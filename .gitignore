@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Data and generated artifacts
+data/raw/
+data/interim/
+data/processed/
+data/external/
+output/tables/
+output/figures/
+
+# Logs and scratch
+logs/
+*.log
+.DS_Store
+
+# Literature payloads that may not be redistributable
+literature/*.pdf
+literature/*.epub
+
+# LaTeX generated files
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+
