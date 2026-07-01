@@ -1,494 +1,501 @@
-# JFE Detailed Outline - The Making of Vehicle Currencies
+# JFE Outline - The Making of Vehicle Currencies
 
 Target title: **The Making of Vehicle Currencies: Evidence from DeFi**
 
-Purpose: restructure the paper around a JFE-compatible architecture after checking
-the downloaded vehicle-currency, liquidity, DeFi, and stablecoin-run literature,
-with particular weight on the JFE papers in the corpus:
-
-- Eren and Malamud (2022), *Journal of Financial Economics*, "Dominant Currency Debt"
-- Makarov and Schoar (2020), *Journal of Financial Economics*, "Trading and Arbitrage in Cryptocurrency Markets"
-- Chordia, Roll, and Subrahmanyam (2000), *Journal of Financial Economics*, "Commonality in Liquidity"
-
-The JFE lesson is structural: a compact 5-8 section paper, a long economic
-introduction, related literature integrated in the introduction, a model or
-framework before the tests, results grouped by economic mechanism rather than by
-script output, and self-contained captions. The current DDC draft has the raw
-material, but its results section is too long and mixes main findings,
-identification checks, diagnostics, returns, depeg, V4, and support material under
-one top-level heading. The revised structure below turns the paper into a
-vehicle-currency formation and stickiness paper.
+This version keeps the paper close to JFE style: few visible section headings,
+subsections only where they are likely to appear in the submitted paper, and
+paragraph-level instructions recorded as comments rather than fake headings.
+
+## Abstract
+
+**Comment:** One paragraph, about 100-150 words. State the question, the DeFi
+identification advantage, the three findings, and the finance implication. Avoid
+a numbered tour of tables.
 
-## Core Claim
+## 1. Introduction
 
-DeFi reveals how vehicle currencies form, persist, and sometimes lose share
-because every routed trade records the source asset, destination asset,
-intermediate vehicle, route cost, and settlement implementation. Vehicle dominance
-is sticky because liquidity and routing externalities concentrate execution around
-an incumbent. It changes in three ways:
+**Comment:** Long JFE-style introduction, not subdivided in the paper. Paragraph
+plan: vehicle-currency puzzle; why fiat evidence is opaque; why DeFi reveals the
+route; core mechanism of liquidity and network externalities; main findings in
+order; contribution; related literature; roadmap.
 
-1. **Gradual change** as pair liquidity and route opportunity migrate across base
-   assets.
-2. **Stress-state rotation** when risk makes the inherited vehicle less attractive
-   and safer stable assets become better routes.
-3. **Architecture shocks** when protocol design changes the feasible route set or
-   the gross settlement movement required by a route.
+**Paragraph plan, not headings:**
 
-This claim fits the downloaded literature: Krugman (1980) supplies the cheapest
-route/vehicle idea; Dowd and Greenaway (1993) supply network externalities and
-switching costs; Gopinath and Stein (2021), Gopinath et al. (2020), Amiti et al.
-(2022), Mukhin (2022), Eren and Malamud (2022), and Somogyi (2026) supply the
-dominant-currency and vehicle-currency comparison; Chordia et al. (2000),
-Pastor and Stambaugh (2003), Brunnermeier and Pedersen (2009), and Baele et al.
-(2020) supply liquidity commonality and flight-to-safety discipline; Makarov and
-Schoar (2020, 2022), Schar (2021), Daian et al. (2020), and Lehar and Parlour
-(2024) anchor the crypto/DEX setting; Catalini et al. (2022), Lyons et al. (2023),
-Gorton and Zhang (2023), Anadu et al. (2023), Liu et al. (2023), and Uhlig (2022)
-discipline the stablecoin safety shock.
+1. Vehicle currencies are liquidity institutions: traders route through a token
+   because it is the cheapest and deepest bridge.
+2. Fiat markets make this hard to study: routes are hidden, transitions are rare,
+   and architecture changes slowly.
+3. DeFi is the laboratory: routes, intermediaries, endpoint tokens, liquidity, and
+   settlement implementation are observed inside transactions.
+4. Main finding 1: vehicle use is concentrated and persistent.
+5. Main finding 2: stress rotates routes away from the inherited risky vehicle,
+   WETH, toward safer stablecoin routes within common route opportunities.
+6. Main finding 3: architecture changes route feasibility and settlement
+   implementation.
+7. Contribution: identify how vehicle currencies are made, why they stick, and
+   what changes them.
+8. Literature: vehicle/dominant currencies; liquidity and flight to safety; DeFi,
+   AMMs, and stablecoins.
+9. Roadmap.
 
-## Main Paper Structure
+## 2. Institutional Setting, Data, and Measurement
 
-### 1. Introduction
+**Comment:** This section should have only a few visible subsections. It explains
+the route object and data reliability, then moves detailed diagnostics to the
+appendix.
 
-**Goal:** make the paper legible to a JFE reader before the data machinery appears.
-The introduction should be long, thesis-first, and result-sequential. No standalone
-top-level literature review.
+### 2.1 Routed exchange in AMM markets
 
-#### 1.1 Motivation: vehicle currencies are liquidity institutions
+**Comment:** Define direct routes, indirect routes, split routes, loop routes, and
+the vehicle role. Use Krugman/Somogyi language but make the DeFi object concrete.
 
-Open with the core economic problem: traders often exchange A for C through B
-because B is the cheaper, deeper, more widely paired route. In FX, the dollar is
-the canonical vehicle. In DeFi, the same role is visible transaction by transaction.
+**Figure 1 placed here.**
 
-#### 1.2 Identification problem in fiat markets
+**Figure 1. Routed exchange and monetary roles in AMM markets.**
+Panel A shows a direct route from source token \(A\) to destination token \(C\).
+Panel B shows an indirect route in which token \(B\) is used as a vehicle currency
+because the trade clears through \(A \rightarrow B \rightarrow C\). Panel C shows
+a split route in which execution is divided across parallel paths. Panel D shows
+a loop route that returns to the initial token inside the same atomic transaction.
+A token is counted as a vehicle only when it is neither the source nor the
+destination of the reconstructed route.
 
-Explain why fiat vehicle-currency formation is hard to study: route choice is
-opaque, transitions are rare, the incumbent is sticky, and market architecture does
-not change on an observable block.
+Subcaptions: **Panel A. Direct route**; **Panel B. Vehicle route**; **Panel C.
+Split route**; **Panel D. Loop route**.
 
-#### 1.3 DeFi laboratory
+### 2.2 Route data and sample construction
 
-State the laboratory clearly: many assets compete, AMM liquidity is observable,
-routes are public, and protocol architecture changes create dated shocks to the
-route technology.
+**Comment:** Combine raw swap records, transaction-hash grouping, log-index
+ordering, route reconstruction, repricing, filters, and measurement universes.
 
-#### 1.4 Findings in order
+**Table 1 placed here.**
 
-Use prose "First, Second, Third" signposting:
+**Table 1. Measurement and estimation universes.**
+The table reports the samples used to construct route-level monetary-role measures
+and the samples used in coefficient-bearing tests. The measurement network uses
+all reconstructed routes after repricing and artifact filters. The vehicle-rotation,
+depeg, architecture, and return tests impose additional data requirements specific
+to each design. Separating these universes makes clear which observations define
+the route network and which observations identify regression estimates.
 
-- First, vehicle use is concentrated and persistent, consistent with thick-market
-  and network-externality forces.
-- Second, stress rotates route choice away from the risky inherited vehicle, WETH,
-  toward safer stable assets within common source-destination opportunities.
-- Third, architecture changes alter vehicle use and settlement implementation: V3
-  changes pairwise depth and route feasibility; V4 lets a route token remain in the
-  path while gross ERC-20 movement is netted away.
+### 2.3 Measuring vehicle use and settlement roles
 
-#### 1.5 Contribution
+**Comment:** Define vehicle share, route betweenness, endpoint share,
+route-endpoint flow, and gross-transfer incidence in prose. Do not make each one a
+subsection.
 
-Frame the contribution as identification of vehicle-currency formation and
-stickiness, not a broad ranking of "dominant currencies" across all monetary roles.
-The broad literature analogy is retained, but the empirical claim is scoped to
-vehicle routes, endpoint settlement pressure, and settlement implementation in
-DEXs.
+**Figure 2 placed here.**
 
-#### 1.6 Related literature integrated in the introduction
+**Figure 2. Vehicle-currency shares in routed exchange.**
+The figure plots weekly shares of reconstructed route intermediation for WETH,
+USDC, USDT, and other major route tokens. Vehicle share is the fraction of indirect
+routes in which the token appears as a pure intermediate. The figure shows the
+inherited WETH vehicle role, the growth of stablecoin intermediation, and the
+distinction between gradual changes in route liquidity and sharp movements around
+stress episodes.
 
-Keep three prose paragraphs:
+Subcaptions: **Panel A. WETH and stablecoin vehicle shares**; **Panel B. Vehicle
+share by token group**; **Panel C. Route betweenness by token group**; **Panel D.
+Vehicle concentration over time**.
 
-- Dominant and vehicle currencies: Krugman; Dowd and Greenaway; Gopinath et al.;
-  Gopinath and Stein; Amiti et al.; Mukhin; Eren and Malamud; Somogyi.
-- Liquidity, commonality, and flight to safety: Chordia et al.; Pastor and
-  Stambaugh; Brunnermeier and Pedersen; Baele et al.
-- DeFi, AMMs, arbitrage, and stablecoins: Makarov and Schoar; Schar; Lehar and
-  Parlour; Daian et al.; Catalini et al.; Lyons et al.; Gorton and Zhang; Anadu et
-  al.; Liu et al.; Uhlig.
+## 3. Framework
 
-#### 1.7 Roadmap
+**Comment:** Visible section should be short and mechanism-led. If the formal
+model is kept, this is where it belongs. Otherwise write it as a disciplined
+conceptual framework with propositions. Do not create many subsections.
 
-Roadmap should mirror the final section order exactly.
+### 3.1 Liquidity, network externalities, and route choice
 
-### 2. Institutional Setting, Data, and Measurement
+**Comment:** One visible subsection can cover the route-cost logic, thick-market
+externalities, switching costs, and why vehicle use is persistent.
 
-**Goal:** give enough route, venue, and measurement detail for trust, while moving
-diagnostics to the appendix.
+### 3.2 Predictions
 
-#### 2.1 AMM routes and the vehicle-currency role
+**Comment:** Use propositions, not H1/H1a/H2 labels.
 
-Define direct routes, multi-hop routes, split routes, and loop routes. A token is a
-vehicle only when it is an intermediate, not the source or destination. This section
-should cite Krugman (1980), Somogyi (2026), Daian et al. (2020), Makarov and
-Schoar (2022), and Lehar and Parlour (2024).
+**Table 2 placed here.**
 
-#### 2.2 Raw swap and route reconstruction
+**Table 2. Predictions and empirical tests.**
+The table maps the framework's three predictions to the empirical designs in the
+paper. The first prediction is that vehicle use is persistent and concentrated
+when liquidity is supplied against an incumbent route asset. The second prediction
+is that downside stress reduces use of a risky incumbent vehicle relative to safer
+substitutes within common route opportunities. The third prediction is that
+protocol architecture can separate route use from gross token movement by changing
+the settlement implementation of the same route unit.
 
-Describe raw swap records, transaction hash grouping, log-index ordering, route
-components, stablecoin-anchored repricing, and artifact filters. Keep the full
-validation battery in the appendix, but state the central reliability checks.
+## 4. Formation and Stickiness of the Vehicle Role
 
-#### 2.3 Measurement universes
+**Comment:** This is the first empirical section. It should establish "making" and
+"stickiness" before stress events. Keep only two visible subsections if possible.
 
-Separate the full route-measurement network from the coefficient-bearing samples.
-This responds directly to prior referee confusion about sample accounting.
+### 4.1 Vehicle concentration and persistence
 
-#### 2.4 Vehicle, endpoint, and settlement-implementation measures
+**Comment:** Show that WETH is the inherited Ethereum vehicle and that vehicle
+use is persistent.
 
-Define:
+**Table 3 placed here.**
 
-- vehicle share: share of routes using token B as a pure intermediate;
-- route betweenness: centrality of token B in the route network;
-- endpoint share: share of route endpoints held by a token;
-- settlement implementation: whether an intermediate token emits a gross ERC-20
-  transfer or is internally netted.
+**Table 3. Concentration and persistence of vehicle-currency use.**
+The table reports concentration and persistence statistics for token vehicle shares
+in the reconstructed route network. Vehicle share is measured from pure-intermediate
+route use. Concentration statistics compare vehicle intermediation with endpoint
+use, and persistence statistics measure how strongly a token's vehicle role carries
+forward across weeks. The estimates show whether vehicle dominance is a sticky
+route-liquidity object rather than a transient volume ranking.
 
-#### 2.5 Descriptive vehicle dominance and persistence
+### 4.2 Liquidity supplied against vehicle assets
 
-Move concentration and lead-lag evidence out of a generic measurement section and
-into the economic question: WETH is the inherited vehicle; stablecoins become
-increasingly important route assets; vehicle shares are persistent.
+**Comment:** This is the key foundation Kathy's liquidity-provision framing needs:
+liquidity is organized around the vehicle.
 
-### 3. Framework: Liquidity, Network Externalities, and Architecture
+**Figure 3 placed here.**
 
-**Goal:** model or conceptual framework before tests, as JFE expects. This section
-should discipline the results and replace the old "framework for routing
-architecture" if it reads like a late rationalization.
+**Figure 3. Pair liquidity supplied against vehicle assets.**
+The figure reports liquidity depth by base asset for major route tokens. Liquidity
+is assigned to the asset against which other tokens are paired. The figure shows
+whether WETH and major stablecoins attract disproportionate paired liquidity, the
+liquidity foundation that makes indirect vehicle routes cheaper than thin direct
+routes.
 
-#### 3.1 Route choice with liquidity and price impact
+Subcaptions: **Panel A. Pair liquidity by base asset**; **Panel B. Share of token
+pairs linked to WETH or stablecoins**; **Panel C. Direct-route depth versus
+vehicle-route depth**; **Panel D. Change in paired liquidity over time**.
 
-A router chooses the path that maximizes output net of pool fees and price impact.
-The vehicle role belongs to the token that makes indirect exchange cheaper than
-direct exchange. This maps directly to Krugman (1980), Somogyi (2026), and the AMM
-literature.
+**Table 4 placed here.**
 
-#### 3.2 Thick markets, network externalities, and switching costs
+**Table 4. Direct routes and vehicle-route execution advantage.**
+The table compares direct execution with the best available vehicle route for
+source-destination pairs in the reconstructed network. For each pair, the table
+reports direct-route availability, direct-route depth, vehicle-route depth, and the
+output advantage of routing through WETH or a stablecoin vehicle. The estimates
+quantify the economic value of the vehicle role before turning to stress-driven
+rotation.
 
-Liquidity supplied against the incumbent deepens its pairs, lowering future route
-costs and creating persistence. Dowd and Greenaway (1993) give the switching-cost
-and network-externality logic. Chordia et al. (2000) and Brunnermeier and Pedersen
-(2009) justify why liquidity can move together under stress.
+## 5. Stress-State Vehicle Rotation
 
-#### 3.3 Stress shocks
+**Comment:** This is the central identification section. Keep the structure tight:
+dose response, common support, route costs/counterfactual, recovery. The hourly
+event anatomy can be a figure or appendix material unless it is crucial.
 
-Stress changes the risk and balance-sheet value of candidate vehicles. Prediction:
-when the inherited vehicle is risky, downside stress reduces its vehicle share
-within common route opportunities and raises safe-token intermediation.
+### 5.1 Stress severity and WETH rotation
 
-#### 3.4 Reserve shocks
+**Table 5 placed here.**
 
-A reserve impairment changes endpoint safety. Prediction: a stablecoin depeg
-causes route-endpoint flow out of the impaired token and creates persistent
-endpoint pressure, but does not mechanically imply tipping to a single substitute
-when several substitutes can clear.
+**Table 5. Daily vehicle-rotation dose response.**
+The table reports daily fixed-effects estimates of vehicle rotation as downside
+stress increases. The outcome is WETH's route-betweenness or vehicle-share gap
+relative to the stablecoin layer. Stress is measured by downside ETH returns, with
+days grouped by crash severity and with a continuous severity specification. WBTC
+is included as a placebo vehicle. The estimates test whether the risky inherited
+vehicle loses route share when market stress rises.
 
-#### 3.5 Architecture shocks
+**Figure 4 placed here.**
 
-Protocol design changes route feasibility and settlement implementation. Prediction:
-V3-style concentrated liquidity changes the cost of using direct versus vehicle
-routes; V4-style internal netting separates route appearance from gross settlement
-movement.
+**Figure 4. Event-time WETH vehicle share around stress episodes.**
+The figure plots WETH vehicle share around pre-specified downside stress episodes.
+Vehicle share is normalized to the pre-event window within each episode. The
+event-time path shows when route rotation occurs, whether it reverses after stress
+subsides, and whether the incumbent vehicle returns to its baseline role.
 
-#### 3.6 Proposition summary
+Subcaptions: **Panel A. Average event-time path**; **Panel B. Episode-specific
+paths**; **Panel C. Recovery after stress trough**; **Panel D. Risk-on placebo
+episodes**.
 
-Use three propositions, not long H1/H1a/H2 notation:
+### 5.2 Common-support route opportunities
 
-- **Proposition 1: Vehicle liquidity and stickiness.** Vehicle share is persistent
-  and concentrated because liquidity supplied against a base asset lowers future
-  route costs.
-- **Proposition 2: Stress-state vehicle rotation.** Downside stress reduces use of
-  a risky incumbent vehicle relative to safer substitutes within common route
-  opportunities.
-- **Proposition 3: Architecture and settlement implementation.** Architecture
-  changes can alter the mapping from route use to gross token movement, allowing a
-  token to remain a route unit while physical settlement is netted.
+**Table 6 placed here.**
 
-### 4. Formation and Stickiness of the Vehicle Role
+**Table 6. Common-support WETH route rotation.**
+The table estimates WETH route-share changes within source-destination
+pair-episodes that used both WETH and at least one non-WETH intermediary before
+the stress anchor. The outcome is WETH's hourly intermediary share minus the
+pair-episode's pre-anchor WETH share. Pair-by-episode and relative-hour fixed
+effects absorb baseline route composition and common event timing. The coefficient
+measures whether WETH loses share relative to observed substitute intermediaries
+inside the same route opportunity set.
 
-**Goal:** make "making" and "stickiness" the first empirical object, before stress
-events.
+### 5.3 Route costs and the road not taken
 
-#### 4.1 Baseline vehicle concentration
+**Table 7 placed here.**
 
-Show that route intermediation is highly concentrated relative to endpoint use and
-that WETH starts as the inherited Ethereum vehicle.
+**Table 7. Executed route costs and WETH route choice.**
+The table compares WETH and non-WETH intermediaries in source-destination-hour
+cells where both route categories are executed on Uniswap V3. Route cost includes
+pool fees and realized within-swap price impact across the executed legs. The
+estimates test whether WETH loses route share under stress after controlling for
+observed route costs, route length, source-destination pair, and time.
 
-#### 4.2 Gradual change in vehicle use
+**Table 8 placed here.**
 
-Document the secular movement from WETH-only intermediation toward stablecoin route
-assets. This section should distinguish gradual liquidity migration from sudden
-stress rotation.
+**Table 8. Road-not-taken route costs under stress.**
+The table prices the executed route against the best observed alternative route
+for the same source-destination pair, using validated V3 quote reconstruction and
+filters for mechanical pricing pathologies. The premium is the output lost or
+gained by the route used relative to the route not taken. The table reports route
+examples, quoter validation, fee and price-impact components, and
+episode-minus-calm premiums. It quantifies the execution-cost consequence of
+vehicle rotation under stress.
 
-#### 4.3 Persistence and inertia
+### 5.4 Recovery after stress
 
-Estimate persistence in vehicle share or route betweenness: transition matrices,
-AR persistence, half-life, or share recovery after shocks. Tie this directly to
-Dowd and Greenaway (switching costs/network externalities) and the currency-inertia
-literature.
+**Table 9 placed here.**
 
-#### 4.4 Liquidity supply against the vehicle
+**Table 9. Recovery of the inherited vehicle role after stress.**
+The table estimates the persistence and recovery of WETH vehicle share after
+downside stress episodes. Recovery is measured as the share of the pre-event WETH
+vehicle role regained by fixed post-event horizons and as the estimated half-life
+of the stress-induced displacement. The estimates distinguish temporary stress
+rotation from permanent tipping away from the incumbent vehicle.
 
-Use pool depth or paired-liquidity concentration to show that liquidity is provided
-against the vehicle. This is the missing "vehicle route much better than direct
-route" foundation: vehicle status should be visible not only in executed routes but
-in the liquidity graph that makes those routes cheap.
+## 6. Reserve Credibility and Settlement Endpoint Flight
 
-### 5. Stress-State Vehicle Rotation
+**Comment:** Keep this as one compact section. It supports the safe-settlement
+side of the story but should not crowd out the vehicle-currency spine.
 
-**Goal:** make the WETH-to-stable rotation the central identification section.
-This section should absorb what is now spread across many results subsections.
+### 6.1 USDC depeg and endpoint flow
 
-#### 5.1 Daily severity design
+**Figure 5 placed here.**
 
-Use the full daily panel: WETH gap against the stable layer falls monotonically with
-ETH downside severity. Keep WBTC as placebo.
+**Figure 5. The USDC depeg and route-endpoint flight.**
+The figure plots the March 2023 USDC depeg and hourly route-endpoint flow into or
+out of USDC. The price of USDC is recovered from Uniswap V3 USDC/USDT pool ticks,
+with USDT as the numeraire. Bars show net route-endpoint flow into USDC from other
+major stablecoins. Negative bars indicate flight from the impaired settlement token
+during the widening phase; positive bars indicate reflow as the peg recovers.
 
-#### 5.2 Hourly event anatomy
+Subcaptions: **Panel A. USDC price around the SVB shock**; **Panel B. Hourly net
+endpoint flow into USDC**; **Panel C. Cumulative route-endpoint pressure**; **Panel
+D. Placebo-window comparison**.
 
-Use named stress windows as anatomy, not as the sole source of identification.
-Show sign consistency across episodes, leave-one-out stability, and risk-on
-placebos.
+### 6.2 Persistence and substitution
 
-#### 5.3 Common-support route opportunities
+**Table 10 placed here.**
 
-Place the common-support design immediately after the dose response. This is the
-referee-facing identification fix: same source-destination pair, both WETH and
-non-WETH opportunities observed before the shock, baseline-normalized WETH share.
+**Table 10. Persistence of route-endpoint pressure during the USDC depeg.**
+The table reports cumulative route-endpoint outflow from USDC during the March
+2023 depeg. Cumulative pressure is the signed net stable-to-stable route flow out
+of USDC and into substitute stablecoins. The measure records endpoint pressure
+generated by observed routes, not wallet-level holdings or redemptions. Share of
+peak reports the remaining pressure at each checkpoint relative to the maximum
+cumulative outflow in the event window.
 
-#### 5.4 Executed route costs
+**Table 11 placed here.**
 
-Use the V3 executed route-cost opportunity test to show the rotation is not simply
-composition, route length, or fee-tier drift.
+**Table 11. Settlement substitution during stablecoin depegs.**
+The table reports positive net route-endpoint outflow from impaired stablecoins
+during depeg widening phases. For each episode, it reports the total outflow, the
+largest recipient's share, and the effective number of substitute stablecoins. The
+table tests whether settlement flight tips mechanically to a single surviving
+stablecoin or disperses across several substitutes with immediate clearing capacity.
 
-#### 5.5 Road-not-taken counterfactual
+## 7. Architecture and Settlement Implementation
 
-Present the quoter and counterfactual validation after the common-support and
-executed-cost evidence. The road-not-taken result should be interpreted as the
-price/cost consequence of vehicle rotation under stress, not as a separate paper
-inside the paper.
+**Comment:** Architecture is part of the vehicle-currency story, but causal claims
+must stay tight. V3 route-feasibility evidence belongs here if built; V4 receipt
+evidence is already a strong first stage.
 
-#### 5.6 Recovery and stickiness after stress
+### 7.1 Architecture and route feasibility
 
-Close the section by showing whether WETH share mean-reverts after stress. This
-connects the stress design back to "stickiness" rather than leaving it as an event
-study.
+**Figure 6 placed here if the V3 analysis is built.**
 
-### 6. Reserve Credibility and Settlement Endpoint Flight
+**Figure 6. Vehicle routes around the introduction of concentrated liquidity.**
+The figure plots route shares, direct-route availability, and paired liquidity
+around the introduction of Uniswap V3 concentrated liquidity. The event window is
+centered on V3 launch. The figure tests whether a change in market architecture
+alters reliance on vehicle routes by changing pairwise depth and the cost of direct
+exchange.
 
-**Goal:** keep the USDC depeg because it is strong and finance-relevant, but scope
-it as endpoint settlement safety, not as the whole paper's main vehicle result.
+Subcaptions: **Panel A. Vehicle share around V3 launch**; **Panel B. Direct-route
+availability**; **Panel C. Pair liquidity concentration**; **Panel D. Direct-route
+versus vehicle-route cost**.
 
-#### 6.1 The USDC/SVB depeg as reserve-safety shock
+### 7.2 V4 settlement implementation
 
-Explain the exogenous trigger, the within-event reversal, and the on-chain price
-measurement from USDC/USDT ticks.
+**Table 12 placed here.**
 
-#### 6.2 Endpoint flow out of the impaired settlement token
+**Table 12. V4 matched settlement-implementation first stage.**
+The table matches coherent multi-hop Uniswap V3 and V4 routes by endpoint pair,
+week, and intermediate token. It reports the gross-exposure nettable share and
+whether the intermediate token emits a matching ERC-20 transfer in the transaction
+receipt. Holding the route unit fixed, V4 sharply lowers gross intermediate-token
+movement, showing that protocol architecture can separate route use from physical
+settlement.
 
-Report hourly net flow out of USDC into substitute stablecoins during the widening
-phase and the normal-times/block-placebo comparison.
+**Table 13 placed here.**
 
-#### 6.3 Persistence of endpoint pressure
+**Table 13. Settlement netting on Uniswap V4.**
+The table reports gross-transfer and netted-settlement shares for clean coherent V4
+routes in which the named token is a pure intermediate. A route is physically
+settled when the intermediate token emits an ERC-20 transfer in the transaction
+receipt and internally netted when no such transfer appears. The table reports
+token-level netted shares, adoption-time patterns, and stress diagnostics. The
+stress estimates are descriptive; the identified architecture result is the
+matched V3/V4 receipt wedge.
 
-Cumulate route-endpoint flow into route-implied endpoint pressure. Be explicit that
-this is not wallet holdings. This responds to prior reviewer concerns.
+## 8. Pricing Implications and Conclusion
 
-#### 6.4 Substitution rather than automatic tipping
+**Comment:** JFE needs the finance payoff, but this should be a payoff, not a
+second asset-pricing paper.
 
-Use the settlement-substitution table to show that flow disperses across several
-substitutes. This is economically useful because it disciplines the
-strategic-complementarity/tipping claim.
+### 8.1 Convenience-yield implication
 
-#### 6.5 Cross-sectional safety in busts
+**Table 14 placed here.**
 
-If the determinant/return evidence is retained, place the safe-token bust
-association here as supporting evidence for reserve credibility and safety demand,
-not as a separate "determinants" paper.
+**Table 14. Vehicle dominance and state-dependent convenience yields.**
+The table sorts tokens by vehicle and route-dominance measures and reports
+subsequent returns by market state. High-dominance tokens are expected to earn
+lower subsequent returns when their route-liquidity services are most valuable.
+The table reports conditional long-short spreads across boom and bust states.
+Unconditional factor-pricing tests are reported in the appendix as diagnostics.
 
-### 7. Architecture Shocks and Settlement Implementation
+### 8.2 Conclusion
 
-**Goal:** integrate V3/V4 as architecture evidence rather than a late add-on.
+**Comment:** Short. No new results. Return to the title: how a vehicle currency is
+made, why it sticks, and what changes it.
 
-#### 7.1 V2 to V3: concentrated liquidity and route feasibility
+## References
 
-If the data support it, use V3 launch/concentrated liquidity as the architecture
-shock that changes pairwise depth and therefore the need for vehicle routes. This
-is the cleanest match to "gradual versus sudden/architectural change." If the
-analysis is not yet built, state it as the natural extension and keep V4 as the
-implemented architecture result.
+**Comment:** References after the conclusion and before the appendix. Keep the
+JFE-style integrated literature in the introduction, but include the full reference
+list here.
 
-#### 7.2 V4 flash accounting and route-token settlement
+## Online Appendix
 
-Present the matched endpoint-pair-week-intermediate design. The key first stage:
-holding the route unit fixed, V4 sharply reduces gross ERC-20 transfer incidence
-for the intermediate token.
+**Comment:** Keep the appendix organized by function, not by the order scripts
+were run.
 
-#### 7.3 Route composition around V4
+### Appendix A. Data construction and route reconstruction
 
-Keep V4 route-composition changes as descriptive diagnostics unless stronger
-identification is built. Do not overclaim pool creation or hook design as
-randomized.
+**Table A1. Raw swap coverage by venue and protocol version.**
+The table reports raw swap coverage by DEX, protocol version, sample start, sample
+end, number of transactions, number of swap legs, and repriced USD volume. Coverage
+is reported before and after artifact filters.
 
-#### 7.4 Settlement netting under stress
+**Table A2. Route reconstruction validation.**
+The table reports transaction-level conservation checks, route-component recovery
+rates, and validation against known Uniswap V3 router paths. Validation statistics
+are reported separately for direct, indirect, split, and loop routes.
 
-Report netting shares and stress patterns as descriptive. The identified claim is
-the matched receipt wedge, not a causal stress coefficient.
+**Table A3. Stablecoin repricing and artifact-filter sensitivity.**
+The table reports route-volume and route-count coverage under alternative repricing
+and artifact-filter rules. The main estimates use the baseline stablecoin-anchored
+repricing and artifact filters.
 
-### 8. Pricing Implications and Conclusion
+### Appendix B. Additional measurement diagnostics
 
-**Goal:** end with the finance implication and a concise conclusion. JFE needs a
-"why prices/finance readers care" payoff, but this should not reopen a separate
-asset-pricing paper.
+**Figure B1. Venue composition of the reconstructed route network.**
+The figure plots weekly reconstructed route volume by DEX and protocol version.
+Shares sum to one inside the reconstructed sample and do not represent total DEX
+market size.
 
-#### 8.1 Convenience yield of vehicle/liquidity services
+**Figure B2. Concentration of vehicle, endpoint, and volume-share measures.**
+The figure plots inverse Herfindahl indexes and top-token shares for route vehicle
+use, endpoint use, and total volume share.
 
-Keep the conditional return-sort result if it remains robust: dominance services
-are valuable in states where route liquidity is scarce, so high-dominance tokens
-earn lower subsequent returns in boom/scarcity states. Present unconditional factor
-pricing as a diagnostic in the appendix.
+**Figure B3. Lead-lag cross-autocorrelation of route-role measures.**
+The figure reports cross-autocorrelations among vehicle share, endpoint share,
+volume share, and route betweenness over alternative lag windows.
 
-#### 8.2 What DeFi teaches about vehicle currencies
+### Appendix C. Stress-rotation robustness
 
-State the general lesson: vehicle currencies are liquidity institutions whose
-dominance persists through network externalities, rotates under stress, and is
-reshaped by architecture.
+**Table C1. WETH route rotation under alternative crash thresholds.**
+The table estimates WETH vehicle-rotation regressions using alternative daily ETH
+drawdown thresholds. Each row reports the WETH interaction coefficient under the
+same fixed-effects structure as the main dose-response design.
 
-#### 8.3 Limits and external validity
+**Table C2. Episode-level vehicle-rotation estimates.**
+The table reports the WETH route-rotation coefficient separately for each stress
+episode, with event anchors, observation counts, and inference.
 
-One tight paragraph: crypto assets are not sovereign currencies; the claim is not
-that DeFi is the global dollar system. The contribution is that DeFi reveals the
-route-level mechanisms that fiat markets usually hide.
+**Table C3. Vehicle-rotation placebo tests.**
+The table reports placebo estimates for WBTC, non-vehicle risky tokens, risk-on
+volatility episodes, and shuffled event windows.
 
-#### 8.4 Conclusion
+**Table C4. Vehicle rotation under external stress measures.**
+The table replaces ETH downside returns with broad crypto-market downside returns,
+the S&P cryptocurrency index, and equity-market stress measures.
 
-Short, no new results. Return to the title: how a vehicle currency is made, why it
-sticks, and what changes it.
+### Appendix D. Counterfactual route and quoter validation
 
-## Main Exhibit Spine
+**Table D1. Quoter validation against executed swaps.**
+The table compares reconstructed V3 quote output with realized executed swaps for
+the pools used in the counterfactual analysis. It reports the fraction of swaps
+reproduced within tolerance, median absolute error, and tail errors.
 
-Keep the main paper exhibit count tight. Heavy validation, alternative
-specifications, determinant batteries, return diagnostics, and venue-composition
-details belong in the online appendix.
+**Table D2. Road-not-taken counterfactual under pricing filters.**
+The table re-estimates road-not-taken premiums under route-mid parity,
+direct-route price-impact, and raw-premium filters.
 
-### Figure 1. Routed exchange and monetary roles in an AMM network
+**Table D3. Representative road-not-taken route examples.**
+The table reports selected source-destination pairs, executed routes, alternative
+routes, notional sizes, fee components, price-impact components, and output
+premiums.
 
-Brief caption: The figure illustrates direct, indirect, split, and loop routes in
-AMM-based DEXs. A token is counted as a vehicle only when it is an intermediate,
-not the source or destination. The same transaction identifies vehicle use,
-endpoint settlement flow, and, where receipts are available, gross versus net
-settlement implementation.
+### Appendix E. USDC depeg and stablecoin substitution
 
-### Table 1. Measurement and estimation universes
+**Table E1. Placebo-window distribution for USDC endpoint flow.**
+The table compares depeg-window route-endpoint flow with contiguous placebo windows
+from normal periods, preserving autocorrelation in hourly flows.
 
-Brief caption: The table separates the full reconstructed route network from the
-coefficient-bearing samples used in the vehicle-rotation, depeg, architecture, and
-pricing tests. This prevents readers from confusing network-measurement tokens
-with regression cross-sectional units.
+**Table E2. USDC supply changes around the SVB depeg.**
+The table reports changes in USDC supply around the depeg window and subsequent
+recovery period. Supply changes are used as external corroboration, not as the
+identified route-flow outcome.
 
-### Figure 2. Vehicle-currency concentration and gradual change
+**Table E3. Stablecoin endpoint substitution in the Terra/UST depeg.**
+The table repeats the settlement-substitution analysis for the Terra/UST depeg and
+compares the dispersion of substitute flows with the USDC/SVB episode.
 
-Brief caption: Weekly vehicle-route shares for WETH, USDC, USDT, and other major
-tokens. The figure documents the inherited WETH vehicle role, the rise of
-stablecoin route assets, and the difference between gradual liquidity migration
-and sharp stress episodes.
+### Appendix F. Architecture and V4 diagnostics
 
-### Table 2. Persistence and concentration of vehicle use
+**Table F1. Construction of matched V3 and V4 route-unit cells.**
+The table reports the number of eligible endpoint-pair-week-intermediate cells,
+minimum route-count requirements, and matched-cell attrition.
 
-Brief caption: Persistence, concentration, and transition measures for vehicle
-shares. The table reports concentration of route intermediation, persistence of
-token vehicle shares, and recovery/half-life statistics after stress episodes.
+**Table F2. V4 route-composition diagnostics.**
+The table reports route-length, intermediary-token, stablecoin-use, and WETH-use
+diagnostics in matched V3 and V4 cells.
 
-### Figure 3. Liquidity supplied against vehicle assets
+**Table F3. Receipt-level settlement audit.**
+The table reports ERC-20 transfer incidence by intermediate token, protocol
+version, and route type, based on transaction receipt parsing.
 
-Brief caption: Pair-liquidity concentration by base asset. The figure shows that
-liquidity is disproportionately provided against vehicle assets, which makes
-indirect routes through the vehicle cheaper than thin direct routes.
+### Appendix G. Determinants and return diagnostics
 
-### Table 3. Daily vehicle-rotation dose response
+**Table G1. Cross-sectional determinants of route dominance.**
+The table reports weekly token-level regressions of route-dominance measures on
+token characteristics, liquidity, safety proxies, and market-state interactions.
 
-Brief caption: Daily fixed-effects estimates of WETH vehicle-share or betweenness
-loss as ETH downside severity rises. WBTC is included as a placebo and the stable
-layer as the safe substitute benchmark.
+**Table G2. Return sorts by alternative dominance measures.**
+The table reports long-short return spreads using volume share, route betweenness,
+vehicle share, endpoint share, and eigenvector centrality.
 
-### Table 4. Common-support WETH route rotation
+**Table G3. Unconditional factor-pricing diagnostics.**
+The table reports two-pass factor-pricing estimates for dominance-spread factors.
+These diagnostics test whether the conditional convenience-yield result appears as
+an unconditional priced factor.
 
-Brief caption: Baseline-normalized route-share changes within source-destination
-pair-episodes that used both WETH and non-WETH intermediaries before the stress
-anchor. The coefficient identifies WETH losing share relative to observed
-substitute intermediaries within the same route opportunity set.
+## Potential Coauthor Note: Olga Klein
 
-### Table 5. Executed route costs and road-not-taken validation
+**Comment:** Kathy's "Olga from Warwick" is almost certainly Dr Olga Klein at
+Warwick Business School. She is an Associate Professor of Finance and a Gillmore
+Centre for Financial Technology research fellow. Her work is directly relevant:
+market microstructure, liquidity, high-frequency trading, fintech, decentralized
+finance, DEX liquidity, and automated market making.
 
-Brief caption: Route-cost and quoter-validation evidence for the vehicle rotation.
-The table reports executed V3 route-cost controls, reproduction accuracy for
-observed swaps, and filtered road-not-taken premiums showing the cost consequence
-of routing away from the inherited vehicle under stress.
+Relevant publications and working papers to read/cite:
 
-### Figure 4. Stress anatomy and recovery of WETH vehicle share
-
-Brief caption: Event-time WETH vehicle share around stress episodes, with
-pre-anchor normalization and post-event recovery. The figure shows the rotation
-timing and whether the incumbent returns to baseline after stress.
-
-### Figure 5. The USDC depeg as settlement endpoint shock
-
-Brief caption: USDC's on-chain price during the March 2023 SVB depeg and hourly
-net route-endpoint flow into or out of USDC. Negative bars record flight from the
-impaired stablecoin; the price line supplies the within-event shock timing.
-
-### Table 6. Persistence and dispersion of endpoint flight
-
-Brief caption: Cumulative route-endpoint pressure out of USDC and substitution
-shares across stablecoin recipients. The table distinguishes persistent route
-pressure from wallet holdings and shows that flow disperses across several
-substitutes rather than tipping automatically to one stablecoin.
-
-### Table 7. V4 matched settlement-implementation first stage
-
-Brief caption: Matched route-unit cells by endpoint pair, week, and intermediate
-token compare V3 and V4. The table reports gross-exposure nettable share and the
-incidence of matching ERC-20 transfer receipts, showing that V4 sharply reduces
-physical intermediate-token movement for the same route unit.
-
-### Table 8. Settlement netting on V4
-
-Brief caption: Token-level netted shares for clean V4 routes, with adoption and
-stress diagnostics. The table is descriptive; the causal architecture claim is the
-matched V3/V4 receipt wedge in Table 7.
-
-### Table 9. State-dependent convenience yield
-
-Brief caption: Conditional return sorts by vehicle or dominance measures. The
-table reports whether tokens with stronger route-liquidity services earn lower
-subsequent returns in states where the service is scarce; unconditional factor
-tests move to the appendix.
-
-## Appendix Placement
-
-Move the following out of the main paper unless a referee specifically needs them
-for the central claim:
-
-- DEX venue composition and long sample-construction diagnostics.
-- Full route-reconstruction validation and raw conservation checks.
-- Alternative stress thresholds and all per-episode tables beyond the sign-pattern
-  summary.
-- Long determinant robustness batteries.
-- Unconditional factor-pricing diagnostics.
-- Money-market, Compound/Aave, collateral, and lending-access diagnostics.
-- V4 route-composition rows that are descriptive rather than identified.
-- Heatmaps, lead-lag cross-autocorrelations, and auxiliary concentration figures.
-
-## Implementation Notes for the Manuscript
-
-1. Retitle from "Dominant Currencies" to "Vehicle Currencies" unless the paper
-   adds broader sovereign-style evidence. "Dominant" still belongs in the
-   literature framing, not the empirical title.
-2. Collapse the old one-piece Results section into mechanism sections: formation
-   and stickiness, stress rotation, reserve credibility, architecture, and pricing.
-3. Avoid a top-level "Literature Review." Keep the literature in the introduction
-   and in short local paragraphs where a mechanism is introduced.
-4. Replace long H1/H1a notation with three propositions inside the framework.
-5. Make every main exhibit caption standalone: sample, unit, variable, treatment,
-   and interpretation in the caption.
-6. Keep model/framework before empirical tests. JFE will punish a model that reads
-   like a post-hoc audit.
-7. Scope every broad claim to the margin identified: route vehicle, endpoint
-   pressure, or settlement implementation.
+- Caparros, Chaudhary, and Klein, "Blockchain scaling and liquidity concentration
+  on decentralized exchanges." This is very relevant to our architecture/liquidity
+  section because it uses scaling solutions as instruments for lower LP
+  repositioning costs and shows effects on liquidity concentration and slippage.
+- Klein, Kozhan, Viswanath-Natraj, and Wang, "Informed Liquidity Provision on
+  Decentralized Exchanges." Very relevant to LP behavior, price discovery, and
+  liquidity updates around ETH-USDC.
+- Klein and Shiyun (2021), "Commonality in intraday liquidity and multilateral
+  trading facilities." Relevant to our commonality/liquidity-network framing.
+- Klein (2020), "Trading aggressiveness and market efficiency." Relevant to
+  crowding, price efficiency, and trading intensity.
+- Klein, Maug, and Schneider (2017), "Trading strategies of corporate insiders."
+  Less directly DeFi-related, but relevant to liquidity-sensitive trading behavior.
