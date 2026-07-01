@@ -9,7 +9,8 @@ Examples:
   GRAPH_API_KEYS=... python3 scripts/fetch_raw_market_data.py fetch --dex all --streams swaps daily mints burns modify_liquidities hourly_reserves
 
 The script is raw-first and intentionally over-fetches fields. Outputs are
-verbatim gzipped JSONL under data/raw/thegraph/, plus per-day metadata sidecars.
+verbatim gzipped JSONL under data/raw/thegraph/ or data/raw/dune/, plus per-day
+metadata sidecars.
 """
 
 from __future__ import annotations
@@ -23,6 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from ddvc.fetch.dune import dune_path, fetch_dune_month, month_ranges, stream_names_for_dune_source
 from ddvc.fetch.graph import GraphClient, first_record, graph_keys
 from ddvc.fetch.raw import (
     block_value,
@@ -56,7 +58,12 @@ def effective_range(source_name: str, start: str, end: str | None) -> tuple[dt.d
 
 
 def selected_streams(source_name: str, requested: list[str] | None) -> set[str] | None:
-    available = set(stream_names_for_source(source_name))
+    source = get_source(source_name)
+    available = (
+        set(stream_names_for_dune_source(source))
+        if source.backend == "dune"
+        else set(stream_names_for_source(source_name))
+    )
     if not requested or requested == ["all"]:
         return None
     unknown = set(requested) - available
@@ -73,14 +80,25 @@ def cmd_plan(args: argparse.Namespace) -> int:
     for name in source_names(args.dex):
         source = get_source(name)
         start, end = effective_range(name, args.start, args.end)
-        streams = stream_names_for_source(name) if args.streams == ["all"] else args.streams
+        if args.streams == ["all"]:
+            streams = (
+                stream_names_for_dune_source(source)
+                if source.backend == "dune"
+                else stream_names_for_source(name)
+            )
+        else:
+            streams = args.streams
         days = iter_days(start, end)
         rows.append(
             {
                 "source": name,
+                "backend": source.backend,
                 "schema": source.schema,
                 "genesis_block": source.genesis_block,
                 "genesis_date_utc": source.genesis_date_utc.isoformat(),
+                "subgraph_id": source.subgraph_id or None,
+                "dune_project": source.dune_project,
+                "dune_version": source.dune_version,
                 "start": start.isoformat(),
                 "end_exclusive": end.isoformat(),
                 "days": len(days),
@@ -102,6 +120,14 @@ def first_swap_entity(source_name: str):
 
 def audit_source_genesis(source_name: str) -> dict[str, object]:
     source = get_source(source_name)
+    if source.backend != "thegraph":
+        return {
+            "source": source.name,
+            "backend": source.backend,
+            "configured_genesis_block": source.genesis_block,
+            "configured_genesis_date_utc": source.genesis_date_utc.isoformat(),
+            "status": "skipped-non-graph-backend",
+        }
     entity = first_swap_entity(source_name)
     client = GraphClient(source.subgraph_id, graph_keys())
     genesis_ts = midnight_ts(source.genesis_date_utc)
@@ -142,6 +168,7 @@ def audit_source_genesis(source_name: str) -> dict[str, object]:
     )
     return {
         "source": source.name,
+        "backend": source.backend,
         "subgraph_id": source.subgraph_id,
         "configured_genesis_block": source.genesis_block,
         "configured_genesis_date_utc": source.genesis_date_utc.isoformat(),
@@ -160,14 +187,17 @@ def audit_source_genesis(source_name: str) -> dict[str, object]:
 
 
 def cmd_audit_genesis(args: argparse.Namespace) -> int:
-    if not graph_keys():
+    names = source_names(args.dex)
+    needs_graph = any(get_source(name).backend == "thegraph" for name in names)
+    if needs_graph and not graph_keys():
         raise RuntimeError("No Graph API key set. Use GRAPH_API_KEYS or GRAPH_API_KEY.")
-    rows = [audit_source_genesis(name) for name in source_names(args.dex)]
+    rows = [audit_source_genesis(name) for name in names]
     print(json.dumps(rows, indent=2, sort_keys=True))
     bad = [
         row
         for row in rows
-        if row["has_prior_day_swap"] or not row["first_indexed_swap_matches_configured_day"]
+        if row.get("status") != "skipped-non-graph-backend"
+        and (row["has_prior_day_swap"] or not row["first_indexed_swap_matches_configured_day"])
     ]
     return 1 if bad and args.strict else 0
 
@@ -177,6 +207,23 @@ def cmd_fetch(args: argparse.Namespace) -> int:
         source = get_source(name)
         start, end = effective_range(name, args.start, args.end)
         streams = selected_streams(name, args.streams)
+        if source.backend == "dune":
+            for month_start, month_end in month_ranges(start, end):
+                if args.max_days and month_start >= start + dt.timedelta(days=args.max_days):
+                    break
+                if args.dry_run:
+                    days = iter_days(month_start, month_end)
+                    if args.max_days:
+                        days = days[: max(0, args.max_days - (month_start - start).days)]
+                    selected = stream_names_for_dune_source(source) if streams is None else sorted(streams)
+                    for day in days:
+                        targets = [str(dune_path(name, stream, day)) for stream in selected]
+                        print(json.dumps({"source": name, "backend": "dune", "day": day.isoformat(), "targets": targets}))
+                    continue
+                metas = fetch_dune_month(source, month_start, month_end, streams=streams, skip_existing=not args.overwrite)
+                for meta in metas:
+                    print(json.dumps(meta, sort_keys=True))
+            continue
         days = iter_days(start, end)
         if args.max_days:
             days = days[: args.max_days]
