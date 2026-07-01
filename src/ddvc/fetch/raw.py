@@ -30,8 +30,6 @@ def raw_path(source: str, stream: str, day: dt.date) -> Path:
         / "raw"
         / "thegraph"
         / source
-        / stream
-        / f"{day:%Y}"
         / f"{source}_{stream}_{day:%Y%m%d}.jsonl.gz"
     )
 
@@ -42,8 +40,6 @@ def meta_path(source: str, day: dt.date) -> Path:
         / "raw"
         / "thegraph"
         / source
-        / "_meta"
-        / f"{day:%Y}"
         / f"{source}_meta_{day:%Y%m%d}.json"
     )
 

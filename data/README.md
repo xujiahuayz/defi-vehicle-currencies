@@ -28,8 +28,10 @@ Run the fetch after setting `GRAPH_API_KEYS` in `.env` or the shell:
 python3 scripts/fetch_raw_market_data.py fetch --dex all --start genesis --end 2026-07-01
 ```
 
-The fetcher writes verbatim gzipped JSONL under `data/raw/thegraph/<source>/<stream>/`
-and tiny metadata sidecars under `data/raw/thegraph/<source>/_meta/`. It over-fetches
+The fetcher writes verbatim gzipped JSONL and tiny metadata sidecars under
+`data/raw/thegraph/<source>/`. The source, stream, and date are all encoded in the
+filename, for example `uniswap_v3_swaps_20260630.jsonl.gz`. This keeps the raw
+tree shallow while avoiding one huge mixed-source directory. It over-fetches
 swap, daily-pool, LP mint/burn, V4 liquidity-modification, and V2 reserve fields so
 route reconstruction, vehicle-route costs, liquidity concentration, LP repositioning,
 and settlement-implementation tests can be derived locally without repeated network

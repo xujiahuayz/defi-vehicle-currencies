@@ -43,7 +43,7 @@ class FetchPlanningTests(unittest.TestCase):
         path = raw_path("uniswap_v3", "swaps", dt.date(2026, 6, 30))
         self.assertTrue(
             path.as_posix().endswith(
-                "data/raw/thegraph/uniswap_v3/swaps/2026/uniswap_v3_swaps_20260630.jsonl.gz"
+                "data/raw/thegraph/uniswap_v3/uniswap_v3_swaps_20260630.jsonl.gz"
             )
         )
 
