@@ -228,6 +228,7 @@ def fetch_all(
     records: list[dict[str, Any]] = []
     for key, entry in entries.items():
         sources = ordered_sources([*default_sources_from_bib(entry), *sources_by_key.get(key, [])], prefer)
+        attempts: list[dict[str, Any]] = []
         if not sources:
             print(f"skip {key}: no source in literature/pdf-sources.json")
             records.append({"key": key, "status": "no-source"})
@@ -240,9 +241,11 @@ def fetch_all(
                 ok, detail = download(source.url, target, headers, overwrite)
             except urllib.error.HTTPError as exc:
                 detail = f"HTTP {exc.code}"
+                attempts.append(attempt_record(source, detail))
                 print(f"try {key} [{index}/{len(sources)}] {source.version}: {detail} {source.url}")
             except Exception as exc:  # noqa: BLE001 - keep trying the source list.
                 detail = f"{type(exc).__name__}: {exc}"
+                attempts.append(attempt_record(source, detail))
                 print(f"try {key} [{index}/{len(sources)}] {source.version}: {detail} {source.url}")
             else:
                 if ok:
@@ -255,16 +258,36 @@ def fetch_all(
                             "version": source.version,
                             "access": source.access,
                             "url": source.url,
+                            "attempts": [*attempts, attempt_record(source, detail, ok=True)],
                         }
                     )
                     break
+                attempts.append(attempt_record(source, detail))
                 print(f"try {key} [{index}/{len(sources)}] {source.version}: {detail} {source.url}")
             time.sleep(0.2)
         else:
-            records.append({"key": key, "status": "miss", "sources": [source.__dict__ for source in sources]})
+            records.append(
+                {
+                    "key": key,
+                    "status": "miss",
+                    "sources": [source.__dict__ for source in sources],
+                    "attempts": attempts,
+                }
+            )
 
     manifest_path.write_text(json.dumps(records, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return records
+
+
+def attempt_record(source: Source, detail: str, *, ok: bool = False) -> dict[str, Any]:
+    return {
+        "ok": ok,
+        "detail": detail,
+        "url": source.url,
+        "version": source.version,
+        "access": source.access,
+        "label": source.label,
+    }
 
 
 def main() -> int:

@@ -4,10 +4,34 @@
   },
   "domains": {
     "academic.oup.com": {
-      "Cookie": "optional-domain-specific-cookie-header"
+      "Cookie": "optional-OUP-cookie-header"
+    },
+    "aeaweb.org": {
+      "Cookie": "optional-AEA-cookie-header"
+    },
+    "annualreviews.org": {
+      "Cookie": "optional-Annual-Reviews-cookie-header"
+    },
+    "chicagounbound.uchicago.edu": {
+      "Cookie": "optional-Chicago-Unbound-cookie-header"
+    },
+    "doi.org": {
+      "Cookie": "optional-DOI-resolver-cookie-header"
+    },
+    "ieeexplore.ieee.org": {
+      "Cookie": "optional-IEEE-cookie-header"
+    },
+    "informs.org": {
+      "Cookie": "optional-INFORMS-cookie-header"
+    },
+    "jstor.org": {
+      "Cookie": "optional-JSTOR-cookie-header"
+    },
+    "sciencedirect.com": {
+      "Cookie": "optional-ScienceDirect-cookie-header"
     },
     "onlinelibrary.wiley.com": {
-      "Cookie": "optional-domain-specific-cookie-header"
+      "Cookie": "optional-Wiley-cookie-header"
     }
   }
 }
