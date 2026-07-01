@@ -23,6 +23,8 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
+import subprocess
 import sys
 import time
 import urllib.error
@@ -100,6 +102,12 @@ def load_sources(path: Path) -> dict[str, list[Source]]:
     return result
 
 
+def load_openathens_domain(path: Path) -> str | None:
+    data = load_json(path)
+    value = data.get("openathens")
+    return str(value) if value else None
+
+
 def merge_sources(*maps: dict[str, list[Source]]) -> dict[str, list[Source]]:
     merged: dict[str, list[Source]] = {}
     for source_map in maps:
@@ -174,14 +182,43 @@ def is_pdf(data: bytes) -> bool:
 def download(url: str, target: Path, headers: dict[str, str], overwrite: bool) -> tuple[bool, str]:
     if target.exists() and not overwrite:
         return True, "exists"
-    with urllib.request.urlopen(request(url, headers), timeout=120) as response:
-        data = response.read()
+    try:
+        with urllib.request.urlopen(request(url, headers), timeout=120) as response:
+            data = response.read()
+    except Exception as exc:
+        data = download_with_curl(url, headers)
+        if data is None:
+            raise exc
     if not is_pdf(data):
         return False, "not-pdf"
     tmp = target.with_suffix(".pdf.tmp")
     tmp.write_bytes(data)
     tmp.replace(target)
     return True, f"{len(data)} bytes"
+
+
+def download_with_curl(url: str, headers: dict[str, str]) -> bytes | None:
+    curl = shutil.which("curl")
+    if not curl:
+        return None
+    command = [
+        curl,
+        "--http1.1",
+        "-L",
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--max-time",
+        "120",
+    ]
+    for name, value in headers.items():
+        command.extend(["-H", f"{name}: {value}"])
+    command.append(url)
+    try:
+        result = subprocess.run(command, check=True, capture_output=True)
+    except subprocess.SubprocessError:
+        return None
+    return result.stdout
 
 
 def ordered_sources(sources: list[Source], prefer: str) -> list[Source]:
@@ -192,6 +229,28 @@ def ordered_sources(sources: list[Source], prefer: str) -> list[Source]:
     else:
         priority = {}
     return sorted(sources, key=lambda source: priority.get(source.version, 50))
+
+
+def openathens_url(url: str, domain: str) -> str:
+    return f"https://go.openathens.net/redirector/{domain}?url={urllib.parse.quote(url, safe='')}"
+
+
+def with_openathens(sources: list[Source], domain: str | None) -> list[Source]:
+    if not domain:
+        return sources
+    expanded: list[Source] = []
+    for source in sources:
+        if source.version == "published" and source.url.startswith("http"):
+            expanded.append(
+                Source(
+                    url=openathens_url(source.url, domain),
+                    version=source.version,
+                    access="institutional",
+                    label=f"OpenAthens {domain}: {source.label}",
+                )
+            )
+        expanded.append(source)
+    return expanded
 
 
 def default_sources_from_bib(entry: Entry) -> list[Source]:
@@ -217,6 +276,7 @@ def default_sources_from_bib(entry: Entry) -> list[Source]:
 def fetch_all(
     entries: dict[str, Entry],
     sources_by_key: dict[str, list[Source]],
+    openathens_domain: str | None,
     out_dir: Path,
     manifest_path: Path,
     global_headers: dict[str, str],
@@ -227,7 +287,10 @@ def fetch_all(
     out_dir.mkdir(parents=True, exist_ok=True)
     records: list[dict[str, Any]] = []
     for key, entry in entries.items():
-        sources = ordered_sources([*default_sources_from_bib(entry), *sources_by_key.get(key, [])], prefer)
+        sources = [
+            *ordered_sources(with_openathens(sources_by_key.get(key, []), openathens_domain), prefer),
+            *ordered_sources(with_openathens(default_sources_from_bib(entry), openathens_domain), prefer),
+        ]
         attempts: list[dict[str, Any]] = []
         if not sources:
             print(f"skip {key}: no source in literature/pdf-sources.json")
@@ -299,17 +362,23 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=LITERATURE_PAPERS_DIR)
     parser.add_argument("--manifest", type=Path, default=LITERATURE_DOWNLOAD_MANIFEST)
     parser.add_argument("--prefer", choices=["published", "working", "listed"], default="published")
+    parser.add_argument("--key", action="append", help="Fetch only this BibTeX key; repeatable.")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--strict", action="store_true", help="Exit nonzero unless every BibTeX entry has a PDF.")
     args = parser.parse_args()
 
     entries = parse_bibtex(args.bib)
+    if args.key:
+        wanted = set(args.key)
+        entries = {key: entry for key, entry in entries.items() if key in wanted}
     committed_sources = load_sources(args.sources)
+    openathens_domain = load_openathens_domain(args.sources)
     local_sources = load_local_source_overlay(args.local_sources)
     global_headers, domain_headers = load_auth_headers(args.auth)
     records = fetch_all(
         entries,
         merge_sources(local_sources, committed_sources),
+        openathens_domain,
         args.out,
         args.manifest,
         global_headers,

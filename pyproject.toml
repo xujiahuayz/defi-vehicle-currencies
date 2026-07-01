@@ -18,10 +18,12 @@ dependencies = [
 dev = [
   "pytest>=8",
 ]
+auth = [
+  "playwright>=1.50",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-

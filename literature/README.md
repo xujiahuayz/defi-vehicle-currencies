@@ -15,10 +15,30 @@ PDF fetching:
 python3 scripts/fetch_literature.py
 ```
 
-The script downloads PDFs to gitignored `literature/papers/` and writes a gitignored `literature/papers/download-manifest.json`. It tries each BibTeX DOI as the published source, then committed fallbacks in `pdf-sources.json`.
+The script downloads PDFs to gitignored `literature/papers/` and writes a gitignored `literature/papers/download-manifest.json`. It tries committed sources in `pdf-sources.json` first, then generated DOI resolver fallbacks. For public servers that fail with Python's default HTTP stack, it falls back to `curl --http1.1`.
+
+Discover publisher-registered PDF endpoints from DOI metadata:
+
+```bash
+python3 scripts/discover_pdf_sources.py --write
+```
+
+Authenticated browser fetching:
+
+```bash
+UCL_USER=... UCL_PW=... /path/to/python scripts/fetch_literature_browser.py
+```
+
+The browser fetcher uses a gitignored persistent profile under `literature/auth/browser-profile`, supports OpenAthens/UCL login, extracts raw PDF responses/downloads, and mines article pages for PDF links advertised in metadata or buttons. It is reproducible once credentials/session state are available, but some publishers still block headless/browser automation with access checks or subscription walls.
 
 For authenticated or paywalled URLs that Java can access legitimately:
 
 - Put additional local-only source URLs in `literature/sources.local.json` using `sources.example.json` as the template.
 - Put local-only cookie/header material in `literature/auth/headers.local.json` using `auth.example.json` as the template.
 - Re-run `python3 scripts/fetch_literature.py --strict` when auth is in place.
+
+Known current access limits:
+
+- `DowdGreenaway1993CurrencyCompetition`: OUP exposes `citation_pdf_url`, but the PDF redirects back to the abstract/purchase page under current auth; JSTOR blocks scripted PDF access with an access check.
+- `Krugman1980VehicleCurrencies`: the NBER working paper is available locally; JSTOR published PDF is blocked by the same access check.
+- `Somogyi2026DollarDominanceFX`: INFORMS shows request-access under current auth; the UniCredit working-paper PDF is available locally.

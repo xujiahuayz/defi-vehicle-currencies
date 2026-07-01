@@ -1,6 +1,57 @@
 {
+  "openathens": "ucl.ac.uk",
   "sources": {
+    "ErenMalamud2022DominantDebt": [
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X21002932/pdfft?md5=5f3aef1ab60050906c0f76a5b8f7f476&pid=1-s2.0-S0304405X21002932-main.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect page-inspected PDF"
+      }
+    ],
+    "ChordiaRollSubrahmanyam2000Commonality": [
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X99000574/pdfft?md5=39f7199969325d277ab51c8e60c5d63b&pid=1-s2.0-S0304405X99000574-main.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect page-inspected PDF"
+      }
+    ],
+    "MakarovSchoar2020Arbitrage": [
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X19301746/pdfft?md5=78072fbb15efb419dcfe7437e85b51cf&pid=1-s2.0-S0304405X19301746-main.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect page-inspected PDF"
+      },
+      {
+        "url": "https://researchonline.lse.ac.uk/id/eprint/100409/1/Cryptocurrency_Markets_JFE_final_v4.pdf",
+        "version": "accepted",
+        "access": "public",
+        "label": "LSE Research Online PDF"
+      }
+    ],
+    "LyonsViswanathNatraj2023Stablecoins": [
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0261560622001802/pdfft?md5=605dc6242a4b9982a3bb898fa5898735&pid=1-s2.0-S0261560622001802-main.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect page-inspected PDF"
+      },
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w27136/w27136.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 27136"
+      }
+    ],
     "Krugman1980VehicleCurrencies": [
+      {
+        "url": "https://www.jstor.org/stable/pdf/1991725.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "JSTOR stable PDF"
+      },
       {
         "url": "https://www.nber.org/system/files/working_papers/w0333/w0333.pdf",
         "version": "working-paper",
@@ -8,12 +59,38 @@
         "label": "NBER Working Paper 333"
       }
     ],
+    "DowdGreenaway1993CurrencyCompetition": [
+      {
+        "url": "https://academic.oup.com/ej/article-pdf/103/420/1180/27039542/ej1180.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "OUP page-inspected PDF"
+      },
+      {
+        "url": "https://www.jstor.org/stable/pdf/2234244.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "JSTOR stable PDF"
+      }
+    ],
     "GopinathEtAl2020DCP": [
+      {
+        "url": "https://pubs.aeaweb.org/doi/pdf/10.1257/aer.20171201",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      },
       {
         "url": "https://www.aeaweb.org/articles/pdf/doi/10.1257/aer.20171201",
         "version": "published",
         "access": "public",
         "label": "AEA PDF"
+      },
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w22943/w22943.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 22943"
       }
     ],
     "AmitiItskhokiKonings2022Dominant": [
@@ -22,22 +99,60 @@
         "version": "published",
         "access": "authenticated",
         "label": "QJE PDF"
+      },
+      {
+        "url": "https://academic.oup.com/qje/advance-article-pdf/doi/10.1093/qje/qjac004/42951138/qjac004.pdf",
+        "version": "accepted",
+        "access": "authenticated",
+        "label": "Crossref syndication"
       }
     ],
     "Mukhin2022InternationalPriceSystem": [
+      {
+        "url": "https://pubs.aeaweb.org/doi/pdf/10.1257/aer.20181550",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      },
       {
         "url": "https://www.aeaweb.org/articles/pdf/doi/10.1257/aer.20181550",
         "version": "published",
         "access": "public",
         "label": "AEA PDF"
+      },
+      {
+        "url": "https://researchonline.lse.ac.uk/id/eprint/112500/1/An_equilibrium.pdf",
+        "version": "accepted",
+        "access": "public",
+        "label": "LSE Research Online PDF"
       }
     ],
     "GriffinShams2020Untethered": [
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/jofi.12903",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref text-mining"
+      },
+      {
+        "url": "https://api.wiley.com/onlinelibrary/tdm/v1/articles/10.1111%2Fjofi.12903",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref text-mining"
+      },
       {
         "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/jofi.12903",
         "version": "published",
         "access": "authenticated",
         "label": "Journal of Finance PDF"
+      }
+    ],
+    "Schar2021DeFi": [
+      {
+        "url": "https://www.stlouisfed.org/-/media/project/frbstl/stlouisfed/publications/review/pdfs/2021/04/15/decentralized-finance-on-blockchain-and-smart-contract-based-financial-markets.pdf?hash=95274ADBE2BC9CDEDE9819A605CB3EDA&sc_lang=en",
+        "version": "published",
+        "access": "public",
+        "label": "St. Louis Fed Review PDF"
       }
     ],
     "MakarovSchoar2022DeFi": [
@@ -49,6 +164,12 @@
       }
     ],
     "LeharParlour2024Uniswap": [
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/jofi.13405",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      },
       {
         "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/jofi.13405",
         "version": "published",
@@ -126,6 +247,146 @@
         "version": "working-paper",
         "access": "public",
         "label": "NBER Working Paper 30256"
+      }
+    ],
+    "DuffieGarleanuPedersen2005OTC": [
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1468-0262.2005.00639.x",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      },
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w10816/w10816.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 10816"
+      }
+    ],
+    "HeimbachPahariSchertenleib2024NonAtomic": [
+      {
+        "url": "http://xplorestaging.ieee.org/ielx8/10646615/10646598/10646836.pdf?arnumber=10646836",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      },
+      {
+        "url": "https://arxiv.org/pdf/2401.01622.pdf",
+        "version": "preprint",
+        "access": "public",
+        "label": "arXiv"
+      }
+    ],
+    "KiyotakiWright1989MoneyMedium": [
+      {
+        "url": "https://www.journals.uchicago.edu/doi/epdf/10.1086/261634",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Chicago page-inspected ePDF"
+      },
+      {
+        "url": "https://www.journals.uchicago.edu/doi/pdf/10.1086/261634?download=true",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Chicago page-inspected PDF download"
+      },
+      {
+        "url": "https://www.journals.uchicago.edu/doi/pdf/10.1086/261634",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      }
+    ],
+    "LagosWright2005Unified": [
+      {
+        "url": "https://www.journals.uchicago.edu/doi/pdf/10.1086/429804",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      }
+    ],
+    "GopinathStein2021Making": [
+      {
+        "url": "https://academic.oup.com/qje/article-pdf/136/2/783/46880119/qjaa036.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref syndication"
+      },
+      {
+        "url": "https://academic.oup.com/qje/advance-article-pdf/doi/10.1093/qje/qjaa036/35040307/qjaa036.pdf",
+        "version": "accepted",
+        "access": "authenticated",
+        "label": "Crossref syndication"
+      }
+    ],
+    "Somogyi2026DollarDominanceFX": [
+      {
+        "url": "https://pubsonline.informs.org/doi/pdf/10.1287/mnsc.2024.07656",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      },
+      {
+        "url": "https://papers.ssrn.com/sol3/Delivery.cfm/3882546.pdf?abstractid=3882546&mirid=1",
+        "version": "working-paper",
+        "access": "public",
+        "label": "SSRN PDF"
+      },
+      {
+        "url": "https://www.unicreditgroup.eu/content/dam/unicreditgroup-eu/ucfoundation/WorkingPapers/2021/WP162_Somogyi_Econ-Job-Market-Best-Paper-Award-8ed.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "UniCredit Foundation working paper PDF"
+      }
+    ],
+    "BrunnermeierPedersen2009Liquidity": [
+      {
+        "url": "https://academic.oup.com/rfs/article-pdf/22/6/2201/5313013/hhn098.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      }
+    ],
+    "PastorStambaugh2003LiquidityRisk": [
+      {
+        "url": "https://www.journals.uchicago.edu/doi/epdf/10.1086/374184",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Chicago page-inspected ePDF"
+      },
+      {
+        "url": "https://www.journals.uchicago.edu/doi/pdf/10.1086/374184?download=true",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Chicago page-inspected PDF download"
+      },
+      {
+        "url": "https://www.journals.uchicago.edu/doi/pdf/10.1086/374184",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
+      }
+    ],
+    "BaeleEtAl2020Flights": [
+      {
+        "url": "https://academic.oup.com/rfs/article-pdf/33/2/689/31788177/hhz055.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref syndication"
+      },
+      {
+        "url": "https://academic.oup.com/rfs/advance-article-pdf/doi/10.1093/rfs/hhz056/29077047/hhz056.pdf",
+        "version": "accepted",
+        "access": "authenticated",
+        "label": "Crossref syndication"
+      }
+    ],
+    "DaianEtAl2020FlashBoys": [
+      {
+        "url": "http://xplorestaging.ieee.org/ielx7/9144328/9152199/09152675.pdf?arnumber=9152675",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Crossref similarity-checking"
       }
     ]
   }
