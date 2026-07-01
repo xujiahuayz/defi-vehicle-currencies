@@ -111,6 +111,35 @@ def build_query(entity: str, fields: str, where: dict[str, Any]) -> str:
     )
 
 
+def build_first_query(
+    entity: str,
+    fields: str,
+    *,
+    order_by: str,
+    where: dict[str, Any] | None = None,
+) -> str:
+    where_clause = f", where: {_where_literal(where)}" if where else ""
+    return (
+        "query FetchFirst { "
+        f"{entity}(first: 1, orderBy: {order_by}, orderDirection: asc{where_clause}) "
+        f"{{ {fields} }} "
+        "}"
+    )
+
+
+def first_record(
+    client: GraphClient,
+    *,
+    entity: str,
+    fields: str,
+    order_by: str,
+    where: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    data = client.query(build_first_query(entity, fields, order_by=order_by, where=where), {})
+    rows = data.get(entity) or []
+    return rows[0] if rows else None
+
+
 def paginate(
     client: GraphClient,
     *,

@@ -81,6 +81,32 @@ def _block_values(rows: list[dict[str, Any]]) -> list[int]:
     return values
 
 
+def block_value(row: dict[str, Any] | None) -> int | None:
+    if row is None:
+        return None
+    values = _block_values([row])
+    return values[0] if values else None
+
+
+def timestamp_value(row: dict[str, Any] | None) -> int | None:
+    if row is None:
+        return None
+    candidates = [
+        row.get("timestamp"),
+        (row.get("transaction") or {}).get("timestamp"),
+        row.get("hourStartUnix"),
+        row.get("date"),
+    ]
+    for value in candidates:
+        if value is None:
+            continue
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
 def fetch_source_day(
     source: DexSource,
     day: dt.date,
@@ -124,6 +150,8 @@ def fetch_source_day(
         "source": source.name,
         "schema": source.schema,
         "subgraph_id": source.subgraph_id,
+        "source_genesis_block": source.genesis_block,
+        "source_genesis_date_utc": source.genesis_date_utc.isoformat(),
         "day": day.isoformat(),
         "head_block_at_fetch": head,
         "min_block": min(all_blocks) if all_blocks else None,

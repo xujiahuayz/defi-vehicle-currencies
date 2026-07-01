@@ -22,6 +22,14 @@ Plan the full genesis-through-last-complete-month raw fetch:
 python3 scripts/fetch_raw_market_data.py plan --dex all
 ```
 
+Genesis is recorded by block first, with a cached UTC date used only for day
+partitioning. Audit the configured block/date against the first indexed swap in
+each Graph source before a full run:
+
+```bash
+GRAPH_API_KEYS=... python3 scripts/fetch_raw_market_data.py audit-genesis --dex all --strict
+```
+
 Run the fetch after setting `GRAPH_API_KEYS` in `.env` or the shell:
 
 ```bash

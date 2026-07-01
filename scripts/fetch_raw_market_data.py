@@ -4,6 +4,7 @@
 Examples:
 
   python3 scripts/fetch_raw_market_data.py plan --dex all
+  python3 scripts/fetch_raw_market_data.py audit-genesis --dex all
   python3 scripts/fetch_raw_market_data.py fetch --dex uniswap_v3 --start genesis --end 2026-07-01
   GRAPH_API_KEYS=... python3 scripts/fetch_raw_market_data.py fetch --dex all --streams swaps daily mints burns modify_liquidities hourly_reserves
 
@@ -22,7 +23,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from ddvc.fetch.raw import fetch_source_day, raw_path, stream_names_for_source
+from ddvc.fetch.graph import GraphClient, first_record, graph_keys
+from ddvc.fetch.raw import (
+    block_value,
+    fetch_source_day,
+    midnight_ts,
+    raw_path,
+    stream_names_for_source,
+    timestamp_value,
+)
 from ddvc.fetch.schemas import get_schema
 from ddvc.fetch.sources import (
     DEX_SOURCES,
@@ -70,7 +79,8 @@ def cmd_plan(args: argparse.Namespace) -> int:
             {
                 "source": name,
                 "schema": source.schema,
-                "genesis": source.genesis.isoformat(),
+                "genesis_block": source.genesis_block,
+                "genesis_date_utc": source.genesis_date_utc.isoformat(),
                 "start": start.isoformat(),
                 "end_exclusive": end.isoformat(),
                 "days": len(days),
@@ -80,6 +90,86 @@ def cmd_plan(args: argparse.Namespace) -> int:
         )
     print(json.dumps(rows, indent=2))
     return 0
+
+
+def first_swap_entity(source_name: str):
+    schema = get_schema(get_source(source_name).schema)
+    for entity in schema.entities:
+        if entity.stream == "swaps":
+            return entity
+    raise ValueError(f"{source_name} has no swaps stream")
+
+
+def audit_source_genesis(source_name: str) -> dict[str, object]:
+    source = get_source(source_name)
+    entity = first_swap_entity(source_name)
+    client = GraphClient(source.subgraph_id, graph_keys())
+    genesis_ts = midnight_ts(source.genesis_date_utc)
+    previous_day = {
+        f"{entity.time_field}_gte": str(genesis_ts - 86_400),
+        f"{entity.time_field}_lt": str(genesis_ts),
+    }
+    genesis_day = {
+        f"{entity.time_field}_gte": str(genesis_ts),
+        f"{entity.time_field}_lt": str(genesis_ts + 86_400),
+    }
+    first = first_record(
+        client,
+        entity=entity.entity,
+        fields=entity.fields,
+        order_by=entity.time_field,
+    )
+    prior = first_record(
+        client,
+        entity=entity.entity,
+        fields=entity.fields,
+        order_by=entity.time_field,
+        where=previous_day,
+    )
+    first_on_genesis_day = first_record(
+        client,
+        entity=entity.entity,
+        fields=entity.fields,
+        order_by=entity.time_field,
+        where=genesis_day,
+    )
+    first_ts = timestamp_value(first)
+    first_block = block_value(first)
+    observed_day = (
+        dt.datetime.fromtimestamp(first_ts, tz=dt.timezone.utc).date().isoformat()
+        if first_ts is not None
+        else None
+    )
+    return {
+        "source": source.name,
+        "subgraph_id": source.subgraph_id,
+        "configured_genesis_block": source.genesis_block,
+        "configured_genesis_date_utc": source.genesis_date_utc.isoformat(),
+        "first_indexed_swap_block": first_block,
+        "first_indexed_swap_timestamp": first_ts,
+        "first_indexed_swap_date_utc": observed_day,
+        "first_indexed_swap_matches_configured_day": observed_day
+        == source.genesis_date_utc.isoformat(),
+        "first_indexed_swap_block_delta": first_block - source.genesis_block
+        if first_block is not None
+        else None,
+        "has_prior_day_swap": prior is not None,
+        "first_configured_day_swap_block": block_value(first_on_genesis_day),
+        "first_configured_day_swap_timestamp": timestamp_value(first_on_genesis_day),
+    }
+
+
+def cmd_audit_genesis(args: argparse.Namespace) -> int:
+    if not graph_keys():
+        raise RuntimeError("No Graph API key set. Use GRAPH_API_KEYS or GRAPH_API_KEY.")
+    rows = [audit_source_genesis(name) for name in source_names(args.dex)]
+    print(json.dumps(rows, indent=2, sort_keys=True))
+    bad = [
+        row
+        for row in rows
+        if row["has_prior_day_swap"] or not row["first_indexed_swap_matches_configured_day"]
+    ]
+    return 1 if bad and args.strict else 0
 
 
 def cmd_fetch(args: argparse.Namespace) -> int:
@@ -104,17 +194,20 @@ def cmd_fetch(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
-    for name, fn in [("plan", cmd_plan), ("fetch", cmd_fetch)]:
+    for name, fn in [("plan", cmd_plan), ("fetch", cmd_fetch), ("audit-genesis", cmd_audit_genesis)]:
         p = sub.add_parser(name)
         p.add_argument("--dex", nargs="+", default=["all"], help="Source names or 'all'.")
-        p.add_argument("--start", default="genesis", help="'genesis' or YYYY-MM-DD.")
-        p.add_argument("--end", default=None, help="Exclusive YYYY-MM-DD; defaults to current month start.")
-        p.add_argument(
-            "--streams",
-            nargs="+",
-            default=["all"],
-            help="Stream names or 'all' (e.g. swaps daily mints burns modify_liquidities).",
-        )
+        if name != "audit-genesis":
+            p.add_argument("--start", default="genesis", help="'genesis' or YYYY-MM-DD.")
+            p.add_argument("--end", default=None, help="Exclusive YYYY-MM-DD; defaults to current month start.")
+            p.add_argument(
+                "--streams",
+                nargs="+",
+                default=["all"],
+                help="Stream names or 'all' (e.g. swaps daily mints burns modify_liquidities).",
+            )
+        else:
+            p.add_argument("--strict", action="store_true", help="Exit nonzero on an audit mismatch.")
         p.set_defaults(func=fn)
     sub.choices["fetch"].add_argument("--dry-run", action="store_true")
     sub.choices["fetch"].add_argument("--overwrite", action="store_true")
@@ -125,7 +218,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    return args.func(args)
+    try:
+        return args.func(args)
+    except RuntimeError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
