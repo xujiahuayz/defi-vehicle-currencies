@@ -39,7 +39,6 @@ For authenticated or paywalled URLs that Java can access legitimately:
 
 Known current access limits:
 
-- `Krugman1980VehicleCurrencies`: the NBER working paper is available locally; JSTOR published PDF is blocked by the same access check.
 - `Somogyi2026DollarDominanceFX`: INFORMS shows request-access under current auth; the UniCredit working-paper PDF is available locally.
 
 JSTOR note: try the stable PDF URL with `?acceptTC=1` before using the browser

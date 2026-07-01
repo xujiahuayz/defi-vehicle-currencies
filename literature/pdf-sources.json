@@ -47,10 +47,10 @@
     ],
     "Krugman1980VehicleCurrencies": [
       {
-        "url": "https://www.jstor.org/stable/pdf/1991725.pdf",
+        "url": "https://www.jstor.org/stable/pdf/1991725.pdf?acceptTC=1",
         "version": "published",
-        "access": "authenticated",
-        "label": "JSTOR stable PDF"
+        "access": "public",
+        "label": "JSTOR stable PDF with terms flag"
       },
       {
         "url": "https://www.nber.org/system/files/working_papers/w0333/w0333.pdf",
