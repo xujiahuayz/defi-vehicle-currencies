@@ -388,6 +388,48 @@
         "access": "authenticated",
         "label": "Crossref similarity-checking"
       }
+    ],
+    "CaparrosChaudharyKlein2024BlockchainScaling": [
+      {
+        "url": "https://arxiv.org/pdf/2306.17742.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "arXiv PDF"
+      },
+      {
+        "url": "https://wrap.warwick.ac.uk/id/eprint/186143/1/WRAP-blockchain-scaling-liquidity-concentration-decentralized-exchanges-2024.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "Warwick WRAP PDF"
+      }
+    ],
+    "KleinKozhanViswanathNatrajWang2026InformedLP": [
+      {
+        "url": "https://www.snb.ch/dam/jcr%3Aa60e3838-c2db-4ea3-bcb3-96e87c9ebdc0/sem_2026_05_22_klein.n.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "SNB-CIF conference PDF"
+      },
+      {
+        "url": "https://papers.ssrn.com/sol3/Delivery.cfm/4642411.pdf?abstractid=4642411&mirid=1",
+        "version": "working-paper",
+        "access": "public",
+        "label": "SSRN PDF"
+      }
+    ],
+    "KleinSong2021CommonalityIntraday": [
+      {
+        "url": "https://wrap.warwick.ac.uk/id/eprint/152109/1/WRAP-Commonality-intraday-liquidity-multilateral-trading-facilites-Chi-X-Europe-2021.pdf",
+        "version": "accepted",
+        "access": "public",
+        "label": "Warwick WRAP accepted manuscript PDF"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S1042443121000688/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
     ]
   }
 }
