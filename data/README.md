@@ -14,7 +14,27 @@ All data payloads are local and regenerated from code. Do not commit raw, interi
 
 The target sample through 2026-06-30 UTC should be represented in scripts as `start <= date < 2026-07-01`.
 
+## Raw Market Fetch
+
+Plan the full genesis-through-last-complete-month raw fetch:
+
+```bash
+python3 scripts/fetch_raw_market_data.py plan --dex all
+```
+
+Run the fetch after setting `GRAPH_API_KEYS` in `.env` or the shell:
+
+```bash
+python3 scripts/fetch_raw_market_data.py fetch --dex all --start genesis --end 2026-07-01
+```
+
+The fetcher writes verbatim gzipped JSONL under `data/raw/thegraph/<source>/<stream>/`
+and tiny metadata sidecars under `data/raw/thegraph/<source>/_meta/`. It over-fetches
+swap, daily-pool, LP mint/burn, V4 liquidity-modification, and V2 reserve fields so
+route reconstruction, vehicle-route costs, liquidity concentration, LP repositioning,
+and settlement-implementation tests can be derived locally without repeated network
+queries.
+
 ## Data Dictionary
 
 Column definitions will be added here as each table family is created. Keep this file as the only markdown file under `data/`.
-
