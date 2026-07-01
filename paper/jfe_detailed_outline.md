@@ -63,20 +63,26 @@ destination of the reconstructed route.
 Subcaptions: **Panel A. Direct route**; **Panel B. Vehicle route**; **Panel C.
 Split route**; **Panel D. Loop route**.
 
-### 2.2 Route data and sample construction
+### 2.2 Route data, sample construction, and summary statistics
 
 **Comment:** Combine raw swap records, transaction-hash grouping, log-index
-ordering, route reconstruction, repricing, filters, and measurement universes.
+ordering, route reconstruction, repricing, filters, summary statistics, and
+estimation-sample definitions. Table 1 should do the normal JFE "summary
+statistics" job; do not bury the basic sample facts in an appendix.
 
 **Table 1 placed here.**
 
-**Table 1. Measurement and estimation universes.**
-The table reports the samples used to construct route-level monetary-role measures
-and the samples used in coefficient-bearing tests. The measurement network uses
-all reconstructed routes after repricing and artifact filters. The vehicle-rotation,
-depeg, architecture, and return tests impose additional data requirements specific
-to each design. Separating these universes makes clear which observations define
-the route network and which observations identify regression estimates.
+**Table 1. Sample coverage and summary statistics.**
+The table reports sample coverage and summary statistics for the reconstructed
+route network. Panel A reports the sample period, venues, swap legs, reconstructed
+routes, source-destination pairs, tokens, and repriced USD route volume. Panel B
+reports route composition, including direct, indirect, split, loop, and pure
+vehicle routes. Panel C reports summary statistics for the main route-role
+variables: vehicle share, route betweenness, endpoint share, route cost, and
+gross-transfer incidence. Panel D reports the coefficient-bearing samples used in
+the stress-rotation, depeg, architecture, and return tests. Separating the
+measurement network from the estimation samples makes clear which observations
+define the route network and which observations identify regression estimates.
 
 ### 2.3 Measuring vehicle use and settlement roles
 
@@ -113,16 +119,9 @@ externalities, switching costs, and why vehicle use is persistent.
 
 **Comment:** Use propositions, not H1/H1a/H2 labels.
 
-**Table 2 placed here.**
-
-**Table 2. Predictions and empirical tests.**
-The table maps the framework's three predictions to the empirical designs in the
-paper. The first prediction is that vehicle use is persistent and concentrated
-when liquidity is supplied against an incumbent route asset. The second prediction
-is that downside stress reduces use of a risky incumbent vehicle relative to safer
-substitutes within common route opportunities. The third prediction is that
-protocol architecture can separate route use from gross token movement by changing
-the settlement implementation of the same route unit.
+**Comment:** No table is necessary here unless the propositions are formal enough
+that a compact proposition-to-test map helps. JFE papers usually let the model or
+framework carry this in text rather than using a mechanical "hypothesis table."
 
 ## 4. Formation and Stickiness of the Vehicle Role
 
@@ -134,9 +133,9 @@ the settlement implementation of the same route unit.
 **Comment:** Show that WETH is the inherited Ethereum vehicle and that vehicle
 use is persistent.
 
-**Table 3 placed here.**
+**Table 2 placed here.**
 
-**Table 3. Concentration and persistence of vehicle-currency use.**
+**Table 2. Concentration and persistence of vehicle-currency use.**
 The table reports concentration and persistence statistics for token vehicle shares
 in the reconstructed route network. Vehicle share is measured from pure-intermediate
 route use. Concentration statistics compare vehicle intermediation with endpoint
@@ -162,9 +161,9 @@ Subcaptions: **Panel A. Pair liquidity by base asset**; **Panel B. Share of toke
 pairs linked to WETH or stablecoins**; **Panel C. Direct-route depth versus
 vehicle-route depth**; **Panel D. Change in paired liquidity over time**.
 
-**Table 4 placed here.**
+**Table 3 placed here.**
 
-**Table 4. Direct routes and vehicle-route execution advantage.**
+**Table 3. Direct routes and vehicle-route execution advantage.**
 The table compares direct execution with the best available vehicle route for
 source-destination pairs in the reconstructed network. For each pair, the table
 reports direct-route availability, direct-route depth, vehicle-route depth, and the
@@ -180,9 +179,9 @@ event anatomy can be a figure or appendix material unless it is crucial.
 
 ### 5.1 Stress severity and WETH rotation
 
-**Table 5 placed here.**
+**Table 4 placed here.**
 
-**Table 5. Daily vehicle-rotation dose response.**
+**Table 4. Daily vehicle-rotation dose response.**
 The table reports daily fixed-effects estimates of vehicle rotation as downside
 stress increases. The outcome is WETH's route-betweenness or vehicle-share gap
 relative to the stablecoin layer. Stress is measured by downside ETH returns, with
@@ -204,9 +203,9 @@ episodes**.
 
 ### 5.2 Common-support route opportunities
 
-**Table 6 placed here.**
+**Table 5 placed here.**
 
-**Table 6. Common-support WETH route rotation.**
+**Table 5. Common-support WETH route rotation.**
 The table estimates WETH route-share changes within source-destination
 pair-episodes that used both WETH and at least one non-WETH intermediary before
 the stress anchor. The outcome is WETH's hourly intermediary share minus the
@@ -217,18 +216,18 @@ inside the same route opportunity set.
 
 ### 5.3 Route costs and the road not taken
 
-**Table 7 placed here.**
+**Table 6 placed here.**
 
-**Table 7. Executed route costs and WETH route choice.**
+**Table 6. Executed route costs and WETH route choice.**
 The table compares WETH and non-WETH intermediaries in source-destination-hour
 cells where both route categories are executed on Uniswap V3. Route cost includes
 pool fees and realized within-swap price impact across the executed legs. The
 estimates test whether WETH loses route share under stress after controlling for
 observed route costs, route length, source-destination pair, and time.
 
-**Table 8 placed here.**
+**Table 7 placed here.**
 
-**Table 8. Road-not-taken route costs under stress.**
+**Table 7. Road-not-taken route costs under stress.**
 The table prices the executed route against the best observed alternative route
 for the same source-destination pair, using validated V3 quote reconstruction and
 filters for mechanical pricing pathologies. The premium is the output lost or
@@ -239,9 +238,9 @@ vehicle rotation under stress.
 
 ### 5.4 Recovery after stress
 
-**Table 9 placed here.**
+**Table 8 placed here.**
 
-**Table 9. Recovery of the inherited vehicle role after stress.**
+**Table 8. Recovery of the inherited vehicle role after stress.**
 The table estimates the persistence and recovery of WETH vehicle share after
 downside stress episodes. Recovery is measured as the share of the pre-event WETH
 vehicle role regained by fixed post-event horizons and as the estimated half-life
@@ -270,9 +269,9 @@ D. Placebo-window comparison**.
 
 ### 6.2 Persistence and substitution
 
-**Table 10 placed here.**
+**Table 9 placed here.**
 
-**Table 10. Persistence of route-endpoint pressure during the USDC depeg.**
+**Table 9. Persistence of route-endpoint pressure during the USDC depeg.**
 The table reports cumulative route-endpoint outflow from USDC during the March
 2023 depeg. Cumulative pressure is the signed net stable-to-stable route flow out
 of USDC and into substitute stablecoins. The measure records endpoint pressure
@@ -280,9 +279,9 @@ generated by observed routes, not wallet-level holdings or redemptions. Share of
 peak reports the remaining pressure at each checkpoint relative to the maximum
 cumulative outflow in the event window.
 
-**Table 11 placed here.**
+**Table 10 placed here.**
 
-**Table 11. Settlement substitution during stablecoin depegs.**
+**Table 10. Settlement substitution during stablecoin depegs.**
 The table reports positive net route-endpoint outflow from impaired stablecoins
 during depeg widening phases. For each episode, it reports the total outflow, the
 largest recipient's share, and the effective number of substitute stablecoins. The
@@ -312,9 +311,9 @@ versus vehicle-route cost**.
 
 ### 7.2 V4 settlement implementation
 
-**Table 12 placed here.**
+**Table 11 placed here.**
 
-**Table 12. V4 matched settlement-implementation first stage.**
+**Table 11. V4 matched settlement-implementation first stage.**
 The table matches coherent multi-hop Uniswap V3 and V4 routes by endpoint pair,
 week, and intermediate token. It reports the gross-exposure nettable share and
 whether the intermediate token emits a matching ERC-20 transfer in the transaction
@@ -322,9 +321,9 @@ receipt. Holding the route unit fixed, V4 sharply lowers gross intermediate-toke
 movement, showing that protocol architecture can separate route use from physical
 settlement.
 
-**Table 13 placed here.**
+**Table 12 placed here.**
 
-**Table 13. Settlement netting on Uniswap V4.**
+**Table 12. Settlement netting on Uniswap V4.**
 The table reports gross-transfer and netted-settlement shares for clean coherent V4
 routes in which the named token is a pure intermediate. A route is physically
 settled when the intermediate token emits an ERC-20 transfer in the transaction
@@ -340,9 +339,9 @@ second asset-pricing paper.
 
 ### 8.1 Convenience-yield implication
 
-**Table 14 placed here.**
+**Table 13 placed here.**
 
-**Table 14. Vehicle dominance and state-dependent convenience yields.**
+**Table 13. Vehicle dominance and state-dependent convenience yields.**
 The table sorts tokens by vehicle and route-dominance measures and reports
 subsequent returns by market state. High-dominance tokens are expected to earn
 lower subsequent returns when their route-liquidity services are most valuable.
@@ -360,118 +359,137 @@ made, why it sticks, and what changes it.
 JFE-style integrated literature in the introduction, but include the full reference
 list here.
 
-## Online Appendix
+## Appendix
 
-**Comment:** Keep the appendix organized by function, not by the order scripts
-were run.
+**Comment:** This appendix is part of the paper file. Formal proofs, essential
+derivations, and compact robustness that a reader needs to trust the paper belong
+here. JFE submissions can also include an online appendix, but for initial
+submission the journal says it should be attached to the end of the main manuscript
+file; after acceptance, internet appendices are submitted separately and included
+with the article in ScienceDirect.
 
-### Appendix A. Data construction and route reconstruction
+### Appendix A. Proofs and framework details
 
-**Table A1. Raw swap coverage by venue and protocol version.**
+**Comment:** Put formal proofs here if they are not short enough for Section 3.
+If the framework is mostly conceptual, this appendix can contain derivations of
+route-choice comparative statics and settlement-netting identities.
+
+### Appendix B. Data construction and route reconstruction
+
+**Table B1. Raw swap coverage by venue and protocol version.**
 The table reports raw swap coverage by DEX, protocol version, sample start, sample
 end, number of transactions, number of swap legs, and repriced USD volume. Coverage
 is reported before and after artifact filters.
 
-**Table A2. Route reconstruction validation.**
+**Table B2. Route reconstruction validation.**
 The table reports transaction-level conservation checks, route-component recovery
 rates, and validation against known Uniswap V3 router paths. Validation statistics
 are reported separately for direct, indirect, split, and loop routes.
 
-**Table A3. Stablecoin repricing and artifact-filter sensitivity.**
+**Table B3. Stablecoin repricing and artifact-filter sensitivity.**
 The table reports route-volume and route-count coverage under alternative repricing
 and artifact-filter rules. The main estimates use the baseline stablecoin-anchored
 repricing and artifact filters.
 
-### Appendix B. Additional measurement diagnostics
+### Appendix C. Additional measurement diagnostics
 
-**Figure B1. Venue composition of the reconstructed route network.**
+**Figure C1. Venue composition of the reconstructed route network.**
 The figure plots weekly reconstructed route volume by DEX and protocol version.
 Shares sum to one inside the reconstructed sample and do not represent total DEX
 market size.
 
-**Figure B2. Concentration of vehicle, endpoint, and volume-share measures.**
+**Figure C2. Concentration of vehicle, endpoint, and volume-share measures.**
 The figure plots inverse Herfindahl indexes and top-token shares for route vehicle
 use, endpoint use, and total volume share.
 
-**Figure B3. Lead-lag cross-autocorrelation of route-role measures.**
+**Figure C3. Lead-lag cross-autocorrelation of route-role measures.**
 The figure reports cross-autocorrelations among vehicle share, endpoint share,
 volume share, and route betweenness over alternative lag windows.
 
-### Appendix C. Stress-rotation robustness
+### Appendix D. Stress-rotation robustness
 
-**Table C1. WETH route rotation under alternative crash thresholds.**
+**Table D1. WETH route rotation under alternative crash thresholds.**
 The table estimates WETH vehicle-rotation regressions using alternative daily ETH
 drawdown thresholds. Each row reports the WETH interaction coefficient under the
 same fixed-effects structure as the main dose-response design.
 
-**Table C2. Episode-level vehicle-rotation estimates.**
+**Table D2. Episode-level vehicle-rotation estimates.**
 The table reports the WETH route-rotation coefficient separately for each stress
 episode, with event anchors, observation counts, and inference.
 
-**Table C3. Vehicle-rotation placebo tests.**
+**Table D3. Vehicle-rotation placebo tests.**
 The table reports placebo estimates for WBTC, non-vehicle risky tokens, risk-on
 volatility episodes, and shuffled event windows.
 
-**Table C4. Vehicle rotation under external stress measures.**
+**Table D4. Vehicle rotation under external stress measures.**
 The table replaces ETH downside returns with broad crypto-market downside returns,
 the S&P cryptocurrency index, and equity-market stress measures.
 
-### Appendix D. Counterfactual route and quoter validation
+### Appendix E. Counterfactual route and quoter validation
 
-**Table D1. Quoter validation against executed swaps.**
+**Table E1. Quoter validation against executed swaps.**
 The table compares reconstructed V3 quote output with realized executed swaps for
 the pools used in the counterfactual analysis. It reports the fraction of swaps
 reproduced within tolerance, median absolute error, and tail errors.
 
-**Table D2. Road-not-taken counterfactual under pricing filters.**
+**Table E2. Road-not-taken counterfactual under pricing filters.**
 The table re-estimates road-not-taken premiums under route-mid parity,
 direct-route price-impact, and raw-premium filters.
 
-**Table D3. Representative road-not-taken route examples.**
+**Table E3. Representative road-not-taken route examples.**
 The table reports selected source-destination pairs, executed routes, alternative
 routes, notional sizes, fee components, price-impact components, and output
 premiums.
 
-### Appendix E. USDC depeg and stablecoin substitution
+### Appendix F. USDC depeg and stablecoin substitution
 
-**Table E1. Placebo-window distribution for USDC endpoint flow.**
+**Table F1. Placebo-window distribution for USDC endpoint flow.**
 The table compares depeg-window route-endpoint flow with contiguous placebo windows
 from normal periods, preserving autocorrelation in hourly flows.
 
-**Table E2. USDC supply changes around the SVB depeg.**
+**Table F2. USDC supply changes around the SVB depeg.**
 The table reports changes in USDC supply around the depeg window and subsequent
 recovery period. Supply changes are used as external corroboration, not as the
 identified route-flow outcome.
 
-**Table E3. Stablecoin endpoint substitution in the Terra/UST depeg.**
+**Table F3. Stablecoin endpoint substitution in the Terra/UST depeg.**
 The table repeats the settlement-substitution analysis for the Terra/UST depeg and
 compares the dispersion of substitute flows with the USDC/SVB episode.
 
-### Appendix F. Architecture and V4 diagnostics
+### Appendix G. Architecture and V4 diagnostics
 
-**Table F1. Construction of matched V3 and V4 route-unit cells.**
+**Table G1. Construction of matched V3 and V4 route-unit cells.**
 The table reports the number of eligible endpoint-pair-week-intermediate cells,
 minimum route-count requirements, and matched-cell attrition.
 
-**Table F2. V4 route-composition diagnostics.**
+**Table G2. V4 route-composition diagnostics.**
 The table reports route-length, intermediary-token, stablecoin-use, and WETH-use
 diagnostics in matched V3 and V4 cells.
 
-**Table F3. Receipt-level settlement audit.**
+**Table G3. Receipt-level settlement audit.**
 The table reports ERC-20 transfer incidence by intermediate token, protocol
 version, and route type, based on transaction receipt parsing.
 
-### Appendix G. Determinants and return diagnostics
+### Supplementary Material / Internet Appendix
 
-**Table G1. Cross-sectional determinants of route dominance.**
+**Comment:** This is for bulky material that supports the paper but should not be
+needed to understand it: long alternative-filter batteries, route-level audit
+lists, extra venue-by-day plots, all placebo variants, code/data manifests, and
+large tables that would distract from the main paper. For initial submission, this
+can still be appended to the manuscript PDF if submitted as an online appendix;
+the conceptual distinction is that it is not part of the journal article text.
+
+### Supplement S1. Determinants and return diagnostics
+
+**Table S1. Cross-sectional determinants of route dominance.**
 The table reports weekly token-level regressions of route-dominance measures on
 token characteristics, liquidity, safety proxies, and market-state interactions.
 
-**Table G2. Return sorts by alternative dominance measures.**
+**Table S2. Return sorts by alternative dominance measures.**
 The table reports long-short return spreads using volume share, route betweenness,
 vehicle share, endpoint share, and eigenvector centrality.
 
-**Table G3. Unconditional factor-pricing diagnostics.**
+**Table S3. Unconditional factor-pricing diagnostics.**
 The table reports two-pass factor-pricing estimates for dominance-spread factors.
 These diagnostics test whether the conditional convenience-yield result appears as
 an unconditional priced factor.
