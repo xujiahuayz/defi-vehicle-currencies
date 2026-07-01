@@ -30,6 +30,9 @@ logs/
 # Literature payloads that may not be redistributable
 literature/*.pdf
 literature/*.epub
+literature/papers/
+literature/sources.local.json
+literature/auth/
 
 # LaTeX generated files
 paper/*.aux
@@ -40,4 +43,3 @@ paper/*.fls
 paper/*.log
 paper/*.out
 paper/*.synctex.gz
-

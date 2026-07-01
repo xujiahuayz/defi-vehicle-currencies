@@ -1,0 +1,12 @@
+{
+  "sources": {
+    "ExampleBibKey": [
+      {
+        "url": "https://publisher.example/path/to/paper.pdf",
+        "version": "published",
+        "access": "local-auth",
+        "label": "publisher PDF from authenticated browser"
+      }
+    ]
+  }
+}

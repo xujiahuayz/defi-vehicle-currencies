@@ -1,0 +1,13 @@
+{
+  "headers": {
+    "Cookie": "paste-browser-cookie-header-here"
+  },
+  "domains": {
+    "academic.oup.com": {
+      "Cookie": "optional-domain-specific-cookie-header"
+    },
+    "onlinelibrary.wiley.com": {
+      "Cookie": "optional-domain-specific-cookie-header"
+    }
+  }
+}

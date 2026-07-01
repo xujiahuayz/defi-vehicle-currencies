@@ -1,0 +1,132 @@
+{
+  "sources": {
+    "Krugman1980VehicleCurrencies": [
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w0333/w0333.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 333"
+      }
+    ],
+    "GopinathEtAl2020DCP": [
+      {
+        "url": "https://www.aeaweb.org/articles/pdf/doi/10.1257/aer.20171201",
+        "version": "published",
+        "access": "public",
+        "label": "AEA PDF"
+      }
+    ],
+    "AmitiItskhokiKonings2022Dominant": [
+      {
+        "url": "https://academic.oup.com/qje/article-pdf/137/3/1435/44839871/qjac004.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "QJE PDF"
+      }
+    ],
+    "Mukhin2022InternationalPriceSystem": [
+      {
+        "url": "https://www.aeaweb.org/articles/pdf/doi/10.1257/aer.20181550",
+        "version": "published",
+        "access": "public",
+        "label": "AEA PDF"
+      }
+    ],
+    "GriffinShams2020Untethered": [
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/jofi.12903",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Journal of Finance PDF"
+      }
+    ],
+    "MakarovSchoar2022DeFi": [
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w30006/w30006.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 30006"
+      }
+    ],
+    "LeharParlour2024Uniswap": [
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/jofi.13405",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Journal of Finance PDF"
+      }
+    ],
+    "AdamsZinsmeisterRobinson2021UniswapV3": [
+      {
+        "url": "https://app.uniswap.org/whitepaper-v3.pdf",
+        "version": "whitepaper",
+        "access": "public",
+        "label": "Uniswap v3 whitepaper"
+      }
+    ],
+    "Fritsch2021ConcentratedLiquidity": [
+      {
+        "url": "https://arxiv.org/pdf/2110.01368.pdf",
+        "version": "preprint",
+        "access": "public",
+        "label": "arXiv"
+      }
+    ],
+    "MilionisMoallemiRoughgarden2023Myersonian": [
+      {
+        "url": "https://arxiv.org/pdf/2303.00208.pdf",
+        "version": "preprint",
+        "access": "public",
+        "label": "arXiv"
+      }
+    ],
+    "Meister2026AutomatedLiquidity": [
+      {
+        "url": "https://arxiv.org/pdf/2601.11375.pdf",
+        "version": "preprint",
+        "access": "public",
+        "label": "arXiv"
+      }
+    ],
+    "CataliniDeGortariShah2022Stablecoins": [
+      {
+        "url": "https://www.annualreviews.org/doi/pdf/10.1146/annurev-financial-111621-101151",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Annual Reviews PDF"
+      }
+    ],
+    "GortonZhang2023Wildcat": [
+      {
+        "url": "https://chicagounbound.uchicago.edu/cgi/viewcontent.cgi?article=6342&context=uclrev",
+        "version": "published",
+        "access": "public",
+        "label": "University of Chicago Law Review PDF"
+      }
+    ],
+    "LiuMakarovSchoar2023Terra": [
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w31160/w31160.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 31160"
+      }
+    ],
+    "AnaduEtAl2023StablecoinRuns": [
+      {
+        "url": "https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr1073.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NY Fed Staff Report 1073"
+      }
+    ],
+    "Uhlig2022Lunatic": [
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w30256/w30256.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 30256"
+      }
+    ]
+  }
+}
