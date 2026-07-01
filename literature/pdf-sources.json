@@ -61,10 +61,10 @@
     ],
     "DowdGreenaway1993CurrencyCompetition": [
       {
-        "url": "https://www.jstor.org/stable/2234244",
+        "url": "https://www.jstor.org/stable/pdf/2234244.pdf?acceptTC=1",
         "version": "published",
-        "access": "authenticated",
-        "label": "JSTOR stable article page"
+        "access": "public",
+        "label": "JSTOR stable PDF with terms flag"
       },
       {
         "url": "https://www.jstor.org/stable/pdf/2234244.pdf",

@@ -42,6 +42,7 @@ Known current access limits:
 - `Krugman1980VehicleCurrencies`: the NBER working paper is available locally; JSTOR published PDF is blocked by the same access check.
 - `Somogyi2026DollarDominanceFX`: INFORMS shows request-access under current auth; the UniCredit working-paper PDF is available locally.
 
-JSTOR note: prefer the stable article URL, e.g. `https://www.jstor.org/stable/2234244`,
-over the raw `/stable/pdf/...` URL. The browser fetcher visits the stable article
-page first, then requests the PDF from the authenticated browser context.
+JSTOR note: try the stable PDF URL with `?acceptTC=1` before using the browser
+fetcher, e.g. `https://www.jstor.org/stable/pdf/2234244.pdf?acceptTC=1`.
+Some JSTOR PDFs that trigger browser automation access-checks still download
+cleanly through the direct HTTP fetcher once the terms flag is present.
