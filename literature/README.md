@@ -39,6 +39,9 @@ For authenticated or paywalled URLs that Java can access legitimately:
 
 Known current access limits:
 
-- `DowdGreenaway1993CurrencyCompetition`: OUP exposes `citation_pdf_url`, but the PDF redirects back to the abstract/purchase page under current auth; JSTOR blocks scripted PDF access with an access check.
 - `Krugman1980VehicleCurrencies`: the NBER working paper is available locally; JSTOR published PDF is blocked by the same access check.
 - `Somogyi2026DollarDominanceFX`: INFORMS shows request-access under current auth; the UniCredit working-paper PDF is available locally.
+
+JSTOR note: prefer the stable article URL, e.g. `https://www.jstor.org/stable/2234244`,
+over the raw `/stable/pdf/...` URL. The browser fetcher visits the stable article
+page first, then requests the PDF from the authenticated browser context.

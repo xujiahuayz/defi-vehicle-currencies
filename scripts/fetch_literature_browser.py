@@ -12,9 +12,11 @@ from __future__ import annotations
 
 import argparse
 import base64
+import contextlib
 import json
 import os
 import re
+import signal
 import sys
 import time
 import urllib.parse
@@ -36,6 +38,10 @@ from ddvc.paths import (  # noqa: E402
 
 
 PROFILE_DIR = LITERATURE_DIR / "auth" / "browser-profile"
+
+
+class SourceTimeout(RuntimeError):
+    pass
 
 
 @dataclass(frozen=True)
@@ -151,6 +157,24 @@ def is_pdf(data: bytes) -> bool:
     return data.startswith(b"%PDF")
 
 
+@contextlib.contextmanager
+def source_deadline(timeout_ms: int):
+    if timeout_ms <= 0:
+        yield
+        return
+
+    def raise_timeout(_signum, _frame):
+        raise SourceTimeout(f"source exceeded {timeout_ms}ms")
+
+    old_handler = signal.signal(signal.SIGALRM, raise_timeout)
+    signal.setitimer(signal.ITIMER_REAL, timeout_ms / 1000)
+    try:
+        yield
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, old_handler)
+
+
 def write_pdf(path: Path, data: bytes, overwrite: bool) -> str:
     if path.exists() and not overwrite:
         return "exists"
@@ -193,6 +217,73 @@ def pdf_from_response(response: Any) -> bytes | None:
     return data if is_pdf(data) else None
 
 
+def goto_page(page: Any, url: str, timeout_ms: int) -> Any | None:
+    response = page.goto(url, wait_until="commit", timeout=timeout_ms)
+    try:
+        page.wait_for_load_state("domcontentloaded", timeout=min(timeout_ms, 8000))
+    except Exception:
+        pass
+    return response
+
+
+def visible_text(page: Any, timeout_ms: int = 3000) -> str:
+    try:
+        return page.locator("body").inner_text(timeout=timeout_ms)
+    except Exception:
+        return ""
+
+
+def access_block_detail(page: Any) -> str | None:
+    text = visible_text(page)
+    if "Access Check" in text and "reCAPTCHA" in text and "jstor.org" in page.url:
+        return "jstor-access-check-recaptcha"
+    if "Sign in to your account" in text and "login.microsoftonline.com" in page.url:
+        return "ucl-login-required"
+    if "request access" in text.lower() and "informs.org" in page.url:
+        return "publisher-request-access"
+    return None
+
+
+def dedupe(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    out: list[str] = []
+    for item in items:
+        if item and item not in seen:
+            seen.add(item)
+            out.append(item)
+    return out
+
+
+def jstor_stable_id(url: str) -> str | None:
+    parsed = urllib.parse.urlparse(url)
+    if not parsed.netloc.endswith("jstor.org"):
+        return None
+    match = re.search(r"/stable/(?:pdf/)?([^/?#]+)", parsed.path)
+    if not match:
+        return None
+    stable_id = match.group(1)
+    if stable_id.endswith(".pdf"):
+        stable_id = stable_id[:-4]
+    return stable_id or None
+
+
+def jstor_article_url(url: str) -> str | None:
+    stable_id = jstor_stable_id(url)
+    if not stable_id:
+        return None
+    return f"https://www.jstor.org/stable/{stable_id}"
+
+
+def jstor_pdf_urls(url: str) -> list[str]:
+    stable_id = jstor_stable_id(url)
+    if not stable_id:
+        return []
+    return [
+        f"https://www.jstor.org/stable/pdf/{stable_id}.pdf",
+        f"https://www.jstor.org/stable/pdf/{stable_id}.pdf?download=true",
+    ]
+
+
 def page_pdf_links(page: Any) -> list[str]:
     try:
         raw_links = page.evaluate(
@@ -211,7 +302,7 @@ def page_pdf_links(page: Any) -> list[str]:
             link = urljoin(page.url, link)
         if link.startswith("http") and link not in links:
             links.append(link)
-    return links
+    return dedupe(links)
 
 
 def first_visible(page: Any, selectors: list[str]) -> Any | None:
@@ -323,6 +414,7 @@ def browser_fetch_pdf(
     password: str | None,
 ) -> tuple[bytes | None, str]:
     responses: list[Any] = []
+    navigation_url = jstor_article_url(url) or url
 
     def remember_response(response: Any) -> None:
         responses.append(response)
@@ -330,7 +422,7 @@ def browser_fetch_pdf(
     page.on("response", remember_response)
     try:
         with page.expect_download(timeout=5000) as download_info:
-            response = page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+            response = goto_page(page, navigation_url, timeout_ms)
         download = download_info.value
         path = download.path()
         if path:
@@ -340,13 +432,13 @@ def browser_fetch_pdf(
     except Exception as exc:  # noqa: BLE001 - caller records exact failure.
         if "Timeout" in type(exc).__name__:
             try:
-                response = page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+                response = goto_page(page, navigation_url, timeout_ms)
             except Exception as goto_exc:  # noqa: BLE001 - caller records exact failure.
                 return None, f"goto {type(goto_exc).__name__}: {goto_exc}"
         elif "Download is starting" in str(exc):
             try:
                 with page.expect_download(timeout=timeout_ms) as download_info:
-                    page.goto(url, wait_until="commit", timeout=timeout_ms)
+                    goto_page(page, navigation_url, timeout_ms)
                 download = download_info.value
                 path = download.path()
                 if path:
@@ -361,12 +453,16 @@ def browser_fetch_pdf(
 
     if complete_microsoft_login(page, username, password):
         try:
-            page.wait_for_load_state("domcontentloaded", timeout=timeout_ms)
+            page.wait_for_load_state("domcontentloaded", timeout=min(timeout_ms, 8000))
         except Exception:
             pass
     for _ in range(3):
         if not accept_consent_if_present(page):
             break
+
+    block = access_block_detail(page)
+    if block:
+        return None, f"{block}; final={page.url}"
 
     candidates = [response, *reversed(responses)]
     for candidate in candidates:
@@ -380,7 +476,16 @@ def browser_fetch_pdf(
     final_url = page.url
 
     request_headers = {"Accept": "application/pdf,*/*"}
-    for candidate_url in [final_url, url]:
+    candidate_urls = dedupe(
+        [
+            *jstor_pdf_urls(final_url),
+            *jstor_pdf_urls(url),
+            final_url,
+            url,
+            *page_pdf_links(page),
+        ]
+    )
+    for candidate_url in candidate_urls:
         try:
             api_response = page.context.request.get(candidate_url, headers=request_headers, timeout=timeout_ms)
             data = api_response.body()
@@ -390,17 +495,6 @@ def browser_fetch_pdf(
             if is_pdf(data):
                 return data, f"context-request {api_response.url}"
             detail = f"context-request status={api_response.status} not-pdf"
-
-    for candidate_url in page_pdf_links(page):
-        try:
-            api_response = page.context.request.get(candidate_url, headers=request_headers, timeout=timeout_ms)
-            data = api_response.body()
-        except Exception as exc:  # noqa: BLE001
-            detail = f"page-link {type(exc).__name__}: {exc}"
-        else:
-            if is_pdf(data):
-                return data, f"page-link {api_response.url}"
-            detail = f"page-link status={api_response.status} not-pdf"
 
     try:
         encoded = page.evaluate(
@@ -445,6 +539,7 @@ def main() -> int:
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--channel", default="", help="Browser channel, e.g. chrome. Empty uses bundled Chromium.")
     parser.add_argument("--timeout-ms", type=int, default=90000)
+    parser.add_argument("--source-timeout-ms", type=int, default=120000)
     parser.add_argument("--username-env", default="UCL_USER")
     parser.add_argument("--password-env", default="UCL_PW")
     parser.add_argument("--overwrite", action="store_true")
@@ -482,9 +577,14 @@ def main() -> int:
             page = ctx.pages[0] if ctx.pages else ctx.new_page()
             for key in keys:
                 entry = entries[key]
+                committed = source_map.get(key, [])
                 sources = [
-                    *ordered_sources(with_openathens(source_map.get(key, []), openathens_domain), args.prefer),
-                    *ordered_sources(with_openathens(default_sources_from_bib(entry), openathens_domain), args.prefer),
+                    *ordered_sources(with_openathens(committed, openathens_domain), args.prefer),
+                    *(
+                        []
+                        if committed
+                        else ordered_sources(with_openathens(default_sources_from_bib(entry), openathens_domain), args.prefer)
+                    ),
                 ]
                 attempts: list[dict[str, Any]] = []
                 for index, source in enumerate(sources, start=1):
@@ -507,7 +607,16 @@ def main() -> int:
                         )
                         break
                     print(f"try {key} [{index}/{len(sources)}] {source.version}: {source.url}", flush=True)
-                    data, detail = browser_fetch_pdf(page, source.url, args.timeout_ms, username, password)
+                    try:
+                        with source_deadline(args.source_timeout_ms):
+                            data, detail = browser_fetch_pdf(page, source.url, args.timeout_ms, username, password)
+                    except SourceTimeout as exc:
+                        data, detail = None, str(exc)
+                        try:
+                            page.close()
+                        except Exception:
+                            pass
+                        page = ctx.new_page()
                     if data:
                         remove_weaker_versions(existing, source.version, target)
                         saved = write_pdf(target, data, args.overwrite)
