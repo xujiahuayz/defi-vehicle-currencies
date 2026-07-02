@@ -96,6 +96,10 @@ def _where_literal(where: dict[str, Any]) -> str:
     for key, value in where.items():
         if isinstance(value, bool):
             rendered = "true" if value else "false"
+        elif isinstance(value, int | float):
+            rendered = str(value)
+        elif isinstance(value, str) and key != "id_gt" and re.fullmatch(r"-?\d+(\.\d+)?", value):
+            rendered = value
         else:
             rendered = json.dumps(str(value))
         parts.append(f"{key}: {rendered}")

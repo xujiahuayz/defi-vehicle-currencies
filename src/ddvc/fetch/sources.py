@@ -51,10 +51,10 @@ DEX_SOURCES: dict[str, DexSource] = {
     "uniswap_v2": DexSource(
         name="uniswap_v2",
         schema="uniswap_v2",
-        genesis_date_utc=dt.date(2020, 5, 11),
+        genesis_date_utc=dt.date(2020, 5, 5),
         subgraph_id="EYCKATKGBKLWvSfwvBjzfCBmGwYNdVkduYXVivCsLRFu",
-        genesis_block=10_042_304,
-        notes="Canonical V2 constant-product pair schema. Genesis is first raw-store swap block.",
+        genesis_block=10_008_566,
+        notes="Canonical V2 constant-product pair schema. Genesis is first indexed swap block from live Graph audit.",
     ),
     "balancer": DexSource(
         name="balancer",
@@ -67,10 +67,10 @@ DEX_SOURCES: dict[str, DexSource] = {
     "uniswap_v3": DexSource(
         name="uniswap_v3",
         schema="uniswap_v3",
-        genesis_date_utc=dt.date(2021, 5, 5),
+        genesis_date_utc=dt.date(2021, 5, 4),
         subgraph_id="5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV",
-        genesis_block=12_371_051,
-        notes="V3 swaps plus mint/burn liquidity-position events. Genesis is first raw-store swap block.",
+        genesis_block=12_369_879,
+        notes="V3 swaps plus mint/burn liquidity-position events. Genesis is first indexed swap block from live Graph audit.",
     ),
     "sushiswap_v2": DexSource(
         name="sushiswap_v2",

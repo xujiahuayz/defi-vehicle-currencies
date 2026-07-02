@@ -15,13 +15,13 @@ from typing import Any
 
 from ddvc.fetch.raw import write_jsonl_gz
 from ddvc.fetch.sources import DexSource
-from ddvc.paths import DATA_DIR
+from ddvc.paths import DATA_DIR, REPO_ROOT
 
 API = "https://api.dune.com/api/v1"
 
 
 def dune_keys() -> list[str]:
-    raw = os.getenv("DUNE_API_KEYS") or os.getenv("DUNE_API_KEY") or ""
+    raw = os.getenv("DUNE_API_KEYS") or os.getenv("DUNE_API_KEY") or _read_dotenv_keys()
     keys: list[str] = []
     seen: set[str] = set()
     for value in raw.replace("\n", ",").split(","):
@@ -31,6 +31,20 @@ def dune_keys() -> list[str]:
         seen.add(key)
         keys.append(key)
     return keys
+
+
+def _read_dotenv_keys() -> str:
+    env_path = REPO_ROOT / ".env"
+    if not env_path.exists():
+        return ""
+    values: dict[str, str] = {}
+    for line in env_path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        values[key.strip()] = value.strip().strip("'\"")
+    return values.get("DUNE_API_KEYS") or values.get("DUNE_API_KEY") or ""
 
 
 def dune_path(source: str, stream: str, day: dt.date) -> Path:
@@ -58,14 +72,29 @@ def _call(method: str, path: str, body: dict[str, Any] | None = None) -> tuple[i
     if not keys:
         raise RuntimeError("No Dune API key set. Use DUNE_API_KEYS or DUNE_API_KEY.")
     last: tuple[int, Any] = (0, "no Dune key available")
+    deprecated_engine_keys = 0
+    invalid_keys = 0
     for key in keys:
         try:
             return _request(key, method, path, body)
         except urllib.error.HTTPError as exc:
             payload = exc.read().decode()[:500]
             last = (exc.code, payload)
+            if exc.code == 400 and "Deprecated query engine" in payload:
+                deprecated_engine_keys += 1
+                continue
+            if exc.code == 401:
+                invalid_keys += 1
+                continue
             if exc.code not in {401, 402, 403, 429}:
                 break
+    if deprecated_engine_keys and deprecated_engine_keys + invalid_keys == len(keys):
+        return (
+            400,
+            f"{deprecated_engine_keys} Dune API keys authenticated but are tied to Dune's deprecated query engine; "
+            f"{invalid_keys} Dune API keys were invalid. "
+            "Create a current DuneSQL API key with Read scope.",
+        )
     return last
 
 
@@ -73,10 +102,12 @@ def _query_state_path() -> Path:
     return DATA_DIR / "raw" / "dune" / "_query_state.json"
 
 
-def _source_sql(source: DexSource) -> str:
+def _source_sql(source: DexSource, start: dt.date | None = None, end: dt.date | None = None) -> str:
     if not source.dune_project:
         raise ValueError(f"{source.name} is missing dune_project")
     version_filter = f"  AND version = '{source.dune_version}'\n" if source.dune_version else ""
+    start_value = f"{start} 00:00:00" if start else "{{start}}"
+    end_value = f"{end} 00:00:00" if end else "{{end}}"
     return f"""
 SELECT
     blockchain,
@@ -106,8 +137,8 @@ SELECT
 FROM dex.trades
 WHERE blockchain = 'ethereum'
   AND project = '{source.dune_project}'
-{version_filter}  AND block_time >= TIMESTAMP '{{{{start}}}}'
-  AND block_time <  TIMESTAMP '{{{{end}}}}'
+{version_filter}  AND block_time >= TIMESTAMP '{start_value}'
+  AND block_time <  TIMESTAMP '{end_value}'
 ORDER BY block_time, evt_index
 """
 
@@ -141,19 +172,17 @@ def _query_id(source: DexSource) -> int:
     return qid
 
 
-def _execute(query_id: int, start: dt.date, end: dt.date) -> str:
+def _execute_sql(source: DexSource, start: dt.date, end: dt.date) -> str:
     status, payload = _call(
         "POST",
-        f"/query/{query_id}/execute",
+        "/sql/execute",
         {
-            "query_parameters": {
-                "start": f"{start} 00:00:00",
-                "end": f"{end} 00:00:00",
-            }
+            "sql": _source_sql(source, start, end),
+            "performance": "medium",
         },
     )
     if status not in {200, 201}:
-        raise RuntimeError(f"Dune execute failed ({status}): {payload}")
+        raise RuntimeError(f"Dune SQL execute failed ({status}): {payload}")
     return str(payload["execution_id"])
 
 
@@ -254,7 +283,7 @@ def fetch_dune_month(
             for day in days
         ]
 
-    execution_id = _execute(_query_id(source), month_start, month_end)
+    execution_id = _execute_sql(source, month_start, month_end)
     rows = _await_rows(execution_id)
     by_day: dict[dt.date, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
