@@ -129,7 +129,7 @@ def audit_source_genesis(source_name: str) -> dict[str, object]:
             "status": "skipped-non-graph-backend",
         }
     entity = first_swap_entity(source_name)
-    client = GraphClient(source.subgraph_id, graph_keys())
+    client = GraphClient(source.subgraph_id, graph_keys(), graph_path=source.graph_path)
     genesis_ts = midnight_ts(source.genesis_date_utc)
     previous_day = {
         f"{entity.time_field}_gte": str(genesis_ts - 86_400),

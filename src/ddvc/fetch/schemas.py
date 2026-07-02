@@ -34,6 +34,29 @@ UNI_V3_LIQUIDITY_FIELDS = (
 
 
 SCHEMAS: dict[str, SchemaSpec] = {
+    "uniswap_v1": SchemaSpec(
+        name="uniswap_v1",
+        entities=(
+            EntitySpec(
+                stream="swaps",
+                entity="transactions",
+                fields=(
+                    "id exchangeAddress block timestamp user fee "
+                    "tokenPurchaseEvents { id ethAmount tokenAmount tokenFee ethFee } "
+                    "ethPurchaseEvents { id ethAmount tokenAmount tokenFee ethFee }"
+                ),
+            ),
+            EntitySpec(
+                stream="daily",
+                entity="exchangeHistoricalDatas",
+                fields=(
+                    "id exchangeAddress type timestamp ethLiquidity tokenLiquidity ethBalance "
+                    "tokenBalance combinedBalanceInEth combinedBalanceInUSD tokenPriceUSD price "
+                    "tradeVolumeToken tradeVolumeEth tradeVolumeUSD totalTxsCount feeInEth"
+                ),
+            ),
+        ),
+    ),
     "uniswap_v2": SchemaSpec(
         name="uniswap_v2",
         entities=(

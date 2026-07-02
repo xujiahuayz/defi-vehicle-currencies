@@ -119,7 +119,7 @@ def fetch_source_day(
     if not selected:
         return {"source": source.name, "day": day.isoformat(), "streams": {}}
 
-    client = GraphClient(source.subgraph_id, graph_keys())
+    client = GraphClient(source.subgraph_id, graph_keys(), graph_path=source.graph_path)
     head = head_block(client)
     stream_meta: dict[str, dict[str, Any]] = {}
     all_blocks: list[int] = []
@@ -150,6 +150,7 @@ def fetch_source_day(
         "source": source.name,
         "schema": source.schema,
         "subgraph_id": source.subgraph_id,
+        "graph_path": source.graph_path,
         "source_genesis_block": source.genesis_block,
         "source_genesis_date_utc": source.genesis_date_utc.isoformat(),
         "day": day.isoformat(),

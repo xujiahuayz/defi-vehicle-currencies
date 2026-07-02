@@ -21,14 +21,15 @@ class FetchPlanningTests(unittest.TestCase):
         self.assertEqual(get_source("curve").genesis, dt.date(2020, 2, 11))
         self.assertEqual(get_source("curve").genesis_block, 9_461_159)
         self.assertEqual(get_source("uniswap_v1").genesis, dt.date(2018, 11, 2))
-        self.assertEqual(get_source("uniswap_v1").backend, "dune")
+        self.assertEqual(get_source("uniswap_v1").backend, "thegraph")
         self.assertEqual(get_source("uniswap_v2").genesis, dt.date(2020, 5, 5))
         self.assertEqual(get_source("uniswap_v2").genesis_block, 10_008_566)
         self.assertEqual(get_source("uniswap_v3").genesis, dt.date(2021, 5, 4))
         self.assertEqual(get_source("uniswap_v3").genesis_block, 12_369_879)
         self.assertEqual(get_source("uniswap_v4").genesis, dt.date(2025, 1, 24))
         self.assertEqual(get_source("uniswap_v4").genesis_block, 21_696_375)
-        self.assertEqual(get_source("sushiswap_v2").backend, "dune")
+        self.assertEqual(get_source("sushiswap_v2").backend, "thegraph")
+        self.assertEqual(get_source("sushiswap_v2").graph_path, "deployments/id")
         self.assertEqual(get_source("fluid").genesis_block, 21_071_249)
 
     def test_schema_overfetches_liquidity_streams(self) -> None:

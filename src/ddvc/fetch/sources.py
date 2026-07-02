@@ -18,6 +18,7 @@ class DexSource:
     schema: str
     genesis_date_utc: dt.date
     subgraph_id: str = ""
+    graph_path: str = "subgraphs/id"
     backend: str = "thegraph"
     genesis_block: int | None = None
     dune_project: str | None = None
@@ -40,13 +41,11 @@ DEX_SOURCES: dict[str, DexSource] = {
     ),
     "uniswap_v1": DexSource(
         name="uniswap_v1",
-        schema="dune_dex_trades",
-        backend="dune",
+        schema="uniswap_v1",
         genesis_date_utc=dt.date(2018, 11, 2),
-        genesis_block=6_627_917,
-        dune_project="uniswap",
-        dune_version="1",
-        notes="Dune dex.trades source; Uniswap V1 subgraph exists but Dune gives routed swap legs and raw token amounts in the same schema.",
+        subgraph_id="ESnjgAG9NjfmHypk4Huu4PVvz55fUwpyrRqHF21thoLJ",
+        genesis_block=6_628_280,
+        notes="Uniswap V1 subgraph; raw transactions carry token/ETH purchase events against exchange addresses.",
     ),
     "uniswap_v2": DexSource(
         name="uniswap_v2",
@@ -74,12 +73,12 @@ DEX_SOURCES: dict[str, DexSource] = {
     ),
     "sushiswap_v2": DexSource(
         name="sushiswap_v2",
-        schema="dune_dex_trades",
-        backend="dune",
-        genesis_date_utc=dt.date(2020, 8, 28),
-        dune_project="sushiswap",
-        dune_version="2",
-        notes="Dune dex.trades source for SushiSwap cpAMM/V2; Sushi has no separate V1 AMM in this sample frame.",
+        schema="uniswap_v2",
+        genesis_date_utc=dt.date(2020, 9, 4),
+        subgraph_id="QmaR2nAMF6dCHBL1eFNQ4F5nGpJQs7V11PZobJB2FgQtbt",
+        graph_path="deployments/id",
+        genesis_block=10_794_365,
+        notes="SushiSwap cpAMM/V2 deployment endpoint; Sushi has no separate V1 AMM in this sample frame.",
     ),
     "sushiswap_v3": DexSource(
         name="sushiswap_v3",

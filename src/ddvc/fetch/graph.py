@@ -13,7 +13,7 @@ from typing import Any
 from ddvc.http import DEFAULT_USER_AGENT
 from ddvc.paths import REPO_ROOT
 
-GRAPH_ENDPOINT = "https://gateway.thegraph.com/api/{key}/subgraphs/id/{subgraph_id}"
+GRAPH_ENDPOINT = "https://gateway.thegraph.com/api/{key}/{graph_path}/{subgraph_id}"
 PAGE_SIZE = 1000
 
 
@@ -50,6 +50,7 @@ def _read_dotenv_keys() -> str:
 class GraphClient:
     subgraph_id: str
     keys: list[str]
+    graph_path: str = "subgraphs/id"
     sleep_seconds: float = 0.1
 
     def __post_init__(self) -> None:
@@ -63,7 +64,11 @@ class GraphClient:
 
     @property
     def url(self) -> str:
-        return GRAPH_ENDPOINT.format(key=self.keys[self._key_index], subgraph_id=self.subgraph_id)
+        return GRAPH_ENDPOINT.format(
+            key=self.keys[self._key_index],
+            graph_path=self.graph_path,
+            subgraph_id=self.subgraph_id,
+        )
 
     def _rotate(self) -> bool:
         if self._key_index + 1 >= len(self.keys):
