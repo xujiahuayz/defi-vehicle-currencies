@@ -19,16 +19,18 @@ import argparse
 import datetime as dt
 import json
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from ddvc.fetch.dune import dune_path, fetch_dune_month, month_ranges, stream_names_for_dune_source
+from ddvc.fetch.dune import dune_meta_path, dune_path, fetch_dune_month, month_ranges, stream_names_for_dune_source
 from ddvc.fetch.graph import GraphClient, first_record, graph_keys
 from ddvc.fetch.raw import (
     block_value,
     fetch_source_day,
+    meta_path,
     midnight_ts,
     raw_path,
     stream_names_for_source,
@@ -202,7 +204,124 @@ def cmd_audit_genesis(args: argparse.Namespace) -> int:
     return 1 if bad and args.strict else 0
 
 
+def available_streams(source_name: str) -> list[str]:
+    source = get_source(source_name)
+    return stream_names_for_dune_source(source) if source.backend == "dune" else stream_names_for_source(source_name)
+
+
+def stream_target(source_name: str, stream: str, day: dt.date) -> Path:
+    source = get_source(source_name)
+    return dune_path(source_name, stream, day) if source.backend == "dune" else raw_path(source_name, stream, day)
+
+
+def metadata_target(source_name: str, day: dt.date) -> Path:
+    source = get_source(source_name)
+    return dune_meta_path(source_name, day) if source.backend == "dune" else meta_path(source_name, day)
+
+
+def missing_streams(source_name: str, day: dt.date, streams: list[str]) -> list[str]:
+    return [stream for stream in streams if not stream_target(source_name, stream, day).exists()]
+
+
+def coverage_report(names: list[str], end_by_source: dict[str, dt.date]) -> dict[str, dict[str, object]]:
+    report: dict[str, dict[str, object]] = {}
+    for name in names:
+        source = get_source(name)
+        end = end_by_source[name]
+        streams = available_streams(name)
+        days = iter_days(source.genesis, end)
+        by_stream: dict[str, list[str]] = {stream: [] for stream in streams}
+        meta_missing: list[str] = []
+        for day in days:
+            for stream in streams:
+                if not stream_target(name, stream, day).exists():
+                    by_stream[stream].append(day.isoformat())
+            if not metadata_target(name, day).exists():
+                meta_missing.append(day.isoformat())
+        report[name] = {
+            "backend": source.backend,
+            "start": source.genesis.isoformat(),
+            "end_exclusive": end.isoformat(),
+            "days": len(days),
+            "missing": {stream: len(items) for stream, items in by_stream.items()},
+            "missing_ranges": {
+                stream: ([items[0], items[-1]] if items else [])
+                for stream, items in by_stream.items()
+            },
+            "missing_meta": len(meta_missing),
+            "missing_meta_range": [meta_missing[0], meta_missing[-1]] if meta_missing else [],
+        }
+    return report
+
+
+def cmd_coverage(args: argparse.Namespace) -> int:
+    names = source_names(args.dex)
+    end_by_source = {name: effective_range(name, "genesis", args.end)[1] for name in names}
+    print(json.dumps(coverage_report(names, end_by_source), indent=2, sort_keys=True))
+    return 0
+
+
+def fetch_gap_days(
+    source_name: str,
+    start: dt.date,
+    end: dt.date,
+    *,
+    streams: set[str] | None,
+    overwrite: bool,
+    dry_run: bool,
+    dune_sleep: float,
+) -> dict[str, int]:
+    source = get_source(source_name)
+    selected = sorted(streams) if streams is not None else available_streams(source_name)
+    counts = {"days_seen": 0, "days_fetched": 0, "streams_fetched": 0}
+    for day in iter_days(start, end):
+        counts["days_seen"] += 1
+        missing = selected if overwrite else missing_streams(source_name, day, selected)
+        if not missing:
+            continue
+        counts["days_fetched"] += 1
+        counts["streams_fetched"] += len(missing)
+        if dry_run:
+            print(json.dumps({"source": source_name, "day": day.isoformat(), "missing_streams": missing}, sort_keys=True))
+            continue
+        if source.backend == "dune":
+            metas = fetch_dune_month(
+                source,
+                day,
+                day + dt.timedelta(days=1),
+                streams=set(missing),
+                skip_existing=not overwrite,
+            )
+            for meta in metas:
+                print(json.dumps(meta, sort_keys=True), flush=True)
+            if dune_sleep:
+                time.sleep(dune_sleep)
+        else:
+            meta = fetch_source_day(source, day, streams=set(missing), skip_existing=not overwrite)
+            print(json.dumps(meta, sort_keys=True), flush=True)
+    return counts
+
+
 def cmd_fetch(args: argparse.Namespace) -> int:
+    if args.gaps_only:
+        totals = {}
+        end_by_source = {}
+        for name in source_names(args.dex):
+            start, end = effective_range(name, args.start, args.end)
+            end_by_source[name] = end
+            streams = selected_streams(name, args.streams)
+            totals[name] = fetch_gap_days(
+                name,
+                start,
+                end,
+                streams=streams,
+                overwrite=args.overwrite,
+                dry_run=args.dry_run,
+                dune_sleep=args.dune_sleep,
+            )
+        print(json.dumps({"totals": totals, "coverage": coverage_report(list(totals), end_by_source)}, indent=2, sort_keys=True))
+        return 0
+
     for name in source_names(args.dex):
         source = get_source(name)
         start, end = effective_range(name, args.start, args.end)
@@ -241,24 +360,27 @@ def cmd_fetch(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
-    for name, fn in [("plan", cmd_plan), ("fetch", cmd_fetch), ("audit-genesis", cmd_audit_genesis)]:
+    for name, fn in [("plan", cmd_plan), ("fetch", cmd_fetch), ("coverage", cmd_coverage), ("audit-genesis", cmd_audit_genesis)]:
         p = sub.add_parser(name)
         p.add_argument("--dex", nargs="+", default=["all"], help="Source names or 'all'.")
         if name != "audit-genesis":
             p.add_argument("--start", default="genesis", help="'genesis' or YYYY-MM-DD.")
             p.add_argument("--end", default=None, help="Exclusive YYYY-MM-DD; defaults to current month start.")
-            p.add_argument(
-                "--streams",
-                nargs="+",
-                default=["all"],
-                help="Stream names or 'all' (e.g. swaps daily mints burns modify_liquidities).",
-            )
+            if name != "coverage":
+                p.add_argument(
+                    "--streams",
+                    nargs="+",
+                    default=["all"],
+                    help="Stream names or 'all' (e.g. swaps daily mints burns modify_liquidities).",
+                )
         else:
             p.add_argument("--strict", action="store_true", help="Exit nonzero on an audit mismatch.")
         p.set_defaults(func=fn)
     sub.choices["fetch"].add_argument("--dry-run", action="store_true")
     sub.choices["fetch"].add_argument("--overwrite", action="store_true")
     sub.choices["fetch"].add_argument("--max-days", type=int, default=0)
+    sub.choices["fetch"].add_argument("--gaps-only", action="store_true", help="Fetch only missing day/stream targets.")
+    sub.choices["fetch"].add_argument("--dune-sleep", type=float, default=2.0, help="Seconds to sleep between day-sized Dune gap fetches.")
     return parser
 
 
