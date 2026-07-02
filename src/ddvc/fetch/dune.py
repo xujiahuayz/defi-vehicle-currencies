@@ -178,7 +178,7 @@ def _execute_sql(source: DexSource, start: dt.date, end: dt.date) -> str:
         "/sql/execute",
         {
             "sql": _source_sql(source, start, end),
-            "performance": "medium",
+            "performance": "small",
         },
     )
     if status not in {200, 201}:
@@ -189,6 +189,9 @@ def _execute_sql(source: DexSource, start: dt.date, end: dt.date) -> str:
 def _await_rows(execution_id: str, *, poll_seconds: int = 3, max_polls: int = 240) -> list[dict[str, Any]]:
     for _ in range(max_polls):
         status, payload = _call("GET", f"/execution/{execution_id}/status")
+        if status == 429:
+            time.sleep(max(poll_seconds, 10))
+            continue
         if status != 200:
             raise RuntimeError(f"Dune status failed ({status}): {payload}")
         state = payload.get("state")
@@ -205,6 +208,9 @@ def _await_rows(execution_id: str, *, poll_seconds: int = 3, max_polls: int = 24
     limit = 1000
     while True:
         status, payload = _call("GET", f"/execution/{execution_id}/results?limit={limit}&offset={offset}")
+        if status == 429:
+            time.sleep(10)
+            continue
         if status != 200:
             raise RuntimeError(f"Dune results failed ({status}): {payload}")
         page = payload.get("result", {}).get("rows", [])
