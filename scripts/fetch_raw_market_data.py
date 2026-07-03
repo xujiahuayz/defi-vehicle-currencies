@@ -270,6 +270,7 @@ def fetch_gap_days(
     overwrite: bool,
     dry_run: bool,
     dune_sleep: float,
+    max_retries: int,
 ) -> dict[str, int]:
     source = get_source(source_name)
     selected = sorted(streams) if streams is not None else available_streams(source_name)
@@ -284,21 +285,46 @@ def fetch_gap_days(
         if dry_run:
             print(json.dumps({"source": source_name, "day": day.isoformat(), "missing_streams": missing}, sort_keys=True))
             continue
-        if source.backend == "dune":
-            metas = fetch_dune_month(
-                source,
-                day,
-                day + dt.timedelta(days=1),
-                streams=set(missing),
-                skip_existing=not overwrite,
-            )
-            for meta in metas:
-                print(json.dumps(meta, sort_keys=True), flush=True)
-            if dune_sleep:
-                time.sleep(dune_sleep)
-        else:
-            meta = fetch_source_day(source, day, streams=set(missing), skip_existing=not overwrite)
-            print(json.dumps(meta, sort_keys=True), flush=True)
+        attempt = 0
+        while True:
+            try:
+                if source.backend == "dune":
+                    metas = fetch_dune_month(
+                        source,
+                        day,
+                        day + dt.timedelta(days=1),
+                        streams=set(missing),
+                        skip_existing=not overwrite,
+                    )
+                    for meta in metas:
+                        print(json.dumps(meta, sort_keys=True), flush=True)
+                    if dune_sleep:
+                        time.sleep(dune_sleep)
+                else:
+                    meta = fetch_source_day(source, day, streams=set(missing), skip_existing=not overwrite)
+                    print(json.dumps(meta, sort_keys=True), flush=True)
+                break
+            except RuntimeError as exc:
+                attempt += 1
+                if attempt > max_retries:
+                    raise
+                sleep_seconds = min(300, 10 * attempt)
+                print(
+                    json.dumps(
+                        {
+                            "source": source_name,
+                            "day": day.isoformat(),
+                            "missing_streams": missing,
+                            "status": "retrying",
+                            "attempt": attempt,
+                            "sleep_seconds": sleep_seconds,
+                            "error": str(exc)[:500],
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+                time.sleep(sleep_seconds)
     return counts
 
 
@@ -318,6 +344,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
                 overwrite=args.overwrite,
                 dry_run=args.dry_run,
                 dune_sleep=args.dune_sleep,
+                max_retries=args.max_retries,
             )
         print(json.dumps({"totals": totals, "coverage": coverage_report(list(totals), end_by_source)}, indent=2, sort_keys=True))
         return 0
@@ -381,6 +408,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.choices["fetch"].add_argument("--max-days", type=int, default=0)
     sub.choices["fetch"].add_argument("--gaps-only", action="store_true", help="Fetch only missing day/stream targets.")
     sub.choices["fetch"].add_argument("--dune-sleep", type=float, default=2.0, help="Seconds to sleep between day-sized Dune gap fetches.")
+    sub.choices["fetch"].add_argument("--max-retries", type=int, default=50, help="Per-day retries for transient provider/indexer errors in --gaps-only mode.")
     return parser
 
 
