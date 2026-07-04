@@ -72,9 +72,18 @@ def where_chunks_for_entity(entity: EntitySpec, day: dt.date) -> list[dict[str, 
                 where["id_lt"] = f"0x{prefixes[index + 1]}"
             chunks.append(where)
         return chunks
-    if entity.stream in {"swaps", "hourly_reserves"}:
+    if entity.stream == "hourly_reserves" and entity.time_field == "hourStartUnix":
         start = midnight_ts(day)
         return [{entity.time_field: str(start + 3600 * hour)} for hour in range(24)]
+    if entity.stream == "swaps":
+        start = midnight_ts(day)
+        return [
+            {
+                f"{entity.time_field}_gte": str(start + 3600 * hour),
+                f"{entity.time_field}_lt": str(start + 3600 * (hour + 1)),
+            }
+            for hour in range(24)
+        ]
     return [where_for_entity(entity, day)]
 
 
