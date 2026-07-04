@@ -11,38 +11,43 @@ If[! DirectoryQ[outputDir], CreateDirectory[outputDir, CreateIntermediateDirecto
 params = {
   q -> 1, theta -> 0.08, lambda -> 4,
   LD -> 1.4, fD -> 0.003, fIK -> 0.003, fKJ -> 0.003,
-  sD -> 0.0005, sK -> 0.0005, rhoK -> 0.01,
-  LIK -> 1, LKJ -> 1
+  sD -> 0.0005, sK -> 0.0005
 };
 
-shareExpr = BridgeShareLevel /. params;
+tightRange[expr_, var_Symbol, lo_, hi_] := Module[{vals, ymin, ymax, pad},
+  vals = Table[N[expr /. var -> z], {z, lo, hi, (hi - lo)/200}];
+  ymin = Min[vals];
+  ymax = Max[vals];
+  pad = Max[0.01*(ymax - ymin), 0.002];
+  {Max[0, ymin - pad], Min[1, ymax + pad]}
+];
 
 liquidityPlot = Plot[
-  Evaluate[BridgeShareLevel /. params /. {LIK -> x, LKJ -> x}],
+  Evaluate[BridgeShareLevel /. params /. {rhoK -> 0.01, LIK -> x, LKJ -> x}],
   {x, 0.25, 5},
   Frame -> True,
   FrameLabel -> {"Vehicle-linked executable liquidity", "Bridge share"},
-  PlotRange -> {0, 1},
+  PlotRange -> tightRange[BridgeShareLevel /. params /. {rhoK -> 0.01, LIK -> x, LKJ -> x}, x, 0.25, 5],
   PlotTheme -> "Scientific",
   ImageSize -> 700
 ];
 
 riskPlot = Plot[
-  Evaluate[BridgeShareLevel /. params /. rhoK -> r],
+  Evaluate[BridgeShareLevel /. params /. {LIK -> 1, LKJ -> 1, rhoK -> r}],
   {r, 0, 0.12},
   Frame -> True,
   FrameLabel -> {"Vehicle risk / credibility cost", "Bridge share"},
-  PlotRange -> {0, 1},
+  PlotRange -> tightRange[BridgeShareLevel /. params /. {LIK -> 1, LKJ -> 1, rhoK -> r}, r, 0, 0.12],
   PlotTheme -> "Scientific",
   ImageSize -> 700
 ];
 
 architecturePlot = Plot[
-  Evaluate[BridgeShare[RouteAdvantageV3] /. params /. a -> x],
+  Evaluate[BridgeShare[RouteAdvantageV3] /. params /. {LIK -> 1, LKJ -> 1, rhoK -> 0.01, a -> x}],
   {x, 0.5, 5},
   Frame -> True,
   FrameLabel -> {"Direct-route liquidity multiplier", "Bridge share"},
-  PlotRange -> {0, 1},
+  PlotRange -> tightRange[BridgeShare[RouteAdvantageV3] /. params /. {LIK -> 1, LKJ -> 1, rhoK -> 0.01, a -> x}, x, 0.5, 5],
   PlotTheme -> "Scientific",
   ImageSize -> 700
 ];
