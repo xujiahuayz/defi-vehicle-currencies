@@ -26,9 +26,15 @@ class SchemaSpec:
     entities: tuple[EntitySpec, ...]
 
 
-UNI_V3_LIQUIDITY_FIELDS = (
+UNI_V3_MINT_FIELDS = (
     "id transaction { id blockNumber timestamp } timestamp pool { id token0 { id symbol } "
     "token1 { id symbol } feeTier } owner origin sender amount amount0 amount1 "
+    "tickLower tickUpper logIndex"
+)
+
+UNI_V3_BURN_FIELDS = (
+    "id transaction { id blockNumber timestamp } timestamp pool { id token0 { id symbol } "
+    "token1 { id symbol } feeTier } owner origin amount amount0 amount1 "
     "tickLower tickUpper logIndex"
 )
 
@@ -111,8 +117,8 @@ SCHEMAS: dict[str, SchemaSpec] = {
                     "symbol decimals } }"
                 ),
             ),
-            EntitySpec(stream="mints", entity="mints", fields=UNI_V3_LIQUIDITY_FIELDS),
-            EntitySpec(stream="burns", entity="burns", fields=UNI_V3_LIQUIDITY_FIELDS),
+            EntitySpec(stream="mints", entity="mints", fields=UNI_V3_MINT_FIELDS),
+            EntitySpec(stream="burns", entity="burns", fields=UNI_V3_BURN_FIELDS),
         ),
     ),
     "uniswap_v4": SchemaSpec(
