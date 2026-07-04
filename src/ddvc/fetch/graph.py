@@ -111,10 +111,10 @@ def _where_literal(where: dict[str, Any]) -> str:
     return "{ " + ", ".join(parts) + " }"
 
 
-def build_query(entity: str, fields: str, where: dict[str, Any]) -> str:
+def build_query(entity: str, fields: str, where: dict[str, Any], *, page_size: int = PAGE_SIZE) -> str:
     return (
         "query FetchPage { "
-        f"{entity}(first: {PAGE_SIZE}, orderBy: id, orderDirection: asc, "
+        f"{entity}(first: {page_size}, orderBy: id, orderDirection: asc, "
         f"where: {_where_literal(where)}) {{ {fields} }} "
         "}"
     )
@@ -155,6 +155,7 @@ def paginate(
     entity: str,
     fields: str,
     base_where: dict[str, Any],
+    page_size: int = PAGE_SIZE,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     last_id = ""
@@ -162,13 +163,13 @@ def paginate(
         where = dict(base_where)
         if last_id:
             where["id_gt"] = last_id
-        data = client.query(build_query(entity, fields, where), {})
+        data = client.query(build_query(entity, fields, where, page_size=page_size), {})
         page = data[entity]
         if not page:
             break
         rows.extend(page)
         last_id = page[-1]["id"]
-        if len(page) < PAGE_SIZE:
+        if len(page) < page_size:
             break
         if client.sleep_seconds:
             time.sleep(client.sleep_seconds)

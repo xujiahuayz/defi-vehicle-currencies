@@ -63,10 +63,23 @@ def where_for_entity(entity: EntitySpec, day: dt.date) -> dict[str, str]:
 
 
 def where_chunks_for_entity(entity: EntitySpec, day: dt.date) -> list[dict[str, str]]:
-    if entity.stream == "hourly_reserves" and entity.time_field == "hourStartUnix":
+    if entity.date_field:
+        prefixes = "0123456789abcdef"
+        chunks: list[dict[str, str]] = []
+        for index, prefix in enumerate(prefixes):
+            where = {entity.date_field: str(midnight_ts(day)), "id_gte": f"0x{prefix}"}
+            if index + 1 < len(prefixes):
+                where["id_lt"] = f"0x{prefixes[index + 1]}"
+            chunks.append(where)
+        return chunks
+    if entity.stream in {"swaps", "hourly_reserves"}:
         start = midnight_ts(day)
         return [{entity.time_field: str(start + 3600 * hour)} for hour in range(24)]
     return [where_for_entity(entity, day)]
+
+
+def page_size_for_entity(entity: EntitySpec) -> int:
+    return 1000
 
 
 def _block_values(rows: list[dict[str, Any]]) -> list[int]:
@@ -143,6 +156,7 @@ def fetch_source_day(
                     entity=entity.entity,
                     fields=entity.fields,
                     base_where=where,
+                    page_size=page_size_for_entity(entity),
                 )
             )
         write_jsonl_gz(out, rows)
