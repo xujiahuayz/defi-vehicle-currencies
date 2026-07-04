@@ -21,6 +21,7 @@ data/processed/
 data/external/
 output/tables/
 output/figures/
+output/model/
 
 # Logs and scratch
 logs/
