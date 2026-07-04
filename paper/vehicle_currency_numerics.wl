@@ -62,6 +62,7 @@ Export[FileNameJoin[{outputDir, "model_bridge_share_liquidity.png"}], liquidityP
 Export[FileNameJoin[{outputDir, "model_bridge_share_risk.png"}], riskPlot];
 Export[FileNameJoin[{outputDir, "model_bridge_share_direct_liquidity.png"}], architecturePlot];
 Export[FileNameJoin[{outputDir, "model_v4_netting_compression.png"}], nettingPlot];
+Export[FileNameJoin[{outputDir, "model_derivations.txt"}], ToString[AllPropositions, InputForm], "Text"];
 
 Grid[{
   {"dBridgeShare/dVehicleLiquidity", FullSimplify[D[BridgeShareLevel, LIK]]},

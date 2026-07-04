@@ -1,7 +1,17 @@
 # Model-to-Test Map
 
-This note records the current small-model structure. The Mathematica source is
-`paper/vehicle_currency_model.wl`.
+This note records the current small-model structure. The Mathematica sources are
+`paper/vehicle_currency_model.wl` and `paper/vehicle_currency_numerics.wl`.
+
+On the Studio machine, Wolfram 14.3 works with UCL's MathLM server. Wolfram 15.0
+installs but the server does not grant licenses to that version. Run the model
+with:
+
+```bash
+'/Applications/Wolfram 14.3.app/Contents/MacOS/WolframKernel' -script paper/vehicle_currency_numerics.wl
+```
+
+The script writes symbolic derivations and numerical figures to `output/model/`.
 
 ## Model
 
