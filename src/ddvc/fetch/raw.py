@@ -62,6 +62,13 @@ def where_for_entity(entity: EntitySpec, day: dt.date) -> dict[str, str]:
     return {f"{entity.time_field}_gte": str(start), f"{entity.time_field}_lt": str(end)}
 
 
+def where_chunks_for_entity(entity: EntitySpec, day: dt.date) -> list[dict[str, str]]:
+    if entity.stream == "hourly_reserves" and entity.time_field == "hourStartUnix":
+        start = midnight_ts(day)
+        return [{entity.time_field: str(start + 3600 * hour)} for hour in range(24)]
+    return [where_for_entity(entity, day)]
+
+
 def _block_values(rows: list[dict[str, Any]]) -> list[int]:
     values: list[int] = []
     for row in rows:
@@ -128,12 +135,16 @@ def fetch_source_day(
         if skip_existing and out.exists():
             stream_meta[entity.stream] = {"path": str(out), "status": "skipped"}
             continue
-        rows = paginate(
-            client,
-            entity=entity.entity,
-            fields=entity.fields,
-            base_where=where_for_entity(entity, day),
-        )
+        rows: list[dict[str, Any]] = []
+        for where in where_chunks_for_entity(entity, day):
+            rows.extend(
+                paginate(
+                    client,
+                    entity=entity.entity,
+                    fields=entity.fields,
+                    base_where=where,
+                )
+            )
         write_jsonl_gz(out, rows)
         blocks = _block_values(rows)
         all_blocks.extend(blocks)
