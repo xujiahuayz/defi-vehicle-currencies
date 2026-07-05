@@ -174,17 +174,20 @@ Outputs:
 - `output/empirical/route_cost_panel_v2_summary.csv`
 
 Scope: Uniswap V2 and SushiSwap V2 constant-product pools, using the noon UTC
-hourly reserve snapshot for each day. This is a real counterfactual direct-vs-
-vehicle route-cost panel, but it is not the final all-venue P1 table because it
-does not yet include exact V3 tick-level quoting or Curve/Balancer/Fluid.
+hourly reserve snapshot for each day, plus Uniswap V3 active-liquidity quotes
+from daily pool snapshots. The V3 layer uses the DDC V3 integer quote math with
+the day's active liquidity, sqrt price, tick, and fee tier. This is a real
+counterfactual direct-vs-vehicle route-cost panel and is no longer V2-only, but
+it is not the final all-venue P1 table because it does not yet build the full
+tick-index exact-crossing V3 reconstruction or include Curve/Balancer/Fluid.
 
-First-pass result: WETH is the only vehicle with a clear positive large-trade
-route-cost advantage in this V2-style panel. For $10k trades, WETH beats the
-direct route in 51.3% of common-support rows, median advantage 2.1 bp, winsorized
-mean \(t=32.75\), \(p<0.001\). For $100k trades, WETH beats direct in 67.7% of
-rows, median advantage 186.0 bp, winsorized mean \(t=53.74\), \(p<0.001\). At
-$1k, the median advantage is slightly negative (-13.7 bp), consistent with the
-model's trade-size heterogeneity.
+Current result: WETH is the only vehicle with a clear positive large-trade
+route-cost advantage in this V2/Sushi V2 plus V3-active panel. For $10k trades,
+WETH beats the direct route in 50.8% of common-support rows, median advantage
+1.3 bp, winsorized mean \(t=32.20\), \(p<0.001\). For $100k trades, WETH beats
+direct in 66.0% of rows, median advantage 138.3 bp, winsorized mean \(t=52.57\),
+\(p<0.001\). At $1k, the median advantage is slightly negative (-13.5 bp),
+consistent with the model's trade-size heterogeneity.
 
 DDC has reusable ingredients for the final upgrade:
 
@@ -193,13 +196,13 @@ DDC has reusable ingredients for the final upgrade:
 - `scripts/run_crossvenue_panel_broad.py`
 - `scripts/run_v3_counterfactual_quote_opportunity.py`
 
-Data sufficiency for the V3 upgrade: no new Graph refetch is needed. DVC already
-has the required Uniswap V3 swaps, mints, burns, fee tiers, ticks, and
-sqrtPriceX96 fields. What is missing is not data acquisition; it is the derived
-liquidity-index layer and the DVC path adapter for the old DDC exact V3 quoter.
-Porting task: build those indexes from existing raw files, adapt the DDC exact
-V3 quoter to DVC raw paths, and merge the resulting exact V3 quotes with the V2
-panel above.
+Data sufficiency for the final V3 upgrade: no new Graph refetch is needed. DVC
+already has the required Uniswap V3 swaps, mints, burns, fee tiers, ticks, and
+sqrtPriceX96 fields. What remains is not data acquisition; it is the derived
+liquidity-index layer for full tick crossing. The current panel prices V3 using
+active-liquidity snapshots; the final exact V3 upgrade should build per-pool
+tick-net indexes from existing raw mint/burn files and swap-state cutoffs, then
+merge those exact-crossing quotes into the same panel.
 
 ## Proposition 2. Liquidity Feedback and Stickiness
 

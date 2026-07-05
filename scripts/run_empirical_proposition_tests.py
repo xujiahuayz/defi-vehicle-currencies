@@ -589,9 +589,6 @@ feasibility and cost measures.
 
 ## Not yet identified by this script
 
-P1 route-cost advantage needs the quoter / executable-depth layer: direct route
-cost versus best vehicle route cost by endpoint pair and trade-size bucket.
-
 P4b V4 virtualization needs transaction receipt / ERC-20 transfer logs: route
 vehicle use can be read from the route table, but physical settlement incidence
 requires transfer logs to distinguish virtual from physically moved vehicles.
@@ -605,7 +602,7 @@ def fmt_route_cost(df: pd.DataFrame) -> str:
     if df.empty:
         return (
             "Not yet run in this empirical pass. Run `python3 scripts/run_route_cost_panel.py` "
-            "to build the V2/Sushi V2 constant-product counterfactual panel."
+            "to build the direct-versus-vehicle route-cost counterfactual panel."
         )
     keep = df[df["vehicle"].eq("WETH")][
         [
@@ -615,10 +612,11 @@ def fmt_route_cost(df: pd.DataFrame) -> str:
         ]
     ].copy()
     return (
-        "First-pass DVC counterfactual using Uniswap V2 and SushiSwap V2 "
-        "constant-product reserves. This is a real route-cost panel, but it is "
-        "not yet the final all-venue quoter because exact V3 tick-level quoting "
-        "still needs to be ported from DDC.\n\n"
+        "DVC counterfactual using Uniswap V2/SushiSwap V2 constant-product "
+        "reserves plus Uniswap V3 active-liquidity quotes from daily pool "
+        "snapshots. This is the current P1 route-cost panel. It is not yet the "
+        "final all-venue quoter because the full V3 tick-index exact-crossing "
+        "layer and Curve/Balancer/Fluid executable-depth quotes remain open.\n\n"
         + fmt_table_static(keep)
     )
 

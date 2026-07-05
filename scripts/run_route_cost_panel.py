@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Build a first DVC-native route-cost panel for Proposition 1.
 
-This ports the counterfactual idea from DDC into the DVC raw layout. The first
-implemented layer uses V2-style constant-product pools from Uniswap V2 and
-SushiSwap V2 hourly reserves. For each day, endpoint pair, vehicle candidate,
-and trade-size bucket, it compares the best direct route against the best
-two-hop vehicle route available in the same daily reserve snapshot.
+This ports the counterfactual idea from DDC into the DVC raw layout. It combines
+V2-style constant-product pools from Uniswap V2/SushiSwap V2 hourly reserves
+with Uniswap V3 active-liquidity quotes from daily pool snapshots. For each day,
+endpoint pair, vehicle candidate, and trade-size bucket, it compares the best
+direct route against the best two-hop vehicle route available in the same daily
+state.
 
-The output is deliberately marked v2_cp. It is a real counterfactual route-cost
-panel, but not the final all-venue quoter: V3 exact tick-level quoting still
-needs the DDC V3 quoter port.
+The V3 layer uses Uniswap V3 integer quote math and the day's active liquidity,
+sqrt price, tick, and fee tier. It is a material DVC-native extension beyond the
+V2/Sushi V2 panel, but it is not a full tick-index, exact-crossing V3
+reconstruction.
 """
 
 from __future__ import annotations
@@ -34,6 +36,7 @@ if str(SRC) not in sys.path:
 
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
 from ddvc.pricing.v2quote import quote_exact_input_float  # noqa: E402
+from ddvc.pricing.v3quote import quote_exact_input  # noqa: E402
 
 
 VEHICLE_BY_ADDRESS = {
@@ -53,12 +56,19 @@ OUT = OUTPUT_DIR / "empirical"
 class Pool:
     source: str
     pool: str
+    kind: str
     token0: str
     token1: str
     sym0: str
     sym1: str
+    dec0: int
+    dec1: int
     reserve0: float
     reserve1: float
+    liquidity: int = 0
+    sqrt_price_x96: int = 0
+    tick: int = 0
+    fee_pips: int = 3000
 
 
 def _raw_path(source: str, stream: str, stamp: str) -> Path:
@@ -178,13 +188,61 @@ def _load_v2_pools(stamp: str, hour: int) -> dict[frozenset[str], list[Pool]]:
                 pools[frozenset((a0, a1))].append(Pool(
                     source=source,
                     pool=str(pair.get("id", "")).lower(),
+                    kind="v2",
                     token0=a0,
                     token1=a1,
                     sym0=str(t0.get("symbol", "")),
                     sym1=str(t1.get("symbol", "")),
+                    dec0=int(t0.get("decimals", 18) or 18),
+                    dec1=int(t1.get("decimals", 18) or 18),
                     reserve0=r0,
                     reserve1=r1,
                 ))
+    return pools
+
+
+def _load_v3_pools(stamp: str) -> dict[frozenset[str], list[Pool]]:
+    pools: dict[frozenset[str], list[Pool]] = defaultdict(list)
+    path = _raw_path("uniswap_v3", "daily", stamp)
+    if not path.exists():
+        return pools
+    with gzip.open(path, "rt") as fh:
+        for line in fh:
+            rec = json.loads(line)
+            pool = rec.get("pool") or {}
+            t0 = pool.get("token0") or {}
+            t1 = pool.get("token1") or {}
+            a0 = str(t0.get("id", "")).lower()
+            a1 = str(t1.get("id", "")).lower()
+            if not a0 or not a1:
+                continue
+            try:
+                liq = int(rec.get("liquidity") or 0)
+                sqrt_price = int(rec.get("sqrtPrice") or 0)
+                tick = int(rec.get("tick") or 0)
+                fee = int(pool.get("feeTier") or 3000)
+                tvl = float(rec.get("tvlUSD") or 0)
+            except (TypeError, ValueError):
+                continue
+            if liq <= 0 or sqrt_price <= 0 or tvl <= 0 or tvl > 10_000_000_000:
+                continue
+            pools[frozenset((a0, a1))].append(Pool(
+                source="uniswap_v3",
+                pool=str(pool.get("id", "")).lower(),
+                kind="v3_active",
+                token0=a0,
+                token1=a1,
+                sym0=str(t0.get("symbol", "")),
+                sym1=str(t1.get("symbol", "")),
+                dec0=int(t0.get("decimals", 18) or 18),
+                dec1=int(t1.get("decimals", 18) or 18),
+                reserve0=0.0,
+                reserve1=0.0,
+                liquidity=liq,
+                sqrt_price_x96=sqrt_price,
+                tick=tick,
+                fee_pips=fee,
+            ))
     return pools
 
 
@@ -198,10 +256,30 @@ def _best_quote(
     best_source = None
     best_pool = None
     for p in pools.get(frozenset((token_in, token_out)), []):
-        if token_in == p.token0 and token_out == p.token1:
+        if p.kind == "v2" and token_in == p.token0 and token_out == p.token1:
             out = quote_exact_input_float(amount_in, p.reserve0, p.reserve1)
-        elif token_in == p.token1 and token_out == p.token0:
+        elif p.kind == "v2" and token_in == p.token1 and token_out == p.token0:
             out = quote_exact_input_float(amount_in, p.reserve1, p.reserve0)
+        elif p.kind == "v3_active" and token_in in (p.token0, p.token1) and token_out in (p.token0, p.token1):
+            zero_for_one = token_in == p.token0
+            dec_in = p.dec0 if zero_for_one else p.dec1
+            dec_out = p.dec1 if zero_for_one else p.dec0
+            amount_atomic = int(amount_in * (10 ** dec_in))
+            if amount_atomic <= 0:
+                continue
+            try:
+                q = quote_exact_input(
+                    zero_for_one=zero_for_one,
+                    amount_in=amount_atomic,
+                    sqrt_price_x96=p.sqrt_price_x96,
+                    liquidity=p.liquidity,
+                    tick_net={},
+                    tick_spacing=60,
+                    fee_pips=p.fee_pips,
+                )
+                out = q.amount_out / (10 ** dec_out)
+            except Exception:
+                continue
         else:
             continue
         if out > best:
@@ -211,7 +289,7 @@ def _best_quote(
     return best, best_source, best_pool
 
 
-def _build_day(stamp: str, trade_sizes: list[float], top_pairs: int, hour: int) -> pd.DataFrame:
+def _build_day(stamp: str, trade_sizes: list[float], top_pairs: int, hour: int, include_v3: bool) -> pd.DataFrame:
     date = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}"
     unified = DATA_DIR / "unified" / f"{stamp}.parquet"
     if not unified.exists():
@@ -227,6 +305,9 @@ def _build_day(stamp: str, trade_sizes: list[float], top_pairs: int, hour: int) 
     if pairs.empty:
         return pd.DataFrame()
     pools = _load_v2_pools(stamp, hour=hour)
+    if include_v3:
+        for key, vals in _load_v3_pools(stamp).items():
+            pools[key].extend(vals)
     if not pools:
         return pd.DataFrame()
 
@@ -257,7 +338,7 @@ def _build_day(stamp: str, trade_sizes: list[float], top_pairs: int, hour: int) 
                 )
                 rows.append({
                     "date": date,
-                    "method": "v2_cp_daily_hour",
+                    "method": "v2_cp_plus_v3_active",
                     "reserve_hour_utc": hour,
                     "src": r.src,
                     "src_sym": r.src_sym,
@@ -331,6 +412,7 @@ def main() -> int:
     ap.add_argument("--top-pairs", type=int, default=200)
     ap.add_argument("--trade-sizes", default="1000,10000,100000")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--no-v3", action="store_true", help="only use V2-style constant-product pools")
     args = ap.parse_args()
 
     out_path = OUT_DATA / "route_cost_panel_v2.parquet"
@@ -342,7 +424,7 @@ def main() -> int:
         frames = []
         stamps = _available_stamps(args.start, args.end)
         for i, stamp in enumerate(stamps, 1):
-            day = _build_day(stamp, sizes, top_pairs=args.top_pairs, hour=args.hour)
+            day = _build_day(stamp, sizes, top_pairs=args.top_pairs, hour=args.hour, include_v3=not args.no_v3)
             if not day.empty:
                 frames.append(day)
             if i % 25 == 0 or i == len(stamps):
