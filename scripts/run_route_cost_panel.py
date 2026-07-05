@@ -3,15 +3,14 @@
 
 This ports the counterfactual idea from DDC into the DVC raw layout. It combines
 V2-style constant-product pools from Uniswap V2/SushiSwap V2 hourly reserves
-with Uniswap V3 active-liquidity quotes from daily pool snapshots. For each day,
-endpoint pair, vehicle candidate, and trade-size bucket, it compares the best
-direct route against the best two-hop vehicle route available in the same daily
-state.
+with Uniswap V3 quotes reconstructed from raw swaps plus mint/burn liquidity.
+For each day, endpoint pair, vehicle candidate, and trade-size bucket, it
+compares the best direct route against the best two-hop vehicle route available
+in the same daily state.
 
-The V3 layer uses Uniswap V3 integer quote math and the day's active liquidity,
-sqrt price, tick, and fee tier. It is a material DVC-native extension beyond the
-V2/Sushi V2 panel, but it is not a full tick-index, exact-crossing V3
-reconstruction.
+The V3 layer maintains an incremental tick-net index from raw mints/burns and
+uses the latest observed pool sqrtPrice/tick from raw swaps, so V3 quotes cross
+initialized ticks offline without an RPC call.
 """
 
 from __future__ import annotations
@@ -36,7 +35,7 @@ if str(SRC) not in sys.path:
 
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
 from ddvc.pricing.v2quote import quote_exact_input_float  # noqa: E402
-from ddvc.pricing.v3quote import quote_exact_input  # noqa: E402
+from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick, quote_exact_input  # noqa: E402
 
 
 VEHICLE_BY_ADDRESS = {
@@ -48,8 +47,28 @@ VEHICLE_BY_ADDRESS = {
 }
 VEHICLE_ADDRESSES = tuple(VEHICLE_BY_ADDRESS)
 V2_SOURCES = ("uniswap_v2", "sushiswap_v2")
+V3_START = "20210504"
+FEE_TO_TICK_SPACING = {100: 1, 500: 10, 3000: 60, 10000: 200}
+SPACING_TO_FEE = {1: 100, 10: 500, 60: 3000, 200: 10000}
+KNOWN_DECIMALS = {
+    "0x0000000000000000000000000000000000000000": 18,
+    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": 18,
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": 6,
+    "0xdac17f958d2ee523a2206206994597c13d831ec7": 6,
+    "0x6b175474e89094c44da98b954eedeac495271d0f": 18,
+    "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599": 8,
+}
+SYMBOL_DECIMALS = {
+    "ETH": 18,
+    "WETH": 18,
+    "USDC": 6,
+    "USDT": 6,
+    "DAI": 18,
+    "WBTC": 8,
+}
 OUT_DATA = DATA_DIR / "empirical"
 OUT = OUTPUT_DIR / "empirical"
+DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / "v3_exact_tick"
 
 
 @dataclass(frozen=True)
@@ -69,6 +88,27 @@ class Pool:
     sqrt_price_x96: int = 0
     tick: int = 0
     fee_pips: int = 3000
+    tick_spacing: int = 60
+    tick_net: dict[int, int] | None = None
+    sorted_ticks: tuple[int, ...] | None = None
+    sqrt_ticks: tuple[int, ...] | None = None
+
+
+@dataclass
+class V3PoolState:
+    pool: str
+    token0: str
+    token1: str
+    sym0: str
+    sym1: str
+    dec0: int
+    dec1: int
+    sqrt_price_x96: int
+    tick: int
+    fee_pips: int
+    tick_spacing: int
+    block: int
+    log_index: int
 
 
 def _raw_path(source: str, stream: str, stamp: str) -> Path:
@@ -201,48 +241,163 @@ def _load_v2_pools(stamp: str, hour: int) -> dict[frozenset[str], list[Pool]]:
     return pools
 
 
-def _load_v3_pools(stamp: str) -> dict[frozenset[str], list[Pool]]:
-    pools: dict[frozenset[str], list[Pool]] = defaultdict(list)
-    path = _raw_path("uniswap_v3", "daily", stamp)
+def _token_decimals(token: str, symbol: str) -> int:
+    token = token.lower()
+    if token in KNOWN_DECIMALS:
+        return KNOWN_DECIMALS[token]
+    sym = symbol.upper()
+    if sym in SYMBOL_DECIMALS:
+        return SYMBOL_DECIMALS[sym]
+    return 18
+
+
+def _infer_tick_spacing(ticks: dict[int, int]) -> int:
+    vals = [abs(t) for t in ticks if t != 0]
+    if not vals:
+        return 60
+    g = 0
+    for val in vals:
+        g = math.gcd(g, val)
+    if g <= 1:
+        return 1
+    if g <= 10:
+        return 10
+    if g <= 60:
+        return 60
+    return 200
+
+
+def _apply_v3_liquidity_events(
+    stamp: str,
+    tick_net_by_pool: dict[str, dict[int, int]],
+    tick_spacing_by_pool: dict[str, int],
+) -> None:
+    for stream, sign in (("mints", 1), ("burns", -1)):
+        path = _raw_path("uniswap_v3", stream, stamp)
+        if not path.exists():
+            continue
+        with gzip.open(path, "rt") as fh:
+            for line in fh:
+                rec = json.loads(line)
+                pool = str((rec.get("pool") or {}).get("id", "")).lower()
+                if not pool:
+                    continue
+                try:
+                    amt = int(rec.get("amount") or 0)
+                    lower = int(rec.get("tickLower"))
+                    upper = int(rec.get("tickUpper"))
+                except (TypeError, ValueError):
+                    continue
+                if amt == 0:
+                    continue
+                ticks = tick_net_by_pool.setdefault(pool, {})
+                ticks[lower] = ticks.get(lower, 0) + sign * amt
+                ticks[upper] = ticks.get(upper, 0) - sign * amt
+                if ticks[lower] == 0:
+                    del ticks[lower]
+                if ticks.get(upper) == 0:
+                    del ticks[upper]
+                tick_spacing_by_pool[pool] = _infer_tick_spacing(ticks)
+
+
+def _update_v3_swap_state(
+    stamp: str,
+    state_by_pool: dict[str, V3PoolState],
+    tick_spacing_by_pool: dict[str, int],
+) -> None:
+    path = _raw_path("uniswap_v3", "swaps", stamp)
     if not path.exists():
-        return pools
+        return
     with gzip.open(path, "rt") as fh:
         for line in fh:
             rec = json.loads(line)
             pool = rec.get("pool") or {}
             t0 = pool.get("token0") or {}
             t1 = pool.get("token1") or {}
+            pool_id = str(pool.get("id", "")).lower()
             a0 = str(t0.get("id", "")).lower()
             a1 = str(t1.get("id", "")).lower()
-            if not a0 or not a1:
+            if not pool_id or not a0 or not a1:
                 continue
             try:
-                liq = int(rec.get("liquidity") or 0)
-                sqrt_price = int(rec.get("sqrtPrice") or 0)
+                tx = rec.get("transaction") or {}
+                block = int(tx.get("blockNumber") or 0)
+                log_index = int(rec.get("logIndex") or 0)
+                sqrt_price = int(rec.get("sqrtPriceX96") or rec.get("sqrtPrice") or 0)
                 tick = int(rec.get("tick") or 0)
-                fee = int(pool.get("feeTier") or 3000)
-                tvl = float(rec.get("tvlUSD") or 0)
+                fee = int(pool.get("feeTier") or 0)
             except (TypeError, ValueError):
                 continue
-            if liq <= 0 or sqrt_price <= 0 or tvl <= 0 or tvl > 10_000_000_000:
+            if sqrt_price <= 0:
                 continue
-            pools[frozenset((a0, a1))].append(Pool(
-                source="uniswap_v3",
-                pool=str(pool.get("id", "")).lower(),
-                kind="v3_active",
+            old = state_by_pool.get(pool_id)
+            if old is not None and (block, log_index) <= (old.block, old.log_index):
+                continue
+            spacing = FEE_TO_TICK_SPACING.get(fee, tick_spacing_by_pool.get(pool_id, 60))
+            if fee <= 0:
+                fee = SPACING_TO_FEE.get(spacing, 3000)
+            sym0 = str(t0.get("symbol", ""))
+            sym1 = str(t1.get("symbol", ""))
+            state_by_pool[pool_id] = V3PoolState(
+                pool=pool_id,
                 token0=a0,
                 token1=a1,
-                sym0=str(t0.get("symbol", "")),
-                sym1=str(t1.get("symbol", "")),
-                dec0=int(t0.get("decimals", 18) or 18),
-                dec1=int(t1.get("decimals", 18) or 18),
-                reserve0=0.0,
-                reserve1=0.0,
-                liquidity=liq,
+                sym0=sym0,
+                sym1=sym1,
+                dec0=_token_decimals(a0, sym0),
+                dec1=_token_decimals(a1, sym1),
                 sqrt_price_x96=sqrt_price,
                 tick=tick,
                 fee_pips=fee,
-            ))
+                tick_spacing=spacing,
+                block=block,
+                log_index=log_index,
+            )
+
+
+def _active_liquidity(ticks: dict[int, int], current_tick: int) -> int:
+    return sum(v for t, v in ticks.items() if t <= current_tick)
+
+
+def _load_v3_pools_from_state(
+    state_by_pool: dict[str, V3PoolState],
+    tick_net_by_pool: dict[str, dict[int, int]],
+    required_pairs: set[frozenset[str]] | None = None,
+) -> dict[frozenset[str], list[Pool]]:
+    pools: dict[frozenset[str], list[Pool]] = defaultdict(list)
+    for pool_id, st in state_by_pool.items():
+        key = frozenset((st.token0, st.token1))
+        if required_pairs is not None and key not in required_pairs:
+            continue
+        ticks = tick_net_by_pool.get(pool_id)
+        if not ticks:
+            continue
+        liq = _active_liquidity(ticks, st.tick)
+        if liq <= 0:
+            continue
+        sorted_ticks = tuple(sorted(ticks))
+        sqrt_ticks = tuple(get_sqrt_ratio_at_tick(t) for t in sorted_ticks)
+        pools[key].append(Pool(
+                source="uniswap_v3",
+                pool=pool_id,
+                kind="v3_exact",
+                token0=st.token0,
+                token1=st.token1,
+                sym0=st.sym0,
+                sym1=st.sym1,
+                dec0=st.dec0,
+                dec1=st.dec1,
+                reserve0=0.0,
+                reserve1=0.0,
+                liquidity=liq,
+                sqrt_price_x96=st.sqrt_price_x96,
+                tick=st.tick,
+                fee_pips=st.fee_pips,
+                tick_spacing=st.tick_spacing,
+                tick_net=ticks,
+                sorted_ticks=sorted_ticks,
+                sqrt_ticks=sqrt_ticks,
+        ))
     return pools
 
 
@@ -260,7 +415,7 @@ def _best_quote(
             out = quote_exact_input_float(amount_in, p.reserve0, p.reserve1)
         elif p.kind == "v2" and token_in == p.token1 and token_out == p.token0:
             out = quote_exact_input_float(amount_in, p.reserve1, p.reserve0)
-        elif p.kind == "v3_active" and token_in in (p.token0, p.token1) and token_out in (p.token0, p.token1):
+        elif p.kind == "v3_exact" and token_in in (p.token0, p.token1) and token_out in (p.token0, p.token1):
             zero_for_one = token_in == p.token0
             dec_in = p.dec0 if zero_for_one else p.dec1
             dec_out = p.dec1 if zero_for_one else p.dec0
@@ -273,9 +428,11 @@ def _best_quote(
                     amount_in=amount_atomic,
                     sqrt_price_x96=p.sqrt_price_x96,
                     liquidity=p.liquidity,
-                    tick_net={},
-                    tick_spacing=60,
+                    tick_net=p.tick_net or {},
+                    tick_spacing=p.tick_spacing,
                     fee_pips=p.fee_pips,
+                    sorted_ticks=p.sorted_ticks,
+                    sqrt_ticks=p.sqrt_ticks,
                 )
                 out = q.amount_out / (10 ** dec_out)
             except Exception:
@@ -289,7 +446,14 @@ def _best_quote(
     return best, best_source, best_pool
 
 
-def _build_day(stamp: str, trade_sizes: list[float], top_pairs: int, hour: int, include_v3: bool) -> pd.DataFrame:
+def _build_day(
+    stamp: str,
+    trade_sizes: list[float],
+    top_pairs: int,
+    hour: int,
+    v3_state: dict[str, V3PoolState] | None,
+    v3_ticks: dict[str, dict[int, int]] | None,
+) -> pd.DataFrame:
     date = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}"
     unified = DATA_DIR / "unified" / f"{stamp}.parquet"
     if not unified.exists():
@@ -305,8 +469,17 @@ def _build_day(stamp: str, trade_sizes: list[float], top_pairs: int, hour: int, 
     if pairs.empty:
         return pd.DataFrame()
     pools = _load_v2_pools(stamp, hour=hour)
-    if include_v3:
-        for key, vals in _load_v3_pools(stamp).items():
+    if v3_state and v3_ticks:
+        required_pairs: set[frozenset[str]] = set()
+        for r in pairs.itertuples(index=False):
+            required_pairs.add(frozenset((r.src, r.tgt)))
+            for veh in VEHICLE_ADDRESSES:
+                if veh in (r.src, r.tgt) or veh not in prices:
+                    continue
+                required_pairs.add(frozenset((r.src, veh)))
+                required_pairs.add(frozenset((veh, r.tgt)))
+        v3_pools = _load_v3_pools_from_state(v3_state, v3_ticks, required_pairs=required_pairs)
+        for key, vals in v3_pools.items():
             pools[key].extend(vals)
     if not pools:
         return pd.DataFrame()
@@ -338,7 +511,7 @@ def _build_day(stamp: str, trade_sizes: list[float], top_pairs: int, hour: int, 
                 )
                 rows.append({
                     "date": date,
-                    "method": "v2_cp_plus_v3_active",
+                    "method": "v2_cp_plus_v3_exact_tick",
                     "reserve_hour_utc": hour,
                     "src": r.src,
                     "src_sym": r.src_sym,
@@ -369,6 +542,10 @@ def _write(df: pd.DataFrame, path: Path) -> None:
     tmp = path.with_suffix(".tmp.parquet")
     df.to_parquet(tmp, index=False)
     tmp.replace(path)
+
+
+def _day_cache_path(stamp: str) -> Path:
+    return DAY_CACHE / f"{stamp}.parquet"
 
 
 def _summarize(panel: pd.DataFrame) -> pd.DataFrame:
@@ -423,8 +600,30 @@ def main() -> int:
         sizes = [float(x) for x in args.trade_sizes.split(",") if x.strip()]
         frames = []
         stamps = _available_stamps(args.start, args.end)
+        v3_ticks: dict[str, dict[int, int]] = {}
+        v3_state: dict[str, V3PoolState] = {}
+        v3_spacing: dict[str, int] = {}
         for i, stamp in enumerate(stamps, 1):
-            day = _build_day(stamp, sizes, top_pairs=args.top_pairs, hour=args.hour, include_v3=not args.no_v3)
+            day_v3_state = None
+            day_v3_ticks = None
+            if not args.no_v3 and stamp >= V3_START:
+                _apply_v3_liquidity_events(stamp, v3_ticks, v3_spacing)
+                _update_v3_swap_state(stamp, v3_state, v3_spacing)
+                day_v3_state = v3_state
+                day_v3_ticks = v3_ticks
+            cache_path = _day_cache_path(stamp)
+            if cache_path.exists():
+                day = pd.read_parquet(cache_path)
+            else:
+                day = _build_day(
+                    stamp,
+                    sizes,
+                    top_pairs=args.top_pairs,
+                    hour=args.hour,
+                    v3_state=day_v3_state,
+                    v3_ticks=day_v3_ticks,
+                )
+                _write(day, cache_path)
             if not day.empty:
                 frames.append(day)
             if i % 25 == 0 or i == len(stamps):

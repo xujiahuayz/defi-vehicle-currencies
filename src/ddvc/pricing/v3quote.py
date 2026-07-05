@@ -8,6 +8,7 @@ quotes once the DVC liquidity-index layer is built.
 """
 from __future__ import annotations
 
+from bisect import bisect_left
 from dataclasses import dataclass
 
 Q96 = 1 << 96
@@ -106,6 +107,8 @@ def quote_exact_input(
     tick_net: dict[int, int],
     tick_spacing: int,
     fee_pips: int,
+    sorted_ticks: tuple[int, ...] | list[int] | None = None,
+    sqrt_ticks: tuple[int, ...] | list[int] | None = None,
 ) -> QuoteResult:
     """Quote ``amount_in`` of the input token. ``zero_for_one`` True = token0 in,
     token1 out (price falls). ``tick_net`` = {tick: net liquidity delta}, ``fee_pips``
@@ -115,14 +118,19 @@ def quote_exact_input(
     amount_remaining = amount_in
     amount_out = 0
     crossed = 0
-    sorted_ticks = sorted(tick_net)
+    if sorted_ticks is None:
+        sorted_ticks = sorted(tick_net)
+    if sqrt_ticks is None:
+        sqrt_ticks = [get_sqrt_ratio_at_tick(t) for t in sorted_ticks]
 
     def _next_init_tick(cur_sqrt: int) -> int | None:
         # next initialized tick in the swap direction (by sqrt price)
-        cand = [t for t in sorted_ticks if (get_sqrt_ratio_at_tick(t) < cur_sqrt) == zero_for_one]
-        if not cand:
+        idx = bisect_left(sqrt_ticks, cur_sqrt)
+        if zero_for_one:
+            idx -= 1
+        if idx < 0 or idx >= len(sorted_ticks):
             return None
-        return max(cand) if zero_for_one else min(cand)
+        return sorted_ticks[idx]
 
     guard = 0
     while amount_remaining > 0:
@@ -138,8 +146,7 @@ def quote_exact_input(
             if nxt is None:
                 break
             sqrt_p = sqrt_target
-            L += tick_net[nxt] if zero_for_one else tick_net[nxt]
-            # (sign handled at cross below; here L was 0 so just set via cross)
+            L += -tick_net[nxt] if zero_for_one else tick_net[nxt]
             L = max(L, 0)
             crossed += 1
             continue
