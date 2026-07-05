@@ -7,6 +7,10 @@ comparative static.
 
 ## Measurement Spine
 
+Reporting convention: empirical tables should report coefficient/effect size,
+\(t\)-statistic, and \(p\)-value together. In text, always include the \(p\)-value
+when giving a \(t\)-statistic so the significance level is immediately visible.
+
 ### Main vehicle-use outcome
 
 Use `BridgeShare`, not raw token volume share.
