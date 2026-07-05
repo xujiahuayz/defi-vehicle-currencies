@@ -13,6 +13,10 @@ with:
 
 The script writes symbolic derivations and numerical figures to `output/model/`.
 
+The empirical design is pinned in `paper/model_empirical_design.md`. That file is
+the control document for the paper tests: it maps each model proposition to the
+estimand, unit, empirical proxy, exhibit, and missing data/script inputs.
+
 ## Model
 
 A trader swaps source token `i` into destination token `j`. The trader can use a
