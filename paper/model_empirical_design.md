@@ -193,8 +193,13 @@ DDC has reusable ingredients for the final upgrade:
 - `scripts/run_crossvenue_panel_broad.py`
 - `scripts/run_v3_counterfactual_quote_opportunity.py`
 
-Porting task: adapt the DDC exact V3 quoter to DVC raw paths and merge it with
-the V2 panel above.
+Data sufficiency for the V3 upgrade: no new Graph refetch is needed. DVC already
+has the required Uniswap V3 swaps, mints, burns, fee tiers, ticks, and
+sqrtPriceX96 fields. What is missing is not data acquisition; it is the derived
+liquidity-index layer and the DVC path adapter for the old DDC exact V3 quoter.
+Porting task: build those indexes from existing raw files, adapt the DDC exact
+V3 quoter to DVC raw paths, and merge the resulting exact V3 quotes with the V2
+panel above.
 
 ## Proposition 2. Liquidity Feedback and Stickiness
 
