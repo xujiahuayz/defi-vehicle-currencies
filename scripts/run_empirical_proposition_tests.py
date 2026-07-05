@@ -14,10 +14,10 @@ It writes compact, paper-facing diagnostics under:
   * output/empirical/
 
 The first pass covers the tests that are identified by the current data layer:
-bridge-use measurement, liquidity formation, persistence, stress rotation, and
-V3 architecture around concentrated liquidity. Route-cost counterfactuals and
-V4 physical-transfer virtualization require extra quoter / receipt layers and
-are reported as pending inputs rather than faked from the route table.
+bridge-use measurement, route-cost counterfactuals, liquidity formation,
+persistence, stress rotation, and V3 architecture around concentrated liquidity.
+V4 physical-transfer virtualization still requires receipt / transfer logs and is
+reported as a pending input rather than faked from the route table.
 """
 from __future__ import annotations
 
@@ -613,11 +613,11 @@ def fmt_route_cost(df: pd.DataFrame) -> str:
     ].copy()
     return (
         "DVC counterfactual using Uniswap V2/SushiSwap V2 constant-product "
-        "reserves plus Uniswap V3 active-liquidity quotes from daily pool "
-        "snapshots. This is the current P1 route-cost panel. It is not yet the "
-        "final all-venue quoter because the full V3 tick-index exact-crossing "
-        "layer and Curve/Balancer/Fluid executable-depth quotes remain open.\n\n"
-        + fmt_table_static(keep)
+        "reserves plus Uniswap V3 exact tick-net quotes reconstructed from raw "
+        "mints, burns, and swap-state cutoffs. This is now the P1 route-cost "
+        "panel for V2-style pools plus exact-crossing V3. Remaining extensions "
+        "are Curve/Balancer/Fluid executable-depth quotes and transaction-time "
+        "rather than daily noon/EOD state cutoffs.\n\n" + fmt_table_static(keep)
     )
 
 

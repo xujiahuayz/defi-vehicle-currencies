@@ -174,35 +174,40 @@ Outputs:
 - `output/empirical/route_cost_panel_v2_summary.csv`
 
 Scope: Uniswap V2 and SushiSwap V2 constant-product pools, using the noon UTC
-hourly reserve snapshot for each day, plus Uniswap V3 active-liquidity quotes
-from daily pool snapshots. The V3 layer uses the DDC V3 integer quote math with
-the day's active liquidity, sqrt price, tick, and fee tier. This is a real
-counterfactual direct-vs-vehicle route-cost panel and is no longer V2-only, but
-it is not the final all-venue P1 table because it does not yet build the full
-tick-index exact-crossing V3 reconstruction or include Curve/Balancer/Fluid.
+hourly reserve snapshot for each day, plus Uniswap V3 exact tick-net quotes
+reconstructed from raw swaps, mints, and burns. The V3 layer uses integer
+Uniswap V3 quote math, rolls each pool's initialized tick liquidity through
+time, and uses the latest observed daily swap state as the quote cutoff. This is
+the DVC-native exact-crossing V3 upgrade, not a simple migration of DDC outputs.
+It is still not the final all-venue P1 table because Curve/Balancer/Fluid
+executable-depth quotes and transaction-time pre-trade state cutoffs remain
+outside the current panel.
 
-Current result: WETH is the only vehicle with a clear positive large-trade
-route-cost advantage in this V2/Sushi V2 plus V3-active panel. For $10k trades,
-WETH beats the direct route in 50.8% of common-support rows, median advantage
-1.3 bp, winsorized mean \(t=32.20\), \(p<0.001\). For $100k trades, WETH beats
-direct in 66.0% of rows, median advantage 138.3 bp, winsorized mean \(t=52.57\),
-\(p<0.001\). At $1k, the median advantage is slightly negative (-13.5 bp),
-consistent with the model's trade-size heterogeneity.
+Current result: WETH remains the cleanest route-cost vehicle in the V2/Sushi V2
+plus exact V3 panel, but the interpretation is more nuanced than in the earlier
+active-liquidity screen. For $1k trades, WETH beats the direct route in 59.6% of
+common-support rows, median advantage 27.7 bp, winsorized mean \(t=33.04\),
+\(p<0.001\). For $10k trades, WETH beats direct in 56.6% of rows, median
+advantage 21.5 bp, winsorized mean \(t=45.06\), \(p<0.001\). For $100k trades,
+the median is essentially zero (-0.4 bp), but the winsorized mean remains
+strongly positive (\(t=63.95\), \(p<0.001\)) and there are 9,584 rows where the
+WETH vehicle route is available while no direct route is available. Thus the
+main P1 evidence is not "WETH is always cheaper"; it is that WETH provides a
+large availability and upper-tail execution-cost option exactly where direct
+liquidity is missing or thin.
 
-DDC has reusable ingredients for the final upgrade:
+DDC provided reusable ingredients for this upgrade:
 
 - `src/ddc/v2quote.py`
 - `src/ddc/v3quote.py`
 - `scripts/run_crossvenue_panel_broad.py`
 - `scripts/run_v3_counterfactual_quote_opportunity.py`
 
-Data sufficiency for the final V3 upgrade: no new Graph refetch is needed. DVC
-already has the required Uniswap V3 swaps, mints, burns, fee tiers, ticks, and
-sqrtPriceX96 fields. What remains is not data acquisition; it is the derived
-liquidity-index layer for full tick crossing. The current panel prices V3 using
-active-liquidity snapshots; the final exact V3 upgrade should build per-pool
-tick-net indexes from existing raw mint/burn files and swap-state cutoffs, then
-merge those exact-crossing quotes into the same panel.
+Data sufficiency for exact V3 is now confirmed: no new Graph refetch was needed.
+DVC already had the required swaps, mints, burns, fee tiers, ticks, and
+sqrtPriceX96 fields. The missing work was derived infrastructure, now added:
+per-pool tick-net indexes from existing raw mint/burn files and swap-state
+cutoffs merged into the same route-cost panel.
 
 ## Proposition 2. Liquidity Feedback and Stickiness
 
