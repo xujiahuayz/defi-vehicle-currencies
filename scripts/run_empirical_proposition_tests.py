@@ -520,6 +520,8 @@ def write_memo(
 ) -> None:
     latest_year = int(summary["year"].max())
     latest = summary[summary["year"] == latest_year].sort_values("BridgeShare", ascending=False).head(5)
+    route_cost_path = OUT / "route_cost_panel_v2_summary.csv"
+    route_cost = pd.read_csv(route_cost_path) if route_cost_path.exists() else pd.DataFrame()
 
     def fmt_table(df: pd.DataFrame, cols: list[str]) -> str:
         """Small markdown table writer without pandas' optional tabulate dep."""
@@ -552,6 +554,10 @@ Top bridge tokens in {latest_year}:
 {fmt_table(latest, ["token", "BridgeShare", "BetwCent_V", "VShare", "PairCoverage"])}
 
 ## Proposition checks
+
+### P1. Route-cost advantage
+
+{fmt_route_cost(route_cost)}
 
 ### P2. Liquidity formation and stickiness
 
@@ -593,6 +599,46 @@ requires transfer logs to distinguish virtual from physically moved vehicles.
     path = OUT / "empirical_first_pass.md"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+def fmt_route_cost(df: pd.DataFrame) -> str:
+    if df.empty:
+        return (
+            "Not yet run in this empirical pass. Run `python3 scripts/run_route_cost_panel.py` "
+            "to build the V2/Sushi V2 constant-product counterfactual panel."
+        )
+    keep = df[df["vehicle"].eq("WETH")][
+        [
+            "vehicle", "trade_size_usd", "both_available_rows",
+            "vehicle_beats_direct_share", "median_advantage_bps",
+            "t_winsor_mean", "p_winsor_mean", "no_direct_vehicle_available_rows",
+        ]
+    ].copy()
+    return (
+        "First-pass DVC counterfactual using Uniswap V2 and SushiSwap V2 "
+        "constant-product reserves. This is a real route-cost panel, but it is "
+        "not yet the final all-venue quoter because exact V3 tick-level quoting "
+        "still needs to be ported from DDC.\n\n"
+        + fmt_table_static(keep)
+    )
+
+
+def fmt_table_static(df: pd.DataFrame) -> str:
+    view = df.copy()
+    for c in view.columns:
+        if pd.api.types.is_float_dtype(view[c]):
+            if c.startswith("p_"):
+                view[c] = view[c].map(lambda x: "" if pd.isna(x) else ("<0.001" if x < 0.001 else f"{x:.3f}"))
+            else:
+                view[c] = view[c].map(lambda x: "" if pd.isna(x) else f"{x:.4f}")
+    cols = list(view.columns)
+    header = "| " + " | ".join(cols) + " |"
+    sep = "| " + " | ".join(["---"] * len(cols)) + " |"
+    rows = [
+        "| " + " | ".join(str(v) for v in row) + " |"
+        for row in view.itertuples(index=False, name=None)
+    ]
+    return "\n".join([header, sep, *rows])
 
 
 def main() -> None:

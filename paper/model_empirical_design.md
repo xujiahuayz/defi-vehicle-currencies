@@ -160,15 +160,41 @@ Panels:
 
 ### Current status
 
-Not yet rebuilt in DVC. DDC has reusable ingredients:
+DVC now has a first route-cost counterfactual panel:
+
+```bash
+python3 scripts/run_route_cost_panel.py \
+  --start 2020-05-11 --end 2026-06-30 \
+  --top-pairs 100 --trade-sizes 1000,10000,100000
+```
+
+Outputs:
+
+- `data/empirical/route_cost_panel_v2.parquet`
+- `output/empirical/route_cost_panel_v2_summary.csv`
+
+Scope: Uniswap V2 and SushiSwap V2 constant-product pools, using the noon UTC
+hourly reserve snapshot for each day. This is a real counterfactual direct-vs-
+vehicle route-cost panel, but it is not the final all-venue P1 table because it
+does not yet include exact V3 tick-level quoting or Curve/Balancer/Fluid.
+
+First-pass result: WETH is the only vehicle with a clear positive large-trade
+route-cost advantage in this V2-style panel. For $10k trades, WETH beats the
+direct route in 51.3% of common-support rows, median advantage 2.1 bp, winsorized
+mean \(t=32.75\), \(p<0.001\). For $100k trades, WETH beats direct in 67.7% of
+rows, median advantage 186.0 bp, winsorized mean \(t=53.74\), \(p<0.001\). At
+$1k, the median advantage is slightly negative (-13.7 bp), consistent with the
+model's trade-size heterogeneity.
+
+DDC has reusable ingredients for the final upgrade:
 
 - `src/ddc/v2quote.py`
 - `src/ddc/v3quote.py`
 - `scripts/run_crossvenue_panel_broad.py`
 - `scripts/run_v3_counterfactual_quote_opportunity.py`
 
-Porting task: create DVC-native `src/ddvc/pricing/` quoters and
-`scripts/run_route_cost_panel.py`.
+Porting task: adapt the DDC exact V3 quoter to DVC raw paths and merge it with
+the V2 panel above.
 
 ## Proposition 2. Liquidity Feedback and Stickiness
 
