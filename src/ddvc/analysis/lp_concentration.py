@@ -44,6 +44,12 @@ VEHICLE_CANDIDATES: dict[str, str] = {
     "0x853d955acef822db058eb8505911ed77f175b99e": "FRAX",
 }
 
+# The Graph occasionally reports absurd pool-level tvlUSD for spam/meme pools
+# because token decimals or token prices are stale/bad. Uniswap V3 total TVL is
+# far below this threshold over the sample, so a single pool above it is a data
+# error rather than economically meaningful liquidity.
+MAX_POOL_TVL_USD = 10_000_000_000
+
 # ---------------------------------------------------------------------------
 # Path helpers
 # ---------------------------------------------------------------------------
@@ -108,7 +114,9 @@ def _build_tvl_map(stamp: str) -> dict[str, float]:
             pid = pool.get("id")
             if pid:
                 try:
-                    tvl[pid.lower()] = float(rec.get("tvlUSD", 0) or 0)
+                    value = float(rec.get("tvlUSD", 0) or 0)
+                    if 0 < value <= MAX_POOL_TVL_USD:
+                        tvl[pid.lower()] = value
                 except (TypeError, ValueError):
                     pass
     return tvl
@@ -215,13 +223,32 @@ def compute_lp_day(
             vshare_map[row["token_address"]] = float(row["VShare"])
 
     def _base_asset(pid: str) -> tuple[str, str] | None:
-        """Return (address, symbol) of the base asset (higher-status token) in this pool."""
+        """Return (address, symbol) of the vehicle-side base asset in this pool.
+
+        The paper object is liquidity supplied against candidate vehicle assets.
+        Earlier versions let any high-VShare token become the pool "base", which
+        is useful descriptively but too noisy for the vehicle-currency test.
+        Here a pool contributes only if at least one side is a known vehicle
+        candidate. If both sides are candidates, choose the side with higher
+        same-day vehicle volume share, falling back to the priority list.
+        """
         info = pools.get(pid)
         if not info:
             return None
         t0_id, t0_sym, t1_id, t1_sym = info
+        t0_is_vehicle = t0_id in VEHICLE_CANDIDATES
+        t1_is_vehicle = t1_id in VEHICLE_CANDIDATES
 
-        # If VShare data available, pick token with higher VShare.
+        if not t0_is_vehicle and not t1_is_vehicle:
+            return None
+        if t0_is_vehicle and not t1_is_vehicle:
+            return t0_id, t0_sym
+        if t1_is_vehicle and not t0_is_vehicle:
+            return t1_id, t1_sym
+
+        # If both are vehicle candidates and VShare data are available, pick the
+        # candidate with higher same-day vehicle share. In the metrics table the
+        # index column currently stores symbols, so the lookup is by symbol.
         if vshare_map:
             vs0 = vshare_map.get(t0_sym, 0.0)
             vs1 = vshare_map.get(t1_sym, 0.0)

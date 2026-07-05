@@ -45,6 +45,28 @@ Outputs:
 - `output/empirical/bridge_measure_summary_by_year.csv`
 - `output/empirical/empirical_first_pass.md`
 
+## Independent Review and Incorporation
+
+An independent clean-room review of this design agreed with the measurement spine
+but was stricter about identification. I incorporated the review as follows.
+
+- `BridgeShare` remains the main vehicle-use outcome. Plain `VShare` is retained
+  only as a diagnostic because it mixes intermediation with endpoint demand.
+- Proposition 1 is still the load-bearing missing test. The paper cannot claim
+  full model validation until the DVC-native route-cost panel is built.
+- Proposition 2 is currently supportive association, not causal identification.
+  I fixed the LP measure so it only counts pools with a known vehicle candidate
+  on one side, and I drop absurd pool-level `tvlUSD` outliers from bad subgraph
+  token pricing. The final table still needs date fixed effects, near-price
+  executable liquidity, and mint/burn repositioning.
+- Proposition 3 now has a DVC-native daily common-support event check. This
+  should replace the naive aggregate daily stress regression as the first
+  paper-facing stress result until the high-frequency event panel is ported.
+- Proposition 4a remains only aggregate suggestive evidence until the route-cost
+  panel supports pair-level direct-route feasibility.
+- Proposition 4b remains conceptually clean but secondary until receipts and
+  ERC-20 transfer incidence are rebuilt in DVC.
+
 ## Proposition 1. Route-Cost Advantage Creates Vehicle Use
 
 ### Model object
@@ -176,10 +198,12 @@ BridgeShare_{k,t+7}
 = \alpha_k + \beta LPConcentration_{k,t} + \epsilon_{k,t}.
 \]
 
-Current first-pass result supports the proposition:
+Current first-pass result is consistent with the proposition, but should be
+described as association rather than causal evidence:
 
-- within-token slope: 0.2558;
-- \(t = 29.97\);
+- raw slope: 0.5542;
+- within-token slope: 0.2817;
+- within-token \(t = 32.77\);
 - \(p < 0.001\).
 
 Stickiness:
@@ -224,8 +248,12 @@ First pass implemented in:
 python3 scripts/run_empirical_proposition_tests.py
 ```
 
-Porting task: add near-price tick-liquidity measures to DVC from the DDC V3
-liquidity tooling.
+Implementation note: the LP concentration input is restricted to pools with a
+known vehicle candidate on one side (`WETH`, `USDC`, `USDT`, `DAI`, `WBTC`,
+`FRAX`) and filters impossible single-pool TVL observations above $10bn.
+
+Porting task: add near-price tick-liquidity measures and date-fixed-effect
+specifications to DVC from the DDC V3 liquidity tooling.
 
 ## Proposition 3. Risk or Credibility Shocks Rotate Vehicle Use
 
@@ -302,7 +330,23 @@ USDC/SVB depeg:
 
 ### Current status
 
-Not fully rebuilt in DVC. DDC has reusable design and code:
+DVC now has a daily common-support event check. For each large WETH downside
+day, it compares WETH-minus-stable bridge share against the same endpoint
+pairs' prior 14-day baseline.
+
+Current DVC first-pass result:
+
+- events: 27;
+- mean WETH-minus-stable effect: -5.41 percentage points;
+- \(t = -4.50\);
+- \(p = 0.0001\).
+
+This is model-consistent evidence that WETH loses bridge role relative to stable
+vehicles inside common route opportunities during downside stress. It is still
+daily rather than hourly, so the final paper should port the high-frequency
+design before freezing the table.
+
+DDC has reusable high-frequency design and code:
 
 - `scripts/run_hfpanel.py`
 - `scripts/run_hfpanel_doseresponse.py`

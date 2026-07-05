@@ -124,6 +124,43 @@ def _weth_price_from_legs(legs: pd.DataFrame) -> float:
     return float(np.average(p["price"], weights=p["weight"].clip(lower=1e-9)))
 
 
+def _pair_vehicle_for_day(stamp: str) -> pd.DataFrame:
+    """Endpoint-pair x vehicle-family bridge volumes for one day."""
+    date = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}"
+    path = DATA_DIR / "unified" / f"{stamp}.parquet"
+    if not path.exists():
+        return pd.DataFrame(columns=["date", "pair", "vehicle_group", "volume"])
+    legs = pd.read_parquet(
+        path,
+        columns=[
+            "tx_hash", "component_id", "route_class", "token_in_sym", "token_out_sym",
+            "amount_usd", "tin_role", "tout_role",
+        ],
+    )
+    routes = _routes(legs[legs["route_class"].isin(CLEAN_ROUTE_CLASSES)])
+    rows = []
+    for r in routes:
+        pair = f"{r['src']}->{r['tgt']}"
+        vol = float(r["vol"])
+        for m in r["inter"]:
+            if m == "WETH":
+                group = "WETH"
+            elif m in STABLES:
+                group = "STABLE"
+            elif m == "WBTC":
+                group = "WBTC"
+            else:
+                continue
+            rows.append((date, pair, group, vol))
+    if not rows:
+        return pd.DataFrame(columns=["date", "pair", "vehicle_group", "volume"])
+    return (
+        pd.DataFrame(rows, columns=["date", "pair", "vehicle_group", "volume"])
+        .groupby(["date", "pair", "vehicle_group"], as_index=False)["volume"]
+        .sum()
+    )
+
+
 def build_bridge_daily(start: str | None, end: str | None, force: bool = False) -> pd.DataFrame:
     """Construct token-day bridge-use measures from reconstructed routes."""
     out_path = OUT_DATA / "bridge_daily.parquet"
@@ -296,6 +333,130 @@ def stress_tests(bridge: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def common_support_stress_tests(
+    bridge: pd.DataFrame,
+    *,
+    force: bool = False,
+    n_events: int = 30,
+    baseline_days: int = 14,
+) -> pd.DataFrame:
+    """Event-level WETH-vs-stable route rotation inside common endpoint pairs.
+
+    For each large WETH downside day, compare the pair-level WETH-minus-stable
+    bridge share on the event day with the same pair's average gap over the prior
+    baseline window. This is a daily common-support version of the high-frequency
+    design: endpoint-pair composition is held fixed by differencing within pair.
+    """
+    out_path = OUT_DATA / "stress_common_support_daily.parquet"
+    if out_path.exists() and not force:
+        out = pd.read_parquet(out_path)
+        _write_common_support_outputs(out)
+        return out
+
+    px = (
+        bridge[["date", "weth_price"]]
+        .dropna()
+        .drop_duplicates("date")
+        .sort_values("date")
+        .copy()
+    )
+    px["date"] = pd.to_datetime(px["date"])
+    px["weth_ret"] = np.log(px["weth_price"]).diff()
+    # Same-day on-chain price can be noisy in very early/thin days; discard
+    # impossible daily moves rather than letting them define stress events.
+    px.loc[px["weth_ret"].abs() > 0.5, "weth_ret"] = np.nan
+    px["downside_stress"] = (-px["weth_ret"]).clip(lower=0)
+    events = (
+        px[px["downside_stress"] >= 0.08]
+        .nlargest(n_events, "downside_stress")
+        .sort_values("date")
+        [["date", "downside_stress"]]
+    )
+
+    needed: set[str] = set()
+    for d in events["date"]:
+        for b in range(1, baseline_days + 1):
+            needed.add((d - pd.Timedelta(days=b)).strftime("%Y%m%d"))
+        needed.add(d.strftime("%Y%m%d"))
+
+    frames = []
+    for i, stamp in enumerate(sorted(needed), 1):
+        day = _pair_vehicle_for_day(stamp)
+        if not day.empty:
+            frames.append(day)
+        if i % 50 == 0 or i == len(needed):
+            print(f"  common-support stress days [{i}/{len(needed)}]", flush=True)
+    if not frames:
+        out = pd.DataFrame()
+        _write(out, out_path)
+        return out
+
+    panel = pd.concat(frames, ignore_index=True)
+    wide = panel.pivot_table(
+        index=["date", "pair"],
+        columns="vehicle_group",
+        values="volume",
+        aggfunc="sum",
+        fill_value=0.0,
+    ).reset_index()
+    for c in ("WETH", "STABLE", "WBTC"):
+        if c not in wide:
+            wide[c] = 0.0
+    wide["weth_stable_total"] = wide["WETH"] + wide["STABLE"]
+    wide = wide[wide["weth_stable_total"] > 0].copy()
+    wide["weth_minus_stable_share"] = (wide["WETH"] - wide["STABLE"]) / wide["weth_stable_total"]
+    wide["date"] = pd.to_datetime(wide["date"])
+
+    rows = []
+    for ev in events.itertuples(index=False):
+        d = pd.Timestamp(ev.date)
+        event = wide[wide["date"].eq(d)][["pair", "weth_minus_stable_share", "weth_stable_total"]]
+        base = wide[(wide["date"] >= d - pd.Timedelta(days=baseline_days)) & (wide["date"] < d)]
+        if event.empty or base.empty:
+            continue
+        base_pair = (
+            base.groupby("pair", as_index=False)
+            .agg(
+                baseline_gap=("weth_minus_stable_share", "mean"),
+                baseline_days=("date", "nunique"),
+            )
+        )
+        comp = event.merge(base_pair, on="pair", how="inner")
+        comp = comp[comp["baseline_days"] >= max(3, baseline_days // 3)]
+        if comp.empty:
+            continue
+        comp["effect"] = comp["weth_minus_stable_share"] - comp["baseline_gap"]
+        w = comp["weth_stable_total"].clip(lower=1e-9)
+        rows.append({
+            "event_date": d.strftime("%Y-%m-%d"),
+            "downside_stress": float(ev.downside_stress),
+            "n_pairs": int(len(comp)),
+            "weighted_effect": float(np.average(comp["effect"], weights=w)),
+            "mean_effect": float(comp["effect"].mean()),
+            "baseline_days": baseline_days,
+        })
+    out = pd.DataFrame(rows)
+    _write(out, out_path)
+    _write_common_support_outputs(out)
+    return out
+
+
+def _write_common_support_outputs(out: pd.DataFrame) -> None:
+    if out.empty:
+        return
+    effect = out["weighted_effect"].to_numpy(dtype=float)
+    t, p = stats.ttest_1samp(effect, 0.0)
+    pd.DataFrame([{
+        "name": "P3 common-support event effect",
+        "n": int(len(effect)),
+        "beta": float(np.mean(effect)),
+        "se": float(stats.sem(effect)),
+        "t": float(t),
+        "p": float(p),
+    }]).to_csv(OUT / "stress_common_support_summary.csv", index=False)
+    out.to_csv(OUT / "stress_common_support_events.csv", index=False)
+
+
 def v3_architecture_tests(bridge: pd.DataFrame) -> pd.DataFrame:
     d = bridge.copy()
     d["date"] = pd.to_datetime(d["date"])
@@ -394,6 +555,11 @@ Top bridge tokens in {latest_year}:
 
 ### P2. Liquidity formation and stickiness
 
+These are first-pass association tests, not the final causal liquidity design.
+The LP measure is now restricted to pools with a known vehicle candidate on one
+side, with bad pool-level TVL outliers removed. The final table should add
+date fixed effects, near-price executable liquidity, and LP repositioning.
+
 {fmt_table(formation, ["name", "n", "beta", "se", "t", "p"])}
 
 {fmt_table(persistence, ["name", "n", "beta", "se", "t", "p"])}
@@ -402,6 +568,8 @@ Top bridge tokens in {latest_year}:
 
 Stress is measured as the positive part of the daily negative log return of WETH,
 using same-day stablecoin-implied WETH prices from swap legs.
+This aggregate screen is retained only as a diagnostic; the paper-facing design
+is the common-support event check below.
 
 {fmt_table(stress, ["name", "n", "beta", "se", "t", "p"])}
 
@@ -442,11 +610,43 @@ def main() -> None:
     formation = liquidity_formation_tests(bridge, lp)
     persistence = persistence_tests(bridge)
     stress = stress_tests(bridge)
+    common_stress = common_support_stress_tests(bridge)
     v3 = v3_architecture_tests(bridge)
     make_figures(bridge, lp)
     write_memo(summary, formation, persistence, stress, v3)
+    if not common_stress.empty:
+        with (OUT / "empirical_first_pass.md").open("a", encoding="utf-8") as fh:
+            fh.write("\n## P3 Common-Support Stress Event Check\n\n")
+            fh.write(
+                "Daily event-level common-support design. For each large WETH downside "
+                "day, compares WETH-minus-stable bridge share with the same endpoint "
+                "pairs' prior 14-day baseline.\n\n"
+            )
+            fh.write(fmt_common_support(common_stress))
+            fh.write("\n")
 
     print(f"wrote empirical outputs -> {OUT}", flush=True)
+
+
+def fmt_common_support(df: pd.DataFrame) -> str:
+    if df.empty:
+        return "No common-support stress events produced.\n"
+    effect = df["weighted_effect"].to_numpy()
+    t, p = stats.ttest_1samp(effect, 0.0)
+    lines = [
+        f"- Events: {len(df)}",
+        f"- Mean weighted effect: {effect.mean():.4f}",
+        f"- t-stat: {float(t):.2f}",
+        f"- p-value: {float(p):.4f}",
+        "",
+        "| event_date | downside_stress | n_pairs | weighted_effect |",
+        "| --- | --- | --- | --- |",
+    ]
+    for r in df.sort_values("downside_stress", ascending=False).head(10).itertuples(index=False):
+        lines.append(
+            f"| {r.event_date} | {r.downside_stress:.4f} | {int(r.n_pairs)} | {r.weighted_effect:.4f} |"
+        )
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":
