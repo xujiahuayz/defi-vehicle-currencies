@@ -19,9 +19,15 @@ data/raw/
 data/interim/
 data/processed/
 data/external/
+data/unified/
+data/metrics/
+data/exhibits/
+data/empirical/
 output/tables/
 output/figures/
 output/model/
+output/exhibits/
+output/empirical/
 
 # Logs and scratch
 logs/
