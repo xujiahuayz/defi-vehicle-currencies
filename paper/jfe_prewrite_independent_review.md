@@ -322,6 +322,9 @@ Fix applied immediately:
 - Removed language saying P2 supports causal liquidity feedback.
 - Added a Curve/Fluid scope-bound table: excluded Curve+Fluid exact-quote venues
   are 16.2% of unified leg volume and 20.5% of covered quoteable volume.
+- Added a Curve/Fluid exclusion sensitivity table for realized vehicle use. In
+  2026, dropping Curve and Fluid leaves WETH BridgeShare essentially unchanged
+  (44.5% to 44.9%) and WETH PairCoverage essentially unchanged (50.0% to 50.4%).
 - Added V4 balance diagnostics: matched V3/V4 cells have the same vehicle
   composition, but V4 routes are smaller within cells; size-bin robustness must
   remain visible.

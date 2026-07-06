@@ -365,6 +365,12 @@ comments:
   volume, and 75.3% stablecoin-leg. This does not remove the limitation, but it
   quantifies its maximum scope and forces the P1 claim to covered quoteable
   venues.
+- Curve/Fluid exclusion sensitivity: rebuilding 2026 realized BridgeShare after
+  dropping Curve and Fluid does not overturn the main vehicle-use ranking. WETH
+  BridgeShare changes from 44.5% to 44.9%; USDC rises from 20.6% to 21.7%;
+  USDT falls from 23.6% to 17.5%. PairCoverage moves by less than 1 pp for the
+  major vehicles. This closes the realized-measure concern, while exact
+  executable-depth quotes remain scoped to quoteable venues.
 - V4 balance diagnostics: V3 and V4 matched samples have identical ETH/WETH and
   stable-vehicle composition by construction, but V4 route units are smaller
   within matched cells (log route-size difference -0.692, \(p<0.001\)). The V4
