@@ -585,6 +585,18 @@ Table A2. Largest WETH downside events used in the common-support design.
 Table A3. V4 settlement-transfer incidence by vehicle token.
 
 Table A4. Uniswap V3 launch-window screen for bridge-share changes.
+
+## Robustness Tables
+
+table_r01_measurement_robustness. Vehicle-use measurement robustness.
+
+table_r02_liquidity_robustness. Liquidity-feedback robustness across horizons and fixed effects.
+
+table_r03_stress_robustness. Stress-rotation robustness to event weighting and subsamples.
+
+table_r04_route_cost_robustness. Route-cost robustness to direct-route quality filters.
+
+table_r05_v4_robustness. V4 settlement-transfer robustness by route size.
 """
     MANIFEST.write_text(text, encoding="utf-8")
 

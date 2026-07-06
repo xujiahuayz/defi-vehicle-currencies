@@ -28,6 +28,7 @@ output/figures/
 output/model/
 output/exhibits/
 output/empirical/
+output/robustness/
 
 # Logs and scratch
 logs/

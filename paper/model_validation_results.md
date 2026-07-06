@@ -29,6 +29,12 @@ because it supplies availability and upper-tail execution-cost protection when
 direct liquidity is missing or thin. There are 9,584 rows where the WETH vehicle
 route is available and no direct route is available.
 
+Robustness: direct-route quality filters sharpen this interpretation. When the
+direct route itself has high output quality, the median WETH advantage shrinks or
+turns negative. The main P1 claim should therefore be written as a route
+availability / thin-direct-liquidity result, not as a universal cost-saving
+claim on already deep direct markets.
+
 ## Proposition 2. Liquidity Feedback and Stickiness
 
 Vehicle-linked LP concentration predicts future bridge use. The within-token
@@ -40,6 +46,9 @@ Interpretation: this supports the liquidity-feedback channel, but the main-paper
 version should still strengthen the specification with date fixed effects,
 near-price executable liquidity, and LP repositioning.
 
+Robustness: the liquidity-feedback slope remains positive for 1-, 7-, 14-, and
+30-day forward BridgeShare, and survives token and date fixed effects.
+
 ## Proposition 3. Stress Rotation
 
 The naive aggregate stress regression is not informative. The paper-facing result
@@ -49,6 +58,12 @@ opportunity sets (\(t=-4.50\), \(p=0.0001\)).
 
 Interpretation: stress rotates vehicle use away from the risky incumbent within
 route opportunities that already support both WETH and stablecoin intermediaries.
+
+Robustness: the effect remains negative under unweighted event averaging, when
+the largest event is dropped, and when the sample is restricted to events with
+at least 2,000 endpoint pairs. The top-10-stress-only slice is negative but not
+statistically significant, so the paper should not overstate concentration in
+the single largest events.
 
 ## Proposition 4a. Concentrated-Liquidity Architecture
 
@@ -68,6 +83,11 @@ difference (\(t=-10.68\), \(p<0.001\)).
 Interpretation: V4 does not eliminate vehicle routing. It partially virtualizes
 settlement by weakening the mapping between route intermediation and physical
 token movement.
+
+Robustness: the V4 transfer-incidence gap is strongest for small routes, remains
+negative for medium routes, and is small for large routes. That pattern is useful
+for interpretation: flash accounting mainly virtualizes the settlement mechanics
+of smaller route units rather than uniformly eliminating physical transfers.
 
 ## Current Paper Claim
 
