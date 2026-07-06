@@ -76,3 +76,26 @@ JFE submission draft without narrowing claims and upgrading inference.
 
 Move to appendix: all-vehicle route costs, V3 aggregate launch screen, broad
 robustness variants, measurement variants, and V4 token heterogeneity.
+
+## Fix-pass status
+
+Implemented before write-up:
+
+- Reframed the main route-cost exhibit around direct-route availability,
+  WETH-route availability, no-direct rows, common-support medians, and
+  high-quality-direct medians.
+- Added date-clustered inference to the liquidity-feedback robustness table.
+- Recomputed route-cost robustness at the endpoint-pair-day unit instead of
+  relying only on mechanically related quote rows.
+- Added V4 matched-cell balance diagnostics for route size and receipt-log
+  balance.
+- Softened the model-validation memo so P1/P2/P3/P4 are stated as first-pass
+  evidence with limited causal interpretation.
+
+Still deliberately not fixed before write-up:
+
+- High-frequency stress is not ported. The write-up must use the narrower daily
+  common-support event claim unless this panel is built later.
+- V3 architecture remains appendix/suggestive.
+- Curve/Balancer/Fluid executable-depth quotes and transaction-time quote-state
+  robustness remain extension/referee-proofing items, not current main claims.

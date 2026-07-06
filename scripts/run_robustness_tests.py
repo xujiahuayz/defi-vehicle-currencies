@@ -56,6 +56,32 @@ def _ols(y: pd.Series, x: pd.Series) -> tuple[int, float, float, float, float]:
     return n, float(beta[1]), se, t, p
 
 
+def _cluster_ols(y: pd.Series, x: pd.Series, cluster: pd.Series) -> tuple[int, int, float, float, float, float]:
+    d = pd.DataFrame({"y": y, "x": x, "cluster": cluster}).replace([np.inf, -np.inf], np.nan).dropna()
+    n = len(d)
+    groups = d["cluster"].nunique()
+    if n < 4 or groups < 2 or np.isclose(float(d["x"].var()), 0):
+        return n, groups, math.nan, math.nan, math.nan, math.nan
+    xmat = np.column_stack([np.ones(n), d["x"].to_numpy(float)])
+    yy = d["y"].to_numpy(float)
+    beta = np.linalg.lstsq(xmat, yy, rcond=None)[0]
+    resid = yy - xmat @ beta
+    bread = np.linalg.inv(xmat.T @ xmat)
+    meat = np.zeros((2, 2))
+    for _, idx in d.groupby("cluster").indices.items():
+        xg = xmat[idx]
+        ug = resid[idx][:, None]
+        score = xg.T @ ug
+        meat += score @ score.T
+    k = xmat.shape[1]
+    finite = (groups / (groups - 1)) * ((n - 1) / max(n - k, 1))
+    cov = finite * bread @ meat @ bread
+    se = float(math.sqrt(max(cov[1, 1], 0.0)))
+    t = float(beta[1] / se) if se > 0 else math.nan
+    p = float(2 * stats.t.sf(abs(t), groups - 1)) if np.isfinite(t) else math.nan
+    return n, groups, float(beta[1]), se, t, p
+
+
 def _demean_one(s: pd.Series, group: pd.Series) -> pd.Series:
     return s - s.groupby(group).transform("mean")
 
@@ -120,13 +146,14 @@ def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
             ),
         }
         for spec, (y, x) in specs.items():
-            n, beta, se, t, p = _ols(y, x)
+            n, clusters, beta, se, t, p = _cluster_ols(y, x, d["date"])
             rows.append({
                 "Horizon": f"t+{horizon}",
                 "Specification": spec,
                 "N": _int(n),
+                "Clusters": _int(clusters),
                 "Beta": _num(beta, 3),
-                "SE": _num(se, 3),
+                "Date-cluster SE": _num(se, 3),
                 "t": _num(t, 2),
                 "p": _p(p),
             })
@@ -136,7 +163,10 @@ def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
         "table_r02_liquidity_robustness",
         "Liquidity-feedback robustness across horizons and fixed effects.",
         "tab:liquidity-robustness",
-        note="Outcome is future BridgeShare. The regressor is vehicle-linked LP concentration.",
+        note=(
+            "Outcome is future BridgeShare. The regressor is vehicle-linked LP concentration. "
+            "Inference is clustered by date."
+        ),
     )
     return out
 
@@ -226,7 +256,7 @@ def stress_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
 
 def route_cost_robustness() -> pd.DataFrame:
     panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=[
-        "vehicle_sym", "trade_size_usd", "direct_available", "vehicle_available",
+        "date", "src", "tgt", "vehicle_sym", "trade_size_usd", "direct_available", "vehicle_available",
         "direct_output_usd", "vehicle_route_advantage",
     ])
     x = panel[panel["vehicle_sym"].eq("WETH")].copy()
@@ -240,18 +270,21 @@ def route_cost_robustness() -> pd.DataFrame:
         for label, fn in filters.items():
             g = g0[fn(g0)]
             adv = 10_000 * g["vehicle_route_advantage"]
-            adv_w = adv.clip(lower=-100_000, upper=100_000)
-            if len(adv_w) > 2:
-                t, p = stats.ttest_1samp(adv_w, 0.0)
+            cells = g.assign(adv_w=adv.clip(lower=-100_000, upper=100_000)).groupby(
+                ["date", "src", "tgt"], as_index=False
+            )["adv_w"].mean()
+            if len(cells) > 2:
+                t, p = stats.ttest_1samp(cells["adv_w"], 0.0)
             else:
                 t = p = math.nan
             rows.append({
                 "Trade size": f"${_int(size)}",
                 "Sample": label,
                 "Rows": _int(len(g)),
+                "Pair-days": _int(len(cells)),
                 "Beats direct (%)": _pct((adv > 0).mean() if len(adv) else math.nan),
                 "Median advantage (bp)": _num(adv.median(), 1),
-                "Winsor mean (bp)": _num(adv_w.mean(), 1),
+                "Pair-day mean (bp)": _num(cells["adv_w"].mean(), 1) if len(cells) else "",
                 "t": _num(t, 2),
                 "p": _p(p),
             })
@@ -263,7 +296,7 @@ def route_cost_robustness() -> pd.DataFrame:
         "tab:route-cost-robustness",
         note=(
             "Advantage is WETH vehicle output minus direct output in basis points. "
-            "The t-test uses the winsorized mean."
+            "The t-test is over endpoint-pair-day mean advantages, winsorized at +/-100,000 bp."
         ),
     )
     return out
@@ -307,6 +340,41 @@ def v4_robustness() -> pd.DataFrame:
     return out
 
 
+def v4_match_balance() -> pd.DataFrame:
+    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
+    cell = (
+        detail.groupby(["cell_id", "dex"], as_index=False)
+        .agg(route_usd=("route_usd", "median"), logs=("total_logs", "median"))
+        .pivot(index="cell_id", columns="dex", values=["route_usd", "logs"])
+    )
+    cell.columns = [f"{a}_{b}" for a, b in cell.columns]
+    cell = cell.dropna().copy()
+    cell["log_route_ratio"] = np.log(cell["route_usd_uniswap_v4"] / cell["route_usd_uniswap_v3"])
+    t, p = stats.ttest_1samp(cell["log_route_ratio"], 0.0)
+    rows = [{
+        "Cells": _int(len(cell)),
+        "V3 median route": f"${_int(cell['route_usd_uniswap_v3'].median())}",
+        "V4 median route": f"${_int(cell['route_usd_uniswap_v4'].median())}",
+        "Mean log V4/V3": _num(cell["log_route_ratio"].mean(), 3),
+        "t": _num(t, 2),
+        "p": _p(p),
+        "V3 median logs": _num(cell["logs_uniswap_v3"].median(), 1),
+        "V4 median logs": _num(cell["logs_uniswap_v4"].median(), 1),
+    }]
+    out = pd.DataFrame(rows)
+    _write_table(
+        out,
+        "table_r06_v4_match_balance",
+        "V4 matched-cell balance diagnostics.",
+        "tab:v4-match-balance",
+        note=(
+            "The matched design holds week, endpoint pair, and intermediate vehicle token fixed. "
+            "This table reports remaining route-size and receipt-log balance across sampled V3/V4 observations."
+        ),
+    )
+    return out
+
+
 def write_memo(tables: dict[str, pd.DataFrame]) -> None:
     ROB.mkdir(parents=True, exist_ok=True)
     lines = [
@@ -342,6 +410,7 @@ def main() -> int:
         "table_r03_stress_robustness": stress_robustness(bridge),
         "table_r04_route_cost_robustness": route_cost_robustness(),
         "table_r05_v4_robustness": v4_robustness(),
+        "table_r06_v4_match_balance": v4_match_balance(),
     }
     write_memo(tables)
     print(f"wrote robustness tables -> {OUT / 'tables'}")

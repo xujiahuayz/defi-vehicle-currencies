@@ -260,29 +260,40 @@ def build_table_summary_statistics() -> None:
 
 def build_table_route_cost() -> None:
     df = pd.read_csv(EMP / "route_cost_panel_v2_summary.csv")
+    panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=[
+        "vehicle_sym", "trade_size_usd", "direct_available", "vehicle_available",
+        "direct_output_usd", "vehicle_route_advantage",
+    ])
     weth = df[df["vehicle"].eq("WETH")].sort_values("trade_size_usd")
     rows = []
     for r in weth.itertuples(index=False):
+        g = panel[(panel["vehicle_sym"].eq("WETH")) & (panel["trade_size_usd"].eq(r.trade_size_usd))]
+        high_quality = g[
+            g["direct_available"]
+            & g["vehicle_available"]
+            & g["vehicle_route_advantage"].notna()
+            & ((g["direct_output_usd"] / g["trade_size_usd"]) >= 0.90)
+        ]
         rows.append({
             "Trade size": f"${_int(r.trade_size_usd)}",
-            "Common-support rows": _int(r.both_available_rows),
-            "WETH beats direct (%)": _pct(r.vehicle_beats_direct_share),
-            "Median advantage (bp)": _num(r.median_advantage_bps, 1),
-            "p25 (bp)": _num(r.p25_advantage_bps, 1),
-            "p75 (bp)": _num(r.p75_advantage_bps, 1),
-            "t": _num(r.t_winsor_mean, 2),
-            "p": _p(r.p_winsor_mean),
+            "Direct available (%)": _pct(r.direct_available_share),
+            "WETH route available (%)": _pct(r.vehicle_available_share),
             "No-direct rows": _int(r.no_direct_vehicle_available_rows),
+            "Common rows": _int(r.both_available_rows),
+            "Median advantage (bp)": _num(r.median_advantage_bps, 1),
+            "HQ-direct median (bp)": _num(10_000 * high_quality["vehicle_route_advantage"].median(), 1),
         })
     _write_table(
         pd.DataFrame(rows),
         "table_03_route_cost_advantage",
-        "Direct routes and WETH vehicle-route execution costs.",
+        "Direct-route availability and WETH vehicle-route value.",
         "tab:route-cost-advantage",
         note=(
             "Advantage is output value on the best WETH vehicle route minus the best direct "
-            "route, in basis points of direct-route output. Quotes use V2-style reserves plus "
-            "exact Uniswap V3 tick-net liquidity reconstructed from raw events."
+            "route, in basis points of direct-route output. HQ-direct restricts common-support "
+            "rows to cases where the direct route returns at least 90 percent of notional. "
+            "The table emphasizes availability and thin-direct-route value, not a universal "
+            "WETH cost advantage."
         ),
     )
 
