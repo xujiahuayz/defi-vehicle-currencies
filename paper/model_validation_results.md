@@ -79,6 +79,14 @@ the same endpoint pairs over the prior four weeks, with \(t=-0.98\), \(p=0.340\)
 The interpretation is that the stress rotation is a short-window event response,
 not a week-long persistent shift in the full common-support set.
 
+Event-window and placebo checks sharpen this interpretation. Using a 28-day
+pre-event baseline, the same-day stress effect is -3.09 pp (\(t=-2.48\),
+\(p=0.024\)); the two-day window is -2.18 pp (\(t=-2.02\), \(p=0.059\)); three-
+and seven-day windows are not significant. The simple shifted-date placebo does
+not mimic the same pattern: the one-day placebo effect has the opposite sign.
+The write-up should therefore emphasize immediate stress rotation, not
+multi-day persistence.
+
 ## Proposition 4a. Concentrated-Liquidity Architecture
 
 The current aggregate V3-launch screen shows a large fall in WETH bridge share
@@ -113,6 +121,17 @@ quotes because the current raw layer lacks the necessary amplification/ramp or
 reserve/depth state. For V2/Sushi V2 hourly reserves, route-hour and daily-state
 WETH route-cost advantages have median differences of 0 bp across the $1k, $10k,
 and $100k trade-size buckets, with same-sign shares of 76.4%, 80.4%, and 93.3%.
+
+Two further pre-write checks are now available. First, the WETH route-cost value
+decomposition shows that the strongest economic role is availability and
+thin-direct-market protection: WETH is available when no direct route exists in
+9,584 rows, and the median thin-direct advantage is 142.65, 190.21, and 349.28
+bp for $1k, $10k, and $100k trades. High-quality direct routes show much smaller
+or negative medians, so the paper should not claim universal WETH cheapness.
+Second, V3 mint/burn repositioning is not a clean positive mechanism result in
+the current specification. Near-price gross repositioning is negative at 7- and
+14-day horizons, and near net repositioning is negative at 14 days. This table
+should be used as a referee-proofing diagnostic, not as a main P2 claim.
 
 The model now has first-pass DVC-native evidence on all four dimensions, but the
 JFE-safe claim is narrower than "all propositions are established." The current

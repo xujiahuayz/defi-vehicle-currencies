@@ -115,6 +115,15 @@ Fixed in the pre-write blocker pass:
   reserves. Route-hour and daily-state WETH route-cost advantages have median
   differences of 0 bp across all three trade sizes, same-sign shares of 76.4%,
   80.4%, and 93.3%, and winsorized correlations of 0.726, 0.911, and 0.948.
+- Stress event-window and placebo checks are built. They support a short-window
+  interpretation: the one-day stress effect is negative and significant, the
+  two-day effect is marginal, and three-/seven-day effects wash out. The shifted
+  placebo does not reproduce the same same-day negative effect.
+- P1 route-cost decomposition is built. It confirms that the defensible claim is
+  availability and thin-direct-market protection, not universal WETH cheapness.
+- V3 LP repositioning is built as a mechanism diagnostic. It does not deliver a
+  clean positive mechanism result and should not be elevated into the main P2
+  claim without a better identification design.
 
 Still deliberately not fixed before write-up:
 
