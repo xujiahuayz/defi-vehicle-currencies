@@ -532,14 +532,40 @@ Panels:
 
 ### Current status
 
-Not yet rebuilt in DVC, but DDC already has the empirical logic:
+DVC rebuild complete:
+
+```bash
+python3 scripts/run_v4_settlement_identification.py
+```
+
+Outputs:
+
+- `data/empirical/v4_settlement_route_units.parquet`
+- `data/empirical/v4_settlement_transfer_detail.csv`
+- `output/empirical/v4_settlement_identification.md`
+- `output/empirical/v4_settlement_paired.csv`
+
+Current result: matching coherent multi-hop V3 and V4 route units by week,
+endpoint pair, and intermediate vehicle token yields 16,218 eligible cells.
+The receipt sample uses 500 matched cells and 1,000 route observations. V3
+has ERC-20 transfer incidence of 100.0%; V4 has 81.4%; the V4-minus-V3
+difference is -18.6 pp (\(t=-10.68\), \(p<0.001\)). The effect is concentrated
+in ETH/WETH, USDC, and USDT vehicle routes; WBTC, XAUt, and DAI show no
+incidence drop in this sample.
+
+Interpretation: V4 does not eliminate vehicle routes. It partially virtualizes
+settlement by weakening the mapping between route intermediation and physical
+intermediary-token transfers. This is directionally smaller than the earlier
+DDC screen because the DVC sample is broader, extends through June 2026, and
+uses DVC's coherent-route reconstruction. The conservative paper claim should
+therefore be a first-stage settlement-implementation result, not a claim that V4
+causally creates or destroys vehicle-currency dominance.
+
+DDC source logic retained as reference:
 
 - `scripts/run_v4_virtual_vehicle_tests.py`
 - `scripts/run_v4_settlement_identification.py`
 - `docs/v4_settlement_identification.md`
-
-Porting task: adapt receipt fetching to DVC raw/unified layout and cache receipts
-under `data/empirical/v4_receipts/`.
 
 ## Final Main-Paper Validation Sequence
 

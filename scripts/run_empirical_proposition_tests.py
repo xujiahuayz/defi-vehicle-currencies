@@ -537,6 +537,7 @@ def write_memo(
         ]
         return "\n".join([header, sep, *rows])
 
+    v4_text = fmt_v4_settlement()
     text = f"""# First-pass empirical proposition tests
 
 Generated from the rebuilt DVC data layer through 2026-06-30.
@@ -587,11 +588,9 @@ feasibility and cost measures.
 
 {fmt_table(v3, ["name", "n", "beta", "se", "t", "p"])}
 
-## Not yet identified by this script
+### P4b. V4 settlement implementation
 
-P4b V4 virtualization needs transaction receipt / ERC-20 transfer logs: route
-vehicle use can be read from the route table, but physical settlement incidence
-requires transfer logs to distinguish virtual from physically moved vehicles.
+{v4_text}
 """
     path = OUT / "empirical_first_pass.md"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -618,6 +617,34 @@ def fmt_route_cost(df: pd.DataFrame) -> str:
         "panel for V2-style pools plus exact-crossing V3. Remaining extensions "
         "are Curve/Balancer/Fluid executable-depth quotes and transaction-time "
         "rather than daily noon/EOD state cutoffs.\n\n" + fmt_table_static(keep)
+    )
+
+
+def fmt_v4_settlement() -> str:
+    paired_path = OUT / "v4_settlement_paired.csv"
+    dex_path = OUT / "v4_settlement_dex_summary.csv"
+    if not paired_path.exists() or not dex_path.exists():
+        return (
+            "Not yet run in this empirical pass. Run "
+            "`python3 scripts/run_v4_settlement_identification.py` to match V3/V4 "
+            "route units and test ERC-20 transfer incidence from receipts."
+        )
+    paired = pd.read_csv(paired_path)
+    dex = pd.read_csv(dex_path)
+    if paired.empty:
+        return "V4 settlement output exists but is empty."
+    p = paired.iloc[0]
+    return (
+        "DVC receipt-level matched design: coherent multi-hop Uniswap V3 and V4 "
+        "route units are matched by week, endpoint pair, and intermediate vehicle "
+        "token. The outcome is whether the receipt contains an ERC-20 Transfer log "
+        "for the intermediate token. V4 reduces physical intermediary-token "
+        f"transfer incidence from {p.v3_mean:.1%} to {p.v4_mean:.1%}, a "
+        f"{100 * p['diff']:.1f} pp difference (t={p.t:.2f}, "
+        f"{'p<0.001' if p.p < 0.001 else f'p={p.p:.3f}'}). This supports the "
+        "architecture proposition, but the right interpretation is virtualization "
+        "of settlement, not elimination of vehicle routing.\n\n"
+        + fmt_table_static(dex)
     )
 
 
