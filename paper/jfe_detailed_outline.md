@@ -146,9 +146,12 @@ The table compares direct execution with the best available vehicle route for
 source-destination pairs in the reconstructed network. For each pair and trade-size
 bucket, it reports direct-route availability, direct-route depth, vehicle-route
 depth, and the output advantage of routing through WETH or a stablecoin vehicle.
-The estimates quantify when the vehicle route is economically valuable and whether
-that value is strongest for the trade sizes that can use concentrated near-price
-liquidity.
+Uniswap V2 and SushiSwap V2 routes are quoted from constant-product reserves, and
+Uniswap V3 routes are quoted from exact tick-net liquidity reconstructed from raw
+mints, burns, and swap-state cutoffs. The estimates quantify when the vehicle
+route is economically valuable and whether that value comes from lower common-support
+costs, availability when no direct route exists, or upper-tail protection when
+direct liquidity is thin.
 
 ## 5. Stress-State Vehicle Rotation
 
@@ -231,11 +234,12 @@ versus vehicle-route cost**.
 
 **Table 7. V4 matched settlement-implementation first stage.**
 The table matches coherent multi-hop Uniswap V3 and V4 routes by endpoint pair,
-week, and intermediate token. It reports the gross-exposure nettable share and
-whether the intermediate token emits a matching ERC-20 transfer in the transaction
-receipt. Holding the route unit fixed, V4 sharply lowers gross intermediate-token
-movement, showing that protocol architecture can separate route use from physical
-settlement.
+week, and intermediate token. It reports whether the transaction receipt contains
+an ERC-20 transfer log for the intermediate token. Holding the route unit fixed,
+V4 lowers physical transfer incidence relative to V3, showing that protocol
+architecture can separate route intermediation from physical settlement. The
+caption should state the conservative interpretation explicitly: V4 virtualizes
+some settlement; it does not eliminate vehicle routing.
 
 ## 7. Discussion and Conclusion
 
