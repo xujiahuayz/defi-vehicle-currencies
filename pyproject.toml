@@ -8,10 +8,12 @@ version = "0.1.0"
 description = "Data and analysis pipeline for The Making of Vehicle Currencies."
 requires-python = ">=3.11"
 dependencies = [
+  "matplotlib>=3.8",
   "pandas>=2.2",
   "pyarrow>=16",
   "numpy>=1.26",
   "requests>=2.32",
+  "scipy>=1.12",
 ]
 
 [project.optional-dependencies]
