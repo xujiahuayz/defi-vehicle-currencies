@@ -129,7 +129,9 @@ def build_panel(stamps: set[str]) -> pd.DataFrame:
     wide["total"] = wide["WETH"] + wide["STABLE"]
     wide = wide[wide["total"].gt(0)].copy()
     wide["gap"] = (wide["WETH"] - wide["STABLE"]) / wide["total"]
-    wide["dt"] = pd.to_datetime(wide["hour"], unit="s", utc=True)
+    # `hour` is an epoch-hour bucket. Convert back to an epoch-second timestamp
+    # before matching event dates and hour-of-day baselines.
+    wide["dt"] = pd.to_datetime(wide["hour"] * 3600, unit="s", utc=True)
     wide["hod"] = wide["dt"].dt.hour
     wide["stamp"] = wide["dt"].dt.strftime("%Y%m%d")
     return wide
