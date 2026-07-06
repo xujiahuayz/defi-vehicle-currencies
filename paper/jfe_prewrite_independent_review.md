@@ -124,9 +124,13 @@ Fixed in the pre-write blocker pass:
 - V3 LP repositioning is built as a mechanism diagnostic. It does not deliver a
   clean positive mechanism result and should not be elevated into the main P2
   claim without a better identification design.
+- V3 architecture is upgraded from an aggregate screen to a pair-level
+  route-feasibility design. Direct-route availability rises sharply after V3
+  launch in the balanced endpoint-pair sample, and no-direct/WETH-available
+  cases fall. This is a usable architecture result, but the interpretation is
+  route-opportunity expansion rather than a pure WETH price-advantage effect.
 
 Still deliberately not fixed before write-up:
 
-- V3 architecture remains appendix/suggestive.
 - Exact V3 transaction-time replay remains an extension; the current quote-state
   robustness is hourly constant-product, not full event-level V3 tick replay.

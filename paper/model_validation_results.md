@@ -95,6 +95,17 @@ consistent with architecture changing route feasibility, but it remains a screen
 until connected directly to pair-level direct-route feasibility and the route-cost
 panel.
 
+The pair-level route-feasibility design now connects this architecture channel
+to endpoint-pair opportunities around the May 5, 2021 Uniswap V3 launch. In a
+balanced endpoint-pair sample with pair fixed effects, direct-route availability
+increases by 27.58 pp (\(t=4.80\), \(p<0.001\)), WETH-route availability also
+increases by 7.50 pp (\(t=4.64\), \(p<0.001\)), and no-direct-but-WETH-available
+cases fall by 22.72 pp (\(t=-4.70\), \(p<0.001\)). The common-support WETH
+advantage itself falls by 647 bp but is not statistically significant
+(\(p=0.310\)). Interpretation: V3 primarily changes the route-opportunity set by
+making direct routes feasible, rather than delivering a clean common-support WETH
+price improvement.
+
 ## Proposition 4b. V4 Settlement Virtualization
 
 The DVC receipt-level design matches coherent multi-hop V3 and V4 route units by
