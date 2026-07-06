@@ -71,7 +71,7 @@ but was stricter about identification. I incorporated the review as follows.
 - Proposition 4b remains conceptually clean but secondary until receipts and
   ERC-20 transfer incidence are rebuilt in DVC.
 
-## Proposition 1. Route-Cost Advantage Creates Vehicle Use
+## Proposition 1. Availability and Thin-Direct-Market Protection
 
 ### Model object
 
@@ -209,7 +209,7 @@ sqrtPriceX96 fields. The missing work was derived infrastructure, now added:
 per-pool tick-net indexes from existing raw mint/burn files and swap-state
 cutoffs merged into the same route-cost panel.
 
-## Proposition 2. Liquidity Feedback and Stickiness
+## Proposition 2. Liquidity Concentration and Bridge-Use Persistence
 
 ### Model object
 

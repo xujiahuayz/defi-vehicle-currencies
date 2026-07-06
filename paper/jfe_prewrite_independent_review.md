@@ -297,3 +297,26 @@ Remaining write-up discipline:
 - Rename P2 around predictability/stickiness, not feedback.
 - State Curve/Fluid exact-quote limitations directly.
 - Introduce WETH's bridge role with both indirect and all-route denominators.
+
+## Fifth independent review after final blocker tightening
+
+Verdict remains **major revisions**, but the comments are now mostly about
+framing, scope language, and table presentation rather than missing broad
+experiments.
+
+Reviewer assessment:
+
+- P3 stress is now substantially better supported by threshold and overlap
+  sensitivity, but must be written as same-day rotation only.
+- V4 all-93 no-transfer audit materially strengthens parser validation, but
+  route-size/router/pool-type balance should be disclosed.
+- The main remaining experimental/construct-validity threat is Curve/Fluid
+  exact-quote exclusion, because they are 16.2% of unified leg volume and
+  stablecoin-heavy.
+- P1/P2 labels still needed to be renamed to match the evidence.
+
+Fix applied immediately:
+
+- Renamed P1 to availability and thin-direct-market protection.
+- Renamed P2 to liquidity concentration and bridge-use persistence.
+- Removed language saying P2 supports causal liquidity feedback.

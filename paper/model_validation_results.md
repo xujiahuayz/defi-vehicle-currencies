@@ -10,7 +10,7 @@ of indirect routes. In 2026, WETH remains the largest route intermediary
 (`BridgeShare` 44.5%), followed by USDT (23.6%) and USDC (20.7%). This differs
 from raw volume share because raw volume mixes endpoint demand with bridge use.
 
-## Proposition 1. Route-Cost Advantage
+## Proposition 1. Availability and Thin-Direct-Market Protection
 
 The DVC route-cost panel now uses Uniswap V2 and SushiSwap V2 constant-product
 reserves plus exact-crossing Uniswap V3 tick-net quotes reconstructed from raw
@@ -35,19 +35,19 @@ turns negative. The main P1 claim should therefore be written as a route
 availability / thin-direct-liquidity result, not as a universal cost-saving
 claim on already deep direct markets.
 
-## Proposition 2. Liquidity Feedback and Stickiness
+## Proposition 2. Liquidity Concentration and Bridge-Use Persistence
 
 Vehicle-linked LP concentration predicts future bridge use. The within-token
 association is 0.2817 with \(t=32.77\), \(p<0.001\). Bridge use is persistent:
 daily AR(1) coefficients range from 0.720 for USDT to 0.798 for WETH, all with
 \(p<0.001\).
 
-Interpretation: this supports the liquidity-feedback channel, but the main-paper
-version should still strengthen the specification with date fixed effects,
-near-price executable liquidity, and LP repositioning.
+Interpretation: this is predictive association and persistence, not identified
+causal liquidity feedback. Reverse causality, common demand shocks, token
+popularity, volatility, and router behavior are not ruled out.
 
-Robustness: the liquidity-feedback slope remains positive for 1-, 7-, 14-, and
-30-day forward BridgeShare, and survives token and date fixed effects.
+Robustness: the predictive slope remains positive for 1-, 7-, 14-, and 30-day
+forward BridgeShare, and survives token and date fixed effects.
 
 ## Proposition 3. Stress Rotation
 
