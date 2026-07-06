@@ -92,10 +92,27 @@ Implemented before write-up:
 - Softened the model-validation memo so P1/P2/P3/P4 are stated as first-pass
   evidence with limited causal interpretation.
 
+Fixed in the pre-write blocker pass:
+
+- High-frequency stress is ported as an hourly common-support event panel. It is
+  directionally negative but weaker than the daily design: WETH-minus-stable
+  BridgeShare falls by 1.71 pp, with \(t=-1.46\), \(p=0.161\). This means the
+  main stress claim should still be written around the daily common-support
+  event evidence, while the hourly panel is a robustness/discipline check rather
+  than the headline.
+- Curve/Balancer/Fluid executable-depth coverage is now documented. Balancer
+  weighted-pool quotes are feasible from daily balances, weights, decimals, and
+  swap fees. Curve and Fluid should be excluded from exact executable-depth
+  quotes in the current paper unless new state data are fetched: Curve lacks the
+  amplification/ramp state needed for audited StableSwap quotes, and Fluid's
+  Dune data lacks reserve/depth state.
+- Transaction-time quote-state robustness is now built for V2/Sushi V2 hourly
+  reserves. Route-hour and daily-state WETH route-cost advantages have median
+  differences of 0 bp across all three trade sizes, same-sign shares of 76.4%,
+  80.4%, and 93.3%, and winsorized correlations of 0.726, 0.911, and 0.948.
+
 Still deliberately not fixed before write-up:
 
-- High-frequency stress is not ported. The write-up must use the narrower daily
-  common-support event claim unless this panel is built later.
 - V3 architecture remains appendix/suggestive.
-- Curve/Balancer/Fluid executable-depth quotes and transaction-time quote-state
-  robustness remain extension/referee-proofing items, not current main claims.
+- Exact V3 transaction-time replay remains an extension; the current quote-state
+  robustness is hourly constant-product, not full event-level V3 tick replay.

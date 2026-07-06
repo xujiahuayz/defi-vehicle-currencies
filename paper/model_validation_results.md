@@ -65,6 +65,14 @@ at least 2,000 endpoint pairs. The top-10-stress-only slice is negative but not
 statistically significant, so the paper should not overstate concentration in
 the single largest events.
 
+High-frequency robustness: the hourly common-support event panel is directionally
+consistent but weaker. Across the top 20 WETH downside events, hourly
+WETH-minus-stable BridgeShare falls by 1.71 percentage points relative to the
+same endpoint pair and hour-of-day baseline, with \(t=-1.46\), \(p=0.161\).
+This disciplines the write-up: the daily common-support event design remains the
+main P3 evidence; the hourly result should be presented as a weaker
+high-frequency check, not as an independent headline result.
+
 ## Proposition 4a. Concentrated-Liquidity Architecture
 
 The current aggregate V3-launch screen shows a large fall in WETH bridge share
@@ -91,6 +99,15 @@ of smaller route units rather than uniformly eliminating physical transfers.
 
 ## Current Paper Claim
 
+Additional pre-write robustness now covers two construct-validity gaps:
+Curve/Balancer/Fluid executable-depth coverage and transaction-time quote-state
+robustness. Balancer weighted-pool quotes are feasible from the rebuilt raw
+state, but Curve and Fluid are defensibly excluded from exact executable-depth
+quotes because the current raw layer lacks the necessary amplification/ramp or
+reserve/depth state. For V2/Sushi V2 hourly reserves, route-hour and daily-state
+WETH route-cost advantages have median differences of 0 bp across the $1k, $10k,
+and $100k trade-size buckets, with same-sign shares of 76.4%, 80.4%, and 93.3%.
+
 The model now has first-pass DVC-native evidence on all four dimensions, but the
 JFE-safe claim is narrower than "all propositions are established." The current
 evidence supports the following cautious claims:
@@ -104,10 +121,8 @@ evidence supports the following cautious claims:
 4. V4 partially separates route intermediation from physical intermediary-token
    transfer settlement.
 
-Before a JFE-style write-up, the remaining pre-write upgrades are inference at
-the correct dependence unit, route-cost tables centered on availability and
-thin-direct-route value, high-frequency/common-support stress evidence or
-explicitly narrower daily-event wording, and a tighter pair-level V3 architecture
-design. The conservative remaining caveats are executable-depth quotes for
-Curve/Balancer/Fluid, transaction-time rather than daily cutoff state for quote
-panels, and expanded V4 matched-cell balance diagnostics.
+Before a JFE-style write-up, the remaining caveat is not an empty empirical
+spine but scope discipline: write the stress result primarily as a daily
+common-support event result, keep V3 architecture appendix/suggestive unless a
+tighter pair-level design is added, and state clearly that transaction-time quote
+robustness is hourly V2/Sushi V2 rather than exact V3 tick replay.

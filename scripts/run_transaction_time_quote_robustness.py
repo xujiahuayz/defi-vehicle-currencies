@@ -9,6 +9,7 @@ replay.
 """
 from __future__ import annotations
 
+import argparse
 import math
 import sys
 from pathlib import Path
@@ -97,7 +98,58 @@ def _quote_advantage(row: pd.Series, pools: dict, prices: dict[str, tuple[str, f
     return (vehicle_usd / direct_usd - 1.0) * 10_000.0
 
 
-def run(max_days: int | None = None) -> pd.DataFrame:
+def _write_summary(out: pd.DataFrame) -> pd.DataFrame:
+    table_rows = []
+    for size, g in out.groupby("trade_size_usd"):
+        d = g.copy()
+        for col in ["daily_state_advantage_bps", "route_hour_advantage_bps", "difference_bps"]:
+            d[f"{col}_w"] = d[col].clip(lower=-100_000, upper=100_000)
+        diff = d["difference_bps_w"].to_numpy(float)
+        t, p = stats.ttest_1samp(diff, 0.0) if len(diff) > 2 and float(np.std(diff)) > 0 else (math.nan, math.nan)
+        corr = (
+            float(d[["daily_state_advantage_bps_w", "route_hour_advantage_bps_w"]].corr().iloc[0, 1])
+            if len(d) > 2
+            else math.nan
+        )
+        same_sign = float(
+            np.mean(np.sign(d["daily_state_advantage_bps_w"]) == np.sign(d["route_hour_advantage_bps_w"]))
+        )
+        table_rows.append({
+            "Trade size": f"${int(size):,}",
+            "Rows": _int(len(d)),
+            "Median daily-state advantage (bp)": _num(d["daily_state_advantage_bps"].median(), 2),
+            "Median route-hour advantage (bp)": _num(d["route_hour_advantage_bps"].median(), 2),
+            "Median difference (bp)": _num(d["difference_bps"].median(), 2),
+            "Winsor mean difference (bp)": _num(np.mean(diff), 2),
+            "t": _num(t, 2),
+            "p": _p(p),
+            "Same-sign share (%)": _num(100 * same_sign, 1),
+            "Winsor correlation": _num(corr, 3),
+        })
+    table = pd.DataFrame(table_rows)
+    _write_table(
+        table,
+        "table_r09_transaction_time_quote_state",
+        "Hourly quote-state robustness for WETH route-cost advantage.",
+        "tab:transaction-time-quote-state",
+        note=(
+            "The robustness compares the daily-state V2/Sushi V2 counterfactual with a quote "
+            "at the realized route hour for the same endpoint pair, WETH vehicle, and trade "
+            "size. The table reports medians and winsorized mean differences because hourly "
+            "constant-product reserves have extreme thin-pool tails. It is an hourly "
+            "constant-product pre-trade-state check, not an exact V3 transaction replay."
+        ),
+    )
+    return table
+
+
+def run(max_days: int | None = None, force: bool = False) -> pd.DataFrame:
+    out_path = EMP / "transaction_time_quote_robustness.csv"
+    if out_path.exists() and not force and max_days is None:
+        out = pd.read_csv(out_path)
+        _write_summary(out)
+        print(f"reused {len(out):,} rows -> {out_path}")
+        return out
     panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet")
     panel = panel[
         panel["vehicle_sym"].eq("WETH")
@@ -148,41 +200,18 @@ def run(max_days: int | None = None) -> pd.DataFrame:
             print(f"transaction-time robustness [{i}/{len(stamps)}] {stamp}", flush=True)
     out = pd.DataFrame(rows)
     EMP.mkdir(parents=True, exist_ok=True)
-    out.to_csv(EMP / "transaction_time_quote_robustness.csv", index=False)
-    table_rows = []
-    for size, g in out.groupby("trade_size_usd"):
-        diff = g["difference_bps"].to_numpy(float)
-        t, p = stats.ttest_1samp(diff, 0.0) if len(diff) > 2 and float(np.std(diff)) > 0 else (math.nan, math.nan)
-        corr = float(g[["daily_state_advantage_bps", "route_hour_advantage_bps"]].corr().iloc[0, 1]) if len(g) > 2 else math.nan
-        table_rows.append({
-            "Trade size": f"${int(size):,}",
-            "Rows": _int(len(g)),
-            "Mean daily-state advantage (bp)": _num(g["daily_state_advantage_bps"].mean(), 2),
-            "Mean route-hour advantage (bp)": _num(g["route_hour_advantage_bps"].mean(), 2),
-            "Mean difference (bp)": _num(np.mean(diff), 2),
-            "t": _num(t, 2),
-            "p": _p(p),
-            "Correlation": _num(corr, 3),
-        })
-    table = pd.DataFrame(table_rows)
-    _write_table(
-        table,
-        "table_r09_transaction_time_quote_state",
-        "Hourly quote-state robustness for WETH route-cost advantage.",
-        "tab:transaction-time-quote-state",
-        note=(
-            "The robustness compares the daily-state V2/Sushi V2 counterfactual with a quote "
-            "at the realized route hour for the same endpoint pair, WETH vehicle, and trade "
-            "size. It is an hourly constant-product pre-trade-state check, not an exact V3 "
-            "transaction replay."
-        ),
-    )
-    print(f"wrote {len(out):,} rows -> {EMP / 'transaction_time_quote_robustness.csv'}")
+    out.to_csv(out_path, index=False)
+    _write_summary(out)
+    print(f"wrote {len(out):,} rows -> {out_path}")
     return out
 
 
 def main() -> int:
-    run()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--force", action="store_true")
+    ap.add_argument("--max-days", type=int, default=None)
+    args = ap.parse_args()
+    run(max_days=args.max_days, force=args.force)
     return 0
 
 
