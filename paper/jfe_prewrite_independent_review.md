@@ -190,3 +190,22 @@ Highest-priority fixes before a JFE-style write-up:
 Implication for project strategy: if the target remains JFE, the next empirical
 round should be a specification/identification/construct-validity round, not a
 new descriptive-exhibit round and not prose drafting.
+
+## Construct-validity fix pass
+
+Implemented immediately after the second review:
+
+- Added `paper/empirical_specification_registry.md`, which defines the unit of
+  observation, sample, outcome, fixed effects/inference target, weighting, and
+  identification claim for P1, P2, P3, P4a, and P4b.
+- Added BridgeShare denominator robustness. This reports both the indirect-route
+  denominator and the all-route denominator, so the paper cannot accidentally
+  imply that BridgeShare is a share of all DEX volume.
+- Added P1 distribution/economic-weighting robustness. This reports mean,
+  median, p10/p90, volume-weighted mean, and dollar savings, and makes the
+  skewness of route-cost advantages visible.
+- Added P3 stress decomposition. The event effect is now separated into WETH
+  share loss, stablecoin share gain, direct-route substitution, and aggregate
+  indirect-route volume.
+- Recorded cross-chain native-asset replication as an external-validity
+  extension rather than a prerequisite for the Ethereum vehicle-currency paper.

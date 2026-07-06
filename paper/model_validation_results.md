@@ -166,3 +166,71 @@ spine but scope discipline: write the stress result primarily as a daily
 common-support event result, keep V3 architecture appendix/suggestive unless a
 tighter pair-level design is added, and state clearly that transaction-time quote
 robustness is hourly V2/Sushi V2 rather than exact V3 tick replay.
+
+## JFE Construct-Validity Round
+
+After the second independent review, I added a dedicated construct-validity and
+identification pass:
+
+```bash
+python scripts/run_jfe_construct_validity_checks.py
+```
+
+Outputs:
+
+- `paper/empirical_specification_registry.md`
+- `output/tables/table_r16_bridge_denominator_robustness.{csv,tex}`
+- `output/tables/table_r17_route_cost_distribution_weighting.{csv,tex}`
+- `output/tables/table_r18_stress_rotation_decomposition.{csv,tex}`
+
+### BridgeShare denominator robustness
+
+The indirect-route denominator is still the right paper-facing object if the
+question is "conditional on routing through an intermediate, which token is the
+vehicle?" But the all-route denominator is now reported because it makes direct
+route substitution explicit. In 2026:
+
+| Token | Indirect BridgeShare | All-route bridge share | PairCoverage |
+|---|---:|---:|---:|
+| WETH | 44.5% | 5.3% | 50.0% |
+| USDC | 20.6% | 2.5% | 25.3% |
+| USDT | 23.6% | 3.0% | 20.7% |
+
+Interpretation: WETH remains the leading intermediary conditional on indirect
+routing, but direct routing dominates total volume in 2026. The paper should
+state both facts rather than letting BridgeShare sound like a share of all DEX
+volume.
+
+### Route-cost distribution and economic weighting
+
+The new route-cost table reports mean, median, p10/p90, volume-weighted mean,
+and dollar savings. This resolves the earlier concern that a positive t-statistic
+could be read as positive median cost dominance. The result is highly skewed:
+the median WETH advantage is small or negative at larger trade sizes, while the
+upper tail and no-direct-route cases are economically large. This reinforces the
+proper P1 wording: WETH is an availability and thin-direct-market protection
+technology, not universally the cheapest route.
+
+### Stress-rotation decomposition
+
+The stress result is now decomposed into WETH loss, stablecoin gain, direct-route
+substitution, and indirect-route volume. Across the top 20 WETH downside events:
+
+- WETH share falls by 1.48 pp, \(t=-2.59\), \(p=0.018\).
+- Stablecoin share rises by 1.48 pp, \(t=2.59\), \(p=0.018\).
+- WETH-minus-stable falls by 2.96 pp, \(t=-2.59\), \(p=0.018\).
+- Aggregate direct-route share changes by only -0.25 pp, \(p=0.679\).
+- Log indirect-route volume rises by 0.51, \(p=0.005\).
+
+Interpretation: the daily event result is not just direct-route substitution; it
+is a within-indirect-route rotation from WETH to stable vehicles during stress.
+The claim should still be short-window, not persistent.
+
+### Cross-chain scope
+
+Cross-chain native-asset replication is not required for the Ethereum paper
+unless the manuscript claims a universal native-currency mechanism. It is an
+external-validity extension. If added, it should be designed as a replication
+across WETH/ETH on Ethereum and L2s plus WBNB, WMATIC, and WAVAX, using the same
+BridgeShare, all-route denominator, route availability, and direct-route
+substitution definitions.
