@@ -138,3 +138,55 @@ Still deliberately not fixed before write-up:
 
 - Exact V3 transaction-time replay remains an extension; the current quote-state
   robustness is hourly constant-product, not full event-level V3 tick replay.
+
+## Second independent review after pre-write diagnostics
+
+After adding the stress-window/placebo checks, P1 decomposition, LP
+repositioning diagnostic, V3 pair-level architecture design, Balancer weighted
+quote extension, hourly/weekly stress, transaction-time quote-state robustness,
+and non-Uni quote-coverage/exclusion diagnostics, a second independent reviewer
+still gave the empirical package a **reject** verdict for JFE if written as
+full model validation.
+
+The reviewer's bottom line is not that the project is unpublishable. It is that
+the current analytics support a narrower descriptive/associational paper better
+than a broad causal mechanism paper. The evidence is strongest for route
+availability, thin-direct-market protection, BridgeShare measurement, and
+short-window event associations. It is weaker for causal LP feedback, persistent
+stress-state rotation, and architecture effects unless those designs are
+tightened further.
+
+Highest-priority fixes before a JFE-style write-up:
+
+1. Write a complete empirical specification registry for every proposition:
+   estimating equation, unit of observation, sample window, inclusion/exclusion
+   rules, fixed effects, clustering/bootstrapping, weights, and identifying
+   assumption.
+2. Strengthen construct validity for vehicle use: report BridgeShare with the
+   indirect-route denominator, all-route denominator, direct-route substitution,
+   and endpoint-pair opportunity-set variants.
+3. Rebuild the P1 route-cost table around distributions, mean and median
+   effects, economic weights, no-direct availability, thin-direct protection,
+   and dollar cost savings. Do not let significant t-statistics imply positive
+   cost dominance when the median effect is negative.
+4. Downgrade P2 unless a better identification design is added. LP
+   concentration predicts future bridge use, but repositioning does not provide
+   a clean positive mechanism result.
+5. Decompose P3 into WETH loss, stablecoin gain, total indirect-route volume,
+   and direct-route substitution. Add event definitions, placebo distributions,
+   event tables, and broad-market-stress controls.
+6. Tighten P4a with event-time/pre-trend evidence and a credible control group
+   or keep it as architecture evidence rather than causal V3 evidence.
+7. Tighten P4b with matched-cell details, balance diagnostics, and parser
+   validation against known V4 flash-accounting examples.
+8. Quantify Curve and Fluid exclusion as a material coverage limitation, and
+   show whether the main conclusions survive without assuming executable-depth
+   quotes for stablecoin-heavy venues.
+9. Report volume-weighted, endpoint-pair-weighted, and low-volume-exclusion
+   variants for the central estimates.
+10. Pre-specify the main tests and report the full robustness family to reduce
+    multiple-testing and selective-emphasis concerns.
+
+Implication for project strategy: if the target remains JFE, the next empirical
+round should be a specification/identification/construct-validity round, not a
+new descriptive-exhibit round and not prose drafting.
