@@ -73,6 +73,12 @@ This disciplines the write-up: the daily common-support event design remains the
 main P3 evidence; the hourly result should be presented as a weaker
 high-frequency check, not as an independent headline result.
 
+Weekly robustness: aggregating over the event week does not restore statistical
+power. WETH-minus-stable BridgeShare falls by 1.15 percentage points relative to
+the same endpoint pairs over the prior four weeks, with \(t=-0.98\), \(p=0.340\).
+The interpretation is that the stress rotation is a short-window event response,
+not a week-long persistent shift in the full common-support set.
+
 ## Proposition 4a. Concentrated-Liquidity Architecture
 
 The current aggregate V3-launch screen shows a large fall in WETH bridge share

@@ -100,6 +100,11 @@ Fixed in the pre-write blocker pass:
   main stress claim should still be written around the daily common-support
   event evidence, while the hourly panel is a robustness/discipline check rather
   than the headline.
+- A weekly common-support version also weakens rather than strengthens the stress
+  evidence: the event-week effect is -1.15 pp, with \(t=-0.98\), \(p=0.340\).
+  Weekly aggregation reduces noise but also averages away the short stress
+  rotation, so it should be used to show that the daily result is event-window
+  specific rather than persistent over a full week.
 - Curve/Balancer/Fluid executable-depth coverage is now documented. Balancer
   weighted-pool quotes are feasible from daily balances, weights, decimals, and
   swap fees. Curve and Fluid should be excluded from exact executable-depth
