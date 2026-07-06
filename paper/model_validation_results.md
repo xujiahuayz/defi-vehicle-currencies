@@ -384,6 +384,7 @@ The paper now has one pre-specified main test per proposition:
 1. P1: WETH availability/thin-direct-market protection.
 2. P2: LP concentration predicts future BridgeShare, explicitly downgraded to
    predictive association.
-3. P3: same-day WETH downside event decomposition.
+3. P3: impact WETH downside event decomposition, implemented empirically as the
+   same-day window because longer windows attenuate.
 4. P4a: V3 no-direct/WETH-available decline.
 5. P4b: V4 intermediary transfer incidence plus no-transfer audit.

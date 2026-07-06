@@ -48,13 +48,15 @@ Empirical test: lag vehicle-linked liquidity and LP concentration; test whether
 they predict future bridge share, route betweenness, or vehicle-route costs,
 while presenting reverse causality and common shocks as unresolved.
 
-**Proposition 3. Same-day stress rotation.** A risk or credibility shock to the
-incumbent vehicle lowers its same-day route use relative to substitute vehicles
-within common endpoint-pair opportunities.
+**Proposition 3. Impact stress rotation.** A risk or credibility shock to the
+incumbent vehicle lowers its route use relative to substitute vehicles within
+common endpoint-pair opportunities on impact. The model is not intrinsically
+daily, hourly, or weekly; the interval is an empirical implementation choice.
 
 Empirical test: WETH bridge share falls with ETH downside stress and stablecoin
-bridge share rises on the same event day. Hourly, weekly, and multi-day windows
-are robustness checks, not the headline claim.
+bridge share rises in the event window. In this dataset the robust window is
+same-day; hourly, weekly, and multi-day windows are robustness checks that bound
+the duration of the effect rather than part of the theoretical proposition.
 
 **Proposition 4a. Direct-route opportunity expansion.** Increasing direct-pool
 executable liquidity reduces no-direct/vehicle-available cases for affected

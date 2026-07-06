@@ -574,15 +574,17 @@ The main paper should validate the model in this order:
 
 1. **Measurement:** show `BridgeShare`, `BetwCent_V`, and pair coverage. Establish
    that the paper measures bridge use, not endpoint demand.
-2. **P1 route-cost advantage:** show that vehicle routes are economically valuable
-   where direct routes are unavailable or expensive.
-3. **P2 liquidity feedback:** show LP liquidity predicts future bridge use and
-   bridge use is persistent.
-4. **P3 stress rotation:** show WETH loses bridge role under downside stress within
-   common route opportunities, with recovery/half-life.
+2. **P1 availability/thin-direct protection:** show that vehicle routes are
+   economically valuable where direct routes are unavailable or expensive.
+3. **P2 liquidity concentration and persistence:** show LP liquidity predicts
+   future bridge use and bridge use is persistent.
+4. **P3 stress rotation:** show WETH loses bridge role on impact under downside
+   stress within common route opportunities. The model is interval-neutral; the
+   same-day event window is the supported empirical implementation.
 5. **P4 architecture:** show V3 changes direct-route feasibility and V4 separates
    route intermediation from physical settlement.
 
-This sequence mirrors the model: route cost creates vehicle use; liquidity makes
-it sticky; shocks perturb it; architecture changes the mapping between route use,
-liquidity, and settlement.
+This sequence mirrors the model: route costs and route availability create
+vehicle use; liquidity concentration predicts persistence; stress shocks move
+vehicle use on impact; architecture changes route opportunities and settlement
+implementation.
