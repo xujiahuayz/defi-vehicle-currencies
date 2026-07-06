@@ -132,6 +132,10 @@ quotes because the current raw layer lacks the necessary amplification/ramp or
 reserve/depth state. For V2/Sushi V2 hourly reserves, route-hour and daily-state
 WETH route-cost advantages have median differences of 0 bp across the $1k, $10k,
 and $100k trade-size buckets, with same-sign shares of 76.4%, 80.4%, and 93.3%.
+The Balancer weighted-pool quote extension is now executed: Balancer contributes
+some WETH-route quote availability in the matched route-cost universe, but it
+adds no direct-route or WETH-route rows beyond the existing V2/Sushi V2/V3 panel
+in this test. Thus Balancer does not overturn the P1 route-availability result.
 
 Two further pre-write checks are now available. First, the WETH route-cost value
 decomposition shows that the strongest economic role is availability and

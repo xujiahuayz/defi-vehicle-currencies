@@ -121,6 +121,10 @@ Fixed in the pre-write blocker pass:
   placebo does not reproduce the same same-day negative effect.
 - P1 route-cost decomposition is built. It confirms that the defensible claim is
   availability and thin-direct-market protection, not universal WETH cheapness.
+- Balancer weighted-pool quote extension is built. It does not add direct-route
+  or WETH-route availability beyond the existing route-cost panel in the matched
+  WETH counterfactual universe, so excluding Balancer from the main P1 panel is
+  empirically harmless for the current claim.
 - V3 LP repositioning is built as a mechanism diagnostic. It does not deliver a
   clean positive mechanism result and should not be elevated into the main P2
   claim without a better identification design.
