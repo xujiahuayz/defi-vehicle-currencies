@@ -253,3 +253,21 @@ than a narrower descriptive/associational paper:
 6. The main results should report economic magnitudes in comparable units and
    present one pre-specified main test per proposition with the full robustness
    family shown transparently.
+
+## Remaining blocker fix pass
+
+Implemented after the third review:
+
+- Added a stress-event definition and event-level decomposition table. The main
+  stress design now states the WETH downside threshold, selected-event count,
+  overlapping-window flags, and prior-28-day baseline window.
+- Added Curve/Fluid materiality diagnostics. Curve and Fluid are 16.2% of
+  unified leg volume combined and heavily stablecoin-oriented, so they remain a
+  real limitation for executable-depth quotes. The paper must state that the
+  exact route-cost panel covers quoteable venues, while realized route measures
+  include all venues.
+- Added a V4 manual no-transfer audit. The 25 largest no-transfer V4 route units
+  have populated receipts, external endpoint-token transfers, and zero
+  intermediary-token transfers.
+- Added a frozen main-test registry with one main test per proposition and an
+  explicit downgrade of P2 to predictive association.

@@ -284,3 +284,62 @@ Interpretation: the V4 no-transfer result is not caused by missing receipts or
 empty receipt parsing. The remaining paper defense is to manually inspect the
 exported no-transfer sample against known V4 flash-accounting behavior if the
 result becomes a main-table claim.
+
+## Remaining Blocker Fixes
+
+I added a final pre-write blocker pass:
+
+```bash
+python scripts/run_jfe_remaining_blocker_fixes.py
+```
+
+Outputs:
+
+- `output/tables/table_r21_stress_event_definition.{csv,tex}`
+- `output/tables/table_r22_stress_design_summary.{csv,tex}`
+- `output/tables/table_r23_curve_fluid_materiality.{csv,tex}`
+- `output/tables/table_r24_v4_manual_audit.{csv,tex}`
+- `output/tables/table_r25_main_test_registry.{csv,tex}`
+
+### Stress event specification
+
+The main stress design is now explicit. Candidate events are WETH downside log
+returns of at least 8%, after dropping absolute daily WETH returns above 50% as
+price-construction outliers. There are 52 candidate days and the main design
+uses the top 20 downside days. Four of the selected events have another selected
+event within 14 days, so overlap is visible rather than hidden. The baseline
+window is the prior 28 calendar days.
+
+### Curve and Fluid materiality
+
+Curve and Fluid remain material exclusions from the exact executable-depth route
+cost panel:
+
+- Curve is 11.5% of unified leg volume, with 71.5% stablecoin-leg share.
+- Fluid is 4.7% of unified leg volume, with 84.5% stablecoin-leg share.
+- Together they are 16.2% of leg volume and heavily stablecoin-oriented.
+
+Interpretation: the route-cost panel must be described as exact executable-depth
+evidence for the covered quoteable venues, not the whole DEX universe. The
+realized BridgeShare and stress measures still include Curve and Fluid; the
+limitation is specifically executable-depth counterfactual quoting.
+
+### V4 manual no-transfer audit
+
+The manual audit now checks the 25 largest V4 route units with no
+intermediary-token transfer. All 25 have populated receipts, all 25 have source
+or sink token transfers in the receipt, and all 25 have zero ERC-20 Transfer
+logs for the sampled route intermediary. This materially strengthens the V4
+virtual-settlement interpretation: the route exists, endpoint tokens move, but
+the intermediary token need not move externally.
+
+### Frozen main-test registry
+
+The paper now has one pre-specified main test per proposition:
+
+1. P1: WETH availability/thin-direct-market protection.
+2. P2: LP concentration predicts future BridgeShare, explicitly downgraded to
+   predictive association.
+3. P3: same-day WETH downside event decomposition.
+4. P4a: V3 no-direct/WETH-available decline.
+5. P4b: V4 intermediary transfer incidence plus no-transfer audit.

@@ -1,0 +1,410 @@
+#!/usr/bin/env python3
+"""Remaining JFE pre-write blocker fixes.
+
+This pass produces paper-facing tables for the issues the third independent
+review still treated as blockers:
+
+1. exact stress-event definition and event table;
+2. Curve/Fluid materiality and stablecoin-heavy coverage limitation;
+3. manual V4 no-transfer audit against receipt transfers for source/sink/vehicle;
+4. one-row-per-proposition main-test registry with economic magnitudes.
+"""
+from __future__ import annotations
+
+import gzip
+import importlib.util
+import json
+import math
+import sys
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
+DATA = ROOT / "data"
+OUT = ROOT / "output"
+EMP = OUT / "empirical"
+
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from build_paper_exhibits import _int, _num, _p, _pct, _write_table  # noqa: E402
+
+
+STABLES = {"USDC", "USDT", "DAI", "USDE", "SUSDE", "FRAX", "LUSD", "PYUSD", "USDP", "GUSD"}
+TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+
+
+def _load_module(name: str, file: str):
+    path = SCRIPTS / file
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _bool(v: Any) -> bool:
+    return str(v).lower() in {"true", "1", "yes"}
+
+
+def _iter_jsonl_gz(path: Path):
+    with gzip.open(path, "rt", encoding="utf-8") as fh:
+        for line in fh:
+            if line.strip():
+                yield json.loads(line)
+
+
+def stress_event_definition_table() -> pd.DataFrame:
+    bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "weth_price"])
+    px = bridge.dropna().drop_duplicates("date").sort_values("date").copy()
+    px["date"] = pd.to_datetime(px["date"])
+    px["weth_ret"] = np.log(px["weth_price"]).diff()
+    px.loc[px["weth_ret"].abs() > 0.5, "weth_ret"] = np.nan
+    px["downside_stress"] = (-px["weth_ret"]).clip(lower=0)
+
+    events = pd.read_csv(EMP / "stress_rotation_decomposition_events.csv")
+    events["event_date"] = pd.to_datetime(events["event_date"])
+    events = events.sort_values("downside_stress", ascending=False).reset_index(drop=True)
+    all_threshold = px[px["downside_stress"].ge(0.08)][["date", "downside_stress"]].copy()
+    selected = set(events["event_date"])
+    rows = []
+    sorted_dates = list(events["event_date"])
+    for i, r in events.iterrows():
+        d = pd.Timestamp(r["event_date"])
+        prev_gap = min((abs((d - od).days) for od in sorted_dates if od < d), default=math.nan)
+        next_gap = min((abs((od - d).days) for od in sorted_dates if od > d), default=math.nan)
+        rows.append(
+            {
+                "Rank": i + 1,
+                "Event date": d.strftime("%Y-%m-%d"),
+                "WETH return (%)": _pct(-float(r["downside_stress"])),
+                "Threshold met": "yes" if float(r["downside_stress"]) >= 0.08 else "no",
+                "Pairs": _int(r["n_pairs"]),
+                "WETH effect (pp)": _num(100 * float(r["weth_effect"]), 2),
+                "Stable effect (pp)": _num(100 * float(r["stable_effect"]), 2),
+                "Gap effect (pp)": _num(100 * float(r["gap_effect"]), 2),
+                "Direct-route effect (pp)": _num(100 * float(r["direct_route_share_effect"]), 2),
+                "Nearest selected event (days)": _int(np.nanmin([prev_gap, next_gap])),
+                "Overlaps 14d window": "yes" if np.nanmin([prev_gap, next_gap]) <= 14 else "no",
+            }
+        )
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "stress_event_definition_table.csv", index=False)
+    _write_table(
+        out.head(20),
+        "table_r21_stress_event_definition",
+        "Stress-event definition and event-level decomposition.",
+        "tab:stress-event-definition",
+        note=(
+            "Stress events are the top 20 WETH downside days among days with an 8 percent "
+            "or larger negative WETH log return after dropping absolute daily returns above "
+            "50 percent as price-construction outliers. Baseline windows use the prior 28 days; "
+            "the overlap column flags selected events whose baseline/event windows may overlap."
+        ),
+    )
+
+    summary = pd.DataFrame(
+        [
+            {
+                "Definition": "Candidate threshold",
+                "Value": "WETH downside log return >= 8%",
+            },
+            {
+                "Definition": "Candidate event days",
+                "Value": _int(len(all_threshold)),
+            },
+            {
+                "Definition": "Selected event days",
+                "Value": _int(len(events)),
+            },
+            {
+                "Definition": "Events with another selected event within 14 days",
+                "Value": _int(out["Overlaps 14d window"].eq("yes").sum()),
+            },
+            {
+                "Definition": "Baseline window",
+                "Value": "prior 28 calendar days",
+            },
+        ]
+    )
+    _write_table(
+        summary,
+        "table_r22_stress_design_summary",
+        "Stress-event design summary.",
+        "tab:stress-design-summary",
+    )
+    summary.to_csv(EMP / "stress_design_summary.csv", index=False)
+    return out
+
+
+def curve_fluid_materiality() -> pd.DataFrame:
+    """Quantify excluded exact-quote venues by volume and stablecoin intensity."""
+    rows = []
+    files = sorted((DATA / "unified").glob("[0-9]" * 8 + ".parquet"))
+    for i, path in enumerate(files, 1):
+        d = pd.read_parquet(path, columns=["source", "amount_usd", "token_in_sym", "token_out_sym", "tx_hash"])
+        d["token_in_u"] = d["token_in_sym"].astype(str).str.upper()
+        d["token_out_u"] = d["token_out_sym"].astype(str).str.upper()
+        d["stable_leg"] = d["token_in_u"].isin(STABLES) | d["token_out_u"].isin(STABLES)
+        d["weth_leg"] = d["token_in_u"].isin({"ETH", "WETH"}) | d["token_out_u"].isin({"ETH", "WETH"})
+        g = d.groupby("source", as_index=False).agg(
+            leg_volume_usd=("amount_usd", "sum"),
+            legs=("amount_usd", "size"),
+            transactions=("tx_hash", "nunique"),
+            stable_leg_volume_usd=("amount_usd", lambda s: float(s[d.loc[s.index, "stable_leg"]].sum())),
+            weth_leg_volume_usd=("amount_usd", lambda s: float(s[d.loc[s.index, "weth_leg"]].sum())),
+        )
+        rows.append(g)
+        if i % 500 == 0 or i == len(files):
+            print(f"Curve/Fluid materiality scan [{i}/{len(files)}] {path.stem}", flush=True)
+    source = pd.concat(rows, ignore_index=True).groupby("source", as_index=False).sum(numeric_only=True)
+    total = float(source["leg_volume_usd"].sum())
+    source["exact_quote_status"] = source["source"].map(
+        {
+            "curve": "excluded exact quote",
+            "fluid": "excluded exact quote",
+            "balancer": "weighted pools quoteable",
+            "uniswap_v1": "covered/Graph",
+            "uniswap_v2": "covered exact CP",
+            "uniswap_v3": "covered exact tick",
+            "uniswap_v4": "covered settlement only",
+            "sushiswap_v2": "covered exact CP",
+            "sushiswap_v3": "covered raw; not main quoter",
+        }
+    ).fillna("other")
+    keep = source[source["source"].isin(["curve", "fluid", "balancer", "uniswap_v2", "uniswap_v3", "sushiswap_v2"])].copy()
+    out = pd.DataFrame(
+        [
+            {
+                "Source": r.source,
+                "Volume share (%)": _pct(r.leg_volume_usd / total if total else math.nan),
+                "Legs": _int(r.legs),
+                "Transactions": _int(r.transactions),
+                "Stable-leg share (%)": _pct(r.stable_leg_volume_usd / r.leg_volume_usd if r.leg_volume_usd else math.nan),
+                "ETH/WETH-leg share (%)": _pct(r.weth_leg_volume_usd / r.leg_volume_usd if r.leg_volume_usd else math.nan),
+                "Exact-quote status": r.exact_quote_status,
+            }
+            for r in keep.sort_values("leg_volume_usd", ascending=False).itertuples(index=False)
+        ]
+    )
+    out.to_csv(EMP / "curve_fluid_materiality.csv", index=False)
+    _write_table(
+        out,
+        "table_r23_curve_fluid_materiality",
+        "Materiality of exact-quote coverage limits.",
+        "tab:curve-fluid-materiality",
+        note=(
+            "Volume shares are measured from unified swap legs. Stable-leg share is the "
+            "fraction of source volume where either side of a leg is a major stablecoin. "
+            "Curve and Fluid are excluded from exact executable-depth quotes in the current "
+            "route-cost panel, so this table bounds the coverage limitation."
+        ),
+    )
+    return out
+
+
+def _load_receipts() -> dict[str, dict[str, Any] | None]:
+    module = _load_module("v4_settlement_for_audit", "run_v4_settlement_identification.py")
+    return module._load_receipt_cache()
+
+
+def _transfer_count(receipt: dict[str, Any] | None, token: str) -> int:
+    if not isinstance(receipt, dict) or not token:
+        return 0
+    token = token.lower()
+    return sum(
+        1
+        for lg in receipt.get("logs", [])
+        if str(lg.get("address", "")).lower() == token
+        and lg.get("topics")
+        and str(lg["topics"][0]).lower() == TRANSFER_TOPIC
+    )
+
+
+def _route_tokens_for_sample(row: pd.Series) -> dict[str, tuple[str, str]]:
+    stamp = str(row["date"]).replace("-", "")
+    path = DATA / "unified" / f"{stamp}.parquet"
+    d = pd.read_parquet(
+        path,
+        columns=[
+            "tx_hash",
+            "component_id",
+            "source",
+            "token_in",
+            "token_out",
+            "token_in_sym",
+            "token_out_sym",
+            "tin_role",
+            "tout_role",
+        ],
+    )
+    g = d[
+        d["tx_hash"].astype(str).str.lower().eq(str(row["tx_hash"]).lower())
+        & d["component_id"].eq(int(row["component_id"]))
+        & d["source"].eq(str(row["dex"]))
+    ]
+    roles: dict[str, tuple[str, str]] = {}
+    for r in g.itertuples(index=False):
+        for addr, sym, role in [
+            (r.token_in, r.token_in_sym, r.tin_role),
+            (r.token_out, r.token_out_sym, r.tout_role),
+        ]:
+            role = str(role)
+            if role in {"source", "sink", "intermediate"} and role not in roles:
+                roles[role] = (str(addr).lower(), str(sym))
+    return roles
+
+
+def v4_manual_no_transfer_audit() -> pd.DataFrame:
+    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
+    sample = pd.read_csv(DATA / "empirical" / "v4_settlement_sample.csv")
+    d = detail.merge(
+        sample[["date", "dex", "tx_hash", "component_id"]],
+        on=["dex", "tx_hash", "component_id"],
+        how="left",
+    )
+    d["has_matching_transfer"] = d["has_matching_transfer"].map(_bool)
+    d["receipt_found"] = d["receipt_found"].map(_bool)
+    audit = (
+        d[d["dex"].eq("uniswap_v4") & d["receipt_found"] & (~d["has_matching_transfer"])]
+        .sort_values("route_usd", ascending=False)
+        .head(25)
+        .copy()
+    )
+    receipts = _load_receipts()
+    rows = []
+    for r in audit.itertuples(index=False):
+        row = pd.Series(r._asdict())
+        roles = _route_tokens_for_sample(row)
+        receipt = receipts.get(str(row["tx_hash"]).lower())
+        src_addr, src_sym = roles.get("source", ("", str(row["src"])))
+        sink_addr, sink_sym = roles.get("sink", ("", str(row["sink"])))
+        int_addr, int_sym = str(row["vehicle_id"]).lower(), str(row["vehicle"])
+        rows.append(
+            {
+                "tx_hash": row["tx_hash"],
+                "date": row["date"],
+                "route": f"{src_sym}->{int_sym}->{sink_sym}",
+                "route_usd": float(row["route_usd"]),
+                "source_transfer_logs": _transfer_count(receipt, src_addr),
+                "sink_transfer_logs": _transfer_count(receipt, sink_addr),
+                "intermediate_transfer_logs": _transfer_count(receipt, int_addr),
+                "total_logs": int(row["total_logs"]),
+            }
+        )
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "v4_no_transfer_manual_audit_enriched.csv", index=False)
+
+    summary = pd.DataFrame(
+        [
+            {
+                "Audit check": "No-transfer sample size",
+                "N": _int(len(out)),
+                "Pass rate (%)": "",
+                "Interpretation": "Largest V4 route units with no intermediary-token ERC-20 transfer",
+            },
+            {
+                "Audit check": "Populated receipts",
+                "N": _int(len(out)),
+                "Pass rate (%)": _pct(out["total_logs"].gt(0).mean()),
+                "Interpretation": "No-transfer examples are not empty receipt failures",
+            },
+            {
+                "Audit check": "Source/sink transfer present",
+                "N": _int(len(out)),
+                "Pass rate (%)": _pct(((out["source_transfer_logs"] > 0) | (out["sink_transfer_logs"] > 0)).mean()),
+                "Interpretation": "Receipt contains external endpoint-token movement while intermediary token is absent",
+            },
+            {
+                "Audit check": "Intermediary transfer absent",
+                "N": _int(len(out)),
+                "Pass rate (%)": _pct(out["intermediate_transfer_logs"].eq(0).mean()),
+                "Interpretation": "Confirms the sampled route unit has no ERC-20 transfer for the route intermediary",
+            },
+        ]
+    )
+    _write_table(
+        summary,
+        "table_r24_v4_manual_audit",
+        "Manual audit of V4 no-transfer route units.",
+        "tab:v4-manual-audit",
+        note=(
+            "The audit takes the 25 largest V4 matched route units with no intermediary-token "
+            "transfer and counts ERC-20 Transfer logs for the source, sink, and intermediary "
+            "token addresses in the transaction receipt."
+        ),
+    )
+    summary.to_csv(EMP / "v4_manual_audit_summary.csv", index=False)
+    return out
+
+
+def main_test_registry_table() -> pd.DataFrame:
+    rows = [
+        {
+            "Proposition": "P1",
+            "Pre-specified main test": "WETH availability/thin-direct-market protection",
+            "Main estimate": "9,584 no-direct/WETH-available rows; thin-direct medians 142.65/190.21/349.28 bp",
+            "Economic unit": "route availability and bp by trade size",
+            "Status": "main-ready, descriptive counterfactual",
+        },
+        {
+            "Proposition": "P2",
+            "Pre-specified main test": "LP concentration predicts future BridgeShare",
+            "Main estimate": "within-token beta 0.2817; p<0.001",
+            "Economic unit": "future bridge-share association",
+            "Status": "downgrade to predictive association",
+        },
+        {
+            "Proposition": "P3",
+            "Pre-specified main test": "same-day WETH downside event decomposition",
+            "Main estimate": "WETH -1.48 pp, stable +1.48 pp; p=0.018",
+            "Economic unit": "bridge-share pp within common-support pairs",
+            "Status": "main-ready as short-window event result",
+        },
+        {
+            "Proposition": "P4a",
+            "Pre-specified main test": "V3 no-direct/WETH-available decline",
+            "Main estimate": "-25.81 pp; p<0.001; pretrend p=0.922",
+            "Economic unit": "route-opportunity pp",
+            "Status": "usable architecture evidence, not broad launch causality",
+        },
+        {
+            "Proposition": "P4b",
+            "Pre-specified main test": "V4 intermediary transfer incidence",
+            "Main estimate": "V4 81.4% vs V3 100%; 25-case no-transfer audit exported",
+            "Economic unit": "ERC-20 transfer incidence",
+            "Status": "main-ready if audit examples are discussed carefully",
+        },
+    ]
+    out = pd.DataFrame(rows)
+    _write_table(
+        out,
+        "table_r25_main_test_registry",
+        "Pre-specified main empirical tests and claim status.",
+        "tab:main-test-registry",
+        note=(
+            "This table freezes one main test per proposition before drafting. Robustness "
+            "families are reported separately to avoid selecting only significant slices."
+        ),
+    )
+    out.to_csv(EMP / "main_test_registry.csv", index=False)
+    return out
+
+
+def main() -> int:
+    EMP.mkdir(parents=True, exist_ok=True)
+    stress_event_definition_table()
+    curve_fluid_materiality()
+    v4_manual_no_transfer_audit()
+    main_test_registry_table()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
