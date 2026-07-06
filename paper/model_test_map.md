@@ -24,41 +24,46 @@ direct route `i -> j` or a vehicle route `i -> k -> j`. Route costs are the sum 
 fees, settlement or credibility costs, and a reduced-form price-impact term that
 falls with executable liquidity.
 
-Liquidity providers allocate liquidity toward pools that attract expected route
-flow. This creates a feedback channel from vehicle-linked liquidity to future
-vehicle use.
+Vehicle-linked liquidity enters route costs, and empirically liquidity
+concentration can predict future bridge use. The current empirical design treats
+this as persistence/predictability, not as an identified causal LP feedback
+channel.
 
 ## Propositions and Empirical Tests
 
-**Proposition 1. Vehicle use.** A token is used as a vehicle when the indirect
-route through it is cheaper than the direct route.
+**Proposition 1. Availability and thin-direct-market protection.** A token is
+economically valuable as a vehicle when the vehicle route exists in endpoint
+pairs where the direct route is missing or thin. Common-support cost advantage is
+heterogeneous and is not assumed to hold in every deep direct market.
 
-Empirical test: compare direct-route and vehicle-route costs by endpoint pair and
-trade-size bucket.
+Empirical test: measure direct-route availability, vehicle-route availability,
+no-direct/vehicle-available cases, thin-direct-market advantages, and
+common-support cost heterogeneity by endpoint pair and trade-size bucket.
 
-**Proposition 2. Liquidity feedback and stickiness.** Vehicle-linked executable
-liquidity raises future bridge share, and liquidity responding to route flow makes
-vehicle status persistent.
+**Proposition 2. Liquidity concentration and bridge-use persistence.**
+Vehicle-linked executable liquidity and LP concentration predict future bridge
+share, but the current design does not identify causal liquidity feedback.
 
-Empirical test: lag near-price liquidity and LP repositioning in vehicle-linked
-pools; test whether they predict future bridge share, route betweenness, or
-vehicle-route costs.
+Empirical test: lag vehicle-linked liquidity and LP concentration; test whether
+they predict future bridge share, route betweenness, or vehicle-route costs,
+while presenting reverse causality and common shocks as unresolved.
 
-**Proposition 3. Stress rotation.** A risk or credibility shock to the incumbent
-vehicle lowers its route advantage and shifts bridge use toward substitute
-vehicles.
+**Proposition 3. Same-day stress rotation.** A risk or credibility shock to the
+incumbent vehicle lowers its same-day route use relative to substitute vehicles
+within common endpoint-pair opportunities.
 
-Empirical test: WETH bridge share falls with ETH downside stress; stablecoin bridge
-share rises. Post-event recovery and half-life measure stickiness versus tipping.
-USDC depeg is a reserve-credibility application of this proposition, not a separate
-main pillar.
+Empirical test: WETH bridge share falls with ETH downside stress and stablecoin
+bridge share rises on the same event day. Hourly, weekly, and multi-day windows
+are robustness checks, not the headline claim.
 
-**Proposition 4a. Concentrated liquidity.** Increasing direct-pool executable
-liquidity lowers the relative advantage of vehicle routes for affected endpoint
-pairs.
+**Proposition 4a. Direct-route opportunity expansion.** Increasing direct-pool
+executable liquidity reduces no-direct/vehicle-available cases for affected
+endpoint pairs. Broader V3 launch effects are suggestive unless a stronger
+control group is added.
 
-Empirical test: around V3 concentrated-liquidity adoption, measure direct-route
-feasibility, direct-route cost, and vehicle-route reliance.
+Empirical test: around V3 concentrated-liquidity adoption, focus on
+no-direct/WETH-available cases and direct-route feasibility, with pretrend
+diagnostics.
 
 **Proposition 4b. Flash accounting.** V4-style netting separates route
 intermediation from physical settlement: gross vehicle exposure can remain positive

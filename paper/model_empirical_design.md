@@ -58,7 +58,8 @@ but was stricter about identification. I incorporated the review as follows.
   only as a diagnostic because it mixes intermediation with endpoint demand.
 - Proposition 1 is still the load-bearing missing test. The paper cannot claim
   full model validation until the DVC-native route-cost panel is built.
-- Proposition 2 is currently supportive association, not causal identification.
+- Proposition 2 is currently predictive association/persistence, not causal
+  liquidity feedback.
   I fixed the LP measure so it only counts pools with a known vehicle candidate
   on one side, and I drop absurd pool-level `tvlUSD` outliers from bad subgraph
   token pricing. The final table still needs date fixed effects, near-price

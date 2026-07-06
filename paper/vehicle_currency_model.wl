@@ -9,8 +9,9 @@ ClearAll["Global`*"];
 $Assumptions =
   q > 0 && theta > 0 && lambda > 0 &&
   LD > 0 && LIK > 0 && LKJ > 0 && Lv > 0 &&
+  Lmin > 0 && Lthin > Lmin &&
   a > 0 && n >= 0 && n <= 1 &&
-  phi >= 0 && Lbar > 0 &&
+  betaL >= 0 && r >= 0 && r <= 1 && alphaK >= 0 &&
   fD >= 0 && fIK >= 0 && fKJ >= 0 &&
   sD >= 0 && sK >= 0 && rhoK >= 0;
 
@@ -30,27 +31,42 @@ BridgeShare[delta_] := 1/(1 + Exp[-lambda*delta]);
 
 BridgeShareLevel = BridgeShare[RouteAdvantage];
 
-(* Proposition 1: vehicle use rises when the vehicle route becomes cheaper
-   relative to the direct route. *)
-Prop1VehicleUse = <|
+DirectAvailable = LD >= Lmin;
+VehicleRouteAvailable = LIK >= Lmin && LKJ >= Lmin;
+ThinDirectMarket = LD <= Lthin;
+VehicleUsefulCondition =
+  FullSimplify[
+    VehicleRouteAvailable && (! DirectAvailable || ThinDirectMarket || RouteAdvantage > 0)
+  ];
+
+(* Proposition 1: the vehicle route is valuable as availability and thin-direct
+   market protection. Cost advantage is heterogeneous and is only one component
+   of the vehicle role. *)
+Prop1AvailabilityProtection = <|
   "RouteAdvantage" -> RouteAdvantage,
-  "VehicleChosenCondition" -> FullSimplify[RouteAdvantage > 0],
+  "DirectAvailableCondition" -> DirectAvailable,
+  "VehicleRouteAvailableCondition" -> VehicleRouteAvailable,
+  "ThinDirectMarketCondition" -> ThinDirectMarket,
+  "VehicleUsefulCondition" -> VehicleUsefulCondition,
   "dBridgeShare_dAdvantage" ->
     FullSimplify[D[BridgeShare[delta], delta] /. delta -> RouteAdvantage]
 |>;
 
-(* Proposition 2: vehicle-linked liquidity raises bridge share and creates a
-   persistence channel when LP liquidity responds to expected route flow. *)
-LpLawOfMotion = Lbar + phi*BridgeShareLevel;
+(* Proposition 2: vehicle-linked liquidity concentration predicts bridge-use
+   persistence. This is deliberately reduced-form: it is not a causal LP
+   feedback law unless an external liquidity shock is supplied empirically. *)
+ExpectedBridgeShareNext = alphaK + betaL*Lv + r*BridgeShareLevel;
 
-Prop2LiquidityFeedback = <|
+Prop2LiquidityPersistence = <|
   "dAdvantage_dLIK" -> FullSimplify[D[RouteAdvantage, LIK]],
   "dAdvantage_dLKJ" -> FullSimplify[D[RouteAdvantage, LKJ]],
   "dBridgeShare_dLIK" -> FullSimplify[D[BridgeShareLevel, LIK]],
   "dBridgeShare_dLKJ" -> FullSimplify[D[BridgeShareLevel, LKJ]],
-  "NextLiquidity" -> LpLawOfMotion,
-  "dNextLiquidity_dCurrentBridgeShare" ->
-    FullSimplify[D[Lbar + phi*b, b]]
+  "ExpectedBridgeShareNext" -> ExpectedBridgeShareNext,
+  "dExpectedBridgeShareNext_dVehicleLiquidity" ->
+    FullSimplify[D[ExpectedBridgeShareNext, Lv]],
+  "dExpectedBridgeShareNext_dCurrentBridgeShare" ->
+    FullSimplify[D[alphaK + betaL*Lv + r*b, b]]
 |>;
 
 (* Proposition 3: stress or reserve-credibility shocks to the incumbent vehicle
@@ -97,8 +113,8 @@ Prop4bFlashAccounting = <|
 |>;
 
 AllPropositions = <|
-  "P1VehicleUse" -> Prop1VehicleUse,
-  "P2LiquidityFeedback" -> Prop2LiquidityFeedback,
+  "P1AvailabilityProtection" -> Prop1AvailabilityProtection,
+  "P2LiquidityPersistence" -> Prop2LiquidityPersistence,
   "P3StressRotation" -> Prop3StressRotation,
   "P4aConcentratedLiquidity" -> Prop4aConcentratedLiquidity,
   "P4bFlashAccounting" -> Prop4bFlashAccounting
