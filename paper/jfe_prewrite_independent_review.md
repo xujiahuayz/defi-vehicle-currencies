@@ -271,3 +271,29 @@ Implemented after the third review:
   intermediary-token transfers.
 - Added a frozen main-test registry with one main test per proposition and an
   explicit downgrade of P2 to predictive association.
+
+## Fourth independent review and final blocker tightening
+
+After the remaining blocker pass, the independent review improved from
+**reject** to **major revisions**. The reviewer now treats the package as closer
+to a coherent empirical spine, with the remaining problems concentrated in
+framing, scope, and table discipline.
+
+Additional fixes completed after that review:
+
+- Added stress threshold/overlap sensitivity. The same-day stress result remains
+  negative and statistically significant for all 6%, 8%, 10%, and 12% downside
+  thresholds, for all 8% events, and for non-overlapping 8% events.
+- Expanded the V4 manual audit from the largest 25 no-transfer cases to all 93
+  sampled no-transfer cases. All have populated receipts, endpoint-token
+  transfers, and zero intermediary-token transfers.
+- Added a compact specification registry table with outcome, unit, sample,
+  regressor/treatment, inference convention, main coefficient, and bounded
+  interpretation for each proposition.
+
+Remaining write-up discipline:
+
+- Rename P1 around availability/thin-direct protection.
+- Rename P2 around predictability/stickiness, not feedback.
+- State Curve/Fluid exact-quote limitations directly.
+- Introduce WETH's bridge role with both indirect and all-route denominators.

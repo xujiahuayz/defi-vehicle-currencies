@@ -310,6 +310,15 @@ uses the top 20 downside days. Four of the selected events have another selected
 event within 14 days, so overlap is visible rather than hidden. The baseline
 window is the prior 28 calendar days.
 
+Stress threshold and overlap sensitivity now supports the same sign and
+significance:
+
+- all events with 6% threshold: -3.12 pp, \(p<0.001\);
+- all events with 8% threshold: -2.95 pp, \(p=0.001\);
+- all events with 10% threshold: -3.74 pp, \(p=0.001\);
+- all events with 12% threshold: -3.18 pp, \(p=0.015\);
+- non-overlapping 8% events: -3.01 pp, \(p=0.020\).
+
 ### Curve and Fluid materiality
 
 Curve and Fluid remain material exclusions from the exact executable-depth route
@@ -326,12 +335,27 @@ limitation is specifically executable-depth counterfactual quoting.
 
 ### V4 manual no-transfer audit
 
-The manual audit now checks the 25 largest V4 route units with no
-intermediary-token transfer. All 25 have populated receipts, all 25 have source
-or sink token transfers in the receipt, and all 25 have zero ERC-20 Transfer
+The manual audit now checks all 93 sampled V4 route units with no
+intermediary-token transfer. All 93 have populated receipts, all 93 have source
+or sink token transfers in the receipt, and all 93 have zero ERC-20 Transfer
 logs for the sampled route intermediary. This materially strengthens the V4
 virtual-settlement interpretation: the route exists, endpoint tokens move, but
 the intermediary token need not move externally.
+
+### Latest independent review status
+
+After these fixes, the independent-review verdict moved from **reject** to
+**major revisions**. The remaining issues are now mainly framing and scope
+control rather than missing core results:
+
+- P2 must be titled and written as predictability/stickiness, not causal
+  liquidity feedback.
+- P1 must be titled and written as availability/thin-direct protection in
+  covered quoteable venues, not universal route-cost advantage.
+- Curve/Fluid exact-quote exclusion must be explicit because the excluded venues
+  are material and stablecoin-heavy.
+- Main text must always pair indirect BridgeShare with all-route bridge share
+  when introducing WETH's vehicle role.
 
 ### Frozen main-test registry
 

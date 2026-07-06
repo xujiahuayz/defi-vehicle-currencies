@@ -143,6 +143,95 @@ def stress_event_definition_table() -> pd.DataFrame:
     return out
 
 
+def stress_threshold_overlap_sensitivity() -> pd.DataFrame:
+    weekly = _load_module("stress_weekly_for_sensitivity", "run_stress_weekly_common_support.py")
+    empirical = weekly._load_empirical_module()
+    bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "weth_price"])
+    px = bridge.dropna().drop_duplicates("date").sort_values("date").copy()
+    px["date"] = pd.to_datetime(px["date"])
+    px["weth_ret"] = np.log(px["weth_price"]).diff()
+    px.loc[px["weth_ret"].abs() > 0.5, "weth_ret"] = np.nan
+    px["downside_stress"] = (-px["weth_ret"]).clip(lower=0)
+
+    candidate_sets: list[tuple[str, pd.DataFrame]] = []
+    for threshold in [0.06, 0.08, 0.10, 0.12]:
+        cand = px[px["downside_stress"].ge(threshold)][["date", "downside_stress"]].copy()
+        candidate_sets.append((f"all events, threshold {int(threshold * 100)}%", cand))
+    top20 = px[px["downside_stress"].ge(0.08)].nlargest(20, "downside_stress")[["date", "downside_stress"]]
+    candidate_sets.append(("top 20, threshold 8%", top20))
+    greedy = []
+    for r in px[px["downside_stress"].ge(0.08)].sort_values("downside_stress", ascending=False).itertuples(index=False):
+        d = pd.Timestamp(r.date)
+        if all(abs((d - pd.Timestamp(x.date)).days) > 14 for x in greedy):
+            greedy.append(r)
+    nonoverlap = pd.DataFrame({"date": [x.date for x in greedy], "downside_stress": [x.downside_stress for x in greedy]})
+    candidate_sets.append(("non-overlap, threshold 8%", nonoverlap))
+
+    stamps: set[str] = set()
+    for _, events in candidate_sets:
+        for d in events["date"]:
+            d = pd.Timestamp(d)
+            stamps.add(weekly._stamp(d))
+            for b in range(1, 29):
+                stamps.add(weekly._stamp(d - pd.Timedelta(days=b)))
+    panel = weekly._build_panel(stamps, empirical)
+
+    rows = []
+    for label, events in candidate_sets:
+        effects = []
+        pairs = []
+        for ev in events.itertuples(index=False):
+            d = pd.Timestamp(ev.date)
+            raw_event = panel[(panel["date"] >= d) & (panel["date"] < d + pd.Timedelta(days=1))]
+            raw_base = panel[(panel["date"] >= d - pd.Timedelta(days=28)) & (panel["date"] < d)]
+            ev_pair = raw_event.groupby("pair", as_index=False).agg(WETH_e=("WETH", "sum"), STABLE_e=("STABLE", "sum"), total_e=("total", "sum"))
+            ba_pair = raw_base.groupby("pair", as_index=False).agg(WETH_b=("WETH", "sum"), STABLE_b=("STABLE", "sum"), total_b=("total", "sum"), days_b=("date", "nunique"))
+            comp = ev_pair.merge(ba_pair, on="pair", how="inner")
+            comp = comp[(comp["total_e"].gt(0)) & (comp["total_b"].gt(0)) & comp["days_b"].ge(7)]
+            if comp.empty:
+                continue
+            comp["weth_effect"] = comp["WETH_e"] / comp["total_e"] - comp["WETH_b"] / comp["total_b"]
+            comp["stable_effect"] = comp["STABLE_e"] / comp["total_e"] - comp["STABLE_b"] / comp["total_b"]
+            comp["gap_effect"] = comp["weth_effect"] - comp["stable_effect"]
+            weights = comp["total_e"].clip(lower=1e-9)
+            effects.append(float(np.average(comp["gap_effect"], weights=weights)))
+            pairs.append(len(comp))
+        arr = np.array(effects, dtype=float)
+        if len(arr) > 2:
+            from scipy import stats
+
+            t, p = stats.ttest_1samp(arr, 0.0)
+            se = stats.sem(arr)
+        else:
+            t = p = se = math.nan
+        rows.append(
+            {
+                "Event set": label,
+                "Events": _int(len(arr)),
+                "Mean pairs": _int(np.mean(pairs) if pairs else math.nan),
+                "Gap effect (pp)": _num(100 * arr.mean(), 2) if len(arr) else "",
+                "SE (pp)": _num(100 * se, 2),
+                "t": _num(t, 2),
+                "p": _p(p),
+                "Negative share (%)": _pct(float(np.mean(arr < 0)) if len(arr) else math.nan),
+            }
+        )
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "stress_threshold_overlap_sensitivity.csv", index=False)
+    _write_table(
+        out,
+        "table_r26_stress_threshold_overlap_sensitivity",
+        "Stress-rotation sensitivity to thresholds and overlapping events.",
+        "tab:stress-threshold-overlap",
+        note=(
+            "Outcome is same-day WETH-minus-stable BridgeShare change within common "
+            "endpoint-pair sets relative to the prior 28 days. Non-overlap greedily keeps "
+            "the largest downside events more than 14 days apart."
+        ),
+    )
+    return out
+
+
 def curve_fluid_materiality() -> pd.DataFrame:
     """Quantify excluded exact-quote venues by volume and stablecoin intensity."""
     rows = []
@@ -271,12 +360,7 @@ def v4_manual_no_transfer_audit() -> pd.DataFrame:
     )
     d["has_matching_transfer"] = d["has_matching_transfer"].map(_bool)
     d["receipt_found"] = d["receipt_found"].map(_bool)
-    audit = (
-        d[d["dex"].eq("uniswap_v4") & d["receipt_found"] & (~d["has_matching_transfer"])]
-        .sort_values("route_usd", ascending=False)
-        .head(25)
-        .copy()
-    )
+    audit = d[d["dex"].eq("uniswap_v4") & d["receipt_found"] & (~d["has_matching_transfer"])].copy()
     receipts = _load_receipts()
     rows = []
     for r in audit.itertuples(index=False):
@@ -307,7 +391,7 @@ def v4_manual_no_transfer_audit() -> pd.DataFrame:
                 "Audit check": "No-transfer sample size",
                 "N": _int(len(out)),
                 "Pass rate (%)": "",
-                "Interpretation": "Largest V4 route units with no intermediary-token ERC-20 transfer",
+                "Interpretation": "All sampled V4 route units with no intermediary-token ERC-20 transfer",
             },
             {
                 "Audit check": "Populated receipts",
@@ -335,7 +419,7 @@ def v4_manual_no_transfer_audit() -> pd.DataFrame:
         "Manual audit of V4 no-transfer route units.",
         "tab:v4-manual-audit",
         note=(
-            "The audit takes the 25 largest V4 matched route units with no intermediary-token "
+            "The audit takes all V4 matched route units with no intermediary-token "
             "transfer and counts ERC-20 Transfer logs for the source, sink, and intermediary "
             "token addresses in the transaction receipt."
         ),
@@ -397,12 +481,83 @@ def main_test_registry_table() -> pd.DataFrame:
     return out
 
 
+def compact_specification_registry_table() -> pd.DataFrame:
+    rows = [
+        {
+            "Test": "P1 availability/thin-direct",
+            "Outcome": "direct route exists; WETH route exists; route-cost advantage",
+            "Unit": "endpoint-pair x day x trade size",
+            "Sample": "V2/Sushi V2/V3 exact quoteable venues",
+            "Treatment/regressor": "WETH vehicle route availability/cost",
+            "FE / clustering": "endpoint-pair-day aggregation",
+            "Main coefficient": "9,584 no-direct/WETH-available rows",
+            "Interpretation": "descriptive counterfactual, covered venues",
+        },
+        {
+            "Test": "P2 predictability",
+            "Outcome": "future BridgeShare",
+            "Unit": "token x day",
+            "Sample": "WETH, USDC, USDT, DAI, WBTC",
+            "Treatment/regressor": "vehicle-linked LP concentration",
+            "FE / clustering": "token/date FE robustness; date clustering",
+            "Main coefficient": "beta 0.2817, p<0.001",
+            "Interpretation": "predictive association, not causal feedback",
+        },
+        {
+            "Test": "P3 stress rotation",
+            "Outcome": "WETH-minus-stable BridgeShare",
+            "Unit": "event x endpoint-pair set",
+            "Sample": "top WETH downside event days",
+            "Treatment/regressor": "same-day WETH downside event",
+            "FE / clustering": "event-level inference",
+            "Main coefficient": "-2.96 pp, p=0.018",
+            "Interpretation": "same-day association",
+        },
+        {
+            "Test": "P4a V3 architecture",
+            "Outcome": "no-direct/WETH-available indicator",
+            "Unit": "endpoint-pair x month",
+            "Sample": "balanced pairs around V3 launch",
+            "Treatment/regressor": "post-V3 indicator",
+            "FE / clustering": "pair FE; pair clustering",
+            "Main coefficient": "-25.81 pp, p<0.001; pretrend p=0.922",
+            "Interpretation": "route-opportunity evidence",
+        },
+        {
+            "Test": "P4b V4 settlement",
+            "Outcome": "intermediary ERC-20 transfer incidence",
+            "Unit": "matched route unit",
+            "Sample": "matched V3/V4 route cells",
+            "Treatment/regressor": "V4 route unit",
+            "FE / clustering": "matched-cell paired difference",
+            "Main coefficient": "-18.6 pp, p<0.001",
+            "Interpretation": "settlement-mechanics evidence",
+        },
+    ]
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "compact_specification_registry.csv", index=False)
+    _write_table(
+        out,
+        "table_r27_compact_specification_registry",
+        "Compact empirical specification registry.",
+        "tab:compact-spec-registry",
+        note=(
+            "This table is the paper-facing version of the specification registry: it states "
+            "the unit, sample, identifying variation, inference convention, and bounded "
+            "interpretation for each main test."
+        ),
+    )
+    return out
+
+
 def main() -> int:
     EMP.mkdir(parents=True, exist_ok=True)
     stress_event_definition_table()
+    stress_threshold_overlap_sensitivity()
     curve_fluid_materiality()
     v4_manual_no_transfer_audit()
     main_test_registry_table()
+    compact_specification_registry_table()
     return 0
 
 
