@@ -209,3 +209,14 @@ Implemented immediately after the second review:
   indirect-route volume.
 - Recorded cross-chain native-asset replication as an external-validity
   extension rather than a prerequisite for the Ethereum vehicle-currency paper.
+
+Additional identification extension pass:
+
+- Added V3 event-time and pre-trend diagnostics. The direct-route and WETH-route
+  availability results remain positive after V3, but both have positive
+  pretrends. The cleaner architecture outcome is the fall in
+  no-direct/WETH-available cases, which has no detectable pretrend.
+- Added V4 receipt-parser validation. V3 acts as a positive control with 100%
+  receipt coverage and 100% intermediary-token transfer incidence. V4 receipts
+  are also 100% found, and V4 no-transfer cases are populated receipts rather
+  than empty/missing parser failures.

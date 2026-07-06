@@ -234,3 +234,53 @@ external-validity extension. If added, it should be designed as a replication
 across WETH/ETH on Ethereum and L2s plus WBNB, WMATIC, and WAVAX, using the same
 BridgeShare, all-route denominator, route availability, and direct-route
 substitution definitions.
+
+## Identification Extensions
+
+I then added two architecture-specific checks:
+
+```bash
+python scripts/run_jfe_identification_extensions.py
+```
+
+Outputs:
+
+- `output/tables/table_r19_v3_event_time_pretrends.{csv,tex}`
+- `output/tables/table_r20_v4_receipt_parser_validation.{csv,tex}`
+- `output/empirical/v4_no_transfer_manual_audit_sample.csv`
+
+### V3 event-time and pre-trends
+
+The event-time version confirms the post-V3 route-opportunity result, but it also
+shows why V3 should still be written carefully:
+
+- Direct-route availability rises 31.78 pp after V3, \(p<0.001\), but the
+  pretrend is already positive, \(p=0.002\).
+- WETH-route availability rises 7.99 pp after V3, \(p<0.001\), but also has a
+  positive pretrend, \(p<0.001\).
+- No-direct/WETH-available cases fall 25.81 pp after V3, \(p<0.001\), and this
+  outcome has no detectable pretrend, \(p=0.922\).
+- Common-support WETH advantage is not statistically changed after V3,
+  \(p=0.935\), and the pretrend is non-flat.
+
+Interpretation: the usable V3 result is the collapse in no-direct/WETH-available
+cases. It supports the architecture story that V3 expands direct-route
+feasibility, but we should avoid a strong causal launch claim for every V3
+outcome because several route-opportunity measures were already trending.
+
+### V4 receipt-parser validation
+
+The parser validation strengthens the V4 settlement result:
+
+- V3 receipt coverage is 100%, and V3 intermediary transfer incidence is 100%.
+  This is the positive-control check: the parser detects standard intermediary
+  token transfers when they should be present.
+- V4 receipt coverage is also 100%.
+- V4 transfer incidence is 81.4%.
+- The 93 V4 no-transfer receipts are still populated: 100% have nonempty logs,
+  with mean total logs of 12.47 and zero matching intermediary-token transfers.
+
+Interpretation: the V4 no-transfer result is not caused by missing receipts or
+empty receipt parsing. The remaining paper defense is to manually inspect the
+exported no-transfer sample against known V4 flash-accounting behavior if the
+result becomes a main-table claim.
