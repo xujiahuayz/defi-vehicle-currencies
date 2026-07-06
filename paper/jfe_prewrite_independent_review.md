@@ -220,3 +220,36 @@ Additional identification extension pass:
   receipt coverage and 100% intermediary-token transfer incidence. V4 receipts
   are also 100% found, and V4 no-transfer cases are populated receipts rather
   than empty/missing parser failures.
+
+## Third independent review after construct-validity and identification fixes
+
+Verdict: still **reject** as a JFE identification package if written as broad
+model validation.
+
+The reviewer agrees the empirical package is now clearer, but says the paper is
+only write-up ready if the claims are narrowed to the evidence actually
+identified:
+
+- conditional indirect-route vehicle use;
+- WETH availability and thin-direct-market protection;
+- same-day stress rotation, not persistent stress-state substitution;
+- suggestive architecture evidence, with V3 restricted to the
+  no-direct/WETH-available decline and V4 pending manual flash-accounting audit.
+
+Remaining pre-write blockers if the target is a JFE-style mechanism paper rather
+than a narrower descriptive/associational paper:
+
+1. P2 still lacks a credible causal liquidity-feedback design. Either downgrade
+   it to predictive persistence or add an exogenous liquidity-shock design.
+2. Curve and Fluid exclusion remains a serious construct-validity issue for
+   stablecoin-heavy routing. Quantify excluded route, volume, and endpoint-pair
+   shares, and contain the claim to covered venues if needed.
+3. P3 needs a fully specified event table: event threshold, event count,
+   overlap handling, baseline windows, and broad-market-stress/placebo controls.
+4. V4 needs the manual audit of no-transfer examples tied explicitly to V4
+   flash-accounting mechanics before it should be a main-table claim.
+5. The specification registry should be converted into a paper-facing appendix
+   table, not just referenced as a file.
+6. The main results should report economic magnitudes in comparable units and
+   present one pre-specified main test per proposition with the full robustness
+   family shown transparently.
