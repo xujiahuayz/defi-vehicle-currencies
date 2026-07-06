@@ -133,7 +133,7 @@ def build_table_bridge_measurement() -> None:
     out = pd.DataFrame(rows)
     _write_table(
         out,
-        "table_01_bridge_measurement",
+        "table_02_bridge_measurement",
         "Vehicle use and raw volume share by year.",
         "tab:bridge-measurement",
         note=(
@@ -141,6 +141,119 @@ def build_table_bridge_measurement() -> None:
             "intermediate. VShare is total token volume share and includes endpoint demand. "
             "PairCoverage is the share of active endpoint pairs for which the token appears "
             "as an intermediate."
+        ),
+    )
+
+
+def build_table_sample_coverage() -> None:
+    bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet")
+    route = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=[
+        "date", "direct_available", "vehicle_available", "vehicle_route_advantage",
+    ])
+    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet")
+    units = pd.read_parquet(DATA / "empirical" / "v4_settlement_route_units.parquet", columns=["date"])
+    cells = pd.read_csv(DATA / "empirical" / "v4_settlement_eligible_cells.csv")
+    sample = pd.read_csv(DATA / "empirical" / "v4_settlement_sample.csv")
+
+    bday = bridge.drop_duplicates("date").copy()
+    active = bday[bday["indirect_route_count"].gt(0)]
+    common = route[route["direct_available"] & route["vehicle_available"] & route["vehicle_route_advantage"].notna()]
+    rows = [
+        {
+            "Sample": "Bridge-use token-day panel",
+            "Start": str(active["date"].min()),
+            "End": str(active["date"].max()),
+            "Days": _int(active["date"].nunique()),
+            "Observations": _int(len(bridge)),
+            "Main quantity": f"${_num(active['indirect_route_volume_usd'].sum() / 1e12, 2)}tn indirect route volume",
+        },
+        {
+            "Sample": "LP concentration panel",
+            "Start": str(lp["date"].min()),
+            "End": str(lp["date"].max()),
+            "Days": _int(lp["date"].nunique()),
+            "Observations": _int(len(lp)),
+            "Main quantity": f"${_num(lp['total_lp_liquidity_usd'].mean() / 1e9, 2)}bn mean vehicle-linked liquidity",
+        },
+        {
+            "Sample": "Route-cost counterfactual panel",
+            "Start": str(route["date"].min()),
+            "End": str(route["date"].max()),
+            "Days": _int(route["date"].nunique()),
+            "Observations": _int(len(route)),
+            "Main quantity": f"{_int(len(common))} common-support quote rows",
+        },
+        {
+            "Sample": "V4 settlement route-unit panel",
+            "Start": str(units["date"].min()),
+            "End": str(units["date"].max()),
+            "Days": _int(units["date"].nunique()),
+            "Observations": _int(len(units)),
+            "Main quantity": f"{_int(len(cells))} matched cells; {_int(len(sample))} receipt observations",
+        },
+    ]
+    _write_table(
+        pd.DataFrame(rows),
+        "table_00_sample_coverage",
+        "Sample coverage for empirical exhibits.",
+        "tab:sample-coverage",
+        note=(
+            "Generated from the rebuilt DVC data layer through 2026-06-30. "
+            "The route-cost panel is based on daily state cutoffs and three trade-size buckets."
+        ),
+    )
+
+
+def build_table_summary_statistics() -> None:
+    bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet")
+    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet")
+    lp = lp.rename(columns={"token_symbol": "token"})
+
+    rows = []
+    for token in VEHICLE_ORDER:
+        g = bridge[(bridge["token"].eq(token)) & bridge["indirect_route_count"].gt(0)]
+        rows.append({
+            "Variable": f"{token} BridgeShare",
+            "N": _int(len(g)),
+            "Mean": _num(100 * g["BridgeShare"].mean(), 2),
+            "SD": _num(100 * g["BridgeShare"].std(), 2),
+            "p25": _num(100 * g["BridgeShare"].quantile(0.25), 2),
+            "Median": _num(100 * g["BridgeShare"].median(), 2),
+            "p75": _num(100 * g["BridgeShare"].quantile(0.75), 2),
+        })
+    for token in VEHICLE_ORDER:
+        g = bridge[(bridge["token"].eq(token)) & bridge["indirect_route_count"].gt(0)]
+        rows.append({
+            "Variable": f"{token} PairCoverage",
+            "N": _int(len(g)),
+            "Mean": _num(100 * g["PairCoverage"].mean(), 2),
+            "SD": _num(100 * g["PairCoverage"].std(), 2),
+            "p25": _num(100 * g["PairCoverage"].quantile(0.25), 2),
+            "Median": _num(100 * g["PairCoverage"].median(), 2),
+            "p75": _num(100 * g["PairCoverage"].quantile(0.75), 2),
+        })
+    for token in VEHICLE_ORDER:
+        g = lp[lp["token"].eq(token)]
+        if g.empty:
+            continue
+        rows.append({
+            "Variable": f"{token} LP concentration",
+            "N": _int(len(g)),
+            "Mean": _num(100 * g["lp_concentration_share"].mean(), 2),
+            "SD": _num(100 * g["lp_concentration_share"].std(), 2),
+            "p25": _num(100 * g["lp_concentration_share"].quantile(0.25), 2),
+            "Median": _num(100 * g["lp_concentration_share"].median(), 2),
+            "p75": _num(100 * g["lp_concentration_share"].quantile(0.75), 2),
+        })
+    _write_table(
+        pd.DataFrame(rows),
+        "table_01_summary_statistics",
+        "Summary statistics for main empirical variables.",
+        "tab:summary-statistics",
+        note=(
+            "BridgeShare, PairCoverage, and LP concentration are reported in percentage points. "
+            "Route-cost summary statistics are reported separately in Table 3 because the "
+            "advantage distribution has a deliberately large no-direct/thin-direct tail."
         ),
     )
 
@@ -163,7 +276,7 @@ def build_table_route_cost() -> None:
         })
     _write_table(
         pd.DataFrame(rows),
-        "table_02_route_cost_advantage",
+        "table_03_route_cost_advantage",
         "Direct routes and WETH vehicle-route execution costs.",
         "tab:route-cost-advantage",
         note=(
@@ -216,7 +329,7 @@ def build_table_liquidity_stickiness() -> None:
         })
     _write_table(
         pd.DataFrame(rows),
-        "table_03_liquidity_stickiness",
+        "table_04_liquidity_stickiness",
         "Liquidity concentration and persistence of vehicle use.",
         "tab:liquidity-stickiness",
         note=(
@@ -240,7 +353,7 @@ def build_table_stress() -> None:
     }])
     _write_table(
         out,
-        "table_04_stress_rotation",
+        "table_05_stress_rotation",
         "Stress rotation in common-support vehicle-route opportunities.",
         "tab:stress-rotation",
         note=(
@@ -302,7 +415,7 @@ def build_table_v4() -> None:
         }
     _write_table(
         out,
-        "table_05_v4_settlement",
+        "table_06_v4_settlement",
         "V4 flash accounting and physical intermediary-token transfers.",
         "tab:v4-settlement",
         note=(
@@ -435,15 +548,19 @@ Generated by `scripts/build_paper_exhibits.py`.
 
 ## Main Tables
 
-Table 1. Vehicle use and raw volume share by year.
+table_00_sample_coverage. Sample coverage for empirical exhibits.
 
-Table 2. Direct routes and WETH vehicle-route execution costs.
+table_01_summary_statistics. Summary statistics for main empirical variables.
 
-Table 3. Liquidity concentration and persistence of vehicle use.
+table_02_bridge_measurement. Vehicle use and raw volume share by year.
 
-Table 4. Stress rotation in common-support vehicle-route opportunities.
+table_03_route_cost_advantage. Direct routes and WETH vehicle-route execution costs.
 
-Table 5. V4 flash accounting and physical intermediary-token transfers.
+table_04_liquidity_stickiness. Liquidity concentration and persistence of vehicle use.
+
+table_05_stress_rotation. Stress rotation in common-support vehicle-route opportunities.
+
+table_06_v4_settlement. V4 flash accounting and physical intermediary-token transfers.
 
 ## Main Figures
 
@@ -474,7 +591,9 @@ Table A4. Uniswap V3 launch-window screen for bridge-share changes.
 
 def main() -> int:
     _ensure_dirs()
+    build_table_sample_coverage()
     build_table_bridge_measurement()
+    build_table_summary_statistics()
     build_table_route_cost()
     build_table_liquidity_stickiness()
     build_table_stress()
