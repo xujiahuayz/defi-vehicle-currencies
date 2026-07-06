@@ -357,6 +357,20 @@ control rather than missing core results:
 - Main text must always pair indirect BridgeShare with all-route bridge share
   when introducing WETH's vehicle role.
 
+I added two further diagnostics to close the remaining empirical parts of those
+comments:
+
+- Curve/Fluid scope bound: exact-quote covered venues are 78.9% of unified leg
+  volume; excluded Curve+Fluid are 16.2%, equal to 20.5% of covered quoteable
+  volume, and 75.3% stablecoin-leg. This does not remove the limitation, but it
+  quantifies its maximum scope and forces the P1 claim to covered quoteable
+  venues.
+- V4 balance diagnostics: V3 and V4 matched samples have identical ETH/WETH and
+  stable-vehicle composition by construction, but V4 route units are smaller
+  within matched cells (log route-size difference -0.692, \(p<0.001\)). The V4
+  settlement result should therefore report size-bin robustness and state this
+  balance fact directly.
+
 ### Frozen main-test registry
 
 The paper now has one pre-specified main test per proposition:

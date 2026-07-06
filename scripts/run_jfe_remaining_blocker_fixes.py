@@ -298,6 +298,63 @@ def curve_fluid_materiality() -> pd.DataFrame:
     return out
 
 
+def curve_fluid_scope_bound() -> pd.DataFrame:
+    mat = pd.read_csv(EMP / "curve_fluid_materiality.csv")
+    def pct_to_float(x: object) -> float:
+        try:
+            return float(str(x).replace(",", ""))
+        except ValueError:
+            return math.nan
+
+    mat["volume_share"] = mat["Volume share (%)"].map(pct_to_float)
+    quoteable = mat[mat["Exact-quote status"].str.contains("covered|quoteable", case=False, na=False)]
+    excluded = mat[mat["Exact-quote status"].str.contains("excluded", case=False, na=False)]
+    qshare = float(quoteable["volume_share"].sum())
+    eshare = float(excluded["volume_share"].sum())
+    stable_weighted = float(
+        np.average(
+            excluded["Stable-leg share (%)"].map(pct_to_float),
+            weights=excluded["volume_share"].clip(lower=1e-9),
+        )
+    )
+    rows = [
+        {
+            "Quantity": "Exact-quote covered share",
+            "Value": _num(qshare, 1),
+            "Interpretation": "Unified leg-volume share covered by V2/Sushi V2/V3 plus Balancer weighted quote extension",
+        },
+        {
+            "Quantity": "Excluded Curve+Fluid share",
+            "Value": _num(eshare, 1),
+            "Interpretation": "Unified leg-volume share not covered by exact executable-depth quotes",
+        },
+        {
+            "Quantity": "Excluded / covered ratio",
+            "Value": _num(eshare / qshare, 3) if qshare else "",
+            "Interpretation": "Maximum exact-quote scope exposure relative to covered quoteable venues",
+        },
+        {
+            "Quantity": "Excluded stable-leg share",
+            "Value": _num(stable_weighted, 1),
+            "Interpretation": "Excluded venues are stablecoin-heavy, so route-cost claims must be scoped",
+        },
+    ]
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "curve_fluid_scope_bound.csv", index=False)
+    _write_table(
+        out,
+        "table_r28_curve_fluid_scope_bound",
+        "Scope bound for Curve and Fluid exact-quote exclusion.",
+        "tab:curve-fluid-scope-bound",
+        note=(
+            "This table does not impute unobserved Curve/Fluid executable-depth quotes. It "
+            "bounds the scope of the route-cost panel by comparing excluded stablecoin-heavy "
+            "venue volume with exact-quote-covered venue volume."
+        ),
+    )
+    return out
+
+
 def _load_receipts() -> dict[str, dict[str, Any] | None]:
     module = _load_module("v4_settlement_for_audit", "run_v4_settlement_identification.py")
     return module._load_receipt_cache()
@@ -428,6 +485,67 @@ def v4_manual_no_transfer_audit() -> pd.DataFrame:
     return out
 
 
+def v4_balance_diagnostics() -> pd.DataFrame:
+    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
+    detail["has_matching_transfer"] = detail["has_matching_transfer"].map(_bool)
+    detail["receipt_found"] = detail["receipt_found"].map(_bool)
+    detail["log_route_usd"] = np.log1p(detail["route_usd"])
+    rows = []
+    for dex, g in detail.groupby("dex"):
+        rows.append(
+            {
+                "DEX": dex,
+                "Observations": _int(len(g)),
+                "Cells": _int(g["cell_id"].nunique()),
+                "Median route ($)": f"${_int(g['route_usd'].median())}",
+                "p25/p75 route ($)": f"${_int(g['route_usd'].quantile(0.25))} / ${_int(g['route_usd'].quantile(0.75))}",
+                "ETH/WETH vehicle (%)": _pct(g["vehicle"].isin(["ETH/WETH", "ETH", "WETH"]).mean()),
+                "Stable vehicle (%)": _pct(g["vehicle"].isin(["USDC", "USDT", "DAI"]).mean()),
+                "Mean total logs": _num(g["total_logs"].mean(), 2),
+                "Transfer incidence (%)": _pct(g["has_matching_transfer"].mean()),
+            }
+        )
+    # Within-cell route-size balance is the key observable matching diagnostic.
+    cell = (
+        detail.pivot_table(index="cell_id", columns="dex", values="log_route_usd", aggfunc="mean")
+        .dropna()
+        .reset_index()
+    )
+    if {"uniswap_v3", "uniswap_v4"}.issubset(cell.columns):
+        diff = cell["uniswap_v4"] - cell["uniswap_v3"]
+        from scipy import stats
+
+        t, p = stats.ttest_1samp(diff, 0.0)
+        rows.append(
+            {
+                "DEX": "V4 - V3 within cell",
+                "Observations": "",
+                "Cells": _int(len(cell)),
+                "Median route ($)": "",
+                "p25/p75 route ($)": "",
+                "ETH/WETH vehicle (%)": "",
+                "Stable vehicle (%)": "",
+                "Mean total logs": f"log route diff={_num(diff.mean(), 3)}",
+                "Transfer incidence (%)": f"t={_num(t, 2)}, p={_p(p)}",
+            }
+        )
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "v4_balance_diagnostics.csv", index=False)
+    _write_table(
+        out,
+        "table_r29_v4_balance_diagnostics",
+        "V3/V4 matched-sample balance diagnostics.",
+        "tab:v4-balance-diagnostics",
+        note=(
+            "Matched cells are week by endpoint pair by intermediate vehicle. The table "
+            "reports observable balance in route size, vehicle composition, and receipt logs. "
+            "Router, pool type, gas, and user composition remain unobserved in the current "
+            "route-unit panel."
+        ),
+    )
+    return out
+
+
 def main_test_registry_table() -> pd.DataFrame:
     rows = [
         {
@@ -555,7 +673,9 @@ def main() -> int:
     stress_event_definition_table()
     stress_threshold_overlap_sensitivity()
     curve_fluid_materiality()
+    curve_fluid_scope_bound()
     v4_manual_no_transfer_audit()
+    v4_balance_diagnostics()
     main_test_registry_table()
     compact_specification_registry_table()
     return 0

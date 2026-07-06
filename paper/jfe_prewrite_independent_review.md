@@ -320,3 +320,8 @@ Fix applied immediately:
 - Renamed P1 to availability and thin-direct-market protection.
 - Renamed P2 to liquidity concentration and bridge-use persistence.
 - Removed language saying P2 supports causal liquidity feedback.
+- Added a Curve/Fluid scope-bound table: excluded Curve+Fluid exact-quote venues
+  are 16.2% of unified leg volume and 20.5% of covered quoteable volume.
+- Added V4 balance diagnostics: matched V3/V4 cells have the same vehicle
+  composition, but V4 routes are smaller within cells; size-bin robustness must
+  remain visible.
