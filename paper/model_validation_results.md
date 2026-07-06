@@ -377,6 +377,22 @@ comments:
   settlement result should therefore report size-bin robustness and state this
   balance fact directly.
 
+### P2 dynamic alignment
+
+I added a dynamic reduced-form P2 table that estimates the model object directly:
+future BridgeShare as a function of current LP concentration and current
+BridgeShare, residualized by token and date fixed effects and clustered by date.
+LP concentration remains positive at all horizons:
+
+- t+1: beta 0.120, \(p<0.001\);
+- t+7: beta 0.142, \(p<0.001\);
+- t+14: beta 0.140, \(p<0.001\);
+- t+30: beta 0.148, \(p<0.001\).
+
+Current BridgeShare is also strongly positive at all horizons. This closes the
+model-alignment issue for P2 as predictability/persistence, while still not
+claiming causal LP feedback.
+
 ### Frozen main-test registry
 
 The paper now has one pre-specified main test per proposition:

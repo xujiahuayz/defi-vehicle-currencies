@@ -54,6 +54,15 @@ Empirical alignment:
 - LP concentration predicts future BridgeShare: within-token beta 0.2817,
   `p<0.001`.
 - BridgeShare is persistent.
+- A dynamic reduced-form specification aligned directly with the model,
+  `BridgeShare_{t+h}` on LP concentration and current BridgeShare with token and
+  date fixed effects, gives positive LP-concentration coefficients at every
+  horizon:
+  - t+1: beta 0.120, `p<0.001`;
+  - t+7: beta 0.142, `p<0.001`;
+  - t+14: beta 0.140, `p<0.001`;
+  - t+30: beta 0.148, `p<0.001`.
+  Current BridgeShare is also strongly positive at every horizon.
 - V3 LP repositioning does not provide a clean positive causal mechanism.
 
 Assessment: aligned only as a reduced-form predictability/persistence result.

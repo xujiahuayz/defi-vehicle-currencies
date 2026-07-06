@@ -271,6 +271,10 @@ Implemented after the third review:
   intermediary-token transfers.
 - Added a frozen main-test registry with one main test per proposition and an
   explicit downgrade of P2 to predictive association.
+- Added a dynamic P2 persistence table that directly estimates the reduced-form
+  model object: future BridgeShare on current LP concentration and current
+  BridgeShare with token/date fixed effects and date-clustered inference. LP
+  concentration remains positive for t+1, t+7, t+14, and t+30.
 
 ## Fourth independent review and final blocker tightening
 
