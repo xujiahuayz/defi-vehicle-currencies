@@ -91,15 +91,23 @@ of smaller route units rather than uniformly eliminating physical transfers.
 
 ## Current Paper Claim
 
-The model is now empirically supported on all four dimensions at first-pass
-DVC-native level:
+The model now has first-pass DVC-native evidence on all four dimensions, but the
+JFE-safe claim is narrower than "all propositions are established." The current
+evidence supports the following cautious claims:
 
-1. route-cost advantage creates vehicle usefulness;
-2. liquidity provision predicts and stabilizes vehicle use;
-3. stress rotates vehicle use away from a risky incumbent;
-4. architecture changes the mapping between route use, direct-route feasibility,
-   and settlement movement.
+1. route-cost and availability advantages are consistent with vehicle usefulness,
+   especially when direct routes are missing or thin;
+2. vehicle-linked liquidity is strongly associated with future bridge use and
+   bridge-use persistence;
+3. stress rotates vehicle use away from a risky incumbent in daily common-support
+   event designs;
+4. V4 partially separates route intermediation from physical intermediary-token
+   transfer settlement.
 
-The conservative remaining caveats are executable-depth quotes for Curve/Balancer
-/ Fluid, transaction-time rather than daily cutoff state for quote panels, and a
-tighter pair-level V3 architecture design.
+Before a JFE-style write-up, the remaining pre-write upgrades are inference at
+the correct dependence unit, route-cost tables centered on availability and
+thin-direct-route value, high-frequency/common-support stress evidence or
+explicitly narrower daily-event wording, and a tighter pair-level V3 architecture
+design. The conservative remaining caveats are executable-depth quotes for
+Curve/Balancer/Fluid, transaction-time rather than daily cutoff state for quote
+panels, and expanded V4 matched-cell balance diagnostics.
