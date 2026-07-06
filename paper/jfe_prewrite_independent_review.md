@@ -328,3 +328,24 @@ Fix applied immediately:
 - Added V4 balance diagnostics: matched V3/V4 cells have the same vehicle
   composition, but V4 routes are smaller within cells; size-bin robustness must
   remain visible.
+
+## Sixth independent review after Curve/Fluid exclusion sensitivity
+
+Verdict remains **major revisions**.
+
+The reviewer accepted that the Curve/Fluid realized-measure concern is now much
+better bounded: dropping Curve and Fluid does not overturn the realized
+BridgeShare ranking. But the review correctly distinguishes realized vehicle-use
+robustness from executable-depth route-cost inference. The route-cost claim must
+remain scoped to covered quoteable venues.
+
+Remaining issues are now mostly paper-structure choices:
+
+- make no-direct/thin-direct P1 the headline table, not common-support
+  cost-superiority rows;
+- use the decomposed -2.96 pp same-day P3 estimate as the paper-facing stress
+  number and reconcile it with the earlier -5.4 pp specification;
+- keep V3 architecture narrow or appendix-level;
+- make V4 size-bin/reweighted evidence prominent because V4 routes are smaller;
+- expand the frozen registry into full table specifications with standard
+  errors, fixed effects, baseline means, and economic magnitudes.
