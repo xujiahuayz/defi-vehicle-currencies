@@ -393,6 +393,31 @@ Current BridgeShare is also strongly positive at all horizons. This closes the
 model-alignment issue for P2 as predictability/persistence, while still not
 claiming causal LP feedback.
 
+## Paper-Facing Main Tables
+
+I built the JFE-facing main table set so the empirical exhibits match the bounded
+claims:
+
+```bash
+python scripts/build_jfe_main_tables.py
+```
+
+Outputs:
+
+- `table_m01_measurement_scope`: indirect versus all-route BridgeShare, plus
+  exact-quote coverage.
+- `table_m02_p1_availability_thin_direct`: no-direct availability and
+  thin-direct protection as the P1 headline.
+- `table_m03_p2_dynamic_predictability`: dynamic P2 predictability with baseline
+  means and economic effects of a 10 pp change.
+- `table_m04_p3_stress_rotation`: decomposed same-day P3 estimate plus
+  threshold/overlap sensitivity.
+- `table_m05_p4a_v3_opportunity`: V3 no-direct/WETH-available decline only.
+- `table_m06_p4b_v4_settlement`: V4 size-bin transfer incidence plus balance.
+- `table_m07_specification_registry`: paper-facing registry of unit, sample,
+  outcome, regressor, inference, baseline mean, main estimate, and
+  interpretation.
+
 ### Frozen main-test registry
 
 The paper now has one pre-specified main test per proposition:
