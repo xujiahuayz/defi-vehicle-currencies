@@ -26,12 +26,9 @@ result, the architecture result, and the broader lesson. No table-number tour.
 4. Vehicle status is made by liquidity provision: liquidity is supplied against
    candidate vehicle assets, and active LP repositioning makes some routes cheap.
 5. Main result 1: vehicle use is concentrated and persistent.
-6. Main result 2: near-price LP liquidity and repositioning predict future vehicle
-   share, tying "making" to LP behavior.
-7. Main result 3: stress rotates routing away from WETH within common route
-   opportunities.
-8. Main result 4: architecture changes, especially concentrated liquidity and V4
-   netting, alter vehicle feasibility and settlement implementation.
+6. Main result 2: liquidity-route feedback is bidirectional: LP liquidity predicts future vehicle use, and vehicle use predicts future LP liquidity.
+7. Main result 3: vehicle risk and credibility shocks rotate routing within common route opportunities.
+8. Main result 4: market- and settlement-architecture changes alter vehicle feasibility and LP incentives.
 9. Contribution and literature: vehicle/dominant currencies, liquidity provision
    and commonality, DeFi/AMMs/stablecoins.
 10. Roadmap.
@@ -94,13 +91,11 @@ which attracts more route demand and reinforces the liquidity base.
 
 **Comment:** State in prose or compact propositions:
 
-1. Vehicle use is persistent when liquidity is supplied against an incumbent route
-   asset.
-2. Near-price liquidity and LP repositioning in vehicle-linked pools predict
-   future vehicle share.
+1. Vehicle use and vehicle-linked liquidity are mutually persistent.
+2. Vehicle-linked liquidity predicts future vehicle use, and vehicle use predicts future vehicle-linked liquidity.
 3. Downside stress reduces use of a risky incumbent vehicle relative to safer
    substitutes within common route opportunities.
-4. Architecture changes can alter route feasibility and settlement implementation.
+4. Architecture changes can alter route feasibility and LP supply incentives.
 
 ## 4. Liquidity Provision and Vehicle-Currency Formation
 
@@ -213,33 +208,21 @@ a composition artifact.
 currency." USDC depeg and broad pricing implications move to appendix/supplement
 unless they become necessary for the paper's final contribution.
 
-### 6.1 Concentrated liquidity and route feasibility
+### 6.1 Direct-market deepening and route feasibility
 
 **Figure 4 placed here if built.**
 
-**Figure 4. Vehicle routes around the introduction of concentrated liquidity.**
-The figure plots route shares, direct-route availability, and paired liquidity
-around the introduction of Uniswap V3 concentrated liquidity. The event window is
-centered on V3 launch. The figure tests whether a change in market architecture
-alters reliance on vehicle routes by changing pairwise depth and the cost of direct
-exchange.
+**Figure 4. Vehicle routes around a direct-market-deepening architecture change.**
+The figure plots route shares, direct-route availability, and paired liquidity around an architecture change that deepens pairwise direct markets. The empirical event window uses the concentrated-liquidity launch as the test bed. The figure tests whether market architecture alters reliance on vehicle routes by changing pairwise depth and the cost of direct exchange.
 
-Subcaptions: **Panel A. Vehicle share around V3 launch**; **Panel B. Direct-route
-availability**; **Panel C. Pair liquidity concentration**; **Panel D. Direct-route
-versus vehicle-route cost**.
+Subcaptions: **Panel A. Vehicle share around architecture change**; **Panel B. Direct-route availability**; **Panel C. Pair liquidity concentration**; **Panel D. Direct-route versus vehicle-route cost**.
 
-### 6.2 V4 settlement implementation
+### 6.2 Settlement netting and LP supply
 
 **Table 7 placed here.**
 
-**Table 7. V4 matched settlement-implementation first stage.**
-The table matches coherent multi-hop Uniswap V3 and V4 routes by endpoint pair,
-week, and intermediate token. It reports whether the transaction receipt contains
-an ERC-20 transfer log for the intermediate token. Holding the route unit fixed,
-V4 lowers physical transfer incidence relative to V3, showing that protocol
-architecture can separate route intermediation from physical settlement. The
-caption should state the conservative interpretation explicitly: V4 virtualizes
-some settlement; it does not eliminate vehicle routing.
+**Table 7. Settlement netting, transfer incidence, and LP response.**
+The table first matches coherent multi-hop routes across settlement architectures by endpoint pair, week, and intermediate token, then reports whether the transaction receipt contains a physical transfer log for the intermediate token. The transfer-log result is a measurement step supporting the behavioral proposition. The behavioral test asks whether vehicles with greater netting exposure receive stronger post-launch LP liquidity supply. The current evidence is suggestive: netting exposure predicts higher log LP liquidity, while LP concentration share moves in the opposite direction.
 
 ## 7. Discussion and Conclusion
 
@@ -326,8 +309,7 @@ unconditional factor-pricing diagnostics.
 
 **Comment:** Kathy's "Olga from Warwick" is almost certainly Dr Olga Klein at
 Warwick Business School. Her relevant work points to one main addition: show that
-vehicle currencies are made by LP-side liquidity allocation, not just observed in
-trader-side routes.
+vehicle currencies are made by LP-side liquidity allocation and by architecture that changes the payoff to supporting routed demand.
 
 Relevant checked papers:
 

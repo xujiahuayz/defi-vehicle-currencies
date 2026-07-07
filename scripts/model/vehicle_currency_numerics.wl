@@ -63,15 +63,48 @@ nettingPlot = Plot[
   ImageSize -> 700
 ];
 
+feedbackPath = NestList[
+  {
+    Min[1, 0.04 + 0.22*#[[2]] + 0.70*#[[1]]],
+    Min[1, 0.02 + 0.18*#[[1]] + 0.62*#[[2]]]
+  } &,
+  {0.35, 0.15},
+  24
+];
+
+feedbackPlot = ListLinePlot[
+  {feedbackPath[[All, 2]], feedbackPath[[All, 1]]},
+  Frame -> True,
+  FrameLabel -> {"Period", "State"},
+  PlotLegends -> {"Bridge share", "Vehicle-linked LP liquidity"},
+  PlotRange -> {0, 1},
+  PlotTheme -> "Scientific",
+  ImageSize -> 700
+];
+
+lpSupplyPlot = Plot[
+  Evaluate[OptimalVehicleLiquidity /. {phi -> 0.08, Dv -> 1, kappa0 -> 0.02, kappa1 -> 0.035, chi -> 0.09}],
+  {n, 0, 1},
+  Frame -> True,
+  FrameLabel -> {"Settlement netting intensity", "Optimal vehicle-linked LP supply"},
+  PlotRange -> All,
+  PlotTheme -> "Scientific",
+  ImageSize -> 700
+];
+
 Export[FileNameJoin[{outputDir, "model_bridge_share_liquidity.png"}], liquidityPlot];
 Export[FileNameJoin[{outputDir, "model_bridge_share_risk.png"}], riskPlot];
 Export[FileNameJoin[{outputDir, "model_bridge_share_direct_liquidity.png"}], architecturePlot];
 Export[FileNameJoin[{outputDir, "model_v4_netting_compression.png"}], nettingPlot];
+Export[FileNameJoin[{outputDir, "model_liquidity_route_feedback.png"}], feedbackPlot];
+Export[FileNameJoin[{outputDir, "model_netting_lp_supply.png"}], lpSupplyPlot];
 Export[FileNameJoin[{outputDir, "model_derivations.txt"}], ToString[AllPropositions, InputForm], "Text"];
 
 Grid[{
   {"dBridgeShare/dVehicleLiquidity", FullSimplify[D[BridgeShareLevel, LIK]]},
   {"dBridgeShare/dVehicleRisk", FullSimplify[D[BridgeShareLevel, rhoK]]},
   {"dBridgeShare/dDirectLiquidityMultiplier", FullSimplify[D[BridgeShare[RouteAdvantageV3], a]]},
-  {"dCompression/dNetting", FullSimplify[D[CompressionRatio, n]]}
+  {"dCompression/dNetting", FullSimplify[D[CompressionRatio, n]]},
+  {"dExpectedVehicleLiquidityNext/dCurrentBridgeShare", FullSimplify[D[alphaL + betaB*b + psi*Lv, b]]},
+  {"dOptimalVehicleLiquidity/dNetting", FullSimplify[D[OptimalVehicleLiquidity, n]]}
 }]

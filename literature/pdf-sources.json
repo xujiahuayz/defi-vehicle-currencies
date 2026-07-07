@@ -347,6 +347,232 @@
         "label": "Crossref similarity-checking"
       }
     ],
+    "AmihudMendelson1980Dealership": [
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/0304405X80900203/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
+    ],
+    "HoStoll1981OptimalDealer": [
+      {
+        "url": "https://rodneywhitecenter.wharton.upenn.edu/wp-content/uploads/2014/03/7927.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "Wharton Rodney L. White Center PDF"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/0304405X81900209/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
+    ],
+    "GlostenMilgrom1985BidAsk": [
+      {
+        "url": "https://www.kellogg.northwestern.edu/research/math/papers/570.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "Northwestern Kellogg PDF"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/0304405X85900443/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
+    ],
+    "Kyle1985ContinuousAuctions": [
+      {
+        "url": "https://www.jstor.org/stable/pdf/1913210.pdf?acceptTC=1",
+        "version": "published",
+        "access": "authenticated",
+        "label": "JSTOR stable PDF with terms flag"
+      },
+      {
+        "url": "https://people.duke.edu/~qc2/BA532/1985%20EMA%20Kyle.pdf",
+        "version": "published",
+        "access": "public",
+        "label": "Duke course-hosted PDF"
+      }
+    ],
+    "GrossmanMiller1988Liquidity": [
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w2641/w2641.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 2641"
+      },
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1540-6261.1988.tb04594.x",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Journal of Finance PDF"
+      }
+    ],
+    "CoughenourSaad2004CommonMarketMakers": [
+      {
+        "url": "https://www.acsu.buffalo.edu/~keechung/MGF743/Readings/L3.pdf",
+        "version": "published",
+        "access": "public",
+        "label": "University at Buffalo course-hosted PDF"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X04000145/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
+    ],
+    "GarleanuPedersenPoteshman2009DemandBased": [
+      {
+        "url": "https://docs.lhpedersen.com/DBOP.pdf",
+        "version": "accepted",
+        "access": "public",
+        "label": "Lasse Heje Pedersen PDF"
+      },
+      {
+        "url": "https://academic.oup.com/rfs/article-pdf/22/10/4259/24453427/hhp005.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "RFS PDF"
+      }
+    ],
+    "ComertonFordeEtAl2010Inventories": [
+      {
+        "url": "https://business.columbia.edu/sites/default/files-efs/pubfiles/4052/jones_time_variation.pdf",
+        "version": "accepted",
+        "access": "public",
+        "label": "Columbia Business School PDF"
+      },
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1540-6261.2009.01530.x",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Journal of Finance PDF"
+      }
+    ],
+    "HendershottJonesMenkveld2011Algorithmic": [
+      {
+        "url": "https://faculty.haas.berkeley.edu/hender/Algo.pdf",
+        "version": "accepted",
+        "access": "public",
+        "label": "Berkeley Haas PDF"
+      },
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1540-6261.2010.01624.x",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Journal of Finance PDF"
+      }
+    ],
+    "Nagel2012EvaporatingLiquidity": [
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w17653/w17653.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 17653"
+      },
+      {
+        "url": "https://academic.oup.com/rfs/article-pdf/25/7/2005/24293577/hhs066.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "RFS PDF"
+      }
+    ],
+    "HendershottMenkveld2014PricePressures": [
+      {
+        "url": "https://faculty.haas.berkeley.edu/hender/price_pressures.pdf",
+        "version": "accepted",
+        "access": "public",
+        "label": "Berkeley Haas PDF"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X14001639/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
+    ],
+    "BessembinderHaoZheng2015Contracts": [
+      {
+        "url": "https://abfer.org/media/abfer-events-2013/annual-conference/investment-finance/track3-market-making-obligations-and-firm-value.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "ABFER conference PDF"
+      },
+      {
+        "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/jofi.12285",
+        "version": "published",
+        "access": "authenticated",
+        "label": "Journal of Finance PDF"
+      }
+    ],
+    "AnandVenkataraman2016MarketMaking": [
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X16300459/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
+    ],
+    "ClarkJosephYeZi2017DMM": [
+      {
+        "url": "https://czi.finance/assets/DMM.pdf",
+        "version": "accepted",
+        "access": "public",
+        "label": "Author-hosted PDF"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X17302337/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
+    ],
+    "BessembinderHaoZheng2020Contracts": [
+      {
+        "url": "https://abfer.org/media/abfer-events-2018/annual-conference/investment-finance/AC18P3076_Liquidity-Provision-Contracts.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "ABFER conference PDF"
+      },
+      {
+        "url": "https://academic.oup.com/rfs/article-pdf/33/1/44/31876849/hhz040.pdf",
+        "version": "published",
+        "access": "authenticated",
+        "label": "RFS PDF"
+      }
+    ],
+    "LiWangYe2021WhoProvides": [
+      {
+        "url": "https://par.nsf.gov/servlets/purl/10296864",
+        "version": "published",
+        "access": "public",
+        "label": "NSF Public Access Repository PDF"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X21001501/pdfft",
+        "version": "published",
+        "access": "authenticated",
+        "label": "ScienceDirect PDF"
+      }
+    ],
+    "ChenDuffie2021Fragmentation": [
+      {
+        "url": "https://www.aeaweb.org/articles/pdf/doi/10.1257/aer.20200829",
+        "version": "published",
+        "access": "public",
+        "label": "AEA PDF"
+      },
+      {
+        "url": "https://www.nber.org/system/files/working_papers/w26828/w26828.pdf",
+        "version": "working-paper",
+        "access": "public",
+        "label": "NBER Working Paper 26828"
+      }
+    ],
     "PastorStambaugh2003LiquidityRisk": [
       {
         "url": "https://www.journals.uchicago.edu/doi/epdf/10.1086/374184",

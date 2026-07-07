@@ -50,9 +50,12 @@ def _table_page(pdf: PdfPages, title: str, csv_name: str, note: str = "") -> Non
 
 
 def _image_page(pdf: PdfPages, title: str, image_names: list[str]) -> None:
-    fig, axes = plt.subplots(2, 2, figsize=(11, 8.5))
+    ncols = 2
+    nrows = max(1, (len(image_names) + ncols - 1) // ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(11, 8.5))
     fig.suptitle(title, fontsize=16, fontweight="bold")
-    for ax, name in zip(axes.ravel(), image_names):
+    flat_axes = axes.ravel() if hasattr(axes, "ravel") else [axes]
+    for ax, name in zip(flat_axes, image_names):
         ax.axis("off")
         path = MODEL / name
         if path.exists():
@@ -60,7 +63,7 @@ def _image_page(pdf: PdfPages, title: str, image_names: list[str]) -> None:
             ax.set_title(name.replace("model_", "").replace(".png", ""), fontsize=9)
         else:
             ax.text(0.5, 0.5, f"Missing: {name}", ha="center", va="center")
-    for ax in axes.ravel()[len(image_names):]:
+    for ax in flat_axes[len(image_names):]:
         ax.axis("off")
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     pdf.savefig(fig)
@@ -78,12 +81,15 @@ def build() -> Path:
 Current status: no additional broad experiments are needed before writing if the paper is written around bounded claims. The remaining task is table hierarchy and claim discipline.
 
 Bounded empirical spine:
-1. Measurement: BridgeShare is conditional on indirect routing and must be paired with all-route bridge share.
-2. P1: WETH vehicle routes provide availability and thin-direct-market protection in quoteable covered venues.
-3. P2: vehicle-linked LP concentration and current bridge use predict future BridgeShare; this is not causal LP feedback.
-4. P3: WETH downside shocks produce impact stress rotation toward stable vehicles; the supported window is same-day.
-5. P4a: V3 evidence is the decline in no-direct/WETH-available cases, not broad V3 launch causality.
-6. P4b: V4 partially separates route intermediation from physical intermediary-token transfer; size-bin evidence must be central.
+1. Measurement: vehicle use is conditional on indirect routing and must be paired with all-route vehicle share.
+2. P1/setup: direct-market incompleteness is descriptive scope for the central propositions.
+3. P2: vehicle intermediation and vehicle-linked LP liquidity are mutually persistent.
+4. P3: credibility or risk shocks to a vehicle reduce its route advantage and rotate order flow toward substitutes.
+5. P4a: market-architecture changes that deepen direct pairwise markets reduce reliance on vehicle routes.
+6. P4b: settlement netting raises LP willingness to supply vehicle-linked liquidity where routed demand is present.
+
+Implementation discipline: WETH, stablecoins, concentrated-liquidity launch, and flash-accounting launch are empirical test beds.
+They should appear in table labels and identification text, not as the propositions themselves.
 """,
         )
         _page(
@@ -96,15 +102,16 @@ VehicleCost(q) = fIK + fKJ + sK + rhoK + theta*q*(1/LIK + 1/LKJ)
 RouteAdvantage = DirectCost - VehicleCost
 BridgeShare(delta) = 1 / (1 + exp(-lambda*delta))
 
-P1 is not universal cost superiority. Vehicle route usefulness requires vehicle-route availability and one of: direct route unavailable, direct route thin, or vehicle route cheaper in common support.
+P1 is treated as setup: direct-market weakness explains why vehicle routes are relevant; direct-unavailable cases are partly mechanical.
 
-P2 is reduced-form persistence:
+P2 is reduced-form liquidity-route feedback:
 E[BridgeShare_{k,t+h}] = alpha_k + betaL * LPConcentration_{k,t} + rho * BridgeShare_{k,t}.
+E[LPConcentration_{k,t+h}] = alpha_l + betaB * BridgeShare_{k,t} + psi * LPConcentration_{k,t}.
 
-P3 is interval-neutral in theory: vehicle risk lowers route advantage on impact. Same-day is the empirical implementation.
+P3 is interval-neutral in theory: vehicle risk or credibility cost lowers route advantage on impact. Same-day stress episodes are the empirical implementation.
 
-P4a increases direct-route liquidity, reducing relative vehicle reliance.
-P4b netting intensity lowers physical intermediary-token movement while route intermediation can remain.
+P4a: higher direct-route liquidity reduces relative vehicle-route reliance.
+P4b: netting lowers the operational inventory cost of supporting routed demand, increasing optimal vehicle-linked LP supply.
 """,
         )
         deriv = (MODEL / "model_derivations.txt").read_text(encoding="utf-8") if (MODEL / "model_derivations.txt").exists() else ""
@@ -117,22 +124,24 @@ P1AvailabilityProtection:
 - dBridgeShare/dAdvantage = lambda * Sech[...]^2 / 4 > 0.
 - VehicleUsefulCondition includes direct-unavailable, thin-direct, and positive-advantage cases.
 
-P2LiquidityPersistence:
+P2LiquidityRouteFeedback:
 - dAdvantage/dLIK > 0 and dAdvantage/dLKJ > 0.
 - dExpectedBridgeShareNext/dVehicleLiquidity = betaL >= 0.
 - dExpectedBridgeShareNext/dCurrentBridgeShare = rho >= 0.
+- dExpectedVehicleLiquidityNext/dCurrentBridgeShare = betaB >= 0.
 
 P3StressRotation:
 - dAdvantage/dVehicleRisk = -1.
 - dBridgeShare/dVehicleRisk < 0.
 
-P4aConcentratedLiquidity:
+P4aDirectMarketDeepening:
 - dAdvantage/dDirectLiquidityMultiplier < 0.
 
-P4bFlashAccounting:
+P4bSettlementNettingLiquidity:
 - PhysicalVehicleMovement = (1 - n) * GrossVehicleExposure.
-- CompressionRatio = n.
-- dPhysicalMovement/dNetting < 0; dCompression/dNetting = 1.
+- LPPayoff = fee value from routed demand - netting-sensitive operating cost - convex liquidity cost.
+- dOptimalVehicleLiquidity/dNetting = kappa1 / chi >= 0.
+- dOptimalVehicleLiquidity/dRoutedDemand = phi / chi > 0.
 
 Full derivation object:
 """
@@ -147,14 +156,16 @@ Full derivation object:
                 "model_bridge_share_risk.png",
                 "model_bridge_share_direct_liquidity.png",
                 "model_v4_netting_compression.png",
+                "model_liquidity_route_feedback.png",
+                "model_netting_lp_supply.png",
             ],
         )
         _table_page(pdf, "Table 1. Measurement and Scope", "table_m01_measurement_scope.csv")
-        _table_page(pdf, "Table 2. P1 Availability and Thin-Direct Protection", "table_m02_p1_availability_thin_direct.csv")
-        _table_page(pdf, "Table 3. P2 Dynamic Predictability", "table_m03_p2_dynamic_predictability.csv")
-        _table_page(pdf, "Table 4. P3 Impact Stress Rotation", "table_m04_p3_stress_rotation.csv")
-        _table_page(pdf, "Table 5. P4a V3 Route Opportunity", "table_m05_p4a_v3_opportunity.csv")
-        _table_page(pdf, "Table 6. P4b V4 Settlement Virtualization", "table_m06_p4b_v4_settlement.csv")
+        _table_page(pdf, "Table 2. P1 Route Availability and Thin-Direct Protection", "table_m02_p1_availability_thin_direct.csv")
+        _table_page(pdf, "Table 3. P2 Liquidity-Route Feedback", "table_m03_p2_dynamic_predictability.csv")
+        _table_page(pdf, "Table 4. P3 Vehicle Risk and Stress Rotation", "table_m04_p3_stress_rotation.csv")
+        _table_page(pdf, "Table 5. P4a Direct-Market Deepening and Vehicle-Route Opportunity", "table_m05_p4a_v3_opportunity.csv")
+        _table_page(pdf, "Table 6. P4b Settlement Netting and LP Response", "table_m06_p4b_v4_settlement.csv")
         _table_page(pdf, "Table 7. Specification Registry", "table_m07_specification_registry.csv")
     return PDF
 

@@ -107,45 +107,39 @@ def table_02_p1_availability() -> pd.DataFrame:
 
 
 def table_03_p2_predictability() -> pd.DataFrame:
-    dyn = _read("table_r31_p2_dynamic_persistence.csv")
-    bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "token", "BridgeShare"])
-    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet").rename(columns={"token_symbol": "token"})
-    d = bridge.merge(lp[["date", "token", "lp_concentration_share"]], on=["date", "token"], how="inner")
-    d["date"] = pd.to_datetime(d["date"])
-    d = d.sort_values(["token", "date"])
+    dyn = _read("table_r32_p2_liquidity_route_feedback.csv")
     rows = []
-    for _, r in dyn.iterrows():
-        h = int(str(r["Horizon"]).replace("t+", ""))
-        dd = d.copy()
-        dd["future"] = dd.groupby("token")["BridgeShare"].shift(-h)
-        base = dd["future"].mean()
-        lp_beta = _float(r["LP beta"])
-        rho = _float(r["Persistence beta"])
+    keep = dyn[
+        dyn["Horizon"].isin(["t+7", "t+30"])
+        & (
+            dyn["Outcome"].isin(["future BridgeShare", "future LP concentration", "future log LP liquidity"])
+        )
+    ].copy()
+    for _, r in keep.iterrows():
         rows.append(
             {
+                "Panel": r["Panel"],
                 "Horizon": r["Horizon"],
-                "Baseline future BridgeShare (%)": _num(100 * base, 2),
-                "LP beta": r["LP beta"],
-                "LP SE": r["LP SE"],
-                "LP p": r["LP p"],
-                "Effect of +10pp LP concentration (pp)": _num(10 * lp_beta, 2),
-                "Persistence beta": r["Persistence beta"],
-                "Persistence SE": r["Persistence SE"],
-                "Persistence p": r["Persistence p"],
-                "Effect of +10pp current BridgeShare (pp)": _num(10 * rho, 2),
+                "Outcome": r["Outcome"],
+                "Main regressor": r["Main regressor"],
+                "Beta": r["Beta"],
+                "SE": r["SE"],
+                "t": r["t"],
+                "p": r["p"],
+                "Control": r["Control"],
             }
         )
     out = pd.DataFrame(rows)
     _write_table(
         out,
         "table_m03_p2_dynamic_predictability",
-        "Liquidity concentration and bridge-use predictability.",
+        "Liquidity-route feedback and vehicle persistence.",
         "tab:main-p2-predictability",
         note=(
-            "Outcome is future BridgeShare. Regressors are current LP concentration and "
-            "current BridgeShare. Variables are residualized by token and date fixed effects; "
-            "standard errors are clustered by date. This is predictability, not causal LP "
-            "feedback."
+            "Panel A tests whether vehicle-linked LP concentration predicts future BridgeShare. "
+            "Panel B tests whether current BridgeShare predicts future LP concentration and log LP liquidity. "
+            "All variables are residualized by token and date fixed effects; standard errors are clustered by date. "
+            "This supports liquidity-route feedback as reduced-form persistence evidence."
         ),
     )
     return out
@@ -224,6 +218,7 @@ def table_05_p4a_v3() -> pd.DataFrame:
 def table_06_p4b_v4() -> pd.DataFrame:
     size = _read("table_r05_v4_robustness.csv")
     balance = _read("table_r29_v4_balance_diagnostics.csv")
+    lp_response = _read("table_r33_p4b_netting_lp_response.csv")
     rows = []
     for _, r in size.iterrows():
         rows.append(
@@ -249,16 +244,29 @@ def table_06_p4b_v4() -> pd.DataFrame:
                 "p": r["Transfer incidence (%)"],
             }
         )
+    for _, r in lp_response[lp_response["Panel"].eq("A. LP response around settlement-netting architecture")].iterrows():
+        rows.append(
+            {
+                "Panel": "C. LP response by netting exposure",
+                "Sample / diagnostic": r["Outcome"],
+                "Cells": r["N"],
+                "V3": "",
+                "V4": "",
+                "Difference / balance": f"{r['Treatment / exposure']} beta {r['Beta']} (t={r['t']})",
+                "p": r["p"],
+            }
+        )
     out = pd.DataFrame(rows)
     _write_table(
         out,
         "table_m06_p4b_v4_settlement",
-        "V4 settlement virtualization and route-size balance.",
+        "Settlement netting, transfer incidence, and LP response.",
         "tab:main-p4b-v4",
         note=(
-            "V4 lowers intermediary-token transfer incidence relative to matched V3 route "
-            "units. Because V4 route units are smaller within cells, size-bin estimates and "
-            "balance diagnostics are part of the main evidence."
+            "Panels A-B show that the settlement architecture lowers intermediary-token transfer incidence relative "
+            "to matched route units and report balance diagnostics. Panel C tests the behavioral implication: vehicles "
+            "with greater no-transfer exposure have higher post-launch log LP liquidity, while LP concentration share "
+            "moves in the opposite direction. The LP response is suggestive mechanism evidence."
         ),
     )
     return out
@@ -278,15 +286,15 @@ def table_07_spec_registry() -> pd.DataFrame:
             "Economic interpretation": "availability and thin-direct execution protection",
         },
         {
-            "Test": "P2 predictability",
+            "Test": "P2 liquidity-route feedback",
             "Unit": "token x day",
             "Sample": "vehicle candidates",
-            "Outcome": "future BridgeShare",
+            "Outcome": "future BridgeShare; future LP concentration/liquidity",
             "Regressor / treatment": "LP concentration; current BridgeShare",
             "FE / SE": "token/date FE; date-clustered SE",
             "Baseline mean": "see Table m03",
-            "Main estimate": "LP beta 0.120-0.148; p<0.001",
-            "Economic interpretation": "predictability and persistence, not causal feedback",
+            "Main estimate": "two-way coefficients positive; p<0.001",
+            "Economic interpretation": "reduced-form liquidity-route feedback",
         },
         {
             "Test": "P3 impact stress",
@@ -312,14 +320,14 @@ def table_07_spec_registry() -> pd.DataFrame:
         },
         {
             "Test": "P4b V4 settlement",
-            "Unit": "matched route unit",
-            "Sample": "matched V3/V4 cells",
-            "Outcome": "intermediary-token transfer incidence",
-            "Regressor / treatment": "V4 route unit",
-            "FE / SE": "matched-cell paired tests",
+            "Unit": "matched route unit; token x week",
+            "Sample": "matched V3/V4 cells; LP panel around launch",
+            "Outcome": "transfer incidence; LP liquidity response",
+            "Regressor / treatment": "V4 route unit; post x netting exposure",
+            "FE / SE": "matched-cell tests; token/week FE",
             "Baseline mean": "V3 transfer incidence 100%",
-            "Main estimate": "V4 81.4%; gap -18.6 pp",
-            "Economic interpretation": "route intermediation partly separated from physical transfer",
+            "Main estimate": "V4 gap -18.6 pp; log LP beta 2.132",
+            "Economic interpretation": "settlement netting lowers movement and predicts LP supply response",
         },
     ]
     out = pd.DataFrame(rows)

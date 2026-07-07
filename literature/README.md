@@ -2,6 +2,8 @@
 
 This folder is intentionally flat. Keep the durable literature record in BibTeX so the paper can compile from a small curated bibliography rather than a large omnibus file.
 
+Use `vehicle-currencies.bib` as the source of truth for what belongs in the curated literature set. Use `pdf-sources.json` only as the fetch manifest for those BibTeX keys: publisher PDF endpoints, public manuscript PDFs, authentication labels, and fallback routes for `scripts/fetch_literature.py`.
+
 Do not commit copyrighted PDFs or other files that cannot be redistributed. Keep private PDFs local and ignored; cite papers through DOI, URL, journal metadata, or BibTeX notes instead.
 
 Suggested filename pattern:
