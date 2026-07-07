@@ -372,3 +372,27 @@ paper construction:
 - P4b must foreground size-bin or size-adjusted evidence because V4 route units
   are smaller;
 - denominator and coverage limits must be in the main text, not just robustness.
+
+## Eighth independent review after JFE-facing main tables
+
+Verdict remains **major revisions**.
+
+The reviewer says the new `table_m01` through `table_m07` set has the right
+structure, but the manuscript/memo must actually use those tables as the spine
+and stop letting older estimates look like headline claims.
+
+Remaining issues are table hierarchy and manuscript discipline:
+
+- `table_m01_measurement_scope` must be the first empirical table because it
+  defines the estimand and scope.
+- `table_m02_p1_availability_thin_direct` must replace common-support
+  cost-superiority framing as the P1 headline.
+- `table_m04_p3_stress_rotation` should supply the single headline stress
+  number; older 5.4 pp and 3.09 pp variants should be robustness/reconciled.
+- `table_m06_p4b_v4_settlement` should foreground size-bin evidence because V4
+  route units are smaller.
+- `table_m07_specification_registry` should be included in the paper/appendix,
+  not merely referenced by filename.
+
+The review is no longer mainly requesting new experiments; it is asking that the
+draft be organized around the bounded main-table spine.
