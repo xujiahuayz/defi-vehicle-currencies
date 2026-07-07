@@ -353,3 +353,22 @@ Remaining issues are now mostly paper-structure choices:
 - make V4 size-bin/reweighted evidence prominent because V4 routes are smaller;
 - expand the frozen registry into full table specifications with standard
   errors, fixed effects, baseline means, and economic magnitudes.
+
+## Seventh independent review after dynamic P2 alignment
+
+Verdict remains **major revisions**.
+
+The dynamic P2 table improved model alignment and the reviewer accepted that it
+appropriately avoids causal claims. Remaining criticism is now concentrated in
+paper construction:
+
+- main claims must be bounded and non-causal where identification is not causal;
+- P1 must headline no-direct/thin-direct protection, not common-support cost
+  superiority;
+- P2 must be predictability only, with baseline means and economic magnitudes;
+- P3 must use one decomposed same-day headline number and explain alternative
+  estimates;
+- P4a must focus only on no-direct/WETH-available decline;
+- P4b must foreground size-bin or size-adjusted evidence because V4 route units
+  are smaller;
+- denominator and coverage limits must be in the main text, not just robustness.
