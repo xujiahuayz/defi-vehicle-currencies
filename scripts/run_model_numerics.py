@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fallback numerical illustrations for the vehicle-currency model.
 
-This mirrors paper/vehicle_currency_numerics.wl so the figures can be generated
+This mirrors scripts/model/vehicle_currency_numerics.wl so the figures can be generated
 before local Wolfram activation is available.
 """
 

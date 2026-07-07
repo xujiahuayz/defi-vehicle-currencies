@@ -1,9 +1,9 @@
 (* Numerical illustrations for vehicle_currency_model.wl.
    Run from the repo root after Mathematica/Wolfram is activated:
-   wolframscript -file paper/vehicle_currency_numerics.wl
+   wolframscript -file scripts/model/vehicle_currency_numerics.wl
 *)
 
-Get[FileNameJoin[{Directory[], "paper", "vehicle_currency_model.wl"}]];
+Get[FileNameJoin[{Directory[], "scripts", "model", "vehicle_currency_model.wl"}]];
 
 outputDir = FileNameJoin[{Directory[], "output", "model"}];
 If[! DirectoryQ[outputDir], CreateDirectory[outputDir, CreateIntermediateDirectories -> True]];

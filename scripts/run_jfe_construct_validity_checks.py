@@ -364,7 +364,7 @@ chain-level replications for WETH-on-Ethereum, WBNB-on-BNB, WMATIC-on-Polygon,
 WAVAX-on-Avalanche, and WETH/ETH-on-Base/Arbitrum/Optimism, using the same
 BridgeShare, route-cost availability, and direct-route-substitution definitions.
 """
-    (ROOT / "paper" / "empirical_specification_registry.md").write_text(text, encoding="utf-8")
+    (EMP / "empirical_specification_registry.md").write_text(text, encoding="utf-8")
 
 
 def main() -> int:
