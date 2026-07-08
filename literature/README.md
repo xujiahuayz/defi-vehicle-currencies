@@ -39,6 +39,14 @@ For authenticated or paywalled URLs that Java can access legitimately:
 - Put local-only cookie/header material in `literature/auth/headers.local.json` using `auth.example.json` as the template.
 - Re-run `python3 scripts/fetch_literature.py --strict` when auth is in place.
 
+ScienceDirect / Elsevier fallback:
+
+- First run the committed fetchers with `--prefer published`; if the stable ScienceDirect `pdfft` endpoint mints a signed `pdf.sciencedirectassets.com/...main.pdf?...` URL but plain `curl` or headless browser fetch gets 403 / HTML / accepted-manuscript fallback, use Java's authenticated Brave session as the access route.
+- Open the stable endpoint in Brave with `open -a "Brave Browser" "https://www.sciencedirect.com/science/article/pii/<PII>/pdfft"` so ScienceDirect/OpenAthens mints the PDF route.
+- Copy the real Brave profile to a temporary directory excluding caches, delete `Singleton*` lock files, and edit only the temp `Default/Preferences` so `plugins.always_open_pdf_externally=true` and `download.prompt_for_download=false`.
+- Launch controlled Brave from `/Applications/Brave Browser.app/Contents/MacOS/Brave Browser` with `--user-data-dir=<tmp-profile> --profile-directory=Default --remote-debugging-port=<port> --no-first-run --no-default-browser-check about:blank`, attach Playwright over CDP, call `Browser.setDownloadBehavior` with a temp download path, navigate to the stable or page-inspected `pdfft?md5=...&pid=...` URL, then copy the downloaded `1-s2.0-<PII>-main.pdf` into gitignored `literature/papers/`.
+- Verify the saved file with `file`, size, and page count, then delete the temp profile and download dir. Playwright/CDP may print Chrome-style labels because Brave is Chromium-based; the browser app is still Brave.
+
 Known access routes:
 
 - `Somogyi2026DollarDominanceFX`: use the UCL Primo `View Online` resolver and EBSCOhost Business Source Ultimate, then `Access now (PDF)`. The Primo/LibKey `Download PDF` button redirects to INFORMS and can hit Cloudflare/request-access instead of the licensed EBSCO PDF.
