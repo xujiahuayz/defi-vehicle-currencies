@@ -6,6 +6,8 @@
 
 \usepackage{threeparttable}
 
+\usepackage{makecell}
+
 \usepackage{array}
 
 \usepackage{pdflscape}
@@ -51,7 +53,8 @@ This document reorganizes the current empirical evidence around research questio
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Research questions, empirical objects, and evidence.}
 \label{tab:rq-evidence-map}
@@ -79,7 +82,8 @@ RQ7 & Does a vehicle create common liquidity? & Pool x vehicle x day liquidity p
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Vehicle-use measurement and exact-quote scope.}
 \label{tab:measurement-scope}
@@ -110,7 +114,8 @@ Panel & Quantity & Main estimate & Companion estimate & Interpretation \\
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Variable construction and empirical proxies.}
 \label{tab:variables}
@@ -139,31 +144,28 @@ VehicleLiquidityFactor & vehicle token x day & Leave-one-out average daily log-l
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Vehicle formation: route economics, availability, and realized route choice.}
 \label{tab:rq1-formation}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}}
 \toprule
-Panel & Outcome & Regressor & Estimate & SE & t & p & N \\
+ & \makecell{(1) \\ Actual vehicle share} & \makecell{(2) \\ Vehicle share, t+7} & \makecell{(3) \\ Vehicle share, t+30} \\
 \midrule
-\multicolumn{8}{l}{\textit{Panel A. Actual route choice}} \\
- & Actual vehicle share & Route-cost advantage, per 100 bp & 0.1462$^{***}$ & 0.0054 & 27.02 & $<$0.001 & 189,143 \\
- & Actual vehicle share & Vehicle route available & 19.1385$^{***}$ & 0.4836 & 39.58 & $<$0.001 & 189,143 \\
- & Actual vehicle share & Vehicle-route depth & 28.8502$^{***}$ & 0.5780 & 49.92 & $<$0.001 & 189,143 \\
-\addlinespace
-\multicolumn{8}{l}{\textit{Panel B. Future vehicle share}} \\
- & Vehicle share, t+7 & Route-cost advantage, per 100 bp & 0.0001$^{***}$ & 0.0000 & 3.10 & 0.002 & 9,380 \\
- & Vehicle share, t+7 & Vehicle-route availability & 0.0940$^{***}$ & 0.0141 & 6.67 & $<$0.001 & 9,380 \\
- & Vehicle share, t+7 & LP concentration & 0.1117$^{***}$ & 0.0135 & 8.30 & $<$0.001 & 9,380 \\
- & Vehicle share, t+30 & Current vehicle share & 0.3630$^{***}$ & 0.0165 & 21.98 & $<$0.001 & 9,265 \\
- & Vehicle share, t+30 & Route-cost advantage, per 100 bp & 0.0002$^{***}$ & 0.0000 & 5.26 & $<$0.001 & 9,265 \\
- & Vehicle share, t+30 & Vehicle-route availability & 0.1254$^{***}$ & 0.0152 & 8.23 & $<$0.001 & 9,265 \\
+Route-cost advantage, per 100 bp & \makecell{0.1462$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0001$^{***}$ \\ {\scriptsize p=0.002}} & \makecell{0.0002$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Vehicle-route availability & \makecell{19.1385$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0940$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1254$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Vehicle-route depth & \makecell{28.8502$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  \\
+LP concentration &  & \makecell{0.1117$^{***}$ \\ {\scriptsize p$<$0.001}} &  \\
+Current vehicle share &  &  & \makecell{0.3630$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Fixed effects & Endpoint-pair x date & Token and date & Token and date \\
+SE clustering & Date & Date & Date \\
+Observations & 189,143 & 9,380 & 9,265 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item \textit{Notes:} Panel A uses endpoint-pair-by-date fixed effects and date-clustered standard errors. Panel B uses token and date fixed effects with date-clustered standard errors. Route-cost advantage is measured per 100 basis points.
+\item \textit{Notes:} Cells report coefficients with p-values beneath them. Stars denote 10\%, 5\%, and 1\% significance. Route-cost advantage is measured per 100 basis points.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -172,38 +174,35 @@ Panel & Outcome & Regressor & Estimate & SE & t & p & N \\
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Liquidity provision, persistence, and challenger displacement.}
 \label{tab:rq2-rq3-liquidity-persistence}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}}
 \toprule
-Panel & Outcome / bin & Regressor / statistic & Estimate & SE & t & p & N \\
+ & \makecell{(1) \\ Vehicle share, t+7} & \makecell{(2) \\ LP concentration, t+7} & \makecell{(3) \\ Log LP liquidity, t+7} & \makecell{(4) \\ Change in LP concentration} & \makecell{(5) \\ Change in log liquidity / challenger N} \\
 \midrule
-\multicolumn{8}{l}{\textit{Panel A. Liquidity-route feedback}} \\
- & Vehicle share, t+7 & LP concentration & 0.1117$^{***}$ & 0.0135 & 8.30 & $<$0.001 & 9,380 \\
- & LP concentration, t+7 & Current vehicle share & 0.0419$^{***}$ & 0.0098 & 4.29 & $<$0.001 & 9,380 \\
- & Log vehicle-linked liquidity, t+7 & Current vehicle share & 1.1713$^{***}$ & 0.0621 & 18.86 & $<$0.001 & 9,380 \\
+\multicolumn{6}{l}{\textit{Panel A. Liquidity-route feedback}} \\
+LP concentration & \makecell{0.1117$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  &  &  \\
+Current vehicle share &  & \makecell{0.0419$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{1.1713$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-3.4047$^{***}$ \\ {\scriptsize p=0.009}} & \makecell{-0.1805$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Vehicle-route availability &  &  &  & \makecell{3.6119$^{**}$ \\ {\scriptsize p=0.014}} & \makecell{0.2112$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+No-direct, vehicle-available &  &  &  & \makecell{-6.5773$^{**}$ \\ {\scriptsize p=0.035}} & \makecell{-0.4296$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Fixed effects & Token and date & Token and date & Token and date & Token and date & Token and date \\
+SE clustering & Date & Date & Date & Date & Date \\
+Observations & 9,380 & 9,380 & 9,380 & 9,265 & 9,265 \\
 \addlinespace
-\multicolumn{8}{l}{\textit{Panel B. LP stock changes}} \\
- & Change in LP concentration, t to t+30 & Current vehicle share & -3.4047$^{***}$ & 1.3012 & -2.62 & 0.009 & 9,265 \\
- & Change in LP concentration, t to t+30 & Vehicle-route availability & 3.6119$^{**}$ & 1.4612 & 2.47 & 0.014 & 9,265 \\
- & Change in LP concentration, t to t+30 & No-direct, vehicle-available & -6.5773$^{**}$ & 3.1165 & -2.11 & 0.035 & 9,265 \\
- & Change in log vehicle-linked liquidity, t to t+30 & Current vehicle share & -0.1805$^{***}$ & 0.0458 & -3.94 & $<$0.001 & 9,265 \\
- & Change in log vehicle-linked liquidity, t to t+30 & Vehicle-route availability & 0.2112$^{***}$ & 0.0454 & 4.65 & $<$0.001 & 9,265 \\
- & Change in log vehicle-linked liquidity, t to t+30 & No-direct, vehicle-available & -0.4296$^{***}$ & 0.1154 & -3.72 & $<$0.001 & 9,265 \\
-\addlinespace
-\multicolumn{8}{l}{\textit{Panel C. Challenger displacement thresholds}} \\
- & Challenger <= incumbent & Incumbent share change, t+30 & -2.80$^{***}$ &  & -8.16 & $<$0.001 & 1,687 \\
- & 0 to 25 bp & Incumbent share change, t+30 & -5.19$^{***}$ &  & -3.47 & $<$0.001 & 86 \\
- & 25 to 100 bp & Incumbent share change, t+30 & -6.72$^{***}$ &  & -5.47 & $<$0.001 & 146 \\
- & 100 to 250 bp & Incumbent share change, t+30 & -9.50$^{***}$ &  & -7.28 & $<$0.001 & 92 \\
- & >250 bp & Incumbent share change, t+30 & -10.08$^{***}$ &  & -10.17 & $<$0.001 & 193 \\
+\multicolumn{6}{l}{\textit{Panel B. Challenger displacement thresholds}} \\
+Challenger <= incumbent &  &  &  & \makecell{-2.80$^{***}$ \\ {\scriptsize p$<$0.001}} & 1,687 \\
+0 to 25 bp &  &  &  & \makecell{-5.19$^{***}$ \\ {\scriptsize p$<$0.001}} & 86 \\
+25 to 100 bp &  &  &  & \makecell{-6.72$^{***}$ \\ {\scriptsize p$<$0.001}} & 146 \\
+100 to 250 bp &  &  &  & \makecell{-9.50$^{***}$ \\ {\scriptsize p$<$0.001}} & 92 \\
+>250 bp &  &  &  & \makecell{-10.08$^{***}$ \\ {\scriptsize p$<$0.001}} & 193 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item \textit{Notes:} Panels A and B use token and date fixed effects with date-clustered standard errors. Panel C reports bin means for challenger route-cost advantages and incumbent share changes.
+\item \textit{Notes:} Cells report coefficients with p-values beneath them. Panel A uses token and date fixed effects with date-clustered standard errors. Panel B reports incumbent share changes by challenger route-cost edge bins; the last column gives the number of incumbent days.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -212,39 +211,31 @@ Panel & Outcome / bin & Regressor / statistic & Estimate & SE & t & p & N \\
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Stress rotation inside common route opportunities.}
 \label{tab:rq4-stress}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}}
 \toprule
-Panel & Estimate & Effect & Events & t & p & Interpretation \\
+ & Events & \makecell{(1) \\ WETH / pre} & \makecell{(2) \\ Stable / event} & \makecell{(3) \\ WETH-stable / post 1-7} & \makecell{(4) \\ Direct share / post 8-30} & \makecell{(5) \\ Indirect volume / note} \\
 \midrule
-\multicolumn{7}{l}{\textit{Panel A. Same-day decomposition}} \\
- & WETH share change & -1.48 pp$^{**}$ & 20 & -2.59 & 0.018 & event-day minus prior-28-day baseline \\
- & Stable share change & 1.48 pp$^{**}$ & 20 & 2.59 & 0.018 & event-day minus prior-28-day baseline \\
- & WETH-minus-stable change & -2.96 pp$^{**}$ & 20 & -2.59 & 0.018 & event-day minus prior-28-day baseline \\
- & Aggregate direct-route share change & -0.25 pp & 20 & -0.42 & 0.679 & event-day minus prior-28-day baseline \\
- & Log indirect-route volume change & 0.51 log points$^{***}$ & 20 & 3.2 & 0.005 & event-day minus prior-28-day baseline \\
-\addlinespace
-\multicolumn{7}{l}{\textit{Panel B. Event-time persistence}} \\
- & event day & -26.96$^{***}$ & 20 & -3.06 & 0.006 & WETH-minus-stable gap \\
- & post 1 to 7 & -11.16$^{*}$ & 20 & -1.87 & 0.077 & WETH-minus-stable gap \\
- & post 8 to 30 & -9.48$^{**}$ & 20 & -2.13 & 0.046 & WETH-minus-stable gap \\
- & pre -14 to -1 & -5.63$^{**}$ & 20 & -2.63 & 0.016 & WETH-minus-stable gap \\
+Stress event day & 20 & \makecell{-1.48 pp$^{**}$ \\ {\scriptsize p=0.018}} & \makecell{1.48 pp$^{**}$ \\ {\scriptsize p=0.018}} & \makecell{-2.96 pp$^{**}$ \\ {\scriptsize p=0.018}} & \makecell{-0.25 pp \\ {\scriptsize p=0.679}} & \makecell{0.51 log points$^{***}$ \\ {\scriptsize p=0.005}} \\
+\multicolumn{7}{l}{\textit{Panel B. WETH-minus-stable event-time gap}} \\
+Gap change & 20 & \makecell{-5.63$^{**}$ \\ {\scriptsize p=0.016}} & \makecell{-26.96$^{***}$ \\ {\scriptsize p=0.006}} & \makecell{-11.16$^{*}$ \\ {\scriptsize p=0.077}} & \makecell{-9.48$^{**}$ \\ {\scriptsize p=0.046}} &  \\
 \addlinespace
 \multicolumn{7}{l}{\textit{Panel C. Threshold and overlap sensitivity}} \\
- & all events, threshold 6\% & -3.12 pp$^{***}$ & 91 & -3.44 & $<$0.001 & negative share 67.0\% \\
- & all events, threshold 8\% & -2.95 pp$^{***}$ & 49 & -3.41 & 0.001 & negative share 65.3\% \\
- & all events, threshold 10\% & -3.74 pp$^{***}$ & 26 & -3.7 & 0.001 & negative share 65.4\% \\
- & all events, threshold 12\% & -3.18 pp$^{**}$ & 19 & -2.68 & 0.015 & negative share 63.2\% \\
- & top 20, threshold 8\% & -3.09 pp$^{**}$ & 18 & -2.48 & 0.024 & negative share 61.1\% \\
- & non-overlap, threshold 8\% & -3.01 pp$^{**}$ & 33 & -2.45 & 0.020 & negative share 57.6\% \\
+all events, threshold 6\% & 91 &  &  & \makecell{-3.12 pp$^{***}$ \\ {\scriptsize p$<$0.001}} &  & negative share 67.0\% \\
+all events, threshold 8\% & 49 &  &  & \makecell{-2.95 pp$^{***}$ \\ {\scriptsize p=0.001}} &  & negative share 65.3\% \\
+all events, threshold 10\% & 26 &  &  & \makecell{-3.74 pp$^{***}$ \\ {\scriptsize p=0.001}} &  & negative share 65.4\% \\
+all events, threshold 12\% & 19 &  &  & \makecell{-3.18 pp$^{**}$ \\ {\scriptsize p=0.015}} &  & negative share 63.2\% \\
+top 20, threshold 8\% & 18 &  &  & \makecell{-3.09 pp$^{**}$ \\ {\scriptsize p=0.024}} &  & negative share 61.1\% \\
+non-overlap, threshold 8\% & 33 &  &  & \makecell{-3.01 pp$^{**}$ \\ {\scriptsize p=0.020}} &  & negative share 57.6\% \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item \textit{Notes:} Event-day effects are measured relative to a prior 28-day baseline. The event-time rows show that pre-movement exists, so the stress result should be written as a same-day common-support rotation, not a clean surprise-shock causal design.
+\item \textit{Notes:} Cells report event effects with p-values beneath them. Panel A is the same-day decomposition relative to a prior 28-day baseline. Panel B uses the same WETH-minus-stable gap in event-time windows; pre-movement means the result should be written as a common-support rotation, not a clean surprise-shock causal design.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -253,29 +244,24 @@ Panel & Estimate & Effect & Events & t & p & Interpretation \\
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Architecture and direct-route opportunity.}
 \label{tab:rq5-architecture}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}}
 \toprule
-Panel & Outcome & Sample & Effect & SE & t & p & N \\
+ & \makecell{(1) \\ No-direct WETH} & \makecell{(2) \\ Q1 direct} & \makecell{(3) \\ Q1 no-direct WETH} & \makecell{(4) \\ Q2 direct} & \makecell{(5) \\ Q2 no-direct WETH} & \makecell{(6) \\ Q4 direct} & \makecell{(7) \\ Q4 no-direct WETH} \\
 \midrule
-\multicolumn{8}{l}{\textit{Panel A. Main V3 opportunity test}} \\
- & No-direct, WETH-available & All matched pairs & -25.81$^{***}$ &  & -7.62 & $<$0.001 & 1,822 \\
-\addlinespace
-\multicolumn{8}{l}{\textit{Panel B. Dose response by pre-V3 direct availability}} \\
- & Direct-route availability & Q1 weakest & 56.42$^{***}$ & 10.03 & 5.63 & $<$0.001 & 1,122 \\
- & No-direct, WETH-available & Q1 weakest & -33.03$^{***}$ & 12.22 & -2.70 & 0.007 & 1,122 \\
- & Direct-route availability & Q2 & 51.36$^{***}$ & 14.83 & 3.46 & $<$0.001 & 1,434 \\
- & No-direct, WETH-available & Q2 & -47.51$^{***}$ & 8.40 & -5.66 & $<$0.001 & 1,434 \\
- & Direct-route availability & Q4 strongest & 3.28$^{*}$ & 1.98 & 1.66 & 0.099 & 8,914 \\
- & No-direct, WETH-available & Q4 strongest & -1.91 & 1.98 & -0.96 & 0.336 & 8,914 \\
+Post V3 & \makecell{-25.81$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{56.42$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-33.03$^{***}$ \\ {\scriptsize p=0.007}} & \makecell{51.36$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-47.51$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{3.28$^{*}$ \\ {\scriptsize p=0.099}} & \makecell{-1.91 \\ {\scriptsize p=0.336}} \\
+Endpoint-pair FE & yes & yes & yes & yes & yes & yes & yes \\
+SE clustering & Pair & Pair & Pair & Pair & Pair & Pair & Pair \\
+Observations & 1,822 & 1,122 & 1,122 & 1,434 & 1,434 & 8,914 & 8,914 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item \textit{Notes:} Effects are percentage points unless otherwise noted. The table is scoped to route opportunity around V3 and should not be read as a broad causal launch effect for every V3 outcome.
+\item \textit{Notes:} Dependent variables are route-opportunity measures. Cells report post-V3 effects in percentage points with p-values beneath them. The table is scoped to route opportunity around V3 and should not be read as a broad causal launch effect for every V3 outcome.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -284,33 +270,28 @@ Panel & Outcome & Sample & Effect & SE & t & p & N \\
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Settlement design, physical transfer incidence, and matched-cell route use.}
 \label{tab:rq6-settlement}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}}
 \toprule
-Panel & Sample / outcome & Cells / N & V3 / regressor & V4 & Difference / estimate & p / diagnostic \\
+ & \makecell{(1) \\ All route sizes} & \makecell{(2) \\ Small} & \makecell{(3) \\ Medium} & \makecell{(4) \\ Large} & \makecell{(5) \\ Log V4 route count} & \makecell{(6) \\ Log V4 route volume} \\
 \midrule
-\multicolumn{7}{l}{\textit{Panel A. Physical intermediary-token transfer incidence}} \\
- & All & 500 & 100.0\% & 81.4\% & -18.6 pp$^{***}$ & $<$0.001 \\
- & Route size: Small & 104 & 100.0\% & 60.6\% & -39.4 pp$^{***}$ & $<$0.001 \\
- & Route size: Medium & 73 & 100.0\% & 87.7\% & -12.3 pp$^{***}$ & 0.002 \\
- & Route size: Large & 94 & 100.0\% & 96.8\% & -3.2 pp$^{*}$ & 0.083 \\
-\addlinespace
-\multicolumn{7}{l}{\textit{Panel B. Matched-sample balance and receipt diagnostics}} \\
- & Uniswap V3 & 500 & \$6,136 &  & 53.05 & 100.0 \\
- & Uniswap V4 & 500 &  & \$3,542 & 71.05 & 81.4 \\
- & V4 minus V3 within cell & 500 &  &  & log route diff=-0.692 & t = -7.58, p < 0.001 \\
-\addlinespace
-\multicolumn{7}{l}{\textit{Panel C. Matched-cell route-use persistence}} \\
- & Log V4 route count & 16,218 & Log V3 route count &  & 0.3674 (t=28.33)$^{***}$ & $<$0.001 \\
- & Log V4 route volume & 16,218 & Log V3 route volume &  & 0.5819 (t=83.13)$^{***}$ & $<$0.001 \\
+V4 minus V3 transfer incidence & \makecell{-18.6 pp$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-39.4 pp$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-12.3 pp$^{***}$ \\ {\scriptsize p=0.002}} & \makecell{-3.2 pp$^{*}$ \\ {\scriptsize p=0.083}} &  &  \\
+V3 transfer incidence & 100.0\% & 100.0\% & 100.0\% & 100.0\% &  &  \\
+V4 transfer incidence & 81.4\% & 60.6\% & 87.7\% & 96.8\% &  &  \\
+\multicolumn{7}{l}{\textit{Panel B. Matched-cell route-use persistence}} \\
+Log V3 route count &  &  &  &  & \makecell{0.3674$^{***}$ \\ {\scriptsize p$<$0.001}} &  \\
+Log V3 route volume &  &  &  &  &  & \makecell{0.5819$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Week FE / vehicle FE &  &  &  &  & yes & yes \\
+Week clusters &  &  &  &  & 75 & 75 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item \textit{Notes:} Panel A compares matched V3 and V4 route units. Panel B reports matched-sample route-size and receipt-log diagnostics; numeric entries in the last column are diagnostic percentages or test statistics, not p-values unless labelled. Panel C shows that V4 route demand persists in matched endpoint-vehicle-week cells.
+\item \textit{Notes:} Columns (1)-(4) compare matched V3 and V4 route units; cells report transfer-incidence gaps with p-values beneath them. Columns (5)-(6) are matched endpoint-vehicle-week regressions of V4 route use on V3 route use.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -319,30 +300,26 @@ Panel & Sample / outcome & Cells / N & V3 / regressor & V4 & Difference / estima
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Common liquidity across pools linked to the same vehicle.}
 \label{tab:rq7-common-liquidity}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}}
 \toprule
-Panel & Sample & Regressor & Estimate & SE & t & p & N \\
+ & \makecell{(1) \\ Full sample} & \makecell{(2) \\ Stress interaction} & \makecell{(3) \\ High vehicle use} & \makecell{(4) \\ Low vehicle use} & \makecell{(5) \\ Excl. top pools} \\
 \midrule
-\multicolumn{8}{l}{\textit{Panel A. Baseline common-liquidity regressions}} \\
- & Full sample & Market liquidity factor & 0.7063$^{***}$ & 0.0573 & 12.32 & $<$0.001 & 685,685 \\
- & Full sample & Vehicle liquidity factor & 0.1626$^{***}$ & 0.0431 & 3.77 & $<$0.001 & 685,685 \\
- & Stress interaction & Market liquidity factor & 0.6987$^{***}$ & 0.0605 & 11.55 & $<$0.001 & 685,685 \\
- & Stress interaction & Vehicle liquidity factor & 0.1586$^{***}$ & 0.0438 & 3.62 & $<$0.001 & 685,685 \\
- & Stress interaction & Vehicle factor x stress & 0.1064$^{**}$ & 0.0491 & 2.17 & 0.030 & 685,685 \\
-\addlinespace
-\multicolumn{8}{l}{\textit{Panel B. Heterogeneity and top-pool exclusion}} \\
- & High average VehicleShare vehicles & Vehicle liquidity factor & 0.2174$^{***}$ & 0.0464 & 4.69 & $<$0.001 & 664,218 \\
- & Low average VehicleShare vehicles & Vehicle liquidity factor & -0.0921 & 0.0903 & -1.02 & 0.307 & 21,467 \\
- & Excluding top 1\% mean-liquidity pools & Vehicle liquidity factor & 0.1670$^{***}$ & 0.0436 & 3.83 & $<$0.001 & 679,228 \\
+Market liquidity factor & \makecell{0.7063$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.6987$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.6572$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.5276$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.7062$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Vehicle liquidity factor & \makecell{0.1626$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1586$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.2174$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.0921 \\ {\scriptsize p=0.307}} & \makecell{0.1670$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Vehicle factor x stress &  & \makecell{0.1064$^{**}$ \\ {\scriptsize p=0.030}} &  &  &  \\
+Pool-vehicle FE & yes & yes & yes & yes & yes \\
+SE clustering & Date & Date & Date & Date & Date \\
+Observations & 685,685 & 685,685 & 664,218 & 21,467 & 679,228 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item \textit{Notes:} Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.
+\item \textit{Notes:} Dependent variable is daily pool-level log liquidity change. Cells report coefficients with p-values beneath them. Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -351,7 +328,8 @@ Panel & Sample & Regressor & Estimate & SE & t & p & N \\
 \begin{landscape}
 \begin{table}[!htbp]
 \centering
-\small
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
 \begin{threeparttable}
 \caption{Specification registry for paper-facing tests.}
 \label{tab:specification-registry}

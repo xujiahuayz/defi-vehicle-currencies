@@ -9,6 +9,7 @@ description = "Data and analysis pipeline for The Making of Vehicle Currencies."
 requires-python = ">=3.11"
 dependencies = [
   "matplotlib>=3.8",
+  "networkx>=3.3",
   "pandas>=2.2",
   "pyarrow>=16",
   "numpy>=1.26",

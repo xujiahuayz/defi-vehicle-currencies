@@ -9,6 +9,9 @@ the supporting ``table_r*`` family feeds ``table_m01``-``table_m07`` through
 For a clean reproducible rebuild from tracked scripts, run:
 
     .venv/bin/python scripts/build_results_evidence_outputs.py
+
+The TeX output is tracked. The PDF output is a local ignored render because
+different TeX engines produce different PDF byte streams.
 """
 from __future__ import annotations
 
@@ -97,6 +100,32 @@ def starred(value: object, p_value: object) -> object:
     return RawLatex(f"{esc(value)}$^{{{stars}}}$")
 
 
+def p_label(p_value: object) -> str:
+    text = str(p_value).strip()
+    if not text:
+        return ""
+    if text.startswith("<"):
+        return f"p{text}"
+    if text.startswith("p"):
+        return text
+    return f"p={text}"
+
+
+def coef_p_cell(value: object, p_value: object) -> object:
+    if value is None or str(value) == "":
+        return ""
+    stars = significance_stars(p_value)
+    star_tex = f"$^{{{stars}}}$" if stars else ""
+    p_text = p_label(p_value)
+    if not p_text:
+        return RawLatex(f"\\makecell{{{esc(value)}{star_tex}}}")
+    return RawLatex(f"\\makecell{{{esc(value)}{star_tex} \\\\ {{\\scriptsize {esc(p_text)}}}}}")
+
+
+def header_cell(number: str, label: str) -> RawLatex:
+    return RawLatex(f"\\makecell{{{esc(number)} \\\\ {esc(label)}}}")
+
+
 def read_table(stem: str) -> pd.DataFrame:
     path = TABLES / f"{stem}.csv"
     if not path.exists():
@@ -154,6 +183,29 @@ def clean_sample(name: str) -> str:
     return mapping.get(name, name)
 
 
+def first_match(df: pd.DataFrame, **where: str) -> pd.Series | None:
+    g = df.copy()
+    for key, val in where.items():
+        g = g[g[key].astype(str).eq(val)]
+    if g.empty:
+        return None
+    return g.iloc[0]
+
+
+def reg_cell(df: pd.DataFrame, *, estimate_col: str = "Beta", p_col: str = "p", **where: str) -> object:
+    r = first_match(df, **where)
+    if r is None:
+        return ""
+    return coef_p_cell(r[estimate_col], r[p_col])
+
+
+def value_cell(df: pd.DataFrame, column: str, **where: str) -> str:
+    r = first_match(df, **where)
+    if r is None:
+        return ""
+    return str(r[column])
+
+
 @dataclass
 class TableSpec:
     number: str
@@ -175,7 +227,8 @@ def table_tex(spec: TableSpec) -> str:
         [
             r"\begin{table}[!htbp]",
             r"\centering",
-            r"\small",
+            r"\scriptsize",
+            r"\setlength{\tabcolsep}{2.5pt}",
             r"\begin{threeparttable}",
             f"\\caption{{{esc(spec.caption)}}}",
             f"\\label{{{spec.label}}}",
@@ -341,41 +394,69 @@ def variable_table() -> TableSpec:
 def rq1_table() -> TableSpec:
     actual = read_table("table_m13_actual_route_choice")
     core = read_table("table_m09_core_panel_regressions")
-    rows: list[list[object]] = []
-    rows.append(["Panel A. Actual route choice", "", "", "", "", "", "", ""])
-    for _, r in actual[actual["Outcome"].eq("Actual vehicle share")].iterrows():
-        rows.append([
+    rows: list[list[object]] = [
+        [
+            "Route-cost advantage, per 100 bp",
+            reg_cell(actual, Outcome="Actual vehicle share", Regressor="route_cost_advantage_100bp"),
+            reg_cell(core, Outcome="future VehicleShare, t+7", Regressor="route_cost_advantage_100bp"),
+            reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="route_cost_advantage_100bp"),
+        ],
+        [
+            "Vehicle-route availability",
+            reg_cell(actual, Outcome="Actual vehicle share", Regressor="vehicle_available"),
+            reg_cell(core, Outcome="future VehicleShare, t+7", Regressor="vehicle_available_share"),
+            reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="vehicle_available_share"),
+        ],
+        [
+            "Vehicle-route depth",
+            reg_cell(actual, Outcome="Actual vehicle share", Regressor="vehicle_depth"),
             "",
-            clean_outcome(r["Outcome"]),
-            clean_regressor(r["Regressor"]),
-            starred(r["Beta"], r["p"]),
-            r["SE"],
-            r["t"],
-            r["p"],
-            r["N"],
-        ])
-    rows.append(["Panel B. Future vehicle share", "", "", "", "", "", "", ""])
-    selectors = [
-        ("future VehicleShare, t+7", "route_cost_advantage_100bp"),
-        ("future VehicleShare, t+7", "vehicle_available_share"),
-        ("future VehicleShare, t+7", "lp_concentration_share"),
-        ("future VehicleShare, t+30", "BridgeShare"),
-        ("future VehicleShare, t+30", "route_cost_advantage_100bp"),
-        ("future VehicleShare, t+30", "vehicle_available_share"),
+            "",
+        ],
+        [
+            "LP concentration",
+            "",
+            reg_cell(core, Outcome="future VehicleShare, t+7", Regressor="lp_concentration_share"),
+            "",
+        ],
+        [
+            "Current vehicle share",
+            "",
+            "",
+            reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="BridgeShare"),
+        ],
+        [
+            "Fixed effects",
+            "Endpoint-pair x date",
+            "Token and date",
+            "Token and date",
+        ],
+        [
+            "SE clustering",
+            "Date",
+            "Date",
+            "Date",
+        ],
+        [
+            "Observations",
+            value_cell(actual, "N", Outcome="Actual vehicle share", Regressor="route_cost_advantage_100bp"),
+            value_cell(core, "N", Outcome="future VehicleShare, t+7", Regressor="route_cost_advantage_100bp"),
+            value_cell(core, "N", Outcome="future VehicleShare, t+30", Regressor="route_cost_advantage_100bp"),
+        ],
     ]
-    for outcome, reg in selectors:
-        g = core[(core["Outcome"].eq(outcome)) & (core["Regressor"].eq(reg))]
-        if not g.empty:
-            r = g.iloc[0]
-            rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(reg), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
     return TableSpec(
         "3",
         "Vehicle formation: route economics, availability, and realized route choice.",
         "tab:rq1-formation",
-        ["Panel", "Outcome", "Regressor", "Estimate", "SE", "t", "p", "N"],
-        ["0.10\\textwidth", "0.22\\textwidth", "0.24\\textwidth", "0.08\\textwidth", "0.08\\textwidth", "0.06\\textwidth", "0.07\\textwidth", "0.09\\textwidth"],
+        [
+            "",
+            header_cell("(1)", "Actual vehicle share"),
+            header_cell("(2)", "Vehicle share, t+7"),
+            header_cell("(3)", "Vehicle share, t+30"),
+        ],
+        ["0.28\\textwidth", "0.21\\textwidth", "0.21\\textwidth", "0.21\\textwidth"],
         rows,
-        "Panel A uses endpoint-pair-by-date fixed effects and date-clustered standard errors. Panel B uses token and date fixed effects with date-clustered standard errors. Route-cost advantage is measured per 100 basis points.",
+        "Cells report coefficients with p-values beneath them. Stars denote 10%, 5%, and 1% significance. Route-cost advantage is measured per 100 basis points.",
         landscape=True,
     )
 
@@ -383,33 +464,76 @@ def rq1_table() -> TableSpec:
 def rq2_rq3_table() -> TableSpec:
     lp = read_table("table_m14_lp_allocation_feedback")
     thresholds = read_table("table_m10_persistence_thresholds")
-    rows: list[list[object]] = [["Panel A. Liquidity-route feedback", "", "", "", "", "", "", ""]]
-    for _, r in lp[lp["Panel"].eq("A. Stock feedback")].iterrows():
-        rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(r["Regressor"]), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
-    rows.append(["Panel B. LP stock changes", "", "", "", "", "", "", ""])
-    for _, r in lp[lp["Panel"].eq("B. LP stock change")].iterrows():
-        if r["Regressor"] in {"BridgeShare", "vehicle_available_share", "no_direct_vehicle_available_share"}:
-            rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(r["Regressor"]), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
-    rows.append(["Panel C. Challenger displacement thresholds", "", "", "", "", "", "", ""])
+    rows: list[list[object]] = [
+        ["Panel A. Liquidity-route feedback", "", "", "", "", ""],
+        [
+            "LP concentration",
+            reg_cell(lp, Panel="A. Stock feedback", Outcome="future VehicleShare, t+7", Regressor="lp_concentration_share"),
+            "",
+            "",
+            "",
+            "",
+        ],
+        [
+            "Current vehicle share",
+            "",
+            reg_cell(lp, Panel="A. Stock feedback", Outcome="future LPConcentration, t+7", Regressor="BridgeShare"),
+            reg_cell(lp, Panel="A. Stock feedback", Outcome="future log VehicleLinkedLiquidity, t+7", Regressor="BridgeShare"),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in LPConcentration", Regressor="BridgeShare"),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="BridgeShare"),
+        ],
+        [
+            "Vehicle-route availability",
+            "",
+            "",
+            "",
+            reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in LPConcentration", Regressor="vehicle_available_share"),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="vehicle_available_share"),
+        ],
+        [
+            "No-direct, vehicle-available",
+            "",
+            "",
+            "",
+            reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in LPConcentration", Regressor="no_direct_vehicle_available_share"),
+            reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="no_direct_vehicle_available_share"),
+        ],
+        ["Fixed effects", "Token and date", "Token and date", "Token and date", "Token and date", "Token and date"],
+        ["SE clustering", "Date", "Date", "Date", "Date", "Date"],
+        [
+            "Observations",
+            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="future VehicleShare, t+7", Regressor="lp_concentration_share"),
+            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="future LPConcentration, t+7", Regressor="BridgeShare"),
+            value_cell(lp, "N", Panel="A. Stock feedback", Outcome="future log VehicleLinkedLiquidity, t+7", Regressor="BridgeShare"),
+            value_cell(lp, "N", Panel="B. LP stock change", Outcome="30-day change in LPConcentration", Regressor="BridgeShare"),
+            value_cell(lp, "N", Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="BridgeShare"),
+        ],
+        ["Panel B. Challenger displacement thresholds", "", "", "", "", ""],
+    ]
     for _, r in thresholds.iterrows():
         rows.append([
-            "",
             clean_sample(r["Challenger advantage bin"]),
-            "Incumbent share change, t+30",
-            starred(r["Mean incumbent share change t+30 (pp)"], r["p"]),
             "",
-            r["t"],
-            r["p"],
+            "",
+            "",
+            coef_p_cell(r["Mean incumbent share change t+30 (pp)"], r["p"]),
             r["Incumbent days"],
         ])
     return TableSpec(
         "4",
         "Liquidity provision, persistence, and challenger displacement.",
         "tab:rq2-rq3-liquidity-persistence",
-        ["Panel", "Outcome / bin", "Regressor / statistic", "Estimate", "SE", "t", "p", "N"],
-        ["0.10\\textwidth", "0.26\\textwidth", "0.24\\textwidth", "0.08\\textwidth", "0.07\\textwidth", "0.06\\textwidth", "0.07\\textwidth", "0.08\\textwidth"],
+        [
+            "",
+            header_cell("(1)", "Vehicle share, t+7"),
+            header_cell("(2)", "LP concentration, t+7"),
+            header_cell("(3)", "Log LP liquidity, t+7"),
+            header_cell("(4)", "Change in LP concentration"),
+            header_cell("(5)", "Change in log liquidity / challenger N"),
+        ],
+        ["0.24\\textwidth", "0.15\\textwidth", "0.15\\textwidth", "0.15\\textwidth", "0.15\\textwidth", "0.15\\textwidth"],
         rows,
-        "Panels A and B use token and date fixed effects with date-clustered standard errors. Panel C reports bin means for challenger route-cost advantages and incumbent share changes.",
+        "Cells report coefficients with p-values beneath them. Panel A uses token and date fixed effects with date-clustered standard errors. Panel B reports incumbent share changes by challenger route-cost edge bins; the last column gives the number of incumbent days.",
         landscape=True,
     )
 
@@ -417,24 +541,46 @@ def rq2_rq3_table() -> TableSpec:
 def stress_table() -> TableSpec:
     stress = read_table("table_m04_p3_stress_rotation")
     et = read_table("table_m11_stress_event_time")
-    rows: list[list[object]] = [["Panel A. Same-day decomposition", "", "", "", "", "", ""]]
-    for _, r in stress[stress["Panel"].eq("A. Main decomposed same-day effect")].iterrows():
-        if r["Estimate"] in {"WETH share change", "Stable share change", "WETH-minus-stable change", "Aggregate direct-route share change", "Log indirect-route volume change"}:
-            rows.append(["", r["Estimate"], starred(r["Effect"], r["p"]), r["Events"], r["t"], r["p"], r["Interpretation"]])
-    rows.append(["Panel B. Event-time persistence", "", "", "", "", "", ""])
-    for _, r in et[et["Outcome"].eq("gap change pp")].iterrows():
-        rows.append(["", r["Window"], starred(r["Mean effect (pp)"], r["p"]), r["Events"], r["t"], r["p"], "WETH-minus-stable gap"])
-    rows.append(["Panel C. Threshold and overlap sensitivity", "", "", "", "", "", ""])
+    rows: list[list[object]] = [
+        [
+            "Stress event day",
+            value_cell(stress, "Events", Panel="A. Main decomposed same-day effect", Estimate="WETH share change"),
+            coef_p_cell(value_cell(stress, "Effect", Panel="A. Main decomposed same-day effect", Estimate="WETH share change"), value_cell(stress, "p", Panel="A. Main decomposed same-day effect", Estimate="WETH share change")),
+            coef_p_cell(value_cell(stress, "Effect", Panel="A. Main decomposed same-day effect", Estimate="Stable share change"), value_cell(stress, "p", Panel="A. Main decomposed same-day effect", Estimate="Stable share change")),
+            coef_p_cell(value_cell(stress, "Effect", Panel="A. Main decomposed same-day effect", Estimate="WETH-minus-stable change"), value_cell(stress, "p", Panel="A. Main decomposed same-day effect", Estimate="WETH-minus-stable change")),
+            coef_p_cell(value_cell(stress, "Effect", Panel="A. Main decomposed same-day effect", Estimate="Aggregate direct-route share change"), value_cell(stress, "p", Panel="A. Main decomposed same-day effect", Estimate="Aggregate direct-route share change")),
+            coef_p_cell(value_cell(stress, "Effect", Panel="A. Main decomposed same-day effect", Estimate="Log indirect-route volume change"), value_cell(stress, "p", Panel="A. Main decomposed same-day effect", Estimate="Log indirect-route volume change")),
+        ],
+        ["Panel B. WETH-minus-stable event-time gap", "", "", "", "", "", ""],
+        [
+            "Gap change",
+            value_cell(et, "Events", Window="event day", Outcome="gap change pp"),
+            coef_p_cell(value_cell(et, "Mean effect (pp)", Window="pre -14 to -1", Outcome="gap change pp"), value_cell(et, "p", Window="pre -14 to -1", Outcome="gap change pp")),
+            coef_p_cell(value_cell(et, "Mean effect (pp)", Window="event day", Outcome="gap change pp"), value_cell(et, "p", Window="event day", Outcome="gap change pp")),
+            coef_p_cell(value_cell(et, "Mean effect (pp)", Window="post 1 to 7", Outcome="gap change pp"), value_cell(et, "p", Window="post 1 to 7", Outcome="gap change pp")),
+            coef_p_cell(value_cell(et, "Mean effect (pp)", Window="post 8 to 30", Outcome="gap change pp"), value_cell(et, "p", Window="post 8 to 30", Outcome="gap change pp")),
+            "",
+        ],
+        ["Panel C. Threshold and overlap sensitivity", "", "", "", "", "", ""],
+    ]
     for _, r in stress[stress["Panel"].eq("B. Threshold/overlap sensitivity")].iterrows():
-        rows.append(["", r["Estimate"], starred(r["Effect"], r["p"]), r["Events"], r["t"], r["p"], r["Interpretation"]])
+        rows.append([r["Estimate"], r["Events"], "", "", coef_p_cell(r["Effect"], r["p"]), "", r["Interpretation"]])
     return TableSpec(
         "5",
         "Stress rotation inside common route opportunities.",
         "tab:rq4-stress",
-        ["Panel", "Estimate", "Effect", "Events", "t", "p", "Interpretation"],
-        ["0.11\\textwidth", "0.27\\textwidth", "0.11\\textwidth", "0.08\\textwidth", "0.07\\textwidth", "0.08\\textwidth", "0.24\\textwidth"],
+        [
+            "",
+            "Events",
+            header_cell("(1)", "WETH / pre"),
+            header_cell("(2)", "Stable / event"),
+            header_cell("(3)", "WETH-stable / post 1-7"),
+            header_cell("(4)", "Direct share / post 8-30"),
+            header_cell("(5)", "Indirect volume / note"),
+        ],
+        ["0.24\\textwidth", "0.08\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.18\\textwidth"],
         rows,
-        "Event-day effects are measured relative to a prior 28-day baseline. The event-time rows show that pre-movement exists, so the stress result should be written as a same-day common-support rotation, not a clean surprise-shock causal design.",
+        "Cells report event effects with p-values beneath them. Panel A is the same-day decomposition relative to a prior 28-day baseline. Panel B uses the same WETH-minus-stable gap in event-time windows; pre-movement means the result should be written as a common-support rotation, not a clean surprise-shock causal design.",
         landscape=True,
     )
 
@@ -442,30 +588,65 @@ def stress_table() -> TableSpec:
 def architecture_table() -> TableSpec:
     main = read_table("table_m05_p4a_v3_opportunity")
     dose = read_table("table_m16_v3_dose_response")
-    rows: list[list[object]] = [["Panel A. Main V3 opportunity test", "", "", "", "", "", "", ""]]
-    for _, r in main.iterrows():
-        rows.append(["", clean_outcome(r["Outcome"]), "All matched pairs", starred(r["Post-V3 effect"], r["p"]), "", r["t"], r["p"], r["Rows"]])
-    rows.append(["Panel B. Dose response by pre-V3 direct availability", "", "", "", "", "", "", ""])
-    for _, r in dose[dose["Outcome"].isin(["Direct-route availability", "No-direct WETH availability"])].iterrows():
-        if r["Pre-V3 direct availability quartile"] in {"Q1 weakest", "Q2", "Q4 strongest"}:
-            rows.append([
-                "",
-                clean_outcome(r["Outcome"]),
-                r["Pre-V3 direct availability quartile"],
-                starred(r["Post-V3 effect"], r["p"]),
-                r["SE"],
-                r["t"],
-                r["p"],
-                r["Rows"],
-            ])
+    rows: list[list[object]] = [
+        [
+            "Post V3",
+            reg_cell(main, estimate_col="Post-V3 effect", Outcome="No-direct WETH availability"),
+            reg_cell(dose, estimate_col="Post-V3 effect", **{"Pre-V3 direct availability quartile": "Q1 weakest", "Outcome": "Direct-route availability"}),
+            reg_cell(dose, estimate_col="Post-V3 effect", **{"Pre-V3 direct availability quartile": "Q1 weakest", "Outcome": "No-direct WETH availability"}),
+            reg_cell(dose, estimate_col="Post-V3 effect", **{"Pre-V3 direct availability quartile": "Q2", "Outcome": "Direct-route availability"}),
+            reg_cell(dose, estimate_col="Post-V3 effect", **{"Pre-V3 direct availability quartile": "Q2", "Outcome": "No-direct WETH availability"}),
+            reg_cell(dose, estimate_col="Post-V3 effect", **{"Pre-V3 direct availability quartile": "Q4 strongest", "Outcome": "Direct-route availability"}),
+            reg_cell(dose, estimate_col="Post-V3 effect", **{"Pre-V3 direct availability quartile": "Q4 strongest", "Outcome": "No-direct WETH availability"}),
+        ],
+        [
+            "Endpoint-pair FE",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+            "yes",
+        ],
+        [
+            "SE clustering",
+            "Pair",
+            "Pair",
+            "Pair",
+            "Pair",
+            "Pair",
+            "Pair",
+            "Pair",
+        ],
+        [
+            "Observations",
+            value_cell(main, "Rows", Outcome="No-direct WETH availability"),
+            value_cell(dose, "Rows", **{"Pre-V3 direct availability quartile": "Q1 weakest", "Outcome": "Direct-route availability"}),
+            value_cell(dose, "Rows", **{"Pre-V3 direct availability quartile": "Q1 weakest", "Outcome": "No-direct WETH availability"}),
+            value_cell(dose, "Rows", **{"Pre-V3 direct availability quartile": "Q2", "Outcome": "Direct-route availability"}),
+            value_cell(dose, "Rows", **{"Pre-V3 direct availability quartile": "Q2", "Outcome": "No-direct WETH availability"}),
+            value_cell(dose, "Rows", **{"Pre-V3 direct availability quartile": "Q4 strongest", "Outcome": "Direct-route availability"}),
+            value_cell(dose, "Rows", **{"Pre-V3 direct availability quartile": "Q4 strongest", "Outcome": "No-direct WETH availability"}),
+        ],
+    ]
     return TableSpec(
         "6",
         "Architecture and direct-route opportunity.",
         "tab:rq5-architecture",
-        ["Panel", "Outcome", "Sample", "Effect", "SE", "t", "p", "N"],
-        ["0.12\\textwidth", "0.25\\textwidth", "0.20\\textwidth", "0.08\\textwidth", "0.07\\textwidth", "0.06\\textwidth", "0.07\\textwidth", "0.08\\textwidth"],
+        [
+            "",
+            header_cell("(1)", "No-direct WETH"),
+            header_cell("(2)", "Q1 direct"),
+            header_cell("(3)", "Q1 no-direct WETH"),
+            header_cell("(4)", "Q2 direct"),
+            header_cell("(5)", "Q2 no-direct WETH"),
+            header_cell("(6)", "Q4 direct"),
+            header_cell("(7)", "Q4 no-direct WETH"),
+        ],
+        ["0.16\\textwidth", "0.11\\textwidth", "0.11\\textwidth", "0.12\\textwidth", "0.11\\textwidth", "0.12\\textwidth", "0.11\\textwidth", "0.12\\textwidth"],
         rows,
-        "Effects are percentage points unless otherwise noted. The table is scoped to route opportunity around V3 and should not be read as a broad causal launch effect for every V3 outcome.",
+        "Dependent variables are route-opportunity measures. Cells report post-V3 effects in percentage points with p-values beneath them. The table is scoped to route opportunity around V3 and should not be read as a broad causal launch effect for every V3 outcome.",
         landscape=True,
     )
 
@@ -473,26 +654,88 @@ def architecture_table() -> TableSpec:
 def settlement_table() -> TableSpec:
     settle = read_table("table_m06_p4b_v4_settlement")
     persist = read_table("table_m17_v4_route_use_persistence")
-    rows: list[list[object]] = [["Panel A. Physical intermediary-token transfer incidence", "", "", "", "", "", ""]]
-    for _, r in settle[settle["Panel"].eq("A. Transfer incidence by route-size bin")].iterrows():
-        rows.append(["", clean_sample(r["Sample / diagnostic"]), r["Cells"], r["V3"], r["V4"], starred(r["Difference / balance"], r["p"]), r["p"]])
-    rows.append(["Panel B. Matched-sample balance and receipt diagnostics", "", "", "", "", "", ""])
-    for _, r in settle[settle["Panel"].eq("B. Matched-sample balance")].iterrows():
-        diagnostic = r["p"]
-        if r["Sample / diagnostic"] == "V4 - V3 within cell":
-            diagnostic = diagnostic.replace("t=", "t = ").replace("p=<0.001", "p < 0.001")
-        rows.append(["", clean_sample(r["Sample / diagnostic"]), r["Cells"], r["V3"], r["V4"], r["Difference / balance"], diagnostic])
-    rows.append(["Panel C. Matched-cell route-use persistence", "", "", "", "", "", ""])
-    for _, r in persist[persist["Panel"].eq("A. Matched-cell route-use persistence")].iterrows():
-        rows.append(["", clean_outcome(r["Outcome"]), r["N"], clean_regressor(r["Regressor / statistic"]), "", starred(f"{r['Estimate']} (t={r['t']})", r["p"]), r["p"]])
+    rows: list[list[object]] = [
+        [
+            "V4 minus V3 transfer incidence",
+            coef_p_cell(value_cell(settle, "Difference / balance", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "All"}), value_cell(settle, "p", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "All"})),
+            coef_p_cell(value_cell(settle, "Difference / balance", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Small"}), value_cell(settle, "p", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Small"})),
+            coef_p_cell(value_cell(settle, "Difference / balance", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Medium"}), value_cell(settle, "p", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Medium"})),
+            coef_p_cell(value_cell(settle, "Difference / balance", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Large"}), value_cell(settle, "p", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Large"})),
+            "",
+            "",
+        ],
+        [
+            "V3 transfer incidence",
+            value_cell(settle, "V3", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "All"}),
+            value_cell(settle, "V3", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Small"}),
+            value_cell(settle, "V3", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Medium"}),
+            value_cell(settle, "V3", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Large"}),
+            "",
+            "",
+        ],
+        [
+            "V4 transfer incidence",
+            value_cell(settle, "V4", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "All"}),
+            value_cell(settle, "V4", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Small"}),
+            value_cell(settle, "V4", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Medium"}),
+            value_cell(settle, "V4", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Large"}),
+            "",
+            "",
+        ],
+        ["Panel B. Matched-cell route-use persistence", "", "", "", "", "", ""],
+        [
+            "Log V3 route count",
+            "",
+            "",
+            "",
+            "",
+            reg_cell(persist, estimate_col="Estimate", Outcome="Log V4 route count"),
+            "",
+        ],
+        [
+            "Log V3 route volume",
+            "",
+            "",
+            "",
+            "",
+            "",
+            reg_cell(persist, estimate_col="Estimate", Outcome="Log V4 route volume"),
+        ],
+        [
+            "Week FE / vehicle FE",
+            "",
+            "",
+            "",
+            "",
+            "yes",
+            "yes",
+        ],
+        [
+            "Week clusters",
+            "",
+            "",
+            "",
+            "",
+            value_cell(persist, "Week clusters", Outcome="Log V4 route count"),
+            value_cell(persist, "Week clusters", Outcome="Log V4 route volume"),
+        ],
+    ]
     return TableSpec(
         "7",
         "Settlement design, physical transfer incidence, and matched-cell route use.",
         "tab:rq6-settlement",
-        ["Panel", "Sample / outcome", "Cells / N", "V3 / regressor", "V4", "Difference / estimate", "p / diagnostic"],
-        ["0.12\\textwidth", "0.25\\textwidth", "0.10\\textwidth", "0.15\\textwidth", "0.10\\textwidth", "0.18\\textwidth", "0.07\\textwidth"],
+        [
+            "",
+            header_cell("(1)", "All route sizes"),
+            header_cell("(2)", "Small"),
+            header_cell("(3)", "Medium"),
+            header_cell("(4)", "Large"),
+            header_cell("(5)", "Log V4 route count"),
+            header_cell("(6)", "Log V4 route volume"),
+        ],
+        ["0.23\\textwidth", "0.12\\textwidth", "0.11\\textwidth", "0.11\\textwidth", "0.11\\textwidth", "0.15\\textwidth", "0.15\\textwidth"],
         rows,
-        "Panel A compares matched V3 and V4 route units. Panel B reports matched-sample route-size and receipt-log diagnostics; numeric entries in the last column are diagnostic percentages or test statistics, not p-values unless labelled. Panel C shows that V4 route demand persists in matched endpoint-vehicle-week cells.",
+        "Columns (1)-(4) compare matched V3 and V4 route units; cells report transfer-incidence gaps with p-values beneath them. Columns (5)-(6) are matched endpoint-vehicle-week regressions of V4 route use on V3 route use.",
         landscape=True,
     )
 
@@ -500,24 +743,57 @@ def settlement_table() -> TableSpec:
 def common_liquidity_table() -> TableSpec:
     common = read_table("table_m12_common_liquidity")
     het = read_table("table_m18_common_liquidity_heterogeneity")
-    rows: list[list[object]] = [["Panel A. Baseline common-liquidity regressions", "", "", "", "", "", "", ""]]
-    keep_a = (
-        (common["Sample / specification"].isin(["Full sample", "Stress interaction"]))
-        & (common["Regressor"].isin(["market_factor_loo", "vehicle_factor_loo", "vehicle_factor_x_stress"]))
-    )
-    for _, r in common[keep_a].iterrows():
-        rows.append(["", r["Sample / specification"], clean_regressor(r["Regressor"]), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
-    rows.append(["Panel B. Heterogeneity and top-pool exclusion", "", "", "", "", "", "", ""])
-    for _, r in het[het["Regressor"].eq("vehicle_factor_loo")].iterrows():
-        rows.append(["", r["Sample"], clean_regressor(r["Regressor"]), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
+    rows: list[list[object]] = [
+        [
+            "Market liquidity factor",
+            reg_cell(common, **{"Sample / specification": "Full sample", "Regressor": "market_factor_loo"}),
+            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "market_factor_loo"}),
+            reg_cell(het, Sample="High average VehicleShare vehicles", Regressor="market_factor_loo"),
+            reg_cell(het, Sample="Low average VehicleShare vehicles", Regressor="market_factor_loo"),
+            reg_cell(het, Sample="Excluding top 1% mean-liquidity pools", Regressor="market_factor_loo"),
+        ],
+        [
+            "Vehicle liquidity factor",
+            reg_cell(common, **{"Sample / specification": "Full sample", "Regressor": "vehicle_factor_loo"}),
+            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_factor_loo"}),
+            reg_cell(het, Sample="High average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
+            reg_cell(het, Sample="Low average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
+            reg_cell(het, Sample="Excluding top 1% mean-liquidity pools", Regressor="vehicle_factor_loo"),
+        ],
+        [
+            "Vehicle factor x stress",
+            "",
+            reg_cell(common, **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_factor_x_stress"}),
+            "",
+            "",
+            "",
+        ],
+        ["Pool-vehicle FE", "yes", "yes", "yes", "yes", "yes"],
+        ["SE clustering", "Date", "Date", "Date", "Date", "Date"],
+        [
+            "Observations",
+            value_cell(common, "N", **{"Sample / specification": "Full sample", "Regressor": "vehicle_factor_loo"}),
+            value_cell(common, "N", **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_factor_loo"}),
+            value_cell(het, "N", Sample="High average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
+            value_cell(het, "N", Sample="Low average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
+            value_cell(het, "N", Sample="Excluding top 1% mean-liquidity pools", Regressor="vehicle_factor_loo"),
+        ],
+    ]
     return TableSpec(
         "8",
         "Common liquidity across pools linked to the same vehicle.",
         "tab:rq7-common-liquidity",
-        ["Panel", "Sample", "Regressor", "Estimate", "SE", "t", "p", "N"],
-        ["0.12\\textwidth", "0.28\\textwidth", "0.22\\textwidth", "0.08\\textwidth", "0.07\\textwidth", "0.06\\textwidth", "0.07\\textwidth", "0.08\\textwidth"],
+        [
+            "",
+            header_cell("(1)", "Full sample"),
+            header_cell("(2)", "Stress interaction"),
+            header_cell("(3)", "High vehicle use"),
+            header_cell("(4)", "Low vehicle use"),
+            header_cell("(5)", "Excl. top pools"),
+        ],
+        ["0.24\\textwidth", "0.15\\textwidth", "0.16\\textwidth", "0.15\\textwidth", "0.15\\textwidth", "0.15\\textwidth"],
         rows,
-        "Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.",
+        "Dependent variable is daily pool-level log liquidity change. Cells report coefficients with p-values beneath them. Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.",
         landscape=True,
     )
 
@@ -554,6 +830,7 @@ def document(tables: list[TableSpec]) -> str:
         r"\usepackage[margin=1in]{geometry}",
         r"\usepackage{booktabs}",
         r"\usepackage{threeparttable}",
+        r"\usepackage{makecell}",
         r"\usepackage{array}",
         r"\usepackage{pdflscape}",
         r"\usepackage{setspace}",

@@ -43,6 +43,7 @@ literature/sources.local.json
 literature/auth/
 
 # LaTeX generated files
+paper/*.pdf
 paper/*.aux
 paper/*.bbl
 paper/*.blg

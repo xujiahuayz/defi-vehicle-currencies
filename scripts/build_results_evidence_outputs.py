@@ -8,8 +8,8 @@ the full upstream table chain before rebuilding ``paper/results_evidence_map.tex
 1. Supporting analytics scripts write the ``table_r*`` inputs.
 2. ``scripts/build_jfe_main_tables.py`` writes ``table_m01``-``table_m07``.
 3. ``scripts/run_core_rq_experiments.py`` writes ``table_m08``-``table_m18``.
-4. ``scripts/build_results_evidence_latex.py --pdf`` writes the committed TeX
-   evidence map and a review PDF.
+4. ``scripts/build_results_evidence_latex.py --pdf`` writes the tracked TeX
+   evidence map and an ignored local review PDF.
 """
 from __future__ import annotations
 

@@ -25,12 +25,26 @@ This repository contains the data pipeline, analysis code, literature workspace,
 
 The working sample target is through 2026-06-30 UTC, implemented as an exclusive end date of 2026-07-01 in fetch and build commands.
 
+## Environment
+
+Install runtime dependencies from repo metadata with:
+
+```bash
+uv sync
+```
+
+For tests and development tools, install the development extra:
+
+```bash
+uv sync --extra dev
+```
+
 ## Results Evidence Map
 
-Regenerate the ignored result tables, the committed TeX evidence map, and the review PDF with:
+Regenerate the ignored result tables, the tracked TeX evidence map, and a local PDF render with:
 
 ```bash
 .venv/bin/python scripts/build_results_evidence_outputs.py
 ```
 
-This orchestrates the supporting `table_r*` analytics, the JFE main tables (`table_m01`-`table_m07`), the core RQ tables (`table_m08`-`table_m18`), then `paper/results_evidence_map.tex` and `paper/results_evidence_map.pdf`. The PDF step uses `tectonic`, `latexmk`, or `pdflatex` when available, and falls back to a matplotlib review PDF on machines without a TeX engine.
+This orchestrates the supporting `table_r*` analytics, the JFE main tables (`table_m01`-`table_m07`), the core RQ tables (`table_m08`-`table_m18`), then `paper/results_evidence_map.tex` and `paper/results_evidence_map.pdf`. The TeX file is tracked and should be byte-stable after regeneration. The PDF is intentionally ignored because TeX engines and fallback renderers produce different byte streams even when the document content and page count match. The PDF step uses `tectonic`, `latexmk`, or `pdflatex` when available, and falls back to a matplotlib review PDF on machines without a TeX engine.
