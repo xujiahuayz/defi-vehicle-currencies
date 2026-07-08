@@ -1,0 +1,321 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+
+\usepackage{booktabs}
+
+\usepackage{threeparttable}
+
+\usepackage{array}
+
+\usepackage{pdflscape}
+
+\usepackage{setspace}
+
+\usepackage{caption}
+
+\captionsetup{font=small,labelfont=bf}
+
+\newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
+
+\begin{document}
+
+\begin{center}
+
+{\Large Results Evidence Map for \textit{The Making of Vehicle Currencies}}\\[0.5em]
+
+{\normalsize Internal results packet. Not manuscript prose.}
+
+\end{center}
+
+\onehalfspacing
+
+\section*{Purpose and Reading Order}
+
+This document reorganizes the current empirical evidence around research questions, not around the order in which the analyses were built. Table \ref{tab:rq-evidence-map} is the master map: every empirical claim must point to one research question, one proxy, and one primary table. The tables use a JFE-style hierarchy: compact headline estimates in the main rows, p-values shown explicitly, fixed effects and clustering reported in notes, and weaker or conditional evidence labelled as such.
+
+\section*{Interpretation Rules}
+
+\begin{enumerate}
+
+\item Definitions are not propositions. Vehicle use is defined by intermediate-token use in indirect routes; the propositions are about emergence, persistence, rotation, architecture, and settlement design.
+
+\item ``Value'' is not a primitive. Feasibility, depth/capacity, execution-cost advantage, settlement-transfer incidence, and LP-liquidity response are the measurable objects.
+
+\item WETH, stablecoins, V3, and V4 are empirical test beds. They should not be written as the propositions themselves.
+
+\item P-values are reported directly rather than hidden behind stars. Weak, noisy, or pre-trending results are labelled in the table notes.
+
+\end{enumerate}
+
+\begin{landscape}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Research questions, empirical objects, and evidence.}
+\label{tab:rq-evidence-map}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}}
+\toprule
+RQ & Research question & Unit & Main proxy & Evidence & Empirical answer \\
+\midrule
+RQ1 & When does one asset become the vehicle? & Endpoint pair x candidate vehicle x day. & Route-cost advantage, vehicle-route availability, vehicle depth. & Table 3 & Actual vehicle share and future vehicle share rise with executable vehicle-route economics. \\
+RQ2 & How does liquidity provision make a vehicle? & Token x day dynamic panel. & LP concentration, vehicle-linked liquidity, lagged vehicle share. & Table 4 & Vehicle use and vehicle-linked liquidity are mutually persistent in stock allocations. \\
+RQ3 & Why does vehicle status persist or get displaced? & Incumbent-challenger pair x day. & Lagged vehicle share and challenger route-cost edge. & Table 4 & Incumbents persist, but large challenger cost edges predict share losses. \\
+RQ4 & When does vehicle status switch under stress? & Common-support stress-event days. & WETH-minus-stable vehicle share relative to a prior baseline. & Table 5 & Stress rotates share away from WETH and toward stable vehicles on event days. \\
+RQ5 & How does architecture change vehicle formation? & Endpoint-pair event windows around V3. & Direct-route availability and no-direct/WETH-available cases. & Table 6 & V3 expands direct-route opportunity and reduces no-direct dependence on WETH. \\
+RQ6 & How does settlement design change vehicle use? & Matched V3/V4 route cells and receipt-audited route units. & Intermediate-token transfer incidence and matched-cell V4 route use. & Table 7 & V4 lowers physical intermediary transfers while vehicle-route demand persists. \\
+RQ7 & Does a vehicle create common liquidity? & Pool x vehicle x day liquidity panel. & Leave-one-out vehicle liquidity factor. & Table 8 & Vehicle-linked pools share a same-vehicle liquidity component beyond market liquidity. \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} The table is the organizing map for the results document. It separates the research question from the test bed, empirical proxy, and table that answers it.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\begin{landscape}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Variable construction and empirical proxies.}
+\label{tab:variables}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.48\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}}
+\toprule
+Variable & Level & Construction & Used for \\
+\midrule
+VehicleShare & vehicle token x day & USD volume of indirect routes where token v is an intermediate divided by total indirect-route USD volume that day. & RQ1, RQ2, RQ3, RQ4 \\
+RouteCostAdvantage & endpoint pair x vehicle x day x trade size & (vehicle-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at \$10k. & RQ1, RQ3, RQ5 \\
+DirectAvailable & endpoint pair x day x trade size & Indicator that the exact-quote engine finds a direct executable route for the endpoint pair at the standard notional. & RQ1, RQ5 \\
+VehicleAvailable & endpoint pair x vehicle x day x trade size & Indicator that both legs through candidate vehicle v are exact-quote executable at the standard notional. & RQ1, RQ5 \\
+VehicleLinkedLiquidity & vehicle token x day & USD TVL in Uniswap V3 pools whose vehicle-side/base asset is candidate v, after excluding absurd pool TVL outliers. & RQ2, RQ3, RQ6 \\
+LPConcentration & vehicle token x day & VehicleLinkedLiquidity divided by total vehicle-candidate linked liquidity across the vehicle set that day. & RQ2, RQ3 \\
+SettlementTransferIncidence & matched route unit & Indicator that the transaction receipt contains at least one ERC-20 Transfer log matching the intermediate vehicle token. & RQ6 \\
+VehicleLiquidityFactor & vehicle token x day & Leave-one-out average daily log-liquidity change among other pools linked to the same vehicle; paired with a leave-one-out market liquidity factor. & RQ7 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} All variables are generated from the reconstructed route and liquidity data. VehicleShare is conditional on indirect routed volume; all-route shares are used only as scope diagnostics.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\begin{landscape}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Vehicle formation: route economics, availability, and realized route choice.}
+\label{tab:rq1-formation}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}}
+\toprule
+Panel & Outcome & Regressor & Estimate & SE & t & p & N \\
+\midrule
+\multicolumn{8}{l}{\textit{Panel A. Actual route choice}} \\
+ & Actual vehicle share & Route-cost advantage, per 100 bp & 0.1462 & 0.0054 & 27.02 & $<$0.001 & 189,143 \\
+ & Actual vehicle share & Vehicle route available & 19.1385 & 0.4836 & 39.58 & $<$0.001 & 189,143 \\
+ & Actual vehicle share & Vehicle-route depth & 28.8502 & 0.5780 & 49.92 & $<$0.001 & 189,143 \\
+\addlinespace
+\multicolumn{8}{l}{\textit{Panel B. Future vehicle share}} \\
+ & future VehicleShare, t+7 & Route-cost advantage, per 100 bp & 0.0001 & 0.0000 & 3.10 & 0.002 & 9,380 \\
+ & future VehicleShare, t+7 & Vehicle-route availability & 0.0940 & 0.0141 & 6.67 & $<$0.001 & 9,380 \\
+ & future VehicleShare, t+7 & LP concentration & 0.1117 & 0.0135 & 8.30 & $<$0.001 & 9,380 \\
+ & future VehicleShare, t+30 & Current vehicle share & 0.3630 & 0.0165 & 21.98 & $<$0.001 & 9,265 \\
+ & future VehicleShare, t+30 & Route-cost advantage, per 100 bp & 0.0002 & 0.0000 & 5.26 & $<$0.001 & 9,265 \\
+ & future VehicleShare, t+30 & Vehicle-route availability & 0.1254 & 0.0152 & 8.23 & $<$0.001 & 9,265 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Panel A uses endpoint-pair-by-date fixed effects and date-clustered standard errors. Panel B uses token and date fixed effects with date-clustered standard errors. Route-cost advantage is measured per 100 basis points.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\begin{landscape}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Liquidity provision, persistence, and challenger displacement.}
+\label{tab:rq2-rq3-liquidity-persistence}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}}
+\toprule
+Panel & Outcome / bin & Regressor / statistic & Estimate & SE & t & p & N \\
+\midrule
+\multicolumn{8}{l}{\textit{Panel A. Liquidity-route feedback}} \\
+ & future VehicleShare, t+7 & LP concentration & 0.1117 & 0.0135 & 8.30 & $<$0.001 & 9,380 \\
+ & future LPConcentration, t+7 & Current vehicle share & 0.0419 & 0.0098 & 4.29 & $<$0.001 & 9,380 \\
+ & future log VehicleLinkedLiquidity, t+7 & Current vehicle share & 1.1713 & 0.0621 & 18.86 & $<$0.001 & 9,380 \\
+\addlinespace
+\multicolumn{8}{l}{\textit{Panel B. LP stock changes}} \\
+ & 30-day change in LPConcentration & Current vehicle share & -3.4047 & 1.3012 & -2.62 & 0.009 & 9,265 \\
+ & 30-day change in LPConcentration & Vehicle-route availability & 3.6119 & 1.4612 & 2.47 & 0.014 & 9,265 \\
+ & 30-day change in LPConcentration & No-direct, vehicle-available & -6.5773 & 3.1165 & -2.11 & 0.035 & 9,265 \\
+ & 30-day change in log VehicleLinkedLiquidity & Current vehicle share & -0.1805 & 0.0458 & -3.94 & $<$0.001 & 9,265 \\
+ & 30-day change in log VehicleLinkedLiquidity & Vehicle-route availability & 0.2112 & 0.0454 & 4.65 & $<$0.001 & 9,265 \\
+ & 30-day change in log VehicleLinkedLiquidity & No-direct, vehicle-available & -0.4296 & 0.1154 & -3.72 & $<$0.001 & 9,265 \\
+\addlinespace
+\multicolumn{8}{l}{\textit{Panel C. Challenger displacement thresholds}} \\
+ & challenger <= incumbent & Incumbent share change, t+30 & -2.80 &  & -8.16 & $<$0.001 & 1,687 \\
+ & 0 to 25 bp & Incumbent share change, t+30 & -5.19 &  & -3.47 & $<$0.001 & 86 \\
+ & 25 to 100 bp & Incumbent share change, t+30 & -6.72 &  & -5.47 & $<$0.001 & 146 \\
+ & 100 to 250 bp & Incumbent share change, t+30 & -9.50 &  & -7.28 & $<$0.001 & 92 \\
+ & >250 bp & Incumbent share change, t+30 & -10.08 &  & -10.17 & $<$0.001 & 193 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Panels A and B use token and date fixed effects with date-clustered standard errors. Panel C reports bin means for challenger route-cost advantages and incumbent share changes.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\begin{landscape}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Stress rotation inside common route opportunities.}
+\label{tab:rq4-stress}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.24\textwidth}}
+\toprule
+Panel & Estimate & Effect & Events & t & p & Interpretation \\
+\midrule
+\multicolumn{7}{l}{\textit{Panel A. Same-day decomposition}} \\
+ & WETH share change & -1.48 pp & 20 & -2.59 & 0.018 & event-day minus prior-28-day baseline \\
+ & Stable share change & 1.48 pp & 20 & 2.59 & 0.018 & event-day minus prior-28-day baseline \\
+ & WETH-minus-stable change & -2.96 pp & 20 & -2.59 & 0.018 & event-day minus prior-28-day baseline \\
+ & Aggregate direct-route share change & -0.25 pp & 20 & -0.42 & 0.679 & event-day minus prior-28-day baseline \\
+ & Log indirect-route volume change & 0.51 log points & 20 & 3.2 & 0.005 & event-day minus prior-28-day baseline \\
+\addlinespace
+\multicolumn{7}{l}{\textit{Panel B. Event-time persistence}} \\
+ & event day & -26.96 & 20 & -3.06 & 0.006 & WETH-minus-stable gap \\
+ & post 1 to 7 & -11.16 & 20 & -1.87 & 0.077 & WETH-minus-stable gap \\
+ & post 8 to 30 & -9.48 & 20 & -2.13 & 0.046 & WETH-minus-stable gap \\
+ & pre -14 to -1 & -5.63 & 20 & -2.63 & 0.016 & WETH-minus-stable gap \\
+\addlinespace
+\multicolumn{7}{l}{\textit{Panel C. Threshold and overlap sensitivity}} \\
+ & all events, threshold 6\% & -3.12 pp & 91 & -3.44 & $<$0.001 & negative share 67.0\% \\
+ & all events, threshold 8\% & -2.95 pp & 49 & -3.41 & 0.001 & negative share 65.3\% \\
+ & all events, threshold 10\% & -3.74 pp & 26 & -3.7 & 0.001 & negative share 65.4\% \\
+ & all events, threshold 12\% & -3.18 pp & 19 & -2.68 & 0.015 & negative share 63.2\% \\
+ & top 20, threshold 8\% & -3.09 pp & 18 & -2.48 & 0.024 & negative share 61.1\% \\
+ & non-overlap, threshold 8\% & -3.01 pp & 33 & -2.45 & 0.020 & negative share 57.6\% \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Event-day effects are measured relative to a prior 28-day baseline. The event-time rows show that pre-movement exists, so the stress result should be written as a same-day common-support rotation, not a clean surprise-shock causal design.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\begin{landscape}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Architecture and direct-route opportunity.}
+\label{tab:rq5-architecture}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}}
+\toprule
+Panel & Outcome & Sample & Effect & SE & t & p & N \\
+\midrule
+\multicolumn{8}{l}{\textit{Panel A. Main V3 opportunity test}} \\
+ & No-direct WETH availability & All matched pairs & -25.81 &  & -7.62 & $<$0.001 & 1,822 \\
+\addlinespace
+\multicolumn{8}{l}{\textit{Panel B. Dose response by pre-V3 direct availability}} \\
+ & Direct-route availability & Q1 weakest & 56.42 & 10.03 & 5.63 & $<$0.001 & 1,122 \\
+ & No-direct WETH availability & Q1 weakest & -33.03 & 12.22 & -2.70 & 0.007 & 1,122 \\
+ & Direct-route availability & Q2 & 51.36 & 14.83 & 3.46 & $<$0.001 & 1,434 \\
+ & No-direct WETH availability & Q2 & -47.51 & 8.40 & -5.66 & $<$0.001 & 1,434 \\
+ & Direct-route availability & Q4 strongest & 3.28 & 1.98 & 1.66 & 0.099 & 8,914 \\
+ & No-direct WETH availability & Q4 strongest & -1.91 & 1.98 & -0.96 & 0.336 & 8,914 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Effects are percentage points unless otherwise noted. The table is scoped to route opportunity around V3 and should not be read as a broad causal launch effect for every V3 outcome.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\begin{landscape}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Settlement design, physical transfer incidence, and matched-cell route use.}
+\label{tab:rq6-settlement}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}}
+\toprule
+Panel & Sample / outcome & Cells / N & V3 / regressor & V4 & Difference / estimate & p / diagnostic \\
+\midrule
+\multicolumn{7}{l}{\textit{Panel A. Physical intermediary-token transfer incidence}} \\
+ & All & 500 & 100.0\% & 81.4\% & -18.6 pp & $<$0.001 \\
+ & Route size: Small & 104 & 100.0\% & 60.6\% & -39.4 pp & $<$0.001 \\
+ & Route size: Medium & 73 & 100.0\% & 87.7\% & -12.3 pp & 0.002 \\
+ & Route size: Large & 94 & 100.0\% & 96.8\% & -3.2 pp & 0.083 \\
+\addlinespace
+\multicolumn{7}{l}{\textit{Panel B. Matched-sample balance and receipt diagnostics}} \\
+ & uniswap\_v3 & 500 & \$6,136 &  & 53.05 & 100.0 \\
+ & uniswap\_v4 & 500 &  & \$3,542 & 71.05 & 81.4 \\
+ & V4 - V3 within cell & 500 &  &  & log route diff=-0.692 & t = -7.58, p < 0.001 \\
+\addlinespace
+\multicolumn{7}{l}{\textit{Panel C. Matched-cell route-use persistence}} \\
+ & Log V4 route count & 16,218 & Log V3 route count &  & 0.3674 (t=28.33) & $<$0.001 \\
+ & Log V4 route volume & 16,218 & Log V3 route volume &  & 0.5819 (t=83.13) & $<$0.001 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Panel A compares matched V3 and V4 route units. Panel B reports matched-sample route-size and receipt-log diagnostics; numeric entries in the last column are diagnostic percentages or test statistics, not p-values unless labelled. Panel C shows that V4 route demand persists in matched endpoint-vehicle-week cells.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\begin{landscape}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Common liquidity across pools linked to the same vehicle.}
+\label{tab:rq7-common-liquidity}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}}
+\toprule
+Panel & Sample & Regressor & Estimate & SE & t & p & N \\
+\midrule
+\multicolumn{8}{l}{\textit{Panel A. Baseline common-liquidity regressions}} \\
+ & Full sample & Market liquidity factor & 0.7063 & 0.0573 & 12.32 & $<$0.001 & 685,685 \\
+ & Full sample & Vehicle liquidity factor & 0.1626 & 0.0431 & 3.77 & $<$0.001 & 685,685 \\
+ & Stress interaction & Market liquidity factor & 0.6987 & 0.0605 & 11.55 & $<$0.001 & 685,685 \\
+ & Stress interaction & Vehicle liquidity factor & 0.1586 & 0.0438 & 3.62 & $<$0.001 & 685,685 \\
+ & Stress interaction & Vehicle factor x stress & 0.1064 & 0.0491 & 2.17 & 0.030 & 685,685 \\
+\addlinespace
+\multicolumn{8}{l}{\textit{Panel B. Heterogeneity and top-pool exclusion}} \\
+ & High average VehicleShare vehicles & Vehicle liquidity factor & 0.2174 & 0.0464 & 4.69 & $<$0.001 & 664,218 \\
+ & Low average VehicleShare vehicles & Vehicle liquidity factor & -0.0921 & 0.0903 & -1.02 & 0.307 & 21,467 \\
+ & Excluding top 1\% mean-liquidity pools & Vehicle liquidity factor & 0.1670 & 0.0436 & 3.83 & $<$0.001 & 679,228 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\end{document}
+

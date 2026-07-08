@@ -1191,7 +1191,7 @@ def build_rq_registry(
     rq_rows = [
         {
             "RQ": "RQ1. Formation",
-            "Empirical answer": "Vehicle use is higher when the candidate vehicle is cheaper/better executable and when vehicle-linked liquidity is larger.",
+            "Empirical answer": "Vehicle use is higher when the candidate vehicle expands executable route opportunity, improves route quality within common-support cells, and has larger vehicle-linked liquidity.",
             "Exact evidence": (
                 f"Table m13: route-cost advantage is positive for actual vehicle share ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='route_cost_advantage_100bp')}); "
                 f"vehicle availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); vehicle depth is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_depth')}). "
@@ -1234,9 +1234,9 @@ def build_rq_registry(
         },
         {
             "RQ": "RQ6. Settlement design",
-            "Empirical answer": "V4 reduces physical intermediate-token transfers but vehicle-route demand persists across matched cells, and netting exposure is associated with LP-liquidity response.",
+            "Empirical answer": "V4 reduces physical intermediate-token transfers while vehicle-route demand persists across matched endpoint-vehicle-week cells.",
             "Exact evidence": (
-                f"Table m06: V4 transfer incidence is {_cell(m06, 'V4', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})} versus V3 {_cell(m06, 'V3', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})}; log LP liquidity response is {_cell(m06, 'Difference / balance', Panel='C. LP response by netting exposure', **{'Sample / diagnostic': 'log LP liquidity'})}. "
+                f"Table m06: V4 transfer incidence is {_cell(m06, 'V4', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})} versus V3 {_cell(m06, 'V3', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})}; matched-cell route-size balance is {_cell(m06, 'Difference / balance', Panel='B. Matched-sample balance', **{'Sample / diagnostic': 'V4 - V3 within cell'})}. "
                 f"Table m17: log V3 route count predicts log V4 route count ({_lookup(v4_persistence, Panel='A. Matched-cell route-use persistence', Outcome='Log V4 route count')}); log V3 route volume predicts log V4 route volume ({_lookup(v4_persistence, Panel='A. Matched-cell route-use persistence', Outcome='Log V4 route volume')})."
             ),
         },
