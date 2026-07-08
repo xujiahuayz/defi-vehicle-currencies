@@ -19,7 +19,14 @@ PAPER = ROOT / "paper"
 OUT_TEX = PAPER / "results_evidence_map.tex"
 
 
+@dataclass(frozen=True)
+class RawLatex:
+    text: str
+
+
 def esc(value: object) -> str:
+    if isinstance(value, RawLatex):
+        return value.text
     text = "" if value is None else str(value)
     if text == "nan":
         return ""
@@ -39,6 +46,44 @@ def esc(value: object) -> str:
         text = text.replace(old, new)
     text = text.replace("<0.001", r"$<$0.001")
     return text
+
+
+def significance_stars(p_value: object) -> str:
+    text = str(p_value).strip()
+    if not text:
+        return ""
+    text = (
+        text.replace("$<$", "<")
+        .replace("p < ", "")
+        .replace("p=", "")
+        .replace("p ", "")
+        .strip()
+    )
+    if "," in text:
+        return ""
+    try:
+        if text.startswith("<"):
+            p = float(text[1:])
+            threshold_is_strict = True
+        else:
+            p = float(text)
+            threshold_is_strict = False
+    except ValueError:
+        return ""
+    if p < 0.01 or (threshold_is_strict and p <= 0.01):
+        return "***"
+    if p < 0.05 or (threshold_is_strict and p <= 0.05):
+        return "**"
+    if p < 0.10 or (threshold_is_strict and p <= 0.10):
+        return "*"
+    return ""
+
+
+def starred(value: object, p_value: object) -> object:
+    stars = significance_stars(p_value)
+    if not stars or value is None or str(value) == "":
+        return value
+    return RawLatex(f"{esc(value)}$^{{{stars}}}$")
 
 
 def read_table(stem: str) -> pd.DataFrame:
@@ -292,7 +337,7 @@ def rq1_table() -> TableSpec:
             "",
             clean_outcome(r["Outcome"]),
             clean_regressor(r["Regressor"]),
-            r["Beta"],
+            starred(r["Beta"], r["p"]),
             r["SE"],
             r["t"],
             r["p"],
@@ -311,7 +356,7 @@ def rq1_table() -> TableSpec:
         g = core[(core["Outcome"].eq(outcome)) & (core["Regressor"].eq(reg))]
         if not g.empty:
             r = g.iloc[0]
-            rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(reg), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
+            rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(reg), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
     return TableSpec(
         "3",
         "Vehicle formation: route economics, availability, and realized route choice.",
@@ -329,18 +374,18 @@ def rq2_rq3_table() -> TableSpec:
     thresholds = read_table("table_m10_persistence_thresholds")
     rows: list[list[object]] = [["Panel A. Liquidity-route feedback", "", "", "", "", "", "", ""]]
     for _, r in lp[lp["Panel"].eq("A. Stock feedback")].iterrows():
-        rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(r["Regressor"]), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
+        rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(r["Regressor"]), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
     rows.append(["Panel B. LP stock changes", "", "", "", "", "", "", ""])
     for _, r in lp[lp["Panel"].eq("B. LP stock change")].iterrows():
         if r["Regressor"] in {"BridgeShare", "vehicle_available_share", "no_direct_vehicle_available_share"}:
-            rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(r["Regressor"]), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
+            rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(r["Regressor"]), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
     rows.append(["Panel C. Challenger displacement thresholds", "", "", "", "", "", "", ""])
     for _, r in thresholds.iterrows():
         rows.append([
             "",
             clean_sample(r["Challenger advantage bin"]),
             "Incumbent share change, t+30",
-            r["Mean incumbent share change t+30 (pp)"],
+            starred(r["Mean incumbent share change t+30 (pp)"], r["p"]),
             "",
             r["t"],
             r["p"],
@@ -364,13 +409,13 @@ def stress_table() -> TableSpec:
     rows: list[list[object]] = [["Panel A. Same-day decomposition", "", "", "", "", "", ""]]
     for _, r in stress[stress["Panel"].eq("A. Main decomposed same-day effect")].iterrows():
         if r["Estimate"] in {"WETH share change", "Stable share change", "WETH-minus-stable change", "Aggregate direct-route share change", "Log indirect-route volume change"}:
-            rows.append(["", r["Estimate"], r["Effect"], r["Events"], r["t"], r["p"], r["Interpretation"]])
+            rows.append(["", r["Estimate"], starred(r["Effect"], r["p"]), r["Events"], r["t"], r["p"], r["Interpretation"]])
     rows.append(["Panel B. Event-time persistence", "", "", "", "", "", ""])
     for _, r in et[et["Outcome"].eq("gap change pp")].iterrows():
-        rows.append(["", r["Window"], r["Mean effect (pp)"], r["Events"], r["t"], r["p"], "WETH-minus-stable gap"])
+        rows.append(["", r["Window"], starred(r["Mean effect (pp)"], r["p"]), r["Events"], r["t"], r["p"], "WETH-minus-stable gap"])
     rows.append(["Panel C. Threshold and overlap sensitivity", "", "", "", "", "", ""])
     for _, r in stress[stress["Panel"].eq("B. Threshold/overlap sensitivity")].iterrows():
-        rows.append(["", r["Estimate"], r["Effect"], r["Events"], r["t"], r["p"], r["Interpretation"]])
+        rows.append(["", r["Estimate"], starred(r["Effect"], r["p"]), r["Events"], r["t"], r["p"], r["Interpretation"]])
     return TableSpec(
         "5",
         "Stress rotation inside common route opportunities.",
@@ -388,7 +433,7 @@ def architecture_table() -> TableSpec:
     dose = read_table("table_m16_v3_dose_response")
     rows: list[list[object]] = [["Panel A. Main V3 opportunity test", "", "", "", "", "", "", ""]]
     for _, r in main.iterrows():
-        rows.append(["", clean_outcome(r["Outcome"]), "All matched pairs", r["Post-V3 effect"], "", r["t"], r["p"], r["Rows"]])
+        rows.append(["", clean_outcome(r["Outcome"]), "All matched pairs", starred(r["Post-V3 effect"], r["p"]), "", r["t"], r["p"], r["Rows"]])
     rows.append(["Panel B. Dose response by pre-V3 direct availability", "", "", "", "", "", "", ""])
     for _, r in dose[dose["Outcome"].isin(["Direct-route availability", "No-direct WETH availability"])].iterrows():
         if r["Pre-V3 direct availability quartile"] in {"Q1 weakest", "Q2", "Q4 strongest"}:
@@ -396,7 +441,7 @@ def architecture_table() -> TableSpec:
                 "",
                 clean_outcome(r["Outcome"]),
                 r["Pre-V3 direct availability quartile"],
-                r["Post-V3 effect"],
+                starred(r["Post-V3 effect"], r["p"]),
                 r["SE"],
                 r["t"],
                 r["p"],
@@ -419,7 +464,7 @@ def settlement_table() -> TableSpec:
     persist = read_table("table_m17_v4_route_use_persistence")
     rows: list[list[object]] = [["Panel A. Physical intermediary-token transfer incidence", "", "", "", "", "", ""]]
     for _, r in settle[settle["Panel"].eq("A. Transfer incidence by route-size bin")].iterrows():
-        rows.append(["", clean_sample(r["Sample / diagnostic"]), r["Cells"], r["V3"], r["V4"], r["Difference / balance"], r["p"]])
+        rows.append(["", clean_sample(r["Sample / diagnostic"]), r["Cells"], r["V3"], r["V4"], starred(r["Difference / balance"], r["p"]), r["p"]])
     rows.append(["Panel B. Matched-sample balance and receipt diagnostics", "", "", "", "", "", ""])
     for _, r in settle[settle["Panel"].eq("B. Matched-sample balance")].iterrows():
         diagnostic = r["p"]
@@ -428,7 +473,7 @@ def settlement_table() -> TableSpec:
         rows.append(["", clean_sample(r["Sample / diagnostic"]), r["Cells"], r["V3"], r["V4"], r["Difference / balance"], diagnostic])
     rows.append(["Panel C. Matched-cell route-use persistence", "", "", "", "", "", ""])
     for _, r in persist[persist["Panel"].eq("A. Matched-cell route-use persistence")].iterrows():
-        rows.append(["", clean_outcome(r["Outcome"]), r["N"], clean_regressor(r["Regressor / statistic"]), "", f"{r['Estimate']} (t={r['t']})", r["p"]])
+        rows.append(["", clean_outcome(r["Outcome"]), r["N"], clean_regressor(r["Regressor / statistic"]), "", starred(f"{r['Estimate']} (t={r['t']})", r["p"]), r["p"]])
     return TableSpec(
         "7",
         "Settlement design, physical transfer incidence, and matched-cell route use.",
@@ -450,10 +495,10 @@ def common_liquidity_table() -> TableSpec:
         & (common["Regressor"].isin(["market_factor_loo", "vehicle_factor_loo", "vehicle_factor_x_stress"]))
     )
     for _, r in common[keep_a].iterrows():
-        rows.append(["", r["Sample / specification"], clean_regressor(r["Regressor"]), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
+        rows.append(["", r["Sample / specification"], clean_regressor(r["Regressor"]), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
     rows.append(["Panel B. Heterogeneity and top-pool exclusion", "", "", "", "", "", "", ""])
     for _, r in het[het["Regressor"].eq("vehicle_factor_loo")].iterrows():
-        rows.append(["", r["Sample"], clean_regressor(r["Regressor"]), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
+        rows.append(["", r["Sample"], clean_regressor(r["Regressor"]), starred(r["Beta"], r["p"]), r["SE"], r["t"], r["p"], r["N"]])
     return TableSpec(
         "8",
         "Common liquidity across pools linked to the same vehicle.",
@@ -516,7 +561,7 @@ def document(tables: list[TableSpec]) -> str:
             "not around the order in which the analyses were built. Table \\ref{tab:rq-evidence-map} "
             "is the master map: every empirical claim must point to one research question, one "
             "proxy, and one primary table. The tables use a JFE-style hierarchy: compact headline "
-            "estimates in the main rows, p-values shown explicitly, fixed effects and clustering "
+            "estimates in the main rows, conventional significance stars shown on estimates, p-values shown explicitly, fixed effects and clustering "
             "reported in notes, and weaker or conditional evidence labelled as such."
         ),
         r"\section*{Interpretation Rules}",
@@ -524,7 +569,7 @@ def document(tables: list[TableSpec]) -> str:
         r"\item Definitions are not propositions. Vehicle use is defined by intermediate-token use in indirect routes; the propositions are about emergence, persistence, rotation, architecture, and settlement design.",
         r"\item ``Value'' is not a primitive. Feasibility, depth/capacity, execution-cost advantage, settlement-transfer incidence, and LP-liquidity response are the measurable objects.",
         r"\item WETH, stablecoins, V3, and V4 are empirical test beds. They should not be written as the propositions themselves.",
-        r"\item P-values are reported directly rather than hidden behind stars. Weak, noisy, or pre-trending results are labelled in the table notes.",
+        r"\item Conventional significance stars are shown on estimates ($^{*}$, $^{**}$, $^{***}$ for 10\%, 5\%, and 1\%). P-values are also reported directly so significance is not hidden behind stars. Weak, noisy, or pre-trending results are labelled in the table notes.",
         r"\end{enumerate}",
     ]
     for spec in tables:

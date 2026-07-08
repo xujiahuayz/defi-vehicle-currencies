@@ -32,7 +32,7 @@
 
 \section*{Purpose and Reading Order}
 
-This document reorganizes the current empirical evidence around research questions, not around the order in which the analyses were built. Table \ref{tab:rq-evidence-map} is the master map: every empirical claim must point to one research question, one proxy, and one primary table. The tables use a JFE-style hierarchy: compact headline estimates in the main rows, p-values shown explicitly, fixed effects and clustering reported in notes, and weaker or conditional evidence labelled as such.
+This document reorganizes the current empirical evidence around research questions, not around the order in which the analyses were built. Table \ref{tab:rq-evidence-map} is the master map: every empirical claim must point to one research question, one proxy, and one primary table. The tables use a JFE-style hierarchy: compact headline estimates in the main rows, conventional significance stars shown on estimates, p-values shown explicitly, fixed effects and clustering reported in notes, and weaker or conditional evidence labelled as such.
 
 \section*{Interpretation Rules}
 
@@ -44,7 +44,7 @@ This document reorganizes the current empirical evidence around research questio
 
 \item WETH, stablecoins, V3, and V4 are empirical test beds. They should not be written as the propositions themselves.
 
-\item P-values are reported directly rather than hidden behind stars. Weak, noisy, or pre-trending results are labelled in the table notes.
+\item Conventional significance stars are shown on estimates ($^{*}$, $^{**}$, $^{***}$ for 10\%, 5\%, and 1\%). P-values are also reported directly so significance is not hidden behind stars. Weak, noisy, or pre-trending results are labelled in the table notes.
 
 \end{enumerate}
 
@@ -148,17 +148,17 @@ VehicleLiquidityFactor & vehicle token x day & Leave-one-out average daily log-l
 Panel & Outcome & Regressor & Estimate & SE & t & p & N \\
 \midrule
 \multicolumn{8}{l}{\textit{Panel A. Actual route choice}} \\
- & Actual vehicle share & Route-cost advantage, per 100 bp & 0.1462 & 0.0054 & 27.02 & $<$0.001 & 189,143 \\
- & Actual vehicle share & Vehicle route available & 19.1385 & 0.4836 & 39.58 & $<$0.001 & 189,143 \\
- & Actual vehicle share & Vehicle-route depth & 28.8502 & 0.5780 & 49.92 & $<$0.001 & 189,143 \\
+ & Actual vehicle share & Route-cost advantage, per 100 bp & 0.1462$^{***}$ & 0.0054 & 27.02 & $<$0.001 & 189,143 \\
+ & Actual vehicle share & Vehicle route available & 19.1385$^{***}$ & 0.4836 & 39.58 & $<$0.001 & 189,143 \\
+ & Actual vehicle share & Vehicle-route depth & 28.8502$^{***}$ & 0.5780 & 49.92 & $<$0.001 & 189,143 \\
 \addlinespace
 \multicolumn{8}{l}{\textit{Panel B. Future vehicle share}} \\
- & Vehicle share, t+7 & Route-cost advantage, per 100 bp & 0.0001 & 0.0000 & 3.10 & 0.002 & 9,380 \\
- & Vehicle share, t+7 & Vehicle-route availability & 0.0940 & 0.0141 & 6.67 & $<$0.001 & 9,380 \\
- & Vehicle share, t+7 & LP concentration & 0.1117 & 0.0135 & 8.30 & $<$0.001 & 9,380 \\
- & Vehicle share, t+30 & Current vehicle share & 0.3630 & 0.0165 & 21.98 & $<$0.001 & 9,265 \\
- & Vehicle share, t+30 & Route-cost advantage, per 100 bp & 0.0002 & 0.0000 & 5.26 & $<$0.001 & 9,265 \\
- & Vehicle share, t+30 & Vehicle-route availability & 0.1254 & 0.0152 & 8.23 & $<$0.001 & 9,265 \\
+ & Vehicle share, t+7 & Route-cost advantage, per 100 bp & 0.0001$^{***}$ & 0.0000 & 3.10 & 0.002 & 9,380 \\
+ & Vehicle share, t+7 & Vehicle-route availability & 0.0940$^{***}$ & 0.0141 & 6.67 & $<$0.001 & 9,380 \\
+ & Vehicle share, t+7 & LP concentration & 0.1117$^{***}$ & 0.0135 & 8.30 & $<$0.001 & 9,380 \\
+ & Vehicle share, t+30 & Current vehicle share & 0.3630$^{***}$ & 0.0165 & 21.98 & $<$0.001 & 9,265 \\
+ & Vehicle share, t+30 & Route-cost advantage, per 100 bp & 0.0002$^{***}$ & 0.0000 & 5.26 & $<$0.001 & 9,265 \\
+ & Vehicle share, t+30 & Vehicle-route availability & 0.1254$^{***}$ & 0.0152 & 8.23 & $<$0.001 & 9,265 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
@@ -181,24 +181,24 @@ Panel & Outcome & Regressor & Estimate & SE & t & p & N \\
 Panel & Outcome / bin & Regressor / statistic & Estimate & SE & t & p & N \\
 \midrule
 \multicolumn{8}{l}{\textit{Panel A. Liquidity-route feedback}} \\
- & Vehicle share, t+7 & LP concentration & 0.1117 & 0.0135 & 8.30 & $<$0.001 & 9,380 \\
- & LP concentration, t+7 & Current vehicle share & 0.0419 & 0.0098 & 4.29 & $<$0.001 & 9,380 \\
- & Log vehicle-linked liquidity, t+7 & Current vehicle share & 1.1713 & 0.0621 & 18.86 & $<$0.001 & 9,380 \\
+ & Vehicle share, t+7 & LP concentration & 0.1117$^{***}$ & 0.0135 & 8.30 & $<$0.001 & 9,380 \\
+ & LP concentration, t+7 & Current vehicle share & 0.0419$^{***}$ & 0.0098 & 4.29 & $<$0.001 & 9,380 \\
+ & Log vehicle-linked liquidity, t+7 & Current vehicle share & 1.1713$^{***}$ & 0.0621 & 18.86 & $<$0.001 & 9,380 \\
 \addlinespace
 \multicolumn{8}{l}{\textit{Panel B. LP stock changes}} \\
- & Change in LP concentration, t to t+30 & Current vehicle share & -3.4047 & 1.3012 & -2.62 & 0.009 & 9,265 \\
- & Change in LP concentration, t to t+30 & Vehicle-route availability & 3.6119 & 1.4612 & 2.47 & 0.014 & 9,265 \\
- & Change in LP concentration, t to t+30 & No-direct, vehicle-available & -6.5773 & 3.1165 & -2.11 & 0.035 & 9,265 \\
- & Change in log vehicle-linked liquidity, t to t+30 & Current vehicle share & -0.1805 & 0.0458 & -3.94 & $<$0.001 & 9,265 \\
- & Change in log vehicle-linked liquidity, t to t+30 & Vehicle-route availability & 0.2112 & 0.0454 & 4.65 & $<$0.001 & 9,265 \\
- & Change in log vehicle-linked liquidity, t to t+30 & No-direct, vehicle-available & -0.4296 & 0.1154 & -3.72 & $<$0.001 & 9,265 \\
+ & Change in LP concentration, t to t+30 & Current vehicle share & -3.4047$^{***}$ & 1.3012 & -2.62 & 0.009 & 9,265 \\
+ & Change in LP concentration, t to t+30 & Vehicle-route availability & 3.6119$^{**}$ & 1.4612 & 2.47 & 0.014 & 9,265 \\
+ & Change in LP concentration, t to t+30 & No-direct, vehicle-available & -6.5773$^{**}$ & 3.1165 & -2.11 & 0.035 & 9,265 \\
+ & Change in log vehicle-linked liquidity, t to t+30 & Current vehicle share & -0.1805$^{***}$ & 0.0458 & -3.94 & $<$0.001 & 9,265 \\
+ & Change in log vehicle-linked liquidity, t to t+30 & Vehicle-route availability & 0.2112$^{***}$ & 0.0454 & 4.65 & $<$0.001 & 9,265 \\
+ & Change in log vehicle-linked liquidity, t to t+30 & No-direct, vehicle-available & -0.4296$^{***}$ & 0.1154 & -3.72 & $<$0.001 & 9,265 \\
 \addlinespace
 \multicolumn{8}{l}{\textit{Panel C. Challenger displacement thresholds}} \\
- & Challenger <= incumbent & Incumbent share change, t+30 & -2.80 &  & -8.16 & $<$0.001 & 1,687 \\
- & 0 to 25 bp & Incumbent share change, t+30 & -5.19 &  & -3.47 & $<$0.001 & 86 \\
- & 25 to 100 bp & Incumbent share change, t+30 & -6.72 &  & -5.47 & $<$0.001 & 146 \\
- & 100 to 250 bp & Incumbent share change, t+30 & -9.50 &  & -7.28 & $<$0.001 & 92 \\
- & >250 bp & Incumbent share change, t+30 & -10.08 &  & -10.17 & $<$0.001 & 193 \\
+ & Challenger <= incumbent & Incumbent share change, t+30 & -2.80$^{***}$ &  & -8.16 & $<$0.001 & 1,687 \\
+ & 0 to 25 bp & Incumbent share change, t+30 & -5.19$^{***}$ &  & -3.47 & $<$0.001 & 86 \\
+ & 25 to 100 bp & Incumbent share change, t+30 & -6.72$^{***}$ &  & -5.47 & $<$0.001 & 146 \\
+ & 100 to 250 bp & Incumbent share change, t+30 & -9.50$^{***}$ &  & -7.28 & $<$0.001 & 92 \\
+ & >250 bp & Incumbent share change, t+30 & -10.08$^{***}$ &  & -10.17 & $<$0.001 & 193 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
@@ -221,25 +221,25 @@ Panel & Outcome / bin & Regressor / statistic & Estimate & SE & t & p & N \\
 Panel & Estimate & Effect & Events & t & p & Interpretation \\
 \midrule
 \multicolumn{7}{l}{\textit{Panel A. Same-day decomposition}} \\
- & WETH share change & -1.48 pp & 20 & -2.59 & 0.018 & event-day minus prior-28-day baseline \\
- & Stable share change & 1.48 pp & 20 & 2.59 & 0.018 & event-day minus prior-28-day baseline \\
- & WETH-minus-stable change & -2.96 pp & 20 & -2.59 & 0.018 & event-day minus prior-28-day baseline \\
+ & WETH share change & -1.48 pp$^{**}$ & 20 & -2.59 & 0.018 & event-day minus prior-28-day baseline \\
+ & Stable share change & 1.48 pp$^{**}$ & 20 & 2.59 & 0.018 & event-day minus prior-28-day baseline \\
+ & WETH-minus-stable change & -2.96 pp$^{**}$ & 20 & -2.59 & 0.018 & event-day minus prior-28-day baseline \\
  & Aggregate direct-route share change & -0.25 pp & 20 & -0.42 & 0.679 & event-day minus prior-28-day baseline \\
- & Log indirect-route volume change & 0.51 log points & 20 & 3.2 & 0.005 & event-day minus prior-28-day baseline \\
+ & Log indirect-route volume change & 0.51 log points$^{***}$ & 20 & 3.2 & 0.005 & event-day minus prior-28-day baseline \\
 \addlinespace
 \multicolumn{7}{l}{\textit{Panel B. Event-time persistence}} \\
- & event day & -26.96 & 20 & -3.06 & 0.006 & WETH-minus-stable gap \\
- & post 1 to 7 & -11.16 & 20 & -1.87 & 0.077 & WETH-minus-stable gap \\
- & post 8 to 30 & -9.48 & 20 & -2.13 & 0.046 & WETH-minus-stable gap \\
- & pre -14 to -1 & -5.63 & 20 & -2.63 & 0.016 & WETH-minus-stable gap \\
+ & event day & -26.96$^{***}$ & 20 & -3.06 & 0.006 & WETH-minus-stable gap \\
+ & post 1 to 7 & -11.16$^{*}$ & 20 & -1.87 & 0.077 & WETH-minus-stable gap \\
+ & post 8 to 30 & -9.48$^{**}$ & 20 & -2.13 & 0.046 & WETH-minus-stable gap \\
+ & pre -14 to -1 & -5.63$^{**}$ & 20 & -2.63 & 0.016 & WETH-minus-stable gap \\
 \addlinespace
 \multicolumn{7}{l}{\textit{Panel C. Threshold and overlap sensitivity}} \\
- & all events, threshold 6\% & -3.12 pp & 91 & -3.44 & $<$0.001 & negative share 67.0\% \\
- & all events, threshold 8\% & -2.95 pp & 49 & -3.41 & 0.001 & negative share 65.3\% \\
- & all events, threshold 10\% & -3.74 pp & 26 & -3.7 & 0.001 & negative share 65.4\% \\
- & all events, threshold 12\% & -3.18 pp & 19 & -2.68 & 0.015 & negative share 63.2\% \\
- & top 20, threshold 8\% & -3.09 pp & 18 & -2.48 & 0.024 & negative share 61.1\% \\
- & non-overlap, threshold 8\% & -3.01 pp & 33 & -2.45 & 0.020 & negative share 57.6\% \\
+ & all events, threshold 6\% & -3.12 pp$^{***}$ & 91 & -3.44 & $<$0.001 & negative share 67.0\% \\
+ & all events, threshold 8\% & -2.95 pp$^{***}$ & 49 & -3.41 & 0.001 & negative share 65.3\% \\
+ & all events, threshold 10\% & -3.74 pp$^{***}$ & 26 & -3.7 & 0.001 & negative share 65.4\% \\
+ & all events, threshold 12\% & -3.18 pp$^{**}$ & 19 & -2.68 & 0.015 & negative share 63.2\% \\
+ & top 20, threshold 8\% & -3.09 pp$^{**}$ & 18 & -2.48 & 0.024 & negative share 61.1\% \\
+ & non-overlap, threshold 8\% & -3.01 pp$^{**}$ & 33 & -2.45 & 0.020 & negative share 57.6\% \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
@@ -262,14 +262,14 @@ Panel & Estimate & Effect & Events & t & p & Interpretation \\
 Panel & Outcome & Sample & Effect & SE & t & p & N \\
 \midrule
 \multicolumn{8}{l}{\textit{Panel A. Main V3 opportunity test}} \\
- & No-direct, WETH-available & All matched pairs & -25.81 &  & -7.62 & $<$0.001 & 1,822 \\
+ & No-direct, WETH-available & All matched pairs & -25.81$^{***}$ &  & -7.62 & $<$0.001 & 1,822 \\
 \addlinespace
 \multicolumn{8}{l}{\textit{Panel B. Dose response by pre-V3 direct availability}} \\
- & Direct-route availability & Q1 weakest & 56.42 & 10.03 & 5.63 & $<$0.001 & 1,122 \\
- & No-direct, WETH-available & Q1 weakest & -33.03 & 12.22 & -2.70 & 0.007 & 1,122 \\
- & Direct-route availability & Q2 & 51.36 & 14.83 & 3.46 & $<$0.001 & 1,434 \\
- & No-direct, WETH-available & Q2 & -47.51 & 8.40 & -5.66 & $<$0.001 & 1,434 \\
- & Direct-route availability & Q4 strongest & 3.28 & 1.98 & 1.66 & 0.099 & 8,914 \\
+ & Direct-route availability & Q1 weakest & 56.42$^{***}$ & 10.03 & 5.63 & $<$0.001 & 1,122 \\
+ & No-direct, WETH-available & Q1 weakest & -33.03$^{***}$ & 12.22 & -2.70 & 0.007 & 1,122 \\
+ & Direct-route availability & Q2 & 51.36$^{***}$ & 14.83 & 3.46 & $<$0.001 & 1,434 \\
+ & No-direct, WETH-available & Q2 & -47.51$^{***}$ & 8.40 & -5.66 & $<$0.001 & 1,434 \\
+ & Direct-route availability & Q4 strongest & 3.28$^{*}$ & 1.98 & 1.66 & 0.099 & 8,914 \\
  & No-direct, WETH-available & Q4 strongest & -1.91 & 1.98 & -0.96 & 0.336 & 8,914 \\
 \bottomrule
 \end{tabular}
@@ -293,10 +293,10 @@ Panel & Outcome & Sample & Effect & SE & t & p & N \\
 Panel & Sample / outcome & Cells / N & V3 / regressor & V4 & Difference / estimate & p / diagnostic \\
 \midrule
 \multicolumn{7}{l}{\textit{Panel A. Physical intermediary-token transfer incidence}} \\
- & All & 500 & 100.0\% & 81.4\% & -18.6 pp & $<$0.001 \\
- & Route size: Small & 104 & 100.0\% & 60.6\% & -39.4 pp & $<$0.001 \\
- & Route size: Medium & 73 & 100.0\% & 87.7\% & -12.3 pp & 0.002 \\
- & Route size: Large & 94 & 100.0\% & 96.8\% & -3.2 pp & 0.083 \\
+ & All & 500 & 100.0\% & 81.4\% & -18.6 pp$^{***}$ & $<$0.001 \\
+ & Route size: Small & 104 & 100.0\% & 60.6\% & -39.4 pp$^{***}$ & $<$0.001 \\
+ & Route size: Medium & 73 & 100.0\% & 87.7\% & -12.3 pp$^{***}$ & 0.002 \\
+ & Route size: Large & 94 & 100.0\% & 96.8\% & -3.2 pp$^{*}$ & 0.083 \\
 \addlinespace
 \multicolumn{7}{l}{\textit{Panel B. Matched-sample balance and receipt diagnostics}} \\
  & Uniswap V3 & 500 & \$6,136 &  & 53.05 & 100.0 \\
@@ -304,8 +304,8 @@ Panel & Sample / outcome & Cells / N & V3 / regressor & V4 & Difference / estima
  & V4 minus V3 within cell & 500 &  &  & log route diff=-0.692 & t = -7.58, p < 0.001 \\
 \addlinespace
 \multicolumn{7}{l}{\textit{Panel C. Matched-cell route-use persistence}} \\
- & Log V4 route count & 16,218 & Log V3 route count &  & 0.3674 (t=28.33) & $<$0.001 \\
- & Log V4 route volume & 16,218 & Log V3 route volume &  & 0.5819 (t=83.13) & $<$0.001 \\
+ & Log V4 route count & 16,218 & Log V3 route count &  & 0.3674 (t=28.33)$^{***}$ & $<$0.001 \\
+ & Log V4 route volume & 16,218 & Log V3 route volume &  & 0.5819 (t=83.13)$^{***}$ & $<$0.001 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
@@ -328,16 +328,16 @@ Panel & Sample / outcome & Cells / N & V3 / regressor & V4 & Difference / estima
 Panel & Sample & Regressor & Estimate & SE & t & p & N \\
 \midrule
 \multicolumn{8}{l}{\textit{Panel A. Baseline common-liquidity regressions}} \\
- & Full sample & Market liquidity factor & 0.7063 & 0.0573 & 12.32 & $<$0.001 & 685,685 \\
- & Full sample & Vehicle liquidity factor & 0.1626 & 0.0431 & 3.77 & $<$0.001 & 685,685 \\
- & Stress interaction & Market liquidity factor & 0.6987 & 0.0605 & 11.55 & $<$0.001 & 685,685 \\
- & Stress interaction & Vehicle liquidity factor & 0.1586 & 0.0438 & 3.62 & $<$0.001 & 685,685 \\
- & Stress interaction & Vehicle factor x stress & 0.1064 & 0.0491 & 2.17 & 0.030 & 685,685 \\
+ & Full sample & Market liquidity factor & 0.7063$^{***}$ & 0.0573 & 12.32 & $<$0.001 & 685,685 \\
+ & Full sample & Vehicle liquidity factor & 0.1626$^{***}$ & 0.0431 & 3.77 & $<$0.001 & 685,685 \\
+ & Stress interaction & Market liquidity factor & 0.6987$^{***}$ & 0.0605 & 11.55 & $<$0.001 & 685,685 \\
+ & Stress interaction & Vehicle liquidity factor & 0.1586$^{***}$ & 0.0438 & 3.62 & $<$0.001 & 685,685 \\
+ & Stress interaction & Vehicle factor x stress & 0.1064$^{**}$ & 0.0491 & 2.17 & 0.030 & 685,685 \\
 \addlinespace
 \multicolumn{8}{l}{\textit{Panel B. Heterogeneity and top-pool exclusion}} \\
- & High average VehicleShare vehicles & Vehicle liquidity factor & 0.2174 & 0.0464 & 4.69 & $<$0.001 & 664,218 \\
+ & High average VehicleShare vehicles & Vehicle liquidity factor & 0.2174$^{***}$ & 0.0464 & 4.69 & $<$0.001 & 664,218 \\
  & Low average VehicleShare vehicles & Vehicle liquidity factor & -0.0921 & 0.0903 & -1.02 & 0.307 & 21,467 \\
- & Excluding top 1\% mean-liquidity pools & Vehicle liquidity factor & 0.1670 & 0.0436 & 3.83 & $<$0.001 & 679,228 \\
+ & Excluding top 1\% mean-liquidity pools & Vehicle liquidity factor & 0.1670$^{***}$ & 0.0436 & 3.83 & $<$0.001 & 679,228 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
