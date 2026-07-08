@@ -284,6 +284,29 @@ def jstor_pdf_urls(url: str) -> list[str]:
     ]
 
 
+def sciencedirect_article_url(url: str) -> str | None:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.netloc == "go.openathens.net":
+        target = urllib.parse.parse_qs(parsed.query).get("url", [""])[0]
+        article = sciencedirect_article_url(target)
+        if article:
+            match = re.search(r"/redirector/([^/?#]+)", parsed.path)
+            domain = match.group(1) if match else ""
+            return openathens_url(article, domain) if domain else article
+        return None
+    if not parsed.netloc.endswith("sciencedirect.com"):
+        return None
+    match = re.search(r"/science/article/pii/([^/?#]+)", parsed.path)
+    if not match:
+        return None
+    return f"https://www.sciencedirect.com/science/article/pii/{match.group(1)}"
+
+
+def is_sciencedirect_page(url: str) -> bool:
+    parsed = urllib.parse.urlparse(url)
+    return parsed.netloc.endswith("sciencedirect.com")
+
+
 def page_pdf_links(page: Any) -> list[str]:
     try:
         raw_links = page.evaluate(
@@ -342,6 +365,58 @@ def ebsco_pdf_from_page(page: Any, timeout_ms: int) -> tuple[bytes | None, str |
     if is_pdf(data):
         return data, f"ebsco-pdf {pdf_response.url}"
     return None, f"ebsco-pdf status={pdf_response.status} not-pdf"
+
+
+def sciencedirect_pdf_from_page(page: Any, timeout_ms: int) -> tuple[bytes | None, str | None]:
+    if not is_sciencedirect_page(page.url):
+        return None, None
+
+    responses: list[Any] = []
+
+    def remember_response(response: Any) -> None:
+        responses.append(response)
+
+    page.on("response", remember_response)
+    selectors = [
+        "a:has-text('Download PDF')",
+        "button:has-text('Download PDF')",
+        "a[aria-label*='Download PDF']",
+        "a[href*='/pdfft']",
+        "a[href*='pdf']",
+    ]
+    try:
+        button = first_visible(page, selectors)
+        if button:
+            button.click(timeout=5000)
+            page.wait_for_timeout(min(timeout_ms, 8000))
+    except Exception:
+        pass
+    finally:
+        with contextlib.suppress(Exception):
+            page.remove_listener("response", remember_response)
+
+    for response in reversed(responses):
+        url = getattr(response, "url", "")
+        if "sciencedirectassets.com" not in url and "/pdfft" not in url and "pdf" not in url.lower():
+            continue
+        data = pdf_from_response(response)
+        if data:
+            return data, f"sciencedirect-response {url}"
+
+    links = page_pdf_links(page)
+    for link in links:
+        if "sciencedirect.com" not in link and "sciencedirectassets.com" not in link:
+            continue
+        try:
+            response = page.context.request.get(link, headers={"Accept": "application/pdf,*/*"}, timeout=timeout_ms)
+            data = response.body()
+        except Exception as exc:  # noqa: BLE001
+            detail = f"sciencedirect-link {type(exc).__name__}: {exc}"
+            continue
+        if is_pdf(data):
+            return data, f"sciencedirect-link {response.url}"
+        detail = f"sciencedirect-link status={response.status} not-pdf"
+    return None, locals().get("detail", "sciencedirect-no-pdf")
 
 
 def first_visible(page: Any, selectors: list[str]) -> Any | None:
@@ -453,7 +528,7 @@ def browser_fetch_pdf(
     password: str | None,
 ) -> tuple[bytes | None, str]:
     responses: list[Any] = []
-    navigation_url = jstor_article_url(url) or url
+    navigation_url = jstor_article_url(url) or sciencedirect_article_url(url) or url
 
     def remember_response(response: Any) -> None:
         responses.append(response)
@@ -506,6 +581,10 @@ def browser_fetch_pdf(
     ebsco_data, ebsco_detail = ebsco_pdf_from_page(page, timeout_ms)
     if ebsco_data:
         return ebsco_data, ebsco_detail or f"ebsco-pdf {page.url}"
+
+    sciencedirect_data, sciencedirect_detail = sciencedirect_pdf_from_page(page, timeout_ms)
+    if sciencedirect_data:
+        return sciencedirect_data, sciencedirect_detail or f"sciencedirect-pdf {page.url}"
 
     candidates = [response, *reversed(responses)]
     for candidate in candidates:
