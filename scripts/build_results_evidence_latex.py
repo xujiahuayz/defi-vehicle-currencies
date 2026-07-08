@@ -122,8 +122,9 @@ def coef_p_cell(value: object, p_value: object) -> object:
     return RawLatex(f"\\makecell{{{esc(value)}{star_tex} \\\\ {{\\scriptsize {esc(p_text)}}}}}")
 
 
-def header_cell(number: str, label: str) -> RawLatex:
-    return RawLatex(f"\\makecell{{{esc(number)} \\\\ {esc(label)}}}")
+def header_cell(number: str, *labels: str) -> RawLatex:
+    label_lines = " \\\\ ".join(esc(label) for label in labels)
+    return RawLatex(f"\\makecell{{{esc(number)} \\\\ {label_lines}}}")
 
 
 def read_table(stem: str) -> pd.DataFrame:
@@ -179,6 +180,9 @@ def clean_sample(name: str) -> str:
         "uniswap_v4": "Uniswap V4",
         "V4 - V3 within cell": "V4 minus V3 within cell",
         "challenger <= incumbent": "Challenger <= incumbent",
+        "0 to 25 bp": "0-25 bp",
+        "25 to 100 bp": "25-100 bp",
+        "100 to 250 bp": "100-250 bp",
     }
     return mapping.get(name, name)
 
@@ -219,7 +223,7 @@ class TableSpec:
 
 
 def table_tex(spec: TableSpec) -> str:
-    align = "".join(f">{{\\raggedright\\arraybackslash}}p{{{w}}}" for w in spec.widths)
+    align = "@{}" + "".join(f">{{\\raggedright\\arraybackslash}}p{{{w}}}" for w in spec.widths) + "@{}"
     lines: list[str] = []
     if spec.landscape:
         lines.append(r"\begin{landscape}")
@@ -380,11 +384,11 @@ def variable_table() -> TableSpec:
     for _, r in df[df["Variable / proxy"].isin(keep)].iterrows():
         rows.append([r["Variable / proxy"], r["Level"], r["Construction"], r["Used for"]])
     return TableSpec(
-        "2",
+        "3",
         "Variable construction and empirical proxies.",
         "tab:variables",
         ["Variable", "Level", "Construction", "Used for"],
-        ["0.18\\textwidth", "0.18\\textwidth", "0.48\\textwidth", "0.12\\textwidth"],
+        ["0.17\\textwidth", "0.17\\textwidth", "0.46\\textwidth", "0.10\\textwidth"],
         rows,
         "All variables are generated from the reconstructed route and liquidity data. VehicleShare is conditional on indirect routed volume; all-route shares are used only as scope diagnostics.",
         landscape=True,
@@ -396,13 +400,13 @@ def rq1_table() -> TableSpec:
     core = read_table("table_m09_core_panel_regressions")
     rows: list[list[object]] = [
         [
-            "Route-cost advantage, per 100 bp",
+            "Route-cost adv., per 100 bp",
             reg_cell(actual, Outcome="Actual vehicle share", Regressor="route_cost_advantage_100bp"),
             reg_cell(core, Outcome="future VehicleShare, t+7", Regressor="route_cost_advantage_100bp"),
             reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="route_cost_advantage_100bp"),
         ],
         [
-            "Vehicle-route availability",
+            "Vehicle-route avail.",
             reg_cell(actual, Outcome="Actual vehicle share", Regressor="vehicle_available"),
             reg_cell(core, Outcome="future VehicleShare, t+7", Regressor="vehicle_available_share"),
             reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="vehicle_available_share"),
@@ -420,41 +424,41 @@ def rq1_table() -> TableSpec:
             "",
         ],
         [
-            "Current vehicle share",
+            "Lagged vehicle share",
             "",
             "",
             reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="BridgeShare"),
         ],
         [
-            "Fixed effects",
+            "FE",
             "Endpoint-pair x date",
             "Token and date",
             "Token and date",
         ],
         [
-            "SE clustering",
+            "SE cluster",
             "Date",
             "Date",
             "Date",
         ],
         [
-            "Observations",
+            "Obs.",
             value_cell(actual, "N", Outcome="Actual vehicle share", Regressor="route_cost_advantage_100bp"),
             value_cell(core, "N", Outcome="future VehicleShare, t+7", Regressor="route_cost_advantage_100bp"),
             value_cell(core, "N", Outcome="future VehicleShare, t+30", Regressor="route_cost_advantage_100bp"),
         ],
     ]
     return TableSpec(
-        "3",
+        "4",
         "Vehicle formation: route economics, availability, and realized route choice.",
         "tab:rq1-formation",
         [
             "",
-            header_cell("(1)", "Actual vehicle share"),
-            header_cell("(2)", "Vehicle share, t+7"),
-            header_cell("(3)", "Vehicle share, t+30"),
+            header_cell("(1)", "Actual", "vehicle share"),
+            header_cell("(2)", "Vehicle share", "t+7"),
+            header_cell("(3)", "Vehicle share", "t+30"),
         ],
-        ["0.28\\textwidth", "0.21\\textwidth", "0.21\\textwidth", "0.21\\textwidth"],
+        ["0.24\\textwidth", "0.19\\textwidth", "0.19\\textwidth", "0.19\\textwidth"],
         rows,
         "Cells report coefficients with p-values beneath them. Stars denote 10%, 5%, and 1% significance. Route-cost advantage is measured per 100 basis points.",
         landscape=True,
@@ -475,7 +479,7 @@ def rq2_rq3_table() -> TableSpec:
             "",
         ],
         [
-            "Current vehicle share",
+            "Lagged vehicle share",
             "",
             reg_cell(lp, Panel="A. Stock feedback", Outcome="future LPConcentration, t+7", Regressor="BridgeShare"),
             reg_cell(lp, Panel="A. Stock feedback", Outcome="future log VehicleLinkedLiquidity, t+7", Regressor="BridgeShare"),
@@ -483,7 +487,7 @@ def rq2_rq3_table() -> TableSpec:
             reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="BridgeShare"),
         ],
         [
-            "Vehicle-route availability",
+            "Vehicle-route avail.",
             "",
             "",
             "",
@@ -491,17 +495,17 @@ def rq2_rq3_table() -> TableSpec:
             reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="vehicle_available_share"),
         ],
         [
-            "No-direct, vehicle-available",
+            "No-direct veh.-avail.",
             "",
             "",
             "",
             reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in LPConcentration", Regressor="no_direct_vehicle_available_share"),
             reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="no_direct_vehicle_available_share"),
         ],
-        ["Fixed effects", "Token and date", "Token and date", "Token and date", "Token and date", "Token and date"],
-        ["SE clustering", "Date", "Date", "Date", "Date", "Date"],
+        ["FE", "Token and date", "Token and date", "Token and date", "Token and date", "Token and date"],
+        ["SE cluster", "Date", "Date", "Date", "Date", "Date"],
         [
-            "Observations",
+            "Obs.",
             value_cell(lp, "N", Panel="A. Stock feedback", Outcome="future VehicleShare, t+7", Regressor="lp_concentration_share"),
             value_cell(lp, "N", Panel="A. Stock feedback", Outcome="future LPConcentration, t+7", Regressor="BridgeShare"),
             value_cell(lp, "N", Panel="A. Stock feedback", Outcome="future log VehicleLinkedLiquidity, t+7", Regressor="BridgeShare"),
@@ -520,18 +524,18 @@ def rq2_rq3_table() -> TableSpec:
             r["Incumbent days"],
         ])
     return TableSpec(
-        "4",
+        "5",
         "Liquidity provision, persistence, and challenger displacement.",
         "tab:rq2-rq3-liquidity-persistence",
         [
             "",
-            header_cell("(1)", "Vehicle share, t+7"),
-            header_cell("(2)", "LP concentration, t+7"),
-            header_cell("(3)", "Log LP liquidity, t+7"),
-            header_cell("(4)", "Change in LP concentration"),
-            header_cell("(5)", "Change in log liquidity / challenger N"),
+            header_cell("(1)", "Vehicle share", "t+7"),
+            header_cell("(2)", "LP conc.", "t+7"),
+            header_cell("(3)", "Log LP liq.", "t+7"),
+            header_cell("(4)", "Chg. LP", "conc."),
+            header_cell("(5)", "Chg. log", "LP liq. / N"),
         ],
-        ["0.24\\textwidth", "0.15\\textwidth", "0.15\\textwidth", "0.15\\textwidth", "0.15\\textwidth", "0.15\\textwidth"],
+        ["0.22\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.14\\textwidth"],
         rows,
         "Cells report coefficients with p-values beneath them. Panel A uses token and date fixed effects with date-clustered standard errors. Panel B reports incumbent share changes by challenger route-cost edge bins; the last column gives the number of incumbent days.",
         landscape=True,
@@ -564,21 +568,27 @@ def stress_table() -> TableSpec:
         ["Panel C. Threshold and overlap sensitivity", "", "", "", "", "", ""],
     ]
     for _, r in stress[stress["Panel"].eq("B. Threshold/overlap sensitivity")].iterrows():
-        rows.append([r["Estimate"], r["Events"], "", "", coef_p_cell(r["Effect"], r["p"]), "", r["Interpretation"]])
+        estimate = (
+            r["Estimate"]
+            .replace("all events, threshold ", "All, ")
+            .replace("top 20, threshold ", "Top 20, ")
+            .replace("non-overlap, threshold ", "Nonoverlap, ")
+        )
+        rows.append([estimate, r["Events"], "", "", coef_p_cell(r["Effect"], r["p"]), "", r["Interpretation"].replace("negative share ", "neg. share ")])
     return TableSpec(
-        "5",
+        "6",
         "Stress rotation inside common route opportunities.",
         "tab:rq4-stress",
         [
             "",
             "Events",
-            header_cell("(1)", "WETH / pre"),
-            header_cell("(2)", "Stable / event"),
-            header_cell("(3)", "WETH-stable / post 1-7"),
-            header_cell("(4)", "Direct share / post 8-30"),
-            header_cell("(5)", "Indirect volume / note"),
+            header_cell("(1)", "WETH", "or pre gap"),
+            header_cell("(2)", "Stable", "or event gap"),
+            header_cell("(3)", "Gap", "or post 1-7"),
+            header_cell("(4)", "Direct", "or post 8-30"),
+            header_cell("(5)", "Indir. vol.", "or note"),
         ],
-        ["0.24\\textwidth", "0.08\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.18\\textwidth"],
+        ["0.21\\textwidth", "0.06\\textwidth", "0.12\\textwidth", "0.12\\textwidth", "0.12\\textwidth", "0.12\\textwidth", "0.15\\textwidth"],
         rows,
         "Cells report event effects with p-values beneath them. Panel A is the same-day decomposition relative to a prior 28-day baseline. Panel B uses the same WETH-minus-stable gap in event-time windows; pre-movement means the result should be written as a common-support rotation, not a clean surprise-shock causal design.",
         landscape=True,
@@ -600,7 +610,7 @@ def architecture_table() -> TableSpec:
             reg_cell(dose, estimate_col="Post-V3 effect", **{"Pre-V3 direct availability quartile": "Q4 strongest", "Outcome": "No-direct WETH availability"}),
         ],
         [
-            "Endpoint-pair FE",
+            "Pair FE",
             "yes",
             "yes",
             "yes",
@@ -610,7 +620,7 @@ def architecture_table() -> TableSpec:
             "yes",
         ],
         [
-            "SE clustering",
+            "SE cluster",
             "Pair",
             "Pair",
             "Pair",
@@ -620,7 +630,7 @@ def architecture_table() -> TableSpec:
             "Pair",
         ],
         [
-            "Observations",
+            "Obs.",
             value_cell(main, "Rows", Outcome="No-direct WETH availability"),
             value_cell(dose, "Rows", **{"Pre-V3 direct availability quartile": "Q1 weakest", "Outcome": "Direct-route availability"}),
             value_cell(dose, "Rows", **{"Pre-V3 direct availability quartile": "Q1 weakest", "Outcome": "No-direct WETH availability"}),
@@ -631,20 +641,20 @@ def architecture_table() -> TableSpec:
         ],
     ]
     return TableSpec(
-        "6",
+        "7",
         "Architecture and direct-route opportunity.",
         "tab:rq5-architecture",
         [
             "",
-            header_cell("(1)", "No-direct WETH"),
-            header_cell("(2)", "Q1 direct"),
-            header_cell("(3)", "Q1 no-direct WETH"),
-            header_cell("(4)", "Q2 direct"),
-            header_cell("(5)", "Q2 no-direct WETH"),
-            header_cell("(6)", "Q4 direct"),
-            header_cell("(7)", "Q4 no-direct WETH"),
+            header_cell("(1)", "No-direct", "WETH"),
+            header_cell("(2)", "Q1", "direct"),
+            header_cell("(3)", "Q1", "no-direct"),
+            header_cell("(4)", "Q2", "direct"),
+            header_cell("(5)", "Q2", "no-direct"),
+            header_cell("(6)", "Q4", "direct"),
+            header_cell("(7)", "Q4", "no-direct"),
         ],
-        ["0.16\\textwidth", "0.11\\textwidth", "0.11\\textwidth", "0.12\\textwidth", "0.11\\textwidth", "0.12\\textwidth", "0.11\\textwidth", "0.12\\textwidth"],
+        ["0.14\\textwidth", "0.10\\textwidth", "0.10\\textwidth", "0.11\\textwidth", "0.10\\textwidth", "0.11\\textwidth", "0.10\\textwidth", "0.11\\textwidth"],
         rows,
         "Dependent variables are route-opportunity measures. Cells report post-V3 effects in percentage points with p-values beneath them. The table is scoped to route opportunity around V3 and should not be read as a broad causal launch effect for every V3 outcome.",
         landscape=True,

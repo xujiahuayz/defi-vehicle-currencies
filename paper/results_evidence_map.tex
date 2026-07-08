@@ -58,7 +58,7 @@ This document reorganizes the current empirical evidence around research questio
 \begin{threeparttable}
 \caption{Research questions, empirical objects, and evidence.}
 \label{tab:rq-evidence-map}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}@{}}
 \toprule
 RQ & Research question & Unit & Main proxy & Evidence & Empirical answer \\
 \midrule
@@ -87,7 +87,7 @@ RQ7 & Does a vehicle create common liquidity? & Pool x vehicle x day liquidity p
 \begin{threeparttable}
 \caption{Vehicle-use measurement and exact-quote scope.}
 \label{tab:measurement-scope}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}@{}}
 \toprule
 Panel & Quantity & Main estimate & Companion estimate & Interpretation \\
 \midrule
@@ -119,7 +119,7 @@ Panel & Quantity & Main estimate & Companion estimate & Interpretation \\
 \begin{threeparttable}
 \caption{Variable construction and empirical proxies.}
 \label{tab:variables}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.48\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}@{}}
 \toprule
 Variable & Level & Construction & Used for \\
 \midrule
@@ -149,18 +149,18 @@ VehicleLiquidityFactor & vehicle token x day & Leave-one-out average daily log-l
 \begin{threeparttable}
 \caption{Vehicle formation: route economics, availability, and realized route choice.}
 \label{tab:rq1-formation}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}@{}}
 \toprule
- & \makecell{(1) \\ Actual vehicle share} & \makecell{(2) \\ Vehicle share, t+7} & \makecell{(3) \\ Vehicle share, t+30} \\
+ & \makecell{(1) \\ Actual \\ vehicle share} & \makecell{(2) \\ Vehicle share \\ t+7} & \makecell{(3) \\ Vehicle share \\ t+30} \\
 \midrule
-Route-cost advantage, per 100 bp & \makecell{0.1462$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0001$^{***}$ \\ {\scriptsize p=0.002}} & \makecell{0.0002$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-Vehicle-route availability & \makecell{19.1385$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0940$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1254$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Route-cost adv., per 100 bp & \makecell{0.1462$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0001$^{***}$ \\ {\scriptsize p=0.002}} & \makecell{0.0002$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Vehicle-route avail. & \makecell{19.1385$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0940$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1254$^{***}$ \\ {\scriptsize p$<$0.001}} \\
 Vehicle-route depth & \makecell{28.8502$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  \\
 LP concentration &  & \makecell{0.1117$^{***}$ \\ {\scriptsize p$<$0.001}} &  \\
-Current vehicle share &  &  & \makecell{0.3630$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-Fixed effects & Endpoint-pair x date & Token and date & Token and date \\
-SE clustering & Date & Date & Date \\
-Observations & 189,143 & 9,380 & 9,265 \\
+Lagged vehicle share &  &  & \makecell{0.3630$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+FE & Endpoint-pair x date & Token and date & Token and date \\
+SE cluster & Date & Date & Date \\
+Obs. & 189,143 & 9,380 & 9,265 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
@@ -179,24 +179,24 @@ Observations & 189,143 & 9,380 & 9,265 \\
 \begin{threeparttable}
 \caption{Liquidity provision, persistence, and challenger displacement.}
 \label{tab:rq2-rq3-liquidity-persistence}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.14\textwidth}@{}}
 \toprule
- & \makecell{(1) \\ Vehicle share, t+7} & \makecell{(2) \\ LP concentration, t+7} & \makecell{(3) \\ Log LP liquidity, t+7} & \makecell{(4) \\ Change in LP concentration} & \makecell{(5) \\ Change in log liquidity / challenger N} \\
+ & \makecell{(1) \\ Vehicle share \\ t+7} & \makecell{(2) \\ LP conc. \\ t+7} & \makecell{(3) \\ Log LP liq. \\ t+7} & \makecell{(4) \\ Chg. LP \\ conc.} & \makecell{(5) \\ Chg. log \\ LP liq. / N} \\
 \midrule
 \multicolumn{6}{l}{\textit{Panel A. Liquidity-route feedback}} \\
 LP concentration & \makecell{0.1117$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  &  &  \\
-Current vehicle share &  & \makecell{0.0419$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{1.1713$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-3.4047$^{***}$ \\ {\scriptsize p=0.009}} & \makecell{-0.1805$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-Vehicle-route availability &  &  &  & \makecell{3.6119$^{**}$ \\ {\scriptsize p=0.014}} & \makecell{0.2112$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-No-direct, vehicle-available &  &  &  & \makecell{-6.5773$^{**}$ \\ {\scriptsize p=0.035}} & \makecell{-0.4296$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-Fixed effects & Token and date & Token and date & Token and date & Token and date & Token and date \\
-SE clustering & Date & Date & Date & Date & Date \\
-Observations & 9,380 & 9,380 & 9,380 & 9,265 & 9,265 \\
+Lagged vehicle share &  & \makecell{0.0419$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{1.1713$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-3.4047$^{***}$ \\ {\scriptsize p=0.009}} & \makecell{-0.1805$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Vehicle-route avail. &  &  &  & \makecell{3.6119$^{**}$ \\ {\scriptsize p=0.014}} & \makecell{0.2112$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+No-direct veh.-avail. &  &  &  & \makecell{-6.5773$^{**}$ \\ {\scriptsize p=0.035}} & \makecell{-0.4296$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+FE & Token and date & Token and date & Token and date & Token and date & Token and date \\
+SE cluster & Date & Date & Date & Date & Date \\
+Obs. & 9,380 & 9,380 & 9,380 & 9,265 & 9,265 \\
 \addlinespace
 \multicolumn{6}{l}{\textit{Panel B. Challenger displacement thresholds}} \\
 Challenger <= incumbent &  &  &  & \makecell{-2.80$^{***}$ \\ {\scriptsize p$<$0.001}} & 1,687 \\
-0 to 25 bp &  &  &  & \makecell{-5.19$^{***}$ \\ {\scriptsize p$<$0.001}} & 86 \\
-25 to 100 bp &  &  &  & \makecell{-6.72$^{***}$ \\ {\scriptsize p$<$0.001}} & 146 \\
-100 to 250 bp &  &  &  & \makecell{-9.50$^{***}$ \\ {\scriptsize p$<$0.001}} & 92 \\
+0-25 bp &  &  &  & \makecell{-5.19$^{***}$ \\ {\scriptsize p$<$0.001}} & 86 \\
+25-100 bp &  &  &  & \makecell{-6.72$^{***}$ \\ {\scriptsize p$<$0.001}} & 146 \\
+100-250 bp &  &  &  & \makecell{-9.50$^{***}$ \\ {\scriptsize p$<$0.001}} & 92 \\
 >250 bp &  &  &  & \makecell{-10.08$^{***}$ \\ {\scriptsize p$<$0.001}} & 193 \\
 \bottomrule
 \end{tabular}
@@ -216,7 +216,7 @@ Challenger <= incumbent &  &  &  & \makecell{-2.80$^{***}$ \\ {\scriptsize p$<$0
 \begin{threeparttable}
 \caption{Stress rotation inside common route opportunities.}
 \label{tab:rq4-stress}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.08\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.18\textwidth}@{}}
 \toprule
  & Events & \makecell{(1) \\ WETH / pre} & \makecell{(2) \\ Stable / event} & \makecell{(3) \\ WETH-stable / post 1-7} & \makecell{(4) \\ Direct share / post 8-30} & \makecell{(5) \\ Indirect volume / note} \\
 \midrule
@@ -249,7 +249,7 @@ non-overlap, threshold 8\% & 33 &  &  & \makecell{-3.01 pp$^{**}$ \\ {\scriptsiz
 \begin{threeparttable}
 \caption{Architecture and direct-route opportunity.}
 \label{tab:rq5-architecture}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}@{}}
 \toprule
  & \makecell{(1) \\ No-direct WETH} & \makecell{(2) \\ Q1 direct} & \makecell{(3) \\ Q1 no-direct WETH} & \makecell{(4) \\ Q2 direct} & \makecell{(5) \\ Q2 no-direct WETH} & \makecell{(6) \\ Q4 direct} & \makecell{(7) \\ Q4 no-direct WETH} \\
 \midrule
@@ -275,7 +275,7 @@ Observations & 1,822 & 1,122 & 1,122 & 1,434 & 1,434 & 8,914 & 8,914 \\
 \begin{threeparttable}
 \caption{Settlement design, physical transfer incidence, and matched-cell route use.}
 \label{tab:rq6-settlement}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}@{}}
 \toprule
  & \makecell{(1) \\ All route sizes} & \makecell{(2) \\ Small} & \makecell{(3) \\ Medium} & \makecell{(4) \\ Large} & \makecell{(5) \\ Log V4 route count} & \makecell{(6) \\ Log V4 route volume} \\
 \midrule
@@ -305,7 +305,7 @@ Week clusters &  &  &  &  & 75 & 75 \\
 \begin{threeparttable}
 \caption{Common liquidity across pools linked to the same vehicle.}
 \label{tab:rq7-common-liquidity}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.15\textwidth}@{}}
 \toprule
  & \makecell{(1) \\ Full sample} & \makecell{(2) \\ Stress interaction} & \makecell{(3) \\ High vehicle use} & \makecell{(4) \\ Low vehicle use} & \makecell{(5) \\ Excl. top pools} \\
 \midrule
@@ -333,7 +333,7 @@ Observations & 685,685 & 685,685 & 664,218 & 21,467 & 679,228 \\
 \begin{threeparttable}
 \caption{Specification registry for paper-facing tests.}
 \label{tab:specification-registry}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.12\textwidth}>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}@{}}
 \toprule
 Test & Unit & Sample & Outcome & Treatment / regressor & FE / SE & Main estimate & Interpretation \\
 \midrule
