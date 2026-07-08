@@ -360,10 +360,10 @@ Panel & Sample & Regressor & Estimate & SE & t & p & N \\
 Test & Unit & Sample & Outcome & Treatment / regressor & FE / SE & Main estimate & Interpretation \\
 \midrule
 P1 availability/thin-direct & endpoint-pair x day x trade size & V2/Sushi V2/V3 exact quoteable venues & route availability and WETH advantage & WETH vehicle route & endpoint-pair-day aggregation & 9,584 no-direct rows; thin-direct 142.65-349.28 bp & availability and thin-direct execution protection \\
-P2 predictability & token x day & vehicle candidates & future BridgeShare & LP concentration; current BridgeShare & token/date FE; date-clustered SE & LP beta 0.120-0.148; p$<$0.001 & predictability and persistence, not causal feedback \\
+P2 liquidity-route feedback & token x day & vehicle candidates & future BridgeShare; future LP concentration/liquidity & LP concentration; current BridgeShare & token/date FE; date-clustered SE & two-way coefficients positive; p$<$0.001 & reduced-form liquidity-route feedback \\
 P3 impact stress & event x common endpoint-pair set & WETH downside event days & WETH-minus-stable BridgeShare & event-day WETH downside stress & event-level t-tests & -2.96 pp, p=0.018 & same-day rotation away from WETH toward stable vehicles \\
 P4a V3 opportunity & endpoint-pair x month & balanced V3 launch-window pairs & no-direct/WETH-available indicator & post-V3 & pair FE; pair-clustered SE & -25.81 pp, p$<$0.001; pretrend p=0.922 & direct-route opportunity expansion \\
-P4b V4 settlement & matched route unit & matched V3/V4 cells & intermediary-token transfer incidence & V4 route unit & matched-cell paired tests & V4 81.4\%; gap -18.6 pp & route intermediation partly separated from physical transfer \\
+P4b V4 settlement & matched route unit; token x week & matched V3/V4 cells; LP panel around launch & transfer incidence; LP liquidity response & V4 route unit; post x netting exposure & matched-cell tests; token/week FE & V4 gap -18.6 pp; log LP beta 2.132 & settlement netting lowers movement and predicts LP supply response \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
