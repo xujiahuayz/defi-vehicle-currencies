@@ -70,6 +70,34 @@ def clean_regressor(name: str) -> str:
     return mapping.get(name, name)
 
 
+def clean_outcome(name: str) -> str:
+    mapping = {
+        "future VehicleShare, t+7": "Vehicle share, t+7",
+        "future VehicleShare, t+30": "Vehicle share, t+30",
+        "future LPConcentration, t+7": "LP concentration, t+7",
+        "future log VehicleLinkedLiquidity, t+7": "Log vehicle-linked liquidity, t+7",
+        "30-day change in LPConcentration": "Change in LP concentration, t to t+30",
+        "30-day change in log VehicleLinkedLiquidity": "Change in log vehicle-linked liquidity, t to t+30",
+        "Actual vehicle share": "Actual vehicle share",
+        "Log actual vehicle volume": "Log actual vehicle volume",
+        "No-direct WETH availability": "No-direct, WETH-available",
+        "Direct-route availability": "Direct-route availability",
+        "Log V4 route count": "Log V4 route count",
+        "Log V4 route volume": "Log V4 route volume",
+    }
+    return mapping.get(name, name)
+
+
+def clean_sample(name: str) -> str:
+    mapping = {
+        "uniswap_v3": "Uniswap V3",
+        "uniswap_v4": "Uniswap V4",
+        "V4 - V3 within cell": "V4 minus V3 within cell",
+        "challenger <= incumbent": "Challenger <= incumbent",
+    }
+    return mapping.get(name, name)
+
+
 @dataclass
 class TableSpec:
     number: str
@@ -135,7 +163,7 @@ def evidence_map() -> TableSpec:
             "When does one asset become the vehicle?",
             "Endpoint pair x candidate vehicle x day.",
             "Route-cost advantage, vehicle-route availability, vehicle depth.",
-            "Table 3",
+            "Table 4",
             "Actual vehicle share and future vehicle share rise with executable vehicle-route economics.",
         ],
         [
@@ -143,7 +171,7 @@ def evidence_map() -> TableSpec:
             "How does liquidity provision make a vehicle?",
             "Token x day dynamic panel.",
             "LP concentration, vehicle-linked liquidity, lagged vehicle share.",
-            "Table 4",
+            "Table 5",
             "Vehicle use and vehicle-linked liquidity are mutually persistent in stock allocations.",
         ],
         [
@@ -151,7 +179,7 @@ def evidence_map() -> TableSpec:
             "Why does vehicle status persist or get displaced?",
             "Incumbent-challenger pair x day.",
             "Lagged vehicle share and challenger route-cost edge.",
-            "Table 4",
+            "Table 5",
             "Incumbents persist, but large challenger cost edges predict share losses.",
         ],
         [
@@ -159,7 +187,7 @@ def evidence_map() -> TableSpec:
             "When does vehicle status switch under stress?",
             "Common-support stress-event days.",
             "WETH-minus-stable vehicle share relative to a prior baseline.",
-            "Table 5",
+            "Table 6",
             "Stress rotates share away from WETH and toward stable vehicles on event days.",
         ],
         [
@@ -167,7 +195,7 @@ def evidence_map() -> TableSpec:
             "How does architecture change vehicle formation?",
             "Endpoint-pair event windows around V3.",
             "Direct-route availability and no-direct/WETH-available cases.",
-            "Table 6",
+            "Table 7",
             "V3 expands direct-route opportunity and reduces no-direct dependence on WETH.",
         ],
         [
@@ -175,7 +203,7 @@ def evidence_map() -> TableSpec:
             "How does settlement design change vehicle use?",
             "Matched V3/V4 route cells and receipt-audited route units.",
             "Intermediate-token transfer incidence and matched-cell V4 route use.",
-            "Table 7",
+            "Table 8",
             "V4 lowers physical intermediary transfers while vehicle-route demand persists.",
         ],
         [
@@ -183,7 +211,7 @@ def evidence_map() -> TableSpec:
             "Does a vehicle create common liquidity?",
             "Pool x vehicle x day liquidity panel.",
             "Leave-one-out vehicle liquidity factor.",
-            "Table 8",
+            "Table 9",
             "Vehicle-linked pools share a same-vehicle liquidity component beyond market liquidity.",
         ],
     ]
@@ -195,6 +223,34 @@ def evidence_map() -> TableSpec:
         ["0.06\\textwidth", "0.20\\textwidth", "0.15\\textwidth", "0.20\\textwidth", "0.08\\textwidth", "0.23\\textwidth"],
         rows,
         "The table is the organizing map for the results document. It separates the research question from the test bed, empirical proxy, and table that answers it.",
+        landscape=True,
+    )
+
+
+def scope_table() -> TableSpec:
+    df = read_table("table_m01_measurement_scope")
+    rows = []
+    current_panel = None
+    for _, r in df.iterrows():
+        panel = f"Panel {r['Panel']}"
+        if panel != current_panel:
+            rows.append([panel, "", "", "", ""])
+            current_panel = panel
+        rows.append([
+            "",
+            r["Quantity"],
+            r["Main estimate"],
+            r["Scope / companion estimate"],
+            r["Interpretation"],
+        ])
+    return TableSpec(
+        "2",
+        "Vehicle-use measurement and exact-quote scope.",
+        "tab:measurement-scope",
+        ["Panel", "Quantity", "Main estimate", "Companion estimate", "Interpretation"],
+        ["0.16\\textwidth", "0.18\\textwidth", "0.21\\textwidth", "0.20\\textwidth", "0.21\\textwidth"],
+        rows,
+        "BridgeShare is conditional on indirect routes. All-route bridge share and endpoint-pair coverage are reported so the conditional vehicle measure is not confused with a share of all DEX volume. Exact executable-depth route-cost results are scoped to covered quoteable venues.",
         landscape=True,
     )
 
@@ -234,7 +290,7 @@ def rq1_table() -> TableSpec:
     for _, r in actual[actual["Outcome"].eq("Actual vehicle share")].iterrows():
         rows.append([
             "",
-            r["Outcome"],
+            clean_outcome(r["Outcome"]),
             clean_regressor(r["Regressor"]),
             r["Beta"],
             r["SE"],
@@ -255,7 +311,7 @@ def rq1_table() -> TableSpec:
         g = core[(core["Outcome"].eq(outcome)) & (core["Regressor"].eq(reg))]
         if not g.empty:
             r = g.iloc[0]
-            rows.append(["", r["Outcome"], clean_regressor(reg), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
+            rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(reg), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
     return TableSpec(
         "3",
         "Vehicle formation: route economics, availability, and realized route choice.",
@@ -273,16 +329,16 @@ def rq2_rq3_table() -> TableSpec:
     thresholds = read_table("table_m10_persistence_thresholds")
     rows: list[list[object]] = [["Panel A. Liquidity-route feedback", "", "", "", "", "", "", ""]]
     for _, r in lp[lp["Panel"].eq("A. Stock feedback")].iterrows():
-        rows.append(["", r["Outcome"], clean_regressor(r["Regressor"]), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
+        rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(r["Regressor"]), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
     rows.append(["Panel B. LP stock changes", "", "", "", "", "", "", ""])
     for _, r in lp[lp["Panel"].eq("B. LP stock change")].iterrows():
         if r["Regressor"] in {"BridgeShare", "vehicle_available_share", "no_direct_vehicle_available_share"}:
-            rows.append(["", r["Outcome"], clean_regressor(r["Regressor"]), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
+            rows.append(["", clean_outcome(r["Outcome"]), clean_regressor(r["Regressor"]), r["Beta"], r["SE"], r["t"], r["p"], r["N"]])
     rows.append(["Panel C. Challenger displacement thresholds", "", "", "", "", "", "", ""])
     for _, r in thresholds.iterrows():
         rows.append([
             "",
-            r["Challenger advantage bin"],
+            clean_sample(r["Challenger advantage bin"]),
             "Incumbent share change, t+30",
             r["Mean incumbent share change t+30 (pp)"],
             "",
@@ -332,13 +388,13 @@ def architecture_table() -> TableSpec:
     dose = read_table("table_m16_v3_dose_response")
     rows: list[list[object]] = [["Panel A. Main V3 opportunity test", "", "", "", "", "", "", ""]]
     for _, r in main.iterrows():
-        rows.append(["", r["Outcome"], "All matched pairs", r["Post-V3 effect"], "", r["t"], r["p"], r["Rows"]])
+        rows.append(["", clean_outcome(r["Outcome"]), "All matched pairs", r["Post-V3 effect"], "", r["t"], r["p"], r["Rows"]])
     rows.append(["Panel B. Dose response by pre-V3 direct availability", "", "", "", "", "", "", ""])
     for _, r in dose[dose["Outcome"].isin(["Direct-route availability", "No-direct WETH availability"])].iterrows():
         if r["Pre-V3 direct availability quartile"] in {"Q1 weakest", "Q2", "Q4 strongest"}:
             rows.append([
                 "",
-                r["Outcome"],
+                clean_outcome(r["Outcome"]),
                 r["Pre-V3 direct availability quartile"],
                 r["Post-V3 effect"],
                 r["SE"],
@@ -363,16 +419,16 @@ def settlement_table() -> TableSpec:
     persist = read_table("table_m17_v4_route_use_persistence")
     rows: list[list[object]] = [["Panel A. Physical intermediary-token transfer incidence", "", "", "", "", "", ""]]
     for _, r in settle[settle["Panel"].eq("A. Transfer incidence by route-size bin")].iterrows():
-        rows.append(["", r["Sample / diagnostic"], r["Cells"], r["V3"], r["V4"], r["Difference / balance"], r["p"]])
+        rows.append(["", clean_sample(r["Sample / diagnostic"]), r["Cells"], r["V3"], r["V4"], r["Difference / balance"], r["p"]])
     rows.append(["Panel B. Matched-sample balance and receipt diagnostics", "", "", "", "", "", ""])
     for _, r in settle[settle["Panel"].eq("B. Matched-sample balance")].iterrows():
         diagnostic = r["p"]
         if r["Sample / diagnostic"] == "V4 - V3 within cell":
             diagnostic = diagnostic.replace("t=", "t = ").replace("p=<0.001", "p < 0.001")
-        rows.append(["", r["Sample / diagnostic"], r["Cells"], r["V3"], r["V4"], r["Difference / balance"], diagnostic])
+        rows.append(["", clean_sample(r["Sample / diagnostic"]), r["Cells"], r["V3"], r["V4"], r["Difference / balance"], diagnostic])
     rows.append(["Panel C. Matched-cell route-use persistence", "", "", "", "", "", ""])
     for _, r in persist[persist["Panel"].eq("A. Matched-cell route-use persistence")].iterrows():
-        rows.append(["", r["Outcome"], r["N"], clean_regressor(r["Regressor / statistic"]), "", f"{r['Estimate']} (t={r['t']})", r["p"]])
+        rows.append(["", clean_outcome(r["Outcome"]), r["N"], clean_regressor(r["Regressor / statistic"]), "", f"{r['Estimate']} (t={r['t']})", r["p"]])
     return TableSpec(
         "7",
         "Settlement design, physical transfer incidence, and matched-cell route use.",
@@ -406,6 +462,32 @@ def common_liquidity_table() -> TableSpec:
         ["0.12\\textwidth", "0.28\\textwidth", "0.22\\textwidth", "0.08\\textwidth", "0.07\\textwidth", "0.06\\textwidth", "0.07\\textwidth", "0.08\\textwidth"],
         rows,
         "Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.",
+        landscape=True,
+    )
+
+
+def specification_table() -> TableSpec:
+    df = read_table("table_m07_specification_registry")
+    rows = []
+    for _, r in df.iterrows():
+        rows.append([
+            r["Test"],
+            r["Unit"],
+            r["Sample"],
+            r["Outcome"],
+            r["Regressor / treatment"],
+            r["FE / SE"],
+            r["Main estimate"],
+            r["Economic interpretation"],
+        ])
+    return TableSpec(
+        "10",
+        "Specification registry for paper-facing tests.",
+        "tab:specification-registry",
+        ["Test", "Unit", "Sample", "Outcome", "Treatment / regressor", "FE / SE", "Main estimate", "Interpretation"],
+        ["0.10\\textwidth", "0.11\\textwidth", "0.14\\textwidth", "0.11\\textwidth", "0.12\\textwidth", "0.10\\textwidth", "0.13\\textwidth", "0.16\\textwidth"],
+        rows,
+        "This registry fixes the paper-facing unit, sample, outcome, treatment or regressor, inference convention, headline estimate, and bounded interpretation for each main test.",
         landscape=True,
     )
 
@@ -455,6 +537,7 @@ def main() -> None:
     PAPER.mkdir(parents=True, exist_ok=True)
     specs = [
         evidence_map(),
+        scope_table(),
         variable_table(),
         rq1_table(),
         rq2_rq3_table(),
@@ -462,6 +545,7 @@ def main() -> None:
         architecture_table(),
         settlement_table(),
         common_liquidity_table(),
+        specification_table(),
     ]
     OUT_TEX.write_text(document(specs), encoding="utf-8")
     print(f"wrote {OUT_TEX}")
