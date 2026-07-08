@@ -199,7 +199,7 @@ Use: RQ1 formation. This is mechanism inspiration, not a definition.
 
 ### Somogyi 2026, dollar dominance in FX trading
 
-PDF: `literature/papers/2026-Somogyi2026DollarDominanceFX-working-paper-dollar-dominance-in-fx-trading.pdf`
+PDF: `literature/papers/2026-Somogyi2026DollarDominanceFX-dollar-dominance-in-fx-trading.pdf`
 
 Snippet: "low-price-impact advantage" (text line 46).
 

@@ -240,7 +240,7 @@ def with_openathens(sources: list[Source], domain: str | None) -> list[Source]:
         return sources
     expanded: list[Source] = []
     for source in sources:
-        if source.version == "published" and source.url.startswith("http"):
+        if source.version == "published" and source.access != "institutional" and source.url.startswith("http"):
             expanded.append(
                 Source(
                     url=openathens_url(source.url, domain),

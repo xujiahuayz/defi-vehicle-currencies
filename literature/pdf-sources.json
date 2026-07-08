@@ -321,6 +321,12 @@
     ],
     "Somogyi2026DollarDominanceFX": [
       {
+        "url": "https://ucl.primo.exlibrisgroup.com/view/action/uresolver.do?operation=resolveService&package_service_id=23450979330004761&institutionId=4761&customerId=4760&VE=true",
+        "version": "published",
+        "access": "institutional",
+        "label": "UCL Primo View Online -> EBSCOhost Business Source Ultimate PDF"
+      },
+      {
         "url": "https://pubsonline.informs.org/doi/pdf/10.1287/mnsc.2024.07656",
         "version": "published",
         "access": "authenticated",

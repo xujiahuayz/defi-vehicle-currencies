@@ -122,7 +122,7 @@ def openathens_url(url: str, domain: str) -> str:
 def with_openathens(sources: list[Source], domain: str | None) -> list[Source]:
     expanded: list[Source] = []
     for source in sources:
-        if domain and source.version == "published" and source.url.startswith("http"):
+        if domain and source.version == "published" and source.access != "institutional" and source.url.startswith("http"):
             expanded.append(
                 Source(
                     url=openathens_url(source.url, domain),
@@ -305,6 +305,45 @@ def page_pdf_links(page: Any) -> list[str]:
     return dedupe(links)
 
 
+def ebsco_pdf_from_page(page: Any, timeout_ms: int) -> tuple[bytes | None, str | None]:
+    if "research.ebsco.com" not in page.url:
+        return None, None
+
+    button = page.locator("button:has-text('Access now (PDF)')").first
+    try:
+        if button.count() and button.is_visible(timeout=2000):
+            button.click(timeout=5000)
+            page.wait_for_url(re.compile(r".*/viewer/pdf/.*"), timeout=timeout_ms)
+    except Exception:
+        pass
+
+    match = re.search(r"/c/([^/]+)/viewer/pdf/([^/?#]+)", page.url)
+    if not match:
+        return None, None
+
+    profile_id, record_id = match.groups()
+    link_url = (
+        f"https://research.ebsco.com/linkprocessor/v2-pdf-full-text?"
+        f"recordId={urllib.parse.quote(record_id)}"
+        f"&sourceRecordId={urllib.parse.quote(record_id)}"
+        f"&restriction=&profileIdentifier={urllib.parse.quote(profile_id)}"
+        f"&intent=view&type=pdfLink&lang=en"
+    )
+    try:
+        link_response = page.context.request.get(link_url, timeout=timeout_ms)
+        link_data = link_response.json()
+        pdf_url = str(link_data.get("url", ""))
+        if not pdf_url:
+            return None, f"ebsco-linkprocessor-no-url {link_response.status}"
+        pdf_response = page.context.request.get(pdf_url, headers={"Accept": "application/pdf,*/*"}, timeout=timeout_ms)
+        data = pdf_response.body()
+    except Exception as exc:  # noqa: BLE001
+        return None, f"ebsco-pdf {type(exc).__name__}: {exc}"
+    if is_pdf(data):
+        return data, f"ebsco-pdf {pdf_response.url}"
+    return None, f"ebsco-pdf status={pdf_response.status} not-pdf"
+
+
 def first_visible(page: Any, selectors: list[str]) -> Any | None:
     for selector in selectors:
         locator = page.locator(selector).first
@@ -463,6 +502,10 @@ def browser_fetch_pdf(
     block = access_block_detail(page)
     if block:
         return None, f"{block}; final={page.url}"
+
+    ebsco_data, ebsco_detail = ebsco_pdf_from_page(page, timeout_ms)
+    if ebsco_data:
+        return ebsco_data, ebsco_detail or f"ebsco-pdf {page.url}"
 
     candidates = [response, *reversed(responses)]
     for candidate in candidates:

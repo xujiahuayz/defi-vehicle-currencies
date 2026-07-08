@@ -39,9 +39,9 @@ For authenticated or paywalled URLs that Java can access legitimately:
 - Put local-only cookie/header material in `literature/auth/headers.local.json` using `auth.example.json` as the template.
 - Re-run `python3 scripts/fetch_literature.py --strict` when auth is in place.
 
-Known current access limits:
+Known access routes:
 
-- `Somogyi2026DollarDominanceFX`: INFORMS shows request-access under current auth; the UniCredit working-paper PDF is available locally.
+- `Somogyi2026DollarDominanceFX`: use the UCL Primo `View Online` resolver and EBSCOhost Business Source Ultimate, then `Access now (PDF)`. The Primo/LibKey `Download PDF` button redirects to INFORMS and can hit Cloudflare/request-access instead of the licensed EBSCO PDF.
 
 JSTOR note: try the stable PDF URL with `?acceptTC=1` before using the browser
 fetcher, e.g. `https://www.jstor.org/stable/pdf/2234244.pdf?acceptTC=1`.
