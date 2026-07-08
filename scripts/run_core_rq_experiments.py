@@ -4,6 +4,7 @@
 Outputs:
   data/empirical/core_token_day_panel.parquet
   data/empirical/pool_vehicle_liquidity_daily.parquet
+  data/empirical/pair_vehicle_actual_daily.parquet
   output/empirical/core_variable_construction.csv
   output/empirical/core_panel_regressions.csv
   output/empirical/persistence_displacement_thresholds.csv
@@ -16,9 +17,16 @@ Outputs:
   output/tables/table_m10_persistence_thresholds.{csv,tex}
   output/tables/table_m11_stress_event_time.{csv,tex}
   output/tables/table_m12_common_liquidity.{csv,tex}
+  output/tables/table_m13_actual_route_choice.{csv,tex}
+  output/tables/table_m14_lp_allocation_feedback.{csv,tex}
+  output/tables/table_m15_pair_challenger_displacement.{csv,tex}
+  output/tables/table_m16_v3_dose_response.{csv,tex}
+  output/tables/table_m17_v4_route_use_persistence.{csv,tex}
+  output/tables/table_m18_common_liquidity_heterogeneity.{csv,tex}
 """
 from __future__ import annotations
 
+from collections import defaultdict
 import gzip
 import json
 import math
@@ -588,11 +596,564 @@ def common_liquidity_tests(pool: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _unified_files() -> list[Path]:
+    return sorted((DATA / "unified").glob("[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].parquet"))
+
+
+def _routes_from_legs(legs: pd.DataFrame) -> list[tuple[str, str, tuple[str, ...], float]]:
+    clean = legs[legs["route_class"].isin(("single", "coherent"))].reset_index(drop=True)
+    if clean.empty:
+        return []
+
+    tin = clean["token_in_sym"].to_numpy()
+    tout = clean["token_out_sym"].to_numpy()
+    tin_role = clean["tin_role"].to_numpy()
+    tout_role = clean["tout_role"].to_numpy()
+    usd = clean["amount_usd"].to_numpy(dtype=float)
+
+    routes: list[tuple[str, str, tuple[str, ...], float]] = []
+    for idx in clean.groupby(["tx_hash", "component_id"], sort=False).indices.values():
+        role: dict[str, str] = {}
+        for i in idx:
+            for tok, rl in ((tin[i], tin_role[i]), (tout[i], tout_role[i])):
+                if role.get(tok) == "intermediate":
+                    continue
+                if rl == "intermediate" or tok not in role:
+                    role[str(tok)] = str(rl)
+        sources = [t for t, rl in role.items() if rl == "source"]
+        sinks = [t for t, rl in role.items() if rl == "sink"]
+        inter = tuple(t for t, rl in role.items() if rl == "intermediate")
+        if not sources or not sinks or not inter:
+            continue
+        pairs = [(s, t) for s in sources for t in sinks if s != t]
+        if not pairs:
+            continue
+        per_pair_volume = float(usd[idx].sum() / len(idx) / len(pairs))
+        for src, tgt in pairs:
+            routes.append((src, tgt, inter, per_pair_volume))
+    return routes
+
+
+def build_pair_vehicle_actual_daily(force: bool = False) -> pd.DataFrame:
+    out_path = DATA / "empirical" / "pair_vehicle_actual_daily.parquet"
+    if out_path.exists() and not force:
+        return pd.read_parquet(out_path)
+
+    frames = []
+    files = _unified_files()
+    for i, path in enumerate(files, 1):
+        legs = pd.read_parquet(
+            path,
+            columns=[
+                "tx_hash",
+                "component_id",
+                "route_class",
+                "token_in_sym",
+                "token_out_sym",
+                "amount_usd",
+                "tin_role",
+                "tout_role",
+            ],
+        )
+        date = f"{path.stem[:4]}-{path.stem[4:6]}-{path.stem[6:]}"
+        acc: defaultdict[tuple[str, str, str], float] = defaultdict(float)
+        for src, tgt, inter, volume in _routes_from_legs(legs):
+            pair = f"{src}->{tgt}"
+            for vehicle in inter:
+                if vehicle in VEHICLES:
+                    acc[(date, pair, vehicle)] += volume
+        if acc:
+            frames.append(
+                pd.DataFrame(
+                    [(date_, pair, vehicle, volume) for (date_, pair, vehicle), volume in acc.items()],
+                    columns=["date", "pair", "vehicle", "volume_usd"],
+                )
+            )
+        if i % 250 == 0 or i == len(files):
+            print(f"  actual pair-vehicle routes [{i}/{len(files)}] {date}", flush=True)
+
+    out = (
+        pd.concat(frames, ignore_index=True)
+        if frames
+        else pd.DataFrame(columns=["date", "pair", "vehicle", "volume_usd"])
+    )
+    out.to_parquet(out_path, index=False)
+    return out
+
+
+def _actual_pair_vehicle_shares(actual: pd.DataFrame) -> pd.DataFrame:
+    d = actual[actual["vehicle"].isin(VEHICLES)].copy()
+    d["date"] = pd.to_datetime(d["date"])
+    d["pair_total"] = d.groupby(["date", "pair"])["volume_usd"].transform("sum")
+    d = d[d["pair_total"] > 0].copy()
+    d["actual_vehicle_share"] = d["volume_usd"] / d["pair_total"]
+    d["log_vehicle_volume"] = np.log1p(d["volume_usd"])
+    return d
+
+
+def _route_cost_10k() -> pd.DataFrame:
+    cols = [
+        "date",
+        "src_sym",
+        "tgt_sym",
+        "vehicle_sym",
+        "trade_size_usd",
+        "direct_available",
+        "vehicle_available",
+        "direct_output_usd",
+        "vehicle_output_usd",
+        "vehicle_route_advantage",
+    ]
+    r = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=cols)
+    r = r[r["trade_size_usd"].astype(float).eq(10_000.0)].copy()
+    r["date"] = pd.to_datetime(r["date"])
+    r["pair"] = r["src_sym"].astype(str) + "->" + r["tgt_sym"].astype(str)
+    r["vehicle"] = r["vehicle_sym"].astype(str)
+    r["route_cost_advantage_100bp"] = (10_000.0 * r["vehicle_route_advantage"].astype(float) / 100.0).clip(-200, 200)
+    r["vehicle_available"] = r["vehicle_available"].astype(float)
+    r["direct_available"] = r["direct_available"].astype(float)
+    r["vehicle_depth"] = (r["vehicle_output_usd"].astype(float) / r["trade_size_usd"].astype(float)).replace(
+        [np.inf, -np.inf], np.nan
+    ).clip(0, 2)
+    r["direct_depth"] = (r["direct_output_usd"].astype(float) / r["trade_size_usd"].astype(float)).replace(
+        [np.inf, -np.inf], np.nan
+    ).clip(0, 2)
+    return r
+
+
+def actual_route_choice_tests(actual: pd.DataFrame) -> pd.DataFrame:
+    shares = _actual_pair_vehicle_shares(actual)
+    r = _route_cost_10k()
+    d = r.merge(
+        shares[["date", "pair", "vehicle", "actual_vehicle_share", "log_vehicle_volume"]],
+        on=["date", "pair", "vehicle"],
+        how="inner",
+    )
+    d["pair_date"] = d["pair"] + "|" + d["date"].dt.strftime("%Y-%m-%d")
+    d.to_parquet(DATA / "empirical" / "actual_route_choice_panel.parquet", index=False)
+
+    rows = []
+    specs = [
+        ("Actual vehicle share", 100.0 * d["actual_vehicle_share"], "pp"),
+        ("Log actual vehicle volume", d["log_vehicle_volume"], "log points"),
+    ]
+    x_names = ["route_cost_advantage_100bp", "vehicle_available", "vehicle_depth"]
+    for outcome, y_raw, units in specs:
+        y = _oneway_demean(y_raw, d["pair_date"])
+        x = pd.DataFrame({name: _oneway_demean(d[name], d["pair_date"]) for name in x_names})
+        n, clusters, res = _cluster_ols(y, x, d["date"])
+        for name in x_names:
+            rows.append(
+                {
+                    "Outcome": outcome,
+                    "Regressor": name,
+                    "N": _int(n),
+                    "Date clusters": _int(clusters),
+                    "Beta": _num(res[f"{name}_beta"], 4),
+                    "SE": _num(res[f"{name}_se"], 4),
+                    "t": _num(res[f"{name}_t"], 2),
+                    "p": _p(res[f"{name}_p"]),
+                    "Units": units,
+                    "FE / SE": "endpoint-pair x date FE; date-clustered SE",
+                }
+            )
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "actual_route_choice_tests.csv", index=False)
+    _write_table(
+        out,
+        "table_m13_actual_route_choice",
+        "Actual pair-vehicle route choice and route economics.",
+        "tab:actual-route-choice",
+        note="Actual vehicle shares are reconstructed from unified transaction routes. Regressions compare candidate vehicles within the same endpoint pair and date.",
+    )
+    return out
+
+
+def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.DataFrame:
+    def _core_row(outcome: str, regressor: str, panel_name: str, units: str) -> dict[str, object]:
+        r = core[(core["Outcome"].eq(outcome)) & (core["Regressor"].eq(regressor))].iloc[0]
+        return {
+            "Panel": panel_name,
+            "Outcome": outcome,
+            "Regressor": regressor,
+            "N": r["N"],
+            "Date clusters": r["Date clusters"],
+            "Beta": r["Beta"],
+            "SE": r["SE"],
+            "t": r["t"],
+            "p": r["p"],
+            "Units": units,
+            "FE / SE": r["FE / SE"],
+        }
+
+    rows: list[dict[str, object]] = [
+        _core_row("future VehicleShare, t+7", "lp_concentration_share", "A. Stock feedback", "share"),
+        _core_row("future LPConcentration, t+7", "BridgeShare", "A. Stock feedback", "share"),
+        _core_row("future log VehicleLinkedLiquidity, t+7", "BridgeShare", "A. Stock feedback", "log points"),
+    ]
+
+    d = panel.sort_values(["token", "date"]).copy()
+    d["delta_lp_concentration_t30_pp"] = 100.0 * (
+        d.groupby("token")["lp_concentration_share"].shift(-30) - d["lp_concentration_share"]
+    )
+    d["delta_log_liquidity_t30"] = d.groupby("token")["log_vehicle_linked_liquidity"].shift(-30) - d[
+        "log_vehicle_linked_liquidity"
+    ]
+    x_names = [
+        "BridgeShare",
+        "route_cost_advantage_100bp",
+        "vehicle_available_share",
+        "no_direct_vehicle_available_share",
+    ]
+    specs = [
+        ("30-day change in LPConcentration", "delta_lp_concentration_t30_pp", "pp"),
+        ("30-day change in log VehicleLinkedLiquidity", "delta_log_liquidity_t30", "log points"),
+    ]
+    for outcome, y_name, units in specs:
+        y = _twoway_demean(d[y_name], d["token"], d["date"])
+        x = pd.DataFrame({name: _twoway_demean(d[name], d["token"], d["date"]) for name in x_names})
+        n, clusters, res = _cluster_ols(y, x, d["date"])
+        for name in x_names:
+            rows.append(
+                {
+                    "Panel": "B. LP stock change",
+                    "Outcome": outcome,
+                    "Regressor": name,
+                    "N": _int(n),
+                    "Date clusters": _int(clusters),
+                    "Beta": _num(res[f"{name}_beta"], 4),
+                    "SE": _num(res[f"{name}_se"], 4),
+                    "t": _num(res[f"{name}_t"], 2),
+                    "p": _p(res[f"{name}_p"]),
+                    "Units": units,
+                    "FE / SE": "token FE + date FE; date-clustered SE",
+                }
+            )
+
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "lp_allocation_feedback_tests.csv", index=False)
+    _write_table(
+        out,
+        "table_m14_lp_allocation_feedback",
+        "Vehicle use and vehicle-linked liquidity allocation.",
+        "tab:lp-allocation-feedback",
+        note="Panel A reports the unified stock feedback estimates from Table m09. Panel B uses 30-day changes in vehicle-linked liquidity stocks.",
+    )
+    return out
+
+
+def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
+    shares = _actual_pair_vehicle_shares(actual)
+    r = _route_cost_10k()
+    d = r.merge(
+        shares[["date", "pair", "vehicle", "actual_vehicle_share"]],
+        on=["date", "pair", "vehicle"],
+        how="inner",
+    ).dropna(subset=["actual_vehicle_share", "route_cost_advantage_100bp"])
+    idx = d.groupby(["pair", "date"])["actual_vehicle_share"].idxmax()
+    inc = d.loc[idx].copy().rename(
+        columns={
+            "vehicle": "incumbent",
+            "actual_vehicle_share": "incumbent_share_t0",
+            "route_cost_advantage_100bp": "incumbent_advantage_100bp",
+        }
+    )
+    alt = (
+        d.loc[~d.index.isin(idx)]
+        .sort_values("route_cost_advantage_100bp")
+        .groupby(["pair", "date"])
+        .tail(1)[["pair", "date", "vehicle", "route_cost_advantage_100bp", "actual_vehicle_share"]]
+        .rename(
+            columns={
+                "vehicle": "challenger",
+                "route_cost_advantage_100bp": "challenger_advantage_100bp",
+                "actual_vehicle_share": "challenger_share_t0",
+            }
+        )
+    )
+    base = inc.merge(alt, on=["pair", "date"])
+    base["challenger_edge_100bp"] = base["challenger_advantage_100bp"] - base["incumbent_advantage_100bp"]
+    base["future_date"] = base["date"] + pd.Timedelta(days=30)
+    future = shares.rename(
+        columns={"date": "future_date", "vehicle": "future_vehicle", "actual_vehicle_share": "future_share"}
+    )[["pair", "future_date", "future_vehicle", "future_share"]]
+    base = base.merge(
+        future,
+        left_on=["pair", "future_date", "challenger"],
+        right_on=["pair", "future_date", "future_vehicle"],
+        how="left",
+    ).rename(columns={"future_share": "challenger_share_t30"}).drop(columns=["future_vehicle"])
+    base = base.merge(
+        future,
+        left_on=["pair", "future_date", "incumbent"],
+        right_on=["pair", "future_date", "future_vehicle"],
+        how="left",
+    ).rename(columns={"future_share": "incumbent_share_t30"}).drop(columns=["future_vehicle"])
+    base["challenger_share_t30"] = base["challenger_share_t30"].fillna(0.0)
+    base["incumbent_share_t30"] = base["incumbent_share_t30"].fillna(0.0)
+    base["challenger_delta_t30_pp"] = 100.0 * (base["challenger_share_t30"] - base["challenger_share_t0"])
+    base["incumbent_delta_t30_pp"] = 100.0 * (base["incumbent_share_t30"] - base["incumbent_share_t0"])
+    base["challenger_beats_incumbent_t30_pp"] = 100.0 * (
+        base["challenger_share_t30"] > base["incumbent_share_t30"]
+    ).astype(float)
+    base.to_parquet(DATA / "empirical" / "pair_challenger_displacement_panel.parquet", index=False)
+
+    rows = []
+    for outcome, y_name, units in [
+        ("Challenger share change t+30", "challenger_delta_t30_pp", "pp"),
+        ("Incumbent share change t+30", "incumbent_delta_t30_pp", "pp"),
+        ("Pr(challenger beats incumbent t+30)", "challenger_beats_incumbent_t30_pp", "pp"),
+    ]:
+        y = _twoway_demean(base[y_name], base["pair"], base["date"])
+        x = pd.DataFrame({"challenger_edge_100bp": _twoway_demean(base["challenger_edge_100bp"], base["pair"], base["date"])})
+        n, clusters, res = _cluster_ols(y, x, base["date"])
+        rows.append(
+            {
+                "Panel": "A. Pair-level regression",
+                "Outcome": outcome,
+                "Challenger edge bin": "",
+                "N": _int(n),
+                "Date clusters": _int(clusters),
+                "Mean edge (bp)": "",
+                "Mean outcome": "",
+                "Beta": _num(res["challenger_edge_100bp_beta"], 4),
+                "t": _num(res["challenger_edge_100bp_t"], 2),
+                "p": _p(res["challenger_edge_100bp_p"]),
+                "Units": f"{units} per 100 bp edge",
+            }
+        )
+
+    base["edge_bin"] = pd.cut(
+        100.0 * base["challenger_edge_100bp"],
+        bins=[-np.inf, 0, 25, 100, 250, np.inf],
+        labels=["challenger <= incumbent", "0 to 25 bp", "25 to 100 bp", "100 to 250 bp", ">250 bp"],
+    )
+    bins = base.groupby("edge_bin", observed=False).agg(
+        N=("challenger_edge_100bp", "count"),
+        edge=("challenger_edge_100bp", "mean"),
+        challenger_delta=("challenger_delta_t30_pp", "mean"),
+        incumbent_delta=("incumbent_delta_t30_pp", "mean"),
+        beat=("challenger_beats_incumbent_t30_pp", "mean"),
+    )
+    for label, rbin in bins.iterrows():
+        rows.append(
+            {
+                "Panel": "B. Edge-bin means",
+                "Outcome": "Challenger / incumbent displacement",
+                "Challenger edge bin": str(label),
+                "N": _int(rbin["N"]),
+                "Date clusters": "",
+                "Mean edge (bp)": _num(100.0 * rbin["edge"], 1),
+                "Mean outcome": (
+                    f"challenger { _num(rbin['challenger_delta'], 2) } pp; "
+                    f"incumbent { _num(rbin['incumbent_delta'], 2) } pp; "
+                    f"beats { _num(rbin['beat'], 2) }%"
+                ),
+                "Beta": "",
+                "t": "",
+                "p": "",
+                "Units": "bin means",
+            }
+        )
+
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "pair_challenger_displacement_tests.csv", index=False)
+    _write_table(
+        out,
+        "table_m15_pair_challenger_displacement",
+        "Actual pair-level challenger displacement by route-cost edge.",
+        "tab:pair-challenger-displacement",
+        note="The incumbent is the highest actual-share vehicle for the endpoint pair and date. The challenger is the best non-incumbent route-cost candidate at $10k. Edge is challenger minus incumbent route advantage.",
+    )
+    return out
+
+
+def v3_dose_response_tests() -> pd.DataFrame:
+    launch = pd.Timestamp("2021-05-05")
+    d = _route_cost_10k()
+    d = d[d["vehicle"].eq("WETH")].copy()
+    d = d[(d["date"] >= launch - pd.Timedelta(days=365)) & (d["date"] <= launch + pd.Timedelta(days=365))]
+    d["post_v3"] = (d["date"] >= launch).astype(float)
+    d["no_direct_weth"] = ((d["direct_available"] < 0.5) & (d["vehicle_available"] > 0.5)).astype(float)
+    pre = (
+        d[d["post_v3"].eq(0)]
+        .groupby("pair", as_index=False)
+        .agg(pre_direct_availability=("direct_available", "mean"))
+    )
+    pre["Pre-V3 direct availability quartile"] = pd.qcut(
+        pre["pre_direct_availability"].rank(method="first"),
+        4,
+        labels=["Q1 weakest", "Q2", "Q3", "Q4 strongest"],
+    )
+    d = d.merge(pre, on="pair", how="inner")
+
+    rows = []
+    outcomes = [
+        ("Direct-route availability", "direct_available", 100.0, "pp"),
+        ("No-direct WETH availability", "no_direct_weth", 100.0, "pp"),
+        ("DirectDepth", "direct_depth", 1.0, "ratio"),
+    ]
+    for quartile, g in d.groupby("Pre-V3 direct availability quartile", observed=False):
+        for outcome, y_col, scale, units in outcomes:
+            y = _oneway_demean(scale * g[y_col].astype(float), g["pair"])
+            x = pd.DataFrame({"post_v3": _oneway_demean(g["post_v3"], g["pair"])})
+            n, clusters, res = _cluster_ols(y, x, g["pair"])
+            rows.append(
+                {
+                    "Pre-V3 direct availability quartile": str(quartile),
+                    "Outcome": outcome,
+                    "Rows": _int(n),
+                    "Pairs": _int(clusters),
+                    "Post-V3 effect": _num(res["post_v3_beta"], 2),
+                    "SE": _num(res["post_v3_se"], 2),
+                    "t": _num(res["post_v3_t"], 2),
+                    "p": _p(res["post_v3_p"]),
+                    "Units": units,
+                    "FE / SE": "endpoint-pair FE; pair-clustered SE",
+                }
+            )
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "v3_dose_response_tests.csv", index=False)
+    _write_table(
+        out,
+        "table_m16_v3_dose_response",
+        "Uniswap V3 architecture dose response by pre-V3 direct-market weakness.",
+        "tab:v3-dose-response",
+        note="Quartiles are formed from pre-V3 direct-route availability for the same endpoint pairs. Estimates compare one year before and after the May 5, 2021 V3 launch.",
+    )
+    return out
+
+
+def v4_route_use_persistence_tests() -> pd.DataFrame:
+    d = pd.read_csv(DATA / "empirical" / "v4_settlement_eligible_cells.csv")
+    d["week"] = pd.to_datetime(d["week"])
+    d["week_label"] = d["week"].dt.strftime("%Y-%m-%d")
+    d["vehicle"] = d["vehicle"].astype(str)
+    d["log_v3_routes"] = np.log1p(d["routes_uniswap_v3"])
+    d["log_v4_routes"] = np.log1p(d["routes_uniswap_v4"])
+    d["log_v3_usd"] = np.log1p(d["route_usd_uniswap_v3"])
+    d["log_v4_usd"] = np.log1p(d["route_usd_uniswap_v4"])
+    d["v4_route_share_pct"] = 100.0 * d["routes_uniswap_v4"] / (d["routes_uniswap_v3"] + d["routes_uniswap_v4"])
+    d["v4_volume_share_pct"] = 100.0 * d["route_usd_uniswap_v4"] / (d["route_usd_uniswap_v3"] + d["route_usd_uniswap_v4"])
+
+    rows = []
+    specs = [
+        ("Log V4 route count", "log_v4_routes", "log_v3_routes", "log V3 route count"),
+        ("Log V4 route volume", "log_v4_usd", "log_v3_usd", "log V3 route volume"),
+    ]
+    for outcome, y_col, x_col, reg_label in specs:
+        y = _twoway_demean(d[y_col], d["vehicle"], d["week_label"])
+        x = pd.DataFrame({reg_label: _twoway_demean(d[x_col], d["vehicle"], d["week_label"])})
+        n, clusters, res = _cluster_ols(y, x, d["week"])
+        rows.append(
+            {
+                "Panel": "A. Matched-cell route-use persistence",
+                "Outcome": outcome,
+                "Regressor / statistic": reg_label,
+                "N": _int(n),
+                "Week clusters": _int(clusters),
+                "Estimate": _num(res[f"{reg_label}_beta"], 4),
+                "SE": _num(res[f"{reg_label}_se"], 4),
+                "t": _num(res[f"{reg_label}_t"], 2),
+                "p": _p(res[f"{reg_label}_p"]),
+                "FE / SE": "vehicle FE + week FE; week-clustered SE",
+            }
+        )
+
+    for stat_name, value in [
+        ("Mean V4 route share within matched cells", d["v4_route_share_pct"].mean()),
+        ("Median V4 route share within matched cells", d["v4_route_share_pct"].median()),
+        ("Mean V4 volume share within matched cells", d["v4_volume_share_pct"].mean()),
+        ("Median V4 volume share within matched cells", d["v4_volume_share_pct"].median()),
+    ]:
+        rows.append(
+            {
+                "Panel": "B. Matched-cell V4 use share",
+                "Outcome": "V4 share",
+                "Regressor / statistic": stat_name,
+                "N": _int(len(d)),
+                "Week clusters": _int(d["week"].nunique()),
+                "Estimate": _num(value, 2),
+                "SE": "",
+                "t": "",
+                "p": "",
+                "FE / SE": "descriptive percentage",
+            }
+        )
+
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "v4_route_use_persistence_tests.csv", index=False)
+    _write_table(
+        out,
+        "table_m17_v4_route_use_persistence",
+        "V4 route-use persistence in matched vehicle-route cells.",
+        "tab:v4-route-use-persistence",
+        note="Matched cells are week x endpoint pair x intermediate vehicle cells with both V3 and V4 route units in the settlement sample frame.",
+    )
+    return out
+
+
+def common_liquidity_heterogeneity_tests() -> pd.DataFrame:
+    d = pd.read_parquet(DATA / "empirical" / "common_liquidity_pool_panel.parquet")
+    bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["token", "BridgeShare"])
+    vehicle_avg = bridge.groupby("token")["BridgeShare"].mean()
+    cutoff = vehicle_avg.median()
+    d["high_vehicle_dependence"] = d["vehicle"].map(lambda v: vehicle_avg.get(v, 0.0) >= cutoff)
+    mean_pool_liq = d.groupby("pool_vehicle_id")["liquidity_usd"].transform("mean")
+    top1_cutoff = mean_pool_liq.quantile(0.99)
+    samples = [
+        ("High average VehicleShare vehicles", d[d["high_vehicle_dependence"]].copy()),
+        ("Low average VehicleShare vehicles", d[~d["high_vehicle_dependence"]].copy()),
+        ("Excluding top 1% mean-liquidity pools", d[mean_pool_liq <= top1_cutoff].copy()),
+    ]
+    rows = []
+    for sample, g in samples:
+        y = _oneway_demean(g["dlog_liquidity"], g["pool_vehicle_id"])
+        x = pd.DataFrame(
+            {
+                "market_factor_loo": _oneway_demean(g["market_factor_loo"], g["pool_vehicle_id"]),
+                "vehicle_factor_loo": _oneway_demean(g["vehicle_factor_loo"], g["pool_vehicle_id"]),
+            }
+        )
+        n, clusters, res = _cluster_ols(y, x, g["date"])
+        for name in ["market_factor_loo", "vehicle_factor_loo"]:
+            rows.append(
+                {
+                    "Sample": sample,
+                    "Regressor": name,
+                    "N": _int(n),
+                    "Date clusters": _int(clusters),
+                    "Pools": _int(g["pool_vehicle_id"].nunique()),
+                    "Beta": _num(res[f"{name}_beta"], 4),
+                    "SE": _num(res[f"{name}_se"], 4),
+                    "t": _num(res[f"{name}_t"], 2),
+                    "p": _p(res[f"{name}_p"]),
+                    "FE / SE": "pool-vehicle FE; date-clustered SE",
+                }
+            )
+    out = pd.DataFrame(rows)
+    out.to_csv(EMP / "common_liquidity_heterogeneity_tests.csv", index=False)
+    _write_table(
+        out,
+        "table_m18_common_liquidity_heterogeneity",
+        "Common liquidity heterogeneity by vehicle dependence.",
+        "tab:common-liquidity-heterogeneity",
+        note="High/low vehicle dependence is based on whether the vehicle token's average BridgeShare is above the vehicle-set median. The top-pool robustness excludes the top 1% of pools by mean liquidity.",
+    )
+    return out
+
+
 def build_rq_registry(
     core: pd.DataFrame,
     threshold: pd.DataFrame,
     stress: pd.DataFrame,
     common: pd.DataFrame,
+    actual_choice: pd.DataFrame,
+    lp_feedback: pd.DataFrame,
+    challenger: pd.DataFrame,
+    v3_dose: pd.DataFrame,
+    v4_persistence: pd.DataFrame,
+    common_hetero: pd.DataFrame,
 ) -> None:
     def _lookup(df: pd.DataFrame, **where: str) -> str:
         g = df.copy()
@@ -601,7 +1162,7 @@ def build_rq_registry(
         if g.empty:
             return ""
         r = g.iloc[0]
-        return f"beta {r.get('Beta', '')}, t {r.get('t', '')}, p {r.get('p', '')}"
+        return f"beta {r.get('Beta', r.get('Estimate', ''))}, t {r.get('t', '')}, p {r.get('p', '')}"
 
     def _cell(df: pd.DataFrame, column: str, **where: str) -> str:
         g = df.copy()
@@ -611,155 +1172,123 @@ def build_rq_registry(
             return ""
         return str(g.iloc[0][column])
 
+    def _md_table(df: pd.DataFrame) -> list[str]:
+        d = df.fillna("").astype(str)
+        d = d.map(lambda x: x.replace("\n", " ").replace("|", "\\|"))
+        cols = list(d.columns)
+        lines = [
+            "| " + " | ".join(cols) + " |",
+            "| " + " | ".join(["---"] * len(cols)) + " |",
+        ]
+        for _, row in d.iterrows():
+            lines.append("| " + " | ".join(row[col] for col in cols) + " |")
+        return lines
+
     m04 = pd.read_csv(OUT / "tables" / "table_m04_p3_stress_rotation.csv")
     m05 = pd.read_csv(OUT / "tables" / "table_m05_p4a_v3_opportunity.csv")
     m06 = pd.read_csv(OUT / "tables" / "table_m06_p4b_v4_settlement.csv")
 
     rq_rows = [
         {
-            "RQ": "RQ1 formation",
-            "Core answer": "Route-cost advantage, direct availability, vehicle availability, and vehicle-linked liquidity jointly predict future VehicleShare in the token-day panel.",
-            "Primary artifact": "Table m09; Table m02 for thin/no-direct route-cost facts; Table m08 for definitions",
-            "Current estimate": _lookup(core, Outcome="future VehicleShare, t+7", Regressor="route_cost_advantage_100bp"),
-            "Status": "core panel now built; still improve with pair x vehicle x day outcome panel",
+            "RQ": "RQ1. Formation",
+            "Empirical answer": "Vehicle use is higher when the candidate vehicle is cheaper/better executable and when vehicle-linked liquidity is larger.",
+            "Exact evidence": (
+                f"Table m13: route-cost advantage is positive for actual vehicle share ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='route_cost_advantage_100bp')}); "
+                f"vehicle availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); vehicle depth is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_depth')}). "
+                f"Table m09: route-cost advantage predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='route_cost_advantage_100bp')}); vehicle availability predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='vehicle_available_share')})."
+            ),
         },
         {
-            "RQ": "RQ2 liquidity provision",
-            "Core answer": "LPConcentration predicts future VehicleShare, and current VehicleShare predicts future LPConcentration/log liquidity.",
-            "Primary artifact": "Table m09 plus existing Table m03/Table r32",
-            "Current estimate": _lookup(core, Outcome="future VehicleShare, t+7", Regressor="lp_concentration_share"),
-            "Status": "reduced-form feedback; next causal upgrade is LP entry/exit or gas/repositioning shock design",
+            "RQ": "RQ2. Liquidity provision",
+            "Empirical answer": "Vehicle-linked liquidity and vehicle use reinforce each other in stock allocations; short-run stock changes also load on route availability.",
+            "Exact evidence": (
+                f"Table m09/m14: LPConcentration predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')}); "
+                f"VehicleShare predicts future LPConcentration ({_lookup(core, Outcome='future LPConcentration, t+7', Regressor='BridgeShare')}) and future log VehicleLinkedLiquidity ({_lookup(core, Outcome='future log VehicleLinkedLiquidity, t+7', Regressor='BridgeShare')}). "
+                f"Table m14: vehicle availability predicts the 30-day change in log VehicleLinkedLiquidity ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='vehicle_available_share')})."
+            ),
         },
         {
-            "RQ": "RQ3 persistence",
-            "Core answer": "Lagged VehicleShare remains the dominant predictor; challenger route-cost edges are summarized as a displacement-threshold screen.",
-            "Primary artifact": "Table m09 and Table m10",
-            "Current estimate": _lookup(core, Outcome="future VehicleShare, t+30", Regressor="BridgeShare"),
-            "Status": "threshold screen added; next upgrade is pair-level challenger choice",
+            "RQ": "RQ3. Persistence and displacement",
+            "Empirical answer": "Vehicle status is persistent, but challenger cost edges predict actual challenger share gains and incumbent losses.",
+            "Exact evidence": (
+                f"Table m09: current VehicleShare predicts t+30 VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+30', Regressor='BridgeShare')}). "
+                f"Table m10: >250 bp challenger edge implies incumbent share change {_cell(threshold, 'Mean incumbent share change t+30 (pp)', **{'Challenger advantage bin': '>250 bp'})} pp, p {_cell(threshold, 'p', **{'Challenger advantage bin': '>250 bp'})}. "
+                f"Table m15: challenger edge raises challenger share change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Challenger share change t+30')}) and lowers incumbent share change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Incumbent share change t+30')})."
+            ),
         },
         {
-            "RQ": "RQ4 stress rotation",
-            "Core answer": "WETH share falls and stable-vehicle share rises on common-support stress days. The aggregate event-time table is diagnostic because it also shows pre-event movement.",
-            "Primary artifact": "Table m04/Table r18 for same-day common-support; Table m11 as diagnostic event-time check",
-            "Current estimate": "Table m04 WETH-minus-stable change -2.96 pp, p=0.018; Table m11 pre-window gap is non-zero",
-            "Status": "same-day rotation is core; do not claim clean event-time persistence from Table m11 alone",
+            "RQ": "RQ4. Stress rotation",
+            "Empirical answer": "Stress rotates vehicle use away from WETH and toward stable vehicles on common-support stress days; event-time persistence is interpreted with pre-movement caution.",
+            "Exact evidence": (
+                f"Table m04: WETH-minus-stable change is {_cell(m04, 'Effect', Panel='A. Main decomposed same-day effect', Estimate='WETH-minus-stable change')}, p {_cell(m04, 'p', Panel='A. Main decomposed same-day effect', Estimate='WETH-minus-stable change')}. "
+                f"Table m11: event-day gap is {_cell(stress, 'Mean effect (pp)', Window='event day', Outcome='gap change pp')} pp, p {_cell(stress, 'p', Window='event day', Outcome='gap change pp')}; pre-window gap is {_cell(stress, 'Mean effect (pp)', Window='pre -14 to -1', Outcome='gap change pp')} pp, p {_cell(stress, 'p', Window='pre -14 to -1', Outcome='gap change pp')}."
+            ),
         },
         {
-            "RQ": "RQ5 architecture",
-            "Core answer": "Existing V3 evidence shows direct-route opportunity expansion and reduced no-direct/WETH-only cases; core variables clarify DirectAvailable and DirectDepth proxies.",
-            "Primary artifact": "Table m05/Table r14/Table r19; definitions in Table m08",
-            "Current estimate": "Table m05: no-direct WETH availability post-V3 -25.81 pp, p<0.001",
-            "Status": "needs dose-response by pre-V3 weakness and fee-tier availability",
+            "RQ": "RQ5. Architecture",
+            "Empirical answer": "Uniswap V3 materially deepens direct-route availability and reduces no-direct WETH dependence, especially outside already-strong direct markets.",
+            "Exact evidence": (
+                f"Table m05: no-direct WETH availability falls {_cell(m05, 'Post-V3 effect', Outcome='No-direct WETH availability')} pp, p {_cell(m05, 'p', Outcome='No-direct WETH availability')}. "
+                f"Table m16: in Q2 pre-V3 direct markets, direct-route availability rises {_cell(v3_dose, 'Post-V3 effect', **{'Pre-V3 direct availability quartile': 'Q2', 'Outcome': 'Direct-route availability'})} pp, p {_cell(v3_dose, 'p', **{'Pre-V3 direct availability quartile': 'Q2', 'Outcome': 'Direct-route availability'})}; no-direct WETH availability falls {_cell(v3_dose, 'Post-V3 effect', **{'Pre-V3 direct availability quartile': 'Q2', 'Outcome': 'No-direct WETH availability'})} pp, p {_cell(v3_dose, 'p', **{'Pre-V3 direct availability quartile': 'Q2', 'Outcome': 'No-direct WETH availability'})}."
+            ),
         },
         {
-            "RQ": "RQ6 settlement design",
-            "Core answer": "Existing V4 matched receipts show settlement virtualization; LP response by netting exposure is already tabled.",
-            "Primary artifact": "Table m06/Table r33; definitions in Table m08",
-            "Current estimate": "Table m06: V4 transfer incidence 81.4% vs V3 100%; log LP beta 2.132",
-            "Status": "needs route-use persistence around V4, not only transfer incidence",
+            "RQ": "RQ6. Settlement design",
+            "Empirical answer": "V4 reduces physical intermediate-token transfers but vehicle-route demand persists across matched cells, and netting exposure is associated with LP-liquidity response.",
+            "Exact evidence": (
+                f"Table m06: V4 transfer incidence is {_cell(m06, 'V4', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})} versus V3 {_cell(m06, 'V3', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})}; log LP liquidity response is {_cell(m06, 'Difference / balance', Panel='C. LP response by netting exposure', **{'Sample / diagnostic': 'log LP liquidity'})}. "
+                f"Table m17: log V3 route count predicts log V4 route count ({_lookup(v4_persistence, Panel='A. Matched-cell route-use persistence', Outcome='Log V4 route count')}); log V3 route volume predicts log V4 route volume ({_lookup(v4_persistence, Panel='A. Matched-cell route-use persistence', Outcome='Log V4 route volume')})."
+            ),
         },
         {
-            "RQ": "RQ7 common liquidity",
-            "Core answer": "Pool-level common-liquidity test now constructed from raw daily pool snapshots using leave-one-out vehicle liquidity factors.",
-            "Primary artifact": "Table m12",
-            "Current estimate": _lookup(common, **{"Sample / specification": "Full sample", "Regressor": "vehicle_factor_loo"}),
-            "Status": "new core test added; next upgrade is pair/group split by vehicle-dependence",
+            "RQ": "RQ7. Common liquidity",
+            "Empirical answer": "Vehicle-linked pools share a vehicle-specific liquidity component beyond market-wide liquidity; the component is stronger in high-vehicle-dependence samples and survives top-pool exclusion.",
+            "Exact evidence": (
+                f"Table m12: vehicle factor is positive in the full sample ({_lookup(common, **{'Sample / specification': 'Full sample', 'Regressor': 'vehicle_factor_loo'})}); stress interaction is positive ({_lookup(common, **{'Sample / specification': 'Stress interaction', 'Regressor': 'vehicle_factor_x_stress'})}). "
+                f"Table m18: high-dependence vehicle factor is positive ({_lookup(common_hetero, Sample='High average VehicleShare vehicles', Regressor='vehicle_factor_loo')}); low-dependence vehicle factor is not significant ({_lookup(common_hetero, Sample='Low average VehicleShare vehicles', Regressor='vehicle_factor_loo')}); excluding top 1% mean-liquidity pools remains positive ({_lookup(common_hetero, Sample='Excluding top 1% mean-liquidity pools', Regressor='vehicle_factor_loo')})."
+            ),
         },
     ]
-    lines = [
+
+    registry_lines = [
         "# Core RQ Evidence Registry",
         "",
         "Generated by `scripts/run_core_rq_experiments.py`. This is a core-result registry, not manuscript prose.",
         "",
-        "| RQ | Core answer | Primary artifact | Current estimate | Status |",
-        "| --- | --- | --- | --- | --- |",
     ]
-    for r in rq_rows:
-        lines.append(
-            f"| {r['RQ']} | {r['Core answer']} | {r['Primary artifact']} | {r['Current estimate']} | {r['Status']} |"
-        )
-    lines.append("")
-    lines.append("## Newly Built Core Artifacts")
-    lines.append("")
-    lines.append("- `output/tables/table_m08_variable_construction.csv`: variable/proxy construction.")
-    lines.append("- `data/empirical/core_token_day_panel.parquet`: merged VehicleShare, route-cost, direct availability, and LP panel.")
-    lines.append("- `output/tables/table_m09_core_panel_regressions.csv`: unified token-day regressions.")
-    lines.append("- `output/tables/table_m10_persistence_thresholds.csv`: incumbent displacement-threshold screen.")
-    lines.append("- `output/tables/table_m11_stress_event_time.csv`: event-time stress rotation summary.")
-    lines.append("- `data/empirical/pool_vehicle_liquidity_daily.parquet`: raw-derived pool-level vehicle-linked liquidity panel.")
-    lines.append("- `output/tables/table_m12_common_liquidity.csv`: pool-level common-liquidity test.")
-    (EMP / "core_rq_evidence_registry.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    registry_lines.extend(_md_table(pd.DataFrame(rq_rows)))
+    (EMP / "core_rq_evidence_registry.md").write_text("\n".join(registry_lines) + "\n", encoding="utf-8")
 
-    t30_challenger = threshold[threshold["Challenger advantage bin"].astype(str).eq(">250 bp")]
-    challenger_note = ""
-    if not t30_challenger.empty:
-        r = t30_challenger.iloc[0]
-        challenger_note = (
-            f">250 bp challenger edge: incumbent share change t+30 {r['Mean incumbent share change t+30 (pp)']} pp, "
-            f"p {r['p']}."
-        )
-
+    table_paths = [
+        ("Table m04. Stress rotation", OUT / "tables" / "table_m04_p3_stress_rotation.csv"),
+        ("Table m05. V3 opportunity", OUT / "tables" / "table_m05_p4a_v3_opportunity.csv"),
+        ("Table m06. V4 settlement", OUT / "tables" / "table_m06_p4b_v4_settlement.csv"),
+        ("Table m08. Variable construction", OUT / "tables" / "table_m08_variable_construction.csv"),
+        ("Table m09. Core panel regressions", OUT / "tables" / "table_m09_core_panel_regressions.csv"),
+        ("Table m10. Persistence thresholds", OUT / "tables" / "table_m10_persistence_thresholds.csv"),
+        ("Table m11. Stress event time", OUT / "tables" / "table_m11_stress_event_time.csv"),
+        ("Table m12. Common liquidity", OUT / "tables" / "table_m12_common_liquidity.csv"),
+        ("Table m13. Actual route choice", OUT / "tables" / "table_m13_actual_route_choice.csv"),
+        ("Table m14. LP allocation feedback", OUT / "tables" / "table_m14_lp_allocation_feedback.csv"),
+        ("Table m15. Pair challenger displacement", OUT / "tables" / "table_m15_pair_challenger_displacement.csv"),
+        ("Table m16. V3 dose response", OUT / "tables" / "table_m16_v3_dose_response.csv"),
+        ("Table m17. V4 route-use persistence", OUT / "tables" / "table_m17_v4_route_use_persistence.csv"),
+        ("Table m18. Common liquidity heterogeneity", OUT / "tables" / "table_m18_common_liquidity_heterogeneity.csv"),
+    ]
     detail_lines = [
         "# Core Empirical RQ Results",
         "",
-        "Generated by `scripts/run_core_rq_experiments.py`. These are core notes for the empirical spine, not manuscript prose.",
+        "Generated by `scripts/run_core_rq_experiments.py`. Core notes only, not manuscript prose.",
         "",
-        "## Variable / Proxy Registry",
+        "## Research Questions And Answers",
         "",
-        "- `output/tables/table_m08_variable_construction.csv`: defines `VehicleShare`, `RouteCostAdvantage`, `DirectAvailable`, `DirectDepth`, `VehicleLinkedLiquidity`, `LPConcentration`, `LPRepositioning`, `Stress`, `SettlementTransferIncidence`, `NettingExposure`, and `VehicleLiquidityFactor`.",
-        "",
-        "## Core RQ Notes",
-        "",
-        "| RQ | Core answer to carry forward | Main evidence | Gap / next empirical closure |",
-        "| --- | --- | --- | --- |",
-        (
-            "| RQ1 formation | Vehicle use is explained by route economics, route executability, and vehicle-linked liquidity; treat Table m09 as the unified regression and Table m02 as the route-mechanics fact table. "
-            f"| Table m09: route-cost advantage predicts future VehicleShare t+7 ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='route_cost_advantage_100bp')}); vehicle availability ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='vehicle_available_share')}); LP concentration ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')}). "
-            "| Build pair x vehicle x day outcome panel so DirectAvailable/DirectDepth can be interpreted less mechanically than in the saturated token-day panel. |"
-        ),
-        (
-            "| RQ2 liquidity provision | Vehicle liquidity and route use reinforce each other. "
-            f"| Table m09: LPConcentration predicts VehicleShare t+7 ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')}); VehicleShare predicts future LPConcentration ({_lookup(core, Outcome='future LPConcentration, t+7', Regressor='BridgeShare')}) and future log VehicleLinkedLiquidity ({_lookup(core, Outcome='future log VehicleLinkedLiquidity, t+7', Regressor='BridgeShare')}). Cross-reference Table m03/Table r32. "
-            "| Add LP entry/exit or gas/repositioning shock design for a cleaner allocation response. |"
-        ),
-        (
-            "| RQ3 persistence | Vehicle dominance is persistent, but large challenger cost edges are associated with displacement. "
-            f"| Table m09: lagged VehicleShare predicts t+30 ({_lookup(core, Outcome='future VehicleShare, t+30', Regressor='BridgeShare')}). Table m10: {challenger_note} "
-            "| Upgrade threshold screen to pair-level challenger choice and duration/hazard design. |"
-        ),
-        (
-            "| RQ4 stress rotation | Same-day common-support evidence supports WETH-to-stable rotation in stress; aggregate event-time is only diagnostic because pre-event movement is present. "
-            f"| Table m04/Table r18: {_cell(m04, 'Effect', Panel='A. Main decomposed same-day effect', Estimate='WETH-minus-stable change')} gap, p {_cell(m04, 'p', Panel='A. Main decomposed same-day effect', Estimate='WETH-minus-stable change')}. Table m11: event-day gap {_cell(stress, 'Mean effect (pp)', Window='event day', Outcome='gap change pp')} pp, p {_cell(stress, 'p', Window='event day', Outcome='gap change pp')}; pre-window gap {_cell(stress, 'Mean effect (pp)', Window='pre -14 to -1', Outcome='gap change pp')} pp, p {_cell(stress, 'p', Window='pre -14 to -1', Outcome='gap change pp')}. "
-            "| Keep common-support same-day estimate as the core result; use Table m11 to motivate caution on persistence. |"
-        ),
-        (
-            "| RQ5 architecture | V3 architecture expands direct-route opportunity and reduces no-direct/WETH-only cases; definitions in Table m08 clarify DirectAvailable and DirectDepth. "
-            f"| Table m05: no-direct WETH availability post-V3 {_cell(m05, 'Post-V3 effect', Outcome='No-direct WETH availability')} pp, p {_cell(m05, 'p', Outcome='No-direct WETH availability')}; pretrend p {_cell(m05, 'Pretrend p', Outcome='No-direct WETH availability')}. Cross-reference Table r14/Table r19. "
-            "| Add dose response by pre-V3 direct-route weakness, fee-tier arrival, and pair-level route-cost changes. |"
-        ),
-        (
-            "| RQ6 settlement design | V4 virtualizes settlement transfers but does not eliminate vehicle-linked liquidity relevance. "
-            f"| Table m06: V4 transfer incidence {_cell(m06, 'V4', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})} versus V3 {_cell(m06, 'V3', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})}; log LP response by netting exposure is `{_cell(m06, 'Difference / balance', Panel='C. LP response by netting exposure', **{'Sample / diagnostic': 'log LP liquidity'})}`. Cross-reference Table r33. "
-            "| Add route-use persistence around V4, not only receipt transfer incidence. |"
-        ),
-        (
-            "| RQ7 common liquidity | Vehicle-linked pools share a common liquidity component beyond market-wide liquidity, and the vehicle component strengthens in stress. "
-            f"| Table m12: vehicle factor full sample ({_lookup(common, **{'Sample / specification': 'Full sample', 'Regressor': 'vehicle_factor_loo'})}); stress interaction ({_lookup(common, **{'Sample / specification': 'Stress interaction', 'Regressor': 'vehicle_factor_x_stress'})}); post-V3 interaction ({_lookup(common, **{'Sample / specification': 'Post-V3 interaction', 'Regressor': 'vehicle_factor_x_post_v3'})}). "
-            "| Split by pair vehicle-dependence and run robustness excluding dominant pools. |"
-        ),
-        "",
-        "## New / Updated Artifacts",
-        "",
-        "- `output/tables/table_m08_variable_construction.csv`",
-        "- `output/tables/table_m09_core_panel_regressions.csv`",
-        "- `output/tables/table_m10_persistence_thresholds.csv`",
-        "- `output/tables/table_m11_stress_event_time.csv`",
-        "- `output/tables/table_m12_common_liquidity.csv`",
-        "- `output/empirical/core_rq_evidence_registry.md`",
-        "- `data/empirical/core_token_day_panel.parquet`",
-        "- `data/empirical/pool_vehicle_liquidity_daily.parquet`",
-        "- `data/empirical/common_liquidity_pool_panel.parquet`",
     ]
+    detail_lines.extend(_md_table(pd.DataFrame(rq_rows)))
+    detail_lines.append("")
+    detail_lines.append("## Displayed Evidence Tables")
+    for title, path in table_paths:
+        detail_lines.extend(["", f"### {title}", ""])
+        detail_lines.extend(_md_table(pd.read_csv(path)))
     (OUT / "core_empirical_rq_results.md").write_text("\n".join(detail_lines) + "\n", encoding="utf-8")
 
 
@@ -772,7 +1301,25 @@ def main() -> int:
     stress = stress_event_time()
     pool = build_pool_vehicle_liquidity()
     common = common_liquidity_tests(pool)
-    build_rq_registry(core, threshold, stress, common)
+    actual = build_pair_vehicle_actual_daily()
+    actual_choice = actual_route_choice_tests(actual)
+    lp_feedback = lp_allocation_feedback_tests(panel, core)
+    challenger = pair_challenger_displacement_tests(actual)
+    v3_dose = v3_dose_response_tests()
+    v4_persistence = v4_route_use_persistence_tests()
+    common_hetero = common_liquidity_heterogeneity_tests()
+    build_rq_registry(
+        core,
+        threshold,
+        stress,
+        common,
+        actual_choice,
+        lp_feedback,
+        challenger,
+        v3_dose,
+        v4_persistence,
+        common_hetero,
+    )
     return 0
 
 
