@@ -123,14 +123,14 @@ Panel & Quantity & Main estimate & Companion estimate & Interpretation \\
 \toprule
 Variable & Level & Construction & Used for \\
 \midrule
-VehicleShare & vehicle token x day & USD volume of indirect routes where token v is an intermediate divided by total indirect-route USD volume that day. & RQ1, RQ2, RQ3, RQ4 \\
-RouteCostAdvantage & endpoint pair x vehicle x day x trade size & (vehicle-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at \$10k. & RQ1, RQ3, RQ5 \\
-DirectAvailable & endpoint pair x day x trade size & Indicator that the exact-quote engine finds a direct executable route for the endpoint pair at the standard notional. & RQ1, RQ5 \\
-VehicleAvailable & endpoint pair x vehicle x day x trade size & Indicator that both legs through candidate vehicle v are exact-quote executable at the standard notional. & RQ1, RQ5 \\
-VehicleLinkedLiquidity & vehicle token x day & USD TVL in Uniswap V3 pools whose vehicle-side/base asset is candidate v, after excluding absurd pool TVL outliers. & RQ2, RQ3, RQ6 \\
-LPConcentration & vehicle token x day & VehicleLinkedLiquidity divided by total vehicle-candidate linked liquidity across the vehicle set that day. & RQ2, RQ3 \\
-SettlementTransferIncidence & matched route unit & Indicator that the transaction receipt contains at least one ERC-20 Transfer log matching the intermediate vehicle token. & RQ6 \\
-VehicleLiquidityFactor & vehicle token x day & Leave-one-out average daily log-liquidity change among other pools linked to the same vehicle; paired with a leave-one-out market liquidity factor. & RQ7 \\
+Vehicle share & vehicle token x day & USD volume of indirect routes where token v is an intermediate divided by total indirect-route USD volume that day. & RQ1, RQ2, RQ3, RQ4 \\
+Route-cost advantage & endpoint pair x vehicle x day x trade size & (vehicle-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at \$10k. & RQ1, RQ3, RQ5 \\
+Direct available & endpoint pair x day x trade size & Indicator that the exact-quote engine finds a direct executable route for the endpoint pair at the standard notional. & RQ1, RQ5 \\
+Vehicle available & endpoint pair x vehicle x day x trade size & Indicator that both legs through candidate vehicle v are exact-quote executable at the standard notional. & RQ1, RQ5 \\
+Vehicle-linked liquidity & vehicle token x day & USD TVL in Uniswap V3 pools whose vehicle-side/base asset is candidate v, after excluding absurd pool TVL outliers. & RQ2, RQ3, RQ6 \\
+LP concentration & vehicle token x day & VehicleLinkedLiquidity divided by total vehicle-candidate linked liquidity across the vehicle set that day. & RQ2, RQ3 \\
+Transfer incidence & matched route unit & Indicator that the transaction receipt contains at least one ERC-20 Transfer log matching the intermediate vehicle token. & RQ6 \\
+Vehicle liquidity factor & vehicle token x day & Leave-one-out average daily log-liquidity change among other pools linked to the same vehicle; paired with a leave-one-out market liquidity factor. & RQ7 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]

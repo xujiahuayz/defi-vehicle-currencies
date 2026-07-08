@@ -380,9 +380,19 @@ def variable_table() -> TableSpec:
         "SettlementTransferIncidence",
         "VehicleLiquidityFactor",
     ]
+    display_name = {
+        "VehicleShare": "Vehicle share",
+        "RouteCostAdvantage": "Route-cost advantage",
+        "DirectAvailable": "Direct available",
+        "VehicleAvailable": "Vehicle available",
+        "VehicleLinkedLiquidity": "Vehicle-linked liquidity",
+        "LPConcentration": "LP concentration",
+        "SettlementTransferIncidence": "Transfer incidence",
+        "VehicleLiquidityFactor": "Vehicle liquidity factor",
+    }
     rows = []
     for _, r in df[df["Variable / proxy"].isin(keep)].iterrows():
-        rows.append([r["Variable / proxy"], r["Level"], r["Construction"], r["Used for"]])
+        rows.append([display_name.get(r["Variable / proxy"], r["Variable / proxy"]), r["Level"], r["Construction"], r["Used for"]])
     return TableSpec(
         "3",
         "Variable construction and empirical proxies.",
