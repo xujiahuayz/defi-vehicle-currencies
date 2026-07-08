@@ -2,6 +2,8 @@
 
 Generated 2026-07-08. Purpose: settle research questions before model, propositions, outline, or evidence hierarchy.
 
+Update 2026-07-08: the workflow is now empirical-first. Use `output/empirical_rq_design_memo.md` as the companion registry for empirical experiments, regression families, and empirical-finance style templates. Theory is optional and should be added only after the empirical design is coherent.
+
 ## Ground Rule
 
 Keep the research question short. Put mechanism, model object, proposition, and evidence below it.
