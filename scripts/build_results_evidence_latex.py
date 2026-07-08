@@ -666,7 +666,7 @@ def settlement_table() -> TableSpec:
     persist = read_table("table_m17_v4_route_use_persistence")
     rows: list[list[object]] = [
         [
-            "V4 minus V3 transfer incidence",
+            "V4 - V3 transfer inc.",
             coef_p_cell(value_cell(settle, "Difference / balance", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "All"}), value_cell(settle, "p", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "All"})),
             coef_p_cell(value_cell(settle, "Difference / balance", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Small"}), value_cell(settle, "p", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Small"})),
             coef_p_cell(value_cell(settle, "Difference / balance", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Medium"}), value_cell(settle, "p", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Medium"})),
@@ -675,7 +675,7 @@ def settlement_table() -> TableSpec:
             "",
         ],
         [
-            "V3 transfer incidence",
+            "V3 transfer inc.",
             value_cell(settle, "V3", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "All"}),
             value_cell(settle, "V3", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Small"}),
             value_cell(settle, "V3", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Medium"}),
@@ -684,7 +684,7 @@ def settlement_table() -> TableSpec:
             "",
         ],
         [
-            "V4 transfer incidence",
+            "V4 transfer inc.",
             value_cell(settle, "V4", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "All"}),
             value_cell(settle, "V4", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Small"}),
             value_cell(settle, "V4", Panel="A. Transfer incidence by route-size bin", **{"Sample / diagnostic": "Route size: Medium"}),
@@ -731,19 +731,19 @@ def settlement_table() -> TableSpec:
         ],
     ]
     return TableSpec(
-        "7",
+        "8",
         "Settlement design, physical transfer incidence, and matched-cell route use.",
         "tab:rq6-settlement",
         [
             "",
-            header_cell("(1)", "All route sizes"),
+            header_cell("(1)", "All", "sizes"),
             header_cell("(2)", "Small"),
             header_cell("(3)", "Medium"),
             header_cell("(4)", "Large"),
-            header_cell("(5)", "Log V4 route count"),
-            header_cell("(6)", "Log V4 route volume"),
+            header_cell("(5)", "Log V4", "route count"),
+            header_cell("(6)", "Log V4", "route vol."),
         ],
-        ["0.23\\textwidth", "0.12\\textwidth", "0.11\\textwidth", "0.11\\textwidth", "0.11\\textwidth", "0.15\\textwidth", "0.15\\textwidth"],
+        ["0.20\\textwidth", "0.11\\textwidth", "0.10\\textwidth", "0.10\\textwidth", "0.10\\textwidth", "0.14\\textwidth", "0.14\\textwidth"],
         rows,
         "Columns (1)-(4) compare matched V3 and V4 route units; cells report transfer-incidence gaps with p-values beneath them. Columns (5)-(6) are matched endpoint-vehicle-week regressions of V4 route use on V3 route use.",
         landscape=True,
@@ -779,9 +779,9 @@ def common_liquidity_table() -> TableSpec:
             "",
         ],
         ["Pool-vehicle FE", "yes", "yes", "yes", "yes", "yes"],
-        ["SE clustering", "Date", "Date", "Date", "Date", "Date"],
+        ["SE cluster", "Date", "Date", "Date", "Date", "Date"],
         [
-            "Observations",
+            "Obs.",
             value_cell(common, "N", **{"Sample / specification": "Full sample", "Regressor": "vehicle_factor_loo"}),
             value_cell(common, "N", **{"Sample / specification": "Stress interaction", "Regressor": "vehicle_factor_loo"}),
             value_cell(het, "N", Sample="High average VehicleShare vehicles", Regressor="vehicle_factor_loo"),
@@ -790,18 +790,18 @@ def common_liquidity_table() -> TableSpec:
         ],
     ]
     return TableSpec(
-        "8",
+        "9",
         "Common liquidity across pools linked to the same vehicle.",
         "tab:rq7-common-liquidity",
         [
             "",
-            header_cell("(1)", "Full sample"),
-            header_cell("(2)", "Stress interaction"),
-            header_cell("(3)", "High vehicle use"),
-            header_cell("(4)", "Low vehicle use"),
-            header_cell("(5)", "Excl. top pools"),
+            header_cell("(1)", "Full", "sample"),
+            header_cell("(2)", "Stress", "interact."),
+            header_cell("(3)", "High", "vehicle use"),
+            header_cell("(4)", "Low", "vehicle use"),
+            header_cell("(5)", "Excl.", "top pools"),
         ],
-        ["0.24\\textwidth", "0.15\\textwidth", "0.16\\textwidth", "0.15\\textwidth", "0.15\\textwidth", "0.15\\textwidth"],
+        ["0.22\\textwidth", "0.13\\textwidth", "0.14\\textwidth", "0.13\\textwidth", "0.13\\textwidth", "0.13\\textwidth"],
         rows,
         "Dependent variable is daily pool-level log liquidity change. Cells report coefficients with p-values beneath them. Regressions include pool-vehicle fixed effects and date-clustered standard errors. The vehicle factor is leave-one-out across other pools linked to the same vehicle.",
         landscape=True,
@@ -810,24 +810,64 @@ def common_liquidity_table() -> TableSpec:
 
 def specification_table() -> TableSpec:
     df = read_table("table_m07_specification_registry")
+    compact = {
+        "P1 availability/thin-direct": "P1 availability",
+        "P2 liquidity-route feedback": "P2 persistence",
+        "P3 impact stress": "P3 stress",
+        "P4a V3 opportunity": "P4a V3",
+        "P4b V4 settlement": "P4b V4",
+        "endpoint-pair x day x trade size": "pair x day x size",
+        "event x common endpoint-pair set": "event x pair set",
+        "endpoint-pair x month": "pair x month",
+        "matched route unit; token x week": "route unit; token-week",
+        "V2/Sushi V2/V3 exact quoteable venues": "quoteable venues",
+        "WETH downside event days": "WETH downside events",
+        "balanced V3 launch-window pairs": "V3 launch pairs",
+        "matched V3/V4 cells; LP panel around launch": "matched V3/V4 cells",
+        "route availability and WETH advantage": "availability; WETH adv.",
+        "future BridgeShare; future LP concentration/liquidity": "future share; LP",
+        "WETH-minus-stable BridgeShare": "WETH-stable share",
+        "no-direct/WETH-available indicator": "no-direct WETH",
+        "transfer incidence; LP liquidity response": "transfer inc.; LP response",
+        "LP concentration; current BridgeShare": "LP conc.; lagged share",
+        "event-day WETH downside stress": "WETH stress day",
+        "V4 route unit; post x netting exposure": "V4; post x netting",
+        "endpoint-pair-day aggregation": "pair-day aggregation",
+        "token/date FE; date-clustered SE": "token/date FE; date SE",
+        "matched-cell tests; token/week FE": "matched tests; token/week FE",
+        "direct available 72.1%": "direct avail. 72.1%",
+        "prior 28-day common-pair baseline": "prior 28-day baseline",
+        "pre/post balanced pair panel": "balanced pair panel",
+        "V3 transfer incidence 100%": "V3 transfer 100%",
+        "9,584 no-direct rows; thin-direct 142.65-349.28 bp": "9,584 no-direct rows; 142.65-349.28 bp",
+        "two-way coefficients positive; p<0.001": "positive; p<0.001",
+        "availability and thin-direct execution protection": "availability/thin-direct protection",
+        "reduced-form liquidity-route feedback": "reduced-form persistence",
+        "same-day rotation away from WETH toward stable vehicles": "same-day WETH-to-stable rotation",
+        "settlement netting lowers movement and predicts LP supply response": "netting lowers movement; LP response",
+    }
+
+    def c(value: object) -> object:
+        return compact.get(str(value), value)
+
     rows = []
     for _, r in df.iterrows():
         rows.append([
-            r["Test"],
-            r["Unit"],
-            r["Sample"],
-            r["Outcome"],
-            r["Regressor / treatment"],
-            r["FE / SE"],
-            r["Main estimate"],
-            r["Economic interpretation"],
+            c(r["Test"]),
+            c(r["Unit"]),
+            c(r["Sample"]),
+            c(r["Outcome"]),
+            c(r["Regressor / treatment"]),
+            c(r["FE / SE"]),
+            c(r["Main estimate"]),
+            c(r["Economic interpretation"]),
         ])
     return TableSpec(
         "10",
         "Specification registry for paper-facing tests.",
         "tab:specification-registry",
         ["Test", "Unit", "Sample", "Outcome", "Treatment / regressor", "FE / SE", "Main estimate", "Interpretation"],
-        ["0.10\\textwidth", "0.11\\textwidth", "0.14\\textwidth", "0.11\\textwidth", "0.12\\textwidth", "0.10\\textwidth", "0.13\\textwidth", "0.16\\textwidth"],
+        ["0.09\\textwidth", "0.10\\textwidth", "0.12\\textwidth", "0.11\\textwidth", "0.12\\textwidth", "0.11\\textwidth", "0.14\\textwidth", "0.15\\textwidth"],
         rows,
         "This registry fixes the paper-facing unit, sample, outcome, treatment or regressor, inference convention, headline estimate, and bounded interpretation for each main test.",
         landscape=True,
