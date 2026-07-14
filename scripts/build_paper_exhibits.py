@@ -208,7 +208,8 @@ def build_table_sample_coverage() -> None:
 
 
 def build_table_summary_statistics() -> None:
-    subprocess.run([sys.executable, str(ROOT / "scripts" / "table" / "render_summary_statistics.py")], check=True)
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "process" / "build_observations_table.py")], check=True)
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "tabulate" / "render_summary_statistics.py")], check=True)
 
 
 def build_table_route_cost() -> None:
