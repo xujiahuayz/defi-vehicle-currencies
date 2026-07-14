@@ -1,18 +1,10 @@
 #!/usr/bin/env python3
-"""Render Table 1: summary statistics from the observations table.
-
-One script owns exactly one exhibit. It reads the canonical observations table
-created by scripts/process/build_observations_table.py and writes one
-journal-facing LaTeX table. It does not emit CSV companions.
-"""
+"""Direct runner for Table 1: summary statistics."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import sys
 from pathlib import Path
-
-import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,167 +12,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from ddvc.variable_registry import SUMMARY_SPECS  # noqa: E402
+from ddvc.analysis.observations import DEFAULT_OBSERVATIONS_TABLE  # noqa: E402
+from ddvc.export.tables import build_summary_rows, render_summary_statistics_latex  # noqa: E402
 
 
-DATA = ROOT / "data"
-TABLES = ROOT / "output" / "tables"
-OBSERVATIONS_TABLE = DATA / "processed" / "observations_token_day.parquet"
-OUT_TEX = TABLES / "table_01_summary_statistics.tex"
-
-
-@dataclass(frozen=True)
-class SummaryRow:
-    panel: str
-    variable: str
-    observations: int
-    mean: float
-    std_dev: float
-    p25: float
-    median: float
-    p75: float
-
-
-def _require(path: Path) -> Path:
-    if not path.exists():
-        raise FileNotFoundError(
-            f"Required input is missing: {path}. "
-            "Run .venv/bin/python scripts/process/build_observations_table.py first."
-        )
-    return path
-
-
-def _summary(panel: str, variable: str, values: pd.Series) -> SummaryRow:
-    clean = pd.to_numeric(values, errors="coerce").dropna()
-    if clean.empty:
-        raise ValueError(f"No non-missing observations for {panel}: {variable}")
-    return SummaryRow(
-        panel=panel,
-        variable=variable,
-        observations=int(clean.shape[0]),
-        mean=float(clean.mean()),
-        std_dev=float(clean.std()),
-        p25=float(clean.quantile(0.25)),
-        median=float(clean.median()),
-        p75=float(clean.quantile(0.75)),
-    )
-
-
-def build_summary_rows() -> list[SummaryRow]:
-    panel = pd.read_parquet(_require(OBSERVATIONS_TABLE))
-    panel["date"] = pd.to_datetime(panel["date"]).dt.normalize()
-    day_panel = panel.drop_duplicates("date").sort_values("date")
-
-    panel_order = {
-        "Panel A. Daily route activity": 0,
-        "Panel B. Vehicle-use measures, token-day": 1,
-        "Panel C. Liquidity and route-cost opportunity": 2,
-        "Panel D. Settlement-transfer sample": 3,
-    }
-    specs = sorted(
-        SUMMARY_SPECS,
-        key=lambda spec: (
-            panel_order.get(spec.summary_panel or spec.group, 99),
-            SUMMARY_SPECS.index(spec),
-        ),
-    )
-
-    rows: list[SummaryRow] = []
-    for spec in specs:
-        if spec.column not in panel.columns:
-            raise KeyError(f"Registered summary column missing from observations table: {spec.column}")
-        source = day_panel if spec.summary_level == "day" else panel
-        label = spec.summary_label or spec.name
-        values = source[spec.column] * spec.summary_scale
-        rows.append(_summary(spec.summary_panel or spec.group, label, values))
-    return rows
-
-
-def _format_count(value: int) -> str:
-    return f"{int(value):,}"
-
-
-def _format_number(value: float) -> str:
-    abs_value = abs(value)
-    if abs_value >= 1_000:
-        return f"{value:,.0f}"
-    if abs_value >= 100:
-        return f"{value:,.1f}"
-    return f"{value:,.2f}"
-
-
-def _latex_escape(value: object) -> str:
-    text = "" if value is None else str(value)
-    return (
-        text.replace("\\", r"\textbackslash{}")
-        .replace("&", r"\&")
-        .replace("%", r"\%")
-        .replace("$", r"\$")
-        .replace("#", r"\#")
-        .replace("_", r"\_")
-        .replace("{", r"\{")
-        .replace("}", r"\}")
-    )
-
-
-def _write_latex(rows: list[SummaryRow]) -> None:
-    lines = [
-        r"\begin{table}[!htbp]",
-        r"\centering",
-        r"\caption{Summary statistics}",
-        r"\label{tab:summary-statistics}",
-        r"\small",
-        r"\begin{tabular}{@{}lrrrrrr@{}}",
-        r"\toprule",
-        r"Variable & Obs. & Mean & Std. dev. & p25 & Median & p75 \\",
-        r"\midrule",
-    ]
-
-    current_panel: str | None = None
-    for row in rows:
-        if row.panel != current_panel:
-            if current_panel is not None:
-                lines.append(r"\addlinespace")
-            lines.append(rf"\multicolumn{{7}}{{l}}{{\textit{{{_latex_escape(row.panel)}}}}} \\")
-            current_panel = row.panel
-        cells = [
-            _latex_escape(row.variable),
-            _format_count(row.observations),
-            _format_number(row.mean),
-            _format_number(row.std_dev),
-            _format_number(row.p25),
-            _format_number(row.median),
-            _format_number(row.p75),
-        ]
-        lines.append(" & ".join(cells) + r" \\")
-
-    note = (
-        "Notes: The table reports summary statistics from the canonical observations table "
-        "generated by scripts/process/build_observations_table.py. Day-level variables are "
-        "summarized after deduplicating dates; token-day and settlement variables use their "
-        "available observations in the same table. BridgeShare uses indirect route volume as "
-        "the denominator; all-route bridge share uses total route volume."
-    )
-    lines.extend(
-        [
-            r"\bottomrule",
-            r"\end{tabular}",
-            r"\vspace{0.35em}",
-            r"\begin{minipage}{0.98\linewidth}",
-            rf"\footnotesize {_latex_escape(note)}",
-            r"\end{minipage}",
-            r"\end{table}",
-        ]
-    )
-    OUT_TEX.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-
-def main() -> None:
-    TABLES.mkdir(parents=True, exist_ok=True)
-    rows = build_summary_rows()
-    _write_latex(rows)
-    print(f"wrote {OUT_TEX.relative_to(ROOT)}")
-
-
-if __name__ == "__main__":
-    main()
+out_tex = ROOT / "output" / "tables" / "table_01_summary_statistics.tex"
+out_tex.parent.mkdir(parents=True, exist_ok=True)
+rows = build_summary_rows(DEFAULT_OBSERVATIONS_TABLE)
+out_tex.write_text(render_summary_statistics_latex(rows), encoding="utf-8")
+print(f"wrote {out_tex.relative_to(ROOT)}")

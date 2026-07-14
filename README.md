@@ -6,7 +6,7 @@ This repository contains the data pipeline, analysis code, literature workspace,
 
 - `src/ddvc/` — importable research package for fetching, route reconstruction, pricing, metrics, analysis, and paper export helpers.
 - `scripts/` — command-line entry points for reproducible fetch/build/analysis steps. Mathematica/Wolfram source belongs under `scripts/model/`.
-- `scripts/process/` — explicit data-processing steps. Each script reads data-layer inputs and writes one reusable analysis table under `data/processed/` or `data/empirical/`.
+- `scripts/process/` — explicit data-processing steps. Each script is a directly runnable wrapper that reads data-layer inputs and writes one reusable analysis table under `data/processed/` or `data/empirical/`.
 - `scripts/tabulate/` — one script per journal table. A script named `render_<exhibit>.py` owns exactly one table and writes the corresponding `output/tables/<table_id>_<exhibit>.tex` file.
 - `data/` — local data workspace for raw responses, intermediate tables, processed panels, external inputs, and run manifests. Data payloads are not committed.
 - `output/` — generated paper artifacts, including tables, figures, and internal review PDFs. These are products of scripts, not the source of truth.
@@ -23,7 +23,7 @@ This repository contains the data pipeline, analysis code, literature workspace,
 - Put local raw/intermediate/generated datasets in `data/`.
 - Put bibliography metadata and local PDF retrieval tooling in `literature/`.
 - Keep reviewer transcripts, one-off assistant notes, and scratch memos out of `paper/`; fold any durable paper point into the single outline or a manuscript source file.
-- Build paper exhibits as separate reproducible units. Tables live under `scripts/tabulate/`, plots under `scripts/figure/`, and diagrams under `scripts/diagram/` when those folders are needed. Do not add new monolithic exhibit builders for paper-facing artifacts.
+- Build paper exhibits as separate reproducible units. Tables live under `scripts/tabulate/`, plots under `scripts/figure/`, and diagrams under `scripts/diagram/` when those folders are needed. Do not add new monolithic exhibit builders for paper-facing artifacts. Scripts should stay directly runnable and thin; reusable functions belong in `src/ddvc/`.
 - Build the canonical wide observations table before rendering summary statistics, regressions, or exploratory plots:
 
 ```bash
