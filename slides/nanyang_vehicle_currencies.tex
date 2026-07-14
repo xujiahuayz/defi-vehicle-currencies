@@ -42,7 +42,7 @@
 \title{The Making of Vehicle Currencies}
 \subtitle{Evidence from DeFi Route-Level Markets}
 \author{Jiahua Xu}
-\institute{Nanyang presentation draft}
+\institute{Nanyang Technological University}
 \date{2026}
 
 \begin{document}
@@ -70,8 +70,8 @@ Vehicle currencies are made by route feasibility and liquidity concentration: th
 \end{block}
 \vspace{0.8em}
 \begin{itemize}
-  \item The paper is not a WETH-only story.
-  \item WETH, stablecoins, V3, and V4 are empirical test beds for general vehicle-currency mechanisms.
+  \item WETH and stablecoins are vehicle-currency candidates in the data.
+  \item V3 and V4 are architecture changes that reveal how market design affects vehicle use and settlement.
 \end{itemize}
 \end{frame}
 
@@ -113,7 +113,7 @@ Vehicle currencies are made by route feasibility and liquidity concentration: th
   \item All-route bridge share reports economic scope.
   \item Endpoint share is a control/diagnostic, not the vehicle proxy.
 \end{itemize}
-\source{Evidence packet Table 1 / Table 2.}
+\source{Authors' calculations from reconstructed Ethereum DEX route data.}
 \end{frame}
 
 \begin{frame}{Route objects}
@@ -184,7 +184,7 @@ FE & pair $\times$ date & token, date & token, date \\
 Observations & 189,143 & 9,380 & 9,265 \\
 \bottomrule
 \end{tabular}
-\source{Evidence packet Table 4.}
+\source{Authors' calculations from reconstructed route-cost and liquidity data.}
 \end{frame}
 
 \begin{frame}{Result 1 interpretation}
@@ -192,7 +192,7 @@ Observations & 189,143 & 9,380 & 9,265 \\
   \item The vehicle role is not simply ``the cheapest route everywhere.''
   \item The strongest interpretation is \key{availability and thin-direct protection}.
   \item Common-support cost advantage is one mechanism, but not the whole vehicle value.
-  \item This framing is important for not making a false universal-cheaper-route claim.
+  \item The route-cost evidence therefore separates feasibility, thin-direct protection, and common-support price improvement.
 \end{itemize}
 \end{frame}
 
@@ -202,8 +202,8 @@ Vehicle-linked liquidity and vehicle use are jointly persistent: liquidity aroun
 \end{block}
 \vspace{0.6em}
 \begin{itemize}
-  \item This is a reduced-form persistence claim.
-  \item It is not yet an exogenous LP-shock causal design.
+  \item The empirical object is persistence in liquidity and route use.
+  \item The estimates are predictive evidence rather than a liquidity-shock design.
 \end{itemize}
 \end{frame}
 
@@ -228,13 +228,13 @@ Observations & 9,380 & 9,380 & 9,380 \\
   \item Liquidity concentration predicts future vehicle use.
   \item Vehicle use predicts future vehicle-linked liquidity.
 \end{itemize}
-\source{Evidence packet Table 5.}
+\source{Authors' calculations from reconstructed route and liquidity data.}
 \end{frame}
 
 \begin{frame}{Figure: vehicle shares and liquidity}
 \centering
 \includegraphics[width=0.86\textwidth,height=0.72\textheight,keepaspectratio]{figure_04_lp_concentration_timeseries.pdf}
-\source{Generated exhibit: LP concentration time series.}
+\source{Authors' calculations from reconstructed route and liquidity data.}
 \end{frame}
 
 \begin{frame}{Proposition 3: impact stress rotation}
@@ -264,13 +264,13 @@ Stress event day & $-1.48^{**}$ pp & $1.48^{**}$ pp & $-2.96^{**}$ pp & $-0.25$ 
   \item Same-day common-support rotation is the cleanest stress result.
   \item Threshold and non-overlap checks remain negative and statistically significant.
 \end{itemize}
-\source{Evidence packet Table 6.}
+\source{Authors' calculations from common-support stress event design.}
 \end{frame}
 
 \begin{frame}{Figure: common-support stress rotation}
 \centering
 \includegraphics[width=0.88\textwidth,height=0.72\textheight,keepaspectratio]{figure_05_stress_common_support.pdf}
-\source{Generated exhibit: stress common-support vehicle rotation.}
+\source{Authors' calculations from common-support stress event design.}
 \end{frame}
 
 \begin{frame}{Proposition 4a: direct-market-deepening architecture}
@@ -280,8 +280,8 @@ An architecture that increases direct pairwise depth reduces reliance on vehicle
 \vspace{0.6em}
 \begin{itemize}
   \item Empirical test bed: concentrated-liquidity launch.
-  \item Defensible claim: no-direct/WETH-available cases fall.
-  \item Do not claim every V3 outcome has clean causal timing.
+  \item Main empirical claim: no-direct/WETH-available cases fall.
+  \item The V3 evidence is strongest for direct-route opportunity, not for every architecture outcome.
 \end{itemize}
 \end{frame}
 
@@ -302,7 +302,7 @@ SE clustering & pair & pair & pair & pair \\
 \begin{itemize}
   \item Strongest message: architecture can reduce vehicle dependence by expanding direct-route opportunity.
 \end{itemize}
-\source{Evidence packet Table 7.}
+\source{Authors' calculations from pair-level route opportunity panel.}
 \end{frame}
 
 \begin{frame}{Proposition 4b: settlement netting}
@@ -333,13 +333,13 @@ V4 transfer incidence & 81.4\% & 60.6\% & 87.7\% & 96.8\% \\
   \item V4 does not eliminate vehicle currencies.
   \item It makes part of the vehicle role virtual: the token can remain the route intermediary without moving physically in every route unit.
 \end{itemize}
-\source{Evidence packet Table 8.}
+\source{Authors' calculations from matched V3/V4 route units and transaction receipts.}
 \end{frame}
 
 \begin{frame}{Figure: settlement-transfer incidence}
 \centering
 \includegraphics[width=0.88\textwidth,height=0.72\textheight,keepaspectratio]{figure_06_v4_settlement_transfer_incidence.pdf}
-\source{Generated exhibit: V4 settlement transfer incidence.}
+\source{Authors' calculations from matched V3/V4 route units and transaction receipts.}
 \end{frame}
 
 \begin{frame}{Additional mechanism: common vehicle-linked liquidity}
@@ -359,9 +359,9 @@ Vehicle factor $\times$ stress & & $0.1064^{**}$ & & & \\
 \vspace{0.8em}
 \begin{itemize}
   \item Same-vehicle pools share a liquidity component beyond market-wide liquidity.
-  \item This can be a main slide or a backup, depending on time.
+  \item The vehicle-linked component strengthens where vehicle use is high and during stress.
 \end{itemize}
-\source{Evidence packet Table 9.}
+\source{Authors' calculations from reconstructed vehicle-linked liquidity panel.}
 \end{frame}
 
 \begin{frame}{What the evidence supports}
@@ -374,18 +374,14 @@ Vehicle factor $\times$ stress & & $0.1064^{**}$ & & & \\
 \end{enumerate}
 \end{frame}
 
-\begin{frame}{What the evidence does not claim}
+\begin{frame}{Scope of the evidence}
 \begin{itemize}
-  \item Not: WETH is always the cheapest route.
-  \item Not: liquidity feedback is causally identified from an exogenous LP shock.
-  \item Not: stress rotation is a permanent regime shift in every window.
-  \item Not: V4 removes vehicle currencies.
-  \item Not: Curve/Fluid are exact-quoted in the main route-cost panel.
+  \item Route-cost estimates are scoped to quoteable venues; venue coverage is reported separately.
+  \item Liquidity estimates measure persistence and predictability rather than shock-based causal effects.
+  \item Stress rotation is an impact-window result, with hourly and weekly diagnostics used to study duration.
+  \item V4 evidence measures intermediary-token transfer incidence and matched route use while separating route intermediation from physical settlement.
+  \item Curve and Fluid are included in realized vehicle-use measurement and excluded from executable-depth quote panels.
 \end{itemize}
-\vspace{0.6em}
-\begin{block}{Paper discipline}
-The strongest contribution comes from bounded claims that match the actual empirical objects.
-\end{block}
 \end{frame}
 
 \begin{frame}{Contribution}
@@ -395,19 +391,6 @@ The strongest contribution comes from bounded claims that match the actual empir
   \item \textbf{Market design:} shows architecture changes vehicle reliance and settlement implementation.
   \item \textbf{DeFi evidence:} turns transparent route-level ledgers into a laboratory for classic monetary intermediation questions.
 \end{itemize}
-\end{frame}
-
-\begin{frame}{Next decisions for the Nanyang talk}
-\begin{itemize}
-  \item How technical should the model section be for this audience?
-  \item Should common liquidity be main-deck or backup?
-  \item How much DeFi institutional detail is needed before the results?
-  \item Which result should be the punchline: liquidity formation, stress rotation, or V4 virtualization?
-\end{itemize}
-\vspace{0.6em}
-\begin{block}{My recommendation}
-Lead with measurement and formation, use stress and V4 as sharp payoffs, keep common liquidity as backup unless the audience is strongly market-microstructure focused.
-\end{block}
 \end{frame}
 
 \begin{frame}{Conclusion}
