@@ -46,6 +46,18 @@ class VariableRegistryTests(unittest.TestCase):
             text = script.read_text(encoding="utf-8")
             self.assertNotIn('if __name__ == "__main__"', text)
 
+    def test_tabulate_scripts_write_tabular_fragments_only(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        scripts = [
+            root / "scripts" / "tabulate" / "render_variable_notation.py",
+            root / "scripts" / "tabulate" / "render_summary_statistics.py",
+        ]
+        for script in scripts:
+            text = script.read_text(encoding="utf-8")
+            self.assertNotIn(r"\begin{table}", text)
+            self.assertNotIn(r"\caption{", text)
+            self.assertNotIn(r"\label{", text)
+
 
 if __name__ == "__main__":
     unittest.main()

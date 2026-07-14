@@ -21,12 +21,11 @@ TABLES_DIR = ROOT / TABLE_OUTPUT_FOLDER
 def _standalone_document(table_latex: str) -> str:
     return "\n".join(
         [
-            r"\documentclass[11pt]{article}",
-            r"\usepackage[margin=0.45in]{geometry}",
+            r"\documentclass[border=2pt]{standalone}",
             r"\usepackage{booktabs}",
             r"\usepackage{array}",
-            r"\pagestyle{empty}",
             r"\begin{document}",
+            r"\scriptsize",
             table_latex,
             r"\end{document}",
             "",
