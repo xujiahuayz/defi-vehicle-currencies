@@ -1,0 +1,127 @@
+"""Shared helpers for table-rendering scripts."""
+
+from __future__ import annotations
+
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+TABLE_OUTPUT_FOLDER = "output/tables"
+TABLES_DIR = ROOT / TABLE_OUTPUT_FOLDER
+
+
+def _standalone_document(table_latex: str) -> str:
+    return "\n".join(
+        [
+            r"\documentclass[11pt]{article}",
+            r"\usepackage[margin=0.45in]{geometry}",
+            r"\usepackage{booktabs}",
+            r"\usepackage{array}",
+            r"\pagestyle{empty}",
+            r"\begin{document}",
+            table_latex,
+            r"\end{document}",
+            "",
+        ]
+    )
+
+
+def _compile_with_tectonic(tex_path: Path, out_dir: Path) -> Path:
+    tectonic = shutil.which("tectonic")
+    if tectonic is None:
+        raise FileNotFoundError("tectonic")
+    subprocess.run(
+        [tectonic, "-X", "compile", str(tex_path), "--outdir", str(out_dir)],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    return out_dir / f"{tex_path.stem}.pdf"
+
+
+def _compile_with_latexmk(tex_path: Path, out_dir: Path) -> Path:
+    latexmk = shutil.which("latexmk")
+    if latexmk is None:
+        raise FileNotFoundError("latexmk")
+    subprocess.run(
+        [
+            latexmk,
+            "-pdf",
+            "-interaction=nonstopmode",
+            "-halt-on-error",
+            f"-outdir={out_dir}",
+            str(tex_path),
+        ],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    return out_dir / f"{tex_path.stem}.pdf"
+
+
+def _compile_with_pdflatex(tex_path: Path, out_dir: Path) -> Path:
+    pdflatex = shutil.which("pdflatex")
+    if pdflatex is None:
+        raise FileNotFoundError("pdflatex")
+    for _ in range(2):
+        subprocess.run(
+            [
+                pdflatex,
+                "-interaction=nonstopmode",
+                "-halt-on-error",
+                f"-output-directory={out_dir}",
+                str(tex_path),
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    return out_dir / f"{tex_path.stem}.pdf"
+
+
+def render_standalone_pdf(table_latex: str, pdf_path: Path) -> Path:
+    """Compile a table fragment into a standalone inspection PDF."""
+
+    with tempfile.TemporaryDirectory(prefix="dvc_table_") as tmp:
+        tmp_dir = Path(tmp)
+        out_dir = tmp_dir / "out"
+        out_dir.mkdir()
+        tex_path = tmp_dir / "standalone_table.tex"
+        tex_path.write_text(_standalone_document(table_latex), encoding="utf-8")
+
+        errors: list[str] = []
+        compiled: Path | None = None
+        for compiler in (_compile_with_tectonic, _compile_with_latexmk, _compile_with_pdflatex):
+            try:
+                compiled = compiler(tex_path, out_dir)
+                break
+            except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+                errors.append(f"{compiler.__name__}: {exc}")
+        if compiled is None or not compiled.exists():
+            raise RuntimeError("Could not compile standalone table PDF. " + " | ".join(errors))
+
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(compiled, pdf_path)
+    return pdf_path
+
+
+def write_table_artifacts(stem: str, table_latex: str) -> tuple[Path, Path]:
+    """Write a paper-input .tex fragment and matching standalone table PDF."""
+
+    TABLES_DIR.mkdir(parents=True, exist_ok=True)
+    tex_path = TABLES_DIR / f"{stem}.tex"
+    pdf_path = TABLES_DIR / f"{stem}.pdf"
+    tex_path.write_text(table_latex, encoding="utf-8")
+    render_standalone_pdf(table_latex, pdf_path)
+    return tex_path, pdf_path
