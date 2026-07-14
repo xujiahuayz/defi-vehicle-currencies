@@ -6,6 +6,7 @@ This repository contains the data pipeline, analysis code, literature workspace,
 
 - `src/ddvc/` — importable research package for fetching, route reconstruction, pricing, metrics, analysis, and paper export helpers.
 - `scripts/` — command-line entry points for reproducible fetch/build/analysis steps. Mathematica/Wolfram source belongs under `scripts/model/`.
+- `scripts/table/` — one script per journal table. A script named `render_<exhibit>.py` owns exactly one table and writes the corresponding `output/tables/<table_id>_<exhibit>.{tex,csv}` files.
 - `data/` — local data workspace for raw responses, intermediate tables, processed panels, external inputs, and run manifests. Data payloads are not committed.
 - `output/` — generated paper artifacts, including tables, figures, and internal review PDFs. These are products of scripts, not the source of truth.
 - `paper/` — manuscript source. Keep this directory clean: LaTeX files when drafting starts, plus at most one outline Markdown file.
@@ -21,6 +22,7 @@ This repository contains the data pipeline, analysis code, literature workspace,
 - Put local raw/intermediate/generated datasets in `data/`.
 - Put bibliography metadata and local PDF retrieval tooling in `literature/`.
 - Keep reviewer transcripts, one-off assistant notes, and scratch memos out of `paper/`; fold any durable paper point into the single outline or a manuscript source file.
+- Build paper exhibits as separate reproducible units. Tables live under `scripts/table/`, plots under `scripts/figure/`, and diagrams under `scripts/diagram/` when those folders are needed. Do not add new monolithic exhibit builders for paper-facing artifacts.
 
 ## Current Target
 

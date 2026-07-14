@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import math
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -205,57 +207,7 @@ def build_table_sample_coverage() -> None:
 
 
 def build_table_summary_statistics() -> None:
-    bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet")
-    lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet")
-    lp = lp.rename(columns={"token_symbol": "token"})
-
-    rows = []
-    for token in VEHICLE_ORDER:
-        g = bridge[(bridge["token"].eq(token)) & bridge["indirect_route_count"].gt(0)]
-        rows.append({
-            "Variable": f"{token} BridgeShare",
-            "N": _int(len(g)),
-            "Mean": _num(100 * g["BridgeShare"].mean(), 2),
-            "SD": _num(100 * g["BridgeShare"].std(), 2),
-            "p25": _num(100 * g["BridgeShare"].quantile(0.25), 2),
-            "Median": _num(100 * g["BridgeShare"].median(), 2),
-            "p75": _num(100 * g["BridgeShare"].quantile(0.75), 2),
-        })
-    for token in VEHICLE_ORDER:
-        g = bridge[(bridge["token"].eq(token)) & bridge["indirect_route_count"].gt(0)]
-        rows.append({
-            "Variable": f"{token} PairCoverage",
-            "N": _int(len(g)),
-            "Mean": _num(100 * g["PairCoverage"].mean(), 2),
-            "SD": _num(100 * g["PairCoverage"].std(), 2),
-            "p25": _num(100 * g["PairCoverage"].quantile(0.25), 2),
-            "Median": _num(100 * g["PairCoverage"].median(), 2),
-            "p75": _num(100 * g["PairCoverage"].quantile(0.75), 2),
-        })
-    for token in VEHICLE_ORDER:
-        g = lp[lp["token"].eq(token)]
-        if g.empty:
-            continue
-        rows.append({
-            "Variable": f"{token} LP concentration",
-            "N": _int(len(g)),
-            "Mean": _num(100 * g["lp_concentration_share"].mean(), 2),
-            "SD": _num(100 * g["lp_concentration_share"].std(), 2),
-            "p25": _num(100 * g["lp_concentration_share"].quantile(0.25), 2),
-            "Median": _num(100 * g["lp_concentration_share"].median(), 2),
-            "p75": _num(100 * g["lp_concentration_share"].quantile(0.75), 2),
-        })
-    _write_table(
-        pd.DataFrame(rows),
-        "table_01_summary_statistics",
-        "Summary statistics for main empirical variables.",
-        "tab:summary-statistics",
-        note=(
-            "BridgeShare, PairCoverage, and LP concentration are reported in percentage points. "
-            "Route-cost summary statistics are reported separately in Table 3 because the "
-            "advantage distribution has a deliberately large no-direct/thin-direct tail."
-        ),
-    )
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "table" / "render_summary_statistics.py")], check=True)
 
 
 def build_table_route_cost() -> None:
