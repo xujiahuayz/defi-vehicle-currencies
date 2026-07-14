@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Build paper-facing exhibit tables and figures from DVC empirical outputs.
 
-This is intentionally a presentation layer. It does not refetch data and does
-not rerun long counterfactual panels. It reads the canonical empirical outputs
-and writes publication-ready CSV/LaTeX tables plus compact PDF figures.
+This is intentionally a presentation-layer orchestrator. It does not refetch
+data and does not rerun long counterfactual panels. New journal-facing exhibits
+should live as one-script-per-exhibit units under scripts/tabulate, scripts/figure,
+or scripts/diagram; this file only preserves the older bundle entry point.
 """
 from __future__ import annotations
 

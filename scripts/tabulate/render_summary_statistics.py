@@ -2,7 +2,7 @@
 """Render Table 1: summary statistics.
 
 One script owns exactly one exhibit. It reads the rebuilt DVC analysis panels and
-writes the journal-facing LaTeX table plus a machine-readable CSV companion.
+writes the journal-facing LaTeX table.
 """
 from __future__ import annotations
 
@@ -19,8 +19,6 @@ TABLES = OUT / "tables"
 
 OUT_STEM = "table_01_summary_statistics"
 OUT_TEX = TABLES / f"{OUT_STEM}.tex"
-OUT_CSV = TABLES / f"{OUT_STEM}.csv"
-
 VEHICLE_TOKENS = ("WETH", "USDC", "USDT", "DAI", "WBTC")
 
 
@@ -184,11 +182,6 @@ def _latex_escape(value: object) -> str:
     )
 
 
-def _write_csv(rows: list[SummaryRow]) -> None:
-    frame = pd.DataFrame([row.__dict__ for row in rows])
-    frame.to_csv(OUT_CSV, index=False)
-
-
 def _write_latex(rows: list[SummaryRow]) -> None:
     lines = [
         r"\begin{table}[!htbp]",
@@ -244,10 +237,8 @@ def _write_latex(rows: list[SummaryRow]) -> None:
 def main() -> None:
     TABLES.mkdir(parents=True, exist_ok=True)
     rows = build_summary_rows()
-    _write_csv(rows)
     _write_latex(rows)
     print(f"wrote {OUT_TEX.relative_to(ROOT)}")
-    print(f"wrote {OUT_CSV.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
