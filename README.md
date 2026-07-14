@@ -9,6 +9,7 @@ This repository contains the data pipeline, analysis code, literature workspace,
 - `data/` — local data workspace for raw responses, intermediate tables, processed panels, external inputs, and run manifests. Data payloads are not committed.
 - `output/` — generated paper artifacts, including tables, figures, and internal review PDFs. These are products of scripts, not the source of truth.
 - `paper/` — manuscript source. Keep this directory clean: LaTeX files when drafting starts, plus at most one outline Markdown file.
+- `slides/` — presentation decks and compiled talk PDFs.
 - `literature/` — flat literature workspace for cited, related, and venue-style references.
 - `tests/` — offline tests for parsing, reconstruction, pricing, metrics, and analysis helpers.
 
