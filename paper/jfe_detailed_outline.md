@@ -2,256 +2,302 @@
 
 Target title: **The Making of Vehicle Currencies: Evidence from DeFi**
 
-This version incorporates the independent JFE-lens review: the paper should use
-Olga Klein's work to sharpen one LP mechanism block, not to add a second
-microstructure paper. The main text should have roughly 8-10 core displays. USDC,
-pricing, long validations, wallet-sophistication splits, cross-chain scaling, and
-full commonality batteries move to the appendix or supplementary material unless
-one becomes essential.
+This outline is aligned to the current model-evidence packet rather than the build
+order of the experiments. The paper should lead with the economic question, then
+use DeFi routes as the measurement laboratory. The main text should have roughly
+8-10 core displays. The table order should follow the evidence map: measurement
+and scope first, then route availability/thin-direct protection, liquidity-route
+persistence, stress rotation, architecture, settlement netting, and common
+liquidity. WETH, stablecoins, V3, and V4 are empirical test beds, not the
+propositions themselves.
+
+## Evidence Spine
+
+**Comment:** This is the paper logic before prose. Each research question has one
+paper-facing answer and one main display. Robustness tables can be selected later.
+
+| Research question | Paper-facing mechanism | Main evidence | Placement |
+| --- | --- | --- | --- |
+| RQ1. When does an asset become a vehicle? | Direct-market incompleteness and thin-direct-route protection. | Route-cost advantage, vehicle-route availability, and vehicle-route depth predict actual and future vehicle share. | Section 4, Table 3 |
+| RQ2. How does liquidity provision make a vehicle? | Vehicle-linked liquidity and vehicle use are mutually persistent. | LP concentration predicts future vehicle share; lagged vehicle share predicts future LP concentration and linked liquidity. | Section 5, Table 4 |
+| RQ3. Why does vehicle status persist or get displaced? | Persistence is strong, but sufficiently large challenger route-cost edges displace incumbents. | Lagged vehicle share and challenger-edge bins predict incumbent share losses. | Section 5, Table 4 plus appendix |
+| RQ4. When does vehicle status switch under stress? | Risk or credibility shocks rotate route intermediation on impact inside common route opportunities. | WETH-minus-stable vehicle share falls on stress event days, with threshold and overlap sensitivity. | Section 6, Table 5 |
+| RQ5. How does market architecture change vehicle formation? | Direct-market-deepening architecture expands pairwise route opportunity and reduces no-direct dependence on vehicles. | Post-V3 no-direct WETH-available cases fall in balanced endpoint-pair panels. | Section 7, Table 6 |
+| RQ6. How does settlement architecture change vehicle use? | Settlement netting separates route vehicle use from physical intermediary-token movement. | V4 lowers intermediary-token transfer incidence while matched V4 route use persists. | Section 8, Table 7 |
+| RQ7. Does vehicle status create common liquidity? | Pools linked to the same vehicle share a vehicle-specific liquidity factor beyond market liquidity. | Leave-one-out vehicle liquidity factor predicts pool liquidity changes. | Section 9 or Appendix C, Table 8 |
 
 ## Abstract
 
-**Comment:** One paragraph, 100-150 words. State the question, the DeFi
-identification advantage, the liquidity-provision mechanism, the stress-rotation
-result, the architecture result, and the broader lesson. No table-number tour.
+**Comment:** One paragraph, 100-150 words. State the question, the transparent
+DeFi route laboratory, the main measurement distinction, and the four results:
+route feasibility/thin-direct protection, liquidity-route persistence, stress
+rotation, and architecture/settlement design. Do not tour table numbers.
 
 ## 1. Introduction
 
-**Comment:** No visible subsections. Paragraph plan only:
+**Comment:** No visible subsections. Paragraph plan only.
 
-1. Vehicle currencies are liquidity institutions: traders route through the asset
-   that gives the cheapest and deepest bridge.
-2. Fiat markets hide the route and rarely reveal clean changes in vehicle status.
-3. DeFi records routes, liquidity, endpoint tokens, and settlement implementation.
-4. Vehicle status is made by liquidity provision: liquidity is supplied against
-   candidate vehicle assets, and active LP repositioning makes some routes cheap.
-5. Main result 1: vehicle use is concentrated and persistent.
-6. Main result 2: liquidity-route feedback is bidirectional: LP liquidity predicts future vehicle use, and vehicle use predicts future LP liquidity.
-7. Main result 3: vehicle risk and credibility shocks rotate routing within common route opportunities.
-8. Main result 4: market- and settlement-architecture changes alter vehicle feasibility and LP incentives.
-9. Contribution and literature: vehicle/dominant currencies, liquidity provision
-   and commonality, DeFi/AMMs/stablecoins.
-10. Roadmap.
+1. Vehicle currencies are routing infrastructure, not merely popular assets or
+   endpoints.
+2. Traditional markets hide route-level intermediation; DeFi records source,
+   destination, intermediate tokens, liquidity, and settlement implementation.
+3. Define the empirical object: vehicle use means intermediate-token use in
+   indirect routes; all-route shares and quote coverage are scope diagnostics.
+4. State P1: candidate vehicles expand the feasible execution set when direct
+   markets are missing or thin; conditional cost advantage is a separate margin.
+5. State P2: vehicle-linked liquidity and vehicle use are persistent together.
+6. State P3: risk/credibility stress rotates route intermediation on impact
+   within common route opportunities.
+7. State P4a/P4b: architecture changes both route feasibility and the mapping
+   between route intermediation and physical settlement movement.
+8. Explain contribution to vehicle-currency, liquidity/intermediation, and market
+   design literatures.
+9. Roadmap.
 
 ## 2. Institutional Setting, Data, and Measurement
 
-**Comment:** Explain the route object and data reliability, then move the reader
-quickly to the economic mechanism.
+**Comment:** The reader must understand what a route is, what counts as a
+vehicle, and what the empirical scope is before seeing regressions.
 
 ### 2.1 Routed exchange in AMM markets
 
 **Figure 1 placed here.**
 
-**Figure 1. Routed exchange and monetary roles in AMM markets.**
+**Figure 1. Routed exchange and vehicle-currency measurement.**
 Panel A shows a direct route from source token \(A\) to destination token \(C\).
-Panel B shows an indirect route in which token \(B\) is used as a vehicle currency
-because the trade clears through \(A \rightarrow B \rightarrow C\). Panel C shows
-a split route in which execution is divided across parallel paths. Panel D shows
+Panel B shows an indirect route in which token \(B\) is used as the vehicle
+because execution clears through \(A \rightarrow B \rightarrow C\). Panel C shows
+a split route in which execution is divided across multiple paths. Panel D shows
 a loop route that returns to the initial token inside the same atomic transaction.
-A token is counted as a vehicle only when it is neither the source nor the
-destination of the reconstructed route.
+A token is counted as a vehicle only when it is an intermediate token, not the
+source or destination.
 
 Subcaptions: **Panel A. Direct route**; **Panel B. Vehicle route**; **Panel C.
 Split route**; **Panel D. Loop route**.
 
-### 2.2 Route data and summary statistics
+### 2.2 Sample construction and coverage
 
 **Table 1 placed here.**
 
-**Table 1. Sample coverage and summary statistics.**
-The table reports sample coverage and summary statistics for the reconstructed
-route network. Panel A reports the sample period, venues, swap legs, reconstructed
-routes, source-destination pairs, tokens, and repriced USD route volume. Panel B
-reports route composition, including direct, indirect, split, loop, and pure
-vehicle routes. Panel C reports summary statistics for the main route-role and
-liquidity-provision variables: vehicle share, route betweenness, endpoint share,
-active liquidity near the current price, LP repositioning intensity, route cost,
-and gross-transfer incidence. Panel D reports the coefficient-bearing samples used
-in the liquidity-provision, stress-rotation, architecture, and return tests.
+**Table 1. Sample construction and measurement scope.**
+The table reports the reconstructed route sample, venue coverage, exact-quote
+coverage, and the distinction between conditional vehicle share and all-route
+bridge share. Panel A reports route, token, pair, and volume coverage. Panel B
+reports the leading vehicle tokens under conditional BridgeShare and their
+all-route scope. Panel C reports exact executable-depth quote coverage and the
+materiality of venues excluded from exact quote tests. The table defines the
+sample over which each empirical claim is made.
 
-### 2.3 Measuring vehicle use and liquidity provision
-
-**Comment:** Define vehicle share, route betweenness, active liquidity near the
-current price, LP repositioning intensity, direct-route cost, vehicle-route cost,
-endpoint flow, and gross-transfer incidence in prose. Do not make each measure a
-subsection.
-
-## 3. Framework
-
-**Comment:** Short mechanism section before tests. No long hypothesis apparatus.
-
-### 3.1 Liquidity, network externalities, and route choice
-
-**Comment:** A router chooses the path with the highest output net of fees and
-price impact. LPs choose where and how tightly to provide liquidity. A vehicle
-currency emerges when liquidity supplied against it lowers future route costs,
-which attracts more route demand and reinforces the liquidity base.
-
-### 3.2 Predictions
-
-**Comment:** State in prose or compact propositions:
-
-1. Vehicle use and vehicle-linked liquidity are mutually persistent.
-2. Vehicle-linked liquidity predicts future vehicle use, and vehicle use predicts future vehicle-linked liquidity.
-3. Downside stress reduces use of a risky incumbent vehicle relative to safer
-   substitutes within common route opportunities.
-4. Architecture changes can alter route feasibility and LP supply incentives.
-
-## 4. Liquidity Provision and Vehicle-Currency Formation
-
-**Comment:** This is the Olga/Kathy mechanism block. Keep it to one figure and two
-tables in the main text. Move informed-LP decompositions, wallet sophistication,
-cross-chain scaling, and full commonality batteries to appendix/supplement.
-
-### 4.1 Vehicle concentration and paired liquidity
-
-**Figure 2 placed here.**
-
-**Figure 2. Vehicle-currency shares and paired liquidity.**
-Panel A plots weekly shares of reconstructed route intermediation for WETH, USDC,
-USDT, and other major route tokens. Panel B plots active liquidity supplied in
-pools linked to the same vehicle assets. Panel C reports liquidity concentration
-near the current price, scaled by total value locked. Panel D reports the
-concentration of vehicle use relative to endpoint use. The figure shows whether
-vehicle status is matched by liquidity supplied against the candidate vehicle
-asset.
-
-Subcaptions: **Panel A. Vehicle shares**; **Panel B. Paired liquidity by vehicle
-asset**; **Panel C. Near-price liquidity concentration**; **Panel D. Vehicle-use
-concentration**.
-
-### 4.2 LP repositioning and future vehicle use
+### 2.3 Vehicle-use and liquidity variables
 
 **Table 2 placed here.**
 
-**Table 2. LP repositioning and future vehicle share.**
-The table relates liquidity supplied near the current price to future vehicle use.
-The unit is pool-hour, pool-day, or vehicle-day depending on data availability.
-Vehicle-linked pools are pairs in which one side is WETH, USDC, USDT, or another
-major route vehicle. Repositioning intensity is measured from mint and burn events,
-and near-price liquidity is measured within fixed bands around the current price.
-The outcome is future vehicle share, route betweenness, or vehicle-route cost. The
-table tests whether vehicle liquidity is actively made by LP allocation rather than
-only observed ex post in trader routing.
+**Table 2. Variables and empirical proxies.**
+The table defines vehicle share, route-cost advantage, direct-route availability,
+vehicle-route availability, vehicle-linked liquidity, LP concentration, settlement
+transfer incidence, and the vehicle liquidity factor. It states the unit of
+observation, construction, and research question using each variable.
+
+## 3. Framework and Testable Implications
+
+**Comment:** Keep the model atomic. The model should discipline what the signs
+mean, not become a separate theory paper.
+
+### 3.1 Route choice and liquidity allocation
+
+**Comment:** A trader with endpoints \(i,j\) compares a direct route \(i\to j\)
+with vehicle routes \(i\to k\to j\). Costs combine fees, price impact, route
+availability, and implementation/settlement cost. LPs allocate liquidity toward
+pools with expected route flow and net-of-cost returns.
+
+### 3.2 Propositions
+
+**Proposition 1. Direct-market incompleteness and vehicle-route feasibility.**
+For an endpoint pair, a candidate vehicle expands the feasible execution set when
+the direct route is unavailable or thin. Conditional on both routes being
+feasible, the vehicle route improves execution only when the vehicle-route cost is
+below the direct-route cost.
+
+**Empirical counterpart:** no-direct/vehicle-available cases, thin-direct cells,
+vehicle-route availability, vehicle-route depth, and common-support route-cost
+advantage.
+
+**Proposition 2. Liquidity-route persistence.**
+Vehicle-linked liquidity and vehicle use are jointly persistent: liquidity around
+a candidate vehicle predicts future vehicle use, and current vehicle use predicts
+future vehicle-linked liquidity.
+
+**Empirical counterpart:** token-day dynamic panels with LP concentration, lagged
+vehicle share, token fixed effects, date fixed effects, and date-clustered
+standard errors.
+
+**Proposition 3. Impact stress rotation.**
+A risk or credibility shock to an incumbent vehicle reduces its route-intermediation
+share on impact relative to safer substitutes, conditional on common route
+opportunities.
+
+**Empirical counterpart:** WETH-minus-stable vehicle share around downside stress
+events, threshold/overlap sensitivity, and event-time windows.
+
+**Proposition 4a. Direct-market-deepening architecture.**
+An architecture that increases direct pairwise depth reduces reliance on vehicle
+routes that exist only because the direct route is absent or thin.
+
+**Empirical counterpart:** V3 launch-window endpoint-pair panels for direct-route
+availability and no-direct WETH-available cases.
+
+**Proposition 4b. Settlement netting.**
+Settlement netting can preserve the route-pricing role of a vehicle while reducing
+physical transfers of the intermediary token.
+
+**Empirical counterpart:** matched V3/V4 route units, receipt-level intermediary
+Transfer incidence, manual receipt audit, and matched-cell route-use persistence.
+
+## 4. Direct-Market Incompleteness and Vehicle Formation
+
+**Comment:** This section answers RQ1. The headline is not "vehicle routes are
+always cheaper." The headline is feasibility and thin-direct protection, with
+common-support cost advantage as one margin.
 
 **Table 3 placed here.**
 
-**Table 3. Direct routes, vehicle routes, and trade-size heterogeneity.**
-The table compares direct execution with the best available vehicle route for
-source-destination pairs in the reconstructed network. For each pair and trade-size
-bucket, it reports direct-route availability, direct-route depth, vehicle-route
-depth, and the output advantage of routing through WETH or a stablecoin vehicle.
-Uniswap V2 and SushiSwap V2 routes are quoted from constant-product reserves, and
-Uniswap V3 routes are quoted from exact tick-net liquidity reconstructed from raw
-mints, burns, and swap-state cutoffs. The estimates quantify when the vehicle
-route is economically valuable and whether that value comes from lower common-support
-costs, availability when no direct route exists, or upper-tail protection when
-direct liquidity is thin.
+**Table 3. Vehicle formation: route economics, availability, and realized route choice.**
+The dependent variables are actual vehicle share and future vehicle share. The
+main regressors are route-cost advantage, vehicle-route availability,
+vehicle-route depth, LP concentration, and lagged vehicle share. Cells report
+coefficients with p-values beneath them. The table shows whether route economics
+and executable vehicle-route opportunity are associated with realized and future
+vehicle use.
 
-## 5. Stress-State Vehicle Rotation
+**Appendix companion:** route-cost decomposition into no-direct, thin-direct, and
+common-support price-improvement cells; Balancer weighted-pool extension;
+Curve/Fluid scope and exclusion sensitivity.
 
-**Comment:** This is the central identification section and should arrive quickly.
-Keep the strongest stress/common-support/road-not-taken evidence in main text.
+## 5. Liquidity Provision, Persistence, and Displacement
 
-### 5.1 Stress severity and WETH rotation
+**Comment:** This section answers RQ2 and RQ3. It should be written as persistent
+liquidity-route co-movement, not causal LP feedback unless an exogenous liquidity
+shock is later added.
+
+**Figure 2 placed here if included.**
+
+**Figure 2. Vehicle shares and vehicle-linked liquidity.**
+Panel A plots weekly vehicle shares for major candidate vehicle tokens. Panel B
+plots vehicle-linked liquidity concentration. Panel C compares vehicle use with
+endpoint use. Panel D plots the concentration of liquidity around vehicle-linked
+pools. The figure motivates the dynamic panel by showing that vehicle use and
+liquidity concentration move together over time.
 
 **Table 4 placed here.**
 
-**Table 4. Daily vehicle-rotation dose response.**
-The table reports daily fixed-effects estimates of vehicle rotation as downside
-stress increases. The outcome is WETH's route-betweenness or vehicle-share gap
-relative to the stablecoin layer. Stress is measured by downside ETH returns, with
-days grouped by crash severity and with a continuous severity specification. WBTC
-is included as a placebo vehicle. The estimates test whether the risky inherited
-vehicle loses route share when market stress rises.
+**Table 4. Liquidity provision, persistence, and challenger displacement.**
+The dependent variables are future vehicle share, future LP concentration, future
+log vehicle-linked liquidity, and 30-day changes in LP concentration and linked
+liquidity. The table also reports challenger route-cost edge bins and incumbent
+share losses. The table tests whether vehicle use and vehicle-linked liquidity are
+mutually persistent and whether sufficiently large challenger cost edges predict
+incumbent displacement.
 
-**Figure 3 placed here.**
+## 6. Stress-State Vehicle Rotation
 
-**Figure 3. Event-time WETH vehicle share around stress episodes.**
-The figure plots WETH vehicle share around pre-specified downside stress episodes.
-Vehicle share is normalized to the pre-event window within each episode. The
-event-time path shows when route rotation occurs and whether the inherited vehicle
-returns to its baseline role after stress subsides.
-
-Subcaptions: **Panel A. Average event-time path**; **Panel B. Episode-specific
-paths**; **Panel C. Recovery after stress trough**; **Panel D. Risk-on placebo
-episodes**.
-
-### 5.2 Common-support route opportunities
+**Comment:** This section answers RQ4. Use the same-day/common-support result as
+the headline. Treat hourly/weekly attenuation and pre-movement honestly as
+robustness and duration diagnostics.
 
 **Table 5 placed here.**
 
-**Table 5. Common-support WETH route rotation.**
-The table estimates WETH route-share changes within source-destination
-pair-episodes that used both WETH and at least one non-WETH intermediary before
-the stress anchor. The outcome is WETH's hourly intermediary share minus the
-pair-episode's pre-anchor WETH share. Pair-by-episode and relative-hour fixed
-effects absorb baseline route composition and common event timing. The coefficient
-measures whether WETH loses share relative to observed substitute intermediaries
-inside the same route opportunity set.
+**Table 5. Stress rotation inside common route opportunities.**
+The table reports changes in WETH vehicle share, stable-vehicle share, their gap,
+direct-route share, and indirect-route volume on downside stress event days. The
+sample is restricted to common route opportunities where substitutes are observed.
+Panel B reports event-time WETH-minus-stable gap changes, and Panel C reports
+threshold and overlap sensitivity. The table tests whether stress rotates route
+intermediation away from the incumbent risky vehicle and toward stable substitutes.
 
-### 5.3 Route costs and the road not taken
+**Appendix companions:** hourly common-support panel, weekly common-support panel,
+placebo windows, threshold definitions, and event-overlap handling.
+
+## 7. Market Architecture and Direct-Route Opportunity
+
+**Comment:** This section answers P4a/RQ5 narrowly. It should not overclaim a
+clean causal launch effect across all V3 outcomes. The defensible result is the
+decline in no-direct WETH dependence where direct-route opportunity expands.
 
 **Table 6 placed here.**
 
-**Table 6. Route costs and road-not-taken validation.**
-The table compares executed WETH and non-WETH routes with the best observed or
-quoted alternative route for the same source-destination pair. It reports route
-fees, price-impact components, quoter validation, trade-size buckets, and
-episode-minus-calm route-cost premiums. The table tests whether the stress-state
-route rotation is an economically meaningful change in execution costs rather than
-a composition artifact.
+**Table 6. Architecture and direct-route opportunity.**
+The dependent variables are no-direct WETH availability and direct-route
+availability by pre-V3 direct-route quartile. The regressor is the post-V3 period,
+with endpoint-pair fixed effects and pair-clustered standard errors. The table
+shows whether a direct-market-deepening architecture reduces dependence on vehicle
+routes for endpoint pairs that previously lacked direct-route opportunity.
 
-## 6. Architecture and Vehicle Feasibility
+## 8. Settlement Architecture and Vehicle Virtualization
 
-**Comment:** Architecture is kept because it is central to "what changes vehicle
-currency." USDC depeg and broad pricing implications move to appendix/supplement
-unless they become necessary for the paper's final contribution.
-
-### 6.1 Direct-market deepening and route feasibility
-
-**Figure 4 placed here if built.**
-
-**Figure 4. Vehicle routes around a direct-market-deepening architecture change.**
-The figure plots route shares, direct-route availability, and paired liquidity around an architecture change that deepens pairwise direct markets. The empirical event window uses the concentrated-liquidity launch as the test bed. The figure tests whether market architecture alters reliance on vehicle routes by changing pairwise depth and the cost of direct exchange.
-
-Subcaptions: **Panel A. Vehicle share around architecture change**; **Panel B. Direct-route availability**; **Panel C. Pair liquidity concentration**; **Panel D. Direct-route versus vehicle-route cost**.
-
-### 6.2 Settlement netting and LP supply
+**Comment:** This section answers P4b/RQ6. The result is not that V4 eliminates
+vehicle currencies. The result is that V4 separates route vehicle use from
+physical intermediary-token movement.
 
 **Table 7 placed here.**
 
-**Table 7. Settlement netting, transfer incidence, and LP response.**
-The table first matches coherent multi-hop routes across settlement architectures by endpoint pair, week, and intermediate token, then reports whether the transaction receipt contains a physical transfer log for the intermediate token. The transfer-log result is a measurement step supporting the behavioral proposition. The behavioral test asks whether vehicles with greater netting exposure receive stronger post-launch LP liquidity supply. The current evidence is suggestive: netting exposure predicts higher log LP liquidity, while LP concentration share moves in the opposite direction.
+**Table 7. Settlement design, physical transfer incidence, and matched-cell route use.**
+Columns 1-4 compare matched V3 and V4 route units by route-size bin and report
+intermediary-token transfer incidence. Columns 5-6 regress V4 route use on V3
+route use in matched endpoint-vehicle-week cells. The table tests whether V4
+settlement design lowers physical movement of the vehicle token while preserving
+vehicle-route demand.
 
-## 7. Discussion and Conclusion
+**Appendix companions:** receipt-parser validation, manual no-transfer audit,
+route-size balance, vehicle heterogeneity, and netting-exposure LP response.
 
-**Comment:** Short. State what DeFi teaches about vehicle currencies: they are
-liquidity institutions, they persist through LP-supplied route depth and network
-externalities, they rotate under stress, and architecture can change the mapping
-from route use to settlement movement. Pricing can be mentioned only if the result
-is clean enough for a one-paragraph payoff.
+## 9. Vehicle-Linked Common Liquidity
+
+**Comment:** This can be main text if the paper wants a stronger LP mechanism, or
+appendix if the main text is already overloaded. It is useful because it makes the
+liquidity institution claim more than a token-level correlation.
+
+**Table 8 placed here or moved to Appendix C.**
+
+**Table 8. Common liquidity across pools linked to the same vehicle.**
+The dependent variable is daily pool-level log liquidity change. The regressors
+are a market liquidity factor and a leave-one-out vehicle liquidity factor. The
+specifications include pool-vehicle fixed effects and date-clustered standard
+errors. The table tests whether pools linked to the same vehicle share a common
+liquidity component beyond market-wide liquidity.
+
+## 10. Discussion and Conclusion
+
+**Comment:** Short. Do not add new evidence. State what the route-level DeFi
+laboratory teaches about vehicle currencies generally: vehicle status is a
+liquidity and routing institution; it arises from direct-market incompleteness and
+thin-direct protection; it persists with liquidity concentration; it rotates under
+risk/credibility stress; and architecture changes the mapping from route use to
+settlement movement.
 
 ## References
 
-**Comment:** References after the conclusion and before the appendix.
+**Comment:** References after the conclusion and before appendices.
 
 ## Appendix
 
-**Comment:** Part of the paper file. Formal proofs, essential derivations, compact
-robustness, and trust-critical construction details belong here.
+**Comment:** Part of the manuscript file. Put formal derivations, construction
+details, robustness tables, and evidence that is important but not main-spine here.
 
-### Appendix A. Proofs and framework details
+### Appendix A. Model derivations and proof details
+
+**Table A1. Model predictions and empirical counterparts.**
+This table maps each proposition to the primitive, empirical proxy, main table,
+identification assumption, and bounded wording.
 
 ### Appendix B. Data construction and route reconstruction
 
 **Table B1. Raw swap coverage by venue and protocol version.**
-The table reports raw swap coverage by DEX, protocol version, sample start, sample
-end, number of transactions, number of swap legs, and repriced USD volume.
+The table reports venue, protocol version, sample start, sample end, transactions,
+swap legs, reconstructed routes, and repriced USD volume.
 
 **Table B2. Route reconstruction validation.**
 The table reports transaction-level conservation checks, route-component recovery
-rates, and validation against known Uniswap V3 router paths.
+rates, and validation against known router paths.
 
 ### Appendix C. Liquidity-provision mechanism details
 
@@ -259,63 +305,36 @@ rates, and validation against known Uniswap V3 router paths.
 The table reports the relation between mint/burn intensity, range width,
 near-price liquidity concentration, and vehicle-linked pool status.
 
-**Table C2. Liquidity commonality across vehicle-linked pools.**
-The table estimates whether pools linked by the same vehicle token share a common
-liquidity factor, and whether that commonality strengthens in down markets.
+**Table C2. Vehicle-linked liquidity commonality.**
+The table reports common liquidity estimates and heterogeneity across high- and
+low-vehicle-use samples.
 
 ### Appendix D. Stress-rotation robustness
 
-**Table D1. WETH route rotation under alternative crash thresholds.**
+**Table D1. Stress event definitions and threshold sensitivity.**
 
-**Table D2. Episode-level vehicle-rotation estimates.**
+**Table D2. Hourly and weekly common-support stress panels.**
 
-**Table D3. Vehicle-rotation placebo tests.**
+**Table D3. Placebo event windows and non-overlap checks.**
 
-**Table D4. Vehicle rotation under external stress measures.**
+### Appendix E. Route-cost and exact-quote robustness
 
-### Appendix E. Counterfactual route and quoter validation
+**Table E1. Route-cost decomposition.**
 
-**Table E1. Quoter validation against executed swaps.**
+**Table E2. Transaction-time quote-state robustness.**
 
-**Table E2. Road-not-taken counterfactual under pricing filters.**
+**Table E3. Non-Uni quote coverage and exclusion sensitivity.**
 
-**Table E3. Representative road-not-taken route examples.**
+### Appendix F. Architecture and settlement diagnostics
 
-### Appendix F. Stablecoin endpoint shocks
+**Table F1. V3 event-time pretrends.**
 
-**Figure F1. The USDC depeg and route-endpoint flight.**
-The figure plots the March 2023 USDC depeg and hourly route-endpoint flow into or
-out of USDC.
+**Table F2. V4 receipt-parser validation and manual no-transfer audit.**
 
-**Table F1. Persistence and substitution during stablecoin depegs.**
-The table reports cumulative route-endpoint pressure and substitute dispersion for
-stablecoin depeg episodes.
-
-### Appendix G. V4 diagnostics
-
-**Table G1. Construction of matched V3 and V4 route-unit cells.**
-
-**Table G2. Receipt-level settlement audit.**
+**Table F3. V4 route-size balance and vehicle heterogeneity.**
 
 ## Supplementary Material / Internet Appendix
 
-**Comment:** Bulky supporting material that should not be needed to understand the
-paper: large alternative-filter batteries, all route-level examples, venue-by-day
-plots, wallet-sophistication splits, public-versus-private LP information splits,
-cross-chain scaling quasi-experiment variants, full determinant batteries, and
-unconditional factor-pricing diagnostics.
-
-## Potential Coauthor Note: Olga Klein
-
-**Comment:** Kathy's "Olga from Warwick" is almost certainly Dr Olga Klein at
-Warwick Business School. Her relevant work points to one main addition: show that
-vehicle currencies are made by LP-side liquidity allocation and by architecture that changes the payoff to supporting routed demand.
-
-Relevant checked papers:
-
-- Caparros, Chaudhary, and Klein, "Blockchain Scaling and Liquidity Concentration
-  on Decentralized Exchanges."
-- Klein, Kozhan, Viswanath-Natraj, and Wang, "Informed Liquidity Provision on
-  Decentralized Exchanges."
-- Klein and Song, "Commonality in Intraday Liquidity and Multilateral Trading
-  Facilities: Evidence from Chi-X Europe."
+**Comment:** Use only for bulky machine-readable audits, full event lists, very
+large robustness batteries, and code/data documentation not needed inside the
+paper file.
