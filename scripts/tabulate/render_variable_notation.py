@@ -1,68 +1,110 @@
 #!/usr/bin/env python3
-"""Direct runner for Table 0: variable notation and construction."""
+"""Render the canonical variable-notation and construction table."""
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
+from ddvc.variable_registry import NOTATION_DEFINITIONS, specs_by_group
+from utils import ROOT, write_table_artifacts
 
 
-ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-TABULATE = ROOT / "scripts" / "tabulate"
-for path in (SRC, TABULATE):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
-
-from ddvc.variable_registry import specs_by_group  # noqa: E402
-from utils import write_table_artifacts  # noqa: E402
+LATEX_ESCAPES = {
+    "&": r"\&",
+    "%": r"\%",
+    "$": r"\$",
+    "#": r"\#",
+    "_": r"\_",
+    "{": r"\{",
+    "}": r"\}",
+    "~": r"\textasciitilde{}",
+    "^": r"\textasciicircum{}",
+    "\\": r"\textbackslash{}",
+}
 
 
 def latex_escape(value: object) -> str:
-    text = "" if value is None else str(value)
-    return (
-        text.replace("\\", r"\textbackslash{}")
-        .replace("&", r"\&")
-        .replace("%", r"\%")
-        .replace("$", r"\$")
-        .replace("#", r"\#")
-        .replace("_", r"\_")
-        .replace("{", r"\{")
-        .replace("}", r"\}")
-    )
+    """Escape plain text without altering trusted notation strings."""
+
+    return "".join(LATEX_ESCAPES.get(char, char) for char in str(value or ""))
 
 
 def latex_texttt_breakable(value: str) -> str:
+    """Render a machine column name with line breaks allowed at underscores."""
+
     parts = [latex_escape(part) for part in value.split("_")]
     return r"\texttt{" + r"\_\allowbreak{}".join(parts) + "}"
 
 
-lines = [
-    r"\begin{tabular}{@{}p{0.17\linewidth}p{0.18\linewidth}p{0.18\linewidth}p{0.39\linewidth}@{}}",
-    r"\toprule",
-    r"Notation & Observation-table column & Unit & Construction \\",
-    r"\midrule",
-]
-first_group = True
-for group, specs in specs_by_group().items():
-    if not first_group:
-        lines.append(r"\addlinespace")
-    first_group = False
-    lines.append(rf"\multicolumn{{4}}{{l}}{{\textit{{{latex_escape(group)}}}}} \\")
-    for spec in specs:
-        lines.append(
-            " & ".join(
-                [
-                    spec.notation,
-                    latex_texttt_breakable(spec.column),
-                    latex_escape(spec.unit),
-                    latex_escape(spec.construction),
-                ]
-            )
-            + r" \\"
-        )
-lines.extend([r"\bottomrule", r"\end{tabular}"])
+def table_row(*cells: str) -> str:
+    return " & ".join(cells) + r" \\"
 
-out_tex, out_pdf = write_table_artifacts("variable_notation", "\n".join(lines) + "\n")
+
+def group_header(label: str, columns: int) -> str:
+    return rf"\multicolumn{{{columns}}}{{@{{}}l}}{{\textit{{{latex_escape(label)}}}}} \\"
+
+
+def render_table() -> str:
+    """Build a width-adaptive table fragment for paper and standalone use."""
+
+    lines = [
+        r"% Requires \usepackage{booktabs,tabularx,array}.",
+        r"\begingroup",
+        r"\renewcommand{\arraystretch}{1.45}",
+        r"\begin{tabularx}{\linewidth}{@{}"
+        r">{\raggedright\arraybackslash}X"
+        r"l"
+        r">{\raggedright\arraybackslash}X@{}}",
+        r"\toprule",
+        table_row("Symbol", "Unit", "Meaning"),
+        r"\midrule",
+    ]
+
+    for item in NOTATION_DEFINITIONS:
+        lines.append(
+            table_row(
+                item.notation,
+                latex_escape(item.unit),
+                item.definition,
+            )
+        )
+
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabularx}",
+            r"\par\medskip",
+            r"\begin{tabularx}{\linewidth}{@{}"
+            r">{\raggedright\arraybackslash}X"
+            r">{\raggedright\arraybackslash}X"
+            r"l"
+            r">{\raggedright\arraybackslash}X"
+            r">{\raggedright\arraybackslash}X@{}}",
+            r"\toprule",
+            table_row("Variable", "Formula", "Unit", "Data column", "Definition"),
+            r"\midrule",
+        ]
+    )
+
+    for group, specs in specs_by_group().items():
+        lines.extend([r"\addlinespace", group_header(group, 5)])
+        for spec in specs:
+            lines.append(
+                table_row(
+                    spec.notation,
+                    spec.formula,
+                    latex_escape(spec.unit),
+                    latex_texttt_breakable(spec.column),
+                    spec.construction,
+                )
+            )
+
+    lines.extend([r"\bottomrule", r"\end{tabularx}", r"\endgroup"])
+    return "\n".join(lines) + "\n"
+
+
+out_tex, out_pdf = write_table_artifacts(
+    "variable_notation",
+    render_table(),
+    preview_width="10in",
+)
 print(f"wrote {out_tex.relative_to(ROOT)}")
 print(f"wrote {out_pdf.relative_to(ROOT)}")

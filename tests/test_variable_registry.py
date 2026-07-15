@@ -8,7 +8,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts" / "tabulate"))
 
-from ddvc.variable_registry import OBSERVATIONS_TABLE_COLUMNS, SUMMARY_SPECS, VARIABLE_SPECS
+from ddvc.variable_registry import (
+    NOTATION_DEFINITIONS,
+    OBSERVATIONS_TABLE_COLUMNS,
+    SUMMARY_SPECS,
+    VARIABLE_SPECS,
+)
 from utils import validate_output_stem
 
 
@@ -30,12 +35,59 @@ class VariableRegistryTests(unittest.TestCase):
                 "all_route_bridge_share",
                 "lp_concentration",
                 "direct_available_share",
+                "direct_depth_median",
                 "no_direct_vehicle_available_share",
                 "route_cost_advantage_median_bps",
                 "settlement_transfer_incidence",
             },
             columns,
         )
+
+    def test_notation_key_defines_route_indices_and_superscripts(self) -> None:
+        notation = " ".join(item.notation for item in NOTATION_DEFINITIONS)
+        definitions = " ".join(item.definition for item in NOTATION_DEFINITIONS)
+        for symbol in ["$i,\\ j$", "$k$", "$t,\\ w$", "$q$", "$r$"]:
+            self.assertIn(symbol, notation)
+        self.assertIn(r"superscripts $D$ and $V$", definitions)
+        self.assertIn(r"Superscript $\mathrm{vol}$", definitions)
+
+    def test_variable_units_are_measurement_units_not_observation_levels(self) -> None:
+        for spec in VARIABLE_SPECS:
+            unit = spec.unit.lower()
+            self.assertNotIn("candidate vehicle", unit, spec.column)
+            self.assertNotIn("token x", unit, spec.column)
+            self.assertNotIn("token-day", unit, spec.column)
+
+    def test_share_notation_uses_fractions_not_probability_operator(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        self.assertTrue(
+            all(r"\Pr" not in spec.notation + spec.formula for spec in VARIABLE_SPECS)
+        )
+        for column in [
+            "direct_available_share",
+            "vehicle_available_share",
+            "no_direct_vehicle_available_share",
+            "vehicle_beats_direct_share",
+            "thin_direct_share",
+            "settlement_transfer_incidence",
+        ]:
+            self.assertIn(r"\frac", by_column[column].formula)
+
+    def test_regression_notation_is_separate_from_construction_formula(self) -> None:
+        for spec in VARIABLE_SPECS:
+            self.assertTrue(spec.notation.startswith("$"), spec.column)
+            self.assertTrue(spec.formula.startswith("$"), spec.column)
+            self.assertNotEqual(spec.notation, spec.formula, spec.column)
+
+    def test_variable_notation_renderer_uses_automatic_column_widths(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        text = (root / "scripts" / "tabulate" / "render_variable_notation.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(r"\begin{tabularx}{\linewidth}", text)
+        self.assertIn('table_row("Variable", "Formula", "Unit", "Data column", "Definition")', text)
+        self.assertNotIn(r"p{0.", text)
+        self.assertNotIn("noqa: E402", text)
 
     def test_new_process_and_tabulate_scripts_are_direct_runners(self) -> None:
         root = Path(__file__).resolve().parents[1]

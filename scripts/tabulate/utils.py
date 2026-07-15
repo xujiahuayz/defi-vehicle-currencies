@@ -2,19 +2,14 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
-import sys
 import tempfile
-import re
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 TABLE_OUTPUT_FOLDER = "output/tables"
 TABLES_DIR = ROOT / TABLE_OUTPUT_FOLDER
 NUMBERED_ARTIFACT_RE = re.compile(r"^(?:table|figure)_(?:[a-z]\d+|\d+)(?:_|$)", re.IGNORECASE)
@@ -35,19 +30,22 @@ def validate_output_stem(stem: str) -> str:
     return stem
 
 
-def _standalone_document(table_latex: str) -> str:
-    return "\n".join(
-        [
-            r"\documentclass[border=2pt]{standalone}",
-            r"\usepackage{booktabs}",
-            r"\usepackage{array}",
-            r"\begin{document}",
-            r"\scriptsize",
-            table_latex,
-            r"\end{document}",
-            "",
-        ]
-    )
+def _standalone_document(table_latex: str, preview_width: str | None = None) -> str:
+    lines = [
+        r"\documentclass[border=2pt]{standalone}",
+        r"\usepackage{booktabs}",
+        r"\usepackage{array}",
+        r"\usepackage{tabularx}",
+        r"\begin{document}",
+        r"\scriptsize",
+    ]
+    if preview_width is not None:
+        lines.append(rf"\begin{{minipage}}{{{preview_width}}}")
+    lines.append(table_latex)
+    if preview_width is not None:
+        lines.append(r"\end{minipage}")
+    lines.extend([r"\end{document}", ""])
+    return "\n".join(lines)
 
 
 def _compile_with_tectonic(tex_path: Path, out_dir: Path) -> Path:
@@ -106,7 +104,12 @@ def _compile_with_pdflatex(tex_path: Path, out_dir: Path) -> Path:
     return out_dir / f"{tex_path.stem}.pdf"
 
 
-def render_standalone_pdf(table_latex: str, pdf_path: Path) -> Path:
+def render_standalone_pdf(
+    table_latex: str,
+    pdf_path: Path,
+    *,
+    preview_width: str | None = None,
+) -> Path:
     """Compile a table fragment into a standalone inspection PDF."""
 
     with tempfile.TemporaryDirectory(prefix="dvc_table_") as tmp:
@@ -114,7 +117,10 @@ def render_standalone_pdf(table_latex: str, pdf_path: Path) -> Path:
         out_dir = tmp_dir / "out"
         out_dir.mkdir()
         tex_path = tmp_dir / "standalone_table.tex"
-        tex_path.write_text(_standalone_document(table_latex), encoding="utf-8")
+        tex_path.write_text(
+            _standalone_document(table_latex, preview_width),
+            encoding="utf-8",
+        )
 
         errors: list[str] = []
         compiled: Path | None = None
@@ -132,7 +138,12 @@ def render_standalone_pdf(table_latex: str, pdf_path: Path) -> Path:
     return pdf_path
 
 
-def write_table_artifacts(stem: str, table_latex: str) -> tuple[Path, Path]:
+def write_table_artifacts(
+    stem: str,
+    table_latex: str,
+    *,
+    preview_width: str | None = None,
+) -> tuple[Path, Path]:
     """Write a paper-input .tex fragment and matching standalone table PDF."""
 
     stem = validate_output_stem(stem)
@@ -140,5 +151,5 @@ def write_table_artifacts(stem: str, table_latex: str) -> tuple[Path, Path]:
     tex_path = TABLES_DIR / f"{stem}.tex"
     pdf_path = TABLES_DIR / f"{stem}.pdf"
     tex_path.write_text(table_latex, encoding="utf-8")
-    render_standalone_pdf(table_latex, pdf_path)
+    render_standalone_pdf(table_latex, pdf_path, preview_width=preview_width)
     return tex_path, pdf_path

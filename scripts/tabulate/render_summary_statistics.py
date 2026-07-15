@@ -88,10 +88,10 @@ panel["date"] = pd.to_datetime(panel["date"]).dt.normalize()
 day_panel = panel.drop_duplicates("date").sort_values("date")
 
 panel_order = {
-    "Panel A. Daily route activity": 0,
-    "Panel B. Vehicle-use measures, token-day": 1,
-    "Panel C. Liquidity and route-cost opportunity": 2,
-    "Panel D. Settlement-transfer sample": 3,
+    "Daily route activity": 0,
+    "Vehicle-use measures, token-day": 1,
+    "Liquidity and route-cost opportunity": 2,
+    "Settlement-transfer sample": 3,
 }
 summary_specs = sorted(
     SUMMARY_SPECS,
