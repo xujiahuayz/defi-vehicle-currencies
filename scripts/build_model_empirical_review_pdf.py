@@ -17,7 +17,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "output"
-TABLES = OUT / "tables"
+EMP = OUT / "empirical"
 MODEL = OUT / "model"
 REVIEW = OUT / "review"
 PDF = REVIEW / "model_empirical_review.pdf"
@@ -41,8 +41,8 @@ def _page(pdf: PdfPages, title: str, body: str, *, fontsize: int = 10) -> None:
     plt.close(fig)
 
 
-def _table_page(pdf: PdfPages, title: str, csv_name: str, note: str = "") -> None:
-    df = pd.read_csv(TABLES / csv_name)
+def _table_page(pdf: PdfPages, title: str, data_name: str, note: str = "") -> None:
+    df = pd.read_pickle(EMP / f"{data_name}.pkl")
     text = df.to_string(index=False)
     if note:
         text += "\n\n" + note
@@ -160,13 +160,13 @@ Full derivation object:
                 "model_netting_lp_supply.png",
             ],
         )
-        _table_page(pdf, "Table 1. Measurement and Scope", "table_m01_measurement_scope.csv")
-        _table_page(pdf, "Table 2. P1 Route Availability and Thin-Direct Protection", "table_m02_p1_availability_thin_direct.csv")
-        _table_page(pdf, "Table 3. P2 Liquidity-Route Feedback", "table_m03_p2_dynamic_predictability.csv")
-        _table_page(pdf, "Table 4. P3 Vehicle Risk and Stress Rotation", "table_m04_p3_stress_rotation.csv")
-        _table_page(pdf, "Table 5. P4a Direct-Market Deepening and Vehicle-Route Opportunity", "table_m05_p4a_v3_opportunity.csv")
-        _table_page(pdf, "Table 6. P4b Settlement Netting and LP Response", "table_m06_p4b_v4_settlement.csv")
-        _table_page(pdf, "Table 7. Specification Registry", "table_m07_specification_registry.csv")
+        _table_page(pdf, "Measurement and Scope", "measurement_scope")
+        _table_page(pdf, "P1 Route Availability and Thin-Direct Protection", "p1_availability_thin_direct")
+        _table_page(pdf, "P2 Liquidity-Route Feedback", "p2_dynamic_predictability")
+        _table_page(pdf, "P3 Vehicle Risk and Stress Rotation", "p3_stress_rotation")
+        _table_page(pdf, "P4a Direct-Market Deepening and Vehicle-Route Opportunity", "p4a_v3_opportunity")
+        _table_page(pdf, "P4b Settlement Netting and LP Response", "p4b_v4_settlement")
+        _table_page(pdf, "Specification Registry", "specification_registry")
     return PDF
 
 

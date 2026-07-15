@@ -1,0 +1,17 @@
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+Sample / specification & Regressor & N & Date clusters & Pools & Beta & SE & t & p & FE / SE \\
+\midrule
+Full sample & market\_factor\_loo & 685,685 & 2,120 & 1,256 & 0.7063 & 0.0573 & 12.32 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Full sample & vehicle\_factor\_loo & 685,685 & 2,120 & 1,256 & 0.1626 & 0.0431 & 3.77 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Stress interaction & market\_factor\_loo & 685,685 & 2,120 & 1,256 & 0.6987 & 0.0605 & 11.55 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Stress interaction & vehicle\_factor\_loo & 685,685 & 2,120 & 1,256 & 0.1586 & 0.0438 & 3.62 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Stress interaction & stress\_dummy & 685,685 & 2,120 & 1,256 & -0.0015 & 0.0028 & -0.52 & 0.602 & pool-vehicle FE; date-clustered SE \\
+Stress interaction & vehicle\_factor\_x\_stress & 685,685 & 2,120 & 1,256 & 0.1064 & 0.0491 & 2.17 & 0.030 & pool-vehicle FE; date-clustered SE \\
+Post-V3 interaction & market\_factor\_loo & 685,685 & 2,120 & 1,256 & 0.6877 & 0.0478 & 14.37 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Post-V3 interaction & vehicle\_factor\_loo & 685,685 & 2,120 & 1,256 & 0.1844 & 0.0761 & 2.42 & 0.015 & pool-vehicle FE; date-clustered SE \\
+Post-V3 interaction & post\_v3 & 685,685 & 2,120 & 1,256 & -0.0170 & 0.0029 & -5.96 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Post-V3 interaction & vehicle\_factor\_x\_post\_v3 & 685,685 & 2,120 & 1,256 & -0.0278 & 0.0732 & -0.38 & 0.704 & pool-vehicle FE; date-clustered SE \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: Dependent variable is daily log liquidity change in vehicle-linked pools. Market and vehicle factors are leave-one-out averages, so the pool's own liquidity change is excluded from its factors.

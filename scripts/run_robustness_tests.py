@@ -213,7 +213,7 @@ def _pair_vehicle_panel(stamps: set[str], empirical_module) -> pd.DataFrame:
 
 
 def stress_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
-    events = pd.read_csv(EMP / "stress_common_support_events.csv")
+    events = pd.read_pickle(EMP / "stress_common_support_events.pkl")
     events = events.sort_values("downside_stress", ascending=False).reset_index(drop=True)
     rows = []
     variants = {
@@ -303,7 +303,7 @@ def route_cost_robustness() -> pd.DataFrame:
 
 
 def v4_robustness() -> pd.DataFrame:
-    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
+    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
     detail["size_bin"] = pd.qcut(detail["route_usd"], 3, labels=["Small", "Medium", "Large"], duplicates="drop")
     rows = []
     for key, g0 in [("All", detail), *[(f"Route size: {k}", g) for k, g in detail.groupby("size_bin", observed=True)]]:
@@ -330,6 +330,7 @@ def v4_robustness() -> pd.DataFrame:
             "p": _p(p),
         })
     out = pd.DataFrame(rows)
+    out.to_pickle(EMP / "v4_robustness.pkl")
     _write_table(
         out,
         "table_r05_v4_robustness",
@@ -341,7 +342,7 @@ def v4_robustness() -> pd.DataFrame:
 
 
 def v4_match_balance() -> pd.DataFrame:
-    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
+    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
     cell = (
         detail.groupby(["cell_id", "dex"], as_index=False)
         .agg(route_usd=("route_usd", "median"), logs=("total_logs", "median"))

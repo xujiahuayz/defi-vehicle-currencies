@@ -90,8 +90,7 @@ def v3_event_time_pretrends() -> pd.DataFrame:
         )
     )
     monthly["post_v3"] = (monthly["rel_month"] >= 0).astype(float)
-    monthly.to_csv(EMP / "v3_event_time_monthly.csv", index=False)
-
+    monthly.to_pickle(EMP / "v3_event_time_monthly.pkl")
     rows = []
     outcomes = [
         ("direct_available", "Direct-route availability", "pp"),
@@ -138,12 +137,12 @@ def v3_event_time_pretrends() -> pd.DataFrame:
             "fixed effects and cluster by endpoint pair."
         ),
     )
-    out.to_csv(EMP / "v3_event_time_pretrends.csv", index=False)
+    out.to_pickle(EMP / "v3_event_time_pretrends.pkl")
     return out
 
 
 def v4_receipt_parser_validation() -> pd.DataFrame:
-    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
+    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
     if detail.empty:
         raise RuntimeError("Missing V4 settlement transfer detail; run run_v4_settlement_identification.py first.")
     detail["has_matching_transfer"] = detail["has_matching_transfer"].astype(bool)
@@ -190,8 +189,7 @@ def v4_receipt_parser_validation() -> pd.DataFrame:
         .head(25)
         [["week", "src", "sink", "vehicle", "tx_hash", "route_usd", "total_logs", "matching_transfer_logs"]]
     )
-    audit.to_csv(EMP / "v4_no_transfer_manual_audit_sample.csv", index=False)
-
+    audit.to_pickle(EMP / "v4_no_transfer_manual_audit_sample.pkl")
     out = pd.DataFrame(rows)
     _write_table(
         out,
@@ -205,7 +203,7 @@ def v4_receipt_parser_validation() -> pd.DataFrame:
             "manual-audit sample of V4 no-transfer transactions is exported."
         ),
     )
-    out.to_csv(EMP / "v4_receipt_parser_validation.csv", index=False)
+    out.to_pickle(EMP / "v4_receipt_parser_validation.pkl")
     return out
 
 

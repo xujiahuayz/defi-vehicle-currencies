@@ -102,7 +102,7 @@ def run() -> pd.DataFrame:
         )
     out = pd.DataFrame(rows)
     EMP.mkdir(parents=True, exist_ok=True)
-    out.to_csv(EMP / "p2_dynamic_persistence.csv", index=False)
+    out.to_pickle(EMP / "p2_dynamic_persistence.pkl")
     _write_table(
         out,
         "table_r31_p2_dynamic_persistence",

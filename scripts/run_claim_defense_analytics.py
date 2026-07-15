@@ -106,7 +106,7 @@ def stress_window_and_placebo() -> pd.DataFrame:
                 "Negative share (%)": _pct(float(np.mean(arr < 0)) if len(arr) else math.nan),
             })
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "stress_window_placebo.csv", index=False)
+    out.to_pickle(EMP / "stress_window_placebo.pkl")
     _write_table(
         out,
         "table_r11_stress_window_placebo",
@@ -153,7 +153,7 @@ def route_cost_decomposition() -> pd.DataFrame:
             "p": _p(p),
         })
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "route_cost_decomposition.csv", index=False)
+    out.to_pickle(EMP / "route_cost_decomposition.pkl")
     _write_table(
         out,
         "table_r12_route_cost_decomposition",

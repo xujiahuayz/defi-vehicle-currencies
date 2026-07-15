@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import re
 from pathlib import Path
 
 
@@ -16,6 +17,22 @@ if str(SRC) not in sys.path:
 
 TABLE_OUTPUT_FOLDER = "output/tables"
 TABLES_DIR = ROOT / TABLE_OUTPUT_FOLDER
+NUMBERED_ARTIFACT_RE = re.compile(r"^(?:table|figure)_(?:[a-z]\d+|\d+)(?:_|$)", re.IGNORECASE)
+
+
+def validate_output_stem(stem: str) -> str:
+    """Return a valid descriptive artifact stem or raise on hard-coded numbering."""
+
+    if stem.endswith((".tex", ".pdf", ".pkl")):
+        raise ValueError("Pass an artifact stem without a file extension.")
+    if NUMBERED_ARTIFACT_RE.match(stem):
+        raise ValueError(
+            "Output artifact stems must be descriptive and unnumbered; "
+            "paper/slides own table and figure numbering."
+        )
+    if not stem or "/" in stem or "\\" in stem:
+        raise ValueError("Output artifact stems must be simple filenames.")
+    return stem
 
 
 def _standalone_document(table_latex: str) -> str:
@@ -118,6 +135,7 @@ def render_standalone_pdf(table_latex: str, pdf_path: Path) -> Path:
 def write_table_artifacts(stem: str, table_latex: str) -> tuple[Path, Path]:
     """Write a paper-input .tex fragment and matching standalone table PDF."""
 
+    stem = validate_output_stem(stem)
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
     tex_path = TABLES_DIR / f"{stem}.tex"
     pdf_path = TABLES_DIR / f"{stem}.pdf"

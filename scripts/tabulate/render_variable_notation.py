@@ -63,6 +63,6 @@ for group, specs in specs_by_group().items():
         )
 lines.extend([r"\bottomrule", r"\end{tabular}"])
 
-out_tex, out_pdf = write_table_artifacts("table_00_variable_notation", "\n".join(lines) + "\n")
+out_tex, out_pdf = write_table_artifacts("variable_notation", "\n".join(lines) + "\n")
 print(f"wrote {out_tex.relative_to(ROOT)}")
 print(f"wrote {out_pdf.relative_to(ROOT)}")

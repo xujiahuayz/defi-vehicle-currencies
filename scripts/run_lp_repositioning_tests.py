@@ -204,8 +204,7 @@ def run() -> pd.DataFrame:
             print(f"LP repositioning [{i}/{len(stamps)}] {stamp}", flush=True)
     rep = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
     EMP.mkdir(parents=True, exist_ok=True)
-    rep.to_csv(EMP / "lp_repositioning_daily.csv", index=False)
-
+    rep.to_pickle(EMP / "lp_repositioning_daily.pkl")
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "token", "BridgeShare"])
     lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet").rename(columns={"token_symbol": "token"})
     d = rep.merge(lp[["date", "token", "total_lp_liquidity_usd"]], on=["date", "token"], how="left")
@@ -235,7 +234,7 @@ def run() -> pd.DataFrame:
                 "p": _p(p),
             })
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "lp_repositioning_tests.csv", index=False)
+    out.to_pickle(EMP / "lp_repositioning_tests.pkl")
     _write_table(
         out,
         "table_r13_lp_repositioning",

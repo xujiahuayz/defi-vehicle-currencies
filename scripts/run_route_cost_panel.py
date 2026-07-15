@@ -593,7 +593,7 @@ def main() -> int:
     args = ap.parse_args()
 
     out_path = OUT_DATA / "route_cost_panel_v2.parquet"
-    summary_path = OUT / "route_cost_panel_v2_summary.csv"
+    summary_path = OUT / "route_cost_panel_v2_summary.pkl"
     if out_path.exists() and not args.force:
         panel = pd.read_parquet(out_path)
     else:
@@ -632,7 +632,7 @@ def main() -> int:
         _write(panel, out_path)
     summary = _summarize(panel)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary.to_csv(summary_path, index=False)
+    summary.to_pickle(summary_path)
     print(f"wrote {len(panel):,} rows -> {out_path}")
     print(f"wrote summary -> {summary_path}")
     return 0

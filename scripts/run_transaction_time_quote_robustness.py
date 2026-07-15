@@ -144,9 +144,9 @@ def _write_summary(out: pd.DataFrame) -> pd.DataFrame:
 
 
 def run(max_days: int | None = None, force: bool = False) -> pd.DataFrame:
-    out_path = EMP / "transaction_time_quote_robustness.csv"
+    out_path = EMP / "transaction_time_quote_robustness.pkl"
     if out_path.exists() and not force and max_days is None:
-        out = pd.read_csv(out_path)
+        out = pd.read_pickle(out_path)
         _write_summary(out)
         print(f"reused {len(out):,} rows -> {out_path}")
         return out
@@ -200,7 +200,7 @@ def run(max_days: int | None = None, force: bool = False) -> pd.DataFrame:
             print(f"transaction-time robustness [{i}/{len(stamps)}] {stamp}", flush=True)
     out = pd.DataFrame(rows)
     EMP.mkdir(parents=True, exist_ok=True)
-    out.to_csv(out_path, index=False)
+    out.to_pickle(out_path)
     _write_summary(out)
     print(f"wrote {len(out):,} rows -> {out_path}")
     return out

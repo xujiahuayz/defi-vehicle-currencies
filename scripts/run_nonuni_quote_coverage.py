@@ -148,7 +148,7 @@ def run() -> pd.DataFrame:
         })
     out = pd.DataFrame(rows)
     EMP.mkdir(parents=True, exist_ok=True)
-    out.to_csv(EMP / "nonuni_quote_coverage.csv", index=False)
+    out.to_pickle(EMP / "nonuni_quote_coverage.pkl")
     _write_table(
         out,
         "table_r08_nonuni_quote_coverage",
@@ -160,7 +160,7 @@ def run() -> pd.DataFrame:
             "and Fluid are excluded from exact route-cost quotes rather than approximated."
         ),
     )
-    print(f"wrote {len(out)} rows -> {EMP / 'nonuni_quote_coverage.csv'}")
+    print(f"wrote {len(out)} rows -> {EMP / 'nonuni_quote_coverage.pkl'}")
     return out
 
 

@@ -68,7 +68,7 @@ def stress_event_definition_table() -> pd.DataFrame:
     px.loc[px["weth_ret"].abs() > 0.5, "weth_ret"] = np.nan
     px["downside_stress"] = (-px["weth_ret"]).clip(lower=0)
 
-    events = pd.read_csv(EMP / "stress_rotation_decomposition_events.csv")
+    events = pd.read_pickle(EMP / "stress_rotation_decomposition_events.pkl")
     events["event_date"] = pd.to_datetime(events["event_date"])
     events = events.sort_values("downside_stress", ascending=False).reset_index(drop=True)
     all_threshold = px[px["downside_stress"].ge(0.08)][["date", "downside_stress"]].copy()
@@ -95,7 +95,7 @@ def stress_event_definition_table() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "stress_event_definition_table.csv", index=False)
+    out.to_pickle(EMP / "stress_event_definition.pkl")
     _write_table(
         out.head(20),
         "table_r21_stress_event_definition",
@@ -139,7 +139,7 @@ def stress_event_definition_table() -> pd.DataFrame:
         "Stress-event design summary.",
         "tab:stress-design-summary",
     )
-    summary.to_csv(EMP / "stress_design_summary.csv", index=False)
+    summary.to_pickle(EMP / "stress_design_summary.pkl")
     return out
 
 
@@ -217,7 +217,7 @@ def stress_threshold_overlap_sensitivity() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "stress_threshold_overlap_sensitivity.csv", index=False)
+    out.to_pickle(EMP / "stress_threshold_overlap_sensitivity.pkl")
     _write_table(
         out,
         "table_r26_stress_threshold_overlap_sensitivity",
@@ -282,7 +282,7 @@ def curve_fluid_materiality() -> pd.DataFrame:
             for r in keep.sort_values("leg_volume_usd", ascending=False).itertuples(index=False)
         ]
     )
-    out.to_csv(EMP / "curve_fluid_materiality.csv", index=False)
+    out.to_pickle(EMP / "curve_fluid_materiality.pkl")
     _write_table(
         out,
         "table_r23_curve_fluid_materiality",
@@ -299,7 +299,7 @@ def curve_fluid_materiality() -> pd.DataFrame:
 
 
 def curve_fluid_scope_bound() -> pd.DataFrame:
-    mat = pd.read_csv(EMP / "curve_fluid_materiality.csv")
+    mat = pd.read_pickle(EMP / "curve_fluid_materiality.pkl")
     def pct_to_float(x: object) -> float:
         try:
             return float(str(x).replace(",", ""))
@@ -340,7 +340,7 @@ def curve_fluid_scope_bound() -> pd.DataFrame:
         },
     ]
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "curve_fluid_scope_bound.csv", index=False)
+    out.to_pickle(EMP / "curve_fluid_scope_bound.pkl")
     _write_table(
         out,
         "table_r28_curve_fluid_scope_bound",
@@ -408,8 +408,8 @@ def _route_tokens_for_sample(row: pd.Series) -> dict[str, tuple[str, str]]:
 
 
 def v4_manual_no_transfer_audit() -> pd.DataFrame:
-    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
-    sample = pd.read_csv(DATA / "empirical" / "v4_settlement_sample.csv")
+    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
+    sample = pd.read_parquet(DATA / "empirical" / "v4_settlement_sample.parquet")
     d = detail.merge(
         sample[["date", "dex", "tx_hash", "component_id"]],
         on=["dex", "tx_hash", "component_id"],
@@ -440,8 +440,7 @@ def v4_manual_no_transfer_audit() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "v4_no_transfer_manual_audit_enriched.csv", index=False)
-
+    out.to_pickle(EMP / "v4_no_transfer_manual_audit_enriched.pkl")
     summary = pd.DataFrame(
         [
             {
@@ -481,12 +480,12 @@ def v4_manual_no_transfer_audit() -> pd.DataFrame:
             "token addresses in the transaction receipt."
         ),
     )
-    summary.to_csv(EMP / "v4_manual_audit_summary.csv", index=False)
+    summary.to_pickle(EMP / "v4_manual_audit_summary.pkl")
     return out
 
 
 def v4_balance_diagnostics() -> pd.DataFrame:
-    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
+    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
     detail["has_matching_transfer"] = detail["has_matching_transfer"].map(_bool)
     detail["receipt_found"] = detail["receipt_found"].map(_bool)
     detail["log_route_usd"] = np.log1p(detail["route_usd"])
@@ -530,7 +529,7 @@ def v4_balance_diagnostics() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "v4_balance_diagnostics.csv", index=False)
+    out.to_pickle(EMP / "v4_balance_diagnostics.pkl")
     _write_table(
         out,
         "table_r29_v4_balance_diagnostics",
@@ -595,7 +594,7 @@ def main_test_registry_table() -> pd.DataFrame:
             "families are reported separately to avoid selecting only significant slices."
         ),
     )
-    out.to_csv(EMP / "main_test_registry.csv", index=False)
+    out.to_pickle(EMP / "main_test_registry.pkl")
     return out
 
 
@@ -653,7 +652,7 @@ def compact_specification_registry_table() -> pd.DataFrame:
         },
     ]
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "compact_specification_registry.csv", index=False)
+    out.to_pickle(EMP / "compact_specification_registry.pkl")
     _write_table(
         out,
         "table_r27_compact_specification_registry",

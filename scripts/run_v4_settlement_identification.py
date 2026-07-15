@@ -234,7 +234,7 @@ def eligible_cells(routes: pd.DataFrame, min_routes: int) -> pd.DataFrame:
     wide = wide[wide["min_route_usd"].gt(0)].copy()
     wide["sample_weight"] = np.log1p(wide["min_route_usd"])
     out = wide.reset_index()
-    _write(out, OUT_DATA / "v4_settlement_eligible_cells.csv")
+    _write(out, OUT_DATA / "v4_settlement_eligible_cells.parquet")
     return out
 
 
@@ -252,7 +252,7 @@ def sample_routes(routes: pd.DataFrame, cells: pd.DataFrame, n_cells: int, per_d
     out["cell_id"] = (
         out["week"].astype(str) + "|" + out["src"].astype(str) + "|" + out["sink"].astype(str) + "|" + out["vehicle"].astype(str)
     )
-    _write(out, OUT_DATA / "v4_settlement_sample.csv")
+    _write(out, OUT_DATA / "v4_settlement_sample.parquet")
     return out
 
 
@@ -292,7 +292,7 @@ def transfer_detail(sample: pd.DataFrame) -> pd.DataFrame:
             "total_logs": len(receipt.get("logs", [])) if isinstance(receipt, dict) else 0,
         })
     out = pd.DataFrame(rows)
-    _write(out, OUT_DATA / "v4_settlement_transfer_detail.csv")
+    _write(out, OUT_DATA / "v4_settlement_transfer_detail.parquet")
     return out
 
 
@@ -350,9 +350,9 @@ def summarize(detail: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.Data
             "p": ht.p,
         })
     heterogeneity = pd.DataFrame(het).sort_values("cells", ascending=False) if het else pd.DataFrame()
-    _write(dex_summary, OUT / "v4_settlement_dex_summary.csv")
-    _write(paired, OUT / "v4_settlement_paired.csv")
-    _write(heterogeneity, OUT / "v4_settlement_heterogeneity.csv")
+    _write(dex_summary, OUT / "v4_settlement_dex_summary.pkl")
+    _write(paired, OUT / "v4_settlement_paired.pkl")
+    _write(heterogeneity, OUT / "v4_settlement_heterogeneity.pkl")
     return dex_summary, paired, heterogeneity
 
 
@@ -415,8 +415,7 @@ def _write(df: pd.DataFrame, path: Path) -> None:
         df.to_parquet(tmp, index=False)
         tmp.replace(path)
     else:
-        df.to_csv(path, index=False)
-
+        df.to_pickle(path)
 
 def run(args: argparse.Namespace) -> None:
     route_path = OUT_DATA / "v4_settlement_route_units.parquet"

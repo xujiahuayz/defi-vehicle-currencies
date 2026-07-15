@@ -99,7 +99,7 @@ def _window_gap(panel: pd.DataFrame, start: pd.Timestamp, days: int) -> pd.DataF
 
 def run(n_events: int, event_days: int, baseline_days: int) -> pd.DataFrame:
     empirical = _load_empirical_module()
-    events = pd.read_csv(EMP / "stress_common_support_events.csv")
+    events = pd.read_pickle(EMP / "stress_common_support_events.pkl")
     events["event_date"] = pd.to_datetime(events["event_date"])
     events = events.sort_values("downside_stress", ascending=False).head(n_events)
     stamps: set[str] = set()
@@ -137,7 +137,7 @@ def run(n_events: int, event_days: int, baseline_days: int) -> pd.DataFrame:
 
     out = pd.DataFrame(rows)
     EMP.mkdir(parents=True, exist_ok=True)
-    out.to_csv(EMP / "stress_weekly_common_support_events.csv", index=False)
+    out.to_pickle(EMP / "stress_weekly_common_support_events.pkl")
     if not out.empty:
         effect = out["weighted_effect"].to_numpy(float)
         t, p = stats.ttest_1samp(effect, 0.0)

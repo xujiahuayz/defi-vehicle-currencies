@@ -1,0 +1,15 @@
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+Panel & Outcome & Challenger edge bin & N & Date clusters & Mean edge (bp) & Mean outcome & Beta & t & p & Units \\
+\midrule
+A. Pair-level regression & Challenger share change t+30 &  & 57,989 & 2,213 &  &  & 0.0501 & 14.54 & <0.001 & pp per 100 bp edge \\
+A. Pair-level regression & Incumbent share change t+30 &  & 57,989 & 2,213 &  &  & -0.0408 & -10.30 & <0.001 & pp per 100 bp edge \\
+A. Pair-level regression & Pr(challenger beats incumbent t+30) &  & 57,989 & 2,213 &  &  & 0.1063 & 23.37 & <0.001 & pp per 100 bp edge \\
+B. Edge-bin means & Challenger / incumbent displacement & challenger <= incumbent & 38,793 &  & -2214.8 & challenger 4.53 pp; incumbent -14.70 pp; beats 16.55\% &  &  &  & bin means \\
+B. Edge-bin means & Challenger / incumbent displacement & 0 to 25 bp & 6,590 &  & 7.8 & challenger 8.33 pp; incumbent -14.01 pp; beats 26.51\% &  &  &  & bin means \\
+B. Edge-bin means & Challenger / incumbent displacement & 25 to 100 bp & 3,113 &  & 54.5 & challenger 15.16 pp; incumbent -24.35 pp; beats 37.39\% &  &  &  & bin means \\
+B. Edge-bin means & Challenger / incumbent displacement & 100 to 250 bp & 2,134 &  & 162.0 & challenger 17.53 pp; incumbent -30.93 pp; beats 42.83\% &  &  &  & bin means \\
+B. Edge-bin means & Challenger / incumbent displacement & >250 bp & 7,359 &  & 4881.2 & challenger 14.64 pp; incumbent -33.82 pp; beats 42.64\% &  &  &  & bin means \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: The incumbent is the highest actual-share vehicle for the endpoint pair and date. The challenger is the best non-incumbent route-cost candidate at \$10k. Edge is challenger minus incumbent route advantage.

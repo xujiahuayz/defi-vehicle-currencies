@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Regenerate the results evidence map from tracked scripts.
 
-The final evidence map is intentionally built from generated CSV tables under
-``output/tables/``. Those tables are ignored by git, so a clean checkout needs
-the full upstream table chain before rebuilding ``paper/results_evidence_map.tex``:
+The final evidence map is built from ignored analysis outputs under
+``output/empirical/`` plus tracked paper-facing TeX/PDF artifacts under
+``output/tables/``. Paper-facing table filenames are descriptive and unnumbered;
+paper/slides own table numbering.
 
-1. Supporting analytics scripts write the ``table_r*`` inputs.
-2. ``scripts/build_jfe_main_tables.py`` writes ``table_m01``-``table_m07``.
-3. ``scripts/run_core_rq_experiments.py`` writes ``table_m08``-``table_m18``.
+1. Supporting analytics scripts write analysis outputs.
+2. ``scripts/build_jfe_main_tables.py`` writes descriptive TeX/PDF table artifacts.
+3. ``scripts/run_core_rq_experiments.py`` writes core RQ analysis outputs and table artifacts.
 4. ``scripts/build_results_evidence_latex.py --pdf`` writes the tracked TeX
    evidence map and an ignored local review PDF.
 """

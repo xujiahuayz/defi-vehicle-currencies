@@ -137,7 +137,7 @@ def bridge_denominator_robustness() -> pd.DataFrame:
             "volume, so direct-route substitution mechanically lowers every vehicle's share."
         ),
     )
-    out.to_csv(EMP / "bridge_denominator_robustness.csv", index=False)
+    out.to_pickle(EMP / "bridge_denominator_robustness.pkl")
     return out
 
 
@@ -183,14 +183,14 @@ def route_cost_distribution_weighting() -> pd.DataFrame:
             "thin-market protection rather than universal cost dominance."
         ),
     )
-    out.to_csv(EMP / "route_cost_distribution_weighting.csv", index=False)
+    out.to_pickle(EMP / "route_cost_distribution_weighting.pkl")
     return out
 
 
 def stress_rotation_decomposition() -> pd.DataFrame:
     weekly = _load_module("stress_weekly_decomp", "run_stress_weekly_common_support.py")
     empirical = weekly._load_empirical_module()
-    events = pd.read_csv(EMP / "stress_common_support_events.csv")
+    events = pd.read_pickle(EMP / "stress_common_support_events.pkl")
     events["event_date"] = pd.to_datetime(events["event_date"])
     events = events.sort_values("downside_stress", ascending=False).head(20)
 
@@ -250,7 +250,7 @@ def stress_rotation_decomposition() -> pd.DataFrame:
         )
 
     effects = pd.DataFrame(rows)
-    effects.to_csv(EMP / "stress_rotation_decomposition_events.csv", index=False)
+    effects.to_pickle(EMP / "stress_rotation_decomposition_events.pkl")
     summary_rows = []
     for col, label, units in [
         ("weth_effect", "WETH share change", "pp"),
@@ -272,6 +272,7 @@ def stress_rotation_decomposition() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(summary_rows)
+    out.to_pickle(EMP / "stress_rotation_decomposition.pkl")
     _write_table(
         out,
         "table_r18_stress_rotation_decomposition",

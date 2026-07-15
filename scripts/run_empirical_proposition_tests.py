@@ -65,8 +65,7 @@ def _write(df: pd.DataFrame, path: Path) -> None:
         df.to_parquet(tmp, index=False)
         tmp.replace(path)
     else:
-        df.to_csv(path, index=False)
-
+        df.to_pickle(path)
 
 def _ols_y_on_x(y: np.ndarray, x: np.ndarray, name: str) -> RegressionResult:
     ok = np.isfinite(y) & np.isfinite(x)
@@ -256,7 +255,7 @@ def summarize_bridge(bridge: pd.DataFrame, metrics: pd.DataFrame) -> pd.DataFram
         )
         .sort_values(["year", "BridgeShare"], ascending=[True, False])
     )
-    _write(summary, OUT / "bridge_measure_summary_by_year.csv")
+    _write(summary, OUT / "bridge_measure_summary_by_year.pkl")
     return summary
 
 
@@ -288,7 +287,7 @@ def liquidity_formation_tests(bridge: pd.DataFrame, lp: pd.DataFrame) -> pd.Data
     ).__dict__)
 
     out = pd.DataFrame(rows)
-    _write(out, OUT / "liquidity_formation_tests.csv")
+    _write(out, OUT / "liquidity_formation_tests.pkl")
     return out
 
 
@@ -302,7 +301,7 @@ def persistence_tests(bridge: pd.DataFrame) -> pd.DataFrame:
     for tok, g in d.groupby("token"):
         rows.append(_ols_y_on_x(g["BridgeShare"].to_numpy(), g["lag1"].to_numpy(), f"P2 stickiness AR(1): {tok}").__dict__)
     out = pd.DataFrame(rows)
-    _write(out, OUT / "bridge_stickiness_tests.csv")
+    _write(out, OUT / "bridge_stickiness_tests.pkl")
     return out
 
 
@@ -329,7 +328,7 @@ def stress_tests(bridge: pd.DataFrame) -> pd.DataFrame:
     )
     rows.append(_ols_y_on_x(stable["BridgeShare"].to_numpy(), stable["downside_stress"].to_numpy(), "P3 stress: USDC+USDT BridgeShare").__dict__)
     out = pd.DataFrame(rows)
-    _write(out, OUT / "stress_rotation_tests.csv")
+    _write(out, OUT / "stress_rotation_tests.pkl")
     return out
 
 
@@ -453,9 +452,8 @@ def _write_common_support_outputs(out: pd.DataFrame) -> None:
         "se": float(stats.sem(effect)),
         "t": float(t),
         "p": float(p),
-    }]).to_csv(OUT / "stress_common_support_summary.csv", index=False)
-    out.to_csv(OUT / "stress_common_support_events.csv", index=False)
-
+    }]).to_pickle(OUT / "stress_common_support_summary.pkl")
+    out.to_pickle(OUT / "stress_common_support_events.pkl")
 
 def v3_architecture_tests(bridge: pd.DataFrame) -> pd.DataFrame:
     d = bridge.copy()
@@ -470,7 +468,7 @@ def v3_architecture_tests(bridge: pd.DataFrame) -> pd.DataFrame:
     for tok, g in x.groupby("token"):
         rows.append(_ols_y_on_x(g["BridgeShare"].to_numpy(), g["post_v3"].to_numpy(), f"P4a V3 post: {tok} BridgeShare").__dict__)
     out = pd.DataFrame(rows)
-    _write(out, OUT / "v3_architecture_tests.csv")
+    _write(out, OUT / "v3_architecture_tests.pkl")
     return out
 
 
@@ -520,8 +518,8 @@ def write_memo(
 ) -> None:
     latest_year = int(summary["year"].max())
     latest = summary[summary["year"] == latest_year].sort_values("BridgeShare", ascending=False).head(5)
-    route_cost_path = OUT / "route_cost_panel_v2_summary.csv"
-    route_cost = pd.read_csv(route_cost_path) if route_cost_path.exists() else pd.DataFrame()
+    route_cost_path = OUT / "route_cost_panel_v2_summary.pkl"
+    route_cost = pd.read_pickle(route_cost_path) if route_cost_path.exists() else pd.DataFrame()
 
     def fmt_table(df: pd.DataFrame, cols: list[str]) -> str:
         """Small markdown table writer without pandas' optional tabulate dep."""
@@ -621,16 +619,16 @@ def fmt_route_cost(df: pd.DataFrame) -> str:
 
 
 def fmt_v4_settlement() -> str:
-    paired_path = OUT / "v4_settlement_paired.csv"
-    dex_path = OUT / "v4_settlement_dex_summary.csv"
+    paired_path = OUT / "v4_settlement_paired.pkl"
+    dex_path = OUT / "v4_settlement_dex_summary.pkl"
     if not paired_path.exists() or not dex_path.exists():
         return (
             "Not yet run in this empirical pass. Run "
             "`python3 scripts/run_v4_settlement_identification.py` to match V3/V4 "
             "route units and test ERC-20 transfer incidence from receipts."
         )
-    paired = pd.read_csv(paired_path)
-    dex = pd.read_csv(dex_path)
+    paired = pd.read_pickle(paired_path)
+    dex = pd.read_pickle(dex_path)
     if paired.empty:
         return "V4 settlement output exists but is empty."
     p = paired.iloc[0]

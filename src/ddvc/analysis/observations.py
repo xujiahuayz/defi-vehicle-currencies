@@ -254,10 +254,10 @@ def _read_route_cost(data: Path, trade_sizes: tuple[float, ...], main_trade_size
 
 
 def _read_settlement(data: Path) -> pd.DataFrame:
-    path = data / "empirical" / "v4_settlement_transfer_detail.csv"
+    path = data / "empirical" / "v4_settlement_transfer_detail.parquet"
     if not path.exists():
         return pd.DataFrame(columns=["date", "token", "settlement_transfer_incidence", "settlement_receipt_count"])
-    detail = pd.read_csv(path)
+    detail = pd.read_parquet(path)
     detail["date"] = _as_date(detail["week"])
     detail["token"] = detail["vehicle"].replace({"ETH/WETH": "WETH"})
     detail["receipt_found"] = detail["receipt_found"].astype(bool)

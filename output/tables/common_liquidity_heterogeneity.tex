@@ -1,0 +1,13 @@
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+Sample & Regressor & N & Date clusters & Pools & Beta & SE & t & p & FE / SE \\
+\midrule
+High average VehicleShare vehicles & market\_factor\_loo & 664,218 & 2,120 & 1,201 & 0.6572 & 0.0591 & 11.11 & <0.001 & pool-vehicle FE; date-clustered SE \\
+High average VehicleShare vehicles & vehicle\_factor\_loo & 664,218 & 2,120 & 1,201 & 0.2174 & 0.0464 & 4.69 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Low average VehicleShare vehicles & market\_factor\_loo & 21,467 & 1,377 & 55 & 0.5276 & 0.0907 & 5.82 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Low average VehicleShare vehicles & vehicle\_factor\_loo & 21,467 & 1,377 & 55 & -0.0921 & 0.0903 & -1.02 & 0.307 & pool-vehicle FE; date-clustered SE \\
+Excluding top 1\% mean-liquidity pools & market\_factor\_loo & 679,228 & 2,120 & 1,252 & 0.7062 & 0.0598 & 11.81 & <0.001 & pool-vehicle FE; date-clustered SE \\
+Excluding top 1\% mean-liquidity pools & vehicle\_factor\_loo & 679,228 & 2,120 & 1,252 & 0.1670 & 0.0436 & 3.83 & <0.001 & pool-vehicle FE; date-clustered SE \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: High/low vehicle dependence is based on whether the vehicle token's average BridgeShare is above the vehicle-set median. The top-pool robustness excludes the top 1\% of pools by mean liquidity.

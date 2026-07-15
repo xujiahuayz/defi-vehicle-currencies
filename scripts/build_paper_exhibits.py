@@ -9,6 +9,7 @@ or scripts/diagram; this file only preserves the older bundle entry point.
 from __future__ import annotations
 
 import math
+import re
 import shutil
 import subprocess
 import sys
@@ -24,8 +25,15 @@ EMP = OUT / "empirical"
 TABLES = OUT / "tables"
 FIGURES = OUT / "figures"
 MANIFEST = OUT / "exhibits" / "paper_exhibit_manifest.md"
+TABULATE = ROOT / "scripts" / "tabulate"
 
 VEHICLE_ORDER = ["WETH", "USDC", "USDT", "DAI", "WBTC"]
+NUMBERED_ARTIFACT_RE = re.compile(r"^(?:table|figure)_(?:[a-z]\d+|\d+)_", re.IGNORECASE)
+
+if str(TABULATE) not in sys.path:
+    sys.path.insert(0, str(TABULATE))
+
+from utils import render_standalone_pdf  # noqa: E402
 
 
 def _ensure_dirs() -> None:
@@ -74,6 +82,12 @@ def _latex_escape(value: object) -> str:
     )
 
 
+def _artifact_stem(stem: str) -> str:
+    """Drop legacy paper-order prefixes from generated output filenames."""
+
+    return NUMBERED_ARTIFACT_RE.sub("", stem)
+
+
 def _write_table(
     df: pd.DataFrame,
     stem: str,
@@ -83,15 +97,11 @@ def _write_table(
     align: str | None = None,
     note: str | None = None,
 ) -> None:
-    csv_path = TABLES / f"{stem}.csv"
+    stem = _artifact_stem(stem)
     tex_path = TABLES / f"{stem}.tex"
-    df.to_csv(csv_path, index=False)
+    pdf_path = TABLES / f"{stem}.pdf"
     align = align or ("l" + "r" * (len(df.columns) - 1))
     lines = [
-        "\\begin{table}[!htbp]",
-        "\\centering",
-        f"\\caption{{{_latex_escape(caption)}}}",
-        f"\\label{{{label}}}",
         f"\\begin{{tabular}}{{{align}}}",
         "\\toprule",
         " & ".join(_latex_escape(c) for c in df.columns) + " \\\\",
@@ -101,9 +111,10 @@ def _write_table(
         lines.append(" & ".join(_latex_escape(v) for v in row) + " \\\\")
     lines.extend(["\\bottomrule", "\\end{tabular}"])
     if note:
-        lines.extend(["\\begin{flushleft}", f"\\footnotesize {_latex_escape(note)}", "\\end{flushleft}"])
-    lines.append("\\end{table}")
-    tex_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        lines.append(f"% Notes for paper wrapper: {_latex_escape(note)}")
+    table_latex = "\n".join(lines) + "\n"
+    tex_path.write_text(table_latex, encoding="utf-8")
+    render_standalone_pdf(table_latex, pdf_path)
 
 
 def _copy_if_exists(src: Path, dest: Path) -> None:
@@ -112,7 +123,7 @@ def _copy_if_exists(src: Path, dest: Path) -> None:
 
 
 def build_table_bridge_measurement() -> None:
-    summary = pd.read_csv(EMP / "bridge_measure_summary_by_year.csv")
+    summary = pd.read_pickle(EMP / "bridge_measure_summary_by_year.pkl")
     years = [2020, 2022, 2024, 2026]
     rows = []
     for token in VEHICLE_ORDER:
@@ -155,8 +166,8 @@ def build_table_sample_coverage() -> None:
     ])
     lp = pd.read_parquet(DATA / "exhibits" / "lp_concentration.parquet")
     units = pd.read_parquet(DATA / "empirical" / "v4_settlement_route_units.parquet", columns=["date"])
-    cells = pd.read_csv(DATA / "empirical" / "v4_settlement_eligible_cells.csv")
-    sample = pd.read_csv(DATA / "empirical" / "v4_settlement_sample.csv")
+    cells = pd.read_parquet(DATA / "empirical" / "v4_settlement_eligible_cells.parquet")
+    sample = pd.read_parquet(DATA / "empirical" / "v4_settlement_sample.parquet")
 
     bday = bridge.drop_duplicates("date").copy()
     active = bday[bday["indirect_route_count"].gt(0)]
@@ -213,7 +224,7 @@ def build_table_summary_statistics() -> None:
 
 
 def build_table_route_cost() -> None:
-    df = pd.read_csv(EMP / "route_cost_panel_v2_summary.csv")
+    df = pd.read_pickle(EMP / "route_cost_panel_v2_summary.pkl")
     panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=[
         "vehicle_sym", "trade_size_usd", "direct_available", "vehicle_available",
         "direct_output_usd", "vehicle_route_advantage",
@@ -271,8 +282,8 @@ def build_table_route_cost() -> None:
 
 
 def build_table_liquidity_stickiness() -> None:
-    formation = pd.read_csv(EMP / "liquidity_formation_tests.csv")
-    stick = pd.read_csv(EMP / "bridge_stickiness_tests.csv")
+    formation = pd.read_pickle(EMP / "liquidity_formation_tests.pkl")
+    stick = pd.read_pickle(EMP / "bridge_stickiness_tests.pkl")
     rows = []
     for r in formation.itertuples(index=False):
         rows.append({
@@ -305,8 +316,8 @@ def build_table_liquidity_stickiness() -> None:
 
 
 def build_table_stress() -> None:
-    common = pd.read_csv(EMP / "stress_common_support_summary.csv")
-    events = pd.read_csv(EMP / "stress_common_support_events.csv")
+    common = pd.read_pickle(EMP / "stress_common_support_summary.pkl")
+    events = pd.read_pickle(EMP / "stress_common_support_events.pkl")
     r = common.iloc[0]
     out = pd.DataFrame([{
         "Design": "Common-support stress events",
@@ -343,9 +354,9 @@ def build_table_stress() -> None:
 
 
 def build_table_v4() -> None:
-    dex = pd.read_csv(EMP / "v4_settlement_dex_summary.csv")
-    paired = pd.read_csv(EMP / "v4_settlement_paired.csv")
-    hetero = pd.read_csv(EMP / "v4_settlement_heterogeneity.csv")
+    dex = pd.read_pickle(EMP / "v4_settlement_dex_summary.pkl")
+    paired = pd.read_pickle(EMP / "v4_settlement_paired.pkl")
+    hetero = pd.read_pickle(EMP / "v4_settlement_heterogeneity.pkl")
     v3 = dex[dex["dex"].eq("uniswap_v3")].iloc[0]
     v4 = dex[dex["dex"].eq("uniswap_v4")].iloc[0]
     diff = paired.iloc[0] if not paired.empty else None
@@ -409,7 +420,7 @@ def build_table_v4() -> None:
 
 
 def build_table_v3_architecture() -> None:
-    df = pd.read_csv(EMP / "v3_architecture_tests.csv")
+    df = pd.read_pickle(EMP / "v3_architecture_tests.pkl")
     rows = []
     for r in df.itertuples(index=False):
         rows.append({
@@ -438,10 +449,10 @@ def build_figures() -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    _copy_if_exists(EMP / "bridge_share_timeseries.pdf", FIGURES / "figure_01_bridge_share_timeseries.pdf")
-    _copy_if_exists(EMP / "lp_concentration_vehicle_timeseries.pdf", FIGURES / "figure_04_lp_concentration_timeseries.pdf")
+    _copy_if_exists(EMP / "bridge_share_timeseries.pdf", FIGURES / "bridge_share_timeseries.pdf")
+    _copy_if_exists(EMP / "lp_concentration_vehicle_timeseries.pdf", FIGURES / "lp_concentration_timeseries.pdf")
 
-    summary = pd.read_csv(EMP / "bridge_measure_summary_by_year.csv")
+    summary = pd.read_pickle(EMP / "bridge_measure_summary_by_year.pkl")
     y2026 = summary[summary["year"].eq(2026)].copy()
     fig, ax = plt.subplots(figsize=(6.2, 4.2))
     for _, r in y2026.iterrows():
@@ -455,10 +466,10 @@ def build_figures() -> None:
     ax.set_ylabel("BridgeShare, intermediate-route share (%)")
     ax.set_title("Vehicle use is not the same as endpoint volume")
     fig.tight_layout()
-    fig.savefig(FIGURES / "figure_02_bridge_vs_volume_share.pdf")
+    fig.savefig(FIGURES / "bridge_vs_volume_share.pdf")
     plt.close(fig)
 
-    route = pd.read_csv(EMP / "route_cost_panel_v2_summary.csv")
+    route = pd.read_pickle(EMP / "route_cost_panel_v2_summary.pkl")
     weth = route[route["vehicle"].eq("WETH")].sort_values("trade_size_usd")
     x = np.arange(len(weth))
     fig, ax = plt.subplots(figsize=(6.4, 4.2))
@@ -473,10 +484,10 @@ def build_figures() -> None:
     ax.set_xlabel("Trade size")
     ax.set_title("WETH route-cost advantage by trade size")
     fig.tight_layout()
-    fig.savefig(FIGURES / "figure_03_route_cost_advantage.pdf")
+    fig.savefig(FIGURES / "route_cost_advantage.pdf")
     plt.close(fig)
 
-    events = pd.read_csv(EMP / "stress_common_support_events.csv")
+    events = pd.read_pickle(EMP / "stress_common_support_events.pkl")
     events["event_date"] = pd.to_datetime(events["event_date"])
     fig, ax = plt.subplots(figsize=(7.2, 4.2))
     ax.bar(events["event_date"], 100 * events["weighted_effect"], width=8, color=np.where(events["weighted_effect"] < 0, "#4c78a8", "#f58518"))
@@ -485,10 +496,10 @@ def build_figures() -> None:
     ax.set_xlabel("Stress event date")
     ax.set_title("Stress rotates vehicle use away from WETH")
     fig.tight_layout()
-    fig.savefig(FIGURES / "figure_05_stress_common_support.pdf")
+    fig.savefig(FIGURES / "stress_common_support.pdf")
     plt.close(fig)
 
-    dex = pd.read_csv(EMP / "v4_settlement_dex_summary.csv")
+    dex = pd.read_pickle(EMP / "v4_settlement_dex_summary.pkl")
     fig, ax = plt.subplots(figsize=(5.2, 4.0))
     labels = ["V3", "V4"]
     vals = [
@@ -502,7 +513,7 @@ def build_figures() -> None:
     for i, v in enumerate(vals):
         ax.text(i, v + 2, f"{v:.1f}%", ha="center")
     fig.tight_layout()
-    fig.savefig(FIGURES / "figure_06_v4_settlement_transfer_incidence.pdf")
+    fig.savefig(FIGURES / "v4_settlement_transfer_incidence.pdf")
     plt.close(fig)
 
 
@@ -513,19 +524,19 @@ Generated by `scripts/build_paper_exhibits.py`.
 
 ## Main Tables
 
-table_00_sample_coverage. Sample coverage for empirical exhibits.
+sample_coverage. Sample coverage for empirical exhibits.
 
-table_01_summary_statistics. Summary statistics for main empirical variables.
+summary_statistics. Summary statistics for main empirical variables.
 
-table_02_bridge_measurement. Vehicle use and raw volume share by year.
+bridge_measurement. Vehicle use and raw volume share by year.
 
-table_03_route_cost_advantage. Direct routes and WETH vehicle-route execution costs.
+route_cost_advantage. Direct routes and WETH vehicle-route execution costs.
 
-table_04_liquidity_stickiness. Liquidity concentration and persistence of vehicle use.
+liquidity_stickiness. Liquidity concentration and persistence of vehicle use.
 
-table_05_stress_rotation. Stress rotation in common-support vehicle-route opportunities.
+stress_rotation. Stress rotation in common-support vehicle-route opportunities.
 
-table_06_v4_settlement. V4 flash accounting and physical intermediary-token transfers.
+v4_settlement. V4 flash accounting and physical intermediary-token transfers.
 
 ## Main Figures
 
@@ -553,15 +564,15 @@ Table A4. Uniswap V3 launch-window screen for bridge-share changes.
 
 ## Robustness Tables
 
-table_r01_measurement_robustness. Vehicle-use measurement robustness.
+measurement_robustness. Vehicle-use measurement robustness.
 
-table_r02_liquidity_robustness. Liquidity-feedback robustness across horizons and fixed effects.
+liquidity_robustness. Liquidity-feedback robustness across horizons and fixed effects.
 
-table_r03_stress_robustness. Stress-rotation robustness to event weighting and subsamples.
+stress_robustness. Stress-rotation robustness to event weighting and subsamples.
 
-table_r04_route_cost_robustness. Route-cost robustness to direct-route quality filters.
+route_cost_robustness. Route-cost robustness to direct-route quality filters.
 
-table_r05_v4_robustness. V4 settlement-transfer robustness by route size.
+v4_robustness. V4 settlement-transfer robustness by route size.
 """
     MANIFEST.write_text(text, encoding="utf-8")
 

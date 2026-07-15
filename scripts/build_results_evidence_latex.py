@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Build a JFE-style evidence map for the DVC empirical results.
 
-This is a presentation layer. Its inputs are ignored generated tables:
-the supporting ``table_r*`` family feeds ``table_m01``-``table_m07`` through
-``scripts/build_jfe_main_tables.py``, and ``table_m08``-``table_m18`` come from
-``scripts/run_core_rq_experiments.py``.
+This is a presentation layer. Its inputs are ignored analysis outputs under
+``output/empirical/`` plus tracked paper-facing TeX/PDF artifacts under
+``output/tables/``. Paper-facing output filenames are descriptive and unnumbered;
+paper/slides own table numbering.
 
 For a clean reproducible rebuild from tracked scripts, run:
 
@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import textwrap
@@ -26,11 +27,12 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TABLES = ROOT / "output" / "tables"
+EMP = ROOT / "output" / "empirical"
 PAPER = ROOT / "paper"
 OUT_TEX = PAPER / "results_evidence_map.tex"
 OUT_PDF = PAPER / "results_evidence_map.pdf"
 FULL_REBUILD_COMMAND = ".venv/bin/python scripts/build_results_evidence_outputs.py"
+NUMBERED_ARTIFACT_RE = re.compile(r"^(?:table|figure)_(?:[a-z]\d+|\d+)_", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -128,12 +130,13 @@ def header_cell(number: str, *labels: str) -> RawLatex:
 
 
 def read_table(stem: str) -> pd.DataFrame:
-    path = TABLES / f"{stem}.csv"
+    clean_stem = NUMBERED_ARTIFACT_RE.sub("", stem)
+    path = EMP / f"{clean_stem}.pkl"
     if not path.exists():
         raise FileNotFoundError(
             f"{path} missing. Run {FULL_REBUILD_COMMAND} first."
         )
-    return pd.read_csv(path, dtype=str).fillna("")
+    return pd.read_pickle(path).astype(str).fillna("")
 
 
 def clean_regressor(name: str) -> str:
@@ -341,7 +344,7 @@ def evidence_map() -> TableSpec:
 
 
 def scope_table() -> TableSpec:
-    df = read_table("table_m01_measurement_scope")
+    df = read_table("measurement_scope")
     rows = []
     current_panel = None
     for _, r in df.iterrows():
@@ -369,7 +372,7 @@ def scope_table() -> TableSpec:
 
 
 def variable_table() -> TableSpec:
-    df = read_table("table_m08_variable_construction")
+    df = read_table("variable_construction")
     keep = [
         "VehicleShare",
         "RouteCostAdvantage",
@@ -406,8 +409,8 @@ def variable_table() -> TableSpec:
 
 
 def rq1_table() -> TableSpec:
-    actual = read_table("table_m13_actual_route_choice")
-    core = read_table("table_m09_core_panel_regressions")
+    actual = read_table("actual_route_choice")
+    core = read_table("core_panel_regressions")
     rows: list[list[object]] = [
         [
             "Route-cost adv., per 100 bp",
@@ -476,8 +479,8 @@ def rq1_table() -> TableSpec:
 
 
 def rq2_rq3_table() -> TableSpec:
-    lp = read_table("table_m14_lp_allocation_feedback")
-    thresholds = read_table("table_m10_persistence_thresholds")
+    lp = read_table("lp_allocation_feedback")
+    thresholds = read_table("persistence_thresholds")
     rows: list[list[object]] = [
         ["Panel A. Liquidity-route feedback", "", "", "", "", ""],
         [
@@ -553,8 +556,8 @@ def rq2_rq3_table() -> TableSpec:
 
 
 def stress_table() -> TableSpec:
-    stress = read_table("table_m04_p3_stress_rotation")
-    et = read_table("table_m11_stress_event_time")
+    stress = read_table("p3_stress_rotation")
+    et = read_table("stress_event_time")
     rows: list[list[object]] = [
         [
             "Stress event day",
@@ -606,8 +609,8 @@ def stress_table() -> TableSpec:
 
 
 def architecture_table() -> TableSpec:
-    main = read_table("table_m05_p4a_v3_opportunity")
-    dose = read_table("table_m16_v3_dose_response")
+    main = read_table("p4a_v3_opportunity")
+    dose = read_table("v3_dose_response")
     rows: list[list[object]] = [
         [
             "Post V3",
@@ -672,8 +675,8 @@ def architecture_table() -> TableSpec:
 
 
 def settlement_table() -> TableSpec:
-    settle = read_table("table_m06_p4b_v4_settlement")
-    persist = read_table("table_m17_v4_route_use_persistence")
+    settle = read_table("p4b_v4_settlement")
+    persist = read_table("v4_route_use_persistence")
     rows: list[list[object]] = [
         [
             "V4 - V3 transfer inc.",
@@ -761,8 +764,8 @@ def settlement_table() -> TableSpec:
 
 
 def common_liquidity_table() -> TableSpec:
-    common = read_table("table_m12_common_liquidity")
-    het = read_table("table_m18_common_liquidity_heterogeneity")
+    common = read_table("common_liquidity")
+    het = read_table("common_liquidity_heterogeneity")
     rows: list[list[object]] = [
         [
             "Market liquidity factor",
@@ -819,7 +822,7 @@ def common_liquidity_table() -> TableSpec:
 
 
 def specification_table() -> TableSpec:
-    df = read_table("table_m07_specification_registry")
+    df = read_table("specification_registry")
     compact = {
         "P1 availability/thin-direct": "P1 availability",
         "P2 liquidity-route feedback": "P2 persistence",

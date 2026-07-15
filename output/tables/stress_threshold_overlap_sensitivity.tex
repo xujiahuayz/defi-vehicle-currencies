@@ -1,0 +1,13 @@
+\begin{tabular}{lrrrrrrr}
+\toprule
+Event set & Events & Mean pairs & Gap effect (pp) & SE (pp) & t & p & Negative share (\%) \\
+\midrule
+all events, threshold 6\% & 91 & 2,378 & -3.12 & 0.91 & -3.44 & <0.001 & 67.0 \\
+all events, threshold 8\% & 49 & 2,343 & -2.95 & 0.87 & -3.41 & 0.001 & 65.3 \\
+all events, threshold 10\% & 26 & 2,268 & -3.74 & 1.01 & -3.70 & 0.001 & 65.4 \\
+all events, threshold 12\% & 19 & 2,194 & -3.18 & 1.18 & -2.68 & 0.015 & 63.2 \\
+top 20, threshold 8\% & 18 & 2,199 & -3.09 & 1.25 & -2.48 & 0.024 & 61.1 \\
+non-overlap, threshold 8\% & 33 & 2,260 & -3.01 & 1.23 & -2.45 & 0.020 & 57.6 \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: Outcome is same-day WETH-minus-stable BridgeShare change within common endpoint-pair sets relative to the prior 28 days. Non-overlap greedily keeps the largest downside events more than 14 days apart.

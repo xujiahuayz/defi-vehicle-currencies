@@ -1,0 +1,44 @@
+\begin{tabular}{@{}p{0.17\linewidth}p{0.18\linewidth}p{0.18\linewidth}p{0.39\linewidth}@{}}
+\toprule
+Notation & Observation-table column & Unit & Construction \\
+\midrule
+\multicolumn{4}{l}{\textit{Panel A. Vehicle-use measures}} \\
+$\mathrm{BridgeShare}_{k,t}$ & \texttt{bridge\_\allowbreak{}share} & candidate vehicle token x day & USD volume of indirect routes whose intermediate token is k divided by total indirect-route USD volume on day t. \\
+$\mathrm{AllRouteBridgeShare}_{k,t}$ & \texttt{all\_\allowbreak{}route\_\allowbreak{}bridge\_\allowbreak{}share} & candidate vehicle token x day & USD volume of routes whose intermediate token is k divided by total route USD volume on day t. \\
+$\mathrm{BridgeCountShare}_{k,t}$ & \texttt{bridge\_\allowbreak{}count\_\allowbreak{}share} & candidate vehicle token x day & Number of indirect route units whose intermediate token is k divided by total indirect route-unit count on day t. \\
+$\mathrm{PairCoverage}_{k,t}$ & \texttt{pair\_\allowbreak{}coverage} & candidate vehicle token x day & Share of active endpoint pairs on day t for which k appears as an intermediate token in at least one indirect route. \\
+$\mathrm{MainVehiclePairShare}_{k,t}$ & \texttt{pair\_\allowbreak{}main\_\allowbreak{}vehicle\_\allowbreak{}share} & candidate vehicle token x day & Share of active endpoint pairs for which k is the largest intermediate vehicle by realized indirect-route USD volume on day t. \\
+$\mathrm{BridgeVolume}_{k,t}$ & \texttt{bridge\_\allowbreak{}volume\_\allowbreak{}usd} & USD, candidate vehicle token x day & USD volume of indirect routes whose intermediate token is k on day t. \\
+\addlinespace
+\multicolumn{4}{l}{\textit{Panel B. Network and route-denominator controls}} \\
+$\mathrm{VShare}_{k,t}$ & \texttt{vshare} & candidate vehicle token x day & Token k's total in-route plus out-route USD volume divided by total token volume in the daily route network. \\
+$\mathrm{Betweenness}_{k,t}$ & \texttt{betweenness\_\allowbreak{}centrality} & candidate vehicle token x day & Daily route-network betweenness centrality for token k. \\
+$\mathrm{Betweenness}^{V}_{k,t}$ & \texttt{volume\_\allowbreak{}weighted\_\allowbreak{}betweenness} & candidate vehicle token x day & Daily USD-volume-weighted route betweenness centrality for token k. \\
+$\mathrm{AllRouteVolume}_{t}$ & \texttt{daily\_\allowbreak{}all\_\allowbreak{}route\_\allowbreak{}volume\_\allowbreak{}usd} & day & Total USD route volume across direct and indirect route units on day t. \\
+$\mathrm{IndirectRouteVolume}_{t}$ & \texttt{daily\_\allowbreak{}indirect\_\allowbreak{}route\_\allowbreak{}volume\_\allowbreak{}usd} & day & Total USD volume in indirect route units on day t. \\
+$\mathrm{IndirectRouteShare}_{t}$ & \texttt{indirect\_\allowbreak{}route\_\allowbreak{}share} & day & Indirect-route USD volume divided by total route USD volume on day t. \\
+\addlinespace
+\multicolumn{4}{l}{\textit{Panel C. Liquidity measures}} \\
+$\mathrm{VehicleLiquidity}_{k,t}$ & \texttt{vehicle\_\allowbreak{}linked\_\allowbreak{}liquidity\_\allowbreak{}usd} & USD, candidate vehicle token x day & USD TVL in Uniswap V3 pools linked to candidate vehicle k after filtering subgraph TVL outliers. \\
+$\mathrm{LPConc}_{k,t}$ & \texttt{lp\_\allowbreak{}concentration} & candidate vehicle token x day & Vehicle-linked liquidity for k divided by total vehicle-linked liquidity across the candidate vehicle set on day t. \\
+$\log(1+\mathrm{VehicleLiquidity}_{k,t})$ & \texttt{log\_\allowbreak{}vehicle\_\allowbreak{}linked\_\allowbreak{}liquidity} & candidate vehicle token x day & Natural log of one plus vehicle-linked liquidity in USD. \\
+\addlinespace
+\multicolumn{4}{l}{\textit{Panel D. Route-cost opportunity measures}} \\
+$\Pr(D_{ijqt})$ & \texttt{direct\_\allowbreak{}available\_\allowbreak{}share} & candidate vehicle token x day & Share of endpoint-pair quote rows for which the direct route is executable at the main trade size. \\
+$\Pr(V_{ijkqt})$ & \texttt{vehicle\_\allowbreak{}available\_\allowbreak{}share} & candidate vehicle token x day & Share of endpoint-pair quote rows for which both legs through k are executable at the main trade size. \\
+$\Pr(\neg D_{ijqt},V_{ijkqt})$ & \texttt{no\_\allowbreak{}direct\_\allowbreak{}vehicle\_\allowbreak{}available\_\allowbreak{}share} & candidate vehicle token x day & Share of endpoint-pair quote rows with no executable direct route but an executable route through k. \\
+$\Delta \mathrm{Cost}_{ijkqt}$ & \texttt{route\_\allowbreak{}cost\_\allowbreak{}advantage\_\allowbreak{}median\_\allowbreak{}bps} & basis points, candidate vehicle token x day & Median, across common-support quote rows, of 10,000 times the vehicle-route output advantage over the direct route. \\
+$\Pr(\Delta \mathrm{Cost}_{ijkqt}>0)$ & \texttt{vehicle\_\allowbreak{}beats\_\allowbreak{}direct\_\allowbreak{}share} & candidate vehicle token x day & Share of common-support quote rows for which the vehicle route gives higher output than the direct route. \\
+$\Pr(T_{ijqt})$ & \texttt{thin\_\allowbreak{}direct\_\allowbreak{}share} & candidate vehicle token x day & Share of quote rows with an executable direct route whose direct output is below 90 percent of notional. \\
+\addlinespace
+\multicolumn{4}{l}{\textit{Panel E. Stress and dynamic variables}} \\
+$\mathrm{Stress}_{t}$ & \texttt{stress\_\allowbreak{}downside} & day & Positive part of the negative daily log return in the WETH price. \\
+$1\{\mathrm{Stress}_{t}\ge 0.08\}$ & \texttt{stress\_\allowbreak{}event\_\allowbreak{}8pct} & day & Indicator that downside WETH stress is at least 8 percent on day t. \\
+$\mathrm{BridgeShare}_{k,t+7}$ & \texttt{future\_\allowbreak{}bridge\_\allowbreak{}share\_\allowbreak{}t7} & candidate vehicle token x day & BridgeShare for token k seven calendar days after t. \\
+$\Delta_{7}\mathrm{BridgeShare}_{k,t}$ & \texttt{delta\_\allowbreak{}bridge\_\allowbreak{}share\_\allowbreak{}t7} & candidate vehicle token x day & BridgeShare at t+7 minus BridgeShare at t. \\
+\addlinespace
+\multicolumn{4}{l}{\textit{Panel F. V4 settlement implementation measures}} \\
+$\Pr(\mathrm{Transfer}_{k,r}=1)$ & \texttt{settlement\_\allowbreak{}transfer\_\allowbreak{}incidence} & candidate vehicle token x week & Mean receipt-level indicator that a matched route unit contains an ERC-20 Transfer log for the intermediate vehicle token. \\
+$N^{\mathrm{receipt}}_{k,t}$ & \texttt{settlement\_\allowbreak{}receipt\_\allowbreak{}count} & candidate vehicle token x week & Number of receipt-audited matched route units for vehicle k in week t. \\
+\bottomrule
+\end{tabular}

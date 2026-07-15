@@ -110,7 +110,7 @@ def run(year: int = 2026) -> pd.DataFrame:
                 }
             )
     summary = pd.DataFrame(out_rows)
-    summary.to_csv(EMP / f"curve_fluid_exclusion_sensitivity_{year}.csv", index=False)
+    summary.to_pickle(EMP / f"curve_fluid_exclusion_sensitivity_{year}.pkl")
     _write_table(
         summary,
         "table_r30_curve_fluid_exclusion_sensitivity",

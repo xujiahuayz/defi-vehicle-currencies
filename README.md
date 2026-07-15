@@ -7,7 +7,7 @@ This repository contains the data pipeline, analysis code, literature workspace,
 - `src/ddvc/` — importable research package for fetching, route reconstruction, pricing, metrics, analysis, and paper export helpers.
 - `scripts/` — command-line entry points for reproducible fetch/build/analysis steps. Mathematica/Wolfram source belongs under `scripts/model/`.
 - `scripts/process/` — explicit data-processing steps. Each script is a directly runnable wrapper that reads data-layer inputs and writes one reusable analysis table under `data/processed/` or `data/empirical/`.
-- `scripts/tabulate/` — one script per journal table. A script named `render_<exhibit>.py` owns exactly one table and writes a `output/tables/<table_id>_<exhibit>.tex` fragment containing only the `tabular` environment, plus a cropped standalone `output/tables/<table_id>_<exhibit>.pdf` for inspection. Captions, labels, notes, sizing, and outer `table` wrappers belong in the paper or slides. Shared table-output helpers live in `scripts/tabulate/utils.py`.
+- `scripts/tabulate/` — one script per journal table. A script named `render_<exhibit>.py` owns exactly one table and writes `output/tables/<exhibit>.tex` containing only the `tabular` environment, plus `output/tables/<exhibit>.pdf` for inspection. Table numbering belongs only in the paper or slides; output filenames must be descriptive and unnumbered. Paper-facing table renderers do not write data sidecars. Captions, labels, notes, sizing, and outer `table` wrappers belong in the paper or slides. Shared table-output helpers live in `scripts/tabulate/utils.py`.
 - `data/` — local data workspace for raw responses, intermediate tables, processed panels, external inputs, and run manifests. Data payloads are not committed.
 - `output/` — generated paper artifacts, including tables, figures, and internal review PDFs. These are products of scripts, not the source of truth.
 - `paper/` — manuscript source. Keep this directory clean: LaTeX files when drafting starts, plus at most one outline Markdown file.
@@ -24,13 +24,14 @@ This repository contains the data pipeline, analysis code, literature workspace,
 - Put bibliography metadata and local PDF retrieval tooling in `literature/`.
 - Keep reviewer transcripts, one-off assistant notes, and scratch memos out of `paper/`; fold any durable paper point into the single outline or a manuscript source file.
 - Build paper exhibits as separate reproducible units. Tables live under `scripts/tabulate/`, plots under `scripts/figure/`, and diagrams under `scripts/diagram/` when those folders are needed. Do not add new monolithic exhibit builders for paper-facing artifacts. Scripts should stay directly runnable and thin; reusable functions belong in `src/ddvc/`.
+- Track paper-facing outputs under `output/tables/`, `output/figures/`, and `output/exhibits/`. Do not generate CSV artifacts, and do not replace CSV sidecars with pickle sidecars. Native serialized intermediates are allowed only for current downstream consumers, expensive reusable caches, or canonical data panels; prefer Parquet for data panels. Paper-facing table artifacts are TeX/PDF only, with no generated data sidecars and no hard-coded `table_01`/`figure_02` style numbering in output filenames.
 - Build the canonical wide observations table before rendering summary statistics, regressions, or exploratory plots:
 
 ```bash
 .venv/bin/python scripts/process/build_observations_table.py
 ```
 
-This writes `data/processed/observations_token_day.parquet`. Table renderers should read this table or another explicit processing output, not ad hoc generated CSVs.
+This writes `data/processed/observations_token_day.parquet`. Table renderers should read this table or another explicit processing output in a native serialized format.
 
 ## Current Target
 
@@ -58,4 +59,4 @@ Regenerate the ignored result tables, the tracked TeX evidence map, and a local 
 .venv/bin/python scripts/build_results_evidence_outputs.py
 ```
 
-This orchestrates the supporting `table_r*` analytics, the JFE main tables (`table_m01`-`table_m07`), the core RQ tables (`table_m08`-`table_m18`), then `paper/results_evidence_map.tex` and `paper/results_evidence_map.pdf`. The TeX file is tracked and should be byte-stable after regeneration. The PDF is intentionally ignored because TeX engines and fallback renderers produce different byte streams even when the document content and page count match. The PDF step uses `tectonic`, `latexmk`, or `pdflatex` when available, and falls back to a matplotlib review PDF on machines without a TeX engine.
+This orchestrates the supporting analytics, the JFE main tables, the core RQ tables, then `paper/results_evidence_map.tex` and `paper/results_evidence_map.pdf`. Analysis intermediates stay in native serialized formats under ignored analysis folders such as `output/empirical/`; `output/tables/` is reserved for tracked, descriptive TeX/PDF table artifacts. The TeX file is tracked and should be byte-stable after regeneration. The PDF is intentionally ignored because TeX engines and fallback renderers produce different byte streams even when the document content and page count match. The PDF step uses `tectonic`, `latexmk`, or `pdflatex` when available, and falls back to a matplotlib review PDF on machines without a TeX engine.

@@ -21,11 +21,19 @@ EMP = OUT / "empirical"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
+from build_paper_exhibits import _artifact_stem, _int, _num, _p, _write_table  # noqa: E402
 
 
 def _read(name: str) -> pd.DataFrame:
-    return pd.read_csv(OUT / "tables" / name)
+    stem = Path(name).stem
+    return pd.read_pickle(EMP / f"{_artifact_stem(stem)}.pkl")
+
+
+def _write_evidence_input(df: pd.DataFrame, stem: str) -> None:
+    """Persist only main-table data consumed by evidence-map/review builders."""
+
+    EMP.mkdir(parents=True, exist_ok=True)
+    df.to_pickle(EMP / f"{stem}.pkl")
 
 
 def _float(x: object) -> float:
@@ -36,8 +44,8 @@ def _float(x: object) -> float:
 
 
 def table_01_measurement_scope() -> pd.DataFrame:
-    denom = _read("table_r16_bridge_denominator_robustness.csv")
-    scope = _read("table_r28_curve_fluid_scope_bound.csv")
+    denom = _read("table_r16_bridge_denominator_robustness.pkl")
+    scope = _read("table_r28_curve_fluid_scope_bound.pkl")
     rows = []
     for token in ["WETH", "USDC", "USDT"]:
         r = denom[denom["Token"].eq(token)].iloc[0]
@@ -61,6 +69,7 @@ def table_01_measurement_scope() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
+    _write_evidence_input(out, "measurement_scope")
     _write_table(
         out,
         "table_m01_measurement_scope",
@@ -77,7 +86,7 @@ def table_01_measurement_scope() -> pd.DataFrame:
 
 
 def table_02_p1_availability() -> pd.DataFrame:
-    r12 = _read("table_r12_route_cost_decomposition.csv")
+    r12 = _read("table_r12_route_cost_decomposition.pkl")
     rows = []
     for _, r in r12.iterrows():
         rows.append(
@@ -92,6 +101,7 @@ def table_02_p1_availability() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
+    _write_evidence_input(out, "p1_availability_thin_direct")
     _write_table(
         out,
         "table_m02_p1_availability_thin_direct",
@@ -107,7 +117,7 @@ def table_02_p1_availability() -> pd.DataFrame:
 
 
 def table_03_p2_predictability() -> pd.DataFrame:
-    dyn = _read("table_r32_p2_liquidity_route_feedback.csv")
+    dyn = _read("table_r32_p2_liquidity_route_feedback.pkl")
     rows = []
     keep = dyn[
         dyn["Horizon"].isin(["t+7", "t+30"])
@@ -130,6 +140,7 @@ def table_03_p2_predictability() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
+    _write_evidence_input(out, "p2_dynamic_predictability")
     _write_table(
         out,
         "table_m03_p2_dynamic_predictability",
@@ -146,8 +157,8 @@ def table_03_p2_predictability() -> pd.DataFrame:
 
 
 def table_04_p3_stress() -> pd.DataFrame:
-    decomp = _read("table_r18_stress_rotation_decomposition.csv")
-    sens = _read("table_r26_stress_threshold_overlap_sensitivity.csv")
+    decomp = _read("table_r18_stress_rotation_decomposition.pkl")
+    sens = _read("table_r26_stress_threshold_overlap_sensitivity.pkl")
     rows = []
     for _, r in decomp.iterrows():
         rows.append(
@@ -174,6 +185,7 @@ def table_04_p3_stress() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
+    _write_evidence_input(out, "p3_stress_rotation")
     _write_table(
         out,
         "table_m04_p3_stress_rotation",
@@ -190,7 +202,7 @@ def table_04_p3_stress() -> pd.DataFrame:
 
 
 def table_05_p4a_v3() -> pd.DataFrame:
-    evt = _read("table_r19_v3_event_time_pretrends.csv")
+    evt = _read("table_r19_v3_event_time_pretrends.pkl")
     keep = evt[evt["Outcome"].eq("No-direct WETH availability")].copy()
     keep = keep.rename(
         columns={
@@ -202,6 +214,7 @@ def table_05_p4a_v3() -> pd.DataFrame:
     out = keep[
         ["Outcome", "Rows", "Pairs", "Post-V3 effect", "t", "p", "Pretrend slope", "Pretrend t", "Pretrend p", "Units"]
     ]
+    _write_evidence_input(out, "p4a_v3_opportunity")
     _write_table(
         out,
         "table_m05_p4a_v3_opportunity",
@@ -216,9 +229,9 @@ def table_05_p4a_v3() -> pd.DataFrame:
 
 
 def table_06_p4b_v4() -> pd.DataFrame:
-    size = _read("table_r05_v4_robustness.csv")
-    balance = _read("table_r29_v4_balance_diagnostics.csv")
-    lp_response = _read("table_r33_p4b_netting_lp_response.csv")
+    size = _read("table_r05_v4_robustness.pkl")
+    balance = _read("table_r29_v4_balance_diagnostics.pkl")
+    lp_response = _read("table_r33_p4b_netting_lp_response.pkl")
     rows = []
     for _, r in size.iterrows():
         rows.append(
@@ -257,6 +270,7 @@ def table_06_p4b_v4() -> pd.DataFrame:
             }
         )
     out = pd.DataFrame(rows)
+    _write_evidence_input(out, "p4b_v4_settlement")
     _write_table(
         out,
         "table_m06_p4b_v4_settlement",
@@ -292,7 +306,7 @@ def table_07_spec_registry() -> pd.DataFrame:
             "Outcome": "future BridgeShare; future LP concentration/liquidity",
             "Regressor / treatment": "LP concentration; current BridgeShare",
             "FE / SE": "token/date FE; date-clustered SE",
-            "Baseline mean": "see Table m03",
+            "Baseline mean": "see p2_dynamic_predictability",
             "Main estimate": "two-way coefficients positive; p<0.001",
             "Economic interpretation": "reduced-form liquidity-route feedback",
         },
@@ -331,6 +345,7 @@ def table_07_spec_registry() -> pd.DataFrame:
         },
     ]
     out = pd.DataFrame(rows)
+    _write_evidence_input(out, "specification_registry")
     _write_table(
         out,
         "table_m07_specification_registry",

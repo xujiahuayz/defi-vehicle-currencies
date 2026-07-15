@@ -170,8 +170,7 @@ def run() -> pd.DataFrame:
         if i % 100 == 0:
             print(f"Balancer quote extension [{i}/{d['stamp'].nunique()}] {stamp}", flush=True)
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "balancer_weighted_quote_extension.csv", index=False)
-
+    out.to_pickle(EMP / "balancer_weighted_quote_extension.pkl")
     table_rows = []
     for size, g in out.groupby("trade_size_usd"):
         both = g[g["balancer_direct_available"] & g["balancer_vehicle_available"]]

@@ -1,0 +1,12 @@
+\begin{tabular}{lrrrrr}
+\toprule
+Check & Observations & Pass rate (\%) & Mean total logs & Mean matching transfers & Interpretation \\
+\midrule
+uniswap\_v3 receipt coverage & 500 & 100.0 & 53.05 & 3.33 & Receipts found; parser input available \\
+uniswap\_v3 positive transfer incidence & 500 & 100.0 & 53.05 & 3.33 & Transfer topic/address parser detects intermediary movement \\
+uniswap\_v4 receipt coverage & 500 & 100.0 & 71.05 & 4.39 & Receipts found; parser input available \\
+uniswap\_v4 positive transfer incidence & 500 & 81.4 & 71.05 & 4.39 & Transfer topic/address parser detects intermediary movement \\
+uniswap\_v4 no-transfer receipts still populated & 93 & 100.0 & 12.47 & 0.00 & No-transfer cases are not empty/missing receipts \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: V3 acts as a positive control because matched V3 route units should contain intermediary-token ERC-20 transfers. V4 no-transfer receipts are separately checked to ensure the absence is not caused by missing or empty receipts. A manual-audit sample of V4 no-transfer transactions is exported.

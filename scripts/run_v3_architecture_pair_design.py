@@ -100,9 +100,9 @@ def run() -> pd.DataFrame:
         vehicle_available=("vehicle_available", "mean"),
         no_direct_weth=("no_direct_weth_available", "mean"),
     ).reset_index()
-    summary.to_csv(EMP / "v3_pair_architecture_summary.csv", index=False)
+    summary.to_pickle(EMP / "v3_pair_architecture_summary.pkl")
     out = pd.DataFrame(rows)
-    out.to_csv(EMP / "v3_pair_architecture_tests.csv", index=False)
+    out.to_pickle(EMP / "v3_pair_architecture_tests.pkl")
     _write_table(
         out,
         "table_r14_v3_pair_architecture",

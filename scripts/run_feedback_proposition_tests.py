@@ -133,7 +133,7 @@ def p2_feedback_loop() -> pd.DataFrame:
             )
     out = pd.DataFrame(rows)
     EMP.mkdir(parents=True, exist_ok=True)
-    out.to_csv(EMP / "p2_liquidity_route_feedback.csv", index=False)
+    out.to_pickle(EMP / "p2_liquidity_route_feedback.pkl")
     _write_table(
         out,
         "table_r32_p2_liquidity_route_feedback",
@@ -154,7 +154,7 @@ def _vehicle_key(s: object) -> str:
 
 
 def p4b_netting_lp_response() -> pd.DataFrame:
-    detail = pd.read_csv(DATA / "empirical" / "v4_settlement_transfer_detail.csv")
+    detail = pd.read_parquet(DATA / "empirical" / "v4_settlement_transfer_detail.parquet")
     v4 = detail[detail["dex"].eq("uniswap_v4") & detail["receipt_found"]].copy()
     v4["token"] = v4["vehicle"].map(_vehicle_key)
     exposure = (
@@ -228,8 +228,8 @@ def p4b_netting_lp_response() -> pd.DataFrame:
         )
     out = pd.DataFrame(rows)
     EMP.mkdir(parents=True, exist_ok=True)
-    exposure.to_csv(EMP / "p4b_netting_exposure_by_vehicle.csv", index=False)
-    out.to_csv(EMP / "p4b_netting_lp_response.csv", index=False)
+    exposure.to_pickle(EMP / "p4b_netting_exposure_by_vehicle.pkl")
+    out.to_pickle(EMP / "p4b_netting_lp_response.pkl")
     _write_table(
         out,
         "table_r33_p4b_netting_lp_response",

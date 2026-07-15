@@ -411,7 +411,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             "Mean receipt-level indicator that a matched route unit contains an "
             "ERC-20 Transfer log for the intermediate vehicle token."
         ),
-        source="data/empirical/v4_settlement_transfer_detail.csv",
+        source="data/empirical/v4_settlement_transfer_detail.parquet",
         used_for="V4 settlement virtualization and netting tests.",
         include_in_summary=True,
         summary_panel="Panel D. Settlement-transfer sample",
@@ -425,7 +425,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$N^{\mathrm{receipt}}_{k,t}$",
         unit="candidate vehicle token x week",
         construction="Number of receipt-audited matched route units for vehicle k in week t.",
-        source="data/empirical/v4_settlement_transfer_detail.csv",
+        source="data/empirical/v4_settlement_transfer_detail.parquet",
         used_for="Settlement-sample size and weights.",
         include_in_summary=True,
         summary_panel="Panel D. Settlement-transfer sample",

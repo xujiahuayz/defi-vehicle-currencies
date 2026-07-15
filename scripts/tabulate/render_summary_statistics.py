@@ -135,6 +135,6 @@ for row in rows:
 
 lines.extend([r"\bottomrule", r"\end{tabular}"])
 
-out_tex, out_pdf = write_table_artifacts("table_01_summary_statistics", "\n".join(lines) + "\n")
+out_tex, out_pdf = write_table_artifacts("summary_statistics", "\n".join(lines) + "\n")
 print(f"wrote {out_tex.relative_to(ROOT)}")
 print(f"wrote {out_pdf.relative_to(ROOT)}")

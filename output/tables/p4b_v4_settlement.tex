@@ -1,0 +1,16 @@
+\begin{tabular}{lrrrrrr}
+\toprule
+Panel & Sample / diagnostic & Cells & V3 & V4 & Difference / balance & p \\
+\midrule
+A. Transfer incidence by route-size bin & All & 500 & 100.0\% & 81.4\% & -18.6 pp & <0.001 \\
+A. Transfer incidence by route-size bin & Route size: Small & 104 & 100.0\% & 60.6\% & -39.4 pp & <0.001 \\
+A. Transfer incidence by route-size bin & Route size: Medium & 73 & 100.0\% & 87.7\% & -12.3 pp & 0.002 \\
+A. Transfer incidence by route-size bin & Route size: Large & 94 & 100.0\% & 96.8\% & -3.2 pp & 0.083 \\
+B. Matched-sample balance & uniswap\_v3 & 500 & \$6,136 &  & 53.05 & 100.0 \\
+B. Matched-sample balance & uniswap\_v4 & 500 &  & \$3,542 & 71.05 & 81.4 \\
+B. Matched-sample balance & V4 - V3 within cell & 500 &  &  & log route diff=-0.692 & t=-7.58, p=<0.001 \\
+C. LP response by netting exposure & LP concentration & 630 &  &  & post x netting exposure beta -0.063 (t=-10.12) & <0.001 \\
+C. LP response by netting exposure & log LP liquidity & 630 &  &  & post x netting exposure beta 2.132 (t=9.47) & <0.001 \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: Panels A-B show that the settlement architecture lowers intermediary-token transfer incidence relative to matched route units and report balance diagnostics. Panel C tests the behavioral implication: vehicles with greater no-transfer exposure have higher post-launch log LP liquidity, while LP concentration share moves in the opposite direction. The LP response is suggestive mechanism evidence.

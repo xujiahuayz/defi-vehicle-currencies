@@ -1,0 +1,13 @@
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+Outcome & Regressor & N & Date clusters & Beta & SE & t & p & Units & FE / SE \\
+\midrule
+Actual vehicle share & route\_cost\_advantage\_100bp & 189,143 & 2,234 & 0.1462 & 0.0054 & 27.02 & <0.001 & pp & endpoint-pair x date FE; date-clustered SE \\
+Actual vehicle share & vehicle\_available & 189,143 & 2,234 & 19.1385 & 0.4836 & 39.58 & <0.001 & pp & endpoint-pair x date FE; date-clustered SE \\
+Actual vehicle share & vehicle\_depth & 189,143 & 2,234 & 28.8502 & 0.5780 & 49.92 & <0.001 & pp & endpoint-pair x date FE; date-clustered SE \\
+Log actual vehicle volume & route\_cost\_advantage\_100bp & 189,143 & 2,234 & 0.0080 & 0.0003 & 25.71 & <0.001 & log points & endpoint-pair x date FE; date-clustered SE \\
+Log actual vehicle volume & vehicle\_available & 189,143 & 2,234 & 1.0180 & 0.0291 & 35.00 & <0.001 & log points & endpoint-pair x date FE; date-clustered SE \\
+Log actual vehicle volume & vehicle\_depth & 189,143 & 2,234 & 1.7877 & 0.0350 & 51.04 & <0.001 & log points & endpoint-pair x date FE; date-clustered SE \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: Actual vehicle shares are reconstructed from unified transaction routes. Regressions compare candidate vehicles within the same endpoint pair and date.
