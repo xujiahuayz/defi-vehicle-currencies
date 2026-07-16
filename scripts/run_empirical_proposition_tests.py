@@ -29,6 +29,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -231,8 +232,13 @@ def build_bridge_daily(start: str | None, end: str | None, force: bool = False) 
 
 def load_network_metrics() -> pd.DataFrame:
     path = DATA_DIR / "metrics" / "daily_token_metrics.parquet"
-    df = pd.read_parquet(path, columns=["date", "token_address", "VShare", "BetwCent", "BetwCent_V"])
-    return df.rename(columns={"token_address": "token"})
+    columns = set(pq.read_schema(path).names)
+    share_column = "VolShare" if "VolShare" in columns else "VShare"
+    df = pd.read_parquet(
+        path,
+        columns=["date", "token_address", share_column, "BetwCent", "BetwCent_V"],
+    )
+    return df.rename(columns={"token_address": "token", share_column: "VolShare"})
 
 
 def load_lp() -> pd.DataFrame:
@@ -249,7 +255,7 @@ def summarize_bridge(bridge: pd.DataFrame, metrics: pd.DataFrame) -> pd.DataFram
         .agg(
             BridgeShare=("BridgeShare", "mean"),
             BetwCent_V=("BetwCent_V", "mean"),
-            VShare=("VShare", "mean"),
+            VolShare=("VolShare", "mean"),
             PairCoverage=("PairCoverage", "mean"),
             PairMainVehicleShare=("PairMainVehicleShare", "mean"),
         )
@@ -544,13 +550,13 @@ Generated from the rebuilt DVC data layer through 2026-06-30.
 
 The paper-facing bridge-use measure is `BridgeShare`: for token k on day t, the
 USD route volume of indirect routes in which k is an intermediate token divided
-by total USD volume of all indirect routes. This is distinct from `VShare`, which
+by total USD volume of all indirect routes. This is distinct from `VolShare`, which
 is total directed token volume and therefore mixes endpoint demand with bridge
 use.
 
 Top bridge tokens in {latest_year}:
 
-{fmt_table(latest, ["token", "BridgeShare", "BetwCent_V", "VShare", "PairCoverage"])}
+{fmt_table(latest, ["token", "BridgeShare", "BetwCent_V", "VolShare", "PairCoverage"])}
 
 ## Proposition checks
 

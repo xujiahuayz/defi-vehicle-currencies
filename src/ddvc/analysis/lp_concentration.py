@@ -1,7 +1,7 @@
 """Foundational exhibit #1 — LP concentration on vehicle currencies as base asset.
 
 For each day, computes per-pool net LP liquidity delta (Uniswap V3 mints minus
-burns), identifies the "base asset" of each pool as the token with higher VShare
+burns), identifies the "base asset" of each pool as the token with higher VolShare
 (or a hardcoded known-vehicle list as fallback), and aggregates the fraction of
 all V3 LP liquidity provided against each token as base.
 
@@ -168,13 +168,13 @@ def _load_liquidity_events(stream: str, stamp: str) -> list[dict]:
 
 def compute_lp_day(
     stamp: str,
-    vshare_df: pd.DataFrame | None = None,
+    vol_share_df: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """LP concentration metrics for one day.
 
     stamp: YYYYMMDD
-    vshare_df: optional DataFrame from the metrics layer with columns
-               ['token_address', 'VShare', 'date'] for the same day. Used to
+    vol_share_df: optional DataFrame from the metrics layer with columns
+               ['token_address', 'VolShare', 'date'] for the same day. Used to
                identify base asset dynamically; falls back to VEHICLE_CANDIDATES
                hardcoded list if not provided.
 
@@ -215,18 +215,19 @@ def compute_lp_day(
         if usd > 0:
             pool_usd[pid] = usd
 
-    # Identify the VShare map for this day if provided
-    vshare_map: dict[str, float] = {}
-    if vshare_df is not None and not vshare_df.empty:
-        day_vs = vshare_df[vshare_df["date"] == date_iso]
+    # Identify the VolShare map for this day if provided.
+    vol_share_map: dict[str, float] = {}
+    if vol_share_df is not None and not vol_share_df.empty:
+        share_column = "VolShare" if "VolShare" in vol_share_df else "VShare"
+        day_vs = vol_share_df[vol_share_df["date"] == date_iso]
         for _, row in day_vs.iterrows():
-            vshare_map[row["token_address"]] = float(row["VShare"])
+            vol_share_map[row["token_address"]] = float(row[share_column])
 
     def _base_asset(pid: str) -> tuple[str, str] | None:
         """Return (address, symbol) of the vehicle-side base asset in this pool.
 
         The paper object is liquidity supplied against candidate vehicle assets.
-        Earlier versions let any high-VShare token become the pool "base", which
+        Earlier versions let any high-VolShare token become the pool "base", which
         is useful descriptively but too noisy for the vehicle-currency test.
         Here a pool contributes only if at least one side is a known vehicle
         candidate. If both sides are candidates, choose the side with higher
@@ -246,12 +247,12 @@ def compute_lp_day(
         if t1_is_vehicle and not t0_is_vehicle:
             return t1_id, t1_sym
 
-        # If both are vehicle candidates and VShare data are available, pick the
+        # If both are vehicle candidates and VolShare data are available, pick the
         # candidate with higher same-day vehicle share. In the metrics table the
         # index column currently stores symbols, so the lookup is by symbol.
-        if vshare_map:
-            vs0 = vshare_map.get(t0_sym, 0.0)
-            vs1 = vshare_map.get(t1_sym, 0.0)
+        if vol_share_map:
+            vs0 = vol_share_map.get(t0_sym, 0.0)
+            vs1 = vol_share_map.get(t1_sym, 0.0)
             if vs0 > vs1:
                 return t0_id, t0_sym
             elif vs1 > vs0:
@@ -357,18 +358,18 @@ def run(
         flush=True,
     )
 
-    # Try to load metrics for VShare cross-reference
+    # Try to load metrics for VolShare cross-reference.
     metrics_path = DATA_DIR / "metrics" / "daily_token_metrics.parquet"
-    vshare_df: pd.DataFrame | None = None
+    vol_share_df: pd.DataFrame | None = None
     if metrics_path.exists():
         try:
-            vshare_df = pd.read_parquet(metrics_path)
+            vol_share_df = pd.read_parquet(metrics_path)
         except Exception:
-            vshare_df = None
+            vol_share_df = None
 
     frames = []
     for stamp in stamps:
-        day_df = compute_lp_day(stamp, vshare_df=vshare_df)
+        day_df = compute_lp_day(stamp, vol_share_df=vol_share_df)
         if not day_df.empty:
             frames.append(day_df)
             print(

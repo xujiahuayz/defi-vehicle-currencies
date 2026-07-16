@@ -33,6 +33,7 @@ class VariableRegistryTests(unittest.TestCase):
             {
                 "bridge_share",
                 "all_route_bridge_share",
+                "vol_share",
                 "lp_concentration",
                 "direct_available_share",
                 "direct_depth_median",
@@ -50,7 +51,107 @@ class VariableRegistryTests(unittest.TestCase):
             self.assertIn(symbol, notation)
         self.assertIn(r"superscripts $D$ and $V$", definitions)
         self.assertIn(r"superscript $B$ denotes bridged", definitions)
-        self.assertIn(r"Superscript $\mathrm{vol}$", definitions)
+
+    def test_symbol_definitions_run_broad_to_narrow(self) -> None:
+        by_notation = {item.notation: item.definition for item in NOTATION_DEFINITIONS}
+
+        bridge_definition = by_notation[
+            r"$\mathrm{IVol}_t,\ \mathrm{IVol}_{k,t}$"
+        ]
+        self.assertLess(
+            bridge_definition.index(r"$\mathrm{IVol}_t"),
+            bridge_definition.index(r"$\mathrm{IVol}_{k,t}"),
+        )
+        self.assertIn(
+            r"$0\le\mathrm{IVol}_{k,t}\le\mathrm{IVol}_t$",
+            bridge_definition,
+        )
+        self.assertNotIn(r"\sum", bridge_definition)
+
+        pair_definition = by_notation[r"$\mathcal A_t,\ \mathcal A^k_t,\ \mathcal M^k_t$"]
+        self.assertIn(
+            r"$\mathcal M^k_t\subseteq\mathcal A^k_t\subseteq\mathcal A_t$",
+            pair_definition,
+        )
+
+        settlement_definition = by_notation[r"$\mathcal{R}^{\mathrm{transfer}}_{k,w}$"]
+        self.assertIn(
+            r"$\mathcal R^{\mathrm{transfer}}_{k,w}\subseteq\mathcal R_{k,w}$",
+            settlement_definition,
+        )
+
+    def test_indicators_put_the_condition_in_the_subscript(self) -> None:
+        notation = " ".join(item.notation for item in NOTATION_DEFINITIONS)
+        formulas = " ".join(spec.formula for spec in VARIABLE_SPECS)
+        self.assertIn(r"\mathbf{1}_{\{\cdot\}}", notation)
+        self.assertIn(r"\mathbf{1}_{\{\mathrm{Stress}_{t}\ge 0.08\}}", formulas)
+        self.assertNotIn(r"\mathbf{1}\{", notation + formulas)
+
+    def test_volume_share_uses_the_unambiguous_name(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        self.assertIn("vol_share", by_column)
+        self.assertEqual(by_column["vol_share"].notation, r"$\mathrm{VolShare}_{k,t}$")
+        self.assertNotIn("vshare", by_column)
+
+    def test_each_quantity_has_one_canonical_symbol(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        expected = {
+            "bridge_volume_usd": r"$\mathrm{IVol}_{k,t}$",
+            "daily_all_route_volume_usd": r"$A_t$",
+            "daily_indirect_route_volume_usd": r"$\mathrm{IVol}_t$",
+            "vehicle_linked_liquidity_usd": r"$L_{k,t}$",
+            "future_bridge_share_t7": r"$\mathrm{VehicleShare}_{k,t+7}$",
+        }
+        for column, symbol in expected.items():
+            with self.subTest(column=column):
+                self.assertEqual(by_column[column].notation, symbol)
+
+        notations = [spec.notation for spec in VARIABLE_SPECS]
+        self.assertEqual(len(notations), len(set(notations)))
+        notation_text = " ".join(notations)
+        for duplicate_alias in [
+            r"\mathrm{AllRouteVolume}",
+            r"\mathrm{IndirectRouteVolume}",
+            r"\mathrm{VehicleVolume}",
+            r"\mathrm{VehicleLiquidity}",
+            r"\mathrm{FutureVehicleShare}",
+        ]:
+            self.assertNotIn(duplicate_alias, notation_text)
+
+    def test_formula_cells_are_blank_or_actual_calculations(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        registered_notations = {spec.notation for spec in VARIABLE_SPECS}
+        for column in [
+            "bridge_volume_usd",
+            "daily_indirect_route_volume_usd",
+            "future_bridge_share_t7",
+        ]:
+            self.assertEqual(by_column[column].formula, "")
+
+        for spec in VARIABLE_SPECS:
+            if not spec.formula:
+                continue
+            self.assertTrue(spec.formula.startswith("$"), spec.column)
+            self.assertNotEqual(spec.notation, spec.formula, spec.column)
+            self.assertNotIn(spec.formula, registered_notations, spec.column)
+            self.assertNotIn(r"\equiv", spec.formula, spec.column)
+
+    def test_network_formulas_reuse_existing_route_symbols(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        count_formula = by_column["betweenness_centrality"].formula
+        volume_formula = by_column["volume_weighted_betweenness"].formula
+        self.assertIn(r"N^{B}_{k,t}", count_formula)
+        self.assertIn(r"\mathrm{IVol}_{k,t}", volume_formula)
+        self.assertIn(r"A_t", volume_formula)
+
+        symbol_key = " ".join(item.notation for item in NOTATION_DEFINITIONS)
+        for duplicate_symbol in [
+            r"N^{\mathrm{mid}}_{k,t}",
+            r"\mathrm{Vol}^{\mathrm{mid}}_{k,t}",
+            r"\mathrm{Vol}^{\mathrm{route}}_t",
+            r"\mathrm{Betweenness}^{\mathrm{vol}}",
+        ]:
+            self.assertNotIn(duplicate_symbol, symbol_key)
 
     def test_every_auxiliary_formula_symbol_is_defined(self) -> None:
         formulas = " ".join(spec.formula for spec in VARIABLE_SPECS)
@@ -59,8 +160,8 @@ class VariableRegistryTests(unittest.TestCase):
         )
         required_symbols = {
             r"A_t": r"A_t",
-            r"B_{k,t}": r"B_{k,t}",
-            r"B_t": r"B_t",
+            r"\mathrm{IVol}_{k,t}": r"\mathrm{IVol}_{k,t}",
+            r"\mathrm{IVol}_t": r"\mathrm{IVol}_t",
             r"N^{B}_{k,t}": r"N^B_{k,t}",
             r"N^{B}_{t}": r"N^B_t",
             r"\mathcal A^{k}_{t}": r"\mathcal A^k_t",
@@ -69,15 +170,11 @@ class VariableRegistryTests(unittest.TestCase):
             r"\mathrm{Vol}^{\mathrm{in}}": r"\mathrm{Vol}^{\mathrm{in}}",
             r"\mathrm{Vol}^{\mathrm{out}}": r"\mathrm{Vol}^{\mathrm{out}}",
             r"N^{\mathrm{route}}": r"N^{\mathrm{route}}",
-            r"N^{\mathrm{mid}}": r"N^{\mathrm{mid}}",
             r"N^{\mathrm{src}}": r"N^{\mathrm{src}}",
             r"N^{\mathrm{sink}}": r"N^{\mathrm{sink}}",
-            r"\mathrm{Vol}^{\mathrm{route}}": r"\mathrm{Vol}^{\mathrm{route}}",
-            r"\mathrm{Vol}^{\mathrm{mid}}": r"\mathrm{Vol}^{\mathrm{mid}}",
             r"\mathrm{Vol}^{\mathrm{src}}": r"\mathrm{Vol}^{\mathrm{src}}",
             r"\mathrm{Vol}^{\mathrm{sink}}": r"\mathrm{Vol}^{\mathrm{sink}}",
-            r"\mathrm{DirectRouteVolume}_t": r"\mathrm{DirectRouteVolume}_t",
-            r"\mathrm{IndirectRouteVolume}_t": r"\mathrm{IndirectRouteVolume}_t",
+            r"\mathrm{DVol}_t": r"\mathrm{DVol}_t",
             r"\ell": r"$\ell,\ p$",
             r"p\in": r"$\ell,\ p$",
             r"L_{k,t}": r"L_{k,t}",
@@ -137,8 +234,9 @@ class VariableRegistryTests(unittest.TestCase):
     def test_regression_notation_is_separate_from_construction_formula(self) -> None:
         for spec in VARIABLE_SPECS:
             self.assertTrue(spec.notation.startswith("$"), spec.column)
-            self.assertTrue(spec.formula.startswith("$"), spec.column)
-            self.assertNotEqual(spec.notation, spec.formula, spec.column)
+            if spec.formula:
+                self.assertTrue(spec.formula.startswith("$"), spec.column)
+                self.assertNotEqual(spec.notation, spec.formula, spec.column)
 
     def test_variable_notation_renderer_uses_automatic_column_widths(self) -> None:
         root = Path(__file__).resolve().parents[1]

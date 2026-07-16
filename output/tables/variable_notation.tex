@@ -14,29 +14,29 @@ $q$ & USD & Input quote notional. Un-suffixed route-cost columns use $q=\$10{,}0
 $r$ & Route unit & Receipt-audited coherent multihop route unit indexed by $r$. \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textit{Route and liquidity aggregates}} \\
-$A_t,\ \mathrm{DirectRouteVolume}_t,\ \mathrm{IndirectRouteVolume}_t$ & USD & $\mathrm{DirectRouteVolume}_t$ and $\mathrm{IndirectRouteVolume}_t$ are day-$t$ realized volumes over direct and indirect route units; $A_t$ is their sum. \\
-$B_{k,t},\ B_t$ & USD & $B_{k,t}$ is realized indirect-route volume through vehicle $k$; $B_t=\mathrm{IndirectRouteVolume}_t$ is total indirect-route volume on day $t$. \\
-$N^B_{k,t},\ N^B_t$ & Route-unit count & $N^B_{k,t}$ counts indirect route units through $k$; $N^B_t$ counts all indirect route units on day $t$; superscript $B$ denotes bridged (indirect) routes. \\
-$\mathcal A_t,\ \mathcal A^k_t,\ \mathcal M^k_t$ & Sets of token pairs & $\mathcal A_t$ is the set of active endpoint pairs; $\mathcal A^k_t$ is the subset using $k$; $\mathcal M^k_t$ is the subset for which $k$ has the largest realized indirect-route volume. \\
+$A_t,\ \mathrm{DVol}_t$ & USD & $A_t$ is total realized USD volume across all direct and indirect route units on day $t$. $\mathrm{DVol}_t$ restricts it to direct routes, so $0\le\mathrm{DVol}_t\le A_t$. \\
+$\mathrm{IVol}_t,\ \mathrm{IVol}_{k,t}$ & USD & $\mathrm{IVol}_t$ restricts $A_t$ to indirect routes, so $0\le\mathrm{IVol}_t\le A_t$. $\mathrm{IVol}_{k,t}$ further restricts that volume to routes using vehicle $k$, so $0\le\mathrm{IVol}_{k,t}\le\mathrm{IVol}_t$. \\
+$N^{\mathrm{route}}_t,\ N^{\mathrm{src}}_{k,t},\ N^{\mathrm{sink}}_{k,t}$ & Route count & $N^{\mathrm{route}}_t$ counts all day-$t$ intent routes. $N^{\mathrm{src}}_{k,t}$ and $N^{\mathrm{sink}}_{k,t}$ restrict that count to source and sink roles for $k$; each lies between $0$ and $N^{\mathrm{route}}_t$. \\
+$N^B_t,\ N^B_{k,t}$ & Route-unit count & $N^B_t$ restricts $N^{\mathrm{route}}_t$ to indirect routes. $N^B_{k,t}$ further restricts that count to routes using $k$, so $0\le N^B_{k,t}\le N^B_t\le N^{\mathrm{route}}_t$; superscript $B$ denotes bridged (indirect) routes. \\
+$\mathcal A_t,\ \mathcal A^k_t,\ \mathcal M^k_t$ & Sets of token pairs & $\mathcal A_t$ is the set of endpoint pairs active in indirect routes on day $t$. $\mathcal A^k_t$ restricts it to pairs using $k$, and $\mathcal M^k_t$ further restricts it to pairs for which $k$ has the largest candidate-vehicle volume; $\mathcal M^k_t\subseteq\mathcal A^k_t\subseteq\mathcal A_t$. \\
 $\mathrm{Vol}^{\mathrm{in}}_{k,t},\ \mathrm{Vol}^{\mathrm{out}}_{k,t}$ & USD & $\mathrm{Vol}^{\mathrm{in}}_{k,t}$ and $\mathrm{Vol}^{\mathrm{out}}_{k,t}$ are inbound and outbound route-leg volumes assigned to token $k$ on day $t$. \\
-$N^{\mathrm{route}}_t,\ N^{\mathrm{mid}}_{k,t},\ N^{\mathrm{src}}_{k,t},\ N^{\mathrm{sink}}_{k,t}$ & Route count & $N^{\mathrm{route}}_t$ counts all day-$t$ intent routes; $N^{\mathrm{mid}}_{k,t}$, $N^{\mathrm{src}}_{k,t}$, and $N^{\mathrm{sink}}_{k,t}$ count routes assigning $k$ the intermediate, source, and sink roles. \\
-$\mathrm{Vol}^{\mathrm{route}}_t,\ \mathrm{Vol}^{\mathrm{mid}}_{k,t},\ \mathrm{Vol}^{\mathrm{src}}_{k,t},\ \mathrm{Vol}^{\mathrm{sink}}_{k,t}$ & USD & $\mathrm{Vol}^{\mathrm{route}}_t$ is total day-$t$ intent-route volume; $\mathrm{Vol}^{\mathrm{mid}}_{k,t}$, $\mathrm{Vol}^{\mathrm{src}}_{k,t}$, and $\mathrm{Vol}^{\mathrm{sink}}_{k,t}$ assign that volume to $k$ by route role. \\
-$L_{k,t},\ \mathcal K$ & USD / set of tokens & $L_{k,t}$ is vehicle-linked liquidity for $k$ on day $t$; $\mathcal K$ is the candidate-vehicle set. \\
+$\mathrm{Vol}^{\mathrm{src}}_{k,t},\ \mathrm{Vol}^{\mathrm{sink}}_{k,t}$ & USD & Source- and sink-role restrictions of $A_t$ for token $k$: $0\le\mathrm{Vol}^{\mathrm{src}}_{k,t}\le A_t$ and $0\le\mathrm{Vol}^{\mathrm{sink}}_{k,t}\le A_t$. \\
+$\mathcal K,\ L_{k,t}$ & Set of tokens / USD & $\mathcal K$ is the candidate-vehicle set. $L_{k,t}$ is liquidity linked to candidate $k\in\mathcal K$ on day $t$. \\
 $\mathcal L_{k,t},\ \mathrm{TVL}_{p,t}$ & Set of pools / USD & $\mathcal L_{k,t}$ is the set of eligible pools linked to $k$ on day $t$; $\mathrm{TVL}_{p,t}$ is total value locked in pool $p$ on that day. \\
 $R^{\mathrm{WETH}}_t$ & Daily log-return fraction & Day-$t$ log return of the WETH price used to construct downside stress. \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textit{Route-cost quote objects}} \\
 $\mathcal{P}_{k,t,q}$ & Set of token pairs & Ordered endpoint pairs eligible for $k$ and quoted on day $t$ at notional $q$. \\
-$\mathcal{D}_{k,t,q},\ \mathcal{V}_{k,t,q},\ \mathcal{C}_{k,t,q},\ \mathcal{T}_{k,t,q},\ \mathcal{W}_{k,t,q}$ & Sets of token pairs & Subsets of $\mathcal P_{k,t,q}$ with a direct route ($\mathcal D$), a route via $k$ ($\mathcal V$), both routes ($\mathcal C=\mathcal D\cap\mathcal V$), a thin direct route ($\mathcal T$), or a vehicle-route cost advantage ($\mathcal W$). \\
+$\mathcal{D}_{k,t,q},\ \mathcal{V}_{k,t,q},\ \mathcal{C}_{k,t,q},\ \mathcal{T}_{k,t,q},\ \mathcal{W}_{k,t,q}$ & Sets of token pairs & $\mathcal D_{k,t,q}\subseteq\mathcal P_{k,t,q}$ and $\mathcal V_{k,t,q}\subseteq\mathcal P_{k,t,q}$ restrict the broad pair set to pairs with a direct route or a route via $k$. $\mathcal C_{k,t,q}=\mathcal D_{k,t,q}\cap\mathcal V_{k,t,q}$, $\mathcal T_{k,t,q}\subseteq\mathcal D_{k,t,q}$ is thin-direct support, and $\mathcal W_{k,t,q}\subseteq\mathcal C_{k,t,q}$ has a vehicle-route cost advantage. \\
 $D_{i,j,q,t},\ V_{i,j,k,q,t},\ T_{i,j,q,t}$ & Indicator (0/1) & Indicators for direct-route availability ($D$), route-through-$k$ availability ($V$), and an executable direct route returning less than $0.9q$ ($T$). \\
 $O^{D}_{i,j,q,t},\ O^{V}_{i,j,k,q,t}$ & USD & Quoted output values; superscripts $D$ and $V$ denote direct and vehicle routes. \\
 $\Delta C_{i,j,k,q,t}$ & Basis points & $10{,}000\,(O^{V}_{i,j,k,q,t}-O^{D}_{i,j,q,t})/O^{D}_{i,j,q,t}$ on $\mathcal C_{k,t,q}$. \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textit{Settlement objects and operators}} \\
 $\mathcal{R}_{k,w}$ & Set of route units & Receipt-audited matched route units using vehicle $k$ in UTC week $w$. \\
-$\mathcal{R}^{\mathrm{transfer}}_{k,w}$ & Set of route units & Members of $\mathcal R_{k,w}$ whose receipt logs a transfer of vehicle $k$. \\
-$|\mathcal{A}|,\ \mathbf{1}\{\cdot\}$ & Count / indicator (0/1) & Cardinality of set $\mathcal A$ and an indicator equal to one when its condition is true. \\
-$\mathrm{Betweenness}^{\mathrm{vol}},\ \Delta_{7}$ & USD weighting / 7 days & Superscript $\mathrm{vol}$ denotes USD weighting; for any daily variable $X_t$, $\Delta_7 X_t=X_{t+7}-X_t$. \\
+$\mathcal{R}^{\mathrm{transfer}}_{k,w}$ & Set of route units & Members whose receipt logs a transfer of vehicle $k$; $\mathcal R^{\mathrm{transfer}}_{k,w}\subseteq\mathcal R_{k,w}$. \\
+$|\mathcal{S}|,\ \mathbf{1}_{\{\cdot\}}$ & Count / indicator (0/1) & Cardinality of any finite set $\mathcal S$ and an indicator equal to one when its subscripted condition is true. \\
+$\Delta_{7}$ & 7 days & Seven-day forward change in any daily variable $X_t$: $\Delta_7 X_t=X_{t+7}-X_t$. \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -46,24 +46,24 @@ Variable & Formula & Unit & Data column & Definition \\
 \midrule
 \addlinespace
 \multicolumn{5}{@{}l}{\textit{Vehicle-use measures}} \\
-$\mathrm{VehicleShare}_{k,t}$ & $\displaystyle\frac{B_{k,t}}{B_t}$ & Fraction (0--1) & \texttt{bridge\_\allowbreak{}share} & $B_{k,t}$ is indirect-route USD volume through $k$; $B_t$ is total indirect-route USD volume on day $t$. \\
-$\mathrm{AllRouteVehicleShare}_{k,t}$ & $\displaystyle\frac{B_{k,t}}{A_t}$ & Fraction (0--1) & \texttt{all\_\allowbreak{}route\_\allowbreak{}bridge\_\allowbreak{}share} & $B_{k,t}$ is indirect-route USD volume through $k$; $A_t$ is total direct plus indirect route USD volume on day $t$. \\
-$\mathrm{VehicleCountShare}_{k,t}$ & $\displaystyle\frac{N^{B}_{k,t}}{N^{B}_{t}}$ & Fraction (0--1) & \texttt{bridge\_\allowbreak{}count\_\allowbreak{}share} & $N^{B}_{k,t}$ counts indirect route units through $k$; $N^{B}_{t}$ counts all indirect route units on day $t$. \\
-$\mathrm{PairCoverage}_{k,t}$ & $\displaystyle\frac{|\mathcal A^{k}_{t}|}{|\mathcal A_t|}$ & Fraction (0--1) & \texttt{pair\_\allowbreak{}coverage} & $\mathcal A_t$ is the set of active endpoint pairs; $\mathcal A^k_t$ contains pairs using $k$ in at least one indirect route on day $t$. \\
-$\mathrm{MainVehiclePairShare}_{k,t}$ & $\displaystyle\frac{|\mathcal M^{k}_{t}|}{|\mathcal A_t|}$ & Fraction (0--1) & \texttt{pair\_\allowbreak{}main\_\allowbreak{}vehicle\_\allowbreak{}share} & $\mathcal M^k_t\subseteq\mathcal A_t$ contains pairs for which $k$ has the largest realized indirect-route USD volume on day $t$. \\
-$\mathrm{VehicleVolume}_{k,t}$ & $B_{k,t}$ & USD & \texttt{bridge\_\allowbreak{}volume\_\allowbreak{}usd} & Sum of realized USD volume over indirect routes using vehicle $k$ on day $t$. \\
+$\mathrm{VehicleShare}_{k,t}$ & $\displaystyle\frac{\mathrm{IVol}_{k,t}}{\mathrm{IVol}_t}$ & Fraction (0--1) & \texttt{bridge\_\allowbreak{}share} & Fraction of day-$t$ indirect-route USD volume routed through $k$. \\
+$\mathrm{AllRouteVehicleShare}_{k,t}$ & $\displaystyle\frac{\mathrm{IVol}_{k,t}}{A_t}$ & Fraction (0--1) & \texttt{all\_\allowbreak{}route\_\allowbreak{}bridge\_\allowbreak{}share} & Fraction of day-$t$ all-route USD volume routed indirectly through $k$. \\
+$\mathrm{VehicleCountShare}_{k,t}$ & $\displaystyle\frac{N^{B}_{k,t}}{N^{B}_{t}}$ & Fraction (0--1) & \texttt{bridge\_\allowbreak{}count\_\allowbreak{}share} & Fraction of day-$t$ indirect route units that use $k$. \\
+$\mathrm{PairCoverage}_{k,t}$ & $\displaystyle\frac{|\mathcal A^{k}_{t}|}{|\mathcal A_t|}$ & Fraction (0--1) & \texttt{pair\_\allowbreak{}coverage} & Fraction of active indirect-route endpoint pairs that use $k$. \\
+$\mathrm{MainVehiclePairShare}_{k,t}$ & $\displaystyle\frac{|\mathcal M^{k}_{t}|}{|\mathcal A_t|}$ & Fraction (0--1) & \texttt{pair\_\allowbreak{}main\_\allowbreak{}vehicle\_\allowbreak{}share} & Fraction of active indirect-route endpoint pairs for which $k$ has the largest candidate-vehicle volume. \\
+$\mathrm{IVol}_{k,t}$ &  & USD & \texttt{bridge\_\allowbreak{}volume\_\allowbreak{}usd} & Sum of realized USD volume over indirect routes using vehicle $k$ on day $t$. \\
 \addlinespace
 \multicolumn{5}{@{}l}{\textit{Network and route-denominator controls}} \\
-$\mathrm{VShare}_{k,t}$ & $\displaystyle\frac{\mathrm{Vol}^{\mathrm{in}}_{k,t}+\mathrm{Vol}^{\mathrm{out}}_{k,t}}{\sum_{\ell}(\mathrm{Vol}^{\mathrm{in}}_{\ell,t}+\mathrm{Vol}^{\mathrm{out}}_{\ell,t})}$ & Fraction (0--1) & \texttt{vshare} & $\mathrm{Vol}^{\mathrm{in}}_{k,t}$ and $\mathrm{Vol}^{\mathrm{out}}_{k,t}$ are inbound and outbound route-leg USD volumes for $k$; $\ell$ indexes every token in the day-$t$ network. \\
-$\mathrm{Betweenness}_{k,t}$ & $\displaystyle\frac{N^{\mathrm{mid}}_{k,t}}{N^{\mathrm{route}}_t-N^{\mathrm{src}}_{k,t}-N^{\mathrm{sink}}_{k,t}}$ & Fraction (0--1) & \texttt{betweenness\_\allowbreak{}centrality} & Fraction of day-$t$ intent routes on which $k$ is intermediate, excluding routes where $k$ is the source or sink. Superscripts identify each route role. \\
-$\mathrm{Betweenness}^{\mathrm{vol}}_{k,t}$ & $\displaystyle\frac{\mathrm{Vol}^{\mathrm{mid}}_{k,t}}{\mathrm{Vol}^{\mathrm{route}}_t-\mathrm{Vol}^{\mathrm{src}}_{k,t}-\mathrm{Vol}^{\mathrm{sink}}_{k,t}}$ & Fraction (0--1) & \texttt{volume\_\allowbreak{}weighted\_\allowbreak{}betweenness} & USD-volume analogue of $\mathrm{Betweenness}_{k,t}$; each $\mathrm{Vol}$ term is day-$t$ route volume assigned to the indicated role. \\
-$\mathrm{AllRouteVolume}_{t}$ & $\mathrm{DirectRouteVolume}_t+\mathrm{IndirectRouteVolume}_t$ & USD & \texttt{daily\_\allowbreak{}all\_\allowbreak{}route\_\allowbreak{}volume\_\allowbreak{}usd} & Total realized USD volume across direct and indirect route units on day $t$. \\
-$\mathrm{IndirectRouteVolume}_{t}$ & $B_t$ & USD & \texttt{daily\_\allowbreak{}indirect\_\allowbreak{}route\_\allowbreak{}volume\_\allowbreak{}usd} & $B_t$ is total realized USD volume across indirect route units on day $t$. \\
-$\mathrm{IndirectRouteShare}_{t}$ & $\displaystyle\frac{B_t}{A_t}$ & Fraction (0--1) & \texttt{indirect\_\allowbreak{}route\_\allowbreak{}share} & $B_t$ is indirect-route USD volume and $A_t$ is all-route USD volume on day $t$. \\
+$\mathrm{VolShare}_{k,t}$ & $\displaystyle\frac{\mathrm{Vol}^{\mathrm{in}}_{k,t}+\mathrm{Vol}^{\mathrm{out}}_{k,t}}{\sum_{\ell}(\mathrm{Vol}^{\mathrm{in}}_{\ell,t}+\mathrm{Vol}^{\mathrm{out}}_{\ell,t})}$ & Fraction (0--1) & \texttt{vol\_\allowbreak{}share} & $\mathrm{Vol}^{\mathrm{in}}_{k,t}$ and $\mathrm{Vol}^{\mathrm{out}}_{k,t}$ are inbound and outbound route-leg USD volumes for $k$; $\ell$ indexes every token in the day-$t$ network. \\
+$\mathrm{Betweenness}_{k,t}$ & $\displaystyle\frac{N^{B}_{k,t}}{N^{\mathrm{route}}_t-N^{\mathrm{src}}_{k,t}-N^{\mathrm{sink}}_{k,t}}$ & Fraction (0--1) & \texttt{betweenness\_\allowbreak{}centrality} & Fraction of day-$t$ intent routes on which $k$ is intermediate, excluding routes where $k$ is the source or sink. Superscripts identify each route role. \\
+$\mathrm{Betweenness}^{\mathrm{vol}}_{k,t}$ & $\displaystyle\frac{\mathrm{IVol}_{k,t}}{A_t-\mathrm{Vol}^{\mathrm{src}}_{k,t}-\mathrm{Vol}^{\mathrm{sink}}_{k,t}}$ & Fraction (0--1) & \texttt{volume\_\allowbreak{}weighted\_\allowbreak{}betweenness} & USD-volume analogue of $\mathrm{Betweenness}_{k,t}$ using the same route universe and source/sink exclusions. \\
+$A_t$ & $\mathrm{DVol}_t+\mathrm{IVol}_t$ & USD & \texttt{daily\_\allowbreak{}all\_\allowbreak{}route\_\allowbreak{}volume\_\allowbreak{}usd} & Total realized USD volume across direct and indirect route units on day $t$. \\
+$\mathrm{IVol}_t$ &  & USD & \texttt{daily\_\allowbreak{}indirect\_\allowbreak{}route\_\allowbreak{}volume\_\allowbreak{}usd} & Total realized USD volume across indirect route units on day $t$. \\
+$\mathrm{IndirectRouteShare}_{t}$ & $\displaystyle\frac{\mathrm{IVol}_t}{A_t}$ & Fraction (0--1) & \texttt{indirect\_\allowbreak{}route\_\allowbreak{}share} & Fraction of day-$t$ all-route USD volume executed through indirect routes. \\
 \addlinespace
 \multicolumn{5}{@{}l}{\textit{Liquidity measures}} \\
-$\mathrm{VehicleLiquidity}_{k,t}$ & $L_{k,t}=\displaystyle\sum_{p\in\mathcal L_{k,t}}\mathrm{TVL}_{p,t}$ & USD & \texttt{vehicle\_\allowbreak{}linked\_\allowbreak{}liquidity\_\allowbreak{}usd} & $\mathcal L_{k,t}$ is the set of eligible Uniswap V3 pools linked to $k$; $p$ indexes pools after filtering subgraph TVL outliers. \\
-$\mathrm{LPConc}_{k,t}$ & $\displaystyle\frac{L_{k,t}}{\sum_{\ell\in\mathcal K}L_{\ell,t}}$ & Fraction (0--1) & \texttt{lp\_\allowbreak{}concentration} & $\mathcal K$ is the candidate-vehicle set; $L_{k,t}$ is vehicle-linked liquidity for $k$ on day $t$. \\
+$L_{k,t}$ & $\displaystyle\sum_{p\in\mathcal L_{k,t}}\mathrm{TVL}_{p,t}$ & USD & \texttt{vehicle\_\allowbreak{}linked\_\allowbreak{}liquidity\_\allowbreak{}usd} & Total eligible Uniswap V3 pool TVL linked to $k$ after filtering subgraph TVL outliers. \\
+$\mathrm{LPConc}_{k,t}$ & $\displaystyle\frac{L_{k,t}}{\sum_{\ell\in\mathcal K}L_{\ell,t}}$ & Fraction (0--1) & \texttt{lp\_\allowbreak{}concentration} & Candidate $k$'s share of total vehicle-linked liquidity on day $t$. \\
 $\mathrm{LogVehicleLiquidity}_{k,t}$ & $\ln(1+L_{k,t})$ & Natural-log points & \texttt{log\_\allowbreak{}vehicle\_\allowbreak{}linked\_\allowbreak{}liquidity} & Natural log of one plus $L_{k,t}$ measured in USD. \\
 \addlinespace
 \multicolumn{5}{@{}l}{\textit{Route-cost opportunity measures}} \\
@@ -76,9 +76,9 @@ $\mathrm{VehicleBeatsDirect}_{k,t,q}$ & $\displaystyle\frac{|\mathcal W_{k,t,q}|
 $\mathrm{ThinDirectShare}_{k,t,q}$ & $\displaystyle\frac{|\mathcal T_{k,t,q}|}{|\mathcal P_{k,t,q}|}$ & Fraction (0--1) & \texttt{thin\_\allowbreak{}direct\_\allowbreak{}share} & Fraction of pairs with $D_{i,j,q,t}=1$ and $O^D_{i,j,q,t}/q<0.9$. \\
 \addlinespace
 \multicolumn{5}{@{}l}{\textit{Stress and dynamic variables}} \\
-$\mathrm{Stress}_{t}$ & $\max\{-R^{\mathrm{WETH}}_t,0\}$ & Daily log-return fraction & \texttt{stress\_\allowbreak{}downside} & $R^{\mathrm{WETH}}_t$ is the day-$t$ WETH log return; only downside moves enter. \\
-$\mathrm{StressEvent}_{t}$ & $\mathbf 1\{\mathrm{Stress}_{t}\ge 0.08\}$ & Indicator (0/1) & \texttt{stress\_\allowbreak{}event\_\allowbreak{}8pct} & Equals one when $\mathrm{Stress}_t$ is at least $0.08$ on day $t$. \\
-$\mathrm{FutureVehicleShare}^{(7)}_{k,t}$ & $\mathrm{VehicleShare}_{k,t+7}$ & Fraction (0--1) & \texttt{future\_\allowbreak{}bridge\_\allowbreak{}share\_\allowbreak{}t7} & Vehicle share for token $k$ seven calendar days after day $t$. \\
+$\mathrm{Stress}_{t}$ & $\max\{-R^{\mathrm{WETH}}_t,0\}$ & Daily log-return fraction & \texttt{stress\_\allowbreak{}downside} & Positive part of the negative day-$t$ WETH log return. \\
+$\mathrm{StressEvent}_{t}$ & $\mathbf{1}_{\{\mathrm{Stress}_{t}\ge 0.08\}}$ & Indicator (0/1) & \texttt{stress\_\allowbreak{}event\_\allowbreak{}8pct} & Equals one when $\mathrm{Stress}_t$ is at least $0.08$ on day $t$. \\
+$\mathrm{VehicleShare}_{k,t+7}$ &  & Fraction (0--1) & \texttt{future\_\allowbreak{}bridge\_\allowbreak{}share\_\allowbreak{}t7} & Vehicle share for token $k$ seven calendar days after day $t$. \\
 $\Delta_{7}\mathrm{VehicleShare}_{k,t}$ & $\mathrm{VehicleShare}_{k,t+7}-\mathrm{VehicleShare}_{k,t}$ & Fraction points & \texttt{delta\_\allowbreak{}bridge\_\allowbreak{}share\_\allowbreak{}t7} & Seven-day forward change for vehicle $k$, measured from day $t$. \\
 \addlinespace
 \multicolumn{5}{@{}l}{\textit{V4 settlement implementation measures}} \\

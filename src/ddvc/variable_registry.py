@@ -12,7 +12,10 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class VariableSpec:
-    """A paper variable and its implementation in the observations table."""
+    """A paper variable and its implementation in the observations table.
+
+    Formula contains a calculation only; primitive measured quantities leave it blank.
+    """
 
     group: str
     name: str
@@ -80,34 +83,48 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
+        notation=r"$A_t,\ \mathrm{DVol}_t$",
+        unit="USD",
+        definition=(
+            r"$A_t$ is total realized USD volume across all direct and indirect route units "
+            r"on day $t$. $\mathrm{DVol}_t$ restricts it to direct routes, so "
+            r"$0\le\mathrm{DVol}_t\le A_t$."
+        ),
+    ),
+    NotationDefinition(
+        group="Route and liquidity aggregates",
+        notation=r"$\mathrm{IVol}_t,\ \mathrm{IVol}_{k,t}$",
+        unit="USD",
+        definition=(
+            r"$\mathrm{IVol}_t$ restricts $A_t$ to indirect routes, so "
+            r"$0\le\mathrm{IVol}_t\le A_t$. $\mathrm{IVol}_{k,t}$ further restricts "
+            r"that volume to routes using vehicle $k$, so "
+            r"$0\le\mathrm{IVol}_{k,t}\le\mathrm{IVol}_t$."
+        ),
+    ),
+    NotationDefinition(
+        group="Route and liquidity aggregates",
         notation=(
-            r"$A_t,\ \mathrm{DirectRouteVolume}_t,\ "
-            r"\mathrm{IndirectRouteVolume}_t$"
+            r"$N^{\mathrm{route}}_t,\ N^{\mathrm{src}}_{k,t},\ "
+            r"N^{\mathrm{sink}}_{k,t}$"
         ),
-        unit="USD",
+        unit="Route count",
         definition=(
-            r"$\mathrm{DirectRouteVolume}_t$ and $\mathrm{IndirectRouteVolume}_t$ are "
-            r"day-$t$ realized volumes over direct and indirect route units; "
-            r"$A_t$ is their sum."
+            r"$N^{\mathrm{route}}_t$ counts all day-$t$ intent routes. "
+            r"$N^{\mathrm{src}}_{k,t}$ and $N^{\mathrm{sink}}_{k,t}$ restrict that count "
+            r"to source and sink roles for $k$; each lies between $0$ and "
+            r"$N^{\mathrm{route}}_t$."
         ),
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
-        notation=r"$B_{k,t},\ B_t$",
-        unit="USD",
-        definition=(
-            r"$B_{k,t}$ is realized indirect-route volume through vehicle $k$; "
-            r"$B_t=\mathrm{IndirectRouteVolume}_t$ is total indirect-route volume on day $t$."
-        ),
-    ),
-    NotationDefinition(
-        group="Route and liquidity aggregates",
-        notation=r"$N^B_{k,t},\ N^B_t$",
+        notation=r"$N^B_t,\ N^B_{k,t}$",
         unit="Route-unit count",
         definition=(
-            r"$N^B_{k,t}$ counts indirect route units through $k$; $N^B_t$ counts all "
-            r"indirect route units on day $t$; "
-            r"superscript $B$ denotes bridged (indirect) routes."
+            r"$N^B_t$ restricts $N^{\mathrm{route}}_t$ to indirect routes. "
+            r"$N^B_{k,t}$ further restricts that count to routes using $k$, so "
+            r"$0\le N^B_{k,t}\le N^B_t\le N^{\mathrm{route}}_t$; superscript $B$ denotes "
+            r"bridged (indirect) routes."
         ),
     ),
     NotationDefinition(
@@ -115,9 +132,10 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         notation=r"$\mathcal A_t,\ \mathcal A^k_t,\ \mathcal M^k_t$",
         unit="Sets of token pairs",
         definition=(
-            r"$\mathcal A_t$ is the set of active endpoint pairs; $\mathcal A^k_t$ is the "
-            r"subset using $k$; $\mathcal M^k_t$ is the subset for which $k$ has the "
-            r"largest realized indirect-route volume."
+            r"$\mathcal A_t$ is the set of endpoint pairs active in indirect routes on day "
+            r"$t$. $\mathcal A^k_t$ restricts it to pairs using $k$, and $\mathcal M^k_t$ "
+            r"further restricts it to pairs for which $k$ has the largest candidate-vehicle "
+            r"volume; $\mathcal M^k_t\subseteq\mathcal A^k_t\subseteq\mathcal A_t$."
         ),
     ),
     NotationDefinition(
@@ -133,37 +151,23 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     NotationDefinition(
         group="Route and liquidity aggregates",
         notation=(
-            r"$N^{\mathrm{route}}_t,\ N^{\mathrm{mid}}_{k,t},\ "
-            r"N^{\mathrm{src}}_{k,t},\ N^{\mathrm{sink}}_{k,t}$"
-        ),
-        unit="Route count",
-        definition=(
-            r"$N^{\mathrm{route}}_t$ counts all day-$t$ intent routes; "
-            r"$N^{\mathrm{mid}}_{k,t}$, $N^{\mathrm{src}}_{k,t}$, and "
-            r"$N^{\mathrm{sink}}_{k,t}$ count routes assigning $k$ the intermediate, source, "
-            r"and sink roles."
-        ),
-    ),
-    NotationDefinition(
-        group="Route and liquidity aggregates",
-        notation=(
-            r"$\mathrm{Vol}^{\mathrm{route}}_t,\ \mathrm{Vol}^{\mathrm{mid}}_{k,t},\ "
-            r"\mathrm{Vol}^{\mathrm{src}}_{k,t},\ \mathrm{Vol}^{\mathrm{sink}}_{k,t}$"
+            r"$\mathrm{Vol}^{\mathrm{src}}_{k,t},\ "
+            r"\mathrm{Vol}^{\mathrm{sink}}_{k,t}$"
         ),
         unit="USD",
         definition=(
-            r"$\mathrm{Vol}^{\mathrm{route}}_t$ is total day-$t$ intent-route volume; "
-            r"$\mathrm{Vol}^{\mathrm{mid}}_{k,t}$, $\mathrm{Vol}^{\mathrm{src}}_{k,t}$, "
-            r"and $\mathrm{Vol}^{\mathrm{sink}}_{k,t}$ assign that volume to $k$ by route role."
+            r"Source- and sink-role restrictions of $A_t$ for token $k$: "
+            r"$0\le\mathrm{Vol}^{\mathrm{src}}_{k,t}\le A_t$ and "
+            r"$0\le\mathrm{Vol}^{\mathrm{sink}}_{k,t}\le A_t$."
         ),
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
-        notation=r"$L_{k,t},\ \mathcal K$",
-        unit="USD / set of tokens",
+        notation=r"$\mathcal K,\ L_{k,t}$",
+        unit="Set of tokens / USD",
         definition=(
-            r"$L_{k,t}$ is vehicle-linked liquidity for $k$ on day $t$; $\mathcal K$ is "
-            r"the candidate-vehicle set."
+            r"$\mathcal K$ is the candidate-vehicle set. $L_{k,t}$ is liquidity linked to "
+            r"candidate $k\in\mathcal K$ on day $t$."
         ),
     ),
     NotationDefinition(
@@ -195,9 +199,12 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         ),
         unit="Sets of token pairs",
         definition=(
-            r"Subsets of $\mathcal P_{k,t,q}$ with a direct route ($\mathcal D$), a route via $k$ "
-            r"($\mathcal V$), both routes ($\mathcal C=\mathcal D\cap\mathcal V$), a thin direct "
-            r"route ($\mathcal T$), or a vehicle-route cost advantage ($\mathcal W$)."
+            r"$\mathcal D_{k,t,q}\subseteq\mathcal P_{k,t,q}$ and "
+            r"$\mathcal V_{k,t,q}\subseteq\mathcal P_{k,t,q}$ restrict the broad pair set "
+            r"to pairs with a direct route or a route via $k$. "
+            r"$\mathcal C_{k,t,q}=\mathcal D_{k,t,q}\cap\mathcal V_{k,t,q}$, "
+            r"$\mathcal T_{k,t,q}\subseteq\mathcal D_{k,t,q}$ is thin-direct support, and "
+            r"$\mathcal W_{k,t,q}\subseteq\mathcal C_{k,t,q}$ has a vehicle-route cost advantage."
         ),
     ),
     NotationDefinition(
@@ -234,20 +241,26 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         group="Settlement objects and operators",
         notation=r"$\mathcal{R}^{\mathrm{transfer}}_{k,w}$",
         unit="Set of route units",
-        definition=r"Members of $\mathcal R_{k,w}$ whose receipt logs a transfer of vehicle $k$.",
-    ),
-    NotationDefinition(
-        group="Settlement objects and operators",
-        notation=r"$|\mathcal{A}|,\ \mathbf{1}\{\cdot\}$",
-        unit="Count / indicator (0/1)",
-        definition=r"Cardinality of set $\mathcal A$ and an indicator equal to one when its condition is true.",
-    ),
-    NotationDefinition(
-        group="Settlement objects and operators",
-        notation=r"$\mathrm{Betweenness}^{\mathrm{vol}},\ \Delta_{7}$",
-        unit="USD weighting / 7 days",
         definition=(
-            r"Superscript $\mathrm{vol}$ denotes USD weighting; for any daily variable $X_t$, "
+            r"Members whose receipt logs a transfer of vehicle $k$; "
+            r"$\mathcal R^{\mathrm{transfer}}_{k,w}\subseteq\mathcal R_{k,w}$."
+        ),
+    ),
+    NotationDefinition(
+        group="Settlement objects and operators",
+        notation=r"$|\mathcal{S}|,\ \mathbf{1}_{\{\cdot\}}$",
+        unit="Count / indicator (0/1)",
+        definition=(
+            r"Cardinality of any finite set $\mathcal S$ and an indicator equal to one when its "
+            r"subscripted condition is true."
+        ),
+    ),
+    NotationDefinition(
+        group="Settlement objects and operators",
+        notation=r"$\Delta_{7}$",
+        unit="7 days",
+        definition=(
+            r"Seven-day forward change in any daily variable $X_t$: "
             r"$\Delta_7 X_t=X_{t+7}-X_t$."
         ),
     ),
@@ -260,12 +273,9 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         name="Vehicle share",
         column="bridge_share",
         notation=r"$\mathrm{VehicleShare}_{k,t}$",
-        formula=r"$\displaystyle\frac{B_{k,t}}{B_t}$",
+        formula=r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}{\mathrm{IVol}_t}$",
         unit="Fraction (0--1)",
-        construction=(
-            r"$B_{k,t}$ is indirect-route USD volume through $k$; $B_t$ is total "
-            r"indirect-route USD volume on day $t$."
-        ),
+        construction=r"Fraction of day-$t$ indirect-route USD volume routed through $k$.",
         source="data/empirical/bridge_daily.parquet",
         used_for="Main vehicle-use outcome; measurement and persistence tests.",
         include_in_summary=True,
@@ -278,12 +288,9 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         name="All-route vehicle share",
         column="all_route_bridge_share",
         notation=r"$\mathrm{AllRouteVehicleShare}_{k,t}$",
-        formula=r"$\displaystyle\frac{B_{k,t}}{A_t}$",
+        formula=r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}{A_t}$",
         unit="Fraction (0--1)",
-        construction=(
-            r"$B_{k,t}$ is indirect-route USD volume through $k$; $A_t$ is total "
-            r"direct plus indirect route USD volume on day $t$."
-        ),
+        construction=r"Fraction of day-$t$ all-route USD volume routed indirectly through $k$.",
         source="bridge_daily plus route_denominator_daily",
         used_for="Economic-scope denominator robustness.",
         include_in_summary=True,
@@ -298,10 +305,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$\mathrm{VehicleCountShare}_{k,t}$",
         formula=r"$\displaystyle\frac{N^{B}_{k,t}}{N^{B}_{t}}$",
         unit="Fraction (0--1)",
-        construction=(
-            r"$N^{B}_{k,t}$ counts indirect route units through $k$; $N^{B}_{t}$ counts "
-            r"all indirect route units on day $t$."
-        ),
+        construction=r"Fraction of day-$t$ indirect route units that use $k$.",
         source="data/empirical/bridge_daily.parquet",
         used_for="Count-weighted measurement robustness.",
         include_in_summary=True,
@@ -316,10 +320,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$\mathrm{PairCoverage}_{k,t}$",
         formula=r"$\displaystyle\frac{|\mathcal A^{k}_{t}|}{|\mathcal A_t|}$",
         unit="Fraction (0--1)",
-        construction=(
-            r"$\mathcal A_t$ is the set of active endpoint pairs; $\mathcal A^k_t$ contains "
-            r"pairs using $k$ in at least one indirect route on day $t$."
-        ),
+        construction=r"Fraction of active indirect-route endpoint pairs that use $k$.",
         source="data/empirical/bridge_daily.parquet",
         used_for="Extensive-margin vehicle coverage.",
         include_in_summary=True,
@@ -335,8 +336,8 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         formula=r"$\displaystyle\frac{|\mathcal M^{k}_{t}|}{|\mathcal A_t|}$",
         unit="Fraction (0--1)",
         construction=(
-            r"$\mathcal M^k_t\subseteq\mathcal A_t$ contains pairs for which $k$ has the "
-            r"largest realized indirect-route USD volume on day $t$."
+            r"Fraction of active indirect-route endpoint pairs for which $k$ has the largest "
+            r"candidate-vehicle volume."
         ),
         source="data/empirical/bridge_daily.parquet",
         used_for="Pair-level dominance and robustness.",
@@ -349,8 +350,8 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         group="Vehicle-use measures",
         name="Vehicle volume",
         column="bridge_volume_usd",
-        notation=r"$\mathrm{VehicleVolume}_{k,t}$",
-        formula=r"$B_{k,t}$",
+        notation=r"$\mathrm{IVol}_{k,t}$",
+        formula="",
         unit="USD",
         construction=r"Sum of realized USD volume over indirect routes using vehicle $k$ on day $t$.",
         source="data/empirical/bridge_daily.parquet",
@@ -363,8 +364,8 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     VariableSpec(
         group="Network and route-denominator controls",
         name="Raw token volume share",
-        column="vshare",
-        notation=r"$\mathrm{VShare}_{k,t}$",
+        column="vol_share",
+        notation=r"$\mathrm{VolShare}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{\mathrm{Vol}^{\mathrm{in}}_{k,t}+\mathrm{Vol}^{\mathrm{out}}_{k,t}}"
             r"{\sum_{\ell}(\mathrm{Vol}^{\mathrm{in}}_{\ell,t}+\mathrm{Vol}^{\mathrm{out}}_{\ell,t})}$"
@@ -384,7 +385,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         column="betweenness_centrality",
         notation=r"$\mathrm{Betweenness}_{k,t}$",
         formula=(
-            r"$\displaystyle\frac{N^{\mathrm{mid}}_{k,t}}"
+            r"$\displaystyle\frac{N^{B}_{k,t}}"
             r"{N^{\mathrm{route}}_t-N^{\mathrm{src}}_{k,t}-N^{\mathrm{sink}}_{k,t}}$"
         ),
         unit="Fraction (0--1)",
@@ -404,14 +405,14 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         column="volume_weighted_betweenness",
         notation=r"$\mathrm{Betweenness}^{\mathrm{vol}}_{k,t}$",
         formula=(
-            r"$\displaystyle\frac{\mathrm{Vol}^{\mathrm{mid}}_{k,t}}"
-            r"{\mathrm{Vol}^{\mathrm{route}}_t-\mathrm{Vol}^{\mathrm{src}}_{k,t}"
+            r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}"
+            r"{A_t-\mathrm{Vol}^{\mathrm{src}}_{k,t}"
             r"-\mathrm{Vol}^{\mathrm{sink}}_{k,t}}$"
         ),
         unit="Fraction (0--1)",
         construction=(
-            r"USD-volume analogue of $\mathrm{Betweenness}_{k,t}$; each $\mathrm{Vol}$ "
-            r"term is day-$t$ route volume assigned to the indicated role."
+            r"USD-volume analogue of $\mathrm{Betweenness}_{k,t}$ using the same route "
+            r"universe and source/sink exclusions."
         ),
         source="data/metrics/<date>.parquet",
         used_for="Network-theoretic robustness.",
@@ -420,8 +421,8 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         group="Network and route-denominator controls",
         name="All-route volume",
         column="daily_all_route_volume_usd",
-        notation=r"$\mathrm{AllRouteVolume}_{t}$",
-        formula=r"$\mathrm{DirectRouteVolume}_t+\mathrm{IndirectRouteVolume}_t$",
+        notation=r"$A_t$",
+        formula=r"$\mathrm{DVol}_t+\mathrm{IVol}_t$",
         unit="USD",
         construction=r"Total realized USD volume across direct and indirect route units on day $t$.",
         source="data/empirical/route_denominator_daily.parquet",
@@ -436,10 +437,10 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         group="Network and route-denominator controls",
         name="Indirect-route volume",
         column="daily_indirect_route_volume_usd",
-        notation=r"$\mathrm{IndirectRouteVolume}_{t}$",
-        formula=r"$B_t$",
+        notation=r"$\mathrm{IVol}_t$",
+        formula="",
         unit="USD",
-        construction=r"$B_t$ is total realized USD volume across indirect route units on day $t$.",
+        construction=r"Total realized USD volume across indirect route units on day $t$.",
         source="data/empirical/route_denominator_daily.parquet",
         used_for="VehicleShare denominator and scope.",
         include_in_summary=True,
@@ -453,9 +454,9 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         name="Indirect-route share",
         column="indirect_route_share",
         notation=r"$\mathrm{IndirectRouteShare}_{t}$",
-        formula=r"$\displaystyle\frac{B_t}{A_t}$",
+        formula=r"$\displaystyle\frac{\mathrm{IVol}_t}{A_t}$",
         unit="Fraction (0--1)",
-        construction=r"$B_t$ is indirect-route USD volume and $A_t$ is all-route USD volume on day $t$.",
+        construction=r"Fraction of day-$t$ all-route USD volume executed through indirect routes.",
         source="data/empirical/route_denominator_daily.parquet",
         used_for="Overall importance of routed exchange.",
         include_in_summary=True,
@@ -468,12 +469,12 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         group="Liquidity measures",
         name="Vehicle-linked liquidity",
         column="vehicle_linked_liquidity_usd",
-        notation=r"$\mathrm{VehicleLiquidity}_{k,t}$",
-        formula=r"$L_{k,t}=\displaystyle\sum_{p\in\mathcal L_{k,t}}\mathrm{TVL}_{p,t}$",
+        notation=r"$L_{k,t}$",
+        formula=r"$\displaystyle\sum_{p\in\mathcal L_{k,t}}\mathrm{TVL}_{p,t}$",
         unit="USD",
         construction=(
-            r"$\mathcal L_{k,t}$ is the set of eligible Uniswap V3 pools linked to $k$; "
-            r"$p$ indexes pools after filtering subgraph TVL outliers."
+            r"Total eligible Uniswap V3 pool TVL linked to $k$ after filtering subgraph "
+            r"TVL outliers."
         ),
         source="data/exhibits/lp_concentration.parquet",
         used_for="Liquidity concentration, persistence, and stickiness tests.",
@@ -489,10 +490,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$\mathrm{LPConc}_{k,t}$",
         formula=r"$\displaystyle\frac{L_{k,t}}{\sum_{\ell\in\mathcal K}L_{\ell,t}}$",
         unit="Fraction (0--1)",
-        construction=(
-            r"$\mathcal K$ is the candidate-vehicle set; $L_{k,t}$ is vehicle-linked "
-            r"liquidity for $k$ on day $t$."
-        ),
+        construction=r"Candidate $k$'s share of total vehicle-linked liquidity on day $t$.",
         source="data/exhibits/lp_concentration.parquet",
         used_for="Liquidity persistence and predictability regressions.",
         include_in_summary=True,
@@ -641,7 +639,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$\mathrm{Stress}_{t}$",
         formula=r"$\max\{-R^{\mathrm{WETH}}_t,0\}$",
         unit="Daily log-return fraction",
-        construction=r"$R^{\mathrm{WETH}}_t$ is the day-$t$ WETH log return; only downside moves enter.",
+        construction=r"Positive part of the negative day-$t$ WETH log return.",
         source="data/empirical/bridge_daily.parquet",
         used_for="Stress-rotation tests and controls.",
         include_in_summary=True,
@@ -655,7 +653,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         name="Eight percent stress event",
         column="stress_event_8pct",
         notation=r"$\mathrm{StressEvent}_{t}$",
-        formula=r"$\mathbf 1\{\mathrm{Stress}_{t}\ge 0.08\}$",
+        formula=r"$\mathbf{1}_{\{\mathrm{Stress}_{t}\ge 0.08\}}$",
         unit="Indicator (0/1)",
         construction=r"Equals one when $\mathrm{Stress}_t$ is at least $0.08$ on day $t$.",
         source="constructed from WETH price in bridge_daily",
@@ -665,8 +663,8 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         group="Stress and dynamic variables",
         name="Future vehicle share, seven days",
         column="future_bridge_share_t7",
-        notation=r"$\mathrm{FutureVehicleShare}^{(7)}_{k,t}$",
-        formula=r"$\mathrm{VehicleShare}_{k,t+7}$",
+        notation=r"$\mathrm{VehicleShare}_{k,t+7}$",
+        formula="",
         unit="Fraction (0--1)",
         construction=r"Vehicle share for token $k$ seven calendar days after day $t$.",
         source="constructed from observations table",

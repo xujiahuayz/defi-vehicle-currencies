@@ -88,6 +88,16 @@ def _artifact_stem(stem: str) -> str:
     return NUMBERED_ARTIFACT_RE.sub("", stem)
 
 
+def _with_canonical_vol_share(df: pd.DataFrame) -> pd.DataFrame:
+    """Accept old empirical pickles while exposing only the canonical name."""
+
+    if "VolShare" in df.columns:
+        return df
+    if "VShare" in df.columns:
+        return df.rename(columns={"VShare": "VolShare"})
+    raise ValueError("Empirical summary has no VolShare column.")
+
+
 def _write_table(
     df: pd.DataFrame,
     stem: str,
@@ -123,7 +133,9 @@ def _copy_if_exists(src: Path, dest: Path) -> None:
 
 
 def build_table_bridge_measurement() -> None:
-    summary = pd.read_pickle(EMP / "bridge_measure_summary_by_year.pkl")
+    summary = _with_canonical_vol_share(
+        pd.read_pickle(EMP / "bridge_measure_summary_by_year.pkl")
+    )
     years = [2020, 2022, 2024, 2026]
     rows = []
     for token in VEHICLE_ORDER:
@@ -137,11 +149,11 @@ def build_table_bridge_measurement() -> None:
                 row[f"{year} BridgeShare (%)"] = _pct(r["BridgeShare"])
         g2026 = summary[(summary["year"] == 2026) & (summary["token"] == token)]
         if g2026.empty:
-            row["2026 VShare (%)"] = ""
+            row["2026 VolShare (%)"] = ""
             row["2026 PairCoverage (%)"] = ""
         else:
             r = g2026.iloc[0]
-            row["2026 VShare (%)"] = _pct(r["VShare"])
+            row["2026 VolShare (%)"] = _pct(r["VolShare"])
             row["2026 PairCoverage (%)"] = _pct(r["PairCoverage"])
         rows.append(row)
     out = pd.DataFrame(rows)
@@ -152,7 +164,7 @@ def build_table_bridge_measurement() -> None:
         "tab:bridge-measurement",
         note=(
             "BridgeShare is the share of indirect route volume in which the token is an "
-            "intermediate. VShare is total token volume share and includes endpoint demand. "
+            "intermediate. VolShare is total token volume share and includes endpoint demand. "
             "PairCoverage is the share of active endpoint pairs for which the token appears "
             "as an intermediate."
         ),
@@ -443,6 +455,37 @@ def build_table_v3_architecture() -> None:
     )
 
 
+def build_figure_bridge_vs_volume_share() -> None:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    summary = _with_canonical_vol_share(
+        pd.read_pickle(EMP / "bridge_measure_summary_by_year.pkl")
+    )
+    y2026 = summary[summary["year"].eq(2026)].copy()
+    fig, ax = plt.subplots(figsize=(6.2, 4.2))
+    for _, r in y2026.iterrows():
+        ax.scatter(100 * r["VolShare"], 100 * r["BridgeShare"], s=70)
+        ax.annotate(
+            r["token"],
+            (100 * r["VolShare"], 100 * r["BridgeShare"]),
+            xytext=(5, 4),
+            textcoords="offset points",
+        )
+    lim = max(35, 100 * max(y2026["VolShare"].max(), y2026["BridgeShare"].max()) * 1.08)
+    ax.plot([0, lim], [0, lim], color="0.6", linewidth=1, linestyle="--")
+    ax.set_xlim(0, lim)
+    ax.set_ylim(0, lim)
+    ax.set_xlabel("VolShare, raw volume share (%)")
+    ax.set_ylabel("BridgeShare, intermediate-route share (%)")
+    ax.set_title("Vehicle use is not the same as endpoint volume")
+    fig.tight_layout()
+    fig.savefig(FIGURES / "bridge_vs_volume_share.pdf")
+    plt.close(fig)
+
+
 def build_figures() -> None:
     import matplotlib
 
@@ -451,23 +494,7 @@ def build_figures() -> None:
 
     _copy_if_exists(EMP / "bridge_share_timeseries.pdf", FIGURES / "bridge_share_timeseries.pdf")
     _copy_if_exists(EMP / "lp_concentration_vehicle_timeseries.pdf", FIGURES / "lp_concentration_timeseries.pdf")
-
-    summary = pd.read_pickle(EMP / "bridge_measure_summary_by_year.pkl")
-    y2026 = summary[summary["year"].eq(2026)].copy()
-    fig, ax = plt.subplots(figsize=(6.2, 4.2))
-    for _, r in y2026.iterrows():
-        ax.scatter(100 * r["VShare"], 100 * r["BridgeShare"], s=70)
-        ax.annotate(r["token"], (100 * r["VShare"], 100 * r["BridgeShare"]), xytext=(5, 4), textcoords="offset points")
-    lim = max(35, 100 * max(y2026["VShare"].max(), y2026["BridgeShare"].max()) * 1.08)
-    ax.plot([0, lim], [0, lim], color="0.6", linewidth=1, linestyle="--")
-    ax.set_xlim(0, lim)
-    ax.set_ylim(0, lim)
-    ax.set_xlabel("VShare, raw volume share (%)")
-    ax.set_ylabel("BridgeShare, intermediate-route share (%)")
-    ax.set_title("Vehicle use is not the same as endpoint volume")
-    fig.tight_layout()
-    fig.savefig(FIGURES / "bridge_vs_volume_share.pdf")
-    plt.close(fig)
+    build_figure_bridge_vs_volume_share()
 
     route = pd.read_pickle(EMP / "route_cost_panel_v2_summary.pkl")
     weth = route[route["vehicle"].eq("WETH")].sort_values("trade_size_usd")

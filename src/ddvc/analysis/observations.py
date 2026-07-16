@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 
 from ddvc.paths import DATA_DIR
 from ddvc.variable_registry import OBSERVATIONS_TABLE_COLUMNS
@@ -35,6 +36,17 @@ def _require(path: Path) -> Path:
 
 def _as_date(series: pd.Series) -> pd.Series:
     return pd.to_datetime(series, errors="coerce").dt.normalize()
+
+
+def _metric_volume_share_column(path: Path) -> str:
+    """Return the current metric column, accepting pre-rename data files."""
+
+    columns = set(pq.read_schema(path).names)
+    if "VolShare" in columns:
+        return "VolShare"
+    if "VShare" in columns:
+        return "VShare"
+    raise ValueError(f"Metric file has no volume-share column: {path}")
 
 
 def _read_bridge_daily(data: Path, vehicles: tuple[str, ...]) -> pd.DataFrame:
@@ -98,9 +110,17 @@ def _read_metrics(data: Path, vehicles: tuple[str, ...]) -> pd.DataFrame:
     metrics_dir = _require(data / "metrics")
     files = sorted(path for path in metrics_dir.glob("*.parquet") if path.stem.isdigit() and len(path.stem) == 8)
     for i, path in enumerate(files, start=1):
+        volume_share_column = _metric_volume_share_column(path)
         day = pd.read_parquet(
             path,
-            columns=["token_address", "date", "VShare", "EigenCent", "BetwCent", "BetwCent_V"],
+            columns=[
+                "token_address",
+                "date",
+                volume_share_column,
+                "EigenCent",
+                "BetwCent",
+                "BetwCent_V",
+            ],
         )
         day = day[day["token_address"].isin(vehicles)].copy()
         if day.empty:
@@ -108,7 +128,7 @@ def _read_metrics(data: Path, vehicles: tuple[str, ...]) -> pd.DataFrame:
         day = day.rename(
             columns={
                 "token_address": "token",
-                "VShare": "vshare",
+                volume_share_column: "vol_share",
                 "EigenCent": "eigen_centrality",
                 "BetwCent": "betweenness_centrality",
                 "BetwCent_V": "volume_weighted_betweenness",
@@ -123,14 +143,21 @@ def _read_metrics(data: Path, vehicles: tuple[str, ...]) -> pd.DataFrame:
             columns=[
                 "date",
                 "token",
-                "vshare",
+                "vol_share",
                 "eigen_centrality",
                 "betweenness_centrality",
                 "volume_weighted_betweenness",
             ]
         )
     out = pd.concat(rows, ignore_index=True)
-    keep = ["date", "token", "vshare", "eigen_centrality", "betweenness_centrality", "volume_weighted_betweenness"]
+    keep = [
+        "date",
+        "token",
+        "vol_share",
+        "eigen_centrality",
+        "betweenness_centrality",
+        "volume_weighted_betweenness",
+    ]
     return out[keep].sort_values(["token", "date"])
 
 

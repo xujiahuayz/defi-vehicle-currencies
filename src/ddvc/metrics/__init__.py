@@ -3,8 +3,8 @@
 Reads the unified cross-DEX swap-events table produced by the reconstruct
 layer and emits per token per day the full dominance-variable family:
 
-    VShare          volume share: fraction of total DEX volume routed through
-                    each token as intermediate
+    VolShare        volume share: fraction of total directed route-leg volume
+                    assigned to each token as an incoming or outgoing endpoint
     BetwCent        betweenness centrality (route betweenness on the token
                     graph, count-based)
     BetwCent_V      betweenness centrality (volume-weighted)
@@ -77,7 +77,7 @@ def _directed_volume(legs: pd.DataFrame) -> pd.DataFrame:
     vol = pd.DataFrame({"V_in": v_in, "V_out": v_out}).fillna(0.0)
     vol["V_total"] = vol["V_in"] + vol["V_out"]
     total = vol["V_total"].sum()
-    vol["VShare"] = vol["V_total"] / total if total > 0 else 0.0
+    vol["VolShare"] = vol["V_total"] / total if total > 0 else 0.0
     return vol
 
 
@@ -251,7 +251,7 @@ def _compute(legs: pd.DataFrame, date_str: str) -> pd.DataFrame:
         vol.join(cent, how="left")
         .join(betw, how="left")
         .fillna(0.0)
-        .sort_values("VShare", ascending=False)
+        .sort_values("VolShare", ascending=False)
     )
     out.index.name = "token_address"
     out.insert(0, "date", date_str)
