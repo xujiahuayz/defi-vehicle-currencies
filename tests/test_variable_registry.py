@@ -46,10 +46,71 @@ class VariableRegistryTests(unittest.TestCase):
     def test_notation_key_defines_route_indices_and_superscripts(self) -> None:
         notation = " ".join(item.notation for item in NOTATION_DEFINITIONS)
         definitions = " ".join(item.definition for item in NOTATION_DEFINITIONS)
-        for symbol in ["$i,\\ j$", "$k$", "$t,\\ w$", "$q$", "$r$"]:
+        for symbol in ["$i,\\ j$", "$k$", "$\\ell,\\ p$", "$t,\\ w$", "$q$", "$r$"]:
             self.assertIn(symbol, notation)
         self.assertIn(r"superscripts $D$ and $V$", definitions)
+        self.assertIn(r"superscript $B$ denotes bridged", definitions)
         self.assertIn(r"Superscript $\mathrm{vol}$", definitions)
+
+    def test_every_auxiliary_formula_symbol_is_defined(self) -> None:
+        formulas = " ".join(spec.formula for spec in VARIABLE_SPECS)
+        symbol_key = " ".join(
+            item.notation + " " + item.definition for item in NOTATION_DEFINITIONS
+        )
+        required_symbols = {
+            r"A_t": r"A_t",
+            r"B_{k,t}": r"B_{k,t}",
+            r"B_t": r"B_t",
+            r"N^{B}_{k,t}": r"N^B_{k,t}",
+            r"N^{B}_{t}": r"N^B_t",
+            r"\mathcal A^{k}_{t}": r"\mathcal A^k_t",
+            r"\mathcal A_t": r"\mathcal A_t",
+            r"\mathcal M^{k}_{t}": r"\mathcal M^k_t",
+            r"\mathrm{Vol}^{\mathrm{in}}": r"\mathrm{Vol}^{\mathrm{in}}",
+            r"\mathrm{Vol}^{\mathrm{out}}": r"\mathrm{Vol}^{\mathrm{out}}",
+            r"N^{\mathrm{route}}": r"N^{\mathrm{route}}",
+            r"N^{\mathrm{mid}}": r"N^{\mathrm{mid}}",
+            r"N^{\mathrm{src}}": r"N^{\mathrm{src}}",
+            r"N^{\mathrm{sink}}": r"N^{\mathrm{sink}}",
+            r"\mathrm{Vol}^{\mathrm{route}}": r"\mathrm{Vol}^{\mathrm{route}}",
+            r"\mathrm{Vol}^{\mathrm{mid}}": r"\mathrm{Vol}^{\mathrm{mid}}",
+            r"\mathrm{Vol}^{\mathrm{src}}": r"\mathrm{Vol}^{\mathrm{src}}",
+            r"\mathrm{Vol}^{\mathrm{sink}}": r"\mathrm{Vol}^{\mathrm{sink}}",
+            r"\mathrm{DirectRouteVolume}_t": r"\mathrm{DirectRouteVolume}_t",
+            r"\mathrm{IndirectRouteVolume}_t": r"\mathrm{IndirectRouteVolume}_t",
+            r"\ell": r"$\ell,\ p$",
+            r"p\in": r"$\ell,\ p$",
+            r"L_{k,t}": r"L_{k,t}",
+            r"\mathcal L_{k,t}": r"\mathcal L_{k,t}",
+            r"\mathrm{TVL}_{p,t}": r"\mathrm{TVL}_{p,t}",
+            r"\mathcal K": r"\mathcal K",
+            r"\mathcal P_{k,t,q}": r"\mathcal{P}_{k,t,q}",
+            r"\mathcal D_{k,t,q}": r"\mathcal{D}_{k,t,q}",
+            r"\mathcal V_{k,t,q}": r"\mathcal{V}_{k,t,q}",
+            r"\mathcal C_{k,t,q}": r"\mathcal{C}_{k,t,q}",
+            r"\mathcal T_{k,t,q}": r"\mathcal{T}_{k,t,q}",
+            r"\mathcal W_{k,t,q}": r"\mathcal{W}_{k,t,q}",
+            r"/q": r"$q$",
+            r"O^D_{i,j,q,t}": r"O^{D}_{i,j,q,t}",
+            r"\Delta C_{i,j,k,q,t}": r"\Delta C_{i,j,k,q,t}",
+            r"R^{\mathrm{WETH}}_t": r"R^{\mathrm{WETH}}_t",
+            r"\mathcal R^{\mathrm{transfer}}_{k,w}": r"\mathcal{R}^{\mathrm{transfer}}_{k,w}",
+            r"\mathcal R_{k,w}": r"\mathcal{R}_{k,w}",
+        }
+        for formula_symbol, key_symbol in required_symbols.items():
+            with self.subTest(symbol=formula_symbol):
+                self.assertIn(formula_symbol, formulas)
+                self.assertIn(key_symbol, symbol_key)
+
+        registered_variables = " ".join(spec.notation for spec in VARIABLE_SPECS)
+        named_inputs = {
+            r"\mathrm{Stress}_{t}": r"$\mathrm{Stress}_{t}$",
+            r"\mathrm{VehicleShare}_{k,t": r"$\mathrm{VehicleShare}_{k,t}$",
+        }
+        for formula_symbol, registered_symbol in named_inputs.items():
+            with self.subTest(named_input=formula_symbol):
+                self.assertIn(formula_symbol, formulas)
+                self.assertIn(registered_symbol, registered_variables)
 
     def test_variable_units_are_measurement_units_not_observation_levels(self) -> None:
         for spec in VARIABLE_SPECS:

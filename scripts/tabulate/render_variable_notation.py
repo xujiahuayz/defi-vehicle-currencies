@@ -58,7 +58,13 @@ def render_table() -> str:
         r"\midrule",
     ]
 
+    symbol_group = None
     for item in NOTATION_DEFINITIONS:
+        if item.group != symbol_group:
+            if symbol_group is not None:
+                lines.append(r"\addlinespace")
+            lines.append(group_header(item.group, 3))
+            symbol_group = item.group
         lines.append(
             table_row(
                 item.notation,
