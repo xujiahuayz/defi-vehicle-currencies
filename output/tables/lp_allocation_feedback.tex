@@ -2,17 +2,17 @@
 \toprule
 Panel & Outcome & Regressor & N & Date clusters & Beta & SE & t & p & Units & FE / SE \\
 \midrule
-A. Stock feedback & future VehicleShare, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 0.1117 & 0.0135 & 8.30 & <0.001 & share & token FE + date FE; date-clustered SE \\
-A. Stock feedback & future LPConcentration, t+7 & BridgeShare & 9,380 & 1,876 & 0.0419 & 0.0098 & 4.29 & <0.001 & share & token FE + date FE; date-clustered SE \\
-A. Stock feedback & future log VehicleLinkedLiquidity, t+7 & BridgeShare & 9,380 & 1,876 & 1.1713 & 0.0621 & 18.86 & <0.001 & log points & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in LPConcentration & BridgeShare & 9,265 & 1,853 & -3.4047 & 1.3012 & -2.62 & 0.009 & pp & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in LPConcentration & route\_cost\_advantage\_100bp & 9,265 & 1,853 & -0.0054 & 0.0025 & -2.16 & 0.031 & pp & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in LPConcentration & vehicle\_available\_share & 9,265 & 1,853 & 3.6119 & 1.4612 & 2.47 & 0.014 & pp & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in LPConcentration & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -6.5773 & 3.1165 & -2.11 & 0.035 & pp & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in log VehicleLinkedLiquidity & BridgeShare & 9,265 & 1,853 & -0.1805 & 0.0458 & -3.94 & <0.001 & log points & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in log VehicleLinkedLiquidity & route\_cost\_advantage\_100bp & 9,265 & 1,853 & -0.0003 & 0.0002 & -1.21 & 0.228 & log points & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in log VehicleLinkedLiquidity & vehicle\_available\_share & 9,265 & 1,853 & 0.2112 & 0.0454 & 4.65 & <0.001 & log points & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in log VehicleLinkedLiquidity & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -0.4296 & 0.1154 & -3.72 & <0.001 & log points & token FE + date FE; date-clustered SE \\
+A. Stock feedback & future VehicleShare, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 0.2118 & 0.0201 & 10.54 & <0.001 & share & token FE + date FE; date-clustered SE \\
+A. Stock feedback & future LPConcentration, t+7 & BridgeShare & 9,380 & 1,876 & 0.0150 & 0.0036 & 4.21 & <0.001 & share & token FE + date FE; date-clustered SE \\
+A. Stock feedback & future log VehicleLinkedLiquidity, t+7 & BridgeShare & 9,380 & 1,876 & -0.2454 & 0.0371 & -6.61 & <0.001 & log points & token FE + date FE; date-clustered SE \\
+B. LP stock change & 30-day change in LPConcentration & BridgeShare & 9,265 & 1,853 & 0.6479 & 0.4516 & 1.43 & 0.152 & pp & token FE + date FE; date-clustered SE \\
+B. LP stock change & 30-day change in LPConcentration & route\_cost\_advantage\_100bp & 9,265 & 1,853 & 0.0068 & 0.0012 & 5.77 & <0.001 & pp & token FE + date FE; date-clustered SE \\
+B. LP stock change & 30-day change in LPConcentration & vehicle\_available\_share & 9,265 & 1,853 & 2.1340 & 0.4417 & 4.83 & <0.001 & pp & token FE + date FE; date-clustered SE \\
+B. LP stock change & 30-day change in LPConcentration & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -7.0424 & 1.0259 & -6.86 & <0.001 & pp & token FE + date FE; date-clustered SE \\
+B. LP stock change & 30-day change in log VehicleLinkedLiquidity & BridgeShare & 9,265 & 1,853 & 0.0231 & 0.0142 & 1.62 & 0.105 & log points & token FE + date FE; date-clustered SE \\
+B. LP stock change & 30-day change in log VehicleLinkedLiquidity & route\_cost\_advantage\_100bp & 9,265 & 1,853 & 0.0005 & 0.0001 & 5.29 & <0.001 & log points & token FE + date FE; date-clustered SE \\
+B. LP stock change & 30-day change in log VehicleLinkedLiquidity & vehicle\_available\_share & 9,265 & 1,853 & 0.0632 & 0.0166 & 3.80 & <0.001 & log points & token FE + date FE; date-clustered SE \\
+B. LP stock change & 30-day change in log VehicleLinkedLiquidity & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -0.1881 & 0.0344 & -5.47 & <0.001 & log points & token FE + date FE; date-clustered SE \\
 \bottomrule
 \end{tabular}
-% Notes for paper wrapper: Panel A reports the unified stock feedback estimates from core\_panel\_regressions. Panel B uses 30-day changes in vehicle-linked liquidity stocks.
+% Notes for paper wrapper: Panel A reports the unified stock-dynamics estimates from core\_panel\_regressions. Panel B uses 30-day changes in candidate-linked liquidity stocks.

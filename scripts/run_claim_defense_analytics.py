@@ -157,10 +157,10 @@ def route_cost_decomposition() -> pd.DataFrame:
     _write_table(
         out,
         "table_r12_route_cost_decomposition",
-        "Route-cost value decomposition for WETH vehicle routes.",
+        "Route-cost value decomposition for WETH indirect routes.",
         "tab:route-cost-decomposition",
         note=(
-            "The table separates route availability, missing-direct-route support, thin-direct "
+            "The table separates route availability, missing-direct-route cases, thin-direct "
             "markets, and common-support price improvement. High-quality direct routes are "
             "rows where direct output is at least 99.5 percent of notional."
         ),

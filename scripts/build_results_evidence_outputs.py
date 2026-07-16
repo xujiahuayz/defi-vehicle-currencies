@@ -28,8 +28,8 @@ SUPPORT_TABLE_STEPS = [
     "run_claim_defense_analytics.py",
     "run_jfe_construct_validity_checks.py",
     "run_jfe_identification_extensions.py",
-    "run_jfe_remaining_blocker_fixes.py",
     "run_feedback_proposition_tests.py",
+    "run_jfe_remaining_blocker_fixes.py",
 ]
 
 

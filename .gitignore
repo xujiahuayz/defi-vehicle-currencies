@@ -39,8 +39,7 @@ literature/papers/
 literature/sources.local.json
 literature/auth/
 
-# LaTeX generated files
-paper/*.pdf
+# LaTeX auxiliary files
 paper/*.aux
 paper/*.bbl
 paper/*.blg

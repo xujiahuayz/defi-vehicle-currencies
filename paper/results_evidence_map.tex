@@ -62,12 +62,12 @@ This document reorganizes the current empirical evidence around research questio
 \toprule
 RQ & Research question & Unit & Main proxy & Evidence & Empirical answer \\
 \midrule
-RQ1 & When does one asset become the vehicle? & Endpoint pair x candidate vehicle x day. & Route-cost advantage, vehicle-route availability, vehicle depth. & Table 4 & Actual vehicle share and future vehicle share rise with executable vehicle-route economics. \\
-RQ2 & How does liquidity provision make a vehicle? & Token x day dynamic panel. & LP concentration, vehicle-linked liquidity, lagged vehicle share. & Table 5 & Vehicle use and vehicle-linked liquidity are mutually persistent in stock allocations. \\
+RQ1 & When does one asset become the vehicle? & Endpoint pair x candidate vehicle x day. & Route-cost advantage, indirect-route availability, indirect-route depth. & Table 4 & Actual vehicle share and future vehicle share rise with executable indirect-route economics. \\
+RQ2 & How does liquidity provision make a vehicle? & Token x day dynamic panel. & LP concentration, vehicle-linked liquidity, lagged vehicle share. & Table 5 & Relative LP concentration and vehicle use are mutually persistent; absolute linked TVL moves differently. \\
 RQ3 & Why does vehicle status persist or get displaced? & Incumbent-challenger pair x day. & Lagged vehicle share and challenger route-cost edge. & Table 5 & Incumbents persist, but large challenger cost edges predict share losses. \\
 RQ4 & When does vehicle status switch under stress? & Common-support stress-event days. & WETH-minus-stable vehicle share relative to a prior baseline. & Table 6 & Stress rotates share away from WETH and toward stable vehicles on event days. \\
 RQ5 & How does architecture change vehicle formation? & Endpoint-pair event windows around V3. & Direct-route availability and no-direct/WETH-available cases. & Table 7 & V3 expands direct-route opportunity and reduces no-direct dependence on WETH. \\
-RQ6 & How does settlement design change vehicle use? & Matched V3/V4 route cells and receipt-audited route units. & Intermediate-token transfer incidence and matched-cell V4 route use. & Table 8 & V4 lowers physical intermediary transfers while vehicle-route demand persists. \\
+RQ6 & How does settlement design change vehicle use? & Matched V3/V4 route cells and receipt-audited route units. & Intermediate-token transfer incidence and matched-cell V4 route use. & Table 8 & V4 lowers physical intermediary transfers while vehicle use persists. \\
 RQ7 & Does a vehicle create common liquidity? & Pool x vehicle x day liquidity panel. & Leave-one-out vehicle liquidity factor. & Table 9 & Vehicle-linked pools share a same-vehicle liquidity component beyond market liquidity. \\
 \bottomrule
 \end{tabular}
@@ -124,10 +124,10 @@ Panel & Quantity & Main estimate & Companion estimate & Interpretation \\
 Variable & Level & Construction & Used for \\
 \midrule
 Vehicle share & vehicle token x day & USD volume of indirect routes where token v is an intermediate divided by total indirect-route USD volume that day. & RQ1, RQ2, RQ3, RQ4 \\
-Route-cost advantage & endpoint pair x vehicle x day x trade size & (vehicle-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at \$10k. & RQ1, RQ3, RQ5 \\
+Route-cost advantage & endpoint pair x vehicle x day x trade size & (indirect-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at \$10k. & RQ1, RQ3, RQ5 \\
 Direct available & endpoint pair x day x trade size & Indicator that the exact-quote engine finds a direct executable route for the endpoint pair at the standard notional. & RQ1, RQ5 \\
-Vehicle available & endpoint pair x vehicle x day x trade size & Indicator that both legs through candidate vehicle v are exact-quote executable at the standard notional. & RQ1, RQ5 \\
-Vehicle-linked liquidity & vehicle token x day & USD TVL in Uniswap V3 pools whose vehicle-side/base asset is candidate v, after excluding absurd pool TVL outliers. & RQ2, RQ3, RQ6 \\
+Indirect route available & endpoint pair x vehicle x day x trade size & Indicator that both legs of the indirect route through candidate vehicle v are exact-quote executable at the standard notional. & RQ1, RQ5 \\
+Vehicle-linked liquidity & vehicle token x day & Allocated USD TVL in valid Uniswap V3 daily-snapshot pools containing candidate v: full pool TVL when v is the only candidate side and half when both sides are candidates. & RQ2, RQ3, RQ6 \\
 LP concentration & vehicle token x day & VehicleLinkedLiquidity divided by total vehicle-candidate linked liquidity across the vehicle set that day. & RQ2, RQ3 \\
 Transfer incidence & matched route unit & Indicator that the transaction receipt contains at least one ERC-20 Transfer log matching the intermediate vehicle token. & RQ6 \\
 Vehicle liquidity factor & vehicle token x day & Leave-one-out average daily log-liquidity change among other pools linked to the same vehicle; paired with a leave-one-out market liquidity factor. & RQ7 \\
@@ -153,11 +153,11 @@ Vehicle liquidity factor & vehicle token x day & Leave-one-out average daily log
 \toprule
  & \makecell{(1) \\ Actual \\ vehicle share} & \makecell{(2) \\ Vehicle share \\ t+7} & \makecell{(3) \\ Vehicle share \\ t+30} \\
 \midrule
-Route-cost adv., per 100 bp & \makecell{0.1462$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0001$^{***}$ \\ {\scriptsize p=0.002}} & \makecell{0.0002$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-Vehicle-route avail. & \makecell{19.1385$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0940$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1254$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-Vehicle-route depth & \makecell{28.8502$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  \\
-LP concentration &  & \makecell{0.1117$^{***}$ \\ {\scriptsize p$<$0.001}} &  \\
-Lagged vehicle share &  &  & \makecell{0.3630$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Route-cost adv., per 100 bp & \makecell{0.1462$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0002$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0003$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Indirect-route avail. & \makecell{19.1385$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1175$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1457$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Indirect-route depth & \makecell{28.8502$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  \\
+LP concentration &  & \makecell{0.2118$^{***}$ \\ {\scriptsize p$<$0.001}} &  \\
+Lagged vehicle share &  &  & \makecell{0.3465$^{***}$ \\ {\scriptsize p$<$0.001}} \\
 FE & Endpoint-pair x date & Token and date & Token and date \\
 SE cluster & Date & Date & Date \\
 Obs. & 189,143 & 9,380 & 9,265 \\
@@ -183,11 +183,11 @@ Obs. & 189,143 & 9,380 & 9,265 \\
 \toprule
  & \makecell{(1) \\ Vehicle share \\ t+7} & \makecell{(2) \\ LP conc. \\ t+7} & \makecell{(3) \\ Log LP liq. \\ t+7} & \makecell{(4) \\ Chg. LP \\ conc.} & \makecell{(5) \\ Chg. log \\ LP liq. / N} \\
 \midrule
-\multicolumn{6}{l}{\textit{Panel A. Liquidity-route feedback}} \\
-LP concentration & \makecell{0.1117$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  &  &  \\
-Lagged vehicle share &  & \makecell{0.0419$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{1.1713$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-3.4047$^{***}$ \\ {\scriptsize p=0.009}} & \makecell{-0.1805$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-Vehicle-route avail. &  &  &  & \makecell{3.6119$^{**}$ \\ {\scriptsize p=0.014}} & \makecell{0.2112$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-No-direct veh.-avail. &  &  &  & \makecell{-6.5773$^{**}$ \\ {\scriptsize p=0.035}} & \makecell{-0.4296$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+\multicolumn{6}{l}{\textit{Panel A. Liquidity-route dynamics}} \\
+LP concentration & \makecell{0.2118$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  &  &  \\
+Lagged vehicle share &  & \makecell{0.0150$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.2454$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.6479 \\ {\scriptsize p=0.152}} & \makecell{0.0231 \\ {\scriptsize p=0.105}} \\
+Indirect-route avail. &  &  &  & \makecell{2.1340$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0632$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Indirect-only avail. &  &  &  & \makecell{-7.0424$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.1881$^{***}$ \\ {\scriptsize p$<$0.001}} \\
 FE & Token and date & Token and date & Token and date & Token and date & Token and date \\
 SE cluster & Date & Date & Date & Date & Date \\
 Obs. & 9,380 & 9,380 & 9,380 & 9,265 & 9,265 \\
@@ -337,8 +337,8 @@ Obs. & 685,685 & 685,685 & 664,218 & 21,467 & 679,228 \\
 \toprule
 Test & Unit & Sample & Outcome & Treatment / regressor & FE / SE & Main estimate & Interpretation \\
 \midrule
-P1 availability & pair x day x size & quoteable venues & availability; WETH adv. & WETH vehicle route & pair-day aggregation & 9,584 no-direct rows; 142.65-349.28 bp & availability/thin-direct protection \\
-P2 persistence & token x day & vehicle candidates & future share; LP & LP conc.; lagged share & token/date FE; date SE & positive; p$<$0.001 & reduced-form persistence \\
+P1 availability & pair x day x size & quoteable venues & availability; WETH adv. & WETH indirect route & pair-day aggregation & 9,584 no-direct rows; 142.65-349.28 bp & availability/thin-direct protection \\
+P2 dynamics & token x day & vehicle candidates & future share; LP & LP concentration; current VehicleShare & token/date FE; date SE & LP->share 0.227 (p $<$0.001); share->LP conc. 0.014 (p $<$0.001); share->log TVL 0.060 (p 0.054) & relative persistence; level sensitivity \\
 P3 stress & event x pair set & WETH downside events & WETH-stable share & WETH stress day & event-level t-tests & -2.96 pp, p=0.018 & same-day WETH-to-stable rotation \\
 P4a V3 & pair x month & V3 launch pairs & no-direct WETH & post-V3 & pair FE; pair-clustered SE & -25.81 pp, p$<$0.001; pretrend p=0.922 & direct-route opportunity expansion \\
 P4b V4 & route unit; token-week & matched V3/V4 cells & transfer inc.; LP response & V4; post x netting & matched tests; token/week FE & V4 gap -18.6 pp; log LP beta 2.132 & netting lowers movement; LP response \\

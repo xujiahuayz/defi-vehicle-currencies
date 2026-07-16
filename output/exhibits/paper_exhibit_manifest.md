@@ -10,11 +10,11 @@ summary_statistics. Summary statistics for main empirical variables.
 
 bridge_measurement. Vehicle use and raw volume share by year.
 
-route_cost_advantage. Direct routes and WETH vehicle-route execution costs.
+route_cost_advantage. Direct routes and WETH indirect-route execution costs.
 
 liquidity_stickiness. Liquidity concentration and persistence of vehicle use.
 
-stress_rotation. Stress rotation in common-support vehicle-route opportunities.
+stress_rotation. Stress rotation in common-support indirect-route opportunities.
 
 v4_settlement. V4 flash accounting and physical intermediary-token transfers.
 

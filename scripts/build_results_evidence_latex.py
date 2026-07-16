@@ -143,11 +143,11 @@ def clean_regressor(name: str) -> str:
     mapping = {
         "BridgeShare": "Current vehicle share",
         "route_cost_advantage_100bp": "Route-cost advantage, per 100 bp",
-        "vehicle_available": "Vehicle route available",
-        "vehicle_available_share": "Vehicle-route availability",
-        "vehicle_depth": "Vehicle-route depth",
+        "vehicle_available": "Indirect route available",
+        "vehicle_available_share": "Indirect-route availability",
+        "vehicle_depth": "Indirect-route depth",
         "lp_concentration_share": "LP concentration",
-        "no_direct_vehicle_available_share": "No-direct, vehicle-available",
+        "no_direct_vehicle_available_share": "Indirect-only availability",
         "direct_available_share": "Direct-route availability",
         "market_factor_loo": "Market liquidity factor",
         "vehicle_factor_loo": "Vehicle liquidity factor",
@@ -278,9 +278,9 @@ def evidence_map() -> TableSpec:
             "RQ1",
             "When does one asset become the vehicle?",
             "Endpoint pair x candidate vehicle x day.",
-            "Route-cost advantage, vehicle-route availability, vehicle depth.",
+            "Route-cost advantage, indirect-route availability, indirect-route depth.",
             "Table 4",
-            "Actual vehicle share and future vehicle share rise with executable vehicle-route economics.",
+            "Actual vehicle share and future vehicle share rise with executable indirect-route economics.",
         ],
         [
             "RQ2",
@@ -288,7 +288,7 @@ def evidence_map() -> TableSpec:
             "Token x day dynamic panel.",
             "LP concentration, vehicle-linked liquidity, lagged vehicle share.",
             "Table 5",
-            "Vehicle use and vehicle-linked liquidity are mutually persistent in stock allocations.",
+            "Relative LP concentration and vehicle use are mutually persistent; absolute linked TVL moves differently.",
         ],
         [
             "RQ3",
@@ -320,7 +320,7 @@ def evidence_map() -> TableSpec:
             "Matched V3/V4 route cells and receipt-audited route units.",
             "Intermediate-token transfer incidence and matched-cell V4 route use.",
             "Table 8",
-            "V4 lowers physical intermediary transfers while vehicle-route demand persists.",
+            "V4 lowers physical intermediary transfers while vehicle use persists.",
         ],
         [
             "RQ7",
@@ -377,7 +377,7 @@ def variable_table() -> TableSpec:
         "VehicleShare",
         "RouteCostAdvantage",
         "DirectAvailable",
-        "VehicleAvailable",
+        "IndirectAvailable",
         "VehicleLinkedLiquidity",
         "LPConcentration",
         "SettlementTransferIncidence",
@@ -387,7 +387,7 @@ def variable_table() -> TableSpec:
         "VehicleShare": "Vehicle share",
         "RouteCostAdvantage": "Route-cost advantage",
         "DirectAvailable": "Direct available",
-        "VehicleAvailable": "Vehicle available",
+        "IndirectAvailable": "Indirect route available",
         "VehicleLinkedLiquidity": "Vehicle-linked liquidity",
         "LPConcentration": "LP concentration",
         "SettlementTransferIncidence": "Transfer incidence",
@@ -419,13 +419,13 @@ def rq1_table() -> TableSpec:
             reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="route_cost_advantage_100bp"),
         ],
         [
-            "Vehicle-route avail.",
+            "Indirect-route avail.",
             reg_cell(actual, Outcome="Actual vehicle share", Regressor="vehicle_available"),
             reg_cell(core, Outcome="future VehicleShare, t+7", Regressor="vehicle_available_share"),
             reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="vehicle_available_share"),
         ],
         [
-            "Vehicle-route depth",
+            "Indirect-route depth",
             reg_cell(actual, Outcome="Actual vehicle share", Regressor="vehicle_depth"),
             "",
             "",
@@ -482,7 +482,7 @@ def rq2_rq3_table() -> TableSpec:
     lp = read_table("lp_allocation_feedback")
     thresholds = read_table("persistence_thresholds")
     rows: list[list[object]] = [
-        ["Panel A. Liquidity-route feedback", "", "", "", "", ""],
+        ["Panel A. Liquidity-route dynamics", "", "", "", "", ""],
         [
             "LP concentration",
             reg_cell(lp, Panel="A. Stock feedback", Outcome="future VehicleShare, t+7", Regressor="lp_concentration_share"),
@@ -500,7 +500,7 @@ def rq2_rq3_table() -> TableSpec:
             reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="BridgeShare"),
         ],
         [
-            "Vehicle-route avail.",
+            "Indirect-route avail.",
             "",
             "",
             "",
@@ -508,7 +508,7 @@ def rq2_rq3_table() -> TableSpec:
             reg_cell(lp, Panel="B. LP stock change", Outcome="30-day change in log VehicleLinkedLiquidity", Regressor="vehicle_available_share"),
         ],
         [
-            "No-direct veh.-avail.",
+            "Indirect-only avail.",
             "",
             "",
             "",
@@ -825,7 +825,7 @@ def specification_table() -> TableSpec:
     df = read_table("specification_registry")
     compact = {
         "P1 availability/thin-direct": "P1 availability",
-        "P2 liquidity-route feedback": "P2 persistence",
+        "P2 liquidity-route dynamics": "P2 dynamics",
         "P3 impact stress": "P3 stress",
         "P4a V3 opportunity": "P4a V3",
         "P4b V4 settlement": "P4b V4",
@@ -838,7 +838,7 @@ def specification_table() -> TableSpec:
         "balanced V3 launch-window pairs": "V3 launch pairs",
         "matched V3/V4 cells; LP panel around launch": "matched V3/V4 cells",
         "route availability and WETH advantage": "availability; WETH adv.",
-        "future BridgeShare; future LP concentration/liquidity": "future share; LP",
+        "future VehicleShare; future LP concentration/log TVL": "future share; LP",
         "WETH-minus-stable BridgeShare": "WETH-stable share",
         "no-direct/WETH-available indicator": "no-direct WETH",
         "transfer incidence; LP liquidity response": "transfer inc.; LP response",
@@ -853,9 +853,8 @@ def specification_table() -> TableSpec:
         "pre/post balanced pair panel": "balanced pair panel",
         "V3 transfer incidence 100%": "V3 transfer 100%",
         "9,584 no-direct rows; thin-direct 142.65-349.28 bp": "9,584 no-direct rows; 142.65-349.28 bp",
-        "two-way coefficients positive; p<0.001": "positive; p<0.001",
         "availability and thin-direct execution protection": "availability/thin-direct protection",
-        "reduced-form liquidity-route feedback": "reduced-form persistence",
+        "relative persistence; absolute TVL is specification-sensitive": "relative persistence; level sensitivity",
         "same-day rotation away from WETH toward stable vehicles": "same-day WETH-to-stable rotation",
         "settlement netting lowers movement and predicts LP supply response": "netting lowers movement; LP response",
     }

@@ -1,0 +1,13 @@
+\begin{tabular}{lrrrrrr}
+\toprule
+Source & Volume share (\%) & Legs & Transactions & Stable-leg share (\%) & ETH/WETH-leg share (\%) & Exact-quote status \\
+\midrule
+uniswap\_v3 & 45.8 & 135,165,909 & 106,369,269 & 74.6 & 78.6 & covered exact tick \\
+uniswap\_v2 & 23.9 & 276,285,012 & 236,019,343 & 15.6 & 91.1 & covered exact CP \\
+curve & 11.5 & 7,798,515 & 7,798,515 & 71.5 & 22.2 & excluded exact quote \\
+sushiswap\_v2 & 5.0 & 17,710,641 & 15,585,182 & 38.9 & 90.7 & covered exact CP \\
+fluid & 4.7 & 2,078,125 & 1,837,242 & 84.5 & 21.7 & excluded exact quote \\
+balancer & 4.2 & 3,478,738 & 2,778,117 & 28.0 & 51.0 & weighted pools quoteable \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: Volume shares are measured from unified swap legs. Stable-leg share is the fraction of source volume where either side of a leg is a major stablecoin. Curve and Fluid are excluded from exact executable-depth quotes in the current route-cost panel, so this table bounds the coverage limitation.

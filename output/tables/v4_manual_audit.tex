@@ -1,0 +1,11 @@
+\begin{tabular}{lrrr}
+\toprule
+Audit check & N & Pass rate (\%) & Interpretation \\
+\midrule
+No-transfer sample size & 93 &  & All sampled V4 route units with no intermediary-token ERC-20 transfer \\
+Populated receipts & 93 & 100.0 & No-transfer examples are not empty receipt failures \\
+Source/sink transfer present & 93 & 100.0 & Receipt contains external endpoint-token movement while intermediary token is absent \\
+Intermediary transfer absent & 93 & 100.0 & Confirms the sampled route unit has no ERC-20 transfer for the route intermediary \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: The audit takes all V4 matched route units with no intermediary-token transfer and counts ERC-20 Transfer logs for the source, sink, and intermediary token addresses in the transaction receipt.

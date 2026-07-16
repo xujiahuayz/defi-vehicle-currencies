@@ -1,0 +1,15 @@
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+Panel & Outcome & N & Week clusters & Vehicles & Treatment / exposure & Beta & SE & t & p & Interpretation \\
+\midrule
+A. LP response around settlement-netting architecture & LP concentration & 630 & 126 & 5 & post x netting exposure & -0.076 & 0.006 & -11.97 & <0.001 & token and week fixed effects; suggestive event evidence \\
+A. LP response around settlement-netting architecture & log LP liquidity & 630 & 126 & 5 & post x netting exposure & 0.660 & 0.082 & 8.04 & <0.001 & token and week fixed effects; suggestive event evidence \\
+B. Netting exposure by vehicle & USDC & 112 &  &  & 1 - V4 transfer incidence & 0.241 &  &  &  & median route \$1,577 \\
+B. Netting exposure by vehicle & WETH & 188 &  &  & 1 - V4 transfer incidence & 0.239 &  &  &  & median route \$2,277 \\
+B. Netting exposure by vehicle & USDT & 96 &  &  & 1 - V4 transfer incidence & 0.219 &  &  &  & median route \$4,298 \\
+B. Netting exposure by vehicle & DAI & 26 &  &  & 1 - V4 transfer incidence & 0.000 &  &  &  & median route \$9,978 \\
+B. Netting exposure by vehicle & WBTC & 44 &  &  & 1 - V4 transfer incidence & 0.000 &  &  &  & median route \$11,612 \\
+B. Netting exposure by vehicle & XAUt & 34 &  &  & 1 - V4 transfer incidence & 0.000 &  &  &  & median route \$5,153 \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: Panel A estimates whether vehicles with higher V4 no-transfer exposure show stronger post-launch LP concentration or log-liquidity changes, residualizing by token and week fixed effects. This is suggestive mechanism evidence, not a clean exogenous adoption design. Panel B reports the exposure measure.

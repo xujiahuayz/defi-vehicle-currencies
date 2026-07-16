@@ -53,6 +53,24 @@ def _bool(v: Any) -> bool:
     return str(v).lower() in {"true", "1", "yes"}
 
 
+def _p2_main_estimate() -> str:
+    path = EMP / "p2_liquidity_route_feedback.pkl"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} missing; run scripts/run_feedback_proposition_tests.py first."
+        )
+    results = pd.read_pickle(path)
+    row = results[
+        results["Horizon"].eq("t+7")
+        & results["Outcome"].eq("future BridgeShare")
+        & results["Main regressor"].eq("LP concentration")
+    ]
+    if len(row) != 1:
+        raise RuntimeError("Expected one t+7 LP-concentration-to-share estimate.")
+    result = row.iloc[0]
+    return f"token/date FE beta {result['Beta']}; p {result['p']}"
+
+
 def _iter_jsonl_gz(path: Path):
     with gzip.open(path, "rt", encoding="utf-8") as fh:
         for line in fh:
@@ -546,6 +564,7 @@ def v4_balance_diagnostics() -> pd.DataFrame:
 
 
 def main_test_registry_table() -> pd.DataFrame:
+    p2_estimate = _p2_main_estimate()
     rows = [
         {
             "Proposition": "P1",
@@ -556,9 +575,9 @@ def main_test_registry_table() -> pd.DataFrame:
         },
         {
             "Proposition": "P2",
-            "Pre-specified main test": "LP concentration predicts future BridgeShare",
-            "Main estimate": "within-token beta 0.2817; p<0.001",
-            "Economic unit": "future bridge-share association",
+            "Pre-specified main test": "LP concentration predicts future VehicleShare",
+            "Main estimate": p2_estimate,
+            "Economic unit": "future vehicle-share association",
             "Status": "downgrade to predictive association",
         },
         {
@@ -599,25 +618,26 @@ def main_test_registry_table() -> pd.DataFrame:
 
 
 def compact_specification_registry_table() -> pd.DataFrame:
+    p2_estimate = _p2_main_estimate()
     rows = [
         {
             "Test": "P1 availability/thin-direct",
-            "Outcome": "direct route exists; WETH route exists; route-cost advantage",
+            "Outcome": "direct route exists; WETH indirect route exists; route-cost advantage",
             "Unit": "endpoint-pair x day x trade size",
             "Sample": "V2/Sushi V2/V3 exact quoteable venues",
-            "Treatment/regressor": "WETH vehicle route availability/cost",
+            "Treatment/regressor": "WETH indirect-route availability/cost",
             "FE / clustering": "endpoint-pair-day aggregation",
             "Main coefficient": "9,584 no-direct/WETH-available rows",
             "Interpretation": "descriptive counterfactual, covered venues",
         },
         {
             "Test": "P2 predictability",
-            "Outcome": "future BridgeShare",
+            "Outcome": "future VehicleShare",
             "Unit": "token x day",
             "Sample": "WETH, USDC, USDT, DAI, WBTC",
             "Treatment/regressor": "vehicle-linked LP concentration",
             "FE / clustering": "token/date FE robustness; date clustering",
-            "Main coefficient": "beta 0.2817, p<0.001",
+            "Main coefficient": p2_estimate,
             "Interpretation": "predictive association, not causal feedback",
         },
         {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI wrapper for the LP concentration exhibit (foundational exhibit #1).
+"""CLI wrapper for the candidate-linked liquidity exhibit.
 
 Usage:
     python3 scripts/run_lp_concentration.py --start YYYY-MM-DD --end YYYY-MM-DD
@@ -13,7 +13,7 @@ from ddvc.analysis.lp_concentration import run
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        description="Compute LP concentration on vehicle currencies as base asset."
+        description="Compute candidate-linked liquidity and concentration."
     )
     ap.add_argument("--start", required=True, help="YYYY-MM-DD start date (inclusive)")
     ap.add_argument("--end", required=True, help="YYYY-MM-DD end date (inclusive)")

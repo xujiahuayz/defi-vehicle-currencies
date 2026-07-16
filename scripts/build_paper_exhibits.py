@@ -68,9 +68,9 @@ def _p(x: float) -> str:
     return f"{x:.3f}"
 
 
-def _latex_escape(value: object) -> str:
+def _latex_escape(value: object, *, allow_breaks: bool = False) -> str:
     text = "" if value is None else str(value)
-    return (
+    escaped = (
         text.replace("\\", "\\textbackslash{}")
         .replace("&", "\\&")
         .replace("%", "\\%")
@@ -80,6 +80,9 @@ def _latex_escape(value: object) -> str:
         .replace("{", "\\{")
         .replace("}", "\\}")
     )
+    if allow_breaks:
+        escaped = escaped.replace(r"\_", r"\_\allowbreak{}").replace("/", r"/\allowbreak{}")
+    return escaped
 
 
 def _artifact_stem(stem: str) -> str:
@@ -111,20 +114,33 @@ def _write_table(
     tex_path = TABLES / f"{stem}.tex"
     pdf_path = TABLES / f"{stem}.pdf"
     align = align or ("l" + "r" * (len(df.columns) - 1))
+    use_tabularx = "X" in align
+    begin = (
+        f"\\begin{{tabularx}}{{\\linewidth}}{{{align}}}"
+        if use_tabularx
+        else f"\\begin{{tabular}}{{{align}}}"
+    )
+    end = "\\end{tabularx}" if use_tabularx else "\\end{tabular}"
     lines = [
-        f"\\begin{{tabular}}{{{align}}}",
+        begin,
         "\\toprule",
         " & ".join(_latex_escape(c) for c in df.columns) + " \\\\",
         "\\midrule",
     ]
     for row in df.itertuples(index=False, name=None):
-        lines.append(" & ".join(_latex_escape(v) for v in row) + " \\\\")
-    lines.extend(["\\bottomrule", "\\end{tabular}"])
+        lines.append(
+            " & ".join(_latex_escape(v, allow_breaks=use_tabularx) for v in row) + " \\\\"
+        )
+    lines.extend(["\\bottomrule", end])
     if note:
         lines.append(f"% Notes for paper wrapper: {_latex_escape(note)}")
     table_latex = "\n".join(lines) + "\n"
     tex_path.write_text(table_latex, encoding="utf-8")
-    render_standalone_pdf(table_latex, pdf_path)
+    render_standalone_pdf(
+        table_latex,
+        pdf_path,
+        preview_width="24cm" if use_tabularx else None,
+    )
 
 
 def _copy_if_exists(src: Path, dest: Path) -> None:
@@ -263,10 +279,10 @@ def build_table_route_cost() -> None:
     _write_table(
         pd.DataFrame(rows),
         "table_03_route_cost_advantage",
-        "Direct-route availability and WETH vehicle-route value.",
+        "Direct-route availability and WETH indirect-route value.",
         "tab:route-cost-advantage",
         note=(
-            "Advantage is output value on the best WETH vehicle route minus the best direct "
+            "Advantage is output value on the best WETH indirect route minus the best direct "
             "route, in basis points of direct-route output. HQ-direct restricts common-support "
             "rows to cases where the direct route returns at least 90 percent of notional. "
             "The table emphasizes availability and thin-direct-route value, not a universal "
@@ -342,7 +358,7 @@ def build_table_stress() -> None:
     _write_table(
         out,
         "table_05_stress_rotation",
-        "Stress rotation in common-support vehicle-route opportunities.",
+        "Stress rotation in common-support indirect-route opportunities.",
         "tab:stress-rotation",
         note=(
             "Effect is the event-day change in WETH-minus-stable BridgeShare relative to "
@@ -507,7 +523,7 @@ def build_figures() -> None:
     ax.axhline(0, color="0.4", linewidth=1)
     ax.set_xticks(x)
     ax.set_xticklabels([f"${_int(v)}" for v in weth["trade_size_usd"]])
-    ax.set_ylabel("WETH vehicle-route advantage (bp)")
+    ax.set_ylabel("WETH indirect-route advantage (bp)")
     ax.set_xlabel("Trade size")
     ax.set_title("WETH route-cost advantage by trade size")
     fig.tight_layout()
@@ -557,11 +573,11 @@ summary_statistics. Summary statistics for main empirical variables.
 
 bridge_measurement. Vehicle use and raw volume share by year.
 
-route_cost_advantage. Direct routes and WETH vehicle-route execution costs.
+route_cost_advantage. Direct routes and WETH indirect-route execution costs.
 
 liquidity_stickiness. Liquidity concentration and persistence of vehicle use.
 
-stress_rotation. Stress rotation in common-support vehicle-route opportunities.
+stress_rotation. Stress rotation in common-support indirect-route opportunities.
 
 v4_settlement. V4 flash accounting and physical intermediary-token transfers.
 

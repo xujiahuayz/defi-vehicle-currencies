@@ -93,8 +93,8 @@ def table_02_p1_availability() -> pd.DataFrame:
             {
                 "Trade size": r["Trade size"],
                 "Direct available (%)": r["Direct available (%)"],
-                "WETH route available (%)": r["WETH route available (%)"],
-                "No-direct / WETH-available rows": r["No-direct, WETH-available rows"],
+                "WETH indirect route available (%)": r["WETH route available (%)"],
+                "Indirect-only WETH rows": r["No-direct, WETH-available rows"],
                 "Thin-direct median advantage (bp)": r["Median thin-direct advantage (bp)"],
                 "High-quality-direct median advantage (bp)": r["Median high-quality-direct advantage (bp)"],
                 "Common-support median (bp)": r["Median common-support advantage (bp)"],
@@ -105,7 +105,7 @@ def table_02_p1_availability() -> pd.DataFrame:
     _write_table(
         out,
         "table_m02_p1_availability_thin_direct",
-        "Availability and thin-direct-market protection by WETH vehicle routes.",
+        "Availability and thin-direct-market protection by WETH indirect routes.",
         "tab:main-p1-availability",
         note=(
             "This is the main P1 table. The claim is not universal route-cost superiority. "
@@ -126,17 +126,22 @@ def table_03_p2_predictability() -> pd.DataFrame:
         )
     ].copy()
     for _, r in keep.iterrows():
+        outcome = str(r["Outcome"]).replace("BridgeShare", "VehicleShare")
+        main_regressor = str(r["Main regressor"]).replace(
+            "BridgeShare", "VehicleShare"
+        )
+        control = str(r["Control"]).replace("BridgeShare", "VehicleShare")
         rows.append(
             {
                 "Panel": r["Panel"],
                 "Horizon": r["Horizon"],
-                "Outcome": r["Outcome"],
-                "Main regressor": r["Main regressor"],
+                "Outcome": outcome,
+                "Main regressor": main_regressor,
                 "Beta": r["Beta"],
                 "SE": r["SE"],
                 "t": r["t"],
                 "p": r["p"],
-                "Control": r["Control"],
+                "Control": control,
             }
         )
     out = pd.DataFrame(rows)
@@ -144,13 +149,13 @@ def table_03_p2_predictability() -> pd.DataFrame:
     _write_table(
         out,
         "table_m03_p2_dynamic_predictability",
-        "Liquidity-route feedback and vehicle persistence.",
+        "Candidate-linked liquidity and vehicle-use dynamics.",
         "tab:main-p2-predictability",
         note=(
-            "Panel A tests whether vehicle-linked LP concentration predicts future BridgeShare. "
-            "Panel B tests whether current BridgeShare predicts future LP concentration and log LP liquidity. "
+            "Panel A tests whether candidate-linked LP concentration predicts future VehicleShare. "
+            "Panel B tests whether current VehicleShare predicts future LP concentration and log LP liquidity. "
             "All variables are residualized by token and date fixed effects; standard errors are clustered by date. "
-            "This supports liquidity-route feedback as reduced-form persistence evidence."
+            "Relative concentration and absolute liquidity are reported separately."
         ),
     )
     return out
@@ -287,28 +292,46 @@ def table_06_p4b_v4() -> pd.DataFrame:
 
 
 def table_07_spec_registry() -> pd.DataFrame:
+    p2 = pd.read_pickle(EMP / "p2_dynamic_predictability.pkl")
+
+    def p2_cell(outcome: str) -> tuple[str, str]:
+        row = p2[p2["Horizon"].eq("t+7") & p2["Outcome"].eq(outcome)]
+        if len(row) != 1:
+            raise RuntimeError(f"Expected one t+7 P2 row for {outcome!r}.")
+        result = row.iloc[0]
+        return str(result["Beta"]), str(result["p"])
+
+    lp_to_share_beta, lp_to_share_p = p2_cell("future VehicleShare")
+    share_to_conc_beta, share_to_conc_p = p2_cell("future LP concentration")
+    share_to_tvl_beta, share_to_tvl_p = p2_cell("future log LP liquidity")
+    p2_estimate = (
+        f"LP->share {lp_to_share_beta} (p {lp_to_share_p}); "
+        f"share->LP conc. {share_to_conc_beta} (p {share_to_conc_p}); "
+        f"share->log TVL {share_to_tvl_beta} (p {share_to_tvl_p})"
+    )
+
     rows = [
         {
             "Test": "P1 availability/thin-direct",
             "Unit": "endpoint-pair x day x trade size",
             "Sample": "V2/Sushi V2/V3 exact quoteable venues",
             "Outcome": "route availability and WETH advantage",
-            "Regressor / treatment": "WETH vehicle route",
+            "Regressor / treatment": "WETH indirect route",
             "FE / SE": "endpoint-pair-day aggregation",
             "Baseline mean": "direct available 72.1%",
             "Main estimate": "9,584 no-direct rows; thin-direct 142.65-349.28 bp",
             "Economic interpretation": "availability and thin-direct execution protection",
         },
         {
-            "Test": "P2 liquidity-route feedback",
+            "Test": "P2 liquidity-route dynamics",
             "Unit": "token x day",
             "Sample": "vehicle candidates",
-            "Outcome": "future BridgeShare; future LP concentration/liquidity",
-            "Regressor / treatment": "LP concentration; current BridgeShare",
+            "Outcome": "future VehicleShare; future LP concentration/log TVL",
+            "Regressor / treatment": "LP concentration; current VehicleShare",
             "FE / SE": "token/date FE; date-clustered SE",
             "Baseline mean": "see p2_dynamic_predictability",
-            "Main estimate": "two-way coefficients positive; p<0.001",
-            "Economic interpretation": "reduced-form liquidity-route feedback",
+            "Main estimate": p2_estimate,
+            "Economic interpretation": "relative persistence; absolute TVL is specification-sensitive",
         },
         {
             "Test": "P3 impact stress",

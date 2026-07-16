@@ -49,8 +49,8 @@ class VariableRegistryTests(unittest.TestCase):
         definitions = " ".join(item.definition for item in NOTATION_DEFINITIONS)
         for symbol in ["$i,\\ j$", "$k$", "$\\ell,\\ p$", "$t,\\ w$", "$q$", "$r$"]:
             self.assertIn(symbol, notation)
-        self.assertIn(r"superscripts $D$ and $V$", definitions)
-        self.assertIn(r"superscript $B$ denotes bridged", definitions)
+        self.assertIn(r"superscripts $D$ and $I$", definitions)
+        self.assertIn(r"superscript $I$ denotes indirect", definitions)
 
     def test_symbol_definitions_run_broad_to_narrow(self) -> None:
         by_notation = {item.notation: item.definition for item in NOTATION_DEFINITIONS}
@@ -68,6 +68,12 @@ class VariableRegistryTests(unittest.TestCase):
         )
         self.assertNotIn(r"\sum", bridge_definition)
 
+        volume_definition = by_notation[r"$\mathrm{Vol}_t,\ \mathrm{DVol}_t$"]
+        self.assertIn(
+            r"$0\le\mathrm{DVol}_t\le\mathrm{Vol}_t$",
+            volume_definition,
+        )
+
         pair_definition = by_notation[r"$\mathcal A_t,\ \mathcal A^k_t,\ \mathcal M^k_t$"]
         self.assertIn(
             r"$\mathcal M^k_t\subseteq\mathcal A^k_t\subseteq\mathcal A_t$",
@@ -79,6 +85,15 @@ class VariableRegistryTests(unittest.TestCase):
             r"$\mathcal R^{\mathrm{transfer}}_{k,w}\subseteq\mathcal R_{k,w}$",
             settlement_definition,
         )
+
+    def test_route_units_count_routes_not_legs(self) -> None:
+        by_notation = {item.notation: item.definition for item in NOTATION_DEFINITIONS}
+        route_definition = by_notation[r"$r$"]
+        count_definition = by_notation[
+            r"$N_t,\ N^{\mathrm{src}}_{k,t},\ N^{\mathrm{sink}}_{k,t}$"
+        ]
+        self.assertIn(r"contributes one $r$ regardless of its number of legs", route_definition)
+        self.assertIn("not their individual legs", count_definition)
 
     def test_indicators_put_the_condition_in_the_subscript(self) -> None:
         notation = " ".join(item.notation for item in NOTATION_DEFINITIONS)
@@ -97,7 +112,7 @@ class VariableRegistryTests(unittest.TestCase):
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}
         expected = {
             "bridge_volume_usd": r"$\mathrm{IVol}_{k,t}$",
-            "daily_all_route_volume_usd": r"$A_t$",
+            "daily_all_route_volume_usd": r"$\mathrm{Vol}_t$",
             "daily_indirect_route_volume_usd": r"$\mathrm{IVol}_t$",
             "vehicle_linked_liquidity_usd": r"$L_{k,t}$",
             "future_bridge_share_t7": r"$\mathrm{VehicleShare}_{k,t+7}$",
@@ -140,18 +155,89 @@ class VariableRegistryTests(unittest.TestCase):
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}
         count_formula = by_column["betweenness_centrality"].formula
         volume_formula = by_column["volume_weighted_betweenness"].formula
-        self.assertIn(r"N^{B}_{k,t}", count_formula)
+        self.assertIn(r"N^{I}_{k,t}", count_formula)
+        self.assertIn(r"N_t", count_formula)
         self.assertIn(r"\mathrm{IVol}_{k,t}", volume_formula)
-        self.assertIn(r"A_t", volume_formula)
+        self.assertIn(r"\mathrm{Vol}_t", volume_formula)
 
         symbol_key = " ".join(item.notation for item in NOTATION_DEFINITIONS)
         for duplicate_symbol in [
             r"N^{\mathrm{mid}}_{k,t}",
+            r"N^{\mathrm{route}}_t",
+            r"N^B_t",
             r"\mathrm{Vol}^{\mathrm{mid}}_{k,t}",
             r"\mathrm{Vol}^{\mathrm{route}}_t",
             r"\mathrm{Betweenness}^{\mathrm{vol}}",
         ]:
             self.assertNotIn(duplicate_symbol, symbol_key)
+
+    def test_route_alternative_uses_indirect_not_vehicle_notation(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        expected = {
+            "vehicle_available_share": r"$\mathrm{IndirectAvailable}_{k,t,q}$",
+            "no_direct_vehicle_available_share": r"$\mathrm{IndirectOnlyAvailable}_{k,t,q}$",
+            "vehicle_beats_direct_share": r"$\mathrm{IndirectBeatsDirect}_{k,t,q}$",
+        }
+        for column, notation in expected.items():
+            with self.subTest(column=column):
+                self.assertEqual(by_column[column].notation, notation)
+
+        symbol_key = " ".join(
+            item.notation + " " + item.definition for item in NOTATION_DEFINITIONS
+        )
+        formulas = " ".join(spec.formula for spec in VARIABLE_SPECS)
+        for retired_symbol in [
+            r"N^{\mathrm{route}}_t",
+            r"N^B_t",
+            r"\mathcal V_{k,t,q}",
+            r"\mathcal{V}_{k,t,q}",
+            r"V_{i,j,k,q,t}",
+            r"O^V_{i,j,k,q,t}",
+            r"O^{V}_{i,j,k,q,t}",
+        ]:
+            self.assertNotIn(retired_symbol, symbol_key + formulas)
+
+        retained_vehicle_notation = " ".join(spec.notation for spec in VARIABLE_SPECS)
+        self.assertIn(r"\mathrm{VehicleShare}_{k,t}", retained_vehicle_notation)
+        self.assertIn(r"\mathrm{MainVehiclePairShare}_{k,t}", retained_vehicle_notation)
+
+    def test_total_volume_uses_descriptive_notation(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        total = by_column["daily_all_route_volume_usd"]
+        self.assertEqual(total.notation, r"$\mathrm{Vol}_t$")
+        self.assertEqual(total.formula, r"$\mathrm{DVol}_t+\mathrm{IVol}_t$")
+        self.assertNotIn(r"$A_t$", [spec.notation for spec in VARIABLE_SPECS])
+
+    def test_candidate_linked_liquidity_has_an_explicit_allocation_rule(self) -> None:
+        by_notation = {item.notation: item.definition for item in NOTATION_DEFINITIONS}
+        candidate_definition = by_notation[r"$\mathcal K$"]
+        pool_definition = by_notation[r"$\mathcal L_{k,t},\ m_p$"]
+        liquidity_definition = by_notation[r"$\mathrm{TVL}_{p,t},\ L_{k,t}$"]
+        for token in ["WETH", "USDC", "USDT", "DAI", "WBTC"]:
+            self.assertIn(token, candidate_definition)
+        self.assertNotIn("FRAX", candidate_definition)
+        self.assertIn(r"$m_p\in\{1,2\}$", pool_definition)
+        self.assertIn("exact token contracts", pool_definition)
+        self.assertIn("persisted V3 swap archive", pool_definition)
+        self.assertIn("one half to each", liquidity_definition)
+
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        formula = by_column["vehicle_linked_liquidity_usd"].formula
+        self.assertEqual(
+            formula,
+            r"$\displaystyle\sum_{p\in\mathcal L_{k,t}}\frac{\mathrm{TVL}_{p,t}}{m_p}$",
+        )
+
+    def test_thin_direct_is_a_quote_quality_subset(self) -> None:
+        symbol_key = " ".join(item.definition for item in NOTATION_DEFINITIONS)
+        self.assertIn("thin-direct subset", symbol_key)
+        self.assertNotIn("thin-direct support", symbol_key)
+
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        construction = by_column["thin_direct_share"].construction
+        self.assertIn(r"$O^D_{i,j,q,t}/q<0.9$", construction)
+        self.assertIn("quote-quality proxy", construction)
+        self.assertIn("not a direct measure", construction)
 
     def test_every_auxiliary_formula_symbol_is_defined(self) -> None:
         formulas = " ".join(spec.formula for spec in VARIABLE_SPECS)
@@ -159,17 +245,17 @@ class VariableRegistryTests(unittest.TestCase):
             item.notation + " " + item.definition for item in NOTATION_DEFINITIONS
         )
         required_symbols = {
-            r"A_t": r"A_t",
+            r"\mathrm{Vol}_t": r"\mathrm{Vol}_t",
             r"\mathrm{IVol}_{k,t}": r"\mathrm{IVol}_{k,t}",
             r"\mathrm{IVol}_t": r"\mathrm{IVol}_t",
-            r"N^{B}_{k,t}": r"N^B_{k,t}",
-            r"N^{B}_{t}": r"N^B_t",
+            r"N^{I}_{k,t}": r"N^I_{k,t}",
+            r"N^{I}_{t}": r"N^I_t",
             r"\mathcal A^{k}_{t}": r"\mathcal A^k_t",
             r"\mathcal A_t": r"\mathcal A_t",
             r"\mathcal M^{k}_{t}": r"\mathcal M^k_t",
             r"\mathrm{Vol}^{\mathrm{in}}": r"\mathrm{Vol}^{\mathrm{in}}",
             r"\mathrm{Vol}^{\mathrm{out}}": r"\mathrm{Vol}^{\mathrm{out}}",
-            r"N^{\mathrm{route}}": r"N^{\mathrm{route}}",
+            r"N_t": r"$N_t,\ N^{\mathrm{src}}_{k,t}",
             r"N^{\mathrm{src}}": r"N^{\mathrm{src}}",
             r"N^{\mathrm{sink}}": r"N^{\mathrm{sink}}",
             r"\mathrm{Vol}^{\mathrm{src}}": r"\mathrm{Vol}^{\mathrm{src}}",
@@ -180,10 +266,11 @@ class VariableRegistryTests(unittest.TestCase):
             r"L_{k,t}": r"L_{k,t}",
             r"\mathcal L_{k,t}": r"\mathcal L_{k,t}",
             r"\mathrm{TVL}_{p,t}": r"\mathrm{TVL}_{p,t}",
+            r"m_p": r"m_p",
             r"\mathcal K": r"\mathcal K",
             r"\mathcal P_{k,t,q}": r"\mathcal{P}_{k,t,q}",
             r"\mathcal D_{k,t,q}": r"\mathcal{D}_{k,t,q}",
-            r"\mathcal V_{k,t,q}": r"\mathcal{V}_{k,t,q}",
+            r"\mathcal I_{k,t,q}": r"\mathcal{I}_{k,t,q}",
             r"\mathcal C_{k,t,q}": r"\mathcal{C}_{k,t,q}",
             r"\mathcal T_{k,t,q}": r"\mathcal{T}_{k,t,q}",
             r"\mathcal W_{k,t,q}": r"\mathcal{W}_{k,t,q}",
@@ -301,6 +388,38 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertNotIn(".to_pickle(", writer)
         self.assertNotIn(".to_parquet(", writer)
 
+    def test_variable_construction_uses_flexible_columns(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        text = (root / "scripts" / "run_core_rq_experiments.py").read_text(
+            encoding="utf-8"
+        )
+        block = text.split("def variable_construction_table()", 1)[1].split(
+            "\ndef route_cost_daily", 1
+        )[0]
+        self.assertIn(r">{\raggedright\arraybackslash}X", block)
+        self.assertNotIn(r"\linewidth}", block)
+        self.assertNotIn("p{0.", block)
+
+    def test_p2_registries_read_current_results(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        remaining = (
+            root / "scripts" / "run_jfe_remaining_blocker_fixes.py"
+        ).read_text(encoding="utf-8")
+        main_tables = (root / "scripts" / "build_jfe_main_tables.py").read_text(
+            encoding="utf-8"
+        )
+        pipeline = (
+            root / "scripts" / "build_results_evidence_outputs.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("p2_liquidity_route_feedback.pkl", remaining)
+        self.assertIn("p2_dynamic_predictability.pkl", main_tables)
+        self.assertNotIn("0.2817", remaining + main_tables)
+        self.assertLess(
+            pipeline.index('"run_feedback_proposition_tests.py"'),
+            pipeline.index('"run_jfe_remaining_blocker_fixes.py"'),
+        )
+
     def test_output_artifact_stems_must_not_encode_table_or_figure_numbers(self) -> None:
         self.assertEqual(validate_output_stem("summary_statistics"), "summary_statistics")
         for stem in [
@@ -318,6 +437,7 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertNotIn("output/tables/", ignore)
         self.assertNotIn("output/figures/", ignore)
         self.assertNotIn("output/exhibits/", ignore)
+        self.assertNotIn("paper/*.pdf", ignore)
 
 
 if __name__ == "__main__":

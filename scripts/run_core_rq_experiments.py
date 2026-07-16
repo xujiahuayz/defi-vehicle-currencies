@@ -116,7 +116,7 @@ def variable_construction_table() -> pd.DataFrame:
         {
             "Variable / proxy": "RouteCostAdvantage",
             "Level": "endpoint pair x vehicle x day x trade size",
-            "Construction": "(vehicle-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at $10k.",
+            "Construction": "(indirect-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at $10k.",
             "Source": "data/empirical/route_cost_panel_v2.parquet",
             "Used for": "RQ1, RQ3, RQ5",
         },
@@ -128,23 +128,23 @@ def variable_construction_table() -> pd.DataFrame:
             "Used for": "RQ1, RQ5",
         },
         {
-            "Variable / proxy": "VehicleAvailable",
+            "Variable / proxy": "IndirectAvailable",
             "Level": "endpoint pair x vehicle x day x trade size",
-            "Construction": "Indicator that both legs through candidate vehicle v are exact-quote executable at the standard notional.",
+            "Construction": "Indicator that both legs of the indirect route through candidate vehicle v are exact-quote executable at the standard notional.",
             "Source": "data/empirical/route_cost_panel_v2.parquet",
             "Used for": "RQ1, RQ5",
         },
         {
             "Variable / proxy": "DirectDepth",
             "Level": "endpoint pair x day x trade size",
-            "Construction": "Executable direct-route quality proxy: direct output USD divided by trade size. Thin-direct cells are direct-available cells with output below 90% of notional.",
+            "Construction": "Executable direct-route quote-quality proxy: direct output USD divided by trade size. Thin-direct cells are direct-available cells with output below 90% of notional; this is not a direct pool-liquidity measure.",
             "Source": "data/empirical/route_cost_panel_v2.parquet",
             "Used for": "RQ1, RQ5",
         },
         {
             "Variable / proxy": "VehicleLinkedLiquidity",
             "Level": "vehicle token x day",
-            "Construction": "USD TVL in Uniswap V3 pools whose vehicle-side/base asset is candidate v, after excluding absurd pool TVL outliers.",
+            "Construction": "Allocated USD TVL in valid Uniswap V3 daily-snapshot pools containing candidate v: full pool TVL when v is the only candidate side and half when both sides are candidates.",
             "Source": "data/exhibits/lp_concentration.parquet",
             "Used for": "RQ2, RQ3, RQ6",
         },
@@ -195,10 +195,18 @@ def variable_construction_table() -> pd.DataFrame:
     out.to_pickle(EMP / "variable_construction.pkl")
     _write_table(
         out,
-        "table_m08_variable_construction",
+        "variable_construction",
         "Core empirical variables and construction.",
         "tab:variable-construction",
-        align="p{0.18\\linewidth}p{0.13\\linewidth}p{0.40\\linewidth}p{0.17\\linewidth}p{0.12\\linewidth}",
+        align=(
+            r"@{}"
+            r">{\raggedright\arraybackslash}X"
+            r">{\raggedright\arraybackslash}X"
+            r">{\raggedright\arraybackslash}X"
+            r">{\raggedright\arraybackslash}X"
+            r">{\raggedright\arraybackslash}X"
+            r"@{}"
+        ),
         note="This is the variable/proxy registry used before drafting the empirical prose.",
     )
     return out
@@ -752,7 +760,7 @@ def actual_route_choice_tests(actual: pd.DataFrame) -> pd.DataFrame:
     _write_table(
         out,
         "table_m13_actual_route_choice",
-        "Actual pair-vehicle route choice and route economics.",
+        "Actual pair-candidate indirect-route choice and route economics.",
         "tab:actual-route-choice",
         note="Actual vehicle shares are reconstructed from unified transaction routes. Regressions compare candidate vehicles within the same endpoint pair and date.",
     )
@@ -825,9 +833,9 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
     _write_table(
         out,
         "table_m14_lp_allocation_feedback",
-        "Vehicle use and vehicle-linked liquidity allocation.",
+        "Vehicle use and candidate-linked liquidity dynamics.",
         "tab:lp-allocation-feedback",
-        note="Panel A reports the unified stock feedback estimates from core_panel_regressions. Panel B uses 30-day changes in vehicle-linked liquidity stocks.",
+        note="Panel A reports the unified stock-dynamics estimates from core_panel_regressions. Panel B uses 30-day changes in candidate-linked liquidity stocks.",
     )
     return out
 
@@ -1076,7 +1084,7 @@ def v4_route_use_persistence_tests() -> pd.DataFrame:
     _write_table(
         out,
         "table_m17_v4_route_use_persistence",
-        "V4 route-use persistence in matched vehicle-route cells.",
+        "V4 route-use persistence in matched indirect-route cells.",
         "tab:v4-route-use-persistence",
         note="Matched cells are week x endpoint pair x intermediate vehicle cells with both V3 and V4 route units in the settlement sample frame.",
     )
@@ -1181,20 +1189,20 @@ def build_rq_registry(
     rq_rows = [
         {
             "RQ": "RQ1. Formation",
-            "Empirical answer": "Vehicle use is higher when the candidate vehicle expands executable route opportunity, improves route quality within common-support cells, and has larger vehicle-linked liquidity.",
+            "Empirical answer": "Vehicle use is higher when the candidate expands executable indirect-route opportunity, improves route quality within common-support cells, and has a larger share of candidate-linked liquidity.",
             "Exact evidence": (
                 f"actual_route_choice: route-cost advantage is positive for actual vehicle share ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='route_cost_advantage_100bp')}); "
-                f"vehicle availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); vehicle depth is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_depth')}). "
-                f"core_panel_regressions: route-cost advantage predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='route_cost_advantage_100bp')}); vehicle availability predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='vehicle_available_share')})."
+                f"indirect-route availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); indirect-route depth is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_depth')}). "
+                f"core_panel_regressions: route-cost advantage predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='route_cost_advantage_100bp')}); indirect-route availability predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='vehicle_available_share')}); LPConcentration predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')})."
             ),
         },
         {
             "RQ": "RQ2. Liquidity provision",
-            "Empirical answer": "Vehicle-linked liquidity and vehicle use reinforce each other in stock allocations; short-run stock changes also load on route availability.",
+            "Empirical answer": "Relative LP concentration and vehicle use reinforce each other, but absolute candidate-linked TVL does not: higher current vehicle use predicts lower absolute TVL at seven days, while stronger indirect-route economics predict 30-day TVL growth.",
             "Exact evidence": (
                 f"core_panel_regressions/lp_allocation_feedback: LPConcentration predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')}); "
-                f"VehicleShare predicts future LPConcentration ({_lookup(core, Outcome='future LPConcentration, t+7', Regressor='BridgeShare')}) and future log VehicleLinkedLiquidity ({_lookup(core, Outcome='future log VehicleLinkedLiquidity, t+7', Regressor='BridgeShare')}). "
-                f"lp_allocation_feedback: vehicle availability predicts the 30-day change in log VehicleLinkedLiquidity ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='vehicle_available_share')})."
+                f"VehicleShare predicts higher future LPConcentration ({_lookup(core, Outcome='future LPConcentration, t+7', Regressor='BridgeShare')}) but lower future log VehicleLinkedLiquidity ({_lookup(core, Outcome='future log VehicleLinkedLiquidity, t+7', Regressor='BridgeShare')}). "
+                f"lp_allocation_feedback: indirect-route availability predicts the 30-day change in log VehicleLinkedLiquidity ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='vehicle_available_share')}); route-cost advantage also predicts that change ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='route_cost_advantage_100bp')})."
             ),
         },
         {
@@ -1224,7 +1232,7 @@ def build_rq_registry(
         },
         {
             "RQ": "RQ6. Settlement design",
-            "Empirical answer": "V4 reduces physical intermediate-token transfers while vehicle-route demand persists across matched endpoint-vehicle-week cells.",
+            "Empirical answer": "V4 reduces physical intermediate-token transfers while vehicle use persists across matched endpoint-vehicle-week cells.",
             "Exact evidence": (
                 f"p4b_v4_settlement: V4 transfer incidence is {_cell(m06, 'V4', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})} versus V3 {_cell(m06, 'V3', Panel='A. Transfer incidence by route-size bin', **{'Sample / diagnostic': 'All'})}; matched-cell route-size balance is {_cell(m06, 'Difference / balance', Panel='B. Matched-sample balance', **{'Sample / diagnostic': 'V4 - V3 within cell'})}. "
                 f"v4_route_use_persistence: log V3 route count predicts log V4 route count ({_lookup(v4_persistence, Panel='A. Matched-cell route-use persistence', Outcome='Log V4 route count')}); log V3 route volume predicts log V4 route volume ({_lookup(v4_persistence, Panel='A. Matched-cell route-use persistence', Outcome='Log V4 route volume')})."

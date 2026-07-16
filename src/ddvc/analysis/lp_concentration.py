@@ -1,9 +1,9 @@
-"""Foundational exhibit #1 — LP concentration on vehicle currencies as base asset.
+"""Candidate-linked Uniswap V3 liquidity and concentration.
 
-For each day, computes per-pool net LP liquidity delta (Uniswap V3 mints minus
-burns), identifies the "base asset" of each pool as the token with higher VolShare
-(or a hardcoded known-vehicle list as fallback), and aggregates the fraction of
-all V3 LP liquidity provided against each token as base.
+For each day, allocate valid pool-level USD TVL across the candidate tokens that
+are sides of the pool. A pool with one candidate side contributes all TVL to that
+candidate; a pool with two candidate sides contributes half to each. This keeps
+the allocation exhaustive without using an outcome-related winner rule.
 
 Outputs:
   data/exhibits/lp_concentration.parquet
@@ -11,14 +11,7 @@ Outputs:
              total_lp_liquidity_usd, lp_concentration_share
 
   output/exhibits/lp_concentration_top5.pdf
-    daily LP concentration share for the top-5 tokens over the sample period
-
-The liquidity unit for mints/burns is the raw ``amount`` field (the Uniswap V3
-concentrated-liquidity measure in L units). Since L is not directly comparable
-across pools in USD terms we instead use pool-USD TVL from the V3 daily snapshot
-as a per-pool USD scale factor. On days when a daily snapshot is missing for a
-pool, we fall back to L-unit liquidity (relative comparison only, not absolute
-USD).
+    daily LP concentration share for the five candidate tokens
 """
 from __future__ import annotations
 
@@ -32,7 +25,7 @@ import pandas as pd
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 
 # ---------------------------------------------------------------------------
-# Known vehicle / base asset candidates (lowercase Ethereum addresses)
+# Paper candidate set (lowercase Ethereum addresses)
 # ---------------------------------------------------------------------------
 
 VEHICLE_CANDIDATES: dict[str, str] = {
@@ -41,7 +34,6 @@ VEHICLE_CANDIDATES: dict[str, str] = {
     "0xdac17f958d2ee523a2206206994597c13d831ec7": "USDT",
     "0x6b175474e89094c44da98b954eedeac495271d0f": "DAI",
     "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599": "WBTC",
-    "0x853d955acef822db058eb8505911ed77f175b99e": "FRAX",
 }
 
 # The Graph occasionally reports absurd pool-level tvlUSD for spam/meme pools
@@ -63,44 +55,115 @@ def _raw_v3_path(stream: str, stamp: str) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# Pool registry — map pool_id -> (token0_addr, token0_sym, token1_addr, token1_sym)
+# Daily pool snapshots and candidate allocation
 # ---------------------------------------------------------------------------
 
-def _build_pool_registry(stamp: str) -> dict[str, tuple[str, str, str, str]]:
-    """Build pool_id -> (t0_addr, t0_sym, t1_addr, t1_sym) from the swaps stream."""
-    pools: dict[str, tuple[str, str, str, str]] = {}
-    path = _raw_v3_path("swaps", stamp)
-    if not path.exists():
-        return pools
-    with gzip.open(path, "rt") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rec = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            pool = rec.get("pool") or {}
-            pid = pool.get("id")
-            t0 = pool.get("token0") or {}
-            t1 = pool.get("token1") or {}
-            t0_id = t0.get("id")
-            t1_id = t1.get("id")
-            if pid and t0_id and t1_id:
-                pools[pid.lower()] = (
-                    t0_id.lower(), t0.get("symbol", ""),
-                    t1_id.lower(), t1.get("symbol", ""),
-                )
-    return pools
+PoolIdentity = tuple[str, str, str, str]
+PoolSnapshot = tuple[str, str, str, str, float]
 
 
-def _build_tvl_map(stamp: str) -> dict[str, float]:
-    """Build pool_id -> tvlUSD from the V3 daily snapshot."""
-    tvl: dict[str, float] = {}
+def _available_stamps(stream: str) -> list[str]:
+    """Return YYYYMMDD stamps for an available V3 raw-data stream."""
+
+    directory = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
+    stamps: set[str] = set()
+    if directory.is_dir():
+        for path in directory.glob(f"uniswap_v3_{stream}_*.jsonl.gz"):
+            stamp = path.name.removesuffix(".jsonl.gz").rsplit("_", 1)[-1]
+            if len(stamp) == 8 and stamp.isdigit():
+                stamps.add(stamp)
+    return sorted(stamps)
+
+
+def _build_pool_registry(stamps: list[str]) -> dict[str, PoolIdentity]:
+    """Map pool contracts to exact token contracts using persisted swap records."""
+
+    registry: dict[str, PoolIdentity] = {}
+    for index, stamp in enumerate(stamps, 1):
+        path = _raw_v3_path("swaps", stamp)
+        if not path.exists():
+            continue
+        with gzip.open(path, "rt") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                    pool = rec.get("pool") or {}
+                    token0 = pool.get("token0") or {}
+                    token1 = pool.get("token1") or {}
+                    pool_id = str(pool.get("id") or "").lower()
+                    token0_id = str(token0.get("id") or "").lower()
+                    token1_id = str(token1.get("id") or "").lower()
+                except (AttributeError, json.JSONDecodeError, TypeError):
+                    continue
+                if pool_id and token0_id and token1_id:
+                    registry[pool_id] = (
+                        token0_id,
+                        str(token0.get("symbol") or ""),
+                        token1_id,
+                        str(token1.get("symbol") or ""),
+                    )
+        if index % 250 == 0 or index == len(stamps):
+            print(
+                f"  pool registry: {index}/{len(stamps)} days, "
+                f"{len(registry):,} pools",
+                flush=True,
+            )
+    return registry
+
+
+def _pool_snapshot_from_record(
+    rec: dict,
+    pool_registry: dict[str, PoolIdentity],
+) -> tuple[str, PoolSnapshot] | None:
+    """Resolve one daily snapshot using embedded or registry token contracts."""
+
+    try:
+        pool = rec.get("pool") or {}
+        token0 = pool.get("token0") or {}
+        token1 = pool.get("token1") or {}
+        pool_id = str(pool.get("id") or "").lower()
+        token0_id = str(token0.get("id") or "").lower()
+        token1_id = str(token1.get("id") or "").lower()
+        token0_symbol = str(token0.get("symbol") or "")
+        token1_symbol = str(token1.get("symbol") or "")
+        tvl_usd = float(rec.get("tvlUSD", 0) or 0)
+    except (AttributeError, TypeError, ValueError):
+        return None
+    if not pool_id or not 0 < tvl_usd <= MAX_POOL_TVL_USD:
+        return None
+
+    if not token0_id or not token1_id:
+        identity = pool_registry.get(pool_id)
+        if identity is None:
+            return None
+        token0_id, registry_symbol0, token1_id, registry_symbol1 = identity
+        token0_symbol = token0_symbol or registry_symbol0
+        token1_symbol = token1_symbol or registry_symbol1
+
+    return pool_id, (
+        token0_id,
+        token0_symbol,
+        token1_id,
+        token1_symbol,
+        tvl_usd,
+    )
+
+
+def _build_pool_snapshot(
+    stamp: str,
+    pool_registry: dict[str, PoolIdentity] | None = None,
+) -> dict[str, PoolSnapshot]:
+    """Return valid pool token identities and USD TVL from poolDayDatas."""
+
+    snapshot: dict[str, PoolSnapshot] = {}
     path = _raw_v3_path("daily", stamp)
     if not path.exists():
-        return tvl
+        return snapshot
+    if pool_registry is None:
+        pool_registry = _build_pool_registry([stamp])
     with gzip.open(path, "rt") as fh:
         for line in fh:
             line = line.strip()
@@ -110,218 +173,79 @@ def _build_tvl_map(stamp: str) -> dict[str, float]:
                 rec = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            pool = rec.get("pool") or {}
-            pid = pool.get("id")
-            if pid:
-                try:
-                    value = float(rec.get("tvlUSD", 0) or 0)
-                    if 0 < value <= MAX_POOL_TVL_USD:
-                        tvl[pid.lower()] = value
-                except (TypeError, ValueError):
-                    pass
-    return tvl
+            resolved = _pool_snapshot_from_record(rec, pool_registry)
+            if resolved is not None:
+                pool_id, pool_snapshot = resolved
+                snapshot[pool_id] = pool_snapshot
+    return snapshot
 
 
-# ---------------------------------------------------------------------------
-# Per-day LP delta calculation
-# ---------------------------------------------------------------------------
+def _candidate_allocations(pool: PoolSnapshot) -> tuple[tuple[str, str, float], ...]:
+    """Allocate pool TVL equally across the candidate tokens on its two sides."""
 
-def _load_liquidity_events(stream: str, stamp: str) -> list[dict]:
-    """Load mints or burns for one day; return list of {pool_id, amount, amount0, amount1}."""
-    path = _raw_v3_path(stream, stamp)
-    if not path.exists():
-        return []
-    events = []
-    with gzip.open(path, "rt") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rec = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            pool = rec.get("pool") or {}
-            pid = pool.get("id")
-            if not pid:
-                continue
-            try:
-                amount = float(rec.get("amount", 0) or 0)
-            except (TypeError, ValueError):
-                amount = 0.0
-            try:
-                amount0 = abs(float(rec.get("amount0", 0) or 0))
-            except (TypeError, ValueError):
-                amount0 = 0.0
-            try:
-                amount1 = abs(float(rec.get("amount1", 0) or 0))
-            except (TypeError, ValueError):
-                amount1 = 0.0
-            events.append({
-                "pool_id": pid.lower(),
-                "amount": amount,
-                "amount0": amount0,
-                "amount1": amount1,
-            })
-    return events
+    token0_id, token0_symbol, token1_id, token1_symbol, _ = pool
+    candidates = [
+        (address, symbol)
+        for address, symbol in (
+            (token0_id, token0_symbol),
+            (token1_id, token1_symbol),
+        )
+        if address in VEHICLE_CANDIDATES
+    ]
+    if not candidates:
+        return ()
+    weight = 1.0 / len(candidates)
+    return tuple(
+        (address, VEHICLE_CANDIDATES[address], weight)
+        for address, _ in candidates
+    )
 
 
 def compute_lp_day(
     stamp: str,
-    vol_share_df: pd.DataFrame | None = None,
+    pool_registry: dict[str, PoolIdentity] | None = None,
 ) -> pd.DataFrame:
-    """LP concentration metrics for one day.
+    """Allocate day-level V3 pool TVL and compute each candidate's share."""
 
-    stamp: YYYYMMDD
-    vol_share_df: optional DataFrame from the metrics layer with columns
-               ['token_address', 'VolShare', 'date'] for the same day. Used to
-               identify base asset dynamically; falls back to VEHICLE_CANDIDATES
-               hardcoded list if not provided.
-
-    Returns a DataFrame with columns:
-        date, token_address, token_symbol, is_vehicle_candidate,
-        total_lp_liquidity_usd, lp_concentration_share
-    """
     date_iso = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}"
+    snapshot = _build_pool_snapshot(stamp, pool_registry)
+    candidate_usd: dict[str, float] = defaultdict(float)
+    candidate_symbol: dict[str, str] = {}
 
-    pools = _build_pool_registry(stamp)
-    tvl = _build_tvl_map(stamp)
+    for pool in snapshot.values():
+        tvl_usd = pool[-1]
+        for address, symbol, weight in _candidate_allocations(pool):
+            candidate_usd[address] += weight * tvl_usd
+            candidate_symbol[address] = symbol
 
-    mints = _load_liquidity_events("mints", stamp)
-    burns = _load_liquidity_events("burns", stamp)
-
-    if not mints and not burns:
+    if not candidate_usd:
         return pd.DataFrame(columns=[
             "date", "token_address", "token_symbol", "is_vehicle_candidate",
             "total_lp_liquidity_usd", "lp_concentration_share",
         ])
 
-    # Build net liquidity (L units) per pool
-    net_liq: dict[str, float] = defaultdict(float)
-    for ev in mints:
-        net_liq[ev["pool_id"]] += ev["amount"]
-    for ev in burns:
-        net_liq[ev["pool_id"]] -= ev["amount"]
-
-    # Use abs(net_liq) as a proxy for LP activity magnitude; treat net 0 as 0.
-    # For absolute USD, scale by TVL / total_L_for_pool (approximation only).
-    # A better approach: use TVL directly as the "weight" for each pool —
-    # this measures how much USD is locked in pools whose base is this token.
-
-    # Build per-pool USD weight: TVL from daily snapshot, or fall back to |net_liq| L
-    pool_usd: dict[str, float] = {}
-    for pid in set(list(net_liq.keys()) + list(tvl.keys())):
-        usd = tvl.get(pid, 0.0)
-        if usd > 0:
-            pool_usd[pid] = usd
-
-    # Identify the VolShare map for this day if provided.
-    vol_share_map: dict[str, float] = {}
-    if vol_share_df is not None and not vol_share_df.empty:
-        share_column = "VolShare" if "VolShare" in vol_share_df else "VShare"
-        day_vs = vol_share_df[vol_share_df["date"] == date_iso]
-        for _, row in day_vs.iterrows():
-            vol_share_map[row["token_address"]] = float(row[share_column])
-
-    def _base_asset(pid: str) -> tuple[str, str] | None:
-        """Return (address, symbol) of the vehicle-side base asset in this pool.
-
-        The paper object is liquidity supplied against candidate vehicle assets.
-        Earlier versions let any high-VolShare token become the pool "base", which
-        is useful descriptively but too noisy for the vehicle-currency test.
-        Here a pool contributes only if at least one side is a known vehicle
-        candidate. If both sides are candidates, choose the side with higher
-        same-day vehicle volume share, falling back to the priority list.
-        """
-        info = pools.get(pid)
-        if not info:
-            return None
-        t0_id, t0_sym, t1_id, t1_sym = info
-        t0_is_vehicle = t0_id in VEHICLE_CANDIDATES
-        t1_is_vehicle = t1_id in VEHICLE_CANDIDATES
-
-        if not t0_is_vehicle and not t1_is_vehicle:
-            return None
-        if t0_is_vehicle and not t1_is_vehicle:
-            return t0_id, t0_sym
-        if t1_is_vehicle and not t0_is_vehicle:
-            return t1_id, t1_sym
-
-        # If both are vehicle candidates and VolShare data are available, pick the
-        # candidate with higher same-day vehicle share. In the metrics table the
-        # index column currently stores symbols, so the lookup is by symbol.
-        if vol_share_map:
-            vs0 = vol_share_map.get(t0_sym, 0.0)
-            vs1 = vol_share_map.get(t1_sym, 0.0)
-            if vs0 > vs1:
-                return t0_id, t0_sym
-            elif vs1 > vs0:
-                return t1_id, t1_sym
-            # Fall through to hardcoded list if tied
-
-        # Fall back: prefer known vehicle candidates, ordered by priority
-        prio = {addr: i for i, addr in enumerate(VEHICLE_CANDIDATES.keys())}
-        p0 = prio.get(t0_id, 999)
-        p1 = prio.get(t1_id, 999)
-        if p0 < p1:
-            return t0_id, t0_sym
-        elif p1 < p0:
-            return t1_id, t1_sym
-        else:
-            # Both unknown or same priority: return None (unclassified)
-            return None
-
-    # Aggregate LP USD by base asset
-    base_usd: dict[str, float] = defaultdict(float)
-    base_sym: dict[str, str] = {}
-
-    for pid, usd in pool_usd.items():
-        ba = _base_asset(pid)
-        if ba is None:
-            continue
-        addr, sym = ba
-        base_usd[addr] += usd
-        base_sym[addr] = sym
-
-    if not base_usd:
-        return pd.DataFrame(columns=[
-            "date", "token_address", "token_symbol", "is_vehicle_candidate",
-            "total_lp_liquidity_usd", "lp_concentration_share",
-        ])
-
-    total = sum(base_usd.values())
-    rows = []
-    for addr, usd in base_usd.items():
-        sym = base_sym.get(addr, "")
-        rows.append({
+    total = sum(candidate_usd.values())
+    rows = [
+        {
             "date": date_iso,
-            "token_address": addr,
-            "token_symbol": sym,
-            "is_vehicle_candidate": addr in VEHICLE_CANDIDATES,
+            "token_address": address,
+            "token_symbol": candidate_symbol.get(address, VEHICLE_CANDIDATES[address]),
+            "is_vehicle_candidate": True,
             "total_lp_liquidity_usd": usd,
-            "lp_concentration_share": usd / total if total > 0 else 0.0,
-        })
-    df = pd.DataFrame(rows).sort_values("total_lp_liquidity_usd", ascending=False)
-    return df.reset_index(drop=True)
+            "lp_concentration_share": usd / total,
+        }
+        for address, usd in candidate_usd.items()
+    ]
+    return (
+        pd.DataFrame(rows)
+        .sort_values("total_lp_liquidity_usd", ascending=False)
+        .reset_index(drop=True)
+    )
 
 
 # ---------------------------------------------------------------------------
 # Multi-day run
 # ---------------------------------------------------------------------------
-
-def _available_stamps() -> list[str]:
-    """YYYYMMDD stamps for which V3 mints or burns data exists."""
-    d = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
-    stamps: set[str] = set()
-    if d.is_dir():
-        for f in d.glob("uniswap_v3_mints_*.jsonl.gz"):
-            # f.name = "uniswap_v3_mints_20230101.jsonl.gz"
-            # f.stem = "uniswap_v3_mints_20230101.jsonl" (only strips one suffix)
-            name_no_gz = f.name[:-3]  # strip .gz
-            stamp = name_no_gz.replace(".jsonl", "").split("_")[-1]
-            if len(stamp) == 8 and stamp.isdigit():
-                stamps.add(stamp)
-    return sorted(stamps)
 
 
 def _write_parquet(df: pd.DataFrame, path: Path) -> None:
@@ -334,14 +258,13 @@ def _write_parquet(df: pd.DataFrame, path: Path) -> None:
 def run(
     start: str | None = None,
     end: str | None = None,
-    skip_existing: bool = True,
     chart: bool = True,
 ) -> pd.DataFrame:
     """Compute LP concentration for a date range and write the exhibit Parquet.
 
     start / end are YYYY-MM-DD inclusive bounds. Returns the combined DataFrame.
     """
-    stamps = _available_stamps()
+    stamps = _available_stamps("daily")
     if start:
         s = start.replace("-", "")
         stamps = [d for d in stamps if d >= s]
@@ -350,7 +273,7 @@ def run(
         stamps = [d for d in stamps if d <= e]
 
     if not stamps:
-        print("no V3 mints/burns data found for the requested range", flush=True)
+        print("no V3 daily pool snapshots found for the requested range", flush=True)
         return pd.DataFrame()
 
     print(
@@ -358,24 +281,18 @@ def run(
         flush=True,
     )
 
-    # Try to load metrics for VolShare cross-reference.
-    metrics_path = DATA_DIR / "metrics" / "daily_token_metrics.parquet"
-    vol_share_df: pd.DataFrame | None = None
-    if metrics_path.exists():
-        try:
-            vol_share_df = pd.read_parquet(metrics_path)
-        except Exception:
-            vol_share_df = None
+    registry_stamps = _available_stamps("swaps")
+    pool_registry = _build_pool_registry(registry_stamps)
 
     frames = []
-    for stamp in stamps:
-        day_df = compute_lp_day(stamp, vol_share_df=vol_share_df)
+    for index, stamp in enumerate(stamps, 1):
+        day_df = compute_lp_day(stamp, pool_registry)
         if not day_df.empty:
             frames.append(day_df)
+        if index % 100 == 0 or index == len(stamps):
             print(
-                f"  {stamp[:4]}-{stamp[4:6]}-{stamp[6:8]}: "
-                f"{len(day_df)} tokens, "
-                f"total_usd={day_df['total_lp_liquidity_usd'].sum():,.0f}",
+                f"  pool snapshots: {index}/{len(stamps)} days, "
+                f"{sum(len(frame) for frame in frames):,} token-days",
                 flush=True,
             )
 
@@ -397,7 +314,7 @@ def run(
 
 
 def _plot_top5(df: pd.DataFrame) -> None:
-    """Daily LP concentration share for the top-5 tokens (by mean share). PDF output."""
+    """Daily LP concentration share for the five candidate tokens."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -431,7 +348,7 @@ def _plot_top5(df: pd.DataFrame) -> None:
 
     ax.set_xlabel("Date")
     ax.set_ylabel("LP Concentration Share")
-    ax.set_title("Daily LP Concentration Share — Top 5 Base Assets (Uniswap V3)")
+    ax.set_title("Daily candidate-linked liquidity concentration (Uniswap V3)")
     ax.legend(loc="best", fontsize=9)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.0%}"))
     fig.tight_layout()
