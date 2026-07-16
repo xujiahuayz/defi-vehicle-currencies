@@ -9,13 +9,14 @@ import pandas as pd
 
 from ddvc.analysis.observations import DEFAULT_OBSERVATIONS_TABLE
 from ddvc.variable_registry import SUMMARY_SPECS
-from utils import ROOT, write_table_artifacts
+from utils import write_table_artifacts
 
 
 @dataclass(frozen=True)
 class SummaryRow:
     panel: str
-    variable: str
+    notation: str
+    unit: str
     observations: int
     mean: float
     std_dev: float
@@ -51,13 +52,14 @@ def format_number(value: float) -> str:
     return f"{value:,.2f}"
 
 
-def summary_row(panel: str, variable: str, values: pd.Series) -> SummaryRow:
+def summary_row(panel: str, notation: str, unit: str, values: pd.Series) -> SummaryRow:
     clean = pd.to_numeric(values, errors="coerce").dropna()
     if clean.empty:
-        raise ValueError(f"No non-missing observations for {panel}: {variable}")
+        raise ValueError(f"No non-missing observations for {panel}: {notation}")
     return SummaryRow(
         panel=panel,
-        variable=variable,
+        notation=notation,
+        unit=unit,
         observations=int(clean.shape[0]),
         mean=float(clean.mean()),
         std_dev=float(clean.std()),
@@ -95,17 +97,27 @@ rows: list[SummaryRow] = []
 for spec in summary_specs:
     if spec.column not in panel.columns:
         raise KeyError(f"Registered summary column missing from observations table: {spec.column}")
+    if spec.summary_unit is None:
+        raise ValueError(f"Registered summary unit is missing: {spec.column}")
     source = day_panel if spec.summary_level == "day" else panel
-    label = spec.summary_label or spec.name
-    rows.append(summary_row(spec.summary_panel or spec.group, label, source[spec.column] * spec.summary_scale))
+    rows.append(
+        summary_row(
+            spec.summary_panel or spec.group,
+            spec.notation,
+            spec.summary_unit,
+            source[spec.column] * spec.summary_scale,
+        )
+    )
 
 lines = [
     r"% Requires \usepackage{booktabs,tabularx,array}.",
     r"\begingroup",
     r"\renewcommand{\arraystretch}{1.15}",
-    r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrrr@{}}",
+    r"\begin{tabularx}{\linewidth}{@{}"
+    r">{\raggedright\arraybackslash}X"
+    r">{\raggedright\arraybackslash}Xrrrrrr@{}}",
     r"\toprule",
-    r"Variable & Obs. & Mean & Std. dev. & p25 & Median & p75 \\",
+    r"Variable & Unit & Obs. & Mean & Std. dev. & p25 & Median & p75 \\",
     r"\midrule",
 ]
 current_panel: str | None = None
@@ -113,10 +125,11 @@ for row in rows:
     if row.panel != current_panel:
         if current_panel is not None:
             lines.append(r"\addlinespace")
-        lines.append(rf"\multicolumn{{7}}{{l}}{{\textit{{{latex_escape(row.panel)}}}}} \\")
+        lines.append(rf"\multicolumn{{8}}{{l}}{{\textit{{{latex_escape(row.panel)}}}}} \\")
         current_panel = row.panel
     cells = [
-        latex_escape(row.variable),
+        row.notation,
+        latex_escape(row.unit),
         format_count(row.observations),
         format_number(row.mean),
         format_number(row.std_dev),
@@ -128,10 +141,8 @@ for row in rows:
 
 lines.extend([r"\bottomrule", r"\end{tabularx}", r"\endgroup"])
 
-out_tex, out_pdf = write_table_artifacts(
+write_table_artifacts(
     "summary_statistics",
     "\n".join(lines) + "\n",
     preview_width="9in",
 )
-print(f"wrote {out_tex.relative_to(ROOT)}")
-print(f"wrote {out_pdf.relative_to(ROOT)}")

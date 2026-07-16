@@ -7,7 +7,7 @@ import pandas as pd
 
 from ddvc.analysis.raw_data_inventory import summarize_raw_data_inventory
 from ddvc.paths import DATA_DIR
-from utils import ROOT, write_table_artifacts
+from utils import write_table_artifacts
 
 
 INVENTORY = DATA_DIR / "processed" / "raw_data_inventory.parquet"
@@ -148,24 +148,12 @@ lines.extend(
         ),
         r"\bottomrule",
         r"\end{tabularx}",
-        r"\par\smallskip",
-        r"\begin{minipage}{\linewidth}\footnotesize",
-        r"\textit{Notes:} Counts describe persisted raw source records through 2026-06-30. "
-        r"Positive-swap days are AMM-days and are summed in the total row. Compressed GB "
-        r"uses decimal gigabytes; raw-file counts exclude metadata sidecars. Daily and hourly "
-        r"states are pool-day and pair-hour records, respectively. LP events combine fetched "
-        r"Uniswap V3 mints and burns with Uniswap V4 liquidity modifications. The all-record "
-        r"total therefore combines distinct raw observation units. For Uniswap V1, one "
-        r"swap-source record is a transaction row that can contain multiple purchase events.",
-        r"\end{minipage}",
         r"\endgroup",
     ]
 )
 
-out_tex, out_pdf = write_table_artifacts(
+write_table_artifacts(
     "data_coverage",
     "\n".join(lines) + "\n",
     preview_width="8.5in",
 )
-print(f"wrote {out_tex.relative_to(ROOT)}")
-print(f"wrote {out_pdf.relative_to(ROOT)}")

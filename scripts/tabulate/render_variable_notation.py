@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from ddvc.variable_registry import NOTATION_DEFINITIONS, specs_by_group
-from utils import ROOT, write_table_artifacts
+from utils import write_table_artifacts
 
 
 LATEX_ESCAPES = {
@@ -107,10 +107,8 @@ def render_table() -> str:
     return "\n".join(lines) + "\n"
 
 
-out_tex, out_pdf = write_table_artifacts(
+write_table_artifacts(
     "variable_notation",
     render_table(),
     preview_width="10in",
 )
-print(f"wrote {out_tex.relative_to(ROOT)}")
-print(f"wrote {out_pdf.relative_to(ROOT)}")

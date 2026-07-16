@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 import shutil
 import subprocess
@@ -13,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 TABLE_OUTPUT_FOLDER = "output/tables"
 TABLES_DIR = ROOT / TABLE_OUTPUT_FOLDER
 NUMBERED_ARTIFACT_RE = re.compile(r"^(?:table|figure)_(?:[a-z]\d+|\d+)(?:_|$)", re.IGNORECASE)
+LOGGER = logging.getLogger(__name__)
 
 
 def validate_output_stem(stem: str) -> str:
@@ -152,4 +154,6 @@ def write_table_artifacts(
     pdf_path = TABLES_DIR / f"{stem}.pdf"
     tex_path.write_text(table_latex, encoding="utf-8")
     render_standalone_pdf(table_latex, pdf_path, preview_width=preview_width)
+    LOGGER.info("wrote %s", tex_path.relative_to(ROOT))
+    LOGGER.info("wrote %s", pdf_path.relative_to(ROOT))
     return tex_path, pdf_path

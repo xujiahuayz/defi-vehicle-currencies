@@ -29,7 +29,7 @@ class VariableSpec:
     in_observations_table: bool = True
     include_in_summary: bool = False
     summary_panel: str | None = None
-    summary_label: str | None = None
+    summary_unit: str | None = None
     summary_scale: float = 1.0
     summary_level: str = "token-day"
 
@@ -297,7 +297,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Main vehicle-use outcome; measurement and persistence tests.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
-        summary_label="Vehicle share (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -312,7 +312,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Economic-scope denominator robustness.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
-        summary_label="All-route vehicle share (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -327,7 +327,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Count-weighted measurement robustness.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
-        summary_label="Vehicle count share (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -342,7 +342,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Extensive-margin vehicle coverage.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
-        summary_label="Pair coverage (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -360,7 +360,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Pair-level dominance and robustness.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
-        summary_label="Main-vehicle pair share (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -375,7 +375,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Economic magnitude and weighting.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
-        summary_label="Vehicle volume ($mn)",
+        summary_unit="USD millions",
         summary_scale=1.0 / 1_000_000.0,
     ),
     VariableSpec(
@@ -414,7 +414,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Network-theoretic vehicle proxy.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
-        summary_label="Route betweenness",
+        summary_unit="Fraction (0--1)",
     ),
     VariableSpec(
         group="Network and route-denominator controls",
@@ -446,7 +446,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Daily market-size control and summary statistics.",
         include_in_summary=True,
         summary_panel="Daily route activity",
-        summary_label="Total route volume ($bn)",
+        summary_unit="USD billions",
         summary_scale=1.0 / 1_000_000_000.0,
         summary_level="day",
     ),
@@ -462,7 +462,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="VehicleShare denominator and scope.",
         include_in_summary=True,
         summary_panel="Daily route activity",
-        summary_label="Indirect route volume ($bn)",
+        summary_unit="USD billions",
         summary_scale=1.0 / 1_000_000_000.0,
         summary_level="day",
     ),
@@ -478,7 +478,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Overall importance of routed exchange.",
         include_in_summary=True,
         summary_panel="Daily route activity",
-        summary_label="Indirect route share (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
         summary_level="day",
     ),
@@ -497,7 +497,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Liquidity concentration, persistence, and stickiness tests.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="Vehicle-linked LP liquidity ($bn)",
+        summary_unit="USD billions",
         summary_scale=1.0 / 1_000_000_000.0,
     ),
     VariableSpec(
@@ -512,7 +512,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Liquidity persistence and predictability regressions.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="LP concentration (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -541,7 +541,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Direct-market completeness and architecture tests.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="Direct route available (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -559,7 +559,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Indirect-route feasibility.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="Indirect route available (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -580,7 +580,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Availability and thin-direct-market protection.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="Indirect-only route available (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -598,7 +598,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Direct-market quality and thin-direct-market tests.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="Direct depth (% of input)",
+        summary_unit="Percent of input",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -616,7 +616,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Common-support execution-cost tests.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="Indirect-route advantage (bp)",
+        summary_unit="Basis points",
     ),
     VariableSpec(
         group="Route-cost opportunity measures",
@@ -633,7 +633,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Execution-cost heterogeneity.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="Indirect route beats direct (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -652,7 +652,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Thin-direct protection.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_label="Thin direct route share (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -667,7 +667,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Stress-rotation tests and controls.",
         include_in_summary=True,
         summary_panel="Daily route activity",
-        summary_label="Downside WETH stress (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
         summary_level="day",
     ),
@@ -722,7 +722,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="V4 settlement virtualization and netting tests.",
         include_in_summary=True,
         summary_panel="Settlement-transfer sample",
-        summary_label="Intermediary transfer incidence (%)",
+        summary_unit="Percent",
         summary_scale=100.0,
     ),
     VariableSpec(
@@ -737,7 +737,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Settlement-sample size and weights.",
         include_in_summary=True,
         summary_panel="Settlement-transfer sample",
-        summary_label="Receipt observations",
+        summary_unit="Route-unit count",
     ),
 )
 

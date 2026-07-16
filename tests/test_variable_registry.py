@@ -26,7 +26,21 @@ class VariableRegistryTests(unittest.TestCase):
         observation_columns = set(OBSERVATIONS_TABLE_COLUMNS)
         for spec in SUMMARY_SPECS:
             self.assertIn(spec.column, observation_columns)
+            self.assertIsNotNone(spec.summary_unit, spec.column)
         self.assertIn("direct_depth_median", {spec.column for spec in SUMMARY_SPECS})
+
+    def test_summary_statistics_use_canonical_registry_notation(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        renderer = (
+            root / "scripts" / "tabulate" / "render_summary_statistics.py"
+        ).read_text(encoding="utf-8")
+        rendered = (root / "output" / "tables" / "summary_statistics.tex").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("spec.notation", renderer)
+        self.assertNotIn("summary_label", renderer)
+        for spec in SUMMARY_SPECS:
+            self.assertIn(spec.notation, rendered, spec.column)
 
     def test_core_bridge_and_route_cost_variables_are_registered(self) -> None:
         columns = set(OBSERVATIONS_TABLE_COLUMNS)
@@ -363,6 +377,18 @@ class VariableRegistryTests(unittest.TestCase):
             self.assertNotIn(r"\begin{table}", text)
             self.assertNotIn(r"\caption{", text)
             self.assertNotIn(r"\label{", text)
+            self.assertNotIn("Notes:", text)
+
+        for stem in [
+            "data_coverage",
+            "sample_coverage",
+            "summary_statistics",
+            "variable_notation",
+        ]:
+            rendered = (root / "output" / "tables" / f"{stem}.tex").read_text(
+                encoding="utf-8"
+            )
+            self.assertNotIn("Notes:", rendered, stem)
 
     def test_tabulate_outputs_are_tex_pdf_only_and_unnumbered(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -378,6 +404,14 @@ class VariableRegistryTests(unittest.TestCase):
             self.assertNotIn(".read_csv(", text)
             self.assertNotIn("table_00_", text)
             self.assertNotIn("table_01_", text)
+
+    def test_table_artifact_logging_is_centralized(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        tabulate = root / "scripts" / "tabulate"
+        helper = (tabulate / "utils.py").read_text(encoding="utf-8")
+        self.assertEqual(helper.count('LOGGER.info("wrote %s"'), 2)
+        for script in tabulate.glob("render_*.py"):
+            self.assertNotIn('print(f"wrote', script.read_text(encoding="utf-8"), script.name)
 
     def test_source_does_not_generate_csv_artifacts(self) -> None:
         root = Path(__file__).resolve().parents[1]

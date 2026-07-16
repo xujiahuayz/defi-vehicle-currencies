@@ -1,39 +1,39 @@
 % Requires \usepackage{booktabs,tabularx,array}.
 \begingroup
 \renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrrr@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}Xrrrrrr@{}}
 \toprule
-Variable & Obs. & Mean & Std. dev. & p25 & Median & p75 \\
+Variable & Unit & Obs. & Mean & Std. dev. & p25 & Median & p75 \\
 \midrule
-\multicolumn{7}{l}{\textit{Daily route activity}} \\
-Total route volume (\$bn) & 2,277 & 1.19 & 0.89 & 0.63 & 1.04 & 1.53 \\
-Indirect route volume (\$bn) & 2,277 & 0.12 & 0.11 & 0.07 & 0.10 & 0.15 \\
-Indirect route share (\%) & 2,277 & 10.29 & 3.22 & 8.51 & 10.16 & 11.96 \\
-Downside WETH stress (\%) & 2,243 & 1.68 & 13.95 & 0.00 & 0.00 & 1.62 \\
+\multicolumn{8}{l}{\textit{Daily route activity}} \\
+$\mathrm{Vol}_t$ & USD billions & 2,277 & 1.19 & 0.89 & 0.63 & 1.04 & 1.53 \\
+$\mathrm{IVol}_t$ & USD billions & 2,277 & 0.12 & 0.11 & 0.07 & 0.10 & 0.15 \\
+$\mathrm{IndirectRouteShare}_{t}$ & Percent & 2,277 & 10.29 & 3.22 & 8.51 & 10.16 & 11.96 \\
+$\mathrm{Stress}_{t}$ & Percent & 2,243 & 1.68 & 13.95 & 0.00 & 0.00 & 1.62 \\
 \addlinespace
-\multicolumn{7}{l}{\textit{Vehicle-use measures, token-day}} \\
-Vehicle share (\%) & 11,385 & 18.37 & 19.89 & 3.09 & 9.76 & 29.73 \\
-All-route vehicle share (\%) & 11,385 & 1.93 & 2.37 & 0.30 & 0.96 & 2.86 \\
-Vehicle count share (\%) & 11,385 & 18.50 & 22.38 & 3.02 & 8.64 & 21.90 \\
-Pair coverage (\%) & 11,385 & 21.12 & 27.98 & 3.23 & 8.18 & 20.31 \\
-Main-vehicle pair share (\%) & 11,385 & 18.13 & 26.49 & 1.71 & 5.80 & 15.69 \\
-Vehicle volume (\$mn) & 11,385 & 23.10 & 41.44 & 2.63 & 9.88 & 30.32 \\
-Route betweenness & 11,279 & 0.10 & 0.19 & 0.00 & 0.01 & 0.04 \\
+\multicolumn{8}{l}{\textit{Vehicle-use measures, token-day}} \\
+$\mathrm{VehicleShare}_{k,t}$ & Percent & 11,385 & 18.37 & 19.89 & 3.09 & 9.76 & 29.73 \\
+$\mathrm{AllRouteVehicleShare}_{k,t}$ & Percent & 11,385 & 1.93 & 2.37 & 0.30 & 0.96 & 2.86 \\
+$\mathrm{VehicleCountShare}_{k,t}$ & Percent & 11,385 & 18.50 & 22.38 & 3.02 & 8.64 & 21.90 \\
+$\mathrm{PairCoverage}_{k,t}$ & Percent & 11,385 & 21.12 & 27.98 & 3.23 & 8.18 & 20.31 \\
+$\mathrm{MainVehiclePairShare}_{k,t}$ & Percent & 11,385 & 18.13 & 26.49 & 1.71 & 5.80 & 15.69 \\
+$\mathrm{IVol}_{k,t}$ & USD millions & 11,385 & 23.10 & 41.44 & 2.63 & 9.88 & 30.32 \\
+$\mathrm{Betweenness}_{k,t}$ & Fraction (0--1) & 11,279 & 0.10 & 0.19 & 0.00 & 0.01 & 0.04 \\
 \addlinespace
-\multicolumn{7}{l}{\textit{Liquidity and route-cost opportunity}} \\
-Vehicle-linked LP liquidity (\$bn) & 9,415 & 0.68 & 0.67 & 0.23 & 0.40 & 0.83 \\
-LP concentration (\%) & 9,415 & 20.00 & 17.82 & 7.23 & 11.64 & 27.62 \\
-Direct route available (\%) & 11,173 & 82.68 & 12.11 & 76.92 & 86.08 & 91.30 \\
-Indirect route available (\%) & 11,173 & 40.52 & 22.82 & 22.83 & 36.84 & 52.05 \\
-Indirect-only route available (\%) & 11,173 & 4.25 & 8.29 & 0.00 & 1.32 & 4.55 \\
-Direct depth (\% of input) & 11,171 & 99.26 & 4.00 & 99.73 & 99.93 & 99.97 \\
-Indirect-route advantage (bp) & 11,055 & -990.7 & 4,229 & -854.5 & -145.5 & -17.47 \\
-Indirect route beats direct (\%) & 11,055 & 23.63 & 22.15 & 6.45 & 17.65 & 33.33 \\
-Thin direct route share (\%) & 11,173 & 14.79 & 6.95 & 10.26 & 14.29 & 18.57 \\
+\multicolumn{8}{l}{\textit{Liquidity and route-cost opportunity}} \\
+$L_{k,t}$ & USD billions & 9,415 & 0.68 & 0.67 & 0.23 & 0.40 & 0.83 \\
+$\mathrm{LPConc}_{k,t}$ & Percent & 9,415 & 20.00 & 17.82 & 7.23 & 11.64 & 27.62 \\
+$\mathrm{DirectAvailable}_{k,t,q}$ & Percent & 11,173 & 82.68 & 12.11 & 76.92 & 86.08 & 91.30 \\
+$\mathrm{IndirectAvailable}_{k,t,q}$ & Percent & 11,173 & 40.52 & 22.82 & 22.83 & 36.84 & 52.05 \\
+$\mathrm{IndirectOnlyAvailable}_{k,t,q}$ & Percent & 11,173 & 4.25 & 8.29 & 0.00 & 1.32 & 4.55 \\
+$\mathrm{DirectDepth}_{k,t,q}$ & Percent of input & 11,171 & 99.26 & 4.00 & 99.73 & 99.93 & 99.97 \\
+$\mathrm{RouteCostAdvantage}_{k,t,q}$ & Basis points & 11,055 & -990.7 & 4,229 & -854.5 & -145.5 & -17.47 \\
+$\mathrm{IndirectBeatsDirect}_{k,t,q}$ & Percent & 11,055 & 23.63 & 22.15 & 6.45 & 17.65 & 33.33 \\
+$\mathrm{ThinDirectShare}_{k,t,q}$ & Percent & 11,173 & 14.79 & 6.95 & 10.26 & 14.29 & 18.57 \\
 \addlinespace
-\multicolumn{7}{l}{\textit{Settlement-transfer sample}} \\
-Intermediary transfer incidence (\%) & 217 & 90.49 & 15.71 & 83.33 & 100.0 & 100.0 \\
-Receipt observations & 217 & 4.29 & 2.61 & 2.00 & 4.00 & 6.00 \\
+\multicolumn{8}{l}{\textit{Settlement-transfer sample}} \\
+$\mathrm{TransferIncidence}_{k,w}$ & Percent & 217 & 90.49 & 15.71 & 83.33 & 100.0 & 100.0 \\
+$\mathrm{ReceiptCount}_{k,w}$ & Route-unit count & 217 & 4.29 & 2.61 & 2.00 & 4.00 & 6.00 \\
 \bottomrule
 \end{tabularx}
 \endgroup

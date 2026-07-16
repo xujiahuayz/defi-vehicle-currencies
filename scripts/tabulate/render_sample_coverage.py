@@ -6,7 +6,7 @@ from __future__ import annotations
 import pandas as pd
 
 from ddvc.paths import DATA_DIR
-from utils import ROOT, write_table_artifacts
+from utils import write_table_artifacts
 
 
 def count(value: int | float) -> str:
@@ -91,20 +91,12 @@ lines.extend(
     [
         r"\bottomrule",
         r"\end{tabularx}",
-        r"\par\smallskip",
-        r"\begin{minipage}{\linewidth}\footnotesize",
-        r"\textit{Notes:} Processed empirical samples are built from the DVC raw layer through "
-        r"2026-06-30. Observation units are stated in each sample name. The route-cost panel "
-        r"uses daily state cutoffs and three trade-size buckets.",
-        r"\end{minipage}",
         r"\endgroup",
     ]
 )
 
-out_tex, out_pdf = write_table_artifacts(
+write_table_artifacts(
     "sample_coverage",
     "\n".join(lines) + "\n",
     preview_width="9in",
 )
-print(f"wrote {out_tex.relative_to(ROOT)}")
-print(f"wrote {out_pdf.relative_to(ROOT)}")
