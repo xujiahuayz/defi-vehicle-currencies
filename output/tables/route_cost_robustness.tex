@@ -1,16 +1,16 @@
 \begin{tabular}{lrrrrrrrr}
 \toprule
-Trade size & Sample & Rows & Pair-days & Beats direct (\%) & Median advantage (bp) & Pair-day mean (bp) & t & p \\
+Trade size & Sample & Rows & Pair-days & Indirect beats direct (\%) & Median direct cost advantage (fraction) & Pair-day mean direct cost advantage (fraction) & t & p \\
 \midrule
-\$1,000 & All common support & 48,840 & 48,819 & 59.6 & 27.7 & 2885.2 & 33.06 & <0.001 \\
-\$1,000 & Direct output >= 50\% notional & 44,377 & 44,371 & 60.0 & 26.3 & -30.4 & -0.61 & 0.542 \\
-\$1,000 & Direct output >= 90\% notional & 42,961 & 42,956 & 59.3 & 23.3 & -167.7 & -3.39 & <0.001 \\
-\$10,000 & All common support & 48,840 & 48,819 & 56.6 & 21.5 & 4803.0 & 45.08 & <0.001 \\
-\$10,000 & Direct output >= 50\% notional & 42,402 & 42,398 & 55.6 & 15.4 & -563.6 & -12.46 & <0.001 \\
-\$10,000 & Direct output >= 90\% notional & 40,562 & 40,558 & 54.5 & 11.2 & -776.6 & -17.66 & <0.001 \\
-\$100,000 & All common support & 48,840 & 48,819 & 49.9 & -0.4 & 8582.1 & 63.96 & <0.001 \\
-\$100,000 & Direct output >= 50\% notional & 38,018 & 38,014 & 44.0 & -24.3 & -1490.8 & -37.66 & <0.001 \\
-\$100,000 & Direct output >= 90\% notional & 34,370 & 34,366 & 41.3 & -33.8 & -1731.3 & -42.50 & <0.001 \\
+\$1,000 & All common support & 48,840 & 48,819 & 59.6 & -0.0028 & -0.2885 & -33.06 & \ensuremath{<}0.001 \\
+\$1,000 & Direct output \ensuremath{>}= 50\% notional & 44,377 & 44,371 & 60.0 & -0.0026 & 0.0030 & 0.61 & 0.542 \\
+\$1,000 & Direct output \ensuremath{>}= 90\% notional & 42,961 & 42,956 & 59.3 & -0.0023 & 0.0168 & 3.39 & \ensuremath{<}0.001 \\
+\$10,000 & All common support & 48,840 & 48,819 & 56.6 & -0.0022 & -0.4803 & -45.08 & \ensuremath{<}0.001 \\
+\$10,000 & Direct output \ensuremath{>}= 50\% notional & 42,402 & 42,398 & 55.6 & -0.0015 & 0.0564 & 12.46 & \ensuremath{<}0.001 \\
+\$10,000 & Direct output \ensuremath{>}= 90\% notional & 40,562 & 40,558 & 54.5 & -0.0011 & 0.0777 & 17.66 & \ensuremath{<}0.001 \\
+\$100,000 & All common support & 48,840 & 48,819 & 49.9 & 0.0000 & -0.8582 & -63.96 & \ensuremath{<}0.001 \\
+\$100,000 & Direct output \ensuremath{>}= 50\% notional & 38,018 & 38,014 & 44.0 & 0.0024 & 0.1491 & 37.66 & \ensuremath{<}0.001 \\
+\$100,000 & Direct output \ensuremath{>}= 90\% notional & 34,370 & 34,366 & 41.3 & 0.0034 & 0.1731 & 42.50 & \ensuremath{<}0.001 \\
 \bottomrule
 \end{tabular}
-% Notes for paper wrapper: Advantage is WETH vehicle output minus direct output in basis points. The t-test is over endpoint-pair-day mean advantages, winsorized at +/-100,000 bp.
+% Notes for paper wrapper: DirectCostAdvantage is direct output minus WETH indirect output as a fraction of direct output. The t-test is over endpoint-pair-day means, clipped to +/-10.

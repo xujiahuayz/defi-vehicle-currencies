@@ -18,9 +18,9 @@ paper-facing answer and one main display. Robustness tables can be selected late
 
 | Research question | Paper-facing mechanism | Main evidence | Placement |
 | --- | --- | --- | --- |
-| RQ1. When does an asset become a vehicle? | Direct-market incompleteness and thin-direct-route protection. | Route-cost advantage, vehicle-route availability, and vehicle-route depth predict actual and future vehicle share. | Section 4, Table 3 |
+| RQ1. When does an asset become a vehicle? | Direct-market incompleteness and thin-direct-route protection. | DirectCostAdvantage, vehicle-route availability, and vehicle-route depth predict actual and future vehicle share. | Section 4, Table 3 |
 | RQ2. How does liquidity provision make a vehicle? | Vehicle-linked liquidity and vehicle use are mutually persistent. | LP concentration predicts future vehicle share; lagged vehicle share predicts future LP concentration and linked liquidity. | Section 5, Table 4 |
-| RQ3. Why does vehicle status persist or get displaced? | Persistence is strong, but sufficiently large challenger route-cost edges displace incumbents. | Lagged vehicle share and challenger-edge bins predict incumbent share losses. | Section 5, Table 4 plus appendix |
+| RQ3. Why does vehicle status persist or get displaced? | Persistence is strong, but sufficiently large challenger cost edges displace incumbents. | Lagged vehicle share and challenger-edge bins predict incumbent share losses. | Section 5, Table 4 plus appendix |
 | RQ4. When does vehicle status switch under stress? | Risk or credibility shocks rotate route intermediation on impact inside common route opportunities. | WETH-minus-stable vehicle share falls on stress event days, with threshold and overlap sensitivity. | Section 6, Table 5 |
 | RQ5. How does market architecture change vehicle formation? | Direct-market-deepening architecture expands pairwise route opportunity and reduces no-direct dependence on vehicles. | Post-V3 no-direct WETH-available cases fall in balanced endpoint-pair panels. | Section 7, Table 6 |
 | RQ6. How does settlement architecture change vehicle use? | Settlement netting separates route vehicle use from physical intermediary-token movement. | V4 lowers intermediary-token transfer incidence while matched V4 route use persists. | Section 8, Table 7 |
@@ -93,7 +93,7 @@ sample over which each empirical claim is made.
 **Table 2 placed here.**
 
 **Table 2. Variables and empirical proxies.**
-The table defines vehicle share, route-cost advantage, direct-route availability,
+The table defines vehicle share, DirectCostAdvantage, direct-route availability,
 vehicle-route availability, vehicle-linked liquidity, LP concentration, settlement
 transfer incidence, and the vehicle liquidity factor. It states the unit of
 observation, construction, and research question using each variable.
@@ -163,7 +163,7 @@ common-support cost advantage as one margin.
 
 **Table 3. Vehicle formation: route economics, availability, and realized route choice.**
 The dependent variables are actual vehicle share and future vehicle share. The
-main regressors are route-cost advantage, vehicle-route availability,
+main regressors are DirectCostAdvantage, vehicle-route availability,
 vehicle-route depth, LP concentration, and lagged vehicle share. Cells report
 coefficients with p-values beneath them. The table shows whether route economics
 and executable vehicle-route opportunity are associated with realized and future

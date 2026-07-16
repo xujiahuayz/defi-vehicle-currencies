@@ -560,7 +560,7 @@ Top bridge tokens in {latest_year}:
 
 ## Proposition checks
 
-### P1. Route-cost advantage
+### P1. Direct cost advantage
 
 {fmt_route_cost(route_cost)}
 
@@ -610,7 +610,7 @@ def fmt_route_cost(df: pd.DataFrame) -> str:
     keep = df[df["vehicle"].eq("WETH")][
         [
             "vehicle", "trade_size_usd", "both_available_rows",
-            "vehicle_beats_direct_share", "median_advantage_bps",
+            "vehicle_beats_direct_share", "direct_cost_advantage_median",
             "t_winsor_mean", "p_winsor_mean", "no_direct_vehicle_available_rows",
         ]
     ].copy()

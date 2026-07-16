@@ -1,12 +1,12 @@
 \begin{tabular}{lrrrrrrr}
 \toprule
-Challenger advantage bin & Incumbent days & Mean challenger edge (bp) & Median challenger edge (bp) & Mean incumbent share change t+30 (pp) & t & p & Interpretation \\
+Challenger cost-edge bin & Incumbent days & Mean challenger cost edge (fraction) & Median challenger cost edge (fraction) & Mean incumbent share change t+30 (pp) & t & p & Interpretation \\
 \midrule
-challenger <= incumbent & 1,687 & -688.7 & -137.9 & -2.80 & -8.16 & <0.001 & incumbent displacement threshold screen \\
-0 to 25 bp & 86 & 11.2 & 10.9 & -5.19 & -3.47 & <0.001 & incumbent displacement threshold screen \\
-25 to 100 bp & 146 & 60.0 & 58.9 & -6.72 & -5.47 & <0.001 & incumbent displacement threshold screen \\
-100 to 250 bp & 92 & 171.0 & 173.5 & -9.50 & -7.28 & <0.001 & incumbent displacement threshold screen \\
->250 bp & 193 & 1464.0 & 685.4 & -10.08 & -10.17 & <0.001 & incumbent displacement threshold screen \\
+challenger \ensuremath{<}= incumbent & 1,687 & -0.0689 & -0.0138 & -2.80 & -8.16 & \ensuremath{<}0.001 & incumbent displacement threshold screen \\
+0 to 0.0025 & 86 & 0.0011 & 0.0011 & -5.19 & -3.47 & \ensuremath{<}0.001 & incumbent displacement threshold screen \\
+0.0025 to 0.01 & 146 & 0.0060 & 0.0059 & -6.72 & -5.47 & \ensuremath{<}0.001 & incumbent displacement threshold screen \\
+0.01 to 0.025 & 92 & 0.0171 & 0.0173 & -9.50 & -7.28 & \ensuremath{<}0.001 & incumbent displacement threshold screen \\
+\ensuremath{>}0.025 & 193 & 0.1464 & 0.0685 & -10.08 & -10.17 & \ensuremath{<}0.001 & incumbent displacement threshold screen \\
 \bottomrule
 \end{tabular}
-% Notes for paper wrapper: Incumbent is the highest-BridgeShare vehicle on day t. Challenger edge is the best non-incumbent median route-cost advantage minus incumbent median advantage at \$10k. Outcome is incumbent BridgeShare change over 30 days.
+% Notes for paper wrapper: Incumbent is the highest-BridgeShare vehicle on day t. Challenger cost edge is incumbent DirectCostAdvantage minus the minimum non-incumbent DirectCostAdvantage at \$10k, so positive values favor the challenger. Outcome is incumbent BridgeShare change over 30 days.

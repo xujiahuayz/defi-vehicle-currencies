@@ -7,6 +7,7 @@ and swap fees already present in the rebuilt raw layer.
 """
 from __future__ import annotations
 
+import argparse
 import gzip
 import json
 import math
@@ -45,6 +46,25 @@ class WeightedPool:
     weight0: float
     weight1: float
     fee: float
+
+
+def _migrate_cached_output() -> int:
+    path = EMP / "balancer_weighted_quote_extension.pkl"
+    if not path.exists():
+        print(f"no Balancer cache to migrate: {path}")
+        return 0
+    out = pd.read_pickle(path)
+    legacy = "balancer_vehicle_advantage_bps"
+    if legacy not in out.columns:
+        print(f"Balancer cache already canonical: {path}")
+        return 0
+    out["balancer_direct_cost_advantage"] = (
+        -pd.to_numeric(out[legacy], errors="coerce") / 10_000.0
+    )
+    out = out.drop(columns=[legacy])
+    out.to_pickle(path)
+    print(f"migrated {len(out):,} Balancer quote rows -> {path}")
+    return 0
 
 
 def _raw_daily(stamp: str) -> Path:
@@ -165,7 +185,11 @@ def run() -> pd.DataFrame:
                 "balancer_vehicle_available": bal_vehicle_usd > 0,
                 "balancer_direct_output_usd": bal_direct_usd,
                 "balancer_vehicle_output_usd": bal_vehicle_usd,
-                "balancer_vehicle_advantage_bps": (bal_vehicle_usd / bal_direct_usd - 1.0) * 10_000.0 if bal_direct_usd > 0 and bal_vehicle_usd > 0 else np.nan,
+                "balancer_direct_cost_advantage": (
+                    (bal_direct_usd - bal_vehicle_usd) / bal_direct_usd
+                    if bal_direct_usd > 0 and bal_vehicle_usd > 0
+                    else np.nan
+                ),
             })
         if i % 100 == 0:
             print(f"Balancer quote extension [{i}/{d['stamp'].nunique()}] {stamp}", flush=True)
@@ -181,7 +205,9 @@ def run() -> pd.DataFrame:
             "Balancer WETH route available (%)": _pct(g["balancer_vehicle_available"].mean()),
             "Adds direct rows": _int((~g["existing_direct_available"] & g["balancer_direct_available"]).sum()),
             "Adds WETH-route rows": _int((~g["existing_vehicle_available"] & g["balancer_vehicle_available"]).sum()),
-            "Median Balancer WETH advantage (bp)": _num(both["balancer_vehicle_advantage_bps"].median(), 2),
+            "Median Balancer direct cost advantage (fraction)": _num(
+                both["balancer_direct_cost_advantage"].median(), 4
+            ),
         })
     table = pd.DataFrame(table_rows)
     _write_table(
@@ -200,6 +226,15 @@ def run() -> pd.DataFrame:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--migrate-cache",
+        action="store_true",
+        help="rewrite a legacy cached result to the canonical direct-cost schema and exit",
+    )
+    args = parser.parse_args()
+    if args.migrate_cache:
+        return _migrate_cached_output()
     run()
     return 0
 

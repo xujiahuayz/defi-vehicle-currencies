@@ -505,8 +505,8 @@ def _build_day(
                 if mid_out > 0:
                     final_out, hop2_source, hop2_pool = _best_quote(pools, veh, r.tgt, mid_out)
                     veh_usd = final_out * tgt_price if final_out > 0 else 0.0
-                advantage = (
-                    (veh_usd - direct_usd) / direct_usd
+                direct_cost_advantage = (
+                    (direct_usd - veh_usd) / direct_usd
                     if direct_usd > 0 and veh_usd > 0 else math.nan
                 )
                 rows.append({
@@ -524,7 +524,7 @@ def _build_day(
                     "vehicle_available": bool(veh_usd > 0),
                     "direct_output_usd": direct_usd,
                     "vehicle_output_usd": veh_usd,
-                    "vehicle_route_advantage": advantage,
+                    "direct_cost_advantage": direct_cost_advantage,
                     "direct_source": direct_source,
                     "direct_pool": direct_pool,
                     "hop1_source": hop1_source,
@@ -548,16 +548,54 @@ def _day_cache_path(stamp: str) -> Path:
     return DAY_CACHE / f"{stamp}.parquet"
 
 
+def _canonicalize_cost_measure(panel: pd.DataFrame) -> pd.DataFrame:
+    """Expose only the direct-minus-indirect fraction in persisted panels."""
+
+    if panel.empty:
+        return panel
+    out = panel.copy()
+    direct = pd.to_numeric(out["direct_output_usd"], errors="coerce")
+    indirect = pd.to_numeric(out["vehicle_output_usd"], errors="coerce")
+    common_support = direct.gt(0) & indirect.gt(0)
+    out["direct_cost_advantage"] = np.where(
+        common_support,
+        (direct - indirect) / direct,
+        np.nan,
+    )
+    return out.drop(columns=["vehicle_route_advantage"], errors="ignore")
+
+
+def _migrate_day_cache() -> int:
+    paths = sorted(DAY_CACHE.glob("*.parquet"))
+    migrated = 0
+    for i, path in enumerate(paths, 1):
+        day = pd.read_parquet(path)
+        if "vehicle_route_advantage" in day.columns:
+            _write(_canonicalize_cost_measure(day), path)
+            migrated += 1
+        if i % 250 == 0 or i == len(paths):
+            print(f"route-cost cache migration [{i}/{len(paths)}] {path.stem}", flush=True)
+    print(f"migrated {migrated:,} route-cost day-cache files")
+    return 0
+
+
 def _summarize(panel: pd.DataFrame) -> pd.DataFrame:
     if panel.empty:
         return pd.DataFrame()
     x = panel.copy()
-    x["advantage_bps"] = x["vehicle_route_advantage"] * 10_000
     rows = []
     for (vehicle, size), g in x.groupby(["vehicle_sym", "trade_size_usd"]):
         avail = g[g["vehicle_available"]]
-        both = g[g["vehicle_available"] & g["direct_available"] & np.isfinite(g["vehicle_route_advantage"])]
-        adv = both["advantage_bps"].clip(lower=-100_000, upper=100_000) if len(both) else pd.Series(dtype=float)
+        both = g[
+            g["vehicle_available"]
+            & g["direct_available"]
+            & np.isfinite(g["direct_cost_advantage"])
+        ]
+        adv = (
+            both["direct_cost_advantage"].clip(lower=-10, upper=10)
+            if len(both)
+            else pd.Series(dtype=float)
+        )
         t_stat = p_value = math.nan
         if len(adv) > 2 and float(adv.std()) > 0:
             t_stat, p_value = stats.ttest_1samp(adv.to_numpy(dtype=float), 0.0)
@@ -568,11 +606,11 @@ def _summarize(panel: pd.DataFrame) -> pd.DataFrame:
             "vehicle_available_share": float(g["vehicle_available"].mean()),
             "direct_available_share": float(g["direct_available"].mean()),
             "both_available_rows": int(len(both)),
-            "vehicle_beats_direct_share": float((both["vehicle_route_advantage"] > 0).mean()) if len(both) else math.nan,
-            "median_advantage_bps": float(both["advantage_bps"].median()) if len(both) else math.nan,
-            "p25_advantage_bps": float(both["advantage_bps"].quantile(0.25)) if len(both) else math.nan,
-            "p75_advantage_bps": float(both["advantage_bps"].quantile(0.75)) if len(both) else math.nan,
-            "mean_advantage_bps_winsor": float(adv.mean()) if len(adv) else math.nan,
+            "vehicle_beats_direct_share": float((both["direct_cost_advantage"] < 0).mean()) if len(both) else math.nan,
+            "direct_cost_advantage_median": float(both["direct_cost_advantage"].median()) if len(both) else math.nan,
+            "direct_cost_advantage_p25": float(both["direct_cost_advantage"].quantile(0.25)) if len(both) else math.nan,
+            "direct_cost_advantage_p75": float(both["direct_cost_advantage"].quantile(0.75)) if len(both) else math.nan,
+            "direct_cost_advantage_winsor_mean": float(adv.mean()) if len(adv) else math.nan,
             "t_winsor_mean": float(t_stat) if np.isfinite(t_stat) else math.nan,
             "p_winsor_mean": float(p_value) if np.isfinite(p_value) else math.nan,
             "no_direct_vehicle_available_rows": int((~g["direct_available"] & g["vehicle_available"]).sum()),
@@ -589,13 +627,25 @@ def main() -> int:
     ap.add_argument("--top-pairs", type=int, default=200)
     ap.add_argument("--trade-sizes", default="1000,10000,100000")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument(
+        "--migrate-day-cache",
+        action="store_true",
+        help="rewrite legacy day-cache files to the canonical direct-cost schema and exit",
+    )
     ap.add_argument("--no-v3", action="store_true", help="only use V2-style constant-product pools")
     args = ap.parse_args()
+
+    if args.migrate_day_cache:
+        return _migrate_day_cache()
 
     out_path = OUT_DATA / "route_cost_panel_v2.parquet"
     summary_path = OUT / "route_cost_panel_v2_summary.pkl"
     if out_path.exists() and not args.force:
         panel = pd.read_parquet(out_path)
+        needs_migration = "vehicle_route_advantage" in panel.columns
+        panel = _canonicalize_cost_measure(panel)
+        if needs_migration:
+            _write(panel, out_path)
     else:
         sizes = [float(x) for x in args.trade_sizes.split(",") if x.strip()]
         frames = []
@@ -614,6 +664,10 @@ def main() -> int:
             cache_path = _day_cache_path(stamp)
             if cache_path.exists():
                 day = pd.read_parquet(cache_path)
+                needs_migration = "vehicle_route_advantage" in day.columns
+                day = _canonicalize_cost_measure(day)
+                if needs_migration:
+                    _write(day, cache_path)
             else:
                 day = _build_day(
                     stamp,
@@ -623,6 +677,7 @@ def main() -> int:
                     v3_state=day_v3_state,
                     v3_ticks=day_v3_ticks,
                 )
+                day = _canonicalize_cost_measure(day)
                 _write(day, cache_path)
             if not day.empty:
                 frames.append(day)

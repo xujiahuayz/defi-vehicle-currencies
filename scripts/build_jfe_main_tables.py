@@ -95,9 +95,15 @@ def table_02_p1_availability() -> pd.DataFrame:
                 "Direct available (%)": r["Direct available (%)"],
                 "WETH indirect route available (%)": r["WETH route available (%)"],
                 "Indirect-only WETH rows": r["No-direct, WETH-available rows"],
-                "Thin-direct median advantage (bp)": r["Median thin-direct advantage (bp)"],
-                "High-quality-direct median advantage (bp)": r["Median high-quality-direct advantage (bp)"],
-                "Common-support median (bp)": r["Median common-support advantage (bp)"],
+                "Thin-direct DirectCostAdvantage (fraction)": r[
+                    "Median thin-direct direct cost advantage (fraction)"
+                ],
+                "High-quality-direct DirectCostAdvantage (fraction)": r[
+                    "Median high-quality-direct cost advantage (fraction)"
+                ],
+                "Common-support DirectCostAdvantage (fraction)": r[
+                    "Median common-support direct cost advantage (fraction)"
+                ],
             }
         )
     out = pd.DataFrame(rows)
@@ -293,6 +299,7 @@ def table_06_p4b_v4() -> pd.DataFrame:
 
 def table_07_spec_registry() -> pd.DataFrame:
     p2 = pd.read_pickle(EMP / "p2_dynamic_predictability.pkl")
+    p1 = pd.read_pickle(EMP / "p1_availability_thin_direct.pkl")
 
     def p2_cell(outcome: str) -> tuple[str, str]:
         row = p2[p2["Horizon"].eq("t+7") & p2["Outcome"].eq(outcome)]
@@ -309,17 +316,25 @@ def table_07_spec_registry() -> pd.DataFrame:
         f"share->LP conc. {share_to_conc_beta} (p {share_to_conc_p}); "
         f"share->log TVL {share_to_tvl_beta} (p {share_to_tvl_p})"
     )
+    p1_direct_available = str(p1.iloc[0]["Direct available (%)"])
+    p1_indirect_only = str(p1.iloc[0]["Indirect-only WETH rows"])
+    p1_thin_values = "/".join(
+        p1["Thin-direct DirectCostAdvantage (fraction)"].astype(str)
+    )
 
     rows = [
         {
             "Test": "P1 availability/thin-direct",
             "Unit": "endpoint-pair x day x trade size",
             "Sample": "V2/Sushi V2/V3 exact quoteable venues",
-            "Outcome": "route availability and WETH advantage",
+            "Outcome": "route availability and DirectCostAdvantage",
             "Regressor / treatment": "WETH indirect route",
             "FE / SE": "endpoint-pair-day aggregation",
-            "Baseline mean": "direct available 72.1%",
-            "Main estimate": "9,584 no-direct rows; thin-direct 142.65-349.28 bp",
+            "Baseline mean": f"direct available {p1_direct_available}%",
+            "Main estimate": (
+                f"{p1_indirect_only} no-direct rows; thin-direct "
+                f"DirectCostAdvantage {p1_thin_values}"
+            ),
             "Economic interpretation": "availability and thin-direct execution protection",
         },
         {

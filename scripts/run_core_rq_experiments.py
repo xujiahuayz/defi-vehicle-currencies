@@ -114,9 +114,9 @@ def variable_construction_table() -> pd.DataFrame:
             "Used for": "RQ1, RQ2, RQ3, RQ4",
         },
         {
-            "Variable / proxy": "RouteCostAdvantage",
+            "Variable / proxy": "DirectCostAdvantage",
             "Level": "endpoint pair x vehicle x day x trade size",
-            "Construction": "(indirect-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at $10k.",
+            "Construction": "(direct-route exact-quote output USD - indirect-route exact-quote output USD) / direct-route output USD. The candidate-day measure is the median fraction across common-support endpoint pairs at $10k; positive values favor the direct route.",
             "Source": "data/empirical/route_cost_panel_v2.parquet",
             "Used for": "RQ1, RQ3, RQ5",
         },
@@ -222,7 +222,7 @@ def route_cost_daily(trade_size: float = 10_000.0) -> pd.DataFrame:
         "direct_available",
         "vehicle_available",
         "direct_output_usd",
-        "vehicle_route_advantage",
+        "direct_cost_advantage",
     ]
     r = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=cols)
     r = r[r["trade_size_usd"].astype(float).eq(float(trade_size))].copy()
@@ -231,12 +231,15 @@ def route_cost_daily(trade_size: float = 10_000.0) -> pd.DataFrame:
     r["pair"] = r["src"].astype(str) + "->" + r["tgt"].astype(str)
     r["direct_available"] = r["direct_available"].astype(bool)
     r["vehicle_available"] = r["vehicle_available"].astype(bool)
-    r["both_available"] = r["direct_available"] & r["vehicle_available"] & r["vehicle_route_advantage"].notna()
+    r["both_available"] = (
+        r["direct_available"]
+        & r["vehicle_available"]
+        & r["direct_cost_advantage"].notna()
+    )
     r["no_direct_vehicle_available"] = (~r["direct_available"]) & r["vehicle_available"]
     r["direct_depth_proxy"] = np.where(r["direct_available"], r["direct_output_usd"].astype(float) / float(trade_size), np.nan)
     r["thin_direct"] = r["direct_available"] & (r["direct_depth_proxy"] < 0.90)
-    r["adv_bps"] = 10_000.0 * r["vehicle_route_advantage"].astype(float)
-    r["adv_bps_winsor"] = r["adv_bps"].clip(lower=-10_000, upper=10_000)
+    r["direct_cost_advantage_winsor"] = r["direct_cost_advantage"].astype(float).clip(-1, 1)
     grouped = r.groupby(["date", "token"], as_index=False)
     out = grouped.agg(
         quote_rows=("pair", "size"),
@@ -245,9 +248,12 @@ def route_cost_daily(trade_size: float = 10_000.0) -> pd.DataFrame:
         vehicle_available_share=("vehicle_available", "mean"),
         no_direct_vehicle_available_share=("no_direct_vehicle_available", "mean"),
         both_available_rows=("both_available", "sum"),
-        route_cost_advantage_median_bps=("adv_bps", "median"),
-        route_cost_advantage_winsor_mean_bps=("adv_bps_winsor", "mean"),
-        vehicle_beats_direct_share=("vehicle_route_advantage", lambda x: float((x > 0).mean()) if x.notna().any() else math.nan),
+        direct_cost_advantage_median=("direct_cost_advantage", "median"),
+        direct_cost_advantage_winsor_mean=("direct_cost_advantage_winsor", "mean"),
+        vehicle_beats_direct_share=(
+            "direct_cost_advantage",
+            lambda x: float((x < 0).mean()) if x.notna().any() else math.nan,
+        ),
         direct_depth_median=("direct_depth_proxy", "median"),
         thin_direct_share=("thin_direct", "mean"),
     )
@@ -269,7 +275,6 @@ def core_token_day_panel() -> pd.DataFrame:
     ).merge(rc, on=["date", "token"], how="left")
     d = d.sort_values(["token", "date"])
     d["log_vehicle_linked_liquidity"] = np.log1p(d["total_lp_liquidity_usd"])
-    d["route_cost_advantage_100bp"] = d["route_cost_advantage_median_bps"] / 100.0
     for h in [1, 7, 14, 30]:
         d[f"future_BridgeShare_t{h}"] = d.groupby("token")["BridgeShare"].shift(-h)
         d[f"future_LPConcentration_t{h}"] = d.groupby("token")["lp_concentration_share"].shift(-h)
@@ -290,7 +295,7 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
     ]
     x_names = [
         "BridgeShare",
-        "route_cost_advantage_100bp",
+        "direct_cost_advantage_median",
         "no_direct_vehicle_available_share",
         "direct_available_share",
         "vehicle_available_share",
@@ -323,29 +328,42 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
         "table_m09_core_panel_regressions",
         "Core token-day panel regressions for vehicle formation, liquidity, and persistence.",
         "tab:core-panel-regressions",
-        note="All variables are residualized by token and date fixed effects. RouteCostAdvantage is median bps divided by 100, so one unit is 100 bps.",
+        note="All variables are residualized by token and date fixed effects. DirectCostAdvantage enters as a direct-minus-indirect fraction of direct-route output.",
     )
     return out
 
 
 def persistence_displacement_thresholds(panel: pd.DataFrame) -> pd.DataFrame:
-    d = panel.dropna(subset=["BridgeShare", "route_cost_advantage_median_bps", "future_BridgeShare_t30"]).copy()
+    d = panel.dropna(
+        subset=["BridgeShare", "direct_cost_advantage_median", "future_BridgeShare_t30"]
+    ).copy()
     idx = d.groupby("date")["BridgeShare"].idxmax()
     inc = d.loc[idx].copy()
     best_alt = (
         d.loc[~d.index.isin(idx)]
-        .groupby("date")["route_cost_advantage_median_bps"]
-        .max()
-        .rename("best_challenger_advantage_bps")
+        .groupby("date")["direct_cost_advantage_median"]
+        .min()
+        .rename("best_challenger_direct_cost_advantage")
     )
     inc = inc.merge(best_alt, on="date", how="left")
-    inc["challenger_minus_incumbent_bps"] = inc["best_challenger_advantage_bps"] - inc["route_cost_advantage_median_bps"]
+    inc["challenger_cost_edge"] = (
+        inc["direct_cost_advantage_median"]
+        - inc["best_challenger_direct_cost_advantage"]
+    )
     inc["future_share_change_pp"] = 100.0 * (inc["future_BridgeShare_t30"] - inc["BridgeShare"])
-    bins = [-np.inf, 0, 25, 100, 250, np.inf]
-    labels = ["challenger <= incumbent", "0 to 25 bp", "25 to 100 bp", "100 to 250 bp", ">250 bp"]
-    inc["Challenger advantage bin"] = pd.cut(inc["challenger_minus_incumbent_bps"], bins=bins, labels=labels)
+    bins = [-np.inf, 0, 0.0025, 0.01, 0.025, np.inf]
+    labels = [
+        "challenger <= incumbent",
+        "0 to 0.0025",
+        "0.0025 to 0.01",
+        "0.01 to 0.025",
+        ">0.025",
+    ]
+    inc["Challenger cost-edge bin"] = pd.cut(
+        inc["challenger_cost_edge"], bins=bins, labels=labels
+    )
     rows = []
-    for label, g in inc.groupby("Challenger advantage bin", observed=False):
+    for label, g in inc.groupby("Challenger cost-edge bin", observed=False):
         y = g["future_share_change_pp"].replace([np.inf, -np.inf], np.nan).dropna()
         if len(y) > 1:
             t, p = stats.ttest_1samp(y.to_numpy(float), 0.0, nan_policy="omit")
@@ -353,10 +371,10 @@ def persistence_displacement_thresholds(panel: pd.DataFrame) -> pd.DataFrame:
             t, p = math.nan, math.nan
         rows.append(
             {
-                "Challenger advantage bin": str(label),
+                "Challenger cost-edge bin": str(label),
                 "Incumbent days": _int(len(y)),
-                "Mean challenger edge (bp)": _num(g["challenger_minus_incumbent_bps"].mean(), 1),
-                "Median challenger edge (bp)": _num(g["challenger_minus_incumbent_bps"].median(), 1),
+                "Mean challenger cost edge (fraction)": _num(g["challenger_cost_edge"].mean(), 4),
+                "Median challenger cost edge (fraction)": _num(g["challenger_cost_edge"].median(), 4),
                 "Mean incumbent share change t+30 (pp)": _num(y.mean(), 2),
                 "t": _num(t, 2),
                 "p": _p(p),
@@ -370,7 +388,7 @@ def persistence_displacement_thresholds(panel: pd.DataFrame) -> pd.DataFrame:
         "table_m10_persistence_thresholds",
         "Incumbent vehicle displacement by challenger route-cost edge.",
         "tab:persistence-thresholds",
-        note="Incumbent is the highest-BridgeShare vehicle on day t. Challenger edge is the best non-incumbent median route-cost advantage minus incumbent median advantage at $10k. Outcome is incumbent BridgeShare change over 30 days.",
+        note="Incumbent is the highest-BridgeShare vehicle on day t. Challenger cost edge is incumbent DirectCostAdvantage minus the minimum non-incumbent DirectCostAdvantage at $10k, so positive values favor the challenger. Outcome is incumbent BridgeShare change over 30 days.",
     )
     return out
 
@@ -700,14 +718,14 @@ def _route_cost_10k() -> pd.DataFrame:
         "vehicle_available",
         "direct_output_usd",
         "vehicle_output_usd",
-        "vehicle_route_advantage",
+        "direct_cost_advantage",
     ]
     r = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=cols)
     r = r[r["trade_size_usd"].astype(float).eq(10_000.0)].copy()
     r["date"] = pd.to_datetime(r["date"])
     r["pair"] = r["src_sym"].astype(str) + "->" + r["tgt_sym"].astype(str)
     r["vehicle"] = r["vehicle_sym"].astype(str)
-    r["route_cost_advantage_100bp"] = (10_000.0 * r["vehicle_route_advantage"].astype(float) / 100.0).clip(-200, 200)
+    r["direct_cost_advantage"] = r["direct_cost_advantage"].astype(float).clip(-2, 2)
     r["vehicle_available"] = r["vehicle_available"].astype(float)
     r["direct_available"] = r["direct_available"].astype(float)
     r["vehicle_depth"] = (r["vehicle_output_usd"].astype(float) / r["trade_size_usd"].astype(float)).replace(
@@ -735,7 +753,7 @@ def actual_route_choice_tests(actual: pd.DataFrame) -> pd.DataFrame:
         ("Actual vehicle share", 100.0 * d["actual_vehicle_share"], "pp"),
         ("Log actual vehicle volume", d["log_vehicle_volume"], "log points"),
     ]
-    x_names = ["route_cost_advantage_100bp", "vehicle_available", "vehicle_depth"]
+    x_names = ["direct_cost_advantage", "vehicle_available", "vehicle_depth"]
     for outcome, y_raw, units in specs:
         y = _oneway_demean(y_raw, d["pair_date"])
         x = pd.DataFrame({name: _oneway_demean(d[name], d["pair_date"]) for name in x_names})
@@ -799,7 +817,7 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
     ]
     x_names = [
         "BridgeShare",
-        "route_cost_advantage_100bp",
+        "direct_cost_advantage_median",
         "vehicle_available_share",
         "no_direct_vehicle_available_share",
     ]
@@ -847,30 +865,33 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
         shares[["date", "pair", "vehicle", "actual_vehicle_share"]],
         on=["date", "pair", "vehicle"],
         how="inner",
-    ).dropna(subset=["actual_vehicle_share", "route_cost_advantage_100bp"])
+    ).dropna(subset=["actual_vehicle_share", "direct_cost_advantage"])
     idx = d.groupby(["pair", "date"])["actual_vehicle_share"].idxmax()
     inc = d.loc[idx].copy().rename(
         columns={
             "vehicle": "incumbent",
             "actual_vehicle_share": "incumbent_share_t0",
-            "route_cost_advantage_100bp": "incumbent_advantage_100bp",
+            "direct_cost_advantage": "incumbent_direct_cost_advantage",
         }
     )
     alt = (
         d.loc[~d.index.isin(idx)]
-        .sort_values("route_cost_advantage_100bp")
+        .sort_values("direct_cost_advantage")
         .groupby(["pair", "date"])
-        .tail(1)[["pair", "date", "vehicle", "route_cost_advantage_100bp", "actual_vehicle_share"]]
+        .head(1)[["pair", "date", "vehicle", "direct_cost_advantage", "actual_vehicle_share"]]
         .rename(
             columns={
                 "vehicle": "challenger",
-                "route_cost_advantage_100bp": "challenger_advantage_100bp",
+                "direct_cost_advantage": "challenger_direct_cost_advantage",
                 "actual_vehicle_share": "challenger_share_t0",
             }
         )
     )
     base = inc.merge(alt, on=["pair", "date"])
-    base["challenger_edge_100bp"] = base["challenger_advantage_100bp"] - base["incumbent_advantage_100bp"]
+    base["challenger_cost_edge"] = (
+        base["incumbent_direct_cost_advantage"]
+        - base["challenger_direct_cost_advantage"]
+    )
     base["future_date"] = base["date"] + pd.Timedelta(days=30)
     future = shares.rename(
         columns={"date": "future_date", "vehicle": "future_vehicle", "actual_vehicle_share": "future_share"}
@@ -903,7 +924,13 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
         ("Pr(challenger beats incumbent t+30)", "challenger_beats_incumbent_t30_pp", "pp"),
     ]:
         y = _twoway_demean(base[y_name], base["pair"], base["date"])
-        x = pd.DataFrame({"challenger_edge_100bp": _twoway_demean(base["challenger_edge_100bp"], base["pair"], base["date"])})
+        x = pd.DataFrame(
+            {
+                "challenger_cost_edge": _twoway_demean(
+                    base["challenger_cost_edge"], base["pair"], base["date"]
+                )
+            }
+        )
         n, clusters, res = _cluster_ols(y, x, base["date"])
         rows.append(
             {
@@ -912,23 +939,29 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
                 "Challenger edge bin": "",
                 "N": _int(n),
                 "Date clusters": _int(clusters),
-                "Mean edge (bp)": "",
+                "Mean edge (fraction)": "",
                 "Mean outcome": "",
-                "Beta": _num(res["challenger_edge_100bp_beta"], 4),
-                "t": _num(res["challenger_edge_100bp_t"], 2),
-                "p": _p(res["challenger_edge_100bp_p"]),
-                "Units": f"{units} per 100 bp edge",
+                "Beta": _num(res["challenger_cost_edge_beta"], 4),
+                "t": _num(res["challenger_cost_edge_t"], 2),
+                "p": _p(res["challenger_cost_edge_p"]),
+                "Units": f"{units} per unit fraction",
             }
         )
 
     base["edge_bin"] = pd.cut(
-        100.0 * base["challenger_edge_100bp"],
-        bins=[-np.inf, 0, 25, 100, 250, np.inf],
-        labels=["challenger <= incumbent", "0 to 25 bp", "25 to 100 bp", "100 to 250 bp", ">250 bp"],
+        base["challenger_cost_edge"],
+        bins=[-np.inf, 0, 0.0025, 0.01, 0.025, np.inf],
+        labels=[
+            "challenger <= incumbent",
+            "0 to 0.0025",
+            "0.0025 to 0.01",
+            "0.01 to 0.025",
+            ">0.025",
+        ],
     )
     bins = base.groupby("edge_bin", observed=False).agg(
-        N=("challenger_edge_100bp", "count"),
-        edge=("challenger_edge_100bp", "mean"),
+        N=("challenger_cost_edge", "count"),
+        edge=("challenger_cost_edge", "mean"),
         challenger_delta=("challenger_delta_t30_pp", "mean"),
         incumbent_delta=("incumbent_delta_t30_pp", "mean"),
         beat=("challenger_beats_incumbent_t30_pp", "mean"),
@@ -941,7 +974,7 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
                 "Challenger edge bin": str(label),
                 "N": _int(rbin["N"]),
                 "Date clusters": "",
-                "Mean edge (bp)": _num(100.0 * rbin["edge"], 1),
+                "Mean edge (fraction)": _num(rbin["edge"], 4),
                 "Mean outcome": (
                     f"challenger { _num(rbin['challenger_delta'], 2) } pp; "
                     f"incumbent { _num(rbin['incumbent_delta'], 2) } pp; "
@@ -961,7 +994,7 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
         "table_m15_pair_challenger_displacement",
         "Actual pair-level challenger displacement by route-cost edge.",
         "tab:pair-challenger-displacement",
-        note="The incumbent is the highest actual-share vehicle for the endpoint pair and date. The challenger is the best non-incumbent route-cost candidate at $10k. Edge is challenger minus incumbent route advantage.",
+        note="The incumbent is the highest actual-share vehicle for the endpoint pair and date. The challenger is the non-incumbent candidate with minimum DirectCostAdvantage at $10k. The cost edge is incumbent minus challenger DirectCostAdvantage, so positive values favor the challenger.",
     )
     return out
 
@@ -1191,9 +1224,9 @@ def build_rq_registry(
             "RQ": "RQ1. Formation",
             "Empirical answer": "Vehicle use is higher when the candidate expands executable indirect-route opportunity, improves route quality within common-support cells, and has a larger share of candidate-linked liquidity.",
             "Exact evidence": (
-                f"actual_route_choice: route-cost advantage is positive for actual vehicle share ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='route_cost_advantage_100bp')}); "
+                f"actual_route_choice: DirectCostAdvantage is negative for actual vehicle share, so stronger indirect-route cost performance is associated with greater vehicle use ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='direct_cost_advantage')}); "
                 f"indirect-route availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); indirect-route depth is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_depth')}). "
-                f"core_panel_regressions: route-cost advantage predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='route_cost_advantage_100bp')}); indirect-route availability predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='vehicle_available_share')}); LPConcentration predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')})."
+                f"core_panel_regressions: DirectCostAdvantage predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='direct_cost_advantage_median')}); indirect-route availability predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='vehicle_available_share')}); LPConcentration predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')})."
             ),
         },
         {
@@ -1202,7 +1235,7 @@ def build_rq_registry(
             "Exact evidence": (
                 f"core_panel_regressions/lp_allocation_feedback: LPConcentration predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')}); "
                 f"VehicleShare predicts higher future LPConcentration ({_lookup(core, Outcome='future LPConcentration, t+7', Regressor='BridgeShare')}) but lower future log VehicleLinkedLiquidity ({_lookup(core, Outcome='future log VehicleLinkedLiquidity, t+7', Regressor='BridgeShare')}). "
-                f"lp_allocation_feedback: indirect-route availability predicts the 30-day change in log VehicleLinkedLiquidity ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='vehicle_available_share')}); route-cost advantage also predicts that change ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='route_cost_advantage_100bp')})."
+                f"lp_allocation_feedback: indirect-route availability predicts the 30-day change in log VehicleLinkedLiquidity ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='vehicle_available_share')}); DirectCostAdvantage also predicts that change ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='direct_cost_advantage_median')})."
             ),
         },
         {
@@ -1210,7 +1243,7 @@ def build_rq_registry(
             "Empirical answer": "Vehicle status is persistent, but challenger cost edges predict actual challenger share gains and incumbent losses.",
             "Exact evidence": (
                 f"core_panel_regressions: current VehicleShare predicts t+30 VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+30', Regressor='BridgeShare')}). "
-                f"persistence_thresholds: >250 bp challenger edge implies incumbent share change {_cell(threshold, 'Mean incumbent share change t+30 (pp)', **{'Challenger advantage bin': '>250 bp'})} pp, p {_cell(threshold, 'p', **{'Challenger advantage bin': '>250 bp'})}. "
+                f"persistence_thresholds: challenger cost edge above 0.025 implies incumbent share change {_cell(threshold, 'Mean incumbent share change t+30 (pp)', **{'Challenger cost-edge bin': '>0.025'})} pp, p {_cell(threshold, 'p', **{'Challenger cost-edge bin': '>0.025'})}. "
                 f"pair_challenger_displacement: challenger edge raises challenger share change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Challenger share change t+30')}) and lowers incumbent share change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Incumbent share change t+30')})."
             ),
         },

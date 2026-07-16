@@ -62,7 +62,7 @@ This document reorganizes the current empirical evidence around research questio
 \toprule
 RQ & Research question & Unit & Main proxy & Evidence & Empirical answer \\
 \midrule
-RQ1 & When does one asset become the vehicle? & Endpoint pair x candidate vehicle x day. & Route-cost advantage, indirect-route availability, indirect-route depth. & Table 4 & Actual vehicle share and future vehicle share rise with executable indirect-route economics. \\
+RQ1 & When does one asset become the vehicle? & Endpoint pair x candidate vehicle x day. & Direct cost advantage, indirect-route availability, indirect-route depth. & Table 4 & Actual vehicle share and future vehicle share rise with executable indirect-route economics. \\
 RQ2 & How does liquidity provision make a vehicle? & Token x day dynamic panel. & LP concentration, vehicle-linked liquidity, lagged vehicle share. & Table 5 & Relative LP concentration and vehicle use are mutually persistent; absolute linked TVL moves differently. \\
 RQ3 & Why does vehicle status persist or get displaced? & Incumbent-challenger pair x day. & Lagged vehicle share and challenger route-cost edge. & Table 5 & Incumbents persist, but large challenger cost edges predict share losses. \\
 RQ4 & When does vehicle status switch under stress? & Common-support stress-event days. & WETH-minus-stable vehicle share relative to a prior baseline. & Table 6 & Stress rotates share away from WETH and toward stable vehicles on event days. \\
@@ -124,7 +124,7 @@ Panel & Quantity & Main estimate & Companion estimate & Interpretation \\
 Variable & Level & Construction & Used for \\
 \midrule
 Vehicle share & vehicle token x day & USD volume of indirect routes where token v is an intermediate divided by total indirect-route USD volume that day. & RQ1, RQ2, RQ3, RQ4 \\
-Route-cost advantage & endpoint pair x vehicle x day x trade size & (indirect-route exact-quote output USD - direct-route exact-quote output USD) / direct-route output USD; reported in bps as 10000 x advantage. Main core panel uses the median bps across endpoint pairs at \$10k. & RQ1, RQ3, RQ5 \\
+Direct cost advantage & endpoint pair x vehicle x day x trade size & (direct-route exact-quote output USD - indirect-route exact-quote output USD) / direct-route output USD. The candidate-day measure is the median fraction across common-support endpoint pairs at \$10k; positive values favor the direct route. & RQ1, RQ3, RQ5 \\
 Direct available & endpoint pair x day x trade size & Indicator that the exact-quote engine finds a direct executable route for the endpoint pair at the standard notional. & RQ1, RQ5 \\
 Indirect route available & endpoint pair x vehicle x day x trade size & Indicator that both legs of the indirect route through candidate vehicle v are exact-quote executable at the standard notional. & RQ1, RQ5 \\
 Vehicle-linked liquidity & vehicle token x day & Allocated USD TVL in valid Uniswap V3 daily-snapshot pools containing candidate v: full pool TVL when v is the only candidate side and half when both sides are candidates. & RQ2, RQ3, RQ6 \\
@@ -153,7 +153,7 @@ Vehicle liquidity factor & vehicle token x day & Leave-one-out average daily log
 \toprule
  & \makecell{(1) \\ Actual \\ vehicle share} & \makecell{(2) \\ Vehicle share \\ t+7} & \makecell{(3) \\ Vehicle share \\ t+30} \\
 \midrule
-Route-cost adv., per 100 bp & \makecell{0.1462$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0002$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0003$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Direct cost adv. (fraction) & \makecell{-14.6239$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.0184$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.0286$^{***}$ \\ {\scriptsize p$<$0.001}} \\
 Indirect-route avail. & \makecell{19.1385$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1175$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1457$^{***}$ \\ {\scriptsize p$<$0.001}} \\
 Indirect-route depth & \makecell{28.8502$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  \\
 LP concentration &  & \makecell{0.2118$^{***}$ \\ {\scriptsize p$<$0.001}} &  \\
@@ -165,7 +165,7 @@ Obs. & 189,143 & 9,380 & 9,265 \\
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item \textit{Notes:} Cells report coefficients with p-values beneath them. Stars denote 10\%, 5\%, and 1\% significance. Route-cost advantage is measured per 100 basis points.
+\item \textit{Notes:} Cells report coefficients with p-values beneath them. Stars denote 10\%, 5\%, and 1\% significance. DirectCostAdvantage is a direct-minus-indirect fraction of direct-route output, so a negative coefficient links stronger indirect-route performance to greater vehicle use.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -194,10 +194,10 @@ Obs. & 9,380 & 9,380 & 9,380 & 9,265 & 9,265 \\
 \addlinespace
 \multicolumn{6}{l}{\textit{Panel B. Challenger displacement thresholds}} \\
 Challenger <= incumbent &  &  &  & \makecell{-2.80$^{***}$ \\ {\scriptsize p$<$0.001}} & 1,687 \\
-0-25 bp &  &  &  & \makecell{-5.19$^{***}$ \\ {\scriptsize p$<$0.001}} & 86 \\
-25-100 bp &  &  &  & \makecell{-6.72$^{***}$ \\ {\scriptsize p$<$0.001}} & 146 \\
-100-250 bp &  &  &  & \makecell{-9.50$^{***}$ \\ {\scriptsize p$<$0.001}} & 92 \\
->250 bp &  &  &  & \makecell{-10.08$^{***}$ \\ {\scriptsize p$<$0.001}} & 193 \\
+0-0.0025 &  &  &  & \makecell{-5.19$^{***}$ \\ {\scriptsize p$<$0.001}} & 86 \\
+0.0025-0.01 &  &  &  & \makecell{-6.72$^{***}$ \\ {\scriptsize p$<$0.001}} & 146 \\
+0.01-0.025 &  &  &  & \makecell{-9.50$^{***}$ \\ {\scriptsize p$<$0.001}} & 92 \\
+>0.025 &  &  &  & \makecell{-10.08$^{***}$ \\ {\scriptsize p$<$0.001}} & 193 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
@@ -337,7 +337,7 @@ Obs. & 685,685 & 685,685 & 664,218 & 21,467 & 679,228 \\
 \toprule
 Test & Unit & Sample & Outcome & Treatment / regressor & FE / SE & Main estimate & Interpretation \\
 \midrule
-P1 availability & pair x day x size & quoteable venues & availability; WETH adv. & WETH indirect route & pair-day aggregation & 9,584 no-direct rows; 142.65-349.28 bp & availability/thin-direct protection \\
+P1 availability & pair x day x size & quoteable venues & availability; direct cost adv. & WETH indirect route & pair-day aggregation & 9,584 no-direct; direct cost adv. -0.0974/-0.4996/-0.9057 & availability/thin-direct protection \\
 P2 dynamics & token x day & vehicle candidates & future share; LP & LP concentration; current VehicleShare & token/date FE; date SE & LP->share 0.227 (p $<$0.001); share->LP conc. 0.014 (p $<$0.001); share->log TVL 0.060 (p 0.054) & relative persistence; level sensitivity \\
 P3 stress & event x pair set & WETH downside events & WETH-stable share & WETH stress day & event-level t-tests & -2.96 pp, p=0.018 & same-day WETH-to-stable rotation \\
 P4a V3 & pair x month & V3 launch pairs & no-direct WETH & post-V3 & pair FE; pair-clustered SE & -25.81 pp, p$<$0.001; pretrend p=0.922 & direct-route opportunity expansion \\

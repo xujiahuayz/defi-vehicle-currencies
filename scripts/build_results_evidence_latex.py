@@ -142,7 +142,8 @@ def read_table(stem: str) -> pd.DataFrame:
 def clean_regressor(name: str) -> str:
     mapping = {
         "BridgeShare": "Current vehicle share",
-        "route_cost_advantage_100bp": "Route-cost advantage, per 100 bp",
+        "direct_cost_advantage": "Direct cost advantage",
+        "direct_cost_advantage_median": "Median direct cost advantage",
         "vehicle_available": "Indirect route available",
         "vehicle_available_share": "Indirect-route availability",
         "vehicle_depth": "Indirect-route depth",
@@ -183,9 +184,9 @@ def clean_sample(name: str) -> str:
         "uniswap_v4": "Uniswap V4",
         "V4 - V3 within cell": "V4 minus V3 within cell",
         "challenger <= incumbent": "Challenger <= incumbent",
-        "0 to 25 bp": "0-25 bp",
-        "25 to 100 bp": "25-100 bp",
-        "100 to 250 bp": "100-250 bp",
+        "0 to 0.0025": "0-0.0025",
+        "0.0025 to 0.01": "0.0025-0.01",
+        "0.01 to 0.025": "0.01-0.025",
     }
     return mapping.get(name, name)
 
@@ -278,7 +279,7 @@ def evidence_map() -> TableSpec:
             "RQ1",
             "When does one asset become the vehicle?",
             "Endpoint pair x candidate vehicle x day.",
-            "Route-cost advantage, indirect-route availability, indirect-route depth.",
+            "Direct cost advantage, indirect-route availability, indirect-route depth.",
             "Table 4",
             "Actual vehicle share and future vehicle share rise with executable indirect-route economics.",
         ],
@@ -375,7 +376,7 @@ def variable_table() -> TableSpec:
     df = read_table("variable_construction")
     keep = [
         "VehicleShare",
-        "RouteCostAdvantage",
+        "DirectCostAdvantage",
         "DirectAvailable",
         "IndirectAvailable",
         "VehicleLinkedLiquidity",
@@ -385,7 +386,7 @@ def variable_table() -> TableSpec:
     ]
     display_name = {
         "VehicleShare": "Vehicle share",
-        "RouteCostAdvantage": "Route-cost advantage",
+        "DirectCostAdvantage": "Direct cost advantage",
         "DirectAvailable": "Direct available",
         "IndirectAvailable": "Indirect route available",
         "VehicleLinkedLiquidity": "Vehicle-linked liquidity",
@@ -413,10 +414,10 @@ def rq1_table() -> TableSpec:
     core = read_table("core_panel_regressions")
     rows: list[list[object]] = [
         [
-            "Route-cost adv., per 100 bp",
-            reg_cell(actual, Outcome="Actual vehicle share", Regressor="route_cost_advantage_100bp"),
-            reg_cell(core, Outcome="future VehicleShare, t+7", Regressor="route_cost_advantage_100bp"),
-            reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="route_cost_advantage_100bp"),
+            "Direct cost adv. (fraction)",
+            reg_cell(actual, Outcome="Actual vehicle share", Regressor="direct_cost_advantage"),
+            reg_cell(core, Outcome="future VehicleShare, t+7", Regressor="direct_cost_advantage_median"),
+            reg_cell(core, Outcome="future VehicleShare, t+30", Regressor="direct_cost_advantage_median"),
         ],
         [
             "Indirect-route avail.",
@@ -456,9 +457,9 @@ def rq1_table() -> TableSpec:
         ],
         [
             "Obs.",
-            value_cell(actual, "N", Outcome="Actual vehicle share", Regressor="route_cost_advantage_100bp"),
-            value_cell(core, "N", Outcome="future VehicleShare, t+7", Regressor="route_cost_advantage_100bp"),
-            value_cell(core, "N", Outcome="future VehicleShare, t+30", Regressor="route_cost_advantage_100bp"),
+            value_cell(actual, "N", Outcome="Actual vehicle share", Regressor="direct_cost_advantage"),
+            value_cell(core, "N", Outcome="future VehicleShare, t+7", Regressor="direct_cost_advantage_median"),
+            value_cell(core, "N", Outcome="future VehicleShare, t+30", Regressor="direct_cost_advantage_median"),
         ],
     ]
     return TableSpec(
@@ -473,7 +474,7 @@ def rq1_table() -> TableSpec:
         ],
         ["0.24\\textwidth", "0.19\\textwidth", "0.19\\textwidth", "0.19\\textwidth"],
         rows,
-        "Cells report coefficients with p-values beneath them. Stars denote 10%, 5%, and 1% significance. Route-cost advantage is measured per 100 basis points.",
+        "Cells report coefficients with p-values beneath them. Stars denote 10%, 5%, and 1% significance. DirectCostAdvantage is a direct-minus-indirect fraction of direct-route output, so a negative coefficient links stronger indirect-route performance to greater vehicle use.",
         landscape=True,
     )
 
@@ -529,7 +530,7 @@ def rq2_rq3_table() -> TableSpec:
     ]
     for _, r in thresholds.iterrows():
         rows.append([
-            clean_sample(r["Challenger advantage bin"]),
+            clean_sample(r["Challenger cost-edge bin"]),
             "",
             "",
             "",
@@ -837,7 +838,7 @@ def specification_table() -> TableSpec:
         "WETH downside event days": "WETH downside events",
         "balanced V3 launch-window pairs": "V3 launch pairs",
         "matched V3/V4 cells; LP panel around launch": "matched V3/V4 cells",
-        "route availability and WETH advantage": "availability; WETH adv.",
+        "route availability and DirectCostAdvantage": "availability; direct cost adv.",
         "future VehicleShare; future LP concentration/log TVL": "future share; LP",
         "WETH-minus-stable BridgeShare": "WETH-stable share",
         "no-direct/WETH-available indicator": "no-direct WETH",
@@ -852,7 +853,6 @@ def specification_table() -> TableSpec:
         "prior 28-day common-pair baseline": "prior 28-day baseline",
         "pre/post balanced pair panel": "balanced pair panel",
         "V3 transfer incidence 100%": "V3 transfer 100%",
-        "9,584 no-direct rows; thin-direct 142.65-349.28 bp": "9,584 no-direct rows; 142.65-349.28 bp",
         "availability and thin-direct execution protection": "availability/thin-direct protection",
         "relative persistence; absolute TVL is specification-sensitive": "relative persistence; level sensitivity",
         "same-day rotation away from WETH toward stable vehicles": "same-day WETH-to-stable rotation",
@@ -860,7 +860,13 @@ def specification_table() -> TableSpec:
     }
 
     def c(value: object) -> object:
-        return compact.get(str(value), value)
+        text = str(value)
+        if " no-direct rows; thin-direct DirectCostAdvantage " in text:
+            return text.replace(
+                " no-direct rows; thin-direct DirectCostAdvantage ",
+                " no-direct; direct cost adv. ",
+            )
+        return compact.get(text, value)
 
     rows = []
     for _, r in df.iterrows():

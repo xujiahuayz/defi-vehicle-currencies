@@ -210,18 +210,33 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route-cost quote objects",
-        notation=(
-            r"$\mathcal{D}_{k,t,q},\ \mathcal{I}_{k,t,q},\ \mathcal{C}_{k,t,q},\ "
-            r"\mathcal{T}_{k,t,q},\ \mathcal{W}_{k,t,q}$"
-        ),
+        notation=r"$\mathcal{D}_{k,t,q},\ \mathcal{I}_{k,t,q}$",
         unit="Sets of token pairs",
         definition=(
             r"$\mathcal D_{k,t,q}\subseteq\mathcal P_{k,t,q}$ and "
             r"$\mathcal I_{k,t,q}\subseteq\mathcal P_{k,t,q}$ restrict the broad pair set "
-            r"to pairs with a direct route or a route via $k$. "
-            r"$\mathcal C_{k,t,q}=\mathcal D_{k,t,q}\cap\mathcal I_{k,t,q}$, "
-            r"$\mathcal T_{k,t,q}\subseteq\mathcal D_{k,t,q}$ is the thin-direct subset, and "
-            r"$\mathcal W_{k,t,q}\subseteq\mathcal C_{k,t,q}$ has an indirect-route cost advantage."
+            r"to pairs with an executable direct route or an executable indirect route via $k$."
+        ),
+    ),
+    NotationDefinition(
+        group="Route-cost quote objects",
+        notation=r"$\mathcal{C}_{k,t,q}$",
+        unit="Set of token pairs",
+        definition=(
+            r"Common-support pairs for candidate $k$, day $t$, and notional $q$: "
+            r"$\mathcal C_{k,t,q}=\mathcal D_{k,t,q}\cap\mathcal I_{k,t,q}$, so both the "
+            r"direct and indirect routes are executable."
+        ),
+    ),
+    NotationDefinition(
+        group="Route-cost quote objects",
+        notation=r"$\mathcal{T}_{k,t,q},\ \mathcal{W}_{k,t,q}$",
+        unit="Sets of token pairs",
+        definition=(
+            r"$\mathcal T_{k,t,q}\subseteq\mathcal D_{k,t,q}$ is the thin-direct subset. "
+            r"$\mathcal W_{k,t,q}\subseteq\mathcal C_{k,t,q}$ contains common-support pairs "
+            r"for which the indirect route beats the direct route, equivalently "
+            r"$\Delta C^D_{i,j,k,q,t}<0$."
         ),
     ),
     NotationDefinition(
@@ -241,11 +256,12 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route-cost quote objects",
-        notation=r"$\Delta C_{i,j,k,q,t}$",
-        unit="Basis points",
+        notation=r"$\Delta C^D_{i,j,k,q,t}$",
+        unit="Fraction",
         definition=(
-            r"$10{,}000\,(O^{I}_{i,j,k,q,t}-O^{D}_{i,j,q,t})/O^{D}_{i,j,q,t}$ on "
-            r"$\mathcal C_{k,t,q}$."
+            r"Pair-level direct cost advantage "
+            r"$(O^{D}_{i,j,q,t}-O^{I}_{i,j,k,q,t})/O^{D}_{i,j,q,t}$ on "
+            r"$\mathcal C_{k,t,q}$; positive values favor the direct route."
         ),
     ),
     NotationDefinition(
@@ -603,20 +619,21 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Route-cost opportunity measures",
-        name="Route-cost advantage",
-        column="route_cost_advantage_median_bps",
-        notation=r"$\mathrm{RouteCostAdvantage}_{k,t,q}$",
-        formula=r"$\displaystyle\mathrm{median}_{\mathcal C_{k,t,q}}\Delta C_{i,j,k,q,t}$",
-        unit="Basis points",
+        name="Direct cost advantage",
+        column="direct_cost_advantage_median",
+        notation=r"$\mathrm{DirectCostAdvantage}_{k,t,q}$",
+        formula=r"$\displaystyle\mathrm{median}_{\mathcal C_{k,t,q}}\Delta C^D_{i,j,k,q,t}$",
+        unit="Fraction",
         construction=(
-            r"Median $\Delta C_{i,j,k,q,t}$ over common-support pairs "
-            r"$(i,j)\in\mathcal C_{k,t,q}$; positive values favor the route through $k$."
+            r"Median $\Delta C^D_{i,j,k,q,t}$ over common-support pairs "
+            r"$(i,j)\in\mathcal C_{k,t,q}$; positive values favor the direct route and "
+            r"negative values favor the indirect route through $k$."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
         used_for="Common-support execution-cost tests.",
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
-        summary_unit="Basis points",
+        summary_unit="Fraction",
     ),
     VariableSpec(
         group="Route-cost opportunity measures",
@@ -627,7 +644,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         unit="Fraction (0--1)",
         construction=(
             r"Fraction of $(i,j)\in\mathcal C_{k,t,q}$ for which "
-            r"$\Delta C_{i,j,k,q,t}>0$, equivalently $O^I_{i,j,k,q,t}>O^D_{i,j,q,t}$."
+            r"$\Delta C^D_{i,j,k,q,t}<0$, equivalently $O^I_{i,j,k,q,t}>O^D_{i,j,q,t}$."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
         used_for="Execution-cost heterogeneity.",

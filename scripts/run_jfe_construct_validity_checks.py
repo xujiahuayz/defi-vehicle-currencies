@@ -144,29 +144,28 @@ def bridge_denominator_robustness() -> pd.DataFrame:
 def route_cost_distribution_weighting() -> pd.DataFrame:
     panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet")
     d = panel[panel["vehicle_sym"].eq("WETH") & panel["direct_available"] & panel["vehicle_available"]].copy()
-    d["adv_bps"] = d["vehicle_route_advantage"] * 10_000.0
+    d["direct_output_edge_usd"] = d["direct_output_usd"] - d["vehicle_output_usd"]
     d["pair_day"] = d["date"].astype(str) + "|" + d["src"].astype(str) + "|" + d["tgt"].astype(str)
     d["weight"] = d["realized_bridge_volume_usd"].fillna(0).clip(lower=0)
     rows = []
     for size, g in d.groupby("trade_size_usd"):
-        x = g["adv_bps"].replace([np.inf, -np.inf], np.nan).dropna().clip(-100_000, 100_000)
-        pair_day = g.groupby("pair_day", as_index=False)["adv_bps"].mean()
-        mean_pd, t, p = _ttest(pair_day["adv_bps"].clip(-100_000, 100_000))
+        x = g["direct_cost_advantage"].replace([np.inf, -np.inf], np.nan).dropna().clip(-10, 10)
+        pair_day = g.groupby("pair_day", as_index=False)["direct_cost_advantage"].mean()
+        mean_pd, t, p = _ttest(pair_day["direct_cost_advantage"].clip(-10, 10))
         weight = g.loc[x.index, "weight"]
         vw = float(np.average(x, weights=weight + 1e-9)) if len(x) else math.nan
-        ew_dollar = float((size * mean_pd) / 10_000.0) if np.isfinite(mean_pd) else math.nan
-        median_dollar = float((size * x.median()) / 10_000.0) if len(x) else math.nan
+        dollar_edge = g.loc[x.index, "direct_output_edge_usd"].replace([np.inf, -np.inf], np.nan)
         rows.append(
             {
                 "Trade size": f"${int(size):,}",
                 "Rows": _int(len(x)),
                 "Pair-days": _int(len(pair_day)),
-                "Mean advantage (bp)": _num(mean_pd, 2),
-                "Median advantage (bp)": _num(x.median(), 2),
-                "p10/p90 (bp)": f"{_num(x.quantile(0.10), 1)} / {_num(x.quantile(0.90), 1)}",
-                "Volume-weighted mean (bp)": _num(vw, 2),
-                "Mean dollar saving": _num(ew_dollar, 2),
-                "Median dollar saving": _num(median_dollar, 2),
+                "Mean direct cost advantage (fraction)": _num(mean_pd, 4),
+                "Median direct cost advantage (fraction)": _num(x.median(), 4),
+                "p10/p90 (fraction)": f"{_num(x.quantile(0.10), 4)} / {_num(x.quantile(0.90), 4)}",
+                "Volume-weighted mean (fraction)": _num(vw, 4),
+                "Mean direct output edge (USD)": _num(dollar_edge.mean(), 2),
+                "Median direct output edge (USD)": _num(dollar_edge.median(), 2),
                 "Pair-day t": _num(t, 2),
                 "p": _p(p),
             }
@@ -175,10 +174,10 @@ def route_cost_distribution_weighting() -> pd.DataFrame:
     _write_table(
         out,
         "table_r17_route_cost_distribution_weighting",
-        "Distribution and economic weighting of WETH route-cost advantages.",
+        "Distribution and economic weighting of direct cost advantages against WETH routes.",
         "tab:route-cost-distribution-weighting",
         note=(
-            "The t-statistic tests whether the endpoint-pair-day mean advantage differs from "
+            "The t-statistic tests whether the endpoint-pair-day mean direct cost advantage differs from "
             "zero. Median and percentile columns show why the claim is availability and "
             "thin-market protection rather than universal cost dominance."
         ),
@@ -299,7 +298,7 @@ what the estimates identify from what they do not identify.
 - Main sample: route-cost panel for WETH using V2/Sushi V2 constant-product
   state plus DVC-native exact-crossing V3 tick-net quotes.
 - Main outcomes: direct-route availability, WETH-route availability,
-  no-direct/WETH-available indicator, common-support route-cost advantage.
+  no-direct/WETH-available indicator, common-support DirectCostAdvantage.
 - Main estimand: availability and execution-cost value of the vehicle route
   relative to direct routing, especially when direct liquidity is missing or thin.
 - Inference: endpoint-pair-day aggregation for central t-tests; report p-values.

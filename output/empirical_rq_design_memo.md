@@ -65,7 +65,7 @@ Core panel:
 - Main outcomes:
   - `vehicle_share_{i,v,t}`: share of routed volume or route count through vehicle \(v\).
   - `vehicle_indicator_{route}`: transaction-level or route-level indicator that \(v\) intermediates.
-  - `route_cost_advantage_{i,v,t}`: direct cost minus vehicle-route cost for a standard trade-size grid.
+  - `direct_cost_advantage_{i,v,t}`: direct-route output minus indirect-route output, divided by direct-route output, for a standard trade-size grid; positive values favor the direct route.
   - `vehicle_linked_liquidity_{i,v,t}`: active liquidity near price in pools linking endpoints to \(v\).
   - `direct_depth_{i,t}` and `direct_available_{i,t}`.
   - `settlement_transfer_incidence_{route}` for physical transfer of the intermediate token.
@@ -83,14 +83,14 @@ Main test:
 
 \[
 VehicleShare_{i,v,t+h} =
-\beta_1 RouteCostAdvantage_{i,v,t}
+\beta_1 DirectCostAdvantage_{i,v,t}
 + \beta_2 DirectUnavailable_{i,t}
 + \beta_3 VehicleDepth_{i,v,t}
 + \beta_4 DirectDepth_{i,t}
 + FE + \epsilon_{i,v,t}.
 \]
 
-Interpretation: a vehicle emerges when the vehicle route is cheaper, deeper, or available when the direct market is thin or absent.
+Interpretation: a vehicle emerges when DirectCostAdvantage is lower, the vehicle route is deeper, or the vehicle route is available when the direct market is thin or absent.
 
 Template: Bessembinder-Hao-Zheng for market-quality outcomes from institutional variation; Hendershott-Jones-Menkveld for market-structure variation.
 
@@ -104,7 +104,7 @@ Main tests:
 VehicleShare_{i,v,t+h} =
 \beta_1 VehicleLinkedLiquidity_{i,v,t}
 + \beta_2 LPRepositioning_{i,v,t}
-+ \beta_3 RouteCostAdvantage_{i,v,t}
++ \beta_3 DirectCostAdvantage_{i,v,t}
 + FE + \epsilon_{i,v,t}.
 \]
 
@@ -129,14 +129,14 @@ Main test:
 \[
 VehicleShare_{i,v,t+h} =
 \rho VehicleShare_{i,v,t}
-+ \beta RouteCostAdvantage_{i,v,t}
++ \beta DirectCostAdvantage_{i,v,t}
 + \theta ChallengerAdvantage_{i,v,t}
 + FE + \epsilon_{i,v,t}.
 \]
 
 Add bins for challenger cost advantage to estimate the threshold needed to displace an incumbent vehicle.
 
-Interpretation: status is sticky if lagged vehicle share remains large after controlling for contemporaneous route-cost advantages, and displacement occurs only after large cost/safety advantages.
+Interpretation: status is sticky if lagged vehicle share remains large after controlling for contemporaneous DirectCostAdvantage, and displacement occurs only after large challenger cost or safety edges.
 
 Template: empirical persistence/event-study tables, not a theory model.
 
@@ -184,7 +184,7 @@ Outcome_{i,v,t} =
 + FE_i + FE_t + Controls_{i,t} + \epsilon_{i,t}.
 \]
 
-Outcomes: direct-route availability, direct depth, route-cost advantage, vehicle share, vehicle-linked liquidity.
+Outcomes: direct-route availability, direct depth, DirectCostAdvantage, vehicle share, vehicle-linked liquidity.
 
 Interpretation: architecture matters if design changes alter route feasibility, direct-market depth, or LP incentives enough to change vehicle reliance.
 

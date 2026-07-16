@@ -257,24 +257,24 @@ def stress_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
 def route_cost_robustness() -> pd.DataFrame:
     panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=[
         "date", "src", "tgt", "vehicle_sym", "trade_size_usd", "direct_available", "vehicle_available",
-        "direct_output_usd", "vehicle_route_advantage",
+        "direct_output_usd", "direct_cost_advantage",
     ])
     x = panel[panel["vehicle_sym"].eq("WETH")].copy()
     rows = []
     filters = {
-        "All common support": lambda d: d["direct_available"] & d["vehicle_available"] & d["vehicle_route_advantage"].notna(),
-        "Direct output >= 50% notional": lambda d: d["direct_available"] & d["vehicle_available"] & d["vehicle_route_advantage"].notna() & ((d["direct_output_usd"] / d["trade_size_usd"]) >= 0.50),
-        "Direct output >= 90% notional": lambda d: d["direct_available"] & d["vehicle_available"] & d["vehicle_route_advantage"].notna() & ((d["direct_output_usd"] / d["trade_size_usd"]) >= 0.90),
+        "All common support": lambda d: d["direct_available"] & d["vehicle_available"] & d["direct_cost_advantage"].notna(),
+        "Direct output >= 50% notional": lambda d: d["direct_available"] & d["vehicle_available"] & d["direct_cost_advantage"].notna() & ((d["direct_output_usd"] / d["trade_size_usd"]) >= 0.50),
+        "Direct output >= 90% notional": lambda d: d["direct_available"] & d["vehicle_available"] & d["direct_cost_advantage"].notna() & ((d["direct_output_usd"] / d["trade_size_usd"]) >= 0.90),
     }
     for size, g0 in x.groupby("trade_size_usd"):
         for label, fn in filters.items():
             g = g0[fn(g0)]
-            adv = 10_000 * g["vehicle_route_advantage"]
-            cells = g.assign(adv_w=adv.clip(lower=-100_000, upper=100_000)).groupby(
+            direct_advantage = g["direct_cost_advantage"]
+            cells = g.assign(direct_advantage_w=direct_advantage.clip(-10, 10)).groupby(
                 ["date", "src", "tgt"], as_index=False
-            )["adv_w"].mean()
+            )["direct_advantage_w"].mean()
             if len(cells) > 2:
-                t, p = stats.ttest_1samp(cells["adv_w"], 0.0)
+                t, p = stats.ttest_1samp(cells["direct_advantage_w"], 0.0)
             else:
                 t = p = math.nan
             rows.append({
@@ -282,9 +282,13 @@ def route_cost_robustness() -> pd.DataFrame:
                 "Sample": label,
                 "Rows": _int(len(g)),
                 "Pair-days": _int(len(cells)),
-                "Beats direct (%)": _pct((adv > 0).mean() if len(adv) else math.nan),
-                "Median advantage (bp)": _num(adv.median(), 1),
-                "Pair-day mean (bp)": _num(cells["adv_w"].mean(), 1) if len(cells) else "",
+                "Indirect beats direct (%)": _pct(
+                    (direct_advantage < 0).mean() if len(direct_advantage) else math.nan
+                ),
+                "Median direct cost advantage (fraction)": _num(direct_advantage.median(), 4),
+                "Pair-day mean direct cost advantage (fraction)": _num(
+                    cells["direct_advantage_w"].mean(), 4
+                ) if len(cells) else "",
                 "t": _num(t, 2),
                 "p": _p(p),
             })
@@ -295,8 +299,8 @@ def route_cost_robustness() -> pd.DataFrame:
         "Route-cost robustness to direct-route quality filters.",
         "tab:route-cost-robustness",
         note=(
-            "Advantage is WETH vehicle output minus direct output in basis points. "
-            "The t-test is over endpoint-pair-day mean advantages, winsorized at +/-100,000 bp."
+            "DirectCostAdvantage is direct output minus WETH indirect output as a fraction "
+            "of direct output. The t-test is over endpoint-pair-day means, clipped to +/-10."
         ),
     )
     return out

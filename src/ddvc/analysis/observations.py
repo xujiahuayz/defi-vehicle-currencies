@@ -185,11 +185,11 @@ def _read_lp_concentration(data: Path, vehicles: tuple[str, ...]) -> pd.DataFram
     return lp[keep].sort_values(["token", "date"])
 
 
-def _beats_direct(values: pd.Series) -> float:
+def _indirect_beats_direct(values: pd.Series) -> float:
     clean = pd.to_numeric(values, errors="coerce").dropna()
     if clean.empty:
         return math.nan
-    return float((clean > 0).mean())
+    return float((clean < 0).mean())
 
 
 def _route_cost_by_size(data: Path, trade_size: float) -> pd.DataFrame:
@@ -202,7 +202,7 @@ def _route_cost_by_size(data: Path, trade_size: float) -> pd.DataFrame:
         "direct_available",
         "vehicle_available",
         "direct_output_usd",
-        "vehicle_route_advantage",
+        "direct_cost_advantage",
     ]
     route = pd.read_parquet(_require(data / "empirical" / "route_cost_panel_v2.parquet"), columns=cols)
     route = route[route["trade_size_usd"].astype(float).eq(float(trade_size))].copy()
@@ -212,7 +212,9 @@ def _route_cost_by_size(data: Path, trade_size: float) -> pd.DataFrame:
     route["direct_available"] = route["direct_available"].astype(bool)
     route["vehicle_available"] = route["vehicle_available"].astype(bool)
     route["both_available"] = (
-        route["direct_available"] & route["vehicle_available"] & route["vehicle_route_advantage"].notna()
+        route["direct_available"]
+        & route["vehicle_available"]
+        & route["direct_cost_advantage"].notna()
     )
     route["no_direct_vehicle_available"] = (~route["direct_available"]) & route["vehicle_available"]
     route["direct_depth_proxy"] = np.where(
@@ -221,8 +223,9 @@ def _route_cost_by_size(data: Path, trade_size: float) -> pd.DataFrame:
         np.nan,
     )
     route["thin_direct"] = route["direct_available"] & route["direct_depth_proxy"].lt(0.90)
-    route["adv_bps"] = 10_000.0 * pd.to_numeric(route["vehicle_route_advantage"], errors="coerce")
-    route["adv_bps_winsor"] = route["adv_bps"].clip(lower=-10_000, upper=10_000)
+    route["direct_cost_advantage_winsor"] = pd.to_numeric(
+        route["direct_cost_advantage"], errors="coerce"
+    ).clip(lower=-1, upper=1)
 
     grouped = route.groupby(["date", "token"], as_index=False)
     out = grouped.agg(
@@ -232,9 +235,9 @@ def _route_cost_by_size(data: Path, trade_size: float) -> pd.DataFrame:
         vehicle_available_share=("vehicle_available", "mean"),
         no_direct_vehicle_available_share=("no_direct_vehicle_available", "mean"),
         both_available_rows=("both_available", "sum"),
-        route_cost_advantage_median_bps=("adv_bps", "median"),
-        route_cost_advantage_winsor_mean_bps=("adv_bps_winsor", "mean"),
-        vehicle_beats_direct_share=("vehicle_route_advantage", _beats_direct),
+        direct_cost_advantage_median=("direct_cost_advantage", "median"),
+        direct_cost_advantage_winsor_mean=("direct_cost_advantage_winsor", "mean"),
+        vehicle_beats_direct_share=("direct_cost_advantage", _indirect_beats_direct),
         direct_depth_median=("direct_depth_proxy", "median"),
         thin_direct_share=("thin_direct", "mean"),
     )
@@ -268,8 +271,8 @@ def _read_route_cost(data: Path, trade_sizes: tuple[float, ...], main_trade_size
         "vehicle_available_share",
         "no_direct_vehicle_available_share",
         "both_available_rows",
-        "route_cost_advantage_median_bps",
-        "route_cost_advantage_winsor_mean_bps",
+        "direct_cost_advantage_median",
+        "direct_cost_advantage_winsor_mean",
         "vehicle_beats_direct_share",
         "direct_depth_median",
         "thin_direct_share",
@@ -323,7 +326,7 @@ def _add_dynamics(panel: pd.DataFrame) -> pd.DataFrame:
         ("bridge_share", "bridge_share"),
         ("lp_concentration", "lp_concentration"),
         ("log_vehicle_linked_liquidity", "log_vehicle_linked_liquidity"),
-        ("route_cost_advantage_median_bps", "route_cost_advantage_median_bps"),
+        ("direct_cost_advantage_median", "direct_cost_advantage_median"),
     ]
     for h in (1, 7, 14, 30):
         for base_col, stem in dynamic_cols:
@@ -369,7 +372,6 @@ def build_observations_table(
     panel["has_lp_observation"] = panel["lp_concentration"].notna().astype(float)
     panel["has_route_cost_observation"] = panel["quote_rows"].fillna(0).gt(0).astype(float)
     panel["has_settlement_observation"] = panel["settlement_receipt_count"].fillna(0).gt(0).astype(float)
-    panel["route_cost_advantage_100bp"] = panel["route_cost_advantage_median_bps"] / 100.0
     panel = _add_stress(panel)
     panel = _add_dynamics(panel)
 

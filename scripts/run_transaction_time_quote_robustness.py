@@ -77,7 +77,9 @@ def _component_vehicle_hours(stamp: str) -> pd.DataFrame:
     )
 
 
-def _quote_advantage(row: pd.Series, pools: dict, prices: dict[str, tuple[str, float]]) -> float:
+def _quote_direct_cost_advantage(
+    row: pd.Series, pools: dict, prices: dict[str, tuple[str, float]]
+) -> float:
     src = str(row["src"]).lower()
     tgt = str(row["tgt"]).lower()
     vehicle = str(row["vehicle"]).lower()
@@ -95,32 +97,67 @@ def _quote_advantage(row: pd.Series, pools: dict, prices: dict[str, tuple[str, f
         return math.nan
     direct_usd = direct * float(tgt_price)
     vehicle_usd = hop2 * float(tgt_price)
-    return (vehicle_usd / direct_usd - 1.0) * 10_000.0
+    return (direct_usd - vehicle_usd) / direct_usd
+
+
+def _canonicalize_cached_output(out: pd.DataFrame) -> pd.DataFrame:
+    legacy = {
+        "daily_state_advantage_bps": "daily_state_direct_cost_advantage",
+        "route_hour_advantage_bps": "route_hour_direct_cost_advantage",
+        "difference_bps": "direct_cost_advantage_difference",
+    }
+    if not set(legacy).intersection(out.columns):
+        return out
+    converted = out.copy()
+    for old, new in legacy.items():
+        if old in converted.columns:
+            converted[new] = -pd.to_numeric(converted[old], errors="coerce") / 10_000.0
+    return converted.drop(columns=list(legacy), errors="ignore")
 
 
 def _write_summary(out: pd.DataFrame) -> pd.DataFrame:
     table_rows = []
     for size, g in out.groupby("trade_size_usd"):
         d = g.copy()
-        for col in ["daily_state_advantage_bps", "route_hour_advantage_bps", "difference_bps"]:
-            d[f"{col}_w"] = d[col].clip(lower=-100_000, upper=100_000)
-        diff = d["difference_bps_w"].to_numpy(float)
+        for col in [
+            "daily_state_direct_cost_advantage",
+            "route_hour_direct_cost_advantage",
+            "direct_cost_advantage_difference",
+        ]:
+            d[f"{col}_w"] = d[col].clip(-10, 10)
+        diff = d["direct_cost_advantage_difference_w"].to_numpy(float)
         t, p = stats.ttest_1samp(diff, 0.0) if len(diff) > 2 and float(np.std(diff)) > 0 else (math.nan, math.nan)
         corr = (
-            float(d[["daily_state_advantage_bps_w", "route_hour_advantage_bps_w"]].corr().iloc[0, 1])
+            float(
+                d[
+                    [
+                        "daily_state_direct_cost_advantage_w",
+                        "route_hour_direct_cost_advantage_w",
+                    ]
+                ].corr().iloc[0, 1]
+            )
             if len(d) > 2
             else math.nan
         )
         same_sign = float(
-            np.mean(np.sign(d["daily_state_advantage_bps_w"]) == np.sign(d["route_hour_advantage_bps_w"]))
+            np.mean(
+                np.sign(d["daily_state_direct_cost_advantage_w"])
+                == np.sign(d["route_hour_direct_cost_advantage_w"])
+            )
         )
         table_rows.append({
             "Trade size": f"${int(size):,}",
             "Rows": _int(len(d)),
-            "Median daily-state advantage (bp)": _num(d["daily_state_advantage_bps"].median(), 2),
-            "Median route-hour advantage (bp)": _num(d["route_hour_advantage_bps"].median(), 2),
-            "Median difference (bp)": _num(d["difference_bps"].median(), 2),
-            "Winsor mean difference (bp)": _num(np.mean(diff), 2),
+            "Median daily-state direct cost advantage (fraction)": _num(
+                d["daily_state_direct_cost_advantage"].median(), 4
+            ),
+            "Median route-hour direct cost advantage (fraction)": _num(
+                d["route_hour_direct_cost_advantage"].median(), 4
+            ),
+            "Median difference (fraction)": _num(
+                d["direct_cost_advantage_difference"].median(), 4
+            ),
+            "Clipped mean difference (fraction)": _num(np.mean(diff), 4),
             "t": _num(t, 2),
             "p": _p(p),
             "Same-sign share (%)": _num(100 * same_sign, 1),
@@ -130,7 +167,7 @@ def _write_summary(out: pd.DataFrame) -> pd.DataFrame:
     _write_table(
         table,
         "table_r09_transaction_time_quote_state",
-        "Hourly quote-state robustness for WETH route-cost advantage.",
+        "Hourly quote-state robustness for direct cost advantage against WETH routes.",
         "tab:transaction-time-quote-state",
         note=(
             "The robustness compares the daily-state V2/Sushi V2 counterfactual with a quote "
@@ -147,6 +184,10 @@ def run(max_days: int | None = None, force: bool = False) -> pd.DataFrame:
     out_path = EMP / "transaction_time_quote_robustness.pkl"
     if out_path.exists() and not force and max_days is None:
         out = pd.read_pickle(out_path)
+        migrated = any(str(col).endswith("_bps") for col in out.columns)
+        out = _canonicalize_cached_output(out)
+        if migrated:
+            out.to_pickle(out_path)
         _write_summary(out)
         print(f"reused {len(out):,} rows -> {out_path}")
         return out
@@ -155,7 +196,7 @@ def run(max_days: int | None = None, force: bool = False) -> pd.DataFrame:
         panel["vehicle_sym"].eq("WETH")
         & panel["direct_available"]
         & panel["vehicle_available"]
-        & panel["vehicle_route_advantage"].notna()
+        & panel["direct_cost_advantage"].notna()
     ].copy()
     panel["stamp"] = panel["date"].str.replace("-", "", regex=False)
     panel["vehicle"] = panel["vehicle"].str.lower()
@@ -183,8 +224,10 @@ def run(max_days: int | None = None, force: bool = False) -> pd.DataFrame:
         by_hour = {int(h): _load_v2_pools(stamp, int(h)) for h in sorted(d["hour"].dropna().unique())}
         for r in d.itertuples(index=False):
             base = pd.Series(r._asdict())
-            adv_noon = _quote_advantage(base, noon, prices)
-            adv_hour = _quote_advantage(base, by_hour.get(int(base["hour"]), {}), prices)
+            adv_noon = _quote_direct_cost_advantage(base, noon, prices)
+            adv_hour = _quote_direct_cost_advantage(
+                base, by_hour.get(int(base["hour"]), {}), prices
+            )
             if np.isfinite(adv_noon) and np.isfinite(adv_hour):
                 rows.append({
                     "date": base["date"],
@@ -192,9 +235,9 @@ def run(max_days: int | None = None, force: bool = False) -> pd.DataFrame:
                     "tgt": base["tgt"],
                     "trade_size_usd": float(base["trade_size_usd"]),
                     "route_hour_utc": int(base["hour"]),
-                    "daily_state_advantage_bps": adv_noon,
-                    "route_hour_advantage_bps": adv_hour,
-                    "difference_bps": adv_hour - adv_noon,
+                    "daily_state_direct_cost_advantage": adv_noon,
+                    "route_hour_direct_cost_advantage": adv_hour,
+                    "direct_cost_advantage_difference": adv_hour - adv_noon,
                 })
         if i % 100 == 0 or i == len(stamps):
             print(f"transaction-time robustness [{i}/{len(stamps)}] {stamp}", flush=True)

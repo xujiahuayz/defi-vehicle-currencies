@@ -125,20 +125,27 @@ def route_cost_decomposition() -> pd.DataFrame:
     panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet")
     d = panel[panel["vehicle_sym"].eq("WETH")].copy()
     d["direct_quality"] = d["direct_output_usd"] / d["trade_size_usd"]
-    d["adv_bps"] = d["vehicle_route_advantage"] * 10_000.0
     rows = []
     for size, g in d.groupby("trade_size_usd"):
-        both = g[g["direct_available"] & g["vehicle_available"] & g["adv_bps"].notna()].copy()
-        thin = both[both["direct_quality"].lt(0.995)]
-        high = both[both["direct_quality"].ge(0.995)]
+        both = g[
+            g["direct_available"]
+            & g["vehicle_available"]
+            & g["direct_cost_advantage"].notna()
+        ].copy()
+        thin = both[both["direct_quality"].lt(0.90)]
+        high = both[both["direct_quality"].ge(0.90)]
         no_direct = g[(~g["direct_available"]) & g["vehicle_available"]]
         grouped = (
             both.assign(pair_day=both["date"].astype(str) + "|" + both["src"].astype(str) + "|" + both["tgt"].astype(str))
-            .groupby("pair_day", as_index=False)["adv_bps"]
+            .groupby("pair_day", as_index=False)["direct_cost_advantage"]
             .mean()
         )
-        adv = grouped["adv_bps"].clip(lower=-100_000, upper=100_000).to_numpy(float)
-        t, p = stats.ttest_1samp(adv, 0.0) if len(adv) > 2 else (math.nan, math.nan)
+        direct_advantage = grouped["direct_cost_advantage"].clip(-10, 10).to_numpy(float)
+        t, p = (
+            stats.ttest_1samp(direct_advantage, 0.0)
+            if len(direct_advantage) > 2
+            else (math.nan, math.nan)
+        )
         rows.append({
             "Trade size": f"${int(size):,}",
             "Rows": _int(len(g)),
@@ -146,9 +153,15 @@ def route_cost_decomposition() -> pd.DataFrame:
             "WETH route available (%)": _pct(g["vehicle_available"].mean()),
             "No-direct, WETH-available rows": _int(len(no_direct)),
             "Common-support rows": _int(len(both)),
-            "Median common-support advantage (bp)": _num(both["adv_bps"].median(), 2),
-            "Median thin-direct advantage (bp)": _num(thin["adv_bps"].median(), 2),
-            "Median high-quality-direct advantage (bp)": _num(high["adv_bps"].median(), 2),
+            "Median common-support direct cost advantage (fraction)": _num(
+                both["direct_cost_advantage"].median(), 4
+            ),
+            "Median thin-direct direct cost advantage (fraction)": _num(
+                thin["direct_cost_advantage"].median(), 4
+            ),
+            "Median high-quality-direct cost advantage (fraction)": _num(
+                high["direct_cost_advantage"].median(), 4
+            ),
             "Pair-day t": _num(t, 2),
             "p": _p(p),
         })
@@ -157,12 +170,12 @@ def route_cost_decomposition() -> pd.DataFrame:
     _write_table(
         out,
         "table_r12_route_cost_decomposition",
-        "Route-cost value decomposition for WETH indirect routes.",
+        "Direct cost-advantage decomposition against WETH indirect routes.",
         "tab:route-cost-decomposition",
         note=(
             "The table separates route availability, missing-direct-route cases, thin-direct "
             "markets, and common-support price improvement. High-quality direct routes are "
-            "rows where direct output is at least 99.5 percent of notional."
+            "rows where direct output is at least 90 percent of notional."
         ),
     )
     return out

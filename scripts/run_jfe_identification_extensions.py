@@ -68,7 +68,7 @@ def v3_event_time_pretrends() -> pd.DataFrame:
     d["post_v3"] = (d["date"] >= launch).astype(float)
     d["no_direct_weth_available"] = (~d["direct_available"]) & d["vehicle_available"]
     d["direct_quality"] = (d["direct_output_usd"] / d["trade_size_usd"]).replace([np.inf, -np.inf], np.nan).clip(0, 2)
-    d["adv_bps"] = (d["vehicle_route_advantage"] * 10_000.0).clip(-100_000, 100_000)
+    d["direct_cost_advantage_w"] = d["direct_cost_advantage"].clip(-10, 10)
 
     pre_pairs = set(d.loc[d["post_v3"].eq(0), "pair"])
     post_pairs = set(d.loc[d["post_v3"].eq(1), "pair"])
@@ -86,7 +86,7 @@ def v3_event_time_pretrends() -> pd.DataFrame:
             vehicle_available=("vehicle_available_f", "mean"),
             no_direct_weth=("no_direct_weth_f", "mean"),
             direct_quality=("direct_quality", "mean"),
-            common_support_adv=("adv_bps", "mean"),
+            direct_cost_advantage=("direct_cost_advantage_w", "mean"),
         )
     )
     monthly["post_v3"] = (monthly["rel_month"] >= 0).astype(float)
@@ -97,7 +97,7 @@ def v3_event_time_pretrends() -> pd.DataFrame:
         ("vehicle_available", "WETH-route availability", "pp"),
         ("no_direct_weth", "No-direct WETH availability", "pp"),
         ("direct_quality", "Direct-route quality", "ratio"),
-        ("common_support_adv", "Common-support WETH advantage", "bp"),
+        ("direct_cost_advantage", "Direct cost advantage against WETH route", "fraction"),
     ]
     for col, label, units in outcomes:
         y = _demean(monthly[col], monthly["pair"])

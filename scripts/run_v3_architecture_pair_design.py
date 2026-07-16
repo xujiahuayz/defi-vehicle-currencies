@@ -62,7 +62,7 @@ def run() -> pd.DataFrame:
     d = d[(d["date"] >= launch - pd.Timedelta(days=365)) & (d["date"] <= launch + pd.Timedelta(days=365))]
     d["pair"] = d["src"].astype(str) + "->" + d["tgt"].astype(str)
     d["post_v3"] = (d["date"] >= launch).astype(float)
-    d["adv_bps"] = d["vehicle_route_advantage"] * 10_000.0
+    d["direct_cost_advantage_w"] = d["direct_cost_advantage"].clip(-10, 10)
     d["no_direct_weth_available"] = (~d["direct_available"]) & d["vehicle_available"]
     d["direct_quality"] = d["direct_output_usd"] / d["trade_size_usd"]
     pre_pairs = set(d.loc[d["post_v3"].eq(0), "pair"])
@@ -75,7 +75,9 @@ def run() -> pd.DataFrame:
         "WETH-route availability": d["vehicle_available"].astype(float),
         "No-direct WETH availability": d["no_direct_weth_available"].astype(float),
         "Direct-route quality": d["direct_quality"].replace([np.inf, -np.inf], np.nan).clip(lower=0, upper=2),
-        "Common-support WETH advantage": d["adv_bps"].where(d["direct_available"] & d["vehicle_available"]).clip(-100_000, 100_000),
+        "Direct cost advantage against WETH route": d["direct_cost_advantage_w"].where(
+            d["direct_available"] & d["vehicle_available"]
+        ),
     }
     for name, y_raw in outcomes.items():
         y = _demean(y_raw, d["pair"])
@@ -90,7 +92,7 @@ def run() -> pd.DataFrame:
             "SE": _num(scale * se, 2),
             "t": _num(t, 2),
             "p": _p(p),
-            "Units": "pp" if "availability" in name.lower() else "bp/ratio",
+            "Units": "pp" if "availability" in name.lower() else "fraction/ratio",
         })
 
     summary = d.groupby("post_v3").agg(

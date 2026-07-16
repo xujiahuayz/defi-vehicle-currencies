@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts" / "tabulate"))
 
 from ddvc.variable_registry import (
@@ -14,6 +15,7 @@ from ddvc.variable_registry import (
     SUMMARY_SPECS,
     VARIABLE_SPECS,
 )
+from build_paper_exhibits import _latex_escape
 from utils import validate_output_stem
 
 
@@ -53,7 +55,7 @@ class VariableRegistryTests(unittest.TestCase):
                 "direct_available_share",
                 "direct_depth_median",
                 "no_direct_vehicle_available_share",
-                "route_cost_advantage_median_bps",
+                "direct_cost_advantage_median",
                 "settlement_transfer_incidence",
             },
             columns,
@@ -192,6 +194,7 @@ class VariableRegistryTests(unittest.TestCase):
             "vehicle_available_share": r"$\mathrm{IndirectAvailable}_{k,t,q}$",
             "no_direct_vehicle_available_share": r"$\mathrm{IndirectOnlyAvailable}_{k,t,q}$",
             "vehicle_beats_direct_share": r"$\mathrm{IndirectBeatsDirect}_{k,t,q}$",
+            "direct_cost_advantage_median": r"$\mathrm{DirectCostAdvantage}_{k,t,q}$",
         }
         for column, notation in expected.items():
             with self.subTest(column=column):
@@ -254,6 +257,14 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertIn("quote-quality proxy", construction)
         self.assertIn("not a direct measure", construction)
 
+        root = Path(__file__).resolve().parents[1]
+        decomposition = (
+            root / "scripts" / "run_claim_defense_analytics.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('direct_quality"].lt(0.90)', decomposition)
+        self.assertIn('direct_quality"].ge(0.90)', decomposition)
+        self.assertNotIn("0.995", decomposition)
+
     def test_every_auxiliary_formula_symbol_is_defined(self) -> None:
         formulas = " ".join(spec.formula for spec in VARIABLE_SPECS)
         symbol_key = " ".join(
@@ -291,7 +302,7 @@ class VariableRegistryTests(unittest.TestCase):
             r"\mathcal W_{k,t,q}": r"\mathcal{W}_{k,t,q}",
             r"/q": r"$q$",
             r"O^D_{i,j,q,t}": r"O^{D}_{i,j,q,t}",
-            r"\Delta C_{i,j,k,q,t}": r"\Delta C_{i,j,k,q,t}",
+            r"\Delta C^D_{i,j,k,q,t}": r"\Delta C^D_{i,j,k,q,t}",
             r"R^{\mathrm{WETH}}_t": r"R^{\mathrm{WETH}}_t",
             r"\mathcal R^{\mathrm{transfer}}_{k,w}": r"\mathcal{R}^{\mathrm{transfer}}_{k,w}",
             r"\mathcal R_{k,w}": r"\mathcal{R}_{k,w}",
@@ -317,6 +328,40 @@ class VariableRegistryTests(unittest.TestCase):
             self.assertNotIn("candidate vehicle", unit, spec.column)
             self.assertNotIn("token x", unit, spec.column)
             self.assertNotIn("token-day", unit, spec.column)
+
+    def test_direct_cost_advantage_is_an_explicit_fraction(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        spec = by_column["direct_cost_advantage_median"]
+        self.assertEqual(spec.name, "Direct cost advantage")
+        self.assertEqual(spec.unit, "Fraction")
+        self.assertEqual(spec.summary_unit, "Fraction")
+        self.assertIn(r"\Delta C^D_{i,j,k,q,t}", spec.formula)
+        self.assertIn("positive values favor the direct route", spec.construction)
+
+        by_notation = {item.notation: item for item in NOTATION_DEFINITIONS}
+        common_support = by_notation[r"$\mathcal{C}_{k,t,q}$"]
+        self.assertIn(
+            r"$\mathcal C_{k,t,q}=\mathcal D_{k,t,q}\cap\mathcal I_{k,t,q}$",
+            common_support.definition,
+        )
+        pair_measure = by_notation[r"$\Delta C^D_{i,j,k,q,t}$"]
+        self.assertEqual(pair_measure.unit, "Fraction")
+        self.assertIn(
+            r"$(O^{D}_{i,j,q,t}-O^{I}_{i,j,k,q,t})/O^{D}_{i,j,q,t}$",
+            pair_measure.definition,
+        )
+
+        canonical_text = " ".join(
+            [spec.column, spec.notation, spec.formula, spec.construction]
+            + [item.notation + " " + item.definition for item in NOTATION_DEFINITIONS]
+        )
+        for retired in [
+            "RouteCostAdvantage",
+            "route_cost_advantage",
+            "vehicle_route_advantage",
+            "Basis points",
+        ]:
+            self.assertNotIn(retired, canonical_text)
 
     def test_share_notation_uses_fractions_not_probability_operator(self) -> None:
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}
@@ -412,6 +457,10 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertEqual(helper.count('LOGGER.info("wrote %s"'), 2)
         for script in tabulate.glob("render_*.py"):
             self.assertNotIn('print(f"wrote', script.read_text(encoding="utf-8"), script.name)
+
+    def test_paper_table_writer_escapes_comparison_symbols(self) -> None:
+        self.assertEqual(_latex_escape("p <0.001"), r"p \ensuremath{<}0.001")
+        self.assertEqual(_latex_escape(">0.025"), r"\ensuremath{>}0.025")
 
     def test_source_does_not_generate_csv_artifacts(self) -> None:
         root = Path(__file__).resolve().parents[1]

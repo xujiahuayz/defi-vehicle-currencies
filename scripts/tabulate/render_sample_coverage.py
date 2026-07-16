@@ -24,7 +24,7 @@ def row(*cells: str) -> str:
 bridge = pd.read_parquet(DATA_DIR / "empirical" / "bridge_daily.parquet")
 route = pd.read_parquet(
     DATA_DIR / "empirical" / "route_cost_panel_v2.parquet",
-    columns=["date", "direct_available", "vehicle_available", "vehicle_route_advantage"],
+    columns=["date", "direct_available", "vehicle_available", "direct_cost_advantage"],
 )
 lp = pd.read_parquet(DATA_DIR / "exhibits" / "lp_concentration.parquet")
 units = pd.read_parquet(
@@ -39,7 +39,7 @@ active_bridge_days = bridge_days[bridge_days["indirect_route_count"].gt(0)]
 common_support = route[
     route["direct_available"]
     & route["vehicle_available"]
-    & route["vehicle_route_advantage"].notna()
+    & route["direct_cost_advantage"].notna()
 ]
 
 rows = [

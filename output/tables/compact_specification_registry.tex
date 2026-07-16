@@ -2,11 +2,11 @@
 \toprule
 Test & Outcome & Unit & Sample & Treatment/regressor & FE / clustering & Main coefficient & Interpretation \\
 \midrule
-P1 availability/thin-direct & direct route exists; WETH indirect route exists; route-cost advantage & endpoint-pair x day x trade size & V2/Sushi V2/V3 exact quoteable venues & WETH indirect-route availability/cost & endpoint-pair-day aggregation & 9,584 no-direct/WETH-available rows & descriptive counterfactual, covered venues \\
-P2 predictability & future VehicleShare & token x day & WETH, USDC, USDT, DAI, WBTC & vehicle-linked LP concentration & token/date FE robustness; date clustering & token/date FE beta 0.227; p <0.001 & predictive association, not causal feedback \\
+P1 availability/thin-direct & direct route exists; WETH indirect route exists; DirectCostAdvantage & endpoint-pair x day x trade size & V2/Sushi V2/V3 exact quoteable venues & WETH indirect-route availability/cost & endpoint-pair-day aggregation & 9,584 no-direct rows; DirectCostAdvantage -0.0974/-0.4996/-0.9057 & descriptive counterfactual, covered venues \\
+P2 predictability & future VehicleShare & token x day & WETH, USDC, USDT, DAI, WBTC & vehicle-linked LP concentration & token/date FE robustness; date clustering & token/date FE beta 0.227; p \ensuremath{<}0.001 & predictive association, not causal feedback \\
 P3 stress rotation & WETH-minus-stable BridgeShare & event x endpoint-pair set & top WETH downside event days & same-day WETH downside event & event-level inference & -2.96 pp, p=0.018 & same-day association \\
-P4a V3 architecture & no-direct/WETH-available indicator & endpoint-pair x month & balanced pairs around V3 launch & post-V3 indicator & pair FE; pair clustering & -25.81 pp, p<0.001; pretrend p=0.922 & route-opportunity evidence \\
-P4b V4 settlement & intermediary ERC-20 transfer incidence & matched route unit & matched V3/V4 route cells & V4 route unit & matched-cell paired difference & -18.6 pp, p<0.001 & settlement-mechanics evidence \\
+P4a V3 architecture & no-direct/WETH-available indicator & endpoint-pair x month & balanced pairs around V3 launch & post-V3 indicator & pair FE; pair clustering & -25.81 pp, p\ensuremath{<}0.001; pretrend p=0.922 & route-opportunity evidence \\
+P4b V4 settlement & intermediary ERC-20 transfer incidence & matched route unit & matched V3/V4 route cells & V4 route unit & matched-cell paired difference & -18.6 pp, p\ensuremath{<}0.001 & settlement-mechanics evidence \\
 \bottomrule
 \end{tabular}
 % Notes for paper wrapper: This table is the paper-facing version of the specification registry: it states the unit, sample, identifying variation, inference convention, and bounded interpretation for each main test.

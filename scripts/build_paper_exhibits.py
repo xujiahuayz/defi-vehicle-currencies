@@ -80,6 +80,7 @@ def _latex_escape(value: object, *, allow_breaks: bool = False) -> str:
         .replace("{", "\\{")
         .replace("}", "\\}")
     )
+    escaped = escaped.replace("<", r"\ensuremath{<}").replace(">", r"\ensuremath{>}")
     if allow_breaks:
         escaped = escaped.replace(r"\_", r"\_\allowbreak{}").replace("/", r"/\allowbreak{}")
     return escaped
@@ -214,7 +215,7 @@ def build_table_route_cost() -> None:
     df = pd.read_pickle(EMP / "route_cost_panel_v2_summary.pkl")
     panel = pd.read_parquet(DATA / "empirical" / "route_cost_panel_v2.parquet", columns=[
         "vehicle_sym", "trade_size_usd", "direct_available", "vehicle_available",
-        "direct_output_usd", "vehicle_route_advantage",
+        "direct_output_usd", "direct_cost_advantage",
     ])
     weth = df[df["vehicle"].eq("WETH")].sort_values("trade_size_usd")
     rows = []
@@ -223,7 +224,7 @@ def build_table_route_cost() -> None:
         high_quality = g[
             g["direct_available"]
             & g["vehicle_available"]
-            & g["vehicle_route_advantage"].notna()
+            & g["direct_cost_advantage"].notna()
             & ((g["direct_output_usd"] / g["trade_size_usd"]) >= 0.90)
         ]
         rows.append({
@@ -232,17 +233,19 @@ def build_table_route_cost() -> None:
             "WETH route available (%)": _pct(r.vehicle_available_share),
             "No-direct rows": _int(r.no_direct_vehicle_available_rows),
             "Common rows": _int(r.both_available_rows),
-            "Median advantage (bp)": _num(r.median_advantage_bps, 1),
-            "HQ-direct median (bp)": _num(10_000 * high_quality["vehicle_route_advantage"].median(), 1),
+            "Median direct cost advantage (fraction)": _num(r.direct_cost_advantage_median, 4),
+            "HQ-direct median direct cost advantage (fraction)": _num(
+                high_quality["direct_cost_advantage"].median(), 4
+            ),
         })
     _write_table(
         pd.DataFrame(rows),
-        "table_03_route_cost_advantage",
-        "Direct-route availability and WETH indirect-route value.",
-        "tab:route-cost-advantage",
+        "table_03_direct_cost_advantage",
+        "Direct-route availability and WETH indirect-route cost comparison.",
+        "tab:direct-cost-advantage",
         note=(
-            "Advantage is output value on the best WETH indirect route minus the best direct "
-            "route, in basis points of direct-route output. HQ-direct restricts common-support "
+            "DirectCostAdvantage is direct-route output minus WETH indirect-route output, "
+            "as a fraction of direct-route output. HQ-direct restricts common-support "
             "rows to cases where the direct route returns at least 90 percent of notional. "
             "The table emphasizes availability and thin-direct-route value, not a universal "
             "WETH cost advantage."
@@ -255,7 +258,9 @@ def build_table_route_cost() -> None:
         "Trade size": app["trade_size_usd"].map(lambda x: f"${_int(x)}"),
         "Available (%)": app["vehicle_available_share"].map(_pct),
         "Beats direct (%)": app["vehicle_beats_direct_share"].map(_pct),
-        "Median advantage (bp)": app["median_advantage_bps"].map(lambda x: _num(x, 1)),
+        "Median direct cost advantage (fraction)": app["direct_cost_advantage_median"].map(
+            lambda x: _num(x, 4)
+        ),
         "t": app["t_winsor_mean"].map(lambda x: _num(x, 2)),
         "p": app["p_winsor_mean"].map(_p),
         "No-direct rows": app["no_direct_vehicle_available_rows"].map(_int),
@@ -475,18 +480,18 @@ def build_figures() -> None:
     weth = route[route["vehicle"].eq("WETH")].sort_values("trade_size_usd")
     x = np.arange(len(weth))
     fig, ax = plt.subplots(figsize=(6.4, 4.2))
-    med = weth["median_advantage_bps"].to_numpy()
-    p25 = weth["p25_advantage_bps"].to_numpy()
-    p75 = weth["p75_advantage_bps"].to_numpy()
+    med = weth["direct_cost_advantage_median"].to_numpy()
+    p25 = weth["direct_cost_advantage_p25"].to_numpy()
+    p75 = weth["direct_cost_advantage_p75"].to_numpy()
     ax.errorbar(x, med, yerr=[med - p25, p75 - med], fmt="o-", capsize=4, linewidth=1.5)
     ax.axhline(0, color="0.4", linewidth=1)
     ax.set_xticks(x)
     ax.set_xticklabels([f"${_int(v)}" for v in weth["trade_size_usd"]])
-    ax.set_ylabel("WETH indirect-route advantage (bp)")
+    ax.set_ylabel("Direct cost advantage (fraction)")
     ax.set_xlabel("Trade size")
-    ax.set_title("WETH route-cost advantage by trade size")
+    ax.set_title("Direct cost advantage against WETH route")
     fig.tight_layout()
-    fig.savefig(FIGURES / "route_cost_advantage.pdf")
+    fig.savefig(FIGURES / "direct_cost_advantage.pdf")
     plt.close(fig)
 
     events = pd.read_pickle(EMP / "stress_common_support_events.pkl")
@@ -534,7 +539,7 @@ summary_statistics. Summary statistics for main empirical variables.
 
 bridge_measurement. Vehicle use and raw volume share by year.
 
-route_cost_advantage. Direct routes and WETH indirect-route execution costs.
+direct_cost_advantage. Direct routes and WETH indirect-route execution costs.
 
 liquidity_stickiness. Liquidity concentration and persistence of vehicle use.
 
@@ -548,7 +553,7 @@ Figure 1. BridgeShare of major vehicle candidates over time.
 
 Figure 2. Vehicle use is not the same as endpoint volume.
 
-Figure 3. WETH route-cost advantage by trade size.
+Figure 3. Direct cost advantage against the WETH route by trade size.
 
 Figure 4. Vehicle-linked liquidity concentration over time.
 

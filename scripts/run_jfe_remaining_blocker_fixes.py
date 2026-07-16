@@ -71,6 +71,20 @@ def _p2_main_estimate() -> str:
     return f"token/date FE beta {result['Beta']}; p {result['p']}"
 
 
+def _p1_main_estimate() -> tuple[str, str]:
+    path = EMP / "route_cost_decomposition.pkl"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} missing; run scripts/run_claim_defense_analytics.py first."
+        )
+    results = pd.read_pickle(path)
+    indirect_only = str(results.iloc[0]["No-direct, WETH-available rows"])
+    thin_values = "/".join(
+        results["Median thin-direct direct cost advantage (fraction)"].astype(str)
+    )
+    return indirect_only, thin_values
+
+
 def _iter_jsonl_gz(path: Path):
     with gzip.open(path, "rt", encoding="utf-8") as fh:
         for line in fh:
@@ -565,12 +579,17 @@ def v4_balance_diagnostics() -> pd.DataFrame:
 
 def main_test_registry_table() -> pd.DataFrame:
     p2_estimate = _p2_main_estimate()
+    p1_indirect_only, p1_thin_values = _p1_main_estimate()
+    p1_estimate = (
+        f"{p1_indirect_only} no-direct/WETH-available rows; thin-direct "
+        f"DirectCostAdvantage {p1_thin_values}"
+    )
     rows = [
         {
             "Proposition": "P1",
             "Pre-specified main test": "WETH availability/thin-direct-market protection",
-            "Main estimate": "9,584 no-direct/WETH-available rows; thin-direct medians 142.65/190.21/349.28 bp",
-            "Economic unit": "route availability and bp by trade size",
+            "Main estimate": p1_estimate,
+            "Economic unit": "route availability and cost fraction by trade size",
             "Status": "main-ready, descriptive counterfactual",
         },
         {
@@ -619,15 +638,18 @@ def main_test_registry_table() -> pd.DataFrame:
 
 def compact_specification_registry_table() -> pd.DataFrame:
     p2_estimate = _p2_main_estimate()
+    p1_indirect_only, p1_thin_values = _p1_main_estimate()
     rows = [
         {
             "Test": "P1 availability/thin-direct",
-            "Outcome": "direct route exists; WETH indirect route exists; route-cost advantage",
+            "Outcome": "direct route exists; WETH indirect route exists; DirectCostAdvantage",
             "Unit": "endpoint-pair x day x trade size",
             "Sample": "V2/Sushi V2/V3 exact quoteable venues",
             "Treatment/regressor": "WETH indirect-route availability/cost",
             "FE / clustering": "endpoint-pair-day aggregation",
-            "Main coefficient": "9,584 no-direct/WETH-available rows",
+            "Main coefficient": (
+                f"{p1_indirect_only} no-direct rows; DirectCostAdvantage {p1_thin_values}"
+            ),
             "Interpretation": "descriptive counterfactual, covered venues",
         },
         {

@@ -1,10 +1,10 @@
 \begin{tabular}{lrrrrrrrrrr}
 \toprule
-Trade size & Rows & Pair-days & Mean advantage (bp) & Median advantage (bp) & p10/p90 (bp) & Volume-weighted mean (bp) & Mean dollar saving & Median dollar saving & Pair-day t & p \\
+Trade size & Rows & Pair-days & Mean direct cost advantage (fraction) & Median direct cost advantage (fraction) & p10/p90 (fraction) & Volume-weighted mean (fraction) & Mean direct output edge (USD) & Median direct output edge (USD) & Pair-day t & p \\
 \midrule
-\$1,000 & 48,840 & 48,819 & 2885.24 & 27.68 & -9295.3 / 734.0 & 1199.77 & 288.52 & 2.77 & 33.06 & <0.001 \\
-\$10,000 & 48,840 & 48,819 & 4802.98 & 21.52 & -9651.9 / 3368.5 & 1907.43 & 4802.98 & 21.52 & 45.08 & <0.001 \\
-\$100,000 & 48,840 & 48,819 & 8582.06 & -0.39 & -9850.0 / 45697.1 & 3317.25 & 85820.60 & -3.91 & 63.96 & <0.001 \\
+\$1,000 & 48,840 & 48,819 & -0.2885 & -0.0028 & -0.0734 / 0.9295 & -0.1200 & 165983.70 & -2.37 & -33.06 & \ensuremath{<}0.001 \\
+\$10,000 & 48,840 & 48,819 & -0.4803 & -0.0022 & -0.3369 / 0.9652 & -0.1907 & 39566256.48 & -18.09 & -45.08 & \ensuremath{<}0.001 \\
+\$100,000 & 48,840 & 48,819 & -0.8582 & 0.0000 & -4.5697 / 0.9850 & -0.3317 & 780312225.36 & 0.00 & -63.96 & \ensuremath{<}0.001 \\
 \bottomrule
 \end{tabular}
-% Notes for paper wrapper: The t-statistic tests whether the endpoint-pair-day mean advantage differs from zero. Median and percentile columns show why the claim is availability and thin-market protection rather than universal cost dominance.
+% Notes for paper wrapper: The t-statistic tests whether the endpoint-pair-day mean direct cost advantage differs from zero. Median and percentile columns show why the claim is availability and thin-market protection rather than universal cost dominance.

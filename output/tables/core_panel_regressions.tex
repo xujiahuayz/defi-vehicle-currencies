@@ -2,30 +2,30 @@
 \toprule
 RQ & Outcome & Regressor & N & Date clusters & Beta & SE & t & p & FE / SE \\
 \midrule
-RQ1/RQ2/RQ3 & future VehicleShare, t+7 & BridgeShare & 9,380 & 1,876 & 0.4754 & 0.0193 & 24.65 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+7 & route\_cost\_advantage\_100bp & 9,380 & 1,876 & 0.0002 & 0.0000 & 4.67 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+7 & no\_direct\_vehicle\_available\_share & 9,380 & 1,876 & -0.1549 & 0.0432 & -3.58 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+7 & direct\_available\_share & 9,380 & 1,876 & -0.1646 & 0.0485 & -3.39 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+7 & vehicle\_available\_share & 9,380 & 1,876 & 0.1175 & 0.0139 & 8.44 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 0.2118 & 0.0201 & 10.54 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+30 & BridgeShare & 9,265 & 1,853 & 0.3465 & 0.0165 & 21.03 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+30 & route\_cost\_advantage\_100bp & 9,265 & 1,853 & 0.0003 & 0.0000 & 6.47 & <0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+7 & BridgeShare & 9,380 & 1,876 & 0.4754 & 0.0193 & 24.65 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+7 & direct\_cost\_advantage\_median & 9,380 & 1,876 & -0.0184 & 0.0039 & -4.67 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+7 & no\_direct\_vehicle\_available\_share & 9,380 & 1,876 & -0.1549 & 0.0432 & -3.58 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+7 & direct\_available\_share & 9,380 & 1,876 & -0.1646 & 0.0485 & -3.39 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+7 & vehicle\_available\_share & 9,380 & 1,876 & 0.1175 & 0.0139 & 8.44 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 0.2118 & 0.0201 & 10.54 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+30 & BridgeShare & 9,265 & 1,853 & 0.3465 & 0.0165 & 21.03 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+30 & direct\_cost\_advantage\_median & 9,265 & 1,853 & -0.0286 & 0.0044 & -6.47 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
 RQ1/RQ2/RQ3 & future VehicleShare, t+30 & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -0.1395 & 0.0448 & -3.11 & 0.002 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+30 & direct\_available\_share & 9,265 & 1,853 & -0.1856 & 0.0502 & -3.70 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+30 & vehicle\_available\_share & 9,265 & 1,853 & 0.1457 & 0.0151 & 9.66 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ1/RQ2/RQ3 & future VehicleShare, t+30 & lp\_concentration\_share & 9,265 & 1,853 & 0.2082 & 0.0203 & 10.27 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ2 & future LPConcentration, t+7 & BridgeShare & 9,380 & 1,876 & 0.0150 & 0.0036 & 4.21 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ2 & future LPConcentration, t+7 & route\_cost\_advantage\_100bp & 9,380 & 1,876 & 0.0000 & 0.0000 & 2.50 & 0.013 & token FE + date FE; date-clustered SE \\
-RQ2 & future LPConcentration, t+7 & no\_direct\_vehicle\_available\_share & 9,380 & 1,876 & -0.0330 & 0.0084 & -3.93 & <0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+30 & direct\_available\_share & 9,265 & 1,853 & -0.1856 & 0.0502 & -3.70 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+30 & vehicle\_available\_share & 9,265 & 1,853 & 0.1457 & 0.0151 & 9.66 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ1/RQ2/RQ3 & future VehicleShare, t+30 & lp\_concentration\_share & 9,265 & 1,853 & 0.2082 & 0.0203 & 10.27 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ2 & future LPConcentration, t+7 & BridgeShare & 9,380 & 1,876 & 0.0150 & 0.0036 & 4.21 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ2 & future LPConcentration, t+7 & direct\_cost\_advantage\_median & 9,380 & 1,876 & -0.0016 & 0.0006 & -2.50 & 0.013 & token FE + date FE; date-clustered SE \\
+RQ2 & future LPConcentration, t+7 & no\_direct\_vehicle\_available\_share & 9,380 & 1,876 & -0.0330 & 0.0084 & -3.93 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
 RQ2 & future LPConcentration, t+7 & direct\_available\_share & 9,380 & 1,876 & -0.0000 & 0.0121 & -0.00 & 0.999 & token FE + date FE; date-clustered SE \\
 RQ2 & future LPConcentration, t+7 & vehicle\_available\_share & 9,380 & 1,876 & 0.0058 & 0.0035 & 1.64 & 0.100 & token FE + date FE; date-clustered SE \\
-RQ2 & future LPConcentration, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 0.9581 & 0.0083 & 115.01 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ2 & future log VehicleLinkedLiquidity, t+7 & BridgeShare & 9,380 & 1,876 & -0.2454 & 0.0371 & -6.61 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ2 & future log VehicleLinkedLiquidity, t+7 & route\_cost\_advantage\_100bp & 9,380 & 1,876 & 0.0000 & 0.0002 & 0.09 & 0.928 & token FE + date FE; date-clustered SE \\
+RQ2 & future LPConcentration, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 0.9581 & 0.0083 & 115.01 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ2 & future log VehicleLinkedLiquidity, t+7 & BridgeShare & 9,380 & 1,876 & -0.2454 & 0.0371 & -6.61 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ2 & future log VehicleLinkedLiquidity, t+7 & direct\_cost\_advantage\_median & 9,380 & 1,876 & -0.0020 & 0.0218 & -0.09 & 0.928 & token FE + date FE; date-clustered SE \\
 RQ2 & future log VehicleLinkedLiquidity, t+7 & no\_direct\_vehicle\_available\_share & 9,380 & 1,876 & -0.3308 & 0.1033 & -3.20 & 0.001 & token FE + date FE; date-clustered SE \\
-RQ2 & future log VehicleLinkedLiquidity, t+7 & direct\_available\_share & 9,380 & 1,876 & 0.4253 & 0.1160 & 3.67 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ2 & future log VehicleLinkedLiquidity, t+7 & vehicle\_available\_share & 9,380 & 1,876 & 0.9399 & 0.0383 & 24.52 & <0.001 & token FE + date FE; date-clustered SE \\
-RQ2 & future log VehicleLinkedLiquidity, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 4.9237 & 0.0530 & 92.86 & <0.001 & token FE + date FE; date-clustered SE \\
+RQ2 & future log VehicleLinkedLiquidity, t+7 & direct\_available\_share & 9,380 & 1,876 & 0.4253 & 0.1160 & 3.67 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ2 & future log VehicleLinkedLiquidity, t+7 & vehicle\_available\_share & 9,380 & 1,876 & 0.9399 & 0.0383 & 24.52 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
+RQ2 & future log VehicleLinkedLiquidity, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 4.9237 & 0.0530 & 92.86 & \ensuremath{<}0.001 & token FE + date FE; date-clustered SE \\
 \bottomrule
 \end{tabular}
-% Notes for paper wrapper: All variables are residualized by token and date fixed effects. RouteCostAdvantage is median bps divided by 100, so one unit is 100 bps.
+% Notes for paper wrapper: All variables are residualized by token and date fixed effects. DirectCostAdvantage enters as a direct-minus-indirect fraction of direct-route output.
