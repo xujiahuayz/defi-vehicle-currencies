@@ -596,6 +596,10 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
         used_for="Direct-market quality and thin-direct-market tests.",
+        include_in_summary=True,
+        summary_panel="Liquidity and route-cost opportunity",
+        summary_label="Direct depth (% of input)",
+        summary_scale=100.0,
     ),
     VariableSpec(
         group="Route-cost opportunity measures",

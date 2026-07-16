@@ -4,22 +4,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import sys
-from pathlib import Path
 
 import pandas as pd
 
-
-ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-TABULATE = ROOT / "scripts" / "tabulate"
-for path in (SRC, TABULATE):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
-
-from ddvc.analysis.observations import DEFAULT_OBSERVATIONS_TABLE  # noqa: E402
-from ddvc.variable_registry import SUMMARY_SPECS  # noqa: E402
-from utils import write_table_artifacts  # noqa: E402
+from ddvc.analysis.observations import DEFAULT_OBSERVATIONS_TABLE
+from ddvc.variable_registry import SUMMARY_SPECS
+from utils import ROOT, write_table_artifacts
 
 
 @dataclass(frozen=True)
@@ -110,7 +100,10 @@ for spec in summary_specs:
     rows.append(summary_row(spec.summary_panel or spec.group, label, source[spec.column] * spec.summary_scale))
 
 lines = [
-    r"\begin{tabular}{@{}lrrrrrr@{}}",
+    r"% Requires \usepackage{booktabs,tabularx,array}.",
+    r"\begingroup",
+    r"\renewcommand{\arraystretch}{1.15}",
+    r"\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrrr@{}}",
     r"\toprule",
     r"Variable & Obs. & Mean & Std. dev. & p25 & Median & p75 \\",
     r"\midrule",
@@ -133,8 +126,12 @@ for row in rows:
     ]
     lines.append(" & ".join(cells) + r" \\")
 
-lines.extend([r"\bottomrule", r"\end{tabular}"])
+lines.extend([r"\bottomrule", r"\end{tabularx}", r"\endgroup"])
 
-out_tex, out_pdf = write_table_artifacts("summary_statistics", "\n".join(lines) + "\n")
+out_tex, out_pdf = write_table_artifacts(
+    "summary_statistics",
+    "\n".join(lines) + "\n",
+    preview_width="9in",
+)
 print(f"wrote {out_tex.relative_to(ROOT)}")
 print(f"wrote {out_pdf.relative_to(ROOT)}")

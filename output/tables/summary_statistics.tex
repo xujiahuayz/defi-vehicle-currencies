@@ -1,4 +1,7 @@
-\begin{tabular}{@{}lrrrrrr@{}}
+% Requires \usepackage{booktabs,tabularx,array}.
+\begingroup
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrrrrr@{}}
 \toprule
 Variable & Obs. & Mean & Std. dev. & p25 & Median & p75 \\
 \midrule
@@ -23,6 +26,7 @@ LP concentration (\%) & 9,415 & 20.00 & 17.82 & 7.23 & 11.64 & 27.62 \\
 Direct route available (\%) & 11,173 & 82.68 & 12.11 & 76.92 & 86.08 & 91.30 \\
 Indirect route available (\%) & 11,173 & 40.52 & 22.82 & 22.83 & 36.84 & 52.05 \\
 Indirect-only route available (\%) & 11,173 & 4.25 & 8.29 & 0.00 & 1.32 & 4.55 \\
+Direct depth (\% of input) & 11,171 & 99.26 & 4.00 & 99.73 & 99.93 & 99.97 \\
 Indirect-route advantage (bp) & 11,055 & -990.7 & 4,229 & -854.5 & -145.5 & -17.47 \\
 Indirect route beats direct (\%) & 11,055 & 23.63 & 22.15 & 6.45 & 17.65 & 33.33 \\
 Thin direct route share (\%) & 11,173 & 14.79 & 6.95 & 10.26 & 14.29 & 18.57 \\
@@ -31,4 +35,5 @@ Thin direct route share (\%) & 11,173 & 14.79 & 6.95 & 10.26 & 14.29 & 18.57 \\
 Intermediary transfer incidence (\%) & 217 & 90.49 & 15.71 & 83.33 & 100.0 & 100.0 \\
 Receipt observations & 217 & 4.29 & 2.61 & 2.00 & 4.00 & 6.00 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
+\endgroup

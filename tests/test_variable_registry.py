@@ -26,6 +26,7 @@ class VariableRegistryTests(unittest.TestCase):
         observation_columns = set(OBSERVATIONS_TABLE_COLUMNS)
         for spec in SUMMARY_SPECS:
             self.assertIn(spec.column, observation_columns)
+        self.assertIn("direct_depth_median", {spec.column for spec in SUMMARY_SPECS})
 
     def test_core_bridge_and_route_cost_variables_are_registered(self) -> None:
         columns = set(OBSERVATIONS_TABLE_COLUMNS)
@@ -339,6 +340,9 @@ class VariableRegistryTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         scripts = [
             root / "scripts" / "process" / "build_observations_table.py",
+            root / "scripts" / "process" / "build_raw_data_inventory.py",
+            root / "scripts" / "tabulate" / "render_data_coverage.py",
+            root / "scripts" / "tabulate" / "render_sample_coverage.py",
             root / "scripts" / "tabulate" / "render_variable_notation.py",
             root / "scripts" / "tabulate" / "render_summary_statistics.py",
         ]
@@ -349,6 +353,8 @@ class VariableRegistryTests(unittest.TestCase):
     def test_tabulate_scripts_write_tabular_fragments_only(self) -> None:
         root = Path(__file__).resolve().parents[1]
         scripts = [
+            root / "scripts" / "tabulate" / "render_data_coverage.py",
+            root / "scripts" / "tabulate" / "render_sample_coverage.py",
             root / "scripts" / "tabulate" / "render_variable_notation.py",
             root / "scripts" / "tabulate" / "render_summary_statistics.py",
         ]
@@ -361,6 +367,8 @@ class VariableRegistryTests(unittest.TestCase):
     def test_tabulate_outputs_are_tex_pdf_only_and_unnumbered(self) -> None:
         root = Path(__file__).resolve().parents[1]
         scripts = [
+            root / "scripts" / "tabulate" / "render_data_coverage.py",
+            root / "scripts" / "tabulate" / "render_sample_coverage.py",
             root / "scripts" / "tabulate" / "render_variable_notation.py",
             root / "scripts" / "tabulate" / "render_summary_statistics.py",
         ]

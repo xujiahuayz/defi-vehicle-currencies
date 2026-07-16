@@ -1,0 +1,64 @@
+% Requires \usepackage{booktabs,tabularx,array}.
+\begingroup
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xllrr@{}}
+\toprule
+\multicolumn{5}{@{}l}{\textit{Panel A. Fetched swap-source coverage}} \\
+AMM & Backend & Positive-swap dates & Positive-swap days & Swap records \\
+\midrule
+Uniswap V1 & The Graph & 2018-11-02--2026-06-30 & 2,798 & 2,816,199 \\
+Curve & The Graph & 2020-02-11--2026-06-30 & 2,327 & 7,820,892 \\
+Uniswap V2 & The Graph & 2020-05-05--2026-06-30 & 2,244 & 276,434,500 \\
+SushiSwap V2 & The Graph & 2020-09-04--2026-06-30 & 2,126 & 17,711,512 \\
+Balancer & The Graph & 2021-04-22--2026-06-30 & 1,896 & 3,525,303 \\
+Uniswap V3 & The Graph & 2021-05-04--2026-06-30 & 1,884 & 135,190,852 \\
+SushiSwap V3 & The Graph & 2023-04-05--2026-06-30 & 1,178 & 487,862 \\
+Fluid & Dune & 2024-10-29--2026-06-30 & 610 & 2,078,125 \\
+Uniswap V4 & The Graph & 2025-01-24--2026-06-30 & 522 & 29,005,863 \\
+\midrule
+All AMMs &  & 2018-11-02--2026-06-30 & 15,585 & 475,071,108 \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrr@{}}
+\toprule
+\multicolumn{4}{@{}l}{\textit{Panel B. Raw storage and total records}} \\
+AMM & Raw files & Compressed GB & All raw records \\
+\midrule
+Uniswap V1 & 5,596 & 0.76 & 5,674,773 \\
+Curve & 4,746 & 1.10 & 8,158,846 \\
+Uniswap V2 & 6,744 & 52.31 & 322,689,025 \\
+SushiSwap V2 & 6,378 & 3.01 & 22,810,010 \\
+Balancer & 3,796 & 0.39 & 3,747,080 \\
+Uniswap V3 & 7,536 & 26.14 & 143,817,539 \\
+SushiSwap V3 & 4,014 & 0.07 & 523,221 \\
+Fluid & 1,276 & 0.17 & 2,091,119 \\
+Uniswap V4 & 1,615 & 5.22 & 30,769,223 \\
+\midrule
+All AMMs & 41,701 & 89.16 & 540,280,836 \\
+\bottomrule
+\end{tabularx}
+\par\medskip
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}Xrrr@{}}
+\toprule
+\multicolumn{4}{@{}l}{\textit{Panel C. Ancillary raw-stream records}} \\
+AMM & Daily pool states & Hourly reserve states & LP events \\
+\midrule
+Uniswap V1 & 2,858,574 & 0 & 0 \\
+Curve & 337,954 & 0 & 0 \\
+Uniswap V2 & 7,667,809 & 38,586,716 & 0 \\
+SushiSwap V2 & 789,008 & 4,309,490 & 0 \\
+Balancer & 221,777 & 0 & 0 \\
+Uniswap V3 & 2,820,300 & 0 & 5,806,387 \\
+SushiSwap V3 & 35,359 & 0 & 0 \\
+Fluid & 12,994 & 0 & 0 \\
+Uniswap V4 & 722,673 & 0 & 1,040,687 \\
+\midrule
+All AMMs & 15,466,448 & 42,896,206 & 6,847,074 \\
+\bottomrule
+\end{tabularx}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\textit{Notes:} Counts describe persisted raw source records through 2026-06-30. Positive-swap days are AMM-days and are summed in the total row. Compressed GB uses decimal gigabytes; raw-file counts exclude metadata sidecars. Daily and hourly states are pool-day and pair-hour records, respectively. LP events combine fetched Uniswap V3 mints and burns with Uniswap V4 liquidity modifications. The all-record total therefore combines distinct raw observation units. For Uniswap V1, one swap-source record is a transaction row that can contain multiple purchase events.
+\end{minipage}
+\endgroup
