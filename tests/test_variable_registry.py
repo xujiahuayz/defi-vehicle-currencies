@@ -64,7 +64,17 @@ class VariableRegistryTests(unittest.TestCase):
     def test_notation_key_defines_route_indices_and_superscripts(self) -> None:
         notation = " ".join(item.notation for item in NOTATION_DEFINITIONS)
         definitions = " ".join(item.definition for item in NOTATION_DEFINITIONS)
-        for symbol in ["$i,\\ o$", "$k$", "$\\ell,\\ p$", "$t,\\ w$", "$q$", "$r$"]:
+        for symbol in [
+            "$i,\\ o$",
+            "$k$",
+            "$h$",
+            "$\\ell,\\ p,\\ p'$",
+            "$t,\\ u,\\ w$",
+            "$d,\\ \\mu$",
+            "$g$",
+            "$q$",
+            "$r$",
+        ]:
             self.assertIn(symbol, notation)
         self.assertIn(r"superscripts $D$ and $I$", definitions)
         self.assertIn(r"superscript $I$ denotes indirect", definitions)
@@ -126,6 +136,15 @@ class VariableRegistryTests(unittest.TestCase):
             volume_definition,
         )
 
+        pair_volume_definition = by_notation[
+            r"$\mathrm{Vol}_{i,o,t},\ \mathrm{IVol}_{i,o,t},\ \mathrm{IVol}_{i,o,k,t}$"
+        ]
+        self.assertIn(
+            r"$0\le\mathrm{IVol}_{i,o,k,t}\le\mathrm{IVol}_{i,o,t}"
+            r"\le\mathrm{Vol}_{i,o,t}$",
+            pair_volume_definition,
+        )
+
         pair_definition = by_notation[r"$\mathcal A_t,\ \mathcal A^k_t,\ \mathcal M^k_t$"]
         self.assertIn(
             r"$\mathcal M^k_t\subseteq\mathcal A^k_t\subseteq\mathcal A_t$",
@@ -185,6 +204,33 @@ class VariableRegistryTests(unittest.TestCase):
         ]:
             self.assertNotIn(duplicate_alias, notation_text)
 
+    def test_proposed_rq_design_variables_are_registered_but_not_materialized(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        expected = {
+            "actual_vehicle_share": r"$\mathrm{VehicleShare}_{i,o,k,t}$",
+            "pair_indirect_route_share": r"$\mathrm{IndirectRouteShare}_{i,o,t}$",
+            "any_indirect_available": r"$\mathrm{AnyIndirectAvailable}_{i,o,q,t}$",
+            "pair_direct_depth": r"$\mathrm{DirectDepth}_{i,o,q,t}$",
+            "pair_indirect_depth": r"$\mathrm{IndirectDepth}_{i,o,k,q,t}$",
+            "candidate_downside_stress": r"$\mathrm{CandidateStress}_{k,t}$",
+            "incumbent_vehicle": r"$\mathrm{Incumbent}_{i,o,k,t}$",
+            "challenger_cost_edge": r"$\mathrm{ChallengerCostEdge}_{i,o,q,t}$",
+            "vehicle_switch": r"$\mathrm{VehicleSwitch}_{i,o,q,t,\tau}$",
+            "pre_v3_direct_constraint": r"$\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}$",
+            "post_v3": r"$\mathrm{PostV3}_{t}$",
+            "vehicle_factor_loo": r"$\mathrm{VehicleLiquidityFactor}_{p,k,t}$",
+            "market_factor_loo": r"$\mathrm{MarketLiquidityFactor}_{p,t}$",
+            "has_matching_transfer": r"$\mathrm{Transfer}_{r,k}$",
+            "v4_route": r"$\mathrm{V4}_{r}$",
+            "v4_route_share": r"$\mathrm{V4RouteShare}_{g}$",
+        }
+        for column, notation in expected.items():
+            with self.subTest(column=column):
+                self.assertIn(column, by_column)
+                self.assertEqual(by_column[column].notation, notation)
+                self.assertFalse(by_column[column].in_observations_table)
+                self.assertNotIn(column, OBSERVATIONS_TABLE_COLUMNS)
+
     def test_formula_cells_are_blank_or_actual_calculations(self) -> None:
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}
         registered_notations = {spec.notation for spec in VARIABLE_SPECS}
@@ -208,7 +254,7 @@ class VariableRegistryTests(unittest.TestCase):
         delta = by_notation[r"$\Delta_{\tau}$"]
         self.assertEqual(tau.unit, "Days")
         self.assertEqual(delta.unit, "")
-        self.assertIn(r"\tau\in\{1,7,14,30\}", tau.definition)
+        self.assertIn("selected ex ante for each dynamic specification", tau.definition)
         self.assertIn(r"\Delta_\tau X_t=X_t-X_{t-\tau}", delta.definition)
 
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}
@@ -223,6 +269,20 @@ class VariableRegistryTests(unittest.TestCase):
         )
         self.assertNotIn(r"\mathrm{VehicleShare}_{k,t+", canonical_text)
         self.assertNotIn(r"\Delta_{7}", canonical_text)
+
+    def test_architecture_pair_universe_is_fixed_before_v3(self) -> None:
+        by_notation = {item.notation: item for item in NOTATION_DEFINITIONS}
+        architecture = next(
+            item
+            for item in NOTATION_DEFINITIONS
+            if r"\mathcal P^{\mathrm{V3}}_q" in item.notation
+        )
+        self.assertIn("fixed 180-calendar-day window", architecture.definition)
+        self.assertIn("positive realized route volume on at least 30 days", architecture.definition)
+        self.assertIn("independent of post-V3 activity", architecture.definition)
+
+        settlement = by_notation[r"$\mathcal R^3_g,\ \mathcal R^4_g$"]
+        self.assertIn("A matched cell has both sets nonempty", settlement.definition)
 
     def test_quote_universe_has_an_explicit_sample_rule(self) -> None:
         by_notation = {item.notation: item for item in NOTATION_DEFINITIONS}
@@ -303,12 +363,13 @@ class VariableRegistryTests(unittest.TestCase):
     def test_candidate_linked_liquidity_has_an_explicit_allocation_rule(self) -> None:
         by_notation = {item.notation: item.definition for item in NOTATION_DEFINITIONS}
         candidate_definition = by_notation[r"$\mathcal K$"]
-        pool_definition = by_notation[r"$\mathcal L_{k,t},\ m_p$"]
+        pool_definition = by_notation[r"$\mathcal L_t,\ \mathcal L_{k,t},\ m_p$"]
         liquidity_definition = by_notation[r"$\mathrm{TVL}_{p,t},\ L_{k,t}$"]
         for token in ["WETH", "USDC", "USDT", "DAI", "WBTC"]:
             self.assertIn(token, candidate_definition)
         self.assertNotIn("FRAX", candidate_definition)
         self.assertIn(r"$m_p\in\{1,2\}$", pool_definition)
+        self.assertIn(r"$\mathcal L_{k,t}\subseteq\mathcal L_t$", pool_definition)
         self.assertIn("exact token contracts", pool_definition)
         self.assertIn("persisted V3 swap archive", pool_definition)
         self.assertIn("one half to each", liquidity_definition)
@@ -361,8 +422,8 @@ class VariableRegistryTests(unittest.TestCase):
             r"\mathrm{Vol}^{\mathrm{in}}": r"\mathrm{Vol}^{\mathrm{in}}",
             r"\mathrm{Vol}^{\mathrm{out}}": r"\mathrm{Vol}^{\mathrm{out}}",
             r"\mathrm{DVol}_t": r"\mathrm{DVol}_t",
-            r"\ell": r"$\ell,\ p$",
-            r"p\in": r"$\ell,\ p$",
+            r"\ell": r"$\ell,\ p,\ p'$",
+            r"p\in": r"$\ell,\ p,\ p'$",
             r"L_{k,t}": r"L_{k,t}",
             r"\mathcal L_{k,t}": r"\mathcal L_{k,t}",
             r"\mathrm{TVL}_{p,t}": r"\mathrm{TVL}_{p,t}",
@@ -395,6 +456,33 @@ class VariableRegistryTests(unittest.TestCase):
             with self.subTest(named_input=formula_symbol):
                 self.assertIn(formula_symbol, formulas)
                 self.assertIn(registered_symbol, registered_variables)
+
+    def test_proposed_design_formula_inputs_are_canonical(self) -> None:
+        formulas = " ".join(spec.formula for spec in VARIABLE_SPECS)
+        canonical_key = " ".join(
+            [item.notation + " " + item.definition for item in NOTATION_DEFINITIONS]
+            + [spec.notation for spec in VARIABLE_SPECS]
+        )
+        required = {
+            r"\mathrm{IVol}_{i,o,k,t}": r"\mathrm{IVol}_{i,o,k,t}",
+            r"\mathrm{Vol}_{i,o,t}": r"\mathrm{Vol}_{i,o,t}",
+            r"I_{i,o,k,q,t}": r"I_{i,o,k,q,t}",
+            r"O^I_{i,o,k,q,t}": r"O^{I}_{i,o,k,q,t}",
+            r"R_{k,t}": r"$R_{k,t}$",
+            r"\sigma^{(30)}_{k,t-1}": r"$\sigma^{(30)}_{k,t-1}$",
+            r"k^\star": r"$k^\star_{i,o,t},\ h^\star_{i,o,q,t}$",
+            r"h^\star": r"$k^\star_{i,o,t},\ h^\star_{i,o,q,t}$",
+            r"\mathcal T^{\mathrm{V3}}_{\mathrm{pre}}": (
+                r"$t^{\mathrm{V3}}_0,\ \mathcal T^{\mathrm{V3}}_{\mathrm{pre}},\ "
+                r"\mathcal P^{\mathrm{V3}}_q$"
+            ),
+            r"\mathcal L_t": r"$\mathcal L_t,\ \mathcal L_{k,t},\ m_p$",
+            r"\mathcal R^4_g": r"$\mathcal R^3_g,\ \mathcal R^4_g$",
+        }
+        for formula_symbol, key_symbol in required.items():
+            with self.subTest(symbol=formula_symbol):
+                self.assertIn(formula_symbol, formulas)
+                self.assertIn(key_symbol, canonical_key)
 
     def test_variable_units_are_measurement_units_not_observation_levels(self) -> None:
         for spec in VARIABLE_SPECS:

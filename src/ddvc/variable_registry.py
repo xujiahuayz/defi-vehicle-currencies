@@ -62,23 +62,56 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Indices",
-        notation=r"$\ell,\ p$",
-        unit="Token / pool",
-        definition=r"$\ell$ indexes tokens in cross-token sums; $p$ indexes liquidity pools.",
+        notation=r"$h$",
+        unit="Token",
+        definition=(
+            r"Candidate vehicle token used as a challenger to incumbent $k$; "
+            r"$h\in\mathcal K\setminus\{i,o,k\}$."
+        ),
     ),
     NotationDefinition(
         group="Indices",
-        notation=r"$t,\ w$",
+        notation=r"$\ell,\ p,\ p'$",
+        unit="Token / pool",
+        definition=(
+            r"$\ell$ indexes tokens in cross-token sums; $p$ indexes a focal liquidity pool; "
+            r"$p'$ indexes another pool in leave-one-out sums."
+        ),
+    ),
+    NotationDefinition(
+        group="Indices",
+        notation=r"$t,\ u,\ w$",
         unit="UTC day / UTC week",
-        definition=r"$t$ indexes calendar days; $w$ indexes calendar weeks in settlement variables.",
+        definition=(
+            r"$t$ indexes a focal calendar day; $u$ indexes another calendar day in a "
+            r"time-window sum; $w$ indexes calendar weeks in settlement variables."
+        ),
     ),
     NotationDefinition(
         group="Indices",
         notation=r"$\tau$",
         unit="Days",
         definition=(
-            r"Positive calendar-day horizon in dynamic specifications; the empirical panels "
-            r"use $\tau\in\{1,7,14,30\}$."
+            r"Positive calendar-day horizon selected ex ante for each dynamic specification."
+        ),
+    ),
+    NotationDefinition(
+        group="Indices",
+        notation=r"$d,\ \mu$",
+        unit="Calendar days / calendar months",
+        definition=(
+            r"$d$ is calendar-day event time relative to a candidate-specific shock; "
+            r"$\mu$ is calendar-month event time relative to an architecture activation date. "
+            r"Event time zero contains the event or activation date."
+        ),
+    ),
+    NotationDefinition(
+        group="Indices",
+        notation=r"$g$",
+        unit="Settlement comparison cell",
+        definition=(
+            r"Settlement comparison cell defined by ordered pair $(i,o)$, vehicle $k$, "
+            r"UTC week $w$, and a prespecified route-size bin."
         ),
     ),
     NotationDefinition(
@@ -116,6 +149,21 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
             r"$0\le\mathrm{IVol}_t\le\mathrm{Vol}_t$. $\mathrm{IVol}_{k,t}$ further restricts "
             r"that volume to routes using vehicle $k$, so "
             r"$0\le\mathrm{IVol}_{k,t}\le\mathrm{IVol}_t$."
+        ),
+    ),
+    NotationDefinition(
+        group="Route and liquidity aggregates",
+        notation=(
+            r"$\mathrm{Vol}_{i,o,t},\ \mathrm{IVol}_{i,o,t},\ "
+            r"\mathrm{IVol}_{i,o,k,t}$"
+        ),
+        unit="USD",
+        definition=(
+            r"$\mathrm{Vol}_{i,o,t}$ is realized route-unit volume for ordered pair $(i,o)$ "
+            r"on day $t$. $\mathrm{IVol}_{i,o,t}$ restricts it to indirect routes, and "
+            r"$\mathrm{IVol}_{i,o,k,t}$ further restricts it to routes through $k$, so "
+            r"$0\le\mathrm{IVol}_{i,o,k,t}\le\mathrm{IVol}_{i,o,t}"
+            r"\le\mathrm{Vol}_{i,o,t}$."
         ),
     ),
     NotationDefinition(
@@ -191,13 +239,15 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
-        notation=r"$\mathcal L_{k,t},\ m_p$",
+        notation=r"$\mathcal L_t,\ \mathcal L_{k,t},\ m_p$",
         unit="Set of pools / token count",
         definition=(
-            r"$\mathcal L_{k,t}$ contains Uniswap V3 daily-snapshot pools with candidate $k$ "
-            r"on one side, exact token contracts identified in the persisted V3 swap archive, "
-            r"and $0<\mathrm{TVL}_{p,t}\le 10$ billion USD. $m_p$ is the number of pool tokens "
-            r"in $\mathcal K$, so $m_p\in\{1,2\}$."
+            r"$\mathcal L_t$ contains valid Uniswap V3 daily-snapshot pools with exact token "
+            r"contracts identified in the persisted V3 swap archive and "
+            r"$0<\mathrm{TVL}_{p,t}\le 10$ billion USD. "
+            r"$\mathcal L_{k,t}\subseteq\mathcal L_t$ restricts that set to pools with "
+            r"candidate $k$ on one side. $m_p$ is the number of pool tokens in $\mathcal K$, "
+            r"so $m_p\in\{1,2\}$."
         ),
     ),
     NotationDefinition(
@@ -216,6 +266,54 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         notation=r"$R^{\mathrm{WETH}}_t$",
         unit="Daily log-return fraction",
         definition=r"Day-$t$ log return of the WETH price used to construct downside stress.",
+    ),
+    NotationDefinition(
+        group="Candidate-shock objects",
+        notation=r"$P_{k,t}$",
+        unit="USD per token",
+        definition=r"Day-$t$ USD price of candidate token $k$.",
+    ),
+    NotationDefinition(
+        group="Candidate-shock objects",
+        notation=r"$R_{k,t}$",
+        unit="Daily log-return fraction",
+        definition=r"Candidate return $R_{k,t}=\ln(P_{k,t}/P_{k,t-1})$.",
+    ),
+    NotationDefinition(
+        group="Candidate-shock objects",
+        notation=r"$\sigma^{(30)}_{k,t-1}$",
+        unit="Daily log-return standard deviation",
+        definition=(
+            r"Sample standard deviation of $R_{k,u}$ over the 30 calendar days ending at "
+            r"$t-1$, requiring at least 20 valid daily returns."
+        ),
+    ),
+    NotationDefinition(
+        group="Persistence and displacement objects",
+        notation=r"$k^\star_{i,o,t},\ h^\star_{i,o,q,t}$",
+        unit="Token",
+        definition=(
+            r"$k^\star_{i,o,t}$ is the incumbent vehicle with the largest mean "
+            r"$\mathrm{VehicleShare}_{i,o,k,u}$ over the 30 calendar days ending at $t-1$. "
+            r"$h^\star_{i,o,q,t}$ is the executable nonincumbent candidate with the largest "
+            r"$O^I_{i,o,h,q,t}$ on day $t$."
+        ),
+    ),
+    NotationDefinition(
+        group="Architecture objects",
+        notation=(
+            r"$t^{\mathrm{V3}}_0,\ \mathcal T^{\mathrm{V3}}_{\mathrm{pre}},\ "
+            r"\mathcal P^{\mathrm{V3}}_q$"
+        ),
+        unit="UTC day / set of UTC days / set of token pairs",
+        definition=(
+            r"$t^{\mathrm{V3}}_0$ is the Uniswap V3 activation date, 5 May 2021. "
+            r"$\mathcal T^{\mathrm{V3}}_{\mathrm{pre}}$ is the fixed 180-calendar-day window "
+            r"ending at $t^{\mathrm{V3}}_0-1$. $\mathcal P^{\mathrm{V3}}_q$ is the fixed "
+            r"architecture-analysis universe of ordered pairs with positive realized route "
+            r"volume on at least 30 days in that pre-period; every member is quoted at $q$ "
+            r"throughout the event window, independent of post-V3 activity."
+        ),
     ),
     NotationDefinition(
         group="Route-cost quote objects",
@@ -302,6 +400,15 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         definition=(
             r"Members whose receipt logs a transfer of vehicle $k$; "
             r"$\mathcal R^{\mathrm{transfer}}_{k,w}\subseteq\mathcal R_{k,w}$."
+        ),
+    ),
+    NotationDefinition(
+        group="Settlement objects and operators",
+        notation=r"$\mathcal R^3_g,\ \mathcal R^4_g$",
+        unit="Sets of route units",
+        definition=(
+            r"Receipt-audited route units in settlement comparison cell $g$ executed on "
+            r"Uniswap V3 and V4, respectively. A matched cell has both sets nonempty."
         ),
     ),
     NotationDefinition(
@@ -418,6 +525,36 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         summary_panel="Vehicle-use measures, token-day",
         summary_unit="USD millions",
         summary_scale=1.0 / 1_000_000.0,
+    ),
+    VariableSpec(
+        group="Pair-level route-choice measures",
+        name="Pair-level vehicle share",
+        column="actual_vehicle_share",
+        notation=r"$\mathrm{VehicleShare}_{i,o,k,t}$",
+        formula=r"$\displaystyle\frac{\mathrm{IVol}_{i,o,k,t}}{\mathrm{IVol}_{i,o,t}}$",
+        unit="Fraction (0--1)",
+        construction=(
+            r"Candidate $k$'s share of realized indirect-route USD volume for ordered pair "
+            r"$(i,o)$ on day $t$, defined when $\mathrm{IVol}_{i,o,t}>0$."
+        ),
+        source="data/empirical/pair_vehicle_actual_daily.parquet",
+        used_for="RQ1 candidate selection and RQ3 persistence/displacement designs.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Pair-level route-choice measures",
+        name="Pair-level indirect-route share",
+        column="pair_indirect_route_share",
+        notation=r"$\mathrm{IndirectRouteShare}_{i,o,t}$",
+        formula=r"$\displaystyle\frac{\mathrm{IVol}_{i,o,t}}{\mathrm{Vol}_{i,o,t}}$",
+        unit="Fraction (0--1)",
+        construction=(
+            r"Fraction of realized route-unit USD volume for ordered pair $(i,o)$ executed "
+            r"through an indirect route on day $t$, defined when $\mathrm{Vol}_{i,o,t}>0$."
+        ),
+        source="to be constructed from the unified route panel before estimation",
+        used_for="RQ1 vehicle reliance and RQ4 execution-architecture designs.",
+        in_observations_table=False,
     ),
     VariableSpec(
         group="Network and route-denominator controls",
@@ -568,6 +705,92 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         used_for="Liquidity-level regressions.",
     ),
     VariableSpec(
+        group="Liquidity commonality measures",
+        name="Leave-one-out vehicle liquidity factor",
+        column="vehicle_factor_loo",
+        notation=r"$\mathrm{VehicleLiquidityFactor}_{p,k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\sum_{p'\in\mathcal L_{k,t}\setminus\{p\}}"
+            r"\Delta_1\ln(\mathrm{TVL}_{p',t})}"
+            r"{|\mathcal L_{k,t}\setminus\{p\}|}$"
+        ),
+        unit="Daily log-change points",
+        construction=(
+            r"Leave-one-out mean daily log TVL change among other valid pools linked to "
+            r"candidate $k$; requires at least three other pools."
+        ),
+        source="data/empirical/common_liquidity_pool_panel.parquet",
+        used_for="RQ2 common-liquidity mechanism test.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Liquidity commonality measures",
+        name="Leave-one-out market liquidity factor",
+        column="market_factor_loo",
+        notation=r"$\mathrm{MarketLiquidityFactor}_{p,t}$",
+        formula=(
+            r"$\displaystyle\frac{\sum_{p'\in\mathcal L_t\setminus\{p\}}"
+            r"\Delta_1\ln(\mathrm{TVL}_{p',t})}"
+            r"{|\mathcal L_t\setminus\{p\}|}$"
+        ),
+        unit="Daily log-change points",
+        construction=(
+            r"Leave-one-out mean daily log TVL change across all other valid pools in "
+            r"$\mathcal L_t$; market-wide control for the vehicle factor."
+        ),
+        source="data/empirical/common_liquidity_pool_panel.parquet",
+        used_for="RQ2 common-liquidity mechanism test.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Any indirect route available",
+        column="any_indirect_available",
+        notation=r"$\mathrm{AnyIndirectAvailable}_{i,o,q,t}$",
+        formula=(
+            r"$\mathbf{1}_{\{\sum_{k\in\mathcal K\setminus\{i,o\}}"
+            r"I_{i,o,k,q,t}>0\}}$"
+        ),
+        unit="Indicator (0/1)",
+        construction=(
+            r"Equals one when at least one candidate in $\mathcal K\setminus\{i,o\}$ "
+            r"provides an executable indirect route for pair $(i,o)$ at input notional $q$."
+        ),
+        source="to be constructed from data/empirical/route_cost_panel_v2.parquet",
+        used_for="RQ1 extensive-margin vehicle reliance.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-level direct depth",
+        column="pair_direct_depth",
+        notation=r"$\mathrm{DirectDepth}_{i,o,q,t}$",
+        formula=r"$\displaystyle\frac{O^D_{i,o,q,t}}{q}$",
+        unit="Output USD per input USD",
+        construction=(
+            r"Direct-route output ratio for cells with $D_{i,o,q,t}=1$; undefined when "
+            r"the direct route is not executable."
+        ),
+        source="data/empirical/route_cost_panel_v2.parquet",
+        used_for="RQ1 direct-route quality and RQ4 architecture outcomes.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-candidate indirect depth",
+        column="pair_indirect_depth",
+        notation=r"$\mathrm{IndirectDepth}_{i,o,k,q,t}$",
+        formula=r"$\displaystyle\frac{O^I_{i,o,k,q,t}}{q}$",
+        unit="Output USD per input USD",
+        construction=(
+            r"Indirect-route output ratio through candidate $k$ for "
+            r"$(i,o)\in\mathcal I_{k,t,q}$; undefined when that route is not executable."
+        ),
+        source="data/empirical/route_cost_panel_v2.parquet",
+        used_for="RQ1 candidate selection and RQ2 liquidity-route mechanism tests.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
         group="Route-cost opportunity measures",
         name="Direct available share",
         column="direct_available_share",
@@ -699,6 +922,21 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Stress and dynamic variables",
+        name="Candidate downside stress",
+        column="candidate_downside_stress",
+        notation=r"$\mathrm{CandidateStress}_{k,t}$",
+        formula=r"$\displaystyle\max\left\{-\frac{R_{k,t}}{\sigma^{(30)}_{k,t-1}},0\right\}$",
+        unit="Trailing-volatility standard deviations",
+        construction=(
+            r"Candidate-specific adverse return shock scaled by trailing volatility. The "
+            r"measure captures crashes for volatile candidates and downward depegs for stable candidates."
+        ),
+        source="to be constructed from candidate-token day prices before estimation",
+        used_for="RQ3 candidate-specific stress rotation and event-time designs.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Stress and dynamic variables",
         name="Downside WETH stress",
         column="stress_downside",
         notation=r"$\mathrm{Stress}_{t}$",
@@ -738,6 +976,132 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="constructed from observations table",
         used_for="Persistence and displacement tests.",
+    ),
+    VariableSpec(
+        group="Persistence and displacement measures",
+        name="Incumbent vehicle indicator",
+        column="incumbent_vehicle",
+        notation=r"$\mathrm{Incumbent}_{i,o,k,t}$",
+        formula=r"$\mathbf{1}_{\{k=k^\star_{i,o,t}\}}$",
+        unit="Indicator (0/1)",
+        construction=(
+            r"Equals one when candidate $k$ is the trailing-30-day incumbent for ordered pair "
+            r"$(i,o)$; the ranking window ends at $t-1$."
+        ),
+        source="to be constructed from pair-level vehicle shares before estimation",
+        used_for="RQ3 persistence and candidate-shock interactions.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Persistence and displacement measures",
+        name="Challenger cost edge",
+        column="challenger_cost_edge",
+        notation=r"$\mathrm{ChallengerCostEdge}_{i,o,q,t}$",
+        formula=(
+            r"$\displaystyle\frac{O^I_{i,o,h^\star,q,t}-O^I_{i,o,k^\star,q,t}}"
+            r"{O^I_{i,o,k^\star,q,t}}$"
+        ),
+        unit="Fraction",
+        construction=(
+            r"Quoted-output advantage of the best executable challenger over the incumbent "
+            r"vehicle at input notional $q$; positive values favor the challenger."
+        ),
+        source="to be constructed from pair-level shares and the route-cost panel",
+        used_for="RQ3 incumbent-displacement and switching-threshold designs.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Persistence and displacement measures",
+        name="Vehicle switch indicator",
+        column="vehicle_switch",
+        notation=r"$\mathrm{VehicleSwitch}_{i,o,q,t,\tau}$",
+        formula=(
+            r"$\displaystyle\mathbf{1}_{\left\{\begin{array}{c}"
+            r"\mathrm{VehicleShare}_{i,o,h^\star,t+\tau}\\"
+            r"{}>\mathrm{VehicleShare}_{i,o,k^\star,t+\tau}"
+            r"\end{array}\right\}}$"
+        ),
+        unit="Indicator (0/1)",
+        construction=(
+            r"Equals one when the day-$t$ best challenger has a larger pair-level vehicle "
+            r"share than the day-$t$ incumbent at exact calendar horizon $t+\tau$."
+        ),
+        source="to be constructed from pair-level vehicle shares before estimation",
+        used_for="RQ3 displacement probability at 7-, 30-, and 90-day horizons.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Execution-architecture measures",
+        name="Pre-V3 direct-market constraint",
+        column="pre_v3_direct_constraint",
+        notation=r"$\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}$",
+        formula=(
+            r"$\displaystyle 1-\frac{\sum_{u\in\mathcal T^{\mathrm{V3}}_{\mathrm{pre}}}"
+            r"D_{i,o,q,u}}{|\mathcal T^{\mathrm{V3}}_{\mathrm{pre}}|}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Fraction of the fixed 180-day pre-V3 window in which pair $(i,o)$ lacks an "
+            r"executable direct route at notional $q$; higher values mean a more constrained "
+            r"pre-architecture direct market."
+        ),
+        source="to be constructed from the route-cost panel before estimation",
+        used_for="RQ4 continuous-treatment architecture event study.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Execution-architecture measures",
+        name="Post-V3 indicator",
+        column="post_v3",
+        notation=r"$\mathrm{PostV3}_{t}$",
+        formula=r"$\mathbf{1}_{\{t\ge t^{\mathrm{V3}}_0\}}$",
+        unit="Indicator (0/1)",
+        construction=r"Equals one on and after the Uniswap V3 activation date.",
+        source="constructed from calendar date",
+        used_for="RQ4 architecture difference-in-differences and event-time designs.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="Intermediate-token transfer indicator",
+        column="has_matching_transfer",
+        notation=r"$\mathrm{Transfer}_{r,k}$",
+        formula=r"$\mathbf{1}_{\{r\in\mathcal R^{\mathrm{transfer}}_{k,w}\}}$",
+        unit="Indicator (0/1)",
+        construction=(
+            r"Equals one when route unit $r$'s transaction receipt contains an ERC-20 "
+            r"$\mathrm{Transfer}$ log matching intermediate vehicle $k$."
+        ),
+        source="data/empirical/v4_settlement_transfer_detail.parquet",
+        used_for="RQ5 matched route-level settlement comparison.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="V4 route indicator",
+        column="v4_route",
+        notation=r"$\mathrm{V4}_{r}$",
+        formula=r"$\mathbf{1}_{\{r\in\mathcal R^4_g\}}$",
+        unit="Indicator (0/1)",
+        construction=r"Equals one when matched route unit $r$ executes on Uniswap V4.",
+        source="data/empirical/v4_settlement_transfer_detail.parquet",
+        used_for="RQ5 settlement-architecture treatment indicator.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="V4 route share",
+        column="v4_route_share",
+        notation=r"$\mathrm{V4RouteShare}_{g}$",
+        formula=r"$\displaystyle\frac{|\mathcal R^4_g|}{|\mathcal R^3_g|+|\mathcal R^4_g|}$",
+        unit="Fraction (0--1)",
+        construction=(
+            r"Fraction of receipt-audited route units in comparison cell $g$ executed on V4; "
+            r"reported alongside transfer incidence to distinguish route use from token movement."
+        ),
+        source="to be constructed from the matched V3/V4 settlement panel",
+        used_for="RQ5 economic-route-use persistence diagnostic.",
+        in_observations_table=False,
     ),
     VariableSpec(
         group="V4 settlement implementation measures",
