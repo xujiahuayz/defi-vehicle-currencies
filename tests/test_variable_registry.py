@@ -209,9 +209,19 @@ class VariableRegistryTests(unittest.TestCase):
         expected = {
             "actual_vehicle_share": r"$\mathrm{VehicleShare}_{i,o,k,t}$",
             "pair_indirect_route_share": r"$\mathrm{IndirectRouteShare}_{i,o,t}$",
+            "pair_candidate_vehicle_coverage": (
+                r"$\mathrm{Coverage}^{\mathcal K}_{i,o,t}$"
+            ),
+            "pair_vehicle_hhi": r"$\mathrm{VehicleHHI}_{i,o,t}$",
             "any_indirect_available": r"$\mathrm{AnyIndirectAvailable}_{i,o,q,t}$",
             "pair_direct_depth": r"$\mathrm{DirectDepth}_{i,o,q,t}$",
             "pair_indirect_depth": r"$\mathrm{IndirectDepth}_{i,o,k,q,t}$",
+            "pair_direct_fee_cost": r"$C^{D,\mathrm{fee}}_{i,o,q,t}$",
+            "pair_direct_price_impact_cost": r"$C^{D,\mathrm{impact}}_{i,o,q,t}$",
+            "pair_direct_gas_cost": r"$C^{D,\mathrm{gas}}_{i,o,q,t}$",
+            "pair_indirect_fee_cost": r"$C^{I,\mathrm{fee}}_{i,o,k,q,t}$",
+            "pair_indirect_price_impact_cost": r"$C^{I,\mathrm{impact}}_{i,o,k,q,t}$",
+            "pair_indirect_gas_cost": r"$C^{I,\mathrm{gas}}_{i,o,k,q,t}$",
             "candidate_downside_stress": r"$\mathrm{CandidateStress}_{k,t}$",
             "incumbent_vehicle": r"$\mathrm{Incumbent}_{i,o,k,t}$",
             "challenger_cost_edge": r"$\mathrm{ChallengerCostEdge}_{i,o,q,t}$",
@@ -220,9 +230,36 @@ class VariableRegistryTests(unittest.TestCase):
             "post_v3": r"$\mathrm{PostV3}_{t}$",
             "vehicle_factor_loo": r"$\mathrm{VehicleLiquidityFactor}_{p,k,t}$",
             "market_factor_loo": r"$\mathrm{MarketLiquidityFactor}_{p,t}$",
+            "pool_vehicle_route_share": r"$\mathrm{VehicleRouteShare}_{p,k,t}$",
+            "lp_active_capital_usd": r"$L_{a,p,t}$",
+            "lp_pool_capital_share": r"$w_{a,p,t}$",
+            "lp_net_flow_usd": r"$F^{\mathrm{LP}}_{a,p,t}$",
+            "lp_fee_yield": r"$\mathrm{LPFeeYield}_{a,p,t}$",
+            "lp_lvr": r"$\mathrm{LVR}_{a,p,t}$",
+            "lp_net_return": r"$\mathrm{LPNetReturn}_{a,p,t}$",
+            "lp_other_pool_return": r"$R^{\mathrm{other}}_{a,-p,t}$",
+            "lp_predicted_other_pool_shock": r"$Z^{\mathrm{other}}_{a,-p,t}$",
+            "pool_lp_wealth_shock": r"$\mathrm{LPWealthShock}_{p,t}$",
+            "lp_provider_overlap": r"$\mathrm{LPOverlap}_{p,p',t}$",
+            "pair_all_in_direct_cost": r"$C^{D}_{i,o,q,t}$",
+            "pair_all_in_indirect_cost": r"$C^{I}_{i,o,k,q,t}$",
+            "pair_all_in_direct_cost_advantage": r"$\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}$",
+            "all_in_direct_cost_advantage_median": (
+                r"$\mathrm{AllInDirectCostAdvantage}_{k,t,q}$"
+            ),
             "has_matching_transfer": r"$\mathrm{Transfer}_{r,k}$",
             "v4_route": r"$\mathrm{V4}_{r}$",
             "v4_route_share": r"$\mathrm{V4RouteShare}_{g}$",
+            "pre_v4_pair_indirect_route_share": r"$\mathrm{PreV4IndirectShare}_{i,o}$",
+            "post_v4": r"$\mathrm{PostV4}_{t}$",
+            "pre_v3_pair_volatility": r"$\sigma^{\mathrm{pre}}_{i,o}$",
+            "pool_liquidity_concentration": r"$\mathrm{LiquidityConcentration}_{p,t,b}$",
+            "physical_vehicle_movement_usd": r"$M_{r,k}$",
+            "physical_settlement_intensity": r"$\mathrm{SettlementIntensity}_{r,k}$",
+            "vehicle_liquidity_turnover": r"$\mathrm{VehicleTurnover}_{k,t}$",
+            "pre_v4_pool_vehicle_route_exposure": (
+                r"$\mathrm{VehicleRouteExposure}^{\mathrm{pre}}_{p,k}$"
+            ),
         }
         for column, notation in expected.items():
             with self.subTest(column=column):
@@ -230,6 +267,105 @@ class VariableRegistryTests(unittest.TestCase):
                 self.assertEqual(by_column[column].notation, notation)
                 self.assertFalse(by_column[column].in_observations_table)
                 self.assertNotIn(column, OBSERVATIONS_TABLE_COLUMNS)
+
+    def test_revised_rq_measurements_have_explicit_constructions(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        expected_units = {
+            "pair_all_in_direct_cost": "Fraction",
+            "pair_all_in_indirect_cost": "Fraction",
+            "pair_all_in_direct_cost_advantage": "Fraction",
+            "pair_direct_fee_cost": "Fraction",
+            "pair_direct_price_impact_cost": "Fraction",
+            "pair_direct_gas_cost": "Fraction",
+            "pair_indirect_fee_cost": "Fraction",
+            "pair_indirect_price_impact_cost": "Fraction",
+            "pair_indirect_gas_cost": "Fraction",
+            "lp_active_capital_usd": "USD",
+            "lp_net_flow_usd": "USD per day",
+            "lp_fee_yield": "Daily fraction",
+            "lp_lvr": "Daily fraction",
+            "lp_net_return": "Daily fraction",
+            "lp_predicted_other_pool_shock": "Daily return fraction",
+            "physical_vehicle_movement_usd": "USD",
+            "physical_settlement_intensity": "USD transferred per gross vehicle-leg USD",
+            "vehicle_liquidity_turnover": "USD vehicle volume per USD liquidity per day",
+        }
+        for column, unit in expected_units.items():
+            with self.subTest(column=column):
+                self.assertEqual(by_column[column].unit, unit)
+                self.assertTrue(by_column[column].construction)
+
+        self.assertEqual(by_column["lp_active_capital_usd"].formula, "")
+        self.assertEqual(by_column["lp_net_flow_usd"].formula, "")
+        self.assertEqual(by_column["physical_vehicle_movement_usd"].formula, "")
+        self.assertIn(
+            r"C^{I}_{i,o,k,q,t}-C^{D}_{i,o,q,t}",
+            by_column["pair_all_in_direct_cost_advantage"].formula,
+        )
+        self.assertIn(
+            r"\mathrm{LPFeeYield}_{a,p,t}-\mathrm{LVR}_{a,p,t}",
+            by_column["lp_net_return"].formula,
+        )
+        self.assertIn(
+            r"M_{r,k}",
+            by_column["physical_settlement_intensity"].formula,
+        )
+        self.assertIn(
+            r"\omega_{a,x,-p,t-1}R_{x,t}",
+            by_column["lp_predicted_other_pool_shock"].formula,
+        )
+        self.assertIn(
+            r"Z^{\mathrm{other}}_{a,-p,t}",
+            by_column["pool_lp_wealth_shock"].formula,
+        )
+
+    def test_pair_vehicle_hhi_is_conditional_on_candidate_coverage(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        coverage = by_column["pair_candidate_vehicle_coverage"]
+        concentration = by_column["pair_vehicle_hhi"]
+        self.assertIn(
+            r"\sum_{k\in\mathcal K\setminus\{i,o\}}\mathrm{VehicleShare}_{i,o,k,t}",
+            coverage.formula,
+        )
+        self.assertIn(
+            r"\mathrm{Coverage}^{\mathcal K}_{i,o,t}",
+            concentration.formula,
+        )
+        self.assertIn("renormalizing their shares to sum to one", concentration.construction)
+
+    def test_challenger_is_selected_and_ranked_by_all_in_cost(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        challenger = by_column["challenger_cost_edge"]
+        self.assertEqual(
+            challenger.formula,
+            r"$C^I_{i,o,k^\star,q,t}-C^I_{i,o,h^\star,q,t}$",
+        )
+        self.assertIn("All-in cost advantage", challenger.construction)
+        self.assertNotIn(r"O^I", challenger.formula)
+
+        incumbent_objects = next(
+            item for item in NOTATION_DEFINITIONS if r"h^\star_{i,o,q,t}" in item.notation
+        )
+        self.assertIn("smallest", incumbent_objects.definition)
+        self.assertIn(r"$C^I_{i,o,h,q,t}$", incumbent_objects.definition)
+
+    def test_pre_v4_pair_share_uses_only_positive_volume_days(self) -> None:
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        pre_share = by_column["pre_v4_pair_indirect_route_share"]
+        self.assertIn(r"\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}", pre_share.formula)
+        self.assertIn("positive-volume days", pre_share.construction)
+
+        architecture = next(
+            item
+            for item in NOTATION_DEFINITIONS
+            if r"\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}" in item.notation
+        )
+        self.assertIn(
+            r"$\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}\subseteq"
+            r"\mathcal T^{\mathrm{V4}}_{\mathrm{pre}}$",
+            architecture.definition,
+        )
+        self.assertIn(r"$\mathrm{Vol}_{i,o,t}>0$", architecture.definition)
 
     def test_formula_cells_are_blank_or_actual_calculations(self) -> None:
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}
@@ -468,7 +604,7 @@ class VariableRegistryTests(unittest.TestCase):
             r"\mathrm{Vol}_{i,o,t}": r"\mathrm{Vol}_{i,o,t}",
             r"I_{i,o,k,q,t}": r"I_{i,o,k,q,t}",
             r"O^I_{i,o,k,q,t}": r"O^{I}_{i,o,k,q,t}",
-            r"R_{k,t}": r"$R_{k,t}$",
+            r"R_{k,t}": r"$R_{x,t},\ R_{k,t}$",
             r"\sigma^{(30)}_{k,t-1}": r"$\sigma^{(30)}_{k,t-1}$",
             r"k^\star": r"$k^\star_{i,o,t},\ h^\star_{i,o,q,t}$",
             r"h^\star": r"$k^\star_{i,o,t},\ h^\star_{i,o,q,t}$",

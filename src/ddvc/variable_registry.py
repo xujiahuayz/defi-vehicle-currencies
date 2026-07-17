@@ -56,6 +56,12 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Indices",
+        notation=r"$x$",
+        unit="Token",
+        definition=r"Generic token index used where a quantity applies to any endpoint or candidate token.",
+    ),
+    NotationDefinition(
+        group="Indices",
         notation=r"$k$",
         unit="Token",
         definition=r"Candidate vehicle token used as the route intermediate; $k\notin\{i,o\}$.",
@@ -76,6 +82,24 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         definition=(
             r"$\ell$ indexes tokens in cross-token sums; $p$ indexes a focal liquidity pool; "
             r"$p'$ indexes another pool in leave-one-out sums."
+        ),
+    ),
+    NotationDefinition(
+        group="Indices",
+        notation=r"$a,\ a'$",
+        unit="LP address",
+        definition=(
+            r"$a$ indexes a focal liquidity-provider address or resolved position controller; "
+            r"$a'$ indexes another provider in within-pool sums."
+        ),
+    ),
+    NotationDefinition(
+        group="Indices",
+        notation=r"$b$",
+        unit="Fraction",
+        definition=(
+            r"Symmetric price-band half-width used to measure concentrated liquidity around "
+            r"the current reference price; $b=0.02$ is primary."
         ),
     ),
     NotationDefinition(
@@ -263,21 +287,114 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
+        notation=r"$\mathrm{PoolVol}_{p,t},\ \mathrm{SpokeIVol}_{p,k,t}$",
+        unit="USD",
+        definition=(
+            r"$\mathrm{PoolVol}_{p,t}$ is total realized swap volume in pool $p$ on day $t$. "
+            r"$\mathrm{SpokeIVol}_{p,k,t}$ restricts it to pool legs belonging to reconstructed "
+            r"indirect routes that use $k$ as the intermediate, so "
+            r"$0\le\mathrm{SpokeIVol}_{p,k,t}\le\mathrm{PoolVol}_{p,t}$."
+        ),
+    ),
+    NotationDefinition(
+        group="LP portfolio objects",
+        notation=r"$L_{a,p,t}$",
+        unit="USD",
+        definition=(
+            r"End-of-day USD value of active liquidity supplied by provider $a$ to pool $p$, "
+            r"marked at the day-$t$ reference prices."
+        ),
+    ),
+    NotationDefinition(
+        group="LP portfolio objects",
+        notation=r"$w_{a,p,t}$",
+        unit="Fraction (0--1)",
+        definition=(
+            r"Provider $a$'s share of active capital in pool $p$ on day $t$: "
+            r"$w_{a,p,t}=L_{a,p,t}/\sum_{a'}L_{a',p,t}$."
+        ),
+    ),
+    NotationDefinition(
+        group="LP portfolio objects",
+        notation=r"$F^{\mathrm{LP}}_{a,p,t}$",
+        unit="USD per day",
+        definition=(
+            r"Day-$t$ liquidity deposits by $a$ into $p$ minus withdrawals, valued at "
+            r"transaction-time USD prices and excluding fee collections."
+        ),
+    ),
+    NotationDefinition(
+        group="LP portfolio objects",
+        notation=r"$\mathrm{Fee}_{a,p,t},\ G^{\mathrm{LP}}_{a,p,t}$",
+        unit="USD",
+        definition=(
+            r"Swap fees accrued to provider $a$ in pool $p$ during day $t$, and USD gas "
+            r"spent by $a$ on that position's mint, burn, collect, and rebalance transactions."
+        ),
+    ),
+    NotationDefinition(
+        group="LP portfolio objects",
+        notation=r"$V^{\mathrm{LP}}_{a,p,t},\ V^{\mathrm{RB}}_{a,p,t}$",
+        unit="USD",
+        definition=(
+            r"End-of-day values of the day-$t$ opening LP inventory and its self-financing "
+            r"rebalanced benchmark, respectively, both excluding day-$t$ fees, flows, and gas."
+        ),
+    ),
+    NotationDefinition(
+        group="LP portfolio objects",
+        notation=r"$R^{\mathrm{LP}}_{a,p,t},\ R^{\mathrm{other}}_{a,-p,t}$",
+        unit="Daily return fraction",
+        definition=(
+            r"$R^{\mathrm{LP}}_{a,p,t}=(V^{\mathrm{LP}}_{a,p,t}-L_{a,p,t-1})/L_{a,p,t-1}$ "
+            r"is the position's fee-, flow-, and gas-excluded return. "
+            r"$R^{\mathrm{other}}_{a,-p,t}$ is the lag-capital-weighted mean of that return "
+            r"across $a$'s pools other than $p$."
+        ),
+    ),
+    NotationDefinition(
+        group="LP portfolio objects",
+        notation=r"$\omega_{a,x,-p,t}$",
+        unit="Fraction (0--1)",
+        definition=(
+            r"Share of provider $a$'s marked LP inventory outside focal pool $p$ exposed to "
+            r"token $x$, excluding both tokens in $p$ and normalized to sum to one across the "
+            r"remaining tokens."
+        ),
+    ),
+    NotationDefinition(
+        group="LP portfolio objects",
+        notation=r"$\mathrm{BandDepth}_{p,t,b}$",
+        unit="USD",
+        definition=(
+            r"Average across trade directions of the input USD notional executable in pool $p$ "
+            r"before its marginal price exits the symmetric $b$ band around the day-$t$ "
+            r"reference price."
+        ),
+    ),
+    NotationDefinition(
+        group="Route and liquidity aggregates",
         notation=r"$R^{\mathrm{WETH}}_t$",
         unit="Daily log-return fraction",
         definition=r"Day-$t$ log return of the WETH price used to construct downside stress.",
     ),
     NotationDefinition(
         group="Candidate-shock objects",
-        notation=r"$P_{k,t}$",
+        notation=r"$P_{x,t},\ P_{k,t}$",
         unit="USD per token",
-        definition=r"Day-$t$ USD price of candidate token $k$.",
+        definition=(
+            r"$P_{x,t}$ is the day-$t$ USD price of any token $x$. $P_{k,t}$ restricts "
+            r"that price to candidate $k\in\mathcal K$."
+        ),
     ),
     NotationDefinition(
         group="Candidate-shock objects",
-        notation=r"$R_{k,t}$",
+        notation=r"$R_{x,t},\ R_{k,t}$",
         unit="Daily log-return fraction",
-        definition=r"Candidate return $R_{k,t}=\ln(P_{k,t}/P_{k,t-1})$.",
+        definition=(
+            r"$R_{x,t}=\ln(P_{x,t}/P_{x,t-1})$ is the day-$t$ return of any token $x$. "
+            r"$R_{k,t}$ restricts it to candidate $k\in\mathcal K$."
+        ),
     ),
     NotationDefinition(
         group="Candidate-shock objects",
@@ -289,14 +406,24 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         ),
     ),
     NotationDefinition(
+        group="Architecture objects",
+        notation=r"$R_{i,o,t},\ \sigma^{\mathrm{pre}}_{i,o}$",
+        unit="Daily log-return fraction / daily log-return standard deviation",
+        definition=(
+            r"$R_{i,o,t}=\ln[(P_{i,t}/P_{o,t})/(P_{i,t-1}/P_{o,t-1})]$ is the ordered "
+            r"endpoint-pair return. $\sigma^{\mathrm{pre}}_{i,o}$ is its sample standard "
+            r"deviation over $\mathcal T^{\mathrm{V3}}_{\mathrm{pre}}$."
+        ),
+    ),
+    NotationDefinition(
         group="Persistence and displacement objects",
         notation=r"$k^\star_{i,o,t},\ h^\star_{i,o,q,t}$",
         unit="Token",
         definition=(
             r"$k^\star_{i,o,t}$ is the incumbent vehicle with the largest mean "
             r"$\mathrm{VehicleShare}_{i,o,k,u}$ over the 30 calendar days ending at $t-1$. "
-            r"$h^\star_{i,o,q,t}$ is the executable nonincumbent candidate with the largest "
-            r"$O^I_{i,o,h,q,t}$ on day $t$."
+            r"$h^\star_{i,o,q,t}$ is the executable nonincumbent candidate with the smallest "
+            r"all-in indirect cost $C^I_{i,o,h,q,t}$ on day $t$."
         ),
     ),
     NotationDefinition(
@@ -313,6 +440,23 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
             r"architecture-analysis universe of ordered pairs with positive realized route "
             r"volume on at least 30 days in that pre-period; every member is quoted at $q$ "
             r"throughout the event window, independent of post-V3 activity."
+        ),
+    ),
+    NotationDefinition(
+        group="Architecture objects",
+        notation=(
+            r"$t^{\mathrm{V4}}_0,\ \mathcal T^{\mathrm{V4}}_{\mathrm{pre}},\ "
+            r"\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}$"
+        ),
+        unit="UTC day / sets of UTC days",
+        definition=(
+            r"$t^{\mathrm{V4}}_0$ is the Ethereum V4 activation date established from the "
+            r"canonical deployment metadata before extraction. "
+            r"$\mathcal T^{\mathrm{V4}}_{\mathrm{pre}}$ is the fixed 180-calendar-day window "
+            r"ending at $t^{\mathrm{V4}}_0-1$. "
+            r"$\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}\subseteq"
+            r"\mathcal T^{\mathrm{V4}}_{\mathrm{pre}}$ restricts that window to days with "
+            r"$\mathrm{Vol}_{i,o,t}>0$."
         ),
     ),
     NotationDefinition(
@@ -379,11 +523,48 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route-cost quote objects",
+        notation=r"$O^{D,\mathrm{fee}}_{i,o,q,t},\ O^{I,\mathrm{fee}}_{i,o,k,q,t}$",
+        unit="USD",
+        definition=(
+            r"Counterfactual direct and indirect output values when each pool remains at its "
+            r"pre-quote marginal price but charges its historical swap fee; these retain fee "
+            r"loss and suppress price impact."
+        ),
+    ),
+    NotationDefinition(
+        group="Route-cost quote objects",
+        notation=r"$G^{D}_{i,o,q,t},\ G^{I}_{i,o,k,q,t}$",
+        unit="USD",
+        definition=(
+            r"Historical gas expenditure for the quoted direct and indirect routes, "
+            r"respectively, using route-specific gas usage and the day-$t$ gas-token USD price."
+        ),
+    ),
+    NotationDefinition(
+        group="Route-cost quote objects",
+        notation=r"$C^{D}_{i,o,q,t},\ C^{I}_{i,o,k,q,t}$",
+        unit="Fraction",
+        definition=(
+            r"All-in execution-cost fractions for the direct and indirect alternatives, "
+            r"including quoted pool fees and price impact plus historical gas expenditure."
+        ),
+    ),
+    NotationDefinition(
+        group="Route-cost quote objects",
         notation=r"$\Delta C^D_{i,o,k,q,t}$",
         unit="Fraction",
         definition=(
             r"Pair-level direct cost advantage "
             r"$(O^{D}_{i,o,q,t}-O^{I}_{i,o,k,q,t})/O^{D}_{i,o,q,t}$ on "
+            r"$\mathcal C_{k,t,q}$; positive values favor the direct route."
+        ),
+    ),
+    NotationDefinition(
+        group="Route-cost quote objects",
+        notation=r"$\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}$",
+        unit="Fraction",
+        definition=(
+            r"All-in direct cost advantage $C^{I}_{i,o,k,q,t}-C^{D}_{i,o,q,t}$ on "
             r"$\mathcal C_{k,t,q}$; positive values favor the direct route."
         ),
     ),
@@ -409,6 +590,17 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         definition=(
             r"Receipt-audited route units in settlement comparison cell $g$ executed on "
             r"Uniswap V3 and V4, respectively. A matched cell has both sets nonempty."
+        ),
+    ),
+    NotationDefinition(
+        group="Settlement objects and operators",
+        notation=r"$M_{r,k},\ \mathrm{GrossLegVol}_{r,k}$",
+        unit="USD",
+        definition=(
+            r"$M_{r,k}$ is the sum of absolute, route-attributed ERC-20 transfers of intermediate "
+            r"$k$ between distinct nonzero addresses in route unit $r$, valued in USD. "
+            r"$\mathrm{GrossLegVol}_{r,k}$ is the corresponding gross USD notional of $k$ entering "
+            r"or leaving the route's pools across both vehicle legs."
         ),
     ),
     NotationDefinition(
@@ -554,6 +746,45 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="to be constructed from the unified route panel before estimation",
         used_for="RQ1 vehicle reliance and RQ4 execution-architecture designs.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Pair-level route-choice measures",
+        name="Pair-level candidate vehicle coverage",
+        column="pair_candidate_vehicle_coverage",
+        notation=r"$\mathrm{Coverage}^{\mathcal K}_{i,o,t}$",
+        formula=(
+            r"$\displaystyle\sum_{k\in\mathcal K\setminus\{i,o\}}"
+            r"\mathrm{VehicleShare}_{i,o,k,t}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Share of pair $(i,o)$'s realized indirect-route volume routed through a candidate "
+            r"in $\mathcal K\setminus\{i,o\}$; defined when total pair indirect volume is positive."
+        ),
+        source="to be constructed from pair-level vehicle shares before estimation",
+        used_for="RQ4 candidate-set coverage diagnostic for pair-level vehicle concentration.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Pair-level route-choice measures",
+        name="Pair-level vehicle concentration",
+        column="pair_vehicle_hhi",
+        notation=r"$\mathrm{VehicleHHI}_{i,o,t}$",
+        formula=(
+            r"$\displaystyle\sum_{k\in\mathcal K\setminus\{i,o\}}\left("
+            r"\frac{\mathrm{VehicleShare}_{i,o,k,t}}"
+            r"{\mathrm{Coverage}^{\mathcal K}_{i,o,t}}"
+            r"\right)^2$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Herfindahl concentration among candidates in $\mathcal K\setminus\{i,o\}$ for "
+            r"ordered pair $(i,o)$ on day $t$, after renormalizing their shares to sum to one; "
+            r"defined when candidate-routed indirect volume is positive."
+        ),
+        source="to be constructed from pair-level vehicle shares before estimation",
+        used_for="RQ3 dominance and RQ4 decentralization-versus-entrenchment tests.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -743,6 +974,178 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         in_observations_table=False,
     ),
     VariableSpec(
+        group="Liquidity commonality measures",
+        name="Pool vehicle-route share",
+        column="pool_vehicle_route_share",
+        notation=r"$\mathrm{VehicleRouteShare}_{p,k,t}$",
+        formula=r"$\displaystyle\frac{\mathrm{SpokeIVol}_{p,k,t}}{\mathrm{PoolVol}_{p,t}}$",
+        unit="Fraction (0--1)",
+        construction=(
+            r"Fraction of pool $p$'s day-$t$ realized swap volume contributed by legs of "
+            r"indirect routes using $k$ as the intermediate; defined for positive pool volume."
+        ),
+        source="to be constructed from the reconstructed route-leg and pool-volume panels",
+        used_for="RQ2 pool-level vehicle demand and LP rent-incidence tests.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="LP active capital",
+        column="lp_active_capital_usd",
+        notation=r"$L_{a,p,t}$",
+        formula="",
+        unit="USD",
+        construction=(
+            r"End-of-day active liquidity controlled by address $a$ in pool $p$, reconstructed "
+            r"from position events and marked at day-$t$ reference prices. Contract-managed "
+            r"positions are assigned to a controller only where the event trail permits look-through."
+        ),
+        source="to be constructed from V3/V4 position events, pool states, and transaction receipts",
+        used_for="RQ2 LP supply, balance-sheet transmission, and rent-incidence tests.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="LP capital share",
+        column="lp_pool_capital_share",
+        notation=r"$w_{a,p,t}$",
+        formula=r"$\displaystyle\frac{L_{a,p,t}}{\sum_{a'}L_{a',p,t}}$",
+        unit="Fraction (0--1)",
+        construction=r"Provider $a$'s share of reconstructed active capital in pool $p$ on day $t$.",
+        source="to be constructed from LP active capital",
+        used_for="RQ2 provider overlap and pool exposure weights.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="LP net flow",
+        column="lp_net_flow_usd",
+        notation=r"$F^{\mathrm{LP}}_{a,p,t}$",
+        formula="",
+        unit="USD per day",
+        construction=(
+            r"Transaction-time USD value of day-$t$ mint deposits less burn withdrawals for "
+            r"provider $a$ in pool $p$, with fee collections excluded."
+        ),
+        source="to be constructed from V3/V4 liquidity events and transaction-time token prices",
+        used_for="RQ2 liquidity-supply response and RQ4/RQ5 architecture response.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="LP fee yield",
+        column="lp_fee_yield",
+        notation=r"$\mathrm{LPFeeYield}_{a,p,t}$",
+        formula=r"$\displaystyle\frac{\mathrm{Fee}_{a,p,t}}{L_{a,p,t-1}}$",
+        unit="Daily fraction",
+        construction=(
+            r"Day-$t$ fees accrued to the position divided by lagged active capital; defined "
+            r"only for positive lagged capital."
+        ),
+        source="to be constructed from swap fees, position ranges, and lagged LP active capital",
+        used_for="RQ2 gross LP rent incidence and RQ4/RQ5 architecture response.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="Loss versus rebalancing",
+        column="lp_lvr",
+        notation=r"$\mathrm{LVR}_{a,p,t}$",
+        formula=(
+            r"$\displaystyle\frac{V^{\mathrm{RB}}_{a,p,t}-V^{\mathrm{LP}}_{a,p,t}}"
+            r"{L_{a,p,t-1}}$"
+        ),
+        unit="Daily fraction",
+        construction=(
+            r"Underperformance of the opening LP inventory relative to its self-financing "
+            r"rebalanced benchmark, before fees, flows, and gas; defined for positive lagged capital."
+        ),
+        source="to be constructed from V3/V4 position states and intraday reference-price paths",
+        used_for="RQ2 adverse-selection cost and net-rent decomposition.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="LP net return",
+        column="lp_net_return",
+        notation=r"$\mathrm{LPNetReturn}_{a,p,t}$",
+        formula=(
+            r"$\displaystyle\mathrm{LPFeeYield}_{a,p,t}-\mathrm{LVR}_{a,p,t}"
+            r"-\frac{G^{\mathrm{LP}}_{a,p,t}}{L_{a,p,t-1}}$"
+        ),
+        unit="Daily fraction",
+        construction=(
+            r"Fee yield less loss versus rebalancing and position-management gas cost, all "
+            r"scaled by lagged active capital."
+        ),
+        source="to be constructed from LP fee yield, loss versus rebalancing, and transaction gas",
+        used_for="RQ2 net LP rent incidence and RQ4/RQ5 architecture response.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="Other-pool LP portfolio return",
+        column="lp_other_pool_return",
+        notation=r"$R^{\mathrm{other}}_{a,-p,t}$",
+        formula=(
+            r"$\displaystyle\frac{\sum_{p'\ne p}L_{a,p',t-1}R^{\mathrm{LP}}_{a,p',t}}"
+            r"{\sum_{p'\ne p}L_{a,p',t-1}}$"
+        ),
+        unit="Daily return fraction",
+        construction=(
+            r"Lag-capital-weighted, fee-, flow-, and gas-excluded return on provider $a$'s "
+            r"positions outside focal pool $p$; defined when outside lagged capital is positive."
+        ),
+        source="to be constructed from the address-pool LP position panel",
+        used_for="RQ2 within-pool balance-sheet transmission experiment.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="Predicted other-pool LP shock",
+        column="lp_predicted_other_pool_shock",
+        notation=r"$Z^{\mathrm{other}}_{a,-p,t}$",
+        formula=r"$\displaystyle\sum_{x\notin p}\omega_{a,x,-p,t-1}R_{x,t}$",
+        unit="Daily return fraction",
+        construction=(
+            r"Shift-share return shock formed from provider $a$'s lagged outside-pool token "
+            r"exposures and independent day-$t$ token returns, excluding both focal-pool tokens."
+        ),
+        source="to be constructed from lagged LP inventories and an independent token-price panel",
+        used_for="RQ2 predetermined-exposure balance-sheet transmission experiment.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="Pool LP wealth shock",
+        column="pool_lp_wealth_shock",
+        notation=r"$\mathrm{LPWealthShock}_{p,t}$",
+        formula=r"$\displaystyle\sum_a w_{a,p,t-1}Z^{\mathrm{other}}_{a,-p,t}$",
+        unit="Daily return fraction",
+        construction=(
+            r"Lagged-capital-share-weighted predicted outside-pool shock of the providers "
+            r"supplying pool $p$ before day-$t$ flows."
+        ),
+        source="to be constructed from LP capital shares and predicted other-pool shocks",
+        used_for="RQ2 pool-level propagation of LP balance-sheet shocks.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="LP capital and return measures",
+        name="LP provider overlap",
+        column="lp_provider_overlap",
+        notation=r"$\mathrm{LPOverlap}_{p,p',t}$",
+        formula=r"$\displaystyle\sum_a\min\{w_{a,p,t},w_{a,p',t}\}$",
+        unit="Fraction (0--1)",
+        construction=(
+            r"Common active-capital share attributable to the same resolved providers in pools "
+            r"$p$ and $p'$; zero means no overlap and one means identical provider weights."
+        ),
+        source="to be constructed from LP capital shares",
+        used_for="RQ2 separation of shared-provider supply from vehicle-network demand.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
         group="Route-cost opportunity measures",
         name="Any indirect route available",
         column="any_indirect_available",
@@ -788,6 +1191,141 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
         used_for="RQ1 candidate selection and RQ2 liquidity-route mechanism tests.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-level direct fee cost",
+        column="pair_direct_fee_cost",
+        notation=r"$C^{D,\mathrm{fee}}_{i,o,q,t}$",
+        formula=r"$\displaystyle 1-\frac{O^{D,\mathrm{fee}}_{i,o,q,t}}{q}$",
+        unit="Fraction",
+        construction=(
+            r"Direct-route loss attributable to historical pool fees when price impact is "
+            r"suppressed at the pre-quote marginal price."
+        ),
+        source="to be constructed by historical no-impact quote replay with actual fees",
+        used_for="RQ1 all-in route-cost decomposition.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-level direct price-impact cost",
+        column="pair_direct_price_impact_cost",
+        notation=r"$C^{D,\mathrm{impact}}_{i,o,q,t}$",
+        formula=(
+            r"$\displaystyle\frac{O^{D,\mathrm{fee}}_{i,o,q,t}-O^{D}_{i,o,q,t}}{q}$"
+        ),
+        unit="Fraction",
+        construction=(
+            r"Additional direct-route output loss caused by moving through the realized "
+            r"liquidity curve, after holding the fee-only output fixed."
+        ),
+        source="to be constructed from actual and no-impact direct quote replay",
+        used_for="RQ1 convex-price-impact mechanism test.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-level direct gas cost",
+        column="pair_direct_gas_cost",
+        notation=r"$C^{D,\mathrm{gas}}_{i,o,q,t}$",
+        formula=r"$\displaystyle\frac{G^{D}_{i,o,q,t}}{q}$",
+        unit="Fraction",
+        construction=r"Historical direct-route gas expenditure as a fraction of input USD notional.",
+        source="to be constructed from route gas usage, gas price, and gas-token USD price",
+        used_for="RQ1 fixed-cost decomposition and RQ5 user-cost incidence.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-candidate indirect fee cost",
+        column="pair_indirect_fee_cost",
+        notation=r"$C^{I,\mathrm{fee}}_{i,o,k,q,t}$",
+        formula=r"$\displaystyle 1-\frac{O^{I,\mathrm{fee}}_{i,o,k,q,t}}{q}$",
+        unit="Fraction",
+        construction=(
+            r"Two-leg indirect-route loss attributable to both pools' historical fees when "
+            r"price impact is suppressed at each pre-quote marginal price."
+        ),
+        source="to be constructed by historical two-leg no-impact quote replay with actual fees",
+        used_for="RQ1 second-fee-leg mechanism test.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-candidate indirect price-impact cost",
+        column="pair_indirect_price_impact_cost",
+        notation=r"$C^{I,\mathrm{impact}}_{i,o,k,q,t}$",
+        formula=(
+            r"$\displaystyle\frac{O^{I,\mathrm{fee}}_{i,o,k,q,t}-O^{I}_{i,o,k,q,t}}{q}$"
+        ),
+        unit="Fraction",
+        construction=(
+            r"Additional two-leg indirect-route output loss caused by moving through both "
+            r"realized liquidity curves, after holding fee-only output fixed."
+        ),
+        source="to be constructed from actual and no-impact indirect quote replay",
+        used_for="RQ1 vehicle-spoke price-impact mechanism test.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-candidate indirect gas cost",
+        column="pair_indirect_gas_cost",
+        notation=r"$C^{I,\mathrm{gas}}_{i,o,k,q,t}$",
+        formula=r"$\displaystyle\frac{G^{I}_{i,o,k,q,t}}{q}$",
+        unit="Fraction",
+        construction=r"Historical two-leg indirect-route gas expenditure as a fraction of input USD notional.",
+        source="to be constructed from route gas usage, gas price, and gas-token USD price",
+        used_for="RQ1 fixed-cost decomposition and RQ5 settlement-saving incidence.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-level all-in direct cost",
+        column="pair_all_in_direct_cost",
+        notation=r"$C^{D}_{i,o,q,t}$",
+        formula=r"$\displaystyle 1-\frac{O^{D}_{i,o,q,t}}{q}+\frac{G^{D}_{i,o,q,t}}{q}$",
+        unit="Fraction",
+        construction=(
+            r"Direct quote-output loss, which includes pool fees and price impact, plus historical "
+            r"route gas as a fraction of input notional. Fee, price-impact, and gas contributions "
+            r"are retained separately and sum to this measure."
+        ),
+        source="to be constructed by historical quote replay and route-specific gas accounting",
+        used_for="RQ1 route-cost decomposition and RQ3 current-economics controls.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-candidate all-in indirect cost",
+        column="pair_all_in_indirect_cost",
+        notation=r"$C^{I}_{i,o,k,q,t}$",
+        formula=r"$\displaystyle 1-\frac{O^{I}_{i,o,k,q,t}}{q}+\frac{G^{I}_{i,o,k,q,t}}{q}$",
+        unit="Fraction",
+        construction=(
+            r"Indirect quote-output loss across both legs, which includes both pools' fees and "
+            r"price impact, plus historical route gas as a fraction of input notional. Fee, "
+            r"price-impact, and gas contributions are retained separately and sum to this measure."
+        ),
+        source="to be constructed by historical quote replay and route-specific gas accounting",
+        used_for="RQ1 trade-size route comparison and RQ3 challenger economics.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Pair-candidate all-in direct cost advantage",
+        column="pair_all_in_direct_cost_advantage",
+        notation=r"$\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}$",
+        formula=r"$C^{I}_{i,o,k,q,t}-C^{D}_{i,o,q,t}$",
+        unit="Fraction",
+        construction=(
+            r"Indirect all-in cost minus direct all-in cost on common support; positive values "
+            r"favor direct execution and negative values favor indirect execution."
+        ),
+        source="to be constructed from pair-level direct and indirect all-in costs",
+        used_for="RQ1 economic route choice and RQ3 hysteresis conditional on current economics.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -882,6 +1420,24 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         include_in_summary=True,
         summary_panel="Liquidity and route-cost opportunity",
         summary_unit="Fraction",
+    ),
+    VariableSpec(
+        group="Route-cost opportunity measures",
+        name="Candidate-day median all-in direct cost advantage",
+        column="all_in_direct_cost_advantage_median",
+        notation=r"$\mathrm{AllInDirectCostAdvantage}_{k,t,q}$",
+        formula=(
+            r"$\displaystyle\mathrm{median}_{\mathcal C_{k,t,q}}"
+            r"\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}$"
+        ),
+        unit="Fraction",
+        construction=(
+            r"Median pair-level all-in direct cost advantage over common-support pairs; "
+            r"positive values favor direct execution after gas."
+        ),
+        source="to be constructed from pair-level all-in direct cost advantages",
+        used_for="RQ2 candidate-day feedback controls and all-in-cost robustness.",
+        in_observations_table=False,
     ),
     VariableSpec(
         group="Route-cost opportunity measures",
@@ -997,16 +1553,13 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         name="Challenger cost edge",
         column="challenger_cost_edge",
         notation=r"$\mathrm{ChallengerCostEdge}_{i,o,q,t}$",
-        formula=(
-            r"$\displaystyle\frac{O^I_{i,o,h^\star,q,t}-O^I_{i,o,k^\star,q,t}}"
-            r"{O^I_{i,o,k^\star,q,t}}$"
-        ),
+        formula=r"$C^I_{i,o,k^\star,q,t}-C^I_{i,o,h^\star,q,t}$",
         unit="Fraction",
         construction=(
-            r"Quoted-output advantage of the best executable challenger over the incumbent "
+            r"All-in cost advantage of the best executable challenger over the incumbent "
             r"vehicle at input notional $q$; positive values favor the challenger."
         ),
-        source="to be constructed from pair-level shares and the route-cost panel",
+        source="to be constructed from pair-level shares and pair-candidate all-in route costs",
         used_for="RQ3 incumbent-displacement and switching-threshold designs.",
         in_observations_table=False,
     ),
@@ -1047,6 +1600,36 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="to be constructed from the route-cost panel before estimation",
         used_for="RQ4 continuous-treatment architecture event study.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Execution-architecture measures",
+        name="Pre-V3 pair volatility",
+        column="pre_v3_pair_volatility",
+        notation=r"$\sigma^{\mathrm{pre}}_{i,o}$",
+        formula=r"$\displaystyle\mathrm{sd}_{u\in\mathcal T^{\mathrm{V3}}_{\mathrm{pre}}}(R_{i,o,u})$",
+        unit="Daily log-return standard deviation",
+        construction=(
+            r"Sample standard deviation of the ordered endpoint-pair log return over the fixed "
+            r"180-day pre-V3 window; computed only from information dated before V3 activation."
+        ),
+        source="to be constructed from endpoint-token reference prices before estimation",
+        used_for="RQ4 test of whether concentrated liquidity disproportionately favors stable pairs.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Execution-architecture measures",
+        name="Pool liquidity concentration",
+        column="pool_liquidity_concentration",
+        notation=r"$\mathrm{LiquidityConcentration}_{p,t,b}$",
+        formula=r"$\displaystyle\frac{\mathrm{BandDepth}_{p,t,b}}{\mathrm{TVL}_{p,t}}$",
+        unit="USD band depth per USD TVL",
+        construction=(
+            r"Executable depth inside the symmetric $b$ price band divided by pool TVL. The "
+            r"primary band is $b=0.02$; $b\in\{0.01,0.10\}$ is retained for robustness."
+        ),
+        source="to be constructed from historical V3 pool states and daily TVL",
+        used_for="RQ4 capital-efficiency and network-concentration mechanism tests.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -1101,6 +1684,103 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="to be constructed from the matched V3/V4 settlement panel",
         used_for="RQ5 economic-route-use persistence diagnostic.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="Pre-V4 pair indirect-route share",
+        column="pre_v4_pair_indirect_route_share",
+        notation=r"$\mathrm{PreV4IndirectShare}_{i,o}$",
+        formula=(
+            r"$\displaystyle\frac{\sum_{u\in\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}}"
+            r"\mathrm{IndirectRouteShare}_{i,o,u}}"
+            r"{|\mathcal T^{\mathrm{V4}}_{i,o,\mathrm{pre}}|}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Mean pair-level indirect-route share over pair $(i,o)$'s positive-volume days in "
+            r"the fixed 180-day pre-V4 window, requiring at least 30 such days."
+        ),
+        source="to be constructed from the pre-V4 pair route panel",
+        used_for="RQ5 predetermined pair-level exposure to settlement netting.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="Post-V4 indicator",
+        column="post_v4",
+        notation=r"$\mathrm{PostV4}_{t}$",
+        formula=r"$\mathbf{1}_{\{t\ge t^{\mathrm{V4}}_0\}}$",
+        unit="Indicator (0/1)",
+        construction=r"Equals one on and after the Ethereum V4 activation date.",
+        source="constructed from the activation date verified against deployment metadata",
+        used_for="RQ5 pair- and pool-level differential event studies.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="Physical vehicle-token movement",
+        column="physical_vehicle_movement_usd",
+        notation=r"$M_{r,k}$",
+        formula="",
+        unit="USD",
+        construction=(
+            r"Sum of absolute, route-attributed ERC-20 transfers of intermediate token $k$ "
+            r"between distinct nonzero addresses in route unit $r$, with duplicate logs removed "
+            r"and each amount valued at the transaction-time reference price."
+        ),
+        source="to be constructed from receipt-audited route units and ERC-20 transfer logs",
+        used_for="RQ5 gross-to-net settlement comparison.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="Physical settlement intensity",
+        column="physical_settlement_intensity",
+        notation=r"$\mathrm{SettlementIntensity}_{r,k}$",
+        formula=r"$\displaystyle\frac{M_{r,k}}{\mathrm{GrossLegVol}_{r,k}}$",
+        unit="USD transferred per gross vehicle-leg USD",
+        construction=(
+            r"Physical intermediate-token movement per unit of gross intermediate-token notional "
+            r"across the two economic route legs; defined for positive gross vehicle-leg volume."
+        ),
+        source="to be constructed from receipt-audited movement and reconstructed route legs",
+        used_for="RQ5 intensive-margin settlement netting and accounting validation.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="Vehicle liquidity turnover",
+        column="vehicle_liquidity_turnover",
+        notation=r"$\mathrm{VehicleTurnover}_{k,t}$",
+        formula=r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}{L_{k,t}}$",
+        unit="USD vehicle volume per USD liquidity per day",
+        construction=(
+            r"Realized indirect-route volume through candidate $k$ divided by its allocated "
+            r"vehicle-linked liquidity, defined for positive $L_{k,t}$."
+        ),
+        source="to be constructed from route volume and vehicle-linked liquidity",
+        used_for="RQ5 test of whether net settlement changes required capital per unit of vehicle use.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="V4 settlement implementation measures",
+        name="Pre-V4 pool vehicle-route exposure",
+        column="pre_v4_pool_vehicle_route_exposure",
+        notation=r"$\mathrm{VehicleRouteExposure}^{\mathrm{pre}}_{p,k}$",
+        formula=(
+            r"$\displaystyle\frac{\sum_{u\in\mathcal T^{\mathrm{V4}}_{\mathrm{pre}}}"
+            r"\mathrm{SpokeIVol}_{p,k,u}}"
+            r"{\sum_{u\in\mathcal T^{\mathrm{V4}}_{\mathrm{pre}}}\mathrm{PoolVol}_{p,u}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Fraction of pool $p$'s realized swap volume in the fixed 180-day pre-V4 window "
+            r"attributable to legs of indirect routes using $k$ as the intermediate; defined "
+            r"for positive pre-period pool volume."
+        ),
+        source="to be constructed from the pre-V4 reconstructed route-leg and pool panels",
+        used_for="RQ5 predetermined LP-capital exposure and RQ2 vehicle-spoke heterogeneity.",
         in_observations_table=False,
     ),
     VariableSpec(

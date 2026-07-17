@@ -1,345 +1,344 @@
 # Research questions and empirical design (review draft)
 
-**Status:** proposed design for Java's review, 17 July 2026. No empirical experiment has been run for this draft. Existing result files are not treated as evidence for these specifications.
+**Status:** revised design for Java's review, 17 July 2026. No experiment in this document has been run, and no existing result is treated as evidence for the revised specifications.
 
-The canonical symbols, formulas, units, and constructions are maintained in `src/ddvc/variable_registry.py` and rendered in `output/tables/variable_notation.tex` and `output/tables/variable_notation.pdf`. Any measurement approved here must be implemented through that registry before it enters an estimation script.
+**Organizing question:** how do trading technology, liquidity-provider capital, and settlement technology create or break increasing returns to a vehicle asset?
 
-## RQs rather than duplicate hypotheses
+The canonical symbols, formulas, units, and constructions are maintained in `src/ddvc/variable_registry.py` and rendered in `output/tables/variable_notation.tex` and `output/tables/variable_notation.pdf`. Every quantity used below is already registered there; proposed fields remain outside the current observations table until this design is approved.
 
-Use research questions as the paper's organizing labels. Do not add a parallel set of numbered hypotheses at this stage. Each RQ below already contains:
+## RQs, not duplicate hypotheses
 
-- an empirical prediction or, where mechanisms compete, the coefficients that distinguish them;
-- a primary experiment and pre-specified sample;
-- the evidence required to answer the question;
-- a failure condition; and
-- a limit on the interpretation.
+Use research questions as the paper's organizing labels. Do not maintain a parallel numbered hypothesis list: each RQ below states competing mechanisms, coefficient-level decision rules, evidence that would refute the proposed mechanism, and the permitted interpretation. This preserves an empirical-first paper and leaves theory as an optional, atomic extension after the evidence is known.
 
-Separately numbered hypotheses would duplicate these objects and would imply a theory-first structure that the paper does not currently need. If a journal later requires hypotheses, each empirical prediction can be relabelled without changing the experiments.
+## Literature classification
+
+The anchor audit below is based on the local PDF corpus and the keys in [`literature/vehicle-currencies.bib`](../literature/vehicle-currencies.bib). Classification matters because only genuinely empirical papers should serve as design and presentation templates.
+
+| Literature | Classification | Use in this design |
+|---|---|---|
+| Chordia, Roll, and Subrahmanyam (2000), `ChordiaRollSubrahmanyam2000Commonality` | Pure empirical | Commonality benchmark and control structure for RQ2 |
+| Coughenour and Saad (2004), `CoughenourSaad2004CommonMarketMakers` | Pure empirical | Shared-intermediary capital channel for RQ2 |
+| Comerton-Forde et al. (2010), `ComertonFordeEtAl2010Inventories` | Pure empirical | Market-maker wealth/inventory shock template for RQ2 and RQ5 |
+| Hendershott, Jones, and Menkveld (2011), `HendershottJonesMenkveld2011Algorithmic` | Pure empirical | Trading-technology event design and provider-rent benchmark for RQ4 |
+| Anand and Venkataraman (2016), `AnandVenkataraman2016MarketMaking` | Pure empirical | Participation, synchronous withdrawal, and fragility benchmark for RQ2 |
+| Clark-Joseph, Ye, and Zi (2017), `ClarkJosephYeZi2017DMM` | Pure empirical; local corpus includes the published version | Natural-experiment standard for identifying indispensable versus redundant liquidity providers |
+| Bessembinder, Hao, and Zheng (2020), `BessembinderHaoZheng2020Contracts` | Pure empirical | Regression-discontinuity standard and strategic-complementarity spillover benchmark for RQ2 |
+| Krugman (1980), `Krugman1980VehicleCurrencies`; Dowd and Greenaway (1993), `DowdGreenaway1993CurrencyCompetition` | Theory | Increasing returns, network externalities, inertia, and abrupt displacement mechanisms for RQ1 and RQ3 |
+| Grossman and Miller (1988), `GrossmanMiller1988Liquidity`; Ho and Stoll (1981), `HoStoll1981OptimalDealer`; Brunnermeier and Pedersen (2009), `BrunnermeierPedersen2009Liquidity` | Theory | Finite risk-bearing and intermediary-capital mechanisms for RQ2 and RQ5 |
+| Gopinath and Stein (2021), `GopinathStein2021Making` | Primarily theory with preliminary correlations | Boundary-condition anchor for whether medium-of-exchange use remains tied to settlement and stores of value in RQ5 |
+| Chen and Duffie (2021), `ChenDuffie2021Fragmentation` | Theory | Competing prediction that fragmentation can reduce venue depth yet improve allocation through order splitting in RQ4 |
+| Somogyi (2026), `Somogyi2026DollarDominanceFX` | Model plus empirical evidence, not pure empirical | Substantive FX benchmark for price-impact-driven vehicle routing; not a design-style template |
+| Lehar and Parlour (2024), `LeharParlour2024Uniswap` | Equilibrium model plus empirical evidence, not pure empirical | AMM pool-size, price-impact, and adverse-selection benchmark for RQ1, RQ2, and RQ4 |
+| Caparros, Chaudhary, and Klein (2024), `CaparrosChaudharyKlein2024BlockchainScaling` | Empirical working paper | DEX benchmark for gas costs, repositioning, liquidity concentration, and slippage in RQ4 |
+| Li, Wang, and Ye (2021), `LiWangYe2021WhoProvides` | Theory/model paper, not pure empirical | Theory comparator only; not used as an empirical template |
+| Heimbach, Pahari, and Schertenleib (2024), `HeimbachPahariSchertenleib2024NonAtomic` | Computer-science paper | Not used as the finance/economics design or writing template |
 
 ## Proposed RQ set
 
-1. **RQ1. When is an indirect route used, and which candidate is selected as the vehicle?**
-2. **RQ2. How does liquidity provision support and reinforce vehicle status?**
-3. **RQ3. How persistent is vehicle status, and what displaces an incumbent?**
-4. **RQ4. How does execution architecture change reliance on vehicle routes?**
-5. **RQ5. Does settlement netting separate economic vehicle use from physical vehicle-token transfer?**
+1. **RQ1. When and why does two-leg intermediation dominate direct exchange?**
+2. **RQ2. Does vehicle use create a liquidity multiplier, and who captures the rents?**
+3. **RQ3. Does vehicle dominance exhibit hysteresis and abrupt displacement?**
+4. **RQ4. Does liquidity-enhancing execution technology decentralize exchange or entrench the vehicle?**
+5. **RQ5. Does net settlement sever transactional intermediation from physical settlement and market-making capital?**
 
-This consolidates the previous seven-question draft. Stress rotation is a source of incumbent displacement under RQ3. Commonality in liquidity is a mechanism test under RQ2. Execution architecture and settlement architecture remain separate because they change different economic objects.
+The questions are deliberately mechanism-based rather than protocol-feature-based. Hooks are not a headline RQ; any hook-level analysis is a heterogeneity test only if it maps to execution cost, LP risk, or settlement netting.
 
 ## Cross-RQ design rules
 
-- The primary quote notional is proposed as \(q=\$10{,}000\). The exact same specifications are repeated at \(q\in\{\$1{,}000,\$100{,}000\}\); results are not pooled across notionals.
-- Quote and liquidity measurements dated \(t\) predict realized route outcomes at an exact future calendar date wherever the question permits. A missing \(t+\tau\) date is not replaced by the next observed row.
-- RQ2 uses \(\tau\in\{1,7,30\}\), with 90 days as a persistence check. RQ3 uses \(\tau\in\{7,30,90\}\). These choices remain review items and are not hard-coded in the notation for \(\tau\).
-- USD volume shares are primary. Route-count shares, pair coverage, and all-route denominators are robustness outcomes, not interchangeable definitions.
-- Every output reports the coefficient, standard error, 95% confidence interval, \(p\)-value, sample size, fixed effects, and clustering method.
-- A primary prediction is supported only when the coefficient has the proposed sign, its two-sided 95% confidence interval excludes zero, and its magnitude is economically interpretable. Holm-adjusted \(p\)-values are also reported within each RQ's primary coefficient family.
-- Predictive panel evidence is described as predictive. Causal wording is used only for a design that passes its stated identifying assumptions and diagnostics.
-- Result artifacts have descriptive filenames, no hard-coded table or figure numbers, and no notes embedded inside tables. Paper discussion is written separately after the evidence is approved.
+- The primary quote notional remains \(q=\$10{,}000\), with \(\$1{,}000\) and \(\$100{,}000\) as fixed robustness notionals; RQ1 additionally evaluates the observed route notional and a wider fixed size grid where historical state replay is executable.
+- All direct and indirect alternatives in a comparison use the same block state, input token, output token, input USD notional, token prices, and gas-price convention.
+- Quote-output cost and all-in cost are not interchangeable: \(C^D\), \(C^I\), and \(\Delta C^{D,\mathrm{all}}\) include gas, while \(\Delta C^D\) remains the quote-output-only measure.
+- Each all-in route cost retains the registered fee, price-impact, and gas components \(C^{D,\mathrm{fee}}\), \(C^{D,\mathrm{impact}}\), \(C^{D,\mathrm{gas}}\), \(C^{I,\mathrm{fee}}\), \(C^{I,\mathrm{impact}}\), and \(C^{I,\mathrm{gas}}\) even when the regression uses their sum.
+- USD volume shares are primary; count shares, pair coverage, and all-route denominators are robustness outcomes.
+- \(\mathrm{VehicleHHI}_{i,o,t}\) is concentration conditional on the fixed candidate set; every HHI result must be accompanied by \(\mathrm{Coverage}^{\mathcal K}_{i,o,t}\) and repeated with an expanded candidate set so changing out-of-set routing cannot masquerade as concentration.
+- Every result table must report the coefficient, standard error, 95% confidence interval, \(p\)-value, sample size, fixed effects, clustering method, and an economically scaled effect.
+- A predicted sign is supported only when its two-sided 95% confidence interval excludes zero; Holm-adjusted \(p\)-values are reported within each RQ's primary coefficient family.
+- Predictive panel evidence is called predictive. Causal language requires the stated treatment timing, pretrend, balance, exclusion, and placebo tests to pass.
+- Missing data trigger durable acquisition or reconstruction work; they never justify silently dropping an experiment or substituting a weaker proxy.
+- After approval, every data build and estimator is a committed script, intermediate data use a language-native binary format, and paper outputs are TeX/PDF with descriptive filenames, no hard-coded numbering, no CSV, and no notes embedded in tables.
 
-## Compact design crosswalk
+## Compact crosswalk
 
-| RQ | Primary experiment | Unit and sample | Outcome | Primary evidence |
-|---|---|---|---|---|
-| RQ1 | Direct-market availability and conditional candidate choice | Pair-day, then pair-candidate-day | \(\mathrm{IndirectRouteShare}_{i,o,t+1}\); \(\mathrm{VehicleShare}_{i,o,k,t+1}\) | Direct availability and depth reduce indirect reliance; candidate indirect depth raises selection; \(\Delta C^D\) lowers selection because positive values favor direct execution |
-| RQ2 | Bidirectional local projections plus pool commonality | Candidate-day; pool-candidate-day | Future changes in \(\mathrm{VehicleShare}_{k,t}\), \(\mathrm{LogVehicleLiquidity}_{k,t}\), and pool TVL | \(\mathrm{LPConc}_{k,t}\) predicts future vehicle share; vehicle share predicts future liquidity; the leave-one-out vehicle factor explains pool liquidity beyond the market factor |
-| RQ3 | Incumbent persistence, challenger edge, and candidate-specific stress | Pair-candidate-day; incumbent-challenger pair-day | Future vehicle share and \(\mathrm{VehicleSwitch}_{i,o,q,t,\tau}\) | Current share persists; challenger cost edge and incumbent stress raise displacement; challenger stress lowers displacement |
-| RQ4 | Continuous-treatment V3 event study | Fixed pre-V3 pair-day panel | \(D_{i,o,q,t}\), \(\mathrm{DirectDepth}_{i,o,q,t}\), \(\mathrm{AnyIndirectAvailable}_{i,o,q,t}\), and \(\mathrm{IndirectRouteShare}_{i,o,t}\) | More pre-constrained pairs experience larger post-V3 route-opportunity changes; the sign of vehicle reliance identifies whether direct-market or indirect-leg deepening dominates |
-| RQ5 | Receipt-audited matched V3/V4 route comparison | Route unit within settlement comparison cell | \(\mathrm{Transfer}_{r,k}\) | \(\mathrm{V4}_r\) materially lowers transfer incidence while economically classified V4 vehicle routes remain present |
+| RQ | Core empirical tension | Primary design | Decisive evidence |
+|---|---|---|---|
+| RQ1 | Two pool legs charge twice, but a deep vehicle path can have lower convex price impact than one thin direct pool | Same-state direct-versus-indirect cost frontier plus pair and candidate route-choice panels | \(\Delta C^{D,\mathrm{all}}<0\) for economically important cells and a significantly negative route-choice coefficient on \(\Delta C^{D,\mathrm{all}}\) |
+| RQ2 | Vehicle demand can attract liquidity, but shared LP balance sheets can also create fragile commonality; gross fees need not be net rents | Bidirectional use/liquidity projections, LP shift-share wealth shocks, provider-overlap decomposition, and fee/LVR/net-return panels | Vehicle use predicts future liquidity; outside LP losses cause withdrawals; low-overlap spoke commonality survives; fee and net-return incidence identify who gains |
+| RQ3 | Near-zero algorithmic user switching costs should weaken inertia, but liquidity coordination can still protect an incumbent until a threshold is crossed | Persistence conditional on current all-in economics plus challenger-edge crossing and candidate-stress event studies | Lagged incumbent status remains significant after current economics, and switching responds nonlinearly or abruptly when the challenger edge becomes large |
+| RQ4 | Concentrated liquidity can improve execution while either deepening direct markets or concentrating routes around a few vehicle spokes | Fixed-universe heterogeneous V3 event study using pre-V3 direct constraint and pair volatility | Better depth together with falling indirect share/vehicle HHI means decentralization; better depth together with rising indirect share/vehicle HHI means entrenchment |
+| RQ5 | V4 can net physical movements without eliminating the two economic swaps or their LP fees | Receipt-audited V3/V4 comparison plus pre-exposure pair and LP-capital event studies | Physical settlement intensity falls; route use, gas, LP flow, fee yield, net return, and turnover reveal whether netting expands, contracts, or merely virtualizes vehicle intermediation |
 
-## RQ1. Route reliance and vehicle selection
+## RQ1. When and why does two-leg intermediation dominate direct exchange?
 
-### Question
+### Literature anchors
 
-When does an ordered pair use any indirect route, and conditional on indirect routing, which candidate \(k\) captures the route volume? These are two different margins and must not be collapsed into a candidate-day aggregate regression.
+| Anchor | Existing result or mechanism | Relationship to RQ1 |
+|---|---|---|
+| Krugman (1980) | Transaction cost falls with market volume, so routing through a large third currency can dominate bilateral exchange and reinforce that currency's scale | **Direct test and possible support:** replace the unobserved FX cost schedule with exact same-state AMM route counterfactuals; **refute in this setting** if scale and liquidity add no explanatory power after all-in cost |
+| Somogyi (2026) | The direct FX spread can be lower while the vehicle route is cheaper after price impact; holiday variation is used because FX data do not reveal motive | **Expand and sharpen:** observe the intermediate directly, compare every executable route, and separate fee, price impact, and gas rather than infer vehicle demand from holidays |
+| Lehar and Parlour (2024) | AMM pool size reflects fee revenue, adverse selection, and price impact | **Expand:** move from isolated pool quality to the economic choice between one direct pool and a two-pool network path |
 
-### Experiment A: pair-level reliance on indirect routing
+### Experiment A: same-state route-cost frontier
 
-The unit is ordered pair-day \((i,o,t)\). The quote is measured on day \(t\), and the outcome is realized route use on day \(t+1\). The primary sample requires \(\mathrm{AnyIndirectAvailable}_{i,o,q,t}=1\) and \(\mathrm{Vol}_{i,o,t+1}>0\).
+- **Unit:** ordered pair-candidate-state-notional \((i,o,k,t,q)\), with block-level state preferred and day snapshots used only where exact historical state is unavailable.
+- **Sample:** a fixed or predetermined rolling universe of economically active ordered pairs; \(k\in\mathcal K\setminus\{i,o\}\); retain unavailable direct and indirect alternatives as availability outcomes rather than deleting them.
+- **Construction:** replay the direct route and every via-\(k\) route from the identical pre-trade state; compute \(C^D_{i,o,q,t}\), \(C^I_{i,o,k,q,t}\), and \(\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}=C^I-C^D\).
+- **Decomposition:** rerun each route holding the marginal reference price fixed to isolate pool fees, then attribute residual quote loss to price impact and add route-specific historical gas; the three contributions must sum back to all-in cost within a numerical tolerance.
+- **Outputs after approval:** availability by \(q\); the fraction and USD-weighted fraction of common-support cells with \(\Delta C^{D,\mathrm{all}}<0\); distributions of the direct-minus-indirect fee, impact, and gas components; and cost-difference curves over \(q\).
+- **Nonlinearity rule:** do not force one crossing-size statistic, because concentrated-liquidity routes can cross more than once; report all sign-changing intervals on the fixed size grid and validate them with denser local replay.
 
-The extensive-margin specification is
+### Experiment B: realized indirect-route reliance
 
-\[
-\mathrm{IndirectRouteShare}_{i,o,t+1}
-=\alpha_{i,o}+\delta_t
-+\beta_D D_{i,o,q,t}+\varepsilon_{i,o,t+1}.
-\]
+The unit is pair-day. First estimate the extensive margin using \(D_{i,o,q,t}\), \(\mathrm{AnyIndirectAvailable}_{i,o,q,t}\), and next-day \(\mathrm{IndirectRouteShare}_{i,o,t+1}\). On common support, estimate the all-in economic specification separately at each \(q\):
 
-The direct-depth specification is estimated only where \(D_{i,o,q,t}=1\):
+\[\mathrm{IndirectRouteShare}_{i,o,t+1}=\alpha_{i,o}+\delta_t+\beta_C\min_{k:I_{i,o,k,q,t}=1}\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}+\beta_Q\mathrm{DirectDepth}_{i,o,q,t}+\varepsilon_{i,o,t+1}.\]
 
-\[
-\mathrm{IndirectRouteShare}_{i,o,t+1}
-=\alpha_{i,o}+\delta_t
-+\beta_Q\mathrm{DirectDepth}_{i,o,q,t}
-+\varepsilon_{i,o,t+1}.
-\]
+- **Fixed effects and inference:** ordered-pair and date fixed effects; two-way clustering by ordered pair and date.
+- **Primary signs:** \(\beta_C<0\), because a larger direct cost advantage should reduce indirect reliance; \(\beta_Q<0\), because better direct execution should reduce indirect reliance.
+- **Size test:** estimate the same specification separately by \(q\); a more negative indirect-versus-direct cost difference at large \(q\) together with greater large-trade indirect reliance isolates convex price impact from fixed gas cost.
 
-\(T_{i,o,q,t}\) enters a separate nonlinear specification because it is a thresholded version of direct quote quality. It is not included as though it were an independent measure of pool liquidity.
+### Experiment C: candidate choice within indirect routes
 
-**Empirical prediction:** \(\beta_D<0\) and \(\beta_Q<0\). Direct availability and better direct execution should reduce the realized indirect-route share. In the threshold specification, the coefficient on \(T_{i,o,q,t}\) should be positive.
+The unit is pair-candidate-day, restricted to executable via-\(k\) alternatives and positive next-day indirect volume. Pair-date fixed effects compare candidates facing the same endpoints and market state:
 
-Pair fixed effects absorb persistent pair characteristics. Calendar-date fixed effects absorb market-wide conditions. Standard errors are two-way clustered by ordered pair and date.
+\[\mathrm{VehicleShare}_{i,o,k,t+1}=\alpha_{i,o,k}+\lambda_{i,o,t}+\beta_K\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}+\beta_L\mathrm{LPConc}_{k,t}+\varepsilon_{i,o,k,t+1}.\]
 
-### Experiment B: candidate selection conditional on indirect routing
+- **Primary signs:** \(\beta_K<0\), because a candidate with a cheaper indirect route has a smaller direct cost advantage and should capture more share; \(\beta_L>0\) is evidence that candidate-linked scale predicts selection beyond measured contemporaneous route cost.
+- **Algebra rule:** do not place \(\mathrm{IndirectDepth}_{i,o,k,q,t}\) and a cost measure built from the same \(O^I\) in one pair-date specification and interpret both structurally.
 
-The unit is pair-candidate-day \((i,o,k,t)\). The sample requires \(I_{i,o,k,q,t}=1\) and \(\mathrm{IVol}_{i,o,t+1}>0\). Candidate quote depth is tested with
+### Decision rule for RQ1
 
-\[
-\mathrm{VehicleShare}_{i,o,k,t+1}
-=\alpha_{i,o,k}+\lambda_{i,o,t}
-+\beta_I\mathrm{IndirectDepth}_{i,o,k,q,t}
-+\beta_L\mathrm{LPConc}_{k,t}
-+\varepsilon_{i,o,k,t+1}.
-\]
+| Finding | Answer |
+|---|---|
+| Economically important common-support cells have \(\Delta C^{D,\mathrm{all}}<0\), especially at larger \(q\), and \(\beta_C,\beta_K<0\) significantly | Two-leg intermediation dominates when deeper vehicle spokes save more price impact than the second fee and gas leg costs; this supports Krugman's scale mechanism and expands Somogyi with observed route choice |
+| Indirect routes win only before gas is added | Vehicle routing is a quote-quality phenomenon but not an all-in economic advantage for users |
+| Indirect routes remain common when \(\Delta C^{D,\mathrm{all}}>0\), and lagged scale/liquidity remains significant | Current cost is incomplete; persistence, reliability, private order flow, or coordination moves to RQ3 rather than being labelled irrationality |
+| All-in cost does not predict realized route choice | Refute the proposed cost mechanism or revisit route reconstruction, unobserved router objectives, and quote timing before making a formation claim |
 
-On common support, \((i,o)\in\mathcal C_{k,t,q}\), relative route cost is tested in a separate specification:
+**Potentially surprising result:** two swaps can be cheaper than one only above a trade-size region because direct-pool price impact is convex, even though the indirect route pays two fee legs and more gas.
 
-\[
-\mathrm{VehicleShare}_{i,o,k,t+1}
-=\alpha_{i,o,k}+\lambda_{i,o,t}
-+\beta_C\Delta C^D_{i,o,k,q,t}
-+\beta_L\mathrm{LPConc}_{k,t}
-+\varepsilon_{i,o,k,t+1}.
-\]
+## RQ2. Does vehicle use create a liquidity multiplier, and who captures the rents?
 
-Do not put \(\mathrm{IndirectDepth}_{i,o,k,q,t}\) and \(\Delta C^D_{i,o,k,q,t}\) in the same common-support regression with pair-date fixed effects. At fixed \((i,o,q,t)\), both are algebraic transformations of \(O^I_{i,o,k,q,t}\), so their separate coefficients are not identified.
+### Literature anchors
 
-**Empirical prediction:** \(\beta_I>0\), \(\beta_C<0\), and \(\beta_L>0\). More indirect output and more candidate-linked liquidity should raise candidate share; a positive direct cost advantage should lower it. Pair-candidate fixed effects and pair-date fixed effects make this a within-pair choice among candidates. Standard errors are two-way clustered by pair-candidate and date.
+| Anchor | Existing result or mechanism | Relationship to RQ2 |
+|---|---|---|
+| Chordia, Roll, and Subrahmanyam (2000) | Liquidity has market and industry common components after standard controls, but the source is not identified | **Corroborate and narrow:** test commonality on economically linked vehicle spokes, then separate common demand from shared-provider capital |
+| Coughenour and Saad (2004) | Common specialist firms transmit capital and information across the stocks they manage | **Direct expansion:** on-chain positions reveal provider overlap and permit explicit exclusion of shared LP addresses |
+| Comerton-Forde et al. (2010) | Market-maker inventory and income shocks predict future liquidity, with stronger nonlinear effects after losses | **Design anchor:** use predetermined outside-pool LP exposures and token-return shocks to test balance-sheet transmission |
+| Anand and Venkataraman (2016) | Voluntary market makers enter and withdraw synchronously as profits and risk change; designated providers mitigate fragility | **Expand:** test synchronous LP withdrawal and whether vehicle-spoke demand offsets or amplifies it without a designated provider |
+| Clark-Joseph, Ye, and Zi (2017) | Removing NYSE designated market makers impairs marketwide liquidity, while removing a voluntary venue does not | **Expand:** use provider-level shocks and pool capital shares to distinguish economically indispensable LP capital from redundant liquidity supply |
+| Bessembinder, Hao, and Zheng (2020) | Stronger designated-market-maker obligations improve liquidity, including positive spillovers away from the treated venue | **Expand:** test whether vehicle liquidity is strategically complementary across pools rather than merely reallocated between them |
+| Hendershott, Jones, and Menkveld (2011) | Automation improves liquidity and can initially raise liquidity-supplier realized spreads before the rent dissipates | **Expand:** separate LP gross fee yield from LVR, gas, and net return rather than equating volume or fees with rents |
+| Grossman and Miller (1988); Brunnermeier and Pedersen (2009) | Market liquidity depends on finite intermediary risk-bearing and funding capacity | **Mechanism support or refutation:** outside LP wealth shocks should move supply if AMM liquidity remains balance-sheet constrained |
 
-### Evidence that answers RQ1
+### Experiment A: use-to-liquidity multiplier and reverse feedback
 
-RQ1 is answered by the joint pattern, not one omnibus coefficient:
+Estimate candidate-day local projections in both directions for \(\tau\in\{1,7,30\}\), with candidate and date fixed effects and the current outcome level included:
 
-- \(\beta_D<0\) shows that a missing direct route shifts realized volume toward indirect execution.
-- \(\beta_Q<0\), or a positive coefficient on \(T_{i,o,q,t}\), shows that weak direct execution also matters on the intensive margin.
-- \(\beta_I>0\) and \(\beta_C<0\) show that candidate selection responds to the candidate's executable route quality.
-- \(\beta_L>0\) connects candidate selection to liquidity and is carried forward as a mechanism coefficient in RQ2.
+\[\Delta_\tau\mathrm{LogVehicleLiquidity}_{k,t+\tau}=\alpha_k+\delta_t+\gamma_\tau\mathrm{VehicleShare}_{k,t}+\phi_\tau\mathrm{LogVehicleLiquidity}_{k,t}+\beta_\tau\mathrm{AllInDirectCostAdvantage}_{k,t,q}+\varepsilon_{k,t+\tau}.\]
 
-The RQ is not supported if direct availability and quality do not predict indirect reliance, or if candidate route quality does not predict conditional candidate share after the fixed effects. This evidence is predictive route-choice evidence, not an exogenous shock to route availability.
+\[\Delta_\tau\mathrm{VehicleShare}_{k,t+\tau}=\alpha_k+\delta_t+\eta_\tau\mathrm{LPConc}_{k,t}+\rho_\tau\mathrm{VehicleShare}_{k,t}+\beta_\tau\mathrm{AllInDirectCostAdvantage}_{k,t,q}+\nu_{k,t+\tau}.\]
 
-Planned outputs: `formation_route_reliance.tex` and `formation_candidate_selection.tex`.
+- **Primary evidence:** \(\gamma_\tau>0\) means vehicle use precedes capital growth; \(\eta_\tau>0\) means capital concentration precedes vehicle-share growth; both are required before describing feedback.
+- **Inference:** Driscoll-Kraay errors and calendar-month block bootstrap because five candidates are insufficient for ordinary candidate-cluster asymptotics.
+- **Interpretation:** this is predictive feedback, not a causal supply elasticity; causal mechanism evidence comes from Experiment B.
 
-## RQ2. Liquidity provision and reinforcement
+### Experiment B: LP balance-sheet transmission
 
-### Question
+The unit is provider-address-pool-day. The shift-share shock \(Z^{\mathrm{other}}_{a,-p,t}\) uses lagged token exposures outside focal pool \(p\), excludes both focal-pool tokens, and multiplies those exposures by independently sourced token returns. Pool-date fixed effects compare providers facing the same pool demand, price path, and fee opportunity:
 
-Does vehicle-linked liquidity predict later vehicle use, does vehicle use predict later liquidity allocation, and do pools linked to the same vehicle share a liquidity component beyond market-wide liquidity?
+\[F^{\mathrm{LP}}_{a,p,t+1}=\alpha_{a,p}+\lambda_{p,t}+\beta_Z Z^{\mathrm{other}}_{a,-p,t}+\beta_L L_{a,p,t-1}+\varepsilon_{a,p,t+1}.\]
 
-### Experiment A: bidirectional candidate-day local projections
+- **Primary sign:** \(\beta_Z>0\); an adverse outside-portfolio shock should induce relative withdrawal or smaller deposits from the affected provider.
+- **First stage and falsification:** \(Z^{\mathrm{other}}\) must predict \(R^{\mathrm{other}}\); future \(Z^{\mathrm{other}}_{a,-p,t+1}\) must not predict day-\(t\) flow; results must survive excluding contract-managed positions without reliable controller look-through.
+- **Dynamics:** replace next-day flow with cumulative \(F^{\mathrm{LP}}\) over 7 and 30 days and test whether losses have a larger absolute effect than gains using a prespecified zero split.
+- **Inference:** two-way clustering by provider and date; address-pool fixed effects and pool-date fixed effects are mandatory.
+- **Pool propagation:** estimate \(\Delta_1\ln(\mathrm{TVL}_{p,t+1})=\alpha_p+\delta_t+\beta_W\mathrm{LPWealthShock}_{p,t}+\varepsilon_{p,t+1}\); \(\beta_W>0\) shows that shocks to the incumbent provider portfolio reach aggregate pool liquidity, linking the address-level result to the Clark-Joseph and Comerton-Forde market-quality channel.
 
-The first direction is
+### Experiment C: vehicle commonality after removing shared providers
 
-\[
-\Delta_\tau\mathrm{VehicleShare}_{k,t+\tau}
-=\alpha_k+\delta_t
-+\beta_\tau\mathrm{LPConc}_{k,t}
-+\rho_\tau\mathrm{VehicleShare}_{k,t}
-+\varepsilon_{k,t+\tau}.
-\]
+Estimate the pool-candidate-day commonality regression with leave-one-out factors:
 
-The reverse direction is
+\[\Delta_1\ln(\mathrm{TVL}_{p,t})=\alpha_{p,k}+\delta_{\mathrm{month}(t)}+\theta_V\mathrm{VehicleLiquidityFactor}_{p,k,t}+\theta_M\mathrm{MarketLiquidityFactor}_{p,t}+\omega\bigl(\mathrm{VehicleLiquidityFactor}_{p,k,t}\times\mathrm{VehicleShare}_{k,t-1}\bigr)+\varepsilon_{p,k,t}.\]
 
-\[
-\Delta_\tau\mathrm{LogVehicleLiquidity}_{k,t+\tau}
-=\alpha_k+\delta_t
-+\gamma_\tau\mathrm{VehicleShare}_{k,t}
-+\phi_\tau\mathrm{LogVehicleLiquidity}_{k,t}
-+\eta_{k,t+\tau}.
-\]
+- **Shared-provider decomposition:** estimate once on all linked pools, once after excluding pool pairs with material \(\mathrm{LPOverlap}_{p,p',t}\), and once after constructing the vehicle factor only from capital supplied by addresses absent from the focal pool.
+- **Demand-network evidence:** \(\theta_V>0\) and \(\omega>0\) after the shared-provider exclusions imply vehicle-linked commonality beyond market liquidity and common LP balance sheets.
+- **Supply-network evidence:** coefficients that disappear when shared providers are removed attribute commonality to intermediary balance sheets rather than a vehicle-demand multiplier.
 
-Nested columns add, by name, \(\mathrm{DirectAvailable}_{k,t,q}\), \(\mathrm{IndirectAvailable}_{k,t,q}\), \(\mathrm{DirectDepth}_{k,t,q}\), and \(\mathrm{DirectCostAdvantage}_{k,t,q}\). Common-support controls are only added where they are defined; missing values are not coded as zero. Candidate fixed effects and date fixed effects are used. Inference uses Driscoll-Kraay standard errors with a 30-day bandwidth and a calendar-month block bootstrap as a robustness check because \(|\mathcal K|=5\) is too small for ordinary candidate clustering.
+### Experiment D: gross and net LP rents
 
-**Empirical prediction:** \(\beta_\tau>0\) and \(\gamma_\tau>0\). The first coefficient tests whether liquidity concentration precedes gains in vehicle use; the second tests whether vehicle use precedes growth in vehicle-linked liquidity. The current level of each outcome is included, so these are changes beyond simple level persistence.
+In the provider-pool panel, estimate \(\mathrm{LPFeeYield}_{a,p,t}\), \(\mathrm{LVR}_{a,p,t}\), and \(\mathrm{LPNetReturn}_{a,p,t}\) as separate outcomes against lagged \(\mathrm{VehicleRouteShare}_{p,k,t-1}\), with address-pool and date fixed effects, lagged active capital, pair volatility, and fee tier held fixed.
 
-The pair-candidate coefficient \(\beta_L\) from RQ1 Experiment B is the route-level allocation counterpart: it asks whether the same candidate liquidity measure predicts choice while holding pair-date conditions fixed.
+- **Rent capture:** a positive vehicle-route-share coefficient for fee yield shows gross LP revenue; a positive coefficient for net return shows LPs retain the rent after adverse selection and gas.
+- **User capture:** RQ1's lower \(C^I\) measures trader benefit; lower user cost together with higher LP net return is a positive-sum liquidity multiplier.
+- **Centrality curse:** higher vehicle-route share raises fee yield and LVR but lowers or fails to raise net return; the vehicle attracts volume while competition or adverse selection dissipates LP rents.
 
-### Experiment B: commonality in vehicle-linked pool liquidity
+### Decision rule for RQ2
 
-The unit is pool-candidate-day \((p,k,t)\) for \(p\in\mathcal L_{k,t}\). Observations are weighted by \(1/m_p\), so a pool containing two candidates is not counted twice at full weight. The specification is
+Use the phrase **liquidity multiplier** only if vehicle use predicts future capital \((\gamma_\tau>0)\), the vehicle commonality factor survives market and shared-provider controls \((\theta_V,\omega>0)\), and LP supply responds in the predicted direction to outside wealth shocks \((\beta_Z>0)\). If only the reverse projection is significant, report liquidity selection rather than feedback. If commonality vanishes after provider-overlap removal, report a shared-intermediary capital channel rather than a vehicle-demand externality. Gross fee yield never answers who benefits without LVR and net return.
 
-\[
-\Delta_1\ln(\mathrm{TVL}_{p,t})
-=\alpha_{p,k}+\delta_{\mathrm{month}(t)}
-+\theta\mathrm{VehicleLiquidityFactor}_{p,k,t}
-+\psi\mathrm{MarketLiquidityFactor}_{p,t}
-+\omega\bigl(
-\mathrm{VehicleLiquidityFactor}_{p,k,t}
-\times\mathrm{VehicleShare}_{k,t-1}
-\bigr)+\varepsilon_{p,k,t}.
-\]
+**Potentially surprising result:** vehicle centrality can increase trader liquidity and gross LP fees while reducing LP net return, so the network grows even though the marginal provider does not capture the apparent rent.
 
-The vehicle and market factors are leave-one-out by construction. Full date fixed effects are not included because they would absorb the market factor; calendar- month fixed effects are used instead. Standard errors are two-way clustered by pool and date. Excluding two-candidate pools is a pre-specified robustness check.
+## RQ3. Does vehicle dominance exhibit hysteresis and abrupt displacement?
 
-**Empirical prediction:** \(\theta>0\) and \(\omega>0\). Pools linked to the same candidate should comove beyond the leave-one-out market factor, and that commonality should be stronger when the candidate is used more heavily as a vehicle.
+### Literature anchors
 
-### Evidence that answers RQ2
+| Anchor | Existing result or mechanism | Relationship to RQ3 |
+|---|---|---|
+| Krugman (1980) | Vehicle use is self-reinforcing, may persist after the original commercial advantage disappears, and can switch abruptly when declining volume raises cost | **Direct test:** condition on current all-in cost and liquidity, then test persistence and nonlinear displacement; **refute** abrupt-transition content if responses are smooth and reversible |
+| Dowd and Greenaway (1993) | Network externalities interact with direct switching costs such as learning, accounting, and requoting | **Narrow the mechanism:** algorithmic routing largely removes user learning and requoting costs, so residual persistence points toward liquidity-capital coordination, integration, or router constraints rather than household-style switching cost |
+| Gopinath and Stein (2021) | Complementarities between invoicing and safe-asset/banking demand can entrench a dominant currency; medium-of-exchange use is not the modeled margin | **Expand and delimit:** provide direct medium-of-exchange evidence without claiming to test their invoicing/banking model |
+| Somogyi (2026) | Current spread and price impact can make vehicle execution optimal | **Control benchmark:** hysteresis requires persistence after exact current route economics, not merely continued cost superiority |
 
-RQ2 receives coherent support only if liquidity predicts future use \((\beta_\tau>0)\), use predicts future liquidity \((\gamma_\tau>0)\), and at least one within-route or commonality mechanism is present \((\beta_L>0)\), \((\theta>0)\), or \((\omega>0)\). A one-way association is reported as one-way predictability, not feedback.
+### Experiment A: persistence conditional on current economics
 
-These panels do not by themselves identify a causal liquidity-supply effect. A causal extension would require a separately approved, candidate-specific LP shock such as a scheduled incentive start or termination, with treatment assignment, event notation, balance, and pretrends registered before estimation. No such shock is smuggled into the current design.
+For common-support pair-candidate-days, estimate exact future horizons \(\tau\in\{7,30,90\}\):
 
-Planned outputs: `liquidity_feedback.tex` and `liquidity_commonality.tex`.
+\[\mathrm{VehicleShare}_{i,o,k,t+\tau}=\alpha_{i,o,k}+\lambda_{i,o,t}+\rho_\tau\mathrm{VehicleShare}_{i,o,k,t}+\beta_\tau\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}+\gamma_\tau\mathrm{LPConc}_{k,t}+\chi_\tau\mathrm{CandidateStress}_{k,t}+\varepsilon_{i,o,k,t+\tau}.\]
 
-## RQ3. Persistence and displacement
+- **Primary evidence:** \(\rho_\tau>0\) and economically material after all-in cost, liquidity, availability, and stress controls; pair-date fixed effects compare candidates for the same endpoints and date.
+- **Hysteresis bar:** persistence alone is not called hysteresis. Hysteresis additionally requires incumbent status to predict future choice among observations matched tightly on current \(\Delta C^{D,\mathrm{all}}\), \(\mathrm{LPConc}\), availability, and stress, plus asymmetric displacement in Experiment B.
+- **Inference:** two-way clustering by pair-candidate and date; exact calendar horizons only.
 
-### Question
+### Experiment B: challenger-edge crossings and switching thresholds
 
-Does vehicle status persist after current route economics are controlled for, and when does a challenger replace the trailing incumbent? Candidate-specific adverse shocks are treated as one displacement channel, not a separate RQ.
+The incumbent \(k^\star\) uses only the 30 days ending at \(t-1\); the challenger \(h^\star\) is the nonincumbent with the lowest current all-in indirect cost. The primary outcome is \(\mathrm{VehicleSwitch}_{i,o,q,t,\tau}\), and the continuous companion outcome is the incumbent's future share change.
 
-The incumbent \(k^\star_{i,o,t}\) is selected using only the 30 calendar days ending at \(t-1\). The challenger \(h^\star_{i,o,q,t}\) is the best executable nonincumbent on day \(t\). These definitions prevent future information from entering the rankings.
+\[\mathrm{VehicleSwitch}_{i,o,q,t,\tau}=\alpha_{i,o}+\delta_t+f\bigl(\mathrm{ChallengerCostEdge}_{i,o,q,t}\bigr)+\kappa_L\bigl(\mathrm{LPConc}_{h^\star,t}-\mathrm{LPConc}_{k^\star,t}\bigr)+\kappa_S\mathrm{CandidateStress}_{k^\star,t}+\varepsilon_{i,o,t+\tau}.\]
 
-### Experiment A: persistence of pair-level candidate share
+- **Functional form:** report a continuous linear term, fixed bins with knots at 0, 25, 50, 100, and 200 basis points, and a local event study around the first crossing above zero that remains positive for three consecutive days; knots are fixed before estimation.
+- **Abrupt displacement evidence:** switching probability or incumbent share loss is flat near zero but rises sharply beyond an economically material challenger edge; event leads must be flat.
+- **Asymmetry evidence:** estimate the mirror sample after a switch; if the former incumbent requires a larger cost edge to regain share than the challenger required to win it, the path matters.
+- **Stress channel:** incumbent stress should raise switching and challenger stress should lower it; a placebo assigning the shock after the outcome window must be null.
 
-On common support, estimate
+### Decision rule for RQ3
 
-\[
-\mathrm{VehicleShare}_{i,o,k,t+\tau}
-=\alpha_{i,o,k}+\lambda_{i,o,t}
-+\rho_\tau\mathrm{VehicleShare}_{i,o,k,t}
-+\beta_\tau\Delta C^D_{i,o,k,q,t}
-+\gamma_\tau\mathrm{LPConc}_{k,t}
-+\varepsilon_{i,o,k,t+\tau}.
-\]
+| Finding | Answer |
+|---|---|
+| \(\rho_\tau>0\), matched incumbency remains predictive, and switching is threshold-like/asymmetric | Vehicle dominance exhibits hysteresis consistent with liquidity coordination and Krugman-style increasing returns despite low user-side switching cost |
+| \(\rho_\tau>0\) but switching responds smoothly and symmetrically | Vehicle status is persistent but the evidence does not establish hysteresis or catastrophic displacement |
+| Lagged status loses significance after current all-in cost and liquidity | Apparent persistence is explained by continuing economic superiority, supporting the current-cost channel rather than path dependence |
+| Candidate stress moves share before the event or only contemporaneously | Do not interpret stress as displacement; resolve anticipation, timestamping, or common-shock confounding |
 
-**Empirical prediction:** \(\rho_\tau>0\) at 7, 30, and 90 days. Persistence is stronger when \(\rho_\tau\) decays slowly and remains economically large after route cost and liquidity are controlled for. Pair-candidate and pair-date fixed effects are used, with two-way clustering by pair-candidate and date.
+**Potentially surprising result:** an incumbent can retain most route share while being measurably more expensive, then lose dominance abruptly after a small additional challenger advantage even though routers can switch without human learning or accounting costs.
 
-This is state dependence, not proof of structural switching costs. The paper must use the word persistence unless an exogenous source of historical status is added.
+## RQ4. Does liquidity-enhancing execution technology decentralize exchange or entrench the vehicle?
 
-### Experiment B: challenger advantage and candidate stress
+### Literature anchors
 
-For cells in which both the incumbent and challenger routes execute at \(q\), estimate a linear-probability model:
+| Anchor | Existing result or mechanism | Relationship to RQ4 |
+|---|---|---|
+| Hendershott, Jones, and Menkveld (2011) | Staggered NYSE autoquote provides an instrument for algorithmic trading; automation narrows spreads and reduces adverse selection for large stocks | **Empirical template and corroboration target:** test whether a trading technology improves execution, but add network topology as an outcome; acknowledge that the global V3 launch is weaker than their staggered instrument |
+| Chen and Duffie (2021) | Fragmentation lowers per-venue depth, while order splitting can improve allocation and information aggregation | **Competing theory:** improved aggregate execution need not imply less concentration or deeper bilateral markets |
+| Caparros, Chaudhary, and Klein (2024) | Lower gas costs instrument for more precise LP repositioning; concentration rises and small-trade slippage falls | **Expand:** move from within-pool concentration and slippage to direct-versus-vehicle route structure and candidate concentration |
+| Lehar and Parlour (2024) | Pool size and execution reflect fee revenue, volatility, liquidity-trader demand, and adverse selection | **Narrow:** use pre-V3 pair volatility to distinguish where concentrated liquidity should be most effective, then observe whether gains accrue to direct pools or vehicle spokes |
+| Bessembinder, Hao, and Zheng (2020) | A targeted liquidity-provision contract improves market quality beyond the treated venue | **Corroborate or refute strategic complementarity:** test whether technology-induced depth propagates across vehicle-linked pools rather than only reallocating liquidity |
 
-\[
-\begin{aligned}
-\mathrm{VehicleSwitch}_{i,o,q,t,\tau}
-=\;&\alpha_{i,o}+\delta_t
-+\kappa_{E,\tau}\mathrm{ChallengerCostEdge}_{i,o,q,t}\\
-&+\kappa_{I,\tau}\mathrm{CandidateStress}_{k^\star,t}
-+\kappa_{H,\tau}\mathrm{CandidateStress}_{h^\star,t}\\
-&+\kappa_{L,\tau}\bigl(
-\mathrm{LPConc}_{h^\star,t}-\mathrm{LPConc}_{k^\star,t}
-\bigr)
-+\kappa_{V,\tau}\mathrm{VehicleShare}_{i,o,k^\star,t}
-+\varepsilon_{i,o,t+\tau}.
-\end{aligned}
-\]
+### Experiment A: fixed-universe heterogeneous V3 event study
 
-**Empirical prediction:** \(\kappa_{E,\tau}>0\), \(\kappa_{I,\tau}>0\), \(\kappa_{H,\tau}<0\), \(\kappa_{L,\tau}>0\), and \(\kappa_{V,\tau}<0\). A challenger with better quoted execution or relatively more linked liquidity should be more likely to displace the incumbent. Stress to the incumbent should raise switching; stress to the challenger should lower it. A larger current incumbent share should protect the incumbent.
+- **Universe:** \(\mathcal P^{\mathrm{V3}}_q\) is selected only from the fixed 180-day pre-period and quoted throughout event months \(-12\) to \(+12\), independent of post-V3 activity.
+- **Treatments fixed before launch:** \(\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\) measures missing pre-V3 direct execution; \(\sigma^{\mathrm{pre}}_{i,o}\) measures pair volatility and therefore suitability for narrow concentrated-liquidity ranges.
+- **Outcomes:** estimate separately for \(D_{i,o,q,t}\), \(\mathrm{DirectDepth}_{i,o,q,t}\), \(\mathrm{AnyIndirectAvailable}_{i,o,q,t}\), \(\mathrm{IndirectRouteShare}_{i,o,t}\), and \(\mathrm{VehicleHHI}_{i,o,t}\); at pool level, estimate \(\mathrm{LiquidityConcentration}_{p,t,b}\).
 
-The companion continuous-outcome regression replaces \(\mathrm{VehicleSwitch}_{i,o,q,t,\tau}\) with \(\Delta_\tau\mathrm{VehicleShare}_{i,o,k^\star,t+\tau}\). Its expected signs for challenger edge and incumbent stress are negative. Pair and date fixed effects are used, with two-way clustering by ordered pair and date.
+\[Y_{i,o,t}=\alpha_{i,o}+\delta_t+\sum_{\mu\ne-1}\beta_\mu\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\mathbf{1}_{\{t\in\mu\}}+\sum_{\mu\ne-1}\gamma_\mu\sigma^{\mathrm{pre}}_{i,o}\mathbf{1}_{\{t\in\mu\}}+\sum_{\mu\ne-1}\theta_\mu\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\sigma^{\mathrm{pre}}_{i,o}\mathbf{1}_{\{t\in\mu\}}+\varepsilon_{i,o,t}.\]
 
-The challenger edge is continuous in the primary table. A secondary piecewise- linear specification uses fixed knots at 0, 25, 50, 100, and 200 basis points. The knots are approved before estimation and are not selected from observed switching results. A placebo regresses the share change ending at \(t-1\) on day-\(t\) candidate stress; its coefficient should be zero.
+- **Inference:** pair and date fixed effects; two-way clustering by ordered pair and calendar week; event month \(-1\) omitted.
+- **Diagnostics:** joint pretrend tests; placebo launch dates; fixed 12- and 24-month windows; balanced quote-coverage audit; V2-only, V3-only, and best-across-versions route construction shown separately; no failed fetch is coded as route unavailability.
+- **Capital-efficiency mechanism:** V3 should raise \(\mathrm{LiquidityConcentration}_{p,t,b}\) and executable depth most for lower-\(\sigma^{\mathrm{pre}}\) pairs if narrow ranges are the operative channel.
 
-### Evidence that answers RQ3
+### Experiment B: where the execution gain goes
 
-Persistence is supported by positive, slowly decaying \(\rho_\tau\). Displacement is supported by a positive challenger-edge coefficient, a positive incumbent- stress coefficient, and corresponding incumbent share losses. If lagged share does not survive current route controls, status is not empirically sticky. If challenger advantage or incumbent stress does not predict future switching, the proposed displacement channel is not supported. A nonzero placebo coefficient invalidates event-style interpretation until the pre-movement is resolved.
+Decompose each pair's post-V3 depth gain into its direct pool and the two pools on its best indirect route, using the same \(q\) and historical state. Then estimate the event design separately for direct depth, first vehicle-spoke depth, second vehicle-spoke depth, pair indirect share, and pair vehicle HHI.
 
-Planned outputs: `vehicle_persistence.tex`, `challenger_displacement.tex`, and `candidate_stress_rotation.tex`.
+- **Decentralization pattern:** direct depth and availability rise, \(\mathrm{IndirectRouteShare}\) falls, and \(\mathrm{VehicleHHI}\) falls or remains unchanged.
+- **Entrenchment pattern:** vehicle-spoke depth rises more than direct depth, and both \(\mathrm{IndirectRouteShare}\) and \(\mathrm{VehicleHHI}\) rise.
+- **Strategic-complementarity pattern:** both vehicle spokes deepen together and the gain survives excluding pools with shared LP addresses; this parallels off-venue spillovers in Bessembinder, Hao, and Zheng rather than simple capital migration.
+- **Reallocation pattern:** one spoke gains exactly as another loses and aggregate all-in cost does not improve; do not call this a liquidity expansion.
 
-## RQ4. Execution architecture
+### Decision rule for RQ4
 
-### Question
+RQ4 is answered by the joint execution-quality and topology response, not by a post-V3 slippage coefficient alone. Better execution with lower indirect share and lower vehicle HHI is decentralization. Better execution with higher indirect share and higher vehicle HHI is technological entrenchment. Better execution with unchanged topology is a capital-efficiency result without a vehicle-currency result. Differential pretrends, quote-coverage imbalance, or sensitivity to placebo dates block causal language; in that case the evidence is reported as heterogeneous event-time association.
 
-Did the introduction of Uniswap V3 change route opportunity and therefore vehicle reliance, especially for pairs whose direct markets were constrained before V3?
+**Potentially surprising result:** V3 can improve aggregate execution and direct-pool depth while simultaneously increasing vehicle concentration because the same technology is even more productive on low-volatility vehicle spokes.
 
-### Experiment: continuous-treatment V3 event study
+## RQ5. Does net settlement sever transactional intermediation from physical settlement and market-making capital?
 
-The fixed pair universe is \(\mathcal P^{\mathrm{V3}}_q\), selected only from the 180-day pre-period. Every pair is quoted each day through the event window, independent of post-V3 activity. A missing route after a successful data fetch is an unavailable route; a failed or incomplete fetch is missing data, not zero.
+### Literature anchors
 
-The continuous treatment is \(\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\). For each outcome listed below, estimate
+| Anchor | Existing result or mechanism | Relationship to RQ5 |
+|---|---|---|
+| Gopinath and Stein (2021) | Dominant-currency invoicing and safe-asset/banking demand reinforce each other; medium-of-exchange use is not explicitly modeled | **Expand and set a boundary condition:** test whether an asset remains the economic route intermediate when physical settlement demand collapses; this is not a refutation of their invoicing model |
+| Grossman and Miller (1988); Ho and Stoll (1981) | Intermediation requires finite risk-bearing and inventory capacity | **Support or refute a capital channel:** if netting reduces settlement movement but LP capital remains necessary, transactional intermediation is separable from physical inventory transfer but not from market-making capital |
+| Brunnermeier and Pedersen (2009) | Funding conditions and market liquidity reinforce each other | **Expand:** test whether lower settlement overhead changes vehicle turnover and LP supply without removing exposure to adverse selection or funding shocks |
+| Comerton-Forde et al. (2010) | Market-maker income and inventory shocks predict future liquidity | **Empirical anchor:** carry the LP wealth-shock design into the V4 event and test whether net settlement attenuates balance-sheet sensitivity |
+| Hendershott, Jones, and Menkveld (2011) | Trading technology can improve user liquidity while changing liquidity-provider revenue | **Rent-incidence anchor:** compare user all-in cost, gross LP fee yield, LVR, and net LP return after settlement technology changes |
 
-\[
-Y_{i,o,t}
-=\alpha_{i,o}+\delta_t
-+\sum_{\mu\ne-1}\beta_\mu
-\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}
-\mathbf{1}_{\{t\text{ is in event month }\mu\}}
-+\varepsilon_{i,o,t},
-\]
+### Accounting premise to test, not assume
 
-over event months \(-12\) through \(+12\), omitting month \(-1\). Here \(Y\) is estimated separately as:
+V4 flash accounting can reduce intermediate ERC-20 transfers and route gas, but it does not automatically lower the swap fee charged by either pool. An economic \(i\to k\to o\) route still executes both pool swaps, and both LP sets earn their applicable swap fees unless a particular pool or hook changes that rule. Netted intermediate balances therefore motivate an empirical test of physical movement and LP supply; they do not imply that the intermediate LP earns nothing.
 
-- \(D_{i,o,q,t}\), for direct-route availability;
-- \(\mathrm{DirectDepth}_{i,o,q,t}\), conditional on direct availability;
-- \(\mathrm{AnyIndirectAvailable}_{i,o,q,t}\), for indirect route opportunity;
-- \(\mathrm{IndirectRouteShare}_{i,o,t}\), conditional on positive realized pair volume.
+### Experiment A: receipt-audited V3/V4 gross-to-net comparison
 
-The compact difference-in-differences summary replaces the event-month terms with \(\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\times \mathrm{PostV3}_t\). Pair and calendar-date fixed effects are used. Standard errors are two-way clustered by ordered pair and calendar week.
+- **Classification order:** identify ordered endpoints, intermediate \(k\), both swap legs, and protocol version from calls and swap events before reading transfer logs.
+- **Sample:** route units in cells \(g\) matched on ordered pair, vehicle, UTC week, fixed route-size bin, and route direction; show full V3/V4 coverage before restricting to cells with both versions.
+- **Outcomes:** \(\mathrm{Transfer}_{r,k}\), \(M_{r,k}\), \(\mathrm{SettlementIntensity}_{r,k}\), indirect gas contribution \(C^{I,\mathrm{gas}}_{i,o,k,q,t}\), and all-in indirect cost \(C^I_{i,o,k,q,t}\).
 
-**Empirical prediction:** the post-V3 coefficients for \(D_{i,o,q,t}\) and \(\mathrm{DirectDepth}_{i,o,q,t}\) should be more positive for pairs with larger pre-V3 direct constraints if V3 deepens direct markets. The sign for \(\mathrm{IndirectRouteShare}_{i,o,t}\) is deliberately not imposed:
+\[Y_{r,k}=\alpha_g+\beta_{\mathrm{V4}}\mathrm{V4}_r+\varepsilon_{r,k}.\]
 
-- a negative effect, accompanied by stronger direct availability or depth, means direct-market deepening reduces vehicle reliance;
-- a positive effect, accompanied by stronger indirect availability, means V3 deepens vehicle-linked legs enough to increase vehicle reliance;
-- route-share movement without either opportunity-set mechanism is not interpreted as an architecture result.
+- **Primary signs:** \(\beta_{\mathrm{V4}}<0\) for transfer incidence, physical movement, settlement intensity, and gas contribution; the sign for all-in indirect cost should be negative if the settlement saving reaches users.
+- **Validation:** exact token contracts rather than tickers; wrapped/proxy resolution; exclusion of mint/burn addresses; route-attributed transfer matching; reconciliation of \(M_{r,k}\) to \(\mathrm{GrossLegVol}_{r,k}\); stratified manual receipt audit; one-route-per-transaction robustness.
+- **Hook separation:** the primary accounting sample separates pools whose hooks or dynamic fees alter swap cash flows from vanilla swap accounting; hook-bearing routes are reported by economic function rather than pooled into the V4 coefficient.
+- **Inference:** two-way clustering by comparison cell and week; report raw matched means and the fixed-effect coefficient.
 
-The pre-V3 \(\beta_\mu\) coefficients must be individually small and jointly indistinguishable from zero. Diagnostics also include placebo launch dates, alternative 12- and 24-month windows, the three \(q\) values, and a balanced quote coverage audit.
+### Experiment B: does netting expand economic vehicle use?
 
-### Evidence that answers RQ4
+Use a fixed pair universe and predetermined \(\mathrm{PreV4IndirectShare}_{i,o}\). Estimate an exposure event study around \(t^{\mathrm{V4}}_0\) for \(\mathrm{IndirectRouteShare}_{i,o,t}\), \(\mathrm{VehicleHHI}_{i,o,t}\), and the cheapest \(\Delta C^{D,\mathrm{all}}\):
 
-RQ4 is answered by the event-time difference between weak and strong pre-V3 direct markets and by the accompanying route-opportunity channel. It is not answered by a simple before-after mean. Detectable differential pretrends, missing-data imbalance, or a route-share shift without a direct or indirect opportunity change blocks causal language. Even with clean pretrends, the interpretation is a differential V3 architecture effect, not a claim that all market changes at the launch date were caused by V3.
+\[Y_{i,o,t}=\alpha_{i,o}+\delta_t+\sum_{\mu\ne-1}\beta_\mu\mathrm{PreV4IndirectShare}_{i,o}\mathbf{1}_{\{t\in\mu\}}+\varepsilon_{i,o,t}.\]
 
-Planned outputs: `v3_execution_architecture.tex` and `v3_execution_architecture_event_study.pdf`.
+- **Heterogeneity:** estimate separately by fixed route-size bin because gas savings are a larger fraction of small trades; show V4 availability and \(\mathrm{V4RouteShare}_g\) so treatment intensity is not inferred from the calendar alone.
+- **Expansion channel:** physical settlement and gas fall while indirect share or vehicle HHI rises, especially for smaller routes.
+- **Pure virtualization:** physical settlement falls but route shares and all-in cost do not move.
+- **Contraction channel:** physical settlement falls and indirect route use also falls, consistent with V4 making direct pools relatively more attractive or changing LP allocation.
+- **Identification limit:** activation is a global event and actual pool migration is endogenous; without a valid instrument, the pair event study supports a differential exposure interpretation, not an unconditional causal V4 claim.
 
-## RQ5. Settlement netting
+### Experiment C: does netting encourage or discourage liquidity provision?
 
-### Question
+The unit is pool-candidate-day. Treatment intensity is predetermined \(\mathrm{VehicleRouteExposure}^{\mathrm{pre}}_{p,k}\), and the event coefficient is its interaction with \(\mathrm{PostV4}_t\). Estimate separate outcomes for total active capital \(\sum_aL_{a,p,t}\), net LP flow \(\sum_aF^{\mathrm{LP}}_{a,p,t}\), \(\mathrm{LPFeeYield}_{a,p,t}\), \(\mathrm{LVR}_{a,p,t}\), \(\mathrm{LPNetReturn}_{a,p,t}\), and \(\mathrm{VehicleTurnover}_{k,t}\), with pool and date fixed effects and event-time leads.
 
-Can a token retain its economic role as the intermediate in an \(i\to k\to o\) route while settlement architecture reduces observable physical transfer of that token?
+\[Y_{p,k,t}=\alpha_{p,k}+\delta_t+\beta_{\mathrm{LP}}\bigl(\mathrm{VehicleRouteExposure}^{\mathrm{pre}}_{p,k}\times\mathrm{PostV4}_t\bigr)+\varepsilon_{p,k,t}.\]
 
-### Experiment: receipt-audited matched V3/V4 route comparison
+- **Encouragement:** exposed pools receive positive net flow or capital, fee yield/net return do not deteriorate, and vehicle turnover rises; lower settlement overhead expands route demand enough to attract supply.
+- **Discouragement:** exposed pools lose capital or net return despite stable or rising vehicle volume; netting raises capital efficiency or competition so fewer LP dollars are needed, or adverse selection dominates fee gains.
+- **No LP effect:** physical movement collapses while LP capital, fee yield, and route use remain stable; settlement balances were not the economically relevant source of LP demand.
+- **Capital remains binding:** the RQ2 outside-wealth-shock coefficient remains strong after V4 even though settlement intensity falls; net settlement severs token movement but not market-making balance-sheet dependence.
 
-Route classification is constructed from swap execution before the transfer outcome is measured. The full comparison universe reports \(|\mathcal R^3_g|\), \(|\mathcal R^4_g|\), and \(\mathrm{V4RouteShare}_g\) for cells \(g\) defined by ordered pair, vehicle, UTC week, and a pre-specified route-size bin. This establishes the coverage and economic presence of V4 vehicle routes without requiring both versions to appear in every cell.
+### Decision rule for RQ5
 
-The regression sample then restricts to matched cells with \(|\mathcal R^3_g|>0\) and \(|\mathcal R^4_g|>0\):
+RQ5 has three separable answers. Experiment A establishes whether economic vehicle use can occur with less physical token movement. Experiment B establishes whether netting expands or contracts route intermediation. Experiment C establishes whether LP capital and rents remain tied to that intermediation. Do not collapse these into a single transfer-incidence result, and do not infer lower LP fees from netting.
 
-\[
-\mathrm{Transfer}_{r,k}
-=\alpha_g+\beta_{\mathrm{V4}}\mathrm{V4}_r
-+\varepsilon_{r,k}.
-\]
+**Potentially surprising result:** V4 vehicle volume and both pools' fee revenue can rise while observable intermediate-token movement collapses, demonstrating that transactional centrality, physical settlement, and market-making capital are distinct margins.
 
-Cell fixed effects compare V3 and V4 route units with the same pair, vehicle, week, and size bin. Standard errors are two-way clustered by comparison cell and week. The table reports both the regression coefficient and raw version-specific transfer incidence.
+## Data acquisition and durable implementation after approval
 
-**Empirical prediction:** \(\beta_{\mathrm{V4}}<0\), with a material percentage- point reduction relative to V3 transfer incidence. The route counts and \(\mathrm{V4RouteShare}_g\) must also show that the result is not driven by a negligible set of V4 routes.
-
-Receipt validity gates are part of the experiment:
-
-- the ordered endpoints and intermediate contract must agree across route reconstruction, swap logs, and the transfer parser;
-- proxy and wrapped-token contracts must be resolved to exact contract addresses, not ticker strings;
-- every parser disagreement and a stratified sample of transfer and no-transfer receipts must be manually audited; and
-- conclusions must survive alternative pre-specified size bins and a one-route- per-transaction restriction.
-
-### Evidence that answers RQ5
-
-RQ5 is supported when economically classified V4 \(i\to k\to o\) routes have substantially lower intermediate-token transfer incidence within matched cells, while the full comparison universe shows nontrivial V4 route use. The claim fails if the difference disappears after receipt validation or matching, if route and transfer classification are not independent, or if V4 route coverage is too thin to support the comparison.
-
-This experiment identifies a settlement-implementation difference conditional on vehicle routing. It does not show that V4 caused a token to become a vehicle or increased vehicle adoption.
-
-Planned output: `v4_settlement_decoupling.tex`.
-
-## Notation added for this review
-
-The notation registry now includes, but does not yet materialize, the following proposed measurements:
-
-- pair route outcomes: \(\mathrm{IndirectRouteShare}_{i,o,t}\) and \(\mathrm{VehicleShare}_{i,o,k,t}\);
-- pair quote measures: \(\mathrm{AnyIndirectAvailable}_{i,o,q,t}\), \(\mathrm{DirectDepth}_{i,o,q,t}\), and \(\mathrm{IndirectDepth}_{i,o,k,q,t}\);
-- liquidity factors: \(\mathrm{VehicleLiquidityFactor}_{p,k,t}\) and \(\mathrm{MarketLiquidityFactor}_{p,t}\);
-- displacement objects: \(k^\star_{i,o,t}\), \(h^\star_{i,o,q,t}\), \(\mathrm{CandidateStress}_{k,t}\), \(\mathrm{Incumbent}_{i,o,k,t}\), \(\mathrm{ChallengerCostEdge}_{i,o,q,t}\), and \(\mathrm{VehicleSwitch}_{i,o,q,t,\tau}\);
-- architecture objects: \(t^{\mathrm{V3}}_0\), \(\mathcal T^{\mathrm{V3}}_{\mathrm{pre}}\), \(\mathcal P^{\mathrm{V3}}_q\), \(\mathrm{DirectConstraint}^{\mathrm{pre}}_{i,o,q}\), and \(\mathrm{PostV3}_t\); and
-- settlement objects: \(\mathcal R^3_g\), \(\mathcal R^4_g\), \(\mathrm{Transfer}_{r,k}\), \(\mathrm{V4}_r\), and \(\mathrm{V4RouteShare}_g\).
-
-They are flagged outside the current wide observations table so this review does not silently trigger data construction.
+| RQ | Required acquisition or reconstruction | Durable artifact after approval |
+|---|---|---|
+| RQ1 | Historical pool state, direct and via-\(k\) quote replay at fixed and observed sizes, route gas usage, block gas prices, token prices, and deterministic cost decomposition | Language-native route-cost panel plus TeX/PDF frontier and route-choice exhibits |
+| RQ2 | V3 NFT/position events, position ownership/controller history, pool states, fee growth, tick paths, transaction gas, independent token returns, and provider portfolios | Language-native address-pool-day panel plus TeX/PDF multiplier, shock, commonality, and rent exhibits |
+| RQ3 | Pair-candidate route shares, all-in incumbent/challenger costs, exact horizons, candidate prices, and stress events | Language-native incumbent-challenger event panel plus TeX/PDF persistence and displacement exhibits |
+| RQ4 | Balanced pre/post V2 and V3 pool states, fixed pair universe, endpoint prices, direct and spoke quote replay, and pool liquidity distributions | Language-native architecture panel plus TeX/PDF event-study and topology exhibits |
+| RQ5 | V4 deployment metadata, calls, swap events, ERC-20 transfer receipts, V3 matched routes, V4 pool states, gas, LP positions, fees, and V4 availability | Language-native route-receipt and pool-event panels plus TeX/PDF settlement, adoption, and LP-capital exhibits |
 
 ## Review decisions before execution
 
-- [ ] Approve the five RQs and the use of empirical predictions instead of separately numbered hypotheses.
-- [ ] Approve \(q=\$10{,}000\) as primary and \(\$1{,}000/\$100{,}000\) as robustness notionals.
-- [ ] Approve the RQ2 horizons \(1/7/30\) and RQ3 horizons \(7/30/90\).
-- [ ] Approve candidate-specific standardized stress as primary, with WETH-only stress retained as a special-case robustness test.
-- [ ] Approve the fixed challenger-edge knots \(0/25/50/100/200\) basis points.
-- [ ] Approve the fixed V3 pre-period pair rule, event window, and bounded causal language.
-- [ ] Decide whether RQ5 belongs in the main paper or is retained as an empirical architecture extension.
+- [ ] Approve the five revised RQs and their ordering.
+- [ ] Approve the distinction between quote-output cost and all-in route cost, including the fee/price-impact/gas audit decomposition.
+- [ ] Approve the RQ1 fixed notionals and use of observed transaction size for route-level validation.
+- [ ] Approve the RQ2 provider-controller look-through rule, outside-token shift-share shock, and fee/LVR/net-return decomposition.
+- [ ] Approve RQ3 horizons \(7/30/90\), the three-day persistent edge crossing, and fixed challenger-edge knots \(0/25/50/100/200\) basis points.
+- [ ] Approve the bounded interpretation of the global V3 and V4 event studies; neither is presented as equivalent in strength to a staggered instrument or regression discontinuity.
+- [ ] Approve RQ5 as a main RQ rather than an extension; its LP-capital experiment is the strongest bridge from V4 mechanics to traditional market-making theory.
 
 ## Execution hold
 
-Do not run or modify the empirical experiment scripts, rebuild result tables, or rewrite result prose until the RQs, primary specifications, and review decisions above are approved. After approval, each panel is constructed by a durable script, intermediate data use language-native binary formats, and paper outputs are TeX and PDF only. No CSV output is generated.
+Do not run or modify empirical experiment scripts, build result tables, or write result prose until the RQs, measurements, and primary specifications above are approved. Rendering the notation registry for review is permitted and does not count as running an experiment.
