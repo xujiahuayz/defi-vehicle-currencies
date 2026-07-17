@@ -71,6 +71,15 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Indices",
+        notation=r"$\tau$",
+        unit="Days",
+        definition=(
+            r"Positive calendar-day horizon in dynamic specifications; the empirical panels "
+            r"use $\tau\in\{1,7,14,30\}$."
+        ),
+    ),
+    NotationDefinition(
+        group="Indices",
         notation=r"$q$",
         unit="USD",
         definition=r"Input quote notional. Un-suffixed route-cost columns use $q=\$10{,}000$.",
@@ -206,7 +215,17 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         group="Route-cost quote objects",
         notation=r"$\mathcal{P}_{k,t,q}$",
         unit="Set of token pairs",
-        definition=r"Ordered endpoint pairs eligible for $k$ and quoted on day $t$ at notional $q$.",
+        definition=(
+            r"Quote-universe pairs for candidate $k$: distinct ordered source-to-sink pairs "
+            r"among day $t$'s 200 largest clean reconstructed pairs by realized USD volume, "
+            r"where clean means route class \texttt{single} or \texttt{coherent}, "
+            r"$k\notin\{i,j\}$, and each of $i$, $j$, and $k$ has a valid day-price "
+            r"estimate. A valid estimate requires at least three finite token-side "
+            r"USD-per-token observations in $(0,\$1{,}000{,}000)$ and equals their "
+            r"realized-USD-volume-weighted median. Each pair is submitted to the direct "
+            r"and via-$k$ quote engines at input $q$; membership does not require either "
+            r"quote to execute."
+        ),
     ),
     NotationDefinition(
         group="Route-cost quote objects",
@@ -289,12 +308,12 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         ),
     ),
     NotationDefinition(
-        group="Settlement objects and operators",
-        notation=r"$\Delta_{7}$",
-        unit="7 days",
+        group="Dynamic operators",
+        notation=r"$\Delta_{\tau}$",
+        unit="",
         definition=(
-            r"Seven-day forward change in any daily variable $X_t$: "
-            r"$\Delta_7 X_t=X_{t+7}-X_t$."
+            r"Change in a daily variable over the $\tau$ days ending at $t$: "
+            r"$\Delta_\tau X_t=X_t-X_{t-\tau}$."
         ),
     ),
 )
@@ -701,23 +720,16 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Stress and dynamic variables",
-        name="Future vehicle share, seven days",
-        column="future_bridge_share_t7",
-        notation=r"$\mathrm{VehicleShare}_{k,t+7}$",
-        formula="",
-        unit="Fraction (0--1)",
-        construction=r"Vehicle share for token $k$ seven calendar days after day $t$.",
-        source="constructed from observations table",
-        used_for="Dynamic predictability regressions.",
-    ),
-    VariableSpec(
-        group="Stress and dynamic variables",
-        name="Change in vehicle share, seven days",
+        name="Change in vehicle share",
         column="delta_bridge_share_t7",
-        notation=r"$\Delta_{7}\mathrm{VehicleShare}_{k,t}$",
-        formula=r"$\mathrm{VehicleShare}_{k,t+7}-\mathrm{VehicleShare}_{k,t}$",
+        notation=r"$\Delta_{\tau}\mathrm{VehicleShare}_{k,t}$",
+        formula=r"$\mathrm{VehicleShare}_{k,t}-\mathrm{VehicleShare}_{k,t-\tau}$",
         unit="Fraction points",
-        construction=r"Seven-day forward change for vehicle $k$, measured from day $t$.",
+        construction=(
+            r"$\tau$-day change for vehicle $k$ ending on day $t$. The displayed data column "
+            r"is the $\tau=7$ instance; the observations table also constructs "
+            r"$\tau\in\{1,14,30\}$."
+        ),
         source="constructed from observations table",
         used_for="Persistence and displacement tests.",
     ),

@@ -300,10 +300,6 @@ def build_table_liquidity_stickiness() -> None:
         "table_04_liquidity_stickiness",
         "Liquidity concentration and persistence of vehicle use.",
         "tab:liquidity-stickiness",
-        note=(
-            "The formation rows regress seven-day-ahead BridgeShare on vehicle-linked LP "
-            "concentration. The AR(1) rows estimate daily persistence by token."
-        ),
     )
 
 

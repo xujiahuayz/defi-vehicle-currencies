@@ -37,6 +37,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from ddvc.analysis.dynamics import value_at_day_offset  # noqa: E402
 from ddvc.metrics import CLEAN_ROUTE_CLASSES, _routes  # noqa: E402
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
 
@@ -269,7 +270,7 @@ def liquidity_formation_tests(bridge: pd.DataFrame, lp: pd.DataFrame) -> pd.Data
     d = bridge[["date", "token", "BridgeShare"]].copy()
     d["date"] = pd.to_datetime(d["date"])
     d = d.sort_values(["token", "date"])
-    d["BridgeShare_fwd7"] = d.groupby("token")["BridgeShare"].shift(-7)
+    d["BridgeShare_fwd7"] = value_at_day_offset(d, "BridgeShare", 7)
 
     l = lp[["date", "token", "lp_concentration_share", "total_lp_liquidity_usd"]].copy()
     l["date"] = pd.to_datetime(l["date"])
@@ -279,7 +280,7 @@ def liquidity_formation_tests(bridge: pd.DataFrame, lp: pd.DataFrame) -> pd.Data
     rows.append(_ols_y_on_x(
         x["BridgeShare_fwd7"].to_numpy(),
         x["lp_concentration_share"].to_numpy(),
-        "P2 raw: future BridgeShare on LP concentration",
+        "P2 raw: VehicleShare on lagged LP concentration (7 days)",
     ).__dict__)
 
     # Within-token version: asks whether a token's own liquidity concentration
@@ -289,7 +290,7 @@ def liquidity_formation_tests(bridge: pd.DataFrame, lp: pd.DataFrame) -> pd.Data
     rows.append(_ols_y_on_x(
         y.to_numpy(),
         z.to_numpy(),
-        "P2 within-token: future BridgeShare on LP concentration",
+        "P2 within-token: VehicleShare on lagged LP concentration (7 days)",
     ).__dict__)
 
     out = pd.DataFrame(rows)
@@ -301,7 +302,7 @@ def persistence_tests(bridge: pd.DataFrame) -> pd.DataFrame:
     d = bridge[["date", "token", "BridgeShare"]].copy()
     d["date"] = pd.to_datetime(d["date"])
     d = d.sort_values(["token", "date"])
-    d["lag1"] = d.groupby("token")["BridgeShare"].shift(1)
+    d["lag1"] = value_at_day_offset(d, "BridgeShare", -1)
     d = d.dropna()
     rows = []
     for tok, g in d.groupby("token"):

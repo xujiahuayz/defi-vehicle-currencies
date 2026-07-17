@@ -2,8 +2,8 @@
 """V3 LP repositioning tests for vehicle-currency liquidity feedback.
 
 This is a mechanism check for P2. It builds token-day measures of V3 mints and
-burns in vehicle-linked pools and asks whether near-active net minting predicts
-future BridgeShare. It uses existing raw mints/burns plus daily pool ticks; it
+burns in vehicle-linked pools and asks whether lagged near-active net minting
+predicts VehicleShare. It uses existing raw mints/burns plus daily pool ticks; it
 does not refetch data.
 """
 from __future__ import annotations
@@ -17,6 +17,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy import stats
+
+from ddvc.analysis.dynamics import value_at_day_offset
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -217,14 +219,16 @@ def run() -> pd.DataFrame:
         d[f"{col}_share"] = (d[col] / denom).clip(lower=-5, upper=5)
     rows = []
     for horizon in [1, 7, 14, 30]:
-        d[f"BridgeShare_t{horizon}"] = d.groupby("token")["BridgeShare"].shift(-horizon)
+        d[f"BridgeShare_t{horizon}"] = value_at_day_offset(
+            d, "BridgeShare", horizon
+        )
         y_raw = d[f"BridgeShare_t{horizon}"]
         for var in ["net_reposition_usd_share", "active_net_reposition_usd_share", "near_net_reposition_usd_share", "near_gross_reposition_usd_share"]:
             y = _demean_two(y_raw, d["token"], d["date"])
             x = _demean_two(d[var], d["token"], d["date"])
             n, clusters, beta, se, t, p = _cluster_ols(y, x, d["date"])
             rows.append({
-                "Horizon": f"t+{horizon}",
+                "Horizon (days)": horizon,
                 "Regressor": var.replace("_usd_share", "").replace("_", " "),
                 "N": _int(n),
                 "Date clusters": _int(clusters),
@@ -238,10 +242,10 @@ def run() -> pd.DataFrame:
     _write_table(
         out,
         "table_r13_lp_repositioning",
-        "LP repositioning and future vehicle use.",
+        "LP repositioning and subsequent vehicle use.",
         "tab:lp-repositioning",
         note=(
-            "Regressions predict future BridgeShare from V3 mints/burns in vehicle-linked "
+            "Regressions predict VehicleShare from lagged V3 mints/burns in vehicle-linked "
             "pools, scaled by vehicle-linked LP liquidity. Active ranges contain the daily "
             "pool tick; near ranges also have width no more than 20 tick spacings. "
             "Specifications include token and date fixed effects and cluster by date."

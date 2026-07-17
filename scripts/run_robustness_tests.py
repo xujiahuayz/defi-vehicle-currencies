@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from ddvc.analysis.dynamics import value_at_day_offset
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 DATA = ROOT / "data"
@@ -135,7 +137,7 @@ def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for horizon in [1, 7, 14, 30]:
         d = base.sort_values(["token", "date"]).copy()
-        d["y"] = d.groupby("token")["BridgeShare"].shift(-horizon)
+        d["y"] = value_at_day_offset(d, "BridgeShare", horizon)
         d = d.dropna(subset=["y", "lp_concentration_share"])
         specs = {
             "No FE": (d["y"], d["lp_concentration_share"]),
@@ -148,7 +150,7 @@ def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
         for spec, (y, x) in specs.items():
             n, clusters, beta, se, t, p = _cluster_ols(y, x, d["date"])
             rows.append({
-                "Horizon": f"t+{horizon}",
+                "Horizon (days)": horizon,
                 "Specification": spec,
                 "N": _int(n),
                 "Clusters": _int(clusters),
@@ -164,7 +166,7 @@ def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
         "Liquidity-feedback robustness across horizons and fixed effects.",
         "tab:liquidity-robustness",
         note=(
-            "Outcome is future BridgeShare. The regressor is vehicle-linked LP concentration. "
+            "Outcome is VehicleShare. The regressor is lagged vehicle-linked LP concentration. "
             "Inference is clustered by date."
         ),
     )

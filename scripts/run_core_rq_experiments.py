@@ -28,6 +28,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from ddvc.analysis.dynamics import value_at_day_offset
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 DATA = ROOT / "data"
@@ -276,10 +278,15 @@ def core_token_day_panel() -> pd.DataFrame:
     d = d.sort_values(["token", "date"])
     d["log_vehicle_linked_liquidity"] = np.log1p(d["total_lp_liquidity_usd"])
     for h in [1, 7, 14, 30]:
-        d[f"future_BridgeShare_t{h}"] = d.groupby("token")["BridgeShare"].shift(-h)
-        d[f"future_LPConcentration_t{h}"] = d.groupby("token")["lp_concentration_share"].shift(-h)
-        d[f"future_log_liquidity_t{h}"] = d.groupby("token")["log_vehicle_linked_liquidity"].shift(-h)
-        d[f"delta_BridgeShare_t{h}"] = d[f"future_BridgeShare_t{h}"] - d["BridgeShare"]
+        d[f"lag_BridgeShare_t{h}"] = value_at_day_offset(d, "BridgeShare", -h)
+        d[f"future_BridgeShare_t{h}"] = value_at_day_offset(d, "BridgeShare", h)
+        d[f"future_LPConcentration_t{h}"] = value_at_day_offset(
+            d, "lp_concentration_share", h
+        )
+        d[f"future_log_liquidity_t{h}"] = value_at_day_offset(
+            d, "log_vehicle_linked_liquidity", h
+        )
+        d[f"delta_BridgeShare_t{h}"] = d["BridgeShare"] - d[f"lag_BridgeShare_t{h}"]
     out_path = DATA / "empirical" / "core_token_day_panel.parquet"
     d.to_parquet(out_path, index=False)
     return d
@@ -288,10 +295,10 @@ def core_token_day_panel() -> pd.DataFrame:
 def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
     rows = []
     specs = [
-        ("RQ1/RQ2/RQ3", "future_BridgeShare_t7", "future VehicleShare, t+7"),
-        ("RQ1/RQ2/RQ3", "future_BridgeShare_t30", "future VehicleShare, t+30"),
-        ("RQ2", "future_LPConcentration_t7", "future LPConcentration, t+7"),
-        ("RQ2", "future_log_liquidity_t7", "future log VehicleLinkedLiquidity, t+7"),
+        ("RQ1/RQ2/RQ3", "future_BridgeShare_t7", "VehicleShare", 7),
+        ("RQ1/RQ2/RQ3", "future_BridgeShare_t30", "VehicleShare", 30),
+        ("RQ2", "future_LPConcentration_t7", "LPConcentration", 7),
+        ("RQ2", "future_log_liquidity_t7", "log VehicleLinkedLiquidity", 7),
     ]
     x_names = [
         "BridgeShare",
@@ -301,7 +308,7 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
         "vehicle_available_share",
         "lp_concentration_share",
     ]
-    for rq, y_name, label in specs:
+    for rq, y_name, label, horizon in specs:
         dd = panel.copy()
         y = _twoway_demean(dd[y_name], dd["token"], dd["date"])
         x = pd.DataFrame({name: _twoway_demean(dd[name], dd["token"], dd["date"]) for name in x_names})
@@ -311,6 +318,7 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
                 {
                     "RQ": rq,
                     "Outcome": label,
+                    "Horizon (days)": horizon,
                     "Regressor": name,
                     "N": _int(n),
                     "Date clusters": _int(clusters),
@@ -373,9 +381,10 @@ def persistence_displacement_thresholds(panel: pd.DataFrame) -> pd.DataFrame:
             {
                 "Challenger cost-edge bin": str(label),
                 "Incumbent days": _int(len(y)),
+                "Horizon (days)": 30,
                 "Mean challenger cost edge (fraction)": _num(g["challenger_cost_edge"].mean(), 4),
                 "Median challenger cost edge (fraction)": _num(g["challenger_cost_edge"].median(), 4),
-                "Mean incumbent share change t+30 (pp)": _num(y.mean(), 2),
+                "Mean incumbent VehicleShare change (pp)": _num(y.mean(), 2),
                 "t": _num(t, 2),
                 "p": _p(p),
                 "Interpretation": "incumbent displacement threshold screen",
@@ -786,11 +795,22 @@ def actual_route_choice_tests(actual: pd.DataFrame) -> pd.DataFrame:
 
 
 def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.DataFrame:
-    def _core_row(outcome: str, regressor: str, panel_name: str, units: str) -> dict[str, object]:
-        r = core[(core["Outcome"].eq(outcome)) & (core["Regressor"].eq(regressor))].iloc[0]
+    def _core_row(
+        outcome: str,
+        horizon: int,
+        regressor: str,
+        panel_name: str,
+        units: str,
+    ) -> dict[str, object]:
+        r = core[
+            core["Outcome"].eq(outcome)
+            & core["Horizon (days)"].eq(horizon)
+            & core["Regressor"].eq(regressor)
+        ].iloc[0]
         return {
             "Panel": panel_name,
             "Outcome": outcome,
+            "Horizon (days)": horizon,
             "Regressor": regressor,
             "N": r["N"],
             "Date clusters": r["Date clusters"],
@@ -803,18 +823,25 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
         }
 
     rows: list[dict[str, object]] = [
-        _core_row("future VehicleShare, t+7", "lp_concentration_share", "A. Stock feedback", "share"),
-        _core_row("future LPConcentration, t+7", "BridgeShare", "A. Stock feedback", "share"),
-        _core_row("future log VehicleLinkedLiquidity, t+7", "BridgeShare", "A. Stock feedback", "log points"),
+        _core_row("VehicleShare", 7, "lp_concentration_share", "A. Stock feedback", "share"),
+        _core_row("LPConcentration", 7, "BridgeShare", "A. Stock feedback", "share"),
+        _core_row(
+            "log VehicleLinkedLiquidity",
+            7,
+            "BridgeShare",
+            "A. Stock feedback",
+            "log points",
+        ),
     ]
 
     d = panel.sort_values(["token", "date"]).copy()
     d["delta_lp_concentration_t30_pp"] = 100.0 * (
-        d.groupby("token")["lp_concentration_share"].shift(-30) - d["lp_concentration_share"]
+        value_at_day_offset(d, "lp_concentration_share", 30) - d["lp_concentration_share"]
     )
-    d["delta_log_liquidity_t30"] = d.groupby("token")["log_vehicle_linked_liquidity"].shift(-30) - d[
-        "log_vehicle_linked_liquidity"
-    ]
+    d["delta_log_liquidity_t30"] = (
+        value_at_day_offset(d, "log_vehicle_linked_liquidity", 30)
+        - d["log_vehicle_linked_liquidity"]
+    )
     x_names = [
         "BridgeShare",
         "direct_cost_advantage_median",
@@ -822,8 +849,8 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
         "no_direct_vehicle_available_share",
     ]
     specs = [
-        ("30-day change in LPConcentration", "delta_lp_concentration_t30_pp", "pp"),
-        ("30-day change in log VehicleLinkedLiquidity", "delta_log_liquidity_t30", "log points"),
+        ("Change in LPConcentration", "delta_lp_concentration_t30_pp", "pp"),
+        ("Change in log VehicleLinkedLiquidity", "delta_log_liquidity_t30", "log points"),
     ]
     for outcome, y_name, units in specs:
         y = _twoway_demean(d[y_name], d["token"], d["date"])
@@ -834,6 +861,7 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
                 {
                     "Panel": "B. LP stock change",
                     "Outcome": outcome,
+                    "Horizon (days)": 30,
                     "Regressor": name,
                     "N": _int(n),
                     "Date clusters": _int(clusters),
@@ -919,9 +947,9 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
 
     rows = []
     for outcome, y_name, units in [
-        ("Challenger share change t+30", "challenger_delta_t30_pp", "pp"),
-        ("Incumbent share change t+30", "incumbent_delta_t30_pp", "pp"),
-        ("Pr(challenger beats incumbent t+30)", "challenger_beats_incumbent_t30_pp", "pp"),
+        ("Challenger VehicleShare change", "challenger_delta_t30_pp", "pp"),
+        ("Incumbent VehicleShare change", "incumbent_delta_t30_pp", "pp"),
+        ("Challenger exceeds incumbent", "challenger_beats_incumbent_t30_pp", "pp"),
     ]:
         y = _twoway_demean(base[y_name], base["pair"], base["date"])
         x = pd.DataFrame(
@@ -936,6 +964,7 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
             {
                 "Panel": "A. Pair-level regression",
                 "Outcome": outcome,
+                "Horizon (days)": 30,
                 "Challenger edge bin": "",
                 "N": _int(n),
                 "Date clusters": _int(clusters),
@@ -971,6 +1000,7 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
             {
                 "Panel": "B. Edge-bin means",
                 "Outcome": "Challenger / incumbent displacement",
+                "Horizon (days)": 30,
                 "Challenger edge bin": str(label),
                 "N": _int(rbin["N"]),
                 "Date clusters": "",
@@ -1226,25 +1256,25 @@ def build_rq_registry(
             "Exact evidence": (
                 f"actual_route_choice: DirectCostAdvantage is negative for actual vehicle share, so stronger indirect-route cost performance is associated with greater vehicle use ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='direct_cost_advantage')}); "
                 f"indirect-route availability is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_available')}); indirect-route depth is positive ({_lookup(actual_choice, Outcome='Actual vehicle share', Regressor='vehicle_depth')}). "
-                f"core_panel_regressions: DirectCostAdvantage predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='direct_cost_advantage_median')}); indirect-route availability predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='vehicle_available_share')}); LPConcentration predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')})."
+                f"core_panel_regressions: lagged DirectCostAdvantage predicts VehicleShare at the 7-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='direct_cost_advantage_median', **{'Horizon (days)': '7'})}); lagged indirect-route availability predicts VehicleShare ({_lookup(core, Outcome='VehicleShare', Regressor='vehicle_available_share', **{'Horizon (days)': '7'})}); lagged LPConcentration predicts VehicleShare ({_lookup(core, Outcome='VehicleShare', Regressor='lp_concentration_share', **{'Horizon (days)': '7'})})."
             ),
         },
         {
             "RQ": "RQ2. Liquidity provision",
             "Empirical answer": "Relative LP concentration and vehicle use reinforce each other, but absolute candidate-linked TVL does not: higher current vehicle use predicts lower absolute TVL at seven days, while stronger indirect-route economics predict 30-day TVL growth.",
             "Exact evidence": (
-                f"core_panel_regressions/lp_allocation_feedback: LPConcentration predicts future VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+7', Regressor='lp_concentration_share')}); "
-                f"VehicleShare predicts higher future LPConcentration ({_lookup(core, Outcome='future LPConcentration, t+7', Regressor='BridgeShare')}) but lower future log VehicleLinkedLiquidity ({_lookup(core, Outcome='future log VehicleLinkedLiquidity, t+7', Regressor='BridgeShare')}). "
-                f"lp_allocation_feedback: indirect-route availability predicts the 30-day change in log VehicleLinkedLiquidity ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='vehicle_available_share')}); DirectCostAdvantage also predicts that change ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='30-day change in log VehicleLinkedLiquidity', Regressor='direct_cost_advantage_median')})."
+                f"core_panel_regressions/lp_allocation_feedback: lagged LPConcentration predicts VehicleShare at the 7-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='lp_concentration_share', **{'Horizon (days)': '7'})}); "
+                f"lagged VehicleShare predicts higher LPConcentration ({_lookup(core, Outcome='LPConcentration', Regressor='BridgeShare', **{'Horizon (days)': '7'})}) but lower log VehicleLinkedLiquidity ({_lookup(core, Outcome='log VehicleLinkedLiquidity', Regressor='BridgeShare', **{'Horizon (days)': '7'})}). "
+                f"lp_allocation_feedback: indirect-route availability predicts the change in log VehicleLinkedLiquidity at the 30-day horizon ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='Change in log VehicleLinkedLiquidity', Regressor='vehicle_available_share', **{'Horizon (days)': '30'})}); DirectCostAdvantage also predicts that change ({_lookup(lp_feedback, Panel='B. LP stock change', Outcome='Change in log VehicleLinkedLiquidity', Regressor='direct_cost_advantage_median', **{'Horizon (days)': '30'})})."
             ),
         },
         {
             "RQ": "RQ3. Persistence and displacement",
             "Empirical answer": "Vehicle status is persistent, but challenger cost edges predict actual challenger share gains and incumbent losses.",
             "Exact evidence": (
-                f"core_panel_regressions: current VehicleShare predicts t+30 VehicleShare ({_lookup(core, Outcome='future VehicleShare, t+30', Regressor='BridgeShare')}). "
-                f"persistence_thresholds: challenger cost edge above 0.025 implies incumbent share change {_cell(threshold, 'Mean incumbent share change t+30 (pp)', **{'Challenger cost-edge bin': '>0.025'})} pp, p {_cell(threshold, 'p', **{'Challenger cost-edge bin': '>0.025'})}. "
-                f"pair_challenger_displacement: challenger edge raises challenger share change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Challenger share change t+30')}) and lowers incumbent share change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Incumbent share change t+30')})."
+                f"core_panel_regressions: lagged VehicleShare predicts VehicleShare at the 30-day horizon ({_lookup(core, Outcome='VehicleShare', Regressor='BridgeShare', **{'Horizon (days)': '30'})}). "
+                f"persistence_thresholds: challenger cost edge above 0.025 implies incumbent VehicleShare change {_cell(threshold, 'Mean incumbent VehicleShare change (pp)', **{'Challenger cost-edge bin': '>0.025', 'Horizon (days)': '30'})} pp, p {_cell(threshold, 'p', **{'Challenger cost-edge bin': '>0.025', 'Horizon (days)': '30'})}. "
+                f"pair_challenger_displacement: challenger edge raises challenger VehicleShare change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Challenger VehicleShare change', **{'Horizon (days)': '30'})}) and lowers incumbent VehicleShare change ({_lookup(challenger, Panel='A. Pair-level regression', Outcome='Incumbent VehicleShare change', **{'Horizon (days)': '30'})})."
             ),
         },
         {

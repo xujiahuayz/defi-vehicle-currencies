@@ -311,7 +311,7 @@ what the estimates identify from what they do not identify.
 
 - Unit: token-day.
 - Main sample: candidate vehicle tokens WETH, USDC, USDT, DAI, WBTC.
-- Main outcomes: future BridgeShare and BridgeShare persistence.
+- Main outcomes: VehicleShare with lagged predictors at specified horizons and VehicleShare persistence.
 - Main regressor: vehicle-linked LP concentration.
 - Fixed effects: token and date fixed effects in robustness.
 - Inference: date-clustered or block-bootstrap inference.

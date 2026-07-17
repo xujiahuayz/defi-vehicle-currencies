@@ -61,12 +61,12 @@ def _p2_main_estimate() -> str:
         )
     results = pd.read_pickle(path)
     row = results[
-        results["Horizon"].eq("t+7")
-        & results["Outcome"].eq("future BridgeShare")
-        & results["Main regressor"].eq("LP concentration")
+        results["Horizon (days)"].eq(7)
+        & results["Outcome"].eq("VehicleShare")
+        & results["Main regressor"].eq("Lagged LP concentration")
     ]
     if len(row) != 1:
-        raise RuntimeError("Expected one t+7 LP-concentration-to-share estimate.")
+        raise RuntimeError("Expected one 7-day LP-concentration-to-share estimate.")
     result = row.iloc[0]
     return f"token/date FE beta {result['Beta']}; p {result['p']}"
 
@@ -594,9 +594,9 @@ def main_test_registry_table() -> pd.DataFrame:
         },
         {
             "Proposition": "P2",
-            "Pre-specified main test": "LP concentration predicts future VehicleShare",
+            "Pre-specified main test": "lagged LP concentration predicts VehicleShare",
             "Main estimate": p2_estimate,
-            "Economic unit": "future vehicle-share association",
+            "Economic unit": "vehicle-share association at a seven-day horizon",
             "Status": "downgrade to predictive association",
         },
         {
@@ -654,10 +654,10 @@ def compact_specification_registry_table() -> pd.DataFrame:
         },
         {
             "Test": "P2 predictability",
-            "Outcome": "future VehicleShare",
+            "Outcome": "VehicleShare",
             "Unit": "token x day",
             "Sample": "WETH, USDC, USDT, DAI, WBTC",
-            "Treatment/regressor": "vehicle-linked LP concentration",
+            "Treatment/regressor": "lagged vehicle-linked LP concentration",
             "FE / clustering": "token/date FE robustness; date clustering",
             "Main coefficient": p2_estimate,
             "Interpretation": "predictive association, not causal feedback",

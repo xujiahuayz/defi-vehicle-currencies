@@ -10,6 +10,7 @@ $i,\ j$ & Token & Input (sold) and output (bought) endpoint tokens; the ordered 
 $k$ & Token & Candidate vehicle token used as the route intermediate; $k\notin\{i,j\}$. \\
 $\ell,\ p$ & Token / pool & $\ell$ indexes tokens in cross-token sums; $p$ indexes liquidity pools. \\
 $t,\ w$ & UTC day / UTC week & $t$ indexes calendar days; $w$ indexes calendar weeks in settlement variables. \\
+$\tau$ & Days & Positive calendar-day horizon in dynamic specifications; the empirical panels use $\tau\in\{1,7,14,30\}$. \\
 $q$ & USD & Input quote notional. Un-suffixed route-cost columns use $q=\$10{,}000$. \\
 $r$ & Route unit & Reconstructed source-to-sink route unit. A coherent $i\to k\to j$ component contributes one $r$ regardless of its number of legs; a split or join contributes one $r$ per reconstructed source-sink pair. \\
 \addlinespace
@@ -27,7 +28,7 @@ $\mathrm{TVL}_{p,t},\ L_{k,t}$ & USD & $\mathrm{TVL}_{p,t}$ is pool $p$'s day-$t
 $R^{\mathrm{WETH}}_t$ & Daily log-return fraction & Day-$t$ log return of the WETH price used to construct downside stress. \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textit{Route-cost quote objects}} \\
-$\mathcal{P}_{k,t,q}$ & Set of token pairs & Ordered endpoint pairs eligible for $k$ and quoted on day $t$ at notional $q$. \\
+$\mathcal{P}_{k,t,q}$ & Set of token pairs & Quote-universe pairs for candidate $k$: distinct ordered source-to-sink pairs among day $t$'s 200 largest clean reconstructed pairs by realized USD volume, where clean means route class \texttt{single} or \texttt{coherent}, $k\notin\{i,j\}$, and each of $i$, $j$, and $k$ has a valid day-price estimate. A valid estimate requires at least three finite token-side USD-per-token observations in $(0,\$1{,}000{,}000)$ and equals their realized-USD-volume-weighted median. Each pair is submitted to the direct and via-$k$ quote engines at input $q$; membership does not require either quote to execute. \\
 $\mathcal{D}_{k,t,q},\ \mathcal{I}_{k,t,q}$ & Sets of token pairs & $\mathcal D_{k,t,q}\subseteq\mathcal P_{k,t,q}$ and $\mathcal I_{k,t,q}\subseteq\mathcal P_{k,t,q}$ restrict the broad pair set to pairs with an executable direct route or an executable indirect route via $k$. \\
 $\mathcal{C}_{k,t,q}$ & Set of token pairs & Common-support pairs for candidate $k$, day $t$, and notional $q$: $\mathcal C_{k,t,q}=\mathcal D_{k,t,q}\cap\mathcal I_{k,t,q}$, so both the direct and indirect routes are executable. \\
 $\mathcal{T}_{k,t,q},\ \mathcal{W}_{k,t,q}$ & Sets of token pairs & $\mathcal T_{k,t,q}\subseteq\mathcal D_{k,t,q}$ is the thin-direct subset. $\mathcal W_{k,t,q}\subseteq\mathcal C_{k,t,q}$ contains common-support pairs for which the indirect route beats the direct route, equivalently $\Delta C^D_{i,j,k,q,t}<0$. \\
@@ -39,7 +40,9 @@ $\Delta C^D_{i,j,k,q,t}$ & Fraction & Pair-level direct cost advantage $(O^{D}_{
 $\mathcal{R}_{k,w}$ & Set of route units & Receipt-audited matched route units using vehicle $k$ in UTC week $w$. \\
 $\mathcal{R}^{\mathrm{transfer}}_{k,w}$ & Set of route units & Members whose receipt logs a transfer of vehicle $k$; $\mathcal R^{\mathrm{transfer}}_{k,w}\subseteq\mathcal R_{k,w}$. \\
 $|\mathcal{S}|,\ \mathbf{1}_{\{\cdot\}}$ & Count / indicator (0/1) & Cardinality of any finite set $\mathcal S$ and an indicator equal to one when its subscripted condition is true. \\
-$\Delta_{7}$ & 7 days & Seven-day forward change in any daily variable $X_t$: $\Delta_7 X_t=X_{t+7}-X_t$. \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Dynamic operators}} \\
+$\Delta_{\tau}$ &  & Change in a daily variable over the $\tau$ days ending at $t$: $\Delta_\tau X_t=X_t-X_{t-\tau}$. \\
 \bottomrule
 \end{tabularx}
 \par\medskip
@@ -81,8 +84,7 @@ $\mathrm{ThinDirectShare}_{k,t,q}$ & $\displaystyle\frac{|\mathcal T_{k,t,q}|}{|
 \multicolumn{5}{@{}l}{\textit{Stress and dynamic variables}} \\
 $\mathrm{Stress}_{t}$ & $\max\{-R^{\mathrm{WETH}}_t,0\}$ & Daily log-return fraction & \texttt{stress\_\allowbreak{}downside} & Positive part of the negative day-$t$ WETH log return. \\
 $\mathrm{StressEvent}_{t}$ & $\mathbf{1}_{\{\mathrm{Stress}_{t}\ge 0.08\}}$ & Indicator (0/1) & \texttt{stress\_\allowbreak{}event\_\allowbreak{}8pct} & Equals one when $\mathrm{Stress}_t$ is at least $0.08$ on day $t$. \\
-$\mathrm{VehicleShare}_{k,t+7}$ &  & Fraction (0--1) & \texttt{future\_\allowbreak{}bridge\_\allowbreak{}share\_\allowbreak{}t7} & Vehicle share for token $k$ seven calendar days after day $t$. \\
-$\Delta_{7}\mathrm{VehicleShare}_{k,t}$ & $\mathrm{VehicleShare}_{k,t+7}-\mathrm{VehicleShare}_{k,t}$ & Fraction points & \texttt{delta\_\allowbreak{}bridge\_\allowbreak{}share\_\allowbreak{}t7} & Seven-day forward change for vehicle $k$, measured from day $t$. \\
+$\Delta_{\tau}\mathrm{VehicleShare}_{k,t}$ & $\mathrm{VehicleShare}_{k,t}-\mathrm{VehicleShare}_{k,t-\tau}$ & Fraction points & \texttt{delta\_\allowbreak{}bridge\_\allowbreak{}share\_\allowbreak{}t7} & $\tau$-day change for vehicle $k$ ending on day $t$. The displayed data column is the $\tau=7$ instance; the observations table also constructs $\tau\in\{1,14,30\}$. \\
 \addlinespace
 \multicolumn{5}{@{}l}{\textit{V4 settlement implementation measures}} \\
 $\mathrm{TransferIncidence}_{k,w}$ & $\displaystyle\frac{|\mathcal R^{\mathrm{transfer}}_{k,w}|}{|\mathcal R_{k,w}|}$ & Fraction (0--1) & \texttt{settlement\_\allowbreak{}transfer\_\allowbreak{}incidence} & Fraction of receipt-audited route units $r\in\mathcal R_{k,w}$ containing an ERC-20 $\mathrm{Transfer}$ log for intermediate vehicle $k$. \\

@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
+from ddvc.analysis.dynamics import value_at_day_offset
 from ddvc.paths import DATA_DIR
 from ddvc.variable_registry import OBSERVATIONS_TABLE_COLUMNS
 
@@ -332,12 +333,14 @@ def _add_dynamics(panel: pd.DataFrame) -> pd.DataFrame:
         for base_col, stem in dynamic_cols:
             if base_col not in panel.columns:
                 continue
-            panel[f"lag_{stem}_t{h}"] = panel.groupby("token")[base_col].shift(h)
-            panel[f"future_{stem}_t{h}"] = panel.groupby("token")[base_col].shift(-h)
+            panel[f"lag_{stem}_t{h}"] = value_at_day_offset(panel, base_col, -h)
+            panel[f"future_{stem}_t{h}"] = value_at_day_offset(panel, base_col, h)
         if "bridge_share" in panel.columns:
-            panel[f"delta_bridge_share_t{h}"] = panel[f"future_bridge_share_t{h}"] - panel["bridge_share"]
+            panel[f"delta_bridge_share_t{h}"] = panel["bridge_share"] - panel[f"lag_bridge_share_t{h}"]
         if "lp_concentration" in panel.columns:
-            panel[f"delta_lp_concentration_t{h}"] = panel[f"future_lp_concentration_t{h}"] - panel["lp_concentration"]
+            panel[f"delta_lp_concentration_t{h}"] = (
+                panel["lp_concentration"] - panel[f"lag_lp_concentration_t{h}"]
+            )
     return panel
 
 

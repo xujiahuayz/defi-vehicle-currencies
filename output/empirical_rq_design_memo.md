@@ -63,7 +63,7 @@ Core panel:
 - Unit: endpoint pair \(i=(a,c)\), candidate vehicle \(v\), time \(t\) at day or hour frequency.
 - Route opportunity set: observations where both direct and at least one vehicle route are feasible or where direct infeasibility is itself part of the treatment.
 - Main outcomes:
-  - `vehicle_share_{i,v,t}`: share of routed volume or route count through vehicle \(v\).
+  - `vehicle_share_{k,t}`: share of routed volume or route count through candidate vehicle \(k\).
   - `vehicle_indicator_{route}`: transaction-level or route-level indicator that \(v\) intermediates.
   - `direct_cost_advantage_{i,v,t}`: direct-route output minus indirect-route output, divided by direct-route output, for a standard trade-size grid; positive values favor the direct route.
   - `vehicle_linked_liquidity_{i,v,t}`: active liquidity near price in pools linking endpoints to \(v\).
@@ -82,13 +82,16 @@ Empirical experiment: route-cost dominance and direct-market incompleteness.
 Main test:
 
 \[
-VehicleShare_{i,v,t+h} =
-\beta_1 DirectCostAdvantage_{i,v,t}
-+ \beta_2 DirectUnavailable_{i,t}
-+ \beta_3 VehicleDepth_{i,v,t}
-+ \beta_4 DirectDepth_{i,t}
-+ FE + \epsilon_{i,v,t}.
+VehicleShare_{k,t} =
+\beta_1 DirectCostAdvantage_{k,t-\tau}
++ \beta_2 DirectUnavailable_{k,t-\tau}
++ \beta_3 VehicleDepth_{k,t-\tau}
++ \beta_4 DirectDepth_{k,t-\tau}
++ FE + \epsilon_{k,t}.
 \]
+
+Here and below, \(\tau\) is the prediction horizon in calendar days; the main
+specifications report \(\tau=7\) and \(\tau=30\).
 
 Interpretation: a vehicle emerges when DirectCostAdvantage is lower, the vehicle route is deeper, or the vehicle route is available when the direct market is thin or absent.
 
@@ -101,19 +104,19 @@ Empirical experiment: liquidity-route feedback.
 Main tests:
 
 \[
-VehicleShare_{i,v,t+h} =
-\beta_1 VehicleLinkedLiquidity_{i,v,t}
-+ \beta_2 LPRepositioning_{i,v,t}
-+ \beta_3 DirectCostAdvantage_{i,v,t}
-+ FE + \epsilon_{i,v,t}.
+VehicleShare_{k,t} =
+\beta_1 VehicleLinkedLiquidity_{k,t-\tau}
++ \beta_2 LPRepositioning_{k,t-\tau}
++ \beta_3 DirectCostAdvantage_{k,t-\tau}
++ FE + \epsilon_{k,t}.
 \]
 
 \[
-VehicleLinkedLiquidity_{i,v,t+h} =
-\gamma_1 VehicleShare_{i,v,t}
-+ \gamma_2 VehicleRouteVolume_{i,v,t}
-+ \gamma_3 FeesEarned_{i,v,t}
-+ FE + \eta_{i,v,t}.
+VehicleLinkedLiquidity_{k,t} =
+\gamma_1 VehicleShare_{k,t-\tau}
++ \gamma_2 VehicleRouteVolume_{k,t-\tau}
++ \gamma_3 FeesEarned_{k,t-\tau}
++ FE + \eta_{k,t}.
 \]
 
 Interpretation: liquidity provision makes the vehicle if vehicle-linked liquidity predicts future vehicle use and vehicle use predicts future LP liquidity.
@@ -127,11 +130,11 @@ Empirical experiment: persistence and switching thresholds.
 Main test:
 
 \[
-VehicleShare_{i,v,t+h} =
-\rho VehicleShare_{i,v,t}
-+ \beta DirectCostAdvantage_{i,v,t}
-+ \theta ChallengerAdvantage_{i,v,t}
-+ FE + \epsilon_{i,v,t}.
+VehicleShare_{k,t} =
+\rho VehicleShare_{k,t-\tau}
++ \beta DirectCostAdvantage_{k,t-\tau}
++ \theta ChallengerAdvantage_{k,t-\tau}
++ FE + \epsilon_{k,t}.
 \]
 
 Add bins for challenger cost advantage to estimate the threshold needed to displace an incumbent vehicle.

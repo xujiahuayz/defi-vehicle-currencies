@@ -1,18 +1,18 @@
-\begin{tabular}{lrrrrrrrrrr}
+\begin{tabular}{lrrrrrrrrrrr}
 \toprule
-Panel & Outcome & Regressor & N & Date clusters & Beta & SE & t & p & Units & FE / SE \\
+Panel & Outcome & Horizon (days) & Regressor & N & Date clusters & Beta & SE & t & p & Units & FE / SE \\
 \midrule
-A. Stock feedback & future VehicleShare, t+7 & lp\_concentration\_share & 9,380 & 1,876 & 0.2118 & 0.0201 & 10.54 & \ensuremath{<}0.001 & share & token FE + date FE; date-clustered SE \\
-A. Stock feedback & future LPConcentration, t+7 & BridgeShare & 9,380 & 1,876 & 0.0150 & 0.0036 & 4.21 & \ensuremath{<}0.001 & share & token FE + date FE; date-clustered SE \\
-A. Stock feedback & future log VehicleLinkedLiquidity, t+7 & BridgeShare & 9,380 & 1,876 & -0.2454 & 0.0371 & -6.61 & \ensuremath{<}0.001 & log points & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in LPConcentration & BridgeShare & 9,265 & 1,853 & 0.6479 & 0.4516 & 1.43 & 0.152 & pp & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in LPConcentration & direct\_cost\_advantage\_median & 9,265 & 1,853 & -0.6760 & 0.1171 & -5.77 & \ensuremath{<}0.001 & pp & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in LPConcentration & vehicle\_available\_share & 9,265 & 1,853 & 2.1340 & 0.4417 & 4.83 & \ensuremath{<}0.001 & pp & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in LPConcentration & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -7.0424 & 1.0259 & -6.86 & \ensuremath{<}0.001 & pp & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in log VehicleLinkedLiquidity & BridgeShare & 9,265 & 1,853 & 0.0231 & 0.0142 & 1.62 & 0.105 & log points & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in log VehicleLinkedLiquidity & direct\_cost\_advantage\_median & 9,265 & 1,853 & -0.0493 & 0.0093 & -5.29 & \ensuremath{<}0.001 & log points & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in log VehicleLinkedLiquidity & vehicle\_available\_share & 9,265 & 1,853 & 0.0632 & 0.0166 & 3.80 & \ensuremath{<}0.001 & log points & token FE + date FE; date-clustered SE \\
-B. LP stock change & 30-day change in log VehicleLinkedLiquidity & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -0.1881 & 0.0344 & -5.47 & \ensuremath{<}0.001 & log points & token FE + date FE; date-clustered SE \\
+A. Stock feedback & VehicleShare & 7 & lp\_concentration\_share & 9,380 & 1,876 & 0.2115 & 0.0201 & 10.50 & \ensuremath{<}0.001 & share & token FE + date FE; date-clustered SE \\
+A. Stock feedback & LPConcentration & 7 & BridgeShare & 9,380 & 1,876 & 0.0150 & 0.0036 & 4.21 & \ensuremath{<}0.001 & share & token FE + date FE; date-clustered SE \\
+A. Stock feedback & log VehicleLinkedLiquidity & 7 & BridgeShare & 9,380 & 1,876 & -0.2454 & 0.0371 & -6.61 & \ensuremath{<}0.001 & log points & token FE + date FE; date-clustered SE \\
+B. LP stock change & Change in LPConcentration & 30 & BridgeShare & 9,265 & 1,853 & 0.6479 & 0.4516 & 1.43 & 0.152 & pp & token FE + date FE; date-clustered SE \\
+B. LP stock change & Change in LPConcentration & 30 & direct\_cost\_advantage\_median & 9,265 & 1,853 & -0.6760 & 0.1171 & -5.77 & \ensuremath{<}0.001 & pp & token FE + date FE; date-clustered SE \\
+B. LP stock change & Change in LPConcentration & 30 & vehicle\_available\_share & 9,265 & 1,853 & 2.1340 & 0.4417 & 4.83 & \ensuremath{<}0.001 & pp & token FE + date FE; date-clustered SE \\
+B. LP stock change & Change in LPConcentration & 30 & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -7.0424 & 1.0259 & -6.86 & \ensuremath{<}0.001 & pp & token FE + date FE; date-clustered SE \\
+B. LP stock change & Change in log VehicleLinkedLiquidity & 30 & BridgeShare & 9,265 & 1,853 & 0.0231 & 0.0142 & 1.62 & 0.105 & log points & token FE + date FE; date-clustered SE \\
+B. LP stock change & Change in log VehicleLinkedLiquidity & 30 & direct\_cost\_advantage\_median & 9,265 & 1,853 & -0.0493 & 0.0093 & -5.29 & \ensuremath{<}0.001 & log points & token FE + date FE; date-clustered SE \\
+B. LP stock change & Change in log VehicleLinkedLiquidity & 30 & vehicle\_available\_share & 9,265 & 1,853 & 0.0632 & 0.0166 & 3.80 & \ensuremath{<}0.001 & log points & token FE + date FE; date-clustered SE \\
+B. LP stock change & Change in log VehicleLinkedLiquidity & 30 & no\_direct\_vehicle\_available\_share & 9,265 & 1,853 & -0.1881 & 0.0344 & -5.47 & \ensuremath{<}0.001 & log points & token FE + date FE; date-clustered SE \\
 \bottomrule
 \end{tabular}
 % Notes for paper wrapper: Panel A reports the unified stock-dynamics estimates from core\_panel\_regressions. Panel B uses 30-day changes in candidate-linked liquidity stocks.

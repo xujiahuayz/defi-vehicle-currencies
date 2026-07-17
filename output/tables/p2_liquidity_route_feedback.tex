@@ -1,19 +1,19 @@
 \begin{tabular}{lrrrrrrrrrr}
 \toprule
-Panel & Horizon & Outcome & N & Date clusters & Main regressor & Beta & SE & t & p & Control \\
+Panel & Horizon (days) & Outcome & N & Date clusters & Main regressor & Beta & SE & t & p & Control \\
 \midrule
-A. Liquidity -\ensuremath{>} future intermediation & t+1 & future BridgeShare & 9,410 & 1,882 & LP concentration & 0.204 & 0.018 & 11.06 & \ensuremath{<}0.001 & current BridgeShare beta 0.586 \\
-B. Intermediation -\ensuremath{>} future liquidity & t+1 & future LP concentration & 9,410 & 1,882 & current BridgeShare & 0.008 & 0.003 & 2.60 & 0.009 & LP concentration beta 0.981 \\
-B. Intermediation -\ensuremath{>} future liquidity & t+1 & future log LP liquidity & 9,410 & 1,882 & current BridgeShare & 0.034 & 0.030 & 1.12 & 0.262 & LP concentration beta 4.873 \\
-A. Liquidity -\ensuremath{>} future intermediation & t+7 & future BridgeShare & 9,380 & 1,876 & LP concentration & 0.227 & 0.020 & 11.52 & \ensuremath{<}0.001 & current BridgeShare beta 0.464 \\
-B. Intermediation -\ensuremath{>} future liquidity & t+7 & future LP concentration & 9,380 & 1,876 & current BridgeShare & 0.014 & 0.004 & 3.91 & \ensuremath{<}0.001 & LP concentration beta 0.960 \\
-B. Intermediation -\ensuremath{>} future liquidity & t+7 & future log LP liquidity & 9,380 & 1,876 & current BridgeShare & 0.060 & 0.031 & 1.93 & 0.054 & LP concentration beta 4.783 \\
-A. Liquidity -\ensuremath{>} future intermediation & t+14 & future BridgeShare & 9,345 & 1,869 & LP concentration & 0.227 & 0.020 & 11.26 & \ensuremath{<}0.001 & current BridgeShare beta 0.407 \\
-B. Intermediation -\ensuremath{>} future liquidity & t+14 & future LP concentration & 9,345 & 1,869 & current BridgeShare & 0.018 & 0.005 & 4.02 & \ensuremath{<}0.001 & LP concentration beta 0.940 \\
-B. Intermediation -\ensuremath{>} future liquidity & t+14 & future log LP liquidity & 9,345 & 1,869 & current BridgeShare & 0.078 & 0.033 & 2.36 & 0.018 & LP concentration beta 4.696 \\
-A. Liquidity -\ensuremath{>} future intermediation & t+30 & future BridgeShare & 9,265 & 1,853 & LP concentration & 0.221 & 0.020 & 11.10 & \ensuremath{<}0.001 & current BridgeShare beta 0.337 \\
-B. Intermediation -\ensuremath{>} future liquidity & t+30 & future LP concentration & 9,265 & 1,853 & current BridgeShare & 0.032 & 0.004 & 7.10 & \ensuremath{<}0.001 & LP concentration beta 0.907 \\
-B. Intermediation -\ensuremath{>} future liquidity & t+30 & future log LP liquidity & 9,265 & 1,853 & current BridgeShare & 0.119 & 0.032 & 3.71 & \ensuremath{<}0.001 & LP concentration beta 4.556 \\
+A. Lagged liquidity -\ensuremath{>} VehicleShare & 1 & VehicleShare & 9,410 & 1,882 & Lagged LP concentration & 0.204 & 0.018 & 11.06 & \ensuremath{<}0.001 & Lagged VehicleShare beta 0.586 \\
+B. Lagged VehicleShare -\ensuremath{>} liquidity & 1 & LP concentration & 9,410 & 1,882 & Lagged VehicleShare & 0.008 & 0.003 & 2.60 & 0.009 & Lagged LP concentration beta 0.981 \\
+B. Lagged VehicleShare -\ensuremath{>} liquidity & 1 & log LP liquidity & 9,410 & 1,882 & Lagged VehicleShare & 0.034 & 0.030 & 1.12 & 0.262 & Lagged LP concentration beta 4.873 \\
+A. Lagged liquidity -\ensuremath{>} VehicleShare & 7 & VehicleShare & 9,380 & 1,876 & Lagged LP concentration & 0.227 & 0.020 & 11.52 & \ensuremath{<}0.001 & Lagged VehicleShare beta 0.464 \\
+B. Lagged VehicleShare -\ensuremath{>} liquidity & 7 & LP concentration & 9,380 & 1,876 & Lagged VehicleShare & 0.014 & 0.004 & 3.91 & \ensuremath{<}0.001 & Lagged LP concentration beta 0.960 \\
+B. Lagged VehicleShare -\ensuremath{>} liquidity & 7 & log LP liquidity & 9,380 & 1,876 & Lagged VehicleShare & 0.060 & 0.031 & 1.93 & 0.054 & Lagged LP concentration beta 4.783 \\
+A. Lagged liquidity -\ensuremath{>} VehicleShare & 14 & VehicleShare & 9,345 & 1,869 & Lagged LP concentration & 0.227 & 0.020 & 11.26 & \ensuremath{<}0.001 & Lagged VehicleShare beta 0.407 \\
+B. Lagged VehicleShare -\ensuremath{>} liquidity & 14 & LP concentration & 9,345 & 1,869 & Lagged VehicleShare & 0.018 & 0.005 & 4.02 & \ensuremath{<}0.001 & Lagged LP concentration beta 0.940 \\
+B. Lagged VehicleShare -\ensuremath{>} liquidity & 14 & log LP liquidity & 9,345 & 1,869 & Lagged VehicleShare & 0.078 & 0.033 & 2.36 & 0.018 & Lagged LP concentration beta 4.696 \\
+A. Lagged liquidity -\ensuremath{>} VehicleShare & 30 & VehicleShare & 9,265 & 1,853 & Lagged LP concentration & 0.221 & 0.020 & 11.10 & \ensuremath{<}0.001 & Lagged VehicleShare beta 0.337 \\
+B. Lagged VehicleShare -\ensuremath{>} liquidity & 30 & LP concentration & 9,265 & 1,853 & Lagged VehicleShare & 0.032 & 0.004 & 7.10 & \ensuremath{<}0.001 & Lagged LP concentration beta 0.907 \\
+B. Lagged VehicleShare -\ensuremath{>} liquidity & 30 & log LP liquidity & 9,265 & 1,853 & Lagged VehicleShare & 0.119 & 0.032 & 3.71 & \ensuremath{<}0.001 & Lagged LP concentration beta 4.556 \\
 \bottomrule
 \end{tabular}
-% Notes for paper wrapper: All regressions residualize by token and date fixed effects and cluster by date. Panel A asks whether vehicle-linked LP concentration predicts future BridgeShare. Panel B asks whether current BridgeShare predicts future LP concentration or log LP liquidity.
+% Notes for paper wrapper: All regressions residualize by token and date fixed effects and cluster by date. Panel A asks whether lagged vehicle-linked LP concentration predicts VehicleShare. Panel B asks whether lagged VehicleShare predicts LP concentration or log LP liquidity.

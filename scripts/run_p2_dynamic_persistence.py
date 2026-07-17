@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Dynamic P2 alignment test.
 
-The revised model treats liquidity concentration and current bridge use as
-reduced-form predictors of future bridge use:
+The revised model treats lagged liquidity concentration and bridge use as
+reduced-form predictors of current bridge use:
 
-    E[BridgeShare_{k,t+h}] = alpha_k + beta L_{k,t} + rho BridgeShare_{k,t}.
+    E[BridgeShare_{k,t}] = alpha_k + beta L_{k,t-tau} + rho BridgeShare_{k,t-tau}.
 
 This script estimates that object directly. It is still not causal LP feedback,
 but it makes P2 fully aligned with the bounded model.
@@ -18,6 +18,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy import stats
+
+from ddvc.analysis.dynamics import value_at_day_offset
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -76,7 +78,7 @@ def run() -> pd.DataFrame:
     rows = []
     for h in [1, 7, 14, 30]:
         dd = d.copy()
-        dd["future_bridge_share"] = dd.groupby("token")["BridgeShare"].shift(-h)
+        dd["future_bridge_share"] = value_at_day_offset(dd, "BridgeShare", h)
         y = _demean_two(dd["future_bridge_share"], dd["token"], dd["date"])
         x = pd.DataFrame(
             {
@@ -87,7 +89,7 @@ def run() -> pd.DataFrame:
         n, clusters, res = _cluster_ols_multi(y, x, dd["date"])
         rows.append(
             {
-                "Horizon": f"t+{h}",
+                "Horizon (days)": h,
                 "N": _int(n),
                 "Date clusters": _int(clusters),
                 "LP beta": _num(res["lp_concentration_beta"], 3),
@@ -109,8 +111,8 @@ def run() -> pd.DataFrame:
         "Dynamic bridge-use persistence and liquidity concentration.",
         "tab:p2-dynamic-persistence",
         note=(
-            "Outcome is future BridgeShare. Regressors are current LP concentration and "
-            "current BridgeShare. Variables are residualized by token and date fixed effects; "
+            "Outcome is VehicleShare. Regressors are lagged LP concentration and "
+            "lagged VehicleShare. Variables are residualized by token and date fixed effects; "
             "standard errors are clustered by date. The table estimates the reduced-form P2 "
             "model and is not a causal LP-feedback design."
         ),

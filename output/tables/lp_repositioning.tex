@@ -1,0 +1,23 @@
+\begin{tabular}{lrrrrrrr}
+\toprule
+Horizon (days) & Regressor & N & Date clusters & Beta & SE & t & p \\
+\midrule
+1 & net reposition & 9,408 & 1,882 & 0.000 & 0.003 & 0.12 & 0.903 \\
+1 & active net reposition & 9,408 & 1,882 & 0.001 & 0.005 & 0.26 & 0.793 \\
+1 & near net reposition & 9,408 & 1,882 & -0.314 & 0.667 & -0.47 & 0.637 \\
+1 & near gross reposition & 9,408 & 1,882 & 0.245 & 0.079 & 3.09 & 0.002 \\
+7 & net reposition & 9,378 & 1,876 & -0.003 & 0.003 & -0.91 & 0.364 \\
+7 & active net reposition & 9,378 & 1,876 & 0.004 & 0.006 & 0.65 & 0.513 \\
+7 & near net reposition & 9,378 & 1,876 & -0.494 & 0.533 & -0.93 & 0.354 \\
+7 & near gross reposition & 9,378 & 1,876 & 0.131 & 0.044 & 3.01 & 0.003 \\
+14 & net reposition & 9,343 & 1,869 & 0.005 & 0.003 & 1.37 & 0.170 \\
+14 & active net reposition & 9,343 & 1,869 & 0.009 & 0.008 & 1.08 & 0.282 \\
+14 & near net reposition & 9,343 & 1,869 & 0.095 & 0.084 & 1.12 & 0.261 \\
+14 & near gross reposition & 9,343 & 1,869 & 0.073 & 0.065 & 1.12 & 0.262 \\
+30 & net reposition & 9,263 & 1,853 & -0.004 & 0.003 & -1.05 & 0.295 \\
+30 & active net reposition & 9,263 & 1,853 & 0.000 & 0.055 & 0.00 & 0.997 \\
+30 & near net reposition & 9,263 & 1,853 &  &  &  &  \\
+30 & near gross reposition & 9,263 & 1,853 & -0.005 & 1.842 & -0.00 & 0.998 \\
+\bottomrule
+\end{tabular}
+% Notes for paper wrapper: Regressions predict VehicleShare from lagged V3 mints/burns in vehicle-linked pools, scaled by vehicle-linked LP liquidity. Active ranges contain the daily pool tick; near ranges also have width no more than 20 tick spacings. Specifications include token and date fixed effects and cluster by date.

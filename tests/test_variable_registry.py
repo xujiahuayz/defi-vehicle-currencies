@@ -132,7 +132,7 @@ class VariableRegistryTests(unittest.TestCase):
             "daily_all_route_volume_usd": r"$\mathrm{Vol}_t$",
             "daily_indirect_route_volume_usd": r"$\mathrm{IVol}_t$",
             "vehicle_linked_liquidity_usd": r"$L_{k,t}$",
-            "future_bridge_share_t7": r"$\mathrm{VehicleShare}_{k,t+7}$",
+            "delta_bridge_share_t7": r"$\Delta_{\tau}\mathrm{VehicleShare}_{k,t}$",
         }
         for column, symbol in expected.items():
             with self.subTest(column=column):
@@ -156,7 +156,6 @@ class VariableRegistryTests(unittest.TestCase):
         for column in [
             "bridge_volume_usd",
             "daily_indirect_route_volume_usd",
-            "future_bridge_share_t7",
         ]:
             self.assertEqual(by_column[column].formula, "")
 
@@ -167,6 +166,46 @@ class VariableRegistryTests(unittest.TestCase):
             self.assertNotEqual(spec.notation, spec.formula, spec.column)
             self.assertNotIn(spec.formula, registered_notations, spec.column)
             self.assertNotIn(r"\equiv", spec.formula, spec.column)
+
+    def test_dynamic_notation_is_parameterized_and_ends_at_t(self) -> None:
+        by_notation = {item.notation: item for item in NOTATION_DEFINITIONS}
+        tau = by_notation[r"$\tau$"]
+        delta = by_notation[r"$\Delta_{\tau}$"]
+        self.assertEqual(tau.unit, "Days")
+        self.assertEqual(delta.unit, "")
+        self.assertIn(r"\tau\in\{1,7,14,30\}", tau.definition)
+        self.assertIn(r"\Delta_\tau X_t=X_t-X_{t-\tau}", delta.definition)
+
+        by_column = {spec.column: spec for spec in VARIABLE_SPECS}
+        change = by_column["delta_bridge_share_t7"]
+        self.assertEqual(
+            change.formula,
+            r"$\mathrm{VehicleShare}_{k,t}-\mathrm{VehicleShare}_{k,t-\tau}$",
+        )
+        canonical_text = " ".join(
+            [spec.notation + " " + spec.formula for spec in VARIABLE_SPECS]
+            + [item.notation + " " + item.definition for item in NOTATION_DEFINITIONS]
+        )
+        self.assertNotIn(r"\mathrm{VehicleShare}_{k,t+", canonical_text)
+        self.assertNotIn(r"\Delta_{7}", canonical_text)
+
+    def test_quote_universe_has_an_explicit_sample_rule(self) -> None:
+        by_notation = {item.notation: item for item in NOTATION_DEFINITIONS}
+        definition = by_notation[r"$\mathcal{P}_{k,t,q}$"].definition
+        for required in [
+            "200 largest",
+            r"\texttt{single}",
+            r"\texttt{coherent}",
+            r"$k\notin\{i,j\}$",
+            "at least three finite token-side",
+            "USD-per-token observations",
+            "realized-USD-volume-weighted median",
+            "does not require either quote to execute",
+        ]:
+            with self.subTest(required=required):
+                self.assertIn(required, definition)
+        self.assertNotIn(r"\\texttt", definition)
+        self.assertNotIn("eligible", definition.lower())
 
     def test_network_formulas_reuse_existing_route_symbols(self) -> None:
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}

@@ -151,13 +151,13 @@ Vehicle liquidity factor & vehicle token x day & Leave-one-out average daily log
 \label{tab:rq1-formation}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}@{}}
 \toprule
- & \makecell{(1) \\ Actual \\ vehicle share} & \makecell{(2) \\ Vehicle share \\ t+7} & \makecell{(3) \\ Vehicle share \\ t+30} \\
+ & \makecell{(1) \\ Actual \\ vehicle share} & \makecell{(2) \\ Vehicle share \\ $\tau=7$} & \makecell{(3) \\ Vehicle share \\ $\tau=30$} \\
 \midrule
-Direct cost adv. (fraction) & \makecell{-14.6239$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.0184$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.0286$^{***}$ \\ {\scriptsize p$<$0.001}} \\
-Indirect-route avail. & \makecell{19.1385$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1175$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1457$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Direct cost adv. (fraction) & \makecell{-14.6239$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.0187$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.0287$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+Indirect-route avail. & \makecell{19.1385$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1159$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.1450$^{***}$ \\ {\scriptsize p$<$0.001}} \\
 Indirect-route depth & \makecell{28.8502$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  \\
-LP concentration &  & \makecell{0.2118$^{***}$ \\ {\scriptsize p$<$0.001}} &  \\
-Lagged vehicle share &  &  & \makecell{0.3465$^{***}$ \\ {\scriptsize p$<$0.001}} \\
+LP concentration &  & \makecell{0.2115$^{***}$ \\ {\scriptsize p$<$0.001}} &  \\
+Lagged vehicle share &  &  & \makecell{0.3466$^{***}$ \\ {\scriptsize p$<$0.001}} \\
 FE & Endpoint-pair x date & Token and date & Token and date \\
 SE cluster & Date & Date & Date \\
 Obs. & 189,143 & 9,380 & 9,265 \\
@@ -181,10 +181,10 @@ Obs. & 189,143 & 9,380 & 9,265 \\
 \label{tab:rq2-rq3-liquidity-persistence}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.14\textwidth}@{}}
 \toprule
- & \makecell{(1) \\ Vehicle share \\ t+7} & \makecell{(2) \\ LP conc. \\ t+7} & \makecell{(3) \\ Log LP liq. \\ t+7} & \makecell{(4) \\ Chg. LP \\ conc.} & \makecell{(5) \\ Chg. log \\ LP liq. / N} \\
+ & \makecell{(1) \\ Vehicle share \\ $\tau=7$} & \makecell{(2) \\ LP conc. \\ $\tau=7$} & \makecell{(3) \\ Log LP liq. \\ $\tau=7$} & \makecell{(4) \\ Chg. LP conc. \\ $\tau=30$} & \makecell{(5) \\ Chg. log LP liq. \\ $\tau=30$} \\
 \midrule
 \multicolumn{6}{l}{\textit{Panel A. Liquidity-route dynamics}} \\
-LP concentration & \makecell{0.2118$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  &  &  \\
+LP concentration & \makecell{0.2115$^{***}$ \\ {\scriptsize p$<$0.001}} &  &  &  &  \\
 Lagged vehicle share &  & \makecell{0.0150$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.2454$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.6479 \\ {\scriptsize p=0.152}} & \makecell{0.0231 \\ {\scriptsize p=0.105}} \\
 Indirect-route avail. &  &  &  & \makecell{2.1340$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{0.0632$^{***}$ \\ {\scriptsize p$<$0.001}} \\
 Indirect-only avail. &  &  &  & \makecell{-7.0424$^{***}$ \\ {\scriptsize p$<$0.001}} & \makecell{-0.1881$^{***}$ \\ {\scriptsize p$<$0.001}} \\
@@ -338,7 +338,7 @@ Obs. & 685,685 & 685,685 & 664,218 & 21,467 & 679,228 \\
 Test & Unit & Sample & Outcome & Treatment / regressor & FE / SE & Main estimate & Interpretation \\
 \midrule
 P1 availability & pair x day x size & quoteable venues & availability; direct cost adv. & WETH indirect route & pair-day aggregation & 9,584 no-direct; direct cost adv. -0.0974/-0.4996/-0.9057 & availability/thin-direct protection \\
-P2 dynamics & token x day & vehicle candidates & future share; LP & LP concentration; current VehicleShare & token/date FE; date SE & LP->share 0.227 (p $<$0.001); share->LP conc. 0.014 (p $<$0.001); share->log TVL 0.060 (p 0.054) & relative persistence; level sensitivity \\
+P2 dynamics & token x day & vehicle candidates & share; LP & lagged LP concentration; lagged VehicleShare & token/date FE; date SE & LP->share 0.227 (p $<$0.001); share->LP conc. 0.014 (p $<$0.001); share->log TVL 0.060 (p 0.054) & relative persistence; level sensitivity \\
 P3 stress & event x pair set & WETH downside events & WETH-stable share & WETH stress day & event-level t-tests & -2.96 pp, p=0.018 & same-day WETH-to-stable rotation \\
 P4a V3 & pair x month & V3 launch pairs & no-direct WETH & post-V3 & pair FE; pair-clustered SE & -25.81 pp, p$<$0.001; pretrend p=0.922 & direct-route opportunity expansion \\
 P4b V4 & route unit; token-week & matched V3/V4 cells & transfer inc.; LP response & V4; post x netting & matched tests; token/week FE & V4 gap -18.6 pp; log LP beta 2.132 & netting lowers movement; LP response \\

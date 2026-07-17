@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from ddvc.analysis.dynamics import value_at_day_offset
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 DATA = ROOT / "data"
@@ -72,9 +74,13 @@ def p2_feedback_loop() -> pd.DataFrame:
     rows = []
     for h in [1, 7, 14, 30]:
         dd = d.copy()
-        dd["future_bridge_share"] = dd.groupby("token")["BridgeShare"].shift(-h)
-        dd["future_lp_concentration"] = dd.groupby("token")["lp_concentration_share"].shift(-h)
-        dd["future_log_lp_liquidity"] = np.log1p(dd.groupby("token")["total_lp_liquidity_usd"].shift(-h))
+        dd["future_bridge_share"] = value_at_day_offset(dd, "BridgeShare", h)
+        dd["future_lp_concentration"] = value_at_day_offset(
+            dd, "lp_concentration_share", h
+        )
+        dd["future_log_lp_liquidity"] = np.log1p(
+            value_at_day_offset(dd, "total_lp_liquidity_usd", h)
+        )
         x = pd.DataFrame(
             {
                 "lp_concentration": _demean_two(dd["lp_concentration_share"], dd["token"], dd["date"]),
@@ -88,17 +94,17 @@ def p2_feedback_loop() -> pd.DataFrame:
         )
         rows.append(
             {
-                "Panel": "A. Liquidity -> future intermediation",
-                "Horizon": f"t+{h}",
-                "Outcome": "future BridgeShare",
+                "Panel": "A. Lagged liquidity -> VehicleShare",
+                "Horizon (days)": h,
+                "Outcome": "VehicleShare",
                 "N": _int(n),
                 "Date clusters": _int(clusters),
-                "Main regressor": "LP concentration",
+                "Main regressor": "Lagged LP concentration",
                 "Beta": _num(res["lp_concentration_beta"], 3),
                 "SE": _num(res["lp_concentration_se"], 3),
                 "t": _num(res["lp_concentration_t"], 2),
                 "p": _p(res["lp_concentration_p"]),
-                "Control": f"current BridgeShare beta { _num(res['current_bridge_share_beta'], 3) }",
+                "Control": f"Lagged VehicleShare beta { _num(res['current_bridge_share_beta'], 3) }",
             }
         )
         x_rev = pd.DataFrame(
@@ -108,8 +114,8 @@ def p2_feedback_loop() -> pd.DataFrame:
             }
         )
         for outcome, label in [
-            ("future_lp_concentration", "future LP concentration"),
-            ("future_log_lp_liquidity", "future log LP liquidity"),
+            ("future_lp_concentration", "LP concentration"),
+            ("future_log_lp_liquidity", "log LP liquidity"),
         ]:
             n, clusters, res = _cluster_ols_multi(
                 _demean_two(dd[outcome], dd["token"], dd["date"]),
@@ -118,17 +124,17 @@ def p2_feedback_loop() -> pd.DataFrame:
             )
             rows.append(
                 {
-                    "Panel": "B. Intermediation -> future liquidity",
-                    "Horizon": f"t+{h}",
+                    "Panel": "B. Lagged VehicleShare -> liquidity",
+                    "Horizon (days)": h,
                     "Outcome": label,
                     "N": _int(n),
                     "Date clusters": _int(clusters),
-                    "Main regressor": "current BridgeShare",
+                    "Main regressor": "Lagged VehicleShare",
                     "Beta": _num(res["current_bridge_share_beta"], 3),
                     "SE": _num(res["current_bridge_share_se"], 3),
                     "t": _num(res["current_bridge_share_t"], 2),
                     "p": _p(res["current_bridge_share_p"]),
-                    "Control": f"LP concentration beta { _num(res['lp_concentration_beta'], 3) }",
+                    "Control": f"Lagged LP concentration beta { _num(res['lp_concentration_beta'], 3) }",
                 }
             )
     out = pd.DataFrame(rows)
@@ -141,8 +147,8 @@ def p2_feedback_loop() -> pd.DataFrame:
         "tab:p2-liquidity-route-feedback",
         note=(
             "All regressions residualize by token and date fixed effects and cluster by date. "
-            "Panel A asks whether vehicle-linked LP concentration predicts future BridgeShare. "
-            "Panel B asks whether current BridgeShare predicts future LP concentration or log LP liquidity."
+            "Panel A asks whether lagged vehicle-linked LP concentration predicts VehicleShare. "
+            "Panel B asks whether lagged VehicleShare predicts LP concentration or log LP liquidity."
         ),
     )
     return out

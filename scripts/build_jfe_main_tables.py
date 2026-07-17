@@ -126,28 +126,21 @@ def table_03_p2_predictability() -> pd.DataFrame:
     dyn = _read("table_r32_p2_liquidity_route_feedback.pkl")
     rows = []
     keep = dyn[
-        dyn["Horizon"].isin(["t+7", "t+30"])
-        & (
-            dyn["Outcome"].isin(["future BridgeShare", "future LP concentration", "future log LP liquidity"])
-        )
+        dyn["Horizon (days)"].isin([7, 30])
+        & dyn["Outcome"].isin(["VehicleShare", "LP concentration", "log LP liquidity"])
     ].copy()
     for _, r in keep.iterrows():
-        outcome = str(r["Outcome"]).replace("BridgeShare", "VehicleShare")
-        main_regressor = str(r["Main regressor"]).replace(
-            "BridgeShare", "VehicleShare"
-        )
-        control = str(r["Control"]).replace("BridgeShare", "VehicleShare")
         rows.append(
             {
                 "Panel": r["Panel"],
-                "Horizon": r["Horizon"],
-                "Outcome": outcome,
-                "Main regressor": main_regressor,
+                "Horizon (days)": r["Horizon (days)"],
+                "Outcome": r["Outcome"],
+                "Main regressor": r["Main regressor"],
                 "Beta": r["Beta"],
                 "SE": r["SE"],
                 "t": r["t"],
                 "p": r["p"],
-                "Control": control,
+                "Control": r["Control"],
             }
         )
     out = pd.DataFrame(rows)
@@ -158,8 +151,8 @@ def table_03_p2_predictability() -> pd.DataFrame:
         "Candidate-linked liquidity and vehicle-use dynamics.",
         "tab:main-p2-predictability",
         note=(
-            "Panel A tests whether candidate-linked LP concentration predicts future VehicleShare. "
-            "Panel B tests whether current VehicleShare predicts future LP concentration and log LP liquidity. "
+            "Panel A tests whether lagged candidate-linked LP concentration predicts VehicleShare. "
+            "Panel B tests whether lagged VehicleShare predicts LP concentration and log LP liquidity. "
             "All variables are residualized by token and date fixed effects; standard errors are clustered by date. "
             "Relative concentration and absolute liquidity are reported separately."
         ),
@@ -302,15 +295,15 @@ def table_07_spec_registry() -> pd.DataFrame:
     p1 = pd.read_pickle(EMP / "p1_availability_thin_direct.pkl")
 
     def p2_cell(outcome: str) -> tuple[str, str]:
-        row = p2[p2["Horizon"].eq("t+7") & p2["Outcome"].eq(outcome)]
+        row = p2[p2["Horizon (days)"].eq(7) & p2["Outcome"].eq(outcome)]
         if len(row) != 1:
-            raise RuntimeError(f"Expected one t+7 P2 row for {outcome!r}.")
+            raise RuntimeError(f"Expected one 7-day P2 row for {outcome!r}.")
         result = row.iloc[0]
         return str(result["Beta"]), str(result["p"])
 
-    lp_to_share_beta, lp_to_share_p = p2_cell("future VehicleShare")
-    share_to_conc_beta, share_to_conc_p = p2_cell("future LP concentration")
-    share_to_tvl_beta, share_to_tvl_p = p2_cell("future log LP liquidity")
+    lp_to_share_beta, lp_to_share_p = p2_cell("VehicleShare")
+    share_to_conc_beta, share_to_conc_p = p2_cell("LP concentration")
+    share_to_tvl_beta, share_to_tvl_p = p2_cell("log LP liquidity")
     p2_estimate = (
         f"LP->share {lp_to_share_beta} (p {lp_to_share_p}); "
         f"share->LP conc. {share_to_conc_beta} (p {share_to_conc_p}); "
@@ -341,8 +334,8 @@ def table_07_spec_registry() -> pd.DataFrame:
             "Test": "P2 liquidity-route dynamics",
             "Unit": "token x day",
             "Sample": "vehicle candidates",
-            "Outcome": "future VehicleShare; future LP concentration/log TVL",
-            "Regressor / treatment": "LP concentration; current VehicleShare",
+            "Outcome": "VehicleShare; LP concentration/log TVL",
+            "Regressor / treatment": "lagged LP concentration; lagged VehicleShare",
             "FE / SE": "token/date FE; date-clustered SE",
             "Baseline mean": "see p2_dynamic_predictability",
             "Main estimate": p2_estimate,
