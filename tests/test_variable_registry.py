@@ -64,10 +64,45 @@ class VariableRegistryTests(unittest.TestCase):
     def test_notation_key_defines_route_indices_and_superscripts(self) -> None:
         notation = " ".join(item.notation for item in NOTATION_DEFINITIONS)
         definitions = " ".join(item.definition for item in NOTATION_DEFINITIONS)
-        for symbol in ["$i,\\ j$", "$k$", "$\\ell,\\ p$", "$t,\\ w$", "$q$", "$r$"]:
+        for symbol in ["$i,\\ o$", "$k$", "$\\ell,\\ p$", "$t,\\ w$", "$q$", "$r$"]:
             self.assertIn(symbol, notation)
         self.assertIn(r"superscripts $D$ and $I$", definitions)
         self.assertIn(r"superscript $I$ denotes indirect", definitions)
+
+    def test_paper_route_notation_uses_input_output_endpoints(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        registry_text = " ".join(
+            item.notation + " " + item.definition for item in NOTATION_DEFINITIONS
+        )
+        paper_text = (root / "paper" / "jfe_detailed_outline.md").read_text(
+            encoding="utf-8"
+        )
+        rendered_text = (root / "output" / "tables" / "variable_notation.tex").read_text(
+            encoding="utf-8"
+        )
+        canonical_text = " ".join([registry_text, paper_text, rendered_text])
+
+        self.assertIn(r"$(i,o)$ is an ordered input--output pair", registry_text)
+        self.assertIn(r"$i\to k\to o$", registry_text)
+        self.assertIn(r"$O^{D}_{i,o,q,t},\ O^{I}_{i,o,k,q,t}$", registry_text)
+        self.assertIn(r"N^{\mathrm{in}}_{k,t}", registry_text)
+        self.assertIn(r"N^{\mathrm{out}}_{k,t}", registry_text)
+        self.assertIn(r"\mathrm{LegVol}^{\mathrm{in}}_{k,t}", registry_text)
+        self.assertIn(r"\mathrm{Vol}^{\mathrm{in}}_{k,t}", registry_text)
+
+        for retired in [
+            "source-to-sink",
+            "source-sink",
+            "source or sink",
+            r"$i,\ j$",
+            r"(i,j)",
+            r"\{i,j\}",
+            r"N^{\mathrm{src}}",
+            r"N^{\mathrm{sink}}",
+            r"\mathrm{Vol}^{\mathrm{src}}",
+            r"\mathrm{Vol}^{\mathrm{sink}}",
+        ]:
+            self.assertNotIn(retired, canonical_text)
 
     def test_symbol_definitions_run_broad_to_narrow(self) -> None:
         by_notation = {item.notation: item.definition for item in NOTATION_DEFINITIONS}
@@ -107,7 +142,7 @@ class VariableRegistryTests(unittest.TestCase):
         by_notation = {item.notation: item.definition for item in NOTATION_DEFINITIONS}
         route_definition = by_notation[r"$r$"]
         count_definition = by_notation[
-            r"$N_t,\ N^{\mathrm{src}}_{k,t},\ N^{\mathrm{sink}}_{k,t}$"
+            r"$N_t,\ N^{\mathrm{in}}_{k,t},\ N^{\mathrm{out}}_{k,t}$"
         ]
         self.assertIn(r"contributes one $r$ regardless of its number of legs", route_definition)
         self.assertIn("not their individual legs", count_definition)
@@ -196,7 +231,7 @@ class VariableRegistryTests(unittest.TestCase):
             "200 largest",
             r"\texttt{single}",
             r"\texttt{coherent}",
-            r"$k\notin\{i,j\}$",
+            r"$k\notin\{i,o\}$",
             "at least three finite token-side",
             "USD-per-token observations",
             "realized-USD-volume-weighted median",
@@ -248,9 +283,9 @@ class VariableRegistryTests(unittest.TestCase):
             r"N^B_t",
             r"\mathcal V_{k,t,q}",
             r"\mathcal{V}_{k,t,q}",
-            r"V_{i,j,k,q,t}",
-            r"O^V_{i,j,k,q,t}",
-            r"O^{V}_{i,j,k,q,t}",
+            r"V_{i,o,k,q,t}",
+            r"O^V_{i,o,k,q,t}",
+            r"O^{V}_{i,o,k,q,t}",
         ]:
             self.assertNotIn(retired_symbol, symbol_key + formulas)
 
@@ -292,7 +327,7 @@ class VariableRegistryTests(unittest.TestCase):
 
         by_column = {spec.column: spec for spec in VARIABLE_SPECS}
         construction = by_column["thin_direct_share"].construction
-        self.assertIn(r"$O^D_{i,j,q,t}/q<0.9$", construction)
+        self.assertIn(r"$O^D_{i,o,q,t}/q<0.9$", construction)
         self.assertIn("quote-quality proxy", construction)
         self.assertIn("not a direct measure", construction)
 
@@ -318,13 +353,13 @@ class VariableRegistryTests(unittest.TestCase):
             r"\mathcal A^{k}_{t}": r"\mathcal A^k_t",
             r"\mathcal A_t": r"\mathcal A_t",
             r"\mathcal M^{k}_{t}": r"\mathcal M^k_t",
+            r"\mathrm{LegVol}^{\mathrm{in}}": r"\mathrm{LegVol}^{\mathrm{in}}",
+            r"\mathrm{LegVol}^{\mathrm{out}}": r"\mathrm{LegVol}^{\mathrm{out}}",
+            r"N_t": r"$N_t,\ N^{\mathrm{in}}_{k,t}",
+            r"N^{\mathrm{in}}": r"N^{\mathrm{in}}",
+            r"N^{\mathrm{out}}": r"N^{\mathrm{out}}",
             r"\mathrm{Vol}^{\mathrm{in}}": r"\mathrm{Vol}^{\mathrm{in}}",
             r"\mathrm{Vol}^{\mathrm{out}}": r"\mathrm{Vol}^{\mathrm{out}}",
-            r"N_t": r"$N_t,\ N^{\mathrm{src}}_{k,t}",
-            r"N^{\mathrm{src}}": r"N^{\mathrm{src}}",
-            r"N^{\mathrm{sink}}": r"N^{\mathrm{sink}}",
-            r"\mathrm{Vol}^{\mathrm{src}}": r"\mathrm{Vol}^{\mathrm{src}}",
-            r"\mathrm{Vol}^{\mathrm{sink}}": r"\mathrm{Vol}^{\mathrm{sink}}",
             r"\mathrm{DVol}_t": r"\mathrm{DVol}_t",
             r"\ell": r"$\ell,\ p$",
             r"p\in": r"$\ell,\ p$",
@@ -340,8 +375,8 @@ class VariableRegistryTests(unittest.TestCase):
             r"\mathcal T_{k,t,q}": r"\mathcal{T}_{k,t,q}",
             r"\mathcal W_{k,t,q}": r"\mathcal{W}_{k,t,q}",
             r"/q": r"$q$",
-            r"O^D_{i,j,q,t}": r"O^{D}_{i,j,q,t}",
-            r"\Delta C^D_{i,j,k,q,t}": r"\Delta C^D_{i,j,k,q,t}",
+            r"O^D_{i,o,q,t}": r"O^{D}_{i,o,q,t}",
+            r"\Delta C^D_{i,o,k,q,t}": r"\Delta C^D_{i,o,k,q,t}",
             r"R^{\mathrm{WETH}}_t": r"R^{\mathrm{WETH}}_t",
             r"\mathcal R^{\mathrm{transfer}}_{k,w}": r"\mathcal{R}^{\mathrm{transfer}}_{k,w}",
             r"\mathcal R_{k,w}": r"\mathcal{R}_{k,w}",
@@ -374,7 +409,7 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertEqual(spec.name, "Direct cost advantage")
         self.assertEqual(spec.unit, "Fraction")
         self.assertEqual(spec.summary_unit, "Fraction")
-        self.assertIn(r"\Delta C^D_{i,j,k,q,t}", spec.formula)
+        self.assertIn(r"\Delta C^D_{i,o,k,q,t}", spec.formula)
         self.assertIn("positive values favor the direct route", spec.construction)
 
         by_notation = {item.notation: item for item in NOTATION_DEFINITIONS}
@@ -383,10 +418,10 @@ class VariableRegistryTests(unittest.TestCase):
             r"$\mathcal C_{k,t,q}=\mathcal D_{k,t,q}\cap\mathcal I_{k,t,q}$",
             common_support.definition,
         )
-        pair_measure = by_notation[r"$\Delta C^D_{i,j,k,q,t}$"]
+        pair_measure = by_notation[r"$\Delta C^D_{i,o,k,q,t}$"]
         self.assertEqual(pair_measure.unit, "Fraction")
         self.assertIn(
-            r"$(O^{D}_{i,j,q,t}-O^{I}_{i,j,k,q,t})/O^{D}_{i,j,q,t}$",
+            r"$(O^{D}_{i,o,q,t}-O^{I}_{i,o,k,q,t})/O^{D}_{i,o,q,t}$",
             pair_measure.definition,
         )
 

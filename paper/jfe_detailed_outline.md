@@ -39,8 +39,8 @@ rotation, and architecture/settlement design. Do not tour table numbers.
 
 1. Vehicle currencies are routing infrastructure, not merely popular assets or
    endpoints.
-2. Traditional markets hide route-level intermediation; DeFi records source,
-   destination, intermediate tokens, liquidity, and settlement implementation.
+2. Traditional markets hide route-level intermediation; DeFi records input,
+   output, intermediate tokens, liquidity, and settlement implementation.
 3. Define the empirical object: vehicle use means intermediate-token use in
    indirect routes; all-route shares and quote coverage are scope diagnostics.
 4. State P1: candidate vehicles expand the feasible execution set when direct
@@ -64,13 +64,13 @@ vehicle, and what the empirical scope is before seeing regressions.
 **Figure 1 placed here.**
 
 **Figure 1. Routed exchange and vehicle-currency measurement.**
-Panel A shows a direct route from source token \(A\) to destination token \(C\).
+Panel A shows a direct route from input token \(A\) to output token \(C\).
 Panel B shows an indirect route in which token \(B\) is used as the vehicle
 because execution clears through \(A \rightarrow B \rightarrow C\). Panel C shows
 a split route in which execution is divided across multiple paths. Panel D shows
 a loop route that returns to the initial token inside the same atomic transaction.
 A token is counted as a vehicle only when it is an intermediate token, not the
-source or destination.
+input or output endpoint.
 
 Subcaptions: **Panel A. Direct route**; **Panel B. Vehicle route**; **Panel C.
 Split route**; **Panel D. Loop route**.
@@ -105,8 +105,8 @@ mean, not become a separate theory paper.
 
 ### 3.1 Route choice and liquidity allocation
 
-**Comment:** A trader with endpoints \(i,j\) compares a direct route \(i\to j\)
-with vehicle routes \(i\to k\to j\). Costs combine fees, price impact, route
+**Comment:** A trader with input token \(i\) and output token \(o\) compares a direct route
+\(i\to o\) with vehicle routes \(i\to k\to o\). Costs combine fees, price impact, route
 availability, and implementation/settlement cost. LPs allocate liquidity toward
 pools with expected route flow and net-of-cost returns.
 

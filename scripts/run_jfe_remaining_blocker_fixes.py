@@ -488,7 +488,7 @@ def v4_manual_no_transfer_audit() -> pd.DataFrame:
                 "Interpretation": "No-transfer examples are not empty receipt failures",
             },
             {
-                "Audit check": "Source/sink transfer present",
+                "Audit check": "Input/output transfer present",
                 "N": _int(len(out)),
                 "Pass rate (%)": _pct(((out["source_transfer_logs"] > 0) | (out["sink_transfer_logs"] > 0)).mean()),
                 "Interpretation": "Receipt contains external endpoint-token movement while intermediary token is absent",
@@ -508,7 +508,7 @@ def v4_manual_no_transfer_audit() -> pd.DataFrame:
         "tab:v4-manual-audit",
         note=(
             "The audit takes all V4 matched route units with no intermediary-token "
-            "transfer and counts ERC-20 Transfer logs for the source, sink, and intermediary "
+            "transfer and counts ERC-20 Transfer logs for the input, output, and intermediary "
             "token addresses in the transaction receipt."
         ),
     )

@@ -47,15 +47,18 @@ class NotationDefinition:
 NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     NotationDefinition(
         group="Indices",
-        notation=r"$i,\ j$",
+        notation=r"$i,\ o$",
         unit="Token",
-        definition=r"Input (sold) and output (bought) endpoint tokens; the ordered pair is $i\to j$.",
+        definition=(
+            r"Input (sold) and output (bought) endpoint tokens, respectively; "
+            r"$(i,o)$ is an ordered input--output pair and the direct route is $i\to o$."
+        ),
     ),
     NotationDefinition(
         group="Indices",
         notation=r"$k$",
         unit="Token",
-        definition=r"Candidate vehicle token used as the route intermediate; $k\notin\{i,j\}$.",
+        definition=r"Candidate vehicle token used as the route intermediate; $k\notin\{i,o\}$.",
     ),
     NotationDefinition(
         group="Indices",
@@ -89,9 +92,9 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         notation=r"$r$",
         unit="Route unit",
         definition=(
-            r"Reconstructed source-to-sink route unit. A coherent $i\to k\to j$ component "
+            r"Reconstructed input-to-output route unit. A coherent $i\to k\to o$ component "
             r"contributes one $r$ regardless of its number of legs; a split or join contributes "
-            r"one $r$ per reconstructed source-sink pair."
+            r"one $r$ per reconstructed input--output pair."
         ),
     ),
     NotationDefinition(
@@ -118,14 +121,14 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     NotationDefinition(
         group="Route and liquidity aggregates",
         notation=(
-            r"$N_t,\ N^{\mathrm{src}}_{k,t},\ "
-            r"N^{\mathrm{sink}}_{k,t}$"
+            r"$N_t,\ N^{\mathrm{in}}_{k,t},\ "
+            r"N^{\mathrm{out}}_{k,t}$"
         ),
         unit="Route-unit count",
         definition=(
             r"$N_t$ counts all reconstructed route units $r$ on day $t$, not their individual legs. "
-            r"$N^{\mathrm{src}}_{k,t}$ and $N^{\mathrm{sink}}_{k,t}$ restrict that count "
-            r"to source and sink roles for $k$; each lies between $0$ and "
+            r"$N^{\mathrm{in}}_{k,t}$ and $N^{\mathrm{out}}_{k,t}$ restrict that count "
+            r"to routes with $k$ as the input or output endpoint, respectively; each lies between $0$ and "
             r"$N_t$."
         ),
     ),
@@ -153,25 +156,28 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
-        notation=r"$\mathrm{Vol}^{\mathrm{in}}_{k,t},\ \mathrm{Vol}^{\mathrm{out}}_{k,t}$",
+        notation=(
+            r"$\mathrm{LegVol}^{\mathrm{in}}_{k,t},\ "
+            r"\mathrm{LegVol}^{\mathrm{out}}_{k,t}$"
+        ),
         unit="USD",
         definition=(
-            r"$\mathrm{Vol}^{\mathrm{in}}_{k,t}$ and "
-            r"$\mathrm{Vol}^{\mathrm{out}}_{k,t}$ are inbound and outbound route-leg "
-            r"volumes assigned to token $k$ on day $t$."
+            r"$\mathrm{LegVol}^{\mathrm{in}}_{k,t}$ and "
+            r"$\mathrm{LegVol}^{\mathrm{out}}_{k,t}$ are route-leg USD volumes for "
+            r"which $k$ is the leg's input or output token, respectively, on day $t$."
         ),
     ),
     NotationDefinition(
         group="Route and liquidity aggregates",
         notation=(
-            r"$\mathrm{Vol}^{\mathrm{src}}_{k,t},\ "
-            r"\mathrm{Vol}^{\mathrm{sink}}_{k,t}$"
+            r"$\mathrm{Vol}^{\mathrm{in}}_{k,t},\ "
+            r"\mathrm{Vol}^{\mathrm{out}}_{k,t}$"
         ),
         unit="USD",
         definition=(
-            r"Source- and sink-role restrictions of $\mathrm{Vol}_t$ for token $k$: "
-            r"$0\le\mathrm{Vol}^{\mathrm{src}}_{k,t}\le\mathrm{Vol}_t$ and "
-            r"$0\le\mathrm{Vol}^{\mathrm{sink}}_{k,t}\le\mathrm{Vol}_t$."
+            r"Input- and output-endpoint restrictions of $\mathrm{Vol}_t$ for token $k$: "
+            r"$0\le\mathrm{Vol}^{\mathrm{in}}_{k,t}\le\mathrm{Vol}_t$ and "
+            r"$0\le\mathrm{Vol}^{\mathrm{out}}_{k,t}\le\mathrm{Vol}_t$."
         ),
     ),
     NotationDefinition(
@@ -216,10 +222,10 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
         notation=r"$\mathcal{P}_{k,t,q}$",
         unit="Set of token pairs",
         definition=(
-            r"Quote-universe pairs for candidate $k$: distinct ordered source-to-sink pairs "
+            r"Quote-universe pairs for candidate $k$: distinct ordered input--output pairs "
             r"among day $t$'s 200 largest clean reconstructed pairs by realized USD volume, "
             r"where clean means route class \texttt{single} or \texttt{coherent}, "
-            r"$k\notin\{i,j\}$, and each of $i$, $j$, and $k$ has a valid day-price "
+            r"$k\notin\{i,o\}$, and each of $i$, $o$, and $k$ has a valid day-price "
             r"estimate. A valid estimate requires at least three finite token-side "
             r"USD-per-token observations in $(0,\$1{,}000{,}000)$ and equals their "
             r"realized-USD-volume-weighted median. Each pair is submitted to the direct "
@@ -255,12 +261,12 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
             r"$\mathcal T_{k,t,q}\subseteq\mathcal D_{k,t,q}$ is the thin-direct subset. "
             r"$\mathcal W_{k,t,q}\subseteq\mathcal C_{k,t,q}$ contains common-support pairs "
             r"for which the indirect route beats the direct route, equivalently "
-            r"$\Delta C^D_{i,j,k,q,t}<0$."
+            r"$\Delta C^D_{i,o,k,q,t}<0$."
         ),
     ),
     NotationDefinition(
         group="Route-cost quote objects",
-        notation=r"$D_{i,j,q,t},\ I_{i,j,k,q,t},\ T_{i,j,q,t}$",
+        notation=r"$D_{i,o,q,t},\ I_{i,o,k,q,t},\ T_{i,o,q,t}$",
         unit="Indicator (0/1)",
         definition=(
             r"Indicators for direct-route availability ($D$), indirect-route-through-$k$ availability ($I$), "
@@ -269,17 +275,17 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
     ),
     NotationDefinition(
         group="Route-cost quote objects",
-        notation=r"$O^{D}_{i,j,q,t},\ O^{I}_{i,j,k,q,t}$",
+        notation=r"$O^{D}_{i,o,q,t},\ O^{I}_{i,o,k,q,t}$",
         unit="USD",
         definition=r"Quoted output values; superscripts $D$ and $I$ denote direct and indirect routes.",
     ),
     NotationDefinition(
         group="Route-cost quote objects",
-        notation=r"$\Delta C^D_{i,j,k,q,t}$",
+        notation=r"$\Delta C^D_{i,o,k,q,t}$",
         unit="Fraction",
         definition=(
             r"Pair-level direct cost advantage "
-            r"$(O^{D}_{i,j,q,t}-O^{I}_{i,j,k,q,t})/O^{D}_{i,j,q,t}$ on "
+            r"$(O^{D}_{i,o,q,t}-O^{I}_{i,o,k,q,t})/O^{D}_{i,o,q,t}$ on "
             r"$\mathcal C_{k,t,q}$; positive values favor the direct route."
         ),
     ),
@@ -419,13 +425,13 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         column="vol_share",
         notation=r"$\mathrm{VolShare}_{k,t}$",
         formula=(
-            r"$\displaystyle\frac{\mathrm{Vol}^{\mathrm{in}}_{k,t}+\mathrm{Vol}^{\mathrm{out}}_{k,t}}"
-            r"{\sum_{\ell}(\mathrm{Vol}^{\mathrm{in}}_{\ell,t}+\mathrm{Vol}^{\mathrm{out}}_{\ell,t})}$"
+            r"$\displaystyle\frac{\mathrm{LegVol}^{\mathrm{in}}_{k,t}+\mathrm{LegVol}^{\mathrm{out}}_{k,t}}"
+            r"{\sum_{\ell}(\mathrm{LegVol}^{\mathrm{in}}_{\ell,t}+\mathrm{LegVol}^{\mathrm{out}}_{\ell,t})}$"
         ),
         unit="Fraction (0--1)",
         construction=(
-            r"$\mathrm{Vol}^{\mathrm{in}}_{k,t}$ and $\mathrm{Vol}^{\mathrm{out}}_{k,t}$ "
-            r"are inbound and outbound route-leg USD volumes for $k$; $\ell$ indexes every "
+            r"$\mathrm{LegVol}^{\mathrm{in}}_{k,t}$ and $\mathrm{LegVol}^{\mathrm{out}}_{k,t}$ "
+            r"are input-side and output-side route-leg USD volumes for $k$; $\ell$ indexes every "
             r"token in the day-$t$ network."
         ),
         source="data/metrics/<date>.parquet",
@@ -438,12 +444,12 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$\mathrm{Betweenness}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{N^{I}_{k,t}}"
-            r"{N_t-N^{\mathrm{src}}_{k,t}-N^{\mathrm{sink}}_{k,t}}$"
+            r"{N_t-N^{\mathrm{in}}_{k,t}-N^{\mathrm{out}}_{k,t}}$"
         ),
         unit="Fraction (0--1)",
         construction=(
             r"Fraction of day-$t$ intent routes on which $k$ is intermediate, excluding routes "
-            r"where $k$ is the source or sink. Superscripts identify each route role."
+            r"where $k$ is the input or output endpoint. Superscripts identify each route role."
         ),
         source="data/metrics/<date>.parquet",
         used_for="Network-theoretic vehicle proxy.",
@@ -458,13 +464,13 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$\mathrm{Betweenness}^{\mathrm{vol}}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}"
-            r"{\mathrm{Vol}_t-\mathrm{Vol}^{\mathrm{src}}_{k,t}"
-            r"-\mathrm{Vol}^{\mathrm{sink}}_{k,t}}$"
+            r"{\mathrm{Vol}_t-\mathrm{Vol}^{\mathrm{in}}_{k,t}"
+            r"-\mathrm{Vol}^{\mathrm{out}}_{k,t}}$"
         ),
         unit="Fraction (0--1)",
         construction=(
             r"USD-volume analogue of $\mathrm{Betweenness}_{k,t}$ using the same route "
-            r"universe and source/sink exclusions."
+            r"universe and input/output-endpoint exclusions."
         ),
         source="data/metrics/<date>.parquet",
         used_for="Network-theoretic robustness.",
@@ -569,7 +575,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         formula=r"$\displaystyle\frac{|\mathcal D_{k,t,q}|}{|\mathcal P_{k,t,q}|}$",
         unit="Fraction (0--1)",
         construction=(
-            r"Fraction of pairs in $\mathcal P_{k,t,q}$ with $D_{i,j,q,t}=1$. "
+            r"Fraction of pairs in $\mathcal P_{k,t,q}$ with $D_{i,o,q,t}=1$. "
             r"The un-suffixed data column fixes $q=\$10{,}000$."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
@@ -587,7 +593,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         formula=r"$\displaystyle\frac{|\mathcal I_{k,t,q}|}{|\mathcal P_{k,t,q}|}$",
         unit="Fraction (0--1)",
         construction=(
-            r"Fraction of pairs in $\mathcal P_{k,t,q}$ with $I_{i,j,k,q,t}=1$, so both "
+            r"Fraction of pairs in $\mathcal P_{k,t,q}$ with $I_{i,o,k,q,t}=1$, so both "
             r"legs through $k$ are executable."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
@@ -608,7 +614,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         unit="Fraction (0--1)",
         construction=(
-            r"Fraction of pairs with $D_{i,j,q,t}=0$ and $I_{i,j,k,q,t}=1$: no executable "
+            r"Fraction of pairs with $D_{i,o,q,t}=0$ and $I_{i,o,k,q,t}=1$: no executable "
             r"direct route but an executable route through $k$."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
@@ -623,11 +629,11 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         name="Direct depth",
         column="direct_depth_median",
         notation=r"$\mathrm{DirectDepth}_{k,t,q}$",
-        formula=r"$\displaystyle\mathrm{median}_{\mathcal D_{k,t,q}}\left(O^D_{i,j,q,t}/q\right)$",
+        formula=r"$\displaystyle\mathrm{median}_{\mathcal D_{k,t,q}}\left(O^D_{i,o,q,t}/q\right)$",
         unit="Output USD per input USD",
         construction=(
-            r"Median direct-route output ratio $O^D_{i,j,q,t}/q$ over executable-direct "
-            r"pairs $(i,j)\in\mathcal D_{k,t,q}$."
+            r"Median direct-route output ratio $O^D_{i,o,q,t}/q$ over executable-direct "
+            r"pairs $(i,o)\in\mathcal D_{k,t,q}$."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
         used_for="Direct-market quality and thin-direct-market tests.",
@@ -641,11 +647,11 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         name="Direct cost advantage",
         column="direct_cost_advantage_median",
         notation=r"$\mathrm{DirectCostAdvantage}_{k,t,q}$",
-        formula=r"$\displaystyle\mathrm{median}_{\mathcal C_{k,t,q}}\Delta C^D_{i,j,k,q,t}$",
+        formula=r"$\displaystyle\mathrm{median}_{\mathcal C_{k,t,q}}\Delta C^D_{i,o,k,q,t}$",
         unit="Fraction",
         construction=(
-            r"Median $\Delta C^D_{i,j,k,q,t}$ over common-support pairs "
-            r"$(i,j)\in\mathcal C_{k,t,q}$; positive values favor the direct route and "
+            r"Median $\Delta C^D_{i,o,k,q,t}$ over common-support pairs "
+            r"$(i,o)\in\mathcal C_{k,t,q}$; positive values favor the direct route and "
             r"negative values favor the indirect route through $k$."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
@@ -662,8 +668,8 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         formula=r"$\displaystyle\frac{|\mathcal W_{k,t,q}|}{|\mathcal C_{k,t,q}|}$",
         unit="Fraction (0--1)",
         construction=(
-            r"Fraction of $(i,j)\in\mathcal C_{k,t,q}$ for which "
-            r"$\Delta C^D_{i,j,k,q,t}<0$, equivalently $O^I_{i,j,k,q,t}>O^D_{i,j,q,t}$."
+            r"Fraction of $(i,o)\in\mathcal C_{k,t,q}$ for which "
+            r"$\Delta C^D_{i,o,k,q,t}<0$, equivalently $O^I_{i,o,k,q,t}>O^D_{i,o,q,t}$."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
         used_for="Execution-cost heterogeneity.",
@@ -681,7 +687,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         unit="Fraction (0--1)",
         construction=(
             r"Fraction of pairs with an executable direct quote but "
-            r"$O^D_{i,j,q,t}/q<0.9$. This is a quote-quality proxy, not a direct measure "
+            r"$O^D_{i,o,q,t}/q<0.9$. This is a quote-quality proxy, not a direct measure "
             r"of pool liquidity depth."
         ),
         source="data/empirical/route_cost_panel_v2.parquet",
