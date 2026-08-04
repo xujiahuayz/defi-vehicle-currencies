@@ -1,0 +1,850 @@
+% ============================================================================
+% nbc_2026_full.tex
+% FULL merged deck for the invited talk at the Nanyang Blockchain Conference
+% 2026 (NTU Singapore, 21--22 August 2026): core content (this file's own
+% preamble/title/core sections, originally authored as nbc_2026_core.tex)
+% followed by a single "Backup" divider and the full backup content
+% (originally authored as the standalone nbc_2026_appendix.tex, merged in
+% below). Built from the winning framing (output/nbc_pipeline/02_framings/
+% framing_1.md) and the Phase-4/5 verified evidence under
+% output/nbc_pipeline/04_evidence/. Do not add numbers to this file that are
+% not traceable to those verified sources.
+%
+% Classical-Beamer skeleton per output/nbc_pipeline/00_exemplars.md: title ->
+% abstract-bridge -> outline -> content under a persistent section header ->
+% recap -> backup. One exhibit per slide; no dense equations live; tables are
+% built directly from the verified .md evidence files (booktabs), not from
+% the pre-redesign output/tables/*.pdf figures (those predate the 2026-08-04
+% redesign and are explicitly not pre-cleared per framing_1.md Sec. 2).
+%
+% MERGE NOTES (2026-08-04, compiled and QA'd in this pass):
+% 1. The two source files' preambles were near-identical (both
+%    \documentclass[aspectratio=169]{beamer} with the same package list and
+%    plain theme); this file keeps the core deck's preamble, which is a
+%    strict superset (it additionally loads tikz for the three mechanism
+%    diagrams the appendix never needed). No missing packages, no
+%    duplication.
+% 2. The core deck's own condensed backup frames (a mini P1 headline table,
+%    a short robustness paragraph, P2 sample/DiD, P2 placebo, P2
+%    volatility/version, and its own References slide) were DROPPED at the
+%    Backup divider rather than kept next to the appendix's fuller versions
+%    of the identical material -- see the note at the "\section{Backup}"
+%    marker below for why.
+% 3. FACTUAL FIX: the core deck's "P1's contra-result" frame claimed the
+%    D-on-L wrong sign "recurs in the low-baseline-depth subsample." The
+%    appendix's own depth-split backup slide (built by checking the primary
+%    p1_robustness_depth_split.csv/.md directly, not the prose synthesis)
+%    found the opposite: all 8 depth-split cells match the *predicted*
+%    sign, i.e. this is the one split where the contra-result reverses. The
+%    bullet below has been corrected to match the appendix's verified
+%    finding so the merged deck does not contradict itself between the core
+%    section and its own backup.
+% ============================================================================
+\documentclass[aspectratio=169]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+% ---------------------------------------------------------------------------
+% Plain, light template. No heavy theme, no running logo (branding note:
+% UCL CBT logo appears ONLY on the title slide via \titlegraphic below).
+% ---------------------------------------------------------------------------
+\usetheme{default}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=2.6ex,dp=1.2ex,leftskip=.4cm,rightskip=.4cm]{structure}
+    \usebeamerfont{footline}\scriptsize\insertsectionhead\hfill\insertframenumber\,/\,\inserttotalframenumber
+  \end{beamercolorbox}%
+}
+\setbeamertemplate{itemize items}[circle]
+\setbeamerfont{footline}{size=\scriptsize}
+
+\tikzset{
+  box/.style={draw, thick, rounded corners, align=center, font=\footnotesize,
+              minimum width=3.3cm, minimum height=1.05cm, inner sep=3pt},
+  arr/.style={-{Latex[length=2.2mm]}, thick}
+}
+
+\title[Vehicle Currencies in DeFi]{The Making of Vehicle Currencies}
+\subtitle{Liquidity Provision in DeFi/AMM Markets}
+\author[J.~Xu et al.]{Jiahua Xu \\ {\small with Emre Ozdenoren, Kathy Yuan, and Benjamin Chen}}
+\institute{UCL Centre for Blockchain Technologies}
+\date{Nanyang Blockchain Conference 2026 \\ NTU Singapore \\ 21--22 August 2026}
+
+% ---------------------------------------------------------------------------
+% Title-slide logo only (branding note: every other slide stays plain, no
+% running footer logo). The path contains a literal, unescaped "&" (normally
+% catcode 4, the alignment-tab character), which would misparse inside a
+% macro argument. \newcommand/\titlegraphic tokenize their argument at the
+% point the line is READ, so the catcode change must be a standalone
+% top-level command executed immediately before that line, not nested
+% inside the argument being defined -- then restored immediately after,
+% since "&" is needed as a real alignment tab in every table later in this
+% deck. Verified the logo file exists on disk (2026-08-04) before wiring
+% this path.
+% ---------------------------------------------------------------------------
+\catcode`\&=12\relax
+\titlegraphic{\includegraphics[width=3.4cm]{/Users/dsf-pro16-m3/Library/CloudStorage/OneDrive-SharedLibraries-UniversityCollegeLondon/UCL CBT - Documents/Operations (internal)/Media & Identity/Logos/Centre for Blockchain/Full colour/UCL_S_2C_DP_RGB_Ctr_Block_Tech_logos.png}}
+\catcode`\&=4\relax
+
+\begin{document}
+
+% ============================================================================
+% TITLE
+% ============================================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ============================================================================
+% ABSTRACT-BRIDGING SLIDE
+% Per framing_1.md Sec. 4 (as amended): Slide 2, immediately after the title
+% and immediately before the outline. Content matches the four specified
+% lines and footer; wording adjusted only to clear the cosmetic-language
+% gate (no em-dashes, no "rather than", at most one "X, not Y" in the deck).
+% ============================================================================
+\begin{frame}{From the abstract to this talk}
+  \begin{itemize}
+    \item The NBC abstract described three roles: quoting/invoicing, vehicle/intermediation, and reserve/settlement, with a flight-to-dominance story under stress.
+    \item[] \vspace{-0.3em}
+    \item \textbf{This talk keeps only the vehicle/intermediation role, grounding it in liquidity provision instead of asset-pricing or flight dynamics.}
+    \item[] \vspace{-0.3em}
+    \item Dropped: the quoting/invoicing and reserve/settlement roles, and any claim about flight-to-dominance as a pricing or attack phenomenon.
+    \item[] \vspace{-0.3em}
+    \item What ``flight-to-dominance'' becomes here: liquidity depth and routing volume move together in the data (Proposition 1, with one contra-result left unresolved); architecture improves execution quality without changing which asset serves as the vehicle (Proposition 2).
+  \end{itemize}
+  \vfill
+  {\scriptsize The full three-role framing remains the long-run agenda. Today's talk covers the liquidity-provision leg only.}
+\end{frame}
+
+% ============================================================================
+% OUTLINE (manual list -- core sections only, backup excluded)
+% ============================================================================
+\begin{frame}{Outline}
+  \begin{enumerate}
+    \item Motivation
+    \item The two propositions and their limits
+    \item Mechanism (borrowed theory, three analogies)
+    \item Evidence: formation (Proposition 1)
+    \item Evidence: architecture (Proposition 2)
+    \item Recap and contribution
+  \end{enumerate}
+\end{frame}
+
+% ============================================================================
+% 1. MOTIVATION
+% ============================================================================
+\section{Motivation}
+
+\begin{frame}{Motivation: a vehicle-currency fact from FX}
+  \begin{itemize}
+    \item In interdealer FX, roughly \textbf{13\%} of USD-pair volume is vehicle-currency routing, a price-impact channel distinct from a spread-reducing one, rising to \textbf{25--38\%} in major pairs (Somogyi 2026, quasi-experimental holiday design).
+    \item That paper's own panel-regression mechanism test (its C1--C3 specifications) is explicitly non-causal, with an $R^2$ of roughly 18--20\% dominated by fixed effects. We treat that mechanism test only as motivation; this talk does not rely on it as evidence.
+  \end{itemize}
+  \vspace{1em}
+  \begin{block}{The pivot}
+    In FX, vehicle status is usually read off fundamental dollar demand. In DeFi, transaction-level liquidity-provision data lets us ask directly whether it instead traces to liquidity provision itself.
+  \end{block}
+\end{frame}
+
+% ============================================================================
+% 2. THE TWO PROPOSITIONS AND THEIR LIMITS
+% ============================================================================
+\section{The two propositions}
+
+\begin{frame}{The two propositions and their limits}
+  \begin{block}{Proposition 1 (formation)}
+    Vehicle-currency status is a liquidity-provision equilibrium: LP capital concentrates on a candidate's pools, deepens the pool, lowers the cost of indirect routing through it, and draws more LP capital, closing a self-reinforcing loop.
+  \end{block}
+  \begin{block}{Proposition 2 (architecture)}
+    Architecture that cheapens LP repositioning makes vehicle status more elastic to stress.
+  \end{block}
+  \vspace{0.5em}
+  \begin{alertblock}{Two constraints, named before the data}
+    \small
+    \textbf{P1:} no true exogenous shock is available in this sample. The one clean candidate (the UNI liquidity-mining launch, Sept.\ 2020) predates this repo's V3-only liquidity construction; what follows here is a lead-lag panel.\\
+    \textbf{P2:} a 2021 market-wide volatility episode sits on the same date used to test P2 (the V2$\to$V3 launch), and this design cannot separate a true architecture effect from that episode in this sample.
+  \end{alertblock}
+\end{frame}
+
+% ============================================================================
+% 3. MECHANISM SCAFFOLD (three slides, one analogy each, borrowed theory)
+% ============================================================================
+\section{Mechanism (borrowed theory)}
+
+\begin{frame}{Mechanism 1: the vehicle feedback loop (Krugman 1980, analogy)}
+  \begin{center}
+  \begin{tikzpicture}[node distance=1.3cm and 1.0cm]
+    \node[box] (A) {LP capital concentrates\\on the candidate's pools};
+    \node[box, below left=1.7cm and 0.6cm of A] (B) {Pool deepens;\\price impact on\\vehicle-routed trades falls};
+    \node[box, below right=1.7cm and 0.6cm of A] (C) {Indirect routing through\\the candidate cheapens;\\volume rises};
+    \draw[arr] (A) -- (B);
+    \draw[arr] (B) -- (C);
+    \draw[arr] (C) -- (A);
+  \end{tikzpicture}
+  \end{center}
+  {\footnotesize Motivating analogy only. Krugman's three-country transaction-cost mechanism, with an endogenized cost function. Scope here: at most three currencies, no persistence-after-dominance-fades claim, no empirical claim.}
+\end{frame}
+
+\begin{frame}{Mechanism 2: pool size and price impact (Leh\'ar \& Parlour 2024, analogy)}
+  \begin{center}
+  \begin{tikzpicture}[node distance=1.2cm and 1.0cm]
+    \node[box] (P) {AMM pool size\\(V1/V2, constant-product)};
+    \node[box, above left=1.3cm and 0.7cm of P] (N) {Noise trading};
+    \node[box, above right=1.3cm and 0.7cm of P] (V) {Volatility /\\informed-trading probability};
+    \draw[arr] (N) -- node[left, font=\scriptsize] {raises} (P);
+    \draw[arr] (V) -- node[right, font=\scriptsize] {lowers} (P);
+  \end{tikzpicture}
+  \end{center}
+  {\footnotesize Cited only for their own result: under bounded conditions, AMM price impact can be lower and less volatile than a comparable limit-order book. Scope: their own 43-pair Binance comparison, constant-product V1/V2 only. This talk does not extend that result to a general AMM-versus-order-book claim or to V3.}
+\end{frame}
+
+\begin{frame}{Mechanism 3: benchmark liquidity (Yuan 2005, analogy)}
+  \begin{center}
+  \begin{tikzpicture}[node distance=1.0cm and 1.6cm]
+    \node[box, minimum width=4cm] (Y) {Liquid benchmark /\\common-factor asset};
+    \node[box, minimum width=4cm, right=2.6cm of Y] (Z) {Liquidity and price\\informativeness, economy-wide};
+    \draw[arr] (Y) -- node[above, font=\scriptsize, align=center] {raises\\(conditional)} (Z);
+  \end{tikzpicture}
+  \end{center}
+  {\footnotesize Flagged as theory only, conditional on the specific assumption that market makers observe order flow across markets: no DeFi claim, no empirical claim, no assumption-free law.}
+\end{frame}
+
+% ============================================================================
+% 4. EVIDENCE: FORMATION (P1)
+% ============================================================================
+\section{Evidence: formation (P1)}
+
+\begin{frame}{Testing P1 with a lead-lag panel}
+  \begin{itemize}
+    \item \textbf{Sample:} 5 candidates (WETH, USDC, USDT, DAI, WBTC), daily, 2021-05-05 to 2026-06-30, balanced (1{,}883 dates $\times$ 5 tokens, $N=9{,}415$).
+    \item \textbf{Three series per token-day:} $L$ = log candidate-linked liquidity; $D$ = DirectCostAdvantage (execution-cost gap, direct vs.\ indirect route); $S$ = indirect-route VehicleShare.
+    \item \textbf{Design:} $\Delta_\tau(\text{outcome})_{t+\tau}$ on $L_t, D_t, S_t$, token $+$ date fixed effects, $\tau \in \{1,7,14,30\}$ days; cluster-by-date, Driscoll-Kraay, and month block-bootstrap inference.
+    \item \textbf{What this shows:} $L$, $D$, $S$ at $t$ carry predictive content for each other's future changes beyond fixed effects. It cannot rule out a persistent common shock driving them together.
+    \item \textbf{Independently re-derived} from scratch by two methods (sparse LSDV; from-scratch sandwich estimator); matches to 4 decimal places.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{P1 headline: two legs support the loop, one is null, one runs backward}
+  \small
+  \begin{center}
+  \begin{tabular}{@{}p{3.6cm}c p{5.1cm} l@{}}
+    \toprule
+    Relationship & Pred.\ sign & Evidence across the 4 horizons & Verdict \\
+    \midrule
+    $S$ on $L$ & $+$ & positive; $p<0.001$ (DK) at all 4 & \textbf{Robust} \\
+    $L$ on $S$ & $+$ & positive; $p<0.05$ (DK) at 3 of 4 & Partial \\
+    $S$ on $D$ & $-$ & correct sign; $p=0.06$--$0.24$, never sig. & Null \\
+    $D$ on $L$ & $-$ & \textbf{wrong sign} at all 4; $p<0.06$ (DK) at 2 of 4 & \textbf{Contra} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.6em}
+  {\footnotesize ``$Y$ on $X$'' = outcome $Y_{t+\tau}$ regressed on $X_t$. Full table in backup. Two bars this design does not clear: no exogenous shock/IV, and the fourth prediction runs backward (next slide).}
+\end{frame}
+
+\begin{frame}{P1's contra-result: one leg of the loop runs backward}
+  \small
+  P1 predicts deeper own liquidity should \emph{lower} DirectCostAdvantage ($D$ on $L$, $\beta<0$). The pooled estimate is significantly positive at every horizon. It survives most, but not all, of the robustness battery:
+  \begin{itemize}
+    \item Recurs in \emph{both} calm and high-volatility regimes.
+    \item Recurs in 3 of 4 alternative depth/cost-measure constructions (the \$100k common-support variant is the one exception: it turns null instead of wrong-signed).
+    \item Recurs in the pre-midpoint half of the sample; reverses (matches the predicted sign) post-midpoint.
+    \item \textbf{Reverses} in the high/low baseline-depth split: both regimes match the predicted sign there (full detail in backup).
+  \end{itemize}
+  \vspace{0.4em}
+  \begin{alertblock}{Bottom line}
+    Two of four legs of the proposed loop show lead-lag support ($S$ on $L$ robust, $L$ on $S$ partial); one is null; one runs opposite to the theory in most but not all splits and stays unresolved.
+  \end{alertblock}
+\end{frame}
+
+% ============================================================================
+% 5. EVIDENCE: ARCHITECTURE (P2)
+% ============================================================================
+\section{Evidence: architecture (P2)}
+
+\begin{frame}{Testing P2: V2 to V3 as an event study, reframed}
+  \begin{itemize}
+    \item \textbf{Original ask:} does architecture that cheapens LP repositioning make vehicle status more elastic to stress? Tested via the V2$\to$V3 concentrated-liquidity launch (2021-05-05).
+    \item \textbf{Design note:} a cross-chain design was scoped and found not closeable (no multi-chain/L2 fetch path in this repo). Within-chain is the intended design, with chronological sample splits as the robustness check.
+    \item \textbf{Sample:} 5 candidates, balanced pairs around the launch: $\pm$12 months (396 pairs, $N=65{,}022$) and $\pm$24 months (507 pairs, $N=97{,}484$).
+    \item \textbf{Outcomes:} vehicle-candidate route share, vehicle HHI, direct-pool depth (level difference-in-differences), plus an elasticity test on $|$day-to-day change$|$ pre- vs.\ post-launch.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{P2 headline: capital efficiency moves, topology does not}
+  \small
+  \begin{center}
+  \begin{tabular}{@{}l l r r@{}}
+    \toprule
+    Window & Outcome & Effect & $p$ \\
+    \midrule
+    $\pm$12mo & Vehicle-candidate route share (pp) & 0.94 & 0.141 \\
+    $\pm$12mo & Vehicle HHI & 0.014 & 0.246 \\
+    $\pm$12mo & \textbf{Direct-pool depth (ratio)} & \textbf{0.120} & \textbf{$<$0.001} \\
+    \midrule
+    $\pm$24mo & Vehicle-candidate route share (pp) & 1.13 & 0.123 \\
+    $\pm$24mo & Vehicle HHI & 0.023 & 0.131 \\
+    $\pm$24mo & \textbf{Direct-pool depth (ratio)} & \textbf{0.120} & \textbf{$<$0.001} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.6em}
+  Direct-pool depth improves significantly post-V3 in both windows. Route share and vehicle HHI do not move. Architecture that improves execution quality does not automatically change which asset serves as the vehicle.
+\end{frame}
+
+\begin{frame}{Why the elasticity claim is not testable here}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \small
+      Monthly mean $|$day-to-day $\Delta$ route share$|$, model-free, from the raw panel:
+      \begin{center}
+      \begin{tabular}{@{}l r@{}}
+        \toprule
+        Month & pp \\
+        \midrule
+        2020-12 & 16.5 \\
+        2021-01 & 21.4 \\
+        2021-05 (launch) & 22.2 (peak) \\
+        2021-06 & 16.8 \\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+      {\footnotesize Matches the well-documented Jan--May 2021 alt-season volatility episode, unrelated to the AMM architecture change.}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small
+      \begin{itemize}
+        \item Pre-launch placebo dates: large, significant ``elasticity'' jumps ($t=4.4$--$7.8$).
+        \item Post-launch placebos: mostly null.
+        \item True launch window sits at the peak of the same cycle and comes back null.
+        \item Joint pretrend Wald test: $\chi^2=49$--$67$, $p<0.001$ for every outcome, while the linear pretrend slope is insignificant ($p=0.14$--$0.99$), consistent with a step-like calendar effect.
+      \end{itemize}
+      \vspace{0.4em}
+      Not identifiable in this sample by this design. Not claimed either way.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================================
+% 6. RECAP
+% ============================================================================
+\section{Recap}
+
+\begin{frame}{Recap and contribution}
+  \begin{itemize}
+    \item Liquidity depth and routing volume move together in the direction P1 predicts ($S$ on $L$ robust across every check), with one contra-result left unresolved ($D$ on $L$, wrong-signed across most, but not all, robustness splits).
+    \item Architecture that improves execution quality (direct-pool depth up 0.12, $p<0.001$) does not change which asset serves as the vehicle (route share and HHI both null); the P2 elasticity claim cannot be identified in this sample given a diagnosed 2021 confound.
+    \item Capital efficiency and vehicle-currency status are separable margins.
+  \end{itemize}
+  \vspace{0.8em}
+  \begin{block}{}
+    \centering A modest, partially-supported finding, not a closed causal loop.
+  \end{block}
+\end{frame}
+% ============================================================================
+% BACKUP
+% Divider + appendix content merged in from nbc_2026_appendix.tex (companion
+% backup deck). NOTE (merge decision, 2026-08-04): the core deck's own
+% original condensed backup frames (P1 headline mini-table, a short
+% robustness-detail paragraph, P2 sample/DiD, P2 placebo, P2
+% volatility/version, and a References slide) have been DROPPED here rather
+% than kept alongside the appendix's fuller versions of the same material --
+% keeping both would have put two different-looking tables of the *same*
+% P1/P2 numbers back-to-back and two slightly different References slides
+% in one deck. The appendix version is a strict superset (more SE/p columns
+% on the P1 headline table; dedicated slides for each robustness split
+% instead of one paragraph; a Q&A coverage map and design-notes section the
+% core-only backup never had), so it wins. See the appendix's own file
+% header for its sourcing/verification method.
+% ============================================================================
+\section{Backup}
+
+\begin{frame}
+  \centering
+  \vfill
+  {\Large \textbf{Backup}}
+  \vspace{1em}
+
+  {\small
+  Q\&A coverage map \quad $\vert$ \quad P1 backup: full headline table and $D$-on-$L$ robustness detail \\
+  P2 backup: placebo dates, pretrend, volatility split, version construction \\
+  Design notes: data provenance, cost construction, why V2$\to$V3 \quad $\vert$ \quad References
+  }
+  \vfill
+\end{frame}
+
+\begin{frame}{What this appendix covers}
+  \begin{itemize}
+    \item \textbf{Q\&A coverage map:} the questions NTU's blockchain/CS-leaning audience is most likely to ask, each mapped to a specific slide below.
+    \item \textbf{P1 backup:} the full lead-lag table (4 relationships $\times$ 4 horizons) and the full $D$-on-$L$ contra-result detail (every robustness split, plus the LINK falsification cells).
+    \item \textbf{P2 backup:} the full placebo-date table, the joint-pretrend Wald detail, the volatility split, and the version-construction table.
+    \item \textbf{Design notes:} data provenance and cost construction, why V2$\to$V3 and not cross-chain, candidate-set and route construction.
+    \item References, at full density.
+  \end{itemize}
+  {\scriptsize Companion file to \texttt{slides/nbc\_2026\_core.tex}. Every number below is checked directly against a file under \texttt{output/nbc\_pipeline/04\_evidence/}.}
+\end{frame}
+
+% ============================================================================
+% Q&A COVERAGE MAP
+% ============================================================================
+\section{Q\&A coverage map}
+
+\begin{frame}{Q\&A coverage map (1/2): mechanics and data}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{5.9cm}@{}}
+    \toprule
+    Likely question & Backup slide \\
+    \midrule
+    Does $D$ (DirectCostAdvantage) include gas, or only fees/price impact? & ``Data provenance and cost construction'' \\[0.3em]
+    Where does the on-chain data come from, and how do you know an indexer/subgraph didn't drop or mis-attribute swaps? & ``Data provenance and cost construction'' \\[0.3em]
+    With only 5 tokens, is Driscoll-Kraay / date-clustering actually valid here? & ``P1 backup: full headline table'' (note) \\[0.3em]
+    How is an ``indirect route'' identified on-chain? Could a swap count as ``through'' a candidate just because the trader also held it? & ``Candidate set, route construction, and the LINK placebo'' \\[0.3em]
+    Could MEV/arbitrage bots mechanically generate the $S$-on-$L$ result instead of liquidity providers doing so? & ``Candidate set, route construction, and the LINK placebo'' \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Q\&A coverage map (2/2): design choices and the contra-results}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{5.9cm}@{}}
+    \toprule
+    Likely question & Backup slide \\
+    \midrule
+    Caparros-Chaudhary-Klein (CCK) is cited as the identification template and uses cross-chain gas variation. Why is P2 tested within one chain instead? & ``Why V2$\to$V3: no cross-chain design'' \\[0.3em]
+    Why V2$\to$V3 specifically? Why not V1, or a non-Uniswap AMM? & ``Why V2$\to$V3: no cross-chain design'' \\[0.3em]
+    Is LINK really a fair placebo, given it's one unit with no fixed effects? & ``P1 backup: LINK falsification detail'' \\[0.3em]
+    Why this 5-token candidate set (WETH/USDC/USDT/DAI/WBTC), with no long-tail candidates? & ``Candidate set, route construction, and the LINK placebo'' \\[0.3em]
+    Is the V2$\to$V3 null/confound really a design problem, or could it be a coding bug in the panel? & ``P2 backup: joint pretrend detail'' (note) \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  {\scriptsize Per \texttt{docs/nbc-2026-deck-pipeline.md}: this is the one place NBC's actual audience profile is allowed to shape content, capped and confined to this appendix.}
+\end{frame}
+
+% ============================================================================
+% P1 BACKUP
+% ============================================================================
+\section{P1 backup}
+
+\begin{frame}{P1 backup: full headline table, all 4 relationships $\times$ 4 horizons}
+  \tiny
+  \begin{center}
+  \begin{tabular}{@{}l c r r r r r r@{}}
+    \toprule
+    Relationship & $\tau$ & $\beta$ & SE (cluster-date) & $p$ (cl.-date) & SE (DK) & $p$ (DK) & SE (bootstrap) \\
+    \midrule
+    $S$ on $L$ ($+$) & 1  & 0.0223 & 0.0015 & $<$0.001 & 0.0015 & $<$0.001 & 0.0024 \\
+    $S$ on $L$ ($+$) & 7  & 0.0261 & 0.0016 & $<$0.001 & 0.0023 & $<$0.001 & 0.0030 \\
+    $S$ on $L$ ($+$) & 14 & 0.0270 & 0.0017 & $<$0.001 & 0.0030 & $<$0.001 & 0.0032 \\
+    $S$ on $L$ ($+$) & 30 & 0.0270 & 0.0016 & $<$0.001 & 0.0036 & $<$0.001 & 0.0040 \\
+    \midrule
+    $L$ on $S$ ($+$) & 1  & 0.0189 & 0.0091 & 0.039 & 0.0095 & 0.046 & 0.0094 \\
+    $L$ on $S$ ($+$) & 7  & 0.0377 & 0.0114 & $<$0.001 & 0.0146 & 0.010 & 0.0130 \\
+    $L$ on $S$ ($+$) & 14 & 0.0483 & 0.0148 & 0.001 & 0.0247 & 0.051 & 0.0276 \\
+    $L$ on $S$ ($+$) & 30 & 0.0842 & 0.0154 & $<$0.001 & 0.0344 & 0.014 & 0.0350 \\
+    \midrule
+    $S$ on $D$ ($-$) & 1  & $-$0.0060 & 0.0035 & 0.085 & 0.0036 & 0.095 & 0.0051 \\
+    $S$ on $D$ ($-$) & 7  & $-$0.0057 & 0.0036 & 0.117 & 0.0049 & 0.239 & 0.0067 \\
+    $S$ on $D$ ($-$) & 14 & $-$0.0122 & 0.0037 & 0.001 & 0.0065 & 0.060 & 0.0084 \\
+    $S$ on $D$ ($-$) & 30 & $-$0.0129 & 0.0041 & 0.002 & 0.0084 & 0.123 & 0.0086 \\
+    \midrule
+    $D$ on $L$ ($-$) & 1  & \textbf{0.0111} & 0.0058 & 0.054 & 0.0054 & 0.039 & 0.0080 \\
+    $D$ on $L$ ($-$) & 7  & \textbf{0.0162} & 0.0060 & 0.007 & 0.0085 & 0.057 & 0.0104 \\
+    $D$ on $L$ ($-$) & 14 & \textbf{0.0168} & 0.0064 & 0.008 & 0.0113 & 0.139 & 0.0131 \\
+    $D$ on $L$ ($-$) & 30 & \textbf{0.0244} & 0.0062 & $<$0.001 & 0.0154 & 0.113 & 0.0156 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.3em}
+  \tiny $N=9{,}265$--$9{,}410$; 1{,}853--1{,}882 date clusters, 5 tokens. Bold = wrong-signed vs.\ the predicted sign in parentheses. \textbf{Inference note (Q\&A):} date-clustering (not token-clustering) is intentional: with only 5 tokens, clustering on the token dimension would give 5 clusters, which is invalid asymptotics. Clustering on date ($\sim$1{,}850--1{,}880 clusters) plus Driscoll-Kraay (which runs on $T\to\infty$, $N$ fixed) is the correct tool for $N=5$; independently re-derived to 4 decimal places (Sec.\ 5, \texttt{05\_verification.md}). One nitpick from that check: the finite-sample multiplier uses $k=4$ regressor d.f.\ without an FE adjustment, modestly understating SEs ($\sim$10--12\%), so DK $p=0.046$--$0.060$ above should not be read as robustly significant. Source: \texttt{04\_evidence/p1/p1\_headline\_panel\_results.md}.
+\end{frame}
+
+\begin{frame}{P1 backup: $D$-on-$L$ detail --- depth split (and a correction)}
+  \scriptsize
+  \begin{center}
+  \begin{tabular}{@{}l r r r r@{}}
+    \toprule
+    Depth regime & $\tau$ & $\beta$ & $p$ (DK) & Sign check \\
+    \midrule
+    High baseline depth & 1  & $-$0.0245 & $<$0.001 & match \\
+    High baseline depth & 7  & $-$0.0244 & 0.008 & match \\
+    High baseline depth & 14 & $-$0.0372 & 0.002 & match \\
+    High baseline depth & 30 & $-$0.0236 & 0.084 & match (n.s.) \\
+    Low baseline depth  & 1  & $-$0.0449 & $<$0.001 & match \\
+    Low baseline depth  & 7  & $-$0.0541 & $<$0.001 & match \\
+    Low baseline depth  & 14 & $-$0.0617 & $<$0.001 & match \\
+    Low baseline depth  & 30 & $-$0.0731 & $<$0.001 & match \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.1em}
+  \begin{alertblock}{Correction against the prose synthesis, checked against the primary table}
+    \scriptsize The $D$-on-$L$ wrong sign does \textbf{not} recur here in either regime: all 8 cells above match the predicted negative sign, most significantly. This is the one split where the contra-result reverses back to the theory's prediction, and it should not be read as a fifth confirmation of the wrong-signed pooled result. \texttt{05\_verification.md}'s Sec.\ 3 prose describes this split as ``recurs in the low-depth regime''; the primary table here, checked directly for this appendix, shows the opposite in both regimes. The wrong-signed cells the depth-split tally actually contains come from $S$-on-$D$ and $L$-on-$S$ instead of $D$-on-$L$; see next slides for where the contra-result really does recur.
+  \end{alertblock}
+  \vspace{-0.3em}
+  {\scriptsize Source: \texttt{04\_evidence/p1/p1\_robustness\_depth\_split.md}, cross-checked against \texttt{p1\_robustness\_depth\_split.csv}.}
+\end{frame}
+
+\begin{frame}{P1 backup: $D$-on-$L$ detail --- volatility split (recurs in both regimes)}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}l r r r r@{}}
+    \toprule
+    Volatility regime & $\tau$ & $\beta$ & $p$ (DK) & Sign check \\
+    \midrule
+    Calm & 1  & 0.0071 & 0.409 & wrong sign (n.s.) \\
+    Calm & 7  & 0.0220 & 0.159 & wrong sign (n.s.) \\
+    Calm & 14 & 0.0232 & 0.282 & wrong sign (n.s.) \\
+    Calm & 30 & 0.0346 & 0.262 & wrong sign (n.s.) \\
+    High & 1  & 0.0117 & 0.106 & wrong sign (n.s.) \\
+    High & 7  & 0.0122 & 0.243 & wrong sign (n.s.) \\
+    High & 14 & 0.0137 & 0.316 & wrong sign (n.s.) \\
+    High & 30 & 0.0186 & 0.219 & wrong sign (n.s.) \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.5em}
+  Every one of the 8 volatility-split cells for $D$ on $L$ is wrong-signed (positive, predicted negative); none reach DK significance individually, but the consistency of the sign across every horizon and both regimes is itself the finding this split contributes.
+  {\scriptsize Source: \texttt{04\_evidence/p1/p1\_robustness\_volatility\_split.csv} (cross-checked against \texttt{p1\_robustness\_battery\_summary.md}).}
+\end{frame}
+
+\begin{frame}{P1 backup: $D$-on-$L$ detail --- alternative measures}
+  \tiny
+  \begin{center}
+  \begin{tabular}{@{}l r r r r@{}}
+    \toprule
+    Variant & $\tau$ & $\beta$ & $p$ (DK) & Sign check \\
+    \midrule
+    Alt.\ depth (lp\_concentration) & 1  & 0.0517 & 0.013 & wrong sign \\
+    Alt.\ depth (lp\_concentration) & 7  & 0.0781 & 0.021 & wrong sign \\
+    Alt.\ depth (lp\_concentration) & 14 & 0.0670 & 0.116 & wrong sign (n.s.) \\
+    Alt.\ depth (lp\_concentration) & 30 & 0.0923 & 0.095 & wrong sign (n.s.) \\
+    Winsorized-mean $D$ & 1  & 0.0133 & $<$0.001 & wrong sign \\
+    Winsorized-mean $D$ & 7  & 0.0195 & $<$0.001 & wrong sign \\
+    Winsorized-mean $D$ & 14 & 0.0222 & $<$0.001 & wrong sign \\
+    Winsorized-mean $D$ & 30 & 0.0286 & $<$0.001 & wrong sign \\
+    \$1k common-support $D$ & 1  & 0.0101 & 0.001 & wrong sign \\
+    \$1k common-support $D$ & 7  & 0.0116 & 0.004 & wrong sign \\
+    \$1k common-support $D$ & 14 & 0.0134 & 0.008 & wrong sign \\
+    \$1k common-support $D$ & 30 & 0.0165 & 0.019 & wrong sign \\
+    \$100k common-support $D$ & 1  & $-$0.0075 & 0.164 & match (n.s.) \\
+    \$100k common-support $D$ & 7  & $-$0.0047 & 0.596 & match (n.s.) \\
+    \$100k common-support $D$ & 14 & $-$0.0065 & 0.558 & match (n.s.) \\
+    \$100k common-support $D$ & 30 & 0.0035 & 0.802 & wrong sign (n.s.) \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.3em}
+  \tiny Wrong-signed in 3 of 4 variants at every horizon (12 of 16 cells); the \$100k window is the one variant/horizon combination that turns null instead of wrong-signed, except at $\tau=30$. Source: \texttt{04\_evidence/p1/p1\_robustness\_altmeasure.csv}.
+\end{frame}
+
+\begin{frame}{P1 backup: $D$-on-$L$ detail --- period split and full tally}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}l r r r r@{}}
+    \toprule
+    Period & $\tau$ & $\beta$ & $p$ (DK) & Sign check \\
+    \midrule
+    Pre-midpoint  & 1  & 0.0192 & 0.087 & wrong sign (n.s.) \\
+    Pre-midpoint  & 7  & 0.0263 & 0.094 & wrong sign (n.s.) \\
+    Pre-midpoint  & 14 & 0.0285 & 0.110 & wrong sign (n.s.) \\
+    Pre-midpoint  & 30 & 0.0327 & 0.183 & wrong sign (n.s.) \\
+    Post-midpoint & 1  & $-$0.0618 & 0.002 & match \\
+    Post-midpoint & 7  & $-$0.0717 & 0.014 & match \\
+    Post-midpoint & 14 & $-$0.1026 & 0.008 & match \\
+    Post-midpoint & 30 & $-$0.1376 & 0.001 & match \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+  \begin{block}{Where the $D$-on-$L$ contra-result actually recurs, checked directly}
+    \footnotesize Pooled headline (wrong-signed, all 4 $\tau$) $\to$ \textbf{volatility split: recurs in both regimes} $\to$ \textbf{alt-measure: recurs in 3 of 4 variants} $\to$ \textbf{period split: recurs pre-midpoint, reverses post-midpoint} $\to$ \textbf{depth split: reverses in both regimes} (previous slides). Net: this contra-result survives most but not all of the battery. A "nearly every split" characterization does not hold on its own; two of five checks (depth, post-midpoint period) actually flip back to the predicted sign.
+  \end{block}
+  {\scriptsize Source: \texttt{04\_evidence/p1/p1\_robustness\_period\_split.csv}.}
+\end{frame}
+
+\begin{frame}{P1 backup: LINK falsification detail}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}l r r r r r@{}}
+    \toprule
+    Equation & $\tau$ & $\beta$ (LINK) & $p$ (NW, LINK) & $\beta$ (pooled) & Same sign? \\
+    \midrule
+    $S$ on $L$ & 1  & 0.0003  & 0.380 & 0.0223 & yes \\
+    $S$ on $L$ & 7  & 0.0001  & 0.911 & 0.0261 & yes \\
+    $S$ on $L$ & 14 & $-$0.0008 & 0.183 & 0.0270 & no \\
+    $S$ on $L$ & 30 & 0.0001  & 0.898 & 0.0270 & yes \\
+    $L$ on $S$ & 1  & $-$0.6536 & 0.152 & 0.0189 & no \\
+    $L$ on $S$ & 7  & $-$2.4480 & 0.036 & 0.0377 & no (wrong sign, significant) \\
+    $L$ on $S$ & 14 & $-$1.4347 & 0.363 & 0.0483 & no \\
+    $L$ on $S$ & 30 & 0.1612  & 0.900 & 0.0842 & yes \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.3em}
+  \scriptsize\textbf{Is LINK a fair placebo (Q\&A)?} Liquid, real V3 pools, a genuine occasional intermediate hop. It is not conventionally treated as a vehicle/bridge currency. Built by the identical $L$/$S$ construction. But: single cross-sectional unit, no token+date FE possible, Newey-West HAC in place of Driscoll-Kraay -- a strictly weaker, noisier estimator. Sign matches the pooled headline in only 4 of 8 cells; LINK's own coefficients are indistinguishable from zero in 7 of 8; one cell is wrong-signed and significant ($p=0.036$). No placebo $D$ was built: doing so would require rerunning the multi-year V2+V3 quote-simulation with LINK added, out of scope for this pass. This limit is disclosed in \texttt{build\_link\_placebo\_panel.py}; it was not silently skipped. \textbf{Verdict: a weak, inconclusive placebo. It is not a clean pass either way.}
+
+  {\scriptsize Source: \texttt{04\_evidence/p1/p1\_robustness\_placebo\_link.md}.}
+\end{frame}
+
+\begin{frame}{P1 backup: full battery, remaining cells}
+  \begin{center}
+  \begin{block}{TODO -- formatting pass}
+    \small The subsample sign-check tallies (depth 72 cells, volatility 72, alt-measure 144, period 72 -- 360 cells total) are summarized on this appendix's earlier slides for the $D$-on-$L$ relationship specifically. The remaining cells (the $S$-on-$L$, $L$-on-$S$, and $S$-on-$D$ relationships across every split) are all directionally consistent with the headline (see \texttt{p1\_robustness\_battery\_summary.md}'s tallies: $S$-on-$L$ is significant in all 32/32 depth$\times$volatility$\times$period$\times$horizon cells and all 16/16 alt-measure$\times$horizon cells). A full row-by-row table across all four relationships and all four split types is not reproduced here; pull directly from the CSVs below if a specific cell is requested live.
+  \end{block}
+  \end{center}
+  {\scriptsize Sources: \texttt{04\_evidence/p1/p1\_robustness\_\{depth\_split,volatility\_split,altmeasure,period\_split\}.csv}.}
+\end{frame}
+
+% ============================================================================
+% P2 BACKUP
+% ============================================================================
+\section{P2 backup}
+
+\begin{frame}{P2 backup: placebo dates, level DiD}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}l l r r@{}}
+    \toprule
+    Placebo date (regime) & Outcome & Effect & $p$ \\
+    \midrule
+    2020-10-01 (pre) & Route share (pp) & $-$1.7776 & 0.049 \\
+    2020-10-01 (pre) & Vehicle HHI & $-$0.0224 & 0.049 \\
+    2020-10-01 (pre) & Direct-pool depth & 0.0554 & 0.003 \\
+    2020-11-15 (pre) & Route share (pp) & $-$0.0901 & 0.873 \\
+    2020-11-15 (pre) & Vehicle HHI & $-$0.0261 & 0.002 \\
+    2020-11-15 (pre) & Direct-pool depth & 0.0211 & 0.048 \\
+    2021-01-01 (pre) & Route share (pp) & 2.0903 & $<$0.001 \\
+    2021-01-01 (pre) & Vehicle HHI & 0.0018 & 0.768 \\
+    2021-01-01 (pre) & Direct-pool depth & 0.0125 & 0.077 \\
+    2022-05-05 (post, +1y) & Route share (pp) & $-$2.4767 & $<$0.001 \\
+    2022-05-05 (post, +1y) & Vehicle HHI & $-$0.0287 & $<$0.001 \\
+    2022-05-05 (post, +1y) & Direct-pool depth & $-$0.0255 & 0.043 \\
+    2023-05-05 (post, +2y) & Route share (pp) & 2.9108 & $<$0.001 \\
+    2023-05-05 (post, +2y) & Vehicle HHI & 0.0150 & 0.061 \\
+    2023-05-05 (post, +2y) & Direct-pool depth & $-$0.0067 & 0.301 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{-0.3em}
+  {\scriptsize Level DiD, $\pm$120-day windows entirely inside one regime (never straddling 2021-05-05). Source: \texttt{04\_evidence/p2/p2\_robustness\_battery\_results.md}, part (i).}
+\end{frame}
+
+\begin{frame}{P2 backup: placebo dates, elasticity test}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}l l r r@{}}
+    \toprule
+    Placebo date (regime) & Outcome ($|$day-to-day $\Delta|$) & Effect & $p$ \\
+    \midrule
+    2020-10-01 (pre) & Route share (pp) & 3.4318 & $<$0.001 \\
+    2020-10-01 (pre) & Vehicle HHI & 0.0148 & 0.004 \\
+    2020-10-01 (pre) & Direct-pool depth & $-$0.0192 & $<$0.001 \\
+    2020-11-15 (pre) & Route share (pp) & 4.0151 & $<$0.001 \\
+    2020-11-15 (pre) & Vehicle HHI & 0.0207 & $<$0.001 \\
+    2020-11-15 (pre) & Direct-pool depth & $-$0.0140 & 0.001 \\
+    2021-01-01 (pre) & Route share (pp) & 5.9643 & $<$0.001 \\
+    2021-01-01 (pre) & Vehicle HHI & 0.0187 & $<$0.001 \\
+    2021-01-01 (pre) & Direct-pool depth & $-$0.0098 & 0.003 \\
+    2021-05-05 (\textbf{true launch}) & Route share (pp) & $-$0.6810 & 0.621 \\
+    2022-05-05 (post, +1y) & Route share (pp) & $-$0.6550 & 0.427 \\
+    2022-05-05 (post, +1y) & Direct-pool depth & 0.0219 & $<$0.001 \\
+    2023-05-05 (post, +2y) & Route share (pp) & 1.1534 & 0.135 \\
+    2023-05-05 (post, +2y) & Direct-pool depth & $-$0.0101 & 0.036 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{-0.3em}
+  \footnotesize Every pre-launch placebo produces a large, significant ``elasticity'' jump; the true launch window does not. This is the falsification check failing at the pre-launch placebos and the pattern that motivates the pretrend test on the next slide.
+  {\scriptsize Source: \texttt{04\_evidence/p2/p2\_robustness\_battery\_results.md}, part (i).}
+\end{frame}
+
+\begin{frame}{P2 backup: joint pretrend detail}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}l l r r r r@{}}
+    \toprule
+    Window & Outcome & Slope & Slope $p$ & Joint $\chi^2$ (12 df) & Joint $p$ \\
+    \midrule
+    $\pm$12mo & Route share & 0.0012 & 0.994 & 64.24 & $<$0.001 \\
+    $\pm$12mo & Vehicle HHI & $-$0.0024 & 0.144 & 50.52 & $<$0.001 \\
+    $\pm$12mo & Direct-pool depth & 0.0176 & $<$0.001 & 60.33 & $<$0.001 \\
+    $\pm$24mo & Route share & 0.0344 & 0.836 & 67.48 & $<$0.001 \\
+    $\pm$24mo & Vehicle HHI & $-$0.0020 & 0.202 & 49.35 & $<$0.001 \\
+    $\pm$24mo & Direct-pool depth & 0.0184 & $<$0.001 & 67.51 & $<$0.001 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.6em}
+  A flat \emph{linear} pretrend slope alongside a hugely significant \emph{joint} test that all pre-launch month dummies are zero is a step-like, non-monotonic calendar effect. It is not a smooth trend toward the launch -- exactly the signature the raw monthly $|\Delta$ route share$|$ series shows (16$\to$21pp step-up, Dec 2020$\to$Jan 2021, peaking at launch month, falling back by June 2021).
+  \vspace{0.4em}
+  \textbf{Bug or design problem (Q\&A)?} \texttt{05\_verification.md} traced this with an independent code audit (the placebo estimator and headline estimator import and call the identical functions, so a latent bug would bias both in the same direction instead of selectively failing only the placebos) plus a raw-panel recomputation bypassing both scripts. Verdict: 85\% confidence this is a genuine design/confound issue and not a coding error.
+  {\scriptsize Source: \texttt{04\_evidence/p2/p2\_robustness\_battery\_results.md}, part (i), joint pretrend block.}
+\end{frame}
+
+\begin{frame}{P2 backup: volatility split, both windows}
+  \footnotesize
+  \begin{center}
+  \begin{tabular}{@{}l l l r r@{}}
+    \toprule
+    Window & Pre-V3 volatility & Outcome ($|\Delta|$) & Effect & $p$ \\
+    \midrule
+    $\pm$12mo & High & Route share (pp) & 0.4028 & 0.823 \\
+    $\pm$12mo & Low  & Route share (pp) & $-$1.1501 & 0.522 \\
+    $\pm$12mo & High & Vehicle HHI & $-$0.0030 & 0.778 \\
+    $\pm$12mo & High & Direct-pool depth & $-$0.0163 & 0.102 \\
+    $\pm$12mo & Low  & Vehicle HHI & $-$0.0044 & 0.579 \\
+    $\pm$12mo & Low  & Direct-pool depth & 0.0047 & 0.137 \\
+    $\pm$24mo & High & Route share (pp) & 1.6682 & 0.295 \\
+    $\pm$24mo & Low  & Route share (pp) & $-$0.9029 & 0.670 \\
+    $\pm$24mo & High & Vehicle HHI & 0.0010 & 0.906 \\
+    $\pm$24mo & High & Direct-pool depth & $-$0.0120 & 0.278 \\
+    $\pm$24mo & Low  & Vehicle HHI & $-$0.0052 & 0.530 \\
+    $\pm$24mo & Low  & Direct-pool depth & 0.0143 & 0.002 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+  Null in both volatility regimes for route share and vehicle HHI, every window. The one significant cell (low pre-V3 volatility, $\pm$24mo, direct-pool depth, $p=0.002$) is a capital-efficiency result. It is distinct from a vehicle-status/elasticity result, consistent with the headline's separation of the two margins.
+  {\scriptsize Source: \texttt{04\_evidence/p2/p2\_robustness\_battery\_results.md}, part (ii).}
+\end{frame}
+
+\begin{frame}{P2 backup: version construction, $\pm$12mo}
+  \tiny
+  \begin{center}
+  \begin{tabular}{@{}l r r r@{}}
+    \toprule
+    Version construction & Outcome & Effect & $p$ \\
+    \midrule
+    Best-across-versions & Direct-route availability (pp) & 11.13 & $<$0.001 \\
+    Best-across-versions & Vehicle-route availability (pp) & 25.99 & $<$0.001 \\
+    Best-across-versions & No-direct vehicle-route availability (pp) & $-$2.16 & 0.013 \\
+    Best-across-versions & Direct-route quality (ratio) & 0.139 & $<$0.001 \\
+    Best-across-versions & Direct cost advantage vs.\ vehicle route & $-$0.012 & 0.663 \\
+    V2-only & Direct-route availability (pp) & $-$39.66 & $<$0.001 \\
+    V2-only & Vehicle-route availability (pp) & $-$28.18 & $<$0.001 \\
+    V2-only & No-direct vehicle-route availability (pp) & $-$2.29 & $<$0.001 \\
+    V2-only & Direct-route quality (ratio) & 0.024 & $<$0.001 \\
+    V2-only & Direct cost advantage vs.\ vehicle route & $-$0.005 & 0.821 \\
+    V3-only & Direct-route availability (pp) & 50.79 & $<$0.001 \\
+    V3-only & Vehicle-route availability (pp) & 28.77 & $<$0.001 \\
+    V3-only & No-direct vehicle-route availability (pp) & 8.52 & $<$0.001 \\
+    V3-only & Direct-route quality (ratio) & $-$0.0002 & 0.321 \\
+    V3-only & Direct cost advantage vs.\ vehicle route & 0.0000 & 0.574 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.3em}
+  \tiny ``Best-across-versions'' is the default unfiltered panel (whichever version gave the best realized quote per leg); V2-only/V3-only restrict to legs whose realized best source was actually that version -- a disclosed proxy for version availability. It is not a forced re-quote. Availability shifts mechanically with which version existed; cost-advantage effects are small and insignificant throughout. Source: \texttt{04\_evidence/p2/p2\_robustness\_battery\_results.md}, part (iii).
+\end{frame}
+
+\begin{frame}{P2 backup: version construction, $\pm$24mo}
+  \tiny
+  \begin{center}
+  \begin{tabular}{@{}l r r r@{}}
+    \toprule
+    Version construction & Outcome & Effect & $p$ \\
+    \midrule
+    Best-across-versions & Direct-route availability (pp) & 11.51 & $<$0.001 \\
+    Best-across-versions & Vehicle-route availability (pp) & 26.07 & $<$0.001 \\
+    Best-across-versions & No-direct vehicle-route availability (pp) & $-$2.31 & 0.012 \\
+    Best-across-versions & Direct-route quality (ratio) & 0.129 & $<$0.001 \\
+    Best-across-versions & Direct cost advantage vs.\ vehicle route & $-$0.002 & 0.932 \\
+    V2-only & Direct-route availability (pp) & $-$43.89 & $<$0.001 \\
+    V2-only & Vehicle-route availability (pp) & $-$29.16 & $<$0.001 \\
+    V2-only & No-direct vehicle-route availability (pp) & $-$2.91 & $<$0.001 \\
+    V2-only & Direct-route quality (ratio) & 0.017 & 0.003 \\
+    V2-only & Direct cost advantage vs.\ vehicle route & 0.001 & 0.970 \\
+    V3-only & Direct-route availability (pp) & 55.40 & $<$0.001 \\
+    V3-only & Vehicle-route availability (pp) & 32.22 & $<$0.001 \\
+    V3-only & No-direct vehicle-route availability (pp) & 7.95 & $<$0.001 \\
+    V3-only & Direct-route quality (ratio) & $-$0.0002 & 0.320 \\
+    V3-only & Direct cost advantage vs.\ vehicle route & 0.0000 & 0.873 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.3em}
+  \tiny Same pattern as $\pm$12mo, both magnitude and significance. Source: \texttt{04\_evidence/p2/p2\_robustness\_battery\_results.md}, part (iii).
+\end{frame}
+
+\begin{frame}{P2 backup: fixed-window reproduction (robustness item iv)}
+  \footnotesize
+  The level-DiD and elasticity-test numbers under a fixed 12- and 24-month event window reproduce the headline exactly (Effect/SE/$t$/$p$ identical to the headline table in \texttt{p2\_vehicle\_status\_elasticity\_results.md}, to the reported decimal places). This confirms the headline windows are not a hand-picked variant that happens to look best: they are the same fixed-window construction the robustness battery independently re-derives.
+  {\scriptsize Source: \texttt{04\_evidence/p2/p2\_robustness\_battery\_results.md}, part (iv).}
+\end{frame}
+
+% ============================================================================
+% DESIGN / DATA NOTES (answers the mechanics Q&A)
+% ============================================================================
+\section{Design notes}
+
+\begin{frame}{Data provenance and cost construction}
+  \scriptsize
+  \begin{itemize}
+    \item \textbf{Source:} swap/mint/burn/pool-day streams fetched from The Graph subgraphs (six sources: Uniswap V2/V3/V4, Curve, SushiSwap V3, Balancer, each pinned to a specific verified deployment ID) plus Dune for one venue (Fluid); stored as verbatim gzipped JSONL with per-day block-provenance sidecars (min/max block, head-block-at-fetch).
+    \item \textbf{Reliability check:} a drift spot-audit re-fetches a random sample of days per source and diffs row IDs, counts, and block ranges against the stored archive. A drifting source is refetched in full; it is not patched cell by cell.
+    \item \textbf{USD repricing:} subgraph-native \texttt{amountUSD}/\texttt{amountInUSD} fields are not trusted directly (a known \texttt{derivedETH} blow-up issue in the upstream derivation). Every swap leg is repriced from raw token amounts against a stablecoin-anchored per-day price table instead.
+    \item \textbf{DirectCostAdvantage ($D$), does it include gas?} Yes. It is an all-in measure: registered pool fee, price impact from quote replay, and historical route-specific gas expenditure (route gas usage $\times$ day-$t$ gas-token USD price), computed identically for the direct and indirect leg and differenced. Fee/impact/gas components are retained separately and sum back to the all-in figure within a numerical tolerance.
+    \item \textbf{Candidate liquidity ($L_{k,t}$):} sum of Uniswap V3 pool TVL where the candidate is a pool side, restricted to pools with $0<\mathrm{TVL}\le\$10$bn (a spam-pool filter) and confirmed token contracts in the persisted V3 swap archive.
+  \end{itemize}
+  {\scriptsize Sources: \texttt{docs/data-reuse-plan.md}; \texttt{docs/research-questions-and-empirical-design.md} (RQ1 Experiment A; variable registry entries for $C^{D,\mathrm{gas}}$, $C^{I,\mathrm{gas}}$); \texttt{src/ddvc/variable\_registry.py}.}
+\end{frame}
+
+\begin{frame}{Why V2$\to$V3: no cross-chain design}
+  \scriptsize
+  \begin{itemize}
+    \item Caparros, Chaudhary \& Klein (CCK, 2024) is cited only for its own result (gas costs causally raise LP repositioning and concentration, across chains) as the identification template P2 was originally scoped to reuse.
+    \item That specific reuse was scoped and found not closeable in this pass: this repo's data provenance is Ethereum-mainnet subgraph deployments only, with no multi-chain or L2 on-chain fetch path. Building one is real data-engineering work with its own new provenance and reliability burden. It is not a rerun of an existing pipeline.
+    \item The V2$\to$V3 concentrated-liquidity launch (2021-05-05) is the closest available within-chain shock to LP repositioning cost. Chronological sample splits ($\pm$12mo/$\pm$24mo, placebo dates, pretrend tests) substitute for the cross-chain contrast as this design's robustness axis. Java confirmed this substitution up front as the intended design.
+    \item Cost of the substitution: it collapses CCK's actual source of variation (cross-chain gas-cost heterogeneity) into a single across-time architecture change, which is exactly why a market-wide volatility episode centered on the same calendar date becomes a live, undissolvable confound for the elasticity outcome (previous section). A cross-chain replication remains future work; it is not claimed as done here.
+    \item Why V2/V3 and not V1: this repo's tick-level concentrated-liquidity construction is V3-only and populated from 2021-05-04 onward; extending it to V1/V2-equivalent liquidity is the same kind of non-trivial build work already declined for P1's exogenous-shock search (the September 2020 UNI liquidity-mining launch predates the V3-only $L_{k,t}$ construction for the identical reason).
+  \end{itemize}
+  {\scriptsize Sources: \texttt{02\_framings/framing\_1.md} Sec.\ 1 (P2 revision); \texttt{docs/data-reuse-plan.md}.}
+\end{frame}
+
+\begin{frame}{Candidate set, route construction, and the LINK placebo}
+  \scriptsize
+  \begin{itemize}
+    \item \textbf{Candidate set} $\mathcal K=\{\mathrm{WETH},\mathrm{USDC},\mathrm{USDT},\mathrm{DAI},\mathrm{WBTC}\}$: prespecified in \texttt{src/ddvc/variable\_registry.py}, the largest-TVL, most consistently bridging tokens across the sampled AMMs over the full window. It is not re-optimized on the outcome. A no-long-tail candidate set is a real scope limit, disclosed here: it has not been tested against smaller/altcoin candidates in this pass.
+    \item \textbf{How ``indirect route'' is identified:} realized swap paths are reconstructed from the raw swap archive and classified by route class (direct single-hop vs.\ a coherent multi-hop path via a candidate). VehicleShare/BridgeShare counts a route as ``through $k$'' only when $k$ is an actual intermediate hop of a realized multi-leg swap. Merely holding the token alongside the trade does not count.
+    \item \textbf{MEV/arbitrage bots:} this construction does not separately identify bot-driven multi-hop arbitrage flow from other trader flow. Bot flow is not excluded. The lead-lag design's own stated limit covers this case: it establishes temporal precedence only, and does not rule out a common shock, such as a coordinated bot response to deepening liquidity, as an alternative to LP-driven feedback.
+    \item \textbf{LINK as the falsification token:} chosen because it is liquid, has real V3 pools, and is a genuine occasional intermediate hop, but is not conventionally treated as a vehicle/bridge currency. See the dedicated LINK slide (P1 backup) for why the result reads as weak and inconclusive. It is not presented as a clean pass.
+  \end{itemize}
+  {\scriptsize Sources: \texttt{src/ddvc/variable\_registry.py}; \texttt{04\_evidence/p1/build\_link\_placebo\_panel.py} (docstring); \texttt{docs/research-questions-and-empirical-design.md} RQ1.}
+\end{frame}
+
+% ============================================================================
+% REFERENCES
+% ============================================================================
+\section{References}
+
+\begin{frame}{References}
+  \scriptsize
+  \begin{itemize}
+    \item Somogyi, F.\ (2026). FX vehicle-currency routing, quasi-experimental holiday design. Motivation only.
+    \item Krugman, P.\ (1980). Three-country transaction-cost vehicle-selection mechanism. Motivating analogy for P1.
+    \item Yuan, K.\ (2005). Benchmark/common-factor liquidity, conditional theory. Motivating analogy for P1.
+    \item Leh\'ar, A.\ and Parlour, C.\ (2024). AMM (V1/V2) pool size and price impact vs.\ a limit order book. Motivating analogy for P1.
+    \item Klein, O., Kozhan, R., Viswanath-Natraj, G., and Wang, J.\ (2026). LP minting/burning and short-horizon return predictability. Motivates strategic LP behavior behind P1.
+    \item Caparros, B., Chaudhary, S., and Klein, O.\ (2024). Gas costs, LP repositioning, and liquidity concentration. Identification template for P2 (cross-chain design not reused here; see ``Why V2$\to$V3: no cross-chain design'').
+    \item Klein, O.\ and Song, Y.\ (2021); He, Z., Khorrami, P., and Song, Y.\ (2022). TradFi liquidity-commonality and intermediary-capacity analogies. Background only, no DeFi extension claimed.
+    \item Barbon, A.\ and Ranaldo, A.\ (2024/Articles in Advance). CEX vs.\ DEX market quality, gas-fee causal effects. DeFi-native existence-proof comparator for venue/scope calibration. It is not a design template used above.
+  \end{itemize}
+  {\scriptsize Full corpus manifest: \texttt{output/nbc\_pipeline/00\_manifest.md}. This appendix's own sources: \texttt{output/nbc\_pipeline/04\_evidence/\{p1,p2\}/}, \texttt{docs/research-questions-and-empirical-design.md}, \texttt{docs/data-reuse-plan.md}.}
+\end{frame}
+
+\end{document}
