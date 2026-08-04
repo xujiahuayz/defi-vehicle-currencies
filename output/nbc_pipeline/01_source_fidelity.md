@@ -448,3 +448,55 @@ Goldstein, Ozdenoren & Yuan (2011, *Review of Economic Studies* 78(1): 263–292
 
 ---
 
+
+
+# EisfeldtHerskovicRajanSiriwardane2023OTCIntermediaries
+Eisfeldt, Herskovic, Rajan & Siriwardane (2023), "OTC Intermediaries," Review of Financial Studies 36(2), 615-677
+
+**Added after Phase 3 flagged this comparator was named in the manifest but never actually cross-checked in the initial Phase 1 pass — closing that gap here.**
+
+## Comparison: OTC Intermediaries (Eisfeldt, Herskovic, Rajan & Siriwardane, RFS 2023)
+
+**Access status: NOT incomplete.** Both agents read the same substitute source — the OFR/SSRN pre-publication working paper (not the paywalled RFS typeset version) — and both explicitly flag this caveat rather than hiding it. Read 1 cross-checked the abstract snippet of the published RFS version and found it qualitatively consistent; Read 2 flagged the same "can't confirm pixel-identical to final print" caveat. This is a legitimate, disclosed proxy-access situation, not a failure to access — so the underlying characterization is usable, with the caveat that exact numbers should be verified against the final RFS PDF/tables if precision matters.
+
+### 1. Where they agree (trustworthy, cross-checked)
+
+- **Model structure**: static core-periphery network (dealers = fully-connected core, customers = periphery reachable only via dealers), mean-variance/quadratic-disutility agents, two structural frictions — aversion to aggregate risk (α) and aversion to *concentrated bilateral* exposure per counterparty (φ). Both agree φ>0 is what blocks full risk-sharing even when a network link exists.
+- **Data**: proprietary DTCC Trade Information Warehouse CDS data, 2010–2013 (pre-single-name central clearing), obtained via OFR's data license (explaining Rajan's coauthorship); ~14 dealers identified out of ~723 counterparties via a minimum-distance core-periphery classification algorithm, cross-checked against DTCC's own dealer list; supplemented by Markit spreads and Moody's EDF default probabilities.
+- **Correction to the manifest's "simulation" language**: both independently and specifically correct "counterfactual dealer-exit simulation" — it is a **closed-form, analytical re-solve** of the calibrated equilibrium after algebraically deleting a node's connections, *not* a stochastic/agent-based/Monte Carlo simulation. Both note it's run against a complete-network benchmark to isolate the network-friction channel.
+- **Calibration method**: α and φ are backed out via closed-form inversion of observed moments (dealer net position, DD-vs-DC price gap) — a moment-matching calibration, not GMM/MLE/simulated estimation.
+- **Qualitative comparative-statics result**: removing the largest net-seller dealer raises spreads materially; removing a net-neutral/median dealer does almost nothing; removing the largest net-buyer *lowers* spreads; under a complete-network counterfactual, removing any dealer (even the largest net seller) has almost no effect — proving the effect is a network-incompleteness effect, not a "lost capacity" effect per se.
+- **Scope limits**: no default contagion, no balance-sheet/fire-sale/liquidity-spiral mechanics (both quote/paraphrase the authors' own point that price effects occur "despite... no default contagion"); sample predates central clearing and the authors only speculate the mechanism "may" extend there; extension to non-CDS OTC markets (FX, rates swaps, repo, bonds) is explicitly flagged by the authors as future work, not demonstrated.
+- **Authorship/credit**: no CRediT or contribution statement exists in the paper; both independently conclude any citation must attribute the whole paper to all four authors jointly — there is no textual basis for crediting one author with one section/result.
+- **Lehman 2008 comparison**: used only as an informal plausibility benchmark, not as estimation data or model validation against a real event.
+- **No real-world dealer identities**: the paper never names which actual institution is "the largest net seller" — only reports the counterfactual effect for an anonymized profile.
+
+### 2. Disagreements and one-caught-it-the-other-didn't (flagged, not averaged)
+
+**(a) Headline magnitude numbers conflict — this is the most consequential discrepancy.**
+- Read 1: removing the largest net-seller dealer moves dealer-dealer spreads **133 → 164 bps (+31 bps, +23%)**; customer-dealer spreads rise only ~11%; overall sensitivity range "~10–24%."
+- Read 2: the same exercise moves dealer-market spreads **124 → 170 bps (+46 bps, ~37–40%)**; doubling to ~102 bps total under elevated risk-aversion ("crisis") conditions; shrinking to ~20 bps under an alternative 26-dealer classification.
+
+These are materially different base levels *and* different percentage effects for what is presented as the same headline result. Either one or both agents misread a table/column, or they are citing different specific rows (e.g., different φ/α sensitivity cases) without saying so. **Do not average these — treat the magnitude as unverified pending a direct table check.**
+
+**(b) The core empirical spread-gap moment (θ / DC−DD gap) also conflicts.**
+- Read 1: baseline θ ≈ 6.14 bps, market-power-scrubbed θ ≈ 5.12 bps (with an explicit ~17%-attributable-to-market-power decomposition).
+- Read 2: DC−DD gap ≈ 7.69 bps, with no market-power decomposition mentioned at all.
+
+This is a second independent numeric conflict, and it's suspicious that Read 2 never mentions the market-power-scrubbing exercise Read 1 leans on — either Read 2 missed a real robustness cut, or Read 1 is describing a different specification. Flagged, not resolved.
+
+**(c) Each caught empirical/identification details the other omitted:**
+- Read 1 only: the direct price-concession-vs-bilateral-concentration regression (`PriceConcession = ψ + β·κ + ε`, β≈−5.4) used to empirically validate φ>0 before calibration; specific complete-network-benchmark magnitudes (customer-dealer spreads ~3.4% lower, dealer-dealer ~7% lower than complete-network case in normal times); explicit calibrated parameter values (α=4.37, φ=8.00, μ=0.39%, σ=4.87%).
+- Read 2 only: the "beta-weighted net notional sold" (BNS) measure and its explicit provenance in Siriwardane's own prior (2018) solo paper — a genuine individual-attribution detail Read 1 never mentions; the 26-dealer alternative-classification robustness check; the "~1 billion positions processed" data-volume claim; an explicit citation of the prior literature establishing core-periphery structure in other OTC markets (Li & Schürhoff 2018; Hollifield/Neklyudov/Spatt 2017; Di Maggio/Kermani/Song 2017), correctly scoping this paper as *confirmatory for CDS*, not originating the core-periphery finding generally; and a sharper technical point that the model formally assumes **zero transaction costs** (Rij=Rji) — φ is a quadratic disutility penalty, and calling it "bilateral trading costs" is only a loose shorthand, not a literal fee.
+
+None of these one-sided items directly contradicts the other agent's account, but each represents real, unverified-by-the-other-agent content — treat each as a single-source claim until cross-checked, not as confirmed.
+
+**(d) Author-instigated framing of φ differs slightly in nuance**: Read 2's zero-transaction-cost clarification is more precise than Read 1's plainer "aversion to concentrated bilateral exposure" — this looks like Read 2 caught a precision point Read 1 missed, worth deferring to Read 2 on this specific nuance.
+
+### 3. Safe to cite as
+
+*"Eisfeldt, Herskovic, Rajan & Siriwardane (RFS 2023) build a calibrated core-periphery network model of the 2010–2013 US CDS market (via DTCC data) in which traders' aversion to concentrated bilateral counterparty exposure — not default contagion, balance-sheet spillovers, or market power — is what prevents complete risk-sharing. In this model, a systemically important dealer's importance is driven by its net risk position (net seller vs. net buyer vs. neutral), not by network connectivity alone: a closed-form counterfactual removal of a large net-seller dealer meaningfully raises equilibrium CDS spreads, removing a net-neutral dealer barely moves them, and removing a large net-buyer lowers them — and this pattern disappears entirely under a complete-network benchmark, showing the effect is attributable to network incompleteness specifically. The paper does not model contagion, fire sales, or dynamic/multi-period effects; does not empirically extend to centrally-cleared derivatives or to non-CDS OTC markets; and is a single calibrated exercise on one dataset/period, not a validated event study."*
+
+**What must NOT be cited from this paper on the strength of either read alone**: any specific magnitude (e.g., "+23%" or "+40%," "6.14 bps" or "7.69 bps") — the two independent reads disagree on these exact figures, so cite only the qualitative direction/mechanism until the underlying table is checked directly. Precise numbers referenced above are Read-1-only or Read-2-only claims pending reconciliation against the source PDFs, both of which remain available at the working-paper session paths each agent recorded.
+
+---
