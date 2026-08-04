@@ -1,0 +1,6 @@
+Placebo date,Regime,Balanced pairs,First date,Last date
+2020-10-01,pre-period placebo (true regime: pre-V3),216,2020-06-03,2021-01-29
+2020-11-15,pre-period placebo (true regime: pre-V3),232,2020-07-18,2021-03-15
+2021-01-01,pre-period placebo (true regime: pre-V3),283,2020-09-03,2021-05-01
+2022-05-05,"post-period placebo (true regime: post-V3, +1yr)",312,2022-01-05,2022-09-02
+2023-05-05,"post-period placebo (true regime: post-V3, +2yr)",246,2023-01-05,2023-09-02

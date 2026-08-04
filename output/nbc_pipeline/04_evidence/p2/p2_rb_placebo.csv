@@ -1,0 +1,31 @@
+Placebo date,Regime,Outcome,Units,N,Pairs,Effect,SE,t,p,Test
+2020-10-01,pre-period placebo (true regime: pre-V3),Vehicle-candidate route share,pp,"22,064",216,-1.7776,0.8978,-1.98,0.049,Level DiD
+2020-10-01,pre-period placebo (true regime: pre-V3),Vehicle HHI,HHI (0-1),"11,031",216,-0.0224,0.0113,-1.98,0.049,Level DiD
+2020-10-01,pre-period placebo (true regime: pre-V3),Direct-pool depth,ratio,"11,031",216,0.0554,0.0185,2.99,0.003,Level DiD
+2020-11-15,pre-period placebo (true regime: pre-V3),Vehicle-candidate route share,pp,"23,120",232,-0.0901,0.5654,-0.16,0.873,Level DiD
+2020-11-15,pre-period placebo (true regime: pre-V3),Vehicle HHI,HHI (0-1),"11,425",232,-0.0261,0.0082,-3.19,0.002,Level DiD
+2020-11-15,pre-period placebo (true regime: pre-V3),Direct-pool depth,ratio,"11,425",232,0.0211,0.0106,1.99,0.048,Level DiD
+2021-01-01,pre-period placebo (true regime: pre-V3),Vehicle-candidate route share,pp,"24,135",283,2.0903,0.4931,4.24,<0.001,Level DiD
+2021-01-01,pre-period placebo (true regime: pre-V3),Vehicle HHI,HHI (0-1),"11,905",283,0.0018,0.0061,0.29,0.768,Level DiD
+2021-01-01,pre-period placebo (true regime: pre-V3),Direct-pool depth,ratio,"11,905",283,0.0125,0.0070,1.77,0.077,Level DiD
+2022-05-05,"post-period placebo (true regime: post-V3, +1yr)",Vehicle-candidate route share,pp,"25,258",312,-2.4767,0.5117,-4.84,<0.001,Level DiD
+2022-05-05,"post-period placebo (true regime: post-V3, +1yr)",Vehicle HHI,HHI (0-1),"12,857",312,-0.0287,0.0067,-4.27,<0.001,Level DiD
+2022-05-05,"post-period placebo (true regime: post-V3, +1yr)",Direct-pool depth,ratio,"12,857",312,-0.0255,0.0125,-2.04,0.043,Level DiD
+2023-05-05,"post-period placebo (true regime: post-V3, +2yr)",Vehicle-candidate route share,pp,"18,943",246,2.9108,0.6825,4.27,<0.001,Level DiD
+2023-05-05,"post-period placebo (true regime: post-V3, +2yr)",Vehicle HHI,HHI (0-1),"9,852",246,0.0150,0.0080,1.88,0.061,Level DiD
+2023-05-05,"post-period placebo (true regime: post-V3, +2yr)",Direct-pool depth,ratio,"9,852",246,-0.0067,0.0064,-1.04,0.301,Level DiD
+2020-10-01,pre-period placebo (true regime: pre-V3),|day-to-day change| in route share,pp,"21,392",215,3.4318,0.7831,4.38,<0.001,Elasticity
+2020-10-01,pre-period placebo (true regime: pre-V3),|day-to-day change| in vehicle HHI,HHI points,"10,815",216,0.0148,0.0051,2.88,0.004,Elasticity
+2020-10-01,pre-period placebo (true regime: pre-V3),|day-to-day change| in direct-pool depth,ratio points,"10,815",216,-0.0192,0.0042,-4.52,<0.001,Elasticity
+2020-11-15,pre-period placebo (true regime: pre-V3),|day-to-day change| in route share,pp,"22,383",229,4.0151,0.8285,4.85,<0.001,Elasticity
+2020-11-15,pre-period placebo (true regime: pre-V3),|day-to-day change| in vehicle HHI,HHI points,"11,193",232,0.0207,0.0056,3.68,<0.001,Elasticity
+2020-11-15,pre-period placebo (true regime: pre-V3),|day-to-day change| in direct-pool depth,ratio points,"11,193",232,-0.0140,0.0043,-3.28,0.001,Elasticity
+2021-01-01,pre-period placebo (true regime: pre-V3),|day-to-day change| in route share,pp,"23,227",279,5.9643,0.7606,7.84,<0.001,Elasticity
+2021-01-01,pre-period placebo (true regime: pre-V3),|day-to-day change| in vehicle HHI,HHI points,"11,622",283,0.0187,0.0050,3.75,<0.001,Elasticity
+2021-01-01,pre-period placebo (true regime: pre-V3),|day-to-day change| in direct-pool depth,ratio points,"11,622",283,-0.0098,0.0033,-2.98,0.003,Elasticity
+2022-05-05,"post-period placebo (true regime: post-V3, +1yr)",|day-to-day change| in route share,pp,"24,283",308,-0.6550,0.8235,-0.80,0.427,Elasticity
+2022-05-05,"post-period placebo (true regime: post-V3, +1yr)",|day-to-day change| in vehicle HHI,HHI points,"12,545",312,0.0024,0.0066,0.37,0.711,Elasticity
+2022-05-05,"post-period placebo (true regime: post-V3, +1yr)",|day-to-day change| in direct-pool depth,ratio points,"12,545",312,0.0219,0.0056,3.92,<0.001,Elasticity
+2023-05-05,"post-period placebo (true regime: post-V3, +2yr)",|day-to-day change| in route share,pp,"18,180",235,1.1534,0.7694,1.50,0.135,Elasticity
+2023-05-05,"post-period placebo (true regime: post-V3, +2yr)",|day-to-day change| in vehicle HHI,HHI points,"9,606",246,0.0047,0.0064,0.73,0.468,Elasticity
+2023-05-05,"post-period placebo (true regime: post-V3, +2yr)",|day-to-day change| in direct-pool depth,ratio points,"9,606",246,-0.0101,0.0048,-2.11,0.036,Elasticity
