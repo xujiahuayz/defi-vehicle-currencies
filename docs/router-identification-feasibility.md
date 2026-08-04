@@ -50,3 +50,39 @@ Sound, with the caveats above stated in the paper:
 ## Adjacent work found
 
 "Multi-Path Routing in DEX Networks" (arXiv 2607.22540) runs repeated quote comparisons against four production aggregators and reports substantial rank variation across epochs, with limited candidate-path search modelled explicitly. A recent preprint, short of settled literature, and it works from live quotes instead of reconstructed on-chain counterfactuals. Node B's prior-art lane should confirm the boundary against it before any novelty claim is made.
+
+---
+
+# Cross-venue routing: the full-panel series, and the filter it required
+
+Built 2026-08-05 by `scripts/build_cross_venue_routing_series.py` over all 2,277 days of `data/unified/`: **471,616,631 swap legs reduced to 364,324,757 routes.**
+
+## Headline series
+
+Of economically meaningful intermediated routes (multi-leg, first input token differing from last output token), the share spanning more than one venue:
+
+| year | count-weighted | value-weighted | round-trip share of multi-leg (excluded) | venues active |
+|---|---|---|---|---|
+| 2020 | 1.2% | 11.1% | 11.8% | 3 |
+| 2021 | 7.6% | 33.9% | 13.4% | 5 |
+| 2022 | 19.0% | 47.0% | 15.4% | 5 |
+| 2023 | 19.4% | 46.1% | 9.6% | 6 |
+| 2024 | 28.8% | 59.1% | 11.0% | 7 |
+| 2025 | 48.3% | 81.7% | 16.9% | 8 |
+| 2026 | 61.1% | 89.1% | 20.5% | 8 |
+
+Stated conservatively, since the quarterly series is upward-trending but **not monotone** (2023 flattens and reverses slightly, and 2026-Q2 dips against Q1): the cross-venue share of intermediated routing rises by roughly an order of magnitude across the sample on counts, and reaches close to nine-tenths of intermediated trade value by 2026. The value-weighted series sits consistently above the count-weighted one, so larger trades span venues more than smaller ones, which is what a depth constraint implies.
+
+## The filter this required, and why the first attempt was wrong
+
+The first run of this series produced a value-weighted number that *collapsed* in 2025-Q4 (34.1% against a count share of 59.6%) and was non-monotone in a way no economic story explained. Diagnosis: routes whose first input token equals their last output token (A to K to A) are atomic arbitrage or wash trading and move no value between counterparties, yet they carried **90.5% of multi-leg dollar value** on the worst day inspected while being only 25.6% of routes by count. One contributing case was six separate transactions, each running WETH into a junk token and back on a single venue, each repriced to exactly $9,113,892.
+
+Excluding round trips removed every inversion: **0 of 18 quarters from 2022 onward now show value below count**, where that ordering was previously the contamination signature. Round trips run 0.0% to 31.7% of multi-leg routes day to day, so this is not a marginal correction.
+
+The panel keeps `cross_venue_share_unfiltered`, `cross_venue_usd_share_unfiltered`, and `round_trip_share_of_multileg` as columns, so the contamination stays visible in the data instead of living only in this prose.
+
+## Reporting rules that follow
+
+- Count-weighted is primary; value-weighted is secondary and always accompanied by the round-trip share, because volume-weighted measures are more exposed to inflation than count-based ones (a result the reference repo's `ddc.integrity` already established, with Cong, Li, Tang and Yang 2023 on wash trading and Heimbach et al. 2024 measuring over a quarter of Ethereum DEX volume as likely non-atomic arbitrage).
+- Do not describe the series as monotone. It trends up with real reversals in 2023.
+- The wash screens in `ddc.integrity` (turnover-spike and volume-spike at K robust MADs, arbitrage-cycle detection, organic-versus-MEV decomposition) still need applying on top of the round-trip filter before any regression uses this panel.
