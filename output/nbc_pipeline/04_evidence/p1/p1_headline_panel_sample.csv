@@ -1,7 +1,0 @@
-Sample,N rows,Tokens,First date,Last date
-"Core (L, D, S all observed)",9415,5,2021-05-05,2026-06-30
-  token=DAI,1883,1,2021-05-05,2026-06-30
-  token=USDC,1883,1,2021-05-05,2026-06-30
-  token=USDT,1883,1,2021-05-05,2026-06-30
-  token=WBTC,1883,1,2021-05-05,2026-06-30
-  token=WETH,1883,1,2021-05-05,2026-06-30

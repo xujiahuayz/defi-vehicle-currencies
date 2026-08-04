@@ -1,7 +1,0 @@
-Window,Outcome,Units,Pretrend N,Pretrend pairs,Pretrend slope,Pretrend slope SE,Pretrend slope t,Pretrend slope p,Joint pretrend months (k),Joint chi2,Joint p
-+/-12 months,Vehicle-candidate route share,pp,"3,938",396,0.0012,0.1664,0.01,0.994,12,64.24,<0.001
-+/-12 months,Vehicle HHI,HHI (0-1),"1,625",396,-0.0024,0.0016,-1.46,0.144,12,50.52,<0.001
-+/-12 months,Direct-pool depth,ratio,"1,625",396,0.0176,0.0030,5.79,<0.001,12,60.33,<0.001
-+/-24 months,Vehicle-candidate route share,pp,"4,392",507,0.0344,0.1663,0.21,0.836,12,67.48,<0.001
-+/-24 months,Vehicle HHI,HHI (0-1),"1,837",507,-0.0020,0.0016,-1.28,0.202,12,49.35,<0.001
-+/-24 months,Direct-pool depth,ratio,"1,837",507,0.0184,0.0030,6.21,<0.001,12,67.51,<0.001

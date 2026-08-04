@@ -1,7 +1,0 @@
-Window,Outcome,Units,N,Pairs,Effect,SE,t,p
-+/-12 months,Vehicle-candidate route share,pp,"65,022",396,0.9448,0.6402,1.48,0.141
-+/-12 months,Vehicle HHI,HHI (0-1),"32,557",396,0.0143,0.0123,1.16,0.246
-+/-12 months,Direct-pool depth,ratio,"32,557",396,0.1203,0.0257,4.68,<0.001
-+/-24 months,Vehicle-candidate route share,pp,"97,484",507,1.1276,0.7298,1.55,0.123
-+/-24 months,Vehicle HHI,HHI (0-1),"48,319",507,0.0226,0.0150,1.51,0.131
-+/-24 months,Direct-pool depth,ratio,"48,319",507,0.1201,0.0275,4.36,<0.001
