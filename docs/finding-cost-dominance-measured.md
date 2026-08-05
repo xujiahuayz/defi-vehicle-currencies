@@ -8,23 +8,36 @@ Built by `scripts/build_counterfactual_dominance.py` on `src/ddvc/cpquote.py`. *
 
 The FX inertia literature's stated limit is that an incumbent's cost advantage is a consequence of its incumbency, so the data never contain the state where a currency holds the vehicle role while strictly cost-dominated. On-chain, that state is observable and common: **17.9% of intermediated routes were dominated gross of gas, 30.0% all-in.** So the windows exist.
 
-## The result that matters
+## The result that matters, and a correction to a first reading
 
-Dominance by intermediary type, all-in, every year of the sample:
+**First, a data filter that changes the claim.** The unfiltered panel contains mispriced tokens: 994 routes show gaps above 10,000 bps (one reaches 11.5 billion bps) and 22 report notionals above $50m, one of them $208 billion. Every top offender is an unclassified token with a null symbol, the same repricing failure that produced the wash-trade contamination elsewhere in this project. Filtering to plausible economics (absolute gap at most 10,000 bps, notional between $100 and $50m) keeps 99.0% of routes and is applied throughout below.
 
-| year | native n | native dominated | other n | other dominated |
-|---|---|---|---|---|
-| 2020 | 2,309 | 17.1% | 11,959 | 35.2% |
-| 2021 | 7,723 | 15.5% | 31,620 | 29.1% |
-| 2022 | 4,201 | 19.5% | 16,195 | 25.5% |
-| 2023 | 2,611 | 22.2% | 7,179 | 29.5% |
-| 2024 | 1,757 | 19.4% | 8,647 | 29.6% |
-| 2025 | 689 | 15.4% | 7,261 | 55.5% |
-| 2026 | 118 | 32.2% | 1,588 | 86.7% |
+Dominance by intermediary type, filtered, gross of gas:
 
-The native asset is dominated less often than every alternative, in all seven years, and its median all-in gap is **-2,352 bps**, meaning the typical native-intermediated route returns far more than the best direct pool would have.
+| type | routes | dominated | median gap |
+|---|---|---|---|
+| native | 19,339 | **13.2%** | **-2,459 bps** |
+| stable | 33,037 | 16.8% | -492 bps |
+| other | 48,441 | 18.7% | -171 bps |
+| imported | 2,028 | 23.1% | -123 bps |
 
-**This is evidence against naive inertia.** An asset carried by habit should be dominated *more* often than alternatives, since habit would keep sending flow through it after it stopped being the best choice. The opposite holds. What the data support instead is incumbency operating through a state variable: the native asset's pools are deepest, so routing through it is genuinely optimal today, and the reason they are deepest may still be historical. That distinction is the defensible one, and it is the position Java argued for against a reviewer who wanted the incumbency reading dropped altogether.
+Pooled across the sample, the native asset is dominated least often, and the median native-intermediated route returns 2,459 bps more than the best available direct pool would have. That gap is an order of magnitude larger than for any other type.
+
+**The year-by-year claim does not survive the filter, and an earlier version of this document was wrong to make it.** On the unfiltered panel native appeared to be dominated less often in all seven years. Filtered, it holds in five of seven:
+
+| year | native | other | |
+|---|---|---|---|
+| 2020 | 10.7% | 22.4% | native lower |
+| 2021 | 12.7% | 22.0% | native lower |
+| 2022 | 14.6% | 13.8% | **reversed** |
+| 2023 | 15.8% | 16.0% | native lower, within noise |
+| 2024 | 13.1% | 12.2% | **reversed** |
+| 2025 | 7.7% | 9.3% | native lower |
+| 2026 | 16.4% | 30.0% | native lower |
+
+So the defensible statement is the pooled one, plus the observation that the ordering is not uniform through time and reverses in two years. The junk-token contamination was inflating measured dominance among non-native intermediaries, which flattered the original claim.
+
+**What still supports the reading against naive inertia.** An asset carried by habit should be dominated more often than alternatives, since habit keeps routing flow through it after it stops being best. Pooled, the opposite holds, and the median-gap difference is large and one-directional. What the evidence supports is incumbency operating through a state variable: the native asset's pools are deepest, so routing through it is genuinely optimal in most instances, while the reason those pools are deepest may still be historical. The two reversal years mean this is a tendency and not a law, and the paper should say so.
 
 ## Gas behaves exactly as a fixed cost should
 
