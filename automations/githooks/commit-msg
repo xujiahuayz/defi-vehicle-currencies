@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""commit-msg hook — reflow hard-wrapped commit bodies into flowing paragraphs.
+
+Java's standing rule: commit/PR bodies must NOT have mid-sentence line breaks
+(the old ~72-char hard-wrap habit). A behavioural promise isn't enough — any
+agent session or the automated brain-sync job can reintroduce wraps — so this
+hook is the code-level guarantee. It runs on every `git commit` (core.hooksPath
+points here; set by `glotl setup`).
+
+What it does: within the BODY (everything after the subject line), it joins each
+blank-line-delimited paragraph onto a single physical line. It deliberately does
+NOT touch:
+  - the subject (first line)
+  - blank lines (paragraph separators are preserved)
+  - list items            (-, *, +, or "1." / "1)")
+  - trailers              (Co-Authored-By:, Signed-off-by:, etc. — `Token: ...`)
+  - indented blocks        (code / quotes — lines starting with 2+ spaces or a tab)
+  - comment lines          (#) which git strips anyway
+
+So real structure survives; only wrapped prose gets unwrapped. The hook EDITS the
+message in place and always exits 0 (it corrects rather than rejects), so it can
+never block an automated sync commit.
+"""
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+LIST_RE = re.compile(r"^\s*([-*+]|\d+[.)])\s")
+TRAILER_RE = re.compile(r"^[A-Za-z][A-Za-z-]*:\s")  # single token then ': '
+INDENT_RE = re.compile(r"^( {2,}|\t)")
+
+
+def _keep_own_line(line: str) -> bool:
+    s = line.rstrip()
+    return (
+        s == ""
+        or s.startswith("#")
+        or bool(LIST_RE.match(line))
+        or bool(TRAILER_RE.match(line))
+        or bool(INDENT_RE.match(line))
+    )
+
+
+def reflow(text: str) -> str:
+    lines = text.split("\n")
+    if not lines:
+        return text
+    out = [lines[0]]  # subject untouched
+    para: list[str] = []
+
+    def flush() -> None:
+        if para:
+            out.append(" ".join(para))
+            para.clear()
+
+    for line in lines[1:]:
+        if _keep_own_line(line):
+            flush()
+            out.append(line.rstrip() if line.startswith("#") or line.strip() == "" else line)
+        else:
+            para.append(line.strip())
+    flush()
+    return "\n".join(out)
+
+
+def main() -> int:
+    if len(sys.argv) < 2:
+        return 0
+    path = Path(sys.argv[1])
+    try:
+        original = path.read_text()
+    except OSError:
+        return 0
+    reflowed = reflow(original)
+    if reflowed != original:
+        path.write_text(reflowed)
+        sys.stderr.write("[commit-msg] reflowed hard-wrapped body into flowing paragraphs\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

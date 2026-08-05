@@ -176,8 +176,23 @@ F. Empirics ....................... per E. Specification curves. Multi-agent
 G. Paper .......................... six sections, JFE invariants of section 1,
      pure-empirics lane, named rival mechanisms as the horse race.
 H. Deck ........................... derived from G.
-        G <-> H is a cycle: slides expose narrative gaps, paper detail exposes
-        missing slides. Neither is finished before the other stops changing.
+
+        F <-> G <-> H IS ONE ITERATING CLUSTER, not a chain with a cycle on
+        the end. G decides which results the narrative NEEDS; F decides which
+        results the data can SUPPORT. Fix G first and it demands results the
+        panel cannot identify; fix F first and it yields results with no
+        narrative slot, which is how an empirical paper becomes a list of
+        regressions. G <-> H has the same mutual pull: slides expose narrative
+        gaps, paper detail exposes missing slides. All three may start in
+        parallel and none is finished while another still moves.
+
+        CONVERGENCE CONDITION, because a cycle without a stopping rule is a
+        hang. Converged only when all four hold at once: every result F
+        produces has a slot in G; every claim G makes rests on a result F has
+        actually produced; every slide in H maps to a G section and adds no
+        claim of its own; and one complete pass generates no new demand in
+        either direction. Two consecutive passes changing nothing but wording
+        means converged, and the work moves to I.
 I. Cross-family review ............ Codex/Gemini. Feeds back into C..H.
      Desk-reject filter first, then rank-ordered referee.
 J. Gates .......................... run on every G/H artefact (section 7).
