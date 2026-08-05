@@ -1,4 +1,5 @@
 {"day": "20230601", "dominated": 0.49473684210526314, "matched": 475, "realised_multileg": 24847, "value_weighted": 0.4670598391075594}
-{"day": "20230602", "dominated": 0.38127090301003347, "matched": 598, "realised_multileg": 23959, "value_weighted": 0.3363231916531983}
-{"day": "20230603", "dominated": 0.39215686274509803, "matched": 306, "realised_multileg": 21108, "value_weighted": 0.3789257090993144}
-{"day": "20230604", "dominated": 0.3785900783289817, "matched": 383, "realised_multileg": 20791, "value_weighted": 0.4013331305577415}
+{"day": "20230602", "dominated": 0.3795986622073579, "matched": 598, "realised_multileg": 23959, "value_weighted": 0.3351314833210056}
+{"day": "20230603", "dominated": 0.39215686274509803, "matched": 306, "realised_multileg": 21108, "value_weighted": 0.37892570909931445}
+{"day": "20230604", "dominated": 0.3785900783289817, "matched": 383, "realised_multileg": 20791, "value_weighted": 0.3861124188388114}
+{"day": "REWEIGHTED", "dominated": 0.27209191661021126, "matched": 1762, "realised_multileg": 90705, "value_weighted": NaN}

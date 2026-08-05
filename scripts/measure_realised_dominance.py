@@ -95,10 +95,12 @@ def main() -> int:
     print(f"screened panel covers {len(days)} days: {days[0]}..{days[-1]}")
 
     rows = []
+    all_matched, all_pop = [], []
     for day in days[: args.days]:
         rr = realised_routes(day)
         if rr.empty:
             continue
+        all_pop.append(rr)
         pk = panel[panel.daystr == day]
         # Match each realised route to the counterfactual at the nearest quoted size,
         # since the panel prices fixed notionals and realised trades are continuous.
@@ -112,6 +114,7 @@ def main() -> int:
         merged["mid_type"] = merged.vehicle.map(
             {v: classify(v)[1] for v in merged.vehicle.unique()})
         merged["dominated"] = (merged.adv > 0).astype(float)
+        all_matched.append(merged)
         rows.append({"day": day, "realised_multileg": int(len(rr)),
                      "matched": int(len(merged)),
                      "dominated": float(merged.dominated.mean()),
@@ -134,6 +137,32 @@ def main() -> int:
           f"the state they executed in")
     print("  the pre-screen, enumerate-every-candidate figure was 70.1%, and the")
     print("  original v2-only realised figure was 17.9%")
+    # REWEIGHT to the population's vehicle-type composition. The matched sample is not
+    # a random 2%: it is 64.1% stable-intermediated where the realised population is
+    # 67.7% native-intermediated, an inversion, and dominance rates differ sharply by
+    # candidate type. Quoting the raw matched mean as a population figure would be a
+    # statement about large trades on busy pairs through stablecoins.
+    if all_matched:
+        M = pd.concat(all_matched, ignore_index=True)
+        P = pd.concat(all_pop, ignore_index=True)
+        M["mid_type"] = M.vehicle.map({v: classify(v)[1] for v in M.vehicle.unique()})
+        P["mid_type"] = P.vehicle.map({v: classify(v)[1] for v in P.vehicle.unique()})
+        pop_w = P.mid_type.value_counts(normalize=True)
+        by_t = M.groupby("mid_type").dominated.mean()
+        common = [t for t in by_t.index if t in pop_w.index]
+        if common:
+            num = sum(by_t[t] * pop_w[t] for t in common)
+            den = sum(pop_w[t] for t in common)
+            print(f"\n  dominance by candidate type in the matched sample:")
+            for t in common:
+                print(f"    {t:<14}{by_t[t]:>7.1%}   population weight {pop_w[t]:>6.1%}"
+                      f"   matched weight {(M.mid_type == t).mean():>6.1%}")
+            print(f"\n  raw matched mean          {w:.1%}")
+            print(f"  reweighted to population  {num / den:.1%}   "
+                  f"(covers {den:.1%} of realised routing)")
+            rows.append({"day": "REWEIGHTED", "realised_multileg": int(len(P)),
+                         "matched": int(len(M)), "dominated": float(num / den),
+                         "value_weighted": float("nan")})
     write_exhibit(pd.DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0
