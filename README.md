@@ -46,19 +46,13 @@ The inventory is `data/processed/raw_data_inventory.parquet`. It caches exact re
 
 ## Graph API Keys
 
-Subgraph fetches read a rotating pool of The Graph gateway keys from `GRAPH_API_KEYS` in `.env`, comma-separated. `src/ddvc/fetch/graph.py` walks the pool and advances to the next key when one answers 401, 403, 429, or "payment required", so an exhausted key costs one wasted request rather than a failed run.
-
-The Free Plan meters 100k queries per month per *account*, not per key, so more quota means more accounts. `scripts/mint_graph_keys.py` provisions them against the Studio backend API: it generates a burner Ethereum wallet, signs in with it (SIWE), confirms a `+graphN` alias of one Gmail inbox by reading the code through the `glotl gmail` CLI, and creates a key.
+Subgraph fetches read a rotating pool of gateway keys from `GRAPH_API_KEYS` in `.env`, comma-separated. `src/ddvc/fetch/graph.py` advances to the next key when one answers 401, 403, 429, or "payment required", so an exhausted key costs a wasted request rather than a failed run. Top the pool up with:
 
 ```bash
-.venv/bin/python scripts/mint_graph_keys.py status
-.venv/bin/python scripts/mint_graph_keys.py mint --count 5 --email you@gmail.com --write-env
-.venv/bin/python scripts/mint_graph_keys.py sync-env
+.venv/bin/python scripts/mint_graph_keys.py --count 5 --email you@gmail.com
 ```
 
-Every minted key is recorded in `secrets/minted_graph_keys.json` alongside the wallet that owns its account. That wallet is the only way back into the account if a key has to be reissued, so the ledger is as load-bearing as the `.env` line and needs an out-of-band backup. It contains private keys, so `secrets/` is gitignored.
-
-Spreading the free tier over many accounts is grey against The Graph's terms of service. The paid Growth plan, roughly $2 per 100k queries, is the clean route once volume justifies it.
+The Free Plan meters 100k queries a month per *account*, so each key needs a fresh account, which needs a burner wallet and a confirmed email. Each is recorded in `secrets/minted_graph_keys.json` with the wallet that owns it, the only route back into an account if a key must be reissued. That ledger holds private keys, so `secrets/` is gitignored and it needs an out-of-band backup. Spreading the free tier over many accounts is grey against The Graph's terms of service; the Growth plan, about $2 per 100k queries, is the clean alternative.
 
 ## Current Target
 
