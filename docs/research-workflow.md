@@ -75,6 +75,12 @@ The general question is then venue- and coin-independent: does the vehicle role 
 
 **Definitions belong on a slide and in a numbered subsection**, stated explicitly.
 
+**What the route-cost experiment measures, stated once so it stops drifting.** For one trade, meaning a specific token pair at a specific hour at a specific size, the panel computes the best ONE-HOP route, which is the direct pool joining the endpoints priced at its cheapest venue, and the best TWO-HOP route through each candidate vehicle, where each leg independently picks its own cheapest pool across every available venue. It then asks whether routing through the native asset costs less than routing through the stable numéraire or the imported asset. Legs genuinely do cross venues: 32.3% of two-hop routes in the current panel have their two legs on different DEXes.
+
+**Why this object and not realised swaps.** Vehicle-currency theory says the incumbent retains the role because routing through it is cheaper, which is the thick-market externality. The test is therefore the cost of the road not taken. FX data cannot run it, because the quote for the route nobody took is never observed; on-chain the state can be reconstructed and the counterfactual priced exactly, which is this paper's actual edge over the FX literature. What the panel does NOT measure is router behaviour or revealed preference. It is the cost surface a router faced, not the choices it made, and those are different papers.
+
+**Consequence for venue coverage, which follows from the definition rather than from tidiness.** "Best available route" is defined over all venues, so truncating the venue set understates the best route on every leg and the bias direction depends on which routes lose most. Curve carries roughly 85% of Uniswap v2's volume on sampled 2024 days and sits where stable-to-stable legs happen, so omitting it plausibly penalises stable-vehicle routes hardest and flatters the native asset in exactly the comparison the headline rests on. Venue completeness is therefore part of identification here, not a robustness appendix.
+
 ---
 
 ## 4. Candidate results, screened for non-mechanicalness (node E)

@@ -396,85 +396,148 @@ def _apply_tick_liquidity_events(
                     del ticks[upper]
 
 
-def _update_tick_swap_state(
-    venue: str,
-    stamp: str,
-    state_by_pool: dict[str, V3PoolState],
-) -> None:
-    """Latest observed price state per pool for one venue-day.
+def _absorb_swap_state(venue: str, rec: dict,
+                       state_by_pool: dict[str, V3PoolState]) -> None:
+    """Fold one swap into a venue's price state, keeping the latest by (block, log).
 
-    Pool statics come from different places by venue, and neither is guessed. v3
-    carries no `feeTier` in this raw layer, so the fee is recovered exactly from the
-    CREATE2 pool address and decimals from the sqrtPriceX96 identity. v4 carries
-    both `feeTier` and token `decimals` directly, and its fees are hook-settable, so
-    they are read rather than matched against v3's four tiers: pools at fee 0 and 7
-    price exactly and would be rejected by any tier whitelist.
+    Pool statics come from different places by venue and neither is guessed. v3 carries
+    no feeTier in this raw layer, so the fee is recovered exactly from the CREATE2 pool
+    address and decimals from the sqrtPriceX96 identity. v4 carries both feeTier and
+    token decimals directly, and its fees are hook-settable, so they are read rather
+    than matched against v3's four tiers: pools at fee 0 and 7 price exactly and any
+    tier whitelist would reject them.
     """
+    pool = rec.get("pool") or {}
+    t0 = pool.get("token0") or {}
+    t1 = pool.get("token1") or {}
+    pool_id = str(pool.get("id", "")).lower()
+    raw0 = str(t0.get("id", "")).lower()
+    raw1 = str(t1.get("id", "")).lower()
+    a0 = canonical_token(raw0, unify_wrapped=UNIFY_WRAPPED)
+    a1 = canonical_token(raw1, unify_wrapped=UNIFY_WRAPPED)
+    if not pool_id or not a0 or not a1:
+        return
+    try:
+        tx = rec.get("transaction") or {}
+        block = int(tx.get("blockNumber") or 0)
+        log_index = int(rec.get("logIndex") or 0)
+        sqrt_price = int(rec.get("sqrtPriceX96") or rec.get("sqrtPrice") or 0)
+        tick = int(rec.get("tick") or 0)
+    except (TypeError, ValueError):
+        return
+    if sqrt_price <= 0:
+        return
+    old = state_by_pool.get(pool_id)
+    if old is not None and (block, log_index) <= (old.block, old.log_index):
+        return
+    if venue == "uniswap_v4":
+        try:
+            fee = int(pool.get("feeTier"))
+            dec = (int(t0.get("decimals")), int(t1.get("decimals")))
+        except (TypeError, ValueError):
+            return
+    else:
+        sample = _SWAP_SAMPLE.setdefault(pool_id, [])
+        if len(sample) < 12:
+            sample.append(rec)
+        exact_fee = derive_fee_tier(pool_id, raw0, raw1)
+        if exact_fee is None:
+            return
+        fee = exact_fee
+        dec = resolve_decimals(raw0, raw1, sample)
+        if dec is None:
+            return
+    state_by_pool[pool_id] = V3PoolState(
+        pool=pool_id, token0=a0, token1=a1,
+        sym0=str(t0.get("symbol", "")), sym1=str(t1.get("symbol", "")),
+        dec0=dec[0], dec1=dec[1],
+        sqrt_price_x96=sqrt_price, tick=tick, fee_pips=fee,
+        tick_spacing=tick_spacing_for_fee(fee), block=block, log_index=log_index)
+
+
+def _update_tick_swap_state(venue: str, stamp: str,
+                            state_by_pool: dict[str, V3PoolState]) -> None:
+    """Whole-day price state, used only when warming the index past unpriced days."""
     path = _raw_path(venue, "swaps", stamp)
     if not path.exists():
         return
     with gzip.open(path, "rt") as fh:
         for line in fh:
-            rec = json.loads(line)
-            pool = rec.get("pool") or {}
-            t0 = pool.get("token0") or {}
-            t1 = pool.get("token1") or {}
-            pool_id = str(pool.get("id", "")).lower()
-            raw0 = str(t0.get("id", "")).lower()
-            raw1 = str(t1.get("id", "")).lower()
-            a0 = canonical_token(raw0, unify_wrapped=UNIFY_WRAPPED)
-            a1 = canonical_token(raw1, unify_wrapped=UNIFY_WRAPPED)
-            if not pool_id or not a0 or not a1:
-                continue
-            try:
-                tx = rec.get("transaction") or {}
-                block = int(tx.get("blockNumber") or 0)
-                log_index = int(rec.get("logIndex") or 0)
-                sqrt_price = int(rec.get("sqrtPriceX96") or rec.get("sqrtPrice") or 0)
-                tick = int(rec.get("tick") or 0)
-            except (TypeError, ValueError):
-                continue
-            if sqrt_price <= 0:
-                continue
-            old = state_by_pool.get(pool_id)
-            if old is not None and (block, log_index) <= (old.block, old.log_index):
-                continue
+            _absorb_swap_state(venue, json.loads(line), state_by_pool)
 
-            if venue == "uniswap_v4":
+
+def load_day_tick_events(venue: str, stamp: str) -> dict[int, dict[str, list]]:
+    """One day of a tick venue's events, bucketed by UTC hour, in one pass per file.
+
+    Why this exists. State was advanced a whole DAY at a time and then all 24 priced
+    hours shared that single end-of-day snapshot, while the v2 family was priced at
+    each hour's own end-of-hour reserves. So an "hour" compared a constant-product pool
+    at hour 3 against a concentrated-liquidity pool at hour 23. Measured on the deepest
+    USDC/WETH pool on a calm day, that misalignment moved the price a median 0.345% and
+    up to 1.04%, which is as large as the route-cost differences the panel exists to
+    measure. The hourly dimension was fictitious for v3 and v4, and the error was
+    present even in the original single-hour panel, where v2 sat at hour 12 and the
+    tick venues sat at end of day.
+
+    Reading per hour would multiply IO by 24, so each file is read once and its rows
+    are bucketed by the hour they occurred in. The caller then advances state hour by
+    hour and prices each hour against the state as of that hour.
+    """
+    out: dict[int, dict[str, list]] = {h: {"liq": [], "swaps": []} for h in range(24)}
+    for stream, sign in TICK_VENUES[venue]:
+        path = _raw_path(venue, stream, stamp)
+        if not path.exists():
+            continue
+        with gzip.open(path, "rt") as fh:
+            for line in fh:
+                rec = json.loads(line)
                 try:
-                    fee = int(pool.get("feeTier"))
-                    dec = (int(t0.get("decimals")), int(t1.get("decimals")))
+                    ts = int(rec.get("timestamp") or 0)
                 except (TypeError, ValueError):
                     continue
-            else:
-                sample = _SWAP_SAMPLE.setdefault(pool_id, [])
-                if len(sample) < 12:
-                    sample.append(rec)
-                # CREATE2 needs the pool's ACTUAL tokens; a canonicalised
-                # native-ETH-to-WETH substitution would never match an address.
-                exact_fee = derive_fee_tier(pool_id, raw0, raw1)
-                if exact_fee is None:
+                if ts <= 0:
                     continue
-                fee = exact_fee
-                dec = resolve_decimals(raw0, raw1, sample)
-                if dec is None:
+                out[(ts % 86400) // 3600]["liq"].append((sign, rec))
+    path = _raw_path(venue, "swaps", stamp)
+    if path.exists():
+        with gzip.open(path, "rt") as fh:
+            for line in fh:
+                rec = json.loads(line)
+                try:
+                    ts = int(rec.get("timestamp")
+                             or (rec.get("transaction") or {}).get("timestamp") or 0)
+                except (TypeError, ValueError):
                     continue
+                if ts <= 0:
+                    continue
+                out[(ts % 86400) // 3600]["swaps"].append(rec)
+    return out
 
-            state_by_pool[pool_id] = V3PoolState(
-                pool=pool_id,
-                token0=a0,
-                token1=a1,
-                sym0=str(t0.get("symbol", "")),
-                sym1=str(t1.get("symbol", "")),
-                dec0=dec[0],
-                dec1=dec[1],
-                sqrt_price_x96=sqrt_price,
-                tick=tick,
-                fee_pips=fee,
-                tick_spacing=tick_spacing_for_fee(fee),
-                block=block,
-                log_index=log_index,
-            )
+
+def apply_hour_events(venue: str, bucket: dict[str, list],
+                      tick_net_by_pool: dict[str, dict[int, int]],
+                      state_by_pool: dict[str, V3PoolState]) -> None:
+    """Advance one tick venue's liquidity index and price state by a single hour."""
+    for sign, rec in bucket["liq"]:
+        pool = str((rec.get("pool") or {}).get("id", "")).lower()
+        if not pool:
+            continue
+        try:
+            amt = int(rec.get("amount") or 0)
+            lower, upper = int(rec["tickLower"]), int(rec["tickUpper"])
+        except (TypeError, ValueError, KeyError):
+            continue
+        if amt == 0:
+            continue
+        ticks = tick_net_by_pool.setdefault(pool, {})
+        ticks[lower] = ticks.get(lower, 0) + sign * amt
+        ticks[upper] = ticks.get(upper, 0) - sign * amt
+        if ticks[lower] == 0:
+            del ticks[lower]
+        if ticks.get(upper) == 0:
+            del ticks[upper]
+    for rec in bucket["swaps"]:
+        _absorb_swap_state(venue, rec, state_by_pool)
 
 
 def advance_tick_venues(
