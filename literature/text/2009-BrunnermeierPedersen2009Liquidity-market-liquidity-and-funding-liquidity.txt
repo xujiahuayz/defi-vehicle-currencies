@@ -1,0 +1,2698 @@
+
+
+===== PAGE 1 =====
+
+Market Liquidity and Funding Liquidity
+Markus K. Brunnermeier
+Princeton University
+Lasse Heje Pedersen
+New York University
+We provide a model that links an asset’s market liquidity (i.e., the ease with which it is
+traded) and traders’ funding liquidity (i.e., the ease with which they can obtain funding).
+Traders provide market liquidity, and their ability to do so depends on their availability
+of funding. Conversely, traders’ funding, i.e., their capital and margin requirements, de-
+pends on the assets’ market liquidity. We show that, under certain conditions, margins are
+destabilizing and market liquidity and funding liquidity are mutually reinforcing, leading
+to liquidity spirals. The model explains the empirically documented features that market
+liquidity (i) can suddenly dry up, (ii) has commonality across securities, (iii) is related to
+volatility, (iv) is subject to “ﬂight to quality,” and (v) co-moves with the market. The model
+provides new testable predictions, including that speculators’ capital is a driver of market
+liquidity and risk premiums.
+Trading requires capital. When a trader (e.g., a dealer, hedge fund, or invest-
+ment bank) buys a security, he can use the security as collateral and borrow
+against it, but he cannot borrow the entire price. The difference between the
+security’s price and collateral value, denoted as the margin or haircut, must be
+ﬁnanced with the trader’s own capital. Similarly, short-selling requires capital
+in the form of a margin; it does not free up capital. Therefore, the total margin
+on all positions cannot exceed a trader’s capital at any time.
+Our model shows that the funding of traders affects—and is affected by—
+market liquidity in a profound way. When funding liquidity is tight, traders
+We are grateful for helpful comments from Tobias Adrian, Franklin Allen, Yakov Amihud, David Blair, Bernard
+Dumas, Denis Gromb, Charles Johns, Christian Julliard, John Kambhu, Markus Konz, Stefan Nagel, Michael
+Brennan, Martin Oehmke, Ketan Patel, Guillaume Plantin, Felipe Schwartzman, Hyun Shin, Matt Spiegel (the
+editor), Jeremy Stein, Dimitri Vayanos, Jiang Wang, Pierre-Olivier Weill, and from an anonymous referee and
+Filippos Papakonstantinou and Felipe Schwartzman for outstanding research assistantship. We also thank sem-
+inar participants at the New York Federal Reserve Bank, the New York Stock Exchange, Citigroup, Bank for
+International Settlement, University of Z ¨urich, INSEAD, Northwestern University, Stockholm Institute for Fi-
+nancial Research, Goldman Sachs, IMF, the World Bank, UCLA, LSE, Warwick University, Bank of England,
+University of Chicago, Texas A&M, University of Notre Dame, HEC, University of Maryland, University of
+Michigan, Virginia Tech, Ohio State University, University of Mannheim, ECB-Bundesbank, MIT, and confer-
+ence participants at the American Economic Association Meeting, FMRC conference in honor of Hans Stoll at
+Vanderbilt, NBER Market Microstructure Meetings, NBER Asset Pricing Meetings, NBER Risks of Financial
+Institutions conference, the Five Star conference, and American Finance Association Meeting. Brunnermeier
+acknowledges ﬁnancial support from the Alfred P. Sloan Foundation. Send correspondence to Markus K.
+Brunnermeier, Princeton University, NBER and CEPR, Department of Economics, Bendheim Center for
+Finance, Princeton University, 26 Prospect Avenue, Princeton, NJ 08540-5296. E-mail: markus@princeton.edu.
+C⃝ The Author 2008. Published by Oxford University Press on behalf of The Society for Financial Studies.
+All rights reserved. For Permissions, please e-mail: journals.permissions@oxfordjournals.org.
+doi:10.1093/rfs/hhn098 Advance Access publication November 26, 2008
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 2 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+become reluctant to take on positions, especially “capital intensive” positions in
+high-margin securities. This lowers market liquidity, leading to higher volatility.
+Further, under certain conditions, low future market liquidity increases the risk
+of ﬁnancing a trade, thus increasing margins. Based on the links between
+funding and market liquidity, we provide a uniﬁed explanation for the main
+empirical features of market liquidity. In particular, our model implies that
+market liquidity (i) can suddenly dry up, (ii) has commonality across securities,
+(iii) is related to volatility, (iv) is subject to “ﬂight to quality,” and (v) co-moves
+with the market. The model has several new testable implications that link
+margins and dealer funding to market liquidity: We predict that (i) speculators’
+(mark-to-market) capital and volatility (as, e.g., measured by VIX) are state
+variables affecting market liquidity and risk premiums; (ii) a reduction in
+capital reduces market liquidity, especially if capital is already low (a nonlinear
+effect) and for high-margin securities; (iii) margins increase in illiquidity if
+the fundamental value is difﬁcult to determine; and (iv) speculators’ returns
+are negatively skewed (even if they trade securities without skewness in the
+fundamentals).
+Our model is similar in spirit to Grossman and Miller (1988) with the added
+feature that speculators face the real-world funding constraint discussed above.
+In our model, different customers have offsetting demand shocks, but arrive
+sequentially to the market. This creates a temporary order imbalance. Specu-
+lators smooth price ﬂuctuations, thus providing market liquidity. Speculators
+ﬁnance their trades through collateralized borrowing from ﬁnanciers who set
+the margins to control their value-at-risk (VaR). Since ﬁnanciers can reset mar-
+gins in each period, speculators face funding liquidity risk due to the risk of
+higher margins or losses on existing positions. We derive the competitive equi-
+librium of the model and explore its liquidity implications. We deﬁne market
+liquidity as the difference between the transaction price and the fundamen-
+tal value, and funding liquidity as speculators’ scarcity (or shadow cost) of
+capital.
+We ﬁrst analyze the properties of margins, which determine the investors’
+capital requirement. We show that margins can increase in illiquidity when
+margin-setting ﬁnanciers are unsure whether price changes are due to fun-
+damental news or to liquidity shocks, and volatility is time varying. This
+happens when a liquidity shock leads to price volatility, which raises the ﬁ-
+nancier’s expectation about future volatility, and this leads to increased margins.
+Figure 1 shows that margins did increase empirically for S&P 500 futures dur-
+ing the liquidity crises of 1987, 1990, 1998, and 2007. More generally, the
+October 2007 IMF Global Stability Report documents a signiﬁcant widening
+of the margins across most asset classes during the summer of 2007. We denote
+margins as “destabilizing” if they can increase in illiquidity, and note
+that anecdotal evidence from prime brokers suggests that margins often
+behave in this way. Destabilizing margins force speculators to de-lever
+2202
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 3 =====
+
+Market Liquidity and Funding Liquidity
+0%
+2%
+4%
+6%
+8%
+10%
+12%
+14%
+Jan-82 Jan-84 Jan-86 Jan-88 Jan-90 Jan-92 Jan-94 Jan-96 Jan-98 Jan-00 Jan-02 Jan-04 Jan-06 Jan-08
+Black Monday
+10/19/87
+U.S.  Iraq war
+1989 mini-crash 
+LTCM
+Asian crisis
+Subprime crisis
+Figure 1
+Margins for S&P 500 futures
+The ﬁgure shows margin requirements on S&P 500 futures for members of the Chicago Mercantile Exchange
+as a fraction of the value of the underlying S&P 500 index multiplied by the size of the contract. (Initial or
+maintenance margins are the same for members.) Each dot represents a change in the dollar margin.
+their positions in times of crisis, leading to pro-cyclical market liquidity
+provision.1
+In contrast, margins can theoretically decrease with illiquidity and thus can
+be “stabilizing.” This happens when ﬁnanciers know that prices diverge due to
+temporary market illiquidity and know that liquidity will be improved shortly
+as complementary customers arrive. This is because a current price divergence
+from fundamentals provides a “cushion” against future adverse price moves,
+making the speculators’ position less risky in this case.
+Turning to the implications for market liquidity, we ﬁrst show that, as long
+as speculators’ capital is so abundant that there is no risk of hitting the funding
+constraint, market liquidity is naturally at its highest level and is insensitive to
+marginal changes in capital and margins. However, when speculators hit their
+capital constraints—or risk hitting their capital constraints over the life of a
+trade—then they reduce their positions and market liquidity declines. At that
+point prices are more driven by funding liquidity considerations rather than
+by movements in fundamentals, as was apparent during the quant hedge fund
+crisis in August 2007, for instance.
+When margins are destabilizing or speculators have large existing positions,
+there can be multiple equilibria and liquidity can befragile. In one equilibrium,
+1 The pro-cyclical nature of banks’ regulatory capital requirements and funding liquidity is another application of
+our model, which we describe in Appendix A.2.
+2203
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 4 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+Funding problems
+for speculators
+Reduced
+positions
+Higher
+margins
+Losses on 
+existing positions
+Prices
+move away from
+fundamentals
+Initial losses
+Figure 2
+Liquidity spirals
+The ﬁgure shows the loss spiral and the margin/haircut spiral.
+markets are liquid, leading to favorable margin requirements for speculators,
+which in turn helps speculators make markets liquid. In another equilibrium,
+markets are illiquid, resulting in larger margin requirements (or speculator
+losses), thus restricting speculators from providing market liquidity. Impor-
+tantly, any equilibrium selection has the property that small speculator losses
+can lead to a discontinuous drop of market liquidity. This “sudden dry-up” or
+fragility of market liquidity is due to the fact that with high levels of speculator
+capital, markets must be in a liquid equilibrium, and, if speculator capital is
+reduced enough, the market must eventually switch to a low-liquidity/high-
+margin equilibrium.
+2 The events following the Russian default and LTCM
+collapse in 1998 are a vivid example of fragility of liquidity since a relatively
+small shock had a large impact. Compared to the total market capitalization of
+the U.S. stock and bond markets, the losses due to the Russian default were
+minuscule but, as Figure 1 shows, caused a shiver in world ﬁnancial markets.
+Similarly, the subprime losses in 2007–2008 were in the order of several hun-
+dred billion dollars, corresponding to only about 5% of overall stock market
+capitalization. However, since they were primarily borne by levered ﬁnancial
+institutions with signiﬁcant maturity mismatch, spiral effects ampliﬁed the cri-
+sis so, for example, the overall stock market losses amounted to more than 8
+trillion dollars as of this writing (see Brunnermeier 2009).
+Further, when markets are illiquid, market liquidity is highly sensitive to
+further changes in funding conditions. This is due to two liquidity spirals, as
+illustrated in Figure 2. First, a margin spiral emerges if margins are increasing
+2 Fragility can also be caused by asymmetric information on the amount of trading by portfolio insurance traders
+(Gennotte and Leland 1990), and by losses on existing positions (Chowdhry and Nanda 1998).
+2204
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 5 =====
+
+Market Liquidity and Funding Liquidity
+in market illiquidity. In this case, a funding shock to the speculators lowers mar-
+ket liquidity, leading to higher margins, which tightens speculators’ funding
+constraint further, and so on. For instance, Figure 1 shows how margins grad-
+ually escalated within a few days after Black Monday in 1987. The subprime
+crisis that started in 2007 led to margin increases at the end of August and
+end of November 2007 for the S&P futures contract. For other assets, margins
+and haircuts widened signiﬁcantly more (see, for example, IMF Global Stabil-
+ity Report, October 2007). The margin spiral forces traders to de-lever during
+downturns and recently, Adrian and Shin (2009) found consistent evidence for
+investment banks. Second, a loss spiral arises if speculators hold a large initial
+position that is negatively correlated with customers’ demand shock. In this
+case, a funding shock increases market illiquidity, leading to speculator losses
+on their initial position, forcing speculators to sell more, causing a further price
+drop, and so on.
+3 These liquidity spirals reinforce each other, implying a larger
+total effect than the sum of their separate effects. Paradoxically, liquidity spirals
+imply that a larger shock to the customers’ demand for immediacy leads to a
+reduction in the provision of immediacy during such times of stress. Consistent
+with our predictions, Mitchell, Pedersen, and Pulvino (2007) ﬁnd signiﬁcant
+liquidity-driven divergence of prices from fundamentals in the convertible bond
+markets after capital shocks to the main liquidity providers, namely convert-
+ible arbitrage hedge funds. Also, Garleanu, Pedersen, and Poteshman (2008)
+document that option market makers’ unhedgeable risk is priced, especially in
+times following recent losses.
+In the cross section, we show that the ratio of illiquidity to margin is the
+same across all assets for which speculators provide market liquidity. This is
+the case since speculators optimally invest in securities that have the great-
+est expected proﬁt (i.e., illiquidity) per capital use (determined by the as-
+set’s dollar margin). This common ratio is determined in equilibrium by the
+speculators’ funding liquidity (i.e., capital scarcity). Said differently, a secu-
+rity’s market illiquidity is the product of its margin and the shadow cost of
+funding. Our model thus provides a natural explanation for the commonality
+of liquidity across assets since shocks to speculators’ funding constraint af-
+fect all securities. This may help explain why market liquidity is correlated
+across stocks (Chordia, Roll, and Subrahmanyam 2000; Hasbrouck and Seppi
+2001; and Huberman and Halka 2001), and across stocks and bonds (Chordia,
+Sarkar, and Subrahmanyam 2005). In support of the idea that commonality is
+driven at least in part by our funding-liquidity mechanism, Chordia, Roll, and
+Subrahmanyam (2005) ﬁnd that “money ﬂows... account for part of the com-
+monality in stock and bond market liquidity.” Moreover, their ﬁnding that
+3 The loss spiral is related to the multipliers that arise in Grossman (1988); Kiyotaki and Moore (1997); Shleifer
+and Vishny (1997); Chowdhry and Nanda (1998); Xiong (2001); Kyle and Xiong (2001); Gromb and Vayanos
+(2002); Morris and Shin (2004); Plantin, Sapra, and Shin (2005); and others. In Geanakoplos (2003) and in
+Fostel and Geanakoplos (2008), margins increase as risk increases. Our paper captures the margin spiral—i.e.,
+the adverse feedback loop between margins and prices—and the interaction between the margin and loss spirals.
+Garleanu and Pedersen (2007) show how a risk management spiral can arise.
+2205
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 6 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+“during crisis periods, monetary expansions are associated with increased liq-
+uidity” is consistent with our model’s prediction that the effects are largest when
+traders are near their constraint. Acharya, Schaefer, and Zhang (2008) docu-
+ment a substantial increase in the co-movement among credit default swaps
+(CDS) during the GM/Ford rating downgrade in May 2005 when dealer fund-
+ing was stretched. Coughenour and Saad (2004) provide further evidence of
+the funding-liquidity mechanism by showing that the co-movement in liquidity
+among stocks handled by the same NYSE specialist ﬁrm is higher than for other
+stocks, commonality is higher for specialists with less capital, and decreases
+after a merger of specialists.
+Next, our model predicts that market liquidity declines as fundamen-
+tal volatility increases, which is consistent with the empirical ﬁndings of
+Benston and Hagerman (1974) and Amihud and Mendelson (1989).
+4 Fur-
+ther, the model can shed new light on “ﬂight to quality,” referring to episodes
+in which risky securities become especially illiquid. In our model, this hap-
+pens when speculators’ capital deteriorates, which induces them to mostly
+provide liquidity in securities that do not use much capital (low-volatility
+stocks with lower margins), implying that the liquidity differential between
+high-volatility and low-volatility securities increases. This capital effect means
+that illiquid securities are predicted to have more liquidity risk.
+5 Recently,
+Comerton-Forde, Hendershott, Jones, Moulton and Seasholes (2008) test these
+predictions using inventory positions of NYSE specialists as a proxy for fund-
+ing liquidity. Their ﬁndings support our hypotheses that market liquidity of
+high-volatility stocks is more sensitive to inventory shocks and that this is
+more pronounced at times of low funding liquidity. Moreover, Pastor and
+Stambaugh (2003) and Acharya and Pedersen (2005) document empirical evi-
+dence consistent with ﬂight to liquidity and the pricing of this liquidity risk.
+Market-making ﬁrms are often net long in the market. For instance, Ibbotson
+(1999) reports that security brokers and speculators have median market betas
+in excess of one. Therefore, capital constraints are more likely to be hit during
+market downturns, and this, together with the mechanism outlined in our model,
+helps to explain why sudden liquidity dry-ups occur more often when markets
+decline. Further, capital constraints affect the liquidity of all securities, leading
+to co-movement as explained above. The fact that this effect is stronger in
+down markets could explain that co-movement in liquidity is higher during
+large negative market moves, as documented empirically by Hameed, Kang,
+and Viswanathan (2005).
+4 The link between volatility and liquidity is shared by the models of Stoll (1978); Grossman and Miller (1988);
+and others. What sets our theory apart is that this link is connected with margin constraints. This leads to
+testable differences since, according to our model, the link is stronger when speculators are poorly ﬁnanced, and
+high-volatility securities are more affected by speculator wealth shocks—our explanation of ﬂight to quality.
+5 In Vayanos (2004), liquidity premiums increase in volatile times. Fund managers become effectively more
+risk-averse because higher fundamental volatility increases the likelihood that their performance falls short of a
+threshold, leading to costly performance-based withdrawal of funds.2206
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 7 =====
+
+Market Liquidity and Funding Liquidity
+Finally, the very risk that the funding constraint becomes binding limits
+speculators’ provision of market liquidity. Our analysis shows that speculators’
+optimal (funding) risk management policy is to maintain a “safety buffer.” This
+affects initial prices, which increase in the covariance of future prices with
+future shadow costs of capital (i.e., with future funding illiquidity).
+Our paper is related to several literatures. 6 Traders rely both on (equity)
+investors and counterparties, and, while the limits to arbitrage literature fol-
+lowing Shleifer and Vishny (1997) focuses on the risk of investor redemptions,
+we focus on the risk that counterparty funding conditions may worsen. Other
+models with margin-constrained traders are Grossman and Vila (1992) and
+Liu and Longstaff (2004), which derive optimal strategies in a partial equilib-
+rium with a single security; Chowdhry and Nanda (1998) focus on fragility
+due to dealer losses; and Gromb and Vayanos (2002) derive a general equi-
+librium with one security (traded in two segmented markets) and study wel-
+fare and liquidity provision. We study the endogenous variation of margin
+constraints, the resulting amplifying effects, and differences across high- and
+low-margin securities in our setting with multiple securities. Stated simply,
+whereas the above-cited papers use a ﬁxed or decreasing margin constraint,
+say, $5000 per contract, we study how market conditions lead to changes in
+the margin requirement itself, e.g., an increase from $5000 to $15,000 per
+futures contract as happened in October 1987, and the resulting feedback
+effects between margins and market conditions as speculators are forced to
+de-lever.
+We proceed as follows. We describe the model (Section 1) and derive our four
+main new results: (i) margins increase with market illiquidity when ﬁnanciers
+cannot distinguish fundamental shocks from liquidity shocks and fundamentals
+have time-varying volatility (Section 2); (ii) this makes margins destabilizing,
+leading to sudden liquidity dry-ups and margin spirals (Section 3); (iii) liquidity
+crises simultaneously affect many securities, mostly risky high-margin securi-
+ties, resulting in commonality of liquidity and ﬂight to quality (Section 4); and
+(iv) liquidity risk matters even before speculators hit their capital constraints
+(Section 5). Then we outline how our model’s new testable predictions may be
+helpful for a novel line of empirical work that links measures of speculators’
+funding conditions to measures of market liquidity (Section 6). Section 7 con-
+cludes. Finally, we describe the real-world funding constraints for the main liq-
+uidity providers, namely market makers, banks, and hedge funds (Appendix A),
+and provide proofs (Appendix B).
+6 Market liquidity is the focus of market microstructure (Stoll 1978; Ho and Stoll 1981, 1983; Kyle 1985;
+Glosten and Milgrom 1985; Grossman and Miller 1988), and is related to the limits of arbitrage (DeLong et al.
+1990; Shleifer and Vishny 1997; Abreu and Brunnermeier 2002). Funding liquidity is examined in corporate
+ﬁnance (Shleifer and Vishny 1992; Holmstr ¨om and Tirole 1998, 2001) and banking (Bryant 1980; Diamond
+and Dybvig 1983; Allen and Gale 1998, 2004, 2005, 2007). Funding and collateral constraints are also studied
+in macroeconomics (Aiyagari and Gertler 1999; Bernanke and Gertler 1989; Fisher 1933; Kiyotaki and Moore
+1997; Lustig and Chien 2005), and general equilibrium with incomplete markets (Geanakoplos 1997, 2003).
+Finally, recent papers consider illiquidity with constrained traders (Attari, Mello, and Ruckes 2005; Bernardo
+and Welch 2004; Brunnermeier and Pedersen 2005; Eisfeldt 2004; Morris and Shin 2004; Weill 2007).
+2207
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 8 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+1. Model
+The economy has J risky assets, traded at times t = 0, 1, 2, 3. At time t = 3,
+each security j pays off v j , a random variable deﬁned on a probability space
+(/Omega1,F, P). There is no aggregate risk because the aggregate supply is zero and
+the risk-free interest rate is normalized to zero, so the fundamental value of each
+stock is its conditional expected value of the ﬁnal payoff v j
+t = Et [v j ]. Funda-
+mental volatility has an autoregressive conditional heteroscedasticity (ARCH)
+structure. Speciﬁcally, v j
+t evolves according to
+v j
+t+1 = v j
+t + /Delta1vj
+t+1 = v j
+t + σj
+t+1εj
+t+1 , (1)
+where all εj
+t are i.i.d. across time and assets with a standard normal cumulative
+distribution function /Phi1with zero mean and unit variance, and the volatility σj
+t
+has dynamics
+σj
+t+1 = σj + θj⏐⏐/Delta1vj
+t
+⏐
+⏐, (2)
+where σ
+j , θj ≥ 0. A positive θj implies that shocks to fundamentals increase
+future volatility.
+There are three groups of market participants: “customers” and “speculators”
+trade assets while “ﬁnanciers” ﬁnance speculators’ positions. The group of
+customers consists of three risk-averse agents. At time 0, customer k = 0, 1, 2
+has a cash holding of W k
+0 bonds and zero shares, but ﬁnds out that he will
+experience an endowment shock of zk ={ z1,k,. . . , zJ,k} shares at time t = 3,
+where z are random variables such that the aggregate endowment shock is zero,∑2
+k=0 z j,k = 0.
+With probability (1− a), all customers arrive at the market at time 0 and can
+trade securities in each time period 0, 1, 2. Since their aggregate shock is zero,
+they can share risks and have no need for intermediation.
+The basic liquidity problem arises because customers arrive sequentially
+with probability a, which gives rise to order imbalance. Speciﬁcally, in this
+case customer 0 arrives at time 0, customer 1 arrives at time 1, and customer
+2 arrives at time 2. Hence, at time 2 all customers are present, at time 1 only
+customers 0 and 1 can trade, and at time 0 only customer 0 is in the market.
+Before a customer arrives in the marketplace, his demand is y
+k
+t = 0, and
+after he arrives he chooses his security position each period to maximize his
+exponential utility function U(W k
+3 ) =− exp{−γW k
+3 } over ﬁnal wealth. Wealth
+W k
+t , including the value of the anticipated endowment shock of zk shares,
+evolves according to
+W k
+t+1 = W k
+t + (pt+1 − pt )′(
+yk
+t + zk)
+. (3)
+The vector of total demand shock of customers who have arrived in the market
+at time t is denoted by Zt :=∑t
+k=0 zk .
+2208
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 9 =====
+
+Market Liquidity and Funding Liquidity
+The early customers’ trading need is accommodated by speculators who pro-
+vide liquidity/immediacy. Speculators are risk-neutral and maximize expected
+ﬁnal wealth W3. Speculators face the constraint that the total margin on their
+position xt cannot exceed their capital Wt :
+∑
+j
+(
+x j+
+t m j+
+t + x j−
+t m j−
+t
+)
+≤ Wt, (4)
+where x j+
+t ≥ 0 and x j−
+t ≥ 0 are the positive and negative parts ofx j
+t = x j+
+t −
+x j−
+t , respectively, and m j+
+t ≥ 0 and m j−
+t ≥ 0 are the dollar margin on long
+and short positions, respectively. The institutional features related to this key
+constraint for different types of speculators like hedge funds, banks, and market
+makers are discussed in detail in Appendix A.
+Speculators start out with a cash position of W0 and zero shares, and their
+wealth evolves according to
+Wt = Wt−1 + (pt − pt−1)′xt−1 + ηt , (5)
+where ηt is an independent wealth shock arising from other activities (e.g.,
+a speculator’s investment banking arm). If a speculator loses all his capital,
+Wt ≤ 0, he can no longer invest because of the margin constraint (4), i.e., he
+must choose xt = 0. We let his utility in this case be ϕt Wt , where ϕt ≥ 0.
+Limited liability corresponds to ϕt = 0, and a proportional bankruptcy cost
+(e.g., monetary, reputational, or opportunity costs) corresponds to ϕt > 0. We
+focus on the case in which ϕ2 = 1, that is, negative consumption equal to
+the dollar loss in t = 2. We discuss ϕ1 in Section 5. Our results would be
+qualitatively the same with other bankruptcy assumptions.
+We could allow the speculators to raise new capital as long as this takes time.
+Indeed, the model would be the same if the speculators could raise capital only
+at time 2 (and in this case we need not assume that the customers’ endowment
+shocks z
+j aggregate to zero). Hence, in this sense, we can view our model as one
+of “slow moving capital,” consistent with the empirical evidence of Mitchell,
+Pedersen, and Pulvino (2007).
+Each ﬁnancier sets the margins to limit his counterparty credit risk. Specif-
+ically, each ﬁnancier ensures that the margin is large enough to cover the
+position’s π-value-at-risk (where π is a non-negative number close to zero,
+e.g., 1%):
+π = Pr
+(
+− /Delta1p
+j
+t+1 > m j+
+t
+⏐⏐Ft
+)
+, (6)
+π = Pr
+(
+/Delta1p j
+t+1 > m j−
+t
+⏐
+⏐F
+t
+)
+. (7)
+Equation (6) means that the margin on a long position m+ is set such
+that price drops that exceed the amount of the margin only happen with
+a small probability π. Similarly, Equation (7) means that price increases
+larger than the margin on a short position only happen with small probability.
+Clearly, the margin is larger for more volatile assets. The margin depends on
+2209
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 10 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+ﬁnanciers’ information set Ft . We consider two important benchmarks: “in-
+formed ﬁnanciers,” who know the fundamental value and the liquidity shocks
+z, Ft = σ{z, v0,..., vt, p0,..., pt, η1,..., ηt}, and “uninformed ﬁnanciers,”
+who only observe prices, Ft = σ{p0,..., pt}. This margin speciﬁcation is mo-
+tivated by the real-world institutional features described in Appendix A. The-
+oretically, Stiglitz and Weiss (1981) show how credit rationing can be due to
+adverse selection and moral hazard in the lending market, and Geanakoplos
+(2003) considers endogenous contracts in a general-equilibrium framework of
+imperfect commitment.
+We let /Lambda1
+j
+t be the (signed) deviation of the price from fundamental value:
+/Lambda1j
+t = p j
+t − v j
+t , (8)
+and we deﬁne our measure of market illiquidity as the absolute amount of this
+deviation, |/Lambda1j
+t |. We consider competitive equilibria of the economy:
+Definition 1. An equilibrium is a price process pt such that (i) xt maxi-
+mizes the speculators’ expected ﬁnal proﬁt subject to the margin constraint (4);
+(ii) each y
+k
+t maximizes customer k’s expected utility after their arrival at the
+marketplace and is zero beforehand; (iii) margins are set according to the VaR
+speciﬁcation (6–7); and (iv) markets clear, xt +∑2
+k=0 yk
+t = 0.
+Equilibrium. We derive the optimal strategies for customers and speculators
+using dynamic programming, starting from time 2, and working backwards.
+A customer’s value function is denoted /Gamma1and a speculator’s value function is
+denoted J. At time 2, customer k’s problem is
+/Gamma12
+(
+W k
+2 , p2,v 2
+)
+= max
+yk
+2
+−E2
+[
+e−γW k
+3
+]
+(9)
+= max
+yk
+2
+−e−γ(E2[W k
+3 ]− γ
+2 Va r2[W k
+3 ]) , (10)
+which has the solution
+y j,k
+2 = v j
+2 − p j
+2
+γ
+(
+σj
+3
+)2 − z j,k. (11)
+Clearly, since all customers are present in the market at time 2, the unique equi-
+librium is p2 = v2. Indeed, when the prices are equal to fundamentals, the ag-
+gregate customer demand is zero,∑
+k y j,k
+2 = 0, and speculators also has a zero
+demand. We get the customer’s value function/Gamma12(W k
+2 , p2 = v2,v 2) =− e−γW k
+2 ,
+and the speculator’s value functionJ2(W2, p2 = v2,v 2) = W2.
+The equilibrium before time 2 depends on whether the customers arrive
+sequentially or simultaneously. If all customers arrive at time 0, then the simple
+arguments above show that pt = vt at any time t = 0, 1, 2.
+2210
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 11 =====
+
+Market Liquidity and Funding Liquidity
+We are interested in the case with sequential arrival of the customers such
+that the speculators’ liquidity provision is needed. At time 1, customers 0 and
+1 are present in the market, but customer 2 has not arrived yet. As above,
+customer k = 0, 1 has a demand and value function of
+y j,k
+1 = v j
+1 − p j
+1
+γ
+(
+σj
+2
+)2 − z j,k (12)
+/Gamma11
+(
+W k
+1 , p1,v 1
+)
+=− exp
+⎧
+⎨
+⎩−γ
+⎡
+⎣W k
+1 +
+∑
+j
+(
+v j
+1 − p j
+1
+)2
+2γ
+(
+σj
+2
+)2
+⎤
+⎦
+⎫
+⎬
+⎭ . (13)
+At time 0, customer k = 0 arrives in the market and maximizes
+E
+0[/Gamma11(W k
+1 , p1,v 1)].
+At time t = 1, if the market is perfectly liquid so that p j
+1 = v j
+1 for all j,
+then the speculators are indifferent among all possible positions x1.I fs o m e
+securities have p1 ̸=v1, then the risk-neutral speculators invest all his capital
+such that his margin constraint binds. The speculators optimally trade only
+in securities with the highest expected proﬁt per dollar used. The proﬁt per
+dollar used is ( v
+j
+1 − p j
+1 )/m j+
+1 on a long position and −(v j
+1 − p j
+1 )/m j−
+1 on a
+short position. A speculators’ shadow cost of capital, denotedφ1, is 1 plus the
+maximum proﬁt per dollar used as long as he is not bankrupt:
+φ1 = 1 + max
+j
+{
+max
+(
+v j
+1 − p j
+1
+m j+
+1
+, −
+(
+v j
+1 − p j
+1
+)
+m j−
+1
+)}
+, (14)
+where the margins for long and short positions are set by the ﬁnanciers, as
+described in the next section. If the speculators are bankrupt, W
+1 < 0, then
+φ1 = ϕ1. Each speculator’s value function is therefore
+J1(W1, p1,v 1, p0,v 0) = W1φ1 . (15)
+At time t = 0, the speculator maximizes E0[W1φ1] subject to his capital con-
+straint (4).
+The equilibrium prices at times 1 and 0 do not have simple expressions but
+we can characterize their properties, starting with a basic result from which
+much intuition derives:
+Proposition 1 (market and funding liquidity). In equilibrium, any asset
+j’s market illiquidity |/Lambda1
+j
+1| is linked to its margin m j
+1 and the common funding
+illiquidity as measured by the speculators’ marginal value of an extra dollar
+φ1:
+⏐⏐/Lambda1j
+1
+⏐
+⏐= m
+j
+1(φ1 − 1), (16)
+2211
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 12 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+where m j
+1 = m j+
+1 if the speculator is long and m j
+1 = m j−
+1 otherwise. If the
+speculators have a zero position for asset j, the equation is replaced by ≤.
+We next go on to show the (de-)stabilizing properties of margins, and then we
+further characterize the equilibrium connection between market liquidity and
+speculators’ funding situation, and the role played by liquidity risk at time 0.
+2. Margin Setting and Liquidity (Time 1)
+A key determinant of speculators’ funding liquidity is their margin requirement
+for collateralized ﬁnancing. Hence, it is important to determine the margin
+function, m
+1, set by, respectively, informed and uninformed ﬁnanciers. The
+margin at time 1 is set to cover a position’s value-at-risk, knowing that prices
+equal the fundamental values in the next period 2, p
+2 = v2.
+We consider ﬁrst informed ﬁnanciers who know the fundamental values v1
+and, hence, price divergence from fundamentals /Lambda11. Since /Lambda12 = 0, they set
+margins on long positions at t = 1, according to
+π = Pr
+(
+−/Delta1p j
+2 > m j+
+1
+⏐⏐F1
+)
+= Pr
+(
+−/Delta1vj
+2 + /Lambda1j
+1 > m j+
+1
+⏐⏐F1
+)
+(17)
+= 1 − /Phi1
+(
+m j+
+1 − /Lambda1j
+1
+σj
+2
+)
+,
+which implies that
+m j+
+1 = /Phi1−1 (1 − π) σj
+2 + /Lambda1j
+1 (18)
+= ¯σj + ¯θ
+⏐
+⏐/Delta1v
+j
+1
+⏐
+⏐+ /Lambda1
+j
+1 ,
+where we deﬁne
+¯σj = σj /Phi1−1 (1 − π), (19)
+¯θj = θj /Phi1−1 (1 − π). (20)
+The margin on a short position can be derived similarly and we arrive at the
+following surprising result:
+Proposition 2 (stabilizing margins and the cushioning effect). When the
+ﬁnanciers are informed about the fundamental value and knows that prices will
+equal fundamentals in the next period, t = 2, then the margins on long and
+short positions are, respectively,
+m j+
+1 = max
+{
+¯σj + ¯θj |/Delta1vj
+1
+⏐⏐+ /Lambda1j
+1, 0
+}
+, (21)
+m j−
+1 = max
+{
+¯σj + ¯θj⏐
+⏐/Delta1v
+j
+1
+⏐
+⏐− /Lambda1
+j
+1, 0
+}
+. (22)
+2212
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 13 =====
+
+Market Liquidity and Funding Liquidity
+The more prices are below fundamentals /Lambda1j
+1 < 0, the lower is the margin on
+a long position m j+
+1 , and the more prices are above fundamentals/Lambda1j
+1 > 0,t h e
+lower is the margin on a short position m j−
+1 . Hence, in this case illiquidity
+reduces margins for speculators who buy low and sell high.
+The margins are reduced by illiquidity because the speculators are expected
+to proﬁt when prices return to fundamentals at time 2, and this proﬁt “cushions”
+the speculators from losses due to fundamental volatility. Thus, we denote the
+margins set by informed ﬁnanciers at t = 1a s stabilizing margins.
+Stabilizing margins are an interesting benchmark, and they are hard to escape
+in a theoretical model. However, real-world liquidity crises are often associated
+with increases in margins, not decreases. To capture this, we turn to the case of
+a in which ﬁnanciers are uninformed about the current fundamental so that he
+must set his margin based on the observed prices p
+0 and p1. This is in general
+a complicated problem since the ﬁnanciers need to ﬁlter out the probability
+that customers arrive sequentially, and the values of z0 and z1. The expression
+becomes simple, however, if the ﬁnancier’s prior probability of an asynchronous
+arrival of endowment shocks is small so that he ﬁnds it likely that p
+j
+t = v j
+t ,
+implying a common margin m j
+1 = m j+
+1 = m j−
+1 for long and short positions in
+the limit:
+Proposition 3 (destabilizing margins). When the ﬁnanciers are uninformed
+about the fundamental value, then, as a → 0, the margins on long and short
+positions approach
+m j
+1 = ¯σj + ¯θj⏐⏐/Delta1p j
+1
+⏐
+⏐= ¯σ
+j + ¯θj⏐
+⏐/Delta1v
+j
+1 + /Delta1/Lambda1j
+1
+⏐
+⏐. (23)
+Margins are increasing in price volatility and market illiquidity can increase
+margins.
+Intuitively, since liquidity risk tends to increase price volatility, and since
+uninformed ﬁnanciers may interpret price volatility as fundamental volatility,
+this increases margins.
+7 Equation (23) corresponds closely to real-world margin
+setting, which is primarily based on volatility estimates from past price move-
+ments. This introduces a procyclicality that ampliﬁes funding shocks—a major
+criticism of the Basel II capital regulation. (See Appendix A.2 for how banks’
+capital requirements relate to our funding constraint.) Equation (23) shows that
+illiquidity increases margins when the liquidity shock /Delta1/Lambda1
+j
+1 has the same sign
+as the fundamental shock /Delta1vj
+1 (or is greater in magnitude), for example, when
+bad news and selling pressure happen at the same time. On the other hand, mar-
+gins are reduced if the nonfundamentalz-shock counterbalances a fundamental
+7 In the analysis of time 0, we shall see that margins can also be destabilizing when price volatility signals future
+liquidity risk (not necessarily fundamental risk).
+2213
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 14 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+move. We denote the phenomenon that margins can increase as illiquidity rises
+by destabilizing margins. As we will see next, the information available to the
+ﬁnanciers (i.e., whether margins are stabilizing or destabilizing) has important
+implications for the equilibrium.
+3. Fragility and Liquidity Spirals (Time 1)
+We next show how speculators’ funding problems can lead to liquidity spirals
+and fragility—the property that a small change in fundamentals can lead to a
+large jump in illiquidity. We show that funding problems are especially esca-
+lating with uninformed ﬁnanciers (i.e., destabilizing margins). For simplicity,
+we illustrate this with a single security J = 1.
+3.1 Fragility
+To set the stage for the main fragility proposition below, we make a few brief
+deﬁnitions. Liquidity is said to be fragile if the equilibrium price p
+t (ηt,v t )
+cannot be chosen to be continuous in the exogenous shocks, namely ηt and
+/Delta1vt . Fragility arises when the excess demand for shares xt +∑1
+k=0 yk
+1 can
+be non-monotonic in the price. While under “normal” circumstances, a high
+price leads to a low total demand (i.e., excess demand is decreasing), binding
+funding constraints along with destabilizing margins (margin effect) or specu-
+lators’ losses (loss effect) can lead to an increasing demand curve. Further, it is
+natural to focus on stable equilibria in which a small negative (positive) price
+perturbation leads to excess demand (supply), which, intuitively, “pushes” the
+price back up (down) to its equilibrium level.
+Proposition 4 (fragility). There exist x
+, θ, a > 0 such that:
+(i) With informed ﬁnanciers, the market is fragile at time 1 if speculators’
+position |x0| is larger than x and of the same sign as the demand shock Z1.
+(ii) With uninformed ﬁnanciers the market is fragile as in (i) and additionally
+if the ARCH parameter θ is larger than θ and the probability, a, of sequential
+arrival of customers is smaller than a.
+Numerical example. We illustrate how fragility arises due to destabilizing
+margins or dealer losses by way of a numerical example. We consider the
+more interesting (and arguably more realistic) case in which the ﬁnanciers are
+uninformed, and we choose parameters as follows.
+The fundamental value has ARCH volatility parameters σ
+= 10 and θ =
+0.3, which implies clustering of volatility. The initial price is p0 = 130, the
+aggregate demand shock of the customers who have arrived at time 1 is Z1 =
+z0 + z1 = 30, and the customers’ risk aversion coefﬁcient is γ = 0.05. The
+speculators have an initial position of x0 = 0 and a cash wealth of W1 =
+900. Finally, the ﬁnanciers use a VaR with π = 1% and customers learn their
+endowment shocks sequentially with probability a = 1%.
+2214
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 15 =====
+
+Market Liquidity and Funding Liquidity
+−50 −40 −30 −20 −10 0 10 20 30 40 50
+90
+100
+110
+120
+130
+140
+150
+160
+170
+x1
+−50 −40 −30 −20 −10 0 10 20 30 40 50
+x1
+p1
+90
+100
+110
+120
+130
+140
+150
+160
+170p1
+Figure 3
+Speculator demand and customer supply
+This ﬁgure illustrates how margins can be destabilizing when ﬁnanciers are uninformed and the fundamentals
+have volatility clustering. The solid curve is the speculators’ optimal demand for a = 1%. The upward sloping
+dashed line is the customers’ supply, that is, the negative of their demand. In panel A, the speculators experience
+a zero wealth shock, η
+1 = 0, while in panel B they face a negative wealth shock of η1 =− 150, otherwise
+everything is the same. In panel A, perfect liquidityp1 = v1 = 120 is one of two stable equilibria, while in panel
+B the unique equilibrium is illiquid.
+Panel A of Figure 3 illustrates how the speculators’ demand x1 and the
+customers’ supply (i.e., the negative of the customers’ demand as per Equation
+(12)) depend on the price p1 when the fundamental value is v1 = 120 and the
+speculators’ wealth shock isη1 = 0. Customers’ supply is given by the upward
+sloping dashed line since, naturally, their supply is greater when the price is
+higher. Customers supplyZ
+1 = 30 shares, namely the shares that they anticipate
+receiving at timet = 3, when the market is perfectly liquid,p1 = v1 = 120 (i.e.,
+illiquidity is |/Lambda11|= 0). For lower prices, they supply fewer shares.
+The speculators’ demand, x1, must satisfy the margin constraints. It is in-
+structive to consider ﬁrst the simpler limiting casea → 0 for which the margin
+requirement is simply m = ¯σ + ¯θ|/Delta1p1|= 2.326(10 + 0.3|/Delta1p1|). This implies
+that speculators demand |x1|≤ W1/(¯σ + ¯θ|/Delta1p1|). Graphically, this means that
+their demand must be inside the “hyperbolic star” deﬁned by the four (dotted)
+hyperbolas (that are partially overlaid by a solid demand curve in Figure 3).
+At the price p
+1 = p0 = 130, the margin is smallest and hence the constraint is
+most relaxed. As p1 departs from p0 = 130, margins increase and speculators
+become more constrained—the horizontal distance between two hyperbolas
+shrinks.
+After establishing the hyperbolic star, it is easy to derive the demand curve
+for a → 0: For p
+1 = v1 = 120, the security’s expected return is zero and each
+speculator is indifferent between all his possible positions on the horizontal
+line. For price levels p
+1 >v 1 above this line, the risk-neutral speculators want
+to short-sell the asset, x1 < 0, and their demand is constrained by the upper-
+left side of the star. Similarly, for prices below v1, speculators buy the asset,
+x1 > 0, and their demand is limited by the margin constraint. Interestingly,
+the speculators’ demand is upward sloping for prices below 120. As the price
+2215
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 16 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+declines, the ﬁnanciers’ estimate of fundamental volatility, and consequently
+of margins, increase.
+We now generalize the analysis to the case wherea > 0. The margin setting
+becomes more complicated since uninformed ﬁnanciers must ﬁlter out to what
+extent the equilibrium price change is caused by a movement in fundamentals
+/Delta1v
+1 and/or an occurrence of a liquidity event with an order imbalance caused
+by the presence of customers 0 and 1, but not customer 2. Since customers
+0 and 1 want to sell ( Z
+1 = 30), a price increase or modest price decline is
+most likely due to a change in fundamentals, and hence the margin setting
+is similar to the case of a = 0. This is why speculators’ demand curve for
+prices above 100 almost perfectly overlays the relevant part of the hyperbolic
+star in Figure 3. However, for a large price drop, say below 100, ﬁnanciers assign
+a larger conditional probability that a liquidity event has occurred. Hence, they
+are willing to set a lower margin (relative to the one implying the hyperbolic
+star) because they expect the speculator to proﬁt as the price rebounds in period
+2—hence, the cushioning effect discussed above reappears in the extreme here.
+This explains why the speculators’ demand curve is backward bending only
+in a limited price range and becomes downward sloping for p
+1 below roughly
+100.8
+Panel A of Figure 3 shows that there are two stable equilibria: a perfect
+liquidity equilibrium with price p1 = v1 = 120 and an illiquid equilibrium
+with a price of about 94 (and an uninteresting unstable equilibrium withp1 just
+below 120).
+Panel B of Figure 3 shows the same plot as panel A, but with a negative wealth
+shock to speculators of η1 =− 150 instead of η1 = 0. In this case, perfect
+liquidity with p1 = v1 is no longer an equilibrium since the speculators cannot
+fund a large enough position. The unique equilibrium is highly illiquid because
+of the speculators’ lower wealth and, importantly, because of endogenously
+higher margins.
+This “disconnect” between the perfect-liquidity equilibrium and the illiquid
+equilibrium and the resulting fragility is illustrated more directly in Figure 4.
+Panel A plots the equilibrium price correspondence for different exogenous
+funding shocks η
+1 (with ﬁxed/Delta1v1 =− 10) and shows that a marginal reduction
+in funding cannot always lead to a smooth reduction in market liquidity. Rather,
+there must be a level of funding such that an inﬁnitesimal drop in funding leads
+to a discontinuous drop in market liquidity.
+The dark line in Figure 4 shows the equilibrium with the highest market
+liquidity and the light line shows the equilibrium with the lowest market liq-
+uidity. We note that the ﬁnanciers’ ﬁltering problem and, hence, the margin
+function depend on the equilibrium selection. Since the margin affects the
+8 We note that the cushioning effect relies on the ﬁnanciers’ knowledge that the market will become liquid in
+period t = 2. This is not the case in the earlier period 0, though. In an earlier version of the paper, we showed that
+the cushioning effect disappears in a stationary inﬁnite horizon setting in which the “complementary” customers
+arrive in each period with a constant arrival probability.2216
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 17 =====
+
+Market Liquidity and Funding Liquidity
+−100 −50 0 50 100 150 200 250 300 350 400
+90
+100
+110
+120
+130
+140
+150
+η1
+p1
+90
+100
+110
+120
+130
+140
+150p1
+−30 −20 −10 0 10 20 30
+Δ v1
+Figure 4
+Fragility due to destabilizing margins
+The ﬁgure shows the equilibrium price as a function of the speculators’ wealth shock η1 (panel A) and of
+fundamental shocks/Delta1v1 (panel B). This is drawn for the equilibrium with the highest market liquidity (light line)
+and the equilibrium with the lowest market liquidity (dark line). The margins are destabilizing since ﬁnanciers
+are uninformed and fundamentals exhibit volatility clustering. The equilibrium prices are discontinuous, which
+reﬂects fragility in liquidity since a small shock can lead to a disproportionately large price effect.
+speculators’ trades, the equilibrium selection affects the equilibrium outcome
+everywhere—prices are slightly affected even outside the η region (v1 region)
+with fragility.
+Panel B of Figure 4 plots the equilibrium price correspondence for different
+realizations of the fundamental shock /Delta1v1 (with ﬁxed η1 = 0) and shows
+the same form of discontinuity for adverse fundamental shocks to v1.T h e
+discontinuity with respect to/Delta1v1 is most easily understood in conjunction with
+panel A of Figure 3. As /Delta1v1 falls, the horizontal line of speculator demand
+shifts downward, and the customer supply line moves downward. As a result,
+the perfect liquidity equilibrium vanishes. Panel B of Figure 4 also reveals the
+interesting asymmetry that negative fundamental shocks lead to larger price
+movements than corresponding positive shocks (for Z1 := z0 + z1 > 0). This
+asymmetry arises even without a loss effect since x0 = 0.
+Fragility can also arise because of shocks to customer demand or volatility.
+Indeed, the market can also be suddenly pushed into an illiquid equilibrium
+with high margins due to an increase in demand and an increase in volatility.
+Paradoxically, a marginally larger demand for liquidity by customers can lead
+to a drastic reduction of liquidity supply by the speculators when it pushes the
+equilibrium over the edge.
+While the example above has speculators with zero initial positions,x
+0 = 0,
+it is also interesting to consider x0 > 0. In this case, lower prices lead to
+losses for the speculators, and graphically this means that the constraints in the
+“hyperbolic star” tighten (i.e., the gap between the hyperbolas narrows) at low
+prices. Because of this “loss effect,” the discontinuous price drop associated
+with the illiquid equilibrium is even larger.
+In summary, this example shows how destabilizing margins and dealer losses
+give rise to a discontinuity in prices, which can help to explain the sudden market
+2217
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 18 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+liquidity dry-ups observed in many markets. For example, Russia’s default in
+1998 was in itself only a trivial wealth shock relative to global arbitrage capital.
+Nevertheless, it had a large effect on liquidity in global ﬁnancial markets,
+consistent with our fragility result that a small wealth shock can push the
+equilibrium over the edge.
+3.2 Liquidity Spirals
+To further emphasize the importance of speculators’ funding liquidity, we now
+show how it can make market liquidity highly sensitive to shocks. We identify
+two ampliﬁcation mechanisms: a “margin spiral” due to increasing margins as
+speculator ﬁnancing worsens, and a “loss spiral” due to escalating speculator
+losses.
+Figure 2 illustrates these “liquidity spirals.” A shock to speculator capital
+(η
+1 < 0) forces speculators to provide less market liquidity, which increases
+the price impact of the customer demand pressure. With uninformed ﬁnanciers
+and ARCH effects, the resulting price swing increases ﬁnanciers’ estimate of
+the fundamental volatility and, hence, increases the margin, thereby worsening
+speculator funding problems even further, and so on, leading to a “margin
+spiral.” Similarly, increased market illiquidity can lead to losses on speculators’
+existing positions, worsening their funding problem and so on, leading to a “loss
+spiral.” Mathematically, the spirals can be expressed as follows:
+Proposition 5. (i) If speculators’ capital constraint is slack, then the price
+p
+1 is equal to v1 and insensitive to local changes in speculator wealth.
+(ii) (Liquidity spirals) In a stable illiquid equilibrium with selling pressure
+from customers, Z 1, x1 > 0, the price sensitivity to speculator wealth shocks
+η1 is
+∂p1
+∂η1
+= 1
+2
+γ(σ2)2 m+
+1 + ∂m+
+1
+∂p1
+x1 − x0
+(24)
+and with buying pressure from customers, Z1, x1 < 0,
+∂p1
+∂η1
+= −1
+2
+γ(σ2)2 m−
+1 + ∂m−
+1
+∂p1
+x1 + x0
+. (25)
+A margin/haircut spiral arises if ∂m+
+1
+∂p1
+< 0 or ∂m−
+1
+∂p1
+> 0, which happens with
+positive probability if ﬁnanciers are uninformed and a is small enough. A loss
+spiral arises if speculators’ previous position is in the opposite direction as the
+demand pressure, x0 Z1 > 0.
+This proposition is intuitive. Imagine ﬁrst what happens if speculators face
+a wealth shock of $1, margins are constant, and speculators have no inventory
+2218
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 19 =====
+
+Market Liquidity and Funding Liquidity
+x0 = 0. In this case, the speculator must reduce his position by 1/m1. Since the
+slope of each of the two customer demand curves is9 1/(γ(σ2)2), we get a total
+price effect of 1/( 2
+γ(σ2)2 m1).
+The two additional terms in the denominator imply ampliﬁcation or damp-
+ening effects due to changes in the margin requirement and to proﬁt/losses
+on the speculators’ existing positions. To see that, recall that for any
+k > 0 and l with |l| < k, it holds that 1
+k−l = 1
+k + l
+k2 + l2
+k3 + ... ; so with
+k = 2
+γ(σ2)2 m1 and l =− ∂m±
+1
+∂p1
+x1 ± x0, each term in this inﬁnite series corre-
+sponds to one loop around the circle in Figure 2. The total effect of the changing
+margin and speculators’ positions ampliﬁes the effect ifl > 0. Intuitively, with
+Z1 > 0, then customer selling pressure is pushing down the price, and∂m+
+1
+∂p1
+< 0
+means that as prices go down, margins increase, making speculators’ funding
+tighter and thus destabilizing the system. Similarly, when customers are buying,
+∂m−
+1
+∂p1
+> 0 implies that increasing prices leads to increased margins, making it
+harder for speculators to short-sell, thus destabilizing the system. The system is
+also destabilized if speculators lose money on their previous position as prices
+move away from fundamentals.
+Interestingly, the total effect of a margin spiral together with a loss spiral is
+greater than the sum of their separate effects. This can be seen mathematically
+by using simple convexity arguments, and it can be seen intuitively from the
+ﬂow diagram of Figure 2.
+Note that spirals can also be “started” by shocks to liquidity demand Z
+1,
+fundamentals v1, or volatility. It is straightforward to compute the price sensi-
+tivity with respect to such shocks. They are just multiples of∂p1
+∂η1
+. For instance, a
+fundamental shock affects the price both because of its direct effect on the ﬁnal
+payoff and because of its effect on customers’ estimate of future volatility—and
+both of these effects are ampliﬁed by the liquidity spirals.
+Our analysis sheds some new light on the 1987 stock market crash, com-
+plementing the standard culprit, portfolio insurance trading. In the 1987 stock
+market crash, numerous market makers hit (or violated) their funding constraint:
+“By the end of trading on October 19, [1987] thirteen [NYSE
+specialist] units had no buying power,” —SEC (1988, chap. 4,
+p. 58)
+While several of these ﬁrms managed to reduce their positions and continue
+their operations, others did not. For instance, Tompane was so illiquid that it
+was taken over by Merrill Lynch Specialists and Beauchamp was taken over by
+Spear, Leeds & Kellogg (Beauchamp’s clearing broker). Also, market makers
+outside the NYSE experienced funding troubles: the Amex market makers
+Damm Frank and Santangelo were taken over; at least 12 OTC market makers
+ceased operations; and several trading ﬁrms went bankrupt.
+9 See Equation (12).
+2219
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 20 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+These funding problems were due to (i) reductions in capital arising from
+trading losses and defaults on unsecured customer debt, (ii) an increased fund-
+ing need stemming from increased inventory, and (iii) increased margins. One
+New York City bank, for instance, increased margins/haircuts from 20% to 25%
+for certain borrowers, and another bank increased margins from 25% to 30%
+for all specialists (SEC, 1988, pp. 5–27 and 5–28). Other banks reduced the
+funding period by making intraday margin calls, and at least two banks made
+intraday margin calls based on assumed 15% and 25% losses, thus effectively
+increasing the haircut by 15% and 25%. Also, some broker-dealers experienced
+a reduction in their line of credit and—as Figure 1 shows—margins at the fu-
+tures exchanges also drastically increased (SEC 1988 and Wigmore 1998).
+Similarly, during the ongoing liquidity and credit crunch, the margins and hair-
+cuts across most asset classes widened signiﬁcantly starting in the summer of
+2007 (see IMF Global Stability Report, October 2007).
+In summary, our results on fragility and liquidity spirals imply that dur-
+ing “bad” times, small changes in underlying funding conditions (or liquidity
+demand) can lead to sharp reductions in liquidity. The 1987 crash exhibited
+several of the predicted features, namely capital-constrained dealers, increased
+margins, and increased illiquidity.
+4. Commonality and Flight to Quality (Time 1)
+We now turn to the cross-sectional implications of illiquidity. Since speculators
+are risk-neutral, they optimally invest all their capital in securities that have
+the greatest expected proﬁt |/Lambda1
+j | per capital use, i.e., per dollar margin m j ,a s
+expressed in Equation (14). That equation also introduces the shadow cost of
+capital φ
+1 as the marginal value of an extra dollar. The speculators’ shadow
+cost of capital φ1 captures well the notion of funding liquidity: a highφ means
+that the available funding—from capital W1 and from collateralized ﬁnancing
+with margins m j
+1—is low relative to the needed funding, which depends on the
+investment opportunities deriving from demand shocks z j .
+The market liquidity of all assets depends on the speculators’ funding liq-
+uidity, especially for high-margin assets, and this has several interesting impli-
+cations:
+Proposition 6. There exists c > 0 such that, for θ
+j < c for all j and either
+informed ﬁnanciers or uninformed with a < c, we have:
+(i) Commonality of market liquidity . The market illiquidities |/Lambda1| of any
+two securities, k and l, co-move,
+Cov0
+(⏐⏐/Lambda1k
+1
+⏐⏐,
+⏐
+⏐/Lambda1
+l
+1
+⏐
+⏐)
+≥ 0, (26)
+2220
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 21 =====
+
+Market Liquidity and Funding Liquidity
+and market illiquidity co-moves with funding illiquidity as measured by
+speculators’ shadow cost of capital,φ1,
+Cov0
+[⏐⏐/Lambda1k
+1
+⏐⏐, φ1
+]
+≥ 0. (27)
+(ii) Commonality of fragility. Jumps in market liquidity occur simultane-
+ously for all assets for which speculators are marginal investors.
+(iii) Quality and liquidity. If asset l has lower fundamental volatility than
+asset k, σl < σk , then l also has lower market illiquidity,
+⏐
+⏐/Lambda1
+l
+1
+⏐
+⏐≤
+⏐
+⏐/Lambda1
+k
+1
+⏐⏐, (28)
+if xk
+1 ̸=0 or |Zk
+1|≥| Zl
+1|.
+(iv) Flight to quality. The market liquidity differential between high- and
+low-fundamental-volatility securities is bigger when speculator funding
+is tight, that is, σl < σk implies that |/Lambda1k
+1| increases more with a negative
+wealth shock to the speculator,
+∂
+⏐⏐/Lambda1l
+1
+⏐
+⏐
+∂(−η1) ≤ ∂
+⏐
+⏐/Lambda1
+k
+1
+⏐⏐
+∂(−η1) , (29)
+if xk
+1 ̸=0 or |Zk
+1|≥| Zl
+1|. Hence, if xk
+1 ̸=0 or |Zk
+1|≥| Zl
+1| a.s., then
+Cov0
+(⏐⏐/Lambda1l
+1
+⏐
+⏐, φ
+1
+)
+≤ Cov0
+(⏐
+⏐/Lambda1
+k
+1
+⏐⏐, φ1
+)
+. (30)
+Numerical example, continued. To illustrate these cross-sectional predic-
+tions, we extend the numerical example of Section 3 to two securities. The
+two securities only differ in their long-run fundamental volatility: ¯σ1 = 7.5
+and ¯σ2 = 10. The other parameters are as before, except that we double W1
+to 1800 since the speculators now trade two securities, the ﬁnanciers remain
+uninformed, and we focus on the simpler limited case with a → 0.
+Figure 5 depicts the assets’ equilibrium prices for different values of the
+funding shock η
+1. First note that as speculator funding tightens and our funding
+illiquidity measure φ1 rises, the market illiquidity measure |/Lambda1j
+1| rises for both
+assets. Hence, for random η1, we see our commonality in liquidity result
+Cov0[|/Lambda1k
+1|,|/Lambda1l
+1|] > 0.
+The “commonality in fragility” cannot directly be seen from Figure 5, but it
+is suggestive that both assets have the same range of η1 with two equilibrium
+prices p j
+1 . The intuition for this result is the following. Whenever funding
+is unconstrained, there is perfect market liquidity provision for all assets. If
+funding is constrained, then it cannot be the case that speculators provide
+perfect liquidity for one asset but not for the other, since they would always
+have an incentive to shift funds toward the asset with non-perfect market
+2221
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 22 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+−1000 −500 0 500 1000
+0
+20
+40
+60
+80
+100
+120
+140
+160
+η1
+p1
+1, p2
+1
+Figure 5
+Flight to quality and commonality in liquidity
+The ﬁgure plots the prices p j
+1 of assets 1 and 2 as functions of speculators’ funding shocks η1. Asset 1 (darker
+curve) has lower long-run fundamental risk than asset 2 (lighter curve), ¯σ1 = 7.5 < 10 = ¯σ2.
+liquidity. Hence, market illiquidity jumps for both assets at exactly the same
+funding level.
+Our result relating fundamental volatility to market liquidity (“quality and
+liquidity”) is reﬂected in p2
+1 being below p1
+1 for any given funding level.
+Hence, the high-fundamental-volatility asset 2 is always less liquid than the
+low-fundamental-volatility asset 1.
+Figure 5 also illustrates our result on “ﬂight to quality.” To see this, consider
+the two securities’ relative price sensitivity with respect toη1. For large wealth
+shocks, market liquidity is perfect for both assets, i.e., p1
+1 = p2
+1 = v1
+1 = v2
+1 =
+120, so in this high range of funding, market liquidity is insensitive to marginal
+changes in funding. On the lower branch of the graph, market illiquidity of
+both assets increases as η
+1 drops since speculators must take smaller stakes in
+both assets. Importantly, as funding decreases, p2
+1 decreases more steeply than
+p1
+1, that is, asset 2 is more sensitive to funding declines than asset 1. This is
+because speculators cut back more on the “funding-intensive” asset 2 with its
+high margin requirement. Speculators want to maximize their proﬁt per dollar
+margin, |/Lambda1j |/m j , and therefore |/Lambda12| must be higher than |/Lambda11| to compensate
+speculators for using more capital for margin.
+Both price functions exhibit a kink around η =− 1210, because, for sufﬁ-
+ciently low funding levels, speculators put all their capital into asset 2. This is
+because the customers are more eager to sell the more volatile asset 2, leading
+to more attractive prices for the speculators.
+2222
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 23 =====
+
+Market Liquidity and Funding Liquidity
+5. Liquidity Risk (Time 0)
+We now turn attention to the initial time period, t = 0, and demonstrate that
+(i) funding liquidity risk matters even before margin requirements actually
+bind; (ii) the pricing kernel depends on future funding liquidity, φt+1; (iii) the
+conditional distribution of prices p1 is skewed due to the funding constraint
+(inducing fat tails ex ante ); and (iv) margins m0 and illiquidity /Lambda10 can be
+positively related due to liquidity risk even if ﬁnanciers are informed.
+The speculators’ trading activity at time 0 naturally depends on their expec-
+tations about the next period and, in particular, the time 1 illiquidity described
+in detail above. Further, speculators risk having negative wealthW
+1 at time 1, in
+which case they have utility ϕt Wt . If speculators have no dis-utility associated
+with negative wealth levels (ϕt = 0), then they go to their limit already at time
+0 and the analysis is similar to time 1.
+We focus on the more realistic case in which the speculators have dis-utility
+in connection withW1 < 0 and, therefore, choose not to trade to their constraint
+at time t = 0 when their wealth is large enough. To understand this, note that
+while most ﬁrms legally have limited liability, the capital Wt in our model
+refers to pledgable capital allocated to trading. For instance, Lehman Brothers’
+2001 Annual Report (p. 46) states:
+“The following must be funded with cash capital: Secured funding ‘haircuts,’
+to reﬂect the estimated value of cash that would be advanced to the Company
+by counterparties against available inventory, Fixed assets and goodwill, [and]
+Operational cash ... ”
+Hence, if Lehman suffers a large loss on its pledgable capital such that
+W
+t < 0, then it incurs monetary costs that must be covered with its unpledgable
+capital like operational cash (which could also hurt Lehman’s other businesses).
+In addition, the ﬁrm incurs non-monetary cost, like loss in reputation and
+in goodwill, that reduces its ability to exploit future proﬁtable investment
+opportunities. To capture these effects, we let a speculator’s utility be φ
+1W1,
+where φ1 is given by the right-hand side of Equation (14) both for positive
+and negative values of W1. With this assumption, equilibrium prices at time
+t = 0 are such that the speculators do not trade to their constraint at timet = 0
+when their wealth is large enough. In fact, this is the weakest assumption that
+curbs the speculators’ risk taking since it makes their objective function linear.
+Higher “bankruptcy costs” would lead to more cautious trading at time 0 and
+qualitatively similar results.10
+10 We note that risk aversion also limits speculators’ trading in the real world. Our model based on margin
+constraints differs from one driven purely by risk aversion in several ways. For example, an adverse shock
+that lowers speculator wealth at t = 1 creates a proﬁtable investment opportunity that one might think partially
+offsets the loss—a natural “dynamic hedge.” Because of this dynamic hedge, in a model driven by risk-aversion,
+speculators (with a relative-risk-aversion coefﬁcient larger than one) increase theirt = 0 hedging demand, which
+in turn, lowers illiquidity in t = 0. However, exactly the opposite occurs in a setting with capital constraints.
+Capital constraints prevent speculators from taking advantage of investment opportunities int = 1 so they cannot
+exploit this “dynamic hedge.” Hence, speculators are reluctant to trade away the illiquidity att = 0.
+2223
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 24 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+If the speculator is not constrained at timet = 0, then the ﬁrst-order condition
+for his position in security j is E0[φ1(p j
+1 − p j
+0 )] = 0. (We leave the case of
+a constrained time-0 speculator for Appendix B.) Consequently, the funding
+liquidity, φ1, determines the pricing kernel φ1/E0[φ1] for the cross section of
+securities:
+p j
+0 = E0
+[
+φ1 p j
+1
+]
+E0[φ1] = E0
+[
+p j
+1
+]
++ Cov0
+[
+φ1, p j
+1
+]
+E0[φ1] . (31)
+Equation (31) shows that the price at time 0 is the expected time-1 price, which
+already depends on the liquidity shortage at time 1, further adjusted for liquidity
+risk in the form of a covariance term. The liquidity risk term is intuitive: The
+time-0 price is lower if the covariance is negative, that is, if the security has a
+low payoff during future funding liquidity crises when φ
+1 is high.
+An illustration of the importance of funding-liquidity management is the
+“LTCM crisis.” The hedge fund Long Term Capital Management (LTCM) had
+been aware of funding liquidity risk. Indeed, they estimated that in times of
+severe stress, haircuts on AAA-rated commercial mortgages would increase
+from 2% to 10%, and similarly for other securities (HBS Case N9-200-007(A)).
+In response to this, LTCM had negotiated long-term ﬁnancing with margins
+ﬁxed for several weeks on many of their collateralized loans. Other ﬁrms
+with similar strategies, however, experienced increased margins. Due to an
+escalating liquidity spiral, LTCM could ultimately not fund its positions in
+spite of its numerous measures to control funding risk, it was taken over by
+fourteen banks in September 1998. Another recent example is the funding
+problems of the hedge fund Amaranth in September 2006, which reportedly
+ended with losses in excess of USD 6 billion. The ongoing liquidity crisis of
+2007–2008, in which funding based on the asset-backed commercial paper
+market suddenly eroded and banks were reluctant to lend to each other out of
+fear of future funding shocks, provides a nice out-of-sample test of our theory.
+11
+Numerical example, continued. To better understand funding liquidity risk,
+we return to our numerical example with one security, η1 = 0 and a → 0. We
+ﬁrst consider the setting with uninformed ﬁnanciers and later turn to the case
+with informed ﬁnanciers.
+Figure 6 depicts the price p
+0 and expected time-1 price E0[p1] for different
+initial wealth levels, W0, for which the speculators’ funding constraint is not
+binding at t = 0. The ﬁgure shows that even though the speculators are un-
+constrained at time 0, market liquidity provision is limited with prices below
+the fundamental value of E0[v] = 130. The price is below the fundamental for
+two reasons: First, the expected time-1 price is below the fundamental value
+because of the risk that speculators cannot accommodate the customer sell-
+ing pressure at that time. Second, p0 is even below E0[p1], since speculators
+11 See Brunnermeier (2009) for a more complete treatment of the liquidity and credit crunch that started in 2007.
+2224
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 25 =====
+
+Market Liquidity and Funding Liquidity
+1000 1500 2000 2500 3000
+114
+116
+118
+120
+122
+124
+126
+128
+130
+W0
+p0, E[p1]
+Figure 6
+Illiquidity at time 0
+This graph shows the price p0 at time 0 (solid line), the expected time-1 price E0[p1] (dashed line), and the
+fundamental value E0[v] = 130 (dotted line) for different levels of speculator fundingW0. The price p0 is below
+the fundamental value due to illiquidity, in particular, because of customer selling pressure and the risk that
+speculators will hit their capital constraints at time 1, even though speculators are not constrained at time 0 for
+the depicted wealth levels.
+face liquidity risk: Holding the security leads to losses in the states of nature
+when speculators are constrained and investment opportunities are good, im-
+plying that Cov[φ
+1, p1] < 0. The additional compensation for liquidity risk is
+Cov0[φ1,p j
+1 ]
+E0[φ1] , as seen in Equation (31), which is the difference between the solid
+line p1 and the dashed E0[p1].
+The funding constraint not only affects the price level, it also introduces
+skewness in the p1-distribution conditional on the sign of the demand pressure.
+For Z1 > 0, speculators take long positions and, consequently, negative v1-
+shocks lead to capital losses with resulting liquidity spirals. This ampliﬁcation
+triggers a sharper price drop than the corresponding price increase for positive
+v
+1-shocks. Figure 7 shows this negative skewness for different funding levels
+W0. The effect is not monotone—zero dealer wealth implies no skewness, for
+instance.
+When customers want to buy (not sell as above), and funding constraints
+induce a positive skewness in the p1-distribution. The speculator’s return re-
+mains negatively skewed, as above, since it is still its losses that are ampliﬁed.
+This is consistent with the casual evidence that hedge fund return indexes are
+negatively skewed, and it can help explain why FX carry trade returns are neg-
+atively skewed (see Brunnermeier, Nagel, and Pedersen 2009). It also suggests
+that from an ex ante point of view (i.e., prior to the realization of Z
+1), funding
+constraints lead to higher kurtosis of the price distribution (fat tails).
+2225
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 26 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+1000 1200 1400 1600 1800 2000 2200 2400 2600 2800 3000
+−12
+−10
+−8
+−6
+−4
+−2
+0
+W0
+Skewness of p1
+Figure 7
+Conditional price skewness
+The ﬁgure shows the conditional skewness of p1 for different funding levels W0. While the funding constraint is
+not binding at time 0, it can become binding at time 1, leading to large price drops due to liquidity spirals. Price
+increases are not ampliﬁed, and this asymmetry results in skewness.
+Finally, we can also show numerically that unlike at time t = 1, margins
+can be positively related to illiquidity at time 0, even when ﬁnanciers are fully
+informed.12 This is because of the liquidity risk between time 0 and time 1.
+To see this, note that if we reduce the speculators’ initial wealth W0, then
+the market becomes less liquid in the sense that the price is further from the
+fundamental value. At the same time, the equilibrium price in t = 1i sm o r e
+volatile and thus equilibrium margins at time 0 can actually increase.
+6. New Testable Predictions
+Our analysis provides a theoretical framework that delivers a uniﬁed expla-
+nation for a host of stylized empirical facts. Our analysis further suggests a
+novel line of empirical work that tests the model at a deeper level, namely, its
+prediction that speculator funding is a driving force underlying these market
+liquidity effects.
+First, it would be of interest to empirically study the determinants of margin
+requirements (e.g., using data from futures markets or from prime brokers). Our
+model suggests that both fundamental volatility and liquidity-driven volatility
+affect margins (Propositions 2 and 3). Empirically, fundamental volatility can
+12 The simulation results are available upon request from the authors.
+2226
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 27 =====
+
+Market Liquidity and Funding Liquidity
+be captured using price changes over a longer time period, while the sum of
+fundamental and liquidity-based volatility can be captured by short-term price
+changes as in the literature on variance ratios (see, for example, Campbell,
+Lo, and MacKinlay 1997). Our model predicts that, in markets where it is
+harder for ﬁnanciers to be informed, margins depend on the total fundamental
+and liquidity-based volatility. In particular, in times of liquidity crises, margins
+increase in such markets, and, more generally, margins should co-move with
+illiquidity in the time series and in the cross section.
+13
+Second, our model suggests that an exogenous shock to speculator capital
+should lead to a reduction in market liquidity (Proposition 5). Hence, a clean
+test of the model would be to identify exogenous capital shocks, such as an
+unconnected decision to close down a trading desk, a merger leading to reduced
+total trading capital, or a loss in one market unrelated to the fundamentals of
+another market, and then study the market liquidity and margin around such
+events.
+Third, the model implies that the effect of speculator capital on market liq-
+uidity is highly nonlinear: a marginal change in capital has a small effect when
+speculators are far from their constraints, but a large effect when speculators
+are close to their constraints—illiquidity can suddenly jump (Propositions 4
+and 5).
+Fourth, the model suggests that a cause of the commonality in liquidity is
+that the speculators’ shadow cost of capital is a driving state variable. Hence,
+a measure of speculator capital tightness should help explain the empirical co-
+movement of market liquidity. Further, our result “commonality of fragility”
+suggests that especially sharp liquidity reductions occur simultaneously across
+several assets (Proposition 6(i)–(ii)).
+Fifth, the model predicts that the sensitivity of margins and market liquidity
+to speculator capital is larger for securities that are risky and illiquid on average.
+Hence, the model suggests that a shock to speculator capital would lead to a
+reduction in market liquidity through a spiral effect that is stronger for illiquid
+securities (Proposition 6(iv)).
+Sixth, speculators are predicted to have negatively skewed returns since,
+when they hit their constraints, they incur signiﬁcant losses because of the
+endogenous liquidity spirals, and, in contrast, their gains are not ampliﬁed
+when prices return to fundamentals. This leads to conditional skewness and
+unconditional kurtosis of security prices (Section 5).
+7. Conclusion
+By linking funding and market liquidity, this paper provides a uniﬁed frame-
+work that explains the following stylized facts:
+13 One must be cautious with the interpretation of the empirical results related to changes in Regulation T since
+this regulation may not affect speculators but affects the demanders of liquidity, namely the customers.
+2227
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 28 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+(1) Liquidity suddenly dries up; we argue that fragility in liquidity is in part
+due to destabilizing margins, which arise when ﬁnanciers are imperfectly
+informed and the fundamental volatility varies.
+(2) Market liquidity and fragility co-moves across assets since changes in
+funding conditions affects speculators’ market liquidity provision of all
+assets.
+(3) Market liquidity is correlated with volatility, since trading more volatile
+assets requires higher margin payments and speculators provide market
+liquidity across assets such that illiquidity per capital use, i.e., illiquidity
+per dollar margin, is constant.
+(4) Flight to quality phenomena arise in our framework since when funding
+becomes scarce speculators cut back on the market liquidity provision
+especially for capital intensive, i.e., high margin, assets.
+(5) Market liquidity moves with the market since funding conditions do.
+In addition to explaining these stylized facts, the model also makes a number
+of speciﬁc testable predictions that could inspire further empirical research on
+margins. Importantly, our model links a security’s market illiquidity and risk
+premium to its margin requirement (i.e. funding use) and the general shadow
+cost of funding.
+Our analysis also suggests policy implications for central banks. Central
+banks can help mitigate market liquidity problems by controlling funding liq-
+uidity. If a central bank is better than the typical ﬁnanciers of speculators
+at distinguishing liquidity shocks from fundamental shocks, then the central
+bank can convey this information and urge ﬁnanciers to relax their funding
+requirements—as the Federal Reserve Bank of New York did during the 1987
+stock market crash. Central banks can also improve market liquidity by boosting
+speculator funding conditions during a liquidity crisis, or by simply stating the
+intention to provide extra funding during times of crisis, which would loosen
+margin requirements as ﬁnanciers’ worst-case scenarios improve.
+Appendix A: Real-World Margin Constraints
+A central element of our paper is the capital constraints that the main providers of market liquidity
+face. In this section, we review the institutional features that drive the funding constraints of
+securities ﬁrms such as hedge funds, banks’ proprietary trading desks, and market makers.
+A.1 Funding requirements for hedge funds
+We ﬁrst consider the funding issues faced by hedge funds since they have relatively simple balance
+sheets and face little regulation. A hedge fund’s capital consists of its equity capital supplied by
+the investors, and possible long-term debt ﬁnancing that can be relied upon during a potential
+funding crisis. The investors can withdraw their capital at certain times so the equity is not locked
+into the ﬁrm indeﬁnitely as in a corporation,
+14 but, to ensure funding, the withdrawal is subject
+to initial lock-up periods and general redemption notice periods before speciﬁc redemption dates
+(typically at least a month, often several months or even years). Also, hedge funds use a variety of
+14 A few hedge funds have in fact raised some amount of permanent equity capital.
+2228
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 29 =====
+
+Market Liquidity and Funding Liquidity
+other contractual arrangements to manage their funding liquidity: “Side pocket” determines that a
+proportion of each investor’s capital, for example, 10%, can only be redeemed when the designated
+assets (e.g., a privately held ﬁrm) are sold. A “gate” limits the fraction of the total capital that
+can leave the fund during any redemption period. Individual investors’ redemptions are typically
+prorated in case of excess demand for outﬂows. “Withdrawal suspensions” (orforce majeureterms)
+temporarily suspend withdrawals completely.
+Hedge funds usually do not have access to unsecured debt ﬁnancing, but a few large hedge funds
+have managed to obtain medium-term bank loans, a guaranteed line of credit,
+15 or even issued
+bonds (see, for example, The Economist 1/27/2007, p. 75).
+The main sources of leverage for hedge funds are (i) collateralized borrowing ﬁnanced through
+the repo market; (ii) collateralized borrowing ﬁnanced by the hedge fund’s prime broker(s); and
+(iii) implicit leverage using derivatives, either exchange traded or over the counter (OTC). Real-
+world ﬁnancing contracts are complex, opaque (i.e., negotiated privately and hence unobservable
+to an outsider), different across market participants, and change over time, so our description is
+somewhat stylized and we discuss some caveats below. Nevertheless, all three forms of ﬁnancing
+are based on the same general principle, which we describe ﬁrst, and then we outline a few speciﬁc
+issues.
+The guiding principle for margin setting on levered positions is that the hedge fund’s counter-
+party should be relatively immune to the hedge fund’s possible losses. In particular, if a hedge fund
+buys at time t a long position of x
+j
+t > 0 shares of a security j at price p j
+t , it has to come up with
+x j
+t p j
+t dollars. The security can, however, be used as collateral for a new loan of, say, l j
+t dollars.
+The difference between the price of the security and the collateral value is denoted as the margin
+requirement m
+j+
+t = p j
+t − l j
+t . Hence, this position uses x j
+t m j+
+t dollars of the fund’s capital. The
+collateralized funding implies that the cash use depends on margins, not notional amounts. The
+margins are typically set so as to make the loan almost risk-free for the counterparty, that is, such
+that it covers the largest possible price drop with a certain degree of conﬁdence (i.e., it covers the
+VaR).
+16 Hence, if the price drops and the hedge fund defaults, the counterparty can still recover its
+loan by selling the security.
+Similarly, if the hedge fund wants to sell short a security, x j < 0, then the fund asks one of its
+brokers to locate a security that can be borrowed, and then the fund sells the borrowed security.
+Dufﬁe, Gˆarleanu, and Pedersen (2002) describe in detail the institutional arrangements of shorting.
+The broker keeps the proceeds of the short sale and, additionally, requires that the hedge fund posts
+am a r g i nm
+j−
+t that covers the largest possible price increase with a certain degree of conﬁdence (in
+case the hedge fund defaults when the price increases, in which case the broker needs enough cash
+to buy the security back at a higher price).
+This stylized description of collateralized ﬁnancing portrays well the repo market for ﬁxed-
+income securities (e.g., government and corporate bonds) and the prime brokerage that banks offer
+hedge funds for ﬁnancing equities and convertible bonds, among other things. However, these
+forms of ﬁnancing have different implementation. Prime brokerage is an ongoing service provided
+by banks in which they ﬁnance a whole portfolio of the hedge funds’ securities on an ongoing basis
+(as well as providing other services), whereas in the repo market, a hedge fund will often get bids
+from multiple counterparties each time they make a new repo transaction. The portfolio nature of
+the prime brokerage business means that the prime broker can take diversiﬁcation among securities
+into account and therefore lower the margin using so-called cross-margining, as we describe further
+below.
+15 A line of credit may have a “material adverse change” clause or other covenants subject to discretionary
+interpretation of the lender. Such covenants imply that the line of credit may not be a reliable source of funding
+during a crisis.
+16 An explicit equation for the margin is given by Equation (6) in Section 1. Often brokers also take into account the
+delay between the time a failure by the hedge fund is noticed, and the time the security is actually sold. Hence,
+the margin of a one-day collateralized loan depends on the estimated risk of holding the asset over a time period
+that is often set as ﬁve to ten days. 2229
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 30 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+As an aside, margins on U.S. equities are in principle subject to Regulation T, which stipulates
+that non-brokers/dealers must put down an initial margin (down payment) of 50% of the market
+value of the underlying stock, both for new long and short positions. Hedge funds can, however,
+get around Regulation T in various ways and therefore face signiﬁcantly lower stock margins. For
+example, their prime broker can organize the transaction offshore or as a total return swap, which
+is a derivative that is functionally equivalent to buying the stock.
+With derivatives, the principle is similar, although the hedge fund does not “borrow against” the
+security, it must simply post margins to enter into the derivative contract in the ﬁrst place. Suppose,
+for instance, that a hedge fund buys an OTC forward contract. The forward contract initially has
+a market value of zero (so in this sense the contract has leverage built in), but this does not mean
+that you can buy the forward without cash. To enter into the forward contract, which obviously
+has risk, the hedge fund must post margins corresponding to the largest adverse price move with
+a certain conﬁdence. To ease netting long and short positions, unwinding, and other things, many
+OTC derivatives are structured using standardized swaps provided by the International Swaps and
+Derivatives Association (ISDA).
+For exchange-traded derivatives such as futures and options, a hedge fund trades through a
+clearing broker (sometimes referred to as a futures clearing merchant). The exchange requires
+margins from the broker, and these margins are set using the same principle as described above,
+that is, the margin is set to make the exchange almost immune to losses and hence riskier contracts
+have larger margins. The broker, in turn, typically passes the margin requirement on to the hedge
+fund. Sometimes, the broker requires higher margins from the hedge fund or lower margins (the
+latter is considered granting the hedge fund a risky loan, usually at an interest rate spread). While
+the broker margins are opaque as mentioned above, the exchange margins are usually publicly
+available. Figure 1 depicts the exchange margins charged by the CME for the S&P 500 futures
+contract.
+A hedge fund must ﬁnance all of its positions, that is, the sum of all the margin requirements
+on long and short positions cannot exceed the hedge fund’s capital. In our model, this is captured
+by the key Equation (4) in Section 1.
+At the end of the ﬁnancing period, timet + 1, the position is “marked-to-market,” which means
+that the hedge fund is credited any gains (or pays any losses) that have occurred between t and
+t + 1, that is, the fund receives x
+j
+t (p j
+t+1 − p j
+t ) and pays interest on the loan at the funding rate. If
+the trade is kept on, the broker keeps the margin to protect against losses going forward from time
+t + 1. The margin can be adjusted if the risk of the collateral has changed, unless the counterparties
+have contractually ﬁxed the margin for a certain period.
+Instead of posting risk-free assets (cash), a hedge fund can also post other risky assets, say
+asset k, to cover its margin on position, sayx
+j . However, in this case, a “haircut,”hk
+t , is subtracted
+from asset k’s market value to account for the riskiness of the collateral. The funding constraint
+becomes x j
+t m j
+t ≤ Wt − xk
+t hk
+t . Moving the haircut term to the left-hand side reveals that the haircut
+is equivalent to a margin, since the hedge fund could alternatively have used the risky security to
+raise cash and then used this cash to cover the margins for asset j. We therefore use the terms
+“margins” and “haircuts” interchangeably.
+We have described how funding constraints work when margins and haircuts are set separately
+for each security position. As indicated earlier, it is, however, increasingly possible to “cross-
+margin” (i.e., to jointly ﬁnance several positions). This leads to a lower total margin if the risks of
+the various positions are partially offsetting. For instance, much of the interest rate risk is eliminated
+in a “spread trade” with a long position in one bond and a short position in a similar bond. Hence,
+the margin/haircut of a jointly ﬁnanced spread trade is smaller than the sum of the margins of
+the long and short bonds. For a strategy that is ﬁnanced jointly, we can reinterpret security j as
+such a strategy. Prime brokers compete (especially when credit is as loose as in early 2007) by,
+among other things, offering low margins and haircuts, a key consideration for hedge funds, which
+means that it has become increasingly easy to ﬁnance more and more strategies jointly. It is by now
+relatively standard to cross-margin an equity portfolio or a portfolio of convertible bonds, and so-
+called cross-product-margining, which attempts to give diversiﬁcation beneﬁts across asset classes,
+2230
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 31 =====
+
+Market Liquidity and Funding Liquidity
+is becoming more common although it is associated with some issues that make some hedge funds
+avoid it.17 In the extreme, one can imagine a joint ﬁnancing of a hedge fund’s total position such
+that the “portfolio margin” would be equal to the maximum portfolio loss with a certain conﬁdence
+level. Currently, it is often not practical to jointly ﬁnance a large portfolio with all the beneﬁts
+of diversiﬁcation. This is because a large hedge fund ﬁnances its trades using several brokers;
+both a hedge fund and a broker can consist of several legal entities (possibly located in different
+jurisdictions); certain trades need separate margins paid to exchanges (e.g., futures and options) or
+to other counterparties of the prime broker (e.g., securities lenders); prime brokers may not have
+sufﬁciently sophisticated models to evaluate the diversiﬁcation beneﬁts (e.g., because they do not
+have enough data on the historical performance of newer products such as CDOs); and because
+of other practical difﬁculties in providing joint ﬁnancing. Further, if the margin requirement relies
+on assumed stress scenarios in which the securities are perfectly correlated (e.g., due to predatory
+trading, as in Brunnermeier and Pedersen 2005), then the portfolio margin constraint coincides
+with position-by-position margins.
+A.2 Funding requirements for commercial and investment banks
+A bank’s capital consists of equity capital plus its long-term borrowing (including credit lines
+secured from commercial banks, alone or in syndicates), reduced by assets that cannot be read-
+ily employed (e.g., goodwill, intangible assets, property, equipment, and capital needed for daily
+operations), and further reduced by uncollateralized loans extended by the bank to others (see,
+for example, Goldman Sachs’s 2003 Annual Report). Banks also raise money using short-term
+uncollateralized loans, such as commercial paper and promissory notes, and, in the case of com-
+mercial banks, demand deposits. These sources of ﬁnancing cannot, however, be relied on in times
+of funding crisis since lenders may be unwilling to continue lending, and therefore this short-term
+funding is often not included in measures of capital.
+The ﬁnancing of a bank’s trading activity is largely based on collateralized borrowing. Banks
+can ﬁnance long positions using collateralized borrowing from corporations, other banks, insurance
+companies, and the Federal Reserve Bank, and can borrow securities to short-sell from, for instance,
+mutual funds and pension funds. These transactions typically require margins that must be ﬁnanced
+by the bank’s capital, as captured by the funding constraint in Equation (4).
+The ﬁnancing of a bank’s trading is more complicated than that of a hedge fund, however.
+For instance, banks may negotiate zero margins with certain counterparties, and banks can often
+sell short shares held in-house, that is, held in a customer’s margin account (in “street name”)
+such that the bank does not need to use capital to borrow the shares externally. Further, a bank
+receives margins when ﬁnancing hedge funds (i.e., the margin is negative from the point of view
+of the bank). In spite of these caveats, in times of stress, banks face margin requirements and are
+ultimately subject to a funding constraint in the spirit of Equation (4). Bear Stearns’s demise is a
+vivid reminder that banks’ funding advantage from clients’ margin accounts can quickly evaporate.
+In March of 2008, Bear Stearns’s clients terminated their brokerage relationships and ran on the
+investment bank. Only an orchestrated merger with JPMorgan Chase avoided a bankruptcy.
+Banks must also satisfy certain regulatory requirements. Commercial banks are subject to the
+Basel Accord, supervised by the Federal Reserve System for U.S. banks. In short, the Basel Accord
+of 1988 requires that a bank’s “eligible capital” exceeds 8% of the “risk-weighted asset holdings,”
+which is the sum of each asset holding multiplied by its risk weight. The risk weight is 0% for cash
+and government securities, 50% for mortgage-backed loans, and 100% for all other assets. The
+requirement posed by the 1988 Basel Accord corresponds to Equation (4) with margins of 0%, 4%,
+and 8%, respectively. In 1996, the accord was amended, allowing banks to measure market risk
+using an internal model based on portfolio VaRs rather than using standardized risk weights. To
+17 For instance, cross-product margining means that the broker effectively can move extra cash from one margin
+account to cover a loss elsewhere, even if the hedge may dispute the loss. Also, collecting all positions with one
+broker may mean that the hedge fund cannot get a good pricing on the trades, e.g., on repos, and may expose the
+hedge fund to predatory trading.
+2231
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 32 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+outmaneuver the Basel Accord, banks created a shadow banking system, which allowed them to
+off-load assets to off-balance sheet vehicles like SIVs and conduits. For details, see Brunnermeier
+(2009).
+Broker-speculators in the United States, including banks acting as such, are subject to the
+Securities and Exchange Commission’s (SEC’s) “net capital rule” (SEC Rule 15c3-1). This rule
+stipulates, among other things, that a broker must have a minimum “net capital,” which is deﬁned
+as equity capital plus approved subordinate liabilities minus “securities haircuts” and operational
+charges. The haircuts are set as security-dependent percentages of the market value. The standard
+rule requires that the net capital exceeds at least 6
+2
+3 % (15:1 leverage) of aggregate indebtedness
+(broker’s total money liabilities) or alternatively 2% of aggregate debit items arising from customer
+transactions. This constraint is similar in spirit to Equation (4).
+18 As of August 20, 2004, SEC
+amended the net capital rule for Consolidated Supervised Entities (CSEs) such that CSEs may,
+under certain circumstances, use their internal risk models to determine whether they fulﬁll their
+capital requirement (SEC Release No. 34-49830).
+A.3 Funding requirements for market makers
+There are various types of market-making ﬁrms. Some are small partnerships, whereas others are
+parts of large investment banks. The small ﬁrms are ﬁnanced in a similar way to hedge funds in that
+they rely primarily on collateralized ﬁnancing; the funding of banks was described in Section A2.
+Certain market makers, such as NYSE specialists, have an obligation to make a market; and
+a binding funding constraint means that they cannot fulﬁll this requirement. Hence, avoiding the
+funding constraint is especially crucial for such market makers.
+Market makers are in principle subject to the SEC’s net capital rule (described in Section A2),
+but this rule has special exceptions for market makers. Hence, market makers’ main regulatory
+requirements are those imposed by the exchange on which they operate. These constraints are often
+similar in spirit to Equation (4).
+Appendix B: Proofs
+Proof of Propositions 1–3
+These results follow from the calculations in the text.
+Proof of Proposition 4
+We prove the proposition for Z1 > 0, implying p1 ≤ v1 and x1 ≥ 0. The complementary case is
+analogous. To see how the equilibrium depends on the exogenous shocks, we ﬁrst combine the
+equilibrium condition x1 =− ∑1
+k=0 yk
+1 with the speculator funding constraint to get
+m+
+1
+(
+Z1 − 2
+γ(σ2)2 (v1 − p1)
+)
+≤ b0 + p1x0 + η1, (B1)
+that is,
+G(p1): = m+
+1
+(
+Z1 − 2
+γ(σ2)2 (v1 − p1)
+)
+− p1x0 − b0 ≤ η1. (B2)
+For η1 large enough, this inequality is satisﬁed for p1 = v1, that is, it is a stable equilibrium that
+the market is perfectly liquid. For η1 low enough, the inequality is violated for p1 = 2v1
+γ(σ2)2 − Z1,
+that is, it is an equilibrium that the speculator is in default. We are interested in intermediate values
+18 Let L be the lower of 6 2
+3 % of total indebtedness or 2% of debit items and h j the haircut for security j; then the
+rule requires that L ≤ W −∑
+j h j x j , that is,∑
+j h j x j ≤ W − L.
+2232
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 33 =====
+
+Market Liquidity and Funding Liquidity
+of η1. If the left-hand side G of (B2) is increasing in p1,t h e np1 is a continuously increasing
+function of η1, implying no fragility with respect to η1.
+Fragility arises if G can be decreasing in p1. Intuitively, this expression measures speculator
+funding needs at the equilibrium position, and fragility arises if the funding need is greater when
+prices are lower, that is, further from fundamentals. (This can be shown to be equivalent to a
+non-monotonic excess demand function.)
+When the ﬁnanciers are informed, the left-hand side G of (B2) is
+(¯σ + ¯θ|/Delta1v1|+ p1 − v1)
+(
+Z1 + 2
+γ(σ2)2 (p1 − v1)
+)
+− p1x0 − b0. (B3)
+The ﬁrst product is a product of two positive increasing functions of p1, but the second term,
+−p1x0, is decreasing in p1 if x0 > 0. Since the ﬁrst term does not depend on x0, there exists x
+such that, for x0 > x, the whole expression is decreasing.
+When the ﬁnancier is uninformed, we ﬁrst show that there is fragility for a = 0. In this case,
+the left-hand side of (B2) is
+G0(p1): = (¯σ + ¯θ|/Delta1p1|)
+(
+Z1 + 2
+γ(σ2)2 (p1 − v1)
+)
+− p1x0 − b0. (B4)
+When p1 < p0, ¯θ|/Delta1p1|= θ(p0 − p1) decreases in p1 and, if ¯θ is large enough, this can make the
+entire expression decreasing. (Since ¯θ is proportional to θ, this clearly translates directly to θ.)
+Also, the expression is decreasing if x0 is large enough.
+Finally, on any compact set of prices, the margin function converges uniformly to (23) as a
+approaches 0. Hence, G converges uniformly to G0. Since the limit function G0 has a decreasing
+part, choose pa
+1 < pb
+1 such that ε := G0(pa
+1 ) − G0(pb
+1 ) > 0. By uniform convergence, choose
+a > 0 such that for a < a, G differs from G0 by at most ε/3. Then we have
+G
+(
+pa
+1
+)
+− G
+(
+pb
+1
+)
+= G0(
+pa
+1
+)
+− G0(
+pb
+1
+)
++
+[
+G
+(
+pa
+1
+)
+− G0(
+pa
+1
+)]
+−
+[
+G
+(
+pb
+1
+)
+− G0(
+pb
+1
+)]
+(B5)
+≥ ε − ε
+3 − ε
+3 = ε
+3 > 0, (B6)
+which proves that G has a decreasing part.
+It can be shown that the price cannot be chosen continuously in η1 when the left-hand side of
+(B2) can be decreasing.
+Proof of Proposition 5
+When the funding constraint binds, we use the implicit function theorem to compute the derivatives.
+As above, we have
+m+
+1
+(
+Z1 − 2
+γ(σ2)2 (v1 − p1)
+)
+= b0 + p1x0 + η1 . (B7)
+We differentiate this expression to get
+∂m+
+1
+∂p1
+∂p1
+∂η1
+(
+Z1 − 2
+γ(σ2)2 (v1 − p1)
+)
++ m+
+1
+2
+γ(σ2)2
+∂p1
+∂η1
+= ∂p1
+∂η1
+x0 + 1, (B8)
+which leads to Equation (24) after rearranging. The case ofZ1 < 0 (i.e., Equation (25)) is analogous.
+Finally, spiral effects happen if one of the last two terms in the denominator of the right-hand
+side of Equations (24) and (25) is negative. (The total value of the denominator is positive by
+deﬁnition of a stable equilibrium.) When the speculator is informed,
+∂m+
+1
+∂p1 = 1a n d
+∂m−
+1
+∂p1 =− 1
+using Proposition 2. Hence, in this case, margins are stabilizing.
+2233
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 34 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+If the speculators are uninformed and a approaches 0, then using Proposition 3, we ﬁnd that
+∂m+
+1
+∂p1 =
+∂m+
+1
+∂/Lambda11 approaches −¯θ < 0f o rv1 − v0 + /Lambda11 − /Lambda10 < 0a n d
+∂m−
+1
+∂p1 =
+∂m−
+1
+∂/Lambda11 approaches ¯θ > 0
+for v1 − v0 + /Lambda11 − /Lambda10 > 0. This means that there is a margin spiral with positive probability. The
+case of a loss spiral is immediately seen to depend on the sign on x0.
+Proof of Proposition 6
+We ﬁrst consider the equation that characterizes a constrained equilibrium. When there is selling
+pressure from customers, Z j
+1 > 0, it holds that
+⏐⏐/Lambda1j
+1
+⏐
+⏐=− /Lambda1
+j
+1 = v j
+1 − p j
+1 = min
+{
+(φ1 − 1)m j+
+1 , γ
+(
+σ j
+2
+)2
+2 Z j
+1
+}
+, (B9)
+and if customers are buying, Z j
+1 < 0, we have
+⏐
+⏐/Lambda1
+j
+1
+⏐
+⏐= /Lambda1
+j
+1 = p j
+1 − v j
+1 = min
+{
+(φ1 − 1)m j−
+1 , γ
+(
+σ j
+2
+)2
+2
+(
+− Z j
+1
+)}
+. (B10)
+We insert the equilibrium conditionx j
+1 =− ∑
+k y j,k
+1 and Equation (12) fory j,k
+1 into the speculators’
+funding condition to get
+∑
+Z j
+1 >
+2(φ1−1)m j+
+1
+γ(σ j
+2 )2
+m j+
+1
+(
+Z j
+1 − 2(φ1 − 1)m j+
+1
+γ
+(
+σ j
+2
+)2
+)
++
+∑
+−Z j
+1 >
+2(φ1−1)m j−
+1
+γ(σ j
+2 )2
+m j−
+1
+(
+−Z j
+1 − 2(φ1 − 1)m j−
+1
+γ
+(
+σ j
+2
+)2
+)
+=
+∑
+j
+x j
+0 p j
+1 + b0 + η1, (B11)
+where the margins are evaluated at the prices solving Equations (B9)–(B10). Whenφ1 approaches
+inﬁnity, the left-hand side of Equation (B11) becomes zero, and when φ1 approaches one, the
+left-hand side approaches the capital needed to make the market perfectly liquid. As in the case of
+one security, there can be multiple equilibria and fragility (Proposition 4). On a stable equilibrium
+branch, φ1 increases as η1 decreases. Of course, the equilibrium shadow cost of capital ( φ1 − 1)
+is random since η1,/Delta1 v1
+1,...,/Delta1 vJ
+1 are random. To see the commonality in liquidity, we note
+that |/Lambda1j | is increasing in φ1 for each j = k, l. To see this, consider ﬁrst the case Z j
+1 > 0. When
+the ﬁnanciers are uninformed, a = 0, and θj = 0, then, m j+
+1 = ¯σk , and, therefore, Equation (B9)
+shows directly that|/Lambda1j
+1| increases in φ1 (since the minimum of increasing functions is increasing).
+When ﬁnanciers are informed and θj = 0t h e nm j+
+1 = ¯σk + /Lambda1j
+1, and, therefore, Equation (B9) can
+be solved to be |/Lambda1j
+1|= min{ φ1−1
+φ1
+¯σ j ,
+γ(σk
+2)2
+2 Zk
+1}, which increases in φ1. Similarly, Equation (B10)
+shows that |/Lambda1j | is increasing in φ1 when Z j
+1 < 0.
+Now, since |/Lambda1j | is increasing in φ1 and does not depend on other state variables under these
+conditions, Cov
+(
+|/Lambda1k (φ)|, |/Lambda1l (φ)|
+)
+> 0 because any two functions that are both increasing in the
+same random variable are positively correlated (the proof of this is similar to that of Lemma 1
+below). Since |/Lambda1j | is bounded, we can use dominated convergence to establish the existence of
+c > 0 such that part (i) of the proposition applies for any θj , a < c.
+To see part (ii) of the proposition, note that, for allj, |/Lambda1j | is a continuous function ofφ1, which
+is locally insensitive to φ1 if and only if the speculator is not marginal on security j (i.e., if the
+second term in Equation (B9) or (B10) attains the minimum). Hence,|/Lambda1j | jumps if and only if φ1
+jumps.
+2234
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 35 =====
+
+Market Liquidity and Funding Liquidity
+To see part (iii), we write illiquidity using Equations (B9)–(B10) as
+⏐⏐/Lambda1j
+1
+⏐
+⏐= min
+{
+(φ
+1 − 1)m
+j,sign (Z j
+1 )
+1 , γ
+(
+σ j
+2
+)2
+2
+⏐
+⏐Z
+j
+1
+⏐
+⏐
+}
+. (B12)
+Hence, using the expression for the margin, if the ﬁnancier is uninformed and θ
+j = a = 0, then
+⏐⏐/Lambda1j
+1
+⏐
+⏐= min
+{
+(φ
+1 − 1)¯σ j
+1 , γ
+(
+σ j
+2
+)2
+2
+⏐
+⏐Z
+j
+1
+⏐
+⏐
+}
+(B13)
+and, if the ﬁnanciers are informed and θ
+j = 0, then
+⏐⏐/Lambda1j
+1
+⏐
+⏐= min
+{φ
+1 − 1
+φ1
+¯σ j
+1 , γ
+(
+σ j
+2
+)2
+2
+⏐
+⏐Z
+j
+1
+⏐
+⏐
+}
+. (B14)
+In the case of uninformed ﬁnanciers as in Equation (B13), we see that, if x
+k
+1 ̸=0,
+⏐
+⏐/Lambda1
+k
+1
+⏐⏐= (φ1 − 1)¯σk
+1 > (φ1 − 1)¯σl
+1 ≥
+⏐
+⏐/Lambda1
+l
+1
+⏐
+⏐ (B15)
+and, if |Z
+k
+1|≥| Zl
+1|,
+⏐⏐/Lambda1k
+1
+⏐⏐= min
+{
+(φ1 − 1)¯σk
+1 , γ
+(
+σk
+2
+)2
+2
+⏐
+⏐Z
+k
+1
+⏐
+⏐
+}
+> min
+{
+(φ
+1 − 1)¯σl
+1 , γ
+(
+σl
+2
+)2
+2
+⏐
+⏐Z
+l
+1
+⏐
+⏐
+}
+=
+⏐
+⏐/Lambda1
+l
+1
+⏐
+⏐. (B16)
+Since /Lambda1
+k and /Lambda1l converge to these values as θj , a approach zero, we can choose c so that
+inequality holds for θj , a below c. With informed ﬁnanciers, it is seen that |/Lambda1k
+1|≥| /Lambda1l
+1| using
+similar arguments.
+For part (iv) of the proposition, we use that
+∂
+⏐⏐/Lambda1j
+1
+⏐
+⏐
+∂(−η1) = ∂
+⏐
+⏐/Lambda1
+j
+1
+⏐
+⏐
+∂φ1
+∂φ1
+∂(−η1). (B17)
+Further, ∂φ1
+∂(−η1) ≥ 0 and, from Equations (B13)–(B14), we see that
+∂|/Lambda1k
+1|
+∂φ1 ≥
+∂|/Lambda1l
+1|
+∂φ1 . The result that
+Cov(/Lambda1k, φ) ≥ Cov(/Lambda1l, φ) now follows from Lemma 1 below.
+Lemma 1. Let X be a random variable and g i ,i = 1, 2, be weakly increasing functions of X,
+where g1 has a larger derivative than g2, that is, g′
+1(x) ≥ g′
+2(x) for all x and g ′
+1(x) > g′
+2(x) on a
+set with nonzero measure. Then
+Cov[X, g1(X)] > Cov[X, g2(X)]. (B18)
+Proof. For i = 1, 2w eh a v e
+Cov[X, gi (X)] = E [(X − E[X])gi (X)] (B19)
+= E
+[
+(X − E[X])
+(∫X
+E[X]
+g′
+i (y)dy
+)]
+. (B20)
+The latter expression is a product of two terms that always have the same sign. Hence, this is higher
+if g′
+i is larger. ■
+Liquidity Risk (Time 0). Section 5 focuses on the case of speculators who are unconstrained
+at t = 0. When a speculator’s problem is linear and he is constrained at time 0, then he invests only
+2235
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 36 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+in securities with the highest expected proﬁt per capital use, where proﬁt is calculated using the
+pricing kernel φi
+1/E0[φi
+1]. In this case, his time-0 shadow cost of capital is
+φi
+0 = E0[φi
+1]
+⎧
+⎪⎨
+⎪⎩
+1 + max
+j
+⎛
+⎜⎝
+E0
+[φi
+1
+E0[φi
+1] p j
+1
+]
+− p j
+0
+m+
+0
+, −
+E0
+[φi
+1
+E0[φi
+1] p j
+1
+]
+− p j
+0
+m−
+0
+⎞
+⎟⎠
+⎫
+⎪⎬
+⎪⎭
+. (B21)
+References
+Abreu, D., and M. K. Brunnermeier. 2002. Synchronization Risk and Delayed Arbitrage. Journal of Financial
+Economics 66:341–60.
+Acharya, V . V ., and L. H. Pedersen. 2005. Asset Pricing with Liquidity Risk. Journal of Financial Economics
+77:375–410.
+Acharya, V . V ., S. Schaefer, and Y . Zhang. 2008. Liquidity Risk and Correlation Risk: A Clinical Study of the
+General Motors and Ford Downgrade of 2005. Working Paper, London Business School.
+Adrian, T., and H. S. Shin. 2009. Liquidity and Leverage. Journal of Financial Intermediation.
+Aiyagari, S. R., and M. Gertler. 1999. “Overreaction” of Asset Prices in General Equilibrium.Review of Economic
+Dynamics 2:3–35.
+Allen, F., and D. Gale. 1998. Optimal Financial Crisis. Journal of Finance 53:1245–84.
+Allen, F., and D. Gale. 2004. Financial Intermediaries and Markets. Econometrica 72:1023–61.
+Allen, F., and D. Gale. 2005. Financial Fragility, Liquidity, and Asset Prices.Journal of the European Economic
+Association 2:1015–48.
+Allen, F., and D. Gale. 2007. Understanding Financial Crises. Clarendon Lectures in Economics. Oxford, UK:
+Oxford University Press.
+Amihud, Y ., and H. Mendelson. 1989. The Effects of Beta, Bid-Ask Spread, Residual Risk, and Size on Stock
+Returns. Journal of Finance 44:479–86.
+Attari, M., A. S. Mello, and M. E. Ruckes. 2005. Arbitraging Arbitrageurs. Journal of Finance 60:2471–511.
+Benston, G. J., and R. L. Hagerman. 1974. Determinants of the Bid-Ask Spread in the Over-the-Counter Market.
+Journal of Financial Economics 1:353–64.
+Bernanke, B., and M. Gertler. 1989. Agency Costs, Net Worth, and Business Fluctuations. American Economic
+Review 79:14–31.
+Bernardo, A. E., and I. Welch. 2004. Liquidity and Financial Markets Run. Quarterly Journal of Economics
+119:135–58.
+Brunnermeier, M. K. 2009. Deciphering the Liquidity and Credit Crunch 2007–08. Journal of Economic Per-
+spectives. 2009, Issue 1.
+Brunnermeier, M. K., S. Nagel, and L. H. Pedersen. 2009. Carry Trades and Currency Crashes, in Daron
+Acemoglu, Kenneth Rogoff, and Michael Woodford (eds.), NBER Macroeconomics Annual 2008 , vol. 23.
+Cambridge, MA: MIT Press.
+Brunnermeier, M. K., and L. H. Pedersen. 2005. Predatory Trading. Journal of Finance 60:1825–63.
+Bryant, J. 1980. A Model of Reserves, Bank Runs, and Deposit Insurance. Journal of Banking and Finance
+4:335–44.
+Campbell, J. Y ., A. W. Lo, and A. C. MacKinlay. 1997.The Econometrics of Financial Markets. Princeton, NJ:
+Princeton University Press.
+2236
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 37 =====
+
+Market Liquidity and Funding Liquidity
+Chordia, T., R. Roll, and A. Subrahmanyam. 2000. Commonality in Liquidity. Journal of Financial Economics
+56:3–28.
+Chordia, T., A. Sarkar, and A. Subrahmanyam. 2005. An Empirical Analysis of Stock and Bond Market Liquidity.
+Review of Financial Studies 18:85–129.
+Chowdhry, B., and V . Nanda. 1998. Leverage and Market Stability: The Role of Margin Rules and Price Limits.
+Journal of Business 71:179–210.
+Comerton-Forde, C., T. Hendershott, C. M. Jones, P. C. Moulton, and M. S. Seasholes. 2008. Time Variation in
+Liquidity: The Role of Market Maker Inventories and Revenues. Working Paper, Columbia University.
+Coughenour, J. F., and M. M. Saad. 2004. Common Market Makers and Commonality in Liquidity. Journal of
+Financial Economics 73:37–69.
+DeLong, J. B., A. Shleifer, L. H. Summers, and R. J. Waldmann. 1990. Noise Trader Risk in Financial Markets.
+Journal of Political Economy 98:703–38.
+Diamond, D., and P. Dybvig. 1983. Bank Runs, Deposit Insurance, and Liquidity.Journal of Political Economy
+91:401–19.
+Dufﬁe, D., N. Gˆarleanu, and L. H. Pedersen. 2002. Securities Lending, Shorting, and Pricing.Journal of Financial
+Economics 66:307–39.
+Eisfeldt, A. 2004. Endogenous Liquidity in Asset Markets. Journal of Finance 59:1–30.
+Fisher, I. 1933. The Debt-Deﬂation Theory of Great Depression. Econometrica 1:337–57.
+Fostel, A., and J. Geanakoplos. 2008. Leverage Cycles and The Anxious Economy.American Economic Review
+98:1211–44.
+Garleanu, N., and L. H. Pedersen. 2007. Liquidity and Risk Management. The American Economic Review
+(Papers & Proceedings) 97:193–97.
+Garleanu, N., L. H. Pedersen, and A. Poteshman. 2008. Demand-Based Option Pricing. Review of Financial
+Studies.
+Geanakoplos, J. 1997. Promises, Promises in W.B. Arthur, S. Durlauf and D. Lane (eds.), The Economy as an
+Evolving Complex System II 1997: 285–320. Addison-Wesley, Reading MA.
+Geanakoplos, J. 2003. Liquidity, Default and Crashes: Endogenous Contracts in General Equilibrium, in Mathias
+Dewatripont, Lars Peter Hansen, and Stephen J. Turnovsky (eds.), Advances in Economics and Econometrics:
+Theory and Applications II, Eighth World Congress , vol. 2, pp. 170–205. Econometric Society Monographs.
+Cambridge, UK: Cambridge University Press.
+Gennotte, G., and H. Leland. 1990. Market Liquidity, Hedging, and Crashes. American Economic Review
+80:999–1021.
+Glosten, L. R., and P. R. Milgrom. 1985. Bid, Ask, and Transaction Prices in a Specialist Market with Heteroge-
+neously Informed Traders. Journal of Financial Economics 14:71–100.
+Gromb, D., and D. Vayanos. 2002. Equilibrium and Welfare in Markets with Financially Constrained Arbi-
+trageurs. Journal of Financial Economics 66:361–407.
+Grossman, S. J. 1988. An Analysis of the Implications for Stock and Futures Price V olatility of Program Trading
+and Dynamic Hedging Strategies. Journal of Business 61:275–98.
+Grossman, S. J., and M. H. Miller. 1988. Liquidity and Market Structure. Journal of Finance 43:617–33.
+Grossman, S. J., and J.-L. Vila. 1992. Optimal Dynamic Trading with Leverage Constraints.Journal of Financial
+and Quantitative Analysis 27:151–68.
+Hameed, A., W. Kang, and S. Viswanathan. 2005. Asymmetric Comovement in Liquidity. Mimeo, Duke
+University.
+2237
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026
+
+
+===== PAGE 38 =====
+
+The Review of Financial Studies / v 22 n 6 2009
+Hasbrouck, J., and D. Seppi. 2001. Common Factors in Prices, Order Flows, and Liquidity.Journal of Financial
+Economics 59:383–411.
+Ho, T. S. Y ., and H. R. Stoll. 1981. Optimal Dealer Pricing under Transactions and Return Uncertainty.Journal
+of Financial Economics 9:47–73.
+Ho, T. S. Y ., and H. R. Stoll. 1983. The Dynamics of Dealer Markets under Competition. Journal of Finance
+38:1053–74.
+Holmstr¨om, B., and J. Tirole. 1998. Private and Public Supply of Liquidity. Journal of Political Economy
+106:1–39.
+Holmstr¨om, B., and J. Tirole. 2001. LAPM: A Liquidity-Based Asset Pricing Model. Journal of Finance
+56:1837–67.
+Huberman, G., and D. Halka. 2001. Systematic Liquidity. Journal of Financial Research 24:161–78.
+Ibbotson. 1999. Cost of Capital Quarterly, 1999 Yearbook, 2nd ed. Chicago: Ibbotson Associates, 1976.
+International Monetary Fund. 2007. Global Financial Stability Report. October.
+Kiyotaki, N., and J. Moore. 1997. Credit Cycles. Journal of Political Economy 105:211–48.
+Kyle, A. S. 1985. Continuous Auctions and Insider Trading. Econometrica 53:1315–35.
+Kyle, A. S., and W. Xiong. 2001. Contagion as a Wealth Effect.Journal of Finance 56:1401–40.
+Liu, J., and F. A. Longstaff. 2004. Losing Money on Arbitrages: Optimal Dynamic Portfolio Choice in Markets
+with Arbitrage Opportunities. Review of Financial Studies 17:611–41.
+Lustig H., and Y . Chien. 2005. The Market Price of Aggregate Risk and Wealth Distribution. NBER Working
+Paper 11132.
+Mitchell, M., L. H. Pedersen, and T. Pulvino. 2007. Slow Moving Capital. American Economic Review (Papers
+& Proceedings) 97:215–20.
+Morris, S., and H. Shin. 2004. Liquidity Black Holes. Review of Finance 8:1–18.
+Pastor, L., and R. F. Stambaugh. 2003. Liquidity Risk and Expected Stock Returns.Journal of Political Economy
+111:642–85.
+Plantin, G., H. Sapra, and H. S. Shin. 2005. Marking-to-Market: Panacea or Pandora’s Box?Journal of Accounting
+Research 46:435–60.
+Shleifer, A., and R. W. Vishny. 1992. Liquidation Values and Debt Capacity: A Market Equilibrium Approach.
+Journal of Finance 47:1343–66.
+Shleifer, A., and R. W. Vishny. 1997. The Limits of Arbitrage.Journal of Finance 52:35–55.
+Stiglitz, J. E., and A. Weiss. 1981. Credit Rationing in Markets with Imperfect Information.American Economic
+Review 71:393–410.
+Stoll, H. R. 1978. The Supply of Dealer Services in Securities Markets. Journal of Finance 33:1133–51.
+Vayanos, D. 2004. Flight to Quality, Flight to Liquidity, and the Pricing of Risk. Working Paper, London School
+of Economics.
+Weill, P.-O. 2007. Leaning Against the Wind.Review of Economic Studies 74:1329–54.
+Wigmore, B. 1998. Revisiting the October 1987 Crash. Financial Analysts Journal 54:36–48.
+Xiong, W. 2001. Convergence Trading with Wealth Effects: An Ampliﬁcation Mechanism in Financial Markets.
+Journal of Financial Economics 62(2): 247–92.
+2238
+Downloaded from https://academic.oup.com/rfs/article/22/6/2201/1592184 by Eastman Dental Institute user on 01 July 2026

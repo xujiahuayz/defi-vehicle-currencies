@@ -1,0 +1,945 @@
+
+
+===== PAGE 1 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+AnnualReviewofFinancialEconomics
+Some Simple Economics of
+Stablecoins
+Christian Catalini,1,2 Alonso de Gortari,3
+and Nihar Shah3
+1Sloan School of Management,Massachusetts Institute of Technology,Cambridge,
+Massachusetts,USA; email: catalini@mit.edu
+2Diem Association,Washington,DC,USA
+3Novi Financial,Inc.,Menlo Park,California,USA
+Annu.Rev.Financ.Econ.2022.14:117–35
+First published as a Review in Advance on
+April 28,2022
+TheAnnualReviewofFinancialEconomics is online at
+financial.annualreviews.org
+https://doi.org/10.1146/annurev-financial-111621-
+101151
+Copyright © 2022 by Annual Reviews.
+All rights reserved
+JEL codes: E42,E50,E60,O30
+Keywords
+cryptocurrency,Bitcoin,blockchain,stablecoins,CBDC,central bank
+digital currency,digital currency
+Abstract
+Stablecoins have the potential to drastically increase competition and
+innovation in financial services by reducing our reliance on traditional in-
+termediaries. But they also introduce new challenges, as regulators rely
+on intermediaries to ensure financial stability, market integrity, and con-
+sumer protection.Because they operate at the interface between traditional
+banking and cryptocurrencies,stablecoins also represent an ideal setting for
+understandingthekeytrade-offscryptocurrenciesinvolve,andinsightsfrom
+robust stablecoin design and regulation are highly relevant for related in-
+novations in decentralized finance (DeFi), nonfungible tokens, and Web3
+protocols. In this review, we describe the following: key stablecoin design
+choices,fromreservecompositiontostabilitymechanism;legalclaimagainst
+theissuer;noninterferencewithmacroeconomicstability;andinteroperabil-
+itywithpublicsectorpaymentrailsandcentralbankdigitalcurrencies.Last,
+wecoverthekeybenefitsofstablecoinsinthecontextofreal-time,low-cost
+programmable payments,financial inclusion,and DeFi.
+117
+
+===== PAGE 2 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+1. INTRODUCTION
+Blockchain technology has the potential to support payments and financial services without
+assigning the same degree of market power and control to traditional intermediaries (Catalini
+& Gans 2020). This poses a challenge for regulators, as they rely on their ability to regulate
+and monitor intermediaries to uphold financial stability, market integrity, compliance, consumer
+protection,andmore.Thecryptocurrencymarkethasbeenriddledwiththesechallengessincethe
+releaseoftheBitcoinwhitepaperin2008(Nakamoto2008),eachstagewitnessingapush-pullbe-
+tween the perceived benefits of increased disintermediation and worries about losing centralized
+counterparties as safekeepers. Proponents of disintermediation cite the ability of open markets,
+greater transparency, and interoperability to unbundle existing services and promote innovation
+andcompetitioninfinancialmarkets.Butdisintermediationalsomakesitdifficulttoenforcecom-
+pliance standards, ensure the stability of the financial system, and protect consumers from fraud
+and financial risk.In a world with increased disintermediation,how can the public sector achieve
+itsgoalsandpreservesociety’svaluesandprincipleswithinthesenewmarkets?Andhowshouldit
+evolve regulatory frameworks to account for the constraints and possibilities that the technology
+enables?
+Thisarticlestudiesthetrade-offbetweendisintermediationandcentralizationinthecontextof
+stablecoins.Attheircore,stablecoinsarecryptocurrenciesdesignedtotradeatparwithareference
+asset (typically the US dollar). Stablecoins are an ideal starting point for analyzing this tension
+becauseoftheirproximitytotraditionalpaymentsystemsandbankingservices.Fromaregulatory
+perspective,theyarea“canaryinacoalmine,”anditislikelythatmorerecentwavesofinnovation
+withincryptocurrency,suchasdecentralizedfinance(DeFi)andWeb3,willfacesimilarchallenges
+as they become more mainstream. Stablecoins are also interesting to study because their designs
+encompass the whole spectrum—from completely centralized to fully decentralized solutions.
+At one extreme, centralized designs rely on intermediaries to play the role of the issuer and
+manage the reserve of assets backing the coins in circulation.To perform well in stressed market
+conditions,thesedesignsshouldbebacked1:1withhigh-quality,liquidassets[foramoredetailed
+discussion, see Catalini & Shah (2021) and Catalini & de Gortari (2021)]. A special case of this
+approach is a central bank digital currency (CBDC),where a central bank issues coins directly on
+blockchain-basedinfrastructureandguaranteesconvertibilitywithfiat.Attheotherextreme,fully
+decentralized models—often referred to as purely algorithmic stablecoins—rely exclusively on
+codetoissuecoinsandimplementtheeconomicoperationsneededtokeepthepriceclosetopar. 1
+Stablecoins provide a useful lens for studying the broader cryptocurrency industry,since their
+ultimate evolution will quite likely incorporate elements from both centralized and decentralized
+models. They are intrinsically important to understand, as they have the potential to drastically
+improve traditional payments and financial services. Because of their cost structure, stablecoins
+can make inroads on financial inclusion and help remove last mile frictions for segments of the
+population that are currently excluded. Within the cryptocurrency market, stablecoins also act
+as a necessary base layer for DeFi protocols, as they bring a stable asset to an otherwise volatile
+ecosystem.
+Forregulators,stablecoinsofferausefullaboratoryforunderstandinghowoversightcanevolve
+in a situation where intermediaries play a different role than in the past. The lessons therefore
+apply more broadly than stablecoins and extend to DeFi, nonfungible tokens (NFTs),and Web3
+applications. In general, if cryptocurrencies are to be successful within mainstream applications,
+1It is important to recognize that,to date,no fully decentralized model has been able to produce a stablecoin
+that trades at or close to par for extended periods of time.
+118 Catalini  deGortari  Shah
+
+===== PAGE 3 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+the public sector will have to play the fundamental role of developing frameworks that enhance
+theirstrengthswhileaddressingtheirweaknesses.Whilethetechnologybringsnewopportunities
+around the privacy, auditability, and safety of digital transactions—from payments to financial
+contracts and digital content—the lack of traditional structures means that it also carries new
+risks.Addressingtheseriskswhilepreservingthelong-termpotentialofthetechnologytoreshape
+market structure and increase competition is the key challenge regulators, entrepreneurs, and
+software developers face in this space.
+The article proceeds with a description of the origin of stablecoins in Section 2. Section 3
+discusses the core stablecoin design choices. Section 4 covers the main benefits to the financial
+system that robust economic design can provide in this context,and Section 5 concludes.
+2. FROM VOLATILE CRYPTOCURRENCIES TO STABLECOINS
+Cryptocurrencies first received public attention following the release of the Bitcoin white pa-
+per and subsequent growth of the Bitcoin network (see Nakamoto 2008, Narayanan et al. 2016).
+Bitcoin was originally described as “an electronic payment system based on cryptographic proof
+instead of trust, allowing any two willing parties to transact directly with each other without the
+need for a trusted third party”(Nakamoto 2008,p.1).Before Bitcoin,intermediaries were neces-
+sary to solve the double-spending problem that affects all traditional forms of digital cash.While
+Bitcoin’svaluehassurged,themaindriverbehinditsdiffusionhasnotbeenitsuseasamediumof
+exchange.2 Various reasons account for this—long settlement time,lack of merchant acceptance,
+andcomplextaxtreatment—butthemainreasonispricevolatility.SinceBitcoin’ssupplyincreases
+slowly and predictably in the short run, and is capped in the long run, shifts in demand for Bit-
+coin directly translate into sharp fluctuations in its price.3 Of course, current levels of volatility
+could be the result of Bitcoin being on a transition path toward equilibrium and not yet in that
+steady state. Therefore, volatility could be the result of the high uncertainty Bitcoin faces from
+a regulatory, technological, and market-fit perspective. As expectations across these dimensions
+evolve, the price may stabilize. The potential use of Bitcoin as a store of value often leads it to
+being characterized as “digital gold,”a new type of reserve currency,ora hedge against inflation.4
+While some of the theoretical arguments are compelling, the empirical evidence so far suggests
+otherwise.5 It is also possible that Bitcoin belongs to a completely new asset class with its own
+novel properties.
+The technology behind Bitcoin not only changes the role of intermediaries but also funda-
+mentally affects two key economic costs (see Catalini & Gans 2020). First, it lowers the cost
+2Bitcoin’s market cap has peaked four times—at $205 million in June 2011,$13.5 billion in November 2013,
+$325 billion in December 2017,and $1.3 trillion in November 2021.
+3The amount of Bitcoin in circulation is fixed in the long run at 21 million coins and highly inelastic in the
+short run.Currently,approximately 90% of all Bitcoins have already been minted,and 6.25 new Bitcoins are
+issued with each block (roughly every 10 minutes).
+4Various factors contribute to Bitcoin’s potential role as a store of value: It is easily transferable by anyone
+with an internet connection, it offers a high degree of censorship resistance, and it is easy to store since it is
+fully digital.
+5In line with the view of Bitcoin being in a transition phase, adoption is still far from gold (Bitcoin’s current
+market cap is approximately only one-tenth that of gold’s, currently approximately $10 trillion). This factor
+may explain Bitcoin’s much higher price volatility relative to gold and is consistent with how market partici-
+pantsreactedduringtheflighttosafetyofearly2020:DuringtheCOVID-19(coronavirusdisease2019)crisis,
+the peak-to-trough decline in the S&P 500 Index was approximately 35%, while gold’s price fell only by ap-
+proximately 12%.Bitcoin’s price,however,fell by 64%—far outpacing the decline in equities and weakening
+the argument that it is an effective hedge against economic turmoil.
+www.annualreviews.org  EconomicsofStablecoins 119
+
+===== PAGE 4 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+Y ear
+Market cap, log(million USD)
+Bitcoin share of 
+total cryptocurrency market cap (%)
+10
+1,000
+100,000
+10,000,000
+0
+25
+50
+75
+100
+2012 2014 2016 2018 2020 2022
+Figure 1
+Bitcoin market cap over the years in log(million USD) and Bitcoin’s share of the overall cryptocurrency
+market (%).Data fromhttps://coinmarketcap.com.
+of verifying information on a digital ledger—such as information about past transactions and
+current ownership in a digital asset. Second, through novel forms of distributed governance, it
+allows participants to bootstrap and operate a digital platform without assigning control to the
+platform creator. This replaces traditional forms of governance with decentralized consensus-
+based mechanisms.6 Taken together,these properties replace some of the functions of traditional
+intermediaries with a combination of cryptography and incentives. The technology can thus
+blend some of the advantages of traditional digital platforms [e.g., the ability of participants
+to rely on shared infrastructure and application programming interfaces (APIs), benefit from
+interoperability and network effects, etc.] without assigning market power to the platform
+creator.
+The evolution of the cryptocurrency space and the role of intermediaries within it over the
+last decade can roughly be split into four phases.In the first phase,between 2009 and mid-2012,
+most of the effort was focused on Bitcoin (Figure 1).7 This phase saw a first push toward disin-
+termediation, with some users custodying their coins directly rather than through a third party.
+However,the phasealso witnessedseveral events that,at thetime,putinto questionBitcoin’ssur-
+vival,such as protocol bugs,hacks and fraud at cryptocurrency custodians,and the emergence of
+illegal marketplaces.8
+6For a detailed primer of exactly how Bitcoin avoids the double-spend problem and perpetuates a shared
+ledger using cryptography and consensus,see Narayanan et al.(2016) and John,O’Hara & Saleh (2022).
+7As of December 2021, Bitcoin remains the largest project as measured by market capitalization and rep-
+resents 40% of the cryptocurrency’s $2.3 trillion market cap. All of the numbers in this section come from
+https://coinmarketcap.com/, https://www.blockchain.com/,a n dhttps://defipulse.com/, accessed on
+December 9,2021.
+8Amongotherthings,theseearlyyearswitnessedtheidentificationandsubsequentfixofabugintheprotocol
+code enabling the creation of an infinite amount of coins, the collapse of the Mount Gox cryptocurrency
+exchange,and the emergence and later shutdown of the Silk Road darknet marketplace.
+120 Catalini  deGortari  Shah
+
+===== PAGE 5 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+Market cap, log(million USD)
+1
+10
+100
+1,000
+10,000
+100,000
+2017 2018 2019 2020 2021 2022
+Tether
+USD Coin
+Binance USD
+Terra USD
+Dai
+True USD
+Pax Dollar
+Huobi USD
+Gemini Dollar
+Y ear
+Figure 2
+Market cap in log(million USD) for the leading USD-linked stablecoins.Data fromhttps://coinmarketcap.
+com.
+The second phase, from mid-2012 to mid-2015, saw the entry of altcoins: alternative cryp-
+tocurrenciesthatimitatedkeyfeaturesofBitcoin.Thealtcoinmarketcappeakedatapproximately
+$2 billion and was marked by a number of hard forks of Bitcoin and other cryptocurrencies.
+This period also brought the first initial coin offerings (ICOs), by which start-ups raised funds
+through the issuance of cryptocurrency tokens (see Catalini & Gans 2019).9 It is also when the
+first stablecoin,Tether,came online.
+Stablecoins are cryptocurrencies whose prices are linked to reference assets.They were devel-
+oped with the goal of creating a cryptocurrency-native medium of exchange that could be easily
+movedacrosscryptocurrencyexchangestoarbitragepricedifferences.Inotherwords,stablecoins
+deliveredtheabilitytomovestable-value,dollar-peggedcoinsinawaythatwasfasterthanmoving
+actualdollarsonlegacyrails. 10 Becauseoftheirabilitytosupportreal-timepaymentsandbroader
+forms of interoperability and programmability,stablecoins also offer a natural path for upgrading
+traditionalpaymentsystems(seeCatalini&Lilley2021). 11 Tether—linkedtotheUSdollar—was
+issuedin2014andremainedtheonlystablecoinuntil2018.As Figure2 shows,severalotherUSD
+stablecoins have been issued since then, with Tether maintaining a disproportionate share of the
+market.12 In contrast to Bitcoin, stablecoins tend to operate with centralized protocols in which
+9Two notable ICOs include Mastercoin, which launched the first ICO in 2013, and the highly successful
+ICO-funded launch of Ethereum in 2014 (today’s largest blockchain after Bitcoin, current market cap of
+$490 billion).
+10Note that price volatility is also a burden for financial services: For example, a Bitcoin-denominated loan
+used to fund a business with fiat revenues entails similar risk to taking a loan issued in a foreign currency with
+a highly volatile exchange rate.
+11Interoperabilityisimportantforencouragingamorecompetitiveandinnovativepaymentsecosystem,while
+programmability reduces or eliminates the need to rely on intermediaries for offering financial services.
+12Tether coins run on several blockchains, among which the most important are the Bitcoin (OMNI),
+Ethereum (ETH),and Tron (TRX) integrations.Seehttps://tether.to/faqs/.
+www.annualreviews.org  EconomicsofStablecoins 121
+
+===== PAGE 6 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+newcoinsareissuedatthediscretionofasingleentityandnotbasedonasetofrulesenforcedbya
+decentralizedgroupofactors. 13 ThemainexceptionisDai,whichusesadecentralizedprotocol. 14
+The third phase—taking place between mid-2015 and late 2019—saw the development of ad-
+ditional projects with large-scale ambitions.15 Yet, this boom would prove brief, and the whole
+market’s value would drop to approximately $100 billion at the beginning of 2019 from a peak of
+$830 billion. Last, the fourth and current phase began in early 2020 and has led to a new boom
+cycle driven by broader retail and institutional adoption.16 Driven at least partly by the liquidity
+influx from expansionary fiscal policy, the cryptocurrency’s market cap has increased to approxi-
+mately $2.3 trillion as of December 2021,following an earlier peak of $2.9 trillion in November
+2021.Bitcoincurrentlyaccountsforapproximately40%ofthemarket,andothercryptocurrencies
+have firmly established themselves in specific verticals, such as the Ethereum blockchain within
+DeFi applications and NFTs.
+Stablecoins, being the connective tissue across all cryptocurrency applications, have become
+extremelyimportanttothecryptocurrencyeconomy.Theiracceleratedgrowthtrajectoryhasalso
+attracted increased regulatory scrutiny,17 with concerns focused on the design of their reserves,
+consumer protection challenges, financial crime, and financial stability. We now turn to the key
+stablecoin design trade-offs next.
+3. KEY STABLECOIN DESIGN CHOICES
+In 2020–2022 the stablecoin landscape rapidly expanded,with six coins hitting more than $1 bil-
+lioninmarketcapasofDecember2021.Butthisexplosionalsobroughtwideheterogeneityinde-
+signsacrossdimensionssuchasbackingassets,stabilizationmechanism,consumerprotection,and
+market structure.Broadly,these decision choices fall along the continuum between fully central-
+ized and fully decentralized solutions.While centralized approaches typically involve setting up a
+corporateentityasthelicensedissuerofcoins,buildinglinkageswithbanksforholdingthereserve
+assets,and varying degrees of regulatory engagement,decentralized solutions usually place fewer
+restrictions on governance and licensing and may not involve any regulatory engagement at all.
+Inthissection,wediscussthekeystablecoindesignchoicesbetweencentralizationanddecen-
+tralization as well as their economic, legal, and policy implications. In some cases, an additional
+13Stablecoinshaveplayedakeyroleinmakingcryptocurrencymarketsmoreefficientandenablingnewfunc-
+tionalitysuchasDeFi.Yet,stablecoinsalsointroduceanimportanttensionwhenitcomestodecentralization.
+On the one hand, the most important stablecoins, as measured by coins in circulation, are all based on cen-
+tralized designs and back their coins with off-chain assets.On the other hand,it is an open question whether
+the cryptocurrency industry would have been able to grow and mature to its current size without centralized
+stablecoins.
+14It is important to note, however, that in practice Dai’s price stability relies heavily on the stability of USD
+Coin (USDC), which is a centralized stablecoin. Consequently, Dai’s stack does rely deeply on a layer of
+centralization,even if its protocol appears to be fully decentralized in theory.
+15Bitcoin’s share of the overall cryptocurrency market cap had fallen to approximately 65% by late 2019,fol-
+lowing an all-time low of 30%,and this cemented the idea that there was demand and product-market fit for
+theothercoins.Ethereum,inparticular,establisheditselfasthesecondmajorblockchain,withEther—itsna-
+tiveasset—inheritingBitcoin’sextremevolatilityandwitnessingapeak-to-troughdeclinefromapproximately
+$1,300 to $100 per coin.
+16Retailuserssawanincreasedofferingofcryptocurrencyon-ramps,includingRobinhood,CashApp,PayPal,
+and Venmo, while some institutional investors such as corporate treasuries—MicroStrategy, Square, and
+Tesla—and hedge funds increased their exposure to cryptocurrency.In addition,various crypto funds,such as
+those offered by Greyscale and Fidelity,saw increased inflows during this period.
+17For more information, readers are referred to G7 Work. Group Stablecoins (2019), Financ. Stab. Board
+(2020),Pres.Work.Group Financ.Markets (2020),and Pres.Work.Group Financ.Markets (2021).
+122 Catalini  deGortari  Shah
+
+===== PAGE 7 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+constraintintermsofwhatastablecoinissuercanorcannotdodependsonitsabilitytoalsoshape
+the blockchain network on which its coins move,opening a wider set of levers and choices.18
+3.1. Reserve Design and Financial Stability
+The core purpose of a stablecoin is to offer stability against a reference asset. Stablecoin issuers
+have two key levers to protect stability: (a) the choice of reserve assets and (b) the design of the
+stabilization mechanism used to keep the coin price pegged to the reference asset. When de-
+mand rises, the stabilization mechanism typically increases the supply of coins (minting). Vice
+versa,when demand decreases,the stabilization mechanism reduces the supply of coins (burning)
+through the sale of reserve assets.19
+Three approaches to these basic operations have emerged, spanning the centralization–
+decentralizationspectrum:( a)stablecoinsbackedbyfiatrelyonfinancialintermediariestocustody
+reserve assets and to mint and burn coins with market participants; (b) stablecoins backed by
+cryptocurrencies automate reserve operations and interface with different blockchains support-
+ing reserve assets through smart contracts; and (c) stablecoins backed partially or fully by their
+own investment token only rely on their own algorithms and smart contracts.
+Consider first stablecoins backed by fiat. Most stablecoins with a large market cap are in this
+category and match each coin liability issued with fiat-based assets on their balance sheet.Tether,
+USDC, the Paxos Coins [Paxos Standard, Binance USD, Huobi Coin (HUSD)], and Gemini
+Dollar are fully backed by dollar-denominated assets, including cash, US treasuries, commercial
+paper,and more.Most of these issuers directly issue new coins and redeem existing coins directly
+to the market at par. This creates arbitrage opportunities whenever the price deviates from the
+peg and keeps the price of the stablecoin relatively stable.20
+Robust reserve design for fiat-backed coins is inspired by narrow banking (Catalini &
+Massari 2021) and aims to minimize mismatches in market risk and liquidity needs (Catalini &
+Shah 2021). However, most of the USD-pegged coins issued today do not follow this model, as
+stablecoinissuersinvestinfairlyriskyassets.Thiscancauseproblemsintwoways.First,thevalue
+of the backing assets can change,tipping a fully backed coin into a partially backed coin.Second,
+concerns around the solvency of an issuer can be self-fulfilling: If coin holders fear insolvency
+and try to redeem their coins, even a solvent stablecoin issuer may be forced to liquidate its as-
+sets at discounted fire-sale prices and thus become insolvent in the process. These concerns of
+solvency and liquidity are well-known in the banking industry,but currently no common regula-
+tory standards exist for stablecoin issuers. Gorton & Zhang (2021) argue that uniform standards
+should be imposed, e.g., reserve assets at FDIC-insured banks, in US Treasury bonds, or poten-
+tially held at the Federal Reserve itself.While some stablecoin issuers have provided increasingly
+transparent information about their backing, including monthly audited reports, this is unlikely
+to be sufficient.21 For a detailed discussion of ideal reserve design,see Catalini & Shah (2021).
+18Most existing stablecoins (e.g., Tether and USDC) run on multiple external networks, and so the design
+choices are largely oriented around the coin itself. However, a few projects, such as Terra and Diem, also
+design and govern the network on which the stablecoin runs.
+19Since stablecoins are traded on secondary markets, both within cryptocurrency exchanges and over the
+counter, arbitrage across these markets is also important for maintaining parity beyond the basic reserve op-
+erations of minting and burning coins.Agents make profits by arbitraging price differences across exchanges
+and,ideally,this practice keeps stablecoins’ prices confined to tight spreads in all marketplaces.
+20For evidence that this mechanism works as intended for Tether, in the sense of keeping spreads small, see
+Lyons & Viswanath-Natraj (2020).
+21For example,while several issuers claim to hold reserves in FDIC-insured bank accounts,it is unclear what
+structure is used to ensure that FDIC insurance limited to $250,000 applies to their large reserve sizes. One
+www.annualreviews.org  EconomicsofStablecoins 123
+
+===== PAGE 8 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+Next,consider stablecoins backed with cryptocurrencies.While fiat-backed stablecoins are is-
+sued by entities that need to hold licenses and rely on financial institutions to custody assets,
+cryptocurrency-backed coins can be constructed and managed in a decentralized way. For in-
+stance, Dai, an ERC-20 token issued on the Ethereum blockchain and designed by MakerDAO,
+is a decentralized USD-linked stablecoin that can be minted by anyone with sufficient collateral
+in other cryptocurrencies.22 While overcollateralization requirements guard against losses, this
+approach is riskier than the fiat-backed one. Some of the backing cryptocurrencies, such as Bit-
+coin or Ether,often exhibit large price fluctuations.As a result,it is possible that a fastand abrupt
+change in the price of the cryptocurrency collateral, coupled with fading liquidity in markets,
+could lead to undercollateralized smart contracts.In this case,the stablecoin would no longer be
+fully backed, would enter an unbacked and more unstable phase, and could be at risk of a death
+spiral.
+Last,consideralgorithmicstablecoins.Thesestablecoinsarenotbackedbyexternalassetsand
+rely on their own equity to deliver some degree of stability. In particular, they typically regu-
+late coin supply through two sets of coins: the stablecoin and an investment coin (also called
+“seigniorage” or “dual” coin) targeted at absorbing market volatility. At a high level, their stabi-
+lizationmechanisminflatestheoutstandingsupplyofstablecoinsinexchangeforinvestmentcoins
+when prices are above par and deflates it when they are below par. When the price is below par,
+the protocol issues more investment coins and uses the proceeds to repurchase stablecoins and
+remove them from circulation, raising the price. Thus, the investment coins function as equity,
+bearing the risk of dilution when coins trade below par, but enjoying additional returns in peri-
+ods of growth.To ensure investment coins have some intrinsic value,they are often imbued with
+additional functionality; e.g.,they are required for paying transaction fees.
+Algorithmicstablecoins,byvirtueoftheiruseofsmartcontractsandtheirlackofexternallinks
+to external assets (fiat or cryptocurrency),do not require an intermediary and can be truly decen-
+tralized. While this may look safe in normal times, it forces investment coin holders to bear all
+the market risk in the same way that equity holders do for corporations (see Sams 2015). Such
+arrangements are prone to self-fulfilling crises in which nervous market participants running on
+thereservecantriggeradeathspiral.Insuchsituations,thealgorithmhasnochoicebuttofurther
+diluteinvestmentcoinstothepointthattheyareunabletosupportthepeg.Catalini&deGortari
+(2021) note that,unlike stablecoins backed by fiat assets or cryptocurrencies,the true solvency of
+analgorithmiccoinislinkedtothepublic’sconfidenceinthecoin,allowingdeathspiralstomate-
+rialize even in unstressed conditions.While these stablecoins often add mechanisms to prevent a
+death spiral from occurring,in practice,they are unlikely to be effective.For example,in stressed
+times,protocols may levy stability or redemption fees on coin holders to recapitalize the reserve.
+However, these mechanisms only accelerate the run, as investment coin holders may realize that
+fees will rise as the run deepens and thus preemptively run.Overall,these risks impede this form
+likely solution involves seeking pass-through FDIC insurance,but it is unclear if this design would hold up in
+an insolvency.
+22Minting Dai requires a consumer posting a specified amountof another cryptocurrency as collateral,where
+the overcollateralization ratios are proportional to the risk of the collateral (e.g., at least 101% with USDC,
+150%withEther,etc.)andwherethecollateralisliquidatedifitfallstoofarinprice.Dai’sstabilizationmech-
+anism relies on two forces: the issuing and redemption of new Dai at par to prevent prices on the secondary
+market from deviating, and a mechanism known as the Dai Savings Rate that pays users that lock Dai into a
+smart contract and can be adjusted to affect Dai’s price (e.g., the Savings Rate falls when Dai’s price is above
+par).
+124 Catalini  deGortari  Shah
+
+===== PAGE 9 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+ofstablecoindesignfrombeingviableatscaleforanyapplicationthatneedstoguaranteestability
+over the long run.23
+Empirically, decentralized designs have higher price volatility, while most fiat-backed stable-
+coins have been successful at maintaining price stability. Lyons & Viswanath-Natraj (2020) note
+thattheaveragedeviationsforlargefiat-backedcoinshavebeenunder10basispointsandfurther
+find that maximum spreads were within 10 basis points,with a few notable deviations (e.g.,up to
+300basispointsduringthevolatilityofMarch2020).Theauthorsalsoshowthatcryptocurrency-
+collateralizedcoinstradewithlargerspreads(e.g.,between$1.01and1.03duringMay–November
+2020)andhaveanaveragetradingdeviationof40basispoints. 24 Meanwhile,Kuo,Iles&Rincon-
+Cruz(2019)notethatsomealgorithmiccoinshaveseenextremelylargevolatility,tradingbetween
+$0.50 and $1.50. Catalini & de Gortari (2021) and Catalini & Shah (2021) highlight that high-
+quality liquid assets can better retain value during stressed conditions than cryptocurrencies and
+that,in turn,both are more stable than the investment coins that back algorithmic coins.
+Whilethequalityofthereservebackinganditscorrelationwiththereferenceassetarecritical,
+oneaddedchallengemustbeconsideredbystablecoinissuers:liquidity.Stablecoinstradeglobally
+and at all hours. But limitations of traditional banking rails make this difficult, as fiat movement
+is limited to operating hours. To address the potential liquidity mismatch, additional layers of
+intermediation have emerged. The main solution is to use on-network liquidity providers that
+can intermediate overnight transactions, although this works well only for established coins that
+can support enough activity. Another solution is to rely on 24/7 banks that have the technology
+to let their customers transact at all hours.
+3.2. Consumer Protection
+Consumer protection goes beyond the design and financial stability of the reserve. In particular,
+stablecoin issuers must consider the legal claim that a coin represents and must develop rules
+regarding the types of entities that can hold their coins (e.g.,only regulated intermediaries versus
+anyone). Such protections vary depending on whether the underlying stablecoin has chosen a
+more centralized or decentralized design.
+First, consider the nature of the claim that a stablecoin’s holders have. Centralized projects
+must decide whether consumers have a direct claim against the issuer,direct claim on the under-
+lying assets held with a custodian, or no direct claim at all.25 Decentralized projects must make
+similar choices, although in many cases those choices manifest in the design of a smart contract
+rather than a legal agreement.26 Second, stablecoin projects may implement restrictions on how
+their coins are distributed and used. These restrictions are easier to enforce if the stablecoin
+issuer operates its own blockchain and may impact the types of entities that are allowed to hold
+consumer coins. Stablecoin projects focused on consumer protection, compliance, and market
+23It could be argued that such coordinated run dynamics seem implausible,but the history of fixed exchange
+rate regimes shows that it is quite possible for even country-level monetary systems to collapse entirely and
+abruptly.
+24Forexample,issuingDaiwithUSDCascollateralrequiresa101%collateralizationratio.Hence,arbitraging
+Dai price differences away through this process is profitable only when Dai’s price trades above $1.01.
+25As one example,Barnett & Dowling (2020) explain that Tether has picked the first of these: Tether holders
+have direct claims on the issuing corporation but not on the assets custodied with Tether’s banking partners.
+26Dai, for instance, chooses to prioritize those who have locked up collateral to create Dai over those who
+transact Dai on secondary markets in its emergency shutdown procedures.In an emergency,the protocol will
+first release excess collateral to the former group and then use any remaining funds to redeem Dai from the
+second group,possibly at a value below par.
+www.annualreviews.org  EconomicsofStablecoins 125
+
+===== PAGE 10 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+integritymayperformduediligenceontheintermediariesthatcanbuyandselltheircoins[known
+asvirtualassetserviceproviders(VASPs)]andmayinsistontheintermediariesdisclosingkeyrisks
+toconsumers,offeringprotectionsagainsttheirowninsolvency,andusingatransparentfeestruc-
+tureforredemptions.Indeed,thesedimensionshaveattractedregulatoryattention,withthePres.
+Work. Group Financ. Markets (2020) explicitly calling out transparent fees, bankruptcy-remote
+protections,risk disclosures,and direct claims as issues stablecoin projects need to address.
+Historically, additional consumer protections required coordination between stablecoin is-
+suersandintermediaries.However,cryptocurrency-nativesolutionsarealsobeingdeveloped.One
+leading example is proof of solvency, a scheme by which consumers can verify the integrity of
+their funds held by VASPs without relying on a trusted third party such as an auditor. Chalkias
+et al.(2020) illustrate an approach in which consumers can directly check whether their balances
+are represented in the overall assets of an intermediary through a mapping known as a Merkle
+tree. This mechanism effectively serves as a decentralized audit, decreasing the degree of trust
+consumers have to place in a digital custodian.
+3.3. Interoperability
+Stablecoin-based payment rails are different from traditional ones because they can support not
+onlyprogrammabilitybutalsodeeperformsofinteroperabilitybetweennetworkparticipants. 27 By
+design,traditional digital wallets and card networks do not invest in interoperability to reinforce
+network effects within their walled garden and lock in consumers and/or merchants. In China,
+for example, even though WeChat Pay and Alipay jointly account for more than 90% of mobile
+payments,theydonotletuserstransferfundsbetweenthetwoproviders,andtransferringmoney
+requires cashing out to a bank account and then cashing in to the other, which is costly since
+withdrawal fees are pretty much the only fees charged by these services. These challenges are
+even more severe in countries where payments systems are more fragmented.
+Interoperability incentivizes competition and disproportionately helps smaller players, as the
+benefitsfromcompatibilityareasymmetricandenablesmallerserviceproviderstoofferpayments
+to and from the larger installed base of the incumbents. When interoperability is implemented
+at the network level (e.g., as in the Unified Payments Interface in India), the resulting competi-
+tion drives down prices, lowers barriers to entry, and reduces the market power of incumbents
+and within-provider network effects. While stablecoins running on permissionless networks in-
+herit some degree of interoperability from the openness of the infrastructure they rely on, for
+competitiontotrulythrive,interoperabilityacrossnetworksandprotocolswillalsobeimportant.
+3.4. Macroeconomic Stability
+At scale, stablecoins raise a key additional area of concern based on how they interact with the
+broader international financial system. Regulators, including the G7 Work. Group Stablecoins
+(2019)andBankofEngland(2020),haveidentifiedseveralriskstothebroadereconomyifstable-
+coinadoptionbecomeswidespreadandastablecoinemergesasaparallelmonetarysystem.These
+macroeconomic concerns—namely, stablecoins facilitating destabilizing capital flows, replacing
+27In the words of Duffie (2020), “two different ledgers are interoperable if there is always at least one inter-
+mediary holding accounts on each of the two ledgers that automatically meets legal requests to transfer funds
+fromanyaccountononeoftheledgerstoanyaccountontheother ... atnegligibleornearlynegligiblelatency
+and user cost”(p.2).This definition rules out most existing payment services,where users can transfer funds
+from one to another but at a significant cost in time or money, whereas VASPs on a shared blockchain can
+indeed transfer funds at very low cost.
+126 Catalini  deGortari  Shah
+
+===== PAGE 11 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+a country’s local currency, and enabling an alternate financial system—are critical for stablecoin
+issuers to address.
+First, consider the ability of stablecoins to facilitate rapid capital flows, as pointed out by G7
+Work. Group Stablecoins (2019) and Grenville (2019), among others. Following the currency
+crisesofthelate1990s,inwhichinboundandoutboundflowsofhotmoneyledtoassetbubblesand
+systematicdistress,respectively,theInternationalMonetaryFundandmostcentral banksrecom-
+mendedcapitalcontrolsandothermacroprudentialpolicies.However,digitalcurrenciesposenew
+challenges to the enforcement of such regimes. Chainalysis (2020) detected large flows of cryp-
+tocurrencyfromEastAsiatootherregions(some$50billionin2020)andascribesatleastsomeof
+ittotheevasionofcapitalcontrolsthatpreventChinesecitizensfromsendingmorethan$50,000
+per year overseas. Baydakova (2019) further finds reports of stablecoins being used to avoid cap-
+ital controls between Russia and China, and von Luckner, Reinhart & Rogoff (2021) document
+broader evidence of capital flows being facilitated by traditional cryptocurrencies (namely, Bit-
+coin).While these incidents are not yet widespread,it is possible that a widely adopted stablecoin
+could enable disruptive flows in the future.
+Second,a related risk around stablecoins is one in which they substitute for the local currency
+of a country (dollarization), as G7 Work. Group Stablecoins (2019), Benigno, Schilling & Uhlig
+(2019),Cecchetti&Schienholtz(2019),andothersdiscuss.Severalcountrieshavealreadysuffered
+currency substitution in the fiat realm.For instance,the US dollar has already replaced the local
+currency of countries as diverse as Cambodia, Ecuador, and Zimbabwe, and in doing so, it has
+removedthosecountries’abilitytoconductmonetarypolicy.Stablecoinsmayprovetobeanother
+path to currency substitution and in unique ways. For instance, acquiring and storing fiat dollars
+are cumbersome, giving the local currency an innate advantage in most countries; however, for
+digitalcurrencies,thesedisadvantagesaremuted.Stablecoinsarepotentiallyeasiertoacquireand
+far easier to store,and thus they introduce new risks.
+Finally,stablecoins may give rise to a parallel financial system (shadow banking),as G7 Work.
+Group Stablecoins (2019) and Brunnermeier,James & Landau (2019),among others,have noted.
+DeFialreadyrepresentsamanifestationofthis,inwhichaparallelnetworkthatfacilitateslending,
+trading, derivatives, and other financial contracts is being built on top of cryptocurrency tokens.
+A broader parallel digital financial system poses two risks. First, distress on such a system could
+spill over into distress on the stablecoins that support it.For instance,a market crash could scare
+users into redeeming their stablecoins for fiat,overwhelming the issuer’s redemption capabilities.
+Second,fromamacroeconomicperspective,anysuchfinancialsystemwouldnotbenefitfromthe
+modern safeguards, ranging from oversight to last resort lending, that onshore financial systems
+havedeveloped.Currently,suchparallelfinancialsystemsaresmall,butstablecoinscouldenhance
+their appeal and scope.
+Any solution to these issues entails trade-offs. For instance, the public sector and stablecoin
+issuers could tightly regulate the perimeter of stablecoin ecosystems (e.g.,on- and off-ramps be-
+tween stablecoins and fiat) and only allow regulated VASPs on their networks. This approach
+would mitigate the macroeconomic risks but could also make stablecoins less interoperable with
+other systems and less effective at facilitating cross-border transfers, expanding on financial
+inclusion,etc.
+3.5. Evolution Toward Central Bank Digital Currencies
+Thus far, we have focused on privately issued stablecoins. Private stablecoins face key decisions
+on how to back their coins, stabilize their reserve, protect consumers, design their networks to
+ensure integrity and compliance,and integrate with the existing financial system.But in the long
+www.annualreviews.org  EconomicsofStablecoins 127
+
+===== PAGE 12 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+run,there is an alternative that can address some of these questions more naturally: central bank
+digital currencies (CBDCs).
+Discussion on CBDCs has accelerated over the last few years.28 In particular, retail-facing
+CBDCs,in which central banks issue digital tokens to consumers,would represent an innovation
+on two fronts.Unlike cash,CBDCs would be electronic money,and unlike central bank reserves,
+CBDCs would represent direct claims on the central bank that are accessible to consumers. Ac-
+cording to a set of Bank of International Settlement surveys (see Barontini & Holden 2019; Boar,
+Holden & Wadsworth 2020), 70% of central banks conducted conceptual CBDC research in
+2018,halfofthoseranexperimentsandproof-of-concepttests,andfivehadprogressedtorunning
+pilot projects. In order of importance, the main motivations for issuing a CBDC were payment
+safetyandefficiency,financialstabilityandinclusion,monetarypolicyimplementation,andcross-
+border payments. That said, 85% of central banks thought it would be unlikely that they would
+issue CBDCs in the short- or medium-term (3–6 years).This likelihood had fallen to 70% by the
+end of 2019 yet remains high.29
+While at first glance it may appear that stablecoins compete with CBDCs, they can coex-
+ist harmoniously. In particular, CBDCs can be embedded within a public–private partnership
+that leverages each sector’s comparative advantage, with central banks providing the base layer
+of money and the private sector innovating on top (see Catalini et al.2021).Indeed,some central
+banks are already espousing this view.According to the Bank of England (2020): “An approach to
+CBDCwhereBankofEnglanddoeseverything,withnoprivatesectorinvolvement,isunlikelyto
+meetmostofourdesignprinciples. ... Asafepaymentsystemisonlyusefulifpeopleuseit,which
+means CBDC would also need to enable fast, efficient, user-friendly and inclusive services. This
+inturnrequiresthataCBDCpaymentsystemwouldbeopentoinnovationandcompetition,and
+built around the comparative advantage (relative strengths) of the Bank and the private sector”
+(p. 20). In fact, as Goldstein (2020) chronicles, money in virtually every era has been grounded
+in a public–private partnership, whether tenth-century Chinese merchants exchanging coins for
+paper, seventeenth-century English goldsmiths issuing IOUs, or the modern monetary system’s
+interplay between central and commercial banks.CBDCs can be the next step of this evolution.
+AssumingthatCBDCsdevelopasapublic–privatepartnership,thecentralbankcouldprovide
+reserve custody, payment settlement, and interoperability across private sector rails and digital
+assets. Private sector participants could then be in charge of the products, consumer interfaces,
+and customer due diligence processes (know your customer,etc.).This approach could represent
+a blend of public governance at the bottom of the stack and distributed or even decentralized
+private innovation at the top. Operationally, this partnership could manifest in a few different
+forms. One model is for the central bank to provide a backstop for private stablecoins, i.e., let
+stablecoin operators custody funds with the central bank but otherwise issue coins and operate
+independently. This model corresponds to the synthetic or hybrid CBDC design introduced by
+Adrian & Mancini-Griffoli (2019),in which private players become narrow banks with liabilities
+held in central bank reserves, thus removing market and liquidity risk. Another potential model
+involves users interfacing through private products but holding accounts directly at the central
+28Foran overview ofCBDCfeaturesand proposals,seeBordo &Levin (2017);BankofIsrael (2018);Comm.
+Paym. Market Infrastruct. (2018); Off. Monet. Financ. Inst. Forum (2019); Auer, Cornelli & Frost (2020);
+Bank of England (2020); Banque de France (2020); Prasad (2021).
+29The notable exception is,of course,China,which appears to be fairly advanced in the piloting process of its
+digitalcurrencyelectronicpayment(DC/EP)project.Facedwithauniquelyadvanceddigitalpaymentsecosys-
+tem,largely developed by Alipay and WeChat,China will likely be able to rely on its population’s familiarity
+with digital currencies to drive adoption of its CBDC.
+128 Catalini  deGortari  Shah
+
+===== PAGE 13 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+bank as a true CBDC. As Bank of England (2020) discusses, distribution in an alternative model
+couldbedonethroughatwo-tieredsysteminwhichusersaccessCBDCtokensthroughamiddle
+layer of payment interface providers. Finally, the central bank could offer wholesale liquidity to
+banks, financial institutions, and payment system providers (i.e., a wholesale CBDC, as in the
+status quo), and these entities could in turn develop their own form of retail digital tokens that
+areinteroperablethroughthewholesale CBDC.Anygivenstructureentailsansweringadditional
+questions, such as whether CBDCs should pay interest, how commercial banks should fit in the
+system,ifcentralbanksshouldupholdtheprivacyfeaturesofcash,andhowcomplianceprovisions
+should be enforced.
+Itisimportanttostressthatcentralbanksdonothavetoparticipateinstablecoinarrangements
+from the outset.Central banks in both developed and emerging markets have different priorities,
+have varying tastes in the speed and degree at which they shift policy stances, and face distinct
+monetaryandpaymentsecosystems. 30 Assuch,theycanpreserveoptionalitybylettingprivateap-
+proachesevolveindependentlyinatech-neutralmanner(samerisk,sameregulation)andconnect
+with these new types of networks when appropriate.31
+In the meantime, stablecoin issuers face important design choices ranging from reserve de-
+signtofinancialstability,consumerprotection,interoperability,andmacroeconomicramifications.
+Whileissuershavedevelopedawidearrayofsolutions,asstablecoinsevolveandmature,standard-
+ization will be necessary. As such, regulators should build high-quality and consistent regulatory
+standards.Forinstance,regulatorsshouldprovideaframeworkfortheappropriatecapitalandliq-
+uidityrequirementsgoverningstablecoins.Furthermore,regulatorsshouldharmonizetheserules
+with their foreign counterparts. Currently, many topics—such as the legal classification of sta-
+blecoins,the legal certainty of settlement finality,and the rules around privacy—are fragmented.
+Different jurisdictions treat the same instrument differently (some as tokens, some as e-money,
+etc.),handletheconceptsofsettlementfinalityandpaymentinstructionirrevocabilitydifferently,
+and set different standards about data-sharing across entities and across borders.There are some
+encouraging cases: The efforts of the Financial Action Task Force to set baseline standards for fi-
+nancial entities have culminated in proposed rules to counter money laundering,and the Bank of
+InternationalSettlementsisdevelopingglobalstandardsforCBDCs,soastoallowthemtointer-
+actdirectlythroughasharedmBridgeplatform.Butbroadercoordinationisessentialifstablecoins
+are to deliver on their broader promises to society.
+4. POTENTIAL BENEFITS OF STABLECOINS
+In the short run, stablecoins can enable low-cost digital payments and make payments pro-
+grammable. Over time, they can also improve financial inclusion for the unbanked and support
+novel types of DeFi applications.
+4.1. Low-Cost, Real-Time Digital Payments
+Existing payment systems are slow and expensive (see Catalini & Lilley 2021). For instance, the
+largest US banks charge between $10 and $35 for a same-day domestic wire transaction between
+30To name one example, the Bank of England (2020) noted the declining use of cash as a motivation for
+investigating CBDCs to retain its ability to deliver public (risk-free) money to its citizens.The Bank of Israel
+(2018),in contrast,has been more cautious,given that the Israeli economy has not significantly seen a decline
+in the use of cash.
+31For example,central banks could let stablecoins and other digital assets launch, grow,and compete against
+each other and then promote the most successful ones to synthetic CBDCs by taking custody of the private
+backing reserves.
+www.annualreviews.org  EconomicsofStablecoins 129
+
+===== PAGE 14 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+consumers,and even slower transfers incur hefty fees.Small businesses pay between 1% and 3%
+to accept card transactions, with an additional 1% for online payments, faster settlement, etc.
+Moreover,manycountrieslackacheap,real-timegrosssettlementnetworkthatcantransfervalue
+across a broad set of participants quickly and cheaply.In the United States,for example,Fedwire
+is only available to a small set of institutions transacting large volumes, and attempts to expand
+on availability [like The Clearing House (TCH)] have not gained meaningful scale. Through
+their widespread distribution and streamlined cost structure, stablecoins can offer a solution.
+They trade on networks that are cheaper to access for businesses,consumers,and intermediaries
+alike and therefore can deliver real-time gross settlement solutions for small transactions that are
+uneconomical to perform today.
+4.2. Programmable Money
+Stablecoinshaveoneotheradvantage:programmability.Programmablemoneyallowsparticipants
+to customize payments and related financial agreements, creating new types of exchanges. Pro-
+grammability can also play an important role for the public sector (see Catalini et al. 2021). For
+example,conditionalcashtransferprograms—wherebyfundrecipientsneedtoperformanaction
+beforereceivingfundssuchasattendingschool—arepopularinemergingmarketsandeffectivefor
+achievingpolicygoals(seeParker&Todd2017).Theseprogramscouldbeimplementedbytrans-
+ferringfundstorecipientsbutalsorequiringthemtofulfillarequirement(e.g.,attendingahealth
+clinic for a vaccination) in order to unlock the funds.This approach could increase transparency
+and accountability and reduce corruption and errors.In the United States,for example,even the
+basic disbursement of stimulus funds faced severe delays and challenges in reaching unbanked
+beneficiaries (see Long & Singletary 2020).
+4.3. Financial Inclusion
+Considerfirstcross-bordertransfers.Theremittancesmarket—typicallydefinedascross-country
+person-to-persontransfers(often to friends or family members)—is large and expensive.In 2019,
+remittances to low- and middle-income countries reached $554 billion—higher than all foreign
+direct investment flows to these countries.32 Yet, the average remittance involves fees and com-
+missions of approximately 6.8% globally and a staggering 8.9% when sending to sub-Saharan
+Africa. Even smart remitters who use digital solutions paid 4.2% on average. Stablecoins can re-
+duce these costs by addressing last-mile distribution challenges in the same way that companies
+such as M-PESA have done with their mobile money initiatives. In Kenya, M-PESA not only
+contributed to financial inclusion but also helped decrease poverty and increased consumption,
+risk-sharing,productivity,womenempowerment,andgenderequality(seeJack&Suri2011;Jack,
+Ray & Suri 2013; Suri & Jack 2016; Suri 2017).33 At the same time, M-PESA’s success was hard
+to replicate elsewhere—with various explanations posited by Fengler (2012),such as the absence
+of a strong national regulator, a dominant telecom company, and large investments in merchant
+networks—andBanerjeeetal.(2015)findthatutilizationratesfornewfinancialtechnologyprod-
+ucts are relatively low in the developing world. Similarly, blockchain technology could be used
+32The overall remittance market is estimated at $714 billion. All remittance numbers discussed in this
+paragraph are from the World Bank Group (2020).
+33Digital innovation in payments has been found to have positive impacts on productivity before. Scott,
+Van Reenen & Zachariadis (2017) documented that the adoption of SWIFT—a technology for world-
+wide interbank telecommunication—increased bank profitability and exhibited important network effects on
+performance.
+130 Catalini  deGortari  Shah
+
+===== PAGE 15 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+to enhance peer group savings programs that have been successful at overcoming commitment
+issues and increasing savings in emerging markets (see Kast,Meier & Pomeranz 2018).34
+4.4. Decentralized Finance
+In the long run, stablecoins may end up having their largest impact through DeFi applications.
+DeFi applications are smart contract–powered financial contracts. To date, most DeFi activity
+takes place on the Ethereum blockchain.35 DeFi grew from having approximately $1 billion of
+locked value at the end of 2019 to $16 billion at the end of 2020 and $100 billion by late 2021.36
+Relative to traditional financial services, DeFi applications are more transparent, are easy to ac-
+cess, and deliver more control to end users since they run on permissionless blockchains and do
+notinvolveanintermediary.Theycanalsobenefitfromcomposability,i.e.,theabilitytocombine
+multiple applications with each other to build more complex financial services. Combined with
+interoperability,this can encourage competition and innovation.Yet,relative to traditional finan-
+cial services, DeFi applications also incorporate new risks. Some of these risks arise because the
+early stage nature of DeFi implies that the regulatory,compliance,and oversight guardrails from
+thetraditionalsystemhavenotbeenimplementedyet—notably,protectionsagainstfinancialrisk,
+systemic risk, and financial crime. Other risks, however, such as those stemming from errors in
+the codebase,are completely new.We discuss risks in more detail below.
+At a high level,DeFi protocols rely on two main features.First,they depend on users locking
+value in order to use that liquidity to power some type of service. For example, a DeFi lending
+platform can offer credit if depositors have locked in value that can be lent, or a decentralized
+exchangecanonlyprocessalargevolumeoftradesiftheprotocolhassufficientliquiditytoprevent
+slippage in exchange rates. In the specific case of Ethereum DeFi protocols, users can lock in
+both Ether, Ethereum’s native asset, and any ERC-20 tokens running on the same blockchain.37
+Second, DeFi protocols typically have a mechanism for rewarding providers of liquidity, often
+in the form of the protocol’s governance token. This mechanism adapts to market conditions in
+order to guarantee liquidity provision (e.g.,increasing rewards when provision is low).
+DeFi both extends the functionality existing in traditional finance and creates new services
+where no centralized intermediary has control over the underlying assets. There are currently
+dozens, if not hundreds, of DeFi protocols, but the market structure is fairly concentrated and
+value is locked in a very small number of top protocols (at the time of writing, the top five DeFi
+projects account for 70% of the locked value,and the top ten for more than 90%).
+DeFi protocols can be grouped into four broad categories. First, decentralized exchanges
+(e.g.,Uniswap,Sushiswap,Curve Finance,Balancer) let users exchange cryptocurrencies without
+relying on an intermediary. Instead of relying on order books—as centralized exchanges do—
+decentralized exchanges typically rely on liquidity pools for each pair of coins,where the relative
+proportionofeachcoininthepooldeterminestherelativepricesbetweenthepair.Userscanthus
+exchange one coin for another according to the proportion in these pools,plus a small fee that is
+used to reward the users who provide liquidity to the protocol.38
+34Indeed,M-PESA is already implementing a similar proposal through its Chama accounts.
+35While DeFi applications exist on other blockchains,the majority currently run on Ethereum.
+36All numbers in this section are fromhttps://defipulse.com,accessed on December 9,2021.
+37Newer protocols are also able to leverage other types of on-chain assets such as NFTs.
+38Typically, automated market makers define the precise function determining the exchange rate for each
+trade. For example, under the constant product market maker design, the decentralized exchange between
+two assets available inx and y quantities ensures that if a user wants to buy/Delta1y coins, then the user has to
+www.annualreviews.org  EconomicsofStablecoins 131
+
+===== PAGE 16 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+Second, collateralized lending platforms let users deposit one token in exchange for interest
+andborrowanothertokenusingtheoriginaloneascollateral.Forexample,MakerDAOletsusers
+lock up value in order to issue the Dai stablecoin. In other lending platforms, token deposits
+are important not only to incentivize borrowers to pay back their loans but also because they
+provideliquiditythatotheruserscanborrow.Forexample,onCompoundandAave,twoseparate
+users can deposit Ether and USDC, and then the Ether depositor can borrow USDC while the
+USDC depositor can borrow Ether—with the lending platform imposing overcollateralization
+ratios depending on the quality and volatility of the collateral.
+Third,DeFiassetmanagementplatforms(e.g.,Yearn.Finance)letusersoptimizeportfoliosby
+automatingholdingstomaximizereturnsacrossdifferentDeFiprotocols.Theseplatformscreate
+investment strategies in which user-provided liquidity is shifted across decentralized exchanges,
+DeFilendingplatforms,andotherprotocolsprovidingthehighestreturns.Thesestrategiesoften
+involve several layers by which the protocol borrows assets against the ones it deposits in other
+protocols,or it uses the claims on the assets it has locked to further invest in other protocols.
+Last, decentralized derivatives applications deliver functionality such as insurance, futures, or
+options contracts, relying on price movements that are external to the protocol and brought in
+through oracles. For example, Synthetix lets users go long or short on other cryptocurrencies
+suchas Bitcoinor Ether.Otherprotocols,such asNexus Mutual,provide insurance againstsmart
+contract risk.
+DeFiprotocolsbuildadditionalfunctionalityontopofcryptocurrencies,whichpartlyexplains
+why their use has increased so rapidly. Decentralized exchanges let users move value across as-
+sets at lower fees than centralized exchanges, reduce custody risk, and allow for trades between
+assets that are otherwise not listed on centralized exchanges. Collateralized lending lets users
+obtain short-term liquidity from long-term asset holdings, increase leverage and asset exposure,
+and short assets.39 Finally, asset management and derivative platforms could, in theory, improve
+price discovery and the efficiency with which capital is allocated across different cryptocurrency
+platforms.
+As mentioned above, DeFi protocols also introduce new risks. First, smart contracts execute
+automatically, meaning that bad actors can exploit code vulnerabilities in nefarious ways (e.g.,
+stealing assets) and without obvious consequences. Second, various elements of these protocols
+adjustalgorithmically(e.g.,interestrates)—oftenwithlittletransparency—implyingthatusersdo
+notalwaysknowhowthingschangewhenthemarketshifts.Third,theDeFiecosystemasawhole
+ispotentiallyatrisk,giventhatthedifferentprotocolsareoftenintertwinedwithoneanother.This
+creates systemic risk, in that a vulnerability in one protocol can easily transmit across the whole
+ecosystem, potentially triggering a run out of DeFi. Critically, systemic risk arises not only from
+the financial risk of any given DeFi protocol failing due to poor economic design but also from
+the governance risk arising from a protocol being mismanaged by the governance token holders.
+Stablecoins are needed for DeFi because they provide a nonvolatile asset that can be used to
+manageliquidityandmovefundsacrossprotocols.WiththeexceptionofEther,theyrepresentthe
+deposit /Delta1x coins such that (x + /Delta1x)(y − /Delta1y) =k, with the pool’s original assets determiningk asxy =k.I ti s
+straightforward to see that,for a small trade,/Delta1x = (x/y)/Delta1y; i.e.,the exchange rate is given by the relative size
+of the two pools.
+39Short-term liquidity is particularly useful for long-term investors (i.e., HODLers) who would rather pay
+a fee to obtain liquidity than forgo the potential appreciation of their asset holdings. Meanwhile, increasing
+leverageisusefulforbullishinvestors,andtheabilitytoshortassetsisusefulforbearishinvestors.Forexample,
+longBitcoinholderscanusetheirBitcoinascollateraltoborrowfundsandincreasetheirexposuretoBitcoin.
+Likewise, Ether short sellers can use their funds as collateral to borrow Ether and then sell it, with the hope
+that they will be able to repurchase it in the future at a lower price.
+132 Catalini  deGortari  Shah
+
+===== PAGE 17 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+mostimportantassetdepositedindecentralizedexchangesandlendingplatforms.Yet,thereliance
+on stablecoins as a base layer for stability creates its own risks for DeFi. A stablecoin that breaks
+its peg may undermine a protocol whose design assumes the price will always track the reference
+asset.Moreover,stablecoins themselves are a source of systemic risk,in that their widespread use
+within DeFi implies that the collapse of a major stablecoin would immediately transmit to the
+broader ecosystem.For these reasons,it is critical that stablecoin issuers adopt the safest designs
+and are able to protect the peg under stressed market conditions.
+5. CONCLUSION
+Stablecoins are the preeminent example of cryptocurrencies expanding beyond cryptocurrency
+usecasesandintothetraditionalfinancialsystem.Well-designedstablecoinscanenablefast,low-
+cost, and programmable payments, broader participation in the financial system, novel exchange
+and lending products, etc. But their long-term success is not guaranteed, and involvement from
+the public sector is important. Regulators must design novel frameworks that attain the broad
+goals of consumer protection, financial stability, compliance, low barriers to entry, transparency,
+accountability, and more—and they must do so using different tools than in the past. Stablecoin
+issuers and regulators must thus partner to find the right balance between centralized and de-
+centralized solutions. If this partnership is successful, stablecoins have the potential to radically
+reshape the financial system for the better.
+DISCLOSURE STATEMENT
+Atthetimeofwriting,C.C.wasthechiefeconomistoftheDiemAssociationandDiemNetworks
+US and a co-creator of Diem (formerly Libra).He is also the founder of the Massachusetts Insti-
+tute of Technology (MIT) Cryptoeconomics Lab and a research scientist at MIT. At the time of
+writing,A.D.G.and N.S.were employees of Novi Financial,Inc.,a fully owned Facebook (Meta)
+subsidiary,andcontributedtothispieceaspartoftheirworkwithDiemNetworksUS.Thispiece
+does not necessarily represent the views of Novi Financial,Inc.
+ACKNOWLEDGMENTS
+We are thankful to Andrew Lilley, Ben Brookins, and Wanyi Dai Li for helpful comments and
+suggestions.
+LITERATURE CITED
+Adrian T, Mancini-Griffoli T. 2019. The rise of digital money.Int. Monet. Fund FinTech Notes,July 15.
+https://www.imf.org/en/Publications/fintech-notes/Issues/2019/07/12/The-Rise-of-Digital-
+Money-47097
+Auer R, Cornelli G, Frost J. 2020.Rise of the central bank digital currencies: drivers,approaches and technologies.
+Work.Pap.880,Bank Int.Settl.,Basel,Switz.
+Banerjee A, Duflo E, Glennerster R, Kinman C. 2015. The miracle of microfinance? Evidence from a
+randomized evaluation.Am.Econ.J.Appl.Econ. 7(1):22–53
+Bank of England. 2020. Central bank digital currency: opportunities, challenges and design. Discuss. Pap.,
+March 12,Bank of England,London
+Bank of Israel. 2018.Reportoftheteamtoexaminetheissueofcentralbankdigitalcurrencies . Tech. Rep., Bank of
+Israel,Jerusalem
+Banque de France.2020.Centralbankdigitalcurrency .Tech.Rep.,Banque de France,Paris
+www.annualreviews.org  EconomicsofStablecoins 133
+
+===== PAGE 18 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+Barnett C, Dowling M. 2020. In the wildcat era of stablecoins, commercial banks have new rails to
+ride. CoinDesk, June 16. https://www.coindesk.com/markets/2020/06/16/in-the-wildcat-era-of-
+stablecoins-commercial-banks-have-new-rails-to-ride/
+Barontini C,Holden H.2019.Proceedingwithcaution—asurveyoncentralbankdigitalcurrency .Work.Pap.101,
+Bank Int.Settl.,Basel,Switz.
+Baydakova A. 2019. Millions in crypto is crossing the Russia-China border daily. There, tether is king.Coin-
+Desk, July 30. https://www.coindesk.com/business/2019/07/30/millions-in-crypto-is-crossing-
+the-russia-china-border-daily-there-tether-is-king/
+BenignoP,SchillingLM,UhligH.2019. Cryptocurrencies,currencycompetition,andtheimpossibletrinity .NBER
+Work.Pap.26214
+BoarC,HoldenH,WadsworthA.2020. Impendingarrival—asequeltothesurveyoncentralbankdigitalcurrency .
+Work.Pap.107,Bank Int.Settl.,Basel,Switz.
+Bordo MD, Levin AT. 2017.Central bank digital currency and the future of monetary policy. NBER Work. Pap.
+23711
+Brunnermeier MK,James H,Landau JP.2019.Thedigitalizationofmoney .NBER Work.Pap.26300
+Catalini C,de Gortari A.2021.Ontheeconomicdesignofstablecoins .SSRN Work.Pap.3899499
+Catalini C,Gans JS.2019.Initialcoinofferingsandthevalueofcryptotokens .NBER Work.Pap.24418
+CataliniC,GansJS.2020.Somesimpleeconomicsoftheblockchain. Commun.Assoc.Comput.Mach. 63(7):80–
+90
+Catalini C,Li WD,de Gortari A,Lilley A.2021.FromstablecoinstoCBDCs:thepublicbenefitsofapublic-private
+partnership.SSRN Work.Pap.3986192
+Catalini C,Lilley A.2021.WhyistheUnitedStateslaggingbehindinpayments? SSRN Work.Pap.3893937
+CataliniC,MassariJ.2021.Stablecoinsandthefutureofmoney. HarvardBus.Rev., Aug.10. https://hbr.org/
+2021/08/stablecoins-and-the-future-of-money
+Catalini C,Shah N.2021.Settingstandardsforstablecoinreserves. SSRN Work.Pap.3970885
+Cecchetti S, Schienholtz K. 2019. Libra: a dramatic call to regulatory action.VoxEU.org,Aug. 28.https://
+voxeu.org/article/libra-dramatic-call-regulatory-action
+Chainalysis.2020. The2020geographyofcryptocurrencyreport .Tech.Rep.,Sept.,Chainalysis,New York
+Chalkias K, Lewi K, Mohassel P, Nikolaenko V. 2020.Distributed auditing proofs of liabilities.Presented at
+the 3rd ZKProof Workshop.https://research.facebook.com/file/593824151622372/Distributed-
+Auditing-Proofs-of-Liabilities.pdf
+Comm.Paym.Market Infrastruct.2018. Centralbankdigitalcurrencies .Rep.,Bank Int.Settl.,Basel,Switz.
+Duffie D. 2020.Interoperable payment systems and the role of central bank digital currencies.SSRN Work. Pap.
+3604665
+Fengler W. 2012. How Kenya became a world leader for mobile money.World Bank Blogs, Africa Can End
+Poverty, July 16. https://blogs.worldbank.org/africacan/how-kenya-became-a-world-leader-for-
+mobile-money
+Financ. Stab. Board. 2020.Regulation, supervision and oversight of “global stablecoin” arrangements. Tech. Rep.,
+Financ.Stab.Board,Basel,Switz.
+G7 Work. Group Stablecoins. 2019.Investigating the impact of global stablecoins. Comm. Paym. Market Infra-
+struct.Pap.187,Bank Int.Settl.,Basel,Switz.
+Goldstein J.2020.Money:TheTrueStoryofaMade-UpThing .New York: Hachette Books
+Gorton GB,Zhang J.2021.Tamingwildcatstablecoins .SSRN Work.Pap.3888752
+Grenville S. 2019. The coming Libra panics. Proj. Synd., July 1. https://www.project-syndicate.org/
+commentary/libra-capital-flows-fuel-panic-by-stephen-grenville-2019-07
+Jack W, Ray A, Suri T. 2013. Transaction networks: evidence from mobile money in Kenya.Am.Econ.Rev.
+103(3):356–61
+Jack W,Suri T.2011.Mobilemoney:theeconomicsofM-PESA .NBER Work.Pap.16721
+John K,O’Hara M,Saleh F.2022.Bitcoin and beyond.Annu.Rev.Financ.Econ. 14:95–115
+Kast F, Meier S, Pomeranz D. 2018. Saving more in groups: field experimental evidence from Chile.J.Dev.
+Econ.133:275–94
+Kuo E, Iles B, Rincon-Cruz M. 2019.Ampleforth: a new synthetic commodity. White Pap., Ampleforth, San
+Francisco.https://ampltools.com/Media/Ampleforth-whitepaper.pdf
+134 Catalini  deGortari  Shah
+
+===== PAGE 19 =====
+
+Downloaded from www.annualreviews.org.  University College London (ar-259169) IP:  128.16.70.70 On: Wed, 01 Jul 2026 16:15:56
+Long H, Singletary M. 2020. Glitches prevent $1,200 stimulus checks from reaching millions of Americans.
+Washington Post, Apr. 16. https://www.washingtonpost.com/business/2020/04/16/coronavirus-
+cares-stimulus-check/
+Lyons RK,Viswanath-Natraj G.2020.Whatkeepsstablecoinsstable? NBER Work.Pap.27136
+Nakamoto S.2008.Bitcoin:apeer-to-peerelectroniccashsystem .T ech.Rep.https://bitcoin.org/bitcoin.pdf
+Narayanan A, Bonneau J, Felten E, Miller A, Goldfeder S. 2016.Bitcoin and Cryptocurrency Technologies.
+Princeton,NJ: Princeton Univ.Press
+Off.Monet.Financ.Inst.Forum.2019. RetailCBDCs:thenextpaymentsfrontier. Rep.,Off.Monet.Financ.Inst.
+Forum,London
+Parker SW, Todd PE. 2017. Conditional cash transfers: the case ofProgresa/Oportunidades. J. Econ. Lit.
+55(3):866–915
+Prasad ES. 2021.The Future of Money: How the Digital Revolution Is Transforming Currencies and Finance.
+Cambridge,MA: Belknap Press
+Pres. Work. Group Financ. Markets. 2020.Statement on key regulatory and supervisory issues relevant to certain
+stablecoins.Statement,Pres.Work.Group Financ.Markets,U.S.Dep.Treas.,Washington,DC
+Pres.Work.GroupFinanc.Markets.2021. Reportonstablecoins .T ech.Rep.,Pres.Work.GroupFinanc.Markets,
+U.S.Dep.Treas.,Washington,DC
+SamsR.2015. Anoteoncryptocurrencystabilisation:seigniorageshares. Work.Pap.,Clearmatics,London. https://
+blog.bitmex.com/wp-content/uploads/2018/06/A-Note-on-Cryptocurrency-Stabilisation-
+Seigniorage-Shares.pdf
+ScottSV,VanReenenJ,ZachariadisM.2017.Thelong-termeffectofdigitalinnovationonbankperformance:
+an empirical study of SWIFT adoption in financial services.Res.Policy 46(5):984–1004
+Suri T.2017.Mobile money.Annu.Rev.Econ. 9:497–520
+SuriT,JackW.2016.Thelong-runpovertyandgenderimpactsofmobilemoney. Science354(6317):1288–92
+von Luckner CG,Reinhart CM,Rogoff KS.2021.Decryptingnewageinternationalcapitalflows .NBER Work.
+Pap.29337
+World Bank Group. 2020.COVID-19crisisthroughamigrationlens . Migr. Dev. Brief 32, World Bank Group,
+Washington,DC
+www.annualreviews.org  EconomicsofStablecoins 135

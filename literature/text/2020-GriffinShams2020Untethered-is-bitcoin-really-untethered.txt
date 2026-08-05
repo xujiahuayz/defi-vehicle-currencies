@@ -1,0 +1,2295 @@
+
+
+===== PAGE 1 =====
+
+THE JOURNAL OF FINANCE • VOL. LXXV, NO. 4 • AUGUST 2020
+Is Bitcoin Really Untethered?
+JOHN M. GRIFFIN and AMIN SHAMS ∗
+ABSTRACT
+This paper investigates whether Tether, a digital currency pegged to the U.S. dollar,
+inﬂuenced Bitcoin and other cryptocurrency prices during the 2017 boom. Using al-
+gorithms to analyze blockchain data, we ﬁnd that purchases with Tether are timed
+following market downturns and result in sizable increases in Bitcoin prices. The ﬂow
+is attributable to one entity , clusters below round prices, induces asymmetric auto-
+correlations in Bitcoin, and suggests insufﬁcient Tether reserves before month-ends.
+Rather than demand from cash investors, these patterns are most consistent with the
+supply-based hypothesis of unbacked digital money inﬂating cryptocurrency prices.
+INNOVATION, EXCESSIVE SPECULATION , AND DUBIOUS behavior are often closely
+linked. Periods of extreme price increases followed by implosion, commonly
+known as “bubbles,” are often associated with legitimate inventions, technolo-
+gies, or opportunities. However, they can be carried to excess. In particu-
+lar, ﬁnancial bubbles often coincide with the belief that a rapid gain can be
+∗John M. Grifﬁn is at the McCombs School of Business, University of Texas at Austin. Amin
+Shams is at the Fisher College of Business, Ohio State University . Helpful comments were received
+from Stefan Nagel (the editor); an associate editor; two anonymous referees; Cesare Fracassi; Sam
+Kruger; Shaun MaGruder; Gregor Matvos; Nikolai Roussanov; Clemens Sialm; and seminar and
+conference participants at the Chinese University of Hong Kong, Cryptocurrencies and Blockchain
+Conference at the University of Chicago, FBI CPA Conference, Financial Intelligence and Inves-
+tigations Conference, Fintech Conference at the Hong Kong University , Hong Kong University of
+Science and Technology , Hong Kong Securities and Futures Commission, Korea Advanced Insti-
+tute of Science and Technology , Korean Financial Supervisory Service, Japan Financial Services
+Agency , Santa Clara University , Texas Bitcoin Conference, Tsinghua University , U.S. Commodity
+Futures Trading Commission, University of Texas-Austin, University of Zurich, and Wharton Liq-
+uidity Conference at the University of Pennsylvania. Integra FEC purchased data and provided
+research assistant support for the project. Grifﬁn is an owner of Integra FEC, which engages in
+ﬁnancial consulting on a variety of issues related to ﬁnancial fraud, including cryptocurrencies.
+See disclosure statement. We especially thank Tin Dinh for excellent conceptual assistance and
+Prateek Mahajan for research assistance.
+Correspondence: Amin Shams, Department of Finance, Ohio State University , 2100 Neil Ave,
+Columbus, OH 43210; e-mail: shams.22@osu.edu.
+This is an open access article under the terms of the Creative Commons Attribution-NonCom-
+mercial License, which permits use, distribution and reproduction in any medium, provided the
+original work is properly cited and is not used for commercial purposes.
+DOI: 10.1111/joﬁ.12903
+C⃝ 2020 The Authors. The Journal of Finance published by Wiley Periodicals LLC on behalf of
+American Finance Association
+1913
+
+
+===== PAGE 2 =====
+
+1914 The Journal of Finance R⃝
+obtained from simply selling an asset to another speculator. 1 Perhaps because
+of the focus on speculative activity rather than veriﬁable fundamentals, bub-
+bles have historically been associated with various forms of misinformation and
+fraud. For example, in the Mississippi Bubble of 1719 to 1720, promoters en-
+gaged in false marketing about the potential of income-generating assets, price
+support by the stock itself, and distribution of paper money that was not fully
+backed by gold as claimed (Dale ( 2004), Kindleberger and Aliber ( 2011)). As
+we brieﬂy discuss in Section I, an abundance of evidence suggests that famous
+bubbles such as the 1840s Railroad bubble, the roaring 1920s stock market
+boom, the dot-com bubble, and the 2008 ﬁnancial crisis all involved misin-
+formation, false accounting, price manipulation, collusion, and fraud, often in
+sophisticated forms.
+Cryptocurrencies grew from nearly nothing to over $300 billion in market
+capitalization in only a few years and ﬁt the characterization of bubbles quite
+well–extreme speculation surrounding an innovative technology . To many , Bit-
+coin and other cryptocurrencies offer the promise of an anonymous, decen-
+tralized ﬁnancial system free from banks and government intervention. The
+conception of Bitcoin corresponds to the 2008 to 2009 ﬁnancial crisis, a time
+of growing disdain for government intervention and distrust of major banks.
+The promise of a decentralized ledger with independently veriﬁable transac-
+tions has enormous appeal, 2 especially in an age when centralized clearing is
+subject to concerns about both external hacking and internal manipulation. 3
+Ironically , new large entities have gained centralized control over the vast ma-
+jority of operations in the cryptocurrency world, such as centralized exchanges
+that handle the majority of transactions and stable coin issuers that can con-
+trol the supply of money like a central bank. These centralized entities operate
+largely outside the purview of ﬁnancial regulators and offer varying levels
+of limited transparency . Additionally , operating based on digital stable coins
+rather than ﬁat currency further relaxes the need for these entities to estab-
+lish a legitimate ﬁat banking relationship. 4 Trading on unregulated exchanges,
+speciﬁcally on cross-digital-currency exchanges, could leave cryptocurrencies
+vulnerable to gaming and manipulation.
+In this study , we examine the role of the largest stable coin, Tether, on Bit-
+coin and other cryptocurrency prices. Tether, which accounts for more Bitcoin
+transaction volume than the U.S. dollar (USD), is purportedly backed by USD
+1 For example, in the bubble model of Scheinkman and Xiong ( 2003), investors purchase assets
+not because of their belief in the underlying cash ﬂows, but because they can sell the asset to
+another individual with a higher valuation.
+2 The appeal, underlying value, and mechanics of cryptocurrencies and decentralized ledgers
+have been described in recent descriptive and theoretical work (Y ermack ( 2017), Sockin and Xiong
+(2018), Cong, He, and Li ( 2019), Cong, Li, and Wang ( 2019)).
+3 Recent examples of apparently manipulated markets include LIBOR (Mollenkamp and White-
+house ( 2008)), FX manipulation (Vaughan and Finch ( 2013)), gold (Denina and Harvey ( 2004)),
+and the VIX index (Grifﬁn and Shams ( 2018)). Kumar and Seppi ( 1992) and Spatt ( 2014)d i s c u s s
+conditions that may facilitate manipulation.
+4 By May 20, 2018, over 1,600 cryptocurrencies and digital tokens were trading on various digital
+exchanges.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 3 =====
+
+Is Bitcoin Really Untethered? 1915
+reserves and allows for dollar-like transactions without a banking connection,
+which many cryptoexchanges have difﬁculty obtaining or keeping. Although
+some in the blogosphere and press have expressed skepticism regarding the
+USD reserves backing Tether, 5 the cryptocurrency exchanges largely reject
+such concerns and widely use Tether in transactions.
+To shed light on the driving forces behind the 2017 boom of cryptocurrency
+markets, we examine two main alternative hypotheses for Tether: whether
+Tether is “pulled” (demand-driven), or “pushed” (supply-driven). Under the
+pulled hypothesis, Tether is driven by legitimate demand from investors who
+use Tether as a medium of exchange to enter their ﬁat capital into the cryp-
+tospace because it is digital currency with the stability of the dollar “peg.” In
+this case, the price impact of Tether reﬂects natural market demand.
+Alternatively , under the “pushed” hypothesis, Bitﬁnex prints Tether regard-
+less of the demand from cash investors, and additional supply of Tether can
+create inﬂation in the price of Bitcoin that is not due to a genuine capital ﬂow. In
+this setting, Tether creators have several potential motives. First, if the Tether
+creators, like most early cryptocurrency adopters and exchanges, have large
+holdings of Bitcoin, they generally proﬁt from the inﬂation of the cryptocur-
+rency prices. Second, coordinated supply of Tether creates an opportunity to
+manipulate cryptocurrencies—when prices are falling, the Tether creators can
+convert their large Tether supply into Bitcoin in a way that pushes Bitcoin up
+and then sell some Bitcoin back into dollars in a venue with less price impact to
+replenish Tether reserves. Finally , if cryptocurrency prices crash, the founders
+essentially have a put option to default on redeeming Tether, or to potentially
+experience a “hack” or insufﬁcient reserves where by Tether-related dollars
+disappear. The “pushed” and “pulled” hypotheses have different testable im-
+plications for capital ﬂows and cryptocurrency returns that we can take to the
+powerful blockchain data.
+We begin our exercise by collecting and analyzing Tether and Bitcoin
+blockchain data using a series of algorithms that reduce the complexity of
+the blockchain. In particular, because of the semitransparent nature of the
+transaction history recorded on the blockchain, we are able to use variations of
+algorithms developed in computer science to cluster groups of related Bitcoin
+wallets. Large clusters are then labeled by identifying certain member wal-
+lets inside each group and tracking the ﬂow of coins between major players in
+the market.
+Figure 1 plots the aggregate ﬂow of Tether among major market participants
+on the Tether blockchain from its conception in October 6, 2014 until March 31,
+2018. The size of the nodes is proportional to the sum of coin inﬂow and outﬂow
+to each node, the thickness of the lines is proportional to the size of ﬂows, and
+all ﬂow movements are clockwise. Tether is authorized, moved to Bitﬁnex, and
+then slowly distributed to other Tether-based exchanges, mainly Poloniex and
+Bittrex. The graph shows that almost no Tether returns to the Tether issuer to
+5 For example, see posts by Bitﬁnex’ed account at https://medium.com/@bitﬁnexed and Popper
+(2017).
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 4 =====
+
+1916 The Journal of Finance R⃝
+Figure 1. Aggregate ﬂow of Tether between major addresses . This ﬁgure shows the aggre-
+gate ﬂow of Tether between major exchanges and market participants from Tether genesis block
+to March 31, 2018. Tether transactions are captured on Omni Layer as transactions with the coin
+ID 31. The data include conﬁrmed transactions with the following action types: Grant Property
+Tokens, Simple Send, and Send All. Exchange identities on the Tether blockchain are obtained
+from the Tether rich list. The thickness of the edges is proportional to the magnitude of the ﬂow
+between two nodes, and the node size is proportional to aggregate inﬂow and outﬂow for each
+node. Intranode ﬂows are excluded. The direction of the ﬂow is shown by the curvature of the
+edges, with Tether moving clockwise from a sender to a recipient. (Color ﬁgure can be viewed at
+wileyonlinelibrary .com)
+be redeemed, and the major exchange where Tether can be exchanged for USD,
+Kraken, accounts for only a small proportion of transactions. Tether also ﬂows
+out to other exchanges and entities and becomes more common as a medium of
+exchange over time.
+A similar analysis of the ﬂow of coins on the much larger Bitcoin blockchain
+shows that the three main Tether exchanges for most of 2017 (Bitﬁnex,
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 5 =====
+
+Is Bitcoin Really Untethered? 1917
+Poloniex, and Bittrex) also facilitate considerable cross-exchange Bitcoin ﬂows
+among themselves.6 Additionally , we ﬁnd that the cross-exchange Bitcoin ﬂows
+on Bitcoin blockchain closely match the Tether ﬂows on the Tether blockchain.
+This result independently veriﬁes our algorithm for categorizing exchange
+identities and also captures the direct exchange of Tether for Bitcoin. Addi-
+tionally , we ﬁnd that one large player is associated with more than half of the
+exchange of Tether for Bitcoin at Bitﬁnex, suggesting that the distribution of
+Tether into the market is from a large player and not from many different
+investors who bring cash to Bitﬁnex to purchase Tether.
+We examine the ﬂow of coins identiﬁed above to understand whether Tether
+is pushed or pulled, and the effect of Tether, if any , on Bitcoin prices. First,
+following periods of negative Bitcoin returns, Tether ﬂows from Bitﬁnex to
+Poloniex and Bittrex, and in exchange, Bitcoin is sent back to Bitﬁnex. Second,
+when there are positive net hourly ﬂows from Bitﬁnex to Poloniex and Bittrex,
+Bitcoin prices move up over the next three hours, resulting in predictably high
+Bitcoin returns. The price impact is present after periods of negative returns
+and periods following the printing of Tether, that is, when there is likely an
+oversupply of Tether in the system. This phenomenon strongly suggests that
+the price effect is driven by Tether issuances. Additionally , the price impact is
+strongly linked to trading of the one large player and not to other accounts on
+Poloniex, Bittrex, or other Tether exchanges.
+To gauge the aggregate magnitude of the observed price impact, we focus
+on the top 1% of hours with the largest lagged combined Bitcoin and Tether
+net ﬂows on the two blockchains. These 95 hours have large negative returns
+before the ﬂows but are followed by large positive returns afterward. This 1%
+of our time series (over the period from the beginning of March 2017 to the
+end of March 2018) is associated with 58.8% of Bitcoin’s compounded return
+and 64.5% of the returns on six other large cryptocurrencies (Dash, Ethereum
+Classic, Ethereum, Litecoin, Monero, and Zcash). 7 A bootstrap analysis with
+10,000 simulations demonstrates that this behavior does not occur randomly ,
+and a similar placebo analysis for ﬂows to other Tether exchanges shows very
+little price impact.
+Further analysis for the single largest player on Bitﬁnex shows that the
+1%, 5%, and 10% of hours with the highest lagged ﬂow of Tether by this one
+player are associated with 55%, 67.2%, and 79.2% of Bitcoin’s price increase
+over our March 1, 2017 to March 31, 2018 sample period. This pattern is not
+present for the ﬂows to any other Tether exchanges. Moreover, simulations
+show that these patterns are highly unlikely to be due to chance—this one
+large player or entity either exhibited clairvoyant market timing or exerted an
+6 For the period between March 1, 2017 and March 31, 2018, we grouped over 640,000 wallet
+addresses as Bitﬁnex, 720,000 addresses as Poloniex, and 1.22 million wallet addresses as Bittrex
+using our clustering algorithm.
+7 These ﬁndings are instructive but incomplete, and they may over- or understate the Tether
+effect. Fully quantifying the effect of Tether on Bitcoin depends on knowing precise price impacts
+and the various exchange, off-exchange, and cross-trading mechanisms on which these cryptocur-
+rencies may trade.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 6 =====
+
+1918 The Journal of Finance R⃝
+extremely large price impact on Bitcoin that is not observed in the aggregate
+ﬂows from other smaller traders. Such trading by this one player is also large
+enough to induce a statistically and economically strong reversal in Bitcoin
+prices following negative returns.
+Investors hoping to stabilize and drive up the price of an asset might concen-
+trate on certain price thresholds as an anchor or price ﬂoor, the idea being that
+if investors can demonstrate a price ﬂoor, then they can induce other traders
+to purchase. 8 Interestingly , Bitcoin purchases from Bitﬁnex strongly increase
+just below multiples of 500. This pattern is present only in periods following
+printing of Tether, is being driven by the single large account holder, and is not
+observed by other exchanges. To address causality , we use the discontinuity
+in Tether ﬂow at the round threshold cutoffs as an instrument and ﬁnd that
+Tether ﬂows are causing the positive Bitcoin return.
+The patterns observed above are consistent with either one large player
+purchasing Tether with cash at Bitﬁnex and then exchanging it for Bitcoin, or
+Tether being printed without cash backup and pushed out through Bitﬁnex in
+exchange for Bitcoin. If Tether is pushed out to other cryptoexchanges rather
+than demanded by cash investors, then it may not be always fully backed. To
+show the full reserve, Bitﬁnex might therefore have to liquidate their Bitcoin
+reserve to support their end-of-month (EOM) bank statements. Interestingly ,
+we ﬁnd a signiﬁcant negative EOM abnormal return of 6% in the months with
+strong Tether issuance and no abnormal returns in months when Tether is not
+issued. Since these patterns are driven primarily by only a few EOMs with
+large Tether issuance, we test further and ﬁnd that the EOM effect is stronger
+in a value-weighted index of the largest cryptocurrencies and is also present
+around a publicized mid-month balance statement. Moreover, Bitﬁnex’s reserve
+wallets on the blockchain data exhibit large signiﬁcant balance decreases in
+days prior to EOMs with large Tether printing. This pattern is not present in
+reserve wallets on any other exchanges.
+Our results are generally consistent with Tether being printed unbacked
+and pushed out onto the market, which can have an inﬂationary effect on asset
+prices. While other tests do not speak to capital backing, the EOM patterns are
+inconsistent with the “pulled” hypothesis since they indicate a lack of dollar
+reserves. Nevertheless, we further examine a direct implication of the “pulled”
+hypothesis by testing whether the ﬂows of Tether bear a relation to a proxy for
+its demand from investors, namely the premium for Tether relative to the USD.
+We ﬁnd little evidence to support this demand-based hypothesis, but note that
+the demand-based proxies likely contain noise. In sum, while we expect that
+there are some sources of legitimate demand for Tether, they do not appear to
+dominate the Tether ﬂow patterns observed in the data.
+Overall, our paper demonstrates the usefulness of combining methodolog-
+ical approaches from computer science and ﬁnance, in particular, clustering
+8 Shiller ( 2000) and Bhattacharya, Holden, and Jacobsen ( 2012) describe trading signals that
+anchor around price thresholds. These thresholds can be used as coordination mechanisms as well.
+For instance, Christie and Schultz ( 1994) ﬁnd collusion only around even numbers in spreads.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 7 =====
+
+Is Bitcoin Really Untethered? 1919
+algorithms and capital ﬂow analysis, to understand the role of central mon-
+etary entities in a cryptocurrency world. Previous studies show that none of
+the exposures to macroeconomic factors, stocks markets, currencies, or com-
+modities can explain cryptocurrency prices (Liu and Tsyvinski ( 2018)). We ﬁnd
+that Tether ﬂows can largely explain Bitcoin prices. Our ﬁndings are gen-
+erally consistent with evidence that sophisticated investors may proﬁt from
+bubbles (Brunnermeier and Nagel ( 2004)), but more speciﬁcally provide empir-
+ical evidence on the intersection of potentially nefarious activity and bubbles.
+Although cryptocurrencies are relatively new, the trading mechanisms within
+and across exchanges are quite complex (Partnoy ( 2009)) and may obfuscate
+the inﬂuence of large players. This complexity also implies that there are limits
+to what we can learn from blockchain data, and additional research is certainly
+necessary to further understand the cryptocurrency market. Since our ﬁndings
+indicate that Bitcoin prices are subject to gaming by a small number of ac-
+tors, they suggest that Bitcoin does not make a solid basis for more complex
+ﬁnancial vehicles such as exchange-traded funds (ETFs) or derivatives. Mar-
+ket surveillance within a proper regulatory framework across many venues
+may be necessary for cryptocurrency markets to be a reliable medium for fair
+ﬁnancial transactions.
+The rest of the paper is organized as follows. Section I provides an overview of
+historical bubbles, cryptocurrencies, Tether, and the main pushed and pulled
+hypotheses to be tested. Section II describes our main data sources and ex-
+plains the methodologies that we use to analyze the blockchain data and ﬂows.
+Section III analyzes the potential inﬂuence of Tether on Bitcoin, and Section IV
+further tests whether the ﬂows are consistent with pushed or pulled explana-
+tions. Section V concludes.
+I. Overview of Bubbles, Bitcoin, Tether, and Hypotheses
+A. Speculative Bubbles and the Prevalence of Dubious Market Activity
+Periods of excessive price speculation often share the themes of optimism
+around a new technology , a focus on selling to others rather than economic
+cash ﬂows, and questionable activities. The famous South Sea Bubble of 1719
+to 1720 is often described as a sophisticated Ponzi scheme where old investors
+were paid high dividends not from operations but from new stock issuances with
+the hope of higher prices at future issuances (Hutcheson (1720), Temin and Voth
+(2013)). Scheinkman (2013) notes that many other companies around this time
+also seem to have been fraudulent. The Railroad Bubble of the 1840s led to a
+host of companies that merely sought to procure funds from investors and had
+no intention of actually building railroads (Robb ( 2002)). In the Roaring Twen-
+ties, investment pools would manipulate a stock price through “wash sales,”
+collusion with stock-exchange specialists, and coordinated publicity from com-
+mentators to pump a stock at an inﬂated price to the public (Malkiel ( 1981)).
+The technology or “dot-com” bubble of 1997 to 2000 also contained strong el-
+ements of stock promotion through inﬂated forecasts from afﬁliated analysts
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 8 =====
+
+1920 The Journal of Finance R⃝
+(Lin and McNichols ( 1998)), pushing or “laddering” prices through implicit
+agreements to purchase more IPO shares in the aftermarket (Grifﬁn, Harris,
+and Topaloglu (2007)), and accounting fraud (e.g., Enron and Worldcom). Hedge
+funds and other institutional investors were the main net buyers of overpriced
+technology stocks during this period (Brunnermeier and Nagel ( 2004), Grifﬁn
+et al. ( 2011)).
+One line of thinking is that more fraud exists in economic booms because
+individuals monitor their investments relatively less closely (Povel, Singh, and
+Winton ( 2007)). Akerlof et al. ( 1993) argue that historical actors involved in
+“looting” an organization (such as banks in the U.S. savings and loan crisis)
+move capital into a space in a manner that systematically increases asset
+prices. In our analysis of Bitcoin and Tether, we are able to examine whether
+either of these two views ﬁts the data.
+B. Brief History of Bitcoin and Exchange “Hacks”
+On October 31, 2008, the whitepaper “Bitcoin: A Peer-to-Peer Electronic
+Cash System” was released by Satoshi Nakamoto (Nakamoto ( 2008)). The pa-
+per outlines a digital currency system where transactions are recorded on a
+chain of linked blocks, hence “blockchain,” and veriﬁed electronically through
+a decentralized network of users. This decentralized feature avoids the tradi-
+tional system of government-backed currencies controlled by centralized banks
+and clearing houses. On January 3, 2009, the ﬁrst block was established on the
+Bitcoin blockchain by Nakamoto. On October 5, 2009, New Liberty Standard
+established the ﬁrst exchange rates of Bitcoin (BTC) at 1309.03 for 1 USD, or
+$0.00076 per BTC. 9 By April 23, 2011, Bitcoin exceeded parity with the USD,
+euro, and British pound, with the market cap passing 10 million USD, and by
+March 28, 2013, Bitcoin market cap passed 1 billion USD.
+Mt. Gox, a leading exchange that by 2013 was handling approximately 70% of
+Bitcoin volume, declared bankruptcy due to a mysterious “hack” of the exchange
+which resulted in approximately $450 million worth of Bitcoin missing from
+investors’ accounts. Good reasons have been put forward as to why the “hack”
+may have been an inside job (Nilsson ( 2015)). Gandal et al. ( 2018) argues that
+fraudulent trading on the Mt. Gox exchange led to a signiﬁcant spike in Bitcoin
+prices in late 2013. 10 Foley , Karlsen, and Putni ņˇs( 2019) detail hubs of illicit
+commerce in Bitcoin and estimate that 44% of transactions are associated with
+illegal activity .
+9 Most of these facts are available in multiple places, but an account of the ﬁrst ﬁve years of
+Bitcoin can be found at http://historyofbitcoin.org and in Lee ( 2014).
+10 In the second-biggest hack in Bitcoin history , on August 2, 2016, the Bitﬁnex exchange an-
+nounced that $72 million had been stolen from investor accounts, leading Bitcoin to plummet 20%
+in value.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 9 =====
+
+Is Bitcoin Really Untethered? 1921
+C. Brief History of Tether
+The objective of Tether is to facilitate transactions between cryptocurrency
+exchanges with a rate pegged to the USD. While this could also occur with
+ﬁat transactions, Tether is advantageous because many cryptoexchanges have
+difﬁculty securing banking relationships. Tether Limited, the issuer of Tether,
+historically claimed that “Tether Platform currencies are 100% backed by actual
+ﬁat currency assets in our reserve account.” 11 However, Tether itself created
+ambiguity around this backing by later noting that they do not guarantee
+redemption rights.12
+The Bitﬁnex exchange started in 2012, but experienced rapid growth and
+now claims to be “the world’s largest and most advanced cryptocurrency trading
+platform.” The Paradise Papers leaks in November 2017 named the Bitﬁnex
+exchange ofﬁcials, Philip Potter and Giancarlo Devasini, responsible for setting
+up Tether Holdings Limited in the British Virgin Islands in 2014. 13
+Figure 2, Panel A, shows the cumulative authorization of Tether denomi-
+nated in both USD and Bitcoin as well as Bitcoin prices. The ﬁrst Tether was
+authorized on October 6, 2014, but the market cap was only $25 million as of
+March 6, 2017. Between March 7, 2017 and January 2018, however, more than
+$2.2 billion worth of Tether was issued.
+Panel B of Figure 2 shows transactions of major cryptocurrencies in USD as
+compared to Tether, aggregated across all cryptocurrency exchanges available
+on CoinAPI. Although cryptocurrencies were historically denominated in dol-
+lars or yuan, a large share of Bitcoin and many other cryptocurrencies transac-
+tions are denominated in Tether as of 2017. Additionally , even after closely
+examining Bitﬁnex public statements, it is unclear as to whether Bitﬁnex
+transactions are denominated in dollar or Tether. Prices quoted on Bitﬁnex
+are signiﬁcantly closer to prices on Tether exchanges than USD exchanges. 14
+Hence, we term Bitﬁnex transactions as well as those explicitly denominated
+in Tether as Tether-related.
+Many in the blogosphere as well as the mainstream press began to raise
+questions about Tether in the second half of 2017. 15 In April 2017, Tether
+lost its banking relationship with a Taiwanese bank linked to Wells Fargo.
+Since then, Tether has issued over $2 billion Tether without fully disclosing
+banking details. This could be due to not wanting to subject their bank to
+public scrutiny and risk losing their new banking relationship, as many large
+banks avoid the scrutiny associated with crypto-related deposits either because
+11 See https://tether.to/faqs/.
+12 “There is no contractual right or other right or legal claim against us to redeem or exchange
+your Tethers for money . We do not guarantee any right of redemption or exchange of Tethers by us
+for money” (Leising ( 2017)).
+13 See Popper ( 2017).
+14 The percentage deviation of hourly prices between Bitﬁnex and Poloniex and Bittrex are 19
+and 42 basis points, while the deviation is 103, 56, and 111 basis points for Bitstamp, Gemini, and
+Kraken, respectively .
+15 See Leising ( 2017), Kaminska ( 2017), and Popper ( 2017).
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 10 =====
+
+1922 The Journal of Finance R⃝
+Figure 2. Tether authorization and Bitcoin price over time, and trade volume in both
+dollars and Tether. Panel A plots the cumulative authorization of Tether and the price of Bitcoin
+over time. The red dashed line shows cumulative authorization in millions of Tether tokens. The
+black dashed line shows Tether cumulative authorization denominated in contemporaneous Bitcoin
+price. The blue line shows the Bitcoin price. Authorizations are deﬁned as transactions with
+transaction type “Grant Property Tokens” on Tether blockchain. Panel B shows the percentage of
+trade volume of USD and Tether for major cryptocurrencies between March 1, 2017 and March 31,
+2018 aggregated over all exchanges. The major currencies include the 15 largest cryptocurrencies
+and tokens by aggregate trade volume across exchanges reported in CoinAPI data over the same
+period. The blue bars show the percentage of volume traded against USD, the red bars show the
+percentage against Tether, and the gray bars show the percentage against USD/Tether on the
+Bitﬁnex exchange. (Color ﬁgure can be viewed at wileyonlinelibrary .com)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 11 =====
+
+Is Bitcoin Really Untethered? 1923
+of perceived reputation tainting or because of the need to comply with anti-
+money laundering (AML) or “know your customer” (KYC) banking regulations.
+Tether hired a consultant that released an internal memo showing reserves on
+September 15, 2017.
+Immediately after the ﬁrst draft of this paper, a law ﬁrm released a report on
+the sufﬁciency of Tether reserves in June 2018. 16 On February 25, 2019, Tether
+changed their deﬁnition of Tether backing to read “traditional currency and
+cash equivalents.” In response to legal motions, on April 30, 2019, Bitﬁnex’s
+former General Counsel admitted that Tether does not have cash reserves equal
+to 100% of the outstanding Tethers. In a May 15, 2019 court hearing, a Bitﬁnex
+attorney also admitted that Tether invested in instruments beyond cash, in-
+cluding Bitcoin, something clearly at odds with Tether’s longstanding claims.
+Bloggers have also conjectured about whether Tether authorizations are fuel-
+ing Bitcoin.17 One website, tetherreport.com, ﬁnds positive return effects after
+incidences of Tether authorizations. 18 Analysis by Wei ( 2018), however, ﬁnds
+no price effect at the time of Tether authorizations.
+D. Main Hypotheses
+This section examines two main alternative “pulled” versus “pushed” hy-
+potheses19 about Tether. Under the ﬁrst hypothesis, Tether is “pulled” or driven
+by legitimate demand from investors who use Tether as a medium of exchange
+to enter their ﬁat capital into the cryptospace. In this case, the price impact of
+Tether reﬂects natural market demand. Under the second hypothesis, Tether
+is “pushed” through a supply-driven scheme whereby an unbacked digital dol-
+lar is printed and used to purchase Bitcoin. In this case, additional supply of
+Tether can create inﬂation in the price of Bitcoin and other cryptocurrencies
+that is not due to a genuine capital ﬂow.
+Related to the “pulled” hypothesis, we ﬁrst predict that Tether is driven by in-
+vestor demand and is always fully backed by USD (as with a full-reserve bank).
+16 Tether Limited has also released EOM snapshot bank statements showing reserves at the
+EOM. Tether has not to our knowledge released a full audit, which is important since snapshot
+reports showing cash in a bank balance on a certain date could reﬂect borrowed funds or funds from
+related entities. Tether is closely related to Bitﬁnex, which has also not been audited, according to
+public sources.
+17 See Higgins ( 2018) and Leising ( 2017).
+18 The website shows that after 91 hourly events of Tether being granted and moved to Bitﬁnex,
+the Bitcoin return increases over the next two hours. They compound the return for those 182
+hours (91 two-hour periods) and derive a compounded effect of 48.8%, then compare this effect to
+6.5% average compounded returns for the same time period during normal times. The results are
+incorrectly interpreted as “Tether could account for nearly half of Bitcoin’s price rise” or “a rough
+estimate of 40% price growth attributed to Tether.” Indeed, Bitcoin prices increased by 1,422%
+(from $893.19 to $13,592.93) over their period of study . Interestingly , we ﬁnd that the hours
+directly following Tether authorization are often not when the Bitcoin buying activity actually
+occurs.
+19 There is a literature in international ﬁnance examining whether capital ﬂows are pushed or
+pulled across markets (Froot, O’connell, and Seasholes ( 2001), Grifﬁn, Nardari, and Stulz ( 2007)).
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 12 =====
+
+1924 The Journal of Finance R⃝
+A currency that can provide a stable store of value, support quick transactions,
+and potentially allow cryptocurrency exchanges to skirt banking regulations
+required for traditional deposits has an intuitive appeal. If an increase in de-
+mand is driven by new investors who hold dollars and wish to convert their
+dollars to Tether and then into cryptocurrencies, the increase in demand may
+result in a higher market rate for Tether. A lower price for Tether would thus
+be a consequence of weak demand for Tether, while a higher price (perhaps at
+or above one dollar) would be a consequence of strong Tether demand.
+H1A: Tether’s price relative to the USD may increase as a consequence of
+strong investor demand. Tether ﬂows should be strongly related to this
+demand as proxied by changes in the Tether-USD exchange rate.
+H1B: The printing of Tether may also be driven by its usefulness as a fa-
+cilitator of cross-exchange arbitrage to eliminate pricing discrepancies
+across cryptocurrency exchanges. For example, Tether outﬂows from
+Bitﬁnex to another exchange should correspond to periods when Bit-
+coin sells at a premium on Bitﬁnex relative to that exchange. 20
+The main alternative hypothesis is that Tether is printed independent of
+demand and pushed onto the market. The issuers can print Tether and convert
+it into more widely accepted cryptocurrencies such as Bitcoin. In addition to
+issuance fees, transaction fees, and interest earned from trading in Tether,
+other possible beneﬁts of “pushing” Tether could be as follows.
+First, like an inﬂationary effect of printing money , issuing Tether increases
+the money supply in the cryptospace and can signiﬁcantly push cryptocurrency
+prices up by generating artiﬁcial demand. Since most cryptocurrency exchanges
+and early movers are long in Bitcoin and other cryptocurrencies, they would
+generally beneﬁt. For instance, if Bitcoin prices increase, the founders can cash
+out the acquired Bitcoins into dollars, likely at a slower pace and on an opaque
+channel that has less price impact than their initial buying behavior. If the
+Tether issuers wish to legitimize Tether and avoid scrutiny , they can slowly
+convert some of their cryptocurrencies to USD and retroactively provide either
+full or partial dollar reserves for Tether.
+Second, since Tether issuances are large, if traded strategically , Tether could
+have further price impact and lead to further manipulation of Bitcoin prices.
+For instance, the issuers can stabilize and/or set regionalized price ﬂoors and
+push the price of Bitcoin and other cryptocurrencies upward.
+Third, the Tether issuers create a valuable put option in the case of a future
+cryptomarket downturn or other losses. In particular, the founders of Tether
+have an option to not redeem Tether to dollars, and possibly experience an in-
+side “hack” (McLannahan (2015)) when Tethers and/or their associated dollars
+suddenly disappear.
+20 This hypothesis is also consistent with the supply-driven view as unbacked money printing of
+Tether could cause Bitcoin to sell at a premium on Bitﬁnex relative to the other exchanges before
+Tether moves to those exchanges.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 13 =====
+
+Is Bitcoin Really Untethered? 1925
+The key to the “pushed” hypothesis is that the Tether-USD price does not
+collapse. This can be accomplished by creating a limited set of venues to redeem
+Tether, sending signals to investors through periodic accounting reports, and
+creating Tether price support.
+To examine the “push” hypothesis, we test the following predictions:
+H2A: If Tether issuers are trying to provide stability to the market during
+downturns, outﬂows of Tether and purchases of Bitcoin by Bitﬁnex
+may follow periods of negative Bitcoin returns.
+H2B: If Tether supply is large enough to have a material price impact on
+Bitcoin, Bitcoin prices should go up after Tether ﬂows into the market,
+especially after periods with large authorization of Tether.
+H2C: Bitcoin returns may show a return reversal after negative returns,
+especially during times when Tether ﬂows into the market.
+H2D: Since round-number thresholds can be price anchors to set a price ﬂoor
+and are often used as buying signals by investors, ﬂow of Tether might
+increase if Bitcoin falls below these salient round-number thresholds.
+This effect should be more pronounced in periods with large Tether
+authorization.
+H2E: If Tether is not fully backed by dollars at the outset, but the issuers
+want to signal otherwise to investors by releasing EOM (or other in-
+terval) accounting statements, then Tether creators may liquidate Bit-
+coins into USD to demonstrate sufﬁcient reserves. This could create
+negative returns in Bitcoin at the EOM, particularly in periods with
+large Tether issuances.
+While the above hypotheses need not all follow from the pulled hypothesis,
+H2A through H2D shed light on whether the ﬂow of Tether into the market
+is consistent with creating price support and inﬂating Bitcoin prices, and H2E
+sheds light on whether the potential price impact is due to unbacked printing
+of Tether, which can have an inﬂationary effect on Bitcoin. In the next section,
+we discuss the data and empirical methods used to test these hypotheses.
+II. Data, Algorithms, and Flows between Major Accounts
+A. Data
+The price and the blockchain data obtained for this study amount to
+over 200 GB from more than 10 sources, with CoinAPI, Coinmarketcap.com,
+Blockchain.info, Omniexplorer .info,a n dCoinDesk as our main sources. The in-
+traday pricing data on major cryptocurrencies come from CoinAPI. The starting
+date varies for different currencies. The sample covers 25 months from March
+2016 to March 2018, but the main tests are implemented after March 2017,
+when Tether experienced a large issuance. 21
+21 Daily prices are based on Coordinated Universal Time (UTC) time, and the close and open
+prices are calculated based on a 24-hour daily cycle that ends at midnight UTC. Daily prices of
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 14 =====
+
+1926 The Journal of Finance R⃝
+Bitcoin blockchain data are obtained from Blockchain.info and cover the pe-
+riod from Bitcoin initiation in January 2009 to March 2018. The blockchain
+data contain the entire history of Bitcoin transactions between Bitcoin wallets
+and include variables such as wallet IDs of senders and recipients as a string of
+34 characters and numbers, amount of coins transferred, timestamp, transac-
+tion ID, and previous transaction ID where the coin was received by the sender
+of each new transaction. Over the October 2014 to March 2018 period, Tether
+is issued via the Omni Layer Protocol based on the Bitcoin blockchain, and
+Tether blockchain data are from Omniexplorer .info.
+To assign identities of grouped wallets to Tether-related exchanges on the
+Bitcoin blockchain, the addresses of a number of wallets belonging to Tether
+exchanges are collected from public forums and individual investors who trans-
+ferred Bitcoin to these exchanges.22 For the Tether blockchain, wallet identities
+of major exchanges are manually collected from the Tether rich list on tether.to
+at all snapshots available on Internet Archive.
+Tether exchanges account for a large portion of cryptocurrencies’ trading
+volume over our sample period. Table I, Panel A, shows the total trading volume
+on major exchanges of major cryptocurrencies from March 1, 2017 to March
+31, 2018. Tether-based exchanges are marked with a “*.” Some exchanges,
+including Gemini and Coinbase, specialize in a limited number of major coins
+such as Bitcoin and Ethereum. Others, especially the Tether-related exchanges,
+feature a large number of coins. Bitﬁnex has the largest volume, both for Bitcoin
+and across all major cryptocurrencies. Other Tether exchanges also play an
+important role among the top 10 exchanges in terms of aggregate volume.
+As shown in Panel B of Figure 2, a large share of major cryptocurrencies’
+transactions are denominated in Tether.
+Panel B of Table I shows the cross-sectional correlation of cryptocurren-
+cies’ daily returns. Not surprisingly , the daily returns are positively correlated
+across all of the coins, but there is variation across different cryptocurrencies.
+For example, Bitcoin’s correlation with Ethereum, Ripple, and Litecoin are
+0.44, 0.20, and 0.45, respectively .
+Panel C of Table I reports the autocorrelation of cryptocurrencies at vari-
+ous frequencies. The autocorrelations are generally negative. For example, a
+1% change in lagged one-hour Bitcoin prices is followed by a 6 basis point
+reversal in the next hour. The reversal is 6 and 5 basis points at three- and
+ﬁve-hour intervals.
+various coins are obtained from Coinmarketcap.com, which calculates the price of each coin by
+taking the volume-weighted average of prices reported at different exchanges. We also use the
+intraday CoinDesk price index, which aggregates prices across major markets. Hourly and ﬁve-
+minute returns are calculated from the last trade within each minute. Missing prices are carried
+forward for nontrading periods of up to ﬁve minutes. Prices are assumed to be missing if stale for
+more than ﬁve minutes.
+22 The Internet Appendix Section II includes the list of representative addresses that can be
+used to assign identities of major exchanges. The Internet Appendix is available in the online
+version of this article on The Journal of Finance website.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 15 =====
+
+Is Bitcoin Really Untethered? 1927
+Table I
+Summary Statistics
+This table summarizes the trading volume and pricing information of major cryptocurrencies on major exchanges. The major cryptocurrencies are the
+15 coins and tokens with the highest aggregate volume in USD and Tether across exchanges reported in CoinAPI between March 1, 2017 and March
+31, 2018, and the top exchanges are those with the highest aggregate volume for these major cryptocurrencies. Panel A shows the total volume for
+each cryptocurrency on each exchange in billions of dollars from March 1, 2017 to March 31, 2018 using data from CoinAPI. Tether-based exchanges
+are indicated with a star. Panel B shows the daily return correlation between major cryptocurrencies. The daily pricing data are from CoinMarketCap.
+Panel C reports the autocorrelations of the major cryptocurrencies at one-hour, three-hour, and ﬁve-hour intervals using price data from the most
+liquid exchange for each altcoin between March 1, 2017 and March 31, 2018. The three-hour and ﬁve-hour autocorrelations are calculated using
+hourly returns rolled over three-hour and ﬁve-hour windows. Standard errors are adjusted for heteroskedasticity and autocorrelation. The intrada y
+pricing data are from CoinAPI.
+Panel A: Total Volume ($B)
+Binance* Bitﬁnex* Bitstamp Bittrex * Coinbase Gemini Huobi * Kraken* OKEx* Poloniex*
+BCC 0.81 0.01 – 1.68 – – – – – –
+BCH 0.81 18.83 0.66 – 2.96 – 1.52 1.99 2.47 3.06
+BNB 2.69 – – – – – – – – –
+BTC 32.78 120.79 36.20 11.52 53.09 16.50 8.10 17.10 6.86 14.64
+DASH – 1.88 – 0.26 – – 0.99 0.34 0.03 0.55
+EOS – 8.12 – – – – 2.36 0.07 0.29 –
+ETC – 5.59 – 0.60 – – 0.92 0.96 1.30 1.36
+ETH 10.19 35.40 5.44 2.50 32.46 7.77 3.11 14.54 3.08 4.91
+IOTA – 2.51 – – – – – – 0.06 –
+LTC 2.69 13.13 2.44 1.02 24.51 – 1.10 1.80 2.78 2.48
+NEO 3.88 4.54 – 1.46 – – 0.24 – 0.18 –
+OMG – 3.77 – 0.49 – – 0.21 – 0.01 –
+XMR – 2.84 – 0.30 – – – 0.77 0.00 0.60
+XRP – 17.11 7.41 1.86 – – 1.46 3.28 0.26 2.87
+ZEC – 2.35 – 0.33 – – 0.32 0.39 0.01 0.70
+(Continued)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 16 =====
+
+1928 The Journal of Finance R⃝
+Table I—Continued
+Panel B: Correlations
+BCC BCH BNB BTC DASH EOS ETC ETH IOTA LTC NEO OMG XMR XRP
+BCH 0.17
+BNB 0.31 0.21
+BTC 0.47 0.24 0.46
+DASH 0.28 0.42 0.20 0.39
+EOS 0.19 0.34 0.28 0.35 0.30
+ETC 0.25 0.42 0.28 0.42 0.36 0.38
+ETH 0.30 0.40 0.37 0.44 0.44 0.45 0.61
+IOTA 0.29 0.25 0.35 0.48 0.42 0.32 0.54 0.53
+LTC 0.24 0.31 0.34 0.45 0.36 0.35 0.50 0.42 0.43
+NEO 0.16 0.25 0.43 0.30 0.31 0.29 0.43 0.34 0.31 0.31
+OMG 0.26 0.17 0.42 0.41 0.40 0.41 0.45 0.60 0.47 0.41 0.60
+XMR 0.26 0.35 0.26 0.49 0.55 0.34 0.43 0.52 0.54 0.42 0.24 0.40
+XRP 0.15 0.24 0.17 0.20 0.10 0.29 0.17 0.19 0.30 0.26 0.12 0.32 0.23
+ZEC 0.22 0.41 0.34 0.38 0.58 0.42 0.49 0.52 0.54 0.36 0.34 0.45 0.54 0.27
+(Continued)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 17 =====
+
+Is Bitcoin Really Untethered? 1929
+Table I—Continued
+Panel C: Autocorrelations
+One-HourInterval Three-Hour Interval Five-Hour Interval
+Coin Coefﬁcient t-Stat Coefﬁcient t-Stat Coefﬁcient t-Stat
+BCC −0.127 −3.960 −0.166 −6.412 −0.260 −6.800
+BCH −0.039 −1.459 −0.033 −1.136 −0.064 −1.870
+BNB −0.000 −0.827 0.002 1.476 0.004 3.850
+BTC −0.063 −4.089 −0.072 −4.414 −0.062 −2.985
+DASH −0.073 −4.124 −0.052 −2.822 −0.065 −3.540
+EOS −0.075 −2.448 −0.052 −1.376 −0.072 −1.300
+ETC −0.054 −3.182 −0.071 −3.807 −0.031 −1.383
+ETH −0.053 −3.069 −0.043 −2.154 −0.042 −1.780
+IOTA −0.202 −6.775 −0.241 −6.820 −0.224 −6.022
+LTC −0.009 −0.341 −0.047 −1.356 −0.018 −0.476
+NEO −0.081 −3.657 −0.064 −2.341 −0.069 −2.263
+OMG −0.068 −3.745 −0.039 −1.677 −0.039 −1.319
+XMR −0.075 −3.243 −0.067 −3.391 −0.066 −2.877
+XRP −0.104 −3.348 −0.042 −1.374 0.049 1.035
+ZEC −0.077 −3.782 −0.063 −2.446 −0.098 −3.387
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 18 =====
+
+1930 The Journal of Finance R⃝
+B. Analyzing Bitcoin Blockchain
+The Bitcoin blockchain up to March 31, 2018 is a 170 GB network database
+of more than 360 million wallet addresses and billions of transactions. It is
+common for each entity to have multiple wallet addresses, and transactions
+with multiple senders and recipients are frequent. 23 The complexity of the
+data is illustrated in Internet Appendix Figure IA.1, which depicts a 10-minute
+random sample of the blockchain in 2017. In the ﬁgure, each node represents
+a wallet address, and each edge shows the ﬂow of coins.
+To reduce the complexity of the network, we adopt methods from the com-
+puter science literature (Androulaki et al. ( 2013), Meiklejohn et al. (2013), Reid
+and Harrigan ( 2013), Ron and Shamir ( 2013)) to cluster-related Bitcoin wal-
+lets. The idea is that when multiple addresses are used as inputs to a single
+transaction, the entity controlling each of the inputs must have the private
+signing keys of all other inputs. It is therefore very likely that all such ad-
+dresses are controlled by the same entity . For example, if wallets A and B
+appear as inputs in a single transaction, and wallets B and C appear as inputs
+in a different transaction, we group wallets A, B, and C together. We ﬁnd con-
+nected components of this “same-input” relation throughout the entire Bitcoin
+blockchain and consider each component as a group of wallets controlled by the
+same entity . We then take three more steps. First, if a transaction has multiple
+recipients, the ﬂow from the sender is allocated proportionally by the number
+of coins received by each recipient. Second, for each transaction, we exclude
+the portion of coins that have the same input and output wallets. Finally , we
+exclude the transaction fees as reﬂected in the difference between total Bit-
+coin sent and received in one transaction. The clustered group of wallets that
+contain exchange addresses are assigned to the identiﬁed exchanges. Between
+March 1, 2017 and March 31, 2018, a group of approximately 640,000 wallets
+are labeled as Bitﬁnex, 720,000 wallets as Poloniex, and 1.22 million wallets
+as Bittrex.
+Figure 3 shows the ﬂows on the Bitcoin blockchain. First, one can see that the
+Bitcoin blockchain has many more major players than the Tether blockchain,
+and we do not ﬁnd identifying information for all nodes. Second, Bitﬁnex,
+Poloniex, and Bittrex are considerable players on the Bitcoin blockchain in
+terms of the aggregate ﬂow of coins, and there is a reasonable ﬂow volume be-
+tween these exchanges. Third, there are substantial ﬂows between Bitﬁnex and
+transitory addresses,24 which we deﬁne as wallets with four or fewer transac-
+tions on the blockchain and zero net balance, and with the Bitﬁnex cold wallet.
+23 Internet Appendix Table IA.I shows an example of a Bitcoin transaction on the blockchain
+with 313 senders and 218 recipients. Addresses on the left column are senders of the Bitcoins and
+addresses on the right are the recipients.
+24 Transitory addresses may be tumblers or mixer wallets used to further mask Bitcoin transfer
+activities.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 19 =====
+
+Is Bitcoin Really Untethered? 1931
+Figure 3. Aggregate ﬂow of Bitcoin between major addresses .T h i sﬁ g u r es h o w st h ea g -
+gregate ﬂow of Bitcoin between major exchanges and market participants from March 1, 2017 to
+March 31, 2018. Groups of addresses are clustered by ﬁnding the connected component of the same
+input relation on the Bitcoin blockchain, and each group is labeled with identities of members
+obtained from publicly available information and individual investors. The thickness of the edges
+is proportional to the magnitude of ﬂow between two nodes, and the node size is proportional to
+aggregate inﬂow and outﬂow of each node. Intranode ﬂows are excluded. The direction of the ﬂow
+is shown by the curvature of the edges, with Bitcoin moving clockwise from a sender to a recipient.
+(Color ﬁgure can be viewed at wileyonlinelibrary .com)
+C. Analyzing Tether Blockchain
+As previously described, Figure 1 provides insights into the structure of the
+Tether network. First, almost all Tether printed by Tether Limited (the red
+node in the bottom of the graph) is ﬁrst moved to Bitﬁnex and then distributed
+through the network. The transfer of Tether from Tether authorizer (account
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 20 =====
+
+1932 The Journal of Finance R⃝
+labeled as 3MbY) to Tether treasuries (1NTM and 3BbD), all colored in red,
+is referred to as “authorization,” and the transfer out of Tether treasuries,
+primarily to Bitﬁnex, is referred to as “issuance.” Note that barely any ﬂows
+move back to the initial Tether printing node, consistent with individuals stat-
+ing that it is not feasible to move Tether back to Tether Limited to redeem
+for USD. Second, Poloniex and Bittrex, the largest Tether exchanges for most
+of 2017, are closely tied to Bitﬁnex through a large ﬂow of Tether using an
+intermediary address. Third, Kraken, the small yellow node at the top of the
+graph, was the only ofﬁcial marketplace for trading the USD-Tether pair for
+the majority of 2017. Fourth, most of the Tether ﬂows to and from Bitﬁnex are
+through Bittrex and Poloniex. Throughout the paper, we focus on the timing
+and amount of Tether ﬂow from Bitﬁnex to these two major exchanges because
+as we will show, this is the primary channel through which Tether is converted
+to Bitcoin; however, we also examine ﬂows to other exchanges. To calculate the
+ﬂows between exchanges, we consider the intermediary wallets that receive
+Tether from Bitﬁnex and transfer them all to the same exchange as addresses
+belonging to that exchange.
+Note that since the ﬁgure is proportional to the size of the ﬂows, the graph
+puts substantial emphasis on the end of 2017 and early 2018, when Tether
+issuance increased rapidly . For this reason, in Internet Appendix Figure IA.2,
+we display four snapshots of the Tether ﬂows over time. For the majority of
+2017, Bitﬁnex, Poloniex, and Bittrex were by far the largest players in the
+market. Binance, Huobi, OKEx, and Kraken gained substantial market share
+in December 2017.
+The ﬂow of Tether from Bitﬁnex to the other exchanges increases on the day
+of Tether authorization, but it takes as many as three to four days to move the
+capital out of Bitﬁnex to the other exchanges. 25 It is the net ﬂow of Tether out
+of Bitﬁnex to Poloniex and Bittrex and the net ﬂow of Bitcoin back that we use
+in our tests.
+D. Bitcoin and Tether Net Flows
+Flows between two parties on the blockchain are more formally deﬁned as the
+signed net amount of capital transferred between those parties. Speciﬁcally , our
+tests require the ﬂow of coins between major Tether exchanges, Bitﬁnex (BFX),
+Poloniex (PLX), and Bittrex (BTX), during our sample period. For Bitcoin, we
+simply aggregate the net amount of coins transferred between these exchanges
+25 We show this formally in a V AR model in Internet Appendix Figure IA.3. Examples are shown
+in Internet Appendix Figure IA.4.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 21 =====
+
+Is Bitcoin Really Untethered? 1933
+in each period:
+NetBTCFlowt =
+( t∑
+t−1
+BTCPLX→BFX −
+t∑
+t−1
+BTCBFX→PLX
+)
++
+( t∑
+t−1
+BTCBTX→BF X −
+t∑
+t−1
+BT CBF X→BT X
+)
+, (1)
+where BT Ci→ j is the amount of coins transferred from group of wallets i to
+group of wallets j between hours t − 1a n d t. For Tether, to measure the value
+relative to Bitcoin prices, we accumulate the Bitcoin-denominated value of
+Tether using Bitcoin prices at the time of the transaction. Similar to the ﬂow
+of Bitcoin, we deﬁne the net ﬂow of Tether as
+NetTetherFlowt =
+( t∑
+t−1
+TetherBF X→PL X −
+t∑
+t−1
+TetherPL X→BF X
+)
++
+( t∑
+t−1
+TetherBF X→BT X −
+t∑
+t−1
+TetherBT X→BF X
+)
+, (2)
+where Tetheri→ j is the amount of coins transferred from exchange i to exchange
+j between hours t − 1a n d t.
+We also verify that ﬂows identiﬁed on the Tether blockchain moving from
+Bitﬁnex and to Poloniex and Bittrex correspond to opposite ﬂows back on the
+Bitcoin blockchain that come out of Poloniex and Bittrex and into Bitﬁnex.
+Internet Appendix Figure IA.5 shows that the two series have a correlation of
+0.72 for Poloniex and 0.71 for Bittrex at daily intervals, and that they also have
+similar magnitudes. The Bitcoin ﬂow between other exchanges, even between
+other Tether-based exchanges and Bitﬁnex, have much lower correlations with
+the Tether ﬂow to Poloniex and Bittrex and a much larger difference in mag-
+nitude. We also ﬁnd a strong relation between inﬂow of Tether to Poloniex
+and Bittrex in the blockchain data and reported exchange trading volume on
+Poloniex and Bittrex that is not present in a placebo test for other Tether-
+related exchanges.26
+The magnitude of the ﬂow of coins on the two blockchains matches closely ,
+and the correlation between the two ﬂows is high, but the timing is not per-
+fectly matched given different delays in moving coins to exchanges and clearing
+transactions on the blockchain. Given that the timing of blockchain transac-
+tions is a proxy for the actual capital ﬂows, and to reduce noise in our measure
+of net ﬂows of Tether out of Bitﬁnex and net ﬂows of Bitcoin coming back, we
+average the two ﬂows on the Bitcoin and Tether blockchains:
+Tether/BitcoinFlow = (NetTetherFlowt + NetBTCFlowt)/2. (3)
+26 Details on our veriﬁcation method and the results are provided in the Internet Appendix
+Section I.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 22 =====
+
+1934 The Journal of Finance R⃝
+After printing, Tether is used to purchase Bitcoin primarily on Poloniex
+and Bittrex. We examine if the sensitivity of ﬂow of Tether to Bitcoin returns
+is symmetric in response to positive and negative shocks. Tether is used to
+purchase Bitcoin when returns are negative, but we do not ﬁnd considerable
+Tether ﬂows following price increases (see Internet Appendix Figure IA.6 and
+Table IA.II).
+E. Detailed Deposit Accounts
+We drill down on the nature of the Tether ﬂows out of Bitﬁnex and the corre-
+sponding Bitcoin ﬂows back by focusing on the exact deposit addresses used to
+move these coins. Typically , to electronically detect which user has deposited
+funds and to credit these funds to their account, each exchange user receives
+her own unique deposit wallet address. Interestingly , Panel A of Figure4 shows
+that 81% of the Tether ﬂows from Bitﬁnex to Poloniex and Bittrex are through
+one large deposit address for each exchange. This account is responsible for
+47% of all Tether ﬂows from Bitﬁnex to all Tether exchanges combined. The
+ﬁrst four digits of these addresses are shown as 1J1d for Poloniex and 1AA6
+for Bittrex in the ﬁgure. Additionally , 52% of the Bitcoin ﬂows back to Bitﬁnex
+from all Tether exchanges goes to a single deposit address on Bitﬁnex, which
+we label with its ﬁrst four digits on the Bitcoin blockchain, 1LSg. The relation
+is depicted in Internet Appendix Figure IA.7, which shows how Bitﬁnex sends
+Tether out on the Tether blockchain through 1J1d and 1AA6 and receives ﬂows
+back from 1MZA. On the Bitcoin blockchain, a majority of the Bitcoin deposits
+from Poloniex and Bittrex to Bitﬁnex go through 1LSg, and the ﬂows back to
+Poloniex and Bittrex go through 1DEc and 1PCw.
+If the Tether ﬂows to 1J1d and 1AA6 on the Tether blockchain correspond to
+Bitcoin ﬂows to 1LSg on the Bitcoin blockchain, this would suggest that all of
+these wallets are likely controlled by the same entity , which sends the printed
+Tether into the market in exchange for Bitcoin. To examine this, we compare
+the Tether ﬂows from Bitﬁnex to 1J1d and 1AA6 on Poloniex and Bittrex to the
+Bitcoin ﬂow from Poloniex and Bittrex to the top-100 largest Bitcoin addresses
+on Bitﬁnex, including 1LSg. The correlation of Bitcoin ﬂows from Bittrex to
+1LSg with Tether ﬂows from Bitﬁnex to 1AA6 on Bittrex is 0.69. The correlation
+is 0.64 for 1J1d on Poloniex. Flows to other large deposit accounts on Bitﬁnex
+do not come close in terms of the correlation or the magnitude of ﬂows. Internet
+Appendix Section I (and Figures IA.8 and IA.9) provides more details on the
+procedure used to identify these wallet addresses that move Tether and Bitcoin
+between Bitﬁnex, Poloniex, and Bittrex and verify their relation. Analogous
+to our ﬂow calculations in equations ( 1)t o( 3), we calculate the average net
+Tether/Bitcoin ﬂows to these large, closely tied wallets and label them as “1LSg
+ﬂows” throughout the paper. We also compare the effect of ﬂows that are not
+part of this group of wallets.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 23 =====
+
+Is Bitcoin Really Untethered? 1935
+Figure 4. Top accounts associated with the ﬂow of Tether from and Bitcoin to Bitﬁnex .
+Panel A shows the largest recipients of Tether from Bitﬁnex recorded on Tether blockchain between
+March 1, 2017 to March 31, 2018. Exchange wallet identities are obtained from the Tether rich list.
+Moreover, intermediary wallets that receive Tether from Bitﬁnex but send all Tether to wallets of
+a particular exchange are labeled as that exchange. Exchanges are distinguished by colors, and
+the partitions show unique wallets within each exchange. The two largest recipients of Tether
+from Bitﬁnex on Bittrex and Poloniex are labeled by the ﬁrst four characters of their wallet ID as
+1AA6 and 1J1d. Panel B shows the top recipients of Bitcoin on the Bitﬁnex exchange from other
+exchanges between March 1, 2017 to March 31, 2018. The largest recipient of Bitcoin on Bitﬁnex
+is labeled by the ﬁrst four characters of its wallet ID as 1LSg. (Color ﬁgure can be viewed at
+wileyonlinelibrary .com)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 24 =====
+
+1936 The Journal of Finance R⃝
+III. Are Bitcoin Prices Related to Tether?
+In this section, we focus on the nature of the relationship between Bitcoin
+prices and Tether, and we discuss how this relationship is connected to our
+main hypotheses.
+A. Examining Flows and Bitcoin Prices
+Since demand curves for ﬁnancial securities are typically not ﬂat, demand
+or supply shocks can have large effects on prices even in the absence of fun-
+damental information (Harris and Gurel ( 1986), Shleifer ( 1986), Greenwood
+(2005)), and may persist for surprisingly long periods of time (Dufﬁe ( 2010)).
+One should expect this effect to be stronger for cryptocurrencies because, ﬁrst,
+there are no fundamental cash ﬂows from which prices are derived, and sec-
+ond, the supply of coins is often ﬁxed. In particular, if Tether issuances are
+sizable, Bitcoin prices should be affected by movements of Tether into the mar-
+ket. Moreover, as hypothesized in H2B, if Tether is being used to protect and
+inﬂate the market, the effect of Tether transactions on Bitcoin prices should be
+stronger following negative Bitcoin returns and on days after printing.
+We estimate a regression of rolling three-hour average Bitcoin returns on
+lagged average net hourly ﬂow of Tether from Bitﬁnex to Poloniex and Bittrex
+and of Bitcoin back to Bitﬁnex. We use the average three-hour Bitcoin returns
+as our dependent variable, as the effect of ﬂows might not be incorporated into
+exchange prices immediately . The traceable ﬂows on the blockchains indicate
+when capital moves to the exchanges, not necessarily when the transactions
+occur within the exchange. We expect the ﬂow of Tether to an exchange to
+precede the time when the Tether is used to purchase Bitcoin. 27 For controls,
+we include past returns to account for the effects of potential return reversals
+(Lehmann ( 1990)), daily volatility of hourly returns in the previous 24 hours
+to account for possible relations between returns and volatility , and lagged
+returns interacted with volatility to account for the potential of larger return
+reversals during periods of high volatility (Nagel ( 2012)).
+Column (1) of Table II, Panel A, shows that on days right after Tether print-
+ing, for a 100 Bitcoin increase in lagged ﬂow, the three-hour average future
+Bitcoin return goes up by 3.85 basis points, controlling for lagged returns,
+volatility , and the interaction of lagged returns and volatility . Column (2) shows
+that the effect exists only on days following Tether authorization, with no re-
+lationship between the ﬂow of Tether and Bitcoin prices on days apart from
+printing Tether, consistent with the supply-driven price impact of hypothesis
+H2B. Moreover, columns (3) and (4) show that the effect exists only after a
+negative shock to Bitcoin prices. Finally , column (5) shows that the effect is
+even stronger with a 8.13 basis point increase in returns when conditioning on
+both Tether authorization and a lagged negative return.
+27 The standard errors are adjusted for heteroskedasticity and autocorrelation using the Newey-
+West procedure with up to three lags.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 25 =====
+
+Is Bitcoin Really Untethered? 1937
+Table II
+The Effect of Flow of Bitcoin and Tether on Bitcoin Return
+Panel A shows OLS estimates for which the dependent variable is the average three-hour Bitcoin
+returns,
+1
+3
+2∑
+i=0
+Rt+i = β0 + β1 Flowt−1 + Con trols+ ϵt,
+where Rt is the hourly return of an equal-weighted price index that aggregates Bitcoin prices on
+Tether exchanges Bitﬁnex, Poloniex, Bittrex, Binance, HitBTC, Huobi, and OKEx and Flowt is the
+average net hourly ﬂow of Tether from Bitﬁnex to Poloniex and Bittrex and of Bitcoin from Poloniex
+and Bittrex to Bitﬁnex. The control variables include lagged returns, volatility calculated using
+hourly returns over the previous 24 hours, and the interaction of lagged returns and volatility .
+Column (1) shows the results for times when a Tether authorization occurred in the previous 72
+hours and column (2) for other times. Columns (3) and (4) report results separately for observations
+with lagged negative and positive returns. Column (5) reports results conditioning on both 72 hours
+after Tether authorization and negative lagged returns. Panel B estimates the same regression
+but decomposes ﬂows into 1LSg ﬂows and ﬂows to other Poloniex and Bittrex accounts (described
+in detail in Internet Appendix Section I). Panel B also controls for the net average ﬂows of Tether
+and Bitcoin to other Tether recipient exchanges (Binance, HitBTC, Huobi, Kraken, and OKEx).
+Standard errors are adjusted for heteroskedasticity and autocorrelation. t-Statistics are reported
+in parentheses. *p < 0.05, **p < 0.01, **p < 0.001.
+Panel A: Regression of Returns on Lagged Flows
+(1) (2) (3) (4) (5)
+Auth NoAuth L.Ret < 0L . R e t > 0L . R e t < 0_Auth
+Lag PLX BTX Flow 3.855 * −0.354 2.694 * −1.100 8.134 **
+(2.30) ( −0.48) (2.18) ( −1.20) (2.93)
+LagRet −0.00600 −0.00985 0.0634 * −0.0518 0.0897
+(−0.18) ( −0.57) (1.97) ( −1.72) (1.46)
+Volatility 103.9 97.00 −52.33 −70.32 −102.3
+(1.17) (1.38) ( −0.67) ( −0.89) ( −0.70)
+Volatility*Lag Ret −0.343 −0.289 −1.443*** 0.609 −1.660**
+(−0.94) ( −1.14) ( −3.40) (1.58) ( −2.85)
+Constant −8.071 −1.387 4.261 5.105 2.062
+(−1.44) ( −0.46) (1.26) (1.50) (0.24)
+Observations 2,645 6,856 4,488 5,009 1,258
+Adjusted R2 0.012 0.005 0.020 0.001 0.045
+Panel B: Regression of Returns on Lagged Decomposed Flows
+(1) (2) (3) (4) (5)
+Auth NoAuth L.Ret < 0L . R e t > 0L . R e t < 0_Auth
+Lag 1LSg Flow 4.240 * −0.484 2.379 * −1.300 8.206 ***
+(2.37) ( −0.57) (1.97) ( −1.24) (3.61)
+Lag Other PLX BTX Flow 5.531 −0.513 4.602 −0.372 12.22
+(1.20) ( −0.26) (1.23) ( −0.16) (1.32)
+Lag Other Flow −6.483* 1.599 −0.514 0.322 −8.328*
+(−2.36) (1.43) ( −0.34) (0.25) ( −2.38)
+LagRet −0.00562 −0.0108 0.0650 * −0.0523 0.0958
+(−0.17) ( −0.63) (2.01) ( −1.73) (1.57)
+(Continued)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 26 =====
+
+1938 The Journal of Finance R⃝
+Table II—Continued
+Panel B: Regression of Returns on Lagged Decomposed Flows
+(1) (2) (3) (4) (5)
+Auth NoAuth L.Ret < 0L . R e t > 0L . R e t < 0_Auth
+Volatility 121.7 94.23 −51.05 −71.01 −84.21
+(1.36) (1.33) ( −0.65) ( −0.90) ( −0.57)
+Volatility*Lag Ret −0.346 −0.281 −1.457*** 0.613 −1.717**
+(−0.95) ( −1.10) ( −3.42) (1.59) ( −2.95)
+Constant −8.621 −1.334 4.203 5.108 1.784
+(−1.53) ( −0.44) (1.24) (1.50) (0.21)
+Observations 2,645 6,856 4,488 5,009 1,258
+Adjusted R2 0.014 0.005 0.020 0.001 0.049
+To more precisely examine the source of the ﬂow effect, we analyze three
+different ﬂow components: (i) the net Tether ﬂows out from Bitﬁnex (and the
+Bitcoin back) to the closely tied 1LSg addresses discussed above, (ii) the net
+Tether ﬂow out from Bitﬁnex (and the Bitcoin back) to the rest of Poloniex
+and Bittrex accounts not involving the 1LSg addresses, and (iii) the rest of
+the net Tether ﬂows out from Bitﬁnex (and the Bitcoin back) to other Tether
+exchanges including Binance, HitBTC, Huobi, Kraken, and OKEx. Column
+( 1 )o fT a b l eII, Panel B, shows that on days right after Tether printing, for
+a 100 Bitcoin increase in 1LSg ﬂow, the three-hour average future Bitcoin
+return goes up by 4.24 basis points, controlling for lagged returns, volatility ,
+and their interaction. The results are signiﬁcant at the 5% level. There is no
+signiﬁcant positive relationship for the rest of the Poloniex and Bittrex ﬂows
+(ﬂow component 2). The same is true for ﬂows into other Tether exchanges.
+In Table III, we examine whether the effect related to Tether printing spills
+over into the six leading cryptocurrencies listed on Tether-related exchanges.
+The effects are generally larger across all coins when conditioning on both days
+after Tether authorization and following a negative return. For the equivalent
+of a 100 Bitcoin increase in ﬂow, the average future return goes up by 7.89 to
+10.19 basis points for different coins. 28
+B. Large Flows and Prices
+We now speciﬁcally focus on the 1% of hours (95 of 9,504 hours) with the
+largest Tether/Bitcoin ﬂow. Figure 5, Panel A, plots an event study of Bitcoin
+and other cryptocurrency prices around these high-ﬂow events. The high-ﬂow
+hours occur between times −1 and 0 by construction. The results show that
+returns are large and negative between times −3a n d −1. However, after the
+large ﬂow, the pattern starts to change at time 0. The next hour’s returns
+are large at 80 basis points per hour, and returns are positive at 1.23% over
+28 Internet Appendix Table IA.III reports similar results for the relationship between 1LSg ﬂows
+and other major cryptocurrency prices.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 27 =====
+
+Is Bitcoin Really Untethered? 1939
+Table III
+The Effect of Flow of Bitcoin and Tether on Other Cryptocurrency
+Returns
+This table shows OLS estimates for which the dependent variable is the average three-hour return
+for major cryptocurrencies other than Bitcoin,
+1
+3
+2∑
+i=0
+Rt+i = β0 + β1 Flowt−1 + Con trols+ ϵt,
+where Rt is the hourly return using price data from the most liquid exchange for each cryptocur-
+rency between March 1, 2017 and March 31, 2018 and Flowt is the average net hourly ﬂow of
+Tether from Bitﬁnex to Poloniex and Bittrex and of Bitcoin from Poloniex and Bittrex to Bitﬁnex.
+The control variables include lagged returns, volatility calculated using hourly returns over the
+previous 24 hours, and the interaction of lagged returns and volatility . Major cryptocurrencies are
+selected based on the criteria in Table I, conditional on being listed on at least one of the major
+Tether exchanges as of the beginning of March 2017. Panel A reports results for the 72 hours after
+Tether authorization and Panel B reports results for other days. Panel C reports results when the
+lagged return is negative and Panel D when the lagged return is positive. Panels E reports results
+conditioning on both 72 hours after Tether authorization and negative lagged returns. Standard
+errors are adjusted for heteroskedasticity and autocorrelation.
+Panel A: Days Following Authorization
+Coin Coefﬁcient t-Stat N
+DASH 6.16 3.26 2,645
+ETC 7.54 3.00 2,645
+ETH 6.29 3.10 2,645
+LTC 6.17 1.83 2,645
+XMR 4.80 2.19 2,645
+ZEC 5.65 2.46 2,645
+Panel B: Other Days
+Coin Coefﬁcient t-Stat N
+DASH 0.59 0.61 6,833
+ETC −0.57 −0.52 6,833
+ETH 0.54 0.58 6,833
+LTC 1.32 1.27 6,833
+XMR 0.13 0.12 6,833
+ZEC 0.50 0.38 6,833
+Panel C: Following Negative Returns
+Coin Coefﬁcient t-Stat N
+DASH 2.92 1.69 3,992
+ETC 2.38 1.93 4,679
+ETH 2.36 1.70 4,544
+LTC 3.74 2.57 4,668
+XMR 2.74 1.69 4,614
+ZEC 3.12 2.00 4,785
+(Continued)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 28 =====
+
+1940 The Journal of Finance R⃝
+Table III—Continued
+Panel D: Following Positive Returns
+Coin Coefﬁcient t-Stat N
+DASH 3.47 2.26 3,985
+ETC 1.92 0.99 4,732
+ETH 1.65 1.27 4,878
+LTC 1.99 0.94 4,581
+XMR 0.59 0.48 4,752
+ZEC 1.26 0.73 4,577
+Panel E: Negative Returns-Authorization
+Coin Coefﬁcient t-Stat N
+DASH 10.19 3.26 1,063
+ETC 8.84 3.00 1,271
+ETH 8.86 3.10 1,246
+LTC 8.54 1.83 1,293
+XMR 7.44 2.19 1,244
+ZEC 7.89 2.46 1,293
+the next three hours after the ﬂow. Panel B shows sharp positive returns in
+the three-hour window after the ﬂow events for all six of the other major
+cryptocurrencies as well. We further examine the spillover in the cross-section
+of cryptocurrencies by constructing an exchange-level value-weighted return
+index of all coins other than Bitcoin using all other coin-BTC pairs for all
+exchanges in the sample. The altcoins listed on Bitﬁnex, Poloniex, and Bittrex
+have signiﬁcantly larger Bitcoin-denominated returns than the coins listed on
+other exchanges in the hours right after the ﬂows (see Internet Appendix Table
+IA.IV). Consistent with the effect being driven by Tether ﬂows, the return is
+not different before the high-ﬂow periods.
+We also examine the results for the largest player, 1LSg. In Internet Ap-
+pendix Figure IA.10, we focus on the largest 1% of the 1LSg ﬂows and ﬁnds
+that returns are positive at 1.27% over the next three hours, while returns are
+−1.50% over the three hours before. We test whether this behavior is linked
+to a general increase in blockchain transactions by examining Bitcoin prices
+around the times with high ﬂows from Bitﬁnex to non-1LSg Poloniex and Bit-
+trex wallets or to other Tether exchanges. We ﬁnd no statistical or economic
+effect around these times.
+Note that the only conditioning variable for these hours is lagged ﬂows, and
+we do not condition on past returns, but the large negative returns preceding
+the ﬂows seem to be consistent with investors following a “buying-the-dips”
+strategy . To see if a normally occurring reversal pattern rather than the im-
+pact of ﬂows is driving the returns, we ﬁnd hours in the sample that are the
+closest match to our 95 high-ﬂow hours in terms of lagged returns in the pre-
+vious three hours, but we do not condition on the high ﬂow of Tether. Internet
+Appendix Figure IA.11 shows that while the returns from times −3 to 0 are
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 29 =====
+
+Is Bitcoin Really Untethered? 1941
+the same by construction, the returns in the three hours after are −0.06% and
+indistinguishable from zero, indicating that the higher returns after time 0 are
+not due to a general price reversal or a “buying-the-dips” pattern in the market.
+C. Is the Price Effect Economically Important?
+What is the cumulative economic magnitude of the effects of Tether on Bitcoin
+and other cryptocurrencies? Such a question is difﬁcult to address. We take a
+simple approach to partial economic assessment of the effect, but we also note
+its potential limitations. From March 1, 2017 to March 31, 2018, the actual
+Bitcoin price rose from around $1,191 to $6,929 for a return of 481.8%. In
+contrast, the price series without the 95 Tether-related hours ends at around
+$3,555, for an increase of 198.5%. Hence, the 1% of hours with the strongest
+lagged Tether ﬂow are associated with 58.8% of the Bitcoin buy-and-hold return
+over the period.
+We compare an actual Bitcoin price series to a series that is extremely similar,
+but that removes the 95 high-lagged-ﬂow hours discussed above and replaces
+them with a random sample of 95 returns from other hours. 29 This process
+is repeated, with replacement, for 10,000 draws. Panel A of Figure 6 shows
+that the actual return including the Tether-related hours clearly falls to the
+far right of the bootstrapped distribution, indicating that it does not happen
+by chance.
+Panel B of Figure 6 compares the actual buy-and-hold return and the return
+excluding hours after high ﬂows for other major coins. The percentage of the
+buy-and-hold return that is attributable to the Tether-related hours ranges
+from 53% for Dash to 79% for Zcash. 30 Across the six other cryptocurrencies,
+returns are 64.5% smaller on average when removing the 95 Tether-related
+ﬂow hours.
+We now perform the same analysis by focusing only on hours following the top
+1% of 1LSg ﬂows. From March 1, 2017 to March 31, 2018, excluding the top 1%
+of times with high lagged ﬂow of Tether and Bitcoin though 1LSg accounts, the
+Bitcoin price rises only 216%. Hence, only 1% of the hours (95 of 9504) with the
+strongest 1LSg ﬂows are associated with 55.0% of the rise of Bitcoin in the next
+hour. As shown in Internet Appendix Table IA.V , when removing the top 5% and
+10% of hours, returns are 67.2% and 79.2% lower, respectively . We also perform
+a bootstrap analysis for this account by replacing these 1% of hours with other
+randomly selected hours. Figure 7 shows that the simulated distribution of
+Bitcoin returns averages 221% and in none of the 10,000 simulations is the
+return close to the actual return. The return distributions when replacing the
+29 For example, for a three-period buy-and-hold return compounded as (1 + r1) (1 + r2) (1 + r3),
+if period 1 is a high-ﬂow hour, we replace the next-period returns, r2, with r2′,w h e r er2′ is a
+random draw from all other nonhigh-ﬂow hours in our sample. The benchmark buy-and-hold
+return is calculated as (1 + r1) (1 + r2′)( 1 + r3). Note that this approach does not suffer from
+look-ahead bias, as it depends only on past ﬂows in replacing returns.
+30 Ethereum, for example, experienced nearly a 2,400% return during this period, but if the
+Tether-related hours were excluded it would have experienced around a 900% return.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 30 =====
+
+1942 The Journal of Finance R⃝
+Figure 5. Prices of Bitcoin and other cryptocurrencies around high-ﬂow events .P a n e l
+A shows Bitcoin prices three hours before and after the top 1% of high-ﬂow hours to Poloniex and
+Bittrex. Prices are scaled to one at time −3 before the event and at time 0 at the end of the event
+window. Scaled prices are averaged across events. High-ﬂow events are deﬁned as the top 1% of
+hours with high net average ﬂows of Tether from Bitﬁnex to Poloniex and Bittrex and Bitcoin back
+from Poloniex and Bittrex to Bitﬁnex in the prior hour, which means that high ﬂows occur between
+time −1 and time 0. Panel B depicts similar results for other major cryptocurrencies. (Color ﬁgure
+can be viewed at wileyonlinelibrary .com)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 31 =====
+
+Is Bitcoin Really Untethered? 1943
+Figure 6. Predictive effect of high-ﬂow hours on cryptocurrencies returns . The red bar
+in Panel A shows the buy-and-hold return of Bitcoin from March 1, 2017 to March 31, 2018. The
+blue bars show the distribution of returns if the top 1% hours with high lagged ﬂow of Tether
+and Bitcoin are replaced with a random sample of returns in other hours, bootstrapped 10,000
+times. High-ﬂow hours are deﬁned as in Figure 5. Panel B compares the actual buy-and-hold
+return (red bars) with the return excluding the top 1% high-ﬂow hours (blue bars) for other major
+cryptocurrencies over the same time period. (Color ﬁgure can be viewed at wileyonlinelibrary .com)
+hour following the top 5% and 10% of 1LSg ﬂows are also considerably to the
+left of the actual returns and indicate that the observed patterns are not likely
+due to chance.
+To determine whether the high-ﬂow return relationship is a general result of
+extreme market events reﬂected in the blockchain data, in Internet Appendix
+Figure IA.12 we also perform simulations where we remove the top 1%, 5%,
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 32 =====
+
+1944 The Journal of Finance R⃝
+Figure 7. Predictive effect of 1LSg high-ﬂow hours on Bitcoin returns . The red bars show
+the buy-and-hold return of Bitcoin from March 1, 2017 to March 31, 2018. The blue bars show the
+distribution of returns if the top hours with high lagged 1LSg ﬂow are replaced with a random
+sample of returns in other hours, bootstrapped 10,000 times. The high 1LSg ﬂow hours are the
+top 1% of hours with high 1LSg ﬂows as deﬁned in the Internet Appendix Section I. The return
+distribution in the top panel replaces the top 1% of high lagged 1LSg ﬂow hours with a random
+sample of returns in other hours, and the middle and bottom panels replace the top 5% and 10%,
+respectively . (Color ﬁgure can be viewed at wileyonlinelibrary .com)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 33 =====
+
+Is Bitcoin Really Untethered? 1945
+and 10% of net ﬂows from Bitﬁnex to other Poloniex and Bittrex addresses.
+There seems to be weak evidence that the extreme non-1LSg ﬂows have some
+effects on prices for the top 1% of hours, but not the top 5% and 10%. For
+the net Tether/Bitcoin ﬂows associated with the other ﬁve main Tether-based
+exchanges (Binance, HitBTC, Huobi, Kraken, and OKEx), removing the top
+1%, 5%, or 10% of the ﬂows has no effect on simulated Bitcoin prices.
+Overall, the ﬁndings indicate that a large player moves Tether out of Bitﬁnex
+in exchange for Bitcoin in such a way that she/he would either have to exhibit
+extreme market timing or, much more likely and consistent with the price
+impact literature, have a large price impact on Bitcoin price.
+We note that this ﬁnding is subject to some caveats. The effect only considers
+the hourly periods with extreme ﬂows. Measuring such ﬁndings over other
+intervals would be less precise and more difﬁcult, but the ﬂow could push
+prices up at other times as well. However, the effect does not consider the effect
+of selling price pressure if the Tether issuers later sell the Bitcoin and move
+the proceedings into dollars, though it seems feasible that the issuers could sell
+Bitcoin through channels with considerably less price impact. If the purchased
+Bitcoin is not permanently liquidated for dollars, then the inﬂationary effect
+due to increasing the money supply can be persistent. Overall, although it
+is difﬁcult to fully assess the exact price impact of Tether, these back-of-the-
+envelope calculations demonstrate that the effect is plausibly large.
+D. Negative Serial Correlation in Bitcoin Prices
+The ﬂows of Tether and Bitcoin follow a speciﬁc pattern: accounts on Bitﬁnex
+buy Bitcoins with Tether when Bitcoin prices drop. If the ﬂow of Tether moves
+Bitcoin prices, this may lead to a price reversal following a negative shock as
+described in H2C.
+To test this hypothesis, we examine whether future Bitcoin returns can be
+explained by lagged returns, and in particular, whether the reversal effect
+is related to Tether ﬂows. We include controls for lagged volatility and the
+interaction of lagged volatility and lagged returns similar to Table II. Table IV
+shows that after controlling for volatility , we observe a return reversal, but only
+for negative returns and only in periods with high net ﬂows. Panel B shows
+that the reversal pattern is driven by 1LSg ﬂows and is not present in ﬂows to
+non-1LSg accounts on Poloniex and Bittrex, nor in ﬂows to other Tether-based
+exchanges.31 Panel C shows that the effect is strongest in periods right after
+the hours with the top 1% and 5% of ﬂows. In the extreme case, if accompanied
+by top 1% net ﬂows, each 1% drop in Bitcoin prices is followed by a large 61
+basis point reversal in the next hour, whereas the reversal is on average only
+6 basis points (and statistically insigniﬁcant) in other times. 32 Controlling for
+31 Internet Appendix Table IA.VI shows that if the speciﬁcation controls for the interaction
+between ﬂows and volatility , the ﬂow effect remains signiﬁcant for the full sample but becomes
+statistically insigniﬁcant when the sample is split into positive and negative lagged returns.
+32 Internet Appendix Table IA.VII shows that the results are driven entirely by top hours of
+1LSg ﬂows and that top hours of other ﬂows are not related to the reversal. For example, each 1%
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 34 =====
+
+1946 The Journal of Finance R⃝
+Table IV
+Bitcoin Return Reversals and 1LSg Flow
+This table shows OLS estimates for the autocorrelation of Bitcoin returns,
+Rt = β0 + β1 Rt−1 + β2 Flowt−1 + β3 Rt−1 ∗ Flowt−1 + Con trols+ ϵt,
+where Rt is the hourly return of an equal-weighted price index that aggregates Bitcoin prices on
+Tether exchanges, Flowt is the average net hourly ﬂow of Tether from Bitﬁnex to Poloniex and
+Bittrex and of Bitcoin from Poloniex and Bittrex to Bitﬁnex, and the control variables include
+lagged returns, volatility calculated using hourly returns over the previous 24 hours, and the
+interaction of lagged returns and volatility . Panel A reports results for aggregate net ﬂows to
+Poloniex and Bittrex. Panel B decomposes ﬂows into 1LSg ﬂows and the rest of Poloniex and
+Bittrex accounts and controls for ﬂows into other Tether exchanges (Binance, HitBTC, Huobi,
+Kraken, and OKEx). The ﬂow variables are standardized by subtracting the mean and dividing by
+the standard deviation. Panel C estimates a similar regression for dummy variables that take the
+value of 1 for top 1%, 5%, and 10% of hours with high lagged ﬂows and volatility . Standard errors
+are adjusted for heteroskedasticity and autocorrelation. t-Statistics are reported in parentheses.
+*p < 0.05, **p < 0.01.
+Panel A: Using Aggregate Flows to PLX and BTX
+Full Sample Neg Lagged Returns Pos Lagged Returns
+Lag Ret −0.0198 0.0004 −0.0420
+(−0.62) (0.01) ( −0.69)
+Lag Flow 0.0003 −0.0002 0.0001
+(1.68) ( −0.53) (0.34)
+Lag Flow × Lag Ret −0.0326** −0.0669** −0.0073
+(−2.73) ( −2.67) ( −0.36)
+Lag Volatility 0.0093 0.0060 0.0100
+(1.38) (0.49) (0.88)
+Lag Volatility × Lag Ret −0.3961 −0.5918 −0.2719
+(−0.98) ( −0.85) ( −0.37)
+Constant −0.0002 −0.0000 −0.0001
+(−0.67) ( −0.07) ( −0.29)
+Observations 9,503 4,488 5,011
+Adjusted R2 0.007 0.011 0.001
+Panel B: Using Decomposed Flows
+Full Sample Neg Lagged Returns Pos Lagged Returns
+Lag Ret −0.0125 0.0166 −0.0320
+(−0.38) (0.27) ( −0.52)
+Lag 1LSg Flow 0.0003 −0.0001 −0.0000
+(1.71) ( −0.19) ( −0.02)
+Lag 1LSg Flow × Lag Ret −0.0280* −0.0545* 0.0050
+(−2.23) ( −2.17) (0.22)
+Lag Volatility 0.0094 0.0060 0.0110
+(1.40) (0.49) (0.97)
+Lag Volatility × Lag Ret −0.4986 −0.7798 −0.4123
+(−1.20) ( −1.11) ( −0.55)
+Lag PLX BTX Flow × Lag Ret −0.0200 −0.0272 −0.0153
+(−1.61) ( −1.41) ( −0.95)
+(Continued)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 35 =====
+
+Is Bitcoin Really Untethered? 1947
+Table IV—Continued
+Panel B: Using Decomposed Flows
+Full Sample Neg Lagged Returns Pos Lagged Returns
+Lag Other Flow × Lag Ret 0.0255 0.0404 0.0094
+(1.81) (1.63) (0.56)
+Constant −0.0002 0.0000 −0.0002
+(−0.71) (0.01) ( −0.42)
+Observations 9,503 4,488 5,011
+Adjusted R2 0.008 0.012 0.001
+Panel C: Using the Top Percentile Flow and Volatility (Lagged Neg Returns)
+Top 1% Top 5% Top 10%
+Lag Ret −0.0583 −0.0169 −0.0299
+(−1.90) ( −0.49) ( −0.78)
+Lag High Flows 0.0041 0.0003 −0.0011
+(0.72) (0.19) ( −0.85)
+Lag High Flows=1 × Lag Ret −0.6091* −0.2720* −0.1756
+(−2.56) ( −2.53) ( −1.93)
+Lag High Vol 0.0167 * −0.0018 0.0008
+(2.53) ( −0.73) (0.51)
+Lag High Vol=1 × Lag Ret 0.2014 −0.1192 −0.0183
+(1.09) ( −1.42) ( −0.26)
+Constant −0.0000 0.0003 0.0002
+(−0.04) (1.07) (0.70)
+Observations 4,488 4,488 4,488
+Adjusted R2 0.023 0.013 0.007
+the interaction between lagged returns and volatility shows that the results
+cannot be explained by the possibility of larger return reversals during periods
+of high volatility (Nagel ( 2012)).
+In conclusion, the results in this section provide considerable evidence that
+Tether is used to purchase Bitcoin following Tether authorization and a drop
+in Bitcoin price, and that this phenomenon has a sizable relation with fu-
+ture prices of Bitcoin and other coins. This relation is driven by one ac-
+count holder and induces an asymmetric negative autocorrelation in Bitcoin
+returns.
+IV . Is Tether Pushed or Pulled?
+The results in the previous section are consistent with a sizable price impact
+of Tether. In this section, we examine pushed H2D and H2E as well as variants
+of the pulled hypothesis to shed light on the nature of this price impact.
+drop in Bitcoin prices is followed by a 52 basis point reversal in the next hour if accompanied by
+the top 1% of 1LSg ﬂows.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 36 =====
+
+1948 The Journal of Finance R⃝
+A. Currency Flows around Round Price Thresholds
+Following Tversky and Kahneman ( 1974), a large literature demonstrates
+the importance of price anchoring for a variety of assets. Shiller ( 2000) ex-
+tensively discusses the importance of psychological anchors for stock market
+prices, and indicates that one such anchor is the nearest round-number level.
+Bhattacharya, Holden, and Jacobsen ( 2012) ﬁnd support for liquidity deman-
+ders buying just below round-number thresholds in stocks, consistent with in-
+vestors anchoring prices to the round-number threshold. Such an anchor could
+be of particular importance for cryptocurrency prices, for which the underlying
+value cannot be gauged through fundamentals.
+Additionally , cryptocurrency traders likely engage in technical trading
+whereby past price movements generate buy and sell signals. If Tether is used
+to stabilize market prices during a downturn, one might expect a spike in the
+ﬂow of Tether around round thresholds, as this might induce other traders,
+upon observing technical support at the threshold, to purchase as well. Such a
+pattern could also be consistent with recent theories that suggest that higher
+participation of users and investors makes Bitcoin more appealing to other
+users/investors due to network effects (Sockin and Xiong ( 2018), Cong, Li, and
+Wang (2019)).
+To test this prediction, we divide hourly CoinDesk prices by 500 and then
+group the remainders into bins of $10 width to examine how the ﬂow of Tether
+for Bitcoin changes near the round thresholds. Figure 8 plots the net average
+ﬂow of Bitcoin and Tether between Bitﬁnex and other Tether exchanges as a
+function of distance to the round thresholds. Panel A shows that on days after
+Tether authorization, the ﬂow increases signiﬁcantly just below the round cut-
+off but drops right above the cutoff. In contrast, there is no such effect on days
+with no prior Tether authorization. Panel B plots the ﬂows after authorization
+for net 1LSg ﬂows and ﬂows to other accounts. We ﬁnd evidence of strong ﬂows
+below the threshold for 1LSg accounts. There is some weaker evidence of larger
+ﬂows below the threshold for the rest of Bittrex and Poloniex (not coming from
+1LSg) and no evidence of net Bitcoin buying around round number thresholds
+for Binance, HitBTC, Huobi, Kraken, or OKEx.
+Table V, Panel A, formally tests whether Tether/Bitcoin ﬂow is different
+below and above the round-price thresholds. The dependent variable is the
+net Tether/Bitcoin ﬂow, and the independent variable is a dummy that takes
+the value of 1 if the Bitcoin price is in the $50 bandwidth below the round
+multiples of $500 and 0 if in the $50 bandwidth above. The results show that
+purchasing below the threshold is economically and statistically signiﬁcant
+only after authorization.
+In Panel B of Table V, we further examine the disaggregated ﬂows following
+authorization and ﬁnds that the higher ﬂow below round-number thresholds is
+driven by the 1LSg accounts, with a t-statistic of 3.71. Other accounts at Bittrex
+and Poloniex as well as other Tether exchanges do not have statistically or
+economically signiﬁcant ﬂows below the threshold. In addition, Panel C shows
+that no such pattern obtains in nonauthorization periods. Overall, the evidence
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 37 =====
+
+Is Bitcoin Really Untethered? 1949
+0 0
+02 0 4 0 6 0 8 0
+50 150 100 20040 80 120
+Hourly Average Flow (BTC) Hourly Average Flow (BTC)
+Hourly Average Flow (BTC)
+−100 −50 0 50 100 −100 −50 0 50 100
+Distance from Round Threshold
+−10 −5 0 5 10 15
+Hourly Average Flow (BTC)−100 −50 0 50 100
+Distance from Round Threshold
+−10 0 10 20 30
+Hourly Average Flow (BTC)−100 −50 0 50 100
+Distance from Round Threshold
+Distance from Round ThresholdDistance from Round Threshold
+−20 0 20 40 60
+Hourly Average Flow (BTC)−100 −50
+Binance
+ILSg
+Days Following Authorization Other Days
+Rest of Bittrex
+Panel B. Decomposed and Other Flows
+Panel A. Aggregate Bittrex and Poloniex Flows
+Rest of Poloniex
+HitBTC
+Kraken OKEx
+Huobi
+0 50 100
+Distance from Round Threshold
+−5 0 5 10 15
+Hourly Average Flow (BTC)−100 −50 0 50 100
+Distance from Round Threshold
+−10 0 10 20 30
+Hourly Average Flow (BTC)−100 −50 0 50 100
+Distance from Round Threshold
+−20 −10 0 10 20 30
+Hourly Average Flow (BTC)−100 −50 0 50 100
+Distance from Round Threshold
+−5 0 5 10 15
+Hourly Average Flow (BTC)−100 −50 0 50 100
+Distance from Round Threshold
+Figure 8. Flows around round number thresholds . This ﬁgure shows the average net hourly
+ﬂows of Tether from Bitﬁnex to two major Tether exchanges, Poloniex and Bittrex, and of Bitcoin
+from these exchanges to Bitﬁnex, around round-number thresholds of Bitcoin prices. The Bitcoin
+prices are based on hourly prices reported by CoinDesk. The horizontal axis shows the distance
+of the price from round thresholds in multiples of $500 at the end of the previous hour, and the
+vertical axis shows the ﬂow within the hour. The hollow blue circles show the average ﬂow for $10-
+wide price bins, and the black lines show the ﬁtted values of the ﬂow as a second-order polynomial
+of the price distance to the round thresholds. The gray areas represent the 95% conﬁdence interval
+for the ﬁtted values. Panel A, left, plots the results for times when a Tether authorization occurred
+in the previous 72 hours, and Panel A, right, plots the results for other times. Panel B shows the
+results after Tether authorization for the ﬂows decomposed into 1LSg ﬂows and other Poloniex and
+Bittrex accounts, as well as ﬂows to other Tether-based exchanges. The sample covers the period
+from March 1, 2017 to March 31, 2018. (Color ﬁgure can be viewed at wileyonlinelibrary .com)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 38 =====
+
+1950 The Journal of Finance R⃝
+Table V
+Flow of Coins around Round Thresholds of Bitcoin Price
+Panel A reports OLS estimates for which the dependent variable is hourly average net ﬂow of
+Tether from Bitﬁnex to Poloniex and Bittrex and of Bitcoin from Poloniex and Bittrex to Bitﬁnex.
+Below RoundC uto f ft is a dummy variable that takes the value of 1 if the Bitcoin price, at the end of
+the hour, falls into the $50 price bucket below a $500 price multiple and 0 if it is in the $50 bucket
+above such a multiple,
+Flowt = β0 + β1 Below RoundC uto f ft−1 + ϵt.
+Panel B estimates the same regression for the net average ﬂows into 1LSg accounts, the rest of
+Poloniex and Bittrex accounts, and the other Tether exchanges (Binance, HitBTC, Huobi, Kraken,
+and OKEx). Standard errors are adjusted for heteroskedasticity and autocorrelation. t-Statistics
+are reported in parentheses. *p < 0.05.
+Panel A: Flows around Round Thresholds
+Full Auth NoAuth
+Below Round Cutoff 14.75 * 60.83*** 0.221
+(2.02) (3.52) (0.03)
+Constant 36.26 *** 45.55*** 31.93***
+(8.52) (5.19) (6.78)
+Observations 1,603 464 1,139
+Adjusted R2 0.002 0.028 −0.001
+Panel B: Flows to Different Exchanges—Days Following Authorization
+1LSg Oth BTX Oth PLX Binance HitBTC Huobi Kraken OKEx
+Below Round Cutoff 52.60 *** 2.059 6.172 7.497 3.810 6.289 5.252 0.971
+(3.71) (0.60) (1.62) (1.27) (1.92) (1.90) (0.83) (0.46)
+Constant 34.75 *** 4.885*** 5.915** 13.66*** 0.564 3.766 ** −1.071 3.841 ***
+(4.63) (3.93) (3.08) (4.42) (0.64) (3.01) ( −0.38) (3.52)
+Observations 464 464 464 305 464 464 464 260
+Adjusted R2 0.030 −0.001 0.004 0.002 0.007 0.008 −0.000 −0.003
+Panel C: Flows to Different Exchanges—Other Days
+1LSg Oth BTX Oth PLX Binance HitBTC Huobi Kraken OKEx
+Below Round Cutoff 5.815 −2.825 −2.768 −1.085 −0.835 −0.476 0.207 2.043
+(0.89) ( −1.33) ( −1.47) ( −0.47) ( −1.23) ( −0.12) (0.17) (0.71)
+Constant 19.93 *** 4.982*** 7.015*** 3.442* 0.761* 4.123 −0.00519 −0.542
+(4.99) (3.43) (5.43) (2.01) (2.29) (1.32) ( −0.01) ( −0.22)
+Observations 1,139 1,139 1,139 731 1,139 1,139 1,139 483
+Adjusted R2 −0.000 0.001 0.001 −0.001 0.001 −0.001 −0.001 −0.001
+indicates that the ﬂow below thresholds is driven by the 1LSg account, and
+only after authorization, that is, this ﬂow pattern is not typically observed in
+the market.
+We next examine what effect, if any , the inﬂow of Tether below the threshold
+might have on Bitcoin returns. In Panel A of Table VI, we report estimates of
+a regression of average three-hour future returns on the lagged round-number
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 39 =====
+
+Is Bitcoin Really Untethered? 1951
+Table VI
+Effect of Flow on Returns around Round Thresholds of Bitcoin Price
+Panel A estimates a regression of average three-hour Bitcoin returns on the Below RoundC uto f f
+dummy . Panel B reports results for the second-stage estimates of a two-stage least squares regres-
+sion of Bitcoin returns on ﬂows,
+1
+3
+2∑
+i=0
+Rt+i = β0 + β1 ˆFlowt−1 + ϵt,
+where in the ﬁrst stage, ˆFlowt is instrumented using a dummy variable that takes the value of
+1 if the Bitcoin price, at the end of the previous hour, is within the $50 bucket below the round
+threshold and the time is within the three-day window after Tether authorization and 0 if within
+the $50 bucket above or in days outside the three-day window after Tether authorization. Panel
+C reports the same results as in Panel B but where the ﬂows are decomposed into 1LSg and the
+rest of Poloniex and Bittrex, and it also controls for aggregate net ﬂows to other Tether exchanges
+(Binance, HitBTC, Huobi, Kraken, and OKEx). Standard errors are adjusted for heteroskedasticity
+and autocorrelation. t-Statistics are reported in parentheses. *p < 0.05.
+Panel A: Returns around Round Thresholds
+Auth NoAuth Auth_L.Ret < 0 Auth_L.Ret > 0
+Below Round Cutoff 20.61 * −3.397 32.87 * 11.91
+(2.42) ( −0.74) (2.58) (1.29)
+Constant 1.765 5.466 11.75 −7.205
+(0.33) (1.87) (1.39) ( −1.15)
+Observations 464 1,138 214 250
+Adjusted R2 0.012 0.000 0.025 0.002
+Panel B: Instrumenting the Flow using the Round Thresholds
+All Auth Auth L.Ret < 0 Auth_L.Ret > 0
+Flow 26.42 * 33.88* 45.34* 22.92
+(2.06) (2.05) (2.37) (0.97)
+Constant −5.724 −13.67 −10.75 −16.81
+(−1.05) ( −1.27) ( −0.72) ( −1.23)
+Observations 1,602 464 214 250
+Wald F-statistic 19.44 12.03 8.217 5.264
+Panel C: Instrumenting the 1LSg Flow using the Round Thresholds
+All Auth Auth_L.Ret < 0 Auth_L.Ret > 0
+1LSg Flow 38.52 * 65.44* 89.35 47.27
+(2.09) (2.03) (1.79) (1.11)
+Oth PLX/BTX Flow −21.19 −52.65 −76.91 −47.82
+(−1.78) ( −1.45) ( −1.08) ( −1.26)
+Oth Flow −10.18 −38.09* −35.38 −40.03
+(−1.92) ( −2.10) ( −1.73) ( −1.21)
+Constant −3.364 −10.28 −8.653 −11.08
+(−0.75) ( −1.01) ( −0.53) ( −0.99)
+Observations 1,602 464 214 250
+Wald F-statistic 19.49 7.639 3.291 4.277
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 40 =====
+
+1952 The Journal of Finance R⃝
+threshold dummy . On days following Tether authorization, when prices are
+below the round threshold, the future hourly return is 20.61 basis points higher
+on average. However, this return effect is not present on days apart from
+printing Tether or periods after authorization with positive lagged returns.
+Note that it is possible that the Bitﬁnex-related wallets trade around round-
+number thresholds simply because they are following behavioral biases. How-
+ever, in this case their trading is not likely to be proﬁtable as documented in
+the behavioral ﬁnance literature (Bhattacharya, Holden, and Jacobsen ( 2012)).
+Large purchasing by 1LSg accounts provides a coherent explanation as to how
+prices can be pushed above the thresholds. In addition, if other traders see such
+large purchasing, they might join the buying due to either technical trading
+indicators being triggered or through the perception of stronger network effects
+(Sockin and Xiong ( 2018), Cong, Li, and Wang ( 2019)).
+We also use the discontinuity around round-number thresholds as an instru-
+ment to identify the effect of Tether on Bitcoin prices by estimating a fuzzy
+regression discontinuity design. As an instrument for Tether-related ﬂows, we
+set a dummy variable equal to 1 if Bitcoin price is within the $50 bucket below
+the round threshold and the time is within the three-day window after Tether
+authorization. Our identiﬁcation assumption is that the only channel through
+which the cutoff affects future Bitcoin returns is through Tether ﬂows. The
+exclusion restriction is supported by the fact that neither 1LSg ﬂows nor the
+future Bitcoin returns differ below and above the thresholds on days not around
+Tether authorization, and ﬂows associated with no other accounts differ below
+and above the thresholds even for periods after authorization.
+In Panel B of Table VI, we estimate a two-stage least squares regression
+of three-hour future Bitcoin returns on the lagged net Bitcoin/Tether ﬂow,
+where the ﬂow is instrumented using the cutoff dummy . The reported Wald F-
+statistics show that the ﬁrst-stage regressions are strong, suggesting a strong
+instrument. The second-stage regression indicates that for 100 Bitcoin pur-
+chased by Bitﬁnex, the average hourly Bitcoin return in the next three hours
+goes up by 26.42 basis points. The effect is 33.88 basis points if the sample
+is limited to days after authorization, and 45.34 basis points for periods after
+authorization with lagged negative returns. The effect is insigniﬁcant for pe-
+riods after authorization with positive lagged returns. In Panel C, we perform
+the same analysis except we instrument for 1LSg ﬂows rather than aggregate
+Poloniex and Bittrex ﬂows, and we also control for the ﬂows associated with
+other accounts on Poloniex and Bittrex as well as on other exchanges. The re-
+sults are economically larger with a 100 Bitcoin ﬂow by 1LSg associated with
+an average hourly Bitcoin return in the next three hours of 65.44 basis points
+after authorization. This result highlights a very strong effect of 1LSg ﬂows on
+Bitcoin prices, especially on days after Tether authorization.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 41 =====
+
+Is Bitcoin Really Untethered? 1953
+B. Demand from Investors with Fiat Currency?
+B.1. End-of-Month Returns
+The previous sections establish that the ﬂow of Tether explains a sizable
+increase and predictable trading patterns in Bitcoin prices. These patterns are
+potentially consistent with ﬁat purchases of Tether through Bitﬁnex, but the
+purchases and trading would need to be driven by one large player who moved
+over 2 billion USD into Tether through the Bitﬁnex exchange. Alternatively ,
+if the printed Tether is not backed by dollars and does not reﬂect the inﬂow
+of real capital into the cryptospace, such an increase in Bitcoin prices can re-
+ﬂect inﬂation caused by printing unbacked money . In this section we examine
+the backing of Tether by borrowing from the intermediary asset pricing litera-
+ture, speciﬁcally Du, Tepper, and Verdelhan (2018) and He and Krishnamurthy
+(2018), who argue that banks’ compliance with period-end capital requirements
+may have a sizable effect on asset prices. To assure traders of the existence of
+dollar reserves, Tether has issued EOM bank statements from December 2016
+to March 2017 that were audited by a Chinese accounting ﬁrm. 33 If Tether does
+not maintain full reserves daily but seeks to release audited EOM statements
+that demonstrate full reserves to investors, there could be negative selling pres-
+sure on Bitcoin to convert it to USD reserves before the EOM as hypothesized
+in H2E. Such an EOM selling effect should be related to the Tether issuance.
+Moreover, if cash needs to be raised by liquidating other major cryptocurrencies,
+as they also show a large price increase around Tether ﬂows, they should show
+an EOM effect as well. We test for this effect by constructing value-weighted
+returns of the top-ﬁve cryptocurrency returns.
+Figure 9 depicts Bitcoin daily returns at EOM by dividing the sample months
+into four quantiles based on their monthly Tether issuance. 34 The blue bars
+show the raw EOM returns, and the red bars benchmark the EOM returns by
+subtracting the average return over the four days before and the four days after.
+As can be seen, there is a clear relationship between monthly Tether issuance
+and EOM negative price pressure. In months with no Tether issuance, there is
+no EOM effect. However, in months with large Tether issuance, there is a 6%
+negative benchmarked return.
+We caveat this relation, however, by noting that there are only 25 months in
+our sample, and the two months with the largest Tether issuance, December
+2017 and January 2018, exhibit a strong EOM effect. Because of the relatively
+33 As announced on https://tether.to/tether-update/, these audits were made publicly available
+on Tether.to. Tether also stated its intention to be audited by a non-Chinese ﬁrm, but it eventually
+canceled the audit due to “the excruciatingly detailed procedures.” In an interview about the lack
+of an audit on Tether, Bitﬁnex’s chief technology ofﬁcer noted that “[w]hat we want to do is not
+[audit] the bank balances as of now, but we want to demonstrate to the community that we had
+the money at the end of every single month , since a reasonable date like January 2017 and on.”
+34 Cryptocurrencies ofﬁcially trade on UTC timestamp and daily prices close at midnight UTC
+time, when business hours have already ended in most countries and the next day has already
+started in East Asia. The effect must therefore be observed in the second-to-last day of the month,
+which we consider the EOM price.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 42 =====
+
+1954 The Journal of Finance R⃝
+Figure 9. End-of-month returns and quantiles of Tether issuance . This ﬁgure shows end-
+of-month (EOM) daily Bitcoin returns for different quantiles of monthly Tether issuance. Four
+quantiles of Tether issuance are deﬁned based on total Bitcoin-denominated Tether issuance each
+month. Issuance is calculated as the aggregate monthly Bitcoin-denominated ﬂow of Tether from
+the Tether treasury to Bitﬁnex. All months with zero issuance are included in one group, and the
+other months are divided into three quantiles. The EOM return is deﬁned as the daily return
+on the second-to-last day of the month closing at midnight UTC time. Daily prices are obtained
+from CoinMarketCap. The blue bars show the raw EOM return, and the red bars show the raw
+return minus the average return from the prior four days through the subsequent four days.
+The sample covers the period from March 2016 to March 2018. (Color ﬁgure can be viewed at
+wileyonlinelibrary .com)
+small sample size, we check the sensitivity of the results by excluding the
+two months with the largest Tether issuances. In a simple regression of EOM
+Bitcoin returns on monthly Tether issuances, we obtain a t-statistic of −2.85
+with all observations, but an insigniﬁcant t-statistic of −1.26 when excluding
+the two largest months. 35
+In Table VII, we examine this result further. In Panel A, column (1) shows
+that the EOM return is 2.3% less than returns in the four days before and
+after the EOM. Columns (2) and (3) indicate that there is no effect in months
+without Tether issuance, but the EOM return is 3.8% lower in months with
+Tether issuance ( t-statistic of 3.65). Column (4) interacts the EOM dummy
+with the magnitude of the monthly Tether issuance and shows that for a one-
+standard-deviation higher Tether issuance, the EOM return is 2.2% more neg-
+ative. Column (5) tests the plot in Figure 9 statistically and shows that relative
+to months with zero issuance, months with low, medium, and high issuance
+35 When using the value-weighted returns of top-ﬁve currencies, the same regression yields a t-
+statistic of −4.85 and −2.97 with and without the top two months, respectively (Internet Appendix
+Table IA.VIII).
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 43 =====
+
+Is Bitcoin Really Untethered? 1955
+Table VII
+EOM Bitcoin Returns and the Effect of Tether Issuance
+This table reports OLS estimates for which the dependent variable is daily Bitcoin returns and the independent variables are the EOM dummy and
+monthly Tether issuance,
+Rt = β0 + β1 EOMt + β2 Issuancet + β3 EOMt ∗ Issuancet + ϵt,
+where EOMt takes the value of 1 on the second-to-last day of the month at midnight UTC time and Issuancet is the aggregate monthly Bitcoin-
+denominated ﬂow of Tether from the Tether treasury to Bitﬁnex scaled by its standard deviation. Column (5) interacts the EOM dummy with quantiles
+of issuance as deﬁned in Figure 9. The sample is from March 2016 to March 2018. Columns (6) to (8) report results after excluding the two months
+with extreme issuance, December 2017 and January 2018. Panel B estimates the results using the returns on a value-weighted portfolio of top-ﬁve
+cryptocurrencies. Each day in the sample, the top-ﬁve cryptocurrencies are selected based on average market cap in the previous week as reported on
+CoinMarketCap. Standard errors are robust to heteroskedasticity . t-Statistics are reported in parentheses. *p < 0.05, **p < 0.01, ***p < 0.001.
+Panel A: Bitcoin Returns
+Full Sample Excluding 12/2017 and 1/2018
+(1) (2) (3) (4) (5) (6) (7) (8)
+All NoIssuance Issuance All All Issuance All All
+EOM −0.0230** −0.000788 −0.0377*** −0.00669 −0.000788 −0.0251*** −0.00869 −0.000788
+(−3.24) ( −0.14) ( −3.65) ( −1.41) ( −0.14) ( −4.70) ( −1.84) ( −0.14)
+Issuance 0.00123 0.00546
+(0.39) (1.63)
+EOM = 1 × Issuance −0.0222** −0.0107*
+(−2.85) ( −2.04)
+Low × EOM −0.0187* −0.0187*
+(−2.27) ( −2.27)
+Med × EOM −0.0307** −0.0307**
+(−2.71) ( −2.70)
+High × EOM −0.0615* −0.0232*
+(−2.40) ( −1.98)
+Low 0.0117* 0.0117*
+(2.08) (2.08)
+Med 0.00933 0.00933
+(1.33) (1.32)
+High 0.00908 0.0126
+(1.07) (1.57)
+(Continued)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 44 =====
+
+1956 The Journal of Finance R⃝
+Table VII—Continued
+Panel A: Bitcoin Returns
+Full Sample Excluding 12/2017 and 1/2018
+(1) (2) (3) (4) (5) (6) (7) (8)
+All NoIssuance Issuance All All Issuance All All
+Constant 0.0110 *** 0.00501 0.0150 *** 0.0101*** 0.00501 0.0160 *** 0.00824** 0.00501
+(4.32) (1.49) (4.19) (3.58) (1.48) (4.78) (2.92) (1.47)
+Observations 225 90 135 225 225 117 207 207
+Adjusted R2 0.035 −0.011 0.078 0.065 0.060 0.048 0.024 0.023
+Panel B: Top Five Value-Weighted Returns
+Full Sample Excluding 12/2017 and 1/2018
+(1) (2) (3) (4) (5) (6) (7) (8)
+All NoIssuance Issuance All All Issuance All All
+EOM −0.0216** 0.00107 −0.0367*** −0.00188 0.00107 −0.0241*** −0.00301 0.00107
+(−3.19) (0.25) ( −3.68) ( −0.46) (0.25) ( −4.05) ( −0.79) (0.25)
+Issuance 0.00179 0.00460
+(0.53) (1.53)
+EOM = 1 × Issuance −0.0269*** −0.0186***
+(−4.45) ( −3.41)
+Low × EOM −0.0175* −0.0175*
+(−2.41) ( −2.40)
+Med × EOM −0.0196* −0.0196*
+(−2.07) ( −2.07)
+High × EOM −0.0762*** −0.0474***
+(−3.99) ( −3.63)
+Low 0.0119* 0.0119*
+(2.34) (2.34)
+Med 0.00990 0.00990
+(1.35) (1.35)
+High 0.0106 0.0100
+(1.31) (1.39)
+Constant 0.0101 *** 0.00367 0.0145 *** 0.00884** 0.00367 0.0143 *** 0.00719** 0.00367
+(4.08) (1.18) (4.06) (3.16) (1.18) (4.35) (2.69) (1.17)
+Observations 225 90 135 225 225 117 207 207
+Adjusted R2 0.033 −0.011 0.076 0.083 0.084 0.045 0.030 0.030
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 45 =====
+
+Is Bitcoin Really Untethered? 1957
+have a negative EOM return of 1.9%, 3.1%, and 6.1%, respectively , all sta-
+tistically signiﬁcant. Finally , as a sensitivity check, in columns (6) to (8), we
+exclude the top two months of ﬂow. As expected, the results are weaker but
+still statistically and economically signiﬁcant.
+Panel B examines the ﬁndings using the value-weighted return index. The
+ﬁndings are considerably more statistically signiﬁcant. The index shows a re-
+turn of −7.7% in the months with the highest issuance with a t-statistic of
+−4.00. If we remove December 2018 and January 2018, the magnitude is still
+4.8% with a t-statistic of −3.64.
+As a one-period example not at EOM, we also noticed that Tether released
+a limited audit of a snapshot of their cash balance as of September 15, 2017.
+Tether later ﬁred the auditor. Prices dropped 25% from September 12, 2017 to
+September 15, 2017, the day of the audit (see Internet Appendix Figure IA.13).
+Finally , we examine if there are any patterns in Bitﬁnex’s Bitcoin wallets
+used to hold the exchange Bitcoin reserves. 36 If the founders attempt to sell
+Bitcoin and raise a cash reserve, the balance in the reserve wallets of Bitﬁnex
+might go down before the EOM. To examine this possibility , we compute the
+net ﬂows of Bitcoins from Bitﬁnex’s reserve wallets, including its main cold
+wallets. Internet Appendix Table IA.IX shows that in months with large Tether
+issuances, the Bitﬁnex balances experience a large net outﬂow in the last
+ﬁve days of the month, and the relationship is statistically signiﬁcant with
+a t-statistic of 3.14. As a placebo test, we perform the same analysis on the
+reserve wallets of any of the top-20 largest exchanges for which we could obtain
+reserve wallet addresses, and we ﬁnd no EOM net outﬂow from these wallet
+balances. This result suggests that a plausible channel for the decrease in
+Bitcoin prices is EOM liquidation of Bitﬁnex reserves. In summary , the strong
+negative effect on Bitcoin prices in months of Tether issuance is consistent
+with Tether not maintaining full dollar reserves at all times. Without a dollar
+backup, the Tether peg could be held when cryptocurrency prices increase and
+the liquidation of Tether is limited. But if market participants lose conﬁdence
+in Tether and a run occurs, there can be a substantial risk of default without
+full cash reserves. Like most runs, this could also lead to substantial collateral
+damage to cryptocurrency investors.
+B.2. Flows and the Tether-USD Rate
+Although the analysis above shows substantial support for a supply-based
+explanation, we further examine the demand-based explanations for Tether. If
+the demand for Tether comes mainly from investors who hold dollars and seek
+to invest in Bitcoin, the greater demand could translate into a higher market
+rate for the Tether-USD pair. Kraken was the most active market-based venue
+for exchanging Tether for dollars in 2017, although the market volume of the
+36 These wallets can include cold wallets or other wallets that hold a large balance of Bitcoin
+reserves for a speciﬁc exchange. The table header to Internet Appendix Table IA.IX describes how
+we identify these wallets on the blockchain.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 46 =====
+
+1958 The Journal of Finance R⃝
+pair was less than 1% of the Bitcoin-Tether volume. The rate on Kraken often
+stays close to one over our sample period from March 1, 2017 to March 31, 2018
+but has a standard deviation of 2%. If part of the demand for Tether spills over
+to Kraken, one would expect changes in the Tether-USD rate to be related to
+the ﬂow of Tether.
+In Panel A of Table VIII, we regress Tether ﬂow on different lags of Tether-
+USD returns as well as BTC-USD returns. We standardize the variables so
+that the magnitudes of the coefﬁcients are comparable. The results show that
+Tether ﬂow is highly sensitive to the BTC-USD pair (as shown previously) but
+bears little relation to the Tether-USD pair. Similarly , in Panel B, we examine
+Bitcoin ﬂow and ﬁnd that the corresponding ﬂow of Bitcoin back is highly
+sensitive to BTC-USD rates but bears no relationship with the Tether-USD
+pair. We further examine this relationship by constructing different proxies for
+the Tether price using value-weighted and equal-weighted Tether-USD rates
+across all available exchanges as well as constructing a synthetic rate using
+Bitcoin prices on Bitﬁnex versus dollar exchanges. The results using these
+proxies instead of the Kraken Tether-USD rate are similar (Internet Appendix
+Tables IA.X, IA.XI, and IA.XII). We also examine results for the 1LSg account
+and other accounts on Tether exchanges and ﬁnd similar results (Internet
+Appendix Table IA.XIII).
+Another possibility is that the overall price difference between Tether and
+USD exchanges is driving the ﬂow. To examine this possibility , we construct two
+lagged return measures: the three-hour lagged Bitcoin return averaged across
+all major exchanges, and the three-hour lagged difference in return between
+Tether exchanges and USD exchanges. The average return captures the effect
+of Bitcoin price changes and the difference captures the spread leading to the
+arbitrage opportunity between Tether and USD exchanges. We then estimate
+a regression of Tether and Bitcoin ﬂows on the spread and average returns.
+Panel C of Table VIII shows that the ﬂows are not sensitive to the spread.
+Moreover, Panel C of Internet Appendix Table IA.XIII shows that the ﬂows
+to 1LSg and other Poloniex and Bittrex accounts have no relationships with
+the spread, whereas the ﬂows to Binance and Huobi are positively related to
+the spread. These ﬁndings suggest that when the BTC-Tether pair trades at
+a higher discount relative to BTC-USD, capital ﬂow to Binance and Huobi
+increases to buy Bitcoin at a lower price. This result indicates that Tether is
+used in arbitrage activities, but the 1LSg activities are not driven by these
+arbitrage proxies.
+Overall, we do not ﬁnd evidence to support the demand-based hypothesis
+(H1A), but we also note that noise and illiquidity in the Tether return series
+add noise to these tests. We believe that the various ways we construct for the
+actual and implied Tether return series substantially mitigate this concern.
+C. Flows and Bitcoin Prices across Exchanges
+Tether may facilitate cross-exchange arbitrage among Tether exchanges. In
+particular, imagine that Bitcoin prices increase on Bitﬁnex, but Bitcoin prices
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 47 =====
+
+Is Bitcoin Really Untethered? 1959
+Table VIII
+The Relationship between Tether and Bitcoin Flows and Tether-USD
+versus BTC-USD Rates
+This table reports OLS estimates for which the dependent variables are the net ﬂow of Tether from
+Bitﬁnex (Panel A) and the net ﬂow of Bitcoin to Bitﬁnex (Panel B), and the independent variables
+are multiple lags of Tether-USD and BTC-USD returns,
+Flowt = α +
+5∑
+i=1
+βi RTe t h e r−USD
+t−i +
+5∑
+i=1
+γi RBT C−USD
+t−i + ϵt,
+where RBT C−USD
+t is the hourly return of Bitcoin prices in USD and RTe t h e r−USD
+t is the hourly
+return of the Tether-USD pair on the Kraken exchange. The sample period is from April 1, 2017
+(when Kraken prices are ﬁrst available) to March 1, 2018. Panel C estimates an OLS regression
+of Tether and Bitcoin ﬂows on the lagged arbitrage spread and average returns between USD and
+Tether exchanges,
+Flowt = β0 + β1
+1
+3
+3∑
+i=1
+Ar bi t r ag e S pr e a dt−i + β2
+1
+3
+3∑
+i=1
+Average Returnt−i + ϵt,
+where Average Returnt = (RUSDt +RTe t h e rt )
+2 and Ar bi t r ag e S pr e a dt = RUSD
+t − RTe t h e r
+t . All variables are
+standardized by subtracting the mean and dividing by the standard deviation. Standard errors are
+robust to heteroskedasticity . t-Statistics are reported in parentheses. *p < 0.05, **p < 0.01, ***p <
+0.001.
+Panel A: Tether Flow
+L.Tether_USD_Ret −0.0082 −0.0016 0.0019 0.0018 0.0047
+(−0.77) ( −0.13) (0.16) (0.14) (0.36)
+L2.Tether_USD_Ret 0.0080 0.0160 0.0180 0.0232
+(0.59) (1.11) (1.21) (1.42)
+L3.Tether_USD_Ret 0.0138 0.0176 0.0257
+(1.23) (1.32) (1.71)
+L4.Tether_USD_Ret 0.0024 0.0172
+(0.20) (1.05)
+L5.Tether_USD_Ret 0.0272
+(1.50)
+L.BTC_USD_Ret −0.0448** −0.0472*** −0.0482*** −0.0489*** −0.0490***
+(−3.14) ( −3.31) ( −3.40) ( −3.44) ( −3.45)
+L2.BTC_USD_Ret −0.0688*** −0.0698*** −0.0715*** −0.0719***
+(−4.80) ( −4.84) ( −4.96) ( −4.95)
+L3.BTC_USD_Ret −0.0299* −0.0316** −0.0325**
+(−2.56) ( −2.70) ( −2.73)
+L4.BTC_USD_Ret −0.0419** −0.0426**
+(−3.05) ( −3.12)
+L5.BTC_USD_Ret −0.0263
+(−1.85)
+Constant −0.0034 −0.0032 −0.0031 −0.0030 −0.0029
+(−0.31) ( −0.29) ( −0.28) ( −0.27) ( −0.27)
+Observations 8,750 8,749 8,748 8,747 8,746
+Adjusted R2 0.002 0.006 0.007 0.008 0.009
+(Continued)
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 48 =====
+
+1960 The Journal of Finance R⃝
+Table VIII—Continued
+Panel B: Bitcoin Flow
+L.Tether_USD_Ret −0.0047 0.0029 0.0033 0.0061 0.0075
+(−0.34) (0.21) (0.23) (0.42) (0.51)
+L2.Tether_USD_Ret 0.0098 0.0085 0.0150 0.0167
+(0.74) (0.58) (1.02) (1.10)
+L3.Tether_USD_Ret −0.0139 −0.0012 0.0021
+(−1.04) ( −0.08) (0.14)
+L4.Tether_USD_Ret 0.0212 0.0271
+(1.62) (1.93)
+L5.Tether_USD_Ret 0.0084
+(0.64)
+L.BTC_USD_Ret −0.1066*** −0.1093*** −0.1126*** −0.1133*** −0.1134***
+(−6.72) ( −6.91) ( −7.18) ( −7.24) ( −7.27)
+L2.BTC_USD_Ret −0.0775*** −0.0808*** −0.0825*** −0.0829***
+(−4.97) ( −5.20) ( −5.30) ( −5.33)
+L3.BTC_USD_Ret −0.0734*** −0.0750*** −0.0761***
+(−4.76) ( −4.85) ( −4.92)
+L4.BTC_USD_Ret −0.0450** −0.0460**
+(−3.09) ( −3.17)
+L5.BTC_USD_Ret −0.0280
+(−1.91)
+Constant 0.0154 0.0158 0.0160 0.0162 0.0163
+(1.43) (1.47) (1.49) (1.51) (1.52)
+Observations 8,750 8,749 8,748 8,747 8,746
+Adjusted R2 0.011 0.017 0.022 0.024 0.025
+Panel C: Price Differences between USD and Tether Exchanges
+(1) (2)
+Tether BTC
+Arbitrage Spread 0.0032 0.0163
+(0.22) (1.08)
+Average Return −0.0823*** −0.1372***
+(−5.77) ( −8.37)
+Constant −0.0000 0.0001
+(−0.00) (0.01)
+Observations 9,501 9,501
+Adjusted R2 0.007 0.020
+on Poloniex adjust with a delay . Traders can respond to the spread by sending
+Tether to Poloniex and buying undervalued Bitcoins. This cross-exchange ar-
+bitrage also necessitates a ﬂow of Tether back to Bitﬁnex when Bitﬁnex prices
+are lower than Poloniex prices. However, as Figure 1 shows, this reverse ﬂow
+pattern is not commonly observed. On the other hand, the ﬂow of printed Tether
+through Bitﬁnex might also cause prices to inﬂate ﬁrst on Bitﬁnex before the
+Tether moves to other exchanges.
+Internet Appendix Table IA.XIV shows that for a one-standard-deviation
+increase in the return spread measure, the net Tether and Bitcoin ﬂow goes
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 49 =====
+
+Is Bitcoin Really Untethered? 1961
+up from 0.0336 to 0.419 standard deviations, with t-statistics of 2.39 to 3.13.
+Consistent with the supply-based hypothesis of ﬂows following returns, a one-
+standard-deviation decrease in the average Bitcoin return increases the ﬂow
+by 0.043 to 0.12 standard deviations, with t-statistics of 3.15 to 6.68 even after
+controlling for the return spread. 37 The results show that Bitcoin is typically
+at a small premium on Bitﬁnex before the Tether ﬂows to Bittrex and Poloniex.
+This ﬁnding could be due to the use of Tether to facilitate arbitrage or to the
+supply of Tether inﬂating prices at Bitﬁnex ﬁrst. In either case, the results
+show that the pattern of ﬂows following negative Bitcoin returns is the more
+economically sizable driver of the ﬂow.
+V . Conclusion
+Periods of rapid price appreciation are historically associated with innova-
+tion and growth but also with nefarious activities that lead to misallocation
+of capital. The semitransparent nature of the blockchain provides a unique
+opportunity to examine the mechanics behind the growth of an asset class
+during a period of massive speculation and understand the role of central mon-
+etary entities in a cryptocurrency world. In this paper, we examine whether
+the growth of the largest pegged cryptocurrency , Tether, is primarily driven
+by investor demand or is supplied to investors as part of a scheme to inﬂate
+cryptocurrency prices.
+By mapping the blockchains of Bitcoin and Tether, we are able to establish
+that one large player on Bitﬁnex uses Tether to purchase large amounts of
+Bitcoin when prices are falling and following the printing of Tether. Such price
+supporting activities are successful as Bitcoin prices rise following the periods
+of intervention. Indeed, even 1% of the times with extreme exchange of Tether
+for Bitcoin have substantial aggregate price effects. The buying of Bitcoin with
+Tether also occurs more aggressively right below salient round-number price
+thresholds where the price support might be most effective. Negative EOM
+price pressure on Bitcoin in months with large Tether issuance points to a
+month-end need for dollar reserves for Tether, consistent with partial reserve
+backing. Our results are most consistent with the supply-driven hypothesis.
+Overall, our ﬁndings provide support for the view that price manipula-
+tion can have substantial distortive effects in cryptocurrencies. Prices in this
+market reﬂect much more than standard supply/demand and fundamental
+news. These distortive effects, when unwound, could have a considerable nega-
+tive impact on cryptocurrency prices. More broadly , these ﬁndings also suggest
+that innovative technologies designed to bypass traditional banking systems
+have not eliminated the need for external surveillance, monitoring, and a reg-
+ulatory framework as many in the cryptocurrency space had believed. Our
+ﬁndings support the historical view that dubious activities are associated with
+bubbles and can contribute to further price distortions.
+37 We ﬁnd similar results when decomposing the ﬂows into those to 1LSg, other Poloniex and
+Bittrex, and other Tether-based exchange (Internet Appendix Table IA.XIV).
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 50 =====
+
+1962 The Journal of Finance R⃝
+Initial submission: July 6, 2018; Accepted: October 5, 2019
+Editors: Stefan Nagel, Philip Bond, Amit Seru, and Wei Xiong
+REFERENCES
+Akerlof, George A., Paul M. Romer, Robert E. Hall, and N. Gregory Mankiw, 1993, Looting: The
+economic underworld of bankruptcy for proﬁt, Brookings Papers on Economic Activity 1993,
+1–73.
+Androulaki, Elli, Ghassan O. Karame, Marc Roeschlin, Tobias Scherer, and Srdjan Capkun, 2013,
+Evaluating user privacy in Bitcoin, International Conference on Financial Cryptography and
+Data Security, Springer, Berlin.
+Bhattacharya, Utpal, Craig W . Holden, and Stacey Jacobsen, 2012, Penny wise, dollar foolish:
+Buy–sell imbalances on and around round numbers, Management Science 58, 413–431.
+Brunnermeier, Markus K., and Stefan Nagel, 2004, Hedge funds and the technology bubble, Jour-
+nal of Finance 59, 2013–2040.
+Christie, William G., and Paul H. Schultz, 1994, Why do NASDAQ market makers avoid odd-eighth
+quotes? Journal of Finance 49, 1813–1840.
+Cong, Lin William, Zhiguo He, and Jiasun Li, 2019, Decentralized mining in centralized pools,
+Working paper, National Bureau of Economic Research.
+Cong, Lin William, Y e Li, and Neng Wang, 2019, Tokenomics: Dynamic adoption and valuation,
+Working paper, Becker Friedman Institute for Research in Economics.
+Dale, Richard, 2004, The First Crash: Lessons from the South Sea Bubble (Princeton University
+Press, Princeton, NJ).
+Denina, Clara, and Jan Harvey, 2014, E-trading pulls gold into forex units as commodity desks
+shrink, Reuters, April 22.
+Du, Wenxin, Alexander Tepper, and Adrien Verdelhan, 2018, Deviations from covered interest rate
+parity, Journal of Finance 73, 915–957.
+Dufﬁe, Darrell, 2010, Presidential address: Asset price dynamics with slow-moving capital, Journal
+of Finance 65, 1237–1267.
+Foley, Sean, Jonathan R. Karlsen, and T ¯alis J. Putni ņˇs, 2019, Sex, drugs, and Bitcoin: How much
+illegal activity is ﬁnanced through cryptocurrencies? Review of Financial Studies 32, 1798–
+1853.
+Froot, Kenneth A., Paul G. J. O’connell, and Mark S. Seasholes, 2001, The portfolio ﬂows of
+international investors, Journal of Financial Economics 59, 151–193.
+Gandal, Neil, J. T. Hamrick, Tyler Moore, and Tali Oberman, 2018, Price manipulation in the
+Bitcoin ecosystem, Journal of Monetary Economics 95, 86–96.
+Greenwood, Robin, 2005, Short-and long-term demand curves for stocks: Theory and evidence on
+the dynamics of arbitrage, Journal of Financial Economics 75, 607–649.
+Grifﬁn, John M., Jeffrey H. Harris, Tao Shu, and Selim Topaloglu, 2011, Who drove and burst the
+tech bubble? Journal of Finance 66, 1251–1290.
+Grifﬁn, John M., Jeffrey H. Harris, and Selim Topaloglu, 2007, Why are IPO investors net buyers
+through lead underwriters? Journal of Financial Economics 85, 518–551.
+Grifﬁn, John M., Federico Nardari, and Ren ´e M. Stulz, 2007, Do investors trade more when stocks
+have performed well? Evidence from 46 countries, Review of Financial Studies 20, 905–951.
+Grifﬁn, John M., and Amin Shams, 2018, Manipulation in the VIX? Review of Financial Studies
+31, 1377–1417.
+Harris, Lawrence, and Eitan Gurel, 1986, Price and volume effects associated with changes in
+the S&P 500 list: New evidence for the existence of price pressures, Journal of Finance 41,
+815–829.
+He, Zhiguo, and Arvind Krishnamurthy, 2018, Intermediary asset pricing and the ﬁnancial crisis,
+Annual Review of Financial Economics 10, 173–197.
+Higgins, Stan, 2018, Bitﬁnex’s biggest critic is back on twitter, CoinDesk,F e b r u a r y8 .
+Hutcheson, Archibald, 1720, Some Seasonable Considerations for Those Who are Desirous, by
+Subscription, or Purchase, to Become Proprietors of South-Sea Stock (F . Morphew, London).
+Kaminska, Isabella, 2017, Tether’s “transparency update” is out, Alphaville, October 2.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 51 =====
+
+Is Bitcoin Really Untethered? 1963
+Kindleberger, Charles P ., and Robert Z. Aliber, 2011, Manias, Panics and Crashes: A History of
+Financial Crises (Palgrave Macmillan, London).
+Kumar, Praveen, and Duane J. Seppi, 1992, Futures manipulation with “cash settlement,” Journal
+of Finance 47, 1485–1502.
+Lee, T.B., 2014, These four charts suggest that Bitcoin will stabilize in the future, Washington
+Post,F e b r u a r y3 .
+Lehmann, Bruce N., 1990, Fads, martingales, and market efﬁciency , Quarterly Journal of Eco-
+nomics 105, 1–28.
+Leising, Matthew, 2017, There’s an $814 million mystery near the heart of the biggest Bitcoin
+exchange, Bloomberg, December 5.
+Lin, Hsiou-wei, and Maureen F . McNichols, 1998, Underwriting relationships, analysts’ earnings
+forecasts and investment recommendations, Journal of Accounting and Economics 25, 101–
+127.
+Liu, Yukun, and Aleh Tsyvinski, 2018, Risks and returns of cryptocurrency, Technical report,
+National Bureau of Economic Research.
+McLannahan, Ben, 2015, Bitcoin hack report suggests inside job, Financial Times, February 19.
+Malkiel, Burton G., 1981, Risk and return: A new look, Technical report, National Bureau of
+Economic Research.
+Meiklejohn, Sarah, Marjori Pomarole, Grant Jordan, Kirill Levchenko, Damon McCoy, Geoffrey M.
+Voelker, and Stefan Savage, 2013, A ﬁstful of Bitcoins: Characterizing payments among men
+with no names, Proceedings of the 2013 Conference on Internet Measurement Conference,
+Internet Measurement Conference, 127–140.
+Mollenkamp, Carrick, and Mark Whitehouse, 2008, Study casts doubt on key rate, Wall Street
+Journal, May 29.
+Nagel, Stefan, 2012, Evaporating liquidity, Review of Financial Studies 25, 2005–2039.
+Nakamoto, Satoshi, 2008, Bitcoin: A Peer-to-Peer Electronic Cash System (Unpublished
+Manuscript).
+Nilsson, Kim, 2015, The missing Mt. Gox Bitcoins, WizSec, April 19.
+Partnoy, Frank, 2009, FIASCO: Blood in the Water on Wall Street (WW Norton & Company, New
+Y ork, NY).
+Popper, Nathaniel, 2017, Warning signs about another giant Bitcoin exchange, New Y ork Times,
+November 21.
+Povel, Paul, Rajdeep Singh, and Andrew Winton, 2007, Booms, busts, and fraud, Review of Finan-
+cial Studies 20, 1219–1254.
+Reid, Fergal, and Martin Harrigan, 2013, An analysis of anonymity in the Bitcoin system, in Y aniv
+Altshuler, Yuval Elovici, Armin B. Cremers, Nadav Aharony, and Alex Pentland, eds., Security
+and Privacy in Social Networks (Springer, New Y ork, NY).
+Robb, George, 2002, White-Collar Crime in Modern England: Financial Fraud and Business Moral-
+ity, 1845-1929 (Cambridge University Press, Cambridge).
+Ron, Dorit, and Adi Shamir, 2013, Quantitative analysis of the full Bitcoin transaction graph,
+International Conference on Financial Cryptography and Data Security , Springer, Berlin.
+Scheinkman, Jos´e A., 2013, Speculation, trading and bubbles: Third annual arrow lecture, Working
+paper 1458, Princeton University .
+Scheinkman, Jose A., and Wei Xiong, 2003, Overconﬁdence and speculative bubbles, Journal of
+Political Economy 111, 1183–1220.
+Shiller, Robert J., 2000, Irrational Exuberance (Princeton University Press, Princeton, NJ).
+Shleifer, Andrei, 1986, Do demand curves for stocks slope down? Journal of Finance 41, 579–590.
+Sockin, Michael, and Wei Xiong, 2018, A model of cryptocurrencies, Working paper, Princeton
+University .
+Spatt, Chester, 2014, Security market manipulation, Annual Review of Financial Economics 6,
+405–418.
+Temin, Peter, and Hans-Joachim Voth, 2013, Prometheus Shackled: Goldsmith Banks and Eng-
+land’s Financial Revolution after 1700 (Oxford University Press, Oxford).
+Tversky, Amos, and Daniel Kahneman, 1974, Judgment under uncertainty: Heuristics and biases,
+Science 185, 1124–1131.
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 52 =====
+
+1964 The Journal of Finance R⃝
+Vaughan, Liam, and Gavin Finch, 2013, Currency spikes at 4 pm in London provide rigging clues,
+Bloomberg Business, August 27.
+Chun Wei, Wang, 2018, The impact of Tether grants on Bitcoin, Economics Letters 171, 19–22.
+Y ermack, David, 2017, Corporate governance and blockchains, Review of Finance 21, 7–31.
+Supporting Information
+Additional Supporting Information may be found in the online version of this
+article at the publisher’s website:
+Appendix S1: Internet Appendix.
+Replication code.
+Disclosure statement
+ 15406261, 2020, 4, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License

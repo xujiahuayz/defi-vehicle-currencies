@@ -1,0 +1,3034 @@
+
+
+===== PAGE 1 =====
+
+Informed Liquidity Provision on
+Decentralized Exchanges ∗
+Olga Klein Roman Kozhan Ganesh Viswanath-Natraj
+Junxuan Wang
+Saturday 9th May, 2026
+Abstract
+We study the role of liquidity providers (LPs) in price discovery on decen-
+tralized cryptocurrency exchanges. In contrast to traditional limit order markets,
+where quotes can be revised instantaneously, DEX liquidity providers commit large
+amounts of capital to liquidity pools and face costly liquidity adjustments. This
+exposes them to greater adverse selection risk and generates strong incentives to
+acquire private information. Consistent with this prediction, we find that liquid-
+ity provision in the ETH-USDC low-fee pool close to the prevailing price has a
+permanent price impact, reflecting informed behavior of DEX LPs. We document
+heterogeneity across LPs, with larger orders, higher execution priority, narrower
+intervals, and sophisticated providers exhibiting greater informativeness.
+Keywords: Price discovery, order flow, decentralized finance
+JEL Classifications: E44, F31, G18, G20, G28
+∗Olga Klein is with Warwick Business School, University of Warwick, e-mail:olga.klein@wbs.ac.uk.
+Roman Kozhan is with Warwick Business School, University of Warwick, e-mail:
+Roman.Kozhan@wbs.ac.uk. Ganesh Viswanath-Natraj is with Warwick Business School, Univer-
+sity of Warwick, e-mail: ganesh.viswanath-natraj@wbs.ac.uk. Junxuan Wang is with Hong Kong
+University of Science and Technology (Guangzhou), e-mail: junxuanwang@hkust-gz.edu.cn. For
+comments, we would like to thank Agostino Capponi, Wenqian Huang, Luke Johnson, Erik Theissen
+and participants at the 6th Sydney Market Microstructure and Digital Finance Meeting, 2024 Torino
+Decentralized Finance Conference, the 6th International Conference on Blockchain Economics Security
+and Protocols (Tokenomics Conference) and 2026 SNB-CIF Conference on Cryptoassets and Financial
+Innovation. Ganesh Viswanath-Natraj acknowledges support from the Berkeley Ripple University
+Blockchain Research Initiative.
+
+===== PAGE 2 =====
+
+1 Introduction
+One of the central functions of financial markets is price discovery—the incorporation of
+new and dispersed information into asset prices through the interaction of traders and liq-
+uidity providers (LPs). In the cryptocurrency ecosystem, this process takes place across
+two distinct market structures: centralized exchanges (CEXs), which operate traditional
+limit order books (LOBs), and decentralized exchanges (DEXs), which rely on smart
+contracts and automated market maker (AMM) protocols. These venues differ in execu-
+tion speed, transparency, trading costs, and security, features that shape the behavior of
+informed traders and their choice of where to trade (Lehar and Parlour, 2025).
+In Uniswap V2, the dominant AMM design until recently, LPs placed their capital
+uniformly across all prices. This made liquidity provision largely passive, allowing arbi-
+trageurs to extract rents (Capponi and Jia, 2025) and leaving price discovery to aggressive
+(swap) traders (Capponi, Jia, and Yu, 2025), similar to traditional markets where market
+makers primarily absorb order flow (Glosten and Milgrom, 1985; Kyle, 1985). Uniswap
+V3, launched on Ethereum blockchain in May 2021, altered this design by enabling LPs
+to concentrate liquidity in chosen price ranges and fee tiers, 1 thereby bringing their role
+closer to that of limit order traders in LOBs, who are known to contribute to price
+discovery (e.g., Brogaard, Hendershott, and Riordan, 2019).
+Yet despite these similarities, AMM liquidity provision differs from limit order markets
+in at least three important ways. First, unlike limit orders that can be canceled at
+any time, deposited liquidity is locked in the AMM pool until actively withdrawn by
+a liquidity provider - for at least the duration of one block. 2 Second, each liquidity
+deposit and withdrawal requires paying transaction costs (”gas fees”), making active
+liquidity management inherently costly.3 Third, because gas fees make small transactions
+uneconomical, DEX trades tend to be substantially larger — up to ten times the size of
+1. Both features enhance flexibility and capital efficiency by allowing LPs to tailor the scope and
+profitability of their positions.
+2. The average block duration on Ethereum is 12 seconds. While it is technically possible to mint
+and burn liquidity within the same block — a practice known as just-in-time” (JIT) liquidity — such
+transactions are rare in our sample.
+3. By contrast, submitting or canceling a limit order on a CEX is costless, as on traditional exchanges.
+1
+
+===== PAGE 3 =====
+
+CEX trades — meaning DEXs naturally attract infrequent but large-sized trades.
+Taken together, these three structural features imply that DEX liquidity providers
+have considerably more ”skin in the game” than their CEX counterparts. Their capital
+is locked, each adjustment is costly, and they face larger trades on average — meaning
+that a poorly positioned LP on a DEX bears significant adverse selection losses. This
+stands in sharp contrast to CEX market makers, who can costlessly cancel and repost
+quotes in response to incoming order flow. Facing these higher stakes, rational DEX
+liquidity providers have strong incentives to acquire private information about future
+price movements and to position their liquidity accordingly. These differences in market
+structure leave open the question of whether LPs in Uniswap V3 behave as informed
+participants. Understanding this matters not only for DeFi but also more broadly, as it
+highlights how market design shapes information aggregation.
+This paper examines whether LPs in Uniswap V3 actively contribute to price discovery
+alongside swap traders. Using transaction-level data from the ETH/USDC pair, the most
+liquid and actively traded on Uniswap V3, we construct detailed measures of liquidity
+using the tick-level distribution of deposits (mints) and withdrawals (burns) and estimate
+the price impacts. This approach allows us to test whether liquidity supply in DEXs is
+purely passive or whether LPs behave strategically in ways that transmit information to
+prices.
+We find that the actions of LPs in decentralized markets reveal information about
+future returns. Orders placed close to the current price on the decentralized exchange
+have a statistically significant and persistent impact on prices. In particular, aggres-
+sive burns and mints predict returns in the expected direction, consistent with informed
+repositioning to mitigate adverse selection costs. In economic terms, a one standard
+deviation liquidity provision event generates an aggregate price impact up to 30 times
+larger than that of a comparable swap, suggesting that DEX liquidity provision is a
+more informative signal per unit than swap activity. Yet as the forecast error variance
+decomposition reveals, swaps account for a larger share of overall return variation, re-
+flecting their far greater frequency rather than superior informational content per trade.
+2
+
+===== PAGE 4 =====
+
+In contrast, orders placed far from the current price – non-aggressive mints and burns –
+are generally uninformative and typically have insignificant effects. Limit order flow on
+the CEX also exhibits statistically significant return predictability, but with the opposite
+sign to that predicted — net ask-side limit order flow positively rather than negatively
+forecasts returns — suggesting that CEX liquidity providers are less informed than their
+DEX counterparts.
+We next document that the informativeness of liquidity provision in DEXs is het-
+erogeneous across LPs and across orders with different characteristics. In contrast to
+traditional limit order books, which do not provide user-level information, we exploit
+the unique granularity of blockchain data to link informativeness directly to wallet- and
+balance sheet–level characteristics. This enables us to identify features such as execution
+priority, repositioning behavior, and LP tick ranges as measures of sophistication, provid-
+ing a novel way to distinguish informed from uninformed liquidity providers. Large orders,
+those with high execution priority, narrow price ranges, and submissions from sophisti-
+cated wallets display predictive content. By contrast, many liquidity events—especially
+those placed far from the current price or in high-fee pools—appear uninformed or have
+economically negligible price impacts. These patterns suggest that sophisticated LPs
+behave strategically, adjusting positions to reduce exposure to adverse selection, while
+simultaneously repositioning liquidity toward expected prices to earn fees.
+Finally, we examine whether LPs rely on public or private information. We condition
+liquidity provision on tradable price discrepancies between CEX and DEX, defining peri-
+ods of high and low deviation based on whether the absolute percentage price difference
+exceeds a threshold that reflects typical transaction costs, including gas fees, slippage,
+and pool fees. These deviations represent a natural form of public information, since a
+large share of DEX trading consists of arbitrage activity. We find that much of the infor-
+mativeness of LPs’ orders can be attributed to their reactions to such arbitrage signals,
+indicating that LPs are active and fast enough to compete with arbitrageurs. At the same
+time, liquidity orders continue to exert significant price impact even when arbitrage op-
+portunities are absent, consistent with LPs trading on private information or processing
+3
+
+===== PAGE 5 =====
+
+more complex public signals. Hence, informed liquidity provision in AMMs is not merely
+a mechanical response to arbitrage but also contributes independently to price discovery.
+These findings have several implications. From a theoretical perspective, they ex-
+tend the literature on informed liquidity supply in limit order markets (e.g., Bloomfield,
+O’Hara, and Saar, 2005; Kaniel and Liu, 2006; Goettler, Parlour, and Rajan, 2009; Bro-
+gaard, Hendershott, and Riordan, 2019) by providing transparent, position-level evidence
+from decentralized markets, where liquidity decisions are fully observable on-chain. The
+closest paper to ours from this literature is Brogaard, Hendershott, and Riordan (2019),
+who show that price discovery in traditional limit order markets occurs predominantly
+through limit orders, with HFTs accounting for the bulk of this contribution. Whereas
+HFTs’ informational advantage arises predominantly from their speed and co-location
+advantages, the mechanism driving informed liquidity provision in our setting is funda-
+mentally different: DEX liquidity providers cannot rely on speed or co-location, since all
+transactions are settled at the block level. Instead, their informational advantage stems
+from the large amounts of capital committed to liquidity pools, which generates strong
+economic incentives to acquire private information about future price movements.
+From a market design perspective, our findings highlight how changes in protocol
+rules, moving from uniform liquidity in Uniswap V2 to concentrated liquidity in Uniswap
+V3, alter the strategic nature of liquidity provision. From a policy perspective, they show
+that AMMs represent a viable alternative market structure for price discovery, in which
+information is aggregated by liquidity providers through capital-at-risk incentives rather
+than the technological speed and co-location advantages that characterise informed liq-
+uidity provision in traditional markets. This distinction matters for the sustainability
+of liquidity provision, the distribution of rents between informed and uninformed par-
+ticipants, and the assessment of decentralized exchanges relative to traditional trading
+venues.
+Related literature. Decentralized finance is a blockchain-based form of finance that
+uses smart contracts to auto-execute in financial markets without the need for traditional
+intermediaries (Sch¨ ar, 2021; John, Kogan, and Saleh, 2023).
+4
+
+===== PAGE 6 =====
+
+The early literature on DEXs examines the role of LPs and their coexistence with
+centralized LOBs (Lehar and Parlour, 2025; Aoyagi and Ito, 2025); the determinants of
+liquidity provision (Caparros, Chaudhary, and Klein, 2023; Fang, 2024; Lehar, Parlour,
+and Zoican, 2022; Neuder et al., 2021); empirical differences between DEX and CEX
+markets (Barbon and Ranaldo, 2025; Han, Huang, and Zhong, 2021; Capponi, Jia, and
+Yu, 2025; Foley, O’Neill, and Putni¸ nˇ s, 2023; Alexander et al., 2023; Heimbach, Wang,
+and Wattenhofer, 2021); the role of arbitrage and front-running (Daian et al., 2019; Wang
+et al., 2022; Capponi and Jia, 2025); and the theoretical foundations of AMM functions
+and informed trading (Hasbrouck, Rivera, and Saleh, 2022, 2025; Park, 2023; Angeris
+and Chitra, 2020; Angeris et al., 2021; Angeris, Chitra, and Evans, 2022; Cartea, Drissi,
+and Monga, 2024; Cartea et al., 2023; Aoyagi, 2020; Huang, Rostova, and Song, 2024).
+Within this literature, our paper is closest to studies of market efficiency in Uniswap
+V3, such as Barbon and Ranaldo (2025), who compare trading costs across DEX and CEX
+markets and show that concentrated liquidity provision in Uniswap V3 improves efficiency
+and reduces costs, allowing DEXs to compete directly with CEXs. We also relate to work
+on price discovery in DEX markets, such as Capponi, Jia, and Yu (2025), who show that
+trades with higher gas fees carry greater informational content because they increase
+the likelihood of execution in the next block and incentivize miners through higher tips,
+and Han, Huang, and Zhong (2021), who argue that price differences between Binance
+and Uniswap predict order flow. Our main innovation in this context is to consider the
+relative contributions of swap and liquidity orders to price discovery. In doing so, we
+contribute to an understanding of the incentives for informed trading in DEX markets.
+Most closely related on the theory side, Routledge, Shen, and Zetlin-Jones (2025) develop
+an adverse-selection framework for AMM liquidity provision analogous to Glosten and
+Milgrom (1985). Their model is set in a Uniswap V2 environment where LPs cannot
+choose a targeted price interval, and shows that LPs who also trade directionally via
+swaps are more informed than pure liquidity providers. In Uniswap V3, LPs can instead
+manage adverse-selection costs directly through the choice of price range and position
+size, without relying on swap trading. Our empirical results provide direct evidence for
+5
+
+===== PAGE 7 =====
+
+this mechanism.
+A second focus is on understanding the determinants of liquidity provision (Lehar and
+Parlour, 2025; Capponi and Jia, 2025; Foley, O’Neill, and Putni¸ nˇ s, 2023). Prior work
+documents that liquidity provision depends on factors such as adverse selection risk, with
+pool balances related to the underlying volatility of the pair and the share of informed
+trading. Turning to whether LPs are passive or active, Fang (2024) show that while LPs
+are profitable, capital is often misallocated because passive LPs do not reallocate in line
+with adverse selection risk. Caparros, Chaudhary, and Klein (2023) demonstrate that
+blockchain scaling solutions such as Polygon and Arbitrum facilitate more active liquidity
+provision and trade repositioning, while Lehar, Parlour, and Zoican (2022) compare low-
+and high-fee pools on Uniswap v3, finding that low-fee pools typically attract institutional
+LPs who rebalance more often, whereas retail LPs tend to concentrate in high-fee pools.
+We contribute to this literature by studying the information set of LPs. We find that
+LPs strategically rebalance in response to information about future returns, and that net
+liquidity posted close to the market price has a permanent impact, consistent with the
+role of limit orders in traditional financial markets (Brogaard, Hendershott, and Riordan,
+2019).
+The remainder of the paper is structured as follows. Section 2 introduces the insti-
+tutional setting and data for both centralized and decentralized exchanges. Section 3
+develops our main research hypotheses, which test whether liquidity provision and with-
+drawal on decentralized exchanges contribute to price discovery. In Section 4, we conduct
+our empirical analysis of market order flow and liquidity provision. Section 5 concludes.
+2 Institutional Setting and Data
+2.1 Centralized vs Decentralized Exchanges
+Cryptoassets can currently be traded either on CEX or on DEX. CEXs, such as Binance
+and Coinbase, use LOBs, similar to traditional exchanges. In LOBs, market orders
+are matched with outstanding limit orders, i.e., traders need to find a counterparty for
+6
+
+===== PAGE 8 =====
+
+their orders to be executed. However, once orders are matched, the execution is quickly
+processed by the exchange server.
+Decentralized exchanges, such as Uniswap and Curve, operate on the blockchain, using
+a set of smart contracts. Most commonly, liquidity is provided through an “automated
+market maker” (AMM). Each asset pair, for example, USDC/ETH, comprises a separate
+liquidity pool. LPs can deposit (‘mint’) or withdraw (‘burn’) liquidity from the pool.
+Liquidity demanders can then exchange, or swap, one token for another in the pool at
+the current pool price, paying a pre-specified pool fee, e.g., 0.05% or 0.30%, to LPs. In
+contrast to LOB, all trades are executed against the AMM, eliminating the need for a
+counterparty search. Importantly, execution on DEXs is also more secure, because traders
+keep custody of their assets. However, execution on DEX is costly and not immediate.
+Every transaction on the blockchain has to be validated before it is actually recorded.
+Validating takes time, and traders have to compensate validators with so-called “gas fees”
+for processing their transactions. Gas fees represent a fixed cost per transaction and are
+paid in addition to the usual exchange (or pool) fees that traders pay to LPs both on
+CEX and DEX. 4
+Importantly, AMM liquidity provision differs from traditional limit order markets in
+at least three ways. First, unlike limit orders that can be revised or canceled at any time,
+liquidity providers are essentially ”locking” their capital in the pool when they deposit
+(”mint”) liquidity. The capital is locked for at least the duration of one block, which
+corresponds on average to 12 seconds on Ethereum. Second, similar to traders, liquidity
+providers also have to pay gas fees for every mint or burn transaction, making liquidity
+mints and burns inherently costly. Third, liquidity providers on DEX face a different
+distribution of expected trade sizes: DEX trades tend to be substantially larger — up to
+ten times the size of CEX trades - because gas fees make small transactions uneconomical.
+Taken together, these three differences imply that DEX liquidity providers have con-
+siderably larger exposure to adverse selection than their CEX counterparts: their capital
+4. Lehar and Parlour (2025) provide a detailed introduction to decentralized exchanges. Barbon and
+Ranaldo (2025) compare transaction costs on CEX and DEX, highlighting that the major difference in
+execution costs on DEX arises due to the existence of high gas fees.
+7
+
+===== PAGE 9 =====
+
+is locked, each adjustment is costly, and they face larger trades on average. In contrast,
+CEX market makers can costlessly cancel and repost quotes in response to incoming order
+flow and CEX trades are on average smaller. Facing these higher stakes, rational DEX
+liquidity providers have strong incentives to acquire private information about future
+price movements.
+On aggregate, decentralized exchanges account for between 6% and 10% of total
+monthly spot trading volume across both CEX and DEX venues during our sample period,
+from May 2021 to July 2022.5 In our further analysis, we concentrate on the largest CEX,
+Binance, and the largest DEX, Uniswap v3.
+2.2 Trading Mechanics on Uniswap
+2.2.1 Liquidity Provision
+Uniswap V3 was released in May 2021, implementing two main changes relative to its
+previous version, Uniswap V2. 6 To understand these innovations, it is helpful to begin
+with the mechanics of Uniswap V2.
+In Uniswap V2, LPs deposit equal values of two tokens into a liquidity pool, and
+trading is designed to keep the constant product pricing rule (called bonding curve)
+x·y =k, wherex andy are the quantities of the two tokens in the pool. Importantly, LPs
+are not allowed to restrict the price range over which their liquidity was active—liquidity
+was automatically distributed over the entire price range [0,∞]. Figure 1 illustrates this
+liquidity distribution. Panel A shows the Uniswap V2 case, where liquidity is uniformly
+distributed across all prices. This implies that most capital is idle for trades far from the
+current market price, leading to low capital efficiency.
+[Insert Figure 1 approximately here]
+In Uniswap V2, when a user executes a swap, the trade is routed through the pool’s
+reserves, and the execution price is determined by the relative quantities of the two tokens.
+5. Reference based on data aggregated from major CEX and DEX exchanges at the Block https:
+//www.theblock.co/data/decentralized-finance/dex-non-custodial/dex-to-cex-spot-trade-volume.
+6. For detailed discussion of Uniswap V2, see Lehar and Parlour (2025), Capponi and Jia (2025), and
+Park (2023).
+8
+
+===== PAGE 10 =====
+
+Specifically, the reserves must continue to satisfy the constant product rulex·y =k after
+the trade, which means the execution price is the marginal rate of substitution along this
+curve. As a result, the price of a trade increases with its size—larger trades incur more
+price slippage by moving further along the bonding curve.
+The first key innovation of Uniswap V3 is the introduction of concentrated liquidity,
+which allows LPs to set specific price ranges for their liquidity positions. Panel B of
+Figure 1 shows how this changes the shape of the liquidity distribution: liquidity is no
+longer spread uniformly, but instead concentrated within a finite interval [ pa,p b]. This
+aims to improve capital efficiency, as LPs can earn more trading fees with less capital
+deployed.
+When an LP opens a new position in Uniswap V3, they specify a price range [ pa,p b],
+wherepa is the minimum price and pb is the maximum price of token X (the base token)
+in units of token Y (the quote token) at which the position is active. In contrast to
+Uniswap V2, this allows LPs to concentrate their liquidity where they expect trading to
+occur.
+The pricing function in Uniswap V3 is a generalization of the constant product for-
+mula, ensuring that the relationship between the two quantities holds within the specified
+price range:7
+(
+x + L√pb
+)
+(y +L√pa) =L2, (1)
+wherex andy are the amounts of tokensX andY deposited, andL is the virtual liquidity
+of the position. Virtual liquidity governs effective depth within the active range: a higher
+L implies deeper liquidity and a smaller price impact per unit of trade, while a lower L
+produces steeper price responses to the same trade size. 8
+This pricing function not only determines how liquidity is allocated, but also governs
+how trades execute in the protocol. When a user executes a swap in Uniswap V3, the trade
+7. Source: Uniswap V3 whitepaper available at https://uniswap.org/whitepaper-v3.pdf
+8. This expression reduces to the standard Uniswap V2 constant product formula x· y = k when the
+price range is unrestricted. In the limit as pa→ 0 and pb→∞ , the LP’s position is active across all
+prices. Then, lim pa→0 L√pa = 0 and lim pb→∞ L√pb
+= 0, so Equation (1) simplifies to x· y = L2. This
+matches the Uniswap V2 constant product rule, where liquidity is uniformly distributed over [0 ,∞] and
+trades move along a fixed curve with k = L2.
+9
+
+===== PAGE 11 =====
+
+is routed through the active tick range that contains the current price. The execution
+price of the trade is determined by the marginal rate implied by the current pool reserves,
+following the same pricing logic as Uniswap V2 but applied locally within the active tick
+range . Specifically, if a user swaps ∆ x units of token X (e.g., ETH) for token Y (e.g.,
+USDC), the output amount ∆y is computed so that the updated reserves (x+∆x,y−∆y)
+still satisfy equation (1). This ensures that the constant-curve invariant is preserved.
+Since prices move continuously along the bonding curve during the trade, the effective
+execution price is the average price over the path of the swap. In practice, this results
+in slippage: larger trades receive worse prices as they deplete more liquidity within the
+specified price range.
+To implement concentrated liquidity, Uniswap V3 divides the price space into discrete
+tick intervals. Each tick range i maintains a total liquidity level Li, which aggregates the
+virtual liquidity L from all LP positions active in that range. The liquidity distribution
+in Panel B of Figure 1 is built up from these tick-level contributions. This structure
+allows multiple LPs to deposit liquidity at different prices, resulting in a richer and more
+flexible liquidity profile than Uniswap V2. We provide more details on tick spacing in
+Section 2.2.2.
+The amount of tokens deposited in a Uniswap V3 position is no longer in a fixed 50-50
+ratio, as in Uniswap V2. Instead, it depends on the location of the price range relative
+to the current market price pM. If the range lies strictly above pM, only token X needs
+to be deposited (corresponding to the ask side). If the range lies strictly below pM, only
+token Y is required (corresponding to the bid side). When the range contains pM, both
+tokens must be deposited, with proportions depending on the position of pM within the
+range.
+The second key innovation in Uniswap V3 is the introduction of variable fee tiers.
+Liquidity pools can be created with one of four fee rates: 0.01%, 0.05%, 0.3%, or 1%.
+Hence, the same token pair may be traded across multiple pools. For example, the
+most liquid pair—USDC/ETH—is actively traded in both the 0.05% and 0.3% fee pools.
+Lehar, Parlour, and Zoican (2022) show that fragmentation across low- and high-fee
+10
+
+===== PAGE 12 =====
+
+pools is driven by economies of scale. Low-fee pools are primarily used by large, i.e.,
+professional, LPs who can afford to frequently update positions despite fixed gas costs.
+In contrast, smaller, i.e., retail, LPs prefer to passively provide liquidity in higher-fee
+pools where rebalancing is less frequent.
+Together, concentrated liquidity and variable fees make Uniswap V3 significantly more
+flexible and capital-efficient than its predecessor. However, these benefits come at a cost
+of more frequent monitoring required from LPs, which also creates new strategic behaviors
+in liquidity provision.
+2.2.2 Tick Spacing
+In Uniswap V3, prices are not continuous but are discretized into fixed increments called
+ticks. Each tick is indexed by an integer i∈ Z, and the price corresponding to tick i is
+given by:
+pi = 1.0001i. (2)
+This exponential mapping implies that each tick represents approximately a 1 basis point
+price increment, since 1.0001≈ 1 + 0.01%. As i increases, prices rise slightly faster than
+linearly in tick space.
+Importantly, the discrete tick structure also provides a mapping between tick intervals
+and price ranges. If an LP selects a lower tick i and an upper tick i +l, this corresponds
+to a price range [pa,p b] = [pi,p i+l] with pi = 1.0001i and pi+l = 1.0001i+l. This mapping
+connects the tick-based notation used throughout this section with the continuous price
+interval [pa,p b] introduced earlier in the discussion of virtual liquidity.
+Not all ticks can be used for liquidity provision. Each Uniswap v3 pool specifies a tick
+spacing parameter, which restricts the set of valid (initializable) ticks. Only ticks divisible
+by this spacing can be used to define a price range. For example, in the USDC/ETH
+0.3% fee pool, the tick spacing is 60, meaning that valid ticks include −120,−60, 0, 60,
+120, and so on. In the USDC/ETH 0.05% pool, the tick spacing is narrower, equal to 10,
+allowing for more granular price levels spaced about 10 basis points apart.
+LPs select a lower tick i and an upper tick i +l to define a price range [ i,i +l] over
+11
+
+===== PAGE 13 =====
+
+which they allocate liquidity. The length of the tick range, l, must be a multiple of
+the pool’s tick spacing. A single LP position can cover one or more such tick ranges.
+The total liquidity on tick range [ i,i +l], denoted Li, aggregates all active LP positions
+overlapping that range. As a result, the aggregate liquidity distribution across the pool
+becomes fragmented and uneven, in contrast to Uniswap V2 where liquidity was uniformly
+distributed across all prices.
+According to the Uniswap v3 whitepaper (Adams et al., 2021), the amounts of tokens
+locked within a given tick range [i,i +l] are given by: 9
+xi = Li
+√zi
+− Li
+√pi+l
+(3)
+yi =Li· (√zi−√pi) (4)
+where xi and yi denote the quantities of tokens X and Y (the base and quote assets,
+respectively) deposited within the tick range. The intermediate price zi depends on the
+current market price pM and adjusts based on the position of pM relative to the tick
+range:
+zi =
+
+
+
+pi if pM≤pi
+pM if pi <p M <p i+l
+pi+l if pi+l≤pM
+This definition ensures that the token amounts vary depending on whether the tick range
+lies entirely above, entirely below, or contains the current price.
+Figure 2 displays an example of the liquidity distribution around the current market
+price for the ETH/USDC 0.05% pool, referred to here as DEX(5). The actual Uniswap v3
+pool is denominated as USDC/ETH 0.05%, where USDC is the base token (X), quoted in
+units of ETH (Y ). For ease of interpretation, we reverse this convention in our analysis:
+ETH is treated as the base token ( X), and USDC as the quote token ( Y ). Under this
+notation, liquidity provided in ETH corresponds to the ask side (i.e., LPs are willing to
+9. See also Lehar, Parlour, and Zoican (2022) and Caparros, Chaudhary, and Klein (2023) for further
+details and numerical examples.
+12
+
+===== PAGE 14 =====
+
+sell ETH for USDC), while liquidity provided in USDC corresponds to the bid side (i.e.,
+LPs are willing to buy ETH with USDC).
+[Insert Figure 2 approximately here]
+The figure corresponds to block 16,265,204 on December 25, 2022. The horizontal axis
+shows the distance from the current tick, which corresponds to the discrete tick index i
+such that the tick price pi = 1.0001i is the largest tick price less than or equal to the
+current market price pM. We normalize tick 0 to align with this current tick. In this
+pool, the tick spacing is set to 10, meaning that only every tenth tick (e.g., −20,−10,
+0, 10, 20) can be initialized and used for liquidity provision. A tick range is defined as
+[i,i + 10], and each liquidity position is distributed across one or more of these 10-tick
+intervals.
+Liquidity is expressed in millions of USDC on both sides of the book to allow consistent
+measurement of bid- and ask-side depth. Tick ranges below the current price correspond
+to the bid side of the limit order book (LOB), — that is, LP positions denominated
+entirely in USDC, standing ready to purchase ETH as the price declines (akin to buy
+limit orders for ETH). Tick ranges above the current price correspond to the ask side.
+LP positions on the ask side are denominated entirely in ETH, standing ready to sell
+ETH as the price increases (akin to sell limit orders for ETH). Expressing both sides
+in USDC units allows us to directly compare relative liquidity and track changes across
+price movements in a common numeraire.
+2.3 DEX Data
+Our sample of DEX data consists of the two most liquid pools on Uniswap V3: ETH/USDC
+0.05% (denoted DEX(5)) and ETH/USDC 0.3% (DEX(30)). The sample period runs
+from May 6, 2021, the launch date of Uniswap V3, until July 12, 2022. We end the sam-
+ple in mid-2022 because our benchmark CEX, Binance, delisted the ETH-USDC trading
+pair in late 2022.
+We focus on the ETH/USDC pair because it is the most actively traded pair on
+13
+
+===== PAGE 15 =====
+
+Uniswap V3 and exhibits by far the highest level of LP activity during our sample pe-
+riod. Based on our sample, the average LP in the ETH/USDC pools submits 330 liquid-
+ity events (mints and burns) per day, compared to 75 in the second most liquid pool in
+our data (ETH/BTC). This concentration of LP activity makes ETH/USDC the natural
+choice for studying active, informed liquidity provision. Within this pair, we include both
+the low-fee DEX(5) and the high-fee DEX(30) pool to capture the full cross-section of LP
+behavior: DEX(5) attracts predominantly professional and institutional LPs who rebal-
+ance their positions more frequently (Lehar, Parlour, and Zoican, 2022), while DEX(30)
+serves as a comparison group of more passive retail LPs. If informed repositioning drives
+our results, we expect stronger effects in DEX(5) than in DEX(30), which is precisely
+what we find.
+We obtain trade data for the DEX(5) and DEX(30) pools via the Subgraph API. 10
+The trade data includes the pool address, fee tier, block number, token amounts swapped,
+and the pool price after each transaction. Using these data, we compute the ETH buy
+(sell) volume in USDC for each block, denoted as buy (sell) order flow,swapbuy
+(k) (swapsell
+(k) ),
+wherek = 5 for the 0.05% pool and k = 30 for the 0.3% pool. Net swap flow within each
+block is defined as:
+swap(k) =swapbuy
+(k)−swapsell
+(k). (5)
+Liquidity data, sourced via the Kaiko API, includes all liquidity events (mints and
+burns).11 Each event record contains the pool address, fee tier, block number, token pair,
+wallet ID, amount minted or burned, and the corresponding tick range.
+We use liquidity events to construct the net mints of liquidity on the ask side (token
+X) and the bid side (token Y ), denoted mint(k). Specifically, we define mint(k) as the
+difference between mintask
+(k) and mintbid
+(k) for each block, for k = 5, 30:
+mint(k) =mintask
+(k)−mintbid
+(k). (6)
+10. https://thegraph.com/hosted-service/subgraph/uniswap/uniswap-v3
+11. https://docs.kaiko.com/rest-api/data-feeds/level-1-and-level-2-data/level-2-tick-level/mints-and
+-burns
+14
+
+===== PAGE 16 =====
+
+For each mint of [xp;yp] posted on a price range [ pa,p b], we compute
+mintask
+(k) =xp·pM, (7)
+mintbid
+(k) =yp, (8)
+where pM is the current market price of ETH in USDC. If there are multiple mints in a
+block, we sum mintask
+(k) and mintbid
+(k) across all mints before computing mint(k) as in (1).
+By design, in Uniswap V2 LPs must supply both tokens in equal value proportions
+across the full price range, i.e. they cannot choose the specific price range on which their
+liquidity position is active. Because liquidity provision is symmetric and passive by con-
+struction, LP minting and burning decisions carry no directional information about LPs’
+price expectations in Uniswap V2. In contrast, Uniswap V3 allows LPs to concentrate
+liquidity within chosen price ranges, so mint(k) can take positive or negative values. A
+positive value indicates that LPs have minted more of token X (ask side) than token Y
+(bid side), akin to more sell limit orders being placed than buy limit orders in a tradi-
+tional LOB. This asymmetry is unique to the V3 framework and provides a source of
+information about LPs’ expectations regarding future price direction.
+Following the same logic, we define the net burn per block as
+burn(k) =burnask
+(k)−burnbid
+(k). (9)
+For each burn of [xp;yp] on a price range [pa,p b], we compute
+burnask
+(k) =xp·pM, (10)
+burnbid
+(k) =yp, (11)
+where pM is the current market price of ETH in USDC. A positive value of burn(k)
+indicates that more token X (ask-side liquidity) has been withdrawn than token Y (bid-
+side), akin to ask-side order cancellations in traditional markets.
+Since activity near the current price may impact price discovery more directly, we
+15
+
+===== PAGE 17 =====
+
+decompose net liquidity into “best” (close to the current price) and “away” (far from the
+current price) ranges:
+mintb
+(k) =mintb,ask
+(k) −mintb,bid
+(k) , (12)
+minta
+(k) =minta,ask
+(k) −minta,bid
+(k) . (13)
+We define the “best” price sub-range as the five tick ranges around the current tick
+(i.e., [−5, 5]). Each tick range consists of multiple individual ticks, and the width of each
+tick range is determined by the pool’s tick spacing. In the DEX(5) pool, the tick spacing
+is 10, so five tick ranges correspond to 50 ticks. In the DEX(30) pool, the tick spacing is
+60, so five tick ranges correspond to 300 ticks. These thresholds match the 25th percentile
+of the distribution of absolute distances between liquidity positions and the current tick,
+as reported in Table 1. Thus, this sub-range captures the quarter of all events closest to
+the current market price.
+Specifically, for each mint or burn event on a tick range [ ia,i b], we compute the
+absolute distance from both the lower tick ia and the upper tick ib to the current tick
+iM. Table 1 reports the distribution of these distances separately for the DEX(5) and
+DEX(30) pools. As noted, the lower quartile corresponds to approximately 50 ticks in
+DEX(5) and 300 ticks in DEX(30), equivalent to 5 tick ranges in each pool.
+Some liquidity positions span both “best” and “away” regions, so we disaggregate the
+total liquidity accordingly. For each mint on a price range [ pa,p b], we first compute the
+total position liquidityLp using Equations (3) and (4).12 We then use the same equations
+to split the ETH and USDC token amounts across the relevant sub-ranges. For example,
+to calculate mintb,ask
+(k) in DEX(5), we compute the amount of token X (ETH) minted
+within the five tick ranges above the current tick — i.e., tick intervals [0 , 10], [10, 20], ...,
+[40, 50] —which span approximately 50 basis points above the current price pM:
+mintb,ask
+(k) =xp[0; 50]·pM (14)
+12. See Caparros, Chaudhary, and Klein (2023), Appendix D, for a worked example.
+16
+
+===== PAGE 18 =====
+
+where xp[0; 50] is computed using Equation (3), setting pi =pM and pi+l =pM + 50bps.
+We similarly compute the liquidity deposited above this range as:
+minta,ask
+(k) =xp[50;∞]·pM (15)
+Applying the same method to token Y yields:
+mintb,bid
+(k) =yp[−50; 0], (16)
+minta,bid
+(k) =yp[−∞;−50], (17)
+The same disaggregation is performed for burn events.
+2.4 CEX Data
+Our sample of CEX data consists of the ETH–USDC pair traded on Binance over the
+same sample period as the DEX pools, from May 6, 2021 to July 12, 2022. We obtain
+Binance tick-level data from CryptoTick, a subsidiary of CoinAPI, and resample the data
+to the block level using DEX block timestamps.
+We define the block-level market order flow in the CEX market as:
+market =marketbuy−marketsell, (18)
+where marketbuy and marketsell represent the volume of buy and sell market orders per
+each Ethereum block, respectively.
+We construct the end-of-block mid-price series using limit order book snapshots from
+CryptoTick. The mid-price is calculated as the average of the best bid and best ask
+prevailing at or just before the timestamp of each Ethereum block. Log returns are then
+computed as the difference in log mid-prices:
+ret = log(pt)− log(pt−1). (19)
+17
+
+===== PAGE 19 =====
+
+We define depth as the aggregate volume of buy (bid) and sell (ask) limit orders
+resting in the order book across price levels. In our data, depth is measured from the
+top 50 levels of the Binance order book snapshots, spanning approximately 0.50%–1% on
+either side of the mid-price.
+Changes in depth therefore capture the net effect of limit order submissions and
+cancellations within these levels. Since our data do not separately identify submissions
+and cancellations, we approximate the net liquidity added to the ask (bid) side during
+each block as the change in depth on the ask (bid) side, adjusted for executed market
+orders:
+limitask = ∆depthask +marketbuy, (20)
+limitbid = ∆depthbid +marketsell, (21)
+limit =limitask−limitbid. (22)
+Appendix A provides detailed definitions of all variables used in the analysis, along
+with their data sources. This includes block-level measures of swap flows, disaggregated
+mint and burn activity by price range on Uniswap V3, and approximated market and
+limit order flows on Binance.
+2.5 Summary Statistics
+Table 2 presents summary statistics for trade and liquidity flows across the DEX(5),
+DEX(30), and Binance CEX markets. All flows are measured at the Ethereum block
+level and expressed in USDC. The table is divided into three panels.
+[Insert Table 2 approximately here]
+Panel A summarizes the distribution of net trade order flows on each venue. The
+average block-level net order flow is close to zero across all platforms, indicating balanced
+trading activity between buy and sell orders. However, the standard deviation of the net
+trade order flows (which is an indication of the average trade size) differs substantially:
+18
+
+===== PAGE 20 =====
+
+the highest is on DEX(30), roughly $464,298, followed by DEX(5) with a standard de-
+viation of $321,763, and the CEX (Binance) exhibits a much smaller standard deviation
+of $47,213. This difference reflects the cost structure of each platform: due to gas fees,
+DEXs are better suited for infrequent but large trades, whereas CEXs facilitate smaller,
+more frequent transactions. Indeed, the CEX platform is the most active in terms of
+the number of trades; there are 1,585,597 block intervals with at least one market order
+traded during that interval. For DEX(5), there are 1,294,246 blocks with at least one
+swap order executed. In contrast, DEX(30) is the least active in terms of the number of
+trades (only 223,011 blocks with an executed trade).
+Panel B reports statistics on liquidity provision activity. For DEX pools, this includes
+mint and burn events both near the current price (within five tick ranges) and away from
+it. In DEX(5), liquidity flows are substantially larger: average net mints near the price
+(mintb
+(5)) exceed $780,000, and average net burns ( burnb
+(5)) are even larger at over $1.5
+million. In comparison, DEX(30) exhibits consistently smaller average net mints and
+burns near the current price: $123,877 and $232,370, respectively. This pattern is also
+true for the standard deviations of net mints and burns. This is consistent with findings
+in Lehar, Parlour, and Zoican (2022) that low-fee pools attract larger and more active
+LPs, while high-fee pools cater more to smaller passive LPs.
+Mints occur more frequently than burns in both pools. However, when burns do occur,
+they tend to be larger in size (as reflected in their standard deviations). This asymmetry
+suggests that LPs more actively deposit liquidity but withdraw strategically in response
+to adverse market conditions.
+The CEX limit order flow proxy,limit, shows much smaller standard deviation—around
+$175,990—but occurs nearly every block, indicating continuous and fine-grained liquidity
+provision. Although our data do not permit identification of individual order submissions
+and cancellations, the high frequency aligns with the microstructure of traditional order
+books.
+Panel C reports mid-price returns at three horizons — 1, 10, and 60 blocks — com-
+puted as log differences in mid-prices. Given Ethereum’s average block time of 12 seconds,
+19
+
+===== PAGE 21 =====
+
+these horizons correspond to approximately 12 seconds, 2 minutes, and 12 minutes respec-
+tively. As expected, return dispersion increases with horizon, ranging from a standard
+deviation of 0.07% over 1 block to 0.52% over 60 blocks. Median returns are zero at all
+horizons, indicating no directional bias.
+Overall, these statistics reveal that DEXs and CEXs serve different trading roles.
+DEXs concentrate on larger, less frequent trades and liquidity updates, while CEXs
+operate at a higher frequency with smaller volumes. The data also suggest that liquidity
+behavior on DEXs is both strategic and heterogeneously distributed across fee tiers.
+3 Research Hypotheses
+The introduction of concentrated liquidity in Uniswap V3 transforms liquidity provision
+from a passive into a potentially strategic activity. In this section, we develop a set of
+hypotheses to test whether LPs use their positions to act on information about future
+price movements. These behaviors may arise either from attempts to reduce adverse
+selection costs, such as impermanent loss, or from the need to remove stale liquidity
+that no longer earns trading fees. We distinguish between different mechanisms through
+which LPs may contribute to price discovery: the timing and placement of their deposits
+and withdrawals (mints and burns), the location of those orders relative to the current
+price, and wallet- or order-level characteristics that may reveal informational advantage.
+The hypotheses are grouped as follows: H1 tests for the information content of overall
+liquidity orders; H2 investigates how price impact varies with the proximity of liquidity
+orders to the current price; and H3 explores whether informativeness varies across wallets
+and order types.
+In earlier versions of AMMs, such as Uniswap V2, LPs were designed to be passive
+participants, with no control over the price at which they transact or the fees they earn
+in return for liquidity provision. It is, therefore, natural to expect that LP behavior con-
+tained little information. The concentrated liquidity design of Uniswap V3 fundamentally
+alters the LP’s role: rather than passively providing liquidity, LPs must actively man-
+20
+
+===== PAGE 22 =====
+
+age their positions to ensure capital remains within the active tick range and continues
+to earn fees. In particular, LPs can now target specific price ranges, allowing them to
+optimally reposition their liquidity in response to new information—whether public or
+private—to maximize expected profits.
+When LPs add liquidity to a pool, they are exposed to impermanent loss—the risk
+that the value of their allocated assets changes from the time of deposit. If this price
+change is driven by fundamental information, it may become permanent, resulting in
+adverse selection costs for LPs. LPs have several tools at their disposal to manage this
+risk. First, they can concentrate their liquidity within pre-specified intervals around
+particular price levels, known as price ranges. Narrower price ranges reduce exposure to
+price movements outside the selected interval, but also limit fee earnings, since LPs are
+only rewarded when trades occur within their active range. Second, when LPs anticipate
+a permanent price change, they can burn their existing positions and/or reposition their
+liquidity closer to the new expected price level.
+Routledge, Shen, and Zetlin-Jones (2025) provide an adverse-selection framework for
+AMM liquidity provision whose structure is analogous to Glosten and Milgrom (1985).
+An LP who chooses virtual liquidity L over price range [pa,p b] earns expected profit:
+Π(L, pa, pb) = πF(L, pa, pb) − (1−π)A(L, pa, pb), (23)
+where π is the fraction of uninformed liquidity takers, F > 0 is the fee income earned
+from those traders, and A ≥0 is the adverse-selection loss when an informed taker
+pushes the price from pM to p∗. Using the Uniswap V3 pricing rule (Equation 1), the
+adverse-selection term is:
+A(L, pa, pb) = L√pM
+E
+[(√p∗−√pM
+)2
+· 1p∗∈[pa, pb]
+]
+. (24)
+Unlike a traditional market maker who can widen the bid–ask spread to screen informed
+traders, the AMM bonding curve is fixed by protocol. The LP’s only instrument for
+managing adverse-selection risk is therefore the quantity deposited on each side of the
+21
+
+===== PAGE 23 =====
+
+current price, specifically the choice ofL and [pa,p b]. Because these choices are observable
+in transaction data as mints and burns, they encode the LP’s directional view and should
+have predictive power over subsequent price movements.
+Further, from Table 2, mint sizes on DEXs are significantly larger than those of limit
+orders on CEXs, with standard deviations of $7,360,373 for mintb
+(5) versus $175,990 for
+limit. With large amounts of capital locked in liquidity pools, DEX liquidity providers
+face strong incentives to acquire private information and actively monitor public releases
+to minimize their adverse selection losses. Their exposure to adverse selection is com-
+pounded by the larger expected trade sizes documented in Section 2.5. In contrast, CEX
+liquidity providers operate at a considerably smaller scale — both in terms of limit or-
+der size and expected trade size — and can quickly and costlessly revise their quotes in
+response to incoming informed order flow.
+Overall, CEX liquidity providers have weaker incentives to acquire private informa-
+tion and more closely resemble the classical uninformed market maker who learns from
+order flow, as in Glosten and Milgrom (1985). DEX liquidity providers, by contrast,
+are effectively endogenously informed: the scale of their capital commitment generates
+strong incentives to actively acquire information about future price movements in order
+to mitigate adverse selection losses.
+This reasoning suggests that sophisticated LPs either acquire private information or
+respond quickly to public information. actively adjusting their positions to maximise fee
+income and limit adverse-selection losses. Accordingly, we expect that LPs’ mint and
+burn activity contributes to price discovery on DEXs. Our first hypothesis is:
+H1: Mint and burn activity on DEXs contains predictive information about
+future price movements.
+If LPs correctly anticipate future price changes and strategically use this information
+to increase expected profit or avoid risks, the direction of future price movements should
+be reflected in the composition of mint and burn activity. To rationalize the sign of this
+22
+
+===== PAGE 24 =====
+
+predictive relationship, we interpret how net minting or burning of liquidity relates to
+subsequent price direction.
+Figure 3 illustrates four possible states that relate net minted and burned liquidity
+to future price changes. In all four scenarios, the long-term price, p∗, is assumed to be
+higher than the current price, p0. A positive net mint, mint(k), corresponds to a larger
+amount of liquidity added above the current price (ask) relative to liquidity added below
+the current price (bid), as illustrated on the right side of Panel A. We define a positive net
+mint as having a ”positive price impact” when an increase in liquidity submitted above
+the current price positively predicts future returns. Importantly, we use the term “price
+impact” to refer to the return-predictive content of liquidity adjustments rather than
+their immediate effect on transaction prices. In contrast, a negative net mint corresponds
+to a larger amount of liquidity added to the bid side relative to the ask side, as illustrated
+on the left side of Panel A. We refer to the scenario where a negative net mint predicts
+a future price increase as a “negative price impact” of a net mint. 13
+Panel B shows similar scenarios for net burns. A positive net burn (right side of
+Panel B), corresponds to greater wothdrawal of liquidity above the current price (on the
+ask side) relative to below it (on the bid side). In this case, a positive (negative) price
+impact arises when this net removal of ask-side liquidity positively (negatively) predicts
+future returns. Conversely, a net burn on the bid side (left side of Panel B) has a positive
+(negative) price impact if it is negatively (positively) related to subsequent returns.
+[Insert Figure 3 approximately here]
+An informed LP can adopt several strategies to utilize information about future price
+changes. For example, if the LP expects the base currency token X to appreciate perma-
+nently, posting liquidity at or just above the current price (i.e., near the ask) would be
+irrational, as it exposes the LP to impermanent loss from adverse selection. Instead, it is
+more rational to post liquidity at or close to the best bid, corresponding to a “buy low”
+13. Similarly, a positive net mint could have a “negative price impact” if it predicts a future price
+decrease. By “negative price impact”, we refer here to the negative relation between net liquidity minted
+and subsequent returns.
+23
+
+===== PAGE 25 =====
+
+strategy similar to submitting a limit buy order in traditional markets. Although such a
+strategy carries a low probability of execution, it avoids losses from longer-term adverse
+price movements while potentially earning fees from short-term reversals (it earns liquid-
+ity fees only if the token price depreciates temporarily before appreciating permanently).
+Conversely, when the LP expects the token to depreciate in the long run, liquidity
+provision near the ask carries little adverse selection risk. Overall, since it is rational
+to post at or close to the best bid when the base token X is expected to appreciate,
+and to post at or close to the best ask when X is expected to depreciate, we expect a
+negative relation between net liquidity minted close to the current price (denoted mintb)
+and subsequent returns. In terms of equation (24), a bid-side position lies outside the
+indicator for any upward informed move (p∗ >p M falls outside [pa,p M]), soA = 0 while
+feesF are still earned from uninformed reversals into the range. Panel A of Figure 4
+visualizes this strategic behavior and its expected price impact.
+[Insert Figure 4 approximately here]
+A similar logic applies to liquidity withdrawal strategies. In response to a permanent
+expected appreciation in the base currency, rational LPs may burn liquidity on the ask
+side to avoid being “picked off” and minimize adverse selection risk. Burning ask-side
+liquidity directly reducesL abovepM in equation (24), loweringA from incoming informed
+buyers. This strategy implies a positive price impact of burn activity placed close to the
+current price (denoted burnb). This behavior is also illustrated in Panel A of Figure 4.
+H2a (Risk-avoidance): Mint orders placed close to the current price have
+negative price impacts, and burn orders close to the current price have positive
+price impacts.
+Another strategy of an informed LP is to post liquidity orders at prices away from the
+current price in anticipation of future price movements. For example, if the LP expects the
+price to increase by 20 basis points, they may mint new liquidity around that anticipated
+future price range. Once the price rises, this liquidity will start earning trading fees. In
+24
+
+===== PAGE 26 =====
+
+contrast, it would be irrational to mint on the bid side, since that liquidity would remain
+far from the active trading range and fail to generate fees. As a result, we expect mint
+orders placed away from the current price to occur more frequently on the ask side than
+the bid side in case of expected price appreciation. This leads to a positive price impact
+of mint orders placed away from the current price—denoted as minta orders. Panel B of
+Figure 4 visualizes this strategy and its corresponding price impact.
+Similarly, if LPs expect the price to appreciate and currently have liquidity posted
+on the bid side away from the current price, those orders will be further away from the
+active price range and are unlikely to be executed. Maintaining such stale orders incurs
+opportunity costs without generating fees. Therefore, it is optimal to burn liquidity on
+the bid side posted away from the current price. In contrast, it would not be optimal to
+burn ask-side liquidity, as this is now closer to the expected trading range and likely to
+earn fees. As a result, we expect to observe more burns placed away from the current
+price on the bid side than the ask side when price is expected to permanently appreciate.
+Since “price impact” refers to the return-predictive content of these liquidity adjust-
+ments, net burns on the bid side away from the current price are expected to precede
+positive returns (as illustrated in Panel B of Figure 4). Conversely, net liquidity burned
+on the ask side away from the current price is expected to precede negative returns. Over-
+all, this implies a negative relation between net liquidity burned away from the current
+price, denoted burna, and future returns.
+H2b: (Liquidity repositioning) Mint orders placed away from the current
+price have positive price impacts, while burn orders away from the current
+price have negative price impacts.
+Our final set of hypotheses concerns heterogeneity across LPs. It is reasonable to
+assume that not all LPs are equally active — some remain passive. A key question is
+which characteristics differentiate informed LPs from uninformed ones. One approach is
+to condition on order submission strategies, either at the wallet level (by grouping all
+transactions from a single address) or based on order-level characteristics such as size or
+25
+
+===== PAGE 27 =====
+
+execution priority.
+We hypothesize that larger orders tend to have greater price impact. LPs who deposit
+large amounts of liquidity face higher exposure to adverse selection and are therefore more
+likely to be informed. For example, Capponi, Jia, and Yu (2025) show that in Uniswap
+V2, high-fee DEX trade flows are significantly more informative than low-fee flows. A
+similar logic applies to LP strategies: informed LPs have incentives to expedite execution
+of their mint or burn transactions. As a result, we expect that liquidity submissions with
+higher execution priority (e.g., those placed earlier within a block) will exhibit stronger
+price impacts. We also expect that liquidity orders associated with a narrower liquidity
+range (concentrated liquidity) to have a greater price impact. While the liquidity orders
+posted on a narrow range limits LP’s exposure to adverse selection risk, it also reduces
+its potential profit. Hence, for that liquidity order to be profitable (in excess of gas fee),
+the LP has to be rather precise in their forecast of future price. We expect this effect to
+be more pronounced in the low-fee pool.
+H3a (Order-level characterization): Price impact of liquidity orders is in-
+creasing in order size, priority of execution, and the degree of liquidity con-
+centration.
+We also hypothesize that the sophistication and activity of wallets are key indicators
+of informed liquidity provision. For example, an LP who alternates between supplying
+passive liquidity and executing aggressive swaps is more likely to process market informa-
+tion actively. Likewise, LPs who frequently reposition by minting and burning liquidity
+in response to price movements are likely to be more sophisticated. Because frequent
+updates incur gas and opportunity costs, wallets that regularly adjust their positions are
+likely to do so only when they possess informational advantages. We therefore use the
+frequency of liquidity updates as an additional proxy for sophistication.
+H3b (Wallet-level characterization): Price impact of liquidity orders is in-
+creasing with the degree of sophistication of LPs posting the orders.
+26
+
+===== PAGE 28 =====
+
+4 Empirical Analysis
+4.1 Baseline Estimation
+We begin our analysis by estimating a VAR that includes measures of trading activity on
+both DEX and CEX, alongside benchmark CEX returns. This specification follows prior
+work on the price informativeness of order flow, including Capponi, Jia, and Yu (2025).
+AYt =α +
+25∑
+j=1
+AjYt−j +ϵt, (25)
+where the vector of endogenous variables is defined as:
+Yt =[swap(30),swap (5),mint a
+(30),mint b
+(30),burn a
+(30),burn b
+(30),mint a
+(5),mint b
+(5),burn a
+(5),
+burnb
+(5),market,limit,ret ]. (26)
+The first six variables capture DEX swap flows and liquidity provision (mints and
+burns) on both the low-fee (DEX(5)) and high-fee (DEX(30)) Uniswap V3 pools. The
+next two variables are market and limit order flows on Binance (CEX), and the final
+variable is the benchmark return, computed from Binance mid-prices.
+We impose a recursive structure on the system through the following identifying as-
+sumptions:
+1. Block-time pre-determination. We order DEX variables (swaps, mints, burns)
+ahead of CEX market and limit order flows. Ethereum blocks are produced ap-
+proximately every 12 seconds, and once a transaction is submitted to the mempool
+its content is fixed. DEX activity within a block is therefore committed before any
+Binance order flow in that same period, so the ordering reflects genuine temporal
+precedence rather than an arbitrary normalisation.
+2. Market orders affect limit orders contemporaneously, but not vice versa.
+This ordering captures the intuition that market order flow may trigger immediate
+27
+
+===== PAGE 29 =====
+
+liquidity adjustments in the order book, while changes in limit order flow typically
+affect market orders with a delay.
+3. CEX order flow can impact returns contemporaneously. Following the
+structural VAR identification strategy of Hasbrouck (1991a), we allow CEX market
+and limit order flows to contemporaneously affect returns. In contrast, we assume
+that returns affect order flow with a delay. Because our return measure is derived
+from CEX mid-prices, we assume no contemporaneous mechanical relationship be-
+tween DEX activity and CEX returns, as DEX prices cannot mechanically affect
+CEX returns.
+To assess the statistical significance of the estimated impulse responses, we compute
+cumulative impulse response functions (CIRFs) and construct empirical confidence bands
+using the Wild bootstrap method. Specifically, we generate 1,000 CIRF realizations
+by resampling residuals using a Rademacher distribution and reconstructing synthetic
+datasets from the estimated model. In each iteration, we re-estimate the VAR and
+calculate CIRFs. The confidence intervals are then formed using percentiles from the
+empirical distribution of bootstrapped CIRFs. 14
+[Insert Table 3 approximately here]
+Table 3 reports the CIRFs of DEX and CEX order flow variables on ETH-USDC re-
+turns at horizons n = 0, 1, 10, and 60 blocks. 15 The table presents results separately for
+the low-fee DEX(5) pool (Panel A), the high-fee DEX(30) pool (Panel B), and the cen-
+tralized exchange (Panel C). Each coefficient represents the return impact (in percentage
+points) of a 1 standard deviation of net order flow shock.
+We begin with a swap activity on DEX. We find that net swaps have a positive and
+statistically significant effect on prices in both pools. For DEX(5), the return increases
+by 2.3 basis points 60 blocks after a 1 standard deviation shock to a net buy order.
+14. This procedure is implemented using the VAR Toolbox developed by Ambrogio Cesa-Bianchi. See
+https://sites.google.com/site/ambropo/MatlabCodes?authuser=0.
+15. One Ethereum block corresponds to approximately 12 seconds during our sample period. So, 10
+blocks correspond to 120 seconds or 2 minutes, and 60 blocks correspond to 12 minutes.
+28
+
+===== PAGE 30 =====
+
+For DEX(30), the corresponding effect is 3.8 basis points. These results confirm that
+DEX trading activity contributes to price discovery, consistent with Capponi, Jia, and
+Yu (2025).16
+Turning to liquidity provision, we find strong evidence in support of H1 in the low-
+fee pool: mint and burn orders contain predictive information about future returns.
+In DEX(5), a one standard deviation increase in mintb—net liquidity deposited within
+5 tick ranges (or 0.5%) of the current price—predicts a negative price impact of 9.6
+basis points. Conversely, a one standard deviation increase in burnb predicts a positive
+price impact of 11.9 basis points. These signs are consistent with H2a, which posits
+that informed LPs mint more liquidity close to the current ask (bid) price when they
+anticipate return declines (increases). Further, informed LPs withdraw liquidity close to
+the current ask (bid) price when they anticipate return increases (decreases). It is worth
+mentioning that while the coefficients are about three times larger than those for swaps,
+the standard deviations of net mint and burn orders are more than ten times larger than
+the standard deviations of swap orders (see Table 2). In economic terms, this implies
+that a one standard deviation liquidity provision event has an aggregate price impact
+up to 30 times larger than that of a comparable swap. This finding is consistent with
+our earlier argument that DEX liquidity providers — unlike their CEX counterparts —
+deploy sufficiently large amounts of capital to justify acquiring private information.
+In contrast, we find no statistically significant price response to minta or burna ac-
+tivity in DEX(5) at a 60-block horizon, suggesting that LPs do not reposition liquidity
+away from the current price in a return-predictive manner. This provides no support
+for hypothesis H2b in the DEX(5) pool. The DEX(30) pool exhibits limited evidence
+of informed liquidity provision. Only minta
+(30) has a statistically significant effect, with
+a one standard deviation increase in net mint flow leading to a negative price impact of
+0.5 basis points. However, this effect is small in magnitude and its sign is inconsistent
+with the prediction of H2b, making it difficult to interpret as evidence of anticipatory
+LP behavior.
+16. Table B1 in the Internet Appendix documents the CIRFs for 1 million USDC shocks to net order
+flows.
+29
+
+===== PAGE 31 =====
+
+These patterns are consistent with the view that informed liquidity provision is con-
+centrated in DEX(5), which features smaller tick spacing and receives the bulk of initial
+trade flow due to lower transaction costs. Because orders are routed first to DEX(5), LPs
+in this pool have stronger incentives to actively manage positions. Infrequent execution
+in DEX(30), by contrast, leads to more passive LP behavior. A complementary expla-
+nation stems directly from the fee structure. In the low-fee pool, fee income per unit
+of liquidity is six times smaller than in DEX(30). To remain profitable, LPs in DEX(5)
+must therefore achieve a correspondingly lower adverse-selection cost, since they cannot
+rely on fee income alone to offset impermanent loss. This forces active repositioning, as
+LPs must withdraw liquidity from the side where informed order flow is expected and
+shift it to the other side before prices move against them. LPs in DEX(30), by contrast,
+earn sufficient fee income to remain profitable with less frequent position management.
+The stronger incentive to actively manage positions in DEX(5) is reflected in the larger
+and more significant price impacts of mintb and burnb relative to DEX(30). Our expla-
+nation is consistent with evidence from Lehar, Parlour, and Zoican (2022), who find that
+professional LPs dominate low-fee pools, while retail LPs tend to provide liquidity more
+passively in high-fee environments.
+For the CEX market, we find that a one standard deviation shock to market order flow
+leads to a 1.1 basis point increase in returns after 60 blocks, about half the effect of DEX
+swap orders. Limit order flow also has statistically significant impact on returns of similar
+magnitude (1.1 basis points over the same horizon). The sign of this effect, however, is
+surprising. By analogy with mints close the current price, one would expect net ask-side
+limit order flow (within 0.5% - 1% of the mid-price) to negatively predict returns, as
+it signals an informed expectation of price declines. The positive sign we find instead
+suggests that CEX limit orders are less informationally driven than DEX mints. In terms
+of economic significance, the price impact of CEX limit order flow is considerably smaller
+in aggregate than that of DEX mints: the coefficients are approximately ten times smaller,
+and the standard deviation of CEX limit order flow is around 40 times smaller than that
+of mintb
+(5). Taken together, these findings are consistent with our earlier argument that
+30
+
+===== PAGE 32 =====
+
+DEX liquidity providers deploy far greater capital and therefore have stronger incentives
+to acquire and trade on private information.
+Figure 5 presents the CIRFs for each type of order flow.
+[Insert Figure 5 approximately here]
+Robustness of VAR Ordering. To assess the robustness of our identifying assump-
+tions, Appendix C presents additional analysis using three alternative recursive orderings
+of the VAR system. These variants relax aspects of the baseline structure, including
+contemporaneous effects between DEX and CEX order flows, and between market and
+limit orders on centralized exchanges. The first alternative ordering allows DEX activity
+to contemporaneously affect CEX market and limit orders. The second removes this link
+but permits CEX limit orders to affect market orders contemporaneously. The third com-
+bines both, allowing DEX orders to affect CEX orders and limit orders to affect market
+orders.
+The results are consistent across specifications and reinforce our baseline findings.
+Liquidity deposits and withdrawals on decentralized exchanges—particularly in the low-
+fee DEX(5) pool—play a significant role in price discovery. We find robust evidence that
+LPs mint and burn liquidity on DEX in ways that reflect expectations about future price
+movements, consistent with hypotheses H1 and H2a.
+Variance Decomposition. While we find evidence that LPs adjust their positions
+in response to new information and that their liquidity management contains predictive
+content for returns, the impulse responses alone do not reveal the overall contribution of
+each order type to price discovery.
+To address this, we complement our analysis with the forecast error variance decom-
+position introduced by Hasbrouck (1991b). This method weights the cumulative impulse
+responses by the variance of shocks to each order type, allowing us to estimate the pro-
+portion of return variation attributable to each source of order flow. The results are
+presented in Table 4.
+31
+
+===== PAGE 33 =====
+
+[Insert Table 4 approximately here]
+We find that swap orders in the DEX(5) and DEX(30) pools contribute a combined
+7.4% to return variation, while market orders on the CEX account for only 1.0%. The
+lower contribution of CEX market orders reflects the fact that, although they occur more
+frequently, their average (non-zero) trade size is smaller, so their aggregate contribution
+is smaller than that of DEX swaps.
+Mint and burn activity in the DEX pools contributes approximately 1.5% of return
+variation in total, with the majority explained by mint orders close to the current price.
+While informative, their overall contribution is smaller than that of DEX swaps. Overall,
+our findings suggest that DEX liquidity provision is a more informative signal per unit
+than swap activity. However, swaps account for a larger share of overall return variation,
+reflecting their far greater frequency rather than superior informational content per trade.
+Limit order flow in the CEX accounts for 2.2% of return variation. However, as
+discussed previously, the sign on limit in Table 3 is contrary to what one would expect
+by analogy with DEX mints. In general, forecast error variance decomposition captures
+the total contribution of a variable to return variation regardless of its direction, so
+a variable can account for a substantial share of variance while carrying little or no
+directional information about future price movements.
+Overall, the results from variance decomposition reinforce the view that DEX liquidity
+activity contributes to price discovery, particularly in the low-fee pool where informed LPs
+have greater incentives to reposition actively. This is consistent with the higher activity
+and informativeness observed in DEX(5) relative to DEX(30), and supports hypotheses
+H1 and H2a.
+4.2 Heterogeneity in Liquidity Orders: Order- and Wallet-level
+Classifications
+In this section, we test hypotheses H3a and H3b on the determinants of price impact of
+LP activity. We explore in more detail how strategic behavior varies across LPs in the
+32
+
+===== PAGE 34 =====
+
+DEX market. First, we classify liquidity orders by order-level characteristics such as size,
+execution priority and, liquidity concentration ( H3a). Second, we examine wallet-level
+characteristics that proxy for LP sophistication, including whether a wallet engages in
+both swaps and liquidity provision, or frequently repositions its liquidity ( H3b).
+4.2.1 Order-level classification
+We begin by testing whether the informativeness of liquidity orders depends on their
+size. Traders and LPs submitting large orders generally have greater incentives to gather
+and act on information. We classify a liquidity order as large if its size exceeds the
+median of the corresponding order size distribution in our sample. We then estimate a
+VAR as in Equation (25), replacing each DEX liquidity variable with its large and small
+counterparts:
+Yt =[swap(30), swap(5), minta,small
+(30) , mintb,small
+(30) , burna,small
+(30) , burnb,small
+(30) , minta,small
+(5) , mintb,small
+(5) ,
+burna,small
+(5) , burnb,small
+(5) , minta,large
+(30) , mintb,large
+(30) , burna,large
+(30) , burnb,large
+(30) , minta,large
+(5) , mintb,large
+(5) ,
+burna,large
+(5) , burnb,large
+(5) , market, limit, ret]. (27)
+[Insert Table 5 approximately here]
+Order size. The results broadly support H3a: large mint and burn orders in DEX(5)
+have statistically significant long-term price effects, whereas small orders do not. As
+before, DEX(30) liquidity activity is not informative. Althoughminta,large
+(30) shows a weakly
+significant (5%) negative effect, the economic magnitude of the price impact (0.7 basis
+points) is more than ten times smaller than the price impacts in DEX(5) and its sign is
+opposite to what would be expected under H2b.
+The finding that large orders are more informative than small ones is consistent
+with Glosten (1994), who show that informed traders place large orders to maximize
+profits from private information. Large informative orders on DEXs contrast with the
+“stealth trading” patterns observed in traditional markets (Barclay and Werner, 1993;
+Chakravarty, 2001), where informed traders tend to break up orders to avoid detection
+and minimize price impact. The transparency of blockchain and the constant-product
+33
+
+===== PAGE 35 =====
+
+pricing function eliminate the benefits of order splitting (Park, 2023), implying that in-
+formed traders should consistently favor large orders when trading on DEXs.
+Execution priority. We next test whether informed LPs actively expedite the exe-
+cution of their liquidity orders by securing early placement within a block. While in
+principle Ethereum transactions with higher gas fees are executed first, the introduction
+of Flashbots MEV-geth in late 2020 decoupled gas price from execution priority. Through
+off-chain auctions, traders can obtain top-of-block execution even with low or zero gas
+fees (Lehar and Parlour, 2023). This means that gas fees no longer provide a reliable
+signal of execution priority, making transaction order within the block a more accurate
+measure of whether LPs secure early execution.
+To assess priority, we use Etherscan data to retrieve the index of each transaction
+within its block. 17 We classify transactions as top if their index is below the sample
+median (index ≤ 81), and bottom otherwise.18 Using this classification, we estimate a
+VAR including swap, mint, and burn orders based on their position within a given block:
+Yt =[swapbot
+(30), swapbot
+(5), minta,bot
+(30) , mintb,bot
+(30) , burna,bot
+(30) , burnb,bot
+(30) , minta,bot
+(5) , mintb,bot
+(5) , burna,bot
+(5) ,
+burnb,bot
+(5) , swaptop
+(30), swaptop
+(5) , minta,top
+(30) , mintb,top
+(30) , burna,top
+(30) , burnb,top
+(30) , minta,top
+(5) , mintb,top
+(5) ,
+burna,top
+(5) , burnb,top
+(5) , market, limit, ret]. (28)
+Panel B of Table 5 presents the CIRFs for this estimation. In both DEX pools, swap
+orders exhibit significant price impacts regardless of execution position, with slightly
+larger impacts from top-positioned swaps. This confirms earlier findings from Uniswap
+V2 in Capponi, Jia, and Yu (2025), where high gas fee (and thus early) orders were more
+informative.
+In DEX(5), top-positioned mints close to the current price ( mintb,top
+(5) ) have negative
+price impacts, while burns ( burnb,top
+(5) ) have positive price impacts, consistent with risk-
+mitigating strategies. Bottom-positioned mints and burns show similar effects, although
+17. https://docs.etherscan.io/etherscan-v2
+18. Ethereum blocks typically contain several hundred transactions. We classify the top half based on
+the empirical distribution, and robustness checks using the top quartile or decile yield similar results.
+34
+
+===== PAGE 36 =====
+
+the magnitude of their price impacts is about 15 times smaller. Mints and burns placed
+away from the current price in DEX(5) remain uninformative, regardless of their execution
+position. These results indicate that execution priority is economically important in
+DEX(5), as the price impacts of top-positioned orders are much larger than those of
+bottom-positioned ones.
+In contrast, we find stronger evidence of strategic positioning in DEX(30). Top-
+positioned mints near the current price ( mintb,top
+(30) ) are associated with negative price
+impacts, while top burns (burnb,top
+(30) ) have positive price impacts—both significant at the
+5% level. These results are consistent with anticipatory repositioning to reduce adverse
+selection and support H2a. Although additional significant effects appear in DEX(30),
+such as minta,bot
+(30) and burna,top
+(30) (negative at the 5% level) and burna,bot
+(30) (positive at the
+10% level), their magnitudes are small and remain below those observed in DEX(5).
+Overall, these results suggest that informed LPs selectively expedite their minting
+and burning activity, particularly in less active pools such as DEX(30), either to reduce
+exposure to price risk or to enhance fee earnings. The substantially larger price impact
+of top-positioned relative to bottom-positioned orders also supports the view that the
+causal ordering from DEX activity to prices reflects informed positioning rather than a
+common information shock. There are, however, important limitations to this analysis.
+Although our sample ends in July 2022, just-in-time (JIT) liquidity provision, in which
+LPs mint and burn liquidity within the same block to minimize exposure while collecting
+fees, may confound our estimates (Capponi, Jia, and Zhu, 2023). Simultaneous mint and
+burn behavior could obscure the predictive content of top-positioned orders. Evidence
+from Wan and Adams (2022), however, indicates that during our sample period only
+approximately 0–1 percent of total Uniswap V3 liquidity was provided by JIT LPs.
+Liquidity concentration. We finally test whether the choice of liquidity interval range
+(liquidity concentration) carries information about future price changes. We classify a
+liquidity order as wide ( wid) if the width of the corresponding liquidity interval exceeds
+the upper quartile of the empirical distribution of interval ranges. This corresponds to
+35
+
+===== PAGE 37 =====
+
+2,740 ticks for DEX(5) and 7,020 for DEX(30). Otherwise, we classify it as narrow ( nar).
+We then estimate a VAR as in Equation (25), replacing each DEX liquidity variable with
+its wide and narrow counterparts:
+Yt =[swap(30), swap(5), minta,nar
+(30) , mintb,nar
+(30) , burna,nar
+(30) , burnb,nar
+(30) , minta,nar
+(5) , mintb,nar
+(5) , burna,nar
+(5) ,
+burnb,nar
+(5) , minta,wid
+(30) , mintb,wid
+(30) , burna,wid
+(30) , burnb,wid
+(30) , minta,wid
+(5) , mintb,wid
+(5) , burna,wid
+(5) , burnb,wid
+(5) ,
+market, limit, ret]. (29)
+Panel C of Table 5 reports the CIRFs at n = 60 blocks. The results are also broadly
+consistent with predictions of H3a: mint and burn orders posted on narrow intervals in
+DEX(5) have statistically significant long-term price effects, while the orders associated
+with wide intervals do not. While the price impacts of burnb,wid
+(5) , burna,wid
+(5) and burna,wid
+(30)
+are significant (al least at the 10% level), the economic magnitudes are small.
+4.2.2 Wallet-level Classification
+We now examine whether liquidity placement strategies of sophisticated investors convey
+information about future price changes, as predicted by Hypothesis H3. We consider
+three wallet-level classifications to proxy for investor sophistication: (i) pure vs mixed
+liquidity provision, (ii) liquidity repositioning, and (iii) frequency of updates.
+Mixed vs. pure provision. We first classify wallets as those that engage in mixed
+liquidity provision, mix, if they participated in both liquidity provision and swap trading
+within our sample period. In contrast, we classify wallets that engage in pure liquidity
+provision as pure. The reasoning behind our classification is that wallets executing mixed
+strategies are more likely to belong to sophisticated investors who closely monitor price-
+relevant information. Routledge, Shen, and Zetlin-Jones (2025) show theoretically that
+LPs who also trade as swappers can use their directional positions to actively rebalance
+and offset adverse-selection exposure, making them more informed than pure liquidity
+providers. We estimate the VAR model based on Equation (25), using the following
+variables:
+36
+
+===== PAGE 38 =====
+
+Yt =[swappure
+(30) , swappure
+(5) , minta,pure
+(30) , mintb,pure
+(30) , burna,pure
+(30) , burnb,pure
+(30) , minta,pure
+(5) , mintb,pure
+(5) ,
+burna,pure
+(5) , burnb,pure
+(5) , swapmix
+(30), swapmix
+(5) , minta,mix
+(30) , mintb,mix
+(30) , burna,mix
+(30) , burnb,mix
+(30) ,
+minta,mix
+(5) , mintb,mix
+(5) , burna,mix
+(5) , burnb,mix
+(5) , market, limit, ret]. (30)
+Panel A of Table 6 shows that swap orders from both mix and pure wallets have a
+significant price impact in both DEX(5) and DEX(30). However, for mints, price infor-
+mativeness is more concentrated among mix wallets in DEX(5): mintb,mix
+(5) is significant,
+while mintb,pure
+(5) is not. Both burnb,mix
+(5) and burnb,pure
+(5) are significant, with the former
+exhibiting a larger coefficient. Our findings suggest that LPs who combine trading and
+liquidity provision tend to submit aggressive mints close to the current price in anticipa-
+tion of price changes, contributing to price discovery. This is consistent with Routledge,
+Shen, and Zetlin-Jones (2025), who show that LPs who also trade as swappers can use
+their directional positions to offset adverse-selection exposure and are consequently more
+informed than pure liquidity providers. At the same time, some pure LPs, who only
+provide liquidity, appear to react more strongly to adverse selection risk by withdrawing
+liquidity when facing unfavorable price movements. In DEX(30), all of the mix liquidity
+order flows have insignificant price impacts. While minta,pure
+(30) and burnb,pure
+(30) display sig-
+nificant coefficients at the 5% level, their magnitudes are almost 10 times smaller than
+those from DEX(5). This result is consistent with earlier evidence that more strategic
+behavior is concentrated in DEX(5).
+[Insert Table 6 approximately here]
+Repositioning behavior. Our second proxy for sophistication is the repositioning
+behavior of LPs. A wallet is classified as engaging in repositioning, repo, if it has at least
+one burn followed by a mint within two minutes (equivalent to 10 next blocks). Other
+wallets are labeled other. We estimate the VAR model based on Equation (25) and the
+following variables:
+Yt =[swap(30), swap(5), minta,other
+(30) , mintb,other
+(30) , burna,other
+(30) , burnb,other
+(30) , minta,other
+(5) , mintb,other
+(5) ,
+burna,other
+(5) , burnb,other
+(5) , minta,repo
+(30) , mintb,repo
+(30) , burna,repo
+(30) , burnb,repo
+(30) , minta,repo
+(5) , mintb,repo
+(5) ,
+37
+
+===== PAGE 39 =====
+
+burna,repo
+(5) , burnb,repo
+(5) , market, limit, ret]. (31)
+Panel B of Table 6 shows that both repo and other wallets in DEX(5) contribute
+to price discovery. mintb,repo
+(5) and burnb,repo
+(5) are significant, as are their other counter-
+parts. The magnitude of coefficients for other wallets is about twice as small as that of
+repo wallets. These findings suggest that repositioning behavior helps avoiding adverse
+selection; yet, minting or burning liquidity on a more permanent basis by other wallets
+appears to be also informative. In DEX(30), minta,repo
+(30) and burnb,other
+(30) are weakly sig-
+nificant but their economic magnitude is small. These results provide limited support
+for repositioning-based hypotheses in wider-spread pools, because these pools are mostly
+used by passive liquidity providers, consistent with findings in Lehar, Parlour, and Zoican
+(2022).
+Update frequency. We finally examine the frequency of liquidity orders. LPs in the
+top quartile of mint and burn activity—more than four updates—are classified as high-
+frequency (hfr); all others are classified as low-frequency (lfr ). We estimate the VAR
+model using the following specification:
+Yt =[swap(30), swap(5), minta,lf r
+(30) , mintb,lf r
+(30) , burna,lf r
+(30) , burnb,lf r
+(30) , minta,lf r
+(5) , mintb,lf r
+(5) , burna,lf r
+(5) ,
+burnb,lf r
+(5) , minta,hf r
+(30) , mintb,hf r
+(30) , burna,hf r
+(30) , burnb,hf r
+(30) , minta,hf r
+(5) , mintb,hf r
+(5) , burna,hf r
+(5) , burnb,hf r
+(5) ,
+market, limit, ret]. (32)
+Panel C of Table 6 shows that in DEX(5), both mintb,hf r
+(5) and burnb,hf r
+(5) are highly
+significant (1% level), while the corresponding lfr orders are only weakly significant
+(10%). These results indicate that more active LPs are also more likely to be informed.
+We observe only limited informativeness in DEX(30), though burna,lf r
+(30) is surprisingly
+relatively large and significant at the 5%, most likely driven by an infrequent number of
+burns further away from the current price submitted by low-frequency investors.
+Taken together, these results suggest that informed liquidity provision is concentrated
+in DEX(5), particularly among wallets that combine swaps with liquidity provision, en-
+gage in both permanent and repositioning-based mints or burns, and submit liquidity
+38
+
+===== PAGE 40 =====
+
+orders more frequently. In contrast, DEX(30) shows weaker evidence of informativeness
+across all wallet types.
+4.3 Information and Arbitrage Trading
+In the previous sections, we showed that liquidity provision in DEX conveys information
+and contributes to the price discovery process. Our primary hypothesis is that LPs
+either possess private information or have a superior ability to process public information.
+However, LPs may also condition their liquidity provision decisions on publicly observable
+signals, such as the price difference between DEX and CEX. For instance, to mitigate
+adverse selection risk and avoid being picked off by informed arbitrageurs, LPs may
+strategically reposition liquidity around these price gaps. While this is a form of strategic
+(and rational) behavior, it does not require knowledge of private information. If LPs are
+sufficiently fast in updating their position when such arbitrage deviations arise, their
+orders may exert price impact despite being based on public information.
+To differentiate between private and public signals, we examine whether the infor-
+mation content of liquidity provision differs during periods of publicly observable price
+differences across markets. Specifically, we test whether the price impact of DEX or-
+ders is concentrated during periods of high price deviation (hpd), defined as when the
+absolute CEX–DEX price difference exceeds the transaction-cost threshold for profitable
+arbitrage, relative to periods of low price deviation (lpd), when such deviations are too
+small to exploit.
+Due to gas fees, exchange fees, and deterministic price impacts, not all arbitrage
+opportunities between CEX and DEX are economically exploitable. Moreover, price
+deviations may not fully revert due to these frictions. Therefore, before analyzing price
+impacts, we first characterize the distribution of arbitrage deviations and the dynamics
+of price reversals in DEX markets.
+We define the price difference between the DEX and the CEX market as pd =
+prcDEX−prcCEX and the percentage price difference as ppd = 100×pd/prcCEX . Pan-
+els A and B of Table 7 report summary statistics for ppd and its absolute value |ppd|,
+39
+
+===== PAGE 41 =====
+
+accordingly. For DEX(5) pool, the average percentage price difference is small, with a
+mean of 0.004 per cent, and the mean of its absolute value of 0.106 per cent. However,
+deviations can occasionally be large, reaching up to 27.06 per cent. The average absolute
+price difference is about 1.8 times larger for the DEX(30) pool, although the extreme
+values are of similar magnitude.
+[Insert Table 7 approximately here]
+Figure 6 plots the average dynamics of price differences between DEX and CEX
+markets, conditional on the next incoming swap/market order that exploits (i.e., trades in
+the direction of) the arbitrage opportunity. We consider the following six cases: (i) pdt >
+0, swapt+1 < 0; (ii) pdt > 0, markett+1 > 0; (iii) pdt > 0, swapt+1 < 0, markett+1 > 0;
+(iv) pdt < 0, swapt+1 > 0; (v) pdt < 0, markett+1 < 0; (vi) pdt < 0, swapt+1 > 0,
+markett+1 < 0.
+[Insert Figure 6 approximately here]
+Panel A presents the results for the DEX(5) pool. The left-hand plots correspond
+to cases (i)–(iii), where stabilizing order flow follows a positive price difference. We find
+that DEX order flow alone, as in case (i), generates price convergence comparable to that
+in case (iii), where both DEX and CEX order flows act in the stabilizing direction. For
+cases (iv)–(vi), which involve negative price differences, convergence is more pronounced
+when either DEX alone or both markets respond. This suggests that DEX order flow
+plays a central role in restoring price parity.
+Panel B considers the DEX(30) pool. As before, stabilizing DEX flow in response to
+a price difference leads to strong price convergence.
+Next, we assess whether orders convey information beyond the exploitation of arbi-
+trage opportunities. For an arbitrage to be economically viable, the absolute percentage
+price deviation (|ppd|) must exceed transaction costs. We estimate these costs using the
+median values of gas fees, pool fees, and slippage across the sample. Gas fees are com-
+puted at the transaction level and converted from ETH to USDC using contemporaneous
+40
+
+===== PAGE 42 =====
+
+ETH prices. Pool fees correspond to the fee tier of each pool (5 basis points for DEX(5)
+and 30 basis points for DEX(30)). Slippage is measured at the trade level as the difference
+between the execution price and the pre-trade price implied by pool reserves. The exe-
+cution price is calculated using the relative token amounts exchanged in the swap, while
+the pre-trade price is based on the reserve ratio immediately prior to the transaction.
+For DEX(5), the median gas fee is approximately 30.29 basis points, and the median
+combined cost of pool fees and slippage is 5.17 basis points, yielding a total transaction
+cost of 35.46 basis points. For DEX(30), gas costs are lower at 5.25 basis points, while
+the combined cost of pool fees and slippage is higher at 31.34 basis points, resulting in a
+total of 36.59 basis points. Based on these estimates, we round to a common cutoff of 36
+basis points to define the threshold at which price deviations become sufficiently large to
+incentivize arbitrage. Orders submitted when |ppd| exceeds or equals this threshold are
+classified as high price deviation (hpd) periods; those below the threshold are designated
+as low price deviation ( lpd) periods. Based on this classification, we identify 110,225
+hpd blocks in DEX(5) and 142,788 in DEX(30), where price deviations are large enough
+to incentivize arbitrage. These account for approximately 4% and 5.2% of the sample,
+respectively.
+Panel C of Table 7 reports the cumulative impulse response function (CIRF) estimates
+from a VAR model, where the variable vector is defined in Equation (33). The specifica-
+tion includes DEX swaps, aggressive and non-aggressive mints ( mintb and minta), and
+aggressive and non-aggressive burns ( burnb and burna), split by hpd and lpd classifica-
+tions. CEX order flow shocks (market and limit orders) and the CEX return are included
+as controls. The model specification is given by:
+Yt = [swaplpd
+(30),swap lpd
+(5),mint a,lpd
+(30),mint b,lpd
+(30),burn a,lpd
+(30),burn b,lpd
+(30),mint a,lpd
+(5) ,mint b,lpd
+(5) ,burn a,lpd
+(5) ,
+burnb,lpd
+(5) ,swap hpd
+(30),swap hpd
+(5),mint a,hpd
+(30) ,mint b,hpd
+(30) ,burn a,hpd
+(30) ,burn b,hpd
+(30) ,mint a,hpd
+(5) ,mint b,hpd
+(5) ,
+burna,hpd
+(5) ,burn b,hpd
+(5) ,market,limit,ret ]. (33)
+We find that non-arbitrage swaps, classified as lpd, have significant and persistent
+41
+
+===== PAGE 43 =====
+
+price impacts in both DEX(5) and DEX(30). For instance, swaplpd
+(5) has a CIRF of 2.2
+basis points while swaphpd
+(5) has a CIRF of 8.0 basis points. On DEX(30), swaplpd
+(30) has
+higher price impact thanswaphpd
+(5) (4.1 basis points versus 3.1 basis points). This suggests
+that when the CEX and DEX prices are misaligned, swaps contribute more strongly to
+price discovery on DEX(5).
+In contrast, liquidity orders (mints and burns) exhibit more heterogeneous patterns.
+On DEX(5), aggressive mint orders placed close to the current price during hpd periods
+(mintb,hpd
+(5) ) have a large negative price impact of−40.9 basis points, while the same order
+type during lpd periods has five times smaller, but statistically more significant effect
+(−8.9 basis points). Similarly, burns close to the current price in hpd periods (burnb,hpd
+(5) )
+have a large positive impact of 46.2 basis points, consistent with liquidity withdrawal in
+response to observable arbitrage signals. Again, the same order type during lpd periods
+has a smaller, but statistically more significant effect (12.0). The price impacts of liquidity
+orders on DEX(30) are much smaller and barely significant.
+Overall, these results suggest that LPs condition their behavior on both private and
+public signals. While both lpd andhpd orders exhibit statistically significant price effects,
+the magnitude is typically larger during hpd periods, indicating that a substantial por-
+tion of information transmission reflects benchmarking against CEX prices, for example
+minting near the best bid and burning near the best ask when the CEX price exceeds the
+DEX price. At the same time, the significance of mintb,lpd
+(5) and burnb,lpd
+(5) in the absence
+of exploitable arbitrage opportunities indicates that LP-driven price discovery is not a
+mechanical artifact of CEX–DEX mispricings; LPs either possess private information or
+process public signals more rapidly than we observe at block-level frequency.
+5 Conclusion
+In this paper, we study the role of LPs in price discovery on the Uniswap V3 platform.
+Using data on the ETH/USDC market from both centralized (Binance) and decentralized
+(Uniswap) exchanges, we estimate the long-term price impacts of trades and liquidity
+42
+
+===== PAGE 44 =====
+
+orders across both venues. Contrary to the common perception of LPs as passive, we
+show that liquidity orders play a significant role in the price discovery process.
+Uniswap V3’s concentrated liquidity design allows LPs to control the price range over
+which their liquidity is active, enabling strategic behavior similar to that observed in
+limit order books. We formulate and test hypotheses linking LP actions to information
+transmission, focusing on whether informed LPs manage positions through risk avoidance
+and strategic repositioning of liquidity. Consistent with this behavior, we find that mint
+and burn activity placed close to the current price contains predictive information about
+future returns.
+Using transaction-level blockchain data, we examine heterogeneity in the price impact
+of liquidity provision. LPs are generally more informed in the low-fee pool, while liquidity
+orders in the high-fee pool contribute little to price discovery. We document several order-
+level characteristics that influence the informativeness of liquidity flows, including order
+size, execution priority, and the width of LPs’ liquidity positions. In particular, mints
+and burns that are larger in size, executed at the top of a block, or placed within narrower
+price intervals exhibit larger and more significant long-term price impacts. We also find
+that orders submitted by more sophisticated LPs—characterized by wallets that combine
+liquidity provision with swaps, actively reposition liquidity relative to the current price,
+or submit orders more frequently—are more likely to be informed.
+We then test whether the information set of informed LPs is based solely on cross-
+exchange price differences between CEX and DEX markets. While we find stronger
+effects when price deviations are high, liquidity orders also have a significant price impact
+in periods of small deviations with no tradeable arbitrage opportunities. Overall, our
+findings suggest that arbitrage deviations are not the only source of LPs’ information,
+and that LPs use both private signals and public benchmarks, such as CEX prices, to
+guide their strategies and reposition liquidity.
+In conclusion, our results demonstrate that decentralized exchanges can support in-
+formed trading and meaningful price discovery. The ability of LPs to strategically allocate
+and reposition liquidity plays a central role in this process. These findings highlight the
+43
+
+===== PAGE 45 =====
+
+informational value of liquidity provision and suggest that decentralized exchanges rep-
+resent a viable and competitive alternative to centralized trading venues based on limit
+order books.
+44
+
+===== PAGE 46 =====
+
+References
+Adams, Hayden, Noah Zinsmeister, Moody Salem, River Keefer, and Dan
+Robinson. 2021. “Uniswap v3 whitepaper. ”Tech. rep., Uniswap, https://uniswap.org/whitepaper-
+v3.pdf.
+Alexander, Carol, Xi Chen, Jun Deng, and Qi Fu. 2023. “Market Efficiency Im-
+provements from Technical Developments of Decentralized Crypto Exchanges. ”Avail-
+able at SSRN 4495589.
+Angeris, Guillermo, and Tarun Chitra. 2020. “Improved price oracles: Constant
+function market makers. ” In Proceedings of the 2nd ACM Conference on Advances
+in Financial Technologies, 80–91.
+Angeris, Guillermo, Tarun Chitra, and Alex Evans. 2022. “When does the tail
+wag the dog? Curvature and market making. ”
+Angeris, Guillermo, Hsien-Tang Kao, Rei Chiang, Charlie Noyes, and Tarun
+Chitra. 2021. “An analysis of Uniswap markets. ”
+Aoyagi, Jun. 2020. “Liquidity provision by automated market makers. ”Working paper,
+Hong Kong University of Science and Technology.
+Aoyagi, Jun, and Yuki Ito. 2025. “Coexisting exchange platforms: Limit order books
+and automated market makers. ”Journal of Political Economy Microeconomics 3 (3):
+000–000.
+Barbon, Andrea, and Angelo Ranaldo. 2025. “On The Quality Of Cryptocurrency
+Markets: Centralized Versus Decentralized Exchanges. ”Management Science, forth-
+coming.
+Barclay, M., and J. Werner. 1993. “Stealth Trading and Volatility: Which Trades
+Move Prices. ”Journal of Financial Economics 34 (3): 281–305.
+45
+
+===== PAGE 47 =====
+
+Bloomfield, Robert, Maureen O’Hara, and Gideon Saar. 2005. “The “make or
+take” decision in an electronic market: Evidence on the evolution of liquidity. ”Jour-
+nal of Financial Economics 75 (1): 165–199.
+Brogaard, Jonathan, Terrence Hendershott, and Ryan Riordan. 2019. “Price
+discovery without trading: Evidence from limit orders. ” Journal of Finance 74 (4):
+1621–1658.
+Caparros, Basile, Amit Chaudhary, and Olga Klein. 2023. “Blockchain Scaling
+and Liquidity Concentration on Decentralized Exchanges. ”Working Paper, Warwick
+Business School.
+Capponi, Agostino, and Ruizhe Jia. 2025. “Liquidity Provision on Blockchain-Based
+Decentralized Exchanges. ” Advance access published July 14, 2025,Review of Finan-
+cial Studies, https://doi.org/10.1093/rfs/hhaf046.
+Capponi, Agostino, Ruizhe Jia, and Shihao Yu. 2025. “Price discovery on decen-
+tralized exchanges. ”Available at SSRN 4236993.
+Capponi, Agostino, Ruizhe Jia, and Brian Zhu. 2023. “The paradox of just-in-
+time liquidity in decentralized exchanges: More providers can sometimes mean less
+liquidity. ”arXiv preprint arXiv:2311.18164.
+Cartea, ´Alvaro, Fay¸ cal Drissi, and Marcello Monga.2024. “Decentralised finance
+and automated market making: Predictable loss and optimal liquidity provision. ”
+Working paper, Oxford-Man Institute of Quantitative Finance.
+Cartea, ´Alvaro, Fay¸ cal Drissi, Leandro S´ anchez-Betancourt, David Siska, and
+Lukasz Szpruch. 2023. “Automated Market Makers Designs Beyond Constant
+Functions. ”Available at SSRN 4459177.
+Chakravarty, S. 2001. “Stealth Trading: Which Traders’ Trades Move Stock Prices. ”
+Journal of Financial Economics 61 (2): 289–307.
+46
+
+===== PAGE 48 =====
+
+Daian, Philip, Steven Goldfeder, Tyler Kell, Yunqi Li, Xueyuan Zhao, Iddo
+Bentov, Lorenz Breidenbach, and Ari Juels. 2019. “Flash boys 2.0: Frontrun-
+ning, transaction reordering, and consensus instability in decentralized exchanges. ”
+arXiv preprint arXiv:1904.05234.
+Fang, Chuck.2024. “Learning Financial Innovations: Experience from Automated Mar-
+ket Makers. ” Jacobs Levy Equity Management Center for Quantitative Financial
+Research Paper.
+Foley, Sean, Peter O’Neill, and T¯ alis J Putni¸ nˇ s.2023. “A Better Market Design?
+Applying ‘Automated Market Makers’ to Traditional Financial Markets. ” Working
+Paper, Macquarie University.
+Glosten, L., and P. Milgrom. 1985. “Bid, ask and transaction prices in a specialist
+market with heterogeneously informed traders. ” Journal of Financial Economics 14
+(1): 71–100.
+Glosten, Lawrence R. 1994. “Is the electronic open limit order book inevitable?” The
+Journal of Finance 49 (4): 1127–1161.
+Goettler, Ronald L, Christine A Parlour, and Uday Rajan. 2009. “Informed
+traders and limit order markets. ” Journal of Financial Economics 93 (1): 67–87.
+Han, Jianlei, Shiyang Huang, and Zhuo Zhong. 2021. “Trust in DeFi: an empirical
+study of the decentralized exchange. ”Working Paper, Macquarie University.
+Hasbrouck, Joel. 1991a. “Measuring the information content of stock trades. ” Journal
+of Finance 46 (1): 179–207.
+. 1991b. “The summary informativeness of stock trades: An econometric analysis. ”
+Review of Financial Studies 4 (3): 571–595.
+47
+
+===== PAGE 49 =====
+
+Hasbrouck, Joel, Thomas J Rivera, and Fahad Saleh. 2022. “The need for fees
+at a DEX: How increases in fees can increase DEX trading volume. ” Working paper,
+Wake Forest University.
+. 2025. “An economic model of a decentralized exchange with concentrated liquid-
+ity. ”Management Science.
+Heimbach, Lioba, Ye Wang, and Roger Wattenhofer.2021. “Behavior of liquidity
+providers in decentralized exchanges. ”arXiv preprint arXiv:2105.13822.
+Huang, Wenqian, Natalia Rostova, and Zhaogang Song. 2024. “Decentralized
+Exchanges for Near-Money Assets. ”
+John, Kose, Leonid Kogan, and Fahad Saleh. 2023. “Smart contracts and decen-
+tralized finance. ”Annual Review of Financial Economics 15 (1): 523–542.
+Kaniel, Ron, and Hong Liu. 2006. “So what orders do informed traders use?” Journal
+of Business 79 (4): 1867–1913.
+Kyle, Albert S.1985. “Continuous auctions and insider trading. ”Econometrica 53:1315–
+1335.
+Lehar, Alfred, and Christine A Parlour. 2023. “Battle of the Bots: Flash loans,
+Miner Extractable Value and Efficient Settlement. ” Working paper, Haas School of
+Business, UC Berkeley.
+. 2025. “Decentralized Exchange: The Uniswap Automated Market Maker. ”Journal
+of Finance 80 (1): 321–374.
+Lehar, Alfred, Christine A Parlour, and Marius Zoican. 2022. “Liquidity Frag-
+mentation on Decentralized Exchanges. ” Working paper, University of Calgary and
+University of California, Berkeley.
+48
+
+===== PAGE 50 =====
+
+Neuder, Michael, Rithvik Rao, Daniel J Moroz, and David C Parkes. 2021.
+“Strategic liquidity provision in uniswap v3. ” arXiv preprint arXiv:2106.12033.
+Park, Andreas. 2023. “The conceptual flaws of decentralized automated market mak-
+ing. ”Management Science 69 (11): 6731–6751.
+Routledge, Bryan R, Yikang Shen, and Ariel Zetlin-Jones. 2025. “Automated
+Exchange Economies. ”
+Sch¨ ar, Fabian.2021. “Decentralized finance: On blockchain-and smart contract-based
+financial markets. ”FRB of St. Louis Review.
+Wan, Xin, and Austin Adams.2022. “Just-in-time liquidity on the uniswap protocol. ”
+Available at SSRN 4382303.
+Wang, Ye, Yan Chen, Haotian Wu, Liyi Zhou, Shuiguang Deng, and Roger
+Wattenhofer. 2022. “Cyclic arbitrage in decentralized exchanges. ” In Companion
+Proceedings of the Web Conference 2022, 12–19.
+49
+
+===== PAGE 51 =====
+
+Figures
+Figure 1: Liquidity Distribution in Uniswap V2 vs V3.
+Panel A of this figure displays the uniform liquidity distribution on the entire price range on Uniswap
+v2. Panel B illustrates the fragmentation of liquidity, L, across multiple tick ranges between pa and pb
+on Uniswap v3. Liquidity within each tick range remains constant and represents an aggregation of all
+LP positions active on this tick range.
+Panel A: Liquidity in Uniswap V2 (uniform across price range)
+p
+Liquidity
+Panel B: Liquidity in Uniswap V3 (concentrated around [pa,p b])
+pa pb
+p
+Liquidity
+50
+
+===== PAGE 52 =====
+
+Figure 2: Liquidity distribution.
+This figure displays the tick-level distribution of liquidity around the current market price for the ETH-USDC 0.05% Uniswap V3 pool, observed at block
+16,265,204 on December 25, 2022. The horizontal axis measures tick distance from the prevailing pool price (denoted as tick 0), where each tick represents a
+discrete price interval in log base
+√
+1.0001 units. The pool has a fixed tick spacing of 10, which means that LPs can only provide liquidity at every 10th tick.
+This spacing implies price intervals of approximately 0.1% (10 basis points), determining the granularity of allowable liquidity placements. Ticks to the left of
+zero represent liquidity below the current market price. These correspond to buy limit orders for ETH (i.e., LPs are willing to purchase ETH by selling USDC).
+Conversely, ticks to the right of zero represent liquidity above the market price and correspond to sell limit orders for ETH (i.e., LPs are willing to sell ETH in
+exchange for USDC). Liquidity in each tick is expressed in USDC millions on both sides of the book.
+1000
+ 750
+ 500
+ 250
+ 0 250 500 750 1000
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8millions
+USDC ETH
+51
+
+===== PAGE 53 =====
+
+Figure 3: Mint and Burn order price impacts.
+This figure illustrates four possible states relating net minted and burned liquidity to future price changes. The current price is denoted by p0, and the long-run
+price by p∗. The bid side refers to mints/burns below the market price; the ask side refers to mints/burns above the market price. Panel (a) shows possible price
+impacts of mint orders. A positive net mint, mint(k), corresponds to a larger amount of liquidity added above the current price (ask) relative to liquidity added
+below the current price (bid), as illustrated on the right side of Panel (a). We refer to the scenario where a positive (negative) net mint predicts a future price
+increase (decrease) as a ”positive price impact” of a net mint. A negative net mint corresponds to a larger amount of liquidity added on the bid side, relative
+to the ask side, as illustrated on the left side of Panel (a). We refer to the scenario where a negative net mint predicts a future price increase (or, similarly,
+if a positive net mint predicts a future price decrease) as a ”negative price impact” of a net mint. Panel (b) shows possible price impacts of burn orders. A
+positive net burn corresponds to a higher burn volume on the ask side relative to the bid side, as illustrated on the right side of Panel (b). A negative net burn
+corresponds to a higher burn volume on the bid side relative to the ask side, as illustrated on the left side of Panel (b). In this case, a positive (negative) price
+impact of burned liquidity refers to scenarios where more liquidity withdrawn above (below) the current price predicts a future price increase. These schematics
+are illustrative and do not distinguish between aggressive and passive orders.
+Panel A: Price impact of Mint orders: negative (left) and positive(right)
+p0 p∗
+p
+Liquidity
+Initial Liquidity Newly Minted Liquidity
+p0 p∗
+p
+Liquidity
+Initial Liquidity Newly Minted Liquidity
+52
+
+===== PAGE 54 =====
+
+Panel B: Price impact of burn orders: negative (left) and positive(right)
+p0 p∗
+p
+Liquidity
+Initial Liquidity Newly Burned Liquidity
+p0 p∗
+p
+Liquidity
+Initial Liquidity Newly Burned Liquidity
+53
+
+===== PAGE 55 =====
+
+Figure 4: Aggressive and non-aggressive liquidity price impacts.
+This figure displays aggressive and non-aggressive liquidity adjustment strategies of LPs. The current
+price is denoted by p0, and the “long-run” price by p∗. The bid side refers to mints/burns below the
+current price; the ask side refers to mints/burns above the current price. The Y-axis, ”Liquidity”, shows
+net minting (burning) of liquidity by LPs. Panel (a) illustrates two aggressive liquidity strategies: 1) net
+minting liquidity on the bid side close to the current price, i.e., mintb < 0 and 2) net burning liquidity on
+the ask side close to the current price, i.e., burnb > 0. According to H2a, we expect a negative relation
+between net minting liquidity on the bid side close to the current price and subsequent returns, i.e.,
+mints placed close to the current price have negative price impacts. We further expect a positive relation
+between net burning liquidity on the ask side close to the current price and subsequent returns. Panel (b)
+illustrates two non-aggressive liquidity strategies: 1) net minting liquidity on the ask side further away
+from the current price, i.e., minta > 0 and 2) net burning liquidity on the bid side further away from
+the current price, i.e., burna < 0. According to H2b, we expect a positive relation between net minting
+liquidity on the ask side away from the current price and subsequent returns, i.e., mints placed away
+from the current price have positive price impacts. We further expect a negative relation between net
+burning liquidity on the bid side away from the current price and subsequent returns, i.e., burn orders
+away from the current price have negative price impacts.
+Panel A:Aggressive liquidity
+p0 p∗ ∞p
+Liquidity
+Panel B:Non-aggressive liquidity
+p0 p∗ ∞p
+Liquidity
+54
+
+===== PAGE 56 =====
+
+Figure 5: Cumulative impulse response functions of order flows on returns
+This figure plots the cumulative impulse response of ETH-USDC returns to a positive shock to order flow on DEX (Panels A and B) and on CEX (Panel C). The
+methodology is based on Hasbrouck (1991a). In Panels A and B, we measure the effect of 1 standard deviation of net order flow shock to swap orders ( swap),
+aggressive and non-aggressive mints ( mintb and minta), aggressive and non-aggressive burns ( burnb and burna) for DEX(5) and DEX(30) pools, respectively.
+In Panel C, we measure the effect of a 1 standard deviation of net order flow shock to market order flow ( market) and limit order flow ( limit). The benchmark
+return is computed from Binance mid-prices of ETH-USDC. Appendix A provides detailed definitions of all variables used in the analysis. The sample period
+runs from 06/05/2021 to 12/07/2022. All data are in block frequency. The shaded area represents the range between the 2.5th and 97.5th quantile values, which
+captures the middle 95% of the data distribution.
+Panel A: CIRF of DEX(5) orders on returns
+0 10 20 30 40 50 60
+blocks
+0.000
+0.005
+0.010
+0.015
+0.020
+0.025%
+CIRF of DEX(5) swap on returns
+swap(5)
+0 10 20 30 40 50 60
+blocks
+0.14
+0.12
+0.10
+0.08
+0.06
+0.04
+0.02
+0.00
+%
+CIRF of DEX(5) mintbest on returns mintb
+(5)
+0 10 20 30 40 50 60
+blocks
+0.008
+0.006
+0.004
+0.002
+0.000
+0.002
+0.004
+0.006
+%
+CIRF of DEX(5) mintaway on returns minta
+(5)
+0 10 20 30 40 50 60
+blocks
+0.000
+0.025
+0.050
+0.075
+0.100
+0.125
+0.150
+0.175
+0.200%
+CIRF of DEX(5) burnbest on returns burnb
+(5)
+0 10 20 30 40 50 60
+blocks
+0.010
+0.008
+0.006
+0.004
+0.002
+0.000
+0.002
+%
+CIRF of DEX(5) burnaway on returns burna
+(5)
+Panel B: CIRF of DEX(30) orders on returns
+0 10 20 30 40 50 60
+blocks
+0.00
+0.01
+0.02
+0.03
+0.04%
+CIRF of DEX(30) swap on returns
+swap(30)
+0 10 20 30 40 50 60
+blocks
+0.04
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+%
+CIRF of DEX(30) mintbest on returns mintb
+(30)
+0 10 20 30 40 50 60
+blocks
+0.008
+0.006
+0.004
+0.002
+0.000
+0.002
+%
+CIRF of DEX(30) mintaway on returns minta
+(30)
+0 10 20 30 40 50 60
+blocks
+0.02
+0.00
+0.02
+0.04
+%
+CIRF of DEX(30) burnbest on returns burnb
+(30)
+0 10 20 30 40 50 60
+blocks
+0.006
+0.004
+0.002
+0.000
+0.002
+0.004
+0.006
+0.008
+%
+CIRF of DEX(30) burnaway on returns burna
+(30)
+Panel C: CIRF of CEX order flow on returns
+0 10 20 30 40 50 60
+blocks
+0.000
+0.002
+0.004
+0.006
+0.008
+0.010
+0.012%
+CIRF of CEX market on returns
+market
+0 10 20 30 40 50 60
+blocks
+0.000
+0.002
+0.004
+0.006
+0.008
+0.010
+0.012%
+CIRF of CEX limt on returns limit
+55
+
+===== PAGE 57 =====
+
+Figure 6: Arbitrage deviations and price convergence
+This figure plots the average dynamics of the price difference between Uniswap and Binance ETH-USDC
+prices, conditional on the sign of the next incoming swap/market order that exploits the arbitrage
+opportunity. We define the price difference as pdt = prcDEX
+t − prcCEX
+t and consider six conditioning
+cases: (i) pdt > 0, swapt+1 < 0; (ii) pdt > 0, markett+1 > 0; (iii) pdt > 0, swapt+1 < 0, markett+1 > 0;
+(iv) pdt < 0, swapt+1 > 0; (v) pdt < 0, markett+1 < 0; (vi) pdt < 0, swapt+1 > 0, markett+1 < 0. These
+conditions identify cases where either DEX, or CEX, or both platforms respond to arbitrage deviations.
+Panel A displays dynamics for the DEX(5) pool, and Panel B for the DEX(30) pool. The x-axis is
+measured in blocks, and the y-axis represents the average price difference.
+Panel A: DEX (5)
+0 50 100 150 200 250 300
+2829.0
+2829.5
+2830.0
+2830.5
+2831.0
+2831.5
+2832.0USDC
+DEX(5): pdt > 0, swapt + 1 < 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2810.5
+2811.0
+2811.5
+2812.0
+2812.5
+2813.0
+2813.5USDC
+DEX(5): pdt < 0, swapt + 1 > 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2842
+2843
+2844
+2845USDC
+DEX(5): pdt > 0, markett + 1 > 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2837
+2838
+2839
+2840USDC
+DEX(5): pdt < 0, markett + 1 < 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2740.5
+2741.0
+2741.5
+2742.0
+2742.5
+2743.0USDC
+DEX(5): pdt > 0, swapt + 1 < 0, markett + 1 > 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2694.5
+2695.0
+2695.5
+2696.0
+2696.5
+2697.0USDC
+DEX(5): pdt < 0, swapt + 1 > 0, markett + 1 < 0
+prcDEX
+prcCEX
+ppd (right)
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+%
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+%
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+%
+0.12
+0.10
+0.08
+0.06
+0.04
+0.02
+0.00
+%
+0.12
+0.10
+0.08
+0.06
+0.04
+0.02
+0.00
+%
+0.12
+0.10
+0.08
+0.06
+0.04
+0.02
+0.00
+%
+Panel B: DEX (30)
+0 50 100 150 200 250 300
+2726
+2728
+2730
+2732
+2734
+2736USDC
+DEX(30): pdt > 0, swapt + 1 < 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2770
+2772
+2774
+2776
+2778
+2780USDC
+DEX(30): pdt < 0, swapt + 1 > 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2843
+2844
+2845
+2846
+2847
+2848
+2849USDC
+DEX(30): pdt > 0, markett + 1 > 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2864
+2865
+2866
+2867
+2868
+2869USDC
+DEX(30): pdt < 0, markett + 1 < 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2690
+2692
+2694
+2696
+2698USDC
+DEX(30): pdt > 0, swapt + 1 < 0, markett + 1 > 0
+prcDEX
+prcCEX
+ppd (right)
+0 50 100 150 200 250 300
+2720
+2722
+2724
+2726
+2728
+2730USDC
+DEX(30): pdt < 0, swapt + 1 > 0, markett + 1 < 0
+prcDEX
+prcCEX
+ppd (right)
+0.0
+0.1
+0.2
+0.3
+%
+0.0
+0.1
+0.2
+0.3
+%
+0.0
+0.1
+0.2
+0.3
+%
+0.3
+0.2
+0.1
+0.0
+%
+0.3
+0.2
+0.1
+0.0
+%
+0.3
+0.2
+0.1
+0.0
+%
+56
+
+===== PAGE 58 =====
+
+Tables
+Table 1: Distribution of distance from lower and upper tick to current tick
+This table presents summary statistics on the absolute distance of liquidity events (mints and burns)
+from the current tick in DEX pools. The current tick is derived from the current price. Each liquidity
+event is associated with a tick range that includes both lower and upper ticks. We calculate the absolute
+distance from both the lower and upper ticks to the current tick separately. The sample period ranges
+from 06/05/2021 to 12/07/2022. One tick is equivalent to one basis point of the current price.
+DEX(5) DEX(30)
+lower upper lower upper
+count 50,845 50,845 92,217 92,217
+mean 7,802 4,646 8,076 6,053
+SD 81,360 46,725 72,379 44,184
+min 0 0 0 0
+1% 0 1 5 6
+5% 3 3 30 31
+10% 7 7 64 66
+15% 10 10 114 113
+20% 23 22 188 177
+25% 53 47 307 285
+50% 424 367 1,348 1,279
+75% 1,554 1,354 4,205 3,943
+max 1,094,907 695,697 1,094,047 695,475
+57
+
+===== PAGE 59 =====
+
+Table 2: Summary statistics
+This table reports summary statistics for trades and liquidity flows with non-zero values at the block
+level for both DEX(5) and DEX(30) pools on Uniswap v3 Ethereum, as well as the CEX Binance for
+the ETH/USDC pair. market is the block-level net market order flow in the CEX, defined as buy minus
+sell volume. swap(k) is the block-level net swap flow on the corresponding DEX(k) pool, defined as ETH
+buy minus sell volume (in USDC). limit is the block-level net limit order flow on the CEX, proxied by
+changes in depth adjusted for executed market orders. mintb
+(k) and burnb
+(k) denote mint and burn flows
+near the current price (within five tick ranges), whileminta
+(k) and burna
+(k) are flows away from the current
+price. All amounts are converted to USDC. Returns are computed from log mid-prices over 1, 10, and
+60 blocks and are in percentage points. Column count presents the number of block intervals with at
+least one order of the corresponding type. Appendix A provides detailed definitions of all variables used
+in the analysis. The sample period is from 06/05/2021 to 12/07/2022.
+Panel A: Trade orders
+Variable count mean std 5% 25% 50% 75% 95%
+market 1,585,597 -646 47,213 -22,003 -2,209 -15 1,911 20,002
+swap(5) 1,294,246 -145 321,763 -403,434 -27,185 -295 21,736 412,498
+swap(30) 223,011 -57 464,298 -613,402 -118,373 -377 120,001 617,619
+Panel B: Liquidity orders
+limit 2,730,640 -374 175,990 -240,206 -47,286 -15 45,476 240,723
+mintb
+(5) 25,155 783,748 7,360,737 -3,469,365 0 1 143 7,626,490
+minta
+(5) 21,812 33,074 1,402,734 -248,198 -7,273 62 15,514 409,539
+burnb
+(5) 12,941 1,537,658 9,953,216 -10,494,282 -911 1 2,718 24,988,820
+burna
+(5) 18,454 34,164 2,572,021 -891,150 -50,541 403 67,432 1,002,886
+mintb
+(30) 48,433 123,877 2,855,405 -15,445 -1 0 10 22,718
+minta
+(30) 42,274 18,116 652,460 -52,175 -541 0 1,313 78,552
+burnb
+(30) 25,027 232,370 3,892,722 -106,283 -165 0 119 116,991
+burna
+(30) 28,681 22,078 1,041,103 -229,567 -11,020 3 13,592 291,812
+Panel C: Returns (log mid-price)
+ret (1 bl) 2,753,596 0.00 0.07 -0.09 -0.02 0.00 0.02 0.08
+ret (10 bl) 2,753,587 0.00 0.21 -0.28 -0.09 0.00 0.08 0.28
+ret (60 bl) 2,753,537 0.00 0.52 -0.71 -0.22 0.00 0.21 0.70
+58
+
+===== PAGE 60 =====
+
+Table 3: CIRF of net orders on returns
+This table reports the cumulative impulse response functions (CIRFs) of DEX and CEX order flow
+variables on ETH-USDC returns at horizons n = 0, 1, 10, and 60 blocks. Our methodology is based on
+Hasbrouck (1991a), with vector of endogenous variables consisting of DEX net swap flows and DEX net
+liquidity provision (mints and burns), CEX market and limit order flows, and the ETH-USDC return on
+CEX. The table presents results separately for the low-fee DEX(5) pool (Panel A), the high-fee DEX(30)
+pool (Panel B), and the centralized exchange (Panel C). Each coefficient represents the return impact
+(in percentage points) of a 1 standard deviation of net order flow shock. market is the net market order
+flow in the CEX market, limit is the net limit order flow in the CEX market, and swap is the net swap
+flow in the corresponding DEX pool. mintb (minta) is the net liquidity minted in the corresponding
+DEX pool within (away from) 5 tick ranges of the current price, and burnb (burna) is the net liquidity
+burned within (away from) 5 tick ranges. The benchmark return is computed from Binance mid-prices of
+ETH-USDC. Appendix A provides detailed definitions of all variables used in the analysis. The sample
+period ranges from 06/05/2021 to 12/07/2022. All data are in block frequency. * denotes significance at
+a 10 per cent level, ** denotes significance at a 5 per cent level, *** denotes significance at a 1 per cent
+level.
+n = 0 n = 1 n = 10 n = 60
+Panel A: DEX(5)
+swap 0 0 .022∗∗∗ 0.022∗∗∗ 0.023∗∗∗
+mintb
+(5) 0 −0.066∗∗∗ −0.066∗∗∗ −0.096∗∗∗
+minta
+(5) 0 0 .000 −0.004∗∗ −0.001
+burnb
+(5) 0 0 .080∗∗∗ 0.090∗∗∗ 0.119∗∗∗
+burna
+(5) 0 −0.003∗∗∗ −0.003 −0.003
+Panel B: DEX(30)
+swap 0 0 .038∗∗∗ 0.039∗∗∗ 0.038∗∗∗
+mintb
+(30) 0 −0.029∗∗∗ −0.017 −0.011
+minta
+(30) 0 0 .001∗∗∗ −0.001 −0.005∗∗
+burnb
+(30) 0 0 .035∗∗∗ 0.019 0 .012
+burna
+(30) 0 0 .001 0 .001 0 .000
+Panel C: CEX
+market 0.009∗∗∗ 0.010∗∗∗ 0.010∗∗∗ 0.011∗∗∗
+limit 0.011∗∗∗ 0.011∗∗∗ 0.011∗∗∗ 0.011∗∗∗
+59
+
+===== PAGE 61 =====
+
+Table 4: Variance decomposition
+This table reports the forecast error variance decomposition from the Hasbrouck (1991a) VAR in Table 3
+at horizons n = 1 and 60 blocks. market is the net market order flow in the CEX market, limit is the net
+limit order flow in the CEX market, andswap is the net swap flow in the corresponding DEX pool. mintb
+(minta) is the net liquidity minted in the corresponding DEX pool within (away from) 5 tick ranges of
+the current price, and burnb (burna) is the net liquidity burned within (away from) 5 tick ranges. The
+benchmark return is computed from Binance mid-prices of ETH-USDC. Appendix A provides detailed
+definitions of all variables used in the analysis. The sample period ranges from 06/05/2021 to 12/07/2022.
+All data are in block frequency.
+n = 1 n = 60
+Panel A: DEX(5) orders
+swap 4.79 4.78
+mintb 0.94 1.03
+minta 0.00 0.00
+burnb 0.01 0.01
+burna 0.00 0.00
+Panel B: DEX(30) orders
+swap 2.61 2.62
+mintb 0.36 0.44
+minta 0.00 0.00
+burnb 0.01 0.01
+burna 0.00 0.00
+Panel C: CEX orders
+market 1.04 1.04
+limit 2.20 2.20
+60
+
+===== PAGE 62 =====
+
+Table 5: CIRF of DEX orders: Order-level classification
+This table reports the cumulative impulse response functions (CIRFs) of DEX order flow variables on
+ETH-USDC returns at a horizon of 60 blocks. We estimate the VAR model in Equation (25), following
+the methodology of Hasbrouck (1991a). Panel A splits mints and burns by their size. A mint (burn) is
+classified as large ( large) if its size exceeds the median of its distribution in the sample; otherwise, it is
+classified as small. Equation (27) provides the full variable specification. Panel B splits mints and burns
+by priority of their execution within the block. A mint (burn) is classified as a top-of-block ( top) if its
+position index within the block is less than or equal to the sample median of 81; otherwise, it is classified
+as a bottom-of-block ( bot). Panel C splits mints and burns by the width of their price range interval. A
+mint (burn) is associated with a wide interval (wid) if the width of its interval is above the upper quartile
+of the corresponding distribution; otherwise, it is classified as narrrow ( nar). Equation (29) provides the
+full variable specification. The benchmark return is computed from Binance mid-prices of ETH-USDC.
+Each coefficient represents the return impact (in percentage points) of a 1 standard deviation of net order
+flow shock. Appendix A provides detailed definitions of all variables used in the analysis. The sample
+period runs from 06/05/2021 to 12/07/2022. All data are in block frequency. * denotes significance at
+the 10 per cent level, ** at the 5 per cent level, and *** at the 1 per cent level.
+DEX(5) DEX(30)
+Panel A: Order size classification (60-block horizon)
+swap(5) 0.023∗∗∗ swap(30) 0.038∗∗∗
+mintb,large
+(5) −0.112∗∗∗ mintb,small
+(5) −0.003 mintb,large
+(30) −0.018 mintb,small
+(30) −0.003
+minta,large
+(5) −0.002 minta,small
+(5) −0.001 minta,large
+(30) −0.007∗∗ minta,small
+(30) 0.000
+burnb,large
+(5) 0.139∗∗∗ burnb,small
+(5) −0.004 burnb,large
+(30) 0.017 burnb,small
+(30) −0.001
+burna,large
+(5) −0.003 burna,small
+(5) 0.003 burna,large
+(30) 0.000 burna,small
+(30) 0.000
+Panel B: Order execution priority classification (60-block horizon)
+swaptop
+(5) 0.028∗∗∗ swapbot
+(5) 0.011∗∗∗ swaptop
+(30) 0.041∗∗∗ swapbot
+(30) 0.036∗∗∗
+mintb,top
+(5) −0.151∗∗∗ mintb,bot
+(5) −0.005∗∗ mintb,top
+(30) −0.082∗∗ mintb,bot
+(30) 0.002
+minta,top
+(5) 0.000 minta,bot
+(5) −0.003 minta,top
+(30) 0.002 minta,bot
+(30) −0.006∗∗
+burnb,top
+(5) 0.167∗∗∗ burnb,bot
+(5) 0.009∗∗∗ burnb,top
+(30) 0.108∗∗ burnb,bot
+(30) −0.002
+burna,top
+(5) −0.006 burna,bot
+(5) −0.002 burna,top
+(30) −0.019∗∗ burna,bot
+(30) 0.007∗
+Panel C: Liquidity concentration classification (60-block horizon)
+swap(5) 0.023∗∗∗ swap(30) 0.038∗∗∗
+mintb,nar
+(5) −0.111∗∗∗ mintb,wid
+(5) 0.005 mintb,nar
+(30) −0.014 mintb,wid
+(30) 0.004
+minta,nar
+(5) −0.002 minta,wid
+(5) −0.006 minta,nar
+(30) 0.001 minta,wid
+(30) −0.014
+burnb,nar
+(5) 0.138∗∗∗ burnb,wid
+(5) −0.018∗∗∗ burnb,nar
+(30) 0.017 burnb,wid
+(30) −0.009
+burna,nar
+(5) −0.006 burna,wid
+(5) −0.011∗ burna,nar
+(30) 0.007∗∗ burna,wid
+(30) −0.023∗∗
+61
+
+===== PAGE 63 =====
+
+Table 6: CIRF of DEX orders: Wallet-level classification
+This table reports the cumulative impulse response functions (CIRFs) of DEX order flow variables on
+ETH-USDC returns at a horizon of 60 blocks. We estimate the VAR model in Equation (25), following
+the methodology of Hasbrouck (1991a). Panel A classifies wallets based on the type of their liquidity
+provision. We classify wallets as those that engage in mixed liquidity provision, mix, if they participated
+in both liquidity provision and swap trading within our sample period. In contrast, we classify wallets
+that engage in pure liquidity provision as pure. The variable vector is defined in Equation (30). Panel
+B classifies wallets as repositioning, repo, if they have at least one burn followed by a mint within two
+minutes (equivalent to 10 next blocks). Remaining wallets, who mint or burn on a more permanent
+basis, are labeled other. The variable vector is defined in Equation (31). Panel C classifies wallets based
+on frequency of liquidity provision. Wallets that submit more than four liquidity orders (mints or burns)
+over the sample period—the upper quartile of the distribution—are classified as high-frequency ( hf r).
+All other wallets are classified as low-frequency ( lf r). The variable vector is defined in Equation (32).
+The benchmark return is computed from Binance mid-prices of ETH-USDC. Each coefficient represents
+the return impact (in percentage points) of a 1 standard deviation of net order flow shock. Appendix A
+provides detailed definitions of all variables used in the analysis. The sample period runs from 06/05/2021
+to 12/07/2022. All data are in block frequency. * denotes significance at the 10 per cent level, ** at the
+5 per cent level, and *** at the 1 per cent level.
+DEX(5) DEX(30)
+Panel A: Mixed order types vs pure liquidity provision
+swapmix
+(5) 0.033∗∗∗ swappure
+(5) 0.020∗∗∗ swapmix
+(30) 0.049∗∗∗ swappure
+(30) 0.030∗∗∗
+mintb,mix
+(5) −0.107∗∗∗ mintb,pure
+(5) −0.007 mintb,mix
+(30) −0.016 mintb,pure
+(30) −0.001
+minta,mix
+(5) −0.001 minta,pure
+(5) −0.004 minta,mix
+(30) −0.001 minta,pure
+(30) −0.013∗∗
+burnb,mix
+(5) 0.134∗∗∗ burnb,pure
+(5) 0.020∗∗∗ burnb,mix
+(30) 0.017 burnb,pure
+(30) −0.015∗∗
+burna,mix
+(5) −0.003 burna,pure
+(5) −0.008 burna,mix
+(30) 0.001 burna,pure
+(30) 0.000
+Panel B: Liquidity repositioning
+swap(5) 0.023∗∗∗ swap(30) 0.038∗∗∗
+mintb,repo
+(5) −0.118∗∗∗ mintb,other
+(5) −0.045∗∗ mintb,repo
+(30) −0.041 mintb,other
+(30) 0.004
+minta,repo
+(5) −0.006 minta,other
+(5) 0.000 minta,repo
+(30) −0.007∗ minta,other
+(30) −0.002
+burnb,repo
+(5) 0.133∗∗∗ burnb,other
+(5) 0.069∗∗ burnb,repo
+(30) 0.047 burnb,other
+(30) −0.012∗∗
+burna,repo
+(5) 0.004 burna,other
+(5) −0.007 burna,repo
+(30) −0.007 burna,other
+(30) 0.008
+Panel C: Frequency of liquidity orders
+swap(5) 0.023∗∗∗ swap(30) 0.038∗∗∗
+mintb,hf r
+(5) −0.092∗∗∗ mintb,lf r
+(5) −0.110∗ mintb,hf r
+(30) −0.014 mintb,lf r
+(30) 0.008
+minta,hf r
+(5) −0.001 minta,lf r
+(5) 0.003 minta,hf r
+(30) −0.005∗ minta,lf r
+(30) −0.000
+burnb,hf r
+(5) 0.113∗∗∗ burnb,lf r
+(5) 0.161∗ burnb,hf r
+(30) 0.013 burnb,lf r
+(30) −0.029
+burna,hf r
+(5) −0.003 burna,lf r
+(5) −0.002 burna,hf r
+(30) −0.005 burna,lf r
+(30) 0.071∗∗
+62
+
+===== PAGE 64 =====
+
+Table 7: Arbitrage deviations and CIRF of DEX orders
+This table reports the cumulative impulse response function (CIRF) of ETH-USDC returns to order
+flow shocks on DEX at a 60-block horizon. We estimate the VAR model following the methodology of
+Hasbrouck (1991a). Panel A reports summary statistics of the percentage price difference between DEX
+and CEX markets, defined as ppd = 100× (prcDEX− prcCEX )/prcCEX , where prcDEX is the observed
+DEX pool price. Panel B reports the distribution of the absolute percentage price difference |ppd|. Panel
+C presents CIRF estimates conditional on the magnitude of arbitrage opportunities between DEX and
+CEX markets. Order flow observations are split by|ppd|: orders that are submitted when|ppd| is greater
+than or equal to 36 basis points are classified as highpd, corresponding to deviations large enough to
+exceed median DEX transaction costs (gas, pool fees, and slippage). Orders below this threshold are
+classified as lowpd. Each coefficient represents the return impact (in percentage points) of a 1 standard
+deviation of net order flow shock. Appendix A provides detailed definitions of all variables used in the
+analysis. The sample period spans from 06/05/2021 to 12/07/2022. All data are sampled at the block
+level. * denotes significance at the 10 per cent level, ** at the 5 per cent level, and *** at the 1 per cent
+level.
+Panel A: Distribution of ppd
+count mean std min 25% 50% 75% max
+DEX(5) 2,753,596 0.0042 0.4250 -30.82 -0.0554 -0.0023 0.0515 27.06
+DEX(30) 2,753,596 0.0028 0.4128 -31.82 -0.1681 -0.0096 0.1521 12.62
+Panel B: Distribution of |ppd|
+count mean std 50% 75% 95% 99% max
+DEX(5) 2,753,596 0.1058 0.4117 0.0535 0.0897 0.2858 0.9759 30.82
+DEX(30) 2,753,596 0.1874 0.3678 0.1604 0.2513 0.3622 0.5386 31.82
+Panel C: CIRF of DEX orders conditional on arbitrage
+DEX(5) DEX(30)
+swaphpd
+(5) 0.080∗∗∗ swaphpd
+(30) 0.031∗∗∗
+swaplpd
+(5) 0.022∗∗∗ swaplpd
+(30) 0.041∗∗∗
+mintb,hpd
+(5) −0.409∗∗ mintb,hpd
+(30) 0.030∗
+mintb,lpd
+(5) −0.089∗∗∗ mintb,lpd
+(30) −0.029∗
+minta,hpd
+(5) −0.115∗∗ minta,hpd
+(30) −0.003
+minta,lpd
+(5) −0.001 minta,lpd
+(30) −0.004∗
+burnb,hpd
+(5) 0.462∗∗ burnb,hpd
+(30) −0.018
+burnb,lpd
+(5) 0.120∗∗∗ burnb,lpd
+(30) 0.040∗
+burna,hpd
+(5) 0.024 burna,hpd
+(30) 0.036
+burna,lpd
+(5) −0.003 burna,lpd
+(30) −0.003
+63
+
+===== PAGE 65 =====
+
+Informed Liquidity Provision on
+Decentralized Exchanges
+(Not for publication)
+
+===== PAGE 66 =====
+
+A Variable Definitions and Data Sources
+Table A1: Variables Definitions
+Variable Description Source
+swapbuy
+(k) ETH buy volume (in USDC) per block in DEX pool k,
+where k = 5 for 0.05% and k = 30 for 0.3%.
+The Graph
+swapsell
+(k) ETH sell volume (in USDC) per block in DEX pool k. The Graph
+swap(k) Net swap flow: swapbuy
+(k)−swapsell
+(k) . The Graph
+mintask
+(k) USDC equivalent of token X (ETH) minted: xp·pM. Kaiko
+mintbid
+(k) USDC amount of token Y (USDC) minted: yp. Kaiko
+mint(k) Net mint: mintask
+(k)−mintbid
+(k). Kaiko
+burnask
+(k) USDC equivalent of token X (ETH) burned: xp·pM. Kaiko
+burnbid
+(k) USDC amount of token Y (USDC) burned: yp. Kaiko
+burn(k) Net burn: burnask
+(k)−burnbid
+(k). Kaiko
+mintb
+(k) Minted liquidity within 5 tick ranges of the current price
+(“best”): mintb,ask−mintb,bid.
+Kaiko
+minta
+(k) Minted liquidity beyond 5 tick ranges (“away”):
+minta,ask−minta,bid.
+Kaiko
+burnb
+(k) Burned liquidity within 5 tick ranges of the current
+price: burnb,ask−burnb,bid.
+Kaiko
+burna
+(k) Burned liquidity beyond 5 tick ranges: burna,ask−
+burna,bid.
+Kaiko
+marketbuy Buy market order volume (in USDC) per block on Bi-
+nance.
+CryptoTick / CoinAPI
+marketsell Sell market order volume (in USDC) per block on Bi-
+nance.
+CryptoTick / CoinAPI
+market Net market order flow: marketbuy−marketsell. CryptoTick / CoinAPI
+limitask Net liquidity added to the ask side: ∆ depthask +
+marketbuy.
+CryptoTick / CoinAPI
+limitbid Net liquidity added to the bid side: ∆ depthbid +
+marketsell.
+CryptoTick / CoinAPI
+limit Net limit order flow: limitask−limitbid. CryptoTick / CoinAPI
+ret Log return of mid-price: log( pt)− log(pt−1). CryptoTick / CoinAPI
+
+===== PAGE 67 =====
+
+B CIRFs for 1 Million USDC Shock
+Table B1: CIRF of net orders on returns
+This table reports the cumulative impulse response functions (CIRFs) of DEX and CEX order flow
+variables on ETH-USDC returns at horizons n = 0, 1, 10, and 60 blocks. Our methodology is based on
+Hasbrouck (1991a), with vector of endogenous variables consisting of DEX net swap flows and DEX net
+liquidity provision (mints and burns), CEX market and limit order flows, and the ETH-USDC return
+on CEX. The table presents results separately the low-fee DEX(5) pool (Panel A), and the high-fee
+DEX(30) pool (Panel B), and for the centralized exchange (Panel C). Each coefficient represents the
+return impact (in basis points) of a 1 million USDC net order flow shock. market is the net market
+order flow in the CEX market, limit is the net limit order flow in the CEX market, and swap is the net
+swap flow in the corresponding DEX pool. mintb (minta) is the net liquidity minted in the corresponding
+DEX pool within (away from) 5 tick ranges of the current price, and burnb (burna) is the net liquidity
+burned within (away from) 5 tick ranges. The benchmark return is computed from Binance mid-prices of
+ETH-USDC. Appendix A provides detailed definitions of all variables used in the analysis. The sample
+period ranges from 06/05/2021 to 12/07/2022. All data are in block frequency. * denotes significance at
+a 10 per cent level, ** denotes significance at a 5 per cent level, *** denotes significance at a 1 per cent
+level.
+n = 0 n = 1 n = 10 n = 60
+Panel A: DEX(5)
+swap 0 0 .068∗∗∗ 0.069∗∗∗ 0.073∗∗∗
+mintb
+(5) 0 −0.009∗∗∗ −0.009∗∗∗ −0.013∗∗∗
+minta
+(5) 0 0 .000 −0.003∗∗ −0.001
+burnb
+(5) 0 0 .008∗∗∗ 0.009∗∗∗ 0.012∗∗∗
+burna
+(5) 0 −0.001∗∗∗ −0.001 −0.001
+Panel B: DEX(30)
+swap 0 0 .081∗∗∗ 0.083∗∗∗ 0.082∗∗∗
+mintb
+(30) 0 −0.010∗∗∗ −0.006 −0.004
+minta
+(30) 0 0 .002∗∗∗ −0.002 −0.007∗∗
+burnb
+(30) 0 0 .009∗∗∗ 0.005 0 .003
+burna
+(30) 0 0 .001 0 .001 0 .000
+Panel C: CEX
+market 0.186∗∗∗ 0.202∗∗∗ 0.209∗∗∗ 0.223∗∗∗
+limit 0.062∗∗∗ 0.065∗∗∗ 0.063∗∗∗ 0.062∗∗∗
+
+===== PAGE 68 =====
+
+Table B2: CIRF of DEX orders: Order-level classification
+This table reports the cumulative impulse response functions (CIRFs) of DEX order flow variables on
+ETH-USDC returns at a horizon of 60 blocks. We estimate the VAR model in Equation (25), following
+the methodology of Hasbrouck (1991a). Panel A splits mints and burns by their size. A mint (burn) is
+classified as large ( large) if its size exceeds the median of its distribution in the sample; otherwise, it is
+classified as small. Equation (27) provides the full variable specification. Panel B splits mints and burns
+by priority of their execution within the block. A mint (burn) is classified as a top-of-block ( top) if its
+position index within the block is less than or equal to the sample median of 80; otherwise, it is classified
+as a bottom-of-block ( bot). Panel C splits mints and burns by the width of their price range interval. A
+mint (burn) is associated with a wide interval (wid) if the width of its interval is above the upper quartile
+of the corresponding distribution; otherwise, it is classified as narrrow ( nar). Equation (29) provides the
+full variable specification. The benchmark return is computed from Binance mid-prices of ETH-USDC.
+Appendix A provides detailed definitions of all variables used in the analysis. The sample period runs
+from 06/05/2021 to 12/07/2022. All data are in block frequency. * denotes significance at the 10 per
+cent level, ** at the 5 per cent level, and *** at the 1 per cent level.
+DEX(5) DEX(30)
+Panel A: Order size classification (60-block horizon)
+swap(5) 0.073∗∗∗ swap(30) 0.082∗∗∗
+mintb,large
+(5) −0.013∗∗∗ mintb,small
+(5) −2.266 mintb,large
+(30) −0.004 mintb,small
+(30) −2.204
+minta,large
+(5) −0.001 minta,small
+(5) −0.170 minta,large
+(30) −0.007∗∗ minta,small
+(30) 0.188
+burnb,large
+(5) 0.012∗∗∗ burnb,small
+(5) −1.009 burnb,large
+(30) 0.003 burnb,small
+(30) −0.149
+burna,large
+(5) −0.001 burna,small
+(5) 0.153 burna,large
+(30) 0.000 burna,small
+(30) 0.004
+Panel B: Order execution priority classification (60-block horizon)
+swaptop
+(5) 0.073∗∗∗ swapbot
+(5) 0.078∗∗∗ swaptop
+(30) 0.076∗∗∗ swapbot
+(30) 0.131∗∗∗
+mintb,top
+(5) −0.013∗∗∗ mintb,bot
+(5) −0.014∗∗ mintb,top
+(30) −0.016∗∗ mintb,bot
+(30) 0.005
+minta,top
+(5) 0.000 minta,bot
+(5) −0.002 minta,top
+(30) 0.003 minta,bot
+(30) −0.009∗∗
+burnb,top
+(5) 0.012∗∗∗ burnb,bot
+(5) 0.020∗∗∗ burnb,top
+(30) 0.016∗∗ burnb,bot
+(30) −0.005
+burna,top
+(5) −0.002 burna,bot
+(5) −0.001 burna,top
+(30) −0.018∗∗ burna,bot
+(30) 0.007∗
+Panel C: Liquidity concentration classification (60-block horizon)
+swap(5) 0.073∗∗∗ swap(30) 0.082∗∗∗
+mintb,nar
+(5) −0.013∗∗∗ mintb,wid
+(5) 1.606 mintb,nar
+(30) −0.004 mintb,wid
+(30) 0.199
+minta,nar
+(5) −0.001 minta,wid
+(5) −0.008 minta,nar
+(30) 0.001 minta,wid
+(30) −0.021
+burnb,nar
+(5) 0.012∗∗∗ burnb,wid
+(5) −0.820∗∗∗ burnb,nar
+(30) 0.004 burnb,wid
+(30) −0.628
+burna,nar
+(5) −0.002 burna,wid
+(5) 0.006∗ burna,nar
+(30) 0.007∗∗ burna,wid
+(30) −0.023∗∗
+
+===== PAGE 69 =====
+
+Table B3: CIRF of DEX orders: Wallet-level classification
+This table reports the cumulative impulse response functions (CIRFs) of DEX order flow variables on
+ETH-USDC returns at a horizon of 60 blocks. We estimate the VAR model in Equation (25), following
+the methodology of Hasbrouck (1991a). Panel A classifies wallets based on the type of their liquidity
+provision. We classify wallets as those that engage in mixed liquidity provision, mix, if they combine
+liquidity provision with swap trading within the same block. In contrast, we classify wallets that engage
+in pure liquidity provision as pure. The variable vector is defined in Equation (30). Panel B classifies
+wallets as repositioning, repo, if they have at least one burn followed by a mint within two minutes
+(equivalent to 10 next blocks). Remaining wallets, who mint or burn on a more permanent basis, are
+labeled other. The variable vector is defined in Equation (31). Panel C classifies wallets based on
+frequency of liquidity provision. Wallets that submit more than four liquidity orders (mints or burns)
+over the sample period—the upper quartile of the distribution—are classified as high-frequency ( hf r).
+All other wallets are classified as low-frequency (lf r). The variable vector is defined in Equation (32).The
+benchmark return is computed from Binance mid-prices of ETH-USDC. Appendix A provides detailed
+definitions of all variables used in the analysis. The sample period runs from 06/05/2021 to 12/07/2022.
+All data are in block frequency. * denotes significance at the 10 per cent level, ** at the 5 per cent level,
+and *** at the 1 per cent level.
+DEX(5) DEX(30)
+Panel A: Mixed order types vs pure liquidity provision
+swapmix
+(5) 0.075∗∗∗ swappure
+(5) 0.073∗∗∗ swapmix
+(30) 0.094∗∗∗ swappure
+(30) 0.075∗∗∗
+mintb,mix
+(5) −0.014∗∗∗ mintb,pure
+(5) −0.016 mintb,mix
+(30) −0.005 mintb,pure
+(30) −0.004
+minta,mix
+(5) −0.001 minta,pure
+(5) −0.004 minta,mix
+(30) −0.001 minta,pure
+(30) −0.018∗∗
+burnb,mix
+(5) 0.013∗∗∗ burnb,pure
+(5) 0.051∗∗∗ burnb,mix
+(30) 0.004 burnb,pure
+(30) −0.071∗∗
+burna,mix
+(5) −0.001 burna,pure
+(5) −0.007 burna,mix
+(30) 0.001 burna,pure
+(30) 0.000
+Panel B: Liquidity repositioning
+swap(5) 0.073∗∗∗ swap(30) 0.082∗∗∗
+mintb,repo
+(5) −0.012∗∗∗ mintb,other
+(5) −0.039∗∗ mintb,repo
+(30) −0.008 mintb,other
+(30) 0.009
+minta,repo
+(5) −0.006 minta,other
+(5) 0.000 minta,repo
+(30) −0.006∗ minta,other
+(30) −0.006
+burnb,repo
+(5) 0.011∗∗∗ burnb,other
+(5) 0.038∗∗ burnb,repo
+(30) 0.008 burnb,other
+(30) −0.021∗∗
+burna,repo
+(5) 0.003 burna,other
+(5) −0.002 burna,repo
+(30) −0.004 burna,other
+(30) 0.012
+Panel C: Frequency of liquidity orders
+swap(5) 0.073∗∗∗ swap(30) 0.082∗∗∗
+mintb,hf r
+(5) −0.012∗∗∗ mintb,lf r
+(5) −0.043∗ mintb,hf r
+(30) −0.004 mintb,lf r
+(30) 0.010
+minta,hf r
+(5) −0.001 minta,lf r
+(5) 0.007 minta,hf r
+(30) −0.006∗ minta,lf r
+(30) −0.002
+burnb,hf r
+(5) 0.011∗∗∗ burnb,lf r
+(5) 0.042∗ burnb,hf r
+(30) 0.003 burnb,lf r
+(30) −0.019
+burna,hf r
+(5) −0.001 burna,lf r
+(5) −0.005 burna,hf r
+(30) −0.004 burna,lf r
+(30) 0.323∗∗
+
+===== PAGE 70 =====
+
+Table B4: Arbitrage deviations and CIRF of DEX orders
+This table reports the cumulative impulse response function (CIRF) of ETH-USDC returns to order
+flow shocks on DEX at a 60-block horizon. We estimate the VAR model following the methodology of
+Hasbrouck (1991a). The CIRF estimates the effect of a 1 million USDC net order flow shock of a given
+type on the ETH-USDC return. Panel A reports summary statistics of the percentage price difference
+between DEX and CEX markets, defined as ppd = 100× (prcDEX− prcCEX )/prcCEX , where prcDEX is
+the observed DEX pool price. Panel B reports the distribution of the absolute percentage price difference
+|ppd|. Panel C presents CIRF estimates conditional on the magnitude of arbitrage opportunities between
+DEX and CEX markets. Order flow observations are split by |ppd|: orders that are submitted when
+|ppd| is greater than or equal to 36 basis points are classified as highpd, corresponding to deviations
+large enough to exceed median DEX transaction costs (gas, pool fees, and slippage). Orders below this
+threshold are classified as lowpd. Appendix A provides detailed definitions of all variables used in the
+analysis. The sample period spans from 06/05/2021 to 12/07/2022. All data are sampled at the block
+level. * denotes significance at the 10 per cent level, ** at the 5 per cent level, and *** at the 1 per cent
+level.
+Panel A: Distribution of ppd
+count mean std min 25% 50% 75% max
+DEX(5) 2,753,596 0.0042 0.4250 -30.82 -0.0554 -0.0023 0.0515 27.06
+DEX(30) 2,753,596 0.0028 0.4128 -31.82 -0.1681 -0.0096 0.1521 12.62
+Panel B: Distribution of |ppd|
+count mean std 50% 75% 95% 99% max
+DEX(5) 2,753,596 0.1058 0.4117 0.0535 0.0897 0.2858 0.9759 30.82
+DEX(30) 2,753,596 0.1874 0.3678 0.1604 0.2513 0.3622 0.5386 31.82
+Panel C: CIRF of DEX orders conditional on arbitrage
+DEX(5) DEX(30)
+swaphpd
+(5) 0.088∗∗∗ swaphpd
+(30) 0.048∗∗∗
+swaplpd
+(5) 0.073∗∗∗ swaplpd
+(30) 0.098∗∗∗
+mintb,hpd
+(5) −0.171∗∗ mintb,hpd
+(30) 0.024∗
+mintb,lpd
+(5) −0.012∗∗∗ mintb,lpd
+(30) −0.010∗
+minta,hpd
+(5) −0.289∗∗ minta,hpd
+(30) −0.007
+minta,lpd
+(5) −0.001 minta,lpd
+(30) −0.006∗
+burnb,hpd
+(5) 0.187∗∗ burnb,hpd
+(30) −0.011
+burnb,lpd
+(5) 0.012∗∗∗ burnb,lpd
+(30) 0.010∗
+burna,hpd
+(5) 0.015 burna,hpd
+(30) 0.031
+burna,lpd
+(5) −0.001 burna,lpd
+(30) −0.003
+
+===== PAGE 71 =====
+
+C Alternative VAR Orderings
+To assess the robustness of our identification strategy, we explore three alternative recursive
+orderings of the VAR system, summarized in Table C1. These specifications vary the contem-
+poraneous relationships between DEX and CEX order flow, as well as between market and limit
+orders on CEX. All models include the same set of endogenous variables defined in equation (26),
+but differ in the structure imposed on the contemporaneous impact matrix A in equation (25).
+• In the first variant (“Ordering 1”), DEX orders are allowed to contemporaneously affect
+CEX order flow, and CEX market orders can contemporaneously affect limit orders.
+• The second (“Ordering 2”) removes this link and instead allows CEX limit orders to affect
+market orders contemporaneously.
+• The third (“Ordering 3”) combines both, allowing DEX orders to affect CEX orders and
+limit orders to affect market orders.
+Across all three specifications, we maintain the assumption that CEX order flow (market and
+limit) can contemporaneously affect returns, but not vice versa. In contrast, DEX activity affects
+returns only with a lag, consistent with the absence of a mechanical pricing link between DEX
+trades and Binance mid-prices.
+
+===== PAGE 72 =====
+
+Table C1: CIRF of net orders on returns: Alternative Ordering
+This table reports the cumulative impulse response function (CIRF) of ETH-USDC returns to a buy
+and sell order flow shock in centralized and decentralized exchanges at horizons of n = 0, 1, 10, and 60
+blocks. The methodology is based on Hasbrouck (1991a) with vector of endogenous variables consisting
+of DEX net swap flows and DEX net liquidity provision (mints and burns), CEX market and limit order
+flows, and the ETH-USDC return on CEX. The estimates are the effect of a 1 standard deviation shock
+to a net order flow on the ETH-USDC return. market is the market order flow in the CEX market,
+swap is the swap order flow from the corresponding DEX pool, and limit is the limit order flow in
+the CEX market. mintb (minta) is the flow of minted liquidity in the corresponding DEX pool within
+(away from) 5 tick ranges of the current price, and burnb (burna) is the flow of burned liquidity within
+(away from) 5 tick ranges. The benchmark return is based on bid-ask prices of Binance ETH-USDC.
+The models differ in the structure imposed on the contemporaneous impact matrix A in equation (25).
+The orderings are as follows. “Ordering 1” – DEX orders are allowed to contemporaneously affect
+CEX order flow, and CEX market orders can contemporaneously affect limit orders; “Ordering 2” –
+DEX orders do not affect CEX order flows contemporaneously and CEX limit orders are allowed to
+affect market orders contemporaneously; “Ordering 3” – DEX orders are allowed to contemporaneously
+affect CEX order flow and CEX limit orders are allowed to affect market orders contemporaneously.
+Across all three specifications, we maintain the assumption that CEX order flow (market and limit) can
+contemporaneously affect returns, but not vice versa. In contrast, DEX activity affects returns only
+with a lag. The sample period ranges from 06/05/2021 to 12/07/2022. All data are in block frequency.
+* denotes significance at a 10 per cent level, ** denotes significance at a 5 per cent level, *** denotes
+significance at a 1 per cent level.
+Ordering 1 Ordering 2 Ordering 3
+Panel A: DEX(5)
+swap(5) 0.024∗∗∗ 0.024∗∗∗ 0.024∗∗∗
+mintb
+(5) −0.100∗∗∗ −0.096∗∗∗ −0.103∗∗∗
+minta
+(5) −0.001 −0.001 −0.001
+burnb
+(5) 0.129∗∗∗ 0.129∗∗∗ 0.129∗∗∗
+burna
+(5) −0.003 −0.003 −0.003
+Panel B: DEX(30)
+swap(30) 0.038∗∗∗ 0.038∗∗∗ 0.038∗∗∗
+mintb
+(30) −0.011 −0.011 −0.011
+minta
+(30) −0.005∗∗ −0.005∗∗ −0.005∗∗
+burnb
+(30) 0.012 0 .012 0 .016
+burna
+(30) 0.000 0 .000 0 .000
+Panel C: CEX
+market 0.011∗∗∗ 0.008∗∗∗ 0.008∗∗∗
+limit 0.011∗∗∗ 0.012∗∗∗ 0.012∗∗∗

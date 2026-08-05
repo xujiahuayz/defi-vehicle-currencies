@@ -1,0 +1,2976 @@
+
+
+===== PAGE 1 =====
+
+642
+[Journal of Political Economy, 2003, vol. 111, no. 3]
+/H170152003 by The University of Chicago. All rights reserved. 0022-3808/2003/11103-0006$10.00
+Liquidity Risk and Expected Stock Returns
+LˇubosˇP a´ stor
+University of Chicago, National Bureau of Economic Research, and Centre for Economic Policy
+Research
+Robert F . Stambaugh
+University of Pennsylvania and National Bureau of Economic Research
+This study investigates whether marketwide liquidity is a state variable
+important for asset pricing. We ﬁnd that expected stock returns are
+related cross-sectionally to the sensitivities of returns to ﬂuctuations
+in aggregate liquidity. Our monthly liquidity measure, an average of
+individual-stock measures estimated with daily data, relies on the prin-
+ciple that order ﬂow induces greater return reversals when liquidity
+is lower. From 1966 through 1999, the average return on stocks with
+high sensitivities to liquidity exceeds that for stocks with low sensitiv-
+ities by 7.5 percent annually, adjusted for exposures to the market
+return as well as size, value, and momentum factors. Furthermore, a
+liquidity risk factor accounts for half of the proﬁts to a momentum
+strategy over the same 34-year period.
+Research support from the Center for Research in Security Prices and the James S.
+Kemper Faculty Research Fund at the Graduate School of Business, University of Chicago,
+is gratefully acknowledged (Pa ´stor). We are grateful for comments from Nick Barberis,
+John Campbell, Tarun Chordia, John Cochrane (the editor), George Constantinides, Doug
+Diamond, Andrea Eisfeldt, Gene Fama, Simon Gervais, David Goldreich, Gur Huberman,
+Michael Johannes, Owen Lamont, Andrew Metrick, Mark Ready, Hans Stoll, Dick Thaler,
+Rob Vishny, Tuomo Vuolteenaho, Jiang Wang, and two anonymous referees, as well as
+workshop participants at Columbia University, Harvard University, New York University,
+Stanford University, University of Arizona, University of California at Berkeley, University
+of Chicago, University of Florida, University of Pennsylvania, Washington University, the
+Review of Financial Studies Conference on Investments in Imperfect Capital Markets at
+Northwestern University, the Fall 2001 NBER Asset Pricing meeting, and the 2002 Western
+Finance Association meetings.
+
+
+===== PAGE 2 =====
+
+liquidity risk 643
+I. Introduction
+In standard asset pricing theory, expected stock returns are related cross-
+sectionally to returns’ sensitivities to state variables with pervasive effects
+on investors’ overall welfare. A security whose lowest returns tend to
+accompany unfavorable shifts in that welfare must offer additional com-
+pensation to investors for holding the security. Liquidity appears to be
+a good candidate for a priced state variable. It is often viewed as an
+important feature of the investment environment and macroeconomy,
+and recent studies ﬁnd that ﬂuctuations in various measures of liquidity
+are correlated across assets.
+1 This empirical study investigates whether
+marketwide liquidity is indeed priced. That is, we ask whether cross-
+sectional differences in expected stock returns are related to the sen-
+sitivities of returns to ﬂuctuations in aggregate liquidity.
+It seems reasonable that many investors might require higher ex-
+pected returns on assets whose returns have higher sensitivities to ag-
+gregate liquidity. Consider, for example, any investor who employs some
+form of leverage and faces a margin or solvency constraint, in that if
+his overall wealth drops sufﬁciently, he must liquidate some assets to
+raise cash. If he holds assets with higher sensitivities to liquidity, then
+such liquidations are more likely to occur when liquidity is low, since
+drops in his overall wealth are then more likely to accompany drops in
+liquidity. Liquidation is costlier when liquidity is lower, and those greater
+costs are especially unwelcome to an investor whose wealth has already
+dropped and who thus has higher marginal utility of wealth. Unless the
+investor expects higher returns from holding these assets, he would
+prefer assets less likely to require liquidation when liquidity is low, even
+if these assets are just as likely to require liquidation on average.
+2
+The well-known 1998 episode involving Long-T erm Capital Manage-
+ment (LTCM) seems an acute example of the liquidation scenario above.
+1 Chordia, Roll, and Subrahmanyam (2000), Lo and Wang (2000), Hasbrouck and Seppi
+(2001), and Huberman and Halka (2002) empirically analyze the systematic nature of
+stock market liquidity. Chordia, Sarkar, and Subrahmanyam (2002) ﬁnd that improvements
+in stock market liquidity are associated with monetary expansions and that ﬂuctuations
+in liquidity are correlated across stocks and bond markets. Eisfeldt (2002) develops a
+model in which endogenous ﬂuctuations in liquidity are correlated with real fundamentals
+such as productivity and investment.
+2 This economic story has yet to be formally modeled, but recent literature presents
+related models that lead to the same basic result. Lustig (2001) develops a model in which
+solvency constraints give rise to a liquidity risk factor, in addition to aggregate consumption
+risk, and equity’s sensitivity to the liquidity factor raises its equilibrium expected return.
+Holmstro¨m and Tirole (2001) also develop a model in which a security’s expected return
+is related to its covariance with aggregate liquidity. Unlike more standard models, their
+model assumes risk-neutral consumers and is driven by liquidity demands at the corporate
+level. Acharya and Pedersen (2002) develop a model in which each asset’s return is net
+of a stochastic liquidity cost, and expected returns are related to return covariances with
+the aggregate liquidity cost (as well as to three other covariances).
+
+
+===== PAGE 3 =====
+
+644 journal of political economy
+The hedge fund was highly levered and by design had positive sensitivity
+to marketwide liquidity, in that many of the fund’s spread positions,
+established across a variety of countries and markets, went long less
+liquid instruments and short more liquid instruments. When the Russian
+debt crisis precipitated a widespread deterioration in liquidity, LTCM’s
+liquidity-sensitive portfolio dropped sharply in value, triggering a need
+to liquidate in order to meet margin calls. The anticipation of costly
+liquidation in a low-liquidity environment then further eroded LTCM’s
+position. (The liquidation was eventually overseen by a consortium of
+14 institutions organized by the New York Federal Reserve.) Even though
+exposure to liquidity risk ultimately spelled LTCM’s doom, the fund
+performed quite well in the previous four years, and presumably its
+managers perceived high expected returns on its liquidity-sensitive
+positions.
+3
+Liquidity is a broad and elusive concept that generally denotes the
+ability to trade large quantities quickly, at low cost, and without moving
+the price. We focus on an aspect of liquidity associated with temporary
+price ﬂuctuations induced by order ﬂow. Our monthly aggregate li-
+quidity measure is a cross-sectional average of individual-stock liquidity
+measures. Each stock’s liquidity in a given month, estimated using that
+stock’s within-month daily returns and volume, represents the average
+effect that a given volume on day d has on the return for day d /H110011,
+when the volume is given the same sign as the return on day d. The
+basic idea is that, if signed volume is viewed roughly as “order ﬂow,”
+then lower liquidity is reﬂected in a greater tendency for order ﬂow in
+a given direction on day d to be followed by a price change in the
+opposite direction on day Essentially, lower liquidity correspondsd /H110011.
+to stronger volume-related return reversals, and in this respect our li-
+quidity measure follows the same line of reasoning as the model and
+empirical evidence presented by Campbell, Grossman, and Wang
+(1993). They ﬁnd that returns accompanied by high volume tend to be
+reversed more strongly, and they explain how this result is consistent
+with a model in which some investors are compensated for accommo-
+dating the liquidity demands of others.
+We ﬁnd that stocks’ “liquidity betas,” their sensitivities to innovations
+in aggregate liquidity, play a signiﬁcant role in asset pricing. Stocks with
+higher liquidity betas exhibit higher expected returns. In particular,
+between January 1966 and December 1999, a spread between the top
+and bottom deciles of predicted liquidity betas produces an abnormal
+return (“alpha”) of 7.5 percent per year with respect to a model that
+accounts for sensitivities to four other factors: the market, size, and value
+factors of Fama and French (1993) and a momentum factor. The alpha
+3 See, e.g., Jorion (2000) and Lowenstein (2000) for accounts of the LTCM experience.
+
+
+===== PAGE 4 =====
+
+liquidity risk 645
+with respect to just the three Fama-French factors is over 9 percent per
+year. The results are both statistically and economically signiﬁcant, and
+similar results occur in both halves of the overall 34-year period.
+This study investigates whether expected returns are related to sys-
+tematic liquidity risk in returns, as opposed to the level of liquidity per
+se. The latter’s relation to expected stock returns has been investigated
+by numerous empirical studies, including Amihud and Mendelson
+(1986), Brennan and Subrahmanyam (1996), Brennan, Chordia, and
+Subrahmanyam (1998), Datar, Naik, and Radcliffe (1998), and Fiori
+(2000).
+4 Using a variety of liquidity measures, these studies generally
+ﬁnd that less liquid stocks have higher average returns. Amihud (2002)
+and Jones (2002) document the presence of a time-series relation be-
+tween their measures of market liquidity and expected market returns.
+Instead of investigating the level of liquidity as a characteristic that is
+relevant for pricing, this study entertains marketwide liquidity as a state
+variable that affects expected stock returns because its innovations have
+effects that are pervasive across common stocks. The potential usefulness
+of such a perspective is recognized by Chordia, Roll, and Subrahmanyam
+(2000, 2001).
+Chordia, Subrahmanyam, and Anshuman (2001) ﬁnd a signiﬁcant
+cross-sectional relation between stock returns and the variability of li-
+quidity, where liquidity is proxied by measures of trading activity such
+as volume and turnover. The authors report that stocks with more vol-
+atile liquidity have lower expected returns, an unexpected result. Li-
+quidity risk in that study is measured as ﬁrm-speciﬁc variability in li-
+quidity. Our paper focuses on systematic liquidity risk in returns and
+ﬁnds that stocks whose returns are more exposed to marketwide liquidity
+ﬂuctuations command higher expected returns.
+Section II explains the construction of the liquidity measure and
+brieﬂy describes some of its empirical features. The sharpest troughs in
+marketwide liquidity occur in months easily identiﬁed with signiﬁcant
+ﬁnancial and economic events, such as the 1987 crash, the beginning
+of the 1973 oil embargo, the 1997 Asian ﬁnancial crisis, and the 1998
+collapse of LTCM. Moreover, in months of large liquidity drops, stock
+returns are negatively correlated with ﬁxed-income returns, in contrast
+to other months. This observation seems consistent with “ﬂight-to-
+quality” effects. We also ﬁnd signiﬁcant commonality across stocks in
+our monthly liquidity measure. That result, in accord with the high-
+frequency evidence of previous studies, enhances the prospect that mar-
+ketwide liquidity could be a priced state variable.
+4 Theoretical studies that investigate the relation between liquidity and asset prices in-
+clude Amihud and Mendelson (1986), Constantinides (1986), Heaton and Lucas (1996),
+Vayanos (1998), Lo, Mamaysky, and Wang (2001), and Huang (in press), among others.
+
+
+===== PAGE 5 =====
+
+646 journal of political economy
+Section III presents the asset pricing investigation. We ﬁnd that stocks’
+liquidity betas can be predicted not only by their simple historical es-
+timates but by other variables as well. Each year, we sort stocks by their
+predicted liquidity betas and form 10 portfolios. This procedure yields
+a substantial spread in the estimated postformation liquidity betas as
+well as the large spread in abnormal returns reported above. Sorting
+stocks on their historical liquidity betas alone produces results that are
+slightly less strong but still signiﬁcant. A sort on ﬁrm size reveals that
+stocks of the smallest ﬁrms tend to have high liquidity betas as well as
+signiﬁcantly positive alphas with respect to the four-factor model.
+Section IV provides an investment perspective on liquidity risk by
+examining the degree to which spreads between stocks with high and
+low liquidity risk expand the mean-variance opportunity set. In an in-
+vestment universe that also includes the market portfolio and spreads
+based on size, value, and momentum, we ﬁnd that liquidity risk spreads
+receive substantial weight in the portfolio with the highest ex post
+Sharpe ratio. The importance of the momentum spread in that portfolio
+is especially reduced as compared to a universe without a liquidity risk
+spread. Moreover, an equally weighted liquidity risk spread reduces mo-
+mentum’s alpha by half in the overall 34-year period and eliminates it
+completely (driving it to a small negative value) in the more recent 17-
+year subperiod 1983–99. Section V brieﬂy reviews our conclusions and
+suggests directions for future research.
+II. Marketwide Liquidity
+A. Constructing a Measure
+Liquidity has many dimensions. This study focuses on a dimension as-
+sociated with temporary price changes accompanying order ﬂow. We
+construct a measure of market liquidity in a given month as the equally
+weighted average of the liquidity measures of individual stocks on the
+New York Stock Exchange (NYSE) and American Stock Exchange
+(AMEX), using daily data within the month.
+5 Speciﬁcally, the liquidity
+5 All the individual-stock return and volume data used in the study are obtained from
+the Center for Research in Security Prices (CRSP) at the University of Chicago. Daily
+returns and volume are taken from the CRSP daily stock ﬁle; all month-end (or year-end)
+codes and values are taken from the CRSP monthly stock ﬁle. We exclude NASDAQ in
+constructing the aggregate liquidity measure because NASDAQ returns and volume data
+are available from CRSP for only part of this period (beginning in 1982). Also, reported
+volumes on NASDAQ include interdealer trades, unlike the volumes reported on the
+NYSE and the AMEX. To exclude NASDAQ, we omit stocks with exchange codes of 3 or
+33 as of the end of the previous year. We use only stocks classiﬁed as ordinary common
+shares (CRSP share codes 10 and 11), excluding American depository receipts, shares of
+beneﬁcial interest, certiﬁcates, units, real estate investment trusts, closed-end funds, com-
+panies incorporated outside the United States, and Americus trust components.
+
+
+===== PAGE 6 =====
+
+liquidity risk 647
+measure for stock i in month t is the ordinary least squares estimate of
+in the regressiongi,t
+eer p v /H11001f r /H11001g sign(r ) 7 v /H11001e , d p 1, … , D,( 1 )i,d/H110011,ti ,ti ,ti ,d,ti ,ti ,d,ti ,d,ti ,d/H110011,t
+where quantities are deﬁned as follows: is the return on stock i onri,d,t
+day d in month t; where is the return on the CRSPer p r /H11002r , ri,d,ti ,d,tm ,d,tm ,d,t
+value-weighted market return on day d in month t; and is the dollarvi,d,t
+volume for stock i on day d in month t. A stock’s liquidity is computed
+in a given month only if there are more than 15 observations with which
+to estimate the regression (1) ( ), and we exclude a stock for theD
+1 15
+ﬁrst and last partial month that it appears on the CRSP tape. The daily
+observations are not required to be consecutive (except that each ob-
+servation requires data for two successive days). Stocks with share prices
+less than $5 and greater than $1,000 at the end of the previous month
+are excluded, and volume is measured in millions of dollars.
+The basic idea is that “order ﬂow,” constructed here simply as volume
+signed by the contemporaneous return on the stock in excess of the
+market, should be accompanied by a return that one expects to be
+partially reversed in the future if the stock is not perfectly liquid. We
+assume that the greater the expected reversal for a given dollar volume,
+the lower the stock’s liquidity. That is, one would expect to be negativeg
+i,t
+in general and larger in absolute magnitude when liquidity is lower. 6
+Viewing volume-related return reversals as arising from liquidity effects
+is motivated by Campbell et al. (1993). Those authors present a model
+in which risk-averse “market makers,” deﬁned in the general sense of
+Grossman and Miller (1988), accommodate order ﬂow from liquidity-
+motivated traders and are compensated with a higher expected return
+(by buying at a low price or selling at a high one). The greater the
+order ﬂow, the greater the compensation, so this liquidity-induced effect
+on expected future return is larger when current volume is high. Camp-
+bell et al. present empirical evidence consistent with this argument.
+As illustrated below, the estimates of the liquidity measure are g
+i,t
+typically negative, although there are months in which the average es-
+timate is positive. The preponderance of negative values is consistent
+with the basic intuition underlying our liquidity measure, but it must
+be recognized that the measure abstracts from other potential roles that
+volume can play in the relation between current and lagged return. For
+example, Llorente et al. (2001) explain that asymmetric information
+(not considered by Campbell et al. [1993]) can weaken the volume-
+6 An alternative class of liquidity measures is based on a positive contemporaneous relation
+between returns and order ﬂow. Typically, these measures are estimated with intraday
+transactions data, and the volume for a transaction is signed by comparing the transaction
+price to the bid-ask midpoint (see, e.g., Hasbrouck 1991; Foster and Viswanathan 1993;
+Brennan and Subrahmanyam 1996).
+
+
+===== PAGE 7 =====
+
+648 journal of political economy
+related reversal effect and even produce volume-related continuations
+in returns on stocks for which information-motivated trading is sufﬁ-
+ciently important. Using daily data, the authors report empirical evi-
+dence consistent with that prediction. Other related evidence is reported
+by Lee and Swaminathan (2000), who conclude that momentum effects
+in monthly returns are stronger for stocks with high recent volume.
+The speciﬁcation of the regression in (1) is somewhat arbitrary, as is
+any liquidity measure. We use the return in excess of the market,
+er ,i,d,t
+as the dependent variable as well as to sign volume, in order to remove
+marketwide shocks and better isolate the individual-stock effect of vol-
+ume-related return reversals. Moreover, daily returns of zero are not
+uncommon with lower-priced stocks for which a one-tick move repre-
+sents a greater relative price change. Signing volume on the basis of
+total return is problematic in those zero-return cases, whereas returns
+in excess of the market are unlikely to be zero. On a day in which a
+stock’s price does not change but the market goes up, it seems reason-
+able to identify the stock’s order ﬂow on that day as more likely initiated
+by sellers than by buyers. We also include the lagged stock return as a
+second independent variable with the intention of capturing lagged-
+return effects that are not volume-related, such as reversals due to a
+minimum tick size. Since we use to sign volume, we use the total
+eri,d,t
+return as this second variable to have it be less correlated with theri,d,t
+variable whose coefﬁcient we take as the liquidity measure. (A higher
+correlation between the independent variables generally reduces the
+precision with which one can measure the individual slope on either
+one.) The precise speciﬁcation of the variables in (1), as compared to
+seemingly close alternative speciﬁcations, is addressed below in subsec-
+tion C.
+In order to investigate the ability of the regression slope in (1) tog
+i,t
+capture a liquidity effect, we examine a simple model in which the return
+on a given day has an order ﬂow component that is partially reversed
+on the subsequent day. Speciﬁcally, the return on stock i on day d is
+given by
+r p f /H11001u /H11001f(q /H11002q ) /H11001h /H11002h . (2)
+i,dd i ,di i ,d/H110021 i,di ,di ,d/H110021
+The ﬁrst two terms on the right-hand side represent permanent changes
+in the price, where is a marketwide factor and is a stock-speciﬁcfudi ,d
+effect. The term is intended to capture the liquidity-relatedf(q /H11002q )ii ,d/H110021 i,d
+effect arising from order ﬂow in the sense that both current andq ,i,d
+lagged order ﬂow enter the return, but in the opposite directions. The
+coefﬁcient fi is negative and represents the stock’s liquidity. We assume
+that where is independent across stocks and qd is a∗∗q p q /H11001q , qi,di ,dd i ,d
+marketwide component whose standard deviation is one-third as large
+as that of so the marketwide component then explains 10 percent∗q ,i,d
+
+
+===== PAGE 8 =====
+
+liquidity risk 649
+of the total variance of order ﬂow. (Hasbrouck and Seppi [2001] report
+that the ﬁrst principal component explains 7.8 percent of total order
+ﬂow variance.)
+We use (2) to simulate returns on 10,000 stocks. The quantities f
+d,
+and qd are all mean zero draws from normal distributions. The∗u , q ,i,di ,d
+values of fd are drawn independently across d with standard deviation
+; and are drawn independently across d and i with∗j p 0.20/250 uqi,di ,d
+standard deviations equal to j; and qd is drawn independently across d
+with standard deviation equal to The liquidity coefﬁcient fi is drawn1 j.3
+independently across i from a uniform [ /H110021, 0] distribution. The term
+represents an additional reversal effect that is independenth /H11002hi,di ,d/H110021
+of the order ﬂow effect, and this component of the return is best viewed
+as bid-ask bounce or a tick size effect. On a given day, takes the valuehi,d
+/H11002si, zero, or si with probabilities one-fourth, one-half, and one-fourth,
+and the realizations are independent across days and stocks. The value
+of s
+i for a given stock is drawn as where is a uniform0.01(U /H11002f ), U[0,1] i [0,1]
+[0, 1] variate, so the mean value of si across stocks is 0.01, and there is
+some association between the typical magnitude of and the stock’shi,d
+liquidity (less liquid stocks tend to have larger si’s). In this simulation
+setting, the average standard deviation of a daily stock return is 0.023,
+the average standard deviation of each of the ﬁrst three right-hand-side
+terms in (2) is 0.013, and the average standard deviation of h /H11002
+i,d
+is 0.010. The regression in (1) requires returns in excess of thehi,d/H110021
+market, so we also construct a market return as
+n
+1r p r ,/H20888m,di ,d
+n ip1
+for (The average in a regression of on is .33.) We2n p 10,000. Rr r i,dm ,d
+also specify a stock’s “volume” on day d as 7 For each stock,v p Fq F.i,di ,d
+we then compute the population value of the coefﬁcient in (1) bygi
+estimating that regression across 50,000 simulated daily values. We ﬁnd
+that the cross-sectional correlation between fi and is .98, which sug-gi
+gests that the regression in (1) is a reasonable speciﬁcation for esti-
+mating the hypothesized liquidity effect.
+The use of signed volume as a predictor of future return can also be
+motivated using the equilibrium model of Campbell et al. (1993). In
+their model, the stock’s excess return and order ﬂow D
+t are jointlyQ t
+normal, along with and the regression relating expected futureQ ,t/H110011
+7 Because of the common factor in order ﬂow, the market return is correlated with
+lagged order ﬂow. Moreover, if we compute a lagged aggregate “volume” measure as
+then the correlation between and is /H11002.03. This feature of ourV p /H20888Fq F, rr Vdi ,dm ,dm ,d/H110021 di
+simulation is consistent with the negative relation between the market return and the
+lagged product of return and volume reported by Campbell et al. (1993).
+
+
+===== PAGE 9 =====
+
+650 journal of political economy
+return to current return and volume Vt ( ) is given by a relationp FDFt
+of the form
+E(Q FQ , V) p f Q /H11002f tanh (f VQ )V, (3)t/H110011 tt 1 t 23 tt t
+where and As the correlation between and Dt increases,f ! 0 f ! 0. Q23 t
+(3) becomes well approximated by
+E(Q FQ , V) p f Q /H11001f sign(Q )V, (4)t/H110011 tt 1 t 2 tt
+which is roughly analogous to (1). 8 To the extent that order ﬂow plays
+an important role in determining high-frequency return variation, a
+conjecture that seems plausible, we see that the model of Campbell et
+al. gives some justiﬁcation for the use of signed volume. Of course, their
+model of a single-stock economy with continuous price variables (no
+minimum tick) is only suggestive when applied to our empirical setting,
+but the intuition underlying their model corresponds to our interpre-
+tation of as a liquidity measure.g
+i,t
+Although the ordinary least squares slope coefﬁcient is an impre-ˆgi,t
+cise estimate of a given stock’s the marketwide average liquidity ing ,i,t
+month t is estimated more precisely. The disturbances in (1) are less
+than perfectly correlated across stocks (recall that the dependent var-
+iable is the return in excess of the market). Thus, as the number of
+stocks, N, grows large, the true unobserved average
+N
+g p (1/N ) /H20888gti ,tip1
+becomes more precisely estimated by
+N
+1ˆˆg p g . (5)/H20888ti ,t
+N ip1
+We construct the marketwide measure above for each month from Au-
+gust 1962 through December 1999. The number of stocks in the index
+(N) ranges from 951 to 2,188.
+Given the regression speciﬁcation in (1), the value of can be viewedg
+i,t
+as the liquidity “cost,” in terms of return reversal, of “trading” $1 million
+of stock i, so the average in (5) can be viewed as the cost of a $1 million
+trade distributed equally across stocks. Obviously, a dollar trade size of
+8 Equation (3) relies on a result given in Wang (1994). It is straightforward to show that
+Wang’s eq. B.6 allows (3) to be restated as
+r QVtt
+E(Q FQ , V ) p f Q /H11001f tanh V ,t/H110011 tt 1 t 2 t() ( ) ( )2[] 1 /H11002rjj Q D
+where r is the correlation between and Dt, and and are the standard deviationsQ jjtQ D
+of those variables. Note that as r r 1,
+r QVtt
+tanh () ( ) ( )2[] 1 /H11002rjj Q D
+converges in distribution to since and ( /H110021) as ( /H11002/H11009).sign(Q ) V ≥ 0 tanh ( x) r 1 x r /H11009tt
+
+
+===== PAGE 10 =====
+
+liquidity risk 651
+Fig. 1.—Aggregate liquidity. Each month’s observation is constructed by averaging
+individual-stock measures for the month and then multiplying by where mt is them /m ,t 1
+total dollar value at the end of month of the stocks included in the average in montht /H110021
+t, and month 1 corresponds to August 1962. An individual stock’s measure for a given
+month is a regression slope coefﬁcient estimated using daily returns and volume data
+within that month. Tick marks correspond to July of the given year.
+$1 million was more substantial in relative terms in the 1960s than in
+the 1990s, so, not surprisingly, the raw values of tend to be smallerˆgt
+in magnitude later in the period. It seems reasonable to construct a
+liquidity measure that reﬂects the cost of a trade whose size is com-
+mensurate with the overall size of the stock market, so we construct the
+scaled series where m
+t is the total dollar value at the end ofˆ(m /m )g ,t 1 t
+month of the stocks included in the average in month t, and montht /H110021
+1 corresponds to August 1962. This scaled series is plotted in ﬁgure 1.
+It can essentially be viewed as an estimate of the liquidity cost, averaged
+across stocks at a given point in time, of trading $1 million in 1962
+“stock market” dollars (about $34 million at the end of 1999). The
+average value of this liquidity measure over time is /H110020.03 (the median
+is /H110020.02), indicating about a 2–3 percent cost for such a trade. Chordia,
+Roll, and Subrahmanyam (2001) report that the average daily dollar
+volume per stock over the 1988–98 period is about $7 million. For the
+same period, the average value of $1 million in 1962 stock market dollars
+is $14 million. On the basis of this comparison, one can also view our
+measure as the cost, for the average stock, of trading twice the daily
+volume.
+In the next section we explore the importance of liquidity risk, mea-
+
+
+===== PAGE 11 =====
+
+652 journal of political economy
+sured as comovement between returns and unanticipated innovations
+in liquidity. The liquidity series plotted in ﬁgure 1 has a ﬁrst-order serial
+correlation of .22. In constructing innovations, we do not work directly
+with that series, since to do so could introduce a return component
+through ﬂuctuations in the scaling factor Although any such(m /m ).
+t 1
+return effects would be lagged, since mt uses values at the end of month
+we nevertheless wish to minimize the possibility that any estimatedt /H110021,
+relation between returns and liquidity innovations could arise in that
+fashion. At the same time, the innovation series should also appropri-
+ately reﬂect the growth in size of the stock market. Therefore, rather
+than difference the scaled series, we ﬁrst difference and then scale.
+Speciﬁcally, to construct innovations in liquidity, we ﬁrst scale the
+monthly difference in liquidity measures, averaged across the N
+t stocks
+with available data in both the current and previous month,
+Nt
+m 1tˆˆ ˆDg p (g /H11002g ). (6)/H20888ti ,ti ,t/H110021()mN ip11 t
+We then regress on its lag as well as the lagged value of the scaledˆDgt
+level series:
+mt/H110021ˆ ˆˆDg p a /H11001bDg /H11001c g /H11001u . (7)tt /H110021 t/H110021 t()m 1
+This regression allows the predicted change to depend on the most
+recent change as well as on the deviation of the most recent level from
+its long-run mean (impounded in a). Aside from the scaling issues, the
+regression is analogous to a second-order autoregression in the level
+series, and it produces residuals that appear serially uncorrelated.
+9 The
+innovation in liquidity, is taken as the ﬁtted residual divided by 100:L ,t
+1 ˆL p u . (8)tt
+100
+The arbitrary scaling by 100 simply produces more convenient magni-
+tudes of the liquidity betas reported in the next section. If expected
+changes in liquidity are correlated with time variation in expected stock
+returns, then failure to use liquidity innovations can contaminate risk
+measures. We ﬁnd that expected liquidity changes can indeed predict
+9 Note that the equation
+y /H11002y p a /H11001b(y /H11002y ) /H11001cy /H11001utt /H110021 t/H110021 t/H110022 t/H110021 t
+is equivalent to
+′′y p a /H11001by /H11001cy /H11001u ,tt /H110021 t/H110022 t
+with and′′b p 1 /H11001b /H11001cc p /H11002b.
+
+
+===== PAGE 12 =====
+
+liquidity risk 653
+future stock returns one month ahead, thereby conﬁrming the desira-
+bility of forming innovations. 10
+B. Empirical Features of the Liquidity Measure
+Perhaps the most salient features of the liquidity series plotted in ﬁgure
+1 are its occasional downward spikes, indicating months with especially
+low estimated liquidity. Many of these spikes occur during market down-
+turns, consistent with the evidence in the studies by Chordia, Roll, and
+Subrahmanyam (2001) and Jones (2002), who use different liquidity
+measures. Chordia, Roll, and Subrahmanyam observe that their liquidity
+measures plummet in down markets, and Jones ﬁnds that his average
+spread measure exhibits frequent sharp spikes that often coincide with
+market downturns.
+The largest downward spike in our measure of aggregate liquidity
+occurs in October 1987, the month of the stock market crash. Grossman
+and Miller (1988) argue that both spot and futures stock markets were
+“highly illiquid” on October 19, the day of the crash, and Amihud,
+Mendelson, and Wood (1990) contend that the crash occurred in part
+because of a rise in market illiquidity during and before October 19.
+The second largest spike is in November 1973, the ﬁrst full month of
+the Mideast oil embargo. Estimated liquidity is generally low in the early
+1970s, again consistent with the evidence in Jones (2002). The third
+largest negative value is in September 1998, when liquidity is widely
+perceived to have dried up because of the LTCM collapse and the recent
+Russian debt crisis.
+11 The next largest spike occurs in May 1970, a month
+of signiﬁcant domestic political unrest. 12 The third biggest spike in the
+second half of the sample is observed in October 1997 at the height of
+the Asian ﬁnancial crisis. There is obviously a risk in pushing such
+anecdotal analysis very far, but a drop in stock market liquidity during
+these months seems at least plausible.
+10 Regressions of the value-weighted and equally weighted liquidity risk spreads LIQ V
+and LIQ E (deﬁned in Sec. III) on the lagged ﬁtted values in (7) produce t-statistics of
+/H110023.33 and /H110022.30. The correlation between the innovations and the level series in ﬁg. 1
+is .88. We repeated the historical beta analysis reported in table 8 below using the level
+series in place of the innovations and obtained weaker results that go in the same direction
+as those reported.
+11 According to the Economist (“When the Sea Dries Up,” 1999), “In August 1998, after
+the Russian government had defaulted on its debts, liquidity suddenly evaporated from
+many ﬁnancial markets, causing asset prices to plunge” (p. 93). The article also asserts
+that “the possibility that liquidity might disappear from a market … is a big source of risk
+to an investor.”
+12 On April 30, President Richard Nixon announced the invasion of Cambodia and the
+need to draft 150,000 more soldiers. The Kent State and Jackson State shootings occurred
+on May 4 and May 14, and nearly 500 colleges and universities closed that month because
+of antiwar protests.
+
+
+===== PAGE 13 =====
+
+654 journal of political economy
+The monthly innovation in liquidity, has a correlation of .36 withL ,t
+the returns on both the value-weighted and equally weighted NYSE-
+AMEX indexes, constructed by CRSP . This result goes in the same di-
+rection as that reported by Chordia, Roll, and Subrahmanyam (2001),
+who ﬁnd a positive association at a daily frequency between stock returns
+and changes in other marketwide liquidity measures. As mentioned
+earlier, the downward spikes in our liquidity series often coincide with
+market downturns, and this observation is conﬁrmed by comparing cor-
+relations between and the value-weighted market return for monthsL
+t
+in which that return is negative versus positive. The correlation is .52
+in negative-return months but only .03 in positive-return months, and
+the difference between the liquidity-return relation in these two sub-
+samples is statistically signiﬁcant.
+13 The simple correlation between Lt
+and stock market returns is larger than those between and otherLt
+factors typically included in empirical asset pricing studies. In particular,
+’s correlations with SMB and HML, the size and value factors con-Lt
+structed by Fama and French (1993), are .23 and /H11002.12.14 Recall that
+SMB is the difference in returns between small and large ﬁrms, whereas
+HML is the return difference between stocks with high and low book-
+to-market ratios (i.e., value minus growth). The correlation between
+and a momentum factor is only .01. The inclusion of momentum asL
+t
+an asset pricing factor, here and in other studies, is motivated by the
+evidence in Jegadeesh and Titman (1993) that ranking stocks by per-
+formance over the past year produces abnormal returns.
+15
+Our measure of aggregate liquidity also tends to be low when market
+volatility is high. Speciﬁcally, the within-month daily standard deviation
+of the value-weighted market return has a correlation of /H11002.57 with the
+liquidity series in ﬁgure 1. This association between volatility and our
+liquidity measure seems reasonable, in that the compensation required
+by providers of liquidity for a given level of order ﬂow could well be
+greater when volatility is higher.
+To describe further the nature of months with exceptionally low li-
+quidity, we note that a kind of “ﬂight-to-quality” effect appears in such
+13 We run the regression
+L p a /H11001bR /H11001cD R /H11001e ,tS ,tt S ,tt
+where is the market return, and if and zero otherwise. The estimate ofRD p 1 R 1 0S,tt S ,t
+b is 1.01 with a t-statistic of 9.7, and the estimate of c is /H110020.99 with a t-statistic of /H110026.2.
+14 We are grateful to Ken French for supplying the Fama-French factors.
+15 To construct the momentum factor in month t, which we denote as MOM, all stocks
+in the CRSP ﬁle with return histories back to at least month are ranked at the endt /H1100212
+of month by their cumulative returns over months through and MOMt /H110021 t /H1100212 t /H110022,
+is the payoff on a spread consisting of a $1 long position in an equally weighted portfolio
+of the top decile of the stocks in that ranking and a corresponding $1 short position in
+the bottom decile. This particular speciﬁcation is the same as the “12–2” portfolio in Fama
+and French (1996).
+
+
+===== PAGE 14 =====
+
+liquidity risk 655
+TABLE 1
+Correlations of Monthly Stock Market Returns with Other V ariables in
+Months with Large Liquidity Drops
+Correlation of withRS,t Number of
+Observations/H11002DRf,t RGB,t RCB,t Volt
+A. January 1962–December 1999
+All months .047 .323 .372 .491 449
+Low-liquidity months* /H11002.387 /H11002.197 /H11002.278 /H11002.360 14
+Other months .092 .362 .406 .522 435
+p-value .087 .045 .018 .002
+B. August 1962–March 1981
+All months .077 .285 .376 .567 224
+Low-liquidity months* /H11002.194 .247 /H11002.370 /H11002.362 7
+Other months .079 .285 .378 .572 217
+p-value .279 .426 .070 .016
+C. April 1981–December 1999
+All months .007 .353 .365 .394 225
+Low-liquidity months* /H11002.573 /H11002.401 /H11002.307 /H11002.306 8
+Other months .105 .433 .434 .459 217
+p-value .048 .033 .040 .038
+Note.— The table reports the correlation between the monthly return on the CRSP value-weighted NYSE-AMEX
+index, and (i) minus the change in the rate on one-month Treasury bills, ; (ii) the return on long-termR , /H11002DRS,t f,t
+government bonds, ; (iii) the return on long-term corporate bonds, ; and (iv) the equally weighted averageRRGB,t CB,t
+percentage change in monthly dollar volume for NYSE-AMEX stocks, Vol t. The p-values for the hypothesis that the
+correlations during these months are equal to those in other months are computed by a bootstrap approach.
+* “Low-liquidity” months are those in which the innovation in the liquidity series is at least two standard deviations
+below zero.
+months. That is, months in which liquidity drops severely tend to be
+months in which stocks and ﬁxed-income assets move in opposite di-
+rections. Table 1 reports correlations between the monthly return on
+the CRSP value-weighted NYSE-AMEX index ( ) and three ﬁxed-R
+S,t
+income variables: minus the change in the rate on one-month Treasury
+bills ( ), the return on long-term government bonds ( ), and/H11002DRRf,t GB,t
+the return on long-term corporate bonds ( ). 16 The ﬁrst row reportsR CB,t
+the correlations across all months, and the next two rows report cor-
+relations in subsamples split according to the values of The secondL .t
+row of table 1 shows the correlation between and the other variablesR S,t
+during the 14 months in which is at least two standard deviationsLt
+below its mean. The correlations between stock returns and the three
+ﬁxed-income series during those months are negative, in contrast to the
+correlations during the remaining months, and the bootstrap p-values
+indicate that those differences are signiﬁcant at levels of either 5 percent
+(for the bond returns) or 10 percent (for the Treasury bill rate
+16 The ﬁxed-income data are obtained from Ibbotson Associates.
+
+
+===== PAGE 15 =====
+
+656 journal of political economy
+change).17 The results across both subperiods generally support the
+inference drawn for the overall period, in that ﬁve of the six correlations
+between and the ﬁxed-income series are negative in the months ofR
+S,t
+large liquidity drops.
+Also shown in table 1 is the correlation between the stock return
+and the change in volume, Vol t, deﬁned as the equally weightedR S,t
+average percentage change in monthly dollar volume for NYSE-AMEX
+stocks. Stock returns are positively correlated with volume changes in
+all months, but the correlation is negative in months with large liquidity
+drops, and the bootstrap p-value for the overall period is .002. The
+subperiod results again support the inference that the correlation is
+lower in the months of severe liquidity drops. There is no obvious story
+here, other than perhaps that, in such months, higher volume accom-
+panying a larger liquidity drop is another manifestation of a ﬂight to
+quality. We also ﬁnd that, in low-liquidity months, the correlation be-
+tween volume changes and is equal to /H11002.27, whereas it equals .18 inL
+t
+other months (and in all months). But, again, we do not wish to push
+the descriptive analysis of the marketwide liquidity series too far. The
+primary goal of the paper is to investigate whether liquidity is a source
+of priced systematic risk in stock returns, and we use the series con-
+structed here for that purpose.
+An important motive for entertaining a marketwide liquidity measure
+as a priced state variable is evidence that ﬂuctuations in liquidity exhibit
+commonality across stocks. Chordia, Roll, and Subrahmanyam (2000)
+and Huberman and Halka (2001) ﬁnd signiﬁcant commonality in var-
+ious liquidity measures at a daily frequency, whereas Hasbrouck and
+Seppi (2001) ﬁnd only weak commonality in intraday (15-minute) ﬂuc-
+tuations in liquidity. Our stock-by-stock measure affords an additionalˆg
+it
+perspective on commonality, since it measures liquidity differently, it is
+constructed at a monthly frequency, and our sample period is substan-
+tially longer. We conduct a simple exploration of commonality in ˆg
+it
+across stocks by ﬁrst sorting all stocks at the end of each year by market
+value and then assigning them to decile portfolios on the basis of NYSE
+break points (i.e., each decile has an equal number of NYSE stocks).
+Each decile portfolio’s change in liquidity for a given month is then
+computed as the cross-sectional average change in the individual-stock
+measures, and this procedure yields a 1963–99 monthly series of liquidity
+changes for each decile. The sample correlation of these series between
+any two deciles is positive. If the decile series are averaged separately
+across the odd-numbered and even-numbered deciles, the sample cor-
+relation between the two resulting series is .56, and the t-statistic for a
+17 The p-values are computed by resampling the original series and then randomly
+assigning observations to subsamples of the same size as in the reported results.
+
+
+===== PAGE 16 =====
+
+liquidity risk 657
+test of zero correlation is 14.20. This commonality in our liquidity mea-
+sure across stocks enhances the prospect that marketwide liquidity rep-
+resents a priced source of risk.
+C. Speciﬁcation Issues
+Our liquidity measure relies on a large cross section of stocks and yields
+a monthly series spanning more than 37 years. As such, the series seems
+well suited for this study’s focus on liquidity risk and asset pricing.
+Aggregate stock market liquidity is measured in a variety of alternative
+ways by recent studies that explore other interesting issues. Those studies
+include Chordia, Roll, and Subrahmanyam (2000, 2001, 2002), Lo and
+Wang (2000), Amihud (2002), and Jones (2002). Chordia, Roll, and
+Subrahmanyam form daily time series of various measures of liquidity
+(such as depth and bid-ask spread) and trading activity (such as dollar
+volume), averaged across NYSE stocks over the period 1988–98. Lo and
+Wang form a weekly series of average turnover across NYSE and AMEX
+stocks from July 1962 to December 1996. Amihud constructs an annual
+aggregate liquidity series for the period 1963–97 by averaging across
+NYSE stocks the ratios of average absolute price change to trading vol-
+ume. Jones collects an annual time series of average quoted bid-ask
+spreads on the stocks in the Dow Jones index, covering the period
+1898–1998.
+While measures of trading activity such as volume and turnover seem
+useful in explaining cross-sectional differences in liquidity, they do not
+appear to capture time variation in liquidity. Although liquid markets
+are typically associated with high levels of trading activity, it is often the
+case that volume is high when liquidity is low. One example is October
+19, 1987, when the market was highly illiquid in many respects but
+trading volume on the NYSE set its historical record. More generally,
+the previous subsection shows that the positive time-series correlation
+between our liquidity measure and dollar volume turns negative when
+calculated only across low-liquidity months. For this reason, we do not
+proxy for time variation in liquidity using measures of trading activity.
+Bid-ask spreads and depth are not used either because suitable data are
+not available for a long enough sample period. The data of Chordia,
+Roll, and Subrahmanyam span 11 years, which is too short for an asset
+pricing study. Notably, their liquidity measures (quoted share and dollar
+depth, quoted absolute and proportional spreads, and effective absolute
+and proportional spreads) covary with ours in the expected direction
+(depth positively and spreads negatively). These measures are also jointly
+signiﬁcant in explaining the time variation in our measure, as one might
+
+
+===== PAGE 17 =====
+
+658 journal of political economy
+expect from measures that capture different dimensions of market
+liquidity.18
+As explained earlier, our liquidity measure reﬂects reversals in returns
+in excess of the market. Another potential source of negative serial
+correlation in excess returns is nonsynchronous trading. (When returns
+are measured with reported closing prices, an infrequently traded se-
+curity is more likely to outperform the market on a day following one
+on which it underperforms.) With nonsynchronous trading, however, a
+reversal on day is more likely when volume on day d is low, asd /H110011
+opposed to high as under the liquidity interpretation of in (1). More-g
+i,t
+over, nonsynchronous trading is likely to be more important when trad-
+ing activity is low, but we ﬁnd that average turnover is in fact slightly
+higher in the months identiﬁed as having the lowest liquidity by our
+measure. Nevertheless, it remains possible that nonsynchronous trading
+makes some contribution to a negative value of If the negative serialg .
+i,t
+correlation in excess returns, arising from either liquidity-related re-
+versals or nonsynchronous trading, is relatively more stable through time
+than volatility, then ﬂuctuations in volatility are likely to be reﬂected in
+the value of Recall from the earlier discussion that our aggregateg .
+i,t
+liquidity series exhibits a negative association with market volatility.
+The liquidity measure used in this paper has substantial ex ante appeal
+and a number of empirical liquidity-like features, as argued earlier. One
+class of alternative measures involves merely changing the precise spec-
+iﬁcation of regression (1). In fact, one can consider 24 different spec-
+iﬁcations (including ours). The variable on the left-hand side of (1) can
+be either the excess or total stock return. On the right-hand side, the
+ﬁrst regressor can be either total return or excess return, or it can be
+absent. Next, one can use not only excess return but also total return
+to sign volume for the purpose of obtaining a proxy for order ﬂow.
+Finally, the return sign can be replaced by the return itself, for both
+excess and total return, motivated by the empirical implementation of
+Campbell et al. (1993).
+The various speciﬁcations described above produce aggregate series
+that are all substantially different from ours. The correlations between
+the innovations in the aggregate series produced by our speciﬁcation
+and those for the remaining 23 choices are low, ranging from /H11002.47 to
+.80 and averaging .21. The highest correlation is achieved by the spec-
+iﬁcation that differs from ours only in replacing by itself.
+eesign(r ) ri,d,ti ,d,t
+The plot of the resulting series, shown in ﬁgure 2 a, departs noticeably
+18 Changes in our measure are regressed on changes in theirs in the overlapping period
+of January 1988 through December 1998, excluding the change between June and July
+1997, when the quoted depth dropped sharply because of a reduction in the tick size on
+the NYSE. The regression is .115, and the F-test rejects the hypothesis that all slopes
+2R
+are jointly equal to zero with a p-value of .03.
+
+
+===== PAGE 18 =====
+
+liquidity risk 659
+from the plot of our series in ﬁgure 1. For example, the well-known
+low-liquidity episodes of October 1987 and September 1998 are much
+less prominent, and there are a number of downward spikes (e.g., in
+the late 1990s) in months that are not commonly identiﬁed with low-
+liquidity events. Moreover, this alternative series does not exhibit the
+ﬂight-to-quality effects documented for our measure in table 1: the stock-
+bond correlations in low-liquidity months are actually positive. Our li-
+quidity measure therefore seems more appealing than its most highly
+correlated alternative.
+Figure 2 also plots the aggregate series for two other speciﬁcations
+of regression (1) obtained by making only one change to ours. In ﬁgure
+2b, the lagged total return is replaced by its excess counterpartr
+i,d,t
+In ﬁgure 2 c, the excess return is replaced by total return throughout,er .i,d,t
+on the left-hand side as well as within the sign operator on the right-
+hand side. Both alternative series have a correlation of only .41 with
+ours, and the ﬂight-to-quality effects are again absent from both mea-
+sures. In addition, both series exhibit a negative correlation with the
+market in negative-return months, in contrast to the signiﬁcantly positive
+correlation obtained for our measure (.52) as well as for liquidity mea-
+sures such as bid-ask spreads and depth considered in other studies.
+Finally, the ﬁrst series does not pick up the best-known low-liquidity
+periods at all, and its time-series average is in fact positive, not negative.
+All these facts make the alternative speciﬁcations less appealing than
+ours.
+Another test of the usefulness of the various alternative speciﬁcations
+of (1) is to what extent they capture the liquidity effect modeled in the
+simulation exercise described in Section II A. To explore this issue, we
+repeated the simulation described there for each of the other 23 spec-
+iﬁcations. The version with the same independent variables as ours but
+total returns on the left achieves the same correlation (.98) with the
+true liquidity value f
+i as our measure does. This is not surprising since
+the additional noise in the dependent variable under this alternative
+matters little in the population (large-sample) value for the slope. More
+interesting is that all 22 remaining speciﬁcations produce smaller cor-
+relations with true liquidity, which lends additional support to our mea-
+sure as being a sensible speciﬁcation relative to seemingly close
+alternatives.
+Figure 2 d plots the aggregate series obtained by value-weighting our
+individual stock measures across stocks. This series differs substantially
+from our equal-weighted measure, since the correlation between the
+innovations in the two series is only .77. One less attractive feature of
+the value-weighted series is that certain months in which liquidity was
+notoriously low are relatively unimportant, largely because of the high
+volatility of the series in the ﬁrst half of the sample. When all months
+
+
+===== PAGE 19 =====
+
+660
+
+
+===== PAGE 20 =====
+
+661
+Fig. 2.—Alternative aggregate series. Each panel plots an alternative to our aggregate liquidity measure. The ﬁrst three panels are based on a simple
+modiﬁcation of the liquidity-deﬁning regression (1). a, is replaced by on the right-hand side of the regression. b, is replaced byee esign(r ) rr ri,d,ti ,d,t i,d,ti ,d,t
+on the right-hand side. c, is replaced by on the left-hand side and is replaced by on the right-hand side. These threee err sign(r ) sign( r )i,d/H110011,ti ,d/H110011,ti ,d,ti ,d,t
+panels plot equal-weighted averages of the slope coefﬁcients on order ﬂow in regression (1), multiplied by where is the total dollar value atm /m , mt 1 t
+the end of month of the stocks included in the average in month t, and month 1 corresponds to August 1962. d, The value-weighted average oft /H110021
+the individual stock measures from the unaltered version of regression (1). Tick marks correspond to July of the given year.
+
+
+===== PAGE 21 =====
+
+662 journal of political economy
+are sorted by their value-weighted liquidity measures, the October 1987
+liquidity crunch appears sixth and September 1998 appears only twenty-
+ﬁfth in the order of importance. Moreover, the value-weighted series
+fails to exhibit any ﬂight-to-quality effects: the correlations between
+stocks and bonds in low-liquidity months are in fact positive. These
+unappealing features of the value-weighted measure are likely due to
+its domination by large-cap stocks, whose liquidity often remains high
+even when smaller-cap stocks experience a liquidity crunch. Our interest
+centers on a broad liquidity measure, as opposed to a large-stock li-
+quidity measure, so we attempt to measure changes in aggregate liquidity
+using an equally weighted average of the liquidity measures for individ-
+ual stocks.
+19
+One might prefer to replace dollar volume on the right-hand side of
+regression (1) by turnover, deﬁned as dollar volume divided by market
+capitalization. Note that, with such a change, the resulting gamma co-
+efﬁcients are very close to our coefﬁcients multiplied by the stock’s
+market cap at the beginning of the month, since the effects on the
+independent variable of within-month variation in market cap are likely
+to be small. Equal-weighting such modiﬁed gamma coefﬁcients across
+stocks hence produces the same series as value-weighting our original
+coefﬁcients and scaling them by the average market cap of all stocks
+used to compute the average. The resulting series therefore looks very
+similar to the series discussed in the previous paragraph, and it inherits
+all the unappealing features of that series.
+In summary, the various series produced by alternative speciﬁcations
+and weightings of our regression-based liquidity measure are signiﬁ-
+cantly different from our measure and exhibit various features that
+render them less appealing as measures of aggregate liquidity.
+III. Is Liquidity Risk Priced?
+This section investigates whether a stock’s expected return is related to
+the sensitivity of its return to the innovation in aggregate liquidity, L .
+t
+That sensitivity, denoted for stock i by its liquidity beta is the slopeLb ,i
+coefﬁcient on in a multiple regression in which the other independentLt
+variables are additional factors considered important for asset pricing.
+To investigate whether the stock’s expected return is related to we Lb ,i
+follow a straightforward portfolio-based approach to create a universe
+of assets whose liquidity betas are sufﬁciently disperse. At the end of
+each year, starting with 1965, we sort stocks on the basis of their pre-
+dicted values of and form 10 portfolios. The postformation returns
+Lbi
+19 We did repeat the historical beta analysis reported in table 8 below using the value-
+weighted series; the results are weaker but go in the same direction as those reported.
+
+
+===== PAGE 22 =====
+
+liquidity risk 663
+on these portfolios during the next 12 months are linked across years
+to form a single return series for each decile portfolio. The excess
+returns on those portfolios are then regressed on return-based factors
+that are commonly used in empirical asset pricing studies. To the extent
+that the regression intercepts, or alphas, differ from zero, explains
+Lbi
+a component of expected returns not captured by exposures to the
+other factors.
+For the purpose of portfolio formation, we deﬁne as the coefﬁcient
+Lbi
+on in a regression that also includes the three factors of Fama andLt
+French (1993):
+0 L MS Hr p b /H11001b L /H11001b MKT /H11001b SMB /H11001b HML /H11001e , (9)i,tii t i t i t i t i ,t
+where denotes asset i’s excess return, MKT denotes the excess returnri,t
+on a broad market index, and the other two factors, SMB and HML,
+are payoffs on long-short spreads constructed by sorting stocks according
+to market capitalization and book-to-market ratio. This deﬁnition of
+captures the asset’s comovement with aggregate liquidity that is dis-Lbi
+tinct from its comovement with other commonly used factors. We allow
+for any given stock to vary through time, and the predicted valuesLbi
+of used to sort stocks are obtained using two methods. The ﬁrst allowsLbi
+the predicted to depend on the stock’s historical least-squares esti-Lbi
+mate as well as a number of additional stock characteristics observable
+at the time of the sort. The results using that method, reported in
+subsection A, reveal large differences in expected returns on -sorted
+Lbi
+portfolios that are unexplained by the other factors. The second method
+uses only historical betas and is presented to conﬁrm that the ﬁrst set
+of results is not driven solely by sorting stocks on the other characteristics
+that help predict liquidity betas. The results from that method, reported
+in subsection B, also reveal large and signiﬁcant differences in alphas
+on the -sorted portfolios. Subsection C reports results obtained for
+Lbi
+portfolios formed by sorting stocks on market capitalization.
+Our analysis covers all stocks traded on the NYSE, AMEX, and
+NASDAQ that are ordinary common shares (CRSP share codes 10 and
+11). Stocks with prices below $5 or above $1,000 are also excluded from
+the portfolio sorts. The portfolio formation procedure uses data avail-
+able only as of the formation date, and this requirement applies to the
+liquidity series as well. Thus the formation procedure each year begins
+with a reestimation of (7) using only the raw liquidity series ( ) availableˆg
+t
+up to that point in time. The historical values of used in that formationLt
+year are then recomputed using (8), where is the ﬁtted residual fromˆut
+that reestimated regression.
+
+
+===== PAGE 23 =====
+
+664 journal of political economy
+TABLE 2
+Determinants of Predicted Liquidity Betas
+August 1962 through
+December 1998 December 1983 December 1968
+Intercept /H110021.79
+(/H110026.75)
+/H110024.39
+(/H1100212.94)
+/H110022.75
+(/H110022.95)
+Historical beta 2.30
+(9.97)
+3.75
+(10.87)
+9.18
+(9.99)
+Average liquidity /H11002.87
+(/H110024.12)
+/H11002.02
+(/H11002.08)
+/H11002.48
+(/H11002.61)
+Average volume 1.54
+(3.29)
+/H110023.37
+(/H110025.03)
+.07
+(.05)
+Cumulative return /H11002.04
+(/H11002.14)
+1.00
+(2.86)
+.93
+(.86)
+Return volatility /H11002.24
+(/H110021.60)
+/H110021.13
+(/H110023.39)
+/H110022.61
+(/H110022.25)
+Price .59
+(1.85)
+7.51
+(15.00)
+4.32
+(3.38)
+Shares outstanding /H110021.43
+(/H110023.37)
+.67
+(1.26)
+/H11002.69
+(/H11002.54)
+Note.— Each column reports the results of estimating a linear relation between a stock’s liquidity beta and the seven
+characteristics listed (in addition to the intercept, shown ﬁrst). At each year end shown, the estimation uses all stocks
+deﬁned as ordinary common shares traded on the NYSE, AMEX, or NASDAQ with at least three years of monthly
+returns continuing through the given year end. The estimation uses a two-stage pooled time-series and cross-sectional
+approach. Each value reported is equal to the coefﬁcient estimate multiplied by the time-series average of the annual
+cross-sectional standard deviations of the characteristic. The t-statistics are in parentheses.
+A. Sorting by Predicted Liquidity Betas
+1. Predicting Liquidity Betas
+We model each stock’s liquidity beta as a linear function of observable
+variables
+L ′b p w /H11001w Z . (10)i,t/H1100211 , i 2,ii ,t/H110021
+The vector contains seven characteristics: (i) the historical liquidityZi,t/H110021
+beta estimated using all data available from months throught /H1100260
+(if at least 36 months are available), (ii) the average value of ˆt /H110021 gi,t
+from months through (iii) the natural log of the stock’st /H110026 t /H110021,
+average dollar volume from months through (iv) the cu-t /H110026 t /H110021,
+mulative return on the stock from months through (v) thet /H110026 t /H110021,
+standard deviation of the stock’s monthly return from months t /H110026
+through (vi) the natural log of the price per share from montht /H110021,
+and (vii) the natural log of the number of shares outstandingt /H110021,
+from month (These seven characteristics are listed in table 2.)t /H110021.
+The list of characteristics is necessarily arbitrary, although they do pos-
+sess some appeal ex ante. Historical liquidity beta should be useful if
+the true beta is fairly stable over time. The average of the stock’s ˆg
+i,t
+and volume can matter if liquidity risk is related to liquidity per se.
+Stocks with different market capitalization could have different liquidity
+
+
+===== PAGE 24 =====
+
+liquidity risk 665
+betas, so we include shares outstanding and stock price, whose product
+is equal to the stock’s market capitalization. The level and variability of
+recent returns simply allow some role for short-run return dynamics.
+Each characteristic is “demeaned” by subtracting the time-series average
+(through month ) of the characteristic’s cross-sectional average int /H110021
+each previous month.
+Substituting the right-hand side of (10) for in (9), we obtain
+Lbi
+0 MS Hr p b /H11001b MKT /H11001b SMB /H11001b HMLi,tii t i t i t
+′/H11001(w /H11001w Z )L /H11001e .( 1 1 )1,i 2,ii ,t/H110021 ti ,t
+This regression for stock i contains 11 independent variables, seven of
+which are cross products of the elements of with (This approachZ L .i,t/H110021 t
+to incorporating time variation in betas follows Shanken [1990].) To
+increase precision in the face of the substantial variance in individual-
+stock returns, we restrict the coefﬁcients and in equation (10)w w
+1,i 2,i
+to be the same across all stocks and estimate them using the whole panel
+of stock returns. Speciﬁcally, at the end of each year between 1965 and
+1998, we ﬁrst construct for each stock the historical series of
+MS Hˆˆ ˆe p r /H11002b MKT /H11002b SMB /H11002b HML , (12)i,ti ,ti ti ti t
+where the ’s are estimated from the regression of the stock’s excessˆb
+returns on the Fama-French factors and using all data available upL ,t
+to the current year end. Then we run a pooled time-series, cross-sectional
+regression of on the characteristics,ei,t
+′e p w /H11001w L /H11001w Z L /H11001n , (13)i,t 01 t 2 i,t/H110021 ti ,t
+again using all data available up to the current year end. The ﬁrst year
+end considered here is that of 1965, since the data on begin in AugustLt
+1962, and it seems reasonable to use at least three years of data to
+conduct the estimation. A stock is excluded for any month in which it
+has any missing characteristics.
+Table 2 reports the estimated coefﬁcients and from the pooledˆ ˆw w
+12
+regression, together with their t-statistics.20 Results are reported for sev-
+eral periods, each beginning in August 1962 but ending in December
+of a different year; the estimated coefﬁcients are those used in the
+ranking at that year end. Each coefﬁcient is multiplied by the time-series
+average of the cross-sectional standard deviation of the corresponding
+demeaned characteristic. This scaling helps clarify the relative contri-
+butions of the individual characteristics to the predicted betas. Historical
+20 The t-statistics are computed assuming independence of the regression residuals,
+which are purged of common variation in returns attributable to the three Fama-French
+factors together with L .
+t
+
+
+===== PAGE 25 =====
+
+666 journal of political economy
+liquidity beta is the most important determinant of the predicted beta
+in the longest sample period, used for the most recent ranking in De-
+cember 1998. The coefﬁcient of 2.30 ( ) indicates that if a stock’st p 9.97
+historical liquidity beta is one cross-sectional standard deviation above
+the cross-sectional mean of the historical betas, then the stock’s pre-
+dicted liquidity beta is higher by 2.30, when we hold the other char-
+acteristics constant and average the effect over time. Historical beta is
+also the most robust determinant of the predicted beta across the dif-
+ferent periods. The coefﬁcient on stock price is signiﬁcantly positive
+early in the sample, but its effect weakens in the longer period. Volatility
+enters negatively, again more strongly in the earlier periods. The co-
+efﬁcients on the stock’s past return, shares outstanding, and average
+volume are less stable over time.
+21 The coefﬁcient on the stock’s recent
+average is signiﬁcantly negative in the longest period (and insignif-ˆgit
+icantly negative in the subperiods), suggesting that stocks with lower
+liquidity (as measured by ) tend to be more exposed to aggregateˆgit
+liquidity ﬂuctuations.
+2. Postranking Portfolio Betas
+At the end of each year, stocks are sorted by their predicted liquidity
+betas and assigned to 10 portfolios. The predicted beta for each stock
+is calculated from equation (10), using the year-end values of the stock’s
+characteristics along with the values of and estimated using dataˆ ˆw w
+12
+through the current year end. Portfolio returns are computed over the
+following 12 months, after which the estimation/formation procedure
+is repeated. The postranking returns are linked across years, generating
+a single return series for each decile covering the period from January
+1966 through December 1999. On average, there are 187 stocks in each
+portfolio, and no portfolio ever contains fewer than 103 stocks.
+Panel A of table 3 reports the postranking liquidity betas of the decile
+portfolios when the stocks within each portfolio are value-weighted.
+(The results for equally weighted portfolios, not shown, are nearly iden-
+tical.) The liquidity betas are estimated by running the regression in
+21 As mentioned earlier, the trading volume of the NASDAQ stocks is overstated relative
+to the NYSE/AMEX volume. When the NASDAQ stocks are excluded from the pooled
+regression, the coefﬁcient on volume remains negative in the ﬁrst two subperiods and
+turns insigniﬁcantly negative in the overall period. In addition, the results presented in
+this section lead to similar conclusions about the relation between liquidity risk and ex-
+pected stock returns. We retain the NASDAQ stocks in the analysis because their inclusion
+increases the dispersion of the postranking liquidity betas of the portfolios sorted on
+predicted betas, in line with the purpose of the sorting procedure. Stocks with prices
+outside the $5–$1,000 range are also included in the pooled regression for the same
+reason: their inclusion increases the spread in the postranking betas, even if these stocks
+are subsequently excluded from the portfolio sorts.
+
+
+===== PAGE 26 =====
+
+TABLE 3
+Properties of Portfolios Sorted on Predicted Liquidity Betas
+Decile Portfolio
+123456789 1 0 1 0 – 1
+A. Postranking Liquidity Betas
+Jan. 1966–Dec. 1999 /H110025.75
+(/H110022.22)
+/H110026.54
+(/H110022.98)
+/H110024.66
+(/H110022.59)
+/H110023.16
+(/H110022.18)
+.90
+(.69)
+/H11002.63
+(/H11002.54)
+/H11002.86
+(/H11002.68)
+.68
+(.52)
+2.44
+(1.77)
+2.48
+(1.35)
+8.23
+(2.37)
+Jan. 1966–Dec. 1982 /H110027.28
+(/H110021.84)
+/H110028.29
+(/H110022.54)
+/H110023.47
+(/H110021.19)
+/H110023.15
+(/H110021.36)
+2.58
+(1.23)
+/H11002.34
+(/H11002.17)
+/H11002.47
+(/H11002.22)
+.73
+(.33)
+/H110022.51
+(/H110021.10)
+4.19
+(1.38)
+11.47
+(2.06)
+Jan. 1983–Dec. 1999 /H110023.00
+(/H11002.85)
+/H110024.27
+(/H110021.37)
+/H110025.09
+(/H110022.12)
+/H110022.36
+(/H110021.22)
+/H110021.10
+(/H11002.63)
+/H11002.84
+(/H11002.57)
+/H110021.60
+(/H110021.06)
+1.94
+(1.22)
+5.67
+(3.23)
+.85
+(.36)
+3.85
+(.84)
+B. Additional Properties, January 1966–December 1999
+Market cap 2.83 5.90 8.30 7.65 10.67 16.61 15.99 16.02 16.05 14.28
+Liquidity /H11002.46 /H11002.16 /H11002.10 /H11002.15 /H11002.08 /H11002.07 /H11002.03 /H11002.03 /H11002.04 /H11002.10
+MKT beta 1.24
+(37.70)
+1.21
+(44.61)
+1.09
+(48.31)
+1.05
+(56.83)
+1.04
+(62.83)
+1.03
+(68.89)
+1.00
+(62.56)
+1.01
+(60.75)
+.98
+(55.76)
+.94
+(40.75)
+/H11002.30
+(/H110026.85)
+SMB beta .70
+(14.47)
+.31
+(7.64)
+.05
+(1.61)
+.01
+(.26)
+/H11002.09
+(/H110023.51)
+/H11002.12
+(/H110025.63)
+/H11002.12
+(/H110025.04)
+/H11002.09
+(/H110023.82)
+/H11002.12
+(/H110024.76)
+.05
+(1.36)
+/H11002.65
+(/H1100210.14)
+HML beta .07
+(1.31)
+.19
+(4.36)
+.23
+(6.45)
+.20
+(6.69)
+.11
+(4.02)
+.14
+(5.68)
+.08
+(3.07)
+/H11002
+.00
+(/H11002.06)
+/H11002.01
+(/H11002.37)
+/H11002.34
+(/H110029.04)
+/H11002.40
+(/H110025.74)
+MOM beta /H11002.06
+(/H110022.43)
+/H11002.10
+(/H110025.35)
+/H11002.07
+(/H110024.29)
+/H11002.03
+(/H110022.19)
+/H11002.03
+(/H110022.51)
+/H11002.01
+(/H11002.72)
+.01
+(.53)
+/H11002.01
+(/H11002.72)
+.03
+(2.72)
+.05
+(3.02)
+.11
+(3.41)
+Note.— At each year end between 1965 and 1998, eligible stocks are sorted into 10 portfolios according to predicted liquidity betas. The betas are constructe d as linear
+functions of seven stock characteristics at the current year end, using coefﬁcients estimated from a pooled time-series, cross-sectional regressi on approach. The estimation
+and sorting procedure at each year end uses only data available at that time. Eligible stocks are deﬁned as ordinary common shares traded on the NYSE, AM EX, or NASDAQ
+with at least three years of monthly returns continuing through the current year end and with stock prices between $5 and $1,000. The portfolio returns for the 12
+postranking months are linked across years to form one series of postranking returns for each decile. Panel A reports the decile portfolios’ postrank ing liquidity betas,
+estimated by regressing the value-weighted portfolio excess returns on the aggregate liquidity innovation and the Fama-French factors. Panel B rep orts the time-series averages
+of the decile portfolios’ market capitalization and liquidity, obtained as value-weighted averages of the corresponding measures across the stock s within each decile. Market
+capitalization is reported in billions of dollars. A stock’s liquidity in any given month is the slope coefﬁcient from eq. (1), multiplied by 100. Also reported are postrankinggi,t
+betas with respect to the three Fama-French factors and a momentum factor, estimated by regressing value-weighted portfolio excess returns on the fo ur factors. The t-
+statistics are in parentheses.
+
+
+===== PAGE 27 =====
+
+668 journal of political economy
+(9) over the whole sample period, January 1966 through December
+1999, as well as over two subperiods. The postranking liquidity betas
+increase across deciles, consistent with the objective of the sorting pro-
+cedure. The “10–1” spread, which goes long decile 10 (stocks with high
+liquidity betas) and short decile 1 (stocks with low liquidity betas), has
+an overall-period liquidity beta of 8.23, with a t-statistic of 2.37.
+Panel B of table 3 reports some additional properties of portfolios
+sorted by predicted liquidity betas. The low-beta portfolios contain stocks
+of somewhat smaller ﬁrms: the value-weighted average size in portfolio
+1 is $2.83 billion, as compared to $14.28 billion in portfolio 10 (averaged
+over time). Stocks in the low-beta portfolios also tend to be less liquid,
+as measured by the average value of although this pattern is notˆg ,
+it
+monotonic. Panel B also reports the decile portfolios’ betas with respect
+to the Fama-French factors, MKT , SMB, and HML, and the previously
+described momentum factor, MOM. The Fama-French and momentum
+betas are estimated by regressing the decile excess returns on the returns
+of the four-factor portfolios. All three Fama-French betas of the 10–1
+spread are signiﬁcantly negative: /H110020.30 for MKT , /H110020.65 for SMB, and
+/H110020.40 for HML. The SMB betas conﬁrm the pattern in average capi-
+talizations, and the HML betas indicate that the 10–1 spread has a tilt
+toward growth stocks. The 10–1 spread’s momentum beta is signiﬁcantly
+positive (0.11), suggesting some tilt toward past winners.
+3. Alphas
+If our liquidity risk factor is priced, we should see systematic differences
+in the average returns of our beta-sorted portfolios. The evidence in
+table 4 indeed favors the pricing of liquidity risk. The table reports the
+value-weighted portfolios’ postranking alphas estimated under three dif-
+ferent factor speciﬁcations. The capital asset pricing model (CAPM)
+alpha is computed with respect to MKT , the Fama-French alpha with
+respect to the Fama-French factors, and the four-factor alpha with re-
+spect to the Fama-French factors and MOM. All three alphas of the 10–1
+spread are signiﬁcantly positive: the CAPM alpha is 6.40 percent per
+year ( ), the Fama-French alpha is 9.23 percent per year (t p 2.54 t p
+), and the four-factor alpha is 7.48 percent per year ( ).4.29 t p 3.42
+(Annual alphas are computed as 12 times the monthly estimates.) The
+alphas are also robust across the subperiods. For example, the subperiod
+Fama-French alphas of the 10–1 spread are 8.50 percent ( ) andt p 2.77
+10.74 percent ( ), and the subperiod four-factor alphas are 6.21t p 3.53
+percent ( ) and 9.49 percent ( ). Table 5 reports alphast p 1.95 t p 3.12
+when the decile portfolios are equally weighted rather than value-
+weighted. These results are even slightly stronger. For example, the full-
+period CAPM, Fama-French, and four-factor alphas of the equally
+
+
+===== PAGE 28 =====
+
+TABLE 4
+Alphas of V alue-Weighted Portfolios Sorted on Predicted Liquidity Betas
+Decile Portfolio
+1 2 3 4 5 6789 1 0 1 0 – 1
+A. January 1966–December 1999
+CAPM alpha /H110025.16
+(/H110022.57)
+/H110021.88
+(/H110021.24)
+/H11002.66
+(/H11002.56)
+/H11002.07
+(/H11002.08)
+/H110021.48
+(/H110021.80)
+1.48
+(1.93)
+1.22
+(1.52)
+1.38
+(1.72)
+1.68
+(1.93)
+1.24
+(1.01)
+6.40
+(2.54)
+Fama-French alpha /H110026.05
+(/H110023.77)
+/H110023.36
+(/H110022.47)
+/H110022.15
+(/H110021.93)
+/H110021.23
+(/H110021.37)
+/H110022.10
+(/H110022.61)
+.78
+(1.08)
+.86
+(1.11)
+1.41
+(1.76)
+1.90
+(2.22)
+3.18
+(2.82)
+9.23
+(4.29)
+Four-factor alpha /H110025.11
+(/H110023.12)
+/H110021.66
+(/H110021.23)
+/H110021.02
+(/H11002.91)
+/H11002.76
+(/H11002.83)
+/H110021.61
+(/H110021.96)
+.91
+(1.22)
+.76
+(.96)
+1.55
+(1.88)
+1.34
+(1.54)
+2.36
+(2.06)
+7.48
+(3.42)
+B. January 1966–December 1982
+CAPM alpha /H110022.26
+(/H11002.81)
+1.63
+(.76)
+.54
+(.31)
+.67
+(.50)
+/H110023.09
+(/H110022.69)
+1.44
+(1.29)
+.61
+(.54)
+1.78
+(1.46)
+1.43
+(1.14)
+/H11002.93
+(/H11002.52)
+1.34
+(.36)
+Fama-French alpha /H110027.32
+(/H110023.36)
+/H110022.22
+(/H110021.23)
+/H110021.80
+(/H110021.13)
+/H11002.75
+(/H11002.59)
+/H110023.29
+(/H110022.85)
+1.03
+(.95)
+.20
+(.17)
+1.91
+(1.56)
+2.32
+(1.86)
+1.18
+(.71)
+8.50
+(2.77)
+Four-factor alpha /H110026.43
+(/H110022.82)
+/H11002.25
+(/H11002.13)
+/H11002.22
+(/H11002.13)
+/H11002.03
+(/H11002.02)
+/H110022.46
+(/H110022.05)
+1.09
+(.95)
+.31
+(.25)
+2.89
+(2.28)
+1.67
+(1.28)
+/H11002.22
+(/H11002.13)
+6.21
+(1.95)
+C. January 1983–December 1999
+CAPM alpha /H110028.01
+(/H110022.76)
+/H110025.33
+(/H110022.49)
+/H110021.76
+(/H110021.08)
+/H110021.01
+(/H11002.77)
+.20
+(.17)
+1.55
+(1.46)
+1.74
+(1.54)
+.70
+(.67)
+1.81
+(1.47)
+3.38
+(1.98)
+11.39
+(3.36)
+Fama-French alpha /H110025.23
+(/H110022.23)
+/H110025.08
+(/H110022.46)
+/H110022.69
+(/H110021.67)
+/H110021.80
+(/H110021.41)
+/H11002.82
+(/H11002.72)
+.37
+(.38)
+.89
+(.89)
+.76
+(.72)
+1.25
+(1.05)
+5.51
+(3.51)
+10.74
+(3.53)
+Four-factor alpha /H110024.43
+(/H110021.88)
+/H110023.72
+(/H110021.85)
+/H110021.94
+(/H110021.21)
+/H110021.52
+(/H110021.17)
+/H11002.63
+(/H11002.54)
+.53
+(.54)
+.70
+(.69)
+.47
+(.44)
+.84
+(.70)
+5.06
+(3.20)
+9.49
+(3.12)
+Note.— See the note to table 3. The table reports the decile portfolios’ postranking alphas, in percentages per year. The alphas are estimated as intercepts f rom the
+regressions of excess portfolio postranking returns on excess market returns (CAPM alpha), on the Fama-French factor returns (Fama-French alpha), and on the Fama-French
+and momentum factor returns (four-factor alphas). The t-statistics are in parentheses.
+
+
+===== PAGE 29 =====
+
+TABLE 5
+Alphas of Equally Weighted Portfolios Sorted on Predicted Liquidity Betas
+Decile Portfolio
+123456 7 8 9 1 0 1 0 – 1
+A. January 1966–December 1999
+CAPM alpha /H110025.46
+(/H110022.27)
+/H110021.47
+(/H11002.75)
+/H11002.73
+(/H11002.46)
+.34
+(.24)
+.02
+(.02)
+.94
+(.84)
+1.97
+(1.91)
+2.78
+(2.71)
+2.43
+(2.37)
+2.77
+(2.06)
+8.23
+(4.12)
+Fama-French alpha /H110027.53
+(/H110026.35)
+/H110023.47
+(/H110023.39)
+/H110023.04
+(/H110023.63)
+/H110021.58
+(/H110022.13)
+/H110021.67
+(/H110022.47)
+/H11002.76
+(/H110021.21)
+.46
+(.78)
+1.49
+(2.50)
+1.46
+(2.18)
+2.96
+(3.14)
+10.49
+(6.50)
+Four-factor alpha /H110025.80
+(/H110024.98)
+/H110021.64
+(/H110021.68)
+/H110021.68
+(/H110022.07)
+/H11002.68
+(/H11002.92)
+/H110021.02
+(/H110021.50)
+/H11002.17
+(/H11002.26)
+.16
+(.26)
+1.32
+(2.16)
+.95
+(1.40)
+1.86
+(1.98)
+7.66
+(4.95)
+B. January 1966–December 1982
+CAPM alpha 1.74
+(.49)
+5.52
+(1.90)
+5.22
+(2.22)
+4.49
+(2.25)
+2.99
+(1.70)
+4.15
+(2.49)
+4.76
+(3.15)
+6.00
+(4.10)
+4.11
+(2.77)
+4.68
+(2.54)
+2.95
+(.98)
+Fama-French alpha /H110026.50
+(/H110024.02)
+/H110021.12
+(/H11002.76)
+/H11002.80
+(/H11002.69)
+/H11002.51
+(/H11002.52)
+/H110021.21
+(/H110021.25)
+.02
+(.02)
+1.12
+(1.32)
+2.70
+(3.17)
+1.23
+(1.22)
+2.76
+(1.95)
+9.25
+(4.19)
+Four-factor alpha /H110025.32
+(/H110023.16)
+1.00
+(.67)
+1.28
+(1.14)
+.80
+(.81)
+.20
+(.20)
+.93
+(1.00)
+.85
+(.96)
+2.79
+(3.12)
+.84
+(.79)
+1.18
+(.81)
+6.49
+(2.91)
+C. January 1983–December 1999
+CAPM alpha /H1100211.47
+(/H110023.70)
+/H110027.36
+(/H110022.94)
+/H110026.09
+(/H110022.92)
+/H110023.06
+(/H110021.63)
+/H110022.21
+(/H110021.41)
+/H110021.58
+(/H110021.10)
+.06
+(.04)
+.29
+(.21)
+1.77
+(1.34)
+1.78
+(.92)
+13.25
+(5.13)
+Fama-French alpha /H110028.90
+(/H110025.02)
+/H110025.83
+(/H110024.07)
+/H110025.58
+(/H110024.62)
+/H110022.58
+(/H110022.26)
+/H110022.08
+(/H110022.16)
+/H110021.56
+(/H110021.70)
+.13
+(.15)
+.54
+(.64)
+2.37
+(2.72)
+4.12
+(3.33)
+13.02
+(5.50)
+Four-factor alpha /H110027.10
+(/H110024.40)
+/H110024.34
+(/H110023.35)
+/H110024.73
+(/H110024.05)
+/H110022.00
+(/H110021.77)
+/H110021.92
+(/H110021.97)
+/H110021.19
+(/H110021.30)
+/H11002.13
+(/H11002.15)
+.29
+(.34)
+1.87
+(2.18)
+3.42
+(2.80)
+10.51
+(4.94)
+Note.— See the note to table 3. The table reports the decile portfolios’ postranking alphas, in percentages per year. The alphas are estimated as intercepts f rom the regressions
+of excess portfolio postranking returns on excess market returns (CAPM alpha), on the Fama-French factor returns (Fama-French alpha), and on the Fam a-French and momentum
+factor returns (four-factor alphas). The t-statistics are in parentheses.
+
+
+===== PAGE 30 =====
+
+liquidity risk 671
+weighted 10–1 spread are 8.23 percent, 10.49 percent, and 7.66 percent,
+respectively. The subperiod results are comparably strong, too.
+We also test the hypothesis that all 10 alphas are jointly equal to zero,
+using the test of Gibbons, Ross, and Shanken (1989). For both equally
+weighted and value-weighted portfolios and for all three models, the
+hypothesis is rejected a t a 1 percent signiﬁcance level in the overall
+period. The hypothesis is also rejected at the 5 percent level in both
+subperiods, for both equally weighted and value-weighted portfolios and
+for all three models. The only exception occurs with the four-factor
+alphas for the value-weighted portfolios in the second subperiod, in
+which case the hypothesis is rejected at the 10 percent level.
+Overall, the evidence strongly supports the hypothesis that our li-
+quidity risk factor is priced. The premium for this risk is positive, in
+that stocks with higher sensitivity to aggregate liquidity shocks offer
+higher expected returns. The latter result is consistent with the notion
+that a pervasive drop in liquidity is seen as undesirable by the repre-
+sentative investor, so that the investor requires compensation for holding
+stocks with greater exposure to this risk.
+4. Estimating the Premium Using All 10 Portfolios
+The discussion above relies on the 10–1 spread to infer that the
+expected-return premium associated with liquidity risk is positive. We
+also estimate the liquidity risk premium using all 10 decile portfolios.
+Deﬁne the multivariate regression
+Lr p b /H11001BF /H11001b L /H11001e , (14)t 0 tt t
+where rt is a vector containing the excess returns on the decile10 # 1
+portfolios; Ft is a vector containing the realizations of the “traded”4 # 1
+factors MKT , SMB, HML, and MOM; B is a matrix; and b0 and10 # 4
+are vectors. We also consider a speciﬁcation with only threeLb 10 # 1
+traded factors, excluding MOM. Assume that the decile portfolios are
+priced by the returns’ sensitivities to the traded factors and the non-
+traded liquidity factor:
+LE(r ) p Bl /H11001b l , (15)tF L
+where denotes the unconditional expectation. Taking expectationsE(7)
+of both sides of equation (14) and substituting from equation (15) gives
+Lb p b [l /H11002E(L ) ], (16)0 L t
+since the vector of premia on the traded factors, is equal tol , E(F).Ft
+The liquidity factor is not the payoff on a traded position, so in generalLt
+the liquidity risk premium is not equal to We estimate usingl E(L ). lL t L
+the generalized method of moments (GMM) of Hansen (1982). Let v
+
+
+===== PAGE 31 =====
+
+672 journal of political economy
+TABLE 6
+Liquidity Risk Premium and Its Contribution to Expected Return
+January 1966–
+December 1999
+January 1966–
+December 1982
+January 1983–
+December 1999
+A. Value-Weighted Portfolios Sorted on Predicted Betas
+Three traded factors:
+lL .91
+(2.92)
+.81
+(2.05)
+1.13
+(2.73)
+LL(b /H11002b )l10 1 L 9.63
+(4.57)
+8.37
+(2.91)
+10.59
+(3.22)
+Four traded factors:
+lL .78
+(2.43)
+.23
+(1.36)
+.82
+(2.93)
+LL(b /H11002b )l10 1 L 7.56
+(3.42)
+2.61
+(1.32)
+9.27
+(2.78)
+B. Equally Weighted Portfolios Sorted on Predicted Betas
+Three traded factors:
+lL 1.65
+(2.74)
+1.28
+(1.82)
+1.10
+(3.38)
+LL(b /H11002b )l10 1 L 11.06
+(7.19)
+9.90
+(4.26)
+10.77
+(4.05)
+Four traded factors:
+lL 1.72
+(2.33)
+3.01
+(.74)
+1.02
+(3.49)
+LL(b /H11002b )l10 1 L 8.56
+(5.53)
+8.20
+(3.03)
+10.14
+(4.07)
+Note.— The table reports the estimates of the risk premium associated with the liquidity factor, as well as the
+contribution of liquidity risk to the expected return on the “10–1” spread. Stocks are sorted into 10 portfolios by their
+predicted liquidity betas at each year end. The premium is estimated using postranking returns on all 10 portfolios.l
+L
+The decile portfolios are value-weighted in panel A and equally weighted in panel B. The premium is reported as a
+monthly value multiplied by 1,200, so that the product of the liquidity beta and the reported premium can be interpreted
+as the annual percentage return. The 10–1 spread goes long decile 10, with high liquidity beta and short decile 1,
+Lb ,10
+with low liquidity beta The contribution of liquidity risk to the portfolio’s expected return, is alsoL LLb .( b /H11002b )l ,1 10 1 L
+expressed in percentage per year. The asymptotic t-statistics are in parentheses.
+denote the set of unknown parameters: B, and The GMMLl , b , E(L ).L t
+estimator of v minimizes where
+T′g(v) Wg(v), g(v) p (1/T ) /H20888f(v),ttp1
+h /H20002ettf(v) p , (17)t ()L /H11002E(L )tt
+′′h p (1 F L ),tt t
+LLe p r /H11002b [l /H11002E(L )]/H11002BF /H11002b L , (18)tt L tt t
+and W is a consistent estimator of the optimal weighting matrix. 22
+Estimates of the liquidity risk premium are reported in table 6,lL
+along with asymptotic t-statistics. Results are reported for both value-
+22 Following Hansen (1982), we estimate W as the inverse of where
+T ′ˆˆ(1/T) /H20888ff ,tttp1
+evaluated at a consistent estimator of v, obtained by minimizing ′ˆf p f (v) g(v) g(v).tt
+
+
+===== PAGE 32 =====
+
+liquidity risk 673
+weighted and equally weighted portfolios. The full-period estimate of
+is signiﬁcantly positive for both sets of portfolios under both speci-lL
+ﬁcations (three traded factors or four). The subperiod estimates are all
+positive, and the majority are statistically signiﬁcant. Overall, estimating
+the liquidity risk premium using all 10 portfolios conﬁrms the previous
+inferences based on the extreme deciles.
+23 Again, liquidity risk appears
+to be an economically important determinant of expected stock returns.
+The magnitude of the liquidity risk premium depends on the ar-lL
+bitrary scaling of described earlier, but that scaling does not affectLt
+the t-statistic or the product the contribution of liquidity risk toLbl ,i L
+asset i’s expected return. Table 6 also reports the GMM estimates of
+the difference between expected returns on the extremeLL(b /H11002b )l ,10 1 L
+decile portfolios implied by their liquidity betas. In the overall period,
+the annualized estimate of is 9.63 percent with three tradedLL(b /H11002b )l10 1 L
+factors and 7.56 percent with four (the corresponding values for equally
+weighted portfolios are 11.06 percent and 8.56 percent). These values
+are close to the 10–1 spread alphas in table 4 of 9.23 percent and 7.48
+percent (the corresponding values in table 5 for equally weighted port-
+folios are 10.49 percent and 7.66 percent). Thus, even when the liquidity
+premium is estimated using all 10 portfolios, the contribution of liquidity
+risk to the 10–1 expected-return difference remains virtually unchanged.
+The contributions of the traded factors to the expected return of the
+10–1 spread are much smaller, all below 2 percent per year in absolute
+value for the overall period.
+B. Sorting by Historical Liquidity Betas
+As discussed earlier, a stock’s historical liquidity beta is the most im-
+portant predictor of its future liquidity beta (table 2). If liquidity betas
+are sufﬁciently stable over time, sorting on the historical liquidity betas
+alone could produce dispersion in the postranking betas. This subsec-
+tion shows that this is indeed the case, although the dispersion in the
+betas is not as large as when liquidity betas are predicted using additional
+variables. Although our study focuses primarily on the results produced
+by sorts on betas predicted with the larger set of variables, we present
+here some results based on historical beta sorts in order to show that
+the results do not hinge on the inclusion of the additional variables.
+At the end of each year between 1967 and 1998, we identify stocks
+with at least ﬁve years of monthly returns continuing through the current
+year end. For each stock, we estimate its historical liquidity beta by
+running the regression in (9) using the most recent ﬁve years of monthly
+23 In no case does the asymptotic test reject the restriction in (15) at standard sig-2x
+niﬁcance levels.
+
+
+===== PAGE 33 =====
+
+674 journal of political economy
+data. We impose a ﬁve-year minimum here in estimating the historical
+beta, as compared to the minimum of three years required to compute
+historical betas in the previous analysis. With no other information about
+liquidity beta brought to bear, it seems reasonable to require a somewhat
+more precise historical estimate. The series of innovations ( ’s) is againL
+t
+recomputed at the end of each year. Stocks are then sorted by these
+historical betas into 10 value-weighted portfolios. Analogous to our sort
+on the predicted betas, we obtain a January 1968 through December
+1999 series of monthly returns on each decile portfolio by linking across
+years the postranking returns during the next 12 months. On average,
+there are 217 stocks in each decile portfolio, and no portfolio ever
+contains fewer than 108 stocks.
+Table 7 reports, in the same format as table 3, the postranking liquidity
+betas as well as the average market capitalization, liquidity, and Fama-
+French and momentum betas of the decile portfolios. Note that, al-
+though the pattern in the postranking liquidity betas is not monotonic,
+sorting on historical betas achieves some success in spreading the post-
+ranking betas. The liquidity beta of the 10–1 spread is positive at 5.99
+( ), not as large as the corresponding value of 8.23 ( )t p 1.88 t p 2.37
+obtained by sorting on the predicted betas. The SMB beta of the 10–1
+spread is signiﬁcantly negative, as in table 3, but the low-beta portfolio
+no longer has the lowest market capitalization. Rather, smaller ﬁrms
+now occupy both extremes of the historical beta sort. The latter result
+is consistent with smaller (and more volatile) stocks producing noisier
+historical liquidity betas. Also, average liquidity is now lower at both
+extremes, contrary to the pattern in table 3. Finally, the tilt toward
+growth stocks and past winners observed in table 3 disappears when
+sorting on historical liquidity betas.
+Table 8 reports the value-weighted decile portfolios’ postranking al-
+phas. The dispersion in the alphas is now smaller than in the previous
+results, which is consistent with the smaller dispersion in the postranking
+liquidity betas. Nevertheless, all three alphas of the 10–1 spread are still
+signiﬁcantly positive in the overall period: the CAPM alpha is 4.66 per-
+cent per year ( ), the Fama-French alpha is 4.15 percent pert p 2.36
+year ( ), and the four-factor alpha is 4.87 percent per yeart p 2.08
+() .
+24 Moreover, the liquidity risk premium estimated from thet p 2.38
+universe of all 10 portfolios, obtained by the same GMM procedure used
+to produce the values in table 6, is positive and signiﬁcant at the 10
+percent level. With three traded factors the estimated premium is 0.80
+with a t-statistic of 1.77, and with four traded factors it is 1.04 with a t-
+24 When the decile portfolios are equally weighted, the postranking betas are less disperse
+than when the portfolios are value-weighted, and the alphas lose signiﬁcance but are still
+positive. This is consistent with greater estimation error in historical liquidity betas for
+smaller stocks, which are typically more volatile.
+
+
+===== PAGE 34 =====
+
+TABLE 7
+Properties of Portfolios Sorted on Historical Liquidity Betas
+Decile Portfolio
+1234567 8 9 1 0 1 0 – 1
+A. Liquidity Betas
+Jan. 1968–Dec. 1999 /H110026.02
+(/H110022.57)
+/H11002.65
+(/H11002.37)
+/H11002.62
+(/H11002.48)
+/H11002.54
+(/H11002.41)
+1.12
+(.96)
+/H110021.58
+(/H110021.24)
+1.37
+(1.00)
+2.00
+(1.49)
+3.04
+(1.99)
+/H11002.04
+(/H11002.02)
+5.99
+(1.88)
+Jan. 1968–Dec. 1983 /H110027.59
+(/H110021.84)
+/H110021.17
+(/H11002.44)
+3.87
+(1.86)
+/H110021.54
+(/H11002.68)
+/H11002.48
+(/H11002.25)
+1.65
+(.71)
+/H110021.18
+(/H11002.55)
+.02
+(.01)
+1.26
+(.54)
+.41
+(.14)
+7.99
+(1.60)
+Jan. 1984–Dec. 1999 /H110024.17
+(/H110021.52)
+/H110021.49
+(/H11002.63)
+/H110024.10
+(/H110022.46)
+/H11002.30
+(/H11002.18)
+2.55
+(1.72)
+/H110022.75
+(/H110022.00)
+2.80
+(1.56)
+3.79
+(2.08)
+4.38
+(2.07)
+1.18
+(.39)
+5.35
+(1.26)
+B. Additional Properties, January 1968–December 1999
+Market cap 7.11 7.69 10.44 17.65 16.76 22.18 16.26 11.64 9.89 6.97
+Liquidity /H11002.52 /H11002.19 /H11002.06 /H11002.04 /H11002.02 /H11002.05 /H11002.05 /H11002.05 /H11002.05 /H11002.12
+MKT beta 1.12
+(37.25)
+1.09
+(48.37)
+1.02
+(61.23)
+.96
+(56.63)
+.98
+(65.92)
+.99
+(59.99)
+1.02
+(58.01)
+1.01
+(58.52)
+1.02
+(51.53)
+1.09
+(40.84)
+/H11002.03
+(/H11002.74)
+SMB beta .37
+(8.02)
+/H11002.00
+(/H11002.02)
+/H11002.13
+(/H110025.11)
+/H11002.16
+(/H110026.03)
+/H11002.09
+(/H110024.21)
+/H11002.15
+(/H110026.10)
+/H11002.11
+(/H110024.19)
+/H11002.00
+(/H11002.02)
+.04
+(1.20)
+.16
+(4.06)
+/H11002.20
+(/H110023.25)
+HML beta /H11002.20
+(/H110024.04)
+/H11002.05
+(
+/H110021.31)
+.02
+(.87)
+/H11002.02
+(/H11002.80)
+.10
+(4.22)
+.12
+(4.40)
+.07
+(2.60)
+.09
+(3.27)
+/H11002.01
+(/H11002.38)
+/H11002.15
+(/H110023.39)
+.05
+(.76)
+MOM beta .04
+(1.64)
+/H11002.00
+(/H11002.18)
+.02
+(1.25)
+.01
+(1.13)
+/H11002.02
+(/H110021.91)
+/H11002.00
+(/H11002.17)
+/H11002.01
+(/H11002.76)
+.01
+(.65)
+/H11002.02
+(/H110021.11)
+/H11002.01
+(/H11002.46)
+/H11002.05
+(/H110021.51)
+Note.— At each year end between 1967 and 1998, eligible stocks are sorted into 10 portfolios according to historical liquidity betas. The betas are estimated as the
+slope coefﬁcients on the aggregate liquidity innovation in regressions of excess stock returns on that innovation and the three Fama-French factors . The regressions are
+estimated using the most recent ﬁve years of data, and eligible stocks are deﬁned as ordinary common shares traded on the NYSE, AMEX, or NASDAQ with ﬁve y ears
+of monthly returns continuing through the current year end and with stock prices between $5 and $1,000. The portfolio returns for the 12 postranking mo nths are
+linked across years to form one series of postranking returns for each decile. Panel A reports the decile portfolios’ postranking liquidity betas, es timated by regressing
+value-weighted portfolio excess returns on the liquidity innovation and the Fama-French factors. Panel B reports the time-series averages of each decile’s market capitalization
+and liquidity, obtained as value-weighted averages of the corresponding measures across the stocks within each decile. Market capitalization is re ported in billions of
+dollars. A stock’s liquidity in any given month is the slope coefﬁcient from eq. (1), multiplied by 100. Also reported are postranking betas with respe ct to the Fama-gi,t
+French and momentum factors, estimated by regressing value-weighted portfolio excess returns on the four factors. The t-statistics are in parentheses.
+
+
+===== PAGE 35 =====
+
+TABLE 8
+Alphas of V alue-Weighted Portfolios Sorted on Historical Liquidity Betas
+Decile Portfolio
+1 2 3456789 1 0 1 0 – 1
+A. January 1968–December 1999
+CAPM alpha /H110022.06
+(/H110021.30)
+/H11002.36
+(/H11002.34)
+.63
+(.76)
+.49
+(.57)
+.07
+(.10)
+.49
+(.58)
+1.42
+(1.64)
+1.36
+(1.63)
+/H11002.02
+(/H11002.02)
+2.60
+(1.96)
+4.66
+(2.36)
+Fama-French alpha /H11002.62
+(/H11002.42)
+/H11002.09
+(/H11002.08)
+.46
+(.57)
+.57
+(.68)
+/H11002.62
+(/H11002.86)
+/H11002.28
+(/H11002.35)
+.90
+(1.06)
+.84
+(1.00)
+.03
+(.03)
+3.53
+(2.71)
+4.15
+(2.08)
+Four-factor alpha /H110021.20
+(/H11002.79)
+/H11002.04
+(/H11002.04)
+.22
+(.26)
+.34
+(.40)
+/H11002.29
+(/H11002.40)
+/H11002.25
+(/H11002.31)
+1.05
+(1.20)
+.71
+(.82)
+.29
+(.29)
+3.67
+(2.74)
+4.87
+(2.38)
+B. January 1968–December 1983
+CAPM alpha /H110021.10
+(/H11002.46)
+1.04
+(.70)
+.94
+(.79)
+.35
+(.27)
+/H11002.28
+(/H11002.26)
+.46
+(.34)
+.09
+(.08)
+.83
+(.72)
+.33
+(.25)
+2.51
+(1.51)
+3.62
+(1.32)
+Fama-French alpha /H110021.24
+(/H11002.53)
+2.32
+(1.56)
+1.66
+(1.41)
+1.53
+(1.21)
+/H110021.05
+(/H11002.98)
+/H11002.49
+(/H11002.38)
+/H11002.06
+(/H11002.05)
+/H11002.07
+(/H11002.06)
+.17
+(.13)
+1.61
+(1.01)
+2.85
+(1.01)
+Four-factor alpha /H110023.74
+(/H110021.58)
+1.50
+(.96)
+.87
+(.71)
+.86
+(.66)
+/H11002.20
+(/H11002.18)
+.21
+(.16)
+.59
+(.47)
+/H11002.18
+(/H11002.15)
+.59
+(.43)
+1.64
+(.98)
+5.38
+(1.86)
+C. January 1984–December 1999
+CAPM alpha /H110022.79
+(/H110021.31)
+/H110021.63
+(/H110021.04)
+.21
+(.18)
+.40
+(.36)
+.37
+(.36)
+.23
+(.23)
+3.12
+(2.51)
+1.70
+(1.40)
+/H11002.11
+(/H11002.08)
+2.70
+(1.28)
+5.49
+(1.90)
+Fama-French alpha .03
+(.02)
+/H110022.04
+(/H110021.29)
+/H11002.60
+(/H11002.53)
+/H11002.33
+(/H11002.30)
+/H11002.40
+(/H11002.40)
+/H11002.55
+(/H11002.59)
+2.21
+(1.83)
+1.50
+(1.22)
+/H11002.11
+(/H11002.07)
+4.41
+(2.20)
+4.38
+(1.54)
+Four-factor alpha .57
+(.30)
+/H110021.50
+(/H11002.94)
+/H11002.50
+(/H11002.44)
+/H11002.28
+(/H11002.25)
+/H11002.39
+(/H11002.38)
+/H11002.87
+(/H11002.93)
+2.06
+(1.68)
+1.35
+(1.08)
+.02
+(.01)
+4.55
+(2.23)
+3.98
+(1.38)
+Note.— See the note to table 7. The table reports the decile portfolios’ postranking alphas, in percentage per year. The alphas are estimated as intercepts fr om the
+regressions of excess portfolio postranking returns on excess market returns (CAPM alpha), on the Fama-French factor returns (Fama-French alpha), and on the Fama-
+French and momentum factor returns (four-factor alphas). The t-statistics are in parentheses.
+
+
+===== PAGE 36 =====
+
+liquidity risk 677
+statistic of 1.76. Note that the magnitude of the premium in either case
+is fairly close to its counterpart in table 6. In summary, the analysis based
+solely on historical betas supports the conclusion that stocks with greater
+sensitivity to innovations in aggregate liquidity offer higher expected
+returns.
+C. Sorting by Size
+Total market capitalization, or “size,” is a common criterion for sorting
+stocks in empirical investment studies, and size sorts often produce
+dispersion in a number of other characteristics. Table 9 reports various
+properties of decile portfolios formed by sorting on size at the end of
+each year, where the break points are based on all eligible NYSE, AMEX,
+and NASDAQ stocks. Not surprisingly, smaller stocks are less liquid, in
+that the average value of increases nearly monotonically acrossˆg
+it
+deciles. The liquidity betas of the two or three portfolios containing the
+smallest stocks are large and signiﬁcantly positive, whereas the betas for
+the other deciles exhibit no discernible pattern and are not signiﬁcantly
+different from zero. When the size sort is instead based on break points
+for NYSE stocks only, so that each decile contains the same number of
+NYSE stocks but more AMEX and NASDAQ stocks are assigned to the
+lower deciles, then the pattern in liquidity betas is fairly ﬂat across all
+10 deciles, except for the large liquidity beta for the ﬁrst decile. In other
+words, in a sort on size, the very smallest ﬁrms tend to be those with
+high liquidity betas.
+It seems plausible that small and illiquid stocks might be those whose
+values are most affected by drops in marketwide liquidity, particularly
+if those drops prompt some investors concerned with the overall li-
+quidity of their portfolios to “ﬂee” such stocks and move to assets with
+greater liquidity. At the same time, though, size and liquidity are not
+the sole determinants of liquidity betas. Recall from table 3 that, when
+we sort by predicted liquidity betas, the high-beta portfolios actually
+have somewhat higher liquidity and average market capitalizations than
+the low-beta portfolios. It is easy to see why stocks with high liquidity
+betas need not be illiquid. When market liquidity declines, many in-
+vestors sell stocks and buy bonds (see table 1 for indirect evidence),
+and those investors might prefer to sell liquid stocks in order to save
+on transaction costs. As a result, the price reaction to aggregate liquidity
+changes could actually be stronger for stocks that are more liquid. Also,
+prices of liquid stocks could have greater sensitivity to aggregate liquidity
+shocks if such stocks are held in larger proportion by the more liquidity-
+conscious investors. In general, liquidity betas need not bear a simple
+relation to size and liquidity.
+Table 9 also reports the size-sorted portfolios’ alphas computed with
+
+
+===== PAGE 37 =====
+
+TABLE 9
+Portfolios Sorted on Market Capitalization
+Decile Portfolio
+1 2 3 4 5 6 7 8 9 10 1–10
+A. General Properties
+Market cap 13.00 23.85 38.13 57.34 84.98 129.90 206.61 373.89 837.34 17,068.24
+Liquidity /H110023.35 /H110023.16 /H110021.47 /H110021.87 /H110021.48 /H110021.14 /H11002.92 /H11002.46 /H11002.19 /H11002.01
+B. Return-Based Measures for Value-Weighted Portfolios
+Liquidity beta 5.26
+(2.57)
+3.84
+(2.46)
+1.95
+(1.52)
+/H11002.42
+(/H11002.43)
+.34
+(.37)
+/H110021.13
+(/H110021.25)
+/H11002.48
+(/H11002.54)
+/H110021.02
+(/H110021.04)
+/H110021.60
+(/H110021.66)
+.17
+(.67)
+5.09
+(2.51)
+Four-factor alpha 3.01
+(2.34)
+1.09
+(1.12)
+.57
+(.71)
+/H11002.67
+(/H110021.07)
+/H11002.75
+(/H110021.30)
+/H11002.91
+(/H110021.64)
+/H11002.33
+(/H11002.61)
+/H110021.05
+(/H110021.73)
+/H11002.81
+(/H110021.34)
+.50
+(3.14)
+2.51
+(1.96)
+C. Return-Based Measures for Equal-Weighted Portfolios
+Liquidity beta 4.73
+(2.18)
+4.22
+(2.64)
+2.61
+(1.89)
+.43
+(.40)
+.82
+(.79)
+.06
+(.07)
+/H11002.25
+(/H11002.28)
+/H110021.29
+(/H110021.23)
+/H11002.63
+(/H11002.63)
+.59
+(.80)
+4.14
+(1.75)
+Four-factor alpha 3.15
+(2.34)
+.47
+(.48)
+/H11002.45
+(/H11002.55)
+/H110021.48
+(/H110022.34)
+/H110021.42
+(/H110022.27)
+/H110021.83
+(/H110023.10)
+/H11002.70
+(/H110021.24)
+/H110021.40
+(/H110022.12)
+/H110021.04
+(/H110021.65)
+/H11002.68
+(/H110021.48)
+3.83
+(2.59)
+Note.— At each year end between 1962 and 1998, eligible stocks are sorted into 10 portfolios according to market capitalization. Eligible stocks are deﬁned a s ordinary
+common shares traded on the NYSE, AMEX, or NASDAQ with stock prices between $5 and $1,000. The break points for the sort are based on all eligible stocks, so that all
+decile portfolios contain approximately the same number of stocks in each month. The portfolio returns for the 12 postranking months are linked acros s years to form one
+series of postranking returns for each decile. Panel A reports the time-series averages of the deciles portfolios’ market capitalization and liquid ity, obtained as value-weighted
+averages of the corresponding measures across the stocks within each decile. Market capitalization is reported in millions of dollars. A stock’s liq uidity in any given month is
+the slope coefﬁcient from eq. (1), multiplied by 100. Panels B and C report the decile portfolios’ postranking liquidity betas, estimated by regressi ng excess portfolio returnsgi,t
+on the aggregate liquidity innovation and the Fama-French factors. Also reported are the portfolios’ alphas, estimated as intercepts from the regre ssions of excess portfolio
+postranking returns on the Fama-French and momentum factor returns. The t-statistics are in parentheses. All statistics are calculated over the period January 1963 through
+December 1999.
+
+
+===== PAGE 38 =====
+
+liquidity risk 679
+respect to the four factors used previously (the excess market return
+and size, value, and momentum spreads). Note that, for both the value-
+and equal-weighted portfolios, the estimated alpha for the decile of
+smallest ﬁrms is over 3 percent annually, with a t-statistic of 2.3. This 3
+percent positive abnormal return can be compared to the portion of
+expected return attributable to liquidity risk, computed as the product
+of the portfolio’s liquidity beta and the estimate of the liquidity risk
+premium reported earlier. If we take the premium estimated usingl
+L
+the value-weighted beta-sorted portfolios, reported in panel A in table
+6 (and the lower of the overall-period estimates), that product is 3.7
+percent ( ) for the equally weighted lowest-size decile andp 4.73 # 0.78
+4.1 percent ( ) for the value-weighted version. In otherp 5.26 # 0.78
+words, the liquidity risk of the small-ﬁrm portfolio appears to be more
+than sufﬁcient to explain its abnormal return with respect to the other
+four factors.
+D. Individual Stock Liquidity
+This paper investigates whether the cross section of returns is related
+to stocks’ liquidity betas. A natural separate question is whether stocks
+whose liquidity is high according to our measure earn high average
+returns, in the spirit of Amihud and Mendelson (1986). This question
+cannot be conclusively answered here. While our estimated liquidity
+measure seems appealing at the aggregate level, it is too noisy to be
+useful at the individual stock level. In particular, when stocks are sorted
+into 10 portfolios on the basis of their coefﬁcients averaged over theˆg
+it
+past one or three years, the pattern in the postranking portfolio ’s is ˆg
+rather ﬂat across the deciles. The sorting procedure fails because of the
+large sampling error in the individual stock ’s. For this reason, we doˆg
+it
+not work with individual stock liquidity. It seems that our most successful
+sort on liquidity is the simple size sort described in the previous
+subsection.
+Our result that stocks with high liquidity betas tend to have high
+average returns does not appear to be explained by liquidity effects a `
+la Amihud and Mendelson. Although the least liquid stocks in table 9
+tend to have the highest liquidity betas, recall that when stocks are sorted
+on their predicted liquidity betas, as in table 3, stocks with the highest
+liquidity betas actually have somewhat higher average postranking li-
+quidity measures than stocks with the smallest betas. The pricing results
+in tables 4 and 5 therefore seem distinct from any pure liquidity effects.
+Given the mounting evidence on commonality in liquidity, it seems
+natural to ask whether the sensitivity of stock liquidity to market liquidity
+is related to the cross section of returns. This question is different from
+the one addressed in this paper, since stocks whose liquidities are the
+
+
+===== PAGE 39 =====
+
+680 journal of political economy
+most sensitive to market liquidity are not necessarily those whose prices
+are the most sensitive to market liquidity; the issue is of independent
+interest nonetheless. One might conjecture, for example, that stocks
+whose liquidity dries up the most during marketwide liquidity crises
+need to compensate investors by higher average returns (e.g., Acharya
+and Pedersen 2002). Our lack of reliable time series of liquidity for
+individual stocks prevents us from investigating this hypothesis, since
+sorts on betas (or correlations) of individual liquidity with respect to
+aggregate liquidity are unable to achieve any signiﬁcant postranking
+spread in those quantities. This intriguing topic presents an obvious
+direction for future research.
+IV. An Investment Perspective
+The evidence presented in the previous section reveals that liquidity
+risk is related to expected-return differences that are not explained by
+stocks’ sensitivities to MKT , SMB, HML, and MOM. An equivalent char-
+acterization of this evidence is that no combination of these four factors
+(and riskless cash) is mean-variance efﬁcient with respect to the universe
+of common stocks.
+25 In particular, the large and signiﬁcant alphas for
+the 10–1 spreads reported in tables 4 and 5 imply that adding such
+positions to an opportunity set consisting of the other four factors in-
+creases the maximum Sharpe ratio.
+In a linear pricing model in which expected returns are explained
+by betas with respect to nontraded factors, expected returns are also
+explained by betas with respect to portfolios whose returns are maxi-
+mally correlated with those factors.
+26 Constructing a maximum corre-
+lation portfolio for from the universe of common stocks is a chal-Lt
+lenging problem that lies beyond the scope of this study. It is the case
+that, if the ex post maximum correlation portfolio is constructed from
+the six-asset universe consisting of the ﬁrst and last decile portfolios of
+the liquidity beta sort as well as the four factors MKT , SMB, HML, and
+MOM, then the weight on the high–liquidity beta portfolio is positive
+and the weight on the low–liquidity beta portfolio is negative (for both
+the value-weighted and equally weighted versions of those portfolios).
+In this sense, adding the 10–1 spread to an investment universe con-
+25 The equivalence between multibeta asset pricing and mean-variance efﬁciency of some
+combination of benchmark portfolios is well known. For an early recognition of this point,
+see Merton (1973); for later discussions, see Jobson and Korkie (1982, 1985), Grinblatt
+and Titman (1987), and Huberman, Kandel, and Stambaugh (1987).
+26 Huberman et al. (1987) characterize the “mimicking” portfolios that can be used in
+place of nontraded factors when betas with respect to these factors explain expected
+returns.
+
+
+===== PAGE 40 =====
+
+liquidity risk 681
+TABLE 10
+Liquidity Risk Spreads and Investment Opportunities: Weights in the Ex Post
+Tangency Portfolio, January 1966–December 1999
+MKT SMB HML MOM LIQ V LIQE Sharpe Ratio
+100.00 … … … … … .12
+35.08 5.83 59.10 … … … .22
+20.05 16.07 43.03 20.85 … … .33
+22.34 18.77 36.41 … 22.49 … .31
+17.32 22.33 29.10 … … 31.25 .40
+17.70 20.62 34.23 11.86 15.59 … .37
+15.88 22.51 29.56 6.47 … 25.58 .42
+Note.— Each row reports the ex post tangency portfolio weights (percent) as well as the ex post monthly Sharpe
+ratio of the tangency portfolio in the given asset universe. The assets available for investment are various subsets of six
+traded factors. This set comprises the Fama-French factors MKT , SMB, and HML; a momentum factor MOM; and two
+liquidity risk spreads, both of which go long decile 10, containing the stocks with the highest predicted liquidity betas,
+and short decile 1, containing the stocks with the lowest betas. Each leg of the spread is value-weighted in LIQ
+V and
+equally weighted in LIQ E.
+sisting of the original four factors is motivated by a model in which
+expected returns are related to liquidity risk.
+Let LIQ V denote the payoff on the 10–1 spread constructed using
+value-weighted decile portfolios sorted on predicted liquidity betas, and
+let LIQ
+E denote the payoff on the equally weighted version. To provide
+an additional perspective on the importance of liquidity risk, we examine
+here the degree to which the mean-variance opportunity set is enhanced
+by adding LIQ
+V or LIQ E to MKT , SMB, HML, and MOM. Of course, a
+mean-variance-efﬁcient portfolio is not necessarily the optimal choice
+of an investor in a world that gives rise to multibeta pricing, but we
+believe that a mean-variance setting is of interest to many investors
+nevertheless. Table 10 reports, for the overall 1966–99 period, the max-
+imum ex post Sharpe ratio and the weights in the corresponding tan-
+gency portfolio for various subsets of the six factors. For ease of dis-
+cussion, let denote the maximum Sharpe ratio for a given set of
+∗S
+assets. The original four factors have an of 0.33 (on a monthly basis).∗S
+When LIQ V is added, increases to 0.37, and LIQ V receives a greater∗S
+weight in the ex post tangency portfolio than MOM (15.6 percent vs.
+11.9 percent). When LIQ
+E is added to the original four, increases to∗S
+0.42, and the weight in MOM drops by more than two-thirds, from 20.9
+percent to 6.5 percent. In contrast, the weight on LIQ
+E in that case is
+25.6 percent, which is higher than the weights on all but HML (29.6
+percent). Moreover, we see that when we add a fourth factor to the
+three Fama-French factors, which by themselves have an of 0.22, LIQ
+E∗S
+is more valuable than MOM by the mean-variance comparison: LIQ E
+raises to 0.40 whereas MOM raises it to 0.33.∗S
+Since LIQ V and LIQ E ﬁgure prominently in the ex post tangency
+portfolio, at the expense of MOM especially, we are led to investigate
+a bit further the extent to which the momentum factor’s importance is
+
+
+===== PAGE 41 =====
+
+682 journal of political economy
+TABLE 11
+Liquidity Risk Spreads and Investment Opportunities: Alphas from the
+Regression of Momentum on Portfolios Listed
+January 1966–
+December 1999
+January 1966–
+December 1982
+January 1983–
+December 1999
+MKT , SMB, HML 16.30
+(4.85)
+21.65
+(4.53)
+11.10
+(2.29)
+MKT , SMB, HML, LIQ V 13.89
+(4.09)
+19.46
+(4.04)
+8.03
+(1.63)
+MKT , SMB, HML, LIQ E 8.41
+(2.55)
+16.11
+(3.35)
+/H110021.29
+(/H11002.28)
+Note.— The table reports the alphas (percent per year) of the momentum portfolio MOM with respect to the factors
+listed in each row. These factors include the Fama-French factors MKT , SMB, and HML and two liquidity risk spreads,
+both of which go long decile 10, containing the stocks with the highest predicted liquidity betas, and short decile 1,
+containing the stocks with the lowest betas. Each leg of the spread is value-weighted in LIQ
+V and equally weighted in
+LIQE. The t-statistics are in parentheses.
+reduced by our liquidity-risk spreads. Table 11 reports the alpha for
+MOM when regressed on the three Fama-French factors plus either LIQ V
+or LIQ E. In the overall period, momentum’s annualized alpha with re-
+spect to just the three Fama-French factors is 16.3 percent with a t-
+statistic of 4.85, conﬁrming a well-known result. Adding LIQ V reduces
+MOM’s alpha somewhat, to 13.9 percent with a t-statistic of 4.09. The
+momentum factor MOM is a spread between equally weighted portfo-
+lios, and perhaps for that reason the effect on its alpha of adding LIQ
+E
+to the Fama-French factors is more dramatic. That equally weighted
+liquidity risk spread cuts momentum’s full-period alpha nearly in half,
+to 8.4 percent with a t-statistic of 2.55. In the more recent 17-year sub-
+period from 1983 through 1999, MOM’s estimated alpha in the presence
+of LIQ
+E is actually negative, at /H110021.29.
+Although such evidence is tantalizing, it is difﬁcult to conclude that
+liquidity risk provides a partial explanation for momentum. On one
+hand, MOM’s alpha is substantially reduced by the addition of liquidity
+risk spreads, and MOM’s loadings on those spreads are highly signiﬁcant
+in the overall period as well as in both subperiods (in the full period,
+MOM’s beta on LIQ
+V is 0.26 with and MOM’s beta on LIQ Et p 3.41,
+is 0.75 with in a multiple regression that includes the threet p 7.77,
+Fama-French factors). On the other hand, the liquidity beta of MOM,
+estimated as the multiple-regression coefﬁcient on the nontraded factor
+is positive but not statistically signiﬁcant at conventional levels in theL ,
+t
+overall period (6.9 with a t-statistic of 1.3). Moreover, in the later sub-
+period, when LIQE eliminates MOM’s alpha, the estimated liquidity beta
+of MOM is negative ( /H110021.65 with a t-statistic of /H110020.23). At the same time,
+though, we must remember that is at best an imperfect proxy forLt
+whatever correct measure of liquidity could be relevant for asset pricing.
+It remains possible that the 10–1 spread constructed by ranking on betas
+with respect to comes closer to the correct mimicking portfolio thanL
+t
+
+
+===== PAGE 42 =====
+
+liquidity risk 683
+does to the correct liquidity measure. At this point, however, we canLt
+simply observe that momentum’s importance in an investment context
+is affected signiﬁcantly by the addition of spreads based on liquidity
+risk.
+V. Conclusions
+Marketwide liquidity appears to be a state variable that is important for
+pricing common stocks. We ﬁnd that expected stock returns are related
+cross-sectionally to the sensitivities of stock returns to innovations in
+aggregate liquidity. Stocks that are more sensitive to aggregate liquidity
+have substantially higher expected returns, even after we account for
+exposures to the market return as well as size, value, and momentum
+factors.
+Our liquidity measure captures a dimension of liquidity associated
+with the strength of volume-related return reversals. Over the last four
+decades, this measure of marketwide liquidity exhibits a number of sharp
+declines, many of which coincide with market downturns and apparent
+ﬂights to quality. Our liquidity measure is also characterized by signif-
+icant commonality across stocks, supporting the notion of aggregate
+liquidity as a priced state variable. Smaller stocks are less liquid, ac-
+cording to our measure, and the smallest stocks have high sensitivities
+to aggregate liquidity.
+One direction for future research is to explore whether liquidity risk
+plays a role in various pricing anomalies in ﬁnancial markets. This study
+takes a step on this path by showing that the momentum strategy of
+buying recent winning stocks and selling recent losing stocks becomes
+less attractive from an investment perspective when portfolio spreads
+based on liquidity risk are also available for investment. Future research
+could investigate whether expected returns are related to stocks’ sen-
+sitivities to ﬂuctuations in other aspects of aggregate liquidity. It would
+also be useful to explore whether some form of systematic liquidity risk
+is priced in other ﬁnancial markets, such as ﬁxed income markets or
+international equity markets.
+References
+Acharya, Viral V., and Pedersen, Lasse Heje. “Asset Pricing with Liquidity Risk.”
+Working paper. London: London Bus. School, 2002.
+Amihud, Yakov. “Illiquidity and Stock Returns: Cross-Section and Time-Series
+Effects.” J. Financial Markets 5 (January 2002): 31–56.
+Amihud, Yakov, and Mendelson, Haim. “Asset Pricing and the Bid-Ask Spread.”
+J. Financial Econ. 17 (December 1986): 223–49.
+Amihud, Yakov; Mendelson, Haim; and Wood, Robert A. “Liquidity and the 1987
+Stock Market Crash.” J. Portfolio Management 16 (Spring 1990): 65–69.
+
+
+===== PAGE 43 =====
+
+684 journal of political economy
+Brennan, Michael J.; Chordia, Tarun; and Subrahmanyam, Avanidhar. “Alter-
+native Factor Speciﬁcations, Security Characteristics, and the Cross-Section of
+Expected Stock Returns.” J. Financial Econ. 49 (September 1998): 345–73.
+Brennan, Michael J., and Subrahmanyam, Avanidhar. “Market Microstructure
+and Asset Pricing: On the Compensation for Illiquidity in Stock Returns.” J.
+Financial Econ. 41 (July 1996): 441–64.
+Campbell, John Y.; Grossman, Sanford J.; and Wang, Jiang. “Trading Volume
+and Serial Correlation in Stock Returns.” Q.J.E. 108 (November 1993): 905–39.
+Chordia, Tarun; Roll, Richard; and Subrahmanyam, Avanidhar. “Commonality
+in Liquidity.” J. Financial Econ. 56 (April 2000): 3–28.
+———. “Market Liquidity and Trading Activity.” J. Finance 56 (April 2001):
+501–30.
+———. “Order Imbalance, Liquidity, and Market Returns.” J. Financial Econ. 65
+(July 2002): 111–30.
+Chordia, Tarun; Sarkar, Asani; and Subrahmanyam, Avanidhar. “An Empirical
+Analysis of Stock and Bond Market Liquidity.” Working paper. Atlanta: Emory
+Univ., 2002.
+Chordia, Tarun; Subrahmanyam, Avanidhar; and Anshuman, V. Ravi. “Trading
+Activity and Expected Stock Returns.” J. Financial Econ. 59 (January 2001):
+3–32.
+Constantinides, George M. “Capital Market Equilibrium with Transaction Costs.”
+J.P .E.94 (August 1986): 842–62.
+Datar, Vinay T .; Naik, Narayan Y.; and Radcliffe, Robert. “Liquidity and Stock
+Returns: An Alternative T est.” J. Financial Markets 1 (August 1998): 203–19.
+Eisfeldt, Andrea L. “Endogenous Liquidity in Asset Markets.” Working paper.
+Evanston, Ill.: Northwestern Univ., 2002.
+Fama, Eugene F., and French, Kenneth R. “Common Risk Factors in the Returns
+on Stocks and Bonds.” J. Financial Econ. 33 (February 1993): 3–56.
+———. “Multifactor Explanations of Asset Pricing Anomalies.” J. Finance 51
+(March 1996): 55–84.
+Fiori, Filippo. “Liquidity Premia in the Equity Markets: An Investigation into
+the Characteristics of Liquidity and Trading Activity.” Working paper. Chicago:
+Univ. Chicago, 2000.
+Foster, F. Douglas, and Viswanathan, S. “Variations in Trading Volume, Return
+Volatility, and Trading Costs: Evidence on Recent Price Formation Models.”
+J. Finance 48 (March 1993): 187–211.
+Gibbons, Michael R.; Ross, Stephen A.; and Shanken, Jay. “A T est of the Efﬁciency
+of a Given Portfolio.” Econometrica 57 (September 1989): 1121–52.
+Grinblatt, Mark, and Titman, Sheridan. “The Relation between Mean-Variance
+Efﬁciency and Arbitrage Pricing.” J. Bus. 60 (January 1987): 97–112.
+Grossman, Sanford J., and Miller, Merton H. “Liquidity and Market Structure.”
+J. Finance 43 (July 1988): 617–37.
+Hansen, Lars Peter. “Large Sample Properties of Generalized Method of Mo-
+ments Estimators.” Econometrica 50 (July 1982): 1029–54.
+Hasbrouck, Joel. “Measuring the Information Content of Stock Trades.”J. Finance
+46 (March 1991): 179–207.
+Hasbrouck, Joel, and Seppi, Duane J. “Common Factors in Prices, Order Flows,
+and Liquidity.” J. Financial Econ. 59 (March 2001): 383–411.
+Heaton, John, and Lucas, Deborah J. “Evaluating the Effects of Incomplete
+Markets on Risk Sharing and Asset Pricing.” J.P .E.104 (June 1996): 443–87.
+Holmstro¨m, Bengt, and Tirole, Jean. “LAPM: A Liquidity-Based Asset Pricing
+Model.” J. Finance 56 (October 2001): 1837–67.
+
+
+===== PAGE 44 =====
+
+liquidity risk 685
+Huang, Ming. “Liquidity Shocks and Equilibrium Liquidity Premia.” J. Econ.
+Theory (in press).
+Huberman, Gur, and Halka, Dominika. “Systematic Liquidity.” J. Financial Res.
+24 (Summer 2001): 161–78.
+Huberman, Gur; Kandel, Shmuel; and Stambaugh, Robert F. “Mimicking Port-
+folios and Exact Arbitrage Pricing.” J. Finance 42 (March 1987): 1–9.
+Jegadeesh, Narasimhan, and Titman, Sheridan. “Returns to Buying Winners and
+Selling Losers: Implications for Stock Market Efﬁciency.” J. Finance 48 (March
+1993): 65–91.
+Jobson, John D., and Korkie, Bob. “Potential Performance and T ests of Portfolio
+Efﬁciency.” J. Financial Econ. 10 (December 1982): 433–66.
+———. “Some T ests of Linear Asset Pricing with Multivariate Normality.” Ca-
+nadian J. Administrative Sci. 2, no. 1 (1985): 114–38.
+Jones, Charles M. “A Century of Stock Market Liquidity and Trading Costs.”
+Working paper. New York: Columbia Univ., 2002.
+Jorion, Philippe. “Risk Management Lessons from Long-T erm Capital Manage-
+ment.” European Financial Management 6 (September 2000): 277–300.
+Lee, Charles M. C., and Swaminathan, Bhaskaran. “Price Momentum and Trad-
+ing Volume.” J. Finance 55 (October 2000): 2017–69.
+Llorente, Guillermo; Michaely, Roni; Saar, Gideon; and Wang, Jiang. “Dynamic
+Volume-Return Relation of Individual Stocks.” Rev. Financial Studies 15 (Fall
+2002): 1005–47.
+Lo, Andrew W.; Mamaysky, Harry; and Wang, Jiang. “Asset Prices and Trading
+Volume under Fixed Transaction Costs.” Working paper. Cambridge: Massa-
+chusetts Inst. T ech., 2001.
+Lo, Andrew W., and Wang, Jiang. “Trading Volume: Deﬁnitions, Data Analysis,
+and Implications of Portfolio Theory.”Rev. Financial Studies 13 (Summer 2000):
+257–300.
+Lowenstein, Roger. When Genius Failed: The Rise and Fall of Long-Term Capital
+Management. New York: Random House, 2000.
+Lustig, Hanno. “The Market Price of Aggregate Risk and the Wealth Distribu-
+tion.” Working paper. Stanford, Calif.: Stanford Univ., 2001.
+Merton, Robert C. “An Intertemporal Capital Asset Pricing Model.” Econometrica
+41 (September 1973): 867–87.
+Shanken, Jay. “Intertemporal Asset Pricing: An Empirical Investigation.” J. Econ-
+ometrics 45 (July–August 1990): 99–120.
+Vayanos, Dimitri. “Transaction Costs and Asset Prices: A Dynamic Equilibrium
+Model.” Rev. Financial Studies 11 (Spring 1998): 1–58.
+Wang, Jiang. “A Model of Competitive Stock Trading Volume.” J.P .E.102 (Feb-
+ruary 1994): 127–68.
+“When the Sea Dries Up.” Economist 352 (September 25, 1999): 93.

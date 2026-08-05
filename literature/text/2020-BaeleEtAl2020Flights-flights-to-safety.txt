@@ -1,0 +1,3447 @@
+
+
+===== PAGE 1 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 689 689–746
+Flights to Safety
+Lieven Baele
+Tilburg University
+Geert Bekaert
+Graduate School of Business, Columbia University and NBER
+Koen Inghelbrecht
+Ghent University
+Min Wei
+Federal Reserve Board of Governors
+We identify ﬂight-to-safety (FTS) days for twenty-three countries using only stock
+and bond returns and a model averaging approach. FTS days comprise less than 2%
+of the sample and are associated with a 2.7% average bond-equity return differential
+and signiﬁcant ﬂows out of equity funds and into government bond and money
+market funds. FTS represents ﬂights to both quality and liquidity in international
+equity markets, but mainly a ﬂight to quality in the U.S. corporate bond market.
+Emerging markets, endowment funds, and hedge funds perform poorly during FTS,
+whereas hedge funds appear to vary their systematic exposures prior to an FTS.
+(JEL G11, G12, G14, E43, E44)
+Received February 6, 2015; editorial decision February 22, 2019 by Editor Andrew Karolyi.
+Authors have furnished an Internet Appendix, which is available on the Oxford University
+Press Web site next to the link to the ﬁnal published paper online.
+We greatly beneﬁted from discussions with seminar participants at Antwerp University, the National Bank
+of Belgium, the University of the Basque Country, Tilburg University, the Spring 2014 Inquire Europe-U.K.
+conference in Vienna, the 2014 Bank of Canada/Banco de España Workshop on International Financial Markets,
+and the 2015 American Finance Association in Boston and, in particular, with Hans Dewachter, Frank de Jong,
+Joost Driessen, Eric Ghysels, Campbell Harvey, Philippe Mueller, Laurens Swinkels, Allan Timmermann, and
+Mathijs van Dijk. We are particularly grateful to Frank de Jong for sharing his corporate bond market data set
+with us and Zilong Niu for his excellent research assistance in constructing the quality/liquidity sorted equity
+portfolios. Baele, Bekaert, and Inghelbrecht gratefully acknowledge ﬁnancial support from the National Bank of
+Belgium and Inquire Europe. Bekaert acknowledges ﬁnancial support from Netspar. The opinions expressed are
+those of the authors and do not necessarily reﬂect views of the National Bank of Belgium or the Federal Reserve
+System. Supplementary data can be found on The Review of Financial Studies Web site. Send correspondence to
+Lieven Baele, Tilburg University, PO Box 90153, 5000 LE, Tilburg, the Netherlands; telephone: +31-13-4663257.
+E-mail: Lieven.Baele@uvt.nl
+© The Author(s) 2019. Published by Oxford University Press on behalf of The Society for Financial Studies.
+All rights reserved. For permissions, please e-mail: journals.permissions@oup.com.
+doi:10.1093/rfs/hhz055 Advance Access publication June 7, 2019
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 2 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 690 689–746
+The Review of Financial Studies / v 33 n 2 2020
+In periods of market stress, the ﬁnancial press often refers to extreme and inverse
+movements in bond and equity markets as ﬂights to safety or ﬂights to quality.1
+An active theoretical literature studies such phenomena. Traditional
+representative-agent consumption-based asset pricing models (e.g., Barsky
+1989; Bekaert, Engstrom, and Xing 2009), deﬁne a ﬂight to safety as the joint
+occurrence of higher economic uncertainty (viewed as exogenous) with lower
+equity prices (through the cash ﬂow and/or risk premium channel) and low
+real rates (through the precautionary savings channel). More recent papers
+examine how market dynamics might cause or exacerbate such a phenomenon.
+In V ayanos (2004), investors behave like fund managers and their fear of
+redemptions during high volatility periods cause them to reduce holdings of
+less liquid assets, resulting in a ﬂight to liquidity. The same fear also raises
+investors’ effective risk aversion, leading to a ﬂight to safety that pushes up
+risk premiums and drives down the prices of risky assets (a ﬂight to quality).
+In Caballero and Krishnamurthy (2008), Knightian uncertainty leads agents
+to shed risky assets in favor of safer claims when aggregate liquidity is low,
+thereby provoking ﬂights to quality and safety. Brunnermeier and Pedersen
+(2009) study a model in which speculators, who provide market liquidity,
+face margin requirements that increase in asset price volatility. They show
+that following a bad shock, the margin requirements can cause not only a
+liquidity spiral, with liquidity deteriorating across markets, but also a ﬂight to
+quality, with a sharper drop in liquidity provision for the higher margin, more
+volatile assets. To test such a diverse set of theoretical models, an empirical
+characterization of ﬂight-to-safety episodes is essential. For that purpose, this
+paper deﬁnes, detects, and characterizes ﬂight-to-safety episodes for twenty-
+three countries, using daily data on only two types of assets: the prototypical
+risky asset (a well-diversiﬁed equity index) and the prototypical safe and liquid
+asset (the benchmark Treasury security). We deﬁne a ﬂight to safety, referred to
+as FTS henceforth, as an episode that satisﬁes three criteria: (1) a large, positive
+bond return accompanied by a large, negative equity return, (2) negative high-
+frequency correlations between bond and stock returns, and (3) elevated market
+stress, as demonstrated by a high equity market volatility. To identify FTS,
+we start with a bivariate regime-switching (RS) model for bond and equity
+returns that allows FTS events of varying degrees of persistence. Economic
+restrictions on risk premiums in different regimes aid in the identiﬁcation.
+Section 1 discusses the speciﬁcation and parameter estimates of this model.
+A key ﬁnding is that the difference between equity and bond risk premiums
+increases substantially during FTS events. We also formulate two alternative
+models, a “threshold model” inspired by the concept of exceedance correlation
+in Bae, Karolyi, and Stulz (2003), and an “ordinal index model”, similar to
+the model used by Hollo, Kremer, and Lo Duca (2012) to measure ﬁnancial
+1 In particular, between August 2004 and June 2015, a period marred by a global ﬁnancial crisis, the Financial
+Times alone referred to Flight(s)-to-Quality 538 times and to Flight(s)-to-Safety 464 times.
+690
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 3 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 691 689–746
+Flights to Safety
+instability. Applying model averaging techniques to these three models provides
+our preferred, robust estimates of the FTS events. Section 2 discusses the two
+alternative models, the construction of the preferred FTS measure that uses
+information from all three models, and the empirical results. Section 3 examines
+the identiﬁed FTS episodes across all twenty-three countries.
+Section 3.1 shows that FTS episodes comprise less than 2% of the sample,
+and are predominantly short lived, with about 94% of the FTS episodes lasting 3
+days or less. During those episodes, bond returns exceed equity returns by about
+2.72% on average. Section 3.2 shows that FTS episodes are also associated with
+decreases in consumer sentiment, increases in implied volatilities for major
+stock indices, and appreciations of the so-called “safe-haven” currencies: the
+Japanese yen and the Swiss franc. Although asset prices could change without
+large portfolio reallocations or trading volumes, Section 3.3 documents that, at
+least in the United States, FTS events are accompanied by signiﬁcant ﬂows out
+of equity funds and into government bond and money market funds. Section 3.4
+addresses the question whether the FTS is best characterized as a ﬂight to quality
+or a ﬂight to liquidity. Safety and quality are mostly used interchangeably in
+this context, referring to a preference for less risky assets, but as the theories
+we discussed earlier illustrate, in times of stress investors may also demand
+liquidity and the benchmark safe assets tend to be highly liquid as well. To
+differentiate between the two, we examine returns to corporate bonds (for the
+U.S. market) and equities (for all other markets), double sorted on measures of
+quality and liquidity, during FTS episodes. Although we ﬁnd a strong ﬂight-to-
+quality effect in both the corporate bond and equity markets, we ﬁnd evidence
+for a ﬂight-to-liquidity effect in the equity market only.
+Section 4 considers the global nature of FTS events, using data from a larger
+set of emerging markets. We ﬁnd that emerging equity and bond markets are
+both exposed to global FTS events beyond their usual exposures to a benchmark
+global portfolio. In addition, the FTS exposure of emerging equity markets
+appear to be lower for more integrated markets.
+Section 5 investigates whether some popular investment strategies can
+“hedge” against FTS events. First, we consider the beneﬁts of diversiﬁcation
+into different geographic areas, alternative asset classes, or alternative
+investment vehicles, strategies reportedly followed by major U.S. endowments,
+such as Y ale and Harvard. We ﬁnd that proxies of asset allocations used by the
+average endowment as well as that of Harvard and Y ale still exhibit negative
+exposures to FTS events. In addition, we ﬁnd that nearly all hedge fund
+styles demonstrate negative FTS betas. Inspired by Patton and Ramadorai’s
+(2013) analysis of changing market exposure of hedge funds, we show that the
+systematic exposures of hedge fund returns slowly increase until about 60 days
+before a FTS event and then steeply decrease until shortly before the event.
+A number of previous empirical studies touch on one or more aspects of
+the FTS phenomenon, though none as systematically as the current paper.
+Baele, Bekaert, and Inghelbrecht (2010) show that stock-bond illiquidity
+691
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 4 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 692 689–746
+The Review of Financial Studies / v 33 n 2 2020
+factors (potentially capturing “ﬂights to liquidity”) and the VIX (potentially
+capturing “ﬂights to safety”) help capture episodes of negative stock-bond
+return correlations. Connolly, Stivers, and Sun (2005) and Bansal, Connolly, and
+Stivers (2010) show that periods of higher stock market volatility are associated
+with lower correlations between stock and bond returns and with higher
+bond returns. Goyenko and Sarkissian (2012) show that higher illiquidity of
+nonbenchmark U.S. Treasury bills, possibly associated with a ﬂight to liquidity
+and/or quality, reduces future stock returns around the globe. Beber, Brandt, and
+Cen (2014) identify “risk-off” episodes based on correlations between foreign
+exchange returns, whereas Baur and Lucey (2009) deﬁne a ﬂight to quality as
+a period of declining correlation between stock and bond returns amid a falling
+stock market and differentiate such episodes from contagion. In addition, the
+recent ﬁnancial crisis sparked a literature on indicators of ﬁnancial instability
+and systemic risk, which are related to our FTS indicator. The majority of those
+articles use data from the ﬁnancial sector only (see, e.g., Acharya et al. 2017;
+Adrian and Brunnermeier 2016; Allen, Bali, and Tang 2012; Brownlees and
+Engle 2011), whereas Hollo, Kremer, and Lo Duca (2012) and Aikman et al.
+(2017) use a wider set of stress indicators.
+1. A Dynamic Model of Bond and Stock Returns with FTS
+Recall that we identiﬁed three “symptoms” of an FTS: (1) a large, positive
+bond return accompanied by a large, negative equity return, (2) negative high-
+frequency correlations between bond and stock returns, and (3) elevated market
+stress, represented by a high equity market volatility. To avoid relying on
+arbitrary parameter choices determining what constitutes “stress” and how
+negative the stock-bond correlations ought to be, we specify a RS model
+that embeds these three symptoms but allows the data to speak to the exact
+magnitude of stress and return differentials between bonds and equities on FTS
+days and of the difference in stock-bond correlations between FTS and non-
+FTS days. The model is ﬂexibly parameterized so that it can accommodate FTS
+episodes of any duration, including very short-lived ones. Moreover, the model
+yields estimates of expected returns in different regimes, which we exploit to
+impose economic restrictions that aid the identiﬁcation. Section 1.1 discusses
+the model in detail; Section 1.2 reports the estimation results.
+1.1 The Model
+1.1.1 General model structure. The model features three regimes: an equity
+regime denoted byS
+e
+t ; a bond regime denoted bySb
+t ; and an FTS regime denoted
+by SFTS
+t . Each regime variable takes the value 0 or 1. For the bond and equity
+regimes, which are assumed to be independent, values of 1 correspond to high
+volatility regimes. For the FTS regime, a value of 1 indicates we are on an FTS
+day, and identifying this regime is the main goal of the paper. We assume that
+these variables are not observed by the econometrician and must be inferred
+692
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 5 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 693 689–746
+Flights to Safety
+from the data. As in the Hamilton (1989) tradition, the bond and equity regime
+variables follow Markov chains with constant transition probabilities:
+Pe = Prob
+[
+Se
+t =0|Se
+t−1 =0
+]
+,Q e =Prob
+[
+Se
+t =1|Se
+t−1 =1
+]
+(1)
+Pb = Prob
+[
+Sb
+t =0|Sb
+t−1 =0
+]
+,Q b =Prob
+[
+Sb
+t =1|Sb
+t−1 =1
+]
+. (2)
+FTS events are assumed to only occur in periods of equity market stress; we
+therefore impose Prob
+[
+SFTS
+t =1|Se
+t =0
+]
+= 0. Conditional on being in the high
+equity regime, the switching and staying probabilities for the FTS regime are
+denoted by
+Prob
+[
+S
+FTS
+t =1|Se
+t =1,SFTS
+t−1 =0
+]
+=A, Prob
+[
+SFTS
+t =1|Se
+t =1,SFTS
+t−1 =1
+]
+=B.
+(3)
+The parameters A and B play a critical role in determining the persistence of
+FTS events.
+We consider the following model for equity ( re,t ) and bond (rb,t ) returns:
+re,t =α0 +α1Jlh
+e,t +α2Jhl
+e,t +αFTS
+(
+JFTS
+t +veSFTS
+t
+)
++αFTR JFTR
+t +he,t εe,t , (4)
+rb,t =γ0 +γ1Jlh
+b,t +γ2Jhl
+b,t +γFTS
+(
+JFTS
+t +vbSFTS
+t
+)
++γFTR JFTR
+t +hb,t εb,t . (5)
+The model features several “jump” terms, indicated by the letter J , that play
+critical roles in determining the relative values of expected returns in the various
+regimes, as discussed below in Section 1.1.2. The normalized shocks ε
+e,t and
+εb,t are assumed to be distributed N(0,1) and can be correlated. The volatilities
+of the shocks are indicated by he,t and hb,t and are time varying. Section 1.1.3
+provides more details on the volatilities and the correlation.
+1.1.2 Expected returns. In this model, time variations in expected returns
+arise because of the various “jump terms” and the FTS regime, which we
+discuss in turn. The non-FTS-related jump term, J
+jk
+i,t , takes the value 1 when
+the equity (i =e) or bond (i =b) market switches from a high to a low volatility
+regime (j =l,k =h) or from a low to a high volatility regime ( j =h,k =l), and
+is zero otherwise. The jump terms are designed to capture the large negative
+(positive) returns observed when the regime unexpectedly switches from low
+(high) to high (low) volatilities. Therefore, following Mayﬁeld (2004), we
+impose α
+1,γ1 < 0 and α2,γ2 > 0. These sign restrictions imply that, for either
+market and a given FTS regime, expected returns are higher in the high volatility
+regime, because investors perceive a positive probability of switching to the
+other regime.
+2
+2 Estimation of standard RS models (see, e.g., Ang and Bekaert 2002), in which the drift term is simply a function
+of the contemporaneous regime, often generates a counterintuitive pattern of a negative (positive) expected return
+in the high (low) volatility regime, partly because these jump terms are not accounted for.
+693
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 6 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 694 689–746
+The Review of Financial Studies / v 33 n 2 2020
+The FTS-related terms,JFTS
+t and SFTS
+t , capture the notion that equity (bond)
+returns are negative (positive) during FTS episodes, with the effect being
+particularly pronounced on the ﬁrst day of the episode. Here, J
+FTS
+t is a jump
+term that equals 1 on the ﬁrst day of an FTS-regime and zero otherwise. We
+impose that v
+e,vb > 0, αFTS < 0 (stock markets fall during FTS episodes), and
+γFTS > 0 (bond prices increase during FTS). On the ﬁrst day, the negative
+(positive) FTS effect on equity (bond) returns is at its maximum at (1+ ve)αFTS
+((1+ vb)γFTS ), while on subsequent FTS days the magnitude of the effect is
+allowed to decline to veαFTS (vbγFTS ). Finally, the jump term JFTR
+t is equal
+to 1 on the day when the FTS regime is switched off, representing a “ﬂight
+to risk” (FTR). We impose that α
+FTR > 0 and γFTR < 0, so that equity (bond)
+returns positively (negatively) react to the end of an FTS regime.
+Because, by assumption, an FTS regime cannot coincide with a low equity
+volatility regime, there are three possible combinations of the equity regime Se
+t
+and the FTS regime SFTS
+t , with the following expected returns:
+ER0,0
+e =E[re,t +1|Se
+t =0,SFTS
+t =0;It ]= α0 +α1
+(
+1−Pe)
++αFTS (1+ ve)
+(
+1−Pe)
+A
+ER1,0
+e =E[re,t +1|Se
+t =1,SFTS
+t =0;It ]= α0 +α2
+(
+1−Qe)
++αFTS (1+ ve)QeA
+ER1,1
+e =E[re,t +1|Se
+t =1,SFTS
+t =1;It ]= α0 +α2
+(
+1−Qe)
++QeBαFTS ve
++
+[(
+1−Qe)
++Qe (1−B)
+]
+αFTR , (6)
+where It represents the information set at time t. When the economy is in
+the low-equity-volatility, non-FTS regime, the expected equity return is pulled
+below the constant term α
+0, because the prospect of switching into the high-
+equity-volatility and/or FTS regimes brings with it the possibility of negative
+return jumps ( α
+1 and αFTS < 0). When the economy is in the high-equity-
+volatility, non-FTS regime, there is a tension between the possibility of moving
+back to a low-equity-volatility regime, inducing a positive jump in returns
+(α
+2 (1−Qe)), and the possibility of moving to an FTS regime, inducing a
+negative jump in returns ( αFTS (1+ ve)QeA). Finally, when the economy is
+already in the FTS, and hence high equity volatility regime, there is a chance
+of moving back to the low-equity-volatility state and thus also out of the
+FTS regime, triggering a positive ﬂight-to-risk jump in returns
+3 as well as
+a chance of staying within the FTS regime, inducing further negative returns
+through Q
+eBαFTS ve. To help identify the regimes, we impose the additional
+restriction that expected equity returns are the highest in the FTS regime,
+followed by the non-FTS, high-equity-volatility regime, with the low-equity-
+volatility regime featuring the lowest, yet still positive, expected return, that is,
+3 The term “ﬂight to risk” applies whether the equity regime stays in the high volatility state (with probability
+Qe (1−B)) or not (probability 1−Qe ).
+694
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 7 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 695 689–746
+Flights to Safety
+ER1,1
+e >ER 1,0
+e >ER 0,0
+e > 0. The restriction ER1,0
+e >ER 0,0
+e requires
+α2 > α1 (1−Pe)−αFTS (1+ ve)A[Qe +Pe −1]
+(1−Qe) , (7)
+while the restriction ER1,1
+e >ER 1,0
+e requires
+veQeαFTS (A−B)≤
+[(
+1−Qe)
++Qe (1−B)
+]
+αFTR −QeAαFTS . (8)
+Given that αFTR > 0 and αFTS < 0, the right hand side of Equation (8) is
+guaranteed to be positive. Therefore, there are two cases. IfB>A , the condition
+is automatically satisﬁed, and the estimation must simply ensure ve ≥ 0. If
+A>B , however,ve is constrained from above by the expression implicit in (8).
+Finally, we impose that all expected equity returns are positive by imposing a
+restriction on α
+0 such that ER0,0
+e ≥ 0 (see Equation (6)).
+Analogously, for bond returns, we impose the restriction that expected bond
+returns must be lower in the FTS regimes, regardless of the bond volatility
+regime. We do, however, not rule out negative bond returns. The Online
+Appendix offers more details about the expected return restrictions.
+1.1.3 V olatility and correlation dynamics. The volatilities of the stock and
+bond return shocks are modeled as the product of their long- and short-term
+components:
+h
+z,t =mz,t ×gz,t ,z ={e,b}. (9)
+The long-term component mz,t captures secular changes in stock and bond
+return volatilities, possibly associated with secular changes in the overall
+economic environment. We model this component using a backward-looking
+Gaussian kernel with a bandwidth of 360 days, excluding the last 5 days to avoid
+contamination by recent FTS events (see Appendix A for details on the kernel
+method). The bandwidth of 360 days was chosen to reﬂect macroeconomic
+cyclical variation; it implies that the kernel’s half-life corresponds to the average
+length of U.S. postwar recessions (11 months).
+The short-run component g
+z,t takes different values in different regimes that
+either lower or increase the daily equity (bond) volatility relative to its long-term
+component:
+g
+z,t =
+{
+az < 1 if S z
+t =0
+bz ≥ 1 if S z
+t =1 ,z ={e,b}. (10)
+The conditional correlation between the return residuals is speciﬁed as
+ρt =−1+2 f
+⎛
+⎝θLR
+t +
+∑
+i,j ={L,H}
+θij +θFTS SFTS
+t
+⎞
+⎠. (11)
+where f (.) is the logistic function. The correlation has three components.
+First, θLR
+t is a long-run component reﬂecting slow-moving macroeconomic
+695
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 8 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 696 689–746
+The Review of Financial Studies / v 33 n 2 2020
+developments. For example, the subsiding importance of aggregate supply
+shocks might have contributed to the switch in the sign of stock and
+bond return correlations (see, e.g., Ermolov 2017). We specify θ
+LR
+t as
+ln
+[(
+1+ ρLR
+t
+)
+/
+(
+1−ρLR
+t
+)]
+, where ρLR
+t is calculated using a backward-looking
+kernel method with a bandwidth of 360 days (again lagged 5 days). The second
+component of the correlation takes one of four values depending on the bond
+and equity regimes: θ
+ij =θ
+(
+Se
+t =i,Sb
+t =j
+)
+. Finally, the third term with θFTS < 0
+imposes that the stock-bond return correlation is particularly low or, even,
+negative, during FTS episodes.
+The conditional return volatilities in this model are not simply a function
+of the shock volatilities but also a function of the jump terms. Similar to the
+conditional expected returns, there are 3 and 6 different regimes to consider for
+the conditional volatilities of equity and bond returns, respectively. Appendix
+B shows the expressions. The derivations, which are available on request, take
+into account the covariance between the regime variables and the jump terms.
+1.2 Estimation and empirical results
+Our data set consists of daily stock and 10-year government bond returns
+for twenty-three countries over the period January 1980 to June 2015.
+Our sample includes two countries from North America (United States,
+Canada), 18 European countries (Austria, Belgium, Czech Republic, Denmark,
+France, Finland, Germany, Greece, Ireland, Italy, Netherlands, Norway, Poland,
+Portugal, Spain, Sweden, Switzerland, and the United Kingdom), as well
+as Australia, Japan, and New Zealand. We use Datastream International’s
+total market indices to calculate daily total equity returns, and their 10-
+year benchmark bond indices to calculate government bond returns, both
+denominated in local currencies. For countries in the euro zone, we use returns
+denominated in their original (pre-1999) currencies (rather than in synthetic
+euros). For all European countries, except Denmark, Norway, Switzerland, and
+the United Kingdom, German government bonds serve as the benchmark; for
+all other countries, local government bonds serve as the benchmark.
+1.2.1 Estimation methodology. We estimate the RS model, speciﬁed in
+Equations (1) through (11), by maximum likelihood following Hamilton
+(1994). We assume that the agents in the model observe the true regimes while
+the econometrician does not. To identify the regimes, we use the smoothed
+regime probabilities, which represent regime probabilities conditional on full
+sample information (see Kim 1994, Hamilton 1994).
+RS models have likelihoods that are not globally concave and may possess
+multiple local optima. Apart from using multiple starting values, we mitigate
+this estimation problem by imposing several reasonable economic restrictions
+on the model. First, as discussed in Section 1.1.2, we impose a number of
+economic restrictions on the relative expected returns across regimes. Second,
+we ﬁx the constants ( α
+i
+0 and γi
+0 ) in the RS model for each country to be a
+696
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 9 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 697 689–746
+Flights to Safety
+simply average of the sample mean and the expected return implied by the
+capital asset pricing model (CAPM), assuming a market risk premium of 4.5%.
+This procedure is meant to address the problem that historical averages are
+poor estimates of expected returns, a problem that is further exacerbated by the
+different sample periods across countries in our analysis. The Online Appendix
+further details the procedure.
+Because the model remains heavily parameterized, our benchmark
+estimation considers the joint likelihood for all twenty-three countries,
+assuming that the parameters are the same across countries (except for α
+i
+0
+and γi
+0 , which are determined as indicated above), but with country-speciﬁc
+regime variables. The construction of the likelihood assumes that shocks and
+regime variables are uncorrelated across countries. We refer to the appendix
+in the NBER version of Bekaert, Hodrick, and Marshall (2001) for a detailed
+derivation of the joint likelihood function for a similar model. The parameter
+estimates therefore can be viewed as “pooled” estimates reﬂecting twenty-
+three different draws from a worldwide population distribution. In population,
+the duration of an FTS regime and the differences in conditional expected
+returns between an FTS and a non-FTS regime are identical across countries.
+However, many country-speciﬁc features remain: the regime variables are
+country-speciﬁc, and so is the timing of regime switches; shock volatilities
+and correlations vary across countries as they contain long-run components
+that are estimated using data for each country; ﬁnally, the unconditional means
+of the returns are also different across countries.
+We also estimate the model country by country to check the robustness of
+our results. However, because the parameter estimates and their implications
+appear remarkably robust, we focus our discussion on the all-country model and
+relegate the discussion of country-by-country models to the Online Appendix.
+4
+In Section 4, we also consider a “global” version of the model.
+1.2.2 Parameter estimates. Table 1 (panel A) reports the parameter estimates
+at the global optimum. 5 The ﬁrst set of parameters are the transition
+probabilities. Both equity and bond volatility regimes are highly persistent,
+with the low volatility regimes slightly more so (P
+i >Qi ; i =e,b). The expected
+durations of high equity and bond volatility regimes are 32.1 and 31.6 days,
+respectively. Conditional on being in the high equity volatility regime, but not in
+an FTS the day before, the probability of switching to the FTS regime is slightly
+below 1% ( A =0.9%). Once in the FTS regime, the probability of staying
+is high at B =9 8.8%. The average FTS regime lasts on average 23.19 days
+4 For example, Figure 1 in the Online Appendix shows that, for the United States, the smoothed FTS probabilities
+from the pooled model are nearly identical to those from a bivariate RS model using U.S. data only.
+5 All the best runs feature A<B , but we did ﬁnd some local optima with A>B . One local maximum (with A<B
+and B relatively low) implies very ephemeral FTS and would produce a very low number of FTS days. Not
+imposing the expected return constraints delivers the same global optimum.
+697
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 10 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 698 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Table 1
+Bivariate regime switching model: Estimation results
+A. Estimation results
+Estim. SE p-val
+Pe 0.989 0.001 0.00
+Qe 0.969 0.003 0.00
+Pb 0.987 0.002 0.00
+Qb 0.968 0.005 0.00
+A 0.009 0.002 0.00
+B 0.988 0.004 0.00
+α1 −0.910 0.149 0.00
+α2 1.221 0.670 0.08
+αFTS −5.453 1.232 0.00
+αFTR 3.463 1.246 0.01
+γ1 −0.821 0.141 0.00
+γ2 0.085 0.047 0.08
+γFTS 0.362 0.083 0.00
+γFTR −1.404 0.313 0.00
+ve 0.024 0.011 0.03
+vb 0.156 0.042 0.01
+ae 0.691 0.008 0.00
+be 1.554 0.041 0.00
+ab 0.719 0.011 0.00
+bb 1.436 0.033 0.00
+θFTS −1.338 0.083 0.00
+θLL 0.006 0.020 0.38
+θLH 0.072 0.037 0.06
+θHL 0.013 0.059 0.39
+θHH 0.349 0.075 0.00
+B. Ergodic probs
+Ergodic probabilities across
+states (Se,Sb,SFTS )
+0,0,0 52.00%
+0,1,0 21.24%
+1,0,0 15.70%
+1,0,1 3.31%
+1,1,0 6.41%
+1,1,1 1.35%
+Total FTS 4.66%
+Panel A reports estimation results for the bivariate regime switching model,
+developed in Section 1. Panel B reports ergodic probabilities for each of the six
+possible regime combinations (
+Se,Sb,SFTS ).
+(1/(1−QeB)). As a result, the population FTS incidence implied by the model,
+reported in panel B of Table 1, is relatively high at 4.66% (3.31%+1.35%). Later,
+Section 2 uses this population FTS incidence of 4.66% to discipline the two
+alternative models.
+The next set of parameters govern the conditional mean of bond and equity
+returns and we discuss the economic implications in more detail in the next
+subsection. The pure regime shift effects for both bonds and equities ( α
+1, α2;
+γ1, γ2) are smaller than the FTS related jump effects. For example, the onset
+of an FTS or an FTR is accompanied by signiﬁcant changes in equity returns
+(α
+FTS (1+ νe)= −5.58%, αFTR −αFTS νe =3.59%), much larger in magnitude
+than those associated with switches between equity volatility regimes ( α1 =
+−0.91%; α2 =1.22%). The FTR is also associated with a notable decline in
+expected bond returns ( γFTR −γFTS νb =−1.46%), larger in magnitude than
+the jump effects associated with the onset of an FTS ( γFTS (1+ νb)=0 .42%)
+or switches between bond return volatility regimes (γ1 =−0.82%; γ2 =0.09%).
+The return effect on subsequent days of an FTS are estimated to be much smaller
+for both equities (α
+FTS νe =−0.13%) and bonds (γFTS νb =0.05%).
+698
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 11 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 699 689–746
+Flights to Safety
+The last set of parameters characterize the volatility dynamics. First, the
+equity stress regime has a volatility that is 55.4% ( be −1) above the long-
+run volatility component, while the low equity volatility regime has volatility
+only 69.1% ( a
+e) of the long-term level. The corresponding statistics for bond
+return volatilities are 43.6% and 71.9%, respectively. Second, stock-bond return
+correlations are substantially lower during FTS episodes (θ
+FTS =−1.338). The
+economic effect depends on the value of the long-run correlation and the regime
+constellation and appears large. For example, if the long-run correlations and
+regime dependent correlation parameters were all zeros, the FTS regime would
+feature a stock-bond return correlation of−56.8%. We note a moderate increase
+in stock-bond correlations when both equity and bond volatility are in the high
+volatility regime (θ
+HH =0.349).6
+1.2.3 Expected returns and return dynamics during FTS events. The RS
+model provides estimates of expected equity and bond returns across regimes.
+An accurate assessment of the risk premiums is of paramount importance in
+ﬁnance; however, the high volatility of equity returns and the potential time
+variations in conditional risk premiums make it a challenging task. The seminal
+article by Merton (1980) proposes to impose positivity on risk premiums and
+links them to asset return variances. Our RS model follows a similar approach.
+First, the economic restrictions imposed ensure that risk premiums are higher in
+high volatility and FTS regimes. Second, by linking the constants in the model
+to weighted averages of average historical returns and CAPM-based estimates
+of expected returns, we impose overall positivity (see Table 1 in the Online
+Appendix).
+The last column of panel A in Table 2 presents the expected returns
+conditional on each of the three possible combinations of equity and FTS
+regimes for the United States. Note that these expected returns vary from
+country to country reﬂecting the country speciﬁc means, α
+i
+0. However, the
+return differences between regimes are identical across countries reﬂecting the
+joint estimation. We ﬁnd expected equity returns to be around 10% both in the
+high equity volatility, non-FTS regime and in the low equity volatility regime,
+but rise sharply to 28% when the economy moves into the high volatility, FTS
+regime.
+The preceding columns decompose the total expected equity returns into
+different components (as given by Equation (6)). The expected equity return in
+the low equity volatility regime is 2.73% below the country-speciﬁc estimate of
+the average annualized return (α
+i
+0), primarily because of the prospect of moving
+into the high volatility regime (with probability (1−Pe)), which lowers the
+return by 2.59%, but also due to the possibility that such a move is accompanied
+6 We verify that the parameter estimates are remarkably robust to variations in the kernel bandwidth and the length
+of the exclusion window. With only one exception, all parameters are within the 95% conﬁdence interval of the
+original estimates when the bandwidth (exclusion period) is set to either 250 or 500 days (10 days).
+699
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 12 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 700 689–746
+The Review of Financial Studies / v 33 n 2 2020
+by an onset of an FTS (with probability (1−Pe)A), which reduces the average
+return further by 0.14%.
+The expected equity return in the high equity volatility, FTS regime is boosted
+by the possibility of switching to the low equity volatility state (with probability
+(1−Qe)) and that of moving out of the FTS regime but staying in the high
+volatility regime (with probability QeB), as both are associated with positive
+return impact (ofα2 and αFTR , respectively). In contrast, the prospect of staying
+in the FTS regime (with probability ofQeB)) lowers the expected equity return.
+The ﬁrst effect (in total +47.19%) dominates the second (-31.95%), leading to
+an expected return that is 15.24% above the country-speciﬁc mean. Our ﬁndings
+are therefore in line with Martin (2017), who ﬁnds the (option-implied) market
+risk premium to be very volatile and above 20% in periods of market stress, and
+with similar results in Ait-Sahalia, Karaman, and Mancini (2018). Our ﬁndings
+suggest that not all equity stress periods are created equal: only FTS events
+generate steep, though short lived, spikes in expected equity returns.
+Panel B of Table 2 reports expected bond returns conditional on each of
+the six possible regime combinations as well as the contributions of individual
+components (see the equations in Section 1.2 of the Online Appendix). We
+highlight three key ﬁndings. First, regardless of the equity volatility and FTS
+regime, expected bond returns are about 3% higher in the high relative to the
+low bond volatility regime. Second, our estimates imply expected bond returns
+to be about 2.60% lower in the FTS regime, as the negative return impact (γ
+FTR )
+from a switching out of an FTS regime (with the probability (1−Qe)+QeB)
+outweighs the positive impact (γFTS vb) from a continuation of the FTS regime
+(with the probability QeB). Finally, as indicated by the ﬁnal rows of panel B,
+expected equity returns are slightly lower (-0.40%) than expected bond returns
+in the more common, low equity and bond return volatility regimes, but are
+much higher (16.24%) in the FTS regime.
+1.2.4 Conditional return volatilities. Table 3 reports model-implied
+annualized return volatilities across regimes for equities (ﬁrst two columns)
+and bonds (last two columns), calculated using the expressions in Appendix
+B. The equity return volatility only depends on the equity and FTS regimes,
+while the bond return volatility depends on all three regimes. Equity volatility is
+substantially higher in the high equity volatility regime than in the low volatility
+regime, regardless of the FTS regime (25.36% and 27.66%, compared with
+16.18%). For given equity volatility and FTS regimes, bond return volatility in
+the high bond volatility regime exceeds that in the low bond volatility regime by
+around 2%, with the highest bond return volatility obtained when equities are in
+the FTS (and hence high volatility) regime (9.63%). The conditional bond return
+volatilities in this model can be decomposed into four components, deriving
+from (1) the volatility jump terms; (2) the FTS jump term, the FTS regime
+variable, and their interaction; (3) the covariance between the volatility jump
+terms and the FTS jump and regime terms; and (4) volatilities of the shocks. The
+700
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 13 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 701 689–746
+Flights to Safety
+Table 2
+Model-implied within-regime expected equity and bond returns
+A. Equities
+Components
+Switch to Stay in Switch out Switch to FTS Stay in FTS Switch out FTS Total ER (U.S.)high equity vol high equity vol high equity vol
+E[re,t +1|Se
+t =0,SFTS
+t =0;It ] α1 (1−Pe ) αFTS (1+ ve )(1−Pe )A 10.14%
+(ER0,0
+e ) −2.592% −0.1397% (0.95%)
+E[re,t +1|Se
+t =1,SFTS
+t =0;It ] α2 (1−Qe ) αFTS (1+ ve )QeA 10.17%
+(ER1,0
+e ) 9.567% −12.274% (1.04%)
+E[re,t +1|Se
+t =1,SFTS
+t =1;It ] α2 (1−Qe ) QeBαFTS ve
+[
+(1−Qe )+Qe (1−B)
+]
+αFTR 28.12%
+(ER1,1
+e ) 9.567% −31.951% 37.623% (3.19%)
+(αus
+0 =1 2.88)
+s.e.
+(ER1,0
+e )-( ER0,0
+e ) 0.07%
+(ER1,1
+e )-( ER1,0
+e ) 2.13%
+(ER1,1
+e )-( ER0,0
+e ) 2.19%
+B. Bonds Components
+Switch to Stay in Switch out Switch to FTS Stay in FTS Switch out FTS Total ER (U.S.)high equity vol high equity vol high equity vol
+E[rb,t +1|Se
+t =0,Sb
+t =0,SFTS
+t =0;It ] γ1
+(
+1−Pb )
+γFTS (1+ vb )(1−Pe )A 4.40%
+(ER00,0
+b ) −2.338% 0.011% (0.57%)
+E[rb,t +1|Se
+t =0,Sb
+t =1,SFTS
+t =0;It ] γ2
+(
+1−Qb )
+γFTS (1+ vb )(1−Pe )A 7.42%
+(ER01,0
+b ) 0.680% 0.011% (0.53%)
+E[rb,t +1|Se
+t =1,Sb
+t =0,SFTS
+t =0;It ] γ1
+(
+1−Pb )
+γFTS (1+ vb )QeA 5.31%
+(ER10,0
+b ) −2.338% 0.918% (0.63%)
+E[rb,t +1|Se
+t =1,Sb
+t =0,SFTS
+t =1;It ] γ1
+(
+1−Pb )
+γFTS vbQB [(1−Qe ))+ Qe (1−B)]γFTR 2.71%
+(ER10,1
+b ) −2.338% 13.576% −15.257% (1.43%)
+E[rb,t +1|Se
+t =1,Sb
+t =1,SFTS
+t =0;It ] γ2
+(
+1−Qb )
+γFTS (1+ vb )QeA 8.33%
+(ER11,0
+b ) 0.680% 0.918% (1.58%)
+E[rb,t +1|Se
+t =1,Sb
+t =1,SFTS
+t =1;It ] γ2
+(
+1−Qb )
+γFTS vbQB [(1−Qe ))+ Qe (1−B)]γFTR 5.73%
+(ER11,1
+b ) 0.680% 13.576% −15.26% (1.53%)
+(γus
+0 =6.73%)
+s.e.
+ER11,1
+b - ER11,0
+b 0.41%
+ER1,1
+e - ER11,1
+b 2.24%
+ER0,0
+e - ER00,0
+b 0.14%
+Panel A reports expected equity returns (relative to a country speciﬁc intercept αi
+0 ) conditional on the equity volatility ( Se
+t ) and FTS (SFTS
+t ) regimes as implied by our Bivariate RS model. For each regime combination, we
+also calculate the total expected return for the US (including αus
+0 , ﬁnal column) and its different components using the equations in (6). Panel B reports corresponding expected bond return differences, the total US b ond
+returns, and their components conditional on being in any of the six possible equity volatility ( Se
+t ), bond volatility ( Sb
+t ), and FTS ( SFTS
+t ) regimes (calculated using the equations in Section 1.2 of the Online Appendix). All
+numbers are annualized. The ﬁnal rows test for signiﬁcant differences between the state-dependent expected returns.
+701
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 14 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 702 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Table 3
+Model-implied within-regime equity and bond return volatilities
+Equity volatility Bond volatility
+Va r
+(
+re,t +1
+⏐⏐Set =0,S FTSt =0;It ) 16.18% Va r
+(
+rb,t +1
+⏐⏐Set =0,Sbt =0,S FTSt =0;It ) 6.28%
+Va r
+(
+rb,t +1
+⏐⏐Set =0,Sbt =1,S FTSt =0;It ) 8.50%
+Va r
+(
+re,t +1
+⏐⏐Set =1,S FTSt =0;It ) 25.36% Va r
+(
+rb,t +1
+⏐⏐Set =1,Sbt =0,S FTSt =0;It ) 6.31%
+Va r
+(
+rb,t +1
+⏐⏐Set =1,Sbt =0,S FTSt =1;It ) 7.74%
+Va r
+(
+re,t +1
+⏐⏐Set =1,S FTSt =1;It ) 27.66% Va r
+(
+rb,t +1
+⏐⏐Set =1,Sbt =1,S FTSt =0;It ) 8.52%
+Va r
+(
+rb,t +1
+⏐⏐Set =1,Sbt =1,S FTSt =1;It ) 9.63%
+Unconditional 19.22% 7.07%
+This table reports the model-implied within-regime equity and bond return volatilities, calculated using the
+expressions in Appendix B. As input for the shock volatilities, we take the estimated average long-run shock
+volatilities across countries. The equity volatility only depends on the equity regime and the FTS regime; the
+bond volatility depends on equity, bond and FTS regimes. The model-implied total volatility is calculated using
+the ergodic probabilities. All numbers are annualized.
+Online Appendix provides a full decomposition, which shows that the variances
+of the shocks typically account for the bulk of the conditional variances of the
+returns. The jump term and its covariance with the FTS variables have small
+contributions overall, but the FTS component contributes over 10% to the equity
+return variance and over 20% to the bond return variance in FTS regimes.
+1.2.5 Characterizing FTS days in the RS model. Despite the “pooled”
+nature of our estimation, each country has its unique realizations of regimes, and
+the conditional volatilities are estimated using information from the realized
+returns (see Section 1.2.1). Therefore, the in-sample estimates of the FTS
+incidence, the return impact, conditional return volatilities, and bond-equity
+return correlations can all differ across countries. As in the remainder of this
+paper, we deﬁne FTS days as days when the estimated FTS regime probability
+exceeds 50%. The second column of panel A of Table 4 shows that FTS days
+make up on average 4.73% of our sample, with a narrow interquartile range
+(IQR) of 4.03%–5.48%. Detailed country-by-country results reported in the
+Online Appendix shows that the United States has the highest FTS incidence
+(6.74%) and New Zealand the lowest (1.06%). The next six columns show that
+equity (bond) returns are on average much more negative (positive) on ﬁrst days
+of FTS spells (-0.91% vs. average of -0.33% over all FTS days for equities;
+0.19% vs. 0.11% for bonds).
+The next two columns report the ratio of return volatilities on FTS days to
+those on non-FTS days. Equity volatility is on average 95% higher in the FTS
+state, whereas bond volatility is about 23% higher. The ﬁnal three columns
+report daily stock-bond return correlations using FTS days only (Column 11),
+the full sample (Column 12), and using non-FTS days only (Column 13). On
+non-FTS days, stock-bond return correlations are on average slightly positive
+for countries with data available since the early 1980s, but slightly negative for
+countries with shorter (more recent) samples. Across all countries, the average
+stock-bond correlation is -4.18% on non-FTS days, with an IQR of -8.67% to
+702
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 15 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 703 689–746
+Flights to Safety
+2.08%. On FTS days, stock-bond correlations are considerably more negative
+with an average of -58.5% and a relatively tight IQR of -57.0% to -62.5%.
+One might be tempted to identify FTS episodes simply based on these
+symptoms, including negative equity returns accompanied by positive bond
+returns, high equity return volatility, and a low correlation between bond and
+stock returns. Compared with such a naive approach, using a more structured
+RS model provides us with a richer characterization of the FTS episodes. For
+example, the FTS regime is estimated to be quite persistent, even though we
+impose no a priori restrictions on its persistence. In addition, the exact nature
+of the “equity market stress” is endogenously determined by the model rather
+than exogenously speciﬁed. We ﬁnd that bond returns are also more variable
+in FTS regimes, even though the model did not impose this condition, and that
+the correlations between bond and stock returns are dramatically lower in FTS
+regimes. Finally, the model differentiates between the FTS regime and a non-
+FTS, equity market stress regime. We ﬁnd that the FTS regime is associated with
+sizable risk premiums, whereas risk premiums associated with the “non-FTS”
+equity market stress regime are trivial.
+2. An FTS Measure
+Our key idea is to identify the “symptoms of an FTS”—in terms of its effect on
+asset returns, correlations and volatilities—and then use data on ONL Y bond
+and stock returns to identify those events. Because our goal is to document
+empirical regularities associated with FTS that can be used to guide theoretical
+research on FTS, we seek to be conservative in our estimates of the FTS events.
+We do so by averaging across multiple models. We start from a baseline model,
+the bivariate RS model, discussed above in Section 1. We then develop two
+alternative statistical models to capture the FTS symptoms and describe them
+in Sections 2.1 and 2.2 below. We calibrate both models to deliver the same
+average FTS incidence as that implied by the bivariate RS model (4.66%).
+Section 2.3 details the model averaging procedure.
+2.1 A threshold FTS model
+2.1.1 The model. Bae, Karolyi, and Stulz (2003) (BKS henceforth) study
+contagion across emerging markets by counting coexceedance events, deﬁned
+as joint occurrence of extreme returns beyond a certain threshold, and assess
+the signiﬁcance by comparing the actual count to what can be expected under
+certain standard (such as Gaussian) distributions. Our ﬁrst alternative model is
+speciﬁed in a similar fashion, by counting the joint occurrence of some or all
+FTS symptoms stated earlier for given thresholds. Denoter
+t =
+(
+re,t ,−rb,t
+)T
+and
+assume that rt ∼N (μ,Ωt ). We ﬁrst deﬁne the threshold. Using the cumulative
+normal distribution, we calculate the probability that the equity return, and the
+negative of bond return will both be κ standard deviations below their mean as
+703
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 16 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 704 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Table 4
+FTS summary: All models
+All FTS days First FTS days V ol ratio Stock-bond correlation
+A. Bivariate RS model
+FTS incidence Equity Bond Impact Equity Bond Impact Equity Bond FTS All Non-FTS
+Average (EW) 4.73% −0.33% 0.11% 0.44% −0.91% 0.19% 1.10% 1.95 1.23 −58.48% −10.30% −4.18%
+median 5.01% −0.33% 0.10% 0.43% −1.08% 0.18% 1.16% 1.94 1.26 −60.01% −12.93% −7.03%
+IQR 4.03% −0.41% 0.09% 0.29% −1.34% 0.08% 0.57% 1.72 1.17 −62.49% −14.87% −8.67%
+5.48% −0.21% 0.11% 0.51% −0.34% 0.28% 1.48% 2.00 1.29 −57.00% −4.79% 2.08%
+B. Threshold model
+Average (EW) 4.64%
+−2.18% 0.57% 2.75% −2.18% 0.57% 2.75% 1.41 1.14 −17.38% −10.30% 2.95%
+median 4.64% −2.17% 0.55% 2.71% −2.17% 0.55% 2.71% 1.37 1.14 −23.99% −12.93% 0.34%
+IQR 4.60% −2.43% 0.54% 2.44% −2.43% 0.54% 2.44% 1.30 1.06 −35.65% −14.89% −2.39%
+4.68% −1.89% 0.58% 2.99% −1.89% 0.58% 2.99% 1.47 1.21 −9.13% −3.71% 9.52%
+C. Ordinal model
+Average (EW) 4.65%
+−2.00% 0.32% 2.32% −2.00% 0.32% 2.32% 1.37 1.09 −24.42% −10.30% −2.66%
+median 4.66% −1.97% 0.30% 2.26% −1.97% 0.30% 2.26% 1.35 1.08 −25.52% −12.93% −4.55%
+IQR 4.62% −2.27% 0.29% 1.97% −2.27% 0.29% 1.97% 1.23 0.99 −30.32% −14.89% −7.46%
+4.67% −1.68% 0.33% 2.55% −1.68% 0.33% 2.55% 1.48 1.19 −18.39% −3.71% 3.69%
+This table reports FTS incidence (Column 2), equity, bond and return impact (deﬁned as the difference between the bond and equity returns) on all FTS da ys (Columns 3 to 5) and
+on the ﬁrst day of an FTS spell (Columns 6 to 8), the ratio of volatility on FTS relative to non-FTS days (Columns 9 and 10), and stock-bond return correlat ions during FTS episodes
+(Column 11), over the full sample (Column 12), and on non-FTS days (Column 13). For each indicator, we report the equally weighted average, the median, and interquartile range (IQR).
+704
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 17 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 705 689–746
+Flights to Safety
+Prob ths,t =Ncdf
+([ −κσe,t
+−κσb,t
+]
+,0,Ωt
+)
+,Ω t =
+[ σ 2
+e,t ρLR
+t σe,t σb,t
+ρLR
+t σe,t σb,t σ 2
+b,t ,
+]
+where σe,t and σb,t are time-varying equity and bond market volatilities and Ωt
+the time-varying variance-covariance matrix. We implicitly assume zero mean
+daily returns for both equities and bonds. As in the RS model, the slow-moving
+time-variation in volatilities and correlations is computed using a backward
+kernel methodology, with a 360-day bandwidth excluding the last 5 days. The
+parameter κ controls how “extreme” bond and equity returns need to be to
+qualify as FTS events. Prob
+ths,t gives us the probability threshold that all FTS
+observations must surpass. For each day in our sample, we then compute the
+joint probability of observing an equity return at least as negative, and a bond
+return at least as positive, as the realized returns, under a normal distribution
+7
+with the prevailing variance-covariance matrix:
+Prob obs,t =Ncdf (rt,0,Ωt ).
+An observation is deemed “extreme” if this probability falls below the
+threshold probability, Prob obs,t <Prob ths,t . The FTS probability on day t is
+then computed as
+I
+{
+rb
+i,t > 0
+}
+×I
+{
+rs
+i,t < 0
+}
+×I
+{
+Prob obs,t <Prob ths,t
+}
+×
+(
+1−Prob obs,t
+)
+.
+(12)
+The ﬁrst two indicator functions impose the requirement that equity (bond)
+returns are negative (positive); the third indicator function guarantees that the
+observed combination of negative equity and positive bond returns is an extreme
+outcome. The last term ensures that a more extreme combination of bond and
+equity returns is assigned a higher probability of FTS.
+2.1.2 Calibration results. Figure 1 plots cross-country averages of the FTS
+incidence (left axis) and the return impact (deﬁned as the difference between
+bond and equity returns; right axis) for various levels of κ. The dashed lines
+show the associated IQRs. The FTS incidence decreases, and the return impact
+increases, with κ. The blue horizontal line indicates the target FTS incidence of
+4.66%; we reach this target at κ =1.26, when the return impact averages 2.72%
+with a tight IQR of 2.46%–2.98%.
+2.2 The ordinal FTS model
+2.2.1 The model. Our third model builds on the “ordinal” approach in
+Hollo, Kremer, and Lo Duca (2012), which proposes a composite measure of
+stress in the ﬁnancial system. The methodology uses the empirical cumulative
+distribution of several stress indicators and then aggregates these ordinal
+7 The actual returns exhibit fat tails. We therefore redid the threshold model assuming a t-distribution that
+accommodates fat tails. The Online Appendix describes this exercise. The alternative distributional assumption
+does not materially affect the identiﬁcation of FTS events.
+705
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 18 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 706 689–746
+The Review of Financial Studies / v 33 n 2 2020
+0 0.5 1 1.5 2 2.5
+Threshold Parameter ( )
+0
+0.05
+0.1
+0.15
+0.2
+0.25
+0.3
+FTS Incidence
+0.01
+0.015
+0.02
+0.025
+0.03
+0.035
+0.04
+0.045
+0.05
+0.055
+Return Impact
+Figure 1
+Coexceedance model: FTS incidence and return impact
+This graph plots the FTS incidence (left axis) and the return impact (right axis) from the coexceedance model
+for various levels of
+κ. The blue horizontal line represents the target FTS incidence of 4.66%. Dashed and dotted
+lines plot the associated IQRs.
+numbers into one summary stress indicator. Analogously, we select three FTS
+indicators, based on the FTS symptoms we listed before:
+1. the difference between the bond and stock return (“return impact”);
+2. the difference between the long- and short-term stock-bond return
+correlation (“correlation dip”); and
+3. the difference between the short- and long-term equity return volatility
+(“volatility spike”).
+We measure long and short-term volatilities and correlations using a
+backward-looking Gaussian kernel with bandwidths of 360 and 7 days,
+respectively, and exclude the most recent 5 days when calculating the long-term
+measures.
+The three indicators above are continuous variables, with higher values
+typically observed during an FTS. We convert these continuous variables to
+ordinal numbers by replacing each observation by its ranking (in ascending
+order) over the sample period, normalized by the total number of observations; a
+value close to one (zero) is therefore associated with a higher (lower) likelihood
+of FTS. For instance, a value of 0.95 for, say, the return impact implies that
+only 5% of the observations over the full sample have a return impact larger or
+equal than the value observed on that day.
+To further convert those ordinal numbers to a measure of the FTS probability,
+we proceed in two steps. First, we create a composite “ordinal” index that takes
+values in the [0,1] interval, denotedOI
+t , by averaging the three ordinal numbers
+at each point in time.8 This yields a number for each day that can be interpreted
+8 We also considered taking into account the correlation between the various variables as suggested by Hollo,
+Kremer, and Lo Duca (2012), where higher time-series correlations between the stress-sensitive variables increase
+the stress indicator’s value. However, our inference regarding FTS episodes was not materially affected by this
+change.
+706
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 19 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 707 689–746
+Flights to Safety
+as a cumulative density function probability. Numbers very close to one, such
+as 0.99, can be viewed as a strong indicator of an FTS; however, it’s less clear
+how to assess the FTS probability for numbers further away from one.
+To solve this problem, in the second step, we transform the ordinal index
+into an ordinal measure of FTS probability by imposing the requirement that
+all FTS events need to satisfy some “weak” FTS symptoms, including: (1) a
+strictly negative equity return and a strictly positive bond return; (2) a negative
+short-term bond-equity return correlation that is below the long-term level; and
+(3) a ratio of short-term to long-term equity return volatility that is larger than
+κ ≥ 1. The parameter κ determines the incidence of FTS events in this model
+(see Section 2.2.2 below). To implement this requirement, we ﬁrst collect the
+ordinal numbers from all days that satisfy those three “weak” FTS symptoms
+for a givenκ. We view the minimum of this set of ordinal index values, denoted
+OI
+ths , as a threshold: All observations with an ordinal number below this
+threshold ( OIt <OI ths ) are assigned an FTS probability equal to zero. For
+observations with an ordinal number above the threshold, we set the ordinal
+measure of FTS probability to one minus the percentage of “false positives”
+(FP ), calculated as the percentage of observations with an ordinal number
+above the observed ordinal number that do not match our “weak” FTS criteria.
+The number of false positives will be substantial for observations with ordinal
+numbers that are relatively low, though still above the minimum threshold, but
+will be close to zero for observations with ordinal numbers close to one. In
+summary, the ordinal measure of our FTS probability is constructed as
+Prob
+FTS
+OI,t =I {OIt ≥OIths }×(1−FP ). (13)
+As an illustration, suppose that the lowest ordinal value among all observations
+satisfying the three “weak” FTS criteria is 0 .75. This procedure will assign
+zero FTS probability to all observations with ordinal values below 0 .75. Now
+consider an observation with an ordinal value of 0 .84. Suppose 20% of the
+observations with ordinal values above 0 .84 do not satisfy the “weak” FTS
+criteria. This procedure will assign an FTS probability equal to 1−20% = 80%.
+2.2.2 Calibration results. Figure 2 plots cross-country averages of the FTS
+incidence (left axis) and the return impact (right axis) for various levels of κ,
+the minimum ratio of short- to long-term equity volatilities. The dashed lines
+show the associated IQRs. Again, FTS incidence decreases, while return impact
+increases, with κ. The target FTS incidence of 4.66% is reached when κ is set
+to 1.72. The average return impact at this value of κ is 2.32%, with an IQR of
+1.98%–2.54%.
+Table 5 provides some insights into the calculation of the ordinal FTS
+measure. The second column shows that the threshold level, the minimum
+value of the ordinal index among all observations that satisﬁes the three “mild”
+FTS conditions, is on average 68% with an IQR of [66.5%, 69.7%]. The third
+column shows that the percentage of observations with ordinal indices above
+707
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 20 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 708 689–746
+The Review of Financial Studies / v 33 n 2 2020
+38.26.24.22.228.16.14.12.11
+Ratio Short to Long-Term Volatility ( )
+0
+0.02
+0.04
+0.06
+0.08
+0.1
+0.12FTS Incidence
+0.01
+0.015
+0.02
+0.025
+0.03
+0.035
+0.04
+Return Impact
+Figure 2
+Ordinal model: FTS incidence and return impact, various volatility scales
+This graph plots the FTS incidence (left axis) and the return impact (right axis) from the ordinal model for
+various levels of κ. The blue horizontal line represents the target FTS incidence of 4.66%. Dashed lines plot the
+associated IQRs.
+Table 5
+Ordinal FTS measure
+% obs % (obs > threshold) with % obs with
+Threshold above threshold FTS prob > 50% FTS prob > 50%
+Mean 67.95% 15.61% 31.14% 4.65%
+Median 68.97% 13.85% 33.72% 4.66%
+Min 63.04% 9.34% 20.84% 4.57%
+Max 74.00% 22.13% 49.83% 4.75%
+Q1 66.45% 13.54% 26.69% 4.63%
+Q3 69.65% 17.50% 34.46% 4.67%
+This table reports cross-country summary statistics for the Ordinal FTS measure discussed in Section 2.2. Column
+2 reports summary statistics for the threshold level, calculated as the minimum of the ordinal numbers on days
+that satisfy a set of “mild” FTS conditions. Column 3 reports the percentage of observations that have an ordinal
+number above this threshold. Column 4 reports how much of those observations have an ordinal measure larger
+than 50% (calculated as 1 minus the percentage of false positives, that is, the percentage of observations with
+an ordinal number above the threshold that do not meet our FTS criteria). Column 5 shows the percentage of
+observations in the full sample that have an ordinal FTS probability larger than 50%.
+the threshold averages 15.61% with an IQR of 13.54%–17.50%. The tight
+IQRs in both cases indicate that the raw ordinal indices behave consistently
+across countries. Our measure is also heavily inﬂuenced by the number of false
+positives, the fraction of observations with ordinal numbers above the threshold,
+but not satisfying the weak symptoms. Once those are taken into account, the
+fourth column shows that among the observations with ordinal indices above
+the threshold, on average 31.1% (with an IQR of 26.7%–35.5%) have an ordinal
+measure of FTS probability above 50% and hence would be classiﬁed as an FTS
+according to this measure. Multiplying this number with the percentage number
+of observations above the threshold essentially produces the FTS probability.
+The cross-country average FTS incidence is close to the 4.66% target.
+9
+9 We selected κ from a two-digit grid to minimize the distance from the target regarding FTS incidence.
+708
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 21 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 709 689–746
+Flights to Safety
+2.3 Aggregate FTS incidence
+So far, we have three models that can be used to assess the probability that
+a given day is experiencing an FTS. The FTS incidence is endogenously
+determined within the RS model. By contrast, the FTS incidence in the two
+other models depends on the κ parameters, which we calibrate to deliver the
+same average FTS incidence as the benchmark RS model. We now use averaging
+across the three models to derive our preferred, conservative estimates of the
+FTS events.
+To aggregate information across the three models, we rely on the existing
+literature on regime classiﬁcation based on qualitative variables (see, e.g.,
+Gilbert 1968).
+10 We view the three methods as yielding a multivariate Bernouilli
+draw at each point in time on FTS events with probabilities to be estimated.
+We extract the joint probability that the RS model and at least one of the
+threshold and ordinal models identify an FTS for a particular day based on
+a multivariate Bernoulli distribution using the method proposed by Teugels
+(1990) (see Appendix C for technical details). This computation requires not
+only the probabilities of the three Bernoulli random variables at each point in
+time but also their covariances. Obviously, inference based on the three different
+measures is positively correlated. In these day-by-day computations, we use
+full sample estimates of the covariances between the different FTS dummies
+(the underlying Bernoulli variables). Following the standard classiﬁcation rule,
+we identify an FTS event when the joint FTS probability exceeds 50%. More
+speciﬁcally, deﬁnep
+k1,k2,k3 =Prob (IRS =k1,ITr =k2,IOrd =k3), withk1,k2,k2 ∈
+{0,1} and I an indicator function that equals one when the RS, the threshold
+(Tr), or ordinal (Ord) model indicates an FTS. We then set the aggregate FTS
+dummy equal to one when either p
+1,1,1 +p1,1,0 > 0.5o r p1,1,1 +p1,0,1 > 0.5, and
+zero otherwise.
+Model averaging is important. Figure 3 illustrates this for the United States,
+showing estimates of the FTS probabilities from the three models and the
+aggregate measure. Although the RS model clearly identiﬁes many FTS
+episodes, it remains inconclusive on many days by assigning FTS probabilities
+above 0.5 but below 0.9. Relative to the RS model, the two other models identify
+more FTS days with very short durations as well as more days with FTS
+probabilities between 0.5 and 0.9. By comparison, the joint measure retains
+some relatively longer-lasting FTS episodes (e.g., around October 2008) as
+well as some short-lived ones (e.g., during October 1987). Except for the 1987
+stock market crash and a short spell preceding the 1990 recession in the United
+States, our measure identiﬁes very few FTS in the pre-1995 period. By contrast,
+the post-1995 period is marred with FTS spells, including the 1997 Asian crisis,
+the Russian crisis and LTCM debacle in 1998, the 2007–2008 global ﬁnancial
+10 We also considered a naive aggregator, which simply averages the probabilities at each point in time, and sets
+the FTS dummy to 1 when that average is above 0.5. Both procedures largely select the same periods as FTS
+episodes.
+709
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 22 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 710 689–746
+The Review of Financial Studies / v 33 n 2 2020
+19801 9 821 9 841 9 861 9 88 1990 1992 1994 1996 199 8 2000 2002 2004 2006 200 8 2010 2012 2014
+0
+0.5
+1 FTS Probability - Bivariate RS Model
+19801 9 821 9 841 9 861 9 88 1990 1992 1994 1996 199 8 2000 2002 2004 2006 200 8 2010 2012 2014
+0
+0.5
+1 FTS Probability - Co-Exceedance Model
+19801 9 821 9 841 9 861 9 88 1990 1992 1994 1996 199 8 2000 2002 2004 2006 200 8 2010 2012 2014
+0
+0.5
+1 FTS Probability - Ordinal Model
+19801 9 821 9 841 9 861 9 88 1990 1992 1994 1996 199 8 2000 2002 2004 2006 200 8 2010 2012 2014
+0
+0.5
+1 Joint FTS Probability
+Figure 3
+FTS probability: United States, individual and joint
+This ﬁgure plots the probability of being in an FTS according to the bivariate regime switching model (top panel;
+see Section 2), the coexceedance model (second panel; see Section 3.1), the ordinal approach (third panel, see
+Section 3.2), and the joint FTS measure (bottom panel, see Section 3.3).
+crisis, and the subsequent European sovereign debt crisis. Outside those well-
+known major crises, this measure also picks up some spells that are not as
+easily recognized as FTS. For example, an FTS appeared to occur on October
+13, 1989, when a large leveraged buyout deal for the UAL corporation collapsed
+with negative ramiﬁcations for the junk bond market. On June 29, 2015, fears
+about Greece defaulting on its sovereign bonds also seemed to trigger an FTS
+event.
+The ﬁrst rows of Table 6 show that the cross-country FTS incidence equals
+1.74%, with an interquartile range of 1.55%–2.09%. During FTS days, equities
+drop, on average, 2.29% (IQR of [-2.50%, -2.02%]), whereas Treasury bonds
+increase, on average, 0.43% (IQR of [0.39%, 0.46%]).
+Our methodology is intricate and requires nonlinear estimation. However,
+by aggregating information from three different models, we obtain a plausible,
+conservative way of identifying FTS events that is more systematic and reliable
+than simply eyeballing the data and handpicking the dates. Our methodology
+does not merely identify high volatility periods in equity markets either. Table 6
+looks at the overlap between our FTS days and stress times in equity markets.
+To identify the latter, we measure equity market volatility using a backward-
+looking Gaussian kernel with bandwidths of either 5 or 25 days for a given
+day. For each country, we then select the same number of days with the highest
+equity market volatilities as the number of FTS days we identify for that country.
+The table reports the percentage of days that fall into both sets. The overlap
+using the shorter 5-day window averages 21.6%, with an IQR of 14.9%–28.0%,
+710
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 23 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 711 689–746
+Flights to Safety
+Table 6
+Joint FTS incidence: Overlap with high equity volatility states
+FTS Equity Bond % of FTS that are also high vol days
+incidence impact impact V ol (bw = 5 days) V ol (bw = 25 days)
+United States 2.27% −2.02% 0.54% 21.4% 7.1%
+Germany 2.21% −2.23% 0.40% 27.3% 20.5%
+United Kingdom 2.15% −1.86% 0.43% 18.6% 15.6%
+Switzerland 1.59% −2.35% 0.25% 29.4% 21.7%
+Japan 1.29% −2.38% 0.37% 11.3% 7.5%
+Canada 1.60% −2.27% 0.50% 20.5% 19.7%
+Sweden 2.14% −2.57% 0.38% 10.1% 7.4%
+Australia 1.58% −1.85% 0.55% 14.5% 4.3%
+Denmark 1.73% −2.02% 0.32% 16.8% 2.5%
+France 2.06% −2.26% 0.43% 18.9% 19.5%
+Belgium 1.99% −1.81% 0.37% 15.1% 17.9%
+Italy 2.12% −2.42% 0.47% 21.3% 21.8%
+New Zealand 0.38% −2.01% 0.59% 16.7% 16.7%
+Netherlands 2.36% −2.27% 0.39% 27.9% 26.9%
+Ireland 1.36% −2.59% 0.45% 11.1% 5.6%
+Spain 2.06% −2.37% 0.42% 23.5% 14.1%
+Austria 1.67% −2.01% 0.40% 8.4% 0.6%
+Czech Republic 1.56% −2.68% 0.40% 20.3% 15.3%
+Finland 1.64% −2.75% 0.40% 3.7% 0.0%
+Greece 1.14% −2.69% 0.43% 2.0% 0.0%
+Norway 1.51% −2.20% 0.37% 4.5% 3.4%
+Poland 1.54% −2.97% 0.48% 8.6% 8.6%
+Portugal 2.06% −2.16% 0.44% 35.0% 31.4%
+Mean 1.74% −2.29% 0.43% 21.6% 17.5%
+Median 1.67% −2.27% 0.42% 22.4% 19.7%
+Q1 1.55% −2.50% 0.39% 14.9% 9.5%
+Q3 2.09% −2.02% 0.46% 28.0% 23.1%
+The ﬁrst three data columns report joint FTS incidence as well as equity and bond return impact on FTS days
+across countries. The last two columns show the percentage overlap in days between our FTS events and stress
+times in equity markets. For each country, we select the same number of days with the highest equity market
+volatilities as the number of FTS days we identify for that country and calculate the percentage overlap with
+our FTS indicator. We use the backward-looking Gaussian kernel method with bandwidths (bw) of either 5 or
+25 days to estimate equity market volatility. We show country-speciﬁc results and summary statistics (average,
+min, max, interquartile range) for our full sample of twenty-three countries.
+and is never higher than 35% (reached by Portugal). Using the longer 25-day
+bandwidth reduces the average overlap to less than 20%. Even though some
+overlap between the two sets is expected as “equity market stress” is one of
+our FTS symptoms, this exercise shows that our method cannot be replicated
+by looking at equity volatility alone.
+Our methodology also does not simply select “market downturns.”Of course,
+by its very deﬁnition, a FTS event will often coincide with an equity market
+downturn, but not all equity market downturns are FTS events. In fact, the
+percentage of days with negative (minus 2 standard deviations) equity market
+returns that are also FTS is only 3.8%, with an IQR of 3.38%–4.58% (25%, with
+an IQR of 21.5%–30.3%). In addition, we also ﬁnd little overlap between our
+FTS days and recession periods. For the United States, only 21% of FTS days
+occur during NBER recessions. For other countries, only 15% of FTS occur
+during recessionary periods, deﬁned as two consecutive quarters of negative
+real gross domestic product (GDP) growth.
+711
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 24 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 712 689–746
+The Review of Financial Studies / v 33 n 2 2020
+2.4 Robustness
+The intricate nature of our methodology does raise the concern of whether it
+is robust to different parameter choices and whether its results are stable over
+time. To address the ﬁrst question, we verify whether the FTS incidence is robust
+to three parameter choices governing the computation of long and short-term
+volatilities. In particular, we consider two alternative bandwidths in computing
+the long-term component of volatility (250 and 500 days, instead of 360 days in
+the baseline), one alternative bandwidth for the computation of the short-term
+volatility (10 days instead of 7 days), and a longer exclusion window (10 days
+instead of 5 days) to prevent FTS events from contaminating the computation of
+the time-varying volatilities and correlations. This yields a total of 11 alternative
+parameter conﬁgurations. For each alternative conﬁguration, we reestimate the
+RS model, recalibrate the threshold and ordinal models to ﬁt the new population
+FTS incidence given by the RS model, and then recompute the aggregate
+FTS incidence. The Online Appendix provides the detailed results, but we
+summarize the main ﬁndings below:
+1. The FTS incidence is little affected overall, with the dispersion of the
+median FTS incidence across countries being only 0.16% across all
+parameter speciﬁcations. The FTS incidence is weakly increasing in
+the length of the bandwidth used to compute the long run volatilities.
+This is expected because FTS events tend to happen during stress periods
+with persistently higher volatility; therefore, a shorter long-run volatility
+window would lead to higher long-run volatility estimates and a higher
+volatility threshold for FTS events, decreasing the FTS incidence.
+2. Similarly, the estimated median return impact on FTS days shows little
+variation across parameter conﬁgurations, with the dispersion across
+speciﬁcations being 7.1 basis points (bps) for equities and only 1.4 bps
+for bonds.
+3. The identiﬁed FTS days are also similar across different parameter
+speciﬁcations. According to the cross-country median estimates, more
+than 95% of the FTS days identiﬁed by our benchmark model are
+also identiﬁed as FTS days using any of the 11 alternative parameter
+conﬁgurations when the long-term bandwidth is set to 360 or 500 days,
+regardless of other parameter values. The median percentages range
+between 84% and 88% when the long-run volatility bandwidth is 250
+days, as this shorter window raises the volatility threshold for FTS
+events. Conversely, the bulk (between 93.9% and 99.6%) of the FTS
+days identiﬁed by the alternative models are also FTS days under the
+benchmark model when the long-term volatility bandwidth is 250 or
+360 days, with the overlap dropping slightly to about 86% when the
+bandwidth is 500 days.
+We also examine whether our results were robust to parameter stability
+concerns. To do this, we reestimate the RS model excluding either the ﬁrst
+712
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 25 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 713 689–746
+Flights to Safety
+15 or the last 10 years, and then examine the robustness of the FTS incidence
+and other statistics across different sample periods. The parameters of the RS
+model are remarkably robust across these three different samples, resulting in
+quite similar FTS evidence for the overlapping years. The Online Appendix
+gives more details, and we come back to the question of parameter stability in
+Section 4.2.
+3. Economics of an FTS
+Now that we have identiﬁed the FTS event days, this section tries to characterize
+a typical FTS event. Section 3.1 examines the return proﬁle and persistence
+of an FTS spell. Section 3.2 considers how correlated our FTS measure is
+with alternative indicators of market stress and risk aversion and whether
+FTS is associated with large real (macroeconomic) consequences. Section 3.3
+examines whether the large changes in asset prices during FTS spells are
+accompanied by large fund ﬂows using U.S. data. Finally, Section 3.4 tries
+to shed light on whether an FTS is primarily a ﬂight to quality or a ﬂight to
+liquidity by looking at the price responses of corporate bonds and equities with
+different quality and liquidity characteristics.
+3.1 Impact and persistence
+Figure 4 summarizes the average returns on equities and bonds as well as the
+bond-equity return differential (“return impact”) before, during, and after FTS
+events. The horizontal axis records seven stages on a time line, including 5 to
+1 day before, 1 day before, the ﬁrst day of, the second through the second to
+last day of, the last day of, and 1 to 5 days after an FTS spell. Returns on the
+vertical axis are expressed as percentages. The dashed lines connect the average
+returns across countries, while the vertical bars represent the IQRs across
+countries.
+The graphs clearly show the key characteristics of an FTS spell. Outside
+FTS spells, equity and bond returns are statistically indistinguishable from
+zero. Equity returns are slightly but signiﬁcantly positive, while bond returns
+slightly but signiﬁcantly negative, on the day before the start of an FTS spell.
+The FTS spells itself are associated with sharply negative (positive) equity
+(bond) returns, with the effects slightly larger in magnitude in the beginning
+and toward the end of a spell. To see how large these impacts are, we note that
+the 2.79% return impact on the ﬁrst day of an FTS represents a 2.3 standard
+deviation move above its daily average of 0.013%, based on the ensemble
+standard deviation of return impact in the sample.
+Intuitively, FTS spells are mostly short lived. Expressed in fractions over
+all countries, we ﬁnd that 62% of the spells last 1 day, 23% last 2 days,
+9% last 3 days, and 6% last longer than 4 days, but none last longer than
+10 days. The Online Appendix shows how this distribution differs across the
+three models, with the threshold model delivering very short-lived spells (never
+713
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 26 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 714 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Figure 4
+Return impact before, during, and after an FTS spell
+This ﬁgure plots the average return across all countries and the associated IQR before, during, and after an FTS
+spell for equities (panel A), bonds (panel B), and the difference between the two (“return impact”) (panel C) at
+different stages of an FTS, including (1) over the 5 days before the start of the spell, (2) on the day right before
+the start of the spell, (3) on the ﬁrst day of the spell, (4) over all subsequent days, except the last one, of the spell,
+(5) on the last day of the spell, (6) on the ﬁrst day following the spell, and (7) over the 5 days following a spell.
+714
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 27 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 715 689–746
+Flights to Safety
+Table 7
+Alternative market stress indicators
+United States Germany United Kingdom Mean SD 6th 17th Sign. Obs
+OECD consumer −0.563*** −0.231∗ −0.429∗∗∗ −0.389 0.212 −0.511 −0.281 19 22
+conﬁdence
+Swiss franc 0.169* 0.196∗∗∗ 0.222∗∗∗ 0.327 0.276 0.152 0.346 21 22
+Japanese yen 0.193*** 0.156∗∗ 0.312∗∗∗ 0.439 0.337 0.199 0.617 20 22
+U.S. dollar −− 0.177∗∗∗ −0.058 0.073 0.291 −0.121 0.160 13 22
+TED spread 0.051*** −0.002 −0.004 0.012 0.026 0.000 0.007 5 19
+Gold 0.122 0.171∗ −0.004 0.026 0.137 −0.070 0.115 3 23
+Gold, controlling 0.370*** 0.396∗∗∗ 0.200∗∗ 0.202 0.160 0.082 0.312 12 23
+for market return
+Equity implied 3.176*** 2.139∗∗∗ 2.432∗∗∗ 2.252 0.448 2.009 2.273 23 23
+volatility
+This table reports regressions of changes in consumer conﬁdence, safe-haven currency values, the TED spread,
+gold prices, and equity implied volatility measures on the aggregate FTS dummy (instances). The consumer
+conﬁdence indicator is the monthly (country-speciﬁc) OECD consumer conﬁdence indicator (seasonally
+adjusted), available for all countries, except for Norway. The safe-haven currencies include the Swiss franc,
+the Japanese yen, and the U.S. dollar and are expressed in terms of local currency per unit of safe currency.
+The daily TED spread is available for all countries, except Ireland, Austria, Czech Republic, and Poland. The
+price of gold is measured by the S&P GSCI gold index in U.S. dollars. Country-speciﬁc equity implied volatility
+measures are VIX for the United States and Canada; VFTS for the United Kingdom; VDAX for the other
+European countries; and VJX for Japan, Australia, and New Zealand. Changes are measured as percentages for
+the currencies and gold, and in simple terms for all other indicators. Regressions are run monthly for the consumer
+conﬁdence (with monthly FTS incidence measured as the fraction of FTS days within that month) and daily for all
+others. For gold, we consider speciﬁcations with and without the global equity market return (in U.S. dollars) as a
+control variable. For all regressions, we show the slope parameter estimates for the United States, Germany, and
+the United Kingdom, as well as the average, standard deviation, and top/bottom quartile of parameter estimates
+across all countries for which data are available. The second to last column shows the number of countries for
+which the parameters estimates are signiﬁcant at the 10% level. The last column shows the number of countries
+for which data are available. *
+p <10%; **p <5%; ***p <1%. Standard errors are heteroscedasticity consistent.
+longer than 5 days) and the RS model delivering more persistent spells (because
+regime identiﬁcation often relies on second moments, which tend to be highly
+persistent).
+3.2 Alternative market stress indicators
+In Table 7, we investigate the comovement between our FTS dummies and
+ﬁve types of alternative stress indicators: consumer conﬁdence, safe-have
+currencies, the TED spread, the price of gold, and option-implied equity
+volatility. We regress these indicators on our FTS dummy for each country and
+a constant and report the slope coefﬁcients for the United States, Germany,
+and the United Kingdom, as well as the average, standard deviation, and
+top and bottom quartiles of those parameter estimates across all available
+countries. The second-to-last column shows the number of countries for which
+the parameter estimates are signiﬁcant, using White (1980) heteroscedasticity-
+consistent standard errors. The last column shows the number of countries for
+which data are available. From now onward, many of our cross-country tables
+will have this format.
+The ﬁrst set of stress indicators comprises sentiment/conﬁdence indices.
+Many types of such indices have been developed in the literature
+(see, e.g., Bekaert and Hoerova 2016). We use the (seasonally adjusted) OECD
+consumer conﬁdence indicators, because they are county-speciﬁc and available
+715
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 28 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 716 689–746
+The Review of Financial Studies / v 33 n 2 2020
+for all countries in our sample, except for Norway. Because these sentiment
+variables are only available on a monthly basis, we regress their monthly
+changes on the fraction of FTS days within the month. The FTS beta is
+signiﬁcantly negative in 19 of the 22 countries. The average effect, -0.389,
+implies that for a month with an FTS incidence equal to the average value
+among all FTS months, 0.22, on average we observe a 8.5 percentage point
+drop in consumer conﬁdence.
+11
+Second, we regress percentage changes in the values of three safe haven
+currencies—the Swiss franc, the Japanese yen, and the U.S. dollar, measured
+in units of local currency per unit of the safe currency—on the country-speciﬁc
+FTS dummies using daily data for all but the three safe currency countries. On
+average, over an FTS day, the three safe currencies appreciate by 0.33% (Swiss
+franc), 0.44% (yen), and 0.07% (U.S. dollar), respectively. The appreciation
+of the Swiss franc and Japanese yen following an FTS are signiﬁcant in
+20 or more countries. The evidence for the U.S. dollar is less strong, with
+signiﬁcant depreciations observed in almost as many countries (6) as signiﬁcant
+appreciations (7) following an FTS.
+The third indicator is the TED spread, the difference between the 3-month
+LIBOR rate in the local currency and the corresponding 3-month Treasury-bill
+rate.
+12 The TED spread is a direct measure of the perceived default risk in the
+banking sector and a frequently used indicator of the perceived credit risk in the
+broader economy, and it tends to spike up at times of crises (see Brunnermeier
+2009 for its role in the 2007–2008 global ﬁnancial crisis). We regress daily
+TED spread changes on the country-speciﬁc FTS dummies. For the United
+States, the TED spread on average increases 5 bps on an FTS day. On average
+across all countries, the TED spread only edges up 1 bps on an FTS day, and
+the increase is only signiﬁcant in 5 of 19 countries. This ﬁnding suggests that
+the FTS episodes identiﬁed here are not always a credit event.
+The fourth indicator we consider is the price of gold, and we measure its
+changes using daily returns on the S&P GSCI gold index (in U.S. dollar and
+percentages). The average daily return on an FTS day is only 3 bps and almost
+never signiﬁcant. However, the FTS beta of gold returns becomes positive and
+statistically signiﬁcant for half the countries, averaging 0.20% per day, once
+we control for global equity market exposure. In other words, gold appears to
+provide some hedge against FTS events, after adjusting for its positive market
+exposure. Relatedly, Baur and McDermott (2010) show gold to be a safe haven
+and hedge for the European and U.S. stock markets. The ﬁnal indicators are
+implied volatilities on major stock indices. The VIX index on the United States’s
+S&P 500 index is often viewed as a “fear” index, and is an important input in
+11 We also ﬁnd that the well-known Baker and Wurgler (2006) sentiment indicator (purged of business-cycle
+ﬂuctuations) and the Michigan consumer sentiment index signiﬁcantly decrease when there is an FTS in the
+United States, as does the famous German Ifo business-cycle indicator with high FTS incidence in Germany.
+12 We have TED spread data for 19 countries, but not for Ireland, Austria, the Czech Republic, and Poland.
+716
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 29 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 717 689–746
+Flights to Safety
+a number of risk aversion indices (see Bekaert and Hoerova 2016). We use
+the VIX for the United States and Canada. In addition, we use the VFTS (on
+the FTSE100) for the United Kingdom; VDAX on Germany’s DAX index for
+Germany and all the non-U.K. European countries, and the VJX on the Japanese
+Nikkei 225 index for Japan, Australia and New Zealand. Daily changes in those
+indices constitute the dependent variable in the regressions. The VIX increases
+on average by 3.18% on a U.S. FTS day. The volatility effect is signiﬁcant at
+the 5% level in all countries, averaging 2.25%. Bekaert and Hoerova (2014)
+decompose the squared VIX into a variance risk premium, which is particularly
+sensitive to changes in risk aversion, and the “physical” conditional variance
+for the U.S. stock market. When we examine the variance risk premium and
+the conditional volatility separately, both have FTS betas that are positive and
+statistically signiﬁcant, suggesting that both risk aversion and expected stock
+market volatility increase on FTS days.
+To check the robustness and stability of our inference, we recalculate these
+comovements for the last 10 years of our sample, using FTS identiﬁed out
+of sample. To do so, we ﬁrst reestimate the regressions shown in Table 7,
+using the last 10 years of data and our full sample FTS estimates. The results
+are very similar to what is reported in Table 7, except that the U.S. dollar
+has become a genuine safe haven currency over the last 10 years. Second, as
+discussed before, we reestimate the RS model excluding the last 10 years of
+data. Keeping these parameters ﬁxed, we then repeat our FTS identiﬁcation
+procedure and reestimate the regressions in Table 7 over the last 10 years. The
+Online Appendix reports the results. Both the magnitudes and the signiﬁcances
+of the various coefﬁcients are similar across the two sets of regressions. In
+addition, for all dependent variables, except for the two gold variables, the
+number of countries for which the coefﬁcients are signiﬁcant is identical.
+The VIX plays a critical role in studies that link economic uncertainty to
+real activity (see, e.g., Bloom 2009). Increased uncertainty associated with
+an FTS may lead companies to defer their investment and hiring decisions,
+weakening the economy. The Online Appendix assesses the link between
+current FTS incidence and future inﬂation and economic activity. We conﬁrm
+that for the United States, a higher FTS incidence in the current month
+is statistically signiﬁcantly associated with lower inﬂation, lower industrial
+production growth, higher unemployment, and lower investment to GDP ratios
+in the future. Future real GDP growth is also lower, but the decline is not
+statistically signiﬁcant. The results are weaker when all countries are considered
+and signiﬁcant in less than half of the countries. We also investigate whether FTS
+episodes affect investor expectations about the macroeconomy, by examining
+the mean and dispersion of survey forecasts from Consensus Economics for
+inﬂation, industrial production, real GDP growth, the unemployment rate, and
+investment growth in the quarter following FTS episodes. With the caveat
+that these data were only available for a subset of countries, we do not ﬁnd
+a strong association between FTS episodes and those macro forecasts. Finally,
+717
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 30 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 718 689–746
+The Review of Financial Studies / v 33 n 2 2020
+we regress 3-month changes in the OECD leading indicator over the next 3
+months on the FTS incidence within the current month. The OECD indicator is
+explicitly designed to provide early signals of turning points in business cycles,
+with a targeted lead time of about 6 to 9 months. Here, we ﬁnd consistent and
+strong results: the FTS “beta” for the OECD leading indicator is on average
+about -1% and the effect is statistically signiﬁcant in 16 of 23 countries. Overall,
+some, although mixed, evidence appears to suggest that FTS episodes are
+associated with future declines in economic activity.
+3.3 FTS and mutual fund ﬂows
+The parameter estimates of the RS model suggest that FTS episodes are
+typically associated with dramatic, yet short-lived, changes in expected returns
+on equities and bonds. Of course, these price changes need not be accompanied
+by active trading and/or risk transfer between different investors. Kelley and
+Tetlock (2013), for example, show that U.S. equity returns during extended
+trading hours are as volatile as during regular trading hours, even though trading
+volumes are much lower during extended trading hours. The international
+contagion literature has also allowed price spillovers to happen without capital
+ﬂows, as in the “wake-up call” hypothesis, see Bekaert et al. (2014). However, it
+is conceivable that in an FTS, more risk-averse investors (e.g., retail investors)
+rebalance their portfolios toward safe assets, whereas less risk-averse or more
+sophisticated investors provide the insurance the other type of investors seek,
+thereby earning elevated risk premiums in the process.
+Conclusively conﬁrming or refuting this conjecture requires detailed data
+on ﬂows between different investment vehicles and on the ownership of these
+vehicles and is beyond the scope of the paper. Nonetheless, as a ﬁrst step,
+we obtain data on mutual fund ﬂows from Thomson Reuters Lipper, which
+collects assets, returns, and distributions from virtually all U.S.-registered open-
+end mutual funds and ETFs going back to 1992. About 75% of those funds
+report total assets under management (AUM) at both the weekly (Wednesday
+to Wednesday) and the monthly frequencies; the rest only report at the monthly
+frequency. Lipper calculates the ﬂows as changes in AUMs over a month or
+week, adjusted for asset price variations. For funds reporting at the monthly
+frequency only, Lipper creates a weekly ﬂows series by distributing the monthly
+ﬂows evenly among the weeks within the month. We use all three sets of ﬂow
+estimates in our analysis: (1) weekly ﬂows for the 75% of funds reporting
+weekly, (2) weekly ﬂows for all funds, and (3) monthly ﬂows for all funds.
+Lipper uses information from fund prospectuses to classify funds into
+different categories, such as funds that invest primarily in equities, in U.S.
+Treasury securities, in U.S. investment grade corporate bonds, and in U.S. high-
+yield corporate bonds, as well as money market funds and various subcategories.
+Amongst money market funds, we focus on those that invest predominantly
+in government securities, as they may provide investors with additional FTS
+beneﬁts on top of long-term government bonds.
+718
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 31 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 719 689–746
+Flights to Safety
+For our main results, we exclude ETFs, but the Online Appendix shows
+results including those for ETFs. ETFs present several challenges. First, ETFs
+are a rapidly growing investment vehicle with inﬂows trending up over time.
+Second, rebalancing ETF portfolios typically incurs brokerage fees, making
+ETFs a costly vehicle to achieve the rapid rebalancing required in the face of
+an FTS. Third, most ETFs represent index funds and many are held through
+robo advisors or in institutional investor portfolios. They therefore may be part
+of “constant mix” portfolios, which would rebalance in a contrarian fashion,
+rather than be part of a ﬂight-to-safety ﬂow. Consistent with this intuition, our
+results including ETFs are robust but slightly weaker than the main results.
+We examine the comovement of FTS spells with the ﬂows of different types
+of funds, using a simple linear regression at the fund category ( i) level:
+flo w
+t,i =α +βFTS,i FTS t,US +βFTS,i FTS t−1,US +εt,i , (14)
+where i is the type of fund (either equity, Treasury, corporate investment grade,
+corporate high yield, or government-only money market) andt represents either
+a week or a month.13 The flo wt,i variable is ﬂows into funds of type i over the
+periodt, as a percentage of theAUM at those funds at timet −1.14 TheFTS t,US
+variable is the percentage of days within a week or month that are identiﬁed as
+experiencing an FTS in the United States. A regression on the contemporaneous
+FTS variable may underestimate the effect of FTS on fund ﬂows. For example,
+if the ﬂow effects occur with a slight lag and with some persistence, FTS events
+occurring toward the end of a week may affect ﬂows in the following week, but
+not in the current week. We therefore consider two different speciﬁcations. In
+one regression, we only consider the contemporaneous effect, denotedβ
+FTS,i ;i n
+the other regression, we also include the lagged FTS variable with a coefﬁcient
+denoted
+βFTS,i , and measure the total FTS effect as the sum of βFTS,i and
+βFTS,i .
+Table 8 reports the results using the three sets of ﬂows data mentioned above.
+Across all speciﬁcations, FTS events appear to be associated with signiﬁcant
+outﬂows from equity and high-yield corporate bond funds and signiﬁcant
+inﬂows into government-only money market funds, with larger effects at the
+monthly frequency or when the lagged FTS variable is included. Results using
+monthly data on all funds also show signiﬁcant inﬂows into Treasury mutual
+funds and all money markets. The effects are economically important. For
+example, if all days are FTS days in a week, the AUM of equity (high-yield
+corporate) funds drops by about 0.30% (0.42%), whereas the AUM of bond
+funds increases by 0.50% for the weekly and monthly reporting sets.
+13 Edelen and Warner (2001), among others, document a strong relationship between net ﬂows into equity funds
+and market returns in the United States, but do not examine the effect of ﬂights to safety or market stress on ﬂows
+into different types of mutual funds.
+14 Lipper only provides AUM at the weekly frequency. For monthly regressions, we use AUM from the week
+closest to the end of the month.
+719
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 32 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 720 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Table 8
+FTS and mutual fund ﬂows
+Weekly reporting funds only All funds
+Weekly Weekly Monthly
+βFTS βFTS + ¯βFTS βFTS βFTS + ¯βFTS βFTS βFTS + ¯βFTS
+Equity −0.0034∗∗∗ −0.0052∗∗∗ −0.0029∗∗∗ −0.0043∗∗∗ −0.0173∗∗∗ −0.0270∗∗∗
+Treasury 0.0000 0 .0008 0 .0050 0 .0067∗∗ 0.0377∗∗∗ 0.0541∗∗∗
+Corporate IG −0.0013 −0.0017 0 .0005 0 .0005 0 .0033 0 .0006
+Corporate HY −0.0048∗∗ −0.0059∗∗ −0.0042∗∗∗ −0.0052∗∗∗ −0.0296∗∗∗ −0.0342∗∗∗
+Money market, all 0.0023 0 .0048 0 .0028 0 .0056 0 .0368∗∗ 0.0453∗∗
+Money market, 0.0208∗∗∗ 0.0291∗∗∗ 0.0210∗∗∗ 0.0298∗∗∗ 0.0819∗∗∗ 0.1619∗∗∗
+government only
+This table reports estimated coefﬁcients from regressions of mutual fund ﬂows (as a percentage of the lagged
+AUM) on our FTS variable. In the ﬁrst regression, we only include the contemporaneous effect ( βFTS );i n
+the second regression, we also include the lagged FTS variable and report the total FTS effect as the sum of
+contemporaneous effect (
+βFTS ) and the lagged effect ( ¯βFTS ). The FTS variable is the percentage of days within
+the week or month that signals an FTS for the United States. We show results for both weekly-reporting-only
+funds and all funds. For the latter, we differentiate between the monthly ﬂows based on reported monthly AUMs,
+and weekly ﬂows Lipper constructed by distributing monthly ﬂows evenly among the weeks within a month
+for funds reporting at the monthly frequency only. We exclude ETFs, but the Online Appendix shows results
+including ETFs. *
+p <10%; **p <5%; ***p <1%. We use Newey-West standard errors (with either 6 monthly or
+12 weekly lags).
+We conclude that, at least in the United States, mutual fund investors appear
+to be actively rebalancing their holdings from riskier into safer asset classes in
+response to FTS effects. That mutual funds are predominantly held by retail
+investors is a well-known fact.
+15 Therefore, the evidence presented here may
+be indicative of irrational retail investor behavior, considering the substantial
+returns risky asset investors can expect to earn following FTS events. More
+analysis is needed on this topic.
+3.4 Flights to liquidity or ﬂights to quality?
+Longstaff (2004) shows that up to 15% of the value of Treasury bonds can be
+attributed to liquidity premiums. Beber, Brandt, and Kavajecz (2009) use data
+from the euro-area government bond market to show that, at times of market
+stress, investors appear to demand liquidity more than credit quality. Those
+ﬁndings suggest that FTS may represent more ﬂight to liquidity than ﬂight to
+quality. In this section, we test this hypothesis by examining how FTS events
+affect returns on assets with different quality and liquidity characteristics in the
+U.S. corporate bond market (Section 3.4.1) and international equity markets
+(Section 3.4.2).
+3.4.1 FTS and the cross-section of corporate bonds. It is generally difﬁcult
+to differentiate “quality” from “liquidity,” as the two characteristics tend
+to be highly correlated. However, the corporate bond market provides an
+ideal laboratory because the credit rating of a bond is a good indicator of
+15 For example, based on data reported in the 2018 ICI Fact Book (https://www.ici.org/pdf/2018_factbook.pdf,
+table 60), retail investors hold about 92% of all equity mutual funds, 90% of bond mutual funds, and 62% of
+money market mutual funds as of 2017.
+720
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 33 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 721 689–746
+Flights to Safety
+its “quality,” whereas within the same rating category, large variations in
+bond liquidity remain. We obtain estimates of returns and transaction costs
+on credit quality- and liquidity-sorted U.S. corporate bond portfolios from
+Bongaerts, de Jong, and Driessen (2017). They use transaction-level data from
+the enhanced TRACE (Trade Reporting and Compliance Engine) database
+from July 2002 up to the end of 2013, a period that witnesses many FTS
+events. Each quarter, they form portfolios by sorting bonds ﬁrst into ﬁve
+credit quality categories and then into two liquidity categories, where credit
+quality is measured by either a bond’s S&P credit rating or its expected default
+frequency (EDF) as reported by Moody’s KMV , and liquidity is measured
+by amount issued, age, or trading activity. They then estimate returns and
+transaction costs for each portfolio using the repeat-sales approach of Edwards,
+Harris, and Piwowar (2007). Bongaerts, de Jong, and Driessen (2017) show
+that the variation in the transaction costs across bonds is best explained by
+the “amount issued” characteristic; we therefore use “amount issued” as our
+liquidity measure. For credit quality, we focus on the EDF proxy, but the Online
+Appendix shows additional results using the credit ratings proxy.
+The third column of Table 9 reports the average transaction cost, measured by
+the average effective percentage bid-ask half-spread, for portfolios from all ﬁve
+credit quality (EDF) quintiles and, within each EDF quintile, the top and bottom
+liquidity (“amount issued”) buckets. Transaction costs monotonically increase
+from around 30 to 80 bps as default risk increases. Within each default risk
+quintile, the differences in transaction costs between low and high liquidity
+portfolios vary between 10 and 23 bps, tend to be slightly higher for lower
+credit quality bonds, and are invariably statistically signiﬁcant at the 1% level.
+Liquidity and credit quality are positively correlated, with transaction costs
+increasing as default risk increases. Nonetheless, the variation in transaction
+costs is more notable across credit quality quintiles than across liquidity
+buckets; for example, the more liquid bonds in the second-best credit quality
+quintile enjoy lower average transaction costs (33 bps) than the less liquid bonds
+in the best credit quality quintile (37 bps), as is the case for all other adjacent
+EDF categories.
+To assess the FTS exposure of each portfolio, we run the following
+regressions:
+r
+c,l,t =αc,l +βTB
+c,l rtb,t +βEQ
+c,l req,t +γc,lFTS t +εc,l,t , (15)
+with rc,l,t denoting the weekly return on a portfolio consisting of corporate
+bonds belonging to credit quality quintile c and liquidity bucket l, and FTS t
+representing the percentage of FTS days within the week. We control for returns
+on two benchmark portfolios, a duration-matched Treasury portfolio ( rtb,t )
+and the aggregate U.S. equity market ( req,t ). Table 9 reports each portfolio’s
+exposure to FTS and to the two benchmark portfolios. Corporate bonds with
+higher credit quality have higher Treasury market exposures and lower equity
+market exposures. The FTS exposure, γ , is negative for all portfolios and
+721
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 34 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 722 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Table 9
+FTS return impact on quality and liquidity double-sorted corporate bond portfolios
+Liquidity Av. effective % βTB βEQ FTS Impact (γ ) FTS impact Total FTS impact
+bid-ask half spread (incl. lags) (not risk corrected)
+Bottom quintile
+(lowest default r isk)
+low 0.37% 0.744*** 0.057*** −0.46% −0.78%*** 0.08%
+high 0.27% 0.684*** 0.041*** −0.47%** −0.43%** 0.04%
+diff 0.10%*** −0.06 −0.02 −0.01% 0.35%* −0.05%
+Quintile 2
+low 0.46% 0.691*** 0.058*** −0.87%*** −0.88%*** −0.35%
+high 0.33% 0.707*** 0.071*** −0.69%*** −0.68%*** −0.16%
+diff 0.13%*** −0.02 −0.01 −0.18% −0.19% −0.19%
+Quintile 3
+low 0.53% 0.661*** 0.107*** −0.88%*** −0.95%*** −0.51%*
+high 0.40% 0.721*** 0.104*** −0.98%*** −0.9%*** −0.6%**
+diff 0.14%*** −0.06* 0.00 0.1% −0.06% 0.09%
+Quintile 4
+low 0.73% 0.514*** 0.155*** −1.16%*** −1.29%*** −1.12%***
+high 0.51% 0.523*** 0.104*** −1.26%*** −1.11%** −1.11%**
+diff 0.23%*** −0.01 0.05 0.11% −0.18% −0.01%
+Top quintile
+(highest default risk)
+low 0.87% 0.288*** 0.254*** −2.17%*** −1.99%** −2.71%***
+high 0.71% 0.361*** 0.245*** −2.49%*** −2.00%*** −2.93%***
+diff 0.16%*** −0.07 0.01 0.32% 0.01% 0.22%
+H0: equal FTS exposure impact for between credit quality quintiles 1 and 5
+(within same liquidity quintiles)
+[0.00] [0.02] [0.00]
+H0: equal FTS exposure impact between low and high liquidity quintiles
+(within same credit quality quintiles)
+[0.67] [0.48] [0.72]
+This table reports the average effective percentage bid-ask half spreads and FTS impact estimates for corporate bond portfolios double sorted on qua lity (measured by the KMV’s
+EDF) and liquidity (measured by amount issued). The table on the left reports contemporaneous exposures to a duration-matched Treasury-bond benchm ark and the aggregate U.S.
+equity market as well as the FTS impact (see Equation (15) in Section 3.4.1). The table in the middle reports the sum of contemporaneous and lagged FTS im pact, after correcting
+for contemporaneous and lagged exposures to the Treasury and equity market benchmark portfolios. The table on the right reports the sum of the contemp oraneous and lagged
+FTS exposures, not corrected for benchmark risks. The bottom rows report the p-value from a test of the hypothesis that (1) low and high liquidity bonds within the same quality
+quintile have the same FTS exposures or (2) the bottom and high-quality quintiles within the same liquidity bucket have the same FTS exposures. * p <10%; ** p <5%; *** p <1%.
+722
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 35 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 723 689–746
+Flights to Safety
+signiﬁcantly so with one exception. Even bonds with the highest credit quality
+(bottom EDF quintile) have FTS betas close to -50 bps. Nonetheless, these
+bonds beneﬁt from a large positive exposure to Treasuries and a low, albeit still
+positive, exposure to equities, resulting in an overall return on FTS days that
+is slightly positive (ﬁnal column of Table 9).
+16 The FTS exposure increases
+monotonically with default risk, reaching -2.49% for bonds in the highest
+EDF quintile. The difference in FTS betas across credit quality quintiles is
+statistically signiﬁcant: as shown in the second to last row of Table 9, we can
+decisively reject the null hypothesis that, within the same liquidity bucket,
+bonds in the ﬁrst and ﬁfth credit quality quintiles have equal FTS exposures.
+Moreover, bonds with the lowest credit quality also suffer from the lowest
+Treasury betas and the highest equity betas, resulting in signiﬁcantly negative
+overall returns on FTS days.
+In contrast, we ﬁnd little evidence of a ﬂight to liquidity during FTS events.
+As shown in the last row of Table 9, we cannot reject the hypothesis that the
+FTS exposure is the same across the two liquidity buckets within each credit
+quality class. Our results are robust to including the lagged benchmark return
+and allowing for a lagged response to an FTS (last two columns of Table 9).
+We therefore conclude that, at least in the U.S. corporate bond market, an FTS
+event appears to represent more a ﬂight to quality than a ﬂight to liquidity.
+3.4.2 FTS and the cross-section of equities. We now turn to the equity
+market. While quality is not as easily deﬁned for equities as for corporate bonds,
+most studies use one or more variables that capture ﬁrm proﬁtability, safety,
+and earnings quality (see, e.g., Graham 1973; Piotroski 2000; Novy-Marx 2013;
+Asness, Frazzini, and Pedersen 2018).
+We proceed in four steps. First, we collect daily returns on all stocks listed in
+22 developed markets (excluding the United States) over the period 1982–2012.
+We only include common stocks that are traded on the main stock exchange
+and covered by WorldScope. To avoid survivorship bias, we include both active
+and inactive stocks. Second, for each stock, we calculate ﬁve quality indicators:
+the total leverage, the Altman z-score,
+17 two measures of proﬁtability: the ratio
+of gross proﬁts to total assets and the return on equity, and earnings quality,
+measured as the 5-year volatility in earnings growth. For each indicator for
+each country, we sort the stocks into ﬁve quintiles and assign a score of 1
+(5) to the quintile representing the highest (lowest) credit quality. We then
+calculate an aggregate quality indicator for each stock by summing the ﬁve
+individual quality scores. Third, for each stock, we measure its liquidity as the
+16 The Online Appendix shows that this is not true for top-rated corporate bonds, which provide no hedge against
+FTS at all. However, that analysis does not include AAA bonds, which are insufﬁcient in number.
+17 We calculate the Altman z-score as 1.2x(working capital / total assets) + 1.4x(retained earnings / total assets) +
+3.3x(earnings before interest and tax / total assets) + 0.6x(market value of equity / total liabilities) + 1.0x(sales /
+total assets).
+723
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 36 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 724 689–746
+The Review of Financial Studies / v 33 n 2 2020
+percentage of days with nonzero returns in the previous year (see Lesmond,
+Ogden, and Trzcinka 1999; Bekaert, Harvey, and Lundblad 2007). Fourth, and
+ﬁnally, for each country, we create nine double sorted portfolios sorted ﬁrst on
+aggregate quality and then on liquidity using 30-40-30 percentile breakpoints.
+We rebalance yearly at the end of June, using the liquidity measure calculated
+over the previous year and the aggregate quality indicator calculated at the
+end of the previous year. The Online Appendix provides more details about the
+sample (which contains 7,504 ﬁrms) and conﬁrms that “quality” and “liquidity”
+are priced characteristics.
+The ﬁrst column of Table 10 reports the average percentage of nonzero daily
+returns within a year for the quality and liquidity double sorted portfolios. Over
+the full sample, regardless of quality, stocks in the top liquidity tercile trade
+around 90% of days, compared to around 55% for the bottom liquidity tercile.
+In contrast to the corporate bond market, the correlation between “quality” and
+“liquidity” appears low in the equity market, as stocks in the same liquidity
+group but different quality bucket trade at similar frequencies.
+To measure the impact of FTS on those portfolios, we run the following panel
+regression:
+r
+c,l,q,t =αc,l,q,t +
+1∑
+i=0
+βG,i
+c,l,q,t rglobal,t −i +
+1∑
+i=0
+βL,i
+c,l,q,t rlocal,t −i +γl,q FTS t +εc,l,q,t ,
+(16)
+with rc,l,q,t and αc,l,q,t denoting the time t return and alpha on a portfolio of
+stocks from country c in quality tercile q and liquidity tercile l. We control
+for global and local benchmark returns, including a lag for both to account
+for nonsynchronous trading hours and allowing the less liquid ﬁrms to respond
+with a delay to market shocks from the previous day. While intercepts and betas
+vary both across characteristics and countries, we impose the FTS exposureγ
+l,q
+to be constant across countries. Signiﬁcance levels are based on standard errors
+clustered across time.
+Table 10 reports the results. First, there is a ﬂight-to-quality effect in the
+equity market for the more liquid stocks. Outside the least liquid segment, the
+FTS exposure of equity portfolios rises with quality, with the highest quality
+portfolio posting on average a 19-bp higher return on FTS days than the lowest
+quality portfolios in the top liquidity tercile, after taking into account their
+respective benchmark portfolios. A joint test of equal FTS exposures between
+the top and bottom quality tercile within the same liquidity segment rejects at
+the 1% level. Second, unlike for the corporate bond market, we ﬁnd evidence of
+a ﬂight to liquidity during FTS. Within each quality tercile, the lowest liquidity
+portfolios exhibit signiﬁcantly negative FTS exposures, suggesting that they
+decline much more on FTS days than what can be explained by their benchmark
+exposures; in contrast, the most liquid stocks exhibit less negative or even
+positive FTS exposures. A joint test of equal FTS exposures across liquidity
+724
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 37 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 725 689–746
+Flights to Safety
+Table 10
+FTS return impact on quality and liquidity double sorted international Equity Portfolios
+Liquidity % day with Global β (incl lag) Local β (incl lag) FTS impact ( γ ) FTS impact (incl lag)
+nonzero returns Mean IQR Mean IQR (incl lag) (not risk corrected)
+Bottom Low 53.9% 0.41 0.10 0.10 0.13 −0.18%** −0.97%***
+quality Intermediate 77.6% 0.47 0.18 0.10 0.15 −0.22%*** −1.46%***
+tercile High 89.3% 0.50 0.20 0.07 0.10 −0.06% −1.92%***
+High minus low 35.4% 0.09 −0.03 0.12%* −0.96%***
+Intermediate Low 55.9% 0.43 0.09 0.09 0.10 −0.16%** −0.93%***
+quality Intermediate 78.6% 0.46 0.15 0.11 0.13 −0.16%** −1.35%***
+tercile High 90.0% 0.49 0.24 0.08 0.07 0.08% −1.76%***
+High minus low 34.1% 0.06 −0.01 0.24%*** −0.83%***
+Top Low 56.7% 0.42 0.16 0.11 0.11 −0.17%*** −0.90%***
+quality Intermediate 78.3% 0.47 0.15 0.10 0.14 −0.11% −1.34%***
+tercile High 89.4% 0.37 0.23 0.07 0.10 0.13%** −1.70%***
+High minus low 32.7% −0.05 −0.04 0.30%*** −0.79%***
+H0: equal FTS exposures between high and low liquidity buckets (within same quality buckets) [0.00] [0.00]
+H0: equal FTS exposures for bottom and top quality buckets (within same liquidity buckets) [0.00] [0.00]
+This table reports percentages of nonzero daily returns and FTS impact estimates for international stocks double sorted ﬁrst on quality and subseque ntly on liquidity (see Section 3.4
+.2 for details). The table on the left reports the cross-country averages and IQRs of exposures—sum of contemporaneous and lagged—to both global and l ocal benchmark portfolios,
+as well as the FTS exposure (see Equation (17) in Section 3.4.2). The table on the right reports the sum of the contemporaneous and lagged FTS exposures, not correcting for
+exposures to benchmark portfolios. The bottom rows report the p-value from a test of the hypothesis that (1) FTS exposures are the same for low and high liquidity equities within
+the same credit quality tercile or (2) FTS exposures are the same for the bottom and top credit quality terciles within the same liquidity tercile. * p <10%; ** p <5%; *** p <1%.
+725
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 38 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 726 689–746
+The Review of Financial Studies / v 33 n 2 2020
+buckets but within the same quality tercile also rejects at the 1% level. The
+difference ranges from 12 bps for the low quality tercile to 30 bps for the top
+quality tercile.
+18 Note that this does not imply that highly liquid stocks perform
+better than illiquid stocks in an FTS event, because more liquid stocks tend
+to have higher market exposures. In fact, the ﬁnal column of Table 10 shows
+that without adjusting for the benchmark risks, the 30% most liquid stocks
+underperform the 30% least liquid ones by between 79 and 96 bps on FTS
+days. Taken together, stocks in the top quality, most liquid bucket have an FTS
+beta that is 31 bps above those in the bottom quality, least liquid bucket, a
+difference that is signiﬁcant at the 1% level.
+We also perform the sorting in reverse order, ﬁrst on liquidity and then on
+quality. The Online Appendix offers the results, which are very similar.
+4. FTS Events around the World
+In this section, we analyze the global ramiﬁcations of FTS events. Section 4.1
+proposes a few possible deﬁnitions of a global FTS, and discusses the estimated
+FTS incidence. Sections 4.2 and 4.3 show the sensitivity of emerging market
+equity and bond returns, respectively, to those global FTS events. While
+emerging markets have witnessed numerous severe ﬁnancial crises, deﬁning
+FTS events using data on emerging markets alone is a challenge. During much
+of our sample period, local government bond markets in those economies were
+not well developed and are dominated by sovereign bonds issued in dollars.
+These sovereign bonds cannot function as a “safe asset” for these emerging
+markets due to default and exchange rate risks, and we show below that indeed
+they behave like risky securities. There is a growing literature on global safe
+assets (see Caballero, Gourinchas, and Farhi 2017 for a recent overview) which
+often suggests that U.S. bonds act as the global safe asset, but the presence of
+currency risk makes this conjecture problematic. In addition, many emerging
+markets imposed capital controls during parts of or throughout our sample
+period. We therefore restrict our goal to characterizing the FTS sensitivity of
+emerging equity and bond markets to global FTS events, and analyze how such
+sensitivity depends on the de jure degree of integration of these markets. We
+stop short of analyzing the source of this sensitivity, which may or may not be
+accompanied by international capital ﬂows.
+19
+4.1 Deﬁning global FTS events
+We consider three deﬁnitions of a global FTS event. First, using our country-by-
+country aggregate FTS indicators, we can deﬁne global FTS as days on which
+18 A similar case of illiquid assets serving as safe assets can be found in Badarinza and Ramadorai (2018), who
+show that houses in developed markets (London in particular) act as “safe assets” to insure against political risk
+in emerging markets despite their illiquidity.
+19 One example of the former is Jotikasthira, Lundblad, and Ramadorai (2012), who show that investor ﬂows in
+global funds cause portfolio reallocations, generating strong price effects in emerging markets.
+726
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 39 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 727 689–746
+Flights to Safety
+19801 9 821 9 841 9 861 9 88 1990 1992 1994 1996 199 8 2000 2002 2004 2006 200 8 2010 2012 2014
+0
+0.2
+0.4
+0.6
+0.8
+1
+Percentage of Countries in a FTS State
+19801 9 821 9 841 9 861 9 88 1990 1992 1994 1996 199 8 2000 2002 2004 2006 200 8 2010 2012 2014
+0
+0.2
+0.4
+0.6
+0.8
+1
+FTS Probability - Global Model
+19801 9 821 9 841 9 861 9 88 1990 1992 1994 1996 199 8 2000 2002 2004 2006 200 8 2010 2012 2014
+0
+0.2
+0.4
+0.6
+0.8
+1
+FTS Probability - US
+Figure 5
+Global FTS measures
+This ﬁgure plots the percentage of countries in an FTS according to our benchmark model (top panel), the
+aggregate FTS probability from a global version of the benchmark model (middle panel), and the aggregate FTS
+probability for the United States. A horizontal line at 50% probability is shown in all panels, representing the
+requirement that a global FTS occurs when at least half of the countries are in an FTS (the top panel) or the 50%
+threshold probability level we require for a day to be denoted an FTS (the middle and bottom panels).
+at least 50% of the countries experience an FTS. Second, we apply our models
+to global equity and bond returns, where the global equity return is proxied
+by returns on the MSCI World index and the global bond return is proxied by
+returns on a portfolio of government bonds from countries that maintained a
+AAA rating over the entire sample—the United States, Germany, Switzerland,
+Netherlands, Austria, Finland, and Norway—weighted according to the size of
+their equity markets. Finally, we also use the U.S. FTS as a proxy for the global
+FTS, on the argument that an FTS in the world’s largest economy will likely
+have spillover effects on emerging markets.
+Figure 5 plots the percentage of countries in an FTS according to our
+benchmark model (top panel), the aggregate probability of a global FTS from
+the global model (middle panel), and the aggregate FTS probability for the
+United States (bottom panel). A horizontal line at 50% probability is shown in all
+panels, representing the requirement that a global FTS occurs when at least half
+of the countries are in an FTS (top panel), or the 50% threshold probability level
+we require for a day to be denoted an FTS (the middle and bottom panels). The
+deﬁnitions signiﬁcantly overlap, with all well-known global crises identiﬁed as
+global FTS days by all three measures. The ﬁrst deﬁnition leads to the fewest
+number of global FTS, with an FTS incidence of only 0.80%, compared with
+2.36% using a global-model-based measure and 2.62% using the U.S. FTS
+727
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 40 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 728 689–746
+The Review of Financial Studies / v 33 n 2 2020
+indicator. The average return impact on FTS days is the smallest under the ﬁrst
+deﬁnition and largest using the U.S. FTS indicator.
+4.2 Global FTS and emerging equity markets
+We use daily data for twenty-ﬁve emerging equity markets from various
+regions—Bulgaria, Hungary, Romania, Russia, Slovenia, Turkey from Central
+East Europe; Israel; South Africa; Argentina, Brazil, Chile, Colombia, Mexico,
+and Peru from Latin America; and China, India, Hong Kong, Indonesia, Korea,
+Malaysia, Pakistan, Philippines, Singapore, Sri Lanka, and Thailand from Asia.
+While Hong Kong and Singapore are in fact developed markets, we retain them
+in the sample as they are not part of our main sample. Returns are computed
+in dollar terms but are relevant for both U.S. and local investors because the
+dollar changes on FTS days are negligible relative to equity movements. This
+also makes the results on equities more comparable to those on bonds which
+also trade in dollars. For all markets, except those in Eastern Europe, the sample
+starts in the early 1990s. Bulgaria has the latest starting date in March 2000.
+An important consideration in this analysis is the degree ofde jureintegration
+of these markets, which affects the risk models investors use and may also affect
+the incidence of FTS events. To measure de jure integration, we use the [0,1]
+indices compiled by Fernandez et al. (2015) using IMF data and extended by
+Bekaert et al. (2016) to an earlier sample period. These indices, denoted byFI
+i,t
+and available annually, use restrictions speciﬁcally focused on equity markets.20
+The ﬁnancial integration indices typically increase over time, signaling higher
+integration (see the Online Appendix for details), but are constant at zero (one)
+for China (Bulgaria, Peru, and Hong Kong).
+When considering the effect of FTS events, it is important to control for
+the typical response of emerging market equities to global equity markets,
+which may differ across jurisdictions due to different degrees of integration.
+We therefore consider the following panel model:
+r
+i,t =
+(
+ci,0 +c1FIi,t
+)
++
+(
+βi,0 +β1FIi,t
+)
+rbe,t +
+(
+γi,0 +γ1FIi,t
+)
+FTS be,t +εi,t, (17)
+where ri,t denotes the equity market return (in dollar) in country i on day t
+and ci,0 the country-speciﬁc intercept. rbe,t and FTS be,t represent the time- t
+benchmark return and FTS indicator, respectively, that depend on the global
+FTS deﬁnition in consideration. The benchmark return is the global equity
+market return under the ﬁrst two global FTS deﬁnitions and the U.S. equity
+market under the third deﬁnition. We estimate the model as a panel because the
+limited time variation in ﬁnancial integration for some countries requires us to
+assume β
+1 and γ1 to be pooled across countries. In estimating the model, we
+also take into account asynchronous trading hours. In particular, for European,
+African, and Middle Eastern markets, we include both contemporaneous and
+20 This index is calculated as one minus the fraction of restrictions in place on international security transactions.
+728
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 41 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 729 689–746
+Flights to Safety
+1-day-lagged benchmark returns and FTS indicators in the regression. The
+tables report the sums of contemporaneous and lagged coefﬁcients and the
+associated standard errors. We only include the contemporaneous returns and
+FTS indicators for Latin American markets, and only 1-day-lagged benchmark
+returns and FTS indicators for Asian markets.
+Panel A of Table 11 summarizes the results, with country-by-country results
+reported in the Online Appendix. The average exposure of emerging equity
+markets to benchmark returns is estimated to be 0.26–0.28 using the two
+global market benchmarks and 0.13 using the U.S. market benchmark, with
+higher exposures for more integrated equity markets. The effect of ﬁnancial
+integration is statistically and economically signiﬁcant, as a move from zero
+to full integration increases an emerging market’s global market beta by about
+0.40. On FTS days, emerging equity market returns decline more than justiﬁed
+by their benchmark exposures. The average FTS impact is the most negative
+(-2.46%, with an IQR of -1.79% to -2.96%) when the global FTS is identiﬁed
+as one with at least half the countries in an FTS, and the least negative (-
+0.97%, with an IQR of -0.74% to -1.24%) when the global FTS is identiﬁed by
+applying our methodology to global equity and bond returns. The FTS effect
+of ﬁnancial integration is less negative for more integrated economies, with γ
+1
+ranging from 0.0057 to 0.0147 and statistically signiﬁcant at the 1% level for
+all three deﬁnitions. On FTS days, more integrated emerging equity markets
+beneﬁt from less negative FTS exposures but at the same time suffer from
+more positive benchmark exposures; this suggests that, during FTS episodes,
+investors treat integrated and segmented emerging equity markets similarly as
+one asset class, leading to indiscriminate declines across those markets.
+While all these results are computed in U.S. dollars, we have veriﬁed that
+the bulk of the effect comes from declining local equity markets with less than
+20% of the total effect coming from depreciating emerging market currencies.
+4.3 Global FTS and emerging bond markets
+Our analysis of emerging market bonds covers the same set of countries as for
+emerging equity markets, except for Slovenia for which no bond market data
+are found. For Israel, Hong Kong, Korea, and Singapore, we use JP Morgan’s
+Emerging Local Markets Index, which contains securities denominated in each
+country’s local currency with a relatively short duration; for all other countries,
+we use JP Morgan’s Emerging Markets Bond Index (EMBI) data, consisting
+of U.S. dollar-denominated Brady bonds. We use the de jure bond market
+integration indices compiled by Fernandez et al. (2015) (and extended by
+Bekaert et al. 2016) using restrictions for bond markets only. We adjust the FTS
+regression (17) to include both bond and equity benchmarks. Several papers
+(e.g., Longstaff et al. 2011; Bekaert et al. 2014) suggest that global factors
+affect the pricing of emerging market sovereign bonds.
+Panel B of Table 11 shows the average benchmark bond market beta to be
+0.17–0.25 and the average equity market beta to be 0.20–0.27, depending on
+729
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 42 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 730 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Table 11
+FTS and emerging markets
+A. Emerging equity markets
+50% countries in FTS Global FTS (model) U.S. FTS
+benchmark FTS benchmark FTS benchmark FTS
+Average 0.26 −2.46% 0.28 −0.97% 0.13 −1.94%
+Median 0.19 −2.65% 0.20 −1.01% 0.05 −2.08%
+Q1 0.02 −2.96% 0.04 −1.24% −0.05 −2.38%
+Q3 0.40 −1.79% 0.40 −0.74% 0.27 −1.47%
+# signiﬁcant 17 25 17 20 15 25
+Estim p-val Estim p-val Estim p-val
+c1 −0.0002 0.55 −0.0002 0.59 0.0000 0.94
+β1 0.416*** 0.00 0.405*** 0.00 0.309*** 0.00
+γ1 0.0147*** 0.00 0.0057*** 0.01 0.0102*** 0.00
+B. Emerging bond markets
+50% countries in FTS Global FTS (model) U.S. FTS
+bonds equities FTS bonds equities FTS bonds equities FTS
+Average 0.25 0.27 −0.12% 0.17 0.27 −0.18% 0.20 0.20 −0.24%
+Median 0.25 0.26 −0.13% 0.13 0.26 −0.19% 0.19 0.18 −0.27%
+Q1 0.12 0.18 −0.39% 0.02 0.17 −0.45% 0.07 0.11 −0.32%
+Q3 0.34 0.35 0.17% 0.27 0.34 0.11% 0.28 0.26 −0.14%
+# signiﬁcant 18 22 2 18 23 7 15 23 4
+Estim p-val Estim p-val Estim p-val
+c1 −0.0002 0.12 −0.0002 0.22 −0.0002 0.25
+β1(bo) 0.0855** 0.03 0.0912** 0.02 0.0766** 0.02
+β1(eq) 0.0203 0.27 0.0152 0.42 0.0072 0.46
+γ1 −0.0022 0.63 −0.0013 0.26 −0.0006 0.27
+This table reports the FTS exposures for emerging equity markets (panel A) and emerging bond markets (panel B) estimated using speciﬁcation (17) in Se ction 4.2. The three
+global FTS indicators considered are: an indicator that equals 1 when at least half of countries are in an FTS (Columns 2 and 3), a global-model-based in dicator (Columns
+4 and 5), and the U.S. FTS indicator (Columns 6 and 7). We use the global (U.S.) equity market return as the benchmark equity market return under the ﬁrst t wo (third)
+deﬁnition(s). To account for nonsynchronous trading hours, we include both contemporaneous and 1-day lagged benchmark returns and FTS indicators f or European, African,
+and Middle Eastern Markets. For Latin American (Asian) markets, we only use contemporaneous (1-day lagged) benchmark returns and FTS indicators. Wh en reporting the
+benchmark beta and FTS exposure, we sum across contemporaneous and lagged coefﬁcients, if applicable. The parameters c1,β 1, and γ 1 capture the potential effect of market
+integration on the country-speciﬁc intercepts and benchmark and FTS exposures, respectively. * p <10%; ** p <5%; *** p <1%. (calculated using standard errors clustered on time).
+730
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 43 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 731 689–746
+Flights to Safety
+the deﬁnition of global FTS used. The benchmark bond market betas tend to
+increase with bond market integration ( β1(bo)=0 .08, which is signiﬁcant at
+the 5% level), while equity market betas show no such correlations. We also
+ﬁnd on average negative FTS betas that range from −0.12% (IQR of -0.39%
+to 0.17%) using the “50% countries in FTS rule” to -0.24% (IQR of -0.32%
+to -0.14%) using the U.S. FTS indicator, although the estimates are signiﬁcant
+(at the 5% level) in no more than 7 of the 24 countries. Contrary to the equity
+markets, we ﬁnd the FTS exposure to decrease with bond market integration, but
+the effect is never statistically signiﬁcant. We conclude that emerging market
+bonds behave about in line with typical risky asset classes during a global FTS,
+while emerging market equities are exposed to global FTS risks beyond their
+exposures to standard benchmark risks.
+5. Hedging against FTS
+An FTS moves equities and bonds in opposite directions; diversiﬁcation using
+these two major asset classes may therefore provide a good way of limiting
+the losses during stress times. This thinking is reﬂected in the fact that a 60%
+equity-40% bond portfolio is often used as the benchmark in institutional asset
+management. It is also a common belief that additional beneﬁts can be obtained
+from diversifying away from the standard equity and bond asset classes into
+alternative investment vehicles and asset classes, such as private equity, hedge
+funds, and natural resources. Some high-proﬁle university endowments in the
+United States reportedly follow this strategy, which some dub the “endowment
+model” (see Swensen 2009). In Section 5.1, we examine whether proxies to
+the endowment portfolios provide hedges against FTS. In addition, one speciﬁc
+investment vehicle, hedge funds, should in theory provide at least a partial
+protection against market downturns. Those funds can go long or short and
+can invest in a wide array of securities and derivative products, which could
+potentially provide positive returns in all market environments. In fact, the name
+“hedge funds” suggests that, in the mind of many investors, they may “hedge”
+against bad times. But do they? Section 5.2 tries to answer this question.
+5.1 The endowment model
+The endowment model seeks to enhance diversiﬁcation by investing in different
+geographic regions (mostly international and emerging market equities),
+alternative asset classes (e.g., commodities, real estate), and alternative
+investment vehicles (e.g., private equity and hedge funds). Ang, Ayala, and
+Goetzmann (2018) report that U.S. university and college endowments now
+hold close to one-third of their portfolios in private equity and hedge funds.
+Testing whether the endowment model works in practice during FTS events
+requires data on those funds’ actual returns, which is beyond the scope of this
+article. However, we collected proxies for the various asset classes used by
+endowment funds, as well as data on their target or actual asset allocations.
+731
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 44 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 732 689–746
+The Review of Financial Studies / v 33 n 2 2020
+With the rapid growth of alternative and “smart beta” ETFs, retail investors
+can now mimic the endowment model. We measure the FTS sensitivity of the
+various asset classes in the endowment model using a daily regression:
+r
+t,i =α +βiFTS t +γi Ctrl t +εt,i , (18)
+where rt,i is the return on asset classi on dayt, FTS is our FTS dummy, and the
+variable Ctrl is a vector of control variables that may differ across regressions.
+The alternative asset classes we consider include natural resources (S&P
+GSCI energy index), commodities (S&P GSCI benchmark total commodity
+index), hedge funds (HFRX global hedge fund index), absolute return hedge
+funds (HFRX absolute return index), real estate (a REITS index from
+Datastream), and global private equity in local currency (S&P listed private
+equity). Those asset classes show relatively low correlation (see the Online
+Appendix), conﬁrming their potential value for portfolio diversiﬁcation. For
+all asset classes, we control for their exposures to the domestic equity market.
+For private equity and nonbenchmark ﬁxed income asset classes, we also control
+for their exposures to the domestic government bond market.
+Table 12 reports the results using daily dollar returns over the period 2004–
+2015.
+21 All asset classes show signiﬁcantly positive equity exposures; the
+bond market exposure is signiﬁcantly negative for private equity, reﬂecting
+its leverage component, and signiﬁcantly positive for foreign and inﬂation-
+linked bonds. After controlling for the benchmark risks, real estate, natural
+resources and commodities show signiﬁcantly positive FTS betas, suggesting
+that those asset classes do indeed provide some FTS insurance. The hedge
+fund indices and high-yield bonds have signiﬁcantly negative FTS betas, while
+global equities (either world excl. U.S. or emerging markets) have negative yet
+insigniﬁcant FTS betas, suggesting those asset classes lose value more than
+justiﬁed by their benchmark exposures during FTS episodes.
+22
+We track the annual portfolio allocations of all endowments in Nacubo
+combined and the Harvard and Y ale endowments, the two largest and best
+known endowment funds, over 2004–2015. We obtain actual allocations for
+Nacubo and Y ale but only target allocations for Harvard. Table 13 (panel A)
+shows some snapshots of their asset allocations. Both Harvard and Y ale have
+more real assets than the average endowment, and Y ale’s well-known strategy
+of overweighting private equity and underweighting listed domestic equity is
+also visible from the table. Nevertheless, the returns on the three endowment
+portfolios, calculated using the allocations and the proxies shown in Table
+12, are highly correlated with correlations exceeding 90% (see the Online
+Appendix).
+21 While our asset allocation weights go back to 2002 for Nacubo and even further for the Harvard and Y ale
+endowments, the HFRX Absolute Return Index starts on July 1, 2004.
+22 The Online Appendix reports the same table showing Dimson (1979) betas with one lag. The results are largely
+similar, with FTS betas of the absolute return hedge fund index and high-yield bonds also becoming signiﬁcantly
+negative though remaining economically small.
+732
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 45 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 733 689–746
+Flights to Safety
+Table 12
+FTS and endowment asset classes
+Asset classes Index used as proxy αβ FTS βEquity βBond
+Equity Domestic equity US Datastream Total Mar-
+ket Index
+0.105∗∗∗ −1.858∗∗∗ −−
+Foreign equity World, excl. U.S. Datas-
+tream Total Market Index
+0.016 −0.040 0 .479∗∗∗ −
+Emerging
+market
+equity
+Emerging Markets Datas-
+tream Total Market Index
+0.032∗ −0.040 −
+Private equity S&P Listed Private Equity −0.002 0 .023 1 .019∗∗∗ −0.168∗∗∗
+Hedge funds All strategies HFRX Global Hedge
+Fund Index
+0.006∗ −0.173∗∗∗ 0.111∗∗∗ −
+Absolute return HFRX Absolute Return
+Index
+0.002 −0.052∗∗ 0.018∗∗∗ −
+Real assets Real estate US Datastream REITs −0.008 0 .322∗∗ 1.418∗∗∗ −
+Natural resources S&P GSCI Energy Total
+Return
+−0.049 0 .488∗∗ 0.516∗∗∗ −
+Commodities S&P GSCI Commodity
+Total Return
+−0.035 0 .308∗ 0.431∗∗∗ −
+Fixed income Domestic bonds 10-year Benchmark U.S.
+Government Bond Index
+0.002 0 .637∗∗∗ −−
+Foreign bonds ICE BofAML Global
+Government Index
+0.003 0 .067 0 .021∗∗∗ 0.376∗∗∗
+Inﬂation-linked Barclays U.S. Treasury
+TIPS Index
+−0.018∗∗∗ 0.050 0 .033∗∗∗ 0.646∗∗∗
+bonds
+High-yield bonds ICE BofAML U.S. High-
+Yield Total Return Index
+0.030∗∗∗ −0.081∗ 0.067∗∗∗ 0.010
+Cash JPM U.S. CASH 1M 0.006∗∗∗ 0.005∗∗∗ 0.000 −
+This table reports results from regression in Equation (18) for various asset classes frequently included in
+endowment portfolios. The third column shows the indices used as proxies for the asset classes. The subsequent
+columns report coefﬁcient estimates. We control for the domestic equity market for all asset classes (expect for
+the benchmark domestic bonds) and control for the domestic bond market for private equity and nonbenchmark
+ﬁxed income asset classes. We use daily returns, expressed as percentages, over the period 2004–2015. *
+p <10%;
+**p <5%; ***p <1%. Standard errors are heteroscedasticity consistent.
+Panel B repeats regression (18) for the three endowment funds returns
+using different control variables. On average, the values of those portfolios go
+down between 91 bps (Harvard) and 1.42% (Y ale) more on FTS days than on
+other days. Once we control for domestic equity exposures, all portfolios have
+positive FTS exposures, which are only signiﬁcant (at the 10% level) for the
+Harvard portfolio. The positive FTS beta may simply reﬂect the performance
+of the ﬁxed income portion of their portfolio. In fact, an often-used benchmark
+for endowment portfolios contains 60% equities and 40% bonds. Indeed, all
+three endowment portfolios have betas not too far from one with respect to such
+a benchmark, with Y ale showing the highest beta. The FTS betas now become
+signiﬁcantly negative for all three portfolios, with Harvard’s FTS beta the least
+negative or signiﬁcant.
+23 We conclude that most endowment funds remained
+exposed to FTS risks. Of course, it is conceivable that the actual portfolios of
+endowments perform better than the tracking portfolios we constructed using
+various indices that are not actively managed.
+23 The results are unchanged when a lagged Dimson beta is included (see the Online Appendix).
+733
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 46 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 734 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Table 13
+FTS and endowment portfolios
+A. Weights of asset classes
+Nacubo portfolio Harvard portfolio Y ale portfolio
+Asset classes 2005 2010 2015 2005 2010 2015 2005 2010 2015
+Equity Domestic equity 34.3 15.0 16.0 15.0 11.0 11.0 14.1 7.0 3.9
+Foreign equity 14.0 16.0 19.0 10.0 11.0 11.0 13.7 9.9 14.7
+Emerging market equity 0.0 0.0 0.0 5.0 11.0 11.0 0.0 0.0 0.0
+Private equity 7.1 15.6 15.0 13.0 13.0 18.0 14.8 30.3 32.5
+Hedge funds All strategies 16.6 21.3 22.0 0.0 0.0 0.0 0.0 0.0 0.0
+Absolute return 0.0 0.0 0.0 12.0 16.0 16.0 25.7 21.0 20.5
+Real assets Real estate 4.5 5.2 6.0 10.0 9.0 12.0 25.0 27.5 14.0
+Natural resources 3.6 7.3 6.0 0.0 9.0 11.0 0.0 0.0 6.7
+Commodities 0.0 0.0 1.0 13.0 5.0 0.0 0.0 0.0 0.0
+Fixed income Domestic bonds 17.2 12.0 9.0 11.0 4.0 7.0 4.9 4.0 4.9
+Foreign bonds 0.0 0.0 0.0 5.0 2.0 1.0 0.0 0.0 0.0
+Inﬂation-linked bonds 0.0 0.0 0.0 6.0 5.0 2.0 0.0 0.0 0.0
+High-yield bonds 0.0 2.6 2.0 5.0 2.0 0.0 0.0 0.0 0.0
+Cash 2.7 5.0 4.0
+−5.0 2.0 0.0 1.8 0.3 2.8
+B. Parameter estimates
+Without controls With domestic equity With 60 equity / 40 bond
+Portfolio αβ FTS αβ FTS βGlobal αβ FTS β60/40
+Nacubo 0.060*** −1.030*** 0.001 0.019 0.565*** 0.000 −0.195*** 0.971***
+Harvard 0.055*** −0.911*** −0.003 0.113* 0.551*** −0.003 −0.107* 0.935***
+Y ale 0.081*** −1.421*** −0.004 0.096 0.816*** −0.006 −0.220*** 1.396***
+This table reports asset allocations and estimation results for three endowment portfolios: the dollar-weighted portfolio across the sample of uni versity endowments in the
+NACUBO–Commonfund Study of Endowments, and the Harvard and Y ale endowment portfolios. Panel A shows the endowments’ allocation to asset classes for 2005, 2010, and 2015.
+The Nacubo and Y ale portfolios use the actual allocation; the Harvard portfolio uses the target allocation. Allocations are expressed as percentage s. For the Nacubo and Y ale portfolios, the
+foreign equity allocation includes emerging market equity. Panel B reports estimated coefﬁcients from regressions of our endowment portfolio retu rns on the U.S. FTS dummy. The ﬁrst two
+columns report the results for the model without adding control variables; the next three columns for the model with the domestic equity market as cont rol variable; the latter three columns
+for the model with a standard “60-40” domestic equity–bond benchmark portfolio as control variable. * p <10%; **p <5%; ***p <1%. Standard errors are heteroscedasticity consistent.
+734
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 47 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 735 689–746
+Flights to Safety
+5.2 Hedge funds
+In this section, we examine how well hedge funds do during times of market
+stress, as measured by our FTS indicator. We obtain daily returns (in U.S.
+dollars) on various Hedge Fund Research (HFR) indices over the period of
+March 2003 to July 2015. The indices include the overall index (“Global
+Hedge fund”) and 11 different categories, such as “Convertible Arbitrage,”
+“Global Macro,” and “Absolute Return.” The Online Appendix describes the
+various categories in more detail and reports summary statistics for the returns.
+These hedge fund indices show overall positive returns, with the exception of
+Convertible Arbitrage and Equity Market Neutral, and subdued volatilities of
+only 2.5 to 6.5% annualized. However, their returns on FTS days are invariably
+negative, ranging from -0.025% for equity market neutral funds to -0.624% for
+equity hedge funds. It is well known that most hedge fund styles have positive
+market exposures (see, e.g., Asness, Krail, and Liew 2001 and Patton 2009 for
+market neutral funds). Therefore, we run our usual regression, regressing daily
+hedge fund returns on the U.S. FTS indicator and control for market risk using
+the U.S. equity market return. To prevent FTS events from contaminating the
+factor beta estimates, we also consider two abnormal return models. The ﬁrst
+model is
+r
+i,t =αi +β
+′
+iFt +εi,t, (19)
+where ri,t is the return on hedge fund indexi, Ft represent the risk factors under
+consideration, andβ
+′
+i is a vector of exposures of hedge fund indexi with respect
+to the risk factors Ft . The model is estimated using only data on non-FTS days.
+Abnormal returns on FTS days are computed as
+ARi,t =ri,t −ˆαi − ˆβ
+′
+iFt, (20)
+with t now indicating FTS days. We then conduct a simplet-test on the average
+abnormal returns, which constitute an alternative estimate of the FTS beta. In
+the second model, α and β are estimated over a window of 250 days before the
+FTS event; hence, this model allows the α and β estimates to be different for
+each FTS event. FTS days within the window are excluded when estimating
+the model.
+Column 3 of Table 14 reports estimates of the market exposures for the
+standard speciﬁcation. Most hedge fund categories have signiﬁcantly positive
+systematic exposures, suggesting poor performance during market downturns.
+The exceptions include Convertible Arbitrage, which shows signiﬁcantly
+negative exposure, and Distressed Securities, Equity Market Neutral, and
+Global Macro, which have effectively zero exposures. After controlling for
+market risks, the estimated FTS betas reported in Column 4 are negative for all
+categories and, with the sole exception of Equity Market Neutral, signiﬁcant at
+the 10% level or below. The estimated FTS betas do not differ much between
+the standard regression (shown in Column 4), and the abnormal return models
+(shown in Columns 6 and 7), although the FTS betas for Equity Market Neutral,
+735
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 48 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 736 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Global Macro, and Absolute Return become insigniﬁcant in the abnormal return
+model with rolling betas.
+We consider four additional robustness checks of the benchmark regressions.
+First, Asness, Krail, and Liew (2001) claim that the systematic exposure of
+hedge funds increases substantially when lagged exposures are accounted for.
+Column 8 of Table 14 reports the FTS exposures using the contemporaneous
+and two lags of U.S. equity market returns as systematic risk controls.
+24 The
+results are remarkably robust with the FTS betas and their signiﬁcance barely
+affected. Second, when using a richer risk model with the seven factors as in
+Fung and Hsieh (2004) and additionally including an Emerging Markets factor,
+our results, again, remain robust (see the Online Appendix). Third, we redo all
+our speciﬁcations using the global equity return instead of the U.S. equity return
+to control for systematic risks. TheR
+2s rise in a few cases, but most other results
+remain unchanged. The FTS betas are estimated to be negative and statistically
+signiﬁcant for most categories, with a few cases of insigniﬁcant betas found for
+Convertible Arbitrage, Distressed Securities and Equity Market Neutral.
+Last, but not least, Patton and Ramadorai (2013) study the changing market
+exposure of individual hedge funds within the month by interacting them with
+instruments available at the daily frequency. They ﬁnd strong evidence of time-
+varying market exposures, some deterministic and some in response to market
+conditions. For example, they ﬁnd that the market exposures of hedge funds
+may abruptly change in response to lower stock returns, higher stock volatility,
+or elevated TED spreads. This suggests that hedge funds may provide hedges
+against market stress by lowering their exposure to the risk factors ahead of an
+FTS. We can only test this at the fund category level as we do not have data on
+individual hedge fund returns, but our data on daily returns allows us to directly
+test whether hedge funds change their exposure ahead of an FTS.
+We consider a model where the exposure of the hedge fund index with respect
+to the risk factors depend on the time (in days) relative to the FTS event,
+denoted by ζ : r
+i,t =αi +β
+′
+i (ζ )Ft +εi,t . Our most general speciﬁcation for β
+′
+i (ζ )
+is a third-order polynomial function:
+β
+′
+i (ζ ) =β
+′
+i0 +β
+′
+i1ln(¯ζ )+ β
+′
+i2ln(¯ζ )2 +β
+′
+i3ln(¯ζ )3 +β
+′
+i4D1 +β
+′
+i5D2, (21)
+where D1 is a dummy variable that equals one on the last day before an FTS
+event and D2 a dummy variable that equals one on each of the last 5 business
+days before an FTS event. In the third-order polynomial speciﬁcation, we
+set ¯ζ =ζ for ζ< 250 and ¯ζ = 250 for ζ ≥ 250. The baseline model does not
+include lags of F
+t. We also consider models including 1, 2, and 4 lags of
+Ft , where the lagged exposures are assumed to be proportional to β
+′
+i (ζ ). The
+24 We also examined models with one and four lags and applied this methodology to the abnormal return framework
+as well. The results are invariably robust (see the Online Appendix).
+736
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 49 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 737 689–746
+Flights to Safety
+Table 14
+FTS and hedge fund returns
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13)
+Fund categories Standard regression Abnormal 1 Abnormal 2 Lag model Polynomial model
+αi βi R2 βFTS
+i βFTS
+i βFTS
+i βFTS
+i βFTS
+i (250)-(ζ1)( ζ1)-(1) ζ1 ζ2
+Convertible arbitrage −0.0026 −0.0344∗∗ 0.0117 −0.1716∗∗∗ −0.1843∗∗∗ −0.2046∗∗∗ −0.1741∗∗∗ −0.1832∗∗∗ –– – –
+Distressed securities 0.0026 −0.0062 0 .0017 −0.0489∗ −0.0487∗∗ −0.0538∗∗∗ −0.0495∗∗ −0.0907∗∗∗ −0.0954∗∗∗ 0.1133∗∗∗ 69 3
+Event driven 0.0132∗∗∗ 0.1500∗∗∗ 0.4137 −0.1904∗∗∗ −0.1976∗∗∗ −0.0559∗∗∗ −0.1919∗∗∗ −0.1586∗∗∗ −0.1608∗∗∗ 0.1201∗∗∗ 58 3
+Equity hedge 0.0026 0 .2374∗∗∗ 0.5554 −0.2101∗∗∗ −0.2168∗∗∗ −0.0483∗∗ −0.2141∗∗∗ −0.1446∗∗∗ −0.1822∗∗∗ 0.1205∗∗∗ 64 3
+Equity market neutral 0.0006 0 .0023 0 .0005 −0.0221 −0.0245 −0.0061 −0.0212 −0.0576∗∗ −0.1154∗∗∗ 0.1227∗∗∗ 78 7
+Merger arbitrage 0.0139∗∗∗ 0.1235∗∗∗ 0.3128 −0.0942∗∗ −0.1026∗∗∗ −0.0636∗∗∗ −0.0942∗∗ −0.0999∗∗∗ –– – –
+Global macro 0.0113∗ 0.0038 0 .0061 −0.1667∗− 0.1653∗∗∗ −0.0573 −0.1649∗− 0.1681∗∗∗ −0.1706∗∗∗ 0.1583∗∗∗ 75 4
+Relative value 0.0096∗∗ 0.0414∗∗∗ 0.0618 −0.1801∗∗∗ −0.1923∗∗∗ −0.0920∗∗∗ −0.1835∗∗∗ −0.1932∗∗∗ –– – –
+Market directional 0.0095∗ 0.2039∗∗∗ 0.4262 −0.2428∗∗∗ −0.2520∗∗∗ −0.0559∗∗ −0.2476∗∗∗ −0.2049∗∗∗ −0.1483∗∗∗ 0.1041∗ 64 3
+Absolute return 0.0019 0 .0185∗∗∗ 0.0292 −0.0524∗∗ −0.0575∗∗∗ −0.0117 −0.0531∗∗ −0.0343∗∗ −0.0957∗∗∗ 0.0706∗∗∗ 56 3
+Equal weighted strategies 0.0075∗∗∗ 0.0675∗∗∗ 0.2582 −0.1382∗∗∗ −0.1440∗∗∗ −0.0748∗∗∗ −0.1393∗∗∗ −0.1233∗∗∗ −0.1018∗∗∗ 0.0793∗∗∗ 63 3
+Overall hedge fund 0.0073∗∗ 0.1118∗∗∗ 0.3769 −0.1729∗∗∗ −0.1789∗∗∗ −0.0577∗∗∗ −0.1749∗∗∗ −0.1516∗∗∗ −0.1509∗∗∗ 0.1193∗∗∗ 63 3
+This table reports estimation results for our FTS dummy model (Columns 2 to 5), our two abnormal return models without lags (Columns 6 and 7), our FTS dum my model including
+two lags (Column 8), and our model with FTS time-dependent exposures (Columns 9 to 11). For the FTS dummy model without lags we report the alpha, the risk exposure, the
+adjusted R2 measure and the FTS beta. For the other models we only report the FTS beta. Columns 10 and 11 report the difference in beta over two combinations of days, b ased on
+the beta polynomial speciﬁcation for the restricted model without lags. ζ1 and ζ2 are the optimums of the beta speciﬁcation (i.e., the distance to FTS for which the beta is respectively
+a maximum and a minimum). The optima are calculated by taking the ﬁrst derivative of Equation (21) with respect to ζ , set it equal to zero and then solving for ζ . The optimums are
+ζ1,2 =exp
+⎡
+⎢⎢⎣
+−
+(
+2β′
+i2
+)
+±
+√ (
+2β′
+i2
+)2
+−4
+(
+3β′
+i3
+)(
+β′
+i1
+)
+2
+(
+3β′
+i3
+)
+⎤
+⎥⎥⎦−1.
+*p <.1; **p <.05; ***p <.01. Standard errors are heteroscedasticity consistent.
+737
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 50 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 738 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Figure 6
+Time-varying market exposure of the overall hedge fund index
+This ﬁgure shows the market beta of the overall hedge fund index as a function of the distance to FTS. The
+market beta is based on the model in Equation (21), in which the market exposure depends on the time (in days)
+relative to the FTS event according to a polynomial function. The coefﬁcients of the dummy variables
+D1 and
+D2 are imposed to be zero if they are estimated to be insigniﬁcant. The U.S. market return is used as the risk
+factor.
+Online Appendix provides details on the estimation results of the most general
+model as well as a more restricted version. As a summary, we ﬁnd that the two
+dummy variables are never statistically signiﬁcant, suggesting the polynomial
+function is ﬂexible enough to capture changes in risk exposure, even near an FTS
+event. The dummy variables are therefore excluded from the preferred model.
+For three hedge fund categories (convertible arbitrage, merger arbitrage, and
+relative value), the polynomial coefﬁcients are jointly and/or individually all
+statistically insigniﬁcant and we put them equal to zero in the preferred model.
+We ﬁnd that the time variations in the risk exposures are remarkably
+similar across fund categories with nonconstant exposures. Figure 6 shows
+the pattern for the overall hedge fund index only, and the Online Appendix
+offers detailed results for individual categories and different speciﬁcations.
+Systematic exposures are relatively small at around 0.10 one year before an FTS,
+but steadily increase to about 0.25 around 50 days before an FTS event. The
+market exposure then decreases rather quickly to levels below that witnessed a
+year earlier just before the FTS event, before rising slightly into the event. This
+pattern is seen for all fund categories with signiﬁcant polynomial coefﬁcients
+with varying magnitudes. Because of the parametric nature of the beta function,
+we can analyze the observed pattern mathematically. Focusing on the model
+without lags, we deﬁne ζ
+1 and ζ2 as the distance to FTS that reaches the largest
+and the smallest beta, respectively. The last two columns of Table 14 report the
+estimates. The maximum beta occurs in general between 78 and 52 days before
+an FTS event, and 63 days before for the overall index. The minimum occurs a
+few days before an FTS event, varying between 3 (for most categories) and 7
+738
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 51 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 739 689–746
+Flights to Safety
+(Equity Market Neutral) days. This table shows numerically that the pattern of
+Figure 6 is valid for all hedge fund categories. We can also test whether these
+changes in systematic exposure are statistically signiﬁcant. Columns 10 and
+11 of Table 14 show that both the increase in market exposures from 250 days
+before an FTS event to dayζ
+1 and the the decreases in market exposures between
+day ζ1 and the day before an FTS are statistically signiﬁcant and economically
+large (varying between 0.08 and 0.18).
+In summary, similar to Patton and Ramadorai (2013), we ﬁnd signiﬁcant
+changes in hedge fund exposures, but the pattern is intricate. Hedge funds appear
+to slowly increase their systematic exposures before an FTS event occurs, likely
+during periods when markets are relatively calm, but rapidly reduce their market
+exposure a few months before an FTS event. Interestingly, once we allow for
+time variations in market exposure using the polynomial speciﬁcation, the
+estimated FTS betas (Column 9 of Table 14) become signiﬁcantly negative
+for all hedge fund categories.
+We conclude that hedge funds do not hedge against FTS events. That said,
+we do ﬁnd that about half of the fund categories and the overall index generate
+positive and statistically signiﬁcant alphas, which remains true under the Fung-
+Hsieh model to control for risk. There is, in fact, extensive research on the
+relationship between the average performance of a fund on the one hand, and
+the R
+2 with respect to various systematic exposures (Titman and Tiu 2011), the
+probability of fund failure (Bollen 2013), the dynamic risk management ability
+of hedge fund managers (Namvar et al. 2016), and insurance value against
+high tail risk episodes (Kelly and Jiang 2012) or “bad times” (Cao, Rapach,
+and Zhou 2014), on the other hand. Those papers all use individual hedge fund
+returns and it is therefore difﬁcult to compare our results with theirs. At the fund
+category level, there does not seem to be a strong link between low R
+2s and
+alphas; for example, event driven and merger arbitrage have both the highest
+R
+2s and the highest alphas. Moreover, all hedge fund categories fare poorly
+during FTS episodes, regardless of their alpha. Of course, it is also conceivable
+that the broad categories might mask individual hedge fund effects, with some
+high-quality funds indeed providing hedges against FTS events. One economic
+factor that could lead to differential performance of hedge funds in crisis times
+is liquidity. For example, Boyson, Stahel, and Stulz (2010) suggest that hedge
+funds may experience contagion effects in response to large adverse shocks
+to asset and hedge fund liquidity; Sadka (2012) shows that liquidity risk is an
+important factor in explaining the cross-section of hedge fund returns; and Cao
+et al. (2013) document that hedge funds tune their market exposures with respect
+to liquidity conditions. We defer further analysis of these issues to future work.
+6. Conclusion
+We deﬁne an FTS event as a day on which bond returns are positive, equity
+returns are negative, the stock-bond return correlation is negative, and market
+739
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 52 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 740 689–746
+The Review of Financial Studies / v 33 n 2 2020
+stress is reﬂected in elevated equity return volatility. Using daily data on only
+equity and bond returns, we identify FTS episodes in twenty-three countries. To
+do so, we develop a new RS model for bond and stock returns that embeds the
+FTS characteristics described above. The model delivers relatively persistent
+FTS spells, accompanied by steep increases in equity risk premiums and
+more modest decreases in bond risk premiums, high conditional equity return
+volatility, and very negative conditional bond-stock return correlations. We
+combine the FTS measure delivered by this model with the FTS measures
+implied by two alternative models to generate conservative FTS estimates.
+On average, FTS episodes comprise less than 2% of the sample, and when
+they occur, bond returns exceed equity returns by about 2.72% on average.
+FTS spells are short lived, rarely exceeding 4 days and never longer than 10
+days. Alternative market stress indicators such as consumer sentiment indices,
+implied stock market volatility, and safe haven currencies (the Japanese yen
+and the Swiss franc) move as expected on FTS days. For the United States, we
+document that FTS are accompanied by outﬂows from equity mutual funds and
+inﬂows into Treasury bond, government-only money market funds. This may
+suggest that retail investors, which are the dominant investors in such funds,
+forego the high relative risk premiums to be earned on such days. In addition,
+using corporate bonds stratiﬁed over “quality” and “liquidity,” we show that
+the FTS effect represents more a ﬂight to quality than a ﬂight to liquidity.
+However, international equity data stratiﬁed across quality and liquidity lines
+show FTS events to adversely affect both low-liquidity and low-quality stocks,
+with high-quality or high-liquid stock portfolios featuring positive FTS betas.
+Finally, alternative asset classes do not fully help hedge against FTS, and we ﬁnd
+the FTS exposure of portfolios following the “endowment model” (the average
+endowment as well as those of Y ale and Harvard) to be negative once we control
+for exposure to the standard 60% equities; 40% bonds benchmark portfolio.
+Hedge funds overall and almost all hedge fund styles we examine do not hedge
+against FTS events either, but we document an intricate pattern of changes in
+the systematic risk exposure of hedge funds preceding an FTS. It would be
+interesting to further examine the FTS exposures of individual hedge funds.
+We hope that our results will provide useful inputs to theorists positing
+theories regarding the origin and dynamics of FTS, and to asset pricers
+attempting to uncover major tail events that may drive differences in expected
+returns across different assets or asset classes. Those results may also inspire
+portfolio and risk managers to look for portfolio strategies that may help insure
+against FTS events, especially because we show that standard hedge fund
+strategies do not provide such an insurance. Preliminary computations suggest
+that such strategies would involve quite large bond allocations.
+Appendices
+A Kernel Method for High and Low Frequency Variances and Correlations
+Let re,t and rb,t be the returns on a benchmark equity and Treasury bond index, respectively. Given
+any date t0 in a sample t =1,..,T , the kernel method calculates stock and bond return variances at
+740
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 53 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 741 689–746
+Flights to Safety
+the normalized date τ =t0/T ∈ (0,1) as
+σ 2
+i,τ = ∑ T
+t=1Kh (t/T −τ )r2
+i,t ,i =e,b,
+where Kh (z) =K (z/h )/h is the kernel with bandwidth h> 0. The weights given to individual
+observations depend on (1) how close in time these observations are to the time point of interest,
+τ , (2) the speciﬁc form of the kernel, and (3) the chosen bandwidth. In our applications, we use a
+backward-looking Gaussian kernel:
+K (z) =
+ψ√
+2π exp
+(
+z2
+2
+)
+if z ≤ t−k
+T
+K (z) =0 if z > t−k
+T
+with ψ, which is a scaling factor that makes the weights sum to a 100%, andk, which is the number
+of past days (including the current) that are excluded from the variance calculation. The bandwidth
+can be viewed as the standard deviation of the distribution and determines how much weight is
+given to returns either in the distant past or in the future. The higher the bandwidth, the more past
+observations are taken into account. When measuring the long-run component of volatility, we set
+the bandwidth to 360 days ( h = 360) and exclude the last 5 days ( k = 5) to avoid contamination by
+recent FTS events. We calculate time-varying covariances in a similar way, that is, by applying the
+same weighting scheme to the cross-product of the stock and bond returns. The long-run correlation
+is then simply the long-run covariance divided by the cross-product of the long-run stock and bond
+volatilities.
+B Conditional V olatilities
+Appendix B shows the expressions for the conditional volatilities for stock returns (see Section
+B.1) and bond returns (see Section B.2), respectively.
+B.1 Equity V olatilities. Only three regimes are possible for the conditional equity volatilities,
+because an FTS regime cannot occur when the equity regime variable is in the low variance state.
+The conditional or state-dependent equity volatilities are given by
+Var
+(
+r
+e,t +1
+⏐⏐Se
+t =0,SFTS
+t =0;It )= α2
+1Pe (
+1−Pe )
++2α1αFTS (1+ ve )Pe (1−Pe )A
++α2
+FTS (1+ ve )2 (
+1−Pe )
+A
+(
+1−
+(
+1−Pe )
+A
+)
++me,t
+(
+aePe +be
+(
+1−Pe ))
+Var
+(
+re,t +1
+⏐⏐Se
+t =1,SFTS
+t =0;It )= α2
+2Qe (
+1−Qe )
+−2α2αFTS (1+ ve )Qe (
+1−Qe )
+A
++α2
+FTS (1+ ve )2QeA
+(
+1−QeA
+)
++me,t
+(
+ae (1−Qe )+ beQe )
+Var
+(
+re,t +1
+⏐⏐Se
+t =1,SFTS
+t =1;It )= α2
+2Qe (
+1−Qe )
++2α2(αFTR −αFTS ve )
+(
+1−Qe )
+QeB
++(α2
+FTS v2
+e +α2
+FTR )QeB
+(
+1−QeB
+)
++me,t
+(
+ae (1−Qe )+ beQe )
+.
+B.2 Bond V olatilities. For bond returns, there are six regime-dependent conditional volatilities,
+because an FTS regime can occur in either high or low bond volatility regimes. The various
+conditional or state-dependent bond volatilities are given by
+Var
+(
+r
+b,t +1
+⏐⏐Se
+t =0,Sb
+t =0,SFTS
+t =0;It )= γ 2
+1 Pb (1−Pb )
+741
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 54 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 742 689–746
+The Review of Financial Studies / v 33 n 2 2020
++γ 2
+FTS (1+ vb )2(1−Pe )A
+(
+1−(1−Pe )A
+)
++mb,t
+[
+abPb +bb (1−Pb )
+]
+Var
+(
+rb,t +1
+⏐⏐Se
+t =0,Sb
+t =1,SFTS
+t =0;It )= γ 2
+2 Qb (1−Qb )
++γ 2
+FTS (1+ vb )2(1−Pe )A
+(
+1−(1−Pe )A
+)
++mb,t
+[
+ab (1−Qb )+ bbQb ]
+Var
+(
+rb,t +1
+⏐⏐Se
+t =1,Sb
+t =0,SFTS
+t =0;It )= γ 2
+1 Pb (1−Pb )
++γ 2
+FTS (1+ vb )2QeA
+(
+1−QeA
+)
++mb,t
+[
+abPb +bb (1−Pb )
+]
+Var
+(
+rb,t +1
+⏐⏐Se
+t =1,Sb
+t =0,SFTS
+t =1;It )= γ 2
+1 Pb (1−Pb )
++
+(
+γ 2
+FTS v2
+b +γ 2
+FTR
+)
+QeB
+(
+1−QeB
+)
++mb,t
+[
+abPb +bb (1−Pb )
+]
+Var
+(
+rb,t +1
+⏐⏐Se
+t =1,Sb
+t =1,SFTS
+t =0;It )= γ 2
+2 Qb (1−Qb )
++γ 2
+FTS (1+ vb )2QeA
+(
+1−QeA
+)
++mb,t
+[
+ab (1−Qb )+ bbQb ]
+Var
+(
+rb,t +1
+⏐⏐Se
+t =1,Sb
+t =1,SFTS
+t =1;It )= γ 2
+2 Qb (1−Qb )
++
+(
+γ 2
+FTS v2
+b +γ 2
+FTR
+)
+QeB
+(
+1−QeB
+)
++mb,t
+[
+ab (1−Qb )+ bbQb ]
+.
+C Calculation of Joint FTS Dummy
+Assume {Xi,i =1,2,...,n} is a sequence of Bernoulli random variables, where
+P {Xi =0} =qi,P {Xi =1} =pi
+where 0 <pi =1 −qi < 1. The multivariate Bernoulli distribution is then represented by
+pk1,k2,...,kn :=P {X1 =k1,X2 =k2,...,Xn =kn}
+where ki ∈{0,1} and i =1,2,...,n. Let p(n) be a vector containing the probabilities of the 2n possible
+combinations of the n individual binary indicators. To deﬁne p(n), we write k (with 1 ≤k≤ 2n)a s
+a binary expansion:
+k =1+
+n∑
+i=1
+ki 2i−1
+where ki ∈{0,1}. This expansion induces a 1-1 correspondence
+k↔ (k1,k2,...,kn)
+so that
+742
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 55 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 743 689–746
+Flights to Safety
+p(n)
+k =pk1,k2,...,kn, 1≤k≤ 2n
+Teugels (1990) shows that p(n) can be calculated as:
+p(n) =
+[ 11
+−pn qn
+]
+⊗
+[ 11
+−pn−1 qn−1
+]
+⊗...⊗
+[ 11
+−p1 q1
+]
+σ (n)
+where σ (n) =
+(
+σ (n)
+1 ,σ (n)
+2 ,...,σ (n)
+2n
+)T
+is the vector of central moments than can be calculated as
+σ (n)
+k =E
+[ n∏
+i=1
+(Xi −pi )ki
+]
+In our application, n = 3, with pi corresponding to the FTS probability on a particular day based
+on the RS model ( i = 1), the threshold model ( i = 2), and the ordinal model ( i = 3). The Bernoulli
+variablesXi,i =1,.., 3 are set to 1 whenpi > 0.5, and zero otherwise. The vector of central moments
+σ (n)
+k is estimated over the full sample. Our joint FTS dummy is set to one when on that particular
+day, the probability that the RS model and at least one of the other two models signal FTS is larger
+than 50%, that is, when p
+1,1,1 +p1,1,0 > 0.5o r p1,1,1 +p1,0,1 > 0.5.
+References
+Acharya, V . V ., L. H. Pedersen, T. Philippon, and M. Richards. 2017. Measuring systemic risk. Review of
+Financial Studies 30:2–47.
+Adrian, T., and M. K. Brunnermeier. 2016. CoV ar. American Economic Review 106:1705–41.
+Aikman, D., M. Kiley, S. J. Lee, M. G. Palumbo, and M. Warusawitharana. 2017. Mapping heat in the U.S.
+ﬁnancial system. Journal of Banking & Finance 81:36–64.
+Ait-Sahalia, Y ., M. Karaman, and L. Mancini. 2018. The term structure of variance swaps and risk premia.
+Research Paper, Swiss Finance Institute.
+Allen, L., T. G. Bali, and Y . Tang. 2012. Does systemic risk in the ﬁnancial sector predict future economic
+downturns? Review of Financial Studies 25:3000–36.
+Ang, A., A. Ayala, and W. N. Goetzmann. 2018. Investment beliefs of endowments. European Financial
+Management 24:3–33.
+Ang, A., and G. Bekaert. 2002. International asset allocation with regime shifts. Review of Financial Studies
+15:1137–87.
+Asness, C., R. Krail, and J. Liew. 2001. Do hedge funds hedge? Journal of Portfolio Management 28:6–19.
+Asness, C. S., A. Frazzini, and L. H. Pedersen. 2018. Quality minus junk.Review of Accounting Studies24:34–112.
+Badarinza, C., and T. Ramadorai. 2018. Home away from home? Foreign demand and London house prices.
+Journal of Financial Economics 130:532–55.
+Bae, K. H., G. A. Karolyi, and R. M. Stulz. 2003. A new approach to measuring ﬁnancial contagion. Review of
+Financial Studies 16:717–63.
+Baele, L., G. Bekaert, and K. Inghelbrecht. 2010. The determinants of stock and bond return comovements.
+Review of Financial Studies 23:2374–428.
+Baker, M., and J. Wurgler. 2006. Investor sentiment and the cross-section of stock returns. Journal of Finance
+61:1645–80.
+Bansal, N., R. A. Connolly, and C. T. Stivers. 2010. Regime-switching in stock index and Treasury futures returns
+and measures of stock market stress. Journal of Futures Markets 30:753–79.
+743
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 56 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 744 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Barsky, R. B. 1989. Why don’t the prices of stocks and bonds move together. American Economic Review
+79:1132–45.
+Baur, D. G., and B. M. Lucey. 2009. Flights and contagion - An empirical analysis of stock-bond correlations.
+Journal of Financial Stability 5:339–52.
+Baur, D. G., and T. K. McDermott. 2010. Is gold a safe haven? International evidence. Journal of Banking &
+Finance 34:1886–98.
+Beber, A., M. W. Brandt, and J. Cen. 2014. Switching risk-off: Fx correlations and risk premia. Working Paper,
+Cass Business School.
+Beber, A., M. W. Brandt, and K. A. Kavajecz. 2009. Flight-to-quality or ﬂight-to-liquidity? evidence from the
+euro-area bond market. Review of Financial Studies 22:925–57.
+Bekaert, G., M. Ehrmann, M. Fratzscher, and A. Mehl. 2014. The global crisis and equity market contagion.
+Journal of Finance 69:2597–649.
+Bekaert, G., E. Engstrom, and Y . Xing. 2009. Risk, uncertainty, and asset prices.Journal of Financial Economics
+91:59–82.
+Bekaert, G., C. Harvey, C. Lundblad, and S. Siegel. 2014. Political risk spreads.Journal of International Business
+Studies 45:471–93.
+Bekaert, G., C. R. Harvey, A. Kiguel, and X. Wang. 2016. Globalization and asset returns. Annual Review of
+Financial Economics 8:221–88.
+Bekaert, G., C. R. Harvey, and C. Lundblad. 2007. Liquidity and expected returns: Lessons from emerging
+markets. Review of Financial Studies 20:1783–831.
+Bekaert, G., R. J. Hodrick, and D. Marshall. 2001. Peso problem explanations for term structure anomalies.
+Journal of Monetary Economics 48:241–70.
+Bekaert, G., and M. Hoerova. 2014. The VIX, the variance premium and stock market volatility. Journal of
+Econometrics 183:181–92.
+———. 2016. What do asset prices have to say about risk and uncertainty? Journal of Banking and Finance
+67:103–18.
+Bloom, N. 2009. The impact of uncertainty shocks. Econometrica 77:623–85.
+Bollen, N. P . 2013. Zero-R2 hedge funds and market neutrality. Journal of Financial and Quantitative Analysis
+48:519–47.
+Bongaerts, D., F. de Jong, and J. Driessen. 2017. An asset pricing approach to liquidity effects in corporate bond
+markets. Review of Financial Studies 30:1229–69.
+Boyson, N. M., C. W. Stahel, and R. M. Stulz. 2010. Hedge fund contagion and liquidity shocks. Journal of
+Finance 65:1789–816.
+Brownlees, C. T., and R. F. Engle. 2011. V olatility, correlation and tails for systemic risk measurement. Working
+Paper.
+Brunnermeier, M. K. 2009. Deciphering the liquidity and credit crunch 2007-2008. Journal of Economic
+Perspectives 23:77–100.
+Brunnermeier, M. K., and L. H. Pedersen. 2009. Market liquidity and funding liquidity. Review of Financial
+Studies 22:2201–38.
+Caballero, R., P .-O. Gourinchas, and E. Farhi. 2017. The safe assets shortage conundrum. Journal of Economic
+Perspectives 31:29–46.
+Caballero, R. J., and A. Krishnamurthy. 2008. Collective risk management in a ﬂight to quality episode. Journal
+of Finance 63:2195–230.
+744
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 57 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 745 689–746
+Flights to Safety
+Cao, C., Y . Chen, B. Liang, and A. W. Lo. 2013. Can hedge funds time market liquidity? Journal of Financial
+Economics 109:493–516.
+Cao, C., D. Rapach, and G. Zhou. 2014. Which hedge fund styles hedge against bad times? Working Paper.
+Connolly, R., C. Stivers, and L. Sun. 2005. Stock market uncertainty and the stock-bond return relation. Journal
+of Financial and Quantitative Analysis 40:161–94.
+Dimson, E. 1979. Risk measurement when shares are subject to infrequent trading. Journal of Financial
+Economics 7:197–226.
+Edelen, R. M., and J. B. Warner. 2001. Aggregate price effects of institutional trading: A study of mutual fund
+ﬂow and market returns. Journal of Financial Economics 59:195–220.
+Edwards, A., L. Harris, and M. Piwowar. 2007. Corporate bond market transaction costs and transparancy.Journal
+of Finance 62:1421–51.
+Ermolov, A. 2017. Time-varying risk of nominal bonds: How important are macroeconomic shocks? Working
+Paper.
+Fernandez, A., M. Klein, A. Rebucci, M. Schindler, and M. Uribe. 2015. Capital control measures: A new dataset.
+Working Paper, IMF.
+Fung, W., and D. A. Hsieh. 2004. Hedge fund benchmarks: A risk-based approach. Financial Analyst Journal
+60:65–80.
+Gilbert, E. S. 1968. On discrimination using qualitative variables.Journal of the American Statistical Association
+63:1399–412.
+Goyenko, R., and S. Sarkissian. 2012. Treasury bond illiquidity and global equity returns. Journal of Financial
+and Quantitative Analysis 49:1217–53.
+Graham, B. 1973. The intelligent investor, 4th ed. New Y ork: Harpers & Row.
+Hamilton, J. D. 1989. A new approach to the economic analysis of nonstationary time series and the business
+cycle. Econometrica 57:357–84.
+———. 1994. Time Series Analysis. New Y ork: Princeton University Press.
+Hollo, D., M. Kremer, and M. Lo Duca. 2012. CIS S - A composite indicator of systemic stress in the ﬁnancial
+system. Working Paper, ECB.
+Jotikasthira, C., C. Lundblad, and T. Ramadorai. 2012. Asset ﬁre sales and purchases and the international
+transmission of funding shocks. Journal of Finance 67:2015–50.
+Kelly, B., and H. Jiang. 2012. Tail risk and hedge fund returns. Working Paper, Chicago Booth.
+Kelley, E. K., and P . C. Tetlock. 2013. Why do investors trade? Working Paper.
+Kim, C.-J. 1994. Dynamic linear models with Markov-switching. Journal of Econometrics 60:1–22.
+Lesmond, D. A., J. Ogden, and C. Trzcinka. 1999. A new estimate of transaction costs. Review of Financial
+Studies 12:1113–41.
+Longstaff, F. 2004. The ﬂight to liquidity premium in US Treasury bond prices. Journal of Business 77:511–26.
+Longstaff, F. A., J. Pan, L. H. Pedersen, and K. J. Singleton. 2011. How sovereign is sovereign credit risk?
+American Economic Journal: Macroeconomics 3:75–103.
+Martin, I. 2017. What is the expected return on the market? Quarterly Journalof Economics 132:367–433.
+Mayﬁeld, E. S. 2004. Estimating the market risk premium. Journal of Financial Economics 73:465–96.
+Merton, R. C. 1980. On estimating the expected return on the market: An exploratory investigation. Journal of
+Financial Economics 8:323–61.
+745
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 58 =====
+
+[14:44 20/12/2019 RFS-OP-REVF190061.tex] Page: 746 689–746
+The Review of Financial Studies / v 33 n 2 2020
+Namvar, E., B. Phillips, K. Pukthuanthong, and P . Raghavendra Rau. 2016. Do hedge funds dynamically manage
+systematic risk? Journal of Banking and Finance 64:1–15.
+Novy-Marx, R. 2013. The other side of value: Good growth and the gross proﬁtability premium. Journal of
+Financial Economics 108:1–28.
+Patton, A. J. 2009. Are "market neutral" hedge funds really market neutral?Review of Financial Studies22:2495–
+530.
+Patton, A. J., and T. Ramadorai. 2013. On the high-frequency dynamics of hedge fund risk exposures. Journal
+of Finance 68:597–635.
+Piotroski, J. 2000. V alue investing: The use of historical ﬁnancial statement information to separate winners from
+losers. Journal of Accounting Research 38:1–41.
+Sadka, R. 2012. Hedge-fund performance and liquidity risk. Journal of Investment Management 10:60–72.
+Swensen, D. F. 2009.Pioneering portfolio management: An unconventional approach to institutional investment.
+New Y ork:Free Press.
+Teugels, J. L. 1990. Some representations of the multivariate bernoulli and binomial distributions. Journal of
+Multivariate Analysis 32:256–68.
+Titman, S., and C. Tiu. 2011. Do the best hedge funds hedge? Review of Financial Studies 24:123–68.
+V ayanos, D. 2004. Flight to quality, ﬂight to liquidity, and the pricing of risk. Working Paper, London School of
+Economics.
+White, H. 1980. A heteroskedasticity-consistent covariance-matrix estimator and a direct test for
+heteroskedasticity. Econometrica 48:817–38.
+746
+Downloaded from https://academic.oup.com/rfs/article/33/2/689/5512368 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026

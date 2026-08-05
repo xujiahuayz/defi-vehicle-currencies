@@ -1,0 +1,1541 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 73 (2004) 37–69
+Common market makers and
+commonality in liquidity $
+Jay F.Coughenour a,b,*, Mohsen M.Saad c
+a Lerner College of Business and Economics, University of Delaware, Newark, DE 19716, USA
+b Securities and Exchange Commission, Washington, DC 20549, USA
+c American University in Dubai, United Arab Emirates
+Received 7 August 2002; accepted 21 May 2003
+Abstract
+Each NYSE specialist ﬁrm provides liquidity for more than one common stock.As a result
+of shared capital and information among specialists within a ﬁrm, we argue that stock
+liquidity will co-move with the liquidity of other stocks handled by the same specialist ﬁrm,
+with magnitude increasing with the risk of providing liquidity.The evidence indicates that
+individual stock liquidity co-varies with specialist portfolio liquidity apart from information
+reﬂected by market liquidity variation.Further tests based on specialist ﬁrm size, specialist
+ﬁrm mergers, and market returns indicate that liquidity co-variation increases with the risk of
+providing liquidity.
+r 2004 Elsevier B.V. All rights reserved.
+JEL classiﬁcation: D23; G14
+Keywords: Liquidity; Co-movement; Specialist ﬁrms; Microstructure
+ARTICLE IN PRESS
+$We thank Jeff Harris, Larry Harris, Bill Latham, Mike Pagano, seminar participants at the Securities
+and Exchange Commission and Villanova University, and especially an anonymous referee for valuable
+comments.From the NYSE, we thank Steven Wheeler for assistance with archived documents and Julie
+Fryer for providing the daily Specialist Firm Directory ﬁles.From LaBranche and Co. , we thank Robert
+Murphy and several specialists for valuable conversations.The views expressed herein do not necessarily
+reﬂect those of the NYSE, LaBranche, or any other individual or ﬁrm.The Securities and Exchange
+Commission, as a matter of policy, disclaims responsibility for any private publication or statement by any
+of its employees.The views expressed herein are those of the authors and do not necessarily reﬂect the
+views of the Commission or of the author’s colleagues upon the staff of the Commission.
+*Corresponding author.Department of Finance, Lerner College of Business and Economics, University
+of Delaware, Newark, DE 19716, USA.Tel. : 1-302-831-1766.
+E-mail address: coughenj@lerner.udel.edu (J.F. Coughenour).
+0304-405X/$ - see front matter r 2004 Elsevier B.V. All rights reserved.
+doi:10.1016/j.jﬁneco.2003.05.006
+
+===== PAGE 2 =====
+
+1. Introduction
+Chordia, Roll, and Subrahmanyam (2000) and Hasbrouck and Seppi (2001)
+provide evidence of positive time-series stock liquidity co-variation.However, the
+underlying economic sources of this ‘commonality in liquidity’ are not well
+understood.We argue that liquidity co-variation could arise from the fact that
+each NYSE specialist ﬁrm provides liquidity for many stocks.Common adjustments
+in the provision of liquidity arise because specialists within each ﬁrm trade from a
+common pool of capital and share inventory and proﬁt information.The argument
+also implies that the degree of liquidity co-variation should be positively related to
+specialist ﬁrm capital constraints or, more generally, to the ﬁrm-level risk of
+providing liquidity.Our cross-sectional and time-series evidence supports these
+arguments.
+Understanding the source of common liquidity movements is important for many
+market participants.Because systematic liquidity variation is most likely a priced
+source of risk ( Amihud and Mendelson, 1986 ; Brennan and Subrahmanyam, 1996 ;
+Jones, 2002; P!astor and Stambaugh, 2003), understanding the causes of liquidity co-
+variation will help investors bear this risk with greater efﬁciency.Empirical evidence
+regarding this issue will aid academics to advance their understanding of liquidity
+dynamics and also aid regulators, exchanges, and other participants seeking to
+improve market design.
+Broadly speaking, commonality in liquidity is induced by common variation in the
+demand for liquidity, the supply of liquidity, or both.Demand-generated
+commonality in liquidity could arise as variation in a common factor stimulates
+systematic variation in the desire to transact.In contrast, supply-generated
+commonality in liquidity could arise from systematic variation in the costs of
+providing liquidity.It is difﬁcult, however, to think of systematic factors that would
+not simultaneously alter the demand and supply of liquidity.For example, an
+interest rate shock could stimulate a shared desire to rebalance portfolios and thus
+stimulate a systematic increase in the demand for liquidity.Concurrently, however,
+an interest rate shock would also alter the cost (and risk) of supplying liquidity.In
+the normal course of events, liquidity co-variation most likely arises from a complex
+interplay among demanders of liquidity, market makers, and other liquidity
+suppliers (e.g., those placing public limit orders).
+The purpose of this paper is to provide empirical evidence regarding the existence
+and relative importance of supply-generated liquidity co-variation.To do so, we
+highlight the fact that market makers (NYSE specialists) employ shared capital and
+information, and we argue that this organizational arrangement can induce liquidity
+co-variation.For example, suppose information regarding ﬁrm values contains no
+common component and arrives randomly across stocks, yielding uncorrelated
+demands for liquidity.Even in this extreme case, common liquidity adjustments
+could still arise if market makers allow gains or losses in one stock to inﬂuence the
+provision of liquidity to other stocks in their portfolio.
+Prior research provides useful guidance for thinking about the specialist ﬁrm
+characteristics most likely to inﬂuence liquidity co-variation. Ho and Stoll (1983)
+ARTICLE IN PRESS
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6938
+
+===== PAGE 3 =====
+
+and Gehrig and Jackson (1998) argue that the risk of providing inventory is
+negatively related to the degree of specialist portfolio diversiﬁcation. Strobl (2002)
+notes that, while inventory costs could decrease with specialist portfolio diversiﬁca-
+tion, adverse selection costs could increase.Apart from portfolio composition,
+Coughenour and Deli (2002) ﬁnd that specialist ﬁrm organizational form inﬂuences
+liquidity provision, in which ﬁrms that employ relatively low-cost capital tend to
+provide liquidity as if they are more willing or able to bear risk.
+The common thread through these studies is that the risk of providing liquidity
+can vary systematically across specialist ﬁrms, implying that a given specialist can
+assume more risk if its specialist ﬁrm employs lower cost capital across a well-
+diversiﬁed portfolio.Accordingly, we argue that stocks handled by specialist ﬁrms
+with these characteristics will display less liquidity co-variation.For example, with
+greater specialist ﬁrm diversiﬁcation, a negative proﬁt shock in one stock is less likely
+to inﬂuence the liquidity provided to their other stocks.Similarly, specialists facing
+relatively moderate capital constraints (by employing lower cost capital) are more
+likely to provide liquidity independent of variation in market and specialist portfolio
+liquidity.
+Our basic methodology follows that used by Chordia et al.(2000) .One difference
+between our studies, however, is that we use intraday aggregates that allow us to
+account for well-known intraday spread variation (e.g., McInish and Wood, 1992 ).
+Initially, we replicate the liquidity market model estimated by Chordia et al.(2000)
+and ﬁnd a similar positive mean liquidity beta between individual stock and market
+portfolio liquidity variation.An important difference, however, is that our data
+yields R
+2’s over 22%, compared with the R2’s of roughly 1% reported by Chordia
+et al.(2000) .1 This result indicates that the degree of liquidity co-variation is greater
+than that implied by the analyses of Chordia et al.(2000) and Hasbrouck and Seppi
+(2001), lending greater support to recent studies arguing that systematic liquidity
+variation is a priced risk factor (e.g., P!astor and Stambaugh, 2003 ).
+Our central results are obtained by incorporating information about the specialist
+ﬁrm portfolio into the liquidity market model used by Chordia et al.(2000) .In each
+model, we substitute the variation of market portfolio liquidity with variation of
+each stock’s specialist portfolio liquidity and ﬁnd a signiﬁcant positive specialist-
+liquidity beta that is roughly two-thirds the size of the market-liquidity beta.When
+we isolate variation in specialist portfolio liquidity from variation in market liquidity
+(by joint estimation), the evidence reveals a signiﬁcant positive specialist-liquidity
+beta that is roughly one-eighth the size of the market-liquidity beta.This evidence
+indicates that liquidity co-variation induced by information related solely to
+specialist portfolio liquidity is signiﬁcant, but less important than factors associated
+with market liquidity variation.
+We conclude with tests that examine whether the degree of liquidity co-variation is
+positively related to the risk of providing liquidity.The ﬁrst two tests focus on
+specialist ﬁrm size.We argue that specialists employed by larger ﬁrms can provide
+ARTICLE IN PRESS
+1 We verify that the different R2’s stem from the aggregation period by repeating the test with our data
+aggregated at daily intervals.Doing so causes the adjusted R2’s to fall from 22% to roughly 3%.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 39
+
+===== PAGE 4 =====
+
+liquidity with greater independence owing to greater diversiﬁcation beneﬁts and
+lower capital constraints.If so, we should observe an inverse relation between
+specialist ﬁrm size and degree of liquidity co-variation.In the ﬁrst test we estimate
+specialist portfolio liquidity co-variation with market portfolio liquidity and ﬁnd a
+signiﬁcant negative relation between the co-variation estimates and specialist ﬁrm
+size.In the second test we focus on eight specialist ﬁrm mergers and ﬁnd that
+liquidity co-variation estimates signiﬁcantly decrease after the mergers.
+The ﬁnal test considers whether the degree of liquidity co-variation is related to the
+sign and magnitude of market returns.During periods with large negative returns,
+we argue that shared capital constraints are likely to be more binding and the cost
+(and risk) of supplying liquidity should increase.
+2 Therefore, if specialists provide
+liquidity with less independence when the risk of doing so increases, the degree of
+specialist portfolio liquidity co-variation should be greater during periods with
+negative market returns.Consistent with this argument, the evidence indicates that
+individual stock liquidity co-variation with specialist portfolio liquidity is
+signiﬁcantly greater during periods with relatively large negative market returns.
+In summary, the evidence indicates that commonality in liquidity is generated
+from the fact that stocks share common market makers.On average, individual
+stock liquidity variation is signiﬁcantly related to variation in specialist ﬁrm
+portfolio liquidity.This relation, however, is roughly one-eighth of that found with
+respect to market liquidity variation, implying that factors which inﬂuence market
+wide liquidity typically play a greater role in explaining individual stock liquidity
+dynamics.Further tests indicate that specialist ﬁrm characteristics explain cross-
+sectional and time-series variation in the degree of liquidity co-variation, consistent
+with our hypothesis that liquidity co-variation increases with the risk of supplying
+liquidity.Finally, the use of intraday aggregates yields evidence that the degree of
+commonality in individual stock liquidity is greater than previously reported.
+The remainder of this paper proceeds as follows.In Section 2 we provide
+background information about NYSE specialist ﬁrms and review related research.
+Section 3 describes the data.Section 4 presents evidence regarding the co-variation
+of individual stock liquidity with market and specialist portfolio liquidity.Section 5
+presents evidence from tests regarding the relation between liquidity co-variation
+and specialist ﬁrm characteristics.Section 6 concludes with a summary of the results
+and a discussion of some remaining issues.
+2. Background
+In this section we describe the evolution and current structure of NYSE specialist
+ﬁrms and relate our study to research examining liquidity co-variation and to
+research examining the inﬂuence of specialist ﬁrms on liquidity provision.
+ARTICLE IN PRESS
+2 As stock prices drop, returns become more volatile and inventory-holding costs increase.More
+generally, because specialist ﬁrms tend to have net long positions, capital constraints are stressed and
+specialist ﬁrm wealth is reduced during market downturns.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6940
+
+===== PAGE 5 =====
+
+2.1. Evolution and characteristics of NYSE specialist ﬁrms
+The NYSE specialist system commenced soon after the exchange introduced
+continuous trading in 1871. 3 With continuous trading, ﬂoor brokers found it
+proﬁtable to ‘specialize’ in a particular stock by maintaining a ﬁxed position at a
+post on the NYSE ﬂoor and execute orders for other brokers.As of 1933 (the date of
+the earliest specialist directory available in the NYSE archives) there appeared to be
+123 unique specialist ﬁrms, which typically contained no more than a handful of
+partners.
+4 Specialist ﬁrms were formed as a means for individual specialists to share
+capital and risk.This capital and risk-sharing aspect of specialist ﬁrms drives the
+hypotheses examined in this paper.
+During the 1900s, the NYSE changed its rules three times to allow specialist ﬁrms
+to raise greater amounts of capital at lower cost.In 1953 the NYSE allowed member
+ﬁrms to incorporate.In 1970 the NYSE voted to let member ﬁrms sell securities to
+the public.Then in 1997 the NYSE amended its rules so that the parent organization
+of a specialist ﬁrm could conduct other transactions with the listed ﬁrm.
+5
+These rule changes allowed NYSE specialist ﬁrms to evolve from small, closely
+held ﬁrms that employ their own capital to larger ﬁrms owned by public
+corporations.This evolution was accelerated after several specialist ﬁrms failed
+following the large drop in market valuations during October 1987 (from October
+1987 through June 1999 the number of specialist ﬁrms decreased from 65 to 31).
+During our sample period, June 1999 through December 2000, 13 of the 31
+remaining specialist ﬁrms were acquired.Of the 18 remaining ﬁrms four are relatively
+large; LaBranche and Co.is itself a publicly traded corporation, and Fleet
+Specialists, Goldman Sachs (Spear, Leeds, and Kellogg), and Bear Stearns (Bear
+Hunter) are all large publicly traded ﬁrms with a specialist ﬁrm subsidiary.The
+remaining specialist ﬁrms are relatively smaller partnerships organized as limited
+liability companies.
+Recent research indicates that specialist ﬁrms do not provide liquidity in equal
+manners. Cao et al.(1997) and Corwin (1999) document differences in bid–ask
+spreads, trading halt rates, and market stabilization rates across specialist ﬁrms.
+Their results suggest that specialists, grouped by specialist ﬁrm, differ in their
+incentives or ability to bear the risk of providing liquidity.In support of that
+conjecture, Coughenour and Deli (2002) ﬁnd liquidity provision to be a function of
+specialist ﬁrm organizational form, which inﬂuences the risk-bearing incentives of
+specialists.
+ARTICLE IN PRESS
+3 NYSE (1976) provides a detailed discussion of specialist ﬁrm history.
+4 Unlike current specialist directories, the exact number of ﬁrms were not provided in the 1933 specialist
+directory.Instead, it contains the stock symbol and specialist name (typically the list of ﬁrm partners).
+Therefore, we hand-counted the number of unique sets of partners and cross-checked against the 1933
+NYSE Directory of Members .
+5 These rule changes are detailed in NYSE (1953, 1970, 1987) and summarized by Coughenour and Deli
+(2002).
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 41
+
+===== PAGE 6 =====
+
+2.2. Comparison of research questions and methods with recent studies
+Studies by Chordia et al.(2000) and Hasbrouck and Seppi (2001) highlight stock
+liquidity co-variation.By examining common liquidity movements, they extend
+microstructure research that had primarily focused on an individual market maker’s
+problem of providing liquidity while bearing inventory costs (e.g., Garman, 1976 ;
+Stoll, 1978; Ho and Stoll, 1981 ; O’Hara and Oldﬁeld, 1986 ) and adverse selection
+costs (e.g., Copeland and Galai, 1983 ; Glosten and Milgrom, 1985 ; Easley and
+O’Hara, 1987).
+Chordia et al.(2000) test for common liquidity movements across 1,169 stocks
+over 253 trading days during the 1992 calendar year.They focus on the variation of
+daily changes of various liquidity measures (quoted spreads, effective spreads, and
+quoted depths) with changes in market liquidity (the equally weighted average
+liquidity of all other stocks in the sample).Applying a market model regression to
+each stock, they ﬁnd a strong average positive relation between changes in individual
+stock liquidity and changes in market liquidity.
+In addition, Chordia et al.(2000) examine whether liquidity co-variation is the
+result of systematic variation in inventory or adverse selection costs, or both.
+Although market wide price and volatility shocks could lead to common changes in
+inventory risk, they argue that it is less likely that traders are privately informed
+about market wide price movements.Therefore, they test for common variation in
+adverse selection costs by examining whether individual stock liquidity is correlated
+with changes in industry portfolio liquidity (with the reasoning that traders could
+possess private information about industry returns).They conclude that common
+variation in both inventory and adverse selection costs induces common liquidity
+movements.
+Hasbrouck and Seppi (2001) , however, report weaker evidence of liquidity co-
+variation from a sample of 24 stocks that are each components of the Dow Jones
+Industrial Average during the 1994 calendar period.In contrast to Chordia et al.
+(2000), they analyze liquidity levels instead of changes, they sample over 15-minute
+intervals instead of daily intervals, and they do not test for a relation between
+individual stock liquidity and market liquidity because this imposes an a priori
+restriction on the common factor.They conduct a principal component and
+canonical correlation analysis that does not require assumptions about the
+distributions between returns, signed order ﬂow (transaction price relative to quote
+midpoint), and liquidity.
+From the principal component analysis, Hasbrouck and Seppi (2001) report that
+one common factor explains roughly 13% of variation in the quote slope (a liquidity
+estimate that incorporates both the quoted spread and depth) and roughly 12% of
+variation in the percentage quoted spread (log spread).Although this explanatory
+power is similar to that found for signed order ﬂow (11.2% for all signed trades, and
+13% for signed small dollar volume trades), the overall evidence leads them to
+conclude that common factors in liquidity are less evident and weak.This is
+important because it casts doubt on recent research indicating that liquidity
+variation is a priced source of risk (e.g., P!astor and Stambaugh, 2003 ).They note,
+ARTICLE IN PRESS
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6942
+
+===== PAGE 7 =====
+
+however, that stronger liquidity co-variation could exist between stocks with
+different market capitalizations. 6
+We attempt to combine favorable elements of both studies.As explained in
+Section 3, we aggregate data at intraday intervals for 470 NYSE-listed securities over
+the 19-month period ending December 2000.In a fashion similar to Chordia et al.
+(2000), we consider the relation between changes in liquidity relative to the change in
+market and specialist portfolio liquidity.Although this pre supposes common
+factors, it allows us to test hypotheses with respect to variation in specialist portfolio
+liquidity that is independent of variation in market liquidity.Following Hasbrouck
+and Seppi (2001), we conduct our analysis on intraday liquidity estimates to capture
+well-known intraday variation in transaction costs (e.g., McInish and Wood, 1992 )
+that is smoothed by daily aggregation.We note, however, that the precision of
+liquidity estimates decreases with ﬁner aggregation periods, especially for stocks that
+trade less frequently.Therefore, we use three intraday liquidity estimates: morning,
+midday, and afternoon.
+Although we employ prior techniques, our hypotheses differ markedly.Our
+primary hypothesis considers whether the simple sharing of a common market
+maker induces common liquidity movements between stocks, a test of supply-
+generated commonality.If a group of specialists share common ﬁnancial constraints
+their tolerance for bearing inventory or adverse selection costs should be correlated,
+giving rise to positive liquidity co-variation.
+Conversations with NYSE specialists provide anecdotal support of this argument.
+On monitors at each trading panel, NYSE specialists observe their current proﬁt or
+loss on each stock they handle.Then, for example, specialist ﬁrms such as LaBranche
+and Co.can monitor this information across all its stocks.Although LaBranche
+specialists state that their ﬁrm is extremely well capitalized, they also note that they
+cannot freely take any position.For example, before taking an abnormally large
+position a specialist could seek permission from one of the LaBranche ﬂoor captains
+(who are also specialists).In turn, the ﬂoor captain could call LaBranche directors
+off the exchange ﬂoor for guidance.For our purposes, this process illustrates that
+information about inventory and proﬁts is shared and that ﬁrm capital constraints
+and other characteristics can affect the provision of liquidity.
+Several theoretical studies suggest which specialist ﬁrm characteristics could
+inﬂuence the degree of liquidity co-movement. Ho and Stoll (1983) argue that dealer
+behavior will be a function of a given stock’s inventory in relation to the inventories
+of all other stocks handled by the dealer ﬁrm. Gehrig and Jackson (1998) show that
+inventory cost savings are obtained when specialist ﬁrms handle stocks with
+relatively low trading correlation. Strobl (2002) considers the trade-off between the
+diversiﬁcation beneﬁts of handling securities with uncorrelated payoffs, with the
+lower adverse selection costs obtained when specialists handle stocks with correlated
+payoffs.
+ARTICLE IN PRESS
+6 For example, Chan (1993) argues that, with less order-ﬂow information about small stocks, small stock
+traders and market makers will rationally choose to learn, and update their quotes, by observing
+transactions of larger stocks.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 43
+
+===== PAGE 8 =====
+
+Apart from specialist portfolio composition issues, Coughenour and Deli (2002)
+argue that specialist ﬁrm organizational form inﬂuences a ﬁrm’s cost of capital, and
+thus the degree it is willing to bear market-making risk.In particular, their evidence
+indicates that specialists from ﬁrms that employ corporate-owned capital (instead of
+capital owned directly by the specialists) provide liquidity as if they can bear greater
+inventory risk.
+These economic rationales prompt three additional tests for supplier-generated
+commonality based on the risk of providing liquidity.The ﬁrst two tests focus on
+specialist ﬁrm size.Because larger specialist ﬁrms tend to have greater diversiﬁcation
+beneﬁts and tend to employ lower cost capital, we expect stocks handled by larger
+specialist ﬁrms to display less liquidity co-variation.We test this by examining
+whether specialist portfolio commonality estimates decrease with specialist ﬁrm size
+and by examining whether individual stock commonality estimates decrease when
+the stock’s specialist ﬁrm increases in size following a specialist ﬁrm merger.
+7
+The ﬁnal test is based on market direction.When market valuations decrease, the
+stress on shared capital constraints is likely to increase as specialist ﬁrm
+wealth decreases (specialist ﬁrms tend to have net long stock positions).For
+example, the large drop in market indices during October 1987 brought several
+specialist ﬁrms to the brink of failure.Consequently, we expect greater joint
+management of liquidity within a specialist ﬁrm portfolio during periods with
+negative market returns.Therefore, we test whether liquidity co-variation between
+stocks handled by the same specialist ﬁrm is larger during periods with greater
+absolute negative market returns.
+8
+3. Data
+In this section we characterize the composition of the specialist ﬁrm portfolios,
+discuss issues related to the measurement of liquidity, and characterize the level and
+changes of several liquidity variables.
+3.1. Stock and specialist ﬁrm characteristics
+We use NYSE Trade and Quote data to estimate all liquidity and control
+variables, and we use daily NYSE specialist directory ﬁles to match each stock in our
+sample with its specialist ﬁrm.Given that the daily specialist directory ﬁles did not
+exist prior to June 1999, the analysis examines the 19-month period from June 1,
+1999 through December 31, 2000.To be included in the sample each stock had to
+pass the following ﬁve ﬁlters.Each stock had to be among the 500 largest (market
+ARTICLE IN PRESS
+7 Hatch and Johnson (2002) ﬁnd an improvement in market quality after specialist ﬁrm mergers (but not
+relative to a control sample).While their paper examines changes in market quality (spreads and other
+liquidity measures) following specialist ﬁrm mergers, we examine changes in the degree liquidity co-varies
+after specialist ﬁrm mergers.
+8 We are grateful to the referee for suggesting the size-based test using specialist portfolio liquidity and
+the ﬁnal test based on market direction.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6944
+
+===== PAGE 9 =====
+
+capitalization) stocks that were continuously listed on the NYSE from January 1999
+through December 2000.Each stock had to be continuously listed in the NYSE
+specialist directory ﬁles.Each stock had to trade at least twice every intraday period
+and average at least 20 trades per intraday period (the sample mean is 252.4 trades
+per period, with mean dollar volume over $19.7 million per period). Each stock’s
+price had to always exceed $4 per share and be less than $200 per share.The trading
+activity ﬁlters are necessary because we aggregate data at intraday intervals.The
+ﬁlters on price are necessary to remove stocks that yield extreme percent changes in
+bid–ask spreads.Thirty stocks failed to pass one or more of these ﬁlters, leaving a
+sample of 470 common stocks.
+Table 1 provides a description of the specialist ﬁrms operating during our sample
+period.The ﬁrst column lists the 31 specialist ﬁrms in operation on June 1, 1999.
+During our sample period, however, 13 specialist ﬁrms were acquired.The second
+column lists the last date that the NYSE specialist directory reports stocks handled
+by the acquired ﬁrms.The third column illustrates the distribution of all 3,060
+common stocks across the 31 specialist ﬁrms at the beginning of the sample.The
+fourth and ﬁfth columns provide the distribution of our ﬁltered 470-stock sample
+across specialist ﬁrms on the ﬁrst and last day of our sample, respectively, to
+illustrate the degree of change in the specialist ﬁrm population.
+The ﬁnal column on Table 1 lists our working sample stocks.The working sample
+contains stocks handled by the same specialist ﬁrm throughout the 19-month sample
+period, in which the specialist portfolio contains at least ten stocks meeting the
+original ﬁlters.From the set of 470 ﬁltered stocks, the working sample contains 259
+stocks from ten specialist ﬁrms.We use the working sample throughout the study to
+measure liquidity co-variation between stock j and its own specialist portfolio (all
+stocks in the specialist portfolio except stock j) and with the market portfolio (all
+stocks from the 470 stock sample not handled by stock j’s specialist ﬁrm).We
+constrain ourselves to these 259 stocks to assure that our specialist portfolio liquidity
+estimates are not overly inﬂuenced by any particular stock.This constraint is not
+overly costly because inference based on the 259 stock sample covers a broad range
+of industries and size (as shown below in Table 2 ).The limiting aspect of this
+constraint is that forthcoming cross-sectional tests will be based on a sample of ten
+specialist ﬁrms.The results indicate, however, that this trade-off is not problematic,
+for large and signiﬁcant cross-sectional variation is revealed.In addition, our cross-
+sectional sample size reﬂects more recent consolidation that has left only seven
+specialist ﬁrms operating on the NYSE ﬂoor.
+A related concern is the distribution of stocks across size and industry
+classiﬁcations within each specialist ﬁrm portfolio.If specialist portfolios are highly
+concentrated with stocks containing a certain characteristic, common liquidity
+variation between stocks within the specialist ﬁrm could be the result of common
+adjustments in the demand for the liquidity of these type stocks, instead of factors
+associated with the liquidity supplier.Two characteristics likely to be associated with
+common surges in the demand for liquidity are stock industry and size.For example,
+there are numerous cases of information releases that primarily affect stocks in a
+particular industry, and common demand for liquidity could be periodically
+ARTICLE IN PRESS
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 45
+
+===== PAGE 10 =====
+
+ARTICLE IN PRESS
+Table 1
+NYSE specialist ﬁrms from June 1, 1999 to December 31, 2000.The data are collected from the merged
+NYSE daily specialist directory ﬁles and NYSE Trade and Quote ﬁles.There were 31 specialist ﬁrms on
+June 1, 1999.As a result of 13 mergers, 18 specialist ﬁrms were in operation at the end of 2000.The
+specialist ﬁrms are sorted according to the total number of common stocks handled on June 1, 1999.The
+470 sample stocks are the largest 500 (market capitalization) stocks listed from January 1, 1999 through
+December 31, 2000 that passed several price and trade activity ﬁlters (see Section 3).To illustrate the
+degree specialist ﬁrm composition changes during our sample period, we report the distribution of the
+sample stocks at the beginning and end of the sample.The 259 stock working sample contains those
+ﬁltered stocks that remain with the same specialist ﬁrm throughout the sample period and have at least
+nine other stocks in the specialist portfolio (to obtain more reliable estimates of specialist portfolio
+liquidity).Throughout the paper, the 470 stock sample is used to estimate market portfolio liquidity and
+returns, while the 259 working stock sample is used to estimate liquidity co-variation with market and
+specialist portfolio liquidity.A dash (—) in the column denotes a zero.
+Specialist ﬁrm Date specialist
+ﬁrm ceases to
+exist
+Total
+stocks
+(June 1,
+1999)
+Sample
+stocks
+(June 1,
+1999)
+Sample
+stocks
+(December
+30, 2000)
+Working
+sample
+stocks
+Fleet Specialist October 27,
+2000
+355 72 — —
+Spear, Leeds, and Kellogg
+LLC
+293 57 80 57
+LaBranche and Co.291 44 73 44
+Wagner Stott Mercator,
+LLC
+171 28 48 28
+RPM Specialist Corp 170 28 29 28
+Henderson Brothers Inc.June 6, 2000 139 26 — —
+M.J. Meehan and Co. LLC 106 23 95 23
+Equitrade Partners June 21, 1999 172 23 — —
+Bear Hunter Specialists LLC 123 21 21 21
+CMJ Partners October 20,
+1999
+104 19 — —
+Benjamin Jacobson and Sons
+LLC
+94 19 19 19
+Lawrence, O Donnell,
+Marcus
+86 15 32 15
+Bocklet and Co.LLC 66 14 14 14
+Scavone, McKenna, Cloud
+and Co.
+65 10 10 10
+Corroon, Lichtenstein March 10,
+2000
+59 9 — —
+Fagenson/Frankel/Streicher June 1, 2000 92 9 — —
+Lyden, Dolan, Nick and Co.,
+LLC
+80 7 7 —
+Walter N.Frank and Co.
+LLC
+75 6 6 —
+Einhorn and Co.July 19, 1999 59 5 — —
+Phoenix Partners L.L.C. November 3,
+2000
+53 5 — —
+Surnamer, Weissman, and
+Co.
+July 19, 1999 41 4 — —
+WEBCO Securities Inc.March 10,
+2000
+40 4 — —
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6946
+
+===== PAGE 11 =====
+
+size-based because many portfolio managers focus on stocks within particular
+market capitalization categories.
+In Table 2 we list the highest number of stocks sharing Standard Industrial
+Classiﬁcation (SIC) code digits for each specialist ﬁrm.For example, no more than
+13 of 44 sample stocks handled by LaBranche and Co.share the same ﬁrst SIC code
+digit; no more than four of 44 share both the ﬁrst and second SIC code digits, etc.In
+the ﬁnal four columns we report the distribution of stocks across mean daily dollar
+volume quartiles.The quartiles are deﬁned as Q1 p $12.5 o Q2 p $25 o Q3 p $50
+o Q4 ($ millions).Although two specialist ﬁrms (LaBranche and Bear Hunter) are
+weighted toward the more active stocks, the remainder appears well diversiﬁed.
+Therefore, any cross-sectional differences in liquidity co-variation are not likely to be
+the result of differences in the demand for liquidity across stocks in different
+specialist portfolios.
+9
+3.2. Liquidity measurement and summary statistics
+The liquidity of a stock’s market is measured using standard methods.At the time
+of each transaction let P denote transaction price, t denote transaction time, a denote
+ARTICLE IN PRESS
+Table 1 (continued)
+Specialist ﬁrm Date specialist
+ﬁrm ceases to
+exist
+Total
+stocks
+(June 1,
+1999)
+Sample
+stocks
+(June 1,
+1999)
+Sample
+stocks
+(December
+30, 2000)
+Working
+sample
+stocks
+Susquehanna Specialists 43 4 12 —
+Performance Specialist
+Group, L.P.
+47 3 9 —
+Stuart, Scotto, Cella Co./
+MJM
+October 13,
+2000
+24 3 — —
+Buttonwood Specialists LLC 33 3 3 —
+Freedom Spec./Adrian/RPM
+Spec.
+31 3 3 —
+Stern and Kennedy 43 3 3 —
+Weiskopf, Silver Specialists,
+LLC
+56 2 2 —
+M.J. Cohen and Co. October 20,
+1999
+21 1 — —
+KV Specialists LLC June 21, 1999 28 — — —
+Total 3,060 470 470 259
+9 Related to this point, Corwin (2004) reports that a primary determinant of a specialist ﬁrm receiving a
+stock allocation is the queue (time since prior allocation was received).This process results in little
+correlation of the types of stocks allocated to any given specialist ﬁrm.We also help assure that variation
+in the demand for liquidity does not inﬂuence results by controlling for variation in market portfolio
+liquidity in the regression analysis.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 47
+
+===== PAGE 12 =====
+
+ARTICLE IN PRESS
+Table 2
+Distribution of stocks within specialist ﬁrms by Standard Industrial Classiﬁcation (SIC) code and trading volume.The degree of stock concentratio n by SIC
+code and trading volume is provided for the working stock sample.The SIC codes are from the Securities and Exchange Commission Edgar database, and the
+trading volume data are obtained from the NYSE Trade and Quote database.The ﬁrst set of columns list the greatest number of sample stocks sharing SIC
+codes at different digit levels (e.g., a ‘‘5’’ under ‘‘First digit’’ indicates that no more than ﬁve stocks share a particular ﬁrst SIC code digit; a ‘‘2’’ under ‘‘All four
+digits’’ indicates that no more than two stocks share a complete SIC code; a ‘‘1’’ indicates that no SIC digits are shared).The volume quartiles are deﬁ ned on
+mean daily dollar volume between the following intervals ($ millions): Q1 p12.5oQ2p25oQ3p50oQ4.
+Specialist ﬁrm Stocks Highest number of sample stocks sharing SIC code
+digits
+Percent of stocks within each trading volume
+quartile
+First digit First two
+digits
+First three
+digits
+All four
+digits
+Q1
+(Low)
+Q2 Q3 Q4
+(High)
+Spear, Leeds and Kellogg LLC 57 17 5 5 3 22.81 22.81 26.31 28.07
+LaBranche and Co. 44 13 4 3 3 9.09 25.00 22.73 43.82
+Wagner Stott Mercator, LLC 28 7 5 3 3 21.43 25.00 21.43 32.14
+RPM Specialist Corp 28 10 4 2 2 21.43 21.43 32.14 25.00
+M.J. Meehan and Co. LLC 23 5 3 2 2 17.39 21.74 8.69 52.17
+Bear Hunter Specialists LLC 21 6 5 3 3 9.52 9.52 19.05 61.91
+Benjamin Jacobson & Sons LLC 19 6 2 2 2 36.84 10.52 26.32 26.32
+Lawrence, O Donnell, Marcus 15 4 2 1 1 33.33 33.33 13.33 20.00
+Bocklet and Co. LLC 14 4 2 2 2 50.00 7.14 28.57 14.28
+Scavone, McKenna, Cloud & Co 10 3 2 1 1 30.00 30.00 30.00 10.00
+Total 259
+Mean 25.18 20.65 22.86 31.31
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6948
+
+===== PAGE 13 =====
+
+the ask price, b denote the bid price, and m denote the bid–ask midpoint.Then the
+effective half spread (ehst) equals9Pt–mt9, the percentage effective half spread ( pehst)
+equals 100 /C1ehst/mt, the quoted half spread (qhst) equals (at–bt)/2, and the percentage
+quoted half spread (pqhst) equals 100 /C1qhst/mt.10 The mean spread is estimated from
+the trade and quote data across three intraday periods (ﬁrst hour, last hour, and
+midday) for each stock, each day.The ﬁnal sample contains 560,373 observations
+from 470 sample stocks covering 401 trading days.
+11
+Market liquidity is measured using equally weighted estimates from the 470 sample
+stocks not handled by a given stock’s specialist ﬁrm during each observation period.
+This results in an equivalent market portfolio for stocks in the same specialist ﬁrm,
+but not for stocks handled by different specialist ﬁrms.Any cross-sectional difference
+in the variation of market liquidity created by this procedure is slim because ﬁrm-
+speciﬁc liquidity variation is largely diversiﬁed away within the larger market
+portfolios.As a result, the market liquidity estimates are not signiﬁcantly different for
+stocks handled by different specialist ﬁrms.For example, the correlation between the
+estimated market portfolio effective spread for stocks handled by Spear, Leeds, and
+Kellogg and for stocks handled by Scavone, McKenna and Cloud is 0.998.
+12
+Throughout the paper we estimate liquidity commonality using changes in the
+effective half spread.This is done for several reasons.First, our depth estimate lacks
+accuracy.Therefore, inference based on our estimate of depth variation is likely to be
+inaccurate and unreliable.13 Second, the evidence obtained using changes in quoted
+spreads is not substantially different from that obtained using effective spreads. 14
+Third, the effective half spread has several desirable properties.Because it is based
+on transactions, and because specialists participate in a substantial number of price-
+improved trades, it is the liquidity measure most likely to reﬂect specialist actions.
+Furthermore, the effective spread is arguably a more accurate measure of market
+liquidity because it reﬂects unquoted depth from the exchange ﬂoor.
+We estimate four different changes in the effective half spread, as deﬁned in
+Table 3, Panel A.We measure the dollar change in the dollar effective spread ( DL1),
+the point change in the percentage effective spread (DL2), the proportional change in
+ARTICLE IN PRESS
+10 Before spread estimation, transactions were eliminated if the quoted spread exceeds $5, the
+transaction price is more than 12.5 cents greater than (less than) the ask price (bid price), the transaction,
+bid, or ask price is more than 25% larger than (or less than 75% of) the preceding transaction, bid, or ask
+price, respectively, or if it was the ﬁrst transaction of the day.
+11 The number of total observations is less than 565,410 (470 /C2401 /C23) because of days with early
+market closings and the removal of three days around holidays that had abnormally low volume
+(November 24, 1999; November 26, 2000; and December 28, 2000).
+12 Chordia et al.(2000) create a market portfolio that includes all stocks except the stock of interest.
+Similarly, their market portfolio estimates are technically different for each stock, but because of
+diversiﬁcation the differences are of no consequence.
+13 Depth is measured as the sum of shares available at the quoted bid and ask price.This measure of
+depth does not capture the willingness of people to trade at other prices in the limit order book or the
+unstated willingness of people to trade from the NYSE ﬂoor. Bacidore et al.(2002) illustrate that
+unquoted depth on the ﬂoor is signiﬁcant.We also note that Chordia et al.(2000) found no evidence of
+signiﬁcant depth co-variation.
+14 Evidence using variation in quoted spreads was provided to the referee and is available upon request.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 49
+
+===== PAGE 14 =====
+
+ARTICLE IN PRESS
+Table 3
+Liquidity variable deﬁnitions and distributions.At the time of each transaction, let P denote transaction price, t denote transaction time, a denote the ask
+price, b denote the bid price, andm denote the bid–ask midpoint.Then the effective half spread (ehst) equals9Pt–mt9, the percentage effective half spread (pehst)
+equals 100 /C1ehst/mt, the quoted half spread (qhst) equals (at–bt)/2, and the percentage quoted half spread (pqhst) equals 100 /C1qhst/mt.Before spread estimation
+transactions were eliminated if the quoted spread exceeds $5; the transaction price is more than 12.5 cents greater than (less than) the ask price (bidprice); the
+transaction, bid, or ask price is more than 25% larger than (or less than 75% of) the preceding transaction, bid, or ask price, respectively; or if it was the ﬁrst
+transaction of the day.All variables are aggregated across three intraday periods (ﬁrst hour, midday, and last hour) for each stock, each day.The ﬁna l sample
+contains 560,373 observations from 470 sample stocks covering 398 trading days.
+Notation Deﬁnition Description
+Panel A: Deﬁnition of changes in liquidity
+DL1 ehs –lag(ehs) Dollar change in the
+mean effective half spread
+DL2 pehs –lag(pehs) Point change in the mean
+percentage effective half spread
+DL3 (ehs/lag(ehs))–1 Proportional change in the
+mean effective half spread
+DL4 (pehs/lag(pehs))–1 Proportional change in the mean
+percentage effective half spread
+Statistic ehs pehs qhs pqhs DL1 DL2 DL3 DL4
+Panel B: Distribution of liquidity variables (N=560,373)
+Mean 0.0650 0.2002 0.1337 0.3937 0.0000 0.0000 0.0503 0.0506
+Percentile
+100% Maximum 1.0798 5.2691 1.8437 7.5512 0.9896 4.9383 58.1249 58.2453
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6950
+
+===== PAGE 15 =====
+
+ARTICLE IN PRESS
+99% 0.1452 0.7455 0.3210 1.2951 0.0602 0.2560 1.2954 1.2996
+95% 0.1119 0.4599 0.2334 0.8388 0.0340 0.1149 0.6641 0.6651
+90% 0.0993 0.3590 0.2014 0.6703 0.0236 0.0715 0.4465 0.4475
+75% Q3 0.00806 0.2444 0.1598 0.4750 0.0102 0.0267 0.1885 0.1884
+50% Median 0.0603 0.1632 0.1244 0.3317 –0.0005 –0.0013 –0.0099 –0.0098
+25% Q1 0.0442 0.1094 0.0960 0.2395 –0.0108 –0.0286 –0.1684 –0.1684
+10% 0.0359 0.0787 0.0751 0.1817 –0.0228 –0.0702 –0.2979 –0.2979
+5% 0.0325 0.0656 0.0639 0.1550 –0.0316 –0.1097 –0.3750 –0.3751
+1% 0.0269 0.0478 0.0457 0.1155 –0.0553 –0.2399 –0.5243 –0.5246
+0% Minimum 0.0000 0.0000 0.0053 0.0127 –0.9745 –3.9555 –1.0000 –1.0000
+Statistic ehs pehs qhs pqhs DL1 DL2 DL3 DL4 |DL1|| DL2|| DL3|| DL4|
+Panel C: Cross-sectional statistics for time-series means (N ¼ 470)
+Mean 0.0650 0.2002 0.1337 0.3937 0.0000 0.0000 0.0503 0.0506 0.0149 0.0489 0.2427 0.2432
+Median 0.0636 0.1754 0.1287 0.3528 0.0000 0.0000 0.0423 0.0426 0.0139 0.0390 0.2297 0.2303
+Standard Deviation 0.0118 0.0964 0.0329 0.1633 0.0000 0.0001 0.0276 0.0276 0.0045 0.0321 0.0638 0.0637
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 51
+
+===== PAGE 16 =====
+
+the dollar effective spread ( DL3), and the proportional change in the percentage
+effective spread ( DL4).Examining the point and proportional change in the
+percentage spread ( DL2 and DL4) allows us to examine liquidity co-variation
+relative to the price of each stock, while the dollar and proportional difference in
+dollar spreads ( DL1 and DL3) help assure that evidence is not driven by common
+variation in prices. 15
+A few properties of the change in effective spread distributions are worth
+mentioning.First, the minimum effective half spread and percentage effective
+spreads are zero (see Table 3, Panel B).In these cases, each trade during a period for
+a particular stock occurred at the quote midpoint.As a result, when the spread drops
+to zero the proportional change in the dollar effective spread and percentage effective
+spread (DL3 and DL4) equals –1.0 (the minimum), but when spreads rise from zero
+the proportional changes are undeﬁned.Also, when spreads rise from near-zero
+(which occurs fairly often), a relatively modest dollar change in the spread can yield
+exceptionally large proportional changes (the maximum percent change in effective
+spreads is over 5,800 times).Thus, the change in effective spread from zero or near-
+zero is captured well by the dollar change in the dollar spread or point change in the
+percentage spread ( DL1 and DL2).To assure that the evidence is robust to the
+measurement of liquidity change, each test is estimated using these four methods.
+Finally, before estimating the degree of liquidity co-variation we remove liquidity
+variation observations (DL1–DL4) that are greater than the 99th percentile and lower
+than the 1st percentile of its own distribution.We do this because any remaining data
+errors are most likely contained in the distribution tails, and because we want the
+evidence to depict the degree of commonality without the undue inﬂuence of outliers.
+The cross-sectional distribution of the 470 stock time-series means of each
+liquidity variable is reported in Table 3, Panel C.The mean effective half spread is
+6.5 cents and the mean quoted half spread is roughly 13.4 cents. The mean
+percentage effective half spread is 0.2% and the mean percentage quoted half spread
+is almost 0.4%. The mean dollar change in the dollar effective spread ( DL1) and the
+mean point change in the percentage effective spread ( DL2) are both zero, while the
+mean percentage changes (DL3 and DL4) are both about 5% (with difference driven
+largely by the truncation of DL3 and DL4 at –1.0).
+The cross-sectional mean of the absolute dollar change of dollar spreads (|DL1|) is
+1.49 cents and the mean absolute point change in percentage spreads (| DL2|) is 4.89
+points.The mean absolute proportional change in the dollar effective spread and
+percentage effective spread (|DL3| and |DL4|) are both slightly over 24% per period,
+which are slightly lower than the 31% mean absolute changes reported by Chordia
+et al.(2000) .This difference could stem from different sample periods (1992 versus
+1999–2000) between which there were many structural changes (tick size, display
+rules, increased competition for order ﬂow) and changes in overall market activity
+ARTICLE IN PRESS
+15 Borrowing from Chordia et al.(2000) , we let D denote ‘difference’ and L denote ‘liquidity.’ We use the
+numbers 1–4 to easily refer to method used to calculate the change in liquidity. Chordia et al.(2000) also
+measured two changes in effective spreads, the proportional change in dollar and percentage spreads (our
+DL3 and DL4).
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6952
+
+===== PAGE 17 =====
+
+that has led to lower transaction costs ( Bessembinder, 1999, 2003 ).Similar to
+Chordia et al.(2000) , however, the low cross-sectional standard deviation of the
+mean absolute changes in the effective spread indicate that time-series spread
+variation is common across stocks.
+4. Empirical evidence of common liquidity variation
+In this section we report estimation of individual stock liquidity co-variation with
+the market portfolio and separately with the specialist ﬁrm portfolios, we report the
+simultaneous estimation of individual stock liquidity co-variation with market and
+specialist portfolio liquidity, and we present a test checking the assumption
+underlying the basic model speciﬁcation.
+4.1. Evidence regarding commonality with market liquidity
+The market model method employed byChordia et al.(2000) is used for our initial
+estimates of liquidity co-variation, which we report for comparison purposes.The model,
+DL
+i; j;t ¼
+X3
+p¼1
+ai; j;pPp þ bi; jDMLi; j;t þ XB þ ei; j;t; ð1Þ
+yields the market-liquidity beta estimate (#bi; j) for each stock j in the working sample
+(N=259), across each of the four ( i) methods of estimating the change in effective
+spread (where DLi=DL1,y,DL4).The change in market liquidity ( DMLijt)i st h eith
+change in the average effective spread using the 470 ﬁltered sample stocks that are not
+in stock j’s specialist ﬁrm.In addition, we estimate a vector of control variable
+coefﬁcients (B), which includes lead and lag estimates of the change in market liquidity;
+the current, lead, and lag market return; and the current change in the squared return
+of stock j.The control variables are intended to hold constant any relation between
+spreads, market returns, and individual stock price movement that is unrelated to
+changes in market liquidity.Finally, we allow the intercept to vary to control for the
+intraday variation of transaction costs.The indicator variable P
+1 equals one if the
+observation is aggregated from data during the ﬁrst hour of trade and is zero otherwise.
+Likewise, indicator variablesP
+2 and P3 equal one if the observation is aggregated from
+the middle of the day and ﬁnal hour, respectively, and zero otherwise.
+If individual stock liquidity co-varies with market liquidity the mean beta
+coefﬁcient estimated from Eq.(1) will be signiﬁcantly different from zero.Following
+Chordia et al.(2000) , we test the hypothesis %b
+i ¼ 0 using a cross-sectional t-test.16 To
+convey the cross-sectional distribution of the sign and signiﬁcance of the individual
+liquidity beta estimates we also report the percent of positive and signiﬁcantly
+positive coefﬁcients estimated from the individual regressions.
+ARTICLE IN PRESS
+16 As Chordia et al.(2000) note, the cross-sectional t-statistic for the b estimates is calculated under the
+assumption that the estimation errors are uncorrelated across the individual stock regressions.The
+speciﬁcation check reported in Table 6 supports this assumption.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 53
+
+===== PAGE 18 =====
+
+The mean market-liquidity betas are reported in the ﬁrst four columns in Table 4.
+The average market-liquidity beta ranges from %b2 ¼ 0:66 (t-statistic D 30) to %b3 ¼
+0:81 (t-statistic D 47), and for each measure of spread variation, over 90 percent of
+the individual market-liquidity betas are signiﬁcantly positive.This initial evidence
+indicates a strong degree of common liquidity variation in our sample.
+ARTICLE IN PRESS
+Table 4
+Commonality in liquidity with market and specialist ﬁrm portfolios.The change in the effective spread of
+stock j is regressed on the concurrent, lag, and lead change in the market portfolio effective spread (where
+the market excludes stock j and stocks in the same specialist ﬁrm) or on the change in the specialist
+portfolio effective spread (where the specialist portfolio excludes stock j).The speciﬁcations are described
+in the text as Eqs.(1) and (2).The dependent variable is DL1, DL2, DL3,o r DL4, representing the four
+methods of estimating spread changes (see Table 3, Panel A).The regression is estimated for each of the
+259 stocks in the working sample.The cross-sectional average time-series coefﬁcient %b is the estimate of co-
+variation with market portfolio liquidity, and %g is the estimate of co-variation with specialist portfolio
+liquidity (with t-statistics in parentheses).‘Percent positive’ is the percent of positive coefﬁcients, and
+‘Percent + signiﬁcant’ is the percent with t-statistic greater than + 1.645, the 5% critical level in one-
+tailed test.Sum = concurrent + lead +lag coefﬁcients.The p-value is a sign test of H0: Sum median = 0.
+Regressors not reported include the period intercepts, lead, lag, and concurrent equally weighted market
+returns, and the proportional change in individual stock squared return.
+Eq.(1) dependent variable Eq.(2) dependent variable
+DL1 DL2 DL3 DL4 DL1 DL2 DL 3 DL4
+Concurrent-market ( %b) 0.7777 0.6615 0.8079 0.7393
+(t-statistic) (43.98) (30.40) (46.84) (45.28)
+Percent positive 98.06 98.46 98.45 98.45
+Percent + signiﬁcant 94.98 92.66 94.21 94.21
+Concurrent-specialist (%g) 0.4718 0.4016 0.4060 0.3321
+(t-statistic) (31.79) (22.85) (28.35) (25.72)
+Percent positive 97.29 97.68 96.52 94.98
+Percent + signiﬁcant 90.73 86.87 83.01 81.46
+Lag 0.0028 0.0224 –0.0368 –0.0143 –0.0046 –0.0057 0.0032 0.0028
+(t-statistic) (0.23) (1.84) (–3.22) (–1.34) (–0.55) (–0.72) (0.45) (0.44)
+Percent positive 50.96 58.30 45.17 50.96 46.71 47.87 52.12 52.51
+Percent + signiﬁcant 7.72 11.58 5.02 5.01 8.49 10.42 5.01 3.86
+Lead –0.0033 0.0136 –0.0115 –0.0119 –0.0039 –0.0068 0.0143 0.0039
+(t-statistic) (–0.35) (1.44) (–1.29) (–1.36) (–0.58) (–1.08) (2.24) (0.68)
+Percent positive 50.57 54.82 47.10 45.17 49.03 52.12 53.28 51.73
+Percent + signiﬁcant 4.24 9.65 3.47 4.24 4.63 5.01 6.17 5.02
+Mean sum 0.7772 0.6976 0.7549 0.7130 0.4633 0.3891 0.4235 0.3388
+(t-statistic) (30.89) (23.05) (35.74) (35.60) (24.05) (18.86) (23.79) (21.02)
+Median 0.8150 0.6652 0.8300 0.7681 0.4674 0.3470 0.4351 0.3499
+p-value o0.0001 o0.0001 o0.0001 o0.0001 o0.0001 o0.0001 o0.0001 o0.0001
+Mean adjusted R
+2 0.2497 0.2388 0.2225 0.2204 0.2317 0.2191 0.2089 0.2063
+Median adjusted R2 0.2418 0.2302 0.2142 0.2119 0.2234 0.2127 0.2015 0.1988
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6954
+
+===== PAGE 19 =====
+
+Because this test replicates Chordia et al.(2000) , it is worth pausing for a
+comparative discussion.First, Chordia et al.(2000) use the proportional change in
+the dollar effective spread and percentage effective spread (same as our DL3 and
+DL4).While the signs and signiﬁcance of the commonality coefﬁcients are similar,
+the difference in the degree of individual liquidity variation explained is substantial.
+The mean adjusted R
+2’s reported by Chordia et al.(2000) are slightly greater than
+1%, while ours are slightly greater than 22%.This difference appears to be primarily
+the result of different aggregation periods.We assess the degree different aggregation
+periods have on explained variation by re-aggregating our data at daily intervals and re-
+estimating Eq.(1).The resulting mean coefﬁcients fell slightly, ranging from %b
+2 ¼ 0:60
+(t-statistic D 15) to %b1 ¼ 0:71 (t-statistic D 21).The four mean adjusted R2 estimates,
+however, now range from 2.9% (DL1 regressions) to 3.9% (DL2 regressions), which is
+much closer to the average adjustedR2 of 1.4% reported byChordia et al.(2000).As a
+result, we conclude that our initial evidence is consistent with this previous study but
+that the degree of commonality is greater than previously reported.
+17
+4.2. Evidence regarding commonality with specialist portfolio liquidity
+The degree of liquidity co-variation within specialist ﬁrms is estimated in two
+ways.First, we simply replace variation in market portfolio liquidity ( DMLi)i n
+Eq.(1) with variation in specialist portfolio liquidity ( DSLi),
+DLi; j;t ¼
+X3
+p¼1
+ai; j;pPp þ gi; jDSLi; j;t þ XB þ ei; j;t; ð2Þ
+where specialist ﬁrm liquidity is measured as the mean of all other stocks in the
+specialist ﬁrm except stock j, and where all other variables are deﬁned above.The
+evidence is reported in the ﬁnal four columns of Table 4.The average sensitivity of
+individual stock liquidity to specialist portfolio liquidity ranges from %g4 ¼ 0:33 ( t-
+statistic D 25) to %g1 ¼ 0:47 ( t-statistic D 32), and over 80 percent of the 259
+individual regression coefﬁcients are signiﬁcantly positive for each measure of
+liquidity variation.The regression R2’s indicate that approximately the same degree
+of individual stock liquidity variation is explained by specialist portfolio liquidity as
+was found with market portfolio liquidity.
+The liquidity co-variation estimates with only the market or specialist portfolios,
+however, should be interpreted with caution because much variation in the specialist
+and market portfolio liquidity is likely the result of common information.
+18
+Therefore, we estimate liquidity co-variation based on variation that is not shared
+ARTICLE IN PRESS
+17 The evidence using daily aggregates was provided to the referee and is available upon request.
+18 The average correlation coefﬁcient between the change in market portfolio spreads and specialist
+portfolio spreads is roughly 0.70. Because they are never perfectly correlated, we have no identiﬁcation
+problem, and least squares remains the best linear unbiased estimator.However, near-multicollinearity
+can inﬂuence the precision of the coefﬁcient estimates.As a rule of thumb, Greene (1990) suggests that if
+the R2 in the multivariate regression is less than any individual R2 then near-multicollinearity could
+inﬂuence the precision of the coefﬁcient estimates (seeGreene, 1990, p.280 ).Because this is not true in our
+case, we believe any precision problems are marginal.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 55
+
+===== PAGE 20 =====
+
+between the two portfolios.The model is,
+DLi; j;t ¼
+X3
+p¼1
+ai; j;pPp þ bi; jDMLi; j;t þ gi; jDSLi; j;t þ XB þ ei; j;t; ð3Þ
+where all variables are as previously deﬁned.
+The joint commonality estimates obtained from Eq.(3) are reported in Table 5.
+Across the four ( i) methods of measuring the change in effective spreads, liquidity
+co-variation with both the market and specialist portfolios is positive and signiﬁcant.
+The market commonality coefﬁcients now range from %b2 ¼ 0:59 (t-statistic D 27) to
+%b3 ¼ 0:74 (t-statistic D 40).Although the sensitivity of individual stock liquidity to
+market liquidity falls slightly, the cross-section of commonality estimates remain
+signiﬁcantly different from zero; and the estimates remain positive and signiﬁcant in
+over 86% of the individual regressions.In contrast, the specialist commonality
+coefﬁcients decrease substantially but remain signiﬁcantly positive, ranging from
+%g
+3 ¼ 0:0756 (t-statistic D 6.71) to %g4 ¼ 0:0783 (t-statistic D 7.83).
+This evidence indicates that individual stock liquidity is less sensitive to
+information associated exclusively with variation in the specialist ﬁrm portfolio.
+To assess this difference, we test the restriction that #b
+i;j ¼ #gi;j for each of the four ( i)
+methods of measuring the change in effective spreads, for each of the j=259
+individual stock regressions.This restriction is rejected in over 62% of the sample
+regressions (mean F-values range from 6.07 to 7.25, and mean p-values range from
+0.16 to 0.18 across the four i regression sets).Based on this evidence, we conclude
+that the liquidity of the typical individual stock is more sensitive to variation in
+market portfolio liquidity than to variation in specialist portfolio liquidity.The
+signiﬁcant specialist portfolio co-variation estimates indicate, however, that factors
+associated with liquidity suppliers generate liquidity co-variation.
+4.3. A speciﬁcation check
+Before analyzing the relation between specialist ﬁrm characteristics and liquidity
+co-variation, we report a speciﬁcation check with regard to the initial evidence.
+Above, we use t-tests to determine if the average commonality coefﬁcients (%b
+i and %gi)
+were signiﬁcantly different from zero.For this test to be reliable, the residuals across
+regressions need to be independent.We test for error independence using a method
+similar to that used by Chordia et al.(2000) .First, we save the residuals from the
+joint estimation of commonality, Eq.(3), for each of the 259 individual regressions,
+and assign each residual series a number, j, using a random number generator.The
+relation between the residuals for stock j+1 with the residuals for stock j are
+estimated as
+e
+jþ1;t ¼ dj;0 þ dj;1ej;t þ xj;t ðj ¼ 1; y; 259Þ: ð4Þ
+This allows us to create a random set of error sensitivities with mean %d1: As reported
+in Table 6 the evidence indicates that there is very little cross-equation dependence.
+The full sample average coefﬁcient (%d1) is –0.0066 with a mean t-statistic of –0.18 and
+ARTICLE IN PRESS
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6956
+
+===== PAGE 21 =====
+
+ARTICLE IN PRESS
+Table 5
+Joint estimation of liquidity co-variation with market and specialist ﬁrm portfolios.The change in the
+effective spread of stock j is regressed on the concurrent, lag, and lead change in the market portfolio
+effective spread (where the market excludes stock j and stocks in the same specialist ﬁrm) and on the
+change in the specialist portfolio effective spread (where the specialist portfolio excludes stock j).The
+speciﬁcation is described in the text as Eq.(3). The dependent variable is DL1, DL2, DL3,o r DL4,
+representing the four methods of estimating spread changes (see Table 3 , Panel A).The regression is
+estimated for each of the 259 stocks in the working sample.The cross-sectional average time-series
+coefﬁcient %b is the estimate of co-variation with market portfolio liquidity, and %g is the estimate of co-
+variation with specialist portfolio liquidity (witht-statistics in parentheses).‘Percent positive’ is the percent
+of positive coefﬁcients, and ‘Percent + signiﬁcant’ is the percent with t-statistic greater than +1.645, the
+5% critical level in one-tailed test.Sum ¼ concurrent + lead +lag coefﬁcients.The p-value is a sign test of
+H
+0: Sum median = 0.Regressors not reported include the period intercepts, the lead, lag, and concurrent
+equally weighted market returns; the lead and lag change in market and specialist portfolio liquidity; and
+the proportional change in individual stock squared return.We test the restriction that #b=#g within each
+individual regression and report the mean (median), F-value, p-value, and the percent of p-values less than
+0.10.
+Eq.(3) dependent variable
+DL1 DL2 DL3 DL4
+Concurrent-market ( %b) 0.7114 0.5953 0.7409 0.6717
+(t-statistic) (37.73) (27.05) (39.98) (38.98)
+Percent positive 98.06 94.98 98.45 98.06
+Percent + signiﬁcant 87.64 86.10 87.25 86.10
+Concurrent-specialist (%g) 0.0757 0.0795 0.0756 0.0783
+(t-statistic) (7.01) (7.25) (6.71) (7.83)
+Percent positive 67.56 69.88 65.63 69.88
+Percent + signiﬁcant 11.58 14.28 13.51 12.35
+Mean market sum 0.7110 0.6380 0.6952 0.6569
+(t-statistic) (25.60) (19.07) (27.76) (27.34)
+Mean specialist sum 0.0712 0.0698 0.0714 0.0639
+(t-statistic) (3.81) (3.77) (4.09) (4.10)
+Mean adjusted R
+2 0.2507 0.2402 0.2231 0.2210
+Median adjusted R2 0.2425 0.2319 0.2146 0.2138
+Test: #b ¼ #g
+Mean F-value 6.24 7.25 6.07 6.77
+(median) (4.32) (4.51) (4.54) (5.10)
+Mean p-value 0.1609 0.1891 0.1702 0.1713
+(median) (0.0377) (0.0337) (0.0332) (0.0240)
+Percent p-values o 0.10 62.54 62.16 63.32 64.09
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 57
+
+===== PAGE 22 =====
+
+a median t-statistic of –0.19. The percent of signiﬁcant t-statistics at the 5% level
+(15.5%) is higher than expected given a normal distribution and is slightly greater
+than that reported by Chordia et al.(2000) .
+As a further check, we repeat the test on volume-sorted quintiles because heavily
+traded stocks could be more likely to share commonalities in order ﬂow because of
+program trading and the concerted efforts of institutional investors ( Hasbrouck and
+Seppi, 2001).As expected, the relation between residuals is strongest for the high-
+volume securities.However, even for this set of stocks, no evidence exists of a
+signiﬁcant relation (mean and median t-statistics for the high-volume portfolio are
+0.51 and 0.81, respectively). Because the mean cross-equation error is not signiﬁcant,
+the evidence implies that adjustments for cross-equation dependence would yield
+immaterial changes.
+5. Common liquidity variations and the risk of providing liquidity
+In this section, we report three tests considering whether the degree of supply-
+generated liquidity co-variation is positively related to the risk of providing liquidity.
+The ﬁrst two are based on specialist ﬁrm size and the last is based on the direction of
+market returns.
+5.1. Specialist ﬁrm size and commonality in liquidity
+Prior research indicates that the cost (and risk) of providing liquidity is inﬂuenced
+by the degree of specialist ﬁrm portfolio diversiﬁcation (e.g., Gehrig and Jackson,
+1998; Strobl, 2002) and specialist ﬁrm organizational form ( Coughenour and Deli,
+2002).With a higher degree of portfolio diversiﬁcation, a given proﬁt shock in one
+stock is less likely to inﬂuence the liquidity provided to other stocks in large specialist
+ARTICLE IN PRESS
+Table 6
+The cross-equation correlation of estimation errors.First, joint commonality is estimated using Eq.(3) for
+each of the 259 stocks in the working sample.Then the residuals for stock j+1 are compared with
+residuals for stock j using Eq.(4), where j is assigned using a random number generator.From these 258
+paired regressions, we report the average slope coefﬁcient, the mean and median t-statistic for the slope
+coefﬁcient, and the frequency it exceeds the 5% and 2.5% critical levels. This process is then repeated on
+the sample subgroups sorted by total dollar volume.
+Sample Average slope
+coefﬁcient
+Mean t Median t jtj > 1.645 (%) jtj >1.96 (%)
+All stocks –0.0066 –0.1818 –0.1899 19.76 15.50
+Quintile 5 (highest volume) 0.0152 0.5067 0.8068 27.45 21.56
+Quintile 4 0.0000 0.0285 0.1369 21.56 15.68
+Quintile 3 –0.0021 –0.0475 0.0819 19.60 11.76
+Quintile 2 0.0057 0.1742 0.3226 23.52 15.68
+Quintile 1 (lowest volume) –0.0027 –0.0917 0.0203 20.00 12.00
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6958
+
+===== PAGE 23 =====
+
+ﬁrm portfolios.In addition, because large specialist ﬁrms tend to be subsidiaries of
+well-diversiﬁed corporations, their specialists provide liquidity using relatively low-
+cost capital.As a result of both these beneﬁts that accrue with specialist ﬁrm size, we
+expect the liquidity of stocks handled by large specialist ﬁrms to co-move less with
+market liquidity.
+First, we test whether the liquidity co-variation of specialist ﬁrm portfolios with
+the market declines with specialist ﬁrm size.The estimation procedure is as follows.
+First, we estimate the change in the mean spread of each specialist ﬁrm portfolio.
+19
+This results in a time-series of mean spread changes for each specialist ﬁrm portfolio,
+which are regressed against the change in market portfolio liquidity.The model is
+DSL
+i;s;t ¼
+X3
+p¼1
+ai;s;pPp þ bi;sDMLi;s;t þ XB þ ei;s;t; ð5Þ
+where s indicates the specialist ﬁrm portfolio. 20 As before, we control for the
+concurrent, lead and lag market returns, lead and lag changes in market liquidity,
+and the squared specialist portfolio return.We estimate the model coefﬁcients for
+each specialist ﬁrm (ten times) and report the mean market-liquidity beta in Table 7,
+Panel A.
+The evidence indicates that the specialist portfolio market-liquidity betas are
+slightly greater than the individual stock liquidity betas.For example, the
+commonality estimates for the percent change in dollar spread (DL3) and percentage
+spreads (DL4) are 0.81 (t-statistic D 15) and 0.83 (t-statistic D 11), respectively, and
+are signiﬁcant for each specialist portfolio regression (percent positive and signiﬁcant
+is 100%).Furthermore, the mean adjusted R
+2’s increase to roughly 78%.The
+increased explanatory power stems from the fact that idiosyncratic stock liquidity
+variation is largely reduced within the diversiﬁed specialist portfolios, leaving only
+the systematic variation in specialist portfolio liquidity to be explained by systematic
+variation in market liquidity.
+Next, we test whether the cross-sectional variation in the specialist portfolio
+commonality estimates are inversely related to specialist ﬁrm size.We measure
+specialist ﬁrm size by the natural log of both the number of specialist ﬁrm stocks and
+the total dollar volume generated by stocks within each specialist portfolio.The
+evidence reported in Table 7 , Panel B, is consistent with the hypothesis.The
+specialist portfolio commonality estimates signiﬁcantly decrease with specialist ﬁrm
+size.In addition, the R
+2’s range from 10% to 44%, indicating that specialist ﬁrm size
+accounts for a large degree of the cross-sectional variation in portfolio commonality.
+ARTICLE IN PRESS
+19 The specialist portfolio includes all working sample stocks handled by the ﬁrm, and the change in
+mean effective spread is estimated using the similar four ( i) methods as described above.
+20 We considered whether a market portfolio proxy that includes stocks handled by specialist ﬁrms of the
+same size inﬂuences the results.Because of the effects of diversiﬁcation, removing these stocks from the
+market portfolio does not signiﬁcantly alter the estimate of market portfolio liquidity variation.For
+consistency, and to assure that only systematic liquidity variation remains in the market portfolio proxy,
+we continue to use the same deﬁnition of the market portfolio.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 59
+
+===== PAGE 24 =====
+
+Because each of the above cross-sectional regressions are based on only ten specialist
+portfolio commonality estimates, the slope estimate is more likely to be inﬂuenced by
+outliers.To examine this potential problem we plot the coefﬁcients inFig.1 .From this
+plot, we believe it would be difﬁcult to argue that outliers generate the negative relation.
+For each measure of effective spread change, the market liquidity betas generally
+decline with specialist ﬁrm size.In addition, we ﬁnd a signiﬁcant negative relation
+between all the portfolio commonality estimates and specialist ﬁrm size (regression
+reported onFig.1 ).We conclude that this evidence is consistent with a negative relation
+between specialist ﬁrm size and degree of portfolio liquidity co-variation.
+ARTICLE IN PRESS
+Table 7
+Specialist portfolio liquidity co-variation.Panel A reports the degree of co-variation between the change in
+specialist portfolio liquidity and change in market liquidity estimated using Eq.(5). The dependent
+variable is the change in specialist portfolio liquidity, DSL1, DSL2, DSL3,o r DSL4, representing the four
+methods of estimating spread changes (see Table 3, Panel A).Each regression is estimated ten times (once
+for each specialist ﬁrm), in which each regression is based on 1,194 day-period observations.We report the
+mean coefﬁcient (t-statistic), percent of positive coefﬁcients, and percent of positive signiﬁcant coefﬁcients.
+Regressors not reported include the period intercepts; lead and lag changes in market liquidity; lead, lag,
+and concurrent market returns; and the proportional change in specialist portfolio squared return.Panel B
+reports the relation between the estimated portfolio commonality coefﬁcients reported in Panel A with
+specialist ﬁrm size.Each cross-sectional regression is estimated using the ten estimates.We provide the plot
+the commonality estimates in Fig.1 because outliers are more likely to alter small-sample regression
+coefﬁcients.
+Eq.(5) dependent variable
+DSL
+1 DSL2 DSL3 DSL4
+Panel A: Specialist portfolio commonality
+Concurrent ( %b) 0.8790 0.9148 0.8110 0.8359
+(t-statistic) (37.71) (17.06) (15.26) (11.14)
+Percent positive 100.00 100.00 100.00 100.00
+Percent + signiﬁcant 100.00 100.00 100.00 100.00
+Mean adjusted R2 0.7862 0.7465 0.7515 0.7159
+Median adjusted R2 0.7655 0.7445 0.7350 0.7216
+Dependent variable, coefﬁcients estimated from Eq.(5)
+#bPDL1 #bPDL2 #bPDL3 #bPDL4 #bPDL1 #bPDL2 #bPDL3 #bPDL4
+Panel B: Cross-sectional regressions of portfolio commonality estimates on specialist ﬁrm size estimates
+(N=10)
+Intercept 1.1329 1.4253 1.3086 1.3988 1.1884 1.6597 1.4245 1.6753
+(t-statistic) (10.75) (5.42) (4.98) (3.49) (9.97) (6.31) (4.76) (3.90)
+ln(spec ﬁrm stocks) –0.0764 –0.1536 –0.1498 –0.1694
+(t-statistic) (–2.45) (–1.97) (–1.92) (–1.43)
+ln(spec ﬁrm dollar volume) –0.0496 –0.1196 –0.0985 –0.1348
+(t-statistic) (–2.63) (–2.87) (–2.08) (–1.98)
+Adjusted R
+2 0.3570 0.2426 0.2308 0.1033 0.3960 0.4452 0.2689 0.2447
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6960
+
+===== PAGE 25 =====
+
+5.2. Specialist ﬁrm mergers and commonality in liquidity
+The second size-based test focuses on specialist ﬁrm mergers.If larger specialist
+ﬁrms enjoy greater diversiﬁcation and capital cost beneﬁts, the degree the liquidity of
+stocks within the original parent ﬁrm co-varies with market portfolio liquidity and
+with each other (parent specialist portfolio liquidity) should decrease after the
+merger effective date.To test this hypothesis, we compare the degree of commonality
+using one-month windows around each merger.
+Thirteen specialist ﬁrm mergers occurred during our sample period.Of these
+mergers, eight involved ﬁve of our ten specialist ﬁrms in the working sample.In total,
+167 stocks in our working sample experienced a time when their specialist ﬁrm grew
+in size through a merger.The parent specialist ﬁrm, target specialist ﬁrm, merger
+effective date (ﬁrst trading day the target ﬁrm is not listed in the daily specialist
+directory ﬁles), and the window of analysis are reported in Table 8, Panel A.
+We extend Eq.(3) to allow the commonality estimates to vary after the merger by
+interacting an indicator variable A, which equals one if the observation is after the
+merger and zero otherwise, with the change in market and specialist portfolio
+liquidity variables.The model is
+DL
+i; j;t ¼
+X3
+p¼1
+ai; j;pPp þ bi; jDMLi; j;t þ bA;i; jA /C1DMLi; j;t þ gi; jDSLi; j;t
+þ gA;i; jA /C1DSLi; j;t þ XB þ ei; j;t; ð6Þ
+ARTICLE IN PRESS
+Fig.1. Plot of specialist portfolio liquidity commonality estimates on specialist ﬁrm size.The co-variation
+coefﬁcients ( #bs) are estimated using Eq.(5) separately for each specialist ﬁrm (reported in Table 7 ).
+The commonality coefﬁcient estimates for DML1, DML2, DML3, and DML4 (the four measures
+of market liquidity variation) are denoted with a }, &, D, and /C2, respectively.Thus, each column of
+plot points belongs to the same specialist ﬁrm (with the mean of each specialist ﬁrm’s coefﬁcients
+denoted with the solid diamond, ~).We also estimate a simple regression through all coefﬁcient
+estimates: #b ¼ 1:4044 /C00:1734 /C1lnðstocksÞþ e; slope t-statistic=–3.64, and R2=0.2395.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 61
+
+===== PAGE 26 =====
+
+ARTICLE IN PRESS
+Table 8
+Change in liquidity co-variation following specialist ﬁrm mergers.The sample includes the 167 stocks in the working sample whose specialist ﬁrm grew through
+merger or acquisition during our sample period.Panel A describes our merger parent ﬁrms, target ﬁrms, effective date, and window of analysis.Panel Breports
+the mean regression estimates from Eq.(6) on each of the 167 stocks, where coefﬁcients bA and gA estimate the post-merger difference in liquidity co-variation
+with market and specialist portfolio liquidity.The specialist portfolio is constrained to the set of sample stocks prior to the merger.In this manner we estimate
+the effect of an increase in specialist ﬁrm size on the degree liquidity co-varies across the same stock set.Regressors not reported include the period intercepts;
+lead and lag changes in market liquidity; lead, lag, and concurrent market returns; and the proportional change in individual stock squared return.
+Parent ﬁrm Stocks Target ﬁrm Effective date Window of analysis
+Panel A: Sample of specialist ﬁrm mergers
+Spear, Leeds and Kellogg 57 Equitrade Partners June 21, 1999 71 month
+Lawrence, O’Donnell, Marcus 15 Surnamer Weissman and Co.,
+and Einhorn and Co.
+July 19, 1999 71 month
+Wagner, Stott, Mercator 28 CMJ Partners October 20, 1999 71 month
+LaBranche and Co.44 Henderson Brothers March 6, 2000
+Webco Securities Inc.March 19, 2000 1 month before March 6, 2000
+and 1 month after March 10, 2000
+M.J. Meehan and Co. 23 Stuart, Scotto, Cella Co. October 16, 2000
+Fleet Specialist October 27, 2000 1 month before October 16, 2000
+and 1 month after October 27, 2000
+Eq.(6) dependent variable
+DL3 DL3 DL3 DL4 DL4 DL4
+Panel B: Regression estimates of change in liquidity co-variation after specialist ﬁrm mergers (N=167)
+Concurrent-market ( %b) 0.7315 0.7729 0.6851 0.7041
+(t-statistic) (11.73) (7.07) (10.58) (7.70)
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6962
+
+===== PAGE 27 =====
+
+ARTICLE IN PRESS
+Percent positive 83.83 73.65 81.43 76.04
+Percentage + signiﬁcant 40.71 23.95 39.52 20.95
+Concurrent-market after ( %bA) –0.1170 –0.2361 –0.1329 –0.2158
+(t-statistic) (–2.61) (–1.84) (–2.93) (–2.06)
+Percent negative 58.68 55.68 58.08 53.89
+Percent–signiﬁcant 14.37 16.17 14.97 16.17
+Concurrent-specialist (%g) 0.3973 –0.0374 0.3427 –0.0018
+(t-statistic) (9.26) (–0.41) (7.83) (–0.02)
+Percent positive 78.44 53.29 73.65 53.89
+Percent + signiﬁcant 28.14 7.18 26.94 8.98
+Concurrent-specialist after ( %gA) –0.0973 0.1172 –0.1218 0.0800
+(t-statistic) (–2.34) (1.00) (–3.03) (0.86)
+Percent negative 58.68 49.10 57.48 50.89
+Percent–signiﬁcant 16.17 8.38 16.17 7.78
+Mean adjusted R
+2 0.2234 0.2146 0.2328 0.2215 0.2119 0.2311
+Median adjusted R2 0.1994 0.2013 0.2172 0.1973 0.1973 0.2147
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 63
+
+===== PAGE 28 =====
+
+where all variables are as earlier deﬁned.We estimate this regression for each of the
+167 individual stocks originally held by the set of parent specialist ﬁrms.To be
+consistent with the hypothesis, the evidence should reveal a signiﬁcant decrease in
+mean commonality after the merger ( %b
+A;io 0 and %gA;io 0).
+The evidence is reported in Table 8 , Panel B.In the ﬁrst two columns we
+regress the proportional change in dollar spreads ( DL3) on changes in the market
+or specialist portfolio liquidity separately [similar to Eqs.(1) and (2)].In this case,
+the evidence indicates that the degree of liquidity co-variation with the market
+portfolio and specialist portfolio drop signiﬁcantly after the specialist ﬁrm
+mergers.
+When estimating joint specialist and market portfolio commonality [similar to
+Eq.(3)] the degree of liquidity co-variation with the market portfolio falls
+signiﬁcantly after the mergers.For example, the mean change in the market-
+liquidity beta, %b
+A;i; equals –0.23 (t-statistic=–1.84) and –0.21 (t-statistic = –2.06) for
+the proportional change in dollar ( DL3) and percentage effective spreads ( DL4),
+respectively.However, the degree of liquidity co-variation with the specialist
+portfolio does not signiﬁcantly change after the mergers.Consistent with the cross-
+sectional specialist portfolio tests, the evidence using mergers indicates that the
+degree of liquidity co-variation with the market portfolio decreases as specialist ﬁrm
+size increases.
+The hypothesis tested in this subsection is that stocks handled by larger specialist
+ﬁrms will display less liquidity co-variation.This is based on the idea that larger
+specialist ﬁrms tend to have a lower cost of capital and, because they handle more
+stocks, individual liquidity shocks have less inﬂuence on specialist ﬁrm wealth and
+capital constraints.Overall, the evidence from the two size-based tests is consistent
+with this hypothesis.The cross-sectional test based on portfolio commonality
+indicates that market liquidity betas are signiﬁcantly lower for larger specialist ﬁrms.
+Similarly, the time-series test indicates that individual stock market liquidity betas
+decrease after specialist ﬁrms grow through mergers.
+5.3. Variation in market returns and commonality in liquidity
+In this section we use the sign and magnitude of returns to isolate times when the
+risk of providing liquidity is likely to be relatively high.Relative to periods with
+rising market valuations, specialist ﬁrm wealth is likely to contract and capital
+constraints are more likely to be stressed during periods with falling market
+valuations.Therefore, if specialists are more likely to share inventory and proﬁt
+information during falling markets in an effort to manage ﬁrm wealth, we expect
+specialist portfolio liquidity co-variation to increase with the absolute size of
+negative returns.
+We condition liquidity co-variation estimates on market returns using indicator
+variables to denote which quartile a period’s return observation is within the
+total return distribution.For example, if the return at period t falls into the
+quartile with the lowest returns, then q1 equals one; otherwise q1 equals zero, etc.
+To estimate the liquidity co-variation coefﬁcients conditional on returns we modify
+ARTICLE IN PRESS
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6964
+
+===== PAGE 29 =====
+
+Eq.(3) as
+DLi; j;t ¼
+X3
+p¼1
+ai; j;pPp þ bi; jDMLi; j;t þ
+X4
+r¼2
+bqr;i; jDMLi; j;t /C1qr þ gi; jDSLi; j;t
+þ
+X4
+r¼2
+gqr;i; jDSLi; j;t /C1qr þ XB þ ei; j;t; ð7Þ
+where r denotes the return quartile, and where all other variables are deﬁned as above.
+In this manner, we estimate the difference in liquidity co-variation when returns are in
+the upper three quartiles relative to the degree that occurs when returns are in the
+lowest quartile.Given our economic rationale for liquidity co-variation between stocks
+in the same specialist portfolio, we expect g
+q2, gq3,a n dgq4 to be negative.
+We summarize the return distribution of each quartile in Table 9, Panel A, and
+provide the conditional liquidity co-variation evidence in Table 9 , Panel B.The
+evidence is largely consistent with the hypothesis.We estimate Eq.(7) using each of
+the four changes in liquidity measures.The bottom three rows provide the difference
+in specialist portfolio co-variation when returns are in the upper three quartiles ( g
+q2,
+gq3,a n d gq4).The degree of co-variation in the change in dollar spreads ( DL1),
+change in percentage spread points ( DL2), and proportional change in percentage
+spreads ( DL4) is signiﬁcantly less than the estimated degree of co-variation when
+returns are most negative.For the proportional change in dollar spreads ( DL3), the
+mean degree of co-variation is also lower when market returns are in the upper three
+quartiles, but the difference is not signiﬁcant.
+In Fig.2 we illustrate the mean specialist portfolio co-variation level for each
+measure of liquidity variation, across the four return quartiles.Regardless of the
+measure of liquidity variation, the highest estimate is associated with returns in
+the lowest quartile (denoted with solid black bars).Also observable is the strong
+increase in liquidity co-variation when returns are in the lowest quartile, even relative
+to the second quartile.This indicates that the degree of co-variation with the
+specialist portfolio increases with the magnitude of negative market returns.This is
+consistent with greater joint management of liquidity during periods when specialist
+ﬁrm constraints are most likely strained.
+It is also of interest to note the different pattern in conditional market portfolio
+co-variation across the return quartiles.Unlike the variation in specialist portfolio
+commonality, market portfolio commonality is lowest when market returns are most
+negative.We interpret this as further evidence that variation in specialist portfolio
+liquidity provides unique information to specialists and that during periods with
+negative market returns the relative role of supplier-generated factors in causing
+liquidity co-variation is elevated.
+6. Conclusion
+In this paper we argue that common market makers induce common liquidity
+movements.Because specialists within the same ﬁrm share capital and information,
+ARTICLE IN PRESS
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 65
+
+===== PAGE 30 =====
+
+ARTICLE IN PRESS
+Table 9
+The relation between liquidity co-variation and market returns.Eq.(3) is extended to allow liquidity co-
+variation estimates to vary by market direction, as described by Eq.(7).The dependent variables are DL1,
+DL2, DL3,o r DL4, representing the four methods of estimating spread changes (see Table 3, Panel A).
+The regression is estimated for each of the 259 stocks in the working sample.The b and g coefﬁcient
+estimates the degree of liquidity co-variation with the market and specialist portfolio, respectively, when
+market returns are in the lowest quartile (quartile 1) of its distribution.The coefﬁcients bqi and gqi denote
+the estimated difference in liquidity co-variation during periods within return in the ith quartile from the
+quartile with the lowest returns, relative to market and specialist portfolios, respectively.Regressors not
+reported include the period intercepts, lead and lag commonality coefﬁcients, lead and lag market returns,
+and the proportional change in individual stock squared return.Fig.2 illustrates the co-variation estimates
+(instead of the differences) with the specialist portfolio liquidity across quartiles.
+Statistic Quartile 1
+(lowest)
+Quartile 2 Quartile 3 Quartile 4
+(highest)
+Panel A: Percentage period returns by quartile
+Mean –0.576 –0.106 0.119 0.606
+Minimum –3.138 –0.238 0.006 0.255
+Median –0.472 –0.104 0.115 0.481
+Maximum –0.239 0.005 0.254 3.454
+Eq.(7) dependent variable
+DL1 DL2 DL3 DL4
+Panel B: Liquidity co-variation estimates by return quartile
+Concurrent market q1 ( %b) 0.6742 0.5621 0.7150 0.6360
+(t-statistic) (28.41) (22.46) (28.29) (30.25)
+Percent positive 96.13 93.82 94.59 94.98
+Percent + signiﬁcant 69.88 72.59 71.04 74.90
+Concurrent market–difference q2 ( %b
+q2) 0.0680 0.0337 0.0342 0.0347
+(t-statistic) (2.74) (1.67) (1.28) (1.63)
+Percent positive 56.75 50.96 50.96 55.59
+Percent + signiﬁcant 7.72 8.49 6.17 6.56
+Concurrent market–difference q3 ( %b
+q3) 0.0499 0.0582 0.0428 0.0567
+(t-statistic) (2.03) (2.40) (1.62) (2.53)
+Percent positive 55.98 55.21 55.59 60.62
+Percent + signiﬁcant 7.72 8.88 5.40 6.17
+Concurrent market–difference q4 ( %bq4) 0.0519 0.0523 0.0456 0.0672
+(t-statistic) (2.14) (2.16) (1.68) (3.07)
+Percent positive 49.81 53.66 52.12 57.91
+Percent + signiﬁcant 9.65 9.65 10.03 10.42
+Concurrent specialist q1 ( %g) 0.1148 0.1125 0.0959 0.1083
+(t-statistic) (6.91) (6.63) (4.84) (7.02)
+Percent positive 65.25 64.48 62.16 67.56
+Percent + signiﬁcant 10.81 14.28 13.13 14.67
+Concurrent specialist–difference q2 ( %g
+q2) –0.0793 –0.0477 –0.0315 –0.0418
+(t-statistic) (–3.15) (–2.27) (–1.21) (–2.06)
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6966
+
+===== PAGE 31 =====
+
+the manner in which they provide liquidity is likely to be correlated.The evidence
+indicates that individual stock liquidity co-varies with specialist portfolio liquidity,
+unique from information causing co-variation with market liquidity.However,
+individual stock liquidity is roughly one-eighth as sensitive to specialist portfolio
+liquidity variation as it is to information causing market wide liquidity variation.
+In extension, we argue that if shared resources cause liquidity co-variation across
+stocks within a specialist ﬁrm, then the degree of co-variation will increase when
+these resources are at most risk.Prior research indicates that the risk of providing
+liquidity decreases with the degree of specialist ﬁrm portfolio diversiﬁcation (Ho and
+Stoll, 1983; Gehrig and Jackson, 1998) and increases with the specialist ﬁrm’s cost of
+capital (Coughenour and Deli, 2002 ).Using specialist ﬁrm size as a proxy for ﬁrms
+with greater diversiﬁcation and capital cost beneﬁts, tests examining specialist ﬁrm
+portfolio commonality and specialist ﬁrm mergers indicate that liquidity co-variation
+ARTICLE IN PRESS
+Percent negative 56.37 57.53 53.67 55.21
+Percent–signiﬁcant 9.65 9.27 7.33 7.33
+Concurrent specialist–difference q3 ( %gq3) –0.0374 –0.0433 –0.0274 –0.0395
+(t-statistic) (–1.56) (–1.75) (–1.06) (–1.86)
+Percent negative 55.21 54.44 54.05 57.14
+Percent–signiﬁcant 6.94 8.11 6.56 6.56
+Concurrent specialist–difference q4 ( %gq4) –0.0502 –0.0427 –0.0269 –0.0383
+(t-statistic) (–2.05) (–1.71) (–1.02) (–1.89)
+Percent negative 50.96 52.89 53.67 56.37
+Percent–signiﬁcant 9.26 10.81 7.72 9.26
+Mean adjusted R
+2 0.2515 0.2416 0.2239 0.2219
+Median adjusted R2 0.2441 0.2304 0.2147 0.2149
+Table 9 (continued)
+Fig.2.Plot of mean liquidity commonality estimates with specialist portfolio liquidity conditional on
+market return, using Eq.(7).Market returns are sorted into quartiles, with lowest quartile denoted q1, etc.
+DL1, DL2, DL3, or DL4 denote the commonality estimates derived from each of the four methods of
+estimating spread changes (see Table 3 , Panel A). Table 9 provides information on the statistical
+signiﬁcance of the different magnitudes across quartiles.
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 67
+
+===== PAGE 32 =====
+
+is signiﬁcantly lower for stocks handled by larger specialist ﬁrms.Evidence based on
+market returns indicates that liquidity co-variation increases with the absolute
+magnitude of negative returns, which is when shared resources such as capital are
+more likely to be at risk.
+In addition to examining the existence and relative importance of supplier-
+generated liquidity co-variation, our evidence also has potentially important
+implications regarding asset pricing.If variation in liquidity is completely idiosyn-
+cratic, then liquidity variation can be eliminated at the portfolio level, and liquidity
+variation is not likely to be a source of priced risk.If this is true, it sheds doubt on
+research indicating that variation in liquidity is a priced risk factor.However, our
+study indicates that the degree of liquidity co-variation is greater than that implied by
+the analyses of Chordia et al.(2000) and Hasbrouck and Seppi (2001).
+Our conclusions regarding common market making and common liquidity
+variation differs from conclusions recently reached by Naik and Yadav (2003).Naik
+and Yadav use a sample of 20 stocks during 1994 and ﬁnd that London equity
+dealers appear to manage stocks independent of dealer-ﬁrm level considerations.The
+divergent conclusions could result from different sample time periods, sample sizes,
+and empirical methods.However, differences in the organizational and trading
+structures of London dealer ﬁrms and NYSE specialist ﬁrms could be most critical.
+Naik and Yadav note difﬁculty in information sharing across London dealers within
+the same ﬁrm.However, our conversations with NYSE specialists suggest that
+information sharing (both verbal and electronic) is not problematic.Further
+research considering liquidity co-variation owing to other structural characteristics
+at the NYSE and across a wider variety of markets would be of interest.
+References
+Amihud, Y., Mendelson, H., 1986. Asset pricing and the bid–ask spread. Journal of Financial Economics
+17, 223–249.
+Bacidore, J., Battalio, R., Jennings, R., 2002. Depth improvement and adjusted price improvement on the
+NYSE.Journal of Financial Markets 5, 169–195.
+Bessembinder, H., 1999. Trade execution costs on Nasdaq and NYSE: a post-reform comparison. Journal
+of Financial and Quantitative Analysis 34, 387–408.
+Bessembinder, H., 2003. Trade execution costs and market quality after decimalization. Journal of
+Financial and Quantitative Analysis 38, 747–778.
+Brennan, M., Subrahmanyam, A., 1996. Market microstructure and asset pricing: on the compensation
+for illiquidity in stock returns.Journal of Financial Economics 41, 441–464.
+Cao, C., Choe, H., Hatheway, F., 1997. Does the specialist matter? Differential execution costs and inter-
+security subsidation on the NYSE.Journal of Finance 52, 1615–1640.
+Chan, K., 1993. Imperfect information and cross-autocorrelation among stock returns. Journal of Finance
+48, 1211–1230.
+Chordia, T., Roll, R., Subrahmanyam, A., 2000. Commonality in liquidity. Journal of Financial
+Economics 56, 3–28.
+Copeland, T., Galai, D., 1983. Information effects and the bid–ask spread. Journal of Finance 38,
+1457–1469.
+Corwin, S.A., 1999. Differences in trading behavior across NYSE specialist ﬁrms. Journal of Finance 54,
+721–745.
+ARTICLE IN PRESS
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–6968
+
+===== PAGE 33 =====
+
+Corwin, S.A., 2004. Specialist performance and new listing allocations on the NYSE: an empirical
+analysis.Journal of Financial Markets 7, 27–51.
+Coughenour, J., Deli, D., 2002. Liquidity provision and the organizational form of NYSE specialist ﬁrms.
+Journal of Finance 56, 841–869.
+Easley, D., O’Hara, M., 1987. Price, trade size, and information in securities markets. Journal of Financial
+Economics 19, 69–90.
+Garman, M., 1976. Market microstructure. Journal of Financial Economics 3, 257–275.
+Gehrig, T., Jackson, M., 1998. Bid–ask spreads with indirect competition among specialists. Journal of
+Financial Markets 1, 89–119.
+Glosten, L., Milgrom, P., 1985. Bid, ask, and transaction prices in a specialist market with heterogeneously
+informed traders.Journal of Financial Economics 13, 71–100.
+Greene, W.H., 1990. Econometric Analysis. New York.
+Hasbrouck, J., Seppi, D.J., 2001. Common factors in prices, order ﬂows, and liquidity. Journal of
+Financial Economics 59, 383–411.
+Hatch, B., Johnson, S., 2002. The impact of specialist ﬁrm acquisitions on market quality. Journal of
+Financial Economics 66, 139–167.
+Ho, T., Stoll, H.R., 1981. Optimal dealer pricing under transactions and return uncertainty. Journal
+of Financial Economics 9, 47–73.
+Ho, T., Stoll, H.R., 1983. The dynamics of dealer markets under competition. Journal of Finance 38,
+1053–1074.
+Jones, C.M., 2002. A century of stock market liquidity and trading costs. Unpublished working paper,
+Columbia University.
+McInish, T.H., Wood, R.A., 1992. An analysis of intraday patterns in bid/ask spreads for NYSE stocks.
+Journal of Finance 47, 753–764.
+Naik, N., Yadav, P., 2003. Do dealer ﬁrms manage inventory on a stock-by-stock or a portfolio basis?
+Journal of Financial Economics 69, 325–354.
+New York Stock Exchange (NYSE), 1953.NYSE press release on incorporation of present and future
+member ﬁrms.February 20.
+NYSE, 1970.Special membership bulletin: proposed constitutional amendments relating to public
+ownership of member corporations.March 5.
+NYSE, 1976.Report of the committee to study the stock allocation system.January 27.
+NYSE, 1987.Information memo 87-1: new rule 98 – facilitates diversiﬁed organizations’ entry into NYSE
+specialist business.January 6.
+O’Hara, M., Oldﬁeld, G., 1986. The microeconomics of market making. Journal of Financial and
+Quantitative Analysis 21, 361–376.
+P!astor, L., Stambaugh, R., 2003. Liquidity risk and expected stock returns. Journal of Political Economy
+111, 642–685.
+Stoll, H.R., 1978. The supply of dealer services in securities markets. Journal of Finance 33, 1133–1151.
+Strobl, G., 2002. On the optimal allocation of new security listings to specialists. Unpublished working
+paper, University of Pennsylvania.
+ARTICLE IN PRESS
+J.F. Coughenour, M.M. Saad / Journal of Financial Economics 73 (2004) 37–69 69

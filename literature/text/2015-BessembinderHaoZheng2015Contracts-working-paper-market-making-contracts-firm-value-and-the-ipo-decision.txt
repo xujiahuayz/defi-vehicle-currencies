@@ -1,0 +1,1907 @@
+
+
+===== PAGE 1 =====
+
+ 
+ 
+  
+Market Making Obligations and Firm Value* 
+ 
+Hendrik Bessembinder 
+University of Utah 
+ 
+Jia Hao 
+Wayne State University 
+ 
+Kuncheng Zheng 
+University of Michigan 
+ 
+ 
+This Draft: October 2012 
+ 
+ 
+ 
+ 
+ 
+Abstract: 
+We model a contract by which a firm engages a Designated Market Maker (DMM) to provide more 
+liquidity than would be supplied in a competitive market.  The DMM contract increases trading volume, 
+and enhances allocative efficiency, price discovery and firm value.  The model predicts that DMM 
+contracts will be most valuable for (i) firms charac terized by substantial information asymmetries as well 
+as greater uncertainty regarding asset value, and (ii)  firms whose real investment decisions are better 
+informed by improved price discovery, i.e. small, youn g, growth firms.  Our analysis indicates that 
+contracts between listed firms and DMMs, which are currently prohibited in the U.S., can represent a 
+market solution to a market imperfection. 
+*This paper supersedes an earlier working paper titled “Why Designate Market Makers? Affirmative Obligations 
+and Market Quality.” The authors thank Robert Battalio, Thierry Foucault, David Hirshleifer, Michael Lemmon, 
+Marios Panayides, Uday Rajan, Hans Stoll, and Avanidhar Subrahmanyam for useful discussions, and seminar 
+participants at Northwestern Univer sity, University of Pittsburgh, Case Western Reserve University, Southern 
+Methodist University, University of Texas at Austin, Univ ersity of Utah, University of Auckland, University of 
+Sydney, University of California at Irvine, Pontifica Un iversidade Catolica, Fundacao Getulio Vargas, and York 
+University for comments. 
+
+===== PAGE 2 =====
+
+ 
+1 
+  
+Market Making Obligations and Firm Value 
+1. Introduction 
+Recent turmoil, including the financial crisis of 2008-2009 and the “flash crash” of May 6, 2010, 
+highlight the importance of liquidity in financial ma rkets.  Modern stock markets largely rely on limit 
+order submissions for liquidity provision.  There are no barriers to entry, and essentially any investor can 
+supply liquidity in electronic limit order markets.  Nevertheless, in practice liquidity has increasingly 
+been supplied by specialized “high frequency trading”  firms, who use computer algorithms to quickly 
+submit and modify large quantities of limit orders. 1  In contrast to the designated “specialists” who in 
+past decades coordinated trading on the flagship Ne w York Stock Exchange, high frequency traders are 
+typically under no obligation to supply liquidity.   
+The desirability of purely endogenous liquidi ty provision has recently been questioned, 
+particularly in the wake of the sharp, albeit brief,  decline in U.S. equity prices on May 6, 2010.   
+Kirilenko, Kyle, Samadi, and Tuzan (2011) conclude th at high-frequency firms did not trigger the “flash 
+crash” on that date, but may have exacerbated it by  demanding rather than supplying liquidity after 
+prices started to fall.  Other commentators, e.g.  Arnuk, Saluzzi, and Leuchtkafer (2011) assert that 
+numerous high frequency firms simply “turned thei r algo-bots off and disappeared” from the market 
+during the turbulence.  Mary L. Shapiro, chairm an of the United States Securities and Exchange 
+Commission (SEC), highlighted the issue as follows: 
+“May 6 was clearly a market failure, and it brought to the fore concerns about our equity market 
+structure…. Where were the high frequency trading firms that typically dominate liquidity 
+provision in those stocks? ….  The issue is wh ether the firms that effectively act as market 
+makers during normal times should have any obligation to support the market in reasonable ways 
+in tough times.” 2  
+                                                             
+1 Brogaard (2010), for example, shows that a small group of high frequency firms participate in about two thirds of 
+all trades on the NASDAQ market, while following liquidity-providing strategies.  Menkveld (2012) asserts that 
+high frequency traders look “much like an electronic version of the classic market maker.” 
+2 From a speech to the Economic Club of New York, September 7, 2010.  Available at 
+http://www.sec.gov/news/speech/2010/spch090710mls.htm. 
+
+===== PAGE 3 =====
+
+ 
+2 
+  
+In this paper, we introduce a model that assesses the costs and benefits of contracts that require 
+liquidity providers to supply more liquidity than they  would endogenously choose.  Contracts that require 
+one or more “Designated Market Makers” (DMMs) to provide liquidity are observed on some markets, 
+particularly for less liquid stocks. 3  The most frequently observed obligation is a “maximum spread” rule, 
+which requires the DMM to keep the “bid-ask spread” (the difference between the lowest price for an 
+unexecuted sell order and the highest price for an unexecuted buy order) within a specified width.4   
+Our goal is to develop in the simplest po ssible model a framework for understanding the 
+circumstances under which DMM contracts can enhan ce trader welfare and firm value, the economic 
+mechanisms by which the contracts operate, and to assess factors that affect optimal contracted spread 
+widths.5  The model includes three periods.  At t=0, the firm sells the rights to the risky cash flows from 
+its existing assets to investors in an IPO.  Invest ors may subsequently become privately informed 
+regarding the value of the assets, and are subject to a liquidity shock.  At t=1 secondary trading can occur, 
+potentially motivated by either information or liquidity  needs, either in a competitive market for liquidity 
+or in a market with a DMM contract.   At t=2 the investor receives the value of the asset in cash.   
+As a benchmark, we determine the IPO price that will just induce investors to participate in the 
+IPO, given competitive liquidity provision in the secondary market, and given the alternative of 
+investing in a completely liquid treasury security.   We then assess the effects of a contract by which the 
+firm requires liquidity providers to narrow the secondary market bid-ask spread beyond competitive 
+                                                             
+3 Charitou and Panayides (2009) report that DMM contracts are employed for at least some stocks in the largest 
+stock markets in Canada, the UK, Germany, France, the Netherlands, Sweden, Spain, Italy, Greece, Denmark, 
+Austria, Finland, Norway, and Switzerland.    
+4 Such obligations typically bind.  For example, Anand, Tanggaard, and Weaver (2009) study DMM agreements on 
+the Stockholm Stock Exchange and document that the cont racted maximum spreads are ty pically narrower than the 
+average spread that prevailed prior to the introduction of DMMs.  On the New York Stock Exchange, Rule 104 
+recently introduced, for a set of  pilot securities, DMMs who are tasked with maintaining quotes that match the best 
+existing quotes a specified percentage of each trading day.  However, Rule 104 does not require the NYSE DMM to 
+improve on the best quotes at any time.   
+5 The answer to the question of why an affirmative obligation to enhance liquidity supply might be desirable cannot 
+simply be “because liquidity is valuable.”  A requirement to supply extra liquidity in an otherwise competitive 
+market for liquidity provision will impose trading losses on the DMMs, for which they must be compensated.   The 
+contract can be valuing enhancing only if the benefits to listed firms and/or traders from improved liquidity exceed 
+the costs imposed on liquidity suppliers.       
+
+===== PAGE 4 =====
+
+ 
+3 
+  
+levels.  Such a contract has two effects.  First,  it imposes expected trading losses on market makers.  
+Second, it increases the equilibrium IPO price, as inv estors take into account the benefits of the being 
+able to subsequently trade at lower cost.   Notably,  the increase in the IPO price can exceed the requisite 
+payment to the market makers, thereby increasing the firm’s net proceeds.    
+Our analysis shows that the narrowing of bid-ask spreads due to a maximum spread rule leads to 
+increased secondary market trading, and improves economic efficiency.   In our model, as in the classic 
+analysis of Glosten and Milgrom (1985), the bid-ask spread arises due to information asymmetry.  A key 
+point of perspective is that, while  informational losses comprise a privat e cost to liquidity providers, 
+these are zero-sum transfers rather th an a cost when aggregated across all agents.  Competitive spreads 
+compensate liquidity suppliers for th eir private losses to better informed traders, and are therefore wider 
+than the net social cost of completing trades.   A maximum spread rule can improve social welfare and 
+firm value because more investors will choose to trad e when the spread is narrower.  This increased 
+trading can enhance allocative efficiency, as traders who value the asset highly acquire more of it, while 
+traders who no longer value the asset highly are able to exit their positions.   
+However, we find that the constrained spread th at maximizes the firm’s net proceeds (IPO price 
+less payment to market maker) is typically not ze ro, even though the only cost borne by liquidity 
+suppliers in our model is that due to asymmetric inform ation.    This result reflects the complex role of 
+informed trading in market equilibrium.  A narrowe r bid-ask spread induces more trading.  However, 
+trades motivated by information, while privately op timal, can impose their own externality by reducing 
+allocative efficiency. 6   In cases where the probability of in formed trading is sufficiently high it is 
+possible to reduce rather than incr ease the firm’s net proceeds by c onstraining the spread to be too 
+narrow.   Our model predicts that contracts that c onstrain the spread will be beneficial for firms with 
+                                                             
+6 Hollifield, Miller, Sandas, and Slive (2007) also observe th at the allocative efficiency of a market can be reduced 
+by the presence of informed investors who transact based on the divergence of prices from value. 
+
+===== PAGE 5 =====
+
+ 
+4 
+  
+greater relative uncertainty regarding asset value,  and where information asymmetry between market 
+makers and investors exists, but is not excessively high. 
+Narrowing the bid-ask spread has a second potential benefit, in the form of enhanced price 
+discovery.  In particular, we show that time 1 trade price becomes a better indicator of security 
+liquidation value (as measured by a lower mean square d forecast error) as the spread is narrowed.    
+More rapid price discovery provides superior information for real decisions, and can lead to increased 
+firm value and improved economic efficiency, as shown for example by Tetlock and Hahn (2007), 
+Foucault and Fresard (2012), Holmstrom and Tirole (1993), and Subrahmanyam and Titman (1999).  
+The model therefore also implies that DMM contracts ar e more likely to be adopted by firms that benefit 
+more from enhanced price discovery to guide real investment decisions.  These will likely be firms with 
+large potential future investments, as opposed to firms in stable, mature, industries.   
+Our analysis has implications that differ in an important but subtle way from the simple wisdom 
+that DMMs are most useful in otherwise illiquid st ocks.  If these stocks have wide bid-ask spreads 
+because of high real costs of competing trades, e.g.  due to the inventory costs that Demsetz (1968) 
+predicts will be high for thinly-tra ded assets, then the marginal social cost of providing liquidity is high, 
+and it is efficient for spreads to be  wide.  In contrast, our analysis focuses on spreads attributable to 
+information asymmetry, and shows that DMM contract s can enhance value as long as the probability of 
+informed trading is not excessive.   
+Competitive bid-ask spreads will widen at those times and for those stocks where liquidity 
+suppliers perceive an increased likelihood of informati on-based trading.   Easley, Lopez de Prado, and 
+O’Hara (2011) argue that their empirical measure of information asymmetry increased prior to the “flash 
+crash” of May 6, 2010, and that high frequency traders withdrew liquidity in response.  Our analysis 
+implies that the resulting reduction in liquidity was economically inefficient, and that future flash crashes 
+
+===== PAGE 6 =====
+
+ 
+5 
+  
+can be potentially be avoided and firm values enhan ced by contracts calling for one or more DMMs to 
+continue to provide liquidity during periods of heightened information asymmetries.   
+The model presented here has direct regulatory imp lications.   We show that contracts by which 
+a firm compensates a DMM for enhancing liquidity provision in its own shares can enhance market 
+quality, trader welfare, and firm value.   However, such contracts impose trading losses on, and therefore 
+require side payments to, the DMM.  A regulatory requirement that certain DMMs provide additional 
+liquidity beyond competitive levels without such comp ensation would lead to exit from the industry and 
+would ultimately be counterproductive to the goal of enhancing liquidity.   
+Contracts of the type we assess are in fact observed on some markets, but are currently 
+prohibited in the U.S. by FINRA rule 5250, which “prohibits any payments by an issuer or an issuer’s 
+affiliates and promoters, directly or indirectly ….  for publishing a quotation, acting as a market maker or 
+submitting an application in connection therewith.”
+7  The NYSE and Nasdaq markets have both recently 
+requested partial exemptions from rule 5250, to al low DMM contracts for certain Exchange Traded 
+Funds.8  Some commentators have criticized these proposals on the grounds that DMM contracts “distort 
+market forces.”9   Our model shows that the competitive bid-ask  spread fails to maximize trader welfare 
+or firm value, due to externalities associated with information asymmetries.  DMM contracts of the type 
+considered here comprise a potential market solution to a market imperfection. 
+2. Related Literature 
+Many authors provide models of market maki ng.  Among these, Demsetz (1968) shows that 
+market maker spreads will decline as a function of t ypical trading activity in the stock.  Ho and Stoll 
+                                                             
+7 FINRA Regulatory Notice 09‐60.  See Venkataraman and Waisburd (2007) and Anand, Tanggaard, and Weaver 
+(2009) for descriptions of DMM agreements on Euronext Paris and the Stockholm Stock Exchange, respectively.   
+8 See SEC Release No. 34‐67411, available at http://www.sec.gov/rules/sro/nasdaq/2012/34‐67411.pdf.  The 
+proposals only call for DMM’s to match the best existing quotes at certain times, and thus are less aggressive than 
+the “maximum spread” obligations considered here.  
+9 SEC Release No. 34‐67411, page 58. 
+
+===== PAGE 7 =====
+
+ 
+6 
+  
+(1980) assess the effects of inventory on market ma ker quotes, while Glosten and Milgrom (1985) show 
+that a bid-ask spread will arise if some traders are be tter informed than liquidity suppliers.  Biais (1993) 
+compares liquidity provision in a centralized limit orde r market to that in a fragmented dealer market.  
+Goettler, Parlour, and Rajan (2005) and Foucault,  Kadan, and Kandel ( 2005), among others, model 
+liquidity provision strategies used by limit order traders.  Biais, Foucault, and Moinas (2012) rely on a 
+model that is similar to ours in several dimens ions, including a single round of trading, binomial 
+outcomes on fundamental asset value, potentially info rmed traders, and exogenous liquidity shocks.  
+They focus on market making by well-informed hi gh frequency traders, showing that such high 
+frequency participation enhances econom ic efficiency by allowing more  trades to occur, even while 
+negative externalities are imposed on other informed traders.  
+However, in the literature cited above, as in most of  the literature on market making, the emphasis is 
+on endogenous liquidity provision, i.e. on dealer and trader behavior in the absence of any specific 
+obligation to supply liquidity.   Only a few authors have assessed the role of DMMs, and only in limited 
+ways.  Venkataraman and Waisburd (2 007) consider the effect of a DMM in a periodic auction market 
+characterized by a finite number of investors.  The DMM in their model is essentially an additional 
+trader who is present in every round of trading, thereby improving risk sharing.  Sabourin (2006) 
+presents a model where a designated market maker is imposed in an imperfectly competitive limit order 
+market.   In her model, the presence of a designated market maker will cause some limit order traders to 
+substitute to market orders, which reduces competition in liquidity supp ly and allows the possibility of 
+wider spreads with a designated market maker.    
+A small group of empirical researchers have studied  the effects of DMMs on market quality.   
+Anand and Weaver (2006) examine the Chicago Boar d Options Exchange (CBOE) when that market 
+began to assign DMMs to each option, documenting decreased bid-ask spreads and increased CBOE 
+market share following the introduction of DMMs.  Pe trella and Nimalendran (2003) study the Italian 
+Stock Exchange, documenting improved market quality  on a hybrid market that includes a designated 
+
+===== PAGE 8 =====
+
+ 
+7 
+  
+market maker, as compared to stocks traded on a pure limit order market.  Venkataraman and Waisburd 
+(2007), Anand, Tanggaard, and Weaver (2009), Sk jeltorp and Odegaard (2011), and Menkveld and 
+Wang (2009) study the introduction of DMMs on Eur onext-Paris, the Stockholm Stock Exchange, the 
+Olso Stock Exchange, and Euronext-Amsterdam, resp ectively.  Each study reports improvements in 
+liquidity associated with DMM introduction, and positive stock valuation effects on announcement of 
+DMM introduction.   
+While the empirical evidence strongly supports the reasoning that DMMs enhance liquidity and 
+firm values, the evidence does not clarify the source of  the value gain.   Providing enhanced liquidity is 
+costly, and the DMMs must be compensated for th ese costs.   Amihud and Me ndelson’s (1986) model 
+implies a reduction in firms’ cost of capital due to improved liquidity.  However, this reasoning alone 
+need not imply that the benefits exceed the costs.  Our analysis clarifies the economic mechanism by 
+which value can be enhanced by contracts that narro w bid-ask spreads, and pr ovides insights into the 
+determinants of the optimal contracted spread width. 
+3. The Model 
+3.1 Overview 
+In this section, we introduce a model to assess the po tential benefits of a contract between a firm 
+and a DMM.  Our intent is to identify the key economi c issues with the simplest possible model.   An 
+alternative modeling approach would be to consider a contract between the exchange where the firm’s 
+shares are listed and a DMM.  If the exchange si mply recovers the DMM fee from the firm through a 
+higher listing fee, the model remains equivalent to th at presented.  Alternatively, the exchange might 
+benefit directly, e.g. in the form of trading fee revenu e that would be enhanced if trading were increased.   
+“Make-take” fees, which are differential fees assessed on marketable (those that take liquidity) versus 
+non-marketable (those that make liquidity) orders, are employed by a number of exchanges, and subsidize 
+liquidity provision when “make fees” are negative.  However, in the absence of frictions Angel, Harris 
+
+===== PAGE 9 =====
+
+ 
+8 
+  
+and Spatt (2011) argue that the net (make – take) will be neutralized in competitive equilibrium by 
+offsetting changes in bid and ask quotes.  Foucault,  Kadan, and Kandel (2012) present a model where 
+make fees are relevant due to a non-trivial tick size.   In contrast, the model we present does not rely on 
+any market friction. 
+We focus on a single investor who potentially invests in a firm’s initial public offering of stock.   
+In the IPO, the firm sells rights to the eventual cash flow from its risky asset.   Proceeds from the IPO, net 
+of any payment to the market maker, are paid to the firm’s existing owners.  The IPO investor may want 
+to trade again, and considers possible future trading costs in assessing the amount she is willing to pay for 
+the firm’s risky equity.   The ri sk-neutral investor chooses between purchasing ownership of the firm’s 
+equity and an alternative investment that is free of risk and can be traded without cost.    
+The model’s timeline is as follows.   The firm i ssues risky equity at t=0.  The security can be 
+traded in the secondary market at t=1, with a liquidity  supplier taking the opposite side of the investor’s 
+trade.   At t=2 the security pays a terminal value, V, equal to either H or L, with equal probability.    Let μ 
+= (H+L)/2 denote the unconditional expected payment on the risky security.   Prior to t=1 trading the 
+investor receives with probability P an information signa l that reveals whether security value will by H or 
+L.  We consider both the case where P is exog enously determined, and where the investor can 
+endogenously increase P by investing in  information acquisition.   As an alternative, the investor can 
+purchase a risk-free Treasury bill that makes a certain final payment also equal to μ, and that can be 
+traded without cost.    
+The timeline is as follows: 
+ 
+ 
+ 
+t = 0: The investor buys the 
+risky security or the t‐bill. 
+The investor 
+becomes informed 
+with probability P.  
+t =1: The investor buys, 
+sells, or holds the risky 
+security or the t‐bill.  
+t = 2: The security is liquidated.  
+The investor 
+experiences a 
+liquidity shock, ρ.
+
+===== PAGE 10 =====
+
+ 
+9 
+  
+As in Glosten and Milgrom (1985), the possibility th at the investor is privately informed gives 
+rise to a bid-ask spread in the secondary market for the risky security.   To prevent a complete market 
+breakdown requires an extrinsic motive for trade.   Ju st before t=1 the investor experiences a liquidity 
+shock, ρ.  A positive ρ implies that the investor’s subjective va luation of the asset has increased, while a 
+negative ρ implies that the investor’s subjective valuati on of the asset has decreased.   We do not model 
+the determinants of the liquidity shock, which represents any motive for trade other than non-public 
+information regarding asset value.  For our baseline analysis we assume that ρ is distributed uniform on 
+the interval –
+ுି௅
+ଶ  to	
+ுି௅
+ଶ , which allows for a number of closed fo rm solutions.  In Section 3.5.1 below we 
+discuss the effects of alternative distributional assumptions regarding ρ.   
+At t = 1 secondary trading occurs, and at t=2 the investments pay their liquidation value, either H 
+or L for the risky investment, and μ for the Treasury bill.  The risk-n eutral investor maximizes expected 
+utility, the ex post outcome on which is the number of units held times the sum of liquidation value and ρ.   
+We assume the existence of competitive and risk-neutral liquidity providers who have no 
+extrinsic motive for trade ( ρ ൌ 0	for	liquidity	providersሻ, and that trades can be completed without any 
+out-of-pocket cost, implying zero-expected profit as the equilibrium condition.  This is consistent with the 
+Glosten and Milgrom (1985) model of a dealer market, but also pertains to a limit order market with 
+competitive liquidity provision, which seems a reasona ble baseline assumption given a large number of 
+potential limit order traders and the absence of barriers to entry.  As in Glosten and Milgrom (1985), the 
+zero profit bid (ask) price is equal to the expect ed value of the security conditional on observing an 
+investor sell (buy) at t=1.  The investor’s priv ate valuation of the risky equity at t=1 is V*= μ + ρ if the 
+investor remains uninformed, or V*= V + ρ, where V = H or L, if the investor has become informed.  The 
+investor will purchase an additional unit of equity at t=1 if V* exceeds the ask quote, will sell if V* is less 
+than the bid quote, and otherwise refrains from trading.  
+ 
+
+===== PAGE 11 =====
+
+ 
+10 
+  
+3.2 The Treasury-Bill Benchmark. 
+As an alternative to purchasing the risky secu rity, the investor can purchase one unit of the 
+Treasury bill at t=0, for the price μ.   The zero-profit condition impli es a zero bid-ask spread for the 
+Treasury bill secondary market. 10  The investor will not purchase th e risky security unless the expected 
+gain is equal to that of purchasing the Treasury security. 
+Table 1 summarizes potential outcomes from purch asing the Treasury security at t=0.  If the 
+investor has a positive subjective valuation shock ( ρ > 0), she purchases an additional unit at t=1 for cost 
+μ.  Her ex post gain from being able to purchase an extra unit at time 1 is ρ, and her final subjective 
+valuation for the two units exceeds the 2 μ paid to acquire them by 2ρ.  If the subjective valuation shock is 
+zero the investor does not trade in the secondary mark et.   The final subjective value of the treasury 
+security equals the amount paid, so the net gain is zer o.   If the investor has a negative valuation shock ( ρ 
+< 0) she sells the treasury security in the secondary market for price μ.  Since this was also the purchase 
+price, the ex post net gain is zero in this case as well.   Note, though, that the ability to sell at t=1 has 
+improved the investor’s utility, as the net gain would otherwise have been ρ < 0.   
+Table 1: Ex Post Outcomes from Purchasing and Trading the Treasury Security 
+Time 1 Valuation If no t=1 trade If trade possible Trade vs. No-Trade 
+V*= μ + ρ > μ  Buy V*- μ = ρ 2V* - 2 μ = 2ρ Ρ 
+V*= μ + ρ = μ  NT V*- μ = ρ V* - μ = ρ=0 0 
+V*= μ + ρ < μ  Sell V*- μ= ρ μ – μ = 0 - ρ 
+ 
+Incorporating the distributional assumption on ρ, the unconditional expectation of the net payoff from 
+buying a Treasury-bill at t=0, with the option to trade again in the frictionless market, is: 
+                                                             
+10 We assume that the investor cannot short sell the treasury security, or equivalently, that the investor cannot 
+borrow at the risk free interest rate (which is zero in the model).   Similarly, the investor cannot sell the risky 
+security unless the time zero IPO takes place, which requires through the participation constraint that the investor 
+be compensated for illiquidity.  More generally (as in Glosten and Milgrom, 1985), to prevent a complete market 
+breakdown resulting from information asymmetries, it is necessary that non‐information‐motivated trade occurs in 
+the secondary market for the risky security.   
+
+===== PAGE 12 =====
+
+ 
+11 
+  
+ሺρሺ2	ρ|ρ ൐0 ሻ ൌ
+ுି௅
+ସ  ,                                                              (1) 
+which establishes a reservation payoff for the investor.  
+3.3 The investor’s trading strategy and payoff on the risky security 
+Table 2 summarizes the possible ex post outcomes fr om participating in the market for the risky 
+equity security, as a function of the investor’s subj ective valuation, V*, the bid (B) and ask (A) quotes, 
+the initial offer price, denoted Q, and the possible payment from the firm to the market maker, denoted M.  
+The Table includes outcomes to the in vestor, the market maker, and the firm, with and without trading at 
+time 1, to emphasize the gains that arise from secondary market trading.11 
+The first row of Table 2 applies if the investor’s subjective valuation at t=1 exceeds the ask quote, 
+in which case she purchases another unit in the sec ondary market.  The second row applies if the 
+investor’s subjective valuation lies between the bid and ask quotes, and she refrains from trading. The 
+third row applies if the investor’s subjective valuation is less than the bid quote, in which case she sells.  
+In all three cases, the outcome to the firm in the absence of t=1 trading, displayed in column (iv) 
+is Q (the proceeds from the IPO) less V (the value of the asset sold).  With time 1 trading, outcomes to the 
+firm, displayed in column (v), are Q less the sum of  V and M (the payment to the market maker, which 
+equals the market maker’s expected  trading loss).   The firm theref ore benefits from the possibility of 
+secondary market trading if the IPO price is increased by more than the payment to the market maker.   
+This payment, M, is determined such that the risk-neutral liquidity supplier has zero expected gain, i.e. so 
+that the unconditional expectation of column (vii) outcome s is zero.    In the absence of time 1 trade the 
+investor’s ex post outcome is V* - Q.   Given the opportunity to trade at t=1, the investor’s ex post 
+outcome (column ii) is 2V* - A - Q if she elects to purchase a second unit at the ask price, V* - Q if she 
+refrains from trading, and is B – Q is she elects to sell her share at the bid price.   
+                                                             
+11 Note  that  the  investor  trades  with  the  market  maker,  not  the  firm.   The  market  maker’s  final  inventory  is 
+therefore the opposite of the t=1 investor trade.   
+
+===== PAGE 13 =====
+
+ 
+12 
+  
+Columns (viii) and (ix) reports combined gains,  obtained by summing ex  post gains across the 
+firm, market maker, and the investor, with and without  time 1 trading, respectively.  Column (x) reports 
+the change in the combined gain due to time 1 trad e.  Only the investor’s subjective liquidity shock 
+parameter, ρ, appears in these columns.  This reflects that  all payments in the model are zero-sum across 
+the parties.  In particular, while the investor can benefit from trading on private information should she 
+become informed, any investor gain is a market ma ker loss.  Note that the unconditional expectation of 
+the combined gain in the absence of t=1 trading (c olumn viii) is zero, which reflects that unconditional 
+mean of the liquidity shock parameter, ρ, is zero.  The gain across all par ties is positive solely due to time 
+1 secondary market trading, and can be computed as th e unconditional expectation of either column (ix) 
+or column (x). 
+Table 2: Ex Post Outcomes from Purchasing and Trading the Equity Security 
+ Investor Firm Market Maker Combined 
+(i) (ii) (iii) (iv) (v) (vi) (vii) (viii) (ix) (x) 
+Time 1 
+Outcome 
+If no 
+trade 
+If trade 
+possible 
+If no 
+trade 
+If trade 
+possible 
+If no 
+trade 
+If trade 
+possible 
+If no 
+trade 
+If trade 
+possible 
+Trade vs. 
+No-Trade 
+V* > A: V*–Q 2V*– A–Q Q – V Q–V–M 0 A – V + M ρ 2 ρ ρ 
+B <V*<A V*–Q V* – Q Q – V Q–V–M 0 M ρ Ρ 0 
+V* < B V*–Q B – Q Q – V Q–V–M 0 V – B + M ρ 0 - ρ 
+ 
+From the viewpoint of the investor, the unc onditional expectation of the net gain from 
+participating in the IPO (column iii), given t=1 trading, can be written as: 
+ሻ ሿ  + ൧   
+        + ሿ.                                                                                                         (2) 
+To induce the investor to participate, the firm chooses Q so that the expected payoff ߨequals௧௕௜௟௟.   
+ 
+
+===== PAGE 14 =====
+
+ 
+13 
+  
+3.4 Model Outcomes  
+We initially assess the effects of a contract that compensates market makers to narrow the bid-ask 
+spread while assuming that the probability that the e quity investor will become  informed regarding the 
+t=2 asset value is known and exogenous.   Proofs are provided in the appendix. 
+3.4.1 The Competitive Benchmark 
+Our first results are with regard to bid and ask quotes and the initial offer price, in the absence of 
+a payment from the firm to the market maker.  Bid and ask quotes are determined such that the market 
+maker anticipates zero profit conditional on either a custom er buy or sell, and the offer price is set to just 
+meet the investor’s participation constraint.   
+LEMMA 1: 
+For P less than 2/3, the competitive bid-ask spread is A-B = 	
+ଶ௉ሺுି௅ሻ
+ଶି௉ , and the firm sets the offer price of 
+the risky security as: െ
+௉ሺுି௅ሻ
+ସ  . 
+For P greater than or equal to 2/3, the competitive bid-ask spread is A-B = H-L and the sets the offer 
+price of the risky security as: െ
+ሺଶି௉ሻሺுି௅ሻ
+଼  . 
+As might be anticipated, e.g. based on the intuition of the model presented by Amihud and 
+Mendelson (1986), the competitive offer price is  less than the expected asset value, µ, indicating that the 
+IPO price is discounted to reflect illiquidity in the secondary market, for all P > 0.  The competitive bid-
+ask spread increases in the probab ility of informed trading for P < 2/3, and increases in uncertainty 
+regarding final value, H-L.  The offer price which satisfies the participation constraint decreases with P up 
+to 2/3, but increases with P for P > 2/3.   This reflect s that higher P benefits the investor, ceteris paribus.  
+However, for P < 2/3 the bid-ask spread increases with  P, and the wider spread more than offsets the 
+
+===== PAGE 15 =====
+
+ 
+14 
+  
+benefit to the trader.   For P > 2/3 the competitive spread is already widened to its maximum and the 
+investor strictly benefits from a higher probability of becoming informed.   
+3.4.2 Spread constraints and net proceeds to the firm.   
+We now assess the effects of a contract by which the firm requires liquidity providers to narrow 
+the bid-ask spread, and compensates them for doing so.  We focus on a contract that requires the bid-ask 
+spread to be no greater than K, and for si mplicity focus on symmetric spreads such that ൌ µ ൅
+௄
+ଶ and 
+ൌ µ െ
+௄
+ଶ.  
+LEMMA 2: Given exogenous P and a constrained bid-ask spread K, the equilibrium offer price is:  
+௄ ൌμ൅
+௉ሺுି௅ሻ
+ସ ൅
+ሺଶି௉ሻ
+଼ሺுି௅ሻଶ െ
+௄
+ଶ. 
+ 
+Note that for any constrained spread, K, the offer price increases as P increases, as 
+ப୕ే
+ப୔ ൌ
+ሺୌି୐ି୏ሻሺୌି୐ା୏ሻ
+ସሺୌି୐ሻ ൐0 .   The investor benefits from higher probability of becoming informed, and 
+given a constrained spread, does not pay higher trading costs to offset.   
+ 
+We next turn to the effect of the spread constraint on the firm’s offering proceeds. 
+PROPOSITION 1: The firm’s IPO proceeds always increase as  the t=1 bid-ask spread is further 
+constrained relative to the competitive spread.   
+  
+When ൑
+ଶ
+ଷ, ൌ
+ሺଶି௉ሻ
+଼ሺுି௅ሻଶ െ
+௄
+ଶ ൅
+௉ሺுି௅ሻ
+ଶ  > 0 
+When ൒
+ଶ
+ଷ,   ൌ
+ሺଶି௉ሻ
+଼ሺுି௅ሻଶ െ
+௄
+ଶ ൅
+ሺଶା௉ሻ∗ሺுି௅ሻ
+଼ 	൐ 	 0 
+Proposition 1 shows that the firm captures benefits  from constraining the t=1 spread in the form 
+of a higher t=0 offer price.   However, constraine d the spread to be less than the zero-profit spread 
+
+===== PAGE 16 =====
+
+ 
+15 
+  
+necessarily imposes expected trading losses on liquidity providers.  To in duce the liquidity providers to 
+accept the constraint requires a side payment to compensate for expected trading losses.   
+ 
+LEMMA 3: For constrained spreads narrower than the comp etitive benchmark, the liquidity provider’s 
+expected market making loss, M, which also equals the requisite payment from the firm to the market 
+makers, depends on the constraint K according to: 
+ൌ
+ሻ
+ሻଶ െ
+ሻ
+4ሻ
+2 ൐0 , 
+and the effect of the spread constraint on market making loss is: 
+ܯ߲
+ܭ߲ൌ
+ሻ
+ሻ ൏0 . 
+ 
+Lemma 3 shows that market maker loss always incr eases as the contracted spread width is narrowed 
+relative to the competitive spread.     
+ 
+Proposition 1 shows that the firm’s IPO price is incr eased by constraining secondary market spreads, 
+while Lemma 3 demonstrates that the losses imposed on  market makers, which must be compensated by 
+the firm, increase as spreads are more constrained.   These results are intuitive.   The central issue is 
+whether the IPO proceeds are increased by more than the requisite payment to the market makers. 
+ 
+LEMMA 4: The firm’s net proceeds (FNP), defined as the IPO proceeds less the payment to the market 
+maker, depend on the spread constraint, K, according to:  
+ൌെ
+ሺଶି௉ሻ
+଼ሺுି௅ሻଶ ൅
+௉
+ସ൅
+ଶሺுା௅ሻି௉ሺுି௅ሻ
+ସ .                                        (4) 
+We now assess the relation between the constrained spread and the firm’s net proceeds. 
+
+===== PAGE 17 =====
+
+ 
+16 
+  
+PROPOSITION 2:  Constraining the spread to an optimal width of ∗ ൌ
+௉ሺுି௅ሻ
+ଶି௉  increases IPO proceeds by 
+more than the required payment to market makers.   
+Proposition 2 demonstrates the existen ce of an optimal spread constraint . Note that the value-maximizing 
+spread is non-zero.  When P < 2/3, the value maximi zing spread K* is half of the competitive spread.  
+When P > 2/3, K* exceeds half of the competitive spread .  Note also that the optimal constrained spread 
+is strictly increasing in uncertainty regarding value (H-L), and in the probability of informed trading, P, as 
+displayed on Figure 1.    
+ 
+Figure 1 Optimal Constrained Spread for various P and (H-L) 
+Figure 2 depicts the increase in IPO proceeds, net of the requisite payment to market makers, 
+when the spread is set at K*, for various levels of  P, and given that H=2 and L=1.   Net proceeds are 
+enhanced for all P except P = 0 (when the unconstrained spread is zero) and when P = 1. The increase in 
+net proceeds is largest for P = 2/3.  
+Proposition 2 comprises the central result of this paper.   It implies that firm value is enhanced by 
+a contract requiring liquidity providers to narrow sp reads beyond competitive levels, even when the firm 
+compensates liquidity providers for expected trading losses.   It also provides the empirically testable 
+
+
+===== PAGE 18 =====
+
+ 
+17 
+  
+implications that that the value-maximizing spre ad is positive, increases in both the probability of 
+informed trading, P, and increases in the degree of uncertainty regarding asset value, H-L. 
+ 
+Figure 2 Enhanced Net IPO proceeds with the optimal constrained spread, for various P. 
+To understand why firm value can be improved by constraining the spread such that liquidity 
+providers suffer trading losses, recognize that bid-ask spreads arise in this model only due to information 
+asymmetries.  Competitive liquidity providers charge  spreads as a function of their expected losses to 
+better informed traders.  Crucially, however, any loss e xperienced by a liquidity pr ovider is offset by an 
+equal gain to the investor.  That is, losses to better informed trader s are a private cost to liquidity 
+providers, but are not a net cost when aggregating acr oss all traders.  This implies that the competitive 
+bid-ask spread is wider than the net social cost of completing trades.12   
+Since the model incorporates no out-of-pocket costs to completing trades, it is efficient from an 
+allocative perspective for the trad er to purchase (sell) any time ρ is positive (negative).  With a positive 
+bid-ask spread the trader is dissuaded from trading in those cases where B < V* < A.   The constraint on 
+                                                             
+12 Glosten (1989) also observes that a zero‐expected‐profit condition that applies for each trade leads to 
+inefficiencies when asymmetric information exists.   He considers the extent to which a market maker with a 
+degree of monopoly power can improve efficiency, by using profits on some trades to subsidize losses on others.   
+In contrast, we focus on competitive liquidity provision, as in an open limit order book. 
+
+
+===== PAGE 19 =====
+
+ 
+18 
+  
+spread widths increases a llocative efficiency and net IPO proceeds by facilitating efficient trades that 
+would otherwise be dissuaded by a bid-ask spread wider than the social cost of completing trades.    
+Proposition 2 indicates that net IPO proceeds can be enhanced by optimally constraining the 
+spread.   However, narrowing the spread to arbitrary levels has the following implications: 
+PROPOSITION 3: When P < 2/3, value is enhanced for all positive K narrower than the competitive 
+spread.  When  P> 2/3, value is enhanced when  
+ሺଷ௉ିଶሻሺுି௅ሻ
+ଶି௉൏
+ଶ௉ሺுି௅ሻ
+ଶି௉ , but value is decreased when 
+൑
+ሺଷ௉ିଶሻሺுି௅ሻ
+ଶି௉ .   
+To illustrate Proposition 3, Figure 3 displays the increase in net proceeds for various constrained 
+spreads and P, for P < 2/3.  Figure 4 displays co rresponding changes in net proceeds when P > 2/3, and 
+Figure 5 combines the data to display changes in net proceeds from constraining spreads for the full range 
+of P from 0 to 1.   
+Figures 3 to 5 demonstrate that firm net proceed s are enhanced by constraining the spread for 
+most parameter values.  However, two potentially surpri sing results are also illustrated.  First, the spread 
+width that maximizes net proceeds is greater than  zero, even though the model incorporates no out-of-
+pocket cost to complete trades.   Second, net proceeds can be decreased rather than enhanced if the spread 
+is constrained too tightly when there is a sufficiently high probability of informed trading, P.   
+
+===== PAGE 20 =====
+
+ 
+19 
+  
+ 
+Figure 3 Enhanced Firm Net Proceeds with the constrained spread normalized by the zero-profit 
+competitive spread with P ranging from 0 to 2/3. 
+ 
+Figure 4 Enhanced Firm Net Proceeds with the constrained spread normalized by the zero-profit 
+competitive spread with P ranging from 2/3 to 1. 
+ 
+
+
+===== PAGE 21 =====
+
+ 
+20 
+  
+ 
+Figure 5 Enhanced Firm Net Proceeds with the constrained spread normalized by the zero-profit 
+competitive spread with P ranging from 0 to 1. 
+It may be surprising that value can be decreased by the combination of a high probability of 
+informed trading and narrow bid-ask ask spreads, given that the investor benefits from each.  In fact, 
+Lemma 2 above shows that the firm’s IPO proceeds strictly increase with P for any K, and Proposition 1 
+shows that the firm’s IPO proceeds increase as the sp read width is further constrained, for any P.  
+However, to enhance value the gain s to the trader must exceed the co sts imposed on the market maker, 
+and in some cases they do not.    
+To understand these results, consider again colu mn (x) of Table 2, which summarizes ex post 
+gains aggregated across the investor, firm, and market  maker.   These gains depend on the investor’s buy-
+sell decisions and outcomes on the liquidity shock parameter, ρ.  Trading gains across all parties would be 
+maximized if the trader would buy for any realization of ρ ൐0  and would sell for any realization of 	ρ ൏
+0.   Such an outcome would imply perfect allocative efficiency, in the sense that an additional share 
+would flow to the trader if she valued it more highly than the market maker (for whom ρ ൌ0 ሻ, while the 
+share would be transferred to the market maker if he valued it more highly than the trader. 
+ However, perfect allocative efficiency is not obta ined in this setting, due both to the existence of 
+the spread and the fact that trade prices differ from the true asset value known to informed traders.  
+
+
+===== PAGE 22 =====
+
+ 
+21 
+  
+Constraining the spread potentially improves alloca tive efficiency by allowing trades to occur that 
+otherwise would not.   However, allocative efficiency  can be compromised by constraining the spread, by 
+encouraging trades by informed traders in the “wrong” direction.13     
+Referring to column (x) of Table 2, the unconditional expectation of the combined gains from t=1 
+trading can be expressed as:  
+Combined	Gain	from	Trading		ሺCGTሻ ൌ 
+ሻ ∗E ሺρሻ ∗E ሺെρሻ.                                                    (5) 
+Incorporating the distributional assumption on ρ, the unconditional expectation of the combined gains 
+from trade depends on K according to: 
+ൌ
+௉ିଶ
+଼ሺுି௅ሻଶ ൅
+௉
+ସ൅
+ሺுି௅ሻି௉ሺுି௅ሻ
+ସ .                    (6) 
+We can now state the following.                                                                                
+PROPOSION 4:   The spread constraint that maximizes the combined gain from trading is that which 
+maximizes firm net proceeds. 
+Comparing expression (6) for gains from trade to expression (4) for the firm’s proceeds net of the 
+payment to market makers and expression (1) for the trader’s reservation utility from trading the Treasury 
+security, implies FNP = µ௧௕௜௟௟ .  The firm captures as net proceeds the unconditional expected 
+value of the asset, µ, plus the expected combined gains from t=1 trading, less the reservation utility 
+available if the trader purchases the Treasury security instead of the IPO.   Since µ and ௧௕௜௟௟ are not 
+affected by the secondary market spread, FNP and CGT are maximized simultaneously.   
+                                                             
+13 Trades in this model are always privately optimal.   Trades in the “wrong” direction occur because the market 
+price of the asset differs from its true, non‐public, value.   A social planner with the goal of maximizing gains from 
+trade might require all traders to transact in the “right” direction.  However, such a requirement would 
+compromise price discovery, would require some form of coercion, and in any case is not induced via a maximum 
+spread rule.  
+
+===== PAGE 23 =====
+
+ 
+22 
+  
+The effect of the spread constraint on the firm ’s proceeds and gains from trade can be understood 
+by further assessing expression (5).  Tightening the spread constraint (decreasing K) decreases the ask and 
+increases the bid.   Hence, the probability of a t=1 trad e strictly increases as the spread is constrained.   If 
+the trader is uninformed, V*= μ + ρ, so V* exceeds A, giving rise to a buy, if and only if ρ > 0, while V* 
+is less than B, giving rise to a sell, if and only if ρ < 0.   Narrowing the spread therefore always improves 
+allocative efficiency when the trader is uninformed.   In contrast, trades need not improve allocative 
+efficiency when the trader is informed.    
+For an informed trader, V*= H + ρ when V = H, or V*= L + ρ when V = L.  Figure 6 illustrates 
+informed trading outcomes in the former case; outco mes are symmetric when V = L.   Case 1 illustrated 
+on Figure 6 incorporates the distributional assumption on ρ used to this point, i.e. that ρ is uniformly 
+distributed on the interval -(H-L)/2 to (H-L)/2.  (Cases 2 and 3 will be discussed in Section 3.5.1 below). 
+ 
+Figure 6: The effect of constraining the spread on informed trading when V=H.  In Case 1 ρ is 
+uniformly distributed on the interval -(H-L)/2 to (H-L)/2.  In Case 2 ρ is normally distributed with mean 
+zero.  In Case 3 ρ is uniformly distributed on the interval -(H-L) to (H-L). 
+Narrowing the spread decreases A and increases B, each toward µ, as indicat ed by the arrows on 
+Figure 6.  Given V = H and the Case 1 distributio nal assumption, the lower bound on the informed 
+
+
+===== PAGE 24 =====
+
+ 
+23 
+  
+trader’s subjective value, V*, is µ.  Therefore the d ecrease in the ask leads to a greater probability of an 
+investor buy, while the increase in the bid does not affect the probability of a sale.  However, since A < H, 
+the potential realizations on ρ that shift the informed trad er from no-trade to buy involve ρ < 0.   
+Narrowing the spread therefore increa ses the probability of an informed  trader buy, but decreases the 
+mean ρ conditional on a buy.  While the buy induced by a narrower spread is privately optimal for an 
+informed trader (and contributes to price discovery, as discussed in Section 3.4.3), it reduces allocative 
+efficiency, which in turn reduces gains from trade and the firm’s net proceeds. 
+The spread constraint that maximizes the firm’s  net proceeds is that which maximizes expected 
+allocative efficiency.  Constraining the spread to  the optimal level always enhances value, but 
+constraining the spread to zero encourages too many informed trades that reduce allocative efficiency.    It 
+is possible to reduce rather the net pr oceeds to the firm if the spread is  constrained too far in the presence 
+of a large probability of informed trading.   
+However, the preceding insight will be at least pa rtially mitigated in practice, for two reasons.  
+First, the available empirical evidence indicates moderate rates of informed trading.  In particular, Easley, 
+Kiefer, O’Hara, and Paperman (1996) introduce a model to estimate the probability of informed trading in 
+U.S common stocks, reporting a cross-sectional average P estimate of about 0.20, and that the estimated P 
+is less than 0.40 for virtually all stocks.  Our anal ysis indicates excessively constraining the spread can 
+destroy rather than enhance value only when P appro aches one.  Further, our results regarding allocative 
+efficiency stem in part from the fact that the m odel includes just a single round of trading.  A more 
+complex model that allows for an offsetting trade afte r prices adjust to fully incorporate the informed 
+traders’ information would alleviate the allocative inefficiency.  However, as long as trade prices differ 
+from fundamental value (including the potential effect s of subsequent information shocks) the reductions 
+in allocative efficiency due to info rmed trading will not be completely eliminated, and the optimal spread 
+will not be zero. 
+
+===== PAGE 25 =====
+
+ 
+24 
+  
+3.4.3 Constrained Spreads and Price Discovery 
+The preceding section shows that optimally constrai ning the spread leads to an increase in the 
+IPO price that exceeds the cost of reimbursing liquidity  providers for their trading losses.  This comprises 
+a major benefit from a DMM contract.  In addition,  the firm potentially benefits from improved price 
+discovery.  We focus in particular on the mean squared forecast error (MSFE) when viewing the t=1 trade 
+price as a forecast of the t=2 liquidation value, H or L.  Letting E 1(V) denote the expectation of 
+liquidation value formed conditional on observing the time 1 trades, the MSFE is: 
+MSFE ൌ Prob ሺVൌH ሻ ∗ሾ EଵሺV|VൌH ሻ െH ሿଶ ൅P r o bሺVൌL ሻ ∗ሾ EଵሺV|VൌL ሻ െL ሿଶ,    
+where	the probabilities are unconditional.   In the Appendi x we assess these conditional expectations.  Let 
+௟ and ௛ denote the mean squared forecast erro r with the competitive spreads, when ൏2 / 3  
+and when ൒2 / 3  respectively.  These can be expressed as:  
+௟ ൌ
+ሺுି௅ሻమሺିସ௉యାଷ௉మାସ௉ିସሻమ
+ସሺଶି௉ሻర , and ௛ ൌ
+ሺுି௅ሻమሺଶି௉ሻమ
+ଵ଺ . 
+Let ௄ denote the mean squared forecast error when the spread width is constrained to K.  We have:  
+௄ ൌ
+ሺ௉మ௄మାଶሺுି௅ሻ൫ଶି௉ିଶ௉మ൯௄ାସ௉మሺுି௅ሻమሻమ
+ଵ଺ሺଶுିଶ௅ିଶ௄ା௉∗௄ሻ మ . 
+PROPOSITION 5: Constraining the bid-ask spread improves pr ice discovery, as the mean square forecast 
+error (MSFE) of the time 1 trade price as a predictor of time 2 value is reduced.   
+Figure 7 displays the difference between the M SFE with various constrained spreads and the 
+MSFE with the zero-profit competitive spread for va rious constraints and probabilities of informed 
+trading, and shows that the MSFE declines as the spread  is constrained, for K and all P.  The forecast 
+error is reduced most when P is large, which reflects that the improvement in price discovery arises due to 
+a narrower spread encouraging informed traders to trade on their information.  
+
+===== PAGE 26 =====
+
+ 
+25 
+  
+ 
+Figure 7: The effect of the constrained spread on the mean square forecast error, relative to the 
+competitive benchmark.   
+This analysis highlights the complex role of in formed trading in security  market equilibrium.  
+Narrower spreads induce more outcomes where the in formed trader to is willing to purchase because 
+V=H even though her liquidity shock is negative, and more outcomes where she is willing to sell because 
+V = L, even though her liquidity shock is positive.  These additional trades are informative, and enhance 
+price discovery.  On the other hand, the same tr ades reduce allocative effici ency, as discussed in the 
+preceding section.  
+3.5 Extensions   
+We have shown that a contract between the firm and a DMM that calls for narrowing the 
+secondary market bid-ask spread to less than competitive levels can benefit the firm in two ways.   First, it 
+can increase the market value of the firm’s securities by more than th e required payment to the liquidity 
+provider.   Second, by encouraging informed traders to  transact on their information, it can improve price 
+discovery, such that the secondary market transaction price becomes a more reliable forecast of the final 
+value of the firm’s assets.    
+
+
+===== PAGE 27 =====
+
+ 
+26 
+  
+However, our analysis to this point has relied on a particular distributional assumption regarding 
+liquidity shocks, and on the assumption that the pr obability that the trader will become privately 
+informed, P, is exogenous.  Further, while the dist ributional assumption used allows for closed form 
+solutions, it allows for only limited insights regarding cr oss-sectional variation in the optimality of spread 
+constraints.  We now consider the effects of relaxing these assumptions in various dimensions. 
+3.5.1 Alternative Distributional Assumptions 
+ The results presented in Section 3.4 relied on a specific distributional assumption regarding the 
+investor’s subjective motive for trade, in particular that ρ is uniformly distributed on the interval -(H-L)/2 
+to (H-L)/2.  This assumption is convenient, and allows  for a number of closed form solutions.  However, 
+the actual distribution of motives for trade is unknow n, and a wide variety of alternative assumptions 
+could potentially be evaluated.   Here, we briefly outline two alternatives that highlight the key features of 
+possible alternative distributions, and argue that our central results are likely to be robust to reasonable 
+alternative specifications.    
+If the trader is uninformed, then for any symmetric distribution of ρ centered on zero, narrowing 
+the spread will lead to more uninformed buys with positive ρ and more uninformed sells with negative ρ. 
+For any such symmetric distribution narrower spreads lead to more uninformed trades.  This necessarily 
+improves allocative efficiency, but also generates more noise for purposes of price discovery.   Similarly, 
+narrower spreads will always generate more trades by in formed traders, for any symmetric distribution of 
+ρ centered on zero.  However, the increased in formed trades do not necessarily improve allocative 
+efficiency, and may or may not increase price discovery, depending on the distribution of ρ.   
+Figure 6 illustrates outcomes on V*, the informed i nvestor’s subjective valuation of the security, 
+and the informed trader’s trading decisions for two additional distributional assumptions.   In Case 2, ρ is 
+distributed normally with mean zero.   In Case 3, ρ is uniformly distributed on the interval -(H-L) to (H-
+L).   Figure 6 focuses on the case where V = H; results when V = L are symmetric.   
+
+===== PAGE 28 =====
+
+ 
+27 
+  
+The relevant attribute of the two new proba bility distributions, relative to the base case 
+assumption, is that they each allow for outcomes on  V* (conditional on V = H) that are less than the 
+unconditional  expected asset value, µ, while the b ase case did not.  As a consequence, narrowing the bid-
+ask spread can lead to additional informed sales as well as purchases in Cases 2 and 3, while in the base 
+case narrowing the spread could only lead to additi onal informed purchases.   In Case 2, outcomes on V* 
+that are less than H but exceed µ ar e more likely than outcomes that ar e less than µ, implying that a 
+symmetric narrowing of the spread will induce more a dditional purchases than sales.   In case 3 outcomes 
+on V* that are less than H but exceed µ are equally likely as outcomes that are less than µ, implying that a 
+symmetric narrowing of the spread will generate an equal number of additional sales as additional 
+purchases.   
+The key attribute of case 3 is that narrowing the sp read is equally likely to generate additional 
+informed sales as additional purchases.   In contr ast, under the base case assumption constraining the 
+spread was more likely to generate additional buys when value is high an d more sells when value is low.  
+In case 3, price discovery is not e nhanced by constraining the spr ead, because an equal number of new 
+buys and new sells are induced by the narrower spread , rendering the information content of buys versus 
+sells unchanged.  By comparison, the improvement in  price discovery in the base case occurs because 
+constraining the spread was more likely to induce cust omer buys (sells) when value is high (low).   
+Further, in case 3, the constrained spread that maximizes the firm net proceeds is zero. 14  This result also 
+reflects that constraining the spread is equally likely to induce new buys as to induce new sells in case 3.  
+As a consequence, allocative efficiency in trad es stemming from informed traders does not decrease on 
+average with a narrower spread in case 3, as it did under the base case assumptions.  The improved 
+allocative efficiency associated with  increased trades by uninformed traders therefore leads to a value-
+maximizing spread of zero in case 3.      
+                                                             
+14 Formal proofs of both Case 3 results cited in this paragraph are available from the authors on request.   
+
+===== PAGE 29 =====
+
+ 
+28 
+  
+Comparing case 3 to base case highlights that a key feature of any possible distributional 
+assumption regarding liquidity shocks is whether small shocks (in particular those with absolute value 
+less than (H-L)/2) are more likely than large shocks (in particular those with absolute value greater (H-
+L)/2).   The base case involves zero probability of large shocks, while case 3 involves equal probabilities 
+of large and small shocks.   While the actual distri bution of liquidity shocks is not observable, we 
+consider probability distributions where small shocks are more likely than large to be more realistic.  This 
+analysis indicates that our results that price discove ry is improved by narrowing the spread and that the 
+optimal spread is non-zero can be overturned if large liquidity shocks are assumed to be as likely as small 
+shocks, but that the results are likely to be robust to  other alternative distributional assumptions.    Note, 
+though, that the key result that value is enhanced by constraining the spread survives even in case 3. 
+Normally distributed shocks, as in case 2, comprise a particular intermediate assumption.  
+Narrowing the spread (still conditional on V=H) increases sa les by informed traders, but to a lesser extent 
+than it increases purchases by informed  traders.  As a consequence,  narrowing the spread in Case 2 
+unambiguously improves price discovery, as it did under base case assumptions.      
+Whether the constrained spread that maximizes fi rm net proceeds in Case 2 remains positive or is 
+equal to zero depends also on the standard deviation of  liquidity shocks.    Narrowing the spread induces 
+more purchases by informed traders with negative ρ than sales by informed traders with positive ρ, but the 
+latter involve liquidity shocks of greater absolute  value.   In the following section we implement 
+numerical searches and find optimal spreads that are non-zero, given normally distributed liquidity 
+shocks.  
+3.5.2 Cross-Sectional Variation in the Use of DMM Contracts   
+ As noted, DMM contracts are used on a number of international stock markets.  Such contracts 
+are typically not used for all stocks on the market, bu t tend to be concentrated in less liquid securities.   
+Our analysis shows that the key characteristic that  allows a DMM contract to improve value is not 
+
+===== PAGE 30 =====
+
+ 
+29 
+  
+illiquidity per se, but illiquidity attributable to informa tion asymmetry.   However, the analysis in Section 
+3.4 does not clarify why some firms refrain from entering DMM contracts. 
+ To assess cross-sectional variation in the usage of DMM contracts requires alternative 
+assumptions regarding the distribution of liquidity shocks, ρ.   In our baseline anal ysis, the distribution of 
+ρ is linked to the fundamental uncertainty in asset va lue, H-L, which allowed for closed-form solutions 
+that helped to illustrate the key economic reasons that  DMM contracts can enhance value.    However, to 
+obtain cross-sectional insights requires assumptions that  break this linkage, as fundamental uncertainty is 
+likely to vary across assets, while the distribution of li quidity shocks is more appropriately viewed as an 
+investor characteristic that remains the same regardless of which asset is purchased.15      
+ To assess cross-sectional variation in DMM contr act usage, we focus on a measure of relative 
+uncertainty regarding asset value, R = (H-L)/(H+L) = (H-L)/2µ, which is absolute uncertainty scaled by  
+expected asset value.  Higher re lative uncertainty would generally be  associated with smaller, younger, 
+and more volatile firms.   While uncertainty regarding asset value differs across securities, we assume that 
+liquidity shocks are drawn from the same distributi on, regardless of the asset purchase.  We focus in 
+particular on liquidity shocks drawn from a zero-mean normal distribution.16    
+Unlike the baseline analysis, wher e the expected payoff on both the risky and riskless securities 
+equal µ, the cross-sectional analysis includes risky i nvestments that differ in scale.  This gives rise to a 
+modified indifference condition for IPO participation.   In particular, the expected utility gain per unit of 
+µ must be equal across all risky assets and equal to that  of the T-bill.  We continue to rely on expression 
+(2) to describe investor utility, and appendix e xpressions A.III.1 and A.III.2 to define competitive 
+equilibrium.   However, closed form solutions for the equilibrium offer price, the required payment to 
+                                                             
+15 Of course, in a more complex model with heterogeneous investors who differ in terms of the distribution of 
+liquidity shocks it is possible that clientele effects could form.    
+16 Results are based on a standard deviation of liquidity shocks equal to one.   More generally, model results depend 
+on relative uncertainty in asset value as compared to the standard deviation of liquidity shocks.  We rely on the 
+normal distribution here since closed form solutions are not available in any case, and a distribution where small 
+liquidity shocks are more common than large seems more realistic as compared to the uniform distribution. 
+
+===== PAGE 31 =====
+
+ 
+30 
+  
+market makers and firm net proceeds are not available when the distribution of ρ is no longer linked to 
+absolute uncertainty or when ρ is distributed normal rather than uniform.  We therefore implement 
+numerical procedures, searching across constrained spreads ranging from the competitive spread to zero, 
+in order to assess optimal firm-specific spread widths.     
+ 
+ 
+Figure 8: (Panel A) Displays optimal spreads for vari ous probabilities of informed trading, P, and relative 
+uncertainty regarding asset value, R.  Panel (B) disp lays the change in relative firm net proceeds for 
+various probabilities of informed trading, P, and relative uncertainty regarding asset value, R.  
+Figures 8A and 8B display the optimal constrained spread (relative to the zero profit spread) and 
+the enhancement in firm net proceeds as a result of constraining the spread, for various probabilities of 
+informed trading, P, and relative uncertainty regarding asset value, R.   The figures show that the optimal 
+constrained spread is less than the competitive spread, and firm net proceeds are enhanced by constraining 
+the spread, when relative uncertainty is high, and when the probability of informed trading is moderate.    
+This result reflects the fact that the competitive sp read itself is wide for firms with high relative 
+uncertainty, meaning that a higher proportion of tr aders are dissuaded from trading.   Narrowing the 
+spread induces proportionately more trading by uninformed traders, whose trades always improve 
+
+
+===== PAGE 32 =====
+
+ 
+31 
+  
+allocative efficiency, when the spread is wider.   This leads to  improved allocative efficiency for firms 
+with higher relative uncertainty and higher competitive spreads, unless the probability of informed trading 
+is excessive.     
+As noted, Easley, Kiefer, O’Hara, and Paperman (1996) report empirical estimates of informed 
+trading probabilities that are less than 0.40 for virtually  all stocks.   These moderate estimates of P, in 
+combination with our model results, imply that DMM c ontracts will indeed enhance value, for firms with 
+large relatively uncertainty in asset value.   These will tend to be smaller and you nger firms.   This model 
+implication accords with simple intuition and the em pirical observation that DMM contracts tend to be 
+employed for less liquid firms (which tend to be younger and smaller).  However, we emphasize that the 
+contracts enhance value by reducing externalities st emming from information asymmetries, not due to 
+illiquidity attributable to non-informational sources. 
+3.5.3 Model Outcomes with Endogenous Information Acquisition   
+In section 3.4, we show that given an exogenous  probability that the trader becomes informed, 
+firm net proceeds and price discovery can both be e nhanced by constraining the bid-ask spread to be 
+narrower than the zero-profit spread.   We now relax the assumption of exogenous P, to reflect that traders 
+can choose to invest in information.     We return in this analysis to the base case assumption that liquidity 
+shocks are distributed uniform.   
+We assume that P can be increased as the trader invests in information acquisition, according to a 
+convex cost function ሻ ൌ
+௉ൈ௖
+ଵି௉, where c is a constant.   This implies that investors can improve the 
+odds of becoming informed regarding true value, but th at the cost of doing so increases as more certainty 
+is sought.   After paying ߟthe investor will learn the true t=2 value of the security with probability P.   
+The investor benefits directly from higher P th rough better trading decisions.  In addition, we 
+assume that the value of the firm’s assets is enha nced when P is increased, according to the concave 
+
+===== PAGE 33 =====
+
+ 
+32 
+  
+function ܲwhere b is a constant.  We do not model of the effect of P on the value of the 
+firm’s assets, as this effect has been addressed in the extant literature, and our primary goal lies in 
+assessing the effect of contracts that enhance liquidity supply.   The basic rationale is that, given more 
+informative secondary market prices, the firm can ma ke superior investment and compensation decisions, 
+as in Foucault and Fresard (2012), Tetlock and Hahn (2007), Holmstrom and Tirole (1993), Dow and 
+Gorton (1997), and Subrahmanyam and Titman (1999), among others.    
+The investor gains this benefit through owners hip of the firm’s equity, implying that the 
+investor’s expected time zero payoff from initially investing in the risky security becomes ߨ=’.ߟ   
+Note though, that since the IPO price is set to provi de the investor with only her reservation utility, the 
+firm’s current owners ultimately capture all benefits (net of ߟfrom improved price discovery, in the form 
+of a higher IPO price.  
+For any given spread, the investor evaluates margin al costs and benefits to choose her optimal P, 
+which we denote P*.   Since liquidity providers know th e investor’s costs and benefits, they can infer P*.  
+In the absence of any constraint on spreads, liquidity  suppliers continue to choose zero-profit bid and ask 
+quotes, on the basis of P*.  Similarly, the firm knows P*, and selects the offer price Q so that the 
+participation constraint is met.  
+The investor pays the security offer price, Q, befo re choosing P, implying that the offer price is a 
+sunk cost at the time of the decision to invest in info rmation.   If the firm is committed to constraining the 
+spread the investor knows the contracted spread width,  K, at the time she chooses P.  This creates an 
+important asymmetry between constrained and unconstr ained outcomes.  In the absence of a constraint, 
+increasing P leads to wider spreads, and the investor ta kes this effect into account.  However, with fixed 
+K, increasing P does not widen spreads; it instead increases the side payment from the firm to the 
+liquidity provider.  The trader therefore has stronger incentives to invest in increasing P with contractually 
+fixed as compared to competitive spreads.    
+
+===== PAGE 34 =====
+
+ 
+33 
+  
+Let P*(K) denote the trader’s optimal P as a function of the constrained spread.  The 
+corresponding payoff to the investor can be denoted ߨ′K, Q, P*(K)).  Equilibrium requires 
+డగ’
+డ௉ ൌ0  and 
+ߨ’ െ
+ሺுି௅ሻ
+ସ  , where the former is the first order conditio n that reflects the informed trader’s optimal 
+choice of P, and the latter is the investor’s particip ation constraint.    Unfo rtunately, these equilibrium 
+expressions cannot be solved analytically.   
+We instead assess numerical solutions.  Figur e 9 displays the gross investor payoff, ߨfor 
+various P and K, based on parameters of H=2, L=1,  b=0.36, and c=0.03.  The optimal P that will be 
+selected by the investor for any given K chosen by the firm can be assessed as the highest outcome on ߨ ’
+for the given K.  As Figure 9 demonstrates, the invest or will select a higher P when the spread constraint, 
+K, is tighter. 
+Figure 10 displays with a solid blue line firm net proceeds (FNP) for various levels of the 
+constrained spread, K, conditional on the investor’s optim al selection of  P*(K).   As when P was fixed, 
+there is an interior optimum K* that maximizes firm  net proceeds.   Figure 10 also displays, with the 
+dashed green line, the optimal P* that the investor would choose for different levels of the spread 
+constraint, K.   As might be anticipated, P* d ecreases with K, because the marginal gain from being 
+informed is increased if the cost of trading on the in formation is reduced.   However, the modest increase 
+in P*, from about .785 when K = H-L to about .805 when K = 0 understates the importance of 
+constraining the spread, relative to the outcome when the spread is endogenous. 
+Figure 11 displays the sum of firm net proceed s, FNP, and fixed reservation utility, with the 
+competitive spread, for various possible P.  Since the fi rm makes no payment to the market maker in this 
+case, the firm’s net proceeds plus reservation utility is si mply the investor’s expected trading gains.   The 
+investor chooses P after paying the IPO price, so as to  maximize this net gain.  Note that, in the absence 
+of a payment to market makers, the competitive spread  will increase if the trader invests to increase P.  
+This creates a disincentive to increas e P that is absent for any fixed K.  As Figure 11 shows, FNP plus 
+reservation utility is maximized at P = 0.  That is, with competitive market making (and given the selected 
+
+===== PAGE 35 =====
+
+ 
+34 
+  
+parameters) the marginal costs of becoming informed exceed the marginal benefits, and the trader would 
+choose to not invest in information.  The resulting FN P plus reservation utility is µ =1.5.  In contrast, as 
+Figure 10 shows, given the same parameters the trad er chooses to become inform ed for any fixed spread 
+up to H-L.  The implication is that constraining sp reads can induce the investor to become informed, 
+thereby enhancing price discovery, in situations wh ere she would not choose to invest in information 
+given competitive market making.     
+ 
+Figure 9 The investor’s Gross Payoff with different level of constrained spread K and P. 
+ 
+Figure 10 Maximum firm net proceeds at different level of constrained spread K with the optimal P*(K) 
+
+
+===== PAGE 36 =====
+
+ 
+35 
+  
+ 
+Figure 11 Firm net proceeds (equals to IPO price plus reservation utility) with competitive spread 
+Figures 9 to 11 are based on a specific set of parameters, including H=2, L=1, b=0.36, and 
+c=0.03.  Given these parameters, there exists an interi or optimum constrained spread that maximizes firm 
+net proceeds, and the investor chooses to incur costs in order to become informed with a constrained 
+spread, but not with a competitive spread.   
+As might be anticipated, the results of this anal ysis are sensitive to the parameters employed, and 
+in particular to the relative costs and benefits of information acquisition.  In Figure 12 we summarize 
+outcomes when the benefit parameter is alternately in creased to b = 0.40 (Panel A) and decreased to b = 
+0.30 (Panel B) while the cost parameter is held constant at c = 0.03.   
+In Panel A, in the absence of a constraint on  spreads, FNP plus reservation utility reaches a 
+maximum of about 1.518 with P of about 0.8.  In co ntrast, constraining spreads leads to net proceeds in 
+excess of 1.52 for a wide range of constrained spreads.  Given these parameters, the trader would invest in 
+information with or without a constraint on spreads,  but the firm would indeed choose to constrain the 
+spreads to increase its net proceeds.    
+On Panel B, in the absence of a c onstraint on spreads, the investor would choose to not invest in 
+private information, leading to FNP plus reservation u tility of 1.5.  Constraining spreads would lead the 
+
+
+===== PAGE 37 =====
+
+ 
+36 
+  
+investor to invest to increase P, but FNP plus reserva tion utility are less than th e benchmark of 1.5 for all 
+constrained spreads.  Hence, the reduction in the be nefit parameter induces the firm to not contract to 
+narrow the spread, and as a consequence induces the trader to not invest in information. 
+In Section 3.4 we showed that a constraint on sp read widths could always enhance value, given 
+exogenous P.  Here, we show that when becoming info rmed requires costly private investment, value will 
+be enhanced and the investor will be induced to incur expenses in or der to become informed, in those 
+cases where the benefits of improved price discovery to th e firm are relatively larger.   To the extent that 
+the benefits of more informativ e prices take the form of guida nce regarding upcoming investment 
+decisions, we anticipate that firms with greater future  investment opportunities re lative to assets-in-place 
+will be more likely to contract to constrain spreads.  These will tend to be young, growth firms.    
+ 
+(a) Firm chooses to constrain spread when benefit is relatively high. (b=0.4, c=0.03) 
+ 
+ 
+
+
+===== PAGE 38 =====
+
+ 
+37 
+  
+ 
+(b) Firm chooses not to constrain spread when benefit is relatively low. (b=0.3, c=0.03) 
+ 
+Figure 12 Equilibria with varying benefit parameters 
+4. Conclusions and Implications 
+We present a relatively simple model to assess the effects on firm value, gains from trade, and 
+price discovery of a contract between a firm and a de signated liquidity supplier.  Our analysis shows that 
+optimal contracted liquidity provision depends crucia lly on the amount of informed trading.  Contracts 
+that narrow bid-ask spreads improve economic effici ency by inducing more uninformed investors to 
+trade.   Narrower spreads also i nduce more informed investors to trade, which tends to improve price 
+discovery.   However, more information-based trade has a cost, which is reduced allocative efficiency. 
+The optimal contracted bid-ask spread will reflect a balance between these considerations.    
+ Our analysis shows that the potential benefits of contracts that require enhanced liquidity supply 
+are related to information, rather than illiquidity, per se.  The insight that seems to arise most often in 
+contemporary discussion is that contracts for additional liquidity supply are needed for those firms or at 
+those times when liquidity is scarce.   Our analysis does not support this view, to the extent that illiquidity 
+is attributable to high real costs, e.g. the high  inventory costs associated with large volatility and/or 
+infrequent trading.   Value will not be enhanced by contracts that reduce spreads below the real social 
+
+
+===== PAGE 39 =====
+
+ 
+38 
+  
+costs of market making.   Instead, our analysis impli es that efficiency and firm value can be enhanced for 
+those firms or at those times when liquidity is sparse due to real or perceived information asymmetries.  
+This result reflects that the asymmetric information costs of providing liquidity are zero sum transfers, not 
+net social costs.   If, as Easley, Lopez de Prado, and O’Hara (2011) assert, liquidity is sometimes 
+withdrawn from the market when perceived informati on asymmetries increase, our analysis implies that 
+market quality and firm values will be enhanced by cont racts that require liquidity providers to remain in 
+the market at those times.   
+Our analysis is also relevant in assessing which firms would benefit from adopting a DMM 
+agreement.  Liquidity enhancement will be more va luable, ceteris paribus, to those firms that would 
+benefit more from improved price discovery to guid e real investment decisions.  Further, liquidity 
+enhancement will be more valuable  to firms characterized by high uncertainty regarding asset value, 
+relative to expected asset value.   These will also be firms that would tend to have wider spreads in 
+competitive equilibrium.  In combination, our model im plies that contracts that constrain spread widths 
+are value enhancing at firms that (1) are characteri zed by non-trivial information asymmetries, (2) are 
+subject to relatively more uncertainty regarding funda mental asset values, and (3) are likely to make 
+substantial capital investment decisions in the reasona bly near future.   These are likely to be smaller, 
+younger, and growth-oriented firms, as opposed to larger firms with a high proportion of assets-in-place.  
+The model presented here has a number of implicati ons for researchers and policy makers.   First, 
+and most important, our analysis shows that market quality, economic efficiency , and firm value can be 
+enhanced by contracts that require liquidity providers to provide more liquidity than they would otherwise 
+choose.  In light of the absence of barriers to entry in providing liquidity in electronic limit order markets, 
+it seems reasonable to assume the business of liquidity provision is competitive.  If so, side payments will 
+be required to induce one or more designated market makers to take on such affirmative obligations, and 
+our model implies that affirmative obligations to pr ovide liquidity should not be imposed in the absence 
+of compensation to the DMMs.  Contracts of the t ype studied here, calling for a contract between the 
+
+===== PAGE 40 =====
+
+ 
+39 
+  
+listed firm and the DMM, are observed on some international markets, but are currently prohibited in U.S. 
+markets by FINRA Rule 5250.  Our model shows that  the competitive bid-ask spread fails to maximize 
+trader welfare or firm value, due to externa lities associated with information asymmetries.  DMM 
+contracts of the type considered here comprise a potential market solution to a market imperfection. 
+Some limitations of our analysis should be noted .  We focus exclusively on a requirement to 
+maintain narrow spreads, and have not attempted to formally assess the optimal set of affirmative 
+obligations.   Further, as our model focuses for simplicity on a single trader, a single round of trading, and 
+trades of unit size, we have not considered potential effects of market maker affirmative obligations on 
+trade timing, trade sizes, repeat trading, or trad ing aggressiveness, each of which provides useful 
+possibilities for future research.    
+
+===== PAGE 41 =====
+
+ 
+40 
+  
+Appendix 
+I. Investor Trading  
+If the investor purchases the Treasury Bill or the risky security at time 0 she has the option to trade the 
+same asset at time 1. After her purc hase of the asset and before her tr ading at T=1, she will experience a 
+liquidity shock ρ~Uሺെ
+ୌି୐
+ଶ ,
+ୌି୐
+ଶ ሻ.  Observing the bid and ask quotes (B and A) at time 1, the investor 
+buys if her private value exceeds the ask, sells if her private value is be low the bid, and does not trade if 
+her subjective valuation lies between the bid and the ask. Her probability of buy, sell and no trade, and her 
+expected payoff are assessed as follows.   
+1) If the investor purchases the T-bill at time 0, she can buy, sell or not trade the T-bill at zero spread at 
+its known price at time 1. That is ൌ
+ுା௅
+ଶ . Her private value of the T-bill is ∗ ൌ
+ுା௅
+ଶ∈
+ሻ.  
+ሻ ൌ
+ுି஺
+ுି௅ ൌ0.5     (A.I.1) 
+ሻ ൌ
+஻ି௅
+ுି௅=0.5     (A.I.2) 
+ሻ ൌ
+஺ି஻
+ுି௅=0     (A.I.3) 
+ሿ ൌ
+ுା஺
+ଶ ൌ
+ଷுା௅
+ସ      (A.I.4) 
+ሿ ൌ
+஻ା௅
+ଶ ൌ
+ுାଷ௅
+ସ      (A.I.5) 
+ሿ ൌ
+ுା௅
+ଶ 				  (A.I.6) 
+ 
+AൌBൌ 	
+ܮ
+2 				
+ሻ 									
+ܤ
+ܣ
+ܪ 
+ܮ 
+
+===== PAGE 42 =====
+
+ 
+41 
+  
+ 
+2) If the investor purchases the risky security’s IPO sh are at time 0, she will ha ve a probability of P to 
+become informed and she can buy, sell or not trade the risky security at (A, B). If the investor remains 
+uninformed, her expected value of the security is  EሺVሻ ൌ
+ୌା୐
+ଶ  and her private value of the security 
+is	V∗ ൌ
+ୌା୐
+ଶ ൅ρ∈ሺ L ,H ሻ .  
+ሻ ൌ
+ுି஺
+ுି௅    (A.I.7) 
+ሻ ൌ
+஻ି௅
+ுି௅  (A.I.8)  
+ሻ ൌ
+஺ି஻
+ுି௅  (A.I.9) 
+ሿ ൌ
+ுା஺
+ଶ     (A.I.10)    
+ ሿ ൌ
+஻ା௅
+ଶ      (A.I.11) 
+ ሿ ൌ
+஺ା஻
+ଶ     (A.I.12) 
+If the investor becomes informed and learns that the true value of the security is V=H, then her private 
+value of the security is V∗ ൌH൅ ρ	∈ሺ
+ୌା୐
+ଶ ,H൅
+ୌି୐
+ଶ ሻ. 
+ሻ ൌ
+ுାಹషಽ
+మ ି஺
+ுି௅   (A.I.13) 
+ሻ ൌ0    (A.I.14) 
+ሻ ൌ
+஺ିಹశಽ
+మ
+ுି௅     (A.I.15) 
+ሿ ൌ
+ுାಹషಽ
+మ ା஺
+ଶ  (A.I.16) 
+ሿ ൌ0 ,     ݒ׬ 
+஻
+ሻ ൌ0 ሻ (A.I.17) 
+ሻ ൌ
+ܮ
+2 			
+H
+L
+A
+B
+ሻ 		 					
+ܤ
+ܣ
+
+===== PAGE 43 =====
+
+ 
+42 
+  
+ሿ ൌ
+஺ାಹశಽ
+మ
+ଶݒ׬ 
+஺
+ݒ׬ 
+஺
+ಹశಽ
+మ
+ሻ ൌ
+ሻሻ          ( A . I . 1 8 )  
+ 
+Correspondingly, if the investor become s informed learns that the true va lue of the security is V=L, then  
+her private value of the security is V∗ ൌL൅ρ∈ ቀLെ
+ୌି୐
+ଶ ,
+ୌା୐
+ଶ ቁ.  
+ሻ ൌ0 	  (A.I.19) 
+ሻ ൌ
+஻ି௅ାಹషಽ
+మ
+ுି௅  (A.I.20) 
+ሻ ൌ
+ಹశಽ
+మ ି஻
+ுି௅  (A.I.21) 
+ 
+ݒ׬ 
+ு
+ሻ ൌ0 ሻ 	  (A.I.22) 
+ሿ ൌ
+஻ା௅ିಹషಽ
+మ
+ଶ          (A.I.23) 
+ሿ ൌ
+஻ାಹశಽ
+మ
+ଶݒ׬ 
+஺
+ݒ׬ 
+ಹశಽ
+మ
+ሻ ൌ
+ሻሻ	         (A.I.24) 
+  
+ 
+
+
+===== PAGE 44 =====
+
+ 
+43 
+  
+II. Bayesian Updating Based on the Observed Order (Buy, Sell, No Trade) 
+ 
+The market maker updates the conditional asset value on the basis of observed order using Bayes’ Rule. 
+The bid and ask quotes and the trader’s decision are endogenously determined, as a lower ask implies a 
+higher probability of buy order and a higher bid implies a high probability of sell order.  
+ 
+Given the probability of a buy conditional on the ask quot e, the arrival of an informed trader with true 
+value being high (or low) in eq. (A.I.13) (or in eq . (A.I.19)) and the probability of a buy conditional on 
+the arrival of an uninformed trader in eq. (A.I.7), the probability of a buy order conditional on asset value 
+can be stated as: 
+ 
+ሻ   (A.II.1) 
+ 
+ሻ     (A.II.2) 
+ 
+where P is the probability that the trader is informed. Upon observing a buy order, the market maker uses 
+Bayes’ Rule to update probabilities regarding the true asset value: 
+ 
+ሻ ൌ
+௉௥௢௕ሺ௏∗வ஺|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻ
+௉௥௢௕ሺ௏∗வ஺|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻା௉௥௢௕ሺ௏∗வ஺|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ   (A.II.3) 
+ሻ ൌ
+௉௥௢௕ሺ௏∗வ஺|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ
+௉௥௢௕ሺ௏∗வ஺|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻା௉௥௢௕ሺ௏∗வ஺|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ    (A.II.4) 
+ 
+Conditional on observing a buy, the expected value of V is: 
+ሻ         (A.II.5) 
+ 
+
+===== PAGE 45 =====
+
+ 
+44 
+  
+ 
+When value is high (or low) and the trader is inform ed, the probability of a sell is given by eq. (A.I.14) 
+(or by eq. (A.I.20)).   If the trader is uninformed, the probability of a sell is in eq. (A.I.8).  Therefore, the 
+probabilities of observing a sell are given as:  
+ሻ   (A.II.6)  
+ሻ  (A.II.7) 
+where P is the probability that the trader is informed . Upon observing a sell order, the market maker uses 
+Bayes Rule to update probabilities regarding the true asset value: 
+ሻ ൌ
+௉௥௢௕ሺ௏∗ழ஻|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻ
+௉௥௢௕ሺ௏∗ழ஻|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻା௉௥௢௕ሺ௏∗ழ஻|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ   (A.II.8) 
+ሻ ൌ
+௉௥௢௕ሺ௏∗ழ஻|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ
+௉௥௢௕ሺ௏∗ழ஻|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻା௉௥௢௕ሺ௏∗ழ஻|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ   (A.II.9) 
+Conditional on a sell, the market maker updates the expected value of V as:   
+ሻ.                 (A.II.10) 
+ 
+The absence of a trade is also potenti ally informative regarding firm valu e.  If the trader is informed, the 
+probability of no trade is given by eq. (A.I.15) when  V=H and eq. (A.I 21) when V=L.  If the trader is 
+uninformed, the probability of no trade is given by in eq. (A.I.9).  Therefore, conditional no-trade 
+probabilities are:   
+ 
+ܸ
+ሻ			
+          (A.II.11)  
+
+===== PAGE 46 =====
+
+ 
+45 
+  
+and 
+ሻ 
+                      (A.II.12) 
+And probabilities regarding asset values conditional on no trade are given as:   
+ሻ ൌ
+௉௥௢௕ሺ஺வ௏∗வ஻|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻ
+௉௥௢௕ሺ஺வ௏∗வ஻|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻା௉௥௢௕ሺ஺வ௏∗வ஻|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ            (A.II.13) 
+ሻ ൌ
+௉௥௢௕ሺ஺வ௏∗வ஻|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ
+௉௥௢௕ሺ஺வ௏∗வ஻|௏ୀுሻ∗௉௥௢௕ሺ௏ୀுሻା௉௥௢௕ሺ஺வ௏∗வ஻|௏ୀ௅ሻ∗௉௥௢௕ሺ௏ୀ௅ሻ            (A.II.14) 
+Conditional on the no-trade outcome, the market ma ker will update the expected value of V as the 
+following: 
+ሻ            (A.II.15) 
+ 
+With a given spread, the unconditional probabilities of a buy, sell, and no trade are:  
+ሻ               (A.II.16) 
+ሻ                (A.II.17) 
+ሻ         (A.II.18) 
+ 
+where ሻ, ሻ,ሻ,  
+ሻ, and ሻ   are given in eq. (A.II.1), (A.II.6), (A.II.11) , 
+(A.II.2), (A.II. 7). and (A.II.12). 
+ 
+ 
+III. Proof of Lemmas and Propositions 
+
+===== PAGE 47 =====
+
+ 
+46 
+  
+Proof of Lemma 1:  We determine the competitive bid and ask quotes based on a zero-expected profit 
+condition, similar to Glosten and Milgrom (1985).  The market maker sets the zero profit ask price (A) to 
+the conditional expected value based on a buy and the zero profit bid price (B) to the conditional expected 
+value based on a sell as the followings:  
+ሻ          (A.III.1)  
+and  
+ൌE ሺV|V∗ ൏B ሻ,          (A.III.2)  
+where ሻ and  EሺV|V∗ ൏B ሻ are given in eq. (A.II.5) and eq. (A.II.10). Given the distributional 
+assumption of the liquidity shock ρ~U ቀെ
+ୌି୐
+ଶ ,
+ୌି୐
+ଶ ቁ,   ProbሺV ൌ Lሻ = 	ProbሺV ൌ Hሻ =0.5, and the 
+exogenous P, the competitive bid and ask  price can be obtained by solving ሻ and 
+ൌE ሺV|V∗ ൏B ሻ respectively,  
+ 
+For P less than 2/3: 
+The competitive ask price ൌ 	
+଴.ହ∗ሺ௉∗ுାଶுାଶ௅ିଷ௉∗௅ሻ
+ଶି௉               
+The competitive ask price ൌ 	
+଴.ହ∗ሺ௉∗௅ାଶுାଶ௅ିଷ௉∗ு ሻ
+ଶି௉        
+  
+For P greater than or equal to 2/3: 
+The competitive ask price ܪ            
+The competitive ask price ܮ          
+ 
+Following section 3.3 table 2, from the viewpoint of the investor, the unconditional expectation of the 
+investor’s net gain from participating in the IPO(column iii), given time 1 trading, can be written as: 
+ሻ ሿ   + 
+൧    + ሿ.                                                            
+
+===== PAGE 48 =====
+
+ 
+47 
+  
+As noted, the investor becomes info rmed regarding the final value of the asset, prior to time 1 trading, 
+with probability P.   Differentia ting between the case where the investor is informed or not, the 
+unconditional expectation as of time zero of the net gain can be expressed as:  
+                                                                                                    
+ሻ ሿ        
+     ሿ  
+     ሿ 	 ሽ  
+     
+ሻ ሿ     
+  ሿ  
+  ሿ	ሽ		    
+                
+   ሻ ሿ        
+   ሿ 	 
+        ሿ 	 ሽ 	 	 .  
+ 
+where the conditional probabilitiesሻ, ሻ, and ሻ are 
+given in eq. (A.I.7), (A.I.8) and (A.I.9).ሻ , ሻ , and 
+ሻ  are given in eq. (A.I.13) , (A.I.14) and (A.I.15). ሻ , 
+ሻ, and ሻ is given in eq. (A.I.19), (A.I.20) and (A.I.21) 
+respectively. The conditiona l expected private values ሻ and ሻ	are 
+given in (A.I.10) and (A.I.12). ሻ,	  ሻ 	 , 
+ሻ, and  ሻ 	 are given in eq. (A.I.16), (A.I.18) ,(A.I.22) 
+and  (A.I.24) respectively.  
+ 
+
+===== PAGE 49 =====
+
+ 
+48 
+  
+The firm’s equilibrium initial offer price Q can be derived from the participation constraint of the 
+investor. To induce the investor to participate,  the firm chooses Q so that the expected payoff ߨequals 
+௧௕௜௟௟.   
+ 
+When P<2/3, given the zero profit bid and ask spread s, the firm will set the offer price of the risky 
+security as௟ ൌ µ െ
+௉ሺுି௅ሻ
+ସ . When P>2/3, given the zero profit bid and ask spreads, the firm will set the 
+offer price of the risky security as ௛ ൌ µ െ
+ሺଶି௉ሻሺுି௅ሻ
+଼ .      ■ 
+ 
+ 
+ 
+Proof of Proposition 1: When ൑
+ଶ
+ଷ, ൌ
+ሺଶି௉ሻ
+଼ሺுି௅ሻଶ െ
+௄
+ଶ ൅
+௉ሺுି௅ሻ
+ଶ .   Then,  
+ 
+ப୕ేି୕
+ப୏ ൌ
+୏ሺଶି୔ሻ
+ସሺୌି୐ሻ െ
+ଵ
+ଶ ൏
+మౌሺౄషైሻ
+మషౌ ሺଶି୔ሻ
+ସሺୌି୐ሻ െ
+ଵ
+ଶ ൌ
+ଵ
+ଶ
+ሺP െ 1ሻ ൏ 0,	  
+where the first inequality makes use of the fact that 		K ൏
+ଶ୔ሺୌି୐ሻ
+ଶି୔ , i.e. that the constrained spread is less 
+than the unconstrained spread. 
+When ൒
+ଶ
+ଷ,   ൌ
+ሺଶି௉ሻ
+଼ሺுି௅ሻଶ െ
+௄
+ଶ ൅
+ሺଶା௉ሻ∗ሺுି௅ሻ
+଼ .		Then,	
+ 
+ப୕ేି୕
+ப୏ ൌ
+୏ሺଶି୔ሻ
+ସሺୌି୐ሻ െ
+ଵ
+ଶ
+൏
+ሺୌି୐ሻሺଶି୔ሻ
+ସሺୌି୐ሻ െ
+ଵ
+ଶ
+൑
+ଶିమ
+య
+ସ െ
+ଵ
+ଶ ൌെ
+ଵ
+଺
+൏0 ,  
+where the first inequality makes use of the fact that ,ܮ i.e. that the constrained spread is less than 
+the unconstrained spread.          ■ 
+ 
+ 
+Proof of Lemma 3: Given any quote (A, B), the liquidity provid er’s unconditional expectation of market 
+making loss can be stated as: 
+ሻሿ      
+
+===== PAGE 50 =====
+
+ 
+49 
+  
+Where ሻ  and ሻ  are given in eq. (A.II.16) and (A.II.17) respectively. 
+ሻ	are given in eq. (A.II.5) and (A.II.10) respectively. 
+ 
+By definition, the market maker’s loss is  zero with the competitive spread, where ሻ	and 
+ሻ.   When the spread is constrained to K, such that ൌ
+ுା௅
+ଶ ൅
+௄
+ଶ	and ൌ
+ுା௅
+ଶ െ
+௄
+ଶ	, the 
+liquidity provider’s expected market making loss, M,  which also equals the requisite payment from the 
+firm to the market makers, is given as: 
+ൌ
+ሺଶି௉ሻ
+ସሺுି௅ሻଶ െ
+ሺଶା௉ሻ
+ସ൅
+௉ሺுି௅ሻ
+ଶ . 
+The derivative with respect to the spread constraint K is  
+డெ
+డ௄ ൌ
+ሺுି௅ሻሺ௉ାଶሻିଶ௄ሺଶି௉ሻ
+ିସሺுି௅ሻ . 
+When ൑
+ଶ
+ଷ,  
+ப୑
+ப୏ ൏
+ሺୌି୐ሻሺ୔ାଶሻିଶమౌሺౄషైሻ
+మషౌ ሺଶି୔ሻ
+ିସሺୌି୐ሻ ൌ
+ሺଶିଷ୔ሻሺୌି୐ሻ
+ିସሺୌି୐ሻ ൑0 , where the first inequality follows from 
+the fact that K൏
+ଶ୔ሺୌି୐ሻ
+ଶି୔ , i.e. that the constrained spread is less than the competitive spread. 
+When ൒
+ଶ
+ଷ,	
+ப୑
+ப୏ ൏
+ሺୌି୐ሻሺ୔ାଶሻିଶሺୌି୐ሻሺଶି୔ሻ
+ିସሺୌି୐ሻ ൌ
+ଷ୔ିଶ
+ିସ ൑0 , where the first inequality follows from the fact 
+that K൑HെL , i.e. that the constrained spread is less than the competitive spread. 
+ 
+ 
+ 
+Proof of Proposition 2:  The derivative of the firm’s net proceeds with respect to K is: 
+பሺ୕ేି୔ሻ
+ப୏ ൌ
+	
+୔ሺୌି୐ሻି୏ሺଶି୔ሻ
+ସሺୌି୐ሻ . Setting this first order condition to zero and so lving for K, we obtain the optimal spread  
+K∗ ൌ
+୔ሺୌି୐ሻ
+ଶି୔ .  Substituting the expression for K* into the e xpressions for the change in firm net proceeds, 
+we have: 
+When P<2/3, ൌ
+௉మ∗ሺுି௅ሻ
+଼∗ሺଶି௉ሻ ൒0 , and  
+
+===== PAGE 51 =====
+
+ 
+50 
+  
+when P>2/3,  ൌ
+ሺଵି௉ሻమ∗ሺுି௅ሻ
+ଶ∗ሺଶି௉ሻ ൒0 .       ■ 
+	
+Proof of Proposition 3: When ൑
+ଶ
+ଷ, ൌെ
+ሺଶି௉ሻ
+଼ሺுି௅ሻଶ ൅
+௉
+ସቀ
+௉
+ସ െ
+ሺଶି௉ሻ
+଼ሺுି௅ሻቁ ൐
+ቀ
+௉
+ସ െ
+ሺଶି௉ሻ
+଼ሺுି௅ሻ
+௉ሺுି௅ሻ
+ଶି௉ 	ቁ ൌ0   ; where the inequality follows from the fact that ൏
+ଶ௉ሺுି௅ሻ
+ଶି௉ , i.e. that the 
+constrained spread is less than the competitive spread. 
+When൒ 2/3 , ൌെ
+ሺଶି௉ሻ
+଼ሺுି௅ሻଶ ൅
+௉
+ସ൅
+ሺுି௅ሻሺଶିଷ௉ሻ
+଼  .   
+That isܯ0 when െ
+௉ሺுି௅ሻ
+ଶି௉ ቚ ൏
+ଶሺଵି௉ሻሺுି௅ሻ
+ଶି௉  .  
+Therefore, if  
+ሺଷ௉ିଶሻሺுି௅ሻ
+ଶି௉൏
+ଶ௉ሺுି௅ሻ
+ଶି௉ , then ൐0 .    
+If ൑
+ሺଷ௉ିଶሻሺுି௅ሻ
+ଶି௉ , then ൑0 .       ■ 
+IV. Combined Gains from Trade  
+                     
+Referring to column (x) of Table 2 in section 3.3, the unconditional expectation of the combined gains 
+from t=1 trading can be expressed as: 
+ሻ
+ሻ 
+As noted, the investor becomes info rmed regarding the final value of the asset, prior to time 1 trading, 
+with probability P.   Differentia ting between the case where the investor is informed or not, the 
+unconditional expectation of the combined gains can be expressed as:  
+ሻሿ    
+
+===== PAGE 52 =====
+
+ 
+51 
+  
+      ሻ ሿ 	 ሽ  
+     
+ሿ     
+  ሿ 	 ሽ 	 	   
+                
+   ሿ        	 
+     ሿ 	 ሽ 	 	 .  
+ 
+Where the conditional probabilities ܸ
+ሻ and ሻ are given in eq. (A.I.7) and 
+(A.I.8).ሻ  and ሻ  are given in eq. (A.I.13) and (A.I.14). 
+ሻ  and ሻ  are given in eq. (A.I.19) and (A.I.20). The 
+conditional expected private values ሻ, ሻ,	 ሻ 
+are given in eq. (A.I.10). (A.I.16) and (A.I.22).  ሻ,  ሻ,	 
+ሻ are given in eq. (A.I.11). (A.I.17) and (A.I.23). 
+ 
+Given the distributional assumption of the liquidity shock ρ~U ቀെ
+ୌି୐
+ଶ ,
+ୌି୐
+ଶ ቁ, the combined gain from 
+trade with the constrained spread, K, can be further simplified to: ൌ
+௉ିଶ
+଼ሺுି௅ሻଶ ൅
+௉
+ସ൅
+ሺுି௅ሻି௉ሺுି௅ሻ
+ସ .                         
+  
+
+===== PAGE 53 =====
+
+ 
+52 
+  
+References 
+Angel, James J., Lawrence Harris, and Chester S. Spatt, 2011, Equity trading in the 21st century, 
+Quarterly Journal of Finance 1, 1-53. 
+Amihud, Y., and H. Mendelson, 1986, A sset pricing and the bid-ask spread, Journal of Financial 
+Economics, 17, 223-249. 
+Anand, Amber, and Daniel G. Weaver, 2006, The value of the specialist: Empirical evidence from the 
+CBOE, Journal of Financial Markets 9, 100-118. 
+Anand, Anand, Carsten Tanggaard, and Daniel G. Weaver, 2009, Paying for market quality, Journal of 
+Financial and Quantitative Analysis 44, 1427-1457. 
+Arnuk, S., Saluzzi, J. and R. Leuchtkafer, 2011, Comment: Algo Bots could cause another flash crash, 
+Financial Times, May 5, 2011.  
+Biais, B., T. Foucault, and S. Moinas, 2012, Equ ilibrium high frequency trading, working paper, 
+Toulouse School of Economics. 
+Biais, B., 1993, Price formation and equilibrium li quidity in fragmented and centralized markets, Journal 
+of Finance 48, 157-185. 
+Brogaard, Jonathan A., 2010, High frequency trading and its impact on market quality, working paper, 
+University of Washington. 
+Charitou, Andreas, and Marios A. Panayides, 2009, Market Making in International Capital Markets: 
+Challenges and Benefits of Its Implementation in Emerging Markets, International Journal of Managerial 
+Finance: Special Issue on International Market Microstructure 5, 50-80. 
+Demsetz, Harold, 1968, The cost of transacting, Quarterly Journal of Economics 82, 33-53. 
+Dow, James, and Gorton, Gary, 1997,  Stock Market  Efficiency and Economic Efficiency: Is There a 
+Connection?, Journal of Finance 52, 1087-1129. 
+Easley, D., N. Kiefer, M. O’Hara, and J. Paperman, 1996, Liquidity, information, and infrequently traded 
+stocks, Journal of Finance 51, 1405-1436. 
+Easley, D., M. M. Lopez de Prado, and M. O’Hara, 2011, The microstructure of the flash crash: Flow 
+toxicity, liquidity crashes, and the probability of informed trading, Journal of Portfolio Management  37, 
+118-128. 
+Foucault, T., O. Kadan, and E. Kandel, 2005, Limit order book as a market for liquidity, Review of 
+Financial Studies 18, 1171-1217 
+Foucault, T., O. Kadan, and E. Kandel, 2012, Liquid ity cycles and make/take fees in electronic markets, 
+Journal of Finance, forthcoming. 
+Foucault, T. and L. Fresard, 2012, Cross-Listing, In vestment Sensitivity to Stock Price and the Learning 
+Hypothesis, Review of Financial Studies, forthcoming. 
+Goettler, R., C. Parlour, and U. Rajan, 2005,  Equilibrium in a dynamic limit order market, Journal of 
+Finance, 60, 2149-92.  
+
+===== PAGE 54 =====
+
+ 
+53 
+  
+Glosten, Lawrence R., and Paul R. Milgrom, 1985, Bi d, ask, and transaction prices in a specialist market 
+with heterogeneously informed traders, Journal of Financial Economics 14, 71-100. 
+Glosten, Lawrence R., 1989, Insider trading, liquidity, and the role of the monopolist specialist, Journal 
+of Business 62, 211-235. 
+Hollifield, Burton, Robert Miller, Patrik Sandas, and Joshua Slive, 2007, Estimating the Gains from Trade 
+in Limit Order Markets, Journal of Finance 61, 2753-2804.  
+Holmstrom, Bengt, and Jean Tirole, 1993, Market liquidity and performance monitoring, Journal of 
+Political Economy 101, 678-709. 
+Ho, Thomas S.Y., and Hans R. Stoll, 1980, On dealer markets under competition, Journal of Finance 35, 
+259-267. 
+Kirilenko, A., Kyle, A., Samadi, M., and T. Tuzan, 2011, The flash crash, the impact of high frequency 
+trading on an electronic market, United States Commodity Futures Trading Commission, working paper. 
+Menkveld, A. 2012, High Frequency Trading and the New Market Makers , VU Amsterdam working 
+paper. 
+Menkveld, A., and T. Wang, 2009, How do designated ma rket makers create valu e for small-cap stocks? 
+VU Amsterdam working paper. 
+Petrella, Giovanni, and Mahendrar ajah Nimalendran, 2003, Do thinly-traded stocks benefit from 
+specialist intervention? Journal of Banking and Finance 27, 1823-1854. 
+Sabourin, Delphine, 2006, Are designa ted market makers necessary in centralized limit order markets? 
+Working paper, Université Paris IX Dauphine. 
+Skjeltorp, Johannes A. and Bernt A. Odegaard, 2011, Why do firms pay for market making in their own 
+stock?, Norges Bank working paper. 
+Subrahmanyam, Avanidhar, and Sheridan Titman, 1999, The going-public decision and the development 
+of financial markets, Journal of Finance 54, 1045-1082. 
+Tetlock, Paul C., and Robert W. Hahn, 2007, Optim al liquidity provision for decision makers, Working 
+paper, Columbia University. 
+Venkataraman, Kumar, and Andrew C. Waisburd, 2007, The value of the designated market maker, 
+Journal of Financial and Quantitative Analysis 42, 735-758. 

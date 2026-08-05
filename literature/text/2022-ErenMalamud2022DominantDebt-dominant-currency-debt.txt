@@ -1,0 +1,2135 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 144 (2022) 571–589 
+Contents lists available at ScienceDirect 
+Journal of Financial Economics 
+journal homepage: www.elsevier.com/locate/jfec 
+Dominant currency debt /p82 
+Egemen Eren a , Semyon Malamud b , ∗
+a Bank for International Settlements (BIS), Centralbahnplatz 2, Basel CH-4002, Switzerland 
+b Swiss Finance Institute EPFL, Extranef 213, UNIL Dorigny, Lausanne 1015, Switzerland 
+a r t i c l e i n f o 
+Article history: 
+Received 10 February 2020 
+Revised 5 May 2021 
+Accepted 9 May 2021 
+Available online 18 July 2021 
+JEL classiﬁcation: 
+E44 
+E52 
+F33 
+F34 
+G15 
+G32 
+Keywords: 
+Dollar debt 
+Dominant currency 
+Exchange rates 
+Inﬂation 
+Monetary policy 
+a b s t r a c t 
+We propose a “debt view” to explain the dominant international role of the dollar. Within 
+a simple capital-structure model with debt-currency choice, we show that the “dominant 
+currency” is the one that (1) depreciates in global downturns over horizons of typical debt 
+maturity and (2) has the steepest nominal yield curve. Empirically, we show the dollar ﬁts 
+this description better than other major currencies. The debt view can explain dollar-debt- 
+issuance patterns over the past two decades. It also offers insights into the future of the 
+dominance of the dollar in the aftermath of the COVID-19 crisis. 
+©2 0 2 1 The Authors. Published by Elsevier B.V. 
+This is an open access article under the CC BY-NC-ND license 
+( http://creativecommons.org/licenses/by-nc-nd/4.0/ ) 
+/p82 We thank the editor (Ron Kaniel), one anonymous referee, Stefan 
+Avdjiev, Claudio Borio, Mike Chernov, Stijn Claessens, Giancarlo Corsetti, 
+Husnu Dalgic (discussant), Kent Daniel, Darrell Duﬃe, Linda Goldberg, 
+Gita Gopinath, Yuriy Gorodnichenko, Pierre-Olivier Gourinchas (discus- 
+sant), Bryan Hardy, Harald Hau, Ben Hebert, Oleg Itskhoki, Zhengyang 
+Jiang (discussant), Sebnem Kalemli-Ozcan, Arvind Krishnamurthy, Karen 
+Lewis, Gordon Liao, Xu Lu, Hanno Lustig (discussant), Matteo Maggiori, 
+Emile Marin (discussant), Arnaud Mehl, Erwan Morellec, Dmitry Mukhin 
+(discussant), Brent Neiman, Monika Piazzesi, Ricardo Reis, Hélène Rey, 
+Lukas Schmid (discussant), Andreas Schrimpf, Amit Seru, Hyun Song Shin, 
+Alp Simsek, Jeremy Stein, Michael Weber, and conference and semi- 
+nar participants at the AFA, IMF Jacques Polak ARC, NBER IFM, Stanford 
+SITE, CEPR ESSIM, IDC Herzliya, Joint BIS-BoE-ECB-IMF Workshop, BIS, U. 
+Zurich, EPFL, Uni. Bern, the ECB and USI Lugano for helpful comments. 
+Zuzana Filkova and Nicolas Lemercier provided excellent research assis- 
+tance. Semyon Malamud acknowledges the ﬁnancial support of the Swiss 
+National Science Foundation and the Swiss Finance Institute. Parts of this 
+paper were written when Semyon Malamud visited the BIS as a research 
+1. Introduction 
+The dollar is the most common currency of choice for 
+debt contracts worldwide. According to the Bank for In- 
+ternational Settlements, the dollar-denominated credit to 
+non-banks outside the US amounts to around $12 trillion. 
+Whereas the dominance of the dollar had declined be- 
+fore 2008, the dollar has strengthened its international role 
+since the Global Financial Crisis [ Fig. 1 , ECB (2017) , and 
+Maggiori et al. (2019) ]. 
+In this paper, we study how a single currency can be- 
+come the most common currency of choice for denominat- 
+fellow. The views in this article are those of the authors and do not nec- 
+essarily represent those of the BIS. All errors are our own. 
+∗ Corresponding author. 
+E-mail addresses: egemen.eren@bis.org (E. Eren), 
+semyon.malamud@epﬂ.ch (S. Malamud). 
+https://doi.org/10.1016/j.jﬁneco.2021.06.023 
+0304-405X/© 2021 The Authors. Published by Elsevier B.V. This is an open access article under the CC BY-NC-ND license 
+( http://creativecommons.org/licenses/by-nc-nd/4.0/ ) 
+
+===== PAGE 2 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Fig. 1. Currency denomination of international debt and cross-border borrowing of non-banks (amounts outstanding). Source: Bank for International Set- 
+tlements . 
+ing debt contracts, that is the dominant currency , why that 
+choice is the dollar, and why the dominance of the dollar 
+may have declined and recovered in the last two decades. 
+To ﬁx ideas, in this paper, our focus is not on answering 
+why emerging-market ﬁrms issue debt in dollars as op- 
+posed to local currency. Instead, our primary focus is on 
+why large, global ﬁrms issue debt in dollars as opposed to 
+other major safe-haven currencies, such as the euro or the 
+yen. 
+According to the conventional view, debt issuance in 
+dollars is investor-driven. Investors prefer holding safe as- 
+sets that tend to appreciate in bad times. Therefore, ﬁrms 
+choose the currency denomination of their debt to cater 
+to investors’ demand. This view faces three potential chal- 
+lenges. First, we show empirically that the dollar is not 
+the “safest” among the major currencies, such as the euro, 
+the Japanese yen, or the Swiss franc, especially over longer 
+horizons. Second, nominal interest rates in dollars are 
+higher than those in these other major currencies. Third, 
+the dollar increased its international role after the Bretton 
+Woods, even as it depreciated considerably against other 
+major currencies in the 1970s ( Gourinchas, 2019 ). 
+We propose the debt view, in which debt issuance 
+in dollars is borrower-driven. In the baseline version of 
+our model, ﬁrms ﬁnance themselves by issuing equity 
+and nominal, defaultable debt to optimize the trade-off
+between tax beneﬁts of debt and the risk of default. 2 
+Debt can potentially be issued in any currency. Firms 
+issue in dollars if dollar debt maximizes this trade-off. 
+Our ﬁrst theoretical result is that, independent of the in- 
+vestors’ preferences, ﬁrms always issue debt in the most 
+2 We think of our model as being best applicable to large interna- 
+tional ﬁrms deciding whether to issue debt in one of the major inter- 
+national currencies with comparable market liquidity and issuance costs. 
+Nikolov et al. (2018) show that the trade-off theory eﬃciently explains 
+capital structure dynamics for large ﬁrms. By contrast, other theories need 
+to be developed for smaller ﬁrms facing a high degree of informational 
+asymmetry. 
+“CAPM-risky” currency. It is the currency that, controlling 
+for issuance costs, has the highest covariance with the 
+stock market over the horizons of debt maturity . We call 
+it the “dominant” currency. If investors’ marginal utility 
+co-moves negatively with the stock market, such debt is 
+unattractive for debt-holders, and yet ﬁrms still prefer is- 
+suing in this currency. 
+These features of the debt view have two implications 
+and can explain the challenges to the conventional view 
+outlined above. First, while the dollar does tend to appre- 
+ciate in economic downturns in the short run, 3 dollar debt 
+represents a better hedge for ﬁrms against long-term eco- 
+nomic downturns than other major currencies, such as the 
+euro, the yen, or the Swiss franc, making repayment eas- 
+ier in times of distress (in expectation, over the long run). 
+Second, the currency in which ﬁrms prefer to issue debt 
+should have a higher risk premium over the long run. As a 
+result, the dollar is the dominant currency for denominat- 
+ing debt, not despite being the riskiest of the major curren- 
+cies (over the horizon of typical debt maturity), but pre- 
+cisely because of it. A higher associated risk premium leads 
+to higher nominal dollar interest rates. Finally, we show 
+that since the end of Bretton Woods, stock market declines 
+tended to be followed by the depreciation of the dollar at 
+horizons beyond one year, incentivizing ﬁrms to borrow in 
+dollars, thus cementing its dominant international role. 
+Empirically, we test our prediction that the dollar is 
+the “CAPM riskiest” among the major international curren- 
+cies. The ﬁrst prediction of our model is that the dominant 
+role of the dollar in international debt markets might be 
+attributed to market participants’ expectations of a posi- 
+tive co-movement of the dollar with the stock market over 
+the horizons of debt maturity of ﬁrms , which is typically 
+around ﬁve years (see Section 5 ). We show this empirically 
+in two ways. First, we use asset-price-implied forward- 
+looking expectations of market participants regarding the 
+3 In particular, over horizons below one year, the dollar is less risky 
+than many other major currencies. 
+572 
+
+===== PAGE 3 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+covariance of the EUR/USD exchange rate and the S&P 500, 
+directly computed from so-called quanto contracts. Second, 
+we compute the historical covariances between the dollar 
+and global stock markets. 
+A direct way to compute the forward-looking covari- 
+ance between the stock market and exchange rates is to 
+use so-called quanto forward contracts ( Kremens and Mar- 
+tin, 2019 ). A euro-quanto forward contract for S&P 500, 
+for example, pays off the level of the S&P 500 index in 
+euros when the contract matures. As opposed to a con- 
+tract that pays off the S&P 500 in dollars, the value of 
+this contract depends on the anticipated covariance be- 
+tween the index and the EUR/USD exchange rate. Hence, 
+the price of this contract reﬂects the expectations of in- 
+vestors about currency returns and currency risk premia. 
+Kremens and Martin (2019) compute the quanto-implied 
+covariance for contracts with a two-year maturity and ﬁnd 
+the quanto-implied covariance of the EUR/USD exchange 
+rate with S&P500 exhibited a robust downward trend in 
+the post-crisis period and has become negative in the re- 
+cent years. A negative quanto-implied risk premium (QRP) 
+means market participants believe the euro will appreciate 
+against the dollar when the S&P 500 falls, in line with our 
+theory for why ﬁrms would issue debt in dollars. 
+Our theoretical characterization of the dominant cur- 
+rency also has direct implications for the time-series dy- 
+namics of the shares of the dollar- and euro-denominated 
+debt. Namely, keeping the distribution of issuance costs 
+constant across ﬁrms, our model predicts the share 
+of dollar-denominated debt relative to that of euro- 
+denominated debt is negatively related to the QRP. Con- 
+sistent with the predictions of our model, we ﬁnd a strong 
+negative relationship between quanto-implied covariances 
+and the share of dollar debt, suggesting forward-looking 
+expectations of currency returns are an important driver 
+of ﬁrms’ debt-currency-denomination choice. Moreover, we 
+interpret this fact as strong evidence of a distinctive pre- 
+diction of our theory; that is, changes to the currency com- 
+position of debt can occur at high frequency and are re- 
+lated to forward-looking expectations because our regres- 
+sions are at a quarterly frequency. 
+The debt view also assigns an important role for mon- 
+etary policy if relative inﬂation between two countries is 
+an important driver of exchange rates. 4 Similar to the pre- 
+dictions regarding the QRP, our model implies the share 
+of dollar-denominated debt relative to euro-denominated 
+debt is positively related to the inﬂation risk premium 
+of the dollar and negatively related to that of the euro. 
+Therefore, according to our model, central bank inﬂation- 
+stabilization policies in global downturns and ﬁrms’ debt- 
+currency choice are closely linked. Strikingly, we ﬁnd debt- 
+currency shares move more tightly with the expectations 
+about inﬂation risk premia, especially in the eurozone, 
+which explains debt-issuance patterns over the last two 
+decades, suggesting deﬂation risk in the eurozone after the 
+4 See, for example, Imbs et al. (2005) and Chowdhry et al. (2005) for 
+evidence supporting the relative PPP, as well as Chernov and Creal (0 0 0 0) , 
+who argue PPP is an important driver of long-horizon currency risk pre- 
+mia. 
+crisis is a possible reason why the euro lost its momen- 
+tum. 5 
+Computing covariances from historical data, we ﬁnd the 
+dollar co-moves positively with the stock market at hori- 
+zons that typically accord with the debt maturity of ﬁrms. 
+This pattern does not contradict the well-documented ten- 
+dency of the dollar to appreciate in bad times over shorter 
+horizons ( Gourinchas et al., 2017 ). Indeed, we ﬁnd the dol- 
+lar co-moves negatively with the stock market for horizons 
+up to a year, making it less risky over the short-run than 
+other major currencies. However, the sign of the covariance 
+switches for longer horizons corresponding to typical ma- 
+turities of debt that ﬁrms issue. 
+To gain a deeper understanding of the term structure 
+of dollar-stock market co-movement, we further decom- 
+pose the long-horizon covariances into shorter-term con- 
+temporaneous and lead-lag relationships between the dol- 
+lar and the stock market, proxied by S&P 500 or the MSCI 
+World Index. Whereas the contemporaneous covariance is 
+negative, we ﬁnd the stock market positively predicts the 
+dollar, and the strength of this effect is suﬃcient to pro- 
+duce a sign change at longer horizons. To formally estimate 
+the lead-lag relationships between the dollar and the stock 
+market, we estimate a VAR for their joint-return process 
+and study the impulse response for their joint dynamics 
+after a stock-market-depreciation shock. We ﬁnd that after 
+such a shock, the dollar signiﬁcantly depreciates in future 
+periods, consistent with our theory. 
+As the dollar co-movement with the stock market 
+increases over longer horizons, our model predicts the 
+propensity to issue dollar-denominated debt increases with 
+debt maturity. We use granular bond-issuance data to test 
+this prediction, and ﬁnd strong support for it. 
+The sign change in the term structure of the dollar- 
+stock market covariance (negative for short horizons, posi- 
+tive for long horizons) naturally raises the question of what 
+would happen if the ﬁrm could rebalance its capital struc- 
+ture after a short-run dollar appreciation. To answer this 
+question, we solve a dynamic version of our model with 
+an intermediate period at which the ﬁrm can issue more 
+debt or buy back debt in any currency. Our ﬁrst result is 
+that independent of the underlying shock dynamics, the 
+ﬁrm never buys back debt, because doing so would mean 
+foregoing the tax beneﬁts. This result is a version of the 
+leverage ratchet effect of Admati et al. (2018) . Thus, when 
+the ﬁrm issues long-term debt at time t = 0 , it anticipates 
+holding this debt all the way until expiry, making this 
+part of the debt-choice problem effectively static. The next 
+question is whether the possibility of issuing more debt 
+at the intermediate period alters the currency composi- 
+tion of debt ex ante. Despite the extreme complexity of the 
+dynamic capital-structure problem, we derive the optimal 
+debt-issuance policy in closed form and uncover a novel 
+inter-temporal trade-off mechanism . According to this mech- 
+anism, the ﬁrm chooses between receiving the tax beneﬁts 
+today and paying the (effective) cost of default tomorrow. 
+5 The importance of accommodative monetary policy in helping reduce 
+real debt burdens of ﬁrms and the differences across central banks in ac- 
+complishing this goal is also acknowledged by the European Central Bank 
+(ECB). See, for example, Praet (2016) and Cœuré (2019) . 
+573 
+
+===== PAGE 4 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+We characterize this novel trade-off explicitly in terms 
+of the slopes of nominal yield curves across currencies and 
+show the ﬁrm always selects the currency with the steep- 
+est yield curve. The dollar also ﬁts this description better 
+than other major currencies. In addition, we test a pre- 
+diction of our model that the fraction of dollar-debt is- 
+suance co-moves positively with the difference in yield- 
+curve slopes between the dollar and the euro (using the 
+government bond yield curves in the US and Germany). 
+Consistent with our theory, we ﬁnd that, quite remarkably, 
+regressing dollar-debt issuance on this yield-curve slope 
+differential produces statistically signiﬁcant estimates with 
+the predicted sign. 
+Finally, the COVID-19 crisis and ensuing developments 
+in exchange-rate markets shed further light on our theory. 
+Our theory suggests borrowers would prefer to issue debt 
+in dollars if they expect it to depreciate in response to a 
+global shock against other major currencies, in part due to 
+easing by monetary policy. Following the COVID-19 shock, 
+the Federal Reserve promptly and forcefully eased mone- 
+tary policy and rolled out crisis programs. As a result, the 
+dollar depreciated against all major international curren- 
+cies. Unlike previous episodes, this depreciation happened 
+almost immediately and to the order of around 10% in a 
+few months. The depreciation of the dollar provided a ma- 
+terial hedge for ﬁrms with nominal dollar debt as opposed 
+to debt in euros, yen, or the Swiss francs. Moreover, in- 
+ﬂation risk premia for the dollar increased compared with 
+the euro. In this context, our theory predicts higher dollar- 
+debt issuance in the post-COVID period. 
+We show evidence using granular issuance data that 
+ﬁrms tended to issue more dollar debt than other major 
+currencies in the aftermath of the COVID-19 crisis, con- 
+trolling for other factors and ﬁrm ﬁxed effects. The na- 
+ture of the shock, the depreciation of the dollar, the impact 
+of monetary policy, and the debt-issuance patterns in the 
+aftermath of the COVID-19 crisis are all in line with the 
+mechanisms discussed in our paper. 
+Related literature. 
+Recent literature pays considerable attention to the in- 
+ternational role of the dollar. The dollar is omnipresent 
+in all parts of the global ﬁnancial system ( CGFS, 2020; 
+Gopinath and Stein, 0 0 0 0; Gourinchas et al., 2019 ), includ- 
+ing international trade invoicing ( Goldberg and Tille, 2008; 
+Gopinath, 2015; Casas et al., 2017 ), global banking ( Shin, 
+2012; Ivashina et al., 2015; Aldasoro et al., 2019 ), corporate 
+borrowing ( Bruno et al., 2018; Bruno and Shin, 2017; Gio- 
+vanni et al., 2017 ), central bank reserve holdings ( Bocola 
+and Lorenzoni, 2020; Ilzetzki et al., 2019 ), and global port- 
+folios ( Maggiori et al., 2019 ). Our paper adds to the grow- 
+ing literature that studies the international role of the 
+dollar. 6 
+Our main contribution is the introduction of the “debt 
+view” in explaining the international role of the dollar. Cur- 
+rent explanations can be broadly classiﬁed into three cat- 
+6 See also, for example, Matsuyama et al. (1993) , Rey (2001) , 
+Caballero and Krishnamurthy (2002) , Caballero et al. (2008) , 
+Caballero and Krishnamurthy (2009) , Devereux and Shi (2013) , 
+Chahrour and Valchev (2017) , Mukhin (2018) , Farhi and Maggiori (2018) , 
+He et al. (2019) , Drenik et al. (2019) and Bahaj and Reis (2020a) . 
+egories. First is the “trade view,” wherein trade invoicing 
+in dollars explains the dollar’s role in the global econ- 
+omy ( Gopinath and Stein, 0 0 0 0 ). Second is the “safe as- 
+set view,” in which the dollar is dominant because of its 
+safe-haven properties ( He et al., 2019; Farhi and Maggiori, 
+2018; Jiang et al., 2018 ) and the global demand for safe 
+assets ( Caballero et al., 2008; 2015; 2017 ). Third is the “ve- 
+hicle currency view,” wherein the dominance of the dol- 
+lar arises from its international use as a vehicle currency 
+( Goldberg and Tille, 2008 ). 
+The debt view of the dollar’s dominance assigns an im- 
+portant role in the choice of the debt-currency denomina- 
+tion of ﬁrms, driven by forward-looking expectations about 
+exchange rates and monetary policy . The main mechanism 
+in our model is similar to the one in Gomes et al. (2016) ; 
+but, in an international setting. The debt view focuses on 
+the medium run to account for typical debt maturity of 
+ﬁrms, and as such, complements other theories that focus 
+on the short-run frictions such as price stickiness, or the 
+short-run appreciation of the dollar in bad times as insur- 
+ance to investors. In contrast to other theories, we show 
+a dominant currency equilibrium in the debt market can 
+arise without relying on network effects, price stickiness, 
+pricing complementarities, and safety demand. 
+Three closely related papers to ours are by 
+Gopinath and Stein (0 0 0 0) , Jiang et al. (0 0 0 0) , 
+Liao (2020) , and Bahaj and Reis (2020b) . Gopinath and 
+Stein (0 0 0 0) demonstrate how the dollar can emerge as a 
+key international currency starting from its role in trade 
+invoicing and in turn affecting global banking, which in 
+turn affects the currency denomination of bank deposits 
+and ﬁrm borrowing endogenously. Whereas their main 
+focus is emerging markets and bank-intermediated debt, 
+our results apply mostly for the currency choice of large, 
+global ﬁrms and also apply to market-based ﬁnancing, and 
+the dollar’s dominant role arises due to its risk properties. 
+Jiang et al. (0 0 0 0) ﬁnd that investors attach a convenience 
+yield for dollar safe assets that can be observed from 
+covered interested parity deviations. An implication of 
+their results is that ﬁrms would issue dollar debt to reap 
+the beneﬁts of this convenience yield. Liao (2020) shows 
+ﬁrms’ issuance ﬂows or euro and dollar debt between 
+the eurozone and the US respond to covered interest 
+parity deviations. Bahaj and Reis (2020b) also assign an 
+important role for monetary policy for the international- 
+ization of currencies as in our paper, studying the Chinese 
+renminbi’s jumpstart as an international currency. Our 
+results complement the ﬁndings of these papers. We ﬁnd 
+ﬁrms choose the dollar as opposed to other currencies, 
+regardless of the preferences of investors, and the issuance 
+of dollar debt could be determined by its favorable risk 
+properties over longer-horizons compared with other ma- 
+jor currencies, such as the euro, the Japanese yen, or the 
+Swiss franc. As we explain above, short-term safe-haven 
+properties of the dollar do not contradict this ﬁnding. 
+A growing literature studies reasons for persistent un- 
+covered interest rate parity (UIP) violations and its impli- 
+cations of these violations for the choice between local- 
+and foreign-currency borrowing of emerging-market ﬁrms 
+( Baskaya et al., 2017; Salomao and Varela, 2020 ). Our pri- 
+mary interest lies in understanding why the dollar is the 
+574 
+
+===== PAGE 5 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+“dominant foreign currency” as opposed to similar curren- 
+cies with similarly deep and liquid markets, such as the 
+euro. Thus, we abstract from many features of currencies 
+that lead to UIP deviations, in reality, to highlight our main 
+mechanism, even though capturing these deviations in re- 
+duced form through differential issuance costs would be 
+possible. In the Internet Appendix, we provide some the- 
+oretical and empirical results for the dominant and local 
+currency mix in the debt of a cross-section of emerging- 
+market ﬁrms that depend on the properties of local inﬂa- 
+tion and its relation to the US inﬂation. 
+Our paper is also related to the extensive literature on 
+long-term nominal debt and its real effects, including debt 
+deﬂation ( Fisher, 1933 ), debt overhang ( Myers, 1977 ), and 
+leverage dynamics ( Gomes et al., 2016 ). 
+2. Theory 
+In this section, we build a simple model that lays out 
+conditions for the currency choice of ﬁrms’ debt issuance. 
+Our main theoretical result is that ﬁrms’ currency choice 
+comes down to a simple statistic: the covariance between 
+stock returns and exchange-rate returns. This covariance 
+governs the choice of debt currency, regardless of the 
+stochastic discount factor of lenders. In the ﬁrst part, we 
+take exchange rates as given. In the second part, we add 
+slightly more structure to exchange-rate determination, al- 
+lowing us to assign a role for inﬂation and monetary policy 
+in determining ﬁrms’ currency choice. Although we take a 
+partial-equilibrium approach in this paper for simplicity, in 
+an earlier working-paper version, we solved the model in 
+general equilibrium ( Eren and Malamud, 2019 ). All results 
+and intuitions go through in a general-equilibrium setting 
+as well. 
+2.1. Model 
+Time is discrete, indexed by t = 0 , 1 , ··· . A large, in- 
+ternational ﬁrm is inﬁnitely lived and generates after-tax 
+cash ﬂows of /Omega1t Z t , where /Omega1t is the common productiv- 
+ity shock, which is measured in dollars, and Z t is an id- 
+iosyncratic shock. If the ﬁrm generates cash ﬂows in dif- 
+ferent currencies, we just multiply them with the respec- 
+tive exchange rates and then aggregate them to get the 
+total dollar cash ﬂows. We assume Z t follows a geomet- 
+ric random walk, Z t+1 = Y t+1 Z t , where Y t are i.i.d. and 
+have a density P (Y t+1 = y ) = ℓy ℓ −1 , y ∈ [0 , 1] and ℓ > 0 . 
+This assumption is common in the literature on interna- 
+tional trade ( Melitz, 2003 ) and is made for tractability. We 
+denote by /Phi1(y ) ≡ P (Y ≤ y ) = y ℓ the cumulative distri- 
+bution function of idiosyncratic shocks. All cash ﬂows are 
+priced with a common, exogenously given dollar stochastic 
+discount factor M t ,t +1 = M $ 
+t ,t +1 . The choice of the dollar as 
+the reference currency is made purely for tractability. See 
+Lemma A.2 in the Internet Appendix, where we re-derive 
+all expressions in the domestic currency. 
+Firms ﬁnance themselves by issuing both equity and 
+defaultable nominal bonds in any of the N currencies, ma- 
+turing in one time period. 7 Each bond has a nominal face 
+value of one currency unit, and the ﬁrm is required to 
+pay a coupon of c currency units per unit of outstanding 
+debt. 8 We denote by B j,t the stock of outstanding nomi- 
+nal debt at time t denominated in the currency of coun- 
+try j. We also denote by B t = (B j,t ) N 
+j=1 the vector of debt 
+stocks in different currencies That is, B j,t is the face value 
+of debt in currency jt o be paid back at time t + 1 . As in 
+Gomes et al. (2016) , we assume that coupon payments are 
+shielded from taxes so that 
+B t+1 (B t ) = ((1 − τ) c + 1) 
+N ∑  
+j=1 
+E j,t+1 B j,t (1) 
+is the total debt-servicing cost, net of tax shields. There- 
+fore, the choice of ﬁrm leverage depends on the trade-off
+between tax advantages and distress costs. 9 Thus, absent 
+default, the nominal distribution to shareholders at time 
+t + 1 is given by 
+/Omega1t+1 Z t+1 − B t+1 (B t ) = Z t /Omega1t+1 Y t+1 . 
+If the idiosyncratic shock realization, Y t+1 = Z t+1 /Z t , is be- 
+low an endogenous default threshold /Psi1t+1 (B t ) , sharehold- 
+ers optimally default on their debt. Upon default, share- 
+holders get zero, and debtholders take over the ﬁrm and 
+are able to recover a fraction ρ < 1 of debt face value and 
+coupon. 
+Thus, the dollar value of cash ﬂows to debthold- 
+ers of currency- j debt are given by (1 + c)( 1 Y t+1 ≥/Psi1t+1 + 
+ρ 1 Y t+1 < /Psi1t+1 ) E j,t+1 . Hence, by direct calculation, using the 
+fact that the idiosyncratic shocks Y t+1 are independent of 
+/Omega1t+1 , M t ,t +1 , E j,t+1 , we get that the dollar price of one 
+unit of debt denominated in currency j is given by 
+δj (B t ) = E t [ M t ,t +1 (1 Y t+1 ≥/Psi1t+1 
++ ρ 1 Y t+1 < /Psi1t+1 )(1 + c) E j,t+1 ] 
+= E t 
+[
+M t ,t +1 ( 1 −(1 −ρ)/Phi1(/Psi1t+1 (B t )) ) (1 + c) E j,t+1 
+]
+, 
+(2) 
+where /Phi1(/Psi1t+1 (B t )) is the default probability conditional 
+on the realization of aggregate variables. 10 We assume that 
+7 We interpret this one single period as the typical maturity of debt 
+of the order of several years. See, for example, Cortina et al. (2018) . The 
+dollar is known to have a tendency to appreciate over the short term dur- 
+ing crises ( Maggiori, 2017; Farhi and Maggiori, 2018 ). So, some portion of 
+the long-term debt may become due exactly during a crisis. We abstract 
+from such considerations. Nonetheless, ﬁrms may keep dollar cash buffers 
+to mitigate potential problems from the dollar’s short-term risk proﬁle. 
+8 Apart from the multiple-currencies assumption, when modeling the 
+ﬁnancing side, we closely follow Gomes et al. (2016) . However, our model 
+is static. Empirical ﬁndings in Kalemli-Ozcan et al. (2018) suggest the ef- 
+fects of foreign-currency debt on ﬁrms’ behavior might be even stronger 
+in a dynamic setting. 
+9 For simplicity, as in Gomes et al. (2016) , we assume that tax shields 
+are the only motivation for issuing debt. However, one can also interpret 
+τ as a reduced form of gains from debt issuance, such as the alleviation 
+of adverse-selection costs. 
+10 Let X t+1 = (/Omega1t+1 , M t ,t +1 , E j,t+1 ) . Then, by the law of iterated expec- 
+tations, 
+E t [ M t ,t +1 (1 Y t+1 ≥/Psi1t+1 + ρ 1 Y t+1 < /Psi1t+1 )(1 + c) E j,t+1 ] 
+= E t [ M t ,t +1 (1 − 1 Y t+1 ≤/Psi1t+1 + ρ 1 Y t+1 < /Psi1t+1 )(1 + c) E j,t+1 ] 
+= E t [ M t ,t +1 (1 − (1 − ρ) E[ 1 Y t+1 ≤/Psi1t+1 | X t+1 ])(1 + c) E j,t+1 ] 
+575 
+
+===== PAGE 6 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+ﬁrms face a proportional cost q (j) of issuing in country j
+currency for j = 1 , ··· , N and maximize equity value plus 
+the proceeds from the debt issuance net of issuance costs. 
+Although we do not micro-found these costs, doing so is 
+not diﬃcult. These costs may originate from underwrit- 
+ing costs, the limited risk bearing capacity of intermedi- 
+aries (in the case of bank loans), or the actual debt place- 
+ment costs incurred by the investment banks (e.g., locat- 
+ing bond investors). The observed convenience yields for 
+dollar-denominated debt ( Jiang et al., 0 0 0 0 ) can be viewed 
+as a negative issuance cost q ($) in our model. 
+Conditional on no default, the equity value V t of a given 
+ﬁrm after the previous period debt had been repaid satisﬁes 
+V t = /Omega1t Z t + max 
+B t 
+{ N ∑  
+j=1 
+δj (B t ) B j,t (1 −q (j)) 
++ E t [ M t ,t +1 max { V t+1 − B t+1 (B t ) , 0 } ] 
+}
+. 
+It is then straightforward to show equity value is homo- 
+geneous in Z t , so that V t = Z t ¯/Omega1t for some variable ¯/Omega1t that 
+is independent of idiosyncratic shocks. Thus, default occurs 
+whenever Y t+1 falls below the default threshold 
+/Psi1t+1 (B t ) ≡ B t+1 (B t ) 
+¯/Omega1t+1 
+, (4) 
+Note that, importantly, /Psi1t+1 is invariant to currency choice , 
+because both the numerator B t+1 (B t ) and the denom- 
+inator ¯/Omega1t+1 are denominated in dollars. In particular, 
+the currency- k price of debt denominated in currency j
+satisﬁes δj (B t , k ) = E t [ M k 
+t ,t +1 ( 1 − (1 − ρ)/Phi1(/Psi1t+1 (B t )) ) (1 + 
+c) E j,t+1 / E k,t+1 ] where M k 
+t ,t +1 = M $ 
+t ,t +1 E k,t ,t +1 is the pricing 
+kernel in currency k . 
+Everywhere in the sequel, we use E $ 
+t and Cov $ 
+t to de- 
+note conditional expectation and covariance under the 
+dollar risk-neutral measure with the conditional density 
+E t [ M t ,t +1 ] −1 M t ,t +1 . Furthermore, for each stochastic pro- 
+cess X t , we consistently use the notation 
+X t ,t +1 ≡ X t+1 
+X t 
+. 
+We need the following assumption to ensure that the 
+leverage-choice problem has a non-trivial solution. 
+Assumption 1 . The (exogenously speciﬁed) issuance costs 
+q (j) , j = 1 , ··· , N satisfy 
+(1 −q (j))(1 + c) > (1 + c(1 − τ)) and 
+¯q (j, $) ≡ ((1 −q (j))(1 + c) − (1 + c(1 − τ))) 
+( 1 − ρ)(1 + c)[(1 −q (j)) + ℓ (1 −q ($))] − (1 + c(1 − τ)) 
+> 0 
+(5) 
+for all j = 1 , ··· , N. We also deﬁne ¯q ($) ≡ ¯q ($ , $) . 
+The ﬁrst condition ensures the cost q (j) of issuing debt 
+is less than the gains, as measured by the value of tax 
+shields, so debt issuance is positive. The second condi- 
+tion ensures that the recovery rate ρ is suﬃciently low; 
+= E t 
+[
+M t ,t +1 ( 1 − (1 − ρ)/Phi1(/Psi1t+1 (B t )) ) (1 + c) E j,t+1 
+] (3) 
+otherwise, funding becomes so cheap for the ﬁrm that the 
+ﬁrm may want to issue inﬁnite amounts of debt. The fol- 
+lowing is true. 11 
+Theorem 2.1 . Issuing debt only in dollars is optimal if and 
+only if 
+¯q (j, $) 
+¯q ($) 
+−1 ≤
+Cov $ 
+t 
+(¯/Omega1−ℓ 
+t+1 , E j,t ,t +1 
+)
+E $ 
+t 
+[¯/Omega1−ℓ 
+t+1 
+]
+E $ 
+t [ E j,t ,t +1 ] 
+(6) 
+for all j = 1 , ··· , N . In this case, optimal dollar debt satisﬁes 
+B $ ,t = (1 + c(1 − τ)) −1 
+(
+¯q ($) 
+E $ 
+t [ ¯/Omega1−ℓ 
+t+1 ] 
+)ℓ −1 
+. (7) 
+Absent heterogeneity in issuance costs (i.e., when q (j) 
+is independent of j), (6) takes the form of 
+Cov $ 
+t 
+(¯/Omega1−ℓ 
+t+1 , E j,t ,t +1 
+)
+≥ 0 j = 1 , ··· , N . (8) 
+Intuitively, at time t, ﬁrms, when deciding on the cur- 
+rency composition of their debt, choose to issue in dol- 
+lars if they expect the dollar to depreciate when their 
+time t + 1 valuation is low; condition (8) provides a pre- 
+cise formalization of this intuition. Because 
+(¯/Omega1t+1 
+)−ℓ 
+at- 
+tains its largest value when ¯/Omega1t+1 is close to zero, covari- 
+ance (8) overweights the distress states: when ℓ is suﬃ- 
+ciently high, (8) essentially requires the dollar to depreci- 
+ate against all its key competitors during times of major 
+economic downturns. 
+Also note condition (8) corresponds to the problem a 
+ﬁrm faces when choosing between dollar debt and debt 
+denominated in other key currencies, such as, for exam- 
+ple the euro, the yen, the Swiss franc, and the pound. For 
+an emerging-market ﬁrm that is choosing between local- 
+currency debt and dollar debt, heterogeneity in issuance 
+costs may be as (if not more so) important as the cur- 
+rency risk proﬁle. However, even for the choice between 
+dollar- and euro-denominated debt, ignoring differences in 
+issuance costs puts the dollar at a disadvantage: Existing 
+evidence ( Velandia and Cabral, 2017 ) suggests issuing debt 
+in dollars is signiﬁcantly cheaper than issuing in euros. 
+The convenience yield on the dollar also effectively implies 
+negative issuance costs for dollar-denominated debt ( Jiang 
+et al., 0 0 0 0; Liao, 2020 ). 
+To test the validity of condition 6 , we need to ﬁnd an 
+empirical proxy for ¯/Omega1t . We suppose for simplicity that the 
+distressed state only lasts for one period, and debt holders 
+11 As we show in the Internet Appendix (see Proposition A.1), in our 
+model, ﬁrms never hedge their foreign-exchange risk. Ample evidence 
+shows ﬁrms often choose not to hedge their foreign-currency risk. See, 
+for example, Bodnár (2006) , who shows only 4% of Hungarian ﬁrms with 
+foreign-currency debt hedge their currency risk exposure. Furthermore, 
+according to Salomao and Varela (2020) , “data from the Central Bank of 
+Peru reveals that only 6% of ﬁrms borrowing in foreign currency em- 
+ploy ﬁnancial instruments to hedge the exchange rate risk, and a simi- 
+lar number is found in Brazil.” Du and Schreger (2017) also provide ev- 
+idence that ﬁrms do not fully hedge their currency risk exposures. See 
+also Niepmann and Schmidt-Eisenlohr (2019) and Bruno and Shin (2017) . 
+That being said, Liao (2020) does ﬁnd evidence that at least 40% of global 
+ﬁrms issue currency-hedged foreign debt. Although costly external ﬁnanc- 
+ing is known to make hedging optimal ( Froot et al., 1993; Hugonnier 
+et al., 2015 ), Rampini et al. (2014) show both theoretically and empiri- 
+cally that, in fact, more ﬁnancially constrained ﬁrms hedge less. For more 
+on hedging, see Section 3.4 . 
+576 
+
+===== PAGE 7 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+run the ﬁrm ineﬃciently, making its output drop. We call 
+this drop “Distress Costs.” The following is true. 
+Proposition 1 . Let S t be the (value-weighted) stock market in- 
+dex (i.e., total market capitalization of all (large and diversi- 
+ﬁed) ﬁrms. Then, 
+S t = ¯/Omega1t − Distress Costs t . 
+Proposition 1 shows that ¯/Omega1t is closely related to the 
+market portfolio. If distress costs are small relative to the 
+total value of the stock index, then ¯/Omega1t can be directly prox- 
+ied by the corresponding stock market index of “similar”
+ﬁrms. We therefore use stock market index returns in our 
+empirical tests of condition (8) . 
+2.2. Roles for inﬂation and monetary policy 
+In this section, we derive a link between the character- 
+ization in Theorem 2.1 and the inﬂation risk premium and 
+assign a role for monetary policy in determining the dom- 
+inant currency in debt issuance. 
+Denote by P i,t inﬂation in country i, i = 1 , ··· , N. We 
+make the following assumptions about the joint long-term 
+dynamics of inﬂation and exchange rates at horizons of av- 
+erage debt maturity. 
+Assumption 2 . A global business-cycle shock, a t , exists such 
+that 
+• Relative PPP is an important driver of exchange rates: 
+E j,t ,t +1 = P $ ,t ,t +1 P −1 
+j,t ,t +1 e ε ∗
+j,t+1 
+where ε ∗
+j,t+1 ∼ N(0 , σ2 
+i, ∗) are the log real exchange rates. 
+• Stochastic discount factor is countercyclical, 
+log M t ,t +1 = −γa t+1 + ε M 
+t+1 , 
+where ε M 
+i,t+1 ∼ N(0 , σ2 
+M ) . 
+• Stock prices are cyclical 
+log S i,t ,t +1 = βi a t + ε S 
+i,t , 
+where ε S 
+i,t ∼ N(0 , σ2 
+S ) and βi > 0 . 
+• All variables a t , ε M 
+i,t , ε ∗
+j,t , ε i,t , ε S 
+t are independent. 
+Under Assumption 2 , a key driver of debt-currency 
+choice will be forward-looking expectations about the co- 
+movement of inﬂation with the stock market. The latter 
+can be backed out from the inﬂation risk premium, given 
+by the difference between inﬂation expectations under the 
+risk-neutral and the physical measures: 
+IRP i,t = log 
+(
+E i 
+t [ P i,t ,t +1 ] 
+E t [ P i,t ,t +1 ] 
+)
+= log 
+(
+e r t Cov t (M i,t ,t +1 , P i,t ,t +1 ) 
+E t [ P i,t ,t +1 ] 
+)
+. (9) 
+The following is true. 
+Theorem 2.2 . Under Assumption 2 , ﬁrms issue all debt in US 
+dollars if and only if the US has the highest inﬂation risk pre- 
+mium. 
+Although Assumption 2 ’s requirements to derive 
+Theorem 2.2 is restrictive, they allow us to highlight 
+the important link between our results and Fisherian 
+debt-deﬂation theory ( Fisher, 1933 ). The common-shock 
+structure in Assumption 2 allows us to abstract from 
+the choice between local-currency and foreign-currency 
+debt, and focus on the choice between different global 
+currencies (e.g., the euro and the dollar). 
+3. Evidence from forward-looking measures 
+The ﬁrst goal of this section is to check whether the risk 
+properties of the dollar ﬁt the predictions of our theory of 
+the dominant currency using forward-looking measures of 
+the covariance between the stock market returns and ex- 
+change rates. The second goal is to understand the pre- 
+and post-crisis trends in the shares of euro- and dollar- 
+denominated debt through the lens of our model. 
+An ideal test of our predictions would be to test the 
+following condition: 
+¯q (j, $) 
+¯q ($) 
+−1 ≤
+Cov $ 
+t 
+((¯/Omega1t+1 
+)−ℓ 
+, E j,t ,t +1 
+)
+E $ 
+t 
+[( ¯/Omega1t+1 ) −ℓ 
+]
+E $ 
+t [ E j,t ,t +1 ] 
+. (10) 
+According to our model, abstracting from differences in 
+issuance costs, the currency that market participants expect 
+to co-move more with the stock market would be the cur- 
+rency ﬁrms would choose to denominate their debt. We 
+show, using forward-looking risk premia recovered from 
+asset prices, that the dollar ﬁts this description. 
+Moreover, if the distribution of issuance costs stays 
+roughly constant across ﬁrms, our model implies a tight 
+link between the time variation in this anticipated co- 
+movement and the currency denomination of debt is- 
+suance. In particular, all else constant, our model would at- 
+tribute the recent rise in the share of dollar-denominated 
+debt to heightened expectations of market participants of 
+the dollar becoming more positively (or less negatively) 
+correlated with the stock market than the euro over longer 
+horizons. By extension, the dollar becomes more of a 
+hedge for long-term borrowers rather than investors. We 
+provide evidence for the link between debt-issuance pat- 
+terns and such forward-looking market expectations and 
+ﬁnd support for the debt view, suggesting ﬁrms issue more 
+dollar debt when the dollar becomes riskier from the in- 
+vestors’ point of view. 
+3.1. Quanto-implied risk premia and inﬂation risk premia 
+A direct way to compute the forward-looking covari- 
+ance between the stock market and exchange rates is to 
+use so-called quanto forward contracts ( Kremens and Mar- 
+tin, 2019 ), which provides an almost ideal test of our the- 
+ory. A euro-quanto forward contract for S&P 500 with ma- 
+turity T , for example, pays off the level of the S&P 500 in- 
+dex in euros . Therefore, at initiation, the exchange rate is 
+ﬁxed. As opposed to a contract that pays off the S&P 500 
+in dollars, the value of this contract depends on the an- 
+ticipated covariance between the index and the EUR/USD 
+exchange rate. 
+Hence, the price of this contract reﬂects the expecta- 
+tions of investors about currency returns. For example, if a 
+quanto contract on the S&P 500 denominated in euros is 
+577 
+
+===== PAGE 8 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Fig. 2. Two-year quanto-implied risk premia and two- and ﬁve- year inﬂation risk premia in the US and eurozone. Source: QRP data are from Kremens and 
+Martin (2019) and IRP data are from Hördahl and Tristani (2014) . 
+more valuable than the S&P 500 denominated in dollars, 
+the implication is that investors expect the euro to depre- 
+ciate when the index (in dollars) is low, and vice versa. 
+Formally, we deﬁne the quanto-implied risk premium 
+(QRP) as: 
+QRP t = Cov $ 
+t 
+(
+S t+1 , 
+EUR 
+USD 
+)
+= 
+R $ 
+f,t 
+R i 
+f,t P t 
+(Q t −F t ) , (11) 
+where Q t and F t are quanto and vanilla forward prices, re- 
+spectively. 
+Using the approximation 
+Cov $ 
+t 
+(
+S −ℓ 
+t+1 , 
+EUR 
+USD 
+)
+≈− ℓ Cov $ 
+t 
+(
+S t+1 , 
+EUR 
+USD 
+)
+, 
+we can transform the QRP measure into the covariance we 
+derived in the previous section. Namely, a negative QRP 
+means investors expect the dollar to depreciate against the 
+euro when the S&P 500 falls. 
+Kremens and Martin (2019) compute the quanto- 
+implied covariance for contracts with a two-year maturity 
+and ﬁnd the quanto-implied covariance of the EUR/USD ex- 
+change rate with S&P 500 exhibited a very strong down- 
+ward trend in the post-crisis period and has become neg- 
+ative in the recent years ( Fig. 2 ). This evidence is perfectly 
+in line with the predictions of the debt view. 
+Whereas quanto-implied covariance is the most rel- 
+evant measure for our purposes, data obtained from 
+Kremens and Martin (2019) only cover the period between 
+December 2009 and October 2015. Because our goal is to 
+explain the fall and the rise of the dollar in debt mar- 
+kets over the last two decades, we also resort to a longer 
+time series containing similar information about forward- 
+looking covariances. We use our model to generate similar 
+predictions that we can test with other available data mea- 
+suring forward-looking risk premia. A second limitation of 
+the QRP data is that liquid quanto contracts only exist for 
+maturities of two years and less. To remedy that limitation, 
+we provide further evidence for the covariance over longer 
+horizons using backward-looking measures in Section 4 . Fi- 
+nally, quanto contracts give us information about the co- 
+variance of the exchange rate and the S&P 500. Because 
+our theory mainly applies to global ﬁrms that are exposed 
+mostly to global shocks, we believe the S&P 500 provides 
+a proxy. In Section 4 , we also provide backward-looking 
+evidence on the covariances using the MSCI All Country 
+World Index. 
+To obtain long time series containing information about 
+forward-looking covariances, we appeal to Theorem 2.2 , 
+which provides a direct link between debt-currency de- 
+nomination and anticipated relative inﬂation cyclicality un- 
+der the assumption that relative PPP is an important deter- 
+minant of exchange rates at horizons of average debt ma- 
+turity. 12 
+The explicit link between relative inﬂation dynamics 
+and exchange rates is the key element behind Theorem 2.2 . 
+Consistent with the predictions of Theorems 2.1 and 2.2 , 
+both QRP and IRP measures point to the dollar being the 
+dominant currency in the post-crisis period. The left panel 
+of Fig. 2 shows the quanto-implied risk premium for the 
+EUR/USD exchange rate taken directly from Kremens and 
+Martin (2019) . The right-hand panel of Fig. 2 shows the 
+inﬂation risk premia for the euro and the dollar for two 
+years and for ﬁve years, taken directly from Hördahl and 
+Tristani (2014) . 13 As we can see from this ﬁgure, in recent 
+years, QRP entered the negative territory, whereas the dol- 
+lar IRP went up relative to the euro QRP. Finally, note that 
+Theorem 2.2 does not require US inﬂation to be counter- 
+cyclical: what matters is the relative inﬂation dynamics be- 
+12 Although the perfect link between exchange rates and inﬂation relies 
+on a strong form of PPP, Theorem 2.2 would still hold true even with large 
+PPP deviations, as long as the relative-inﬂation component of the ex- 
+change rates contributed signiﬁcantly to the covariance (8) over the hori- 
+zons of debt maturity of a typical ﬁrm. See Chernov and Creal (0 0 0 0) for 
+evidence that PPP is an important driver of long-horizon currency risk 
+premia. 
+13 The same pattern is present for longer maturities. Moreover, the dif- 
+ference between the dollar and the euro is more pronounced for longer 
+maturities. 
+578 
+
+===== PAGE 9 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+tween the two countries . Even if US inﬂation is procyclical, 
+ﬁrms will still issue in dollars if they expect euro inﬂation 
+to be lower US inﬂation in bad times. 
+In a recent paper, Campbell et al. (0 0 0 0) ﬁnd 
+US inﬂation became procyclical after 2001 [see also 
+Baele et al. (2007) ]. The fact that the dollar has a higher 
+IRP that the euro in the post-crisis period suggests that in- 
+vestors anticipate US inﬂation to be less procyclical than 
+that in the Eurozone. Note also Campbell et al. (0 0 0 0) in- 
+vestigate inﬂation cyclicality over short horizons below one 
+year. Our estimates of the covariance of CPI changes with 
+stock market returns suggest that this covariance is con- 
+sistently negative at horizons beyond three years; that is, 
+inﬂation is countercyclical at horizons of debt maturity. 
+3.2. The fall and the rise of the dollar 
+In this section, we state and test two predictions linking 
+QRP and IRP dynamics with the currency denomination of 
+debt issuance. We start with the following important re- 
+sult. 
+Proposition 2 . If the distribution of debt-issuance costs across 
+ﬁrms is constant over time, the quanto-implied covariance 
+(11) is negatively related to the share of dollar-denominated 
+debt issuance. 
+Proposition 2 is a direct consequence of Theorem 2.1 : 
+when (11) drops, the fraction of ﬁrms for which (6) holds 
+increases, and hence, so does the dollar issuance. 14 An 
+analogous result holds for IRP 15 : 
+Proposition 3 . Under Assumption 2 , if the distribution of debt- 
+issuance costs across ﬁrms is constant over time, then the dol- 
+lar debt share is positively related to the dollar IRP and is 
+negatively related to the euro IRP. 
+In Fig. 3 , we show the volume and the currency com- 
+position of gross issuance patterns of international debt 
+as well as the shares of the dollar and the euro obtained 
+from the BIS International Debt Securities statistics (data 
+includes all sectors except the government). 
+Broad trends shown in Fig. 1 for amounts outstanding, 
+in Fig. 3 for debt issuance, and in Maggiori et al. (2019) for 
+corporate debt holdings seem to be aligned with the trends 
+in QRP and IRP documented in Fig. 2 . These joint dynam- 
+ics of risk premia and dollar-debt quantities lend support 
+to the debt view (Predictions 2 and 3 ). In particular, in 
+14 Note that even if the quanto-implied covariance (11) is positive (as 
+it was before 2015), ﬁrms may still prefer issuing in dollars as long as 
+doing so is cheaper than issuing in euros. For example, according to 
+Velandia and Cabral (2017) , “In the case of Mexico, the average bid-ask 
+spread of the yield to maturity on outstanding dollar-denominated inter- 
+national bonds is seven basis points, compared to 10 basis points for out- 
+standing euro-denominated bonds. Mexico is also an example with very 
+liquid benchmarks on both currencies.” The dollar convenience yield fur- 
+ther ampliﬁes this effect ( Jiang et al., 0 0 0 0 ). 
+15 In our model, IRP can be viewed as a barometer of market expecta- 
+tions about inﬂation cyclicality. Although our model is silent about the 
+origins of these expectations, one might speculate that the observed pat- 
+tern in inﬂation risk premia between the euro and the dollar, shown in 
+Fig. 2 , may be due to declining expectations of inﬂation stabilization and 
+an increasing expected risk of deﬂation in the eurozone following the 
+Global Financial Crisis in 2008 and the European Debt Crisis in 2011. 
+the pre-crisis period, IRP for the euro was higher than 
+the IRP for the dollar, and after the crisis, this relation- 
+ship reversed. In line with our predictions, the share of 
+dollar debt was in decline before the crisis and increased 
+after the crisis. Moreover, during the period for which we 
+have data, the QRP of the euro against the dollar declined 
+strongly. 
+Both the QRP and the IRP dynamics suggest that debt 
+holders caring about inﬂation and foreign-exchange risk 
+should dislike holding dollar-denominated debt and prefer 
+holding euro-denominated debt in the post-crisis period. 
+However, the debt view implies ﬁrms will still prefer to is- 
+sue debt in dollars because of the attractive risk properties 
+of the dollar. 
+3.3. QRP, IRP, And debt-issuance dynamics 
+Whereas broader trends in debt-currency choice and 
+currency and inﬂation risk premia are in line with 
+our predictions, we would now like to formally test 
+Propositions 2 and 3 about the response of dollar-debt is- 
+suance to movements in risk premia. One distinctive fea- 
+ture of our theory is that changes to debt-issuance cur- 
+rency are driven by expectations and could change quickly. 
+We regress various measures of the dollar’s share in debt 
+markets on changes in risk premia at a quarterly frequency. 
+First, we test Proposition 2 : as the euro becomes less of 
+a hedge for ﬁrms, that is, as QRP declines, do they issue 
+more dollar debt? Second, we test Proposition 3 : as the 
+euro IRP becomes lower than the dollar IRP, do ﬁrms is- 
+sue more dollar debt? 
+We report the results in Table 1 . Column (1) shows a 
+one-standard-deviation decrease in QRP 2 Y 
+e / $ ,t , which 
+is around 0.01, is associated with around three-percentage- 
+points-higher dollar share in debt issuance in a given quar- 
+ter. Note the average of the total issuance is $1.284 trillion. 
+Hence, three percentage points amount to around $38 bil- 
+lion in a quarter. In column (2), we rerun the regression 
+with a linear time trend, and in column (3), we control 
+for total issuance. The results are qualitatively similar. In 
+columns (4), (5), and (6), we rerun the same type of re- 
+gressions for the dollar share in debt issuance and inﬂa- 
+tion risk premia in the US and the eurozone. The results 
+suggest that whereas debt-issuance patterns do not move 
+much with inﬂation risk premia in the US, they mostly 
+react to the inﬂation-risk-premia movements in the euro- 
+zone. Thus, the decline of the euro as a preferred currency 
+for debt issuance might be due to rising deﬂation risk in 
+the eurozone after the European sovereign debt crisis. The 
+magnitude is also sizable as the results suggest a one- 
+standard-deviation decrease in the eurozone IRP (which is 
+0.02) corresponds to around four-percentage-point-higher 
+dollar share in debt issuance. 16 
+The above regression results provide additional support 
+for our theory. Moreover, the effects we identify hold in a 
+relatively high frequency, lending support to another pre- 
+diction of our theory: changes in the currency of debt is- 
+16 In the Appendix, we report the results for non-bank and bank debt 
+issuance separately. The results are similar for both sectors. 
+579 
+
+===== PAGE 10 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Fig. 3. Gross issuance of international debt securities. Source: BIS International Debt Securities. 
+Table 1 
+QRP, IRP, debt-currency choice. 
+Robust standard errors are shown in parentheses. ∗, ∗∗, and ∗∗∗ denote signiﬁcance at the 10%, 5%, and 1% 
+levels, respectively. Debt-issuance data includes all sectors except the government. Latest observed values 
+of QRP 2 Y 
+e / $ ,t , I RP 2 Y 
+$ ,t, and I RP 2 Y 
+e ,t in a given quarter are used. QRP 2 Y 
+e / $ ,t data come from Kremens and Mar- 
+tin (2019) , and IRP 2 Y 
+$ ,t and IRP 2 Y 
+e ,t are recovered using the methodology in Hördahl and Tristani (2014) . 
+Trend refers to a linear time trend and control refers to the inclusion of total issuance as a control variable. 
+(1) (2) (3) (4) (5) (6) 
+Sample: Full Full Full Full Full Full 
+USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t 
+–3.463 ∗∗∗ –1.574 ∗∗ –3.505 ∗∗∗
+(0.314) (0.680) (0.305) 
+IRP 2 Y 
+$ ,t –0.00612 –0.00870 0.0330 
+(0.0197) (0.0254) (0.0232) 
+–0.201 ∗∗∗ –0.194 ∗∗∗ –0.200 ∗∗∗
+(0.0266) (0.0406) (0.0251) 
+Trend X X 
+Control X X 
+Period 09q4-15q3 09q4-15q3 09q4-15q3 99q1-19q4 99q1-19q4 99q1-19q4 
+Observations 24 24 24 84 84 84 
+R-squared 0.713 0.783 0.781 0.340 0.341 0.449 
+suance respond to expectations and therefore could occur 
+relatively quickly. 
+3.4. Exchange-rate expectations or convenience yield: What 
+drives debt-issuance dynamics? 
+Issuing dollar-denominated debt is cheap, not only due 
+to more liquid markets and lower underwriting costs 
+( Velandia and Cabral, 2017 ), but also due to signiﬁcant 
+investor demand for dollar assets that creates a conve- 
+nience yield for dollar-denominated safe assets ( Jiang et al., 
+0 0 0 0 ). Liao (2020) computes a measure that captures the 
+FX-hedged corporate borrowing-cost differential, the cor- 
+porate basis , which is effectively the convenience yield of 
+dollar-denominated corporate debt. A higher corporate ba- 
+sis between the dollar and the euro means borrowing in 
+dollars is cheaper than borrowing in euros, making the 
+dollar-issuance cost q ($) in equation (6) effectively nega- 
+tive. When this basis is changing over time, a direct ana- 
+log of Proposition 2 implies dollar-debt-issuance dynamics 
+could potentially be driven both by the corporate basis and 
+the hedging properties of the dollar. 
+In this section, we rerun the regressions in Table 1 , also 
+controlling for the corporate basis to explain the dynam- 
+ics of the global dollar share of debt issuance. We report 
+the results of this regression in Table 2 , which shows the 
+signs on QRP and IRP and their statistical signiﬁcance re- 
+main unchanged, lending further support to the debt view. 
+Moreover, the sign of the coeﬃcient on the corporate basis 
+is negative (i.e., “the wrong sign”), suggesting that, in ag- 
+gregate, ﬂuctuations in the convenience yield do not drive 
+debt-issuance dynamics. 
+4. Evidence from backward-looking measures 
+Our key theoretical condition posits that ﬁrms pre- 
+fer to issue in dollars if they expect the dollar exchange 
+rate to positively co-move with their stock market re- 
+turns over their debt-maturity horizons. 17 Whereas the 
+17 In fact, given that issuing in dollars is cheaper than issuing in any 
+other currency, condition (6) implies that ﬁrms would issue all their debt 
+in dollars even if this correlation were negative, but not too negative rel- 
+ative to the cost gain of issuing in dollars. 
+580 
+
+===== PAGE 11 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Table 2 
+QRP, IRP, corporate basis, and debt-currency choice: exchange-rate expectations versus convenience yield. 
+Robust standard errors are shown in parentheses. ∗, ∗∗, and ∗∗∗ denote signiﬁcance at the 10$, 5%, and 1% levels, respectively. 
+Debt-issuance data includes all sectors except the government. The latest observed values of QRP 2 Y 
+e / $ ,t , IRP 2 Y 
+$ ,t, and IRP 2 Y 
+e ,t in 
+a given quarter are used. QRP 2 Y 
+e / $ ,t data come from Kremens and Martin (2019) , IRP 2 Y 
+$ ,t and IRP 2 Y 
+e ,t are recovered using the 
+methodology in Hördahl and Tristani (2014) , and Corp.Basis t data come from Liao (2020) . Different sample periods are due 
+to differences in data availability, and multiple columns provide robustness checks by aligning sample periods. 
+(1) (2) (3) (4) (5) (6) (7) 
+USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t 
+–3.463 ∗∗∗ –1.566 ∗∗
+(0.314) (0.718) 
+Corp.Basis t –0.00113 –0.00295 ∗∗∗ –0.00182 ∗∗ –0.000846 ∗
+(0.000786) (0.000450) (0.000772) (0.000451) 
+IRP 2 Y 
+$ ,t –0.00612 0.0393 0.0435 ∗
+(0.0197) (0.0259) (0.0251) 
+–0.201 ∗∗∗ –0.192 ∗∗∗ –0.186 ∗∗∗
+(0.0266) (0.0239) (0.0232) 
+Period 09q4-15q3 03q4-16q2 09q4-15q3 09q4-15q3 99q1-19q4 03q4-16q2 03q4-16q2 
+Observations 24 51 24 24 84 51 51 
+R-squared 0.713 0.053 0.747 0.783 0.340 0.527 0.555 
+quanto-implied QRP is the ideal empirical measure of such 
+forward-looking expectations, the most extended maturity 
+of liquid quanto contracts is two years, and the average 
+debt maturity of a ﬁrm is typically much longer. In this 
+subsection, we investigate backward-looking measures of 
+the dollar-stock market co-movement, arguing that ratio- 
+nal agents might use these measures as a basis for their 
+forward-looking expectations. 
+We use two stock market indices to test our predic- 
+tions, namely, the S&P 500 and the MSCI AC World Index 
+measured in dollars, to be consistent with our theoretical 
+conditions. For this subsection, we use the trade-weighted 
+dollar index against major currencies, including those in 
+eurozone, Canada, Japan, the UK, Switzerland, Australia, 
+and Sweden, as obtained from the FRED database. 18 We 
+conduct our analysis by ﬁrst looking at simple covariances, 
+then through a VAR analysis to gauge the lead-lag relation- 
+ships between stock indices and the dollar. In the Internet 
+Appendix, we also provide results using the bilateral ex- 
+change rates between the dollar and the euro, 19 the yen, 
+the pound, and the Swiss franc. 
+4.1. Why is the dollar the dominant currency? results with 
+the dollar index 
+Given that the dollar is the most common currency 
+of denomination in international debt markets, the ﬁrst 
+prediction of our model is that the returns on the dol- 
+lar index positively correlate with the returns on the 
+stock market indices at horizons that correspond to the 
+typical debt maturity [see Section 5 , Choi et al. (2018) ; 
+Cortina et al. (2018) ]. To test this prediction, we ﬁrst 
+run the following regressions for the horizons of h ∈ 
+18 Our results are robust when we use other indices such as the narrow 
+or the broad dollar index obtained from the BIS. 
+19 We use the Deutsche mark prior to the introduction of the euro using 
+the euro/Deutsche mark exchange rate at the time of the inception of the 
+euro. 
+{ 3 , 12 , 24 , 36 , 48 , 60 , 72 , 84 , 96 , 108 , 120 } months: 20 
+Ret _ USD t−h,t = αh + βh Ret _ StockIndex t−h,t + ϵt−h,t . (12) 
+Here, Ret _ USD t−h,t and Ret _ StockIndex t−h,t denote the  
+rolling (overlapping) returns on the dollar index and the 
+two indices we use (in two separate regressions) over h 
+months, respectively. Fig. 4 reports the results for the re- 
+gression coeﬃcient βh for different horizons and for differ- 
+ent stock market indices, together with the 95% conﬁdence 
+intervals. The sample period for the MSCI series starts in 
+January 1988. The round dots and the corresponding solid 
+lines in both panels represent the point estimates and 95% 
+conﬁdence intervals obtained using a sample period be- 
+tween January 1988 and December 2019. The squared dot 
+and the corresponding dashed lines on the left-hand panel 
+represent the point estimates and 95% conﬁdence intervals 
+obtained using a sample period between January 1973 and 
+December 2019 for the S&P 500 and the FRED dollar index. 
+The results show a pattern of negative betas at short 
+horizons and positive and mostly increasing betas at longer 
+horizons. The negative betas for shorter horizons are con- 
+sistent with the ﬁndings in Gourinchas et al. (2017) and 
+Gourinchas (2019) , who show the dollar tends to appreci- 
+ate in bad times. 21 However, Fig. 4 suggests the sign of the 
+relationship reverts for typical horizons of debt maturity. 22 
+These ﬁndings, together with condition (8) , suggest global 
+20 We then control for autocorrelation at the respective horizons by us- 
+ing the Newey-West correction with the respective number of lags. 
+21 In this paper, we focus on the choices of ﬁrms and hence the medium 
+run risk properties of the dollar, and abstract from frictions that house- 
+holds face. However, one can argue that in a more realistic model with 
+more frictions and differences in relevant horizons between households 
+and ﬁrms, the short-run appreciation in bad times provides insurance to 
+investors with shorter horizons and safety demand, and the medium-run 
+depreciation of the dollar provides insurance to ﬁrms with longer matu- 
+rity nominal debt, thereby reinforcing the dominant international role of 
+the dollar. 
+22 Interestingly enough, the same pattern of sign reversal at longer 
+horizons is also observed in the behavior of UIP deviations. See 
+Valchev (2015) and Engel (2016) . Understanding the links between these 
+ﬁndings and our results is an interesting direction for future research. 
+581 
+
+===== PAGE 12 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Fig. 4. The betas of the USD index returns with respect to stock market returns. The graphs report the regression coeﬃcients βh from the regressions 
+(12) . Standard errors are corrected using the Newey-West procedure with the number of lags being equal to the horizon h of returns for each respective 
+regression. The round dots and the corresponding solid lines in both panels represent the point estimates, βh , and 95% conﬁdence intervals obtained using 
+a sample period between January 1988 and December 2019. The squared dot and the corresponding dashed lines on the left-hand panel represent the 
+point estimates, βh , and 95% conﬁdence intervals obtained using a sample period between January 1973 and December 2019 for the S&P 500 and the FRED 
+dollar index. 
+ﬁrms, whose stock returns co-move with the S&P 500 or 
+the MSCI AC World Index, are better off if they borrow in 
+dollars rather than in other major international currencies 
+if their debt maturity is suﬃciently long. 
+In the Internet Appendix, we repeat the same exercise 
+with non-overlapping observations. Whereas the statistical 
+signiﬁcance is hard to establish in that case due to a re- 
+markable drop in sample sizes, the pattern of short-term 
+negative dollar betas, followed by positive betas at longer 
+horizons, is present in that exercise as well. 
+Why does the sign of the co-movement between the 
+dollar index and the stock market change for longer hori- 
+zons? To answer this question, we decompose the covari- 
+ance between the dollar and the stock market based on the 
+additivity of log-returns: Ret t−h −j,t = R t −h −j,t −h + R t−h,t 
+for any pair h, j > 0 . Using this decomposition, we get 
+that 
+Cov (Ret _ USD t−h −j,t , Ret _ SP 500 t−h −j,t ) 
+= Cov (Ret _ USD t −h −j,t −h , R et _ SP 500 t −h −j,t −h ) + Cov (Ret _ USD t−h,t , Ret _ SP 500 t−h,t ) 
+   
+co−mov ement 
++ Cov (Ret _ USD t −h −j,t −h , R et _ SP 500 t−h −j,t ) 
+   
+USD leading S& P500 
++ Cov (Ret _ SP 500 t −h −j,t −h , R et _ USD t−h,t ) 
+   
+S& P500 leading USD 
+. (13) 
+Because the co-movement terms in the covariance de- 
+composition are negative for shorter horizons, whereas the 
+total covariance is positive for longer horizons (see Fig. 4 ), 
+at least one of the lead-lag terms in (13) must be positive 
+and suﬃciently large to offset the negative co-movement 
+terms. 
+4.2. VAR Analysis 
+To understand the impact of the lead-lag relationships 
+in (13) on the joint dynamics of the dollar and S&P 500, 
+we estimate the following two-lag VAR model at annual 
+frequency (selected based on the standard Akaike informa- 
+tion criterion (AIC)): 
+(
+Ret _ USD t−1 ,t 
+Ret _ SP 500 t−1 ,t 
+)
+= /Psi1
+(
+Ret _ USD t −2 ,t −1 
+Ret _ SP 500 t −2 ,t −1 
+)
++ /Gamma1
+(
+Ret _ USD t −3 ,t −2 
+Ret _ SP 500 t −3 ,t −2 
+)
++ ε t , 
+where /Psi1= 
+(
+/Psi11 , 1 /Psi11 , 2 
+/Psi12 , 1 /Psi12 , 2 
+)
+and /Gamma1= 
+(
+/Gamma11 , 1 /Gamma11 , 2 
+/Gamma12 , 1 /Gamma12 , 2 
+)
+and 
+ε t ∼ N(0 , /Sigma1) for some 2 ×2 covariance matrix /Sigma1. 
+The results of this VAR are reported in Table 3 . We 
+ﬁnd ˆ /Psi11 , 2 > 0 > ˆ /Sigma11 , 2 , so that the dollar and S&P 500 co- 
+move negatively contemporaneously, but the lagged return 
+on the S&P 500 positively predicts the dollar. 23 This ﬁnding 
+is consistent with the decomposition (13) and Fig. 4 : This 
+23 Although the results are statistically signiﬁcant at the 10% level for 
+the entire sample 1973–2019, our early sample was characterized by the 
+end of the Bretton Woods era and the associated outlier of event of ex- 
+treme dollar depreciation. If we restrict our sample to 1976–2019, the co- 
+eﬃcient is 0.15, signiﬁcant at 5% level. In the paper, we report the results 
+using the entire sample of available data; however, results based on dif- 
+ferent sample periods are available upon request. 
+582 
+
+===== PAGE 13 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Fig. 5. Cumulative Impulse-Response Functions of a Shock to S&P 500. Figures show the cumulative impulse-response functions of a negative 1 ppt shock 
+to the S&P 500 based on the estimates of a VAR(2) model of the yearly returns on the S&P 500 and the FRED dollar index against major currencies 
+(DTWEXM) between 1973 and 2019, reported in Table 3 . The lines in each graph represent the cumulative impulse-response functions. The darker shaded 
+areas represent the 90% conﬁdence intervals, and the lighter shaded areas represent the 95% conﬁdence intervals. Source: Datastream, FRED, authors’ 
+calculations. 
+Table 3 
+A VAR(2) model of the S&P 500 and the FRED dollar 
+index. 
+Standard errors that are adjusted for small-sample de- 
+grees of freedom are in parentheses. ∗, ∗∗, and ∗∗∗ de- 
+note signiﬁcance at the 10%, 5%, and 1% levels, re- 
+spectively. The coeﬃcients are from a VAR(2) model 
+of non-overlapping annual returns on the S&P 500 
+and the FRED dollar index against major currencies 
+(DTWEXM) between 1973 and 2019. 
+(1) (2) 
+Ret _ SP500 t−1 ,t Ret _ USD t−1 ,t 
+Ret _ SP500 t −2 ,t −1 –0.0856 0.122 ∗
+(0.147) (0.0661) 
+Ret _ SP500 t −3 ,t −2 –0.202 0.0494 
+(0.146) (0.0657) 
+Ret _ USD t −2 ,t −1 0.310 0.322 ∗∗
+(0.335) (0.151) 
+Ret _ USD t −3 ,t −2 –0.240 –0.291 ∗∗
+(0.329) (0.148) 
+Observations 45 45 
+R-squared 0.0714 0.2073 
+lead-lag relationship is responsible for the sign change in 
+Fig. 4 at longer horizons. 24 
+Next, we use our estimates from the VAR model to 
+compute the cumulative impulse response of both the dol- 
+lar and the S&P 500 following a negative shock to the S&P 
+500. As one can see from Fig. 5 , the cumulative impact of 
+a negative shock to the S&P 500 on the dollar is a signif- 
+icant depreciation at a 5% level two and six years follow- 
+ing the shock and a signiﬁcant depreciation at a 10% level 
+for most horizons. 25 In the Internet Appendix, we report 
+the VAR regressions results for the MSCI World Index (for 
+24 The variance-covariance matrix for the error terms is estimated as: 
+ˆ /Sigma1= 
+(
+0 . 0256 
+−0 . 0016 0 . 00516 
+)
+. 
+25 Similar to the VAR coeﬃcients, the impulse responses are also 
+stronger if we restrict the period to 1976–2019, with statistical signiﬁ- 
+which we have data from 1988 onwards). The results are 
+qualitatively similar, but stronger and statistically signiﬁ- 
+cant at the 5% level for the MSCI World Index - in part 
+also reﬂecting the stronger relationship in the later sample 
+periods reported in Fig. 4 . 
+Fig. 5 complements Fig. 4 , providing additional evi- 
+dence for longer-run co-movement between the dollar and 
+stock market. Whereas historical covariance estimates in 
+Fig. 4 are based on overlapping returns, our VAR model 
+is estimated with non-overlapping returns, allowing us to 
+leverage a longer sample. All in all, despite signiﬁcant 
+small-sample issues, our results based on historical data 
+point toward the same direction: The choice of the dollar 
+over other major currencies by debt issuers is consistent 
+with the empirical evidence on the joint dynamics of the 
+dollar and the stock market. 26 
+5. Debt currency and maturity choice 
+Our results in Section 4 have direct implications for 
+the link between debt maturity and the incentives to is- 
+sue dollar-denominated debt. Namely, as the dollar’s co- 
+movement with the stock market increases over longer 
+horizons, we expect that ﬁrms would not be indifferent 
+between issuing short-term dollar debt and rolling it over 
+and issuing long-term debt. In particular, we predict that 
+ﬁrms would prefer issuing their longer-maturity debt in 
+dollars. 
+We use data at the bond-issuance level to formally 
+test the hypothesis that the propensity to issue dollar- 
+cance at 5% for almost all horizons. These results are also available upon 
+request. 
+26 In the Internet Appendix to this section, we also present results using 
+bilateral exchange rates instead of the dollar index - results are qualita- 
+tively similar. Moreover, we discuss the international role of the pound 
+versus the yen in relation to our theory and as supporting evidence for 
+our mechanism. 
+583 
+
+===== PAGE 14 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+denominated debt increases with debt maturity. We re- 
+strict our attention to banks and non-banks separately and 
+have a sample period between 1999 (the introduction of 
+the euro) and the end of 2019. The dataset includes perpet- 
+ual bonds as well. To have them in the analysis, we win- 
+sorize the maturity of the bonds at 5%, both at the lower 
+and upper tail of their maturity distribution. Winsorizing 
+the maturity at 10% or 2.5% or winsorizing only the right 
+tail of the distribution does not change the results materi- 
+ally. We exclude data on the government sector and focus 
+only on private-sector bond issuance. 
+We use data from Dealogic in which observations are at 
+the ISIN level of bond issuance. To keep the timing of our 
+analysis similar to the previous sections, we restrict the 
+sample to bonds issued between January 1999 and Decem- 
+ber 2019. Our dataset includes a total of 706,924 bonds, 
+issued by 61,910 ﬁrms that are headquartered in 121 dif- 
+ferent countries. 
+The dataset includes information on the identity of the 
+ﬁrm, the country where it is headquartered, and the indus- 
+try, as well as information on the bonds, such as the cur- 
+rency denomination, date of issuance, maturity date, issued 
+amount denominated in the local currency of the ﬁrm’s 
+headquarters, and whether the bond is investment grade 
+or is not. In the full sample, the mean of the winsorized 
+maturity is 3408 days, with a standard deviation of 3485 
+days; the minimum value is 365 days, and the maximum 
+value is 11,681 days. 
+The dollar co-movement with the stock market in- 
+creases over longer horizons as documented in Section 4 . 
+An implication of this result through the lens of our model 
+is that the propensity to issue dollar-denominated debt 
+should increase with debt maturity. Following our results 
+in Section 4 , we test the hypothesis that longer debt 
+maturity is associated with a higher propensity to issue 
+dollar-denominated debt using micro-level data on bond 
+issuance. 
+To measure the propensity to issue dollar-denominated 
+debt, we use 1 (USD ) , which is a dummy variable that takes 
+the value of 1 if the currency denomination of the bond 
+is the dollar. Then, the independent variables of interest 
+in our regressions become Mat urit y w , which is the win- 
+sorized and standardized value of maturity at the 5% level. 
+According to our hypothesis, we expect a positive coeﬃ- 
+cient for this variable. 
+Other control variables are the size of the issuance and 
+a dummy variable that is equal to 1 if the bond is in- 
+vestment grade. Moreover, depending on the speciﬁcation, 
+we include Industry ∗Month , Country ∗Month , and f irm ∗
+Month ﬁxed effects. We cluster the standard errors at the 
+Country ∗Year level. 27 
+We run different linear regressions, varying the ﬁxed 
+effects used, and making different cuts of the sample to 
+test the predictions of our theory. Table 4 presents the re- 
+sults. 
+27 In the benchmark speciﬁcation, we use the country where the par- 
+ent company of the issuer is headquartered. As a robustness check, we 
+use the residence of the issuer instead. Our results then are virtually un- 
+changed. 
+The ﬁrst two columns control for bond characteristics 
+as well as Industry ∗Month and Country ∗Month ﬁxed ef- 
+fects for non-banks (in the ﬁrst column) and for banks 
+(in the second column). The coeﬃcient on Mat urit y w sug- 
+gests a one-standard-deviation increase in maturity in- 
+creases the likelihood of the currency denomination of the 
+bond to be dollars by 1.5 percentage points for non-banks 
+and 3 percentage points for banks. 
+Next, as part of our identiﬁcation strategy, we rely on 
+ﬁrms that issue multiple bonds in at least two differ- 
+ent currencies in a given month. This choice allows us to 
+tightly identify that the same ﬁrm that has access to mul- 
+tiple markets chooses to issue the longer-maturity bond 
+in dollars as opposed to issuing in other currencies. In 
+columns (4) and (5), we run a similar regression for non- 
+banks and banks, respectively, with F irm ∗Month ﬁxed ef- 
+fects. Although the result for non-banks is of a similar 
+magnitude for non-banks, it is statistically insigniﬁcant. On 
+the other hand, the result goes through for banks. 
+Finally, in columns (5) and (6), we further restrict the 
+sample to ﬁrms that are from the US, the eurozone, Japan, 
+Switzerland, or the UK and repeat the exercise in (3) and 
+(4). This aims to address a potential concern that our re- 
+sults in (3) and (4) are driven by the fact that ﬁrms in 
+emerging markets could only access dollar-bond-issuance 
+markets. Focusing only on the ﬁve countries with liquid 
+and deep capital markets alleviates this concern, because 
+these ﬁrms could potentially issue in their home currency 
+or any other major currency. The results from these regres- 
+sions are in line with our hypotheses both for banks and 
+non-banks. 
+6. Dynamic capital structure choice 
+Our main theoretical result in Theorem 2.1 is based on 
+the assumption that capital-structure choice is static. That 
+is, when a ﬁrm issues debt at time t = 0 , it does not re- 
+optimize until the debt expires. In reality, a ﬁrm could dy- 
+namically readjust its capital structure by frequently buy- 
+ing back old debt or issuing new debt. In this case, a key 
+concern could be that the maturity of originally issued 
+debt may not be the relevant horizon at which to evaluate 
+the correlation of cash ﬂows and debt value. This concern 
+would be all the more important due to the difference in 
+the sign of the covariance between the dollar and the stock 
+market at short versus long horizons. 28 
+In this section, we investigate the consequences of al- 
+lowing ﬁrms to adjust their capital structure dynamically. 
+Accounting for this case is a theoretical challenge due 
+to complexities that arise from non-linear feedback ef- 
+fects from policy functions (i.e., leverage choice) in the fu- 
+ture into capital-structure choice in the current period. To 
+28 Although these concerns are valid, note that as 
+Korteweg et al. (2018) show, the average ﬁrm rebalances its capital 
+structure once every ﬁve quarters. According to the results in Section 4 , 
+the safe-haven properties of the dollar do not last for ﬁve quarters, par- 
+tially alleviating these concerns. Moreover, Korteweg et al. (2018) show 
+about 50% of ﬁrms issue long-term debt and rebalance their capital 
+structure infrequently, whereas 17% of ﬁrms never adjust leverage. These 
+facts suggest the static capital-structure-choice assumption is roughly 
+consistent with many ﬁrms’ decisions in the data. 
+584 
+
+===== PAGE 15 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Table 4 
+Debt-maturity and debt-currency choice. 
+Standard errors clustered by Country ∗Year in parantheses. ∗, ∗∗, and ∗∗∗ denote signiﬁcance at the 10%, 
+5%, and 1% levels, respectively. 1 (USD ) is a dummy variable that takes the value of 1 if the currency 
+of the issued bond is the dollar. Mat urit y w is the standardized value of maturity winsorized at 5% and 
+95% levels. Controls include the size of the issuance and a dummy variable for whether the bond is 
+investment grade. NB refers to the sample of non-bank ﬁnancials and non-ﬁnancial corporations. B 
+refers to the sample of banks. Columns (3), (4), (5), and (6) only include ﬁrms that issue in at least 
+two currencies in a given month. † means that the sample is further restricted only to those ﬁrms that 
+are from the US, the eurozone, Japan, Switzerland or the UK. 
+(1) (2) (3) (4) (5) (6) 
+Sample: NB B NB B NB † B † 
+1 (USD ) 1 (USD ) 1 (USD ) 1 (USD ) 1 (USD ) 1 (USD ) 
+Mat urit y w 0.0149 ∗∗∗ 0.0299 ∗∗∗ 0.0163 0.0770 ∗∗∗ 0.0350 ∗∗ 0.0734 ∗∗∗
+(0.00339) (0.00787) (0.0138) (0.0126) (0.0157) (0.0155) 
+Controls X X X X X X 
+Industry ∗Month FE X X 
+Country ∗Month FE X X 
+Firm ∗Month FE X X X X 
+Observations 457,266 243,657 46,562 67,213 31,857 49,268 
+R-squared 0.684 0.665 0.450 0.432 0.475 0.472 
+Mean of Dep. Var 0.556 0.534 0.376 0.348 0.430 0.350 
+the best of our knowledge, we present the ﬁrst theoreti- 
+cal characterization of dynamic capital-structure decisions 
+with the currency composition of debt. We derive suﬃ- 
+cient conditions that lead to the dollar’s dominance in a 
+dynamic setup and provide further empirical evidence in 
+line with the theory. 
+6.1. Theory 
+We extend our baseline model by introducing an inter- 
+mediate period at which ﬁrms can rebalance their debt by 
+either issuing new debt or buying back old debt at its mar- 
+ket value. Essentially, we consider a three-period model 
+with t = 0 , 1 , 2 , where the ﬁrm issues debt at t = 0 that 
+matures at t = 2 . The ﬁrm generates after-tax proﬁts Y t at 
+t = 1 , 2 . At t = 1 , the ﬁrm can reoptimize its leverage de- 
+cisions by calling back debt or issuing more debt. 
+To characterize the optimal dynamic leverage policy, 
+we need several technical conditions. In what follows, we 
+make the following assumptions: 
+Assumption 3 . We have 
+• τ −q (j) is small for all j. 
+• cash ﬂows Y 1 are small relative to Y 2 . 
+• Y 2 = /Omega12 Z 1 Z 2 , where idiosyncratic shocks Z t are i.i.d. 
+with the density ℓZ ℓ −1 on [0,1], and are independent of 
+aggregate shocks. 
+• For any aggregate shock realization at time t = 1 , the 
+best ﬁrm (i.e., the ﬁrm with Z 1 = 1 ) does not default 
+(i.e., some ﬁrms survive even the worst crises). 
+• The “marginal” ﬁrm with a Z 1 realization that is indif- 
+ferent between defaulting and not defaulting at t = 1 
+does not issue new debt at time t = 1 . 29 
+Our ﬁrst result is the following: 
+29 The last two conditions are natural and can be formulated as para- 
+metric restrictions on the underlying aggregate shocks. See the Internet 
+Appendix. 
+Proposition 4 (The leverage ratchet effect). Suppose either 
+Assumption 3 holds or currency volatilities are suﬃciently 
+small. Then, even if the ﬁrm has issued long-term debt (ma- 
+turing at time t = 2 ) in multiple currencies at time t = 0 , 
+buying back any of this debt at time t = 1 is never optimal. 
+At the same time, issuing more debt at time t = 1 might be 
+optimal. 
+This proposition is an extension of the classic leverage 
+ratchet effect of Admati et al. (2018) to the case of debt is- 
+sued in multiple currencies. The intuition is the same as 
+in Admati et al. (2018) : buying back debt makes share- 
+holders forego all the tax beneﬁts for which the debt has 
+been issued in the ﬁrst place, making it suboptimal to re- 
+duce leverage. Thus, the optimal amount of debt is mono- 
+tonically increasing (or stays constant) over time. With dy- 
+namic debt issuance, a novel effect that may occur is that 
+buying back debt makes issuing new debt cheaper. Thus, 
+one may ask if a substitution effect may occur: a ﬁrm buys 
+back debt in one currency and issues debt in another cur- 
+rency. Trivially, the magnitude of the reduction in issuance 
+costs is proportional to the optimal new-debt-issuance 
+amount. The ﬁrst item of our technical Assumption 3 above 
+guarantees that taking high leverage is never optimal for 
+the ﬁrm, and as a result, “debt reshuﬄing” is never op- 
+timal. Similarly, if currency volatilities are small, the gain 
+from reshuﬄing the risk proﬁle is too small to justify the 
+loss of tax beneﬁts. 
+We will denote by r t (j) = −log E[ M t E j,t ] the country- j
+nominal interest rate for horizon t. The following theorem 
+derives conditions for the optimality of issuing dollar debt 
+both at t = 0 and t = 1 : 
+Theorem 6.1 . Issuing only dollar debt both at time t = 0 and 
+t = 1 is optimal if and only if the following two conditions 
+holds: 
+• Cov 1 (/Omega1−ℓ 
+2 , E j, 2 ) ≥ 0 for all j. 
+585 
+
+===== PAGE 16 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+• We have 
+q ($) −q (j) 
+τ −q ($) 
+≤ Cov $ (/Omega1−ℓ 
+2 , E j, 2 ) 
+E $ [/Omega1−ℓ 
+2 ] E $ [ E j, 2 ] 
++ 
+E $ [/Omega1−ℓ 
+2 E j, 2 ] 
+E $ [/Omega1−ℓ 
+2 ] E $ [ E j, 2 ] 
+c 1 (e r 2 ($) −r 1 ($) −e r 2 (j) −r 1 (j) ) 
+c 1 e r 2 (j) −r 1 (j) + c 2 
+(14) 
+In particular, if q ($) = q (j) for all j, then a suﬃcient con- 
+dition for issuing only dollar-denominated debt is that 
+(a) the dollar is the riskiest currency so that 
+Cov $ 
+t (/Omega1−ℓ 
+2 , E j, 2 ) ≥ 0 for all ja n d t = 0 , 1 , and 
+(b) the dollar has the largest term premium: r 2 ($) −
+r 1 ($) > r 2 (j) −r 1 (j) . 
+The intuition behind Theorem 6.1 is as follows. Firms 
+issue debt due to the tax beneﬁts of doing so, and op- 
+timal capital structure is determined by the trade-off be- 
+tween the tax beneﬁts and the risk of default. At the time 
+t = 1 , debt is issued to be held until it expires. Hence, 
+Theorem 2.1 applies and the inequality Cov $ 
+1 (/Omega1−ℓ 
+2 , E j, 2 ) ≥ 0 
+is necessary and suﬃcient for the optimality of dollar debt. 
+The situation at t = 0 is more complex. From the time 
+t = 0 point of view, both the tax beneﬁts and the effec- 
+tive costs of default (due to the lost cash ﬂows) accrue at 
+times t = 1 and t = 2 when the coupon is paid. Because 
+by assumption, most of the cash ﬂows occur at time t = 2 , 
+highest costs of default also occur at this time. Thus, the 
+trade-off can be decomposed as: 
+trade −of f ≈ tax benef its (t =1) + tax benef its (t = 2) 
+− default  cost(t = 2) . 
+The default cost itself can be decomposed further into 
+default  cost(t = 2) = a v erage cost(t = 2) 
++ cost from co −mov ement with F X (t = 2) . 
+As in Theorem 2.1 , the trade-off between tax benef its (t = 
+2) and the cost from co −mov ement with F X(t = 2) is de- 
+termined by Cov $ (/Omega1−ℓ 
+2 , E j, 2 ) . Thus, we are left with the 
+second, purely inter-temporal part of the trade-off: 
+int ert emporal trade −of f = tax benef its (t = 1) 
+−a v erage cost(t = 2) . 
+Naturally, this trade-off is determined by the slope of the 
+yield curve: the tax beneﬁts at time t = 1 are discounted 
+at the rate r 1 (j) , whereas the default cost paid at time 
+t = 2 is discounted at the rate r 2 (j) . The larger the differ- 
+ence r 2 (j) −r 1 (j) , the stronger the incentive to issue debt 
+in currency j, get the tax beneﬁts at t = 1 , and pay the cost 
+at time t = 2 . 
+6.2. Empirical evidence 
+In this section, we provide empirical evidence show- 
+ing the yield-curve slope differential between the dollar 
+and the euro is a relevant variable for the choice of cur- 
+rency in debt issuance. 30 We view this evidence as ad- 
+30 Note that, in theory, we have r t (j) = −log E[ M t E j,t ] the country- j
+nominal interest rate for horizon t. r t (j) are the non-annualized interest 
+rates. Therefore, we scale back the yields that we obtain from the yield 
+curves to reﬂect the non-annualized interest rates. 
+Fig. 6. Yield curve slope differentials and dollar debt share. 
+ditional support of the “debt view”: the fact that dollar- 
+debt issuance is (at least partially) driven by ﬁrms’ optimal 
+capital-structure choices. 
+Similarly to Propositions 2 and 3, Theorem 6.1 implies a 
+positive relationship between the yield-curve slope differ- 
+ential, (r 2 ($) −r 1 ($)) − (r 2 (j) −r 1 (j)) and dollar-debt is- 
+suance. Fig. 6 illustrates that the 5y-6m difference be- 
+tween the US Treasury and the German bund curve has 
+largely been positive and increasing since 2008, whereas 
+it was negative and at times decreasing before 2008. This 
+ﬁnding is in line with the decline of the share of dollar 
+debt before 2008 and the subsequent rise of this share af- 
+ter 2008 (see Fig. 4 ). 31 Moreover, we show in a regres- 
+sion that these differences are positively associated with 
+the share of dollar debt for various horizons. In Table 5 , 
+we show the results of a simple regression of the share 
+of dollar-debt issuance at a given time t on the differ- 
+ence between the slopes of the yield curves between the 
+US and Germany. Our independent variable, denoted as 
+Dif f US,DE 
+r 2 ,r 1 ,t , equals (r 2 (US) −r 1 (US)) − (r 2 (DE) −r 1 (DE)) in 
+the notation of Theorem 6.1 . As one can see, consistent 
+with Theorem 6.1 , the relationship is positive and highly 
+signiﬁcant for all horizon combinations. 
+7. The debt view during the COVID-19 crisis and its 
+aftermath 
+The COVID-19 crisis in March 2020 and its aftermath 
+also provide a useful test for our theory. According to our 
+theory, ﬁrms borrow in dollars as opposed to other major 
+currencies, due to the expectation that the dollar would 
+depreciate following a bad global shock relative to other 
+currencies (see Section 4.2 and Fig. 5 ). Furthermore, the 
+rising share of the dollar-debt issuance in the post-GFC pe- 
+riods suggests a strengthening of this expectation from our 
+theory’s point of view. 
+The left-hand side of Fig. 7 shows the evolution of the 
+dollar exchange rate against the euro, Japanese yen, and 
+31 Although we illustrate this only for 5y-6m, it is qualitatively simi- 
+lar for other horizons, such as 1y-6m, 2y-6m, 10y-6m, 2y-1y, 5y-1y, and 
+10y-1y. 
+586 
+
+===== PAGE 17 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Table 5 
+US-Germany yield-curve slope differential and the share of dollar debt. 
+Robust standard errors are in parentheses. ∗, ∗∗, and ∗∗∗ denote signiﬁcance at the 10%, 5%, and 1% levels, 
+respectively. Debt-issuance data includes all sectors except the government. Dif f US,DE 
+r 2 ,r 1 ,t measures the difference 
+between the US and Germany of the difference between the non-annualized interest rate over r 2 months and 
+the non-annualized interest rate over r 1 months: (r 2 (US) −r 1 (US)) − (r 2 (DE) −r 1 (DE)) . The sample period is 
+1999Q1-2019Q4. Each column shows the coeﬃcient on Dif f US,DE 
+r 2 ,r 1 ,t of the regression of USD shr 
+t on Dif f US,DE 
+r 2 ,r 1 ,t , for 
+different values of r 1 , r 2 , and controls. Controls include a time trend and total international debt issuance 
+excluding issuance by governments in a given quarter. 
+(1) (2) (3) (4) (5) (6) (7) 
+Dep. Var: USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t USD shr 
+t 
+Indep. Var: Dif f US,DE 
+12 , 6 ,t Dif f US,DE 
+24 , 6 ,t Dif f US,DE 
+60 , 6 ,t Dif f US,DE 
+120 , 6 ,t Dif f US,DE 
+24 , 12 ,t Dif f US,DE 
+60 , 12 ,t Dif f US,DE 
+120 , 12 ,t 
+2.539 ∗∗∗ 1.016 ∗∗∗ 0.515 ∗∗∗ 0.279 ∗∗∗ 1.633 ∗∗∗ 0.612 ∗∗∗ 0.303 ∗∗∗
+(0.873) (0.297) (0.119) (0.0637) (0.447) (0.134) (0.0673) 
+Controls X X X X X X X 
+Observations 84 84 84 84 84 84 84 
+R-squared 0.618 0.629 0.656 0.664 0.635 0.661 0.666 
+Fig. 7. The dollar and inﬂation risk premia during the COVID-19 crisis. Sources: Datastream, Hördahl and Tristani (2014) , authors’ calculations. 
+the Swiss franc. Unlike previous episodes of global shocks, 
+the dollar depreciated against these currencies without a 
+meaningful initial appreciation. Moreover, this depreciation 
+has been material to the order of around 10% against the 
+euro. This ﬁnding highlights that the dollar’s depreciation 
+provided a hedge for ﬁrms during the COVID-19 downturn, 
+with dollar debt providing support for our theory. 
+The channel that runs in our theory to explain the 
+dollar’s dominance emphasizes the role played by the 
+response of the monetary policy to shocks. During the 
+COVID-19 crisis, the Federal Reserve reacted swiftly and 
+forcefully to respond to the shock by reactivating a num- 
+ber of crisis-response tools used in the GFC as well 
+as introducing new ones, all contributing to the decline 
+of the dollar against major currencies, reinforcing in- 
+vestors’ expectations about the ability of the US mone- 
+tary policy of alleviating the debt burden of ﬁrms in bad 
+times. 
+Our paper’s ﬁndings might also shed light on the future 
+of the dollar’s dominance in denominating debt. Our the- 
+ory suggests the continuing divergence between the dollar 
+and euro inﬂation risk premia during the COVID-19 crisis 
+(see the right-hand panel of Fig. 7 ) will further strengthen 
+the dollar’s international role in denominating debt con- 
+tracts, consistent with Proposition 3 . 
+We provide preliminary evidence that ﬁrms are more 
+likely to issue dollar debt after the COVID-19 crisis using 
+granular bond-issuance data. We control for several factors 
+to account for whether the same ﬁrms’ propensity to is- 
+sue dollar debt is higher after the COVID-19 crisis com- 
+pared with other major currencies. We restrict the sam- 
+ple to bond issuance in ﬁve currencies: the dollar, the 
+euro, the yen, the Swiss franc, and the pound, only in 
+2019 and 2020 (data retrieved from Dealogic in October 
+2020). We also divide the sample into pre- and post-COVID 
+from April 1, 2020, which leaves us with 5099 observa- 
+tions for banks, 4268 of which are pre-COVID and 831 are 
+post-COVID; 25,042 observations for non-bank ﬁnancials, 
+18,786 of which are pre-COVID and 6256 of which are 
+post-COVID; and 6640 observations for non-ﬁnancial cor- 
+porations, 4136 of which are pre-COVID and 2508 of which 
+are post-COVID. 
+We run a regression of whether the bond is issued in 
+dollars or other four currencies ( 1 (USD ) ), on a dummy, 
+1 (Post _ COV ID ) , which indicates whether the issue date is 
+after April 1, 2020 as well as other control variables, such 
+587 
+
+===== PAGE 18 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+Table 6 
+Debt-issuance and debt-currency choice: Pre- and post-COVID period. 
+Robust standard errors are in parentheses. ∗, ∗∗, and ∗∗∗ denote signiﬁ- 
+cance at the 10%, 5%, and 1% levels, respectively. The sample in columns 
+(1), (2), and (3) is restricted to issuance in ﬁve currencies, USD, EUR, 
+JPY, CHF, and GBP, in 2019 and 2020 (data retrieved in October 2020 
+from Dealogic). 1 (USD ) is a dummy variable that takes the value of 1 if 
+the currency of the issued bond is the dollar. 1 (Post _ COV ID ) is a dummy 
+that is 1 if the issue date is after April 1, 2020. Controls include the win- 
+sorized maturity at 5%, the size of the issuance, and a dummy variable 
+for the investment-grade status of the bond. All columns include a ﬁrm 
+ﬁxed effect. B ref ers to the sam ple of banks, NBF I refers to the sample 
+of non-bank ﬁnancials, and NF C refers to the sample of non-ﬁnancial 
+corporations. Column (4) includes all these sectors. The † in column (4) 
+means observations are limited to dollar and euro issuance by ﬁrms out- 
+side the US and the euro area. 
+(1) (2) (3) (4) 
+Sample: B NBFI NFC Full † 
+1 (USD ) 1 (USD ) 1 (USD ) 1 (USD ) 
+1 (Post _ COV ID ) 0.0269 ∗∗ 0.00772 ∗∗ 0.0250 ∗∗∗ 0.0325 ∗∗∗
+(0.0122) (0.00375) (0.00841) (0.0121) 
+Controls X X X X 
+Firm FE X X X X 
+Observations 4978 24,506 5866 6472 
+R-squared 0.751 0.924 0.875 0.666 
+as the size of issuance, maturity, whether it is investment 
+grade or not, and ﬁnally ﬁrm ﬁxed effects. We present the 
+results in Table 6 . The three columns show the results for 
+banks, non-bank ﬁnancials, and non-ﬁnancial corporations, 
+respectively. The fourth column only focuses on the dollar 
+and euro issuance by ﬁrms outside the US and the euro 
+area for the full sample of banks, non-bank ﬁnancials, and 
+non-ﬁnancial corporations. 32 All columns suggest that all 
+else being constant, ﬁrms have tended to issue more dol- 
+lar debt than other-major-currency debt since April 2020. 
+8. Conclusion and policy implications 
+Motivated by two facts, namely, the dollar’s dominant 
+international role in debt markets and the fall and the sub- 
+sequent rise of the dollar in these markets over the last 
+two decades, we address two questions. First, of all the 
+major international currencies, why is the dollar the dom- 
+inant currency? Second, what explains the fall and rise of 
+the dollar? 
+We propose a “debt view” to explain the dollar’s dom- 
+inant international role and provide broad empirical sup- 
+port for it. We develop a simple capital-structure model in 
+which ﬁrms optimally choose the currency composition of 
+their debt. Independent of the lenders’ stochastic discount 
+factor, borrowers behave as if they have a “CAPM discount 
+factor,” whereby the debt-currency choice of borrowers de- 
+pends on how each currency co-moves with the ﬁrm’s 
+stock value. In this sense, borrowers prefer debt issuance 
+in the riskiest of international currencies. Both forward- 
+looking and historical covariances suggest the dollar ﬁts 
+this description better than all major currencies, especially 
+32 Dividing the fourth column into different samples of the three sec- 
+tors yields qualitatively similar results, but not statistically signiﬁcant for 
+non-bank ﬁnancials and non-ﬁnancial corporations due to large standard 
+errors in part because of relatively small sample sizes. 
+for longer horizons. Moreover, the debt view can jointly 
+explain the fall and the rise of the dollar in debt markets 
+during the pre- and post-2008 and offer insights into the 
+future of the dollar’s international role in the aftermath of 
+the COVID-19 crisis. 
+The debt view is borrower driven, in contrast to the 
+conventional view, which is investor driven. The debt view 
+can account for why ﬁrms issue in dollars despite the dol- 
+lar not being the “safest” currency. It can also account for 
+why the dollar has higher nominal interest rates and why 
+the dollar’s international role was cemented following its 
+depreciation against major currencies in the 1970s after 
+Bretton Woods. Moreover, once ﬁrms prefer to issue dol- 
+lar debt, partially explaining the dollar’s role in the rest of 
+the international monetary and ﬁnancial system might be 
+possible, for example, why ﬁrms with dollar debt would 
+prefer to invoice trade in dollars, or why a central bank 
+would accumulate dollar reserves, among others. However, 
+we leave this broader analysis of the dollar’s international 
+role to future work. 
+Our results have some policy implications. First, a com- 
+mon belief is that an exchange-rate depreciation could 
+help an economy in downturns, mainly through its effect 
+on the terms of trade. Our results imply exchange-rate de- 
+preciation could also help an economy by reducing the 
+probability of default of indebted ﬁrms. Second, our results 
+imply that if a country wishes to gain a dominant cur- 
+rency status for debt issuance, that country’s currency can- 
+not be the “safest haven” currency and should be riskier 
+than its counterparts. Moreover, an essential role for the 
+central bank arises, which is not to have realized inﬂation 
+undershoot inﬂation expectations in downturns, generat- 
+ing appreciation pressures for the currency. To that end, 
+if the European Union wishes to enhance the role of the 
+euro as a dominant international currency, the debt view 
+would suggest this scenario could be possible if inﬂation 
+were more countercyclical. 
+What do our results imply for the future of the dollar? 
+Many explanations of the dollar’s dominant role in the in- 
+ternational monetary system feature arguments such as in- 
+ertia, size, network externalities, and market liquidity. All 
+these arguments suggest changes in the dominance status 
+of a currency occur slowly. By contrast, our results indi- 
+cate the dollar can lose its dominance if the expectations 
+about the risk properties of the dollar and other curren- 
+cies change. Because this dominance relies on the beliefs 
+of market participants, changes might occur abruptly. Our 
+evidence from quarterly regressions suggests this channel 
+is relevant. 
+This paper ﬁts into a broader research agenda that aims 
+to study the use of various currencies in different parts of 
+the economy through the lens of their risk properties. Our 
+model can be extended in multiple directions. First, ad- 
+dressing the interactions between the dollar’s role in trade, 
+banking, and ﬁnance may shed important light on how 
+debt issued in a dominant currency could affect other parts 
+of the economy through the lens of the debt view. Sec- 
+ond, modeling the demand for safe assets would help us 
+understand the role of the dollar for ﬁnancial intermedia- 
+tion and household balance sheets and ﬁrms issuing debt 
+jointly. We leave these questions for future research. 
+588 
+
+===== PAGE 19 =====
+
+E. Eren and S. Malamud Journal of Financial Economics 144 (2022) 571–589 
+References 
+Admati, A.R. , Demarzo, P.M. , Hellwig, M.F. , Pﬂeiderer, P. , 2018. The lever- 
+age ratchet effect. J. Finance 73, 145–198 . 
+Aldasoro, I. , Ehlers, T. , Eren, E. , 2019. Global banks, dollar funding and reg- 
+ulation. BIS Working Paper. (708) . 
+Baele, L. , Bekaert, G. , Inghelbrecht, K. , 2007. The determinants of stock and 
+bond return comovements. Working Paper Research. National Bank of 
+Belgium . number 119 
+Bahaj, S. , Reis, R. , 2020. Central bank swap lines: evidence on the effects 
+of the lender of last resort. Technical Report. LSE . 
+Bahaj, S. , Reis, R. , 2020. Jumpstarting an international currency. Technical 
+Report. LSE . 
+Baskaya, Y.S. , di Giovanni, J. , Kalemli-Ozcan, S. , Ulu, M.F. , 2017. Interna- 
+tional spillovers and local credit cycles. Working Paper. NBER . number 
+23149 
+Bocola, L. , Lorenzoni, G. , 2020. Financial crises, dollarization and lending 
+of last resort in open economies. Am. Econ. Rev. 110, 2524–2557 . 
+Bodnár, K. , 2006. Survey evidence on the exchange rate exposure of hun- 
+garian smes. MNB Bull. 1 (1), 6–12 . 
+Bruno, V. , Kim, S.-J. , Shin, H.S. , 2018. Exchange rates and the working cap- 
+ital channel of trade ﬂuctuations. Working Paper. BIS . 
+Bruno, V. , Shin, H.S. , 2017. Global dollar credit and carry trades: a ﬁr- 
+m-level analysis. Rev. Financ. Stud. 30 (3), 703–749 . 
+Caballero, R.J. , Farhi, E. , Gourinchas, P.O. , 2008. An equilibrium model 
+of global imbalances and low interest rates. Am. Econ. Rev. 98 (1), 
+358–393 . 
+Caballero, R.J. , Farhi, E. , Gourinchas, P.-O. , 2015. Global imbalances and 
+currency wars at the ZLB. Working Paper . 
+Caballero, R.J. , Farhi, E. , Gourinchas, P.-O. , 2017. The safe assets shortage 
+conundrum. J. Econ. Perspect. . 
+Caballero, R.J. , Krishnamurthy, A. , 2002. Excessive dollar debt: ﬁnancial 
+development and underinsurance. J. Finance 58 (2), 867–893 . 
+Caballero, R.J. , Krishnamurthy, A. , 2009. Global imbalances and ﬁnancial 
+fragility. Am. Econ. Rev. 99 (2), 584–588 . 
+Campbell, J., Pﬂueger, C. E., Viceira, L., Macroeconomic Drivers of Bond 
+and Equity Risks. J. Politic. Econ.. forthcoming. 
+Casas, C. , Díez, F. , Gopinath, G. , Gourinchas, P.-O. , 2017. Dominant currency 
+paradigm. Technical Report. BIS . 
+CGFS , 2020. US dollar funding: an international perspective. Technical Re- 
+port. Committee on the Global Financial System . 
+Chahrour, R. , Valchev, R. , 2017. International medium of exchange: privi- 
+lege and duty. Technical Report. Boston College . 
+Chernov, M., Creal, D., The PppView of Multihorizon Currency Risk Premi- 
+ums. Rev. Financ. Stud.. forthcoming. 
+Choi, J. , Hackbarth, D. , Zechner, J. , 2018. Corporate debt maturity proﬁles. 
+J. Financ. Econ. . 
+Chowdhry, B. , Roll, R. , Xia, Y. , 2005. Extracting inﬂation from stock returns 
+to test purchasing power parity. Am. Econ. Rev. 95 (1), 255–276 . 
+Cœuré, B. , 2019. The euro’s global role in a changing world: a monetary 
+policy perspective. speech at the Council on Foreign Relations, NYC . 
+Cortina, J.J. , Didier, T. , Schmukler, S. , 2018. Corporate debt maturity in de- 
+veloping countries: sources of long and short-termism. World Econ. 
+Special Issue, 1–29 . 
+Devereux, M.B. , Shi, S. ,2 0 1 3 . Vehicle currency. Int. Econ. Rev. (Philadel- 
+phia) 54 (1), 97–133 . 
+Drenik, A. , Kirpalani, R. , Perez, D. , 2019. Currency Choice in Contracts. 
+Technical Report. NYU . 
+Du, W. , Schreger, J. , 2017. Sovereign risk, currency risk and corporate bal- 
+ance sheets. Technical Report. Federal Reserve Board . 
+ECB , 2017. The international role of the euro. Technical Report. ECB . 
+Engel, C. , 2016. Exchange rates, interest rates and the risk premium. Am. 
+Econ. Rev. 106, 436–474 . 
+Eren, E. , Malamud, S. , 2019. Dominant currency debt. BIS working papers, 
+no. 783 . 
+Farhi, E. , Maggiori, M. , 2018. A model of the international monetary sys- 
+tem. Q. J. Econ. 133 (1), 295–355 . 
+Fisher, I. , 1933. The debt-deﬂation theory of great depressions. Economet- 
+rica 1 (4), 337 . 
+Froot, K.A. , Scharfstein, D.S. , Stein, J.C. , 1993. Risk management: coordi- 
+nating corporate investment and ﬁnancing policies. J. Finance 48 (5), 
+1629–1658 . 
+Giovanni, J.d., Kalemli-Ozcan, S., Ulu, M.F., Baskaya, Y.S., 2017. Interna- 
+tional spillovers and local credit cycles. Working Paper. National Bu- 
+reau of Economic Research doi: 10.3386/w23149 . number 23149 
+Goldberg, L. , Tille, C. , 2008. Vehicle currency use in international trade. J. 
+Int. Econ. 76(2) (2), 177–192 . 
+Gomes, J. , Jermann, U. , Schmid, L. , 2016. Sticky leverage. Am. Econ. Rev. 
+106 (12), 3800–3828 . 
+Gopinath, G. , 2015. International price system. paper prepared for the 
+Jackson Hole Symposium . 
+Gopinath, G., Stein, J. C., Banking, Trade and the Making of a Dominant 
+Currency. Q. J. Econ.. forthcoming. 
+Gourinchas, P. O., 2019. The dollar hegemon? Evidence and implications 
+for policymakers. 
+Gourinchas, P.-O. , Govillot, N. , Rey, H. , 2017. Exorbitant privilege and exor- 
+bitant duty. Mimeo UC Berkeley . 
+Gourinchas, P.-O. , Rey, H. , Sauzet, M. , 2019. The international monetary 
+and ﬁnancial system. Annu. Rev. Econom. 11 . 
+He, Z. , Krishnamurthy, A. , Milbradt, K. , 2019. A model of safe asset deter- 
+mination. Am. Econ. Rev. 109 (4), 1230–1262 . 
+Hördahl, P. , Tristani, O. , 2014. Inﬂation risk premia in the euro area and 
+the united states. Int. J. Central Bank. 10, 1–47 . 
+Hugonnier, J. , Malamud, S. , Morellec, E. , 2015. Capital supply uncertainty, 
+cash holdings and investment,. Rev. Financ. Stud. 28 (2), 391–445 . 
+Ilzetzki, E., Reinhart, C.M., Rogoff, K.S., 2019. Exchange arrangements en- 
+tering the twenty-First century: which anchor will hold? ∗. Q. J. Econ. 
+134 (2), 599–646. doi: 10.1093/qje/qjy033 . http://oup.prod.sis.lan/qje/ 
+article-pdf/134/2/599/29986363/qjy033.pdf 
+Imbs, J. , Mumtaz, H. , Ravn, M. , Rey, H. , 2005. Ppp strikes back: aggregation 
+and the real exchange rate. Q. J. Econ. 120 (1), 1–43 . 
+Ivashina, V. , Scharfstein, D.S. , Stein, J.C. , 2015. Dollar funding and the lend- 
+ing behavior of global banks. Q. J. Econ. 130 (3), 1241–1281 . 
+Jiang, Z. , Krishnamurthy, A. , Lustig, H. , 2018. Dollar safety and the global 
+ﬁnancial cycle. Technical Report. Stanford GSB . 
+Jiang, Z., Krishnamurthy, A., Lustig, H. N., Foreign Safe Asset Demand and 
+the Dollar Exchange Rate. J. Finance. forthcoming 
+Kalemli-Ozcan, S. , Liu, X. , Shim, I. , 2018. Exchange rate appreciations and 
+corporate risk taking. Technical Report. BIS . number 710 
+Korteweg, A. , Schwert, M. , Strebulaev, I.A. ,2 0 1 8 . How often do ﬁrms re- 
+balance their capital structures? Evidence from corporate ﬁlings. Stan- 
+ford GSB Working Paper . 
+Kremens, L. , Martin, I.W. , 2019. The quanto theory of exchange rates. Am. 
+Econ. Rev. 109 (3), 810–843 . 
+Liao, G.Y. , 2020. Credit migration and covered interest rate parity. J. Fi- 
+nanc. Econ. 138 (2), 504–525 . 
+Maggiori, M. , 2017. Financial intermediation, international risk sharing 
+and reserve currencies. Am. Econ. Rev. 107 (10), 3038–3071 . 
+Maggiori, M. , Neiman, B. , Schreger, J. , 2019. International currencies and 
+capital allocation. J. Politic. Econ. 128 (6) . 
+Matsuyama, K. , Kiyotaki, N. , Matsui, A. , 1993. Toward a theory of interna- 
+tional currency. Rev. Econ. Stud. 60 (2), 283–307 . 
+Melitz, M.J. , 2003. The impact of trade on intra-industry reallocations and 
+aggregate industry productivity. Econometrica 71 (6), 1695–1725 . 
+Mukhin, D. , 2018. An eqilibrium model of the international price system. 
+Technical Report. University of Wisconsin-Madison . 
+Myers, S.C. , 1977. Determinants of corporate borrowing. J. Financ. Econ. 5, 
+147–175 . 
+Niepmann, F. , Schmidt-Eisenlohr, T. , 2019. Foreign currency loans and 
+credit risk: evidence from U.S. banks. Technical Report. Federal Re- 
+serve Board . 
+Nikolov, B. , Schmid, L. , Steri, R. ,2 0 1 8 . The sources of ﬁnancing constraints. 
+Technical Report . Working Paper 
+Praet, P., 2016. The ecb’s ﬁght against low inﬂation: reasons and conse- 
+quences. 
+Rampini, A. , Suﬁ, A. , Viswanathan, S. , 2014. Dynamic risk management. J. 
+Financ. Econ. 111, 271–296 . 
+Rey, H. , 2001. International trade and currency exchange. Rev. Econ. Stud. 
+68 (2), 443–464 . 
+Salomao, J. , Varela, L. , 2020. Exchange rate exposure and ﬁrm dynamics. 
+Working paper. University of Minnesota . 
+Shin, H.S. , 2012. Global banking glut and loan risk premium. IMF Econ. 
+Rev. 60, 155–192 . 
+Valchev, R. , 2015. Exchange rates and UIP violations at short and long 
+horizons. 2015 Meeting Papers. Society for Economic Dynamics . num- 
+ber 1446 
+Velandia, A. , Cabral, R. , 2017. Why Are More Sovereigns Issuing in Eu- 
+ros? Choosing between Usd and Eur-denominated Bonds. World Bank 
+Group . 
+589 

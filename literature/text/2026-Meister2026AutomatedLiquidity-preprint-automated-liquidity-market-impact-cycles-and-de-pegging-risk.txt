@@ -1,0 +1,518 @@
+
+
+===== PAGE 1 =====
+
+Automated Liquidity: Market Impact, Cycles, and De-pegging Risk
+B. K. Meister ∗
+(Dated: January 19, 2026)
+Three traits of decentralized finance are studied. First, the market impact function is derived for
+optimal-growth liquidity providers. For a standard random walk, the classic square-root impact
+is recovered. An extension is then derived to fit general fractional Ornstein-Uhlenbeck processes.
+These findings break with the ‘linearized’ liquidity models used in most decentralized exchanges.
+Second, a Constant Product Market Maker is viewed as a multi-phase Carnot engine, where one
+phase matches the exchange of tokens by a liquidity taker, and another the change of pool size by
+a liquidity provider.
+Third, stablecoin de-pegging is a form of catastrophe risk. By using growth optimization, default
+odds are linked to the cost of catastrophe bonds. De-pegging insurance can act as a counterweight
+and a key marketing tool when the law forbids the payment of interest on stablecoins.
+I. INTRODUCTION
+All functioning markets are alike, but every dysfunctional market is dysfunctional in its own way, to paraphrase
+Tolstoi. By bypassing legacy frictions, cryptofinance has traded old inefficiencies for new faults that can only be
+outgrown through iteration. While some mismatches are in plain sight others are hidden. Three such properties and
+related design challenges are examined; but as William Blake remarked, ‘the errors of a wise man make your rule,
+rather than the perfections of a fool’.
+Decentralized Exchanges (DEXs), often in direct competition with Centralized Exchanges (CEXs), are one of the
+innovations of Decentralized Finance (DeFi) with tokens worth tens of billions of dollars currently committed by
+Liquidity Providers (LPs) and tokens worth billions of dollars switched daily by Liquidity Takers (LTs).
+The paper starts with re-deriving, extending and applying the widely-known square root market impact[4] of rele-
+vances for CEXs and DEXs, and then rephrases in terms of a thermodynamical heat engine the Constant Product
+Market Maker (CPMM) - a sub-category of the Constant Function Market Maker (CFMM). A look at the pricing of
+catastrophe bonds follows, showing how it bears on stablecoin insurance, before a final wrap-up.
+II. A ROUTE TO MARKET IMP ACT
+Market impact is of interest for centralised as well as decentralised markets. It will be shown how growth optimal
+behaviour of liquidity providers, who allocate capital across multiple assets, and a mean-reverting Ornstein Uhlenbeck
+process for mis-pricings leads to a square root market impact.
+A compressed derivation is first given, which is then expanded. The Ornstein-Uhlenbeck (OU) price process of the
+asset of interest is
+dPt =κ(P t −K)dt+σdB t,
+with ∆P:=κ(P t −K), and the optimal Kelly fraction[7] is
+f= ∆P
+σ2 .
+For LPs investing across multiple assets their large capitalWtimesfscales asW f∝ √Q. As a consequence, since
+the total wealthWof an active market maker adjusts slowly in respect to any single investment,fbecomes dynamic
+and has to scale with square root ofQ, which immediately leads to the square root impact relation:
+∆P∝ σ2
+W
+p
+Q.
+∗Electronic address:bernhard.k.meister@gmail.com
+arXiv:2601.11375v1  [q-fin.PM]  16 Jan 2026
+
+===== PAGE 2 =====
+
+2
+Next, follows an extended version of the derivation directly relating ∆PtoQwithout introducingf. Market makers
+are assumed to maximize an objective function such as change of log utility:
+g=E[ln(W+dX)−ln(W)] =E
+
+ln
+
+1 + dX
+W
+
+,
+wheredXis the uncertain change in the value of the position in the risky asset. Taylor expansion[1] gives
+g=E
+"
+dX
+W − 1
+2
+ dX
+W
+2#
+= E[dX]
+W − 1
+2
+V ar[dX]
+W 2 .
+For a market maker with positionQ, price change ∆P, and volatilityσ, we haveE[dX] =Q∆PandV ar[dX] =Q 2σ2.
+This yields the fundamental growth equation
+g(Q) = Q∆P
+W − Q2σ2
+2W 2 .
+The next step requires closer scrutiny, since a further constraint is imposed. For a diversified portfolio, capitalW
+scales with the square root of the position:W=k √Q. Unlike an investor with one risky holding, a multi-asset
+liquidity providers only hedges the tail of the exposure, after averaging over a large number of positions, which scales
+with
+√
+Ninstead ofN. This is capital efficient. In other words, when LPs observe flow in a particular asset, they will
+provide liquidity at a ‘price’. This leads to LPs being saddled with market exposure requiring hedging of risk factors
+using liquid assets. As an example, the first factor is often overall market exposure and the second factor might be the
+exposure of a stock to the oil price, or as an alternative the hedge could be determined through the Lyons’ Signature
+Transform, which is computationally demanding but can be again asset light.
+A large LP does not bet its whole capital on just one OU process. It sets aside a ‘slice’ of balance sheet to back each
+trade. If a trade has a sizeQ, the firm’s risk model only charges capital at the rate of √Qdue to portfolio wide netting,
+and the Kelly growth optimzation logic then sets the price gap ∆Paccordingly. This creates investment consistency
+for individual LPs across a multitude of simultaneously available investment opportunities. Since the capital cost is
+measured in √Q, while the trade size and returns grow withQ, the gap between them widens with size. The ‘optimal
+fraction’fis in effect subsidized by the firm’s size. This is one reason besides technological scaling why LPs, and also
+multi-strategy hedge funds, which are governed by the same diversification logic, have become behemoth.
+SubstitutingW=k √Qinto the growth equation gives
+g(Q) = Q∆P
+k√Q − Q2σ2
+2(k√Q)2 = ∆P
+k
+p
+Q− σ2Q
+2k2 .
+The maximal growth rate is obtained by setting the derivative ofgto zero,
+dg
+dQ = ∆P
+2k√Q − σ2
+2k2 = 0,
+which ties ∆PtoQ
+∆P= σ2
+k
+p
+Q.
+The square root ∆Pimpact is directly linked to the Kelly-optimalQunder the choice of portfolio diversification
+constraint[2].
+This stands in contrast to the single-asset portfolio, where time-dependence is explicitly captured by the subindext.
+The investment strategy is governed byf tWt =P tQt, and the self-financing condition is
+dWt =Q tdPt.
+The optimal fraction for the previously introduced OU process is
+ft = κ(Pt −K)
+σ2 .
+Therefore,
+Qt =W t
+κ(Pt −K)
+Pt σ2 .
+
+===== PAGE 3 =====
+
+3
+For convenienceKis set to zero, and this leads to
+dlogW t = κ
+σ2 dPt,
+with
+Wt =W 0e
+κ
+σ2 (Pt−P0),
+and
+Qt =W 0
+κ
+σ2 e
+κ
+σ2 (Pt−P0).
+The discussion is in the next section broadened to fractional Ornstein-Uhlenbeck (fOU) processes.
+III. DERIV A TION OF THE IMP ACT LA W FOR INFORMA TIVE ORDER FLOW
+The extension of the impact rule to general fOU processes,
+dPt =κ(P t −K)dt+σdB H
+t ,
+with any Hurst exponent,H∈(0,1), is carried out next. For details about fOU see [3]. The variance of the portfolio
+for a position sizeQinvested in assetP t over timeTscales asQ 2σ2T 2H . Under the portfolio capital constraint
+W=k √Q, the Kelly growth rate becomes,
+g(Q) = QT∆P
+k√Q − σ2Q2T 2H
+2k2Q .
+Assuming the number of traded unitsQscales linearly withT, i.e.T∝QorT= ˆkQ, the growth equation simplifies
+to
+g(Q) = ∆P
+k
+ˆkQ
+p
+Q− σ2
+2k2
+ˆk2H Q2H+1 .
+Taking the derivative with respect toQand setting it to zero ofg(Q)/T, since one is interested in the optimal growth
+per unit of time, one gets
+∆P √Q
+2k − 2H σ2 ˆk2H−1
+2k2 Q2H = 0,
+and
+∆P= 2H ˆk2H−1 σ2
+k Q2H− 1
+2 .
+An LP’s adjustment of the market impact function in the face of skewed order flow is not malicious; it is instead a
+natural defence against toxic flow and distinct from informational rent-seeking like front-running. In this context,
+‘making a mistake is human, but repeating it is a choice’. Being ‘picked off’ is a signal, and to neglect this information
+and leave the impact function unchanged would be an error.
+The above formulation of market impact stands in contrast to the ‘linearised’ liquidity models prevalent in decentralised
+exchanges.
+IV. INFORMA TIONAL A TTRITION: CPMM ERODED BY TOXIC FLOW
+In a standard CPMM, the invariant isX Y=K. The token exchange ratePis the ratio of the reservesP:=Y /X.
+The associated market impact is derived next. Assume a LT buys a small amount ∆X, the reserves change toX+∆X
+andY−∆Y. The new priceP new is
+Pnew = Y−∆Y
+X+ ∆X = K
+(X+ ∆X) 2 .
+
+===== PAGE 4 =====
+
+4
+A Taylor expansion around ∆X= 0,
+P(X+ ∆X)≈P(X) +P ′(X) ∆X,
+combined withP(X) =KX −2 andP ′(X) =−2kX −3 =−2 P
+X leads to
+2 ∆P
+P ≈ −∆X
+X .
+This is in conflict with the square-root and more generally Hurst dependent market impact found above.
+In an environment where block updates are orders of magnitude slower than high-frequency execution, DEXs for
+many liquid assets lag CEXs, causing the local Hurst exponent to approachH≈1. This is especially acute, if the
+price on the CEX due to information inflow jumps. One is confronted with an ‘entropy leak’ where the LP is under-
+compensated for the variance drag of ‘toxic flow’. While linearization attracts volume, it creates a path-independent
+step-wise ‘crawl’ that can subsidize arbitrageurs. The path-independence of CPMMs is in this case a liability. The
+problem is amplified in protocols that concentrate liquidity and heap on leverage.
+As a simple consequence of the above result, the Kelly-optimal market impact must be steeper than linear at the
+origin forH <3/4, i.e. sub-linear equates to 2H−1/2<1. Misjudging the Hurst exponent and implementing the
+wrong impact function does not necessarily lead to loss of capital, but can instead be associated with opportunity cost,
+especially forHtrending towards zero. Sensitivity analysis determines the amount of leakage due to misspecification.
+One way to ameliorate the cost to DEX LPs is to penalize small orders and shift execution prices closer to the
+post-execution pool ratio. The advantage and disadvantages of this and other proposals will be discussed elsewhere.
+For a fuller analysis one also has to consider ‘impermanence loss’ and ‘loss-versus-rebalancing’ (L VR)[13] for different
+proposals under a range ofH.
+Next follows sections on the Carnot engine.
+V. A DEX TRADING STRA TEGY MAPPED INTO THERMODYNAMICS
+In this section the workings of a heat engine and a DEX trading strategy are positioned side by side after some
+introductory definitions.
+FIG. 1:Crypto Carnot Cycle: Four stage cyclic DEX trading strategy with two switching and two pool liquidity modification
+stages.
+Thermodynamics - Callen[5] provides background - holds an exalted position in science. As Arthur Eddington famously
+remarked, ‘the law that entropy always increases holds, I think, the supreme position among the laws of Nature. If
+someone points out to you that your pet theory of the universe is in disagreement with Maxwell’s equations - then so
+
+===== PAGE 5 =====
+
+5
+much the worse for Maxwell’s equations. If it is found to be contradicted by observation - well, these experimentalists
+do bungle things sometimes. But if your theory is found to be against the Second Law of Thermodynamics I can give
+you no hope; there is nothing for it to collapse in deepest humiliation.’
+The ideal gas law,P V=nkT, finds a direct translation into the mechanics of CPMMs. By mapping the reserve
+amountsXandYto pressurePand volumeVrespectively,Kemerges as the analogue to the system’s thermal energy
+nkT, wherenis the number of moles,kis the ideal gas constant, andTis the temperature. Within this framework,
+a token swap represents an ‘isoenergetic process’, where the state variablesXandYadjust while the productK
+remains invariant. Conversely, the provision or withdrawal of liquidity at the prevailing price ratio constitutes what
+could be termed an ‘isothermal process’[3]. TheX/Yratio is then the system’s temperature. The cyclic process[1, 2]
+with four stages, see figure one, is next described in more detail. The initial and final amounts in the pool are for the
+first tokenXand for the second tokenYwithXY=K. At each stage an investor takes an action. In stage one and
+three an investor acts as a liquidity taker and switches tokens, whereas in stage two and four an investor expands and
+contracts the size of the pool.
+Side by side in the table below are the four stages of the cyclic processes:
+Thermodynamics DeFi
+Step one
+Isothermal Expansion Switchingαof the first token toβof the second
+token while leavingKunchanged leading toX−αand
+Y+βwith (X−α)(Y+β)
+Step two
+Isentropic Expansion AddingMof the first andNof the second token
+in the right ratio, i.e. while (X−α)/(Y+β) =M/N
+Step three
+Isothermal Compression Switchingδof the second token toσof the
+first token with (X−α+M)(Y+β+N) =
+(X−α+M+σ)(Y+β+N−δ)
+Step four
+Isentropic Compression SubtractingGof the first andHof the second token in
+the right ratio, i.e. while (X−α+M+σ)/(Y+β+N−δ) =
+G/H
+In thermodynamics the area enclosed corresponds to the work, and in DeFi the net gain or loss should have a similar
+interpretation.
+We assume the operator of the engine, as well as the trader accessing the DEX, can carry out the four stages
+without interference, i.e. there is complete control by the trader over the incorporations of transactions into the
+blockchain. The following caveats further apply. A ‘perfect’ engine is considered with no extraneous losses, and in the
+trading context, a ‘perfect’ market with neither transaction or nor gas cost. The next paragraphs provide an example
+calculation and implicitly answer the question. What takes the role ofheat baths in CPMM? In thermodynamics the
+Carnot efficiency bound for a heat engine with access to two heat baths is given by 1−T 1/T2 withT 2 ≥T 1.
+The calculation accompanying the four stages of the crypto Carnot cycle are given next. the starting and final
+composition of the pool will be identical. There are three parts to the description of the token composition at each
+stage. These are the total token amounts in the pool, the token amounts owned by the investor in the pool, and the
+token amounts owned by the investor outside the pool. Temporary short position are allowed. This could involve a
+marginal amount of borrowing cost, which is ignored.
+
+===== PAGE 6 =====
+
+6
+Starting point:
+Pool: (X,Y) with XY=K, i.e. the pool composition is a two component vector of amountXof the first and amount
+Yof the second token.
+Investor:
+Investor position inside pool : (0,0)
+Investor position outside pool: (0,0)
+Result of stage 1: Switch ofαof the first token forβof the second token.
+Pool: (X−α, Y X/(X−α))
+Investor:
+Investor position inside pool : (0,0)
+Investor position outside pool: (α,−β)
+withβ=XY /(X−α)−Y
+Result of stage 2: Addition ofMof the first token andNof the second token.
+Pool: (X−α+M, XY /(X−α) +N)
+Investor:
+Investor position inside pool : (M, N)
+Investor position outside pool: (α−M,−β−N) withN=M Y X/(X−α) 2
+Result of stage 3: Switch ofδof the second token forσof the first token.
+Pool:(X−α+σ+M, Y X(1 +M/(X−α))/(X−α)−δ)
+Investor:
+Investor position inside pool : (M, N)
+Investor position outside pool: (α−M−σ,−β−N+δ)
+withδ=σ Y X
+X−α
+
+1 + M
+X−α
+
+1
+X+M
+Result of stage 4: Removal ofGof the first token andHof the second token.
+Pool: (X−α+σ+M−G, Y X
+X−α (1 + M
+X−α )−δ−H).
+Investor:
+Investor position inside pool : (M−G, N−H)
+Investor position outside pool: (α−M−σ+G,−β−N+δ+H).
+The four stage cycle does not generally close, and even if by settingM−G−α+σ= 0 and Y X
+X−α
+
+1+ M
+X−α
+
+−δ−H=Y
+the final pool composition is again (X, Y), the final investor position inside and outside the pool will not have collapsed
+back to zero.
+The strategy described above is not capital free[4]. Friction associated with pool dependent transaction fees, variable
+gas fees and the need to access the blockchain without for example MEV interference was ignored, complicates the
+situation and weakens any obtainable profit. Viewed geometrically, transaction costs distort the crypto-equivalent
+‘isothermal curves’. A formal investigation reducing these frictional effects to a system of inequalities will be carried
+out elsewhere. Stablecoin de-pegging risk is the topic of the next part.
+VI. KELL Y AND THE CA T-BONDS: OPTIMALITY IN CA T ASTROPHE BOND POR TFOLIOS
+How stablecoin de-pegging, both temporary as well as irreversibly, can be covered by catastrophe insurance either in
+form of conventional cat-bonds or on-chain is investigated. The passing of ‘The Guiding and Establishing National
+Innovation for U.S. Stablecoins Act’ (GENIUS Act) has spawned a multibillion-dollar yield windfall by forbidding
+issuers to pay interest to stablecoin holders. Foregone interest collected by issuers could be partially pumped into
+insurance premiums, subsidizing the cost of a private-market backstop. This has been an active topic of discussion,
+but the market remains nascent, held back by legal thickets and wrangling.
+In a recent paper[6] estimates were given for de-pegging risk. It will be shown how to relate the price of different
+catastrophe risks, e.g. de-pegging priced on the back of catastrophe bond benchmarks.
+Stablecoins - whether backed by a vault or algorithmic - have suffered crashes. They are still a work in progress, even
+as hundreds of billions of dollars courses through the system. While they aim to be as steady as cash, their history
+is dotted with sudden melt-downs, rendering them into a risk to be managed.
+The Kelly criterion can provide this relative pricing of catastrophe bonds. Two different basic edge cases are considered.
+First, either a bondAor bondBis contained in the portfolio. In the second method, both bondA&Bare held in
+
+===== PAGE 7 =====
+
+7
+the same portfolio and the relative weights are determined.
+Discrete and continuous price processes lead to different Kelly optimizations. In the one dimensional continuous case
+the optimal fraction is under relatively general conditions given by the ratio of the excess return minus the short rate
+and variance. In the multidimensional case the excess return is a vector multiplied by the inverse (or more generally
+the Moore-Penrose inverse[7]) of the covariance matrix. For independent assets it would be a diagonal matrix. This
+restriction to the first and second moment does not hold when one considers optimization for discrete payouts, where
+higher order moments cannot be neglected. The discrete view is more natural for catastrophe payouts and will be
+used here, nevertheless even in the discrete case the ratio of the mean and variance gives a first estimate for the
+optimal fraction. It provides the simplest way to relate different catastrophe risks.
+If the portfolio has only access to one risky asset withqthe default probability,p= 1−qthe corresponding survival
+probability,fthe fraction invested in the risky assets, andrthe return in the non-default case. Recovery in the case
+of a default is set to zero. The growth expression to maximize is
+qlog(1−f) +plog(1 +f r)
+to get
+f= 1−q− q
+r ,
+which corresponds to the conventional statement of the formula in the double-or-nothing betting game forrequal to
+one. How can the optimalfremain unchanged, ifqis replaced byq+ ∆ andrbyr+δ? This requires the following
+relationship between the additive adjustments
+ϵ≈ δ
+r
+ q
+1 +r
+
+,
+≈ δ
+r
+ q
+1 +r + q2
+(1 +r) 2 + q3
+(1 +r) 3 +. . .
+
+.
+As a next and final step, we consider the two bond portfolio withf A =f B :=f ∗ and include the lowest cross term,
+but instead assumeq A =q B :=qand thereforer A =r B :=rto get
+f ∗ ≈ 1
+2 − q
+r − q2
+2r2 − q
+3r
+ q
+r
+2
+,
+where the last term is a cross term capturing that both bonds can default simultaneously. To reiterate, investment
+fraction equality does not translate into growth equality, especially when rare events are involved, and as already
+mentioned at the end of footnote 2 this can lead to paradoxes.
+The two toy examples explored how in idealized settings catastrophe risks can be related. Similar and more interesting
+scenarios have been considered by Ziemba and others.
+VII. CONCLUSION
+Derivations based on information theory, called colloquially ‘Kelly optimisation’ in some finance applications[8–12],
+can provide insights into market-place design conundrums.
+After deriving market impact for a range of Hurst exponents, it was shown how this differs from the artificial market
+impact implemented on CPMMs. AsHmoves towards extremes the capital misallocations of LPs on CPMMs are
+exacerbated, and the LPs liquidity provisions becomes decoupled from the true growth-optimal pricing curve, leading
+to both sub-optimal fee accumulation and increased exposure to uncompensated jump-risk.
+Market impact arises from the bottom-up competition inside individual LPs for capital allocation. However there is
+also top-down competition between LPs enforcing price consistency across the market - the ‘law of one price’ - even
+as theQ− √Qeffect grants advantages that widen with scale. This is balanced by drawbacks, since a ‘monopoly’
+LP becomes the market itself and, as ‘a whale in a tub’, is unable to stir due to liquidity constraints. The critical
+threshold is easier to observe in a crisis, as one saw with Archegos Capital Management or earlier with LTCM, then to
+predict beforehand, for as Keats noted, ‘axioms in philosophy are not axioms until they are proved upon our pulses’.
+Tail risk associated with various de-pegging events hampers the influx of institutional and retail money to decentralized
+finance. Enumerating these risks and providing hedging tools through catastrophe bonds or similar instruments enables
+broader institutional and retail adoption. It would expand the range of uncorrelated investments available to tail risk
+funds on the demand side and stable coin issuers could use it on the supply side to distinguish their coins from
+
+===== PAGE 8 =====
+
+8
+competitors. The availability of protection can enhance the attractiveness of a stable coin and can be viewed as a cost
+efficient marketing, especially when due to the GENIUS Act payment of interest on stable coin deposits is forbidden.
+De-pegging risk is a tuneable risk similar to an option strike, since it ranges all the way from a temporary deviation
+of a chosen percentage from the peg to an irreversible failure. This gives design flexibility to obtain yields ranging
+from single to low double digits.
+Paul Volcker quipped after the 2008 financial crisis that ‘ATMs were the only useful innovation in banking for the
+past 20 years’. One might say the same for stablecoins. They are the plainest part of DeFi, but they fill a market
+need. In doing so, they take on the main role of fiat money as a means of exchange. Other assets can handle the
+other two functions: being a store of wealth and a unit of account.
+Tweedledee spells out the looking-glass logic[5] of DeFi: ’Contrariwise, if it was so, it might be; and if it were so, it
+would be; but as it isn’t, it ain’t. That’s logic.’
+[1] C M Bender, D C Brody & B K Meister (2000).Quantum-mechanical Carnot engine.Journal of PhysicsA33,
+4427-4436.
+[2] C M Bender, D C Brody & B K Meister (2002).Entropy and temperature of a quantum Carnot engine.
+Proceedings of the Royal Society of LondonA458, 1519-1526.
+[3] F Biagini, Y Hu, B Øksendal & T Zhang (2008).Stochastic Calculus for Fractional Brownian Motion and
+Applications. Springer.
+[4] J P Bouchaud, Y Gefen, M Potters & M Wyart (2004).Fluctuations and response in financial markets: the
+subtle nature of ‘random’ price changes. Quantitative Finance, 4(2), 176-190.
+[5] H B Callen (1985).Thermodynamics and an Introduction to Thermostatistics(2nd ed.). John Wiley & Sons.
+[6] B Eichengreen, M T Nguyen, & G Viswanath-Natraj (2025).Stablecoin devaluation risk. The European Journal
+of Finance, pp.1-28.
+[7] Y Lv & B K Meister (2010)Applications of the Kelly Criterion to multi-dimensional Diffusion Processes.
+International Journal of Theoretical and Applied Finance 13, 93-112. 27, reprinted inThe Kelly Criterion:
+Theory & Practice:, ed. by MacClean, Thorp & Ziemba, World Scientific. 285-300. (2011).
+[8] B K Meister (2016).Meta-CTA Trading Strategies based on the Kelly Criterion, arXiv:1610.10029.
+[9] B K Meister (2022).Meta-CTA Trading Strategies and Rational Market Failures, arXiv:2209.05360.
+[10] B K Meister (2023).Gambling the World Away: Myopic Investors, arXiv:2302.13994.
+[11] B K Meister (2024).Application of the Kelly Criterion to Prediction Markets, arXiv:2412.14144.
+[12] B K Meister (2025).Through the Looking Glass: Bitcoin Treasury Companies, arXiv:2507.14910.
+[13] J Milionis, C C Moallemi, T Roughgarden & A L Zhang (2022).Automated Market Making and Loss-Versus-
+Rebalancing, arXiv:2208.06046.
+[1] Cubic terms and above, i.e.O
+  dX
+W
+3
+, are excluded, but in the continuous Ornstein-Uhlenbeck setting these terms are
+negligible.
+[2] In this footnote it is shown that the same result can also be derived using the conventional terminology, where the leverage
+ratiofis optimised instead of linkingQdirectly with ∆P. To stay unit-consistent, we use the identityP Q=f W. We
+substitute the square root capital constraint,W=k √Q, to find the relationship between wealthWand leveragef
+W=k
+r
+f W
+P =⇒W= k2f
+P .
+SubstitutingWback into the sizing identity:
+Q= f
+P
+ k2f
+P
+
+= k2f 2
+P 2 ,
+
+===== PAGE 9 =====
+
+9
+ergo leveragefscales quadratically with position sizeQ. The instantaneous growth rateg(f) is defined as the expected
+change in wealth minus the variance
+g= E[dW]
+W − 1
+2
+V ar[dW]
+W 2 .
+In an OU process with edge ∆Pand volatilityσ, the wealth change is driven by
+dW=Q(∆P dt+σdB).
+SubstitutingQ= f W
+P
+g(f) = f W∆P
+P W − 1
+2
+(f W)2σ2
+P 2 W 2 ,
+g(f) = ∆P
+P f− σ2
+2P 2 f 2,
+and setting the derivative with respect tofto zero leads to
+g′(f) = 0 = ∆P
+P − σ2
+P 2 f=⇒∆P P=σ 2f,
+together with p
+Q P=f k,
+results in
+∆P= σ2
+k
+p
+Q.
+Other choices forf, e.g.f=const, are inconsistent. In an OU process, ∆Pdecays as the price moves toward the mean. Iffis
+constant, the growth rateg=f∆P− 1
+2 f 2σ2 would eventually become negative as ∆Pbecomes small. By usingf∝∆Pthe
+growth rategstays positive:g= 1
+2 (∆P/σ) 2 ≥0. Trading stops exactly when the edge disappears, i.e. ∆P= 0 =⇒f= 0.
+What should be compared across assets is therefore not the growth rate, but the risk-adjusted edge, i.e.f= ∆P/σ 2. The
+reason one allocates the same amountfto two assets with different growth ratesgis that capital allocation is a function of
+what could be termed ‘leverage efficiency’. This can lead to paradoxes. For example, the increase of the investable universe
+can lead under special conditions to a drop in growth or even bankruptcy, see the Proebsting’s paradox or the Braess
+paradox in the not completely unrelated field of traffic theory.
+[3] Energy is an extensive quantity, while temperature is an intensive quantity, and the analogy between thermodynamics and
+DeFi has to be taken with a grain of salt.
+[4] A requirement exists to borrow tokens temporarily to add to the pool in stage two. This needs capital. The same holds true
+for stage one and three to enable the investor to switch tokens. This leads to borrowing cost and collateral requirements
+and adds a twist to the analysis ignored in the idealised setting. Flashloans can potentially reduce the capital employed.
+[5] W. H. Auden’s 1962 essay, “Today’s ‘Wonder-World’ Needs Alice”, draws a parallel between a rational Alice caught in a
+maze of upside-down logic and a modern world of vanishing certainties.

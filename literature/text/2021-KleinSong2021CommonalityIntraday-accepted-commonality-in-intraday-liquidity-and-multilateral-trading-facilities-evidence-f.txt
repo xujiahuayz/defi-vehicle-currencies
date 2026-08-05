@@ -1,0 +1,1792 @@
+
+
+===== PAGE 1 =====
+
+ 
+ 
+ 
+ 
+ 
+warwick.ac.uk/lib-publications 
+ 
+ 
+ 
+ 
+ 
+Manuscript version: Author’s Accepted Manuscript 
+The version presented in WRAP is the author’s accepted manuscript and may differ from the 
+published version or Version of Record. 
+ 
+Persistent WRAP URL: 
+http://wrap.warwick.ac.uk/152109                                   
+ 
+How to cite: 
+Please refer to published version for the most recent bibliographic citation information.  
+If a published version is known of, the repository item page linked to above, will contain 
+details on accessing it. 
+ 
+Copyright and reuse: 
+The Warwick Research Archive Portal (WRAP) makes this work by researchers of the 
+University of Warwick available open access under the following conditions. 
+ 
+© 2021 Elsevier. Licensed under the Creative Commons Attribution-NonCommercial-
+NoDerivatives 4.0 International http://creativecommons.org/licenses/by-nc-nd/4.0/. 
+ 
+ 
+ 
+Publisher’s statement: 
+Please refer to the repository item page, publisher’s statement section, for further 
+information. 
+ 
+For more information, please contact the WRAP Team at: wrap@warwick.ac.uk. 
+ 
+
+
+===== PAGE 2 =====
+
+Commonality in Intraday Liquidity and Multilateral Trading
+Facilities: Evidence from Chi-X Europe ∗
+Olga Klein †and Shiyun Song ‡
+April 14, 2021
+Abstract
+This paper examines the eﬀects of Chi-X, a pan-European multilateral trading facility, on
+intraday liquidity co-movements within European equity markets. Chi-X enables simultaneous
+trading of all European equities on a single trading platform. Further, it induces an increase in
+multi-market trading between Chi-X and the home exchange, connecting individual markets in a
+single network. Greater market consolidation combined with an increase in multi-market trading
+should induce stronger network-wide liquidity co-movements. Consistent with our predictions,
+we ﬁnd that Europe-wide liquidity co-movements increase after the Chi-X entry. The increase
+is stronger in down markets and for stocks with more intense trading on Chi-X.
+JEL classiﬁcations: G10, G11, G12
+Keywords: Market consolidation, Multi-market trading, High-frequency trading, Common-
+ality in Liquidity, European equities, Liquidity risks
+∗We would like to thank Roman Kozhan, Vikas Raman, Onur Tosun, Bart Yueshen, Sean Foley, Gbenga Ibikunle,
+Mario Bellia, Darrell Duﬃe, Loriano Mancini, Ingrid Werner, Gideon Saar, Tarun Chordia and seminar participants
+at Warwick Business School for insightful comments on this paper. This paper has been presented at the 2017
+FMA Annual Meeting, the 2018 FEBS International Conference, the 2018 CEPR-Imperial-Plato Market Innovator
+Conference, the 2018 European Capital Market Workshop and the 2018 Cross-Country Perspectives in Finance
+Conference. This research did not receive any speciﬁc grant from funding agencies in the public, commercial, or
+not-for-proﬁt sectors.
+†The corresponding author. Warwick Business School, CV4 7AL Coventry, UK. E-mail: olga.klein@wbs.ac.uk.
+Tel: +44 24765 28956. Declarations of interest: none.
+‡The Vanguard Group, 19301 Paoli, PA, USA. E-mail: shiyun_song@vanguard.com. Tel: +1 6105030616. Dec-
+larations of interest: none.
+
+===== PAGE 3 =====
+
+Commonality in Intraday Liquidity and Multilateral Trading
+Facilities: Evidence from Chi-X Europe
+Abstract
+This paper examines the eﬀects of Chi-X, a pan-European multilateral trading facility, on
+intraday liquidity co-movements within European equity markets. Chi-X enables simultaneous
+trading of all European equities on a single trading platform. Further, it induces an increase in
+multi-market trading between Chi-X and the home exchange, connecting individual markets in a
+single network. Greater market consolidation combined with an increase in multi-market trading
+should induce stronger network-wide liquidity co-movements. Consistent with our predictions,
+we ﬁnd that Europe-wide liquidity co-movements increase after the Chi-X entry. The increase
+is stronger in down markets and for stocks with more intense trading on Chi-X.
+JEL classiﬁcations: G10, G12, G15
+Keywords: Market consolidation, Multi-market trading, High-frequency trading, Common-
+ality in Liquidity, European equities, Liquidity risks
+
+===== PAGE 4 =====
+
+1 Introduction
+The change of the European ﬁnancial markets regulation in November 2007, the Markets in Fi-
+nancial Instruments Directive (MiFID), allowed for entry of multilateral trading facilities (MTFs).
+MTFs are alternative platforms, which act as competitors of the incumbent exchanges, such as the
+London Stock Exchange, NYSE Euronext and Deutsche Börse. Prior academic literature conﬁrms
+that, by increasing competition for the order ﬂow, MTFs generally improve market liquidity (He
+et al., 2015; Gresse, 2017). However, the beneﬁts of MTFs stand against potential risks, associated
+with their entry. Hoﬀmann (2016) shows that trades, executed on alternative platforms, carry sig-
+niﬁcantly more private information than those executed in the primary markets, increasing adverse
+selection risks for MTF liquidity suppliers. By enabling trading of all European equities on a single
+platform, MTFs might also facilitate the transmission of liquidity shocks across markets. Surpris-
+ingly, empirical evidence on systematic liquidity co-movements across stocks traded on diﬀerent
+venues is rather scarce.1
+In this paper, we examine the eﬀect of the introduction of Chi-X, the ﬁrst and the largest
+pan-European MTF, on systematic liquidity co-movements of stocks across European markets.
+Following Chordia et al. (2000), we analyze co-variations of the stock’s liquidity with the aggregate
+market liquidity and refer to these co-variations as commonality in liquidity. Speciﬁcally, we hy-
+pothesize that Europe-wide commonality in liquidity, i.e. systematic stock liquidity co-movements
+with the aggregate European market, increases after the introduction of Chi-X. Our reasoning be-
+hind this argument is twofold. First, the introduction of Chi-X facilitates simultaneous trading of
+a basket of European equities on a single trading platform. According to previous literature (Koch
+et al., 2016; Kamara et al., 2008), correlated demand for a basket of securities leads to stronger
+commonality in their liquidity. Second, reduced latency and rebates for liquidity suppliers on Chi-X
+should in particular attract high-frequency traders (HFTs).2 High-frequency traders share similar
+algorithms (Chaboud et al., 2014; Benos et al., 2015), which can lead to excess co-movements in
+1To the best of our knowledge, Jain et al., 2020 is the only paper to examine the impact of MTFs on liquidity
+co-movements of stocks, traded by these platforms. Another related study is Ben-David et al. (2012) who show that
+arbitrage activity between ETFs and their underlying securities can propagate shocks across these two asset classes.
+2Jovanovic and Menkveld (2016) and Menkveld (2013) ﬁnd that one large HFT takes part in 70-80% of Chi-X
+trades for Dutch and Belgian index stocks, and almost 10% of all trades for these stocks on their home market,
+Euronext.
+1
+
+===== PAGE 5 =====
+
+their demand and supply, and consequently, to commonality in liquidity across stocks, traded by
+their algorithms.3 Further, HFTs often engage in trading across multiple markets, e.g. between
+Chi-X and the home exchange. Such multi-market HFT trading essentially connects European
+markets in a single network and might facilitate cross-market liquidity spillovers.4 Based on these
+two reasonings, we expect that Europe-wide liquidity co-movements become stronger for stocks
+that are more intensely traded on Chi-X and that are more likely to be traded by multi-market
+HFTs.
+Our second hypothesis is that Europe-wide liquidity co-movements should be stronger in down
+markets. Longin and Solnik, 2001 conﬁrm this relation for returns, showing that return correlation
+across international equity markets increases during market downturns. Liquidation is costlier in
+down markets, compared to up markets (Saar, 2001; Chiyachantana et al., 2004). Nevertheless,
+investors are more likely to liquidate their portfolios when a negative return shock hits the market
+in fear of further price declines and potentially greater losses. The resulting simultaneous selling
+pressure across all European stocks should lead to stronger co-movements in their liquidity in down
+markets, as opposed to up markets.
+Because trading of European major index stocks on Chi-X was introduced in several phases,
+this staggered entrance allows us to clearly identify the causal eﬀect of Chi-X entry on Europe-
+wide commonality in liquidity. Variation in Chi-X entry times into 11 diﬀerent markets in our
+sample should alleviate valid concerns about general time trends in commonality in liquidity, or
+any potential eﬀects of the ﬁnancial crisis. To address potential endogeneity concerns, it is rather
+unlikely that Chi-X was able to accurately predict changes in systematic liquidity co-movements of
+stocks traded across 11 European markets.
+We test our predictions on a sample of 445 major European index stocks from 11 countries over
+the period from January 2004 to December 2014. Our results provide supporting evidence for our
+ﬁrst hypothesis that commonality in liquidity within the aggregate network of European markets
+is stronger after Chi-X introduction. Consistent with our second hypothesis, we also ﬁnd that
+3Prior studies by Huh (2011) and Boehmer and Shankar (2014) analyze the impact of algorithmic traders on the
+co-movement of liquidity and order ﬂow within US and Indian equity markets, respectively.
+4In their model, Lescourret and Moinas (2015) formally show that multi-market liquidity provision makes the
+liquidity of two markets interconnected. Tomio (2016) shows theoretically and empirically how multi-market arbitrage
+activity can contribute to the convergence of individual stock’s liquidity between two markets.
+2
+
+===== PAGE 6 =====
+
+Europe-wide liquidity co-movements are stronger in down markets. Overall, our ﬁndings suggest
+that the introduction of Chi-X induces stronger liquidity co-movements across European markets
+by connecting them in a single network.
+Understanding liquidity risks arising from entry of MTFs on European markets is important
+for policymakers, institutional investors, ﬁrms and virtually all market participants. Stronger
+co-variations in aggregate European liquidity make propagation of liquidity shocks easier across
+markets, increasing the risk of contagion and threatening the stability of global ﬁnancial markets.
+Negative liquidity shocks are of special concern during crisis periods, because they imply higher
+transaction costs and the inability to trade assets quickly without large impact on their prices.
+The details of our research design and main ﬁndings are as follows. We use the average one-
+minute quoted spread as our benchmark measure of liquidity.5 Whereas HFTs have shorter trading
+horizons of milli-, micro- or nanoseconds, we need to compare liquidity co-movements over intervals
+of the same length both in the pre- and post-Chi-X period. The average time between two quote
+updates at the beginning of our sample in 2004-2005 constitutes 43 seconds. To be able to obtain
+meaningful values for liquidity co-movements in our control period, we have therefore chosen 60
+seconds as our benchmark interval length.6
+Using Chordia et al.’s (2000) market model of liquidity, we estimate EU liquidity beta as the
+sensitivity of the stock’s liquidity to the aggregate liquidity of the FTSE Euroﬁrst 100, a pan-
+European index. We additionally control for the ﬂuctuations in liquidity of the corresponding
+home market index (e.g., FTSE 100 for UK stocks).7 In the following, we refer to the sensitivity
+of the stock’s liquidity to its home market liquidity as home liquidity beta.
+Consistent with our ﬁrst prediction, EU liquidity betas signiﬁcantly increase by 19%, relative to
+their mean level in the pre-Chi-X period. We use Scandinavian stocks that are not part of Euroﬁrst
+100 as our control group. In line with expectations, we do not ﬁnd any evidence of signiﬁcantly
+5In Section 5.2, we show that all main results remain unchanged if we use the eﬀective spread, the realized spread
+or the intraday price impact instead.
+6Given the relatively short trading horizons of high-frequency traders, we would expect liquidity co-variations to
+be even stronger if measured on a millisecond (or shorter) basis. Therefore, estimating liquidity betas over 1-minute
+intervals, if anything, makes it potentially harder for us to ﬁnd evidence of stronger liquidity co-variations in the post
+Chi-X period. We also show in Section 5.2 that our main results hold over longer time intervals of ﬁve minutes and
+aggregate to the daily level.
+7We exclude all stocks that are traded in the corresponding home market from the pan-European index to ensure
+that EU liquidity betas are not anyhow aﬀected by the liquidity co-variations with the home market.
+3
+
+===== PAGE 7 =====
+
+higher EU liquidity betas for these stocks. Importantly, Chi-X entry has the strongest eﬀect on
+EU betas for more isolated stocks on peripheral markets (Italy and Spain), compared to already
+well-integrated stocks on core European markets (the UK, France and Germany).
+We also ﬁnd supporting evidence for our second hypothesis that liquidity co-variations with
+the aggregate European market have become stronger in down markets. This result implies that
+the introduction of Chi-X makes European equity markets more susceptible to the transmission of
+liquidity shocks during crisis periods. In contrast, we ﬁnd that liquidity co-movements with home
+markets increase signiﬁcantly only during market upturns. This ﬁnding is consistent with Longin
+and Solnik (2001) who show that return correlations are lower in up markets. Thus, positive return
+shocks appear to be more dispersed across countries in time, whereas negative return shocks are
+more likely to aﬀect all countries at once.
+We then test whether cross-sectional diﬀerences in EU liquidity betas are related to diﬀerences
+in the level of market consolidation and the intensity of multi-market high-frequency trading in the
+post-Chi-X period. We use the average monthly share of volume traded on Chi-X,Chi-X market
+share, and theMultimarket Tradingmeasure of Halling et al. (2013) as our proxies for the level
+of market consolidation and the intensity of multi-market HFT activity, respectively. Consistent
+with expectations, we observe a larger increase in EU liquidity betas for stocks with larger Chi-X
+market shares and with a more intense multi-market activity.
+Finally, we examine the entry of Turquoise, the second pan-European MTF, in September 2008.
+WeformulatetwocountervailingpredictionsfortheentryofTurquoiseonEurope-widecommonality
+in liquidity. On the one hand, Turquoise presents another opportunity for fast trading of major
+European equities on a single platform, which should result in a further increase in EU liquidity
+betas. On the other hand, Turquoise competes directly with Chi-X for the order ﬂow, potentially
+increasing market fragmentation for European stocks. A higher degree of market fragmentation
+should result in weaker Europe-wide liquidity co-movements. Overall, we observe lower EU liquidity
+betas in down markets after the entry of Turquoise, consistent with the latter prediction. Thus,
+the entry of a competitor appears to alleviate the problem of increased Europe-wide commonality
+in liquidity in down markets.
+4
+
+===== PAGE 8 =====
+
+We also consider two potential alternative explanations of our empirical ﬁndings. First, the
+observed increase in Europe-wide liquidity co-movements could be also explained by a launch of
+exchange-traded funds (ETFs) that track broad European stock indices. Indeed, simultaneous
+trading in the underlying securities of ETFs results in stronger liquidity co-movements (Agarwal
+et al., 2018). To test this alternative explanation, we download from Bloomberg all ETFs that
+track Euro Stoxx 50 and MSCI Europe with inception dates within the timeline of the staggered
+entry of Chi-X into European markets. Overall, we ﬁnd no evidence to support the argument of
+the ETF launch as the source of an increase in Europe-wide liquidity co-movements.
+Second, we test for “phantom liquidity” as another potential source of stronger cross-market
+liquidity co-movements. Phantom liquidity refers to the same limit order posted by the same
+trader across multiple markets to maximize chances of its execution. Upon execution of one order,
+the orders still outstanding on other venues are canceled. Such simultaneous order cancellations
+can also result in stronger cross-market liquidity co-movements. In contrast to frequent quote
+updates by HFT market makers, “phantom” order cancellations represent longer-lasting liquidity
+withdrawals.8 To proxy for the degree of phantom liquidity, we estimate the sensitivity in the
+depth of the limit order book on the home exchange to Chi-X trades. Overall, we observe that EU
+liquidity betas display a signiﬁcant increase only for stocks with low levels of phantom liquidity,
+which is not consistent with the phantom liquidity hypothesis.
+We conduct robustness checks of our main analyses, using the ﬁve-minute quoted spread as
+well as the one-minute realized spread, eﬀective spread and price impact. We obtain virtually
+identical results for all of these alternative intraday liquidity measures. Since co-movements on the
+daily basis might be of higher importance to institutional and retail investors, we further estimate
+quarterly liquidity betas, based on the daily relative spread and the Amihud measure. All our main
+results for EU liquidity betas continue to hold and turn out even stronger for the daily measures.
+Our paper contributes to the literature on potential liquidity risks, generated by MTFs. The
+closest paper to ours is Jain et al. (2020) who document an increase in liquidity co-movements
+for stocks that start trading on two MTFs, Turquoise and NYSE-Arca Europe. We complement
+8Van Kervel (2015) documents that the execution on one venue triggers not only immediate cancellations on
+competing venues, but is also followed by further cancellations even after 10 seconds since the original execution.
+5
+
+===== PAGE 9 =====
+
+their study by analyzing the entry of Chi-X, which is the ﬁrst pan-European MTF. It also has
+the largest market share of around 25%, as compared to around 5% for Turquoise.9 Whereas Jain
+et al. (2020) examines daily liquidity co-movements, we analyze commonality in intraday liquidity,
+using 1-minute average quoted spreads as our benchmark liquidity measure. Overall, our ﬁndings
+are consistent with the results of Jain et al. (2020). In addition to stronger daily liquidity co-
+movements, we also ﬁnd stronger commonality in intraday liquidity, potentially associated with an
+increase in market consolidation and multi-market HFT trading after the Chi-X entry. In contrast
+to Jain et al. (2020), our ﬁndings imply that the increase in Europe-wide liquidity co-movements
+should be rather attributed to the entry of Chi-X, as opposed to Turquoise, for larger stocks in our
+sample.
+Our paper further adds to the literature on commonality in liquidity (Chordia et al. 2000,
+Huberman and Halka 2001) and its sources (Coughenour and Saad 2004, Kamara et al. 2008, Koch
+et al. 2016). Karolyi et al. (2012) is a pioneering cross-country study that analyzes commonality in
+returns, liquidity and turnover in a sample of 40 developed and emerging countries. Importantly,
+their analysis documents the existence of strong liquidity co-movements of stocks within their home
+markets for all countries in their sample. Extending their results, we show that liquidity of a stock
+also systematically co-varies with the liquidity of the aggregate market network, and that these
+co-variations can even exceed its co-variations with the home market.
+Lastly, we extend the literature on multi-market trading by analyzing the implications of multi-
+market trading activity on potential liquidity risks. In contrast, the main focus of previous studies
+is either examining determinants of multi-market trading activity (Pulatkonak and Soﬁanos, 1999;
+Halling et al., 2008; Baruch et al., 2007; Menkveld, 2008) or studying its eﬀects on liquidity levels
+through demand (Halling et al., 2013) and supply (Menkveld, 2008; Van Kervel, 2015; Lescourret
+and Moinas, 2015) channels.
+9Market share statistics for all European venues provided by CBOE Global Markets at
+https://markets.cboe.com/europe/equities/market_share/market/venue/.
+6
+
+===== PAGE 10 =====
+
+2 Institutional Background and Hypothesis Development
+2.1 Introduction of Chi-X
+Prior to the introduction of the Markets in Financial Instruments Directive (MiFID) in November
+2007, trading of European equities was virtually consolidated on national stock exchanges, with the
+majority of trades for British stocks executed on the London Stock Exchange (LSE), German stocks
+on Deutsche Börse and French stocks on Euronext Paris. The European Union designed the MiFID
+to promote competition between exchanges by allowing the entry of multilateral trading facilities
+(MTFs). Whereas equities can only be listed on national exchanges, MTFs provide a platform for
+trading these securities, bringing together third-party buyers and sellers.
+The ﬁrst and the largest of the European MTFs is Chi-X, introduced by Instinet six months
+ahead of MiFID in April 2007. Similar to many national stock exchanges, it is organized as an
+electronic limit order book with a price-time priority rule. Importantly, Chi-X is the ﬁrst pan-
+European trading platform, enabling simultaneous trading of all major European equities on a
+single venue. Two further competitive advantages of Chi-X are its lower execution fees and faster
+speed of order processing, or low latency.10 Chi-X operates a so-called “maker-taker” fee structure,
+charging liquidity demanders 0.30 bps and rebating liquidity providers with 0.20 bps. In contrast,
+national stock exchanges charged trading fees over 0.50 bps for each side of a trade at the time
+Chi-X was introduced.11 Further, the Chi-X latency of 0.89 milliseconds was substantially lower
+than the latency of its main competitors. At the time, LSE needed around 20 milliseconds and
+Euronext Paris around 75 milliseconds to process a round-trip transaction, which is 22 to 84 times
+longer than the Chi-X processing time.12
+[Insert Figure 1 approximately here]
+The entry of Chi-X into European equity markets was staggered in several phases. Figure 1
+shows the timeline of Chi-X entrance into European equity markets. German (DAX30) and Dutch
+10There are many deﬁnitions for “latency”. In this paper latency is deﬁned as the time needed by the exchange
+trading engine to process a round-trip transaction.
+11Even though their trading fees reduced over time, they remain substantially higher than 0.30 bps, charged by
+Chi-X. For example, LSE currently charges 0.45 bps for the ﬁrst £2.5 bn of orders executed.
+12He et al. (2015) provide a detailed overview of fee structures and latencies of European national stock exchanges
+at the time of the introduction of Chi-X.
+7
+
+===== PAGE 11 =====
+
+(AEX) large-cap index stocks ﬁrst started trading on its platform in April 2007. UK (FTSE100)
+and French (CAC40) stocks followed in July 2007 and October 2007, respectively. By the end of
+2008, Chi-X expanded further into Belgian (BEL20), Scandinavian (OMXS30, OMXH25, OMXC20
+and OBX), Spanish (IBEX35) and Italian (FTMIB) stocks.
+[Insert Table 1 approximately here]
+Chi-X market shares were initially low, but had increased to levels above 10% for the UK,
+France, Germany and the Netherlands by the end of 2008. By the beginning of 2010, they were
+already above 20% for these countries and started crossing the 10%-threshold for later entrants,
+such as Belgium, Sweden and Finland. Table 1 and Figure IA1 in the Internet Appendix present
+quarterly averages of Chi-X market shares by country. In 2011, Chi-X was taken over by BATS, a
+competitor MTF, resulting in its name change to BATS Chi-X Europe. Subsequently, CBOE took
+over BATS Chi-X Europe in 2017. However, the company still operates two separate limit order
+books: CXE (Chi-X) and BXE (BATS), which mainly diﬀer in their fee structures. By the end of
+2014, Chi-X (CXE) captured around 25% of trades for British, French, German, Dutch, Belgian,
+Finnish and Swedish stocks, and more than 15% of trades for remaining countries.13
+2.2 Hypothesis Development and Identiﬁcation Strategy
+Hypothesis 1. We hypothesize that systematic stock liquidity co-movements with the aggregate
+European market increase after the introduction of Chi-X. The entry of Chi-X is associated with two
+important changes in European ﬁnancial landscape. First, it consolidated the market by allowing
+trading of all major European equities on a single platform. Market consolidation makes it easier
+for investors to trade simultaneously a basket of European stocks, which should lead to an increase
+in stock liquidity co-movements with each other. Consistent with our prediction, Kaul et al. (2016)
+and Jain et al. (2020) document that liquidity co-movements are stronger for stocks traded on the
+same platform.
+13Data on market fragmentation for all major European indices are provided by Fidessa on
+http://fragmentation.ﬁdessa.com/europe.
+8
+
+===== PAGE 12 =====
+
+Second, reduced latency and rebates on liquidity provision on the Chi-X platform encouraged
+an increase in high-frequency trading.14 Findings from prior studies suggest that stock liquidity
+co-movements can arise both through demand (Koch et al. 2016, Kamara et al. 2008) and supply
+channels (Coughenour and Saad 2004). As liquidity demanders, HFTs engage either in cross-
+marketarbitragestrategiestoexploittemporarymispricingsbetweenmarkets, ordirectionaltrading
+strategies, to quickly trade on new information (Baron et al. 2016). In either case, their correlated
+trading strategies lead to correlated buy or sell pressure (Chaboud et al., 2014; Benos et al., 2015).
+Therefore, excess co-movements in HFT demand can cause stronger commonality in liquidity across
+stocks. As liquidity suppliers, HFTs act as market makers, posting and monitoring quotes across
+multiple venues (Menkveld, 2013). Since HFTs usually make markets in several assets, correlated
+ﬂuctuations in their inventory levels can also induce stronger liquidity co-movements across stocks
+in their inventory portfolios.
+Hypothesis 2. We further hypothesize that systematic liquidity co-movements within the Euro-
+pean market become stronger in periods of market downturns rather than market upturns. Longin
+and Solnik (2001) already show this phenomenon for returns, i.e. return correlation across in-
+ternational equity markets increases during market downturns. Therefore, negative return shocks
+are likely to be systemic, i.e. they aﬀect all countries at once, whereas positive shocks are more
+dispersed across countries in time.15 When a negative return shock hits the market, investors are
+more likely to liquidate their portfolios in fear of further price declines and even greater losses.
+However, it is exactly at that time when the liquidation is most costly. Indeed, Saar (2001) and
+Chiyachantana et al. (2004) show theoretically and empirically that investors pay a liquidity pre-
+mium for trading on the same side of the market. Further, Chiyachantana et al. (2004) empirically
+14Prior studies by Jovanovic and Menkveld (2016) and Menkveld (2013) show that one large HFT trading Dutch
+and Belgian index stocks accounts for 70-80% of all Chi-X trades and almost 10% of all trades on the home exchange,
+NYSE Euronext. He et al. (2015) also conﬁrm that Chi-X market shares are larger for stocks in countries in which
+the advantages to high-frequency traders are greater when compared to corresponding national stock exchanges.
+Relatively lower latency and lower trading fees for liquidity providers result in higher Chi-X market shares for stocks
+in these countries.
+15We also ﬁnd evidence of the increased return correlation during market downturns across countries in our sample.
+In down markets, correlation across country index returns equals 0.79, as compared to 0.66 in up markets. The
+z-statistics for the test of equality of two correlation coeﬃcients is 4.49, suggesting a signiﬁcantly higher return
+correlation in down markets.
+9
+
+===== PAGE 13 =====
+
+ﬁnd this premium to be more pronounced in down markets. In addition, in down markets, investors
+do not have to engage in time-consuming information gathering, because they can only sell stocks
+that they are already holding.16 Overall, an increase in simultaneous selling pressure across all
+stocks in major European stock indices should result in Europe-wide liquidity co-variations that
+are stronger in down markets rather than up markets.
+The staggered introduction of Chi-X allows us to clearly identify its eﬀect on systematic stock
+liquidity co-movements. Two valid concerns could be that our results are driven by general time
+trends in liquidity commonality, or are induced by an ongoing ﬁnancial crisis. Arguably, the
+variation in Chi-X entry times across 11 countries in our sample reduces the inﬂuence of these
+concurrent eﬀects and alleviates the above concerns. Our setup is similar to Hendershott et al.
+(2011), who use the staggered introduction of NYSE Autoquote as an instrument for an exogenous
+increase in algorithmic trading. Speciﬁcally, they use variation in the Autoquote phase-in schedule
+across NYSE stocks to identify the causal eﬀect of algorithmic trading by comparing the liquidity
+of auto-quoted stocks to the not yet auto-quoted stocks in their sample. In our setup, we compare
+systematic liquidity co-movements for stocks already traded on Chi-X to those that have not started
+trading yet, which essentially corresponds to a diﬀerence-in-diﬀerences methodology.
+3 Data and Sample Construction
+3.1 Sample Construction
+We download the composition of 11 main European stock indices over the period January 2004
+- December 2014 from the Thomson Reuters Tick History (TRTH) database: BEL20 (Belgium),
+OMXC20 (Denmark), OMXH25 (Finland), CAC40 (France), DAX30 (Germany), MIB40 (Italy),
+AEX20 (the Netherlands), OBX (Norway), IBEX35 (Spain), OMXS30 (Sweden), and FTSE100
+(the United Kingdom). Our initial sample consists of all stocks that constitute these indices during
+our sample period. If the composition of an index changes, we keep both old and new index
+constituents for the entire sample period to keep the number of ﬁrms in our sample constant.
+16We assume that short-selling is not available to a median investor in the market.
+10
+
+===== PAGE 14 =====
+
+We concentrate our analysis on the main European stock indices for two reasons. First, at the
+time of the introduction of Chi-X to each country, it is possible to trade only this country’s main
+index constituents, with mid-cap and other stocks starting their trading only later on the Chi-X
+platform. Second, constituents of main indices represent the largest and the most liquid stocks in
+each country, which should encourage the active participation of high-frequency traders. Panel A
+of Table 2 presents the details of our sample construction.
+[Insert Table 2 approximately here]
+In the ﬁrst step, we ﬁlter out Reuters Instrument Codes (RICs) that appear to be erroneously
+reported as an index constituent by TRTH.17 Appendix A provides details of our data cleansing
+procedure. Our initial sample consists of 446 ﬁrms. We further require the stock price to be
+greater than £2 at the end of the previous trading day for UK stocks, and greater than€2 for
+other European stocks.18 Lastly, we require the stock to be traded for at least 1,000 diﬀerent
+1--minute intervals in a given month. Excluding the stocks that do not satisfy the criteria above
+leaves 445 ﬁrms and 50,728 ﬁrm-months in our ﬁnal sample. Table IA1 in the Internet Appendix
+reports the number of distinct ﬁrms and the number of ﬁrm-month observations, separately for
+each country.
+3.2 Measuring Liquidity
+We opt for the one-minute average quoted spread,qspread, as the benchmark liquidity measure
+in our analysis. Arguably, the quoted spread measured over seconds or milliseconds would better
+correspond to relatively short trading horizons of high-frequency traders. However, to address our
+research question, we need to compare liquidity co-movements over intervals of the same length in
+both pre- (2004-2007) and post-Chi-X (2008-2014) periods. Trading is not so active at the beginning
+of our sample in 2004-2005, with the average time of 43 seconds between two quote updates.19 We
+17RIC is the main stock identiﬁer in TRTH, similar to the ticker in the NYSE TAQ database.
+18This requirement is standard in previous studies with US data, for example, Amihud (2002), Acharya and
+Pedersen (2005), Kamara et al. (2008) and Ben-Raphael et al. (2015).
+19For example, the average time between quote updates for UK stocks constitutes 50 seconds, for Italian stocks 62
+seconds and for Danish stocks 100 seconds at the beginning of our sample period (not tabulated).
+11
+
+===== PAGE 15 =====
+
+therefore choose 60 seconds as our benchmark interval length to compute the quoted spread.20 We
+provide a series of robustness checks for our benchmark liquidity measure in Section 5 and the
+Internet Appendix.
+Formally, we calculateqspread as
+qspreadi,j = Ai,j−Bi,j
+(Ai,j+Bi,j)/2,
+where Ai,j is the ask price andBi,j the bid price prevalent for stocki at timej on its primary
+exchange. We delete observations with negative spreads or spreads exceeding 20%, and winsorize
+the upper and lower 1% of theqspread distribution to avoid outliers. We then average all quoted
+spreads for each stocki over each one-minute intervalt.
+Following Chordia et al. (2000), we calculate ﬁrst diﬀerences of the quoted spread,△qspread,
+to capture ﬂuctuations in intraday liquidity.21 We further standardize△qspread by the time-of-
+the-day mean and standard deviation to account for well-documented intraday patterns of bid-ask
+spreads.22 Speciﬁcally, for stocki and intervalt,△qspreadi,t is standardized by the monthly mean
+and standard deviation of△qspread estimated for stocki in the corresponding hourh across all
+days.
+3.3 Summary statistics
+Panel B of Table 2 presents summary statistics of market capitalization and the 1-minute average
+quoted spread across all stocks in our sample. Our main data source for prices, volume traded and
+bid-ask spreads is TRTH. Data on market capitalization,ﬁrm size(in millions of euros), are from
+Datastream. Appendix B provides a detailed description of variable deﬁnitions.
+As expected, our sample stocks are generally large, with the average market capitalization of
+€15.8 billion. Table IA2 in the Internet Appendix presents summary statistics, separately for each
+20Prior studies on algorithmic trading sample data on longer intervals: Huh (2011) uses 5-minute intervals and
+Boehmer and Shankar (2014) 15-minute intervals. We repeat our analysis with average spreads, calculated over
+5-minute intervals, but all results remain qualitatively similar.
+21Taking ﬁrst diﬀerences also helps us to overcome a potential econometric problem of non-stationarity of liquidity
+levels.
+22McInish and Wood (1992) are the ﬁrst to document a reverse J-shaped pattern in intraday spreads, which might
+falsely lead to excess co-movements in spreads at the beginning and at the end of the trading day. To avoid this bias,
+Huh (2011) and Boehmer and Shankar (2014) also standardize intraday spreads with their time-of-the-day mean and
+standard deviation.
+12
+
+===== PAGE 16 =====
+
+country. Market capitalization varies across diﬀerent countries, with our smallest stocks located in
+Belgium and Norway (€4.7 and €5.8 billion, respectively) and our largest stocks in Germany and
+France (€25.4 and €28.8 billion, correspondingly).
+The average quoted spread constitutes 0.16% in the total sample. German, French and Dutch
+stocks are the most liquid, with a spread value of 0.09-0.10%, around half as large as the sample
+average. They are followed by UK, Belgian, Finnish, Italian and Spanish stocks, with their spread
+values in the range of 0.15% to 0.18%. Our least liquid stocks are located in Sweden, Denmark and
+Norway, with their spread values varying between 0.20% and 0.27%. Despite variation in liquidity
+levels across diﬀerent countries, all our sample stocks are the largest and the most liquid stocks in
+their country and all of them represent constituents of main European equity indices.
+4 Chi-X Entry and Liquidity Co-movements
+In this section, we ﬁrst test whether the staggered entrance of Chi-X in Europe induces stronger
+liquidity co-movements of stocks with the aggregate liquidity (Section 4.1). Since Chi-X enables
+simultaneous trading of all major European equities on a single trading platform, we expect the
+liquidity of stocks to co-vary more strongly with the aggregate European liquidity after its introduc-
+tion. We further test whether Europe-wide commonality in liquidity is stronger in down markets
+(Section 4.1) as well as for stocks with higher Chi-X market shares and higher intensity of HFT
+trading (Section 4.2). Finally, we analyze the entry of Turquoise, the second MTF (after Chi-X) to
+combine all major European indices on a single platform, and its eﬀect on Europe-wide liquidity
+co-movements (Section 4.3).
+4.1 Europe-wide Liquidity Co-variations: Pre- vs Post-Chi-X
+Similar to Koch et al. (2016), we conduct our analyses of liquidity co-variations in two steps. In
+the ﬁrst step, we estimate the stock’s liquidity co-variations with the aggregate liquidity of the
+European market. In the second step, we test whether these liquidity co-variations are stronger
+after the introduction of Chi-X trading in each country.
+13
+
+===== PAGE 17 =====
+
+Estimating liquidity co-variations.For each stock and each month, we estimate the stock’s
+liquidity co-variations with the aggregate liquidity of the European market from the market model
+of liquidity, employed by Chordia et al. (2000). Speciﬁcally, we run time series regressions of
+∆qspreadi,t,d on liquidity changes of the aggregate European market,∆qspreadEU,t,d, for all stocks
+i in all 1-minute intervalst and all trading daysd. We additionally control for liquidity changes of
+the corresponding home market,∆qspreadHome,t,d:
+∆qspreadi,t,d, =α+βi,Home∆qspreadHome,t,d +βi,EU ∆qspreadEU,t,d +εi,t,d. (1)
+As in Kamara et al. (2008) and Koch et al. (2016), we calculate∆qspreadHome,t,d as the cross-
+sectional value-weighted average of∆qspreadj,t,d for all stocks in the home country index (e.g.,
+FTSE100 for UK stocks) with j ̸= i.23 The coeﬃcientβi,Home captures the sensitivity of the
+stock’s liquidity to the aggregate home market liquidity, or its systematic liquidity co-movement
+with the home market. In the following, we refer toβi,Home as home liquidity beta. We calculate
+∆qspreadEU,t,d as the cross-sectional value-weighted average of∆qspreadk,t,d for all FTSE Euroﬁrst
+100 index constituents, excluding stockiand all stocksj that belong toi’s home market index,k̸=i
+and k̸= j. The coeﬃcientβi,EU captures the sensitivity of the stock’s liquidity to the aggregate
+European liquidity, after controlling for its liquidity co-movements with the home market,βi,Home.
+We refer toβi,EU as the EU liquidity beta.
+We choose the FTSE Euroﬁrst 100 as our proxy for the aggregate European market, because it
+is a pan-European index, which consists of the 60 largest European companies ranked by market
+capitalization, and 40 additional companies chosen on the basis of their size and sector represen-
+tation by the FTSE Group. Table 3 presents the composition of FTSE Euroﬁrst 100 during our
+sample period.
+[Insert Table 3 approximately here]
+We aggregate all statistics on the country level and report country codes in the ﬁrst column.
+The second column shows the number of distinct companies in each country that represent a part
+23We require at least 70% of all stocks in the corresponding index to be traded in a given intervalt, which ensures
+that the composition of the home market index does not ﬂuctuate too much.
+14
+
+===== PAGE 18 =====
+
+of the index. As with home country indices, if the composition of Euroﬁrst 100 changes, we keep
+both old and new index constituents for the entire sample period to avoid any biases, such that
+the total number of companies in the index increases to 127 over 2004-2014. We report the average
+daily number of shares (in thousands) and euro volume (in millions) of index constituents traded in
+each country in the third and fourth columns, respectively. The last column displays the daily euro
+volume of index constituents for each country as a percentage of the total daily Euroﬁrst volume.24
+Around one third of total Euroﬁrst volume can be attributed to UK stocks, another 20% to
+French stocks and around 15% to German stocks. Italy and Spain also have quite considerable
+shares, with around 10% each. The shares of the remaining countries, the Netherlands, Belgium
+and Finland, are either close to or below 5%. Note that, apart from 3 Finnish stocks, Scandinavian
+countries are not a part of Euroﬁrst 100. We exploit this feature in our future tests, using Scandi-
+navian countries as our control group. Indeed, we would not expect the liquidity of Scandinavian
+stocks to co-vary with Euroﬁrst 100, if these stocks are not a part of the index.
+[Insert Figure 2 approximately here]
+Figure 2 displays the development of EU and home liquidity betas, estimated from equation
+(1), over our sample period. The solid line shows the six-month moving average home liquidity
+beta, βHome, and the dashed line the corresponding values for EU liquidity beta,βEU, over 2004-
+2014. The vertical dashed line shows the launch of Chi-X in the second quarter of 2007. Both
+EU and home liquidity betas increase signiﬁcantly over the decade from 0.05-0.08 to 0.20-0.25,
+correspondingly. These ﬁndings suggest that liquidity co-variations with the aggregate European
+market have become as important as those with the home market over recent years. The general
+increase in liquidity betas over time can potentially be explained by the ﬁnancial crisis of 2008-2009
+as well as the turmoil on European ﬁnancial markets in 2010-2011 due to the Greek debt crisis.
+These periods of market downturns are highlighted by gray shaded vertical bars in the ﬁgure. Even
+though all these factors undoubtedly contribute to the variation in liquidity betas, our aim is to
+separate the eﬀect of the Chi-X entry from other concurrent events. Fortunately, the staggered
+entry of Chi-X into European ﬁnancial markets allows for a clear identiﬁcation of its causal eﬀect.
+24In this table, we convert the pound volume for UK stocks into the equivalent euro volume, using daily EUR/GBP
+exchange rate.
+15
+
+===== PAGE 19 =====
+
+Liquidity co-variations: Pre- vs Post-Chi-X.To examine the eﬀect of Chi-X entry on home
+and Europe-wide liquidity co-variations, we ﬁrst compute the diﬀerence between average pre- and
+post-Chi-X liquidity betas. Our benchmark deﬁnition of the post-Chi-X period is based on the
+month, when the average Chi-X market share for a given country index reaches 10%. Our reasons
+for choosing the 10% cutoﬀ as our benchmark are twofold. First, we would like to ensure that there
+is a substantial amount of trading in the index constituents on the Chi-X platform. Indeed, Table
+1 shows that when Chi-X is initially introduced in a country, its market share is usually at most
+1%. It takes around one year for most of the countries to reach a market share of 10%. Our second
+reason for choosing the 10% cutoﬀ point is based on empirical evidence from Menkveld (2013),
+who ﬁnds that the Chi-X market share for Dutch stocks jumps above 10% only with the entry of a
+multi-market high-frequency trader. We provide further robustness checks of our deﬁnition of the
+post-Chi-X period in Section 5.
+Our univariate tests show that the average post-Chi-X EU liquidity betas increase by 0.09, from
+0.07 to 0.16, and this increase is statistically signiﬁcant at the 1% level. This ﬁnding represents the
+ﬁrst empirical evidence for our hypothesis that Chi-X entry induces stronger Europe-wide liquidity
+co-movements. We also ﬁnd that the average post-Chi-X home liquidity betas signiﬁcantly increase
+by 0.19, from 0.12 to 0.31, presumably because of an increase in multi-market trading by HFTs
+between Chi-X and the home exchange.
+In the next step, we test our predictions in the multivariate setup, controlling for stock char-
+acteristics, time- and country-ﬁxed eﬀects. Speciﬁcally, we run a panel OLS regression ofβEU,
+estimated for each stocki in monthm, on the dummy variable,Post, which equals 1 for all months
+after the country’s Chi-X market share reaches 10%, and is zero otherwise. The vector of standard-
+ized control variables includes the log of market capitalization at the end of the previous month,
+ln(firmsize )i,m−1; the average quoted spread, calculated over the previous month,qspreadi,m−1;
+the year-ﬁxed,YFE, and country-ﬁxed eﬀects,CFE .25 We allow standard errors to cluster at the
+ﬁrm level in order to account for cross-sectional dependence. Our speciﬁcation is as follows:
+25These control variables are standard in previous studies on commonality in liquidity (see, e.g., Koch et al. 2016).
+16
+
+===== PAGE 20 =====
+
+βEU,i,m =α+γ1Posti,m +γ2ln(firmsize )i,m−1 +γ3qspreadi,m−1 +YFE +CFE +εi,m. (2)
+The inclusion of year-ﬁxed eﬀects eliminates shocks to the systematic liquidity co-movements
+that are common to all countries, whereas country-ﬁxed eﬀects control for general levels of liquid-
+ity betas within each country. Therefore, given the year- and country-ﬁxed eﬀects, our identiﬁ-
+cation stems from cross-country variation in thePost dummy: we compare systematic liquidity
+co-movements for index stocks that have already started their trading on the Chi-X platform to
+those that are not traded yet, and thus represent the control group in the current month. For
+unrelated shocks to aﬀect our results, they would have to be correlated with Chi-X entry dates
+across all countries in our sample, which, in our view, is rather unlikely.26 Panel A of Table 4 re-
+ports the results for the total sample, followed by subsample splits for three country groups and for
+sub-periods of down and up markets. Panel B shows the corresponding results for home liquidity
+betas, βi,Home, as the dependent variable.
+[Insert Table 4 approximately here]
+Consistent with univariate results, post-Chi-X EU liquidity betas signiﬁcantly increase by 0.013
+for our total sample (Model 1 of Panel A), which represents a 19% increase relative to their mean
+level of 0.07 in the pre-Chi-X period. Home liquidity betas also increase after the Chi-X entry: An
+increase of 0.030 (Model 1 of Panel B) represents a 25% increase relative to their pre-Chi-X mean
+of 0.12. Our control variables display expected signs: larger stocks and stocks that are more liquid
+exhibit in general stronger systematic co-movements with aggregate market liquidity, consistent
+with prior ﬁndings of Kamara et al. (2008) and Koch et al. (2016).
+Models (2) to (4) present results for subsample splits across diﬀerent countries. To conserve
+space, we pool 11 individual countries into three country groups, based on their Chi-X entry times.
+26Our speciﬁcation is similar to that used by Christensen et al. (2011) to identify the causal eﬀects of the staggered
+introduction of Market Abuse and Transparency Directives on liquidity levels in European countries. Our setup is
+also close to Hendershott et al. (2011), who use the staggered introduction of NYSE Autoquote as an instrument for
+an exogenous increase in algorithmic trading.
+17
+
+===== PAGE 21 =====
+
+Model (2) reports our ﬁndings for the ﬁrst group of major European countries, the indices of which
+started trading on Chi-X soon after its entry in 2007: the UK, France, Germany, the Netherlands
+and Belgium.27 On aggregate, the increase in EU and home liquidity betas in this group is of
+approximately the same magnitude as for the total sample, because British, German and French
+stocks account for the majority of observations. Further, with the combined volume weight of
+around 68% in the FTSE Euroﬁrst 100, these countries indeed represent the core of the European
+ﬁnancial market.
+Model (3) presents results for the four Scandinavian countries as our second country group,
+which started trading on Chi-X in the ﬁrst two quarters of 2008. Whereas their home liquidity
+betas signiﬁcantly increase by 0.033, Scandinavian stocks do not display any signiﬁcant increase
+in their EU liquidity betas in the post Chi-X period. However, because the vast majority of
+Scandinavian stocks do not constitute a part of Euroﬁrst 100, we do not expect their liquidity to
+co-move with the European market.
+Model (4) presents results for Italy and Spain as our third group, which start trading on Chi-X
+in the last two quarters of 2008. Importantly, we observe a signiﬁcantly larger increase in EU betas
+of 0.075 for Italy and Spain, compared to our ﬁrst country group (UK, FR. DE, NL, BE) in Model
+(2) of Panel A. An increase in respective home betas for these countries is insigniﬁcant (Model 4 of
+Panel B). Taken together with an approximately equal pre-Chi-X average EU and home betas of
+0.12, our overall ﬁndings imply that EU betas have become more important than home betas for
+Italian and Spanish stocks after the introduction of Chi-X. Therefore, it appears that Chi-X entry
+has the strongest eﬀect on EU betas for previously more isolated stocks on peripheral markets (IT,
+ES), compared to stocks on core European markets (UK, FR, DE).
+Additionally, we re-estimate home liquidity betas from equation (1), without controlling for
+liquidity changes of the aggregate European market,∆qspreadEU,t,d. Table IA3 in the Internet
+Appendix presents results for equation (2) with these home liquidity betas as dependent variables.
+All results are virtually identical to Panel B of Table 4.
+27Note that Belgian stocks started trading on Chi-X only later, in mid-2008. However, we still choose to include
+them in the ﬁrst group, since its national exchange, Euronext Brussels, is a part of the Euronext trading platform,
+also used in France (Euronext Paris) and the Netherlands (Euronext Amsterdam). All results remain robust if we
+exclude Belgium from the ﬁrst country group.
+18
+
+===== PAGE 22 =====
+
+Overall, our ﬁndings are consistent with H1 that Europe-wide liquidity co-variations signiﬁ-
+cantly increase with the introduction of Chi-X. Importantly, we ﬁnd that EU liquidity betas are
+signiﬁcantly higher than home liquidity betas for more isolated stocks on peripheral markets, com-
+pared to stocks with already high liquidity co-variations on core European markets.
+To test H2, we next analyze liquidity betas during market downturns and market upturns,
+respectively. We expect stronger increases in EU liquidity betas during market downturns. Longin
+and Solnik (2001) show that negative return shocks are more likely to aﬀect all countries at once, i.e.
+they are more likely to be systemic, which should result in simultaneous selling pressure across all
+European stocks. We split the time series of each country’s index return, and classify months with
+positive index returns as up markets and those with negative returns as down markets. Models (5)
+and (6) of Panel A present results for down and up markets, correspondingly. Consistent with our
+expectations, an increase in EU liquidity betas is signiﬁcantly higher in down markets in the post-
+Chi-X period, but not in up markets. This result is in contrast to our ﬁndings for home liquidity
+betas, which increase signiﬁcantly only in up markets (Model 6 of Panel B). Consistent with Longin
+and Solnik (2001), our ﬁndings for up markets imply that positive return shocks are less correlated
+between countries. Overall, we ﬁnd that Europe-wide liquidity co-variations have become stronger
+during crisis periods. Stronger Europe-wide liquidity co-variations in down markets should be of
+great concern for investors and regulators, since they imply that equity markets are now more
+susceptible to transmissions of negative liquidity shocks in periods when such shocks are more
+likely to occur.
+4.2 Market consolidation and intensity of multi-market HFT trading
+Our analyses so far suggest that the entry of Chi-X resulted in stronger Europe-wide liquidity
+co-movements. One potential explanation could be an increase in market consolidation, because
+Chi-X enables simultaneous trading of all major European equities on a single platform. Another
+(non-mutually exclusive) explanation could be an increase in multi-market HFT trading, which
+induces correlated trading in the stock between the Chi-X and the home exchange. In this section,
+we conduct tests of these two candidate explanations by examining heterogeneity in the treatment
+19
+
+===== PAGE 23 =====
+
+eﬀects that arises due to diﬀerences in 1) the level of market consolidation , and 2) the intensity of
+multi-market activity for stocks traded on the Chi-X platform.
+To test the ﬁrst candidate explanation, we use the average monthly share of volume traded on
+Chi-X, Chi-X market share,as our proxy for the level of market consolidation. Higher volumes
+tradedonChi-XsignalhigherlevelsofstockexposuretotheaggregateEuropeanmarket. Therefore,
+we expect sensitivity to the aggregate European liquidity to be higher for stocks that are traded
+more intensely on Chi-X. To test for cross-sectional diﬀerences in liquidity co-movements, we split
+our sample by the median Chi-X market share and introduce two dummy variables:High, equal
+to 1 for stocks with above median Chi-X market share, andLow, equal to 1 for those with below
+median share. We then interact both of these dummies with ourPost dummy and estimate the
+following speciﬁcation:
+βEU,i,m = α+γ1Highi,m·Posti,m +γ2Lowi,m·Posti,m +γ3ln(firmsize )i,m−1
++γ4qspreadi,m−1 +YFE +CFE +εi,m. (3)
+If our hypothesis holds, we expectγ1 to be higher thanγ2, which would suggest that EU liquidity
+betas exhibit larger increases for stocks that are traded more intensely on Chi-X. We use the same
+set of control variables as in our speciﬁcation (2), and continue to allow for clustering of standard
+errors at the ﬁrm level.
+[Insert Table 5 approximately here]
+We report our ﬁndings on the cross-sectional diﬀerences in liquidity co-movements in Panel A
+of Table 5. Model (1) presents results for the total sample. To conserve space, we do not report
+coeﬃcients for control variables, but they are included in all regressions. The coeﬃcient on the
+interaction ofHigh and Post, γ1, is positive and signiﬁcant, whereas the interaction ofLow and
+Post,γ2, is not. Consistent with our expectations, these ﬁndings suggest a stronger increase in EU
+liquidity betas for stocks that are more intensely traded on Chi-X, i.e. those with higher levels of
+market consolidation. Next, we split our total sample into sub-periods of down and up markets,
+respectively, using the same deﬁnition as in the previous section. For down markets in Model (2),
+20
+
+===== PAGE 24 =====
+
+we observe that interactions ofPost with bothHigh and Low are statistically signiﬁcant, but the
+coeﬃcient on the former is signiﬁcantly higher. For up markets in Model (3), we do not observe any
+statistically signiﬁcant diﬀerences between the coeﬃcients on the two interaction terms. Overall,
+we conclude that an increase in Europe-wide liquidity co-variations in down markets is especially
+high for stocks with higher trading intensity on Chi-X.
+To test the second explanation, we use the Halling et al. (2013) measure ofMultimarket Trading
+to proxy for the intensity of multi-market HFT activity.Multimarket Tradingcaptures the correla-
+tion of unexpected trading volume within a one-minute time interval between Chi-X and the home
+market. We estimate this measure for each stocki and dayd from the following VAR model:
+△VolHome
+i,t = αHome
+i +γHome
+i △VolHome
+i,t−1 +βChi−X
+i △VolChi−X
+i,t−1 +δireti,t +εHome
+i,t (4)
+△VolChi−X
+i,t = αChi−X
+i +γChi−X
+i △VolChi−X
+i,t−1 +βHome
+i △VolHome
+i,t−1 +δireti,t +εChi−X
+i,t ,
+where△Voli,t is the change in the trading volume, calculated as the logarithm of the ratio of the
+1-minute intervalt to intervalt−1 euro (pound) trading volume.28 We also control for the ﬁrm’s
+stock return in the home market,ret, to account for unexpected volume that might be related to
+trading on an information signal. Multimarket Trading for stocki on dayd is calculated as the
+contemporaneous correlation between the unexpected trading volume in the home market,εHome
+i,t ,
+and on the Chi-X platform,εChi−X
+i,t . We then average the obtained daily correlations for each
+monthm.The higher the correlation in trading volume shocks between the two markets, the more
+intensive is the multi-market trading of this stock. Since trading across multiple markets requires
+costly technological investment and continuous monitoring, it is plausible to assume that multi-
+market trading between Chi-X and the home market is to a large extent driven by high-frequency
+traders. On average, the correlation in unexpected trading volumes between Chi-X and the home
+market increases from 0.25 in 2008 to 0.35 in 2011, consistent with the rise in high-frequency trading
+28Similar to Halling et al. (2013), we use log-changes in trading volume to ensure stationarity of this variable.
+21
+
+===== PAGE 25 =====
+
+over these years. It subsequently drops to less than 0.10 in 2014, which implies that cross-market
+strategies have become less proﬁtable towards the end of our sample period.
+We re-estimate equation (4), splitting our sample by the medianMultimarket Tradingmeasure.
+Model (4) in Panel A of Table 5 presents the corresponding results for the total sample. Models (5)
+and (6) present results for down and up market splits, respectively. As in our previous analysis with
+the Chi-X market share, we observe a higher coeﬃcient onHigh·Post than onLow·Post, for the
+total sample and in down markets. Overall, these ﬁndings are consistent with the second candidate
+explanation that Europe-wide liquidity co-movements are stronger for stocks more intensely traded
+by multi-market HFT traders.
+4.3 Entry of Turquoise
+We further conduct an additional analysis of the entry of Turquoise, the second MTF (after Chi-X)
+to start trading all major European indices on a single platform. It was launched in 2008 by a
+consortium of nine founding investment banks.29 The main objective of its founding members was
+to decrease execution costs for their clients. Whereas the soft launch with 5 ﬁrms per country
+took place in mid-August 2008, it was not until September 2008 that Turquoise started trading
+stocks from 13 major European indices.30 Italian stocks started trading in October 2008, followed
+by Spanish stocks in February 2009. Overall, empirical predictions for the eﬀect of Turquoise on
+Europe-wide liquidity co-variations are not straightforward. On the one hand, Turquoise presents
+another opportunity (also for HFTs) to trade all European stocks on a single venue, which can
+result in stronger co-variations. On the other hand, it competes directly with Chi-X for attracting
+the order ﬂow, which increases market fragmentation for the European basket of stocks and can
+therefore result in overall weaker liquidity co-variations.
+To determine which of the two predictions dominates, we re-estimate our equation (2), now
+adding a dummy variable, PostTurq. PostTurq equals 1 for all months after Turquoise starts
+trading the main stock index of a country, and is zero otherwise. Model 1 in Panel B of Table 5
+29Citigroup, Credit Suisse, Deutsche Bank, Goldman Sachs, Merrill Lynch, Morgan Stanley, UBS, BNP Paribas
+and Societe Generale.
+30Hengelbrock and Theissen (2009) provide a detailed overview of the entry of Turquoise on European ﬁnancial
+markets.
+22
+
+===== PAGE 26 =====
+
+reports the results for the total sample. As in our benchmark model (Model 1 in Panel A of Table
+4), the coeﬃcient onPostChi−X shows a signiﬁcant increase of 0.012 in EU liquidity betas for our
+total sample, relative to the pre-MTF period (2004Q1-2007Q1).PostTurq captures an additional
+change in EU liquidity betas after the entry of Turquoise.31 Although the coeﬃcient onPostTurq
+is insigniﬁcant, the total eﬀect on EU liquidity betas, measured as the sum of the coeﬃcients on
+PostChi−X andPostTurq, is still 0.012. In other words, EU liquidity betas increase after the entry
+of Chi-X and remain at the same increased level after the entry of Turquoise. Our ﬁndings are
+overall consistent with previous results of Jain et al. (2020), who document an increase in liquidity
+commonality across stocks traded on Turquoise. However, our ﬁndings imply that this increase
+should be rather attributed to the prior entry of Chi-X for our sample of larger stocks.32
+In addition to Jain et al. (2020), we further analyze changes in EU liquidity betas in down
+and up markets in Models (2) and (3), respectively. Overall, we observe similar coeﬃcients on
+PostChi−X as in our benchmark Models (5) and (6) in Panel A of Table 4. Importantly, the
+coeﬃcient onPostTurq is signiﬁcantly negative for the subsample of down markets, suggesting a
+marginaldecrease of0.01in EUliquiditybetas aftertheentry ofTurquoise. The totaleﬀect, relative
+to the pre-MTF period, is however still positive, i.e.0.027−0.01 = 0.017. In up markets, both
+PostChi−X and PostTurq are insigniﬁcant. Overall, our empirical ﬁndings, based on the entry of
+Turquoise, are rather consistent with the “competition” hypothesis. The entry of Turquoise implies
+additional competition for Chi-X for the order ﬂow, resulting in greater market fragmentation for
+European stocks. Consequently, we observe weaker Europe-wide liquidity co-variations in down
+markets. Thus, the entry of a competitor helps to alleviate the problem of increased systematic
+liquidity co-movements across European stocks in down markets.
+31Since Turquoise entered after Chi-X,P ostT urq only equals 1 ifP ostChi−Xis also equal to 1. Therefore,P ostT urq
+can be regarded as the interaction term,P ostChi−X · P ostT urq, measuring the additional eﬀect of Turquoise on EU
+liquidity betas.
+32In contrast to our study, the sample of Jain et al. (2020) includes all stocks traded on Turquoise. Apart from
+diﬀerences in the sample composition, Jain et al. (2020) use the closing bid-ask spreads to estimate liquidity co-
+variations on a daily level, as opposed to 1-minute average quoted spreads in our study.
+23
+
+===== PAGE 27 =====
+
+5 Alternative Explanations and Robustness Checks
+5.1 Alternative explanations
+LaunchofEurope-wideETFs. OnepotentialalternativeexplanationforanincreaseinEurope-
+wide equity liquidity co-movements could be launch of ETFs tracking broad European stock indices,
+such as Euro Stoxx 50 and MSCI Europe. Agarwal et al. (2018) show that simultaneous trading in
+the underlying securities of ETFs leads to greater commonality in liquidity between them. There-
+fore, if the launch of Europe-wide ETFs overlaps with the entry of Chi-X, an increase in correlated
+demand for their underlying stocks could also explain our empirical ﬁndings. With this argument,
+we would then also expect to ﬁnd an increase in Europe-wide liquidity co-movements after an ETF
+launch.
+To test this alternative explanation, we download from Bloomberg ETFs that track Euro Stoxx
+50 and MSCI Europe and the inception dates of which lie within the timeline of the staggered entry
+of Chi-X into European markets. Speciﬁcally, we identify 6 ETFs that satisfy the above criteria:
+Deka Euro Stoxx 50 ETF (inception: March 31, 2008), Deka MSCI Europe ETF (August 29, 2008),
+Amundi Euro Stoxx 50 ETF (September 1, 2008), Invesco Euro Stoxx 50 ETF (March 18, 2009),
+Invesco MSCI Europe ETF (March 23, 2009), and HSBC MSCI Europe MTF (November 3, 2010).
+We re-estimate our speciﬁcations from Table 4 with EU liquidity betas as dependent variables, now
+replacing Post with PostETF . PostETF is a dummy variable, which equals 1 for all months after
+the launch of the corresponding ETF, and is zero otherwise. Panel A of Table 6 reports the average
+coeﬃcient onPostETF and the average t-statistics across all ETFs.
+[Insert Table 6 approximately here]
+On average, we do not observe a signiﬁcant increase in EU liquidity betas after the launch
+of ETFs, the inception dates of which overlap with the Chi-X entry (Model 1).PostETF is only
+marginally signiﬁcant at the 10% level in down markets (Model 2), with its coeﬃcient of 0.008
+being three times lower than the corresponding coeﬃcient of 0.025 onPostChi−X in Model (5) in
+Panel A of Table 4. Interestingly, we ﬁnd a signiﬁcant eﬀect of the launch of ETFs on EU liquidity
+betas in up markets (Model 3), suggesting that liquidity co-movements of their underlying stocks
+24
+
+===== PAGE 28 =====
+
+are stronger due to an increase in ETF demand in the rising markets. In contrast, the eﬀect of
+Chi-X entry on EU liquidity betas is only signiﬁcant in down markets. Whereas positive liquidity
+shocks are rather benign, correlated liquidity decreases in down markets are of greater concern:
+liquidity dries up exactly when investors need to liquidate their positions.
+Overall, our empirical ﬁndings, based on the launch of Europe-wide ETFs, are inconsistent with
+the notion that an increase in EU liquidity betas is driven by increased correlated demand for
+the underlying stocks of these ETFs. The overall insigniﬁcant eﬀect of ETFs entering the market
+simultaneously with Chi-X can probably be explained by the fact that the ﬁrst ETF oﬀering broad
+exposure to European equities, iShares Euro Stoxx 50 ETF, started trading on the Deutsche Börse
+as early as April 11, 2000, which precedes the entry of Chi-X by seven years. Therefore, we
+suppose that the major eﬀect of ETFs on liquidity commonality for European stocks takes place in
+the pre-Chi-X period.
+Placebo tests. Further, we conduct placebo tests, in which we randomly assign ourPost dummy
+between the ﬁrst month of 2004 and the last month of 2014. Using 5,000 replications, we repeat our
+analyses from Table 4 and summarize the distributions of the coeﬃcients and t-statistics onPost in
+Panel B of Table 6. We report the average, 5th and 95th percentiles across the 5,000 replications.
+We also report the percentiles of our actual estimates and t-statistics in the last row.
+As expected, our average coeﬃcients from the placebo regressions are close to zero for all
+speciﬁcations, with the 95th percentile not exceeding 0.01. Our actual estimates in the range of
+0.013-0.03 fall within the 99th percentile of the distribution for both liquidity betas, suggesting
+that they are signiﬁcantly diﬀerent from the placebo average. These results are also conﬁrmed by
+the actual t-statistics to its distribution from the placebo regressions in the lower part of the panel.
+Phantom liquidity. Another alternative explanation for our empirical results is a phenomenon
+referenced as “phantom liquidity” in the SEC’s (2010) release on equity market structure.33 Phan-
+tom liquidity refers to the same single limit order posted across multiple markets. Posting a limit
+order is much less costly than submitting a market order and posting across multiple venues max-
+33See the 2010 Securities and Exchange Commission Concept Release on Equity Market Structure.
+25
+
+===== PAGE 29 =====
+
+imizes the chances of the limit order execution. After the execution on one of the venues, all
+outstanding orders on other venues are canceled. Such simultaneous order cancellations could also
+increase the liquidity co-movements across markets. Quote updates by HFT market makers also
+result in simultaneous order cancellations. However, the reduction in liquidity is only temporary,
+as it is replenished after market makers repost their new quotes.34 In contrast, order cancellations
+associated with phantom liquidity represent a longer-lasting withdrawal of liquidity from the mar-
+ket. Van Kervel (2015) documents that an execution on one venue is followed by cancellations of
+limit orders on the same side on competing venues of around 60% of the trade size within 100 ms.
+Further, the eﬀect becomes stronger with the time horizon and continues to hold even after 10
+seconds.
+We use the sensitivity in the depth of the limit order book on the home exchange to Chi-X
+trades as a proxy for phantom liquidity. Speciﬁcally, we estimate a modiﬁed equation (10) from
+Van Kervel (2015) for each stock-day:
+△DepthAskHome
+i,t = αHome
+i +γHome
+1,i BuyHome
+i,t +γHome
+2,i SellHome
+i,t +
++ βChi−X
+1,i BuyChi−X
+i,t +βChi−X
+2,i SellChi−X
+i,t +εHome
+i,t . (5)
+where△DepthAskHome
+i,t is the change in the depth quoted at the best ask on the home exchange
+(in pounds/euros) within the one-minute intervalt for stock i; BuyHome
+i,t is the one-minute buy
+volume (in pounds/euros) for stocki on the home exchange;SellHome
+i,t is the corresponding sell
+volume on the home exchange.BuyChi−X
+i,t andSellChi−X
+i,t are deﬁned similarly for the buy and sell
+volume traded on Chi-X, respectively. We also run regressions, using changes in the depth quoted
+at the best bid (△DepthBidHome
+i,t ) as the dependent variable. To capture the long-lasting eﬀect of
+liquidity withdrawals, we opt for a longer time interval of one minute. All results remain robust if
+we use one second instead.35
+34Baruch and Glosten (2013) show theoretically that it is rational for market makers to manage their undercutting
+risk by rapidly canceling their quotes and replacing them with new randomly chosen ones.
+35We obtain similar results for the sensitivity of the depth of the Chi-X limit order book to trades on the respective
+home exchange (not tabulated).
+26
+
+===== PAGE 30 =====
+
+Our main coeﬃcient of interest isβ1 for regressions with△DepthAskHome as the dependent
+variable. Speciﬁcally, β1 shows the pound/euro change in the depth on the ask side of home
+exchange after a 1 pound/euro purchase trade on Chi-X. For regressions with△DepthBidHome
+as the dependent variable, our main coeﬃcient of interest isβ2, respectively. The more negative
+values ofβ1 and β2 imply stronger sensitivity in the depth of the limit order book on the home
+exchange to Chi-X trades. Thus, we associate more negative values ofβ1 andβ2 with a higher level
+of phantom liquidity. Van Kervel (2015) documents thatβ1 and β2 are symmetrical and lie in the
+range of -0.20 to -0.40, dependent on the length of the time interval. We also ﬁnd the symmetric
+monthly average value of -0.28 forβ1 and β2 in our sample.
+Next, we split our sample by the median value ofβ1 and β2, and deﬁne two dummy variables:
+High Phantom Liq, equal to 1 for stocks with below median values, andLow Phantom Liq,equal
+to 1 for those with above median values. We then interact both of these dummies with ourPost
+dummy and re-estimate equation (3) above.
+[Insert Table 7 approximately here]
+Models (1) to (3) of Table 7 present results forHigh Phantom Liqbased onβ1, i.e. the sensitivity
+of the ask side of the limit order book on home exchange to purchase trades on Chi-X. Models (4)
+to (6) present corresponding results forHigh Phantom Liqbased onβ2, i.e. the sensitivity of the
+bid side of the limit order book on home exchange to sale trades on Chi-X. To conserve space,
+we do not report coeﬃcients for control variables, but they are included in all regressions. For
+the total sample, we observe that EU liquidity betas display a signiﬁcant increase only for stocks
+with low levels of phantom liquidity, both for ask and bid sides of the book (Models 1 and 4).
+These results also hold for down (Models 2 and 5) and up (Models 3 and 6) markets. Overall,
+our empirical ﬁndings are inconsistent with the explanation that phantom liquidity is a source of
+stronger cross-market liquidity co-movements.
+5.2 Robustness checks
+Alternative intraday liquidity measures.As our ﬁrst robustness check, we repeat our analyses
+from Table 4 with two alternative intraday liquidity measures: the ﬁve-minute average quoted
+27
+
+===== PAGE 31 =====
+
+spread and the one-minute realized spread. We use a longer time window of ﬁve minutes to check
+the robustness of our results and to make them comparable to previous studies on algorithmic
+trading that also sample data on longer intervals (Huh, 2011;Boehmer and Shankar, 2014). We
+also use an alternative measure of the one-minute realized spread, which should better capture
+proﬁtability of presumably the most common multi-market HFT trading strategy - the market
+making strategy. Speciﬁcally, we calculate the realized spread as
+rspreadi,j = 2|Pi,j−Mi,j+60s|
+Mi,j
+,
+where Pi,j is the transaction price of stock i at time j on its primary exchange, and Mi,j
+is the midpoint quote, calculated as the average of the prevailing bid and ask quotes at timej
+(Mi,j = Ai,j+Bi,j
+2 ). Mi,j+60s represents the one-minute (or 60-second) forward midpoint quote. We
+then average all realized spreads for each stocki within each minutet to calculate the one-minute
+average realized spread.
+[Insert Table 8 approximately here]
+We re-estimate equation (1), using these alternative liquidity measures, to obtainβHome and
+βEU for each stock and each month. Afterwards, we re-estimate our speciﬁcation from equation
+(2) with each of these two betas as the dependent variable. As before, we include the ﬁrm size,
+the average liquidity over the previous month, year- and country-ﬁxed eﬀects as control variables.
+Panel A of Table 8 presents the results. To conserve space, we only report the coeﬃcient onPost
+for each speciﬁcation.
+Models (1)-(3) present results, using the ﬁve-minute average quoted spread, for the total sam-
+ple, down and up markets, respectively. Importantly, we obtain greater economic magnitude of
+coeﬃcients, compared to previous results from Table 4. This ﬁnding implies that the liquidity
+co-movements measured over one-minute intervals do not dissipate within the next ﬁve minutes,
+but actually become stronger. The results for the one-minute realized spread in Models (4)-(6) are
+virtually identical to benchmark speciﬁcations in Table 4. All main results also hold if we use the
+one-minute average eﬀective spreads or price impacts to estimate our liquidity betas (Table IA4 in
+the Internet Appendix).
+28
+
+===== PAGE 32 =====
+
+Dailyliquiditymeasures. Itis ex antenotclearwhetherstrongerintradayliquidityco-variations
+are also signiﬁcant on the daily level. Arguably, daily liquidity co-variations might be of higher
+importance for lower-frequency traders, such as institutional and retail investors. Therefore, we
+also present results for daily quoted bid-ask spreads and the Amihud (2002) measure of illiquidity
+in Panel B of Table 8.36
+We calculate the Amihud (2002) measure,illiq, for stocki on dayd as the ratio of the absolute
+daily stock return,|Ri,d|, to the daily euro (pound) volume traded (in millions),DVoli,d, on the
+stock’s primary exchange:
+illiqi,d = |Ri,d|
+DVol i,d
+.
+Following Amihud (2002), we winsorize the upper and lower 1% of theilliq distribution to
+avoid outliers.37 Since there is now only one observation per day for each liquidity measure, we
+can no longer estimate liquidity betas on a monthly basis and therefore re-estimate equation (1)
+on a quarterly basis. In equation (2),Post now takes value of 1 starting in the quarter when the
+country’s Chi-X market share reaches 10%, and is zero otherwise.
+For daily quoted spreads, we observe a considerably stronger increase of 0.18 in EU liquidity
+betas after the introduction of Chi-X (Model 1), whereas home liquidity betas decrease by -0.11.
+Models (2) and (3) present the corresponding results for down and up markets. As before, we
+observe the highest increases in EU liquidity betas in down markets, whereas they drop insignif-
+icantly in the periods of market booms. The ﬁndings for the Amihud measure are similar, with
+the economic signiﬁcance being comparable to the intraday spreads. Overall, we also ﬁnd stronger
+Europe-wide liquidity co-movements for daily liquidity measures in the post-Chi-X period.
+36For example, on a day with a situation similar to the Flash Crash, with large price declines across multiple stocks,
+followed by subsequent price reversals, their daily stock returns, and thus the Amihud (2002) measures, would still
+be close to zero, leading to potential underestimation of their liquidity co-variations during that day.
+37As in other studies, e.g., Koch et al. (2016), we scaleilliq by the factor106 to obtain meaningful numbers (our
+daily euro/pound volume traded is in millions).
+29
+
+===== PAGE 33 =====
+
+6 Conclusions
+This paper examines the eﬀects of the market entry of Chi-X, a pan-European MTF, on systematic
+liquidity co-movements within a network of European national markets. The staggered introduction
+of Chi-X in 11 European equity markets allows us to clearly identify its eﬀect on Europe-wide
+commonality in liquidity. Importantly, Chi-X enables trading of all major European equities on a
+single trading platform, which was not hitherto possible at a comparable speed. Further, multi-
+market trading by HFTs between Chi-X and national stock exchanges connects individual markets
+in a single network, which should facilitate cross-market liquidity spillovers and induce stronger
+Europe-wide liquidity co-movements.
+Consistent with our expectations, we ﬁnd that liquidity co-movements within the aggregate
+European market signiﬁcantly increase after the introduction of Chi-X, especially in down markets.
+We further show that Europe-wide liquidity co-movements are stronger for stocks with higher Chi-
+X market shares and higher multi-market trading activity in the post-Chi-X period. Overall, our
+ﬁndings are consistent with the notion that the introduction of MTFs is associated with stronger
+network-wide liquidity co-movements, thus facilitating propagation of liquidity shocks across mar-
+kets.
+Empirical evidence in our paper suggests that market participants and policymakers currently
+underestimate potential liquidity risks, generated by MTFs. Stronger network-wide liquidity co-
+movements, especially during crisis periods, imply that equity markets are now more susceptible to
+negative liquidity shocks, exactly when such shocks are more likely to occur. Raising awareness of
+these risks should help institutional investors to manage their liquidity risks better and regulators
+to develop better policies aimed at the reduction of such risks on ﬁnancial markets.
+30
+
+===== PAGE 34 =====
+
+References
+Acharya, V. V. and L. H. Pedersen (2005). Asset pricing with liquidity risk.Journal of Financial
+Economics 77, 375–410.
+Agarwal, V., P. Hanouna, R. Moussawi, and C. W. Stahel (2018). Do etfs increase the commonality
+in liquidity of underlying stocks?Working Paper, Georgia State University.
+Amihud, Y. (2002). Illiquidity and stock returns: Cross-section and time-series eﬀects.Journal of
+Financial Markets 5, 31–56.
+Baron, M. D., J. Brogaard, B. Hagströmer, and A. Kirilenko (2016). Risk and return in high-
+frequency trading. Working Paper, Cornell University.
+Baruch, S. and L. R. Glosten (2013). Flickering quotes.Working Paper, Columbia University.
+Baruch, S., G. A. Karolyi, and M. L. Lemmon (2007). Multimarket trading and liquidity: theory
+and evidence. Journal of Finance 62, 2169–2200.
+Ben-David, I., F. Franzoni, and R. Moussawi (2012). ETFs, arbitrage, and contagion.Working
+Paper, Ohio State University and University of Lugano.
+Ben-Raphael, A., O. Kadan, and A. Wohl (2015). The diminishing liquidity premium.Journal of
+Financial and Quantitative Analysis 50, 197–229.
+Benos, E., J. A. Brugler, E. Hjalmarsson, and F. Zikes (2015). Interactions among high frequency
+traders. Working Paper, Bank of England.
+Boehmer, E. and R. Shankar (2014). Low latency trading and the comovement of order ﬂow, prices,
+and market conditions.Working Paper, EDHEC Business School.
+Chaboud, A. P., B. Chiquoine, E. Hjalmarsson, and C. Vega (2014). Rise of the machines: Algo-
+rithmic trading in the foreign exchange market.Journal of Finance 69, 2045–2084.
+Chiyachantana, C. N., P. K. Jain, C. Jiang, and R. A. Wood (2004). International evidence on
+institutional trading behavior and price impact.Journal of Finance 59, 869–898.
+31
+
+===== PAGE 35 =====
+
+Chordia, T., R. Roll, and A. Subrahmanyam (2000). Commonality in liquidity.Journal of Financial
+Economics 56, 3–28.
+Christensen, H. B., L. Hail, and C. Leuz (2011). Capital-market eﬀects of securities regulation:
+The role of implementation and enforcement.National Bureau of Economic Research.
+Coughenour, J. F. and M. M. Saad (2004). Common market makers and commonality in liquidity.
+Journal of Financial Economics 73, 37–69.
+Gresse, C. (2017). Eﬀects of lit and dark market fragmentation on liquidity.Journal of Financial
+Markets 35, 1–20.
+Halling, M., P. C. Moulton, and M. Panayides (2013). Volume dynamics and multimarket trading.
+Journal of Financial and Quantitative Analysis 48, 489–518.
+Halling, M., M. Pagano, O. Randl, and J. Zechner (2008). Where is the market? Evidence from
+cross-listing in the United States.Review of Financial Studies 21, 725–761.
+He, P., E. Jarnecic, and Y. Liu (2015). The determinants of alternative trading venue market share:
+Global evidence from the introduction of Chi-X.Journal of Financial Markets 22, 27–49.
+Hendershott, T., C. M. Jones, and A. J. Menkveld (2011). Does algorithmic trading improve
+liquidity? Journal of Finance 66, 1–33.
+Hengelbrock, J. and E. Theissen (2009). Fourteen at one blow: The market entry of turquoise.
+Working Paper, University of Mannheim.
+Hoﬀmann, P. (2016). Adverse selection, market access, and inter-market competition.Journal of
+Banking and Finance 65, 108–119.
+Huberman, G. and D. Halka (2001). Systematic liquidity. Journal of Financial Research 24,
+161–178.
+Huh, Y. (2011). Algorithmic trading and liquidity commonality.Working Paper, Stanford Graduate
+School of Business.
+32
+
+===== PAGE 36 =====
+
+Jain, P. K., M. Mekhaimer, and S. Mortal (2020). Commonality in liquidity and multilateral trading
+facilities. Financial Review 55, 481–502.
+Jovanovic, B. and A. J. Menkveld (2016). Middlemen in limit order markets.Working Paper, New
+York University and VU University of Amsterdam.
+Kamara, A., X. Lou, and R. Sadka (2008). The divergence of liquidity commonality in the cross-
+section of stocks.Journal of Financial Economics 89, 444–466.
+Karolyi, G. A., K.-H. Lee, and M. A. van Dijk (2012). Understanding commonality in liquidity
+around the world.Journal of Financial Economics 105, 82–112.
+Kaul, A., V. Mehrotra, and C. Stefanescu (2016). Location and excess comovement.Journal of
+Empirical Finance 37, 293–308.
+Koch, A., S. Ruenzi, and L. Starks (2016). Commonality in liquidity: A demand-side explanation.
+Review of Financial Studies 29, 1943–1974.
+Lescourret, L. and S. Moinas (2015). Liquidity supply accross multiple trading venues.Working
+Paper, ESSEC Business School and Tolouse School of Economics.
+Longin, F. and B. Solnik (2001). Extreme correlation of international equity markets.Journal of
+Finance 56, 649–676.
+McInish, T. H. and R. A. Wood (1992). An analysis of intraday patterns in bid-ask spreads for
+NYSE stocks. Journal of Finance 47, 753–764.
+Menkveld, A. J. (2008). Splitting orders in overlapping markets: A study of cross-listed stocks.
+Journal of Financial Intermediation 17, 145–174.
+Menkveld, A. J. (2013). High frequency trading and the new market makers.Journal of Financial
+Markets 16, 712–740.
+Pulatkonak, M. and G. Soﬁanos (1999). The distribution of global trading in NYSE-listed non-US
+stocks. NYSE Working Paper.
+33
+
+===== PAGE 37 =====
+
+Saar, G. (2001). Price impact asymmetry of block trades: An institutional trading explanation.
+Review of Financial Studies 14, 1153–1181.
+Tomio, D. (2016). Arbitraging liquidity.Working Paper, Copenhagen Business School.
+Van Kervel, V. (2015). Competition for order ﬂow with fast and slow traders.Review of Financial
+Studies 28, 2094–2127.
+34
+
+===== PAGE 38 =====
+
+Appendix
+A Thomson Reuters Tick History (TRTH) Data Filtering
+In the TRTH database,RIC is the main company identiﬁer, similar to the ticker in the NYSE
+TAQ database. In this appendix, we provide details of our initial TRTH data cleaning procedure
+for ﬁltering out RICs. First, we drop duplicateRICs, with the ﬁrst character equal to 0. Second,
+we retain onlyRICs with Type code equal to 113 or 256 to discard any non-equity assets.Type
+113 means that the asset is equity, and the correspondingRIC is the company’s currentRIC in
+use. Type 225 means the asset is equity, but the company is using a diﬀerent RIC now. Third, we
+drop RICs that do not end with “.L” (“.DE”, “.PA”, “.AS”, “ .BR”, “.HE”, “.ST”, “.OL”, “.CO”,
+“.MI” and “.MC”) for UK (German, French, Dutch, Belgian, Finnish, Swedish, Norwegian, Danish,
+Italian and Spanish) stocks.
+For stocks that changeRICs during our sample period, we use the following procedure to
+merge newRICs with oldRICs. If the stock’sNewRICSymbol is empty, this means that the
+corresponding RIC is the company’s most recent identiﬁer (newRIC). In this case, we use the
+corresponding RIC as the ﬁnalRIC. If the stock’sNewRICSymbol is not empty, we then use
+this reportedNewRICSymbol as the ﬁnalRIC. If a stock has more than one observation on a
+particular trading day, we keep the most recentRIC with Type 113 that has the highest trading
+volume.
+35
+
+===== PAGE 39 =====
+
+B Variable Deﬁnitions
+Variable Description Source
+Chi-X Market
+Share
+Chi-X market share, deﬁned as the ratio of the daily volume
+traded on Chi-X relative to the total daily volume traded on
+both Chi-X and the home exchange.
+TRTH
+firmsize Market capitalization (in €/£ million) at the end of each
+quarter t
+Datastream
+illiq The Amihud (2002) measure, calculated as the ratio of the
+absolute daily price change,|Ri,d|, to the daily euro (pound)
+volume traded (in millions) on the stock’s primary exchange,
+DVoli,d. We calculateilliq as the quarterly average of the
+daily Amihud (2002) measure.
+TRTH
+Multimarket
+Trading
+The Multimarket Tradingmeasure of Halling et al. (2013),
+estimated from the following VAR model:
+△Vol Home
+i,t =αHome
+i +γHome
+i △Vol Home
+i,t−1 +βChiX
+i △Vol ChiX
+i,t−1 +reti,t+εHome
+i,t
+△Vol ChiX
+i,t =αChiX
+i +γChiX
+i △Vol ChiX
+i,t−1 +βHome
+i △Vol Home
+i,t−1 +reti,t+εChiX
+i,t
+where△Voli,t is the change in the trading volume, calcu-
+lated as the logarithm of the ratio of the one-minute interval
+t to intervalt−1 euro (pound) trading volume; andreti,t
+is the ﬁrm’s stock return in the home market.Multimarket
+Trading for stock i on day d is calculated as the contem-
+poraneous correlation between εHome
+i,t and εChiX
+i,t . We then
+average the obtained daily correlations for each monthm.
+TRTH
+36
+
+===== PAGE 40 =====
+
+Variable Description Source
+Phantom Liq The measure of phantom liquidity, estimated asβ1 from the
+modiﬁed equation (10) in Van Kervel (2015):
+△DepthAskHome
+i,t =αHome
+i +γHome
+1,i Buy Home
+i,t +γHome
+2,i Sell Home
+i,t +
++βChi−X
+1,i Buy Chi−X
+i,t +βChi−X
+2,i Sell Chi−X
+i,t +εHome
+i,t
+where △DepthAskHome
+i,t is the one-minute change in the
+depth quoted at the best ask on the home exchange
+(in pounds/euros) within the time interval t for stock i;
+BuyHome
+i,t is the one-minute buy volume (in pounds/euros)
+for stock i on the home exchange; SellHome
+i,t is the corre-
+sponding sell volume on the home exchange. BuyChi−X
+i,t
+and SellChi−X
+i,t are deﬁned similarly for the buy and sell
+volume traded on Chi-X, respectively. For regressions with
+△DepthBidHome
+i,t as the dependent variable, the phantom
+liquidity is proxied byβ2.
+TRTH
+Post A dummy variable, which equals 1 for all months after the
+country’s Chi-X market share reaches 10%, and is zero oth-
+erwise.
+TRTH
+37
+
+===== PAGE 41 =====
+
+Variable Description Source
+qspread The one-minute quoted spread, calculated as
+qspreadi,j = Ai,j−Bi,j
+(Ai,j+Bi,j)/2,
+whereAi,j is the ask priceandBi,j the bid priceprevalent for
+stock i at timej on its primary exchange. We then average
+all quoted spreads for each stocki within each minutet to
+calculate the 1-minute average quoted spread. We delete ob-
+servations with negative spreads or spreads exceeding 20%,
+and winsorize the upper and lower 1% of theqspread distri-
+bution to avoid outliers.
+TRTH
+realizedspread The one-minute realized spread, calculated as
+rspreadi,j = 2|Pi,j−Mi,j+60s|
+Mi,j
+,
+wherePi,j is the transaction price of stocki at timej on its
+primary exchange, andMi,j is the midpoint quote, calcu-
+lated as the average of the prevailing bid and ask quotes at
+time j (Mi,j = Ai,j+Bi,j
+2 ). Mi,j+60s represents the 1-minute
+(or 60-second) forward midpoint quote. We then average
+all realized spreads for each stocki within each minutet to
+calculate the 1-minute average realized spread.
+TRTH
+ret The ﬁrm’s stock return in the home market TRTH
+38
+
+===== PAGE 42 =====
+
+Figure 1: Staggered entrance of Chi-X into European equity markets. This ﬁgure shows the
+timeline of Chi-X entrance into European equity markets. The dates of Chi-X entry into European equity
+markets are 30/03/2007 for Germany (DE) and the Netherlands (NL); 29/06/2007 for the United Kingdom
+(GB),28/09/2007forFrance(FR),14/03/2008forSweden(SE),04/04/2008forFinland(FI),27/06/2008for
+Norway (NO) and Denmark (DK), 04/07/2008 for Belgium (BE), 13/10/2008 for Italy (IT) and 09/12/2008
+for Spain (ES).The dotted lines highlight the time of Chi-X market entry for each country in our sample.
+We use the two letter country code to represent each country.
+39
+
+===== PAGE 43 =====
+
+Figure 2: Development of Aggregate EU and Home Liquidity Betas over Time.This ﬁgure
+displays six-month moving averages of EU and home liquidity betas, aggregated across all stocks in our
+sample. For each stock and each month, we ﬁrst estimate the following regression:∆qspreadi,t,d= α+
+βi,Home∆qspreadHome,t,d+βi,EU∆qspreadEU,t,d+εi,t,d, where ∆qspreadi,t,dis the change in the 1-minute
+average quoted spread of ﬁrmi from intervalt−1 to intervalt on dayd, ∆qspreadHome,t,dis the cross-
+sectional value-weighted average of∆qspreadj,t,dfor all stocks in the home country index withj̸= i, and
+∆qspreadEU,t,dis the cross-sectional value-weighted average of∆qspreadk,t,dfor all FTSE Euroﬁrst100 index
+constituents, withk̸=i andk̸=j. We then calculate the average EU (βi,EU) and home (βi,Home) liquidity
+betas for all stocks in each month. The solid line shows the six-month moving average home liquidity betas
+and the dashed line the corresponding values for EU liquidity betas over 2004-2014. The vertical line shows
+the launch of Chi-X in the second quarter of 2007. Periods of market downturns, deﬁned as months when
+the aggregate market return is below zero, are highlighted with gray shaded vertical bars.
+40
+
+===== PAGE 44 =====
+
+Table 1: Chi-X Market Share by Country. This table reports the quarterly averages of Chi-X
+market shares for each country in our sample. Chi-X market share for stocki on dayd is calculated as
+ChiXMrktShr i,t= V olumei,d,c
+V olumei,d,c+V olumei,d,h
+, whereVolume i,d,cis the volume executed on Chi-X for stocki
+on dayd andVolume i,d,his the volume executed on its home stock exchange. It is then averaged quarterly
+for all stocks in the corresponding country.
+GB FR DE NL BE FI SE NO DK IT ES
+2007Q4 1.3% 0.9% 1.9% 2.4%
+2008Q1 4.3% 2.4% 3.0% 4.5%
+2008Q2 10.3% 5.4% 6.8% 7.4% 0.5% 1.0% 1.2%
+2008Q3 14.4% 10.8% 10.8% 12.2% 3.0% 5.1% 3.8% 1.4% 1.6%
+2008Q4 14.6% 11.8% 10.2% 11.6% 3.4% 4.0% 2.3% 0.8% 1.2% 1.0%
+2009Q1 13.0% 12.4% 12.5% 12.4% 3.0% 5.0% 4.7% 1.1% 1.9% 4.0%
+2009Q2 17.8% 17.2% 16.6% 16.8% 6.7% 6.5% 10.4% 3.0% 5.4% 6.8% 0.3%
+2009Q3 20.5% 17.0% 18.1% 17.6% 11.8% 9.9% 14.9% 4.6% 9.0% 9.6% 0.7%
+2009Q4 23.8% 19.3% 21.7% 18.0% 12.7% 9.2% 11.0% 3.6% 7.7% 9.4% 0.6%
+2010Q1 26.2% 23.4% 24.9% 21.7% 15.3% 10.1% 13.3% 3.4% 6.0% 10.8% 0.7%
+2010Q2 28.2% 22.6% 24.8% 23.0% 19.7% 15.7% 16.8% 5.6% 8.6% 11.3% 2.2%
+2010Q3 27.5% 22.1% 25.9% 22.8% 19.7% 17.5% 17.9% 6.0% 9.8% 11.9% 2.1%
+2010Q4 27.1% 23.8% 24.0% 22.9% 20.7% 14.0% 17.3% 6.1% 9.3% 12.7% 2.1%
+...
+2011Q4 31.9% 27.2% 27.7% 25.5% 17.6% 17.3% 23.0% 13.2% 12.7% 14.4% 2.0%
+...
+2012Q4 27.3% 25.3% 25.9% 22.6% 18.7% 20.5% 26.3% 16.7% 16.1% 14.8% 4.0%
+...
+2013Q4 25.9% 25.3% 24.7% 20.9% 19.9% 22.2% 25.6% 20.1% 18.1% 12.4% 12.3%
+...
+2014Q4 23.0% 27.5% 28.1% 23.1% 25.2% 22.6% 24.2% 19.1% 19.9% 15.1% 16.1%
+41
+
+===== PAGE 45 =====
+
+Table 2:Sample Construction and Summary Statistics.Panel A of this table presents details of our
+sample construction. Our initial sample consists of all stocks that constitute main European equity indices
+during our sample period, January 2004 - December 2014. We download the composition of these indices
+from the Thomson Reuters Tick History (TRTH) database. If the composition of an index changes, we keep
+both old and new index constituents for the entire sample period. We ﬁlter out RICs that appear to be
+erroneously reported as an index constituent by TRTH. Appendix A provides details of our data cleaning
+procedure. We further omit ﬁrms whose stock price is less than £2 at the end of the previous trading day
+for UK stocks and less than€2 for other European stocks. Finally, we retain a stock in a given month only
+if it is traded for at least 1,000 diﬀerent 1-minute intervals. Column (2) reports the number of distinct ﬁrms
+and Column (3) reports the number of ﬁrm-month observations in our sample. Panel B of this table reports
+cross-sectional summary statistics of market capitalization,ﬁrm size(in € million), and the 1-minute average
+quoted spread ,qspread. Our main data source for prices, volume traded and bid-ask spreads is Thomson
+Reuters Tick History (TRTH). Data on market capitalization are from Datastream. We censor the upper
+and lower 1% of theﬁrm sizeand qspread to avoid outliers. We also delete observations withqspread< 0
+or qspread> 0.2. Appendix B provides a detailed description of variable deﬁnitions.
+Panel A: Sample Construction
+Firms Firm-Month Obs
+Initial Sample 446 52,384
+Stock price > £2/€2 446 50,895
+Traded for 1,000 1-min intervals 445 50,728
+Panel B: Summary Statistics
+N Mean Median StDev Min Max
+ﬁrm size 445 15,863 7,299 20,264 611 102,791
+qspread 445 0.0016 0.0014 0.0009 0.0004 0.0073
+42
+
+===== PAGE 46 =====
+
+Table 3: Composition of FTSE Euroﬁrst 100. This table presents details of the composition of
+the FTSE Euroﬁrst 100 index over 2004-2014, aggregated on the country level. Column (1) reports the
+corresponding country code abbreviation. Column (2) shows the number of distinct index constituents from
+each country. Column (3) displays the average daily number of shares (in thousands) and column (4) the
+average daily euro volume (in millions) traded in each country. The last column shows the percentage of
+total Euroﬁrst euro volume traded in each country.
+Country N Share Volume Euro Volume Weight
+GB 48 636,712.1 5,000.4 33.4%
+FR 28 88,429.3 2,949.0 19.7%
+DE 16 60,356.1 2,328.7 15.6%
+NL 12 73,904.5 877.5 5.9%
+BE 5 27,595.2 495.8 3.3%
+FI 3 33,642.4 352.8 2.4%
+IT 6 240,160.2 1,360.5 9.0%
+ES 9 192,605.6 1,598.9 10.7%
+Total 127 1,353,405.4 14,963.6 100%
+43
+
+===== PAGE 47 =====
+
+Table 4: Liquidity Co-movements with the European market: Multivariate Analysis. Panel
+A of this table reports results of the following panel OLS regressions: βEU,i,m = α+ γ1Post i,m +
+γ2ln(firmsize )i,m−1 +γ3qspreadi,m−1 +YFE +CFE +εi,m, where βEU,i,mis the EU liquidity beta,
+estimated for stocki in monthm from equation (1), andPost is a dummy variable that equals 1 for all
+months after the country’s Chi-X market share reaches 10%, and zero otherwise. We include the year- and
+country-ﬁxed eﬀects and allow standard errors to cluster at the ﬁrm level. Model (1) reports results for
+the total sample, Models (2)-(4) present results for sample splits by three country groups, and Models (5)
+and (6) the corresponding results for subperiods of down and up markets. We classify months when the
+country’s index return is positive as up markets and as down markets when it is negative. Panel B presents
+the corresponding results withβHome,i,m, estimated from equation (1), as the dependent variable. ***, **
+and * denote signiﬁcance at the 1%, 5% and 10% level, respectively.
+Panel A: EU liquidity beta,βEU
+GB FR FI SE down up
+Total DE NL BE NO DK IT ES mkt mkt
+(1) (2) (3) (4) (5) (6)
+Post 0.013 *** 0.012 *** 0.010 0.075 *** 0.025 *** 0.004
+(3.38) (2.60) (1.36) (7.33) (6.79) (0.78)
+Ln(ﬁrm size) 0.033 *** 0.024 *** 0.029 *** 0.064 *** 0.035 *** 0.032 ***
+(9.51) (5.61) (3.98) (13.05) (8.83) (9.37)
+Qspread -0.004 0.001 -0.026 *** -0.021 *** -0.006 * -0.003
+(-1.35) (0.30) (-3.50) (-5.48) (-1.89) (-0.88)
+N 50,728 30,136 12,320 8,272 18,603 32,125
+R2 0.48 0.53 0.40 0.47 0.50 0.47
+Year FE Yes Yes Yes Yes Yes Yes
+Country FE Yes Yes Yes Yes Yes Yes
+Panel B: Home liquidity beta,βHome
+GB FR FI SE down up
+Total DE NL BE NO DK IT ES mkt mkt
+(1) (2) (3) (4) (5) (6)
+Post 0.030 *** 0.023 *** 0.033 *** -0.007 0.002 0.058 ***
+(7.38) (5.19) (9.19) (-0.74) (0.53) (11.16)
+Ln(ﬁrm size) 0.054 *** 0.075 *** 0.012 *** 0.035 *** 0.057 *** 0.052 ***
+(14.31) (14.91) (3.88) (11.02) (14.56) (13.57)
+Qspread -0.013 *** -0.009 * -0.018 *** -0.016 *** -0.014 *** -0.012 ***
+(-4.03) (-1.93) (-2.78) (-4.18) (-4.70) (-2.98)
+N 50,728 30,136 12,320 8,272 18,603 32,125
+R2 0.59 0.57 0.44 0.44 0.60 0.60
+Year FE Yes Yes Yes Yes Yes Yes
+Country FE Yes Yes Yes Yes Yes Yes
+44
+
+===== PAGE 48 =====
+
+Table 5: Liquidity Co-movements with the European market: Cross-sectional Tests.Panel A
+of this table reports results of the panel OLS regressions:βEU,i,m= α+γ1High i,m·Post i,m+γ2Lowi,m·
+Post i,m+Controls +YFE +CFE +εi,m, whereβEU,i,mis the EU liquidity beta, estimated for stocki in
+monthm from equation (1);Post is a dummy variable that equals 1 for all months after the entry of Chi-X;
+and High (Low)is a dummy variable that equals 1 for stocks with the above (below) medianChi-X market
+share (Models 1-3) or Multimarket Trading (Models 4-6) in our sample. Appendix B provides a detailed
+description of variable deﬁnitions. Panel B reports the analysis for the entry of Turquoise, another pan-
+European trading platform that entered the market after Chi-X.Post T urq is a dummy variable that equals 1
+for all months after the entry of Turquoise, and zero otherwise. The vector of standardized control variables
+in all regressions includesln(firmsize ), the log of market capitalization at the end of the previous month;
+qspread, the average relative quoted spread, calculated over the previous month, the year- and country-ﬁxed
+eﬀects. Standard errors are clustered at the ﬁrm level. Models (1) and (4) report results for the total sample.
+Models (2) and (5) present results for down markets, and Models (3) and (6) for up markets. We classify
+months when the country’s index return is positive as up markets and as down markets when it is negative.
+***, ** and * denote signiﬁcance at the 1%, 5% and 10% level, respectively.
+Panel A: Cross-sectional tests
+Chi-X market share Multimarket trading
+total down mkt up mkt total down mkt up mkt
+βEU (1) (2) (3) (4) (5) (6)
+High·Post 0.021 *** 0.034 *** 0.013 * 0.017 *** 0.029 *** 0.009
+(4.32) (7.34) (1.94) (3.27) (6.27) (1.40)
+Low·Post 0.001 0.013 ** -0.007 0.005 0.021 *** -0.004
+(0.17) (2.41) (-1.04) (1.12) (4.69) (-0.66)
+N 50,728 18,603 32,125 42,164 15,514 26,650
+R2 0.48 0.50 0.47 0.53 0.54 0.53
+Year FE Yes Yes Yes Yes Yes Yes
+Country FE Yes Yes Yes Yes Yes Yes
+Panel B: Entry of Turquoise
+total down mkt up mkt
+βEU (1) (2) (3)
+Post Chi−X 0.012 *** 0.027 *** 0.002
+(3.07) (7.04) (0.38)
+Post T urq -0.004 -0.010 *** 0.000
+(-1.49) (-2.73) (0.11)
+N 51,097 18,663 32,434
+R2 0.47 0.49 0.47
+Controls Yes Yes Yes
+Year FE Yes Yes Yes
+Country FE Yes Yes Yes
+45
+
+===== PAGE 49 =====
+
+Table 6: Alternative Explanation: Launch of ETFs. Panel A of this table reports the average
+coeﬃcient onPost ET F, estimated from the following panel OLS regressions:βEU,i,m=α+γ1Post ET F,i,m+
+γ2ln(firmsize )i,m−1 +γ3qspreadi,m−1 +YFE +CFE +εi,m, where βEU,i,mis the EU liquidity beta,
+estimated for stocki in monthm from equation (1). Post ET F is a dummy variable that equals 1 for all
+months after the launch of ETFs that track the Euro Stoxx 50 or the MSCI Europe stock indices and the
+inception dates of which lie within the timeline of the staggered entry of Chi-X into European markets. We
+include the year- and country-ﬁxed eﬀects and allow standard errors to cluster at the ﬁrm level. Model (1)
+reports results for the total sample. Models (2) and (3) present results for down and up markets, respectively.
+We classify months when the country’s index return is positive as up markets and as down markets when it is
+negative. Panel B summarizes the distributions of the coeﬃcients and t-statistics from placebo regressions,
+in which we randomly assignPost 5,000 times between the ﬁrst month of 2004 and the last month of 2014.
+We report the average, 5th and 95th percentiles across the 5,000 replications. We report the percentiles of
+our actual coeﬃcient estimates and t-statistics in the last row. Appendix B provides a detailed description
+of variable deﬁnitions. ***, ** and * denote signiﬁcance at the 1%, 5% and 10% levels, respectively.
+Panel A: Launch of Europe-wide ETFs
+total down mkt up mkt
+βEU (1) (2) (3)
+Post ET F 0.004 0.008 * 0.061 ***
+(1.23) (1.90) (7.00)
+N 51,097 18,663 32,434
+R2 0.47 0.49 0.47
+Controls Yes Yes Yes
+Year FE Yes Yes Yes
+Country FE Yes Yes Yes
+Panel B: Placebo regressions
+βEU βHome
+Coeﬃcient on Post
+Mean 0.00 0.00
+5th percentile -0.01 -0.01
+95th percentile 0.01 0.01
+percentile of actual estimate >99% >99%
+t-statistic on Post
+Mean 0.06 0.07
+5th percentile -1.64 -1.63
+95th percentile 1.74 1.75
+percentile of actual estimate >99% >99%
+46
+
+===== PAGE 50 =====
+
+Table 7: Alternative Explanation: Phantom Liquidity. This table reports results of the following
+panel OLS regressions:βEU,i,m=α+γ1HighPhantomLiq i,m·Post i,m+γ2LowPhantomLiq i,m·Post i,m+
+Controls +YFE +CFE +εi,m, whereβEU,i,mis the EU liquidity beta, estimated for stocki in monthm
+from equation (1); andHigh (Low) Phantom Liqis a dummy variable that equals 1 for stocks with the above
+(below) median phantom liquidity in our sample. Models (1)-(3) show results for the phantom liquidity
+on the ask side and Models (4)-(6) on the bid side of the limit order book. The vector of standardized
+control variables includesln(firmsize ), the log of market capitalization at the end of the previous month;
+qspread, the average relative quoted spread, calculated over the previous month, the year- and country-ﬁxed
+eﬀects. Standard errors are clustered at the ﬁrm level. Models (1) and (4) report results for the total sample.
+Models (2) and (5) present results for down markets, and Models (3) and (6) for up markets. We classify
+months when the country’s index return is positive as up markets and as down markets when it is negative.
+Appendix B provides a detailed description of variable deﬁnitions. ***, ** and * denote signiﬁcance at the
+1%, 5% and 10% level, respectively.
+Ask side Bid side
+total down mkt up mkt total down mkt up mkt
+βEU (1) (2) (3) (4) (5) (6)
+High·Post 0.004 0.020 *** -0.007 0.004 0.020 *** -0.006
+(0.77) (4.26) (-1.12) (0.87) (4.23) (-1.01)
+Low·Post 0.018 *** 0.029 *** 0.011 * 0.018 *** 0.029 *** 0.010
+(3.53) (6.62) (1.65) (3.44) (6.67) (1.55)
+N 42,296 15,562 26,734 42,296 15,562 26,734
+R2 0.53 0.54 0.53 0.53 0.54 0.53
+Controls Yes Yes Yes Yes Yes Yes
+Year FE Yes Yes Yes Yes Yes Yes
+Country FE Yes Yes Yes Yes Yes Yes
+47
+
+===== PAGE 51 =====
+
+Table 8:Robustness Checks.Panel A of this table reports results of the following panel OLS regressions,
+using alternative liquidity measures of 5-minute quoted spread and 1-minute realized spread: βX,i,m=
+α+γ1Post i,m+γ2ln(firmsize )i,m−1 +γ3qspreadi,m−1 +YFE +CFE +εi,q, with each of the two betas,
+βHome and βEU, as the dependent variable.βHome and βEU are estimated for each stocki and monthm
+from equation (1). We include the year- and country-ﬁxed eﬀects and allow standard errors to cluster at
+the ﬁrm level. To conserve space, we only report the coeﬃcient onPost for each speciﬁcation. Models
+(1)-(3) show the results for the 5-minute quoted spread and Models (4)-(6) for the 1-minute realized spread.
+Models (1) and (4) report results for the total sample, Models (2) and (5) for down markets, and Models
+(3) and (6) for up markets. We classify months when the country’s index return is positive as up markets
+and as down markets when it is negative. Panel B presents the corresponding results with liquidity betas,
+estimated quarterly from daily quoted spread (Models 1-3) and the Amihud illiquidity measure (Models 4-6).
+Appendix B provides a detailed description of variable deﬁnitions. ***, ** and * denote signiﬁcance at the
+1%, 5% and 10% levels, respectively.
+Panel A: Alternative intraday liquidity measures
+5-min qspread 1-min realized spread
+total down mkt up mkt total down mkt up mkt
+(1) (2) (3) (4) (5) (6)
+βEU 0.014 *** 0.032 *** -0.004 0.014 *** 0.022 *** 0.011
+βHome 0.064 *** 0.037 *** 0.089 *** 0.040 *** 0.004 0.076 ***
+Controls Yes Yes Yes Yes Yes Yes
+Year FE Yes Yes Yes Yes Yes Yes
+Country FE Yes Yes Yes Yes Yes Yes
+Panel B: Daily liquidity measures
+daily qspread illiq
+total down mkt up mkt total down mkt up mkt
+(1) (2) (3) (4) (5) (6)
+βEU 0.182 ** 0.302 *** -0.023 0.050 *** 0.091 *** 0.033
+βHome -0.116 *** -0.088 -0.123 ** -0.045 *** -0.077 *** -0.020
+Controls Yes Yes Yes Yes Yes Yes
+Year FE Yes Yes Yes Yes Yes Yes
+Country FE Yes Yes Yes Yes Yes Yes
+48
+
+===== PAGE 52 =====
+
+Internet Appendix
+Figure IA1: Chi-X Market Share by Country.This ﬁgure plots the time series of the average Chi-X
+market share for each country in our sample. The Chi-X market share for stocki on dayd is calculated as
+ChiXMrktShr i,t= V olumei,d,c
+V olumei,d,c+V olumei,d,h
+, whereVolume i,d,cis the volume executed on Chi-X for stocki
+on dayd andVolume i,d,his the volume executed on its home stock exchange. It is then averaged quarterly
+for all stocks in the corresponding country. The vertical line shows the time when each country’s Chi-X
+market share reaches 10%.
+0.0 0.1 0.2 0.3 0.4
+GB
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+FR
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+DE
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+NL
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+BE
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+FI
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+SE
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+NO
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+DK
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+IT
+Time
+ChiX Market Share
+2008 2010 2012 2014
+0.0 0.1 0.2 0.3 0.4
+ES
+Time
+ChiX Market Share
+2008 2010 2012 2014
+
+===== PAGE 53 =====
+
+Table IA1: Sample Construction. This table presents details of our sample construction. Our initial sample consists of all stocks that
+constitute main European equity indices during our sample period, January 2004 - December 2014. We download the composition of these
+indices from the Thomson Reuters Tick History (TRTH) database. If the composition of an index changes, we keep both old and new index
+constituents for the entire sample period. We ﬁlter out RICs that appear to be erroneously reported as an index constituent by TRTH. Appendix
+A provides details of our data cleansing procedure. We further omit ﬁrms whose stock price is less than £2 at the end of the previous trading
+day for UK stocks and less than€2 for other European stocks. Finally, we retain a stock in a given month only if it is traded for at least 1,000
+diﬀerent 1-minute intervals. Panel A reports the number of distinct ﬁrms and Panel B the number of ﬁrm-month observations for each country
+in our sample.
+Panel A: Number of Distinct Firms
+GB FR DE NL BE FI SE NO DK IT ES
+Initial Sample 144 43 37 35 9 25 34 26 20 41 32
+Stock price > £2 /€2 144 43 37 35 9 25 34 26 20 41 32
+Traded for 1,000 1-min intervals 144 43 37 35 9 25 34 26 20 40 32
+Panel B: Number of Firm-Month Observations
+GB FR DE NL BE FI SE NO DK IT ES
+Initial Sample 16,415 5,293 4,190 3,443 1,052 2,901 4,408 2,859 2,547 4,548 4,728
+Stock price > £2 /€2 16,316 5,290 4,179 3,431 1,036 2,891 4,388 2,541 2,543 4,468 3,812
+Traded for 1,000 1-min intervals 16,241 5,266 4,175 3,426 1,028 2,891 4,387 2,537 2,505 4,461 3,811
+
+===== PAGE 54 =====
+
+Table IA2: Summary Statistics. Panel A of this table reports cross-sectional summary statistics of
+market capitalization,ﬁrm size(in € million), across all sample stocks separately for each country. Panel
+B reports corresponding summary statistics for the 1-minute average quoted spread measure,qspread. Our
+main data source for prices, volume traded and bid-ask spreads is Thomson Reuters Tick History (TRTH).
+Data on market capitalization are from Datastream. We censor the upper and lower 1% of theﬁrm size
+and qspread to avoid outliers. We also delete observations withqspread< 0 or qspread> 0.2. Appendix B
+provides a detailed description of variable deﬁnitions.
+Panel A: Summary Statistics forﬁrm size
+Country N Mean Median StDev Min Max
+GB 144 15,886 6,000 21,605 1,401 86,968
+FR 43 28,843 15,923 26,590 4,547 102,791
+DE 37 25,494 15,979 21,540 3,975 75,077
+NL 35 18,001 7,854 23,652 1,373 91,188
+BE 9 4,771 2,591 4,047 1,221 13,148
+FI 25 8,000 3,678 9,760 1,501 33,115
+SE 34 13,097 6,409 13,434 1,188 52,408
+NO 26 5,859 2,362 7,959 611 33,580
+DK 20 7,551 3,992 9,363 1,298 34,037
+IT 40 11,199 6,549 13,213 1,512 52,022
+ES 32 16,196 7,984 20,568 2,252 77,742
+Total 445 15,863 7,299 20,264 611 102,791
+Panel B: Summary Statistics forqspread
+Country N Mean Median StDev Min Max
+GB 144 0.0017 0.0015 0.0010 0.0005 0.0073
+FR 43 0.0009 0.0008 0.0004 0.0005 0.0026
+DE 37 0.0009 0.0008 0.0005 0.0004 0.0022
+NL 35 0.0010 0.0009 0.0004 0.0006 0.0020
+BE 9 0.0018 0.0017 0.0006 0.0011 0.0029
+FI 25 0.0016 0.0015 0.0005 0.0009 0.0029
+SE 34 0.0020 0.0019 0.0006 0.0012 0.0047
+NO 26 0.0027 0.0024 0.0013 0.0013 0.0067
+DK 20 0.0021 0.0018 0.0006 0.0013 0.0035
+IT 40 0.0015 0.0014 0.0006 0.0006 0.0038
+ES 32 0.0017 0.0016 0.0007 0.0006 0.0038
+Total 445 0.0016 0.0014 0.0009 0.0004 0.0073
+
+===== PAGE 55 =====
+
+Table IA3:Liquidity Co-movements with the Home Market: Multivariate Analysis.This table
+reports results of the following panel OLS regressions:βHome,i,m=α+γ1Post i,m+γ2ln(firmsize )i,m−1 +
+γ3qspreadi,m−1 +YFE +CFE +εi,m, whereβHome,i,mis the home liquidity beta, estimated for stocki
+in monthm from equation (1), without controlling for liquidity changes of the aggregate European market,
+∆qspreadEU,t,d. We include the year- and country-ﬁxed eﬀects and allow standard errors to cluster at the
+ﬁrm level. Model (1) reports results for the total sample, Models (2)-(4) present results for sample splits
+by three country groups and Models (5) and (6) the corresponding results for subperiods of down and up
+markets. We classify months when the country’s index return is positive as up markets and as down markets
+when it is negative. Appendix B provides a detailed description of variable deﬁnitions. ***, ** and * denote
+signiﬁcance at the 1%, 5% and 10% level, respectively.
+GB FR FI SE down up
+Total DE NL BE NO DK IT ES mkt mkt
+(1) (2) (3) (4) (5) (6)
+Post 0.034 *** 0.024 *** 0.036 *** 0.003 0.007 0.061 ***
+(7.68) (5.15) (8.49) (0.28) (1.34) (11.18)
+Ln(ﬁrm size) 0.056 *** 0.076 *** 0.015 *** 0.040 *** 0.059 *** 0.054 ***
+(14.80) (15.08) (4.17) (10.67) (15.03) (14.00)
+Qspread -0.012 *** -0.007 -0.018 *** -0.014 * -0.013 *** -0.010 **
+(-3.17) (-1.43) (-2.84) (-1.92) (-3.57) (-2.47)
+N 50,728 30,136 12,320 8,272 18,603 32,125
+R2 0.61 0.59 0.48 0.43 0.60 0.62
+Year FE Yes Yes Yes Yes Yes Yes
+Country FE Yes Yes Yes Yes Yes Yes
+
+===== PAGE 56 =====
+
+Table IA4:Robustness Checks: Eﬀective Spread and Intraday Price Impact.This table replicates
+Panel A from Table 8, using alternative liquidity measures of the 1-minute average eﬀective spread (Models
+1-3) and the 1-minute average price impact (Models 4-6). The eﬀective spread is calculated asespreadi,j=
+2|Pi,j−Mi,j|
+Mi,j
+and the price impact asprcimpi,j= 2|Mi,j+60s−Mi,j|
+Mi,j
+, wherePi,jis the transaction price of stocki
+at timej on its primary exchange, andMi,jis the midpoint quote, calculated as the average of the prevailing
+bid and ask quotes at timej (Mi,j = Ai,j+Bi,j
+2 ). Mi,j+60s represents the 1-minute (or 60-second) forward
+midpoint quote. We then average all eﬀective spreads and price impacts for each stocki within each minute
+t. ***, ** and * denote signiﬁcance at the 1%, 5% and 10% levels, respectively.
+1-min eﬀective spread 1-min price impact
+total down mkt up mkt total down mkt up mkt
+(1) (2) (3) (4) (5) (6)
+βEU 0.012 *** 0.023 *** 0.005 0.015 *** 0.024 *** 0.011
+βHome 0.032 *** -0.002 0.062 *** 0.050 *** 0.005 0.094 ***
+Controls Yes Yes Yes Yes Yes Yes
+Year FE Yes Yes Yes Yes Yes Yes
+Country FE Yes Yes Yes Yes Yes Yes

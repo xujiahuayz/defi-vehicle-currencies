@@ -1,0 +1,1081 @@
+
+
+===== PAGE 1 =====
+
+What keeps stablecoins stable? q
+Richard K. Lyons a, Ganesh Viswanath-Natraj b,⇑
+a Haas School of Business, University of California Berkeley, 2220 Piedmont Ave, Berkeley, CA 94720, USA
+b Warwick Business School, Scarman Rd, Coventry CV47AL, United Kingdom
+article info
+Article history:
+Available online 5 December 2022
+JEL Classiﬁcations:
+E5
+F3
+F4
+G15
+G18
+Keywords:
+Cryptocurrency
+Stablecoins
+Tether
+Arbitrage
+Exchange rates
+abstract
+Using trades between the stablecoin treasury and private investors, we quantify how
+improved arbitrage design stabilizes the price of the dominant stablecoin, Tether. We iden-
+tify two 2019 design reforms: migration of Tether from the Omni to the Ethereum block-
+chain and decentralization of issuance. These reforms increased investor access to arbitrage
+trading with the treasury, reducing the absolute size of peg deviations by half. Further evi-
+dence for the importance of arbitrage design is present in the stability mechanism of the
+stablecoin DAI and in the creation of authorized merchants for the pegged coin WBTC.
+/C2112022 The Author(s). Published by Elsevier Ltd. This is an open access article under the CC
+BY license (http://creativecommons.org/licenses/by/4.0/).
+1. Introduction and motivation
+Stablecoins peg to a national currency, typically the US dollar, and are used to transact in non-stable cryptoassets more
+efﬁciently than using national currencies. They operate on blockchains, distributed ledgers where payments are veriﬁed and
+recorded without need for centralized settlement. By maintaining a collateralized peg, stablecoins achieve much lower
+volatility than cryptocurrencies such as Bitcoin (BTC), whose volatility relative to the US dollar (USD) is roughly 10 times
+that between major national currencies ( Baur and Dimpﬂ, 2021 ). The largest stablecoin is Tether, accounting for over 80 per-
+cent of stablecoin capitalization over the period we study. Unlike ﬁxed-rate national currencies, stablecoin pegs like that for
+https://doi.org/10.1016/j.jimonﬁn.2022.102777
+0261-5606//C2112022 The Author(s). Published by Elsevier Ltd.
+This is an open access article under the CC BY license ( http://creativecommons.org/licenses/by/4.0/).
+q For detailed comments we thank an anonymous referee, discussants Uday Rajan and Xingyu Zhu, and Dirk Baur, Nic Carter, Will Cong, Barry
+Eichengreen, Alex Ferreira, Pierre-Olivier Gourinchas, Cam Harvey, Bob Hodrick, Roman Kozhan, Clayton Philippoz, Manju Puri, Raghavendra Rau, Ni cholas
+Sander, Amin Shams, as well as seminar participants at the Australasian Banking and Finance Conference, the University of Cambridge Centre for Alter native
+Finance, the CEBRA annual meeting, the Georgetown Center for Financial Markets and Policy, the New York Federal Reserve Conference on Digital Assets ,
+the Ofﬁce of Financial Research, the University of Western Australia Blockchain conference, the University of Warwick Economics and Finance brownb ags,
+and the London Empirical Asset Pricing Workshop. We thank Siravit Rattananon, Arijit Santra, Morgan Kidd, and Ying Chen for valuable research assist ance,
+and the Berkeley Haas Blockchain Initiative for a research grant. Neither author is engaged as an academic expert in litigation involving Tether or Bi tﬁnex.
+⇑ Corresponding author.
+E-mail addresses: lyons@haas.berkeley.edu (R.K. Lyons), ganesh.viswanath-natraj@wbs.ac.uk (G. Viswanath-Natraj).
+Journal of International Money and Finance 131 (2023) 102777
+Contents lists available at ScienceDirect
+Journal of International Money and Finance
+journal homepag e: www.elsevier.c om/locate/jimf
+
+
+===== PAGE 2 =====
+
+Tether are maintained wholly via private participants; 1 and unlike exchange-traded funds, there is no subset of private par-
+ticipants pre-authorized to play this role.
+In this paper, our focus is on arbitrage design and which design elements contribute most to stability. Our central thesis is
+that decentralization of issuance and access to arbitrage trades with the issuing treasury are key factors determining the efﬁ-
+ciency of the peg.
+For national currencies with ﬁxed exchange rates, design focuses on central bank initiative: Foreign reserves are
+exchanged for domestic currency, adjusting supply to mute deviations from the peg (e.g., when domestic currency trades
+below the peg, the central bank intervenes to reduce supply by buying domestic currency for foreign reserves, and vice
+versa). Another mechanism, complementary to the ﬁrst, is trades initiated not by an issuing institution but by private inves-
+tors. Suppose for example the price of Tether rises above the pegged rate of 1 USD. Private investors can deposit Tether with
+the Tether Treasury, receive 1 USD for each in return, and sell Tether in the market for more than 1 USD. The arbitrage
+increases circulating Tether supply, putting downward pressure on Tether’s market price toward parity.
+We test these stability mechanisms with three types of empirical evidence. First, we exploit a natural experiment: The
+April 2019 migration of Tether from the Omni to the Ethereum blockchain. Introduction to the Ethereum blockchain was
+motivated in part due to its increased network of investors and Ethereum-based (ERC20) tokens, and its relative efﬁciency
+in processing payments. 2 This resulted in a large increase in investor access to the Tether Treasury, made possible by reduced
+transaction costs of operating on the Ethereum blockchain. 3 We ﬁnd a signiﬁcant subsequent increase in the number of unique
+addresses transacting with the Tether Treasury. For example, the Ethereum blockchain has an average of 4.0 unique addresses
+transacting daily, versus Omni which averaged 1.4 addresses. Consistent with the hypothesis that blockchain efﬁciency is crit-
+ical for keeping stablecoins stable, estimates show a resulting decline in the absolute size of peg price deviations by about 50
+percent and a decline in the half-life of deviations from 6 days to 3 days.
+To sharpen our test of increased peg efﬁciency due to migration to the Ethereum blockchain, we employ a difference-in-
+differences (DiD) design using a set of control group stablecoins that share similar institutional features, but did not undergo
+a structural change of blockchain. This produces a large and statistically signiﬁcant reduction in peg deviations by about a
+third relative to the control group, even after controlling for sampling intervals that might contain confounding events. The
+difference-in-difference estimates are robust to alternative speciﬁcations of the structural date: A dynamic speciﬁcation with
+quarterly dummies shows that the efﬁciency gain peaked in the fourth quarter of 2019, consistent with gradual migration to
+the Ethereum blockchain, with Tether creation on Ethereum surpassing that on Omni by October 2019.
+Our second type of empirical evidence focuses speciﬁcally on arbitrage ﬂows to determine how arbitrage design mediates
+ﬂows’ stabilizing effect. Flows of Tether from the Treasury to private investors are equal to changes in the supply of Tether in
+circulation net of changes retained in the account of the Tether Treasury. These netted ﬂows are the economically relevant
+object for determining price pressure on the secondary market. We estimate the effects of arbitrage ﬂows on prices based on
+local projections as in Jordà (2005) , a procedure that controls for feedback effects in price and ﬂow. We ﬁnd signiﬁcant reduc-
+tions in peg-price deviations due to changes in net ﬂows from the identiﬁed changes in arbitrage design.
+Our third type of evidence addresses the impact of arbitrage design on the proﬁtability of arbitrage trades. We ﬁrst com-
+pute arbitrage proﬁt based on Tether creations where an investor deposits dollars, obtains Tether at a 1:1 rate, and then sells
+Tether at a premium in the secondary market. Matching the high-frequency timestamp of deposits with the Treasury with
+transaction prices, and adjusting for transaction costs (issuer fees, bid-ask spreads, price impact, and gas costs), we ﬁnd that
+arbitrage proﬁts are positive on average on both the Omni and Ethereum blockchains. Migration to the Ethereum blockchain
+resulted in a smaller deposit size, spreads, and proﬁts. This is consistent with the ”democratization” of access to arbitrage
+trades on the Ethereum blockchain leading to smaller spreads and proﬁts per trade. In analysing Tether creations versus
+redemptions, we ﬁnd stronger evidence for an arbitrage motive for creations. This asymmetry is principally due to three fac-
+tors: the higher cost imposed by the Tether Treasury on redemptions, investors’ idiosyncratic liquidity needs, and redemp-
+tions that arise primarily from moving Tether across blockchains known as chain swaps. 4
+We then turn to implications of arbitrage design in other decentralized ﬁnance applications. The peg stability module
+(PSM) of the DAI stablecoin was introduced on December 18, 2020, as a solution to combat persistent peg-price deviations
+(Kozhan and Viswanath-Natraj, 2021 ). Under the PSM, a smart contract enables users to swap the stablecoin USDC with DAI
+at a 1:1 rate without needing to create a vault and deposit collateral. 5 Wrapped tokens are tokenized versions of other cryp-
+tocurrencies. The Wrapped Bitcoin (WBTC) token is an ERC20 stablecoin on Ethereum backed 1:1 by bitcoin. Merchants are
+authorized participants that can mint (create) or burn (redeem) WBTC tokens. The smart contracts to swap USDC and DAI
+1 Among national exchange rates, strong backing with USD reserves is most similar to the Hong Kong (HK) Currency Board where the central bank maintains
+dollar reserves to match every HK dollar in circulation.
+2 ERC20 is a standard which provides features including the transfer of tokens from one account to another, measuring the current token balance of an
+account, and measuring the total supply of the token available on the network. It deploys smart contracts, auto-executing code on the blockchain, to p erform
+these various functions.
+3 For more information on the event, we refer readers to https://www.prnewswire.com/news-releases/huobi-global-offers-deposit-withdrawal-in-tether-
+erc20-300803113.html.
+4 Redemptions incur a minimum cost of 1,000 USD or 0.1 percent of the trade. For example, refer to https://tether.to/fees/ for details. For more details on
+chain swaps, we refer readers to Appendix C.
+5 A smart contract is a set of instructions in computer code that deﬁnes the conditions of the contract for each counterparty under different scenarios ( default
+etc). Managed by code and visible on the blockchain, it can be veriﬁed publicly by all participants on the blockchain.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+2
+
+===== PAGE 3 =====
+
+can only be initiated by investors, and mints and burns of WBTC can only be initiated by merchants. These applications are thus
+prime examples of decentralized arbitrage. Our results show that in these fully decentralized settings arbitrage design is impor-
+tant for how trades initiated by private investors stabilize price.
+Finally, we consider algorithmic stablecoins such as TerraUSD that are typically unbacked. Exploiting the recent collapse
+of TerraUSD on May 9th, 2022, we show that this category is prone to devaluation risk and speculative attacks when they are
+under-collateralized. We show that in contrast to dollar-backed stablecoins, there is no clear arbitrage mechanism to restore
+prices when TerraUSD is priced at a discount. A clear solution to preserve peg stability is through adopting full collateraliza-
+tion, either through liquid dollar reserves or through stable cryptocurrency collateral.
+The remainder of the paper is structured as follows. In Section 2 we summarize related literature. In Section 3 we sum-
+marize the properties and performance of the major stablecoins and detail the balance sheet and price data used in the anal-
+ysis. In Section 4 we present empirical evidence. First, we exploit the migration of Tether from the Omni to Ethereum
+blockchain as an empirical test of the changed arbitrage design. We then test for the stabilizing properties of arbitrage ﬂows,
+and estimate a measure of arbitrage spreads and proﬁts of Tether deposits and redemptions. In Section 5 we turn to stabi-
+lizing mechanisms for other pegged coins. Section 6 concludes.
+2. Related literature
+We contribute to a growing literature on stablecoins. This includes stablecoin properties and comparisons to traditional ﬁnan-
+cial markets (Bullmann et al., 2019; Dell’Erba, 2019; Arner et al., 2020; Barthelemy et al., 2021; Berentsen, 2019; Eichengreen,
+2019; Force et al., 2020; Frost et al., 2020; Kim, 2022), arbitrage in stablecoin and cryptocurrency markets (Makarov and Schoar,
+2019; Makarov and Schoar, 2020; Borri and Shakhnov, 2018; Pernice, 2021; Kozhan and Viswanath-Natraj, 2021 ), theoretical
+research on the price dynamics of stablecoins, with solutions such as reserve buffers and over-collateralization to avoid specu-
+lative attacks and peg discounts (Cong et al., 2021; d’Avernas et al., 2022; Routledge and Zetlin-Jones, 2022; Kwon et al., 2021; Li
+and Mayer, 2021), intraday price changes that support stablecoins’ roleas safe havens (Baur and Hoang, 2020; Hoang and Baur,
+2020; Baumöhl and Vyrost, 2020; Wang et al., 2020; Bianchi et al., 2020; Gloede et al., 2021 ), the ﬁnancial stability, macroeco-
+nomic and political economy i mplications of stablecoins ( Cong and Mayer, 2021; Catalini and de Gortari, 2021; Liao and
+Caramichael, 2022; Allen et al., 2022; Gorton and Zhang, 2021; Gorton et al., 2022; Murakami and Viswanath-Natraj, 2021 )
+and the dynamics of stablecoin i ssuance and crypt oasset prices ( Grifﬁn and Shams, 2020; Wei, 2018; Ante et al., 2020;
+Kristoufek, 2021). We extend existing work on stablecoins in several ways. Most broadly, we push beyond past work focusing
+on prices only and address quantities – in particular by analyzing trades between the Tether Treasury and private investors – to
+address arbitrage as a market-design feature. Results we present here show that stablecoin issuance endogenously responds to
+deviations of stablecoins’ secondary-market rate from the pegged rate.
+It is not clear a priori how the process works to keep stablecoins stable – is it supply based, i.e. actively managed centrally
+by the stablecoin treasury? Or is it demand based, i.e. decentralized private investors that are arbitraging the peg? On
+supply-based mechanisms, our paper also relates to the role of central bank intervention in maintaining pegs ( Fratzscher
+et al., 2019; Ferreira et al., 2019 ). Empirical evidence in Fratzscher et al. (2019) shows that central banks typically ”lean
+against the wind” by actively counteracting private trades of market participants, which has a stabilizing effect.
+6 In contrast,
+decentralized stabilization rests on a mechanism similar to how exchange-traded funds trade at prices close to their net asset
+values ( Aldridge, 2016; Marshall et al., 2013; Brown et al., 2021 ). Stablecoins are fundamentally different in that for ETFs the
+arbitrage process is not decentralized by design, being conducted instead by a preset group of institutions serving as authorized
+participants that conduct all ”creates” and ”redeems.”
+In sum, our paper’s focus on change in arbitrage design posits that Tether distribution fundamentally changed in 2019
+from the supply-based distribution on Omni to decentralized distribution on the Ethereum blockchain. Our evidence that
+migration to decentralized Tether creation, with a subsequent increase in access to arbitrage trades with the Treasury, is con-
+sistent with our variance decomposition of Tether ﬂows showing that the migration led to a decline in supply-based factors. 7
+3. Deﬁnitions and data
+3.1. Stablecoin properties and performance
+We note two institutional features that explain the growing role of stablecoins as a store of value and medium of
+exchange. The ﬁrst is added intermediation costs when trading cryptocurrencies against dollars: On some exchanges, for
+example, there are longer processing lags for withdrawals of dollars; fees are also often imposed when dollar withdrawals
+6 There are differences between the decentralized structure of stablecoins and FX interventions by a central bank. For example, a central bank is typic ally
+concerned with macroeconomic fundamentals like preserving low interest rates and inﬂation, and is targeting an exchange rate that is based on a set of
+fundamentals that are macroeconomic. A stablecoin issuer has no equivalent policy function. Secondly, investors can often deposit dollars directl y with the
+stablecoin issuer. In contrast, investors cannot typically initiate trades, or directly deposit currency, with the central bank.
+7 We provide supplementary evidence in Appendix C that Bitﬁnex indeed dominated ﬂows of Tether from the Treasury to the secondary market on the Omni
+blockchain, whereas distribution is much wider on the Ethereum blockchain.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+3
+
+===== PAGE 4 =====
+
+are frequent or large. 8 A second institutional feature favoring stablecoins is their usability across a greater cross-section of
+crypto exchanges. For example, exchanges like Binance and Poloniex do not provide investors with any on-ramp for trading dol-
+lars, and only accept stablecoins as a medium of exchange. Total trading volume between Bitcoin and Tether exceeded the trad-
+ing volume of Bitcoin/USD in 2019.
+Stablecoins are typically backed by either dollar collateral or crypto collateral. Of the top six coins by market cap (as of
+April 1st 2020), ﬁve are backed by dollar deposits, the exception being DAI, which is backed by Ethereum. 9 The methods of
+how dollar collateral itself is managed includes a central issuer in the case of Tether, which acts analogously to the Hong Kong
+Currency Board. The second-largest stablecoin, USDC, has a more decentralized system of governance, with multiple issuers that
+have a license to provide USDC tokens. The other three stablecoins managed with dollar collateral, Binance USD Coin, Paxos, and
+TrueUSD, focus on concerns over the risk of issuer default: In the case of Binance USD coin and Paxos, dollar collateral is backed
+by FDIC-insured banks, whereas TrueUSD dollar collateral is backed by escrow accounts. 10 The sixth largest coin, DAI, operates a
+system under which investors deposit Ethereum into a collateralized position that allows them to borrow DAI. The number of
+DAI they can borrow is limited by a smart (i.e., auto-executing) contract.
+11 12
+Table 1 presents summary statistics on the deviations from peg prices as of March 31st, 2020. 13 The ﬁrst observation is the
+high ratio of total reported trading volume to the market capitalization, also referred to as daily velocity. 14 This daily ratio is
+typically over ﬁve for Tether, the largest coin, and is similarly above one for other national-currency-backed coins Paxos
+(PAX) and TrueUSD (TUSD). For perspective, the daily turnover in spot foreign exchange markets involving the USD as one
+leg of the transaction is $1.7 trillion over the period 2016–2019, compared to a total supply in circulation of approximately
+$15 trillion. This implies a daily USD velocity of one tenth, an order of magnitude smaller than stablecoin velocities. A takeaway
+is that stablecoins are intensively used as vehicle currencies.
+Examining the summary statistics in Table 1 , stablecoins typically have two-sided distributions, with maximum devia-
+tions both below and above the one-to-one parity exceeding 500 basis points (ﬁve percent) for Tether (USDT), and of similar
+magnitudes for the other coins ( Fig. 1).15 We also observe deviation persistence, measured by the half-life of price departures
+from the peg. The half-lives for all coins range from 1 to 10 days. 16 Persistence of deviations is evidence that the stabilizing
+mechanisms of these coins are not without frictions or risk. 17
+3.2. Tether balance sheet
+To construct the Tether balance sheet, we use blockchain platforms on which the entire history of on-chain transactions
+involving transfers of Tether is recorded. 18 These platforms contain an api that allows users to access an entire history of Tether
+transactions, with details on the size, timestamp, and the type of transaction. Tether tokens are created through a ”grant” when
+new Tether tokens are minted. Tether tokens are destroyed through a ”revoke” when Tether tokens are redeemed. Transactions
+between the Treasury and secondary market recipients are recorded as a ”simple send”, with counter parties listed on the ”send”
+and ”receive” sides of the transaction. Transactions are recorded in a series of blocks, and can be retrieved using the blockchain
+api. 19
+We construct the aggregate stock of Tether, QAgg;t ¼ PN
+i¼1Q i;t as the sum of Tether created across the three principal block-
+chains, Omni, Ethereum, and Tron over the sample period from October 8th, 2014 to March 31st, 2020. Starting in October
+2014, Tether issuance is initially only on the Omni blockchain. We also record the amount of Tether created but retained by
+the Tether Treasury as reserves. The total amount of Tether Reserves on each blockchain is then equal to QT;t ¼ PN
+i¼1QT;i;t . The
+usefulness of the Treasury’s reserves can be seen as analogous to the accumulation of foreign exchange reserves by a central
+8 For more information, refer to the following announcements by Bitﬁnex: https://bit.ly/2NEzITW and https://www.bitﬁnex.com/posts/311. Bitﬁnex states it
+takes investors 7 to 15 days to make dollar withdrawals from their platform in order to comply with intermediation procedures. Bitﬁnex has also introd uced a
+transaction cost of 3% for investors who make more than two dollar withdrawals a month, or for withdrawals of more than $1 million in a given month.
+9 Since November 18, 2019, investors holding single-collateral DAI have transferred their holdings to multi-collateral DAI.
+10 Escrow accounts offer a novel security design. For example, suppose an investor wants to deposit one USD for one TrueUSD token. They ﬁrst deposit their
+dollar in a protected escrow account. TrueUSD then provides the escrow account 1 token. Only upon receipt of the token, and once the token is sent to the
+investor, the escrow account transfers the dollar deposit to TrueUSD. This system minimises settlement risk on both sides.
+11 The contract liquidates underlying Ethereum collateral if the value of that collateral is less than 150% of the corresponding DAI-borrowing value. A gents
+therefore have an incentive to scale back borrowing by redeeming DAI when Ethereum prices fall in order to prevent their collateral from breaching the 150%
+level.
+12 An equally important institutional detail is how these coins’ collateral is audited. We review audit accountability and transparency measures in Ap pendix B.
+13 For details on the source of price data, see the data Appendix A.
+14 The reported 24H Volume in Coinmarketcap and other vendors includes all transactions veriﬁed on the blockchain.
+15 Plots of peg-price deviations for other major stablecoins are provided in Appendix F.
+16 To measure the half-life, we run an auto-regressive process of order 1 on the deviations, D ¼ qDt/C0 1 þ ut . The half-life, or the time it takes for a shock to
+dissipate by 50%, is T ¼ logð0:5Þ
+logðqÞ .
+17 In Appendix G we pin down the fundamentals that explain premiums and discounts. We ﬁnd that an increase in the intra-day price volatility of the BTC/
+USDT market leads to Tether-price premiums, evidence that Tether, and other stablecoins, serve as safe havens in the domain of cryptoassets. Stablec oin
+discounts, on the other hand, generally occur due to risk of insufﬁcient collateral. In October 2018, speculators were uncertain whether Tether was f ully
+collateralized – due to a move by its partner exchange Bitﬁnex to suspend convertibility of dollar deposits. This event induces a decline in Tether’s p rice and a
+sharp rise in bid-ask spreads.
+18 Off-chain transactions, such as transactions within a cryptocurrency exchange, are not recorded.
+19 For more detail on the databases, including how the ﬂows are constructed from the addresses of the issuer, see Appendix A.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+4
+
+===== PAGE 5 =====
+
+bank. This provides the stablecoin issuer a one-sided potency against stablecoin premiums; in the event of a secondary mar-
+ket price above one USD, the Tether Treasury can sell its Tether reserves in the secondary market to restore parity of the
+peg.20 The total amount of Tether held by private wallets and exchanges is equal to the total Tether creation net of Tether held
+in the Treasury’s account, given by QEX;t in Eq. (1).
+Q EX;t ¼ Q Agg;t /C0 Q T;t ð1Þ
+Fig. 2 (left) plots the breakdown of Tether by blockchain. While Tether was exclusively created on the Omni blockchain
+from 2014 through to 2018, there is a gradual migration of Tether from the Omni to Ethereum blockchains starting in April,
+2019. Within three months of Tether’s introduction to the Ethereum blockchain, we note that it overtakes the Omni block-
+chain in Tether creation by October 29th, 2019. Fig. 2 (right) plots the total Tether supply, with the division of total Tether
+held by the Treasury and the secondary market, which included balances held at crypto exchanges, retail investors, and insti-
+tutional investors. While balances held at the Treasury are typically a small fraction of total Tether in circulation, they
+reached almost $1 billion USD in 2018, which equates to 25% of total Tether supply.
+To construct a proper aggregate measure of net Tether issuance, take ﬁrst differences of Eq. (1), and deﬁne ﬂows from the
+Treasury to the secondary market, FlowT!EX;t ¼ DQEX;t , as the change in total Tether net of changes in the Treasury account
+(Eq. (2)). This controls for changes in Tether that are retained at the Treasury, which do not constitute Tether in circulation
+for trading by private wallets and exchanges.
+FlowT!EX;t ¼ DQ Agg;t /C0 DQ T;t ð2Þ
+Table 1
+Top 6 stablecoins – peg price deviations.
+Sample Symbol Market Cap 24H Volume Mean SD Min Max Half-Life (days)
+04/17–03/
+20
+USDT $6,400 M $40,000 M /C0 20.5 128.9 /C0 960 571 6.4
+01/20–03/
+20
+USDC $705 M $692 M 6.9 25.0 /C0 21 100 0.8
+01/19–03/
+20
+PAX $245 M $911 M 7.8 29.6 /C0 100 200 0.5
+10/10–03/
+20
+BUSD $187 M $49 M 1.4 6.1 /C0 10 50 0.3
+06/18–03/
+20
+TUSD $136 M $466 M 6.7 59.2 /C0 170 990 0.4
+04/18–03/
+20
+DAI $79 M $12 M 42.5 128.7 /C0 391 800 4.7
+Note: Market capitalization for all coins is based on total value of stablecoins in circulation; 24H Volume is total reported trading volume, from Cry ptoslate
+(as of April 10th, 2020, https://cryptoslate.com/cryptos/stablecoin/). Summary statistics for price deviations from the parity peg are expressed in basis
+points (100 basis points here equals 1 US cent). Half-Life is in days. Price data are sourced from Coinapi, which reports data from trusted exchanges Bi tﬁnex,
+Bittrex, and Kraken.
+Fig. 1. Tether/USD Deviations from Peg and Histogram of Deviations. Note: Figure plots the deviations of the Tether/USD price from parity (left panel). A
+positive deviation indicates Tether/USD trades at a premium. The right panel is a histogram of deviations of the Tether/USD peg. Data from Coinapi. Sa mple
+is April 1st, 2017 to March 31st, 2020.
+20 The accumulation of Tether reserves helps guard against stablecoin premiums, but not stablecoin discounts. For example, if Tether trades at a discou nt, then
+the Tether Treasury would require investors to redeem their dollar deposits and withdraw Tether from circulation.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+5
+
+===== PAGE 6 =====
+
+3.3. Primary and secondary market prices
+An important distinction to make is between primary and secondary market prices. The primary market is the rate at
+which the Treasury is willing to exchange Tether for dollars. The primary market rate is 1 USDT:USD, with asymmetric trans-
+action costs for deposits and redemptions. While deposits of dollars at the Treasury come with a ﬂat fee of 0.1 per cent,
+redemptions incur a minimum cost of 1000 USD or 0.1 per cent of the trade. 21 Starting in April 2017, the ﬁrst secondary mar-
+ket for Tether/Dollar trading was introduced on the Kraken exchange. Trading in the Tether/Dollar pair commenced on Bittrex in
+May 2018. While Bitﬁnex facilitated Tether deposits and redemptions at the primary market rate, trading in the secondary mar-
+ket on the exchange only commenced in December 2018. We construct a secondary market price of Tether that is an average
+price based on secondary market trading on three exchanges. 22 In our empirical analysis, we use the consolidated Tether-USD
+price to create two measures. The ﬁrst is peg-price deviations, which is the deviation of the secondary market price from 1. The
+second is intra-day volatility, which is calculated as the square root of the daily average sum of squared returns over 5-min
+intervals.
+3.4. Arbitrage between primary and secondary market
+There are two ways to stabilize the peg. A centralized design requires intervention by the issuer similar to a national
+exchange rate pegs, in which the central bank is committed to maintaining the peg by buying the domestic currency and
+selling foreign-currency reserves when the domestic–currency value falls below the peg level, and conversely selling domes-
+tic currency when the domestic–currency value rises above the peg level. In this paper we posit a decentralized mechanism
+is instead driven by the actions of arbitrageurs that exploit differences between the primary and secondary market price. 23 If
+the secondary market price of Tether is above one dollar, an investor can buy Tether from the Treasury at a one-for-one rate, and
+sell Tether at the prevailing market rate to proﬁt, resulting in a ﬂow of Tether from the Treasury to the secondary market ( Fig. 3,
+Left). Conversely, when the dollar price of Tether is below 1, an investor can buy Tether at the exchange and sell to the Tether
+Treasury, resulting in a ﬂow in the opposite direction – from the secondary market to the Tether Treasury. Stability of the
+Tether/USD peg is maintained here through the actions of investors. Arbitrage by secondary-market participants offers a solu-
+tion to exchange-rate stability that is decentralized. 24 In the right panel of Fig. 3, we plot daily ﬂows between the Treasury and
+the secondary market against the Tether price. These ﬂows are more frequent when the Tether price is above the peg. More
+relevant, the regression line has a clear positive slope, evidence – albeit suggestive – that ﬂows between the Tether Treasury
+and the secondary market serve to maintain the Tether/USD peg.
+Fig. 2. left panel: Tether/USD Balance Sheet – By Blockchain, right panel: Tether/USD Balance Sheet – Tether held by the Treasury and Other Accounts. Note:
+The ﬁgure plots total Tether supply, divided by blockchain (left), and divided into holdings in the secondary market (by investors and exchanges) and
+holdings by the Tether Treasury as reserves (right). Flows of Tether to the secondary market, measured using transaction data of the Tether Treasury o n the
+Omni, Ethereum, and Tron blockchains respectively.
+21 For example, refer to https://tether.to/fees/ for details.
+22 We provide more detail on selection of exchanges and price data in Appendix A.
+23 The issuer of Tether has formally stated that it does not intervene in secondary markets to stabilize the market rate. In a statement released on its web site,
+Tether Inc states: (i) Tether does not represent a country or oversee a banking system; (ii) The USDT supply is dictated by consumer demand (all issued U SDT
+has been bought by a consumer at a 1:1 ratio); (iii) Tether does not set or manage any interest rates anywhere; (iv) Tether does not oversee – and is not
+responsible for – a banking or exchange sector, and does not claim to do so. For full reference, see https://tether.to/a-commentary-on-tether-chainalysis/.
+24 The arbitrage mechanism we outline is taking advantage of a law-of-one-price deviation in currency markets, and follows a line of reasoning similar t o
+arbitrage conditions in foreign exchange markets such as covered interest-rate arbitrage ( Akram et al., 2008 ) and triangular arbitrage of cross-rates in forex
+(Foucault et al., 2017 ).
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+6
+
+===== PAGE 7 =====
+
+4. Empirical evidence: tether
+4.1. Decentralization of tether issuance
+Two key reforms resulted in a decentralization of the arbitrage mechanism: independence of the Tether Treasury from
+Bitﬁnex, and migration to the Ethereum blockchain. The Bitﬁnex cryptocurrency exchange has the same parent as the Tether
+Treasury. The Bitﬁnex exchange initially had a monopoly on Tether distribution, by having primary access to deposit dollars
+with the Tether Treasury to create newly minted Tether tokens, which were then distributed to other exchanges for trading.
+The left panel of Fig. 4 presents the distribution of Tether across the Omni blockchain. We observe a signiﬁcant concentration
+of Treasury ﬂows on Omni going to a single address: the Bitﬁnex cryptocurrency exchange. 25 Starting on November 27th,
+2018 Bitﬁnex suspended investor convertibility of Tether to Dollars at a 1:1 rate, as it announced secondary market trading
+in the Tether/USD pair. This resulted in a move to Tether neutrality which we identify as independence from the Tether Treasury.
+26 Instability of a banking connection led to the suspension of Bitﬁnex dollar deposits in April 2017 and October 2018, triggering
+peg discounts as investors price run-risk of Tether and not having sufﬁcient backing to meet redemptions. 27 Independence from
+Bitﬁnex is a key efﬁciency reform as it enables decentralization of the arbitrage mechanism: investors can now directly transact
+with the Treasury.
+The move to decentralization was also facilitated by the migration of Tether to the Ethereum blockchain as the principal
+blockchain for Tether in circulation. Tether’s migration to the Ethereum blockchain is motivated by several factors. First,
+Tether could now be used more directly as a vehicle for a large number of cryptocurrency investors that use the Ethereum
+blockchain. Similarly, Tether’s value as a vehicle increases by being used as a medium of exchange for a large number of
+ERC20 tokens that only circulate on the Ethereum network. Second, the Ethereum blockchain also enables higher-
+frequency arbitrage, with 15-s blocks (the corresponding set of transactions processed by miners on the blockchain) for
+Ethereum versus 10 min for Omni, which has mining times based on the Bitcoin protocol. Third, cryptocurrency exchanges
+such as Bittrex and Huobi also cite the Ethereum blockchain as enabling a reduction in transaction costs in Tether with-
+drawals and deposits. 28 To tap into the beneﬁts of an increased client base and efﬁciency in payments processing, cryptocur-
+Fig. 3. Left: Arbitrage Flows when Tether Price in Secondary Market is Trading at a Premium; Right: Scatter Plot of Daily Flows from the Tether Treasury to
+the Secondary Market, and the Tether/USD peg. Note: Left: Schematic illustrates an arbitrage trade where the secondary-market price of Tether trade sa ta
+premium. An investor makes a dollar deposit with the Tether Treasury, obtains a Tether token (at an exchange rate of 1 Tether per 1 USD), and then sells
+Tether tokens in the secondary market for a round-trip proﬁt of D. Right: The ﬁgure illustrates scatter plot of ﬂows of Tether to the secondary market, and
+the corresponding Tether/USD price, measured using daily data on secondary-market ﬂows from Omni and Etherscan. Price data are from Coinapi, and use
+transaction data from trusted crypto exchanges Bitﬁnex, Bittrex, and Kraken. Sample is April 1st, 2017 to March 31st, 2020.
+25 For more details on the concentration of Bitﬁnex on the Omni blockchain, we refer the reader to Appendix C.
+26 For details on the release, see https://www.bitﬁnex.com/posts/319
+27 For example, see https://www.bitﬁnex.com/posts/200 for the announcement on the April 2017 suspension and https://medium.com/bitﬁnex/ﬁat-deposit-
+update-October-15th-2018-18ddd276c3fd for the announcement on the suspension of Bitﬁnex deposits in October 2018. In Appendix G we document
+signiﬁcant peg discounts and an increase in bid-ask spreads in response to the October 2018 suspension. Bitﬁnex has also on occasion obtained lines of credit
+from Tether for meeting redemption payments, and has been the subject of allegations in which Bitﬁnex covered up the loss of up to 850 million USD in
+customer funds. The litigation has settled in March 2021, when Tether and Bitﬁnex agreed to pay ﬁnes of 18.5 million USD and admitted no wrongdoing, and
+Tether is required to provide quarterly statements of its balance sheet and cannot operate in New York.
+28 For example see a statement from Huobi exchange https://prn.to/2ZkPzw0.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+7
+
+===== PAGE 8 =====
+
+rency exchanges engaged in a chain swap of Tether from the Omni to Ethereum blockchains. This is a special type of transaction
+that moves a cryptocurrency from one blockchain to another. 29 30
+Increased access to the Treasury includes Tether distribution through multiple crypto exchanges that deposit dollars with
+the Treasury to create Tether tokens ( Fig. 5, Left). The right panel of Fig. 5 shows the daily number of unique wallet addresses
+transacting with the Treasury on the three primary blockchains, Omni, Ethereum, and Tron. Note the sharp increase in
+unique addresses transacting with the Treasury in 2019. Judging from the count of unique addresses using Tether on the
+Omni and Ethereum blockchains, the Ethereum network begins to dominate Omni starting in April, 2019. 31 Transactions with
+the Treasury on the Ethereum blockchain is much less concentrated, with an average of 4.0 unique addresses transacting with
+the Treasury daily, compared to 1.4 on the Omni blockchain.
+To quantify the independence of Tether from Bitﬁnex, we conduct a simple decomposition in Eq. (3). The change in the
+stock of Tether in circulation on blockchain i 2½ Omni; Ethereum/C138 is equal to the sum of the co-variances of each component
+of ﬂows. This includes changes in the stock of Tether due to changes in the Treasury account, ﬂows of Tether from the Trea-
+sury to Bitﬁnex, and ﬂows of Tether from the Treasury to other investors.
+varðDQ i
+t Þ¼ covðDQ i
+T;t ; DQi
+t Þþ covðDQ i
+Bitfinex;t ; DQ i
+t Þþ covðDQ i
+Other;t ; DQ i
+t Þð 3Þ
+The decomposition gives us a useful proxy for demand versus supply changes in issuance, where Tether ﬂows explained by
+changes in the holdings of the Treasury or Bitﬁnex is a proxy for supply changes, and the residual due to ﬂows of Tether to
+other investors a proxy for demand changes. On the Omni blockchain, other investors accounts for only 13.7 per cent of the
+variance of daily changes in the stock of Tether in circulation. Changes in the accounts at the Treasury and Bitﬁnex account
+for the remaining 86.3 per cent of ﬂows. Consistent with our narrative of decentralization of Tether issuance on the Ether-
+eum blockchain, the variance of ﬂows explained by other investors rises to 67.2 per cent. The remaining 32.7 per cent is due
+to changes in the stock in the Treasury account, with only 0.1 per cent due to changes in Tether ﬂows to Bitﬁnex. 32
+4.2. Peg efﬁciency of decentralized arbitrage
+We hypothesize that an increase in access to the primary market should translate to increased effectiveness of arbitrage
+in sustaining the peg. For example, if Bitﬁnex is the only investor that has access to the primary market, then this impairs the
+Fig. 4. Distribution of Tether on the Omni and Ethereum Blockchains. Note: Figure presents the network of transactions from the Tether Treasury to all
+wallets on the Omni blockchain recorded from October 8th, 2014 through to March 31st, 2020. Transaction history is obtained from https://omniexplor er.
+info/ for the Treasury wallet address ”1NTMakcgVwQpMdGxRQnFKyb3G1FAJysSfz”. The plot also records absolute ﬂows from Bitﬁnex to other wallets (on ly
+wallets with an absolute transaction value greater than $100 million USD are included to minimize the number of nodes from Bitﬁnex). Right
+Figure presents the network of transactions from the Tether Treasury to all wallets on the Ethereum blockchain recorded from January 30th, 2019 throu gh
+March 31st, 2020. Transaction history is obtained from https://etherscan.io/ for the Treasury wallet address ”0x5754284f345afc66a98fb-
+b0a0afe71e0f007b949”. All identiﬁed wallets (cryptocurrency exchanges) are labeled. The line thickness between wallets and the Treasury indicat e the
+magnitude of absolute ﬂows, which we measure as the sum total of inﬂows and outﬂows of Tether from the Treasury to each wallet. Addresses are labeled
+based on publicly available information on the Tether rich list https://wallet.tether.to/richlist and https://etherscan.io/..
+29 For more information on chain swaps, see https://tether.to/explained-chain-swaps/.
+30 As we note in Appendix C, we record up to $1.0 billion of Tether holdings rebalanced from the Omni to the Ethereum blockchain by the Binance exchange
+through chain swaps from August 2019 to March 2020.
+31 See https://news.bitcoin.com/erc20-tether-transactions-ﬂip-their-omni-equivalent/ for more details on the change in number of users on Omni and
+Ethereum blockchains.
+32 The construction of Tether ﬂows to Bitﬁnex is detailed in Appendix C. We use publicly listed Bitﬁnex wallets on both the Omni and Ethereum blockchains
+for our analysis.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+8
+
+===== PAGE 9 =====
+
+ability of private investors to arbitrage peg deviations. We ﬁrst partition our sample of Tether prices into the pre and post
+periods according to the ﬁrst week in which we observe a jump in transactions between the Treasury and addresses deposit-
+ing dollars directly with the Treasury on the Ethereum blockchain, which we identify as April 9th, 2019. 33 Table 2 presents
+summary statistics. The average size of peg deviations falls substantially, and in particular, note a signiﬁcantly lower half-life of
+deviations, measuring 6.5 days in the pre Ethereum blockchain sample, versus 3.3 days in the post period. 34
+Increased efﬁciency of the Tether peg from April 2019 to March 2020 could be unrelated to the migration to the Ethereum
+blockchain. Other possible causes include, for example, increased liquidity across cryptocurrency exchanges, technological
+changes (such as an increased efﬁciency of mining), or changes in the global demand for cryptocurrencies that use stable-
+coins as the primary vehicle currency. To rule out alternative hypotheses, we adopt a difference-in-differences design.
+The set of control currencies we use in our sample are national-currency-backed stablecoins, Paxos and TrueUSD. These
+stablecoins are closest in design to Tether, with the critical difference being institutional features employed to mitigate coun-
+terparty risk. 35
+Fig. 6 plots the stablecoin prices and intra-day volatility for Tether, TrueUSD, and Paxos. We calculate intra-day volatility
+as the square root of the daily average sum of squared returns over 5-min intervals. A visual inspection of Fig. 6 shows that
+Tether peg-price deviations and intra-day volatility are larger than the control group, with no evidence of pre-trends in the
+preceding 2 months leading to Tether migration to the Ethereum blockchain. 36
+Our purpose in using these stablecoins as a control is twofold. First, any common sources of shocks to the stablecoin class
+as a whole should be captured within the control group. This could be due to investors’ transactional demand for crypto
+investments, the return and volatility structure of cryptocurrencies, and technological advances in crypto markets (new
+crypto exchanges) that will affect demand for all stablecoins. All stablecoins in the control group operate only on the Ether-
+eum blockchain, providing a suitable control for testing the causal effect of Tether’s structural transformation of its currency
+from the Omni to Ethereum blockchain.
+We now test the speciﬁcation in Eq. (4), where the outcome variable Yt is either the absolute level of peg deviations,
+jpt /C0 1j, or the intra-day volatility of peg deviations rt , both measured in basis points. The indicator for treatment Ti takes
+on a value of 1 for Tether and 0 for the control group currencies. Indicators for Paxos and TrueUSD are given by 1PAX and
+1TUSD respectively. The coefﬁcient d measures the net impact of the structural change on Tether net of any trends observed
+Fig. 5. Left – Distribution of Tether to Secondary Market on the Omni and Ethereum blockchains; Right – Number of Unique Addresses transacting with the
+Tether Treasury on Omni, Ethereum, and Tron Blockchains. Note: Left ﬁgure illustrates the creation of Tether on the Omni and Ethereum blockchains. On the
+Omni blockchain, Bitﬁnex deposits dollars into the Tether Treasury. The Tether Treasury then issues Tether tokens at parity (1:1 exchange rate). The newly
+created tokens are then distributed to other investors and exchanges in the secondary market. On the Ethereum blockchain exchanges directly deposit
+dollars with the Tether Treasury to create newly minted tokens. Right Figure plots the daily number of unique investor addresses transacting with the
+Tether Treasury on each blockchain. Data records trades between the Tether Treasury and private investors, obtained from the Omni, Ethereum, and Tro n
+Blockchains. Sample is November 2017 through March 2020..
+33 The ﬁrst recorded transaction with the Tether Treasury occurred on January 30th, 2019. We note that there are 6 transactions prior to April 9th, 2019. I n the
+week of April 9th, 2019, we note a jump in the number of addresses transacting with the Ethereum blockchain by 24, which corresponds to the jump in April
+2019 plotted in Fig. 5 .
+34 Tether, in its white paper, states that investors are allowed to deposit dollars directly to obtain Tether tokens at the 1:1 pegged rate ( Tetherinc (2016) ).
+35 For example, TrueUSD uses a system of escrow, whereas Paxos is insured by FDIC deposits. For more on the technical details of alternative stablecoins,
+please see Section 3. We do not include USDC and DAI in our control group due to institutional differences. USDC is different in that it does not have a
+centralized issuer, with multiple issuers being able to grant USDC tokens. DAI, in contrast, is a crypto-collateralized stablecoin, typically back ed by Ethereum,
+and has an independent structure of stability mechanisms.
+36 A reasonable concern that we address in our design is the signiﬁcance of Tether peg-price deviations in October 2018. Tether experienced large discou nts in
+excess of 500 basis points in response to a speculative attack which we outline in Appendix G. We present our results both for the full sample starting on April
+1st, 2017, as well as a balanced panel starting on January 10th, 2019. The balanced panel is therefore robust to pre-trends of the full sample that inclu des the
+confounding event.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+9
+
+===== PAGE 10 =====
+
+in the control group. The identifying assumption of our analysis is that d measures the efﬁciency gain of Tether in migrating
+to the Ethereum blockchain. Our controls include the daily return and intra-day volatility of Bitcoin. 37 The results are sum-
+marized in Table 3. In columns (I) and (II), we impose a standard structural break test by regressing the absolute size and volatil-
+ity of Tether peg deviations on a post dummy, which takes a value of 1 in April 2019 when Tether issuance migrated to the
+Ethereum blockchain. We observe on average a 36.9 basis point decline in the absolute level of peg deviations, and a decline
+in intra-day volatility of 57.2 basis points.
+Yt ¼ a0 þ ai
+X
+i2PAX;TUSD
+1i þ bTi þ cpostt þ dpostt /C2 Ti þ controlst þ ut ð4Þ
+The results of our differences-in-differences analysis for the full sample are reported in columns (III) and (IV) of Table 3 .
+There is a net convergence in the stability of peg deviations in Tether during the post period, with a difference-in-
+difference coefﬁcient on post /C2 To f /C0 24.0 basis points. This implies a decline in the absolute level of deviations of 24.0 basis
+points relative to the control group currencies. Similarly, we observe a decline in intra-day volatility of Tether deviations rel-
+ative to the control group of 40.3 basis points.
+A reasonable concern of our full sample estimates is bias due to the presence of confounding events. We control for this
+by running our speciﬁcation on a balanced panel for Tether and the control group that starts on January 10th, 2019. The
+results of the balanced panel are in columns (V) and (VI). Testing for effects using a balanced panel rules out the possibility
+that the result is driven by trends in Tether peg-prices in the earlier part of the full sample. 38 We still ﬁnd a statistically sig-
+niﬁcant difference-in-difference coefﬁcient of /C0 29.4 basis points for peg-price deviations and /C0 26.3 basis-points for intra-day
+volatility. The balanced panel result therefore rules out the possibility that large Tether deviations witnessed in 2018 could be
+fully explaining the observed results.
+4.2.1. Robustness test #1: sensitivity of Treatment date
+The migration date in the baseline speciﬁcation is April 9th, which is the ﬁrst week in which at least 10 unique addresses
+transacted on the Ethereum blockchain. We conduct two robustness tests on the difference-in-difference speciﬁcation. First,
+Table 2
+Summary Statistics of Tether/USD Deviations, pre and post introduction of Tether on the Ethereum Blockchain.
+Period Mean SD Min Max Half-Life (days)
+Pre Ethereum Blockchain /C0 28.2 97.2 /C0 505 298 6.5
+Post Ethereum Blockchain /C0 0.9 47.2 /C0 298 119 3.3
+Note: Summary statistics for deviations from the peg are expressed in basis points (100 basis points = 1 US cent). Secondary-market price is based on da ily
+data that averages prices from the Bitﬁnex, Bittrex, and Kraken exchanges, all three being trusted exchanges, sourced from Coinapi. Sample is divide d into
+04/17 to 04/19 in the pre period and 04/19 to 03/20 in the post period, with the post date starting on April 9th, 2019. The post period corresponds to when
+investors can directly transact with the Tether Treasury on the Ethereum blockchain.
+Fig. 6. left panel: Absolute peg-price deviations; right panel: intra-day volatility. Note: This ﬁgure plots average monthly stablecoin prices and intra- day
+volatility for the treatment (USDT) and the control group stablecoins. The treatment stablecoin is Tether (USDT). The control stablecoins are TrueU SD
+(TUSD) and Paxos (PAX). The red dotted line indicates the structural change date of April 9th,2019 used in the baseline speciﬁcation. Price data for US DT
+consolidates trade data from three trusted exchanges: Bitﬁnex, Bittrex, and Kraken. Price data for the control group comes from Bittrex. Sample is Ja nuary
+10th, 2019 through to March 31st, 2020..
+37 Intra-day volatility is calculated as the square root of the daily average sum of squared returns over hourly intervals
+38 In Appendix G we document two sources of large peg-price deviations in 2018. In January and February of 2018, a crash of BTC led to Tether premiums due
+to its relative liquidity and stability beneﬁts. Signiﬁcant discounts in Tether in October 2018 were a response to collateral concerns due to the susp ension of
+dollar deposits at the Bitﬁnex exchange.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+10
+
+===== PAGE 11 =====
+
+we test whether the reported regressions are sensitive to the choice of the migration date. For example, the full effects of
+migration are likely to be realized months after April 2019, as users only gradually transferred their Tether holdings. 39 In
+Fig. 7 , we perform a sensitivity analysis of the date of structural change by recording the difference-in-difference coefﬁcients
+for alternative structural change dates. The presence of a treatment effect is robust to alternative dates: the peak treatment
+effect of /C0 38 basis points occurs on May 8th, approximately a month after the structural change date of the baseline
+speciﬁcation.
+4.2.2. Robustness test #2: Dynamic time trend to the pre-post migration
+We extend the speciﬁcation to account for a dynamic trend in the post period in Eq. (5). The difference-in-difference coef-
+ﬁcient d traces the net effect of structural change across each quarter in the balanced sample, from 2019Q1 to 2020Q1. By
+tracing the net impact across quarters, we test the hypothesis that the structural change is not a step function, but reﬂects a
+gradual increase in arbitrage access. For example, we note that Tether creation on the Ethereum blockchain only exceeded
+Tether on Omni by the end of October 2019, months after the date of structural change. Cryptocurrency exchanges trans-
+ferred Tether tokens from Omni to Ethereum for months through a series of chain swaps in which Tether holdings are rebal-
+anced across blockchains. 40 Therefore we would not expect an immediate decline in peg deviations following the migration,
+but a gradual decline over a wider event window.
+Yt ¼ a0 þ ai
+X
+i2PAX;TUSD
+1i þ bTi þ cpostt þ
+XQ
+q¼1
+dqQtþq /C2 Ti þ ut ð5Þ
+Table 4 presents the results, and Fig. 8 plots the difference-in-difference coefﬁcients in columns (III) and (IV). Peg price-
+deviations relative to the control group is given by the coefﬁcients of interest for each quarter interacted with the dummy for
+Tether. The coefﬁcients document a trend increase in Tether efﬁciency. Tether peg-price deviations in 2019Q1 and 2019Q2
+are 22.7 and 23.7 basis points higher relative to the control group. In contrast, Tether peg-price deviations decline relative to
+control group stablecoins during 2019Q4 and 2020Q1, with estimates of /C0 13.4 and /C0 10.8 basis points respectively. Intra-day
+volatility follows a similar qualitative pattern in efﬁciency. In 2019Q2, it is 42.0 basis points higher relative to the control
+Table 3
+Tests of a structural break in Tether issuance: effects of a migration to the Ethereum blockchain in 2019 on the size and volatility of Tether peg deviat ions.
+I II III IV V VI
+jpt /C0 1j rt jpt /C0 1j rt jpt /C0 1j rt
+post /C0 36.87*** /C0 57.20*** /C0 14.18*** /C0 17.62*** /C0 1.07 /C0 7.28*
+(3.47) (4.02) (3.48) (3.70) (2.01) (3.79)
+T 26.93*** 37.85*** 28.81*** 27.60***
+(2.94) (3.33) (3.28) (2.37)
+post /C2 T /C0 24.00*** /C0 40.26*** /C0 29.41*** /C0 26.32***
+(4.87) (5.46) (4.82) (4.45)
+1PAX /C0 3.40* /C0 19.37*** /C0 5.00*** /C0 14.53***
+(1.95) (2.64) (1.70) (2.68)
+1TUSD /C0 0.98 4.03* /C0 6.15*** 7.03***
+(2.26) (2.17) (1.63) (2.05)
+RBTC 0.0045 /C0 0.0014 0.0012 0.0034 0.0002 0.0024
+(0.0041) (0.0061) (0.0026) (0.0036) (0.0017) (0.0027)
+rBTC 0.04*** 0.17*** 0.03*** 0.16*** 0.02*** 0.13***
+(0.01) (0.01) (0.01) (0.01) (0.01) (0.02)
+R-squared 0.12 0.44 0.12 0.46 0.08 0.39
+No. observations 957 957 1984 1984 1276 1276
+Sample Full Full Full Full Balanced Balanced
+Note: Table presents regressions of the absolute level and volatility of deviations of the peg. The absolute level of deviations is denoted by jp
+t /C0 1j, and rt is
+calculated based on a measure of intra-day volatility of the price, both measured in basis points. The post dummy Postt takes a value of 1 from April 9th,
+2019. The Treatment dummy T takes a value of 1 for USDT, and 0 otherwise. Control group currencies include TrueUSD, Paxos. rBTC is the intra-day volatility
+of the BTC/USDT price sourced from the Binance exchange, measured in basis points. RBTC is daily BTC/USDT returns sourced from Cryptocompare, measured
+in basis points. Full sample for columns (I) through to (IV) is April 1st, 2017 to March 31st, 2020. Balanced panel for columns (V) and (VI) is from Januar y
+10th 2019 to March 31st 2020. Price data for currencies obtained from coinapi, and use closing prices from exchanges Kraken, Bitﬁnex, and Bittrex. Whi te
+heteroscedasticity robust standard errors are used in estimation. *** denotes signiﬁcance at the 1 percent level, ** at the 5 percent level, and * at th e1 0
+percent level.
+39 A potential concern with the post period is the April 30th, 2019 report on Tether backing being only 74% in the form of cash or cash equivalents. For detai ls
+on the announcement, we refer the reader to https://www.coindesk.com/tether-lawyer-conﬁrms-stablecoin-74-percent-backed-by-cash-and-equivalents .
+There was no visible market reaction to the April 30 report, with Tether continuing to have two-sided deviations. Tether asserts that they are backed b y dollar
+reserves fully and releases a balance sheet daily showing Tether assets and liabilities match (with Assets > Liabilities suggesting earnings from in terest-bearing
+assets). The deﬁnition of ”cash or cash equivalents” does not include various interest-bearing assets on the balance sheet.
+40 We provide a list of major chain-swap events in Appendix C.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+11
+
+===== PAGE 12 =====
+
+group, the coefﬁcient then declines to /C0 13.0 and /C0 24.4 basis points by 2019Q4 and 2020Q1 respectively. The results are con-
+sistent with a gradual increase in peg efﬁciency, with Tether migration to Ethereum occurring over a period of months fol-
+lowing the date of structural change. 41
+Fig. 7. Sensitivity Analysis of Difference-in-Difference Coefﬁcients to a Change in the Structural Date. Note: This ﬁgure shows the difference-in-differ ence
+coefﬁcient d of the following design: jpt /C0 1j¼ bt Postt þ dt Postt /C2 Tt by changing the structural change date Postt . The outcome variable measures the
+absolute level of peg deviations on the left panel, and intra-day volatility of peg price deviations on the right panel. The treatment currency is Teth er (USDT),
+and control group currencies are TrueUSD (TUSD) and Paxos (PAX). The red dotted line indicates the structural change date of April 9th used in the basel ine
+speciﬁcation. White heteroscedasticity-robust standard error bands are reported at a 5% signiﬁcance level. The sample is January 10th, 2019 to Marc h 31st,
+2020..
+Table 4
+Difference-in-difference design: dynamic effects.
+I II III IV
+jpt /C0 1j rt jpt /C0 1j rt
+Q12019 23.16*** 14.05*** 6.40*** 5.59
+(2.47) (3.58) (2.27) (4.35)
+Q22019 24.45*** 52.43*** 6.73*** 28.35***
+(2.34) (3.39) (2.02) (3.88)
+Q32019 /C0 10.65*** /C0 9.38*** 0.56 2.62
+(2.33) (3.38) (2.04) (3.91)
+Q42019 /C0 6.53*** /C0 14.40*** 12.85*** 16.57***
+(2.33) (3.38) (2.08) (3.98)
+Q12020 /C0 7.58*** 12.25*** 9.16*** 54.55***
+(2.34) (3.39) (2.06) (3.94)
+Q12019 /C2 T 22.71*** 26.40***
+(3.70) (7.09)
+Q22019 /C2 T 23.67*** 42.03***
+(3.45) (6.60)
+Q32019 /C2 T /C0 5.26 5.94
+(3.44) (6.60)
+Q42019 /C2 T /C0 13.43*** /C0 13.02**
+(3.46) (6.64)
+Q12020 /C2 T /C0 10.79*** /C0 24.36***
+(3.46) (6.64)
+R-squared 0.29 0.31 0.12 0.14
+No. observations 446 446 1274 1274
+Note: Table estimates a dynamic difference-in-difference speciﬁcation where the treatment is interacted with each quarter. The absolute level of d eviations
+is denoted by jp
+t /C0 1j, and rt is calculated based on a measure of intra-day volatility of the price, both measured in basis points. Price data for USDT
+consolidates trade data from three trusted exchanges: Bitﬁnex, Bittrex, and Kraken. Price data for the control group of stablecoins comes from Bittr ex.
+Sample is January 10th, 2019 through March 31st, 2020. White heteroscedasticity-robust standard errors are reported in parentheses. *** denotes si g-
+niﬁcance at the 1 percent level, ** at the 5 percent level, and * at the 10 percent level.
+41 One concern is that the end of our sample coincides with the Covid pandemic. In Appendix D we show that our results are robust to a longer sample (to
+December 2021) that controls for the Covid pandemic. In particular, the increase in peg efﬁciency primarily occurred before the Covid pandemic. A sec ond
+empirical concern is controlling for idiosyncratic shocks to Tether during the migration period that can explain an increase in peg efﬁciency. For ex ample, in
+May 2019 Bitﬁnex raised 1 billion USD through the sale of LEO utility tokens to be traded on Bitﬁnex and other iFinex platforms. Increased trust in Tethe r and
+its afﬁliated Iﬁnex network is an alternative explanation to our evidence on decentralization and Tether’s independence from Bitﬁnex. To identify h ow much of
+the increase in peg efﬁciency is due to decentralized arbitrage, we propose an instrumental variable approach. Using growth of the users as an instrum ent for
+addresses transacting with the Tether treasury, we show an increase in decentralization leads to an increase in peg efﬁciency, and attribute up to 50 p er cent of
+the increase in peg efﬁciency due to decentralization of arbitrage access. The results are in Appendix E.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+12
+
+===== PAGE 13 =====
+
+4.3. Stablecoin prices and issuance ﬂows
+We have provided evidence of a decentralized mechanism for peg stability: migration to the Ethereum blockchain led to
+an increase in arbitrage access, and an increase in the efﬁciency of the peg. A testable implication of the arbitrage mechanism
+is that ﬂows from the Treasury to the secondary market should be stabilizing, by moving peg price deviations toward zero.
+We conduct local projections (based on Jordà (2005) ) of the value of net inﬂows from the Treasury to the secondary market
+on the level of deviations from Tether’s parity peg. We denote FlowT)EX;h as total ﬂows from the Treasury to the secondary
+market, measured at an hourly frequency. 42 The change in the Tether dollar price, Ptþh /C0 Pt/C0 1, is projected on the level of arbi-
+trage ﬂows of investors in Eq. (6), allowing for feedback effects using lagged price and ﬂows as controls. We hypothesize a neg-
+ative coefﬁcient bh, which suggests that positive ﬂows to the secondary market have a stabilizing impact on price.
+Ptþh /C0 Pt/C0 1 ¼ a þ bhFlowT)EX;t þ
+XL
+k¼1
+dkFlowT)EX;t/C0 k þ
+XL
+k¼1
+ckðPt/C0 k/C0 1 /C0 Pt/C0 k/C0 2Þþ ut h ¼ 0; 1; 2; ... ð6Þ
+The results of our local projections are shown in Fig. 9. Consistent with our hypothesis, arbitrage ﬂows from investors have a
+stabilizing effect on the Tether/USD price. After dividing our sample based on the introduction of Tether to the Ethereum
+blockchain, we ﬁnd a signiﬁcant price impact of arbitrage ﬂows in the post period, conﬁrming that increased direct access
+of investors to the Treasury supports the arbitrage mechanism. In the period post migration to the Ethereum blockchain, we
+measure a price impact of approximately 5 basis points in response to a one standard-deviation shock in secondary-market
+ﬂows (approximately 7.5 Million USD based on hourly data). 43
+4.4. Arbitrage proﬁts on the omni and ethereum blockchains
+We compute a proxy for the proﬁtability of arbitrage trades. For deposits, we assume an arbitrage sequence where an
+investor deposits dollars with the Tether Treasury, and then contemporaneously sells Tether in the secondary market.
+The arbitrage spread is then deﬁned, in USD, as the difference pUSDT /C0 1, where pUSDT is the dollar price of Tether at the
+exchange. For redemptions, the arbitrage sequence is when an investor buys Tether contemporaneously in the market,
+and redeem Tether tokens to the Treasury at a 1:1 rate. The arbitrage spread is then deﬁned, in USD, as the difference
+1 /C0 pUSDT , where pUSDT is the dollar price of Tether at the exchange. We match the timestamp of investor Treasury deposits
+and redemptions with the secondary-market price of Tether based on minute-frequency price data from a volume weighted
+average price from Bitﬁnex, Bittrex, and Kraken, three of the most liquid exchanges in the Tether/Dollar market. We then
+calculate arbitrage spreads and proﬁts net of transaction costs. First, we subtract deposit and withdrawal fees imposed by
+the Tether Treasury. Deposits of dollars at the Treasury come with a ﬂat fee of 0.1 per cent, redemptions incur a minimum
+cost of 1000 USD or 0.1 per cent of the trade. 44 Second, we assume the transaction price is at the mid-point between bid and
+Fig. 8. Difference-in-difference coefﬁcients for dynamic panel speciﬁcation. Note: Figure presents coefﬁcients for a dynamic difference-in-differenc e
+speciﬁcation with the absolute level of peg-price deviations (left) and intra-day volatility (right). Coefﬁcients measure the effect of the treatm ent interacted
+with each quarter. Price data for USDT consolidates trade data from three trusted exchanges: Bitﬁnex, Bittrex, and Kraken. Price data for the control group of
+stablecoins comes from Bittrex. Sample is January 10th, 2019 through March 31st, 2020. White heteroscedasticity-robust standard-error bars are pl otted to
+construct a 95 percent conﬁdence interval around coefﬁcient estimates..
+42 A positive ﬂow to the secondary market is equivalent to a net positive deposit of dollars with the Tether Treasury, aggregated at a daily frequency.
+43 While our analysis in this section focuses on Tether, as it represents approximately 80% of the current stablecoin market, our analysis applies more
+generally to the class of national-currency-backed stablecoins. We provide analysis for other national-currency-backed coins in Appendix F.
+44 For example, refer to https://tether.to/fees/ for details.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+13
+
+===== PAGE 14 =====
+
+ask, we subtract half the bid-ask spread. Third, to estimate slippage costs, we use our prior estimates on the price impact of
+arbitrage ﬂow, where we ﬁnd a 1 standard deviation change in arbitrage ﬂow to the secondary market (approximately 7.5 mil-
+lion USD) leads to a 5 basis point decline in the Tether price. For example, for a deposit of 1 million, the slippage cost is then
+calculated as 1
+7:5 /C2 5 ¼ 2
+3 basis points. Fourth, we account for gas fees on the Ethereum blockchain. 45
+A histogram of arbitrage spreads (including a measure net of transaction costs) for deposits and redemptions on the Omni
+and Ethereum blockchains is provided in Fig. 10. The distribution of arbitrage spreads is more dispersed on the Omni block-
+chain, and both blockchains have a majority of deposits, 87% and 84% respectively, that coincide with a secondary-market
+price above the peg. We summarise the statistics of arbitrage proﬁts, deposits, and spread for the Omni and Ethereum block-
+chains in Table 5. Following the migration to the Ethereum blockchain, the average size of deposits fell from 7.6 to 4.1 USD
+million. Second, arbitrage spreads on deposits (net of transaction costs) shrink from an average of 47.1 basis points on Omni
+to 13.5 basis points on Ethereum. Consequently, median arbitrage proﬁts (net of transaction costs) shrink from an average of
+0.004 to 0.001 USD million. In contrast to our results on Tether deposits, the majority of Tether redemptions earn negative
+arbitrage spreads and proﬁts. 46 Following the migration to the Ethereum blockchain, the average size of redemptions fell from
+27.4 to 8.7 USD million. Second, arbitrage spreads (net of transaction costs) shrink from an average of /C0 37.5 basis points on
+Omni to /C0 111.7 basis points on Ethereum. Median arbitrage proﬁts (net of transaction costs) slightly increase from an average
+of /C0 0.012 to /C0 0.008 USD million.
+In analysing Tether deposits and redemptions, we ﬁnd stronger evidence for an arbitrage motive based on deposits of
+Tether, but not for redemptions of Tether. The main reason is an asymmetry in deposit and redemption fees: while deposits
+incur a ﬂat fee of 10 basis points, redemptions incur a minimum 1,000 USD withdrawal. Redemptions may also occur due to
+institutional features such as chain swaps, in which Tether tokens are transferred from one blockchain to another, or spec-
+ulation on collateral risk. The bottom line: increased investor access on the Ethereum blockchain has reduced the extent of
+arbitrage opportunities. The corresponding decline in the average size of trades, spreads and proﬁts is consistent with a ”de-
+mocratization” of access to arbitrage trades.
+5. Decentralized arbitrage: other coins
+5.1. Decentralized stablecoins
+The preceding discussion focused on national-currency backed stablecoins. We now provide evidence of the importance
+of arbitrage design for coins backed by other cryptoassets. The peg stability module (PSM) of the DAI stablecoin was intro-
+duced on December 2020 as a solution to combat persistent peg-price deviations ( Kozhan and Viswanath-Natraj, 2021 ). Ini-
+tially, DAI was created by adding different collateral types (ETH, USDC) in a vault, and borrowing a fraction as DAI tokens.
+Fig. 9. Response of Tether/USD price to 1 standard deviation shock in ﬂows to the secondary market; left panel – Pre Ethereum blockchain; right panel –
+Post Ethereum blockchain. Note: Figure documents the effect of a 1 standard-deviation shock to net secondary-market ﬂows on the price of Tether/USD. Left
+and right panels are for different sample periods based on the introduction of Tether to the Ethereum blockchain. Data for secondary-market ﬂows are f rom
+Omniexplorer and Etherscan. Price data are from Coinapi, and take an average of trade-price data from the following trusted exchanges: Bittrex and Kr aken.
+Sample is hourly data from April 1st, 2017 to March 31st, 2020. 24 lags are included in the baseline speciﬁcation. Gray area deNotes 95% conﬁdence inter val
+using White heteroscedasticity-robust standard errors..
+45 Gas is a measure of the amount of ether (ETH) a user pays to perform a given activity, or batch of activities, on the Ethereum network. These transaction
+costs are analogous to commissions on exchanges, however these costs are paid to the miners who authenticate the transactions on the Ethereum blockch ain.
+As we do not have transaction level gas fees, we use a daily index of ETH gas prices from coinmetrics network statistics as a proxy.
+46 In our summary statistics, we exclude any redemptions that are less than 1000 USD, as these transactions incur a redemption fee of 1000 USD.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+14
+
+===== PAGE 15 =====
+
+While over-collateralized positions can preserve stability, liquidation risk to investors and valuation effects on collateral
+made it difﬁcult for arbitrageurs to stabilize the peg. In response, the governance protocol introduced the PSM, a smart con-
+tract that enables users to swap USDC with DAI at a 1:1 rate without needing to create a vault or deposit collateral. 47
+The smart contracts to swap USDC and DAI can only be called by investors, making the PSM a prime example of arbitrage
+that is fully decentralized. For example, if the secondary market price of DAI is above one USDC, an investor can swap USDC
+for DAI with the Maker governance protocol at a one-for-one rate, and sell DAI at the prevailing market rate to proﬁt. Con-
+versely, when the DAI price is less than 1 USDC, an investor can swap DAI for USDC, resulting in a ﬂow in the opposite direc-
+tion. In the left panel of Fig. 11 we plot daily ﬂows of the swap arrangement between private investors and the MakerDAO
+protocol and also the DAI/USDC price. 48 Consistent with improved arbitrage design, investors typically use the PSM to swap
+USDC for DAI when DAI trades at a premium to USDC in the secondary market. 49
+Ptþh /C0 Pt/C0 1 ¼ a þ bhFlowt þ
+XL
+k¼1
+dkFlowt/C0 k þ
+XL
+k¼1
+ckðPt/C0 k/C0 1 /C0 Pt/C0 k/C0 2Þþ controlst þ ut h ¼ 0; 1; 2; ... ð7Þ
+Fig. 10. Arbitrage spreads calculated as the peg-price deviation pt /C0 1 at the timestamp of the deposit (left). Arbitrage spreads net of transaction costs
+(right). Note: Figure plots histograms of arbitrage spread of Tether deposits (left) and Tether redemptions (right) on the Omni and Ethereum blockch ain.
+Spread, measured in basis points, is the difference between the secondary-market price of Tether and the pegged rate of 1. Spread, measured in basis po ints,
+is the difference between the pegged rate of 1 and the secondary-market price of Tether. Secondary-market price is based on minute-frequency data tha t
+averages prices from the Bitﬁnex, Bittrex, and Kraken exchanges, sourced from Coinapi. Spread c is a spread net of transaction costs, which includes bid-ask
+spreads and an estimate of slippage cost due to the price impact of the trade. Sample is July 12th, 2018 (from which bid-ask prices on the Kraken exchange
+order book is available) to March 31st, 2020..
+Table 5
+Summary statistics of arbitrage spreads on the omni and ethereum blockchains.
+Deposit Redemption
+Omni Ethereum Omni Ethereum
+Size Spread Proﬁt Size Spread Proﬁt Size Spread Proﬁt Size Spread Proﬁt
+Count 542 542 542 1346 1346 1346 139 139 139 171 171 171
+Mean 7.591 47.114 /C0 0.112 4.100 13.474 /C0 0.013 27.437 /C0 37.541 /C0 0.034 8.689 /C0 111.698 /C0 0.048
+std 36.272 86.437 1.456 16.528 41.320 0.292 50.199 164.206 1.260 13.184 387.475 0.103
+min 0.002 /C0 604.333 /C0 30.217 0.001 /C0 206.700 /C0 6.201 0.010 /C0 753.507 /C0 7.215 0.003 /C0 3382.151 /C0 0.870
+25% 0.597 11.659 0.001 0.541 /C0 2.731 /C0 0.000 3.000 /C0 65.589 /C0 0.062 1.000 /C0 70.319 /C0 0.037
+50% 1.498 37.441 0.004 1.798 11.233 0.001 10.000 /C0 33.000 /C0 0.012 2.990 /C0 42.301 /C0 0.008
+75% 3.996 79.130 0.013 4.000 25.394 0.005 30.000 5.017 0.001 10.000 /C0 22.367 /C0 0.002
+max 500.000 423.167 0.482 300.000 493.949 0.204 300.000 406.167 8.123 73.000 84.833 0.085
+Note: Table records statistics on Tether Treasury deposit size, arbitrage spread, and proﬁt (calculated as arbitrage spread times deposit size, tra de-by-trade).
+Spread, measured in basis points, is the difference between the secondary-market price of Tether and the pegged rate of 1. Secondary-market price is b ased
+on minute-frequency data that averages prices from the Bitﬁnex, Bittrex, and Kraken exchanges, sourced from Coinapi. Spread is a spread net of transa ction
+costs, which includes deposit and redemption fees, bid-ask spreads and an estimate of slippage cost due to the price impact of the trade. Proﬁt is compu ted
+as the product of spread and size of deposit or redemption, and is measured in USD Millions. Sample is July 12th, 2018 (from which bid-ask prices on the
+Kraken exchange order book is available) to March 31st, 2020.
+47 The smart contract code required to implement the PSM is available online at https://github.com/BellwoodStudios/dss-psm
+48 Data on the net swaps of USDC for DAI in the PSM is available at https://makerburn.com, and prices are from coinapi using the Coinbase exchange.
+49 For more details on how the PSM works, we refer readers to https://community-development.makerdao.com/en/learn/governance/module-psm/
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+15
+
+===== PAGE 16 =====
+
+A testable implication of the arbitrage mechanism is that adding the swap arrangement should increase stability. 50 We con-
+duct local projections (based on Jordà (2005) ) of the value of swaps of USDC for DAI on the level of deviations of the DAI/USDC
+peg. We denote FlowPSM;t as total swaps of USDC for DAI, measured at a daily frequency. The change in the DAI/USDC price,
+Ptþh /C0 Pt/C0 1, is projected on the level of arbitrage ﬂows of investors in Eq. (7), allowing for feedback effects using lagged price
+and ﬂows, and controlling for ETH/USD returns and intra-day volatility. 51 A negative coefﬁcient bh indicates that positive ﬂows
+to the secondary market have a stabilizing impact on price. The results of local projections are in the right panel of Fig. 11. Con-
+sistent with our hypothesis, arbitrage ﬂows from investors have a stabilizing effect on the DAI/USDC price. We measure a peak
+price impact of approximately 1.5 basis points in response to a one standard-deviation shock in secondary-market ﬂows (ap-
+proximately 32.4 million USD based on daily data).
+5.2. Wrapped tokens
+Wrapped tokens are tokenized versions of other cryptocurrencies. A crucial difference between a stablecoin and a
+wrapped token is that the latter pegs to an asset on the blockchain. 52 The WBTC token is an ERC20 stablecoin on Ethereum
+backed 1:1 by native bitcoin, with approximately 1 per cent of Bitcoin in circulation locked to create WBTC tokens as of Novem-
+ber 2021. WBTC is a unique solution to the inter-operability of blockchains. 53 Bitgo is currently a custodian of assets and holds
+native BTC assets. All transfers are authenticated using a multi-signature (multisig) procedure. 54 Accounts of native bitcoin can
+be audited and veriﬁed on-chain, to ensure that the 1:1 backing is maintained.
+WBTC has a decentralized arbitrage design. Merchants are authorized participants that can mint (create) or burn (re-
+deem) WBTC tokens, and interface with both the custodian of native Bitcoin assets on one side and investors wanting to
+exchange BTC/WBTC on the other. 55 Importantly, the custodian Bitgo cannot initiate transactions, all mints and burns are ini-
+tiated by a merchant. 56 Consider the WBTC token trading at a premium on an exchange. Merchants have an incentive to mint
+WBTC tokens and deposit WBTC with the custodian at a 1:1 rate, and sell it in the secondary market. Conversely, merchants can
+buy WBTC tokens at a discount and burn WBTC tokens at par. In the left panel of Fig. 12, we plot daily net mints of WBTC tokens
+Fig. 11. Swaps of USDC for DAI tokens under peg stability module (PSM) against the DAI/USDC Price (left). Response of DAI/USDC price to 1 standard
+deviation shock in PSM ﬂows (right). Note: left panel: Schematic illustrates net swaps of USDC against DAI using the PSM against the DAI/USDC price. ri ght
+panel: Figure documents the effect of a 1 standard-deviation shock to a net swap of USDC for DAI on the DAI/USDC price. Price data are from Coinapi, using
+coinbase for the DAI/USDC pair. Sample is daily data from 28th December, 2020 to October 28th, 2021. 1 lag is included in the baseline speciﬁcation.
+Controls include ETH returns and intra-day volatility. Gray area deNotes 95% conﬁdence interval using White heteroscedasticity-robust standard e rrors..
+50 For a comprehensive discussion of the DAI peg and the PSM, we refer readers to Kozhan and Viswanath-Natraj (2021) , which is the ﬁrst paper to document
+the effect of the PSM on peg efﬁciency. Kozhan and Viswanath-Natraj (2021) focus, through a model and empirical evidence, on the role of risky Ethereum
+collateral as a limit to arbitrage and leading to the DAI-peg instability. The PSM is designed as a solution to peg stability by enabling arbitrageurs a ccess to a
+USDC/DAI swap trade, reducing the limits to arbitrage. Here we complement their ﬁndings by documenting how the swap arrangement of USDC for DAI leads t o
+price stabilization.
+51 Intra-day volatility is calculated as the square root of the daily average sum of squared returns over hourly intervals
+52 The DAI PSM makes the DAI stablecoin a wrapped USDC token. However DAI functionality still allows users to deposit alternative currencies (ETH) as
+collateral in vaults to create DAI tokens; thus, DAI tokens can be backed by other currencies as well as USDC.
+53 As an ERC-20 token that maps to BTC, it allows users to trade a synthetic BTC token on DeFi applications, including lending protocols like Compound and
+decentralized exchanges like Uniswap.
+54 Multisig is a process requiring multiple keys to authorize a Bitcoin transaction, rather than a single signature from one key. This is more secure as it avoids a
+single-point of failure
+55 A list of merchant institutions can be found at https://wbtc.network/dashboard/partners. There are 34 registered merchants for WBTC trading as of
+November 1st, 2021.
+56 https://forum.makerdao.com/t/state-of-wrapped-bitcoin-wbtc/6800
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+16
+
+===== PAGE 17 =====
+
+and WBTC/BTC prices from Binance, which is the most liquid exchange offering the WBTC/BTC pair during our sample. 57 Con-
+sistent with our hypothesis, merchants typically mint WBTC tokens when they trade at a premium with respect to native Bit-
+coin in the secondary market.
+We conduct local projections of FlowBTC;t as total net mints of WBTC, measured at a daily frequency. Using the same spec-
+iﬁcation in Eq. (7), the change in the WBTC/BTC price, Ptþh /C0 Pt/C0 1, is projected on the level of arbitrage ﬂows of investors in
+Eq. (7), allowing for feedback effects using lagged price and ﬂows, and controlling for BTC/USD returns and intra-day volatil-
+ity.58 We hypothesize a negative coefﬁcient bh, which would indicate that positive ﬂows to the secondary market have a sta-
+bilizing price impact. Consistent with our hypothesis, arbitrage ﬂows from investors have a stabilizing effect on the WBTC/BTC
+price. The results of our local projections are shown in the right panel of Fig. 12. We measure peak price impact at about 3 basis
+points in response to a one standard-deviation shock in the net mints of WBTC tokens (approximately 1187 WBTC based on
+daily data).
+5.3. Global stablecoins and CBDCs
+The decentralized arbitrage mechanism that we have explained can in principle be applied to the stabilization of both
+global stablecoins and CBDCs. Facebook announced in 2019 its intention to launch Diem – a global stablecoin. The proposed
+Diem stablecoin will have designated Dealers (DDs) that interface with both the Diem Association on one side and Diem
+users on the other. 59 DDs will be responsible for keeping the stablecoin stable. If the price of DiemUSD rises above 1 USD, it
+is the dealer’s role to deposit 1 USD with the Diem Network and sell that additional DiemUSD into the secondary market, earn-
+ing a proﬁt on the transaction and driving the price down toward 1 USD. DDs will typically be large ﬁnancial institutions, with
+sufﬁcient regulatory capital to scale these arbitrage opportunities. 60
+Turning to CBDCs, the Digital Currency Economic Payment (DCEP) project of China’s central bank maintains the value of 1
+unit of China’s digital Yuan to the National currency. The tiered structure of China’s digital currency system follows a similar
+setup to the proposed Diem stablecoin, and includes wholesale transactions between Central Banks and Commercial Banks.
+Commercial Banks then issue DCEP to retail users. In this way, the digital token is issued by the central bank and then backed
+1-for-1 by local-currency reserves at domestic banks. If the digital token is priced above par, the domestic bank can buy dig-
+ital currency tokens from the central bank at a 1:1 rate, and sell them in the secondary market. This process will in principle
+keep the value of the digital token pegged at a 1:1 rate to the local currency.
+5.4. Algorithmic stablecoins and TerraUSD collapse
+Algorithmic stablecoins are led by TerraUSD, which reached a peak marketcap of 40 USD billion in April 2022. Unlike their
+centralized counterparts, they are more capital efﬁcient as they do not rely on full collateralization by dollar reserves. Ter-
+Fig. 12. Net mints of WBTC token against the WBTC/BTC Price (left). Response of WBTC/BTC price to 1 standard deviation shock in WBTC net mints (right).
+Note: left panel: Schematic illustrates net mints of WBTC against WBTC using the PSM against the WBTC/BTC price. right panel: Figure documents the eff ect
+of a 1 standard-deviation shock to a net mint of WBTC token on the WBTC/BTC price. Price data are from Coinapi, using the Binance exchange for the WBTC/
+BTC pair. Sample is daily data from August 31st 2020 to October 28th, 2021. 1 lag is included in the baseline speciﬁcation. Controls include BTC returns and
+intra-day volatility. Gray area deNotes 95% conﬁdence interval using White heteroscedasticity-robust standard errors..
+57 Data on WBTC mints and burns is taken from https://wbtc.network/dashboard/order-book.
+58 Intra-day volatility is calculated as the square root of the daily average sum of squared returns over hourly intervals
+59 On the consumer-facing side, DDs will interact mainly with Virtual Asset Service Providers (VASPs), large entities that provide ﬁnancial services t o end
+users.
+60 Dealers have role similar to that of ETF authorized participants.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+17
+
+===== PAGE 18 =====
+
+raUSD is instead backed by Luna, which is the native token of the Terra blockchain. Users can create USD worth of TerraUSD
+stablecoins by burning 1 USD of Luna. The Luna token is used to pay fees for validating transactions on the blockchain, stak-
+ing tokens in governance votes, and earning yields on DeFi lending protocols. 61
+The TerraUSD is pegged to 1 USD through a simple arbitrage mechanism. For example, consider the case where the Ter-
+raUSD price is above parity. In this instance, an investor can sell 1 USD worth of Luna and buy TerraUSD for 1 USD. They can
+then sell TerraUSD in the secondary market to make an arbitrage proﬁt. Conversely, when the dollar price of TerraUSD is
+below one, an investor can buy TerraUSD at the exchange and sell TerraUSD for 1 USD worth of Luna tokens. A major concern
+with the arbitrage mechanism is that it is not risk-free: investor proﬁts are driven by expectations of the valuation of the
+governance token.
+Algorithmic stablecoins are prone to devaluation risk and speculative attacks when they are under-collateralized. In the
+left panel of Fig. 13, we witness large peg discounts starting on 9th May 2022, in which TerraUSD traded at a closing price of
+75 cents, before dropping to 40 cents by 12th May. As an insurance against peg discounts, the TerraUSD treasury has a Bit-
+coin reserve that it can use to support the TerraUSD peg if there is insufﬁcient Luna to meet redemptions. When Bitcoin
+reserves were at their peak of 1.8 billion USD in early May, they reached approximately 10% of the TerraUSD market cap
+of approximately 18 USD billion. However, the Bitcoin reserves became fully depleted as they were sold off to defend against
+the speculative attack.
+When the TerraUSD peg is broken, this triggers a loss of conﬁdence in the blockchain and the governance token. This feed-
+back can and did generate a spiral of falling Luna and TerraUSD prices. The ratio of the value of Luna to the circulating supply
+of TerraUSD declines to approximately 0.1 on 12th May ( Fig. 13 , right). Therefore, there is not enough Luna to redeem the
+outstanding value of all TerraUSD in circulation at par. 62 The arbitrage loop of redeeming TerraUSD at 1 USD and buying Luna
+tokens fails as investors lose conﬁdence in the peg-stabilizing mechanism. 63
+Comparing the design of TerraUSD to alternative systems such as dollar-backed stablecoins like Tether and over-
+collateralized crypto-backed coins like DAI, we note that there exists no equivalent arbitrage mechanism between the pri-
+mary and secondary markets. 64 Critically, the governance token Luna is unsuitable as collateral backing since it is systemically
+Fig. 13. TerraUSD price on 10 May 2022 (left). Ratio of value of TerraLuna to TerraUSD. Note: left panel: Sample is daily data for UST/USD is obtained for the
+Coinbase exchange from coinapi. right panel: Sample is daily data on market cap of TerraUSD and Luna obtained from coinmarketcap. .
+61 Although TerraUSD is backed by cryptocurrency collateral, we differentiate TerraUSD from decentralized stablecoins like DAI, which is backed by mu ltiple
+collateral types and has features like over-collateralization and smart contracts to enforce liquidation in the event positions are under-collate ralized. TerraUSD
+is instead backed by tokens native to its blockchain. We ﬁnd the governance token Luna is unsuitable as collateral backing since it is systemically dep endent on
+the value of the TerraUSD token and the growth of the Terra blockchain, with equilibria in which both the collateral and stablecoin prices jointly fall .
+62 The spiral in Luna and Terra prices observed in May 2022 is in part due to a decline in demand for TerraUSD on Anchor. Anchor is a lending protocol that
+offers users the ability to deposit Luna as collateral (”staking” Luna) and borrow TerraUSD tokens, creating a demand for TerraUSD. The negative sent iment on
+Terra-Luna led to a decline in the demand for TerraUSD on the protocol. As users redeem TerraUSD and mint Luna tokens, the price of Luna depreciates. Thi si n
+turn causes a decline in the amount of Luna deposited in the protocol, leading to less borrowing of TerraUSD, and a downward spiral of TerraUSD and Luna
+prices.
+63 While we focus on equilibria in which peg discounts occur, we can also consider an alternative equilibrium in which user growth on the blockchain grows
+strongly. This increases the value of the governance token Luna and simultaneously the demand for the TerraUSD stablecoin, which is used in all of the
+applications built on the Terra blockchain. In this scenario, TerraUSD trades at a premium and relies on the following arbitrage mechanism: Luna hold ers burn 1
+USD worth of Luna to mint 1 USD worth of Terra token and sell it at a proﬁt. The arbitrage mechanism is therefore more effective in periods when the Terra
+token trades at a premium and the Luna token is appreciating.
+64 The TerraUSD crisis did not spillover to other stablecoins, however temporary contagion effects were seen on May 12th 2022, when Tether experienced
+intra-day discounts of up to 5 cents in response to large sell trades on the FTX exchange. Tether prices rebounded toward parity intra-day, and we note
+signiﬁcant redemption requests by the Tether treasury to accommodate the reduced demand for Tether. Tether market cap declined by 8 USD Billion from 8 2.8
+USD Billion on May 11th to 74.1 USD Billion on May 18th (estimates from coinmarketcap). These redemptions are consistent with the arbitrage mechanism we
+put forward in the paper, and were required for Tether to maintain its peg. For more details on the Tether discounts, we refer readers to https://blog.k aiko.com/
+whats-driving-tether-s-de-pegging-f49db1e55b33
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+18
+
+===== PAGE 19 =====
+
+dependent on the value of the TerraUSD token and the growth of the Terra blockchain. One natural solution is for TerraUSD to be
+backed fully by stable collateral, ideally liquid US dollar reserves, or its equivalent in stablecoins on the blockchain. Another
+solution is to maintain over-collateralization through smart contracts. For example, if the ratio of collateral to stablecoin falls
+below a threshold, the system requires liquidation of the stablecoin to preserve full collateralization and peg stability.
+6. Conclusion
+Our paper focused on the design of stablecoins that are backed by national currencies, speciﬁcally Tether (USDT), the most
+liquid and heavily traded stablecoin. As a function of backing collateral, there are three basic categories: national-currency
+backed, cryptocurrency backed, and algorithmic (unbacked). Our results on Tether are thus best interpreted as applying to
+the ﬁrst of these. Focusing on the design of arbitrage processes as key to keeping centralized stablecoins stable, we identify
+which arbitrage-process elements best account for issuance. Our bottom line: decentralized issuance and increased access to
+the stablecoin treasury are critical factors in determining the efﬁciency of the peg.
+We provide concrete evidence of arbitrage design through an analysis of key 2019 reforms. First, we exploit the April
+2019 migration of Tether from the Omni to the Ethereum blockchain, which resulted in a large increase in arbitrageur access
+to the Tether Treasury. We employed a difference-in-differences design using a set of control group stablecoins that share
+similar institutional features, but did not undergo a structural change of blockchain. This produces a large and statistically
+signiﬁcant reduction in peg deviations. The second way we test the stability mechanism focuses speciﬁcally on arbitrage
+ﬂows. We ﬁnd that a one standard-deviation change in net ﬂows (approximately 7.5 million USD based on hourly data)
+reduces peg-price deviations by up to 5 basis points, consistent with arbitrage being the central stabilizing mechanism.
+We also provide evidence on the proﬁtability of arbitrage trades. Migration to the Ethereum blockchain resulted in a smaller
+deposit size, spreads, and proﬁts. This is consistent with the ”democratization” of access to arbitrage trades on the Ethereum
+blockchain leading to smaller spreads and proﬁts per trade.
+We then turn to several more recent decentralized ﬁnance applications. The peg stability module (PSM) of the DAI stable-
+coin was introduced as a solution to combat persistent peg-price deviations ( Kozhan and Viswanath-Natraj, 2021). The smart
+contracts to swap USDC and DAI can only be called by investors. Similarly, the Wrapped Bitcoin (WBTC) token is an ERC20
+stablecoin on Ethereum backed 1:1 by native bitcoin. In that case, merchants are authorized participants that can mint (cre-
+ate) or burn (redeem) WBTC tokens. For both of these arbitrage designs, we ﬁnd evidence that trades initiated by private
+investors stabilize price. Next, we turn to implications of arbitrage design for Facebook’s Diem stablecoin and central bank
+digital currencies (CBDCs). In both these cases, dealers and commercial banks will play the role of authorized merchants to
+conduct arbitrage that will maintain pegged values. Finally, we consider an alternative system of peg maintenance. Algorith-
+mic stablecoins such as TerraUSD that are typically unbacked. The recent collapse of TerraUSD shows that this category is
+prone to devaluation risk and speculative attacks when they are under-collateralized. In contrast to dollar-backed stable-
+coins, there is no clear arbitrage mechanism to restore prices when TerraUSD is priced at a discount.
+We conclude with policy recommendations for stablecoin and CBDC oversight. First, there is room for increased regula-
+tory guidance on what it means for a stablecoin to be fully backed by sufﬁciently liquid reserves, or the prudence of having
+backstops such as insurance provided by a central bank. For example, stablecoins that are backed by assets that may be illiq-
+uid in a crisis, such as commercial paper held by money market funds in 2008, are susceptible to bank-like runs when the
+value of redemptions exceeds the amount of liquid reserves ( Eichengreen and Viswanath-Natraj, 2022 ). A potential solution
+to minimising run-risk is real-time audits through a proof-of-reserve system. Third party veriﬁcation of the stablecoin-issuer
+assets at a block-time frequency can mitigate run-risks and custodial risk of an issuer absconding with funds off-chain.
+65
+Second, our paper shows that access to the primary market matters for the efﬁciency of arbitrage design. To take advan-
+tage of pricing discrepancies between primary and secondary markets, we recognize that stablecoin stability relies on suf-
+ﬁcient arbitrage capital among participants that a given market design is relying on. Regulatory frameworks should, ceteris
+paribus, increase access to arbitrage trades. This could involve, for example, extending the set investors that have access to
+the primary market when the capital of existing participants is low; or in the case of a CBDC, reducing the costs of obtaining a
+license to transact with the central bank.
+Finally, it has never been our intention in this paper to defend Tether or its own operating policies – we are simply bring-
+ing objective analysis to questions we judge to be of consequence. While the focus of our paper is on arbitrage design, the
+increased global importance of stablecoins makes them a systemically important part of how cryptocurrency markets func-
+tion. The increasing role they play in facilitating speculation and the role that ﬁnancial intermediaries play can spillover to
+other asset markets, as evident in the effects of stablecoin issuance on commercial paper ( Barthelemy et al., 2021; Kim,
+2022). Understanding the implications for ﬁnancial stability and designing optimal regulations are promising areas of future
+work on stablecoins.
+65 An example of proof of reserve is provided by the blockchain ﬁrm Chainlink https://chain.link/proof-of-reserve. As mentioned on their website, the y
+provide three functions: (i) Automated audits into your decentralized application to help decrease risk and increase efﬁciency; (ii) Publish relia ble, timely, and
+immutable audit reports on-chain to help bring new levels of transparency; and (iii) Prevent systemic failures in DeFi applications and protecting u sers from
+unexpected fractional reserve activity. An example of a stablecoin that uses Chainlink’s proof of reserve is TrueUSD. Wrapped tokens like WBTC are al so audited
+through Chainlink.
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+19
+
+===== PAGE 20 =====
+
+Declaration of Competing Interest
+The authors declare that they have no known competing ﬁnancial interests or personal relationships that could have
+appeared to inﬂuence the work reported in this paper.
+Appendix A. Supplementary material
+Supplementary data associated with this article can be found, in the online version, at https://doi.org/10.1016/j.jimonﬁn.
+2022.102777.
+References
+Akram, Q.F., Rime, D., Sarno, L., 2008. Arbitrage in the foreign exchange market: Turning on the microscope. J. Int. Econ. 76 (2), 237–253 .
+Aldridge, I., 2016. Etfs, high-frequency trading, and ﬂash crashes. J. Portfolio Manage. 43 (1), 17–28 .
+Allen, F., Gu, X., Jagtiani, J., 2022. Fintech, cryptocurrencies, and cbdc: Financial structural transformation in china. J. Int. Money Finance 102 625.
+Ante, L., Fiedler, I., Strehle, E., 2020. The inﬂuence of stablecoin issuances on cryptocurrency markets. Finance Res. Lett. 101867 .
+Arner, D.W., Auer, R., Frost, J., 2020. Stablecoins: risks, potential and regulation. Financial Stability Review. N 39 (Autumm 2020), p. 95–123.
+Baumöhl, E., Vyrost, T., 2020. Stablecoins as a crypto safe haven? not all of them!.
+Barthelemy, J., Gardin, P., Nguyen, B., 2021. Stablecoins and the real economy. Available at SSRN 3973538.
+Baur, D.G., Dimpﬂ, T., 2021. The volatility of bitcoin and its role as a medium of exchange and a store of value. Empirical Economics 61 (5), 2663–2683 .
+Baur, D.G., Hoang, L.T., 2020. A crypto safe haven against bitcoin. Finance Research Letters .
+Berentsen, A. and F. Schär (2019). Stablecoins: The quest for a low-volatility cryptocurrency.
+Bianchi, D., M. Iacopini, and L. Rossini (2020). Stablecoins and cryptocurrency returns: Evidence from large bayesian vars. Available at SSRN.
+Borri, N. and K. Shakhnov (2018). Cryptomarket discounts. Available at SSRN 3124394.
+Brown, D.C., Davies, S.W., Ringgenberg, M.C., 2021. Etf arbitrage, non-fundamental demand, and return predictability. Review of Finance 25 (4), 93 7–972.
+Bullmann, D., Klemm, J., Pinna, A., 2019. In search for stability in crypto-assets: Are stablecoins the solution? ECB. Occasional Paper 230 .
+Catalini, C. and A. de Gortari (2021). On the economic design of stablecoins. Available at SSRN 3899499.
+Cong, L.W., Li, Y., Wang, N., 2021. Token-based platform ﬁnance. J. Financ. Econ. 144 (3), 972–991 .
+Cong, L.W. and S. Mayer (2021). The coming battle of digital currencies. Available at SSRN 3992815.
+d’Avernas, A., Maurin, V., Vandeweyer, Q., 2022. Can Stablecoins be Stable? University of Chicago, Becker Friedman Institute for Economics Working .
+Dell’Erba, M., 2019. Stable cryptocurrencies? assessing the case for stablecoins. New York University Journal of Legislation and Public Policy, Fo rthcoming.
+Eichengreen, B. (2019). From commodity to ﬁat and now to crypto: What does history tell us? Technical report, National Bureau of Economic Research.
+Eichengreen, B., Viswanath-Natraj, G., 2022. Stablecoins and central bank digital currencies: Policy and regulatory challenges. Asian Economic P apers 21 (1),
+29–46.
+Ferreira, A.L., A.E. Gozluklu, and J. Mainente (2019). Central bank reserves and currency volatility. Available at SSRN 3409832.
+Force, E. et al. (2020). Stablecoins: Implications for monetary policy, ﬁnancial stability, market infrastructure and payments, and banking super vision in the
+euro area. Technical report, European Central Bank.
+Foucault, T., Kozhan, R., Tham, W.W., 2017. Toxic arbitrage. The Review of Financial Studies 30 (4), 1053–1094 .
+Fratzscher, M., Gloede, O., Menkhoff, L., Sarno, L., Stöhr, T., 2019. When is foreign exchange intervention effective? evidence from 33 countries. A m. Econ. J.:
+Macroecon. 11 (1), 132–156 .
+Frost, J., Shin, H.S., Wierts, P., 2020. An early stablecoin? the bank of amsterdam and the governance of money.
+Gloede, O., Moser, T., 2021. Crypto havens: Are stablecoins safe havens? Swiss National Bank Working Paper, presented at SNB-CIF Conference on
+Cryptoassets and Financial Innovation, 20–21 May 2021, Virtual conference, Swiss National Bank, Zurich, University of Basel, Center for Innovativ e
+Finance, Basel.
+Gorton, G.B., Ross, C.P., Ross, S.Y., 2022. Making money. Technical report, National Bureau of Economic Research.
+Gorton, G.B., Zhang, J., 2021. Taming wildcat stablecoins. Available at SSRN 3888752.
+Grifﬁn, J., Shams, A., 2020. Is bitcoin really untethered? Journal of Finance 74 (4), 1913–1964 .
+Hoang, L.T., Baur, D.G., 2020. How stable are stablecoins? Available at SSRN 3519225.
+Jordà, Ò., 2005. Estimation and inference of impulse responses by local projections. Am. Econ. Rev. 95 (1), 161–182 .
+Kozhan, R., Viswanath-Natraj, G., 2021. Decentralized stablecoins and collateral risk. WBS Finance Group Research Paper Forthcoming.
+Kristoufek, L., 2021. Tethered, or untethered? on the interplay between stablecoins and major cryptoassets. Finance Res. Lett. 101991 .
+Kwon, Y., Kim, J., Kim, Y., Song, D., 2021. The trilemma of stablecoin. Available at SSRN 3917430.
+Li, Y., Mayer, S., 2021. Money creation in decentralized ﬁnance: A dynamic model of stablecoin and crypto shadow banking.
+Liao, G.Y., Caramichael, J., 2022. Stablecoins: Growth potential and impact on banking.
+Makarov, I., Schoar, A., 2019. Price discovery in cryptocurrency markets. In AEA Papers Proc. 109, 97–99 .
+Makarov, I., Schoar, A., 2020. Trading and arbitrage in cryptocurrency markets. J. Financ. Econ. 135 (2), 293–319 .
+Marshall, B.R., Nguyen, N.H., Visaltanachoti, N., 2013. Etf arbitrage: Intraday evidence. J. Bank. Finance 37 (9), 3486–3498 .
+Murakami, D. and G. Viswanath-Natraj (2021). Cryptocurrencies in emerging markets: a stablecoin solution? Available at SSRN 3949012.
+Pernice, I.G.A., 2021. On stablecoin price processes and arbitrage. In Financial Cryptography .
+Tetherinc., 2016. Tether: Fiat currencies on the bitcoin blockchain.
+Routledge, B., Zetlin-Jones, A., 2022. Currency stability using blockchain technology. Journal of Economic Dynamics and Control 142, 104155 .
+Wang, G.-J., Ma, X.-Y., Wu, H.-Y., 2020. Are stablecoins truly diversiﬁers, hedges, or safe havens against traditional cryptocurrencies as their na me suggests?
+Res. Int. Bus. Finance 101225 .
+Wei, W.C., 2018. The impact of tether grants on bitcoin. Econ. Lett. 171, 19–22 .
+Kim, S.R., 2022. How the Cryptocurrency Market is Connected to the Financial Market. Available at SSRN 4106815 .
+R.K. Lyons and G. Viswanath-Natraj Journal of International Money and Finance 131 (2023) 102777
+20

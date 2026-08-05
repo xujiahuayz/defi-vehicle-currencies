@@ -1,0 +1,2025 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 121 (2016) 327–349 
+Contents lists available at ScienceDirect 
+Journal of Financial Economics 
+journal homepage: www.elsevier.com/locate/finec 
+Market conditions, fragility, and the economics of market 
+making /p82 
+Amber Anand a , Kumar Venkataraman b , ∗
+a Whitman School of Management, Syracuse University, 721 University Avenue, Syracuse, NY 13244, USA 
+b Edwin L. Cox School of Business, Southern Methodist University, 6212 Bishop Boulevard, Dallas, TX 75275-0333, USA 
+a r t i c l e i n f o 
+Article history: 
+Received 19 June 2014 
+Revised 13 July 2015 
+Accepted 10 August 2015 
+Available online 28 March 2016 
+JEL classiﬁcation: 
+G11 
+G12 
+G14 
+G24 
+Keywords: 
+Market makers 
+HFTs 
+Fragility 
+Volatility 
+Obligations 
+a b s t r a c t 
+Using audit-trail data from the Toronto Stock Exchange, we ﬁnd that market makers scale 
+back in unison when market conditions are unfavorable, which contributes to covariation 
+in liquidity supply, both within and across stocks. Market conditions lower aggregate par- 
+ticipation via their impact on trading proﬁts and risk. Contrary to regulatory view, higher 
+stock volatility is associated with more participation and higher proﬁts, even after con- 
+trolling for other market conditions, including stock volume. Fragility concerns extend to 
+larger stocks and to active participants. The designated market maker mitigates periodic 
+illiquidity created by synchronous withdrawal of market makers in large and small stocks. 
+©2 0 1 6 Elsevier B.V. All rights reserved. 
+/p82 We thank the editor (Bill Schwert) and, in particular, an anonymous 
+referee for many constructive suggestions. For comments, we thank Hank 
+Bessembinder, Robert Battalio, Paul Brockman, Ekkehart Boehmer, Al Car- 
+rion, Fany Declerck (FIRS discussant), Amy Edwards, Sean Foley, Hans Hei- 
+dle, Bob Jarrow, Yung-Yu Ma, Pamela Moulton, Lin Peng, Talis Putnins, 
+Michel Robe, Gideon Saar, Avanidhar Subrahmanyam (Western Finance 
+Association discussant), Wingwah Tham (European Finance Association 
+discussant), Laura Tuttle, Bob Schwartz, and seminar participants at Com- 
+modity Futures Trading Commission, City University of New York - Baruch 
+College, Cornell University, 2013 EFA conference, 2015 FIRS conference, 
+2013 FMA conference, Hong Kong University of Science and Technology, 
+Lehigh University, Nanyang Technological University, National University 
+of Singapore, Securities and Exchange Commission, Singapore Manage- 
+ment University, 2013 WFA conference, University of Sydney, University 
+of Technology Sydney and University of New South Wales. We are partic- 
+ularly grateful to James Twiss at Investment Industry Regulatory Organi- 
+zation of Canada (IIROC), and Abigail Etches and Judy Lee at the Toronto 
+Stock Exchange for help in obtaining and understanding the data. Amber 
+Anand gratefully acknowledges support from the Snyder Innovation Man- 
+agement Center at Syracuse University, and Kumar Venkataraman from 
+1. Introduction 
+A central tenet of the modern stock and futures mar- 
+ket is endogenous liquidity provision, in which individual 
+investors or for-proﬁt enterprises supply liquidity by post- 
+ing limit orders. In recent years, a dramatic increase in 
+electronic trading has facilitated the emergence of high- 
+frequency traders (HFTs) as active liquidity providers. Most 
+limit order traders, including HFTs, are not obligated to 
+supply liquidity. According to academic studies, high fre- 
+quency market making is highly proﬁtable and market 
+quality has improved alongside the growth in electronic 
+the James M. Collins Chair in Finance at Southern Methodist University. 
+An earlier version of the study was titled “Should exchanges impose mar- 
+ket maker obligations?”
+∗ Corresponding author. Tel.: + 1 214 768 7005; fax: + 1 214 768 4099. 
+E-mail address: kumar@mail.cox.smu.edu (K. Venkataraman). 
+http://dx.doi.org/10.1016/j.jﬁneco.2016.03.006 
+S0304-405X(16)30045-9/© 2016 Elsevier B.V. All rights reserved. 
+
+===== PAGE 2 =====
+
+328 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+trading. 1 These results provide support for a market struc- 
+ture in which liquidity supply arises naturally from the 
+proﬁt incentive (see Glosten (1994) ). 
+Counterbalancing these arguments is the concern high- 
+lighted by former Securities and Exchange Commission 
+(SEC) chairman Mary L. Shapiro in her talk before the 
+Economic Club of New York on September 7, 2010: “The 
+issue is whether the ﬁrms that effectively act as mar- 
+ket makers during normal times should have any obliga- 
+tions to support the market in reasonable ways in tough 
+times.” Speciﬁcally, since endogenous liquidity providers 
+(ELPs) are not obligated to facilitate trading, the concern 
+is whether ELPs scale back in unison when proﬁt oppor- 
+tunities are small or market making is risky. A systematic 
+withdrawal of liquidity when market conditions are unfa- 
+vorable has the potential to destabilize markets and lower 
+investor conﬁdence. A joint SEC - Commodity Futures Trad- 
+ing Commission (CFTC) advisory committee report on the 
+Flash Crash of May 2010 cautions that the new dynamics of 
+electronic markets introduce market structure fragility in 
+highly uncertain periods by “essentially eliminating rule- 
+based market maker obligations.”2 
+In this study, we use audit trail data from the Toronto 
+Stock Exchange (TSX) to present the ﬁrst empirical evi- 
+dence on questions posed by these concerns: Do market 
+makers move in and out of the market in concert with 
+one another? If so, what are the market conditions that 
+serve as signals and what are the economics of corre- 
+lated participation? Is correlated participation a character- 
+istic of the marginal or the more important market mak- 
+ers? Is it limited to small stocks or does it also affect large 
+stocks? Our study informs a central debate in market de- 
+sign on whether market makers reliably supply liquidity 
+when they have no obligations to do so. 
+In the absence of an externality or other market 
+failure, a competitive equilibrium for liquidity provision 
+in which the price of liquidity increases to reﬂect the 
+real social cost of market making is socially optimal. Are 
+regulators mistaken in interpreting an economically driven 
+increase in liquidity cost as a sign of market failure? 
+In a recent theoretical analysis, Bessembinder, Hao, and 
+Zheng (2015) clarify that competitive liquidity provision 
+is optimal if the fundamental uncertainty regarding ﬁrm 
+value and the likelihood of information asymmetry are 
+small in combination. However, for other ﬁrms or when 
+information asymmetries are large, the competitive bid-ask 
+spreads exceed the social costs of market making, leading 
+to allocative ineﬃciencies, as some welfare-enhancing 
+trades do not occur. Further, because investors discount 
+share prices to reﬂect future illiquidity costs, early stage 
+ﬁrms may decline to conduct an initial public offering 
+(IPO) even though doing so would enhance social welfare. 
+Under such conditions, the Bessembinder, Hao, and Zheng 
+1 See, among others, Hendershott, Jones, and Menkveld (2011), Has- 
+brouck and Saar (2013), Hendershott and Riordan (2013), Menkveld 
+(2013) , and Baron, Brogaard and Kirilenko (2012) . 
+2 See summary report titled “Recommendations Regarding Regulatory 
+Responses to the Market Events of May 6, 2010” by the joint CFTC-SEC 
+Advisory Committee on Emerging Regulatory Issues, http://www.cftc.gov/ 
+ucm/groups/public/@aboutcftc/documents/ﬁle/jacreport _ 021811.pdf . 
+model shows that a designated market maker (DMM) with 
+a mandate to narrow the bid-ask spread prevents mar- 
+ket failure, improves allocation eﬃciency, and increases 
+ﬁrm value and welfare because of an information-based 
+externality. Consistent with their model, several empirical 
+studies report positive stock valuation effects and improve- 
+ments in liquidity surrounding DMM introduction in many 
+markets. 3 Our study examines the role of obligations in 
+mitigating failure when market conditions are unfavorable. 
+There is substantial regulatory interest to encourage, 
+through incentives or regulation, market maker strategies 
+that maintain continuous participation in the market. 4 
+However, there is relatively little empirical work showing 
+that adverse market conditions lead to a synchronization 
+of actions among market makers and that imposing obli- 
+gations mitigates the problem. The lack of empirical evi- 
+dence is, at least partly, due to unavailability of suitable 
+data. By its very nature, an analysis of covariation in liq- 
+uidity supply requires data on individual ELP trading. Most 
+publicly available data sources, including the NYSE Trade 
+and Quote (TAQ) database, do not identify user accounts 
+associated with transactions, while other sources, such as 
+Nasdaq data, identify HFT-associated trades but aggregate 
+individual accounts into a single HFT classiﬁcation, mak- 
+ing it diﬃcult to model the behavior of an individual ELP 
+trader. 
+We study individual account trading in a sample of 
+1,286 TSX stocks in the calendar year 2006. 5 The TSX as- 
+signs a single member ﬁrm to serve as the DMM for each 
+stock. We use account-level information of DMM trades 
+(in their assigned and non-assigned stocks) to model the 
+attributes of market makers and implement a propensity 
+score matching algorithm to identify active, non-DMM ac- 
+counts that behave as market makers. User accounts iden- 
+tiﬁed as ELPs in our analysis exhibit short holding periods, 
+actively manage inventory, and earn the majority of trad- 
+ing proﬁts from passive, liquidity supplying trades, both in- 
+and out-of-sample, and these patterns are stable over time. 
+Our paper is distinguished from prior work partly because 
+the audit trail data made available by TSX allow an exam- 
+ination of individual account trading but mainly because 
+we test hypotheses that other papers do not. Most notably, 
+we present the ﬁrst direct analysis of covariation in liq- 
+uidity supply by market makers and identify market con- 
+ditions that inﬂuence liquidity supply via their impact on 
+trading proﬁts and risk. 
+We base our analysis of ELP participation on a fragility 
+score measure (Fragility Score), which aggregates the ex- 
+cess ELP participation on a trading day across all ELPs in a 
+3 Nimalendran and Petrella (2003), Venkataraman and Waisburd 
+(2007), Anand, Tanggaard, and Weaver (2009), Perroti and Rindi (2010), 
+Menkveld and Wang (2013) , and Skjeltorp and Odegaard (2015) study 
+DMM introduction by exchanges in several European markets. 
+4 A European Union (EU) proposal requires market makers to supply 
+liquidity for a set number of hours each day. (See “High-frequency traders 
+get curbs as EU reins in ﬂash boys” - Bloomberg News, April 14, 2014). 
+Nasdaq’s Market Quality Program, approved by the SEC as a pilot study in 
+2013, rewards market makers who meet performance standards on quo- 
+tation and trade participation in less liquid securities. 
+5 Aitken, Cumming, and Zhan (2015) report the start date of HFT ac- 
+tivity on the TSX as May 2005. 
+
+===== PAGE 3 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 329 
+stock, where excess is deﬁned as an ELP’s deviation from 
+its own average participation in the stock. The expected 
+value of the stock’s Fragility Score is zero if ELPs partic- 
+ipate for idiosyncratic reasons. However, when ELPs re- 
+spond to market conditions in a similar manner, Fragility 
+Score is deﬁned as positive in bad states and negative in 
+good states. 6 The observed daily distribution of Fragility 
+Score is compared with a simulated distribution based on 
+the assumption that ELP participation is independent. The 
+analysis shows that market makers tend to enter and exit 
+in a correlated manner. 
+To study commonality in liquidity supply, we imple- 
+ment the methodology used in the analysis of liquidity 
+commonality in Chordia, Roll, and Subrahmanyam [(20 0 0); 
+henceforth, CRS (20 0 0)] , and ﬁnd statistically signiﬁcant 
+positive covariation between individual ELP participation 
+and aggregate ELP participation within a stock, individual 
+ELP’s participation across stocks on the same day, and a 
+stock’s ELP participation and market-wide ELP participa- 
+tion. Coughenour and Saad (2004) ﬁnd a common source 
+of variation in the liquidity of stocks handled by the same 
+NYSE-specialist ﬁrm. We show that market makers who 
+are not DMMs also contribute to covariation in liquidity 
+supply across stocks. 
+Our results based on multivariate, stock ﬁxed effects re- 
+gressions indicate that aggregate ELP participation is sensi- 
+tive to market conditions and that market conditions inﬂu- 
+ence ELP participation via their impact on trading proﬁts 
+and risk. However, contrary to the regulatory view, an in- 
+crease in stock volatility is strongly associated with higher 
+ELP participation, even after controlling for other possible 
+determinants of participation, including stock volume. To 
+rule out reverse-causality, we examine earnings announce- 
+ments, an exogenous event in which the ﬁrm is the source 
+of volatility, and ﬁnd that ELP participation is higher on 
+pre-announcement days. Higher stock volatility is asso- 
+ciated with higher ELP participation, even under condi- 
+tions when market volatility is high, where the U.S. VIX 
+(Chicago Board Options Exchange Volatility Index) serves 
+as an instrument for TSX volatility that is not inﬂuenced 
+by TSX market makers. In addition, trading proﬁts, includ- 
+ing proﬁts per unit of capital, are positively associated with 
+stock and market volatility, which further mitigates con- 
+cerns about reverse causality. Our results are consistent 
+with the Handa and Schwartz’s (1996) theoretical predic- 
+tion that market making is more attractive when volatility 
+is high and, to some extent, allay the regulatory concern 
+that market makers exit during periods of high volatility. 7 
+6 Brokerage houses are subject to the same regulations on margin calls, 
+capital adequacy, and mark-to-market accounting, and implement simi- 
+lar risk management tools. Independent reactions to common signals can 
+lead ELPs to have a synchronized response to market conditions. 
+7 The Wall Street Journal (Meet Getco, high-frequency trade king - Au- 
+gust 27, 2009) reports that HFT ﬁrm GETCO made record proﬁts ($430 
+million) during the ﬁnancial crisis in 2008. GETCO’s proﬁts fell to $16 mil- 
+lion in 2012, which is attributed in part to the dramatic decline in mar- 
+ket volatility after the crisis. (See "Getco proﬁt plunges 82% amid slump 
+in stock volumes" - Bloomberg, February 13, 2013). SEC (2010) describes 
+the possibility that “short-term professional traders may like short-term 
+volatility.”
+Among other determinants of Fragility Score, a stock’s 
+trading activity has the largest impact in terms of eco- 
+nomic signiﬁcance. A decrease in both stock volume and 
+market-wide volume is associated with a higher Fragility 
+Score. Trading volume is a principal determinant of the 
+market maker’s ability to offset an inventory position. 
+Thus, markets are more fragile when market-wide trad- 
+ing volume declines because it inﬂuences the covariation 
+in inventory risk across stocks [see CRS (20 0 0)]. Order im- 
+balance is positively associated with Fragility Score, which 
+supports the Bessembinder, Hao, and Zheng (2015) pre- 
+diction that ELP participation declines when information 
+asymmetry, as reﬂected in one-sided order ﬂow, is high. 8 
+Overall, the results provide empirical support for regu- 
+latory concerns that market makers scale back in uni- 
+son when market conditions are unfavorable for supplying 
+liquidity. 
+We examine whether correlated participation is a char- 
+acteristic of a stock’s marginal ELPs, which we deﬁne as 
+those market makers with below median ELP participa- 
+tion over the sample period. An exit by marginal ELPs is 
+less of a concern because they play a less important role 
+in facilitating trading. We ﬁnd that active ELPs are more 
+sensitive to market conditions than marginal ELPs. Further, 
+ELPs are active participants in large stocks, which are more 
+proﬁtable and less risky, but the Fragility Score sensitiv- 
+ity of large stocks is three to ten times larger than that of 
+other stocks. Much regulatory attention has focused on the 
+role of market maker obligations in small stocks, but the 
+stronger results for large stocks indicate that DMMs miti- 
+gate periodic illiquidity created by synchronous ELP with- 
+drawal in both large and small stocks. In addition, to the 
+extent that capital is supplied at the brokerage ﬁrm level, 
+an exit by an ELP is less of a concern than an exit by all 
+ELPs from the same broker. Although ELPs are more sen- 
+sitive than brokerage ﬁrms to market conditions, we ﬁnd 
+that the difference is not economically large, suggesting 
+that unfavorable market conditions cause a reduction in 
+market making capital from many brokerage ﬁrms at the 
+same time. 
+Anand, Tanggaard, and Weaver (2009) and Menkveld 
+and Wang (2013) examine account-level data on DMM 
+trades on Stockholm Stock Exchange and Euronext-Paris, 
+respectively. On days with high bid-ask spreads, both stud- 
+ies ﬁnd that DMMs participate in passive trades, absorb 
+imbalance by building inventory, and earn lower proﬁts 
+than on days with low bid-ask spreads. We show that 
+DMMs supply liquidity under circumstances when market 
+making is not lucrative but also that DMMs play an impor- 
+tant role as market makers when ELPs scale back on par- 
+ticipation. Our study documents the mechanism by which 
+DMM introduction reduces the stock’s liquidity risk (see 
+Menkveld and Wang (2013) ). 
+8 The Joint CFTC-SEC advisory committee report describes the exit by 
+market making ﬁrms during the 2010 ﬂash crash, an extreme event in 
+which major US indexes declined by over 7% in a matter of minutes. Such 
+a rare event is not a part of our sample but we note that the ﬂash crash 
+was characterized by high volatility as well as one-sided order ﬂow. We 
+believe that circuit breakers are an appropriate tool to handle periods of 
+extreme stress. 
+
+===== PAGE 4 =====
+
+330 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+The TSX DMM is responsible for maintaining two-sided 
+markets with the bid-ask spread within a speciﬁed width, 
+moderating price volatility, and guaranteeing executions 
+for a speciﬁed number of shares [called a minimum guar- 
+anteed ﬁll (MGF)]. As compensation for these obligations, 
+the TSX allows DMMs to execute all odd-lot orders and to 
+auto-participate in a trade ahead of other orders with time 
+priority in a limit order book. We ﬁnd that the option to 
+auto-participate is exercised more often when market mak- 
+ing is diﬃcult, suggesting that this feature helps DMMs to 
+facilitate trading in unfavorable periods. While regulators 
+have focused on the role of market maker obligations, our 
+study points to a related but neglected research on design 
+of compensation contracts for participating in undesirable 
+trades. 
+The rest of the paper is organized as follows. Section 
+2 describes the TSX market structure and the propensity 
+score model to identify ELP accounts in the Toronto sam- 
+ple. Section 3 introduces Fragility Score and presents ev- 
+idence on commonality in liquidity supply across stocks. 
+Section 4 presents the main regression results that re- 
+late Fragility Score with market conditions. Section 5 re- 
+ports the determinants of trading proﬁts and the sources 
+of risk of a market making strategy. Section 6 concludes 
+and presents the study ′ s implications for market design. 
+2. The Toronto Stock Exchange market structure and 
+market maker identiﬁcation 
+We obtain detailed audit trail data from the Toronto 
+Stock Exchange for the calendar year 2006. The TSX’s mar- 
+ket structure is an electronic limit order book that closely 
+resembles those observed in many global exchanges. The 
+data include information on the orders, trades, and quotes 
+for all TSX-listed securities time-stamped to millisecond 
+resolution as well as the member ﬁrm (e.g., Goldman 
+Sachs) and the user identiﬁcation (ID) within a member 
+ﬁrm participating on the active and passive side of each 
+trade. Traders at the member ﬁrm are uniquely assigned 
+a user ID, which serves as the port through which orders 
+are submitted to TSX. Traders place orders on behalf of 
+their own proprietary (principal) account or serve as bro- 
+kers and enter orders on behalf of their clients. The TSX 
+data identify whether an order is submitted on behalf of 
+the proprietary account or the client. However, individual 
+clients within a user ID are not identiﬁed in the data. The 
+institutional details of TSX market, the database, and the 
+sample selection are provided in the Appendix. 
+The TSX assigns a single member ﬁrm to serve as the 
+DMM for each stock. Each member ﬁrm is typically as- 
+signed a mix of more and less actively traded stocks. The 
+TSX evaluates DMMs and rewards better performers with 
+future allocations. The database does not provide informa- 
+tion on stock-speciﬁc obligations of each DMM. When a 
+DMM chooses to automatically (auto) participate on the 
+bid or offer side, or both, with incoming order ﬂow, the 
+DMM is allocated 40% of incoming orders that are less than 
+or equal to the security’s MGF. 9 Auto-participation can be 
+9 Similar to TSX, many US options exchanges allow DMMs to auto- 
+participate (up to a maximum of 40% of the incoming order size) with 
+switched on or off at any time but it applies to subse- 
+quently arriving orders and does not confer a last-mover 
+advantage. Auto-participation ﬂag is reported in the TSX 
+database, but the information is not disseminated in real 
+time to market participants. 
+The TSX database identiﬁes the user ID within a mem- 
+ber ﬁrm assigned as DMM for each stock, which we term 
+as Specialist Trader or ST. All principal trades executed 
+by an ST user ID in stocks with exchange-assigned obli- 
+gations are categorized as DMM accounts. User IDs iden- 
+tiﬁed as a DMM in some stocks execute principal trades 
+using their own capital in other, non-assigned stocks. All 
+principal trades executed by an ST user ID in non-assigned 
+stocks are categorized into ST-ELP accounts. In some anal- 
+yses, we use these ST-ELP accounts for an algorithm-free 
+identiﬁcation of an endogenous market maker, who trades 
+some stocks under TSX beneﬁts and obligations as well as 
+other stocks without any beneﬁts and obligations. 
+Many user IDs at a member ﬁrm are not assigned as 
+DMM in any stock in the sample period. All principal 
+trades associated with these user IDs are categorized into 
+Non-ST accounts. Finally, because the TSX data do not sep- 
+arately identify clients, all client trades within a particular 
+user ID are grouped together in the same CL (or Client) ac- 
+count. For this reason, CL accounts are diﬃcult to interpret. 
+2.1. Descriptive statistics 
+Table 1 , Panel A, describes our sample. The sample con- 
+tains 1,286 TSX-listed stocks traded over 245 days in 2006. 
+We observe trading activity in approximately nine hundred 
+stocks on an average day. Equally weighted across stocks, 
+the daily number of trades for the average stock is 595, 
+which aggregates to 544,482 shares, or approximately 10 
+million Canadian dollars (CAD). The average market capi- 
+talization across stock-days is 1.6 billion CAD, and the aver- 
+age quoted spread is 0.12 CAD. Between the 25th and 75th 
+percentile of the daily distribution, the closing price varies 
+between 13.2 CAD and 14.5 CAD, the relative spread be- 
+tween 2.1% and 2.4%, and the daily stock return between 
+−0.33% and 0.43%. 10 
+In Table 1 , Panel B, we report descriptive statistics for 
+user accounts under category ST, Non-ST, and CL. The re- 
+sults suggest that market makers (i.e., ST accounts, includ- 
+ing ST-ELP and DMM) actively manage inventory and en- 
+gage in liquidity provision. Relative to Non-ST accounts, 
+ST accounts are active on more days, participate in more 
+trades, and have smaller end-of-day inventory, higher pro- 
+portion of zero end-of-day inventory, higher propensity 
+to switch between long and short positions within a day 
+(i.e., reversing inventory position), greater tendency to par- 
+ticipate in trades that reduce inventory, higher propor- 
+tion of passive executions, higher proportion of volume 
+placed anonymously, and higher probability of aﬃliation 
+with proprietary brokers. 
+small orders, which tend to be more proﬁtable [see Anand, Hua and Mc- 
+Cormick (2015) ]. 
+10 Value-weighted across stocks, the quoted spread is 0.047 CAD and 
+the relative quoted spread is 0.17%. 
+
+===== PAGE 5 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 331 
+Table 1 
+Descriptive statistics on Toronto Stock Exchange (TSX) sample and account-level trading activity. 
+Panel A presents descriptive statistics for the overall sample used in the paper. The sample contains 1,286 TSX-listed stocks traded over 245 days in 
+the calendar year 2006. We calculate equally weighted averages across stocks on each trading day and present the average, median, and 25th and 75th 
+percentile statistics across days. Panel B presents summary statistics on trading activity for user identiﬁers (IDs) grouped into three account-type categories: 
+(1) Specialist Trader (ST) refers to proprietary trades of user IDs who are designated market makers (DMM) for some securities but can also trade other 
+securities (ST-ELP); (2) Non-ST are proprietary trades of user IDs who are not designated as DMM in any security; and ( 3 ) CL refers to all client trades (both 
+retail and institutional) associated with a user ID. The Toronto Stock Exchange (TSX) data report whether the order or trade is attributed to a proprietary 
+(i.e., principal) account or to clients of a user ID but do not provide an identiﬁer for each client within a user ID. The reported statistics are aggregated 
+to the stock-user-day level, then aggregated across stocks by user for each day (averages at the user level are volume-weighted), then aggregated across 
+days (equally weighted) for each user, and then equally weighted across user IDs. In the Non-ST accounts and Client account columns, we report the 
+statistical signiﬁcance of the test of difference from ST Accounts. ∗, ∗∗ and ∗∗∗ indicate statistical signiﬁcance of test of difference at the 10%, 5%, and 1% level, 
+respectively. 
+Panel A: Sample statistics Mean Median 25th percentile 75th percentile 
+Number of stocks per day 900 915 886 929 
+Average daily number of trades per stock 595 591 535 650 
+Average daily share volume per stock 544,482 542,384 475,096 627,090 
+Average daily dollar volume per stock 9,969,075 10,060,919 8,687,780 11,155,961 
+Average closing stock price in Canadian dollars 13.7 13.8 13.2 14.5 
+Market capitalization of stocks traded (thousands of Canadian dollars) 1,627,110 1,631,396 1,599,909 1,661,509 
+Average daily dollar spread (Canadian dollars) 0.12 0.12 0.12 0.13 
+Average daily relative spread 2.3% 2.3% 2.1% 2.4% 
+Average daily return −0.02% 0.08% −0.33% 0.43% 
+Panel B: Account-level statistics Overall ST accounts Non-ST accounts Client accounts 
+Number of user IDs 4861 683 2362 1792 
+Days per trader 93 161 60 ∗∗∗ 111 ∗∗∗
+Daily number of trades 154 143 71 ∗∗ 268 ∗∗∗
+Daily Canadian dollars volume ( ∗1,0 0 0) 2,352 1,513 1,214 4,188 ∗∗∗
+Average absolute value of ending inventory 37,560 6,492 30,467 ∗∗∗ 59,128 ∗∗∗
+Number of times inventory crosses zero 0.75 3.79 0.22 ∗∗∗ 0.28 ∗∗∗
+Zero ending inventory 9.2% 18.8% 9.2% ∗∗∗ 5.5% ∗∗∗
+Proportion of trades in direction of inventory 50.1% 41.0% 42.7% ∗ 63.5% ∗∗∗
+Proportion of passive trades 51.8% 62.6% 49.9% ∗∗∗ 50.1% ∗∗∗
+Proportion of volume placed anonymously 16.6% 29.7% 15.8% ∗∗∗ 12.7% ∗∗∗
+Users aﬃliated with institutional brokers 22.5% 9.4% 22.1% ∗∗∗ 28.3% ∗∗∗
+Users aﬃliated with proprietary brokers 4.4% 18.9% 2.5% ∗∗∗ 1.4% ∗∗∗
+Users aﬃliated with retail brokers 20.7% 15.5% 24.5% ∗∗∗ 17.9% 
+Users aﬃliated with integrated brokers 48.0% 54.3% 46.7% ∗∗∗ 46.8% ∗∗∗
+2.2. An algorithm to identify market makers 
+We build a propensity score model to identify active, 
+Non-ST user accounts that behave as market makers. 11 Ex- 
+amples include proprietary traders employed by brokerage 
+houses or institutional traders (e.g., a hedge fund) trad- 
+ing via a DMA arrangement with a prime broker. The pro- 
+bit model is estimated at a daily frequency, in which the 
+dependent variable ST equals one for an ST account and 
+equals zero otherwise. Based on Table 1 , Panel B, we in- 
+clude several explanatory variables that capture an ac- 
+count’s propensity to behave as a market maker. 
+The results of the probit model are presented in 
+Table 2 , Panel A. Consistent with Table 1 , the regres- 
+sion coeﬃcients indicate that market makers are more 
+likely to trade passively, exhibit more switches between 
+long and short intraday inventory, place volume anony- 
+mously, maintain smaller overnight inventory, participate 
+in inventory-reducing trades, associate with proprietary 
+11 Propensity score matching attempts to identify a sample that did 
+not receive the treatment but is comparable in all observed covariates 
+to the sample that received the treatment. Propensity score is the esti- 
+mated probability from a probit or a logit model that is used to identify 
+the treatment sample [see Kennedy (2003) ]. 
+brokers, and are less likely to associate with retail and in- 
+stitutional brokers. For each user account, the propensity 
+score for the stock-day is the predicted probability based 
+on model coeﬃcients and the attributes of the user ac- 
+count. We rank user accounts each day based on propen- 
+sity score and then categorize them into decile portfolios 
+based on the accounts average propensity score rank over 
+the sample period. 
+Table 2 , Panel B, presents the attributes for user ac- 
+counts in Deciles 1, 4, 7, and 10. Results in Columns 1–4 
+suggest that the model obtains signiﬁcant cross-sectional 
+separation in propensity scores. The scores increase from 
+2% for Decile 1 accounts to 71% for Decile 10 accounts. The 
+rank range, deﬁned as [High-Low] rank during the sam- 
+ple period, averages 2.5 for the top and bottom deciles, in- 
+dicating that the relative rank of accounts is stable over 
+time. Many explanatory variables exhibit monotonic pat- 
+terns across deciles. For example, the number of zero in- 
+ventory crosses increases from 0.1 in Decile 1 to 5.5 in 
+Decile 10; the proportion of passive executions increases 
+from 40.3% in Decile 1 to 66.3% in Decile 10; and the 
+proportion of zero inventory days increases from 1.7% in 
+Decile 1 to 23.0% in Decile 10. In column 5–7, we present 
+the attributes of user accounts in Decile 10 for the account 
+types: ST-ELP, Non-ST, and CL. From this group, we classify 
+
+===== PAGE 6 =====
+
+332 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+Table 2 
+Propensity score matching algorithm to identify endogenous liquidity providers (ELPs). 
+Panel A presents the estimates from a probit model on the trading behavior of market makers. The dependent variable ST equals one for a user identiﬁer 
+(ID) designated as a Specialist Trader (ST) account and equals zero otherwise. Specialist Trader (ST) refers to proprietary trades of user IDs who are 
+designated market makers (DMM) for some securities but can also trade other securities (ST-ELP). The probit analysis is based on observations aggregated 
+at the user-day level (similar to Table 1 , Panel B) and includes all user-days with ﬁve or more trades. The explanatory variables are the proportion of passive 
+trades, the number of times inventory position crosses zero within the day, the absolute value of the end-of-the-day inventory positions, the proportion 
+of trades that are executed anonymously, and the proportion of trades that increase the current inventory position in the stock. "Institutional broker", 
+"Proprietary broker," "Retail broker," and "Integrated" broker are indicator variables that equal one for the corresponding member ﬁrm type [identiﬁed by 
+Toronto Stock Exchange (TSX)] and equals zero otherwise. The member ﬁrm type, “Integrated” broker, is the omitted indicator variable. Panel B presents 
+participation and inventory patterns for user accounts grouped by propensity scores deciles from the probit model in Panel A. The probit model provides a 
+propensity score for each user each day. We rank users based on their scores each day, average the ranks across days for each user, and then assign users 
+into deciles based on average ranks. Reported are average propensity scores, the average propensity rank range for an account during the sample period, 
+and a number of trading characteristics for each decile. The reported statistics are aggregated to the stock-user-day level, then aggregated across stocks 
+by user for each day (averages at the user level are volume-weighted), then aggregated across days (equally weighted) for each user, and then equally 
+weighted across user IDs. We report statistics that are equally weighted across users within the same propensity score decile (Columns 1–4) and further 
+within account type (Columns 5–7). The ﬁnal classiﬁcation in Column 8 is based on trading activity of DMMs in their designated stocks with obligations 
+and does not depend on propensity rank. The ﬁnal classiﬁcation in Column 9 refers to non-DMM user accounts ranked in the highest decile on propensity 
+scores (Columns 5–7) and trade on 50 or more days in the sample period. Column 4 reports on test of difference from Column 1, and Column 9 reports on 
+test of difference from Column 8. ∗, ∗∗ and ∗∗∗ indicate statistical signiﬁcance of test of difference at the 10%, 5%, and 1% level, respectively. 
+Panel A: Regression coeﬃcients Estimate p -value 
+Intercept −0.39 0.00 
+Number of times inventory crosses zero 0.08 0.00 
+Proportion of passive trades 1.21 0.00 
+Absolute value of ending inventory ( ∗10 0,0 0 0) −0.63 0.00 
+Proportion of trades in direction of inventory −1.62 0.00 
+Proportion of volume placed anonymously 0.51 0.00 
+Institutional broker dummy −0.60 0.00 
+Proprietary broker dummy 1.38 0.00 
+Retail broker dummy −0.31 0.00 
+Other broker dummy −1.14 0.00 
+Likelihood ratio 0.00 
+Wald 0.00 
+R 2 0.33 
+Panel B: Account-level trading activity Propensity score decile 
+Highest decile accounts with 
+account-type Final classiﬁcation 
+Lowest 
+decile 4 7 
+Highest 
+decile ST-ELP Non-ST Client 
+Designated 
+market 
+maker 
+Endogenous 
+liquidity 
+provider 
+(1) (2) (3) (4) (5) (6) (7) (8) (9) 
+Number of accounts 424 425 425 424 115 93 23 334 152 
+Propensity score 0.02 0.10 0.19 0.71 ∗∗∗ 0.75 0.65 0.65 0.60 0.71 ∗∗∗
+Propensity rank range 2.5 6.4 6.8 2.7 2.6 3.1 3.7 3.5 3.7 
+Days per user 53 114 109 144 ∗∗∗ 157 77 87 166 169 
+Daily Canadian dollar volume ( ∗1,0 0 0) 4,370 2,963 1,805 2,168 ∗∗∗ 1,825 1,234 9,610 1,337 3,395 ∗∗
+Average absolute value of ending 
+inventory 
+67,089 53,261 36,834 5,757 ∗∗∗ 4,265 9,519 15,944 6,232 7,245 
+Number of times inventory crosses zero 0.1 0.2 0.3 5.5 ∗∗∗ 4.0 1.9 5.1 5.6 4.4 ∗∗∗
+Zero ending inventory 1.7% 3.8% 7.4% 23.0% ∗∗∗ 42.6% 42.7% 26.3% 1.1% 49.7% ∗∗∗
+Inventory against days stock return 46.1% 46.8% 48.1% 41.1% ∗∗∗ 32.3% 28.6% 35.0% 52.6% 27.4% ∗∗∗
+Proportion of passive executions 40.3% 48.9% 52.2% 66.3% ∗∗∗ 51.5% 57.3% 51.9% 78.7% 54.0% ∗∗∗
+Proportion of trades in direction of 
+inventory 
+70.3% 61.8% 51.3% 38.9% ∗∗∗ 36.0% 30.1% 42.7% 42.9% 34.4% ∗∗∗
+Proportion of volume placed 
+anonymously 
+9.1% 11.0% 16.1% 42.2% ∗∗∗ 56.1% 42.2% 45.3% 25.0% 51.9% ∗∗∗
+Users aﬃliated with institutional 
+brokers 
+56.6% 21.9% 12.2% 3.3% ∗∗∗ 0.9% 2.2% 4.3% 9.3% 2.0% ∗
+Users aﬃliated with proprietary 
+brokers 
+0.0% 0.0% 0.0% 39.2% ∗∗∗ 53.0% 32.3% 60.9% 19.2% 41.4% ∗∗∗
+Users aﬃliated with retail brokers 9.4% 26.8% 22.1% 8.0% 2.6% 18.3% 0.0% 15.6% 9.2% 
+Users aﬃliated with integrated brokers 12.3% 49.2% 62.6% 49.1% ∗∗∗ 43.5% 47.3% 26.1% 54.2% 46.1% ∗
+the set of accounts that meet the threshold of 50 days of 
+trading data in the sample period as ELPs (Column 9). To 
+facilitate comparison, we report the attributes for DMM ac- 
+counts in their assigned stocks in Column 8. The propen- 
+sity score for ELP accounts [0.71 in Column 9] is higher 
+than those observed for DMM accounts [0.60 in Column 
+8], which alleviates, to some extent, the concern that the 
+model classiﬁes weaker market makers as ELPs. 
+The propensity score model identiﬁes market makers 
+using a combination of desirable attributes. Some buy-side 
+
+===== PAGE 7 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 333 
+institutions primarily use limit orders to build large po- 
+sitions but do not exhibit multiple zero crossing of in- 
+ventory. Other traders implement short horizon momen- 
+tum strategies that result in frequent reversal of inventory 
+but primarily use aggressive orders to enter and exit po- 
+sitions. The model avoids selecting such traders by using 
+several important attributes of market makers. In an out- 
+of-sample robustness analysis, we identify ELP accounts 
+based on a propensity score model that uses data from the 
+ﬁrst half of the sample period. Trading attributes of these 
+accounts in the second half of the sample period are simi- 
+lar to those reported in Table 2 , Panel B. The results are not 
+reported but are available from the authors upon request. 
+Our identiﬁcation strategy is along the lines of sev- 
+eral studies using Nasdaq data (see Brogaard, Hendershott 
+and Riordan (2014) ), in which market makers are identiﬁed 
+based on trading activity across all stocks. This approach is 
+based on the reasoning that a trader is unlikely to behave 
+as market maker in one stock and long-horizon investor 
+in another stock. One important distinction is that indi- 
+vidual account information is preserved in TSX database 
+while information is aggregated into a single HFT classi- 
+ﬁcation across 26 HFT ﬁrms in Nasdaq data. Other stud- 
+ies identify market makers based on information from the 
+exchange or using trading attributes selected by authors. 12 
+These studies report considerable variation in HFT strate- 
+gies, with some HFTs acting as market makers and other 
+HFTs demanding liquidity. The focus of our study is to un- 
+derstand obligated liquidity supply versus the endogenous 
+liquidity supply that arises naturally in a market. 
+3. Analysis of correlated trading by market makers 
+The combined inﬂuence of risk management and the 
+regulatory environment governing margin calls, capital ad- 
+equacy and mark-to-market accounting can lead market 
+makers to withdraw participation at the same time. This 
+is because the economics of market making provide incen- 
+tives to increase participation in good states and reduce 
+participation in bad states. Does the synchronized with- 
+drawal by ELPs to unfavorable market conditions lead to 
+fragility in liquidity supply? 
+Panels A and B of Fig. 1 illustrate the issue with two 
+ELPs in one stock. In the base case scenario (Panel A), the 
+ELPs participate for idiosyncratic reasons, and the com- 
+bined ELP participation in the stock is relatively stable. 
+Panel B presents a scenario in which both ELPs increase 
+participation in favorable states and withdraw participa- 
+tion in unfavorable states. This scenario leads to greater 
+variation in the combined ELP participation and higher in- 
+stability in unfavorable states, when neither of the ELPs 
+supplies liquidity. Both panels hold constant the level of 
+each ELP’s participation and focus on within-ELP deviation 
+12 For example, Kirilenko, Kyle, Samadi, and Tuzun (2011), Baron, Bro- 
+gaard, and Kirilenko (2012) and Clark-Joseph (2012) classify user ac- 
+counts based on holding periods and inventory positions. Raman, Robe 
+and Yadav (2014) identify market makers in crude oil futures markets 
+using account-level data on trading activity relative to end-of-day posi- 
+tions. IIROC (2012) identiﬁes HFTs in Canadian markets using account- 
+level order-to-trade ratio. 
+from expected (the time series average represented by dot- 
+ted line) stock participation. 
+As further illustration, we present an analysis of trad- 
+ing data in Barrick Gold Corporation (ticker: ABX). Barrick 
+is a large capitalization stock with trades observed on all 
+245 trading days in 2006. Panel C of Fig. 1 plots the dis- 
+tribution of number of ELPs participating in a trade on a 
+stock-day in 2006. The observed distribution (dotted line) 
+shows that the minimum number of ELPs is six, the maxi- 
+mum is 19, and about 20% of trading days involve 11 ELPs. 
+The two most active ELPs participate on 244 and 242 days, 
+respectively, and the ELP ranked 25th participates on 28 
+days. 
+In Panel C, the observed distribution is compared with 
+a simulated distribution of number of ELPs (solid line). 
+Using each ELP’s average stock participation observed in 
+2006, we draw all possible outcomes based on indepen- 
+dent arrival of ELPs and plot the simulated distribution of 
+the number of ELPs on a stock-day. 13 When market con- 
+ditions exert a common inﬂuence across market makers, 
+we expect more ELPs to show up in good states (right tail) 
+and more ELPs to withdraw in bad states (left tail) relative 
+to the simulated distribution. Consistent with this expec- 
+tation, the observed frequency in Panel C lies above the 
+simulated frequency in both the left and right tail of the 
+distribution. Further, the observed distribution has a higher 
+standard deviation than the simulated distribution, indicat- 
+ing more weight in the tails of the observed distribution. 
+In unreported regression analysis (available upon request), 
+we show that these patterns extend to the full sample of 
+stocks. 
+3.1. A measure of ELP participation 
+To formalize the patterns in Panels A and B of Fig. 1 , we 
+propose a Fragility Score, which aggregates the excess ELP 
+participation across all ELPs S in stock i on day t : 
+Fragility Score F S (i , t) = (−1) ∗
+∑  S 
+(s =1) ( L (i,s,t) − ¯L (i,s ) ) , (1) 
+where excess is deﬁned as deviation from ELP’s average 
+stock participation and multiplied by ( −1) to convert ex- 
+cess participation into a fragility measure. When ELPs par- 
+ticipate for idiosyncratic reasons, the expected value of 
+Fragility Score is zero. When ELPs offer a similar response 
+to market conditions, Fragility Score is expected to be pos- 
+itive in bad states and negative in good states. 14 
+3.2. Importance of DMM participation 
+We present a complementary measure ( MMPct ) that 
+incorporates both the extent of participation and the 
+13 For example, the top-ranked ELP participates on 244 days [99%] and 
+the 25th ranked ELP participates on 28 days [11%]. The simulation con- 
+siders all possible combinations of ELP participation while matching the 
+average participation rate observed in data for each ELP. The simulated 
+distribution based on independent arrival of market makers serves as a 
+benchmark to assess correlated participation. 
+14 In a robustness analysis, we consider an alternative measure of ELP 
+participation: the daily percentage of trades involving an ELP on one side 
+of the trade (as a proportion of double-counted trades) and ﬁnd similar 
+results. 
+
+===== PAGE 8 =====
+
+334 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+Panel A: Independent arrival Panel B: Similar response to market conditions
+Panel C:  Observed versus simulated participation
+Fig. 1. Framework for correlated trading by endogenous liquidity providers (ELPs). Panel A illustrates the scenario when two ELPs participate for id- 
+iosyncratic reasons. Panel B illustrates the scenario in which the two ELPs respond in a similar manner to market conditions, which leads to correlated 
+participation. Panel C plots the observed versus simulated distribution of the daily number of ELPs participating in a trade for Barrick Gold Corporation 
+(ticker: ABX). 
+circumstances under which a market maker supplies liq- 
+uidity: 
+M M P ct s = 
+(1 
+T 
+) T ∑  
+t=1 
+M M P ct s,t = 
+(1 
+T 
+) T ∑  
+t=1 
+D s,t 
+∑ S 
+s =1 D s,t 
+M M = DM M or ELP, (2) 
+where D s,t is an indicator variable, which equals one if 
+market maker s participates on day t and equals zero oth- 
+erwise, and S represents the number of market makers in 
+the stock. MMD s,t equals one when market maker s is the 
+sole participant, equals zero when market maker s does 
+not participate and takes a value between zero and one 
+when multiple market makers participate on day t . When 
+ELPs scale back under unfavorable conditions, the DMM 
+plays an important role as market maker, resulting in a 
+high score for DMMPct . We use DMMPct as a summary 
+measure of the DMM’s importance as a market maker on 
+a stock-day. 15 
+3.3. Commonality in ELP participation 
+Our framework describing correlated trading among 
+market makers is related to the important literature on 
+commonality in liquidity (see CRS, 20 0 0; Hasbrouck and 
+Seppi, 2001 ). The literature shows that liquidity metrics, 
+such as quoted spreads and effective spreads, exhibit co- 
+movement across stocks and that liquidity commonal- 
+ity is an important source of systematic risk (see Pastor 
+and Stambaugh, 2003 ). Can covariation in market maker 
+15 Across ELPs in all stocks, observed ELP P ct is smaller than simulated 
+ELP P ct , suggesting that an ELP participates more often on trading days 
+when other ELPs participate. In contrast, observed DM M Pct is larger than 
+simulated DM M Pct , suggesting that DMMs participate more often when 
+ELPs do not participate. 
+
+===== PAGE 9 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 335 
+Table 3 
+Analysis of commonality in participation by endogenous liquidity providers (ELPs). 
+This table presents analysis of commonality in ELP participation. Panel A presents tests of commonality in an ELP’s participation in a stock on a day with 
+other ELPs’ participation in the stock on the day. Participation is measured based on the Fragility Score. For each individual ELP, we regress the daily change 
+in individual ELP’s fragility score in a stock on the concurrent change in the stock’s fragility score. The individual ELP being assessed in the regression is 
+excluded from the calculation of the stock’s fragility score. Explanatory variables are one lead and one lag of the change in the stock’s fragility score, stock 
+ﬁxed effects, the concurrent, lead, and lagged market return, and contemporaneous stock squared return. Panel B uses a similar speciﬁcation to test for 
+commonality in an ELP’s participation in a stock on a day with the same ELP’s participation in all other stocks on the day. Panel C tests for the commonality 
+in aggregate ELP participation in a stock on a day with the aggregate ELP participation in all other stocks on the day. We report the cross-sectional average 
+concurrent coeﬃcient, the percentage of coeﬃcients that are positive, and the percentage that are statistically signiﬁcant. We also report cross-sectional 
+average and median of the combined concurrent, lead, and lag coeﬃcients, labeled Sum. p- values for medians are based on the sign test. ∗, ∗∗ and ∗∗∗ indicate 
+statistical signiﬁcance of test of difference at the 10%, 5%, and 1% level, respectively. 
+Commonality in liquidity supply Market capitalization quintile 
+All stocks 1 (small) 2 3 4 5 (large) 
+Panel A: Commonality - individual ELP with other ELPs within a stock over time 
+Number of ELPs 140 106 121 126 137 140 
+Concurrent 0.18 ∗∗∗ 0.17 ∗∗∗ 0.10 ∗∗∗ 0.13 ∗∗∗ 0.11 ∗∗∗ 0.23 ∗∗∗
+Percent positive 95% 75% 75% 83% 78% 92% 
+Percent + signiﬁcant 75% 41% 36% 44% 45% 61% 
+Sum 0.23 ∗∗∗ 0.20 ∗∗∗ 0.12 ∗∗∗ 0.19 ∗∗∗ 0.16 ∗∗∗ 0.30 ∗∗∗
+Median 0.18 ∗∗∗ 0.13 ∗∗∗ 0.07 ∗∗∗ 0.14 ∗∗∗ 0.12 ∗∗∗ 0.22 ∗∗∗
+Stock ﬁxed effects Yes Yes Yes Yes Yes Yes 
+Panel B: Commonality - individual ELP in a stock with same ELP in other stocks 
+Number of ELPs 140 106 121 126 137 140 
+Concurrent 0.28 ∗∗∗ 0.21 ∗∗∗ 0.15 ∗∗∗ 0.18 ∗∗∗ 0.21 ∗∗∗ 0.35 ∗∗∗
+Percent positive 88% 75% 74% 75% 79% 84% 
+Percent + signiﬁcant 74% 25% 28% 36% 46% 67% 
+Sum 0.34 ∗∗∗ 0.30 ∗∗∗ 0.17 ∗∗∗ 0.15 ∗∗∗ 0.21 ∗∗∗ 0.43 ∗∗∗
+Median 0.34 ∗∗∗ 0.21 ∗∗∗ 0.15 ∗∗∗ 0.13 ∗∗∗ 0.21 ∗∗∗ 0.39 ∗∗∗
+Panel C: Commonality - Overall stock participation versus the Market participation 
+Number of stocks 923 162 176 189 193 203 
+Concurrent 0.74 ∗∗∗ 0.40 ∗ 0.27 ∗∗∗ 0.40 ∗∗∗ 0.62 ∗∗∗ 1.84 ∗∗∗
+Percent positive 66% 59% 64% 63% 67% 75% 
+Percent + signiﬁcant 12% 4% 6% 12% 10% 25% 
+Sum 0.84 ∗∗∗ 0.71 ∗ 0.13 0.48 ∗∗∗ 0.65 ∗∗∗ 2.09 ∗∗∗
+Median 0.22 ∗∗∗ 0.11 0.12 ∗ 0.12 ∗∗ 0.27 ∗∗∗ 0.99 ∗∗∗
+participation lead to supply-side driven commonality in 
+liquidity? We analyze co-variation from three perspectives: 
+individual ELP ′ s participation and aggregate ELP participa- 
+tion within a stock, individual ELP’s participation across 
+stocks on the same day, and a stock’s ELP participation 
+and market wide ELP participation. Participation is mea- 
+sured based on Fragility Score, and all three analyses use 
+the methodology established in CRS (20 0 0). 
+We begin by examining the covariation between indi- 
+vidual ELP participation and the aggregate ELP participa- 
+tion over time within a stock. For each ELP, we regress 
+the daily change in ELP’s Fragility Score in a stock on 
+the concurrent change in the stock’s Fragility Score, esti- 
+mated using Eq. (1) . 16 The individual ELP being assessed 
+in the regression and the stock’s DMM are excluded from 
+the calculation of the stock’s Fragility Score. Following the 
+commonality literature, we include one lead and one lag 
+of the change in the stock’s fragility score to account 
+for any lagged adjustment in commonality. In all the re- 
+gressions, we also include stock ﬁxed effects; the concur- 
+rent, lead and lagged market return; and contemporane- 
+16 CRS (20 0 0) observe that the change speciﬁcation helps avoid econo- 
+metric problems (e.g., non-stationarity) that are associated with a level 
+speciﬁcation of commonality. 
+ous stock squared return as control variables. In Table 3 , 
+we report the cross-sectional average Concurrent coeﬃ- 
+cient, the percentage of coeﬃcients that are positive, and 
+the percentage that are positive and statistically signiﬁ- 
+cant. We also report cross-sectional average and median of 
+the combined concurrent, lead, and lag coeﬃcients, labeled 
+Sum. 
+The results in Table 3 , Panel A, support commonality 
+in ELP participation within a stock. Across 140 ELPs, the 
+average Concurrent coeﬃcient is 0.18 and statistically sig- 
+niﬁcant. We ﬁnd that 95% of the individual ELP coeﬃ- 
+cients are positive and that 75% are positive and exceed 
+the 5% one-tailed critical value. The average Sum variable 
+is 0.23, the median is 0.18, and both mean and median 
+are highly signiﬁcant. These results provide strong empir- 
+ical support for regulatory concerns that ELPs participate 
+in unison over time within a stock. We stratify the sample 
+into ﬁrm size quintiles and report results for each quin- 
+tile. The highest slope Sum coeﬃcients are observed for 
+Quintile 5 (large cap) stocks. Thus, an individual ELP has 
+stronger co-movement in participation with other ELPs in 
+large stocks, although large stocks have higher participa- 
+tion rates from ELPs. 
+Coughenour and Saad (2004) posit that the degree of 
+liquidity covariation is explained by shocks to common 
+
+===== PAGE 10 =====
+
+336 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+resources of the NYSE specialists, such as shared capital 
+and information. In the spirit of Coughenour and Saad 
+(2004) , we next examine whether individual ELPs (i.e., 
+market makers other than DMMs) exhibit a common com- 
+ponent in liquidity provision across stocks. For each ELP, 
+we regress the daily change in ELP’s fragility score in a 
+stock on the concurrent change in the same ELP’s aver- 
+age fragility score across other stocks. In Table 3 , Panel 
+B, the average slope Sum coeﬃcient is 0.34 and highly 
+signiﬁcant, indicating that participation by an individual 
+ELP co-varies across stocks. Large stocks have a larger 
+slope coeﬃcient, suggesting that participation in large 
+stocks exhibits stronger co-movement with ELP’s portfolio 
+behavior. 
+The results on commonality in ELP participation ob- 
+served within a stock (Panel A) and within an ELP (Panel 
+B) should translate into commonality in ELP participation 
+across stocks. We explicitly test for such a relation in 
+Table 3 , Panel C. We regress the daily change in a stock’s 
+fragility score on the concurrent, lead, and lagged change 
+in average fragility score across other stocks. The aver- 
+age Sum coeﬃcient for the full sample is 0.84, suggest- 
+ing that ELP participation exhibits signiﬁcant co-movement 
+across stocks. Further, participation in large stocks is more 
+strongly associated with market wide participation than 
+those in small stocks. 17 The extant literature on DMM obli- 
+gations has focused on small and illiquid stocks. However, 
+the stronger results that we document for large stocks in- 
+dicate that periodic illiquidity resulting from synchronous 
+withdrawal by ELPs is a more likely outcome in large 
+stocks. 
+CRS (20 0 0) show that effective spreads of large ﬁrms 
+have greater response to market-wide changes in effec- 
+tive spreads, although large ﬁrms have smaller average 
+effective spreads. They posit a liquidity demand- based 
+explanation that greater prevalence of institutional trad- 
+ing in large ﬁrms could drive the pattern. Our results are 
+consistent with a large ﬁrm effect shown in CRS (20 0 0). 
+While demand-side effects are likely, our results point 
+to a supply-side explanation that is driven by inventory 
+risk management. Market makers have the ability to en- 
+ter and exit a position at low cost and easily manage in- 
+ventory in large stocks. The lower frictions facilitate more 
+frequent entry and exit by ELPs in unison, which con- 
+tributes to higher commonality in liquidity supply in large 
+stocks. 
+4. Market conditions and market maker participation 
+We hypothesize that synchronous participation by ELPs 
+is explained by market conditions that inﬂuence the eco- 
+nomics of market making. In this section, we analyze 
+the inﬂuence of market conditions on ELPs’ participation 
+within a stock. We begin our analysis by examining mar- 
+ket conditions on days when ELPs do not participate ver- 
+sus when they do. The analysis is based on a sample of 
+stock-days when the DMM participates in the stock. We re- 
+17 In unreported analysis, we ﬁnd that stock liquidity co-varies with 
+market liquidity for our sample of stocks, where percentage effective 
+spreads serves as the liquidity proxy. 
+port plots for the logarithm of trading volume in Panel A of 
+Fig. 2 and the absolute value of order imbalance in Panel 
+B. When trading interest among investors is low, or when 
+order ﬂow is one-sided, market makers face higher risk of 
+managing inventory. Consistent with this expectation, trad- 
+ing activity is lower and order imbalance is higher on days 
+when ELPs do not participate versus when they do. Even 
+in large stocks, in which ELPs participate on a high per- 
+centage of the stock-days, ELPs scale back on participation 
+when trading activity declines. 
+In Panel C, we plot the quoted bid-ask spreads for 
+days with and without ELP participation. Higher quoted 
+spreads lead to greater revenues for market makers but 
+also reﬂect more diﬃcult market conditions. Consistent 
+with the latter, we ﬁnd that ELP participation is signiﬁ- 
+cantly lower on days with higher quoted spreads. Since 
+higher stock volatility increases inventory risk, regulators 
+have expressed concern that ELPs scale back on participa- 
+tion when volatility is high. Contrary to regulatory con- 
+cerns, Panel D indicates that intraday stock volatility is 
+higher on days when ELPs participate versus when they do 
+not. Along similar lines, we ﬁnd in an unreported analy- 
+sis that Fragility Score is lower on trading days when in- 
+traday stock volatility exceeds the 95th percentile for the 
+stock. 
+4.1. Volatility and market maker participation 
+Because the intraday volatility results appear inconsis- 
+tent with the regulatory view, we scrutinize these results 
+in more detail in this subsection. One possibility is that, 
+while we treat intraday volatility as exogenous, the causal- 
+ity goes in the opposite direction; i.e., ELP participation 
+contributes, not responds, to higher volatility. To address 
+reverse-causality, we examine earnings announcements, an 
+exogenous event in which pending corporate news is the 
+source of information ﬂow, or volatility. In Table 4 , Panel 
+A, we compare ELP participation on the day before earn- 
+ings announcements (Day [ −1]) with control days (Day 
+[ −10, −30]) for the same stock. The sample consists of 592 
+stocks with a total of 1,532 announcements, ranging from 
+61 for small stocks to 653 for large stocks. Results indi- 
+cate that Fragility Score is lower (i.e., ELP participation is 
+higher) on the day before an earnings announcement (Day 
+[-1]) relative to control days. Using standard errors clus- 
+tered at stock and day level, the decline in fragility score 
+is statistically signiﬁcant for the full sample but not for the 
+sub samples. 
+We further examine whether the intraday volatility re- 
+sult holds in different market conditions. Intraday stock 
+volatility could be attractive to ELPs when market-wide 
+volatility is low, but not when market-wide volatility is 
+high. Accordingly, in Table 4 , Panel B, we examine Fragility 
+Scores based on independent double-sorts of trading days 
+into stock and market volatility quintiles. We use US VIX 
+as an instrument for (exogenous) TSX volatility that is not 
+inﬂuenced by the participation from TSX market makers. 
+We ﬁnd that high intraday stock volatility is associated 
+with signiﬁcantly lower fragility scores. Even when VIX is 
+high, the fragility score is negative when intraday stock 
+volatility is high. The positive association between ELP 
+
+===== PAGE 11 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 337 
+Panel A: Log (volume) Panel B: Absolute (order imbalance)
+Panel C: Relative percentage spreads Panel D: Intraday volatility
+Fig 2. Impact of market conditions on market maker participation. Panel A presents log (volume), Panel B presents the percentage bid-ask spreads, Panel C 
+presents buy-sell imbalance, and Panel D presents intraday volatility. Within market cap quintiles, the plots present averages based on stock days when both 
+the designated market maker (DMM) and endogenous liquidity providers (ELPs) participate (DMM and ELP) and stocks days when the DMM participates 
+but ELPs as a group do not participate (DMM only). 
+participation and volatility supports Handa and Schwartz’s 
+(1996) theoretical prediction that the market making strat- 
+egy of posting buy and sell limit orders simultaneously is 
+proﬁtable when intraday volatility is high. In a subsequent 
+analysis, we ﬁnd that trading proﬁts are positively associ- 
+ated with stock volatility, which provides an economic ra- 
+tionale for the decision to voluntarily supply liquidity on 
+high volatility days. 18 
+18 In unreported analysis, we ﬁnd similar results when we double- 
+sort by directional volatility and intraday volatility. Directional volatility 
+is measured by the absolute value of autocorrelation in 15-minute returns 
+
+===== PAGE 12 =====
+
+338 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+Table 4 
+Market conditions and participation by endogenous liquidity providers (ELPs). 
+Panels A and B present robustness tests of the impact of intraday volatility on ELP participation. Intraday volatility is the standard deviation of 15-minute 
+returns based on quote midpoints. Panel A reports participation on the trading day before an earnings announcement (Day [-1]) benchmarked against 
+control days (Days [-10,-30]) for the same ﬁrm. Earnings announcements date is obtained from the Institutional Brokers Estimate System (I/B/E/S) database. 
+I/B/E/S data are matched to Toronto Stock Exchange (TSX) data by ticker. The sample consists of 592 stocks with a total of 1,532 announcements, ranging 
+from 61 for small stocks and 653 for large stocks. If the announcement time is before the market open or during market hours, then the pre-announcement 
+day is the day prior to the announcement date. For announcements after market close, the pre-announcement day is the same as announcement day. Panel 
+B reports the interplay between stock volatility, market volatility and participation. US stock market based VIX (Chicago Board Option Exchange Volatility 
+Index) serves as an instrument for TSX-wide volatility that is exogenous to ELP participation. The intraday quintile assignments are made separately for 
+each stock. Measures are reported for overall sample, small cap quintile and large cap quintile. Trade participation rates are unconditional (ﬁll in a zero 
+for days with no trading). ∗∗∗, ∗∗ and ∗ indicate that the measures differ between pre-earnings announcement days and control days in Panel A, and 
+differ between low and high intraday quintiles in Panel B, at the 1%, 5%, and 10% level, respectively, based on double-clustered standard errors at stock 
+and day level. Panels C and D present the regression coeﬃcients of a multivariate analysis of stock characteristics and market conditions on the stock’s 
+fragility score. We estimate a stock ﬁxed effects speciﬁcation in which the dependent variable is the stock’s fragility score on the stock-day. The explanatory 
+variables are daily stock- and market-level conditions such as the stock volume, intraday volatility, percentage quoted spread, 1/price, absolute value of the 
+order imbalance, a dummy variable that equals one if the stock-day is a pre-earnings announcement day, downstock (equals one if the rolling 30-day stock 
+return is negative), downmarket (equals one if the rolling 30-day market return is negative), the US market VIX, and the share volume of all securities 
+traded in the TSX on the day. Panel D includes interactions with the large stock dummy that equals one for the largest cap quintile of stocks and the active 
+ELP dummy that equals one if ELP’s participation based on the number of days is above the average for all active ELPs in the stock. Fragility scores for the 
+more and less active ELPs are calculated separately for each stock. The regressions include stock ﬁxed effects, and p -values are calculated based on double 
+clustered standard errors at stock and day level. 
+Panel A: ELP participation before earnings announcements 
+Variables All stocks Small cap stocks Large cap stocks 
+Day [-1] before earnings announcements 
+Percent of stock days with ELP participation 51.17% 16.39% 81.47% 
+Fragility Score −0.063 −0.060 −0.106 
+Participation rate of trades 2.81% 1.89% 4.72% 
+Control days [-10,-30] before earnings announcement 
+Percent of stock days with ELP participation 4 8.6 8% ∗ 13.35% 81.36% 
+Fragility score 0.016 ∗∗ -0.005 -0.003 
+Participation rate of trades 2.69% 1.59% 4.80% 
+Panel B: Stock volatility, market volatility, and ELP participation 
+Intraday stock volatility quintile 
+Variables Low volatility 2 3 4 High volatility P -value: test q1 = q5 
+Lowest VIX quintile days 
+Stock days 9892 9696 9114 8682 8094 
+Percent of stock days 36.90% 37.00% 37.20% 37.50% 39.80% ∗∗ 0.04 
+Fragility score 0.15 0.01 −0.06 −0.15 −0.33 ∗∗∗ 0.00 
+Participation rate of trades 2.10% 2.00% 2.10% 2.00% 2.20% 0.22 
+Highest VIX quintile days 
+Stock days 6931 7100 7608 8420 9971 
+Percent of stock days 21.50% 28.90% 33.10% 36.50% 43.30% ∗∗∗ 0.00 
+Fragility Score 0.21 0.16 0.10 0.03 −0.17 ∗∗∗ 0.00 
+Participation rate of trades 1.50% 1.90% 2.10% 2.20% 2.60% ∗∗∗ 0.00 
+Panel C: Determinants of Fragility Score on the stock day 
+Variables (1) p -value (2) (3) p -value (4) (5) p -value (6) (7) p -value (8) 
+Economic 
+signiﬁcance (one σ
+shock) (9) 
+Stock variables 
+Log (stock volume) −0.133 0.00 −0.126 0.00 −0.122 0.00 0.17 
+Volatility (intraday) −0.155 0.00 −0.146 0.00 −0.148 0.00 0.13 
+Quoted spread (percent) 0.002 0.19 0.002 0.16 0.002 0.33 0.04 
+Price (inverse) −0.018 0.03 −0.016 0.02 −0.016 0.02 0.01 
+Abs(Imbalance) 0.043 0.00 0.043 0.00 0.041 0.00 0.03 
+Earn_Pre −0.057 0.06 −0.055 0.07 0.04 
+Downstock −0.007 0.44 −0.010 0.24 0.01 
+Market variables 
+Log (market volume) -0.239 0.00 −0.107 0.00 0.01 
+Downmarket −0.023 0.02 −0.018 0.04 0.02 
+VIX 0.002 0.45 0.003 0.23 0.02 
+Stock ﬁxed effects Yes Yes Yes Yes 
+Adjusted R 2 4.2% 3.9% 0.3% 4.0% 
+N. obs. 190,265 186,222 187,773 186,222 
+(continued on next page) 
+
+===== PAGE 13 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 339 
+Table 4 
+( continued ) 
+Panel D: Fragility Score on the stock day 
+Dummy = 1 for Large Cap stock Dummy = 1 for Active ELP 
+Fragility Score based on 
+member ﬁrm participation 
+Economic 
+signiﬁcance 
+(one σ shock) 
+Variables (1) p -value (2) (3) p -value (4) (5) p -value (6) (7) 
+Stock variables 
+Log (stock volume) −0.086 0.00 −0.023 0.00 −0.098 0.00 0.165 
+Log (stock volume) ∗ Dummy −0.235 0.00 −0.076 0.00 
+volatility (intraday) −0.113 0.00 −0.031 0.00 −0.120 0.00 0.123 
+volatility ∗ Dummy −1.481 0.00 −0.088 0.00 
+quoted spread (percent) 0.005 0.00 −0.001 0.00 0.002 0.13 0.039 
+quoted spread ∗ Dummy 0.204 0.02 0.004 0.02 
+price (inverse) −0.014 0.04 0.001 0.86 −0.013 0.02 0.015 
+price (inverse) ∗ Dummy 7.850 0.00 −0.017 0.01 
+absolute value of order 
+imbalance 
+0.038 0.00 0.001 0.77 0.049 0.00 0.036 
+abs(Imbalance) ∗ Dummy 0.198 0.00 0.041 0.00 
+Earn_Pre −0.038 0.05 −0.016 0.09 −0.030 0.16 −0.027 
+Earn_Pre ∗ Dummy −0.010 0.87 −0.023 0.36 
+Downstock 0.015 0.02 0.004 0.02 −0.001 0.85 −0.011 
+DownStock ∗Dummy −0.099 0.00 −0.018 0.03 
+Market variables 
+Log (market volume) −0.055 0.00 0.007 0.08 −0.064 0.00 0.004 
+Log (market volume) ∗ Dummy 0.006 0.92 −0.120 0.00 
+Downmarket 0.008 0.13 0.001 0.61 −0.010 0.11 0.014 
+Downmarket ∗ Dummy −0.053 0.07 −0.021 0.02 
+VIX 0.003 0.06 0.001 0.12 0.005 0.01 0.024 
+VIX ∗ Dummy 0.014 0.10 0.002 0.46 
+Stock ﬁxed effects Yes Yes Yes 
+Adjusted R 2 7.9% 2.8% 4.3% 
+N. obs. 186,222 358,703 186,222 
+4.2. Multivariate analysis of market maker participation 
+Volatility, bid-ask spreads, and order imbalances tend to 
+be positively correlated (see Stoll, 20 0 0 ). While the plots 
+in Fig. 2 suggest that order imbalance and stock volatil- 
+ity have an opposite impact on Fragility Score, stock vol- 
+ume and stock volatility have a similar impact on Fragility 
+Score. In Table 4 , Panel C, we employ a multivariate, stock 
+ﬁxed effects, regression framework that accounts for the 
+correlation among explanatory variables and identiﬁes the 
+marginal impact of each explanatory variable on ELP par- 
+ticipation. The ﬁxed effects speciﬁcation controls for omit- 
+ted stock attributes and examines within stock variation in 
+participation. Statistical inference is based on standard er- 
+rors that are double clustered at stock and day level. 
+Following the framework in Section 3 , the dependent 
+variable is the stock’s fragility score based on ELP partic- 
+ipation on the stock-day, and the regression speciﬁcation 
+is: 
+EL P F S i,t = 
+∑  
+i αi + β1 .stockV o l i,t + β2 . log ( stock v olum e i,t ) 
++ β3 .r elspr ea d i,t + β4 . 
+(
+1 
+P ric e i,t 
+)
++ β5 .abs (imba l i,t ) 
++ β6 .Ear n _ P r e i,t + β7 .DownStoc k i.t + ∈ i,t , (3) 
+on the day. ELP fragility score declines with higher intraday volatility even 
+when the absolute value of return autocorrelation is high. 
+where stockvolume is the daily dollar volume in the stock; 
+stockVol is the standard deviation of 15-minute returns 
+based on quote midpoints; relspread is the time-weighted 
+quoted percentage spread on the stock-day; Price is the 
+midpoint of the stock’s closing bid-ask quote; imbal is the 
+absolute value of buy-sell trade imbalance normalized by 
+trading volume; and αi is the stock ﬁxed effect. DMMs par- 
+ticipate on all trading days included in the regressions, but 
+DMMs are not included in the calculation of Fragility Score. 
+We report the regression coeﬃcients in Column 1 of 
+Table 4 , Panel C. The coeﬃcients suggest that Fragility 
+Score is negatively associated with trading volume and in- 
+traday volatility and positively associated with order im- 
+balance. Thus, market makers increase participation in re- 
+sponse to higher trading activity or higher stock volatil- 
+ity and decrease participation in response to higher or- 
+der imbalance. The latter ﬁnding is consistent with the 
+Bessembinder, Hao and Zheng (2015) prediction that mar- 
+ket maker participation declines when information asym- 
+metry is high. Fragility Score is negatively associated with 
+stock price but not associated with the quoted spread. In 
+Column 3, we include two indicator variables: Earn_Pre 
+equals one on the day prior to earnings announcement and 
+equals zero otherwise, and Downstock equals one when cu- 
+mulative stock return over the previous 30 days (not in- 
+cluding the stock-day) is negative and equals zero oth- 
+erwise. Consistent with Panel A results, Earn_pre has a 
+negative coeﬃcient indicating that Fragility Score declines 
+before an earnings announcement while the Downstock co- 
+eﬃcient is not statistically signiﬁcant. 
+
+===== PAGE 14 =====
+
+340 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+The commonality in liquidity literature posits that 
+market-wide conditions exert a common inﬂuence on liq- 
+uidity supply across stocks. In Columns 5 and 7, we ex- 
+amine whether market-wide conditions inﬂuence ELP par- 
+ticipation over time within a stock. We include the log of 
+market-wide trading volume as an explanatory variable be- 
+cause trading activity is an important measure of inven- 
+tory risk. The coeﬃcient on market volume is negative and 
+highly signiﬁcant, suggesting that Fragility Score is higher 
+when market wide trading activity is lower. The negative 
+coeﬃcient on Downmarket is unexpected, indicating that 
+markets are less fragile when the cumulative market re- 
+turn over the previous 30 days is negative. Theoretical 
+models (e.g., Acharya and Viswanathan, 2011 ) predict that 
+market-wide uncertainty increases asset correlations and 
+affect mar gin limits on portfolio positions. Although the 
+VIX coeﬃcient is positive, indicating that Fragility Score is 
+high when market volatility is high, the coeﬃcient is not 
+statistically signiﬁcant. Thus, we do not ﬁnd support for 
+regulatory concerns, but we note that our sample period 
+does not include extreme market volatility events, along 
+the lines of a ﬂash crash event. Most exchanges, including 
+the TSX, rely on trading halts to stabilize markets during 
+extreme events because it might not be economically fea- 
+sible for a DMM to stabilize highly stressed markets. 
+Column 9 in Panel C reports the economic signiﬁcance 
+of explanatory variables based on the standardized re- 
+gression coeﬃcients. One important ﬁnding is that stock- 
+speciﬁc market conditions play a more important role 
+than market-wide conditions in inﬂuencing stock fragility. 
+Among stock-speciﬁc variables, the stock’s trading volume 
+and stock volatility have the largest impact on the Fragility 
+Score. A decrease of one standard deviation in stock vol- 
+ume (volatility) is associated with an increase of 0.17 (0.13) 
+standard deviation in Fragility Score. The economic signiﬁ- 
+cance of other variables is relative small. One standard de- 
+viation increase in order imbalance is associated with 0.03 
+standard deviation increase in the Fragility Score, and the 
+Fragility Score on the day before earnings news is lower 
+by 0.04 standard deviations. Among market-wide variables, 
+the standardized regression coeﬃcient on market volume 
+is 0.01 and the coeﬃcient on Downmarket variable is 0.02. 
+4.3. Cross-sectional variation in sensitivity to market 
+conditions 
+Popular press articles report that HFTs participate more 
+actively in large stocks. In Column 1 of Table 4 , Panel D, we 
+examine whether ELPs are more sensitive to market condi- 
+tions when participating in large stocks relative to other 
+stocks. We estimate a separate slope coeﬃcient for large 
+ﬁrms by interacting each market condition variable with 
+a Large indicator variable, which equals one for stocks in 
+the largest capitalization quintile and equals zero other- 
+wise. Results suggest that market conditions affect partici- 
+pation in large stocks in the same direction, but the sensi- 
+tivity is three to ten times larger than other stocks. Among 
+stock-speciﬁc variables, the interaction coeﬃcient on vol- 
+ume and volatility is negative and the interaction term on 
+imbalance is positive. Higher market volume or VIX has no 
+differential im pact for lar ge stocks. Our results are consis- 
+tent with the higher covariation in liquidity supply shown 
+for large stocks in Table 3 . The stronger commonality re- 
+sults for large stocks indicate that periodic illiquidity cre- 
+ated by synchronous ELP withdrawal is not limited to the 
+smaller segment of the market and that the regular market 
+presence of a DMM can mitigate fragility in both large and 
+small stocks. 
+Which ELPs are more sensitive to changes in market 
+conditions? An exit by marginal ELPs is less of a con- 
+cern because they play a less important role in facilitat- 
+ing trading. In Column 3 of Table 4 , Panel D, we exam- 
+ine differences in sensitivity of more and less active ELPs. 
+For this analysis, we retain the 25 most active ELPs in the 
+stock and deﬁne an Active indicator variable that equals 
+one when an ELP’s stock participation (based on number 
+of days) exceeds the stock’s median ELP participation and 
+zero otherwise. The regression analysis is based on daily 
+Fragility Scores, estimated separately for active and less ac- 
+tive groups of ELPs, on a stock-day. We estimate a sep- 
+arate slope coeﬃcient for active ELPs by interacting each 
+market condition variable with Active . The slope coeﬃ- 
+cients on interaction terms suggest that while some mar- 
+ket conditions, such as order imbalance or pre-earnings 
+day, affect active and less active ELPs in a similar man- 
+ner, active ELPs exhibit higher sensitivity to stock volume, 
+stock volatility, and market volume. Thus, the more active 
+ELPs show a higher propensity to enter and exit a stock 
+in a synchronous manner when market conditions are 
+unfavorable. 
+We next examine whether lower participation in re- 
+sponse to adverse conditions reduces the number of bro- 
+kerage ﬁrms active in the stock. To the extent that capi- 
+tal is supplied at the brokerage ﬁrm level, an exit by an 
+ELP is less of a concern if another ELP from the same bro- 
+ker continues to participate using ﬁrm capital. In Column 
+5 of Table 4 , Panel D, we report regression coeﬃcients us- 
+ing daily Fragility Score based on member ﬁrm participa- 
+tion on a stock-day; that is, following Eq. (2) , we aggre- 
+gate the excess liquidity supply across all member ﬁrms j 
+in stock i on day t . The regression coeﬃcients indicate that 
+market conditions inﬂuence ELP Fragility Score more than 
+member ﬁrm Fragility Score but in the same direction. In 
+the adjacent column 7, we report standardized regression 
+coeﬃcients based on member ﬁrm Fragility Score. We ﬁnd 
+that one standard deviation shock to market conditions has 
+an economically similar impact on Fragility Score of ELPs 
+and member ﬁrms. Thus, adverse market conditions result 
+in synchronized withdrawal among not only ELPs but also 
+brokerage ﬁrms, implying that aggregate capital available 
+for market making is lower in stressful periods. 
+5. Trading proﬁts and inventory risk of market makers 
+We hypothesize that market conditions inﬂuence 
+Fragility Scores via their impact on proﬁt opportunities 
+and inventory risk. Are risk-adjusted proﬁts lower on days 
+when ELPs withdraw from the market? One of the advan- 
+tages of the TSX market structure is that ELPs and DMMs 
+co-exist. The participation decision by DMMs helps iden- 
+tify market conditions when market making is feasible and 
+
+===== PAGE 15 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 341 
+provides measures of trading proﬁt and risk when ELPs en- 
+ter versus exit the market. 19 
+We examine account-level transaction data to present 
+univariate statistics on trading proﬁts and risk. Results are 
+equally weighted averages across stock-days in the respec- 
+tive sample. Panel A of Table 5 presents the statistics for 
+ELP accounts and Panel B presents the statistics for DMM 
+accounts. Tests of differences across groups are based on 
+double clustered standard errors at the stock and day level. 
+For each stock-day for an account, we calculate trading 
+proﬁts by marking the day’s transactions to the closing 
+quote midpoint and aggregating the dollar proﬁt or loss 
+over all positions for the day. 20 Following earlier work, 
+we decompose trading proﬁts into three components: pas- 
+sive is the half-spread earned on trades that provide liq- 
+uidity; active is the half-spread paid on trades that de- 
+mand liquidity; and positioning proﬁt is the proﬁt calcu- 
+lated using quote midpoints instead of trade prices, which 
+removes the effect of the bid-ask spread. Some studies on 
+HFTs conclude that co-location arrangements and HFTs’ in- 
+vestments in speed contributes to large positioning proﬁts 
+(e.g., Hirschey (2013) ) while other studies attribute posi- 
+tioning proﬁts to private information on fundamentals [see 
+Hu, Pan, and Wang (2013) ; and Chordia, Green, and Kot- 
+timukkalur (2015) ]. 
+Our primary measure of market maker’s capital com- 
+mitment (i.e., inventory) is the absolute value of average 
+intraday inventory. Because microstructure theory suggests 
+that inventory risk is a function of stock volatility, we also 
+estimate a volatility-adjusted inventory measure, in which 
+average absolute inventory is multiplied by the stock’s in- 
+traday volatility on the day, to account for differences in 
+risk across positions. Signed closing inventory accounts for 
+daily change in inventory positions relative to daily stock 
+return. The measure is positive when a market maker is 
+a net buyer (seller) on negative (positive) return days. In- 
+ventory measures are normalized by the stock’s monthly 
+trading volume. We also report the number of times the 
+intraday inventory crosses zero. More zero crossings indi- 
+cate lower inventory risk. 
+Based on Table 5 , Panel A, we conclude that ELPs, on 
+average, earn positive trading proﬁts. The majority of prof- 
+its are attributed to passive trades, which is consistent 
+with market making, but ELPs also earn positive posi- 
+tioning proﬁts. Results support the Grossman and Miller 
+(1988) prediction that large  stocks are more attractive  
+for market makers. Based on an aggregate proﬁt analysis 
+19 Some contemporaneous papers examine the trades of market mak- 
+ers in exchanges without DMM adoption (e.g., Kirilenko, Kyle, Samadi 
+and Tuzun, 2011; Clarke-Joseph, 2012; Brogaard, Hendershott and Rior- 
+dan, 2014; Baron, Brogaard and Kirilenko, 2012; Raman, Robe and Yadav, 
+2014; IIROC, 2012 ). The analysis leaves unresolved to what extent market 
+making with obligations is viable when ELPs scale back on participation. 
+20 We also estimate two alternative proﬁt measures based on 
+Hasbrouck and Soﬁanos (1993) and Menkveld (2013) : cash ﬂow proﬁts, 
+calculated as the change in inventory associated with a trade multiplied 
+by the price; and mark-to-market proﬁts, calculated as the inventory po- 
+sition multiplied by the change in price. We close out the open inventory 
+positions at the closing price for both cash ﬂow and mark-to-market prof- 
+its. All three proﬁt measures yield identical measures for the proﬁtability 
+analysis. 
+across all ELP accounts, Fig. 3 , Panel A, shows that ELPs 
+earn almost 90% of proﬁts from large stocks and, in partic- 
+ular, from the highest 5th percentile (T5) on market cap- 
+italization. Fig. 3 , Panel B, shows that ELPs earn large po- 
+sitioning proﬁts in large stocks, particularly T5 stocks, but 
+make losses in small stocks. Overall, more than 40% of ELP 
+proﬁts come from positioning proﬁts. Results also show 
+that market making is less risky in large stocks. In Table 
+5 , Panel A, the daily number of inventory crosses for large 
+stocks is 9.0 versus 0.60 for small stocks, and the absolute 
+average inventory is 0.02% for large stocks versus 0.86% for 
+small stocks. Trading proﬁts per unit of risk are higher for 
+large stocks than small stocks. Consistent with these re- 
+sults, ELPs participate on four out of ﬁve trading days (79%) 
+in large stocks but only one out of eight trading days (12%) 
+in small stocks. 
+The analysis in Table 5 , Panel A, presents an incomplete 
+picture as the results are based on stock-days when ELPs 
+choose to participate. We therefore present a conditional 
+analysis of DMM proﬁts and risk on trading days when 
+ELPs participate as a group versus when they do not. Days 
+without ELP participation are associated with high Fragility 
+Score because ELPs choose to withdraw in unison. Trading 
+proﬁts are almost 60% lower on days when ELPs withdraw 
+than on days when ELPs participate. Based on the plot of 
+DMMs’ proﬁt distribution in Fig. 4 , Panel A, we conclude 
+that ELPs scale back in unison when DMM proﬁts are close 
+to zero but increase participation when DMM proﬁts are 
+either positive or negative. Thus, ELPs appear to be active 
+when proﬁt potential is large but scale back when proﬁt 
+potential is small. Across market cap quintiles, the statisti- 
+cal tests show that inventory risk is higher on days when 
+ELPs do not participate (see Fig. 4 , Panel B). Under these 
+conditions, DMMs fulﬁll their obligations by participating 
+in undesirable trades, particularly in small stocks. Chordia 
+and Subrahmanyam (2004) show that daily returns are cor- 
+related with daily order imbalances. The higher signed in- 
+ventory suggests that DMMs trade against the imbalance 
+by buying stocks when daily return is negative, and vice 
+versa. 
+The combined proﬁtability and inventory risk results 
+from Table 5 , Panel B, are consistent with market con- 
+ditions affecting ELP Fragility Scores via their impact on 
+the economics of market making. The results do not sup- 
+port a reverse-causality explanation as lower competi- 
+tion when ELPs do not participate as a group is not as- 
+sociated with higher DMM proﬁts. The results point to 
+two types of cross-subsidies in market making. First, the 
+DMMs’ risk-adjusted proﬁts are higher in large stocks than 
+small stocks, implying a cross-subsidy from large to small 
+stocks. Second, higher proﬁts under normal conditions 
+compensate for the inventory risk under stressful condi- 
+tions. Panayides (2007) ﬁnds similar evidence of cross- 
+subsidies in the old NYSE-specialist structure. However, 
+one difference is noteworthy: The primary source of NYSE- 
+specialist’s income is positioning proﬁts, which reﬂects the 
+information advantages enjoyed by the NYSE-specialist. In 
+contrast, as seen in Fig. 3 , Panel B, the TSX DMMs do not 
+earn positioning proﬁts. The primary source of TSX DMMs’ 
+proﬁts is the spread earned on passive, liquidity-supplying 
+trades. Thus, our study describes the economics of market 
+
+===== PAGE 16 =====
+
+342 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+Table 5 
+Trading proﬁts and inventory risk of market makers. 
+The table presents trading proﬁt and inventory risk of market makers. Panel A presents results for endogenous liquidity providers (ELPs); Panel B, for designated market makers (DMMs). We report results for 
+the full sample and by market cap quintiles. ST-ELP refers to the subset of ELP accounts that serve as DMM in some stocks. For each stock-day for an account, we calculate proﬁts using three methodologies: by 
+marking the day’s transactions to closing quote midpoint and aggregating the dollar proﬁt over the day, cash ﬂow proﬁts calculated as the change in inventory associated with a trade multiplied by the price, and 
+mark-to-market proﬁts calculated as the inventory position multiplied by the change in prices. We close out remaining inventory positions at the end of the day for each of the three methodologies. All three 
+methodologies yield identical proﬁt measures. We decompose trading proﬁts into three components: Passive is the half-spread earned on trades that provide liquidity, active is the half-spread paid on trades that 
+demand liquidity, and positioning proﬁts is the proﬁt calculated using quote midpoints instead of traded prices. Proxies for inventory risk are the average absolute value of intraday inventory, a volatility-adjusted 
+inventory in which the previous measure is multiplied by the stock’s volatility during the day, and the signed closing inventory position, all normalized by monthly stock trading volume. We also report the 
+number of times the inventory switches between long and short positions. Proﬁt ratios are calculated by dividing trading proﬁts by normalized intraday average inventory and volatility-adjusted inventory. The 
+proﬁt ratios are divided by 10 6 . “Percentage of stock days” represents the proportion of days with ELP participation. The statistics are equally weighted averages across stock-days in the respective sample. Results 
+are reported for large cap (quintile 5), mid cap (quintile 3), and small cap (quintile 1) stocks. Panel B presents trading proﬁts and inventory for the sample of DMMs on stock-days when the DMM and ELPs 
+participate (DMM with ELP) and stock-days when the DMM participates but ELPs do not participate as a group (DMM w/o ELPs). "DMM w/o ELPs" refers to trading days with a high Fragility Score. Results are 
+reported for the full sample of stocks, large cap stocks, mid cap stocks, and small cap stocks. “Percentage of stock days” for ’All stocks: DMM’ reports the proportion of trading days in which DMM participates 
+in a stock. Conditional on DMM participation, “Percentage of stock days” reports the proportion of trading days for ’DMM with ELP’ and ’DMM w/o ELP’ categories. ∗∗∗, ∗∗ and ∗ indicate statistical signiﬁcance of 
+test of difference at the 1%, 5%, and 10% level, respectively. p -values are calculated based on double clustered standard errors at stock and day level. 
+Panel A: Trading proﬁts and inventory risk of endogenous liquidity providers (ELPs) 
+Trading proﬁts Inventory Trading proﬁts / inventory 
+Zero Signed Intraday Average ∗ Average Average ∗
+Sample Percentage of Proﬁt Passive Active Positioning crossing inventory average Volatility inventory Volatility 
+stock-days (1) (2) (3) (4) (5) (6) (7) (8) (1)/(7) (1)/(8) 
+All stocks 
+ELP 35.9 68.9 119.2 62.7 13.2 4.9 0.00% 0.14% 0.5 1.6 91.0 
+ST-ELP 122.3 150.3 92.9 67.5 3.1 0.01% 0.10% 0.4 2.5 150.8 
+Q1 (Small) 
+ELP 12.0 61.7 136.6 51.5 −22.0 0.6 0.04% 0.76% 3.3 0.0 0.4 
+ST-ELP 63.8 151.9 44.3 −42.7 0.7 0.05% 0.67% 2.8 0.0 0.5 
+Q3 (Mid) 
+ELP 22.7 55.1 99.3 61.1 16.1 0.7 −0.03% 0.20% 0.6 0.1 2.3 
+ST-ELP 86.6 142.2 60.9 5.8 1.0 0.02% 0.14% 0.4 0.2 5.4 
+Q5 (Large) 
+ELP 79.4 92.3 137.8 66.1 21.7 9.0 0.00% 0.02% 0.0 3.1 182.6 
+ST-ELP 152.2 152.3 116.8 119.0 4.7 0.00% 0.01% 0.0 4.2 261.2 
+Panel B: Trading proﬁts and inventory risk of designated market makers (DMMs) 
+Trading proﬁts Inventory Trading proﬁts / inventory 
+Percentage of Zero Signed Intraday Average ∗ Average Average ∗
+stock-days Proﬁt Passive Active Positioning crossing inventory average Volatility inventory Volatility 
+(1) (2) (3) (4) (5) (6) (7) (8) (1)/(7) (1)/(8) 
+All stocks: DMM 91.9 150.9 255.8 103.6 0.1 3.6 0.08% 0.26% 0.7 1.6 98.0 
+DMM = ELP 0.00 0.00 0.00 0.22 0.00 0.00 0.00 0.00 0.81 0.40 
+Trading Days with DMM participation: 
+All stocks 
+DMM w/o ELP 61.4 92.6 137.6 45.1 1.3 1.2 0.12% 0.37% 1.0 0.2 10.5 
+DMM with ELP 38.6 243.6 ∗∗∗ 441.1 ∗∗∗ 195.4 ∗∗∗ −1.8 7.4 ∗∗∗ 0.03% ∗∗∗ 0.09% ∗∗∗ 0.3 ∗∗∗ 3.9 ∗∗∗ 236.9 ∗∗∗
+Quintile 1 (small) 
+DMM w/o ELP 86.4 41.4 59.6 18.7 1.4 0.4 0.24% 0.73% 2.6 0.0 0.6 
+DMM with ELP 13.6 52.7 ∗ 93.0 ∗∗∗ 29.2 ∗∗∗ −10.5 ∗∗ 0.9 ∗∗∗ 0.15% ∗∗∗ 0.37% ∗∗∗ 1.7 ∗∗∗ 0.1 ∗∗∗ 1.0 ∗∗∗
+Quintile 3 (mid-cap) 
+DMM w/o ELP 75.9 93.5 132.0 41.8 4.0 1.1 0.10% 0.29% 0.5 0.1 5.3 
+DMM with ELP 24.1 142.7 ∗∗ 242.5 ∗∗∗ 80.1 ∗∗∗ −19.5 2.2 ∗∗∗ 0.04% ∗∗∗ 0.13% ∗∗∗ 0.4 ∗∗∗ 0.3 ∗∗∗ 9.3 ∗∗∗
+Quintile 5 (large) 
+DMM w/o ELP 20.4 200.0 330.5 108.3 −21.8 3.2 0.05% 0.12% 0.2 0.8 61.1 
+DMM with ELP 79.6 333.3 ∗∗∗ 630.2 ∗∗∗ 297.7 ∗∗∗ 1.1 12.3 ∗∗∗ 0.01% ∗∗∗ 0.03% ∗∗∗ 0.1 ∗∗∗ 7.3 ∗∗∗ 462.3 ∗∗∗
+
+===== PAGE 17 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 343 
+Fig 3. Participation and proﬁts of designated market maker (DMM) and endogenous liquidity provider (ELP). Panel A plots the statistics on participation 
+and proﬁts by market cap quintile and Panel B plots the contribution of positioning proﬁts to total proﬁts. Q1 refers to the quintile of small cap stocks and 
+Q5 refers to the quintile of large cap stocks. B5 and T5 refer to the bottom and top 5th percentiles of market capitalization. 
+
+===== PAGE 18 =====
+
+344 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+Fig 4. Designated market maker (DMM) proﬁts and inventory risk. A box-and-whiskers plot of the DMM’s trading proﬁts (dollars per account per stock- 
+day) is presented in Panel A and the average absolute intraday inventory position is presented in Panel B. The plots use stock-days when ELPs participate 
+in principal trades (code = 1) and stock-days when ELPs as a group do not participate (code = 0). For representative tractability, the plots are trimmed at 
+5th and 95th percentile. 
+
+===== PAGE 19 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 345 
+making when exchanges do not confer an informational 
+advantage on the DMM. 
+The proﬁtability analysis in Table 5 does not take the 
+TSX fee structure into account because the database does 
+not report the fees associated with each trade. In an unre- 
+ported analysis, we calculate DMM and ELP proﬁts after in- 
+corporating publicly available information on fees obtained 
+from TSX notices to member ﬁrms. The primary fee differ- 
+entiation between DMMs and ELPs exists in terms of trad- 
+ing fees charged by the exchange. The TSX offered two fee 
+structures in 2006: a make-take structure and a structure 
+that charged a fee on a member’s active trades. Regard- 
+less of the fee structure in place, DMMs typically enjoy a 
+fee advantage, directly because of lower fees and indirectly 
+because they trade more often on the passive side than 
+ELPs (which lowers their net fees in a make-take struc- 
+ture). Thus, incorporating fees results in the difference be- 
+tween DMM and ELP proﬁts being larger with the fee ad- 
+justment than without the fee adjustment. Therefore, we 
+ﬁnd that the conclusions based on Table 5 are robust to 
+the inclusion of fees. 
+5.1. Time series variation in trading proﬁts and risk 
+To further understand the economics of market making, 
+Table 6 , Panel A, presents the regression coeﬃcients of a 
+stock ﬁxed effects analysis of DMM’s daily trading proﬁts 
+(Columns 1 and 3) and trading proﬁts per unit of inven- 
+tory (Columns 5 and 7), deﬁned as daily proﬁts divided by 
+daily absolute average inventory, on variables that capture 
+market conditions on the stock-day: 
+Trading Proﬁt s i,t 
+= 
+∑  
+i αi + β1 .StockV o l i,t + β2 . log ( Stock v olum e i,t ) 
++ β3 .r elspr ea d i,t + β4 . 
+(
+1 
+P ric e i,t 
+)
++ β5 .abs (imba l i,t ) 
++ β6 .Ear n _ P r e i,t + β7 .DownStoc k i.t 
++ β8 . log ( Mktv olum e i,t ) + β9 .Downmarke t i.t 
++ β10 .V I X i.t + ∈ i,t (4) 
+where the explanatory variables are deﬁned in Section 4 . 
+The analysis is based on trading proﬁts and inventory of 
+DMM accounts because ELPs do not participate on many 
+stock-days, particularly in small stocks. We interpret trad- 
+ing proﬁts per unit of inventory as a proxy of return on 
+capital but acknowledge that assessing the risk of market 
+making is complex and beyond the scope of this paper. 21 
+The regression coeﬃcients based on daily trading prof- 
+its (Column 1) indicate higher proﬁts on trading days when 
+stock volatility is high and stock volume is high. These re- 
+sults are consistent with results in Table 4 that ELP partic- 
+ipation is higher on trading days with high stock volume 
+and high stock volatility. In Column 3, we obtain a positive 
+coeﬃcient on market volume, implying that market mak- 
+ers earn more proﬁts when market-wide trading activity is 
+21 In a robustness analysis, we ﬁnd similar results when trading proﬁts 
+are deﬁned as daily aggregate proﬁts for all market makers (both DMM 
+and ELPs) on the stock-day. 
+high. The VIX coeﬃcient is positive, indicating that higher 
+market volatility is associated with higher proﬁts. Regres- 
+sion coeﬃcients based on trading proﬁts per unit of inven- 
+tory offer similar insights. Collectively, the results in Tables 
+4, 5 , and 6 describe the economics of market making by 
+showing that market conditions that cause ELPs to scale 
+back in unison are associated with smaller trading proﬁts 
+and higher capital commitment. 
+We also examine the value of a DMM by modeling the 
+time series variation in DMMPct , which measures the im- 
+portance of DMM as a market maker on a stock-day. Intu- 
+itively, the DMM plays a crucial role as a liquidity supplier 
+when ELPs do not participate ( DMMPct = 1) but plays a less 
+important role when many ELPs are active on a stock-day, 
+which leads DMMPct to be small. Columns 9 and 11 report 
+regression coeﬃcients based on stock ﬁxed effects model, 
+in which the dependent variable is the daily DMMPct and 
+the explanatory variables are the market conditions on the 
+stock-day. One striking result observed in Table 6 , Panel A, 
+is that the regression coeﬃcients in Columns 3 and 11 have 
+the opposite sign, implying that DMM plays a more im- 
+portant role as a market maker when market conditions 
+reduce trading proﬁts on a stock-day. As shown in Table 
+4 , these market conditions are associated with lower ELP 
+participation. Collectively, these results describe the mech- 
+anism by which DMMs lower the covariation in liquidity 
+supply across stocks, thereby lowering liquidity risk. 
+5.2. Analysis of market makers who serve as both DMMs 
+and ELPs 
+In Table 5 , we report signiﬁcant differences in trad- 
+ing proﬁts, positioning proﬁts, and inventory risk of DMMs 
+and ELPs. Because ELP identiﬁcation relies on a propen- 
+sity score model, one concern is that traders identiﬁed by 
+the model as ELPs have different skills than traders as- 
+signed as DMMs. In this sub-section, we rely on a model- 
+free identiﬁcation of ELPs by examining the sub-sample of 
+traders who have obligations in assigned stocks (DMM) but 
+also trade other stocks without obligations ( ST-ELP ). The 
+regression speciﬁcation is a trader ﬁxed effects model that 
+includes market conditions and an indicator variable ST- 
+ELP that equals one for trades in an unassigned stock and 
+equals zero for trades in the assigned stock with obliga- 
+tions. The analysis is based on large capitalization stocks 
+because ELPs’ trading proﬁts and risk are well populated 
+for this sample. 
+In Panel B of Table 6 , we report the regression coef- 
+ﬁcients, which broadly provide support for the univariate 
+results in Table 5 . We conclude based on the negative co- 
+eﬃcient on ST-ELP in Column 1 that market makers earn 
+higher proﬁts as DMMs than as ELPs. Higher proﬁts can 
+be attributed to passive, liquidity-supplying trades, as ev- 
+idenced by the statistically signiﬁcant negative ST-ELP co- 
+eﬃcient in the passive proﬁts regression. The TSX market 
+structure allows the DMM the option to participate in a 
+trade ahead of other orders with time priority in the book 
+and also to execute all odd-lot trades. The higher passive 
+proﬁts suggest that trading privileges serve as a mecha- 
+nism to compensate DMMs. 
+
+===== PAGE 20 =====
+
+346 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+Table 6 
+Regression analysis of the determinants of trading proﬁts and the importance of the designated market maker (DMM). 
+This table presents the regression coeﬃcients of a multivariate analysis of stock characteristics and market conditions on trading proﬁts and DMM 
+importance. Panel A presents the results of a stock ﬁxed effects speciﬁcation in which the dependent variables are DMM’s daily proﬁts on the stock-day, 
+the DMM’s risk-adjusted proﬁts deﬁned as daily proﬁts divided by the absolute value of average inventory (normalized by trading volume in the stock), 
+and the relative importance of the DMM on the stock-day measured by DMMPct as deﬁned in Eq. (2) . The explanatory variables are stock- and market-level 
+conditions, including the stock volume, intraday volatility, percentage quoted spread, 1/price, absolute value of the order imbalance, a dummy variable 
+that equals one if the stock-day is a pre-earnings announcement day, downstock (equals one if the rolling 30-day stock return is negative), downmarket 
+(equals one if the rolling 30-day market return is negative), the US market VIX (Chicago Board Option Exchange Volatility Index) and the share volume of 
+all securities traded on Toronto Stock Exchange (TSX) on the day. p -values are based on standard errors clustered at the stock level. Panel B presents the 
+results of a multivariate analysis of the impact of stock characteristics and market conditions on trading proﬁts and capital commitment for large stocks. 
+Only user accounts who serve as both DMMs and endogenous liquidity providers (ELPs) are included in the analysis. ST-ELP is an indicator variable that 
+equals one when the user account trades as an ELP and equals zero when the user account trades as the DMM in the stock. The speciﬁcation includes user 
+account ﬁxed effects. Capital commitment is the average absolute value of intraday inventory (normalized by trading volume in the stock). We present 
+results for overall trading proﬁts, passive proﬁts, and positioning proﬁts. p -values are based on standard errors clustered at the stock level. 
+Panel A: Dependent Variables are trading proﬁts, proﬁts per capital and the importance of DMM on a stock-day 
+Trading proﬁts Trading proﬁts per unit of capital DMM importance 
+Variables (1) p -value (2) (3) p -value (4) (5) p -value (6) (7) p -value (8) (9) p -value (10) (11) p -value (12) 
+Stock variables 
+Log (stock volume) 31.13 0.00 28.31 0.00 0.22 0.00 0.20 0.00 −0.03 0.00 −0.03 0.00 
+Volatility (intraday) 50.24 0.00 48.62 0.00 0.18 0.00 0.15 0.00 −0.04 0.00 −0.04 0.00 
+Quoted spread (percent) 14.96 0.00 14.92 0.00 0.04 0.00 0.04 0.00 0.00 0.00 0.00 0.00 
+Price (inverse) −7.48 0.00 −6.29 0.00 0.00 0.94 0.02 0.15 −0.01 0.00 0.00 0.02 
+Abs(Imbalance) −31.68 0.27 −31.48 0.26 −0.08 0.29 −0.08 0.29 0.02 0.00 0.02 0.00 
+Earn_Pre 58.59 0.34 56.36 0.37 0.89 0.03 0.88 0.03 −0.01 0.02 −0.01 0.02 
+Downstock 8.83 0.57 6.93 0.61 0.07 0.44 0.02 0.87 0.00 0.00 0.00 0.28 
+Market variables 
+Log (market volume) 109.35 0.00 1.02 0.00 −0.01 0.00 
+Downmarket 16.36 0.17 0.22 0.00 0.00 0.23 
+VIX 3.85 0.03 0.06 0.06 0.00 0.00 
+Stock ﬁxed effects Yes Yes Yes Yes Yes Yes 
+Adj. R 2 1.6% 1.60% 29.0% 29.1% 69.2% 69.3% 
+N 186,232 186,232 186,232 186,232 186,232 186,232 
+Panel B: Dependent Variable: Trading Proﬁts and Capital Commitment in Large Stocks 
+Trading proﬁts Passive proﬁts Positioning proﬁts Capital commitment 
+Variables (1) p -value (2) (3) p -value (4) (5) p -value (6) (7) p -value (8) 
+ST-ELP Dummy −193.23 0.00 −489.42 0.00 118.22 0.06 −0.0 0 01 0.03 
+Stock variables 
+Log (stock volume) 33.16 0.00 104.49 0.00 −9.91 0.52 −0.0 0 01 0.00 
+Volatility (intraday) 19.61 0.69 36.88 0.47 43.00 0.40 0.0 0 0 0 0.45 
+Quoted spread (percent) 184.80 0.01 336.29 0.00 −35.87 0.39 0.0011 0.06 
+Price (inverse) 0.27 0.37 0.83 0.08 −0.43 0.00 −0.1078 0.00 
+Abs(Imbalance) −167.97 0.00 −57.44 0.03 −148.04 0.00 0.0 0 03 0.00 
+Earn_Pre −0.56 0.99 −0.47 0.97 1.72 0.96 0.0 0 0 0 0.55 
+Downstock 2.49 0.80 −1.45 0.86 8.67 0.28 0.0 0 0 0 0.13 
+Log (market cap) 24.83 0.12 0.82 0.97 14.20 0.26 0.0 0 01 0.03 
+Market variables 
+Log (market volume) 162.40 0.00 24.61 0.12 148.59 0.00 0.0 0 01 0.02 
+Downmarket 13.75 0.42 3.58 0.62 21.25 0.22 0.0 0 0 0 0.95 
+VIX 8.62 0.00 5.27 0.04 7.91 0.01 0.0 0 0 0 0.46 
+Stock ﬁxed effects Yes Yes Yes Yes 
+Adj. R 2 6.0% 35.2% 7.4% 20.8% 
+N 68,176 67,035 67,035 68,176 
+The positive coeﬃcient for ST-ELP obtained in the po- 
+sitioning proﬁts regression indicates that, after control- 
+ling for trader-speciﬁc attributes including trading skill, 
+TSX obligations restrict the DMM ′ s ability to participate 
+opportunistically in a designated stock. As an example, 
+the obligation could restrain the ability to use market 
+orders to enter and exit positions. In Column 7, the 
+negative coeﬃcient on the ST-ELP coeﬃcient in average 
+intraday inventory regression suggests that traders com- 
+mit more capital in an assigned stock. Thus, traders 
+earn higher proﬁts but commit more capital in assigned 
+stocks. 
+5.3. Auto-participation and market conditions 
+The mechanism to compensate DMMs is critical to the 
+viability of the DMM model. On TSX, compensation in 
+the form of auto-participation violates time priority and 
+runs counter to the principal of a fair market by favoring 
+DMMs at the expense of other liquidity providers. There- 
+fore, it is important to understand the scenarios under 
+which DMMs use this compensation mechanism. There are 
+two possibilities: Auto-participation allows DMMs to earn 
+extra proﬁts in favorable periods, which subsidizes market 
+making in stressful periods. Alternately, auto-participation 
+
+===== PAGE 21 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 347 
+Table 7 
+Regression analysis of the designated market maker ′ s (DMM) auto-participation decision on market conditions. 
+This table presents results of the stock ﬁxed effects regressions of the decision to auto-participate in a stock on market conditions. The dependent variable 
+in Columns 1–6 is the proportion of DMM ′ s daily trading volume that is executed using the auto-participation mechanism. The dependent variables are 
+Fragility Score, DMMPct, and a number of variables that proxy for stock and market conditions. In Columns 7–12, the dependent variable is the difference 
+between the proportion of trading volume that is executed using the auto-participation ﬂag and the proportion of trading volume that is executed without 
+the auto-participation ﬂag (normal trades). Normal trades exclude trades occurring due to auto-participation, odd-lot trades, and guaranteed ﬁll trades. 
+p -values are calculated based on double clustered standard errors at stock and day level. 
+Percentage of DMM’s daily trading volume executed Difference in percentage volume executed with 
+using auto-participation ﬂag autoparticipation versus normal trades 
+p -value p -value p -value p -value p -value p -value 
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) 
+Fragility Score 0.002 0.03 0.001 0.00 
+DMMPct 0.001 0.00 0.054 0.00 
+Stock variables 
+Log (stock volume) −0.003 0.00 −0.047 0.00 
+Volatility (intraday) −0.037 0.00 −0.102 0.00 
+Quoted spread (percent) −0.011 0.00 −0.027 0.00 
+Price (inverse) −0.001 0.87 0.013 0.02 
+Abs(Imbalance) 0.014 0.00 0.075 0.00 
+Earn_Pre 0.001 0.91 −0.004 0.74 
+Downstock −0.003 0.14 −0.011 0.00 
+Market variables 
+Log (market volume) 0.016 0.00 0.004 0.57 
+Downmarket −0.003 0.09 −0.013 0.00 
+VIX 0.001 0.01 -0.001 0.79 
+Stock ﬁxed effects Yes Yes Yes Yes Yes Yes 
+Adj. R 2 24.0% 24.0% 25.3% 24.0% 24.0% 28.0% 
+N 189,163 191,735 183,635 189,163 191,735 183,635 
+makes market making easier on days when conditions 
+are stressful and allows DMMs to facilitate trading when 
+the economics of market making are otherwise unfavor- 
+able. 22 In Table 7 , we report stock ﬁxed effects regres- 
+sions in which the dependent variable is the percentage 
+of DMM ′ s daily trading volume executed using the auto- 
+participation ﬂag. We examine the daily association be- 
+tween the stock ′ s auto-participation rate and the Fragility 
+Score (Column 1) and DMMPct (Column 3), which serve as 
+a comprehensive proxy for market conditions. We obtain 
+a positive regression coeﬃcient in both columns, indicat- 
+ing that auto-participation plays an important role for the 
+DMM on trading days when ELPs scale back on participa- 
+tion and the DMM steps in to fulﬁll obligations. The results 
+in Column 5 support this interpretation. That is, the DMM 
+executes more volume with auto-participation on trading 
+days when stock volume is low, stock volatility is low, and 
+order imbalance is high. Results in Table 6 indicate that 
+these market conditions are associated with lower prof- 
+its and higher inventory risk. In Columns 7, 9 and 11, we 
+present results based on the difference between the pro- 
+portion executed through auto-participation and normal 
+trading on a day. Normal trades exclude trades occurring 
+due to auto-participation, odd-lot trades, and guaranteed 
+ﬁll trades, and they serve as a control for omitted market 
+conditions that affect DMM participation. Results based on 
+the difference speciﬁcation yield similar insights. 
+22 Auto-participation increases the execution probability of a limit order 
+and makes it easier to manage position risk without paying the bid-ask 
+spread. In addition, auto-participation allows trading without displaying 
+the depth to the market. 
+In unreported analysis, we estimate the trading prof- 
+its per share and the ﬁve-minute price impact for DMM ′ s 
+trades executed with auto-participation versus normal 
+trades. Using paired differences on the same stock-day, 
+we ﬁnd that auto-participation trades earn higher prof- 
+its per share ( P -value of difference = 0.00), which can be 
+attributed almost entirely to the smaller price impact of 
+trades ( P -value = 0.00). 
+Overall, the results support the following interpreta- 
+tion: Auto-participation by DMMs is observed more of- 
+ten under market conditions that are unfavorable for mar- 
+ket making. Under these unfavorable conditions, the abil- 
+ity to auto-participate allows DMM to selectively partic- 
+ipate in trades with lower adverse selection risk, which 
+yields higher proﬁts but potentially allows the market to 
+stay open. The results do not support that trading privi- 
+leges are used to earn higher proﬁts on proprietary trades 
+in favorable periods, possibly due to signiﬁcant quoting re- 
+sponsibilities and monitoring by the exchange. 
+6. Conclusions 
+Improvements in technology and increased competi- 
+tion among trading venues have vastly expanded the pool 
+of proprietary trading desks playing the role of market 
+makers. These participants have no obligations to facili- 
+tate trading but choose to supply liquidity when it is prof- 
+itable. At the same time, the role of market makers with 
+exchange-assigned obligations, such as the NYSE special- 
+ist, has declined in recent years. Subsequent to the 2010 
+Flash Crash, regulators have expressed concern that a mar- 
+ket structure that relies on ELPs for liquidity provision is 
+inherently fragile. 
+
+===== PAGE 22 =====
+
+348 A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 
+In this study, we present the ﬁrst direct empirical ev- 
+idence in support of regulatory concerns that ELPs enter 
+and exit the stock in a correlated manner. We implement 
+the methodology used in the analysis of liquidity common- 
+ality in Chordia, Roll, and Subrahmanyam (20 0 0) to show 
+that ELPs exhibit statistically signiﬁcant positive covaria- 
+tion in liquidity supply, both within a stock and across 
+stocks. Based on multivariate, stock ﬁxed effects regression, 
+we identify market conditions that lower ELPs’ aggregate 
+participation. In addition, we relate market conditions to 
+the trading proﬁts and inventory risk of market makers, 
+thus establishing the link between the participation de- 
+cision and the economics of market making. Contrary to 
+a popular view, high stock volatility is related to greater 
+proﬁt potential and higher ELP participation. We identify 
+trading volume as an important determinant of liquidity 
+supply and further show that fragility concerns apply to 
+large stocks and to the active ELPs in a stock. 
+The recent theoretical work by Bessembinder, Hao, and 
+Zheng (2015) shows that a DMM contract with an obli- 
+gation to narrow bid-ask spreads prevents market failure 
+and improves social welfare when information asymme- 
+try is heightened. The extant empirical literature on DMMs 
+as well as many regulatory initiatives has offered aﬃrma- 
+tive obligations as a solution to improve liquidity supply 
+in small stocks. For example, Nasdaq has introduced quot- 
+ing and trading obligations on registered market makers 
+in newly launched ETFs under its market quality program. 
+While our study concludes that DMMs lower execution un- 
+certainty for small stocks, the synchronized withdrawal by 
+ELPs when market conditions are unfavorable has the po- 
+tential to create periodic illiquidity in large stocks as well. 
+Our results indicate that market maker obligations that re- 
+quire continuous participation and impose limits on maxi- 
+mum spreads serve as a mechanism to mitigate failure un- 
+der adverse conditions in both large and small stocks. 
+Our study identiﬁes circumstances in which obligations 
+become binding and highlights the related but largely ne- 
+glected issue of compensating market makers with obli- 
+gations. Saar (2011) provides an excellent review of com- 
+pensation structures observed in electronic markets today. 
+In many global stock markets, such as Amsterdam, Brus- 
+sels, Frankfurt, Oslo, Paris and Stockholm, the listed ﬁrm 
+compensates the DMM via an annual fee based on a liq- 
+uidity agreement. Prior studies ﬁnd that DMM compensa- 
+tion is explained by the contractual obligations described 
+in liquidity agreements [see Anand, Tanggaard, and Weaver 
+(2009) ] and the potential for earning lucrative investment 
+banking business in the future [see Skjeltorp and Ode- 
+gaard (2015) ]. However, as per Financial Industry Regula- 
+tory Authority (FINRA) rule 5250, this type of arrangement 
+in which an issuer directly compensates a market maker is 
+prohibited in the US. In this paper, we study an alterna- 
+tive compensation mechanism that can be considered for 
+US stocks –t h e ability to auto-participate ahead of limit 
+orders with time priority in the queue, which is being used 
+by TSX and the larger US options exchanges. We ﬁnd that 
+DMMs more often exercise the option to auto-participate 
+under unfavorable market conditions, suggesting that the 
+mechanism helps DMMs to facilitate trading on diﬃcult 
+days. 
+We conclude that a DMM contract that balances trad- 
+ing privileges with both stringent aﬃrmative obligations 
+and exchange monitoring offers a possible mechanism to 
+reduce market fragility. As noted in the joint SEC-CFTC re- 
+port, a fragmented market structure makes it diﬃcult for 
+an individual exchange to provide market makers with suf- 
+ﬁcient incentives to accept meaningful quoting and trading 
+obligations. Therefore, US and European regulators need to 
+solve the coordination problem by implementing, through 
+incentives or regulation, a uniform system of market maker 
+obligations and compensation for all the exchanges that 
+trade the security. 
+Appendix. Description of the TSX data 
+We identify 94 member ﬁrms in the TSX database of 
+which 22 ﬁrms have user IDs associated with DMMs. All 
+retail and institutional orders are routed through a user 
+ID (trader) at a member ﬁrm. 23 The trader can internal- 
+ize the order; that is, execute the order against the ﬁrm’s 
+capital as a proprietary trade or execute against another 
+client’s order. As per IIROC rules, internalized orders must 
+offer price improvement, which results in most client or- 
+ders being routed to the limit order book. When bro- 
+kers submit anonymous orders, information on Broker ID 
+is not displayed to market participants but is reported in 
+the database. 24 Member ﬁrms offer direct market access 
+(DMA) to larger clients (e.g., hedge funds). Therefore, sim- 
+ilar to IIROC (2012) , we do not exclude client (CL) ac- 
+counts from our analysis but the selection criteria yields 
+only a small number of client accounts as ELPs. The results 
+are similar when these accounts are excluded from the 
+sample. 
+We examine transactions of common stocks that occur 
+during regular trading hours (9:30 a.m. −4:00 p.m.). We 
+delete months when a stock is associated with a corpo- 
+rate event such as an initial listing, delisting, stock split, 
+merger or acquisition, stock ticker change, name change, 
+rights offering, etc. Information on corporate events and 
+shares outstanding are obtained from the monthly Toronto 
+Stock Exchange Review publications. We retain the most liq- 
+uid class of a stock unless the multiple classes are part of 
+a stock index (S&P 60, Mid Cap or Small Cap indexes). Ac- 
+tivity is dramatically lower on days when US markets are 
+closed and Canadian markets are open. We exclude these 
+days from our sample. We also limit the sample to stock- 
+days with an absolute return of less than 12% (99th per- 
+centile of stock-day returns). For the quotes data, we delete 
+observations in which the difference between the bid and 
+ask quotes is greater than $5. 
+23 Investment Industry Regulatory Organization of Canada (IIROC), the 
+self-regulatory organization that oversees Canadian debt and equity mar- 
+kets, classiﬁes member ﬁrms into retail, institutional, proprietary, inte- 
+grated, and “other” category composed of managed accounts and corpo- 
+rate ﬁnance. 
+24 Once placed on the book, a broker can violate time priority and trade 
+with the client’s order if the broker’s ID is displayed at the inside bid 
+or ask quote to market participants. For this reason, large brokers with 
+considerable client volume use anonymous orders less frequently. 
+
+===== PAGE 23 =====
+
+A. Anand, K. Venkataraman / Journal of Financial Economics 121 (2016) 327–349 349 
+References 
+Acharya, V. , Viswanathan, S. , 2011. Leverage, moral hazard, and liquidity. 
+Journal of Finance 66, 99 −138 . 
+Aitken, M. , Cumming, D. , Zhan, F. , 2015. High frequency trading and 
+end-of-day price dislocation. Journal of Banking and Finance 59, 
+330–349 . 
+Anand, A. , Hua, J. , McCormick, T. , 2015. Make-take structure and market 
+quality: evidence from the US options markets. Management Science, 
+forthcoming . 
+Anand, A. , Tanggaard, C. , Weaver, D. , 2009. Paying for market quality. Jour- 
+nal of Financial and Quantitative Analysis 44, 1427 −1457 . 
+Baron, M. , Brogaard, J. , Kirilenko, A. , 2012. The trading proﬁts of high- 
+-frequency trades Unpublished working paper. Princeton University, 
+Princeton, NJ . 
+Bessembinder, H. , Hao, J. , Zheng, K. , 2015. Market making contracts, ﬁrm 
+value, and the IPO decision. Journal of Finance 70 (5), 1997 −2028 . 
+Brogaard, J. , Hendershott, T. , Riordan, R. , 2014. High-frequency trading and 
+price discovery. Review of Financial Studies 27, 2267 −2306 . 
+Chordia, T. , Green, T. , Kottimukkalur, B. , 2015. Do high-frequency traders 
+need to be regulated? Evidence from algorithmic trading on macro 
+news Unpublished working paper. Emory University, Druid Hills, GA . 
+Chordia, T. , Subrahmanyam, A. , 2004. Order imbalance and individual 
+stock returns: theory and evidence. Journal of Financial Economics 72, 
+485 −518 . 
+Chordia, T. , Roll, R. , Subrahmanyam, A. , 20 0 0. Commonality in liquidity. 
+Journal of Financial Economics 56, 3 −28 . 
+Coughenour, J. , Saad, M. , 2004. Common market makers and commonality 
+in liquidity. Journal of Financial Economics 73, 37 −69 . 
+Clark-Joseph, A. , 2012. Exploratory trading Unpublished working paper. 
+University of Illinois, Urbana-Champaign, IL . 
+Glosten, L. , 1994. Is the electronic open limit order book inevitable? Jour- 
+nal of Finance 49, 1127 −1161 . 
+Grossman, S. , Miller, M. , 1988. Liquidity and market structure. Journal of 
+Finance 43, 617 −633 . 
+Handa, P. , Schwartz, R. , 1996. Limit order trading. Journal of Finance 51, 
+1835 −1861 . 
+Hasbrouck, J. , Saar, G. ,2 0 1 3 . Low-latency trading. Journal of Financial Mar- 
+kets 16, 646 −679 . 
+Hasbrouck, J. , Seppi, D. , 2001. Common factors in prices, order ﬂows, and 
+liquidity. Journal of Financial Economics 59, 383 −411 . 
+Hasbrouck, J. , Soﬁanos, G. , 1993. The trades of market makers: an analysis 
+of NYSE specialists. Journal of Finance 48, 1565 −1594 . 
+Hendershott, T. , Jones, C. , Menkveld, A. , 2011. Does algorithmic trading im- 
+prove liquidity? Journal of Finance 66, 568 −604 . 
+Hendershott, T. , Riordan, R. , 2013. Algorithmic trading and the mar- 
+ket for liquidity. Journal of Financial and Quantitative Analysis 48, 
+1001 −1024 . 
+Hirschey, N. , 2013. Do high-frequency traders anticipate buying and sell- 
+ing pressure? Unpublished working paper. London Business School, 
+London, UK . 
+Hu, G. , Pan, J. , Wang, J. , 2013. Earl peek advantage? Unpublished working 
+paper. Massachusetts Institute of Technology, Cambridge, MA . 
+IIROC , 2012. The HOT Study, Phases I and II of IIROC’s Study of High-Fre- 
+quency Trading Activity on Canadian Equity Marketplaces. Investment 
+Industry Regulatory Organization of Canada, Toronto, Ontario, Canada . 
+Kennedy, P. , 2003. A Guide to Econometrics. MIT Press, Cambridge, MA . 
+Kirilenko, A . , Kyle, A . , Samadi, M. , Tuzun, T. , 2011. The ﬂash crash: the im- 
+pact of high-frequency trading on an electronic market Unpublished 
+working paper. Massachusetts Institute of Technology, Cambridge, MA . 
+Menkveld, A. , 2013. High-frequency trading and the new market makers. 
+Journal of Financial Markets 16, 712 −740 . 
+Menkveld, A. , Wang, T. , 2013. How do designated market makers create 
+value for small-caps? Journal of Financial Markets 16, 571 −603 . 
+Nimalendran, M. , Petrella, G. , 2003. Do ‘thinly-traded’ stocks beneﬁt 
+from specialist intervention? Journal of Banking and Finance 27, 
+1823 −1854 . 
+Panayides, M. , 2007. Aﬃrmative obligations and market making with in- 
+ventory. Journal of Financial Economics 86, 513 −542 . 
+Pastor, L. , Stambaugh, R. , 2003. Liquidity risk and expected stock returns. 
+Journal of Political Economy 111, 642 −685 . 
+Perotti, P. , Rindi, B. , 2010. Market makers as information providers: the 
+natural experiment of star. Journal of Empirical Finance 17, 895 −917 . 
+Raman, V. , Robe, M. , Yadav, P. , 2014. Electronic market makers, trader 
+anonymity, and market fragility Unpublished working paper. Univer- 
+sity of Warwick, Coventry, UK . 
+Saar, G. , 2011. Specialist markets. In: Cont, R. (Ed.), Encyclopedia of Quan- 
+titative Finance. John Wiley & Sons, Chichester, West Sussex, UK . 
+Securities and Exchange Commission , 2010. Concept Release on Equity 
+Market Structure. Release no. 34-61358. US Government Printing Of- 
+ﬁce, Washington, DC . 
+Skjeltorp, J. , Odegaard, B. , 2015. When do listed ﬁrms pay for market mak- 
+ing in their own stock? Financial Management 44, 241 −266 . 
+Stoll, H. , 20 0 0. Friction. Journal of Finance 55, 1479 −1514 . 
+Venkataraman, K. , Waisburd, A. ,2 0 0 7 . The value of a designated market 
+maker. Journal of Financial and Quantitative Analysis 42, 735 −758 . 

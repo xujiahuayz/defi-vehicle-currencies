@@ -1,0 +1,1561 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 126 (2017) 652–667 
+Contents lists available at ScienceDirect 
+Journal of Financial Economics 
+journal homepage: www.elsevier.com/locate/jfec 
+Designated market makers still matter: Evidence from two 
+natural experiments /p82 
+Adam D. Clark-Joseph 2 , Mao Ye 1 , ∗, Chao Zi 3 
+University of Illinois at Urbana-Champaign, United States 
+a r t i c l e i n f o 
+Article history: 
+Received 28 July 2016 
+Revised 3 October 2016 
+Accepted 5 October 2016 
+Available online 14 September 2017 
+JEL classiﬁcation: 
+G14 
+G24 
+Keywords: 
+Market makers 
+HFTs 
+Liquidity 
+Obligations 
+Trading halt 
+a b s t r a c t 
+Independent technological glitches forced two separate trading halts on different U.S. ex- 
+changes during the week of July 6, 2015. During each halt, all other exchanges remained 
+open. We exploit exogenous variation provided by this unprecedented coincidence, in con- 
+junction with a proprietary data set, to identify the causal impact of Designated Market 
+Maker (DMM) participation on liquidity. When the voluntary liquidity providers on one 
+exchange were removed, liquidity remained unchanged; when DMMs were removed, liq- 
+uidity decreased market-wide. We ﬁnd evidence consistent with the idea that these DMMs, 
+despite facing only mild formal obligations, signiﬁcantly improve liquidity in the modern 
+electronic marketplace. 
+©2 0 1 7 Published by Elsevier B.V. 
+/p82 We are grateful for helpful comments from an anonymous referee, 
+Amber Anand, Jim Angel, Hank Bessembinder (WFA discussant), Robert 
+Battalio (discussant at Wabash River Conference), Colin Clark, Huseyin 
+Gulen, Craig Holden, Neil Pearson, Steven Poser, Paul Schutz, Jeff Smith, 
+Kumar Venkataraman, Dan Weaver as well as conference participants at 
+the Western Finance Association Annual Conference and Wabash River 
+Conference. Mao Ye acknowledges the support by National Science Foun- 
+dation Grant 1352936 (joint with the Oﬃce of Financial Research at U.S. 
+Department of the Treasury). This work also uses the Extreme Science 
+and Engineering Discovery Environment (XSEDE), which is supported by 
+National Science Foundation Grant number OCI-1053575 . We thank David 
+O’Neal for his assistance with supercomputing, supported by the XSEDE 
+Extended Collaborative Support Service program. All errors are our own. 
+∗ Corresponding author. 
+E-mail addresses: adcj@illinois.edu (A.D. Clark-Joseph), maoye@ 
+illinois.edu (M. Ye), chaozi2@illinois.edu (C. Zi). 
+1 Mailing address: 343K Wohlers Hall, 1206 South Sixth Street, Cham- 
+paign, IL, 61820. 
+2 Mailing address: 435 Wohlers Hall, 1206 South Sixth Street, Cham- 
+paign, IL, 61820. 
+3 Mailing address: 330 Wohlers Hall, 1206 South Sixth Street, Cham- 
+paign, IL, 61820. 
+1. Introduction 
+In decades past, designated market makers (DMMs) 
+were central ﬁxtures of the equities trading landscape in 
+the United States. However, since the advent of the Reg- 
+ulation of National Market System (Reg. NMS) and elec- 
+tronic trading, voluntary “de facto” market makers have 
+supplanted DMMs as the primary providers of liquidity. 
+In contrast to DMMs, voluntary liquidity providers have 
+no formal obligations to maintain market quality in their 
+stocks. Nevertheless, modern electronic markets rely al- 
+most entirely on voluntary liquidity provision, and the 
+markets generally seem to function well. Although the 
+2010 Flash Crash rekindled interest in market-maker obli- 
+gations at times of extreme market turmoil, it is not 
+obvious that DMMs remain relevant in ordinary times. 
+In U.S. markets, modern DMMs’ obligations seem too 
+small to clearly differentiate them from voluntary liquid- 
+ity providers. However, using a pair of natural experiments, 
+we ﬁnd strong evidence consistent with the notion that 
+http://dx.doi.org/10.1016/j.jﬁneco.2017.09.001 
+0304-405X/© 2017 Published by Elsevier B.V. 
+
+===== PAGE 2 =====
+
+A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 653 
+these DMMs continue to exert an economically signiﬁcant 
+inﬂuence on U.S. markets. 
+The New York Stock Exchange (NYSE) is the only ma- 
+jor exchange in the U.S. that still has DMMs, and these 
+DMMs face relatively light obligations. The NYSE DMMs’ 
+mild obligations contrast sharply with those of, for exam- 
+ple, some European DMMs who are required to keep the 
+spread within contractually prescribed limits that many 
+times bind. 4 . Rigid obligations such as these “maximum 
+spread rules” can certainly induce changes in various di- 
+mensions of market quality. The scope for mild obligations 
+to produce changes in market quality is less obvious. 
+The bulk of the obligations that the NYSE DMMs face 
+are somewhat subjective. These DMMs are required, “inso- 
+far as reasonably practicable,” to maintain a “fair and or- 
+derly” market in their stocks, which implies maintaining 
+price continuity with reasonable depth, and minimizing 
+of the effects of temporary disparity between supply and 
+demand. They have no obligation to narrow the bid-ask 
+spread. The DMMs’ explicitly quantiﬁed obligations, even 
+in the most restrictive cases, are quite mild: DMMs must 
+quote at the national best bid and offer (NBBO) at least 
+15% of the time, and maintain quotes not more than 8% 
+away from the NBB/NBO. For context, the average propor- 
+tional quoted spread among the NYSE stocks that we study 
+is roughly 18 basis points (bps). Although NYSE DMMs can 
+potentially face disciplinary action and ﬁnes if they fail 
+to maintain a fair and orderly market insofar as reason- 
+ably practicable, the extent to which the loosely worded 
+fair-and-orderly obligations have independent “bite” is  
+unclear. 
+To investigate the causal impact of NYSE DMMs’ pres- 
+ence in the market, we begin by exploiting a natural ex- 
+periment that arose on July 8, 2015, when a computer 
+glitch forced the NYSE to halt trading from 11:32 a.m. to 
+3:10 p.m. This unexpected, exogenous event provides a 
+unique opportunity to examine the impact of DMMs on 
+market quality, since the trading halt exogenously removed 
+all DMMs from the market. 5 Moreover, non-NYSE-listed 
+stocks do not trade on the NYSE, so they were not di- 
+rectly affected by the exchange’ s trading halt. For the ﬁrst 
+stage of our analysis, NYSE-listed stocks serve as our treat- 
+ment group, and non-NYSE-listed stocks serve as our con- 
+trol group. A difference-in-differences test reveals that the 
+liquidity of NYSE-listed stocks fell signiﬁcantly relative to 
+that of non-NYSE-listed stocks after the trading halt began. 
+Compared to the control group, the average NBBO propor- 
+tional quoted spreads for the NYSE-listed stocks widened 
+by a factor of 1.22 during the halt, and the proportional 
+effective spreads widened by a factor of 1.17. Almost im- 
+mediately after trading resumed on the NYSE, spreads 
+for the NYSE-listed stocks narrowed to their pre-halt 
+values. 
+4 See, for example, Venkataraman and Waisburd (2007) , Anand, Tang- 
+gaard and Weaver (2009) , Menkveld and Wang (2013) , Bessembinder, Hao 
+and Zheng (2015) . 
+5 NYSE MKT, the former American Stock Exchange, also has DMMs, but 
+its market share is less than 1% in our sample, and it, too, closed during 
+the NYSE shutdown. 
+The basis on which stocks were assigned to the con- 
+trol vs. treatment groups was not random, so we can- 
+not dismiss, ex ante, the possibility that the non-NYSE- 
+listed stocks in our control group might differ systemati- 
+cally from the NYSE-listed stocks in our treatment group. 
+In particular, the fundamental concern is that our treat- 
+ment stocks might be more sensitive to an arbitrary “shut- 
+down shock” than are the control stocks. However, a sec- 
+ond exogenous exchange-shutdown helps us to alleviate 
+this concern. On July 6, 2015, two days before the NYSE 
+event, the Direct Edge X platform (EDGX) experienced an 
+unrelated technological diﬃculty that forced the exchange 
+to halt trading for part of the day. Both the control-group 
+stocks and the treatment-group stocks trade on EDGX, so 
+we can directly observe the impact of a trading-venue 
+shutdown that affects both groups of stocks simultane- 
+ously. We ﬁnd that this impact for stocks in both groups is 
+negligible and insigniﬁcant, as is the difference in impact 
+between the two groups. 
+The reduction of liquidity observed during the NYSE 
+shutdown therefore presents a puzzle. The trading halt 
+closed down only one exchange out of 11. Liquidity 
+providers and demanders in equities markets are not di- 
+rectly affected by a technology glitch at a single exchange, 
+in that they can still submit orders to ten other exchanges 
+and off-exchange trading venues. As we witness during the 
+EDGX shutdown, removing a trading venue without DMMs 
+has essentially no effect. So why would the NYSE shut- 
+down have any meaningful effects? Mechanical explana- 
+tions based on stock heterogeneity or intraday seasonality 
+are readily ruled out by placebo tests using adjacent days’ 
+data. We’ re led to the inevitable conclusion that the NYSE 
+is not redundant: it has some important distinguishing fea- 
+ture that causes improvement in liquidity. 
+The presence of DMMs is unambiguously one of the 
+NYSE’ s distinctive features, but attributing liquidity effects 
+to DMMs requires additional analysis. To explicitly inves- 
+tigate whether our results reﬂect effects that may be at- 
+tributable to the presence/absence of DMMs, we analyze 
+a proprietary NYSE data set that documents the participa- 
+tion rate of the DMM for each NYSE-listed stock. This data 
+set enables us to isolate the trading on the NYSE where 
+DMMs, as opposed to non-DMMs, participated. For each 
+stock, we compute the average fraction of total trading vol- 
+ume, across all exchanges and off-exchange trading venues, 
+that executes on the NYSE on days prior to July 8, 2015. 
+We then decompose this NYSE market share into a DMM 
+component and a non-DMM component. 
+We ﬁnd that higher DMM participation before the NYSE 
+trading halt predicts larger increases in quoted and effec- 
+tive spread during the halt, but we ﬁnd no evidence that 
+the non-DMM participation rate has such predictive power. 
+In other words, the NYSE market share does not appear 
+to explain any additional cross-sectional variation beyond 
+what is explained by the share of DMM participation alone. 
+These ﬁndings are consistent with the notion that DMM 
+participation drives the liquidity results. 
+Our study contributes to the literature by examining an 
+exogenous loss of DMMs, thereby avoiding the problem of 
+self-selection bias pervasive in empirical studies on the im- 
+pact of DMMs. The extant empirical literature on DMMs 
+
+===== PAGE 3 =====
+
+654 A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 
+focuses on the introduction of the voluntary DMM con- 
+tracts in France, Italy, the Netherlands, and Sweden. 6 
+Menkveld and Wang (2013) , however, point out the self- 
+selection bias across DMM and non-DMM stocks that 
+unavoidably becomes a pivotal element of such studies; 
+( Skjeltorp and Odegaard, 2015 ) ﬁnd that ﬁrms that sign the 
+DMM contract differ substantially from ﬁrms that do not. 
+Our results also connect and contribute to the liter- 
+ature on high-frequency trading. In particular, our paper 
+suggests the relevance of preserving market-making obli- 
+gations in a world of fast trading. The large majority of 
+the six DMMs in our sample meet the deﬁnition of “high- 
+frequency trader” (HFT) set forth in the U.S. Securities 
+and Exchange Commission’ s 2010 Concept Release. 7 HFTs 
+who do not have any market-making obligations also trade 
+on the NYSE. We ﬁnd no evidence that the loss of vol- 
+untary HFT liquidity-providers in the NYSE harms liquid- 
+ity, whereas we ﬁnd evidence consistent with the theory 
+that the loss of DMMs causes spreads to widen substan- 
+tially. Our empirical results complement the theory work 
+of Bessembinder, Hao and Lemmon (2011) , who identify 
+underlying economic mechanisms that explain how and 
+why DMMs’ maintenance of narrow spreads can improve 
+market eﬃciency and social welfare. 
+The remainder of this paper is organized as follows: 
+Section 2 describes the institutional details, data, and 
+our methodology for addressing intraday-seasonality ef- 
+fects. Section 3.1 presents difference-in-differences analy- 
+ses, placebo tests from the days before and the day af- 
+ter the NYSE glitch, and compares effects of the NYSE 
+shutdown to those of the EDGX shutdown. Section 4 uses 
+the proprietary data set to examine the cross-sectional 
+relationship between pre-halt DMM participation rates 
+and changes in liquidity during the halt. Section 5 ex- 
+ploits the exogenous variation provided by the NYSE halt, 
+in conjunction with the proprietary data set, to analyze 
+cross-sectional patterns in the participation and impact of 
+DMMs. Section 6 discusses the issue of why NYSE DMMs 
+might improve liquidity to the extent that empirical results 
+suggest. Section 7 concludes. 
+2. Data and institutional details 
+In this section, we provide an overview of key institu- 
+tional details of the NYSE’s DMM system, describe our data 
+and measure of liquidity, and explain the technique we use 
+to correct for intraday seasonality in our data. 
+2.1. Institutional details 
+According to the NYSE, its designated market-makers 
+are the cornerstone of the exchange’ s market model. Each 
+stock has one DMM, whom the issuer selects. DMMs are 
+the successors of the so-called “specialists” on the NYSE. 
+6 See Venkataraman and Waisburd (2007) , Nimalendran and Petrella 
+(2003) , Perotti and Rindi (2010) , Menkveld and Wang (2013) , Anand, 
+Tanggaard and Weaver (2009) , respectively. 
+7 The six DMM ﬁrms are Barclays, Brendan E. Cryan & Co., IMC Finan- 
+cial Markets, J Streicher & Co. LLC, KCG, and Virtu Financial Capital Mar- 
+kets LLC. 
+Like the specialists, DMMs have aﬃrmative obligations 
+to maintain a fair and orderly market in their stocks, quote 
+at the NBBO a speciﬁed percentage of the time, and fa- 
+cilitate price discovery throughout the day as well as at 
+the open, close, and in periods of signiﬁcant imbalances 
+and high volatility. However, DMMs’ aﬃrmative obligations 
+are not identical to those of the specialists. For exam- 
+ple, DMMs do not face the formal Price Continuity Rule 
+that applied to the specialists. 8 Also, DMMs do not face 
+the negative obligations that the specialists once did. The 
+NYSE removed the “public order precedence rule,” and 
+thereby allowed DMMs to compete for order-priority on 
+parity with ﬂoor traders and electronic limit order books. 
+In 2008, the NYSE also exempted DMMs from the “pub- 
+lic liquidity preservation principle,” that had discouraged 
+specialists from taking liquidity from the public limit order 
+book. DMMs also receive privileges, as the specialists did, 
+but those privileges are now quite modest. 
+In Section 6 we discuss DMMs’ privileges and their 
+(ir)relevance to our results. Appendix A provides a detailed 
+discussion of DMMs’ privileges. Appendix B provides the 
+direct text of selected NYSE rules that describe DMMs’ pre- 
+cise obligations. 
+2.2. Data and sample 
+Our data are drawn from the Trade and Quote (TAQ), 
+Center for Research in Security Prices (CRSP), and Insti- 
+tutional Brokers’ Estimate System (I/B/E/S) databases. We 
+also use a set of proprietary data on NYSE DMM partici- 
+pation that we describe in detail in Section 4 , where the 
+data enter our analysis. Our preliminary sample of stocks 
+consists of all common stocks that are present in the Daily 
+TAQ (DTAQ) master ﬁle for both July 6, 2015 and July 8, 
+2015, and that are listed in the CRSP database on De- 
+cember 31, 2014. We then restrict attention to only those 
+stocks whose monthly share volume for December 2014 
+exceeded 10,0 0 0 shares, and whose closing price on De- 
+cember 31, 2014 exceeded $5.00. 
+We divide this sample of stocks into a treatment group 
+and a control group, based on the data ﬁeld “Trade- 
+dOnNYSE” in the DTAQ Master File Data for July 8, 2015. 
+The treatment group consists of sample stocks that are 
+traded on the NYSE ( T rad ed OnNY SE = 1 ) , and the control 
+group consists of stocks that are not traded on the NYSE 
+( T rad ed OnNY SE = 0 ) . We obtain 980 treated stocks, and 
+922 control stocks. Table 1 presents the summary statistics 
+for the two groups of stocks. 
+We use TAQ data to construct the NBBO prices, and we 
+calculate liquidity measures following Holden and Jacobsen 
+(2014) . 9 The quoted spread is the difference between the 
+8 Panayides (2007) discusses the specialists’ aﬃrmative obligations, and 
+the particular importance of the Price Continuity Rule. 
+9 DTAQ provides two ﬁles that contain oﬃcial NBBO quotes. If a single 
+exchange has both best bid and offer, then the oﬃcial NBBO quotes will 
+be recorded in the DTAQ Quotes File. Otherwise, the NBBO quotes will be 
+recorded in the DTAQ NBBO ﬁle. We combine the NBBO quotes from both 
+ﬁles to construct the complete oﬃcial NBBO. We exclude quotes with ab- 
+normal quote conditions (A, B, H, O, R, and W). We delete quotes whose 
+bids are greater than or equal to asks. We also delete cases in which the 
+quoted spread is greater than $5.00. 
+
+===== PAGE 4 =====
+
+A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 655 
+Table 1 
+Summary statistics for treated and control stocks. 
+Table 1 presents summary statistics describing the stocks in our sample for July of 2015. July 
+6, the day of the EDGX halt, and July 8, the day of the NYSE halt, are not used in computing 
+these summary statistics. The “treated” group consists of 980 stocks that are traded on the 
+NYSE. The “control” group consists of 922 stocks that do not trade on the NYSE. 
+Treated Control 
+Mean Std. dev. Mean Std. dev. 
+Quoted spread (cent) 5.24 7.46 7.87 11.83 
+Proportional quoted spread (bps) 17.80 19.67 20.97 20.64 
+Effective spread (cent) 3.62 5.13 5.84 13.53 
+Proportional effective spread (bps) 12.76 13.96 18.41 59.70 
+Dollar depth (thousand) 22.80 42.61 23.86 39.31 
+Daily dollar volume (million) 23.31 51.55 26.68 91.43 
+Price (dollars) 32.51 22.61 34.67 26.11 
+Market capitalization (billion) 2.77 8.47 2.87 9.88 
+best bid and best ask prices. The effective spread measures 
+the cost of trading against the actual supply of liquidity; 
+the effective spread is deﬁned for a buy as twice the dif- 
+ference between the trade price and the midpoint of the 
+NBBO price, and for a sell as twice the difference between 
+the midpoints of the NBBO and the trade price. A propor- 
+tional spread (quoted, effective) is the spread divided by 
+the midpoint of the best bid and best ask prices. Mea- 
+sures of quoted spread and proportional quoted spread are 
+weighted by the time, while measures of effective spread 
+and proportional effective spread are weighted by trade- 
+size. We measure depth as the time-weighted average of 
+displayed depth at the NBBO. 
+2.3. Intraday seasonality correction and normalizations 
+McInish and Wood (1992) ﬁnd that liquidity has a re- 
+verse J-shaped intraday pattern: spreads are much higher 
+at the beginning of the day relative to mid-day, and moder- 
+ately higher at the end of the day relative to mid-day. Since 
+the NYSE trading halt occurred in the middle of the trading 
+day, time-of-day artifacts contaminate direct comparisons 
+of liquidity during the halt to liquidity before and/or af- 
+ter the halt. We correct for intraday seasonality using mul- 
+tiplicative seasonal adjustment, following Harvey (1993) . 
+This method divides each value of the time series by a 
+seasonal index that represents the long-run average value 
+typically observed in each season. In our application, we 
+split the trading day into ten-minute intervals (39 inter- 
+vals in total) and compute the liquidity measures during 
+each interval. To adjust for intraday seasonality, we calcu- 
+late the monthly average of the indicated measure for each 
+stock during each of the 39 time intervals, then divide the 
+values measured on the day of interest by the correspond- 
+ing interval-stock monthly averages. The averages are taken 
+over all trading days in July 2015, except for the two event 
+dates (July 6 and 8). We refer to the resulting adjusted 
+measures as the “normalized” measures. 
+Fig. 1 provides a concrete illustration of how this 
+intraday-seasonality adjustment normalizes the data, here 
+in the case of proportional effective spreads on the day of 
+the NYSE shutdown, July 8. For a given ten-minute inter- 
+val, the vertical axis represents the ratio of the spread in 
+that interval on July 8 to the average spread in that inter- 
+Fig. 1. Normalized proportional effective spreads on July 8th (NYSE halt). 
+This ﬁgure depicts the time-series of normalized proportional effective 
+spreads during July 8, 2015. The gray shaded region indicates the pe- 
+riod during which the NYSE was shut down on July 8. The solid black 
+line reﬂects the cross-sectional average among the 980 treatment stocks 
+(stocks ordinarily traded on the NYSE), while the dashed line reﬂects the 
+cross-sectional average among the 922 control stocks (stocks never traded 
+on the NYSE). The horizontal axis represents time throughout the trading 
+day, and the vertical axis represents the ratio of the spread on July 8 to 
+the average spread at the same time of day on the other trading days 
+in July 2015. For example, during the interval 12:0 0:0 0 p.m. –1 2 : 0 9 : 5 9 
+p.m. on July 8, proportional effective spreads on the control stocks were 
+roughly 10% above their (respective) typical levels, while effective spreads 
+on the treatment stocks were roughly 35% above their (respective) typical 
+levels. 
+val during the rest of the month. The solid black line re- 
+ﬂects the cross-sectional average among the 980 treatment 
+stocks, while the dashed line reﬂects the cross-sectional 
+average among the 922 control stocks. So, for example, 
+during the interval 12:0 0:0 0 p.m. – 12:09:59 p.m. on July 
+8, proportional effective spreads on the control stocks were 
+roughly 10% above their (respective) typical levels, while 
+effective spreads on the treatment stocks were roughly 35% 
+above their (respective) typical levels. 
+To a ﬁrst approximation, for both quoted spreads and 
+effective spreads, the normalized spread and the normal- 
+ized proportional spread will be equal. Algebraically, the di- 
+vision by the midpoint price approximately washes out in 
+the normalization, provided that the price does not vary 
+
+===== PAGE 5 =====
+
+656 A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 
+too wildly over the course of the month. For brevity, we 
+omit results on non-proportional spreads, but the results 
+are nearly identical to those reported for the proportional 
+spreads. 
+3. Difference-in-differences tests 
+As an initial analysis, we perform a difference-in- 
+differences test around the NYSE trading halt. We com- 
+pute the measures of liquidity for each stock on July 8, 
+2015 before the NYSE trading halt, during the halt, and af- 
+ter the halt, and then calculate the inter-period differences. 
+For each of these inter-period differences, we compare the 
+average among the treatment stocks to the corresponding 
+average among the control stocks. This basic diff-in-diffs 
+procedure sets up the framework for our subsequent re- 
+ﬁnements and elaborations. Section 3.1 presents and dis- 
+cusses the primary diff-in-diffs results. Section 3.2 consid- 
+ers the limitations of the control group as a fully suit- 
+able “control,” and presents placebo-test results as a partial 
+remedy. Section 3.3 uses the shutdown of EDGX on July 
+6 to directly address remaining concerns about systematic 
+differences between the treatment-group stocks and the 
+control-group stocks that might produce spurious diff-in- 
+diffs results. 
+3.1. Diff-in-diffs tests using the NYSE halt 
+For each stock, we calculate the average normalized 
+measures of liquidity in the periods before the NYSE trad- 
+ing halt (9:30:00 a.m. – 11:29:59 a.m.), during the halt 
+(11:30:00 a.m. – 3:09:59 p.m.), after the halt (3:10:00 
+p.m. – 4:0 0:0 0 p.m.), and not during the halt (combin- 
+ing “before” with “after”). We then compute, on a stock- 
+by-stock basis, the difference in liquidity across different 
+time-periods: “during” minus “before,” “during” minus “af- 
+ter,” and “during” minus “not during.” We average each 
+inter-period difference across the 980 treatment stocks, 
+and across the 922 control stocks, then we compare the 
+treatment average to the control average. 
+To assess statistical signiﬁcance, we construct bootstrap 
+distributions using data from the entire month of July 
+2015, excluding July 6 and July 8. For each draw in the 
+bootstrap distributions, a sample of 980 treatment stocks 
+is selected randomly (with replacement), and a sample 
+of 922 control stocks is selected randomly (with replace- 
+ment); one trading day is randomly selected (with re- 
+placement) as the source of data for the “during halt” pe- 
+riod, and a second trading day is randomly selected as the 
+source of data for the other period (i.e., “before,” “after,” or 
+“not during”). We use twenty million draws to construct 
+each bootstrap distribution. 
+3.1.1. Spreads 
+The diff-in-diffs analysis reveals that the NYSE shut- 
+down led to a large, signiﬁcant increase in the treatment 
+stocks’ spreads, relative to the controls’. Table 2 reports 
+the main results. For the treatment-group stocks, nor- 
+malized proportional quoted spreads were approximately 
+29% higher during the NYSE shutdown than they were 
+Table 2 
+Normalized spread differences and diffs-in-diffs on July 8th (NYSE halt). 
+Table 2 summarizes difference and diff-in-diffs results for normalized proportional quoted spreads (Panel A) 
+and normalized proportional effective spreads (Panel B) on July 8, 2015, the day of the NYSE trading halt. NYSE- 
+listed stocks’ spreads increased during the halt, and increased signiﬁcantly more than did those of non-NYSE- 
+listed stocks. Quoted spreads are computed as time-weighted averages, while effective spreads are computed 
+as trade-size-weighted averages. To normalize for intraday seasonality, we calculate the monthly average of 
+the indicated measure for each stock during each of the 39 ten-minute time intervals in a trading day, then 
+divide the values measured on July 8th by the corresponding interval-stock monthly averages. For each stock, 
+we calculate the average normalized measures of spreads in the period before the NYSE trading halt (9:30 
+a.m. – 11:30 a.m.), during the halt (11:30 a.m. –3 : 1 0 p.m.), and after the halt (3:10 p.m. –4 : 0 0 p.m.). The 
+“not during” period combines the “before” and “after” periods. The ﬁrst column in Table 2 reports the averages 
+among the 980 NYSE-listed treatment stocks of the difference in liquidity across the indicated time-periods; the 
+second column reports the analogous average among the 922 non-NYSE-listed control stocks. The third column 
+reports the difference in these averages between the treatment group and the control group. The fourth column 
+reports the p -value associated with the null hypothesis that this diff-in-diffs equals zero. The p -values are based 
+on bootstrap distributions generated using data from the month of July 2015, excluding July 6 (the day of the 
+EDGX halt) and July 8. 
+Panel A: Proportional quoted spreads 
+Diff across periods Treat diff minus Control diff
+Treatment Control Diff-in-diffs p -Value 
+During minus Not 0.256 0 .037 0.219 < 1E-7 
+During minus Before 0.287 0 .070 0.217 < 1E-7 
+During minus After 0.181 −0 .042 0.223 < 1E-7 
+Panel B: Proportional effective spreads 
+Diff across periods Treat diff minus Control diff
+Treatment Control Diff-in-diffs p -Value 
+During minus Not 0.228 0 .054 0.175 < 1E-7 
+During minus Before 0.250 0 .084 0.166 < 1E-7 
+During minus After 0.177 −0 .018 0.195 < 1E-7 
+
+===== PAGE 6 =====
+
+A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 657 
+Table 3 
+Normalized depth differences and diffs-in-diffs on July 8th (NYSE halt). 
+Table 3 summarizes results from difference-in-differences tests around the NYSE trading halt 
+on July 8, 2015, for depth (Panel A) and dollar depth (Panel B). We ﬁnd no signiﬁcant difference 
+between changes in NYSE-listed stocks’ and non-NYSE-listed stocks’ depth or dollar depth. Both 
+depth and dollar depth are computed as time-weighted averages. To normalize for intraday sea- 
+sonality, we calculate the monthly average of the indicated measure for each stock during each 
+of the 39 ten-minute time intervals in a trading day, then divide the values measured on July 
+8th by the corresponding interval-stock monthly averages. For each stock, we calculate the av- 
+erage normalized measures of depth in the period before the NYSE trading halt (9:30 a.m. –
+11:30 a.m.), during the halt (11:30a.m. –3 : 1 0 p.m.), and after the halt (3:10 p.m. –4 : 0 0 p.m.). 
+The “not during” period combines the “before” and “after” periods. The ﬁrst column of the 
+table reports the averages among the 980 NYSE-listed treatment stocks of the difference in liq- 
+uidity across the indicated time-periods, and the second column reports the analogous averages 
+among the 922 non-NYSE-listed control stocks. The third column reports the difference in these 
+averages between the treatment group and the control group. The fourth column reports the p - 
+value associated with the null hypothesis that this diff-in-diffs equals zero. The p -values are 
+based on bootstrap distributions generated using data from the month of July 2015, excluding 
+July 6 (the day of the EDGX halt) and July 8. 
+Panel A: Depth 
+Diff across periods Treat diff minus Control diff
+Treatment Control Diff-in-diffs p -Value 
+During minus Not 0.036 0 .023 0.013 0.598 
+During minus Before 0.011 −0 .007 0.018 0.514 
+During minus After 0.096 0 .093 0.003 0.926 
+Panel B: Dollar depth 
+Diff across periods Treat diff minus Control diff
+Treatment Control Diff-in-diffs p -Value 
+During minus Not 0.034 0 .019 0.015 0.554 
+During minus Before 0.007 −0 .012 0.019 0.477 
+During minus After 0.097 0 .093 0.004 0.884 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 before the shutdown. By com- 
+parison, normalized proportional quoted spreads for the 
+control-group stocks were approximately 7% higher dur- 
+ing the NYSE shutdown than they were before the shut- 
+down. These results indicate that the NYSE halt caused the 
+proportional quoted spread for a typical treated stock to 
+increase by nearly 22% relative to its baseline. Unsurpris- 
+ingly, the statistical signiﬁcance of this large increase is 
+overwhelming. 
+Proportional effective spreads displayed a pattern very 
+similar to that of proportional quoted spreads. The diff- 
+in-diffs results show that the NYSE halt caused the 
+proportional effective spread for a typical treated stock 
+to increase by roughly 17% relative to its baseline. Al- 
+though the difference-in-differences for proportional effec- 
+tive spreads is slightly smaller than that for proportional 
+quoted spreads, the increase is still highly signiﬁcant, both 
+statistically and economically. 
+3.1.2. Depth 
+In contrast to spreads, depth does not change in any 
+discernible way for the treatment-group stocks during the 
+NYSE shutdown. Table 3 reports full results from our diff- 
+in-diffs analysis of depth and dollar depth, but the con- 
+cise summary is that we ﬁnd no signiﬁcant effects. This 
+is not entirely surprising. Because quoted spreads widened 
+(for the treatment-group stocks) during the NYSE shut- 
+down, comparing depth at the NBBO during the shutdown 
+to depth at the NBBO before or after the shutdown is not 
+an apples-to-apples comparison. An increase in spread im- 
+plies that depth at top of the book is currently at price 
+levels that would have been considered inferior previously, 
+when the spread was tighter. 
+3.2. Placebo tests 
+To address the possibility that the results in 
+Section 3.1 are driven by heterogeneity between treat- 
+ment and control stocks, or by mechanical time-of-day 
+effects that are not adequately corrected by our intraday- 
+seasonality adjustments, we repeat the analysis from 
+Section 3.1 using data from July 7 (the day before the 
+NYSE shutdown), and from July 9 (the day after the NYSE 
+shutdown). Fig. 2 illustrates the placebo analysis in the 
+case of proportional effective spreads. Both panels of 
+Fig. 2 are analogues of Fig. 1 . As in Fig. 1 , the gray shaded 
+region indicates the period during which the NYSE was 
+shut down on July 8; however, the NYSE remained open 
+and operational during those times on July 7 and July 9. 
+Table 4 reports the placebo-test results for normalized 
+spreads. On the placebo days, the diffs-in-diffs are not sig- 
+niﬁcantly different from zero. In other words, the placebo- 
+test results suggest that the bulk of the effects documented 
+in Section 3.1 could not be driven by intraday seasonal- 
+ity, nor could they be driven by stock heterogeneity, un- 
+less the treatment-group stocks differ systematically from 
+the control-group stocks in their sensitivity to a generic 
+
+===== PAGE 7 =====
+
+658 A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 
+Fig. 2. Normalized proportional effective spread placebos for the NYSE halt. This ﬁgure depicts the time-series of normalized proportional effective spreads 
+during July 7th (Panel A) and July 9th (Panel B). The gray shaded region indicates the period during which the NYSE was shut down on July 8, 2015; the 
+NYSE was not shut down during this period on July 7 or July 9. The solid black line reﬂects the cross-sectional average among the 980 treatment stocks 
+(stocks ordinarily traded on the NYSE), while the dashed line reﬂects the cross-sectional average among the 922 control stocks (stocks never traded on 
+the NYSE). The horizontal axis represents time throughout the trading day, and the vertical axis represents the ratio of the spread on July 8 to the average 
+spread at the same time of day on the other trading days in July 2015. 
+Table 4 
+Placebo diff-in-diff results for normalized spreads on July 7th and July 9th. 
+Table 4 reports the placebo-test diff-in-diff results for normalized proportional quoted and effective spreads. The 
+signiﬁcant diff-in-diffs spread results from the NYSE halt are not mechanical artifacts; applying identical diff-in-diffs 
+analysis to data from days adjacent to the NYSE halt does not produce signiﬁcant results. Using data from July 7th, and 
+then July 9th, we repeat the analysis from Section 3.1 : For each stock, we calculate the average normalized measures 
+of depth in the period before the NYSE trading halt (9:30 a.m. – 11:30 a.m.), during the halt (11:30 a.m. –3 : 1 0 p.m.), 
+and after the halt (3:10 p.m. –4 : 0 0 p.m.). The “not during” period combines the “before” and “after” periods. The ﬁrst 
+column of the table reports the averages among the 980 NYSE-listed treatment stocks of the difference in liquidity 
+across the indicated time-periods, and the second column reports the analogous averages among the 922 non-NYSE- 
+listed control stocks. The third column reports the difference in these averages between the treatment group and the 
+control group. The fourth column reports the p -value associated with the null hypothesis that this diff-in-diffs equals 
+zero. The p -values are based on bootstrap distributions generated using data from the month of July 2015, excluding 
+July 6 (the day of the EDGX halt) and July 8 (the day of the NYSE halt). 
+Panel A: Normalized proportional quoted spread 
+Difference across periods Treatment diff minus Control diff
+Treatment Control Diff-in-diffs p -Value 
+July 7th 
+During minus Not 0 .086 0 .069 0 .017 0 .401 
+During minus Before 0 .097 0 .075 0 .022 0 .337 
+During minus After 0 .059 0 .054 0 .005 0 .796 
+July 9th 
+During minus Not −0 .030 −0 .034 0 .004 0 .844 
+During minus Before −0 .040 −0 .053 0 .013 0 .566 
+During minus After −0 .005 0 .013 −0 .018 0 .357 
+Panel B: Normalized proportional effective spread 
+Difference across periods Treatment diff minus Control diff
+Treatment Control Diff-in-diffs p -Value 
+July 7th 
+During minus Not 0 .095 0 .089 0 .006 0 .765 
+During minus Before 0 .106 0 .096 0 .010 0 .686 
+During minus After 0 .069 0 .072 −0 .003 0 .900 
+July 9th 
+During minus Not −0 .027 −0 .031 0 .004 0 .852 
+During minus Before −0 .037 −0 .049 0 .012 0 .640 
+During minus After −0 .003 0 .011 −0 .014 0 .512 
+
+===== PAGE 8 =====
+
+A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 659 
+“trading-venue shutdown” event. We address this remain- 
+ing possibility in the next subsection. 
+3.3. EDGX shutdown 
+The preceding sections establish that during the NYSE 
+trading halt on July 8, the NYSE-listed stocks that com- 
+prise our treatment group exhibited a signiﬁcant reduction 
+in liquidity relative to non-NYSE-listed stocks that com- 
+prise our control group. However, stocks were assigned to 
+the control-group or treatment-group on the basis of their 
+listing exchange, and ﬁrms’ choice of listing exchange is 
+not random. The fundamental concern, therefore, is that 
+our treatment stocks might be more sensitive to a gen- 
+eral “shutdown shock” than are our control stocks. We 
+address this concern by examining a separate exogenous 
+technology-related trading halt that occurred on the EDGX 
+platform two days prior to the NYSE glitch. The EDGX halt 
+allows us to directly observe how a trading-venue shut- 
+down affects the stocks in our sample. All of the stocks 
+in both our treatment group and our control group trade 
+on EDGX, so both groups were exposed to the EDGX shut- 
+down. 
+On July 6, 2015 at 9:41 a.m., EDGX suspended trad- 
+ing, saying in a note to customers that it was investigat- 
+ing “an issue related to platform modiﬁcations rolled out 
+today.” EDGX resumed trading at 10:20 a.m. 10 EDGX is the 
+fourth largest stock exchange in the United States. In the 
+last week of September 2015, EDGX covered 8.08% of con- 
+solidated trading volume, whereas NYSE covered 13.02% 
+trading volume in the same period. A shutdown of EDGX 
+is a nontrivial event (although we ﬁnd that the effects of 
+the July 6th shutdown were trivial). 
+We apply the same general methodology used in 
+Sections 3.1 and 3.2 to analyze the effects of the EDGX 
+shutdown. However, we now calculate the average nor- 
+malized measures of liquidity in the time period during 
+the EDGX shutdown (9:40:00 a.m. – 10:19:59 a.m.), and in 
+the complementary portion of the trading day. Because the 
+EDGX shutdown occurred so early in the day, we do not 
+separately examine the pre-shutdown and post-shutdown 
+periods, but instead combine them into a single “not dur- 
+ing the EDGX shutdown” period. 
+As shown in Panel A of Table 5 , we neither ﬁnd ev- 
+idence that spreads for the treatment-group stocks in- 
+creased more during the EDGX shutdown than did spreads 
+for the control-group stocks, nor do we ﬁnd evidence that 
+depth for the treatment-group stocks decreased more dur- 
+ing the EDGX shutdown than did depth for the control- 
+group stocks. 11 As shown in Panel B of Table 5 , repeat- 
+ing the EDGX analysis on placebo data from July 9th de- 
+livers increases in average spreads comparable to the in- 
+creases observed during the actual EDGX shutdown, for 
+10 Source: https://www.batstrading.com/alerts/72398/status/ . 
+11 Since the fraction of trading on EDGX is generally higher among the 
+control-group stocks than among the treatment-group stocks, we run a 
+cross-sectional regression to explicitly control for the typical fraction of 
+each stock’s trading that takes place on EDGX. We ﬁnd no evidence that 
+our results in this section are driven by differences in the fraction of trad- 
+ing on EDGX. 
+both control-group stocks and treatment-group stocks, in- 
+dependently. Results for depth and dollar depth (not re- 
+ported) are analogous. The EDGX shutdown seems to have 
+had almost no effect on the market as a whole. 
+The evidence from the EDGX shutdown indicates that 
+the results in Section 3.1 are not driven by some system- 
+atic difference in how the treatment-group and control- 
+group stocks react to a generic trading-venue shutdown, 
+but rather are driven by some effect unique to the shut- 
+down of the NYSE. 
+4. Distinguishing a DMM effect from a general NYSE 
+effect 
+In the case of the EDGX trading halt, shutting down one 
+exchange out of 11 had no signiﬁcant effect. By contrast, in 
+the case of the NYSE trading halt, shutting down one ex- 
+change out of 11 had a signiﬁcant effect: the NYSE shut- 
+down impaired liquidity for the treatment-group stocks. 
+However, this result could be driven by the fact that the 
+NYSE is the listing market for the treatment stocks. Despite 
+consistently losing market share to competing exchanges, 
+the NYSE remains the largest market center for its listed 
+stocks. The reduction of liquidity during the NYSE trad- 
+ing halt might simply have been the consequence of losing 
+the listing market. More generally, the decrease in liquid- 
+ity during the NYSE shutdown might reﬂect a consequence 
+of removing from the market some NYSE-speciﬁc feature 
+other than DMMs. Were that true, we would expect stocks 
+that ordinarily have a higher market share in the NYSE to 
+exhibit larger reduction in liquidity during the halt, but 
+holding ﬁxed NYSE market share, the level of DMM partic- 
+ipation would not matter. Conversely, if DMMs are respon- 
+sible (in part or in whole) for the observed liquidity effects, 
+those effects should be stronger among stocks where DMM 
+participation was ordinarily higher, ceteris paribus. 
+We use a proprietary data set obtained from the NYSE 
+to determine DMM participation rates for each of the 
+NYSE-listed stocks in our sample. The proprietary data set 
+reports the daily share-volume and dollar-volume traded 
+by the DMM for each NYSE-listed stock. We also know the 
+stock-level total daily volumes that execute on the NYSE, 
+so we can isolate the component of trading on the NYSE 
+where DMMs, as opposed to non-DMMs, participated. 
+4.1. Explanatory power of cross-sectional variation in DMM 
+participation rates 
+For each stock, we compute the average fraction of to- 
+tal trading volume, in shares, (across all exchanges and off- 
+exchange trading venues) that executed on the NYSE in the 
+three trading days preceding July 8. For stock i , we denote 
+this fraction by NYSEshare i . We decompose NYSEshare i into 
+a DMM component ( DMMshare i ) and a non-DMM com- 
+ponent ( NonDMMshare i ), then examine these two compo- 
+nents’ power to explain cross-sectional variation in the re- 
+ductions of liquidity that occurred during the July 8 trading 
+halt. 
+As before, we focus on normalized proportional quoted 
+spread and normalized proportional effective spread as our 
+measures of liquidity. For each stock, we construct the 
+
+===== PAGE 9 =====
+
+660 A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 
+Table 5 
+Liquidity differences and diffs-in-diffs from the EDGX halt. 
+Table 5 summarizes the results for diffs-in-diffs of various liquidity measures on July 6, 2015, the day of the EDGX 
+halt. Unlike the NYSE halt on July 8, the EDGX halt did not produce signiﬁcant differences in liquidity. To normalize 
+for intraday seasonality, we calculate the monthly average of the indicated measure for each stock during each of the 
+39 ten-minute time intervals of the trading day, then divide the values measured on July 6th by the corresponding 
+interval-stock monthly averages. We calculate the average normalized liquidity measures for the period during the 
+EDGX shutdown (9:40 a.m. –1 0 : 2 0 a.m.), and for the complementary portion of the trading day. The ﬁrst column 
+reports the averages among the treatment stocks of the difference in the indicated liquidity measure between the 
+“during-shutdown” and “not-during-shutdown” periods; the second column reports the analogous averages among the 
+control stocks. The third column reports the difference in these averages between the treatment group and the control 
+group. For spreads, we test the null hypothesis that the diff-in-diffs is less than or equal to zero , while for depths, we 
+test the null hypothesis that the diff-in-diffs is greater than or equal to zero . The fourth and ﬁfth columns report the p - 
+values associated with the indicated null hypothesis. The p -values are based on bootstrap distributions generated using 
+data from the month of July 2015, excluding July 6 and July 8. Panel A reports results for the actual day of the EDGX 
+halt, July 6th. To provide context, Panel B compares the results from July 6 against placebo-test results from July 7 and 
+July 9. 
+Panel A: EDGX halt 
+During minus Not during Treatment diff minus Control diff
+Treatment Control Mean p -Value p -Value 
+H 0 : DiD ≤0 H 0 : DiD ≥0 
+Proport. qtd spread −0.0045 0.0349 −0.0394 0.951 –
+Proport. eff spread 0.0 0 06 0.0445 –0.0438 0.956 –
+Depth 0.0383 0.0584 −0.0201 – 0.384  
+Dollar depth 0.0366 0.0530 –0.0164 –0 . 3 1 5  
+Panel B: EDGX halt vs. placebos 
+During minus not during Treatment diff minus control diff
+Treatment Control Mean p -Value 
+( H 0 : DiD ≤0) 
+Proport. qtd spread 
+Placebo, July 7 −0.1410 −0.1242 −0.0168 0.763 
+EDGX halt, July 6 −0.0045 0.0349 −0.0394 0.951 
+Placebo, July 9 0.0012 0.0223 −0.0211 0.817 
+Proport. eff spread 
+Placebo, July 7 −0.1330 −0.1200 −0.0130 0.691 
+EDGX halt, July 6 0.0 0 06 0.0445 −0.0438 0.956 
+Placebo, July 9 0.0082 0.0192 −0.0110 0.666 
+“during-halt minus before-halt” difference in the liquidity 
+measure, now denoting this difference generically by /Delta1i 
+for stock i . We estimate the following equation: 
+/Delta1i = β0 + β1 DM M share i + β2 NonDM M share i + ϵi . (1) 
+If the reduction in liquidity during the NYSE shutdown was 
+caused by the removal of DMMs from the market, rather 
+than the removal of some other NYSE-speciﬁc element, 
+then the coeﬃcient β1 on DMMshare should be signiﬁ- 
+cant and positive, and the coeﬃcient β2 on NonDMMshare 
+should not be signiﬁcant. This is precisely what we ﬁnd in 
+the data. 
+Table 6 reports the regression results. Column 1 shows 
+that stocks with higher DMM participation rates in the 
+days preceding the NYSE halt experienced larger increases 
+in proportional quoted spreads during the halt. However, 
+the non-DMM participation rate on the NYSE, pre-halt, is 
+not a signiﬁcant predictor of spread increases during the 
+halt. Column 4 shows that the results for effective spreads 
+are analogous. 
+4.2. Robustness checks 
+To verify the robustness of the preceding regression 
+results, we re-run regression (1) with additional control 
+variables that have been indicated previously to correlate 
+with DMM participation. Speciﬁcally, we include the fol- 
+lowing for each stock: its price, the logarithm of its mar- 
+ket capitalization, the number of analysts who follow it, 
+and its information-share on the NYSE relative to all other 
+exchanges combined. We include these extra variables to 
+better distinguish the effects of cross-sectional variation 
+in DMMshare from the effects of cross-sectional variation 
+along other dimensions. We estimate 
+/Delta1i = β0 + β1 DM M share i + β2 NonDM M share i + x ′ 
+i β3 + ϵi , 
+(2) 
+where x i denotes the vector of stock-speciﬁc controls, and 
+β3 denotes the associated vector of coeﬃcients. 12 
+We include price because the DMMs that we consider 
+would generally be classiﬁed as HFTs, and both O’Hara, 
+Saar and Zhong (2015) and Yao and Ye (2015) ﬁnd that 
+HFTs are more likely to provide liquidity to low-priced 
+stocks. Bessembinder, Hao and Zheng (2015) ﬁnd that 
+small ﬁrms and ﬁrms with greater information asymme- 
+try would be more likely to beneﬁt from DMMs; we there- 
+fore include ﬁrm size (i.e., log market cap) and, following 
+12 We thank Hank Bessembinder for suggesting this approach. 
+
+===== PAGE 10 =====
+
+A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 661 
+Table 6 
+Explanatory power of DMM vs. non-DMM participation rates for liquidity reduction during NYSE halt. 
+Table 6 reports results from cross-sectional regressions of “during-NYSE-halt minus before-NYSE-halt” differences in 
+spread, on stock-by-stock measures of DMM and non-DMM participation prior to the NYSE trading halt on July 8, 
+2015, along with a variety of additional control variables. The sample consists of the 980 treatment-group stocks. The 
+variable DMMshare measures the ratio of DMM volume in a given stock to total consolidated volume in that stock, 
+and the variable NonDMMshare measures the analogous ratio for the remainder of volume on the NYSE. Both of these 
+measures are calculated using data from the three trading days preceding July 8, 2015. The variable price is the stock’s 
+average closing price; logmktcap is the logarithm of the stock’s market capitalization; Analystcover is the number of 
+analysts following the stock; InfoShrNYSE is the NYSE’s information share for the stock (the average of the estimated 
+minimum and maximum bounds). Standard errors are in parentheses. ∗∗∗ , ∗∗, and ∗ indicate the statistical signiﬁcance 
+at the 1%, 5%, and 10% levels, respectively. 
+Diff in normalized qtd spread Diff in normalized eff spread 
+(1) (2) (3) (4) (5) (6) 
+DMMshare 1 .931 ∗∗∗ 2 .032 ∗∗∗ 1 .353 ∗∗∗ 1 .458 ∗∗∗
+(0 .197) (0 .192) (0 .263) (0 .261) 
+NonDMMshare −0 .675 0 .589 −0 .482 0 .679 
+(0 .656) (0 .668) (0 .876) (0 .907) 
+NYSEshare 1 .853 ∗∗∗ 1 .362 ∗∗∗
+(0 .170) (0 .230) 
+Price 0 .002 ∗∗∗ 0 .002 ∗∗∗ 0 .001 ∗∗∗ 0 .002 ∗∗∗
+(0 .0 0 02) (0 .0 0 02) (0 .0 0 03) (0 .0 0 03) 
+Logmktcap −0 .006 −0 .008 −0 .018 −0 .019 
+(0 .010) (0 .010) (0 .013) (0 .013) 
+Analystcover −0 .002 −0 .002 −0 .001 −0 .001 
+(0 .002) (0 .002) (0 .002) (0 .002) 
+InfoShrNYSE −0 .188 ∗∗ −0 .176 ∗ −0 .162 −0 .155 
+(0 .091) (0 .091) (0 .124) (0 .124) 
+Constant −0 .057 −0 .016 −0 .015 0 .009 0 .135 0 .135 
+(0 .038) (0 .087) (0 .087) (0 .050) (0 .118) (0 .118) 
+Adjusted R 2 0 .092 0 .139 0 .137 0 .027 0 .048 0 .048 
+Anand, Tanggaard and Weaver (2009) , include number of 
+analysts as a proxy for information asymmetry. 
+Hasbrouck (1995) ﬁnds that the majority of price dis- 
+covery among NYSE-listed stocks occurred on the NYSE, 
+and a valid concern is that liquidity providers might have 
+held back during the NYSE halt if they thought that price 
+discovery were compromised. To address this possibility, 
+we include the NYSE information share for each stock as 
+a stock-speciﬁc measure of the NYSE’s importance to price 
+discovery. Appendix C presents full implementation de- 
+tails. The ( Hasbrouck, 1995 ) methodology for computing 
+information share produces estimates of the upper and 
+lower bounds on the NYSE information share for each 
+stock. Following ( Baillie, Booth, Tse and Zabotina, 2002 ) 
+and Chakravarty, Gulen and Mayhew (2004) , we use the 
+average of the upper and lower bounds. In unreported re- 
+sults, we verify that the coeﬃcients on DMMshare and 
+NonDMMshare are not sensitive to the choice of upper 
+bound vs. lower bound vs. average. 
+Table 6 displays the estimates from these expanded re- 
+gressions. The results for quoted spreads (Column 2) are 
+comparable to those for effective spreads (Column 5). Al- 
+though the additional control variables add signiﬁcant ex- 
+planatory power, the key results from our earlier regres- 
+sions are unchanged. The coeﬃcient on DMMshare remains 
+positive and highly statistically signiﬁcant, while the coef- 
+ﬁcient on NonDMMshare remains statistically insigniﬁcant 
+by a wide margin. 
+We also run the following regressions: 
+/Delta1i = α0 + α1 NY SEshare i + x ′ 
+i α2 + ϵi , (3) 
+where x i again denotes the vector of stock-speciﬁc con- 
+trols, and α2 denotes the associated vector of coeﬃcients. 
+That is, we regress the changes in liquidity during the 
+NYSE shutdown on pre-halt NYSE market share in each 
+stock. Columns 3 and 6 of Table 6 report the results for 
+Eq. (3) . Absent further decomposition, pre-halt NYSE mar- 
+ket share appears to be a signiﬁcant predictor for increases 
+in quoted and effective spreads during the NYSE halt. How- 
+ever, the results for Eq. (2) , displayed in Columns 2 and 5, 
+reveal that the DMM component of pre-halt NYSE market 
+share subsumes this predictive power. Pre-halt NYSE mar- 
+ket share appears to matter only to the extent that it prox- 
+ies for pre-halt DMM participation. 
+Collectively, the ﬁndings in this section are consistent 
+with the idea that the liquidity effects observed during 
+the NYSE shutdown were driven by the removal of DMMs, 
+rather than by the removal of the NYSE per se. 
+5. Additional cross-sectional results 
+Sections 3.1 and 4 present our central ﬁndings, namely, 
+evidence consistent with the notion that DMMs cause a 
+substantial improvement in liquidity. In this section we 
+broaden the scope of our analysis, using the exogenous 
+variation from the NYSE glitch in combination with the 
+proprietary data set to document new stylized facts about 
+cross-sectional patterns of modern DMMs’ participation, 
+and to obtain new empirical evidence concerning the types 
+of stocks for which DMM participation appears to matter 
+most. 
+
+===== PAGE 11 =====
+
+662 A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 
+Table 7 
+Patterns of cross-sectional variation in DMM liquidity provision. 
+Table 7 reports regression results concerning factors that explain cross- 
+sectional variation in the DMM participation rate. The variable DMMshare 
+NY SEshare 
+measures the ratio of DMM volume in a given stock to the NYSE volume 
+in that stock. The sample consists of the 980 treatment-group stocks. The 
+variable DMMshare measures the ratio of DMM volume in a given stock to 
+total consolidated volume in that stock. Both of these measures are cal- 
+culated using data from the three trading days preceding the July 8, 2015 
+NYSE halt. (The logarithms of these measures are used as the dependent 
+variables in the regressions, so that the regression coeﬃcients can be in- 
+terpreted as elasticities or semi-elasticities.) The variable log_price is the 
+logarithm of the stock’s average closing price; logmktcap is the logarithm 
+of the stock’s market capitalization; Analystcover is the number of ana- 
+lysts following the stock. Standard errors are given in parentheses. ∗∗∗ , ∗∗, 
+and ∗ indicate the statistical signiﬁcance at the 1%, 5%, and 10% levels, 
+respectively. 
+log 
+(DMMshare 
+NY SEshare 
+)
+log ( DMMshare ) 
+(1) (2) 
+Log_price 0.0413 ∗∗∗ −0.0446 ∗∗∗
+(0.0031) (0.0141) 
+Logmktcap −0.0102 ∗∗∗ 0.0338 ∗∗∗
+(0.0022) (0.0100) 
+Analystcover 0.0 0 05 −0.0023 
+(0.0 0 03) (0.0015) 
+Constant −0.1718 ∗∗∗ −1.8066 ∗∗∗
+(0.0127) (0.0578) 
+Adjusted R 2 0.1678 0.0128 
+5.1. Cross-sectional patterns in DMM participation 
+The six current NYSE DMMs, based on their ﬁrm iden- 
+tity, would typically be categorized as HFTs. In the con- 
+text of the Nasdaq market for common stocks (where no 
+traders, HFTs included, face market-making obligations), 
+Yao and Ye (2015) and Brogaard, Hendershott and Rior- 
+dan (2014) ﬁnd that the HFT participation rate is higher 
+for large stocks; Yao and Ye (2015) also ﬁnd that HFT liq- 
+uidity provision is higher for low-priced securities. We in- 
+vestigate whether DMMs’ pattern of participation differs 
+from that of “normal” HFTs, and whether the differential 
+liquidity outcomes caused by DMMs versus other liquidity 
+providers can be well-explained by the cross-sectional pat- 
+tern of DMMs’ participation. 
+Table 7 presents the results from regressions of DMM 
+participation rate on price, market cap, and analyst cover- 
+age. Analyst coverage is included to help control for vari- 
+ation in informational asymmetry. We use logarithms so 
+that the regression coeﬃcients can be interpreted as elas- 
+ticities or semi-elasticities 
+log ( participation i ) = η0 + η1 log ( price i ) 
++ η2 log ( marketcap i ) + η3 Analystcov er i + ϵi . (4) 
+In the ﬁrst column of Table 7 , the dependent variable is 
+the logarithm of the ratio of DMM volume in a given stock 
+to total NYSE volume in that stock, i.e., log 
+(
+DM M share i 
+NY SEshare i 
+)
+in 
+our previous notation. In the second column, the depen- 
+dent variable is the logarithm of the ratio of DMM volume 
+in a given stock to total consolidated volume in that stock, 
+i.e., the logarithm of the variable DMMshare i considered in 
+Section 4 . Both of these measures are calculated using data 
+from the three trading days preceding July 8, 2015. 
+The regression reveals two interesting facts. The ﬁrst 
+column of Table 7 shows that within the microcosm of the 
+NYSE, DMMs’ pattern of participation appears to run op- 
+posite to that of typical HFTs. Relative to other traders on 
+the NYSE, DMMs participate more heavily in stocks with 
+higher prices and smaller market caps. However, for the 
+purposes of understanding the changes in liquidity during 
+the NYSE shutdown, the relevant measure is DMMs’ partic- 
+ipation relative to that of traders in the market as a whole. 
+As shown in the second column of Table 7 , the picture 
+ﬂips when we consider this latter measure. In this more 
+comprehensive context, DMMs’ participation pattern actu- 
+ally appears analogous to that of “normal” HFTs, in that 
+DMMs participate proportionally more in larger stocks, and 
+in stocks with lower prices. At least by this broad-brush 
+measure, the stocks for which DMMs participate in greater 
+fractions of total trading are generally the same sorts of 
+stocks that one would expect to have high levels of volun- 
+tary HFT liquidity provision. 
+5.2. Cross-sectional patterns in DMM importance 
+In a recent theoretical analysis, Bessembinder, Hao and 
+Zheng (2015) demonstrate that competitive market liquid- 
+ity provision can be suboptimal when fundamental uncer- 
+tainty and information asymmetry are large. They suggest 
+that DMMs are more important for small ﬁrms and ﬁrms 
+with high informational asymmetry. Anand and Venkatara- 
+man (2016) argue that voluntary liquidity provision suﬃces 
+when it is adequately proﬁtable, and that DMMs provide 
+comparatively more liquidity when proﬁtability is lower. 
+These results on liquidity do not align cleanly with our 
+ﬁndings concerning cross-sectional patterns of DMM par- 
+ticipation. We ﬁnd that DMMs tend to participate in a 
+greater fraction of market-wide trading for large-cap stocks 
+than for small-cap stocks, we ﬁnd no signiﬁcant variation 
+in DMM participation rates as a function of analyst cover- 
+age, and we ﬁnd DMM participation to be higher relative 
+to total volume for lower-priced stocks (which have larger 
+relative tick-sizes and therefore offer greater potential for 
+liquidity providers to earn rents). In this subsection, we di- 
+rectly examine cross-sectional patterns in the importance 
+of DMMs for liquidity, more speciﬁcally for spreads, and 
+compare the results to those in the literature. 
+To analyze the cross-sectional patterns in the effect of 
+DMM participation on spreads, controlling for the amount 
+of DMM participation, we run regressions of “during- 
+NYSE-halt minus before-NYSE-halt” differences in nor- 
+malized proportional quoted spreads ( /Delta1i ), on DMMshare , 
+price, log market-cap, analyst coverage, and the interaction 
+terms price × DMMshare, logmktcap × DMMshare , and Ana- 
+lystcover × DMMshare . Results for normalized proportional 
+effective spreads are comparable to those for normalized 
+proportional quoted spreads, so we omit the former for 
+brevity. 
+Table 8 reports results from these regressions. Column 
+1 of Table 8 displays results from the regression with no 
+interaction terms or DMMshare , 
+/Delta1i = φ0 + φ1 price i + φ2 lo gmktcap i 
++ φ3 Analystcov er i + ϵi , (5) 
+
+===== PAGE 12 =====
+
+A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 663 
+Table 8 
+NYSE-halt liquidity reduction: effects of market cap, price, analyst coverage, DMM participation, and inter- 
+actions. 
+Table 8 reports results from cross-sectional regressions of “during-NYSE-halt minus before-NYSE-halt”
+differences in normalized proportional quoted spreads, on a measure of DMM participation prior to the 
+NYSE trading halt ( DMMshare ), the logarithm of stock market cap ( logmktcap ), average closing stock price 
+( price ), the number of analysts following the stock ( Analystcover ), and the interaction terms of DMMshare 
+with each of the other three variables. The sample consists of the 980 treatment-group stocks. The variable 
+DMMshare i represents the average ratio of DMM volume in stock i to total consolidated volume in stock i 
+during the three trading days preceding the halt on July 8th, 2015. Standard errors are in parentheses. ∗∗∗ , 
+∗∗, and ∗ indicate the statistical signiﬁcance at the 1%, 5%, and 10% levels, respectively. 
+(1) (2) (3) (4) (5) 
+Price 0 . 001 ∗∗∗ −0 . 001 
+(0.0 0 02) (0.001) 
+Logmktcap 0.008 −0 . 013 
+(0.010) (0.010) 
+Analystcover −0 . 003 ∗ −0 . 002 
+(0.002) (0.002) 
+DMMshare 1 . 254 ∗∗∗ 1 . 618 ∗∗∗ 2 . 257 ∗∗∗ 1 . 751 ∗∗∗
+(0.296) (0.188) (0.360) (0.196) 
+Price × 0 . 017 ∗∗∗ 0 . 009 ∗∗∗ 0 . 010 ∗∗∗ 0 . 010 ∗∗∗
+DMMshare (0.005) (0.001) (0.001) (0.001) 
+Logmktcap ×− 0 . 082 ∗∗
+DMMshare (0.034) 
+Analystcover × −0 . 015 ∗∗
+DMMshare (0.007) 
+Constant 0 . 265 ∗∗∗ 0.084 −0 . 100 ∗∗∗ −0 . 106 ∗∗∗ −0 . 099 ∗∗∗
+(0.062) (0.091) (0.036) (0.036) (0.036) 
+Adjusted R 2 0.031 0.146 0.139 0.142 0.143 
+which serves as a benchmark. The coeﬃcient φ2 on log 
+market-cap is not signiﬁcant. The coeﬃcients φ1 on price 
+and φ3 on analyst coverage, respectively, are signiﬁcant, 
+but this signiﬁcance vanishes when we include DMMshare 
+and the interaction term price × DMMshare in the regres- 
+sion, as shown in Column 2 of Table 8 . 
+Given these indications that price, log market-cap, 
+and analyst coverage (not interacted with DMMshare ) do 
+not signiﬁcantly affect the regressions when DMMshare 
+and price × DMMshare are present, for expositional clar- 
+ity we focus our main analysis on speciﬁcations with just 
+DMMshare and interaction terms: 
+/Delta1i = ϕ 0 + ϕ 1 DM M share i + ϕ 2 ( price × DM M share ) i + ϵi 
+(6) 
+/Delta1i = θ0 + θ1 DM M share i + θ2 ( price × DM M share ) i 
++ θ3 ( lo gmktcap × DM M share ) i + ϵi (7) 
+/Delta1i = ϑ 0 + ϑ 1 DM M share i + ϑ 2 ( price × DM M share ) i 
++ ϑ 3 ( Analystcov er × DM M share ) i + ϵi . (8) 
+Columns 3, 4, and 5 of Table 8 report the results for 
+these interaction-term speciﬁcations. The coeﬃcient ϕ2 on 
+the interaction price × DMMshare is positive and signiﬁcant, 
+while the respective coeﬃcients θ3 and ϑ3 on the interac- 
+tions logmktcap × DMMshare and Analystcover × DMMshare 
+are each negative and signiﬁcant. These ﬁndings suggest 
+that after controlling for the level of pre-halt DMM par- 
+ticipation, DMMs’ effect on spreads is stronger for higher- 
+priced stocks, smaller stocks, and stocks with more infor- 
+mational asymmetry (less analyst coverage). 
+The ﬁndings regarding market cap and analyst cover- 
+age support the conclusions of Bessembinder, Hao and 
+Zheng (2015) . Our ﬁnding regarding price likewise sup- 
+ports the conclusions of Anand and Venkataraman (2016) . 
+Even though the DMMs tend to be less prominent liq- 
+uidity providers in terms of volume-share among higher- 
+priced stocks and smaller stocks, DMMs’ participation has 
+stronger impact on spreads in those stocks. A natural ex- 
+planation for this effect would be time-series variation in 
+DMMs’ participation, for example, providing tighter quotes 
+on the occasions when voluntary liquidity providers tem- 
+porarily withdraw from the market. Anand and Venkatara- 
+man (2016) ﬁnd precisely this sort of behavior in the con- 
+text of the Toronto Stock Exchange. 
+More broadly, the results in this subsection again un- 
+derscore the notion that, despite superﬁcial similarities, 
+DMMs and voluntary liquidity providers do not play inter- 
+changeable roles in modern markets. 
+6. Why do DMMs matter to the extent that they do? 
+Although the loss of DMMs during the NYSE halt may 
+have caused a degradation of liquidity among NYSE-listed 
+stocks, the loss did not obliterate the markets for those 
+stocks, as it likely would have done a decade ago. DMMs 
+may not be irrelevant, but neither are they indispens- 
+able under ordinary conditions. During the period that we 
+examine, DMMs’ quantiﬁable obligations with respect to 
+maintaining “reasonable quotes” would not have been re- 
+motely binding. 13 Why then could DMMs cause spreads to 
+narrow signiﬁcantly? 
+13 See NYSE Rule 104(a)(1)(B) in Appendix B. 
+
+===== PAGE 13 =====
+
+664 A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 
+We begin by ruling out the two most obvious poten- 
+tial explanations, namely, the formal pressure on DMMs to 
+quote at the NBBO a speciﬁed percentage of the time, and 
+the liquidity rebates that DMMs receive from the NYSE. 
+The NYSE uses the following measures to monitor a 
+DMM’s performance: the fraction of time that the DMM 
+quotes at the NBBO, the DMM’s average size at the NBBO 
+relative to combined NYSE size, and the DMM’s executed 
+liquidity-providing volume. However, DMMs’ obligations 
+and inducements to quote at the NBBO a speciﬁed percent- 
+age of the time fail to provide a satisfactory explanation 
+for the signiﬁcant reduction of liquidity during the NYSE 
+trading halt. The same holds true for obligations to quote 
+some particular minimum size at the NBBO. Quoting at the 
+NBBO does not, in itself, narrow the spread, but rather in- 
+creases depth at the NBBO prices. Had we observed neg- 
+ligible increases in spreads but a reduction in depth dur- 
+ing the NYSE shutdown, those effects could have been ex- 
+plained in terms of DMMs’ obligations to post quotes at 
+the NBBO. However, during the shutdown, the reduction of 
+liquidity took a very different form, namely, a widening of 
+spreads. 
+Next, although the NYSE offers higher liquidity rebates 
+to DMMs than to non-DMMs, the magnitudes involved are 
+far too small to directly explain the spread results. At the 
+time of the NYSE shutdown, DMMs could earn liquidity re- 
+bates as high as 34 cents per 100 shares, while the high- 
+est rebate that non-DMMs could earn was 29 cents per 
+100 shares. 14 The mean quoted spread among treatment- 
+group stocks between 11:30 a.m. and 3:10 p.m. on days 
+other than July 8th was roughly 3.8 cents, so the ≈22% 
+increase in spreads during the NYSE halt translates to an 
+average increase of approximately 0.85 cents. Even in the 
+extreme hypothetical scenario where DMMs earned the 
+maximum liquidity rebate on every trade, and liquidity 
+suppliers on other exchanges earned the standard 0.305- 
+cent-per-share liquidity rebate offered on Nasdaq, the ob- 
+served spread-increase exceeds by a factor of nearly ten 
+the ( 0 . 34 −0 . 305 ) × ( 2 sides ) = 0 . 07 cents per share that 
+could be mechanically explained through rebates. 15 Still 
+less can be explained if we relax the implausible assump- 
+tion that DMMs earn the maximum rebate on every trade. 
+The inadequacy of these two obvious potential ex- 
+planations suggests the legitimate signiﬁcance of DMMs’ 
+more nebulous obligations, such as maintaining a fair and 
+orderly market in their stocks. Since these obligations 
+are rather subjective, their strong apparent inﬂuence on 
+DMMs’ behavior is somewhat surprising. Maintaining high 
+market quality entails some cost, and the broad wording of 
+these DMM obligations seems to leave considerable scope 
+for shirking, as does the narrowly circumscribed set of 
+quantitative criteria on which the NYSE evaluates DMMs’ 
+performance. 
+The manner in which NYSE DMMs compete with one 
+another might contribute to giving the DMMs’ broadly 
+worded obligations some independent bite. There is only 
+ever one DMM per NYSE stock, so DMMs do not com- 
+14 Source: New York Stock Exchange Price List, July 1, 2015. 
+15 Source: SR-NASDAQ-2014-124. 
+pete directly with each other in any single stock. Never- 
+theless, DMMs do compete. Securities are allocated to a 
+DMM when a security is to be initially listed on the NYSE, 
+and DMMs compete to obtain these allocations. Because 
+DMMs cannot explicitly compete on price, they must in- 
+stead compete on their record and reputation for maintain- 
+ing high market quality in the stocks assigned to them. 16 
+Consequently, to the extent that winning additional alloca- 
+tions is valuable, a DMM could obtain “reputational” bene- 
+ﬁts from improving market quality for its stocks, above and 
+beyond any immediate beneﬁts such as rebates. This could 
+give DMMs an incentive to improve market quality in their 
+stocks, even if doing so reduces the DMMs’ respective prof- 
+its in those stocks. The reduction in a DMM’s proﬁts per 
+stock could be offset by an increase in the expected num- 
+ber of allocations that the DMM will receive in the future. 
+While the reputation/competition channel sketched 
+above is just one of many possibilities, it illustrates 
+that unexpectedly signiﬁcant effects arising from DMMs’ 
+broadly worded obligations might be explicable through 
+familiar economic mechanisms. Analyses of how and why 
+apparently mild and diﬃcult-to-monitor DMM obligations 
+could improve market quality may offer fruitful avenues 
+for future investigation. 
+7. Conclusion 
+The NYSE trading halt on July 8, 2015 caused substantial 
+reductions in liquidity among stocks that would ordinarily 
+trade on the NYSE relative to stocks that never trade on the 
+NYSE. This result is unusual because ten other exchanges 
+remained open during the NYSE halt. Indeed, an unre- 
+lated technological glitch forced the temporary shutdown 
+of EDGX just two days before the NYSE halt, and there was 
+no analogous loss of liquidity then. Despite being just one 
+exchange among 11, the NYSE is not redundant. It has a 
+distinctive element that signiﬁcantly improves liquidity. 
+To distinguish the effect of DMMs from that of other 
+features unique to the NYSE, we examine determinants of 
+the cross-sectional variation in liquidity reduction among 
+NYSE-listed stocks during the NYSE shutdown. For each 
+stock, we compute the NYSE’s market share of trading vol- 
+ume during the days leading up to July 8, then use propri- 
+etary data to separate the NYSE market share into a DMM 
+component and a non-DMM component. We ﬁnd that 
+stocks with higher DMM participation experience larger in- 
+creases in quoted and effective spreads during the NYSE 
+trading halt; after controlling for the DMM component, the 
+remainder of NYSE market share does not help to explain 
+cross-sectional variation. The result is robust to the inclu- 
+sion of a variety of stock-speciﬁc controls. These ﬁndings 
+are consistent with the idea that the liquidity effects can 
+be attributed to DMM participation. 
+16 Financial Industry Regulatory Authority (FINRA) Rule 5250 states, “No 
+member or person associated with a member shall accept any payment 
+or other consideration, directly or indirectly, from an issuer of a security, 
+or any aﬃliate or promoter thereof, for publishing a quotation, acting as 
+market maker in a security, or submitting an application in connection 
+therewith.”
+
+===== PAGE 14 =====
+
+A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 665 
+Our results provide evidence consistent with the con- 
+tinued signiﬁcance of DMMs in modern U.S. markets, de- 
+spite the proliferation of voluntary liquidity-providers. The 
+presence of traders with formal market-making obliga- 
+tions, even seemingly small and mild obligations, may 
+cause meaningful improvements in liquidity. 
+Appendix A. Designated market makers’ privileges 
+Historically, specialists could observe an order ﬁrst, be- 
+fore the market could do so. Therefore, the specialists had 
+the ability to handle some portion of the order prior to 
+the market. In 2008, NYSE removed the ﬁrst-look advan- 
+tage. DMMs now have three privileges. First, the NYSE 
+provides more generous rebates to DMMs for providing 
+liquidity. At the time of the NYSE shutdown on July 8, 
+2015, DMMs could earn rebates as high as 34 cents per 
+100 shares, while the highest rebate that non-DMMs could 
+earn was 29 cents per 100 shares. Second, DMMs also re- 
+ceive market data quote revenue and ﬂat monthly fees per 
+symbol in less-active securities, based on market-quality 
+performance. Third, instead of yielding to public limit or- 
+ders at the same price, as specialists were obligated to do 
+prior to 2008, DMMs currently have slightly more prior- 
+ity than each individual limit-order submitter on the book. 
+The privilege comes from the NYSE priority-parity alloca- 
+tion rule for orders at the same price. This rule ﬁrst di- 
+vided traders into three types: the DMM for the stock, 
+ﬂoor brokers, and electronic book. Each single ﬂoor broker 
+and the DMM constitute individual participants, whereas 
+all orders represented in the limit-order book in aggre- 
+gate constitute a single participant. The orders submitted 
+to the limit-order book are executed by means of time pri- 
+ority with respect to entry. If a participant is the unique 
+provider of the best bid and offer (BBO), the participant 
+is awarded the priority and obtains 15% of incoming mar- 
+ket orders or a minimum of one round lot, whichever is 
+greater. After that, the remainder size of the market order 
+shall be allocated to each participant on parity. Therefore, 
+DMMs do not need to yield to public limit orders that were 
+entered earlier, unless the public limit order was the ﬁrst 
+one to set BBO, whereas a public limit order needs to yield 
+to other limit orders with time priority. 
+Appendix B. Selected NYSE Rules 17 
+NYSE Rule 104. Dealings and Responsibilities of 
+DMMs 
+104(a) DMMs registered in one or more securities 
+traded on the Exchange must engage in a course of deal- 
+ings for their own account to assist in the maintenance of 
+a fair and orderly market insofar as reasonably practica- 
+ble. The responsibilities and duties of a DMM speciﬁcally 
+include, but are not limited to, the following: 
+(1) Assist the Exchange by providing liquidity as needed 
+to provide a reasonable quotation and by maintaining a 
+17 The text in this Appendix, including labeling of rule subsections, is 
+quoted directly from the NYSE Rules, available at the time of this writing 
+at http://nyserules.nyse.com/NYSE/Rules/ . All rights belong to the copy- 
+right holder. 
+continuous two-sided quote with a displayed size of at 
+least one round lot. 
+(A) With respect to maintaining a continuous two-sided 
+quote with reasonable size, DMM units must maintain a 
+bid or an offer at the National Best Bid and National Best 
+Offer (“inside”) at least 15% of the trading day for secu- 
+rities in which the DMM unit is registered with a con- 
+solidated average daily volume of less than one million 
+shares, and at least 10% for securities in which the DMM 
+unit is registered with a consolidated average daily volume 
+equal to or greater than one million shares. Time at the in- 
+side is calculated as the average of the percentage of time 
+the DMM unit has a bid or offer at the inside. In calcu- 
+lating whether a DMM is meeting the 15% and 10% mea- 
+sure, credit will be given for executions for the liquidity 
+provided by the DMM. Reserve or other hidden orders en- 
+tered by the DMM will not be included in the inside quote 
+calculations. 
+(B) Pricing Obligations. For NMS stocks (as deﬁned in 
+Rule 600 under Regulation NMS) a DMM shall adhere to 
+the pricing obligations established by this Rule during the 
+trading day; provided, however, that such pricing obliga- 
+tions (i) shall not commence during any trading day un- 
+til after the ﬁrst regular way transaction on the primary 
+listing market in the security, as reported by the responsi- 
+ble single plan processor, and (ii) shall be suspended dur- 
+ing a trading halt, suspension, or pause, and shall not re- 
+commence until after the ﬁrst regular way transaction on 
+the primary listing market in the security following such 
+halt, suspension, or pause, as reported by the responsible 
+single plan processor. 
+(i) Bid and Offer Quotations. At the time of entry of the 
+DMM’s bid (offer) interest, the price of the bid (offer) in- 
+terest shall be not more than the Designated Percentage 
+away from the then current National Best Bid (Offer), or if 
+no National Best Bid (Offer), not more than the Designated 
+Percentage away from the last reported sale from the re- 
+sponsible single plan processor. In the event that the Na- 
+tional Best Bid (Offer) (or if no National Best Bid (Offer), 
+the last reported sale) increases (decreases) to a level that 
+would cause the bid (offer) interest to be more than the 
+Deﬁned Limit away from the National Best Bid (Offer) (or 
+if no National Best Bid (Offer), the last reported sale), or 
+if the bid (offer) is executed or cancelled, the DMM shall 
+enter new bid (offer) interest at a price not more than 
+the Designated Percentage away from the then current Na- 
+tional Best Bid (Offer) (or if no National Best Bid (Offer), 
+the last reported sale), or identify to the Exchange current 
+resting interest that satisﬁes the DMM’s obligation accord- 
+ing to paragraph (1)(A), above. 
+(ii) The National Best Bid and Offer shall be determined 
+by the Exchange in accordance with its procedures for de- 
+termining protected quotations under Rule 600 under Reg- 
+ulation NMS. 
+(iii) For purposes of this Rule, the “Designated Percent- 
+age” shall be 8% for securities subject to Rule 80C(a)(i), 28% 
+for securities subject to Rule 80C(a)(ii), and 30% for secu- 
+rities subject to Rule 80C(a)(iii), except that between 9:30 
+a.m. and 9:45 a.m. and between 3:35 p.m. and the close of 
+trading, when Rule 80C is not in effect, the Designated Per- 
+centage shall be 20% for securities subject to Rule 80C(a)(i), 
+
+===== PAGE 15 =====
+
+666 A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 
+28% for securities subject to Rule 80C(a)(ii), and 30% for se- 
+curities subject to Rule 80C(a)(iii). 
+(iv) For purposes of this Rule, the “Deﬁned Limit” shall 
+be 9.5% for securities subject to Rule 80C(a)(i), 29.5% for 
+securities subject to Rule 80C(a)(ii), and 31.5% for securi- 
+ties subject to Rule 80C(a)(iii), except that between 9:30 
+a.m. and 9:45 a.m. and between 3:35 p.m. and the close of 
+trading, when Rule 80C is not in effect, the Deﬁned Limit 
+shall be 21.5% for securities subject to Rule 80C(a)(i), 29.5% 
+for securities subject to Rule 80C(a)(ii), and 31.5% for secu- 
+rities subject to Rule 80C(a)(iii). 
+Nothing in this Rule shall preclude a DMM from quoting 
+at price levels that are closer to the National Best Bid and 
+Offer than the levels required by this Rule. 
+(2) Facilitate openings and reopenings, including the 
+Midday Auction, for each of the securities in which the 
+DMM is registered as required under Exchange rules. This 
+may include supplying liquidity as needed. (See Rule 123D 
+for additional responsibilities of DMMs with respect to 
+openings and Rule 13 with respect to Reserve Order inter- 
+est procedures at the opening.) DMM and DMM unit algo- 
+rithms will have access to aggregate order information in 
+order to comply with this requirement. (See Supplemen- 
+tary Material .05 of this 104 with respect to odd-lot order 
+information to the DMM unit algorithm.) 
+(3) Facilitate the close of trading for each of the 
+securities in which the DMM is registered as required 
+by Exchange rules. This may include supplying liquidity 
+as needed. (See Rule 123C for additional responsibilities 
+of DMMs with respect to closes and Rule 13 with re- 
+spect to Reserve Order interest procedures at the close.) 
+DMM and DMM unit algorithms will have access to ag- 
+gregate order information in order to comply with this 
+requirement. 
+... 
+104(f) Functions of DMMs 
+(i) Any member who expects to act as a DMM in any 
+listed stock must be registered as a DMM. See Rule 103 for 
+registration requirements for DMMs. 
+(ii) The function of a member acting as a DMM on the 
+Floor of the Exchange includes the maintenance, in so far 
+as reasonably practicable, of a fair and orderly market on 
+the Exchange in the stocks in which he or she is so acting. 
+The maintenance of a fair and orderly market implies the 
+maintenance of price continuity with reasonable depth, to 
+the extent possible consistent with the ability of partici- 
+pants to use reserve orders, and the minimizing of the ef- 
+fects of temporary disparity between supply and demand. 
+In connection with the maintenance of a fair and orderly 
+market, it is commonly desirable that a member acting as 
+DMM engage to a reasonable degree under existing cir- 
+cumstances in dealings for the DMM’s own account when 
+lack of price continuity, lack of depth, or disparity between 
+supply and demand exists or is reasonably to be antici- 
+pated. 
+(iii) The Exchange will supply DMMs with suggested 
+Depth Guidelines for each security in which a DMM is 
+registered. The administration of the Depth Guidelines will 
+be contained in notices periodically issued to all DMMs. 
+In connection with a DMM’s responsibility to maintain a 
+fair and orderly market, DMMs will be expected to quote 
+and trade with reference to the Depth Guidelines where 
+necessary. 
+(iv) DMMs are designated as market maker on the Ex- 
+change for all purposes under the Securities Exchange Act 
+of 1934 and the rules and regulations thereunder. 
+Appendix C. Calculating the NYSE information share 
+For each stock-day, we build two price series with one- 
+second time resolution, one from NYSE and the other from 
+all other exchanges as a whole (non-NYSE). 18 Based on 
+these two price series (NYSE and non-NYSE), we estimate 
+the Vector Error Correction Model (VECM) set forth by 
+Hasbrouck (1995) : 
+/Delta1p 1 ,t = 
+K ∑  
+i =1 
+α1 ,i /Delta1p 1 ,t−i + 
+K ∑  
+i =1 
+β1 ,i /Delta1p 2 ,t−i 
++ γ1 ( p 1 ,t−1 − p 2 ,t−1 − μ) + ϵ1 ,t 
+/Delta1p 2 ,t = 
+K ∑  
+i =1 
+α2 ,i /Delta1p 1 ,t−i + 
+K ∑  
+i =1 
+β2 ,i /Delta1p 2 ,t−i 
++ γ2 ( p 1 ,t−1 − p 2 ,t−1 − μ) + ϵ2 ,t 
+where p 1, t and p 2, t correspond to the two price series. 
+μ is the sample average of 
+(
+p 1 ,t − p 2 ,t 
+)
+. Building on the 
+model estimation, we calculate the cumulative impulse 
+response functions by forecasting the evolution of these 
+two price series 600 seconds ahead after a unit shock. 
+Then with cumulative impulse response functions and the 
+covariance matrix of perturbations, the lower and upper 
+bounds of information share can be calculated by consid- 
+ering the Cholesky factorizations of all the permutations of 
+the disturbances. 
+References 
+Anand, A. , Tanggaard, C. , Weaver, D.G. , 2009. Paying for market quality. 
+Journal of Financial and Quantitative Analysis 44, 1427–1457 . 
+Anand, A. , Venkataraman, K. , 2016. Market conditions, fragility and the 
+economics of market making. Journal of Financial Economics 121, 
+327–349 . 
+Baillie, R.T. , Booth, G.G. , Tse, Y. , Zabotina, T. , 2002. Price discovery and 
+common factor models. Journal of Financial Markets 5, 309–321 . 
+Bessembinder, H., Hao, J., Lemmon, M. L., 2011. Why designate mar- 
+ket makers? Aﬃrmative obligations and market quality. unpublished 
+working paper, Arizona State University. 
+Bessembinder, H. , Hao, J. , Zheng, K. , 2015. Market making contracts, ﬁrm 
+value, and the IPO decision. Journal of Finance 70, 1997–2028 . 
+Brogaard, J. , Hendershott, T. , Riordan, R. , 2014. High-frequency trading and 
+price discovery. Review of Financial Studies 27, 2267–2306 . 
+Chakravarty, S. , Gulen, H. , Mayhew, S. , 2004. Informed trading in stock 
+and option markets. The Journal of Finance 59 (3), 1235–1257 . 
+Harvey, A.C. , 1993. Time Series Models, Second ed. MIT Press, Cambridge, 
+MA . 
+Hasbrouck, J. , 1995. One security, many markets: determining the contri- 
+butions to price discovery. The Journal of Finance 50 (4), 1175–1199 . 
+Holden, C.W. , Jacobsen, S. , 2014. Liquidity measurement problems in fast, 
+competitive markets: expensive and cheap solutions. Journal of Fi- 
+nance 69, 1747–1785 . 
+McInish, T.H. , Wood, R.A. , 1992. An analysis of intraday patterns in bid/ask 
+spreads for NYSE stocks. Journal of Finance 47, 753–764 . 
+18 To conﬁrm robustness, we use two different types of price series: the 
+ﬁrst consists of the last available trade prices at each one-second time 
+interval, and the second consists of the midpoints from best prevailing 
+quotes at the end of each second. The information regarding trades and 
+quotes comes from Daily TAQ data. 
+
+===== PAGE 16 =====
+
+A.D. Clark-Joseph et al. / Journal of Financial Economics 126 (2017) 652–667 667 
+Menkveld, A.J. , Wang, T. , 2013. How do designated market makers create 
+value for small-caps? Journal of Financial Markets 16, 571–603 . 
+Nimalendran, M. , Petrella, G. , 2003. Do ‘thinly-traded’ stocks beneﬁt from 
+specialist intervention? Journal of Banking and Finance 27, 1823–1854 . 
+O’Hara, M., Saar, G., Zhong, Z., 2015. Relative tick size and the trading en- 
+vironment. unpublished working paper, Cornell University and Uni- 
+versity of Melbourne. 
+Panayides, M. , 2007. Aﬃrmative obligations and market making with in- 
+ventory. Journal of Financial Economics 86, 513–542 . 
+Perotti, P. , Rindi, B. , 2010. Market makers as information providers: the 
+natural experiment of STAR. Journal of Empirical Finance 17, 895–917 . 
+Skjeltorp, J.A. , Odegaard, B.A. , 2015. When do listed ﬁrms pay for market 
+making in their own stock? Financial Management 44, 241–266 . 
+Venkataraman, K. , Waisburd, A.C. , 2007. The value of the designated mar- 
+ket maker. Journal of Financial and Quantitative Analysis 42, 735–758 . 
+Yao, C., Ye, M., 2015. Why trading speed matters: a tale of queue rationing 
+under price controls. unpublished working paper, University of War- 
+wick and University of Illinois at Urbana-Champaign. 

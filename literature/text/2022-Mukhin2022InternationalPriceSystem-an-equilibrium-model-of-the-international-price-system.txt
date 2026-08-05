@@ -1,0 +1,2227 @@
+
+
+===== PAGE 1 =====
+
+American Economic Review 2022, 112(2): 650–688 
+https://doi.org/10.1257/aer.20181550
+650
+An Equilibrium Model of the International Price System†
+By Dmitry Mukhin*
+What explains the central role of the dollar in world trade? Will the 
+US currency retain its dominant status in the future? This paper devel-
+ops a quantitative general equilibrium framework with endogenous 
+currency choice that can address these questions. Complementarities 
+in price setting and  input-output linkages across firms generate com-
+plementarities in currency choice making exporters coordinate on 
+the same currency of invoicing. The dollar is more likely to play 
+this role because of the large size of the US economy, a widespread 
+peg to the dollar, and the history dependence in currency choice. 
+Calibrated using the world  input-output tables and exchange rate 
+moments, the model can successfully replicate the key empirical facts 
+about the use of currencies at the global level, across countries, and 
+over time. According to the counterfactual analysis, the peg to the 
+dollar in other economies ensures that the US currency is unlikely 
+to lose its global status because of the falling US share in the world 
+economy, but can be replaced by the renminbi in case of a negative 
+shock in the US economy. If the peg is abandoned, the world is likely 
+to move to a new equilibrium with multiple regional currencies.  
+(JEL D21, E31, E42, F14, F31, F33)
+One of the most intriguing facts in international economics is the asymmetric 
+use of currencies in world trade and the dominance of the dollar in the international 
+price system (Gopinath 2016). Indeed, the share of dollar currency pricing (DCP) in 
+imports and exports is disproportionately high in both emerging economies—where 
+it often reaches one—and many developed countries including Japan, South Korea, 
+and several European economies (see online Appendix Figure A3). In contrast, the 
+euro (ECP) plays the role of a regional currency accounting for most of the trade 
+within eurozone, but almost zero share in trade between third countries. The use of 
+* London School of Economics (email: d.mukhin@lse.ac.uk). Gita Gopinath was the coeditor for this article. 
+This paper is based on my PhD dissertation at Princeton. I am extremely grateful to my advisor Oleg Itskhoki, as 
+well as to Mark Aguiar, Nobu Kiyotaki, and Esteban  Rossi-Hansberg for continual guidance and support. I am also 
+indebted to Michael Devereux, Povilas Lastauskas, Luca Dedola, and Fernando Leibovici for insightful discus-
+sions, Costas Arkolakis, Ariel Burstein, Giancarlo Corsetti, Javier Cravino, Eduardo Dávila, Konstantin Egorov, 
+Charles Engel, Linda Goldberg, Matteo Maggiori, David Nagy, Diego Perez, Mikkel  Plagborg-Møller, Richard 
+Rogerson, Sanjay Singh, and Aleh Tsyvinski as well as numerous seminar/conference participants for helpful com-
+ments and suggestions; David Baqaee and Philip Saure for generously sharing their data; Viktoriia Berestova, 
+Anna Lukianova, Julia Soloveva, Vitalii Tubdenov, Aiaz Valetdinov, and Nan Xiang for the outstanding research 
+assistance; and the International Economics Section at Princeton University and the Cowles Foundation at Yale 
+University for financial support.
+† Go to https://doi.org/10.1257/aer.20181550 to visit the article page for additional materials and author  
+disclosure statement.
+
+===== PAGE 2 =====
+
+651
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+other currencies is marginal and is usually lower than the trade shares of the cor -
+responding economies. Although these invoicing patterns are highly persistent and 
+with few exceptions do not change much at the horizon of a few decades, the history 
+of the twentieth century shows that they are not immanent and that the international 
+price system can undergo major transformations with one dominant currency (dol-
+lar) replacing the other (pound sterling). These facts raise several  policy-relevant 
+questions: Why do firms coordinate on one vehicle currency instead of using pro-
+ducer currencies (PCP) and/or local currencies (LCP)? What explains the central 
+role of the dollar? Will the US currency retain its dominant status in the future? Is it 
+more likely to be replaced by the euro, by the renminbi, or are we heading to a world 
+with multiple regional currencies?
+This paper studies these questions both theoretically and quantitatively by devel-
+oping a tractable general equilibrium framework with endogenous currency choice. 
+I build on the conventional  sticky-price  open-economy model by Gali and Monacelli 
+(2005) and augment it with three additional ingredients. First, rather than taken as 
+exogenous, the currency of invoicing is optimally chosen by individual exporters to 
+bring their prices—which are sticky and cannot adjust in response to shocks—closer 
+to the optimal level (Engel 2006). Second, I allow for price linkages across firms 
+that arise from the use of intermediates in production and complementarities in price 
+setting. These linkages are strongly supported by the data, especially for large firms 
+that account for most of international trade, and are important to explain several 
+other puzzles in international economics (see, e.g., Amiti, Itskhoki, and Konings 
+2014; Burstein and  Gopinath 2012). Finally, the countries are heterogeneous in 
+terms of size, inflation, and exchange rate regime.
+Solving analytically for the equilibrium currency choice, I show that the model 
+can explain key stylized facts about the international price system. Because of price 
+linkages, each firm wants to synchronize its price with the prices of suppliers and 
+competitors, which generates strategic complementarities in currency choice and 
+gives rise to an equilibrium with exporters coordinating on one dominant currency. 
+Two fundamental factors—the large size of the US economy and the use of the 
+dollar as an anchor currency by other countries—make the dollar the most likely 
+candidate for a vehicle currency. Intuitively, the size advantage implies that foreign 
+firms use more US intermediates and compete with a larger number of US firms, 
+which makes their prices more sensitive to the dollar exchange rate and increases 
+the odds that they choose DCP when selling goods both in the US and in other mar-
+kets. The  anchor-currency advantage, on the other hand, means that many countries 
+stabilize their exchange rates against the dollar (see Ilzetzki, Reinhart, and Rogoff 
+2019) making it the best substitute for a large number of currencies and increasing 
+its chances to become a vehicle currency. This mechanism is further amplified by 
+the fact that many developing countries have high inflation, which makes their cur-
+rencies hardly suitable for invoicing.
+The international price system is shaped, however, not only by fundamental fac-
+tors, but also by its history: because of strategic complementarities, no exporter 
+wants to change the currency of invoicing before other firms do, giving rise to path 
+dependence. The hysteresis is even stronger if firms have to pay fixed costs when 
+switching to a new currency. This result can account for the delayed transition 
+from the pound to the dollar during the twentieth century and the wide use of the 
+
+===== PAGE 3 =====
+
+652
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+dollar in the modern economy, despite increasing competition from the euro and 
+the renminbi.
+I then show that a straightforward extension of the baseline model can be eas-
+ily taken to the data and used for a rich quantitative analysis. Complementing the 
+analytical results that capture the  first-order facts about the international price sys-
+tem, the quantitative extension of the model allows for a more nuanced view with 
+the coexistence of the dominant, regional and local currencies in world trade. I 
+calibrate price stickiness and complementarities in price setting using the values 
+from Nakamura and Steinsson (2008) and Amiti, Itskhoki, and Konings (2019) and 
+estimate the two main inputs of the quantitative model—the  country-sector trade 
+flows and the exchange rates moments—directly from the data using the OECD 
+inter-country  input-output (ICIO) tables with  63  countries and  32  sectors and the 
+exchange rate series from the IMF International Financial Statistics database. To 
+capture  history dependence, the model is estimated and simulated sequentially for 
+years 1995, 2005, and 2015 using as an initial guess the equilibrium invoicing from 
+the previous period. Importantly, the only invoicing moment used in the calibration 
+is the aggregate share of DCP for a subsample of countries in 1995 to choose the 
+value of the fixed costs of currency adjustment.
+Confronted with the invoicing data from Georgiadis et al. (2020), the calibrated 
+model shows a surprisingly good fit replicating the key empirical facts about global 
+use of currencies, the  cross-sectional variation, and the evolution of invoicing in 
+time. The share of DCP in total exports of  53  economies with available invoicing 
+data is 52 percent in the model against 53 percent in the data. Moreover, the model 
+explains 80 percent of the  cross-country variation in DCP, including relatively low 
+shares in the Eurozone countries, high shares in the United States and most emerg-
+ing economies, and the intermediate values in the United Kingdom and Japan. The 
+ cross-sectional fit for the euro and home currencies is even better, exceeding 90 
+percent. This success of the structural model with endogenous currency choice con-
+trasts with the naïve predictions based on trade shares and the role of commodities, 
+which can explain neither the global dominance of the dollar, nor its  cross-country 
+variation. Using the granular invoicing data for Switzerland, I also show that the 
+model captures the differences in currency shares across sectors. In addition, the 
+model closely reproduces the evolution of the price system in 1995–2015, gener -
+ating stable currency shares for most countries and a negative trend in DCP for 
+selected European economies that switched to the euro.
+Lastly, I take advantage of the quantitative general equilibrium framework to do 
+counterfactuals about the future of the international price system under alternative 
+scenarios. Interestingly, the model predicts that the rise of China and other emerging 
+economies does not imperil, and can even strengthen, the dominance of the dollar 
+if these countries maintain their current peg to the US currency. Given the comple-
+mentarities and the adjustment costs, firms are unlikely to abandon the dollar as long 
+as it remains a close substitute to other currencies. On the flip side, the status of the 
+anchor currency bears its own risks, making the DCP equilibrium more sensitive to 
+negative shocks in the US economy: an increase in the US inflation rate—e.g., due 
+to rising government debt or the loss of the  safe-asset status of treasuries—makes 
+exporters look for an alternative unit of account and switch to the renminbi as the 
+dollar’s closest substitute. Finally, I consider a case where China abandons its peg 
+
+===== PAGE 4 =====
+
+653
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+to the dollar and several emerging economies follow suit, adopting the renminbi as 
+a new anchor currency. This counterfactual mirrors the history of the twentieth cen-
+tury, when many countries joined the Bretton Woods system with a peg to the pound 
+or gold, but left it with a peg to the dollar (see Gourinchas 2021). Under this sce-
+nario, history dependence is strong enough to prevent the renminbi from becoming 
+the new dominant currency, but it is not sufficient for the dollar to retain its global 
+status, and therefore, the world moves to a new equilibrium with multiple regional 
+currencies in line with the predictions of Eichengreen (2011).
+Related Literature.—There are three main strands in the literature that use differ-
+ent frictions to explain the dominant status of the dollar in international trade. First, 
+there is a long tradition in economics, going back to Krugman (1980), that empha-
+sizes the transaction costs in exchange markets: coordination on a single currency 
+raises the chances of a “double coincidence of wants” ( Matsuyama, Kiyotaki, and 
+Matsui 1993) and increases the “thickness” of markets (Rey 2001, Devereux and Shi 
+2013, Chahrour and Valchev 2021). These theories explain the widespread use of the 
+dollar as a medium of exchange but have little to say about its role as an invoicing 
+currency. Second, the use of the dollar as a unit of account can be due to financial 
+frictions: firms try to synchronize the risks on their contracts ( Drenik, Kirpalani, 
+and Perez 2018) and borrow in a cheaper currency (Gopinath and Stein 2021).
+This paper belongs to the third strand in the literature, one that emphasizes nom-
+inal frictions and has two important advantages. First, Gopinath, Itskhoki, and 
+Rigobon (2010) provide direct empirical evidence in favor of this mechanism, 
+which allows them to discriminate against alternative theories. Second, it is price 
+stickiness that makes currency choice relevant for monetary policy in most existing 
+ open-economy models (Gopinath et al. 2020) and so it is natural to use the same 
+friction as a starting point to think about firms’ invoicing decisions.
+The contribution of this paper is twofold. On the theory side, several ingredients 
+of the model come from the previous literature, including firm’s currency choice 
+under sticky prices (Friberg 1998, Engel 2006), complementarities in currency 
+choice arising from  input-output linkages (Novy 2006; Devereux, Shi, and Xu 2010) 
+and price linkages (Bacchetta and van Wincoop 2005, Goldberg and Tille 2008), 
+the effect of monetary policy on invoicing (Corsetti and Pesenti 2002; Devereux, 
+Engel, and Storgaard 2004), and the use of a vehicle currency in international trade 
+(Bhattarai 2009, Cravino 2014). None of these papers, however, are readily avail-
+able to analyze the global dominance of the dollar or the future of the international 
+price system. Three features of my model distinguish it from the previous literature 
+and make it particularly suitable to address these issues. First, I consider a world 
+with multiple countries, which allows me to distinguish vehicle currencies from 
+PCP and LCP. Second, the model is consistent with the exchange rate disconnect in 
+the data and does not produce a counterfactually high correlation between exchange 
+rates and nominal wages—the moment that plays the central role in firms’ currency 
+choice. Finally and most importantly, I solve for the equilibrium invoicing taking 
+into account the effects of exporters’ decisions on each other via  input-output link-
+ages and complementarities in price setting.
+On the empirical side, the paper complements the  reduced-form evidence (see 
+Goldberg and Tille 2008, Drenik and Perez 2021, Georgiadis et al. 2020) with the 
+
+===== PAGE 5 =====
+
+654
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+structural analysis of the determinants of the currency choice using a calibrated gen-
+eral equilibrium model to explain the global invoicing as well as its variation across 
+countries, sectors, and periods. The important advantage of this approach is that it 
+takes into account the interactions between exogenous factors in their effect on equi-
+librium invoicing, as well as the complementarities in currency choice across firms 
+that are hard to capture in  reduced-form regressions, especially given the limited 
+coverage of the invoicing data.
+I. Baseline Model
+This section describes the model of currency choice that is based on conventional 
+ingredients and attains a  closed-form characterization, yet is rich enough to allow 
+for alternative invoicing regimes depending on parameter values. I keep the envi-
+ronment as simple as possible for tractability reasons and relegate the discussion of 
+extensions to Section III.
+A. Environment
+Following Gali and Monacelli (2005), consider a world consisting of a contin-
+uum of symmetric regions  i ∈  [0, 1]  . Each region  i ∈  (n, 1]   is a small open econ-
+omy with its own nominal unit of account, in which local wages and prices are 
+expressed. All countries are symmetric except for the United States, which is allowed 
+to be different in two dimensions. First, it is a large economy that includes regions  
+ i ∈  [0, n]   and can also be interpreted as a currency union or a set of dollarized coun-
+tries. Second, as explained in detail below, the second moments of exogenous shocks 
+are such that the volatility of the exchange rates against the dollar are lower than the 
+volatility of other bilateral exchange rates capturing the fact that many countries peg 
+their exchange rates to the dollar (Ilzetzki, Reinhart, and Rogoff 2019).
+In each country, there is a representative household, a local government and a 
+continuum of firms with intermediate goods in production, strategic complemen-
+tarities in price setting and the home bias toward domestically produced goods. 
+For simplicity, there is only one period,  risk-sharing and  price-setting decisions are 
+made before the realization of shocks, and firms adjust prices afterwards with a 
+given probability. I focus on financial shocks as the key driver of exchange rates, 
+which is consistent with empirical evidence (see Jiang, Krishnamurthy, and Lustig 
+2018; Engel and Wu 2018) and allows the model to reproduce the exchange rate 
+disconnect from the data (see Itskhoki and Mukhin 2021).
+Households in region  i  have  log-linear preferences over consumption and labor
+(1)  E [log  C i   −  L i  ] . 
+Before the realization of shocks, agents can trade internationally a full set of Arrow 
+securities subject to the  ex ante budget constraint
+(2)   ∑ 
+h
+  
+ 
+    Q   h   B  i  h  = 0, 
+
+===== PAGE 6 =====
+
+655
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+where   Q   h   is the price of Arrow security that pays one dollar in a given state of the 
+world indexed by  h . To simplify the notation, I suppress index  h  below with the 
+understanding that all variables are  state contingent if not noted otherwise. After 
+the shocks are realized, households collect labor income   W i    L i   , dividends from local 
+firms   Π i    and returns on their assets and spend the proceeds   P i    C i    on consumption:
+(3)   P i    C i   =  W i    L i   +  Π i   +  e   − ψ i      i0    B i   +  Ω i  , 
+where    ij    is the bilateral nominal exchange rate between regions  i  and  j , which goes 
+up when currency  i  devalues relative to currency  j . Because markets are complete, 
+the assumption that returns on the Arrow securities are in dollars is without loss of 
+generality. I allow for stochastic  country-specific wedges in asset returns   ψ i   , which 
+can be interpreted as a shock in the local financial markets with the resulting profits 
+(or losses) of the financial sector   Ω i    reimbursed  lump sum to local households.
+Firms in region  i  produce a continuum of unique tradable products indexed by  
+ω ∈  [0, 1]   using technology that combines labor   L i    and intermediate goods   X i   :
+(4)   Y i   (ω)  =  A i     (   L i   (ω)  _ 1 − ϕ  )    
+1−ϕ
+    (   X i   (ω)  _ ϕ  )    
+ϕ
+ , ϕ < 1. 
+The bundle of intermediates   X i    used in production is the same as that consumed by 
+households and includes both local and foreign varieties, which are combined via a 
+homothetic aggregator:
+(5)  Φ (  {   Y ji   (ω)  _  X i    }  
+j,ω
+  , γ)  = 1, 
+where   Y ji   (ω)   denotes exports of product  ω  from country  j  to country  i  and the home 
+bias  1 − γ  reflects either trade costs or preferences for domestic goods,  γ ∈  (0, 1)  . 
+Note that when  n > 0 , a positive fraction of global trade happens between regions 
+within the United States. As a result, the home bias is higher in the United States 
+than in small economies. I assume  Φ ( · )   is the Kimball (1995) aggregator (see equa-
+tion (A1) in the online Appendix) to allow for complementarities in price setting, 
+which as explained below, are important for firms’ currency choice.
+For each country of destination, exporters choose the currency of invoicing, which 
+they use to set the price before the realization of shocks. I use a  one-period version 
+of Calvo (1983) pricing, assuming that the price can be updated ex post with prob-
+ability  1 − λ .1 While any currency can be used for invoicing in international trade, 
+it is assumed that local firms set prices exclusively in domestic currency—perhaps 
+due to legal reasons. Online Appendix A.3.2 relaxes this assumption and derives 
+additional results when domestic firms optimally choose the currency of invoicing.
+Government in each country is responsible for setting monetary policy. Following 
+the primal approach, I formulate the monetary policy in terms of the target, namely, 
+1 The currency choice is robust to the nature of nominal rigidities—including staggered price setting (Section III), 
+Rotemberg (1982) friction, and menu costs (see Gopinath, Itskhoki, and  Rigobon 2010)—and to replacing the 
+assumption that currency choice is made unilaterally by suppliers with Nash bargaining between buyers and sellers.
+
+===== PAGE 7 =====
+
+656
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+the process for the aggregate demand   M i   ≡  C i    P i    as in Carvalho and Nechio (2011), 
+and abstract from the particular implementation of this policy, which can be done 
+either with an  interest-rate rule or a  money-supply rule.
+Equilibrium Conditions  require that labor supply equals total demand of all 
+firms:
+(6)   L i   =  ∫ 0  
+1
+   L i   (ω)  dω. 
+Produced goods are sold locally and exported abroad to be used in production and 
+consumption:
+(7)   Y i   =  (1 − γ)   Y ii   + γ ∫ 0  
+1
+   Y ij   dj. 
+Finally, the market clearing in the international asset markets implies
+(8)   ∫ 0  
+1
+   B i   di = 0. 
+Shocks that have no effect on nominal exchange rates in this setting—including 
+shocks to productivity, government spending, and  terms-of-trade—do not change 
+the  trade-off between setting prices in different currencies, and therefore are sup-
+pressed for brevity. Furthermore, I assume that monetary policy fully stabilizes 
+nominal demand and revisit the case of positive inflation in Section IIIA. This leaves 
+financial shocks   ψ i    as the only source of volatility in exchange rates. Assume that 
+these shocks can be decomposed into a common global component   ψ 
+–
+    and an idio-
+syncratic  currency-specific component   ψ i   −  ψ 
+–
+    that is uncorrelated across countries 
+(but not regions). The volatility of the latter is assumed to be lower for the United 
+States than for other economies; i.e.,  ρ ≡   
+var ( ψ 0   −  ψ 
+–
+  ) 
+ _______ 
+var ( ψ i   −  ψ 
+–
+  ) 
+   ≤ 1  for  ∀  i > n , which can 
+be rationalized in three ways. First, a better diversification of the US economy 
+implies that it is subject to granular shocks less than countries that specialize in 
+production and exports of a few commodities and manufacturing goods (Gabaix 
+2011, Gaubert and Itskhoki 2021). Second, the large size of the US economy can 
+result in stronger spillovers and comovement with other economies (Hassan 2013). 
+My preferred interpretation of the condition, however, is that  non-US economies use 
+foreign exchange interventions and capital controls to stabilize their exchange rates 
+against the dollar, giving rise to a global component   ψ 
+–
+    that is negatively correlated 
+with   ψ 0    (Ilzetzki, Reinhart, and Rogoff 2019).2
+DEFINITION 1: Given exogenous shocks   { ψ i  }  , an equilibrium is defined as follows: 
+(i) households maximize utility over consumption, labor supply and asset holdings; 
+(ii) each firm maximizes expected profits over labor, intermediate inputs, currency 
+2 While the exchange rate regime is taken as exogenous in the model, Egorov and Mukhin (2021) show that 
+there is a feedback with the optimal tightness of the peg to the dollar increasing in the share of DCP in country’s 
+imports.
+
+===== PAGE 8 =====
+
+657
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+of invoicing and prices in each market, taking the decisions of all other firms as 
+given and setting domestic prices in local currency; (iii) all markets clear.
+B. Firm’s Currency Choice
+This section describes the invoicing problem of an individual exporter follow-
+ing closely the insights of Engel (2006); Gopinath, Itskhoki, and Rigobon (2010); 
+and Cravino (2014). In contrast to the previous literature, which focuses mostly 
+on a binary currency choice (e.g., between PCP and LCP), firms are allowed to set 
+prices in any currency  k ∈  [0, 1]   in the model. I approximate equilibrium conditions 
+around the symmetric steady state and denote the  log deviations of variables from 
+the  steady-state values with small letters (see online Appendix A.1 for details).
+Let   Π ji   (p)   denote the profit of the exporter from country  j  to country  i  as a func-
+tion of price  p  expressed in the currency of destination. 3 Define the optimal price  
+   p ̃   ji    that maximizes profits for a given realization of shocks:
+    p ̃   ji   =  argmax  
+𝑝
+     Π ji   (p) . 
+Ideally, firms would like to implement    p ̃   ji    in every state of the world. This is, how-
+ever, not feasible because of price stickiness, and firms preset prices in currency  k  to 
+maximize their expected profits:4
+    p –    ji  k   =  argmax  
+𝑝
+    E  Π ji   (p +  e ik  ) . 
+The optimal preset price equals the expected value of    p ̃   ji    expressed in currency of 
+invoicing  k 
+(9)    p –    ji  k   = E [  p ̃   ji   +  e ki  ]  
+and allows firms to replicate the mean value of the optimal price. With the endoge-
+nous currency choice, firms can go one step further and target the second moment 
+of    p ̃   ji   :
+LEMMA 1 (Currency Choice): To the  second-order approximation, the currency 
+choice problem of the exporter is equivalent to choosing currency  k , in which the 
+optimal price    p ̃   ji   +  e ki    is most stable:
+(10)    max  
+k∈ [0,1] 
+  E  Π ji   (  p ¯    ji  k   +  e ik  )  ⇔   min  
+k∈ [0,1] 
+  E   [  p –    ji  k   +  e ik   −   p ̃   ji  ]    
+2
+ 
+ ⇔   min  
+k∈ [0,1] 
+  var [  p ̃   ji   +  e ki  ] . 
+3 Because of constant returns to scale technology, marginal costs are independent of the quantity produced. 
+Therefore, the profit function is separable across markets, and firms choose prices and currencies independently 
+for each destination.
+4 I assume that profits are expressed in real discounted units; i.e.,   Π ji   ( · )   includes the stochastic discount factor 
+(SDF). The variation in SDF does not affect the results under the approximation used below.
+
+===== PAGE 9 =====
+
+658
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+As the second expression makes clear, exporters choose currency  k  to mitigate 
+the effect of sticky prices and to bring ex post price    p –    ji  k   +  e ik    closer to the optimal 
+ state-dependent value    p ̃   ji   . Equivalently, it is optimal to use currency  k , in which the 
+optimal price    p ̃   ji   +  e ki    is most stable.5
+To give an example, if the optimal price is always  $100 , then setting the price in 
+dollars allows the firm to replicate    p ̃   ji    in every state of the world. The choice is more 
+nuanced when the optimal price is not fully stable in one currency, e.g., when    p ̃   ji    
+can be expressed as  $50 + £50 . As argued by Corsetti and Pesenti (2002), in this 
+case, the firm would ideally like to set the price in terms of a basket of currencies. 6 
+However, not only is there little empirical evidence for such pricing, but it also 
+generates counterfactual predications at the aggregate level and makes the model 
+inconsistent with the key stylized fact about the international price system:
+LEMMA 2 (Basket of Currencies): If firms could set prices in terms of baskets of 
+currencies, then the share of DCP would not exceed the share of the United States 
+in global trade.
+Intuitively, invoicing in baskets of currencies allows firms to reproduce their 
+desired prices    p ̃   ji    and the equilibrium is the same as under flexible prices. As dis-
+cussed below, the currency shares in the optimal basket are then determined by 
+the amount of intermediates and competing products produced in each country and 
+the share of the dollar is bounded by the size of the US economy. Therefore, I 
+introduce the second key friction to the model on top of sticky prices, so that indi-
+vidual firms find it suboptimal to use baskets of currencies for invoicing and make 
+discrete currency choices. In the spirit of Mankiw (1985), Lemma 1 ensures that 
+small ( second-order) fixed costs of adding currencies are sufficient to rationalize 
+this assumption.
+C. Equilibrium Prices
+Lemma 1 shows that firms’ currency choice is determined by the properties of the 
+desired price    p ̃   ji   . A constant returns to scale technology and a homothetic demand 
+ensure that equilibrium prices depend only on the supply side of the economy and 
+can be analyzed separately from the quantities, which greatly simplifies the analysis. 
+In contrast to the constant elasticity of substitution (CES) case, the Kimball demand 
+generates strategic complementarities in price setting across firms, so that the opti-
+mal price of an exporter from  j  to  i  depends not only on its marginal costs but also 
+on the prices of competitors in the destination market:
+(11)    p ̃   ji   =  (1 − α)  (m c j   +  e ij  )  + α  p i  , 
+5 Although Lemma 1 summarizes optimal currency choice in a compact form, solving minimization problem 
+(10) is equivalent to a pairwise comparison of all currencies: currency  k  is preferred to currency  h  if the  pass-through 
+of bilateral exchange rate shocks   e kh    into the desired price    p ̃   ji   +  e ki    is low (see Proposition 2 in Gopinath, Itskhoki, 
+and Rigobon 2010).
+6 Notice this is not the same as using mixed strategies (lotteries) across currencies. Moreover, the optimal cur -
+rency basket is  firm-specific and there is no  one-size-fits-all solution like the special drawing rights.
+
+===== PAGE 10 =====
+
+659
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+where parameter  α  reflects the curvature of  Φ ( · )   and is different from demand elas-
+ticity.7 In the limit  α → 0 , the Kimball aggregator converges to the CES func-
+tion and firms charge a constant markup, so that cost shocks are the only source of 
+variation in the optimal price. The marginal costs of production in country  i  are a 
+weighted sum of local wages   w i    and prices of intermediates   p i   :
+(12)  m c i   =  (1 − ϕ)   w i   + ϕ  p i  . 
+To the  first-order approximation, the aggregate price index is the sum of the prices 
+of locally produced goods   p ii    and imported goods   p  i  I   with the weight of the former 
+determined by the home bias  1 − γ 
+(13)   p i   =  (1 − γ)   p ii   + γ  p  i  I ,  where   p  i  I  =  ∫ 0  
+1
+   p ji   dj, 
+while the bilateral price index combines the prices of adjusting and  nonadjusting 
+firms:8
+(14)   p ji   =  (1 − λ)    p ̃   ji   + λ (  p –    ji  k   +  e ik  ) . 
+A fraction  1 − λ  of firms update prices after the realization of shocks and set them 
+at the optimal level    p ̃   ji   . The prices of other firms stay constant in the currency of 
+invoicing   k ji   , which means they move  one-to-one with the exchange rate   e i k ji      in the 
+currency of the customers. It follows that the equilibrium price system is a fixed 
+point with prices determined by firms’ invoicing decisions and individual currency 
+choices shaped by aggregate prices:
+DEFINITION 2: Given   { w i  ,  e ij  }  , the equilibrium international price system con-
+sists of price indices   { p ji  }   and firms’ currency choices   { k ji  }   such that (i) given 
+invoicing regime,   { p ji  }   solve the system (11)–(14), and (ii) given prices,   { k ji  }   solve  
+problem (10).
+D. General Equilibrium
+Definition  2 implies that the only general equilibrium objects that matter for 
+exporters’ currency choices are the second moments of exchange rates and nominal 
+wages. In the general case, there is also a feedback effect: the dynamics of   w i    and   
+e ij    depend on international prices, which in turn are shaped by the invoicing deci-
+sions of firms. This section shows, however, that under the assumptions made in the 
+baseline model, exchange rates and nominal wages do not depend on the currency 
+7 An alternative way of generating complementarities in price setting is to assume decreasing returns to scale in 
+production (see Goldberg and Tille 2008, Bacchetta and van Wincoop 2005). In this case, the optimal price depends 
+on shifts in demand and hence, on prices of competing firms. Despite this isomorphism, the important advantage 
+of the Kimball demand is that it allows to solve for prices and invoicing independently from quantities keeping the 
+analysis more tractable.
+8 To simplify the notation, I assume that all exporters from  j  to  i  use the same currency of invoicing  k . The results 
+in Section II, however, apply even under mixed strategies if not noted otherwise.
+
+===== PAGE 11 =====
+
+660
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+of invoicing, and therefore, the model attains a convenient  block-recursive structure: 
+one can solve for equilibrium currency choice taking the relevant general equilib-
+rium moments as given.9
+LEMMA 3 (Exchange Rates): The second moments of equilibrium nominal wages 
+and exchange rates are independent of the invoicing decisions of firms.
+The result follows from the combination of  log-linear utility, complete asset 
+markets and the monetary rule that targets nominal spending. Indeed, the labor 
+supply condition implies that wages are equal to nominal spending   w i   =  p i   +  c i    
+and hence, are stabilized by the monetary policy, while international  risk sharing 
+ensures that exchange rates depend only on financial shocks   e ij   =  ψ i   −  ψ j   . The 
+result from Lemma 3 holds more broadly and can be derived under the alternative 
+set of assumptions. In particular, one can replace monetary policy that stabilizes 
+nominal wages with the assumption that wages are sticky in domestic currency, 
+while the assumption of complete asset markets can be relaxed to one internation-
+ally traded bond.
+For future use, it is convenient to define a  trade-weighted exchange rate of 
+country  i , which under symmetric trade flows is   e i   ≡   1 _ 1 − n    ∫ n  1   e ik   dk . Any bilat-
+eral exchange rate can then be decomposed into  country-specific components 
+  e ij   =   1 _ 1 − n    ∫ n  1   e ij   dk =   1 _ 1 − n    ∫ n  1   e ik   dk −   1 _ 1 − n    ∫ n  1   e jk   dk =  e i   −  e j   . It follows from 
+the structure of financial shocks that   e i   =  ψ i   −  ψ 
+–
+    and hence, the  trade-weighted 
+exchange rates are uncorrelated across economies.
+II. Equilibrium Currency Choice
+This section solves for the equilibrium currency choice and shows that the model 
+is consistent with the key stylized facts about the international price system. In par-
+ticular, I argue that exporters find it optimal to coordinate on a single vehicle cur -
+rency, the dollar is a preferred candidate for the role of the dominant currency, and 
+there is a  path dependence in currency choice explaining a delayed transition from 
+the pound to the dollar.
+A. Why Vehicle Currency?
+While it is intuitive that firms might set prices in producer or customer currency, 
+it is not immediately clear why they would ever use a third currency for invoicing. 
+In this section, I show that a vehicle currency equilibrium (VCP) can arise naturally 
+when price linkages across exporters are strong enough. The question of which cur-
+rency is used as a vehicle currency is discussed in the next section.
+According to Lemma 1, the currency choice of an individual exporter from  j  to  
+i  depends on the properties of its desirable price    p ̃   ji   , which in turn, is determined 
+9 Notice this result does not mean that invoicing decisions of firms have no general equilibrium effects at 
+all: consumption, output, exports, and imports do change with the currency of invoicing even though wages and 
+exchange rates do not.
+
+===== PAGE 12 =====
+
+661
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+by the system of equilibrium conditions (11)–(14) summarized in Figure 1. Firms 
+choose currency  k , in which their optimal price is most stable:
+(15)    p ̃   ji   +  e ki   =  e k   −  (1 − α)  ( e j   − ϕ  p j  )  − α ( e i   −  p i  ) . 
+To see the importance of price linkages between exporters for the VCP equilibrium, 
+consider the currency choice in two limiting cases with no interactions between 
+firms from different economies. First, assume the CES aggregator  α = 0  and no 
+intermediates in production  ϕ = 0 . With no price linkages across firms, the desired 
+price    p ̃   ji   +  e ki   =  e k   −  e j    is independent of prices and invoicing decisions of other 
+exporters and is proportional to the nominal wage, which by assumption is stable in 
+the domestic currency. It follows that the optimal price of the exporter is constant in 
+the producer currency and PCP is always optimal; i.e.,  k = j . Second, consider the 
+autarky limit  γ → 0 , so that there are price linkages only between local firms. The 
+aggregate prices in each country are then independent of exchange rate movements 
+and are constant in local currency   p i   = 0 . With marginal costs stable in producer 
+currency and the prices of competitors stable in local currency, the desired price 
+is    p ̃   ji   +  e ki   =  e k   −  (1 − α)   e j   − α  e i    and exporters choose PCP if  α < 1/2  and 
+LCP if  α > 1 / 2 , but never set prices in a vehicle currency.
+These two special cases show that the price linkages between exporters from 
+different countries are a necessary condition to sustain the vehicle currency pricing. 
+The next proposition shows that the reverse is also true: the VCP equilibrium always 
+exists as long as the share of foreign intermediates in production and/or the price 
+complementarities across foreign firms are strong enough.10
+10 I use the following definition throughout the paper: the region of equilibrium  Z  in parameter space is said 
+to be increasing in parameter  x  if for any   x 2   >  x 1    the set of (other) parameters for which  Z  exists under  x =  x 2    
+includes the set for which  Z  exists under  x =  x 1   .
+Figure 1. Optimal Price and the Currency Choice of an Individual Firm
+Wages Domestic Imported Other
+importers
+Local
+producers
+Desired price p̃ji
+Prices of competitors piMarginal costs mcj
+Intermediates pj
+LCPDCPPCP
+α1 − α
+1 − ϕ
+1 − γ
+1 − γ
+γ
+γ
+ϕ
+
+===== PAGE 13 =====
+
+662
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+PROPOSITION 1 (Price Linkages): The region of the VCP equilibrium in param-
+eter space is  nonempty and is increasing in the openness of economies  γ  and the 
+share of intermediates in production  ϕ , and can be  nonmonotonic in  price-setting 
+complementarities  α .
+Intuitively, when openness  γ  is high, so that a significant fraction of suppliers and 
+competitors are coming from third countries, the optimal price    p ̃   ji    of an exporter is 
+no longer stable in either producer or local currency, and using a vehicle currency 
+might be optimal. The prices of inputs and competing products that a given exporter 
+faces in this case depend on the invoicing decisions of suppliers and competitors: in 
+particular, if other firms set their prices in dollars, the optimal price of the exporter 
+becomes more stable in dollars as well, making DCP more attractive. An import-
+ant implication of this result, which will be further discussed in Section  IIIC, is 
+that the globalization of the last few decades—including the rising participation of 
+Asian countries in global value chains and the integration of  post-Soviet states in the 
+global economy—might have strengthened the incentives of exporters to coordinate 
+on a common currency to avoid undesirable movements in relative prices.
+Proposition 1 also shows an important difference between parameters  α  and  ϕ : 
+even though both strengthen complementarities in currency choice, the  price-setting 
+complementarities tie the invoicing decisions of firms within a given market, while 
+the  input-output linkages generate complementarities between markets. As a result, 
+a higher share of intermediates in production  ϕ  always makes VCP more attrac-
+tive, while stronger price complementarities  α  can potentially benefit LCP rather 
+than VCP. In general, the effect of price complementarities is  nonmonotonic: low  α  
+increases the share of producer currency in the optimal price, while high  α  increases 
+the share of the local currency (see Figure 1). The chances of a vehicle currency 
+are therefore, higher for intermediate values of  α  when neither producer nor local 
+currency dominates in the desired price.
+It is worth emphasizing that although Proposition 1 provides sufficient conditions 
+for the existence of the VCP equilibrium, the uniqueness of an equilibrium is not 
+guaranteed. Instead, the strong complementarities in currency choice that help to 
+support VCP can also generate multiple equilibria despite unique optimal choice 
+at the firm level. The next section shows, however, that DCP is not necessarily a 
+sunspot equilibrium and there are fundamental factors that make firms choose dollar 
+pricing.11
+B. Why the Dollar?
+In order to disentangle the fundamental factors behind equilibrium invoicing 
+from the complementarities in currency choice described above, I focus on the 
+ flexible-price limit  λ → 0 , where all firms adjust prices  ex post, and therefore the 
+invoicing decision of a given exporter does not depend on the currency choice of 
+other firms and the equilibrium is always unique (see Lemma A1). Indeed, given no 
+11 Online Appendix Section A.3.1 provides additional results about the  coexistence of the PCP, LCP, and DCP 
+equilibria.
+
+===== PAGE 14 =====
+
+663
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+nominal frictions, the aggregate prices are independent of the currency of invoicing 
+and can be found directly from equations (11) to (14):
+(16)   p i   =   γ _  1 −  (1 − γ) ϕ   ( e i   − n e 0  ) . 
+Consistent with Proposition 1, the  pass-through of exchange rate shocks into aggre-
+gate prices is increasing in the economy’s openness and in the intensity of the 
+ input-output linkages. At the same time, the currency choice is still  well-defined 
+given an arbitrarily small price stickiness: the invoicing decision of an exporter 
+depends only on the states of the world in which prices remain unadjusted and is 
+determined even when the probability of these states converges to zero. Substituting 
+price indices (16) into the optimal currency choice (15), we get the necessary con-
+dition for dollar invoicing:
+LEMMA 4 ( No-DCP Benchmark): Assume  λ → 0 . If countries are sym-
+metric,  n = 0 ,  ρ = 1 , exporters choose PCP when  α ≤   1 _ 2 − γ   , LCP when  
+ α ≥   1 _ 2 − γ   , and no DCP equilibrium exists.
+Intuitively, when prices are (almost) flexible, the weights of different exchange 
+rates in the optimal price    p ̃   ji    are determined solely by trade linkages. If countries are 
+symmetric,  n = 0 , the market share of US products is infinitely small and there-
+fore, the weight of the dollar in the optimal price of exporters from other countries is 
+trivial. The same applies to all other currencies except for producer and destination 
+ones, which have a positive weight due to home bias. Given that all exchange rates 
+have the same volatility,  ρ = 1 , firms unambiguously choose either PCP or LCP.
+Consider next the case when the volatility of exchange rates is the same for all 
+countries,  ρ = 1 , but the United States accounts for a  nontrivial share of global trade,  
+ n > 0 .12 This implies that a positive fraction of inputs and competing products in 
+small economies are coming from the United States, and that the dollar has a positive 
+weight in price index (16) and the optimal price    p ̃   ji    of foreign exporters. As a result, 
+the dollar is preferable to any other vehicle currency and depending on parameter val-
+ues, firms choose PCP, LCP, or DCP in equilibrium. Figure 2 panel A illustrates this 
+result in the coordinates  α  and  γ . Consistent with Proposition 1, exporters are more 
+likely to set prices in producer (local) currency when complementarities in price set-
+ting are weak (strong), while a higher openness of the economies and a larger share of 
+the United States in world trade increase the chances of the DCP equilibrium.
+PROPOSITION 2 (Large Economy Advantage): Assume  λ → 0 . Then as long as 
+the share of the US economy in international trade is positive,  n > 0 , the region in 
+the parameter space with DCP as a unique equilibrium is  nonempty and increases 
+as  n  goes up.
+Figure 2 panel A also shows that equilibria with asymmetric invoicing can arise 
+when  n > 0 . In particular, firms might choose PCP when trading between small 
+12 Note that PCP, LCP, and DCP coincide for trade flows between regions within the United States.
+
+===== PAGE 15 =====
+
+664
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+economies, but set prices in dollars when exporting to the United States. This is 
+because the home bias is larger in the United States than in other countries when  
+n > 0 , and more competitors in the US market have prices stable in local currency. 
+Similarly, exporters from the United States have a higher share of their marginal 
+costs that are stable in their own currency and can choose DCP even when exporters 
+from other economies prefer LCP.
+Interestingly, the size of the US economy is not the only fundamental advantage 
+of the dollar. Even if countries are symmetric in terms of their size,  n = 0 , and the 
+dollar exchange rate does not appear in foreign price indices (16), the DCP equi-
+librium may still emerge because of the lower volatility of the US exchange rate, 
+i.e.,  ρ < 1  (see Figure 2 panel B). To see the benefits of DCP in this case, consider 
+a limiting case with no home bias  γ ≈ 1  and strong complementarities in price 
+setting  α ≈ 1 , so that the optimal price of a given firm depends only on prices of 
+foreign competitors (see Figure 1). It follows that all exchange rates enter symmet-
+rically into the optimal price    p ̃   ji    and the firm would ideally like to set prices in terms 
+of a fully diversified basket of currencies. This is, however, not feasible because 
+of the discrete nature of the invoicing problem, and firms look for a currency that 
+can most closely replicate this diversified portfolio. Since the dollar has the lowest 
+idiosyncratic volatility,  ρ < 1 , it strictly dominates other alternatives. Away from 
+this limit, there is a  trade-off between producer/local currency and the dollar, but the 
+DCP region still increases as  ρ  goes down.
+PROPOSITION 3 (Anchor Currency Advantage): Assume  λ → 0 . Then as long 
+as the dollar has lower volatility than other currencies,  ρ < 1 , the region in the 
+parameter space with DCP as a unique equilibrium is  nonempty and, if  n ≤ 1/2 , 
+increases as  ρ  goes down.
+This result has several noteworthy implications. First, it shows that the relative 
+volatilities of exchange rates are important even when they are not driven by nominal 
+Figure 2. Currency Choice: Flexible Price Limit
+Notes: The figure shows equilibria for  λ → 0 ,  ϕ = 0.5  and (i)  ρ = 1 , different values of  n ; (ii)  n = 0 , differ-
+ent values of  ρ . PCP′ (LCP′ ) denotes the region where small countries set prices in producer (local) currency when 
+trading with each other and use dollars when trading with the United States.
+0 0.2 0.4 0.6 0.8 1
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+Import share γ
+Complementarities in price setting α
+PCP
+DCP DCP
+n = 0.25
+ρ = 0.25
+ρ = 0.5
+n = 0 ρ = 1
+n = 0.5
+PCP′ LCP′
+LCP PCP LCP
+0 0.2 0.4 0.6 0.8 1
+Complementarities in price setting α
+Import share γ
+ρ = 0.75
+Panel A. Large economy advantage Panel B. Anchor currency advantage
+n = 0.1
+
+===== PAGE 16 =====
+
+665
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+shocks (cf. Devereux, Engel, and Storgaard 2004), and that volatile currencies are 
+unlikely to be widely used in international trade. Second, the result establishes an 
+important linkage between, on the one hand the wide use of the dollar as an anchor 
+currency in the exchange rate policies of emerging economies and, on the other 
+hand the dominance of the dollar in international trade: a tighter peg of exchange 
+rates to the dollar makes it a better substitute for other currencies and raises its 
+odds of becoming the vehicle currency. Finally, notice the connection between 
+Propositions 2 and 3: while parameter  n  reflects the total size of economies with 
+a hard peg to the dollar, parameter  ρ  captures the tightness of crawling pegs to the 
+dollar.
+C. Transition
+The previous sections show that both the fundamentals and the complementar -
+ities in currency choice contribute to the dominant status of the dollar in today’s 
+world. But what happens when the two factors work in the opposite directions and 
+firms coordinate on a currency that is losing its fundamental advantages? This sec-
+tion discusses the transition from the pound sterling to the dollar during the twenti-
+eth century, while Section IIIF below discusses the future of the dollar in the twenty 
+first century.
+To this end, I extend the model to have two large countries, the United Kingdom 
+and the United States, and a continuum of small economies: constituting the rest of 
+the world (RoW) (see Figure 3 and online Appendix A.2 for details). The global 
+economy starts from the point where the United Kingdom has a fundamental advan-
+tage in terms of economy size and/or the anchor status of its currency, which it 
+loses during the transition path as the US economy becomes larger and more coun-
+tries switch to pegging their exchange rates to the dollar. I focus on the choice 
+between the two potential dominant currencies and ignore the PCP and LCP alter -
+natives. Importantly, I follow the previous literature (see e.g., Matsuyama, Kiyotaki, 
+and Matsui 1993; Rey 2001) and make the assumption in the spirit of evolutionary 
+game theory that as long as the old equilibrium exists, firms do not coordinate to 
+jump into a new one.13
+COROLLARY 1 (Transition): Consider an increase in the relative size of the US 
+economy or a decrease in the relative volatility of its exchange rate. The share of the 
+pound remains above one-half even when the US fundamentals become the same as 
+in the United Kingdom. The trade flows switch to the dollar in the following order: 
+(i) between the United States and the RoW, (ii) between the RoW countries as well 
+as between the United States and the United Kingdom, and (iii) between the United 
+Kingdom and the RoW.
+13 Although a dynamic model with staggered pricing can be applied to select between “history” versus “expec-
+tations,” the equilibrium remains  nonunique (see e.g., Matsuyama 1991, Krugman 1991). Alternatively, one can 
+use a global game approach (Morris and Shin 2001), but its application in dynamic settings is complex and goes 
+beyond the scope of this paper.
+
+===== PAGE 17 =====
+
+666
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+This result follows from Propositions 1 to 3 and illustrates the interplay between 
+the fundamental determinants of currency choice and the strategic  complementarities 
+across firms. The latter implies that no firm wants to be the first to adopt the dollar. 
+As a result, the pound remains the dominant currency even when the US economy 
+overtakes the UK economy in terms of size, and regarding the anchoring of exchange 
+rates, which gives rise to  path dependence in equilibrium invoicing. Although the 
+fixed costs of changing the currency would further strengthen the hysteresis, they 
+are not necessary given the complementarities in invoicing. The flip side of this 
+result is that the United States can potentially speed up the transition by forcing its 
+own firms adopt the dollar, which due to price linkages, would make exporters from 
+other countries more willing to abandon the pound.
+The model also has clear predictions about the order in which trade flows switch 
+from one currency to another. As can be seen from Figure  3, trade between the 
+United States and small economies is the first to switch from the pound because of 
+the prevalence of US firms with costs stable in dollars. At the second stage, small 
+economies start using the dollar as a vehicle currency when trading with one another, 
+and trade flows between the two large economies also change the currency of invoic-
+ing. Finally, trade between the United Kingdom and small economies switches to 
+the dollar as well. Interestingly, depending on the strength of complementarities in 
+currency choice, there can be a full transition from the pound to the dollar or alterna-
+tively, the economy can end up in an equilibrium with multiple regional currencies: 
+e.g., the dollar dominates in trade between the United States and small economies as 
+well as across small economies, but the imports and exports of the United Kingdom 
+remain invoiced in pounds.
+These predictions are broadly consistent with historical evidence—the tran-
+sition from the pound to the dollar was sluggish, followed with a lag after the 
+United States overtook the United Kingdom as the largest economy, and was 
+accelerated by the high volatility of the UK exchange rate after World War I (see 
+Eichengreen 2011). While the invoicing data are scarce for most of the twentieth 
+Figure 3. Transition from One Vehicle Currency to Another
+Note: The figure shows the order in which trade flows between countries switch from the pound to the dollar.
+UK
+US
+RoW2 2
+3
+1
+
+===== PAGE 18 =====
+
+667
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+century, the recent experience of the eurozone also fits the predictions of the model.  
+In particular, the euro is more commonly used in trade between the eurozone and 
+developing  countries, but much less so in trade with the United States, and almost 
+never as a vehicle currency (Kamps 2006).
+III. Quantitative Analysis
+This section  shows that a straightforward extension of the analytical model 
+described above can be taken to the data and be used for a rich quantitative analysis. 
+To this end, I augment the baseline setup with staggered Calvo pricing, heteroge-
+neous countries and sectors; calibrate the model using the global  input-output table 
+and exchange rate series; demonstrate a good fit of the model; and finally, do the 
+counterfactual exercises about the future of the international price system.
+A. Full Model
+Although useful to build intuition, the baseline model is clearly too simplistic 
+to be taken directly to the data. This section extends the setup in two directions—a 
+general  input-output matrix between countries and sectors, and richer dynamics of 
+prices and exchange rates—briefly outlining the key new ingredients and relegat-
+ing the details to online Appendix B.1. Consider an infinite horizon model with  N  
+economies,  S  sectors (industries), and  K  currencies. For convenience, in most of the 
+analysis below, I use subscripts  j  and  i  to denote respectively the countries of origin 
+and destination, and superscripts  r  and  s  for the sectors of origin and destination. 
+Index  k  is reserved for currency of invoicing. Firms are free to set different prices 
+across markets with the latter defined by the type of good  r  (industry of production) 
+and country of destination  i .
+Heterogeneity.—of trade flows between countries and sectors is important in two 
+ways. On the one hand, it allows analysis of the  cross-sectional variation in currency 
+choice. On the other hand, it incorporates the granularity of international trade with 
+the resulting values of  γ  in  trade-intensive sectors much higher than the aggregate 
+ import-to-GDP ratio.
+To allow for heterogeneous trade flows between countries and sectors, assume 
+that the individual varieties are aggregated via a generalized Kimball aggregator:
+    ∑ 
+j=1
+  
+N
+    γ  ji  r   ϒ (   X  jit  r   _  γ  ji  r    X  it  r    )  = 1, 
+where   X  jit  r    is the quantities sold by firms from country  j  and sector  r  in country  i ,  
+and   γ  ji  r    is demand shifters that determine the  steady-state trade shares and sum up to 
+one,   ∑ j=1  N    γ  ji  r   = 1 . Similarly, the heterogeneity across sectors arises due to different 
+input shares for labor   ϕ  i  Ls   and intermediate goods   ϕ  i  rs   in the  Cobb-Douglas produc-
+tion function. The marginal costs in sector  s  of country  i  are equal to
+  M C  it  s   =   1 _  A  it  s       ( W it  )     ϕ  i  Ls     ∏ 
+r=1
+  
+S
+    ( P  it  r  )     ϕ  i  rs   , 
+
+===== PAGE 19 =====
+
+668
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+where   P  it  r    is the aggregate price index in the market of good  r  in country  i , and 
+the sum of input shares is equal to one to ensure a constant returns to scale,  
+  ϕ  i  Ls  +  ∑ r=1  S    ϕ  i  rs  = 1 .
+Dynamics.—of the model feature a  random-walk process for exchange rates, 
+the Calvo price adjustment, and fixed costs of changing invoicing currency. On the 
+household side, the optimal risk sharing under complete markets remains unchanged, 
+hence the properties of exchange rates from Lemma  3 still apply. I assume that 
+financial shocks   ψ it    are martingales potentially correlated across countries and 
+that a deterministic wage inflation chosen by the monetary policy is  Δ  m it   =  μ i   . 
+Consistent with the empirical evidence from Meese and Rogoff (1983), it follows 
+that the vector of equilibrium exchange rates   e t    follows a random walk with drift  μ  
+and contemporaneous covariance matrix  Σ  across economies,  Δ  e t   ∼ i.i.d. (μ, Σ)  .
+On the firm side, prices are assumed to adjust in a staggered way subject to the 
+Calvo friction. This assumption allows me to calibrate the price stickiness in a con-
+ventional way and contrasts with the static setup, in which the value of  λ  depends 
+on the period length and is not determinate. Leveraging the insights of Gopinath, 
+Itskhoki, and  Rigobon (2010); Cravino (2014); and Drenik and Perez (2021); 
+online Appendix B.1 solves for the optimal currency choice in dynamic setting with 
+ nonzero inflation:14
+PROPOSITION 4 (Calvo Pricing): The optimal currency choice  k  maximizes the 
+following statistic:
+(17)  2 (1 − β  λ   r )    ∑ 
+t=0
+  
+∞
+      (β  λ   r )    t  cov ( e it   −   p ̃    jit  r  , Δ  e k0  )  −  σ  k  2  −   1 _ 1 − β  λ   r     μ  k  2 . 
+The formula generalizes the currency choice from Section IB, which can be nested 
+as a special case when firms act myopically  β → 0  and inflation rates are zero   
+μ k   = 0 . In contrast, as emphasized in the previous literature, what matters for 
+invoicing in the dynamic setting is the  medium-run  pass-through, i.e., a discounted 
+sum of intertemporal covariances between exchange rates and desired prices. The 
+latter has complicated dynamics due to staggered price adjustment and can only be 
+solved numerically. Consistent with the predictions of the  one-period model, the 
+second term of equation (17) indicates that firms are unlikely to use volatile curren-
+cies as a unit of account. Finally, the proposition adds inflation as a separate deter -
+minant of the currency choice that is only relevant in a dynamic model. Other things 
+equal, a positive inflation in country  i  implies that the desired prices are growing 
+in currency  i  and hence, it is optimal to set prices in other currencies in which the 
+optimal price is more stable.
+Finally, I allow for fixed costs  τ  of changing the currency of invoicing; i.e., 
+an individual firm switches from one currency to another only if that increases  
+statistic (17) by more than  τ .15 Although similar to the menu costs, the motivation 
+14 The expression is isomorphic to the formula in Drenik and Perez (2021), but is derived for an arbitrary pro-
+cess    p ̃   jit    rather than the one with a constant growth rate, which is important given the endogenous nature of    p ̃   jit    in 
+this setting.
+15 For simplicity, I assume that the fixed costs are paid in local currency and are a pure transfer to households.
+
+===== PAGE 20 =====
+
+669
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+for this additional ingredient is quite different. As the analysis above shows, there 
+are strategic complementarities and  path dependence in currency choice, even in the 
+absence of any fixed costs. Instead, the main challenge is that invoicing decisions 
+of firms are indeterminate in the limit of fixed exchange rates and are unstable in 
+its neighborhood. As a result, equilibrium currency choice can change abruptly in 
+response to minor shocks when the volatility of exchange rates is low, e.g., under a 
+“crawling peg.” The fixed costs ensure that firms change invoicing only in response 
+to sufficiently large shifts in exchange rate regimes and can be interpreted as both 
+costs of renegotiating contracts and rational inattention (Sims 2003, Mankiw and 
+Reis 2002).
+Simulation.—of the model is done in three steps. Although my main focus is on 
+the current structure of the international price system, I capture the  history depen-
+dence of the currency choice by estimating the model sequentially for years 1995, 
+2005, and 2015 using equilibrium invoicing from the previous period as a starting 
+point when solving for the new equilibrium. The choice of dates is constrained by 
+the availability of the global  input-output tables. Moreover, in the absence of histor-
+ical data on currency choice, I have to make a crude assumption that all international 
+prices are set in dollars before 1995. The aim is that it provides a reasonable approx-
+imation to the late  Bretton-Woods period and plays a diminishing role for later peri-
+ods. To simplify the analysis, it is assumed that domestic firms set prices in local 
+currency, while exporters are allowed to choose between PCP, LCP, and five poten-
+tial vehicle currencies—the dollar, euro, pound, yen, and renminbi. Section  IIID 
+below relaxes all these restrictions and shows the robustness of the main results.
+B. Data and Calibration
+This section briefly summarizes the main sources of data and the calibration strat-
+egy, while further details can be found in online Appendix B.2. The parameters of 
+the model are calibrated in three different ways. The values of the standard param-
+eters are borrowed from the previous literature. The two main inputs of the quanti-
+tative model—the  country-sector trade flows   (γ, ϕ)   and the exchange rate moments   
+(μ, Σ)  —are estimated directly from the data. Finally, the only targeted invoicing 
+moment is the aggregate share of DCP in 1995 that is used to calibrate the fixed 
+costs of currency adjustment.
+Following most of the literature, the monthly discount factor is  
+ β =  0.96     1 _ 12    . I use the estimates of price adjustment frequencies from Nakamura and 
+Steinsson (2008) to calibrate   λ   r   at the sectoral level (see online Appendix Table A1). 
+The elasticity of strategic complementarities in price setting   α   r   is calibrated follow-
+ing the estimates for large firms that account for most of international trade from 
+Amiti, Itskhoki, and Konings (2019). Given scarce evidence on the  cross-industry 
+variation in   α   r  , I use the same value of  0.5  for all sectors in manufacturing and 
+services, but a much higher value of  0.99  for commodities in order to capture the 
+ price-taking behavior of firms in these sectors.
+The main source of trade shares is the OECD  inter-country  input-output (ICIO) 
+table widely used in international trade literature. After making the tables consistent 
+across years, the sample includes  N = 63  countries (including all OECD econo-
+
+===== PAGE 21 =====
+
+670
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+mies, the European Union, most East Asian countries, plus the RoW) and  S = 32  
+ two-digit International Standard Industrial Classification of All Economic Activities 
+(ISIC) industries (including  2  commodity sectors,  16  manufacturing industries, and  
+14  sectors in services). The database has a good coverage with only 2 percent of 
+international trade accounted for by the within RoW flows that are not observed 
+separately from the domestic flows of these economies.
+The ISIC table is adjusted in several ways to bridge the gap between the model 
+and the data. Following the model that defines markets at the  country-good level, I 
+eliminate the variation in   γ  ji  rs   across importing sectors  s . The adjusted  input-output 
+matrix matches the original  cross-country trade flows and sectoral input shares, 
+but is different in terms of  sector-to-sector flows. To capture the fact that prices of 
+most commodities are determined at a global level with relatively little variation 
+across countries, I assume one international market for each commodity, in which 
+the worldwide price of the corresponding good is determined. Finally, because ICIO 
+tables do not report labor costs, one needs to adjust total value added by firms’ prof-
+its. To this end, I use the estimates of markups for Compustat firms from Baqaee 
+and Farhi (2020), which I aggregate to the sectoral level, average across years, and 
+extrapolate to all economies and periods.
+The covariance matrix of exchange rates is computed using monthly series of 
+bilateral exchange rates from the IMF International Financial Statistics data-
+base. Given almost no variation in their exchange rates, Saudi Arabia and Hong 
+Kong are assumed to have a hard peg to the dollar and all members of the euro-
+zone have a hard peg to the euro. Motivated by the fact that out of  124  countries 
+not included in ICIO tables, less than 1 percent have a free floating exchange rate 
+(Ilzetzki, Reinhart, and Rogoff 2019), I construct the exchange rate for the RoW as a 
+ weighted-average of dollar and euro exchange rates. Finally, given the limited avail-
+ability of  wage-based inflation rates, parameter   μ i    is estimated as an average of the 
+consumer price index inflation and exchange rate depreciation in each economy (see 
+online Appendix Table A2). I use a 15-year window before 1995, 2005, and 2015 to 
+estimating the corresponding exchange rate and inflation moments assuming they 
+provide an accurate approximation to agents’ expectations about the near future.
+As mentioned above, the fixed costs of currency adjustment are introduced to 
+avoid large swings in invoicing when countries switch between floating and pegged 
+exchange rates. As a result, the switching between currencies—both in sample and 
+in the counterfactual analysis—depends crucially on the value of this parameter. 
+Given little empirical guidance on the size of these adjustment costs, I adopt two 
+calibration strategies. First, starting with microevidence, I assume that the fixed 
+costs of changing the currency are equal to the standard menu costs of price adjust-
+ment. Using the estimates from Nakamura and  Steinsson (2010), Golosov and 
+Lucas (2007), and Levy et al. (1997) that firms spend about 0.5 percent of their 
+revenues on menu costs, I get  τ = 0.5 − 1 ·  10   −4  . Second, I directly target invoic-
+ing moments and calibrate fixed costs to match the share of DCP in 1995 for a  
+subsample of countries with available data. Given the initial guess that all interna-
+tional trade is invoiced in dollars, the share of DCP is monotonically decreasing in  
+
+===== PAGE 22 =====
+
+671
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+τ  and provides a good identification. This approach leads to a similar estimate and I 
+adopt  τ = 0.8 ·  10   −4   as the baseline value of fixed costs.16
+I use the IMF dataset compiled by Georgiadis et al. (2020), which provides annual 
+shares of exports and imports invoiced in dollars, euros, and home currencies for 
+more than  100  economies over the period from 1990 to 2020. I focus on  three-year 
+averages as a benchmark, but given the large number of missing values, I increase the 
+window to five years for some economies. This allows me to get invoicing shares for 
+about 63 percent of global trade in 2015 with the main limitation being the absence 
+of data for China. Because most numbers come from customs authorities and cover 
+only merchandise trade, I compare empirical values with  model-implied invoicing 
+for manufacturing and commodities, excluding service sectors.17 I complement this 
+ country-level data with the bilateral and sectoral invoicing for Switzerland in 2015 
+(Bonadio, Fischer, and Sauré 2020).
+C. Descriptive Evidence
+Before proceeding to the structural results, I present a first look at the raw data 
+and summarize the main empirical facts about trade flows   (γ, ϕ)   and exchange rates   
+(μ, Σ)  . The objective is to visualize the main inputs of the quantitative model and to 
+evaluate the role of four determinants of the DCP equilibrium from Propositions 1 to 
+4: high inflation and tight trade linkages in shaping demand for a vehicle currency, 
+and the  large-economy and the  anchor-currency advantages of the United States in 
+making the dollar the top candidate for this role. A reader more interested in the 
+predictions of the structural model can proceed directly to Section IIID.
+Starting with the implications of Proposition 4, the  much-studied hyperinflation 
+in Latin American countries in the 1980s and in Eastern Europe in the 1990s, as well 
+as a relatively high inflation in most East Asian economies in the same time period, 
+imply that the currencies of the vast majority of economies in 1995 were hardly suit-
+able for invoicing and that exporters from these countries were looking for a vehi-
+cle currency to be used in international trade (see online Appendix Figure A4 and 
+Table A2). Comparing these patterns with the later period, one can see that despite 
+a substantial decrease in inflation rates  across-the-board in the 2000s, most emerg-
+ing economies—with the notable exception of China—still exhibit significantly 
+higher inflation rates than developed countries. This presumably lowered the global 
+demand for a vehicle currency and increased the number of potential candidates for 
+this role relative to earlier decades, even though for many economies, inflation still 
+generates strong incentives to use foreign currency in international trade.
+FACT 1 (Inflation): The median inflation rate across emerging economies was 16.8 
+percent in the  1980–1990s and went down to 2.7 percent in the 2000s against 0.7 
+percent in developed economies.
+16 The main results do not change much as long as  τ  stays within the range  0.5 − 1.2 ·  10   −4  .
+17 That said, the currency shares for some countries are inferred from settlement data collected by central banks, 
+which include trade in services and can potentially be one source of discrepancy between the model and the data.
+
+===== PAGE 23 =====
+
+672
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+This negative trend in inflation was, however, largely offset by the rising open-
+ness of economies that, according to Proposition 1, helped to sustain the dominant 
+currency equilibrium. To show this, I use the  flexible-price version of the model to 
+compute the  pass-through of exchange rates into aggregate prices.18 The only input 
+in this exercise is the global  input-output table, which allows to estimate the shares 
+of labor from different countries in the aggregate basket of good  r  sold in country  i . 
+These estimates allow to express prices in terms of labor costs across countries and 
+are equivalent to the  pass-through of  country-specific exchange rates   e it   . In particu-
+lar, the  pass-through of a home currency shows how much domestic prices change 
+in terms of foreign units when the local exchange rate depreciates against all other 
+currencies and is a convenient way to measure the openness of the economy: it is 
+equal to one for closed economies and zero in the limit with no home bias. I focus 
+on manufacturing goods and use imports as weights to aggregate the  pass-through 
+coefficients across markets.19
+Figure 4 shows the results. As can be seen from the first panel, there is a large het-
+erogeneity in openness across countries with the average content of home currency 
+ranging in 2015 from less than 20 percent for small East Asian and East European 
+economies, to more than 50 percent for large economies of the United States, Japan, 
+China, and the eurozone (see also online Appendix Table A3). On average, the share 
+of local currency among  nonlarge economies is about 30 percent, leaving enough 
+room for a foreign dominant currency. Moreover, the openness of the economies 
+has substantially increased over the last decades. The left panel of Figure 5 shows 
+that while the average share of domestic currency went up between  1995 and 2015 
+for countries that joined the eurozone, it went down for almost all other economies. 
+The differences are quantitatively large, including the change from 78 percent to 56 
+percent in Japan. Thus, the increase in the openness of economies has largely coun-
+teracted the fall in inflation in emerging economies discussed above, and has helped 
+to sustain demand for a vehicle currency in international trade.
+FACT 2 (Price Linkages): The average  pass-through of home currency in prices 
+is about 30 percent for small economies and 55 percent for the United States, the 
+eurozone, Japan, and China.
+Turing next to the two fundamental advantages of the United States, Figure 4 
+panels B and C show the  import-weighted  pass-through of the euro and the dollar 
+exchange rates into the prices of manufacturing goods across economies. While 
+the euro share is above 30 percent for European countries trading actively with the 
+eurozone, the numbers are close to zero for other economies, suggesting that the 
+euro is more likely to be a regional currency rather than a global one. In contrast, 
+the dollar share is high not only for Canada and Mexico—the two countries with 
+the most intense trade linkages with the United States—but also for Latin American 
+and Asian countries. Aggregating across all economies other than the issuer of the 
+18 Relative to this  flexible-price benchmark, the equilibrium  pass-through in a full structural model can be either 
+higher due to import prices being sticky in foreign currency or lower due to local and import prices being sticky in 
+home currency.
+19 The results are similar for the currency content of exports as shown in Table A4, Figures A5, and A6 in the 
+online Appendix.
+
+===== PAGE 24 =====
+
+673
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+respective currency, the  import-weighted average  pass-through is 11 percent for the 
+euro and 21 percent for the dollar. Given a tight peg of the renminbi to the dollar 
+Panel A. Home currency
+Panel B. EUR
+Panel C. USD
+Panel D. USD + RMB
+10
+20
+30
+40
+50
+60
+10
+20
+30
+40
+50
+60
+10
+20
+30
+40
+50
+60
+10
+20
+30
+40
+50
+60
+Figure 4.  Pass-through into Domestic Prices
+Notes: The figure shows the  pass-through of home currency, euro, dollar, and a combination of dollar and ren-
+minbi exchange rates into domestic prices in 2015 (percent). All values are computed taking into account the global 
+ input-output linkages, are aggregated across markets using imports as weights, and include only markets of man-
+ufacturing goods.
+
+===== PAGE 25 =====
+
+674
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+over most of the period, a more relevant statistic for currency choice might be a 
+combined  pass-through of the two currencies, which reaches 33 percent at the global 
+level (see Figure 4 panel D). This ensures that in most markets, the dollar ranks as 
+the top foreign currency and often surpasses the home currency. The second panel 
+of Figure 5 shows that this dominance has only strengthened over the last decades as 
+the combined share of the dollar and the renminbi went up for every singly country 
+in the sample, including the eurozone economies. The total share has almost dou-
+bled with the renminbi contributing two-thirds of this growth. At the same time, the 
+share of the dollar remains twice as large as the share of the renminbi because of the 
+contribution of the RoW, which is mostly pegged to the dollar.
+FACT 3 (Large Economy Advantage): Between 1995 and 2015, the average 
+ pass-through of the dollar in prices went up from 16 percent to 21 percent and the 
+ pass-through of the renminbi increased from 2 percent to 12 percent.
+Finally, to evaluate the role of the anchor currency advantage, I turn to the suffi-
+cient statistic from Proposition 4 and focus on the limit of static economy  β → 0  
+with no inflation   μ i   = 0 . I define the  pass-through coefficients into desired prices 
+of exporters, such that    p ̃    ji  r   −  e i   = −  ∑ 𝑚        χ  ji  r   (m)   e m    and note that   ∑ 𝑚        χ  ji  r   (m)  = 1 . It 
+follows that the currency choice statistic (17) can be rewritten as
+     2cov ( e i   −   p ̃    ji  r  ,  e k  )  −  σ  k  2  = 2 ∑ 
+m
+  
+ 
+    χ  ji  r   (m) cov ( e m  ,  e k  )  −  σ  k  2  
+ =  ∑ 
+m
+  
+ 
+    χ  ji  r   (m)  (2cov ( e m  ,  e k  )  −  σ  k  2 ) . 
+Without taking a stand on the values of   χ  ji  r   (m)  , which depend on the trade flows 
+and currency choices of other firms, one can ask the following hypothetical ques-
+tion: what vehicle currency will a firm choose if it does not want to use currency m 
+Figure 5.  Pass-through into Domestic Pprices: 1995 versus 2015
+Notes: The figure compares the  pass-through of exchange rates from Figure 4 with counterparts estimated for 1995. 
+The size of each circle represents a country’s share in world imports. The members of the eurozone are shown in 
+red in panel A.
+ESPSVBPOLJPNFRASVK
+NELGRCESTLUXTURTUN
+LTUNORLVA
+BGRMLTNLDGBRARG
+BRA
+ROU
+CZE
+IRLISRCYP
+RUSISL
+MARNZL
+TWN
+PER
+COLINDAUS
+THAZAF SGPMYS
+KHM
+VNM
+CRI MEXCAN
+CHL
+IDN KORPHL
+GHEHRVDEUITAPRTAUTSWE
+DNKHUNFIN
+KHM
+VNM
+MYSSGPBGR HUN
+ISLMAR
+THACZECRITUN
+NOR DNKHRVCHEMEXCHL
+AUS POL
+ROU
+GBR
+COLPERPERISRNZL
+SWE
+PHL
+IDNRUS KOR
+INDTUR
+SAU
+BRA
+JPN
+ARG
+USA
+CHNFRA
+DEU
+ITA
+ESP
+FIN
+AUT
+PRT
+NLDBEL
+LTU
+GRCHKG
+SVK
+LVA
+SVNIDN
+IRL
+CYPEST
+MLT
+ZAF
+CAN
+70
+80 50
+40
+30
+20
+10
+0
+60
+502015
+2015
+1995
+40
+30
+20
+10
+0
+0 10 20 30 40 50 60 70 80
+1995
+0 10 20 30 40 50
+Panel A. Home currency Panel B. USD + RMB
+
+===== PAGE 26 =====
+
+675
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+for invoicing—because of either high inflation   μ m    or a low share of currency  m  
+in desired price   χ  ji  r   (m)  —and is looking for the closest substitute  k  that maximizes  
+ 2cov ( e m  ,  e k  )  −  σ  k  2  ? Clearly, if a single currency  k  turns out to be a good substitute 
+for a large number of currencies, it has a better chance of becoming the dominant 
+currency in international trade. For simplicity, I do this exercise allowing firms to 
+choose only among five potential vehicle currencies and show the results in Figure 
+6, where each country on a map corresponds to currency  m  and the colors show the 
+best choice  k .
+The first thing to notice from this picture, is that the dollar is the best substitute 
+for the vast majority of currencies in 1995, with the only exception being Western 
+European currencies that have the German mark as the closest substitute. 20 Almost 
+no currency is paired with the pound, yen or the renminbi in this period. 21 The 
+position of the dollar is more ambiguous in 2015 as can be seen from the second 
+20 This result echoes the findings of Ilzetzki, Reinhart, and Rogoff (2019) that most countries peg their exchange 
+rates to the dollar, although the sufficient statistic for currency choice is different from the one used in their classi-
+fication and does not depend on whether the comovement of the exchange rates is driven by a monetary policy or 
+ nonmonetary shocks.
+21 The fact that the Argentinian peso is substituted for yen is driven by a few large depreciations of the former 
+and is not robust to the exclusion of these outliers.
+Figure 6. Best Substitution Currency
+Notes: For currency  m  of each country, the figure shows the best substitute  k  among five potential vehicle curren-
+cies with the highest value of  2cov ( e m  ,  e k  )  −  σ  k  2  . The panels report results for two periods from 1981 to 1995 and 
+from 2001 to 2015.
+USD
+DEM
+GBP
+JPY
+RMB
+USD
+EUR
+GBP
+JPY
+RMB
+Panel A. 1995
+Panel B. 2015
+
+===== PAGE 27 =====
+
+676
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+panel of Figure 6. On the one hand, it loses its dominance among Eastern European 
+currencies to the euro and its position among several Latin American and East Asian 
+currencies to the renminbi. On the other hand, if one excludes the renminbi from the 
+set of potential vehicle currencies, given its tight peg to the dollar over this period, 
+the position of the dollar is even stronger in 2015 than in 1995. The expansion of 
+China also explains a falling  trade-weighted share of the euro despite an increase in 
+the number of countries pegging to the currency.
+FACT 4 (Anchor Currency Advantage): Between 1995 and 2015, the  trade-weighted 
+share of countries with the corresponding currency as a best substitute went down 
+from 44 percent to 26 percent for the dollar, up from 2 percent to 29 percent for the 
+renminbi, and down from 41 percent to 32 percent for the euro.
+D. Model’s Fit
+While the previous section provides suggestive evidence about fundamentals that 
+can support the DCP equilibrium, the strategic interactions between firms imply 
+that it is not possible to accurately predict currency choice without a full structural 
+model. Next, I combine together all ingredients in a calibrated version of the model 
+and show that it can quantitatively replicate the key empirical facts about global use 
+of currencies, the  cross-sectional variation, and the evolution of invoicing in time.
+Starting with the aggregate predictions of the model, column 2 of Table 1 reports 
+the share of international trade invoiced in the dollar, euro, renminbi, British pound, 
+yen, and in the remaining currencies of advanced and emerging economies. The 
+dollar clearly emerges as the dominant currency with almost two-thirds of global 
+trade invoiced in the US currency. It is followed by the euro, which accounts for 
+another 22 percent of international flows, while the share of any other currency in 
+world trade does not exceed 2.5 percent. To dissect the optimal currency choice 
+from purely mechanical effects, it is worth comparing these numbers with the shares 
+of the corresponding countries in world trade reported in column  1 of the table: 
+the share of DCP is three times larger than the total trade share of countries with 
+a hard peg to the dollar (including most of the RoW). In this sense, the relative 
+size of economies can only explain about one-third of DCP in world trade with 
+the remaining use of the dollar arising endogenously. In contrast, the percentage of 
+international prices set in euros is very close to the contribution of the eurozone to 
+global trade and the use of other currencies is disproportionately smaller than the 
+trade share of their issuers. Note that although the difference is especially large for 
+emerging economies, it is also significant for currencies of advanced economies, 
+including the pound, which served as the main vehicle currency before the dollar.
+To confront the model predictions with the data, I next look at a subsample of 
+countries, for which invoicing data are available. Figure 7 replicates the plot from 
+Georgiadis et al. (2020) showing in the first two bars the share of dollarized and 
+euroized economies and their currencies in total exports of countries in the sub-
+sample.22 As emphasized by Gopinath (2016), the invoicing share of the  dollar 
+22 The results for imports are similar and are shown in Figure A7 in the online Appendix.
+
+===== PAGE 28 =====
+
+677
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+(53  percent) is disproportionately large relative to its trade share (12 percent). 
+Importantly, this pattern cannot be attributed solely to the dollar invoicing of com-
+modities: the share of the dollar is about  2.3  times larger than the combined share 
+of dollarized economies and commodity trade between other countries. The third 
+Figure 7. Global Exports and Invoicing
+Notes: “Trade” bars show the share of commodity trade and the share of  noncommodity trade with dollarized and 
+euroized economies in world exports. “Data” and “Model” bars show respectively the empirical and  model-implied 
+fraction of exports invoiced in dollars and euros. All numbers are computed for a subsample of countries with avail-
+able invoicing data.
+USD EUR Commodities Other
+T rade Data Model
+1
+0.8
+0.6
+0.4
+0.2
+0
+Table 1—Currencies in World Trade
+Robustness
+Trade 
+share
+Baseline 
+model
+Include 
+services
+Any  
+VCP
+Domestic 
+invoicing
+Zero 
+inflation
+Initial 
+invoicing
+Flexible 
+prices
+(1) (2) (3) (4) (5) (6) (7) (8)
+USD 22.6 64.7 60.3 63.6 64.7 61.1 58.8 65.2
+EUR 20.9 21.7 24.9 21.2 21.7 18.2 26.0 23.8
+RMB 14.2 0.7 0.6 0.8 0.7 1.6 0.9 1.1
+GBP 3.1 1.3 1.7 1.2 1.3 1.8 1.3 1.1
+JPY 4.3 2.4 2.4 2.4 2.4 4.1 5.0 4.1
+Other AE 14.0 5.2 6.5 7.0 5.2 6.1 4.3 2.9
+Other EM 20.9 4.0 3.5 3.8 4.0 7.1 3.7 1.7
+Notes: Column 1 shows the percent of world trade accounted for by countries with the corresponding currency; col-
+umn 2 shows the fraction of world trade invoiced in a given currency; column 3 reports invoicing shares for all sec-
+tors including services; in column 4 exporters choose between  13  vehicle currencies; in column 5 domestic firms 
+optimally choose the currency; column 6 assumes   μ k   = 0  in all countries; column 7 uses initial invoicing based on 
+Ilzetzki, Reinhart, and Rogoff (2019) classification; and column 8 assumes   λ   r  → 0  for all sectors. In each case, 
+the model is re-estimated for all periods. Advanced economies (AE) are defined according to the IMF classification 
+and emerging economies (EM) include the RoW.
+
+===== PAGE 29 =====
+
+678
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+bar of the plot shows that the model replicates closely these empirical facts with the 
+global share of DCP equal to 52 percent against 53 percent in the data and the share 
+of ECP equal to 31 percent against 35 percent in the data.
+Given a good fit at the global level, one can go one step further and ask whether 
+the model is also consistent with the  cross-country variation in invoicing. Focusing 
+again on economies with available data, Figure 8 panel A presents a scatterplot 
+of empirical and simulated shares of DCP in imports across countries (see also 
+Figure A8 and Table A5 in the online Appendix). The figure shows that there is 
+substantial variation in the use of the dollar across economies in the data: e.g., the 
+dollar share is around 20 percent in Germany, 40 percent in the United Kingdom, 
+70 percent in Japan, 90 percent in India, and 100 percent in the United States. This 
+heterogeneity is well captured by the model as indicated by the fact that most obser-
+vations lie close to the  45 -degree line. In particular, the model reproduces a low 
+share of DCP in the eurozone countries and a high share in the United States and 
+most developing economies. Perhaps most surprisingly, it also rationalizes the wide-
+spread use of the dollar in such advanced economies as Japan, Korea, New Zealand, 
+and the United Kingdom. A good  cross-country fit of the model is not limited to 
+DCP and, as can be seen from panels C and D, also extends to the use of the euro 
+and local currencies in international trade.
+To measure the goodness of fit more formally, I use the fraction of ( trade-weighted) 
+ cross-country dispersion explained by the model, i.e.,   R   2  ≡ 1 −   
+ ∑ i       ω i     ( π i   −   π ˆ   i  )    2 
+  _________   ∑ i       ω i     ( π i   −  π ¯  )    2    , 
+where   ω i    is the share of country  i  in world imports,   π i    and    π ˆ   i    are respectively empir-
+ical and simulated shares of a given currency in imports of country  i , and   π –    is a 
+ weighted-average share in the data. Note that the statistic is equal to one when the 
+model perfectly matches the data    π ˆ   i   =  π i    and converges to zero when the model can 
+only explain the global use of currencies, but not the  cross-country variation    π ˆ   i   =  
+π –   . As can be seen in Figure 8, the statistic is   R   2  = 0.80  for the dollar,   R   2  = 0.96  
+for the euro, and   R   2  = 0.91  for local currencies—a surprisingly good fit, especially 
+given the amount of noise in the data. To put these numbers in perspective, consider 
+a “naïve invoicing” when all commodity prices are set in dollars and the prices in 
+ noncommodity sectors are split in half between the currency of the seller and the 
+currency of the buyer. 23 Figure 8 panel B shows that in contrast to the structural 
+model, the naïve invoicing substantially underestimates both the global use of the 
+dollar and its variation across countries with the DCP share staying between 10 
+and  40 percent for all  non-dollarized economies and the resulting   R   2   being negative.
+Going a step further, I complement these  cross-country results with the invoicing 
+patterns between different sectors. Since such data are not available at the global 
+level, I focus instead on one individual economy—Switzerland—with a substan-
+tial use of home currency, DCP, and ECP and a large variation in invoicing across 
+sectors. Figure 9 compares the empirical and  model-implied shares of DCP and 
+ECP in imports and exports across manufacturing sectors with the remaining trade 
+in each industry mostly invoiced in Swiss francs. Even at this granular level when 
+one controls for the country of origin or destination, the fit of the model is quite 
+23 Notice this is a conservative benchmark as it takes for granted the dollar invoicing of commodities. Instead, 
+this is an endogenous outcome in the model.
+
+===== PAGE 30 =====
+
+679
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+good. Although overestimating the average share of the euro in exports, the model 
+reproduces well the ranking of sectors in their use of dollars and euros, including 
+a higher share of DCP in exports of food, chemicals, and petroleum and a higher 
+share of ECP in exports of vehicles, paper, and plastics. Of course, the model’s 
+performance deteriorates as one looks at a more granular level, since by construc-
+tion, the currency choice is the same for all firms within a  sector-exporter-importer 
+triplet.24 More disaggregated data on trade flows is required to make progress in this 
+direction.
+Finally, moving to the time dimension, one of the key properties of the interna-
+tional prices system is the stability of invoicing patterns (Gopinath 2016). The fixed 
+costs of changing a currency and the complementarities in currency choice allow 
+24 Decomposing the variance of simulated invoicing in international trade, one gets that the countries of origin 
+and destination account each for about 47 percent of the total variation, while sectors explain the remaining 5 per -
+cent. Figure A9 in the online Appendix illustrates this result by showing the use of currencies across countries in 
+their trade with Switzerland.
+Figure 8.  Cross-Country Import Currency Shares: Model versus Data
+Notes: Panels A, C, and D show empirical and  model-implied shares of DCP, ECP, and LCP in imports. Panel B 
+shows a counterfactual share of DCP in imports if commodities were invoiced in dollars and invoicing of other 
+goods were split equally between currencies of the buyer and the seller. The size of circles is proportional to coun-
+try’s share in world imports.
+R2 = 0.8
+R2 = 0.96
+R2 = −0.13
+R2 = 0.91
+1
+0.8
+0.6
+0.4
+0.2
+0 0.2 0.4
+Data
+Model
+0.6 0.8 1
+0
+1
+0.8
+0.6
+0.4
+0.2
+0 0.2 0.4
+Data
+Model
+0.6 0.8 1
+0
+1
+0.8
+0.6
+0.4
+0.2
+0 0.2 0.4
+Data
+Model
+0.6 0.8 1
+0
+1
+0.8
+0.6
+0.4
+0.2
+0 0.2 0.4
+Data
+Model
+0.6 0.8 1
+0
+LVA
+LUX
+SVKBEL
+ESTDEU DNKSWE
+POLIRLBGRFRA
+ITA ISLNLDESPLTU
+TUN GBRMAR GRC
+CYP
+NZL
+RUS
+AUSTUR
+IAR
+MYS
+LVAAUT SVK
+EST MLTSVNHUNCZEROUNORPOLDNKSWE
+CHE
+ISLIRLFINFRAHRVDEUPRTBEL ITA ESP
+NLDLTU
+RUSMAR
+GBRTUN NZL
+CYP AUS
+TUR
+GRC JPN KOR
+IND
+CRI 
+TWN
+SAU
+USA
+ISN
+IDNMYS
+THABRHCAL
+ARGPER
+KHM
+BGR
+LUX
+BRA
+IND
+THA
+JPN TWNKORCHL PER
+IND
+ARG
+SAU
+KHM
+CRIUSA
+FIN
+NORPRT
+AUT
+SVNCZEHUN
+CHE
+ARGKHMCRISAU
+TWNMYSTHAIDNJPNPERINDKORAUSNZLCZL
+BRA 
+ISR
+RUS
+NOR
+TUR
+ISLGBR
+DNK
+GRC
+MAR SWE
+POL
+TUN LTU
+CHE
+ESPROUITA
+NLDFINIRL
+ESTCYP
+BGRFRAHRVCZE
+SVK
+PRTHUN
+MLTDEU
+BEL
+LVA
+LUX
+AUT
+SVN  
+MYS
+TWN
+PER
+MARISRTHA
+GHLKOR
+ISLBRA
+IDNTURKHMARG RUS
+CHE
+NZL
+AUS
+NOR GRC
+LTU
+ESP
+IRLFINNLD
+ITA
+ESTCYP
+FRA
+SVK
+PRT
+MLTDEU
+BEL
+LVA
+LUX
+AUT
+SVN
+SAU USA 
+JPN
+USA
+ROVHRUMLT
+Panel A. DCP Panel B. Naïve DCP
+Panel C. ECP Panel D. LCP
+
+===== PAGE 31 =====
+
+680
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+the model to reproduce this fact. The simulated share of DCP is stable not only at 
+the global level (see Figure A10 in the online Appendix), but also at the country 
+level. Focusing on the evolution of export invoicing between 2005 and 2015, the 
+ cross-country median absolute change in the DCP (ECP) share is 3.6 percent (3.2 
+percent) in the model against 3.5 percent (2.9 percent) in the data.25 The model also 
+matches well the fraction of countries with a rising share of ECP in exports (47 per-
+cent against 50 percent in the data), but underpredicts the number of countries with a 
+growing share of DCP (36 percent against 52 percent in the data). At the same time, 
+as emphasized by Georgiadis et al. (2020), there are a few countries with substantial 
+changes in invoicing between 1995 and 2015. The upper panel of Figure 10 illus-
+trates this point by showing the evolution of the dollar share in exports of selected 
+economies with a good data coverage. Both in the data and in the model, there is 
+a negative trend among European countries that either joined the euro area or had 
+strong trade linkages with euro economies.26 On the other hand, the figure shows the 
+model also matches a stable DCP share in Japan and Turkey, and a moderate positive 
+trend in Australia driven by country’s trade with China.
+E. Discussion
+Having established a good empirical fit of the model, it is worth discussing in 
+greater detail the mechanisms that sustain the DCP equilibrium. This section studies 
+25 I focus on the period from 2005 to 2015 because of a better data coverage and a lower sensitivity to the 
+ pre-1995 invoicing. The  trade-weighted means are close to the medians. See Figure A11 in the online Appendix for 
+the  cross-country evidence. 
+26 The results are similar for Bulgaria, Estonia, Hungary, and Latvia. Although the model somewhat overesti-
+mates the share of DCP in the first period due to a crude guess for the  pre-1995 invoicing, it reproduces well the 
+negative trend from the data. A counterfactual with infinite adjustment costs shows that the results from the baseline 
+model are driven not only by a mechanical effect of changing export shares, but is also due to the endogenous 
+change in the currency of invoicing.
+Figure 9. Currency Shares in Switzerland by Sector: Model versus Data
+Notes: The figure shows the share of DCP (blue) and ECP (red) in imports and exports of Switzerland by sector. 
+The size of circles is proportional to sector’s share in country’s trade.
+Data
+0 0.2 0.4 0.6 0.8 1
+Model
+1
+0.8
+0.6
+0.4
+0.2
+0
+Data
+0 0.2 0.4 0.6 0.8 1
+Model
+1
+0.8
+0.6
+0.4
+0.2
+0
+Panel A. Imports Panel B. Exports
+Petroleum
+Petroleum
+Vehicles
+Chemicals
+Chemicals
+Food
+Food
+Paper
+Paper
+Metals Metals
+Minerals
+Minerals
+Plastic
+PlasticPlastic
+PlasticWood WoodMachineryMetal products
+Metal products
+Textiles
+Textiles
+Transport
+Transport
+Chemicals
+Chemicals
+FoodComputer
+Vehicles
+Vehicles
+PaperMetals
+Metals
+MachineryVehiclesPetroleum
+Petroleum
+Wood TextilesElectricsMineralsMetal products
+Machinery
+Vehicles
+Electrics
+Minerals
+FoodComputer
+Paper
+Machinery
+Wood
+Textiles
+Electrics
+Metal products
+Transport
+Transport
+Other
+Other
+Other
+Other
+Computer
+Computer
+Electrics
+
+===== PAGE 32 =====
+
+681
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+the currency choice under alternative values of parameters and shows the robustness 
+of the main findings.
+Addressing the fact that empirical invoicing shares of some countries include not 
+only merchandise trade, but also the trade in services, column 3 of Table 1 reports 
+the global use of currencies across all sectors. Because of a larger share of the euro-
+zone and the United Kingdom in services, the use of their currencies is slightly 
+higher in this case. The share of the dollar, on the other hand, goes down. This is 
+expected given the larger role of PCP and LCP in service sectors: according to the 
+model, a stronger home bias and a lower share of foreign intermediates in these 
+sectors implies that the third currencies account for about 76 percent of world trade 
+in commodities, 32 percent in manufacturing, and only 20 percent in services (see 
+online Appendix Table A6 for details). Yet, the dollar remains the dominant cur -
+rency with a global share above 60 percent.
+The next column of the table relaxes the assumption that exporters can choose 
+from five vehicle currencies and in addition, allows them to set prices in the cur -
+rencies of Switzerland, South Korea, Norway, Sweden, New Zealand, Australia, 
+Canada, and South Africa.27 Although, expectedly, this increases the share of cur -
+rencies of advanced economies, the changes are quantitatively small. In particular, 
+the DCP share falls from 64.7 percent to 63.7 percent indicating that given the start-
+ing conditions and the fundamentals, there is little scope for other vehicle currencies 
+in international trade.28
+27 I focus on these currencies because of their floating regime and a high liquidity—together they account for 
+more than 90 percent of foreign exchange turnover. At the same time, the results remain almost unchanged when 
+exporters are allowed to use arbitrary currencies for invoicing.
+28 Here and below, I solve for the whole new path of currency choice starting from 1995.
+Figure 10. Evolution of DCP in Exports of Selected Economies
+Note: The figure shows the evolution of empirical (blue) and simulated (red) DCP shares (in percent) in countries’ 
+exports.
+Lithuania
+2005
+100
+75
+50
+25
+0
+20151995
+Japan
+2005
+100
+75
+50
+25
+0
+20151995
+Poland
+2005
+100
+75
+50
+25
+0
+20151995
+Turkey
+2005
+100
+75
+50
+25
+0
+20151995
+Romania
+2005
+100
+75
+50
+25
+0
+20151995
+Australia
+2005
+100
+75
+50
+25
+0
+20151995
+
+===== PAGE 33 =====
+
+682
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+I then consider the case when both exporters and domestic firms can optimally 
+choose the currency of invoicing. Consistent with a dramatic fall in inflation rates 
+documented in Section IIIC, the model implies that the share of domestic manu-
+facturing goods in emerging economies invoiced in local currency went up from 
+38 percent in 1995 to 94 percent in 2015. These changes, however, had only minor 
+effects on exporters’ decisions given the low share of currencies of emerging econ-
+omies in international trade and the dominance of local currencies in the domestic 
+flows of developed economies. Thus, the baseline assumption of exogenous PCP in 
+local sales provides a good approximation to the equilibrium invoicing in 2015 and, 
+as can be seen from column 5 of Table 1, is almost inconsequential for the currency 
+shares in international trade.
+Similarly, column 6 shows that the currency shares remain largely unchanged if 
+one assumes zero inflation across economies. This result should be interpreted with 
+caution as it only holds because of the initial guess that all exporters set their prices 
+in dollars and there are both fixed costs and complementarities that make switching 
+to currencies of emerging economies suboptimal even in a  low-inflation case. In 
+other words, the high inflation of the 1990s confirms the status quo. If instead one 
+assumes PCP or LCP in the  pre-1995 period, the inflation substantially changes the 
+currency choice of exporters and makes them switch to vehicle currencies. To further 
+evaluate the role of the initial currency choice, I consider the case when exporters 
+set prices in anchor currencies of their economies as defined by Ilzetzki, Reinhart, 
+and Rogoff (2019) for year 1995. Expectedly, this increases the share of currencies 
+of developed economies and lowers the share of the dollar (see column 7). Yet, even 
+in this case, the dominance of the US currency remains undisputed. Interestingly, if 
+one assumes instead that all export prices except for commodities are set in euros 
+(German mark) before 1995, then in 2015 the share of DCP is 53.2 percent and the 
+share of the ECP is 28.5 percent. This shows that although the  history dependence 
+enhances the role of the dollar and especially so in the commodity sectors, it is 
+the fundamental  anchor-currency advantage of the United States that ensures that 
+its currency dominates the euro in world trade, even if the initial conditions work 
+against the dollar.
+Finally, to disentangle the role of fundamental factors and the complementarities 
+in currency choice, I consider the  flexible-price limit   λ   r  → 0 . Perhaps surprisingly, 
+column  8 shows that the dollar and the euro further crowd out other currencies 
+relative to the baseline case. Intuitively, there are two effects of greater price flexi-
+bility: on the one hand, it lowers the invoicing complementarities across exporters, 
+which dampens the role of vehicle currencies. On the other hand, it also lowers the 
+complementarities between domestic firms and exporters, which helps to support 
+the DCP equilibrium. The latter effect dominates in the calibrated model, although 
+quantitatively the net effect is close to zero, meaning that equilibrium invoicing is 
+robust to a wide range of price stickiness.29
+29 This result is not driven by the fixed costs of currency adjustment. First, the costs are normalized by   λ   r   and 
+go to zero in the limit of flexible prices (see online Appendix B.2.3). Second, a simulation with zero fixed costs 
+confirms that the DCP share is higher under flexible prices.
+
+===== PAGE 34 =====
+
+683
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+F. Future of the Dollar
+After making sure that the equilibrium invoicing matches closely the current use 
+of currencies in world trade, I next take full advantage of the general equilibrium 
+structure of the model to do counterfactual analysis about the future evolution of 
+the international price system. This section evaluates the effect of economic growth, 
+exchange rate regimes, and monetary policy on the prospects of the renminbi to 
+replace the dollar as a global currency.
+The first counterfactual focuses on the growing role of China in world econ-
+omy and asks how much the use of currencies will change 20 years from now, 
+by year 2035, if countries continue to grow at their current rates. To answer this 
+question, I compute future bilateral trade flows   { γ  ji  r  }   using a standard structural 
+gravity model from the international trade literature (Eaton and Kortum 2002; see 
+online Appendix B.3 for details). The growth rates are estimated at the country level 
+using the actual values for 2016–2019 and the IMF forecasts for 2020–2025 and 
+are extrapolated for the whole horizon of twenty years. Importantly, this scenario 
+assumes no changes in other parameters—including inflation rates and exchange 
+rate covariances—keeping them at the 2001–2015 level.
+The second bar in Figure 11 shows the results. Interestingly, the model predicts 
+that if anything, the increasing role of China and other emerging economies in the 
+world economy strengthens the dominance of the dollar, shrinking the share of the 
+euro, and leaving the share of the renminbi and other currencies close to zero. This is 
+because there are almost no changes in currency choice and all dynamics are driven 
+by the composition effect—the contribution of emerging economies to world trade 
+goes up and the share of the Eurozone in world economy falls. Thus, the fixed costs 
+and complementarities in currency choice are strong enough to prevent exporters 
+from switching to the renminbi even when the share of China in world manufac-
+turing exports rises from 19 percent to 23 percent and its home bias goes up from 
+91 percent to 93 percent. Notice there is no contradiction between this result and 
+Corollary 1: the peg to the dollar in several emerging economies including China 
+implies that the effective share of the dollarized countries in world economy is 
+increasing, promoting the status of DCP.
+To better understand the role of the exchange rate policy, consider the second 
+counterfactual, which assumes that China abandons foreign exchange interven-
+tions and switches to a floating regime. While it is hard to predict the properties of 
+the renminbi exchange rate without government interventions, I assume that once 
+expressed against a bundle of floating currencies, it has a zero correlation with 
+other exchange rates and the same volatility as the US dollar. 30 The trade flows 
+and other parameters take the same values as in 2015. The third bar in Figure 11 
+shows that the equilibrium share of the renminbi is significantly larger in this case: 
+a higher volatility of the Chinese exchange rate against the dollar breaks the iso-
+morphism between the two currencies and makes firms reconsider their currency 
+choice. As a result, some trade flows to and from China switch to the renminbi 
+invoicing. At the same time, the share of Chinese currency remains lower than the 
+30 Indeed, once expressed in this way, the average correlation of each floating currency with the others is close 
+to zero.
+
+===== PAGE 35 =====
+
+684
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+country’s  contribution to world trade ( 11 percent against 14 percent)  and the ren-
+minbi is almost never used as a vehicle currency between third countries.
+The previous counterfactual makes a conservative assumption that keeps most 
+currencies pegged to the dollar and to the euro after China switches to a floating 
+regime. One can argue instead that developing countries are likely to adopt the ren-
+minbi as an anchor currency in their exchange rate policy in response to its rising 
+role in international goods and financial markets (see, e.g., Egorov and  Mukhin 
+2021). The next counterfactual considers such a possibility and switches the posi-
+tions of the renminbi and the dollar in the exchange rate covariance matrix. 31 In 
+this case, the share of Chinese currency reaches 18 percent exceeding the country’s 
+contribution to world trade, while the share of DCP falls to 38 percent and the share 
+of ECP rises slightly to 25 percent (see the fourth bar in Figure 11). Although the 
+renminbi also gains the status of a vehicle currency in trade between some countries, 
+the dollar retains its status of the main vehicle currency. Thus, the history depen-
+dence is strong enough to prevent the renminbi from becoming the new dominant 
+currency, but is not sufficient for the dollar to remain the only global currency. The 
+world in this case features several regional currencies in line with the predictions of 
+Eichengreen (2011).
+Finally, I consider the case when the evolution of the international price system 
+is driven by changes in the US economy rather than in the rest of the world. In 
+particular, assume that US inflation goes up to 10 percent with no other changes in 
+the world economy relative to the year 2015. Such a shock can be a consequence of 
+the rising government debt burden and the inability of the fiscal authorities to raise 
+enough taxes to finance it. Alternatively, one can consider a shock to the  safe-asset 
+status of US bonds and the resulting depreciation of the exchange rate (Farhi and 
+Maggiori 2018), which has similar implications for the equilibrium invoicing (see 
+31 In particular, I assume that the covariances between the renminbi and other currencies become the same as 
+they are for the dollar in 2015, while the covariance of the dollar with other exchange rates is zero.
+Figure 11. Counterfactual Currency Shares in World Trade
+Notes: The bars show the  model-implied shares of the main vehicle currencies in world trade (i) in 2015, (ii) under 
+the predicted trade flows in 2035, (iii) if China adopts a floating exchange rate regime, (iv) if the renminbi replaces 
+the dollar as an anchor currency for other economies, and (v) if the US inflation goes up to 10 percent per year.
+2015 Growth by 2035 Floating RMB Pegs to RMB US inflation
+1
+0.8
+0.6
+0.4
+USD EUR RMB Other
+0.2
+0
+
+===== PAGE 36 =====
+
+685
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+Corollary 1). The last bar in Figure 11 shows that the share of DCP falls dramati-
+cally to 15 percent, the share of ECP goes up to 28 percent, and the Chinese currency 
+emerges as the dominant currency accounting for 37 percent of international trade. 
+In fact, only commodities with flexible prices remain invoiced in dollars in this case. 
+Intuitively, an increase in US inflation makes exporters look for an alternative unit 
+of account and although the use of most currencies goes up, the gains are especially 
+high for the renminbi, which is the closest substitute to the dollar.
+To summarize, there are three main  takeaways about the future of the dollar. First, 
+the rise of China and other emerging economies does not put at risk and can even 
+strengthen the dominance of the dollar as long as these countries stay pegged to the 
+US currency. Second, the dollar is more likely to lose its global status if US inflation 
+goes out of control, suggesting that the internal problems of the US economy are 
+more damaging for the dominance of the dollar than external factors. Moreover, in 
+this scenario, the anchor status works against the dollar as it simplifies the transition 
+to the renminbi. Finally, the model suggests that the dominance of one currency 
+in today’s world is due to a particular combination of the previous history, when 
+there were no good alternatives to the dollar, and the current fundamentals, with 
+many emerging economies pegging their exchange rates to the dollar. If the peg is 
+abandoned, the world is likely to move to a new equilibrium with multiple regional 
+currencies rather than to switch to a new global currency. However, the PCP/LCP 
+equilibrium with symmetric use of currencies in world trade is still unlikely because 
+of the complementarities in currency choice and the high volatility of emerging 
+economies.
+IV . Conclusion
+This paper provides a general equilibrium framework of the international price 
+system that can be used to study analytically and quantitatively the use of curren-
+cies in world trade. The model is broadly consistent with the key empirical facts, 
+including the dominant status of the dollar in global trade, a large heterogeneity of 
+invoicing across economies, and delayed transition from one dominant currency to 
+another. A calibrated version of the model shows that high inflation and volatility in 
+emerging economies create global demand for a vehicle currency, which is further 
+amplified by strategic complementarities in currency choice. The large size of the 
+US economy and a widespread peg to the dollar among other countries naturally 
+make the US currency the leading candidate for the role of the global currency. 
+While the increasing role of China in the world economy and its drift toward a float-
+ing regime can undermine the dominance of the dollar in the future, it is unlikely to 
+fully replace it on the global stage.
+The tractability of the baseline model allows for several extensions and appli-
+cations, which are left for future research. First, although the use of the world 
+ input-output table and exchange rate covariance matrix allows me to match the 
+global and  cross-country invoicing patterns from the data, more granular data on 
+ inter-firm linkages can greatly improve the model’s predictions at a more disaggre-
+gated level (Amiti, Itskhoki, and Konings 2020). More empirical evidence is also 
+required regarding the size of the fixed costs of currency adjustment (Crowley, Han, 
+and Son 2020). Second, augmenting the model with a more realistic financial sector 
+
+===== PAGE 37 =====
+
+686
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+and gross capital flows would allow analyzing the interactions between the domi-
+nant status of the dollar as a vehicle currency in international trade and as a reserve 
+currency in global asset markets (Bahaj and Reis 2020). Third, the framework lends 
+itself to a variety of counterfactuals and policy experiments. This paper makes the 
+first step in this direction, leaving for future analysis many interesting experiments, 
+such as the invoicing implications of joining the eurozone. Finally, the counterfac-
+tual analysis shows that the future of the international price system depends heavily 
+on the status of the dollar as the main anchor currency. More work is required to 
+understand how countries choose the exchange rate regime, how it interacts with 
+the other roles of the dollar, and how it is going to change in the future (Gourinchas 
+2021).
+REFERENCES
+Allen, Treb, Costas Arkolakis, and Yuta Takahashi. 2020. “Universal Gravity.” Journal of Political 
+Economy 128 (2): 393–433. 
+Alvarez, Fernando, Martin Beraja, Martín Gonzalez-Rozada, and Pablo  Andrés Neumeyer. 2019. 
+“From Hyperinflation to Stable Prices: Argentina’s Evidence on Menu Cost Models.” Quarterly 
+Journal of Economics 134 (1): 451–505. 
+Amiti, Mary, Oleg Itskhoki, and Jozef Konings. 2014. “Importers, Exporters, and Exchange Rate Dis-
+connect.” American Economic Review 7 (104): 1942–78. 
+Amiti, Mary, Oleg Itskhoki, and Jozef Konings. 2019. “International Shocks, Variable Markups and 
+Domestic Prices.” Review of Economic Studies 86 (6): 2356–2402.
+Amiti, Mary, Oleg Itskhoki, and Jozef Konings. 2020. “Dominant Currencies: How Firms Choose Cur-
+rency Invoicing and Why it Matters.” NBER Working Paper 27926. 
+Ascari, Guido, and Argia M. Sbordone. 2014. “The Macroeconomics of Trend Inflation.” Journal of 
+Economic Literature 52 (3): 679–739. 
+Bacchetta, Philippe, and Eric van Wincoop. 2005. “A Theory of the Currency Denomination of Inter-
+national Trade.” Journal of International Economics 67 (2): 295–319. 
+Bahaj, Saleem, and Ricardo Reis. 2020. “Jumpstarting an International Currency.” CEPR Discussion 
+Paper 14793. 
+Baqaee, David Rezza, and Emmanuel Farhi. 2020. “Productivity and Misallocation in General Equi-
+librium.” Quarterly Journal of Economics 135 (1): 105–63. 
+Bhattarai, Saroj. 2009. “Optimal Currency Denomination of Trade: Theory and Quantitative Explo-
+ration.” Unpublished. 
+Bonadio, Barthélémy, Andreas  M. Fischer, and Philip Sauré. 2020. “The Speed of Exchange Rate 
+Pass-through.” Journal of the European Economic Association 18 (1): 506–38. 
+Boz, Emine, Camila Casas, Georgios Georgiadis, Gita Gopinath, Helena Le Mezo, Arnaud Mehl, and 
+Tra Nguyen. 2020. “Patterns in Invoicing Currency in Global Trade.” IMF Working Paper 20/126.
+Burstein, Ariel  T., and Gita Gopinath. 2012. “International Prices and Exchange Rates.” In Hand-
+book of International Economics, V ol. 4, edited by Gita Gopinath, Elhanan Helpman and Kenneth 
+Rogoff, 391–451. Amsterdam: Elsevier.
+Caliendo, Lorenzo, and Fernando Parro. 2015. “Estimates of the Trade and Welfare Effects of 
+NAFTA.” Review of Economic Studies 82 (1): 1–44. 
+Calvo, Guillermo A. 1983. “Staggered Prices in a Utility-Maximizing Framework.” Journal of Mone-
+tary Economics 12 (3): 383–98. 
+Carvalho, Carlos, and Fernanda Nechio. 2011. “Aggregation and the PPP Puzzle in a Sticky-Price 
+Model.” American Economic Review 101 (6): 2391–2424. 
+Chahrour, Ryan, and Rosen Valchev. 2021. “Trade Finance and the Durability of the Dollar.” Boston 
+College Working Paper 934. 
+Corsetti, Giancarlo, and Paolo Pesenti. 2002. “Self-Validating Optimum Currency Areas.” NBER 
+Working Paper 8783. 
+Cravino, Javier. 2014. “Exchange Rates, Aggregate Productivity and the Currency of Invoicing of 
+International Trade.” Unpublished. 
+Crowley, Meredith A., Lu Han, and Minkyu Son. 2020. “Dominant Currency Dynamics: Evidence on 
+Dollar-Invoicing from UK Exporters.” CEPR Discussion Paper 15493. 
+
+===== PAGE 38 =====
+
+687
+MUKHIN: AN EQUILIBRIUM MODEL OF THE INTERNATIONAL PRICE SYSTEMVOL. 112 NO. 2
+Dekle, Robert, Jonathan Eaton, and Samuel Kortum. 2007. “Unbalanced Trade.” American Economic 
+Review 97 (2): 351–55. 
+Devereux, Michael B., and Shouyong Shi. 2013. “Vehicle Currency.” International Economic Review 
+54 (1): 97–133. 
+Devereux, Michael B., Kang Shi, and Juanyi Xu. 2010. “Oil Currency and the Dollar Standard: A Sim-
+ple Analytical Model of an International Trade Currency.” Journal of Money, Credit and Banking 
+42 (4): 521–50. 
+Devereux, Michael, Charles Engel, and Peter Storgaard. 2004. “Endogenous Pass-through When 
+Nominal Prices Are Set in Advance.” Journal of International Economics 63 (2): 263–91. 
+Drenik, Andres, Rishabh Kirpalani, and Diego Perez. 2018. “Currency Choice in Contracts.” 
+ Unpublished. 
+Drenik, Andres, and Diego J. Perez. 2021. “Domestic Price Dollarization in Emerging Economies.” 
+Journal of Monetary Economics 122: 38–55.
+Eaton, Jonathan, and Samuel Kortum. 2002. “Technology, Geography, and Trade.” Econometrica  
+70 (5): 1741–79. 
+Egorov, Konstantin, and Dmitry Mukhin. 2021. “Optimal Policy under Dollar Pricing.” Unpublished. 
+Eichengreen, Barry. 2011. Exorbitant Privilege: The Rise and Fall of the Dollar and the Future of the 
+International Monetary System. Oxford: Oxford University Press. 
+Engel, Charles. 2006. “Equivalence Results for Optimal Pass-through, Optimal Indexing to Exchange 
+Rates, and Optimal Choice of Currency for Export Pricing.” Journal of European Economic Asso-
+ciation 4 (6): 1249–60. 
+Engel, Charles, and Steve Pak Yeung Wu. 2018. “Liquidity and Exchange Rates: An Empirical Inves-
+tigation.” NBER Working Paper 25397. 
+Farhi, Emmanuel, and Matteo Maggiori. 2018. “A Model of the International Monetary System.” 
+Quarterly Journal of Economics 133 (1): 295–355.
+Friberg, Richard. 1998. “In Which Currency Should Exporters Set Their Prices?” Journal of Interna-
+tional Economics 45 (1): 59–76. 
+Friberg, Richard, and Fredrik Wilander. 2008. “The Currency Denomination of Exports - A Question-
+naire Study.” Journal of International Economics 75 (1): 54–69. 
+Gabaix, Xavier. 2011. “The Granular Origins of Aggregate Fluctuations.” Econometrica 79 (3):  733–72. 
+Gali, Jordi, and Tommaso Monacelli. 2005. “Monetary Policy and Exchange Rate V olatility in a Small 
+Open Economy.” Review of Economic Studies 72 (3): 707–34. 
+Gaubert, Cecile, and Oleg Itskhoki. 2021. “Granular Comparative Advantage.” Journal of Political 
+Economy 129 (3): 871–939. 
+Georgiadis, Georgios, Helena Le Mezo, Arnaud Mehld, and Cédric Tille. 2021. “Fundamentals vs. 
+Policies: Can the US Dollar’s Dominance in Global Trade Be Dented?” European Central Bank 
+Working Paper 2574. 
+Goldberg, Linda S., and Cédric Tille. 2008. “Vehicle Currency Use in International Trade.” Journal of 
+International Economics 76 (2): 177–92. 
+Golosov, Mikhail, and Robert E. Lucas Jr. 2007. “Menu Costs and Phillips Curves.” Journal of Polit-
+ical Economy 115 (2): 171–99. 
+Gopinath, Gita. 2015. “The International Price System.” Paper presented at the Inflation Dynamics and 
+Monetary Policy Federal Reserve Bank of Kansas City Symposium, Jackson Hole, WY , August 28.
+Gopinath, Gita, Emine Boz, Camila Casas, Federico  J. Díez, Pierre-Olivier Gourinchas, and Mik-
+kel Plagborg-Møller. 2020. “Dominant Currency Paradigm.” American Economic Review  
+110 (3): 677–719. 
+Gopinath, Gita, Oleg Itskhoki, and Roberto Rigobon. 2010. “Currency Choice and Exchange Rate 
+Pass-through.” American Economic Review 100 (1): 306–36. 
+Gopinath, Gita, and Jeremy C. Stein. 2021. “Banking, Trade, and the Making of a Dominant Cur -
+rency.” Quarterly Journal of Economics 136 (2): 783–830. 
+Gourinchas, Pierre-Olivier. 2021. “The Dollar Hegemon? Evidence and Implications for Policymak-
+ers.” In The Asian Monetary Policy Forum: Insights for Central Banking, edited by Steven J. Davis, 
+Edward S. Robinson, and Bernard Yeung, 264–300. Singapore: World Scientific. 
+Hassan, Tarek A. 2013. “Country Size, Currency Unions, and International Asset Returns.” Journal of 
+Finance 68 (6): 2269–2308. 
+Ilzetzki, Ethan, Carmen M. Reinhart, and Kenneth S. Rogoff. 2019. “Exchange Arrangements Enter-
+ing the Twenty-First Century: Which Anchor Will Hold?” Quarterly Journal of Economics 134 
+(2): 599–646.
+International Monetary Fund (IMF). 2021a.  “International Financial Statistics.” https://data.imf.org/
+regular.aspx?key=61545850 (accessed December 9, 2021).
+
+===== PAGE 39 =====
+
+688
+THE AMERICAN ECONOMIC REVIEW FEBRUARY 2022
+International Monetary Fund (IMF). 2021b. “World Economic Outlook.” https://www.imf.org/-/
+media/Files/Publications/WEO/2021/April/English/text.ashx (accessed December 9, 2021). 
+Itskhoki, Oleg, and Dmitry Mukhin. 2021. “Exchange Rate Disconnect in General Equilibrium.” 
+ Journal of Political Economy 129 (8): 2183–2232. 
+Jiang, Zhengyang, Arvind Krishnamurthy, and Hanno Lustig. 2018. “Foreign Safe Asset Demand for 
+US Treasurys and the Dollar.” AEA Papers and Proceedings 108: 537–41. 
+Kamps, Annette. 2006. “The Euro as Invoicing Currency in International Trade.” European Central 
+Bank Working Paper 665. 
+Kimball, Miles. 1995. “The Quantitative Analytics of the Basic Neomonetarist Model.” Journal of 
+Money, Credit and Banking 27 (4): 1241–77. 
+Krugman, Paul. 1980. “Vehicle Currencies and the Structure of International Exchange.” Journal of 
+Money, Credit and Banking 12 (3): 513–26. 
+Krugman, Paul. 1991. “History versus Expectations.” Quarterly Journal of Economics 106 (2):  651–67. 
+Levy, Daniel, Mark Bergen, Shantanu Dutta, and Robert Venable. 1997. “The Magnitude of Menu 
+Costs: Direct Evidence from Large US Supermarket Chains.” Quarterly Journal of Economics 112 
+(3): 791–825. 
+Mankiw, N. Gregory. 1985. “Small Menu Costs and Large Business Cycles: A Macroeconomic Model 
+of Monopoly.” Quarterly Journal of Economics 100 (2): 529–38. 
+Mankiw, N. Gregory, and Ricardo Reis. 2002. “Sticky Information versus Sticky Prices: A Proposal to 
+Replace the New Keynesian Phillips Curve.” Quarterly Journal of Economics 117 (4): 1295–1328. 
+Matsuyama, Kiminori. 1991. “Increasing Returns, Industrialization, and Indeterminacy of Equilib-
+rium.” Quarterly Journal of Economics 106 (2): 617–50. 
+Matsuyama, Kiminori, Nobuhiro Kiyotaki, and Akihiko Matsui. 1993. “Toward a Theory of Interna-
+tional Currency.” Review of Economic Studies 60 (2): 283–307. 
+Meese, Richard A., and Kenneth Rogoff. 1983. “Empirical Exchange Rate Models of the Seventies: Do 
+They Fit Out of Sample?” Journal of International Economics 14 (1): 3–24. 
+Morris, Stephen, and Hyun Song Shin. 2001. “Global Games: Theory and Applications.” In Advances 
+in Economics and Econometrics, V ol. 1, edited by Mathias Dewatripont, Lars Peter Hansen, and 
+Stephen J. Turnosky, 56–114. Cambridge: Cambridge University Press.
+Mukhin, Dmitry. 2022. “Replication Data for: An Equilibrium Model of the International Price Sys-
+tem.” American Economic Association [publisher], Inter-university Consortium for Political and 
+Social Research [distributor]. https://doi.org/10.3886/E149661V1.
+Nakamura, Emi, and Jón Steinsson. 2008. “Five Facts about Prices: A Reevaluation of Menu Cost 
+Models.” Quarterly Journal of Economics 123 (4): 1415–64. 
+Nakamura, Emi, and Jón Steinsson. 2010. “Monetary Non-neutrality in a Multisector Menu Cost 
+Model.” Quarterly Journal of Economics 125 (3): 961–1013. 
+Novy, Dennis. 2006. “Hedge Your Costs: Exchange Rate Risk and Endogenous Currency Invoicing.” 
+Warwick Economic Research Paper 765. 
+Organisation for Economic Co-operation and Development (OECD). 2018. “Inter-Country Input-Out-
+put (ICIO) Tables.” https://oe.cd/icio (accessed December 9, 2021).
+Rey, Hélène. 2001. “International Trade and Currency Exchange.” Review of Economic Studies  
+68 (2): 443–64. 
+Rotemberg, Julio J. 1982. “Monopolistic Price Adjustment and Aggregate Output.” Review of Eco-
+nomic Studies 49 (4): 517–31. 
+Sims, Christopher A. 2003. “Implications of Rational Inattention.” Journal Of Monetary Economics 
+50 (3): 665–90. 
+Taiwan National Statistics. 2021. “Ination.” https://bit.ly/3BNYgAe (accessed December 9, 2021).
+World Bank. 2021. “Ination, GDP deator, Argentina,” https://data.worldbank.org/indicator/NY .GDP.
+DEFL.KD.ZG?locations=AR (accessed December 9, 2021).

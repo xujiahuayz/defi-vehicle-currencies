@@ -1,0 +1,2762 @@
+
+
+===== PAGE 1 =====
+
+THE JOURNAL OF FINANCE • VOL. LXXX, NO. 1 • FEBRUARY 2025
+Decentralized Exchange: The Uniswap
+Automated Market Maker
+ALFRED LEHAR and CHRISTINE PARLOUR *
+ABSTRACT
+Uniswap is a system of smart contracts on the Ethereum blockchain and is the largest
+decentralized exchange with a liquidity balance worth up to 4 billion USD and daily
+trading volume of up to 7 billion USD. It is a new model of liquidity provision, so-
+called automated market making. For this new market form, we characterize equi-
+librium in the liquidity pools. We collect all 95.8 million Uniswap interactions and
+compare this automated market maker (AMM) to a centralized limit order book. We
+document absence of long-lived arbitrage opportunities, and show conditions under
+which the AMM dominates a limit order market.
+UNISWAP IS A DECENTRALIZED EXCHANGE (DEX) that launched in Novem-
+ber 2018. One of the striking features of this exchange is that, instead of a
+centralized limit order book, it pioneered a novel form of liquidity provision—
+automated market making. In such markets, liquidity providers do not
+*Alfred Lehar is at the Haskayne School of Business, University of Calgary . Christine Parlour is
+at the Haas School of Business, UC Berkeley . We are indebted to Editor Stefan Nagel, two anony-
+mous referees, and an associate editor for their guidance and comments. Alfred Lehar is grateful to
+the Canadian Securities Institute Research Foundation, the Social Sciences and Humanities Re-
+search Council (SSHRC), and the Fintech Dauphine Chair in partnership with Mazars and Crédit
+Agricole CIB for ﬁnancial support. Christine Parlour is grateful for a Norwegian Finance Initiative
+Grant. Our thanks for helpful discussions and comments also go to Andrea Barbon; Agostino Cap-
+poni; Dmitry Chebotarev; Arthur Gervais; Anand Goel; Terrence Hendershott; Jaisun Li; William
+Mann; Katya Malinova; Andreas Park; Daniel Rabetti; Ioanid Rosu; Gustavo Schwenkler; Fahad
+Saleh; Donghwa Shin; Andre Stenzel; Ganesh Swami; Bart Yueshen; and Haoxiang Zhu; as well
+as to seminar participants at the BIS, Insead, Penn State, Rochester , University of Copenhagen,
+University of Florida, 2021 Central Bank Conference on the Microstructure of Financial Markets,
+2021 Central Bank Research Association conference, 6th RiskLab Bank of Finland, 2021 China
+International Conference in Finance, 6 th Southern Denmark University Finance Workshop, 2021,
+NFA 2021, NBIM-Columbia Research Conference, UWA BlockChain and Crypto conference, FRA
+2021, AFA 2022, FIRS 2022, Blockchain Technology Symposium, 2021, SNB-CIF Conference on
+Cryptoassets and Financial Innovation, 2021 FinteQC conference, 2021 Conference on Financial
+Innovation, Tokenomics 2021, MaCCI Mannheim 2021, 2021 SAFE Microstructure Conference, 5th
+Shanghai-Edinburgh-London Fintech Conference 2021, 2021 Global AI Finance Research Confer-
+ence, 2021 Coller School of Management Blockchain Research Institute Conference, EFA 2022,
+and Protocol Labs. We have read The Journal of Finance disclosure policy and have no conﬂicts of
+interest to disclose.
+Correspondence: Alfred Lehar , Haskayne School of Business, University of Calgary , Calgary , AB
+T2N 1N4, Canada; e-mail: alehar@ucalgary .ca
+DOI: 10.1111/joﬁ.13405
+© 2024 the American Finance Association.
+321
+
+
+===== PAGE 2 =====
+
+322 The Journal of Finance ®
+explicitly set prices, but rather passively supply liquidity . Price impact for
+liquidity demanders is calculated mechanically . In spite of this, Uniswap has
+been very successful. To date, committed liquidity supply tops 4 billion USD
+across multiple cryptocurrencies and facilitates transactions up to 7 billion
+USD per day .
+In an automated market maker (AMM) such as Uniswap, each asset pair
+comprises a distinct pool or market. Agents supply liquidity by adding the pair
+in proportion to the existing pool. Agents demand liquidity by adding one asset
+and removing the other . The relative proportion of the two traded assets deter-
+mines the average price paid, and is calculated according to a predetermined
+downward-sloping, convex relationship. This is referred to as a bonding curve.
+It is surprising that a market in which liquidity suppliers do not explicitly con-
+trol prices has viable liquidity supply and is attractive to liquidity demanders.
+To analyze this new market form, we collect a novel, detailed data set of
+95.8 million interactions with the Uniswap family of smart contracts. Our
+observations are at the block frequency and include the ordering sequence
+within each block. Using these data we can identify all ﬂows into and out of
+105,098 liquidity pools, that is, changes in liquidity supply as well as all of
+the token trades. We can therefore trace how liquidity is both supplied and
+demanded for each set of asset pairs and the payoffs to participants.
+To structure our analysis, we focus on three key differences between an
+AMM and a limit order market. First, in the AMM, liquidity suppliers are
+not in competition as all payoffs are shared pro rata. In contrast, in a limit
+order book, strategic liquidity suppliers actively compete with each other as
+the costs and beneﬁts of supplying liquidity are individual to each liquidity
+supplier . Second, in the AMM, price impact is determined by the bonding
+curve and is perfectly predictable given the size of the liquidity pool and the
+size of the incoming order . In contrast, in the limit order market, liquidity
+suppliers choose to post at a price that maximizes their proﬁts and may even
+withdraw liquidity strategically . Third, in the AMM, liquidity provision and
+price discovery are separate and provided by different agents who collect dif-
+ferent rewards. Liquidity suppliers in the AMM rely on outside arbitrageurs
+to set the correct price at which the liquidity is provided. They receive trading
+fee revenue while arbitrageurs get the trading proﬁts.
+We ﬁrst characterize the effect of these three key differences in liquidity pro-
+vision for an asset whose value is volatile. Risk-neutral liquidity suppliers, a
+liquidity demander , and an arbitrageur all interact. Arbitrageurs are strategic
+traders who proﬁt from stale prices. Liquidity suppliers may be adversely se-
+lected as liquidity is posted before any potential asset innovation. We compare
+strategic liquidity provision in a stylized limit order market to an AMM.
+In the stylized limit order book market, competing liquidity suppliers post
+prices to trade off adverse selection risk against proﬁtable liquidity supply .
+Of course, if two liquidity suppliers are competing in the same market, each
+earns zero in expectation. As a result, each liquidity supplier has an incentive
+to invest to ﬁnd trading opportunities in which he does not have to compete.
+This captures the idea that liquidity is cheap if two suppliers are competing
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 3 =====
+
+Decentralized Exchange 323
+on price. However , if they compete on other dimensions such as speed, the cost
+of liquidity may increase.
+In the AMM, a liquidity supplier deposits a pair of assets into a pool in
+exchange for a liquidity token. On redemption, the liquidity token returns
+both assets but in their current proportion. The direct payoff to supplying
+liquidity is in the form of fees, and the indirect cost of supplying liquidity is
+the loss of committed capital if an arbitrageur has traded against the pool.
+This occurs if the relative price of one of the asset shifts, and an arbitrageur
+ﬁnds it proﬁtable to buy the underpriced asset. The arbitrageur effectively
+rebalances the liquidity suppliers’ portfolio at disadvantageous terms.
+Our key insight is that the equilibrium size of a pool balances the fee
+revenue against this “picking-off risk.” Speciﬁcally , equilibrium is reached
+through a change in the size of a pool rather than a change in price because
+larger pools mechanically have a smaller price impact. If picking-off risk is
+high, the equilibrium size of the pool is small because small pools have a
+higher impact for the same size order . So, faced with a small pool, a rational
+arbitrageur optimally restricts their trade size, which mitigates the extent to
+which liquidity suppliers’ portfolios are adversely rebalanced. A contribution
+of our paper is thus characterizing the equilibrium size of the liquidity pools
+as a function of asset fundamentals. Understanding theoretically and empir-
+ically the assets for which AMMs are effective is important as more venues
+experiment with this new market form.
+Because of differences in market design between a limit order book and an
+AMM, gains from trade are split differently across market participants. In the
+limit order market, liquidity suppliers retain all of the price impact revenue
+from supplying liquidity , whereas in the AMM, arbitrageurs obtain this beneﬁt
+while AMM liquidity suppliers earn only the fees. This differentially affects
+agents’ incentives to supply liquidity on the AMM or in a limit order market.
+Further , in the limit order market, the fact that there can be both competition
+that decreases transaction costs and competition that increases transaction
+costs means that it does not always dominate the AMM for the liquidity trader .
+Indeed, for assets that have lower volatility (and hence adverse selection),
+the AMM can be more effective (i.e., is cheaper) at providing liquidity . This
+observation depends on the fundamental parameters of the tokens traded.
+Our extensive data allow us to make four robust empirical observations.
+First, we document an equilibrium pool size, consistent with our characteriza-
+tion: Pools are larger the lower the volatility of the token price and the higher
+the level of liquidity trade. Second, we demonstrate that the AMM provides
+stable liquidity in comparison to a limit order market during an extreme
+market event. As we document, during extreme market events, both trading
+fee revenue and gas fees increase. Thus, liquidity providers obtain more rev-
+enue and face higher costs to withdraw during market turmoil. Both channels
+stabilize liquidity supply . Third, consistent with our model, we ﬁnd that price
+impact on Uniswap is small with low volatility , while price impact on Binance
+is higher and exhibits high volatility . Consistent with the predictions of our
+model, we show that price impact on Uniswap is smaller relative to Binance for
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 4 =====
+
+324 The Journal of Finance ®
+low token volatility , medium trade sizes, and high noise trading. Interestingly ,
+in March 2022, Binance integrated Pancake Swap, a Uniswap clone, into the
+Binance ecosystem and as a result made their trading venue more similar to an
+AMM. In the data, we subsequently observe a dramatic drop in observed price
+impact on Binance as their trading system moved closer to an AMM. Fourth,
+we document that gas fee differentials between centralized exchanges (CEXs)
+and DEXs are negligible for traders who want to keep custody of their tokens.
+A large literature studies liquidity provision in limit order markets. Since
+Glosten (1994), the efﬁciency of the limit order book in supplying liquidity has
+been widely accepted. Most modern markets operate as a form of an open elec-
+tronic limit order book. Thus, the success of the AMM is surprising. In Glosten
+(1994), the payoff to the marginal liquidity provider at any price balances
+price concession from liquidity demanders against picking-off risk. Thus, no
+competing exchange could offer liquidity at that price and still make proﬁts.
+As we show , in AMMs, due to pro rata sharing of proﬁts, equilibrium is driven
+instead by the average liquidity provider . Further , liquidity providers trade off
+trading fees against a type of picking-off risk. The size of the pool adjusts, and
+the bonding curve shifts out until the market reaches equilibrium.
+As noted, the payoffs to liquidity provision are shared pro rata in AMMs.
+Although time priority (or ﬁrst in, ﬁrst out queuing) is standard practice in
+most equity markets, there has been little research to examine the optimality
+of this precedence rule. Glosten ( 1998) is a rare exception. He shows that pro
+rata rationing changes the marginal payoff to liquidity provision and hence
+the posted volume. Ceteris paribus, we expect pro rata rationing to increase
+liquidity supply . Using a natural experiment from the Treasury Futures mar-
+ket, Haynes and Onur ( 2020) ﬁnd that under pro rata rationing, while order
+sizes and proﬁtability of later submissions are higher , price efﬁciency is lower .
+We note that in contrast to equity markets, option markets have long used pro
+rata rationing, ﬁrst to allocate marketable orders across market makers and
+second to allocate early exercise assignments across writers. Hao, Kalay , and
+Mayhew (2009) document such rationing in options markets.
+More recently , the rise of high-frequency traders (HFTs) has generated re-
+search into competition that does not lead to cheaper liquidity . Biais, Foucault,
+and Moinas ( 2015) present a nuanced view of the effect of speed on market
+competition as it generates both positive and negative externalities. Empir-
+ically , Brogaard, Hendershott, and Riordan ( 2019) examine the limit orders
+submitted by HFT on a Canadian exchange. They document high limit order
+submission and cancellation (95% of the message trafﬁc), which is consistent
+with strategic liquidity provision.
+A few papers have analyzed the theoretical properties of constant function
+market makers. In a general framework, Angeris and Chitra ( 2020) show that
+this class of mechanisms can reﬂect “true” prices. They also provide a bound
+on the minimum value of assets held by such an automated system. These two
+concepts are related because of the increasing price impact faced by a poten-
+tial arbitrageur . Further , Angeris et al. (2021) present a more speciﬁc analysis
+of Uniswap, while Park ( 2021) highlights blockchain-related costs inherent in
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 5 =====
+
+Decentralized Exchange 325
+AMMs. Aoyagi ( 2020) characterizes the effect of information asymmetry on
+these types of markets and shows that the equilibrium liquidity supply size
+is stable. More recently , Ito and Aoyagi ( 2021) present a model in which an
+informed trader chooses between a centralized “market maker” market and
+an AMM market. By contrast, we characterize the endogenous liquidity sup-
+ply for each set of markets and we solve for the optimal venue for a liquidity
+trader . We also discuss why , in general, the tokens traded on a CEX are not
+substitutes for tokens traded on a custodial (centralized) exchange.
+Most closely related to our work is Capponi and Jia ( 2021). They present a
+model of and test for an AMM with a focus on competition among arbitrageurs.
+This competition allows the authors to consider the joint determination of gas
+fees and pool size. By contrast, our focus is on the comparison of a limit order
+market with AMM as markets for liquidity . In particular , we view the gas
+fees as an important precommitment mechanism not to withdraw liquidity
+from the AMM. This allows us to focus on the tradeoff between liquidity fees
+and adverse selection. We also note that our data are more extensive. A more
+recent working paper by Barbon and Ranaldo ( 2021) compares transaction
+costs and price efﬁciency on various decentralized exchanges and Binance for
+ﬁve different token pairs. They conclude that due to the ﬁxed cost of gas fees,
+trading costs on the DEX are roughly comparable to the CEX. Our detailed
+blockchain data allow for a much richer investigation across multiple tokens.
+The rest of the paper is organized as follows. Section I describes in detail
+constant product AMMs, Section II presents the model, Section III presents
+our sample and provides some stylized facts, Section IV characterizes the
+equilibrium pool size, and Section V compares trading costs on the AMM to
+the limit order market. Finally Section VI concludes.
+I. Detailed Description of Constant Product, Automated Market
+Making
+In this section, we describe the market making mechanics on Uniswap V2
+for readers unfamiliar with the protocol. We present an additional numerical
+example in Appendix E. Our model is detailed in Section II below .
+Providing Liquidity . Each swap pool comprises a pair of cryptocurrencies.
+Most frequently , as we document below , one of the currencies is ETH, the na-
+tive cryptocurrency on the Ethereum Blockchain. Expositionally , we typically
+use ETH as the numéraire, and refer to the other generic coin as the “token.”
+An agent wishing to provide liquidity to their preferred pool deposits equal
+amounts of ETH and the token into the pool. The deposit ratio of ETH to to-
+ken is determined by the existing ratio in the pool, which implicitly deﬁnes the
+ETH price of the token.
+An agent who makes such a deposit receives a proportional amount of a
+liquidity token. This third token is speciﬁc to the pool and represents an in-
+dividual liquidity provider’s share of the total liquidity pool. As trade ensues,
+the value of the liquidity pool may rise or fall. Liquidity providers can redeem
+their liquidity tokens at any time and get their share of the current liquidity
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 6 =====
+
+326 The Journal of Finance ®
+Figure 1. A bonding curve . From an initial amount of ETH and tokens of E0 and T0,r e s p e c -
+tively , a trader deposits (sells)T1 − T0 tokens in exchange for E0 − E1 ETH. The price impact of this
+trade is determined by the bonding curve. (Color ﬁgure can be viewed at wileyonlinelibrary .com)
+pool paid out in equal values of ETH and tokens. Changes in the composition
+of the pool from the time a liquidity token is minted to when it is cashed in
+potentially constitute adverse selection. However , providing liquidity is poten-
+tially proﬁtable because each trade generates a fee of 30 basis points that is
+redeposited into the pool. This fee is the same across all pools and hard-coded
+as part of the protocol.
+Consummating Trade . Suppose a trader wishes to buy the token. In this
+case, they will deposit ETH into the pool and withdraw the token. Conversely ,
+if they wish to sell the token, they deposit it into the pool and withdraw ETH
+as payment. The amounts that they have to deposit or withdraw are calculated
+from the bonding curve that is illustrated in Figure 1.
+Suppose there are E0 ETH and T0 tokens in the pool and a trader wishes
+to sell the token. They deposit the amount for sale, T1 − T0, into the pool. In
+return, they receive E0 − E1 and the amount of ETH in the pool drops to E1.
+If the seller was a liquidity trader , the post-trade price in the pool ( E1
+T1
+)i sn o w
+too low , and a potential arbitrageur would enter the market and trade in the
+opposite direction to return the ratio of ETH to tokens to equilibrium. Note
+that the liquidity supplier does not beneﬁt from the price impact paid by the
+liquidity demander—this beneﬁt accrues to the arbitrageur .
+The terms of trade are such that for any post-trade quantities before any fee
+revenue T1 and E1 satisfy
+k := T1 · E1 = T0 · E0. (1)
+In other words, the product of the token and ETH quantities is always on the
+bonding curve.
+For each pool, the constant k depends on the amount of liquidity that has
+been deposited in the pool up to this point. Further , if more liquidity is posted,
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 7 =====
+
+Decentralized Exchange 327
+the constant increases. (The bonding curve shifts out along a ray .) This is the
+mechanism through which the market equilibrates.
+Assessing Liquidity Fees . The discussion above clariﬁes the terms of trade
+absent the liquidity fee. Of course, remuneration is important for the liquidity
+providers. To see how the fee affects trades and prices, suppose that an agent
+wants to trade e ETH in exchange for tokens. The exchange collects a percent-
+age fee τ , which beneﬁts liquidity holders. Thus, the effective amount of ETH
+that trades is (1 − τ )e. This leads to a post-trade, pre-fee revenue liquidity pool
+balance of E′= E + (1 − τ )e. Following the logic of the bonding curve (equa-
+tion (1)), the post-trade token balance must be
+T′= T · E
+E′ = T · E
+E + (1 − τ )e. (2)
+The smart contract that executes the trade accepts the e ETH and returns
+the difference between the pre- and post-trade token balances. Alternatively ,
+the amount of token t that the trader receives is given by
+t = T − T′= (1 − τ )eT
+(1 − τ )e + E . (3)
+Therefore, the terms of trade expressed in ETH/token is given by
+pto t = e
+t = e
+T + E
+(1 − τ )T . (4)
+The terms of trade have a natural interpretation as a spread. Suppose that
+the fundamental value of the token denominated in ETH is p0. If the pool is in
+equilibrium, then p0 = E
+T . The liquidity fee generates what is essentially a tick
+size that is distinct from the volume-induced price impact that the trader pays
+when he moves long the bonding curve. We thus have
+lim
+e→0
+pto t
+p0
+= ET
+ET (1 − τ ) = 1
+1 − τ . (5)
+That is, when buying tokens, traders have to pay a ﬁxed spread of 1
+1−τ p0.S i m -
+ilarly , for token sales, traders have to pay a ﬁxed spread of (1 − τ )p0.
+Pool Size . The price that a trader gets is determined by the bonding curve
+and the volume of posted liquidity . In particular , the price impact of a marginal
+increase in the order is ∂ p/∂e = 1/T. As the liquidity pool grows, the price im-
+pact of a ﬁxed order size decreases. Thus, understanding the payoff to liquidity
+provision and hence the size of each liquidity pool is an important determinant
+of AMM market quality .
+Figure 2 presents an example of an “order book” that an incoming trader
+might face. The blue line corresponds to a small pool and the orange line to
+a larger pool. Because Uniswap has a unique mapping of trading quantity to
+price, the graph shows the exact amount that is traded at any price. The spread
+or ﬁxed cost of trading is evident in the interval around the mid-price of 10, for
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 8 =====
+
+328 The Journal of Finance ®
+Figure 2. Uniswap orderbook depth . The graph shows how many Token B could be bought
+or sold at a given price for a large (orange) and small (blue) liquidity pool. The parameters are:
+τ = 0.003 and T = 20, E = 200 ( T = 10, E = 100) for the large (small) pool. (Color ﬁgure can be
+viewed at wileyonlinelibrary .com)
+which no quantities can be bought. Clearly , larger orders face worse marginal
+prices than they would in a typical limit order book.
+II. Framework
+Consider a market for one asset, with current value p0. With probability α,
+there is an innovation and the asset is equally likely to jump up or down to
+p0 + σ or p0 − σ , respectively; otherwise the asset value remains at p0. Thus,
+σ
+p0
+is the proportional innovation. A potential arbitrageur monitors the market
+and trades whenever proﬁtable; otherwise a liquidity trader , who trades a ﬁxed
+quantity q, arrives. The liquidity trader is equally likely to buy or sell, at any
+price p ∈ [p0 − σ, p0 + σ ]. At the extreme prices, a trading crowd stands ready
+to execute orders.
+A. Limit Order Market
+There are two rational, deep pocketed liquidity suppliers who potentially
+enter the market before the passive trader and supply liquidity that optimally
+trades off the surplus they can extract from the liquidity trader against the
+possibility of being “picked off” by an arbitrageur . We focus on the case of
+two liquidity suppliers as it is the minimum required for competition. These
+rational liquidity suppliers can privately monitor the market to increase the
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 9 =====
+
+Decentralized Exchange 329
+Figure 3. Sequence of events in the limit order market .
+probability that they will be a monopolist liquidity supplier . The symmetric
+monitoring cost is I(γ ) = aγ 2. If liquidity supplier i chooses γi and liquidity
+supplier j chooses γ j, then Nature assigns i to be the sole liquidity supplier
+with probability γi (1 − γ j ). This private monitoring captures the idea that
+liquidity suppliers have an incentive to compete in many different ways, such
+as co-location or speed.
+To simplify the exposition, in the text we describe the case in which the
+informed trader buys, that is, an innovation leads the asset value to jump up.
+The case in which the informed trader sells is symmetric. We characterize
+symmetric equilibria.
+The sequence of events in the limit order market is as follows. First,
+each liquidity supplier chooses their level of private investment. Second,
+Nature determines if there is one or two limit order submitters, and then each
+limit order submitter posts orders. In the case of competing liquidity suppliers,
+one of them is randomly selected to go ﬁrst. This captures the importance of
+time priority . After liquidity is posted, Naturedetermines the new asset value.
+If there is no relative value change, the liquidity trader arrives and trades
+against the best quote or randomizes if indifferent. If there was a relative
+value change, the arbitrageur trades if it is proﬁtable (see Figure 3).
+From the above, it follows that liquidity suppliers may be alone or competing
+in a market. We characterize their optimal trading strategies in both cases, and
+then consider their private investment. The amount that the liquidity trader
+trades is ﬁxed, q, and thus this is also the amount that the liquidity suppli-
+ers post.
+If a liquidity supplier is alone in the market, he will always post a sell price
+of p0 + σ . Posting at this high price completely mitigates adverse selection, and
+at the same time extracts maximal surplus from the passive trader .
+LEMMA 1: A monopolist liquidity supplier in the market will post a sell price
+of p 0 + σ and a buy price of p 0 − σ to obtain an ex ante proﬁt of q (1 − α)σ .
+By contrast, if two competing liquidity suppliers are in the market, the ﬁrst
+liquidity supplier rationally anticipates that he will always be undercut unless
+he offers the competitive price at which he makes zero proﬁt. The second liquid-
+ity provider rationally anticipates that the noise trader’s order will be ﬁlled by
+the ﬁrst liquidity provider and that he can at best trade with the arbitrageur .
+He will therefore post a price of p0 + σ .
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 10 =====
+
+330 The Journal of Finance ®
+LEMMA 2: If two competing liquidity suppliers are in the market offering orders
+to sell, the ﬁrst liquidity provider will post a sell price of p 0 + ασ and a buy price
+of p 0 − ασ , while the second liquidity provider will post a sell price of p 0 + σ
+and a buy price of p 0 − σ . Each competing liquidity supplier makes zero proﬁts.
+A sole liquidity supplier makes positive proﬁts, while those in competition
+make zero proﬁts. Increasing private investment makes it more likely that a
+liquidity supplier makes positive proﬁts.
+The logic in support of competitive liquidity provision is that competition
+leads to lower prices. However , this is true only if suppliers are competing
+on price alone. Given the complexity of electronic trading platforms, liquidity
+suppliers compete in many different ways. Such competition does not neces-
+sarily lead to lower prices and may even be inefﬁcient. In the context of our
+framework, we capture this through liquidity suppliers’ private investment to
+increase the likelihood that they are a monopolist.
+PROPOSITION 1: Each trader chooses private investment, γ∗ = (1−α)σ q
+2a+σ q(1−α) .T h e
+optimal private investment is increasing in the innovation in price σ and the
+size of the liquidity trade q, and decreasing in the probability of an innovation
+α and the monitoring cost a.
+The limit order traders ﬁnd it proﬁtable to trade with the noise traders;
+σ captures the extent to which limit order traders can extract surplus from
+noise traders.
+B. Automated Market Maker
+In the AMM or bonding curve market, liquidity suppliers choose a pool and
+commit quantities of both ETH and tokens. The ﬁrst thing to note is that liq-
+uidity provision is not rivalrous and there is no incentive for private invest-
+ment as there is in the limit order market. The second thing to note is that the
+AMM requires committed capital.
+Suppose that investors have each committed E0 ETH and T0 tokens. Two
+identities from the bonding curve will be useful. First, the ratio of ETH to
+tokens, in equilibrium, is the ETH price of tokens implied by the bonding curve
+market, or
+E0
+T0
+= b0. (6)
+We start our analysis by assuming that the price in the bonding curve market
+is equal to the equilibrium price, or b0 = p0. Second, any transactions must
+occur along the curve. Speciﬁcally , if t tokens and e Ether are traded, then
+E0T0 = k, (7)
+and ( E0 + e)(T0 + t) = k, (8)
+where k is the constant of the bonding curve.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 11 =====
+
+Decentralized Exchange 331
+Figure 4. Sequence of events in the automated market maker .
+In addition, as we indicate in Section I, any trade is assessed a proportional
+fee of τ . We simplify the algebra that follows by assuming that liquidity fees do
+not change the size of the pool, but rather are placed into a separate account.
+In reality , liquidity fees are paid into the pool and therefore change the bonding
+curve constant. The timing of events is shown in Figure 4.
+First consider the payoffs to liquidity provision if a liquidity trader arrives.
+If the liquidity trader buys tokens, they will remove q tokens and will pay with
+the the numeraire good, ETH. Thus, they add eb
+ℓ to the ETH pool. The speciﬁc
+amount of ETH they add is determined by the bonding curve, so
+(E0 + eb
+ℓ)(T0 − q) = E0T0,
+eb
+ℓ = E0T0
+T0 − q − E0.
+Per the protocol, liquidity providers receive a fee for facilitating this transac-
+tion. We model this by assuming that a fee is deposited into a separate account.
+The fees paid by this noise trader are τ eb
+ℓ.
+Reversing this trade (i.e., selling tokens to the pool) is proﬁtable for the ar-
+bitrageur if eb
+ℓ(1 − τ ) < qp0.I f τ is sufﬁciently small, the arbitrageur will add
+tokens and remove ETH. Under our maintained assumptions, the payoff to
+liquidity provision is twice the fee paid by the liquidity trader , or 2 τ eb
+ℓ.S y m -
+metrically , if the liquidity trader is a seller , they will deposit q tokens and
+remove es
+ℓ = E0 − E0 T0
+T0+q , the arbitrageur will buy tokens, and these two transac-
+tions generate fee revenue of 2 τ es
+ℓ.
+In contrast to a market maker in a limit order market, the AMM cannot
+adjust its price and has to rely on arbitrageurs to align the quoted price
+with the fundamental value. Thus, in an AMM, liquidity provision and price
+discovery are separate and provided by different agents who collect different
+rewards. The liquidity providers receive the revenue while the arbitrageur
+earns trading proﬁts.
+Our formulation makes use of two simpliﬁcations for tractability . First, in
+reality , the arbitrageur faces a different size pool than the liquidity trader , as
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 12 =====
+
+332 The Journal of Finance ®
+the liquidity fee has been paid into the pool. Second, the arbitrageur will trade
+slightly less than eb
+ℓ. The overall size of these two effects is negligible and of
+the order τ 2.
+LEMMA 3: Suppose that the aggregate amount of ETH and tokens in a liquidity
+pool are E 0 and T 0, respectively, and τ is sufﬁciently small. With probability
+(1 − α), there is a liquidity event and the fee revenue for liquidity provision is
+2τ p0q
+(
+T0
+T2
+0 − q2
+)
+. (9)
+Now suppose that there was a positive innovation event so that an in-
+formed arbitrageur arrives. Since the pricing is deterministic, she will trade
+an amount that maximizes her proﬁt. She will buy tb tokens and pay eb
+I for
+them. The ETH payment is pinned down by the bonding curve, which requires
+that ( T0 − tb )(E0 + eb
+I ) = E0T0 and gives her a proﬁt function of
+π b
+I = (p0 + σ )tb − (1 + τ )
+[E0T0
+T0 − tb − E0
+]
+. (10)
+Given the convexity of the bonding curve, the optimal trading amount is
+determined by the ﬁrst-order condition
+(p0 + σ ) − (1 + τ ) E0T0
+(T0 − tb )2 = 0, (11)
+which implies
+tb = T0 −
+√
+(1 + τ )E0T0
+p0 + σ , (12)
+eb
+I =
+√
+E0T0 (p0 + σ )
+(1 + τ ) − E0. (13)
+We note that this is optimal for the informed arbitrageur only if tb ≥ 0, or
+τ ≤ σ
+p0
+, so that the transaction cost is low relative to the innovation. 1
+After the innovation, absent informed arbitrage trading, the ETH value of
+the total supplied capital would be E0 + (p0 + σ )T0. Given the informed arbi-
+trage trade, the ETH value of the supplied capital is
+E0 + eb
+I + (p0 + σ )(T0 − tb )
+=
+√
+E0T0 (p0 + σ )
+( 2 + τ√
+(1 + τ )
+)
+.
+1 If τ> σ
+p0
+, the proportional innovation, then the fees are so high that an arbitrageur would
+never trade. Liquidity traders would also be better off choosing the limit order market, and the
+AMM would not be viable.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 13 =====
+
+Decentralized Exchange 333
+Therefore, the change in the value of supplied capital for liquidity suppliers
+after an increase in the value of the asset is
+( 2 + τ√
+(1 + τ )
+)(√
+T0E0 (p0 + σ )
+)
+−
+(
+E0 + (p0 + σ )T0
+)
+. (14)
+This change in value corresponds to picking-off risk, in the sense that the
+informed arbitrageur rebalances the amount of ETH and tokens to reﬂect the
+value in the wider market. In addition, however , the arbitrageur pays a liquid-
+ity fee. Consistent with the previous case, we assume that this is levied on the
+ETH total, for an amount equal to τ
+(√
+E0T0 (p0+σ )
+(1+τ ) − E0
+)
+.
+LEMMA 4: Suppose that the aggregate amount of ETH and tokens provided are
+E0 and T0, respectively, and τ ≤ σ
+p0
+. With probability α
+2 , the asset value jumps
+up and the payoff to liquidity provision is
+( 2 + τ√
+(1 + τ )
+)
+T0
+(√
+p0 (p0 + σ )
+)
+−
+(
+T0 p0 + (p0 + σ )T0
+)
+  
+Picking off
++
+τ
+⎛
+⎝T0
+√
+p0 (p0 + σ )
+(1 + τ ) − p0T0
+⎞
+⎠
+  
+liquidity provision
+. (15)
+A symmetric expression holds for a jump down in asset value.
+Armed with Lemmas 3 and 4, we can determine the overall payoff to liq-
+uidity provision for the entire pool and thus the equilibrium size of the pool.
+The equilibrium pool size makes liquidity suppliers indifferent between com-
+mitting capital to the AMM or to their outside option, which, for simplicity , we
+normalize to zero.
+PROPOSITION 2: Suppose that 0 <τ< σ
+p0
+. Then the equilibrium supply of to-
+kens is given by
+T0 = q
+⎡
+⎣
+√
+1 + (1 − α)2τ 2 p2
+0
+α2ω2 − (1 − α)τ p0
+αω
+⎤
+⎦, (16)
+where ω =
+√
+p0 (p0 + σ )(1 + τ ) +
+√
+p0 (p0−σ )
+1+τ − 2p0.
+Figure 5 illustrates the trade-off captured in Proposition 2. In this ﬁgure,
+fundamental asset characteristics are ﬁxed. The left panel illustrates trade
+size as a function of pool size. By assumption, the noise trader (blue) trades a
+constant amount. Following a noise trade, the arbitrageur trades an identical
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 14 =====
+
+334 The Journal of Finance ®
+Figure 5. Optimal pool size . The left panel shows the optimal trade size by the arbitrageur
+upon a price innovation (orange) and the liquidity trader (blue) as a function of pool size. The
+right panel shows fee revenue (blue) and adverse selection cost (orange) as a function of pool size.
+The parameters are P0 = 10,σ = 1, q = 1,α = 0.1, and τ = 0.003. (Color ﬁgure can be viewed at
+wileyonlinelibrary .com)
+amount in the opposite direction to move the pool price back to its fundamen-
+tal value. If there is an asset innovation, the arbitrageur optimizes trade size
+to maximize proﬁts. The larger the pool, the lower the price impact and the
+more the arbitrageur will optimally trade to push the pool price to its new
+fundamental value. The right panel shows fee revenue (blue) and the adverse
+selection cost (orange) as a function of pool size. The adverse selection cost of
+the pool (orange line, left panel) is proportional to the arbitrageur’s trade size.
+Liquidity providers trade off the fee revenue with this adverse selection cost.
+Fee revenue is slowly growing in pool size as overall trading volume increases
+because of the arbitrageur .
+The parameter restrictions under which equation ( 16) characterizes pool
+size are intuitive. If the payoff to liquidity suppliers is too small, then pools
+are not sustainable. If the payoff to liquidity provision is too large, then ar-
+bitrageurs will not ﬁnd it lucrative to trade on relative price information and
+will also not trade to ensure that the price implied by the pool corresponds to
+the traded value of the token. Going forward, we assume that these conditions
+hold because our empirical focus is on the pools that we observe. Further , as
+we show in our empirical analysis, the prices implied by Uniswap consistently
+track traded prices on Binance, which suggests that cross-market arbitrage
+is proﬁtable.
+III. Data and Stylized Facts
+DEX are smart contracts deployed mostly on the Ethereum blockchain.
+Users initiate trade as an Ethereum transaction that sends tokens to a smart
+contract that in turn calls a function to perform the exchange. The smart
+contract then sends trade proceeds in the form of the appropriate tokens
+back. Since transactions on Ethereum are atomic, that is, they either execute
+completely or fail, there is no settlement risk and users do not have to hand
+over custody of their digital assets to a third party . In keeping with other DeFi
+protocols, the source code for many DEX is public and users can verify that
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 15 =====
+
+Decentralized Exchange 335
+the code is not fraudulent. This also allows them to perfectly predict how the
+smart contract will perform, and more speciﬁcally , the terms of trade if they
+submit an order .
+Uniswap is open source with no owner or operator . It was launched in
+November 2018 at Devcon 4, and in its ﬁrst release, Uniswap V1 allowed
+exchange between any ERC20 tokens against Ether (ETH). 2 Because Uniswap
+has no designated operator , V1 pools cannot be deleted from the blockchain
+and exist in parallel to V2 pools. Uniswap V2 was launched on May 18, 2020.
+The update allows direct trade of any ERC 20 token pairs. If no pool exists for
+a speciﬁc token pair , it can be freely created by invoking the Uniswap factory
+contract and specifying the token for which a new pool should be created.
+The factory contract will then deploy a new pool for that speciﬁc token on the
+Ethereum blockchain and enable subsequent trade. As we document below ,
+most V2 pools trade tokens against Wrapped Ether (WETH), which is a ERC
+20 representation of Ether (ETH).
+To construct our data, we obtain a list of all Uniswap V1 and V2 liquidity
+pools from the original factory contract transactions. Our sample comprises
+105,098 individual liquidity pools, consisting of 2,126 V1 pools and 102,972 V2
+pools. We match transactions into and out of these liquidity pools with block-
+by-block transactions on the Ethereum blockchain. In total we have 94,232,292
+transactions on Uniswap between its inception on November 2, 2018, and De-
+cember 21, 2022. We observe 2,097,032 liquidity injections into a pool, 959,312
+withdrawals of liquidity from a pool, and 91,175,948 trades of tokens.
+An Ethereum transaction is a set of instructions that are processed as
+one unit within the same block. Apart from implicit limits on transaction
+sizes given by Ethereum block size, there is no restriction on how many
+interactions with Uniswap liquidity pools can be done in one transaction.
+In our sample, 65.62% of Ethereum transactions have only one interaction
+with one liquidity pool, another 14.13% have two interactions, and 5,956
+transactions or 0.0063% of the sample have 10 or more interactions with a
+liquidity pool. One transaction interacted with 141 different liquidity pools. 3
+The most complex transaction in terms of number of swaps in our sample
+has 228 interactions with two different Uniswap liquidity pools. 4 Uniswap V2
+introduced router contracts that can perform complex transactions with one
+function call. Assume, for example, that a pool exists that trades tokens A and
+B, another pool trades tokens B and C, and there is no pool to swap A and
+C. The router contract can be instructed to swap A and C by trading through
+token B. In our sample, such a transaction would show up as two separate
+transactions, one for each of the two pools.
+2 ERC 20 is the most commonly used standard for fungible tokens on Ethereum compati-
+ble blockchains.
+3 See transaction 0xf10dfb01d0b2e13a28e7bde411bcb4321b703a55e96d11487b382effaa8998b7,
+in which someone swapped for no apparent reason 0.0000001 Ether each with 140 different liq-
+uidity pools.
+4 See Ethereum transaction 0xa7c81e54c54e58db88f01a92c3602b0996b82ff424b549cb9e8d9
+18e2614ecf5.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 16 =====
+
+336 The Journal of Finance ®
+Figure 6. Number of transactions on Uniswap . (Color ﬁgure can be viewed at wileyonlineli-
+brary .com)
+It is important to recognize that our analysis is on liquidity supply on both a
+limit order market and an AMM. Therefore, we do not consider market access
+fees—either on the limit order market (e.g., co-location, make-take fees) or on
+the AMM (e.g., gas fees). The latter are analyzed in Capponi and Jia ( 2021).
+Most pools trade against WETH. To compute volume we take the WETH
+part of the trade and convert it to USD using Binance minute-by-minute data.
+Most of the remaining pools trade against a USD stablecoin. For those pools we
+convert the amount traded in the stablecoin to USD. For all remaining pools,
+we search for all pools in which one of the tokens trades against WETH and
+we convert it using the prices from the pool with the highest volume. More on
+the network structure of Uniswap can be found in Appendix D.
+Table I provides an overview of the 10 largest Uniswap V1 and V2 pools by
+average daily volume in ETH. We exclude pools with less than 5,000 trades
+and an average poolsize of less than 700 ETH. V1 pools are smaller in terms
+of both volume and number of trades, mostly because the introduction of V2
+coincided with a huge boom in Decentralized Finance and caused most traders
+and liquidity providers to converge on the new protocol. The largest pool with
+at least 100 trades in terms of total volume traded is USD Coin (USDC) -
+Wrapped Ether with an aggregate volume (over all days) of over 43.23 billion
+USD. The Wrapped Ether - Tether USD pool has the highest number of total
+trades in our sample, at over 4.61 million trades. The “on average” largest
+pool in ETH is Wrapped BTC - Wrapped Ether with an average size of around
+225,721 ETH.
+While some of the pools are very active, many are not: 78,341 pools in our
+sample have fewer than 100 transactions. Figure 6 shows the number of trades
+by pool type. With the release of V2, trading activity in V1 declined. We also
+observe that for V2 pools, trading against WETH (orange) dominates direct
+trading of other tokens (red).
+Figure 7 illustrates the trading volume per day . Computing volume is not
+straightforward in bonding curve markets as attackers often deliberately push
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 17 =====
+
+Decentralized Exchange 337
+Table I
+Ten Largest Exchanges for Uniswap V1 and V2, Sorted by Average Daily Volume (in ETH)
+Number transactions is the daily average number of transactions, Volume (ETH) is the daily average volume in Ether , Volume (USD) is the daily
+average volume in USD, Pool size (ETH) is the daily average pool size in Ether , and Days active are the days since inception of that pool.
+Token 1 Token 2 Num.Tx Volume
+(ETH)
+Volume
+(USD)
+Pool size
+(ETH)
+Days
+active
+Panel A: Uniswap V2
+USD Coin USDC Wrapped Ether WETH 4,397.4 35,050 45,027,074 122,236 960
+Wrapped Ether WETH Tether USD USDT 4,868.7 33,751 41,344,518 139,117 946
+Dai Stablecoin DAI Wrapped Ether WETH 1,552.6 16,862 16,854,140 126,240 954
+Uniswap UNI Wrapped Ether WETH 868.9 9,725 9,684,291 47,004 825
+Wrapped BTC WBTC Wrapped Ether WETH 478.0 8,866 9,385,463 225,721 947
+yearn.ﬁnance YFI Wrapped Ether WETH 322.3 5,710 2,858,581 25,572 886
+Wrapped Ether WETH Ampleforth AMPL 451.0 5,140 2,734,632 34,048 947
+Fei USD FEI Wrapped Ether WETH 112.8 4,818 12,789,495 128,547 633
+ChainLink Token LINK Wrapped Ether WETH 436.3 3,905 4,373,169 21,055 947
+SushiToken SUSHI Wrapped Ether WETH 318.3 3,878 1,978,673 68,339 847
+Panel B: Uniswap V1
+Ether ETH Dai Stablecoin DAI 273.2 1,264 258,767 8,908 1,132
+Ether ETH HEX HEX 113.6 818 174,572 20,633 1,113
+Ether ETH USD Coin USDC 167.5 760 181,431 6,447 1,485
+Ether ETH Maker MKR 89.4 756 144,604 10,249 1,510
+Ether ETH Sai Stablecoin v1.0 SAI 122.2 565 107,241 5,030 1,510
+Ether ETH LoopringCoin V2 LRC 11.8 545 202,887 771 1,308
+Ether ETH Synthetix Network Token SNX 65.5 359 66,961 3,505 1,230
+Ether ETH Synth sETH sETH 22.7 201 38,153 26,515 1,195
+Ether ETH UniBright UBT 55.2 139 28,975 634 1,185
+Ether ETH Pinakion PNK 25.2 119 36,217 1,536 1,504
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 18 =====
+
+338 The Journal of Finance ®
+Figure 7. Trading volume on Uniswap . The graph shows the daily volume of transactions
+including ﬂash loans in USD. The graph is capped at 2.4 billion USD. (Color ﬁgure can be viewed
+at wileyonlinelibrary .com)
+markets out of equilibrium. The highest volume in our sample is on March
+30, 2021, with a volume of 18.34 billion USD. On that day , a trader moved 5.5
+billion USD of a token back and forth between her own wallets. On October 26,
+2020, there is volume of over 5.5 million ETH or 2.1 billion USD, linked to an
+attack on Harvest Finance using a ﬂash swap. A more detailed discussion of
+this incident and implications for Uniswap volume can be found in Appendix C.
+Use of ﬂash swaps varies in our sample. Of the 960 days when V2 was deployed,
+ﬂash swaps occurred on 922 days. The median ﬂash swap volume per day was
+164,005 USD, and the maximum was 17.16 billion USD on March 30, 2021.
+The ﬁrst ﬂash swap occurred on May 23, 2020.
+The largest nonﬂash swap trade in our sample was on December 17, 2020,
+when a trader swapped 48,584,947.17 DAI for 342,252.89 WETH worth about
+220.42 million USD at the time as part of an attack on the platform Warp
+Finance. On June 18, 2020, a trader swapped 100,000.39 WETH (about 23.2
+million USD at the time) for 1,695,998.19 Unibomb tokens as part of another
+exploit.5 The median trade size in our sample is 669.95 USD. Moreover 6.70%
+of trades are below 0.01 ETH and 19.21% are below 100 USD. We provide
+details on our methodology in Appendix C.
+For our subsequent econometric analysis, we purge pools that are very small
+or that were used for only a few days. Speciﬁcally , we drop pools with less than
+30 trading days and with less than 100 ETH average balance. The reduced
+sample has 59,606,977 observations in 1,525 pools.
+5 See transaction 0x0x8492ce3b1ea8ec796471997731e557c057c2fb0a3ade7f9c0477450d53ad
+4791. Unibomb is deﬂationary token that burns 1% of each transaction, thus increasing its value.
+Somebody seems to have borrowed 100.000 ETH from the lending platform dXdY and converted
+them to Unibomb. The transaction decreased token supply and the user could reconvert the Uni-
+bomb tokens to ETH with a slight gain in price, leaving a proﬁt after the repayment of the loan.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 19 =====
+
+Decentralized Exchange 339
+Figure 8. Pool size as function of innovation size σ and α. Unless otherwise stated, the
+parameters are α = 0.01, p0 = 10,σ = 4, q = 3, and τ = 0.003. (Color ﬁgure can be viewed at wi-
+leyonlinelibrary .com)
+IV . Liquidity Provision
+A. Pool Size
+We have demonstrated empirically that there is heterogeneity in pools. The
+equilibrium pool size in equation ( 16) permits us to derive comparative statics.
+PROPOSITION 3: Suppose that the current price is p 0 and the fee is less than
+the proportional innovation, or τ< σ
+p0
+. Then the equilibrium size of a liquidity
+pool is:
+i. linear in the size of the liquidity trade q,
+ii. decreasing in the size of the innovation, σ ,
+iii. decreasing in the innovation probability, α.
+In equilibrium, pool size adjusts so that a pool’s per-token fee revenue bal-
+ances the cost from being picked off by arbitrageurs if the pool posts stale
+prices. When innovations, σ , are larger , the informed arbitrageur will ceteris
+paribus place larger trades, and losses for liquidity providers will therefore
+be larger . By contrast, fee revenue from the liquidity trader is independent
+of movements in the fundamental price. This implies that to increase the ex-
+pected payoff per unit of liquidity , the pool in equilibrium must be smaller . As
+the pool shrinks, price impact increases and so the informed arbitrageur places
+a smaller order . These comparative statics highlight how the AMM reaches
+equilibrium—as the price impact is a deterministic function of the pool size,
+the size of the pool adjusts to ensure that the liquidity suppliers receive the
+opportunity cost of their capital.
+The equilibrium pool size also decreases in α, the probability of an innova-
+tion, because this generates informed trading, that is, an arbitrageur trading
+because of an innovation. As α increases, the fraction of liquidity traders
+decreases and the pool is more likely to be picked off by arbitrageurs. The
+pool size again shrinks in equilibrium, increasing price impact, and reducing
+the optimal trade size of the informed trader . Figure 8 shows the pool size as
+a function of σ and α for a numerical example. We summarize our empirical
+prediction below .
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 20 =====
+
+340 The Journal of Finance ®
+HYPOTHESIS 1: We expect pool size to decrease in the volatility of the ex-
+change rate of the two tokens and increase in uninformed trading.
+To test the predictions of Hypothesis 1, we collect daily data on 1,525 pools
+in our ﬁnal sample. For the average pool, we observe 702 days, while the
+median is 750. To test Hypothesis 1, we specify the following regression at the
+pool-day level:
+pool size = a + b1σ fx + b21airdrop + b3noise trading, (17)
+where pool size is the average daily pool size in USD, which is the daily average
+of pool sizes after each trade converted to USD using minute-by-minute data.
+We control for the airdrop of UNI tokens during Uniswap’s liquidity minting
+program as they might have affected the return for liquidity providers and
+thus induced a larger pool size. 6 We set the dummy 1airdrop equal to one for in-
+cluded pools on airdrop days. We control for the daily block-by-block exchange
+rate volatility ,σ fx , as a measure of adverse selection. 7 We use three measures
+for noise trading. First, we use the number of trades on a day in a pool. If
+innovations arrive with exogenous intensity , then a higher number of trades in
+a given interval must correspond to more liquidity trading. This is because in-
+formed traders in these markets have little incentive to split their orders—gas
+fees are levied per transaction and liquidity suppliers are not strategic and do
+not need to hide their orders. Second, we look at volume assuming again that
+any volume beyond the informed volume must be noise. Finally , we examine
+reversals, which we deﬁne as a trade that is immediately followed by a trade in
+the opposite direction of at least 75% of the size of the original trade size. This
+pattern should be observed whenever a liquidity trader who pushes the price
+away from its fundamental value is followed by an arbitrageur who brings the
+pool price back to the appropriate relative value. We cluster standard errors
+by both pool and day , and we run regressions with and without ﬁxed effects.
+Table II presents our results. Consistent with Hypothesis 1, we ﬁnd that
+pool size decreases in token price volatility , which is our empirical proxy of
+the size of the innovation σ . Higher token price volatility means that liquidity
+suppliers in the pool lose more when picked off, and thus liquidity providers
+in equilibrium are compensated with higher per-token fee revenue, which is
+achieved by reducing the pool size. All three measures of uninformed trading
+are positively related to pool size as predicted by our model. Our ﬁndings hold
+without ﬁxed effects (columns (1) to (3)) as well as with pool and day ﬁxed
+effects (columns (4) to (6)).
+6 Between September 18, 2021, and November 17, 2021, 13.5 free UNI tokens per pool per
+block were distributed to users in four pools: WETH/USDT , WETH/USCD, WETH/DAI, and
+WETH/WBTC.
+7 Crypto volatilities are generally high and ﬂuctuating, and our short-term measure captures
+higher frequency market conditions consistent with many microstructure studies. Our ﬁndings
+are robust with respect to a 20-day moving average volatility .
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 21 =====
+
+Decentralized Exchange 341
+Table II
+Regression Explaining Pool Size as a Function of Price Volatility and
+Measures of Uninformed Trading
+Pool size is the daily average size of the liquidity pool measured in million USD. Airdrop is a
+dummy set to one if transactions in that pool were rewarded with UNI tokens at that time. Std.Dev
+FX Rate is the annualized daily standard deviation of block-by-block price changes in the pool in
+percent. Volume (USD) is daily trading volume in million USD. Number Trades is the number of
+trades for a pool per day in thousands. Reversals are deﬁned as trades that are immediately fol-
+lowed by an opposite trade of at least 75% of the size of the original trade measured in thousands.
+Standard errors are clustered by both pool and day . The last three columns include pool and day
+ﬁxed effects. *, **, and *** indicate signiﬁcance at the 10%, 5%, and 1% level, respectively .
+(1) (2) (3) (4) (5) (6)
+Std.Dev Fx Rate −0.201∗∗∗ −0.249∗∗∗ −0.204∗∗∗ −0.163∗∗∗ −0.158∗∗∗ −0.152∗∗∗
+(0.0419) (0.0499) (0.0428) (0.0473) (0.0487) (0.0484)
+Airdrop 222.9 ∗∗∗ 215.0∗∗∗ 214.2∗∗∗ 188.1∗∗∗ 186.2∗∗∗ 185.6∗∗∗
+(26.93) (34.10) (35.00) (23.19) (25.31) (25.51)
+Volume (USD) 0.741 ∗∗∗ 0.419∗∗∗
+(0.198) (0.147)
+Reversals 49.18 ∗∗∗ 18.93∗∗∗
+(13.68) (6.135)
+Number trades 6.633 ∗∗∗ 2.491∗∗∗
+(2.088) (0.850)
+R2 0.263 0.215 0.213 0.552 0.529 0.529
+Observations 997,507 997,507 997,507 997,507 997,507 997,507
+B. Stability in Liquidity Provision
+We focus on two important characteristics of liquidity supply . First, liquidity
+should be predictable for trades during the course of an average trading day .
+This reduces uncertainty and risk around the terms of trade. Second, during
+times of crisis, markets should still be viable, that is, liquidity should be posted.
+The strategic incentives of liquidity suppliers in limit order markets can
+lead to volatility in both cases. One of the characteristics of modern limit order
+markets is the rapid posting and cancelling of liquidity and quote ﬂickering.
+This is usually attributed to strategic liquidity provision. (Baruch and Glosten
+(2013) characterize equilibrium quote ﬂickering in a limit order book.) Further ,
+“ﬂash crashes” or rapid price movements caused by extreme liquidity supply
+withdrawals have been periodically observed in limit order markets. 8 In this
+section, we investigate whether AMM liquidity suppliers are similarly strate-
+gic, that is, whether they submit and withdraw liquidity at high frequency .
+We also examine stability in liquidity during crisis events. Our analysis in
+Section V.B documents variation in price impact on a regular trading day , that
+is, the effect of variation in liquidity supply on the realized terms of trade.
+8 The Securities and Exchange Commission ( 2010) provides a detailed analysis of the 2010
+Flash Crash and documents how HFT liquidity was withdrawn from the market. In addition,
+Kirilenko et al. ( 2017) analyze the crash.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 22 =====
+
+342 The Journal of Finance ®
+In principle, liquidity provision in an AMM could be as strategic as in a limit
+order market. To investigate if liquidity providers engage in high-frequency
+strategic liquidity provision, we track liquidity providers by the wallet address
+where they store their liquidity tokens. Of our 94.2 million observations, we
+ﬁnd only 33,256 events where the same person deposited (withdrew) liquidity
+and withdrew (deposited) liquidity in the same pool within 50 blocks. 9 Most
+of these withdrawals or additions are small, the median size is 1,797 USD or
+2.76% of the pool, which has a very small impact on trading costs. 10 We con-
+clude that liquidity providers on Uniswap V2 do not engage in high-frequency
+strategic liquidity provision and withdrawals.
+In our sample, 1.02% of all the interactions with Uniswap liquidity pools
+are withdrawals. Further , these withdrawals are not coincident with extreme
+market events. For example, on May 19, 2021, ETH dropped from over 3,400
+USD to 2,014 USD, a 41% decline. To put this in perspective, on October 19,
+1987, the S&P 500 index dropped by only 20.5%. The orange area in Figure 9
+shows minute-by-minute pricing data from Binance. We examine liquidity
+withdrawals from the large USD stablecoin pools that trade against ETH:
+USDT , USDC, and DAI. The blue line in Panel A shows aggregate withdrawals
+from these pools in percent of pre-event pool size. When Ether reached its
+lowest price, only about 2% of liquidity was withdrawn and users could trade
+with minimal price impact. Most withdrawals of liquidity happen around
+53 minutes or 245 blocks after the big decline, when prices have already
+recovered. Overall, only 17% of the liquidity gets withdrawn in this extreme
+price movement.
+Two factors mitigate liquidity providers’ incentives to withdraw . First,
+increasing fee revenue partially offsets any losses that liquidity providers
+experience. The green line in Panel A shows cumulative fee revenue during
+the plot period. Between 7 a.m. and 3 p.m. UTC liquidity providers collected
+almost 3 million USD in fees. Trading volume and thus fee revenue might be
+high in periods of strong price movements because levered traders unwind
+their positions or are involuntarily liquidated (Lehar and Parlour ( 2023))
+or because arbitrageurs take advantage of pricing differences across pools.
+Second, when liquidity providers want to withdraw liquidity , they have to pay
+gas fees on the blockchain to compensate the miner for the computational cost
+of processing the transactions. Withdrawing liquidity requires the liquidity
+provider’s share of the fee revenue to be computed, which renders withdrawals
+computationally complex and thus more expensive relative to a swap. Panel B
+9 Only 387 observations are in pools with over 10,000 USD and with more than 1,000 transac-
+tions, where the deposit or withdrawal is for more than 1,000 USD, and where the gap between
+deposit and withdrawal is no more than ﬁve blocks.
+10 Some large short-term liquidity injections are due to scams whereby someone tries to inﬂate
+trading volume of a pool (e.g., 0x6bfd4393fcb5c2b803a2627bb996d66bdaf8859938145803a0c48739
+928d7d1c) or to stabilization attempts of the FEI stablecoin, which used Uniswap as a pri-
+mary stabilization mechanism (e.g., 08883691096dd8624ab433124155536812a74585999bbf55958
+e92a6831d36df).
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 23 =====
+
+Decentralized Exchange 343
+Figure 9. Liquidity withdrawals and extreme market events . Panel A shows the block-by-
+block price of Ether around May 19, 2020 (in orange, left axis), the aggregate percentage liquidity
+withdrawals from the four largest ETH-USD stablecoin pools on Uniswap (blue, right axis), and
+the fee revenue for the liquidity pools in thousand USD (green, far right axis). Panel B depicts
+the price of Ether and the median gas cost of a liquidity withdrawal in USD. (Color ﬁgure can be
+viewed at wileyonlinelibrary .com)
+shows the median gas cost of a liquidity withdrawal. Gas costs spike as ETH
+drops, making it uneconomical for many liquidity providers to withdraw .
+Our model is single period and does not speak to pool dynamics. However ,
+from Figure 8 we can see that the optimal pool size decreases in the innovation
+of price σ , and thus liquidity gets withdrawn when prices move a lot. While
+not explicitly modeled, it is clear that high withdrawal costs would mitigate
+this effect. From the discussion in Section IV.A, we know that pool size in-
+creases in fee revenue. Higher fee revenue therefore also mitigates the effect
+of higher volatility .
+To test more broadly if high fee revenue and high gas fees coincide with
+periods of high volatility , we collect daily token returns and fee revenue for
+all liquidity pools with at least 10,000 USD in inventory and that are active
+for at least 30 days. We also collect average gas prices for all transactions that
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 24 =====
+
+344 The Journal of Finance ®
+Table III
+Regression Explaining Gas Fees and Fee Revenue as a Function of
+Price Variation
+Gas Fees Withdrawal is the average daily gas cost of a liquidity withdrawal for a Uniswap pool in
+USD, Fee revenue (USD) is the daily fee revenue of a liquidity pool, High Return is a dummy set
+to one if the token price in the pool changes by more than 10% on a day , and Absolute return is the
+absolute value of the daily change in the token price. Regressions include pool ﬁxed effects, and
+standard errors are clustered by pool. *, **, and *** indicate signiﬁcance at the 10%, 5%, and 1%
+level, respectively .
+Gas Fees Withdrawal (USD) Fee revenue (USD)
+(1) (2) (3) (4)
+High return 1.705 ∗∗∗ 17.73∗∗∗
+(0.0711) (2.575)
+Absolute return 17.26 ∗∗∗ 423.9∗∗∗
+(0.593) (32.15)
+Constant 16.41 ∗∗∗ 15.89∗∗∗ 257.0∗∗∗ 242.5∗∗∗
+(0.00514) (0.0222) (0.186) (1.204)
+R2 0.155 0.155 0.325 0.326
+Observations 1,303,869 1,303,869 1,303,869 1,303,869
+interact with a Uniswap liquidity pool. Appendix F details our gas cost esti-
+mates. Variables are winsorized at the 95% level. We regress gas fees and fee
+revenue on the absolute return of the exchange rate in the pool as well as on a
+dummy set equal to one if the absolute daily return is more than 10% to mea-
+sure extreme price movements. To interpret our regressions, note that times
+of high price movements are necessarily times of high adverse selection costs,
+as these are the times that arbitrageurs trade. Table III presents our ﬁndings.
+We ﬁnd that on days of extreme market movements, gas costs of liquidity with-
+drawals are about 1.71 USD or 10% more expensive and pools earn 17.7 USD
+more in fees. Both gas costs and fee revenue increase in the absolute return.
+Rapid withdrawals of liquidity supply as we highlighted in our model are a
+feature of modern limit order markets. Further , such withdrawals have con-
+tributed to ﬂash crashes. By contrast, liquidity suppliers in Uniswap pools are
+very stable. In so far as deep and constant liquidity is socially beneﬁcial, the
+design of the AMM is effective. We reiterate that Ethereum gas fees act as a
+commitment device for liquidity suppliers to remain in pools.
+V . Trading Costs Comparison between a Limit Order Market and an
+AMM
+A. Theory
+To compare the limit order market with an AMM, we focus on the total
+trading cost for a liquidity trader , which consists of fees and price impact. 11
+Recall that each liquidity supplier has undertaken private investment and
+11 Thus, the objective function of the liquidity trader consists of a large private value for the
+trade minus trading costs.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 25 =====
+
+Decentralized Exchange 345
+is a monopolist with probability γ∗ (1 − γ∗ ). The liquidity trader thus faces
+a monopolist with probability 2 γ∗ (1 − γ∗ ), which we denote by η, and enjoys
+competitive liquidity provision with probability 1 − η.
+PROPOSITION 4: On a limit order market, the expected cost to the liquidity
+trader per unit is
+E(climit ) = σ ((1 − η)α + η).
+On an active AMM pool, the expected cost to the liquidity trader per unit is
+E(cAMM ) = p0
+(
+(1 + τ )λb − (1 − τ )λs
+2
+)
+,
+where λb(τ,α,σ ) > 1 and λs (τ,α,σ ) < 1 are constants.
+Trading costs on the limit order market are higher if the liquidity supplier
+is a monopolist and if there is more informed trading in the market. As noted,
+the payoffs to liquidity suppliers on the DEX are shared pro rata and so the
+equilibrium liquidity supply and hence the cost to the liquidity trader are de-
+termined by the trade-off between picking off risk and fees. These differences
+mean that the limit order market does not always dominate the AMM. When
+informed trading is low , the liquidity pool is large and price impact is low and
+thus cheaper for the liquidity trader . The price impact in the limit order mar-
+ket does not decrease in informed trading to the same extent because liquidity
+provision is not as competitive. 12
+Our model also implies that price impact in limit order markets is more
+volatile because the trader does not know ex ante if he will face a monopo-
+list liquidity provider or a competitive market. Since monopolist prices differ
+substantially from competitive ones, we expect price impact to vary . For AMM,
+price impact is known ex ante and can be very low when the pool is sufﬁciently
+large.
+PROPOSITION 5: The limit order market does not dominate the AMM.
+i. If τ
+η < σ
+p0
+, there exists a critical innovation probability α∗ such that the
+liquidity trader strictly prefers the AMM whenever α<α ∗.
+ii. Conditional on trading quantity q, price impact is more volatile in the
+limit order market than the AMM.
+Figure 10 depicts the region of the parameter space in which total trading
+costs for the liquidity trader in the liquidity pool are lower than in the limit
+order market. The left panel shows that an AMM is the better trading venue for
+the liquidity trader when either volatility ,σ , or the probability of an innovation
+and associated informed trading, α, are sufﬁciently small. In those cases the
+12 Market makers invest heavily in high-frequency trading, which is wasteful investment for
+the liquidity trader and deters entry in liquidity provision.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 26 =====
+
+346 The Journal of Finance ®
+Figure 10. Region of the parameter space in which AMMs dominate limit order mar-
+kets. The ﬁgure shows the region of the parameter space in which trading costs for the liquidity
+trader in the liquidity pool are lower than in the limit order market. Unless otherwise stated,
+the parameters are P0 = 100,σ = 10, q = 10, a = 45, and τ = 0.003 (Color ﬁgure can be viewed at
+wileyonlinelibrary .com)
+pool is large and the liquidity trader can trade without much price impact. The
+right panel shows that for a given probability of an innovation, liquidity pools
+dominate when the trade size of the liquidity trader is neither too small, which
+generates low fee revenue, nor too large.
+Our deﬁnition of AMM transaction costs includes the fee τ , while our deﬁ-
+nition of transaction costs on the limit order market does not include any fees
+(make/take fees). Note that the trading cost on the AMM differs from price
+impact. This is because on the AMM, each unit trades at a different marginal
+price. The equivalent notion on a limit order book would be the total amount
+paid as an order walked the book. Empirically , we observe the price after each
+transaction (the marginal price) and not the total amount paid.
+There are three additional reasons why a comprehensive empirical analysis
+of the differences in costs is challenging. First, as we discuss in Section V.B
+below , assets traded on an AMM differ from those traded on a CEX. In addition
+to the nonfungibility of assets, trader sorting across the two venues is likely .
+Second, to estimate price impact on a limit order market, quote data are
+important.13 This is because aggressive orders always cross the spread and
+pay it. Finally , order submission strategies on both venues differ , as there is
+an incentive to split orders on limit markets. Based on Proposition 5 and with
+these caveats in mind, we formulate the following empirical hypotheses.
+HYPOTHESIS 2: We expect AMMs to have lower price impact relative to
+the limit order market for low volatility , more noise trading, and medium
+trade sizes.
+13 Using richer data on Binance but a smaller sample, Barbon and Ranaldo ( 2021) conﬁrm
+our ﬁndings.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 27 =====
+
+Decentralized Exchange 347
+HYPOTHESIS 3: We expect AMMs to have lower variation in price impact rel-
+ative to the limit order market.
+B. Empirical Analysis
+Our framework does not incorporate market access fees. However , various
+papers such as Capponi and Jia ( 2021) and Barbon and Ranaldo ( 2021)
+emphasize gas fees as an important determinant of Uniswap market quality .
+Fully quantifying the difference between on-chain markets (such as Uniswap)
+and off-chain markets (such as Binance) is complex. First, tokens on-chain
+and off-chain differ in custody risk and use value. Second, off-chain venues
+have their own market access fees and in some cases make-take fees.
+Binance, as with all centralized crypto exchanges, retains custody of traded
+assets. As the recent collapse of FTX illustrates, this custody risk is not
+insigniﬁcant. Uniswap, in contrast, is noncustodial, meaning that the user can
+initiate a trade directly out of their personal wallet and keep custody of traded
+assets until they are swapped in an atomic transaction.
+Uniswap traded tokens can also be used in other DeFi protocols, for example,
+for yield farming or as collateral. Binance-based tokens have to be transferred
+out of Binance custody into a user’s wallet before they can be used in other
+protocols. Similarly , any tokens that a user wants to trade on the exchange
+must be transferred out the user’s personal wallet into the exchange wallet,
+and the exchange has to give the user credit for these assets in their own
+internal ledger before they can be traded. Both steps incur transaction costs.
+In short, owning a token on Binance has different attributes than owning a
+token on-chain. The difference in value should account for both the opportunity
+cost of being off-chain and having access to the different protocols and the
+direct cost of being exposed to Binance credit risk.
+We can quantify blockchain transaction costs by comparing a swap transac-
+tion on a DEX to two token transfers, which would be required to move a token
+into and out of a CEX. Gas costs are the product of gas amount and gas price.
+The former is determined by the computational complexity of the transaction
+and the latter is set by the user . We collect blockchain data for both, and
+present the details of the estimate in Appendix F. The average incremental
+fee of trading on a DEX is 0.94 cents, while the median incremental fee is
+0.22 cents. On some days, the incremental fee can be very high. Indeed, the
+maximum in our sample is 11.57 USD on May 11, 2021, when ETH ﬁrst broke
+through 4,000 USD. For the latter part of our sample, since January 2021,
+the median incremental fee was 1.33 USD. Finally , note that our calculation
+does not include any withdrawal fees that an exchange may charge. Binance,
+for example, charges token-speciﬁc fees that are hard to include in a compari-
+son. Binance charges a fee of 0.005 ETH for ETH withdrawals to the Ethereum
+blockchain, which at the time of writing would be equivalent to 8.50 USD.
+To compare Uniswap to traditional exchanges, we collect minute-by-minute
+trading data from Binance (international), one of the largest crypto-exchanges
+by volume. Many of the 2,148 token pairs listed on Binance trade against ﬁat
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 28 =====
+
+348 The Journal of Finance ®
+Figure 11. Pricing error and pool size . This ﬁgure shows the pricing error for the USDC/ETH
+pair in percent of the Binance price (blue line, right axis) and the pool size of the Uniswap
+USDC/ETH pool (orange, log-scale, left axis). Prices are calculated at minute intervals. The
+ﬁgure plots these errors sampled every eight hours. (Color ﬁgure can be viewed at wileyonlineli-
+brary .com)
+currencies. We ﬁnd 166 token pairs that trade on both Uniswap and Binance,
+but many of these pairs are infrequently traded. We eliminate all pairs with
+an average daily volume of less than 10 ETH on either market, less than 90
+trading days, and an average daily Uniswap pool size of less than 10 ETH. We
+also eliminate all observations in the ﬁrst 90 days of the initiation of trading
+on either venue and where the pricing error between the two venues is more
+than 10%. We treat WETH and ETH as identical given the easy and cheap
+conversion. We end up with 43 token pairs that are cross-listed on Uniswap
+and Binance.
+Pricing differences between Uniswap and Binance are small except in the
+startup phase of the Uniswap pool when liquidity is scarce. Figure 11 shows
+the pricing in blue and pool size in orange (log scale) for the USDC/ETH pool.
+We calculate these values by taking the closing price per minute on both
+Binance and Uniswap. The pricing error is calculated as
+Price on Binance − Price on Uniswap
+Price on Binance .
+When a pool starts, as long as the pool size is below 100 ETH, pricing errors
+are huge, reaching over 40%. This is not surprising as a small invariant k
+will lead to a very steep bonding curve (see equation ( 1)) and make arbitrage
+unproﬁtable. Once the pool size is above 700 ETH, the pricing difference stays
+below 1.3% with an average absolute pricing error of 0.19% for this pool.
+Figure 12 shows intraday prices of the USDC/ETH pair on one day , October
+21, 2020. The pattern is typical for most days in our sample. Binance prices
+often lead Uniswap prices and, as expected, Binance prices are more volatile
+than those on Uniswap.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 29 =====
+
+Decentralized Exchange 349
+Figure 12. Intraday prices for the USDC/ETH pair on October 21, 2020 . The graph shows
+minute-by-minute prices of the USDC/ETH pair on Binance and Uniswap. (Color ﬁgure can be
+viewed at wileyonlinelibrary .com)
+Following Proposition 5, we expect some Uniswap pools to have lower price
+impact relative to a limit order market such as Binance. We deﬁne price impact
+as the absolute change in price over the change in quantity traded in a one-
+minute interval. We then average price impact measures over a day . Figure 13
+shows our measures for price impact for the USDC/ETH pair . We can see that
+price impact on Binance almost always exceeds that on Uniswap. Binance’s
+price impact also varies over time while the price impact on Uniswap stays
+constant and is negligible once the pool has reached an equilibrium size (in
+September 2020). We also compute the theoretical price impact for Uniswap,
+which we derive analytically from the bonding curve in equation ( 1) assuming
+zero fees. We ﬁnd that our analytical measure of price impact on Uniswap
+(green line) corresponds closely to our empirical measure (orange line).
+We observe a large drop in the price impact on Binance as of March 2022.
+On March 25, Binance integrated PancakeSwap into their trading app. Pan-
+cakeSwap is a DEX similar to Uniswap running on the Binance Smart Chain
+(BSC). Binance simultaneously introduced the Binance DeFi wallet which
+allows users of the CEX to open a wallet and use the DeFi application on BSC
+out of the app. 14 The integration of a DEX into the Binance trading app is
+associated with a substantial drop in price impact on Binance.
+14 See, for example, Binance blog, 2022, First DeFi Project on Binance: The PancakeSwap
+Mini Program Bringing the CeFi and DeFi Ecosystem Together , https://www .binance.com/en/blog/
+markets/ﬁrst-deﬁ-project-on-binance-the-pancakeswap-mini-program-bringing-the-ceﬁ-and-
+deﬁ-ecosystem-together-421499824684903585 .
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 30 =====
+
+350 The Journal of Finance ®
+Figure 13. Price impact of USDC/ETH on Uniswap (orange, green) and Binance (blue) .
+Price impact is computed as the change in price over volume (green and blue lines) as well as an-
+alytically as the price change for a marginal unit bought using the bonding curve formula (green
+line). Binance price impact is cut off at 0.00001. (Color ﬁgure can be viewed at wileyonlineli-
+brary .com)
+To analyze price impact more formally , we deﬁne relative price impact rPI as
+rPI = PIBinance
+PIUniswap
+− 1, (18)
+where PIBinance and PIUniswap are the daily price impact measures for a token
+pair on Binance and Uniswap, respectively . We compute the daily price impact
+as the median price impact over all one-minute intervals in a day for which
+there was positive volume. 15 This relative measure controls for token- and
+day-speciﬁc factors that inﬂuence price impact in both markets. To test
+Hypothesis 2, we run the regression
+rPI = a + b11pancake + b2σFX + b3trade size + b4trade size2 + b5noise trading + ϵ. (19)
+To control for the PancakeSwap integration into Binance, we set the dummy
+1pancake to one after March 25, 2022. We expect Binance price impact to align
+closer with that of Uniswap after the integration of a Uniswap clone into Bi-
+nance. Trade size is the combined volume of Binance and Uniswap in ETH
+divided by the combined number of trades on Binance and Uniswap. As in the
+numerical example in Figure 10, we expect AMMs to have lower price impact
+15 We measure absolute price change over volume, which corresponds to a high-frequency ver-
+sion of the Amihud ( 2002) measure.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 31 =====
+
+Decentralized Exchange 351
+for middle trade sizes, and thus rPI to be U-shaped in trade size. Our measure
+of noise trading is the daily volume of trades that are immediately reversed
+on Uniswap measured in ETH. Standard errors are clustered by pool and by
+day . Models that include the pancake dummy only have pool ﬁxed effects. For
+robustness, we run the same regression with pool and day ﬁxed effects without
+the dummy .
+Table IV presents our ﬁndings. We ﬁrst note that the intercept is positive and
+signiﬁcant, which demonstrates that price impact on Binance is on average
+higher than on Uniswap. The DEX integration on Binance as measured by the
+Pancake dummy is associated with a signiﬁcant drop in Binance price impact
+relative to Uniswap. Consistent with this Hypothesis 2, we ﬁnd that the price
+impact on Binance decreases in volatility relative to Uniswap. As predicted,
+our measure of relative price impact is ﬁrst increasing and then decreasing in
+trade size. Higher reversal volume, which proxies for less informed trading, is
+associated with higher relative price impact on Binance.
+The last two columns of Table IV present results for the subsample before
+the PancakeSwap integration in column (8) and after in column (9). We ﬁnd
+that most variables become insigniﬁcant after the PancakeSwap integration.
+The intercept is smaller but still signiﬁcant post-integration, documenting that
+Uniswap has lower price impact in both subsamples.
+Hypothesis 3 predicts that price impact is more volatile on the limit order
+market. To test this prediction, we compute the 30-day moving average volatil-
+ity V of our daily price impact measure. We then deﬁne relative volatility as
+rV = VBinance
+VUniswap
+− 1, (20)
+which again controls for unobserved token- and day-speciﬁc factors that in-
+ﬂuence volatility of price impact in both markets. We use the same empirical
+speciﬁcation as in equation ( 19). Table V presents our ﬁndings. From the posi-
+tive intercept, we see again that price impact is more volatile on Binance and
+drops signiﬁcantly after the PancakeSwap integration. Similar to price impact,
+we document that price impact on Binance is more volatile for low exchange
+rate volatility , for medium trade sizes, and for more informed trading (lower
+reversal volume).
+The relative attractiveness of AMM attracts traders to DEX. Figure 14
+shows the trading volume of the USDC/ETH pair on Binance and Uniswap.
+We can see that trading volume is remarkably correlated across the two mar-
+kets, which is surprising given that tokens have to be moved back and forth
+through on-chain transactions between the two markets. We can also see that
+Uniswap gains market share over time and eventually more trading happens
+on Uniswap relative to Binance. Toward the end of the sample, trading vol-
+ume on Uniswap V2 declines, most likely due to the fact that volume moves to
+Uniswap V3.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 32 =====
+
+352 The Journal of Finance ®
+Table IV
+Regression Explaining Relative Price Impact between Uniswap and Binance Markets
+Relative price impact is the Binance price impact divided by the Uniswap price impact minus one. Pancake Swap is a dummy set to one after March
+25, 2022, the day when Binance integrated PancakeSwap, a DEX, into the Binance app. Std.Dev FX Rate is the annualized daily standard deviation
+of block-by-block price changes on Uniswap. Trade Size is the average trade size computed as the aggregate volume of Binance and Uniswap in ETH
+divided by the number of trades on Binance and Uniswap. Trade Size2 is the squared trade size. Reversal Volume i st h ev o l u m ei nE T Ho ft r a d e so n
+Uniswap that are reversed immediately , a proxy for noise trading. Columns (1) to (7) cover the full sample, while columns (8) and (9) present results
+for the subsamples before and after the PancakeSwap integration into Binance, respectively . Regressions include pool (i.e., token pair) ﬁxed effec ts
+and day ﬁxed effects in columns (6) to (9). Standard errors are clustered by pool and by day . *, **, and *** indicate signiﬁcance at the 10%, 5%, and
+1% level, respectively .
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+Pancake Swap −3.013∗∗∗ −3.085∗∗∗ −2.405∗∗∗ −1.931∗∗∗ −1.941∗∗∗
+(0.728) (0.728) (0.657) (0.599) (0.590)
+Std.Dev Fx Rate −2.902∗∗∗ −3.034∗∗∗ −2.418∗∗∗ −2.497∗∗∗ −2.963∗∗∗ −0.381
+(0.707) (0.662) (0.754) (0.735) (0.979) (0.332)
+Trade Size 1.472 ∗∗∗ 1.118∗∗∗ 0.939∗∗∗ 1.000∗∗∗ 1.149
+(0.236) (0.317) (0.297) (0.261) (1.045)
+Trade Size2 −0.0120∗∗∗ −0.00900∗∗∗ −0.00742∗∗∗ −0.00791∗∗∗ −0.0759
+(0.00290) (0.00258) (0.00256) (0.00257) (0.0598)
+Reversal Volume 2.731 ∗∗∗ 1.583∗∗ 1.776∗∗ 0.910
+(0.712) (0.745) (0.726) (0.725)
+Constant 4.080 ∗∗∗ 4.956∗∗∗ 3.126∗∗∗ 2.644∗∗∗ 3.394∗∗∗ 3.015∗∗∗ 2.900∗∗∗ 3.963∗∗∗ 1.559∗∗∗
+(0.286) (0.387) (0.303) (0.350) (0.350) (0.336) (0.258) (0.302) (0.179)
+R2 0.446 0.457 0.545 0.520 0.576 0.610 0.636 0.651 0.826
+Observations 24,963 24,224 24,963 24,963 24,224 24,216 24,216 15,387 8,829
+Fixed effects Pool Pool Pool Pool Pool Pool,Day Pool,Day Pool,Day Pool,Day
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 33 =====
+
+Decentralized Exchange 353
+Table V
+Regression Explaining Relative Volatility of Price Impact between Uniswap and Binance markets
+Relative volatility of price impact is the volatility of Binance price impact divided by the volatility of Uniswap price impact minus one. Pancake Swap
+is a dummy set to one after March 25, 2022, the day when Binance integrated PancakeSwap, a DEX, into the Binance app. Std.Dev FX Rate is the
+annualized daily standard deviation of block-by-block price changes on Uniswap. Trade Size is the average trade size computed as the aggregate
+volume of Binance and Uniswap in ETH divided by the number of trades on Binance and Uniswap. Trade Size2 is the squared trade size. Reversal
+Volume is the volume in ETH of trades on Uniswap that are reversed immediately , a proxy for noise trading. Columns (1) to (7) cover the full sample,
+while columns (8) and (9) present results for the subsamples before and after the PancakeSwap integration into Binance, respectively . Regressions
+include pool (i.e., token pair) ﬁxed effects and day ﬁxed effects in columns (6) to (9). Standard errors are clustered by pool and by day . *, **, and ***
+indicate signiﬁcance at the 10%, 5%, and 1% level, respectively .
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+Pancake Swap −13.63∗∗ −13.79∗∗ −10.18∗ −7.916 −7.907∗
+(5.592) (5.437) (5.079) (4.821) (4.613)
+Std.Dev Fx Rate −21.48∗∗∗ −22.23∗∗∗ −16.43∗∗∗ −17.37∗∗∗ −18.16∗∗∗ −7.756∗∗∗
+(4.869) (4.653) (4.317) (4.294) (5.829) (2.551)
+Trade Size 7.202 ∗∗∗ 5.826∗∗∗ 4.991∗∗∗ 5.272∗∗∗ 20.16∗∗∗
+(1.359) (1.151) (1.177) (1.266) (7.192)
+Trade Size2 −0.0556∗∗∗ −0.0439∗∗∗ −0.0386∗∗∗ −0.0409∗∗∗ −1.430∗∗∗
+(0.0193) (0.0144) (0.0132) (0.0149) (0.446)
+Reversal Volume 11.73 ∗∗ 6.228 9.719 ∗ 5.421
+(5.038) (3.859) (5.046) (4.016)
+Constant 33.95 ∗∗∗ 39.00∗∗∗ 29.01∗∗∗ 26.99∗∗∗ 31.44∗∗∗ 28.99∗∗∗ 28.44∗∗∗ 30.47∗∗∗ 25.91∗∗∗
+(1.992) (2.512) (1.857) (2.752) (2.597) (2.339) (1.863) (1.539) (1.216)
+R2 0.416 0.427 0.457 0.441 0.474 0.517 0.530 0.523 0.677
+Observations 21,409 21,275 21,409 21,409 21,275 21,266 21,266 13,981 7,284
+Fixed effects Pool Pool Pool Pool Pool Pool,Day Pool,Day Pool,Day Pool,Day
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 34 =====
+
+354 The Journal of Finance ®
+Figure 14. Trading volume of USDC/ETH on Uniswap (orange) and Binance (blue) .T h e
+graph shows the trading volume excluding ﬂash loans in ETH. Trading volume is aggregated over
+rolling eight-hour intervals. (Color ﬁgure can be viewed at wileyonlinelibrary .com)
+VI. Conclusion
+In 1971, Fischer Black wrote two articles for Financial Analyst’s Journal
+speculating on whether computers or “automation” could ever replace human
+interaction in ﬁnancial markets (Black ( 1971a, 1971b)). In these papers, he
+argued that market liquidity is constrained by the size of a market maker’s
+inventory and suggested that a solution would be to have more direct partici-
+pation from other market participants.
+The Uniswap experiment does not merely increase the supply of liquidity by
+relaxing market makers’ inventory constraints. It also changes how the bene-
+ﬁts and costs of liquidity provision are shared among market participants. In a
+limit order market, the exchange sets price and time priority , which effectively
+determine the interaction of liquidity demand and supply . Price impact in a
+limit order market is the endogenous outcome of the interaction. By contrast,
+on an AMM, the price impact is programmatically determined by a bonding
+curve. We note, however , that this impact is conditional on the size of the pool.
+Thus, the equilibrium price impact arises as the pool size adjusts, so that liq-
+uidity suppliers trade off potential adverse selection against fee revenue.
+The automated Uniswap protocol has clearly been successful. Further , in
+July 2021, Swarm, a Berlin-based DeFi company , announced that it was
+launching an AMM that was fully licensed by the German regulator , BaFin.
+We have demonstrated both theoretically and empirically that one of the rea-
+sons for the uptake of these liquidity-sharing protocols is that pools adjust to
+trade off the beneﬁts and costs of liquidity provision. Further , compared with
+a CEX, there are some token pairs for which the AMM provides liquidity more
+efﬁciently .
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 35 =====
+
+Decentralized Exchange 355
+Initial submission: January 12, 2022; Accepted: September 30, 2023
+Editors: Stefan Nagel, Philip Bond, Amit Seru, and Wei Xiong
+Appendix A: Proofs
+A. Proof of Lemma 1
+If the liquidity supplier is alone in the market, and posts at prices p at which
+he buys and ¯p at which he sells, with p < ¯p then:
+i. With probability (1 − α), a noise trader arrives. If the noise trader is a
+buyer , the liquidity supplier sells to him at ¯p and obtains a payoff of ( ¯p −
+p0 ). Symmetrically , if the noise trader is a seller , the liquidity supplier
+buys from him at p and obtains a payoff of ( p0 − p).
+ii. With probability α, there is an information event. If the informed trader
+buys, the liquidity supplier obtains a payoff ¯p − (p0 + σ ) and if the in-
+formed trader sells, he obtains a payoff of ( p0 − σ ) − p.
+His overall proﬁt is then
+(1 − α)
+[1
+2 ( ¯p − p0 ) + 1
+2 (p0 − p)
+]
++ α
+[1
+2 ( ¯p − (p0 + σ )) + 1
+2 (( p0 − σ ) − p)
+]
+. (A1)
+Clearly , he will post a price at which to sell of ¯p = p0 + σ , and a price at
+which to buy of p = p0 − σ , to obtain a proﬁt of (1 − α)σ .
+B. Proof of Lemma 2
+When two limit order submitters are in competition, Nature will select one
+liquidity provider (LP) denoted by i to go ﬁrst and he will post a price of pi.I f
+this price is below the maximum price of p0 + σ and leaves i with a proﬁt, then
+the second LP will undercut i by posting a price of p j = pi − ε.L P j will absorb
+an order for q by either the noise trader or the arbitrageur . The noise trader’s
+demand is satisﬁed, but the arbitrageur would also exhaust the liquidity of i
+causing a loss of p0 + σ − pi for the LP . Therefore, any price pi that leaves LP
+i with a proﬁt cannot be an equilibrium.
+The only price that LP j would not undercut is the price such that i makes
+zero proﬁt, which is deﬁned by
+α(pi − (p0 + σ )) + (1 − α)( pi − p0 ) = 0( A 2 )
+or pi = p0 + ασ .
+LP j cannot undercut i and knows that he will only potentially trade with
+the arbitrageur . The arbitrageur trades when the price is p0 + σ , and to avoid
+any loss LP j sets p j = p0 + σ .
+Both LPs make zero proﬁt in expectation.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 36 =====
+
+356 The Journal of Finance ®
+C. Proof of Proposition 1
+The ex ante proﬁt for limit order trader i is
+γi (1 − γ j )(1 − α)σ q − I(γi ).
+The reaction function is deﬁned by
+(1 − γ j )(1 − α)σ q − 2aγi = 0.
+In symmetric equilibrium, each liquidity supplier will choose a private level
+of investment of
+γ∗ = (1 − α)σ q
+2a + σ q(1 − α).
+D. Proof of Lemma 3
+The fees accruing to the liquidity providers from accommodating the liquid-
+ity trader follows from the text, and are τ es
+ℓ and τ eb
+ℓ, where
+eb
+ℓ = E0T0
+T0 − q − E0,
+es
+ℓ = E0 − E0T0
+T0 + q.
+The arbitrageur reverses the trade and pays the same fee in ETH. The over-
+all expected fee revenue is then
+= 2τ
+(1
+2
+E0T0
+T0 − q − 1
+2
+E0T0
+T0 + q
+)
+= τ E0T0
+(T0 + q − (T0 − q)
+(T0 − q)(T0 + q)
+)
+= 2τ p0T2
+0
+(
+q
+T2
+0 − q2
+)
+,
+where the last line uses the fact that p0 = E0
+T0
+.
+Reversing the trade is proﬁtable for the arbitrageur if the AMM price includ-
+ing transaction costs differs from the fundamental value or
+eb
+ℓ(1 − τ ) ≥ p0 or T0q
+(T0 − q) > 1
+1 − τ to reverse a liquidity buy order
+es
+ℓ(1 + τ ) ≤ p0 or T0q
+(T0 + q) < 1
+1 + τ to reverse a liquidity sell order ,
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 37 =====
+
+Decentralized Exchange 357
+which yields the conditions
+τ< 1 − T0 − q
+T0q to reverse the liquidity buy ,
+τ< T0 + q
+T0q − 1 to reverse the liquidity sell.
+Deﬁne τ∗ = min
+[
+1 − T0−q
+T0q , T0+q
+T0q − 1
+]
+. Then, for τ,τ ∗, this trade is proﬁtable
+for the arbitrageur .
+E. Proof of Lemma 4
+The change in value to the liquidity providers if there is a positive asset
+innovation follows directly from the arguments in the text.
+If there is a negative asset innovation, the post-innovation value of the com-
+mitted capital is E0 + T0 (p0 − σ ) = 2E0 − σ T0. If there is a negative asset in-
+novation, then the informed trader sells up to the point of no arbitrage, and
+the trade occurs on the bonding curve, so
+(E0 − es
+I )(T0 + ts ) = E0T0. (A3)
+es
+I = E0 − E0T0
+T0 + ts . (A4)
+The proﬁts of the informed trader are given by
+π s
+I = (1 − τ )es
+I − (p0 − σ )ts (A5)
+= (1 − τ )
+(
+E0 − E0T0
+T0 + ts
+)
+− (p0 − σ )ts. (A6)
+The ﬁrst-order condition is
+(1 − τ ) E0T0
+(T0 + ts )2 − (p0 − σ ) = 0. (A7)
+This represents optimal trading if ts =
+√
+(1−τ )E0T0
+p0−σ − T0 ≥ 0, or σ
+p0
+≥ τ .
+We thus obtain
+ts =
+√
+(1 − τ )E0T0
+p0 − σ − T0
+es
+I = E0 −
+√
+E0T0 (p0 − σ )
+1 − τ .
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 38 =====
+
+358 The Journal of Finance ®
+Hence, the value of the committed capital after the asset value has dropped
+and the informed trader has traded is
+E0 − es
+I + (T0 + ts )( p0 − σ ) =
+(2 − τ√
+1 − τ
+)√
+E0T0 (p0 − σ ).
+The change in total value of the committed capital is therefore
+(2 − τ√
+1 − τ
+)√
+E0T0 (p0 − σ ) − 2E0 + σ T0. (A8)
+The liquidity cost paid by the informed trader is τ
+(
+E0 −
+√
+E0 T0 (p0−σ )
+1−τ
+)
+,s ot h e
+total payoff to liquidity provision if the asset value drops is
+(2 − τ√
+1 − τ
+)√
+E0T0 (p0 − σ ) − 2E0 + σ T0 + τ
+⎛
+⎝E0 −
+√
+E0T0 (p0 − σ )
+1 − τ
+⎞
+⎠
+=
+(2 − τ√
+1 − τ
+)√
+T2
+0 p0 (p0 − σ ) − 2p0T0 + σ T0 + τ
+⎛
+⎝T0 p0 −
+√
+T2
+0 p0 (p0 − σ )
+1 − τ
+⎞
+⎠
+= 2
+√
+1 − τ
+√
+T2
+0 p0 (p0 − σ ) − (2 − τ )p0T0 + σ T0. (A9)
+F . Proof of Proposition 2
+From Lemmas 3 and 4, the overall payoff to liquidity provision (for the entire
+pool), and using the fact that p0 = E0
+T0
+,i s
+(1 − α)2τ p0T2
+0
+(
+q
+T2
+0 − q2
+)
++ α
+2
+(
+2T0
+√
+(1 + τ )
+√
+p0 (p0 + σ )
+− (2 + τ )p0T0 − σ T0
+)
++ α
+2
+(
+2T0
+√
+1 − τ
+√
+p0 (p0 − σ ) − (2 − τ )p0T0 + σ T0
+)
+,
+or
+(1 − α)2τ p0T2
+0 q
+T2
+0 − q2 + T0α
+(√
+p0 (p0 + σ )(1 + τ ) +
+√
+(1 − τ )p0 (p0 − σ ) − 2p0
+)
+.
+(A10)
+The liquidity suppliers have deep pockets with zero opportunity cost of cap-
+ital, and are indifferent between committing extra value when the value to
+liquidity provision is zero. Thus, the equilibrium size of the liquidity pool is
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 39 =====
+
+Decentralized Exchange 359
+implicitly deﬁned by setting equation ( A10) equal to zero, which yields
+0 = (1 − α)2τ p0T0
+(
+q
+T2
+0 − q2
+)
++ αω, (A11)
+where
+ω =
+(√
+p0 (p0 + σ )(1 + τ ) +
+√
+p0 (p0 − σ )(1 − τ ) − 2p0
+)
+.
+Thus,
+T0 = q
+⎡
+⎣
+√
+1 + (1 − α)2τ 2 p2
+0
+α2ω2 − (1 − α)τ p0
+αω
+⎤
+⎦. (A12)
+A ﬁnite pool trades off the fee revenue against the picking off risk, else pool
+size is inﬁnite. It also has to be large enough that T0 > q. Clearly ,T0 > q if and
+only if (1−α)τ p0
+αω < 0, which holds if ω< 0.
+Omega reaches a maximum value at zero.
+dω
+dτ =
+√
+p0 (p0 + σ )
+2
+√
+(1 + τ )
+−
+√
+p0 (p0 − σ )
+2
+√
+1 − τ
+,
+d2ω
+dτ 2 =−
+√
+p0 (p0 + σ )
+4(1 + τ )3/2 −
+√
+p0 (p0 − σ )
+2(1 − τ )3/2 < 0,
+and
+dω
+dτ = 0
+⇒ τ = σ
+p0
+.
+At τ = σ
+p0
+, ω = 0. Thus, ω is strictly negative for τ ̸= σ
+p0
+.
+Further , to ensure that the arbitrageur ﬁnds it proﬁtable to trade, from the
+previous lemmas, we have τ ≤ σ
+p0
+.
+G. Proof of Corollary 3
+i. Immediate.
+ii.
+dT0
+dω = q
+⎡
+⎢⎢⎣
+(1 − α)p0τ
+αω2 − (1 − α)2 p2
+0τ 2
+α2ω3
+√((1−α)2 p2
+0τ 2
+α2ω2 + 1
+)
+⎤
+⎥⎥⎦. (A13)
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 40 =====
+
+360 The Journal of Finance ®
+Notice that
+(1 − α)p0τ
+αω2 > (1 − α)2 p2
+0τ 2
+α2ω3
+√((1−α)2 p2
+0τ 2
+α2ω2 + 1
+),
+so dT0
+dω >0. Further ,
+dω
+dσ = 1
+2
+[√
+p0 (1 + τ )√
+(p0 + σ )
+−
+√
+p0 (1 − τ )√
+(p0 − σ )
+]
+, (A14)
+and dω
+dσ < 0i f τ< σ
+p0
+.
+iii.
+dT0
+dα =
+p0τ
+(
+1 + p0τ (1−α)√
+p2
+0 (1−α)2τ 2+α2ω2
+)
+α2ω < 0,
+as ω< 0.
+H. Proof of Proposition 4
+The Limit Order Market :
+If two traders are in the market, the liquidity trader buys at price p0 + ασ
+and sells at p0 − ασ . The trading costs are therefore ασ .
+If there is a monopolist liquidity supplier , he places orders at p0 − σ and
+p0 + σ . The transaction cost is therefore σ .
+The probability that a limit order liquidity supplier is a monopolist is γ∗ (1 −
+γ∗ ), and the probability that the passive trader faces a monopolist when there
+are two liquidity suppliers is 2 γ∗ (1 − γ∗ ) = η.
+The expected cost is (1 − η)ασ + ησ .
+In the AMM,
+eb
+ℓ = E0T0
+T0 − q − E0.
+Using the fact that p0 = E0
+T0
+yields
+eb
+ℓ = p0T2
+0
+T0 − q − p0T0.
+From Proposition 2, the equilibrium supply of tokens is given by
+T0 = q
+⎡
+⎣
+√
+1 + (1 − α)2τ 2 p2
+0
+α2ω2 − (1 − α)τ p0
+αω
+⎤
+⎦,
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 41 =====
+
+Decentralized Exchange 361
+where ω =
+√
+p0 (p0 + σ )(1 + τ ) +
+√
+p0 (p0−σ )
+1+τ − 2p0, which yields
+=
+p0
+(
+q
+[√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω
+])2
+q
+[√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω
+]
+− q
+− p0
+⎛
+⎝q
+⎡
+⎣
+√
+1 + (1 − α)2τ 2 p2
+0
+α2ω2 − (1 − α)τ p0
+αω
+⎤
+⎦
+⎞
+⎠
+= p0q
+⎡
+⎢⎢⎢⎣
+[√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω
+]2
+√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω − 1
+−
+⎡
+⎣
+√
+1 + (1 − α)2τ 2 p2
+0
+α2ω2 − (1 − α)τ p0
+αω
+⎤
+⎦
+⎤
+⎥⎥⎥⎦
+= p0q
+⎡
+⎣
+√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω − 1
+⎤
+⎦
+= p0qλb.
+Here,
+λb =
+⎡
+⎣
+√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω − 1
+⎤
+⎦ > 1.
+In addition, the liquidity trader also pays the liquidity fee of τ per ETH.
+Thus, the total payment to buy q tokens is p0q(1 + τ )λb, or the per-unit cost of
+trading q tokens is p0
+(
+(1 + τ )λb − 1
+)
+.
+Similarly ,
+es
+ℓ = E0 − E0T0
+T0 + q
+= p0T0 − p0T2
+0
+T0 + q
+= p0
+⎛
+⎝q
+⎡
+⎣
+√
+1 + (1 − α)2τ 2 p2
+0
+α2ω2 − (1 − α)τ p0
+αω
+⎤
+⎦
+⎞
+⎠ −
+p0
+(
+q
+[√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω
+])2
+(
+q
+[√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω
+])
++ q
+= p0q
+⎡
+⎢⎢⎢⎣
+√
+1 + (1 − α)2τ 2 p2
+0
+α2ω2 − (1 − α)τ p0
+αω −
+(√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω
+)2
+√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω + 1
+⎤
+⎥⎥⎥⎦
+= p0q
+⎡
+⎣
+√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω + 1
+⎤
+⎦
+= p0qλs,
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 42 =====
+
+362 The Journal of Finance ®
+where
+λs =
+⎡
+⎣
+√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω√
+1 +
+(1−α)2τ 2 p2
+0
+α2ω2 − (1−α)τ p0
+αω + 1
+⎤
+⎦ < 1.
+In addition, the trader has to pay τ p0qλs, and thus the revenue per token
+from selling is p0 (λs (1 − τ )).
+Thus, the expected ETH cost of trading tokens is
+= p0
+(
+(1 + τ )λb
+2 − λs (1 − τ )
+2
+)
+. (A15)
+I. Proof of Proposition 5
+i. We ﬁrst show that the liquidity trader prefers the AMM in the absence of
+informed trading (α = 0). We then show that the limit order market dominates
+for α = 1. Therefore, there must be a critical α∗ for which the liquidity trader
+is indifferent between markets.
+Let
+ξ := (1 − α)τ p0
+αω . (A16)
+From the proof of Proposition 2, we know that ω< 0i f τ ̸= σ
+p0
+. It follows
+immediately that
+lim
+α→0
+ξ =− ∞. (A17)
+The poolsize ζ :=
+√
+1 + ξ 2 − ξ then goes to positive inﬁnity . To see this, note
+that
+√
+ξ 2 and −ξ are positive and go to inﬁnity:
+lim
+a→0
+ζ =∞ . (A18)
+We can then derive
+lim
+α→0
+λb = lim
+α→0
+ζ
+ζ − 1 = lim
+α→0
+1
+1 − 1
+ζ
+= 1 (A19)
+and
+lim
+α→0
+λs = lim
+α→0
+ζ
+ζ + 1 = lim
+α→0
+1
+1 + 1
+ζ
+= 1. (A20)
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 43 =====
+
+Decentralized Exchange 363
+The trading cost on the AMM as deﬁned in equation ( A15) then converges to
+lim
+α→0
+p0
+(
+(1 + τ )λb
+2 − λs (1 − τ )
+2
+)
+= p0
+1 + τ − (1 − τ )
+2 = p0τ. (A21)
+The trading cost in the limit order market when α = 0i s ησ . In the absence
+of informed trading, the AMM is thus cheaper for the liquidity trader whenever
+τ
+η < σ
+p0
+. (A22)
+To examine the price impact as α → 1, note that
+lim
+α→1
+ξ = 0. (A23)
+The pool size ζ =
+√
+1 + ξ 2 − ξ then goes to one and
+lim
+α→1
+λb = lim
+α→1
+ξ
+ξ − 1 =∞ . (A24)
+Since we know that 0 <λ s < 1, we know that the trading cost on the AMM
+goes to inﬁnity:
+lim
+α→1
+p0
+(
+(1 + τ )λb
+2 − λs (1 − τ )
+2
+)
+=∞ . (A25)
+The price impact on the limit order market when α = 1i ss i m p l yσ .A s α → 1,
+the limit order market is always the better trading venue for the liquid-
+ity trader .
+ii. Price impact in the limit order market varies because the liquidity trader
+might face a monopolist or competitive market makers. The price impact on
+the AMM is deterministic.
+Appendix B: Data
+Blockchain data are publicly available. Anyone can download and run an
+Ethereum node, which collects all blockchain transactions. Transactions and
+interactions with smart contracts such as Uniswap leave log entries on the
+blockchain, which can be accessed through an API from the Ethereum node or
+bought from a data provider . At the time of writing, the Ethereum blockchain
+has about 3.8 billion log entries. We bought access to raw Ethereum log entries
+from Covalent. Not all data providers are of equal quality . Aggregate data such
+as periodic snapshots can miss important information as DEX liquidity can
+change substantially within a block or even within a transaction. Such intra-
+block changes will be missed by snapshots but captured by our log-level data as
+we can reconstruct all transactions within the block in the sequence that they
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 44 =====
+
+364 The Journal of Finance ®
+are executed. We are conﬁdent in our data as we conducted many robustness
+checks and comparisons with data obtained directly from our own Ethereum
+archive node.
+Smart contracts are essentially small computer programs that execute in
+the Ethereum Virtual Machine. The code can generate log events and store the
+event and some data on the blockchain. The Uniswap smart contract generates
+several events every time a user interacts with it to deposit, withdraw , or trade
+tokens or when a new pool is created. We ﬁlter over 200 million relevant log
+events and reverse engineer from the data stored with these log events how
+users interacted with the smart contracts.
+Figure B1 shows one transaction in our sample 16 on Etherscan, a commonly
+used web interface to examine Ethereum transactions. We see the transaction
+hash, that it was mined in block 13,738,106 on December 4, 2021 at 5:47:46
+UTC time. The user offered a gas price of 492.5 Gwei. Figure B2 shows the
+relevant log entries. The swap log event shows the two parties (one can be a
+router contract) and the amounts of tokens that ﬂow in and out of the pool.
+The associated sync event shows the balance for each token in the liquidity
+pool. We carefully match swap and sync events as well as the minting and
+burning of liquidity tokens. Log events are not always recorded in the same
+sequence.
+Figure B1. Example swap transaction . (Color ﬁgure can be viewed at wileyonlinelibrary .com)
+16 See transaction 0xa3a7390e7de6587d05f17dbcac6911cd979b2d5ee00e3c361096d6ac8c93c
+77f.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 45 =====
+
+Decentralized Exchange 365
+Figure B2. Example swap transaction—Log entries . (Color ﬁgure can be viewed at wileyon-
+linelibrary .com)
+Appendix C: Measuring Volume
+Dollar volume is a natural volume measure on U .S. exchanges, and there is
+typically a recognized common price. On Uniswap, the U .S. dollar is not the nu-
+meraire; most of the trading in the Uniswap system is against WETH or USD
+stablecoins. Further , the existence of ﬂash loans and ﬂash swaps during so-
+called oracle attacks means that there can be large price discrepancies across
+trading venues.
+To compute volume, we take the WETH part of the trade and convert it to
+USD using Binance minute-by-minute data. We use the Binance price because
+the internal Uniswap price is sometimes purposely distorted. As we have indi-
+cated, large trades such as oracle attacks can push relative token prices out of
+equilibrium. Most of the remaining pools trade against a USD stablecoin. For
+those pools, we convert stablecoin to USD. For all remaining pools, we search
+for all pools where one of the tokens trades against WETH and convert using
+the prices from the pool with the highest volume. We then use external data
+from Binance to convert the ETH to USD.
+As a concrete example of price distortions caused by oracle attacks, a De-
+cember 17, 2020, trade against Warp Finance is in our sample. 17 The initiator
+borrowed about 200 million USD in ﬂash loans from Uniswap and dYdX to
+manipulate the DAI/ETH price by trading 48.58 million DAI against 342,252
+WETH. DAI is a USD stablecoin, so one side of the trade corresponds roughly
+to 48 million USD. One ETH was worth about 643 USD at the time, making
+the WETH side of the trade worth about 220 million USD. The relatively com-
+plex trade involved depositing DAI and WETH into a liquidity pool and then
+using the liquidity tokens as collateral in Warp Finance. Finally , using a large
+trade to distort the DAI/WETH price led the Warp code to overvalue the de-
+posited collateral.
+17 See transaction 0x8bb8dc5c7c830bac85fa48acad2505e9300a91c3ff239c9517d0cae33b595090.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 46 =====
+
+366 The Journal of Finance ®
+Smart contract nuances aside, this trade was designed to distort the
+DAI/WETH price, which means that using contemporaneous prices may dis-
+tort the volume. Thus, in the example above, we would measure the volume
+as 220 million USD. Our approach does not systematically inﬂate volume be-
+cause oracle attacks can happen in both directions and all trades that push
+prices out of equilibrium also have an opposing trade that brings prices back
+to equilibrium.
+Many other contracts such as lending platforms rely on DEX as price feeds
+or oracles to determine, for example, the value of the collateral in relation to
+the face value of an outstanding loan. Attackers can exploit poorly written
+code of such lending platforms for ﬁnancial gain. Typically , large trades are
+used to move prices in the bonding curve market that the lending contract
+uses as oracle, making the smart contract believe that the collateral is very
+valuable. The attacker then borrows against the collateral, brings the price
+on the bonding curve market back to equilibrium, and walks away from the
+now undercollateralized loan. One such attack happened on Harvest Finance,
+a yield farming cooperative similar to a ﬂoating net asset value money market
+fund. The user could deposit tokens with Harvest Finance in return for fAsset
+tokens (e.g., depositors of USDC receive a fUSDC token). The underlying
+tokens were invested in high-yielding liquidity pools and the revenues are
+shared with the holders of fAsset tokens.
+On October 26, 2020, an attacker borrowed 18 million USDT and 50 million
+USDC on Uniswap and converted over 17 million USDT to USDC on curve.ﬁ
+(an AMM similar to Uniswap that specialized in trading stablecoins). 18 This
+temporarily increased the price of USDC in the curve.ﬁ pool, which is used as
+a price oracle for Harvest Finance. The attacker then deposited USDC with
+Harvest in exchange for an inﬂated number of fUSDC tokens. Speciﬁcally , the
+price manipulation caused the price of fUSDC to temporarily drop to 0.9712
+from 0.98 before the attack. Then the attacker changed 17 million USDC back
+to USDT on curve.ﬁ and sold his fUSDC tokens back to Harvest Finance at
+0.9833, as Harvest Finance’s smart contract updated the price based on the
+new information from curve.ﬁ. The net proﬁt of this attack was 619,408 USDC.
+The hacker then repeated the process 17 times and also attacked other Harvest
+Finance pools for a total proﬁt of USD 24 million. 19
+Transactions are ﬁnalized if they are incorporated onto the Ethereum
+blockchain, and anything that happens in the same transaction effectively
+happens at the same time. For this reason, ﬂash swaps were introduced in
+Uniswap V2. This feature allows a user to borrow any amount up to the total
+liquidity available in a pool, only if the whole sum gets returned in the same
+Ethereum transaction. Because an Ethereum transaction is atomic, that is, is
+executed either in its entirety or not at all, there is no credit risk for lenders as
+18 See transaction 0x35f8d2f572fceaac9288e5d462117850ef2694786992a8c3f6d02612277b0877.
+19 See “Harvest Flashloan Economic Attack Post-Mortem,” medium.com, October 26,
+2020, https://medium.com/harvest-ﬁnance/harvest-ﬂashloan-economic-attack-post-mortem-
+3cf900d65217.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 47 =====
+
+Decentralized Exchange 367
+the loan is both originated and repaid in the same transaction. 20 In our data,
+735,644 transactions combine liquidity additions or removals with swaps or
+ﬂash swaps. To be consistent with websites like uniswap.info, in this paper ,
+we include ﬂash swaps in volume computations. Liquidity providers earn a fee
+identical to the one on regular token swaps that is based on the gross amount
+of the ﬂash loan regardless of whether the repayment is the same token that
+was borrowed. For liquidity providers, ﬂash swaps offer a risk-free way to earn
+earn higher fees.
+Table C1
+Fraudulent Tokens
+The table shows the number of fraudulent tokens, that is tokens with the same ticker symbol as
+popular tokens but with a different address. Number is the number of fraudulent tokens found as
+part of a Uniswap liquidity pool. Fraudulent transactions are the number of transactions in liquid-
+ity pools with these fraudulent tokens. Nonfraudulent transactions is the number of transactions
+in the original token in Uniswap pools.
+Ticker Number Fraudulent transactions Nonfraudulent transactions
+DAI 2 186,823 2,843,552
+PAID 26 77,963 101,300
+AXN 3 56,817 60,254
+TRU 5 44,975 187,048
+OM 11 42,830 89,406
+BOND 24 41,637 133,864
+DRC 6 41,519 50,802
+PRQ 1 38,431 129,339
+ANT 7 35,683 44,392
+OCEAN 3 31,260 109,928
+PBR 7 28,704 34,124
+ORN 4 27,627 64,860
+ALEPH 2 25,877 35,300
+DUCK 13 24,562 77,409
+YLD 13 24,113 63,087
+Data Issues:
+We also observe some transactions that trade tokens back and forth with-
+out apparent reason. For example, in one transaction on March 30, 2021,
+somebody created a new Uniswap exchange for a token named SCAMMY ,
+borrowed WETH worth 220 million USD in a ﬂash loan on dYdX, injected half
+as liquidity to the pool, and then traded 50 times the other half of the funds
+back and forth for a total volume of USD 5 billion. 21 The trader then withdrew
+the liquidity and repaid the ﬂash loan. There is no obvious proﬁt motive for
+this transaction. One possibility is that the trader tried to generate high fee
+20 Other protocols also offer ﬂash loans, but Uniswap is unique because the borrowed amount
+can be repaid in any combination of pool tokens as long as the value repaid equals the value
+borrowed. Borrowers pay a fee on amounts borrowed.
+21 See transaction 0xa8c00a56cf2455241bbc4b5ef9e3f9e761cdbd7909847ab8274dcd9bd1dd
+ed6a.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 48 =====
+
+368 The Journal of Finance ®
+revenue to place the token in a leading position at one of the yield farming
+websites in order to attract investment to this scam token (although naming
+the token scammy is not helpful for this purpose). We include such events in
+graphs and summary statistics. For our econometric analysis, we winsorize
+the data and thus eliminate such outliers.
+Ticker symbols on Uniswap are not protected. Anyone can create a
+token and assign the ticker symbol of a popular token like WETH or
+USDC. Tokens are uniquely identiﬁed by their address, for example,
+0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 for WETH, which is not
+easy to work with. Most people therefore use tickers and are exposed to
+copycat tokens. Table C1 lists fraudulent versions of popular tokens. We can
+see that, for example, Y earn Finance (YFI) has 17 copycat tokens that use
+the same ticker symbol. A total of 330 transactions were done on Uniswap
+with copycat tokens, which is small compared to 284,973 transactions in the
+legitimate token. Overall, we ﬁnd that the amount of trading in fake tokens is
+small and will not affect our ﬁndings.
+Appendix D: Stylized Facts on DEXs
+In contrast to traditional exchanges, Uniswap liquidity pools are not certi-
+ﬁed. There are no listing requirements. A consequence of this is that some of
+the token pools are purposely misleading. For example, ﬁve different tokens
+in our sample share the same ticker symbol USDC. A naive user who does
+not verify the relevant smart contract addresses could be tricked into buying
+a worthless coin with the same ticker . 22 Overall trading activity in these
+fraudulent pools is limited and will not affect our results. We provide detailed
+information on fake tokens in Appendix C.
+Figure D1 presents the network of pools between all tokens that are part
+of the 50 largest pools by volume. The thickness of each edge corresponds
+to the trading volume between the tokens. We can see that Wrapped Ether
+(WETH) takes a central position in the Uniswap network. For our full sam-
+ple of 101,884 tokens in 105,098 pools we ﬁnd that 99,863 pools, or 95.02%,
+trade directly against ETH or WETH. The second highest number of tokens,
+2,148, trade against USDT . The highest volume and the most connections are
+between WETH and USD stablecoins such as USDT , USDC, and DAI. 5,244
+tokens, or 4.99% of tokens, trade directly against these three stablecoins. We
+note in passing that the Uniswap network has a core-periphery structure sim-
+ilar to many other ﬁnancial networks. We ﬁnd that 99,491 tokens, or 97.65%
+of tokens, trade only against one other token.
+22 The “real” USDC stablecoin resides under address 0xa0b86991c6218b36c1d19d4a2e9eb0ce36
+06eb48 and has over 4 million token transactions on the Ethereum blockchain. A token
+with the same ticker is 0x0xEFb9326678757522Ae4711d7fB5Cf321D6B664e6. Somebody cre-
+ated a Uniswap liquidity pool for this copycat token at the address 0x1bffb8a3fede9f83a3adc
+292ebf1716d40b220c1, which has a total of 10 trades and the size of the pool never exceeded
+50 ETH.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 49 =====
+
+Decentralized Exchange 369
+Figure D1. Network graph of pools between all tokens that are part of the 50 largest
+pools by total aggregate volume in USD . The size of a node is proportional to the log of the
+number of pools a token is part of, its color is proportional to the total aggregate liquidity staked
+for a given token across all the pools, an edge between two tokens indicates that two tokens are in
+a common pool, and the thickness of the edge is proportional to trading volume. (Color ﬁgure can
+be viewed at wileyonlinelibrary .com)
+Appendix E: Numerical Example
+Assume that the fair exchange rate for a token is 10 ETH/token and a sole
+liquidity provider contributed E = 100 ETH and T = 10 tokens to the liquidity
+pool for , which he gets 100 liquidity tokens in return. Suppose that the fee is
+τ = 0.003.
+EXAMPLE E1: A trader wants to buy tokens for e = 10 ETH. He gets 0.997eT
+0.997e+E =
+0.997·10·10
+0.997·10+100 = 0.90661 tokens in return. The pool collects a fee of 0 .003e =
+0.003 · 10 = 0.03 ETH. The new token balance post-trade is 10 − 0.90661 =
+9.09339 tokens.
+The post-trade ETH balance equals the old balance plus what the
+trader gave for tokens plus the fee revenue 100 + 0.997e + 0.003e = 100 +
+9.97 + 0.03 = 110. The average price the trader got is p = e
+T + E
+(1−τ )T = 10
+10 +
+100
+(1−0.0003)10 = 11.0301.
+Note that the invariant k as deﬁned in equation ( 1) is the same pre- and post-
+trade only without fees, that is, 10 · 100 = 9.09339(100 + 0.997 · 10) = 1000.
+Because the fee gets credited to the liquidity pool after the trade, the invariant
+increases to 9 .09339 · 110 = 1000.27. The next trade will be priced based on
+this new invariant. The new mid-price is p0 = 12.0967. In response to a buy
+order , the mid-price moved up.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 50 =====
+
+370 The Journal of Finance ®
+When redeeming her liquidity tokens, the liquidity provider would receive
+whatever is in the pool, which is now 110 ETH and 9.09339 token.
+Consider two cases:
+(a) True price is 10 ETH/token. Had she kept her initial investment of 100
+ETH and 10 tokens in a private wallet, it would now be worth 100 + 10 ·
+10 = 200 ETH.
+When she redeems the liquidity token, she would obtain a total of
+110 + 9.09339 · 10 = 200.9339 ETH and make a proﬁt of 0.9339 ETH.
+This is the sum of the trading fee ( τ e = 0.003 · 10 = 0.03) and the gain
+from selling to the trader at an average price above the true price.
+(b) True price is 12.0967 ETH/token. Had she kept her initial investment
+of 100 ETH and 10 tokens in a private wallet, it would now be worth
+100 + 10 · 12.0967 = 220.0967.
+When she redeems the liquidity token, she gets 110 + 9.09339 ·
+12.0967 = 220. She loses 0.0967 ETH, in which the gain from the trad-
+ing fee is more than offset by the loss from the exchange selling tokens
+at stale prices.
+As with any passive liquidity provider , the Uniswap pools present a free op-
+tion to the market. That is, if the quantities in the pool are such that the terms
+of trade differ from the true value, arbitrageurs are more likely to pick off stale
+liquidity . This logic is reﬂected in the previous example. However , liquidity-
+demanding trades are always valuable. The liquidity suppliers receive a fee
+for the liquidity-demanding order and also receive a fee when equilibrium is
+replenished by arbitrage traders. They only face potential losses if there has
+been a permanent value change in the token.
+If the price of a token moves away from the fundamental value because of
+a large order , an arbitrageur will initiate an offsetting trade and bring the
+mid-price of the exchange back to the fundamental value. Such short-term de-
+viations from the fundamental price of a token are beneﬁcial to liquidity hold-
+ers. In a pool without fees, liquidity providers will gain zero on such a trading
+pattern. Trades are always priced in such a way that the amount of ETH and
+tokens are on the bonding curve before and after any trade (see equation ( 1)).
+Thus, a move from ( E, T )t o( E′, T′) and then back to ( E, T ) will leave the
+liquidity providers at exactly the same point they started from. Many crypto-
+traders refer to gains or losses while the pool is off equilibrium at value ( E′, T′)
+as impermanent loss . With positive fees, liquidity traders beneﬁt from such
+short-term deviations as they collect a proportional fee for both trades. In our
+empirical analysis, we estimate such short-term deviations from fundamental
+value as reversals.
+Finally , even though arbitrageurs replenish the liquidity pool after a large
+price movement, they pay a fee for doing so. This differs from a traditional limit
+order book in which liquidity is replenished by rivalrous liquidity suppliers.
+EXAMPLE E2: Continue Example 1, case (a), and suppose that an arbitrageur
+brings the price closer to the fundamental value. Assume that the arbitrageur
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 51 =====
+
+Decentralized Exchange 371
+can buy tokens at the fundamental value of 10, sells them to the pool at price
+p(t), and chooses the optimum amount of tokens t to sell to the pool to max-
+imize proﬁt, π = t(p(t) − 10). By sending t tokens to the pool, he will obtain
+e = (1−τ )tE′
+T′+t(1−τ ) = 0.997·t·110
+9.09339+0.997t ETH in return, resulting in price p(t) = e/t. Solving
+for the optimal t that maximizes the arbitrageur’s proﬁt, we ﬁnd t = 0.895648,
+which is smaller than the amount of token sold by the pool in Example E1
+because (i) the invariant k has changed after the ﬁrst trade due to the fee rev-
+enue and (ii) fees make it optimal for the arbitrageur to sell a smaller amount
+back to the pool. It is easy to verify that without fees, that is, τ = 0, the invari-
+ant does k not change after the ﬁrst trade, the arbitrageur would sell exactly
+the same amount of tokens back to the pool that the pool sold in the previous
+trade, and the new mid-price of the pool would exactly equal the fundamental
+value. With fees, however , the arbitrageur optimally sells t = 0.895648 tokens
+to the pool, for which he receives 9.836 ETH, leaving the pool with a new bal-
+ance of 100.164 ETH and 9.98904 token. The new pool mid-price is 10.0274,
+which deviates slightly from the fundamental value of 10. Liquidity providers
+value their token holdings at the fundamental value of 10 and hold a total
+of 100.164 + 99.8904 = 200.054, which is higher than their initial investment
+of 200.
+Appendix F: Gas Fees
+Gas fees are the transaction costs on Ethereum blockchain. In the context
+of our paper , gas fees are important for two reasons. First, they are one quan-
+tiﬁable component of the cost difference between CEX and DEX. Second, gas
+costs that are high in times of market stress provide incentives for liquidity
+providers not to withdraw .
+Gas is quoted in units of Gwei, where 1 Gwei is 10 −9 ETH. The amount of gas
+used for a speciﬁc transaction consists of a predictable and state-contingent
+component. The predictable component comes from the organization of the
+Ethereum Virtual Machine. Any transaction comprises a known number of
+individual low-level computational steps. Fixed gas amounts are assigned to
+each type of operation and are independent of market conditions—the total
+gas used for a transaction is simply the sum of each computational step. In ad-
+dition, users offer an amount of ETH per unit of gas consumed by the program,
+the so-called gas price, as an incentive to the miners to be included. The total
+gas fee is then the gas amount multiplied by the gas price. The gas price varies
+with market conditions and demand for transactions. Given a market price of
+Ethereum, the gas fee can be translated into USD.
+We note three stylized facts that are relevant for our analysis. First, the
+average gas fee is low; second, the state-contingent fee can be high; and ﬁ-
+nally , the incremental fee relative to trading on Binance is low . Intuitively , the
+high state-contingent fee acts as a precommitment not to withdraw liquidity
+in stressed market events.
+To compare gas fees on a CEX and a DEX, we compare a swap transaction
+to two token transfers, which would be required to move a token in and out of
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 52 =====
+
+372 The Journal of Finance ®
+Figure F1. Incremental fees of a swap transaction over two token transfers measured
+in USD. (Color ﬁgure can be viewed at wileyonlinelibrary .com)
+a CEX. To measure gas costs, we pick a sample of 200,000 blocks starting from
+block 11,668,958. Gas prices are recorded per transaction and each transac-
+tion can contain multiple swaps, multiple transfers, or other interactions with
+DeFi platforms. To generate a conservative estimate, we pick the 10 lowest gas
+amounts for transactions that contain swaps or transfers. These transactions
+are most likely to contain a “minimalist” transaction, that is, for example, just
+a simple token transfer . We manually verify on Etherscan that this is indeed
+the case. In these data, a Uniswap V2 swap uses on average 49.973 units of
+gas and a transfer uses 19.830 units of gas. 23 A swap therefore uses on average
+10.313 more gas units than the two token transfers that would be required to
+move tokens to and from a CEX. Using a similar approach, we measure the gas
+amount of a liquidity withdrawal as 97,686 gas units. Liquidity withdrawals
+are the most expensive interactions with Uniswap as the smart contract has
+to compute and transfer the liquidity provider’s share of the fee revenue.
+Using average gas prices can be misleading for two reasons. First, gas
+prices have a fat right tail and averages might be driven by outliers. Second,
+market conditions might make it very lucrative to use one DeFi protocol
+over another at a given time or users might have different preferences to get
+their transaction included in a timely manner . To best capture preferences of
+Uniswap users, on each day , we compute the median gas price for all Uniswap
+transactions, multiply that value by the incremental gas amount of 10.312
+gas units, and convert that value to USD. Figure F1 illustrates our ﬁndings.
+The average incremental fee is 0.94 cents; the median incremental fee is
+0.22 cents. On some days the incremental fee can be very high. Indeed, the
+23 We observe some very small variations in gas amounts due to minor differences in the imple-
+mentation of ERC-20 token contracts.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 53 =====
+
+Decentralized Exchange 373
+maximum in our sample is 11.57 USD on May 11, 2021, when ETH ﬁrst broke
+through 4,000 USD. For the second part of our sample, since January 2021,
+the median incremental fee was 1.33 USD.
+Finally , note that our calculation does not include any withdrawal fees that
+an exchange may charge. Binance, for example, charges token-speciﬁc fees that
+are hard to include in a comparison. Binance charges a fee of 0.005 ETH for
+ETH withdrawals to the Ethereum blockchain, which at the time of writing
+would be equivalent to 8.5 USD.
+REFERENCES
+Amihud, Y akov, 2002, Illiquidity and stock returns: Cross-section and time-series effects, Journal
+of Financial Markets 5, 31–56.
+Angeris, Guillermo, and Tarun Chitra, 2020, Improved price oracles: Constant function market
+makers, in Proceedings of the 2nd ACM Conference on Advances in Financial Technologies ,
+80–91 (Association for Computing Machinery, New Y ork).
+Angeris, Guillermo, Hsien-Tang Kao, Rei Chiang, Charlie Noyes, and Tarun Chitra, 2021, An
+analysis of Uniswap markets, Cryptoeconomic Systems 0, 1–30.
+Aoyagi, Jun, 2020, Liquidity provision by automated market makers, Working paper , HKUST.
+Barbon, Andreas, and Angelo Ranaldo, 2021, On the quality of cryptocurrency markets, Working
+paper , St. Gallen University.
+Baruch, Shmuel, and Lawrence R. Glosten, 2013, Fleeting orders, Working paper , Columbia Uni-
+versity .
+Biais, Bruno, Thierry Foucault, and Sophie Moinas, 2015, Equilibrium fast trading, Journal of
+Financial Economics 116, 292–313.
+Black, Fisher, 1971a, Toward a fully automated stock exchange, part 1, Financial Analysts Journal
+27, 28–35.
+Black, Fisher, 1971b, Toward a fully automated stock exchange, part 2, Financial Analysts Journal
+27, 86–87.
+Brogaard, Jonathan, Terrence Hendershott, and Ryan Riordan, 2019, Price discovery without trad-
+ing: Evidence from limit orders, Journal of Finance 74, 1621–1161.
+Capponi, Agostino, and Ruizhe Jia, 2021, The adoption of blockchain-based decentralized ex-
+changes, Working paper , Columbia University .
+Glosten, Lawrence R., 1994, Is the electronic open limit order book inevitable?, Journal of Finance
+49, 1127–1658.
+Glosten, Lawrence R., 1998, Precedence rules, Working paper , Columbia University.
+Hao, Jia, Avner Kalay, and Stewart Mayhew, 2009, Ex-dividend arbitrage in option markets,
+Review of Financial Studies 23, 271–303.
+Haynes, Richard, and Esen Onur, 2020, Precedence rules in matching algorithms, Journal of Com-
+modity Markets 19, 100109.
+Ito, Yuki, and Jun Aoyagi, 2021, Co-existing exchange platforms, Working paper , HKUST.
+Kirilenko, Andrei, Albert S. Kyle, Mehrdad Samadi, and Tugkan Tuzun, 2017, The ﬂash crash:
+High-frequency trading in an electronic market, Journal of Finance 72, 967–998.
+Lehar, Alfred, and Christine Parlour, 2023, Systemic fragility in decentralized markets, Working
+paper , UC Berkeley.
+Park, Andreas, 2021, The conceptual ﬂaws of constant product automated market making, Work-
+ing paper , University of Toronto.
+Securities and Exchange Commission, 2010, Findings regarding the market events of May 6, 2010,
+Technical report, SEC.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 54 =====
+
+374 The Journal of Finance ®
+Supporting Information
+Additional Supporting Information may be found in the online version of this
+article at the publisher’s website:
+Replication Code.
+ 15406261, 2025, 1, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/jofi.13405 by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License

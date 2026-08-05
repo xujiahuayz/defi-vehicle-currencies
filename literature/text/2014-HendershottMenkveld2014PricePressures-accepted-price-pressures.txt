@@ -1,0 +1,2049 @@
+
+
+===== PAGE 1 =====
+
+Price pressures $
+Terrence Hendershott a, Albert J. Menkveld b,c,d,n
+a Haas School of Business, University of California at Berkeley, United States
+b VU University Amsterdam, FEWEB, De Boelelaan 1 105, 1081 HV Amsterdam, Netherlands
+c Duisenberg school of finance, Netherlands
+d Tinbergen Institute, Netherlands
+article info
+Article history:
+Received 8 June 2013
+Received in revised form
+20 August 2013
+Accepted 7 October 2013
+Available online 14 August 2014
+JEL classification:
+G12
+G14
+D53
+D61
+Keywords:
+Liquidity
+Inventory risk
+Intermediary
+Volatility
+abstract
+We study price pressures, i.e., deviations from the efficient price due to risk-averse
+intermediaries supplying liquidity to asynchronously arriving investors. Empirically, New
+York Stock Exchange intermediary data reveals economically large price pressures, 0.49%
+on average with a half life of 0.92 days. Theoretically, a simple dynamic inventory model
+captures an intermediary's use of price pressure to mean-revert inventory. She trades off
+revenue loss due to price pressure against price risk associated with staying in a nonzero
+inventory state. The closed-form solution identifies the intermediary's risk aversion and
+the investors' private value distribution from the observed time series patterns of prices
+and inventories. These parameters imply a relative social cost due to price pressure, a
+deviation from constrained Pareto efficiency, of approximately 10% of the cost of
+immediacy.
+& 2014 Elsevier B.V. All rights reserved.
+1. Introduction
+The cost of trading large quantities quickly, often referred
+to as liquidity, plays a fundamental role in facilitating risk
+sharing and allocating resources through securities markets.
+A market might turn illiquid through two main channels.
+Informational asymmetry makes counterparties charge a
+permanent price impact to protect against losses due to
+information-motivated traders (e.g., Glosten and Milgrom,
+1985). In addition, a natural counterparty might not yet be in
+the market and a risk-averse intermediary charges a price
+impact for temporarily holding the position (e.g., Grossman
+and Miller, 1988). This price impact is transitory as the price
+rebounds once the natural counterparty arrives, allowing the
+intermediary to liquidate its initial position. These transitory
+price effects or price pressures are the focus of this study.
+This paper generates systematic evidence on the price
+pressure channel and interprets it based on a structural
+Contents lists available at ScienceDirect
+journal homepage: www.elsevier.com/locate/jfec
+Journal of Financial Economics
+http://dx.doi.org/10.1016/j.jfineco.2014.08.001
+0304-405X/& 2014 Elsevier B.V. All rights reserved.
+☆ We benefit from in-depth discussions with Viral Acharya, Bruno Biais,
+Sabrina Buti, Darrell Duffie, Robert Engle, Joel Hasbrouck, Charles Jones,
+Jeremy Large, Sunny Li, Virgiliu Midrigan, Mark Seasholes, Stijn van
+Nieuwerburgh, Marios Panayides, Matthew Pritsker, Jan van Schuppen,
+Elvira Solji, Clara Vega, Pierre-Olivier Weill, and audience participation at
+the Bank of Canada, Cass Business School, Université Paris Dauphine,
+ESSEC Business School, National Bureau of Economic Research micro-
+structure, Society for Financial Econometrics (SoFiE) 201 1 Conference
+held in Chicago, Illinois, Stanford University, Swiss Central Bank, and
+University of Toronto. The project was inspired by the Lars Ljungqvist and
+Thomas J. Sargent New York University (NYU) PhD course based on their
+book Recursive Macroeconomic Theory . Albert J. Menkveld gratefully
+acknowledges Robert Engle for sponsoring his NYU visit in August 2010
+and VU University Amsterdam for a VU talent grant.
+n Corresponding author at: VU University Amsterdam, FEWEB, De
+Boelelaan 1 105, 1081 HV Amsterdam, Netherlands.
+Tel.: þ31 20 598 6130; fax: þ31 20 598 6020.
+E-mail address: albertjmenkveld@gmail.com (A.J. Menkveld).
+Journal of Financial Economics 1 14 (2014) 405 –423
+
+===== PAGE 2 =====
+
+model. The empirical challenge is to disentangle price
+pressure effects associated with an intermediary's trading
+from informational effects. A state space model decom-
+poses price changes into two components: a permanent
+change due to information and a transitory change poten-
+tially due to price pressure. The empirical model relates
+the permanent changes to surprise order flow and the
+transitory changes to the intermediary's inventory. More-
+over, the empirical state space model turns out to be the
+solution of a simple structural model in which a repre-
+sentative intermediary solves a dynamic inventory control
+problem. Thus, the empirical estimates identify deep
+parameters such as the intermediary's risk aversion and
+investors' private value distribution for the assets they
+trade.
+Several reasons can be cited for why the state space
+approach is preferable to other approaches such as an
+autoregressive moving average (ARIMA) model (e.g.,
+Hasbrouck, 1991a ,b) or the generalized method of
+moments (GMM). First, maximum likelihood estimation
+is asymptotically unbiased and efficient. Second, the Kal-
+man filter used in the estimation ensures maximum
+efficiency in dealing with missing values; i.e., it accounts
+for level series changes across periods with missing
+observations. Standard approaches based on the differ-
+enced series discard such information. This is particularly
+beneficial for high-frequency data on inactively traded
+securities. Third, after estimation, the Kalman smoother
+(a backward recursion) enables the decomposition of any
+realized price change into a permanent part and a transi-
+tory part conditional on all observations, i.e., past, current,
+and future observations. Therefore, the decomposition
+benefits from peering into the future. Durbin and
+Koopman (2012) provide an in-depth discussion on the
+use of state space models in economics. Hasbrouck (1999)
+applies the state-space approach to the intraday dynamics
+of discrete bid and ask quotes.
+The empirical estimates show economically large and
+persistent price pressures. The state space model is esti-
+mated for 697 stocks based on daily prices and inventory
+positions of NYSE intermediaries from 1994 through 2005.
+The average size of price pressure is 49 basis points with a
+half life of 0.92 days. Substantial cross-sectional variation
+exists. Price pressure for the quintile of largest stocks is 17
+basis points with a half life of 0.54 days. For the smallest-
+stocks quintile, it is 1 18 basis points with a half life of 2.1 1
+days. These price pressures are roughly the size of the
+(effective) bid –ask spread.
+The state space estimates also yield a novel empirical
+measure of liquidity: the price pressure an intermediary
+charges per unit of inventory. This marginal price pressure is
+the price elasticity of liquidity demand and is an alternative to
+the standard bid–ask spread measure. Institutional investors
+in particular often care more about the marginal pressure than
+the spread. They typically split large orders into small pieces
+sent to the market sequentially. The cumulative impact of that
+order i.e., the extent to which their trading drives the price
+away from the efficient price as the order executes, is typically
+much larger than the half-spread paid on each individual
+order. Marginal price pressure as a liquidity measure instead
+of the spread is in the tradition of earlier work byStoll (1978),
+Grossman and Miller (1988), Campbell, Grossman, and Wang
+(1993),a n d Pastor and Stambaugh (2003).1
+Small stocks are much less liquid than large stocks
+based on marginal pressure than based on the spread. The
+marginal price pressure is 0.02 basis points per one
+thousand dollars of idiosyncratic inventory position for
+the (quintile of) largest stocks and 0.98 basis points for the
+smallest stocks. The (half-) spread for these two sets of
+stocks is 8.41 and 46.12 basis points, respectively, implying
+the largest stocks are 49 times more illiquid when mea-
+sured by marginal pressure but only five times more
+illiquid when measured by spread. The analysis is based
+on idiosyncratic inventory because systematic inventory
+risk can easily be hedged through offsetting positions in
+index futures or exchange traded funds.
+A simple recursive structural model in the spirit of Ho
+and Stoll (1981) helps to further understanding of the
+average size of price pressure, its duration, and the level of
+marginal pressure. The model studies a risk-averse inter-
+mediary who uses price pressure to manage risk though
+mean-reverting her inventory. She equates the size of the
+subsidy she pays to speed up mean-reversion, i.e., the
+price pressure, to the utility cost of one more time unit of
+price risk on her nonzero position. This pecuniary amount
+equated to a utility cost facilitates empirical identification
+of the model's deep parameters. Observed price pressure
+together with the price risk on the intermediary's inven-
+tory identifies her risk aversion. The speed of mean-
+reversion given the level of price pressure identifies
+investors' private value distribution as it captures how
+price pressure impacts investors' buying and selling. If the
+private distribution is relatively flat (inelastic), then not
+many buyers are replaced by sellers and the net demand
+response to price pressure is small. This intuition is
+formalized in the stochastic inventory control problem
+and its closed-form solution.
+The model's solution along with the time series proper-
+ties of price pressure generates a rich economic perspec-
+tive. The intermediary's relative risk aversion is 3.96. The
+uniform distribution assumed for private values ranges
+from /C0 185 to þ185 basis points. The model-implied (half-)
+spread that makes the intermediary indifferent between
+participating or not ranges from 7.63 basis points for the
+largest stocks to 87 .41 basis points for the smallest stocks.
+This range estimate is based entirely on inventory dynamics
+and price pressure estimates. It is, therefore, comforting
+that it is the same order of magnitude as the observed half-
+spread range of 8.41 –46.12 basis points.
+The model also provides insight into potential investor
+welfare loss due to asynchronous arrivals and risk-averse
+intermediation. The intermediary internalizes the price
+pressure as the cost of risk management (inventory reduc-
+tion). This cost, however, overestimates the extent to
+which private value is lost as it is based on the differential
+valuation of the marginal seller who is substituted by the
+marginal buyer. A social planner cares about the average
+1 Grossman and Miller (1988, p. 630) criticize not only the bid –ask
+spread as a liquidity measure but also the liquidity ratio, defined as the
+ratio of average dollar volume to the average price change. Its reciprocal,
+the illiquidity ratio, is subject to the same critique.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423406
+
+===== PAGE 3 =====
+
+seller replaced by the average buyer as a planner inte-
+grates welfare across all agents. The intermediary consid-
+ers price pressure to be more costly than the planner and
+mean-reverts more slowly. Empirically, this results in a
+10% higher cost of immediacy relative to constrained
+Pareto efficiency.
+While our empirical analysis is specific to the NYSE
+structure during our sample period, price pressures cap-
+ture generic properties of supply and demand and the
+methodology developed herein is more widely applicable.
+In the presence of slow-moving capital due to some
+friction such as inattention, it is natural for some agents
+to step in to produce immediacy and be compensated
+through price pressure (see, e.g., Duffie, 2010). Regulators
+should track the size of marginal price pressure in secu-
+rities markets to monitor liquidity. They typically are the
+only ones who have access to the trader identities needed
+to compute the aggregate position of intermediaries at any
+time, e.g., Kirilenko, Kyle, Samadi, and Tuzun (201 1) .
+Following the Flash Crash, a committee including Nobel
+laureates proposed pricing incentives for agents with
+market making strategies that at all times maintain best
+buy and sell quotations that are “reasonably related to the
+market” (Born, Brennan, Engle, Ketchum, O'Hara, Philips,
+Ruder, and Stiglitz, 201 1, p. 10). The realized marginal price
+pressure (a by-product of the model) could indicate
+whether their quotations were reasonable during market
+turbulence. Realized pressure could also be useful for
+issuers who want to evaluate the performance of the
+designated market makers they hire for their stock (see,
+e.g., Nimalendran and Petrella, 2003 ; Venkataraman and
+Waisburd, 2007 ; Anand, Tanggaard, and Weaver, 2009 ;
+Menkveld and Wang, 2013 ). In, 2013 the Nasdaq proposed
+to start such program in the US (see Securities and
+Exchanges Commission Release No. 34-69195).
+The paper's focus on everyday price pressures contri-
+butes to a literature largely focusing on instances identify-
+ing liquidity demand by investors. Kraus and Stoll (1972)
+are among the first to show the existence of price
+pressures by studying large institutional trades. Subse-
+quent studies focusing on other types of trades reveal that
+price pressures can be large.
+2 To more fully characterize
+the price dynamics arising from investors' trading needs,
+one needs data on intermediaries who take temporary
+inventory positions to satisfy liquidity demand. Madhavan
+and Smidt (1991, 1993) and Hasbrouck and Sofianos (1993)
+show inventory mean-reversion for NYSE intermediaries
+(specialists), but not price pressure. Hendershott and
+Seasholes (2007) use a longer time series of similar data
+to find evidence consistent with both inventory control and
+price pressure. They find that a portfolio of stocks for which
+the intermediary is long outperforms a portfolio of stocks
+for which she is short. Their results, however, are also
+consistent with the alternative explanation based on infor-
+mation asymmetry. The state space approach developed in
+this paper identifies the contribution of both channels.
+Section 2 presents estimates of the magnitude of daily
+price pressures and pricing errors. Section 3 sets up and
+solves a structural model and shows how the price
+pressure estimates identify the model's deep parameters.
+How the unique NYSE market structure and the interme-
+diaries' role in it impact the interpretation of the results is
+discussed in Section 4 . In particular, it discusses an alter-
+native, information-based explanation for the negative
+correlation between inventory and the pricing error.
+Section 5 concludes.
+2. Empirical identi ﬁcation of price pressure and
+inventory dynamics
+Markets on which investors do not continuously monitor
+and participate deviate from the standard Walrasian tradition
+(Townsend, 1978; Grossman and Miller, 1988; Rust and Hall,
+2003; and many others). Historically, the NYSE assigned to
+each stock one intermediary, called a specialist, to act as a
+market maker. This structure helps identify the amount of
+liquidity supplied. Data on these intermediaries' inventory
+positions help identify price pressure both in the cross-section
+and through time. While the des ignation of a single inter-
+mediary is unique to the NYSE, the fundamental economic
+forces that generate price pressure and intermediaries' inven-
+tory risk exist in all markets on which investor trading needs
+are not perfectly synchronized.Section 4 further discusses the
+NYSE structure and how it changed subsequent to our sample
+period.
+2.1. Data and summary statistics
+Center for Research in Security Prices (CRSP) data, the
+NYSE's Trade and Quotes (TAQ) data, and a proprietary
+NYSE data set provide the end-of-day midquote price (i.e.,
+the average of the bid price and ask price), the end-of-day
+specialist inventory position, and other variables from
+1994 through 2005. A balanced panel is created to make
+results comparable through time and control for stock
+fixed effects. All NYSE common stocks matched across TAQ
+and CRSP with an average share price of more than $5 and
+less than $1,000 are used. The resulting sample contains
+697 stocks present throughout the whole sample period.
+Stocks are sorted into quintiles based on market capi-
+talization and stay in the assigned quintile throughout the
+sample. Quintile 1 refers to the large-cap stocks, and
+Quintile 5 corresponds to the small-cap stocks. The NYSE
+specialist positions are in shares in the original database.
+To facilitate comparisons across stocks, we convert inven-
+tory into dollars by multiplying the position with each
+stock's average price each year after adjusting for stock-
+splits and dividends. This eliminates daily price changes in
+2 Harris and Gurel (1986) and subsequent papers on additions to the
+Standard and Pool's 500 index find evidence for price pressure.
+Greenwood (2005) extends this with an examination of transitory price
+effects upon a weighting change to the Nikkei 225. Coval and Stafford
+(2007) examine price pressures due to mutual fund redemptions. Less
+directly, Campbell, Grossman, and Wang (1993) study how price pres-
+sures leads to stocks' return autocorrelations declining with trading
+volume. Gabaix, Gopikrishnan, Plerou, and Stanley (2006) examine how
+price pressures by institutional investors can theoretically affect stock
+market volatility. Brunnermeier and Pedersen (2009) propose a theory in
+which liquidity spirals could lead to excessive price pressures. Degryse,
+de Jong, van Ravenswaaij, and Wuyts (2005) and Large (2007) show
+transitory price effects in limit order markets and label it order book
+resiliency. Nagel (2012) uses a return reversal measure to study the
+withdrawal of liquidity supply during financial turmoil.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 407
+
+===== PAGE 4 =====
+
+the inventory variable allowing its use as an explanatory
+variable for the transitory price effect in the econometric
+model. Throughout we use “specialist”, “market maker ”,
+and “intermediary” interchangeably to refer to the NYSE
+specialist.
+Table 1 presents the mean of various trading variables by
+size quintile. It includes the within variation (defined as the
+standard deviation of the data series after removing stock
+fixed effects) to provide a sense of the variable's variability
+through time. Several observations emerge from the statistics.
+First, the within standard deviation in intermediary inventory
+is $1.4 million, which is substantial relative to her average
+position. It suggests that specialists are active intermediaries
+in matching buyers and sellers at interday horizons. Second,
+w h i l en o tt h ef o c u so ft h i ss t u d y ,t h ea v e r a g ep o s i t i o no f
+intermediaries is positive and economically significant.
+3 For
+example, for the large-cap stocks in Q1 they maintain an
+almost half a million dollar average inventory position. The
+inventory position for the small-cap stocks in Q5 is consider-
+ably smaller at $77,900. Third, the market capitalization is $34
+billion for Q1 stocks and declines to $290 million for Q5
+stocks. The effective spread (more precisely the half-spread,
+but for notational convenience we use “spread” throughout),
+which is defined as the distance between the transaction price
+and the prevailing midquote price, is 8 basis points for Q1
+stocks and 46 basis points for Q5 stocks, demonstrating
+considerable heterogeneity across stocks.
+2.2. State space model to disentangle price pressures and
+efficient price innovations
+One challenge in identifying price pressures is that inves-
+tors' net order imbalance, the difference between the volume
+investors buy and sell (which equals the intermediaries'
+inventory change), can convey information as well as cause
+p r e s s u r et h a tm a k e sp r i c e so v e r s h o o t .T h i sw e l l - k n o w np a t -
+tern has been shown in various event studies. For example,
+Kraus and Stoll (1972)find that prices overshoot in the event
+of a block trade, i.e., a transaction in which the initiating party
+wants to trade a large number of shares.
+To identify the price pressure effect in the presence of
+an information effect, we build on the state space
+approach of Menkveld, Koopman, and Lucas (2007) , which
+models an observed, high-frequency price series as the
+sum of two unobserved series: a nonstationary efficient
+price series (information) and a stationary series (pricing
+error) that captures transitory price effects including price
+pressures. We use log prices throughout the paper. In its
+simplest form, the model structure for the log price is
+p
+t ¼ mt þ st ð1Þ
+and
+mt ¼ mt /C0 1 þδt þwt ; ð2Þ
+where pt is the observed price, mt is the unobserved efficient
+price, st is the unobserved pricing error, δt is the required
+return obtained as the (time-varying) risk-free rate plus βi
+times a 6% risk premium, and wt is the innovation in the
+efficient price.st and wt are assumed to be mutually uncorre-
+lated and normally distributed. It is immediate from the
+structure of the model that only draws on wt affect the
+security's price permanently as any draw on st is temporary
+because it affects prices only at a particular time. The model
+can be estimated with maximum likelihood, where the like-
+lihood is constructed using the Kalman filter. Details on the
+implementation are inAppendix A.
+The remainder of this subsection develops the general
+state space model that is taken to the data. 4
+Table 1
+Summary statistics.
+This table presents summary statistics on the data set that merges data from the Center for Research in Security Prices (CRSP), the NYSE's Trade and
+Quote (TAQ), and a proprietary NYSE data set. It is a balanced panel that contains daily observations on 697 NYSE common stocks from January 1994
+through December 2005. Stocks are sorted into quintiles based on the average market capitalization, where Quintile 1 contains the largest-cap stock s (i.e., a
+stock is in the same quintile for all years in the sample).
+Variable Description (units) Source Mean Mean Mean Mean Mean Standard
+deviation
+Q1 Q2 Q3 Q4 Q5 within a
+midquoteit Closing midquote, dividend and split adjusted b (dollars) NYSE 53.76 44.54 36.65 28.58 19.21 22.21
+invent_share sit Specialist inventory at the close (thousands of shares) NYSE 8.19 5.55 4.33 3.23 5.39 34.19
+invent_dollarit Specialist inventory at the close b (thousands of dollars) NYSE,
+CRSP
+412.61 168.98 129.48 75.44 77.90 1,383.32
+shares_out st it Shares outstanding (millions) CRSP 729.94 157.73 70.08 36.27 18.73 283.85
+market_capit Shares outstanding times price (billions of dollars) CRSP 34.29 5.34 2.06 0.88 0.29 1 1.57
+espreadit Share-volume-weighted effective half-spread (basis
+points)
+TAQ 8.41 12.46 16.50 24.60 46.12 24.20
+dollar_volumeit Average daily volume (millions of dollars) TAQ 88.21 23.44 10.13 3.63 0.99 42.31
+specialist_participit Specialist participation rate (percent) NYSE 12.31 12.73 14.10 16.58 20.87 8.30
+Number of observations: 697 n3,018 (stocknday)
+a Denotes that the analysis is based on the deviations from time means, i.e., xn
+it ¼ xit /C0 xi .
+b Denotes that all price series were adjusted to account for stock splits and dividends.
+3 This average long position is likely driven by a combination of a
+cost asymmetry between a long and a short position and capital
+requirements imposed by the exchange that intermediaries choose to
+invest in stocks. The model in Section 3 interprets the zero position as the
+deviation from the long-term optimal position of the intermediary.
+4 The state space model developed has since been used in Menkveld
+(2013), who studies trading by a single large high-frequency trader,
+by Brogaard, Hendershott, and Riordan (2014) , who study trading by
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423408
+
+===== PAGE 5 =====
+
+2.2.1. Observed price process
+The observation equation in the state space model is
+pit ¼ mit þ sit ; ð3Þ
+where i indexes stocks, t indexes time, pit is the observed
+log price, mit is the efficient price, and sit is the stationary
+pricing error. The last two terms each represent a latent
+state process.
+2.2.2. Unobserved efficient price process
+We use the model to analyze daily midquote price
+series by stock-year. The efficient price series is a martin-
+gale that consists of two components:
+mit ¼ mi;t /C0 1 þδit þ βif t þwit ; wit ¼ κi ^Iit þ uit ; ð4Þ
+where the subscript i indexes stocks, t indexes days, δt is
+the required return obtained as the (time-varying) risk-
+free rate plus beta times a 6% risk premium, ft is the
+demeaned market return (CRSP value-weighted return),
+wit is the idiosyncratic innovation, ^Iit is the idiosyncratic
+inventory innovation obtained as the residual of an AR( p)
+model ( p¼9 based on the Akaike information criterion)
+that represents the surprise net order imbalance, which is
+potentially informative, and uit is the stock-specific inno-
+vation orthogonal to this order imbalance innovation and
+assumed to be a normally distributed white noise process.
+The decomposition of an efficient price innovation into
+a common factor component ( βif t ) and an idiosyncratic
+component ( wit) is relevant for our purposes as the latter
+represents undiversifiable risk for the intermediary. The
+common-factor risk is easily hedged through highly liquid
+index products. For the same hedging reason, we remove
+the common factor from inventory dynamics.
+Finally, several econometric issues deserve discussion.
+First, in the absence of trade information, a canonical
+microstructure model cannot be estimated as it is not
+econometrically identified (see, e.g., George and Hwang,
+2001). The reason is that the efficient price innovation is
+likely correlated with the pricing error; i.e., the order
+imbalance an intermediary absorbs might contain infor-
+mation (affecting the efficient price change) as well as
+command a price pressure (affecting the pricing error).
+Incorporating the intermediary's inventory econometri-
+cally identifies the permanent and transitory components
+of price changes in the state space model. Hendershott,
+Jones, and Menkveld (2013) discuss how price pressures
+can be identified without the intermediary's inventory if
+the pricing error follows an AR(2) process. A related point
+is that the inventory change term in the martingale
+equation eliminates a potential omitted variable bias, as
+it is correlated with the inventory term that is assumed to
+affect the pricing error.
+2.2.3. Unobserved pricing error process
+The following process for the stationary pricing error
+incorporates the intermediary's inventory:
+s
+it ¼ αiIit þβ0
+i f t þ ⋯þ βk
+i f t /C0 k þ εit ; ð5Þ
+where the error term εit is normally distributed and uncorre-
+lated with uit. Inventory enters as an explanatory factor to
+allow price pressure to originate from the intermediary's
+desire to mean-revert inventory (Section 3 provides a simple
+dynamic model generating such a linear structure). The f
+terms enter to capture a documented lagged adjustment to
+common factor innovation that is particularly prevalent for
+less actively traded small stocks (see, e.g., Campbell, Lo, and
+MacKinlay, 1997, p. 76). In the proposed specification, the beta
+coefficient in the efficient price process captures the long-
+term impact of a common factor shock on the price of the
+security and any lagged adjustment shows up through
+negative beta coefficients in the pricing error equation.
+2.3. Preliminary evidence on price pressures
+All empirical analyses are done by stock-year to character-
+ize price pressures in the cross-section as well as in the time
+dimension. Quintile bins aggregate the 697 /C2 12 stock-year
+results according to market capitalization over the full sample.
+Therefore, each quintile contains the same set of stocks in
+each year of the sample. Means are calculated for each size-
+year bin separately and also by pooling all size-bins across
+years. These quintile-averages are reported in the“all” column
+of the tables and t-statistics for these are based on stock and
+year clustered standard errors (cf.Petersen, 2009).
+Before turning to the state space model estimates, some
+straightforward time series statistics are useful to examine for
+evidence of transitory price effects in the data. Panels A and B
+of Table 2 report first- and second-order autocorrelation of
+idiosyncratic midquote returns. The effects of contempora-
+neous and lagged adjustment to the common factor innova-
+tion are removed by regressing the midquote return on the
+common factor innovation up to four lags. The residuals serve
+as the idiosyncratic returns. Consistent with the individual
+stock autocorrelation results inCampbell, Lo, and MacKinlay
+(1997, p. 72)the average first-order autocorrelation is negative
+in 65 of the 70 size-year bins. The t-statistics calculated by
+quintile and across all quantiles are all significant at conven-
+tional levels. The negative first-order autocorrelation is con-
+sistent with pricing errors as the simple state space model
+described in Eqs. (1)a n d( 2) implies a negative first-order
+correlation in midquote returns. The table further shows that
+the second-order autocorrelation is significantly negative,
+which indicates that price pressures could carry over days
+instead of being only an intraday phenomenon. This also
+implies that the unconditional transitory deviations are
+potentially much larger relative to fundamental volatility than
+the simple first-order autocorrelations suggest.5
+(footnote continued )
+high-frequency traders as a group at Nasdaq, and by Hendershott, Jones,
+and Menkveld (2013), who use it to analyze the implementation shortfall
+on institutional trades.
+5 If the stationary term follows an AR(1) process, st ¼ φst /C0 1 þεt , the
+first-order autocorrelation in midquote returns is
+ρ1 ¼ /C0ð 1 /C0 φÞσ2
+ε
+ð1þφÞσ2
+w þ2σ2
+ε
+;
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 409
+
+===== PAGE 6 =====
+
+Panels C, D, and E of Table 2 report the standard
+deviation of intermediaries' inventory, its autocorrelation,
+and a cross-correlation with subsequent midquote returns
+as preliminary evidence on the conjectured relation
+between pricing errors and inventory. The standard devia-
+tion of intermediary end-of-day inventory is $1.131 million
+for the large-cap stocks and monotonically decreases to
+$165,000 for the small-cap stocks. It is relatively constant
+throughout time but tapers off in the last few years in the
+sample. The cross-sectional variation is undoubtedly due
+to a higher fundamental volatility and a smaller less active
+market for small-cap stocks. In this case, the intermedi-
+aries shy away from frequent and large nonzero inventory
+positions, as in the model in Section 3 .
+The inventory volatility is roughly twice the mean
+inventory across all quintiles. This is evidence of active
+intermediation across days as inventory management is not
+a strictly intraday phenomenon in which intermediaries go
+home flat. The table further shows a significant first-order
+autocorrelation in inventories, showing that these positions
+can last for multiple days. Again, considerable cross-
+sectional variation exists as the average autocorrelation
+for the large-cap stocks is 0.28, which monotonically
+increases to an average autocorrelation of 0.72 for small-
+cap stocks, corresponding to inventory half-lives of 0.54
+days for the largest stocks and 2.1 1 days for the smallest
+stocks. The intermediary seems to trade out of most of an
+end-of-day position in the course of the next day for the
+large-cap stocks, whereas it takes multiple days for the
+small-cap stocks. These inventory autocorrelations are
+lower than the puzzlingly large autocorrelations found in
+NYSE data from the late 1980s and early 1990s in Madhavan
+and Smidt (1993) and Hasbrouck and Sofianos (1993).
+Table 2
+Descriptive statistics midquote price and inventory dynamics.
+This table presents descriptive statistics on daily log midquote price change and intermediary inventory. It is meant to illustrate these series' dy namics
+and their interaction building up to the state space model of Table 3. A common factor has been removed from both series. For price changes, the series is
+regressed on market return and the residuals enter the analysis. For inventory, the series is regressed on a common factor that is defined as the cross-
+sectional mean each day of the standardized inventory series. The table reports average estimates for each stock each year by market-cap quintile and year.
+The t-statistic pertains to the “All” (column) parameter estimates and is based on a robust standard error obtained by stock and year clustering (see, e.g.,
+Petersen, 2009 ).
+Quintile 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 All t-Statistic
+Panel A: First order autocorrelation idiosyncratic log price change
+Q1 /C0 0.03 /C0 0.03 /C0 0.04 /C0 0.08 /C0 0.02 /C0 0.01 0.01 /C0 0.00 /C0 0.05 /C0 0.01 /C0 0.00 /C0 0.02 /C0 0.02 /C0 3.35
+Q2 /C0 0.02 /C0 0.02 /C0 0.04 /C0 0.06 /C0 0.01 /C0 0.02 /C0 0.01 0.00 /C0 0.05 /C0 0.02 /C0 0.02 /C0 0.03 /C0 0.02 /C0 4.32
+Q3 /C0 0.00 /C0 0.01 /C0 0.03 /C0 0.06 /C0 0.02 /C0 0.04 /C0 0.03 /C0 0.01 /C0 0.06 /C0 0.05 /C0 0.03 /C0 0.04 /C0 0.03 /C0 5.80
+Q4 /C0 0.02 /C0 0.02 /C0 0.03 /C0 0.06 /C0 0.01 /C0 0.03 /C0 0.05 /C0 0.03 /C0 0.08 /C0 0.06 /C0 0.08 /C0 0.05 /C0 0.04 /C0 6.19
+Q5 /C0 0.05 /C0 0.05 /C0 0.02 /C0 0.00 0.03 0.01 /C0 0.02 0.01 /C0 0.01 /C0 0.02 /C0 0.04 /C0 0.02 /C0 0.02 /C0 2.03
+All /C0 0.02 /C0 0.03 /C0 0.03 /C0 0.05 /C0 0.01 /C0 0.02 /C0 0.02 /C0 0.01 /C0 0.05 /C0 0.03 /C0 0.03 /C0 0.03 /C0 0.03 /C0 6.66
+Panel B: Second order autocorrelation idiosyncratic log price change
+Q1 /C0 0.03 /C0 0.05 /C0 0.04 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.06 /C0 0.05 /C0 0.01 /C0 0.01 /C0 0.02 /C0 0.01 /C0 0.03 /C0 6.35
+Q2 /C0 0.03 /C0 0.03 /C0 0.03 /C0 0.01 /C0 0.03 /C0 0.01 /C0 0.02 /C0 0.02 /C0 0.00 /C0 0.02 /C0 0.01 /C0 0.02 /C0 0.02 /C0 5.91
+Q3 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.01 /C0 0.00 /C0 0.01 /C0 0.02 0.01 /C0 0.00 /C0 0.02 /C0 0.01 /C0 0.01 /C0 4.71
+Q4 /C0 0.01 /C0 0.02 /C0 0.02 /C0 0.03 /C0 0.02 /C0 0.00 /C0 0.01 /C0 0.01 0.01 /C0 0.01 0.01 /C0 0.00 /C0 0.01 /C0 3.20
+Q5 /C0 0.01 /C0 0.01 /C0 0.01 /C0 0.01 /C0 0.00 0.00 /C0 0.01 0.00 /C0 0.00 /C0 0.01 0.00 0.00 /C0 0.00 /C0 2.43
+All /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.01 /C0 0.02 /C0 0.01 /C0 0.02 /C0 0.02 /C0 0.00 /C0 0.01 /C0 0.01 /C0 0.01 /C0 0.01 /C0 6.36
+Panel C: Standard deviation of idiosyncratic component specialist inventory I it (in thousands of dollars )
+Q1 691 968 813 964 1 126 1336 1344 1489 1472 1 122 1 1 18 1 128 1 131 1 1.06
+Q2 473 510 489 524 530 695 820 647 448 391 441 400 531 12.26
+Q3 374 429 383 372 430 452 668 437 294 242 266 271 385 10.65
+Q4 226 254 255 261 291 315 320 333 229 163 145 147 245 1 1.95
+Q5 167 159 168 235 205 224 21 1 187 130 109 95 96 166 1 1.31
+All 386 464 421 471 516 605 672 619 514 406 414 408 491 14.68
+Panel D: First order autocorrelation idiosyncratic component specialist inventory I
+it
+Q1 0.28 0.27 0.26 0.22 0.25 0.27 0.28 0.29 0.28 0.34 0.37 0.25 0.28 21.24
+Q2 0.47 0.46 0.44 0.38 0.35 0.34 0.36 0.32 0.25 0.28 0.33 0.25 0.35 15.97
+Q3 0.59 0.59 0.56 0.51 0.49 0.45 0.41 0.41 0.30 0.31 0.34 0.24 0.43 12.68
+Q4 0.74 0.73 0.71 0.66 0.63 0.63 0.59 0.57 0.40 0.38 0.36 0.29 0.56 12.56
+Q5 0.82 0.80 0.80 0.77 0.78 0.79 0.77 0.76 0.66 0.61 0.57 0.51 0.72 23.89
+All 0.58 0.57 0.56 0.51 0.50 0.50 0.48 0.47 0.38 0.38 0.39 0.31 0.47 19.06
+Panel E: Regression coef of log price change on lagged inventory , both idiosyncratic (in basis points per thousand of dollars )
+Q1 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.00 0.00 0.00 0.01 8.71
+Q2 0.01 0.01 0.01 0.02 0.01 0.02 0.02 0.02 0.02 0.02 0.01 0.01 0.02 10.05
+Q3 0.02 0.02 0.02 0.02 0.02 0.03 0.04 0.01 0.05 0.03 0.02 0.03 0.03 7.49
+Q4 0.03 0.02 0.04 0.05 0.04 0.06 0.07 0.04 0.1 1 0.06 0.07 0.06 0.05 7.43
+Q5 0.08 0.07 0.03 0.03 0.07 0.06 0.08 0.08 0.15 0.09 0.10 0.13 0.08 6.63
+All 0.03 0.03 0.02 0.02 0.03 0.03 0.05 0.03 0.07 0.04 0.04 0.05 0.04 9.30
+(footnote continued )
+where φ is the autoregressive coefficient in the st process. The more
+persistent the price pressure is (the higher φ is), the less negative the
+return autocorrelation becomes.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423410
+
+===== PAGE 7 =====
+
+Panel E reveals that today's inventory position corre-
+lates significantly with tomorrow's midquote return. The
+positive sign is consistent with models of intermediary
+risk management. The intermediary benefits from negative
+price pressure on a long position (relative to the long-term
+average) as it elicits net public buying (more investor
+buying than investor selling). The result is that her
+inventory is expected to become smaller and this, in turn,
+results in less negative price pressure. This channel creates
+a positive correlation between today's position and tomor-
+row's midquote return.
+2.4. State space model estimates
+Before presenting the results of the general state space
+model defined by Eqs. (3)–(5), we graphically illustrate the
+idea of the model. The equations relate the permanent
+price change Δmt and the pricing error st to the inter-
+mediary's inventory series. Initially, a reduced version of
+the model does not utilize inventory data:
+pit ¼ mit þ sit ; ð6Þ
+mit ¼ mi;t /C0 1 þβif t þ wit ; ð7Þ
+and
+sit ¼ φisi;t /C0 1 þ β0
+i f t þ ⋯þ β3
+i f t /C0 3 þ εit ; ð8Þ
+where the AR(1) process for sit allows pricing errors to be
+persistent as suggested by the negative second-order auto
+correlations in returns (Panel B of Table 2 ) and the
+inventory persistence (Panel D of Table 2).
+Fig. 1 illustrates the model estimates for 20 trading days
+in a representative stock (Rex Stores Corporation, ticker
+RSC, CRSP PERMNO 68830) starting January 14, 2002.
+It exploits one attractive feature of the state space
+approach, which is that conditional on the model's para-
+meter estimates the Kalman smoother generates estimates
+of the unobserved efficient price and the pricing error
+processes conditional on all observations. In other words,
+it uses past prices, the current price, and future prices to
+estimate the efficient price mit and the pricing error sit at
+any time t in the sample.
+The figure leads to a couple of observations. Panel A
+plots the observed midquote price and the efficient price
+estimate. The graph illustrates that price deviations from
+fundamental value can be economically large (hundreds of
+Panel A: The observed price series (midquote) and the (unobserved)
+efficient price estimate
+Panel B: Pricing error and the idiosyncratic inventory of the specialist
+Panel C: Efficient price innovation and the suprise idiosyncratic inventory
+change of the specialist
+Fig. 1. Price change decomposition conditional on the state space model
+estimates, not using inventory data. These graphs depict the observed
+end-of-day log (midquote) price and the unobserved efficient price
+estimate for a representative stock (Rex Stores Corporation, ticker RSC,
+Center for Research in Securities Prices PERMNO 68830). The efficient
+price estimate is calculated with the Kalman smoother (and thus takes all
+observations into account) after estimating the following state space
+model:
+ðobserved midquote price Þ p
+it ¼ mit þsit ;
+ðunobserved efficient price Þ mit ¼ mi;t /C0 1 þδi;t þβi f t þwit ;
+and
+ðunobserved transitory price deviation Þ
+sit ¼ φi si;t /C0 1 þβ0
+i f t þ⋯ þβ3
+i f t /C0 3 þεit ;
+where i indexes stocks, t indexes days, mit is the end-of-day unobserved
+efficient price, sit is the pricing error, δt is the required return obtained as
+the (time-varying) risk-free rate plus beta times a 6% risk premium, f t is
+the demeaned market return, pit is the end-of-day observed midquote, βj
+i
+captures potential lagged adjustment to market returns, and wit and εit
+are mutually independent and identically distributed error terms. The
+model is estimated using maximum likelihood, in which the error terms
+w
+it and εit are assumed to be normally distributed. Panel A presents these
+series recentered around the first day's estimate of the efficient price.
+Panel B shows the pricing error, the difference between the observed
+price and the efficient price, against the idiosyncratic inventory position
+of the specialist. Panel C depicts the efficient price innovation against the
+contemporaneous (surprise) idiosyncratic inventory innovation.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 411
+
+===== PAGE 8 =====
+
+Table 3
+State space model estimates.
+This table presents estimates of the following state space model for a latent efficient price and an observed end-of-day midquote price:
+ðobserved midquote price Þ pit ¼ mit þsit ;
+ðunobserved efficient price Þ mit ¼ mi;t /C0 1 þδi;t þβi f t þwit ; wit ¼ κi ^I it þuit ;
+and ðunobserved transitory price deviation Þ sit ¼ αi Iit þβ0
+i f t þ⋯ þβ3
+i f t /C0 3 þεit ;
+where i indexes stocks,t indexes days,mit is the end-of-day unobserved efficient price,sit is the pricing error,δt is the required return obtained as the (time-varying) risk-free rate plus beta times a 6% risk premium,ft is the
+demeaned market return,pit is the end-of-day observed midquote,Iit is the idiosyncratic component of the specialist end-of-day inventory position,^I it is the (surprise) innovation in this position as obtained from an AR(9)
+model, βi
+j
+captures potential lagged adjustment to market returns, andwit and εit are mutually independent and identically distributed error terms. The model is estimated using maximum likelihood, in which the error
+terms wit and εit are assumed to be normally distributed. The table reports average estimates for each stock each year by market-cap quintile and year. Thet-statistic pertains to the“All” (column) parameter estimates and
+is based on a robust standard error obtained by stock and year clustering (see, e.g., Petersen, 2009). Some parameter estimates are omitted from the main text but available in the online appendix.
+Quintile 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 All t-Statistic
+Panel A : αi conditional price pressure (in basis points per thousand of dollars )
+Q1 /C0 0.03 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.02 /C0 0.01 /C0 0.01 /C0 0.01 /C0 0.02 /C0 1 1.03
+Q2 /C0 0.06 /C0 0.05 /C0 0.05 /C0 0.04 /C0 0.03 /C0 0.04 /C0 0.04 /C0 0.05 /C0 0.04 /C0 0.03 /C0 0.03 /C0 0.03 /C0 0.04 /C0 8.92
+Q3 /C0 0.12 /C0 0.10 /C0 0.09 /C0 0.07 /C0 0.09 /C0 0.1 1 /C0 0.10 /C0 0.06 /C0 0.09 /C0 0.06 /C0 0.06 /C0 0.06 /C0 0.08 /C0 10.78
+Q4 /C0 0.33 /C0 0.26 /C0 0.29 /C0 0.27 /C0 0.26 /C0 0.29 /C0 0.25 /C0 0.23 /C0 0.26 /C0 0.14 /C0 0.18 /C0 0.15 /C0 0.24 /C0 10.49
+Q5 /C0 1.05 /C0 1.04 /C0 0.76 /C0 0.76 /C0 1.02 /C0 0.98 /C0 1.06 /C0 1.24 /C0 1.19 /C0 0.86 /C0 0.93 /C0 0.87 /C0 0.98 /C0 9.95
+All /C0 0.32 /C0 0.29 /C0 0.24 /C0 0.23 /C0 0.28 /C0 0.29 /C0 0.30 /C0 0.32 /C0 0.32 /C0 0.22 /C0 0.24 /C0 0.23 /C0 0.27 /C0 1 1.01
+Panel B : jαi jσðIÞi explained transitory volatility , i.e., unconditional price pressure (in basis points )
+Q1 14 13 13 16 19 20 25 30 22 15 14 8 17
+Q2 26 24 21 19 20 30 35 31 24 14 15 13 23
+Q3 39 40 35 31 39 45 44 35 23 16 19 17 32
+Q4 65 64 68 57 63 75 75 65 40 21 23 20 53
+Q5 1 12 108 1 13 107 151 170 179 154 107 92 70 54 1 18
+All 51 50 50 46 58 68 72 63 43 31 28 22 49
+Panel C : κ
+i informativeness order imbalance innovation ^I (in basis points per thousands of dollars )
+Q1 /C0 0.08 /C0 0.07 /C0 0.07 /C0 0.07 /C0 0.08 /C0 0.08 /C0 0.08 /C0 0.07 /C0 0.07 /C0 0.06 /C0 0.05 /C0 0.05 /C0 0.07 /C0 18.01
+Q2 /C0 0.16 /C0 0.13 /C0 0.13 /C0 0.14 /C0 0.17 /C0 0.16 /C0 0.17 /C0 0.14 /C0 0.16 /C0 0.15 /C0 0.13 /C0 0.13 /C0 0.15 /C0 20.01
+Q3 /C0 0.22 /C0 0.18 /C0 0.17 /C0 0.21 /C0 0.25 /C0 0.24 /C0 0.24 /C0 0.24 /C0 0.25 /C0 0.25 /C0 0.25 /C0 0.22 /C0 0.23 /C0 24.22
+Q4 /C0 0.34 /C0 0.27 /C0 0.29 /C0 0.36 /C0 0.43 /C0 0.40 /C0 0.45 /C0 0.42 /C0 0.52 /C0 0.53 /C0 0.49 /C0 0.48 /C0 0.42 /C0 13.81
+Q5 /C0 0.58 /C0 0.42 /C0 0.61 /C0 0.61 /C0 0.69 /C0 0.58 /C0 0.76 /C0 0.87 /C0 1.20 /C0 1.37 /C0 1.21 /C0 1.33 /C0 0.85 /C0 8.63
+All /C0 0.27 /C0 0.21 /C0 0.26 /C0 0.28 /C0 0.32 /C0 0.29 /C0 0.34 /C0 0.35 /C0 0.44 /C0 0.47 /C0 0.42 /C0 0.44 /C0 0.34 /C0 12.82
+Panel D : jκi jσð^I Þi explained permanent volatility (in basis points )
+Q1 38 36 38 44 57 69 75 55 55 36 29 26 47
+Q2 41 38 40 45 64 75 83 61 56 43 35 34 51
+Q3 43 40 41 54 70 74 79 74 58 47 40 34 54
+Q4 47 39 42 52 70 70 81 73 65 57 46 41 57
+Q5 43 38 49 55 67 65 77 90 79 74 62 59 63
+All 42 38 42 50 66 71 79 70 63 52 42 39 54
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423412
+
+===== PAGE 9 =====
+
+Panel E : σðwÞi permanent volatility (in basis points )
+Q1 124 124 129 135 176 202 256 194 188 127 107 103 156
+Q2 141 135 138 143 185 217 269 213 206 150 125 123 170
+Q3 149 141 145 156 201 216 257 212 204 151 136 133 175
+Q4 161 151 153 156 198 215 242 214 199 161 143 148 178
+Q5 174 168 179 179 225 235 263 247 243 200 175 186 206
+All 150 144 149 154 197 217 257 216 208 158 137 139 177
+Panel F :
+α2
+i σ2 ðIÞi
+σ2 ðwÞi þβ2
+i σ2 ð^f Þ
+ratio of price pressure variance and permanent variance
+Q1 0.02 0.02 0.02 0.01 0.01 0.02 0.01 0.03 0.02 0.02 0.03 0.01 0.02
+Q2 0.08 0.09 0.04 0.03 0.02 0.03 0.03 0.03 0.02 0.01 0.02 0.01 0.03
+Q3 0.29 0.25 0.16 0.08 0.1 1 0.16 0.05 0.08 0.02 0.01 0.03 0.07 0.1 1
+Q4 0.31 0.47 0.48 0.26 0.22 0.37 0.24 0.18 0.05 0.03 0.03 0.05 0.22
+Q5 1.09 1.35 1.13 1.1 1 1.23 2.40 1.82 1.15 0.79 2.08 0.59 0.59 1.28
+All 0.36 0.43 0.37 0.30 0.32 0.59 0.43 0.29 0.18 0.43 0.14 0.15 0.33
+Panel G :
+α2
+i σ2ðIÞi
+σ2 ðwÞi
+ratio of price pressure variance and permanent idiosyncratic variance
+Q1 0.03 0.03 0.02 0.02 0.02 0.02 0.02 0.04 0.03 0.04 0.04 0.01 0.03
+Q2 0.10 0.10 0.05 0.04 0.02 0.03 0.04 0.04 0.03 0.02 0.03 0.02 0.04
+Q3 0.35 0.28 0.20 0.1 1 0.17 0.18 0.05 0.10 0.04 0.02 0.05 0.1 1 0.14
+Q4 0.37 0.49 0.54 0.31 0.30 0.40 0.25 0.23 0.08 0.04 0.05 0.05 0.26
+Q5 1.25 1.46 1.25 1.28 1.55 2.49 2.04 1.43 1.00 2.32 0.72 0.65 1.45
+All 0.42 0.47 0.41 0.35 0.41 0.62 0.48 0.37 0.24 0.48 0.18 0.17 0.38
+Panel H : σðεÞ
+i error term transitory volatility (in basis points )
+Q1 20 17 23 30 24 20 26 19 32 18 12 15 21
+Q2 20 20 22 28 24 22 34 18 39 23 17 19 24
+Q3 19 18 23 24 28 29 35 26 41 26 20 22 26
+Q4 29 26 24 27 18 23 37 29 42 30 30 25 28
+Q5 43 42 34 25 22 29 43 35 38 28 29 25 33
+All 26 24 25 27 23 24 35 25 39 25 21 21 26
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 413
+
+===== PAGE 10 =====
+
+basis points) and persistent as they appear to last for
+multiple days. Panel B plots the differential between the
+observed price and the efficient price estimate, i.e., the
+price pressure, along with the intermediary's inventory
+deviation from its long-term mean. The clear negative
+correlation between the two series is consistent with the
+intermediary using price pressure to mean-revert her
+inventory toward its desired level. Panel C plots the
+innovation in efficient price Δmt against the contempora-
+neous surprise idiosyncratic inventory change, which is
+obtained as the residual of an AR(9) model. It indicates
+that unexpected order flow is informative about the
+efficient price. A surprise positive inventory change indi-
+cates unexpected selling by liquidity demanders, which
+changes the efficient price downward as the selling could
+have been driven by information. These observations turn
+out to be generic features of the data in the general state
+space model with inventory data.
+Table 3 r e p o r t st h ee s t i m a t e so ft h eg e n e r a ls t a t es p a c e
+model defined by Eqs. (3)–(5). In Panel A, the key parameter
+αi that measures the marginal price pressure has the con-
+jectured negative sign and is sta tistically significant. Prices
+are temporarily low when the intermediary is on a long
+position and temporarily high when she is on a short
+position relative to her long-term mean inventory. Marginal
+price pressure exhibits substan tial cross-sectional variation
+as αi is /C0 0.02 for the large-cap stocks and /C0 0.98 for the
+small-cap stocks. These numbers are economically significant
+even in the large stocks as a $1.131 million (1 standard
+deviation) position change in intermediary inventory creates
+a price pressure of 1131 /C2 0:02 ¼ 17 basis points (cf. effec-
+tive half-spread of 8 basis points, see Table 1).
+Panel B of Table 3 further shows that the average price
+pressure varies less in the cross-section than the marginal
+price pressure. The average pressure, which is measured as
+the marginal pressure times the standard deviation of
+inventory, is 17 basis points for the large-cap stocks and
+1 18 basis points for the low-cap stocks. The average
+pressure is roughly seven times higher for the small-cap
+stocks relative to the large-cap stocks whereas the mar-
+ginal pressure is 50 times higher with the difference
+attributable to the intermediary taking smaller positions
+in the smaller stocks. Panel F also reports the size of these
+average price pressures relative to permanent variance.
+The ratio ranges from 0.02 for the large-cap stocks to 1.28
+for small-cap stocks. The average ratio is 0.33.
+Transitory volatility is often measured using variance ratios
+of stock returns to capture deviations from a random walk.
+The 1-to-n variance ratio divides then-period return variance
+by n times the one-period return variance.Campbell, Lo, and
+MacKinlay (1997, Table 2.7)report a 1-to-16 variance ratio for
+weekly returns for US equities of 0.85 for 1962 –1994. The
+comparable ratio from the state space model's average price
+pressures relative to permanent variance is 0:88 ¼ 1=½1þð 2/C2
+0:33Þ=5/C138. Campbell, Lo, and MacKinlay (1997)find little cross-
+sectional difference in the variance ratios, consistent with the
+return autocorrelations inTable 2. However, Panel F ofTable 3
+shows significant cross-sectional differences. This highlights
+the importance of data on intermediaries' inventory positions
+in identifying and measuring transitory volatility when inven-
+tories are persistent.
+Consistent with earlier empirical work (for example,
+Hasbrouck, 1991b), unexpected inventory changes, which
+equal unexpected investor buying or selling, explain a
+significant part of efficient price innovations. The
+κi estimates
+in Panel C are /C0 0.34 on average and statistically significant. In
+Panel D the average explained permanent volatility (κi times
+the standard deviation of unexpected inventory changes) is 54
+basis points. This compares with an average total permanent
+volatility of 1 77 basis points in Panel E.
+3. A simple dynamic inventory control model to interpret
+price pressure dynamics
+This section models the intermediary's dynamic inventory
+control as a stochastic optimal linear regulator (SOLR) pro-
+blem (see Ljungqvist and Sargent, 2004, p. 1 12). A representa-
+tive intermediary faces stochastically arriving investors with
+elastic liquidity demands. The solution characterizes a statio-
+nary distribution and the transition probabilities for price
+pressures, which, along with the empirical results inSection 2,
+enables identification of the intermediary's relative risk aver-
+sion and liquidity demanders' private value distribution. It also
+allows for an analysis of the costs of trading and social welfare.
+Given that the model assumes that investors arrive asynchro-
+nously, first-best is not achievable. So, the social welfare ana-
+lysis focuses on deviations from constrained Pareto efficiency.
+For expositional ease, we often abbreviate constrained Pareto
+efficiency to Pareto efficiency in the remainder of the paper.
+The model is inspired by Ho and Stoll (1981),w h of r a m e
+dynamic inventory control in a standard macro-model of a
+constant relative risk aversion (CRRA) utility intermediary
+who controls the public buy rate and sell rate, which are
+linear in her ask and bid price quotes. To fit the SOLR approach
+we assume that liquidity demand, which determines the
+intermediary's buy and sell volume, is exogenous and nor-
+mally distributed with a mean that is linear in the bid and ask
+price, respectively; the intermediary maximizes quadratic
+utility over nonstorable consumption6; a security position
+exposes the intermediary to fundamental value risk, which
+is modeled as a normally distributed stochastic dividend to
+avoid a notational burden (cf.Ho and Stoll, 1981, p. 52).
+These assumptions have several implications. First, the
+nonstorable consumption removes the ability of the inter-
+mediary to precautionarily save to smooth consumption.
+Second, quadratic utility leads to risk aversion that increases
+with wealth. Third, the normality assumption for public buy
+volume and sell volume implies that they could become
+negative. To show that the model's predicted price pressure
+dynamics are robust the supplementary material numeri-
+cally solves an infinite horizon Ho and Stoll model.
+3.1. The environment
+Time is discrete and infinite. One durable asset produces a
+perishable and stochastic (numéraire) consumption good.
+6 Cochrane (2001, p. 155) also considers quadratic utility a natural
+starting point when he introduces dynamic programming. Madhavan and
+Smidt (1993) model inventory as having quadratic holding costs. Lagos,
+Rocheteau, and Weill (201 1) model liquidity provision in which inter-
+mediaries maximize over nonstorable consumption.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423414
+
+===== PAGE 11 =====
+
+An infinitely lived intermediary supplies liquidity by standing
+ready to buy or sell the asset to outside investors who
+demand liquidity. At the start of each period, a single
+intermediary quotes an ask price at which she commits to
+sell and a bid price at which she commits to buy.
+3.1.1. Reduced form liquidity demand
+Liquidity demand is modeled to be linear in price con-
+sistent with Ho and Stoll (1981). Its shape is characterized by
+two primitive parameters:λ, which is the aggregate amount
+of all investors' private values to trade per unit of time, andθ,
+which captures the dispersion of private values across
+investors. Investor buying and selling are determined by
+the intermediary's bid price, s /C0 δ, and ask price, s þδ,
+which are characterized by the bid –ask spread of 2 δ and
+price pressure of s, analogous to st ¼ pt /C0 mt in the state
+space model. The analogy follows from the Ho and Stoll
+stochastic dividend trick, which makes mt equal to zero in
+the model. Specifically, investor buying and selling
+demand for liquidity are normally distributed variables
+linear in the bid –ask quotes:
+qs s; δ
+/C0/C1
+¼ λθ 1/C0 θ s þ δ
+/C0/C1/C0/C1
+þ εs; εs /C24 N0 ; 1
+2 σ2
+ε
+/C18/C19
+ð9Þ
+and
+qb s; δ
+/C0/C1
+¼ λθ 1þ θ s /C0 δ
+/C0/C1/C0/C1
+þ εb; εb /C24 N0 ; 1
+2 σ2
+ε
+/C18/C19
+; ð10Þ
+where εs and εb are independent of each other and
+identically and independently distributed (IID) each per-
+iod. The environment is best illustrated by Fig. 2 . Panel A
+illustrates liquidity demand distribution over private
+values, and Panel B depicts how such demand translates
+into an expected investor buy rate, which equals the
+intermediary sell rate, that is linear in the ask price.
+3.1.2. The intermediary 's liquidity supply
+The intermediary is risk-averse and, therefore, dislikes the
+risky dividend associated with a nonzero inventory position.
+She solves the following infinite-horizon dynamic program:
+v
+i0 ¼ max
+fst ðit Þ;δt ðit Þg
+1
+t ¼ 0
+∑
+1
+t ¼ 0
+Ei0 βt ct /C0 cðÞ /C0 1
+2 ~γðct /C0 cÞ2
+/C18/C19/C18/C19
+; ð11Þ
+where it represents the history of her inventory position
+through time t and E i0 ð/C1Þis the expectation operator
+conditional on starting off with inventory position i0.T h e
+quadratic utility parametrization is such that the Arrow-Pratt
+coefficient of (absolute) risk aversion (ARA) is~γ at c,w h i c hi s
+fixed ex ante at the competitive intermediary's average
+consumption. The intermediary's actual consumption in
+period t equals net trading revenue plus the stochastic
+dividend:
+ct ¼ð st þ δt Þqsðst ; δt Þ/C0ð st /C0 δt Þqbðst ; δt Þþ it Δmt þ 1;
+¼ 2λθðδt /C0 θðs2
+t þδ2
+t ÞÞ þsðεst /C0 εbtÞþ δðεst þ εbtÞ
+þit Δmt þ 1; Δmt þ 1 /C24 Nð0; σ2Þ; ð12Þ
+where Δmt þ 1 is the stochastic dividend at the start of period
+tþ1( w h i c hr u n sf r o mt to tþ1). The conditional consump-
+tion mean and variance, therefore, are equal to
+Et ðct Þ¼ 2λθðδt /C0 θðs2
+t þ δ2
+t ÞÞ ð 13Þ
+and
+vart ðct Þ¼ σ2
+ε ðs2
+t þ δ2
+t Þþ σ2i2
+t : ð14Þ
+The law of motion for inventory follows from the net trade in
+the asset:
+it þ 1 ¼ it /C0 qsðst ; δt Þþ qbðst ; δt Þ¼ it þ 2λθ2st /C0 εst þ εbt : ð15Þ
+A final step simplifies the problem in two ways. First, the
+expected utility expression is linearized in mean and var-
+iance by a first-order Taylor expansion around the condi-
+tional mean. This removes the quadratic difference between
+the conditional mean andc (the unconditional mean), which
+would make the objective function fourth-order and not
+possible to solve with standard techniques. Second, the
+impact of σ2
+ε in the variance of consumption, Eq. (14),i s
+omitted to focus on how prices reflect the dynamic trade-off
+between the intermediary's expected cost of a pressured
+price and its benefit of mean-reverting risky inventory.
+Omission of the consumption variance effect is innocuous
+if the utility cost of liquidity demand uncertainty (as cap-
+tured by
+1
+2 ~γσ 2
+ε ) is small relative to the expected revenue loss
+due to price pressure (as captured by 2 λθ2). The final
+specification of the dynamic program is, therefore,
+vi0 ¼ max
+fst ðit Þ;δt ðit Þg
+1
+t ¼ 0
+∑
+1
+t ¼ 0
+βt Ei0 2λθδt /C0 2λθ2ðs2
+t þ δ2
+t Þ/C0 1
+2 ~γσ 2i2
+t
+/C18/C19
+ð16Þ
+Fig. 2. Illustration of liquidity demand. Panel A: Mean demand for each level of private value. Panel B: Mean public buy volume as function of ask price.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 415
+
+===== PAGE 12 =====
+
+and
+it þ 1 ¼ it þ2λθ2st þ εt ; εt /C24 Nð0; σ2
+ε Þ: ð17Þ
+3.2. The recursive form, the closed-form solution, and its
+characteristics
+The IID character of net liquidity demand uncertainty
+(εt) and stochastic dividend ( Δmt þ 1) allows for a recursive
+formulation of the dynamic program. The intermediary
+solves the following Bellman equation:
+vi ¼ max
+fs;δg
+Ei0 2λθδ /C0 2λθ2ðs2 þδ2Þ/C0 1
+2 ~γσ 2i2 þ βvi0
+/C18/C19
+ð18Þ
+and
+i0 ¼ i þ 2λθ2s þε: ð19Þ
+From this point onward, one can apply well-known SOLR
+results (see Ljungqvist and Sargent, 2004, p. 1 12 ) to find
+the following solution:
+vi ¼ λ
+2ð1/C0 βÞ /C0 P i2
+β þ 1
+1/C0 βσ2
+ε
+ !
+; ð20Þ
+sn ¼ αi; α≔ /C0 1
+1
+P þ Q
+; ð21Þ
+and
+δ
+n
+¼ 1
+2θ; ð22Þ
+where ðsn ; δ
+n
+Þ denote the optimal price controls and
+P≔
+/C0ð 1/C0 βÞþ βRQ þ
+ﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃ
+ð1 /C0 βÞ2 þ 2βð1 þβÞQR þ β2Q 2R2
+q
+2Q ;
+Q ≔2λθ2; R≔1
+2 ~γσ 2: ð23Þ
+The solution has various intuitive features. For example,
+the marginal price pressure α becomes larger in magni-
+tude when either the intermediary is more risk-averse
+(higher ~γ) or when there is more (dividend) volatility
+(higher σ). The bid –ask spread (2 δ) is wider when the
+private value distribution is more dispersed (lower θ). And,
+the state value vi is highest when the intermediary is at a
+zero position ( i¼ 0). It declines monotonically the further
+away her position is from zero.
+3.2.1. Time series properties of price pressure
+The solution to the intermediary's control problem implies
+linear dynamics for price pressure (s) and inventory, consis-
+tent with the prior econometric model. More specifically, price
+pressure is linear in inventory [Eq. (21)] and inventory is
+characterized by a first-order autoregressive process:
+it ¼ 1/C0 1
+1 þPQ
+/C18/C19
+it /C0 1 þεt ¼/C0 Q αit /C0 1 þ εt : ð24Þ
+3.2.2. Orthogonality of the spread and optimal inventory
+control
+The intermediary's pricing strategy decomposes into
+two orthogonal parts. First, she sets a spread that exploits
+her monopolistic pricing power vis-à-vis the investors.
+Second, she uses price pressure (the midquote price) to
+optimally mean-revert her inventory. Mathematically, the
+control strategy orthogonalizes as the spread does not enter
+the speed of mean-reversion and the spread is, therefore,
+constant across inventory states. 7 This result critically
+depends on the assumption that public buy volume and sell
+volume are linear in prices in Eqs. (9)a n d( 10).
+3.3. Identification of the model 's primitive parameters
+The remainder of Section 3 uses the empirical results in
+Section 2 to identify the model's primitive parameters,
+calculates a model-implied competitive spread, and ana-
+lyzes Pareto efficiency.
+The unobserved primitive parameters to be identified
+are λ (arrival rate of investors), θ (private value distribu-
+tion), and ~γ (intermediary risk aversion). The primitive
+parameters that are observed are σ (the fundamental price
+risk) and β (the discount factor). The former is set equal to
+the state space estimate of σ(w), which captures the size of
+efficient price innovations. β is assumed to be equal to the
+reciprocal of the gross risk-free rate obtained from Ken-
+neth French's website. 8
+The identification strategy for the hidden parameters
+follows naturally from inspection of the model's solution.
+The empirical estimates of marginal pressure ( ^α) along
+with the rate of inventory mean-reversion [ ^ρI ≔ρðIt ; It /C0 1Þ]
+enables solving for Q and R, which in turn identify λθ2 and
+~γ, respectively. Eqs. (22) and ( 24) yield
+^α ¼ /C0 P
+1þPQ ð25Þ
+and
+^ρI ¼ PQ
+1þ PQ; ð26Þ
+where P is a function of Q and R [see Eq. (23)]. To separate
+the factors λ and θ from the value of Q, estimates of the
+intermediated volume ( specialist_particip /C2 daily_volume)
+and the effective bid –ask spread ( espread) are needed.
+An additional moment that is exploited is realized trading
+activity by the intermediary:
+intermediated_volume ¼ 2
+θ /C0 1
+θ
+/C18/C19
+λθ2 ¼ λθ: ð27Þ
+This follows from all investor who arrive trading except for
+those whose private value falls in the region of the bid –ask
+spread, which is 1 =θ wide. Finally, the model's coefficient
+for absolute risk aversion ( ~γ) is converted to an estimate of
+the more standard relative risk aversion by multiplying it
+7 Zabel (1981) and Mildenstein and Schleef (1983) theoretically find
+that the spread is independent of inventory. Ho and Stoll (1981) finds
+that inventory has a very small effect on spread. Comerton-Forde,
+Hendershott, Jones, Seasholes, and Moulton (2010) empirically find that
+inventory positions affect the spread. A 1 standard deviation shock to
+market-wide inventories increases bid –ask spreads by roughly 0.20 basis
+points, which is substantially smaller than the 49 basis point average
+transitory volatility due to price pressure in Table 3.
+8 The web address is http://mba.tuck.dartmouth.edu/pages/faculty/
+ken.french/.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423416
+
+===== PAGE 13 =====
+
+by a proxy for intermediary wealth consistent with the
+model. Appendix B provides the expressions for the
+calibrated parameters.
+Table 4 summarizes the results. Panel A repeats the
+empirical results used for identification of the model's
+primitive parameters. Panels B and C of Table 4 report
+median estimates for the overall sample and by quintile.
+Estimates by quintile and year are available in the online
+appendix. Panels B and C of Table 4 report interquartile
+ranges ( Q 0:75 /C0 Q 0:25) as the model-implied variables are
+nonlinear functions of the empirical estimates (with esti-
+mates in denominators), which creates numerical issues.
+Medians and interquartile ranges are robust to these issues.
+The private value rate λ is highest for the largest-cap
+stocks: $58,910 per stock per day. It decreases monotonically
+to $1,450 for the smallest-cap stocks. Private value dispersion
+1=θ is 174 basis points for the largest-cap stocks, is 133 for
+the second largest-cap stocks, and increases monotonically
+to 307 basis points for the smallest-cap stocks. These private
+value dispersions are somewhat smaller than the 21%
+standard deviation that Hollifield, Miller, Sandås, and Slive
+(2006, p. 2783) report based on structural estimation of a
+limit order book model. The 21% is the unconditional
+standard deviation implied by a mixture of two normal
+distributions, with approximately 85% weight on a distribu-
+tion with a standard deviation of approximately 5% and a
+15% weight on a distribution with a standard deviation of
+approximately 54%.
+The median relative risk aversion is 3.05 for the largest-
+cap stocks and generally increases to 4.46 for the smallest-
+cap stocks. The differences across quintiles are small
+relative to the interquartile ranges within each quintile.
+The overall median is 3.96. It is somewhat low relative to
+the relative risk aversion estimated from asset, insurance,
+and labor markets (e.g., Mehra and Prescott, 1985 ; Barsky,
+Juster, Kimball, and Shapiro, 1997 ; Chetty, 2006 ; Cohen
+and Einav, 2007 ). The lower risk aversion could arise from
+risk tolerant capital migrating to the intermediation sector
+or be a sign of an agency conflict between firm and the
+individual traders it employs to act as intermediaries. If the
+traders have limited liability, then they could be willing to
+take more risky bets than the firm's owners would prefer.
+The structural model also could underestimate true risk
+aversion as the model ignores increased net demand
+uncertainty associated with price pressure (see related
+discussion in Section 3.1). Finally, the risk aversion might
+Table 4
+Model's primitive parameters and an analysis of the spread.
+This table presents an economic analysis of the cost to liquidity demanders of a competitive intermediary who uses price pressure to control her
+inventory position. The model's primitive parameters consist of the liquidity demander's total private value rate λ and its dispersion 1 =θ, uncertainty about
+net liquidity demand σðεÞ, a discount factor β, and the intermediary's coefficient of relative risk aversion ( γ), which is the model's absolute risk aversion ( ~γ )
+divided by a competitive intermediary's average consumption. The conditional price pressure estimates along with other trading variables measure d in the
+empirical part of the paper (Panel A contains sample averages taken from Tables 1 and 3) allows for identification of the primitive parameters (Panel B),
+which in turn allow for a decomposition of the net cost to liquidity demanders (investors) of liquidity supply by a competitive intermediary (Panel C) .
+It expresses this net cost as a fraction of transacted volume (spread) and decomposes it into a spread received by the intermediary and a subsidy enjoye db y
+the liquidity demanders at times when prices are pressured. It also calculates the Pareto efficient cost if the intermediary were to internalize the s ubsidy
+enjoyed by the liquidity demander. Panel B and C report medians and interquartile ranges ( Q 0:75 /C0 Q 0:25 , where Qi is quantile i) in parentheses.
+The complete set of results (e.g., disaggregated by year) is added to the online appendix.
+Q1 Q2 Q3 Q4 Q5 All
+Panel A: Measured variables that identify model 's primitive parameters (cf. Tables 1 and 3)
+Conditional price pressure αi (in basis points per thousand of dollars) /C0 0.02 /C0 0.04 /C0 0.09 /C0 0.25 /C0 0.99 /C0 0.28
+Standard deviation daily inventory σ(I) (in thousands of dollars) 1 131 530 385 245 166 491
+First order autocorrelation inventory 0.28 0.35 0.43 0.56 0.72 0.47
+Price risk inventory σðwÞ
+i (in basis points) 153 170 176 179 207 177
+Daily dollar volume a (in millions of dollars) 10.86 2.98 1.43 0.60 0.21 3.22
+Effective half spread (in basis points) 8.41 12.46 16.50 24.60 46.12 21.62
+Daily discount factor
+b 0.9998 0.9998 0.9998 0.9998 0.9998 0.9998
+Panel B: Identification of model 's primitive parameters
+Daily private value rate λ (in thousands of dollars) 58 :91
+ð236:50Þ
+14:43
+ð36:51Þ
+6:29
+ð12:80Þ
+2:83
+ð4:76Þ
+1:45
+ð2:28Þ
+5:90
+ð21:91Þ
+Dispersion private value 1
+θ (in basis points) 174
+ð297Þ
+133
+ð197Þ
+146
+ð164Þ
+182
+ð197Þ
+307
+ð362Þ
+185
+ð256Þ
+Intermediary's relative risk aversion γ 3:05
+ð7:90Þ
+3:79
+ð8:91Þ
+4:02
+ð9:30Þ
+4:49
+ð12:61ð
+4:46
+ð9:52Þ
+3:96
+ð9:48Þ
+Panel C: Decomposition of the spread paid by liquidity demander
+(1) Model-implied competitive half spread (in basis points) 7 :63
+ð17:20Þ
+14:32
+ð30:03Þ
+21:52
+ð44:83Þ
+42:30
+ð81:57Þ
+87:41
+ð178:75Þ
+25:18
+ð66:49Þ
+(2) Price pressure subsidy to liquidity demander (in basis points) 0 :56
+ð1:11Þ
+1:40
+ð3:05Þ
+2:54
+ð5:62Þ
+5:86
+ð13:32Þ
+15:13
+ð33:03Þ
+2:82
+ð9:38Þ
+(3) Net half spread to liquidity demander c (1)–(2) (in basis points) 6 :97
+ð15:69Þ
+12:47
+ð26:13Þ
+19:09
+ð39:77Þ
+36:34
+ð69:13Þ
+72:21
+ð145:93Þ
+22:07
+ð56:59Þ
+(4) Constrained Pareto efficient half spread (in basis points) 6 :20
+ð14:09Þ
+10:76
+ð22:14Þ
+16:01
+ð33:10Þ
+29:28
+ð54:24Þ
+54:48
+ð108:47Þ
+18:41
+ð44:68Þ
+(5) Deadweight loss c (3)–(4) (in basis points) 0 :61
+ð1:19Þ
+1:56
+ð3:41Þ
+2:83
+ð6:35Þ
+6:58
+ð15:58Þ
+17:66
+ð38:62Þ
+3:16
+ð10:88Þ
+a Denotes dollar_volumeit /C3 specialist_participit as a proxy for volume intermediated by the specialist.
+b Denotes that discount factor equals the reciprocal of the gross risk-free rate from Kenneth French's website ( http://mba.tuck.dartmouth.edu/pages/
+faculty/ken.french/).
+c Denotes that the reported difference is the median of differences, not the difference of (reported) medians.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 417
+
+===== PAGE 14 =====
+
+be underestimated as the analysis assumes that the inter-
+mediary cannot hedge any of the nonsystematic risk on
+her position. In practice, hedging could be possible, for
+example, by taking an offsetting position in stocks in the
+same industry.
+3.4. Model-implied reservation spread
+Section 3.2 shows that the intermediary's optimal
+control policy consists of two orthogonal decisions:
+one with respect to the size of the bid –ask spread and
+the other with respect to the amount of price pressure
+to apply. This allows for straightforward calculation of
+a reservation spread, which is the narrowest spread
+satisfying the intermediary's participation constraint, i.e.,
+the spread that satisfies an intermediary's zero-profit
+condition.9
+The reservation spread can be calculated based on the
+primitive parameters identified in Section 3.3 as the
+annuity value of the cost of inventory risk identified as
+Pσ2
+ε in Eq. (20). The model-implied marginal price pressure
+and inventory mean-reversion as described by Eqs. (21)
+and ( 24) identify the factor P. The remaining factor σ2
+ε
+follows directly from inventory variance and mean-rever-
+sion, i.e., σ2
+ε ¼ð 1/C0 ρ2
+I Þσ2ðIÞ, where ρI is the first-order
+autocorrelation of inventory. This daily value divided by
+the intermediated daily volume naturally defines the net
+spread. The implied reservation spread is calculated by
+adding back the annuity value of the price pressure
+subsidy that the intermediary pays to mean-revert inven-
+tory. Its value is calculated in Appendix C . Panel C of
+Table 4 reveals that the median model-implied reservation
+spread is 6.97 basis points for the largest-cap stocks and
+monotonically increases to 72.21 basis points for the
+smallest-cap stocks. The panel refers to it as net spread
+as it is the average net spread paid by liquidity demanders.
+3.5. Deadweight loss due to Pareto inefficiency
+The intermediary trades off the expected cost of price
+pressure against the benefit of inventory reduction. Panel A
+of Fig. 3 depicts the expected cost of a negative price
+pressure s associated with a positive inventory. The ask
+price is lowered and the light gray area above the horizontal
+axis indicates the additional expected revenue due to more
+public buying. The lowered price also reduces the margin
+on all buys, which is indicated by an expected loss equal to
+the dark gray area above the axis. Similar areas are drawn
+for the lowered bid price. Overall, the differential between
+the light and dark gray areas is the expected revenue
+decline due to price pressure. The size of this area equals
+the 2λθ2s2 cost in the intermediary's Bellman equation [see
+Eq. (18)].
+Panel B shows that liquidity demanders benefit because
+the discount they enjoy when buying exceeds the lower
+price they receive when selling. The difference equals half
+the intermediary's cost of price pressure: λθ2s2. The daily
+annuity value of this subsidy is obtained recursively (see
+Appendix C ) and, when divided by daily intermediated
+volume, equals 0.56 basis points for the largest-cap stocks
+(7% of their reservation spread) and 15.13 basis points (17%
+of their reservation spread) for the smallest-cap stocks in
+Panel C of Table 4.
+The model-implied competitive spread is the sum of the
+s u b s i d yp a i do u tb yt h ei n t e r m e d i a r ya n dt h er e s e r v a t i o n
+spread. Panel C of Table 4 finds that it is 7.63 basis points for
+Fig. 3. Deadweight loss. Panel A: Intermediary's cost of price pressure. Panel B: Liquidity demander's benefit of price pressure.
+Fig. 4. Social cost of price pressure.
+9 The reservation spread could be competitively implemented by
+assigning the right to be the intermediary based on a second-price
+auction among candidate intermediaries who bid based on a bid –ask
+spread commitment. In such an auction, all candidate intermediaries bid
+their reservation value, which equals the spread that exactly compen-
+sates them for the utility cost of the stochastic dividend stream, i.e., the
+second term in Eq. (20).
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423418
+
+===== PAGE 15 =====
+
+the largest-cap stocks and it increases monotonically to 87.41
+basis points for the smallest-cap stocks. It is reassuring that
+the model-implied spread is of the same magnitude as the
+observed spread. It is slightly below for the largest-cap stocks
+(7.63 versus 8.41 basis points) and increases to roughly 50%
+higher for the smallest-cap st ocks (88.79 versus 46.12 basis
+points). The correspondence i s remarkable given that the
+model-implied spread does not use the spread observed in
+the data but is identified only from the time series properties
+of price pressure. In addition, the cross-sectional evidence of
+an observed spread that is too high for large stocks and too
+low for small stocks is consistent with the specialist cross-
+subsidization practice in effect at the time (see Cao, Choe,
+and Hatheway, 1997).
+The intermediary only experiences the cost of lost
+revenue due to price pressure and does not internalize
+the benefit it creates for liquidity demanders, which, most
+likely, makes the policy constrained Pareto inefficient. The
+adjective “constrained” is used here to emphasize that the
+first-best of synchronous arrivals eliminating the need for
+intermediation is not attained. A social planner might
+Pareto improve by making the intermediary suffer the
+net surplus destroyed by price pressure instead of her
+private revenue loss (i.e., the sum of Panel A and B, not
+Panel A). This true social cost is λθ2s2 as depicted in Fig. 4.
+The social planner's dynamic program therefore equals
+Eqs. (16) and ( 17), where, in Eq. (16), the intermediary's
+cost of price pressure, 2 λθ2s2, is replaced by its social cost
+equivalent: λθ2s2. The solution equals the intermediary's
+solution except for replacing P in Eq. (23) by ~P :
+~P ¼
+/C0ð 1/C0 βÞþ 2βRQ þ
+ﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃ
+ð1/C0 βÞ2 þ4βð1þ βÞQRþ 4β2Q 2R2
+q
+4Q :
+ð28Þ
+Panel C of Table 4 shows that the social planner's implied
+net spread is 6.20 basis points for the largest-cap stocks
+and increases to 54.48 basis points for the smallest-cap
+stocks. The gain relative to the net spread paid by the
+liquidity demander in the intermediary's solution (i.e., net
+of the subsidy) is 0.61 basis points for the largest-cap
+stocks and 17.66 basis points for the smallest-cap stocks.
+Overall, the differential is 3.16 basis points relative a net
+spread of 22.07 basis points, implying a social loss of
+approximately 10%.
+4. Discussion of NYSE market structure
+When interpreting our results it is worth discussing the
+institutional structure of the specialist intermediary at the
+NYSE. Historically, the NYSE granted the specialists an
+advantageous central position in the trading process and
+imposed obligations upon them. This special role could
+affect the interpretation of inventory's role in the price
+process. We first discuss the informational advantages and
+then other facets of the NYSE trading structure. Finally, we
+consider how changes in the NYSE market structure during
+our sample period relate to the results.
+4.1. NYSE informational structure
+An important privilege the specialist had in our sample
+period is a last-mover advantage, i.e., the specialist could
+decide on any incoming order to either trade against it
+herself by offering price improvement or to route it to the
+limit order book. In making this decision the specialist
+could condition on information about the identity of the
+order submitter, e.g., the brokerage firm handling the
+order. Her rationally exploiting this privilege by trading
+against uninformed orders and sending the informed
+orders to the book is often referred to as cream skimming
+(see, e.g., Benveniste, Marcus, and Wilhelm, 1992 ; Rock,
+1990; Seppi, 1997; Parlour and Seppi, 2003 ). Cream skim-
+ming should reduce the adverse selection faced by the
+specialist, which is an important reason that this paper
+focuses on inventory control and price effects.
+In the presence of cream skimming, if market partici-
+pants can observe who is trading with whom, trades that
+involve the specialist should have smaller immediate price
+impacts, reflecting their lesser information content. A
+specialist would take on an inventory position and there
+would then be an immediate price reversal. But if other
+market participants cannot observe when the specialist
+trades, all trades would have similar immediate price
+impacts. The price reversals would not be immediate and
+would occur only as the underlying information (or lack
+thereof) is revealed.
+While inventory control and cream skimming can both
+predict that inventories negatively correlate with the
+transitory component of prices, they make other differing
+predictions. First, unlike inventory control, cream skim-
+ming does not predict that prices have an unconditional
+transitory component. The pricing errors observed in the
+data through the negative autocorrelations in daily mid-
+quote returns (see Table 2 ) is predicted by inventory
+control and not by cream skimming. Second, the empirical
+evidence shows that the specialist inventories are nega-
+tively correlated with the informational (random-walk)
+component of price changes for all quintiles and signifi-
+cantly so except for the smallest-cap quintile (see Panels F
+and G in Table 2 ). In the state space model, this effect
+shows up through the negative coefficient on surprise
+inventory in the efficient price equation (see Panel C in
+Table 3 ). The adverse selection of the specialist suggests
+that cream skimming at the daily horizon is imperfect at
+best. intraday frequencies based on short-lived flow-based
+information, but does not operate at daily frequency
+studied in this sample. In fact, the specialist suffers adverse
+selection at lower frequencies consistent with classic
+market-making models where the market maker is unin-
+formed (see, e.g., Glosten and Milgrom, 1985 ).
+Finally, inventory control predicts that intermediaries
+pay a subsidy to reduce inventory risk. Hence, the infor-
+mation and risk management explanations make opposite
+predictions for the profitability of low-frequency (daily)
+position changes: Cream skimming predicts positive prof-
+its on daily position changes, while inventory control
+predicts negative profits. In a period before our sample,
+Hasbrouck and Sofianos (1993) find that NYSE-specialist
+gross profits are positive on short- and medium-term
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 419
+
+===== PAGE 16 =====
+
+positions and negative on long-term positions. Studying
+how the 2001 change to decimalization affected specialist
+gross profits, Coughenour and Harris (2004) find negative
+specialist gross profits for medium and large stocks at
+horizons greater than half a day. Hence, the analysis of
+specialist gross profits is consistent with inventory control
+and not cream skimming.
+4.2. Noninformational NYSE market structure
+In exchange for the informational advantages discussed
+in Section 4.1, the NYSE imposed obligations upon specia-
+lists. Panayides (2007) shows that the most significant
+obligation, the Price Continuity Rule, which “requires the
+specialist to smooth transaction prices by providing extra
+liquidity as necessary to keep transaction price changes
+small,” is important at the transaction-level horizon.
+Panayides finds that the rule causes specialists to accom-
+modate investor liquidity demands via taking inventory
+positions to prevent “transaction prices from overshooting
+beyond their equilibrium levels. ” If this prevention of
+overshooting leads to prices adjusting to their efficient
+prices more slowly, then it causes inventories to be
+positively associated with pricing errors, which is the
+opposite of our relation between intermediary inventory
+and price pressure. Therefore, if the Price Continuity Rule
+manifests itself at a daily frequency, it causes underestimation
+of price pressures associated with inventory.
+While the NYSE designates a single intermediary for
+each stock, it is likely that other investors compete with
+the specialist by placing limit orders to supply liquidity.
+This is especially important in the NYSE's 2007 market
+structure changes (after our sample period), which
+resulted in a reduced role for the specialist ( Hendershott
+and Moulton, 201 1). This change highlights an important
+potential weakness of our data, but also some strengths.
+On the positive side, the NYSE specialist system we study
+is the market structure for much of the data used in asset
+pricing. Asparouhova, Bessembinder, and Kalcheva (2010 ,
+2013) stress the importance of noise and price pressures in
+asset pricing tests. Comprehensive data on the trading and
+the positions of other liquidity suppliers competing with
+(or replacing) the specialist are not available, and it is
+unclear when or if such data could become available.
+Additional liquidity suppliers should reduce the net
+spread and price pressure by increasing the risk-bearing
+capacity in the intermediation sector. The most efficient
+manner to share risk among intermediaries is for the
+inventory to be immediately and equally shared across
+all liquidity suppliers, leading to perfectly correlated posi-
+tions. How would this affect our estimates of price pres-
+sure? First, the marginal price pressure per unit of
+inventory ( α) should be adjusted by the specialist's frac-
+tion of inventory, e.g., if the specialist carries one half of
+the total inventory, then the marginal price pressure
+should be multiplied by one-half. The average price
+pressure [ ασðIÞ] is unaffected by additional liquidity sup-
+pliers because the standard deviation of inventory is
+adjusted by the reciprocal of the adjustment to the
+marginal price pressure. The model-implied primitive
+parameters and the analysis of the spread (as summarized
+in Panel B and C of Table 4) are robust to this bias except
+for the private value rate
+λ, which would be adjusted by
+the reciprocal of the adjustment to the marginal price
+pressure.
+4.3. NYSE market structure changes
+Fig. 5 depicts a timeline of the main institutional
+changes at the NYSE during our sample period that have
+been studied in the literature. The automatic execution in
+Directþ was not widely used until after our sample period
+(see Hendershott and Moulton, 201 1). The tick size reduc-
+tions in June 1997 (1/8 to 1/16) and January 2001 (1/16 to a
+penny) benefited the specialist. The change effectively
+reduced the public order precedence rule and gave the
+specialists more price points within the spread to quote
+aggressively. Coughenour and Harris (2004) study the
+2001 tick change and find that specialist participation
+increases (participation is defined at the specialist buy
+volume plus her sell volume divided by twice total trading
+volume). The specialist participation trend in our sample
+confirms this result. Participation is fairly constant from
+1994 through 1996. Then, surrounding the first tick
+change, it increases from 14.80% in 1996 to 17.75% in
+1998. It stayed at about this level from 1998 through
+2001. Around the second tick change, participation further
+increases from 17.69% in 2000 to 19.03% in 2001.
+Fig. 5. NYSE market structure changes.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423420
+
+===== PAGE 17 =====
+
+An important benefit of the ability to price aggressively in
+smaller increments is that the specialist could more easily
+mean-revert her inventory, which, in turn, could explain
+the increased participation rate and volatility is specialist
+inventories. The evidence supports this conjecture, i.e., the
+first-order autocorrelation decreased from 0.56 in 1996 to
+0.50 in 1998 and from 0.48 in 2000 to 0.47 in 2001 (Panel
+Di n Table 2).
+The introduction of NYSE OpenBook in January 2002
+and NYSE Autoquote in the first half of 2003 reduces the
+privileges of the specialist. OpenBook provides off-
+exchange traders access to the limit order book every ten
+seconds (see Boehmer, Saar, and Yi, 2005 ). Autoquote
+disseminates a new quote automatically whenever there
+was a change to the limit order book, instead of waiting for
+the clerk at the specialist post to type it in (see
+Hendershott, Jones, and Menkveld, 201 1 ). Both changes
+in effect reduce the specialist's informational privilege
+from continuous access to the limit order book. This is
+consistent with our finding that the specialist experiences
+an increased adverse price movement when trading. The
+magnitude increases from 0.35 basis points per $1,000 in
+2001 to 0.44 basis point in 2002 and 0.47 basis points in
+2003. These changes enable limit order strategies to better
+compete with the specialist, and participation rates
+declined from 19.03% in 2001 to 14.1 1% in 2003.
+5. Conclusion
+We use empirically 12 years of NYSE intermediary data
+to estimate time series price dispersion due to intermedi-
+aries' inventories in financial markets. These price pressures
+are deviations of prices from fundamental values due to the
+inventory risks born by intermediaries providing liquidity
+to facilitate continuous marketing clearing for asynchro-
+nously arriving investors. We develop an empirical model to
+separate the impact of intermediaries' inventory from price
+effects due to information or from temporary shocks to
+supply and demand. We construct a theoretical model to
+understand and characterize the effects of price pressure.
+The structure of the model allows for estimation of the
+intermediary's risk aversion and the distribution of inves-
+tors' private values. We stipulate three findings.
+1. A $100,000 inventory shock causes price pressure of
+0.98% for the small-capitalization stocks and 0.02% for
+the large-cap stocks.
+2. The daily transitory volatility in stock returns due to
+price pressure is large: 1.18% and 0.17% for small and
+large stocks, respectively. For small stocks, the ratio of
+transitory volatility to the permanent volatility is
+greater than one, implying that daily price changes
+are driven more by noise from price pressures than
+from information about fundamentals.
+3. The model together with the time series properties of
+price pressure identifies a somewhat low risk aversion
+for the intermediaries, a 3.96 coefficient of relative risk
+aversion, and deviations from constrained Pareto effi-
+ciency of 3.23 basis points of the value traded, which is
+approximately 10% of the cost of immediacy.
+The significant size of price pressure suggests that
+a goal of financial market regulation should be to mitigate
+price pressure (see also Securities and Exchange
+Commission, 2010 ). One way to do this is by increasing
+capital for intermediation as the greater the risk-bearing
+capacity of the intermediaries the smaller the price pres-
+sure. Another approach would be to lower costs for
+investors to monitor the market. This would lead to
+investor trading being more responsive to price pressures,
+reducing the duration of price pressure by allowing
+intermediaries to mean-revert their inventories more
+quickly.
+Appendix A. Details on the likelihood optimization
+The likelihood of the state space model described by
+Eqs. (4), ( 5) and ( 3) is optimized in essentially three steps
+so as to minimize the probability of finding a local
+maximum. The optimization is implemented in Ox using
+standard optimization routines. It uses the Kalman filter
+and smoother from ssfpack, which is an add-on package in
+Ox (see Koopman, Shephard, and Doornik, 1999 ).
+1. An ordinary least squares regression of log price differ-
+ence on contemporaneous and lagged ft yields starting
+values for βi and β0
+i ; …; βk
+i [see Eqs. (4) and ( 5)]. These
+β estimates are fixed at these values until the final
+step.
+2. The likelihood is calculated using the Kalman filter (see
+Durbin and Koopman, 2012) and optimized numerically
+using the quasi-Newton method developed by Broyden,
+Fletcher, Goldfarb, and Shanno. In the optimization, all
+parameters are free except for the β's and [ σðεÞ; φ]. The
+latter runs over a nine by nine grid in which φ ranges
+from 0 to 0.8 and σðεÞ ranges from 0 to a stock-specific
+upper bound that is calculated assuming that 80% of a
+stock's unconditional variance is price pressure. The
+likelihoods are compared across all 81 optimizations,
+and the [ σðεÞ; φ] value that yields the highest likelihood
+is kept as the starting value for the final optimization.
+The rationale for this step is to prevent numerical
+instability of the quasi-Newton optimization. That is,
+if all parameters are free on arbitrary starting values,
+the optimization routine often runs off to a persistence
+parameter φ that approaches its upper bound and price
+pressure variance approaches the stock's unconditional
+variance. The optimizer starts to load the observed
+price series on two nonstationary series, i.e., the effi-
+cient price and the price pressure, and becomes
+unstable.
+The Kalman filter is initialized with a diffuse distribu-
+tion for the unobserved efficient price m0 and the
+unconditional price pressure distribution for s0, i.e.,
+s0 /C24 Nð0; σ2ðεÞ=ð1/C0 φ2ÞÞ.
+3. The likelihood is optimized when all parameters are
+free and starting values for [ βi; β0
+i ; …; βk
+i ; σðεÞ; φ]a r e
+equal to those found in Steps 1 and 2.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 421
+
+===== PAGE 18 =====
+
+This procedure proves numerically stable as we have
+strong convergence in the likelihood optimization for all
+of our stock-year samples, i.e., convergence both in the
+likelihood elasticity with respect to its parameters and the
+one-step change in parameter values. They both become
+arbitrarily small.
+Appendix B. Expressions for primitive parameters and
+spread measures
+This Appendix lists expressions for the unobserved
+primitive parameters in terms of the empirical results.
+The approach for identification is matching the model-
+implied time series properties of price pressure with those
+implied by the state space model estimates. The identifica-
+tion strategy is described in Section 3.3 . The appendix
+further provides a fuller set of expressions for the various
+spread measures developed in Section 3.4 .
+The expressions for the primitive parameters are
+λ ¼ ð/C0 αnνþ δenð1/C0 ρI ÞÞ2
+2nð/C0 αÞnð1/C0 ρI Þ ; ð29Þ
+1
+θ ¼ /C0 αnνþδenð1/C0 ρI Þ
+1 /C0 ρI
+; ð30Þ
+and
+γ ¼
+2n 1
+β /C0 ρI
+/C18/C19
+nα2n 1/C0 ρ2
+I
+/C0/C1
+nσ2 IðÞ
+ρ2
+I nσ2ðwÞ ; ð31Þ
+where the γ is the coefficient of relative risk aversion, ρI
+denotes the first-order autoregressive coefficient for
+inventory, ν denotes intermediated volume ( specialist_
+particip /C2 dollar_volume), and δe denotes the effective half
+spread. γ can be derived by multiplying the model's
+coefficient of absolute risk aversion ( ~γ) by the intermedi-
+ary's average wealth. A proxy for wealth consistent with
+the model is calculated by multiplying the average con-
+sumption proxy ( c) in Eq. (1 1)by the average number of
+stocks that the specialist firm is market maker for, i.e.,
+(697/24), as there are 697 stocks and an average of 24
+specialist firms. This number is a lower bound, as the
+specialist firm generates additional revenue based on
+stocks not in our sample. This additional revenue, how-
+ever, is likely to be small as our sample contains the largest
+stocks that generate the highest specialist trading revenue
+(Sofianos, 1995).
+The expressions used in the spread analysis are
+net_spread ¼ /C0 αnð1/C0 ρ2
+I Þnσ2ðIÞ
+ρI nν ; ð32Þ
+subsidy ¼ /C0 αnβnð1/C0 ρI Þnð1/C0 ρ2
+I Þnσ2ðIÞ
+2nð1/C0 βnρ2
+I Þnν ; ð33Þ
+and
+RQ ¼ 1
+βnρI
+/C0 1
+/C18/C19
+n 1/C0 ρI
+/C0/C1
+: ð35Þ
+Appendix C. Value of price pressure discount enjoyed
+by liquidity demander
+Let wi be the expected value of the price pressure
+discount enjoyed by the liquidity demander when the
+intermediary starts off on an inventory of i. The Markovian
+law of motion for the intermediary's inventory position
+allows for Bellmanizing this value as
+wi ¼ Ei
+1
+2 Qs2 þ βwi0
+/C20/C21
+: ð36Þ
+Assume wi ¼ A þBi2 and calculate wi from Eq. (36):
+A þ Bi2 ¼ wi ¼ 1
+2 Q α2i2 þβEi½Aþ Bði þ Q αiþ εÞ2/C138
+¼ βA þ βBσ2
+ε
+/C0/C1
+þ 1
+2 Q α2 þβBð1þ Q αÞ2
+/C18/C19
+i2: ð37Þ
+A and B are solved by matching the constant and the
+coefficient of i2 on both sides of the equation.
+Appendix D. Supplementary material
+Supplementary data associated with this paper can be
+found in the online version at http://dx.doi.org/10.1016/j.
+jfineco.2014.08.001.
+References
+Anand, A., Tanggaard, C., Weaver, D., 2009. Paying for market quality.
+Journal of Financial and Quantitative Analysis 44, 1427 –1457.
+Asparouhova, E., Bessembinder, H., Kalcheva, I., 2010. Liquidity biases in
+asset pricing tests. Journal of Financial Economics 96, 215 –237.
+Asparouhova, E., Bessembinder, H., Kalcheva, I., 2013. Noisy prices and
+inference regarding returns. Journal of Finance 68, 665 –714.
+Barsky, R., Juster, T., Kimball, M., Shapiro, M., 1997. Preference parameters
+and behavioral heterogeneity: an experimental approach in the
+health and retirement survey. Quarterly Journal of Economics 1 12,
+537–579.
+Benveniste, L., Marcus, M., Wilhelm, W., 1992. What's special about the
+specialist? Journal of Financial Economics 32, 61 –86.
+Boehmer, E., Saar, G., Yu, L., 2005. Lifting the veil: an analysis of pre-trade
+transparency at the NYSE. Journal of Finance 60, 783 –815.
+Born, B., Brennan, J., Engle, R., Ketchum, R., O'Hara, M., Philips, S., Ruder, D.,
+Stiglitz, J., 201 1. Recommendations regarding regulatory responses to
+the market events of May 6, 2010. Manuscript. Commodity Futures
+Trading Commission, Washington, DC.
+Brogaard, J., Hendershott, T., Riordan, R., 2014. High frequency trading
+and price discovery. Review of Financial Studies, 27 (8), 2267 –2306.
+http://dx.doi.org/10.1093/rfs/hhu032.
+Brunnermeier, M., Pedersen, L., 2009. Market liquidity and funding
+liquidity. Review of Financial Studies 22, 2201 –2238.
+Campbell, J., Grossman, S., Wang, J., 1993. Trading volume and serial
+correlation in stocks returns. Quarterly Journal of Economics 108,
+905–939.
+pareto_eff _spread ¼
+/C0 αnð/C0ð 1 /C0 βÞþ 2βRQ þ
+ﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃﬃ
+ð1 /C0 βÞ2 þ 4nβnð1þ βÞnRQ þ 4nβ2nðRQ Þ2
+q
+Þnð1 /C0 ρ2
+I Þnσ2ðIÞ
+4nð1/C0 ρI Þnν ; ð34Þ
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423422
+
+===== PAGE 19 =====
+
+Campbell, J., Lo, A.W., MacKinlay, A., 1997. The Econometrics of Financial
+Markets. Princeton University Press, Princeton, NJ .
+Cao, C., Choe, H., Hatheway, F., 1997. Does the specialist matter?
+Differential trading costs and inter-security subsidization on the
+NYSE. Journal of Finance 52, 1615 –1640.
+Chetty, R., 2006. A new method of estimating risk aversion. American
+Economic Review 96, 1821 –1834.
+Cochrane, J., 2001. Asset Pricing. Princeton University Press, Princeton, NJ .
+Cohen, A., Einav, L., 2007. Estimating risk preferences from deductible
+choice. American Economic Review 97, 745 –788.
+Comerton-Forde, C., Hendershott, T., Jones, C., Seasholes, M., Moulton, P.,
+2010. Time variation in liquidity: the role of market maker inven-
+tories and revenues. Journal of Finance 65, 295 –331.
+Coughenour, J., Harris, L., 2004. Specialist profits and the minimum price
+increment. Manuscript. University of Southern California, Los Ange-
+las, CA .
+Coval, J., Stafford, E., 2007. Asset fire sales (and purchases) in equity
+markets. Journal of Financial Economics 86, 479 –512.
+Degryse, H., de Jong, F., van Ravenswaaij, M., Wuyts, G., 2005. Aggressive
+orders and the resiliency of a limit order market. Review of Finance 9,
+201–242.
+Duffie, D., 2010. Presidential address: asset price dynamics with slow-
+moving capital. Journal of Finance 65, 1237 –1267.
+Durbin, J., Koopman, S., 2012. Time Series Analysis by State Space Models.
+Oxford University Press, Oxford, UK .
+Gabaix, X., Gopikrishnan, P., Plerou, V., Stanley, H., 2006. Institutional
+investors and stock market volatility. Quarterly Journal of Economics
+121, 461–504.
+George, T., Hwang, C., 2001. Information flow and pricing errors: a unified
+approach to estimation and testing. Review of Financial Studies 14,
+979–1020.
+Glosten, L., Milgrom, P., 1985. Bid, ask, and transaction prices in a
+specialist market with heterogeneously informed agents. Journal of
+Financial Economics 14, 71 –10 0.
+Greenwood, R., 2005. Short- and long-term demand curves for stocks:
+theory and evidence on the dynamics of arbitrage. Journal of
+Financial Economics 75, 607 –649.
+Grossman, S., Miller, M., 1988. Liquidity and market structure. Journal of
+Finance 43, 617 –633.
+Harris, L., Gurel, E., 1986. Price and volume effects associated with
+changes in the S& P 500 list: new evidence for the existence of price
+pressures. Journal of Finance 41, 815 –829.
+Hasbrouck, J., 1991a. Measuring the information content of stock trades.
+Journal of Finance 46, 179 –207.
+Hasbrouck, J., 1991b. The summary informativeness of stock trades: an
+econometric analysis. Review of Financial Studies 4, 571 –595.
+Hasbrouck, J., 1999. The dynamics of discrete bid and ask quotes. Journal
+of Finance 54, 2109 –2142.
+Hasbrouck, J., Sofianos, G., 1993. The trades of market makers: an
+empirical analysis of NYSE specialists. Journal of Finance 48,
+1565–1593.
+Hendershott, T., Jones, C., Menkveld, A.J., 201 1. Does algorithmic trading
+improve liquidity? Journal of Finance 66, 1 –33.
+Hendershott, T., Jones, C., Menkveld, A.J., 2013. Implementation shortfall
+and transitory price effects. In: Easley, D., de Prado, M., O'Hara, M.
+(Eds.), High-Frequency Trading: New Realities for Traders, Markets
+and Regulators, Risk Books, London, UK .
+Hendershott, T., Moulton, P., 201 1. Automation, speed, and stock market
+quality: the NYSE's hybrid. Journal of Financial Markets 14, 568 –604.
+Hendershott, T., Seasholes, M., 2007. Market maker inventories and stock
+prices. American Economic Review 97, 210 –214.
+Ho, T., Stoll, H., 1981. Optimal dealer pricing under transaction cost and
+return uncertainty. Journal of Financial Economics 9, 47 –73.
+Hollifield, B., Miller, R., Sandås, P., Slive, J., 2006. Estimating the gains
+from trade in limit order markets. Journal of Finance 61, 2753 –2804.
+Kirilenko, A., Kyle, A., Samadi, M., Tuzun, T., 201 1. The flash crash: the
+impact of high-frequency trading on an electronic market. Manu-
+script. University of Maryland, College Park, MD .
+Koopman, S., Shephard, N., Doornik, J., 1999. Statistical algorithms for
+models in state space using ssfpack 2.2. Econometrics Journal 2,
+113–166.
+Kraus, A., Stoll, H., 1972. Price impacts of block trading on the New York
+Stock Exchange. Journal of Finance 27, 569 –588.
+Lagos, R., Rocheteau, G., Weill, P., 201 1. Crises and liquidity in OTC
+markets. Journal of Economic Theory 146, 2169 –2205.
+Large, J., 2007. Measuring the resiliency of an electronic limit order book.
+Journal of Financial Markets 10, 1 –25.
+Ljungqvist, L., Sargent, T., 2004. Recursive Macroeconomic Theory. MIT
+Press, Cambridge, MA .
+Madhavan, A., Smidt, S., 1991. A Bayesian model of intraday specialist
+pricing. Journal of Financial Economics 30, 99 –134.
+Madhavan, A., Smidt, S., 1993. An analysis of changes in specialist
+inventories and quotations. Journal of Finance 48, 1595 –1628.
+Mehra, R., Prescott, E., 1985. The equity premium: a puzzle. Journal of
+Monetary Economics 15, 145 –161.
+Menkveld, A.J., 2013. High-frequency trading and the new market
+makers. Journal of Financial Markets 16, 712 –740.
+Menkveld, A.J., Koopman, S.J., Lucas, A., 2007. Modelling round-the-clock
+price discovery for cross-listed stocks using state space methods.
+Journal of Business and Economic Statistics 25, 213 –225.
+Menkveld, A.J., Wang, T., 2013. How do designated market makers create
+value for small-caps? Journal of Financial Markets 16, 571 –603.
+Mildenstein, E., Schleef, H., 1983. The optimal pricing policy of a
+monopolistic market maker in the equity market. Journal of Finance
+38, 218–231.
+Nagel, S., 2012. Evaporating liquidity. Review of Financial Studies 25,
+2005
+–2039.
+Nimalendran, M., Petrella, G., 2003. Do thinly traded stocks benefit from
+specialist intervention? Journal of Banking and Finance 27,
+1823–1854.
+Panayides, M., 2007. Affirmative obligations and market making with
+inventory. Journal of Financial Economics 86, 513 –542.
+Parlour, C., Seppi, D., 2003. Liquidity-based competition for order flow.
+Review of Financial Studies 16, 301 –343.
+Pastor, L., Stambaugh, R., 2003. Liquidity risk and expected returns.
+Journal of Political Economy 1 1 1, 642–685.
+Petersen, M., 2009. Estimating standard errors in finance panel data sets:
+comparing approaches. Review of Financial Studies 22, 435 –480.
+Rock, K., 1990. The specialist's order book and price anomalies. Manu-
+script. Harvard University, Cambridge, MA .
+Rust, J., Hall, J., 2003. Middlemen versus market makers: a theory of
+competitive exchange. Journal of Political Economy 1 1 1, 353 –403.
+Securities and Exchange Commission, 2010. Concept release on equity
+market structure. Release no. 34-61358. File no. S7-02-10. US Govern-
+ment Printing Office, Washington, DC.
+Seppi, D., 1997. Liquidity provision with limit orders and a strategic
+specialist. Review of Financial Studies 10, 103 –150.
+Sofianos, G., 1995. Specialist gross trading revenues at the New York Stock
+Exchange. Manuscript 95-01. New York Stock Exchange, New York, NY.
+Stoll, H., 1978. The supply of dealer services in securities markets. Journal
+of Finance 33, 1 133–1151.
+Townsend, R., 1978. Intermediation with costly bilateral exchange.
+Review of Economic Studies 45, 417 –425.
+Venkataraman, K., Waisburd, A., 2007. The value of the designated market
+maker. Journal of Financial and Quantitative Analysis 42, 735 –758.
+Zabel, E., 1981. Competitive price adjustment without market clearing.
+Econometrica 49, 1201 –1221.
+T. Hendershott, A.J. Menkveld / Journal of Financial Economics 1 14 (2014) 405 –423 423

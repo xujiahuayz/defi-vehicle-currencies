@@ -1,0 +1,997 @@
+
+
+===== PAGE 1 =====
+
+463
+[ Journal of Political Economy, 2005, vol. 113, no. 3]
+/H170152005 by The University of Chicago. All rights reserved. 0022-3808/2005/11303-0001$10.00
+A Uniﬁed Framework for Monetary Theory and
+Policy Analysis
+Ricardo Lagos
+New York University and Federal Reserve Bank of Minneapolis
+Randall Wright
+University of Pennsylvania and Federal Reserve Bank of Cleveland
+Search-theoretic models of monetary exchange are based on explicit
+descriptions of the frictions that make money essential. However, trac-
+table versions of these models typically make strong assumptions that
+render them ill suited for monetary policy analysis. We propose a new
+framework, based on explicit micro foundations, within which macro
+policy can be studied. The framework is analytically tractable and easily
+quantiﬁable. We calibrate the model to standard observations and use
+it to measure the cost of inﬂation. We ﬁnd that going from 10 percent
+to 0 percent inﬂation is worth between 3 and 5 percent of consump-
+tion—much higher than previous estimates.
+I. Introduction
+Most monetary models in macroeconomics are reduced-form models. By
+this we mean that they make assumptions, such as putting money in the
+Many people provided extremely helpful input to this project, including S. B. Aruoba,
+A. Berentsen, V. V. Chari, L. Christiano, N. Kocherlakota, D. Krueger, G. Rocheteau, S.
+Shi, N. Stokey, N. Wallace, and C. Waller. Research support from the C. V. Starr Center
+for Applied Economics at New York University, the Suntory-Toyota International Centre
+for Economics and Related Disciplines at the London School of Economics, Equipe de
+Recherche sur les Marches, l’Emploi et la Simulation at University of Paris II, and the
+National Science Foundation is gratefully acknowledged. In addition to the usual dis-
+claimer, we note that the views expressed here are those of the authors and not necessarily
+those of the Federal Reserve Banks of Minneapolis or Cleveland or the Federal Reserve
+System.
+
+
+===== PAGE 2 =====
+
+464 journal of political economy
+utility function or imposing cash-in-advance constraints, that are pre-
+sumably meant to stand in for a role of money that is not made explicit;
+for example, it helps overcome spatial, temporal, or informational fric-
+tions. There are models that provide micro foundations for monetary
+economics based on search theory, with explicit descriptions of meet-
+ings, specialization, information, and so on, but they are ill suited for
+the analysis of monetary policy as it is usually formulated. The reason
+is that to make the models tractable, people typically adopt extreme
+restrictions on how much cash agents can hold.
+In this paper we propose a new framework, with explicit micro foun-
+dations and without these extreme restrictions, that is easy to use for
+policy analysis. To illustrate, we use the model to measure the welfare
+cost of inﬂation. Calibrating parameters to standard observations for
+the U.S. economy, we estimate that the gain to reducing inﬂation from
+10 percent to 0 percent is worth between 3 percent and 5 percent of
+consumption. This is much higher than earlier estimates based on
+reduced-form models. Our interpretation of the results is that building
+monetary models with explicit micro foundations not only is theoreti-
+cally appealing but also can make a signiﬁcant difference for quantitative
+results.
+There are previous attempts to study search models without extreme
+restrictions on money holdings. Trejos and Wright (1995) present a
+model in which agents can hold any , but like Shi (1995), theym /H33528/H11938
+/H11001
+have analytic results only for the case . Papers that make somem /H33528{0, 1}
+progress on the general case include Green and Zhou (1998), Camera
+and Corbae (1999), Zhou (1999), and Zhu (2003), but they are sufﬁ-
+ciently complicated that it is difﬁcult to get substantive analytic results.
+One can also study the model numerically, as in Molico (1997), but we
+think that it is useful to have a framework that delivers analytic results.
+For one thing, simple models with sharp results are often a better vehicle
+than computer output for developing economic understanding. Also,
+numerical methods make it difﬁcult to say much about issues such as
+existence, uniqueness or multiplicity, and dynamics—issues that are es-
+pecially relevant in monetary economics. Finally, it is useful to have a
+benchmark that is analytically tractable even if (especially if) one ulti-
+mately wants to complicate things for the sake of realism, policy rele-
+vance, and so forth.
+What complicates the analysis in previous search models is the en-
+dogenous distribution of money holdings, . Our assumptions makeF(m)
+degenerate. We accomplish this by assuming quasi-linear prefer-F(m)
+ences and giving agents periodic access to centralized markets in ad-
+dition to the decentralized markets that make money essential as in the
+typical search model. Quasi linearity means that there are no wealth
+effects in the demand for money, so all agents in the centralized markets
+
+
+===== PAGE 3 =====
+
+monetary theory and policy analysis 465
+choose the same m. Hence is degenerate across agents in theF(m)
+decentralized market. This allows us to get sharp analytic results. It also
+makes the framework about as easy to use as standard reduced-form
+models for addressing policy questions such as the cost of inﬂation,
+although, as we shall see, the answers are different.
+1
+The rest of the paper is organized as follows. Section II describes the
+environment. Section III deﬁnes equilibrium and derives some basic
+results. Section IV introduces monetary policy considerations. Section
+V uses a calibrated version to quantify the welfare cost of inﬂation.
+Section VI presents conclusions and discusses some extensions to the
+model.
+II. The Environment
+Time is discrete. There is a [0, 1] continuum of agents who live forever
+with discount factor . Each period is divided into two sub-b /H33528(0, 1)
+periods, say day and night. Agents consume and supply labor in both
+subperiods. In general, preferences are , where x and h (XU(x, h, X, H )
+and H) are consumption and labor during the day (night). Although
+in principle we do not need any special restrictions to deﬁne or discuss
+equilibrium in this model, to get the distribution of money degenerate
+we need to be linear in either X or H. Here we useU
+U(x, h, X, H ) p u(x) /H11002c(h) /H11001U(X ) /H11002H.( 1 )
+Assume that u, c, and U are twice continuously differentiable with
+, , , , , and . Also, ,
+′′ ′ ′ ′′ ′ ′ ′u 1 0 c 1 0 U 1 0 u ! 0 c ≥ 0 U ≤ 0 u(0) p c(0) p 0
+and suppose that there exists such that and ′′q* /H33528(0, /H11009) u (q*) p c (q*)
+such that with .′X* /H33528(0, /H11009) U (X*) p 1 U(X*) 1 X*
+As in a typical search model, during the day agents interact in a
+decentralized market with anonymous bilateral matching, where a is
+the probability of a meeting. The day good x comes in many varieties,
+of which each agent consumes only a subset. Each agent can transform
+labor one for one into one of these special goods that he himself does
+not consume. For two agents i and j drawn at random, there are four
+possible events. The probability that both consume what the other can
+produce (a double coincidence) is d. The probability that i consumes
+1 A related model is developed by Shi (1997), who also gets F degenerate but by differ-
+ent means: he assumes that the fundamental decision-making unit is not an individual,
+but a family with a continuum of agents, and appeals to the law of large numbers. In our
+working paper (Lagos and Wright 2004), we provide a detailed discussion of the two
+approaches; sufﬁce it to say here that our model avoids some technical problems in the
+inﬁnite-family model and seems, at least to us, more natural for many applications. Also,
+independent of making the money distribution degenerate, there are many other reasons
+why it may be interesting to integrate some competitive markets into search models; see
+Sec. VI for some examples.
+
+
+===== PAGE 4 =====
+
+466 journal of political economy
+what j produces but not vice versa (a single coincidence) is j. Sym-
+metrically, the probability that j consumes what i produces but not vice
+versa is j. And the probability that neither wants what the other produces
+is . In a single-coincidence meeting, if i wants the special good1 /H110022j /H11002d
+j produces, we call i the buyer and j the seller.
+At night agents trade in a centralized (Walrasian) market. With cen-
+tralized trade, specialization does not lead to a double-coincidence prob-
+lem, and so it is irrelevant whether the night good X comes in many
+varieties or one; hence we assume that at night all agents produce and
+consume a general good. Agents at night can transform one unit of labor
+into one unit of the general good. The general goods produced at night
+and the special goods produced during the day are perfectly divisible
+and nonstorable. There is another object, called money, that is perfectly
+divisible and storable in any quantity . For now the total moneym ≥ 0
+stock is ﬁxed at M, but later we allow it to change over time.
+Given our assumptions, during the day the only feasible trades are
+barter in special goods and the exchange of special goods for money,
+and at night the only feasible trades involve general goods and money.
+Special goods cannot be traded at night nor general goods during the
+day because they are produced in only one subperiod and are not stor-
+able.
+2 Money is essential in this model for the same reason it is essential
+in the typical search model: since meetings in the day market are anon-
+ymous, there is no scope for trading future promises in this market, so
+exchange must be quid pro quo (see Kocherlakota [1998] and Wallace
+[2001] for detailed discussions).
+III. Equilibrium
+Let be the measure of agents starting the decentralized day market˜F(m)
+t
+at t holding . Similarly let be the distribution at the start of˜˜m ≤ mG (m)t
+the centralized night market. The initial distribution—either or ,FG00
+depending on whether we start the model at during the day ort p 0
+night—is given exogenously. Since for now the total money stock is ﬁxed,
+for all t. Let be the price of money in themdF(m) p mdG(m) p M f∫∫ tt t
+centralized market (i.e., is the nominal price of general goods).1/ft
+There is no uncertainty in the basic model except for random matching.
+Hence, an individual’s decisions in a given period depend on only his
+money holdings, m. That is, at each t, since aggregate variables such as
+, , and prices are taken as given by individuals, we can characterizeFG
+tt
+2 Some extensions that allow general goods to be storable are discussed in Sec. VI. Of
+course, whether or not goods are storable, we can allow the exchange of intertemporal
+claims across centralized markets. Since agents are homogeneous in this market, such
+claims will not trade, but we can still price assets like real or nominal bonds.
+
+
+===== PAGE 5 =====
+
+monetary theory and policy analysis 467
+their decisions in terms of common value functions with m as the only
+argument.3
+Let be the value function for an agent with m dollars when heV(m)t
+enters the decentralized market and the value function when heW(m)t
+enters the centralized market. Since trade is bilateral in the day market,
+a seller’s production h must equal a buyer’s consumption x. Hence, we
+denote their common value by and use to denote the˜˜q(m, m) d (m, m)tt
+dollars the buyer pays; these may depend on the money holdings of the
+buyer m and seller . Also, in double-coincidence meetings, let˜mB (m,t
+be the payoff for an agent holding m who meets someone with .˜˜m) m
+Then
+˜˜ ˜V(m) p aj {u[q(m, m)]/H11001W[m /H11002d (m, m)] }dF(m)t /H20885tt t t
+˜˜ ˜/H11001aj {/H11002c[q(m, m)]/H11001W[m /H11001d (m, m)] }dF(m)/H20885tt t t
+˜˜/H11001ad B(m, m)dF(m) /H11001(1 /H110022aj /H11002ad)W(m), (2)/H20885tt t
+where the four terms represent the expected payoffs to buying, selling,
+bartering, and not trading.
+A version of (2) appears in Trejos and Wright (1995) and Molico
+(1997), except replaces , because in those papers therebV (m) W(m)t/H110011 t
+is no centralized market and all agents can do with money is carry it
+forward to the next round of decentralized trade. Here, they get to go
+to the centralized market, where they solve
+′W(m) p max {U(X ) /H11002H /H11001bV (m )} (3)tt /H110011
+′X,H,m
+subject to , , , and , where ′′X p H /H11001fm /H11002fmX ≥ 00 ≤ H ≤ Hm ≥ 0 Htt
+is an upper bound on hours, is money taken out of the market, and′m
+again is the price of money. We assume an interior solution for Xft
+and H. This is guaranteed for X under standard assumptions, but things
+are more problematic for H because of quasi linearity. Our approach
+is to assume interiority, characterize equilibria, and then check that
+3 As editor Nancy Stokey emphasized to us, our equilibrium concept is a blend of
+traditional Arrow-Debreu components describing aggregates as functions of time t and
+recursive components describing individuals’ problems as functions of t and individual
+state variables. Equilibrium also speciﬁes the distributions of the individual state for all t.
+As is usual in monetary models, there may be multiple equilibria, some of which are
+nonstationary (there may also be sunspot equilibria, but they are ignored here; see Lagos
+and Wright [2003]). The t index indicates the prices and distributions that are relevant,
+but there are no aggregate state variables. In Lagos and Wright (2004), we stay closer to
+conventional recursive methods, but the results are less general; see nn. 6 and 8 below.
+
+
+===== PAGE 6 =====
+
+468 journal of political economy
+is satisﬁed. Thus, when we say equilibrium here, we always0 ! H ! H
+mean equilibrium with .0 ! H ! H
+Given the value functions, we now consider the terms of trade in the
+decentralized market. In double-coincidence meetings, we use the sym-
+metric Nash bargaining solution with threat point given by the contin-
+uation value . It is easy to show that this implies that, regardlessW(m)
+t
+of the money holdings of the agents, each gives the other as deﬁnedq*
+by , and no money changes hands (see Lagos and Wright′′u (q*) p c (q*)
+2004). Hence, . In single-coincidence˜B(m, m) p u(q*) /H11002c(q*) /H11001W(m)tt
+meetings, we use the generalized Nash solution in which the buyer has
+bargaining power and threat points are again given by continuationv 1 0
+values. Hence, ( q, d) maximizes
+v 1/H11002v˜˜[u(q) /H11001W(m /H11002d) /H11002W(m)] [/H11002c(q) /H11001W(m /H11001d) /H11002W(m) ] (4)tt t t
+subject to and , where m and are the buyer’s and seller’s˜d ≤ mq ≥ 0 m
+money holdings.
+This leads us to the following deﬁnition.
+Deﬁnition . An equilibrium is a list { , , , , , , , , ,
+′VWX Hm qd f Fttttt t t t t
+}, where, for all t, and are the value functions; ,GV (m) W(m) X (m)tt t t
+, and are the decision rules in the centralized market;′H(m) m (m)tt
+and are the terms of trade in the decentralized market;˜˜q(m, m) d (m, m)tt
+is the price in the centralized market; and and are the distri-f FGt tt
+butions of money holdings before and after decentralized trade. The
+equilibrium conditions are as follows. For all t, (i) given prices and
+distributions, the value functions and decision rules satisfy (2) and (3);
+(ii) the terms of trade in the decentralized market maximize (4), given
+the value functions; (iii) (i.e., we focus on monetary equilibria);f
+1 0t
+(iv) centralized money markets clear, (goods markets′m (m)dG(m) p M∫ t
+clear by Walras’ law); and (v) is consistent with initial conditions{F, G }tt
+and the evolution of money holdings implied by trades in the centralized
+and decentralized markets. 4
+We now characterize equilibria. Here is an outline of what will follow.
+We begin by deriving some properties of the solution to the centralized
+market problem. We use these properties to solve the bargaining prob-
+lem in the decentralized market and then use these results to simplify
+and to solve an individual’s problem of choosing . In particular,
+′Vm (m)t t
+we show that under certain conditions, for all agents regardless′m p Mt
+of the value of m with which they entered the centralized market (i.e.,
+4 To see what this last condition entails, consider an agent with m entering the decen-
+tralized market at t. With probability aj, he buys and leaves with , where ˜˜m /H11002d (m, m) mt
+is a random draw from . Similarly, with probability aj, he sells and leaves withFm /H11001t
+, and with probability , he neither buys nor sells (although he might barter)˜d (m, m)1 /H110022ajt
+and leaves with m. This maps into . Later that period, in the centralized market, anFGtt
+agent with m chooses , and this maps into .′m (m) p mG Ftt /H110011 tt /H110011
+
+
+===== PAGE 7 =====
+
+monetary theory and policy analysis 469
+must be degenerate) in any equilibrium. Finally, we combine theFt/H110011
+solutions to the centralized and decentralized market problems to re-
+duce the model to a single difference equation.
+To begin, substitute for H from the budget equation to write (3) as
+′′W(m) p fm /H11001max {U(X ) /H11002X /H11002fm /H11001bV (m )}. (5)tt t t /H110011
+′X,m
+This immediately implies several things. First, , whereX (m) p X*t
+. Also, does not depend on m.5 Third, is linear in′′U (X*) p 1 m (m) Wtt
+m with slope . Given this linearity, the bargaining problem (4) sim-ft
+pliﬁes to
+v 1/H11002vmax [u(q) /H11002fd][ /H11002c(q) /H11001fd] (6)tt
+q,d
+subject to and .d ≤ mq ≥ 0
+We claim that the solution to (6) is
+ˆq(m)i f m ! m*tt˜q(m, m) pt {q*i f m ≥ m*,t
+m if m ! m*t˜d (m, m) p (7)t {m*i f m ≥ m*,t
+where is the that solves , withˆq(m) q fm p z(q )tt t t
+′′vc(q)u (q) /H11001(1 /H11002v)u(q)c (q)z(q) { , (8)′′vu (q) /H11001(1 /H11002v)c (q)
+and . To verify this, notice that if we ignore the constraintm* p z(q*)/ftt
+, then necessary and sufﬁcient conditions for a solution ared ≤ m
+′′v[/H11002c(q ) /H11001fd ]u (q ) p (1 /H11002v)[u(q ) /H11002fd ]c (q ) (9)tt t t tt t t
+and
+v[/H11002c(q ) /H11001fd ] p (1 /H11002v)[u(q ) /H11002fd ]. (10)tt t tt t
+Thus , or , and′′u (q ) p c (q ) q p q* d p m* p [vc(q*) /H11001(1 /H11002tt t t t
+. If , the constraint is not binding. If , the so-v)u(q*) ]/f m ≥ m* m ! m*tt t
+lution is given by (9) with , which easily yields . Thisd p m fm p z(q )tt t
+veriﬁes the claim.
+In words, if the buyer’s cash is at least , the constraint is notm* d ≤ mt
+binding and he gets for dollars; otherwise the constraint is bind-q* m*t
+5 The result that does not depend on m suggests that it is reasonable to look for′m
+equilibrium where is degenerate; but we are after bigger game. We want to show thatFt
+is degenerate in all equilibria, and even if does not depend on m, it is possible that′Fmt
+there are multiple solutions to (5) and different agents select different . Below we give′m
+conditions implying that is strictly concave in the relevant range, and hence there is aVt
+unique solution to (5).
+
+
+===== PAGE 8 =====
+
+470 journal of political economy
+ing, and he spends all of his money to get . Notice that the solutionˆq(m)t
+does not depend on the seller’s money holdings at all, and so we˜m
+write and in what follows. For all˜˜q(m, m) p q(m) d (m, m) p d (m)tt t t
+, , where′′m ! m* q (m) p f/z (q )tt t t
+′′ ′ ′ ′′ ′ ′ ′ ′uc [vu /H11001(1 /H11002v)c ] /H11001v(1 /H11002v)(u /H11002c)(uc /H11002cu )′z p 1 0. (11)′′ 2[vu /H11001(1 /H11002v)c ]
+It is a simple matter to check that as . Hence,ˆq(m) r q* m r m*tt
+is strictly increasing for , is continuous at , andˆq(m) p q(m) m ! m* m*tt t t
+is constant at for all .q(m) p q* m ≥ m*tt
+We can now use what we know about the bargaining solution and
+to simplify (2) toW(m)t
+′′V(m) p v(m) /H11001fm /H11001max {/H11002fm /H11001bV (m )}, (12)tt t t t /H110011
+′m
+where
+˜˜ ˜v(m) { aj{u[q(m)]/H11002fd (m)} /H11001aj {fd (m) /H11002c[q(m)] }dF(m)tt t t /H20885tt t t
+/H11001ad[u(q*) /H11002c(q*) ]/H11001U(X*) /H11002X*. (13)
+By repeated substitution we have
+V(m ) p v(m ) /H11001fmtt tt t t
+/H11009
+j/H11002t/H11001b max {/H11002fm /H11001b[v (m ) /H11001f m ]}. (14)/H20888jj /H110011 j/H110011 j/H110011 j/H110011 j/H110011
+jpt mj/H110011
+This reduces the choice of the sequence to a sequence of simple{m }t/H110011
+problems deﬁned in terms of primitives, since is a known function. 6vt/H110011
+Notice that
+′′ ′ ′v (m ) p aj{u [q (m )]q (m ) /H11002f d (m )} (15)t/H110011 t/H110011 t/H110011 t/H110011 t/H110011 t/H110011 t/H110011 t/H110011 t/H110011
+is zero for all by (7). Hence, implies that the prob-m ≥ m* f ! bft/H110011 t/H110011 tt /H110011
+lem of choosing in (14) has no solution, since the objective functionmt/H110011
+is strictly increasing for all . This means that any equilibriumm ≥ m*t/H110011 t/H110011
+6 This is not quite true since depends on , which we do not know yet; but thisvFt/H110011 t/H110011
+merely inﬂuences the intercept and not the choice . The point is that we eliminatedmt/H110011
+from the problem. In Lagos and Wright (2004), we used standard dynamic program-Vt/H110011
+ming methods by writing V as a stationary function of ( m, f) and showing that, even
+though V is unbounded, one can apply the contraction mapping theorem to prove ex-
+istence and uniqueness. That is more work and is less general because there are equilibria
+that cannot be represented in terms of time-independent functions of (m, f), or any other
+aggregate state variable; see n. 8 for an example. However, if one is willing to sacriﬁce
+generality (e.g., to focus on stationary equilibria), then the results in Lagos and Wright
+(2004) are useful because one can study the problem in (12)
+′′ ′max { /H11002fm /H11001bV(m , f )}′m
+directly.
+
+
+===== PAGE 9 =====
+
+monetary theory and policy analysis 471
+must satisfy . Therefore, the minimum inﬂation rate consistentf ≥ bftt /H110011
+with equilibrium is , which is the Friedman rule. Givenf/f p btt /H110011
+, for all t, the objective function in (14) is nonincreasing inf ≥ bftt /H110011
+for .mm ≥ m*t/H110011 t/H110011 t/H110011
+The slope of the date t objective function in (14) as fromm r m*t/H110011 t/H110011
+below is proportional to , where/H11002f /H11001bf /H11001bajf Stt /H110011 t/H110011
+′ 2u (q*)S { /H110021 (16)′ 2 ′′ ′′u (q*) /H11001v(1 /H11002v)[u(q*) /H11002c(q*) ][c (q*) /H11002u (q*) ]
+is the buyer’s marginal gain from bringing an additional dollar into a
+single-coincidence meeting evaluated at . Note that , andq p q* S ≤ 0
+the inequality is strict except when . So, unless andv p 1 f p bftt /H110011
+, the slope of the objective function in (14) as is strictlyv p 1 m r m*t/H110011 t/H110011
+negative, and therefore any solution must satisfy . In the ex-m ! m*t/H110011 t/H110011
+treme case in which and , the slope of the objectivef p bf v p 1tt /H110011
+function at is zero; in this case, however, we consider only solutionsm*t/H110011
+that are limits when either from above or fromf /H11002bf r 0 v r 1tt /H110011
+below. Hence, as long as we are not in the extreme casem ! m*t/H110011 t/H110011
+and , and in this case we take the limit. 7f p bf v p 1tt /H110011
+For , we have . We ′′ ′′ ′ 2 ′′ ′m ! m* v p aj[u (q )(q ) /H11001u (q )q ]t/H110011 t/H110011 t/H110011 t/H110011 t/H110011 t/H110011 t/H110011
+would like to be able to conclude that , since then there will be′′v ! 0t/H110011
+a unique solution . In numerical work one can check it directly, butmt/H110011
+it seems useful to have some conditions to guarantee it more generally.
+For example, suppose that we set , mainly to reduce notation.c(q) p q
+Then if we insert and , one can check that takes the sign of′′ ′ ′ ′qq v
+, where but is otherwise of no concern.′′ ′ ′ ′ ′ 2G /H11001(1 /H11002v)[uu /H11002(u )] G ! 0
+The problem in general is the presence of , but this vanishes if′′′u v ≈
+. Alternatively, for an arbitrary v, we can make assumptions on pref-1
+erences; a sufﬁcient condition is , which holds if is log′′ ′ ′ ′ ′ 2 ′uu ≤ (u ) u
+concave.
+In summary, we now have simple conditions either on v or on pref-
+erences to guarantee , and this implies that there is a unique′′v ! 0t/H110011
+choice of in any equilibrium. That is, must be degenerate atmFt/H110011 t/H110011
+. In any monetary equilibrium, the ﬁrst-order condition eval-m p Mt/H110011
+uated at is , or ′m p M f p b[v (M) /H11001f ]t/H110011 tt /H110011 t/H110011
+′′f p b{aju [q (M)]q (M) /H11001(1 /H11002aj)f }. (17)tt /H110011 t/H110011 t/H110011
+7 It is standard in monetary theory to consider only equilibria at the Friedman rule that
+are the limit of equilibria as inﬂation approaches the Friedman rule. Here we can actually
+do more, by considering any equilibria at the Friedman rule as long as , or as longv
+! 1
+as , but we consider only equilibria that correspond to a limit as .v p 1 v r 1
+
+
+===== PAGE 10 =====
+
+472 journal of political economy
+Inserting and , from the bargaining solu-′′f p z(q )/Mq (M) p f/z (q )tt t t
+tion, we arrive at
+′u (q )t/H110011
+z(q ) p bz(q ) aj /H110011 /H11002aj , (18)tt /H110011 ′[] z (q )t/H110011
+a simple difference equation in . A monetary equilibrium is now char-qt
+acterized by any path for satisfying (18) that stays in , since{q } (0, q*)t
+follows from the result that .q ! q* m ! m*tt t
+For the rest of this paper we focus on stationary equilibria, or steady
+states.8 Notice, however, that it was important not to restrict attention
+to such equilibria earlier, since the argument that is degenerate didFt/H110011
+not use stationarity. In any case, in steady state (18) yields
+′u (q)1 /H11002bp 1 /H11001. (19)′z (q) ajb
+Consider ﬁrst the limiting case , which means . Thenv p 1 z(q) p c(q)
+it is easy to see that a unique solution to (19) exists under standardq 1 0
+conditions, such as . For , a steady state also exists under′u (0) p /H11009v ! 1
+this condition, but we cannot be sure of uniqueness because
+may not be monotone. One can show that it is monotone′′u (q)/z (q)
+under certain additional conditions, such as , or c linear and ′v ≈ 1 u
+log concave (Lagos and Wright 2004). One can also show that
+is increasing in v; hence when the solution is unique, we know′′u (q)/z (q)
+that (Lagos and Wright 2004). Similarly, we know that/H11128q//H11128v 1 0
+, , and . Also note that at , (19) implies/H11128q//H11128a 1 0 /H11128q//H11128j 1 0 /H11128q//H11128b 1 0 v p 1
+as ; for , however, even in the limit as .q r q* b r 1 v ! 1 q ! q* b r 1
+To summarize the results, we have shown that in any equilibrium the
+distribution of money is degenerate across agents exiting the centralized
+and entering the decentralized market. Also, from the choice of m
+t/H110011
+at date t, we know that with strict inequality except in them ≤ m*t/H110011 t/H110011
+extreme case of and . This means that in single-f/f p bv p 1tt /H110011
+coincidence meetings at , the buyer exchanges all his money,t /H110011
+, for . A steady state exists under the usual con-ˆd p Mq p q (M)t/H110011 t/H110011 t/H110011
+ditions, and although it may not be unique, in general, it will be under
+more stringent conditions on preferences orv. Steady states have natural
+8 Dynamics are studied in detail in Lagos and Wright (2003), including cyclic, chaotic,
+and sunspot equilibria, but we do want to mention one thing here. Equilibrium condition
+(18) deﬁnes a function that may not be invertible—i.e., may
+/H110021q p Q(q ) q p Q (q )tt /H110011 t/H110011 t
+be a correspondence—as is standard in monetary models. In this case there is nothing
+that precludes equilibria in which we select different at different dates given the sameqt/H110011
+. For example, under certain conditions, we can construct equilibria in which we selectqt
+from so that cycles between and for all and then select/H110021qQ (q ) qq q t ! Tq /H11323t/H110011 tt L H T /H110011
+from . There is no way to represent such an equilibrium in terms of a time-/H110021{q , q } Q (q )LH T
+invariant function of any aggregate state.
+
+
+===== PAGE 11 =====
+
+monetary theory and policy analysis 473
+comparative static properties, and in particular q is increasing in both
+b and v. One thing we want to emphasize is that the steady state is
+efﬁcient if and only if , which requires both and .q p q* b p 1 v p 1
+To close this section, recall that so far we have simply assumed an
+interior solution for H. Suppose that we want to guarantee . Be-H 1 0
+ginning at with the centralized market, let be the upper boundt p 0 m0
+of the initial distribution. In the candidate equilibrium, andGX p X*0
+, so agents endowed with m workm p MH (m) p X* /H11001f (M /H11002m)t/H110011 0
+hours. Since in any equilibrium , we havef ≤ f* p z(q*)/MH (m) 1 0t 0
+for all m as long as
+X* X*m ! M /H11001p M 1 /H11001.0 []f* z(q*)
+One can similarly show that if the lower bound satisﬁes
+X* /H11002H
+m 1 M 1 /H11001,0 [] z(q*)
+then for all m. Finally, for , one can show thatH (m) ! Ht ≥ 1 X* 10
+and guarantee . Hence, simple condi-z(q*) X* ! H /H11002z(q*) 0 ! H ! Ht
+tions imply that the constraint will be slack for all t.0 ≤ H ≤ Ht
+IV. Changes in the Money Supply
+We now allow M to change over time, with new money injected as lump-
+sum transfers in the centralized market. The generalization of (18) is
+′z(q ) z(q ) u (q )tt /H110011 t/H110011
+p ba j /H110011 /H11002aj . (20)′[]MMz (q )tt /H110011 t/H110011
+If with t constant, it makes sense to consider steadyM p (1 /H11001t)Mt/H110011 t
+states in which q and real balances are constant, that is, infM p z(q)
+which . As in the previous section, is necessaryf/f p 1 /H11001tf /f ≥ btt /H110011 tt /H110011
+for equilibrium to exist; hence, we have , and a lowerFt ≥ t p b /H110021
+bound on feasible t is given by the Friedman rule.
+The steady-state condition is now
+′u (q)1 /H11001t /H11002bp 1 /H11001. (21)′z (q) ajb
+As is standard, we can also state this in terms of the nominal interest
+
+
+===== PAGE 12 =====
+
+474 journal of political economy
+rate i, deﬁned by , where is the equilibrium1 /H11001i p (1 /H11001r)(1/H11001p) p p t
+inﬂation rate and the equilibrium real interest rate:r p (1 /H11002b)/b
+′u (q) ip 1 /H11001. (22)′z (q) aj
+Assuming a unique monetary steady state, we have or, equiv-/H11128q//H11128t ! 0
+alently, ./H11128q//H11128i ! 0
+If , then , and the efﬁcient outcome obtains if andv p 1 z(q) p c(q) q*
+only if or, equivalently, . If , however, then atFt p t i p 0 v ! 1 q ! q*
+. Since a necessary condition for monetary equilibrium is or,F Ftt ≥ t
+equivalently, , the Friedman rule is always optimal here; but wheni ≥ 0
+, it does not achieve . The reason is that in this model there arev ! 1 q*
+two types of inefﬁciencies: one due to b and one to v. The b effect is
+standard: when you acquire cash, you can turn it into future consump-
+tion; but because , you are willing to produce less than the youb
+! 1 q*
+would produce if you could turn the proceeds into immediate con-
+sumption. The Friedman rule corrects this by generating a real return
+on money that compensates for discounting. Notice that although this
+effect is standard, the model does generate some novel insights about
+it, since the frictions show up explicitly: (21) or (22) makes it clear that
+the effect depends on search and specialization through the term aj.
+The more novel effect is the wedge due to . One intuition forv
+! 1
+this effect is the notion of a holdup problem. An agent who carries a dollar
+into next period is making an investment with cost f, since he could
+have spent the cash on general goods. When he uses the money in the
+future, he reaps the full return on his investment if and only if ; v p 1
+otherwise the seller bargains away part of the surplus. Thus reducesv
+! 1
+the incentive to invest, which lowers the demand for real balances and
+hence q. Therefore, implies even at the Friedman rule. Thev
+! 1 q ! q*
+Hosios (1990) condition for efﬁciency says that the bargaining solution
+should split the surplus so that each party is compensated for his con-
+tribution to the surplus in a match. Intuitively, the surplus in a single-
+coincidence meeting is all due to the buyer, since the outcome depends
+on m but not on . Hence, efﬁciency requires here.
+9˜m v p 1
+The wedge due to is important for issues such as the welfarev ! 1
+cost of inﬂation. Measuring welfare by V, when we know that Vv p 1
+is maximized at and achieves the efﬁcient outcome , whereFt V *
+(1 /H11002b)V * p a(d /H11001j)[u(q*) /H11002c(q*) ]/H11001U(X*) /H11002X*, (23)
+as shown in ﬁgure 1. With , small deviations from have very Fv p 1 t
+9 This holdup problem does not arise in the paper by Shi (1997) because of the way
+he solves the bargaining problem, although it would if he used a more standard bargaining
+solution, as Rauch (2000) points out. See Berentsen and Rocheteau (2003) for a discussion.
+
+
+===== PAGE 13 =====
+
+monetary theory and policy analysis 475
+Fig. 1.—Welfare cost of moderate inﬂation
+small effects on V because of the envelope theorem, just as in the typi-
+cal reduced-form (e.g., cash-in-advance) model. When , is a con-Fv ! 1 t
+strained optimum: would achieve a higher q and V if it wereFt ! t
+feasible, but it is not. Hence the slope of V with respect to t is steep at
+and the envelope theorem does not apply. A moderate inﬂationFt
+therefore has a larger welfare cost when . We quantify this statementv
+! 1
+in the next section.
+V. Quantitative Analysis
+We parameterize the model as follows. Assume that u(q) p [(q /H11001
+, where and . This generalizes stan-1/H11002h 1/H11002hb) /H11002b ]/ (1/H11002h) h 1 0 b /H33528(0, 1)
+dard constant relative risk aversion preferences by including b, which
+forces (a maintained assumption); this does not matter muchu(0) p 0
+quantitatively, however, because we set for this exercise. Sinceb ≈ 0
+, this means that . Next, assume thatq* p 1 /H11002bq * ≈ 1 U(X ) p
+. Notice that this implies . Finally, assume thatB log (X ) X* p Bc (h) p
+, which makes the disutility of labor the same in the two markets.h
+We begin with a yearly model, mainly to facilitate comparison with
+
+
+===== PAGE 14 =====
+
+476 journal of political economy
+the existing literature (below we show that a monthly model yields sim-
+ilar results). The annual rate of time preference is . We canr p 0.04
+normalize since results depend only on the products ad and aj.a p 1
+We set , but this actually matters little for the results. We shall taked p 0
+two approaches to setting j: ﬁrst we shall estimate it along with the
+preference parameters, using a procedure discussed below; then, since
+it does not matter much for the results, we shall simply ﬁx it at j p
+, which means that every agent always has an opportunity to either0.5
+buy or sell in each meeting of the decentralized market.
+10
+We now describe the method we use to ﬁt the parameters ( h, B, j).
+The idea, exactly as in Lucas (2000), is to look at the relationship be-
+tween the nominal rate i and . This relationship representsL { M/PY
+“money demand” in the sense that “desired” real balances are M/P
+proportional to Y, with a factor of proportionality L that depends on
+the cost of holding cash, i. To construct L in the model, note that
+nominal output in the centralized market is , and nominalX*/f p B/f
+output in the decentralized market is jM. Hence, andPY p (B/f) /H11001jM
+. In equilibrium, , and soY p B /H11001jfMM /P p fM p z(q)
+M/Pz (q)
+L pp . (24)YB /H11001jz(q)
+Condition (22) gives q and hence L a saf u n c t i o no fi; (24) is the “money
+demand” curve implied by theory.
+We want to ﬁt this relationship to the data by choosing ( h, B, j). We
+again follow Lucas (2000) and let i be the commercial paper rate and
+let M be M1 (there are issues concerning how to measure all these
+variables, perhaps especially M; again our choices are made mainly to
+facilitate comparison with previous studies). The sample period is 1900–
+2000. The ﬁtted values of ( h, B, j) are described below. Before we can
+proceed, however, we need to discuss the bargaining power parameter,
+v. Our method is to try three alternatives: , which eliminates thev p 1
+holdup problem and makes our setup closer to previous studies; v p
+, which means symmetric bargaining; and , where is the value0.5 v p vv
+mm
+that generates a markup m (price over marginal cost) consistent with
+the evidence, which we take to be . 11m p 1.1
+Given or 0.5, we ﬁt the parameters to the “money demand”v p 1
+data; given , we ﬁt them subject to the constraint at a bench-vm p 1.1m
+10 Setting maximizes the importance of the decentralized market, but it is stillj p 0.5
+fairly small in the calibrations reported below: at a benchmark inﬂation rate of 4 percent,
+it contributes less than 10 percent to aggregate output.
+11 See Basu and Fernald (1997) for the evidence. To compute m in the model, note that
+price over marginal cost in the decentralized market is , whereas in the centralizedfM/q
+market it is one. Aggregate m averages these markups using the shares of output from
+each sector.
+
+
+===== PAGE 15 =====
+
+monetary theory and policy analysis 477
+Fig. 2.—Model and data
+mark inﬂation rate of 4 percent. For example, given , the best ﬁtv p 1
+is . However, things are not precisely(h, B, j) p (0.266, 2.133, 0.311)
+identiﬁed; if we ﬁx , we estimate withj p 0.5 ( h, B) p (0.163, 1.968)
+virtually no sacriﬁce in ﬁt and no change in the welfare implications,
+as we shall see below. Hence we often simply set . Figure 2 showsj p 0.5
+the ﬁtted relationship for the case as the solid line and for thev p 1
+case as the dashed line, where in each case we set andv p 0.5 j p 0.5
+ﬁt the preference parameters; clearly there is little in these data to
+recommend one v over another.
+Our measure of the cost of inﬂation asks how much agents would be
+willing to give up in terms of total consumption to have inﬂation zero
+instead of t. For any t, steady-state utility is
+(1 /H11002b)V(t) p U(X*) /H11002X* /H11001aj{u[q(t)]/H11002q(t)}. (25)
+
+
+===== PAGE 16 =====
+
+478 journal of political economy
+TABLE 1
+Annual Model ( 1900–2000)
+v p 1 v p .5 v p .343m v p 1
+j p .31
+h p .27
+B p 2.13
+(1)
+j p .50
+h p .16
+B p 1.97
+(2)
+j p .50
+h p .30
+B p 1.91
+(3)
+j p .50
+h p .39
+B p 1.78
+(4)
+j p .50
+h p .39
+B p 1.78
+(5)
+q(t) .243 .206 .143 .094 .522
+q(0) .638 .618 .442 .296 .821
+Fq(t ) 1.000 1.000 .779 .568 1.000
+1 /H11002D0 .014 .014 .032 .046 .012
+1 /H11002DF .016 .016 .041 .068 .013
+If we reduce t to zero but also reduce consumption of both general
+and special goods by a factor D, utility becomes
+(1 /H11002b)V (0) p U(X*D) /H11002X* /H11001aj{u[q(0)D] /H11002q(0)}. (26)D
+We measure the cost of t as the value that solves ; agentsD V (0) p V(t)0 D0
+would give up percent of consumption to have zero rather than1 /H11002D0
+t. We also consider , which is how much they would give up to haveDF
+the Friedman rule rather than t. Our experiments use (i.e.,Ftt p 0.1
+10 percent inﬂation), but we also report the costs of a wide range for
+inﬂation at the end of the section.
+In table 1, column 1 presents results for the case and the ﬁttedv p 1
+(h, B, j). To focus on one number, we ﬁnd that going from 10 percent
+to 0 percent inﬂation is worth 1.4 percent of consumption. The column
+2 results pertain to the case in which we ﬁx and reﬁt ( h, B). Asj p 0.5
+mentioned, the results are very similar, especially for welfare. The main
+point we want to make is that these numbers are similar to, if slightly
+larger than, typical estimates in the literature, including those in Lucas
+(2000), which reports a range for , depending on the exact spec-1 /H11002D
+0
+iﬁcation, but typically slightly under 1 percent. We interpret the results
+with as being in line with, if slightly higher than, the consensusv p 1
+view in the literature. 12
+Since j does not matter much for the results, the remaining columns
+in table 1 vary v, while ﬁxing and reestimating ( h, B) for eachj p 0.5
+v. The goodness of ﬁt is basically the same for each v, but the welfare
+costs increase and q decreases sharply with v. This indicates that the
+12 Lucas actually uses rather than , but this has a small effect on ourr p 0.03 r p 0.04
+estimates. Cooley and Hansen (1989, 1991) report even smaller numbers. Molico (1997)
+gets small numbers, and sometimes negative numbers, because inﬂation in his model
+beneﬁcially redistributes liquidity to those who need it most; this effect is absent in our
+model, of course, because F is degenerate. Wu and Zhang (2000) get bigger numbers
+because they assume monopolistic competition, and they also provide references to some
+other related studies.
+
+
+===== PAGE 17 =====
+
+monetary theory and policy analysis 479
+TABLE 2
+Annual Model ( 1959–2000)
+v p 1 v p .5 v p .404m v p 1
+j p .50
+h p .27
+B p 3.19
+(1)
+j p .50
+h p .45
+B p 2.92
+(2)
+j p .50
+h p .48
+B p 2.71
+(3)
+j p .50
+h p .48
+B p 2.71
+(4)
+q(t) .392 .192 .135 .590
+q(0) .752 .409 .307 .852
+Fq(t ) 1.000 .602 .478 1.000
+1 /H11002D0 .008 .025 .031 .007
+1 /H11002DF .009 .035 .046 .008
+holdup problem is serious and is in fact what generates a relatively large
+cost of inﬂation. In the case of , the aggregate markup isv p 0.5 m p
+. Column 4 generates at 4 percent inﬂation and implies1.04 m p 1.10
+that the welfare costs are and —substan-1 /H11002D p 0.046 1 /H11002D p 0.0680 F
+tially larger than the consensus view. To verify that it is indeed the holdup
+problem that lies at the heart of these effects, as opposed to the dif-
+ferences in other parameters across the columns, column 5 uses the
+same parameters as column 4 but sets . This yields fairly low costs.v p 1
+Hence, it is and not the other parameters that generates the bigv
+! 1
+effects.13
+Table 2 reports similar experiments ﬁtting the model to a shorter
+sample, 1959–2000. Although the welfare costs are slightly lower, the
+main conclusion is the same: decreasing v from 1 to 0.5 or to increasesv
+m
+the welfare costs considerably.14 Table 3 reports a ﬁnal robustness check
+by recalibrating so that the period is a month; that is, we transform the
+data for Y and i to make them monthly. For these results we estimate
+j along with the preference parameters in every case. While the estimates
+change when we go from an annual to a monthly model, the overall ﬁt
+is about the same.
+15 What we want to emphasize is that the welfare costs
+13 There is a sense in which we may be overestimating the cost of inﬂation by using
+, since is calibrated to generate an average markup of 10 percent under the assumptionvvmm
+that the centralized market is perfectly competitive; if there were a noncompetitive markup
+in the centralized market, we would not need such a low v to match the average markup.
+14 Intuitively, the cost of inﬂation is lower in the shorter sample because the estimated
+“money demand” curve has a much ﬂatter slope in the shorter sample. This is not meant
+to be a rigorous explanation, however, especially since we shall argue below that the area
+under the “money demand” curve is not necessarily the right way to measure the cost of
+inﬂation.
+15 In particular, estimates of B and j are smaller in the monthly data, for the following
+simple reason. First, in equilibrium, centralized market consumption is , and ob-X* p B
+viously monthly consumption is less than annual. Second, j is the probability of a single
+coincidence, and obviously this probability is lower per month than per year. Intuitively,
+this last point is important because it means that we can match velocity equally well when
+we vary the period length.
+
+
+===== PAGE 18 =====
+
+480 journal of political economy
+TABLE 3
+Monthly Model ( 1900–2000)
+v p 1 v p .5 v p .315m v p 1
+j p .033
+h p .20
+B p .17
+(1)
+j p .052
+h p .23
+B p .15
+(2)
+j p .052
+h p .33
+B p .14
+(3)
+j p .052
+h p .33
+B p .14
+(4)
+q(t) .230 .151 .101 .552
+q(0) .623 .476 .329 .831
+Fq(t ) 1.000 .845 .644 1.000
+1 /H11002D0 .013 .030 .049 .010
+1 /H11002DF .015 .038 .069 .011
+here are very similar to those in table 1, and so the main conclusion is
+robust to changing the period length as well as the sample. That con-
+clusion is that bargaining power seems to be a quantitatively important
+consideration in estimating the welfare cost of inﬂation, and one that
+previous analyses have missed entirely.
+To illustrate the effects of less moderate inﬂations, ﬁgure 3 shows the
+welfare cost for inﬂation rates ranging from 0 to 150 percent.1 /H11002D
+0
+The upper curve pertains to and the parameters from column 4 ofvm
+table 1, whereas the lower curve pertains to and the same param-v p 1
+eters. The difference in the curves is due to the holdup problem. Notice
+that the difference gets smaller at big inﬂation rates, because q gets very
+small for big t regardless of v. As the ﬁgure makes clear, the costs
+basically converge when t reaches 150 percent since decentralized trade
+has all but shut down by this point. Hence, the difference between
+models with and is especially relevant for small to moderatev p 1 v
+! 1
+inﬂation rates.
+Finally, we want to contrast our method with the traditional way of
+measuring the cost of inﬂation, which is to compute the area under the
+“money demand” curve (see the discussion and references in Lucas
+[2000]). Our results show that this procedure does not work in general.
+If we start with a value for v and ﬁt parameters to “money demand” and
+then change v and reﬁt the parameters, we match the data equally well
+but get very different values for the welfare cost. Knowing the empirical
+“money demand” curve is not enough: one really needs to understand
+the micro foundations, and especially how the terms of trade are de-
+termined, in order to correctly estimate the welfare cost of inﬂation.
+VI. Conclusion
+We have presented a new framework for monetary economics, explicitly
+based on the frictions used in search theory, but without the restrictions
+
+
+===== PAGE 19 =====
+
+monetary theory and policy analysis 481
+Fig. 3.—Welfare cost of higher inﬂation
+on money holdings usually made in those models. A key innovation is
+to allow agents to interact periodically in centralized as well as decen-
+tralized markets. Given that agents have quasi-linear preferences, the
+distribution of money is degenerate in equilibrium, and this keeps the
+model tractable. We characterized equilibria and discussed some policy
+issues. The Friedman rule is optimal but does not achieve the ﬁrst-best
+for . We found that this has sizable implications for the cost ofv
+! 1
+inﬂation: going from 10 percent to 0 percent inﬂation here is worth
+between 3 percent and 5 percent of consumption—much larger than
+most previous estimates. This indicates that building monetary theories
+with explicit foundations matters for quantitative analysis. We think that
+all of this constitutes progress in terms of bringing micro and macro
+models of money closer together.
+We also think that we have only scratched the surface, and much
+more can be done. In Lagos and Wright (2004), we report several ex-
+tensions. For example, we add real shocks, either match-speciﬁc or ag-
+gregate, and either independently and identically distributed or persis-
+tent. Although in that model the constraint may not bind withd ≤ m
+probability one, we show that F is still degenerate. We also discuss the
+effects of uncertainty in M. One experiment is to keep total M constant
+and randomly transfer m across agents. Again may not bind withd ≤ m
+probability one, and we show that a mean-preserving spread in m always
+
+
+===== PAGE 20 =====
+
+482 journal of political economy
+reduces welfare, even though it may increase f and q if because′′′u ≥ 0
+of a “precautionary demand” effect. We also consider transfers t that
+are the same for all agents but are random over time. This version
+delivers natural results and remains fairly tractable: we show that if t is
+independently and identically distributed, then f and q are constant;
+and if t is persistent, f and q are smaller in periods of high t because
+this implies forecasts of higher future inﬂation.
+Other extensions include the paper by Aruoba and Wright (2003),
+who add neoclassical ﬁrms and capital—that is, they make general goods
+storable—and integrate the framework with a standard real business
+cycle model. However, they assume that capital is not used in the de-
+centralized market, which implies some very special results; Waller
+(2003) and Aruoba, Waller, and Wright (2004) generalize this. Lagos
+and Rocheteau (2004) make the general good storable and allow it to
+compete with money as a medium of exchange. Rocheteau and Wright
+(2005) add heterogeneity and free entry, which allows one to analyze
+effects on the extensive margin (number of trades), in addition to the
+intensive margin (quantity per trade). Lagos and Rocheteau (2005)
+endogenize search intensity and study the effects of inﬂation on velocity,
+output, and welfare. Some of these papers also consider alternative
+pricing mechanisms, such as price taking or posting, instead of bar-
+gaining. See also Ennis (2004), Faig and Huangfu (2004), and Roche-
+teau and Waller (2004). Ennis (2004) and Rocheteau and Wright (forth-
+coming) redo the quantitative experiments in this paper under some
+of these alternative pricing mechanisms.
+Faig (2004) asks when credit and insurance markets can replace quasi-
+linear utility. Williamson (forthcoming) studies policy in a version with
+seasonal and other ﬂuctuations in the demand for liquidity. Lagos
+(2005) extends the basic environment to study liquidity and asset prices.
+Bhattacharya, Haslag, and Martin (2005) study policy with heteroge-
+neous agents. Reed and Waller (2004) discuss risk sharing. Berentsen,
+Camera, and Waller (2004) and He, Huang, and Wright (2005) intro-
+duce roles for banks. Rocheteau and Craig (2004) consider “sticky”
+prices. Berentsen et al. (2005) assume that agents may be in the de-
+centralized market for more that one round of trade, which makes the
+distribution no longer degenerate but still tractable. Kahn, Thomas, and
+Wright (2004) assume that utility is not quasi-linear; this model can be
+solved numerically to show that when wealth effects are not too big, the
+results are close to those derived here. While not an exhaustive list, this
+gives a sense of a few of the applications and extensions that are possible.
+References
+Aruoba, S. Boragan, Christopher Waller, and Randall Wright. 2004. “Money and
+Capital.” Manuscript, Univ. Maryland.
+
+
+===== PAGE 21 =====
+
+monetary theory and policy analysis 483
+Aruoba, S. Boragan, and Randall Wright. 2003. “Search, Money, and Capital: A
+Neoclassical Dichotomy.” J. Money, Credit and Banking 35, no. 6, pt. 2 (Decem-
+ber): 1085–1105.
+Basu, Susanto, and John G. Fernald. 1997. “Returns to Scale in U.S. Production:
+Estimates and Implications.” J.P.E. 105 (April): 249–83.
+Berentsen, Aleksander, Gabriele Camera, and Christopher J. Waller. 2004.
+“Money, Credit and Banking.” Manuscript, Notre Dame Univ.
+———. 2005. “The Distribution of Money Balances and the Non-neutrality of
+Money.” Internat. Econ. Rev. 46 (May).
+Berentsen, Aleksander, and Guillaume Rocheteau. 2003. “On the Friedman Rule
+in Search Models with Divisible Money.” Contributions to Macroeconomics 3 (1).
+Bhattacharya, Joydeep, Joseph H. Haslag, and Antoine Martin. 2005. “Hetero-
+geneity, Redistribution, and the Friedman Rule.”Internat. Econ. Rev. 46 (May).
+Camera, Gabriele, and Dean Corbae. 1999. “Money and Price Dispersion.” In-
+ternat. Econ. Rev. 40 (November): 985–1008.
+Cooley, Thomas F., and Gary D. Hansen. 1989. “The Inﬂation Tax in a Real
+Business Cycle Model.” A.E.R. 79 (September): 733–48.
+———. 1991. “The Welfare Costs of Moderate Inﬂations.” J. Money, Credit and
+Banking 23, no. 3, pt. 2 (August): 483–503.
+Ennis, Huberto. 2004. “Search, Money, and Inﬂation under Private Information.”
+Discussion Paper no. 142 (August), Inst. Empirical Macroeconomics, Fed.
+Reserve Bank Minneapolis.
+Faig, Miguel. 2004. “Divisible Money in an Economy with Villages.” Manuscript,
+Univ. Toronto.
+Faig, Miguel, and Xiuhua Huangfu. 2004. “Competitive Search in Monetary
+Economies.” Manuscript, Univ. Toronto.
+Green, Edward J., and Ruilin Zhou. 1998. “A Rudimentary Random-Matching
+Model with Divisible Money and Prices.” J. Econ. Theory 81 (August): 252–71.
+He, Ping, Lixin Huang, and Randall Wright. 2005. “Money and Banking in
+Search Equilibrium.” Internat. Econ. Rev. 46 (May).
+Hosios, Arthur J. 1990. “On the Efﬁciency of Matching and Related Models of
+Search and Unemployment.” Rev. Econ. Studies 57 (April): 279–98.
+Kahn, Aubhik, Julia Thomas, and Randall Wright. 2004. “The Distribution of
+Money in Search Equilibrium: Quantitative Theory and Policy Analysis.” Man-
+uscript, Univ. Minnesota.
+Kocherlakota, Narayana R. 1998. “Money Is Memory.”J. Econ. Theory 81 (August):
+232–51.
+Lagos, Ricardo. 2005. “Asset Prices and Liquidity in an Exchange Economy.”
+Manuscript, New York Univ.
+Lagos, Ricardo, and Guillaume Rocheteau. 2004. “Money and Capital as Com-
+peting Media of Exchange.” Staff Report no. 341 (August), Res. Dept., Fed.
+Reserve Bank Minneapolis.
+———. 2005. “Inﬂation, Output, and Welfare.” Internat. Econ. Rev. 46 (May).
+Lagos, Ricardo, and Randall Wright. 2003. “Dynamics, Cycles, and Sunspot Equi-
+libria in ‘Genuinely Dynamic, Fundamentally Disaggregative’ Models of
+Money.” J. Econ. Theory 109 (April): 156–71.
+———. 2004. “A Uniﬁed Framework for Monetary Theory and Policy Analysis.”
+Staff Report no. 346 (September), Res. Dept., Fed. Reserve Bank Minneapolis.
+Lucas, Robert E., Jr. 2000. “Inﬂation and Welfare.”Econometrica 68 (March): 247–
+74.
+Molico, Miguel. 1997. “The Distribution of Money and Prices in Search Equi-
+librium.” PhD diss., Univ. Pennsylvania.
+
+
+===== PAGE 22 =====
+
+484 journal of political economy
+Rauch, Bernhard. 2000. “A Divisible Search Model of Fiat Money: A Comment.”
+Econometrica 68 (January): 149–56.
+Reed, Robert, and Christopher Waller. 2004. “Money and Risk Sharing.” Man-
+uscript, Notre Dame Univ.
+Rocheteau, Guillaume, and Ben Craig. 2004. “State-Dependent Pricing, Inﬂation
+and Welfare.” Manuscript, Fed. Reserve Bank Cleveland.
+Rocheteau, Guillaume, and Christopher Waller. 2004. “Bargaining in Monetary
+Economies.” Manuscript, Fed. Reserve Bank Cleveland.
+Rocheteau, Guillaume, and Randall Wright. 2005. “Money in Search Equilib-
+rium, in Competitive Equilibrium, and in Competitive Search Equilibrium.”
+Econometrica 73 (January): 175–202.
+———. Forthcoming. “Inﬂation and Welfare in Models with Trading Frictions.”
+In Monetary Policy in Low Inﬂation Economies , edited by D. Altig and E. Nosal.
+Cambridge: Cambridge Univ. Press.
+Shi, Shouyong. 1995. “Money and Prices: A Model of Search and Bargaining.”
+J. Econ. Theory 67 (December): 467–96.
+———. 1997. “A Divisible Search Model of Fiat Money.” Econometrica 65 (Jan-
+uary): 75–102.
+Trejos, Alberto, and Randall Wright. 1995. “Search, Bargaining, Money, and
+Prices.” J.P.E. 103 (February): 118–41.
+Wallace, Neil. 2001. “Whither Monetary Economics?”Internat. Econ. Rev. 42 (No-
+vember): 847–69.
+Waller, Christopher. 2003. “Comment on ‘Search, Money, and Capital: A Neo-
+classical Dichotomy’ by S. Boragan Aruoba and Randall Wright.” J. Money,
+Credit and Banking 35, no. 6, pt. 2 (December): 1111–17.
+Williamson, Stephen. Forthcoming. “Search, Seasonality and Monetary Policy.”
+Internat. Econ. Rev.
+Wu, Yangru, and Junxi Zhang. 2000. “Monopolistic Competition, Increasing
+Returns to Scale, and the Welfare Costs of Inﬂation.” J. Monetary Econ. 46
+(October): 417–40.
+Zhou, Ruilin. 1999. “Individual and Aggregate Real Balances in a Random-
+Matching Model.” Internat. Econ. Rev. 40 (November): 1009–38.
+Zhu, Tao. 2003. “Existence of a Monetary Steady State in a Matching Model:
+Indivisible Money.” J. Econ. Theory 112 (December): 307–24.

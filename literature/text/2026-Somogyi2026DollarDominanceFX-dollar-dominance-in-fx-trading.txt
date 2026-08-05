@@ -1,0 +1,2934 @@
+
+
+===== PAGE 1 =====
+
+Dollar Dominance in FX Trading
+Fabricius Somogyi
+a 
+a
+D’Amore-McKim School of Business, Northeastern University, Boston, Massachusetts 02115 
+Contact: f.somogyi@northeastern.edu , 
+ https:/ /orcid.org/0009-0001-2058-3405 (FS) 
+Received: September 10, 2024 
+Revised: April 8, 2025 
+Accepted: September 12, 2025 
+Published Online in Articles in Advance: 
+April 7, 2026 
+https://doi.org/10.1287/mnsc.2024.07656 
+Copyright: © 2026 INFORMS
+Abstract. Over 85% of all foreign exchange (FX) transactions involve the U.S. dollar, whereas 
+the United States accounts for a much smaller fraction of global economic activity. My paper 
+attributes the dominance of the dollar in FX trading to strategic avoidance of price impact. 
+Using a novel identification strategy, I show that, on average, 13% of the volume in dollar 
+pairs arises from using the dollar as a vehicle currency to indirectly exchange two nondollar 
+currencies. To rationalise this result, I derive three model-based conditions for dollar domi -
+nance. I empirically test these conditions and provide evidence consistent with the theoretical 
+framework.
+History: Accepted by Lukas Schmid, finance. 
+Funding: F. Somogyi acknowledges financial support from the Swiss National Science Foundation 
+(SNSF) [Grant 195095]. 
+Supplemental Material: The online appendix and data files are available at https:/ /doi.org/10.1287/mnsc. 
+2024.07656. 
+Keywords: dollar dominance • FX volume • price impact • vehicle currency
+1. Introduction
+The U.S. dollar (USD) plays a central role in the global 
+economy. This is particularly the case for the foreign 
+exchange (FX) market, which is the largest financial 
+market in the world. Over 85% of all FX transactions 
+involve the U.S. dollar, despite the fact that the United 
+States accounts for just around 40% of global cross- 
+border economic activities. Against this backdrop, the 
+goal of this paper is to explain why the U.S. dollar is 
+used significantly more in global FX transactions than 
+is warranted by U.S. economic activities.
+I show that the use of the U.S. dollar as an interme -
+diate vehicle currency is a pivotal determinant of its 
+dominance in global FX spot trading volumes. Specifi -
+cally, market participants that are strategic about their 
+trading costs avoid directly transacting in nondollar cur -
+rency pairs whenever the expected trading cost is suffi -
+ciently large. Instead, market participants exchange 
+nondollar pairs indirectly by using the U.S. dollar as an 
+intermediate vehicle currency. That is, market partici -
+pants first exchange a nondollar currency into U.S. 
+dollars and then trade those dollars for their target 
+currency.
+Using a globally representative FX trade data set, I 
+quantify the empirical relevance of vehicle currency 
+trading along two dimensions. First, I use a novel 
+identification strategy to establish a stylised fact 
+about vehicle currency trading: on average 13% of the 
+daily trading volume in dollar currency pairs (around 
+$8 billion per day) corresponds to vehicle currency 
+trading activity. Second, I show that my model-based 
+conditions for dollar dominance (DD) in FX volumes 
+are accurate predictors of the actual dollar dominance 
+observed in the data.
+To guide the empirical analysis, I build on Rostek 
+and Yoon ( 2021 )’s model to show that the price impact 
+of the indirect vehicle trade involving two dollar cur -
+rency pairs is less than the direct exchange if two con -
+ditions are satisfied: the two dollar currency pairs 
+exhibit (i) at least twice as volatile fundamental trading 
+demands, but (ii) half as volatile exchange rate returns 
+as the nondollar pair. The lower expected price impact 
+in dollar currency pairs generates additional trading 
+volume beyond what the U.S. share in global economic 
+activity would suggest. Taken together, large funda -
+mental trading demands coupled with significant 
+vehicle currency trading because of strategic avoid -
+ance of price impact engender that dollar pairs domi -
+nate FX volumes. The empirical analysis supports 
+these theoretical predictions.
+Understanding the determinants of dollar dominance 
+in FX trading is relevant for both global investors and 
+policymakers. This is because the concentration of FX 
+trading volume in U.S. dollar currency pairs entails 
+both costs and benefits for the world economy.
+1
+Poten -
+tial benefits stem from economies of scale and network 
+effects reducing trading costs in dollar currency pairs, 
+which, in turn, facilitates international trade and invest -
+ment. But interconnectedness can also be a source of 
+systemic risk and international spill-over effects if it 
+amplifies shocks from the U.S. to other economies 
+around the world.
+1 
+MANAGEMENT SCIENCE 
+Articles in Advance, pp. 1–23 
+ISSN 0025-1909 (print), ISSN 1526-5501 (online) 
+https://pubsonline.informs.org/journal/mnsc 
+
+===== PAGE 2 =====
+
+The main contribution of this paper is to show 
+empirically that vehicle currency trading because of 
+strategic avoidance of price impact is a pivotal deter -
+minant of dollar dominance in FX trading. Hence, 
+the paper does not aim to provide a unified theory of 
+dollar dominance in general. In particular, the paper 
+does not strive to answer why fundamental trading 
+demands for U.S. dollars are large to begin with. 
+Instead, the paper focuses on how strategic price 
+impact avoidance generates vehicle currency trading 
+demands for U.S. dollars such that trading volume in 
+dollar pairs exceeds what would be warranted by fun -
+damental trading demands.
+To illustrate the relevance of this economic channel, 
+I establish a novel stylised fact about vehicle currency 
+trading. Specifically, I disentangle trading volume in 
+dollar currency pairs because of fundamental trading 
+motives from vehicle currency demands. For identifica -
+tion, I exploit the quasiexogenous variation in vehicle 
+currency trading demands associated with nonoverlap -
+ping holidays. The intuition is as follows. Consider, for 
+instance, the case where Australia is on holiday but nei -
+ther Japan nor the United States are (e.g., Anzac Day 
+on April 25). On such a day, hardly any of the inter -
+dealer volume in USDJPY is driven by vehicle currency 
+trading motives stemming from indirectly exchanging 
+Australian dollars to Japanese yen via the U.S. dollar. 
+This is because the number of counterparties that wish 
+to exchange Australian dollars for another foreign cur -
+rency, such as the Japanese yen, is lower because of 
+the public holiday. Eventually, my measure of vehicle 
+currency trading activity is the difference between 
+interdealer volume and my implied measure of funda -
+mental trading demand based on nonoverlapping holi -
+days. Using an event study regression design that 
+controls for various sources of fundamental trading 
+demands, I find that vehicle currency trading demands 
+for the largest and most liquid dollar pairs (e.g., 
+USDEUR or USDJPY) account for up to 25%–38% of 
+aggregate daily interdealer volume in dollar pairs.
+The remainder of the paper proceeds in two parts. 
+The first part presents a stylised model that identifies 
+the strategic avoidance of price impact as a novel eco -
+nomic channel through which a currency can domi -
+nate FX volumes relative to its use in other areas of 
+the global financial system (e.g., official FX reserves, 
+trade invoicing, cross-border loans, and safe asset sup -
+ply). Specifically, the model provides a set of sufficient 
+conditions for dollar dominance. These conditions 
+accurately predict which nondollar currency pairs are 
+more likely to be exchanged indirectly via the dollar. 
+Perhaps surprisingly, the conditions imply that even a 
+symmetrical market with identical fundamental trad -
+ing demands across currency pairs is prone to dollar 
+dominance if dollar pairs feature lower expected price 
+impacts.
+To be specific, the model incorporates vehicle cur -
+rency trading into a demand submission game that 
+draws on Rostek and Yoon ( 2021 ). Traders in the 
+model represent large institutional investor or dealer 
+banks that consider their price impact when exchang -
+ing one currency against another. Ideally, traders pre -
+fer not to deviate from their fundamental trading 
+demand in a given currency pair. However, they are 
+willing to deviate from their fundamental trade inter -
+est and use a vehicle currency if they are sufficiently 
+compensated by trading cost reductions. In general, 
+my modelling approach reflects the key features of 
+the FX market, which is a decentralised market that is 
+organised via a network of limit order books.
+In equilibrium, the optimal traded quantity increases 
+both in traders’ fundamental and vehicle currency 
+trading demand. The latter is determined by the distri -
+bution of price impacts across currency pairs. The 
+larger the expected price impact in a currency pair, the 
+lower the amount of vehicle currency trading. Price 
+impact in this model is endogenous and determined by 
+the distribution of fundamental trading demands and 
+expected currency returns. I show that the equilibrium 
+price impact decreases in the variance of fundamental 
+trading demands but increases in the variance of 
+expected currency returns.
+Equipped with the intuition from the comparative 
+statics, I derive a set of conditions for dollar domi -
+nance, as follows. Conditional on observing larger 
+trading volume in dollar pairs relative to their funda -
+mental trading demands, a triplet of currency pairs is 
+dominated by the U.S. dollar if trading volume in each 
+of the two dollar currency pairs exceeds trading volume 
+in the direct nondollar cross pair. Based on this defini -
+tion, the sufficient condition for dollar dominance is 
+that the following three conditions are satisfied: U.S. 
+dollar currency pairs exhibit (i) larger average funda -
+mental trading demands, (ii) more volatile fundamental 
+trading demands, and also (iii) less volatile currency 
+returns than nondollar pairs. Therefore, dollar domi -
+nance in this model is not a co-ordination result but a 
+rationale equilibrium outcome.
+The second part of the paper tests the predictions of 
+the model using actual FX trade and quote data from 
+two sources. First, I use spot FX trading volume and 
+order flow data from CLS Group (CLS), which oper -
+ates the world’s largest multicurrency cash settlement 
+system. CLS is the only source of globally representa -
+tive FX trade data that are not specific to a particular 
+market segment or trading platform. Second, I pair 
+the hourly FX trading volume and order flow data 
+with intraday spot rates from Olsen Data.
+The empirical analysis employs panel regressions to 
+show that the model-based conditions are both eco -
+nomically and statistically significant determinants of 
+the time and cross-sectional variation in my measure 
+Somogyi: Dollar Dominance in FX Trading 
+2 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 3 =====
+
+of dollar dominance. My sample contains 15 triplets 
+of currency pairs, which are all dominated by the U.S. 
+dollar except for three triplets involving the euro 
+(EUR) and the Danish, Norwegian, or Swedish krone. 
+In line with this observation, at least two out of three 
+conditions for dollar dominance are satisfied for the 
+remaining 12 currency pair triplets. In particular, the 
+model correctly predicts that the three aforemen -
+tioned triplets are dominated by the euro rather than 
+the U.S. dollar because none of the three conditions 
+for dollar dominance is satisfied. Moreover, in terms 
+of relative importance, the first condition explains 
+around 5:3% of the time series variation in dollar 
+dominance, whereas the second and third conditions 
+jointly account for up to 3:1%. Thus, the time-varying 
+degree of dollar dominance is driven by two forces: 
+first, the dominance of the dollar in fundamental trad -
+ing demands, and second, the attractiveness of the 
+dollar for vehicle currency trading because of a lower 
+expected price impact in dollar currency pairs relative 
+to nondollar pairs.
+This paper contributes to three strands of literature. 
+First, I expand the literature on FX volume by explain -
+ing the concentration of FX trading activity in U.S. 
+dollar currency pairs both empirically and theoreti -
+cally. In contrast to the FX order flow literature (e.g., 
+Evans 2002 ; Evans and Lyons 2002 , 2005 ), the litera -
+ture on trading volume is relatively scarce because of 
+the lack of comprehensive data sets. Earlier research 
+has focused largely on the interdealer segment, which 
+is dominated by two platforms: Reuters (e.g., Evans 
+2002 , Payne 2003 ) and EBS (e.g., Chaboud et al. 2008 , 
+Mancini et al. 2013 ). Alternative sources of FX trading 
+volume are proprietary data from either specific 
+bank holding companies (e.g., Bjønnes and Rime 2005 , 
+Froot and Ramadorai 2005 ) or central banks (e.g., 
+Czech et al. 2021 ). Relatively recent public access to 
+CLS data has enabled researchers to study global FX 
+volumes at higher frequencies (e.g., hourly). Fischer 
+and Ranaldo ( 2011 ) are the first to study FX volume 
+from CLS around central bank decisions using confi -
+dential settlement rather than actual FX trade data. Has -
+brouck and Levich ( 2017 ) and Ranaldo and Santucci 
+de Magistris ( 2022 ) use CLS data to study commonal -
+ity in FX volatility and trading volume. Cespa et al. 
+( 2021 ) introduce a momentum-based FX trading strat -
+egy that conditions on CLS volume.
+Second, I add to the monetary economics literature 
+on vehicle currency trading. My contribution is two -
+fold: (i) provide empirical evidence of vehicle cur -
+rency trading, and (ii) derive explicit conditions for 
+dollar dominance in FX trading volume. Methodolog -
+ically, my model incorporates the market-size (e.g., 
+Chrystal 1977 , Krugman 1980 , Rey 2001 , Devereux 
+and Shi 2013 ), risk-aversion (e.g., Black 1991 , Hart -
+mann 2004 ), and (asymmetric) information-driven 
+(Lyons and Moore 2009 ) approaches to international 
+currencies. Thus, FX trading volume in my model is a 
+function of both fundamental and vehicle currency 
+trading demands for a currency.
+2
+In particular, tra -
+ders may trade both directly (nondollar pairs) and via 
+the dollar, even in the absence of fundamental trading 
+demands for dollar pairs. As a result, vehicle currency 
+trading is not an “either/or outcome” in this model, 
+which is consistent with the empirical evidence that 
+trading activity in nondollar currency pairs accounts 
+for a nontrivial share of global FX volume according 
+to the Bank for International Settlements (BIS) trien -
+nial surveys. Furthermore, the empirical evidence on 
+vehicle currency trading is largely descriptive and 
+lacks comprehensive results because of the scarcity of 
+data. I fill this gap by employing a variety of different 
+empirical tools to test the predictions of my model 
+using a granular FX trade data set.
+Third, I contribute to the growing literature on the 
+international role of the U.S. dollar
+3
+and its omnipres -
+ence in the global financial system (Farhi and Mag -
+giori 2017 , Gourinchas et al. 2019 ). My contribution is 
+to show that vehicle currency trading because of stra -
+tegic avoidance of price impact is a key driver of dol -
+lar dominance in FX trading volumes. Thus, I provide 
+complementary insights into general theories of dollar 
+dominance that can be classified into three categories. 
+The first category is the “trade view,” which argues 
+that the reason for dollar dominance is trade invoicing 
+in dollars (e.g., Portes and Rey 1998 , Goldberg and 
+Tille 2008 , Bahaj and Reis 2020 , Gopinath and Stein 
+2020 , Gopinath et al. 2020 , Tille et al. 2021 ). The sec -
+ond category is the “safe asset view,” according to 
+which dollar dominance arises both from its safe 
+haven properties (e.g., Hassan 2013 , Farhi and Mag -
+giori 2017 , Maggiori 2017 , He et al. 2019 , Jiang et al. 
+2021 ) and from the growing demand for safe assets 
+(e.g., Caballero et al. 2008 , 2017 , 2021 ). The third cate -
+gory is the “debt view” of dollar dominance (Eren 
+and Malamud 2022 ), which emphasises the role of 
+firms’ debt currency denomination. Maggiori et al. 
+( 2020 ) support this view by showing that global bond 
+portfolios are mostly denominated in dollars.
+2. Data
+The empirical analysis employs trade and quote data 
+from two publicly accessible sources. The data set on 
+spot FX volume and order flow data comes directly 
+from CLS Group (CLS). CLS operates the world’s larg -
+est multicurrency cash settlement system and handles 
+over 40% of global spot FX transaction volume accord -
+ing to Hasbrouck and Levich ( 2017 ) and Cespa et al. 
+( 2021 ).
+4
+At settlement, CLS alleviates principal and 
+operational risk by simultaneously settling both sides 
+of the trade. These data have been used previously, 
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 3 
+
+===== PAGE 4 =====
+
+among others, by Hasbrouck and Levich ( 2017 , 2021 ), 
+Cespa et al. ( 2021 ), Ranaldo and Somogyi ( 2021 ), Khe -
+tan and Sinagl ( 2022 ), and Ranaldo and Santucci de 
+Magistris ( 2022 ). These authors have comprehensively 
+described both CLS volume and order flow data.
+The CLS system is owned by its 72 settlement mem -
+bers, which are predominantly large multinational 
+banks. To protect member anonymity, CLS has been 
+reluctant to disclose any transaction-level information 
+about settlement activity. Therefore, the CLS data set 
+only contains hourly aggregates of the trading activity 
+in each currency pair and provides no information 
+about counterparty identities or agreed transaction 
+prices. Furthermore, CLS provides no information on 
+trade initiators because it solely observes the executed 
+trade price used for settlement rather than the market 
+behaviour of the bids and offers preceding execution. 
+Despite these limitations, CLS data are particularly 
+well suited to my analysis because they enable study -
+ing the properties of dollar dominance in FX volume 
+on a global scale rather than just for a specific market 
+segment or trading platform. However, CLS is, of 
+course, not able to distinguish between trades that 
+occur for fundamental reasons (e.g., portfolio rebalan -
+cing) rather than vehicle currency trading motives. I 
+tackle this issue in the next section empirically by 
+devising a suitable instrument based on nonoverlap -
+ping holidays.
+From the volume and order flow data sets, I can con -
+struct two key variables: interdealer volume and 
+dealer-to-customer volume. To do this, I leverage the 
+fact that the CLS volume and order flow data are inter -
+related. Specifically, volume data include the sum of 
+all dealer-to-customer and interdealer trades, whereas 
+order flow data contain separate entries for buying 
+and selling activity but only for dealer-to-customer 
+trades. The buy and sell volume in a given hour and 
+currency pair refers to how much of the base currency 
+was bought and sold by customers from dealer banks. 
+Customers can be categorised into four customer 
+groups: corporates, funds, nonbank financial firms, 
+and nondealer banks. The difference between aggre -
+gate volume and the sum of buying and selling activity 
+by customers captures the amount of interdealer vol -
+ume. Online Appendix Section C provides details on 
+how CLS categorises market participants into custo -
+mers, dealers, and nondealer banks.
+Next, I pair the hourly FX volume and order flow 
+data with intraday spot bid and ask quotes from Olsen 
+Data, a market-leading provider of high-frequency 
+data and time series management systems. Thus, FX 
+trading volume, order flow, and exchange rate returns 
+are measured hourly. By compiling historical tick-by- 
+tick data from various trading platforms (e.g., IDC, 
+Morningstar, and Reuters), these quote data are also 
+representative of the global spot FX market rather than 
+merely of a specific segment (e.g., interdealer or cus -
+tomer-dealer). The full sample period spans Septem -
+ber 1, 2012, to September 30, 2022, and includes data 
+for 11 major currencies and 25 currency pairs.
+5
+To 
+avoid ambiguity in notation, I assume that for a U.S. 
+investor, the quote currency is always the foreign cur -
+rency (e.g., as in USDJPY).
+3. Motivating Evidence
+The purpose of this section is to present descriptive 
+evidence supporting the idea that vehicle currency 
+trading is a pivotal determinant of dollar dominance 
+in FX trading. To do this, the ongoing section pro -
+ceeds in two steps. First, it provides prima facie evi -
+dence of dollar dominance in spot FX trading volume. 
+Second, it carefully establishes a novel stylised fact 
+concerning the amount of vehicle currency trading 
+activity in the FX market using a novel identification 
+strategy based on nonoverlapping holidays.
+3.1. Dollar Dominance
+Daily trading volume in the spot FX market has 
+increased from $400 to $2,100 billion over the past two 
+decades, according to the BIS. This rapid rise in volume 
+has often been associated with electronification and 
+algorithmic trading. According to Rahmouni-Rousseau 
+and Churm ( 2018 ), over 8 0% of total trading is executed 
+electronically, whereas roughly 7 0% of total spot FX 
+volumes on EBS are initiated by algorithms. As a result, 
+search costs in today’s market are negligible compared 
+with 15 or 20 years ago when FX trading was mostly 
+done via telephone. Moreover, at least 8 5% of all spot FX 
+trades passing through the CLS settlement system have 
+a U.S. dollar leg. This is consistent with what the BIS 
+reports in its triennial central bank surveys over the past 
+30 years. It is instructive to contrast this amount with the 
+U.S. share of global real and financial economic activity, 
+which is just around 35%–5 0%. I use this share of global 
+GDP, trade, stocks, and debt markets as a benchmark for 
+the dominance of the U.S. dollar in FX trading volume.
+Figure 1 illustrates the pervasive dominance of the 
+U.S. dollar relative to the euro by comparing FX trad -
+ing volume to both real and financial economic activ -
+ity.
+6
+It is important to note that the U.S. share of world 
+trade accounts for trades that are either invoiced in 
+U.S. dollars (Gopinath and Stein 2020 ) or originated in 
+countries where the dollar is the official currency (e.g., 
+Ecuador). Moreover, the stark discrepancy between 
+the dollar share in FX trading volume and the U.S. 
+share in real economic activity persists even after 
+accounting for any currencies that are pegged to the 
+dollar (i.e., Hong Kong and Singapore dollar).
+3.2. Price Impact Avoidance
+Figure 2(a) provides empirical evidence in favour of 
+the idea that strategic avoidance of price impact 
+Somogyi: Dollar Dominance in FX Trading 
+4 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 5 =====
+
+generates additional FX volume beyond what the 
+U.S. share in global economic activity would imply. 
+Specifically, I show that exchanging two nondollar 
+currencies indirectly by using the U.S. dollar as an 
+intermediate currency incurs less price impact than 
+the direct exchange. I estimate price impact as the 
+ratio of daily realised power variation and trading 
+volume (Ranaldo and Santucci de Magistris 2022 ). The 
+grey and black bars show the median price impact 
+associated with direct and indirect trading activity 
+worth $10 million. A consistent picture arises across 
+currency pairs: with the notable exception of the 
+EURDKK, EURNOK, and EURSEK, it is significantly 
+cheaper in terms of price impact to trade indirectly via 
+two dollar currency pairs.
+On the contrary, Figure 2(b) illustrates that using 
+the U.S. dollar as a vehicle currency for exchanging 
+nondollar pairs is only beneficial from a price impact 
+rather than a bid-ask spread perspective. This is 
+because the median spread for directly exchanging a 
+nondollar pair is always less than for the indirect 
+exchange via the dollar. Conversely, the sum of bid- 
+ask spreads and price impacts is larger for directly 
+exchanging any of the nondollar currency pairs except 
+for the EURCHF, EURDKK, EURNOK, and EURSEK. 
+For instance, trading the GBPJPY directly incurs 4:5 +
+1:7 � 6:2 basis points (BPS) in the form of bid-ask 
+spreads and price impacts, whereas trading via the 
+U.S. dollar yields only 0:5 + 2:3 � 2:8 BPS. However, 
+note that such a comparison is only permissible under 
+the assumption that at most $10 million dollars worth 
+of foreign currency can be exchanged at the Olsen- 
+based bid-ask spreads.
+3.3. Vehicle Currency Trading
+I use an identification method based on nonoverlap -
+ping holidays to establish a novel stylised fact about 
+vehicle currency trading. This method allows me to 
+disentangle trading volume in dollar currency pairs 
+because of fundamental trading motives from vehicle 
+currency demands. To be specific, I leverage the qua -
+siexogenous variation in nonoverlapping holidays to 
+identify changes in vehicle currency trading demands 
+for dollar currency pairs. To see the intuition, consider 
+the following example, which can be generalised to 
+other currency pairs: take the case where Australia is 
+Figure 1. Dollar Dominance in FX Trading 
+Notes. This figure compares the time series average of the share (%) of the U.S. dollar (USD) and euro (EUR) in FX trading to the share of the 
+United States and European Union in global economic activity. The USD and EUR FX volume shares add up to more than 100% because there 
+are two currencies involved in every FX transaction. The underlying data come from six sources. First, spot FX trade data stem from CLS. Second, 
+yearly GDP data by country and currency come from the World Bank and OECD national accounts data. Third, monthly imports and exports by 
+country and currency stem from the World Trade Organisation. Trade is defined as the sum of imports and exports between two countries. 
+Fourth, the share of the United States and European Union in global stock markets is from Bloomberg and is based on the market value of all 
+available equity securities. Fifth, the estimates of USD- and EUR-denominated debt securities and bank loans are from the BIS international debt 
+securities statistics and comprise debt instruments that are issued outside of the local market of the borrower’s country (e.g., Eurobonds). Lastly, 
+international payments data are directly from SWIFT. The sample covers the full year of 2019.
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 5 
+
+===== PAGE 6 =====
+
+on holiday but neither Japan nor the United States is 
+(e.g., Anzac Day on April 25). On such a day, it seems 
+plausible to assume that trading volume in USDJPY 
+is to a much lesser extent driven by vehicle currency 
+trading motives arising from the need to exchange 
+Australian dollars against Japanese yen. This is 
+because the number of market participants who wish 
+to indirectly exchange Australian dollars for Japa -
+nese yen via the U.S. dollar is heavily reduced 
+because of the holiday in Australia.
+7
+However, it is 
+important to note that I am not using Anzac Day (or 
+any other nonoverlapping holiday in Australia) to 
+measure vehicle currency trading in the USDAUD 
+currency pair but, rather, only in dollar currency 
+pairs that do not involve the Australian dollar (e.g., 
+USDJPY). This is because the drop in USDAUD 
+would reflect a combination of less fundamental and 
+vehicle currency trading demands. Eventually, my 
+proxy for vehicle currency trading is equal to the 
+drop in interdealer volume that I observe on such 
+nonoverlapping holidays after controlling for varia -
+tion in fundamental trading demands.
+To come up with an estimate of vehicle currency 
+trading volume in dollar currency pairs, I estimate the 
+following regression for each dollar currency pair:
+vol ume
+t
+� α + βD
+t
++ γ
+′
+w
+t
++ φ
+′
+D
+t
+× w
+t
++ ɛ
+t
+, (1) 
+where the dependent variable is interdealer trading 
+volume in a dollar currency pair on day t. The main 
+regressor is D
+t
+, which is an indicator variable equal to 
+one if day t is a nonoverlapping holiday, and zero oth -
+erwise. Specifically, for any dollar currency k, I define 
+a nonoverlapping holiday as a public holiday that is 
+neither a holiday in the United States nor in the quote 
+currency of currency pair k. For instance, in the case of 
+k � USDJPY, I identify such nonoverlapping holidays 
+based on Australia, Canada, New Zealand, the Euro 
+area, and the United Kingdom.
+The key parameter of interest (the β) is identified 
+from how trading volume in dollar pairs changes on a 
+nonoverlapping holiday (see Table D.1 in the Online 
+Appendix for further details). Note that the number of 
+nonoverlapping holidays in D
+t 
+is different for each 
+triplet of currency pairs. Section D in the Online 
+Appendix documents pooled estimates of vehicle cur -
+rency trading using a panel regression design with a 
+rich set of fixed effects and control variables. My 
+results are qualitatively similar when log transforming 
+Figure 2. Trading Costs of Direct and Indirect Trading 
+(a)
+(b)
+Notes. Subfigure a) shows the median Amihud price impact in BPS per $10 million worth of trading activity for directly (grey bars) and indi -
+rectly (black bars) exchanging 15 nondollar currency pairs. The indirect price impact is computed as the sum of the price impacts in the two dol -
+lar pairs being involved in the vehicle currency trade. Subfigure (b) is based on indicative quotes from Olsen Data and plots the median relative 
+half bid-ask spread in BPS associated with the direct (grey bars) and indirect (black bars) exchange of the same 15 nondollar pairs. The sample is 
+hourly and covers the period from September 1, 2012, to September 30, 2022.
+Somogyi: Dollar Dominance in FX Trading 
+6 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 7 =====
+
+the dependent variable or when replacing interdealer 
+by customer-dealer volume.
+A concern here is that changes in volume on nono -
+verlapping holidays might also be affected by reasons 
+other than vehicle currency trading (e.g., fundamental 
+trading motives and speculative reasons). For exam -
+ple, there might be some market participants in Aus -
+tralia that have a fundamental demand for trading 
+USD and JPY, for instance, because they have sold 
+USD assets and want to invest in JPY assets. To 
+address this possibility, I collect a host of variables in 
+w
+t
+, controlling for various sources of fundamental 
+trading demands that are closely related to other key 
+areas of dollar dominance. Specifically, I use data on (i) 
+U.S. imports and exports to proxy for real trading 
+motives (monthly), (ii) foreign purchases and sales of 
+long-term U.S. securities to control for cross-border 
+financial flows (monthly), (iii) dollar-denominated debt 
+instruments that are issued outside of the United States 
+to account for foreign demand of dollar debt (Eren and 
+Malamud 2022 ) (monthly), (iv) covered interest rate 
+parity deviations to gauge for dealer funding costs 
+(Andersen et al. 2019 , Rime et al. 2022 ) and foreign safe 
+asset demand (Jiang et al. 2021 ) (daily), (v) interest rate 
+differentials to capture speculatory trading motives
+8
+and time-varying risk (Alvarez et al. 2009 ) (daily), and 
+(vi) relative bid-ask spreads to account for variation in 
+traditional transaction costs (daily). Note that some of 
+the control variables such as real trade, cross-border 
+financial flows, and foreign dollar credit issuance are 
+only available at the monthly frequency. Moreover, all 
+controls are given in absolute values because trading 
+volume, by definition, is unsigned. To account for time 
+variation in fundamental trading demands on nonover -
+lapping holidays, I also include the interaction between 
+measures of fundamental trading demands and nono -
+verlapping holidays in Equation ( 1 ).
+9
+For each currency pair, I construct these six control 
+variables as follows. First, I compute the sum of U.S. 
+imports and exports based on imports and exports 
+from the Direction of Trade Statistics (DOTS) that is 
+available from the IMF. Second, I retrieve data on the 
+purchase and sale of long-term U.S. securities (i.e., 
+stocks and bonds) from the Treasury International Cap -
+ital (TIC) system. Third, I use BIS international debt 
+securities (IDS) statistics to identify dollar-denominated 
+debt instruments that are issued outside the United 
+States. Fourth, I approximate the daily interest rate dif -
+ferential between the base and quote currency country 
+by the forward discount or premium, which I compute 
+as the difference between the overnight forward rate 
+and the spot midquote from Bloomberg. Fifth, follow -
+ing Du et al. ( 2018 ), I estimate the cross-currency basis 
+as the difference between the direct dollar interest rate 
+in the base currency from the cash market and the syn -
+thetic interest rate obtained by swapping the quote 
+currency into the base currency. Lastly, I compute the 
+relative bid-ask spread as the ratio of the absolute bid- 
+ask spread and the midquote price (average of bid and 
+ask rates).
+In sum, the above approach bears two implications in 
+terms of interpreting the estimates of vehicle currency 
+trading volume. First, the estimates based on nonover -
+lapping holidays (e.g., in USDJPY on Anzac Day) are 
+potentially upward biased if holidays reduced funda -
+mental trading demands by, for instance, Australian 
+dealers in the USDJPY cross. Therefore, it is paramount 
+to appropriately control for variation in fundamental 
+trading demands in Equation ( 1 ). Second, the estimates 
+of vehicle trading activity are potentially downward 
+biased because any given nonoverlapping holiday can 
+only capture vehicle currency trading demands from a 
+given country (e.g., Australia in the case of Anzac Day).
+Figure 3 shows that volume in seven out of 10 dol -
+lar currency pairs is, on average, significantly lower 
+on nonoverlapping holidays than on all other days. 
+The grey (black) bars correspond to significant (insignif -
+icant) coefficients at the 95% confidence level. I report 
+full regression results for Equation ( 1 ) in the Online 
+Appendix Table D.4. My estimates for vehicle trading 
+volume in USDDKK, USDNOK, and USDSEK are 
+effectively zero. This is consistent with the empirical 
+evidence in Figure 2 suggesting that directly exchang -
+ing one of these three Scandinavian currencies against 
+the euro is optimal in terms of price impact.
+The estimates in Figure 3 are conservative because a 
+particular nonoverlapping holiday can only capture 
+vehicle currency trading motives in one specific triplet. 
+For instance, on Anzac Day, it is plausible to assume 
+that vehicle trading demand for USDJPY stemming 
+from the need to exchange Australian dollars against 
+Japanese yen is close to zero. However, this cannot 
+control for the use of USDJPY as a vehicle currency to 
+indirectly trade any other Japanese yen currency pair 
+(e.g., CADJPY or GBPJPY). As a result, my estimates of 
+vehicle currency trading vary across currency pair tri -
+plets. For example, average vehicle trading volume in 
+USDJPY amounts to almost $14 billion per day when 
+estimated based on the USD-GBP-JPY currency pair 
+triplet. On the contrary, vehicle trading volume in 
+USDJPY is just around $2 billion when estimated from 
+the USD-EUR-JPY currency pair triplet.
+Table 1 provides a detailed breakdown of my esti -
+mates of trading volume because of fundamental ver -
+sus vehicle currency trading motives across 10 dollar 
+currency pairs. The table is based on Figure 3 and 
+reports the average, minimum, and maximum share 
+of vehicle currency trading volume across currency 
+pair triplets involving the same dollar pair (e.g., 
+USDAUD). The last row, headed “Mean,” reports the 
+volume-weighted average fundamental and vehicle 
+currency trading activity across dollar currency pairs.
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 7 
+
+===== PAGE 8 =====
+
+Figure 3. Evidence of Vehicle Currency Trading in Dollar Currency Pairs 
+Notes. This figure shows individual estimates for β  in billions of dollars for 15 triplets of currency pairs from the regression v ol u m e
+t
+� α +
+βD
+t
++ γ
+′
+w
+t
++ φ
+′
+D
+t
+× w
+t
++ ɛ
+t
+, where D
+t 
+is a dummy equal to one if day t is a nonoverlapping holiday in the given currency triplet. w
+t 
+contains 
+measures of fundamental trading demands that are described in the text surrounding Equation ( 1 ). The grey (black) bars correspond to significant 
+(insignificant) coefficients at the 9 5% level. The inference is based on robust standard errors allowing for heteroskedasticity and serial correlation 
+up to eight lags (Newey and West 1994 ). The sample is daily and covers the period from September 1, 2012, to September 30, 2022.
+Table 1. Evidence of Vehicle Currency Trading in Dollar Currency Pairs
+Average Minimum Maximum
+Non-VCT in 
+billions of dollars
+VCT in billions 
+of dollars VCT (%)
+VCT in billions 
+of dollars VCT (%)
+VCT in billions 
+of dollars VCT (%)
+USDAUD 21.56 0.59 2.68 0.00 0.00 2.39 10.78
+USDCAD 24.06 1.95 7.51 0.47 1.80 4.30 16.52
+USDCHF 7.47 1.22 14.01 0.00 0.00 2.88 33.16
+USDDKK 0.44 0.09 17.31 0.09 17.31 0.09 17.31
+USDEUR 70.65 15.70 18.18 5.13 5.94 32.80 37.98
+USDGBP 26.33 2.74 9.43 1.80 6.19 3.37 11.58
+USDJPY 47.21 7.38 13.51 2.13 3.90 13.52 24.76
+USDNOK 1.47 0.01 0.71 0.01 0.71 0.01 0.71
+USDNZD 5.38 0.85 13.63 0.85 13.63 0.85 13.63
+USDSEK 1.67 0.04 2.30 0.04 2.30 0.04 2.30
+Mean 43.87 7.77 12.60 2.55 4.34 15.64 24.83
+Notes. This table reports the breakdown of trading volume because of fundamental (non-VCT) vs. vehicle currency trading (VCT) activity across 
+10 dollar currency pairs. These numbers are based on estimates of β  from the regression v o l u me
+t
+� α + βD
+t
++ γ
+′
+w
+t
++ φ
+′
+D
+t
+× w
+t
++ ɛ
+t
+, where D
+t 
+is 
+an indicator variable equal to one if day t is a nonoverlapping holiday, and zero otherwise. w
+t 
+contains measures of fundamental trading 
+demands that are described in the text surrounding Equation ( 1 ). Note that if 
+ˆ
+β  is positive, that is, there is no evidence of VCT, I report zero in 
+columns (3)–(8). The last row, headed “Mean,” shows the volume-weighted average non-VCT and VCT trading activity across dollar currency 
+pairs. The sample is daily and covers the period from September 1, 2012, to September 30, 2022.
+Somogyi: Dollar Dominance in FX Trading 
+8 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 9 =====
+
+There are three key takeaways from Table 1 . First, 
+the amount of vehicle currency trading is largest in 
+the USDEUR, USDJPY, and USDCHF currency pairs, 
+ranging from 25% to 38%. Second, trading volume in 
+USDDKK, USDNOK, and USDSEK is predominantly 
+driven by fundamental trading motives resulting in 
+estimates of vehicle currency trading demands that 
+are less than $0.1 billion. Third, the volume-weighted 
+average share of vehicle currency trading ranges from 
+4%–25%, suggesting that vehicle currency motives 
+account for a significant share of interdealer trading 
+activity. It is important to note that the estimates of 
+vehicle trading activity face potential biases in both 
+directions. On the one hand, the estimates may be 
+upward biased unless appropriately controlling for 
+variation in fundamental trading demands. On the 
+other hand, the estimates may be downward biased 
+because each nonoverlapping holiday can only control 
+for vehicle currency demands stemming from one 
+particular nondollar pair (e.g., AUDJPY), rather than 
+all nondollar pairs simultaneously.
+3.4. Summary
+Taken together, the preliminary empirical evidence in 
+this section underscores the idea that the share of trad -
+ing volume in dollar currency pairs exceeds the U.S. 
+share of global economic activity because of the strate -
+gic avoidance of price impact. Specifically, I show that 
+vehicle currency trading activity accounts, on average, 
+for around 13% of aggregate daily interdealer trading 
+volume in dollar pairs. The next section formalises 
+this intuition by outlining a simple theoretical frame -
+work of vehicle currency trading.
+4. Theoretical Framework
+This section has two goals. First, I incorporate vehicle 
+currency trading within currency pair triplets into 
+Rostek and Yoon ( 2021 )’s model. Second, I use com -
+parative statics analysis to derive a set of conditions 
+for dollar dominance in FX trading volume. This 
+model is symmetric in the sense that it does not 
+assume that the U.S. dollar is “special” in some way. 
+Hence, the same conditions also apply to any other 
+currency. The equilibrium is the same as in Rostek 
+and Yoon ( 2021 ), and hence, I relegate the detailed 
+solution of it to the Online Appendix. Note that the 
+model has no closed form solution unless I make sim -
+plifying assumptions about the properties of covari -
+ance matrices, rendering the equilibrium symmetric. 
+To justify these simplifying assumptions (which I 
+explain in more detail in the proofs), I simulate the 
+model numerically and show that the comparative 
+statics based on simulations for nonsymmetric equi -
+libria are fully consistent with the ones pertaining to 
+the symmetric equilibrium.
+The stylised model is motivated by the decentra -
+lised nature of the currency market. Hence, traders 
+buy and sell currencies from each other in a decentra -
+lised market setting. Some of these trades take place 
+directly between two traders, whereas others occur 
+between traders and dealers. The model does not 
+explicitly distinguish trader types or dealers. Traders 
+aim to satisfy their fundamental trade interest for cur -
+rency pairs. Consider, for instance, an asset manager 
+who seeks to invest in Japanese equities but receives 
+fund inflows in British pounds. Therefore, the fund 
+manager would have a fundamental demand for trad -
+ing GBPJPY. When traders accommodate their funda -
+mental trading demand, they consider their price 
+impact (e.g., Glosten and Harris 1988 ; Stoll 1989 ; 
+Foster and Viswanathan 1990 ; Hasbrouck 1991a , b ) 
+but abstract away from any additional fixed trading 
+costs such as order handling fees, broker fees, and 
+bid-ask spreads. This assumption is motivated by, for 
+instance, Frazzini et al. ( 2018 ) showing that for institu -
+tional investors, the main cost of trading is price 
+impact.
+10
+In the model, traders are willing to deviate 
+from their fundamental trading demand and use a 
+vehicle currency if they are sufficiently compensated 
+by trading cost reductions. Following this intuition, I 
+show that such behaviour results in a lower expected 
+price impact and, hence, in greater volume in dollar 
+pairs.
+4.1. Setup
+To formalise the trade-off faced by traders who wish 
+to exchange a nondollar currency for another nondol -
+lar currency, I consider a market with at least three 
+traders trading a triplet of currency pairs. Given the 
+empirical application of the model to the interdealer 
+market, intuitively, one can think of the traders in the 
+model representing large institutional investors or 
+dealer banks. Each triplet comprises one nondollar 
+currency pair (e.g., GBPJPY) plus two dollar currency 
+pairs (e.g., USDGBP and USDJPY). I assume that all 
+traders behave strategically. Traders and currency 
+pairs are indexed by i and k, respectively. The distri -
+bution of expected exchange rate returns is exogenous 
+and Gaussian r ~ N ( d , S) with a vector of (observed) 
+mean returns d � δ
+k 
+and covariance matrix S.
+In a frictionless world, no arbitrage would imply 
+that the nondollar FX rate (e.g., GBPJPY) is the same 
+as the ratio of the two dollar rates (e.g., USDJPY/ 
+USDGBP). One implication of this is that the covari -
+ance matrix S of log returns is singular (see Online 
+Appendix Section B for further details). Hence, to 
+keep matters interesting, I assume that triangular 
+no-arbitrage violations within each currency pair 
+triplet are independent and identically distributed 
+(IID) and have the following properties: (i) normally 
+distributed with mean zero and variance σ(∆)
+2
+, and 
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 9 
+
+===== PAGE 10 =====
+
+(ii) correlated with the expected log returns associated 
+with the two dollar pairs. These distributional proper -
+ties are motivated by empirical evidence showing 
+that triangular arbitrage deviations are, on average, 
+close to zero (see, e.g., Lyons and Moore 2009 , Ranaldo 
+and Santucci de Magistris 2022 ) but occasionally become 
+sufficiently large (cf. positive variance) to exceed 
+no-arbitrage boundaries set by fixed trading cost (see, 
+e.g., Chaboud et al. 2014 , Foucault et al. 2016 ).
+Furthermore, I assume that each trader i has qua -
+dratic mean-variance utility and infers from S that the 
+underlying market structure concerns a triplet of cur -
+rency pairs:
+u
+i
+(q
+i
+) � d · (q
+i
++ q
+i
+0
+) �
+γ
+i
+2
+(q
+i
++ q
+i
+0
+) · S(q
+i
++ q
+i
+0
+), (2) 
+where q
+i
+� q
+i
+k 
+is the (effectively) traded quantity, q
+i
+0
+�
+q
+i
+0 , k 
+represents every trader’s fundamental trading demand 
+in each currency pair, and γ
+i 
+is trader i’s risk aversion. 
+Note that the mean-variance framework is not just one 
+of the most commonly used formulations in finance the -
+ory but also standard in the (currency) market micro -
+structure literature (see, e.g., Kyle 1985 , Lyons and 
+Moore 2009 , Foucault et al. 2013 ).
+4.1.1. Fundamental Trading Demand. For currency pairs, 
+fundamental trading demand concerns the amount of 
+currency units in the base currency that a trader 
+intends to buy or sell for the quote currency. The funda -
+mental trading demands at the beginning of every 
+period are traders’ private information and indepen -
+dent of the currency pairs’ return vector r. I capture the 
+uncertainty around fundamental trading demands q
+i
+0 , k 
+via their covariance matrix; that is, V � C o v(q
+i
+0 , k
+, q
+i
+0 , l≠k
+). 
+Traders derive their utility from the posttrade allocation 
+defined by q
+i
++ q
+i
+0 
+and choose q
+i 
+to maximise their 
+expected return.
+4.1.2. Demand Schedules. The exchange of currencies 
+in this model is organised as a uniform-price double 
+auction (e.g., Kyle 1989 , Vives 2011 ) in which traders 
+submit a series of limit orders (forming a demand 
+schedule) for each currency pair. Thus, submitting a 
+demand schedule is consistent with the common prac -
+tice of splitting up a large order into smaller bits. For 
+q
+i
+0 , k
+> 0, trader i is long in currency pair k and short for 
+q
+i
+0 , k
+< 0. Being long in a currency pair is equivalent to 
+buying the base currency and selling the quote cur -
+rency, whereas the opposite holds for a trader who is 
+short. To appropriately reflect the decentralised FX 
+market structure, this model assumes uncontingent 
+demand schedules.
+The key property of uncontingent schedules is that 
+the demand for trading in a given currency pair cannot 
+be made contingent on the market clearing exchange 
+rates in any other pair. As a result, the FX market 
+in this model clears currency pair by currency pair 
+rather than jointly as with contingent schedules. This 
+assumption is appropriate for most financial markets 
+with only few exceptions (e.g., Treasury bills, repo, 
+and electricity). It is especially realistic for the FX 
+market that trades predominantly over the counter 
+(OTC) and, hence, lacks coordination in market clear -
+ing among both dealers and trading platforms. The 
+assumption of uncontingent markets is only realistic at 
+higher frequencies such as seconds or minutes. This is 
+because the interdealer segment of the FX market has 
+become increasingly centralised because of electronic 
+limit order books and algorithmic trading. However, 
+the existence of limit order books does not imply that 
+market clearing exchange rates are determined jointly 
+for all currency pairs unless exchange rates are observ -
+able without any delay and trades are executed imme -
+diately across all trading venues.
+4.2. Equilibrium Characterisation
+To derive the equilibrium exchange rates and quanti -
+ties, I apply the solution concept of Bayesian Nash 
+equilibria. Following Rostek and Yoon ( 2021 ), I conjec -
+ture that trader i’s best response for all other pairs l ≠ k 
+is linear in the exchange rate p
+l 
+and trading demand q
+i
+0
+:
+q
+i
+l
+(p
+l
+) ≡ a
+i
+l
+� b
+l
+q
+i
+0
+� c
+l
+p
+l
+, ∀ l ≠ k, (3 ) 
+where a
+i
+l
+≡ a
+i 
+is the vector of demand intercepts, b
+l
+≡ B 
+is the matrix of demand coefficients, and dia g(c
+k
+) ≡ C 
+is the demand slope matrix on p
+l
+. Market clearing 
+requires that in equilibrium, trader i’s residual supply 
+is equal to the best response demand schedules of all 
+other traders. These assumptions enable deriving the 
+equilibrium exchange rate p
+∗
+as follows:
+p
+∗
+� ( d � (γS � C
+� 1
+B) ¯q
+0
+) � C
+� 1
+B ¯q
+0
+, (4) 
+where ¯q
+0 
+is the average fundamental trading demand 
+across all other traders j ≠ i. For simplicity’s sake, I 
+assume that all traders have identical risk preferences. 
+Hence, equilibrium quantity and price impact will not 
+depend on risk aversion γ.
+Substituting the equilibrium exchange rate p
+∗
+and 
+demand coefficient a
+i 
+into traders’ parametrised demand 
+function yields the (realised) equilibrium quantity q
+i , ∗
+: 
+for every i,
+q
+i , ∗
+� (S + L)
+� 1
+S( ¯q
+0
+� q
+i
+0
+): ( 5 ) 
+Furthermore, the equilibrium price impact matrix L is 
+endogenous and characterised by the slope coefficients 
+of the inverse residual supply function C
+� 1
+:
+L �
+1
+I � 1
+C
+� 1
+�
+1
+I � 2
+h
+S (BVB
+′
+)[BVB
+′
+]
+� 1
+d
+|fflfflfflfflfflfflfflfflfflfflfflfflffl ffl{zfflfflfflfflfflfflfflfflfflfflfflfflffl ffl}
+In fer enc e coe ffi cie nt
+i
+d
+, (6) 
+where [·]
+d 
+is an operator such that for any matrix M, 
+[M]
+d 
+is a diagonal matrix. Note that L is a diagonal 
+Somogyi: Dollar Dominance in FX Trading 
+10 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 11 =====
+
+matrix because the price impact across all other cur -
+rency pairs Λ
+k , l 
+is zero because every currency pair 
+clears independently. This follows directly by the 
+definition of uncontingent demand schedules, which 
+imply independent market clearing.
+Given the expression for optimal volume q
+i , ∗
+in 
+Equation ( 5 ), trading a nonzero amount is optimal 
+only if there is dispersion in traders’ fundamental 
+trading demands (i.e., ¯q
+0
+� q
+i
+0
+≠ 0). Trader i’s distance 
+to the average trading demand ¯q
+0 
+determines whether 
+the trader is a net buyer or net seller of the base cur -
+rency. The key object of this paper is volume rather 
+than order flow. Hence, for the remainder of the 
+paper, I focus on the absolute value of ¯q
+0
+� q
+i
+0 
+(buying 
+and selling are symmetric in a linear equilibrium). 
+Moreover, because price impact L is a positive defi -
+nite matrix, trader i optimally trades less (in absolute 
+terms) relative to ¯q
+0
+� q
+i
+0
+.
+4.2.1. Price Impact. The equilibrium mapping of price 
+impact and trading volume implies that, all else being 
+equal, lower price impact currency pairs receive a 
+larger weight in the equilibrium allocation. Hence, 
+even a trader with zero fundamental trading demand 
+in dollar currency pairs may find it optimal to trade a 
+combination of dollar pairs and nondollar pairs. In 
+equilibrium, this can rationally result in large trading 
+volumes in dollar pairs.
+4.3. Comparative Statics
+Trading volume in Equation ( 5 ) is characterised by 
+three exogenous drivers: fundamental trading demands 
+q
+i
+0
+, covariance of trading demands V, and covariance 
+of currency returns S. I denote the (k , l)
+th 
+element of a 
+matrix (e.g., S) by Σ
+k , l
+. I am interested in the compara -
+tive statics of volume with respect to q
+i
+0 , k
+, Ω
+k , k
+, and 
+Σ
+k , k
+. The corresponding partial derivatives of q
+i , ∗
+k 
+are 
+given by Proposition 1 . Note that Equations ( 5 ) and ( 6 ) 
+characterise volume and price impact by a system of 
+nonlinear (nonpolynomial) matrix equations. Conse -
+quently, it is not possible to apply the implicit function 
+theorem to the functions characterising L and B. 
+Hence, the comparative statics in Proposition 1 are 
+only valid for holding a given demand coefficient B 
+constant. To surmount this shortcoming, I simulate the 
+model and take into account that the demand coeffi -
+cient B is determined endogenously in equilibrium. In 
+particular, I find that the analytical and simulated 
+comparative statics are consistent except for Equation 
+( 9 ), featuring a nonlinear rather than linear decline in 
+trading volume.
+11
+The simulation exercise delivers an additional eco -
+nomic insight relative to the analytical comparative stat -
+ics. Specifically, it allows me to speak to the question of 
+how an increase in the covariance between either fun -
+damental trading demands or currency returns affects 
+equilibrium price impact and trading volume, respec -
+tively. Starting from a symmetric equilibrium, I show 
+that an increase in the covariance of currency returns 
+associated with the two dollar currency pairs leads to 
+lower trading volume in dollar pairs because of higher 
+price impacts. Moreover, an increase in the covariance 
+of fundamental trading demands between dollar pairs 
+bears a similar, albeit economically smaller, effect.
+Proposition 1 ( Comparative Statics ). The comparative 
+statics of equilibrium trading volume q
+i , ∗
+k 
+with respect to 
+fundamental trading demand q
+i
+0 , k
+, variance of fundamental 
+trading demands Ω
+k , k
+, and variance of currency returns 
+Σ
+k , k 
+are given by the following expressions: for every k ≠ l,
+an inc rea se in q
+i
+0 , k
+incr ea ses equ ili bri um tra di ng vo lume q
+i , ∗
+k
+:
+∂q
+i , ∗
+∂q
+i
+0 , k
+� (S + L)
+� 1
+S
+∂d
+i
+0
+∂q
+i
+0 , k
+, wh ere d
+i
+0
+� ¯q
+0
+� q
+i
+0
+and
+∂q
+i , ∗
+k
+∂q
+i
+0 , k
+>
+∂q
+i , ∗
+l
+∂q
+i
+0 , k
+; (7) 
+an inc rea se in Ω
+k , k
+in cre as es eq uil ibr ium tra din g vol ume q
+i , ∗
+k
+:
+∂q
+i , ∗
+∂Ω
+k , k
+� (� (S + L)
+� 1
+∂L
+∂Ω
+k , k
+(S + L)
+� 1
+S)d
+i
+0
+,
+wh ere
+∂q
+i , ∗
+k
+∂Ω
+k , k
+>
+∂q
+i , ∗
+l
+∂Ω
+k , k
+be ca use
+∂Λ
+k , k
+∂Ω
+k , k
+<
+∂Λ
+l , l
+∂Ω
+k , k
+; (8) 
+an inc re ase in Σ
+k , k
+dec re ase s equ ili bri um trad ing vol ume q
+i , ∗
+k
+:
+∂q
+i , ∗
+∂Σ
+k , k
+�
+�
+(S + L)
+� 1
+∂S
+∂Σ
+k , k
+� (S + L)
+� 1
+∂S
+∂Σ
+k , k
++
+∂L
+∂Σ
+k , k
+� �
+(S + L)
+� 1
+S
+�
+d
+i
+0
+, whe re
+∂q
+i , ∗
+k
+∂Σ
+k , k
+<
+∂q
+i , ∗
+l
+∂Σ
+k , k
+: (9) 
+See Online Appendix Section B (Corollaries 1–3) for a for -
+mal derivation of these partial derivatives.
+The economic meaning of the partial derivatives in 
+Proposition 1 is as follows. For every additional mar -
+ginal unit of q
+i
+0 , k
+, Ω
+k , k
+, and Σ
+k , k
+, the equilibrium alloca -
+tion in currency pair k changes (all else equal) at the 
+rate of the partial derivative. The first equation shows 
+that an increase in fundamental trading demand q
+i
+0 , k 
+linearly increases the equilibrium quantity.
+The effect of a change in the variance of fundamen -
+tal trading demands Ω
+k , k 
+depends on the partial deriv -
+ative with respect to price impact L. An increase in 
+the variance of fundamental trading demands in cur -
+rency pair k reduces the expected price impact λ
+k 
+for a 
+given inference coefficient B. This result is driven by 
+the assumption that the fundamental trading demand 
+of each agent is private information. Eventually, the 
+lower price impact induces a surge in the equilibrium 
+allocation in a given currency pair k.
+On the contrary, an increase in the variance of cur -
+rency returns affects the equilibrium allocation not 
+only directly but also indirectly via a change in price 
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 11 
+
+===== PAGE 12 =====
+
+impact (i.e., 
+∂L
+∂Σ
+k , k
+). The latter offsets the former if we 
+hold B constant such that the increase in price impact 
+dominates the net effect. Thus, equilibrium volume in 
+currency pair k decreases in the variance of currency 
+returns Σ
+k , k
+. The simulation exercise in the Online 
+Appendix shows that this result only holds for suffi -
+ciently large changes in Σ
+k , k 
+if the inference coefficient 
+B is not held constant.
+4.4. Dollar Dominance in FX Trading
+Based on the above model, I define dollar dominance 
+in terms of triplets of currency pairs. Every triplet 
+comprises one nondollar currency pair (e.g., GBPJPY) 
+plus the two USD legs (e.g., USDGBP and USDJPY), 
+which are required to indirectly trade the nondollar 
+currency pair by using the USD as a vehicle currency. 
+Hence, I define dollar dominance as follows.
+Definition 1 ( Dollar Dominance ). A triplet of currency 
+pairs (i.e., $X, $Y, and XY) is dominated by the U.S. 
+dollar if, within a triplet, (i) the trading volume in 
+each of the two dollar currency pairs (i.e., $X and $Y) 
+exceeds the trading volume in the respective nondol -
+lar pair (i.e., XY), and (ii) if actual trading volume 
+in dollar pairs exceeds their fundamental trading 
+demands. Hence, for dollar dominance, it must hold 
+that min(q
+i , ∗
+$X
+, q
+i , ∗
+$Y
+) > q
+i , ∗
+XY
+, q
+i , ∗
+$X
+> q
+i , ∗
+$X , 0
+, and q
+i , ∗
+$Y
+> q
+i , ∗
+$Y , 0 
+for 
+every trader i.
+Consider, for example, the three currency pairs 
+GBPJPY, USDGBP, and USDJPY (with associated vol -
+ume of $90, $120, and $110 million and fundamental 
+trading demand of $85, $100, and $90 million, respec -
+tively). Following Definition 1 , the U.S. dollar domi -
+nates because the minimum trading volume in dollar 
+currency pairs (min(1 10, 120) million dollars) exceeds 
+trading volume in the direct nondollar cross ($90 mil -
+lion) and equilibrium volume in dollar pairs is larger 
+than the corresponding fundamental trading demand. 
+Note that the first part of the above definition of dollar 
+dominance is isomorphic to one where the sum of 
+trading volume in the two dollar pairs is larger than 
+in any other two currency pairs within a triplet.
+In other words, my definition of dollar dominance 
+means that within a triplet of currency pairs, the U.S. 
+dollar dominates all other currencies as a hub cur -
+rency. This definition is appealing for two reasons. 
+First, it takes into account the possibility that trading 
+volume is driven by both fundamental and by vehicle 
+currency demands. In particular, vehicle currency 
+trading is characterised by the difference between 
+total volume and fundamental trading demands. Sec -
+ond, it allows me to quantify the degree of dollar 
+dominance as the ratio of the minimum trading vol -
+ume in dollar pairs relative to the direct trading in the 
+nondollar cross.
+4.4.1. Sufficient Conditions. Next, I derive conditions 
+for dollar dominance based on the intuition gained 
+from the comparative static results (see Proposition 1 ). 
+There are three model-based determinants of trading 
+volume q
+i , ∗
+: fundamental trading demand q
+i
+0
+, the 
+covariance matrix of fundamental trading demands 
+V, and the covariance matrix of currency returns S.
+Proposition 2 ( Dollar Dominance Conditions ). Trading 
+volume within a triplet of currency pairs (i.e., $X, $Y, and 
+XY) will be dominated by the dollar if, conditional on observ -
+ing larger trading volume in dollar currency pairs (i.e., $X 
+and $Y) relative to their fundamental trading demands, at 
+least one of the following three conditions is satisfied with 
+inequality for dollar pairs: 
+C1: Larger fundamental trading demands, mi n(q
+i
+$X , 0
+, 
+q
+i
+$Y , 0
+) ≥
+i
+XY , 0
+, ∀ i;
+C2: More volatile trading demands, mi n(Ω
+$X , $X
+, Ω
+$Y , $Y
+)
+≥ Ω
+XY , XY
+;
+C3: Less volatile currency returns, ma x(Σ
+$X , $X
+, Σ
+$Y , $Y
+)
+≤ Σ
+XY , X Y
+.
+The last condition, C3, only holds if S, V, and B are pos -
+itive semidefinite and if all the off-diagonal elements are 
+positive, whereas the second condition, C2, also holds if all 
+the off-diagonal elements in S, V, and B, respectively, have 
+the same signs. The proof of Proposition 2 follows from Cor -
+ollaries 1–3 in the Online Appendix.
+Individually, each of the conditions in Proposition 2
+is sufficient only if the other two hold with equality. 
+This implies that the U.S. dollar may even become 
+dominant if fundamental trading demands and 
+exchange rate volatilities are held the same within a 
+triplet of currency pairs. Conversely, the necessary 
+condition for dollar dominance is that at least one of 
+the three conditions needs to hold with inequality. 
+Thus, these three conditions are also useful for pre -
+dicting which currency is unlikely to be dominant: a 
+currency will not dominate trading volume within a 
+triplet if none of the above conditions is satisfied. 
+Note that the conditions above are based on infinitesi -
+mal (rather than large) changes in the primitives. 
+Hence, I cannot directly speak to the relative impor -
+tance of these conditions in situations where only 
+some of the conditions are satisfied. I tackle this issue 
+empirically in the next section.
+When conditions two and three are both satisfied, 
+dollar currency pairs exhibit a lower price impact 
+than nondollar pairs. As a result, trading nondollar 
+pairs indirectly via the U.S. dollar rather than directly 
+becomes more attractive and should result in more 
+dollar dominance. Specifically, the price impact of the 
+indirect vehicle currency trade involving two dollar 
+currency pairs is less than the direct exchange if the 
+following two conditions are satisfied. First, each of 
+the two dollar currency pairs exhibits at least twice as 
+volatile fundamental trading demands than the 
+Somogyi: Dollar Dominance in FX Trading 
+12 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 13 =====
+
+nondollar pair. Second, the two dollar exchange rates 
+are both at least half as volatile as the direct nondollar 
+rate. These conditions follow directly from Corollaries 
+2 and 3 in the Online Appendix and the fact that the 
+equilibrium is linear and symmetric. Moreover, they 
+are based on the simplifying assumption that the 
+covariance matrix of fundamental trading demands S 
+and currency returns V are such that all off-diagonal 
+elements are identical.
+4.4.2. Summary. The key economic insight provided 
+by the model is threefold. First, traders trade more in 
+currency pairs where they face a lower expected price 
+impact. Second, this effect is driven by the relative 
+riskiness of a currency pair on the one hand and by 
+the distribution of fundamental trading demands on 
+the other. Hence, if each trader plays equilibrium, 
+then strategic avoidance of price impact creates a 
+more liquid market for currencies that are either less 
+risky or that exhibit more uncertain trading demands. 
+Lastly, the comparative statics of the model imply 
+three conditions for dollar dominance. The first condi -
+tion states that the fundamental demand for dollar 
+pairs has to be larger than in nondollar pairs. Condi -
+tions two and three operate via the vehicle currency 
+trading channel. They imply that the price impact in 
+dollar pairs will be larger than in nondollar pairs if 
+dollar pairs exhibit more volatile fundamental trading 
+demands but less volatile currency returns than non -
+dollar pairs.
+The model’s testable implications fall into two parts. 
+First, it enables me to evaluate the three dominance con -
+ditions for the cross-section of currency pair triplets. 
+The aim is to understand if the empirical counterparts 
+of these conditions are consistent with the actual dollar 
+dominance in the data. This is useful not only to predict 
+which triplets are dominated by the dollar but also to 
+identify which ones are on the verge of switching to 
+another currency. Put differently, such an empirical 
+exercise can speak to two questions: (i) which condi -
+tions are close or far from being “necessary” for dollar 
+dominance in trading volume, and (ii) how realistic are 
+these conditions for dollar dominance empirically.
+Second, the model allows disentangling the relative 
+importance of the three conditions for explaining the 
+time variation of dollar dominance. To establish this, I 
+derive a time-varying empirical measure of dollar 
+dominance using actual FX trade data. Following the 
+model, dollar dominance increases in the first and sec -
+ond conditions but decreases in the third one.
+5. Empirical Analysis
+This section presents empirical evidence that is consis -
+tent with the model in two parts. First, I focus on 
+the cross-section of currency pair triplets to evaluate 
+which of the three conditions in Proposition 2 are 
+empirically supported. Second, I use panel regressions 
+to test the model in reduced form and evaluate the rel -
+ative importance of each dominance condition.
+5.1. Determinants of Dollar Dominance in 
+FX Trading
+According to the theoretical framework in Section 4 , FX 
+trading volume is driven by both fundamental and vehi -
+cle currency trading demands. The latter are inversely 
+related to price impact: the larger the expected price 
+impact in a currency pair, the lower the amount of vehi -
+cle currency trading. In the model, this reciprocity is 
+governed by two primitives: (i) the variance of funda -
+mental trading demands, and (ii) the variance of 
+exchange rate returns. The goal of this section is to 
+derive an empirical counterpart for fundamental trading 
+demands and the two theoretical determinants of price 
+impact.
+The main challenge for testing the model’s predic -
+tions is to identify an empirical proxy for fundamental 
+trading demands. The reason is that such a proxy has 
+to be available for both dollar and nondollar currency 
+pairs and at a sufficiently high frequency to compute 
+measures of realised variance. Following the literature 
+on dollar dominance, U.S. imports and exports, for -
+eign purchases and sales of long-term U.S. securities, 
+and dollar-denominated debt instruments that are 
+issued outside of the U.S. are obvious low-frequency 
+measures of fundamental trading demands that origi -
+nate from real trading motives, cross-border financial 
+flows, and foreign demand for dollar debt, respec -
+tively. Unfortunately, these variables are neither avail -
+able at sufficiently high frequencies (e.g., weekly) nor 
+for “nondollar currency pairs” (e.g., AUDJPY). For 
+instance, to my best knowledge, there is no compre -
+hensive source documenting the amount of Australian 
+dollar–denominated debt instruments that are issued 
+in Japan and vice versa. I overcome this challenge by 
+employing dealer banks’ customer order flows as a 
+proxy for dealers’ fundamental trading demand.
+This measure has two potential limitations. First, it 
+implicitly assumes that bank trading is driven mainly 
+by customer flows rather than by dealer banks’ opera -
+tional (driven by operating expenses) or proprietary 
+trading demands. This assumption is reasonable 
+given that my sample covers the post–financial crisis 
+period where the ability of banks to take proprietary 
+positions in OTC markets has been curtailed after the 
+introduction of regulatory reforms.
+12
+The amount of 
+operational and proprietary trading is unobservable 
+in my data set, and hence, I cannot directly control for 
+it. However, including currency pair and time series 
+fixed effects in panel regressions enables mitigating 
+any bias stemming from proprietary trading activity, 
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 13 
+
+===== PAGE 14 =====
+
+which is either constant over time or stable across cur -
+rency pairs.
+Second, Moore et al. ( 2016 ) use survey evidence to 
+show that around 45%–60% of FX spot trades get 
+netted internally over an unspecified time horizon. 
+Hence, gross customer flows (i.e., the sum of buy and 
+sell order volumes) are likely to overestimate the 
+actual fundamental trading demand of FX dealers 
+because they are measured before any internalisation 
+has taken place. To address this issue, I compute cus -
+tomer flows as the absolute value of the difference 
+between customer buy and sell order volumes. The 
+aim of this measure is to capture dealer banks’ trading 
+demands stemming from customer order imbalances 
+that prevail after any internal netting activity.
+CLS volume and order flow data are ideal for my 
+empirical analysis for two reasons. First, CLS flow data 
+contain trades between customers and large FX dealer 
+banks. Second, subtracting customer trading activity 
+from aggregate CLS volume allows me to measure 
+interdealer trading volumes. In the context of inter -
+dealer volume, it is important to note that these are 
+comprised by transactions that generally occur after 
+the dealer bank has done any internal netting. Inter -
+bank trading accounts for around 58% of CLS volume.
+5.1.1. Key Variables. With these assumptions in place, 
+the mapping from the model to the data is straightfor -
+ward. For every currency pair k and every point in 
+time t, I estimate fundamental trading demand flo w
+k , t 
+(i.e., q
+0 , k 
+in the model) as the absolute value of the dif -
+ference between customer buy and sell order volume 
+measured in U.S. dollars. Ideally, I would use the 
+signed difference between buy and sell volume. How -
+ever, the CLS order flow data do not include any 
+dealer-to-dealer trades, whereas interdealer volume is 
+unsigned by definition, and hence, I take the absolute 
+value of net customer flows. Note that the key empiri -
+cal results in this section are robust to using the sum 
+of customer buy and sell order volumes as an alterna -
+tive measure of fundamental trading demands. CLS 
+order flow data are available hourly, which enables 
+proxying the variance of fundamental trading demands 
+va r( f l o w)
+k , t 
+(i.e., Ω
+k , k 
+in the model) as the intraday rea -
+lised variance of f l o w
+k , t
+. I compute the realised variance 
+of customer flows, rather than the sum of squared order 
+flows (as it is common practice for returns), because the 
+average order flow is nonzero. Next, to measure the rel -
+ative riskiness v o l a t i li t y
+k , t 
+of every FX rate, I compute 
+the daily realised variance as the sum of squared intra -
+day midquote returns (Barndorff-Nielsen and Shephard 
+2002 ). Thus, v o l a t i l i t y
+k , t 
+corresponds to the variance of 
+exchange rate returns (i.e., Σ
+k , k
+) in the model.
+Table 2 summarises the key properties of hourly 
+Amihud price impact, interdealer volume, customer 
+flows, ratio of interdealer to customer flows, realised 
+volatility, and relative bid-ask spreads for 15 nondollar 
+and 10 dollar currency pairs, respectively. Throughout 
+this paper, I estimate “Amihud” as the ratio between 
+realised power variation and aggregate trading volume 
+following Ranaldo and Santucci de Magistris ( 2022 ). The 
+summary statistics table conveys four key messages. 
+First, both interdealer and (net) customer flows are 
+heavily concentrated in five dollar pairs (i.e., USDEUR, 
+USDJPY, USDGBP, USDCAD, and USDAUD). Specifi -
+cally, customer flows are, on average, 5.8 times higher in 
+dollar pairs ($104 million on average) than nondollar 
+pairs ($18 million on average). Second, dollar and non -
+dollar pairs have similar risk characteristics. The aver -
+age realised volatility is just about 0.6 BPS higher in 
+dollar pairs (10.7 BPS on average) than nondollar pairs 
+(10.1 BPS on average). Third, the median Amihud price 
+impact in nondollar pairs is, on average, twice as large 
+as in dollar pairs. This observation is consistent with the 
+idea that dollar pairs are less prone to asymmetric infor -
+mation risk than nondollar pairs (see Ranaldo and 
+Somogyi ( 2021 ) for more details). Fourth, relative bid- 
+ask spreads are just marginally higher in nondollar pairs 
+(3.8 BPS on average) than dollar pairs (3.6 BPS on 
+average).
+13
+The fact that bid-ask spreads are, on average, the 
+same in dollar and nondollar pairs has three implica -
+tions. First, it deepens the puzzle about the concentra -
+tion of volume in dollar pairs because using the U.S. 
+dollar as a vehicle currency for exchanging nondollar 
+pairs is not beneficial from a bid-ask spread perspec -
+tive (see also Figure 2 ). Second, it provides indirect 
+evidence in favour of the notion that price impacts, 
+rather than bid-ask spreads, are the primary cost of 
+trading. Lastly, these bid-ask spread estimates do not 
+support the idea that dealers set bid and offer prices 
+such that they reward customers for trading indirectly 
+via the dollar.
+5.2. Evidence of Dollar Dominance in FX Trading
+What follows provides empirical evidence of dollar 
+dominance that is consistent with the economic intui -
+tion of my model. Theoretically, a triplet of currency 
+pairs (e.g., GBPJPY, USDGBP, and USDJPY) will be 
+dominated by the U.S. dollar if, conditional on observ -
+ing larger trading volume in dollar currency pairs rela -
+tive to their fundamental trading demands, at least one 
+of the following three conditions is satisfied, whereas the 
+other two remain equal: dollar currency pairs exhibit (i) 
+larger average fundamental trading demands, (ii) more 
+volatile fundamental trading demands, or (iii) less vola -
+tile currency returns than nondollar currency pairs. The 
+intuition for these conditions stems directly from the 
+comparative statics of trading volume in Proposition 1 . 
+To avoid clutter, I refer to these conditions as C1, C2, and 
+C3 throughout the remainder of the empirical analysis. 
+Somogyi: Dollar Dominance in FX Trading 
+14 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 15 =====
+
+In sum, this section has three goals: first, to derive empir -
+ical counterparts for dollar dominance as well as each of 
+the three dominance conditions; second, to test if the 
+conditions for dollar dominance can correctly predict the 
+observed currency dominance across triplets of currency 
+pairs; and lastly, to pin down the relative importance of 
+the three conditions for explaining the time and cross- 
+sectional variation in dollar dominance.
+5.2.1. Dollar Dominance Conditions. Figure 4 sum -
+marises the empirical counterparts of the three dollar 
+dominance conditions. I plot four bars for every triplet 
+of currency pairs. The first bar from the left (i.e., DD) 
+corresponds to the time series average of my empirical 
+measure of dollar dominance: a positive figure implies 
+dollar dominance, whereas a negative one disproves 
+such dominance. The three other bars (i.e., C1, C2, and 
+C3) each represent the time series average for one of 
+the conditions in Proposition 2 . To derive empirical 
+measures of dollar dominance DD (in line with Defini -
+tion 1 ) and the three conditions (i.e., C1, C2, and C3), I 
+focus on triplets of currency pairs (i.e., $X, $Y, and 
+XY) and proceed as follows:
+DD
+t
+�
+log
+min(v olu me
+$X , t
+, vol ume
+$Y , t
+)
+vol ume
+XY , t
+� �
+if vol ume
+$X , t
+> flo w
+$X , t
+∧ vol ume
+$Y , t
+> flo w
+$Y , t
+0 oth erw ise,
+8
+>
+>
+>
+<
+>
+>
+>
+:
+(10 ) 
+Table 2. Summary Statistics
+AUDJPY AUDNZD CADJPY EURAUD EURCAD
+Amihud price impact in BPS per $10mn 5.04 7.57 40.79 6.75 12.22
+Dealer volume in $mn 110.20 47.12 14.96 66.38 39.00
+Customer flow in $mn 14.63 12.20 5.32 15.42 11.92
+Volatility of customer flow in $mn 22.04 19.77 11.36 26.75 24.28
+Realised volatility in BPS 13.94 8.98 12.21 11.35 9.83
+Relative bid-ask spread in BPS 3.89 3.96 3.92 3.32 3.22
+EURCHF EURDKK EURGBP EURJPY EURNOK
+Amihud price impact in BPS per $10mn 1.74 1.45 1.60 1.35 3.54
+Dealer volume in $mn 204.98 43.43 346.12 382.27 148.23
+Customer flow in $mn 35.57 16.58 48.06 38.02 19.05
+Volatility of customer flow in $mn 96.33 39.54 98.29 74.96 35.14
+Realised volatility in BPS 6.67 1.82 9.36 10.81 11.98
+Relative bid-ask spread in BPS 2.60 2.45 3.10 2.94 6.41
+EURSEK GBPAUD GBPCAD GBPCHF GBPJPY
+Amihud price impact in BPS per $10mn 2.54 22.28 48.21 44.58 4.32
+Dealer volume in $mn 160.91 23.24 12.82 14.20 121.83
+Customer flow in $mn 22.58 7.32 5.49 5.12 16.63
+Volatility of customer flow in $mn 54.28 14.91 17.87 15.97 32.73
+Realised volatility in BPS 9.50 12.12 10.58 10.61 12.46
+Relative bid-ask spread in BPS 5.36 3.90 3.71 3.93 3.61
+USDAUD USDCAD USDCHF USDDKK USDEUR
+Amihud price impact in BPS per $10mn 0.53 0.35 1.16 42.32 0.11
+Dealer volume in $mn 925.02 1,094.64 362.72 22.27 3,585.19
+Customer flow in $mn 90.95 223.71 63.77 5.36 275.02
+Volatility of customer flow in $mn 142.27 373.53 144.67 26.21 519.08
+Realised volatility in BPS 12.03 8.60 9.32 8.89 8.85
+Relative bid-ask spread in BPS 3.21 2.53 2.95 2.98 2.21
+USDGBP USDJPY USDNOK USDNZD USDSEK
+Amihud price impact in BPS per $10mn 0.36 0.17 11.02 1.95 8.24
+Dealer volume in $mn 1,215.27 2,295.34 62.30 262.52 71.94
+Customer flow in $mn 138.15 164.35 19.42 36.47 22.43
+Volatility of customer flow in $mn 281.92 252.55 52.65 68.30 57.97
+Realised volatility in BPS 9.78 9.38 14.52 12.81 12.94
+Relative bid-ask spread in BPS 2.62 2.41 7.25 3.86 6.16
+Notes. This table reports summary statistics for the hourly Amihud price impact, interdealer volume, customer flows, ratio of 
+interdealer to customer flows, realised volatility, and the relative bid-ask spread for 15 nondollar and 10 dollar pairs, respectively. 
+Each row corresponds to the time series average of the variable except for the rows “Amihud price impact in BPS per $10mn” and 
+“Volatility of customer flow in $mn,” which report the median hourly price impact and the standard deviation of hourly customer 
+flows across the full sample, respectively. The sample is balanced (66,524 hourly observations per currency pair) and covers the 
+period from September 1, 2012, to September 30, 2022.
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 15 
+
+===== PAGE 16 =====
+
+C1
+t
+� log
+min ( flo w
+$X , t
+, flo w
+$Y , t
+)
+flow
+XY , t
+ !
+, (11 ) 
+C2
+t
+� log
+min(v ar( flo w)
+$X , t
+, var( flo w)
+$Y , t
+)
+var( flo w)
+XY , t
+� �
+, (12 ) 
+C3
+t
+� log
+max(vo lat il ity
+$X , t
+, vol ati lit y
+$Y , t
+)
+vol ati lit y
+XY , t
+ !
+, (13 ) 
+where f l o w
+k , t 
+is fundamental customer trading demand, 
+va r( f l o w
+k , t
+) denotes the volatility of customer trading 
+demands, and v o l a t i li t y
+k , t 
+captures the realised variance 
+of currency returns. Taking the natural log of the ratios 
+above supports their interpretation as percentage differ -
+ences. In line with my definition of dollar dominance in 
+Definition 1 , the empirical counterpart in Equation ( 10 ) 
+measures by how much trading volume in dollar pairs 
+exceeds trading volume in the direct nondollar cross 
+conditional on observing more interdealer trading vol -
+ume relative to customer flows in period t. To be clear, 
+DD captures the degree of dollar dominance (i.e., inten -
+sive margin) within every currency pair triplet and 
+point in time t rather than just the binary outcome of 
+whether the dollar dominates or not (i.e., extensive 
+margin).
+Table 3 compares the time-series averages of my 
+estimates of dollar dominance DD and the three con -
+ditions (i.e., C1, C2, and C3), focusing on two null 
+hypotheses. First, dollar dominance DD is equal to 
+the first condition C1, implying that the interdealer 
+Figure 4. Dollar Dominance Conditions: Empirical Evidence 
+Notes. This figure shows the time series average of the empirical counterparts (see Equations ( 10 ) and ( 13 )) of the conditions in Proposition 2 for 
+15 currency pair triplets. A triplet is defined as one nondollar pair (e.g., GBPJPY) plus the two USD legs and is abbreviated as USD-GBP-JPY. The 
+first bar (i.e., DD) corresponds to my empirical measure of dollar dominance in Equation ( 10 ): a positive figure implies dollar dominance, 
+whereas a negative one disproves such dominance. The other three bars (i.e., C1, C2, and C3) each represent one of the conditions in Proposi -
+tion 2 . All numbers are in log units. For each currency triplet, the dominant currency is highlighted in boldface within the header, which indi -
+cates whether a triplet is in the region of dollar dominance (title in upper case), multiplicity (title in italics), or nondollar dominance (title in 
+lower case). The sample is daily and spans from September 1, 2012, to September 30, 2022.
+Somogyi: Dollar Dominance in FX Trading 
+16 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 17 =====
+
+market is either Walrasian in the sense that dealers 
+simply pass through what customers want to trade 
+or that customers behave strategically to avoid direct 
+trading. In both cases, the ratio of DD to C1 should be 
+equal to unity, implying that there is no scope for vehi -
+cle currency trading by financial intermediaries. Note 
+that to appropriately reflect the conditional part of 
+Equation ( 10 ), I set DD
+t 
+equal to zero in periods when 
+either vo lu me
+$X , t
+> fl o w
+$X , t 
+or vo lu me
+$Y , t
+> fl o w
+$Y , t 
+does 
+not hold. Second, conditions C2 and C3 are equal to 
+zero, which would refute price impact being a relevant 
+determinant of vehicle currency trading. The inference 
+is based on Newey and West ( 1994 )’s covariance 
+matrix with a bandwidth of eight lags.
+To test whether the conditions are also “sufficient” 
+in the sense that they are always satisfied when DD is 
+positive, it is crucial to test for “negative cases,” that 
+is, when the data meet the three conditions but DD is 
+negative. The only example in my sample that comes 
+close to such a “negative case” is the short period 
+from December 2012 to February 2013 (representing 
+less than 3% of the sample period) when the EUR was 
+the dominant currency for the USD-EUR-CHF triplet. 
+Focusing on this short period, I find that the EUR is 
+the dominant currency despite the fact that conditions 
+C1 and C2 point towards dollar dominance. Impor -
+tantly, the third condition, C3, is inconsistent with dol -
+lar dominance. In sum, the lack of such negative cases 
+across currency pair triplets supports the notion that 
+the three conditions C1, C2, and C3 are strong empiri -
+cal predictors of dollar dominance.
+Three results stand out from Table 3 : First, in line 
+with the evidence shown in Figure 4 , for 13 out of 15 
+triplets, DD is significantly larger than C1. This result 
+fully supports the notion that FX dealers are not sim -
+ply passing through what customers want to trade 
+Table 3. Dollar Dominance Conditions: Hypothesis Tests
+DD C1 C2 C3 DD� C1 volume
+$X , t
+> flow
+$X , t
+volume
+$Y , t
+> flow
+$Y , t
+USD-AUD-JPY 2.13*** 1.80*** 3.64*** � 0.17*** 0.33*** 2.33*** 2.63***
+(47.46) (48.92) (37.99) (4.14) (10.93) (69.10) (76.25)
+USD-AUD-NZD 1.76*** 1.09*** 2.17*** 0.76*** 0.67*** 2.33*** 2.00***
+(66.03) (39.51) (25.48) (15.83) (25.93) (69.10) (69.92)
+USD-CAD-JPY 4.38*** 3.37*** 6.28*** � 0.32*** 1.01*** 1.65*** 2.63***
+(71.90) (53.20) (51.37) (9.51) (30.57) (37.15) (76.25)
+USD-EUR-AUD 2.64*** 1.79*** 3.51*** 0.19*** 0.86*** 2.61*** 2.33***
+(76.57) (64.87) (41.54) (4.37) (19.86) (86.43) (69.10)
+USD-EUR-CAD 3.36*** 2.76*** 5.22*** � 0.01 0.61*** 2.61*** 1.65***
+(109.36) (69.73) (59.87) (0.15) (18.10) (86.43) (37.15)
+USD-EUR-CHF 0.62*** 0.58*** 1.12*** 0.89*** 0.04 2.61*** 1.82***
+(22.78) (15.27) (9.04) (9.07) (0.90) (86.43) (54.90)
+USD-EUR-DKK � 0.77*** � 1.37*** � 2.38*** 3.26*** 0.60*** 2.61*** 1.56***
+(15.77) (16.86) (14.81) (37.93) (6.15) (86.43) (25.51)
+USD-EUR-GBP 1.27*** 1.02*** 1.78*** 0.25*** 0.25*** 2.61*** 2.22***
+(95.63) (49.85) (29.80) (7.32) (10.12) (86.43) (102.10)
+USD-EUR-JPY 1.82*** 1.45*** 2.73*** � 0.05 0.37*** 2.61*** 2.63***
+(33.33) (36.42) (28.64) (1.17) (9.18) (86.43) (76.25)
+USD-EUR-NOK � 0.86*** � 0.06* 0.17** 0.38*** � 0.80*** 2.61*** 1.24***
+(29.12) (1.74) (2.02) (9.19) (24.70) (86.43) (34.96)
+USD-EUR-SEK � 0.81*** � 0.06** 0.10 0.57*** � 0.75*** 2.61*** 1.23***
+(18.75) (1.98) (1.26) (16.35) (17.41) (86.43) (33.64)
+USD-GBP-AUD 3.69*** 2.51*** 4.74*** 0.10** 1.18*** 2.22*** 2.33***
+(102.75) (75.74) (60.04) (2.20) (28.94) (102.10) (69.10)
+USD-GBP-CAD 4.48*** 3.23*** 6.11*** � 0.04 1.24*** 2.22*** 1.65***
+(128.26) (91.35) (86.68) (1.05) (32.24) (102.10) (37.15)
+USD-GBP-CHF 3.33*** 2.53*** 4.83*** 0.07*** 0.79*** 2.22*** 1.82***
+(89.28) (51.94) (38.76) (2.69) (14.40) (102.10) (54.90)
+USD-GBP-JPY 2.30*** 2.01*** 4.02*** � 0.19*** 0.30*** 2.22*** 2.63***
+(45.10) (42.70) (42.43) (6.59) (8.98) (102.10) (76.25)
+Average number of 
+observations per triplet
+2,586 2,586 2,586 2,586 2,586 2,587 2,586
+Notes. This table summarises the empirical counterparts (see Equations ( 10 )–( 13 )) of the three conditions in Proposition 2 for 15 triplets of currency 
+pairs. A triplet is defined as one nondollar currency pair (e.g., GBPJPY as shown at the beginning of each row) plus the two USD legs (e.g., 
+USDGBP and USDJPY). The first bar, named DD, refers to my empirical measure of dollar dominance. The next three columns, labelled C1, C2, 
+and C3, each correspond to one of the three conditions measured in log units. The column labelled DD� C1 reports the difference between the 
+columns labelled DD and C1. The last two columns test if interdealer trading volume exceeds customer flows in the two USD legs, that is, if the log 
+of the ratio of interdealer volume to customer flows is positive. The sample is daily and spans from September 1, 2012, to September 30, 2022. The 
+test statistics based on Hodrick ( 1992 ) robust standard errors, allowing for heteroskedasticity and serial correlation, are reported in parentheses.
+*, **, and *** denote significance at the 90%, 95%, and 99% confidence levels.
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 17 
+
+===== PAGE 18 =====
+
+but behave strategically by avoiding direct trading in 
+nondollar pairs. Second, the conditions C2 and C3 are 
+both significantly different from zero for all 15 triplets 
+except for the USD-EUR-CAD. The economic signifi -
+cance of the second and third conditions (C2 and C3)
+corroborates the idea that cross-sectional heterogene -
+ity in price impact can explain the concentration of 
+trading volume in dollar currency pairs. Third, in line 
+with the hourly sample averages in Table 2 , the last 
+two columns confirm that interdealer trading volume 
+exceeds customer flows for all 10 dollar currency pairs 
+in the sample. In sum, this section provides circum -
+stantial evidence that FX dealers in the interbank mar -
+ket strategically avoid transacting directly in illiquid 
+nondollar pairs by using the U.S. dollar as an interme -
+diate vehicle currency.
+5.2.2. Classification. Based on the empirical estimates 
+of dollar dominance DD and on the three dominance 
+conditions, I classify the 15 triplets in Figure 4 into 
+three regions: (i) dollar dominance (title in upper 
+case), (ii) multiplicity (title in italics), and (iii) nondol -
+lar dominance (title in lower case). First, a triplet of 
+currency pairs lies in the region of dollar dominance if 
+the dollar is the dominant currency (positive DD) and, 
+in addition, all three conditions are jointly satisfied. 
+Second, the region of multiplicity characterises triplets 
+for which only one or two conditions are satisfied while 
+the dollar is still the dominant currency. This supports 
+the idea that the status quo of dollar dominance can 
+potentially be scrutinised in triplets currently within 
+the region of multiplicity. Lastly, currency pair triplets 
+lie in the region of nondollar dominance (i.e., euro 
+dominance) if the U.S. dollar is not the dominant cur -
+rency (negative DD) and if at least two conditions (see 
+Proposition 2 ) are violated in the data.
+Following this classification, 12 out of 15 triplets of 
+currency pairs lie either in the region of multiplicity 
+or in that of dollar dominance. Six currency pair tri -
+plets lie in the region of multiplicity because the third 
+condition (i.e., C3) for realised volatility is not satis -
+fied. Nevertheless, these triplets are still dominated by 
+the dollar (i.e., positive DD). As a result (and not by 
+definition), the currency pair triplets that exhibit dollar 
+dominance also satisfy at least one of the three condi -
+tions. Furthermore, the first two conditions (i.e., C1 
+and C2) with respect to the mean and variance of cus -
+tomer trading demands are empirically “necessary” 
+for dollar dominance. This insight stems from the 
+observation that there is no evidence of dollar domi -
+nance (positive DD) unless these two conditions jointly 
+hold.
+In my sample, the USD-EUR-DKK, USD-EUR-NOK, 
+and USD-EUR-SEK triplets are not dominated by the 
+dollar in terms of FX trading volume. This is because 
+trading volume in at least one of the dollar pairs is less 
+than trading volume in the direct nondollar cross 
+despite the fact that interdealer volume in dollar pairs 
+exceeds customer flows. Moreover, based on the evi -
+dence in Table 3 and Figure 4 , the euro seems to enjoy 
+regional dominance as a vehicle currency for exchang -
+ing Scandinavian currencies against the U.S. dollar. In 
+line with this observation, the conditions for euro dom -
+inance are largely satisfied for all three aforementioned 
+currency triplets (see Table D.5 in the Online Appendix 
+for details). In sum, the evidence here underscores the 
+general nature of the model in Section 4 in the sense 
+that it does not assume that the U.S. dollar is ex ante 
+“special” in some way. Put differently, given that the 
+model is symmetric, the same set of conditions applies 
+to any other currency, and hence, it is straightforward 
+to adapt Definition 1 and Proposition 2 to reflect the 
+perspective of, for instance, euro dominance.
+5.2.3. Relative Importance. Following the evidence in 
+Figure 4 , not all three conditions are equally impor -
+tant determinants of dollar dominance in FX trading. 
+In particular, one might wonder about the relative 
+importance of C1, which is based on fundamental 
+trading demands, relative to C2 and C3, which foster 
+vehicle currency trading because of strategic avoidance 
+of price impact. To estimate the relative importance of 
+each condition and to establish that dollar dominance 
+in FX trading is not simply a direct consequence of 
+dominance in fundamental trading demands, I follow 
+two approaches. First, I define relative importance 
+as the contribution that each regressor makes to the 
+coefficient of determination (see, e.g., Johnson and LeB -
+reton 2004 , Gr ¨omping 2007 ). Second, I estimate a panel 
+regression with time and cross-sectional fixed effects 
+that allows me to control for time-varying FX market 
+and funding liquidity.
+For the first approach, I estimate the relative impor -
+tance of each condition using an averaging-over- 
+orderings approach (Lindeman et al. 1980 ). The key 
+advantage of this method is that it takes into account 
+both a regressor’s direct (i.e., the correlation with the 
+outcome variable) and indirect effect (i.e., when com -
+bined with other explanatory variables). The relative 
+importance measure lmg of the m-th regressor X
+m 
+is 
+given as
+lmg(X
+m
+) �
+1
+p!
+X
+r∈P
+R
+2
+(X
+p
+| S
+p
+(r)), (14 ) 
+where R
+2
+(X
+p
+| S
+p
+(r)) is the difference in R
+2 
+of a model 
+with and without the regressor S
+p
+(r) based on the 
+order r � {r
+1
+, : : : , r
+p
+}, where P denotes the set of all 
+permutations of r.
+Figure 5 visualises the relative importance of the 
+three conditions. There are two takeaways from this 
+figure. First, as expected, condition C1 is the most 
+Somogyi: Dollar Dominance in FX Trading 
+18 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 19 =====
+
+important determinant of DD and, on average, accounts 
+for 5:3% of the daily variation. Second, changes in 
+conditions C2 and C3 account for 2:5% and 0:6% of the 
+variation in DD. Note that the sum of these relative 
+importance measures is equal to the R
+2 
+of the panel 
+regression below in Equation ( 15 ) that jointly includes 
+all three conditions as regressors but excludes any con -
+trol variables other than the currency fixed effects.
+For the second approach, I run the following daily 
+panel regression with time series µ
+t 
+and currency pair 
+triplet α
+j 
+fixed effects:
+DD
+j , t
+� µ
+t
++ α
+j
++ β
+1
+C1
+j , t
++ β
+2
+C2
+j , t
++ β
+3
+C3
+j , t
++ γ
+′
+w
+j , t
++ ɛ
+j , t
+,
+(15 ) 
+where the dependent variable DD
+j , t 
+is my time-varying 
+empirical measure of dollar dominance that is either 
+based on trading volume (i.e., do ld o m
+j , t
+) or on Ami -
+hud’s price impact (i.e., am ih ud
+j , t
+). Estimating Equation 
+( 15 ) does not aim to identify the direction of causality 
+as dollar dominance, and the three conditions are all 
+equilibrium outcomes following the theoretical frame -
+work in Section 4 . Section D in the Online Appendix 
+documents the time and cross-sectional variation in 
+do ld o m
+j , t 
+and a mi hu d
+j , t
+, respectively, for j � 1, 2, : : : , 15 
+triplets of currency pairs. I define a mi hu d
+j , t 
+as the maxi -
+mum Amihud price impact across two dollar currency 
+pairs (e.g., USDGBP and USDJPY) relative to the price 
+impact in the nondollar pair (e.g., GBPJPY) within the 
+same triplet. Thus, both dollar pairs exhibit a lower 
+price impact than nondollar pairs if a mi hu d
+j , t 
+is less 
+than one. In some specifications, I also include the aver -
+age relative bid-ask spread bi d � a sk s pr ea d
+j , t 
+and cross- 
+currency basis ci p � ba si s
+j , t 
+across two dollar pairs as 
+control variables in w
+j , t 
+to account for market and 
+funding liquidity in dollar pairs. Both dependent 
+and independent variables are taken in logs and first 
+differences because dollar dominance and the three 
+conditions are persistent in levels.
+14
+Moreover, I scale 
+each variable by its standard deviation across all 15 
+triplets.
+Following the intuition of the theoretical frame -
+work, I conjecture that dollar dominance based on 
+trading volume dol dom
+j , t 
+correlates positively with C1 
+and C2, respectively. On the contrary, the effect of C3 
+is theoretically ambiguous because of the fact that 
+the correlation between trading volume and currency 
+return volatility depends on the magnitude of the 
+endogenous inference coefficient B. Furthermore, dol -
+lar dominance based on price impact ami hu d
+j , t 
+is pre -
+sumably negatively related to C2 but positively to C3. 
+Hence, if C2 is greater than one, whereas C3 is smaller 
+than one, then dollar currency pairs feature a lower 
+expected price impact than nondollar pairs.
+Table 4 provides evidence that is in line with the 
+model in Section 4 . To mitigate multicollinearity, I 
+orthogonalise conditions C1 against C2 and C3 in 
+column (6), where I add all three conditions as regres -
+sors. The inference is based on double-clustered stan -
+dard errors (by time and currency triplets) allowing 
+for serial correlation up to eight lags (Newey and 
+West ( 1994 )’s plug-in procedure). There are two take -
+aways with respect to the relative importance of the 
+three conditions. First, conditions C2 and C3 are not 
+subsumed by condition C1 when including all three 
+conditions as regressors in column (6). Second, in line 
+with the predictions of the theoretical framework, dol -
+lar dominance based on the Amihud price impact 
+ami hud
+j , t 
+covaries significantly negatively with condi -
+tion C2 but positively with C3.
+5.2.4. Robustness. What follows summarises two 
+additional robustness checks that support my empiri -
+cal findings. Section D in the Online Appendix docu -
+ments these additional analyses. First, to guard against 
+the possibility that my results are driven by seasonalities, 
+I follow Fischer and Ranaldo ( 2011 ) and filter the deter -
+ministic effect by including the lagged dependent vari -
+able as a regressor. The regression results are robust to 
+adding this additional control variable. Second, I use 
+Cespa et al. ( 2021 )’s approach to detrend trading volume 
+by dividing today’s volume in each currency pair by a 
+moving average over the previous 22 business days’ vol -
+ume: v o l u m e
+k , t
+=(
+1
+2 2
+P
+2 2
+m�1
+vo l u m e
+k , t� m
+). All results remain 
+qualitatively unchanged when computing d o l d o m
+j , t 
+based on detrended, rather than actual, volume.
+5.2.5. Summary. This section provides evidence that 
+dollar dominance in FX trading is tightly linked to the 
+model-based conditions. There are three novel insights 
+to be highlighted. First, the predictions of the model 
+and the data are consistent in that I observe dollar or 
+euro dominance in currency pair triplets where the 
+model predicts this, but not otherwise. Second, the 
+Figure 5. Relative Importance of Dominance Conditions 
+Notes. This figure shows the relative importance measure lmg of the 
+three dominance conditions: C1, C2, and C3, respectively. The estima -
+tion follows an averaging-over-orderings approach (Lindeman et al. 
+1980 ). The sample is daily and covers the period from September 1, 
+2012, to September 30, 2022.
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 19 
+
+===== PAGE 20 =====
+
+two conditions for fundamental trading demands (i.e., 
+C1 and C2) are empirically “necessary” for dollar domi -
+nance, whereas the third condition on the variance of 
+currency returns (i.e., C3) does not seem to play a piv -
+otal role for dollar dominance. Lastly, the first condition 
+(i.e., C1) explains around 5:3% of the time variation in 
+dollar dominance, whereas the second and third condi -
+tions (i.e., C2 and C3) jointly account for up to 3:1%.
+6. Conclusion
+This paper studies how vehicle currency trading con -
+tributes to dollar dominance in FX trading volume 
+and contributes both theoretically and empirically to 
+the prior literature. On the theory side, I use a stylised 
+model of FX trading to show how strategic avoidance 
+of price impact is a pivotal determinant of dollar dom -
+inance in FX trading. The key insight of the model is 
+three conditions for dollar dominance that can predict 
+which nondollar currency pairs are more likely to 
+trade indirectly via the U.S. dollar.
+On the empirical side, I apply the model to actual 
+FX trade data and document two novel empirical facts 
+that corroborate the theoretical framework. First, I use 
+nonoverlapping holidays as a novel identification tool 
+to disentangle trading volume because of fundamen -
+tal trading motives from vehicle currency demands. 
+Second, I estimate the model in reduced form and 
+present empirical evidence that the three model-based 
+conditions for dollar dominance correctly predict the 
+actual dollar as well as euro dominance observed in 
+the data.
+Acknowledgments
+The author is especially grateful to Darrell Duffie, Angelo 
+Ranaldo, and Paul S ¨oderlind as well as Raphael Auer, Geor -
+gia Bush (discussant), Jens Christensen, Lauren Cohen, Ege -
+men Eren (discussant), Nils Friewald, Ben H ´ebert, Bob 
+Hodrick, Arvind Krishnamurthy, Ji Yong Lee (discussant), 
+Yeonjeong Lee (discussant), Hanno Lustig, Matteo Maggiori, 
+Edouard Mattille, Albert Menkveld (discussant), Vitaly 
+Orlov, Christopher Polk, Vesa Pursiainen, Ricardo Reis, Mar -
+zena Rostek, Jonas Schirm, Andreas Schrimpf, Stefan Schar -
+nowski (discussant), Andrea Vedolin, Adrien Verdelhan 
+(discussant), Jonathan Wallen, and Matthias Weber for their 
+comments and suggestions while working on this project. 
+The author also thanks the UniCredit Foundation for the 8th 
+Econ Job Market Best Paper Award, the SFA for the 2021 
+Best Paper Award in International Finance, and the Qatar 
+Centre for Global Banking and Finance at King’s College 
+London for the Runner-up Young Economist Prize 2022, as 
+well as seminar and conference participants at Stanford Uni -
+versity, the University of St.Gallen, the Inter Finance PhD 
+Seminar, the 33rd Australasian Finance and Banking Confer -
+ence, 2021 SWFA Meetings, Imperial College London, the 
+37th International Conference of the French Finance Associa -
+tion, 2021 IBEFA Summer Meetings, the 33rd Asian Finance 
+Table 4. Determinants of Dollar Dominance in FX Trading
+doldom
+j,t
+amihud
+j,t
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+C1
+j,t
+0.24*** 0.24*** 0.39***
+(4.67) (4.70) (6.46)
+C2
+j,t
+0.18*** 0.18*** 0.18*** � 0.20** � 0.20**
+(4.42) (4.42) (4.03) (2.05) (2.04)
+C3
+j,t
+0.04** 0.04** 0.04** 0.16*** 0.16***
+(2.25) (2.32) (2.33) (3.06) (3.21)
+bid-ask spread
+j,t
+� 0.12*** � 0.13*** � 0.12*** � 0.01
+(2.71) (2.69) (2.65) (0.67)
+cip-basis
+j,t
+0.00 � 0.03
+(0.27) (1.21)
+R
+2 
+(%) 5.72 3.45 0.15 6.00 3.91 6.43 3.79 1.86 5.66
+Overall R
+2 
+(%) 19.79 17.86 15.06 20.03 18.26 20.26 11.77 9.99 13.53
+Average number of time periods 2,586 2,586 2,586 2,586 2,586 2,510 2,586 2,586 2,510
+Number of currency triplets 15 15 15 15 15 15 15 15 15
+Currency triplet FE Yes Yes Yes Yes Yes Yes Yes Yes Yes
+Time series FE Yes Yes Yes Yes Yes Yes Yes Yes Yes
+Notes. This table reports results from daily fixed effects panel regressions of the form D D
+j , t
+� µ
+t
++ α
+j
++ β
+1
+C1
+j , t
++ β
+2
+C2
+j , t
++ β
+3
+C3
+j , t
++ γ
+′
+w
+j , t
++ ɛ
+j , t
+, 
+where µ
+t 
+and α
+j 
+denote time series and currency pair triplet fixed effects. The dependent variable DD
+j , t 
+is a measure of dollar dominance that is 
+either based on trading volume (i.e., d ol d o m
+j , t
+) or on Amihud’s price impact (i.e., a m i h u d
+j , t
+). C1, C2, and C3 are the empirical counterparts of the 
+three conditions in Proposition 2 . b i d � a sk sp r ea d
+j , t 
+is the daily average relative bid-ask spread. c i p � b as i s
+j , t 
+is the (absolute) cross-currency basis 
+following the methodology in Du et al. ( 2018 ). These control variables in w
+j , t 
+are computed separately within every currency pair triplet as the 
+average across two dollar pairs. Both dependent and independent variables are taken in logs, and first differences and are measured in units of 
+standard deviations. The sample is daily and covers the period from September 1, 2012, to September 30, 2022. The test statistics based on 
+double-clustered standard errors (by time and currency triplets), allowing for serial correlation up to eight lags, are reported in parentheses. The 
+optimal lag length is based on Newey and West ( 1994 )’s plug-in procedure. FE, fixed effects.
+*, **, and *** denote significance at the 90%, 95%, and 99% confidence levels.
+Somogyi: Dollar Dominance in FX Trading 
+20 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 21 =====
+
+Conference, the 2021 Oxford-ETH Macro-finance Confer -
+ence, the 2021 World Finance Conference, the 2nd PhD Stu -
+dent Symposium at the University of Texas at Austin, BIS, 
+the 2021 DGF Meeting and Doctoral Workshop, the 2021 
+FMA Meeting, the 2021 SFA Meeting, the 2022 AFA Meeting, 
+Babson College, BI Oslo, ESCP Paris, Copenhagen Business 
+School, Cornerstone Research, CUHK, INSEAD, Wharton, 
+UVA Darden, Northeastern University, Analysis Group, 
+Baruch College, Federal Reserve Board, and Tilburg Univer -
+sity. Parts of this paper were written during the author’s 
+research stay at the Stanford Graduate School of Business, 
+whose hospitality is gratefully acknowledged. All errors are 
+the author’s own.
+Endnotes
+1
+See Davies and Kent ( 2020 ).
+2
+This is a key conceptual difference relative to Lyons and Moore 
+( 2009 ), focusing on the determinants of vehicle currency trading 
+rather than total trading volume. Through the prism of their model, 
+price impact is the sole determinant of currency dominance, whereas 
+in my model, currency dominance is driven by a combination of 
+fundamental and vehicle currency trading demands. My empirical 
+analysis supports this distinction and shows that vehicle trading 
+motives account for about 4% of the variation in dollar dominance.
+3
+See, for example, Matsuyama et al. ( 1993 ), Rey ( 2001 ), Caballero 
+and Krishnamurthy ( 2003 , 2009 ), Bruno and Shin ( 2017 ), Doepke 
+and Schneider ( 2017 ), Bruno et al. ( 2018 ), Ilzetzki et al. ( 2019 ), Jiang 
+et al. ( 2024 ), Chahrour and Valchev ( 2021 ), Mukhin ( 2022 ), Bruno 
+and Shin ( 2023 ), and (Fukui et al. 2025 ).
+4
+In particular, Cespa et al. ( 2021 ) show that there is an almost per -
+fect overlap between the share of volume across currency pairs in 
+the BIS Triennial Surveys and the CLS data.
+5
+In particular, the data set contains 15 nondollar pairs (i.e., 
+AUDJPY, AUDNZD, CADJPY, EURAUD, EURCAD, EURCHF, 
+EURDKK, EURGBP, EURJPY, EURNOK, EURSEK, GBPAUD, 
+GBPCAD, GBPCHF, and GBPJPY) and 10 dollar pairs (i.e., USDAUD, 
+USDCAD, USDCHF, USDDKK, USDEUR, USDGBP, USDJPY, USD -
+NOK, USDNZD, and USDSEK). These pairs are used to indirectly 
+trade each of the nondollar pairs.
+6
+Note that I compute measures of global GDP, trade, stock, and 
+debt markets based on 16 countries whose national currency is set -
+tled via CLS (see Section 2 ). Thus, for instance, Chinese economic 
+output does not show up in my estimates. This is clearly a conserva -
+tive approach. The U.S. dollar is even more dominant in FX volume 
+when global economic activity is computed based on all countries 
+available in the BIS triennial surveys.
+7
+For the euro, I focus on the most common holidays in the Euro -
+zone that simultaneously affect multiple countries (e.g., Austria, 
+Belgium, France, Germany, Italy, and Luxembourg) and not just on 
+singular events (e.g., German Unity Day on October 3). The com -
+plete list of nonoverlapping holidays is available upon request.
+8
+The link between interest rate differentials and FX volume stems 
+from the fact that carry trade speculators are long (short) in high (low) 
+interest rate currencies (Lustig and Verdelhan 2007 ). Hence, currency 
+pairs exhibiting a larger interest rate differential in absolute terms are 
+more likely to end up in carry trade portfolios. As an alternative proxy 
+for speculatory trading, I use customer flow data from CLS group to 
+identify trades originating from “funds” (e.g., hedge funds). I docu -
+ment these results in the Online Appendix (see Figure D.6).
+9
+I am sincerely grateful to an anonymous reviewer for suggesting 
+the inclusion of these interaction terms.
+10
+Clearly, for market participants trading smaller quantities such 
+fixed trading costs outweigh the price impact of their trades. This is 
+also consistent with the empirical fact that trading volume in non -
+dollar pairs is nonzero, albeit smaller than what flows indirectly via 
+dollar pairs (see Section 3 for further details).
+11
+In the Online Appendix, I present results for an equilibrium that 
+is symmetric (i.e., same price impact and trading volume across cur -
+rency pairs) and, hence, also unique (Rostek and Yoon 2021 ). As a 
+result, the simulations start from an equilibrium without currency 
+dominance and illustrate the transition towards an equilibrium 
+with or without dollar dominance. I also run simulations for non -
+symmetric equilibria and find that the comparative statics are fully 
+consistent with the ones pertaining to the symmetric equilibrium.
+12
+The FX spot market has been formally exempt from the Volcker 
+Rule. However, FX spot may be indirectly affected by the conse -
+quences of regulation for OTC derivatives (e.g., forwards and 
+swaps). For instance, banks that are subject to the “Market Risk 
+Capital Rule FFIEC 102” are required to report the number of 
+value-at-risk breaches in any given quarter to the Federal Financial 
+Institutions Examination Council (FFIEC). Thus, FFIEC 102 creates 
+an implicit demand to hedge open spot FX positions using FX 
+derivatives.
+13
+These bid-ask spreads are based on indicative quotes from Olsen 
+Data, and hence, the amount tradeable at these prices is unknown 
+because of the OTC nature of the FX market. However, the distribu -
+tion and level of these spreads across pairs are consistent with other 
+data sources, including both indicative and firm quotes from 
+Bloomberg (e.g., Karnaukh et al. 2015 ) and EBS (e.g., Mancini et al. 
+2013 ).
+14
+This is given that DD
+j , t 
+is zero when interdealer volume is less 
+than customer flows (see Equation ( 10 )). I compute differences in 
+logs as ∆lo g(DD
+j , t
++ 1). I retain qualitatively similar results when 
+estimating a fixed effects Poisson regression (Cohn et al. 2022 ) 
+because DD
+j , t 
+equals zero for less than 5% of observations in my 
+sample.
+References
+Alvarez F, Atkeson A, Kehoe PJ (2009) Time-varying risk, interest 
+rates, and exchange rates in general equilibrium. Rev. Econom. 
+Stud. 76(3):851–878.
+Andersen L, Duffie D, Song Y (2019) Funding value adjustments. J. 
+Finance 74(1):145–192.
+Bahaj S, Reis RA (2020) Jumpstarting an international currency. Bank 
+of England Working Paper No. 874, Bank of England, London.
+Barndorff-Nielsen OE, Shephard N (2002) Econometric analysis of real -
+ized volatility and its use in estimating stochastic volatility models. 
+J. Royal Statist. Soc. Ser. B: Statist. Methodology 64(2):253–280.
+Bjønnes GH, Rime D (2005) Dealer behavior and trading systems in 
+foreign exchange markets. J. Financial Econom. 75(3):571–605.
+Black SW (1991) Transactions costs and vehicle currencies. J. Inter -
+nat. Money Finance 10(4):512–526.
+Bruno V, Shin HS (2017) Global dollar credit and carry trades: A 
+firm-level analysis. Rev. Financial Stud. 30(3):703–749.
+Bruno V, Shin HS (2023) Dollar and exports. Rev. Financial Stud. 
+36(8):2963–2996.
+Bruno V, Kim S-J, Shin HS (2018) Exchange rates and the working 
+capital channel of trade fluctuations. AEA Papers Proc. 108: 
+531–536.
+Caballero RJ, Krishnamurthy A (2003) Excessive dollar debt: Finan -
+cial development and underinsurance. J. Finance 58(2):867–893.
+Caballero RJ, Krishnamurthy A (2009) Global imbalances and finan -
+cial fragility. Amer. Econom. Rev. 99(2):584–588.
+Caballero RJ, Farhi E, Gourinchas P-O (2008) An equilibrium model 
+of “global imbalances” and low interest rates. Amer. Econom. 
+Rev. 98(1):358–393.
+Caballero RJ, Farhi E, Gourinchas P-O (2017) The safe assets short -
+age conundrum. J. Econom. Perspect. 31(3):29–46.
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 21 
+
+===== PAGE 22 =====
+
+Caballero RJ, Farhi E, Gourinchas P-O (2021) Global imbalances and 
+policy wars at the zero lower bound. Rev. Econom. Stud. 88(6): 
+2570–2621.
+Cespa G, Gargano A, Riddiough SJ, Sarno L (2021) Foreign 
+exchange volume. Rev. Financial Stud. 35(5):2386–2427.
+Chaboud AP, Chernenko SV, Wright JH (2008) Trading activity and 
+macroeconomic announcements in high-frequency exchange 
+rate data. J. Eur. Econom. Assoc. 6(2–3):589–596.
+Chaboud AP, Chiquoine B, Hjalmarsson E, Vega C (2014) Rise of 
+the machines: Algorithmic trading in the foreign exchange mar -
+ket. J. Finance 69(5):2045–2084.
+Chahrour R, Valchev R (2021) Trade finance and the durability of 
+the dollar. Rev. Econom. Stud. 89(4):1873–1910.
+Chrystal KA (1977) Demand for international media of exchange. 
+Amer. Econom. Rev. 67(5):840–850.
+Cohn JB, Liu Z, Wardlaw MI (2022) Count (and count-like) data in 
+finance. J. Financial Econom. 146(2):529–551.
+Czech R, Della Corte P, Huang S, Wang T (2021) FX option volume. 
+Bank of England Staff Working Paper No. 964, Bank of England, 
+London.
+Davies S, Kent C (2020) US dollar funding: An international per -
+spective. CGFS Papers No. 65, Committee on the Global Finan -
+cial System, Basel, Switzerland.
+Devereux MB, Shi S (2013) Vehicle currency. Internat. Econom. Rev. 
+54(1):97–133.
+Doepke M, Schneider M (2017) Money as a unit of account. Econo -
+metrica 85(5):1537–1574.
+Du W, Tepper A, Verdelhan A (2018) Deviations from covered 
+interest rate parity. J. Finance 73(3):915–957.
+Eren E, Malamud S (2022) Dominant currency debt. J. Financial 
+Econom. 144(2):571–589.
+Evans MD (2002) FX trading and exchange rate dynamics. J. Finance 
+57(6):2405–2447.
+Evans MD, Lyons RK (2002) Order flow and exchange rate dynam -
+ics. J. Political Econom. 110(1):247–290.
+Evans MD, Lyons RK (2005) Do currency markets absorb news 
+quickly? J. Internat. Money Finance 24(2):197–217.
+Farhi E, Maggiori M (2017) A model of the international monetary 
+system. Quart. J. Econom. 133(1):295–355.
+Fischer AM, Ranaldo A (2011) Does FOMC news increase global FX 
+trading? J. Banking Finance 35(11):2965–2973.
+Foster FD, Viswanathan S (1990) A theory of the interday variations 
+in volume, variance, and trading costs in securities markets. 
+Rev. Financial Stud. 3(4):593–624.
+Foucault T, Kozhan R, Tham WW (2016) Toxic arbitrage. Rev. Finan -
+cial Stud. 30(4):1053–1094.
+Foucault T, Pagano M, R ¨oell A (2013) Market Liquidity: Theory Evi -
+dence, and Policy (Oxford University Press, Oxford, UK).
+Frazzini A, Israel R, Moskowitz TJ (2018) Trading costs. Preprint, 
+submitted August 22, https:/ /doi.org/10.2139/ssrn.3229719.
+Froot KA, Ramadorai T (2005) Currency returns, intrinsic value, and 
+institutional-investor flows. J. Finance 60(3):1535–1566.
+Fukui M, Nakamura E, Steinsson J (2025) The macroeconomic conse -
+quences of exchange rate depreciations. Quart. J. Econom. 140(4): 
+3015–3065. 
+Glosten LR, Harris LE (1988) Estimating the components of the 
+bid/ask spread. J. Financial Econom. 21(1):123–142.
+Goldberg LS, Tille C (2008) Vehicle currency use in international 
+trade. J. Internat. Econom. 76(2):177–192.
+Gopinath G, Stein JC (2020) Banking, trade, and the making of a 
+dominant currency. Quart. J. Econom. 136(2):783–830.
+Gopinath G, Boz E, Casas C, D ´ıez FJ, Gourinchas P-O, Plagborg- 
+Møller M (2020) Dominant currency paradigm. Amer. Econom. 
+Rev. 110(3):677–719.
+Gourinchas P-O, Rey H, Sauzet M (2019) The international 
+monetary and financial system. Annual Rev. Econom. 11(1): 
+859–893.
+Gr ¨omping U (2007) Estimators of relative importance in linear 
+regression based on variance decomposition. Amer. Statist. 61(2): 
+139–147.
+Hartmann P (2004) Currency Competition and Foreign Exchange Mar -
+kets (Cambridge University Press, Cambridge, UK).
+Hasbrouck J (1991a) Measuring the information content of stock 
+trades. J. Finance 46(1):179–207.
+Hasbrouck J (1991b) The summary informativeness of stock trades: 
+An econometric analysis. Rev. Financial Stud. 4(3):571–595.
+Hasbrouck J, Levich R (2017) FX market metrics: New findings 
+based on CLS bank settlement data. NBER Working Paper No. 
+23206, National Bureau of Economic Research, Cambridge, MA.
+Hasbrouck J, Levich RM (2021) Network structure and pricing in 
+the FX market. J. Financial Econom. 141(2):705–729.
+Hassan TA (2013) Country size, currency unions, and international 
+asset returns. J. Finance 68(6):2269–2308.
+He Z, Krishnamurthy A, Milbradt K (2019) A model of safe asset 
+determination. Amer. Econom. Rev. 109(4):1230–1262.
+Hodrick RJ (1992) Dividend yields and expected stock returns: 
+Alternative procedures for inference and measurement. Rev. 
+Financial Stud. 5(3):357–386.
+Ilzetzki E, Reinhart CM, Rogoff KS (2019) Exchange arrangements 
+entering the twenty-first century: Which anchor will hold? 
+Quart. J. Econom. 134(2):599–646.
+Jiang Z, Krishnamurthy A, Lustig H (2021) Foreign safe asset 
+demand and the dollar exchange rate. J. Finance 76(3):1049–1089.
+Jiang Z, Krishnamurthy A, Lustig H (2024) Dollar safety and the 
+global financial cycle. Rev. Econom. Stud. 91(5):2878–2915. 
+Johnson JW, LeBreton JM (2004) History and use of relative importance 
+indices in organizational research. Organ. Res. Methods 7(3):238–257.
+Karnaukh N, Ranaldo A, S ¨oderlind P (2015) Understanding FX 
+liquidity. Rev. Financial Stud. 28(11):3073–3108.
+Khetan U, Sinagl P (2022) Uninformed but predictable: Corporate trad -
+ing and price discovery in over-the-counter FX markets. Preprint, 
+submitted April 29, https:/ /papers.ssrn.com/sol3/papers. 
+cfm?abstract_id=4090782.
+Krugman PR (1980) Vehicle currencies and the structure of interna -
+tional exchange. J. Money Credit Banking 12(3):513–526.
+Kyle AS (1985) Continuous auctions and insider trading. Econome -
+trica 53(6):1315–1335.
+Kyle AS (1989) Informed speculation with imperfect competition. 
+Rev. Econom. Stud. 56(3):317–355.
+Lindeman RH, Merenda PF, Gold RZ (1980) Introduction to Bivariate 
+and Multivariate Analysis (Scott, Foresman and Company, Glen -
+view, IL).
+Lustig H, Verdelhan A (2007) The cross section of foreign currency 
+risk premia and consumption growth risk. Amer. Econom. Rev. 
+97(1):89–117.
+Lyons RK, Moore MJ (2009) An information approach to interna -
+tional currencies. J. Internat. Econom. 79(2):211–221.
+Maggiori M (2017) Financial intermediation, international risk sharing, 
+and reserve currencies. Amer. Econom. Rev. 107(10):3038–3071.
+Maggiori M, Neiman B, Schreger J (2020) International currencies 
+and capital allocation. J. Political Econom. 128(6):2019–2066.
+Mancini L, Ranaldo A, Wrampelmeyer J (2013) Liquidity in the for -
+eign exchange market: Measurement, commonality, and risk 
+premiums. J. Finance 68(5):1805–1841.
+Matsuyama K, Kiyotaki N, Matsui A (1993) Toward a theory of 
+international currency. Rev. Econom. Stud. 60(2):283–307.
+Moore M, Schrimpf A, Sushko V (2016) Downsized FX markets: 
+Causes and implications. BIS Quart. Rev. 1–17.
+Mukhin D (2022) An equilibrium model of the international price 
+system. Amer. Econom. Rev. 112(2):650–688.
+Newey WK, West KD (1994) Automatic lag selection in covariance 
+matrix estimation. Rev. Econom. Stud. 61(4):631–653.
+Payne R (2003) Informed trade in spot foreign exchange markets: 
+An empirical investigation. J. Internat. Econom. 61(2):307–329.
+Somogyi: Dollar Dominance in FX Trading 
+22 Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 
+
+===== PAGE 23 =====
+
+Portes R, Rey H (1998) The emergence of the euro as an international 
+currency. NBER Working Paper No. 6424, National Bureau of 
+Economic Research, Cambridge, MA.
+Rahmouni-Rousseau I, Churm R (2018) Monitoring of fast-paced 
+electronic markets. BIS Markets Committee Report, Bank for 
+International Settlements, Basel, Switzerland.
+Ranaldo A, Santucci de Magistris P (2022) Liquidity in the global 
+currency market. J. Financial Econom. 146(3):859–883.
+Ranaldo A, Somogyi F (2021) Asymmetric information risk in FX 
+markets. J. Financial Econom. 140(2):391–411.
+Rey H (2001) International trade and currency exchange. Rev. Econom. 
+Stud. 68(2):443–464.
+Rime D, Schrimpf A, Syrstad O (2022) Covered interest parity arbi -
+trage. Rev. Financial Stud. 35(11):5185–5227.
+Rostek M, Yoon JH (2021) Exchange design and efficiency. Econome -
+trica 89(6):2887–2928.
+Stoll HR (1989) Inferring the components of the bid-ask spread: The -
+ory and empirical tests. J. Finance 44(1):115–134.
+Tille C, Mehl A, Georgiadis G, Mezo HL (2021) Fundamentals vs. 
+policies: Can the US dollar’s dominance in global trade be 
+dented? ECB Working Paper No. 2021/2574, European Central 
+Bank, Frankfurt, Germany.
+Vives X (2011) Strategic supply function competition with private 
+information. Econometrica 79(6):1919–1966.
+Somogyi: Dollar Dominance in FX Trading 
+Management Science, Articles in Advance, pp. 1–23, © 2026 INFORMS 23 
+
+===== PAGE 24 =====
+
+Copyright of Management Science (INFORMS) is the property of INFORMS: Institute for
+Operations Research & the Management Sciences and its content may not be copied or
+emailed to multiple sites without the copyright holder's express written permission.
+Additionally, content may not be used with any artificial intelligence tools or machine
+learning technologies. However, users may print, download, or email articles for individual
+use.

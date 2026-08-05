@@ -1,0 +1,1345 @@
+
+
+===== PAGE 1 =====
+
+THE JOURNAL OF FINANCE • VOL. LXVI, NO. 1 • FEBRUARY 2011
+Does Algorithmic Trading Improve Liquidity?
+TERRENCE HENDERSHOTT, CHARLES M. JONES, and ALBERT J. MENKVELD ∗
+ABSTRACT
+Algorithmic trading (AT) has increased sharply over the past decade. Does it improve
+market quality , and should it be encouraged? We provide the ﬁrst analysis of this
+question. The New Y ork Stock Exchange automated quote dissemination in 2003, and
+we use this change in market structure that increases AT as an exogenous instrument
+to measure the causal effect of AT on liquidity . For large stocks in particular, AT
+narrows spreads, reduces adverse selection, and reduces trade-related price discovery .
+The ﬁndings indicate that AT improves liquidity and enhances the informativeness
+of quotes.
+TECHNOLOGICAL CHANGE HAS REVOLUTIONIZED the way ﬁnancial assets are
+traded. Every step of the trading process, from order entry to trading venue to
+back ofﬁce, is now highly automated, dramatically reducing the costs incurred
+by intermediaries. By reducing the frictions and costs of trading, technology
+has the potential to enable more efﬁcient risk sharing, facilitate hedging, im-
+prove liquidity , and make prices more efﬁcient. This could ultimately reduce
+ﬁrms’ cost of capital.
+Algorithmic trading (AT) is a dramatic example of this far-reaching techno-
+logical change. Many market participants now employ AT, commonly deﬁned
+as the use of computer algorithms to automatically make certain trading de-
+cisions, submit orders, and manage those orders after submission. From a
+starting point near zero in the mid-1990s, AT is thought to be responsible for
+as much as 73 percent of trading volume in the United States in 2009. 1
+There are many different algorithms, used by many different types of
+market participants. Some hedge funds and broker–dealers supply liquidity
+∗Hendershott is at Haas School of Business, University of California Berkeley . Jones is at
+Columbia Business School. Menkveld is at VU University Amsterdam. We thank Mark van Achter,
+Hank Bessembinder, Bruno Biais, Alex Boulatov , Thierry Foucault, Maureen O’Hara, S ´ebastien
+Pouget, Patrik Sandas, Kumar Venkataraman, the NASDAQ Economic Advisory Board, and sem-
+inar participants at the University of Amsterdam, Babson College, Bank of Canada, CFTC, HEC
+Paris, IDEI Toulouse, Southern Methodist University , University of Miami, the 2007 MTS Con-
+ference, NYSE, the 2008 NYU-Courant algorithmic trading conference, University of Utah, the
+2008 Western Finance Association meetings, and Y ale University . We thank the NYSE for provid-
+ing system order data. Hendershott gratefully acknowledges support from the National Science
+Foundation, the Net Institute, the Ewing Marion Kauffman Foundation, and the Lester Center
+for Entrepreneurship and Innovation at the Haas School at UC Berkeley . Menkveld gratefully
+acknowledges the College van Bestuur of VU University Amsterdam for a VU talent grant.
+1 See “SEC runs eye over high-speed trading,” Financial Times, July 29, 2009. The 73% is an
+estimate for high-frequency trading, which, as discussed later, is a subset of AT.
+1
+
+===== PAGE 2 =====
+
+2 The Journal of Finance R⃝
+using algorithms, competing with designated market-makers and other liquid-
+ity suppliers (e.g., Jovanovic and Menkveld (2010)). For assets that trade on
+multiple venues, liquidity demanders often use smart order routers to deter-
+mine where to send an order (e.g., Foucault and Menkveld (2008)). Statistical
+arbitrage funds use computers to quickly process large amounts of information
+contained in the order ﬂow and price moves in various securities, trading at
+high frequency based on patterns in the data. Last but not least, algorithms
+are used by institutional investors to trade large quantities of stock gradually
+over time.
+Before AT took hold, a pension fund manager who wanted to buy 30,000
+shares of IBM might hire a broker-dealer to search for a counterparty to execute
+the entire quantity at once in a block trade. Alternatively , that institutional
+investor might have hired a New Y ork Stock Exchange (NYSE) ﬂoor broker to
+go stand at the IBM post and quietly “work” the order, using his judgment and
+discretion to buy a little bit here and there over the course of the trading day
+to keep from driving the IBM share price up too far. As trading became more
+electronic, it became easier and cheaper to replicate that ﬂoor trader with a
+computer program doing AT (see Hendershott and Moulton (2009) for evidence
+on the decline in NYSE ﬂoor broker activity).
+Now virtually every large broker-dealer offers a suite of algorithms to its
+institutional customers to help them execute orders in a single stock, in pairs
+of stocks, or in baskets of stocks. Algorithms typically determine the timing,
+price, quantity , and routing of orders, dynamically monitoring market condi-
+tions across different securities and trading venues, reducing market impact by
+optimally and sometimes randomly breaking large orders into smaller pieces,
+and closely tracking benchmarks such as the volume-weighted average price
+(VWAP) over the execution interval. As they pursue a desired position, these
+algorithms often use a mix of active and passive strategies, employing both
+limit orders and marketable orders. Thus, at times they function as liquidity
+demanders, and at times they supply liquidity .
+Some observers use the term AT to refer only to the gradual accumulation or
+disposition of shares by institutions (e.g., Domowitz and Y egerman (2005)). In
+this paper, we take a broader view of AT, including in our deﬁnition all partici-
+pants who use algorithms to submit and cancel orders. We note that algorithms
+are also used by quantitative fund managers and others to determine portfolio
+holdings and formulate trading strategies, but we focus on the execution aspect
+of algorithms because our data reﬂect counts of actual orders submitted and
+cancelled.
+The rise of AT has obvious direct impacts. For example, the intense activ-
+ity generated by algorithms threatens to overwhelm exchanges and market
+data providers, 2 forcing signiﬁcant upgrades to their infrastructures. But re-
+searchers, regulators, and policymakers should be keenly interested in the
+broader implications of this sea change in trading. Overall, does AT have
+2 See “Dodgy tickers-stock exchanges,” Economist, March 10, 2007.
+
+===== PAGE 3 =====
+
+Does Algorithmic Trading Improve Liquidity? 3
+salutary effects on market quality , and should it be encouraged? We provide
+the ﬁrst empirical analysis of this question.
+As AT has grown rapidly since the mid-1990s, liquidity in world equity mar-
+kets has also dramatically improved. Based on these two coincident trends, it
+is tempting to conclude that AT is at least partially responsible for the increase
+in liquidity . But it is not at all obvious a priori that AT and liquidity should
+be positively related. If algorithms are cheaper and/or better at supplying liq-
+uidity , then AT may result in more competition in liquidity provision, thereby
+lowering the cost of immediacy . However, the effects could go the other way if
+algorithms are used mainly to demand liquidity . Limit order submitters grant
+a trading option to others, and if algorithms make liquidity demanders bet-
+ter able to identify and pick off an in-the-money trading option, then the cost
+of providing the trading option increases, in which case spreads must widen
+to compensate. In fact, AT could actually lead to an unproductive arms race,
+where liquidity suppliers and liquidity demanders both invest in better algo-
+rithms to try to take advantage of the other side, with measured liquidity the
+unintended victim.
+In this paper, we investigate the empirical relationship between AT and liq-
+uidity . We use a normalized measure of NYSE electronic message trafﬁc as a
+proxy for AT. This message trafﬁc includes electronic order submissions, cancel-
+lations, and trade reports. Because we normalize by trading volume, variation
+in our AT measure is driven mainly by variation in limit order submissions
+and cancellations. This means that, for the most part, our measure is picking
+up variation in algorithmic liquidity supply . This liquidity supply likely comes
+both from proprietary traders that are making markets algorithmically and
+from buy-side institutions that are submitting limit orders as part of “slice and
+dice” algorithms.
+We ﬁrst examine the growth of AT and the improvements in liquidity over a
+5-year period. As AT grows, liquidity improves. However, while AT and liquidity
+move in the same direction, it is certainly possible that the relationship is not
+causal. To establish causality we study an important exogenous event that
+increases the amount of AT in some stocks but not others. In particular, we
+use the start of autoquoting on the NYSE as an instrument for AT. Previously ,
+specialists were responsible for manually disseminating the inside quote. This
+was replaced in early 2003 by a new automated quote whenever there was a
+change to the NYSE limit order book. This market structure provides quicker
+feedback to algorithms and results in more electronic message trafﬁc. Because
+the change was phased in for different stocks at different times, we can take
+advantage of this nonsynchronicity to cleanly identify causal effects.
+We ﬁnd that AT does in fact improve liquidity for large-cap stocks. Quoted
+and effective spreads narrow under autoquote. The narrower spreads are a
+result of a sharp decline in adverse selection, or equivalently a decrease in the
+amount of price discovery associated with trades. AT increases the amount of
+price discovery that occurs without trading, implying that quotes become more
+informative. There are no signiﬁcant effects for smaller-cap stocks, but our
+instrument is weaker there, so the problem may be a lack of statistical power.
+
+===== PAGE 4 =====
+
+4 The Journal of Finance R⃝
+Surprisingly , we ﬁnd that AT increases realized spreads and other measures
+of liquidity supplier revenues. This is surprising because we initially expected
+that if AT improved liquidity , the mechanism would be competition between
+liquidity providers. However, the evidence clearly indicates that liquidity sup-
+pliers are capturing some of the surplus for themselves. The most natural
+explanation is that, at least during the introduction of autoquote, algorithms
+had market power. Over a longer time period liquidity supplier revenues de-
+cline, suggesting that any market power was temporary , perhaps because new
+algorithms require considerable investment and time to build.
+The paper proceeds as follows. Section I discusses related literature. Sec-
+tion II describes our measures of liquidity and AT and discusses the need for
+an instrumental variables approach. Section III provides a summary of the
+NYSE’s staggered introduction of autoquote in 2003. Section IV examines the
+impact of AT on liquidity . Section V explores the sources of the liquidity im-
+provement. Section VI studies AT’s relation to price discovery via trading and
+quote updating. Section VII discusses and interprets the results, and Section
+VIII concludes.
+I. Related Literature
+Only a few papers address AT directly . For example, Engle et al. (2007) use
+execution data from Morgan Stanley algorithms to study the effects on trading
+costs of changing algorithm aggressiveness. Domowitz and Y egerman (2005)
+study execution costs for a set of buy-side institutions, comparing results from
+different algorithm providers. Chaboud et al. (2009) study AT in the foreign
+exchange market and focus on its relation to volatility , while Hendershott
+and Riordan (2009) measure the contributions of AT to price discovery on the
+Deutsche Boerse.
+Several strands of literature touch related topics. Most models take the tra-
+ditional view that one set of traders provides liquidity via quotes or limit orders
+and another set of traders initiates a trade to take that liquidity—for either in-
+formational or liquidity/hedging reasons. Many assume that liquidity suppliers
+are perfectly competitive, for example, Glosten (1994). Glosten (1989) models
+a monopolistic liquidity supplier, while Biais et al. (2000) model competing
+liquidity suppliers and ﬁnd that their rents decline as the number increases.
+Our initial expectation is that AT facilitates the entry of additional liquidity
+suppliers, increasing competition.
+The development and adoption of AT also involves strategic considerations.
+While algorithms have low marginal costs, there may be substantial develop-
+ment costs, and it may be costly to optimize the algorithms’ parameters for
+each security . The need to recover these costs should lead to the adoption of
+AT at times and in securities where the returns to adoption are highest (see
+Reinganum (1989) for a review of innovation and technology adoption).
+As we discuss brieﬂy in the introduction, liquidity supply involves posting
+ﬁrm commitments to trade. These standing orders provide free trading op-
+tions to other traders. Using standard option pricing techniques, Copeland
+
+===== PAGE 5 =====
+
+Does Algorithmic Trading Improve Liquidity? 5
+and Galai (1983) value the cost of the option granted by liquidity suppliers.
+Foucault et al. (2003) study the equilibrium level of effort that liquidity suppli-
+ers should expend in monitoring the market to reduce this option’s cost. Black
+(1995) proposes a new limit order type that is indexed to the overall market
+to minimize picking-off risk. Algorithms can efﬁciently implement this kind of
+monitoring and adjustment of limit orders. 3 If AT reduces the cost of the free
+trading option implicit in limit orders, then measures of adverse selection de-
+pend on AT. If some users of AT are better at avoiding being picked off, they can
+impose adverse selection costs on other liquidity suppliers as in Rock (1990)
+and even drive out other liquidity suppliers.
+AT may also be used by traders who are trying to passively accumulate or
+liquidate a large position. 4 There are optimal dynamic execution strategies for
+such traders. For example, Bertsimas and Lo (1998) ﬁnd that, in the presence of
+temporary price impacts and a trade completion deadline, orders are optimally
+broken into pieces so as to minimize cost. 5 Many brokers incorporate such
+considerations into the AT products that they sell to their clients. In addition,
+algorithms monitor the state of the limit order book to dynamically adjust their
+trading strategies, for example, when to take and offer liquidity (Foucault et al.
+(2010)).
+II. Data
+We start by characterizing the time-series evolution of AT and liquidity for a
+sample of NYSE stocks over the 5 years from February 2001 through December
+2005. We limit attention to the post-decimalization regime because the change
+to a one-penny minimum tick was a structural break that substantially altered
+the entire trading landscape, including liquidity metrics and order submission
+strategies. We end in 2005 because substantial NYSE market structure changes
+occur shortly thereafter.
+We start with a sample of all NYSE common stocks that can be matched in
+both the Trades and Quotes (TAQ) and Center for Research in Security Prices
+CRSP databases. To maintain a balanced panel, we retain those stocks that
+are present throughout the whole sample period. Stocks with an average share
+3 Rosu (2009) develops a model that implicitly recognizes these technological advances and
+simply assumes that limit orders can be constantly adjusted. Consistent with AT, Hasbrouck and
+Saar (2009) ﬁnd that by 2004 a large number of limit orders are cancelled within two seconds on
+the INET trading platform.
+4 Keim and Madhavan (1995) and Chan and Lakonishok (1995) study institutional orders that
+are broken up.
+5 Almgren and Chriss (2000) extend this optimization problem by considering the risk that
+arises from breaking up orders and slowly executing them. Obizhaeva and Wang (2005) optimize
+assuming that liquidity does not replenish immediately after it is taken but only gradually over
+time. For each component of a larger transaction, a trader or algorithm must choose the type and
+aggressiveness of the order. Cohen et al. (1981) and Harris (1998) focus on the simplest static
+choice: market order versus limit order. However, a limit price must be chosen, and the problem is
+dynamic; Goettler et al. (2009) model both aspects.
+
+===== PAGE 6 =====
+
+6 The Journal of Finance R⃝
+price of less than $5 are removed from the sample, as are stocks with an aver-
+age share price of more than $1,000. The resulting sample consists of monthly
+observations for 943 common stocks. The balanced panel eliminates composi-
+tional changes in the sample over time, which could induce some survivorship
+effects if disappearing stocks are less liquid. This could overstate time-series
+improvements in liquidity , although the same liquidity patterns are present
+without a survivorship requirement (see Comerton-Forde et al. (2010)).
+Stocks are sorted into quintiles based on market capitalization. Quintile 1
+refers to large-cap stocks and quintile 5 corresponds to small-cap stocks. All
+variables used in the analysis are 99.9 % winsorized: values smaller than
+the 0.05% quantile are set equal to that quantile, and values larger than the
+99.95% quantile are set equal to that quantile.
+A. Proxies for AT
+We cannot directly observe whether a particular order is generated by a
+computer algorithm. For cost and speed reasons, most algorithms do not rely on
+human intermediaries but instead generate orders that are sent electronically
+to a trading venue. Thus, we use the rate of electronic message trafﬁc as a proxy
+for the amount of AT taking place. 6 This proxy is commonly used by market
+participants, including consultants Aite Group and Tabb Group, as well as
+exchanges and other market venues. 7
+For example, in discussing market venue capacity limits following an episode
+of heavy trading volume in February 2007, a Securities Industry News report
+quotes NASDAQ senior vice president of transaction services, Brian Hyndman,
+who noted that exchanges have dealt with massive increases in message trafﬁc
+over the past 5 to 6 years, coinciding with algorithmic growth:
+“It used to be one-to-one,” Hyndman said. “Then you’d see a customer
+send ten orders that would result in only one execution. That’s because
+the black box would cancel a lot of the orders. We’ve seen that rise from
+20- to 30- to 50-to-one. The amount of orders in the marketplace increased
+exponentially .”8
+In the case of the NYSE, electronic message trafﬁc includes order submissions,
+cancellations, and trade reports that are handled by the NYSE’s SuperDOT
+system and captured in the NYSE’s System Order Data (SOD) database. The
+electronic message trafﬁc measure for the NYSE excludes all specialist quoting,
+as well as all orders that are sent manually to the ﬂoor and are handled by a
+ﬂoor broker.
+6 See Biais and Weill (2009) for theoretical evidence on how AT relates to message trafﬁc.
+7 See, e.g., Jonathan Keehner, “Massive surge in quotes, electronic messages may paralyse US
+market,” http://www.livemint.com/2007/06/14005055/Massive-surge-in-quotes-elect.html, June 14,
+2007.
+8 See Shane Kite, “Reacting to market break, NYSE and NASDAQ act on capacity ,” Securities
+Industry News, March 12, 2007.
+
+===== PAGE 7 =====
+
+Does Algorithmic Trading Improve Liquidity? 7
+As suggested by the quote above, an important issue is whether and how
+to normalize the message trafﬁc numbers. The top half of Figure 1 shows the
+evolution of message trafﬁc over time. We focus on the largest-cap quintile
+of stocks, as they constitute the vast bulk of stock market capitalization and
+trading activity . Immediately after decimalization at the start of 2001, the
+average large-cap stock sees about 35 messages per minute during the trading
+day . There are a few bumps along the way , but by the end of 2005 there are an
+average of about 250 messages per minute (more than 4 messages per second)
+for these same large-cap stocks. We could, of course, simply use the raw message
+trafﬁc numbers, but there has been an increase in trading volume over the same
+interval, and without normalization a raw message trafﬁc measure may just
+capture the increase in trading rather than the change in the nature of trading.
+Therefore, for each stock each month we calculate our AT proxy , algo tradit ,a s
+the number of electronic messages per $100 of trading volume.9 The normalized
+measure still rises rapidly over the 5-year sample period, while measures of
+market liquidity such as proportional spreads have declined sharply but appear
+to asymptote near the end of the sample period (see, e.g., the average quoted
+spreads in the top half of Figure 2 below), which occurs as more and more
+stocks are quoted with the minimum spread of $0.01.
+The time-series evolution of algo tradit is displayed in the bottom half of
+Figure 1. For the largest-cap quintile, there is about $7,000 of trading volume
+per electronic message at the beginning of the sample in 2001, decreasing
+dramatically to about $1,100 of trading volume per electronic message by the
+end of 2005. Over time, smaller-cap stocks display similar time-series patterns.
+It is worth noting that our AT proxies may also capture changes in trading
+strategies. For example, messages and algo tradit will increase if the same mar-
+ket participants use algorithms but modify their trading or execution strategies
+so that those algorithms submit and cancel orders more often. Similarly , the
+measure will increase if existing algorithms are modiﬁed to “slice and dice”
+large orders into smaller pieces. This is useful, as we want to capture increases
+in the intensity of order submissions and cancellations by existing algorithmic
+traders, as well as the increase in the fraction of market participants employing
+algorithms in trading.
+B. Liquidity Measures
+We measure liquidity using quoted half-spreads, effective half-spreads, 5-
+minute and 30-minute realized spreads, and 5-minute and 30-minute price
+impacts, all of which are measured as share-weighted averages and expressed
+in basis points as a proportion of the prevailing midpoint. The effective spread
+is the difference between the midpoint of the bid and ask quotes and the actual
+9 O u rr e s u l t sa r ev i r t u a l l yt h es a m ew h e nw en o r m a l i z eb yt h en u m b e ro ft r a d e so ru s er a w
+message trafﬁc numbers (see Table IA.4 in the Internet Appendix, available online in the “Supple-
+ments and Datasets” section at http://www.afajof.org/supplements.asp). The results are also the
+same when we use the number of cancellations rather than the number of messages to construct
+the AT measure.
+
+===== PAGE 8 =====
+
+8 The Journal of Finance R⃝
+Figure 1. Algorithmic trading measures. For each market-cap quintile, where Q1 is the
+largest-cap quintile, these graphs depict (i) the number of (electronic) messages per minute and (ii)
+our proxy for algorithmic trading, which is deﬁned as the negative of trading volume (in hundreds
+of dollars) divided by the number of messages.
+
+===== PAGE 9 =====
+
+Does Algorithmic Trading Improve Liquidity? 9
+Figure 2. Liquidity measures. These graphs depict (i) quoted half-spread, (ii) quoted depth,
+and (iii) effective spread. All spread measures are share volume-weighted averages within-ﬁrm
+that are then averaged across ﬁrms within each market-cap quintile, where Q1 is the largest-cap
+quintile.
+
+===== PAGE 10 =====
+
+10 The Journal of Finance R⃝
+Figure 2. Continued
+transaction price. The wider the effective spread, the less liquid is the stock. For
+the NYSE, effective spreads are more meaningful than quoted spreads because
+specialists and ﬂoor brokers are sometimes willing to trade at prices within the
+quoted bid and ask prices. For the tth trade in stock j, the proportional effective
+half-spread, espreadjt , is deﬁned as
+espreadjt = qjt ( pjt − mjt )/mjt, (1)
+where qjt is an indicator variable that equals +1 for buyer-initiated trades
+and −1 for seller-initiated trades, pjt is the trade price, and mjt is the quote
+midpoint prevailing at the time of the trade. We follow the standard trade-
+signing approach of Lee and Ready (1991) and use contemporaneous quotes
+to sign trades and calculate effective spreads (see Bessembinder (2003), for
+example). For each stock each day , we use all NYSE trades and quotes to calcu-
+late quoted and effective spreads for each reported transaction and calculate a
+share-weighted average across all trades that day . For each month we calculate
+the simple average across days. We also measure share-weighted quoted depth
+at the time of each transaction in thousands of dollars.
+Figure 2 shows quite clearly that our measures of liquidity are generally
+improving over the sample period. Figure 1 shows that AT increases almost
+monotonically . The spread measures are not nearly as monotonic, with illiq-
+uidity spikes in both 2001 and 2002 that correspond to sharp stock market
+declines and increased volatility over the same sample period (see Figure IA.5
+in the Internet Appendix). Nevertheless, one is tempted to conclude that these
+
+===== PAGE 11 =====
+
+Does Algorithmic Trading Improve Liquidity? 11
+two trends are related. The analysis below investigates exactly this relation-
+ship using formal econometric tools.
+If spreads narrow when AT increases, it is natural to decompose the spread
+along the lines of Glosten (1987) to determine whether the narrower spread
+means less revenue for liquidity providers, smaller gross losses due to informed
+liquidity demanders, or both. We estimate revenue to liquidity providers using
+the 5-minute realized spread, which assumes the liquidity provider is able
+to close her position at the quote midpoint 5 minutes after the trade. The
+proportional realized spread for the tth transaction in stock j is deﬁned as
+rsp readjt = qjt ( pjt − mj,t+5min)/mjt, (2)
+where pjt is the trade price, qjt is the buy–sell indicator ( +1 for buys, −1f o r
+sells), mjt is the midpoint prevailing at the time of the tth trade, and mj,t+5min is
+the quote midpoint 5 minutes after the tth trade. The 30-minute realized spread
+is calculated analogously using the quote midpoint 30 minutes after the trade.
+We measure gross losses to liquidity demanders due to adverse selection
+using the 5-minute price impact of a trade, adv selection jt , deﬁned using the
+same variables as
+adv selection jt = qjt (mj,t+5min − mjt )/mjt. (3)
+The 30-minute price impact is calculated analogously . Note that there is an
+arithmetic identity relating the realized spread, the adverse selection (price
+impact), and the effective spread espreadjt
+espreadjt = rsp readjt + adv selection jt. (4)
+Figure 3 graphs the decomposition of the two spread components. Both re-
+alized spreads, rsp readit , and price impacts, adv selectionit , decline from 2001
+to 2005. Most of the narrowed spread is due to a decline in adverse selection
+losses to liquidity demanders. Depending on the size quintile considered, 75%
+to 90% of the narrowed spread is due to a smaller price impact.
+So far, the graphical evidence shows time-series associations between AT
+and liquidity . The natural way to formally test this association is by regressing
+the various liquidity measures ( Lit )o nA T( Ait ) and variables controlling for
+market conditions ( Xit ):
+Lit = αi + β Ait + δ′Xit + εit. (5)
+The problem is that AT is an endogenous choice made by traders. A trader’s
+decision to adopt AT could depend on many factors, including liquidity . For
+example, the evidence in Goldstein and Kavajecz (2004) indicates that humans
+are used more often when markets are illiquid and volatile. Econometrically ,
+this means that the slope coefﬁcient β from estimating equation (5) via OLS
+is not an unbiased estimate of the causal effect of a change in AT on liquidity .
+Unless we have a structural model, the only way to identify the causal effect is
+to ﬁnd an instrumental variable (IV) that affects AT but is uncorrelated with
+
+===== PAGE 12 =====
+
+12 The Journal of Finance R⃝
+Figure 3. Spread decomposition into liquidity supplier revenues and adverse selection.
+These graphs depict the two components of the effective spread: (i) realized spread and (ii) the
+adverse selection component, also known as the (permanent) price impact. Both are based on the
+quote midpoint 5 minutes after the trade. Results are graphed by market-cap quintile, where Q1
+is the largest-cap quintile.
+
+===== PAGE 13 =====
+
+Does Algorithmic Trading Improve Liquidity? 13
+εit . Standard econometrics texts, for example, Greene (2007, Ch. 12), show that
+under these conditions, the resulting IV estimator consistently estimates the
+causal effect, in this case the effect of an exogenous change in AT on liquidity .
+We discuss such an instrument in the next section.
+III. Autoquote
+In this section we provide an overview of our instrument, which is a change
+in NYSE market structure that causes an exogenous increase in AT.
+As a result of the reduction of the minimum tick to a penny in early 2001
+as part of decimalization, the depth at the inside quote shrank dramatically .
+In response, the NYSE proposed that a “liquidity quote” for each stock be
+displayed along with the best bid and offer. The NYSE liquidity quote was
+designed to provide a ﬁrm bid and offer for substantial size, typically at least
+15,000 shares, accessible immediately .10
+At the time of the liquidity quote proposal, specialists were responsible for
+manually disseminating the inside quote. 11 Clerks at the specialist posts on
+the ﬂoor of the exchange were typing rapidly and continuously from open to
+close and still were barely keeping up with order matching, trade reporting,
+and quote updating. In order to ease this capacity constraint and free up spe-
+cialists and clerks to manage a liquidity quote, the exchange proposed that it
+“autoquote” the inside quote, disseminating a new quote automatically when-
+ever there was a relevant change to the limit order book. This would happen
+when a better-priced order arrived, when an order at the inside was canceled,
+when the inside quote was traded with in whole or in part, or when the size of
+the inside quote changed.
+Note that the specialist’s structural advantages were otherwise unaffected
+by autoquote. A specialist could still disseminate a manual quote at any time
+in order to reﬂect his own trading interest or that of ﬂoor traders. Specialists
+continued to execute most trades manually , and they could still participate
+in those trades subject to the unchanged NYSE rules. NYSE market share
+remains unchanged at about 80% around the adoption of autoquote.
+Autoquote was an important innovation for algorithmic traders because an
+automated quote update could provide more immediate feedback about the
+potential terms of trade. This speedup of a few seconds would provide critical
+new information to algorithms, but would be unlikely to directly affect the
+trading behavior of slower-reacting humans. Autoquote allowed algorithmic
+liquidity suppliers to, say , quickly notice an abnormally wide inside quote and
+provide liquidity accordingly via a limit order. Algorithmic liquidity demanders
+could quickly access this quote via a conventional market or marketable limit
+order or by using the NYSE’s automated execution facility for limit orders of
+10 For more details, the NYSE proposal is contained in Securities Exchange Act Release No.
+47091 (December 23, 2002), 68 FR 133.
+11 One exception: NYSE software would automatically disseminate an updated quote after 30
+seconds if the specialist had not already done so.
+
+===== PAGE 14 =====
+
+14 The Journal of Finance R⃝
+Figure 4. Autoquote introduction. This graph depicts the staggered introduction of autoquote
+on the NYSE. It graphs the number of stocks in each market-cap quintile that are autoquoted at
+a given time. Quintile 1 contains largest-cap stocks.
+1,099 shares or less. In the next section, we show that autoquote is positively
+correlated with our AT measure, which is one of the requirements for autoquote
+to be a valid instrument.
+The NYSE began to phase in the autoquote software on January 29, 2003,
+starting with six active, large-cap stocks. During the next 2 months, over 200
+additional stocks were phased in at various dates, and all remaining NYSE
+stocks were phased in on May 27, 2003. 12 Figure 4 provides additional details
+on the phase-in process. The rollout order was determined in late 2002. Early
+stocks tended to be active large-cap stocks because the NYSE felt that these
+stocks would beneﬁt most from the liquidity quote. Beyond that criterion, con-
+versations with those involved at the NYSE indicate that early phase-in stocks
+were chosen mainly because the specialist assigned to that stock was receptive
+to new technology .
+The phase-in is particularly important to our empirical design. It allows
+us to take out all market-wide changes in liquidity , and identify the causal
+effect of AT by comparing autoquoted stocks to non-autoquoted stocks using
+a difference-in-differences methodology . The IV methodology discussed below
+incorporates data before and after each NYSE stock’s autoquote adoption so
+the estimated effect of AT on liquidity incorporates every stock’s autoquote
+12 Liquidity quotes were delayed due to a property rights dispute with data vendors, so they
+did not become operational until June 2003, after autoquote was fully phased in. Liquidity quotes
+were almost never used and were formally abandoned in July 2005.
+
+===== PAGE 15 =====
+
+Does Algorithmic Trading Improve Liquidity? 15
+transition, whenever it occurs. Thus, even if the phase-in order is determined by
+other unknown criteria, our empirical methodology remains valid in most cases.
+For example, there is no bias if the phase-in is determined by the specialist’s
+receptiveness to new technology , and this is correlated with the amount of AT
+in his stocks. There are a small number of problematic phase-in scenarios,
+however. We discuss these next.
+For the staggered introduction of autoquote to serve as a valid instrument, it
+must satisfy the exclusion restriction. Speciﬁcally , a stock’s move to autoquote
+must not be correlated with the error term in that ﬁrm’s liquidity equation
+(equation (5)). This does not mean that the autoquote rollout must be assigned
+randomly . The liquidity equation includes a ﬁrm ﬁxed effect, calendar dummies,
+and a set of control variables. The instrument remains valid even if the rollout
+schedule is related to these particular explanatory variables. For instance, if the
+stocks chosen for early phase-in tend to have high mean liquidity , this would be
+picked up by the ﬁrm ﬁxed effect and the exclusion restriction would still hold.
+In fact, due to the explanatory variables, the exclusion restriction is violated
+only if the autoquote phase-in schedule is somehow related to contemporaneous
+changes in ﬁrm-speciﬁc, idiosyncratic liquidity that are not due to changes in
+AT.
+Thus, it is quite helpful that the rollout schedule for autoquote was ﬁxed
+months in advance, as it seems highly unlikely that the phase-in schedule could
+be correlated with idiosyncratic liquidity months into the future. The only way
+this might happen is if there are sufﬁciently persistent but temporary shocks to
+idiosyncratic liquidity . For example, if temporarily illiquid stocks are chosen for
+early phase-in, these stocks might still be illiquid when autoquote begins, and
+their liquidity would improve post-autoquote as they revert to mean liquidity ,
+thereby overstating the causal effect. 13 To investigate this possibility , we study
+the dynamics of liquidity using an AR(1) model of effective spreads for each
+ﬁrm in the sample. Table IA.3 of the Internet Appendix shows that the average
+AR(1) coefﬁcient is 0.18, corresponding to a half-life of less than a day . 14 We
+also do not ﬁnd statistical support for the conjecture that stocks that migrate
+experience unusual liquidity just ahead of the migration. More precisely , the
+predicted effective spread based on all information up until the day before the
+introduction, including liquidity covariates, is not signiﬁcantly different from
+its unconditional mean. All of this supports the exogeneity of our instrument.
+Lastly , the exclusion restriction requires autoquote to affect liquidity only
+via AT. We have argued that autoquote’s time scale is only relevant for algo-
+rithms and that autoquote does not directly affect liquidity via nonalgorithmic
+trading.15 However, we cannot test this conjecture using the available data.
+13 Late phase-in stocks will not offset this effect. Even if late phase-in stocks are temporarily
+liquid when chosen, this temporary effect has more time to die out by the time autoquote is
+implemented for them.
+14 Also because the average daily AR(1) coefﬁcient is quite small, there is little scope for the bias
+that can arise in dynamic panel data models with strong persistence. See, for example, Arellano
+(2003, Ch. 6.2).
+15 For example, autoquote could simply make the observed quotes less stale. We investigate
+
+===== PAGE 16 =====
+
+16 The Journal of Finance R⃝
+Thus, it is important to emphasize that our conclusions on causality rely on
+the intuitively appealing but ultimately untestable assumption that autoquote
+affects liquidity only via its effect on AT.
+IV. AT’s Impact on Liquidity
+To study the effects of autoquote, we build a daily panel of NYSE common
+stocks. The sample begins on December 2, 2002, which is approximately 2
+months before the autoquote phase-in begins, and it extends through July 31,
+2003, about 2 months after the last batch of NYSE stocks moves to the auto-
+quote regime. We use standard price ﬁlters: stocks with an average share price
+of less than $5 or more than $1,000 are removed. To make our various auto-
+quote analyses comparable, we use the same sample of stocks throughout this
+section. The Hasbrouck (1991a,b) decomposition (discussed below in Section
+VI) has the most severe data requirements, so we retain all stocks that have at
+least 21 trades per day for each day in the 8-month sample period. This leaves
+1,082 stocks in the sample. The shorter time period for the autoquote sample
+allows for a larger balanced panel compared to the 5-year balanced panel used
+to create Figures 1–3.
+Next, we sort stocks into quintiles based on market capitalization. Quintile 1
+refers to large-cap stocks and quintile 5 corresponds to small-cap stocks. Table I
+contains means by quintile and standard deviations for all of the variables used
+in the analysis. All variables used in the analysis are 99.9% winsorized: values
+smaller than the 0.05% quantile are set equal to that quantile, and values
+larger than the 99.95% quantile are set equal to that quantile.
+Autoquote clearly leads to greater use of algorithms. Figure 1 shows that
+message trafﬁc increases by about 50% in the most active quintile of stocks as
+autoquote is phased in. It is certainly hard to imagine that autoquote would
+change the behavior of humans by anything close to this magnitude. However,
+nowhere in the paper do we rely on this time-series increase in AT. Instead,
+we include stock ﬁxed effects and time ﬁxed effects (day dummies), so that we
+identify the effect of the market structure change via its staggered introduction.
+The presence of these two-way ﬁxed effects means that we are comparing the
+changes experienced by autoquoted stocks to the changes in not-yet-autoquoted
+control stocks.
+We begin by estimating the following ﬁrst-stage regression:
+Mit = αi + γt + β Qit + εit, (6)
+where Mit is the relevant dependent variable, for example, the number of elec-
+tronic messages per minute, Qit, is the autoquote dummy set to zero before the
+this possibility in Section I of the Internet Appendix and ﬁnd that this mechanical explanation is
+unlikely to account for our results.
+
+===== PAGE 17 =====
+
+Does Algorithmic Trading Improve Liquidity? 17
+Table I
+Summary Statistics
+This table presents summary statistics on daily data for the period December 2002 through July 2003. This period covers the phase-in of autoquote,
+used as an instrument in the instrumental variable analysis. The data set combines TAQ, CRSP , and the NYSE System Order Data (SOD) database.
+The balanced panel consists of 1,082 stocks sorted into quintiles based on market capitalization, where quintile 1 contains largest-cap stocks. All
+variables are 99.9% winsorized. The within standard deviation is based on day t’s deviation relative to the time mean, that is, x∗
+it = xit − xi .
+Mean Mean Mean Mean Mean St. Dev .
+Variable Description (Units) Source Q1 Q2 Q3 Q4 Q5 Within
+qspreadit share volume-weighted quoted half-spread (bps) TAQ 5 .19 6 .82 9 .17 11 .68 19 .89 4 .84
+qdepthit share volume-weighted depth ($1,000) TAQ 71 .22 41 .85 31 .43 24 .12 15 .76 23 .42
+espreadit share volume-weighted effective half-spread
+(bps)
+TAQ 3 .63 4 .79 6 .56 8 .46 14 .50 3 .73
+rsp readit share volume-weighted realized half-spread,
+5min (bps)
+TAQ 1 .21 1 .44 1 .88 1 .97 4 .34 4 .71
+adv selectionit share volume-weighted adverse selection
+component half-spread, 5min,
+“effective-realized” (bps)
+TAQ 2 .42 3 .35 4 .69 6 .50 10 .16 5 .12
+me s s ag e sit #electronic messages per minute, a proxy for
+algorithmic activity (/minute)
+SOD 119 .30 53 .90 29 .81 19 .33 10 .44 15 .55
+algo tradit dollar volume per electronic message times ( −1),
+a proxy for algorithmic trading ($100)
+TAQ/SOD −18.44 −10.99 −8.05 −6.39 −4.61 4 .54
+dollar volum eit average daily volume ($million) TAQ 94 .71 24 .09 10 .12 5 .32 2 .17 22 .72
+tradesit #trades per minute (/minute) TAQ 5 .72 2 .92 1 .78 1 .24 0 .72 0 .72
+share tu rnoverit (annualized) share turnover TAQ/CRSP 1 .11 1 .52 1 .48 1 .45 1 .30 1 .16
+volatilityit standard deviation open-to-close returns based
+on daily price range, that is, high minus low,
+Parkinson (1980), (%)
+CRSP 1 .47 1 .56 1 .63 1 .74 2 .06 0 .85
+pr i ceit daily closing price ($) CRSP 40 .01 32 .05 25 .86 23 .93 16 .41 3 .46
+mar ke tcapit shares outstanding times price ($billion) CRSP 28 .99 4 .09 1 .71 0 .90 0 .41 1 .96
+trade sizeit trade size ($1,000) TAQ 37 .56 19 .41 13 .06 9 .73 6 .61 8 .03
+specialist partici pit specialist participation rate (%) SOD 13 .07 12 .97 13 .08 13 .73 15 .84 3 .92
+# observations: 1,082 ∗ 167 (stock ∗ day)
+
+===== PAGE 18 =====
+
+18 The Journal of Finance R⃝
+Table II
+Autoquote Impact on Messages, Algorithmic Trading Proxy, and
+Covariates
+This table shows the impact of autoquote on other variables, and the second column can be in-
+terpreted as the ﬁrst-stage instrumental variables regression when algo tradit is the dependent
+variable. The analysis is based on daily observations from December 2002 through July 2003,
+which covers the phase-in of autoquote. We regress each of the variables used in the IV analysis
+on the autoquote dummy ( auto quoteit ) using the following speciﬁcation:
+Mit = αi + γt + β Qit + εit,
+where Mit is the relevant dependent variable, for example, the number of electronic messages
+per minute, Qit is the autoquote dummy set to zero before the autoquote introduction and one
+afterward, αi is a stock ﬁxed effect, and γt is a day dummy . There are also separate regressions
+for each size quintile, and statistical signiﬁcance is based on standard errors that are robust
+to general cross-section and time-series heteroskedasticity and within-group autocorrelation (see
+Arellano and Bond (1991)). Table I provides other variable deﬁnitions. ∗/∗∗ denote signiﬁcance at
+the 95%/99% level.
+algo share ln mar ke t
+me s s ag e sit tradit tu rnoverit volatilityit 1/ pr i ceit capit
+Slope coefﬁcient from regression of column variable on auto quoteit
+All 2 .135∗∗ 0.291∗∗ −0.016∗∗ 0.001 0 .000∗∗ −0.003∗∗
+Q1 (largest cap) 6 .286∗∗ 0.414∗∗ 0.016∗ −0.003 0 .000∗∗ −0.005∗∗
+Q2 0 .880∗∗ 0.396∗∗ −0.029∗ 0.007 −0.000∗∗ 0.003∗∗
+Q3 0 .944∗∗ 0.292∗∗ 0.002 −0.001 0 .000 −0.004∗∗
+Q4 0 .223∗∗ 0.029 −0.006 −0.003 −0.000 0 .002
+Q5 (smallest cap) −0.031 0 .219∗∗ −0.080∗∗ 0.003 0 .002∗∗ −0.013∗∗
+autoquote introduction and one afterward; αi is a stock ﬁxed effect; and γt is a
+day dummy . There are also separate regressions for each size quintile.
+Table II reports the slope coefﬁcients for this speciﬁcation. When the depen-
+dent variable Mit is the number of electronic messages per minute for stock
+i on day t, we ﬁnd a signiﬁcant positive relationship. The coefﬁcient of 2.135
+on autoquote implies that autoquote increases message trafﬁc by an average
+of two messages per minute. In December 2002, the month before autoquote
+begins its rollout, our sample stocks average 36 messages per minute, so au-
+toquote causes a 6% increase in message trafﬁc on average. Associations are
+stronger for large-cap stocks, consistent with the conventional wisdom that AT
+was more prevalent at the time for active, liquid stocks.
+Table II also shows that there is a signiﬁcant positive relationship between
+the autoquote dummy and our preferred measure of AT, algo tradit ,w h i c hi s
+the negative of dollar volume in hundreds per electronic message. Thus, it is
+clear that autoquote leads to more AT in all but the smallest quintiles. 16 There
+16 In the IV regressions in Tables III to V we report F statistics that reject the null that the
+instruments do not enter the ﬁrst-stage regression. Bound et al. (1995, p. 446) mention that “ F
+statistics close to 1 should be cause for concern.” Our F statistics range from 5.88 to 7.32, and we
+are thus not afﬂicted with a weak instruments problem.
+
+===== PAGE 19 =====
+
+Does Algorithmic Trading Improve Liquidity? 19
+is no consistent relationship between autoquote and any other variable, such
+as turnover, volatility , and share price.
+Our principal goal is to understand the effects of algorithmic liquidity supply
+on market quality , and so we use the autoquote dummy as an instrument
+for AT in a panel regression framework. Our main instrumental variables
+speciﬁcation is a daily panel of 1,082 NYSE stocks over the 8-month sample
+period spanning the staggered implementation of autoquote. The dependent
+variable is one of ﬁve liquidity measures: quoted half-spreads, effective half-
+spreads, realized spreads, or price impacts, all of which are share volume-
+weighted and measured in basis points, or the quoted depth in thousands of
+dollars. We include ﬁxed effects for each stock as well as time dummies, and we
+include share turnover, volatility based on the daily price range (high minus
+low, see Parkinson (1980)), the inverse of share price, and the log of market
+cap as control variables. Results are virtually identical if we exclude these
+control variables. Based on anecdotal information that AT was relatively more
+important for active large-cap stocks during this time period, we estimate this
+speciﬁcation separately for each market-cap quintile.
+The estimated equation is
+Lit = αi + γt + β Ait + δ′Xit + εit, (7)
+where Lit is a spread measure for stock i on day t, Ait is the AT measure
+algo tradit ,a n d Xit is a vector of control variables, including share turnover,
+volatility , the inverse of share price, and log market cap. We always include
+ﬁxed effects and time dummies. The set of instruments consists of all explana-
+tory variables, except that we replace algo tradit with auto quoteit . Inference
+is based on standard errors that are robust to general cross-section and time-
+series heteroskedasticity and within-group autocorrelation (see Arellano and
+Bond (1991)). Section II of the Internet Appendix shows that the IV regression
+is unaffected by the use of a proxy for AT, as long as the noise in the proxy is
+uncorrelated with the autoquote instrument.
+The results are reported in Panel A of Table III and the most reliable effects
+are in larger stocks. For large-cap stocks (quintiles 1 and 2), the autoquote
+instrument shows that an increase in algorithmic liquidity supply narrows
+both the quoted and effective spread. To interpret the estimated coefﬁcient
+on the AT variable, recall that the AT measure algo tradit is the negative of
+dollar volume per electronic message, measured in hundreds of dollars, while
+the spread is measured in basis points. Thus, the IV estimate of −0.53 on
+the AT variable for quintile 1 means that a unit increase in AT, for example,
+from the sample mean of $1,844 to $1,744 of volume per message, implies
+that quoted spreads narrow by 0.53 basis points. 17 The average within-stock
+standard deviation for algo tradit is 4.54, or $454, so a one-standard deviation
+17 Table IA.4 in the Internet Appendix contains additional analysis showing that the message
+trafﬁc component of algo tradit drives the decline in spreads.
+
+===== PAGE 20 =====
+
+20 The Journal of Finance R⃝
+Table III
+Effect of Algorithmic Trading on Spread
+This table regresses various measures of the (half) spread on our algorithmic trading proxy . It is based on daily observations from December 2002
+through July 2003, which covers the phase-in of autoquote. The nonsynchronous autoquote introduction instruments for the endogenous algo tradit
+to identify causality from algorithmic trading to liquidity . The speciﬁcation is
+Lit = αi + γt + β Ait + δ Xit + εit,
+where Lit is a spread measure for stock i on day t, Ait is the algorithmic trading measure algo tradit ,a n d Xit is a vector of control variables,
+including share turnover, volatility , 1/price, and log market cap. Coefﬁcients for the control variables and time dummies are quintile-speciﬁc. Ma rket
+cap–weighted coefﬁcients are reported for the control variables. Fixed effects and time dummies are included. The set of instruments consists of
+all explanatory variables, except that algo tradit is replaced with auto quoteit . There are separate regressions for each size quintile, and t-values in
+parentheses are based on standard errors that are robust to general cross-section and time-series heteroskedasticity and within-group autocorrel ation
+(see Arellano and Bond (1991)). ∗/∗∗ denote signiﬁcance at the 95%/99% level. In Panel B the sufﬁx indicates the effective spread for a particular
+trade size category: “1” if 100 shares ≤ trade size ≤ 499 shares; “2” if 500 shares ≤ trade size ≤ 1,999 shares; “3” if 2,000 shares ≤ trade size ≤ 4,999
+shares; “4” if 5,000 shares ≤ trade size ≤ 9,999 shares; “5” if 9,999 shares < trade size.
+Coefﬁcient on algo tradit Coefﬁcients on Control Variables
+Q1 Q2 Q3 Q4 Q5 share tu rnoverit volatilityit 1/ pr i ceit ln mkt capit
+Panel A: Quoted Spread, Quoted Depth, and Effective Spread
+qspreadit −0.53∗∗ −0.42∗∗ −0.43 −0.21 9 .92 −2.81∗∗ 0.90∗∗ 108.40∗∗ −3.61∗∗
+(−3.23) ( −2.21) ( −1.44) ( −0.06) (1 .22) ( −2.98) (9 .71) (7 .42) ( −2.28)
+qdepthit −3.49∗∗ −1.43 −1.99 15 .60 0 .61 −5.22 −1.64∗ −3.44 12 .01
+(−2.51) ( −1.16) ( −1.07) (0 .39) (0 .19) ( −0.64) ( −1.86) ( −0.02) (0 .82)
+espreadit −0.18∗∗ −0.32∗∗ −0.35 −1.67 4 .65 −1.01∗∗ 0.69∗∗ 72.77∗∗ −1.30
+(−2.67) ( −2.23) ( −1.56) ( −0.42) (1 .16) ( −2.30) (9 .39) (10 .80) ( −1.46)
+(continued)
+
+===== PAGE 21 =====
+
+Does Algorithmic Trading Improve Liquidity? 21
+Table III— Continued
+Coefﬁcient on algo tradit Coefﬁcients on Control Variables
+Q1 Q2 Q3 Q4 Q5 share tu rnoverit volatilityit 1/ pr i ceit ln mkt capit
+Panel B: Effective Spread by Trade Size Category
+espread1it −0.12∗∗ −0.14∗∗ −0.17 −1.83 4 .99 −0.83∗∗ 0.28∗∗ 50.45∗∗ −1.10
+(−3.06) ( −2.02) ( −1.09) ( −0.44) (1 .20) ( −2.70) (3 .91) (12 .43) ( −1.61)
+espread2it −0.22∗∗ −0.30∗∗ −0.41 −4.21 4 .21 −1.62∗∗ 0.43∗∗ 53.84∗∗ −2.24
+(−3.25) ( −2.61) ( −1.62) ( −0.45) (1 .16) ( −2.68) (2 .80) (8 .15) ( −1.58)
+espread3it −0.25∗∗ −0.26 −0.66 −3.27 6 .89 −1.85∗∗ 0.64∗∗ 61.48∗∗ −1.96
+(−2.76) ( −1.42) ( −1.57) ( −0.36) (1 .13) ( −2.67) (4 .03) (7 .55) ( −1.29)
+espread4it −0.11 −0.29 −0.24 643 .14 −3.27 28 .99 −10.35 224 .78 93 .04
+(−1.31) ( −0.90) ( −0.62) (0 .00) ( −0.38) (0 .00) ( −0.00) (0 .01) (0 .00)
+espread5it −0.04 −0.32 −0.36 1 .45 10 .48 −0.21 1 .05∗∗ 73.01∗∗ 0.12
+(−0.45) ( −1.04) ( −0.86) (0 .26) (0 .25) ( −0.25) (4 .01) (8 .06) (0 .05)
+Panel C: Spread Decompositions Based on 5-Min and 30-Min Price Impact
+rsp readit 0.35∗∗ 0.76∗∗ 1.03∗∗ 14.25 15 .88 3 .13∗ −1.06∗∗ 45.81∗∗ 5.05
+(3.52) (3 .97) (2 .06) (0 .46) (1 .36) (1 .92) ( −2.15) (4 .14) (1 .18)
+adv selectionit −0.53∗∗ −1.07∗∗ −1.39∗∗ −15.51 −11.21 −4.12∗∗ 1.76∗∗ 26.65∗ −6.30
+(−3.56) ( −4.08) ( −2.06) ( −0.47) ( −1.33) ( −2.23) (3 .28) (1 .84) ( −1.34)
+rsp read 30mit 0.33∗∗ 0.47∗ 0.91 11 .11 12 .63 2 .69∗∗ −2.33∗∗ 52.24∗∗ 2.83
+(2.82) (1 .94) (1 .61) (0 .47) (1 .31) (1 .98) ( −5.99) (4 .21) (0 .83)
+adv selection 30mit −0.51∗∗ −0.81∗∗ −1.27∗ −12.60 −8.28 −3.66∗∗ 3.02∗∗ 20.21 −4.10
+(−3.43) ( −2.76) ( −1.80) ( −0.47) ( −1.25) ( −2.33) (6 .91) (1 .35) ( −1.05)
+#observations: 1,082 ∗ 167 (stock ∗ day)
+F test statistic of hypothesis that instruments do not enter ﬁrst-stage regression: 7.32 ( F(5, 179,587)), p-value: 0.0000
+
+===== PAGE 22 =====
+
+22 The Journal of Finance R⃝
+change in our AT measure is associated with a 4.54 ∗ 0.53 = 2.41 basis point
+change in proportional spreads. This represents nearly a 50% decline from the
+mean quoted spread of 5.19 basis points for quintile 1.
+In the spirit of an event study , we also estimate an analogous non-IV panel
+regression with the autoquote dummy directly on the right-hand side. We do not
+report these results, but quoted and effective spreads are reliably narrower for
+the three largest quintiles. For quintile 1, quoted spreads are 0.50 basis points
+smaller (t =− 9.18) after the autoquote introduction, and effective spreads are
+0.17 basis points smaller ( t =− 4.33). Effective spreads narrow even more for
+quintiles 2 and 3 by 0.21 and 0.23 basis points, respectively .
+The IV estimate on algo tradit is statistically indistinguishable from zero for
+quintiles 3 through 5. This could be a statistical power issue. Figure 4 above
+shows that most small-cap stocks were phased in at the very end, reducing the
+nonsynchronicity needed for econometric identiﬁcation. Perhaps as a result,
+the autoquote instrument is only weakly correlated with AT in these quintiles.
+Alternatively , it could be the case that algorithms are less commonly used in
+these smaller stocks, in which case the introduction of autoquote might have
+little or no effect on these stocks’ market quality .
+Quoted depth also declines with autoquote. One might worry that the nar-
+rower quoted spread simply reﬂects the smaller quoted quantity , casting doubt
+on whether liquidity actually improves after autoquote is introduced. Here, a
+calibration exercise is useful. The results for quintile 1 indicate that a one-unit
+increase in the AT variable—a $100 decrease in trading volume per message—
+reduces the quoted spread by 10%, as the average quoted spread from Table I
+is 5.19 basis points. The same change reduces the quoted depth by about 5%,
+based on an average quoted depth of $71,220. A small liquidity demander is
+unaffected by the depth reduction and is unambiguously better off with the
+narrower spread. A liquidity demander who trades the average quoted depth
+of $71,220 is probably better off as well. She pays 10% less on 95% of her order,
+and as long as she pays less than 290% of the original spread on the remaining
+5% of her order, she is better off overall. Based on the $40.01 average share
+price for this quintile, the average 5.19 basis point quoted spread translates
+to 2.1 cents. For these stocks, it seems extremely unlikely that the last 5% of
+her trade executes at a spread of more than 6.1 cents. Most likely , this last 5%
+would execute only one cent wider. This makes it quite clear that the depth
+reduction is small relative to the narrowing of the spread, at least for these
+trade sizes.
+To further explore the decline in depth, in Panel B of Table III we check to
+see whether autoquote is associated with narrower effective spreads after con-
+trolling for trade size. Speciﬁcally , we sort trades into bins based on trade size,
+calculate effective spreads for these trades alone, and estimate the IV speciﬁ-
+cation for each trade size bin. For the larger quintiles, AT signiﬁcantly narrows
+the effective spread for all trade sizes below 5,000 shares. Point estimates go in
+the same direction for the largest trade sizes but are not reliably different from
+zero. In any case, we only have transaction-level data, not order-level data, so
+it is not possible to conduct the analysis on large orders, given that large or-
+
+===== PAGE 23 =====
+
+Does Algorithmic Trading Improve Liquidity? 23
+ders are typically broken up into many smaller pieces and executed over time.
+If more AT means large orders are broken up more, then even if the effective
+spread narrows for individual trades, the aggregate price impact of the entire
+order could increase.
+V. Sources of Liquidity Improvement
+As discussed earlier in the paper, narrower effective spreads imply either less
+revenue per trade for liquidity providers, smaller gross losses due to informed
+liquidity demanders, or both. In Table III Panel C, we decompose effective
+spreads into a realized spread component and an adverse selection or price
+impact component in order to understand the source or sources of the improve-
+ment in liquidity under autoquote. These spread components are calculated
+using a 5-minute and a 30-minute horizon, and the IV regressions are repeated
+using each component of the spread.
+The results are somewhat surprising. For large- and medium-cap stocks,
+quintiles 1 through 3, the realized spread actually increases signiﬁcantly after
+autoquote, indicating that liquidity providers are earning greater net revenues.
+These greater revenues are offset by a larger decline in price impacts, implying
+that liquidity providers are losing far less to liquidity demanders after the
+introduction of autoquote. As before, nothing is signiﬁcant for the two smallest-
+cap quintiles. Panel C also shows that the results are the same at both 5-minute
+and 30-minute horizons.
+We describe these results as surprising because they do not match our priors
+going into the analysis. We thought that if autoquote improved liquidity , it
+would be because algorithmic liquidity suppliers were low-cost providers who
+suddenly became better able to compete with the specialist and the ﬂoor under
+autoquote, thereby improving overall liquidity by reducing aggregate liquidity
+provider revenues. Instead, it appears that liquidity providers in aggregate
+were able to capture some of the surplus created by autoquote.
+However, this liquidity supplier market power reﬂected in larger realized
+spreads appears to have been ﬂeeting. Figure 3 shows that while liquid-
+ity provider revenues increased during the autoquote introduction in the
+ﬁrst half of 2003, realized spreads decline during the second half of 2003.
+Existing algorithms could have found themselves with a distinct compet-
+itive advantage in response to the increased information ﬂow, given that
+new algorithms take considerable time and expense to build and test. Thus,
+one can interpret the data as a temporary increase in algorithms’ market
+power under autoquote that disappears as new entrants developed competing
+algorithms.
+Which liquidity providers beneﬁt? We do not have any trade-by-trade data
+on the identity of our liquidity providers, but we do know specialist participa-
+tion rates for each stock each day , so we can see whether autoquote changed
+the specialist’s liquidity provision market share. We conduct an IV regression
+with the specialist participation rate on the left-hand side, and the results in
+Table IV conﬁrm that, at least for the large-cap quintile of stocks, specialists
+
+===== PAGE 24 =====
+
+24 The Journal of Finance R⃝
+Table IV
+Effect of Algorithmic Trading on Nonspread Variables
+This table regresses nonspread variables on our algorithmic trading proxy . It is based on daily
+observations from December 2002 through July 2003, which covers the phase-in of autoquote.
+The nonsynchronous autoquote introduction instruments for the endogenous algo tradit to identify
+causality from algorithmic trading to these nonspread variables. The speciﬁcation is
+Mit = αi + γt + β Ait + εit,
+where Mit is a nonspread variable for stock i on day t,a n d Ait is the algorithmic trading mea-
+sure. Fixed effects and time dummies are included. There are separate regressions for each size
+quintile, and t-values in parentheses are based on standard errors that are robust to general
+cross-section and time-series heteroskedasticity and within-group autocorrelation (see Arellano
+and Bond (1991)). ∗/∗∗ denote signiﬁcance at the 95%/99% level.
+Coefﬁcient on algo tradit
+Q1 Q2 Q3 Q4 Q5
+share tu rnoverit 0.04 −0.07∗ 0.01 −0.20 −0.36∗∗
+(1.02) ( −1.77) (0 .07) ( −0.26) ( −2.89)
+tradesit 0.58∗∗ −0.01 −0.01 −0.51 −0.15∗∗
+(2.60) ( −0.23) ( −0.15) ( −0.33) ( −2.60)
+trade sizeit −2.04∗∗ −0.80∗∗ −0.33 2 .27 −0.22
+(−4.64) ( −3.23) ( −0.69) (0 .20) ( −0.60)
+specialist partici pit −0.59∗∗ −0.23 −0.92 −13.24 −1.89∗∗
+(−2.22) ( −1.24) ( −1.43) ( −0.29) ( −2.02)
+#observations: 1,082 ∗ 167 (stock ∗ day)
+F test statistic of hypothesis that instruments do not enter ﬁrst-stage regression:
+5.88(F(5,179,607)), p-value: 0.0000
+appear to participate less under autoquote, suggesting that it is other liquidity
+providers who capture the surplus created by autoquote.
+Table IV also puts a number of other nonspread variables on the left-hand
+side of the IV speciﬁcation. The most interesting is trade size. At least for
+the two largest quintiles, the autoquote instrument conﬁrms most observers’
+strong suspicions that the increase in AT is one of the causes of smaller average
+trade sizes in recent years. 18
+The decomposition of the effective spread used above has the advantage of
+being simple, but it also has distinct disadvantages. In particular, it chooses
+an arbitrary time point in the future, 5 minutes and 30 minutes in this case,
+and implicitly ignores other trades that might have happened in that 5- or
+30-minute time period. Lin et al. (1995) develop a spread decomposition model
+that is estimated trade by trade and accounts for order ﬂow persistence (the
+empirical fact, ﬁrst noted by Hasbrouck and Ho (1987), that buyer-initiated
+18 Turnover has negative and signiﬁcant coefﬁcients in Q2 and Q5 in Table IV . To ensure that
+possible endogeneity of turnover is not affecting the algo trad coefﬁcients in Table III, Table IA.5 in
+the Internet Appendix repeats Table III omitting turnover as a control variable. Including turnover
+does not change the results.
+
+===== PAGE 25 =====
+
+Does Algorithmic Trading Improve Liquidity? 25
+trades tend to follow buyer-initiated trades). 19 Results in Section III of the
+Internet Appendix show that our spread decomposition results continue to
+hold using their approach.
+VI. AT and Price Discovery: Trades versus Quotes
+In this section, we investigate whether AT changes the nature of price dis-
+covery . We use the framework of Hasbrouck (1991a,b), who introduces a model
+based on a vector autoregression (V AR) that makes almost no structural as-
+sumptions about the nature of information or order ﬂow, but instead infers
+the nature of information and trading from the observed sequence of quotes
+and trades. In this framework, all stock price moves end up assigned to one of
+two categories: they are either associated or unassociated with a recent trade.
+Though the model does not make any structural assumptions about the nature
+of information, we usually refer to price moves as private information–based
+if they are associated with a recent trade. Price moves that are orthogonal to
+recent trade arrivals are sometimes considered based on “public information,”
+as in Jones et al. (1994) and Barclay and Hendershott (2003).
+To separate price moves into trade-related and trade-unrelated components,
+we construct a V AR with two equations: the ﬁrst describes the trade-by-trade
+evolution of the quote midpoint, while the second describes the persistence
+of order ﬂow. Continuing our earlier notation, deﬁne qjt to be the buy–sell
+indicator for trade t in stock j (+1 for buys, −1 for sells), and deﬁne rjt to be
+the log return based on the quote midpoint of stock j from trade t − 1 to trade
+t. The V AR picks up order ﬂow dependence out to 10 lags:
+rt =
+10∑
+i=1
+αirt−i +
+10∑
+i=0
+βi qt−i + εrt, (8)
+qt =
+10∑
+i=1
+γirt−i +
+10∑
+i=1
+φi qt−i + εqt, (9)
+where the stock subscripts j are suppressed from now on. The V AR is inverted
+to get the vector moving average (VMA) representation:
+yt =
+⎡
+⎣
+rt
+qt
+⎤
+⎦ = θ (L)εt =
+⎡
+⎣
+a(L) b(L)
+c(L) d(L)
+⎤
+⎦
+⎡
+⎣
+εrt
+εqt
+⎤
+⎦, (10)
+where a(L), b(L), c(L), and d(L) are lag polynomial operators. The permanent
+effect on price of an innovation is given by a(L)εrt + b(L)εqt , and because we
+19 See Barclay and Hendershott (2004) for a discussion of Lin et al. (1995) versus other spread
+decomposition models.
+
+===== PAGE 26 =====
+
+26 The Journal of Finance R⃝
+include contemporaneous qt in the return equation, cov( εrt,ε qt) = 0a n dt h e
+variance of this random-walk component can be written as
+σ 2
+w =
+( ∞∑
+i=0
+ai
+)2
+σ 2
+r +
+( ∞∑
+i=0
+bi
+)2
+σ 2
+q . (11)
+The second term captures the component of price discovery that is related to
+recent trades, and the ﬁrst term captures price changes that are orthogonal
+to trading. The V AR is estimated in transaction time; we follow Hasbrouck
+(1991b) and multiply the resulting variances by the number of trades each day
+to get a decomposition of the daily variance of log changes in the efﬁcient price.
+The information content of individual trades can also be calculated using the
+V AR. As shown in Hasbrouck (1991a), the cumulative response of the quoted
+price to a one-time unit shock in the order ﬂow equation is a measure of adverse
+selection that accounts for the persistence in order ﬂow as well as possible pos-
+itive or negative feedback trading. The cumulative impulse response is easiest
+to see in the VMA representation and is equal to ( ∑ ∞
+i=0 bi ). As discussed in
+Hasbrouck (1991a,b), the V AR approach is robust to price discreteness, lagged
+adjustment to information, and lagged adjustment to trades.
+The V AR, the cumulative impulse response, and the trade-related and non–
+trade-related standard deviations are estimated for each stock each day . As in
+the prior graphs, we calculate monthly averages for each quintile and graph
+these in Figure 5. The most striking feature of the graphs is the decline in the
+cumulative impulse response and the trade-related standard deviation during
+the ﬁrst half of 2003, while the non–trade-related standard deviations do not
+change much as autoquote is introduced. This suggests that under autoquote
+much more information is being incorporated into prices without trade, con-
+sistent with Boulatov and George (2007), who show that mean-squared error
+in the quote midpoint is smaller when informed traders place limit orders,
+compared to a world where liquidity is only provided by perfectly competitive,
+uninformed, risk-neutral market makers.
+While these time-series effects appear large, again we prefer to identify the
+effect using the staggered autoquote instrument. The IV panel regression is es-
+timated ﬁrst with the daily trade-related standard deviation as the dependent
+variable. We then repeat the regression using the non–trade-related standard
+deviation on the left-hand side. The panel regressions continue to include stock
+ﬁxed effects, calendar dummies, and the same set of control variables.
+The results can be found in Table V, and at least for the two largest quintiles
+they conﬁrm the results from the time-series graphs. When a large-cap stock
+adopts autoquote and experiences an exogenous increase in AT, the impulse
+response measure of adverse selection decreases. In addition, there is much
+less trade-correlated price discovery , and much more price discovery that is
+uncorrelated with trading. Consistent with other methodologies, we do not ﬁnd
+consistently reliable effects for the smaller-cap quintiles.
+For the largest quintiles, AT has an economically important effect on the
+nature of price discovery . During the autoquote sample period, the within
+
+===== PAGE 27 =====
+
+Does Algorithmic Trading Improve Liquidity? 27
+Figure 5. Trade-correlated and trade-uncorrelated information. These graphs illustrate
+the estimation results of the Hasbrouck (1991a,b) V AR model for midquote returns and signed
+trades. The top graph illustrates the time-series pattern of the long-term response of the midquote
+price to a unit impulse in the signed trade variable. The bottom two graphs illustrate the
+decomposition of the daily percentage variance of changes in the efﬁcient price into a trade-
+related ( stdev tradecorr com pit ) and trade-unrelated ( stdev nontr adecorr com pit ) component (see
+Hasbrouck (1991a,b) for details on the methodology). The graph includes the autoquote sample
+period, which runs from December 2002 through July 2003. Results are graphed by market-cap
+quintile, where Q1 is the largest-cap quintile.
+
+===== PAGE 28 =====
+
+28 The Journal of Finance R⃝
+Figure 5. Continued
+standard deviation in our AT variable is 4.54, so a one standard deviation
+increase in AT during this sample period leads to an estimated change in
+trade-correlated price discovery equal to a 4 .54 ∗ 0.22 = 1.00 percentage point
+reduction in the daily standard deviation of trade-correlated returns for the
+largest-cap stocks. Figure 5 shows that this is the same order of magnitude as
+the actual level of trade-correlated standard deviations, so this is indeed a sub-
+stantial change in how prices are updated to reﬂect new information over time.
+VII. Discussion and Interpretation
+Why is the nature of price discovery changing? It seems likely that algorithms
+respond quickly to order ﬂow and price information, updating their limit orders
+to prevent them from becoming stale and being picked off. We suspect that
+two kinds of information are of ﬁrst-order importance, though it is hard to be
+sure, given the opacity of algorithm creators and providers. First, we think
+algorithms can easily take into account common factor price information and
+adjust trading and quoting accordingly . For example, if there is an upward
+shock to the S&P futures price, an algorithmic liquidity supplier in IBM that
+currently represents the inside offer may decide to cancel its existing sell order
+before it is picked off by an index arbitrageur or another trade, replacing the
+sell order with a higher-priced ask. Shocks to other stocks in the same industry
+could cause similar reactions from algorithms. Second, some algorithms are
+designed to sniff out other algorithms or otherwise identify order ﬂow and
+other information patterns in the data. For example, if an algorithm identiﬁes
+
+===== PAGE 29 =====
+
+Does Algorithmic Trading Improve Liquidity? 29
+Table V
+Effect of Algorithmic Trading on Permanent Price Impact and Efﬁcient Price Variance Composition
+This table regresses the permanent price response to a trade and the two components of efﬁcient price variance on our algorithmic trading proxy .
+The daily sample extends from December 2002 through July 2003, which covers the phase-in of autoquote. A Hasbrouck V AR model on midquote
+returns and signed trades is estimated in order to identify the long-term price impact of a trade ( im pu lserespon se hasbrit ) and the trade-related
+(stdev tradecorr com pit ) and trade-unrelated ( stdev nontr adecorr com pit ) components of the daily percentage variance of changes in the efﬁcient price
+(see Hasbrouck (1991a,b) for details). For the regressions, the nonsynchronous introduction of autoquote is used as an instrument for the endogenou s
+algo tradit to identify causality from algorithmic trading to these variables. The speciﬁcation is
+Mit = αi + γt + β Ait + δ Xit + εit,
+where Mit is the dependent variable for stock i on day t, Ait is the algorithmic trading measure, and Xit is a vector of control variables, including share
+turnover, volatility , 1/price, and log market cap. Fixed effects and time dummies are included. Coefﬁcients for the control variables and time dummi es
+are quintile-speciﬁc. Market cap–weighted coefﬁcients are reported for the control variables. Control variables are excluded from the Hasbrouck
+component regressions. There are separate regressions for each size quintile, and t-values in parentheses are based on standard errors that are robust
+to general cross-section and time-series heteroskedasticity and within-group autocorrelation (see Arellano and Bond (1991)). ∗/∗∗ denote signiﬁcance
+at the 95%/99% level.
+Coefﬁcient on algo tradit Coefﬁcients on Control Variables
+Q1 Q2 Q3 Q4 Q5 share tu rnoverit volatilityit 1/ pr i ceit ln mkt capit
+Panel A: Effect of Algorithmic Trading on the Long-Term Price Impact of a Trade (bps)
+im pu lserespon se hasbrit −0.54∗∗ −1.21∗∗ −1.44∗∗ −18.92 −11.93 −4.90∗∗ 1.11∗ 16.66 −7.83
+(−3.50) ( −4.05) ( −2.08) ( −0.46) ( −1.36) ( −2.20) (1 .66) (1 .15) ( −1.35)
+Panel B: Effect of Algorithmic Trading on Trade- and Nontrade-Correlated Component of Daily Efﬁcient Price Variance (%)
+stdev tradecorr com pit −0.22∗∗ −0.26∗∗ −0.30∗ −3.40 −0.57∗∗
+(−2.62) ( −3.08) ( −1.69) ( −0.29) ( −2.73)
+stdev nontr adecorr com pit 0.12∗∗ 0.13∗∗ 0.13 1 .04 0 .13
+(2.48) (2 .36) (1 .47) (0 .28) (1 .12)
+#observations: 1,082 ∗ 167 (stock ∗ day)
+F test statistic of hypothesis that instruments do not enter ﬁrst-stage regression: Panel A: 7.32( F(5, 179, 587)), p-value: 0.0000; Panel B:
+5.88(F(5, 179, 607)), p-value: 0.0000
+
+===== PAGE 30 =====
+
+30 The Journal of Finance R⃝
+a sequence of buys in the data and concludes that more buys are coming, an
+algorithmic liquidity supplier might adjust its ask price upward. Information
+in new swires can even be parsed electronically in order to adjust trading
+algorithms.20
+To help understand the counterintuitive realized spread result, it is impor-
+tant to consider how cost structures differ for human and algorithmic trading.
+If monitoring costs are sufﬁciently high that humans do not always monitor
+the market, limit orders submitted by humans will not always reﬂect all public
+information and may become stale. While algorithms have large ﬁxed develop-
+ment costs, one of their main advantages is that there is virtually no marginal
+cost in monitoring public information and adjusting their orders or quotes.
+Thus, an increase in algorithmic activity causes more changes in the efﬁcient
+price to be revealed through a quote update rather than via trade. To develop
+this intuition further, Section IV of the Internet Appendix develops a very sim-
+ple generalized Roll model that is a slight variation on the one developed in
+Hasbrouck (2007).
+If the algorithmic traders have more market power than the nonalgorithmic
+traders, an increase in AT leads to larger imputed revenue to liquidity sup-
+pliers (larger realized spread). Is this market power argument plausible? As
+autoquote was implemented in 2003, the extant algorithms might have found
+themselves with a distinct competitive advantage in trading in response to the
+increased information ﬂow, given that new algorithms take considerable time
+and expense to build and test. While we view the differential market power ar-
+gument as possible, we do not have any additional evidence to support it. Over
+the longer run, liquidity supplier revenues decline (see Figure 3), suggesting
+that any market power was temporary .
+Ideally , we would also directly analyze AT behavior to better understand the
+speciﬁc AT order submission and trading strategies that lead to these results.
+Unfortunately , no U.S. stock exchange has yet been able and willing to identify
+AT. However, Hendershott and Riordan (2009) can accurately identify AT on
+the Deutsche Boerse. They ﬁnd that algorithmic traders generally place more
+efﬁcient quotes, and algorithms supply more liquidity when spreads are wide.
+While they describe equilibrium behavior and cannot measure the causal effect
+of AT on market quality , Hendershott and Riordan (2009) do provide a natural
+mechanism by which algorithmic traders would improve liquidity and quote
+efﬁciency .
+VIII. Conclusions
+The declining costs of technology have led to its widespread adoption through-
+out ﬁnancial industries. The resulting technological change has revolutionized
+ﬁnancial markets and the way ﬁnancial assets are traded. Many institutions
+now trade via algorithms, and we study whether AT at the NYSE improves liq-
+uidity . In the 5 years following decimalization, AT has increased, and markets
+20 See “Ahead of the tape—algorithmic trading,” Economist, June 23, 2007.
+
+===== PAGE 31 =====
+
+Does Algorithmic Trading Improve Liquidity? 31
+have become more liquid. To establish causality we use the staggered intro-
+duction of autoquoting as an instrumental variable for AT. We demonstrate
+that increased AT lowers adverse selection and decreases the amount of price
+discovery that is correlated with trading. Our results suggest that AT lowers
+the costs of trading and increases the informativeness of quotes. Surprisingly ,
+the revenues to liquidity suppliers also increase with AT, though this effect
+appears to be temporary .
+While we have not studied it here, it seems likely that AT can also improve
+linkages between markets, generating positive spillover effects in these other
+markets. For example, when computer-driven trading is made easier, stock
+index futures and underlying share prices are likely to track each other more
+closely . Similarly , liquidity and price efﬁciency in equity options probably im-
+prove as the underlying share price becomes more informative.
+A couple of caveats are in order, however. Our overall sample period covers a
+period of generally rising stock prices, and stock markets are fairly quiescent
+during the 2003 introduction of autoquote. While we do control for share price
+levels and volatility in our empirical work, it remains an open question whether
+AT and algorithmic liquidity supply are equally beneﬁcial in more turbulent
+or declining markets. Like NASDAQ market makers refusing to answer their
+phones during the 1987 stock market crash, algorithmic liquidity suppliers may
+simply turn off their machines when markets spike downward. With access to
+the right data, the 2007 and 2008 stock markets could prove to be a useful
+laboratory for such an investigation.
+A second caveat relates to trading by large institutions. Some market par-
+ticipants complain that the decline in depth has hampered investors’ ability
+to trade large amounts without substantial costs. While the rise of AT has
+contributed to the decline in depth, we are optimistic that other technological
+innovations can offset some of these effects. For instance, some “dark pools”
+such as LiquidNet and Pipeline represent a modern version of an upstairs
+market, allowing traders with large orders to electronically search for counter-
+parties without revealing their trading interest (see, e.g., Bessembinder and
+Venkataraman (2004)).
+Finally , our results have important implications for both regulators and de-
+signers of trading platforms. For example, the U.S. Securities and Exchange
+Commission’s Regulation NMS (SEC (2005)) is designed to increase competi-
+tion among liquidity suppliers. Our results highlight the importance of algo-
+rithmic liquidity suppliers and the beneﬁts of ensuring vigorous competition
+among them. Of course, markets need not leave this problem to the regulator.
+Trading venues can attract these algorithms by lowering development and im-
+plementation costs. For example, exchanges and other trading platforms can
+calculate useful information and metrics to be fed into algorithms, distributing
+them at low cost. A market can also allow algorithmic traders to co-locate their
+servers in the market’s data center. Finally , offering additional order types,
+such as pegged orders, can lessen the infrastructure pressures that algorithms
+impose.
+
+===== PAGE 32 =====
+
+32 The Journal of Finance R⃝
+REFERENCES
+Almgren, Robert, and Neil Chriss, 2000, Optimal execution of portfolio transactions, Journal of
+Risk 3, 5–39.
+Arellano, Manuel, 2003, Panel Data Econometrics (Oxford University Press, New Y ork).
+Arellano, Manuel, and Stephen R. Bond, 1991, Some tests of speciﬁcation for panel data: Monte
+Carlo evidence and an application to employment equations, Review of Economic Studies 58,
+277–297.
+Barclay, Michael J., and Terrence Hendershott, 2003, Price discovery and after trading hours,
+Review of Financial Studies 16, 1041–1073.
+Barclay, Michael J., and Terrence Hendershott, 2004, Liquidity externalities and adverse selection:
+Evidence from trading after hours, Journal of Finance 59, 681–710.
+Bertsimas, Dimitris, and Andrew W . Lo, 1998, Optimal control of execution costs, Journal of
+Financial Markets 1, 1–50.
+Bessembinder, Hendrik, 2003, Issues in assessing trade execution costs, Journal of Financial
+Markets 6, 233–257.
+Bessembinder, Hendrik, and Kumar Venkataraman, 2004, Does an electronic stock exchange need
+an upstairs market? Journal of Financial Economics 73, 3–36.
+Biais, Bruno, David Martimort, and Jean-Charles Rochet, 2000, Competing mechanisms in a
+common value environment, Econometrica 68, 799–837.
+Biais, Bruno, and Pierre-Olivier Weill, 2009, Liquidity shocks and order book dynamics, Working
+paper, Toulouse University , IDEI.
+Black, Fischer, 1995, Equilibrium exchanges, Financial Analysts Journal 51, 23–29.
+Boulatov, Alex, and Thomas J. George, 2007, Securities trading when liquidity providers are
+informed, Working paper, University of Houston.
+Bound, John, David A. Jaeger, and Regina M. Baker, 1995, Problems with instrumental
+variables estimation when the correlation between the instruments and the endogenous
+explanatory variable is weak, Journal of the American Statistical Association 90, 443–
+450.
+Chaboud, Alain, Benjamin Chiquoine, Erik Hjalmarsson, and Clara Vega, 2009, Rise of the ma-
+chines: Algorithmic trading in the foreign exchange market, Working paper, Federal Reserve
+Board.
+Chan, Louis K.C., and Josef Lakonishok, 1995, The behavior of stock prices around institutional
+trades, Journal of Finance 50, 1147–1174.
+Cohen, Kalman, Steven Maier, Robert Schwartz, and David Whitcomb, 1981, Transaction costs,
+order placement strategy and existence of the bid-ask spread, Journal of Political Economy
+89, 287–305.
+Comerton-Forde, Carole, Terrence Hendershott, Charles M. Jones, Mark S. Seasholes, and Pamela
+C. Moulton, 2010, Time variation in liquidity: The role of market maker inventories and
+revenues, Journal of Finance 65, 295–331.
+Copeland, Thomas E., and Dan Galai, 1983, Information effects on the bid-ask spread, Journal of
+Finance 38, 1457–1469.
+Domowitz, Ian, and Henry Y egerman, 2005, The cost of algorithmic trading: A ﬁrst look at compar-
+ative performance, in Brian R. Bruce, ed.: Algorithmic Trading: Precision, Control, Execution
+(Institutional Investor London).
+Engle, Robert F ., Jeffrey R. Russell, and Robert Ferstenberg, 2007, Measuring and modeling
+execution cost and risk, Working paper, New Y ork University.
+Foucault, Thierry, Ohad Kadan, and Eugene Kandel, 2010, Liquidity cycles and make/take fees in
+electronic markets, Working paper, HEC Paris.
+Foucault, Thierry, and Albert J. Menkveld, 2008, Competition for order ﬂow and smart order
+routing systems, Journal of Finance 63, 119–158.
+Foucault, Thierry, Ailsa Ro ¨ell, and Patrik Sandas, 2003, Market making with costly monitoring:
+An analysis of the SOES controversy, Review of Financial Studies 16, 345–384.
+Glosten, Lawrence R., 1987, Components of the bid ask spread and the statistical properties of
+transaction prices, Journal of Finance 42, 1293–1307.
+
+===== PAGE 33 =====
+
+Does Algorithmic Trading Improve Liquidity? 33
+Glosten, Lawrence R., 1989, Insider trading, liquidity , and the role of the monopolist specialist,
+Journal of Business 62, 211–235.
+Glosten, Lawrence R., 1994, Is the electronic limit order book inevitable? Journal of Finance 49,
+1127–1161.
+Goettler, Ronald L., Christine A. Parlour, and Uday Rajan, 2009, Informed traders in limit order
+markets, Journal of Financial Economics 93, 67–87.
+Goldstein, Michael A., and Kenneth A. Kavajecz, 2004, Trading strategies during circuit breakers
+and extreme market movements, Journal of Financial Markets 7, 301–333.
+Greene, William H., 2007, Econometric Analysis (Prentice Hall, London).
+Harris, Lawrence, 1998, Optimal dynamic order submission strategies in some stylized trading
+problems, Financial Markets, Institutions, and Instruments 7, 1–76.
+Hasbrouck, Joel, 1991a, Measuring the information content of stock trades, Journal of Finance 46,
+179–207.
+Hasbrouck, Joel, 1991b, The summary informativeness of stock trades: An econometric analysis,
+Review of Financial Studies 4, 571–595.
+Hasbrouck, Joel, 2007, Empirical Market Microstructure (Oxford University Press, New Y ork).
+Hasbrouck, Joel, and Thomas Ho, 1987, Order arrival, quote behavior and the return generating
+process, Journal of Finance 42, 1035–1048.
+Hasbrouck, Joel, and Gideon Saar, 2009, Technology and liquidity provision: The blurring of tra-
+ditional deﬁnitions, Journal of Financial Markets 12, 143–172.
+Hendershott, Terrence, and Pamela C. Moulton, 2010, Automation, speed, and stock market qual-
+ity: The NYSE’s hybrid, Working paper, University of California, Berkeley .
+Hendershott, Terrence, and Ryan Riordan, 2009, Algorithmic trading and information, Working
+paper, University of California, Berkeley.
+Jones, Charles M., Gautam Kaul, and Marc L. Lipson, 1994, Information, trading, and volatility,
+Journal of Financial Economics 36, 127–154.
+Jovanovic, Boyan, and Albert J. Menkveld, 2010, Middlemen in limit-order markets, Working
+paper, New Y ork University , New Y ork.
+Keim, Donald B., and Ananth Madhavan, 1995, Anatomy of the trading process: Empirical evidence
+on the behavior of institutional traders, Journal of Financial Economics 37, 371–398.
+Lee, Charles M.C., and Mark J. Ready, 1991, Inferring trade direction from intraday data, Journal
+of Finance 46, 733–746.
+Lin, Ji-Chai, Gary C. Sanger, and G. Geoffrey Booth, 1995, Trade size and components of the
+bid-ask spread, Review of Financial Studies 8, 1153–1183.
+Obizhaeva, Anna, and Jiang Wang, 2005, Optimal trading strategy and supply/demand dynamics,
+Working paper, MIT.
+Parkinson, Michael, 1980, The extreme value method for estimating the variance of the rate of
+return, Journal of Business 51, 61–65.
+Reinganum, Jennifer F ., 1989, The timing of innovation: Research, development, and diffusion, in
+Richard Schmalensee and Robert Willig, ed.: Handbook of Industrial Organization (Elsevier
+Publishing, Amsterdam).
+Rock, Kevin, 1990, The specialist’s order book and price anomalies, Working paper, Harvard Uni-
+versity .
+Rosu, Ioanid, 2009, A dynamic model of the limit order book, Review of Financial Studies 22,
+4601–4641.
+Securities and Exchange Commission, 2005, Release No. 34-51808.
+
+===== PAGE 34 =====
+
+34 The Journal of Finance R⃝

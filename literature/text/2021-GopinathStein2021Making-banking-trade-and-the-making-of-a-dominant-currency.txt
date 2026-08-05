@@ -1,0 +1,2148 @@
+
+
+===== PAGE 1 =====
+
+BANKING, TRADE, AND THE MAKING OF A DOMINANT
+CURRENCY∗
+GITA GOPINATH AND JEREMY C. STEIN
+We explore the interplay between trade-invoicing patterns and the pricing of
+safe assets in different currencies. Our theory highlights the following points: (i) a
+currency’s role as a unit of account for invoicing decisions is complementary to its
+role as a safe store of value; (ii) this complementarity can lead to the emergence of
+a single dominant currency in trade invoicing and global banking, even when mul-
+tiple large candidate countries share similar economic fundamentals; (iii) ﬁrms in
+emerging-market countries endogenously take on currency mismatches by borrow-
+ing in the dominant currency; and (iv) the expected return on dominant-currency
+safe assets is lower than that on similarly safe assets denominated in other cur-
+rencies, thereby bestowing an “exorbitant privilege” on the dominant currency .
+The theory thus provides a uniﬁed explanation for why a dominant currency is so
+heavily used in both trade invoicing and in global ﬁnance. JEL Codes: E42, F40,
+G15.
+I. I NTRODUCTION
+The U .S. dollar is often described as a dominant global cur-
+rency , much as the British pound sterling was in the nineteenth
+century and beginning of the twentieth century . The notion of
+dominance in this context refers to a constellation of related facts,
+which can be summarized as follows.
+• Invoicing of International Trade: An overwhelming
+fraction of international trade is invoiced and settled in
+dollars ( Goldberg and Tille 2008 ; Gopinath 2015 ). Impor-
+tantly , the dollar’s share in invoicing is far out of propor-
+tion to the U .S. economy’s role as an exporter or importer of
+∗We are grateful to Chris Anderson and Taehoon Kim for outstanding re-
+search assistance, and to Stefan Avdjiev , Leonardo Gambacorta, and Swapan-
+Kumar Pradhan of the Bank for International Settlements for helping us to better
+understand the construction of the BIS banking data. We are also thankful to
+Adrien Auclert, Andres Drenik, Barry Eichengreen, Zhiguo He, C ´edric Tille, and
+seminar participants at various institutions for helpful comments. Gopinath ac-
+knowledges that this material is based on work supported by the NSF under
+Grant no. 1628874. Any opinions, ﬁndings, and conclusions or recommendations
+expressed in this material are those of the author(s) and do not necessarily reﬂect
+the views of the NSF . All remaining errors are our own.
+C⃝ The Author(s) 2020. Published by Oxford University Press on behalf of the Presi-
+dent and Fellows of Harvard College. All rights reserved. For Permissions, please email:
+journals.permissions@oup.com
+The Quarterly Journal of Economics (2021), 783–830. doi:10.1093/qje/qjaa036.
+Advance Access publication on October 27, 2020.
+783
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 2 =====
+
+784 THE QUARTERL Y JOURNAL OF ECONOMICS
+traded goods. For example, Gopinath (2015) notes that 60%
+of Turkey’s imports are invoiced in dollars, while only 6% of
+its total imports come from the United States. More gener-
+ally , in a sample of 43 countries,Gopinath (2015) ﬁnds that
+the dollar’s share as an invoicing currency for imported
+goods is approximately 4.7 times the share of U .S. goods in
+imports. This stands in sharp contrast to the euro, where
+in the same sample the euro invoicing share and the share
+of imports coming from countries using the euro are much
+closer to one another , so that the corresponding multiple is
+only 1.2.
+• Bank Funding: Non-U .S. banks raise very large amounts
+of dollar-denominated deposits. Indeed, the dollar liabili-
+ties of non-U .S. banks, which are on the order of $10 tril-
+lion, are roughly comparable in magnitude to those of U .S.
+banks ( Shin 2012 ; Ivashina, Scharfstein, and Stein 2015 ).
+According to Bank for International Settlements (BIS) loca-
+tional banking statistics, 62% of the foreign currency local
+liabilities of banks are denominated in dollars.
+• Corporate Borrowing: Non-U .S. ﬁrms that borrow from
+banks and from the corporate bond market often do so by
+issuing dollar-denominated debt, more so than any other
+non-local “hard” currency , such as euros. According to the
+BIS locational banking statistics, 60% of foreign currency
+local claims of banks are denominated in dollars. Brauning
+and Ivashina (2017) document the dominance of dollar-
+denominated loans in the syndicated cross-border loan
+market. Importantly , this dollar borrowing is in many cases
+done by ﬁrms that do not have corresponding dollar rev-
+enues, so that these ﬁrms end up with a currency mis-
+match and can be harmed by dollar appreciation ( Aguiar
+2005; Du and Schreger 2014 ; Kalemli-Ozcan, Kamil, and
+Villegas-Sanchez 2016).
+• Central Bank Reserve Holdings: The dollar is also the
+predominant reserve currency , accounting for 64% of world-
+wide ofﬁcial foreign exchange reserves. The euro is in sec-
+ond place at 20%, and the yen is in third at 4% ( ECB Staff
+2017).
+• Low Expected Returns and UIP Violation: Gilmore
+and Hayashi (2011) and Hassan (2013), among others, doc-
+ument that U .S. dollar risk-free assets generally pay lower
+expected returns (net of exchange rate movements) than
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 3 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 785
+the risk-free assets of most other currencies. That is, there
+is a violation of uncovered interest parity (UIP) that fa-
+vors the dollar as a cheap funding currency . This violation
+is all the more striking—relative to other currencies that
+have historically also had low returns—in light of the fact
+that so much borrowing is done in dollars. Sometimes this
+phenomenon is referred to as the dollar beneﬁting from an
+“exorbitant privilege.”1
+The goal of this article is to develop a model that can help
+make sense of this multifaceted notion of currency dominance.
+Our starting point is the connection between invoicing behavior
+and safe asset demand. These topics have been the subject of
+much recent (and largely separate) work, but their joint implica-
+tions have not been given as much attention. 2 Y et a fundamental
+observation is that in a multicurrency world, one cannot think
+about the structure of safe asset demands without taking into
+account invoicing patterns. Simply put, a ﬁnancial claim is only
+meaningfully “safe” if it can be used to buy a known quantity of
+some speciﬁc goods at a future date, and this necessarily forces
+one to ask about how the goods will be priced.
+Consider , for example, a representative household in an
+emerging market (EM). The household purchases some imported
+goods from abroad, both from the United States and from other
+emerging markets. 3 The household also holds a buffer stock of
+bank deposits that it can use to make these purchases over the
+next several periods. In what currency would it prefer to hold its
+deposits? If most of its imports are priced in dollars—and crucially ,
+if these dollar prices are sticky—the household will tend to prefer
+deposits denominated in dollars, as these are effectively the safest
+1. Our notion of “exorbitant privilege” is the empirical phenomenon whereby
+dollar safe assets pay a lower interest rate compared with most other safe assets in
+the world. Gourinchas and Rey (2007) deﬁne the concept more broadly , to also cap-
+ture the fact that the United States earns a higher return on its assets compared
+with what it pays on its liabilities.
+2. On the choice of invoicing currency , contributions include Friberg (1998) ,
+Engel (2006) , Gopinath, Itskhoki, and Rigobon (2010) ,a n d Goldberg and Tille
+(2013). On safe asset determination in an international context, some recent
+papers are Hassan (2013) , Gourinchas and Rey (2010) , Maggiori (2017) , He,
+Krishnamurthy , and Milbradt (2016),a n d Farhi and Maggiori (2018) .W ed i s c u s s
+these works in more detail below .
+3. This “representative household” label could also refer to ﬁrms that purchase
+imported inputs for production purposes.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 4 =====
+
+786 THE QUARTERL Y JOURNAL OF ECONOMICS
+claim in real terms from its perspective. In other words, while de-
+posits in any currency may be free of default risk, in a world in
+which exchange rates are variable, only a dollar deposit held today
+can be used to purchase a certain quantity of dollar-invoiced goods
+tomorrow . Deposits in different currencies are therefore imperfect
+substitutes.
+It follows that when more internationally traded goods are
+invoiced in dollars, there will be a greater demand for dollar
+deposits—or more generally , for ﬁnancial claims that pay off a
+guaranteed amount in dollar terms. Some of these may be pro-
+vided by the U .S. government, in the form of Treasury securities,
+but to the extent that Treasury supply is inadequate to satiate
+global demand, private ﬁnancial intermediaries will also have
+an important role to play . Speciﬁcally , banks operating in other
+countries will naturally seek to provide safe dollar claims to their
+customers who want them. However , in so doing, they must satisfy
+a collateral constraint: a bank that promises to repay a depositor
+$1 tomorrow must have assets sufﬁcient to back that promise.
+This collateral in turn, must ultimately come from the revenues
+on the projects the bank lends to. And importantly , not all of these
+projects need to produce revenues that are dollar-based. For ex-
+ample, a bank in an EM that is trying to accommodate a large
+demand for dollar deposits may seek to back these deposits by
+turning around and making a dollar-denominated loan to a lo-
+cal ﬁrm that produces nontradable, local-currency-denominated
+goods. Of course, this ﬁrm’s revenues do not make particularly
+good collateral for dollar claims, because of exchange rate risk: it
+would be more efﬁcient to use the ﬁrm’s revenues to back local-
+currency deposits, all else equal.
+This inefﬁciency in collateral creation is at the heart of our
+results. If global demand for dollar deposits is strong enough,
+equilibrium inevitably involves having even those operating ﬁrms
+that generate revenues in other currencies serving as a marginal
+source of collateral for dollar deposits. Because these ﬁrms effec-
+tively have an inferior technology for producing dollar collateral
+relative to own-currency collateral, they can only be drawn into
+doing the latter if they are paid a premium for doing so, that is, if
+it is cheaper for them to borrow in dollars than in their home cur-
+rency . The intuition is of walking up a supply curve: as worldwide
+demand for safe dollar claims expands, we exhaust the supply that
+can be provided by low-cost producers (the U .S. Treasury and ﬁrms
+that naturally have dollar-denominated revenues) and therefore
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 5 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 787
+must turn to less efﬁcient, higher-cost producers, namely , ﬁrms
+that have to take on currency risk to create the collateral that
+backs dollar claims. As a result, the safety premium on dollar de-
+posits exceeds that on local-currency deposits. Put differently , the
+expected return on dollar deposits is on average lower , in violation
+of UIP . This is the exorbitant privilege associated with the dollar .
+Note that this line of argument turns on its head much in-
+formal reasoning about why foreign ﬁrms borrow in dollars. In
+particular , if one takes the UIP violation as exogenous, it seems
+obvious why some ﬁrms might be willing to court exchange rate
+risk by borrowing in dollars—it can be worth it simply because
+dollar borrowing is on average cheaper . But this leaves open the
+question of where the UIP violation comes from in the ﬁrst place.
+Our explanation is that dollar borrowing has to be cheaper be-
+cause the worldwide demand for safe dollar claims is so large that
+even those ﬁrms that are not particularly well suited to it must
+be recruited to help provide collateral for such claims; again, the
+intuition here is of walking up the supply curve. This recruiting
+can only happen in equilibrium if it is cheaper to borrow in dol-
+lars than in local currency . Thus the primitive in our story is the
+volume of internationally traded goods invoiced in dollars, which
+in turn drives the demand for safe dollar claims; the speciﬁc na-
+ture of the UIP violation, wherein the expected return on dollar
+deposits is on average lower , then emerges endogenously as the
+equilibrium “price” required to bring supply in line with demand.
+Of course, this line of reasoning prompts the question of where
+dollar invoicing volume comes from: what determines whether
+EM ﬁrms selling goods internationally price them in dollars, as
+opposed to their own currency or another potential dominant cur-
+rency like the euro? Although a variety of factors probably come
+into play , we argue that there is an important feedback loop from
+UIP violations back to invoicing choices. Suppose for the moment
+that for an EM exporting ﬁrm dollar borrowing is cheaper in equi-
+librium than borrowing in either its own currency or in euros. All
+else equal, the EM ﬁrm then has an incentive to choose to invoice
+its exports in dollars, because doing so gives it more certainty
+about its next-period dollar revenues, which in turn allows it to
+safely borrow more in dollars, that is, in the cheaper currency .
+This generates a link back to safe asset demand and the UIP
+violation. To see this, consider two emerging markets i and j.A n
+initially high quantity of dollar-invoiced imports by households in
+i leads to an increased demand on their part for safe dollar claims,
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 6 =====
+
+788 THE QUARTERL Y JOURNAL OF ECONOMICS
+which in turn drives down dollar borrowing costs. Responding
+to this ﬁnancing advantage, exporting ﬁrms in j are induced to
+invoice more of their sales to importers in country i in dollars. So
+the volume of dollar-invoiced imports in country i goes up further .
+This same mechanism also increases the incentive for exporters
+in country i to price in dollars when selling to country j.I no t h e r
+words, a high dollar invoice volume in country i t e n d st op u s hu p
+the dollar invoicing volume in country j, and vice versa, through
+a safe asset demand-and-supply mechanism. As we show , this
+form of strategic complementarity can give rise to asymmetric
+equilibria in which a single currency becomes disproportionately
+dominant in both global trade and banking, even when two large
+candidate countries share similar economic fundamentals.
+The model that we develop below formalizes this line of argu-
+ment. For example, in a case where the United States and Europe
+are otherwise identical in all respects, we obtain asymmetric equi-
+librium outcomes where the majority of trade invoicing is done in
+dollars, and where most non-local currency deposit-taking and
+lending by banks in other EM countries is dollar denominated,
+rather than euro denominated.
+Finally , in such an asymmetric equilibrium, it seems natural
+to expect that the foreign currency reserve holdings of a typical
+EM central bank would skew heavily toward dollars, as opposed
+to euros. Although we do not model this last link in the chain for-
+mally here, we do so in a companion paper ( Gopinath and Stein
+2018b). The logic is straightforward: given that an important role
+for the central bank is to act as a lender of last resort to its com-
+mercial banking system, the fact that the commercial banks’ hard-
+currency deposits are primarily in dollars means that the central
+bank will want to have a stockpile of dollars so as to be able to
+replace any sudden loss of bank funding that occurs during a liq-
+uidity crisis. Thus the central bank’s asset mix is to some extent a
+mirror of the commercial banks’ liability structure, and both are
+ultimately shaped by—and feed back on—the invoicing decisions
+made by exporters in other countries. This argument is consistent
+with the evidence in Obstfeld, Shambaugh, and Taylor (2010) ,
+who argue that the dramatic accumulation of reserves by central
+banks in emerging markets is driven in part by considerations of
+maintaining domestic ﬁnancial stability .4
+4. Bocola and Lorenzoni (2017) also analyze central bank reserve holdings
+from the perspective of a lender of last resort.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 7 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 789
+Our analysis is very much in the spirit of the historical nar-
+rative of Eichengreen (2010 , 3), which he summarizes by writ-
+ing, “experience suggests that the logical sequencing of steps in
+internationalizing a currency is: ﬁrst, encouraging its use in in-
+voicing and settling trade; second, encouraging its use in private
+ﬁnancial transactions; third encouraging its use by central banks
+and governments as a form in which to hold private reserves.”
+As we discuss below , this logic may be helpful in thinking about
+the evolution of events in the early part of the twentieth century ,
+when the dollar ﬁrst displaced the pound sterling as a dominant
+global currency . It may also shed light on the strategy currently
+being undertaken by the Chinese government in their efforts to
+internationalize the renminbi, in particular , the fact that they are
+focusing at this early stage on creating incentives for the use of
+the renminbi in international trade transactions. The model also
+offers a lens through which to examine the creation of private cur-
+rencies such as Facebook’s Libra. Initially such a currency may be
+meant primarily for transactional purposes, but one can see how
+with sufﬁcient scale this can lead to a demand for safe assets in
+this currency , which in turn triggers the production of further safe
+assets in the currency via borrowing, as well as other goods being
+invoiced in this currency .
+Although our contribution is primarily theoretical, we present
+some preliminary evidence that is consistent with our basic
+premise, namely , that there is a close connection between the
+dollar’s prominence in a country’s import invoicing and its role in
+that country’s banking system. Speciﬁcally , we ﬁnd a strong cor-
+relation at the country level between the dollar’s share (relative
+to other nonlocal currencies) in the invoicing of its imports and
+the dollar’s share (again relative to other nonlocal currencies) in
+the liabilities of the domestic banking sector .
+This article aims to connect two strands of research: one on
+trade invoicing, and the other on safe asset determination in an
+international context. The former emphasizes the role of a domi-
+nant currency as a unit of account, and the latter focuses on its role
+as a store of value. 5 Our contribution is to highlight the strategic
+complementarity between these two roles, that is, to show how
+5. Matsuyama, Kiyotaki, and Matsui (1993) , Rey (2001) ,a n d Devereux and
+Shi (2013) study the medium of exchange role of currencies and the emergence of
+a “vehicle” currency . While we focus on the unit of account role of the currency ,
+adding a medium of exchange role only strengthens our conclusions.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 8 =====
+
+790 THE QUARTERL Y JOURNAL OF ECONOMICS
+they mutually reinforce each other . The only other work we are
+aware of that ties together trade invoicing and ﬁnance is contem-
+poraneous work by Chahrour and Valchev (2017) , who focus on
+the medium of exchange role of currencies. Farhi and Maggiori
+(2018) explore the unidirectional impact of trade invoicing on safe
+asset determination.
+We also provide a novel perspective on both trade invoicing
+and safe asset determination. The literature on trade invoicing
+sets aside ﬁnancing considerations and instead focuses on factors
+that inﬂuence the optimal degree of exchange rate pass-through
+into prices, as in the contributions of Friberg (1998), Engel (2006),
+Gopinath, Itskhoki, and Rigobon (2010) ,a n d Goldberg and Tille
+(2013). Doepke and Schneider (2017) rationalize the role of a dom-
+inant unit of account in payment contracts by the desire to avoid
+exchange rate risk and default risk. By contrast, we provide a
+complementary explanation that relates exporters’ pricing deci-
+sions to their ﬁnancing choices, and in particular to their desire
+to borrow in a cheap currency . In our model, the only reason ex-
+porters choose to invoice in dollars is because they are able to
+more cheaply ﬁnance their projects.
+On the safe asset role of the dollar and the lower expected
+return on the dollar relative to other currency assets, existing ex-
+planations are tied to the superior insurance properties of U .S.
+bonds that arise either from country size ( Hassan 2013); from the
+tendency of the dollar to appreciate in a crisis ( Gourinchas and
+Rey 2010; Maggiori 2017); from better ﬁscal fundamentals and liq-
+uidity of debt markets ( He, Krishnamurthy , and Milbradt 2016 );
+or from the monopoly power of the United States as a safe asset
+provider ( Farhi and Maggiori 2018 ). We offer a distinct explana-
+tion that is tied to the invoicing role of the dollar in international
+trade. In our model, this invoicing behavior generates the demand
+for dollar safe assets and, importantly , implies that the marginal
+supplier of dollar claims must have a mismatch of its assets and
+liabilities in equilibrium.
+The full model that we consider here has two large coun-
+tries, the United States and the euro area, a continuum of EM
+economies, and endogenous invoicing and ﬁnancing decisions. To
+provide a clear exposition of the mechanism, we build up to the
+full model in steps. Section II starts with a simple case in which
+there is just the United States and one EM, and in which the quan-
+tity of dollar-invoiced imports in the EM is exogenously speciﬁed.
+Here we highlight the fundamental source of the UIP violation.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 9 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 791
+Section III endogenizes the invoicing decision of exporter ﬁrms in
+the EM and explains the ﬁnancial incentive for invoicing in dol-
+lars. Section IV brings in the continuum of EMs and demonstrates
+the strategic complementarity between their invoicing decisions
+and the safe asset demand that gives rise to multiple equilib-
+ria. Finally in Section V we add the euro as another candidate
+global currency and show that in spite of the symmetry in fun-
+damentals, for some parameter values the equilibrium outcomes
+are asymmetric, with only one global currency being used exten-
+sively by EM countries to invoice their exports and to ﬁnance their
+projects. Section VI discusses several further implications of the
+model, and Section VII concludes.
+II. E XOGENOUS DOLLAR INVOICING AND THE UIP VIOLATION
+In the simplest version of the model, the world is composed of
+just the United States and one emerging market. All of the focus
+is on decisions made by EM agents. The United States only plays
+two simple roles. First, an exogenous quantity M of goods are
+imported by EM households from the United States and these are
+priced in dollars. Second, the United States supplies an exogenous
+net quantity X$ of safe dollar claims that are available to these
+same EM households. These safe claims could be, say , Treasury
+securities, or deposits in U .S.-based ﬁnancial intermediaries such
+as banks or money market funds. 6
+There are three groups of agents in the EM and there are two
+dates, denoted 0 and 1. There are also three types of assets: (i) risk-
+free home-currency deposits, Dh; (ii) risk-free dollar deposits, D$;
+and (iii) risky home-currency assets, AR; that is, assets with risky
+nominal payoffs such as bonds with credit risk, or equities. The
+ﬁrst group of agents are risk-neutral investors who can potentially
+invest in all three assets. As will become clear momentarily , their
+only role is to pin down the expected return on risky assets AR. The
+second group are risk-averse importers, and they can only save in
+the two risk-free assets Dh and D$. This assumption captures a
+6. To put a little more ﬂesh on this assumption: imagine that U .S. households
+and ﬁrms have an inelastic demand for up to Z$ units of safe assets, and no more,
+and that the Treasury has issued Y$ units of safe Treasury securities. Then X$ =
+Y$ − Z$, and the empirically relevant case for us to consider is when X$ ≧ 0. The
+assumption of a perfectly inelastic supply of X$ is made for tractability and is not
+essential to the analysis.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 10 =====
+
+792 THE QUARTERL Y JOURNAL OF ECONOMICS
+form of market segmentation, whereby importers are not informed
+enough to evaluate the underlying operations of the banks and
+ﬁrms in the economy that issue risky claims, and hence behave
+in an inﬁnitely risk-averse fashion with respect to these risks.
+The importers also have ﬁnite risk aversion over consumption
+risk, which, as we show , leads them to prefer a portfolio mix that
+is more tilted toward dollar deposits when they consume more
+dollar-invoiced goods at time 1. The third group, whom we call
+“banks,” can be thought of as an agglomeration of the local banking
+sector with those ﬁrms—and by extension, those real projects—to
+which the banks lend. We describe each group in detail next. As a
+simpliﬁcation, we assume all goods prices are normalized to 1, and
+are assumed to be sticky over time in whatever currency they are
+set—so that those imports that are priced in dollars have sticky
+dollar prices.
+II.A. Risk-Neutral Investors
+Risk-neutral investors save at time 0, and consume only goods
+produced at home at both time 0 and time 1, in amounts given by
+Cn
+0 and Cn
+1 , respectively . Their utility is therefore given by Cn
+0 +
+βE0Cn
+1 , where β is a discount factor . If we deﬁne QR as the time
+0 price of a risky asset that provides a payoff with an expected
+value of one at time 1—that is, QR is the reciprocal of 1 plus
+the risky discount rate—then it follows immediately that QR =
+β. In principle, risk-neutral investors also have access to the safe
+local currency and dollar-denominated claims, but given their risk
+neutrality , they will choose not to invest in these safe claims if—as
+we establish below—they have a lower equilibrium rate of return
+than the risky asset. We also assume that these investors cannot
+short-sell the safe claims, presumably because they do not have
+the collateral that would be required to guarantee payment with
+absolute certainty . Hence the determination of the rate of return
+on safe claims will depend only on the preferences of the risk-
+averse importers.
+II.B. Risk-Averse Importers
+Importers consume quantities of home goods C0 and C1 at
+times 0 and 1, respectively , and of imported goodsM at time 1 only .
+A key simplifying assumption is that importers have a completely
+inelastic demand for the bundle of imported goods, implying that
+M is a ﬁxed constant, and consequently exchange rate variation
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 11 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 793
+ends up affecting only the value of C1.7 Their initial endowment
+in home currency is given by W, and all imported goods are priced
+in dollars. The time t exchange rate is Et, and we adopt the nor-
+malization that E0(E1) = E0 = 1. We denote by Qh the time 0 price
+of a deposit that pays off a certain one unit in the home currency
+at time 1. Similarly ,Q$ is the time 0 price of a deposit that pays off
+a certain one unit in dollars at time 1. Finally , importers are risk
+averse over their time 1 consumption of home goods C1 and have
+a strictly greater discount factor than the risk-neutral investors,
+given by δ = β + θ .
+Taken together , these assumptions allow us to write the im-
+porters’ problem as:
+max
+Dh,D$
+C0 + δE0U (C1),
+subject to:
+C0 = W − Qh Dh − Q$ D$
+C1 = Dh + E1 D$ − E1 M
+C0, C1, Dh, D$ ⩾ 0.
+For concreteness, we assume a mean variance utility function
+for U(C1) such that E0U (C1) = E0C1 − ψ
+2 V0(C1), where V stands
+for variance. It is easy to see that:
+E0(C1) = Dh + D$ − M
+V0(C1) = (D$ − M)2σ 2,
+where σ 2 = V0[E1] is the variance of the exchange rate. Intuitively ,
+importers face risk in their time 1 consumption of home goods to
+the extent that D$ ̸= M, that is, to the extent that their dollar
+deposit holdings do not match their time 1 consumption of imports
+that are dollar invoiced. Thus all else equal, there will be a greater
+hedging demand for dollar deposits when the quantity of dollar-
+invoiced goods consumed, M, is larger . To see this explicitly , note
+that the ﬁrst-order conditions for the importers’ problem imply
+the following in an interior optimum where Dh and D$ are both
+7. We assume that M < W
+Q$
+for feasibility .
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 12 =====
+
+794 THE QUARTERL Y JOURNAL OF ECONOMICS
+positive:
+D$ = M − 1
+ψδσ 2
+(
+Q$ − Qh
+)
+Qh = δ.
+Thus the demand for dollar deposits increases with M, but de-
+creases when ( Q$ − Qh) goes up, that is, when the interest rate
+on dollar deposits falls relative to that on home currency deposits.
+To close the model and solve for Q$, we therefore need to bring in
+the supply side and pin down the equilibrium quantity of dollar
+safe claims provided by the banking sector . This is what we turn
+to next.
+II.C. Banks
+We model the representative EM bank as an entity that is
+endowed with N projects that collectively pay a risky return of γ N
+in home currency at date 1, where γ is a random variable. Each
+project requires a unit of home currency investment at time 0 that
+the bank ﬁnances through borrowing with one of three types of
+liabilities: safe home currency claims Bh, safe dollar-denominated
+claims B$, and risky home currency bonds BR. The bank is a
+price-taker in the three markets. Importantly , because the bank’s
+projects are risky , there is an upper bound on how much it can
+promise in terms of safe claims. In other words, it faces a collateral
+constraint on its production of Bh and B$. Speciﬁcally , deﬁne γ L
+to be the worst realization of the productivity shock γ ,a n d ¯E > 1
+to be the most depreciated value of the home currency (recall that
+E0(E1) = E0 = 1).8 Then the maximum quantities of safe claims Bh
+and B$ that the bank can issue are constrained by the condition
+¯E B$ + Bh ⩽ γL N.
+A central piece of intuition that emerges from this collat-
+eral constraint is that the bank has a comparative advantage
+in manufacturing home currency safe claims relative to dollar-
+denominated safe claims. This is because the bank’s underlying
+collateral is a collection of projects that pay off in the home cur-
+rency . Given the risk of currency depreciation, an amount of home
+8. To be clear , ¯E is in units of home currency/dollar , so a higher value indicates
+a weaker home currency .
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 13 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 795
+collateral that is sufﬁcient to back one unit of safe home currency
+claims is only enough to back 1
+¯E units of safe dollar claims.
+The bank’s problem is therefore:
+max
+Bh,B$,BR
+E0
+[
+γ N − Bh − E1 B$ − BR
+]
+,
+subject to
+Qh Bh + Q$ B$ + QR BR ⩾ N(1)
+¯E B$ + Bh ⩽ γL N.(2)
+Deﬁne λ and μ to be the Lagrange multipliers on the ﬁnancing
+constraint equation (1) and the collateral constraint equation (2),
+respectively . The ﬁrst-order conditions for the problem imply:
+B$ : Q$ = μ ¯E + 1
+λ
+Bh : Qh = μ + 1
+λ
+BR : QR = 1
+λ,
+These conditions yield the following proposition.
+PROPOSITION 1( Exorbitant Privilege). In an interior equilibrium
+in which the bank issues all three forms of debt, we have that
+Q$ > Qh > QR.
+Q$ − β
+Qh − β = ¯E.
+In other words, in an interior equilibrium, UIP is violated, and
+dollar deposits beneﬁt from an “exorbitant privilege” relative
+to local currency deposits: they have a higher price and a
+lower expected return.
+The proposition is a direct consequence of the bank’s com-
+parative disadvantage in creating dollar safe claims out of home
+currency–denominated collateral. Because of this disadvantage,
+the bank will only be willing to fund these home projects with
+dollar borrowing if doing so is cheaper than funding with home
+currency deposits. However , it still remains to check, as we do be-
+low , whether the bank does fund its home currency projects with
+dollar claims in equilibrium. Intuitively , it will do so only if the
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 14 =====
+
+796 THE QUARTERL Y JOURNAL OF ECONOMICS
+home demand for dollars is large relative to the exogenous supply
+of safe dollar claims X$ that are available from abroad. 9
+II.D. Market-Clearing Conditions
+To solve for the equilibrium of the model, we note that total
+safe dollar claims available to EM importers are the sum of those
+produced by the bank borrowing against home currency collateral,
+and those exogenously supplied from abroad: D$ = B$ + X$.A tt h e
+same time, safe home currency claims can only be collateralized
+by home projects, meaning that Dh = Bh. The safe asset constraint
+always binds, which implies that ¯E(D$ − X$) + Dh = γL N.10
+The next proposition, which we prove in Online Appendix A.1,
+shows that if the quantity of dollar-invoiced imports M is large
+enough relative to the supply X$ of safe dollar claims available
+from abroad, the bank will necessarily get drawn into the busi-
+ness of manufacturing dollar deposits backed by home currency
+projects, which in turn requires the rate of return on these dollar
+deposits to be lower than that on home currency deposits.
+PROPOSITION 2( Dollar-Invoiced Imports and Exorbitant
+Privilege). Deﬁne the cutoff ¯M = X$ + θ( ¯E−1)
+ψδσ 2 . The full
+9. One striking feature of the proposition is that the magnitude of the UIP
+violation is driven entirely by the worst-case realization of the domestic exchange
+rate, as captured by ¯E; nothing else about the distribution of exchange rate out-
+comes appears to matter . But this somewhat unnatural feature is easily tweaked.
+Consider a case where the exchange rate follows a known distribution, such as the
+normal. Suppose further that our collateral constraint implicitly reﬂects a form of
+capital regulation. In particular , the regulator allows the bank to issue short-term
+deposits (as opposed to equity) only up to the point where its risk of failure is
+some ﬁxed probability , for example, 0.1%, with the understanding that there will
+be a government bailout in the event of such a failure, so that deposits are alway
+riskless to households, just as they are in the model here. In this case, the relevant
+item will no longer be the worst-case realization of the exchange rate, but whatever
+moment of the distribution (e.g., the variance, in the normal case) it is that governs
+this tail probability . So if one wants to interpret ¯E more generally as a proxy for
+the variability of the exchange rate, rather than literally its worst-case value, this
+interpretation can be comfortably rationalized in a variant of our setting.
+10. Given that importers discount the future less as compared with risk-
+neutral investors, the interest rate on safe assets is always strictly below that of
+risky assets. Consequently , the bank/ﬁrm will always borrow ﬁrst by issuing safe
+assets and only when this channel is exhausted will they switch to risky assets.
+Last, because the safe asset constraint ensures that only γ L < 1 can be raised
+for each unit of investment, the bank/ﬁrm will necessarily exhaust this constraint
+and then turn to borrowing at the risky rate.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 15 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 797
+(A) (B)
+FIGURE I
+Dollar Invoicing, Deposit Rates, and Dollar Borrowing
+solution to the model is as follows (recall that θ = δ − β):
+D$ =
+{
+X$ if M < ¯M
+M − θ( ¯E−1)
+ψδσ 2 if M ⩾ ¯M
+Q$ − Qh =
+{(M − X$)ψδσ 2 if M < ¯M
+θ ( ¯E − 1) if M ⩾ ¯M
+B$ = D$ − X$ and Bh = γL N − ¯E B$.
+Figure I illustrates Proposition 2, plotting the magnitude of
+the UIP deviation Q$ − Qh (in Panel A) and the quantity of dollar
+funding by the banking system B$ (in Panel B) versus the quantity
+of dollar-invoiced imports M.N o t et h a tQ$ − Qh has to become
+signiﬁcantly positive—in particular , it has to reach a value of
+θ ( ¯E − 1)—before the banks start using home currency collateral
+to back dollar claims. This is because the cost of doing even the
+ﬁrst unit of this kind of currency conversion is discretely positive
+and is proportional to ¯E − 1, which is effectively a proxy for the
+variability of the exchange rate.
+Proposition 2 and Figure I highlight our ﬁrst key point: that
+in equilibrium, there is a fundamental link between the dollar’s
+role as a global invoicing currency and the low return on safe
+dollar claims, that is, the exorbitant privilege. To the extent that
+a large volume of trade is invoiced in dollars (i.e., M is large)
+this increases the demand on the part of importers for safe dollar
+deposits. Equilibrium then requires these claims to have a higher
+price, or equivalently , to offer a lower rate of return. This is true
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 16 =====
+
+798 THE QUARTERL Y JOURNAL OF ECONOMICS
+because when the demand is high enough, the marginal supply of
+safe dollar claims must be produced with a relatively inefﬁcient
+technology—that is, it must be backed by the collateral coming
+from non-dollar-denominated projects.
+REMARK 1. Exogenous Exchange Rates? We are taking exchange
+rates as exogenous and assuming that there is no expected ap-
+preciation or depreciation between time 0 and time 1. This is not
+important for our key conclusions. The logic of the model funda-
+mentally pins down the net-of-exchange-rate expected returns on
+the different assets in the economy . With expected exchange rate
+changes set to zero, this maps into own-currency rates of return;
+the analysis is best thought of as suited to making on-average
+statements about the safe interest rate in different currencies.
+An alternative approach would be to add active monetary policy
+to the model, thereby allowing rates in each country to be dis-
+placed from their average values in response to aggregate demand
+shocks. In this case, there would still be the same violations of UIP
+described in Proposition 2. But now , if interest rates rose in the
+United States due to contractionary monetary policy , the dollar
+would have to be expected to weaken going forward so as to main-
+tain the same relative expected return on dollar claims. This is
+how exchange rates might be endogenized in the richer version of
+the model. Note however , that we would still be making the same
+statements about on-average interest rate differentials—that is,
+rate differentials when monetary policy in both countries was at
+its neutral level. 11
+REMARK 2. Banks and Nonﬁnancial Firms. The agents that we
+have been calling EM banks invest directly in real projects that
+yield returns in local currency units. Thus they are more accu-
+rately thought of as an agglomeration of banks and the local non-
+ﬁnancial ﬁrms that the banks lend to. To create a separation be-
+tween these two types of entities, and a more well-deﬁned account
+of the role of ﬁnancial intermediation, assume that any individual
+11. Either version of our model is silent with respect to any higher-frequency
+aspect of UIP violations, such as the forward premium puzzle, according to which
+the relative expected return to holding a given country’s currency increases when
+the interest rate in that currency rises ( Engel 2014). Instead, we are interested in
+on-average cross-country rate of return differentials, of which we take the “exor-
+bitant privilege” to be a leading example.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 17 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 799
+nonﬁnancial ﬁrm can invest in a single project that pays a random
+amount γ
+p if the project succeeds, which happens with probability
+p, and zero otherwise. This individual project-level success or fail-
+ure draw is idiosyncratic and uncorrelated across ﬁrms. Thus no
+single nonﬁnancial ﬁrm can issue any amount of safe claims, be-
+cause there is always some chance that its project will yield zero.
+However , a bank that pools a large number N of these uncorre-
+lated projects will be assured of a worst-case payout of γ LN,a sw e
+have been assuming.12 Hence, as originally pointed out by Gorton
+and Pennacchi (1990) , there is a speciﬁc pooling-and-tranching
+role for banks in creating safe claims.
+However , this observation raises a further question of who
+bears the exchange rate risk. In the model, a bank that issues
+dollar deposits against its local currency collateral bears some
+exchange rate risk: if the dollar appreciates against the local cur-
+rency , it will see its proﬁts decline. But if the word “bank” is really
+a metaphor for the combined local banking and nonﬁnancial sec-
+tors, which of the two do we expect will actually wind up bearing
+the bulk of the currency risk? In other words, one possibility is
+that nonﬁnancial ﬁrms borrow from banks using local currency
+debt, in which case the banks assume the currency mismatch.
+Alternatively , the nonﬁnancial ﬁrms could borrow using dollar-
+denominated debt, in which case they would be the ones bearing
+the currency risk, while the banks would be insulated. For the
+internal logic of the model, either interpretation works, because
+in either case the exchange rate risk acts to limit the ultimate
+amount of safe dollar claims that can be produced from a given
+amount of local currency collateral. As a matter of empirical real-
+ity , the existing evidence suggests that a signiﬁcant amount of the
+exchange rate risk is borne by the nonﬁnancial corporate sector in
+emerging markets ( Galindo, Panizza, and Schiantarelli 2003 ; Du
+and Schreger 2014 ). So when we develop propositions about the
+degree of exchange rate mismatch in the “banking” sector in what
+follows, these propositions are best taken as statements that refer
+at least in part to mismatch among nonﬁnancial ﬁrms. 13
+12. This particular formulation follows Stein (2012).
+13. Niepmann and Schmidt-Eisenlohr (2017) provide evidence that distress
+caused by currency mismatch among nonﬁnancial ﬁrms spills over into credit risk
+for ﬁnancial institutions.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 18 =====
+
+800 THE QUARTERL Y JOURNAL OF ECONOMICS
+III. E XPORTER FIRMS AND ENDOGENOUS INVOICING
+The next step is to allow exporter ﬁrms in the EM to choose
+how to invoice their sales to other countries, while temporarily
+maintaining the assumption that the invoice terms facing its im-
+porters are exogenously ﬁxed. Bearing in mind the interpreta-
+tion that the banks in the model are really agglomerations of
+banks and operating ﬁrms, we now assume that the EM banks
+have two types of projects. First, there are N0 projects which, as
+before, necessarily produce home currency revenues; these can
+be thought of as representing investments undertaken by ﬁrms
+that sell all of their output domestically . Second, there are N
+projects that can produce either dollar revenues or home-currency
+revenues. These latter projects are meant to capture the pric-
+ing decisions facing exporter ﬁrms in the EM: they have the
+choice of whether to invoice their sales in either dollars or their
+home currency . Moreover , if they do more of the former—and if
+prices are sticky—their dollar revenues will be more predictable,
+and hence will make better collateral for backing safe dollar
+claims.
+We denote by η the fraction of the N export projects that
+are invoiced in dollars, with the remaining fraction (1 − η) be-
+ing invoiced in home currency . Our focus is on the ﬁnancing
+motive behind trade invoicing. Accordingly , to shut down other
+motives—for example, those having to do with imperfect goods-
+market competition—we assume the following: the sticky price of
+export goods is exogenous to the exporting ﬁrm, which acts as a
+price-taker . The export ﬁrm’s invoicing decision thus amounts to
+only the choice between a given sticky home currency price or a
+dollar price.
+To make the micro-foundations behind the bank/exporter’s
+optimization problem more transparent, one can think of each
+export project as requiring a unit investment denominated in the
+home currency . Each project, if undertaken, produces γ units of a
+unique good and that can be sold either at the preﬁxed dollar price
+or the preﬁxed home price, each of which is normalized to one. The
+ultimate owners of the bank only consume local goods. So their
+consumption equals net proﬁts denominated in home currency .
+If they invoice their exports in dollars, their revenue in home
+currency is therefore γ E1 per project. Analogously , if they invoice
+their exports in home currency , their revenue in home currency is
+simply γ .
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 19 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 801
+With these assumptions in place, the bank/exporter’s proﬁt-
+maximization problem can be stated as:
+max
+Bh,B$,BR,η
+E0
+[
+γ N0 + (1 − η)γ N + E1ηγ N − Bh − E1 B$ − BR
+]
+,
+subject to
+Qh Bh + Q$ B$ + QR BR ⩾ N + N0(3)
+¯E B$ + Bh ⩽ γL N0 + (1 − η)γL N + ¯EηγL N(4)
+Bh ⩽ γL N0 + (1 − η)γL N.(5)
+There are a couple of points to note about this revised formulation.
+First, the collateral constraint ( 4) now reﬂects the fact that by
+invoicing in dollars, the bank-exporter coalition is able to increase
+the total quantity of safe dollar claims it can create. Again, this is
+because when it sets prices in dollars, and these prices are sticky ,
+the lower bound on future dollar revenues is higher . Second, we
+have added an additional constraint in equation (5) ,w h i c hs a y s
+that all local currency safe claims must be backed by projects
+with local currency revenues. This rules out a perverse outcome
+where exporters ﬁrst bear a cost to invoice their projects in dollars
+and then turn around and use these dollar revenues to back local
+currency safe claims. 14
+Deﬁne λ, μ,a n dκ to be the Lagrange multipliers on the three
+constraints in equations (3) ,( 4), and ( 5), respectively . The ﬁrst-
+order conditions for the bank’s problem are given by:
+B$ : Q$ = μ ¯E + 1
+λ
+Bh : Qh = μ + 1 + κ
+λ
+BR : QR = 1
+λ,
+14. Such an outcome is endogenously ruled out as soon as one notes that the
+local currency can appreciate, as well as depreciate, against the dollar . For exam-
+ple, denoting the most appreciated value of the local currency by E < 1, one can
+never use a unit of dollar revenues to back more than E units of local-currency safe
+claims. Incorporating this constraint explicitly into the optimization is formally
+identical to incorporating equation (5).
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 20 =====
+
+802 THE QUARTERL Y JOURNAL OF ECONOMICS
+and η is now determined by the following condition
+η =
+⎧
+⎨
+⎩
+0i f Q$ − Qh < 0
+∈ [0, 1] if Q$ − Qh = 0
+1i f Q$ − Qh > 0.
+(6)
+Equation (6) captures the key wrinkle in this variant of the model:
+now when dollar ﬁnancing is cheaper than home currency ﬁnanc-
+ing, it must be that η> 0, that is, there is dollar invoicing by
+EM exporters in equilibrium. Note that because of the linearity of
+the bank’s problem—the bank is effectively a risk-neutral proﬁt-
+maximizer in home currency—the solution for η is of a bang-bang
+nature: as soon as Q$ − Qh turns positive, η j u m p sf r o m0t o1 .
+The only way to maintain an interior value for η is in an equilib-
+rium where Q$ − Qh = 0, that is, where dollar and local-currency
+interest rates are equalized. 15
+With this apparatus in hand, we can generalize Proposition 2.
+Now as M increases, we pass through four distinct regions of
+the parameter space, rather than just two. In the ﬁrst, lowest-
+M region, M < M,w eh a v e Q$ − Qh < 0a n d B$ = 0. That is,
+banks do not ﬁnance any of their projects with safe dollar claims,
+because the interest rate on dollar deposits is higher than that on
+local currency deposits. In the second region, M < M < ˆM we have
+Q$ − Qh = 0, η> 0, and B$ = ηγ LN. Here there is some amount of
+dollar invoicing by exporters, and dollar-invoiced projects are the
+only source of collateral that is used to back safe dollar claims—no
+dollar claims are backed by home currency projects. In the third
+region, ˆM < M < ¯M we have Q$ − Qh > 0, η = 1, and again B$ =
+γ LN. Now all invoicing by exporters is done in dollars, but this is
+still the only source of backing for safe dollar claims. Finally , in
+the highest- M region, M > ¯M,w eh a v e Q$ − Qh > 0, η = 1, and
+B$ >γ LN. Here, dollar deposits are backed both by dollar-invoiced
+projects, as well as by the remaining home currency projects, as
+they were in the earlier setting. Or said differently , here the banks
+or the home-oriented ﬁrms they lend to take on some degree of
+currency mismatch, as they did in Proposition 2.
+15. Although this bang-bang type of solution for η emerges most naturally
+from a well-speciﬁed risk-neutral proﬁt-maximization objective for the bank, it is
+not crucial for what follows. We have also derived qualitatively similar results in a
+version of the model that adds an ad hoc friction that makes η a more continuous
+function of Q$ − Qh. See the NBER working paper version Gopinath and Stein
+(2018a) for this formulation of the model.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 21 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 803
+The full solution to this version of the model is provided in
+Online Appendix A.2 and characterized in Proposition 3.
+PROPOSITION 3( Endogenous Invoicing ). Deﬁne the three cut-
+offs
+M = X$, ˆM = X$ + γL N, ¯M = X$ + γL N + θ ( ¯E − 1)
+ψδσ 2 .
+We can characterize the solution to the model as
+η =
+⎧
+⎪⎨
+⎪⎩
+0i f M < M
+M−X$
+γL N if M ⩽ M < ˆM
+1i f M ⩾ ˆM
+D$ =
+⎧
+⎪⎪⎪⎨
+⎪⎪⎪⎩
+X$ if M < M
+M if M ⩽ M < ˆM
+X$ + γL N if ˆM ⩽ M < ¯M
+M − θ( ¯E−1)
+ψδσ 2 if M > ¯M
+Q$ − Qh =
+⎧
+⎪⎪⎨
+⎪⎪⎩
+(M − X$)ψδσ 2 < 0i f M < M
+0i f M ⩽ M < ˆM
+(M − X$ − γL N)ψδσ 2 > 0i f ˆM ⩽ M < ¯M
+θ ( ¯E − 1) > 0i f M > ¯M.
+■
+Note that as before, we have that Bh = Dh and B$ = D$ −
+X$. Figure II illustrates Proposition 3, showing how the equilib-
+rium values of the dollar export share η (in Panel A), the dollar
+premium Q$ − Qh (in Panel B), and dollar borrowing B$ (in Panel
+C) all vary as the exogenous volume of dollar-invoiced imports M
+increases. This ﬁgure and the associated proposition summarize
+the second key message of the article: we offer a novel argument
+for why EM ﬁrms choose to invoice their exports in dollars. The
+existing literature has no role for ﬁnancing considerations and
+instead focuses on factors that inﬂuence the optimal degree of
+cost pass-through into prices, such as the contributions of Friberg
+(1998), Engel (2006), Gopinath, Itskhoki, and Rigobon (2010) and
+Goldberg and Tille (2013). An alternate explanation, as developed
+in Rey (2001) and Devereux and Shi (2013) , is that the dollar
+is used as a vehicle currency to minimize transaction costs of
+exchange.
+By contrast, here we set aside all these factors and pro-
+vide a complementary explanation that relates exporters’ pricing
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 22 =====
+
+804 THE QUARTERL Y JOURNAL OF ECONOMICS
+(C)
+(B)(A)
+FIGURE II
+Equilibrium Values as Dollar-Invoiced Imports Vary
+decisions to their desire to borrow in a cheap currency . Indeed, in
+our model the only reason exporters choose to invoice in dollars
+is because by doing so they are able to more cheaply ﬁnance their
+projects.16
+REMARK 3. Why is the Export-Pricing Decision Relevant if Ex-
+porters Can Hedge? At ﬁrst glance, one might think that there
+is no need for an exporter ﬁrm that wants to insulate its dollar
+revenues to invoice its sales in dollars; it could instead invoice in
+home currency and then overlay a foreign exchange swap to con-
+vert the proceeds from the sale into dollars. Or put a bit differently ,
+invoicing in dollars bundles together a goods-pricing decision with
+a risk-management decision, and in principle these two decisions
+could be unbundled, in which case the model’s predictions for in-
+voicing behavior would be less clear-cut.
+16. Baskaya et al. (2017) use micro-data for Turkish ﬁrms and banks to show
+that there is indeed a failure of UIP and bank loans denominated in dollars are
+cheaper than those in Turkish lira.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 23 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 805
+A recent theoretical and empirical literature ( Rampini and
+Viswanathan 2010; Rampini, Viswanathan, and Vuillemey 2020 ;
+among others) has argued that due to ﬁnancial contracting fric-
+tions, hedging of this sort by both operating ﬁrms and ﬁnancial
+intermediaries tends to be quite constrained. The broad idea of
+this work is that when a ﬁrm wishes to enter (say) a forward con-
+tract to hedge its FX risk, it needs to post adequate collateral to
+ensure it will be able to perform should the hedge move against it.
+In a world of ﬁnancial frictions, posting such collateral is neces-
+sarily expensive, as it draws resources away from real investment
+activities.
+To see why such frictions can make invoicing in dollars pre-
+ferred to FX hedging in our setting, consider the following ex-
+ample. An exporter in Mexico plans to offer machines for sale in
+Brazil. It can either price these machines in Mexican pesos, and
+then enter a forward contract with a derivatives dealer to con-
+vert the pesos into dollars, or it can price the machines in dollars.
+In the former case, it needs to be able to assure the derivatives
+dealer that the sale of the machines will actually happen and
+will generate the stipulated revenues, and that these revenues
+will not be diverted by the exporter before the dealer can get its
+hands on them. If this is difﬁcult or expensive to do, the exporter
+will be required to post a signiﬁcant amount of collateral to enter
+the hedging transaction. Moreover , if it is already liquidity con-
+strained, this posting of collateral will compromise its ability to
+do real investment. In contrast, if the exporter invoices in dollars,
+these problems of assuring performance disappear . Effectively , by
+bundling the two decisions, it sources its hedge from somebody
+(the Brazilian importer) who is already fully protected from de-
+fault on the part of the exporter , because the importer does not
+have to turn over any cash until it receives its machines and is
+not promised anything other than the machines in any state of the
+world. Compare this with the derivatives dealer who makes a pay-
+ment in one state (when the dollar depreciates against the peso)
+in the hopes of receiving a potentially default-prone payment in
+another state (when the dollar appreciates against the peso).
+IV . ENDOGENOUS INVOICING DECISIONS AND MULTIPLE EQUILIBRIA
+In the previous section, we endogenized the invoicing choices
+of exporter ﬁrms but did not link these decisions to the magnitude
+of dollar-invoiced imports that importers have to pay for , which
+in turn determines their preferences for dollar safe assets. In
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 24 =====
+
+806 THE QUARTERL Y JOURNAL OF ECONOMICS
+this section, we close the loop. We extend the model to include
+many EMs that trade with each other . Speciﬁcally , we now con-
+sider a world composed of one large economy—namely , the United
+States—and a continuum of small open economies (EMs) of mea-
+sure one. The EM we described in the previous section is one of
+this continuum and therefore of measure zero. This extension of
+course introduces multiple exchange rates. To keep the analysis
+tractable, we assume that households in each EM demand safe
+assets only in their own home currency and in dollars. The idea is
+that home-currency consumption and dollar-invoiced imports are
+always a nonnegligible fraction of expenditures in each EM coun-
+try , the latter because the United States is discretely large. By
+contrast, imports from any single other EM are only an inﬁnites-
+imal share of the expenditure bundle. Therefore, if we think of
+there being a small ﬁxed cost of setting up a deposit account in
+each currency , citizens of countryi will only want to do so in dollars
+and in country i currency , rather than having to set up an inﬁnite
+number of such accounts to cover all the currencies of the world.
+Moreover , if we assume that exchange rates across the individual
+EM countries are uncorrelated, the law of large numbers implies
+that the failure to hedge nondollar currency risk in this way has
+no effect on the aggregate cost of the overall import bundle, and
+hence imposes no undesirable variation in time 1 local currency
+consumption C1.
+Exporters in the EMs can choose to invoice their exports in
+either their own currency or in dollars. 17 We denote total imports
+coming from the United States by a, and total imports coming from
+EM countries by b. With this, the budget constraint in period 1 is
+modiﬁed to
+C1i = Dhi + E1i D$i − E1i a − E1i
+∫
+j̸=i
+bη j dj −
+∫
+j̸=i
+Eij b(1 − η j )dj,
+where ηj is the fraction of the N projects in country j that are priced
+to generate dollar revenues, as chosen by exporters in country j,
+and Eij is the bilateral exchange rate between currency of i and
+of j expressed as the price of currency j in terms of currency i.
+The period 0 budget constraint is unchanged. Consistent with our
+description above, we assume
+∫
+j Eij dj = 1, that is, while bilateral
+EM exchange rates can move around, the average of currency i
+17. As will become clear , there is never an incentive to invoice in the destina-
+tion currency .
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 25 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 807
+relative to all other EMs stays constant at 1. As before, all imports
+from the United States, a are assumed to be invoiced in dollars.
+This implies that the total quantity of dollar-invoiced imports for
+emerging market i, M$i, is now an endogenous variable, and is
+given by:
+M$i = a + b
+∫
+j̸=i
+η j dj.
+Simply put, if exporters in the rest of the EM world price more
+of their exports in dollars, importers in i who import from these
+countries have a higher volume of dollar-invoiced goods in their
+own expenditures.
+The key exogenous parameters in the model are now a and b.
+Our assumption is that U .S. exporters always price in dollars, no
+matter what, so that if a is relatively large, M$i will necessarily
+be large as well. By contrast, EM exporters endogenously choose
+whether to price in dollars or in their own home currency , with
+this choice represented by ηj, so when their exports b are large,
+the ultimate value of dollar-invoiced trade volume M$i is more up
+for grabs. In terms of the mechanics of the model, a a c t sa sa n
+exogenous anchor on the quantity of dollar-invoiced trade, and b
+serves as a feedback coefﬁcient—meaning that the higher b is,
+the stronger the feedback from the rest of the EM world’s export-
+pricing decisions to import-invoice quantities, and vice versa, and
+hence the stronger the strategic-complementarity effects that can
+give rise to multiple equilibria.
+By keeping a and b constant across all EM countries, we
+are effectively assuming that all EMs are equally exposed to the
+United States as a trading partner . This makes for a convenient
+simpliﬁcation, though it is straightforward to generalize. Finally ,
+we also assume that the market for dollar deposits is integrated,
+meaning that country-i citizens can obtain safe dollar claims from
+anywhere in the world. This ensures that the interest rate on dol-
+lar deposits offered by banks is the same across countries. By con-
+trast, home currency markets are segmented across the countries.
+These assumptions imply that the market-clearing conditions are
+given by:
+Bhi = Dhi
+BRi = ARi
+∫
+i
+B$i di + X$ =
+∫
+i
+D$i di.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 26 =====
+
+808 THE QUARTERL Y JOURNAL OF ECONOMICS
+FIGURE III
+Dollar Equilibria as the Volume of Imports from the United States Varies
+As just noted, for sufﬁciently large values of the invoicing-
+feedback coefﬁcient b, we can obtain multiple equilibria, with dif-
+fering degrees of dollar invoicing. Intuitively , if exporters in all
+countries j ̸= i price a lot of their sales in dollars, this raises the
+dollar invoice volume M$i facing country i importers—and more
+so if b is larger . Given this higher value of M$i, country i im-
+porters demand more dollar-denominated deposits, which tends
+to push down dollar interest rates. These low dollar rates in
+turn validate the original decision on the part of country j ex-
+porters to price in dollars; they do so precisely because it helps
+them tap more of the cheap dollar funding. This line of rea-
+soning explains how we can sustain an equilibrium where the
+dollar is used relatively intensively in both trade and bank-
+ing. Conversely , a less dollar-intensive equilibrium can also be
+self-sustaining. In this case, there is less invoicing in dollars,
+which lowers the demand on the part of importers for safe dollar
+claims, and therefore leads to higher interest rates on safe dol-
+lar claims. These higher rates in turn validate the choice on the
+part of exporters to do less in the way of pricing their exports in
+dollars.
+Proposition 4, which is proven in Online Appendix A.3
+and illustrated in Figures III and IV, formalizes this intu-
+ition. The proposition divides the parameter space into three
+regions, but now the exogenous parameter that deﬁnes the
+regions is a,n o t M. Recall again that a can be interpreted
+as the quantity of U .S. goods imported by the representative
+EM country .
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 27 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 809
+(B)
+(A)
+FIGURE IV
+Invoicing Decisions and Deposit Rates as the Volume of Imports from the United
+States Varies
+PROPOSITION 4. Deﬁne two cut-offs a and ¯a as:
+a ≡ X$ + γL N + θ ( ¯E − 1)
+ψδσ 2 − b
+¯a ≡ X$.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 28 =====
+
+810 THE QUARTERL Y JOURNAL OF ECONOMICS
+If the invoicing-feedback coefﬁcient b is large enough, specif-
+ically , if
+b >γ L N + θ ( ¯E − 1)
+ψδσ 2 ,
+then a < ¯a, and we can describe the solution of the model ac-
+cording to three regions. In the high- a region where a > ¯a,
+the only equilibrium is one where η = 1, and where there is
+mismatch, meaning that B$ >γ LN—that is, dollar deposits
+are backed both by dollar-invoiced projects and by local cur-
+rency projects. In the low- a region where a < a, there is an
+equilibrium with η = 0, and the equilibrium with both η = 1
+a n dm i s m a t c h(B$ >γ LN) does not exist. In the intermediate-
+a region where a < a < ¯a, both types of equilibria coexist. 18
+The values of all of the other endogenous variables in these
+two equilibria are the same as given by the corresponding
+expressions for the lower and upper ranges in Proposition 3.
+Speciﬁcally , whenη = 0, D$ = X$, Q$ − Qh =− δψσ 2(X$ − a),
+and when η = 1, D$ = (a + b) − θ( ¯E−1)
+ψδσ 2 , Q$ − Qh = θ ( ¯E − 1).
+There are two broad messages to take away from Proposition4
+and the accompanying ﬁgures. First, as EM imports coming from
+the United States—proxied for by the parameter a—gradually
+increase from zero, we eventually must obtain a discrete jump
+in the global role of the dollar , by a at the earliest, or by ¯ a at
+the latest. This jump occurs when other countries besides the
+United States start pricing some of their exports in dollars as well.
+When they do so, the dollar premium jumps also, and the lower
+interest rate on dollar safe claims is precisely what helps support
+the decision of non-U .S. exporters to price their sales in dollars.
+Second, because of these strategic complementarities, there can be
+some indeterminacy in the outcome when imports from the United
+States are in a middle range. This indeterminacy may leave the
+18. The statement of the proposition simpliﬁes things somewhat, in the fol-
+lowing sense. What we are calling the low- a region can in turn be divided into two
+subregions, with the addition of another cut-off ˜a = X$ + γL N − b < a.W h e na < ˜a,
+the only possible equilibrium is one with η = 0. And when ˜a ⩽ a ⩽ a, this zero- η
+equilibrium coexists with one where 0 <η< 1, but where there is no mismatch:
+B$ = ηγ LN. We are downplaying the no-mismatch equilibrium in the presentation
+here in part to streamline the exposition and in part because it is less empirically
+relevant, given the body of evidence on mismatch among corporate borrowers in
+emerging markets.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 29 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 811
+door open for historical factors to pin down what actually happens.
+We return to this point in more detail below .
+V. T HE DOLLAR VERSUS THE EURO:W ILL ONE CURRENCY
+DOMINATE?
+In this section, we explore the possibility of the emergence
+of a single globally dominant currency out of several possible al-
+ternatives. To do so, we need to create a level playing ﬁeld where
+we pit two candidate currencies against one another , and then
+ask what the potential outcomes are. This is what we do next. In
+particular , we consider a symmetric setting where there are two
+possible global currencies, the dollar and the euro, with identical
+economic fundamentals. The question we are most interested in
+is this: are there circumstances where, in spite of the symmetry
+in fundamentals, the equilibrium outcomes are asymmetric, with
+one global currency being used extensively by EM countries to
+invoice their exports and to ﬁnance projects, and the other global
+currency not being used at all in this way?
+It turns out that such asymmetric outcomes arise naturally
+in our framework, and they are driven by the same invoicing
+feedback mechanism that led to multiple equilibria in Proposi-
+tion 4. Intuitively , once one currency—say , the dollar—gets a bit
+of an edge in invoicing market share, this tends to feed on itself:
+as more global trade is invoiced in that currency , there is more
+demand for it as a safe store of value. This makes it a cheaper
+currency to borrow in, which leads exporters in search of lower
+borrowing costs to invoice their sales in that currency . Such a vir-
+tuous circle can entrench the dollar as the dominant currency and
+at the same time freeze out the euro, even if there is initially no
+fundamental difference between the two. 19
+V .A. Augmenting the Model
+To capture this all in the model, we make several adaptations
+that allow us to incorporate the euro alongside the dollar . There is
+19. He, Krishnamurthy , and Milbradt (2016)also study a model where strate-
+gic complementarities can strengthen the safe asset position of one currency rel-
+ative to another . In their setting, these complementarities run through the coor-
+dinated decisions of investors who must decide whether to roll over short-term
+sovereign debt claims. This contrasts with our model, where the complementari-
+ties run through the invoicing decisions of exporters. In other words, the role of
+goods trade, which is central in our story , is absent in theirs.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 30 =====
+
+812 THE QUARTERL Y JOURNAL OF ECONOMICS
+now an equal-sized exogenous external supply of dollar and euro
+safe assets available to emerging markets, that is X$ = X€ = X.
+The goods purchased by importers in EM country i can now be
+invoiced in either dollars or euros. Imports from the United States
+are priced in dollars, and those from the euro area are priced
+in euros. To maintain symmetry and create a level-playing-ﬁeld
+benchmark, we assume that the exogenous quantities of imports
+from the United States and the euro area are the same and equal
+to a. The quantity of imports invoiced in dollars is now given by
+M$i = a + b
+∫
+j̸=iη$jdj, where as before η$j is the fraction of the N
+export projects in country j that are invoiced in dollars. Similarly ,
+the quantity of imports invoiced in euros is given by M€i = a +
+b
+∫
+j̸=iη€jdj.
+Importers in EM country i maximize the same utility function
+as before, but now they have access to deposits denominated in
+euros as well as in dollars. The budget constraint of the importers
+therefore becomes:
+C0i = W − Qhi Dhi − Q$ D$i − Q€ D€i
+C1i = Dhi + E$1i D$i + E€1i D€i − E$1i a − E€1i a
+− E$1i
+∫
+j̸=i
+η$ j bdj − E€1i
+∫
+j̸=i
+η€ j bdj
+−
+∫
+j̸=i
+Eij (1 − η$ j − η€ j )bdj.
+Note that as before, E0(E$1) = E0(E€1) = 1,
+∫
+j Eij dj = 1, and we con-
+tinue to assume that the dollar and euro deposit markets are
+globally integrated.
+We also assume that the dollar and the euro are equally
+volatile with respect to the currencies of all EMs, and therefore
+that the maximally appreciated value of each is the same. That is,
+V0[E$1] = V0[E€1] = σ 2 and ¯E€i = ¯E$i = ¯E. These assumptions have
+the effect of making it equally costly to use local currency projects
+as collateral for either dollar or euro safe claims. Again, the goal
+here is to do everything we can to create a level playing ﬁeld
+between the dollar and the euro based on fundamental considera-
+tions. Finally , to keep things simple, we assume that the correla-
+tion between the two exchange rates is zero. We have also derived
+the more general case where the correlation is given by some
+ρ< 1. All the qualitative results described below carry through
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 31 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 813
+to this case, albeit at the cost of some additional notational
+complexity .
+Next we turn to the supply side. We can restate the aug-
+mented version of the bank’s problem as:
+max
+Bhi,B$i,B€i BRi,
+η$i,η€i
+E0
+[
+γ N0 + (1 − η$i − η€i )γ N + E$1iη$iγ N
++ E€1iη€iγ N − Bhi − E$1i B$i − E€1i B€i − BRi
+]
+,
+subject to
+Qhi Bhi + Q$ B$i + Q€ B€i + QRi BRi ⩾ N + N0
+¯E(B$i + B€i ) + Bhi ⩽ γL N0 + (1 − η$i − η€i )γL N + ¯E(η$i + η€i )γL N
+Bhi ⩽ γL N0 + (1 − η$i − η€i )γL N.
+The market-clearing conditions are now given by:
+Dhi =Bhi ∀i
+ARi =BRi ∀i
+∫
+i
+D$i di =
+∫
+i
+B$i di + X
+∫
+i
+D€i di =
+∫
+i
+B€i di + X.
+Before formally stating the full solution to this version of the
+model, it is useful to preview the types of outcomes that one can
+expect. Broadly speaking, depending on the value of the exogenous
+parameter a, three kinds of equilibria can arise. The ﬁrst is a
+symmetric zero- η equilibrium, where exporters do no pricing in
+either dollars or euros: η$i = η€i = 0. The second is a dual currency
+equilibrium, where exporters do some pricing in both dollars and
+euros: η$i > 0, η€i > 0. The third is an asymmetric dominant
+currency equilibrium, where exporters exclusively use only one of
+the two currencies (in addition to the relevant local currency) to
+price their exports: η$i > 0, η€i = 0o r η€i > 0, η$i = 0.
+If we focus for the moment on the dual currency equilib-
+ria, it is important to note that these can be of two subtypes.
+In the ﬁrst, there is no mismatch, meaning that the only source of
+collateral for dollar (euro) safe claims comes from exports invoiced
+in dollars (euros). In the second, there is mismatch, meaning that
+local currency projects are also used to back dollar and euro safe
+claims. These two subtypes correspond to the intermediate- M and
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 32 =====
+
+814 THE QUARTERL Y JOURNAL OF ECONOMICS
+high-M regions shown in Figure II for the partial-equilibrium
+version of the model. A key insight for what follows—and one that
+captures a central piece of the intuition of our model—is that in
+the current general-equilibrium setting, only the latter mismatch
+types of equilibria are generally stable. That is, if we start in
+a hypothesized dual currency equilibrium with no mismatch, a
+small deviation on the part of other EM countries will necessarily
+drive the invoicing choice in country i toward one of the extreme
+corner solutions: either ( η$,η €) = (1, 0) or (0, 1).
+To see this explicitly , note that, given the bang-bang nature of
+the invoicing decision, it is only possible to sustain η$i > 0, η€i > 0
+if interest rates in dollars and in euros are exactly equalized, that
+is, Q$ = Q€. Now consider how these interest rates are determined
+in the no-mismatch region of the parameter space. From the ﬁrst-
+order conditions of the importers in country i,w eh a v et h a t :
+Q$ = δ + δψσ 2(a + bη$,−i − D$i )(7)
+Q€ = δ + δψσ 2(a + bη€,−i − D€i )(8)
+Qh = δ.
+Consider a potential no-mismatch equilibrium where η$ > 0
+and η€ > 0 for all countries. Now think about the situation facing
+a given country i, if all other countries deviate slightly from the
+proposed equilibrium, so that η$,−i increases by a small amount,
+while η€,−i decreases by the same small amount. From the ﬁrst-
+order conditions, it follows that this deviation increases Q$ and
+reduces Q€. In other words, the deviation toward more dollar in-
+voicing increases the demand for dollar safe assets, and therefore
+drives dollar interest rates down relative to euro interest rates.
+But once we no longer have Q$ = Q€, it is no longer possible to
+sustain an equilibrium with positive amounts of invoicing in both
+dollars and euros, and indeed, given the linearity of the problem
+they face, banks in country i will switch all the way toward an
+extreme invoicing choice of η$i = 1, η€i = 0. This demonstrates
+that any potential dual-currency equilibrium with no mismatch
+is not robust to such small deviations. This is what we mean when
+we say that such equilibria are unstable.
+By contrast, in the mismatch region of Figure II , which oc-
+curs, when M is sufﬁciently high—it can be seen that Q$ is a con-
+stant, and therefore independent of η$. It follows that a deviation
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 33 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 815
+by other countries that increasesη$−i has no effect on the incentive
+for country i to invoice its exports in dollars; in other words, dη$i
+dη$−i
+=
+0, which implies that symmetric equilibria with mismatch are
+always stable.
+If we restrict attention to such always-stable equilibria, it
+turns out that for any given value of a, it is possible that more
+than one type of equilibrium can be sustained. For example, for
+some values of a, it might be the case that we can have both a
+symmetric zero-η equilibrium, as well as an asymmetric dominant
+currency equilibrium. Nevertheless, the symmetric zero-η equilib-
+rium is more likely to arise when a is relatively low , whereas the
+dual currency equilibrium with mismatch is more likely to arise
+when a is high. The asymmetric dominant currency equilibria are
+most prevalent for intermediate values of a. Intuitively , this is
+because the parameter a proxies for the exogenous component of
+nonhome-currency invoicing, and hence the generalized demand
+for safe claims denominated in some nonhome currency , be it the
+euro or the dollar . When this demand is very low , this tends to
+produce outcomes where neither the dollar nor the euro plays an
+important role in global trade. When it is very high, we can get sit-
+uations where both are prominently used. But in the intermediate
+region—and this is of particular interest to us—it can effectively
+be the case that while there is enough safe-asset demand to sus-
+tain one global currency , there is not enough to sustain two. This
+is what can lead to there being a single dominant currency . In
+Online Appendix A.4 we prove:
+PROPOSITION 5. (Dominant Currency ). Consider a symmetric
+setting where the United States and the eurozone have the
+same shares in global trade: a$ = a€ = a. Deﬁne four cutoffs
+as:
+¯an ≡ X, as ≡ X + γL N + θ ( ¯E − 1)
+δψσ 2 − b,
+¯as ≡ X + θ ( ¯E − 1)
+δψσ 2 , ab ≡ X + θ ( ¯E − 1)
+δψσ 2 + γL N
+2 − b
+2.
+¯an is the cut-off for a below which a symmetric zero- η equi-
+librium can be sustained and above which it cannot; ab is
+the cut-off above which a symmetric positive η equilibrium is
+sustainable but below which it is not; as is the cut-off above
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 34 =====
+
+816 THE QUARTERL Y JOURNAL OF ECONOMICS
+FIGURE V
+Possible Equilibrium Conﬁgurations for η$i, η€i as a Function of a
+which an asymmetric dominant currency equilibrium is sus-
+tainable, while it is not above ¯ as.20
+From simple inspection of the four cut-offs in Proposition 5,
+it follows that all the cut-offs shift leftward with a lower supply
+of exogenous dollar/euro safe assets. This follows because a lower
+X reduces the exogenous supply of such assets, making it attrac-
+tive for EM banks to produce these assets. The range of values of
+a for which an equilibrium with either an asymmetric dominant
+currency or a symmetric positive η can be sustained is greater the
+higher is the feedback coefﬁcient b. Higher volatility has an am-
+biguous effect. On the one hand, raising volatility ( σ 2) increases
+importers’ demand for foreign currency safe assets, while on the
+other hand a higher worst-case (depreciated) value ¯E reduces the
+attractiveness to EM banks of issuing safe foreign currency claims.
+If the invoicing feedback coefﬁcient b falls within the following
+region
+θ ( ¯E − 1)
+δψσ 2 + γL N < b < 2θ ( ¯E − 1)
+δψσ 2 + γL N.
+the cutoffs satisfy as < ¯an < ab < ¯as. We can then describe the sta-
+ble equilibria of the model according to ﬁve regions, as depicted
+in Figure V . In the ﬁrst region, where a < as, the only possible
+outcome is a symmetric zero- η equilibrium in which there is no
+20. Note that because of the bang-bang nature of the solution for η,i nt h ed u a l
+currency equilibrium the speciﬁc values of η$ and η€ are indeterminate. In this
+proposition we consider the case where η$ = η€. However these conditions can be
+rederived for any other split of η and the main insights are unchanged.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 35 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 817
+TABLE I
+PARAMETER VALUES
+Parameter βδ ψ NN 0 Xb γ L E[γ ] σ ¯E ρ W
+Value 0.75 0.8 0.8 2.6 10 0.3 1.6 0.55 1.4 0.55 3.8 0.05 10
+dominant currency . In the second region, where as < a < ¯an,t h i s
+equilibrium coexists with an asymmetric dominant currency equi-
+librium, where only one of the two η’s is positive. In the third
+region where ¯ an < a < ab, the asymmetric dominant currency
+equilibrium is the unique stable outcome. In the fourth region,
+where ab < a < ¯as, the asymmetric dominant currency equilib-
+rium coexists with a symmetric positive- η equilibrium, where ex-
+porters do some pricing in both dollars and euros: η$i = η€i > 0,
+and where there is mismatch in both currencies. Finally , in the
+ﬁfth region where a > ¯as, the symmetric positive- η equilibrium is
+the unique outcome.
+Again, what is particularly noteworthy about this ordering is
+that there is an intermediate range of values of a—namely , where
+¯an < a < ab—where the only possible equilibrium is one with a
+single dominant currency .
+V .B. Numerical Example
+In this section we provide a detailed numerical example that
+generates the same ordering of cut-offs as in Figure V . The pa-
+rameters used are listed in Table I.
+As Figure VI shows, in the no-dominant-currency case, which
+is the short-dashed (blue) line labeled “Both =0,” we have that
+η = 0a n d B$ = B€ = 0. There is no incentive to invoice in a global
+currency , as Q$ − Q = Q€ − Q < 0. In this range as a increases
+the negative gap between the dollar (euro) bond price and the
+EM bond declines as a consequence of the exogenous increase in
+demand for dollar and euro safe assets. The dollar’s invoice share
+in total imports, ˆα$, and the euro’s share, ˆα€, both increase by the
+same amount with the exogenous increase in a.21
+In the case of a single dominant currency , depicted by the
+long-and-short dashed (yellow) line marked “One >0,” there is
+positive invoicing in one of the two global currencies, whose η is
+21. The two invoicing shares are deﬁned as ˆ α$ ≡
+a+bη$
+2a+bη$+bη€+b(1−η$−η€) and
+ˆα€ ≡
+a+bη€
+2a+bη$+bη€+b(1−η$−η€) , respectively .
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 36 =====
+
+818 THE QUARTERL Y JOURNAL OF ECONOMICS
+(F)(E)
+(D)(C)
+(B)(A)
+FIGURE VI
+Numerical Example
+plotted. For the purposes of discussion, we assign this dominant
+role to the dollar . The euro is not used in trade invoicing, and
+EM banks do not create any safe euro claims. This difference in
+dollar and euro invoicing leads to a divergence between the in-
+voice market shares ˆα$ and ˆα€, with the former jumping sharply
+relative to the no-dominant-currency case because of the endoge-
+nous increase in dollar invoicing, while the latter falls. Indeed, the
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 37 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 819
+(J) Euro Mismatch(I) Dollar Mismatch
+(H) Euro exorbitant privilege(G) Dollar exorbitant privilege
+FIGURE VI
+(Continued)
+dollar invoicing share exceeds the euro invoicing share for all val-
+ues of a for which this asymmetric equilibrium is sustainable.
+Consistent with this, in this equilibrium, Q$ − Qh is always pos-
+itive and exceeds Q€ − Qh. More subtly , Q€ − Qh is negative for
+lower values of a and then turns positive, but even at this point
+there is still no incentive to invoice in euros as long asQ€ < Q$. The
+ﬁgures also illustrate that in this equilibrium the bank-exporter
+coalition bears a dollar currency mismatch—in the sense that dol-
+lar deposits exceed dollar-denominated collateral—and there is
+no euro mismatch. In addition, the quantity of trade invoiced in
+dollars, M$, greatly exceeds that coming from the United States,
+a, while the two quantities are exactly equal for the euro. This is
+very much in line with the empirical evidence on trade invoicing.
+The case of dual dominant currencies is graphed as the solid
+(orange) line labeled “Both>0.” Nowη represents invoicing in both
+dollars and euros, and it is symmetric and constant over this
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 38 =====
+
+820 THE QUARTERL Y JOURNAL OF ECONOMICS
+range.22 The size of the exorbitant privilege and the extent of
+currency mismatch are now also identical across dollars and euros.
+The vertical lines demarcate the regions that support the different
+equilibria.
+V .C. Which Currency Dominates? The Role of History
+As discussed, we are particularly interested in asymmetric
+dominant currency equilibria, where exporters exclusively use
+only one of the two currencies (in addition to the relevant local
+currency) to price their exports: either η€ = 0, η$ > 0, or η€ >
+0, η$ = 0. Our interest is motivated by the fact that the former
+conﬁguration aligns very closely with what we observe in reality .
+In particular , although the United States and eurozone economies
+are the two largest in the world, trade invoicing by all countries
+other than these two skews almost entirely to the dollar: as noted
+in the introduction, the volume of international trade that is in-
+voiced in dollars is several times that of imports coming from the
+United States, while the volume of trade that is invoiced in eu-
+ros is very similar to that of imports coming from the eurozone. 23
+Since the η’s correspond precisely to export pricing decisions made
+in countries other than the United States and Europe, it appears
+that we are in a situation that is strikingly similar to what the
+model envisions in an equilibrium with η€ = 0.
+However , although the model suggests that we may well wind
+up in an asymmetric equilibrium where one currency dominates
+in this lopsided fashion, it is unable to speak to which currency
+that will be, given that it treats the United States and Europe
+as being identical on all fundamental dimensions. Taken literally ,
+the model says that the outcome is indeterminate.
+To break this indeterminacy , it may be useful to consider cases
+where the fundamentals differ across the United States and Eu-
+rope, and to assign a role to history . Here is what we have in
+mind. If one steps away from the symmetric case where the United
+22. For the parameter values in this example, we have veriﬁed numerically
+that any symmetric dual currency equilibrium without mismatch is indeed unsta-
+ble, as per our discussion. This is why such equilibria do not appear anywhere in
+Figure VI.
+23. The eurozone refers to the 19 countries that use the euro as their common
+currency . Deﬁned this way , the largest “countries” by GDP as of 2016 were, in
+descending order: the United States, the euro area, China, Japan, and the United
+Kingdom.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 39 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 821
+States and European shares in imports of other countries are the
+same—that is, where a$ = a€—for a wide range of parameter
+values there can be just a single deterministic equilibrium out-
+come. We analyze this asymmetric-fundamentals case in Online
+Appendix A.5, and show , for example, that if a$ is much larger
+than a€, it may well be that the only equilibrium is one where
+η€ = 0, η$ > 0. In the case of the United States and Europe, some-
+thing like this might have been a good description of the situation
+that existed before the formation of eurozone in 1999, when all
+the member countries had their own currencies, and the largest
+individual member , Germany , had a GDP only about a ﬁfth that
+of the United States. So applied to the pre-eurozone period, our
+model might well have predicted that the only possible equilib-
+rium outcome was one in which the dollar was the lone dominant
+currency .
+Now suppose that after the eurozone forms, it is large enough
+so that given current parameter values, the model admits two
+equilibrium outcomes: one where the dollar is dominant, and one
+where the euro is dominant. Which of the two is likely to actu-
+ally obtain? To the extent that there is any history dependence, it
+would naturally seem to be the dollar-dominant equilibrium. In
+other words, any time we are faced with multiple possible equi-
+librium outcomes at some date t, a plausible selection mechanism
+would be to go back in time to the ﬁrst date prior to t when one of
+those equilibria is uniquely pinned down by the model, and posit
+that it then remains as the focal equilibrium until the parameters
+change to the point where it is no longer viable.
+If one accepts this line of reasoning, it suggests that even if the
+European economy grows to the point where it catches up with—
+or even somewhat surpasses—the United States, this may not be
+enough to dislodge the now-entrenched dollar from its dominant
+currency perch. According to the dynamic equilibrium selection
+process outlined above, this might require the European economy
+to get substantially bigger than the United States, to the point
+where η€ > 0, η$ = 0 becomes the unique equilibrium outcome. Of
+course, exactly the same observations apply if, instead of Europe,
+one asks about the prospects for the Chinese renminbi to become
+a globally dominant currency: even as its fundamentals approach
+those of the United States, it is likely to be handicapped by history ,
+which we would argue can play an important role in selecting the
+equilibrium in a setting like that of our model.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 40 =====
+
+822 THE QUARTERL Y JOURNAL OF ECONOMICS
+We can also consider the case where the exogenous supply
+of safe assets differs across the two countries, that is, X$ ̸= X€.
+As shown in Online Appendix A.5.2, as the relative supply of
+safe assets increases for a country , all else equal, this reduces its
+ability to become a dominant currency . That is, an increase in the
+supply of euro safe assets, without any change in demand for euro
+safe assets, will lead to an increase in interest rates on euro safe
+assets and thereby reduce the incentive of EM banks to produce
+euro safe assets and of EM exporters to invoice in euros. It has
+often been argued that issuing a euro safe bond can help with
+internationalization of the euro. Interestingly , in the context of
+our model if such an issuance does not increase the demand for
+euro safe bonds it does not help with internationalization.
+VI. F URTHER IMPLICATIONS
+VI.A. Historical Perspectives
+As described in Eichengreen, Mehl, and Chitu (2017) ,t h e
+pound was the dominant global currency prior to World War I,
+with over 60% of world trade invoiced, ﬁnanced, and settled in
+pounds. This was despite the fact that the U .S. economy had al-
+ready overtaken Britain as the world’s largest economy (in the
+1870s) and was almost as large as Britain in world trade. Things
+changed quickly over the decade 1914–1924, when the dollar re-
+placed the pound as the leading international currency . According
+to Eichengreen, Mehl, and Chitu (2017) , this transition was trig-
+gered by two events: by the Federal Reserve Act of 1913 that
+allowed U .S. banks to deal in instruments of trade credit (also
+known as “bankers acceptances”) and by World War I, which was
+relatively more disruptive to Britain and British trade.
+Importantly , the Federal Reserve played an active role in fos-
+tering the market for trade credit in dollars, in the expectation
+that this would lead to the use of the dollar in the invoicing and
+settlement of international trade. Speciﬁcally , a policy decision
+was taken to make dollar trade credit available at concession-
+ary rates, and as a result, between 1917 and 1930 the Federal
+Reserve held over half of all trade acceptances. In the language
+of our model, such a policy can be thought of as an increase in
+a$, the exogenous component in the quantity of dollar-invoiced
+imports facing other countries. As we have shown, a small change
+in this parameter can lead to a large and abrupt change in the
+global role of the currency—both for invoicing decisions taken by
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 41 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 823
+exporters in other countries, as well as for the investment and
+ﬁnancing decisions of ﬁrms, banks, and households in these coun-
+tries. Thus our model offers one lens through which to interpret
+the rapid takeover of the dollar from the pound in the early part
+of the twentieth century .24
+The ability of a currency to dominate will of course depend
+on the strength of its ﬁnancial and monetary institutions, the
+stability of its currency , and the liquidity of its markets. However ,
+historical efforts to globalize a currency have often started with an
+emphasis on the domain of international trade, as emphasized by
+Eichengreen (2010) . This historical observation again highlights
+the key linkage between the role of a currency in trade invoicing
+and its role in banking and ﬁnance, which is the central focus of
+our article.
+With China now one of the largest economies in the world, and
+the biggest exporter , it appears that Chinese ofﬁcials are taking
+these historical lessons to heart in their efforts to international-
+ize the renminbi. Similar to the U .S. interventions in the early
+twentieth century , they have proceeded by encouraging the use of
+the renminbi in international trade transactions. Following this
+push, between 2010 and 2015 the renminbi’s share as a settle-
+ment currency in China’s trade has gone from 0% in 2010 to 25%
+in 2015. 25 In addition as documented in Eichengreen, Mehl, and
+Chitu (2017), the renminbi surpassed the euro in 2013 as the sec-
+ond most widely used currency in global trade ﬁnance, although
+it has since fallen back to third place.
+Nevertheless, the renminbi currently remains far behind
+other major currencies in international ﬁnancial transactions un-
+related to trade. What might the future hold? In the medium
+term, the self-reinforcing mechanisms in our model might lead
+one to predict that the dollar’s dominance would continue largely
+undisturbed, and that the renminbi would have a hard time gain-
+ing much traction in international banking and ﬁnance. However ,
+in the longer run, if the gap between Chinese and U .S. shares
+in world exports widens far enough, we could eventually get to a
+point where a renminbi-dominant equilibrium becomes inevitable.
+24. The ranking of the dollar and pound again switched in the 1930s as the
+Great Depression was more severe for the United States, and trade collapsed more
+for the United States compared with Britain. In the 1950s the dollar once again
+took over as the world’s leading currency , and has remained in that position since.
+25. Less is known about the extent of invoicing in RMB.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 42 =====
+
+824 THE QUARTERL Y JOURNAL OF ECONOMICS
+At this point, the dollar’s share in global trade and ﬁnance could
+potentially decline quite sharply .
+VI.B. Cross-Country Empirical Evidence
+A fundamental premise of the article is that a currency’s role
+as a unit of account is complementary to its role as a store of value.
+In this subsection, we test a simple cross-sectional version of this
+hypothesis.
+To get started, note that in any equilibrium of our model,
+if we generalize to allow the invoicing volumes M$i and M€i to
+vary across countries, the ﬁrst-order conditions for importers in
+country i imply that:
+(9) D$i
+D€i
+=
+M$i − 1
+ψδσ 2
+(
+Q$ − Qhi
+)
+M€i − 1
+ψδσ 2 (Q€i − Qhi)
+.
+In other words, if importers in country i have a greater volume
+of their imports invoiced in dollars—relative to euros—than im-
+porters in country j, they will hold a greater share of their deposits
+in dollars as well, all else equal. This is intuitive, since dollar de-
+posits are effectively held to hedge the exchange rate risk asso-
+ciated with dollar-priced imports. To operationalize a test of this
+prediction, we need to make two assumptions. First, country i im-
+porters keep their deposits in country i banks. Second, recalling
+that D$i = B$i + X$i, where X$i denotes holdings by country i im-
+porters of U .S. Treasury securities and the like, we need to assume
+that investments by importers in these securities are intermedi-
+ated through the banking system, rather than being directly held.
+This implies that the asset side of bank balance sheets in country
+i includes not only their real projects but also the X$i.
+With these assumptions in place, the mapping from the theory
+to the data is straightforward. From Gopinath (2015) we have
+data at the country level on import invoice shares in different
+currencies. From the BIS Locational Banking Statistics, we can
+compute for any country in the data set the fraction of foreign
+currency local banking liabilities that are denominated in dollars.
+To be clear , for a given country i, these numbers are based on
+all banks domiciled in i, be they locally headquartered banks or
+subsidiaries of foreign bank holding companies.
+In the top panel of Figure VII , we plot this measure against
+the share of a country’s foreign currency–invoiced imports that
+are denominated in dollars. Our sample includes all countries for
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 43 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 825
+(B)
+(A)
+FIGURE VII
+Dollar Share in Trade Invoicing and Banks’ Local Foreign Currency Liabilities
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 44 =====
+
+826 THE QUARTERL Y JOURNAL OF ECONOMICS
+which both of these data series are available, with the following
+exceptions. First, we exclude eurozone countries and the United
+States, to ensure that we are not simply capturing the fact that
+countries use their own currency in trade and in ﬁnance. Second,
+we also exclude Brazil and India because they place strong re-
+strictions on foreign currency deposits by private agents. These
+restrictions leave us with a sample of only 10 countries. However ,
+if we drop the restrictions and include all countries for which the
+data is available, the correlation depicted in the ﬁgure becomes
+even more pronounced. As it is, the 10-country sample already
+yields a very strong correlation, with the regression having an
+R-squared of 0.72. We also observe that it is those countries that
+are geographically closer to the eurozone and that trade heav-
+ily with eurozone countries—namely , Denmark, Norway , Sweden,
+and Switzerland—that, unsurprisingly , have both lower dollar in-
+voicing of their imports and fewer dollar-denominated banking
+sector liabilities.
+In the lower panel of Figure VII, we attempt to create an al-
+ternative measure of banking activity that is somewhat cleaner
+relative to the theory we have in mind; we do so by restricting
+attention to banking liabilities in the subcategory “loans and de-
+posits,” and where the counterparty (i.e., the party making the
+loan to the bank in question) is itself a nonbank institution. The
+aim here is to eliminate interbank lending transactions, and other
+wholesale sources of funding that are less likely to come from lo-
+cal depositors. This reﬁnement cuts our sample down from 10 to 8
+countries, but leads to a very similar picture: the R-squared of the
+regression is now 0.82. Thus either way , there seems to be a strong
+empirical association at the country level between dollar-invoiced
+imports and dollar-denominated bank deposits.
+VI.C. Central Bank Reserve Holdings
+In Gopinath and Stein (2018b) , we extend the model of this
+article to incorporate an explicit role for central bank reserve hold-
+ings. To do so, we relax the assumption that banks always main-
+tain enough collateral to render their deposits completely riskless
+in all states of the world. Instead, there is a rare banking crisis
+state in which the local currency depreciates against the dollar
+and in which a fraction of banks fail and need to have their de-
+posits bailed out by the government. The government can ﬁnance
+this bailout in one of two ways: it can impose distortionary taxes
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 45 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 827
+ex post on its citizens, or it can draw on a previously accumu-
+lated stockpile of foreign exchange reserves. The key proposition
+is that the larger is the share of dollar (as opposed to local cur-
+rency) deposits in bank liabilities, the more the government—that
+is, the central bank—will choose to rely on dollar reserves to ﬁ-
+nance bailouts, as opposed to ex post taxation. This is because if
+a banking crisis tends to occur when the local currency is depre-
+ciating against the dollar , bailing out dollar deposits can require
+imposing very large ex post taxes, whereas holding dollar reserves
+effectively hedges against the currency risk associated with being
+a lender of last resort to a dollarized banking system.
+Consistent with this proposition, we show that in a sample
+of 15 countries for which the data are available, there is a strong
+correlation between the dollar’s share in import invoicing, and
+its share in central bank foreign exchange reserves. Combined
+with the evidence in the previous subsection, this suggests that
+a country’s import invoice share not only inﬂuences the liabil-
+ity structure of its commercial banks but also affects the reserve
+holding decisions of its central bank.
+VII. C ONCLUSION
+The central theme of this article is that there is a funda-
+mental connection between the dollar’s role as the currency in
+which non-U .S. exporters predominantly invoice their sales, and
+its prominence in global banking and ﬁnance. Moreover , these two
+roles feed back on and reinforce each other . Going in one direction,
+a large volume of dollar invoicing in international trade creates an
+increased demand for safe dollar deposits, thereby conferring an
+exorbitant privilege on the dollar in terms of reduced borrowing
+costs. Going in the other direction, these low dollar-denominated
+borrowing costs make it attractive for non-U .S. exporters to in-
+voice their sales in dollars, so they can more easily tap the cheap
+dollar funding. The end result of this two-way feedback can be
+an asymmetric entrenchment of the dollar as the global currency
+of choice, even when other countries are roughly similar to the
+United States in terms of economic fundamentals such as their
+share of overall worldwide imports.
+Looking to the future, the self-reinforcing asymmetric equi-
+librium outcomes that we have highlighted carry a double-edged
+message about the dollar’s potential prospects in a changing
+world. As noted, the model suggests that the dollar’s dominance
+is likely to be quite resilient in the medium run, even in the face
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 46 =====
+
+828 THE QUARTERL Y JOURNAL OF ECONOMICS
+of rapid growth in global exports from other leading economies
+like those of Europe and China. However , in the longer run, if the
+gap between the United States and one of these other economies
+widens far enough, the dollar may potentially fall off the world
+stage to a very substantial extent, much as the British pound
+sterling did in the early part of the twentieth century . In other
+words, change may be slow to come, but when it ﬁnally does, the
+forces in our model suggest that the change may well be quite
+dramatic in magnitude.
+Our model can also provide a lens through which to analyze
+recent developments in digital currencies. Potential new curren-
+cies, like Facebook’s Libra, are designed for use in retail payments.
+With large enough scale (in this case Facebook’s 2.4 billion user
+base), one could envisage a scenario where prices are invoiced in
+Libra and where this in turn generates a demand for Libra safe as-
+sets, which then triggers further invoicing in Libra, and so on. Of
+course, the emergence of a dominant Libra-like currency would
+require that it be sufﬁciently liquid and stable in value, issues
+that we have taken as given in our analysis but that cannot be
+assumed away for novel would-be currencies.
+HARVARD UNIVERSITY AND NATIONAL BUREAU OF ECONOMIC RE-
+SEARCH
+HARVARD UNIVERSITY AND NATIONAL BUREAU OF ECONOMIC RE-
+SEARCH
+SUPPLEMENTARY MATERIAL
+An Online Appendix for this article can be found at The
+Quarterly Journal of Economics online.
+DATA AVAILABILITY
+Data replicating the ﬁgures in this article can be found
+in Gopinath and Stein (2020) , in the Harvard Dataverse doi:
+10.7910/DVN/CI13SP .
+REFERENCES
+Aguiar, Mark, “Investment, Devaluation, and Foreign Currency Exposure: The
+Case of Mexico,” Journal of Development Economics , 78 (2005), 95–113.
+Baskaya, Yusuf Soner, Julian di Giovanni, Sebnem Kalemli-Ozcan, and Mehmet
+Fatih Ulu, “International Spillovers and Local Credit Cycles,” NBER Working
+Paper no. 23149, 2017.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 47 =====
+
+BANKING, TRADE, AND DOMINANT CURRENCY 829
+BIS Locational Banking Statistics, Bank for International Settlements, Retrieved
+November 8, 2017, from https://www .bis.org/statistics/full_data_sets.htm.
+Bocola, Luigi, and Guido Lorenzoni, “Financial Crises and Lending of Last Resort
+in Open Economies,” NBER Working Paper no. 23984, 2017.
+Brauning, Falk, and Victoria Ivashina, “Monetary Policy and Global Banking,”
+NBER Working Paper no. 23316, 2017.
+Chahrour, Ryan, and Rosen Valchev, “International Medium of Exchange: Privi-
+lege and Duty ,” SSRN Working Paper , 2017.
+Devereux, Michael B., and Shouyong Shi, “Vehicle Currency ,” International Eco-
+nomic Review, 54 (2013), 97–133.
+Doepke, Matthias, and Martin Schneider , “Money as a Unit of Account,” Econo-
+metrica, 85 (2017), 1537–1574.
+Du, Wenxin, and Jesse Schreger, “Sovereign Risk, Currency Risk, and Corporate
+Balance Sheets,” Working Paper no. 209056, Harvard University OpenScholar ,
+2014.
+ECB Staff, “The International Role of the Euro,” European Central Bank technical
+report, 2017.
+Eichengreen, Barry, “The Renminbi as an International Currency ,” UC Berkeley
+Working Paper, 2010.
+Eichengreen, Barry, Arnaud Mehl, and Livia Chitu, How Global Currencies Work
+(Princeton, NJ: Princeton University Press, 2017).
+Engel, Charles, “Equivalence Results for Optimal Pass-Through, Optimal Index-
+ing to Exchange Rates, and Optimal Choice of Currency for Export Pricing,”
+Journal of European Economic Association , 4 (2006), 1249–60.
+———, “Exchange Rates and Interest Parity ,” in Handbook of International Eco-
+nomics, Gita Gopinath, Elhanan Helpman, and Kenneth Rogoff, eds. (Amster-
+dam: Elsevier , 2014), 453–522.
+Farhi, Emmanuel, and Matteo Maggiori, “A Model of the International Monetary
+System,”Quarterly Journal of Economics , 133 (2018), 295–355.
+Friberg, Richard, “In Which Currency Should Exporters Set Their Prices?,” Jour-
+nal of International Economics , 45 (1998), 59–76.
+Galindo, Arturo, Ugo Panizza, and Fabio Schiantarelli. “Debt Composition and
+Balance Sheet Effects of Currency Depreciation: A Summary of the Micro
+Evidence,”Emerging Markets Review , 4 (2003), 330–339.
+Gilmore, Stephen, and Fumio Hayashi, “Emerging Market Currency Excess Re-
+turns,”American Economic Journal: Macroeconomics , 3 (2011), 85–111.
+Goldberg, Linda, and Cedric Tille, “Vehicle Currency use in Intern,ational Trade,”
+Journal of International Economics , 76 (2008), 177–192.
+———, “A Bargaining Theory of Trade Invoicing and Pricing,” Kiel Working Paper
+no. 1839, 2013.
+Gopinath, Gita, “The International Price System,” in Jackson Hole Symposium ,
+vol. 27 (Kansas City: Federal Reserve Bank at Kansas City, 2015).
+Gopinath, Gita, Oleg Itskhoki, and Roberto Rigobon, “Currency Choice and
+Exchange Rate Pass-Through,” American Economic Review , 100 (2010),
+306–336.
+Gopinath, Gita, and Jeremy C. Stein, “Banking, Trade, and the Making of a Dom-
+inant Currency ,” NBER Working Paper no. 24485, 2018a.
+———, “Trade Invoicing, Bank Funding, and Central Bank Reserve Holdings,”
+American Economic Review Papers and Proceedings , 108 (2018b), 542–546.
+———, “Replication Data for: ‘Banking, Trade, and the Making of a Dominant
+Currency’,” (2020), Harvard Dataverse, doi: 10.7910/DVN/CI13SP.
+Gorton, Gary, and George Pennacchi, “Financial Intermediaries and Liquidity
+Creation,”Journal of Finance , 45 (1990), 49–71.
+Gourinchas, Pierre-Olivier, and H ´el`ene Rey, “Exorbitant Privilege and Exorbitant
+Duty ,” IMES Discussion Paper Series, 2010.
+———, “From World Banker to World Venture Capitalist: U .S. External Adjust-
+ment and the Exorbitant Privilege,” in G7 Current Account Imbalances: Sus-
+tainability and Adjustment , (Cambridge, MA: National Bureau of Economic
+Research, 2007), 11–66.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 48 =====
+
+830 THE QUARTERL Y JOURNAL OF ECONOMICS
+Hassan, Tarek A., “Country Size, Currency Unions, and International Asset Re-
+turns,”Journal of Finance , 68 (2013), 2269–2308.
+He, Zhiguo, Arvind Krishnamurthy, and Konstantin Milbradt, “A Model of Safe
+Asset Determination,” NBER Working Paper no. 22271, 2016.
+Ivashina, Victoria, David S. Scharfstein, and Jeremy C. Stein, “Dollar Funding
+and the Lending Behavior of Global Banks,” Quarterly Journal of Economics ,
+130 (2015), 1241–1281.
+Kalemli-Ozcan, Sebnem, Herman Kamil, and Carolina Villegas-Sanchez, “What
+Hinders Investment in the Aftermath of Financial Crises: Insolvent Firms or
+Illiquid Banks?,” Review of Economics and Statistics , 98 (2016), 756–769.
+Maggiori, Matteo, “Financial Intermediation, International Risk Sharing, and Re-
+serve Currencies,” American Economic Review , 107 (2017), 3038–3071.
+Matsuyama, Kiminori, Nobuhiro Kiyotaki, and Akihiko Matsui, “Toward a Theory
+of International Currency ,”Review of Economic Studies , 60 (1993), 283–307.
+Niepmann, Friederike, and Tim Schmidt-Eisenlohr, “Foreign Currency Loans and
+Credit Risk: Evidence from U .S. Banks,” SSRN Working Paper, 2017.
+Obstfeld, Maurice, Jay C. Shambaugh, and Alan M. Taylor , “Financial Stabil-
+ity , the Trilemma, and International Reserves,” American Economic Journal:
+Macroeconomics, 2 (2010), 57–94.
+Rampini, Adriano A., and S. Viswanathan, “Collateral, Risk Management, and the
+Distribution of Debt Capacity ,”Journal of Finance , 65 (2010), 2293–2322.
+Rampini, Adriano A., S. Viswanathan, and Guillaume Vuillemey , “Risk Manage-
+ment in Financial Institutions,” The Journal of Finance , 75 (2020), 591–637.
+Rey, H ´el`ene, “International Trade and Currency Exchange,” Review of Economic
+Studies, 68 (2001), 443–464.
+Shin, Hyun Song, “Global Banking Glut and Loan Risk Premium,” IMF Economic
+Review, 60 (2012), 155–192.
+Stein, Jeremy C., “Monetary Policy as Financial Stability Regulation,” Quarterly
+Journal of Economics , 127 (2012), 57–95.
+Downloaded from https://academic.oup.com/qje/article/136/2/783/5941506 by DO NOT USE Institute of Education merged with 9000272 user on 01 July 2026
+
+
+===== PAGE 49 =====
+
+CALL FOR NOMINATIONS
+Northwestern University invites nominations for the Erwin Plein Nemmers Prize in Economics, to be 
+awarded during the 2026–27 academic year. The prize pays the recipient $300,000. Recipients of the  
+Nemmers Prize present lectures, participate in department seminars, and engage with Northwestern faculty 
+and students in other scholarly activities.
+Details about the prize and the nomination process can be found at nemmers.northwestern.edu. Candidacy 
+for the Nemmers Prize is open to those with careers of outstanding achievement in their disciplines as  
+demonstrated by major contributions to new knowledge or the development of significant new modes of  
+analysis.Individuals of all nationalities and institutional affiliations are eligible except current or recent  
+members of the Northwestern University faculty and past recipients of the Nemmers or Nobel Prize.  
+Nominations will be accepted until January 14, 2026.
+The Nemmers prizes are made possible by a generous gift to Northwestern University by the late Erwin Esser 
+Nemmers and the late Frederic Esser Nemmers.
+$300,000 Nemmers Prize in Economics 
+Nemmers Prizes • Office of the Provost • Northwestern University • Evanston, Illinois 60208
+nemmers.northwestern.edu

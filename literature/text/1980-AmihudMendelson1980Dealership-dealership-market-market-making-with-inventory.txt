@@ -1,0 +1,848 @@
+
+
+===== PAGE 1 =====
+
+Journal of Fmancml Economics 8 (1980) 31-53 Q North-Holland Pubhshmg Company 
+DEALlEjRSHIP MARKET 
+Market-Making with Inventory* 
+Yakov AMIHUD 
+Tel-Avlv Umversrty, Tel-Avru, Israel 
+Columbia Umuersrty, New York, NY 10027, USA 
+Halm MENDELSON 
+Unrversrty of Rochester, Rochester, NY 14627, USA 
+Received July 1979, final version received January 1980 
+This study considers the problem of a pruze-settmg monopohstlc market-maker m a dealershlp 
+market where the stochastic demand and supply are depIcted by prlcedependent Poisson 
+processes [followmg Garman (1976)] The crux of the analysis IS the dependence of the b&ask 
+prices on the market-maker’s stock Inventory posltlon We derive the optlmal pohcy and Its 
+characterlstlcs and compare It to Garman’s The results are shown to be consistent with some 
+coqectures and observed phenomena, hke the existence of a ‘preferred’ mventory posItIon and 
+the downward monotomclty of the bid-ask prices For hnear demand and supply functions we 
+derlve’the behavior of the bid-ask spread and show that the transactlon-to-transactlon price 
+behavior 1s mtertemporally dependent However, we prove that It IS lmposslble to make a profit 
+on this price dependence by tradmg agamst the market-maker Thus, m this sltuatlon, serially 
+dependent price-changes are consistent with the market etliclency hypothesis 
+1. Introduction 
+The microstructure of non-Walraslan dealership markets IS a SubJect of 
+growing interest The mam issue m question IS the impact of the actlvltles of 
+a market-maker, acting on his own behalf (SubJect to institutional and ethical 
+constraints) on the operational characteristics of the market 
+In a pioneering study, Garman (1976) presented a rigorous stochastic 
+model of the dealershlp market This dealership market 1s entirely dominated 
+by a centralized market-maker, who possesses a monopoly on all trading 
+Being a price-setter, the market-maker quotes bid and ask prices that affect 
+the stochastic mechanism which generates market sell and buy orders, 
+respectively Garman introduced a stochastic analogue of the classic supply 
+*The authors are grateful to Avraham BeJa, Michael C Jensen and the referees, Robert 
+Wilson and Peter Kubat, for helpful comments and suggesttons 
+
+===== PAGE 2 =====
+
+32 Y Amrhud and H Mendelson, Market-making with inventory 
+and demand functions which makes the operation of this mechanism 
+tractable He suggested that the collective actlvlty of the market agents can 
+be characterized as a stochastic flow of market sell and buy orders whose 
+mean rate per-unit-time 1s price-dependent This gives rise to a market 
+supply (demand) curve which depicts the expected mstantaneous arrival rates 
+of mcommg sell (buy) orders as a function of the quoted bid (ask) price 
+The possible temporal discrepancy between market buy and sell orders, 
+and the obhgatlon to mamtam contmuous trading, induce the market-maker 
+to carry stock inventories, either positive (long posltlon) or negative (short 
+position) Garman studied the lmphcatlons of some inventory-independent 
+strategies, which are based on the selection of a fixed pair of bid-ask prices, 
+and showed how they lead either to a sure failure or to a possible failure (see 
+also m the next section) He suggested that ‘the specialists must pursue a 
+pohcy of relating their prices to their inventories m order to avoid failure’ 
+[Garman (1976, p 267)] This Inventory-dependent pohcy is, m fact, the 
+main issue of our paper ’ 
+In this study we derive the optimal prlcmg pohcy of the market-maker m a 
+Garman-like dealership market, SubJect to constramts on his short and long 
+stock inventory posltlons The crux of the analysis 1s the dependence of the 
+quoted bid and ask prices on the market-maker’s stock We derive the 
+optimal pohcy and show that its characteristics are consistent with some 
+conjectures and observed phenomena It 1s proved that the prices are 
+monotone decreasing functions of the stock at hand, and that the resulting 
+spread 1s always positive It 1s shown that the optimal pohcy implies the 
+existence of a ‘preferred’ inventory posltlon, as was suggested by Smldt 
+(1971), Barnea and Logue (1975) and Stoll (1978a) We also obtain some 
+noteworthy relations between Garman’s model and ours concernmg the 
+ObJective function values and pohcy variables 
+Focusing on the case of linear demand and supply, we derive the explicit 
+behavior of the bid-ask spread and the expected tradmg volume as functions 
+of the inventory posltlon Most importantly, we prove that the optimal 
+pricing pohcy 1s consistent with the efficient market hypothesis m the sense 
+that it 1s lmposslble to make a profit by speculating m the market (except, of 
+course, the market-maker, who enjoys a monopohstlc position) Thus, a 
+transaction-to-transaction price behavior which lacks mtertemporal 
+independence may well be consistent with the market etliclency hypothesis 
+Recently, there has been a growmg interest m the posslblhty of 
+computerlzmg part of the market-maker’s functions m the securities markets 
+[e g, BeJa and Hakansson (1979), this idea goes back to Fama (1970)] This 
+‘Barnea and Logue (1975) also argued for an Inventory-dependent prwng pohcy Stall 
+(1978a) dewed the effect of Inventory holdmg costs on the market-maker’s quoted prices BeJa 
+and Hakansson (1979) consider the lmphcatlons of some Inventory-dependent tradmg rules for 
+demand-smoothmg 
+
+===== PAGE 3 =====
+
+Y Amlhud and H Mendelson, Market-makmg wtth mventory 33 
+requires the specllicatlon of a transaction-by-transaction pricing pohcy for 
+the market-maker We hope that our study 1s a step towards the feasible 
+application of this idea 
+It has been suggested by Bagehot (1971) that the market-maker IS faced 
+with basically two kinds of traders the ‘hquldlty-motivated’ transactors, who 
+do not possess any mformatlon advantages, and insiders which are 
+transactors with superior mformatlon He suggested that the market-maker 
+gains from the former and loses to the latter, and the tradeoff between the 
+two determines his spread It should be noted that our dealership market 
+(and Garman’s) 1s intended to describe the ‘hqmdlty-motivated’ transactions 
+It IS worth mentlonmg some other avenues of research pursued in the 
+study of market-maker impact on the securities markets The role of the 
+market-maker as a price-setter and stabilizer m the stock market was 
+presented by Baumol (1965, ch 3) who studied the effect of his monopohstlc 
+posltlon on market prices and resource allocation In a recent overview of 
+market mechanisms, BeJa and Hakansson (1977) discussed some alternative 
+means to facilitate trading m the securltles markets The impact of trading 
+mechanisms on various characterlstlcs of price behavior m dealership 
+markets was investigated m a series of studies by Cohen, Maler, Schwartz, 
+Whitcomb, and Ness and Okuda In particular, they examined the effect of 
+market thinness on the moments of stock returns m securltles markets which 
+operate with or without central market-makers [Cohen, Ness, Okuda, 
+Schwartz and Whltcomb (1976), Cohen, Maler, Ness, Okuda, Schwartz and 
+Whltcomb (1977)], furnished a theoretical framework for these phenomena 
+[Cohen, Maler, Schwartz and Whltcomb (1978a)], and suggested pohcy 
+lmphcatlons [Cohen, Maler, Schwartz and Whltcomb (1977a)] Cohen, 
+Maler, Schwartz and Whltcomb (1977b) explained the existence of serial 
+correlation m the securltles markets, even when the generated quotations 
+have zero own- and cross-serial correlation, by the existence of bid-ask 
+spread and non-simultaneous transactions in various stocks BeJa and 
+Goldman (1977) showed how the way in which expectations are formed may 
+affect the rate of price convergence to the equlhbrlum price BeJa and 
+Goldman (1978) also showed how the impact of a speclahst may lead to a 
+serial correlation m security returns although the underlying process 1s a 
+random walk 
+In a simulation study, Bela and Hakansson (1979) assessed the 
+ramlficatlons of various trading rules adopted by a (programmed) speclahst 
+whose role 1s to smooth the discrete demand function by buying or selling a 
+sufficient number of shares to clear the market 
+Another group of studies [e g , Demsetz (1968), West and Tmic (1971), 
+Tmlc (1972), Benston and Hagerman (1974), Barnea and Logue (1975), 
+Logue (1975), and Stoll (1978b)] focus on the determinants of the bid-ask 
+spread charged by the market-maker They suggest that the bid-ask spread 1s 
+
+===== PAGE 4 =====
+
+34 Y Amthud and H Mendelson, Iclarke&makmg wath mventory 
+a function of the cost of provldmg immediacy services, the risks to the 
+market-maker inherent m the traded stock (m particular the specific risk due 
+to insiders’ trading) the degree of competltlon, the ‘depth’ of the market, the 
+price per share and the volume of trading 
+The notion of a dynamic price-inventory adlustment policy was discussed 
+by Smldt (1971, 1979), Barnea (1974), Barnea and Logue (1975) and Stoll 
+(1976) They suggested that the market-maker has a preferred inventory 
+position and when his realized inventory deviates from It - he will adjust 
+the level, and possibly the spread, of bid-ask prices to restore that position 
+Stoll (1976) presented and tested a model of dealer inventory response to 
+past, current and future price changes and found that speclahsts tend to buy 
+stocks on price declines and sell stocks on price increases In a later model, 
+Stoll (1978a) considered an expected utility maxlmlzmg dealer whose quoted 
+prices are a function of the cost of taking a posltlon which deviates from his 
+desired position, and derived the lmphcatlon of his inventory pohcy on the 
+bid-ask spread and on the structure of the dealership market 
+In what follows, we present the model m section 2, derive the optimal 
+pohcy and its characteristics m section 3, and solve for the case of linear 
+demand and supply m section 4 In section 5, we discuss some additional 
+aspects and possible extensions 
+2. The model 
+The market considered m this study is slmllar to the dealership market 
+introduced by Garman (1976) The mam features of this market concern the 
+monopohstlc position of the market-maker and the nature of the aggregate 
+supply and demand functions Followmg Garman (1976, p 263), the 
+underlying assumptions on the market are 
+(A) 
+(B) 
+(C) 
+(D) 
+All exchanges are made through a single central market-maker, who 
+possesses a monopoly on all trading No direct exchanges between 
+buyers and sellers are permitted 
+The market-maker 1s a price-setter He sets an ask price, P,, at which 
+he will fill a buy order for one unit, and a bid price, P,, for a one-unit 
+sell order 
+Arrivals of buy and sell orders to the market are characterized by two 
+independent Poisson processes, with arrival rates D(P,) and S(P,), 
+respectively The stationary price-dependent rate functions D( ) and 
+S( ) represent the market demand and supply, with D’( ) < 0, S’( ) > 0 
+The ObJectWe of the market-maker is to maximize his expected average 
+profit per unit-time Profit 1s defined as net cash inflow 
+
+===== PAGE 5 =====
+
+Y Amlhud and H Mendelson, Market-makmg wrth mentory 35 
+These assumptions were used by Garman to explore the behavior of the 
+market-maker He derived the probablhtles of failure and the necessary 
+condltlons to avoid a sure failure Then he modified the assumptions to 
+analyze two cases In the first, the market-maker sets bid and ask prices to 
+maximize his expected profit per umt time subject to the constraint of no 
+inventory drift In the second case, Garman assumed zero price-spread and 
+analyzed the nature of failure and the duration of the process 
+Our model IS a natural extension of Garman’s As he suggested, we allow 
+the prices set by the market-maker to depend on his stock inventory 
+posltlon, which leads to a dynamic pricing pohcy of the market-maker For 
+that purpose we focus on the stochastic process which describes the 
+development of inventory This process results from the arrival of market 
+buy and sell orders whose rates are governed by the pricing declslons of the 
+market-maker The underlying process of market-orders generatlon m our 
+model 1s identical to that assumed by Garman The arrival processes are 
+Poisson processes whose rates are price-dependent Yet, since our concern 1s 
+with the development of inventory, we shall rewrite Garman’s assumption 
+(C) m a form suitable to our purpose 
+It 1s well known that the Poisson process IS characterized by independent 
+exponentially distributed mterarrlval times Thus, a given pan of prices, P, 
+and P,, generates two competmg exponential random variables z, with 
+mean l/D(P,), and z,, with mean l/S(P,) [see e g Howard (1971, pp 793- 
+797)] The next arriving order will occur at time mm{z, z,>, being a buy 
+order d z, c z,,, or a sell order if z, > TV It follows that assumption (C) may 
+be written m the followmg equivalent form 
+(C’) For a given pair of pnces, P, and P,, the next mcommg order will be a 
+buy order with probablhty D(P,)/(D(P,)+S(P,)), or a sell order with 
+probability S(P,)/(D(P,)+S(P,)) The time until the next arriving 
+order has an exponential dlstrlbutlon with mean l/(D(P,) + S(P,)) 
+Formulation (C’) lmphes that the process of mventory development (due 
+to the discrepancy between supply and demand) IS m fact a birth and death 
+process [see, e g, Howard (1971, pp 797-814)], whose parameters are 
+controlled by the market-maker Thus we obtam a semi-Markov decision 
+process [Howard (1971, ch 15)] where the state variable 1s the stock at 
+hqnd, and the decision made for a given mventory level 1 is a pair of prices, 
+P,, and P,, which determine the respective demand and supply rates 
+The stock at hand 1s assumed to be bounded from above by some 
+constant L and from below by -K, where K and L are integers and -K c L 
+This assumption reflects the hmltatlons which are usually imposed on the 
+market-maker’s ablhty ot take long and short positions These hmltatlons 
+result from capital requirements or from admmlstratlve rules Note that the 
+
+===== PAGE 6 =====
+
+36 Y Arnlhud and H Uendelson. Market-makmg with mventory 
+formulation of the model m terms of this finite state-space resolves the 
+problem of possible rum Formally, we assume 
+(E) The permissible stock inventory levels are {-K, -K + 1, -K +2, . , 
+L-2, L- 1, L} 
+For convenience of exposltlon, we re-number the states as (0, 1,2, ., M 
+- 1, M}, where M= L+K We assume M 2 3. We also adopt the 
+conventional termmology o&rth and death processes, and let rl, denote the 
+birth rate m state k, and R the correspondmg death rate. We also define cl0 
+=A, =0 Since A, = S(P,) 1s a monotone mcreasmg function of PbL, there IS 
+a one-to-one correspondence between 1, and Pbk Simlarly, pk IS a monotone 
+decreasing function of Pak, with a one-to-one correspondence Thus, the 
+transition rates I, and pk (rather than the correspondmg prices) ~111 be used 
+as the decision variables m state k 
+The market demand and supply ft&l&s give rise to the market-maker’s 
+revenue and cost functions, respectively, 
+and 
+W)=P P.OI)=P 0-‘01), 
+C(i)=J P,(rz)=I2 s-‘(n) 
+Rb) represents the expected sales revenue per unit time corresponding to 
+demand rate p (which IS, m turn, a function of the pre-determined ask price 
+Pa) Analogously, C(n) 1s the expected cash outlay per unit time, which 
+represents the cost of inventory replenishment 
+We make the followmg regularity assumptions on R( ) and C( ) 
+(F) The market-maker’s revenue and cost functions, R( ) and C( ), 
+respectively, are twice contmuously differentiable with 
+(1) R( ) is strictly concave, I e , R”(p)<O, 
+(ii) C( ) is strictly convex, 1 e , C”(Iz)>O, 
+(III) R’(O)>C’(O), R’(oo)cC’(co) 
+Finally, we assume 
+(G) There are no transaction costs to the market-maker 
+Note that the existence of a transactlon cost 5 per trade [see Garman (1976, 
+p. 266)] paid, e g , by the market-maker, will simply shift the supply and 
+demand functions by a constant, retammg the convexity and concavlty 
+properties of C( ) and R( ) Thus, there IS no loss of generality m assummg 
+<=O (Obviously, other costs which are constant per unit time do not affect 
+the optimal pohcy ) 
+
+===== PAGE 7 =====
+
+Y Amthud and H Mendelson, Market-makmg wrth Inventory 37 
+The problem is to find the optimal pohcy of the market-maker under 
+assumptions (A)-(G) Followmg assumption (D), the ObJectWe function IS 
+[Howard (1971, p 868)] 
+where 
+(1) k=O 
+A=(&, ,A,-,) and ~=(PI, ,PM) 
+& is the earning rate for a transition from state k, I e , the expected cash flow 
+dlvlded by the mean sojourn time In terms of our model, the expected cash 
+flow per transition from state k 1s 
+--&- pabk)- 
+1k 
+- Pb(Ak)= 
+R@k)-C(Ak) 
+Ik+pk Ik+pk Ak+pk ’ 
+and the expected SoJourn time in State k is (& + pk.- ‘, hence 
+(2) 
++I, is the limiting probablhty of finding the process in state k It is well 
+known that the stationary probablhtles 4k (k =O, 1, , M) satisfy the relations 
+Ak+k=~k+l~k+l, k=O,l, ,M-I, (3) 
+that is, the expected flow from state k to state k+ 1 equals the expected flow 
+m the opposite direction It follows that 
+Let 
+(4) 
+(5) 
+be the mean rates of mcommg sell and buy orders Then (3) lmphes 
+X=ji, (6) 
+that is, the expected flows In both directions are equal Relations (3) and (4) 
+are valid only when A,>0 for k=O,l, ,M-1 and pk>O for k=l,2, ,M 
+
+===== PAGE 8 =====
+
+38 Y Anuhud and H Mendelson, Market-makmg with menlory 
+It will be proved m the sequel that under the optimal pohcy, the birth and 
+death rates are Indeed positive 
+3. Optimal market-maker behavior 
+In this section we first derive the optlmahty condltlons and then study 
+then lmphcatlons on the behavior of the market-maker By a stralght- 
+forward dlfferentlatlon of the obJectlve function (1) we obtain the followmg 
+necessary condltlons for optlmahiy 
+pk f ~,CR(~,)--((I,)l--k~kR’(~k)=g~,C1) 
+J=k 
+J=k+l 
+(7) 
+]=k 
+By subtracting the (k + 1)st equatron of (8) from the kth equation of (7) 
+and using (3) we obtain 
+R’(&+l)=C’(&), k=O,l, ,M-1, (9) 
+which remmds of the ordinary optlmahty condltlon of a monopoly, except 
+that here it relates to each pair of nelghbormg states Note that since 
+PaOLk+l)>R’(~k+~)=C’(~k)>Pb(~k), (10) 
+a purchase of one unit at state k and Its sale at state k+ 1 always yields a 
+profit z It follows that a loop of transitions starting from any state k, 
+traversing other states and returning to state k yields a posltlve profit with 
+probability one Thus, when the market-maker’s mltlal resources (cash plus 
+available credit) exceed XL-,-,’ P,,, the probability of cash failure [Garman 
+(1976, p 263)] is zero, even m the worst possible case Since the probability 
+of default by the market-maker 1s zero, mltlal credit (If needed) should be 
+available 
+Subtraction of (7) from (8) yields 
+c(n,)-n,c’(n,)+g~,~)=O, (IlO) 
+c(n,)-n,c’(nk)+g~,~)=ROI,)-~kR’(CIk), (Ilk) 
+k=l,2, ,M-1, 
+ZA sale of a umt at state k+ 1 can always be attributed to a purchase at state k (except for 
+the mtlal stock) 
+
+===== PAGE 9 =====
+
+Y Amrhud and H Mendelson, Market-makmg wrth mventory 39 
+g@4.4=wMhdwhf) (119 
+Eqs (11) give the basic relation between A, and Pi, and thus the relation 
+between the bid and ask prices for each inventory posltlon k It follows that 
+the optimal (A,,p& are aligned along the curve defined by 
+[note that @,,O) and (0,~~) are at the intersection of the curve with the 
+positive semi-axes] Lemma 3 1 proves that the curve (12) depicts a 
+downward sloping function on the positive quadrant 
+Lemma 3 1 Along (12), for A,p>O, dp/dAcO 
+Proof The proof follows smce for A, p > 0, 
+and 
+$IcQ)-X(A)] <o QED (13’4 
+The followmg theorem establishes that the optimal bid and ask prices are 
+monotone decreasing functions of the stock at hand [This result IS consistent 
+with the dynamic pricing pohcy described by Smldt (1971, 1979), Barnea 
+(1974) and Barnea and Logue (1975) ] 
+Theorem 3 2 Let P,, and Pak, respectively, be the optimal bid and ask prices 
+at state k Then P,,>P,, >P,,> >P,,,_, and P,, >P,,> >PaM 
+Equtvalently, 1, > A, > I, > >A,-, andpl<p2<p3< <PM 
+Proof The proof IS given in terms of 4 and p_ The equivalent formulation 
+m terms of price behavior follows from the moiotomclty of the demand and 
+supply functions 
+We first prove that i, >A, By subtracting eq (1 lo) from (11’) and noting 
+that R(c(~ )/pl > R’(pl ). we obtam 
+The inequality now follows from (13b) 
+
+===== PAGE 10 =====
+
+40 Y Amthud and H Mendelson, Market-makmg wzth mwntory 
+Next, &,>A, tmphes C’(A,)>C’(A,), hence by (9), RI@,)> R’(p2) It 
+follows that p, <pz, and then we obtam by Lemma 3 1 that A, CA, The 
+proof IS completed by mductlon Q E.D 
+The following corollary shows that the bid-ask spread IS always posltlve, 
+as might be expected 
+Corollary 3 3 Pak - P,, > 0 
+Proof By (10) and Theorem 3 2 we obtam 
+p.k=p*o1k)‘p,o1k+l)~p,(~k)=p,k QED 
+We now turn to compare our results to a case treated by Garman (1976, 
+pp 265-266) Consider a market-maker who wishes to prevent a drift m his 
+expected inventory Thus he sets prices so as to equate the rates of mcommg 
+buy and sell orders, 1 e , p =A, regardless of his inventory posltlon This 
+market-maker acts like an ordinary monopohst who equates marginal 
+revenue to marginal cost 
+It might be argued that the profits of this monopolist, who restricts himself 
+to p=I, are lower than those of our market-maker who enjoys a greater 
+flexlbdlty m setting prices Yet, our market-maker has constraints on the 
+long and short posltlons which he can take, whereas Garman’s monopolrst 
+has no such constraints In fact, the followmg theorem proves that the profit 
+of Garman’s monopolist 1s an upper bound on g&p) 
+Theorem 3 4 Let I* be the (unique) solutton of R’(r*)= C’(r*) Then 
+g@,pli)<R(r*)-CO-*) (14) 
+Proof The ObJective function of our market-maker 1s 
+g&p)= 5 4rCRW-C(&)1 k=O 
+The function R(p)- C(A) is strictly concave on the @,I)-plane, hence, by 
+Jensen’s Inequality, 
+where p and X are given by (5) Furthermore, it follows from (6) that ji=X 1s 
+a subset of the constraints m our problem Now, Garman’s problem can be 
+
+===== PAGE 11 =====
+
+Y Amahud and H Mendelson, Market-makmg wtth anventory 41 
+written as 
+maxh(l,p)=R(p)-C(1) 
+st j.l=A, 
+whose solution IS Iz=p = I* It follows that for all 2,~ 
+g~,~)<R(jl)-c(X)~h(r*,r*)=R(r*)-C(r*) QED 
+We now employ Theorem 3 4 to prove that It IS not optimal to have a 
+vamshmg transitian rate That K., the profit-maxlmmng market-maker will 
+never choose to refrain from makmg buy or sell transactions (except for the 
+case where he reaches his hmltmg posltlons) This also means that relaxing 
+his constraints by expanding the allowed short or long posltlons strictly 
+Increases the market-maker’s profits 
+Theorem 3 5 The optimal policy (A,& satisfies I, >O for k=O, 1, , M - 1, 
+and pn>Ofor k=l,2, ,M 
+Proof It 1s sufficient to prove that ~1~ =0 IS not optimal 3 For that purpose 
+we apply Howard’s (1971, pp 983-1005) pohcy improvement procedure to 
+show that a pohcy with p1 >O 1s an improvement over the pohcy with pL1 =0 
+Let the mltlal pohcy (2,~) be such that pL1 =0 and A, = I* (note that smce 
+state 0 IS transient, the value of I, does not affect g), with relative state 
+values Us Consider an alternatlve pohcy @‘,g’) where A’ =A, & = p, for all 
+J# 1, but & = r*/2>0 Let r1 be the value of the test quantity [Howard 
+(1971, p 986)] for evaluating the orlgmal pohcy at state 1, and P1 the 
+correspondmg test quantity for the alternative pohcy Then, 
+and 
+r,=-c(n,)+(n,+o)[l Q-U,], 
+r;=R(r*/2)-C(1,)+(I,+r*/2) [ 1 :;*,2v1+A $2”o-u1 , 1 1 1 
+hence 
+r;-r,=R(r*/2)-r*/2 (ul-u()) 
+“More generally, the proof ImplIes that addmg one state to a cham strictly Increases the value 
+of g (m that chain) Hence, the cham resultmg from the optlmal solution must contam all states 
+
+===== PAGE 12 =====
+
+42 Y Amrhud and H Mendelson, Market-makmg wzth mventory 
+Now, (IJ~ -u,,) IS found by performing the pohcy evaluation procedure for the 
+initial policy at state 0, 
+that IS, 
+uo + co = - wo )l~, + 01, 
+“l-00 =CdL&+ C(r*)llr* 
+By Theorem 3 4, g@,,r)<R(r*)-C(r*), hence u1 -oo<R(r*)/r*, and 
+r;-f,>R(r*/2)-R(r*)/2>0 QED 
+We now proceed to study the characterlstlcs of the stationary dlstrlbutlon 
+{ &},“= o under the optimal pohcy It follows from Theorem 3 5 that & > 0 for 
+all k=O,l, , M, so there 1s a posltlve probablhty of finding the market- 
+maker m any of the allowed inventory positions In addltlon, other 
+properties of { &},“= o are of interest What IS the shape of this dlstrlbutlon7 
+Is there a ‘preferred’ inventory posltlon [Smldt (1971, 1979), Barnea (1974), 
+Barnea and Logue (1975), Latank et al (1975), Stoll (1976)] If there IS, what 
+can be said about the ‘preferred’ rates and pnces.7 
+Smce ~k+l/4k=~J~k+19 the properties of {&},“=, may be obtained by 
+consldermg the transition rates 2, and /A~+~ The followmg lemma relates Ak 
+and pk+l to Garman’s no-dnft rate r* 
+Lemma 36 For all k=O,l, ,M-1, 
+with equality if and only tf 1, = r* =pk+ 1 
+Proof (I) If pk+l c(=)r*, then 
+C'(&) = R’(pk+ 1 ) > (= )R’(r*) = C’(r*), 
+hence I, > ( = )r*, respectively 
+(II) If pk+ I > r*, then 
+C’(A,)=R’(p,+,)<R’(r*)=C’(r*), 
+hence I, -C r* QED 
+Lemma 3 6 states that r* IS always located between i, and pk+ 1 This fact 
+IS Illustrated m fig 1 
+
+===== PAGE 13 =====
+
+Y Amrhud and H Mendelson, Market-making wth mventory 43 
+Theorem 3 7 The dlstrrbutlon {c#+},“=, 1s urnmodal The mode J 1s such 
+that 
+I,zr* for k<J, l.,<r* for kzJ, (15) 
+pkSr* for kSJ, pk>r* for k>J (16) 
+Proof First, 1, > r* smce otherwise we would have A, ~1,s r* 6p1 < pk+ 1 
+for all k= 1,2, , M - 1 This would have lmphed x<p, m contradlctlon to 
+‘6) A slmdar argument leads to py > r* It follows from Lemma 3 6 that 
+h+l r* Xk 
+Expected number of buy (~1 and sell (A) orders 
+per unit time 
+Fig 1 The market-maker’s revenue as a function of the arrival rate of buy orders, R(P), and his 
+replemshment cost as a function of the arrival rate of sell orders, C(A) r* IS the arrival rate 
+chosen by Garman’s monopohst, maxlmlzmg R(r)- C(r) 2, and pr+ 1 are related by (9) and 
+thus the Interval [pt+ 1, AJ embraces r* 
+Next, &/& _ 1 = & _ Jpk, which 
+decreasmg function of k Let 
+J=max{k)1,_,/p,&l} 
+Inequalities (17) imply that J 1s 
+- by Theorem 3 2 - IS a strictly 
+well defined and O<J< M For k$J, 
+4k2$Jk-19 whereas for k > J, & < c$_ 1 It follows that 4. < <4,-2-C 
+4J-1 S4,P and $J>4J+1>4J+z> >& Now, (15) and (16) follow 
+from Lemma 3 6 and from Theorem 3 2 QED 
+“This also Includes the case of two consecutive modes, J and J - 1 
+
+===== PAGE 14 =====
+
+44 Y Amrhud and H Mendelson, Marketqakmg wrth rnventory 
+Theorem 3 7 suggests that the market-maker adopts a prlcmg pohcy whmh 
+produces a ‘preferred’ Inventory position J, located away from the hmltmg 
+positions 0 and M The preference for posmon J 1s reflected m both the 
+ummodahty of the dlstrlbutlon and m the fact that the decline rate of & as k 
+withdraws from J, IS faster than a geometric decline rate (since 4 J&-l IS 
+decreasing) Furthermore, when the market-maker finds himself m a posmon 
+different from J, he will quote prices which will tend to bring him back to 
+that posmon. That IS, the probablhty that the next transition will be m the 
+due&on of J will exceed the probablhty of moving towards the extreme 
+positions This aversion from the extremes follows since being there forces 
+the market-maker to make transactions at unfavorable condmons 
+Furthermore, at the ‘preferred’ inventory posmon J, L and p are 
+approximately equal An exact equality between I and /1 IS obtained at 
+(1’,&, where the curve (12) intersects with the 45”-lme (see fig 2) The actual 
+(AJ, pJ) IS located m the neighborhood of (A’, $), m the followmg sense 
+Let a = mm (A,, pJ}, and A = max {A,, pJ} Then, 
+and 
+(a,A)c(~,+,,C1,+1)C(~,+,,~,+2)C = (O,Phf), 
+where a51’=p’S A 
+Thus, all the intervals between 1, and pLk straddle the interval between 1, 
+and p,, which m turn straddles A’ =pl This gives (A’, pi) the mterpretatlon of 
+being the approximate ‘likely’ rates of the market-maker If some I, happens 
+to equal 2’, then k = J IS the preferred inventory posmon and A, = I’ =P’ = pJ 
+are the exact modal rates 
+We finally relate the likely rates (A’, $) to (r*, I*), the rates of Garman’s 
+monopolist 
+Theorem 38 d’=p’<r* 
+Proof Let h(x)=[R(x)-xR’(x)] -[C(x)-xc’(x)] Now, h’(x)>0 for x>O, 
+h(r*)=R(r*)-C(r*), and by (12), h(l’)=g It follows from Theorem 3 4 that 
+h(l’)<h(r*), hence 1’=p’<r* QED 
+The above relation, together with (15) and (16), are summarized m fig 2 
+Note that both (n,,pL,) and (A’,$) he on the segment slsl Furthermore, the 
+only (&,p,J contamed m this segment are the modal rates More specifically, 
+when I,_,/~J>l, we have ;1,_,>r*>p,>p,_, and 2J+l<<J<r*<pJ+1 
+
+===== PAGE 15 =====
+
+Y Amrhud and H Uendelson, Market-makmg with mventory 45 
+X, Expected number of sell orders per unct time 
+Fig 2 The curve [R(p)-pR’(p)] - [C(n)-X(i)] =g, along which are ahgned the optunal 
+arrival rates of the pubhc buy and sell orders br and I,, respectively, with the subscrlpt 
+denotmg the related Inventory posItIon) The ‘hkely’ rates sattsfy 1’=~’ The actually preferred 
+rates (A,,p,) are both less than or equal to Garman’s rates (r*.r*), thus they are contamed m 
+the segment s,s2 
+Hence, both modal rates are smaller than the rates of Garman’s monopohst, 
+I e , (A,,pJ) IS mslde s1s2, and for k#J, (A,,p,) hes outslde slsl In the case 
+where 1,-,/p,= 1, (Ar-l,~,_,) and (A,,p,) comclde with the endpomts s1 
+and s2, respectively, m this case, both J- 1 and J are the modes of the 
+dlstrlbutlon { c#J,},“= O 
+The lmphcation of the above results on the ‘preferred’ bid and ask prices 
+charged by the market-maker IS lmmedlate P,, 1 P,(r*) > P,(r*) >PbJ, and 
+the ‘preferred’ bid-ask spread IS always greater than the correspondmg 
+spread set by Garman’s monopohst This also implies that the preferred bid- 
+ask prices straddle the market-clearmg price F at the mtersectlon of the 
+demand and supply curves P IS the unique price at which the expected rate 
+of buy orders equals the expected rate of sell orders (p = A), thus clearing the 
+market ‘on the average’ Garman (1976, p 266) suggested that P IS the price 
+set by a ‘benevolent’ zero-cost market-maker who provides a non-profit 
+public service by filling all mcommg orders from his inventory The choice of 
+P thus guarantees no expected drift m the market-maker’s inventory, 
+together with zero expected profit [under assumption (G)] However, if there 
+IS a fixed cost 5 per transaction, then the spread net of transaction cost ~111 
+
+===== PAGE 16 =====
+
+46 Y Amthud and H Mendelson, Market-ma&q with muentory 
+be zero 5 Now, consider a market where there IS a competltlon among 
+market-makers The ordinary sufficient condltlons for perfect competition in 
+such a market are that entry 1s costless and free, that [see Fama (1970, p 
+387)] all available mformatlon 1s costlessly available to all market-makers, 
+and that they all agree on the lmphcatlon of current mformatlon for the 
+current demand and supply functions There may be additional costs to the 
+market-maker, notably the opportunity cost of his resources tied up m the 
+dealership activity, and the actual cost of transacting As usual, competition 
+leads to a pricing of the dealer’s services so as to reflect the costs of 
+provldmg these services If these costs were zero, competltlon would lead to a 
+zero spread, and the assumed homogeneity of expectations would lead to P, 
+=P, =P (since any other price will leave the market uncleared on the 
+average) The existence of positive costs of provldmg dealership services leads 
+to a positive spread which straddles P 6 When the cost per transaction 1s a 
+positive constant r [see dlscusslon followmg assumption (G)], the 
+competltlve spread will equal 5 > 0 
+4. The case of linear demand and supply 
+In this section we apply our general results to the special case of linear 
+demand and supply functions, D(P,) = y -6P,, and S(P,) = c( +/lP, Then, 
+R(P)=(~/@(YP--P*), and C(~)=(l/B)(~‘-Ia) 
+Here, the locus (12) of possible (&,p& IS the ellipse 
+P21~ + A2IB = g 9 (18) 
+whose axes comclde with the coordinate axes The likely rates are given by 
+the mtersectlon of the 45”~line with the ellipse 
+1’=p’=JgB6/0 (19) 
+The rates chosen by Garman’s monopolist, (Lm,pm), satisfy 
+(20) 
+whereas the market-clearing rates, (P,@), at which the demand and supply 
+5A posltlve spread ~111 exist whenever real resources are tied up m the market-makmg 
+function 
+6For a dIscussIon on the determmatlon of the bid-ask spread on the basis of the dealer’s cost, 
+see Demsetz (1968), West and Tmlc (1971) 
+
+===== PAGE 17 =====
+
+Y Amthud and H Mend&on, Market-makmg with mventory 47 
+functions intersect and P, = P,, are 
+(21) 
+It follows that Iz’ ~1” ~1’ (and p’ <pm <@) (see also Theorem 3 8) The 
+correspondmg prices (usmg the respective upper-scripts) satisfy 
+PL<PrcP and Pf,>P:>F 
+It follows that the market-clearmg price IS contained m the interval [Pk,p,] 
+It IS of interest to investigate whether the bid and ask prices set bv the 
+market-maker always straddle the market-clearmg price P This happens If 
+and only if all I,, pk are not greater than A’ =pc (otherwise, d some I, >L’ 
+then P,, >P,, >Ir, if some /_+ >@, then both prices are below P) This 1s 
+equivalent to requlrmg that both A,,, pMsIze =@ (since I, =max,..,,, 1S A .M k 
+and hzmaXk=O, 1,2, ,Mpk) 
+In our case, a suffclent condltlon for the market-clearing price P to be 
+straddled by all the bid-ask prices Pbk,P.& (k=O, 1, ,M) 1s 
+(22) 
+The suffclency of this condltlon follows since by Theorem 3 4 and the 
+defirutlons of R( ) and C( ), 
+g<R(r*)-C(r*)=(r*)2/6+(r*)2//l, (23) 
+hence 
+130=@<P=2r* and pM=&$<@=2r* 
+Thus, when the (absolute values of the) slopes of the demand and supply 
+curves are not grossly different, P c [P,,, Pak] for all k 
+We now proceed to mvestlgate the behavior of the bid-ask spread set by 
+the market-maker According to the dynamic pnce/mventory adJustment 
+theory suggested by Smldt (1971, 1979), Barnea (1974) and Barnea and 
+Logue (1975), the spread should be mmlmal when the market-maker IS at his 
+preferred inventory level, and widens as his long or short posltlon 1s 
+undesirably high ’ Our model yields a similar behavioral pattern 
+‘This phenomenon was attrrbuted to the higher risk of posltlomng See also Latane et al 
+(1975, pp 73-75), who m addltlon consldered the effect of rtsk on the spread set by dlfferent 
+speclahsts Benston and Hagerman (1974) and Stoll (1978b) provided a cross-sectlonal emplrxal 
+study on the effect of the risks Incurred by holdmg Inventory on the bid-ask swead across 
+shares 
+
+===== PAGE 18 =====
+
+(24) 
+48 Y Amrhud and H Mendelson, Market-makmg wzth mventory 
+The brd-ask spread correspondmg to supply and demand rates (a,~) IS 
+given by 
+Along the ellipse, we have 
+and 
+dd/dCc = (l/M/~ - I) 
+The function d(A, cc) 1s thus mnnmrzed at (A’,#), and increases as (1,~) 
+approaches the hmrts (&,,O) and (0,~~) It follows (since pk increases with k) 
+that the market-maker reduces the bid-ask spread as he approaches the 
+likely inventory posrtron This result and Theorem 3 2 yield a bid-ask price 
+pattern which 1s illustrated m fig 3 Observe that this pattern resembles the 
+one presented by Latani et al (1975, p 74, fig 41) 
+Next, we study the effect of the market-maker’s inventory posrtron on the 
+total volume of transactrons By setting bid and ask prices he determines the 
+supply and demand rates, 1 and ~1, whose sum grves the expected number of 
+transactions per unit time Thus, Iz +/J represents the expected volume per 
+unit time [Equrvalently, (2 +p)-’ 1s the expected inter-transaction time ] 
+Using (24) we obtain 
+(d/d/M + P) = I - /W P/A 
+i 
+[~[__]___I___&___~__~ 
+I 
+I I 
+.__ PO 
+1 I A 
+‘b 
+I 
+J 
+(Profrrrrd poritaon 1 
+Inventory 
+l0V.l 
+Fig 3 The bid-ask prx.es and the correspondmg spread, A, as a function of the market-maker’s 
+Inventory level 
+
+===== PAGE 19 =====
+
+Y Amthud and H Mendelson, Market-makmg wtth tnventory 49 
+Thus, the volume 1s maxlmlzed at 
+As the inventory level approaches one of the short or long hmlts, the volume 
+decreases as expected 
+We conclude the dIscussIon of the hnear model by exammmg the 
+important issue of market efflclency In our dealership market, efficiency (m 
+the ‘fan game’ sense) implies that it 1s lmposslble to make economic profits 
+by trading against the market-maker It 1s well known that a sufficient 
+condltlon for market efficiency 1s that market prices behave as a random 
+walk However, the prices m our model do not adhere to this property since 
+their dlstrlbutlon 1s mean-reverting * Thus, market agents might be tempted 
+to form a trading rule based on past price behavior, by which they would 
+profit through buying from the market-maker at low prices and selling back 
+to him at higher prices However, we shall show that any trading rule which 
+1s based on momtormg the behavior of the market-maker 1s useless and is 
+certain to produce a loss More specltically, we shall show that the pricing 
+pohcy of the market-maker results m all ask prices being greater than all bid 
+prices To show this, observe that by (23) 
+where the last mequahty follows from 
+‘The model also gives us the transient price behavior which derives from the transient 
+behavror of the inventory (recalhng that quoted pruzes are one-to-one related to Inventory) 
+Startmg from an uutlal state I at time t=O, the probablhty of lindmg the system in state 1 at 
+time th0 IS given by the (z,j)-entry of the matrix eA’ where A IS the correspondmg transItion- 
+rate matrix [see, e g , Howard (1971, ch 12)] The matrix e”’ can be wrltten as the sum of a 
+matrix whose rows are all ldentlcal to the stationary probablhty vector (&,, c#J~,&, ,&) (row 
+ldentlty reflects independence of the mltlal state), and M addItIona matrices which reflect 
+dependence on the mltlal state The latter matrices are multlpbed by coefficients which are 
+exponentially decaying as a function of t Thus lf we observe the system at state I at some time, 
+the dependence of the state observed t time-units later on the mltlal state I dlmuushes to zero at 
+an exponential rate (as t-co) The corresponding relatlonshlp between observed quotations of 
+bid and ask prices and any mltml quoted prices readily follows Slmdarly, the observed 
+transaction prices form a tM-state birth and death process with hmitmg probabihtles 
+P{observed prlce=P,} =& P&+J.~), and P{observed prlce=P,} =I$& AJOlt+&) The 
+previous remarks regardmg temporal dependence apply as well to this process (with a dllferent 
+transition-rate matnx) 
+
+===== PAGE 20 =====
+
+50 Y Amthud and H Mendelson, n4arket-makmg with inventory 
+Now, smce A0 = @ and pLM = ,/$, we have 
+Usmg expressron (20) for r* yields 
+hence, 
+which Imphes, for all k,J, 
+It has long been noted that the random-walk property of prices IS not a 
+necessary condltlon for market efficiency m the ‘fair game’ sense [Fama 
+(1970)] In fact, emplrlcal studies have shown that serial dependence m price 
+changes co-exists with market efflclency m the sense that it IS lmposslble to 
+make profit by use of publicly available mformatlon Our model provides a 
+theoretical framework which implies a transaction-to-transaction price 
+dependence, together with market efficiency As can be seen from fig 3, the 
+systematlc pattern of prices cannot be used to make a profit since all ask 
+prices he above all bid prices Therefore, any trading rule that attempts to 
+profit from this price dependence 1s certain to produce a loss the bid-ask 
+spread will wipe out any prospective profit 
+5. Concluding remarks and possible extensions 
+The last result implies that market traders can make no profitable use of 
+mformatlon which 1s also available to the market-maker Even a knowledge 
+of the market-maker’s current inventory position and his pricing pohcy 
+(derived from the demand and supply functions) cannot produce a profitable 
+trading rule This result agrees with Bagehot’s (1971, p 13) observation that 
+‘the market-maker always gains m his transactlons with liquidity-motivated 
+transactors’ Yet, there may be ‘insiders’, 1 e , transactors who possess special 
+mformatlon which IS not available to the market-maker, and can make a 
+profitable use of it In other words, mslders have a more accurate assessment 
+of the demand and supply functions than that of the market-maker, and they 
+may use their superior mformatlon to make profit in excess of their cost 
+lmphed m the bid-ask spread As Bagehot (1971, p 13) noted, the market- 
+maker always loses to these insiders, and these losses represent an inventory 
+
+===== PAGE 21 =====
+
+Y Amlhud and H Mendelson, Market-makmg wrth rnuentory 51 
+holdmg cost to the market-maker ’ Clearly, our model IS structured to treat 
+the hquldlty-motivated transactors and not the insiders’ demand and supply 
+A model which ~111 take account of the mslders’ tradmg m an exphclt 
+manner is a most important extension This model should also contain a 
+learning mechamsm by which the market-maker uses market mformatlon to 
+update his assessment of the demand and supply [see Bagehot (1971, p 14)] 
+It IS worth relating our ObJectWe function (I e , expected average profit per 
+unit time) to value maximization, which implies here contmuous 
+dlscountmg” of cash flows at some instantaneous discount rate u This gives 
+rise to a rate-dependent transaction-to-transaction discount factor, which 
+represents the present value of obtammg one-dollar at the next transaction 
+It has long been known [see Jewel (1963, pp 95&957)] that for small 
+discount rates (which are equivalent to close-to-umty transactlon-to- 
+transaction discount factors), the dlscounted value crlterlon turns out to be 
+well approximated by our average profit criterion I1 It should also be noted 
+that the relevance of dlscountmg to existing dealershlp markets 1s limited 
+when settlements take place a few days after the transactions, smce then the 
+actual tlmmg of a transaction 1s of no importance If the underlymg 
+condltlons m the market are such that dlscountmg 1s of importance, It 1s a 
+stralghtforward matter to formulate the problem as a discounted dynamlc- 
+programming problem Then, there 1s no direct analogy to our formulation 
+of the ObJectWe function (l), and our closed-form results will be replaced by 
+recursive relations Clearly, such a reformulation ~111 be at the expense of the 
+model’s tractability 
+Consldermg the role of mventorles m this paper, note that our market- 
+maker’s pohcy depends on his stock inventory positIon, whereas his cash 
+flows appear only m the objective function The role of the cash position 
+may be interesting m a combined cash-mventory dependent pohcy, where the 
+market-maker maxlmlzes his expected utlhty of consumption 
+It may also be of interest to study the sensltlvlty of the results of our 
+model to the underlymg assumptions on the order arrival process This can 
+be done m several ways The order size may be assumed to be a random 
+variable which represents orders of varying size Furthermore. the 
+assumption of Poisson arrival may be extended to a more general renewal 
+process This may raise the necessity for an empirical study of the mterarrlval 
+time dlstrlbutlon ’ * 
+‘See also Stoll (1978a, p 1144) 
+loThe need for contmuous dlscountmg results from the fact that the mtertransactton times are 
+not ldentlcally dlstrlbuted 
+“If, for example, the yearly contmuous discount rate IS 14% (which IS equivalent to 15 Y0 per 
+annum) and the expected Inter-transactlon time 1s as large as an hour, the relevant discount 
+factor 1s 0 999984 
+“A step m this dIrectIon IS Garbade and Lleber (1977) 
+
+===== PAGE 22 =====
+
+52 Y Amlhud and H Met&son, Mark.&makmg with mwntory 
+References 
+Bagehot, Walter, 1971, The only game m town, Fmancnd Analysts Journal, March-Apnl, 12-14 
+Bamea, Anur, 1974. Performance evaluation of New York stock exchange specmhsts. Journal of 
+Fmanclal and Quantitative Analysis 9. 511-535 
+Barnea, Anur and Denms E Logue, 1975, The effect of risk on the market-maker’s spread, 
+Rnancml Analysts Journal 31, Nov /Dec. 45-49 
+Baumol, Wdham J , 1965, The stock market and economic etliclency (Fordham Umverslty Press, 
+New York) 
+Ek~a, Avraham and M Barry Goldman, 1977, On the dynanuc behavior of prices m 
+chsequhbrmm, Mlmeo 
+BcJ~, Avraham and M Barry Goldman, 1978, Market pricts vs eqmhbnum prices Returns 
+variance, serial correlation, and the role of the specmhst, Working Paper no 78-51 (New 
+York University, New York) 
+&~a, Avraham and Nds H Hakansson, 1977. Some alternative market mechanisms, Workmg 
+Paper no 104 (New York Umverstty, New York) 
+Bela, Avraham and Nils H Hakansson, 1979, On the feasiblhty of usmg a mechanical speciahst 
+m securities trading, Paper presented at the XXIV Meeting of The Institute of Management 
+Science 
+Benston, George J and Robert L Hagerman, 1974, Detemunants of bid-&ked spreads m the 
+over-the-counter market, Journal of Financial Economics 1, 353-364 
+Cohen, Kalman J, Walter L Ness, Hltoshl Okuda, Robert A Schwartz and David K 
+WhItcomb, 1976, The determinants of common stock returns volatdrty An mternatlonal 
+companson, Journal of Fmance 31, 733740 
+Cohen, Kalman J, Steven F Maler, Walter L Ness, Hitoslu Okuda, Robert A Schwartz and 
+David K Whitcomb, 1977, The impact of designated market makers on security prices I, 
+Empwlcal evidence, Journal of Banking and Finance 1, 219-235 
+Cohen, Kalman J, Steven F Mater, Robert A Schwartz and David K Whitcomb, 1977a, The 
+Impact of designated market makers on security prices II, Pohcy proposals, Journal of 
+Banking and Finance 1,236-247 
+Cohen, Kalman J, Steven F Marer, Robert A Schwartz and David K Whitcomb, 1977b, On 
+the existence. of serial correlation m an e&lent securltles market Working Paper no 109 
+(New York University, New York) 
+Cohen, Kalman J, Steven F Maler, Robert A Schwartz and David K Whitcomb, 1978, The 
+returns generation process, returns variance and the effect of thinness m securities markets, 
+Journal of Finance 33, 149-167 
+Demsetz, Harold, 1968, The cost of transactmg, Quarterly Journal of Economics 82, 3353 
+Fama, Eugene F, 1970, Eficient capital markets A review of theory and empirical work, 
+Journal of Finance 25, 383-417 
+Garbade, Kenneth and ZVI Lleber, 1977, On the independence of transactions m the New York 
+Stock Exchange, Journal of Banking and Finance 1, 151-172 
+Garman, Mark B , 1976, Market microstructure, Journal of Fmancial Economics 3, 257-275 
+Howard, Ronald A, 1971, Dynamic probablhstic systems, Vol II Semi-Markov and declslon 
+processes (Wiley, New York) 
+Jewell, Wdham S, 1963, Markov-renewal programmm& II Infinite return models, Example, 
+Operations Research 1 I, 949-971 
+Latane, Henry A, Donald A Tuttle and Charles P Jones, 1975, Security analysis and portfolio 
+management (Ronald Press, New York) 
+Logue, Denms E, 1975, Market-making and the assessment of market efliciency, Journal of 
+Fmance 30 115’123 
+Smldt, Seymour, 1971, Which road to an efficient stock market Free competltlon or regulated 
+monopoly”, Fmancial Analysts Journal 27, Sept /Ott , 18-20, 64-69 
+Smldt, Seymour, 1979, Contmuous versus mtermlttent trading on auction markets, Paper 
+presented at the Western Fmance Assoctatlon 
+Stall, Hans R , 1976, Dealer Inventory behavior An empirIcal mvestlgatlon of NASDAQ stocks, 
+Journal of Fmancial and Quantltatlve Analysis, 356380 
+
+===== PAGE 23 =====
+
+Y Amrhud and H Mendclson, Market-makmg wtth mwntory 53 
+Stall, Hans R , 1978a, The supply of dealer servtccs m securltlcs markets, Journal of Fmance 33, 
+1133-1151 
+Stall, Hans R, 1978b, The pncmg of security dealer servxes An empIrIcal study of the 
+NASDAQ stocks, Journal of Fmance 33, 1153-l 172 
+Tnuc, Seha M, 1972, The economics of bquldlty servxcs, Quarterly Journal of Economics 86, 
+79-93 
+West, Richard R and Seha M Tmlc, 1971. The economxa of the stock market (Praeger, New 
+York) 

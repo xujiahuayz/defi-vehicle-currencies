@@ -1,0 +1,1517 @@
+
+
+===== PAGE 1 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 44 44–74
+Liquidity Provision Contracts and Market
+Quality: Evidence from the New Y ork Stock
+Exchange
+Hendrik Bessembinder
+Arizona State University
+Jia Hao
+Babson College and Chinese University of Hong Kong
+Kuncheng Zheng
+Northeastern University
+We exploit a discontinuity in the New Y ork Stock Exchange Designated Market Maker
+(DMM) contract to identify causal effects of DMM participation on equilibrium market
+outcomes. We document that contractual features that enhance DMM participation are
+associated with increased depth, narrower bid-ask spreads, and higher rates of price
+improvement, with most of the improvements attributable to increases in liquidity provision
+on markets other than the NYSE. These results cannot be attributed to the mechanical effects
+of the contractual changes and support the interpretation that market making is characterized
+by strategic complementarity. ( JEL G10, G12, G19, G29)
+Received October 7, 2017; editorial decision December 10, 2018 by Editor Itay Goldstein.
+Most trading of equities and futures contracts occurs on electronic limit order
+markets. A central feature of these markets is that any participant can elect to
+effectively supply liquidity by posting nonmarketable limit orders.
+1 Despite the
+absence of identiﬁable barriers to entry, some features of liquidity provision in
+The authors thank Itay Goldstein, Adam Clark-Joseph, Kumar V enkataraman, Michael Goldstein, George
+Jiang, Ekkehart Boehmer, and Andriy Shkilko; two anonymous referees; and seminar participants at the
+Chinese University of Hong Kong, Hong Kong University of Science and Technology, Southern University of
+Science and Technology, the Chinese University of Hong Kong (Shenzhen), Cheung Kong Graduate School
+of Business, Northeastern University, Babson College, Stockholm Business School, the Norwegian School
+of Economics, the third Women in Microstructure conference, the 2018 ABFER conference, the 2018 FMA
+conference, and the 2017 China International Conference in Finance for insightful comments. This study was
+supported by a grant from the Research Grant Council of the Hong Kong Special Administrative Region, China
+[CUHK14501616]. Please send correspondence to Hendrik Bessembinder, Arizona State University, Department
+of Finance, W. P . Carey School of Business, P .O. Box 873906, Tempe, AZ 85287-3906; telephone: 480-965-1201.
+E-mail: hb@asu.edu.
+1 Nonmarketable limit orders are priced so that they do not generate immediate trades that remove existing orders
+from the book and therefore provide the option to trade to other market participants.
+© The Author(s) 2019. Published by Oxford University Press on behalf of The Society for Financial Studies.
+All rights reserved. For permissions, please e-mail: journals.permissions@oup.com.
+doi:10.1093/rfs/hhz040 Advance Access publication March 28, 2019
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 2 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 45 44–74
+Liquidity Provision Contracts and Market Quality
+these markets differ from what would be expected based on simple models of
+perfect competition. In particular, a number of exchanges have implemented
+designated market maker (DMM) contracts that commit one or more market
+participants to supply more liquidity than they would endogenously choose, in
+at least certain circumstances. Although DMM contracts have been voluntarily
+adopted in the past, Markets in Financial Instruments Directive II (MiFID II)
+regulations, which apply to European security markets and became effective
+in January 2018, require ﬁrms using a market-making strategy to enter formal
+DMM agreements with the exchanges on which they operate, while leaving the
+terms of such contracts to the discretion of the individual exchanges.
+2
+Prior studies have shown that DMM contracts can enhance economic
+efﬁciency and improve ﬁrm values. Bessembinder, Hao, and Zheng (2015)
+present a model in which DMM contracts reduce deadweight costs attributable
+to asymmetric information, whereas V enkataraman and Waisburd (2007) show
+that DMMs can improve risk sharing in a market characterized by a ﬁnite
+number of investors. Consistent with theory, the literature has documented
+positive market reactions to the announcement that DMMs will be introduced,
+and improved market quality after their introduction, for selected stocks on
+several European markets.
+3 However, because these studies focus on ﬁrms
+that endogenously choose to enter DMM contracts, and ﬁrms that perceive
+the largest beneﬁts would presumably select to enter DMM agreements, it is
+unclear whether the estimates obtained in these studies can be directly applied
+to assess the potential effects of DMM contracts for ﬁrms in general.
+In this paper we provide new and potentially important insights into the
+economics of liquidity provision agreements. We focus on the DMM contract
+employed by the New Y ork Stock (NYSE) for all listed securities, exploiting a
+discontinuity in the contract to provide estimates of the causal impact of changes
+in DMM participation on market quality. Further, we shed light on the industrial
+organization of liquidity supply. Our evidence strongly supports the existence of
+strategic complementarity, as deﬁned by Bulow, Geanakoplos, and Klemperer
+(1985), in liquidity supply. Speciﬁcally, we ﬁnd improvements in liquidity and
+market quality for NYSE-listed securities on markets other than the NYSE at
+times when the DMM contract provides incentives for the DMM to place more
+aggressive quotes on the NYSE. Documenting strategic complementarity in
+liquidity supply is potentially important, because such complementarity implies
+that exogenous shocks to liquidity supply will be ampliﬁed in equilibrium.
+2 MiFID II focuses, in particular, on market making by algorithmic trading ﬁrms and requires that such ﬁrms
+must “carry out market making continuously during a speciﬁed proportion of the trading venue’s trading hours,
+except under exceptional circumstances” and “enter into a binding written agreement with the trading venue”
+(Shearman & Sterling, LLP 2014, p. 4; see also ESMA 2019). Separately, the Hong Kong stock exchange also
+considers the adoption of DMM contracts (see https://www.hkex.com.hk/eng/prod/secprod/mms.htm#5).
+3 See V enkataraman and Waisburd (2007), Anand, Tanggaard, and Weaver (2009), Skjeltorp and Ødegaard (2015),
+and Menkveld and Wang (2013).
+45
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 3 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 46 44–74
+The Review of Financial Studies / v 33 n 1 2020
+The NYSE DMM program was adopted in 2008, replacing the specialist
+system that had been in use for decades. The NYSE assigns one ﬁrm to
+act as DMM in every listed security.
+4 We exploit the fact that the NYSE
+DMM contract includes a discontinuity, by which both DMM obligations and
+incentives discretely shift as a function of the consolidated (across markets)
+prior month’s trading volume in the security. Causal effects can be identiﬁed
+because consolidated trading volume reﬂects the decisions of thousands of
+market participants both on and off the NYSE, as opposed to being selected by
+the DMM, the listed ﬁrm, or the exchange.
+5
+NYSE Rule 104 speciﬁes DMM obligations and compensation for both
+“active” and “less active” securities. 6 The Rule deﬁnes active (inactive)
+securities as those with consolidated average daily trading volume equal to
+or greater than (less than) 1 million shares during the prior month.
+7 For active
+securities, the DMM obligation is to maintain quotes at the NBBO at least 10%
+of the time, whereas for inactive securities the quoting obligation is increased
+to at least 15% of the time. On the compensation side, a DMM that meets its
+quoting obligation also receives a rebate of $0.0035 per share when supplying
+liquidity to trades in less active securities, whereas, during our sample period,
+the rebate for suppling liquidity in more active securities ranged from $0.0025
+to $0.0030 per share.
+8 Thus, both obligations and incentives for NYSE DMMs
+are subject to a discrete increase when the prior’s month trading volume is
+less than 1 million shares per day. For brevity, we refer to security/months that
+meet the “less active” deﬁnition as months characterized by an enhanced DMM
+contract.
+We employ a regression discontinuity research design to assess changes
+in market depth, quoted and effective bid-ask spreads, and rates of price
+improvement attributable to enhancement of the DMM contract. A key
+advantage of the regression discontinuity design, as compared with, for
+4 A total of seven ﬁrms acted as DMMs on the NYSE during our sample period. The number of listed securities
+assigned to individual DMM ﬁrms ranges from 56 to 1,185 as of April 2013.
+5 However, we cannot assess the potentially distinct effects of changes in DMM obligations versus changes in
+DMM compensation, because of a discrete change in each at the same volume threshold.
+6 NYSE Rule 104 “Dealings and Responsibilities of DMMs” is available at http://nyserules.nyse.com/
+nyse/rules/nyse-rules/chp_1_3/chp_1_3_7/chp_1_3_7_8/default.asp. The NYSE allocates securities across
+DMMs in part based on their performance in discharging their DMM obligations. NYSE procedures for
+allocating securities are delineated in Rule 103B, available at http://nyserules.nyse.com/nyse/rules/nyse-
+rules/chp_1_3/chp_1_3_7/chp_1_3_7_6/default.asp.
+7 By comparison, the median consolidated average daily volume for all NYSE-listed securities during our sample
+period is 0.48 million shares. Therefore, the discontinuity applies for securities with above-median volume.
+8 These rebates pertained to securities with a share price of $1 or more. DMM rebates in
+more active securities at times depended also on the quantity of shares posted. See the ﬁl-
+ings at https://www.sec.gov/rules/sro/nyse/2008/34-58921.pdf, https://www.sec.gov/rules/sro/nyse/2009/34-
+60614.pdf, https://www.sec.gov/rules/sro/nyse/2012/34-66138.pdf, and https://www.sec.gov/rules/sro/nyse/
+2013/34-69992.pdf. By comparison, rebates for public providers of liquidity on the NYSE were lower,
+ranging from about $.0010 to $.0020 per share, depending on the trader’s overall volume of transactions (see
+https://www.sec.gov/rules/sro/nyse/2010/34-62082.pdf and the details provided by Cardella, Hao, and Kalcheva
+2017).
+46
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 4 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 47 44–74
+Liquidity Provision Contracts and Market Quality
+example, a difference-in-differences method, is that it focuses on market
+outcomes to the same ﬁrm for similar trading volumes just above and below
+the 1-million-shares-per-day volume threshold. Therefore, the method isolates
+the effect of the change in DMM contract provisions, without potential
+complications attributable to the selection of a control sample.
+Clark-Joseph, Y e, and Zi (2016) report a widening of bid-ask spreads for
+NYSE-listed ﬁrms traded on non-NYSE markets when the NYSE was forced
+by a technological malfunction to stop trading for a portion of the July 8, 2015,
+trading day. They attribute the spread increase to the removal of the NYSE
+DMM during the trading halt, and support this interpretation by showing that
+spreads on average widened more for those securities where DMMs had a
+larger pre-closure share of overall trading. However, their evidence is indirect
+and does not deﬁnitively rule out that the widening of spreads was attributable
+to attributes of the NYSE other than the DMM per se. For example, the
+NYSE is the listing exchange for the affected securities, and the majority of
+price discovery has traditionally taken place at the NYSE (Hasbrouck 1995).
+Further, the NYSE operates the lone remaining physical trading ﬂoor for U.S.
+equities, implying that ﬂoor brokers who may be entrusted with large but
+conﬁdential orders are also removed from the market when the NYSE ceases
+trading. In addition, the NYSE trading glitch was accompanied by reports of
+computer systems problems at other companies, including United Airlines
+and the Wall Street Journal, which may have fueled fears of a coordinated
+attack on information systems (Hope and V aishampayan 2015). The regression
+discontinuity design we employ directly assesses the effects on liquidity of
+exogenous (to the decisions of the DMM or the exchange) changes in the
+obligations and compensation of the NYSE market makers, without potential
+obfuscating effects attributable to the shutdown of the entire NYSE trading
+system or the need to rely on data from a single trading day.
+Our results show that liquidity is improved when the DMM contract
+is enhanced. In particular, quoted and effective bid-ask spreads are both
+signiﬁcantly smaller, and rates of price improvement (i.e., trade executions
+at prices better than the best quotes) are higher when the DMM contract is
+enhanced. We rule out that the empirical results obtained here are attributable to
+some inherent attribute of the prior month’s volume or other bias in the research
+design by conducting placebo tests that focus on counterfactual average daily
+volume breakpoints of 0.5 and 1.5 million shares, rather than the actual
+breakpoint of 1.0 million shares, and that assess outcomes for Nasdaq-listed
+securities and for NYSE securities during a period prior to the implementation
+of the current DMM contract. On balance, our results provide strong evidence
+that exogenous increases in the scope of DMM obligations and compensation
+are associated with improved liquidity. Therefore, they support the Clark-
+Joseph, Y e, and Zi (2016) interpretation of their empirical results, and more
+broadly show that DMM contracts can improve outcomes for typical securities,
+not just those where ﬁrms self-select to employ DMMs.
+47
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 5 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 48 44–74
+The Review of Financial Studies / v 33 n 1 2020
+We also use the discontinuity in the NYSE DMM contract to investigate the
+nature of competition in the business of liquidity provision. The enhanced DMM
+contract incents, both by obligation and compensation, the NYSE DMM to be
+more aggressive in supplying liquidity on the NYSE. NYSE-listed securities are
+also quoted and traded off the NYSE. Strikingly, we document lower effective
+bid-ask spreads, higher rates of price improvement relative to the NBBO,
+and greater quoted depth for non-NYSE markets that quote and trade NYSE-
+listed securities, whereas each of these measures, except effective spreads, are
+essentially unchanged on the NYSE.
+These results support the reasoning that more frequent and aggressive
+quotations from the NYSE DMM reduce competitors’ marginal cost of
+providing liquidity on the other markets that also trade NYSE securities,
+potentially because liquidity providers there understand that they can more
+readily unwind unwanted inventory positions against the NYSE DMM’s
+quotations. More broadly, the results imply that market making is characterized
+by “strategic complementarity” as the term is deﬁned by Bulow, Geanakoplos,
+and Klemperer (1985), whereby more aggressive play by one participant
+improves the marginal proﬁtability of competitors, leading to more aggressive
+play on their part as well.
+The effects of DMM obligations on market quality comprise a question of
+ﬁrst order importance for those who design and regulate ﬁnancial markets.
+While any market participant can choose to provide liquidity on an electronic
+limit order market, in practice most liquidity is provided by high-frequency
+trading ﬁrms.
+9 In the absence of DMM contracts, high-frequency ﬁrms can
+cease providing liquidity during times of market uncertainty. For example,
+Arnuk, Saluzzi, and Leuchtkafer (2011) assert that half of the high frequency
+liquidity providers simply “turned off” their “algo bots” during the “ﬂash crash”
+in U.S. equity markets in May 2010. The evidence provided here contributes
+to the understanding of how DMM contracts can supplement endogenous
+liquidity provision to improve the functioning of ﬁnancial markets and helps
+to illuminate the nature of economic equilibrium in the market for liquidity
+provision services.
+1. Designated Market Makers and Strategic Complementarity in Financial
+Markets
+1.1 Designated market makers
+The majority of trading in equities and futures contracts, as well as signiﬁcant
+amounts of trading in foreign exchange, has migrated to electronic limit order
+markets. Any investor can supply liquidity in these markets if they so desire,
+as entry and exit is accomplished by simply submitting or cancelling limit
+9 See, for example, Hendershott, Jones, and Menkveld (2011) and Hendershott and Riordan (2013).
+48
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 6 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 49 44–74
+Liquidity Provision Contracts and Market Quality
+orders. Nevertheless, DMMs are often observed. The key distinguishing feature
+of a DMM is a contract that includes an obligation to supply liquidity in
+certain circumstances, in exchange for speciﬁed monetary compensation or
+other beneﬁt. Perhaps the best-known example of a DMM is the “specialist”
+employed by the New Y ork Stock Exchange for many decades, until 2008.
+While the NYSE specialist was broadly tasked with maintaining a “fair and
+orderly market,” the most important explicit specialist obligation came in the
+form of the “price continuity” rule, which required that trades be executed
+at prices close to those of immediately preceding trades.
+10 Specialist were
+traditionally compensated in part through preferential access to the information
+contained in the book of unexecuted limit orders.
+More recently, a number of European stock markets, including those based
+in Paris, Amsterdam, Stockholm, Olso, and Milan, introduced DMM contracts
+whereby individual ﬁrms could hire a DMM to enhance liquidity in their own
+shares. These contracts typically call for the ﬁrm to pay the DMM a periodic fee
+in exchange for a requirement that the DMM enter orders sufﬁcient to ensure
+that the quoted bid-ask spread does not exceed a speciﬁed maximum width.
+DMM contracts of this type were studied by Bessembinder, Hao, and Zheng
+(2015), V enkataraman and Waisburd (2007), Anand, Tanggaard, and Weaver
+(2009), Skjeltorp and Ødegaard (2015), and Menkveld and Wang (2013). In
+addition, a number of derivative exchanges identify certain market participants
+as DMMs.
+11
+The current NYSE DMM structure, which is the focus of our study, has
+been in effect since 2008 and is detailed in NYSE Rule 104. Unlike the DMM
+agreements previously adopted in several European markets, Rule 104 does not
+require the DMM to narrow the bid-ask spread, regardless of width. However,
+the agreement does require the DMM to maintain continuous two-sided quotes
+at some price, and to post quotes at prices that match the NBBO for a speciﬁed
+portion of the trading day. The DMM is compensated, in part, by rebates paid to
+DMMs when others execute trades against their orders. In addition, the DMM
+is able to share (with limit orders at the top of the book) in the execution of
+marketable orders, even if the specialists’ orders did not establish time priority
+at that price.
+12 Rule 104 also includes more qualitative requirements for the
+DMM to “assist in the maintenance of a fair and orderly market insofar as
+reasonably practicable” and to “assist the Exchange by providing liquidity as
+needed to provide a reasonable quotation.” We focus on quantitative aspects
+of the NYSE DMM contract, in particular on the discrete shifts in the explicit
+10 See Panayides (2007) and the papers referenced therein.
+11 For descriptions of some DMM programs, see https://www.cboe.org/general-info/liquidity-provider-
+info/designated-primary-market-maker-dpm-program-info (Chicago Board Options Exchange),
+http://www.eurexchange.com/exchange-en/resources/participant-list/market-making-futures (Eurex Futures),
+and http://business.nasdaq.com/media/NFX-DMM-Program-Tenders_tcm5044-51156.pdf (NFX Futures).
+12 Such “parity trading” is described at https://www.nyse.com/publicdocs/nyse/markets/nyse/Parity_and_Priority_
+Fact_Sheet.pdf and is empirically studied by Battalio, Jennings, and McDonald (2018).
+49
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 7 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 50 44–74
+The Review of Financial Studies / v 33 n 1 2020
+NYSE DMM obligation and rebate compensation that occur when the prior
+month’s consolidated trading volume is less than versus greater than or equal
+to 1 million shares, while recognizing that qualitative aspects of performance
+also may be relevant to the NYSE’s decision to retain DMMs.
+1.2 Strategic complementarity
+Here, we show that the enhanced NYSE DMM contract improves market
+liquidity. This evidence, obtained for a DMM contract that applies to all listed
+securities, complements the ﬁndings of improved liquidity in the wake of
+the selective adoption of DMM contracts for some securities on European
+Exchanges, as documented by V enkataraman and Waisburd (2007), Anand,
+Tanggaard, and Weaver (2009), Skjeltorp and Ødegaard (2015), and Menkveld
+and Wang (2013).
+Potentially more important, our evidence sheds light on the economics of
+liquidity supply. The shifts in NYSE DMM obligations and compensation at
+the 1-million-shares threshold are modest, yet we document substantial effects
+on equilibrium market liquidity. In a similar vein, the evidence of improved
+liquidity after the adoption of DMM contracts on the Stockholm Exchange
+presented by Anand, Tanggaard, and Weaver (2009) occurs even though the
+magnitude of the direct compensation to DMM ﬁrms, which is presumably
+sufﬁcient to offset any costs of providing additional liquidity, averages only
+about $3,000 per month.
+We propose that the reason that relatively small changes in incentives
+attributable to DMM contracts can have substantive effects on market outcomes
+is that liquidity supply is characterized by “strategic complementarity.” Bulow,
+Geanakoplos, and Klemperer (1985) introduced this term to refer to situations
+where an increase in an activity by one player increases the marginal beneﬁt of
+the activity to other players. Strategic complementarity is important in ﬁnancial
+markets, because it implies the existence of “ampliﬁcation” effects, where
+the impact of a given exogenous shock is magniﬁed by strategic interactions
+between players.
+Ampliﬁcation resulting from strategic interactions has been identiﬁed in a
+number of studies. Chen, Goldstein, and Jiang (2010) note that mutual fund
+outﬂows impose costs that are borne by investors who remain in the fund,
+implying that the marginal beneﬁt of immediate exit increases when other
+investors exit. They show that this strategic complementarity manifests itself
+in stronger outﬂows in reaction to negative performance news at equity mutual
+funds that hold less liquid assets. Related, Goldstein, Jiang, and Ng (2017)
+document an asymmetry whereby corporate bond mutual fund ﬂows are more
+sensitive to negative than to positive performance news. The resultant “ﬁrst
+seller” advantage implies that bond fund ﬂows may amplify the effects of
+negative bond performance.
+Barlevy and V eronesi (2000) present a model where asset prices depend
+both on information regarding fundamentals and on random liquidity shocks.
+50
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 8 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 51 44–74
+Liquidity Provision Contracts and Market Quality
+They show that the acquisition of information regarding fundamental value by
+some traders can induce higher informational investment by others, particularly
+during times of negative shocks to fundamental values, when informed investors
+drive prices downwards and uninformed investors wish to learn whether
+the shock is fundamental or liquidity-driven. Goldstein and Y ang (2015)
+develop a model whereby agents’ receive signals regarding different aspects of
+fundamental value. They show that more aggressive information-based trading
+by those who receive one signal can reduce uncertainty regarding other aspects
+of information, thereby inducing additional information acquisition and more
+aggressive trading, and amplifying the effect of changes in information. Related,
+Cella, Ellul, and Giannetti (2013) show that, during times of market turmoil,
+“short horizon” investors sell more aggressively than others. Thus, they amplify
+the effect of negative market wide shocks by demanding liquidity when it is
+scarce.
+Although ampliﬁcation attributable to strategic complementarity has been
+documented in prior studies of ﬁnancial market ﬂows, and market illiquidity
+contributes to strategic interactions in some cases, to our knowledge, no prior
+study has assessed whether the business of liquidity provision is itself subject to
+strategic complementarity. We provide direct evidence on this issue by studying
+liquidity supply in NYSE securities by agents both on and off the NYSE.
+Securities listed on the NYSE (as well as Nasdaq) are traded not just on the
+listing exchange, but also on as many as nine other Exchanges as well as in off-
+exchange venues, including so-called “Dark Pools” and at individual brokerage
+ﬁrms that “internalize” orders. We assess whether the enhanced DMM contract
+alters the competitive strategies and outcomes for liquidity suppliers other than
+the DMM by studying quotations entered and trades executed for NYSE-listed
+securities both off and on the NYSE.
+13
+Simply observing that liquidity outcomes on the NYSE are positively
+correlated with outcomes off the NYSE would not be sufﬁcient to draw
+implications regarding potential strategic complementarity, as such correlation
+could arise from common variation in unobservable factors that affect the costs
+of providing or demand for liquidity. However, our regression discontinuity
+design focuses on contractually induced shifts in liquidity supply that apply
+only to the NYSE DMM, so we can directly test the strategic complementarity
+hypothesis. Our results support the interpretation that the liquidity provision is
+indeed characterized by strategic complementarity, as the more binding DMM
+obligation on the NYSE results in higher rates of price improvement and lower
+effective bid-ask spreads off the NYSE. We conjecture that more frequent and
+aggressive quotations from the NYSE DMM reduce competitors’ marginal cost
+of providing liquidity, because non-NYSE liquidity providers understand that
+they can more readily unwind unwanted inventory positions against the NYSE
+13 Off-exchange trades are reported in the Trade-and-Quote (TAQ) database as trade reporting facility (TRF)
+transactions.
+51
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 9 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 52 44–74
+The Review of Financial Studies / v 33 n 1 2020
+DMM’s quotations. More broadly, the evidence of strategic complementarity in
+liquidity provision helps to explain the notion of illiquidity spirals, whereby a
+negative shock affecting some suppliers of liquidity cascades to reduce liquidity
+supply by competitors as well.
+2. Regression Discontinuity Research Design
+To identify the impact of the NYSE DMM contract on market quality, we use a
+regression discontinuity research design focused on the discrete shift in DMM
+obligations and compensation at 1 million shares for the prior’s month average
+daily trading volume. The regression discontinuity design (RDD) is a quasi-
+experimental approach with the deﬁning characteristic that the probability of
+receiving treatment changes discontinuously as a function of one or more
+underlying variables (Hahn, Todd, and van der Klaauw 2001; Cameron and
+Trivedi 2005). RDD methods have been widely adopted in Economics and
+Finance research in recent years.
+14
+In this study, less than 1-million-shares average daily trading volume in a
+calendar month corresponds to the treatment of the enhanced DMM contract, in
+that the DMM is required to maintain quotes at the NBBO for at least 15% of the
+time and receives a higher liquidity-supply rebate. Firm-months with trading
+volume of equal to or just more than 1 million shares provide the control, as
+the DMM is required to maintain quotes at NBBO only 10% of the day and
+receives a smaller rebate.
+Our treatment variable is an indicator variable for the enhanced contract is
+deﬁned as
+DMM
+i,t =
+{ 1 if V oli,t−1 −VT < 0
+0 if V oli,t−1 − VT ≥ 0, (1)
+where i and t index ﬁrm and year-month observations, Vo li,t−1 is the monthly
+average consolidated daily trading volume in the previous month, and VT is
+the treatment volume threshold of 1 million shares.
+Following Imbens and Lemieux (2008), we estimate the following panel
+regression model:
+yi,t =α +β0DMMi,t +β1 ∗(ln
+(
+Vo li,t−1
+)
+−ln(VT ))+ β2 ∗(ln
+(
+Vo li,t−1
+)
+−ln(VT ))×DMMi,t +ηi +νt +ϵi,t, (2)
+where yit is a measure of market quality, ηi is an indicator variable for ﬁrm i to
+allow for ﬁrm ﬁxed effects, νt is an indicator variable for year-month t to allow
+for calendar ﬁxed effects, and εi,t is the error term. The parameter of interest
+is β0, which measures the impact of the enhanced DMM contract. Given the
+inclusion of the ﬁrm ﬁxed effect, identiﬁcation of β0 comes only from those
+ﬁrms that experience a shift of average daily trading volume.
+14 See Kwan, Masulis, and McInish (2015) and Crane, Michenaud, and Weston (2016), among others.
+52
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 10 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 53 44–74
+Liquidity Provision Contracts and Market Quality
+The intuition behind the RDD is that observations below and above the
+cutoff can be compared directly to draw inferences regarding the effect of the
+treatment. The RDD design is valid if the average daily trading volume in
+a month can be considered as essentially randomly assigned below or above
+the threshold. The key assumption of the RDD is that individuals are unable
+to precisely manipulate the assignment variable, implying that treatment is
+randomized. This assumption is empirically testable, as described by McCrary
+(2008). In particular, the marginal density of the assignment variable should be
+continuous in the vicinity of the threshold. In contrast, a jump in the density of
+the assignment variable at the threshold would provide evidence of endogenous
+selection and would invalidate the appropriateness of the RD design. In terms
+of our study, if DMMs or ﬁrms could manipulate the assignment variable
+by altering the consolidated (across markets trading NYSE-listed securities)
+volume of trading, the RDD tests would not lead to valid inference.
+Figure 1 displays average monthly trading volume (rounded to 10,000 shares)
+for sample securities and displays no obvious abnormalities in the vicinity of
+the 1-million-shares cutoff. To verify formally that the RDD provides for valid
+inference in our application, we implement the density discontinuity test of
+McCrary (2008). The results do not indicate any discontinuity at the threshold,
+implying that the RDD design is valid.
+Figure 1
+Distribution of trading volume
+This ﬁgure displays the frequency distribution of the consolidated average daily trading volume around 1 million
+shares during calendar month
+t for the sample securities. Each observation is assigned to a 10,000 shares category
+for display purposes. The sample includes all securities that at least have one change in DMM obligation during
+the period of October 2009 to December 2013. 53
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 11 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 54 44–74
+The Review of Financial Studies / v 33 n 1 2020
+Implementing the RDD design requires the selection of a “bandwidth,” that
+is, the range of volume around the 1-million-shares threshold to be used to
+estimate model parameters. The smaller the bandwidth the more accurate is the
+implicit assumption that ﬁrms are randomly assigned to either side of the 1-
+million-shares threshold. However, statistical power is reduced with a narrower
+bandwidth due to the smaller sample size. Imbens and Kalyanaraman (2012,
+hereafter IK) develop an optimal bandwidth based on minimization of the mean
+square error (MSE). Their method trades off the bias introduced by use of a
+larger bandwidth against the reduction in the standard error attributable to a
+larger sample size. Calonico, Cattaneo, and Titiunik (2014, hereafter CCT)
+introduce a nonparametric method that reﬁnes the IK method to both identify
+the optimal bandwidth and to remove the estimated bias. Calonico et al. (2017,
+hereafter CCFT) provide a Stata package that identiﬁes the optimal bandwidth
+with an upgraded version of the bandwidth selector.
+In our setting, the DMM obligation varies for a given security across months
+based on the aggregated average daily trading volume in the previous month.
+Liquidity is known to vary as a function of endogenous volume and other factors,
+so we include appropriate control variables, as well as time and ﬁrm ﬁxed
+effects. Unfortunately, the CCFT bias correction appears to not be well equipped
+to handle the computational burden created by the inclusion of ﬁxed effects
+for a large number of securities.
+15 Therefore, we proceed by using the local
+linear method proposed by IK, with optimal bandwidths from CCFT. 16 While
+our point estimates remain biased in ﬁnite samples, we assess the effects of
+potential bias by estimating each regression using bandwidths both greater and
+less than the optimal. The results generally indicate larger point estimates with
+smaller bandwidths (though accompanied by higher standard errors resulting
+from the smaller sample). That is, the results indicate that the estimates obtained
+at the optimal bandwidths are understated, that is, biased toward, rather than
+away from, zero.
+Speciﬁcation (2) controls for the direct effects of trading activity by
+the inclusion of trading activity as an explanatory variable. The market
+microstructure literature has documented (e.g., Stoll 1978; Benston and
+Hagerman 1974; O’Hara 1995; Demsetz 1968) that additional variables,
+including share price and return volatility, have pervasive explanatory power
+for market liquidity. We therefore include inverse price and realized return
+volatility as additional explanatory variables when we estimate expression (2).
+Our sample is drawn from the Trade-and-Quote (TAQ) database and pertains
+to the period September 2009 to December 2013. The NYSE amended Rule 104
+in October 2008 to increase the amount of time that a DMM unit must maintain
+15 More speciﬁcally, we ﬁnd that the STA TA package developed by CCFT often fails to converge when ﬁrm ﬁxed
+effects are employed in our sample.
+16 Locally linear methods have been shown to have attractive bias properties in estimating regression functions at
+the boundary (Fan and Gijbels 1992) and enjoy rate optimality (Porter 2003).
+54
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 12 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 55 44–74
+Liquidity Provision Contracts and Market Quality
+Table 1
+Sample summary statistics
+Bandwidth (million shares) None 0.5 0.1 0.05 0.025
+Number of ﬁrms 756 738 606 512 399
+Number of ﬁrm-months 30,819 16,228 3,196 1,585 726
+Number of ﬁrm-days 628,766 336,850 66,409 33,019 16,074
+Stronger DMM obligation 101010101 0
+Consolidated average daily 537 1,845 730 1,222 949 1,049 974 1,025 988 1,012
+trading volume (1,000s)
+Market capitalization ($mil) 2,933 4,946 3,892 5,003 4,584 5,030 4,637 5,013 4,425 5,020
+Share price ($) 33.55 34.39 39.80 37.91 38.71 39.61 38.45 39.93 36.84 39.47
+Turnover (%) 0.98 1.73 1.11 1.36 1.21 1.23 1.20 1.20 1.23 1.15
+Return SD (%) 2.33 2.41 2.20 2.24 2.27 2.17 2.27 2.17 2.40 2.15
+Quoted spread (basis points) 19.25 10.34 11.77 10.06 10.71 10.13 10.84 10.18 11.45 10.44
+Effective spread (basis points) 14.97 8.47 9.29 8.10 8.59 8.07 8.65 8.10 9.16 8.34
+Depth (shares) 1,331 2,659 1,369 1,956 1,642 1,606 1,724 1,491 1,814 1,509
+Dollar depth (1,000$) 23.61 41.11 28.32 35.81 31.64 33.25 31.88 32.45 32.03 32.26
+This table reports descriptive statistics for all NYSE-listed securities except those issued by ﬁnancial and utility
+ﬁrms (bandwidth = none) that have at least one shift from consolidated average daily trading volume during a
+calendar month below 1 million shares to above 1 million shares or vice versa between September 2009 and
+December 2013. This table also reports descriptive statistics for the subsets of securities with bandwidths of 0.5,
+0.1, 0.05, and 0.025 million shares. For each bandwidth, we report the number of ﬁrms, ﬁrm-months, and ﬁrm-
+days. All data are winsorized at the 0.5% level. Within each bandwidth, we report the descriptive statistics for the
+treatment group with stronger DMM obligation and the control group with weaker DMM obligation, respectively.
+Consolidated average daily trading volume is in thousands of shares; market capital is in million dollars; price of
+the security is in dollars; turnover and security daily return volatility are expressed as a percentage; the quoted
+spread and the effective spread are in basis points; share depth is in shares; and dollar depth is in thousands of
+dollar.
+a bid and offer at the inside from 10% to 15% for Less Active Securities
+and from 5% to 10% for More Active Securities. 17 The stated rationale was to
+improve market quality by increasing liquidity at the NBBO. To our knowledge,
+the NYSE has never articulated why Rule 104 focuses on a 1-million-shares
+threshold in particular. However, the model proposed by Bessembinder, Hao,
+and Zheng (2015) implies that DMM contracts will be associated with greater
+efﬁciency gains when applied to lower volume securities, if as seems plausible,
+low volume tends to be associated with greater information asymmetries. We
+commence our sample period just after the change, on September 1, 2009. The
+sample includes NYSE-listed securities for which the average consolidated
+daily trading volume is both less than and greater than the 1-million-shares
+threshold for at least 1 sample month. We exclude securities issued by ﬁnancial
+and utility ﬁrms (SIC codes 4900 to 4999 and 6000 to 6999) and security/months
+with trading on less than ﬁve days.
+Table 1 provides descriptive statistics for the 756 securities in the sample.
+As these statistics depend on the bandwidth, we provide results for several
+bandwidths (the no bandwidth columns include all trading days). The trade-offs
+involved in bandwidth selection can be readily observed. With no bandwidth
+17 See Securities Exchange Act Release no. 60595 (August 31, 2009) and 74 FR 46261 (September 8,
+2009) (SR-NYSE-2009-91) (Notice of Filing) (“DMM quoting requirement ﬁling”) https://www.sec.gov/
+rules/sro/nyse/2009/34-60595.pdf.
+55
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 13 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 56 44–74
+The Review of Financial Studies / v 33 n 1 2020
+restriction, the sample includes 628,766 ﬁrm-days, while by comparison
+a narrow bandwidth of 25,000 shares reduces the sample size to 16,074
+ﬁrm-days. On the other hand, ﬁrms are more closely matched in terms of
+characteristics that may be relevant to liquidity and market quality with the
+narrower bandwidth. In the absence of any bandwidth restriction the sample
+average market capitalization for months with the less restrictive market-
+making obligation greatly exceeds ($4.95 billion vs. $2.93 billion) the mean
+for months with the more restrictive market-making obligation. In contrast, the
+match is much closer ($5.02 billion vs. $4.43 billion) with the 25,000-share
+bandwidth.
+We compute both quoted and effective bid-ask spreads. The quoted spread
+is simply the difference between the best ask quote and the best bid quote on
+any market, and measures the transaction cost for a round trip trade executed
+at the NBBO quotes.
+18 To allow for the fact that some trades occur at prices
+better or worse than the quotations, we also compute effective spreads as twice
+the signed difference between the trade price and the midpoint of the best bid
+and ask quotes at the time of the trade.
+19 We express each spread measure in
+basis points (bps), relative to the midpoint of the bid and ask prices at the time
+of the trade.
+Results with a 25,000-share bandwidth reported in Table 1 indicate that
+quoted bid-ask spreads for security-days with trading close to 1-million-shares
+average about 10.5 to 11.5 bps. Effective spreads are narrower (8.3 to 9.2 bps),
+reﬂecting inside-the-quote executions. We also compute market depth, that
+is, the average quantity of shares and dollar amount (price times quantity)
+of unexecuted orders at the best bid and offer quotes. Results in Table 1
+indicate that depth averages about 1,500 to 1,800 shares with the 25,000-share
+bandwidth.
+3. Empirical Results for the Overall Market
+Following the suggestion of Lee and Lemieux (2010, section 4.1), Kwan,
+Masulis, and McInish (2015), and Crane, Michenaud, and Weston (2016), we
+graphically display in Figure 2 the empirical relation between each dependent
+variable and trading volume (having grouped the data for display purposes
+into ﬁfty evenly displayed bins on each side of the threshold). Tables 2 and 3
+report the results of estimating expression (2) for an array of market quality
+measures, based on market-wide outcomes. Standard errors are double clustered
+18 We construct the NBBO quotes from the TAQ data by ﬁrst identifying the best NASDAQ quote among the
+prevailing quotes for each MPID, and then identifying the best quote across NASDAQ and the prevailing quotes
+from each other stock exchange.
+19 For customer buys, the difference is the trade price less the quote midpoint, whereas for customer sells the
+difference is the quote midpoint less the trade price. Trades are assigned as customer buys or customer sells using
+the algorithm of Lee and Ready (1991), modiﬁed to compare trade prices to contemporaneous rather than lagged
+quotes.
+56
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 14 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 57 44–74
+Liquidity Provision Contracts and Market Quality
+Figure 2
+Regression discontinuity plots
+The panels of this ﬁgure display the functional form and a ﬁtted regression curve of the market quality measures for the group of securities that crosse s the trading volume threshold for changes
+in DMM obligations during the time period from September 2009 to December 2013. The
+y-axis displays market quality measures. The x-axis represents a ﬁrm’s aggregated average daily
+trading volume in calendar month t-1. The vertical line is the cutoff point of 1 million shares. Firms on the left-hand (right-hand) side are treatment (control) groups with less than (e qual to or
+greater than) 1-million-shares average daily trading volume in month t-1 and are associated with stronger (weaker) DMM obligation in month t. The regression discontinuity plots represent
+local sample means using 50 nonoverlapping evenly spaced bins on both sides of the threshold following the methodology described in Calonico et al. (2 017). The line represents a ﬁrst-order
+polynomial regression curve.
+57
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 15 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 58 44–74
+The Review of Financial Studies / v 33 n 1 2020
+Table 2
+Regression discontinuity tests: Spreads, depth, and rate of price improvement
+Percentage of execution
+Percentage quoted spread Effective spread ln(Share depth) within NBBO
+Column (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+Bandwidth
+> OB = OB < OB > OB = OB < OB > OB = OB < OB > OB = OB < OB
+DMM 0.0458 −0.807∗∗ −1.187∗∗ −0.0177 −0.736∗∗ −1.201∗∗ −0.000101 0 .0127∗∗ 0.0297∗∗ 0.0839 0 .326∗∗∗ 0.388∗∗∗
+(0.14) ( −2.32) ( −2.22) ( −0.06) ( −2.13) ( −2.05) ( −0.03) (2 .61) (2 .03) (1 .53) (4 .12) (3 .15)
+ln(V ol)-ln(VC) −4.607 −11.88 −85.48∗∗ −5.320 −13.60 −88.79∗∗∗ 0.316∗∗∗ 0.281∗∗∗ 0.659∗∗∗ −1.188∗∗ 2.527∗ 6.877
+(−0.97) ( −1.34) ( −2.37) ( −1.35) ( −1.53) ( −2.86) (15 .78) (5 .64) (4 .71) ( −2.24) (1 .82) (1 .57)
+(ln(V ol)-ln(VC))* DMM 4.717 1 .833 93 .68∗ 4.970 8 .714 106 .7∗∗ −0.108∗∗∗ 0.154∗∗ 0.176 −1.451∗∗ −1.187 −5.974
+(0.75) (0 .15) (1 .88) (0 .96) (0 .81) (2 .55) ( −4.65) (2 .56) (0 .93) ( −2.11) ( −0.60) ( −0.86)
+Realized volatility 0.0232∗∗∗ 0.0110∗∗ 0.0101 0 .0211∗∗∗ 0.0107∗∗ 0.00780 −0.0007∗∗∗ −0.0005∗∗∗ −0.0006∗∗∗ 0.0695∗∗∗ 0.0770∗∗∗ 0.0508∗∗∗
+(3.12) (2 .09) (1 .57) (3 .49) (2 .30) (1 .32) ( −11.58) ( −8.39) ( −6.66) (8 .11) (6 .23) (2 .46)
+Inv. price 25.84∗∗∗ 41.97∗∗∗ 53.61∗∗ 24.78∗∗∗ 40.70∗∗∗ 45.09∗∗ 0.625∗∗∗ 0.861∗∗∗ 1.561∗∗∗ −8.008∗∗∗ −10.37∗∗∗ −11.82∗∗∗
+(3.37) (3 .16) (2 .46) (4 .529) (3 .91) (2 .57) (17 .36) (13 .40) (13 .40) ( −12.96) ( −13.12) ( −8.06)
+F E s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s
+N 55,834 27,970 13,431 55,834 27,970 13,431 160,780 82,518 38,905 99,598 50,376 25,720
+Adj.
+R-sq. .739 .714 .791 .707 .630 .689 .825 .846 .857 .583 .601 .618
+This table reports the results of estimating the regression discontinuity speciﬁcation (2) on four aspects of liquidity measures for securities tha t cross the trading volume threshold during the
+time period from September 2009 to December 2013. We estimate the following panel regression model:
+yi,t =α +β0DMMi,t +β1
+(
+ln(Vo li,t−1)−ln(VT )
+)
++β2
+(
+ln(Vo li,t−1)−ln(VT )
+)
+DMMi,t +γX i,t−1 +ηi +νt +εi,t ,
+where yi,t is the daily percentage quoted spread, effective spread, the natural logarithm of share depth, and the percentage of transactions executed within th e NBBO quotes for security i in
+month t. Vo li,t−1 is the consolidated average daily trading volume during calendar month t-1 for security i in shares; DMMi,t is an indicator that equals 1 if Vo li,t−1 is less than 1 million
+shares and 0 ifVo li,t−1 is equal to or greater than 1 million shares; andVo li,t−1 is reduced by VT (1-million-shares threshold) to have the threshold at zero. Spreads are in basis points, and share
+depth is in the number of round lots. Xi,t−1 represents a set of controlling variables, including intraday realized volatility and inverse price. Estimation is performed using a panel regress ion
+with ﬁrm ﬁxed effects, ηi , year-month ﬁxed effects,νt , and the robust standard errors are double-clustered by ﬁrm and date. We report results with three different bandwidths: 2 times the optimal
+bandwidth (> OB), the optimal bandwidth (= OB), and a half of the optimal bandwidth (< OB). The optimal bandwidth is based on that of Calonico et al. (2017), which is 0.05 million shares for
+spreads, 0.15 million shares for depth, and 0.07 million shares for the percentage of execution within NBBO.t-statistics are shown below the coefﬁcient estimates. *p<. 1;* *p<. 05; ***p<. 01.
+58
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 16 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 59 44–74
+Liquidity Provision Contracts and Market Quality
+Table 3
+Regression discontinuity tests: Trading volume
+ln(Daily trading volume in shares) ln(Daily trading volume in dollar)
+Column (1) (2) (3) (4) (5) (6)
+Bandwidth > OB = OB < OB > OB = OB < OB
+DMM 0.0125∗∗ 0.0297∗∗∗ 0.0326∗∗∗ 0.0126∗∗ 0.0288∗∗∗ 0.0361∗∗∗
+(2.65) (4 .19) (2 .98) (2 .31) (3 .50) (3 .11)
+ln(V ol)-ln(VT) 0.615∗∗∗ 0.685∗∗∗ 1.054∗∗∗ 0.480∗∗∗ 0.621∗∗∗ 1.128∗∗∗
+(22.48) (10 .09) (5 .40) (15 .44) (8 .06) (5 .49)
+(ln(V ol)-ln(VT))* DMM −0.136∗∗∗ −0.137 −0.789∗∗∗ 0.0453 −0.175∗ −1.201∗∗∗
+(−4.36) ( −1.72) ( −3.15) (1 .30) ( −1.96) ( −4.34)
+Realized volatility 0.0002∗∗∗ 0.0004∗∗∗ 0.0003∗∗ 0.0001 0 .0003∗∗∗ 0.0002
+(2.42) (3 .62) (2 .52) (0 .79) (2 .93) (1 .69)
+Inv. price −0.113∗∗∗ −0.105∗∗∗ −0.0649 −1.744∗∗∗ −1.814∗∗∗ −2.765∗∗∗
+(−3.64) ( −1.85) ( −0.67) ( −38.35) ( −21.18) ( −21.84)
+FEs Y es Y es Y es Y es Y es Y es
+N 160,780 82,518 38,905 160,780 82,518 38,905
+Adj.
+R-sq. .214 .181 .206 .770 .777 .794
+This table reports the results from the analysis using the regression discontinuity speciﬁcation (2) with trading
+volume as the dependent variable on securities that cross the trading volume threshold during the time period
+from September 2009 to December 2013. We estimate the following panel regression model:
+yi,t =α +β0DMMi,t +β1
+(
+ln(Vo li,t−1)−ln(VT )
+)
++β2
+(
+ln(Vo li,t−1)−ln(VT )
+)
+DMMi,t +γXi,t−1 +ηi +νt +εi,t ,
+where yi,t is the natural logarithms of daily trading volume in shares and in dollar for security i in calendar
+month t. Vo li,t−1is the consolidated average daily trading volume during the calendar month t-1 for security i
+in shares; DMMi,t is an indicator that equals 1 if a security is associated a optimal bandwidth (= OB), and a
+half of the optimal bandwidth ( < OB). The optimal bandwidth is based on that of Calonico et al. (2017) and is
+0.135 million shares for the daily trading volume measures.t-statistics are shown below the coefﬁcient estimates.
+*p<. 1;* *p<. 05; ***p<. 01.
+by ﬁrm and date. Table 4 reports the results of placebo tests where we estimate
+expression (2) for volume cutoffs other than the contractually referenced
+1-million-shares threshold, for Nasdaq-listed securities, and for NYSE
+securities based on data prior to the introduction of the current DMM contract.
+Finally, Tables 5 and 6 report the results of estimating (2) separately for NYSE
+versus non-NYSE market quality variables. The key statistical tests reported
+on these tables concern the coefﬁcient estimate on DMM
+it , which estimates the
+discontinuity in the regression estimates at the 1-million-shares threshold.
+3.1 Liquidity: Spreads, price improvement, and depths
+Table 2 reports results obtained when four aspects of liquidity, including quoted
+spreads, effective spreads, rates of price improvement, and market depth are
+employed as the dependent variable in expression (2) in turn. Results are
+reported for the optimal bandwidth determined according to CCFT, and for
+comparison using bandwidths that are half and twice the optimal.
+Focusing on the results for the optimal bandwidth (middle columns of
+Table 2), the estimates indicate that the quoted bid-ask spread is reduced by 0.81
+bps when DMM obligation is enhanced. By comparison, the average quoted
+spread in the vicinity of the 1-million-shares threshold (Table 1) is about 10
+to 11 bps. The results in Table 2 also indicate lower effective bid-ask spreads
+with the stronger DMM obligation. The estimated reduction at the threshold is
+59
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 17 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 60 44–74
+The Review of Financial Studies / v 33 n 1 2020
+Table 4
+Placebo regression discontinuity tests
+A. NYSE securities with a 0.5-million-share B. NYSE securities with a 1.5-million-share
+threshold (Sep. 2009–Dec. 2013) threshold (Sep. 2009–Dec. 2013)
+Quoted Effective ln(Shall Inside ln(Share ln(Dollar Quoted Effective ln(Shall Inside ln(Share ln(Dollar
+spread spread depth) NBBO volume) volume) spread spread depth) NBBO volume) volume)
+(1) (2) (3) (4) (5) (6) (8) (9) (10) (11) (12) (13)
+OB (mil.) 0.04 0 .04 0 .02 0 .07 0 .07 0 .07 0 .13 0 .13 0 .05 0 .25 0 .12 0 .12
+DMM −0.053 −0.045 −0.021 −0.022 0 .011 0 .036 −0.203 −0.164 −0.009 0 .0201 −0.628 −0.084
+(−0.09) ( −0.09) ( −0.53) ( −0.32) (0 .55) (1 .34) ( −0.61) ( −0.57) ( −0.19) (0 .40) ( −0.88) ( −0.64)
+ln(V ol)-ln(VT) −14.66 −11.39 0 .164 0 .724 0 .84∗∗∗ 1.13∗∗∗ 0.845 0 .521 −0.911 0 .834∗∗ −0.152 0 .13
+(−1.58) ( −1.58) (0 .14) (1 .11) (4 .42) (3 .96) (0 .18) (0 .13) ( −1.49) (1 .97) ( −0.40) (0 .26)
+(ln(V ol)-ln(VT))DMM 16.68 12 .53 0 .747 −4.06∗∗∗ −0.40 −0.68∗ −2.472 −1.342 1 .810 −2.50∗∗∗ 0.552 0 .059
+(1.14) (1 .11) (0 .48) ( −4.72) ( −1.64) ( −1.94) ( −0.45) ( −0.29) (0 .84) ( −4.65) (1 .16) (0 .09)
+Realized volatility 0.012∗∗ 0.012∗∗ −0.017 0 .06∗∗∗ 0.0001 −0.0004 0 .014∗ 0.012∗ −0.001 0 .025∗∗∗ −0.0005 −0.0003
+(2.07) (2 .30) ( −1.12) (7 .28) (0 .69) ( −0.81) (1 .81) (1 .77) ( −0.16) (3 .46) ( −1.53) ( −0.49)
+Inv. price 84.8∗∗∗ 65.4∗∗∗ 2.33∗∗∗ −5.92∗∗∗ −0.145 −1.05 86 .51∗∗∗ 71.19∗∗∗ 3.435∗∗∗ 2.532∗∗∗ 0.308 −3.91∗∗∗
+(4.14) (4 .09) (5 .87) ( −9.51) ( −0.98) ( −1.61) (10 .09) (9 .83) (4 .44) (6 .62) (1 .07) ( −3.70)
+F E s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s
+N 42,118 42,118 21,442 107,234 76,025 76,025 45,773 45,773 18,999 106,733 41,108 41,108
+Adj.
+R-sq. .741 .676 .816 .568 .189 .758 .786 .742 .880 .529 .200 .787
+(Continued)
+60
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 18 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 61 44–74
+Liquidity Provision Contracts and Market QualityTable 4
+(Continued)
+C. NASDAQ securities with a 1-million-shares D. NYSE securities with a 1-million-shares
+threshold (Sep. 2009–Dec. 2013) threshold (Jul. 2005–Oct. 2008)
+Quoted Effective ln(Shall Inside ln(Share ln(Dollar Quoted Effective ln(Shall Inside ln(Share ln(Dollar
+spread spread depth) NBBO volume) volume) spread spread depth) NBBO volume) volume)
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+OB (mil.) 0.12 0 .12 0 .10 0 .06 0 .06 0 .06 0 .06 0 .06 0 .06 0 .08 0 .08 0 .03
+DMM 0.055 −0.048 −0.0004 0 .598 0 .024 0 .029 0 .055 0 .449 −0.002 0 .088 0 .0063 −0.014
+(0.08) ( −0.08) ( −0.01) (1 .23) (0 .55) (0 .52) (1 .13) (0 .96) ( −0.10) (0 .34) (0 .29) ( −0.22)
+ln(V ol)-ln(VT) −0.562 0 .476 0 .160 6 .884 0 .358 −0.589 −9.320 −2.063 −0.578 −2.225 0 .369 3 .142
+(−0.08) (0 .08) (0 .29) (0 .62) (0 .41) ( −0.49) ( −1.05) ( −0.26) ( −1.15) ( −0.52) (1 .04) (1 .45)
+(ln(V ol)-ln(VT))DMM 0.334 −5.016 −0.053 5 .517 −0.247 0 .604 28 .66∗ 15.23 1 .304∗ 5.845 −0.0478 −4.710∗
+(0.03) ( −0.55) ( −0.08) (0 .38) ( −0.21) (0 .37) (1 .83) (1 .05) (1 .86) (1 .01) ( −0.10) ( −1.67)
+Realized volatility 0.0642∗∗∗ 0.063∗∗∗ 0.0005 −0.003 −0.0003 −0.0006 0 .118∗∗ 0.100∗∗∗ 0.001∗∗ −0.003 0 .0002 −0.001
+(2.50) (2 .73) (1 .17) ( −0.52) ( −0.59) ( −1.33) (2 .52) (2 .29) (2 .44) ( −0.58) (0 .44) ( −1.48)
+Inv. price 24.59∗∗∗ 22.41∗∗∗ 0.404∗∗ −0.621 0 .044 −1.274∗∗∗ 82.67∗∗∗ 70.57∗∗∗ 1.750∗∗ −7.758∗ −0.194 −3.730∗∗∗
+(4.96) (4 .62) (2 .56) ( −0.37) (0 .48) ( −5.24) (2 .84) (2 .92) (4 .50) ( −1.91) ( −0.39) ( −3.58)
+F E s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s Ye s
+N 57,348 57,348 47,295 28,254 29,346 29,346 46,623 46,623 46,623 60,992 61,622 23,506
+Adj.
+R-sq. .702 .524 .824 .691 .320 .816 .754 .623 .795 .696 .287 .789
+This table reports the placebo test results of estimating the regression discontinuity speciﬁcation (2) with the following panel regression model:
+yi,t =α +β0DMMi,t +β1
+(
+ln(Vo li,t−1)−ln(VT )
+)
++β2
+(
+ln(Vo li,t−1)−ln(VT )
+)
+DMMi,t +γX i,t−1 +ηi +νt +ϵi,t ,
+where yi,t is the daily percentage quoted spread, effective spread, the natural logarithm of share depth, percentage inside NBBO execution, and the natural log arithms of daily trading volume
+in shares and in dollar for security i in month t. Vo li,t−1 is the consolidated average daily trading volume during calendar month t-1 for security i in million shares; DMMi,t is an indicator
+that equals 1 if Vo li,t−1 is less than the threshold and 0 if Vo li,t−1 is equal to or greater than the threshold; and Vo li,t−1 is reduced by VT (the 1-million-shares threshold) to have the
+threshold at zero. Estimation is performed using a panel regression with ﬁrm ﬁxed effects, ηi , year-month ﬁxed effects, νt , and the robust standard errors are double-clustered by ﬁrm and
+date. We report results with the optimal bandwidths based on those of Calonico et al. (2017). The optimal bandwidths (in mil. shares) are listed under e ach dependent variable. t-statistics are
+shown below the coefﬁcient estimates. * p<. 1;* *p<. 05; ***p<. 01. Panel A reports results for NYSE securities that cross a 0.5-million-shares placebo threshold during the time period
+from September 2009 to December 2013. Panel B reports results for NYSE securities that cross a 1.5-million-shares placebo threshold during the time p eriod from September 2009 to
+December 2013. Panel C reports results for NASDAQ securities that cross a 1-million-shares threshold during the time period from September 2009 to De cember 2013. Panel D pertains to
+NYSE securities that cross a 1-million-shares threshold during the time period from July 2005 to October 2008.
+61
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 19 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 62 44–74
+The Review of Financial Studies / v 33 n 1 2020
+Table 5
+Regression discontinuity tests for on versus off NYSE outcomes: Rate of price improvement, effective
+spread, and depth
+Percentage of execution
+within NBBO Effective spread ln(Share depth)
+(1) (2) (3) (4) (5) (6)
+Off-NYSE On-NYSE Off-NYSE On-NYSE Off-NYSE On-NYSE
+DMM 0.335∗∗∗ −0.0126 −0.768∗∗ −0.636∗ 0.0128∗∗ 0.0003
+(4.49) ( −0.56) ( −2.18) ( −1.86) (2 .55) (0 .06)
+ln(V ol)-ln(VC) 2.844∗∗ −0.323 −15.45 −9.706 0 .266∗∗∗ 0.246∗∗∗
+(2.11) ( −0.93) ( −1.72) ( −1.13) (5 .16) (4 .94)
+(ln(V ol)-ln(VC))DMM −0.756 −0.581 11 .88 1 .560 0 .148∗∗ 0.177
+(−0.41) ( −1.15) (1 .07) (0 .15) (2 .41) (2 .89)
+Realized volatility 0.0765∗∗∗ 0.001 0 .0111∗∗ 0.0104∗∗∗ −0.0005∗∗∗ −0.0006∗∗∗
+(6.42) (0 .39) (2 .25) (2 .94) ( −8.04) ( −8.67)
+Inv. price −7.487∗∗∗ −2.836∗∗∗ 41.28∗∗∗ 44.87∗∗∗ 0.860∗∗∗ 0.416∗∗∗
+(−10.74) ( −13.11) (4 .06) (3 .65) (13 .31) (5 .66)
+F E s Ye s Ye s Ye s Ye s Ye s Ye s
+N 50,376 50,376 27,970 27,970 82,466 82,466
+Adj.
+R-sq. .580 .654 .622 .844 .827 .799
+This table reports the results from the analysis using the regression discontinuity speciﬁcation (2) for on versus
+off NYSE activities on securities that cross the trading volume threshold during the time period from September
+2009 to December 2013. We estimate the following panel regression model:
+yi,t =α +β0DMMi,t +β1
+(
+ln(Vo li,t−1)−ln(VT )
+)
++β2
+(
+ln(Vo li,t−1)−ln(VT )
+)
+DMMi,t
++γX i,t−1 +ηi +νt +εi,t ,
+where yi,t is the daily percentage of transactions happening within NBBO on NYSE (or off NYSE), the effective
+spread of transactions that occur on NYSE (or off NYSE), and the natural logarithm of share depth from NYSE
+and None NYSE exchanges for security
+i in calendar month t. Vo li,t−1 is the consolidated average daily trading
+volume during calendar month t-1 for security i in shares; DMMi,t is an indicator that equals 1 if a security is
+associated with a stronger DMM obligation, that is, itsVo li,t−1 is less than the 1 million shares, and 0 if a security
+is associated with a weaker DMM obligation, that is, its Vo li,t−1 is equal to or greater than 1 million shares;
+Vo li,t−1 is reduced by VT (1-million-shares threshold) to have the threshold at zero; and Xi,t−1 represents a set
+of controlling variables, including intraday realized volatility and inverse price. Estimation is performed using
+a panel regression with ﬁrm ﬁxed effects,
+ηi , year-month ﬁxed effects, νt , and the robust standard errors are
+double clustered by ﬁrm and date. We report results with the optimal bandwidth based on that of Calonico et
+al. (2017), which is 0.07 million shares for the percentage of execution within NBBO, 0.05 million shares for
+effective spread, and 0.15 million shares for depth.
+t-statistics are shown below the coefﬁcient estimates. *p<. 1;
+**p<. 05; ***p<. 01.
+0.74 bps, compared to a sample average effective spread near the threshold of
+8 to 9 bps.
+Clark-Joseph, Y e, and Zi (2016) estimate that quoted spreads for NYSE
+stocks increased by about 29% when the NYSE was forced to stop trading
+for a portion of the July 8, 2015 trading day. This estimate is larger than the
+approximate 8% (0.8 basis point increase relative to an approximate 10 basis
+point level) decrease in quoted spreads that we estimate when the DMM contract
+is enhanced. Of course, the estimates pertain to different events, as Clark-
+Joseph, Y e, and Zi focus on the complete removal of the NYSE DMM (as well
+as the entire NYSE trading structure), while we consider a change in the terms
+of the DMM contract, not the elimination of the contract. However, our results
+do support their interpretation that the activities of the NYSE DMM decrease
+bid-ask spreads. Perhaps more important, our results pertain to a relatively long
+62
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 20 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 63 44–74
+Liquidity Provision Contracts and Market Quality
+Table 6
+Regression discontinuity tests for NYSE market shares
+NYSE market shares in NYSE market shares in NYSE market shares in
+number of transactions total share volume total dollar volume
+(1) (2) (3)
+DMM −0.278∗∗ −0.295∗∗ −0.295∗∗
+(−2.55) ( −2.18) ( −2.18)
+ln(V ol)-ln(VT) −4.016∗∗ −0.849 −0.865
+(−1.98) ( −0.34) ( −0.35)
+(ln(V ol)-ln(VT))DMM −3.116 −5.326 −5.306
+(−1.13) ( −1.59) ( −1.58)
+Realized volatility −0.0008 −0.006∗∗∗ −0.006∗∗∗
+(−0.60) ( −3.86) ( −3.86)
+Inv. price −2.279∗∗∗ −1.321 −1.326
+(−2.38) ( −1.75) ( −1.75)
+FEs Y es Y es Y es
+N 38,905 38,905 38,905
+Adj.
+R-sq. .550 .497 .497
+This table reports the results from the analysis using the regression discontinuity speciﬁcation (2) with the NYSE
+market share as the dependent variable on securities that cross the trading volume threshold during the period
+from September 2009 to December 2013. We estimate the following panel regression model:
+yi,t =α +β0DMMi,t +β1
+(
+ln(Vo li,t−1)−ln(VT )
+)
++β2
+(
+ln(Vo li,t−1)−ln(VT )
+)
+DMMi,t
++γX i,t−1 +ηi +νt +εi,t ,
+where yi,t is the NYSE market share in percentage, measured by number of trades, share volume, and dollar
+volume for security i in calendar month t; Vo li,t−1 is the consolidated average daily trading volume during
+calendar month t-1 for security i in shares; DMMi,t is an indicator that equals 1 if a security is associated
+with a stronger DMM obligation, that is, its Vo li,t−1 is less than the 1 million shares, and 0 if a security is
+associated with a weaker DMM obligation, that is, its Vo li,t−1 is equal to or greater than 1 million shares;
+Vo li,t−1 is reduced by VT (1-million-shares threshold) to have the threshold at zero; and Xi,t−1 represents a set
+of controlling variables, including intraday realized volatility and inverse price. Estimation is performed using
+a panel regression with ﬁrm ﬁxed effects,
+ηi , year-month ﬁxed effects, νt , and the robust standard errors are
+double-clustered by ﬁrm and date. We report results with the optimal bandwidth based on that of Calonico et al.
+(2017), which is 0.07 million shares.
+t-statistics are shown below the coefﬁcient estimates * p<. 1;* *p<. 05;
+***p<. 01.
+52- month sample, while theirs is obtained from a single trading day, and are
+in that sense our results are more robust.
+Consistent with the prior literature, the results indicate that bid-ask spreads in
+basis points decline with share price (increase with inverse share price), and that
+depth in shares decreases with share price (increases with inverse share price).
+Also consistent with the prior literature, liquidity supply is reduced (spreads
+widen and depth declines) when return volatility is greater.
+The estimates of the bid-ask spread reductions reported in Table 2 imply
+substantial reductions in the dollar amounts paid as transaction costs. The
+average daily trading volume for ﬁrms in the 50,000-share bandwidth sample
+during the months when stronger DMM obligation is in force is 974,000
+shares (Table 1). Given an average share price of $38.45, an effective spread
+reduction of 0.74 bps implies a transaction cost reduction with the enhanced
+DMM contract of about $700,000 per ﬁrm year.
+20 Further, the estimated spread
+20 $974,000 x 38.45 x 0.000074 x 252 (trading days per year) = $698,373.
+63
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 21 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 64 44–74
+The Review of Financial Studies / v 33 n 1 2020
+reductions are larger than the increase in the DMM rebate when the contract
+is enhanced. A rebate increase of $0.0005 is only about 0.13 bps relative to
+an average event share price of $38.45. This implies that the observed the
+0.75 basis point average effective spread reduction is not simply attributable to
+competitive pass-through of the increased liquidity provision rebate.
+The fact that effective bid-ask spreads are narrower when the NYSE DMM
+contract is enhanced could result directly from the ﬁnding that quoted bid-ask
+spreads are narrower then. However, effective spreads are also affected by trade
+executions at prices inside or outside of the best quotes. In fact, 19.4% of all
+transactions in our sample are executed at prices within (i.e., customer buys at
+prices lower than the best ask or sells at prices better than the best bid) the best
+quotes.
+The coefﬁcient estimate on the DMM indicator when explaining the rate
+of price improvement variable is positive (equal to 0.326) and statistically
+signiﬁcant ( t-statistic = 4.12) at the optimal bandwidth. That is, the results
+indicate that the enhanced DMM contract is associated with a higher rate of trade
+executions at prices better than the NBBO quotes. The NYSE DMM obligation
+involves matching, but does not require improvements on, the NBBO quotes.
+This ﬁnding implies that the improved market quality documented when the
+DMM contract is enhanced does not arise solely as a mechanical outcome of
+the requirement to supply more liquidity.
+The results in Table 2 also indicate greater depth at the best quotes when
+the DMM contract is enhanced. The coefﬁcient is 0.013, with an associated
+t-statistic of 2.61, at the optimal bandwidth.
+21 In contrast, Clark-Joseph, Y e,
+and Zi (2016) did not detect a signiﬁcant change in depth when the NYSE ceased
+trading due to a technological malfunction. The results reported here based on
+a more speciﬁc research design do indicate that an enhanced NYSE DMM
+obligation is associated with greater market depth, in addition to narrower bid-
+ask spreads. This result is not unanticipated, as the more binding obligation
+requires the DMM to contribute size to the NBBO quotes more frequently.
+Whether the result arisessolely from the DMM obligation to quote at the NBBO
+more frequently cannot be ascertained based on the Table 2 results, because we
+cannot measure how often the requirement is binding. Section 6 will provide
+additional evidence on this question when we examine depth on and off the
+NYSE.
+Comparing the results for the optimal bandwidth discussed above with the
+results for the wider and narrower bandwidths presented in the left and right
+columns, respectively, in Table 2 shows the trade-off between precision of
+estimation (signiﬁcance level) and bias. With the smaller bandwidth and fewer
+observations, standard errors are larger. However, the smaller bandwidth is
+also associated with larger point estimates for the effect of the enhanced
+21 We also implement expression (2) using depth measured in dollars (shares time price) and obtain an almost
+identical and signiﬁcant coefﬁcient of 0.011 ( t-statistic =2.46) at the optimal bandwidth.
+64
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 22 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 65 44–74
+Liquidity Provision Contracts and Market Quality
+DMM contract. For example, the estimated decrease in effective spreads at
+the narrower bandwidth is 1.20 bps, compared to 0.74 bps at the optimal
+bandwidth. For depth, the coefﬁcient estimate with the smaller bandwidth
+is 0.030, compared to 0.013 at the optimal bandwidth. For the rate of price
+improvement, the coefﬁcient estimate for the smaller bandwidth is 0.388,
+compared to 0.326 with the optimal bandwidth. While we focus on coefﬁcient
+estimates obtained based on the optimal bandwidth, these results are likely
+understated. On balance, the results reported on Table 2 indicate that customers
+on average enjoy lower quoted spreads, higher rates of price improvement,
+lower average trade execution costs and greater quote sizes for NYSE securities
+when the NYSE DMM contract is enhanced to require and incent more liquidity
+provision.
+3.2 Trading volume
+Improved market liquidity should, other things equal, attract additional trading
+activity. We next assess whether the enhanced DMM contract is associated
+with higher levels of trading. Because the enhancement of the DMM contract
+is triggered by a low prior-month volume, the analysis focuses on the question
+of whether current month volume for securities with a low prior-month volume
+is greater than would be anticipated after allowing for normal relations between
+the current month’s volume and the prior month’s volume, return volatility, and
+share price.
+Table 3 reports the results obtained when estimating expression (2) for
+volume in shares and for dollar volume. The coefﬁcient estimates on DMM
+it
+are uniformly positive and signiﬁcant, for both share and dollar volume, for the
+optimal bandwidth as well as for narrower and broader bandwidths. The point
+estimates for both share and dollar volume are greater when the bandwidth
+is narrower, increasing, for example, from 0.0125 with a bandwidth twice the
+optimal to 0.0326 with a bandwidth half the optimal when explaining the log
+of share volume. Therefore, the results imply increased trading activity as a
+result of enhancement of the DMM contract. Assuming investors transact for
+rational reasons, this trading volume result also implies greater investor utility
+and allocational efﬁciency with the enhanced DMM contract.
+4. Placebo Tests
+In the preceding section we show that ﬁrm/months where the DMM market
+maker contract is enhanced are associated with narrower bid ask spreads,
+higher rates of price improvement and greater market depth. These results
+are perhaps surprising, in light of the fact that the DMM’s explicit obligations
+associated with the enhanced contract appear to be rather minimal, involving
+only the requirement to maintain orders at prices that match the BBO quotes
+for an additional 5% of the time, and the increased rebates associated with
+the enhanced contract are relatively small, only about 0.13 bps relative to the
+65
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 23 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 66 44–74
+The Review of Financial Studies / v 33 n 1 2020
+average share price. The RDD method we employ has desirable properties and
+is capable of providing unbiased estimates of the causal effect of the DMM
+obligation under assumptions that appear to be satisﬁed. However, trading
+volume is an endogenous variable, and is well known to itself have explanatory
+power for measures of liquidity. While the RDD regression we estimate includes
+trading volume and market volatility as regressors, it remains possible that the
+changes in volume that trigger the enhancement of the DMM contract are
+correlated with changes in unobserved variables that affect liquidity supply or
+demand.
+To shed light on the possibility that the results reported here could be spurious,
+being attributable to changes in variables not controlled for by the regression
+speciﬁcation, we report the results of two sets of placebo tests. First, we repeat
+all tests using alternative volume thresholds of 0.5 and 1.5 million shares per day
+consolidated volume in the prior month to deﬁne the DMM
+it variable. These
+volume thresholds are in the general vicinity of the 1 million per share level
+that triggers the change in the DMM quoting requirements and rebates, but do
+not trigger such changes. Panels A and B of Table 4 reports the results based
+on the optimal bandwidth. Second, we estimate expression (2) based on the
+1-million-shares volume threshold, focusing on data where the NYSE DMM
+agreement did not apply. We consider both results for Nasdaq-listed securities
+using data drawn from the same September 2009 to December 2013 period
+studied elsewhere in this paper and results for NYSE-listed securities using
+data drawn from the July 2005 to October 2008 period, which was prior to the
+introduction of the current NYSE DMM agreement. Panels C and D of Table 4
+reports the results also based on the optimal bandwidth.
+The results in Tables 4 can be succinctly summarized. The coefﬁcient
+estimate on the DMM
+it indicator variable does not indicate a statistically
+signiﬁcant improvement in liquidity, either based on counterfactual share
+volume cutoffs or when studying data from markets or time periods in which
+the NYSE DMM contract did not apply. That is, none of the effects on liquidity
+documented here for the actual DMM obligation threshold of 1 million shares
+per day are observed for NYSE securities at alternative volume thresholds, for
+NYSE securities at the actual threshold but prior to the introduction of the
+current DMM contract, or for Nasdaq securities at the actual threshold. These
+placebo test results strongly support the interpretation that the improvements
+in market quality documented here for months where the DMM contract is
+enhanced are indeed attributable to the increased DMM obligations, not to
+omitted variables that also change when the prior month’s volume crosses the
+1-million-shares threshold.
+5. On versus Off NYSE Outcomes
+A ﬁnding that market liquidity is improved at times when a contractual
+obligation to enhance liquidity as well as compensation for doing so becomes
+66
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 24 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 67 44–74
+Liquidity Provision Contracts and Market Quality
+stronger could be viewed as uninformative, if the improved liquidity simply
+reﬂects the direct effects of the fulﬁllment of the enhanced obligations or the
+competitive pass-through of the enhanced compensation. However, the results
+here go beyond any plausible mechanical effects. NYSE Rule 104 requires
+only that the DMM match the best bid or offer for a portion of the trading
+day and does not require the DMM to narrow the bid-ask spread or to execute
+trades at prices better than the quotes. Further, the reductions in spreads that are
+observed are substantially larger than the enhanced rebates for liquidity supply.
+Thus, the DMM contract cannot mechanically explain the ﬁndings that quoted
+and effective spreads are narrowed, or that the rate of price improvement is
+increased when the DMM obligation is more binding.
+The notion of strategic complementarity, introduced by Bulow, Geanakoplos,
+and Klemperer (1985), is plausible in the case of DMM commitments, because
+other ﬁrms or individuals who also supply liquidity in the same securities can
+be more certain that they will be able to ofﬂoad unwanted inventory positions
+against the DMM’s quotations. Strategic complementarity in liquidity provision
+may be of particular importance, because its existence would imply also the
+presence of spillover effects, where a shock to liquidity supplied by some
+participants for reasons other than shifts in DMM incentives or obligations
+also would be associated with same-direction changes in liquidity supply by
+other market participants.
+To investigate this possibility, we estimate expression (2) for the rate of
+price improvement, the effective bid-ask spread, and market depth, when each
+is measured separately on and off the NYSE.
+22 Figure 3 displays regression
+discontinuity plots constructed in the same manner as Figure 2, and Tables 5
+and 6 report the resultant coefﬁcient estimates.
+Focusing ﬁrst on rates of price improvement, the results reported in Table 5
+indicate a positive and statistically signiﬁcant ( t-statistic = 4.49) coefﬁcient
+estimate on the DMM
+t indicator variable for trades executed off the NYSE. In
+contrast, the coefﬁcient estimate for trades executed on the NYSE is negative
+and insigniﬁcant. Results also reported in Table 5 indicate reductions in effective
+bid-ask spreads at the discontinuity threshold both for trades executed off
+the NYSE and for trades executed on the NYSE, with the former slightly
+larger in absolute magnitude, and the latter only marginally (t-statistic =−1.86)
+signiﬁcant. The coefﬁcient estimates for depth at the best quotes, also reported
+in Table 5, show a signiﬁcant increase ( t-statistic = 2.55) off the NYSE, as
+compared to an insigniﬁcant estimate ( t-statistic = 0.06) on the NYSE. That
+is, the results show that the improvements in overall liquidity for NYSE
+listed securities associated with an enhanced NYSE DMM contract are mainly
+22 We separate the depth at both the national best bid and national best offer into NYSE and non-NYSE components
+by maintaining a running count of the outstanding quantities at the best prices. We average on-NYSE and off-
+NYSE across the ask and bid sides as of the time of each quote update, and then compute the monthly average
+of each based on the elapsed time before the next quote that alters the NBBO depth.
+67
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 25 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 68 44–74
+The Review of Financial Studies / v 33 n 1 2020
+Figure 3
+Regression discontinuity plots for on versus off NYSE outcomes
+These ﬁgures display the functional form and a ﬁtted regression curve of the percentage of inside NBBO executions, effective spread for on NYSE and off NYSE transactions,
+and the share depth at the NBBO from NYSE and none NYSE for the group of securities that crosses the trading volume threshold for changing DMM obligation s during the
+time period from September 2009 to December 2013. The
+x-axis represents a ﬁrm’s aggregated average daily trading volume in calendar month t-1. The vertical line is the
+cutoff point of 1 million shares. Firms on the left-hand (right-hand) side are treatment (control) groups with less than (equal to or greater than) 1-m illion-shares average daily
+trading volume in month t-1 and are associated with stronger (weaker) DMM obligation in month t. The regression discontinuity plots represent local sample means using 50
+nonoverlapping evenly spaced bins on both sides of the threshold following the methodology described in Calonico et al. (2017). The ﬁtted lines repre sent the ﬁrst-order polynomial
+regression curves.
+68
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 26 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 69 44–74
+Liquidity Provision Contracts and Market Quality
+manifest in larger quote sizes and improved rates of price improvement on the
+markets other than the NYSE.
+These results imply that the enhanced NYSE DMM contract affects the
+strategies employed by other suppliers of liquidity as well. The ﬁnding that
+depth on the NYSE is not improved while depth off the NYSE is improved
+when the NYSE DMM contract is enhanced may arise from substitution effects
+motivated in part by the fact that regulations do not enforce time priority (by
+which the ﬁrst order to be posted at a given price receives execution priority)
+across the various markets that trade NYSE securities, even while time priority
+is enforced across orders at a given exchange. A liquidity supplier intending to
+submit an order at the BBO who observes an existing NYSE order at the same
+price might choose to submit the order to an alternative market instead. More
+frequent NYSE DMM orders at the BBO may therefore lead other liquidity
+suppliers to substitute their order submissions priced at the BBO to markets
+other than the NYSE.
+However, such a substitution effect in order submission does not explain
+the ﬁnding of improved rates of price improvement off the NYSE. The “trade
+through” rule (part of Securities and Exchange Commission Regulation NMS,
+adopted in 2006) speciﬁes that trades cannot be executed at prices inferior to
+the best quotation available on any electronically accessible exchange, but does
+not require price improvement relative to the best quotes. Further, NYSE Rule
+104 itself does not require the DMM to quote at a price that improves on the
+existing NBBO quote or to execute trades at better prices. The higher rate of
+price improvement off the NYSE associated with the enhanced DMM contract
+therefore reﬂect endogenous changes in outcomes in the market for liquidity
+supply.
+We also estimate expression (2) while using the NYSE share of overall
+market trading in sample securities as the dependent variable. Table 6 reports the
+results obtained when market share is measured based on the number of trades,
+number of shares traded, and dollar value of shares traded. In each case we ﬁnd
+that the NYSE market share is signiﬁcantly lower when the DMM contract
+is enhanced. This result also implies the existence of strategic interactions
+in liquidity supply across markets, because any direct effects of the DMM
+obligation should manifest themselves in greater depth and/or improved quotes
+on the NYSE, which would be anticipated to attract additional marketable
+orders, ceteris paribus.
+23
+The ﬁnding that effective spreads are narrowed, depth is increased, and
+price improvement rates are increased off the NYSE when the NYSE DMM
+contract is enhanced provides strong, if indirect, evidence that the behavior of
+23 Note that because market shares sum to one by construction, more aggressive quotations both on and off the
+NYSE must result in either no change in market shares or a decrease in share for either the NYSE or off-NYSE
+markets. That the NYSE share declines when the DMM contract is enhanced suggests that off-NYSE liquidity
+providers and their customers beneﬁt more from greater NYSE liquidity provision than vice versa.
+69
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 27 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 70 44–74
+The Review of Financial Studies / v 33 n 1 2020
+other market participants and the resultant market equilibrium is altered by the
+knowledge that the NYSE DMM will be present more frequently. This result is
+broadly consistent with the ﬁndings of Anand and V enkataraman (2016), who
+show that electronic liquidity providers on the Toronto Stock Exchange tend to
+increase their provision of liquidity at times when other market makers are also
+more active, because they are more conﬁdent that they can ofﬂoad unwanted
+positions in the more active market. The fact that effective spreads are reduced
+both on and off the NYSE when the NYSE DMM contract is enhanced in
+particular supports the interpretation that the business of liquidity provision
+is characterized by strategic complementarity, as the term is used by Bulow,
+Geanakoplos, and Klemperer (1985). To further assess the channels by which
+strategic complementarity arises will likely require data identifying the class
+of trader who submit each order.
+This result implies positive spillover effects in liquidity supply and is
+potentially important to those who develop theoretical models of equilibrium
+in securities markets. The result also helps to explain why a DMM contract
+that applies to only a single market participant and that would appear to have
+only minor direct effects on the DMM’s quotation behavior can have a more
+substantive effect on equilibrium liquidity supply. Finally, the result helps to
+explain illiquidity spirals, as a shock (e.g., because of deterioration in funding
+conditions or the value of collateral) to some participants’ willingness or ability
+to supply liquidity can reduce liquidity supply by their competitors as well.
+6. Conclusions
+A key question facing those who design or regulate securities markets is whether
+the electronic limit order book can attract sufﬁcient liquidity. A number of
+stock markets have voluntarily adopted DMMs for at least some securities,
+and recent MiFID II regulations require DMM contracts for algorithmic ﬁrms
+on European markets, while leaving the parameters of the contracts to the
+discretion of individual Exchanges. However, our collective understanding of
+economics of DMM contracts remains quite incomplete.
+We contribute to the understanding of these issues by studying DMMs
+on the New Y ork Stock Exchange. The NYSE designates a DMM for every
+listed security, so selection bias in the securities with DMMs is not a concern
+with our research design. We exploit the fact that NYSE Rule 104 speciﬁes a
+discontinuity in both DMM obligations and compensation. In particular, DMMs
+are (1) required to maintain orders at the NBBO more frequently and (2) receive
+larger rebates for supplying liquidity for securities where the prior month’s
+average daily volume was less than the threshold level of 1 million shares.
+We use a regression discontinuity research design to estimate the causal
+effect of the enhanced DMM contract on market liquidity and trading volume.
+The RDD design can provide unbiased estimates of the causal effect of a
+change in DMM obligations and incentives. At the same time, the Regression
+70
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 28 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 71 44–74
+Liquidity Provision Contracts and Market Quality
+Discontinuity approach by design provides estimates that are local, applying
+at the point of discontinuity. The results cannot necessarily be extrapolated to
+estimate the effects of implementing a new DMM contract or entirely removing
+an existing DMM contract.
+Our results indicate the enhanced DMM contract in effect when the prior
+month’s volume is less than 1 million shares is associated with improved
+liquidity, in the form of lower average quoted and effective bid-ask spreads,
+as well as greater market depth, higher rates of price improvement and higher
+trading volume. These results therefore support Clark-Joseph, Y e, and Zi (2016)
+in their interpretation that the widening of quoted spreads observed when the
+NYSE abruptly ceased trading on July 8, 2015, was indeed attributable at least in
+part to the fact that the NYSE DMMs were removed from the market. However,
+our evidence is more speciﬁc, in that we can link liquidity directly to changes in
+the DMM obligation, without the potentially confounding effects of eliminating
+the entire NYSE infrastructure.
+While the results reported here are informative, they are also in some ways
+puzzling. The NYSE DMM contract calls only for the DMM to maintain orders
+that match the best bid and offer for a relatively small percentage of each trading
+day. The contract does not require that the DMM narrow bid-ask spreads by
+entering orders at prices superior to the NBBO quotes. Further, the enhanced
+rebates for supplying liquidity in low volume securities amounts to only about
+0.13 bps relative to share prices. As a consequence, the observed magnitudes
+of the improvements in bid ask spreads and rates of price improvement, and the
+increased trading activity associated with the more stringent DMM obligations
+are unlikely to simply arise mechanically. One possibility, as suggested by
+Corwin and Coughenour (2008) is that DMMs have limited attention, and that
+the more binding DMM constraint motivates them to focus their attention on
+securities with the more binding obligation. However, this perspective cannot
+provide a complete explanation, as we ﬁnd that rates of price improvement
+are increased, market depth is increased, and average effective spreads are
+decreased when the NYSE DMM contract is enhancedeven for trades executed
+off the NYSE.
+These results provide strong, if indirect, evidence that the knowledge that
+NYSE DMM contract is enhanced affects other traders’ order submission
+strategies and equilibrium in the market for liquidity. In particular, the results
+support the reasoning that market-making equilibrium is characterized by
+strategic complementarity in the sense of Bulow, Geanakoplos, and Klemperer
+(1985), where more aggressive play by one supplier (the DMM) results in
+decreased marginal costs for competitors. This result would arise if competitors
+are more certain that they can unwind unwanted inventory positions when the
+DMM obligation is more binding. The existence of strategic complementarity
+implies positive spillover effects in the business of liquidity supply. Such
+positive spillovers are important for theoreticians seeking to develop models
+of security market equilibrium, and also help to understand both the existence
+71
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 29 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 72 44–74
+The Review of Financial Studies / v 33 n 1 2020
+of illiquidity spirals and the fact that seemingly small DMM obligations can
+have substantive effects on equilibrium liquidity. Developing models that allow
+for such spillovers to gain an improved understanding of how the presence
+of contractually required DMM orders alters other traders’ behavior and
+equilibrium outcomes comprises an important challenge for future research.
+References
+Anand, A., and K. V enkataraman. 2016. Market conditions, fragility and the economics of market making.
+Journal of Financial Economics 121:327–49.
+Amihud, Y ., and H. Mendelson. 1980. Dealership market: Market-making with inventory. Journal of Financial
+Economics 8:31–53.
+Anand, A., C. Tanggaard, and D. G. Weaver. 2009. Paying for market quality. Journal of Financial and
+Quantitative Analysis 44:1427–57.
+Arnuk, S., J. Saluzzi, and R. T. Leuchtkafer. 2011. What’s changed since the Flash Crash? Wall Street
+and Technology, May 6, 2011. http://www.wallstreetandtech.com/trading-technology/whats-changed-since-the-
+ﬂash-crash/a/d-id/1264794.html
+Barlevy, G., and P . V eronesi. 2000. Information acquisition in ﬁnancial markets. Review of Economic Studies
+67:79–90.
+Barnea, A. 1974. Performance evaluation of New Y ork stock exchange specialists. Journal of Financial and
+Quantitative Analysis 9:511–35.
+Battalio, R., R. Jennings, and B. McDonald. 2018. Right to work for NYSE ﬂoor brokers: Parity trading on the
+NYSE. Working Paper, University of Notre Dame.
+Benston, G. J., and R. L. Hagerman. 1974. Determinants of bid-asked spreads in the over-the-counter market.
+Journal of Financial Economics 1:353–64.
+Bessembinder, H., J. Hao, and K. Zheng. 2015. Market making contracts, ﬁrm value, and the IPO decision.
+Journal of Finance 70:1997–2028.
+Boehmer, E., and E. K. Kelley. 2009. Institutional investors and the informational efﬁciency of prices. Review of
+Financial Studies 22:3563–94.
+Bulow, J. I., J. D. Geanakoplos, and P . D. Klemperer. 1985. Multimarket oligopoly: Strategic substitutes and
+complements. Journal of Political Economy 93:488–511.
+Calonico, S., M. D. Cattaneo, M. H. Farrell, and R. Titiunik. 2017. rdrobust: Software for regression-discontinuity
+designs. Stata Journal 17:372–404.
+Calonico, S., M. D. Cattaneo, and R. Titiunik. 2014. Robust nonparametric conﬁdence intervals for regression –
+Discontinuity designs. Econometrica 82:2295–326.
+Cameron, A. C., and P . K. Trivedi. 2005. Microeconometrics: Methods and applications . Cambridge, UK:
+Cambridge University Press.
+Cardella, L., J. Hao, and I. Kalcheva. 2018. Make and take fees in the US equity market. Working Paper.
+Cella, C., A. Ellul, and M. Giannetti. 2013. Investor horizons and the ampliﬁcation of market shocks. Review of
+Financial Studies 26:1607–48.
+Chen, Q., I. Goldstein, and W. Jiang. 2010. Payoff complementarities and ﬁnancial fragility: Evidence from
+mutual fund outﬂows. Journal of Financial Economics 97:239–62.
+Clark-Joseph, A. D., M. Y e, and C. Zi. 2017. Designated market makers still matter: Evidence from two natural
+experiments. Journal of Financial Economics 126:652–67.
+72
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 30 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 73 44–74
+Liquidity Provision Contracts and Market Quality
+Corwin, S., and J. Coughenour. 2008. Limited attention and the allocation of effort in securities trading. Journal
+of Finance 63:3031–7.
+Crane, A. D., S. Michenaud, and J. P . Weston. 2016. The effect of institutional ownership on payout policy:
+Evidence from index thresholds. Review of Financial Studies 29:1377–408.
+Demsetz, H. 1968. The cost of transacting. Quarterly Journal of Economics 82:33–53.
+ESMA. 2019. Questions and Answers: On MiFID II and MiFIR Market Structures Topics. Report, European
+Securities and Markets Authority, Paris, France. https://www.esma.europa.eu/sites/default/ﬁles/library/esma70-
+872942901-38_qas_markets_structures_issues.pdf
+Fan, J., and I. Gijbels. 1992. V ariable bandwidth and local linear regression smoothers. Annals of Statistics
+20:2008–36.
+Goldstein, I., and L. Y ang. 2015. Information diversity and complementarities in trading and information
+acquisition. Journal of Finance 70:1723–65.
+Goldstein, I., H. Jiang, and D. Ng. 2017. Investor ﬂows and fragility in corporate bond markets. Journal of
+Financial Economics 126:592–613.
+Hope, B., and S. V aishampayan. 2015. Glitch freezes NYSE trading for hours. Wall Street Journal, July 8, 2015.
+https://www.wsj.com/articles/trading-halted-on-new-york-stock-exchange-1436372190
+Hahn, J., P . Todd, and W. van der Klaauw. 2001. Identiﬁcation and estimation of treatment effects with a
+regression-discontinuity design. Econometrica 69:201–9.
+Hasbrouck, J. 1995. One security, many markets: Determining the contributions to price discovery. Journal of
+Finance 50:1175–99.
+Hendershott, T., and R. Riordan. 2013. Algorithmic trading and the market for liquidity. Journal of Financial
+and Quantitative Analysis 48:1001–24.
+Hendershott, T., C. M. Jones, and A. J. Menkveld. 2011. Does algorithmic trading improve liquidity? Journal of
+Finance 66:1–33.
+Imbens, G. W., and K. Kalyanaraman. 2012. Optimal bandwidth choice for the regression discontinuity estimator.
+Review of Economic Studies 79:933–59.
+Imbens, G. W., and T. Lemieux. 2008. Regression discontinuity designs: A guide to practice. Journal of
+Econometrics 142:615–35.
+Kwan, A., R. Masulis, and T. H. McInish. 2015. Trading rules, competition for order ﬂow and market
+fragmentation. Journal of Financial Economics 115:330–48.
+Lee, C., and M. J. Ready. 1991. Inferring trade direction from intraday data. Journal of Finance 46:733–46.
+Lee, D. S., and T. Lemieux. 2010. Regression discontinuity designs in economics.Journal of Economic Literature
+48:281–355.
+Lo, A. W., and A. C. MacKinlay. 1988. Stock market prices do not follow random walks: Evidence from a simple
+speciﬁcation test. Review of Financial Studies 1:41–66.
+McCrary, J. 2008. Manipulation of the running variable in the regression discontinuity design: A density test.”
+Journal of Econometrics 142:698–714.
+Menkveld, A. J., and T. Wang. 2013. How do designated market makers create value for small-caps?” Journal
+of Financial Markets 16:571–603.
+O’Hara, M. 1995. Market microstructure theory. Cambridge, MA: Blackwell.
+O’Hara, M., and M. Y e. 2011. Is market fragmentation harming market quality?Journal of Financial Economics
+100:459–74.
+Panayides, M. 2007. Afﬁrmative obligations and market making with inventory. Journal of Financial Economics
+86:513–42.
+73
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026
+
+
+===== PAGE 31 =====
+
+[16:32 27/11/2019 RFS-OP-REVF190042.tex] Page: 74 44–74
+The Review of Financial Studies / v 33 n 1 2020
+Porter, J. 2003. Estimation in the regression discontinuity model. Unpublished Manuscript, Department of
+Economics, University of Wisconsin at Madison.
+Shearman & Sterling, LLP . 2014. MiFID II: The Regulation of Market Makers. Report, Shearman & Ster-
+ling, LLP , London, UK. https://www.shearman.com/-/media/Files/NewsInsights/Publications/2014/10/MiFID-
+II_The-Regulation-of-Market-Makers-FIA-10914.pdf
+Skjeltorp, J. A., and B. A. Ødegaard. 2015. When do listed ﬁrms pay for market making in their own stock?
+Financial Management 44:241–66.
+Stoll, H. R. 1978. The pricing of security dealer services: An empirical study of NASDAQ stocks. Journal of
+Finance 33:1153–72.
+V enkataraman, K., and A. C. Waisburd. 2007. The value of the designated market maker. Journal of Financial
+and Quantitative Analysis 42:735–58.
+74
+Downloaded from https://academic.oup.com/rfs/article/33/1/44/5421819 by Catherine Sharp user on 07 July 2026

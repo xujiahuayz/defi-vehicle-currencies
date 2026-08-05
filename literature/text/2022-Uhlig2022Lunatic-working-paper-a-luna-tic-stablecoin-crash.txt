@@ -1,0 +1,2678 @@
+
+
+===== PAGE 1 =====
+
+NBER WORKING PAPER SERIES
+A LUNA-TIC STABLECOIN CRASH
+Harald Uhlig
+Working Paper 30256
+http://www.nber.org/papers/w30256
+NATIONAL BUREAU OF ECONOMIC RESEARCH
+1050 Massachusetts Avenue
+Cambridge, MA 02138
+July 2022
+I am grateful to Xuefei Gao for his excellent research assistance. The views expressed herein are 
+those of the author and do not necessarily reflect the views of the National Bureau of Economic 
+Research.
+NBER working papers are circulated for discussion and comment purposes. They have not been 
+peer-reviewed or been subject to the review by the NBER Board of Directors that accompanies 
+official 
+NBER publications.
+© 2022 by Harald Uhlig. All rights reserved. Short sections of text, not to exceed two paragraphs, 
+may be quoted without explicit permission provided that full credit, including © notice, is given 
+to 
+the source.
+
+===== PAGE 2 =====
+
+A Luna-tic Stablecoin Crash
+Harald Uhlig
+NBER Working Paper No. 30256
+July 2022
+JEL No. E41,F31,F32,G01,G12,G23
+ABSTRACT
+After remaining close to 1 US Dollar since its inception in November 2020, the algorithmic 
+stablecoin UST crashed in the two weeks of May 9th to May 15th, 2022, leading to a price 
+collapse of the underlying LUNA token and the erasure of more than 50 Billion U.S. Dollar or 
+90% in market value.
+I provide a novel theory to account for these phenomena and use it to shed light on the data. I 
+break new ground methodologically by showing how crashes unfold gradually, and by 
+introducing the method of quantitative interpretation. To obtain a gradual unfolding of the crash, I 
+allow for the possibility  that the market might return to normal at any moment. Suspension of 
+convertibility happens, once the price has fallen sufficiently far. Agents price LUNA, taking into 
+account these probabilities as well as the ongoing inflow from burning UST coins. Agents sell 
+their UST coins when the probability  of an eventual suspension of convertibility exceeds some 
+agent-specific threshold. The implications  of the theory are highlighted in an analytically 
+tractable example. The theory is then used as a guide to examine and interpret the data, using bi-
+hourly observations. I use the observed data to quantify  theory variables and use them in turn to 
+interpret the data. I find that the majority of the UST coin holders waited until the probability of 
+suspension was rather high, before deciding to burn their holdings.
+Harald Uhlig
+Dept. of Economics
+University of Chicago
+1126 E 59th Street
+Chicago, IL 60637
+and CEPR
+and also NBER
+huhlig@uchicago.edu
+
+===== PAGE 3 =====
+
+1 Introduction
+After remaining close to 1 US Dollar since its inception in November 2020,
+the algorithmic stable coin Terra UST lost more than 75 percent of its value
+in the two weeks of May 9th to May 15th, 2022, leading to a price collapse of
+the underlying LUNA token of more than 99.9 percent, an increase in LUNA
+supply by a factor of 19,000 and the erasure of more than 50 Billion U.S.
+Dollar or 90% in market value 1, see the online appendix D. The purpose of
+this paper is to shed light on these events and to advance our methodological
+toolkit by doing so. I provide a novel theory to account for these phenomena
+and use it to shed light on the data. I break new ground methodologically
+by showing how crashes unfold gradually, and by introducing the method of
+quantitative interpretation.
+The system worked by allowing traders to convert a Terra UST coin into
+1 U.S. Dollar worth of LUNA tokens and vice versa, thereby achieving a sta-
+ble exchange rate of the UST coin to the US Dollar, see online appendix C.
+Eventually, a sustained outﬂow or “burning” of UST coins into LUNA tokens
+resulted in a massive price decline of LUNA and suspension of convertibility,
+see ﬁgure 1 and online appendix D. The crash unfolded in the course of a cou-
+ple of days, rather than resulting in an instantaneous price collapse for LUNA
+and UST as well as an instantaneous spike in burning. This is a challenge for
+any theoretical modelling exercise. Rational forward-looking LUNA traders
+should have noticed the burning run, even if unfolding gradually, and priced
+that in at the very beginning. However, they did so gradually, as ﬁgure 1
+shows. The large movements in LUNA prices anticipated the subsequent
+burning of UST coins, but not fully. Likewise, rational forward-looking UST
+holders should have burned their holdings as soon as possible rather than
+1Luna and UST have since been renamed Luna Classic and UST Classic, with Luna
+2.0 and Terra 2.0 as successors to the originals.
+
+===== PAGE 4 =====
+
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+-1
+0
+1
+2
+3
+4
+5
+6
+# UST tokens
+#108
+0
+10
+20
+30
+40
+50
+60
+70
+$
+Number of UST tokens burnt
+VS LUNA price
+# UST burnt
+LUNA price
+Figure 1: Burning of UST coins (left scale) versus decline of the LUNA price
+(right scale.
+wait for the end and suspension of convertibility. A central goal of this paper
+is to show how a crash such as the crash of the Terra-Luna system can unfold
+gradually.
+I provide a theoretical framework in section 2 and section 3 addressing
+this challenge. There are two parts to understanding the crash. First, I
+seek to understand the pricing of LUNA, given the burning of UST coins at
+some given rate, see section 2. The crash in the price unfolds gradually, as
+I allow for the possibility that the market might return to normal and that
+the burning of UST coins stops at any moment. Suspension of convertibility
+happens, once the price has fallen suﬃciently far. I derive the diﬀerential
+equations characterizing the equilibrium. I provide a rich, yet analytically
+tractable special case. Second, I discuss the unfolding of the burning of UST
+coins and the underpricing in the market, before the crash, see section 3.
+There, I propose that agents sell their UST coin, when the probability of
+an eventual suspension of convertibility exceeds some convenience value of
+holding the UST coin, allowing for agent heterogeneity in the latter. I derive
+2
+
+===== PAGE 5 =====
+
+the distribution of threshold probabilities across agents, given the observed
+burn rate and calculate it explicitly for the tractable special case of section 2.
+In section 4, I demonstrate how to use the theory to interpret the bi-
+hourly data for LUNA and UST and the unfolding of the crash. Rather than
+estimate or test the theory or calibrate the theory to match some moments,
+I use the observed data to quantify theory variables, and use them in turn
+to interpret the data. The method is related to but goes beyond structural
+identiﬁcation of theory variables by turning the quantiﬁcation of theory vari-
+ables into a tool for interpreting the data through the lense of the theory.
+I call this the method of quantitative interpretation. instead of providing a
+general methodological treatise, section 4 is intended as a showcase as how
+this method can be applied. One may argue that this method has already
+been used with some regularity in practice 2, but if so, it deserves its own
+name and recognition as a methodology on its own. Using the theory, I infer
+the evolution of the probability of suspension, as perceived by the agents,
+using two scenarios. I calculate the resulting distribution of threshold prob-
+abilities across the population of agents burning their UST coins, once the
+suspension probability exceeds this threshold. I ﬁnd that the majority of the
+UST coin holders waited until the probability of suspension was rather high,
+before deciding to burn their holdings. This is consistent with 60 percent
+of the UST coins still being in circulation after the suspension, see online
+appendix D.
+Section 5 concludes. Appendix A provides the proofs for the propositions
+in the main text. Appendix B provides a theory perspective on how to
+generally price cryptocurrencies and determine their market cap. The online
+appendix C provides a short description of the initial success story, followed
+by a description and analysis of the crash in section D and the aftermath in
+2One example might be quantitative macroeconomic “accounting” exercises as e.g. in
+Fratto-Uhlig (2020).
+3
+
+===== PAGE 6 =====
+
+section E. Online appendix F contains additional results and ﬁgures.
+The examination of the Terra-Luna crash is important for a number of
+reasons. First, the high frequency of available data allows me to examine
+the gradual unfolding of a crash and the motives of the traders involved.
+This may ultimately hold lessons how to generally think about the dynamics
+of runs and speculative attacks. My approach here might be suitable more
+generally model the gradual unfolding ofsuch events. Second, the market
+for stablecoins has grown substantially in recent years and has become the
+basis for much of decentralized ﬁnance and automated or “smart” contract
+execution. Understanding stablecoins and their stability is crucial in order
+to assess the functioning of this emerging sector. Third, calls for regulat-
+ing stablecoins speciﬁcally and cryptocurrencies more generally have become
+more forceful in recent months. In the wake of the Terra-Luna Crash, the EU
+has already proceeded to an agreement, see Council of the EU (2022) press
+release. Proper regulation requires a deeper understanding of the underly-
+ing phenomenon, and this is where this paper contributes. The focus of the
+analysis here is on the speciﬁcs of the Terra-Luna ecosystem and its collapse
+rather than stablecoins more generally, allowing a more precise understand-
+ing of the forces at work. Finally, the disappearance of 50 Billion U.S. Dollar
+might be large enough to merit some academic analysis on its own.
+A recent literature examining the rationale for speciﬁc market capitaliza-
+tions and the collapse for intrinsically worthless cryptocurrencies, including
+stablecoins and the Terra-Luna crash in particular, is emerging. Schilling-
+Uhlig (2019b) or Benigno-Schilling-Uhlig (2022), building on Kareken-Wallace
+(1981) and Manuelli-Peck (1990), argue that the price for cryptocurrencies
+should be a risk-adjusted martingale. Schilling-Uhlig (2019a) as well as Biais
+et al (2021) add transaction costs and some other features, modifying this
+result. Frost et al (2020) argue that stablecoins are not truly new. Rather,
+the rise and fall of the Bank of Amsterdam from 1609 to 1820 is an early
+4
+
+===== PAGE 7 =====
+
+example and oﬀers important lessons, how a run on a stablecoin can emerge.
+The importance of modern stablecoins for decentralized ﬁnance or DeFi ap-
+plications is discussed by Mita et al (2020), Ante et al (2021), Benedetti and
+Labb´ e (2022). Stablecoins, including the Terra-Luna system, are discussed
+in chapter 7 of Arslanian (2022). Klages-Mundt and Minca (2021) provide a
+model to understand deleveraging spirals and stablecoin attacks, which dif-
+fers from the approach taken here in a number of ways. Kwon et a (2021)
+argue that there is a “trilemma of stablecoin” in that “any stablecoin design
+can avoid at most two of all the following risks: (1) downward price insta-
+bility ... (2) downward price instability ... and (3) upward price instability.”
+Clements (2021) provides an early and prescient warning about the inherent
+fragility of algorithmic stablecoins. Li and Mayer (2022) characterize an in-
+stability trap: once debasement happens, price volatility persists and demand
+shrinks. They argue that capital requirements fail to eliminate debasement
+and that restricting the riskiness of reverse assets can surprisingly destablize
+prices. Gambles (2022) examines the repercussions of the LUNA crash for
+other crypto assets. Catalini and Shah (2021) argue for setting standards for
+stablecoin reserves, centered around short-maturity, high-quality and liquid
+asset. Clements (2022) provides a discussion of the “regulatory perimeter for
+stablecoins in Canada”. While stablecoins in particular and cryptocurren-
+cies more generally have emerged as important components of decentralized
+ﬁnance, see e.g. Delivorias (2021) for stablecoins speciﬁcally and Makarov-
+Schoar (2022) more generally, concerns about connections to illegal cash ﬂows
+and crimes are a rising concern, see e.g. Makarov-Schoar (2021).
+The event was called a “run on the bank” by a number of observers 3.
+It is also reminiscent of a currency crisis, of a sovereign debt crisis or a
+hyperinﬂation, and lessons from the pertinent literatures are applicable here
+3One example is Michael Boroughs of Fortis Digital Vaue LLC, as reported in the Wall
+Street Journal by Osipovic and Ostroﬀ (2022)
+5
+
+===== PAGE 8 =====
+
+to some extent. The parallels are certainly unmistakable, but there are subtle
+and not-so-subtle diﬀerences.
+The classic reference for a model of a bank run is Diamond-Dybvig (1983).
+The dynamic model here is somewhat inspired by the dynamic debt run
+model of He and Xiong (2012), but there are a number of important diﬀer-
+ences. Most notably, the asset is intrinsically worthless. The behavior of the
+LUNA traders, i.e. in essence the purchasers of the liquidated assets, is a
+key focus of the analysis here. As for the “creditors” and their gradual sale
+of the UST coins, I provide a theory in section 3 based on heterogeneity in
+the tradeoﬀ between beneﬁts and the probability of a run rather than the
+roll-over of gradually maturing contracts, though the latter surely played a
+role as well.
+As for understanding currency crises and speculative attacks, Obstfeld
+(1984, 1988, 1996) are some of the classic references. A key diﬀerence is that
+the peg, i.e. the exchange rate of the UST coin with the US Dollar, has
+been defended with a second currency “in circulation”, i.e. the LUNA token,
+rather than currency reserves on their own.
+2 A dynamic model of the crash: LUNA
+Time evolves continuously,t∈ (−∞,∞). Let Mt be the number of LUNA 4
+tokens in circulation. I assume that Mt is a continuous function of time. Let
+Qt be their Dollar price and letmt =QtMt denote market capitalization. Let
+bt be the rate of Dollar amount of UST coins burned (if bt > 0) or created
+(ifbt < 0) per unit of time at date t. The burn rate bt is assumed exogenous
+4The labels “UST” and “LUNA” in this section are meant to be inspired by their
+real-world counterparts: a diﬀerent labeling would be confusing. However, the description
+here is meant to be stylized to oﬀer a theoretical understanding. It is simpliﬁed in key
+dimensions, compared to their real-life counterparts.
+6
+
+===== PAGE 9 =====
+
+in this section, while Mt, Qt and mt are endogenous. I assume that the
+possibility to burn tokens stops, once the LUNA price falls to some low level
+ϵ> 0.
+Date t = 0 is special. At that moment, and as a complete surprise to all
+market participants, it becomes known that UST holders will likely continue
+to burn their tokens, bt≥ 0 for all t >0: this is the “bank run” on UST.
+There will thus be a chance that the price QT falls to ϵ at some future date
+T and the run ends by design. Until then, there is an exogenous hazard
+rate or instantaneous probability λt, that the run comes to a halt, and that
+everything goes back to “normal”. I will treat λt as an objective probability,
+but one might as well think of it as the consensus subjective probability of
+market participants5. I assume that the number of tokens M0 at date t = 0
+at beginning of the run is given. I assume that bt is known in advance,
+and that the only source of randomness is the possibility of going back to
+normal. In sum, everything is known in advance, except for the realization
+of going back to normal or not at each date t≥ 0. Surely, more items were
+subject to uncertainty. However, focussing on these key elements already
+provides a suﬃciently rich framework, allows for a clean derivation of results
+and analysis of the key forces at work.
+At center stage of the analysis is the market capitalization for the LUNA
+tokens. They are intrinsically worthless, but may be traded as a medium of
+exchange e.g. in applications connected to the Terra-Luna platform. LUNA
+is most properly understood as a form of currency rather than merely as
+bubble. This is the perspective taken in e.g. Schilling-Uhlig (2019b) and
+Benigno-Schilling-Uhlig (2022). Indiﬀerence between currencies gives rise to
+exchange rate indeterminacy, as Kareken and Walce (1981) have pointed out.
+5The diﬀerence only matters in assessing the observed frequency by which gradual
+crashes eventually run its course. Such an empirical cross-crash examination is beyond
+the scope of this paper.
+7
+
+===== PAGE 10 =====
+
+Exchange rate indeterminacy in turn implies indeterminacy regarding the
+market capitalization. To break that indeterminacy, indiﬀerence cannot hold
+for all traders. I investigate this in appendix B. There, I assume that there are
+switchers, who are indiﬀerent between the various currencies and devotees,
+who regard these currencies as imperfect substitutes and thus prefer to hold a
+certain amount of LUNA. As a result and given the number of tokens, there is
+then a lower ﬂoor for the market price and thus for the market capitalization,
+while there is (essentiially) no upper bound, see proposition 3.
+If the LUNA price is determined by risk-neutral switchers, then the price
+for LUNA is a martingale, in line with Schilling-Uhlig (2019b) or Benigno-
+Schilling-Uhlig (2022), building on Kareken-Wallace (1981) and Manuelli-
+Peck (1990). Any additional burning of UST coins and creation of LUNA
+tokens might then simply be soaked up by these switchers, resulting in mean-
+zero random movements of the LUNA price, and the same would be true in
+the case of LUNA burning and UST creation. In other words, in a world
+characterized by exchange rate indeterminacy, the burning and creation of
+UST coins would have no impact on the LUNA market price, unless one
+were to assume some correlation between these movements for UST coins
+and the price surprise for LUNA. Even then, any reasonably predictable
+period of burning UST coins could not generate such correlation and therefore
+would not generate price movements. This is what the founders might have
+envisioned in creating the UST stable coin.
+To model the crash, some assumption about market capitalization is
+needed. For t≥ 0, I assume that there is an exogenous exit market cap-
+italization nt, to which the LUNA market capitalization returns, should the
+run come to a halt and everything goes to normal. In light of the remarks
+above, this is obviously a strong assumption. One may think of this exit
+market capitalization as a combination of devotees, providing a ﬂoor, and
+switchers, who will return, when the run ceases. Once Qt =ϵ, the run comes
+8
+
+===== PAGE 11 =====
+
+to a halt by design and convertibility of UST coins into LUNA tokens is
+susended. I denote that date with T . Let mT be the terminal condition for
+the endogenous market capitalizationmt at that point, which I allow to diﬀer
+from the exit market capitalization nT : the halt at Qt =ϵ should be thought
+of as a drastic change in key features of the environment. For LUNA, it
+meant giving up Terra UST as a stable coin. For comparison, I assume that
+mt≡ n for some (short) time interval t∈ [−S, 0) before the run scenario,
+and that no burning or creation of UST coin takes place. As a result, the
+initial supply of Luna tokens is constant, Mt≡ M0 for t∈ [−S, 0), and the
+initial price just before the run is ¯Q =n/M0.
+I assume that market participants are rational, risk neutral and do not
+discount the future. The run unfolded within a few days: so discounting
+should hardly play a role. Rationality and risk neutrality provide a conve-
+nient and important benchmark. Consider then a date 0 ≤ t < T and a
+small time interval [t,t + ∆) fromt tot + ∆, ∆> 0 small. I assume that the
+price Qt is (approximately) constant during this interval.
+During that time interval, the UST coins bt∆ are burned are turned into
+LUNA tokens at the going market price 6. They thus increase the supply of
+LUNA tokens per
+Mt+∆ =Mt + bt∆
+Qt
+(1)
+As for pricing, a trader must be indiﬀerent between buying and selling the
+tokens. With probability λt∆, the run ends at t + ∆ and the price will be
+¯Qt+∆ = nt+∆/Mt+∆. With probability 1 −λt∆, the run continues, and the
+market price is Qt+∆. Together with risk neutrality and rationality of the
+6The aim here is to derive the continuous-time limit. In practice, the LUNA price
+relevant for burning UST kept changing during short time intervals, resulting in some
+average price Qa
+t used for burning UST coins, see equation (25).
+9
+
+===== PAGE 12 =====
+
+traders, this implies
+Qt = nt+∆
+Mt+∆
+λt∆ + (1−λt∆)Qt+∆ (2)
+Given the sequence for pricesQt, equation (1) needs to be solved forward:
+given Mt at t, one can ﬁgure out the increase in tokens bt∆/Qt and the
+humber of tokens Mt+∆ at t + ∆. Conversely, given the sequence for the
+number of tokens Mt, equation (2) needs to be solved “backwards”: the
+market price att is the expectation of the market price at t+ ∆. The system
+of equations (1) and (2) may therefore appear to be challenging to solve.
+The resolution lies in examining the market capitalization mt = QtMt.
+The market capitalization increases from mt at the beginning of the time
+interval [t,t + ∆) to ˜mt = mt +bt∆. The traders are willing to absorb the
+instantaneous increase in market capitalization, provided they do not expect
+to gain or loose. With probability λt∆, the run ends att+∆, and the market
+capitalization will bent+∆. With probability 1−λt∆, the run continues, and
+the market capitalization at the beginning t + ∆ of the next ∆ time interval
+is mt+∆. In total, I obtain,
+mt +bt∆ =λtnt+∆∆ + (1−λt∆)mt+∆ (3)
+This equation only involves market capitalization, and not Qt or Mt and it
+can be solved backwards, using the terminal condition mT .
+These three equations are related: given two of them, the third can be
+derived. For example, multiplying (2) with Mt+∆ and using (1) delivers
+(3). Letting ∆ → 0 turns these three equations into a system of ordinary
+diﬀerential equations
+˙mt = −λt(nt−mt) +bt (4)
+˙Mt = bt
+Qt
+(5)
+˙Qt = −λt
+(nt
+mt
+− 1
+)
+Qt (6)
+10
+
+===== PAGE 13 =====
+
+where “dots” denote time derivatives and where, again, any of these equations
+is implied by the other two.
+This system of diﬀerential equations provides a rich set of implications. I
+will use them as a framework to interpret the data in section 4. Before doing
+so, I examine its properties here and investigate a closed-form solutions for
+a benchmark case. Deﬁne
+αt = bt
+λtnt
+(7)
+The theory of ordinary diﬀerential equations can now be used to provide
+general expressions for the solution to the system (4) to (6).
+Proposition 1 1. The solution to (4) subject to the boundary condition
+mT is given by
+mt =e−
+∫T
+s=tλsds
+(
+mT +
+∫ T
+τ=t
+e−
+∫T
+s=τλsdsλτnτ(1−ατ)dτ
+)
+(8)
+2. Given a solution to (4), the solution to (6) is given by
+Qt =AeIt (9)
+where
+It =
+∫ T
+τ=t
+λτ
+(nτ
+mτ
+− 1
+)
+dτ (10)
+and where A≥ 0 is a constant solving
+Q0 = m0
+M0
+(11)
+3. Given the solutions for mt and Qt, Mt =mt/Qt solves (5).
+The proof is in appendix A and an application of the solution theory for
+ordinary diﬀerential equations with some calculations. The solutions can
+also be veriﬁed directly by diﬀerentiation.
+11
+
+===== PAGE 14 =====
+
+Section 4 discusses the theory implications, when the actually observed
+burn rate is used. By contrast, the next proposition considers a special case,
+where everything can be calculated in closed form, and which is helpful to
+illuminate the forces at work. I impose a constant burn rate from some date
+t∗≥ t forward. I demonstrate, how the price Qt falls in anticipation of the
+burning in the future, as implied by the forward-looking nature of (2) or (6).
+Proposition 2 Let t∗ > 0 be the time, when the burning starts, and is
+constant from there onwards, bt ≡ b for t ≥ t∗. The transition date t∗
+becomes known at t = 0 . Suppose that nt≡ n and λt≡ λ for t≥ 0. Let
+α = b/(λn) and suppose that 0≤ α <1. Let κ = (n−mT )/n and suppose
+that 0≤κ≤ 1. Then:
+1. Market capitalization mt is given by
+mt =n
+(
+1−αe−λ max(t∗−t,0) + (α−κ)e−λ(T−t)
+)
+(12)
+2. For all t∗≤ t < T, mt > (1−α)n, if κ < αand mt < (1−α)n, if
+κ>α .
+3. The price Qt is given by
+Qt =
+
+
+
+ψm
+− 1
+1−α
+t |(1−α)n−mt|− α
+1−α for t≥t∗
+mt
+mt∗Qt∗ for 0≤t<t ∗
+(13)
+where
+ψ =|κ−α|
+α
+1−α (1−κ)
+−1
+1−α
+ϵ
+n (14)
+4. If κ<α , the time horizon T satisﬁes
+T =t∗− 1
+λ
+
+log
+( 1−α
+α−κ
+)
++ log
+
+ 1
+1− (ψM0)
+1−α
+α
+− 1
+
+
+
+ (15)
+12
+
+===== PAGE 15 =====
+
+If κ>α , the time horizon T satisﬁes
+T =t∗− 1
+λ
+
+log
+( 1−α
+κ−α
+)
++ log
+
+1− 1
+1 + (ψM0)
+1−α
+α
+
+
+
+ (16)
+For both cases and for ϵ≈ 0,
+T≈t∗− 1
+λ
+(
+log(1−α)− 1
+α log(1−κ) + 1−α
+α log
+(ϵM0
+n
+))
+(17)
+5. The price at t∗, when burning commences, is given by
+Qt∗≈ (1−α) ¯Q for ϵ≈ 0 (18)
+The proof is in appendix A. It involves some calculations and exploits propo-
+sition 1 and lemma 1. The solutions (12) and (13) can also be veriﬁed directly
+by diﬀerentiation.
+The parameter α can now be given an interpretation. Note that the
+date-0 expected amount of total burning B is
+B =
+∫ T
+t=t∗
+e−tλb = 1
+λ
+(
+1−e−λ(T−t∗)
+)
+b→ b
+λ as T→∞
+Thus, α = B/n is the ratio of total expected burning relative to the exit
+market cap n, if there is no termination rule 7.
+The results are best illustrated with a numerical example and a number
+of graphs. I pick α = 0.5 and λ = 0.05 as a somewhat arbitrary benchmark.
+I picked t∗ = 50 hours to show the anticipation eﬀect on prices. I normalize
+n = 30, which one may wish to read as 30 billion US Dollars, the before-
+crash LUNA market cap, see online appendix D. I assume that mt≡ n for
+t < 0 before the run, and that the number of tokens Mt ≡ M0 is stable
+until t = 0. I ﬁx M0 = n/100, so that ¯Q = 100, roughly in line with the
+observed pre-crash LUNA price. I assume that κ = 0.9, i.e. the termination
+7Note that in this model, the burning could be kept going forever.
+13
+
+===== PAGE 16 =====
+
+market cap will be 3 or 3 billion dollar, in line with the May 15th value, see
+online appendix D. I ﬁx ϵ = 0.1: this is a small number, but obviously higher
+than the actual LUNA price, at which the conversion of UST to LUNA was
+suspended. This helps the numerical illustration and is chosen in light of the
+constant and high exit market capitalization n and to achieve a reasonable
+time horizon T .
+Figure 2 shows the results. Note that the price starts to fall dramatically
+at date t = 0, even though burning will commence only at t∗ = 50. This is
+due to the forward looking nature of the market capitalization and prices:
+anticipating future burning depresses the price now. At t = t∗, the price
+has dropped to just above Qt∗ = 100α. This timing of LUNA falling ﬁrst,
+before sizeable reductions in the market capitalization of UST was a key
+feature during the crash, see ﬁgure 1, section 4 and appendix D, which this
+model captures nicely. The market cap likewise keeps falling until t∗ = 50
+and then continues to fall until eventually reaching (1 −κ)n = 3. The ex
+ante probability of an eventual halt of UST convertibility is a bit above 0.004
+percent, i.e. rather small, accounting for the gradual fall of prices over time,
+as the probability of eventual return to normality shrinks to zero.
+It turns out that the time horizon in particular is highly sensitive to
+the ratio α. Figure 3 illustrates this point. For small α, the horizon of
+an eventual halt of convertibility is far away and the ex ante probability
+of getting there is exceedingly small. This is no longer the case for larger
+values ofα. This corresponds to the concern by many market observers, that
+the market capitalization of UST has grown too large relative to the market
+capitalization of LUNA to be stable in the long run. The lower left panel of
+that ﬁgure shows that the approximation (17) works remarkably well.
+14
+
+===== PAGE 17 =====
+
+Burning rate of UST relative to n: Market cap dynamics:
+-500 50100150200hours
+0
+0.005
+0.01
+0.015
+0.02
+0.025b/n
+Burn rate relative to target market cap
+-500 50100150200hours
+0
+10
+20
+30m(t)
+MarketCap
+Price dynamics: Log price dynamics:
+-500 50100150200hours
+0
+20
+40
+60
+80
+100P(t)
+Price
+-500 50100150200hours
+-5
+0
+5log(P(t))
+Log Price
+Figure 2: Numerical example: the dynamics for α = 0.5, λ = 0.05, ϵ = 0.1,
+t∗ = 50 and κ = 0.9.
+15
+
+===== PAGE 18 =====
+
+Time horizon: Crash Probability:
+0.2 0.4 0.6 0.80
+100
+200
+300
+400hours
+Time to collapse
+0.2 0.4 0.6 0.80
+0.01
+0.02
+0.03
+0.04Probability
+Probability of Collapse
+Time horizon comparison: Log crash probability:
+0.2 0.4 0.6 0.80
+100
+200
+300
+400hours
+Time to collapse: exact vs approximation
+0.2 0.4 0.6 0.8-20
+-15
+-10
+-5
+0Log(Probability)
+Log Probability of Collapse
+Figure 3: Numerical comparison: comparing the time T until suspension
+and the ex-ante probability of an eventual suspension across various α, when
+λ = 0.05 and ϵ = 0.1.
+16
+
+===== PAGE 19 =====
+
+3 The burning of TERRA UST
+Above, I have assumed that the burn rate bt is exogenous. An explana-
+tion is desirable. As a particularly simple theory, I propose that there is a
+convenience yield 1 + φ to investors for holding the UST coin, when it re-
+mains stable beyond T : this may be due to interest paid on UST or its use
+in decentralized ﬁnance applications, see online appendix C. I assume that
+ν≤ 1+φ is the ﬁnal payoﬀ for holding the UST coin, once the run has taken
+its course and burning of UST coins is no longer possible. I assume that
+(φ,ν ) are heterogeneous across investors and given by probability measure
+µ over measurable sets of (φ,ν ). Alternative and behavioral interpretations
+may be appropriate. For example, φ might represent some salience of the
+run event in order for an investor to take action. ν might reﬂect some stub-
+born disagreement over ﬁnal payoﬀs or some individual-level attachment. I
+assume that each investor can only hold a ﬁxed quantity of UST coins, due
+to some institutional constraints 8.
+Let
+Pt =e−
+∫T
+t λsds (19)
+be the suspension-of-convertibility probability, i.e. the conditional probabil-
+ity that the conversion will come to a halt eventually, given that the run is
+still happening at date t. Let t(P ) be the inversion of (19), i.e. let it be that
+datet, so that Pt =P . A rational 9 investor choose to burn his UST coins no
+later than t, if
+φ(1 +φ)(1−Pt) +νPt≤ 1 (20)
+8Otherwise, investors would have turned US Dollar into UST during “normal times”,
+until the convenience yield minus some adjustment for a small run risk is zero.
+9“Rational”, given φ and ν. These parameters may well have a behavioral interpreta-
+tion, though.
+17
+
+===== PAGE 20 =====
+
+or if
+Pt≥P (φ,ν ), where P (φ,ν ) = φ
+1 +φ−ν (21)
+I will call P (φ,ν ) the threshold probability for a trader with characteris-
+tics φ and ν. P (φ,ν ) is all one needs to know about an investor, i.e. in-
+vestors are characterized by their threshold probability. Equation 21 has
+several implications. During “normal” times, the probability of a crash
+may be considered vanishingly small. For agents to hold the UST then re-
+quires a positive convenience yield φ >0. There may be a positive fraction
+γ = µ({(φ,ν )| P (φ,ν ) > 1}, who will never burn their UST coin, even if
+the suspension of convertability is certain: this is the case, if ν > 1. It is
+remarkable, that around 60 percent of the pre-crash total UST coin amount
+remained in circulation after the suspension, see the online appendix D, but
+trading at a substantial discount below one dollar. It is possible, that insti-
+tutional features played the key role, e.g. that some of the UST coins were
+tied up in contracts, see the description of Anchor Protocol in the online
+appendix C, and was not suﬃciently quickly available for burning 10.
+Consider then the population of traders, for which 0 < P(φ,ν ) < 1,
+i.e. which is willing to hold the UST coin, if the probability is suﬃciently
+small, but would seek to burn them at some point during the run. Let
+F (P ) = µ({(φ,ν )} |P (φ,ν ) ≤ P}/µ({(φ,ν ) | 0 < P(φ,ν ) < 1 be the
+measure of agents, who burn their UST, while Pτ≤P , when the population
+seeking to burn for some probability is normalized to unity. Let
+Bt =
+∫ t
+0
+bτdτ (22)
+10If this is the entire story, a version of He and Xiong (2012) might be suitable for
+understanding the events. Data would be needed to determine the amount of UST tied
+up in contracts. There was an active market trading UST coins, however: that would
+seem inconsistent with a story relying entirely on the coins being tied up in contracts.
+Bottlenecks in burning may have been another factor, but seem inconsistent with the
+hump-shape of the actual amount burned.
+18
+
+===== PAGE 21 =====
+
+be the quantity of UST coins burned between date 0 and t. It then follows
+that
+F (P ) =Bt(P )/BT. (23)
+Taking the derivative with respect to P showsF to have the density
+f(P ) = bt(P )
+λt(P )BTP (24)
+The left panel of ﬁgure 4 shows F (Pt) and Pt as a function of time for the
+benchmark numerical example of section 2. While F (Pt) grows linearly after
+t∗, Pt grows exponentially from t = 0. The suspension probability can also
+be used to understand the pricing of the UST coin below par during the
+run. At one extreme, burning works ﬁne and instantaneously throughout, in
+which case underpricing should not happen, as it would present an arbitrage
+opportunity. At the other extreme, burning might be heavily constrained
+and a bottleneck, the marginal UST coin holder has zero convenience yield
+φ = 0 from holding the UST coin, and is willing to trade it an actuarily fair
+value. One can calculate the latter from the suspension probability, assuming
+a price of unity, in case the run comes to an end, and assuming some exit
+price, if it does not. The latter is non-negative. Thus, the non-suspension
+probability 1−Pt, shown in the right panel of ﬁgure 4, provides a ﬂoor for
+the market price of the UST coin.
+Figure 5 shows F (P ) as a function of P rather than time. One might
+already discern the resulting pattern for F (P ), when examining the juxtapo-
+sition ofF (Pt) andPt in ﬁgure 5. While most of the mass sits at probabilities
+close to but exceeding 11 the lower bound P (t∗)≈ 0.05%, there is quite a bit
+of mass at high probabilities all the way to P = 1.
+Other explanations surely played a role. It is possible that traders became
+aware of the run only with heterogeneous degree of delay. It is possible that
+11Note that bt = 0 and thus f(Pt) = 0 for t<t ∗.
+19
+
+===== PAGE 22 =====
+
+Fraction UST burned over time: Price ﬂoor for UST coins:
+-500 50100150200hours
+0
+0.2
+0.4
+0.6
+0.8
+1P(t) and F(t)
+Suspension Probability vs fraction burnedSuspension ProbabilityFraction burned
+-500 50100150200hours
+0
+0.2
+0.4
+0.6
+0.8
+11 - P
+Non-Suspension Probability
+Figure 4: The left panel shows F (Pt) and Pt as a function of time for the
+benchmark numerical example of section 2. While F (Pt) grows linearly af-
+ter t∗, Pt grows exponentially from t = 0 . The right panel plots the non-
+suspension probability 1−Pt which also provides a ﬂoor price for UST, given
+by its actuarily fair value and an exit-upon-suspension price of zero.
+0 0.20.40.60.81P
+0
+0.2
+0.4
+0.6
+0.8
+1F(P)
+Distribtion for P
+Figure 5: The distribution function F (P ) for the benchmark numerical ex-
+ample of section 2.
+20
+
+===== PAGE 23 =====
+
+there were bottlenecks in burning UST: indeed some bottleneck was widened
+shortly before the last suspension of the blockchain, see the description in
+the online appendix D. All approaches have some diﬃculty with explaining,
+why there was substantial and active trading in the UST coin.
+As for the underpricing of UST in the market, note that burning UST
+into LUNA and then selling LUNA takes time. Consider a UST coin held
+on an exchange. To proceed with burning, it needs to be transferred to
+“Terra Station”, the wallet for holding Terra or Luna tokens, see the online
+appendix C. The burning then needs to be executed on the blockchain. The
+resulting LUNA tokens need to be transferrred to an exchange for selling.
+By contrast, selling the UST coin directly on the exchange is considerably
+faster. In principle, that should not matter, since the LUNA price is a
+martingale and investors are assumed to be risk neutral. It is conceivable,
+that traders looked at the price trajectory along the crash price, noting its
+continued decline, and where thus willing to sell immediately, if the current
+price exceeds what can be earned, when taking into account the crash price
+decline.
+4 Interpreting the Data
+Hourly data on prices and market capitalization was collected by hand per
+reading them oﬀ the charts available at coinmarketcap.com. I let ∆ corre-
+spond to two hours rather than one hour, since the hourly data seemed to
+contain an odd two-hour swing rather unconnected to the underlying price
+and quantity movements, suggesting that perhaps some data was only prop-
+erly recorded every second hour.
+The theoretical framework above allows me to shed light on and interpret
+the data. Rather than estimate or test the theory or calibrate the theory to
+match some moments, I use the observed data to quantify theory variables,
+21
+
+===== PAGE 24 =====
+
+Burning of UST: Market cap dynamics:
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+-1
+0
+1
+2
+3
+4
+5
+6
+# UST tokens
+#108 Number of UST tokens burnt
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.5
+1
+1.5
+2
+2.5$
+#1010 LUNA market cap
+Price dynamics: Log price dynamics:
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+10
+20
+30
+40
+50
+60
+70$
+LUNA price
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+-5
+0
+5
+$(log)
+LUNA price(Log)
+Figure 6: The data counterpart to the numerical example in ﬁgure 2.
+and use that quantiﬁcation in turn as a tool for interpreting the data through
+the lense of the theory. I call this the method of quantitative interpretation.
+Figure 6 is the data counterpart to the numerical example in ﬁgure 2,
+plotted until the ﬁrst halt of the blockchain on Thursday, May 12, 16:14
+UTC, see online appendix D. Figure 17 in the online appendix F extends
+these plot beyond that suspension date. Figures 2 and 6 obviously diﬀer
+in the rate of UST coins burned. While bt has been assumed constant for
+t≥t∗ in ﬁgure 2 in order to exploit the closed-form solution of proposition 2,
+the actual burning followed roughly a tent-like pattern. Nonetheless, the
+pattern of the price dynamics and market capitalization in ﬁgure 6 is broadly
+consistent with ﬁgure 2. The LUNA price declined by roughly 50 percent
+before the substantial part of the UST coin burning commenced.
+22
+
+===== PAGE 25 =====
+
+Given the discrepancy between the burn rates in ﬁgure 2 and 6, I seek
+to explore, how far the theory can be made consistent with the data, when
+allowing the observed rather than the assumed burn rate. To that end, it is
+helpful to ﬁrst shed some light on some accounting. As in the theory, assume
+that burning of UST coins was the only source of changing the LUNA money
+stock12. The LUNA market price was not constant during the time interval
+[t,t +∆], as I imposed in the discrete time version of the model above. LetQa
+t
+be the average price at which burned UST coins were converted into LUNA
+during that interval. Basic accounting delivers
+Mt+∆ =Mt + bt∆
+Qa
+t
+(25)
+in slight generalization of (1). Using the equation above, one can calculate
+Qa
+t , implied by the data for bt and Mt. Figure 18 in the online appendix F
+plots Qa
+t alongside Qt to judge the discrepancy: it tracks it rather closely.
+Deﬁne the rate of the LUNA price decline measured in proportion to
+Qt+∆ rather than Qt as
+xt =−Qt+∆−Qt
+Qt+∆∆ (26)
+The market capitalization satisﬁes mt =QtMt for all t. With (25) and (29),
+one has
+mt+∆−mt =−xtmt+∆∆ + Qt
+Qa
+t
+bt∆ (27)
+Also and trivially,
+Qt+∆−Qt =−xtQt+∆∆ (28)
+These equations are the counterparts to (3) and (2), rewritten with
+yt =λt
+(
+nt+∆
+mt+∆
+− 1
+)
+(29)
+12In practice, there were also other items, such rewards to validators.
+23
+
+===== PAGE 26 =====
+
+as
+mt+∆−mt = −ytmt+∆∆ +bt∆ (30)
+Qt+∆−Qt = −ytQt+∆∆ (31)
+These equations yield a few insights. First, if indeed burning of UST coins at
+priceQa
+t was the only source of changing the LUNA money stock and if indeed
+mt = QtMt, then (27) follows from (28) and vice versa. The corresponding
+theory equations (30) and (31) only diﬀer from their accounting counterparts
+(27) and (28) in that Qa
+t may diﬀer from Qt, but one may reasonably wish
+to adjust that for the theory equation as well, as they are best thought to be
+approximations to their continuous-time versions. Comparison of (28) with
+(31) shows thatxt provides a way to measureyt. Comparison of (27) to (30),
+adjusted to using the Qt/Qa
+t -ratio, reveals that
+zt =
+(
+Qt
+Qa
+t
+bt− mt+∆−mt
+∆
+)
+/mt+∆ (32)
+provides an alternative measurement foryt, which coincides withxt, if indeed
+burning of UST coins at price Qa
+t was the only source of changing the LUNA
+money stock and if indeedmt =QtMt. The equations also show, that xt =yt
+and zt = yt is not a system of two independent equations, which one could
+then solve for λt and nt+∆: rather, these equations mechanically coincide 13.
+Equation (27) then implies that
+mt+∆ =
+(
+mt + Qt
+Qa
+t
+bt∆
+)
+/(1 +xt∆) (33)
+In the theory, I used Qt = Qa
+t , however. With that, one can reconstruct
+market capitalization mc
+t with the current rather than the actual prices for
+burning UST from xt as14
+mc
+t+∆ = (mc
+t +bt∆)/(1 +xt∆) (34)
+13The left panel of ﬁgure 19 in the online appendix F shows, this is indeed the case.
+14The right panel of ﬁgure 19 in the online appendix F compares mc
+t tomt: the discrep-
+ancy is fairly small.
+24
+
+===== PAGE 27 =====
+
+Furthermore, the theory is designed for taking the limit as ∆ → 0, in which
+caseQa
+t→Qt. The discrete time theory above can easily be extended, allow-
+ing (27) instead, while maintaining the same continuous-time limit. There-
+fore and for consistency, I proceed using the actual market cap mt rather
+than this constructed market cap.
+The equations also show that one can always ﬁnd sequences for λt and
+nt so as to make the theory ﬁt the data. There is a small caveat to that.
+Mechanically, yt≥− 1, which implies that prices cannot double from one
+period to the next: this indeed never happened in the data. Furthermore,
+I need 0 ≤ λt≤ and nt+∆≥ 0, and it may be desirable to impose tighter
+restrictions yet.
+I proceed constructing λt and nt, imposing additional assumptions. I
+examine two scenarios, inspired by the theory construction above 15. For sce-
+nario A, I assume that nt+∆≡ ¯n throughout, and pick ¯n to be the maximum
+value for the LUNA market capitalization during the time window examined
+here, i.e. after May 8th, 2022, and solve for λt. Comparing (29) and (26)
+shows that this precludes prices from ever rising. Thus, I replace the actual
+LUNA price series at each date with its maximum of the price between that
+date and the suspension of convertibility, and reconstruct ˜xt from that price
+series16. Formally
+˜Qt = max
+t≤s≤T
+Qt (35)
+˜xt = −
+˜Qt+∆− ˜Qt
+˜Qt+∆∆ (36)
+15I provide results for two more scenarios in the online appendix F.
+16Scenario C in appendix F examines the alternative version, when the original price
+data and original xt are used, and the bounds in (57) provide the necessary safe guards.
+As ﬁgure 20 in the online appendix F shows, the reconstructed price then diﬀers quite a
+bit from the original.
+25
+
+===== PAGE 28 =====
+
+I further impose that λt cannot exceed 0.9 rather than 1. Formally
+λt = max
+{
+min
+{
+˜xt/
+(
+¯n
+mt+∆
+− 1
+)
+, 0.9
+}
+, 0
+}
+(37)
+With this, one can then calculate the impliedyt per (29), and with yt instead
+of xt calculate the implied price series per (26). One obtains essentially the
+price series ˜Qt, which in turn does not diﬀer much from the original prices
+Qt, see ﬁgure 20 in the online appendix F.
+The left panel of ﬁgure 7 shows the resulting λt. By construction, the
+beginning of the crash, i.e. t = 0 in the theory, coincides with the peak
+of the LUNA price on May 8th, and well ahead before larger fractions of
+UST got burned, see also ﬁgure 1. The probabilities of recovery are initially
+high and even hitting the upper constraint λt = 0.9, but gradually and with
+oscillations die out to near-zero values. The large probabilities correspond
+to swift LUNA price declines, whereas near-zero values of λt correspond to
+rather stable prices. For example, the temporary moment of relative stability
+during May 10th seen in ﬁgure 1 corresponds to the near-zero probabilities
+λt as shown in the left panel of ﬁgure 7 during that time. Overall, the left
+panel of ﬁgure 7 tells a plausible story, that the initial disbelief in a continued
+crash was replaced by the resignation that it was indeed happening.
+For scenario B, I keep λt≡ ¯λ = 0.05 throughout, thus moving the begin-
+ning of the crash to the beginning of the sample shown, and solve for nt+∆
+as
+nt+∆ = max
+{(xt
+¯λ + 1
+)
+mt+∆, 0
+}
+(38)
+The construction (38) can account for the occasionally observed rise in prices.
+The theory and this construction justiﬁes them by a fear of an instant and
+full crash to an exit market capitalization below the current one or even at
+zero: when that does not materialize, traders are rewarded by an increase
+26
+
+===== PAGE 29 =====
+
+Scenario A: λt Scenario B: nt+∆
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+Implied exit probability
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+1
+2
+3
+4
+5
+6
+7
+8 #1010 Implied exit market cap
+nt+"
+7n
+Figure 7: The left panel shows the implied λt, when nt+∆≡ ¯n and the LUNA
+price series is replaced by the maximum of the LUNA price from that date
+until suspension of convertibility (“scenario A”). The right panel of the bot-
+tom row shows the impliednt+∆ together with a line at ¯n, when λt≡ ¯λ = 0.05
+(“scenario B”).
+in the price17. I plot the constructed exit market capitalizations nt+∆ in the
+right panel of ﬁgure 7. Initially, the exit market capitalizations nt+∆ is high,
+ﬁrst ﬂuctuating around ¯n and then exceeding it quite a bit 18. This is driven
+by the large price declines, which the theory justiﬁes by either large recovery
+probabilities or large exit market capitalizations. Similar to the story told by
+the left panel of ﬁgure 7, these exit market caps decline and are eventually
+rather far below ¯n, as pessimism regarding full recovery settles in.
+These calculations can in turn be used to shed light on the UST investors,
+using the theory in section 3 as a guide. As the discrete time analogue to
+17It may well be, that other forces such as the interventions of the Luna Foundation
+Guard or richer types of propagations than those considered here played a role and can
+account for rising prices other than through the fear of a full and immediate collapse.
+18Scenario D in appendix F provides a more sophisticated version, where nt+∆ is ﬁrst
+calculated per (38) for ¯λ = 0.001, but is capped at ¯n, and thenλt is calculated, using (57).
+27
+
+===== PAGE 30 =====
+
+Fraction UST burned vs Pt: Price ﬂoor for UST coins:
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+P(t) and F(t)
+Suspension probability VS fraction burned
+Fraction burned
+Suspension prob (scenario A)
+Suspension prob (scenario B)
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+UST market price and non-suspension prob
+Non-suspension probability VS UST market price
+UST price
+Non-suspension prob (scenario A)
+Non-suspension prob (scenario B)
+Figure 8: The data counterpart to ﬁgure 4. The left panel shows the fraction
+Ft of UST burned and Pt as a function of time, where Pt is calculated ac-
+cording to the two scenarios. The right panel compares the non-suspension
+probability 1−Pt according to the two scenarios to the UST market price.
+The non-suspension probability is a price ﬂoor, if the price upon suspension
+is zero, traders are risk-neutral and everything except the possibility of exiting
+the run is deterministic, as assumed in the model. 1−Pt as calculated per
+scenario B is indeed below the observed UST price throughout, while this is
+nearly, but not always the case for scenario A.
+28
+
+===== PAGE 31 =====
+
+0 0.2 0.4 0.6 0.8 1
+P
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+F(P)
+Distribution for P
+Scenario A
+Scenario B
+Figure 9: This ﬁgure is the empirical counterpart to ﬁgure 5, showing the
+distributions for the threshold probabilities P for burning or selling UST for
+the two scenarios.
+29
+
+===== PAGE 32 =====
+
+(19), start with PT = 1 at the ﬁnal date, and construct
+Pt = (1−λt∆)Pt+∆ (39)
+as the suspension probability, given that the run is still happening at date t.
+As the discrete time analogue to (22), start B0 = 0 for the initial date and
+construct
+Bt =Bt−∆ +bt∆ (40)
+as the quantity of UST coins burned between date 0 and t. With that,
+calculate the fraction Ft of the total burned by date t according to
+Ft =Bt/BT (41)
+The left panel of ﬁgure 8 plots Pt calculated per the two scenarios as well as
+Ft as a function of time. As in the theoretical example shown in ﬁgure 4, both
+gradually rise over time. The right panel of ﬁgure 8 plots the non-suspension
+probability 1−Pt for the two scenarios vis-a-vis the UST price. The non-
+suspension probability of scenario A works well as a price ﬂoor for the UST
+price, but it was calculated compromising on the LUNA price series. Scenario
+B respects that price series, but shows occasional violations of the “price
+ﬂoor” by the actual UST price. One could attempt to ﬁnd a scenario that
+can account for both. More plausibly, additional and unmodelled volatilities
+and forces account for some of the discrepancies. The payoﬀ for ever enriching
+the theory to eventually fully close the gaps may be rather small, though.
+The theoretical framework provided is reasonably simple and stylized, yet
+provides a useful way to examine, interpret and account for the data.
+Figure 9 plots Ft as a function of Pt and shows the distributions for the
+threshold probabilities P for burning or selling UST for the two scenarios.
+The left panel of ﬁgure 8 has shown that the suspension probabilities Pt in
+scenario A rise faster over time than in scenario B. This in turn implies
+that the threshold probabilities for burning UST are more likely to high in
+30
+
+===== PAGE 33 =====
+
+scenario A compared to scenario B. Put diﬀerently, the threshold probability
+distribution of scenario A ﬁrst-order stochastically dominates the threshold
+probability distribution of scenario B except at low values of P. Overall, both
+distributions put much more weight on high threshold probabilities compared
+to the theoretical example shown in ﬁgure 5. Perhaps then, the surprising
+part about the extent of burning of UST coins during the crash was that it
+happened so late and to such a limited degree. About 60 percent of the UST
+coins were never burned, see online appendix D.
+5 Conclusions
+The algorithmic stablecoin UST crashed in the two weeks of May 9th to May
+15th, 2022, leading to a price collapse of the underlying LUNA token and
+the erasure of more than 50 Billion U.S. Dollar or 90% in market value. To
+shed light on these events, I have provided a novel theory for the gradual
+unfolding of a crash. I make assumptions about the market cap during
+“normal” times and for the terminal value at suspension of convertibility.
+I allow for the possibility that the market might return to normal at any
+moment, but that value is lost, once the price has fallen suﬃciently far. I
+have highlighted the implications of the theory in an analytically tractable
+example. I have then used to theory to interpret the data, using bi-hourly
+observations. I show how the LUNA price anticipated the subsequent burning
+of UST tokens and conversion into LUNA. I examine two scenarios to recover
+the probability of exiting the crash and the market capitalization upn exit.
+I ﬁnd that the majority of the UST coin holders waited until the probability
+of suspension was rather high, before deciding to burn their holdings. This
+is consistent with 60 percent of the UST coins still being in circulation after
+the suspension, see online appendix D.
+The analysis breaks new ground methodologically. I provide a novel ap-
+31
+
+===== PAGE 34 =====
+
+proach as to how crashes can unfold gradually. To that end, I propose that
+participants hesitate to anticipate the ﬁnal outcome, due to the continuing
+possibility of things returning to normal or, at least, agents believing in such
+a return. This raises the deeper question whether indeed full runs are rare
+or whether agents are simply overly optimistic, once a crash is on its way.
+Understanding these forces more deeply is of importance for policy interven-
+tions in market crashes, and worthy of further exploration. The theoretical
+framework above allows me to shed light on and interpret the data. Rather
+than estimate or test the theory or calibrate the theory to match some mo-
+ments, I use the observed data to quantify theory variables, and use that
+quantiﬁcation in turn as a tool for interpreting the data through the lense of
+the theory. I call this the method of quantitative interpretation. Section 4 is
+intended as a showcase as how this method can be applied. It should prove
+to be an appealing approach more broadly 19.
+References
+[1] Ante, Lennart, Ingo Fiedler and Elias Strehle (2021), “The inﬂuence
+of stablecoin issuances on cryptocurrency markets,” Finance Research
+Letters, 41.
+[2] Arslanian, Henri, May 2022, The Book of Crypto , Palgrave Macmillan,
+Springer, Switzerland.
+[3] Benedetti, Hugo E and Labb´ e, Sebasti´ an, February 2022, “A Closer
+Look Into Decentralized Finance,” in The Emerald Handbook on Cryp-
+toassets, forthcoming. Available at SSRN.
+19One may argue that this method has been used with some frequency before. It is a
+distinct methodology, and it deserves a name.
+32
+
+===== PAGE 35 =====
+
+[4] Benigno Pierpaolo, Linda Schilling and Harald Uhlig, May 2022, “Cryp-
+tocurrencies, Currency Competition, and the Impossible Trinity,” Jour-
+nal of International Economics, forthcoming.
+[5] Biais, Bruno, Christophe Bisi´ ere, Matthieu Bouvard, Catherine
+Casamatta and Albert J. Menkveld (2021), “Equilibrium Bitcoin Pric-
+ing,” Toulouse School of Economics Working Paper No 973, Journal of
+Finance, forthcoming.
+[6] Catalini, Christian and Nihar Shah, Nihar, November 2021, “Setting
+Standards for Stablecoin Reserves,” draft, MIT. Available at SSRN.
+[7] Council of the EU, June 30, 2022, “Digital ﬁnance: agreement reached
+on European crypto-assets regulation (MiCA),” Press Release.
+[8] Frost, Jon, Hyun Song Shin and Peter Wierts, Novembe 2020, “An Early
+Stablecoin? The Bank of Amsterdam and the Governance of Money,”
+De Nederlandsche Bank Working Paper No. 696. Available at SSRN.
+[9] Clements, Ryan, Oct. 2021, “Built to Fail: The Inherent Fragility of
+Algorithmic Stablecoins,” The Wake Forest Law Review Online 131.
+[10] Clements, Ryan, June 2022, “Deﬁning the Regulatory Perimeter for
+Stablecoins in Canada,” Canadian Business Law Journal (Forthcoming,
+September 2022). Available at SSRN.
+[11] Delivorias Angelos, November 2021, “Stablecoins. Private-sector quest
+for cryptostability,” European Parliamentary Research Service.
+[12] Diamond, Douglas W. and Phil H. Dybvig, 1983, “Bank runs, deposit
+insurance, and liquidity,” Journal of Political Economy, vol. 91, no. 3,
+pp. 401–419.
+33
+
+===== PAGE 36 =====
+
+[13] Fratto, Chiara and Harald Uhlig, 2020, “Accounting for Post-Crisis In-
+ﬂation: a Retro Analysis,” Review of Economic Dynamics, vol. 35, pp.
+133-53.
+[14] Gambles, Paul, 2020, revised June 2, 2022, “Crypt into Crypto: Why
+Has Crypto Fallen When Stocks Have Fallen as Well?,” draft, MBMG
+IA, available at SSRN.
+[15] He, Zhiguo and Wei Xiong, 2012, “Dynamic Debt Runs,” The Review
+of Financial Studies, Vol. 25, No. 6 (June 2012), pp. 1799-1843.
+[16] Kareken, J. and N. Wallace, 1981, “On the indeterminacy of equilibrium
+exchange rates,” Quarterly Journal of Economics, vol. 96, no. 2, pp. 207-
+222.
+[17] Klages-Mundt, Ariah and Andreea Minca, March 2021, “(In)Stability
+for the Blockchain: Deleveraging Spirals and Stablecoin Attacks,” draft,
+Cornell University. Available at arxiv.org.
+[18] Kwon, Yujin, Jihee Kim, Yongdae Kim, and Dawn Song (2021), “The
+Trilemma of Stablecoin,” draft, KAIST. Available at SSRN.
+[19] Li, Ye and Simon Mayer, 2020, revised April 2022, “Money Creation
+in Decentralized Finance: A Dynamic Model of Stablecoin and Crypto
+Shadow Banking,” Fisher College of Business Working Paper No. 2020-
+03-030, Charles A. Dice Center Working Paper No. 2020-30. Available
+at SSRN.
+[20] Makarov, Igor and Antoinette Schoar, 2021, revised May 2022,
+“Blockchain Analysis of the Bitcoin Market,” draft, LSE and MIT.
+Available at .
+[21] Makarov, Igor and Antoinette Schoar, 2022, “Cryptocurrencies and De-
+centralized Finance (DeFi),” draft, LSE and MIT. Available at .
+34
+
+===== PAGE 37 =====
+
+[22] Manuelli, R.E. and J. Peck, 1990, “Exchange rate volatility in an equilib-
+rium asset pricing model,” International Economic Review, p. 559-574.
+[23] Mita, Makiko, Kensuke Ito, Makiko Mita, Shohei Ohsawa and Hideyuki
+Tanaka, December 2020, “What is Stablecoin?: A Survey on Its Mech-
+anism and Potential as Decentralized Payment Systems,” International
+Journal of Service and Knowledge Management, vol. 4, no. 2, pp. 71-86.
+DOI. Available at IJSKM.
+[24] Obstfeld, Maurice, 1984, “Rational and self-fulﬁlling balance-of-
+payments crises,” technical report, National Bureau of Economic Re-
+search .
+[25] Obstfeld, Maurice, 1988, “The logic of currency crises,” in Monetary
+and Fiscal policy in an integrated Europe, Springer 1988, pages 62-90.
+[26] Obstfeld, Maurice, 1996, “Models of currency crises with self-fulﬁlling
+features,” European Economic Review, 40(3-5), pp. 1037-1047.
+[27] Osipovic, Alexander and Caitlin Ostroﬀ, May 12th, 2022, “Crash of
+TerraUSD shakes crypto. ‘There was a run on the bank”, Wall Street
+Journal.
+[28] Schilling, Linda M., and Harald Uhlig, 2019a,“Currency Substitution
+under Transaction Costs,” AEA Papers and Proceedings, vol. 109, p.
+83-87.
+[29] Schilling, Linda and Harald Uhlig, 2019b, “Some Simple Bitcoin Eco-
+nomics,” Journal of Monetary Economics, vol. 106, p. 16-26.
+35
+
+===== PAGE 38 =====
+
+APPENDIX
+A Proofs
+Proof: (Proof of Proposition 1:)
+1. This is a standard result for ODEs and can be veriﬁed directly.
+2. This is a standard result for ODEs and can be veriﬁed directly. Note
+that the initial condition is given per the initially given amount of
+tokensM0.
+3. This follows directly from the deﬁnition of market capitalization as
+mt =MtQt.
+•
+Lemma 1 Suppose that the solution to (4) is given and invertible, i.e every
+m∈{mτ|τ∈ [0,T ]} obtains for a unique τ =τ(m). Then It can be written
+as
+It =
+∫ mT
+mt
+1
+1−ατ(m)
+(
+ατ(m)
+m− (1−ατ(m))nτ(m)
+− 1
+m
+)
+dm (42)
+Proof: (Proof of Lemma 1:) Substitute m for τ in (10) and verify that
+the resulting formula is correct. •
+Formula (42) is intriguing, as it shows that Qt can be calculated, know-
+ing only αt and nt rather than the three exogenous pieces bt,λt,nt, given a
+solution to mt for the boundaries. Furthermore, it allows the calculation of
+explicit solutions in the simple benchmark case that bt≡ b, nt≡ n, λt≡ λ
+36
+
+===== PAGE 39 =====
+
+and thus αt≡ α = b/(λn) are all constant. This turns out to be useful for
+proposition 2.
+Proof: (Proof of Proposition 2:) The solutions (12) and (13) can
+be veriﬁed by diﬀerentiation and comparison to (4) and (6). For a direct
+calculation,
+1. (12) can be obtained per proposition 1 or equation (8).
+2. Check.
+3. The solution (13) obtains for t ≥ t∗, using a general A in (9) and
+calculating the integral in (42) . For t≤ t∗, note that Mt≡ M0 is
+constant, since no burning takes place. Thus, the price is proportional
+tomt and coincides withQt∗ as already calculated fort≥t∗. Equation
+(14) follows from QT =ϵ.
+4. The exact equations (15) and (16) follow from (11). The approximation
+follows from the ﬁrst, using the approximation
+1
+1−η− 1≈η≈ 1− 1
+1 +η for η≈ 0, (43)
+where η = (ψM0)
+α
+1−α here.
+5. Using that approximation, (11) together with the solution (12) now
+implies (18), where I also used ϵM0/n≈ 0.
+•
+B Pricing cryptocurrencies
+Most cryptocurrencies, including LUNA, are intrinsically worthless. They
+share that feature with ﬁat currencies, issued by many central banks. The
+37
+
+===== PAGE 40 =====
+
+latter derive value as a medium of exchange. Likewise, cryptocurrencies may
+be valuable as medium of exchange or for applications built on top of the
+blockchain recording cryptocurrency transactions. It is reasonable to assume
+that the introduction of the stablecoin UST in turn made LUNA attractive
+and increased its value as a medium of exchange.
+As a consequence, a standard asset pricing perspective, discounting future
+dividends is of little help: one would either derive a zero value or conclude
+that the token price is a pure bubble. Even introducing some “liquidity
+dividend” runs into headwinds: it does not explain, why, say, a 20 Dollar bill
+is twice as valuable as a 10 Dollar bill except for the tautology of arguing
+that a bill with twice its face value oﬀers twice the liquidity dividend.
+Instead, a monetary perspective is required. A benchmark approach for
+pricing cryptocurrencies is provided in Schilling-Uhlig (2019b), building on
+Kareken-Wallace (1981) and Manuelli-Peck (1990): if currencies are perfect
+substitutes, then their exchange rate is a risk-adjusted martingale. In the
+simplest case without uncertainty, agents are indiﬀerent between cryptocur-
+rencies and Dollars: thus, they must have the same value, at a constant, but
+indeterminate exchange rate, as in Kareken-Wallace (1981). This benchmark
+approach implies that exchange rate ﬂuctuations can be large, that they do
+not invalidate the medium-of-exchange function, and that theory provides no
+guide in pinning down the price and market capitalization other than that
+the expected price tomorrow is the price today, modulo some risk premium.
+An extension to imperfect substitution is provided in Benigno-Schilling-Uhlig
+(2022), section 6.1: in that case, some demands for a currency remains, even
+if it becomes increasingly unattractive. Intriguingly, that approach implies
+a value for the total market capitalization and thus a relationship between
+the price and the number of tokens outstanding, but no longer leaves room
+for exchange rate ﬂuctuations except due to, say, currency preference shocks.
+A combined perspective appears to be most promising for thinking about
+38
+
+===== PAGE 41 =====
+
+pricing cryptocurrencies.
+The following simpliﬁed framework, related to Benigno-Schilling-Uhlig
+(2022), section 6.1, suﬃces for the analysis here. I assume that there are two
+or more currencies, with quantity MA and MB: think of MA as denoting
+the quantity of LUNA tokens or UST coins and think of MB as the total
+of all other currencies, measured in Dollar equivalents. There are two types
+j∈{ d,s} of households with shares σ resp. 1 −σ of the total population
+or of the total wealth to be allocated to the two currencies. Both allocate
+some given real resources w to their currency holdings MX
+j ≥ 0,X ∈{A,B}
+in order to maximize their utility v(mtot
+j ) in their total money aggregate 20,
+mtot
+j =aj
+(
+QMA
+j
+P ,MB
+j
+P ;ξ
+)
+where P is the general (Dollar) price level, where Q is the exchange rate
+or relative price of MA in terms of MB, and where aj(·,·) is a continuously
+diﬀerentiable type-speciﬁc aggregator function, aggregating the two types of
+currency holding into a total of relevance for the agent, and which I allow to
+depend on an additional parameterξ. The aggregator function is assumed to
+be constant returns to scale, concave, non-negative and twice continuously
+diﬀerentiable. I assume that v(·) is concave and strictly increasing. The
+problem for an agent of type j can thus be stated as 21
+max
+MA
+j ,MB
+j
+aj
+(
+QMA
+j
+P ,MB
+j
+P ;ξ
+)
+(44)
+20We keep with the tradition of the literature to formulate the utility in terms of the
+real value of money. The price level P plays little role in the analysis here, however, and
+I could instead multiply it out, simplifying the formulas.
+21A more complete approach would include the intertemporal considerations of holding
+currencies across periods and the opportunity costs of holding currencies in terms of nom-
+inal interest rates and currency-speciﬁc inﬂation rates. In equilibrium and as long as the
+“switchers” are at an interior optimum, one obtains the martingale result of Schilling-Uhlig
+(2019b) and no impact on the static analysis presented here. I skip the details.
+39
+
+===== PAGE 42 =====
+
+s.t. QMA
+j
+P + MB
+j
+P ≤w (45)
+MA
+j ≥ 0, MB
+j ≥ 0 (46)
+Note that
+mA
+j = QMA
+j
+P , and mB
+j = MB
+j
+P (47)
+are the real amounts held of currency A resp. B by household typej. Deﬁne
+the relative marginal rate of currency substitution
+µj (ρj;ξ) =
+∂aj
+(
+mA
+j,mB
+j ;ξ
+)
+∂mA
+j
+/∂aj
+(
+mA
+j,mB
+j ;ξ
+)
+∂mB
+j
+, where ρj = mA
+j
+mB
+j
+Note that only the ratioρj of the two currencies matters, since the aggregator
+function aj(·,·) has constant returns to scale. Note that µj is a continuous
+function of ρj. At an interior solution, the ﬁrst order conditions imply
+µj(ρj;ξ) = 1, if 0 <ρ j <∞. (48)
+The s-type of households are called switchers, who do not particularly
+care, which currency they hold and are ready to switch at moment’s notice.
+Their aggregator function is given by 22
+as
+(
+mA
+s,mB
+s
+)
+=mA
+s +mB
+s, with µs(ρ)≡ 1
+Note that their relative marginal rate of currency substitution is constant,
+µj≡ 1. As a consequence of (48), switchers are indiﬀerent as to how much
+real quantity of each currency to hold. If all agents are switchers, exchange
+rate indeterminacy obtains.
+The d-type of households are called stayers or devotees, and consider
+the currencies to be imperfect substitutes and are thus devoted to hold some
+amount of each. I assume that µd(ρd;ξ) is a strictly decreasing function
+22as does not vary with some parameter ξ: thus, ξ is dropped as an argument.
+40
+
+===== PAGE 43 =====
+
+of ρd and a strictly increasing function of the additional parameter ξ, with
+limρd→∞µd(ρd;ξ)< 1<µ d(0;ξ). As a consequence of (48), devotees hold
+mA
+d = ρ∗(ξ)
+ρ∗(ξ) + 1w and mB = 1
+ρ∗(ξ) + 1w (49)
+where ρ∗(ξ) solves
+µd(ρ∗(ξ);ξ) = 1 (50)
+Note that 0 < ρ∗(ξ) <∞ exists and is unique. An example is the CES
+speciﬁcation for the aggregator function
+ad(mA,mB;ξ) =
+(
+ξ
+(
+mA
+)η−1
+η
++
+(
+mB
+)η−1
+η
+) η
+η−1
+(51)
+where 0 < η <∞ is the elasticity of substitution, see the discussion in
+Benigno-Schilling-Uhlig (2022), section 6.1. With that functional form,
+µd(ρ;ξ) =ξρ−1/η and ρ∗(ξ) =ξη (52)
+Given23 P > 0, an equilibrium, Q and the quantities MX
+j ≥ 0,j ∈
+{d,s},X ∈ {A,B} must be such that they maximize the utilities of the
+two types of agents and that markets clear,
+MX =σMX
+d + (1−σ)MX
+s , for X{A,B}. (53)
+Proposition 3 1. The market capitalization σmA
+d (ξ) of the currency A
+held by devotees is strictly increasing in ξ in the interior 0<ρ d <∞.
+2. Suppose that σ <1. For any market price Q with
+Q≥Q(ξ) (54)
+23We ignore examining the aggregate price levelP , as I imagine the market capitalization
+of currency A to be “small” relative to market capitalization of currency B.
+41
+
+===== PAGE 44 =====
+
+there is an equilibrium, where Q(ξ) is the price ﬂoor obtaining, if only
+devotees hold currency A,
+Q(ξ) =PσmA
+d (ξ)
+MA (55)
+There is no equilibrium for Q<Q (ξ).
+3. For σ = 1, Q =Q(ξ).
+4. The price ﬂoor Q(ξ) is strictly increasing in ξ.
+Proof:
+1. ρ∗(ξ) is strictly increasing in ξ in the interior 0<ρ d <∞ per (52) and
+the assumed properties of the functions µd and ad.
+2. Equation (55) follows with mA
+d = (Q/P )MA
+d and market clearing (53)
+with MX
+s = 0 . The money demand of devotees for currency A is
+σMA
+d = (P/Q)mA
+d (ξ). For Q > Q(ξ), there is an equilibrium, where
+the switchers hold the rest, MA
+s = (MA−σMA
+d )/(1−σ)≥ 0, as they
+are indiﬀerent as to which currency to hold. For Q < Q(ξ), money
+demand for currency A would exceed total supply, in violation of (53)
+and MA
+s ≥ 0.
+3. This follows from the arguments for the previous part.
+4. This follows from the ﬁrst part of the proposition.
+•
+A couple of remarks are in order. With σ >0 and devotees in the market,
+there is a minimal market capitalization for currencyA, given byσmA
+d (ξ)> 0.
+Without switchers, the market capitalization is uniquely pinned down by
+mA
+d (ξ), while it can be arbitrarily large with switchers. Without devotees,
+42
+
+===== PAGE 45 =====
+
+i.e. σ = 0, the price Q and the market capitalization can be zero. One could
+close the model per replacing w with (QMA +MB)/P , i.e. per assuming
+that MX is the per-capita supply of currency X and per reformulating the
+model as a trade of the currencies between the agents. In that case, mA
+d (ξ)
+depends on Q per (49). Eliminating that dependency, (55) then implies
+Q(ξ) = σρ∗(ξ)
+1 + (1−σ)ρ∗(ξ)
+MB
+MA. (56)
+With this equation, one can directly relate the price ﬂoor Q(ξ) to the quanti-
+ties of currencies in the market, the share of devotees σ and their preference
+for currency A encapsulated in ρ(ξ).
+43
+
+===== PAGE 46 =====
+
+ONLINE APPENDIX
+1
+
+===== PAGE 47 =====
+
+stake & govern
+Borrower
+Exchanges
+DeFi Swap
+Platform
+DEFC
+reward
+reward
+buys
+lends
+repays 
+with 
+interest
+stake & govern
+reward
+ANC
+Terra
+UST
+repays 
+with 
+interest
+deposit
+trade
+ trade
+burn
+mint
+LUNA
+Terra
+blockchainstake & govern
+reward
+Luna Foundation 
+Guard (LFG)supports
+Terra Ecosystem
+Figure 10: The Terra ecosystem and its relationship with the crypto world
+C Initial Success
+There are a veriety of excellent descriptions of the Terra blockchain based
+ecosystem, which encompass the native LUNA token and the algorithmic sta-
+blecoin UST, as well as the crash events. I will draw on Kelly(2022), Moskov
+(2022), Sandor(2022) as well as a variety of other sources. Terra was cre-
+ated in January 2018 by Terraform Labs, a start-up headquartered in Seoul,
+South Korea, and founded by Do Kwon (CEO) and Daniel Shin. Terraform
+Labs also launched the Chai mobile payment system, with currently over 2.5
+million users in South Korea. The Terra-Luna Ecosystem itself features 114
+projects, building on it. Figure 10 provides an overview.
+LUNA is the native token for the Terra blockchain. The cosmos-based
+Terra blockchain is governed by delegated proof-of-stake or DPoS, where
+owners of LUNA can delegate their voting rights to validators per Terra
+2
+
+===== PAGE 48 =====
+
+Price Market Capitalization
+TerraUSD or UST, the stablecoin:
+LUNA, the native token:
+Figure 11: Price and market capitalization for the stablecoin UST and the
+native token LUNA from November 2020 until May 18, 2022. Price for UST
+only until May 6, 2022. Source: coinmarketcap.com.
+Station, who in turn vote on validating blocks, see the documentation.
+UST or TerraUSD is an algorithmic stablecoin, meant to be valued at
+1 US Dollar. It indeed did so remarkably closely nearly all the time from
+its inception in November 2020 to the end of April, see the top left chart
+in ﬁgure 11. It achieved this by allowing users to swap between UST and
+LUNA per Terra Station. “Burning” 1 UST would “mint” the amount of
+Luna currently valued at 1 US Dollar, and vice versa.
+Both UST and LUNA can also be traded on various exchanges and liq-
+uidity pools, with some such as Curve Finance specializing in particular on
+3
+
+===== PAGE 49 =====
+
+the arbitrage between stable coins, providing additional stability in normal
+times. It worked so well until late April 2022 and led to UST becoming
+the third largest stablecoin by market capitalization, that Terra founder Do
+Kwon used @stablekwon as his Twitter handle and proclaimed that “by my
+hand $DAI will die,” referring to the stablecoin $DAI, see Braun (2022).
+One of the main attractions for UST owners was to deposit them at at
+anchorprotocol.com, another part of the Terra ecosystem, see ﬁgure 10 and
+governed per proof of stake by owners of the ANC token, who set the “an-
+chor rate” or annual percentage yield (APY) for its depositors. According
+to Kessler and Young (2022), anchor oﬀers yields of 20% per annum to de-
+positors. It achieves this remarkably high return by lending the funds to
+borrowers, who in turn obtain 24 staked assets in a proof-of-stake blockchain.
+Staking there is rewarded by distributing trading fees and newly minted coins,
+claimed to generate up to 75% APY e.g. for DEFC according to Pepi (2022)
+and thus used as the example in ﬁgure 10. It then comes as no surprise that
+75 percent of UST’s supply in circulation was deposited at Anchor.
+LUNA achieved a record market capitalization according to daily data of
+41.1 billion U.S. Dollar on April 4th, 2022. With UST achieving a market
+capitalization of 16.7 billion U.S. Dollar, this achieved a combined record
+of 57.7 billion U.S. Dollar market cap. The daily-data record UST market
+capitalization of nearly 19 billion US Dollar was achieved on May 4th, 2022,
+with the LUNA market cap then at nearly 30 billion U.S. Dollar, the LUNA
+price having declined from 116 Dollar to 86 Dollar: not a particularly unusual
+movement in the highly volatile world of cryptocurrencies. All in all, it was a
+24It seems to me that there must have been another middle institution in play, borrowing
+from Anchor in UST and lending to the borrower in US $, holding an exactly balanced
+position. Otherwise, the borrower would have to sell UST in order to buy staked assets,
+which would result in second-round etc deposits of UST at Anchor, ultimately undermining
+the system. It seems to me that the peg of UST to the Dollar made such a middle
+institution feasible in the ﬁrst place.
+4
+
+===== PAGE 50 =====
+
+Price Market Capitalization
+TerraUSD or UST, the stablecoin:
+LUNA, the native token:
+:49 AM Wed May 18 ••• 
+coinmarketcap.com Iii 
+(9 Terra LUNA Price:$0.0001806 Qiilf Add to Main Watchlist * 
+Terra to USD Chart 
+Price Market Cap TradingView 
+90.0 
+70.0 
+60.0 
+50.0 
+40.0 
+30.0 
+20.0 
+10.0 
+0 
+USD 5 6 7 
+19 22 25 
+LIi USO BTC 
+8 
+28 
+1D 7D 1M 3M 1Y YTD ALL Ej LOG 
+9 10 11 12 13 14 15 
+May 4 7 13 16 
+Want more data? Check out our API 
+e use cookies to offer you a better browsing experience, analyze site traffic, personalize content, and serve targeted advertisements. Read about how we use cookies and how you 
+can control them on our Privacy Policy. If you continue to use this site, you consent to our use of cookies. 
+II 
+Figure 12: Price and market capitalization for the stablecoin UST and the
+native token LUNA from May 5th to May 15th, 2022. Source: coinmarket-
+cap.com.
+remarkable success story. What was about to follow was extremely unusual
+however, even by these standards.
+D The Crash
+Discussions about the inherent stability of the system arose well ahead of
+the actual crash events. Clements (2021) in particular provides a remark-
+able, early and prescient warning about the inherent fragility of algorithmic
+stablecoins, arguing that “algorithmic stablecoins are fundamentally ﬂawed
+because they rely on three factors which history has shown to be impossi-
+5
+
+===== PAGE 51 =====
+
+ble to control”, namely a support level of demand, independent actors and
+reliable price information. These concerns were reported and thoughtfully
+discussed and expanded upon with regards to the Terra-Luna system and
+Anchor by Morris (2022) less than a month ahead of the crash, stating that
+“the sharks may already be circling”. Clearly then, there were warning signs
+well ahead of the events to unfold that not all was well.
+Possibly inevitably, possibly due to these rising doubts and self-feeding
+beliefs by investors, possibly due to discussions at Anchor to lower the APY,
+possibly due to a concerted attack as argued by Locke(2022), possibly due to
+recent declines in the price for LUNA or some other cause, larger amounts
+of UST started to be withdrawn from Anchor and being burned in exchange
+for LUNA. It takes time for the process to complete: the burning needs to be
+validated in the blockchain, the resulting LUNA tokens then transferred to
+an account at an exchange and sold, in order to truly “cash out”. It may also
+be that limits had been imposed as to how much burning of UST coins could
+take place. In any event, owners of UST coins took the faster “shortcut” of
+selling their holdings directly at exchanges at a discount instead, leading to
+UST leaving the 1$ peg. With the peg in question, more UST holders sought
+to get out. Between May 9th and May 13th, the peg collapsed entirely down
+to around 15 to 25 cents on the Dollar on the exchanges, see the top row of
+ﬁgure 12.
+The non-proﬁt Luna Foundation Guard or LFG was created as part of
+the Terra ecosystem to deploy funds and defend the system, should problems
+arise. It originally held 80,000 Bitcoins, worth approximately 2.5 to 3 billion
+US Dollar in April 2022, and deployed them to defend the UST peg, creating
+some upward bumps in the price on its way down, see Browne(2022). The
+rescue ultimately failed, see Kessler and Malwa(2022), with questions arising
+about the use of the funds, see Robinson (2022) and depleting the reserves
+of the LFG.
+6
+
+===== PAGE 52 =====
+
+Price Market Capitalization
+May 12th: lowest LUNA market capitalization of 40 Mill. $
+May 13th: : lowest LUNA price of 0.00002$
+Figure 13: Price and market capitalization for LUNA at their lowest points on
+May 12th (market cap) and May 13th (price). Source: coinmarketcap.com.
+Note that the graphs were produced in Frankfurt on May 18: the time axis
+thus adds 2 hours to the benchmark UTC time.
+7
+
+===== PAGE 53 =====
+
+The market cap of UST declined from more than 18 billion to around 2
+billion, a sharper decline than the fall of its price. 40 percent of the UST
+coins were burnt between May 9th and May 14th, as can be calculated from
+table D. The burning of the UST coins generated a drastic price decline of
+the LUNA token, falling from 86 Dollar at the open of May 5th to a low of
+just below 0.00002 Dollar around 13:49 UTC 25 on May 13th, a decline by a
+factor of more than 4 million, see the bottom row of ﬁgure 12 and ﬁgure 13.
+Market capitalization of the Luna tokens shrank from 29.6 billion at the open
+of May 5th to less than 40 million around 16:09 pm on May 12th, a decline
+by a factor of more than 700, see the top row of ﬁgure 13.
+In a last-ditch desperate attempt to recover parity, burning of UST into
+LUNA was made easier, but only resulted in a more dramatic decline of
+the LUNA price and increase of its circulation. A vast amount of LUNA
+minting took place in the morning of May 13th, temporarily increasing the
+market cap of LUNA to 80 billion around 6:00 am before its price collapsed
+to its record lows, see ﬁgure 14 and the spike in ﬁgure 12 26. Overall, the
+circulation of LUNA token had increased by a factor of more than 19000. The
+Terra blockchain was suspended ﬁrst on Thursday, May 12 at 16:14 UTC per
+@terra money at block height of 7603700 in order to apply a patch preventing
+governance attacks and disabling further delegations of LUNA. It resumed
+at 18:02 pm. At the time, one can infer from coinmarketcap.com plots, that
+about 3.5 billion LUNA tokens were in circulation, or about 0.05 percent of
+the eventual total number of 6.5 trillion LUNA tokens. Since LUNA tokens
+can no longer be staked since then, it implies that a tiny fraction of current
+25coinmarketcap.com uses the UTC time zone, as I do here.
+26It is clear that there is a glitch in the data here. The burning of somewhat more
+than 6 billion UST coins at face value during the days of May 11, 12 and 13 according to
+table D and assuming that the LUNA price did not increase during the majority of the
+burning phase of LUNA tokens implies that the LUNA market cap should have increased
+by less than a bit above 6 billion $ rather than 80 billion $.
+8
+
+===== PAGE 54 =====
+
+Price Market Capitalization
+TerraUSD or UST, the stablecoin:
+LUNA, the native token:
+Figure 14: Price and market capitalization for the stablecoin UST and the
+native token LUNA in the morning of May 13th, 2022. Source: coinmarket-
+cap.com. Note that the graphs were produced in Frankfurt on May 18: the
+time axis thus adds 2 hours to the benchmark UTC time.
+9
+
+===== PAGE 55 =====
+
+Figure 15: The Binance C.E.O. announces the resumption of the Terra
+blockchain and the end of LUNA minting. Note that the graphs were produced
+in Frankfurt on May 18: the time axis thus adds 2 hours to the benchmark
+UTC time.
+LUNA holders control what will happen to the blockchain in the future.
+On Friday, 13th, and LUNA as well as UST were delisted at a number
+of the major exchanges, though still continuing to trade on others through-
+out. The blockchain was halted again at 2:13 am UTC on May 13 at block
+7607789. The number of LUNA tokens in circulation had increased by nearly
+a factor of 40, see ﬁgure 14 and D. At the urging of Binance C.E.O. Chang-
+peng Zhao, see ﬁgure 15, the blockchain restarted on Friday May 13th at
+12:46 UTC in full, but now without minting, i.e. without burning of UST for
+receiving LUNA, eﬀectively ending the role of UST as a stablecoin. Follow-
+ing that, the tokens were listed at Binance and elsewhere again, with trading
+resuming. The price of the LUNA and UST as well as their market caps
+stabilized within reason for cryptocurrencies, at a total market cap around 5
+billion on May 15th, see table D. Compared to the combined record market
+capitalization of 57.7 billion in April 2022, this is an erasure of more than
+10
+
+===== PAGE 56 =====
+
+Date UST LUNA
+May Price Open Market Cap Supply Price Open Market Cap Supply
+2022 $ Mio $ Mio $ Mio $ Bill.
+5 1.000 18668 18673 86.2 29580 0.343
+6 1.000 18668 18674 82.4 28274 0.343
+7 0.999 18717 18733 77.3 26479 0.343
+8 0.993 18649 18769 68.1 23305 0.342
+9 0.995 186202 18712 64.3 22056 0.343
+10 0.753 14025 18605 30.3 10471 0.345
+11 0.799 14020 17538 17.4 6577 0.378
+12 0.767 10270 13378 1.09 1600 1.462
+13 0.367 4223 11499 0.00054 92 169.6
+14 0.128 1453 11279 0.00013 877 6531
+15 0.183 2070 11279 0.00045 2924 6531
+Table 1: Data according to messari.co. Market capitalization and suppy are
+at the beginning of the day.
+50 Billion U.S. Dollar in market value or more than 90% of the market cap
+record. The depletion of the reserves by the LFG should not be counted,
+since they are simply transfers to other owners.
+In order to understand the interrelationship between the UST burning
+and the LUNA crash, a bit more analysis is required. The body of the
+paper provides a detailed analysis, using hourly data, but much progress
+can already be made using downloadable daily data, publicly available from
+coinmarketcap.com and messari.co, see table D for an excerpt27. The analysis
+27Given the speed of the events, it now matters, whether market capitaization is mea-
+sured at the end of the day, at the beginning of the day or per some kind of average, and
+documentation on that is scant. Fortunately, this can be resolved. Messari.co also lists
+11
+
+===== PAGE 57 =====
+
+here should be understood as a coarser and exploratory, preliminary version
+of the detailed analysis provided in the main text.
+I use this data to measure the UST-burning-induced dilution of the beginning-
+of-the-day LUNA tokens in two ways. First, I use the change in the number
+of LUNA tokens from the open of the current day to the open of the next
+one, and divide it by the total quantity of LUNA tokens at the open of the
+next day28. That ratio can not exceed 1 by construction. Second, I use the
+change in the number of UST coins (i.e. valued at face vaue) from the open
+of the current day to the open of the next day, divided by the market value
+of LUNA at the open of the current day. For comparison, I also plot the
+two market capitalizations, using the beginning-of-the-day value provided in
+table D for the previous day, for comparability to the dilution plots 29.
+The results are show in ﬁgure 16, “zooming in” on the crash episode. The
+second panel of the ﬁrst row shows the remarkable rise in market capitaliza-
+tions during the last year, with the UST market cap gradually rising to a
+range of 40 to 60 percent of the LUNA market cap until the end of April.
+The seocnd row shows the last 30 days before May 15. What is clearly vis-
+ible here is that the decline in the LUNA price happened quite some time
+before the dilution took place, as if the market was anticipating the dilution
+to come.
+the circulating supply: one can then infer from the various prices, that the open price
+was used to calculate market capitalization. I.e. for messari.co, market capitalization is
+measured at the beginning of the day. Table D lists the messari.co data, though I used the
+coinmarketcap.com data and end-of-day prices to construct coin supply. It turns out that
+coinmarketcap.com provides (roughly) the same number for market capitalization, but for
+a day earlier. Therefore, market capitalization on coinmarketcap.com is measured at the
+end of the day.
+28I.e., I will use the coinmarketcap.com dating convention, as e.g. Luna dilution for
+May 13th should refer to the dilution happening during the day of May 13th and not the
+result of the dilution on May 12th.
+29I.e., I use the coinmarketcap.com dating convention also here.
+12
+
+===== PAGE 58 =====
+
+LUNA dilution market capitalization
+July 2021 until May 15, 2022
+Jul 2021Jan 2022time
+0
+20
+40
+60
+80
+100$ and dilution percent
+LUNA dilution (percent) vs LUNA price
+LUNA Dil per USTLUNA Dilution (percent)LUNA Price
+Jul 2021Jan 2022time
+0
+1
+2
+3
+4
+5Market Cap
+1010Market CapitalizationLUNAUST
+July 2021 until May 15, 2022
+April 15 until May 15, 2022:
+Apr 17Apr 24May 01May 08May 15time 2022   
+-20
+0
+20
+40
+60
+80
+100$ and dilution percent
+LUNA dilution (percent) vs LUNA price
+LUNA Dil per USTLUNA Dilution (percent)LUNA Price
+Apr 17Apr 24May 01May 08May 15time 2022   
+0
+1
+2
+3
+4Market Cap
+1010Market CapitalizationLUNAUST
+May 6 until May 15, 2022:
+May 07May 09May 11May 13May 15time 2022   
+0
+20
+40
+60
+80
+100$ and dilution percent
+LUNA dilution (percent) vs LUNA price
+LUNA Dil per USTLUNA Dilution (percent)LUNA Price
+May 07May 09May 11May 13May 15time 2022   
+0
+1
+2
+3Market Cap
+1010Market CapitalizationLUNAUST
+Figure 16: LUNA dilution and comparison of market capitalizations
+13
+
+===== PAGE 59 =====
+
+The last row ﬁnally shows the last week. It shows particularly clearly how
+the market capitalization of UST considerably exceeded the market capital-
+ization of LUNA from May 9 to May 13, with the UST market cap 46 times
+the LUNA market cap on May 1230 in terms of market value and 126 times at
+face value (not shown). One may wonder, what fraction of UST coins can be
+turned into LUNA tokens per the burning-minting process: a question that I
+resolve in section 2. The discrepancy between the two dilution measures now
+becomes particularly visible on May 13th. While the change in UST coins
+is a better measure of the UST coins burned, that ratio is now additionally
+aﬀected by the price change of LUNA during the day, see in particular 14 for
+May 13th and the massive increase of LUNA tokens from the open of May
+13 to the open of May 14. During the crash, the ﬁrst measure therefore is
+more reliable31.
+E The aftermath
+U.S. Treasury Secretary Janet Yellen called for greater regulation of stable-
+coins, see Shen (2022). Ethereum co-founder Vitalik Buterin urged to make
+“average small shareholders” whole, as reported by Locke (2022), but did not
+specify how to ﬁnance this. On May 30th, LUNA was turned into LUNAC
+or LUNA classic, and a new version of LUNA or LUNA 2 was distributed
+per “airdrop” to those holding LUNA before the crash, with a number of
+additional details concerning the distribution, see e.g. Henn (2022) and the
+Terra 2.0 website. Likewise, TerraUSD has been turned into TerraUSDC,
+but is no longer maintained as a stable coin. The market capitalization of
+both LUNA and UST has stabilized around one billion US$ shortly after
+the crash: a a substantial amount of value, and considerably larger than
+30i.e. at the open of May 13 per table D.
+31However, it provides “false positives” for a few other episodes
+14
+
+===== PAGE 60 =====
+
+the value in the start-up phase. Since then, the market capitalization has
+gradually continued to shrink, by the time of writing this.
+Chipolina and Steer have sought to assign “shame” to some individuals
+involved in the construction and thus eventual collapse of the Terra-Luna
+ecosystem: individuals, which may have perhaps been celebrated as heroes,
+if all had continued to go well. Some institutions ran into diﬃculties or fal-
+tered such as the crypto lender Celsius, see Lang et al (2022), or the crypto
+hedge fund Three Arrows, see Ng et al (2022). No larger institution fal-
+tered, though given the increased importance of stablecoins for decentralized
+ﬁnance applications, they may have. Despite headlines to the contrary, the
+price of bitcoin and crypto currencies generally remained reasonably stable,
+given their usual volatility: their subsequent decline may owe more to the
+rise of interest rates and monetary policy tightening in light of higher inﬂa-
+tion. There was a brief drop in the market price of other stable coins, but
+they recovered. Increasing doubts have emerged about Tether at the time of
+writing, see e.g. Huang (2022). Some UST and LUNA investors, apparently
+drawn to these tokens due to their remarkably high returns and success, lost
+quite a bit of money and some painfully so. Investors in other crypto assets
+have on occasions become quite rich instead. These are and have been risky
+markets. The case for government intervention, compensation for losses or
+tighter regulation will be a focus of future discussions, and a more detailed
+welfare analysis and examinations of the repercussions will help. One may
+argue for allowing some stablecoin operators to obtain some kind of regula-
+tory approval for those investors that prefer that, while allowing unregulated
+stablecoins with their greater opportunities as well as risks for others. In
+the wake of the Terra-Luna crash, the EU has swiftly reached a provisional
+agreement on MiCA or “markets in crypto assets” regulation, with consid-
+erable implications for cryptocurrencies and stablecoins, see Ng (2022). A
+deeper understanding and timely research of the pros and cons of the degree
+15
+
+===== PAGE 61 =====
+
+of regulation in this market is urgently needed.
+While stablecoins in particular and cryptocurrencies more generally have
+emerged as important components of decentralized ﬁnance, see e.g. Delivo-
+rias (2021) for stablecoins speciﬁcally and Makarov-Schoar (2022) more gen-
+erally, concerns about connections to illegal cash ﬂows and crimes are a rising
+concern, see e.g. Makarov-Schoar (2021) or Rogoﬀ (2022). The tensions will
+be tricky to sort out in the future.
+F Additional ﬁgures and results
+I construct two additional scenarios for λt andnt+∆. Scenario C is similar to
+scenario A, but I use the actual LUNA price series, rather than replacing it
+with the max of all current and future prices. As in scenario A, I assume that
+nt+∆≡ ¯n throughout, and pick ¯n to be the maximum value for the LUNA
+market capitalization during the time window examined here, i.e. after May
+8th, 2022, and solve for λt. I use xt as the observed values for yt rather than
+reconstruct it from ˜Qt, impose that λt cannot exceed 0.9 as before, and set
+λt = max
+{
+min
+{
+xt/
+(
+¯n
+mt+∆
+− 1
+)
+, 0.9
+}
+, 0
+}
+(57)
+As before, one can reconstruct yt per (29) and, with that instead of xt,
+reconstruct the implied price series. Figure 20 shows the implied price series
+for scenarios A and C. For scenario A, one obtains essentially ˜Qt, i.e. the
+maximum of all current and future prices.
+For scenario D, I combine features of scenario A and B. I calculate ¯ n as
+the highest LUNA market cap during the week of observations. Equation
+(29) together with imposing yt = xt can then be used to ﬁnd the best exit
+market cap no larger than ¯n to ﬁt the data at a benchmark exit probability,
+which I pick to be ¯λ = 0.001. Given nt+∆, I then calculate λt per (29): by
+construction λt = ¯λ, if nt+∆ < ¯n. I.e., the main scenario is given by the two
+16
+
+===== PAGE 62 =====
+
+Burning rate of UST relative to n: Market cap dynamics:
+May 08 May 09 May 10 May 11 May 12 May 13 May 14 May 15
+time 2022   
+-1
+0
+1
+2
+3
+4
+5
+6
+# UST tokens
+#108 Number of UST tokens burnt
+May 08 May 09 May 10 May 11 May 12 May 13 May 14 May 15
+time 2022   
+0
+0.5
+1
+1.5
+2
+2.5$
+#1010 LUNA market cap
+Price dynamics: Log price dynamics:
+May 08 May 09 May 10 May 11 May 12 May 13 May 14 May 15
+time 2022   
+0
+10
+20
+30
+40
+50
+60
+70$
+LUNA price
+May 08 May 09 May 10 May 11 May 12 May 13 May 14 May 15
+time 2022   
+-10
+-5
+0
+5
+$(log)
+LUNA price(Log)
+Figure 17: The data counterpart to the numerical example in ﬁgure 2 and
+an extended version of ﬁgure 6. The three dashed lines indicate, when the
+LUNA blockchain was halted, resumed and eventually halted again, ending
+the suspension of convertibility of UST coins at “date T ” shortly after 2 am
+UTC on Friday, May 13th, see online appendix D.
+17
+
+===== PAGE 63 =====
+
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+-100
+-80
+-60
+-40
+-20
+0
+20
+40
+60
+80
+100
+$
+Average price obtained for burning UST
+VS LUNA price (zoomed)
+LUNA price
+average price
+Figure 18: Average price for burning UST coins versus LUNA price. The
+ﬁgure excludes some highly erratic episodes at the beginning and the end,
+which appear to be due to division by small numbers and slight discrepancies
+between the number of UST coins burnt and the time diﬀerence of UST coins
+due to e.g. staking rewards. The average price Qa
+t is typically above the
+actual price Qt rather than between Qt and Qt+∆. This may be due to a
+delay between determining the price and the actual burning or it may be due
+to other outﬂow of UST coins not accounted for by burning.
+18
+
+===== PAGE 64 =====
+
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+-0.5
+0
+0.5
+1
+1.5
+x
+z
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.5
+1
+1.5
+2
+2.5 #1010 Constructed market cap VS actual market cap
+actual
+ma
+t
+Figure 19: The left panel plots and compares the two measurements xt and
+zt, see equations (26) and (32): they are indeed identical. They are negative
+in episodes, where Qt+∆ > Qt. The right panel compares the constructed
+market capitalization mc
+t to the actual market capitalization mt, see equation
+(34). The discrepancy is small.
+equations
+nt+∆ = min
+{
+max
+{(xt
+¯λ + 1
+)
+mt+∆, 0
+}
+, ¯n
+}
+(58)
+λt = max
+{
+min
+{
+xt/
+(
+nt+∆
+mt+∆
+− 1
+)
+, 0.9
+}
+, 0
+}
+(59)
+Note that ¯n>m t+∆ by construction. However, it might happen that xt < 0
+on occasions, necessitating to impose 0 as the lower bound for a probability.
+Conversely, the ratioxt/
+(
+¯n
+mt+∆
+− 1
+)
+might exceed unity, while a probability
+cannot. In order to generate sensible results and as before, I impose that λt
+cannot exceed 0.9 rather than 1. As before, one can reconstruct yt and thus
+the implied price series, see ﬁgure 20. The diﬀerences for this scenarios turn
+out to be negligible.
+Figure 21 shows the constructed λt andnt+∆ for all four scenarios. Com-
+pared to scenario A, cenario C contains addtional spikes in λt, when prices
+fall before a later price rise and price peak. Note the two additional spikes
+for λt towards the end in scenario D, which are not present in scenario C.
+They are due to price rises, i.e. nt+∆ = 0 at these dates, and when scenario
+19
+
+===== PAGE 65 =====
+
+Scenario A: Scenario B:
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+10
+20
+30
+40
+50
+60
+70
+Implied LUNA price VS actual LUNA price
+(scenario A)
+Actual
+Implied
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+10
+20
+30
+40
+50
+60
+70
+Implied LUNA price VS actual LUNA price
+(scenario B)
+Actual
+Implied
+Scenario C: Scenario D:
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+10
+20
+30
+40
+50
+60
+70
+Implied LUNA price VS actual LUNA price
+(scenario C)
+Actual
+Implied
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+10
+20
+30
+40
+50
+60
+70
+Implied LUNA price VS actual LUNA price
+(scenario D)
+Actual
+Implied
+Figure 20: This ﬁgure shows the implied price series for the four scenarios,
+reconstructing yt per (29) and, with that instead of xt, reconstructing the
+implied price series per (26). The reconstructed price series is compared to
+the actual price series. The discrepancy is fairly large for scenario C. For
+scenario A, one obtains essentially ˜Qt, i.e. the maximum of all current and
+future prices. The discrepancy for scenarios B and D is small.
+20
+
+===== PAGE 66 =====
+
+D is accounting for these prices rises as the “reward” for avoiding a complete
+crash to a market cap of zero. These additional spikes in probability are the
+key reasons, why scenario D does not provide a full price ﬂoor in ﬁgure 22,
+in contrast to scenarios A and C.
+The results comparing all four scenarios are in ﬁgure 22 and ﬁgure 23.
+21
+
+===== PAGE 67 =====
+
+Scenario A: λt Scenario B: nt+∆
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+Implied exit probability
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+1
+2
+3
+4
+5
+6
+7
+8 #1010 Implied exit market cap
+nt+"
+7n
+Scenario C: λt
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+Implied exit probability
+Scenario D: λt Scenario D: nt+∆
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+Implied exit probability
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.5
+1
+1.5
+2
+2.5 #1010 Implied exit market cap
+nt+"
+7n
+Figure 21: This ﬁgure is an extension of ﬁgure 7, showing all four scenar-
+ios. The left panel shows the constructed λt, while the right panel shows the
+constructednt+∆.
+22
+
+===== PAGE 68 =====
+
+Fraction UST burned vs Pt: Price ﬂoor:
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+P(t) and F(t)
+Suspension probability VS fraction burned
+Fraction burned
+Suspension prob (scenario A)
+Suspension prob (scenario B)
+Suspension prob (scenario C)
+Suspension prob (scenario D)
+May 08 May 09 May 10 May 11 May 12
+time 2022   
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+UST market price and non-suspension prob
+Non-suspension probability VS UST market price
+UST price
+Non-suspension prob (scenario A)
+Non-suspension prob (scenario B)
+Non-suspension prob (scenario C)
+Non-suspension prob (scenario D)
+Figure 22: The empirical counterpart to ﬁgure 4 and the four-scenario coun-
+terpart to ﬁgure 8. The left panel shows the fraction Ft of UST burned and Pt
+as a function of time. The right panel compares the non-suspension probabil-
+ity 1−Pt according to the four scenarios to the UST market price. Scenarios
+A and C work as price ﬂoors, scenario D nearly does, while some violations
+remain for scenario B.
+23
+
+===== PAGE 69 =====
+
+0 0.2 0.4 0.6 0.8 1
+P
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+F(P)
+Distribution for P
+Scenario A
+Scenario B
+Scenario C
+Scenario D
+Figure 23: This ﬁgure is the empirical counterpart to ﬁgure 5 and the four-
+scenario counterpart to ﬁgure 9, calculating the distributions for the threshold
+probabilitiesP for burning or selling UST for all four scenarios.
+24
+
+===== PAGE 70 =====
+
+References
+[1] Benigno Pierpaolo, Linda Schilling and Harald Uhlig, May 2022, “Cryp-
+tocurrencies, Currency Competition, and the Impossible Trinity,” Jour-
+nal of International Economics, forthcoming.
+[2] Braun, Helene, May 11, 2022, “ ‘$DAI will die’ tweet twisted back on
+Terra’s Kwon as UST loses $1 Peg,” coindesk.com.
+[3] Browne, Ryan, May 16, 2022, “$3 billion in bitcoin was sold in a last-
+ditch attempt to sav UST stablecoin from collapse”, cnbc.com.
+[4] Chipolina, Scott and George Steer, May 25, 2022, “The Terra/Luna hall
+of shame,” Financial Times.
+[5] Clements, Ryan, Oct. 2021, “Built to Fail: The Inherent Fragility of
+Algorithmic Stablecoins,” The Wake Forest Law Review Online 131.
+[6] Council of the EU, June 30, 2022, “Digital ﬁnance: agreement reached
+on European crypto-assets regulation (MiCA),” Press Release.
+[7] Delivorias Angelos, November 2021, “Stablecoins. Private-sector quest
+for cryptostability,” European Parliamentary Research Service.
+[8] Henn, Peter, May 31, 2022, “LUNA airdrop: How to get hold of the
+new terra coin,” currency.com.
+[9] He, Zhiguo and Wei Xiong, 2012, “Dynamic Debt Runs,” The Review
+of Financial Studies, Vol. 25, No. 6 (June 2012), pp. 1799-1843.
+[10] Huang, Vicky Ge, June 22, 2022, “More Hedge Funds Are Betting
+Against Tether as Crypto Melts Down,” Wall Street Journal.
+25
+
+===== PAGE 71 =====
+
+[11] Kareken, J. and N. Wallace, 1981, “On the indeterminacy of equilibrium
+exchange rates,” Quarterly Journal of Economics, vol. 96, no. 2, pp. 207-
+222.
+[12] Kelly Liam J., May 2022, “How Terra’s USt and LUNA Imploded,”
+decrypt.co.
+[13] Kessler, Sam and Malwa Shaurya, May 16, 2022, “LFG reserves dwindle
+to Just 313 bitcoins from 80K after UST crash,” coindesk.com.
+[14] Sam Kessler and Sage D. Young, May 2022, “The LUNA and UST crash
+explained in 5 charts”, ﬁnance.yahoo.com.
+[15] Lang, Hannah, Carolina Mandi and Elizabeth Howcroft, June 15, 2022,
+“How crypto lender Celsius stumbled on risky bank-like investments,”
+Reuters.
+[16] Locke, Taylor, May 13, 2022, “Did a ‘concerted attack’ cause Terra’s
+UST to crash below $1? An exec behind the largest stablecoin and
+experts agree it’s suspicious,” fortune.com.
+Locke, Taylor, May 15, 2022, “Ethereum co-founder says every “average
+smallholder’ impacted by Terra’s stablecoin crash should be made whole,
+cites FDIC’s $250,000 as ‘precedent’ ‘’, fortune.com.
+[17] Makarov, Igor and Antoinette Schoar, 2021, revised May 2022,
+“Blockchain Analysis of the Bitcoin Market,” draft, LSE and MIT.
+Available at .
+[18] Makarov, Igor and Antoinette Schoar, 2022, “Cryptocurrencies and De-
+centralized Finance (DeFi),” draft, LSE and MIT. Available at .
+[19] Manuelli, R.E. and J. Peck, 1990, “Exchange rate volatility in an equilib-
+rium asset pricing model,” International Economic Review, p. 559-574.
+26
+
+===== PAGE 72 =====
+
+[20] Morris, David Z., April 2022, “ ‘Built to Fail’? Why TerraUSD’s Growth
+is Giving Finance Experts Nightmares,” Coindesk.com.
+[21] Moskov, Alex, May 2022, “Terra (UST and LUNA) Guide: Is Terra
+Legit and How Does it Work?”, coincentral.com.
+[22] Ng, Felix, July 1, 2022, “EU agrees on MiCA regulation to crack down
+on crypto and stablecoins,” cointelegraph.com
+[23] Ng, Serena, Caitlin Ostroﬀ and Vicky Ge Huang, 29 June, 2022, “Crypto
+Hedge Fund Three Arrows Ordered to Liquidate,” Wall Street Journal.
+[24] Osipovic, Alexander and Caitlin Ostroﬀ, May 12th, 2022, “Crash of
+TerraUSD shakes crypto. ‘There was a run on the bank”, Wall Street
+Journal.
+[25] Pepi, Kane, May 2022, “Best staking coins for maximum gains in 2022”,
+business2community.com.
+[26] Robinson, Dr. Tom, May 2022, “What happened to the $3.5 Billion
+Terra Reserve? Elliptic follows the bitcoin”, elliptic.co.
+[27] Rogoﬀ, Kenneth, June 2022, “When the crypto crisis hits (and it soon
+will), the U.S. will be forced to strip away the cloak of anonymity
+that facilitates criminal acts and which gives crypto its allure,” mar-
+ketwatch.com.
+[28] Sandor, Kristztian, May 2022, “What is LUNA and UST? a Guide to
+the Terra Ecosystem,” coindesk.com.
+[29] Shen, Muyao, May 10, 2022, “Yellen cites UST breakdown while calling
+for stablecoin rules,” Bloomberg.
+27
+
+===== PAGE 73 =====
+
+[30] Schilling, Linda M., and Harald Uhlig, 2019a,“Currency Substitution
+under Transaction Costs,” AEA Papers and Proceedings, vol. 109, p.
+83-87.
+[31] Schilling, Linda and Harald Uhlig, 2019b, “Some Simple Bitcoin Eco-
+nomics,” Journal of Monetary Economics, vol. 106, p. 16-26.
+28

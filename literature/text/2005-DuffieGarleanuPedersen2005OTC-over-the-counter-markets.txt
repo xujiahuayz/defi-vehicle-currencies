@@ -1,0 +1,1773 @@
+
+
+===== PAGE 1 =====
+
+Econometrica, Vol. 73, No. 6 (November, 2005), 1815–1847
+OVER-THE-COUNTER MARKETS
+BY DARRELL DUFFIE,N ICOLAE GÂRLEANU, AND LASSE HEJE PEDERSEN1
+We study how intermediation and asset prices in over-the-counter markets are af-
+fected by illiquidity associated with search and bargaining. We compute explicitly the
+prices at which investors trade with each other, as well as marketmakers’ bid and ask
+prices, in a dynamic model with strategic agents. Bid–ask spreads are lower if investors
+can more easily ﬁnd other investors or have easier access to multiple marketmakers.
+With a monopolistic marketmaker, bid–ask spreads are higher if investors have eas-
+ier access to the marketmaker. We characterize endogenous search and welfare, and
+discuss empirical implications.
+K
+EYWORDS: Asset pricing, search frictions, bargaining, marketmaking, welfare,
+Walrasian.
+INO V E R-THE-COUNTER MARKETS, an investor who wishes to sell must search
+for a buyer, incurring opportunity or other costs until one is found. Some over-
+the-counter (OTC) markets therefore have intermediaries. Contact with rele-
+vant intermediaries, however, is not immediate. Often, intermediaries must be
+approached sequentially. Hence, when two counterparties meet, their bilateral
+relationship is inherently strategic. Prices are set through a bargaining process
+that reﬂects each investor’s or marketmaker’s alternatives to immediate trade.
+These search-and-bargaining features are empirically relevant in many mar-
+kets, such as those for mortgage-backed securities, corporate bonds, emerging-
+market debt, bank loans, derivatives, and certain equity markets. In real-estate
+markets, for example, prices are inﬂuenced by imperfect search, the relative
+impatience of investors for liquidity, outside options for trade, and the role
+and proﬁtability of brokers.
+We build a dynamic asset-pricing model that captures these features and
+analytically derive the equilibrium allocations, prices negotiated between in-
+vestors, as well as marketmakers’ bid and ask prices. We show how these
+equilibrium properties depend on investors’ search abilities, marketmaker ac-
+cessibility, and bargaining powers. We determine the search intensities that
+marketmakers choose, and derive the associated welfare implications of in-
+vestment in marketmaking.
+Our model of search is a variant of the coconuts model of Diamond (1982).
+2
+A continuum of investors contact each other, independently, at some mean
+1Part of this paper was previously distributed under the title “V aluation in Dynamic Bargain-
+ing Markets.” We are grateful for conversations with Yakov Amihud, Helmut Bester, Joseph
+Langsam of Morgan Stanley Dean Witter, Richard Lyons, T ano Santos, and Jeff Zwiebel, and
+to participants at the NBER Asset Pricing Meeting, the Cowles Foundation Incomplete Markets
+and Strategic Games Conference, the Western Finance Association Conference, the CEPR meet-
+ing at Gerzensee, University College London, Universite Libre de Bruxelles, T el Aviv University,
+and Universitat Autonoma de Barcelona.
+2Our model differs from Diamond (1982), and the labor literature more generally, by con-
+sidering repeated trade of long-lived assets. The monetary search literature (for example,
+1815
+
+
+===== PAGE 2 =====
+
+1816 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+rate λ, a parameter that reﬂects search ability. Similarly, marketmakers con-
+tact agents at some intensity ρ that reﬂects dealer availability. When agents
+meet, they bargain over the terms of trade. Gains from trade arise from het-
+erogeneous costs or beneﬁts of holding assets. For example, an asset owner can
+be anxious to sell because of a liquidity need or because of hedging motives.
+Marketmakers are assumed to off-load their inventories in a frictionless inter-
+dealer market, trading with investors so as to capture part of the difference
+between the interdealer price and investors’ reservation values.
+Asset pricing with exogenous trading frictions has been studied by Amihud
+and Mendelson (1986), Constantinides (1986), and V ayanos (1998). We en-
+dogenize the trading frictions that arise through search and bargaining, and
+show their effects on asset prices. In follow-up work, Dufﬁe, Gârleanu, and
+Pedersen (2003) extend the model developed here to characterize the impact
+on asset pricing of search in settings with risk aversion and risk limits, while
+Weill (2002) and V ayanos and Wang (2002) consider cross-sectional asset pric-
+ing in extensions with multiple assets.
+Market frictions have been used to explain the existence and behavior of
+marketmakers. Notably, marketmakers’ bid and ask prices have been explained
+by inventory considerations (Garman (1976), Amihud and Mendelson (1980),
+and Ho and Stoll (1981)) and by adverse selection arising from asymmetric
+information (Bagehot (1971), Glosten and Milgrom (1985), and Kyle (1985)).
+In contrast, we model marketmakers who have no inventory risk because of the
+existence of interdealer markets, and our agents are symmetrically informed.
+In our model, bid and ask prices are set in light of investors’ outside options,
+which reﬂect both the accessibility of other marketmakers and investors’ own
+abilities to ﬁnd counterparties.
+We show that bid–ask spreads are lower if investors can ﬁnd each other more
+easily.
+3 The intuition is that improving an investor’s search alternatives forces
+marketmakers to give better prices. This result is supported by the experimen-
+tal evidence of Lamoureux and Schnitzlein (1997).
+An investor also improves his bargaining position relative to a marketmaker
+if he can more easily ﬁnd other marketmakers. Hence, despite the bilateral
+nature of bargaining between a marketmaker and an investor, marketmakers
+are effectively in competition with each other over order ﬂow, given the option
+Kiyotaki and Wright (1993)) also considers long-lived assets, but, with the exception of T rejos
+and Wright (1995), it considers exogenous prices. Our model has similarities with that of T rejos
+and Wright (1995), but their objectives are different and they do not study marketmaking. See
+also Harris (1979).
+3We show that our model specializes in a speciﬁc way to the standard general-equilibrium
+paradigm as bilateral trade becomes increasingly active (under conditions to be described), ex-
+tending a chain of results by Rubinstein and Wolinsky (1985), Gale (1987, 1986a, 1986b), and
+McLennan and Sonnenschein (1991), in a manner explained later in our paper. Thus, “standard”
+asset-pricing theory is not excluded, but rather is found at the end of the spectrum of increasingly
+“active” markets.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 3 =====
+
+OVER-THE-COUNTER MARKETS 1817
+of investors to search for better terms. Consistent with this intuition, we prove
+that competitive prices and vanishing spreads obtain as marketmakers’ contact
+intensities become large, provided that marketmakers do not have all of the
+bargaining power.
+In summary, if investors are more sophisticated (that is, have better access to
+other investors or to marketmakers who do not have total bargaining power),
+they receive a tighter bid–ask spread. This implication sets our theory of inter-
+mediation apart from information-based models, in which more sophisticated
+(that is, better informed) investors receive a wider bid–ask spread.
+In an extension with heterogeneous investors in the same OTC market, we
+show that more sophisticated investors (those with better access to marketmak-
+ers) receive tighter bid–ask spreads because of their improved outside options.
+Hence, this result holds both when comparing across markets and when com-
+paring across investors in the same market. This sets our theory apart from
+inventory-based models, which would not imply differential treatment across
+investors.4 Furthermore, in the heterogeneous-agents extension, investors with
+lower search ability may refrain entirely from trade.
+Our result seems consistent with behavior in certain OTC markets, such as
+those for interest-rate swaps and foreign exchange, in which asymmetric infor-
+mation is limited. Anecdotal evidence suggests that “sales traders” give more
+competitive prices to sophisticated investors, perceived to have better outside
+options.
+We also consider cases in which the marketmaker has total bargaining
+power. The bid–ask spread of such a monopolistic marketmaker vanishes as
+investors are increasingly able to meet each other quickly, as with the case
+of competing marketmakers. In contrast, however, more frequent contact be-
+tween investors and a monopolistic marketmaker actually widens spreads, be-
+cause of the investors’ poorer outside options. Speciﬁcally, an investor’s threat
+to ﬁnd a counterparty himself is less credible if the marketmaker has already
+executed most of the efﬁcient trades, making it harder for the investor to ﬁnd
+potential counterparties.
+Our results regarding the impact of investors’ searches for each other on
+dealer spreads are similar in spirit to those of Gehrig (1993) and Yava¸s (1996),
+who consider monopolistic marketmaking in one-period models. 5 We show
+that dynamics have an important effect on agents’ bargaining positions, and
+thus asset prices, bid–ask spreads, and investments in marketmaking capacity.
+Rubinstein and Wolinsky (1987) study the complementary effects of market-
+maker inventory and consignment agreements in a dynamic search model.
+4We note that, when comparing across markets, inventory considerations may have the same
+bid–ask implication as our search model, because more frequent meetings between investors and
+marketmakers may result in lower inventory costs.
+5See also Bhattacharya and Hagerty (1987), who introduce dealers into the Diamond (1982)
+model, and Moresi (1991), who considers intermediation in a search model in which buyers and
+sellers exit the market after they trade.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 4 =====
+
+1818 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+We consider marketmakers’ choices of search intensity and the social efﬁ-
+ciency of these choices. A monopolistic marketmaker imposes additional “net-
+working losses” on investors because his intermediation renders less valuable
+the opportunity of investors to trade directly with each other. A monopolis-
+tic marketmaker thus provides more intermediation than is socially efﬁcient.
+Competitive marketmakers may provide even more intermediation, because
+they do not consider, in their allocation of resources to search, the impact of
+their intermediation on the equilibrium allocation of assets among investors.
+6
+1. MODEL
+We ﬁx a probability space (Ω/commaoriF/commaoriPr) and a ﬁltration {Ft :t ≥ 0} of sub-
+σ-algebras satisfying the usual conditions, as deﬁned by Protter (1990). The
+ﬁltration represents the resolution over time of information commonly avail-
+able to agents.
+T wo kinds of agents, investors and marketmakers, consume a single nonstor-
+able consumption good that is used as a numeraire. All agents are risk-neutral
+and inﬁnitely lived, with time preferences determined by a constant discount
+rate r> 0. Marketmakers hold no inventory and maximize proﬁts.
+Investors have access to a risk-free bank account with interest rate r and to
+an OTC market for a “consol,” meaning an asset paying dividends at the con-
+stant rate of 1 unit of consumption per year. (Dufﬁe, Gârleanu, and Pedersen
+(2003) consider extensions with risky securities and risk-averse investors.) The
+consol can be traded only when an investor ﬁnds another investor or a mar-
+ketmaker, according to a random search model described below. The bank
+account can also be viewed as a liquid security that can be traded instantly.
+We require that the valueW
+t of an investor’s bank account be bounded below,
+ruling out Ponzi schemes.
+A fraction s of investors are initially endowed with 1 unit of the asset. In-
+vestors can hold at most 1 unit of the asset and cannot short-sell. Because
+agents have linear utility, we can restrict attention to equilibria in which, at any
+given time and state of the world, an investor holds either 0 or 1 unit of the
+asset.
+An investor is characterized by whether he owns the asset or not, and by an
+intrinsic type that is “high” or “low.” A low-type investor, when owning the
+asset, has a holding cost of δ per time unit; a high-type investor has no such
+holding cost. There are multiple interpretations of the investor types. For in-
+stance, a low-type investor may have (i) low liquidity (that is, a need for cash),
+6Studying endogenous search in labor markets, Mortensen (1982) and Hosios (1990) ﬁnd that
+agents may choose inefﬁcient search levels because they do not internalize the gains from trade
+realized by future trading partners. Moen (1997) shows that search markets can be efﬁcient under
+certain conditions.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 5 =====
+
+OVER-THE-COUNTER MARKETS 1819
+(ii) high ﬁnancing costs, (iii) hedging reasons to sell, 7 (iv) a relative tax dis-
+advantage,8 or (v) a lower personal use of the asset. Any investor’s intrinsic
+type switches from low to high with intensity λu and switches back with inten-
+sity λd . For any pair of investors, their intrinsic-type processes are assumed to
+be independent.
+The full set of investor types is T ={ ho/commaorihn/commaorilo/commaoriln}, where the letters
+“h”a n d“l” designate the investor’s intrinsic liquidity state, as above, and “o”
+and “n” indicate whether the investor owns the asset or not, respectively.
+We suppose that there is a “continuum” (a nonatomic ﬁnite-measure space)
+of investors and we let µσ(t) denote the fraction at time t of investors of type
+σ ∈ T . Because the fractions of each type of investor add to 1 at any time t,
+µho(t) +µhn(t) +µlo(t) +µln(t) = 1/periodori(1)
+Because the total fraction of investors owning an asset is s,
+µho(t) +µlo(t) =s/periodori(2)
+A pair of investors can negotiate a trade of the consol whenever they meet,
+for a mutually agreeable number of units of current consumption. (The de-
+termination of the terms of trade is to be addressed later.) Investors meet,
+however, only at random times, in a manner idealized as independent random
+search, as follows. At the successive event times of a Poisson process with some
+intensity parameterλ, an investor contacts another agent, chosen from the en-
+tire population “at random,” meaning with a uniform distribution across the
+investor population. An investor therefore contacts an investor from a given
+set D of investors that contains a fraction µ
+D of the total population with the
+mean intensityλµD. The total rate at which a groupC of independently search-
+ing investors of mass µC contacts group D investors is almost surely µCλµD.
+Because groupD investors contactC investors at the same total rate, the total
+meeting rate between the two groups is almost surely 2 λµCµD. This assumes
+that searches are independent in a sense appropriate for an application of the
+exact law of large numbers for random search and matching among a contin-
+uum of agents; Dufﬁe and Sun (2004) provide an exact discrete-time theorem
+and proof.
+9 Random switches in intrinsic types are assumed to be independent
+of the agent matching processes.
+7Dufﬁe, Gârleanu, and Pedersen (2003) explore this interpretation in an extension with risk
+aversion.
+8Dai and Rydqvist (2003) provide a tax example with potential search effects.
+9The assumed almost sure meeting rate of 2 λµCµD is the limit meeting rate of an associated
+discrete-time ﬁnite-agent random search model. Ferland and Giroux (2002) prove a more gen-
+eral version of this assertion rigorously. Here is a sketch of the proof in our setting. Suppose that
+market (n/commaori∆)has n agents, for whom, given any pair (i/commaorij)of distinct agents, agent i contacts
+agent j over a discrete-time period of length /Delta1with probability p(n/commaori∆)= 1 −e−∆λ/n (the prob-
+ability of an arrival of a Poisson process with intensity λ/n). Suppose that the indicator 1i/commaorijof
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 6 =====
+
+1820 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+There is a unit mass of independent nonatomic marketmakers. Marketmak-
+ers are also found through search, implying that an investor must bargain with
+marketmakers sequentially as they are found. An investor meets a market-
+maker with a ﬁxed intensity, ρ, which can be interpreted as the sum of the
+intensity of investors’ search for marketmakers and marketmakers’ search for
+investors.
+10 When an investor meets a marketmaker, they bargain over the
+terms of trade as described in the next section. Marketmakers have access to
+an immediately accessible interdealer market on which they unload their posi-
+tions, so that they have no inventory at any time.
+The OTC markets without marketmakers are treated by the special case of
+our model with ρ = 0.
+2.
+DYNAMIC SEARCH EQUILIBRIUM WITH COMPETING MARKETMAKERS
+In this section, we explicitly compute the allocations and prices that form a
+dynamic search-and-bargaining equilibrium. In particular, we compute prices
+negotiated directly between investors, marketmakers’ bid and ask prices, and
+the interdealer price.
+In equilibrium, low-type asset owners want to sell and high-type nonowners
+want to buy. When two such agents meet, they bargain over the price. Similarly,
+when investors meet a marketmaker, they bargain over the price. An investor’s
+bargaining position depends on his outside option, which in turn depends on
+the availability of other counterparties, both now and in the future, and a mar-
+ketmaker’s bargaining position depends on the interdealer price. In deriving
+the equilibrium, we rely on the insight from bargaining theory that trade hap-
+successful contact of j by i is independent across all distinct pairs (i/commaorij)of distinct agents. The
+mean rate of contact per unit of time of a speciﬁc investor with other investors in the (n/commaori∆)
+market isE(∆−1 ∑
+j̸=i 1i/commaorij) =∆−1(n − 1)p(n/commaori∆)/commaoriwhich converges toλ, as in our continuous-time
+model, as (n/commaori∆)→ (+∞/commaori0). The per capita total rate of contact per unit of time by a subset
+C(n) ⊂{ 1/commaori/periodori/periodori/periodori/commaorin} that contains a fraction µC of the total population with a disjoint subset D(n)
+that contains a fraction µD of the population is
+S(n/commaori∆)= 1
+n∆
+( ∑
+i∈C(n)/commaorij∈D(n)
+1i/commaorij+
+∑
+i∈D(n)/commaorij∈C(n)
+1i/commaorij
+)
+/commaori
+which has mean (n∆)−12p(n/commaori∆)|C(n)|·| D(n)|/commaoriwhich converges to 2 λµCµD as (n/commaori∆)→
+(+∞/commaori0). By the weak law of large numbers (Theorem 6.2 of Billingsley (1986)), S(n/commaori∆)con-
+verges in probability as (n/commaori∆)→(+∞/commaori0) to its expectation, 2λµCµD, given that S(n/commaori∆)is the
+sum of a divergent number of independent variables whose total variance is shrinking to zero.
+One caveat is that, in a discrete-time model, an agent can contact more than one other agent at
+the same time. In that case, an elimination rule can be used to keep only one-to-one matches, but
+since the probability of contacting more than one agent during a period of length ∆ is of the or-
+der ∆
+2, the meeting rate is as derived above. (The same result holds in the limit even ifC(n) and
+D(n) are not disjoint, but one must make slight (order 1/n) adjustments to the mean of S(n/commaori∆)
+for overlap in the two groups.)
+10It would be equivalent to have a mass k of dealers with contact intensity ρ/k,f o ra n yk> 0.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 7 =====
+
+OVER-THE-COUNTER MARKETS 1821
+pens instantly.11 This allows us to derive a dynamic equilibrium in two steps.
+First, we derive the equilibrium masses of the different investor types. Second,
+we compute agents’ value functions and transaction prices (taking as given the
+masses of the investor types).
+Assuming, as discussed in the previous section, that the law of large numbers
+applies, the rate of change of the mass µlo(t) of low-type owners is almost
+surely
+˙µlo(t) =−
+(
+2λµhn(t)µlo(t) +ρµm(t)
+)
+−λuµlo(t) +λdµho(t)/commaori(3)
+where µm(t) = min{µlo(t)/commaoriµhn(t)}. The ﬁrst term in (3) reﬂects the fact that
+agents of type hn contact those of type lo at a total rate of λµhn(t)µlo(t),w h i l e
+agents of type lo contact those of type hn at the same total rate λµhn(t)µlo(t).
+At both of these types of encounters, the agent of type lo becomes one of
+type ln. This implies a total rate of reduction of mass due to these encounters of
+2λµhn(t)µlo(t). Similarly, investors of type lo meet marketmakers with a total
+contact intensity of ρµlo(t).I f µlo(t) ≤µhn(t), then all of these meetings lead
+to trade and the lo agent becomes an ln agent, resulting in a reduction in µlo
+of ρµlo(t).I f µlo(t) > µhn(t), then not all these meetings result in trade. This
+is because marketmakers buy from lo investors and sell to hn investors, and,
+in equilibrium, the total intensity of selling must equal the intensity of buying.
+Marketmakers meet lo investors with total intensityρµlo and hn investors with
+total intensity ρµhn, and, therefore, investors on the “long side” of the market
+are rationed. In particular, if µlo(t) > µhn(t), then lo agents trade with mar-
+ketmakers only at the intensity ρµhn. In equilibrium, this rationing can be the
+outcome of bargaining because the marketmaker’s reservation value (that is,
+the interdealer price) is equal to the reservation value of the lo investor.
+Finally, the term λ
+uµlo(t) in (3) reﬂects the migration of owners from low
+to high intrinsic types, and the last term λdµho(t) reﬂects owners’ change from
+high to low intrinsic types.
+The rate of change of the other investor-type masses are
+˙µhn(t) =−
+(
+2λµhn(t)µlo(t) +ρµm(t)
+)
++λuµln(t) −λdµhn(t)/commaori(4)
+˙µho(t) =
+(
+2λµhn(t)µlo(t) +ρµm(t)
+)
++λuµlo(t) −λdµho(t)/commaori(5)
+˙µln(t) =
+(
+2λµhn(t)µlo(t) +ρµm(t)
+)
+−λuµln(t) +λdµhn(t)/periodori(6)
+As in (3), the ﬁrst terms reﬂect the result of trade and the last two terms are
+the result of intrinsic-type changes.
+11In general, bargaining leads to instant trade when agents do not have asymmetric informa-
+tion. Otherwise there can be strategic delay. In our model, it does not matter whether agents
+have private information about their own type, for it is common knowledge that a gain from
+trade arises only between agents of types lo and hn.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 8 =====
+
+1822 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+In most of the paper we focus on stationary equilibria, that is, equilibria in
+which the masses are constant. In our welfare analysis, however, it is more
+natural to take the initial masses as given and, therefore, we develop some
+results with any initial mass distribution. The following proposition asserts the
+existence, uniqueness, and stability of the steady state.
+P
+ROPOSITION 1: There exists a unique constant steady-state solution to
+(1)–(6). From any initial condition µ(0) ∈[ 0/commaori1]4 that satisﬁes (1) and (2), the
+unique solution µ(t) to (3)–(6) converges to the steady state as t →∞ .
+A particular agent’s type process {σ(t) :−∞<t< +∞} is, in steady state,
+a four-state Markov chain with state spaceT and with constant switching inten-
+sities determined in the obvious way12 by the steady-state population massesµ
+and the intensities λ, λu,a n d λd . The unique stationary distribution of any
+agent’s type process coincides with the cross-sectional distribution µ of types
+characterized13 in Proposition 1.
+With these equilibrium masses, we will determine the pricePt negotiated di-
+rectly between lo and hn investors, the “bid” priceBt at which investors sell to
+marketmakers, the “ask” price At at which investors buy from marketmakers,
+and the interdealer price. For this, we use dynamic programming, by ﬁrst com-
+puting an investor’s utility at time t for remaining lifetime consumption. For
+a particular agent this “value function” depends, naturally, only on the agent’s
+current type σ(t) ∈
+T , the current wealth Wt in his bank account, and time.
+More speciﬁcally, the value function is
+U(Wt/commaoriσ(t)/commaorit)= sup
+C/commaoriθ
+Et
+∫ ∞
+0
+e−rs dCt+s(7)
+subject to dWt =rWt dt −dCt +θt(1 −δ1{σθ(t)=lo})dt − ˆPt dθt/commaori(8)
+where Et denotes Ft -conditional expectation, C is a cumulative consumption
+process, θt ∈{ 0/commaori1} is a feasible asset holding process, σθ is the type process
+induced by θ, and at the timet of a trading opportunity, ˆPt ∈{Pt/commaoriAt/commaoriBt} is the
+12For example, the transition intensity from state lo to state ho is λu, the transition intensity
+from state lo to state ln is 2λµhn, and so on, for the 4 × 3 switching intensities.
+13This is a result of the law of large numbers, in the form of Theorem C of Sun (2000), which
+provides the construction of our probability space (Ω/commaoriF/commaoriPr) and agent space [0/commaori1],w i t ha na p -
+propriate σ-algebra making Ω ×[ 0/commaori1] into what Sun calls a “rich space,” with the properties
+that: (i) for each individual agent in[0/commaori1], the agent’s type process is indeed a Markov chain inT
+with the speciﬁed generator, (ii) the unconditional probability distribution of the agents’ type is
+always the steady-state distribution µ on T given by Proposition 1, (iii) agents’ type transitions
+are almost everywhere pairwise independent, and (iv) the cross-sectional distribution of types is
+also given by µ, almost surely, at each time t.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 9 =====
+
+OVER-THE-COUNTER MARKETS 1823
+trade price, which depends on the type of counterparty. From (7) and (8) the
+value function is linear in wealth, in thatU(Wt/commaoriσ(t)/commaorit)=Wt +Vσ(t)(t)/commaoriwhere14
+Vσ(t)(t) = sup
+θ
+Et
+[∫ ∞
+t
+e−r(s−t)θs(1 −δ1{σθ(s)=lo})ds −e−r(s−t) ˆPs dθs
+]
+/periodori(9)
+As shown in the Appendix, the value functions satisfy the Hamilton–Jacobi–
+Bellman (HJB) equations
+˙Vlo =rVlo −λu(Vho −Vlo) − 2λµhn(P +Vln −Vlo)(10)
+−ρ(B +Vln −Vlo) −(1 −δ)/commaori
+˙Vln =rVln −λu(Vhn −Vln)/commaori
+˙Vho =rVho −λd(Vlo −Vho) − 1/commaori
+˙Vhn =rVhn −λd(Vln −Vhn) − 2λµho(Vho −Vhn −P)
+−ρ(Vho −Vhn −A)/commaori
+suppressing the time argument t, which implies that an lo investor beneﬁts
+from a sale at any price greater than Vlo −Vln and that an hn investor beneﬁts
+from a purchase at any price smaller than Vho −Vhn. Bargaining between the
+investors leads to a price between these two values. Speciﬁcally, Nash (1950)
+bargaining with a seller bargaining power of q ∈[ 0/commaori1] yields
+P =(Vlo −Vln)(1 −q) +(Vho −Vhn)q/periodori(11)
+This is also the outcome of the simultaneous-offer bargaining game described
+in Kreps (1990) and of the alternating-offer bargaining game described in
+Dufﬁe, Gârleanu, and Pedersen (2003).15
+Similarly, the bid and ask prices are determined through a bargaining en-
+counter between investors and marketmakers in which a marketmaker’s out-
+side option is to trade in the interdealer market at a price ofM. Marketmakers
+have a fraction, z ∈[ 0/commaori1], of the bargaining power when facing an investor.
+Hence, a marketmaker buys from an investor at the bid price B, and sells at
+the ask price A, determined by
+A =(Vho −Vhn)z +M(1 −z)/commaori(12)
+B =(Vlo −Vln)z +M(1 −z)/periodori(13)
+14If lims→∞ Et[e−rs max{Ps/commaoriAs/commaoriBs}] =0, V is well deﬁned. We restrict attention to such prices.
+15Dufﬁe, Gârleanu, and Pedersen (2003) describe an alternating-offer bargaining procedure
+that yields a bargaining power that, in the limit as the time between offers approaches zero, is
+equal to the probability of making an offer. Our qualitative results do not, however, depend on
+zero time between offers. For example, the results in Section 4 concerning λ →∞ hold for an
+arbitrary delay between offers.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 10 =====
+
+1824 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+As discussed above, in equilibrium, marketmakers and those investors on
+the long side of the market must be indifferent to trading. Hence, if µlo <µ hn,
+marketmakers meet more potential buyers than sellers. The interdealer price,
+M, is therefore equal to the ask price A and equal to any buyer’s reservation
+value Vho −Vhn. Similarly, if µlo >µ hn, then M =B =Vlo −Vln. For the knife-
+edge case of µlo = µhn,l e t M = ˜q(Vho − Vhn) + (1 − ˜q)(Vlo − Vln),f o rs o m e
+constant ˜q that is arbitrarily chosen from [0/commaori1], and ﬁxed for the remainder.
+In steady state, it is easy to see which side of the market is rationed because
+the steady-state fraction of high-type agents is λu(λd +λu)−1,s ow eh a v e
+µhn +(s −µlo) = λu
+λd +λu
+/periodori
+Hence, µlo <µ hn in steady state if and only if the following condition is satis-
+ﬁed.
+CONDITION 1: It holds that s<λ u/(λu +λd)/periodori
+An equilibrium is deﬁned as a process (P/commaoriA/commaoriB/commaoriµ/commaoriV)such that (i) the sys-
+tem µ of investor masses solves (1)–(6), (ii) the transaction prices (P/commaoriA/commaoriB)
+are those in (11)–(13), and (iii) V solves the HJB equations (9) and (10) and
+Vlo −Vln ≤Vho −Vhn. As there is a continuum of agents, no agent has the abil-
+ity to inﬂuence mass dynamics with an off-equilibrium-path trading strategy.
+These three conditions therefore ensure individual-agent optimality of the as-
+sociated equilibrium trading strategies, as well as consistency between the mass
+dynamics assumed by agents and those arising from the equilibrium trading
+strategies. We derive the equilibrium explicitly. For brevity, we report only the
+prices under Condition 1; the complementary case is treated in the Appendix.
+T
+HEOREM 2: For any given initial mass distribution µ(0), t h e r ee x i s t sa ne q u i -
+librium. There is a unique steady-state equilibrium . Under Condition 1, the ask,
+bid, and interinvestor prices are
+A = 1
+r − δ
+r
+λd + 2λµlo(1 −q)
+r +λd + 2λµlo(1 −q) +λu + 2λµhnq +ρ(1 −z)/commaori(14)
+B = 1
+r − δ
+r
+zr +λd + 2λµlo(1 −q)
+r +λd + 2λµlo(1 −q) +λu + 2λµhnq +ρ(1 −z)/commaori(15)
+P = 1
+r − δ
+r
+(1 −q)r +λd + 2λµlo(1 −q)
+r +λd + 2λµlo(1 −q) +λu + 2λµhnq +ρ(1 −z)/periodori(16)
+These explicit prices are intuitive. Each price is the present value, 1 /r,o f
+dividends, reduced by an illiquidity discount. All of these prices decrease in
+the bargaining powerz of the marketmaker, because a higherz makes trading
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 11 =====
+
+OVER-THE-COUNTER MARKETS 1825
+more costly for investors. The prices increase, however, in the ease of meeting
+a marketmaker (ρ) and in the ease of ﬁnding another investor ( λ), provided
+that ρ and λ are large enough. The effect of increasing search intensities is
+discussed in Section 4.
+From Theorem 2, the bid–ask spread A − B is increasing in the market-
+maker’s bargaining power z. The bid–ask spread is decreasing in λ,s i n c ea
+highλ means that an investor can easily ﬁnd a counterparty himself, which im-
+proves his bargaining position. The bid–ask spread is also decreasing inρ,p r o -
+vided z< 1a n dρ is sufﬁciently large. A higher ρ implies that an investor can
+quickly ﬁnd another marketmaker, and this “sequential competition” improves
+his bargaining position. If z = 1, however, then the bid–ask spread is increas-
+ing inρ.T h ec a s eo fz = 1 is perhaps best interpreted as that of a monopolistic
+marketmaker, as discussed in the next section. These comparative-statics re-
+sults can be derived from the price equations (14)–(16) and from (A.2), which
+characterizes the steady-state investor masses.
+3.
+MONOPOLISTIC MARKETMAKING
+We assume here that investors can trade with the monopolistic marketmaker
+only when they meet one of the marketmaker’s nonatomic “dealers.” There
+is a unit mass of such dealers who contact potential investors randomly and
+pairwise independently, lettingρ be the intensity with which a dealer contacts a
+given agent. Dealers instantly balance their positions with their marketmaking
+ﬁrm, which, on the whole, holds no inventory.
+With these assumptions, the equilibrium is computed as in Section 2. The
+masses are determined by (3)–(6) and the prices are given by Theorem 2.
+It might seem surprising that a single monopolistic marketmaker is equiva-
+lent for pricing purposes to many “competing” nonatomic marketmakers. The
+result follows from the fact that a search economy is inherently uncompetitive,
+in that each time agents meet, a bilateral bargaining relationship obtains. With
+many nonatomic marketmakers, however, it is natural to assume that z< 1,
+while a monopolistic marketmaker could be assumed to have all of the bar-
+gaining power (z = 1). In practice, monopolists could develop dominant bar-
+gaining power by building a reputation for being “tough,” or by being larger
+and wealthier than small investors.
+16
+For these reasons, the label “monopolistic” serves to separate the casez = 1
+from the case z< 1. The distinction between monopolistic and competitive
+marketmakers is clariﬁed when search intensities are endogenized in Section 7.
+A monopolistic marketmaker quotes an ask price A a n dab i dp r i c eB that
+are, respectively, a buyer’s and a seller’s reservation value. Hence, in equilib-
+rium, B ≤P ≤A/periodori
+16In our model, a marketmaker’s proﬁt is not affected by any one inﬁnitesimal trade. Further,
+Board and Zwiebel (2003) show that if agents bid resources for the right to make an offer, one
+agent much richer than another endogenously receives the entire bargaining power.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 12 =====
+
+1826 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+4. FAST SEARCH LEADS TO COMPETITIVE PRICES?
+A competitive Walrasian equilibrium is characterized by a single price
+process at which agents may buy and sell instantly, such that supply equals de-
+mand in each state and at every point in time. A Walrasian allocation is efﬁcient
+and all assets are held by agents of high type, if there are enough such agents,
+17
+which is the case in steady state if s<λ u/(λu +λd)/periodoriIn this case, the unique
+Walras equilibrium has agent masses
+µ∗
+ho =s/commaori(17)
+µ∗
+hn = λu
+λu +λd
+−s/commaori
+µ∗
+lo = 0/commaori
+µ∗
+ln = λd
+λu +λd
+/commaori
+and price
+P∗ =Et
+[∫ ∞
+t
+e−r(s−t) ds
+]
+= 1
+r/commaori(18)
+which may be viewed as the reservation value of holding the asset forever for a
+hypothetical investor who is always of high type.
+In the case that s>λ u/(λu +λd), the masses are determined similarly, and
+since the marginal investor has low liquidity, the Walrasian price is the reser-
+vation value of holding the asset indeﬁnitely for a hypothetical agent who is
+permanently of low type (that is,P
+∗ =(1−δ)/r). Ifs =λu/(λu +λd), then any
+price P∗ between 1/r and (1 −δ)/r is a Walrasian equilibrium.
+Faster search by either investors or marketmakers leads in the limit to the
+efﬁcient allocationsµ∗ of the Walrasian market. The following theorem further
+determines the circumstances under which prices approach the competitive
+Walrasian prices,P
+∗.
+THEOREM 3: Let (λk/commaoriρk/commaoriµk/commaoriBk/commaoriAk/commaoriPk) be a sequence of stationary equilib-
+ria.
+1. Fast Investors. If λk →∞ , (ρk) is any sequence , and 0 <q< 1, then
+µk →µ∗, and Bk, Ak, and Pk converge to a Walrasian price P∗.
+2. Fast Competing Marketmakers. If ρk →∞ , (λk) is any sequence , and
+z< 1, then µk →µ∗, and Bk, Ak, and Pk converge to a Walrasian price P∗.
+17The quantity of such agents can be thought, for instance, as the capacity for taking a certain
+kind of risk.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 13 =====
+
+OVER-THE-COUNTER MARKETS 1827
+3. Fast Monopolistic Marketmaker. If λk =λ is constant, ρk →∞ is an in-
+creasing sequence, and z = 1, then µk →µ∗ and the bid–ask spread , Ak −Bk, is
+increasing.
+Part 1 shows that prices become competitive and that the bid–ask spread ap-
+proaches zero as investors ﬁnd each other more quickly, regardless of the na-
+ture of intermediation. In other words, the availability to investors of a search
+alternative forces marketmakers to offer relatively competitive prices, consis-
+tent with the evidence of Lamoureux and Schnitzlein (1997).
+18
+Part 2 shows that fast intermediation by competing marketmakers also leads
+to competitive prices and vanishing bid–ask spreads. This may seem surprising,
+given that an investor trades with the ﬁrst encountered marketmaker, and this
+marketmaker could have almost all bargaining power ( z close to 1). As ρ in-
+creases, however, the investor’s outside option when bargaining with a market-
+maker improves, because he can more easily meet another marketmaker, and
+this sequential competition ultimately results in competitive prices.
+Part 3 shows that fast intermediation by a monopolistic marketmaker does
+not lead to competitive prices. In fact, the bid–ask spread widens as inter-
+mediation by marketmakers increases. This is because an investor’s potential
+“threat” to search for a direct trade with another investor becomes increas-
+ingly less persuasive, since the mass of investors with whom there are gains
+from trade is shrinking.
+Contrary to our result, Rubinstein and Wolinsky (1985) ﬁnd that their bar-
+gaining equilibrium (without intermediaries) doesnot converge to the compet-
+itive equilibrium as trading frictions approach zero. Gale (1987) argues that
+this failure is due to the fact that the total mass of agents entering their econ-
+omy is inﬁnite, which makes the competitive equilibrium of the total economy
+undeﬁned. Gale (1987) shows that if the total mass of agents is ﬁnite, then
+the economy (which is not stationary) is Walrasian in the limit. He suggests
+that, when considering stationary economies, one should compare the bargain-
+ing prices to those of a “ﬂow equilibrium” rather than a “stock equilibrium.”
+Our model has a natural determination of steady-state masses, even though no
+agent enters the economy. This is accomplished by considering agents whose
+types change over time.
+19 We are able to reconcile a steady-state economy with
+convergence to Walrasian outcomes in both a ﬂow and stock sense, both for
+18This result holds, under certain conditions, even if the monopolistic marketmaker can be
+approached instantly (ρ =+ ∞). In this case, for any ﬁnite λ, all trades are done using the mar-
+ketmaker, but as the investors’ outside options improve, even a monopolistic marketmaker needs
+to quote competitive prices.
+19Gale (1986a, 1986b) and McLennan and Sonnenschein (1991) show that a bargaining game
+implements Walrasian outcomes in the limiting case with no frictions (that is, no discounting) in
+much richer settings for preferences and goods. See also Binmore and Herrero (1988).
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 14 =====
+
+1828 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+allocations and for prices, and by increasing both investor search and market-
+maker search.20
+5. NUMERICAL EXAMPLE
+We illustrate some of the search effects on asset pricing and marketmaking
+with a numerical example. Figure 1 shows the marketmakers’ bid (B)a n da s k
+(A) prices as well as the interinvestor price ( P). These prices are plotted as
+functions of the intensity, ρ, of meeting dealers. The top panel deals with the
+case of competing marketmakers with bargaining power z = 0/periodori8, whereas the
+bottom panel treats a monopolistic marketmaker (z = 1). The parameters that
+underlie these graphs are as follows. First, λd = 0/periodori1a n dλu = 1, which implies
+that an agent is of high liquidity type 91% of the time. An investor ﬁnds other
+investors on average every two weeks, that is, λ = 26, and selling investors
+have bargaining power q = 0/periodori5. The supply is s = 0/periodori8 and the interest rate is
+r = 0/periodori05.
+Since allocations become more efﬁcient asρ increases, for both the competi-
+tive and monopolistic cases, all prices increase withρ. Interestingly, in the case
+of competing marketmakers ( z = 0/periodori8), the bid–ask spread decreases to zero
+and the prices increase to the Walrasian price 1/r = 20. In the case of a monop-
+olist marketmaker (z = 1), on the other hand, the bid–ask spread is increasing
+in ρ and, due to this spread, the prices are bounded away from 1/r = 20.
+The intuition for this difference is as follows. When the dealers’ contact in-
+tensities increase, they execute more trades. Investors then ﬁnd it more difﬁ-
+cult to contact other investors with whom to trade. If dealers have all of the
+bargaining power, this leads to wider spreads. If dealers do not have all of the
+bargaining power, however, then higher marketmaker intensity leads to a nar-
+rowing of the spread, because an investor has an improved threat of waiting to
+trade with the next encountered marketmaker.
+6.
+HETEROGENEOUS INVESTORS
+So far, we have assumed that investors are homogeneous with respect to the
+speed with which they ﬁnd counterparties. In certain OTC markets, however,
+some investors are more sophisticated than others, in the sense that they have
+faster and easier access to counterparties. T o capture this effect, we assume
+that there are two different investor classes: “sophisticated,” of total mass µ
+s,
+and “unsophisticated,” of mass 1−µs. We assume that sophisticated investors
+meet marketmakers with an intensity ρs, while unsophisticated investors meet
+20Other important differences between our framework and that of Rubinstein and Wolin-
+sky (1985) are that we accommodate repeated trade and we diminish search frictions explicitly
+through λ rather than implicitly through the discount rate. See Bester (1988, 1989) for the im-
+portance of diminishing search frictions directly.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 15 =====
+
+OVER-THE-COUNTER MARKETS 1829
+FIGURE 1.—The solid line shows the price P for trades between investors; the dashed lines
+show the bid (B)a n da s k(A) prices applied by marketmakers. The prices are functions of the
+intensity (ρ) with which an investor meets a dealer, which is plotted on a logarithmic scale. The
+bargaining power z of the marketmaker is 0/periodori8 in the top panel and 1 in the bottom panel.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 16 =====
+
+1830 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+marketmakers at intensity ρu,w h e r eρu <ρ s. We assume here that investors
+cannot trade directly with each other, that is, λ = 0. If this assumption is re-
+laxed and investors are able to ﬁnd each other (possibly with type-dependent
+speeds), then the nature of the equilibrium that we will describe would change
+for certain parameters. In particular, sophisticated investors would, under cer-
+tain conditions, proﬁt from executing as many trades as possible and would
+start acting like marketmakers. This interesting effect is beyond the scope of
+this paper; we focus on how marketmakers react to differences in investor so-
+phistication.
+An investor’s type is observable to marketmakers, who have bargaining
+power z< 1. When a sophisticated investor meets a marketmaker, the out-
+come of their bargaining is a bid price of B
+s or an ask price of As.A nu n -
+sophisticated investor takes more time to locate a marketmaker, resulting in
+higher expected holding costs and a poorer bargaining position. Hence, unso-
+phisticated investors receive different bid and ask prices, which we denote by
+B
+u and Au, respectively.
+When the supply of shares is so low that sophisticated investors are
+“marginal” buyers, then all unsophisticated investors optimally stay out of the
+market, that is, they never buy. Similarly, when the asset supply is large, so-
+phisticated investors are marginal sellers, and unsophisticated investors hold
+the asset, never selling. With an intermediate supply, all investors trade, but
+unsophisticated investors trade at a larger spread. The following theorem char-
+acterizes the most important properties of the equilibrium with heterogeneous
+investors; a full characterization is in the Appendix.
+T
+HEOREM 4: In equilibrium , unsophisticated investors do not trade if s<
+µs(λu/(λu +λd)) ors> 1 −µs(λd/(λu +λd)). Otherwise, all investors trade and
+marketmakers quote a larger bid–ask spread to unsophisticated investors than to
+sophisticated investors. That is, Au −Bu >As −Bs. In particular, an agent who
+meets a marketmaker with intensity ρ faces a bid–ask of
+A −B = zδ
+r +λu +λd +ρ(1 −z)/periodori(19)
+7. ENDOGENOUS SEARCH AND WELFARE
+Here, we investigate the search intensities that marketmakers would op-
+timally choose in the two cases considered above: a single monopolistic
+marketmaker and nonatomic competing marketmakers. We illustrate how
+marketmakers’ choices of search intensities depend on (i) a marketmaker’s
+personal inﬂuence on the equilibrium allocations of assets and (ii) a market-
+maker’s bargaining power. We take investors’ search intensityλ as given, and
+assume that the meeting intensity ρ between investors and marketmakers is
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 17 =====
+
+OVER-THE-COUNTER MARKETS 1831
+determined solely by marketmakers’ technology choice. Considering the inter-
+actions that arise if both investors and intermediaries choose search intensities
+would be an interesting issue for future research.
+21
+Because the marketmakers’ search intensities, collectively, affect the mas-
+ses µ of investor types, it is natural to take as given the initial masses, µ(0),o f
+investors, rather than to compare based on the different steady-state masses
+that correspond to different choices of search intensities. Hence, in this sec-
+tion, we are not relying on a steady-state analysis.
+We assume that a marketmaker chooses one search intensity and abides by
+it. This assumption is convenient and can be motivated by interpreting the
+search intensity as based on a technology that is difﬁcult to change. A full dy-
+namic analysis of the optimal control of marketmaking intensities with small
+switching costs would be interesting, but seems difﬁcult. We merely assume
+that marketmakers choose ρ so as to maximize the present value, using their
+discount rate r, of future marketmaking spreads, net of the rate Γ(ρ) of tech-
+nology costs, where Γ :[0/commaori∞) →[ 0/commaori∞) is assumed for technical convenience
+to be continuously differentiable, strictly convex, withΓ( 0) = 0,Γ
+′(0) = 0, and
+limρ→∞ Γ ′(ρ) =∞ .
+The marketmaker’s trading proﬁt, per unit of time, is the product of the
+volume of trade, ρµm, and the bid–ask spread, A −B. Hence, a monopolistic
+marketmaker who searches with an intensity of ρ has an initial valuation of
+πM(ρ) =E
+[∫ ∞
+0
+ρµm(t/commaoriρ)(A(t/commaoriρ)−B(t/commaoriρ))e−rt dt
+]
+− Γ(ρ)
+r /commaori(20)
+where µm = min{µlo/commaoriµhn} and where we are using the obvious notation to in-
+dicate dependence of the solution on ρ and t.
+Any one nonatomic marketmaker does not inﬂuence the equilibrium masses
+of investors and, therefore, values his proﬁts at
+πC(ρ) =ρE
+[∫ ∞
+0
+µm(t)(A(t) −B(t))e−rt dt
+]
+− Γ(ρ)
+r /periodori
+An equilibrium intensity, ρC , for nonatomic marketmakers is a solution to the
+ﬁrst-order condition
+Γ ′(ρC) =rE
+[∫ ∞
+0
+µm(t/commaoriρC)
+(
+A(t/commaoriρC) −B(t/commaoriρC)
+)
+e−rt dt
+]
+/periodori(21)
+The following theorem characterizes equilibrium search intensities in the case
+of “patient” marketmakers.
+21Related to this, Pagano (1989) considers a one-period model in which investors choose be-
+tween searching for a counterparty and trading on a centralized market.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 18 =====
+
+1832 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+THEOREM 5: There exists a marketmaking intensity ρM that maximizesπM(ρ).
+There exists ¯r> 0 such that, for all r< ¯r and for each z ∈[ 0/commaori1], a unique num-
+berρC(z) solves the optimal search intensity condition (21). Moreover,ρC(0) = 0,
+ρC(z) is increasing in z, and ρC(1) is larger than any solution , ρM , to the monop-
+olist’sp r o b l e m.22
+In addition to providing the existence of equilibrium search intensities, this
+result establishes that (i) competing marketmakers provide more marketmak-
+ing services if they can capture a higher proportion of the gains from trade and
+(ii) competing marketmakers with full bargaining power provide more market-
+making services than a monopolistic marketmaker, since they do not internal-
+ize the consequences of their search on the masses of investor types.
+T o consider the welfare implications of marketmaking in our search econ-
+omy, we adopt as a notion of “social welfare” the sum of the utilities of in-
+vestors and marketmakers. This can be interpreted as the total investor utility
+in the case in which the marketmaker proﬁts are redistributed to investors, for
+instance, through asset holdings. With our form of linear preferences, maximiz-
+ing social welfare is a meaningful concept in that it is equivalent to requiring
+that utilities cannot be Pareto improved by changing allocations and by mak-
+ing initial consumption transfers.
+23 By “investor welfare,” we mean the total
+of investors’ utilities, assuming that marketmakers’ proﬁts are not redistrib-
+uted to investors. We take “marketmaker welfare” to be the total valuation of
+marketmaking proﬁts, net of the cost of intermediation.
+In our risk-neutral framework, welfare losses are easily quantiﬁed. The total
+“social loss” is the cost Γ(ρ) of intermediation plus the present value of the
+stream δµlo(t)/commaorit≥ 0/commaoriof dividends wasted through misallocation. At a given
+marketmaking intensity ρ, this leaves the social welfare
+wS(ρ) =E
+[∫ ∞
+0
+(s −δµlo(t))e−rt dt
+]
+− Γ(ρ)
+r /periodori
+Investor welfare is, similarly,
+wI(ρ) =E
+[∫ ∞
+0
+(
+s −δµlo(t/commaoriρ)
+−ρµm(t/commaoriρ)(A(t/commaoriρ)−B(t/commaoriρ))
+)
+e−rt dt
+]
+and the marketmakers’ welfare is
+wM(ρ) =E
+[∫ ∞
+0
+ρµm(t/commaoriρ)(A(t/commaoriρ)−B(t/commaoriρ))e−rt dt
+]
+− Γ(ρ)
+r /periodori
+22If the monopolist’s bargaining power isz< 1, it still holds that ρC(z)>ρ M(z).
+23This “utilitarian” social welfare function can be justiﬁed by considering the utility of an agent
+“behind the veil of ignorance,” not knowing what type of agent he will become.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 19 =====
+
+OVER-THE-COUNTER MARKETS 1833
+We consider ﬁrst the case of monopolistic marketmaking. We let ρM be the
+level of intermediation optimally chosen by the marketmaker and let ρS be
+the socially optimal level of intermediation. The relationship between the mo-
+nopolistic marketmaker’s chosen levelρ
+M of intensity and the socially optimal
+intensity ρS is characterized in the following theorem.
+THEOREM 6: Let z = 1. (i) If investors cannot meet directly , that is , λ = 0,
+then the investor welfare wI(ρ) is independent of ρ and a monopolistic market-
+maker provides the socially optimal level ρS of intermediation; that is, ρM =ρS .
+(ii) If λ> 0, then provided q is 0 or 1, wI(ρ) decreases in ρ and the monopolistic
+marketmaker overinvests in intermediation ; that is, ρM >ρS .
+The point of this result is that if investors cannot search, then their utilities
+do not depend on the level of intermediation because the monopolist extracts
+all gains from trade. In this case, because the monopolist gets all social beneﬁts
+from providing intermediation and bears all of the costs, he chooses the socially
+optimal level of intermediation.
+If, on the other hand, investors can trade directly with each other, then the
+marketmaker may exploit the opportunity to invest in additional search for
+trades so as to reduce the opportunities of investors to trade directly with each
+other. Therefore, investor welfare decreases withρ. Consequently, the market-
+maker’s marginal beneﬁt from intermediation is larger than the social beneﬁt,
+so there is too much intermediation.
+24
+We now turn to the case of nonatomic (competing) marketmakers. We saw
+above that the equilibrium level of intermediation of a nonatomic market-
+maker depends critically on its bargaining power. With no bargaining power,
+such a marketmaker provides no intermediation. With complete bargaining
+power, they search more than a monopolistic marketmaker would.
+A government may sometimes be able to affect intermediaries’ mar-
+ket power, for instance through the enforcement of regulation (DeMarzo,
+Fishman, and Hagerty (2000)). Hence, we consider the following questions:
+How much marketmaker market power is socially optimal? How much mar-
+ket power would the intermediaries choose to have? Would investors prefer
+that marketmakers have some market power? These questions are answered
+in the following theorem, in which we let z
+I , zS ,a n dzM denote the market-
+maker bargaining power that would be chosen by, respectively, the investors,
+a social-welfare maximizing planner, and marketmakers.
+T
+HEOREM 7: It holds that zI > 0. There is some ¯r> 0 such that , provided
+r< ¯r, we have zI <zS ≤zM = 1.
+24If 0 <q< 1, then increasing ρ has the additional effect of changing the relative strength of
+investors’ bargaining positions with the marketmaker, because it changes their outside options,
+which complicates the calculations.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 20 =====
+
+1834 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+Investors in our model would prefer to enter a market in which nonatomic
+marketmakers have some market powerzI > 0, because this gives marketmak-
+ers an incentive to provide intermediation. The efﬁcient level of intermedia-
+tion is achieved with even higher marketmakers, powerzS >zI . Marketmakers
+themselves prefer to have full bargaining power.
+8. EMPIRICAL IMPLICATIONS
+This paper lays out a theory of asset pricing and marketmaking based on
+search and bargaining. We show how search-based inefﬁciencies affect prices
+through equilibrium allocations and through the effect of search on agents’
+bargaining positions, that is, their outside options based on their ability to trade
+with other investors or marketmakers.
+Consider, for example, the OTC market for interest-rate swaps, which, ac-
+cording to the British Bankers Association has open positions totalling roughly
+$100 trillion dollars. Customers rarely have material private information about
+the current level of the underlying interest rates, so standard information-
+based explanations of bid–ask spreads are not compelling in this market. In-
+stead, a “sales trader” sets spreads based on a customer’s (perceived) outside
+option and would rarely fear that the customer has superior information about
+the underlying interest rates. The customer’s outside option depends on how
+easily he can ﬁnd a counterparty himself (proxied by λ in our model), and
+how easily he can access other banks (proxied by ρ in our model). T o trade
+OTC derivatives with a bank, one needs, among other things, an account and
+a credit clearance. Smaller investors often have an account with only one or a
+few banks, lowering their search options. Hence, a testable implication of our
+search framework is that smaller investors, typically those with fewer search
+options, receive less favorable prices. We note that these investors are less
+likely to be informed, so traditional information-based models of spreads (for
+example, Glosten and Milgrom (1985)), applied to this market, would have
+the opposite prediction. Consistent with our results, Schultz (2001) ﬁnds that
+bid–ask spreads are larger for smaller trades and for smaller (institutional) in-
+vestors in the market for corporate bonds. Furthermore, Green, Holliﬁeld, and
+Schurhoff (2004) and Harris and Piwowar (2004) ﬁnd that bid–ask spreads are
+larger for smaller trades and for more complex instruments in the market for
+municipal bonds.
+The model that we present here can also be viewed as one of imperfect
+competition, for example, in specialist-based equity markets. In particular, the
+model shows that even a monopolistic marketmaker may have a tight bid–ask
+spread if investors can easily trade directly with each other (that is, have a
+highλ). This resembles situations at the New Y ork Stock Exchange (NYSE) in
+which, despite a single specialist for each stock, ﬂoor brokers can ﬁnd and trade
+among themselves, and outside brokers can ﬁnd each other and trade “around”
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 21 =====
+
+OVER-THE-COUNTER MARKETS 1835
+the specialist with limit orders. However, on Nasdaq, a “phone market” with
+several dealers for each stock, it can be difﬁcult for investors to ﬁnd each other
+directly. Before the reforms of 1994, 1995, and 1997, it was difﬁcult for in-
+vestors to compete with Nasdaq marketmakers through limit orders.
+25 This
+may help explain why spreads were higher on Nasdaq than on NYSE (Huang
+and Stoll (1996)). Consistent with this view, Barclay, Christie, Harris, Kandel,
+and Schultz (1999) ﬁnd that the “Securities and Exchange Commission began
+implementing reforms that would permit the public to compete directly with
+N a s d a qd e a l e r sb ys u b m i t t i n gb i n d i n gl i m i to r d e r s ....O u rr e s u l t si n d i c a t et h a t
+quoted and effective spreads fell dramatically.”
+The competition faced by marketmakers from direct trade between investors
+can perhaps be gauged by the participation rate of marketmakers, that is, the
+fraction of trades that are intermediated by a marketmaker. Our model sug-
+gests that, with equal marketmaker availability and stock characteristics, stocks
+with higher participation rates are characterized by lower search intensity ( λ)
+and, hence, higher bid–ask spreads. On Nasdaq, the participation rate was
+once large relative to the NYSE, whose participation rate was between 18.8%
+and 24.2% in the 1990s (New Y ork Stock Exchange (2001)). At that time, the
+NYSE may well have covered stocks whose investors had higher direct contact
+rates (λ) than those covered, on average, by Nasdaq.
+Our modeled counterparty search times can proxy, in practice, also for de-
+lays necessary for counterparties to verify one another’s credit standing, and
+to arrange for trade authorization and ﬁnancing or for the time necessary to
+familiarize an investor with a product type or contractual terms. Even in an
+OTC market as liquid as that of U.S. T reasuries, delays necessary to contact
+suitable counterparties are frequently responsible for meaningful price effects,
+for example, as documented by Krishnamurthy (2002). Dufﬁe, Gârleanu, and
+Pedersen (2003) provide additional discussion of the empirical relevance of
+search for asset pricing behavior.
+Graduate School of Business, Stanford University, Stanford, CA 94305-5015,
+U.S.A.; dufﬁe@stanford.edu,
+Wharton School, University of Pennsylvania, 3620 Locust Walk, Philadelphia,
+PA 19104-6367, U.S.A.; garleanu@wharton.upenn.edu,
+and
+Stern School of Business, New Y ork University, 44 West Fourth Street, Suite
+9-190, New Y ork, NY 10012-1126, U.S.A; lpederse@stern.nyu.edu.
+Manuscript received April, 2004; ﬁnal revision received February, 2005.
+25See Barclay, Christie, Harris, Kandel, and Schultz (1999) and references therein.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 22 =====
+
+1836 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+APPENDIX: PROOFS
+PROOF OF PROPOSITION 1: Start by letting
+y = λu
+λu +λd
+/commaori
+and assume that y>s .T h ec a s ey ≤s can be treated analogously. Setting the
+right-hand side of (3) to zero and substituting all components of µ other than
+µlo in terms ofµlo from (1) and (2) and fromµlo +µln =λd(λd +λu)−1 = 1−y,
+we obtain the quadratic equation
+Q(µlo) = 0/commaori(A.1)
+where
+Q(x) = 2λx2 +
+(
+2λ(y −s) +ρ +λu +λd
+)
+x −λds/periodori(A.2)
+It is immediate that Q has a negative root (since Q(0)< 0) and has a root in
+the interval (0/commaori1) (since Q(1)> 0).
+Since µlo is the largest and positive root of a quadratic with positive leading
+coefﬁcient and with a negative root, to show that µlo <η for some η> 0, it
+sufﬁces to show that Q(η)> 0. Thus, so that µho > 0 (for, clearly, µho < 1), it
+is sufﬁcient that Q(s)> 0, which is true, since
+Q(s) = 2λs2 +(λu + 2λ(y −s) +ρ)s/periodori
+Similarly, µln > 0i f Q(1 −y)> 0, which holds because
+Q(1 −y) = 2λ(1 −y)2 +(2λ(y −s) +ρ)(1 −y) +λd(1 −s)/periodori
+Finally, since µhn =y −s +µlo, it is immediate that µhn > 0.
+We present a sketch of a proof of the claim that from any admissible initial
+condition µ(0), the system converges to the steady state µ.
+Because of the two restrictions (1) and (2), the system is reduced to
+two equations, which can be thought of as equations in the unknowns
+µ
+lo(t) and µl(t),w h e r eµl(t) = µlo(t) + µln(t). The equation for µl(t) does
+not depend on µlo(t), and admits the simple solution
+µl(t) =µl(0)e−(λd+λu)t + λd
+(λd +λu)
+(
+1 −e−(λd+λu)t )
+/periodori
+Deﬁne the function
+G(w/commaorix)=− 2λx2 −
+(
+λu +λd + 2λ(1 −s −w) +ρ
+)
+x
++ρ max{0/commaoris+w − 1}+ λds
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 23 =====
+
+OVER-THE-COUNTER MARKETS 1837
+and note that µlo satisﬁes
+˙µlo(t) =G(µl(t)/commaoriµlo(t))/periodori
+The claim is proved by the following steps:
+1. Choose t1 high enough that s +µl(t) − 1 does not change sign for t>t 1.
+2. Show that µlo(t) stays in (0/commaori1) for all t by verifying that G(w/commaori0)> 0a n d
+G(w/commaori1)< 0.
+3. Choose t2 (≥t1) high enough that µl(t) c h a n g e sb ya tm o s ta na r b i t r a r i l y
+chosen ε> 0f o rt>t 2.
+4. Note that, for any value µlo(t2) ∈(0/commaori1), the equation
+˙x(t) =G(w/commaorix(t))(A.3)
+with boundary condition x(t2) = µlo(t2) admits a solution that converges ex-
+ponentially, as t →∞ , to a positive quantity that can be written as (−b +√
+b2 +c) ,w h e r eb and c are afﬁne functions of w. The convergence is uni-
+form in µlo(t2).
+5. Finally, using a comparison theorem (for instance, see Birkhoff and Rota
+(1969, p. 25)), µlo(t) is bounded by the solutions to (A.3) that correspond to
+w taking the highest and lowest values of µl(t) for t>t 2 (these are, of course,
+µl(t2) and limt→∞ µl(t)). By virtue of the previous step, for high enought, these
+solutions are within O(ε) of the steady-state solution µlo. Q.E.D.
+PROOF OF THEOREM 2: T o calculate Vσ and P, we consider a particular
+agent and a particular time t,l e tτl denote the next (stopping) time at which
+that agent’s intrinsic type changes, let τi denote the next (stopping) time at
+which another investor with gain from trade is met, letτm denote the next time
+a marketmaker is met, and let τ = min{τl/commaoriτi/commaoriτm}. Then,
+Vlo =Et
+[∫ τ
+t
+e−r(u−t)(1 −δ)du +e−r(τl−t)Vho1{τl=τ}(A.4)
++e−r(τi−t)(Vln +P)1{τi=τ} +e−r(τm−t)(Vln +B)1{τm=τ}
+]
+/commaori
+Vln =Et
+[
+e−r(τl−t)Vhn
+]
+/commaori
+Vho =Et
+[∫ τl
+t
+e−r(u−t) du +e−r(τl−t)Vlo
+]
+/commaori
+Vhn =Et
+[
+e−r(τl−t)Vln1{τl=τ} +e−r(τi−t)(Vho −P)1{τi=τ}/commaori
++e−r(τm−t)(Vho −A)1{τm=τ}
+]
+/commaori
+where Et denotes expectation conditional on the information available at
+time t. Differentiating both sides of (A.4) with respect to t, we get (10).
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 24 =====
+
+1838 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+In steady state, ˙Vσ = 0 and hence (10) implies the following equations for
+the value functions and prices:
+Vlo = (λuVho + 2λµhnP +ρB +(2λµhn +ρ)Vln + 1 −δ)
+r +λu + 2λµhn +ρ /commaori(A.5)
+Vln = λuVhn
+r +λu
+/commaori
+Vho = λdVlo + 1
+r +λd
+/commaori
+Vhn = (λdVln +(2λµlo +ρ)Vho − 2λµloP −ρA)
+r +λd + 2λµlo +ρ /periodori
+(We note that agents on the “long side” of the market are rationed when they
+interact with the marketmaker and, therefore, their trading intensity with the
+marketmaker is less than ρ. This does not affect (A.5), however, because the
+price is the reservation value.) Deﬁne/Delta1V
+l =Vlo −Vln and/Delta1Vh =Vho −Vhn to be
+the reservation values. With this notation, the prices are determined by
+P =/Delta1Vl(1 −q) +/Delta1Vhq/commaori(A.6)
+A =/Delta1Vhz +M(1 −z)/commaori
+B =/Delta1Vlz +M(1 −z)/commaori
+M =
+
+
+
+/Delta1Vh/commaoriifs< λu
+λu +λd
+,
+/Delta1Vl/commaoriifs> λu
+λu +λd
+,
+and M ∈[/Delta1Vl/commaori/Delta1Vh] if s =λu/(λu +λd).L e t
+ψd =λd + 2λµlo(1 −q) +(1 − ˜q)ρ(1 −z)/commaori
+ψu =λu + 2λµhnq + ˜qρ(1 −z)/commaori
+where
+˜q
+
+
+
+
+
+= 1/commaoriifs< λ
+u
+λu +λd
+,
+= 0/commaoriifs> λu
+λu +λd
+,
+∈[ 0/commaori1]/commaoriifs = λu
+λu +λd
+.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 25 =====
+
+OVER-THE-COUNTER MARKETS 1839
+With this notation, we see that appropriate linear combinations of (A.5)–(A.6)
+yield
+[
+r +ψu −ψu
+−ψd r +ψd
+][
+/Delta1Vl
+/Delta1Vh
+]
+=
+[
+1 −δ
+1
+]
+/periodori
+Consequently,
+[
+/Delta1Vl
+/Delta1Vh
+]
+= 1
+r
+[
+1
+1
+]
+− δ
+r
+1
+r +ψu +ψd
+[
+r +ψd
+ψd
+]
+/commaori(A.7)
+which leads to the price formula stated by the theorem. Note also that
+/Delta1Vl </Delta1Vh/periodori
+Finally, we need to verify that any agent prefers, at any time, given all infor-
+mation, to play the proposed equilibrium trading strategy, assuming that other
+agents do. It is enough to show that an agent agrees to trade at the candidate
+equilibrium prices when contacted by an investor with whom there are poten-
+tial gains from trade.
+The Bellman principle for an agent of typelo in contact with an agent of type
+hn is
+P +Vln
+≥Et
+[∫ τ
+t
+e−r(u−t)(1 −δ)du +e−r(τl−t)Vho1{τl=τ}
++e−r(τi−t)(Vln +P)1{τi=τ} +e−r(τm−t)(Vln +B)1{τm=τ}
+]
+/commaori
+whereτ = min{τl/commaoriτi/commaoriτm}. This inequality follows from that fact that/Delta1Vh ≥P ≥
+/Delta1Vl, which means that selling the asset, consuming the price, and attaining the
+candidate value of a nonowner with low valuation, dominates (at least weakly)
+the value of keeping the asset, consuming its dividends, and collecting the dis-
+counted expected candidate value achieved at the next time τm of a trading
+opportunity or at the next timeτr of a change to a low discount rate, whichever
+comes ﬁrst. There is a like Bellman inequality for an agent of type hn.
+Now, to verify the sufﬁciency of the Bellman equations for individual opti-
+mality, consider any initial agent typeσ(0) and any feasible trading strategyθ,
+an adapted process whose value is 1 whenever the agent owns the asset and
+0 whenever the agent does not own the asset. The associated type process σθ
+and a wealth process ofW = 0 (which can be assumed without loss of general-
+ity) determine a cumulative consumption process Cθ that satisﬁes
+dCθ
+t =θt(1 −δ1{σθ(t)=lo})dt − ˆPdθt/periodori(A.8)
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 26 =====
+
+1840 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+Following the usual veriﬁcation argument for stochastic control, for any fu-
+ture meeting time τm, m ∈ N,w eh a v e
+Vσ(0) ≥E
+[∫ τm
+0
+e−rt dCθ
+t
+]
++E
+[
+e−rτm
+Vσθ(τm)
+]
+/periodori
+(This assumes without loss of generality that a potential trading contact does
+not occur at time 0.) Letting m go to ∞,w eh a v eVσ(0) ≥ U(Cθ). Because
+Vσ(0) =U(C∗),w h e r eC∗ is the consumption process associated with the candi-
+date equilibrium strategy, we have shown optimality. Q.E.D.
+PROOF OF THEOREM 3: The convergence of the masses µ to µ∗ is easily
+seen using (A.1), whether λ or ρ tends to inﬁnity. Let us concentrate on the
+prices.
+1. If s<λ u/(λu + λd), then we see using (A.1) that λµhn tends to inﬁn-
+ity with λ,w h i l eλµlo is bounded. Hence, (A.7) shows that both /Delta1Vl and /Delta1Vh
+tend to r−1, provided that q> 0. If s>λ u/(λu + λd), λµlo tends to inﬁnity
+with λ,w h i l eλµhn is bounded. Hence, /Delta1Vl and /Delta1Vh tend to r−1(1 −δ),p r o -
+vided that q< 1. If s =λu/(λu +λd), then λµhn =λµlo tends to inﬁnity with λ,
+and/Delta1Vl and/Delta1Vh tend tor−1(1−δ(1−q)). In each case, the reservation values
+converge to the same value, which is a Walrasian price.
+2. Equation (A.7) shows that both /Delta1Vl and /Delta1Vh tend to the Walrasian price
+r−1(1 −δ(1 − ˜q)) as ρ approaches inﬁnity.
+3. When z = 1, Ak −Bk increases withρ becauseA−B =δ(r +ψu +ψd)−1
+and both ψu and ψd decrease, since µlo and µhn do. Q.E.D.
+PROOF OF THEOREM 4: Let the value function of a sophisticated type- σ
+investor beVs
+σ and let the value function of an unsophisticated type-σ investor
+beVu
+σ . These value functions and the prices (As,Bs,Au,Bu) are computed as in
+(A.5) and (A.6), with the modiﬁcation that the interdealer priceM is different.
+For any ﬁxed interdealer price M, an agent who meets the marketmaker with
+intensity ρ, and who sells as a lo type and buys as an hn type (i.e., with /Delta1Vl ≤
+M ≤/Delta1Vh) has value functions determined by
+Vho(r +λd) = 1 +λdVlo/commaori
+Vhn(r +λd +ρ) =λdVln +ρ
+(
+Vho −[z/Delta1Vh +(1 −z)M]
+)
+/commaori
+Vln(r +λu) =λuVhn/commaori
+Vlo(r +λu +ρ) = 1 −δ +λuVho +ρ
+(
+Vln +[z/Delta1Vl +(1 −z)M]
+)
+/periodori
+The system reduces to
+/Delta1Vh(r +λd +ρ(1 −z)) = 1 +λd/Delta1Vl +ρ(1 −z)M/commaori
+/Delta1Vl(r +λu +ρ(1 −z)) = 1 −δ +λu/Delta1Vh +ρ(1 −z)M/commaori
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 27 =====
+
+OVER-THE-COUNTER MARKETS 1841
+which implies that
+[
+/Delta1Vl
+/Delta1Vh
+]
+= 1 +ρ(1 −z)M
+r +ρ(1 −z)
+[
+1
+1
+]
+(A.9)
+− δ
+r +ρ(1 −z)
+1
+r +λu +λd +ρ(1 −z)
+×
+[
+r +λd +ρ(1 −z)
+λd
+]
+/periodori
+Hence, this agent faces a bid–ask spread of
+z(/Delta1Vh −/Delta1Vl) = zδ
+r +λu +λd +ρ(1 −z)/periodori
+We show below, for each case, thatM is given by
+M =
+
+
+
+
+
+
+
+
+
+/Delta1V
+s
+h /commaoriif s<µ s λu
+λu +λd
+,
+/Delta1Vu
+h /commaoriif µs λu
+λu +λd
+<s< λu
+λu +λd
+,
+/Delta1Vu
+l /commaoriif λu
+λu +λd
+<s< 1 −µs λd
+λu +λd
+,
+/Delta1Vs
+l /commaoriif 1 −µs λd
+λu +λd
+<s .
+(A.10)
+CASE (a): Consider ﬁrst the case of s<µ sλu/(λu +λd). The claim is that it is
+an equilibrium that the unsophisticated investors own no assets. Assuming this
+to be true, the market has only sophisticated investors, the interdealer price is
+M =/Delta1V
+s
+h , and the buyers are rationed.
+It remains to be shown that, with this interdealer price, there is no price
+at which marketmakers will sell and unsophisticated investors will buy. First,
+we note that the optimal response of an investor to the Markov (time-
+independent) investment problem can be chosen to be Markov, which means
+that one only needs to check the payoffs from Markov strategies that stipulate
+the same probability of trade for a given type at any time. The linearity of the
+problem further allows one to assume that the trading probability is 1 or 0.
+(When indifferent, the choice does not matter, so we may assume a corner
+solution.)
+There are three possible Markov strategies for the unsophisticated investor
+that involve buying: buying as type h and selling as type l,b u y i n ga st y p el and
+selling as type h, and buying and holding (never selling).
+If the unsophisticated investor buys as an h type and sells as an l type, then
+her value function satisﬁes (A.9), implying that/Delta1V
+u
+h </Delta1Vs
+h =M sinceρu <ρs.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 28 =====
+
+1842 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+The reservation values are even lower if she buys as anl and sells as anh type.
+Finally, if the unsophisticated investor buys and never sells, then her value
+function is also smaller thanM. This is inconsistent with trading with the mar-
+ketmaker, meaning that she never buys.
+CASE (b): For the case µs
+h <s<µ h, the equilibrium is given by an inter-
+dealer price of Au = M = /Delta1Vu
+h = A(ρu). This is also the price at which
+unsophisticated hn agents buy from the marketmaker, and these agents are
+rationed. The sophisticated types hold a total µs
+h =µsλu/(λu +λd) of the sup-
+ply, while the unsophisticated types hold the rest. This is clearly an equilibrium
+for the unsophisticated types. We must ensure that sophisticated types also be-
+have optimally. In particular, we must check that/Delta1Vs
+l ≤M ≤/Delta1Vs
+h /periodoriFor this, we
+use (A.7) and (A.9). We have/Delta1Vs
+l ≤M if and only if
+1 +ρs(1 −z)M
+r +ρs(1 −z)
+− δ(r +λd +ρs(1 −z))
+r +ρs(1 −z)
+1
+r +λu +λd +ρs(1 −z) ≤M/commaori
+which holds if and only if
+r +λd +ρs(1 −z)
+r +λu +λd +ρs(1 −z) ≥ λd
+r +λu +λd +ρu(1 −z)/commaori
+which holds because ρs ≥ρu. Similarly, it can be veriﬁed that M ≤/Delta1Vs
+h using
+the same formulae.
+CASE (c): The remaining two cases are dual to those just treated. T o see this,
+take the following new perspective of an agent’s problem: An agent considers
+“acquiring” nonownership (that is, selling). The number of shares of nonown-
+ership is 1 − s.I fa n l type acquires nonownership, then he gets a dividend
+of −(1 − δ) (that is, he gives up a dividend of 1 − δ). If an h type acquires
+nonownership, then he gets a dividend of −1. Said differently, he gets a divi-
+dend of −(1 −δ) like that of the l type and, additionally, he has a cost of δ.
+Hence, from this perspective, h and l types are reversed and the supply of
+shares is 1 −s.
+This explains why the equilibria in the latter two cases are mirror images
+of the equilibria in the former two cases. In particular, if λu/(λu +λd)<s<
+1 − µs(λd/(λu + λd)), then both sophisticated and unsophisticated investors
+trade, and the unsophisticated l type is rationed.
+If 1 −µs(λd/(λu +λd))<s , each unsophisticated investor owns a share and
+does not trade. (Using the alternative perspective, they are out of the market
+for nonownership.) The sophisticated investors hold the remaining (1 − µs)
+shares, they trade, and the selling sophisticated investors are rationed. Q.E.D.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 29 =====
+
+OVER-THE-COUNTER MARKETS 1843
+PROOF OF THEOREM 5: There exists a number ρM that maximizes (19) since
+πM is continuous and πM(ρ) →− ∞ as ρ →∞ . We are looking for some
+ρC ≥ 0 such that
+Γ ′(ρC) =rE
+∫ ∞
+0
+µm(ρC)
+(
+A(ρC) −B(ρC)
+)
+e−rt dt/periodori(A.11)
+Consider how both the left-hand and right-hand sides depend on ρ.T h el e f t -
+hand side is 0 for ρ = 0, increasing, and tends to inﬁnity as ρ tends to inﬁnity.
+Forz = 0,A(t/commaoriρ)−B(t/commaoriρ)= 0 everywhere, so the right-hand side is zero, and,
+therefore, the unique solution to (A.11) is clearly ρC = 0. For z> 1, the right-
+hand side is strictly positive for ρ = 0. Furthermore, the steady-state value of
+the right-hand side can be seen to be decreasing, using the fact that µm is de-
+creasing inρ and using the explicit expression for the spread provided by (A.7).
+Furthermore, by continuity and still using (A.7), there isε> 0a n dT such that
+∂
+∂ρµm(A−B)< −ε for allt>T and allr. Further, note thatt ↦→re−rt is a prob-
+ability density function for any r> 0 and that the closer is r to zero, the more
+weight is given to high values of t (that is, the more important is the steady-
+state value for the integral). Therefore, the right-hand side is also decreasing
+in ρ for any initial condition on µ if r is small enough. These results yield the
+existence of a unique solution.
+T o see that ρ
+C >ρ M when z = 1, consider the ﬁrst-order conditions that
+determine ρM :
+Γ ′(ρM)(A.12)
+=rE
+∫ ∞
+0
+[
+µm(t/commaoriρM)
+(
+A(t/commaoriρM) −B(t/commaoriρM)
+)
++ρM ∂
+∂ρM
+(
+µm(t/commaoriρM)
+(
+A(t/commaoriρM) −B(t/commaoriρM)
+))]
+e−rt dt/periodori
+The integral of the ﬁrst integrand term on the right-hand side of (A.12) is the
+same as that of (A.11), and that of the second is negative for smallr. Hence, the
+right-hand side of (A.12) is smaller than the right-hand side of (A.11), implying
+that ρC(1)>ρ M .
+T o see thatρC(z) is increasing inz, we use the implicit function theorem and
+the dominated convergence theorem to compute the derivative of ρC(z) with
+respect to z as
+rE
+∫∞
+0 µm(ρC)(Az(ρC/commaoriz)−Bz(ρC/commaoriz))e−rt dt
+Γ ′′(ρC) −rE
+∫∞
+0 (d/dρ)µm(ρC)(A(ρC/commaoriz)−B(ρC/commaoriz))e−rt dt/periodori(A.13)
+If we use the steady-state expressions for µ, A,a n dB, this expression is seen
+to be positive because both the denominator and the numerator are posi-
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 30 =====
+
+1844 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+tive. Hence, it is also positive with any initial masses if we choose r small
+enough. Q.E.D.
+PROOF OF THEOREM 6: (i) The ﬁrst part of the theorem, that the monop-
+olistic marketmaker’s search intensity does not affect investors when they can
+not search for each other, follows from (A.5), which shows that investor’s utility
+is independent of ρ.
+(ii) We want to prove that the investor welfare is decreasing in ρ,w h i c h
+directly implies that the marketmaker overinvests in intermediation services.
+We introduce the notation /Delta1V
+o =Vho −Vlo, /Delta1Vn =Vhn −Vln,a n dφ =/Delta1Vh −
+/Delta1Vl = /Delta1Vo −/Delta1Vn, and start by proving a few general facts about the market-
+maker spread, φ.
+The dynamics of φ are given by the ordinary differential equation (ODE)
+˙φt =
+(
+r +λd +λu + 2λ(1 −q)µlo + 2λqµhn
+)
+φt −δ/periodori
+Let R = r + λd + λu + 2λ(1 − q)µlo + 2λqµhn. The equation above readily
+implies that
+∂ ˙φt
+∂ρ =R∂φt
+∂ρ +
+(
+2λ(1 −q)∂µlo(t)
+∂ρ + 2λq∂µhn(t)
+∂ρ
+)
+φt/periodori(A.14)
+This can be viewed as an ODE in the function ∂φ
+∂ρ by treating φt as a ﬁxed
+function. It can be veriﬁed that 0 < ∂φ
+∂ρ < ∞ in the limit as t →∞ , that
+is, in steady state. Furthermore, a simple comparison argument yields that
+∂µlo(t)/∂ρ = ∂µhn(t)/∂ρ <0. Hence, the solution to the linear ODE (A.14)
+is positive since
+∂φt
+∂ρ =−
+∫ ∞
+t
+e−R(u−t)
+(
+2λ(1 −q)∂µlo(u)
+∂ρ + 2λq∂µhn(u)
+∂ρ
+)
+φu du> 0/periodori
+Consider now the case q = 1, for which, since Vhn =Vln = 0,
+˙Vho(t) =rVho(t) +λdφt − 1/periodori
+Differentiating both sides with respect to ρ and using arguments as above, we
+see that ∂Vho(t)/∂ρ <0s i n c e∂φt/∂ρ >0. Consequently, Vlo(t) = Vho(t) −φt
+also decreases in ρ.
+If q = 0, then (A.5) shows that Vlo and Vho are independent of ρ. Further-
+more,
+˙Vln(t) =rVln(t) +λu(φt −/Delta1Vo(t))/periodori
+As above, we differentiate with respect toρ and conclude thatVln(t) decreases
+in ρ since ∂φt/∂ρ> 0a n d/Delta1Vo(t) is independent of ρ. Consequently, Vhn(t) =
+Vln(t) −φt +/Delta1Vo(t) also decreases in ρ. Q.E.D.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 31 =====
+
+OVER-THE-COUNTER MARKETS 1845
+PROOF OF THEOREM 7:
+T o see thatzI > 0, we note that with ρ =ρC(z),
+d
+dzwI
+⏐⏐⏐⏐
+z=0
+=−δE
+∫ ∞
+0
+d
+dρµlo(t/commaoriρ)e−rt dt dρC
+dz > 0/commaori
+w h e r ew eh a v eu s e dt h a tρC(0) = 0, that ∂ρC/∂z >0a t z = 0 (see (A.13)), that
+A −B = 0i f z = 0, and that for all t, d
+dρµlo(t/commaoriρ)<0.
+T o prove thatzI <z S ≤ zM = 1, it sufﬁces to show that the marketmaker
+welfare is increasing in z, which follows from
+d
+dzwM =ρ d
+dz
+[
+E
+∫ ∞
+0
+µlo(a −b)e−rt dt
+]
+= ρ
+r
+d
+dzΓ ′(ρC(z))
+= ρ
+r Γ ′′(ρC(z))dρC
+dz > 0/commaori
+suppressing the argumentst andρ from the notation, where we have used twice
+the fact thatΓ ′(ρ) =rE
+∫∞
+0 µlo(A −B)e−rt dt ifρ =ρC(z) and that∂ρC/∂z >0
+(Theorem 5). Q.E.D.
+REFERENCES
+AMIHUD,Y . , AND H. M ENDELSON (1980): “Dealership Markets: Market Making with Inven-
+tory,” Journal of Financial Economics , 8, 31–53.
+(1986): “ Asset Pricing and the Bid–Ask Spread,” Journal of Financial Economics , 17,
+223–249.
+BAGEHOT, W . (1971): “The Only Game in T own,”The Financial Analysts Journal , 27, 12–14.
+BARCLAY,M .J . ,W .G .CHRISTIE,J .H .H ARRIS,E .K ANDEL, AND P. H . SCHULTZ (1999): “Effects
+of Market Reform on the T rading Costs and Depths of Nasdaq Stocks,”Journal of Finance, 54,
+1–34.
+BESTER, H. (1988): “Bargaining, Search Costs and Equilibrium Price Distributions,” Review of
+Economic Studies, 55, 201–214.
+(1989): “Noncooperative Bargaining and Spatial Competition,” Econometrica, 57,
+97–113.
+BHATTACHAR YA,S . ,AND K. M. HAGERTY (1987): “Dealerships, T rading Externalities, and Gen-
+eral Equilibrium,” in Contractual Arrangements for Intertemporal T rade , Minnesota Studies in
+Macroeconomics Series, Vol. 1., ed. by E. Prescott and N. Wallace. Minneapolis: University of
+Minnesota Press, 81–104.
+BILLINGSLEY, P . (1986):Probability and Measure (Second Ed.). New Y ork: John Wiley & Sons.
+BINMORE,K .G . ,AND M. J. HERRERO (1988): “Matching and Bargaining in Dynamic Markets,”
+Review of Economic Studies , 55, 17–31.
+BIRKHOFF,G . ,AND G.-C. ROTA (1969): Ordinary Differential Equations . New Y ork: John Wiley
+&S o n s .
+BOARD,S . , AND J. Z WIEBEL (2003): “Endogenous Competitive Bargaining,” Working Paper,
+Stanford University.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 32 =====
+
+1846 D. DUFFIE, N. GÂRLEANU, AND L. H. PEDERSEN
+CONSTANTINIDES, G. M. (1986): “Capital Market Equilibrium with T ransaction Costs,” Journal
+of Political Economy, 94, 842–862.
+DAI,Q . , AND K. RYDQVIST (2003): “How Do Buyers and Sellers Divide the Surplus,” Unpub-
+lished Working Paper, Binghamton University.
+DEMARZO,P . ,M .F ISHMAN, AND K. H AGERTY (2000): “The Enforcement Policy of a Self-
+Regulatory Organization,” Unpublished Working Paper, Graduate School of Business, Stan-
+ford University; forthcoming in the REStud.
+D
+IAMOND, P . (1982): “ Aggregate Demand Management in Search Equilibrium,”Journal of Polit-
+ical Economy, 90, 881–894.
+DUFFIE, D., N. GÂRLEANU, AND L. H. PEDERSEN (2003): “V aluation in Over-the-Counter Mar-
+kets,” Working Paper, Graduate School of Business, Stanford University.
+DUFFIE, D., AND Y. SUN (2004): “The Exact Law of Large Numbers for Pairwise Random Match-
+ing,” Unpublished Working Paper, Graduate School of Business, Stanford University.
+FERLAND,R . , AND G. G IROUX (2002): “Une Approche Probabiliste des Marchés Dy-
+namiques, I,” Unpublished Working Paper, Université du Québec à Montréal.
+GALE, D. (1986a): “Bargaining and Competition Part I: Characterization,” Econometrica, 54,
+785–806.
+(1986b): “Bargaining and Competition Part II: Existence,” Econometrica, 54, 807–818.
+(1987): “Limit Theorems for Markets with Sequential Bargaining,” Journal of Economic
+Theory, 43, 20–54.
+GARMAN, M. (1976): “Market Microstructure,” Journal of Financial Economics , 3, 257–275.
+GEHRIG, T . (1993): “Intermediation in Search Markets,”Journal of Economics and Management
+Strategy, 2, 97–120.
+GLOSTEN,L .R . , AND P. R . MILGROM (1985): “Bid, Ask and T ransaction Prices in a Specialist
+Market with Heterogeneously Informed T raders,”Journal of Financial Economics , 14, 71–100.
+GREEN,R .C . ,B .H OLLIFIELD, AND N. SCHURHOFF (2004): “Financial Intermediation and the
+Costs of T rading in an Opaque Market,” Working Paper, Carnegie Mellon University.
+HARRIS,L .E . , AND M. S. P IWOWAR (2004): “Municipal Bond Liquidity,” Working Paper,
+The Securities and Exchange Commission.
+HARRIS, M. (1979): “Expectations and Money in a Dynamic Exchange Model,” Econometrica,
+47, 1403–1419.
+HO,T . ,AND H. R. STOLL (1981): “Optimal Dealer Pricing under T ransactions and Return Un-
+certainty,” Journal of Financial Economics , 9, 47–73.
+HOSIOS, A. J. (1990): “On the Efﬁciency of Matching and Related Models of Search and Unem-
+ployment,” Review of Economic Studies , 57, 279–298.
+HUANG,R .D . ,AND H. R. STOLL (1996): “Dealer versus Auction Markets: A Paired Comparison
+of Execution Costs on NASDAQ and the NYSE,”Journal of Financial Economics, 41, 313–357.
+KIYOTAKI,N . ,AND R. WRIGHT (1993): “ A Search-Theoretic Approach to Monetary Economics,”
+American Economic Review, 83, 63–77.
+KREPS, D. (1990): A Course in Microeconomic Theory . Princeton, NJ: Princeton University Press.
+KRISHNAMURTHY, A. (2002): “The Bond/Old-Bond Spread,”Journal of Financial Economics, 66,
+463–506.
+KYLE, A. S. (1985): “Continuous Auctions and Insider T rading,”Econometrica, 6, 1315–1335.
+LAMOUREUX,C .G . , AND C. R. SCHNITZLEIN (1997): “When It’s Not the Only Game in T own:
+The Effect of Bilateral Search on the Quality of a Dealer Market,” Journal of Finance , 52,
+683–712.
+MCLENNAN,A . , AND H. SONNENSCHEIN (1991): “Sequential Bargaining as a Noncooperative
+Foundation for Walrasian Equilibrium,”Econometrica, 59, 1395–1424.
+MOEN, E. R. (1997): “Competitive Search Equilibrium,” Journal of Political Economy , 105,
+385–411.
+MORESI, S. (1991): “Three Essays in Economic Theory,” Ph.D. Thesis, MIT .
+MORTENSEN, D. T . (1982): “Property Rights and Efﬁciency in Mating, Racing, and Related
+Games,” American Economic Review, 72, 968–979.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 33 =====
+
+OVER-THE-COUNTER MARKETS 1847
+NASH, J. (1950): “The Bargaining Problem,” Econometrica, 18, 155–162.
+NEW YORK STOCK EXCHANGE (2001): Fact Book 2001.
+PAGANO, M. (1989): “T rading Volume and Asset Liquidity,”Quarterly Journal of Economics , 104,
+255–274.
+PROTTER, P . (1990):Stochastic Integration and Differential Equations. New Y ork: Springer-Verlag.
+RUBINSTEIN,A . ,AND A. WOLINSKY (1985): “Equilibrium in a Market with Sequential Bargain-
+ing,” Econometrica, 53, 1133–1150.
+(1987): “Middlemen,” Quarterly Journal of Economics , 102, 581–594.
+SCHULTZ, P . (2001): “Corporate Bond T rading Costs: A Peek Behind the Curtain,” Journal of
+Finance, 56, 677–698.
+SUN, Y. (2000): “The Exact Law of Large Numbers via Fubini Extension and Characterization
+of Insurable Risks,” Working Paper, Singapore National University; forthcoming in Journal of
+Economic Theory.
+TREJOS,A . ,AND R. WRIGHT (1995): “Search, Bargaining, Money, and Prices,”Journal of Political
+Economy, 103, 118–140.
+VAYANOS, D. (1998): “T ransaction Costs and Asset Prices: A Dynamic Equilibrium Model,” Re-
+view of Financial Studies , 11, 1–58.
+VAYANOS, D., AND T. WANG (2002): “Search and Endogenous Concentration of Liquidity in Asset
+Markets,” Working Paper, MIT .
+WEILL, P .-O. (2002): “The Liquidity Premium in a Dynamic Bargaining Market,” Working Paper,
+Stanford University.
+YAVA¸S, A. (1996): “Search and T rading in Intermediated Markets,” Journal of Economics and
+Management Strategy, 5, 195–216.
+ 14680262, 2005, 6, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0262.2005.00639.x by University College London, Wiley Online Library on [01/07/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License

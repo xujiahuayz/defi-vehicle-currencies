@@ -1,0 +1,1149 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 56 (2000) 3}28
+Commonality in liquidityq
+Tarun Chordia!, Richard Roll",*,
+Avanidhar Subrahmanyam"
+!Owen School of Management, Vanderbilt Uni versity, Nashville, TN 37203, USA
+"The Anderson School, Uni versity of California Los Angeles, Los Angeles, CA 90095-1481, USA
+Received 8 August 1998; received in revised form 27 May 1999
+Abstract
+Traditionally and understandably, the microscope of market microstructure has
+focused on attributes of single assets. Little theoretical attention and virtually no
+empirical work has been devoted to common determinants of liquidity nor to their
+empirical manifestation, correlated movements in liquidity. But a wider-angle lens
+exposes an imposing image of commonality. Quoted spreads, quoted depth, and e!ective
+spreads co-move with market- and industry-wide liquidity. After controlling for well-
+known individual liquidity determinants, such as volatility, volume, and price, common
+in#uences remain signi"cant and material. Recognizing the existence of commonality is
+a key to uncovering some suggestive evidence that inventory risks and asymmetric
+information both a!ect intertemporal changes in liquidity.( 2000 Elsevier Science S.A.
+All rights reserved.
+JEL classixcation: G23; D82
+Keywords: Liquidity; Trading costs; Co-movement; Microstructure
+qFor comments, suggestions and encouragement, we are indebted to Viral Acharya, Cli!ord Ball,
+Michael Brennan, Will Goetzmann, Roger Huang, Craig Lewis, Mike Long, Ron Masulis, Patrick
+Panther, Geert Rouwenhorst, Lakshmanan Shivakumar, Hans Stoll, and seminar participants at
+Arizona, Bocconi, INSEAD, Rice, and Yale. An anonymous referee and the editor (Bill Schwert)
+provided constructive suggestions that greatly improved the paper. Christoph Schenzler provided
+expert programming advice. The "rst author was supported by the Dean’s Fund for Research and
+the Financial Markets Research Center at Vanderbilt University.
+*Corresponding author. Tel.: #1-310-825-6118; fax: #1-310-206-8404.
+E-mail address: rroll@anderson.ucla.edu (R. Roll)
+0304-405X/00/$- see front matter ( 2000 Elsevier Science S.A. All rights reserved.
+PII: S 0 3 0 4 - 4 0 5 X ( 9 9 ) 0 0 0 5 7 - 4
+
+===== PAGE 2 =====
+
+1. Introduction
+The individual security is the traditional domain of market microstructure
+research. Topics such as transactions costs and liquidity naturally pertain to the
+repeated trading of a single homogeneous asset. Typically, we do not think of
+such topics in a market-wide context, except perhaps as averages of individual
+attributes.
+From the earliest papers (Demsetz, 1968; Garman, 1976), the bid}ask spread
+and other microstructure phenomena have been modeled with an isolated
+market maker in the pivotal role, providing immediacy at a cost determined by
+either inventory risks from a lack of diversi"cation (Stoll, 1978a; Amihud and
+Mendelson, 1980; Grossman and Miller, 1988), or by the specter of asymmetric
+information (Copeland and Galai, 1983; Glosten and Milgrom, 1985). Privileged
+information has pertained to an individual stock, the insider serving as proto-
+type privilegee (Kyle, 1985; Admati and P#eiderer, 1988).
+Empirical work also deals solely with the trading patterns of individual assets,
+most often equities sampled at high frequencies (Wood et al., 1985; Harris, 1991),
+or examines micro questions such as the price impact of large trades (Kraus and
+Stoll, 1972; Keim and Madhavan, 1996; Chan and Lakonishok, 1997). The
+single-asset focus is exempli"ed by a prominent recent paper (Easley et al., 1997),
+whose empirical work is devoted to a single common stock, Ashland Oil, on
+thirty trading days.
+Even articles devoted to market design (Garbade and Silber, 1979; Mad-
+havan, 1992) examine the in#uence of various trading mechanisms solely on the
+costs of individual transactions. Studies of topics such as intermarket competi-
+tion, or the contrast between dealer and auction markets, yield predictions
+about individual liquidity and transaction costs.
+We do not imply even the slightest criticism. The microstructure literature has
+indeed become a very impressive body of knowledge. But in this paper we aspire
+to direct attention toward unexplored territory, the prospect that liquidity,
+trading costs, and other individual microstructure phenomena have common
+underlying determinants. A priori reasoning and, as it turns out, sound empiri-
+cal evidence suggest that some portion of individual transaction costs covary
+through time.
+Since completing the "rst draft of this paper, two other working papers with
+similar results have appeared; see Hasbrouck and Seppi (1998) and Huberman
+and Halka (1999). Given the virtual absence of documented commonality in the
+existing literature, this sudden #urry seems to portend a shift of emphasis from
+individual assets to broader market determinants of liquidity.
+1.1. Plausible reasons for the existence of commonality in liquidity
+Commonality in liquidity could arise from several sources. Trading activity
+generally displays market-wide intertemporal response to general price swings.
+4 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 3 =====
+
+1See the Wall Street Journal (1998)&Illiquidity means it has become more di$cult to buy or sell
+a given amount of any bond2 The spread between prices at which investors will buy and sell has
+widened, and the amounts [being traded] have shrunk across the board2’(emphasis added).
+Since trading volume is a principal determinant of dealer inventory, its variation
+seems likely to induce co-movements in optimal inventory levels which lead in
+turn to co-movements in individual bid}ask spreads, quoted depth, and other
+measures of liquidity. Across assets, inventory carrying costs must also co-move
+because these costs depend on market interest rates.
+The risk of maintaining inventory depends also on volatility, which could
+have a market component. Program trading of simultaneous large orders might
+exert common pressure on dealer inventories. Institutional funds with similar
+investing styles might exhibit correlated trading patterns, thereby inducing
+changes in inventory pressure across broad market sectors. Whatever the
+source, if inventory#uctuations were correlated across individual assets, liquid-
+ity could be expected to exhibit similar co-movement.
+One might think that little covariation in liquidity would be induced by
+asymmetric information because few traders possess privileged information
+about broad market movements. In the prototypical case of a corporate insider,
+privileged information is usually thought to pertain only to that speci "c cor-
+poration. Indeed, this presumption would be valid for certain types of informa-
+tion, such as fraudulent accounting statements. However, there might be other
+types of secret information, such as a revolutionary new technology, that could
+in#uence many "rms, not necessarily all in the same direction. Within an
+industry, occasional occurrences of asymmetric information could a!ect many
+"rms in that sector.
+1.2. Implications of commonality
+Covariation in liquidity and the associated co-movements in trading costs
+have interesting rami "cations and pose immediate questions. A key research
+issue is the relative importance of inventory and asymmetric information. Of
+equal interest would be other potential sources of commonality, as yet unim-
+agined. How are these causes themselves related to market incidents such as
+crashes? Does their in#uence depend on market structure or design?
+There are practical implications of the commonality issue for traders, inves-
+tors, and regulators. For example, sudden pervasive changes in liquidity might
+have played a key role in otherwise puzzling market episodes. During the
+summer of 1998, the credit-sensitive bond market seemed to undergo a global
+liquidity crisis. This event precipitated "nancial distress in certain highly
+leveraged trading "rms which found themselves unable to liquidate some posi-
+tions to pay lenders secured by other, seemingly unrelated positions.1 Similarly,
+the international stock market crash of October 1987 was associated with no
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 5
+
+===== PAGE 4 =====
+
+2Transactions are matched to best bid and o!er quotes that existed at least"ve seconds prior to
+the transaction time because Lee and Ready (1991)"nd that quote reporting has about a 5 second
+delay.
+identi"able noteworthy event (Roll, 1988), yet was characterized by a ubiquitous
+temporary reduction in liquidity.
+Trading costs should be cross-sectionally related to expected returns before
+costs simply because after-cost returns should be equilibrated in properly
+functioning markets (Amihud and Mendelson, 1986; Brennan and Subrah-
+manyam, 1996). But commonality in liquidity raises the additional issue of
+whether shocks in trading costs constitute a source of non-diversi"able priced
+risk. If covariation in trading costs is cannot be completely anticipated and has
+a varying impact across individual securities, the more sensitive an asset is to
+such shocks, the greater must be its expected return. Hence, there are potentially
+two di!erent channels by which trading costs in#uence asset pricing, one static
+and one dynamic: a static channel in #uencing average trading costs and a
+dynamic channel in #uencing risk. In future work, it would be of interest
+to determine whether the second channel is material and, if so, its relative
+importance.
+This paper is devoted mainly to documenting the commonality in liquidity,
+measuring its extent, and providing some suggestive evidence about its sources.
+However, the precise identi"cation of these sources remains for future research.
+Section 2 describes the data. Section 3 reports a progression of empirical
+"ndings about commonality in liquidity. Section 4 provides some interpreta-
+tions, makes suggestions for additional empirical research, calls on theorists for
+help, and concludes.
+2. Data
+Transactions data for New York Exchange (NYSE) stocks were obtained
+from the Institute for the Study of Securities Markets (ISSM) during the most
+recently available calendar year, 1992. The ISSM data include every transaction,
+time-stamped, along with the transaction price, the shares exchanged, the
+nearest preceding bid and ask prices quoted by the NYSE specialist,2 and the
+number of shares the specialist had guaranteed to trade at the bid and ask
+quotes.
+The data do not reveal the identities of buyer and seller, so one cannot tell for
+sure when the specialist is involved nor on which side. However, since the
+quoted spread is given, it seems reasonable to deduce that an outsider is usually
+the buyer (seller) when the transaction price is nearer the ask (bid)
+Some stocks are rarely traded and would not provide reliable observations.
+To be included here, we require that a stock be continually listed throughout
+6 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 5 =====
+
+3Since the available data cover only a single calendar year, there is always the possibility that our
+results are not representative. We have no reason to suspect that 1992 data are peculiar but an
+extended time period would be reassuring.
+1992 on the NYSE, trading at least once on at least ten trading days that year.
+To circumvent any possible problems with trading units, stocks are excluded if
+they split or paid a stock dividend during the year. Because their trading
+characteristics might di!er from ordinary equities, we also expunge assets in the
+following categories: certi"cates, American depository receipts, shares of bene"-
+cial interest, units, companies incorporated outside the U.S., Americus Trust
+components, closed-end funds, and real estate investment trusts; 1169 individual
+unalloyed equities remain.
+There are 29,655,629 transactions in the 1169 stocks on the 254 trading days
+during 1992. Not all stocks traded every day. To avoid any contaminating
+in#uence of the minimum tick size, we delete a stock on a day its average price
+falls below $2. Opening batch trades and transactions with special settlement
+conditions are excluded because they di!er from normal trades and might be
+subject to distinct liquidity considerations. For obvious reasons, transactions
+reported out of sequence or after closing are not used. After all this "ltering,
+289,612(296,926"1169(254) total stock-days remain, an average of 102.4
+transactions per stock-day or about 99.9 transactions averaged over the 1169
+stocks and 254 trading days. All but 13 of the 1169 stocks have transactions on
+more than 100 days. 3 The number of transactions is, of course, extremely
+right-skewed; the largest stocks have thousands of daily trades.
+Corresponding to every transaction, "ve di !erent liquidity measures are
+computed: the quoted and e!ective bid}ask spreads, the proportional quoted
+and e!ective spreads, and quoted depth. Their acronyms and de "nitions are
+given in the "rst panel of Table 1.
+The quoted spread and the depth are announced by the specialist and become
+known to other traders prior to each transaction, though the lead time may be
+only seconds. The e!ective spread is devised to measure actual trading costs,
+recognizing that (a) many trades occur within the quoted spread and (b) if the
+proposed transaction exceeds the quoted depth, NYSE specialists are allowed,
+though not obliged, to execute that portion of the order in excess of the quoted
+depth at an altered price.
+To smooth out intraday peculiarities and thus to promote greater synchrone-
+ity, and to reduce our data to more manageable levels, each liquidity measure is
+averaged across all daily trades for each stock. Thus, for each of the 1169 stocks,
+the working sample consists of at most 254 observations, one for each trading
+day during the year. Table 1 presents summary statistics for the "ve liquidity
+measures.
+As would be anticipated, there is some right skewness in the cross-section of
+daily average spreads; sample means exceed medians. The e !ective spread is
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 7
+
+===== PAGE 6 =====
+
+Table 1
+Liquidity variables: de"nitions and summary statistics
+P denotes price and subscripts indicate: t"actual transaction, A"ask, B"bid, M"bid}ask
+midpoint. Q denotes the quantity guaranteed available for trade at the quotes, (with subscripts:
+A"ask, B"bid). Each measure is calculated for every transaction during calendar year 1992 using
+all NYSE stocks with at least one transaction on at least ten trading days, 1169 stocks. Transaction
+observations are then averaged within each day to obtain a sample of 254 trading days.
+Panel A: De xnitions
+Liquidity measure Acronym De "nition Units
+Quoted spread QSPR PA!PB $
+Proportional quoted spread PQSPR ( PA!PB)/PM None
+Depth DEP 12(QA#QB) Shares
+E!ective spread ESPR 2 DPt!PMD $
+Proportional e!ective spread PESPR 2 DPt!PMD/Pt None
+Panel B: Cross-sectional statistics for time-series means
+Mean Median Standard deviation
+QSPR 0.3162 0.2691 1.3570
+PQSPR 0.0160 0.0115 0.0136
+DEP 3776 2661 3790
+ESPR 0.2245 0.1791 1.3051
+PESPR 0.0111 0.0077 0.0132
+Panel C: Cross-sectional means of time series correlations between liquidity measure pairs for an
+individual stock
+QSPR PQSPR DEP ESPR
+PQSPR 0.844
+DEP !0.396 !0.303
+ESPR 0.665 0.549 !0.228
+PESPR 0.555 0.699 !0.156 0.871
+somewhat smaller than the quoted spread, evidently re #ecting within-quote
+trading. All measures of spread are positively correlated with each other across
+time and negatively correlated with depth.
+There is substantial variability over time in all the liquidity measures.
+Table 2 provides summary statistics about daily percentage changes. For
+example, the time-series/cross-section mean of the absolute value of the percent-
+age change in the quoted spread is almost 24% per day. The cross-sectional
+standard deviations of individual mean daily changes is rather modest, thereby
+8 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 7 =====
+
+Table 2
+Absolute daily proportional changes in liquidity variables
+QSPR is the quoted spread. PQSPR is the proportional quoted spread. DEP is quoted depth. ESPR
+is the e!ective spread. PESPR is the proportional e!ective spread. &D’preceding the acronym, e.g.,
+DQSPR, denotes a proportional change in the variable across successive trading days, i.e., for
+liquidity measure ‚, D‚t,(‚t!‚t~1)/‚t~1 for trading day t. DD‚tD denotes the absolute value of
+the daily proportional change. 1169 stocks, calendar year 1992.
+Mean Median Standard deviation
+Cross-sectional statistics for time-series means
+DDQSPRD 0.2396 0.2373 0.0741
+DDPQSPRD 0.2408 0.2386 0.0742
+DDDEPD 0.7828 0.6543 0.4533
+DDESPRD 0.3148 0.2976 0.1367
+DDPESPRD 0.3196 0.2977 0.1811
+revealing that substantial time series variability is shared by many stocks. Depth
+is even more volatile across time than spreads.
+3. Empirical commonality in measures of liquidity
+As a natural and simple "rst step on our empirical expedition, Section 3.1
+below reports the empirical covariation between individual stock liquidity and
+market and industry liquidity. Given evidence of common liquidity variation,
+Section 3.2 then asks a deeper question: Is time-series variation in individual
+stock liquidity related to market or industry trading activity after controlling for
+trading activity in the individual stock?
+Cross-sectional variation in liquidity is known to depend on such individual
+stock attributes as trading volume, volatility, and price level. An important
+issue, investigated in Section 3.3, is whether commonality contributes any
+additional cross-sectional explanatory power. Finally, in Section 3.4, we shift
+focus to uncover evidence that liquidity covariation is much stronger for
+portfolios than individual stocks, a "nding relevant for investment managers
+who turn over their holdings frequently.
+3.1. Some basic empirical e vidence
+We calculate simple &market model’time series regressions; daily percentage
+changes in liquidity variables for an individual stock regressed on market
+measures of liquidity, i.e.,
+D‚j,t"aj#bjD‚M,t#ej,t, (1)
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 9
+
+===== PAGE 8 =====
+
+4Because the tables are already voluminous, we do not report coe $cients for the nuisance
+variables: the market return and squared stock return.
+5Even though the explanatory variable in (1) is constructed to exclude the dependent variable,
+there is still some cross-sectional dependence in the estimated coe$cients because each individual
+liquidity measure (i.e., the dependent variable) does appear as one component of the explanatory
+variables for all other regressions. Later, we investigate the materiality of this and other possible
+sources of cross-equation dependence.
+where D‚j,t is, for stock j, the percentage change (D) from trading dayt!1t o
+t in liquidity variable‚(‚"QSPR, PQSPR, etc.), andD‚M,t is the concurrent
+change in a cross-sectional average of the same variable. We examine percentage
+changes rather than levels for two reasons:"rst, our interest is fundamentally in
+discovering whether liquidity co-moves, and second, time series of liquidity
+levels are more likely to be plagued by econometric problems (e.g., non-
+stationarity).
+Statistics about the bj’s from these regressions are reported in Table 3. One
+lead and one lag of the market average liquidity (i.e., D‚M,t~1 and D‚M,t‘1)
+plus the contemporaneous, leading and lagged market return and the contem-
+poraneous change in the individual stock squared return are included as
+additional regressors. The leads and lags are designed to capture any lagged
+adjustment in commonality while the market return is intended to remove
+spurious dependence induced by an association between returns and spread
+measures. This could have particular relevance for the e!ective spread measures
+since they are functions of the transaction price. Their changes are thus func-
+tions of individual returns, known to be signi "cantly correlated with broad
+market returns. Finally, the squared stock return is included to proxy for
+volatility, which from our perspective is a nuisance variable possibly in#uencing
+liquidity.4
+In computing the market liquidity measure,D‚M, stock j is excluded, so the
+explanatory variable in (1) is slightly di !erent for each stock ’s time series
+regression. This removes a potentially misleading constraint on the average
+coe$cients reported in Table 3. For example, when the market liquidity
+measure in an equal-weighted average ofall stocks, the cross-sectional mean of
+b is constrained to exactly unity. Although dropping 1/1169 of the sample from
+each index calculation makes only a small di!erence in the coe$cients of any
+individual equation, those small di!erences can accumulate to a material total
+when averaged across all equations.5
+The discreteness that plagues empirical spread data is an excellent reason to
+focus on the cross-sectional sampling distribution of coe$cients. During 1992,
+the minimum quoted spread was$1/8, which was also the minimum increment.
+Consequently, a scatter diagram of the variables in an individual regression such
+as (1) takes on a lumpy appearance in the vertical (y-axis) dimension. Discrete-
+ness implies too that the disturbances in (1) are not normally-distributed; this
+10 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 9 =====
+
+Table 3
+Market-wide commonality in liquidity 1169 stocks, calendar year 1992, 253 daily observations
+Daily proportional changes in an individual stock’s liquidity measure are regressed in time series on
+proportional changes in the equal-weighted average liquidity for all stocks in the sample (the
+&market’). QSPR is the quoted spread. PQSPR is the proportional quoted spread. DEP is quoted
+depth. ESPR is the e!ective spread. PESPR is the proportional e!ective spread. &D’preceding the
+acronym, e.g., DQSPR, denotes a proportional change in the variable across successive trading days,
+i.e., for liquidity measure‚, D‚t,(‚t!‚t~1)/‚t~1 for trading dayt. In each individual regression,
+the market average excludes the dependent variable stock.
+Cross-sectional averages of time series slope coe$cients are reported with t-statistics in paren-
+theses. &Concurrent’, &Lag’, and &Lead’refer, respectively, to the same, previous, and next trading day
+observations of market liquidity. &% positive’reports the percentage of positive slope coe$cients,
+while &%#signi"cant’gives the percentage with t-statistics greater than #1.645 (the 5% critical
+level in a one-tailed test).
+&Sum’"Concurrent#Lag#Lead coe$cients. The &p-value’is a sign test of the null hypothesis,
+H0: Sum Median"0. The lead, lag and concurrent values of the equal-weighted market return and
+the proportional daily change in individual "rm squared return (a measure of change in return
+volatility) were additional regressors; coe$cients not reported.
+DQSPR DPQSPR DDEP DESPR DPESPR
+Concurrent 0.690 0.791 1.373 0.280 0.778
+(28.29) (30.09) (15.50) (10.64) (2.06)
+% positive 84.86 84.26 81.61 68.61 71.00
+%#signi"cant 34.65 33.27 31.05 14.88 14.29
+Lag 0.123 0.169 !0.047 0.058 0.179
+(4.72) (6.46) ( !0.72) (2.63) (1.80)
+% positive 58.60 59.80 47.65 53.04 55.95
+%#signi"cant 8.81 9.50 4.62 6.93 7.96
+Lead 0.053 0.050 0.336 0.042 !0.156
+(2.33) (1.87) (5.55) (1.99) ( !0.65)
+% positive 55.35 56.29 56.54 53.21 55.00
+% #signi"cant 6.84 7.01 7.19 5.73 6.76
+Sum 0.866 1.009 1.662 0.380 0.801
+(21.19) (23.48) (12.29) (8.67) (3.00)
+Median 0.880 1.092 1.213 0.289 0.442
+p-value 0.00 0.00 0.00 0.00 0.00
+Adjusted R2 mean 0.017 0.017 0.010 0.013 0.014
+Median 0.011 0.012 0.002 0.003 0.004
+casts doubt on small sample inferences from any single equation. However,
+a well-known version of the Central Limit Theorem, Judge et al. (1985),
+Chapter 5), stipulates that the estimated coe$cients from (1) are asymptotically
+normally-distributed under mildly restrictive conditions. It follows that
+the cross-sectional mean estimated coe $cient is probably close to Gaussian,
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 11
+
+===== PAGE 10 =====
+
+6Measurement error might be endemic in ewective spreads, reducing explanatory power. Light-
+foot et al. (1999) document biases up to 32% in e!ective spreads computed with the Lee and Ready
+(1991) algorithm (which we have adopted). Also, since PESPR depends on the transaction price, an
+additional source of noise is introduced by the bid}ask bounce.
+particularly if the sampling errors in the individual regressions are independent
+across assets and have stationary distributions across time.
+Table 3 reveals ample evidence of co-movement. For example, the change in
+the percentage quoted spread, DPQSPR, displays an average value of 0.791 for
+the contemporaneousbj in (1) and an associatedt-statistic of 30. Approximately
+84% of these individual bj’s are positive while 33% exceed the 5% one-tailed
+critical value. The cross-sectionalt-statistic for the averageb is calculated under
+the assumption that the estimation errors in bj are independent across regres-
+sions, a presumption we shall check subsequently.
+Although the leading and lagged terms are usually positive and often signi"-
+cant, they are small in magnitude. The most signi"cant e!ects are for a lagged
+market liquidity on the quoted spreads (DQSPR and DPQSPR), where roughly
+eight to nine percent of the coe$cients exceed the 5% critical level.
+The penultimate panel reports the combined contemporaneous, lead, and lag
+coe$cients, labeled &Sum’. Its t-statistic reveals high signi"cance in most cases.
+A non-parametric sign test that &Sum’has a zero median rejects with p-values
+zero to two decimal places in all instances. This test also assumes independent
+estimation error across equations.
+However, the explanatory power of the typical individual regression is not
+impressive. The average adjusted R2 is less than two percent. Clearly, there is
+either a large component of noise and/or other in#uences on daily changes in
+individual stock liquidity constructs.
+Similar regressions, not shown here, are estimated with a value-weighted
+market liquidity variable. The contemporaneous slope coe$cient from Eq. (1) is
+larger when the market spread measure is equal-weighted, a contrast parti-
+cularly pronounced for the percentage e !ective spread measure, DPESPR,
+which is not signi "cant when the market spread measure is value-weighted. 6
+This pattern is exactly the opposite of market model regressions involving
+individual and market returns. Return &betas’are typically smaller when the
+market index is equal-weighted, as opposed to value-weighted, because smaller
+stocks display more market return sensitivity. In contrast, smaller stocks are less
+sensitive to market-wide shocks in spreads.
+The size e !ect is demonstrated explicitly in Table 4, which strati "es the
+sample into size quintiles. For the spread measures of liquidity, the slope
+coe$cient in Eq. (1) generally increases with size; large"rm spreads have greater
+response to market-wide changes in spreads, although large"rms have smaller
+average spreads.
+12 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 11 =====
+
+Table 4
+Market-wide commonality in liquidity by size quintile 1169 stocks (+234 per quintile), calendar
+year 1992, 253 daily observations
+Daily proportional changes in an individual stock’s liquidity measure are regressed in time series on
+proportional changes in the equal-weighted average liquidity for all stocks in the sample (the
+&market’). QSPR is the quoted spread. PQSPR is the proportional quoted spread. DEP is quoted
+depth. ESPR is the e!ective spread. PESPR is the proportional e!ective spread. &D’preceding the
+acronym, e.g., DQSPR, denotes a proportional change in the variable across successive trading days;
+i.e., for liquidity measure‚, D‚t,(‚t!‚t~1)/‚t~1 for trading dayt. In each individual regression,
+the market average excludes the dependent variable stock.
+Cross-sectional averages of time series slope coe$cients are reported with t-statistics in paren-
+theses. &Sum’aggregates coe$cients for concurrent, previous, and next trading day observations of
+market liquidity. The &p-value’is a sign test of the null hypothesis, H0: Sum Median"0. The lead,
+lag and the concurrent values of the equal-weighted market return and the proportional daily
+change in individual "rm squared return (a measure of change in return volatility) were additional
+regressors; coe$cients not reported. R2 is the cross-sectional mean adjusted R2.
+Size quintile
+Smaller
+(N"233)
+2
+(N"234)
+3
+(N"234)
+4
+(N"234)
+Largest
+(N"234)
+DQSPR Sum 0.498 0.745 0.903 1.080 1.101
+(4.41) (6.83) (12.06) (13.82) (16.47)
+Median 0.501 0.639 0.844 1.031 1.135
+p-value 0.00 0.00 0.00 0.00 0.00
+R2 0.008 0.012 0.016 0.017 0.033
+DPQSPR Sum 0.632 0.823 1.053 1.155 1.382
+(5.07) (7.95) (12.33) (15.37) (18.20)
+Median 0.580 0.732 1.028 1.276 1.477
+p-value 0.00 0.00 0.00 0.00 0.00
+R2 0.010 0.013 0.015 0.017 0.033
+DDEP Sum 1.163 1.839 2.105 1.776 1.426
+(3.32) (4.94) (7.76) (5.57) (10.08)
+Median 0.942 1.266 1.369 1.081 1.211
+p-value 0.00 0.00 0.00 0.00 0.00
+R2 0.003 0.009 0.013 0.010 0.017
+DESPR Sum 0.314 0.183 0.389 0.375 0.636
+(2.22) (1.70) (5.19) (5.50) (8.26)
+Median 0.110 0.125 0.304 0.338 0.512
+p-value 0.12 0.00 0.00 0.00 0.00
+R2 0.005 0.011 0.011 0.013 0.027
+DPESPR Sum 0.510 0.370 0.520 0.435 2.167
+(2.64) (2.65) (5.34) (5.60) (1.66)
+Median 0.244 0.299 0.431 0.346 0.655
+p-value 0.24 0.00 0.00 0.00 0.00
+R2 0.004 0.011 0.011 0.015 0.027
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 13
+
+===== PAGE 12 =====
+
+7Some readers have conjectured that the smaller coe$cients for small"rms could be attributable
+to non-synchronous trading. We doubt, however, that this can be the sole explanation. Few stocks in
+our sample were inactive for many days. Thus, in the larger four size quintiles, about 82% of the
+stocks traded every day, yet the same pattern is observed in the coe$cients.
+We can only speculate on the reason for this large/small "rm pattern;
+perhaps it has something to do with the greater prevalence of institutional herd
+trading in larger "rms. It seems unlikely to be caused by more prevalent
+asymmetric information speci "c to small "rms. That would promulgate a
+lower level of explanatory power in the small "rm regressions but not neces-
+sarily smaller slope coe $cients.7 Alternatively, perhaps there is a &size
+factor’in spreads analogous to the small minus big (SMB) factor documented
+for returns by Fama and French (1993). Though beyond the scope of our
+present paper, that possibility would indeed be an interesting issue for future
+research.
+Although depth also exhibits commonality, it has little if any relation to size.
+In contrast to the spread measures, the largest "rm size quintile has a smaller
+average coe$cient than intermediate quintiles, but there is really no perceptible
+pattern. Evidently, market makers respond to systematic changes in liquidity by
+revising spreads and depth, but only the former is revised to a greater extent in
+larger "rms. Notice too the evidence in Table 3 that depth’s coe$cients are quite
+a bit more right-skewed than many of the spread coe $cients. For depth, the
+&Sum’mean is larger than the median by around 0.4 while the mean-median
+di!erence for most of the spreads is no larger than 0.2 (DPESPR is the
+exception).
+Turning now to a more detailed examination of the sources of commonality in
+liquidity, Table 5 reports regressions with both market and industry liquidity
+measures, both equal-weighted:
+D‚j,t"aj#bj,MD‚M,t#bj,ID‚I,t#ej,t, (2)
+where the additional regressor, D‚I,t, is an industry-speci "c average liquidity
+measure. As with market liquidity, "rm j was excluded when computing the
+industry average. Perhaps surprisingly, except for DPESPR the liquidity
+measures seem to be in#uenced by both a market and an industry component;
+industry actually has larger coe$cients for three of the"ve liquidity measures. If
+trading activity and volatility exhibit more within- than across-industry com-
+monality, inventory risks would be industry-speci"c, a phenomenon consistent
+with these empirical patterns.
+The reliability of the t-statistics in Table 5 (and in other tables) depends on
+estimation error being independent across equations, a presumption tanta-
+mount to not having omitted a material common variable. To check this, we
+conducted a simple investigation of the residuals from (2). The 1169 individual
+14 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 13 =====
+
+Table 5
+Market and industry commonality in liquidity
+Daily proportional changes in an individual stock’s liquidity measure are regressed in time series on proportional changes in the equal-weighted liquidity
+measures for all stocks in the sample (the &market’) and sample stocks in the same industry. !QSPR is the quoted spread. PQSPR is the proportional
+quoted spread. DEP is quoted depth. ESPR is the e!ective spread. PESPR is the proportional e!ective spread. &D’preceding the acronym, e.g., DQSPR,
+denotes a proportional change in the variable across successive trading days; i.e., for liquidity measure ‚, D‚t,(‚t!‚t~1)/‚t~1 for trading day t.
+Market and Industry averages excluded the dependent variable individual stock. Cross-sectional averages of time series slope coe$cients are reported
+with t-statistics in parentheses. &Concurrent’, &Lag’,a n d&Lead’refer, respectively, to the same, previous, and next trading day observations of market
+liquidity. &Sum’"Concurrent#Lag#Lead coe$cients. The &p-value’is a sign test of the null hypothesis, H0:S u mM e d i a n"0. The lead, lag and
+concurrent values of the equal-weighted market return and the proportional daily change in individual"rm squared return (a measure of change in return
+volatility) are additional regressors; coe$cients not reported. R2 denotes the cross-sectional adjusted R2.
+Market Industry Market Industry Market Industry Market Industry Market Industry
+DQSPR DPQSPR DDEP DESPR DPESPR
+Concurrent 0.264 0.467 0.505 0.287 0.721 0.614 0.164 0.414 !0.172 0.970
+(9.86) (16.65) (14.06) (11.08) (6.17) (7.28) (5.26) (7.51) ( !0.60) (1.81)
+Lag 0.070 0.059 0.096 0.065 !0.058 0.022 0.057 0.028 !0.138 0.307
+(2.90) (2.12) (2.85) (2.74) ( !0.60) (0.28) (2.64) (0.43) ( !0.84) (1.37)
+Lead 0.073 0.005 0.042 0.034 0.368 !0.040 0.040 !0.014 !0.158 0.007
+(2.91) (0.22) (1.18) (1.40) (4.22) ( !0.57) (1.75) ( !0.57) ( !0.92) (0.12)
+Sum 0.409 0.530 0.642 0.386 1.030 0.596 0.260 0.429 !0.468 1.285
+(7.49) (9.63) (9.13) (6.99) (4.99) (3.49) (4.79) (3.67) ( !0.75) (1.76)
+Median 0.238 0.527 0.784 0.259 0.749 0.480 0.022 0.307 0.030 0.259
+p-value 0.00 0.00 0.00 0.00 0.00 0.00 0.01 0.00 0.03 0.00
+R2 mean 0.024 0.022 0.014 0.020 0.018
+Median 0.019 0.016 0.005 0.009 0.008
+!The eight industry classi"cations follow Roll (1992) and Chalmers and Kadlec (1998).
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 15
+
+===== PAGE 14 =====
+
+Table 6
+Check for cross-equation dependence in estimation error
+After estimating 1169 time series regressions of individual liquidity measures on equal-weighted
+market and industry liquidity, Eq. (2), residuals for stockj#1 are compared with residuals for stock
+j, where j is ordered alphabetically. From these 1168 pairs, the table reports the average correlation
+coe$cient. Also reported from pair-wise regressions (3) are the sample mean and mediant-statistic of
+the regression slope coe$cient and the frequency of absolute t-statistics (for the slope) exceeding
+typical critical levels, 5% and 2.5%. Because there are two tails, double these critical percentages (i.e.,
+10% and 5%, respectively), should be found just by chance if, in fact, there is no dependence. QSPR
+is the quoted spread. PQSPR is the proportional quoted spread. DEP is quoted depth. ESPR is the
+e!ective spread. PESPR is the proportional e !ective spread. &D’preceding the acronym, e.g.,
+DQSPR, denotes a proportional change in the variable across successive trading days; i.e., for
+liquidity measure ‚, D‚t,(‚t!‚t~1)/‚t~1 for trading day t.
+Liquidity
+measure
+Average
+correlation
+Mean
+t
+Median
+t
+DtD’ 1.645
+(%)
+DtD’ 1.96
+(%)
+DQPSR !0.001 !0.006 0.014 15.92 9.33
+DPQPSR !0.0004 0.0001 !0.015 14.38 7.71
+DDEP !0.003 !0.030 !0.125 11.73 6.08
+DESPR 0.004 0.053 0.024 13.44 8.39
+DPESPR 0.007 0.082 0.041 12.33 7.62
+8With 1168 regression, even small cross-equation correlations can have a big e!ect on standard
+errors for cross-sectional averages. For a quick, back-of-the-envelope estimate of the extent of this
+e!ect, assume that all the residual variances are equal and that every pair of residuals has the same
+correlationq. Then the ratio of the true standard error to the usual standard error is [1#2(N!1)o]1@2,
+whereN is the number of regressions. For negativeo,t h eu s u a ls t a n d a r de r r o ri st o ol a r g ea n dt h u st h e
+reportedt-statistic is too small; The average correlation is, in fact, negative for DQPSR, DPQPSR, and
+DDEP (Table 6). For DPESPR, the reported t-statistics are too large, but they are generally not
+signi"cant anyway. For DESPR,t-statistics could be overstated by a factor of about three.
+regressions are arranged randomly (alphabetically) by stock name so we simply
+run 1168 time series regressions between adjacent residuals; i.e.,
+ej‘1,t"cj,0#cj,1ej,t#mj,t ( j"1,2, 1168), (3)
+where cj,0 and cj,1 are estimated coe$cients andmj,t is an estimated disturbance.
+The t-statistics for cj,1 provide evidence about cross-equation dependence.
+Table 6 summarizes the results of this exercise by tabulating the average
+correlations betweenej‘1,t and ej,t and sample characteristics for thet-statistics
+of cj,1, the slope coe$cient in (3).
+There is little evidence of cross-equation dependence. The mean and median
+slope coe$cients from (3) are near zero on average. Although there are rather
+more observations in the tails than would be expected by chance, the excess is
+too slight to overturn the very high signi"cance levels in (2). The correlations,
+being very close to zero on average, imply that adjusting for cross-equation
+dependence would change few, if any, of the conclusions.8
+16 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 15 =====
+
+3.2. Commonality , inventory risk, and asymmetric information
+Although the evidence strongly favors the existence of common underlying
+in#uences on variations in liquidity, their identities remain to be determined.
+Microstructure literature suggests two possible in #uences, inventory risk and
+asymmetric information (which are not mutually exclusive). A priori, it seems
+reasonable that broad market activity would exert more in#uence on inventory
+risk while individual trading activity would more likely be associated with
+asymmetric information. Industry would again represent an intermediate
+position, possibly being in#uenced by both e!ects on occasion.
+Previous work by Jones et al. (1994) suggests that thenumber of trades, not the
+dollar volume of trading, is an indicator of individual"rm asymmetric informa-
+tion; they showed that volume has little impact on volatility once trading
+frequency has been taken into account. This rather puzzling result could
+perhaps be explained by the propensity of truly informed traders to hide their
+activities by splitting orders into small units. In other words, large uninformed
+traders such as institutions might dominate the determination of dollar volume
+while informed traders might dominate the determination of the number of
+transactions. Barclay and Warner (1993) suggest that informed traders do break
+up their orders and are most active in the medium-size trades.
+However, somewhat in con#ict with the thrust of this idea, individual stock
+trading frequency turns out to be strongly in #uenced by both market and
+industry, which have similar coe$cients and signi"cance; Table 7. If, as seems
+likely, some of this commonality is not the result of asymmetric information, the
+empirical conundrum is to separately identify that portion of individual trading
+frequency truly attributable to informed agents.
+In an attempt to separate the two e!ects, Table 8 presents estimated marginal
+in#uences of individual, market, and industry transaction frequencies on our"ve
+liquidity measures. The individual time series regressions have the general form
+D‚j,t"aj#bj,SDSj,t#bj,TD„j,t#bj,MD<M,t#bj,ID<I,t#ej,t , (4)
+where, as before&D’denotes the percentage change from trading dayt!1 to day
+t, ‚is the liquidity measure, Sj,t is the average dollar size of a transaction in
+stock j, „j,t is the number of trades in stockj, <M,t is the aggregate dollar trading
+volume for the entire market (excluding stockj), and <I,t is the dollar volume in
+stock j’s industry (again excluding stock j itself).
+The results are striking. The inventory explanation for liquidity suggests that
+more trading should bring about smaller spreads because inventory balances
+and risks per trade can be maintained at lower levels. Conversely, when surrepti-
+tious informed traders become active, spreads should increase with the number
+of transactions. The results are consistent with both explanations. Individual
+trading frequency („j,t) has a strong positive in#uence on the spread measures
+while market-wide volume has a negative marginal in#uence on quoted spread,
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 17
+
+===== PAGE 16 =====
+
+Table 7
+Commonality in transactions frequency
+Daily percentage changes in the number of transactions (i.e., not volume) for 1169 stocks are
+individually regressed in time series on the daily percentage change in the average number of
+transactions for all stocks in the sample (the&market’), and/or for all"rms in the same industry (the
+&industry’) during 1992. Market and industry averages are equal-weighted but excluded the indi-
+vidual subject stock.!
+Cross-sectional averages of time series slope coe $cients are reported with t-statistic in paren-
+theses. &Concurrent’, &Lag’, and &Lead’refer to the same, previous, and next trading day observations
+of market and industry;&Sum’aggregates the three coe$cients. The &p-value’is a sign test of the null
+hypothesis, H0: Sum Median"0. R2 is adjusted.
+Alone Together Alone
+Market Industry
+Concurrent 1.0486 0.6470 0.4202 0.9213
+(63.97) (16.58) (11.88) (63.60)
+Lag !0.0643 !0.1427 0.0787 !0.0434
+(!5.26) ( !3.91) (2.37) ( !3.88)
+Lead 0.0356 0.0079 0.0305 0.0163
+(2.69) (0.22) (0.98) (1.38)
+Sum 1.0199 0.5121 0.5294 0.8942
+(37.71) (7.69) (8.65) (36.57)
+Median 1.0400 0.5243 0.4896 0.9100
+p-value 0.00 0.00 0.00 0.00
+R2 mean 0.095 0.061 0.100
+Median 0.057 0.070 0.057
+!The equal-weight market return is an additional regressor, coe $cient not reported. The eight
+industry classi"cations follow Roll (1992) and Chalmers and Kadlec (1998).
+even though market trading frequency a !ects individual frequency strongly
+(Table 7). Industry volume, which one might have thought could arise from both
+informed and uninformed trading, displays mostly positive coe$cients, sugges-
+ting the dominance of informed traders.
+Dollar volume depends on both the number of transactions and the average
+size of a transaction. Table 8 discloses that the individual "rm’s trade size has
+a strong positive in#uence on quoted spreads and depth. Perhaps this can be
+explained by the obligation of specialists to maintain larger inventories during
+periods of intense institutional trading. When engaging in portfolio trading,
+institutions are presumably uninformed but nonetheless e!ectuate large transac-
+tions for liquidity or rebalancing reasons. To accommodate them, the specialist
+must maintain more substantial balances. Note that informed institutions might
+attempt to conceal themselves by splitting up what would otherwise have been
+18 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 17 =====
+
+Table 8
+Commonalities in trade size, transaction frequency and trading volume 1169 Stocks, Calendar Year
+1992
+Daily proportional changes in individual stock liquidity variables are regressed in time series on
+daily proportional changes in (1) the stock’s average trade size, (2) its number of transactions, (3) the
+trading volume for all stocks in the sample (the&market’), and/or (4) the trading volume for all stocks
+in the same industry. QSPR is the quoted spread. PQSPR is the proportional quoted spread. DEP is
+quoted depth. ESPR is the e!ective spread. PESPR is the proportional e!ective spread.&D’preceding
+the acronym, e.g., DQSPR, denoted a proportional change in the variable across successive trading
+days, i.e., for liquidity measure‚, D‚t,(‚t!‚t~1)/‚t~1 for trading day t, Market and Industry
+averages exclude the dependent variable individual stock. The eight industry classi"cation follow
+Roll (1992) and Chalmers and Kadlec (1998).
+Cross-sectional averages of time series slope coe $cients are reported with t-statistic in paren-
+theses. &Concurrent’, &Lag’, and &Lead’refer to the same, previous, and next trading day observations
+of market or industry while &Sum’"Concurrent#Lag#Lead coe$cients. The &p-value’is a sign
+test of the null hypothesis, H0: Sum Median "0. The lead, lag and concurrent values of the
+equal-weighted market return is an additional regressor; coe $cients not reported. The spread
+measures are multiplied by 100 to suppress leading zeroes in the coe$cients. R2 is adjusted.
+DQSPR DPQSPR DDEP DESPR DPESPR
+(]100) ( ]100) ( ]100) ( ]100)
+Own trade size 0.643 0.597 0.166 !0.341 !0.499
+(7.72) (7.11) (26.41) ( !1.70) ( !1.37)
+Median 0.359 0.361 0.125 !0.268 !0.268
+p-value 0.00 0.00 0.00 0.00 0.00
+Own number of transactions 2.807 2.820 0.126 8.088 8.406
+(17.53) (17.27) (11.31) (22.01) (14.38)
+Median 2.468 2.282 0.083 6.446 6.373
+p-value 0.00 0.00 0.00 0.00 0.00
+Market trading volume
+Concurrent !2.367 !2.569 0.165 !2.782 !0.871
+(!4.10) ( !4.438) (4.03) ( !2.11) ( !0.17)
+Lag 0.350 0.324 !0.029) 1.520 11.900
+(0.58) (0.53) ( !0.87) (1.41) (1.07)
+Lead !0.698 !0.469 0.084 !0.528 !3.733
+(!1.02) ( !0.65) (2.30) ( !0.47) ( !1.42)
+Sum !2.715 !2.714 0.219 !1.790 7.296
+(!2.43) ( !2.41) (2.83) ( !0.87) (0.47)
+Median !2.859 2.135) 0.135 !4.670 !5.878
+p-value 0.01 0.00 0.00 0.00 0.00
+Industry trading volume
+Concurrent 1.306 1.133 !0.058 1.931 !2.634
+(2.77) (2.39) ( !1.94) (1.64) ( !0.43)
+Lag 0.824 0.651 !0.029 !0.543 !11.410
+(1.63) (1.29) ( !1.12) ( !0.61) ( !1.03)
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 19
+
+===== PAGE 18 =====
+
+Table 8 (continued)
+DQSPR DPQSPR DDEP DESPR DPESPR
+(]100) ( ]100) ( ]100) ( ]100)
+Lead 0.450 0.244 !0.009 0.087 0.586
+(0.89) (0.44) ( !0.35) (0.09) (0.59)
+Sum 2.581 2.029 !0.097 1.475 !13.458
+(2.86) (2.18) ( !1.71) (0.70) ( !0.80)
+Median 2.283 1.444 !0.050 3.113 2.876
+p-value 0.00 0.09 0.14 0.01 0.01
+R2 mean 0.020 0.021 0.050 0.031 0.032
+Median 0.013 0.012 0.037 0.016 0.017
+large orders, a notion consistent with Jones et al. (1994). Suggestive evidence to
+support this argument are the negative but insigni"cant trade size coe$cients
+for the e !ective spread measures, which are likely to be more in #uenced by
+informed trading.
+The puzzling pattern of market and industry coe$cients for DPESPR might
+have been caused by a few outliers. Notice that the median coe$cient for market
+(industry) volume is negative (positive) and signi "cant according to the sign
+tests’p-values. In contrast, both mean coe$cients have the opposite signs from
+their corresponding medians but are insigni"cant. The medians of all the spread
+measures tell the consistent story that greater market-wide volume brings
+reduced spreads while industry volume increases spreads (presumably due to
+informed traders).
+Based on inventory arguments, one might have anticipated that larger market
+volume would induce specialists to quote greater depth (though tighter spreads.)
+Indeed, this is the empirical result in Table 8. In contrast, industry volume has
+an insigni"cant (negative) in#uence on depth. This suggests that any marginal
+reduction in inventory costs from industry trading is o!set by caution induced in
+the specialist by a higher probability of encountering an insider when industry
+volume is high.
+We were surprised that individual trading frequency and the size of the
+average individual trade have signi"cant positive in#uences on depth; bj,S and
+bj,T are positive and signi"cant in the depth regressions. Asymmetric informa-
+tion would suggest that the specialist should quote less depth when more fearful
+of informed traders. Perhaps the explanation resides once again in the tendency
+of informed traders to split orders. If they adopt this practice regularly, depth is
+inconsequential because they will invariably transact in units smaller than the
+quoted depth. This implies that depth is established almost exclusively for
+uninformed traders. Hence it is determined by inventory risks and thus increases
+20 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 19 =====
+
+with either the number of (uninformed) trades or the average (uninformed)
+trade size.
+The relation between depth and either the average trade size or the number
+of transaction could also be explained by strategic motives underlying
+depth quotations. Large changes in volume are likely to be accompanied by
+substantial #uctuations in inventory. A specialist overloaded with inventory
+would naturally increase depth on the ask side to encourage buying and
+decrease depth on the bid side to discourage selling, and vice versa when
+inventory is de"cient. However, the specialist’s mandate to maintain a fair and
+orderly market might make him reluctant to decrease depth on either side. It
+follows that the average bid}ask depth would be higher when inventories are
+abnormal, either higher or lower, and inventories are likely to be abnormal
+when volume is greater. This could account for positive correlation (though
+not necessarily causation) between changes in depth and either trade size or
+frequency.
+Since we have no access to inventory levels, nor a foolproof method by which
+to sign trades, we are unable to fully test this idea. We do, however, conduct
+a simple exercise with the available data; we run a regression analogous to (4)
+except that the dependent variable is the proportional daily change in the
+absolute value of the di!erence between bid and ask depth, i.e.,‚"DQA!QBD.
+If specialists respond to abnormal inventory by increasing depth on one side of
+the market while failing to decrease depth as much on the other side, this
+variable should be signi "cantly and positively related to trade size and the
+number of trades. It is. The mean coe $cient for trade size, bj,S, is 0.398 with
+a t-statistic of 2.93 and the coe $cient for the number of transactions, bj,T,i s
+0.323 with at-statistic of 2.90. Further investigation promises to be an interest-
+ing line of research.
+3.3. Commonality compared to indi vidual determinants of liquidity
+Previous microstructure literature argues that individual trading volume,
+volatility, and price are in #uential determinants of liquidity (Benston and
+Hagerman, 1974; Stoll, 1978b). From an inventory perspective, individual dollar
+volume should reduce spreads and increase depth while individual volatility
+should have the opposite e !ect. If possessed monopolistically by traders who
+have no competitors, more rampant asymmetric information should increase
+both volatility and spreads, inducing correlation but not causation; and if, as
+seems plausible, informed traders earn greater pro"ts when volatility is generally
+high, spreads should increase in response.
+The empirical in #uence of market price on the quoted or e !ective spread
+levels is obvious. Clearly, a$10 stock will not have the same bid}ask spread as
+a $1000 stock provided that they have otherwise similar attributes. Depth
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 21
+
+===== PAGE 20 =====
+
+9The referee points out that depth decreases with price because it is measured in shares. If it were
+measured in value, arguably a more economically relevant construct, there would be no obvious
+relation between depth and price. But a share measure of depth mitigates return&contamination’, i.e.,
+if depth is measured in value, the change in depth from one day to another e!ectively includes a price
+change. Consequently, a regression of an individual stock change in depth on a market-wide change
+in depth could display signi"cance induced by return co-movement even if there is no liquidity co-
+movement. The use of share depth is consistent with prevailing practice in market microstructure
+literature; see, for example, Lee et al. (1993).
+10The method reported in Table 9 is adopted in an e!ort to enhance power. We could simply
+average all the variables across time and then calculate a single regression with the averages. Instead,
+we adopt the Fama}MacBeth (1973) approach of estimating a cross-sectional regression daily, then
+averaging the cross-sectional coe $cients over time, correcting for auto-correlation. This method
+should improve statistical precision.
+11A similar point is made by Harris (1994).
+should decrease with price, ceteris paribus.9 There is less reason to anticipate
+any in#uence of price on the proportional spreads; unless price is proxying for
+some other variable, the proportional spread should be roughly independent of
+the stock’s price level, other things equal.
+Table 9 documents the separate marginal in #uences on liquidity of such
+individual attributes: volatility, price, and trading volume. It also compares their
+magnitude with commonality, measured in this case by industry liquidity. As
+expected, individual volume (volatility) has a negative (positive) in #uence on
+spreads and the opposite in#uence on depth. Their impacts are large and highly
+signi"cant for all "ve liquidity constructs. Also as anticipated, price and
+spread level are positively related while depth falls with price. In the case
+of spreads, however, note that the marginal in #uence of price is less than
+proportional; the coe$cients are about 0.3 for both quoted and e!ective spreads,
+QSPR and ESPR. This suggests that price should have a negative marginal
+impact on the proportional spreads, which is indeed the result shown. More-
+over, the price coe$cient for PQSPR and PESPR have the largestt-statistics in
+the Table.10
+We regard the negative in#uence of price on proportional spread as some-
+thing of a puzzle remaining to be explained. One piece of that puzzle could be
+discreteness. Since the minimum quoted spread was $1/8, all stocks liquid
+enough to trade at the minimum spread would display a substantial negative
+correlation between price and proportional quoted spread. 11 This spurious
+e!ect would disappear only when price reaches a level high enough to support
+occasional spreads larger than the minimum.
+Finally and most important, note in Table 9 that industry liquidity retains
+a strong in #uence on individual stock liquidity even after accounting for
+volatility, volume, and price. All coe$cients are positive and signi"cant. Com-
+monality is indeed a ubiquitous characteristic of liquidity.
+22 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 21 =====
+
+Table 9
+Individual liquidity determinants and industry commonality!
+Individual stock liquidity measures (levels) are regressed cross-sectionally each trading day on the
+standard deviation of individual daily returns from the preceding calendar month (STD), the
+concurrent day ’s mean price level (PRICE), the day ’s dollar trading volume (DVOL), and an
+equally-weighted liquidity measure of all stocks in the same industry (INDUSTRY)." The INDUS-
+TRY observation corresponding to an individual stock excluded that stock. Natural logarithmic
+transformations are used for all variables. Cross-sectional coe$cients are then averaged across the
+254 trading days in the sample and are reported witht-statistics in parentheses QSPR is the quoted
+spread. PQSPR is the proportional quoted spread. DEP is quoted depth. ESPR is the e !ective
+spread. PESPR is the proportional e!ective spread. The R2 is adjusted.
+QSPR PQSPR DEP ESPR PESPR
+STD 0.1268 0.1171 !0.1372 0.1295 0.1218
+t (45.41) (35.54) ( !17.45) (32.49) (27.98)
+PRICE 0.3738 !0.6215 !0.9010 0.3296 !0.6669
+t (108.8) ( !164.8) ( !103.2) (54.96) ( !101.9)
+DVOL !0.0669 !0.0670 0.4127 !0.0523 !0.0525
+t (!33.17) ( !33.99) (129.4) ( !42.06) ( !43.23)
+INDUSTRY 0.3333 0.1871 0.2737 0.2428 0.1413
+t (30.75) (29.49) (13.11) (29.63) (30.36)
+R2 mean 0.290 0.810 0.432 0.216 0.735
+Median 0.288 0.806 0.422 0.208 0.733
+!Note: t denotes t-statistic corrected for "rst-order auto-correlation.
+"This is similar to the Fama and MacBeth (1973) method for returns. The eight industry
+classi"cations follow Roll (1992) and Chalmers and Kadlec (1998).
+Since the coe$cients in the cross-sectional regressions are not returns, there is nothing to keep
+them from being correlated across time. Indeed, their "rst-order auto-correlations across adjacent
+trading days range between 0.22 and 0.72;all are positive. Assuming that the coe$cient’s estimation
+error volatility, p, is constant and that only "rst-order auto-correlation, q, is present, the standard
+error of the time series sample mean becomes
+pM(1#2o/(1!o)]/„!2o[(1!oT)/(1!o)2]/„2N1@2,
+where„is the sample size. Wheno’ 0, this expression exceeds the usual estimator,p/„1@2, resulting
+in a smallert-statistic. If intertemporal dependence actually decays more slowly because of second-
+or higher-order auto-correlation, thet-statistics would still remain large. Assuming no decay at all,
+a grossly conservative assumption, the minimum t-statistic in the table would be 1.99 and 18 (11)
+would exceed 4.0 (6.0). Even assuming perfect correlation (i.e., not dividingp by any multiple of„),
+18 of the 20 t-statistics would still exceed 2.0. By any measure, the coe$cients are very signi"cant.
+3.4. Measures of commonality in liquidity for portfolios
+Earlier tables reveal that common in #uences signi "cantly in #uence daily
+changes in individual asset liquidity measures; however, these in #uences have
+low explanatory power, adjustedR2 rising to around four percent in only a few
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 23
+
+===== PAGE 22 =====
+
+12Unadjusted R2 are, of course, higher} around six percent. Many of the nuisance variables such
+as squared return are not signi"cant. Consequently, the low adjustedR2 give a somewhat misleading
+portrayal of the actual power of the liquidity variables.
+13The corresponding individual R2 squares are 0.017 and 0.010 (cf. Table 3).
+regressions.12 See Tables 3}5 and 7. Explanatory power improves when changes
+in determinants of individual liquidity measures are included as explanatory
+variables (Table 8), but there is still much unexplained variation.
+Whether the unexplained variation is noise or omitted variables, portfolio
+liquidity might exhibit a more palpable trace of commonality. By analogy,
+portfolio returns are much more correlated with common market factors than
+individual stock returns. Perhaps the same e!ect will be found for intertemporal
+changes in liquidity.
+Table 10 presents some evidence about this question by co-relating changes in
+liquidity measures for size-based portfolios. We"rst divide the sample into size
+quintiles based on the market capitalization at the end 1991. Then an equal-
+weighted average of each liquidity measure is calculated for each quintile on
+every trading day during 1992. The daily change from trading day t!1t o
+trading day t is our portfolio construct.
+Table 10 reports regressions of each daily liquidity change on a market-
+wide equal-weighted liquidity change for all stocks not in the subject quintile.
+The results could be compared to those reported for individual stocks in
+Table 3. In Table 10, all the contemporaneous coe $cients are positive and
+highly signi"cant. The explanatory power has also improved, in some cases
+substantially. Notice that the percentage quoted spreads (DPQSPR) and
+depth (DDEP) now have average R2 of 0.552 and 0.811, respectively. 13
+E!ective spreads, however, still exhibit only modest explanatory power; though
+larger for these portfolios than for individual stocks, theR2 are still below four
+percent.
+The results in Table 10 reveal that when market-wide forces impinge on
+liquidity, portfolio managers are likely to face more challenges, on average, in
+altering their holdings. Though they may have di !erent portfolios, two ran-
+domly-chosen managers are likely to "nd their average liquidities co-moving
+signi"cantly through time.
+Much of the intertemporal variation in liquidity changes is "rm-speci"c,
+particularly for the quoted spread and for the depth; which is why the
+explanatory power is relatively low in regressions with individual securities
+(Tables 3 and 5). By using portfolios, Table 10 e!ectively expunges much of the
+"rm-speci"c variation and thereby uncovers stronger co-movements in liquidity
+changes. The results show that the risks of unexpected changes in average
+liquidity contain a strong market component.
+24 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 23 =====
+
+Table 10
+Portfolio commonality in liquidity by size quintile "ve size groups ( +234 stocks per quintile),
+calendar year 1992, 253 daily observations
+Daily proportional changes in each quintile ’s liquidity measure are regressed in time series on
+proportional changes in the equal-weighted liquidity measure for all stocks in the sample (the
+&market’). &D’preceding the acronym, e.g., DQSPR, denotes a proportional change in the variable
+across successive trading days; i.e., for liquidity measure ‚, D‚t,(‚t!‚t~1)/‚t~1 for trading
+day t. Market averages exclude the quintile dependent variable. To allow for error correlations
+across quintiles the system is estimated as a set of Seemingly Unrelated Regressions.
+The lead, lag and concurrent values of the equal-weighted market returns, the proportional daily
+change in individual "rm squared return (a measure of change in return volatility) are additional
+regressors; coe$cients not reported. „-statistics are in parenthesis.
+Smallest 2 3 4 Largest
+(N"233) ( N"234) ( N"234) ( N"234) ( N"234)
+DQSPR (System Weighted R2"0.152) size quintile
+Concurrent 0.185 0.187 0.223 0.231 3.940
+(6.05) (4.87) (6.82) (6.58) (7.66)
+Lag 0.018 0.052 0.075 0.023 !0.651
+(0.62) (1.46) (2.48) (0.71) ( !1.27)
+Lead 0.020 0.010 0.030 0.058 !0.130
+(0.72) (0.29) (0.98) (1.79) ( !0.25)
+DPQSPR (System Weighted R2"0.552)
+Concurrent 0.739 0.763 0.843 0.769 1.829
+(12.21) (10.35) (12.93) (11.74) (8.38)
+Lag !0.037 0.043 0.275 0.131 !0.316
+(!0.64) (0.61) (4.42) (2.09) ( !1.46)
+Lead 0.023 0.018 0.088 0.245 !0.343
+(0.40) (0.25) (1.42) (3.93) ( !1.61)
+DDEP (System Weighted R2"0.811)
+Concurrent 0.637 0.835 1.062 1.110 1.013
+(9.47) (12.35) (19.22) (19.77) (17.59)
+Lag !0.080 0.208 0.028 !0.002 !0.034
+(!1.16) (3.06) (0.50) ( !0.03) ( !0.57)
+Lead !0.098 !0.037 0.015 0.044 0.143
+(!1.43) ( !0.55) (0.27) (0.77) (2.41)
+DESPR (System Weighted R2"0.036)
+Concurrent 0.015 0.003 0.016 0.033 2.477
+(0.70) (0.27) (1.47) (3.08) (1.84)
+Lag 0.006 0.010 !0.003 !0.016 0.781
+(0.28) (0.89) (0.32) ( !1.54) (0.61)
+Lead 0.019 !0.000 0.015 !0.006 !0.611
+(0.94) ( !0.00) (1.42) ( !0.59) ( !0.46)
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 25
+
+===== PAGE 24 =====
+
+Table 10 (continued)
+Smallest 2 3 4 Largest
+(N"233) ( N"234) ( N"234) ( N"234) ( N"234)
+DPESPR (System Weighted R2"0.039)
+Concurrent 0.020 0.011 0.026 0.033 5.280
+(1.13) (0.91) (1.79) (2.49) (1.82)
+Lag 0.015 0.021 !0.002 !0.014 1.631
+(0.87) (1.82) ( !0.14) ( !1.06) (0.61)
+Lead 0.010 !0.007 0.009 0.011 1.802
+(0.57) ( !0.59) (0.66) (0.86) (0.66)
+4. Summary and implications for future work
+Liquidity is more than just an attribute of a single asset. Individual liquidity
+measures co-move with each other. Even after accounting for well-known
+individual determinants of liquidity such as trading volume, volatility, and price,
+commonality retains a signi"cant in#uence.
+To the best of our knowledge, commonality in liquidity has not before been
+empirically documented. It is a wide-open area of research with both academic
+and practical aspects. Future research will surely be devoted to understanding
+why liquidity co-moves. Is it induced by market peregrinations, political events,
+macroeconomic conditions, or even hysteria? A sensible next step would
+attempt to identify speci"c macroeconomic in#uences that correlate with time-
+series variation in liquidity.
+Recognizing the existence of commonality in liquidity allows us to uncover
+evidence that inventory risks and asymmetric information both a!ect individual
+stock liquidity. A stock’s spread is positively related to the number of individual
+transactions but negatively related to the aggregate level of trading in the entire
+market. We interpret this pattern as a manifestation of two e!ects (a) a dimin-
+ution in inventory risk from greater market-wide trading activity, most plaus-
+ibly by uninformed traders, and (b) an increase in asymmetric information risk
+occasioned by informed traders attempting to conceal their activities by break-
+ing trades into small units, thus increasing the number of transactions, cf. Jones
+et al. (1994). Although commonality is the instrument used here to reveal
+asymmetric information e!ects on liquidity, we have no evidence that asymmet-
+ric information itself has common determinants.
+Co-movements in liquidity also suggest that transaction expenses might be
+better managed with appropriate timing. When spreads are low, managed
+portfolio turnover can be larger without sacri"cing performance. However, we
+26 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
+
+===== PAGE 25 =====
+
+do not yet know whether common variations in trading costs are associated
+with other market phenomena, such as price swings, which might o !set the
+bene"ts of time-managed trading.
+Finally, an important research issue not investigated here is whether and to
+what extent liquidity has an important bearing on asset pricing. Transaction
+expenses can accumulate to become a relatively large decrement in total return
+when portfolios are turned over frequently. If liquidity shocks cannot be diversi-
+"ed, the sensitivity of an individual stock to such shocks could induce the
+market to require a higher average return. Notice that a higher expected return
+would surely be required for stocks with higher average trading costs, but there
+might be an additional expected return increment demanded of stocks with
+higher sensitivities to broad liquidity shocks.
+References
+Admati, A., P#eiderer, P., 1988. A theory of intraday patterns: volume and price variability. Review
+of Financial Studies 1, 3}40.
+Amihud, Y., Mendelson, H., 1980. Dealership market: market making with inventory. Journal of
+Financial Economics 8, 31}53.
+Amihud, Y., Mendelson, H., 1986. Asset pricing and the bid }ask spread. Journal of Financial
+Economics 17, 223}249.
+Barclay, M., Warner, J., 1993. Stealth trading and volatility: which trades move prices? Journal of
+Financial Economics 34, 281}306
+Benston, G., Hagerman, R., 1974. Determinants of bid }asked spreads in the over-the-counter
+market. Journal of Financial Economics 1, 353}364.
+Brennan, M., Subrahmanyam, A., 1996. Market microstructure and asset pricing: on the compensa-
+tion for illiquidity in stock returns. Journal of Financial Economics 41, 441}464.
+Chalmers, J., Kadlec, G., 1998. An empirical examination of the amortized spread. Journal of
+Financial Economics 48, 159}188.
+Chan, L., Lakonishok, J., 1997. The behavior of stock prices around institutional trades. Journal of
+Finance 50, 1147}1174.
+Copeland, T., Galai, D., 1983. Information e !ects on the bid}ask spread. Journal of Finance 38,
+1457}1469.
+Demsetz, H., 1968. The cost of transacting. Quarterly Journal of Economics 82, 33}53.
+Easley, D., Kiefer, N., O’Hara, M., 1997. One day in the life of a very common stock. Review of
+Financial Studies 10, 805}835.
+Fama, E., French, K., 1993. Common risk factors in the returns on stocks and bonds. Journal of
+Financial Economics 33, 3}56.
+Fama, E., MacBeth, J., 1973. Risk, return, and equilibrium: empirical tests. Journal of Political
+Economy 81, 607}636.
+Garbade, K., Silber, W., 1979. Structural organization of secondary markets: clearing frequency,
+dealer activity and liquidity risk. Journal of Finance 34, 577}593.
+Garman, M., 1976. Market microstructure. Journal of Financial Economics 3, 257}275.
+Glosten, L., Milgrom, P., 1985. Bid, ask and transaction prices in a specialist market with heterogen-
+eously informed traders. Journal of Financial Economics 14, 71}100.
+Grossman, S., Miller, M., 1988. Liquidity and Market Structure. Journal of Finance 43,
+617}633.
+T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28 27
+
+===== PAGE 26 =====
+
+Harris, L., 1991. Stock price clustering and discreteness. Review of Financial Studies 4, 389}415.
+Harris, L., 1994. Minimum price variations, discrete bid}ask spreads, and quotation sizes. Review of
+Financial Studies 7, 149}178.
+Hasbrouck, J., Seppi, D., 1998. Common factors in prices, order#ows and liquidity. Working Paper,
+New York University, unpublished.
+Huberman, G. Halka, D., 1999. Systematic liquidity. Working Paper, Columbia Business School,
+unpublished.
+Jones, C., Kaul, G., Lipson, M., 1994. Transactions, volume, and volatility. Review of Financial
+Studies 7, 631}651.
+Judge, G., Gri $ths, W., Hill, R., Lu K tkepohl, H., Lee, T., 1985. The Theory and Practice of
+Econometrics. Wiley, New York.
+Keim, D., Madhavan, A., 1996. The upstairs market for large-block transactions: analysis and
+measurement of price e!ects. Review of Financial Studies 9, 1}36.
+Kraus, A., Stoll, H., 1972. Price impacts of block trading on the New York stock exchange. Journal
+of Finance 27, 569}588.
+Kyle, A., 1985. Continuous auctions and insider trading. Econometrica 53, 1315}1335.
+Lee, C., Mucklow, B., Ready, M., 1993. Spreads, depths, and the impact of earnings information: an
+intraday analysis. Review of Financial Studies 6, 345}374.
+Lee, C., Ready, M., 1991. Inferring trade direction from intraday data. Journal of Finance 46,
+733}746.
+Lightfoot, L., Martin, P., Peterson, M., Sirri, E., 1999. Order preferencing and market quality on
+United States equity exchanges. Working Paper, Securities and Exchange Commission, unpub-
+lished.
+Madhavan, A., 1992. Trading mechanisms in securities markets. Journal of Finance 47, 607}641.
+Roll, R., 1988. The international crash of October 1987. Financial Analysts Journal, 19}35.
+Roll, R., 1992. Industrial structure and the comparative behavior of international stock market
+indices. Journal of Finance 47, 3}41.
+Stoll, H., 1978a. The supply of dealer services in securities markets. Journal of Finance 33,
+1133}1151.
+Stoll, H., 1978b. The pricing of security dealer services: an empirical study of NASDAQ stocks.
+Journal of Finance 33, 1153}1172.
+Wall Street Journal, 1998. Illiquidity is crippling bond world, October 19, C-1.
+Wood, R., McInish, T., Ord, J., 1985. An Investigation of Transactions Data for NYSE Stocks.
+Journal of Finance 40, 723}739.
+28 T. Chordia et al. / Journal of Financial Economics 56 (2000) 3 }28
