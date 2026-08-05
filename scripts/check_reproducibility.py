@@ -56,6 +56,15 @@ ARTEFACT_DIRS = (
 SUFFIXES = (".parquet", ".pkl", ".jsonl", ".json", ".gz", ".tex", ".pdf", ".png", ".svg")
 
 
+# Per-day cache shards are not stamped individually and should not be reported as
+# missing provenance. Their generation is already encoded in the directory name,
+# which is a fingerprint of the quoting sources plus the arguments that decide what
+# is computed, so a shard from superseded code is unreachable rather than merely
+# unlabelled. Stamping each of 2,277 shards would add thousands of sidecars that
+# say the same thing as their parent directory.
+CACHE_MARKERS = ("_route_cost_day_cache", "_day_cache", "__pycache__")
+
+
 def collect() -> list[Path]:
     out: list[Path] = []
     for d in ARTEFACT_DIRS:
@@ -63,8 +72,11 @@ def collect() -> list[Path]:
         if not base.exists():
             continue
         for p in sorted(base.rglob("*")):
-            if p.is_file() and p.suffix in SUFFIXES:
-                out.append(p)
+            if not p.is_file() or p.suffix not in SUFFIXES:
+                continue
+            if any(m in p.parts for m in CACHE_MARKERS):
+                continue
+            out.append(p)
     return out
 
 

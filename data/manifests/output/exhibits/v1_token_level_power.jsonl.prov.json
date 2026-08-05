@@ -1,0 +1,61 @@
+{
+ "argv": [
+  "--permutations",
+  "5000"
+ ],
+ "artefact": "output/exhibits/v1_token_level_power.jsonl",
+ "code_fingerprint": "febc5121a3baddfc427ea13f27235c9727fbc67a91f419f9875e3213bbddb7a1",
+ "code_sources": [
+  "scripts/process/build_v1_exchange_class_panel.py",
+  "scripts/run_v1_forced_vehicle_token_level.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T04:06:41+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "f35682a521df635f71e67ebbada5bfb6bf969c06",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "cripts/build_cost_dominance_windows.py",
+   "scripts/build_counterfactual_dominance.py",
+   "scripts/build_cross_venue_routing_series.py",
+   "scripts/build_daily_gas_and_eth.py",
+   "scripts/build_intermediation_by_type.py",
+   "scripts/build_v1_forced_vehicle.py",
+   "scripts/check_reproducibility.py",
+   "scripts/run_dominance_regressions.py",
+   "scripts/run_v1_forced_vehicle_tests.py",
+   "scripts/validate_v3_quoter.py"
+  ]
+ },
+ "inputs": [
+  {
+   "bytes": 3401562,
+   "exists": true,
+   "path": "data/processed/v1_exchange_class_day.parquet",
+   "sha256": "707962e39478b3fdede5ce13337600b47e35472c6764fbce2accb06924c71100"
+  },
+  {
+   "bytes": 314674,
+   "exists": true,
+   "path": "data/processed/v1_t2t_route_pairs_daily.parquet",
+   "sha256": "06aa46cef6cdac1bd4a340e9e6894bee28edbbb98131118a23cfa6cc91f9673a"
+  },
+  {
+   "bytes": 7100508,
+   "exists": true,
+   "path": "data/processed/v1_exchange_day.parquet",
+   "sha256": "cb5bb5e44d242c497a87f3e72f4afd33a561aba22de0176837b47e1ebc3b1d67"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": null,
+ "script": "scripts/run_v1_forced_vehicle_token_level.py"
+}

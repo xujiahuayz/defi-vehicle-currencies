@@ -1,0 +1,41 @@
+{
+ "argv": [
+  "--workers",
+  "10"
+ ],
+ "artefact": "data/processed/v1_t2t_route_pairs_daily.parquet",
+ "code_fingerprint": "aea47ddccb1e15e5e9a6bde557d7747ac72dc6d468b6f41bf63ef13cb576e508",
+ "code_sources": [
+  "scripts/process/build_v1_exchange_class_panel.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T03:52:22+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "f35682a521df635f71e67ebbada5bfb6bf969c06",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "cripts/build_cost_dominance_windows.py",
+   "scripts/build_counterfactual_dominance.py",
+   "scripts/build_cross_venue_routing_series.py",
+   "scripts/build_daily_gas_and_eth.py",
+   "scripts/build_intermediation_by_type.py",
+   "scripts/build_v1_forced_vehicle.py",
+   "scripts/check_reproducibility.py",
+   "scripts/run_dominance_regressions.py",
+   "scripts/run_v1_forced_vehicle_tests.py",
+   "scripts/validate_v3_quoter.py"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "daily forced-route adjacency, sell exchange to buy exchange",
+ "python": "3.14.5",
+ "rows": 87258,
+ "script": "scripts/process/build_v1_exchange_class_panel.py"
+}

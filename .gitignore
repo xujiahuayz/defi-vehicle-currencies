@@ -48,3 +48,8 @@ paper/*.fls
 paper/*.log
 paper/*.out
 paper/*.synctex.gz
+
+# Provenance stamps ARE tracked: they are the record of how each derived
+# artefact was produced, and provenance that does not travel with the repository
+# is not provenance. They are small JSON sidecars.
+!data/manifests/
