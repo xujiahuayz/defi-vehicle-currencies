@@ -105,9 +105,14 @@ for _m, _t in ((NATIVE, "native"), (STAKED_NATIVE, "staked_native"),
         _LOOKUP[_addr.lower()] = (_sym, _t)
 
 
-def classify(address: str | None) -> tuple[str | None, str]:
-    """Return (symbol, type) for a token address; type is 'other' if unknown."""
-    if not address:
+def classify(address: object) -> tuple[str | None, str]:
+    """Return (symbol, type) for a token address; type is 'other' if unknown.
+
+    Defensive about input because callers pass pandas columns, where a missing
+    token arrives as float('nan'). NaN is truthy, so a bare `if not address`
+    guard lets it through and then fails on .lower().
+    """
+    if not isinstance(address, str) or not address:
         return None, "other"
     return _LOOKUP.get(address.lower(), (None, "other"))
 
