@@ -78,6 +78,12 @@ QUOTE_SOURCES = [
     "src/ddvc/pricing/v3quote.py",
     "src/ddvc/pricing/v3pools.py",
     "src/ddvc/pricing/v2quote.py",
+    # Curve and Balancer price legs too, so a change to either changes quotes. Omitting
+    # them left the fingerprint dishonest: tightening the Curve calibration gate would
+    # not have invalidated a single cached day, which is the same defect as the original
+    # date-keyed cache that served quotes from a broken quoter through two fixes.
+    "src/ddvc/pricing/stableswap.py",
+    "src/ddvc/pricing/weighted.py",
     "scripts/run_route_cost_panel.py",
 ]
 QUOTE_ENGINE = cache_key(QUOTE_SOURCES)

@@ -1,0 +1,44 @@
+{
+ "argv": [
+  "--skip-volume",
+  "--curve-days",
+  "28",
+  "--min-swaps",
+  "4",
+  "--overlap-days",
+  "0",
+  "--tag",
+  "minswaps4"
+ ],
+ "artefact": "output/exhibits/sushiswap_v3_schema_probe_minswaps4.jsonl",
+ "code_fingerprint": "71548e2a0a7016e5468a3ebff7d858a24a8df5c8e50d7a88dd81ac912495a0ec",
+ "code_sources": [
+  "scripts/run_venue_coverage_bounds.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T19:52:28+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "4ea5b31a6ce997661561dff20ece740059427c22",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
+   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json",
+   "scripts/run_venue_coverage_bounds.py",
+   "scripts/validate_weighted_quoter.py",
+   "src/ddvc/fetch/schemas.py",
+   "uv.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 1,
+ "script": "scripts/run_venue_coverage_bounds.py"
+}

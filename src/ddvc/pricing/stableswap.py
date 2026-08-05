@@ -60,6 +60,15 @@ A_MIN, A_MAX = 1, 1_000_000
 # the threshold sits an order of magnitude below the effects being estimated.
 MAX_CALIBRATION_ERROR = 0.01
 
+# The gate reads a HIGH quantile of fitting error, not the median. A median gate is
+# gameable and was demonstrably gamed: the Balancer work found a stable pool that
+# cleared a 0.1% MEDIAN fit gate and then returned 34% median error on held-out trades,
+# because half its fitted trades can sit inside the gate while the other half are
+# arbitrarily bad. A pool running the right invariant fits nearly every trade, so
+# demanding the 90th percentile clear the threshold costs a correct pool nothing and
+# rejects a wrong-invariant pool that happens to fit half its sample.
+FIT_QUANTILE = 0.90
+
 
 @dataclass(frozen=True)
 class StablePool:
@@ -174,7 +183,7 @@ def calibrate_amp(balances: tuple[int, ...], decimals: tuple[int, ...],
                   fee_pips: int = 4_000_000,
                   candidates: tuple[int, ...] | None = None,
                   max_error: float = MAX_CALIBRATION_ERROR) -> tuple[int, float] | None:
-    """Recover A by fitting realised trades, returning (A, median absolute error).
+    """Recover A by fitting realised trades, returning (A, error at FIT_QUANTILE).
 
     Every quantity in the invariant except A is observed, so A is identified rather
     than assumed. Candidates sweep the range Curve pools actually use, on a log grid
@@ -203,7 +212,8 @@ def calibrate_amp(balances: tuple[int, ...], decimals: tuple[int, ...],
         if len(errs) < max(1, len(observations) // 4):
             return None
         errs.sort()
-        return errs[len(errs) // 2]
+        idx = min(len(errs) - 1, int(FIT_QUANTILE * len(errs)))
+        return errs[idx]
 
     best: tuple[int, float] | None = None
     for amp in grid:

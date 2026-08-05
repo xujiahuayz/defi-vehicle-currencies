@@ -89,8 +89,39 @@ TVL_FIELD = {
 # possible. The ceilings are three orders of magnitude above anything real, so the screen
 # discriminates between data and arithmetic accidents and not between large and small
 # pools, and the mass it removes is reported alongside every total it touches.
+#
+# What the screen must NOT do is require the value-locked field to look sane, which a
+# first version did by demanding TVL above zero. Two venues fail that test while
+# reporting real volume. Curve's subgraph reports zero value locked for pools whose
+# tokens its oracle does not price, which in 2026 means most of the newer stablecoins:
+# sUSDS/USDT at $17m, USDC/USDT at $9m and PYUSD/crvUSD at $5m were all thrown out. The
+# Uniswap v4 subgraph reports NEGATIVE `tvlUSD` on its largest pools, so the deepest
+# USDC/USDT pool on the venue went out at $87m. Both losses fall on stable pairs, so the
+# tidy-looking version of the screen was quietly deleting the stable side of exactly the
+# comparison this document exists to bound. Volume is therefore screened on volume, and
+# value locked only rules out the astronomical.
 MAX_POOL_DAY_USD = 5e9        # the largest true pool-day on Ethereum is ~$2e9
 MAX_POOL_TVL_USD = 1e10       # no Ethereum pool has ever held this much
+MAX_SWAP_USD = 5e8            # single swaps above this are oracle output, not trades
+# A pool cannot trade a thousand times its own liquidity in a day. The ceiling alone does
+# not catch what this does: Uniswap v2 reports a $1,360,770,229 day for WETH/TRI against
+# $255 of reserves, and four more meme pairs with four-figure reserves report nine-figure
+# days, which together made v2 look larger than v3 in 2025. The rule applies wherever
+# liquidity is reported at all, and where it is not, which is Curve's newer stable pools
+# at zero and Uniswap v4's largest pools at negative, the volume ceiling stands alone.
+MAX_DAILY_TURNOVER = 1_000.0
+
+# The two Messari-schema venues, Curve and sushiswap_v3, need their volume built from
+# swaps instead of read from the daily snapshot, for two reasons found by cross-checking
+# one against the other. First, `dailyVolumeUSD` counts BOTH legs of a trade while the
+# Uniswap-family fields count one, so reading them side by side doubles Curve: 3Crv on
+# 2024-04-02 reports $515m against $168m summed from its own swaps, and the ratio sits
+# near two on every pool and day checked. Second, the daily field carries the oracle's
+# failures whole, while a swap reports the value of both legs and a broken price usually
+# breaks one: GHO/USR reports a $456m day whose swaps sum to $8. Taking the SMALLER leg
+# of each swap fixes both, and it is conservative by construction, which is the right
+# direction for a bound.
+MESSARI_VENUES = ("curve", "sushiswap_v3")
 
 
 def rows(path: Path):
@@ -111,25 +142,57 @@ def _f(x) -> float:
 
 
 def plausible(vol: float, tvl: float) -> bool:
-    return 0.0 < tvl <= MAX_POOL_TVL_USD and 0.0 <= vol <= MAX_POOL_DAY_USD
+    if not (0.0 <= vol <= MAX_POOL_DAY_USD and abs(tvl) <= MAX_POOL_TVL_USD):
+        return False
+    return tvl <= 0.0 or vol <= MAX_DAILY_TURNOVER * tvl
 
 
-def day_volume(venue: str, day: str) -> tuple[float, float] | None:
-    """(kept, screened) USD swap volume for a venue-day; None when the day is absent.
+def messari_pool_volume(venue: str, day: str) -> dict[str, float]:
+    """Per-pool USD volume for a Messari-schema venue-day, from the smaller swap leg."""
+    out: dict[str, float] = defaultdict(float)
+    for s in rows(RAW / venue / f"{venue}_swaps_{day}.jsonl.gz"):
+        pid = ((s.get("pool") or {}).get("id") or "").lower()
+        v = min(_f(s.get("amountInUSD")), _f(s.get("amountOutUSD")))
+        if pid and 0.0 <= v <= MAX_SWAP_USD:
+            out[pid] += v
+    return dict(out)
 
-    Two of the seven subgraphs report volume cumulatively and five report it daily, and
-    the difference is invisible in the field names. uniswap_v1's `daily` stream is
-    `exchangeHistoricalDatas`, one record per EVENT carrying LIFETIME totals, so reading
-    `tradeVolumeEth` as a daily figure counts a pool's entire history once per event and
-    turned a venue that had been dead for years into 99.9% of the 2020 market. Its day
-    flow is the cumulative field's within-day range. Balancer's `poolSnapshots.swapVolume`
-    is lifetime cumulative too, handled above. The five Messari and Uniswap-native
-    streams do report a day's flow, and their fields are used directly.
+
+def day_volume(venue: str, day: str) -> tuple[float, int, int] | None:
+    """(kept USD, pool-days kept, pool-days screened); None when the day is absent.
+
+    The screened mass is counted in pool-days and not in dollars, because a dollar total
+    over records the oracle got wrong is not a quantity: one 6.9e22 pool-day would
+    report the screen as removing 100.0% of everything, which describes the bug and not
+    the screen's footprint.
+
+    No two of these subgraphs mean the same thing by volume, and the field names do not
+    say so. uniswap_v1's `daily` stream is `exchangeHistoricalDatas`, one record per EVENT
+    carrying LIFETIME totals, so reading `tradeVolumeEth` as a daily figure counts a
+    pool's entire history once per event and turned a venue that had been dead for years
+    into 99.9% of the 2020 market; its day flow is that field's within-day range.
+    Balancer's `poolSnapshots.swapVolume` is lifetime cumulative too. Curve's and
+    sushiswap_v3's `dailyVolumeUSD` is a daily flow but counts both legs, so it is rebuilt
+    from swaps. Only the four Uniswap-family streams can be read as they stand.
     """
     p = RAW / venue / f"{venue}_daily_{day}.jsonl.gz"
     if not p.exists():
         return None
-    kept = screened = 0.0
+    kept = 0.0
+    n_kept = n_screened = 0
+    if venue in MESSARI_VENUES:
+        tvl_by_pool: dict[str, float] = {}
+        for r in rows(p):
+            pid = ((r.get("pool") or {}).get("id") or "").lower()
+            if pid:
+                tvl_by_pool[pid] = _f(r.get("totalValueLockedUSD"))
+        for pid, v in messari_pool_volume(venue, day).items():
+            if plausible(v, tvl_by_pool.get(pid, 0.0)):
+                kept += v
+                n_kept += 1
+            else:
+                n_screened += 1
+        return kept, n_kept, n_screened
     if venue == "balancer":
         # Balancer's `poolSnapshots.swapVolume` is also lifetime cumulative, and reading
         # it as a daily figure put the venue at 94% of 2024 volume. Its swaps stream is
@@ -147,9 +210,10 @@ def day_volume(venue: str, day: str) -> tuple[float, float] | None:
         for pid, v in per_pool.items():
             if plausible(v, liq.get(pid, 0.0)):
                 kept += v
+                n_kept += 1
             else:
-                screened += v
-        return kept, screened
+                n_screened += 1
+        return kept, n_kept, n_screened
     if venue == "uniswap_v1":
         lo: dict[str, float] = {}
         hi: dict[str, float] = {}
@@ -166,17 +230,19 @@ def day_volume(venue: str, day: str) -> tuple[float, float] | None:
             v = top - lo[a]
             if plausible(v, tvl.get(a, 0.0)):
                 kept += v
+                n_kept += 1
             else:
-                screened += v
-        return kept, screened
+                n_screened += 1
+        return kept, n_kept, n_screened
     vf, tf = VOLUME_FIELD[venue], TVL_FIELD[venue]
     for r in rows(p):
         v = _f(r.get(vf))
         if plausible(v, _f(r.get(tf))):
             kept += v
+            n_kept += 1
         else:
-            screened += v
-    return kept, screened
+            n_screened += 1
+    return kept, n_kept, n_screened
 
 
 def sampled_days(step: int) -> list[str]:
@@ -190,7 +256,8 @@ def sampled_days(step: int) -> list[str]:
 
 def job_volume_shares(step: int) -> pd.DataFrame:
     tot: dict[tuple[str, str], float] = defaultdict(float)
-    scr: dict[tuple[str, str], float] = defaultdict(float)
+    scr: dict[tuple[str, str], int] = defaultdict(int)
+    pool_days: dict[tuple[str, str], int] = defaultdict(int)
     days_seen: dict[tuple[str, str], int] = defaultdict(int)
     days = sampled_days(step)
     print(f"volume shares: {len(days)} sampled days, every {step}th day, "
@@ -200,9 +267,10 @@ def job_volume_shares(step: int) -> pd.DataFrame:
             got = day_volume(v, day)
             if got is None:
                 continue
-            kept, dropped = got
+            kept, n_kept, n_dropped = got
             tot[(day[:4], v)] += kept
-            scr[(day[:4], v)] += dropped
+            scr[(day[:4], v)] += n_dropped
+            pool_days[(day[:4], v)] += n_kept
             days_seen[(day[:4], v)] += 1
         if (i + 1) % 50 == 0:
             print(f"  {i + 1}/{len(days)} days")
@@ -213,7 +281,8 @@ def job_volume_shares(step: int) -> pd.DataFrame:
         for v in VENUES:
             recs.append({"year": y, "venue": v, "usd_volume": tot[(y, v)],
                          "share_pct": 100 * tot[(y, v)] / gross if gross else 0.0,
-                         "usd_screened_out": scr[(y, v)],
+                         "pool_days_kept": pool_days[(y, v)],
+                         "pool_days_screened_out": scr[(y, v)],
                          "sampled_days": days_seen[(y, v)]})
     return pd.DataFrame(recs)
 
@@ -338,13 +407,16 @@ def job_curve_excluded(n_days: int, min_swaps: int
     for day in picked:
         pools = curve_pool_state(day)
         trades: dict[str, list] = defaultdict(list)
-        # A pool-day's volume is taken from the daily snapshot, screened, so that the
-        # excluded share is a ratio of two comparably measured quantities.
+        # A pool-day's volume is summed from the same swaps the calibration is fitted to,
+        # on the smaller-leg basis, so the excluded share is a ratio of two identically
+        # measured quantities and neither side can be inflated by the daily field's
+        # double counting.
+        raw_vol = messari_pool_volume("curve", day)
         vol_usd: dict[str, float] = {}
         gross_day = screened_day = 0.0
         for pid, meta in pools.items():
-            v, tvl = meta["daily_volume_usd"], meta["tvl_usd"]
-            if plausible(v, tvl):
+            v = raw_vol.get(pid, 0.0)
+            if plausible(v, meta["tvl_usd"]):
                 vol_usd[pid] = v
                 gross_day += v
             else:
@@ -460,6 +532,72 @@ def job_sushiswap_v3() -> pd.DataFrame:
     }])
 
 
+def _pairs_on_day(venue: str, day: str) -> set[frozenset[str]]:
+    """Token-symbol pairs quotable on a venue-day, for the overlap test."""
+    out: set[frozenset[str]] = set()
+    for r in rows(RAW / venue / f"{venue}_daily_{day}.jsonl.gz"):
+        if venue in ("uniswap_v2", "sushiswap_v2"):
+            syms = [(r.get("token0") or {}).get("symbol"),
+                    (r.get("token1") or {}).get("symbol")]
+        elif venue in ("uniswap_v3", "uniswap_v4"):
+            p = r.get("pool") or {}
+            syms = [(p.get("token0") or {}).get("symbol"),
+                    (p.get("token1") or {}).get("symbol")]
+        else:
+            syms = [t.get("symbol") for t in ((r.get("pool") or {})
+                                              .get("inputTokens") or [])]
+        syms = [s.upper() for s in syms if s]
+        for i in range(len(syms)):
+            for j in range(i + 1, len(syms)):
+                out.add(frozenset((syms[i], syms[j])))
+    return out
+
+
+def job_sushiswap_v3_overlap(n_days: int) -> pd.DataFrame:
+    """Does sushiswap_v3 reach pairs the priced venues do not?
+
+    Volume share alone cannot settle whether a venue is worth building, because a
+    best-of-all-venues route statistic is sensitive to a venue that is SOLE host of a
+    pair however small it is. So the test is not size, it is uniqueness.
+    """
+    priced = ("uniswap_v2", "uniswap_v3", "uniswap_v4", "sushiswap_v2", "curve")
+    days = [p.name[len("sushiswap_v3_daily_"):-len(".jsonl.gz")]
+            for p in sorted((RAW / "sushiswap_v3").glob("sushiswap_v3_daily_*.jsonl.gz"))]
+    days = [d for d in days if d >= "20230405"]
+    step = max(1, len(days) // n_days)
+    recs = []
+    for day in days[::step][:n_days]:
+        elsewhere: set[frozenset[str]] = set()
+        for v in priced:
+            elsewhere |= _pairs_on_day(v, day)
+        vol_shared = vol_only = 0.0
+        n_shared = n_only = 0
+        vol_by_pool = messari_pool_volume("sushiswap_v3", day)
+        for r in rows(RAW / "sushiswap_v3" / f"sushiswap_v3_daily_{day}.jsonl.gz"):
+            p = r.get("pool") or {}
+            syms = [(t.get("symbol") or "").upper()
+                    for t in (p.get("inputTokens") or [])]
+            v = vol_by_pool.get((p.get("id") or "").lower(), 0.0)
+            if len(syms) != 2 or not plausible(v, _f(r.get("totalValueLockedUSD"))):
+                continue
+            if frozenset(syms) in elsewhere:
+                vol_shared += v
+                n_shared += 1
+            else:
+                vol_only += v
+                n_only += 1
+        tot = vol_shared + vol_only
+        recs.append({"day": day, "pools_pair_shared": n_shared,
+                     "pools_pair_unique": n_only,
+                     "usd_pair_shared": vol_shared, "usd_pair_unique": vol_only,
+                     "unique_pair_share_pct": 100 * vol_only / tot if tot else 0.0})
+        r0 = recs[-1]
+        print(f"  {day}: {n_shared:>3} pools on pairs the priced venues also host "
+              f"(${vol_shared:>12,.0f}), {n_only:>3} on pairs they do not "
+              f"(${vol_only:>12,.0f}) = {r0['unique_pair_share_pct']:>5.1f}% unique")
+    return pd.DataFrame(recs)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -468,34 +606,84 @@ def main() -> int:
     ap.add_argument("--curve-days", type=int, default=16)
     ap.add_argument("--min-swaps", type=int, default=8)
     ap.add_argument("--skip-volume", action="store_true")
+    ap.add_argument("--overlap-days", type=int, default=12,
+                    help="days on which to test sushiswap_v3 pair uniqueness; 0 skips")
+    ap.add_argument("--tag", default="",
+                    help="suffix for exhibit filenames, for sensitivity runs")
     args = ap.parse_args()
+    tag = f"_{args.tag}" if args.tag else ""
 
     if not args.skip_volume:
         vol = job_volume_shares(args.volume_step)
-        write_exhibit(vol, EX / "venue_volume_by_year.jsonl")
+        write_exhibit(vol, EX / f"venue_volume_by_year{tag}.jsonl")
         print("\n" + vol.pivot(index="year", columns="venue",
                                values="share_pct").round(2).to_string())
 
     probe = job_sushiswap_v3()
-    write_exhibit(probe, EX / "sushiswap_v3_schema_probe.jsonl")
+    write_exhibit(probe, EX / f"sushiswap_v3_schema_probe{tag}.jsonl")
     print("\nsushiswap_v3 probe")
     for k, x in probe.iloc[0].items():
         print(f"  {k}: {x}")
 
-    days, comp = job_curve_excluded(args.curve_days, args.min_swaps)
-    write_exhibit(days, EX / "curve_excluded_volume.jsonl")
+    if args.overlap_days:
+        print("\nsushiswap_v3 pair uniqueness against the five priced venues")
+        ov = job_sushiswap_v3_overlap(args.overlap_days)
+        write_exhibit(ov, EX / f"sushiswap_v3_pair_overlap{tag}.jsonl")
+        tot = ov["usd_pair_shared"].sum() + ov["usd_pair_unique"].sum()
+        print(f"  pooled: {100 * ov['usd_pair_unique'].sum() / tot:.2f}% of "
+              f"sushiswap_v3 volume sits on pairs no priced venue hosts that day")
+
+    if not args.curve_days:
+        return 0
+    days, comp, kept = job_curve_excluded(args.curve_days, args.min_swaps)
+    write_exhibit(days, EX / f"curve_excluded_volume{tag}.jsonl")
     if not comp.empty:
         agg = (comp.groupby("leg_served")
-               .agg(pools=("pool_id", "count"), usd_volume=("usd_volume", "sum"))
+               .agg(excluded_pools=("pool_id", "count"),
+                    excluded_usd=("usd_volume", "sum"))
                .reset_index())
-        agg["share_of_excluded_usd_pct"] = 100 * agg["usd_volume"] / agg["usd_volume"].sum()
-        write_exhibit(agg, EX / "curve_excluded_composition.jsonl")
-        print("\nexcluded-pool composition, pooled over measured days")
+        agg["share_of_excluded_usd_pct"] = (
+            100 * agg["excluded_usd"] / agg["excluded_usd"].sum())
+        k = (kept.groupby("leg_served").agg(priced_usd=("usd_volume", "sum"))
+             .reset_index()) if not kept.empty else pd.DataFrame(
+                 columns=["leg_served", "priced_usd"])
+        agg = agg.merge(k, on="leg_served", how="outer").fillna(0.0)
+        agg["share_of_priced_usd_pct"] = (
+            100 * agg["priced_usd"] / agg["priced_usd"].sum())
+        # The bound's sign lives in this column: the share of a leg's Curve volume that
+        # the calibration gate throws away, leg by leg.
+        agg["excluded_share_within_leg_pct"] = (
+            100 * agg["excluded_usd"] / (agg["excluded_usd"] + agg["priced_usd"]))
+        write_exhibit(agg, EX / f"curve_excluded_composition{tag}.jsonl")
+        print("\nleg composition of Curve volume, priced against excluded, "
+              "pooled over measured days")
         print(agg.round(2).to_string(index=False))
+        comp["year"] = comp["day"].str[:4]
+        kept["year"] = kept["day"].str[:4]
+        ex_y = (comp.groupby(["year", "leg_served"])["usd_volume"].sum()
+                .unstack(fill_value=0.0))
+        kp_y = (kept.groupby(["year", "leg_served"])["usd_volume"].sum()
+                .unstack(fill_value=0.0))
+        within = (100 * ex_y / (ex_y + kp_y.reindex_like(ex_y).fillna(0.0))).round(2)
+        print("\nexcluded share of each leg's Curve volume, by year")
+        print(within.to_string())
+        write_exhibit(within.reset_index(), EX / f"curve_excluded_by_year_leg{tag}.jsonl")
         top = comp.nlargest(12, "usd_volume")[
             ["day", "pool_symbol", "tokens", "leg_served", "usd_volume"]]
         print("\nlargest excluded pool-days")
         print(top.to_string(index=False))
+        # Audit trail for the classifier: any large volume sitting in "other" would mean
+        # the leg labels are guesses, so the unclassified tokens are printed by size.
+        unk: dict[str, float] = defaultdict(float)
+        for _, r in comp.iterrows():
+            if "other" in str(r["token_legs"]).split("|"):
+                unk[str(r["tokens"])] += float(r["usd_volume"])
+        if unk:
+            print("\nexcluded pool-days holding a token the classifier calls 'other'")
+            for toks, v in sorted(unk.items(), key=lambda kv: -kv[1])[:15]:
+                print(f"  ${v:>16,.0f}  {toks}")
+            print(f"  total in 'other'-touching pools: ${sum(unk.values()):,.0f} of "
+                  f"${comp['usd_volume'].sum():,.0f} excluded")
     by_year = (days.groupby("year")
                .agg(days=("day", "count"),
                     usd_failed=("usd_failed", "sum"),
