@@ -13,6 +13,9 @@ dist/
 .env
 .env.*
 !.env.example
+# secrets/ holds minted_graph_keys.json: the burner wallets behind the Graph API
+# key pool, private keys included. Never committed; back it up out of band.
+secrets/
 
 # Data and intermediate generated artifacts
 data/raw/

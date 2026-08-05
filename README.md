@@ -44,6 +44,22 @@ Build the incremental raw-file inventory and render the descriptive tables with:
 
 The inventory is `data/processed/raw_data_inventory.parquet`. It caches exact record counts only for raw files whose sidecars do not contain stream counts; the cache is consumed by the coverage tabulator and avoids rescanning unchanged compressed files. The paper-facing products are the tracked, unnumbered TeX/PDF pairs under `output/tables/`.
 
+## Graph API Keys
+
+Subgraph fetches read a rotating pool of The Graph gateway keys from `GRAPH_API_KEYS` in `.env`, comma-separated. `src/ddvc/fetch/graph.py` walks the pool and advances to the next key when one answers 401, 403, 429, or "payment required", so an exhausted key costs one wasted request rather than a failed run.
+
+The Free Plan meters 100k queries per month per *account*, not per key, so more quota means more accounts. `scripts/mint_graph_keys.py` provisions them against the Studio backend API: it generates a burner Ethereum wallet, signs in with it (SIWE), confirms a `+graphN` alias of one Gmail inbox by reading the code through the `glotl gmail` CLI, and creates a key.
+
+```bash
+.venv/bin/python scripts/mint_graph_keys.py status
+.venv/bin/python scripts/mint_graph_keys.py mint --count 5 --email you@gmail.com --write-env
+.venv/bin/python scripts/mint_graph_keys.py sync-env
+```
+
+Every minted key is recorded in `secrets/minted_graph_keys.json` alongside the wallet that owns its account. That wallet is the only way back into the account if a key has to be reissued, so the ledger is as load-bearing as the `.env` line and needs an out-of-band backup. It contains private keys, so `secrets/` is gitignored.
+
+Spreading the free tier over many accounts is grey against The Graph's terms of service. The paid Growth plan, roughly $2 per 100k queries, is the clean route once volume justifies it.
+
 ## Current Target
 
 The working sample target is through 2026-06-30 UTC, implemented as an exclusive end date of 2026-07-01 in fetch and build commands.
