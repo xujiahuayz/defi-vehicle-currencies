@@ -20,7 +20,13 @@ Two earlier figures answered different questions and should not be cited. Enumer
 
 The reweighted 27.2% lands close to the 30.0% all-in figure the original v2-only analysis reported. That is a convergence by a disjoint route and not a confirmation, since a shared error in the underlying quoting would move both.
 
-## The role persists through dominance
+## The role persists through dominance — WITHDRAWN 2026-08-06
+
+> **Every number in this section is withdrawn pending block-level pricing.** `output/exhibits/repricing_at_block.jsonl` measures the timing threat that node E's screen named as open, and it is live: comparing each swap's own immediately-prior state against the hour-boundary state this panel used, the median deviation across the busiest pools is 1.166% and the median share of routes mispriced by more than 25 basis points is 86.2%, against route-cost differences of tens of basis points. A retention ratio computed on hour-boundary classification cannot be separated from staleness. The numbers are kept below for comparison against the block-level rebuild and must not be cited.
+>
+> Note the shape of why this hid. The deep stable pairs are fine, at 0.085% and 0.012% median deviation, while volatile pools run 1.8% to 4.9%. Validation concentrated on the deep pairs, so the error lived exactly where nobody was looking, and that pattern is worth checking elsewhere in the panel.
+>
+> The dominance FREQUENCY above is affected in magnitude but not in kind, because a frequency is a statement about a state and does not require the router to have had a choice.
 
 A vehicle's share of its pair's multi-leg volume falls when it is dominated and does not collapse.
 
