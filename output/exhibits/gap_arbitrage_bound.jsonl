@@ -1,0 +1,3 @@
+{"gas_bps": 109.36274166305515, "median_gap_bps": 112.47142115247237, "n": 2907, "p90_gap_bps": 9861.467293517746, "share_above_threshold": 0.4451324389404885, "threshold_bps": 169.36274166305515, "trade_size_usd": 1000.0}
+{"gas_bps": 10.936274166305514, "median_gap_bps": 427.29272029247784, "n": 2907, "p90_gap_bps": 9998.696275991762, "share_above_threshold": 0.7079463364293086, "threshold_bps": 70.93627416630551, "trade_size_usd": 10000.0}
+{"gas_bps": 1.0936274166305515, "median_gap_bps": 4655.1207609235025, "n": 2907, "p90_gap_bps": 9999.98999153607, "share_above_threshold": 0.8197454420364637, "threshold_bps": 61.093627416630554, "trade_size_usd": 100000.0}

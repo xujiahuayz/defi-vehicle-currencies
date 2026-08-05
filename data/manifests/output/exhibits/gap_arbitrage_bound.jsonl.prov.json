@@ -1,0 +1,29 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/gap_arbitrage_bound.jsonl",
+ "code_fingerprint": "58bd08cc1ce88cb9dffba04e220efc05972d670d9707bba3e380930245d8a099",
+ "code_sources": [
+  "scripts/test_gap_arbitrage_bound.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T20:02:34+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "25a3de8dac506f7f8f8a800d589811f82e7252d6",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "v.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 3,
+ "script": "scripts/test_gap_arbitrage_bound.py"
+}
