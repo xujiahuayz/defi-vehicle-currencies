@@ -1,0 +1,11 @@
+{"exits": 216, "forced_share": 0.27610181411454676, "n": 247, "robust se": 0.3073973671505313, "t": 0.8981918637557517, "variant": "baseline"}
+{"exits": 318, "forced_share": -0.00931909085245547, "n": 351, "robust se": 0.2674835646296711, "t": -0.03483986339630877, "variant": "min pre-V2 legs 20"}
+{"exits": 113, "forced_share": 0.874782002738171, "n": 141, "robust se": 0.46762940308523987, "t": 1.8706736509011068, "variant": "min pre-V2 legs 200"}
+{"exits": 181, "forced_share": 0.2138964025470503, "n": 247, "robust se": 0.2769876678821897, "t": 0.7722235584799616, "variant": "horizon 12 months"}
+{"exits": 224, "forced_share": 0.2591821062532996, "n": 247, "robust se": 0.3188666202357268, "t": 0.8128229479200283, "variant": "horizon 36 months"}
+{"exits": 216, "forced_share": 0.38953929494463957, "n": 247, "robust se": 0.2973837547362036, "t": 1.309887607311244, "variant": "treatment: strict-leg forced share"}
+{"exits": 216, "forced_share": 0.198940601463529, "n": 247, "robust se": 0.3374596023401909, "t": 0.5895241981082471, "variant": "treatment: ETH-volume forced share"}
+{"exits": 216, "forced_share": 0.3685428037036504, "n": 247, "robust se": 0.5512524289117132, "t": 0.6685554282839722, "variant": "treatment: forced-route SOURCE share only"}
+{"exits": 216, "forced_share": 0.49954510474464, "n": 247, "robust se": 0.5349263754141181, "t": 0.9338576815508725, "variant": "treatment: forced-route DESTINATION share only"}
+{"exits": 191, "forced_share": 0.5580075620511069, "n": 222, "robust se": 0.32577651799271373, "t": 1.7128538468312415, "variant": "drop bottom decile of pool size"}
+{"exits": 215, "forced_share": 0.28005446979721943, "n": 242, "robust se": 0.31207765976507923, "t": 0.8973871119388498, "variant": "drop the 5 largest exchanges by legs"}

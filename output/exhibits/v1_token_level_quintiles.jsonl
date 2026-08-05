@@ -1,0 +1,5 @@
+{"exchanges": 50, "intensity quintile": 1, "log survival vs quintile 1": 0.0, "mean forced share": 0.028852914219797045, "robust se": NaN}
+{"exchanges": 49, "intensity quintile": 2, "log survival vs quintile 1": 0.009013139952338491, "mean forced share": 0.08662472698616695, "robust se": 0.1648191565858636}
+{"exchanges": 49, "intensity quintile": 3, "log survival vs quintile 1": 0.44462862591871466, "mean forced share": 0.14312612397283975, "robust se": 0.16469859655017524}
+{"exchanges": 49, "intensity quintile": 4, "log survival vs quintile 1": 0.2874695202415596, "mean forced share": 0.22603107464532546, "robust se": 0.1647477660147339}
+{"exchanges": 50, "intensity quintile": 5, "log survival vs quintile 1": 0.13737755292039128, "mean forced share": 0.45738293594287854, "robust se": 0.16748534336911133}

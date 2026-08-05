@@ -1,0 +1,12 @@
+{"date": "2020-05-05 00:00:00", "day": "20200505", "eth_usd": 201.48625086106713, "gas_gwei": 64.0, "gas_gwei_basefee": NaN, "gas_gwei_receipt": NaN, "pool_depth_usd": 0.989}
+{"date": "2020-11-21 00:00:00", "day": "20201121", "eth_usd": 540.9030121043158, "gas_gwei": 64.0, "gas_gwei_basefee": NaN, "gas_gwei_receipt": 64.0, "pool_depth_usd": 106900540.383073}
+{"date": "2021-06-09 00:00:00", "day": "20210609", "eth_usd": 2605.8600074471337, "gas_gwei": 15.4, "gas_gwei_basefee": NaN, "gas_gwei_receipt": 15.4, "pool_depth_usd": 131051458.525848}
+{"date": "2021-12-26 00:00:00", "day": "20211226", "eth_usd": 4098.336603428419, "gas_gwei": 43.003036273, "gas_gwei_basefee": 51.821683608, "gas_gwei_receipt": 43.003036273, "pool_depth_usd": 117638971.843554}
+{"date": "2022-07-14 00:00:00", "day": "20220714", "eth_usd": 1196.323666778716, "gas_gwei": 150.0, "gas_gwei_basefee": NaN, "gas_gwei_receipt": 150.0, "pool_depth_usd": 53303912.349507}
+{"date": "2023-01-30 00:00:00", "day": "20230130", "eth_usd": 1642.6061520716537, "gas_gwei": 25.348269306, "gas_gwei_basefee": 22.986709241, "gas_gwei_receipt": 25.348269306, "pool_depth_usd": 50536088.705621}
+{"date": "2023-08-18 00:00:00", "day": "20230818", "eth_usd": 1695.252885235465, "gas_gwei": 233.98289067, "gas_gwei_basefee": NaN, "gas_gwei_receipt": 233.98289067, "pool_depth_usd": 30183526.487498}
+{"date": "2024-03-05 00:00:00", "day": "20240305", "eth_usd": 3718.2247231325296, "gas_gwei": 193.466093688, "gas_gwei_basefee": 62.509690148, "gas_gwei_receipt": 193.466093688, "pool_depth_usd": 78069602.590822}
+{"date": "2024-09-21 00:00:00", "day": "20240921", "eth_usd": 2613.3974977783055, "gas_gwei": 18.353681789, "gas_gwei_basefee": 8.546742577, "gas_gwei_receipt": 18.353681789, "pool_depth_usd": 66171086.329788}
+{"date": "2025-04-09 00:00:00", "day": "20250409", "eth_usd": 1673.3684516312003, "gas_gwei": 3.919486899, "gas_gwei_basefee": 0.503767908, "gas_gwei_receipt": 3.919486899, "pool_depth_usd": 9165666.385447}
+{"date": "2025-10-26 00:00:00", "day": "20251026", "eth_usd": 4164.083006091775, "gas_gwei": 0.277213722, "gas_gwei_basefee": NaN, "gas_gwei_receipt": 0.277213722, "pool_depth_usd": 26176342.864225}
+{"date": "2026-05-14 00:00:00", "day": "20260514", "eth_usd": 2313.248107465791, "gas_gwei": 2.003097283, "gas_gwei_basefee": 0.095611556, "gas_gwei_receipt": 2.003097283, "pool_depth_usd": 9706591.326017}

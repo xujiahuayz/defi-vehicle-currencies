@@ -1,0 +1,3 @@
+{"cluster-robust se": 0.4352023536517876, "clusters": 247, "exchange-months": 1772, "failures": 241, "forced_share": 0.1404249730954925, "hazard ratio per SD": 1.0237948842628388, "outcome": "ETH-paired, relative threshold", "t": 0.3226659321053415}
+{"cluster-robust se": 0.43063494076424835, "clusters": 247, "exchange-months": 2457, "failures": 216, "forced_share": 0.02565956016244855, "hazard ratio per SD": 1.0043063110933665, "outcome": "ETH-paired, absolute floor", "t": 0.059585411524922936}
+{"cluster-robust se": 0.4767898130935291, "clusters": 247, "exchange-months": 1737, "failures": 241, "forced_share": 0.7389205349742995, "hazard ratio per SD": 1.1317249345283673, "outcome": "all legs, relative threshold", "t": 1.5497825555038647}

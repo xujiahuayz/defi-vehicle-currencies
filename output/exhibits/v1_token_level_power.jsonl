@@ -1,0 +1,4 @@
+{"implied true coefficient": -0.20088376268655378, "replications": 1000, "share rejecting at 5% with the right sign": 0.092, "true survival ratio, 95th vs 5th percentile of intensity": 0.9}
+{"implied true coefficient": -0.5485039325287963, "replications": 1000, "share rejecting at 5% with the right sign": 0.422, "true survival ratio, 95th vs 5th percentile of intensity": 0.75}
+{"implied true coefficient": -1.3215768056666195, "replications": 1000, "share rejecting at 5% with the right sign": 0.984, "true survival ratio, 95th vs 5th percentile of intensity": 0.5}
+{"implied true coefficient": -2.643153611333239, "replications": 1000, "share rejecting at 5% with the right sign": 1.0, "true survival ratio, 95th vs 5th percentile of intensity": 0.25}

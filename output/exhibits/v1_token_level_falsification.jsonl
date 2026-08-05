@@ -1,0 +1,2 @@
+{"design": "real event, 6-month horizon", "exits": 124, "forced_share": 0.031133528683328457, "mean forced share": 0.18884658648885044, "n": 247, "robust se": 0.20875782695231784, "t": 0.14913706057325282}
+{"design": "placebo event, 6-month horizon", "exits": 17, "forced_share": 0.03327249133028928, "mean forced share": 0.1119891294573129, "n": 99, "robust se": 0.2735723417417217, "t": 0.12162227774363858}

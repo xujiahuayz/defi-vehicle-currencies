@@ -1,0 +1,13 @@
+{"difference": 0.06904679946546055, "high-intensity": 13, "low-intensity": 17, "mean log survival, high": 0.9422762922648976, "mean log survival, low": 0.8732294927994371, "stratum": "0|0", "units": 30}
+{"difference": 0.03976435363575015, "high-intensity": 8, "low-intensity": 9, "mean log survival, high": 1.4536384024074547, "mean log survival, low": 1.4138740487717045, "stratum": "0|1", "units": 17}
+{"difference": 1.0042389484201302, "high-intensity": 1, "low-intensity": 3, "mean log survival, high": 2.5649493574615367, "mean log survival, low": 1.5607104090414066, "stratum": "0|2", "units": 4}
+{"difference": 0.2841429488032383, "high-intensity": 12, "low-intensity": 11, "mean log survival, high": 1.5578024610538552, "mean log survival, low": 1.273659512250617, "stratum": "1|0", "units": 23}
+{"difference": 0.707637695542003, "high-intensity": 11, "low-intensity": 9, "mean log survival, high": 1.9512365363917106, "mean log survival, low": 1.2435988408497076, "stratum": "1|1", "units": 20}
+{"difference": -0.998416748617164, "high-intensity": 4, "low-intensity": 1, "mean log survival, high": 2.2204590762510366, "mean log survival, low": 3.2188758248682006, "stratum": "1|2", "units": 5}
+{"difference": -0.3967630912113944, "high-intensity": 9, "low-intensity": 9, "mean log survival, high": 1.060756956510822, "mean log survival, low": 1.4575200477222163, "stratum": "2|0", "units": 18}
+{"difference": 0.8686611343374289, "high-intensity": 10, "low-intensity": 10, "mean log survival, high": 2.1702012923753817, "mean log survival, low": 1.3015401580379529, "stratum": "2|1", "units": 20}
+{"difference": 0.4478838937855938, "high-intensity": 6, "low-intensity": 5, "mean log survival, high": 2.224251154786423, "mean log survival, low": 1.7763672610008292, "stratum": "2|2", "units": 11}
+{"difference": 1.9159332866936944, "high-intensity": 1, "low-intensity": 5, "mean log survival, high": 3.2188758248682006, "mean log survival, low": 1.3029425381745061, "stratum": "3|0", "units": 6}
+{"difference": 0.6822783345100218, "high-intensity": 12, "low-intensity": 7, "mean log survival, high": 2.5841331540833044, "mean log survival, low": 1.9018548195732825, "stratum": "3|1", "units": 19}
+{"difference": 0.5436561787064909, "high-intensity": 11, "low-intensity": 13, "mean log survival, high": 2.5973008514541274, "mean log survival, low": 2.0536446727476365, "stratum": "3|2", "units": 24}
+{"difference": -0.098596335331822, "high-intensity": 25, "low-intensity": 13, "mean log survival, high": 2.834805775629389, "mean log survival, low": 2.933402110961211, "stratum": "4|2", "units": 38}
