@@ -15,6 +15,9 @@ dependencies = [
   "numpy>=1.26",
   "requests>=2.32",
   "scipy>=1.12",
+  "eth-abi>=5.2.0",
+  "eth-utils>=6.0.0",
+  "eth-hash[pycryptodome]>=0.8.0",
 ]
 
 [project.optional-dependencies]
