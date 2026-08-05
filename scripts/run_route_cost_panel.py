@@ -34,8 +34,18 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
+from ddvc.provenance import cache_key, stamp  # noqa: E402
 from ddvc.pricing.v2quote import quote_exact_input_float  # noqa: E402
 from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick, quote_exact_input  # noqa: E402
+from ddvc.pricing.v3pools import (  # noqa: E402
+    derive_fee_tier,
+    resolve_decimals,
+    tick_spacing_for_fee,
+)
+
+# Swap samples per pool, used only to pin token decimals by the sqrtPriceX96
+# identity. Capped per pool, so this stays small next to the swap stream itself.
+_SWAP_SAMPLE: dict[str, list[dict]] = {}
 
 
 VEHICLE_BY_ADDRESS = {
@@ -48,27 +58,36 @@ VEHICLE_BY_ADDRESS = {
 VEHICLE_ADDRESSES = tuple(VEHICLE_BY_ADDRESS)
 V2_SOURCES = ("uniswap_v2", "sushiswap_v2")
 V3_START = "20210504"
-FEE_TO_TICK_SPACING = {100: 1, 500: 10, 3000: 60, 10000: 200}
-SPACING_TO_FEE = {1: 100, 10: 500, 60: 3000, 200: 10000}
-KNOWN_DECIMALS = {
-    "0x0000000000000000000000000000000000000000": 18,
-    "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2": 18,
-    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": 6,
-    "0xdac17f958d2ee523a2206206994597c13d831ec7": 6,
-    "0x6b175474e89094c44da98b954eedeac495271d0f": 18,
-    "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599": 8,
-}
-SYMBOL_DECIMALS = {
-    "ETH": 18,
-    "WETH": 18,
-    "USDC": 6,
-    "USDT": 6,
-    "DAI": 18,
-    "WBTC": 8,
-}
 OUT_DATA = DATA_DIR / "empirical"
 OUT = OUTPUT_DIR / "empirical"
-DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / "v3_exact_tick"
+
+
+# Cache generation = fingerprint of every source that can change a quote. Keyed in
+# the PATH so a stale generation cannot be read at all, rather than being readable
+# and merely mislabelled, which is how the hand-managed `v3_exact_tick` label let
+# 2,242 days of quotes from a broken quoter survive two correctness fixes.
+QUOTE_SOURCES = [
+    "src/ddvc/pricing/v3quote.py",
+    "src/ddvc/pricing/v3pools.py",
+    "src/ddvc/pricing/v2quote.py",
+    "scripts/run_route_cost_panel.py",
+]
+QUOTE_ENGINE = cache_key(QUOTE_SOURCES)
+
+# Cached day content also depends on the arguments that decide WHAT is computed,
+# not only on the code that computes it. The cache ignored them, so a run at
+# `--hour 0` silently reused rows priced at `--hour 12`, and a wider `--top-pairs`
+# reused the narrower pair set. Both belong in the key for the same reason the
+# code fingerprint does.
+DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}"
+
+
+def _configure_cache(hour: int, top_pairs: int, sizes: list[float], no_v3: bool) -> Path:
+    global DAY_CACHE
+    spec = f"h{hour}_p{top_pairs}_s{'-'.join(str(int(x)) for x in sizes)}{'_nov3' if no_v3 else ''}"
+    DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}" / spec
+    DAY_CACHE.mkdir(parents=True, exist_ok=True)
+    return DAY_CACHE
 
 
 @dataclass(frozen=True)
@@ -241,16 +260,6 @@ def _load_v2_pools(stamp: str, hour: int) -> dict[frozenset[str], list[Pool]]:
     return pools
 
 
-def _token_decimals(token: str, symbol: str) -> int:
-    token = token.lower()
-    if token in KNOWN_DECIMALS:
-        return KNOWN_DECIMALS[token]
-    sym = symbol.upper()
-    if sym in SYMBOL_DECIMALS:
-        return SYMBOL_DECIMALS[sym]
-    return 18
-
-
 def _infer_tick_spacing(ticks: dict[int, int]) -> int:
     vals = [abs(t) for t in ticks if t != 0]
     if not vals:
@@ -333,19 +342,35 @@ def _update_v3_swap_state(
             old = state_by_pool.get(pool_id)
             if old is not None and (block, log_index) <= (old.block, old.log_index):
                 continue
-            spacing = FEE_TO_TICK_SPACING.get(fee, tick_spacing_by_pool.get(pool_id, 60))
-            if fee <= 0:
-                fee = SPACING_TO_FEE.get(spacing, 3000)
+            # Fee tier EXACTLY, by CREATE2 address match, not inferred from tick
+            # spacing. The raw layer carries no `feeTier`, so the old path always
+            # fell through to a spacing guess defaulting to 3000, which silently
+            # mispriced every 0.01%, 0.05% and 1% pool. A pool the canonical
+            # factory did not deploy is excluded rather than quoted on a guess.
+            sample = _SWAP_SAMPLE.setdefault(pool_id, [])
+            if len(sample) < 12:
+                sample.append(rec)
+            exact_fee = derive_fee_tier(pool_id, a0, a1)
+            if exact_fee is None:
+                continue
+            fee = exact_fee
+            spacing = tick_spacing_for_fee(fee)
             sym0 = str(t0.get("symbol", ""))
             sym1 = str(t1.get("symbol", ""))
+            # Decimals by identity against sqrtPriceX96, never defaulted to 18. A
+            # wrong exponent here is a factor-of-10^k error in every quote on the
+            # pool, so an unresolvable pool is dropped instead.
+            dec = resolve_decimals(a0, a1, sample)
+            if dec is None:
+                continue
             state_by_pool[pool_id] = V3PoolState(
                 pool=pool_id,
                 token0=a0,
                 token1=a1,
                 sym0=sym0,
                 sym1=sym1,
-                dec0=_token_decimals(a0, sym0),
-                dec1=_token_decimals(a1, sym1),
+                dec0=dec[0],
+                dec1=dec[1],
                 sqrt_price_x96=sqrt_price,
                 tick=tick,
                 fee_pips=fee,
@@ -648,11 +673,37 @@ def main() -> int:
             _write(panel, out_path)
     else:
         sizes = [float(x) for x in args.trade_sizes.split(",") if x.strip()]
+        cache_dir = _configure_cache(args.hour, args.top_pairs, sizes, args.no_v3)
+        print(f"day cache: {cache_dir.relative_to(ROOT)}", flush=True)
         frames = []
         stamps = _available_stamps(args.start, args.end)
         v3_ticks: dict[str, dict[int, int]] = {}
         v3_state: dict[str, V3PoolState] = {}
         v3_spacing: dict[str, int] = {}
+
+        # WARM THE LIQUIDITY INDEX FROM V3 LAUNCH, whatever --start says.
+        #
+        # A V3 pool's active liquidity is the running sum of every mint and burn
+        # since inception, so the index is only correct for a run that has seen all
+        # of them. Previously the index started empty at --start, which meant a
+        # narrow range quoted against almost no liquidity and returned quotes that
+        # were wrong by orders of magnitude WITHOUT FAILING: a one-day run finished
+        # in two seconds and wrote a plausible-looking panel. --start now selects
+        # which days are OUTPUT, never what the index has accumulated.
+        if not args.no_v3 and stamps:
+            warm = [s for s in _available_stamps(None, None)
+                    if V3_START <= s < min(stamps)]
+            if warm:
+                print(f"warming V3 liquidity index over {len(warm)} day(s) "
+                      f"{warm[0]}..{warm[-1]} before the first output day",
+                      flush=True)
+                for j, stamp in enumerate(warm, 1):
+                    _apply_v3_liquidity_events(stamp, v3_ticks, v3_spacing)
+                    _update_v3_swap_state(stamp, v3_state, v3_spacing)
+                    if j % 200 == 0 or j == len(warm):
+                        print(f"  warm [{j}/{len(warm)}] {stamp} "
+                              f"({len(v3_ticks):,} pools indexed)", flush=True)
+
         for i, stamp in enumerate(stamps, 1):
             day_v3_state = None
             day_v3_ticks = None
@@ -688,6 +739,9 @@ def main() -> int:
     summary = _summarize(panel)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary.to_pickle(summary_path)
+    stamp(out_path, code_sources=QUOTE_SOURCES, rows=len(panel),
+          notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}")
+    stamp(summary_path, code_sources=QUOTE_SOURCES, rows=len(summary))
     print(f"wrote {len(panel):,} rows -> {out_path}")
     print(f"wrote summary -> {summary_path}")
     return 0

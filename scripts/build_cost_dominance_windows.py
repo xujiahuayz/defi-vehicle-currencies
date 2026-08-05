@@ -42,7 +42,7 @@ trade against a large intermediated one is not like-for-like.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cost_dominance_cells.parquet
-        output/exhibits/cost_dominance_summary.csv
+        output/exhibits/cost_dominance_summary.parquet
 """
 
 from __future__ import annotations
@@ -59,7 +59,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 UNIFIED = ROOT / "data" / "unified"
 OUT_PARQUET = ROOT / "data" / "processed" / "cost_dominance_cells.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "cost_dominance_summary.csv"
+OUT_CSV = ROOT / "output" / "exhibits" / "cost_dominance_summary.parquet"
 
 from ddvc.asset_types import classify  # noqa: E402
 
@@ -215,7 +215,7 @@ def main() -> int:
         print(f"  {row['year']}  cells {row['cells']:7,}  dominated {row['pct_dominated']:5.1f}%"
               f"  median indirect share {row['median_indirect_share_in_dominated']:6.1%}"
               f"  persistent {row['persistent_cells']:6,}")
-    pd.DataFrame(summary).to_csv(OUT_CSV, index=False)
+    pd.DataFrame(summary).to_parquet(OUT_CSV, index=False)
     print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_CSV.relative_to(ROOT)}")
     print("\nREAD THIS BEFORE USING THE NUMBERS: rates are gross of gas, so a "
           "two-hop route losing on rate may still win all-in. This is an upper "

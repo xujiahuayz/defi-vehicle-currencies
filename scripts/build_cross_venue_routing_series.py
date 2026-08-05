@@ -39,7 +39,7 @@ primary and the value series as secondary.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cross_venue_routing_daily.parquet
-        output/exhibits/cross_venue_routing_series.csv
+        output/exhibits/cross_venue_routing_series.parquet
 
 Run     .venv/bin/python scripts/build_cross_venue_routing_series.py [--workers N]
 Rebuild is idempotent: delete the outputs and rerun to regenerate byte-identically.
@@ -57,7 +57,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 UNIFIED = ROOT / "data" / "unified"
 OUT_PARQUET = ROOT / "data" / "processed" / "cross_venue_routing_daily.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "cross_venue_routing_series.csv"
+OUT_CSV = ROOT / "output" / "exhibits" / "cross_venue_routing_series.parquet"
 
 COLS = ["tx_hash", "component_id", "source", "amount_usd", "route_class",
         "token_in", "token_out"]
@@ -154,7 +154,7 @@ def main() -> int:
     OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
     OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUT_PARQUET, index=False)
-    df.to_csv(OUT_CSV, index=False)
+    df.to_parquet(OUT_CSV, index=False)
 
     # monthly view, which is what a figure would plot
     m = df.set_index("date").resample("MS").agg(

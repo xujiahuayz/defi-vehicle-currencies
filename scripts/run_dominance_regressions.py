@@ -37,7 +37,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 PANEL = ROOT / "data" / "processed" / "counterfactual_dominance_clean.parquet"
-OUT = ROOT / "output" / "exhibits" / "dominance_regressions.csv"
+OUT = ROOT / "output" / "exhibits" / "dominance_regressions.parquet"
 
 
 def demean(df: pd.DataFrame, cols: list[str], group: pd.Series) -> pd.DataFrame:
@@ -133,7 +133,7 @@ def main() -> int:
                        k_absorbed=c.cell.nunique()))
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(rows).to_csv(OUT, index=False)
+    pd.DataFrame(rows).to_parquet(OUT, index=False)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     print("\nReading: a negative `native` coefficient in (4) means that, among trades")
     print("between the same two tokens on the same day, routing through the native")

@@ -1,0 +1,214 @@
+# Uniswap V1's ETH mandate, and what happened when V2 removed it
+
+Uniswap V1 gave every ERC20 token exactly one exchange contract holding an ETH-token pair, so a token-to-token trade had no direct pool and the protocol routed it through ETH. ETH was a *mandated* vehicle currency. Traders never chose it. Uniswap V2, live 2020-05-05, allowed arbitrary ERC20/ERC20 pools and withdrew the mandate. That is a discontinuity in this paper's dependent variable, on a date we did not choose, and this document measures it.
+
+The verdict, stated first because it is negative in the places that matter. One large, clean, robust fact comes out of this. **The mandate was withdrawn and native-asset pairing did not retreat at all.** Six years on, 95 to 98% of single-leg Uniswap V2 trades still execute on a pool containing WETH, and the WETH share of newly created pairs *rose* from 84% in 2020 to 98% by 2023. Everything sharper than that fails. The obvious event study on V1's own flow is absorbed by a mechanical confound. The test that would isolate voluntary vehicle persistence among V1-era tokens cannot be run at all, because the V1 exchange-to-token crosswalk is not recoverable from this repo's data and the statistical substitute has a measured false-positive rate equal to its hit rate. A weaker version of that test does run on all V2 pairs and returns something interesting but not identified.
+
+Built by `scripts/build_v1_forced_vehicle.py`, `scripts/build_v2_token_panel.py`, and `scripts/run_v1_forced_vehicle_tests.py`. Every number below is reproducible from those three; the machine-readable output is `output/exhibits/v1_forced_vehicle_report.md`.
+
+## 1. The institutional premise, verified, and one correction to how it appears in the data
+
+The brief for this work stated that a V1 row carrying both `ethPurchaseEvents` and `tokenPurchaseEvents` is a token-to-token trade forced through ETH. **That is wrong, and it would have missed essentially every forced route while counting a different object instead.** The V1 subgraph keys its `transaction` entity on `txhash-exchangeAddress`. A token-to-token trade calls `tokenToEthSwap` on exchange A and then `ethToTokenSwap` on exchange B, so it materialises as *two* rows sharing one transaction hash, one carrying only `ethPurchaseEvents` and one carrying only `tokenPurchaseEvents`. Rows carrying both arrays do exist, at 14,641 of 2,816,199 entity rows (0.52%), and they are a different object, namely one exchange trading in both directions inside one transaction, which is a round trip through a single pool. The correct signature recovers 217,003 forced routes where the stated one recovers none of them.
+
+The forced route is therefore identified by pairing rows across a transaction hash, and it can be verified. If ETH physically flowed out of exchange A and into exchange B, the two legs must report the same ETH amount. Across 217,003 candidate token-to-token transactions, **87.4% report the two legs as exactly equal and 93.1% agree within 1%**, with a volume-weighted median relative gap of 3.5e-03. The residual 6.9% are transactions in which the two amounts differ materially, which is what an arbitrage bot bundling two unrelated swaps looks like. A separate strict-definition column carries them throughout, and they are never quietly folded in.
+
+A second correction to the denominator. 61,033 V1 transactions (2.19%) carry neither event array and a zero fee. Inspection confirms these are liquidity provision and withdrawal, which the V1 subgraph's `transaction` entity covers alongside swaps. Leaving them in would deflate every share below, so all shares are taken over swap transactions only.
+
+### Composition of V1 flow, whole sample
+
+2,724,038 swap transactions across 2,798 days, 2018-11-02 to 2026-06-30. Volume is denominated in ETH throughout, because every V1 event reports `ethAmount` natively and ETH sidesteps the repriced-junk-token problem that has misled this project repeatedly.
+
+| trade class | transactions | share | ETH volume | share |
+|---|---|---|---|---|
+| ETH to token | 1,203,360 | 44.18% | 3,561,614 | 43.21% |
+| token to ETH | 1,075,970 | 39.50% | 3,550,092 | 43.07% |
+| **token to token, forced via ETH** | **217,003** | **7.97%** | **668,171** | **8.11%** |
+| round trip within one exchange | 12,051 | 0.44% | 153,088 | 1.86% |
+| three or more exchanges | 13,736 | 0.50% | 309,498 | 3.75% |
+
+Exchange-to-token resolution rate by direct lookup: **0%**. Not "low" — zero, and not by accident of coverage. The raw fetch in `src/ddvc/fetch/schemas.py` requested `exchangeAddress` and never `tokenAddress`; the V1 `meta` files hold fetch provenance alone (day, block range, subgraph id, row counts); `uniswap_v1` is absent from `data/unified/`, whose eight sources are uniswap v2 to v4, sushiswap v2 and v3, curve, balancer and fluid; and a grep for V1 exchange addresses across this repo and the two sibling reference repos returns nothing. V1 exchange addresses are not derivable either, since the factory used `CREATE`, whose output depends on a nonce. Section 4 covers the statistical substitute and why it fails.
+
+So the headline share of V1 activity that was forced through ETH is **7.97% of swaps and 8.11% of ETH volume over the whole sample, rising to about 10% in 2019 and 2020 when V1 was actually alive**. That is the size of the mandate's bite. Roughly one V1 trade in ten was a token-to-token trade that the architecture compelled to touch ETH.
+
+## 2. V1 after V2, and the confound that absorbs the result
+
+V1 died after V2 launched, which is mechanical migration and not a finding. The non-mechanical quantity is whether the *forced* part of V1 flow left faster than the *ETH-paired* part. V2 replaced two hops with one for token-to-token trades and left ETH-paired trades roughly as they were, so the mandate's removal predicts exactly that divergence, and a common shock to V1 as a venue cannot produce a divergence between two flow types inside the same venue.
+
+The divergence is there and it is large.
+
+| window around 2020-05-05 | swap tx | ETH-paired tx | forced t2t tx | t2t share of swaps | ETH-paired vs pre | t2t vs pre | differential |
+|---|---|---|---|---|---|---|---|
+| -365 to -183 days | 283,590 | 254,321 | 28,298 | 9.98% | 0.31 | 0.25 | 1.24 |
+| -182 to -1 days | 943,067 | 817,859 | 113,022 | 11.98% | 1.00 | 1.00 | 1.00 |
+| 0 to +181 days | 653,705 | 589,523 | 60,038 | 9.18% | 0.72 | 0.53 | 1.36 |
+| +182 to +364 days | 151,773 | 147,010 | 4,434 | 2.92% | 0.18 | 0.04 | **4.58** |
+| +365 to +729 days | 43,956 | 42,396 | 1,431 | 3.26% | 0.05 | 0.01 | **4.09** |
+
+The token-to-token share of V1 swaps was stable at 9 to 15% for the 26 weeks before the launch, and fell monotonically to 2.4% by December 2020. In the second half-year after launch, forced flow had contracted 4.6 times more than ETH-paired flow. ETH-paired V1 activity actually *grew* for two months after V2 went live, so this is not the venue shrinking.
+
+**The response spreads out over months.** There is no discontinuity at the launch date. Weekly, the t2t share runs 12.6% at week -2, 10.5% at week +2, 9.5% at week +6, 6.2% at week +10, 5.2% at week +14. Whatever is happening takes about six months, consistent with V2 needing non-ETH pools to be created and funded before they were usable.
+
+### The confound, and it is fatal to this test
+
+A token-to-token trade needs *both* of its tokens to have a live V1 exchange. An ETH-paired trade needs one. As the V1 exchange network thinned, the set of feasible token-to-token pairs shrank roughly with the square of the number of live exchanges while feasible ETH-paired trades shrank roughly linearly, so the *ratio* of the two should fall roughly in proportion to the exchange count **even if no trader changed behaviour and no mandate had been removed**.
+
+Benchmarking against the count of exchanges with at least ten trades in the month, indexed to 2020-05:
+
+| month | exchanges with 10+ trades | t2t per ETH-paired | ratio vs 2020-05 | exchange count vs 2020-05 | excess over thinning |
+|---|---|---|---|---|---|
+| 2020-03 | 304 | 0.1451 | 1.04 | 0.97 | 1.07 |
+| 2020-05 | 313 | 0.1395 | 1.00 | 1.00 | 1.00 |
+| 2020-06 | 242 | 0.1074 | 0.77 | 0.77 | **1.00** |
+| 2020-07 | 190 | 0.0751 | 0.54 | 0.61 | **0.89** |
+| 2020-08 | 155 | 0.0575 | 0.41 | 0.50 | **0.83** |
+| 2020-09 | 135 | 0.0598 | 0.43 | 0.43 | **0.99** |
+| 2020-10 | 142 | 0.0605 | 0.43 | 0.45 | **0.96** |
+| 2020-11 | 133 | 0.0597 | 0.43 | 0.42 | **1.01** |
+| 2020-12 | 127 | 0.0244 | 0.18 | 0.41 | 0.43 |
+| 2021-06 | 71 | 0.0337 | 0.24 | 0.23 | 1.06 |
+
+Through the entire period in which the differential emerges, excess sits between 0.83 and 1.07. **Network thinning alone accounts for essentially the whole of it, leaving nothing for the removal of the mandate to explain.** Only December 2020 breaks from the benchmark, and one month on a venue by then executing 1,500 swaps a day is not a result.
+
+Two things this does not settle. The N-squared benchmark is a crude combinatorial heuristic that assumes uniform trade propensity across pairs, whereas real V1 activity concentrated in a handful of tokens, so the benchmark could be wrong by a constant factor in either direction. And thinning is endogenous, because V2 is *why* exchanges went quiet, so thinning is partly a channel through which the mandate's removal operated, which makes it a poor rival explanation. Neither observation rescues the test, because both leave the differential unable to distinguish the mandate from the arithmetic of a shrinking network.
+
+## 3. The plain fact that survives, which is that nobody stopped pairing against the native asset
+
+This needs no route reconstruction and no V1 token identity. On V1, the share of trades on a pool containing ETH was 100% by construction. On V2 it was free to fall.
+
+| year | single-leg V2 trades | share on a WETH pool, count | share on a WETH pool, value |
+|---|---|---|---|
+| 2020 | 14,422,786 | 95.1% | 81.2% |
+| 2021 | 29,430,033 | 95.2% | 90.2% |
+| 2022 | 17,001,637 | 93.4% | 85.1% |
+| 2023 | 44,342,924 | 97.9% | 94.1% |
+| 2024 | 48,367,432 | 97.7% | 85.2% |
+| 2025 | 36,249,166 | 95.4% | 94.1% |
+| 2026 | 13,862,895 | 95.5% | 84.6% |
+
+Of 477,633 pairs that ever traded on V2, 463,548 (**97.1%**) include WETH. And the pattern strengthens rather than decays in the *supply* of new pools:
+
+| year first traded | new pairs | share including WETH |
+|---|---|---|
+| 2020 | 25,400 | 84.1% |
+| 2021 | 30,948 | 92.9% |
+| 2022 | 66,170 | 96.5% |
+| 2023 | 153,967 | 99.0% |
+| 2024 | 90,679 | 98.0% |
+| 2025 | 75,769 | 98.1% |
+| 2026 | 34,700 | 97.9% |
+
+This is the cleanest number in the exercise, and it is a null on the architectural hypothesis, because removing the constraint did not move the outcome the constraint had been producing. It is also the weakest kind of evidence about *why*, and it says nothing about routing. It describes which pools get created and used, and the dominant reason a new token launches against WETH may simply be that WETH is the default in every launch template and every liquidity-bootstrapping guide. That is still a thick-market externality operating through a state variable, which is where `docs/research-workflow.md` section 4.0 already says incumbency can legitimately live, but convention and tooling would produce it just as well as optimisation, and the data cannot separate the two.
+
+One boundary that must be stated whenever this table is used. It is **Uniswap V2 only**, and V2 became a legacy venue after V3 arrived in May 2021. The migration of stable-numeraire pairing to V3, Curve and elsewhere is exactly what `docs/finding-intermediation-transition.md` measures on the unified layer, and a V2-only WETH share cannot speak to it. It says the venue that lost the mandate never used its freedom. It does not say the native asset never lost ground anywhere.
+
+## 4. The sharpest test cannot be run, and the substitute is measurably worthless
+
+The test the brief asks for runs like this. Among tokens that lived under the V1 mandate and then got a direct non-ETH V2 pair, how long did ETH remain the routing intermediary after the direct pair existed? Running it needs V1 token identities, which do not exist locally. The only recoverable route is a statistical crosswalk that matches each V1 exchange's `tokenPriceUSD` series against a V2 token price panel, constrained by token decimals recovered from the printed precision of V1 token balances (a subgraph BigDecimal prints the raw integer over 10^decimals with no padding, so the maximum fractional digit count across many days recovers the decimals), and constrained by the V1 factory's one-exchange-per-token rule which makes a duplicate claim evidence of a mismatch.
+
+It fails, and the failure is measured.
+
+| step | exchanges |
+|---|---|
+| V1 exchanges priced in the window 2020-05-05 to 2022-12-31 | 1,175 |
+| match attempted, at least 20 overlapping priced days | 305 |
+| of those, traded before the V2 launch, so genuinely V1-era | 284 |
+| accepted by the price-and-decimals rule | 106 |
+| **same rule on a 180-day-shifted placebo series** | **98** |
+
+A series shifted forward 180 days describes the same token, so a match driven by that token's actual price path must break under the shift. **Acceptance is 34.8% on the real series and 32.1% on the placebo**, so the procedure's false-positive rate is its hit rate and it carries no information. With 7,805 candidate price series spanning many orders of magnitude, some series lies within 5% of any target on most days by chance. A second, independent check agrees. Estimated separately on odd and on even days of the same series, only **4.0%** of exchanges pick the same token, so the nearest neighbour is not even stable under a random halving. Inspection of the accepted matches confirms it from the other direction, since they are dominated by 2021-vintage meme tokens that no 2018-era V1 exchange could have held.
+
+A pre-stated gate voids the crosswalk when placebo acceptance exceeds half the real rate. It does, so **every match is discarded and the resolved-token count downstream falls to 0**. The V1-restricted version of the persistence test is not identified and is not reported. Recovering it requires re-fetching the V1 subgraph's `exchange` entity with `tokenAddress`, which is a data-acquisition task.
+
+## 5. Voluntary vehicle persistence on all V2 pairs, which is real, large, and not identified
+
+The unrestricted version does run. For each unordered token pair, take the first day it traded through a direct pool; ETH routing before that is mandatory and measures nothing, ETH routing after it is a choice. ETH-routed trade is a two-leg component A to WETH to B inside one transaction, read from `data/unified/` where routes are already reconstructed, restricted to `uniswap_v2`.
+
+Sample construction, every filter reported:
+
+| filter | pair-days | share kept |
+|---|---|---|
+| pair-days with any V2 trade | 12,713,685 | 1.000 |
+| both tokens present in the V2 decimals map | 11,511,497 | 0.905 |
+| median trade notional between $100 and $50m | 8,018,149 | 0.631 |
+| pairs with a direct pool, 20+ trades, and any ETH-routed trade | **2,222 pairs** | |
+
+The window logic checks out. Before their direct pool existed these pairs traded 444,651 times through ETH and **0** times directly, which is what construction requires.
+
+**A filter that changes the answer completely.** Dating availability at the direct pool's first trade is not enough. A pool that traded once and went dormant is not a usable alternative, and a pair whose direct pool died shows a near-100% ETH-routed share that reflects nothing about choosing the vehicle. Requiring a direct trade inside the trailing 28 days keeps 70.2% of post-availability pair-days, and per pair the median share of days with a live direct pool is 0.88.
+
+Median per-pair ETH-routed share of trade count, weeks since the direct pool first traded:
+
+| weeks since availability | no liveness condition | direct pool live in trailing 28 days |
+|---|---|---|
+| week 0 | 0.456 | 0.456 |
+| week 1 | 0.638 | 0.638 |
+| weeks 2-3 | 0.746 | 0.746 |
+| weeks 4-7 | 0.800 | **0.600** |
+| weeks 8-12 | 0.909 | **0.333** |
+| weeks 13-25 | 0.933 | **0.321** |
+| weeks 26-51 | 0.978 | **0.200** |
+| week 52+ | 0.992 | **0.078** |
+
+Without the liveness condition the median pair looks like it routes 99% through ETH a year after its direct pool arrived, which is an artefact of dead pools and would have been a spectacular false positive. With it, ETH routing decays but stays substantial. **The median pair still sends 32% of its trades through ETH three to six months after a live direct pool exists, and 20% at six to twelve months.** Pooled across trades the same series runs 33% at week 0, 29% at weeks 8-12, 17% at weeks 26-51 and 5.6% beyond a year; pooled figures are dominated by a few very large pairs and the two weightings disagree, so both are reported.
+
+### Why this is not identified, in two steps
+
+**Calendar time does most of the work, and horizon little of it.** Splitting by the year a pair's direct pool arrived, and separately by the calendar year of observation, median per-pair ETH-routed share:
+
+| direct pool arrived | week 0 | weeks 1-3 | weeks 4-12 | weeks 13-25 | weeks 26-51 | week 52+ |
+|---|---|---|---|---|---|---|
+| 2020 | 0.506 | 0.793 | 0.801 | 0.631 | 0.500 | 0.189 |
+| 2021 | 0.476 | 0.643 | 0.520 | 0.226 | 0.092 | 0.056 |
+| 2022 | 0.076 | 0.111 | 0.058 | 0.022 | 0.019 | 0.010 |
+| 2023 | 0.083 | 0.125 | 0.138 | 0.000 | 0.000 | 0.028 |
+| 2024 | 0.167 | 0.454 | 0.296 | 0.049 | 0.013 | 0.008 |
+| 2025 | 0.067 | 0.204 | 0.170 | 0.004 | 0.066 | 0.000 |
+
+| observed in calendar | week 0 | weeks 1-3 | weeks 4-12 | weeks 13-25 | weeks 26-51 | week 52+ |
+|---|---|---|---|---|---|---|
+| 2020 | 0.500 | 0.773 | 0.833 | 0.830 | 0.907 | |
+| 2021 | 0.491 | 0.667 | 0.533 | 0.403 | 0.362 | 0.303 |
+| 2022 | 0.071 | 0.090 | 0.028 | 0.005 | 0.029 | 0.073 |
+| 2023 | 0.083 | 0.100 | 0.129 | 0.019 | 0.010 | 0.029 |
+| 2024 | 0.183 | 0.404 | 0.167 | 0.016 | 0.000 | 0.025 |
+| 2025 | 0.114 | 0.240 | 0.128 | 0.023 | 0.009 | 0.084 |
+
+Within a cohort there is genuine decay in horizon, clearest for 2021 (0.48 down to 0.06). But the level difference across cohorts and calendar years dwarfs it, since pairs whose direct pool arrived in 2020 kept routing 50 to 80% through ETH for six to twelve months, while 2022-onward pairs sit at 2 to 17% within weeks. In calendar 2020 there is **no decay in horizon at all** (0.50, 0.77, 0.83, 0.83, 0.91) — having a live direct pool available for a year did not reduce ETH routing in the year the mandate was withdrawn. Because most pairs acquired direct pools in 2020 and 2021, cohort and calendar are close to collinear and the pooled horizon profile cannot be cleanly attributed to time-since-availability. The 2026 row of both tables inverts the pattern on a handful of pairs and should be read as noise on a venue that is now nearly abandoned.
+
+**Even a clean horizon profile would not measure inertia.** This repo has already settled the point in `docs/research-workflow.md` section 4.0: routing is executed by deterministic graph optimisers, so preferring ETH when a direct pool exists is not evidence of habit. A newly created direct pool is thin, and routing through the deepest pool on the network can be strictly cost-optimal at every moment. Reading 32% ETH routing at three to six months as persistence requires showing the direct route was cheaper and was declined, which needs the counterfactual priced at transaction-time pool state. `src/ddvc/cpquote.py` and `scripts/build_counterfactual_dominance.py` already do exactly that for two-leg routes with a direct alternative, and pointing them at this pair-availability panel is the obvious next step. Until that runs, section 5 describes routing behaviour and identifies nothing.
+
+## 6. Confounds, in the order they would sink the paper
+
+**Fatal to the V1 event study (section 2).** Network thinning reproduces the entire differential, with excess over the benchmark between 0.83 and 1.07 across the whole response period. There is no version of the V1-side event study that survives this, because the treatment (V2 exists) and the confound (V1 exchanges go quiet) are the same event.
+
+**Fatal to the V1-restricted persistence test (section 4).** Token identity is unrecoverable and the statistical substitute has a false-positive rate equal to its hit rate. Not a power problem; the estimator is uninformative.
+
+**Fatal to any causal reading of section 5.** Router choice is a cost optimisation, so ETH routing over a live direct pool is the correct action whenever the direct pool is thinner net of gas. This is not a nuisance to control for, it is a rival explanation that is a priori more likely than incumbency and is untested here.
+
+**Major, and specific to what was measured.**
+
+*V2's router defaulted to WETH paths.* Both section 3's pairing shares and section 5's routing shares are partly a statement about one team's routing software and pool-creation defaults rather than about traders. A single implementation choice inside the Uniswap frontend can produce both patterns with no economics at all.
+
+*Gas sits on the causal path, so controlling for it is wrong.* A two-hop vehicle route burns roughly 74,096 more gas units than one hop (`docs/finding-cost-dominance-measured.md`, from receipt medians of 154,604 against 228,701). Gas rose sharply through 2020 and collapsed after EIP-4844. That directly drives whether ETH routing is optimal, and it drives V1 abandonment, so it sits on the causal path of both tests and cannot be netted out by including it as a regressor.
+
+*V1 survivor bias.* By late 2020 V1 was executing under 1,500 swaps a day across roughly 130 exchanges. The tokens still trading there were selected on not having migrated, which selects on the outcome. All of section 2's post-launch windows live inside this.
+
+*V1 was small and illiquid throughout.* Even at its 2020 peak, V1's whole forced-routing channel is 217,003 transactions over eight years. Section 3's V2 table alone covers 203 million single-leg trades. Any inference resting on the V1 side rests on a thin, dying venue.
+
+*Bot composition.* V1 token-to-token flow includes atomic arbitrage; 6.9% of candidate routes have mismatched legs and are bundled unrelated swaps. Sophisticated flow migrates first for reasons unrelated to the mandate, and the strict-definition columns bound but do not remove this.
+
+*Availability is dated late.* Section 5 dates a direct pool's availability at its first trade instead of its creation, because using `hourly_reserves` for pool existence means reading 2.4 GB against 329 MB for swaps. First trade is weakly later than creation, which *shortens* measured persistence, so the bias runs against the persistence finding. It also means "available" never distinguishes a $500 pool from a $5m one, which is the more serious version of the same gap.
+
+*Composition of the pair panel.* The 2,222 pairs are 1,308 other-plus-stable and 807 other-plus-other by endpoint asset type, so the panel is a long-tail-token panel and its results should not be read as being about major pairs.
+
+*Single venue.* Section 5 counts only `uniswap_v2` legs, so a trade routed A to WETH on V2 and WETH to B on V3 is invisible, and cross-venue multi-leg routing rose from 11.7% to 49.8% of multi-leg routes across the sample. Omitting other venues understates the availability of alternatives, which inflates measured ETH routing.
+
+*Filters that are not random.* The notional band removes 36.9% of pair-days, and small trades are exactly where gas makes the vehicle route uneconomic, so the band is correlated with the outcome.
+
+**What the data cannot identify, stated plainly.** Whether ETH held the vehicle role on V2 because traders and liquidity providers were slow to leave an incumbent, or because ETH pools were genuinely deepest at every instant, is not answerable from anything in this document. The V1-to-V2 discontinuity does not help, because the mandate's removal changed the feasible set and the cost surface at the same moment and on the same date for every token. The one thing that is established without a counterfactual is the null in section 3: the constraint was withdrawn and the behaviour it had been enforcing did not change.
+
+## 7. Is this natural experiment usable
+
+Not as an identification spine. As a motivating fact, section 3 is strong. A hard architectural constraint was removed, and six years later 97% of pools on that venue still hold the asset the constraint had mandated, with new-pool creation converging *toward* it. That is a good opening fact for a paper about how dominance is made, and it is cheap to defend.
+
+Three things would change the verdict, in order of cost. Re-fetch the V1 subgraph's `exchange` entity with `tokenAddress` and `tokenSymbol`, which turns section 4 from impossible into routine and makes the V1-restricted persistence test available. Point the existing transaction-time quoter at the pair-availability panel from section 5, which converts a description of routing into a test of whether the cheaper route was declined. Extend section 5 beyond `uniswap_v2` on the unified layer, which removes the single-venue bias that currently inflates every measured ETH share. Only the second of those makes the experiment identifying; the first two make it honest.

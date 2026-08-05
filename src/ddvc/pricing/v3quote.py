@@ -8,7 +8,7 @@ quotes once the DVC liquidity-index layer is built.
 """
 from __future__ import annotations
 
-from bisect import bisect_left
+from bisect import bisect_left, bisect_right
 from dataclasses import dataclass
 
 Q96 = 1 << 96
@@ -124,10 +124,22 @@ def quote_exact_input(
         sqrt_ticks = [get_sqrt_ratio_at_tick(t) for t in sorted_ticks]
 
     def _next_init_tick(cur_sqrt: int) -> int | None:
-        # next initialized tick in the swap direction (by sqrt price)
-        idx = bisect_left(sqrt_ticks, cur_sqrt)
+        """Next initialized tick in the swap direction, by sqrt price.
+
+        The two directions need different tie-breaking, and conflating them is a
+        silent-underquote bug rather than a crash. Crossing a tick leaves the
+        price exactly ON that tick, so an upward search must be STRICTLY greater
+        (`bisect_right`); with `bisect_left` it returns the tick just crossed, the
+        step then spans zero width, `consumed` comes out zero and the loop breaks
+        early. Measured against realised swaps that behaviour under-quoted
+        tick-crossing upward swaps by a median 62.6% while leaving every
+        non-crossing quote exact, so it was invisible except by direction.
+        Downward keeps `bisect_left - 1`, which is validated at -0.0006%.
+        """
         if zero_for_one:
-            idx -= 1
+            idx = bisect_left(sqrt_ticks, cur_sqrt) - 1
+        else:
+            idx = bisect_right(sqrt_ticks, cur_sqrt)
         if idx < 0 or idx >= len(sorted_ticks):
             return None
         return sorted_ticks[idx]

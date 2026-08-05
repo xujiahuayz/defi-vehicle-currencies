@@ -25,7 +25,7 @@ median is preferred and the base fee is kept for comparison.
 
 Reads   data/raw/thegraph/uniswap_v2/uniswap_v2_{hourly_reserves,swaps}_*.jsonl.gz
 Writes  data/processed/daily_gas_eth.parquet
-        output/exhibits/daily_gas_eth.csv
+        output/exhibits/daily_gas_eth.parquet
 """
 
 from __future__ import annotations
@@ -44,9 +44,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 RAW = ROOT / "data" / "raw" / "thegraph" / "uniswap_v2"
 OUT_PARQUET = ROOT / "data" / "processed" / "daily_gas_eth.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "daily_gas_eth.csv"
+OUT_CSV = ROOT / "output" / "exhibits" / "daily_gas_eth.parquet"
 
+from ddvc.provenance import stamp  # noqa: E402
 from ddvc.quoter import rpc_post  # noqa: E402
+
+CODE_SOURCES = ["scripts/build_daily_gas_and_eth.py", "src/ddvc/quoter.py"]
 
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 STABLES = {
@@ -85,19 +88,24 @@ def _blocks_and_txs(day: str, n: int = 12) -> tuple[list[int], list[str]]:
     p = RAW / f"uniswap_v2_swaps_{day}.jsonl.gz"
     if not p.exists():
         return [], []
+    # Read all rows first, then stride, so sparse days (late sample, after v2
+    # volume migrated to v3/v4) still yield transactions. Striding while reading
+    # returned nothing for every 2025-26 day and silently dropped those days to
+    # base-fee-only gas, which omits priority tips.
     blocks, txs = [], []
+    lines = []
     with gzip.open(p, "rt") as fh:
-        for i, line in enumerate(fh):
-            if i % 500:
-                continue
-            s = json.loads(line)
-            t = s.get("transaction") or {}
-            if t.get("blockNumber"):
-                blocks.append(int(t["blockNumber"]))
-            if t.get("id"):
-                txs.append(t["id"])
-            if len(blocks) >= n and len(txs) >= n:
-                break
+        lines = fh.readlines()
+    step = max(1, len(lines) // max(n, 1))
+    for line in lines[::step]:
+        s = json.loads(line)
+        tx = s.get("transaction") or {}
+        if tx.get("blockNumber"):
+            blocks.append(int(tx["blockNumber"]))
+        if tx.get("id"):
+            txs.append(tx["id"])
+        if len(blocks) >= n and len(txs) >= n:
+            break
     return blocks[:n], txs[:n]
 
 
@@ -114,24 +122,26 @@ def gas_price_gwei(day: str) -> tuple[float | None, float | None]:
                 base = int(b["baseFeePerGas"], 16) / 1e9
         except Exception:
             pass
-    eff = None
-    if txs:
-        payload = [{"jsonrpc": "2.0", "id": j, "method": "eth_getTransactionReceipt",
-                    "params": [t]} for j, t in enumerate(txs[:8])]
+    # One receipt per request. JSON-RPC batching is refused by the free endpoints
+    # (Ankr demands an API key for batches, 1rpc rate-limits them) while the same
+    # calls succeed singly. The earlier batch path failed on every late-sample day
+    # and, because the failure was swallowed, silently degraded those days to
+    # base-fee-only gas, which omits priority tips.
+    vals = []
+    for tx in txs[:8]:
         try:
-            resp = rpc_post(payload, sleep=0.3)
-            vals = []
-            for r in (resp if isinstance(resp, list) else [resp]):
-                res = r.get("result") or {}
-                if res.get("effectiveGasPrice"):
-                    vals.append(int(res["effectiveGasPrice"], 16) / 1e9)
-                elif res.get("gasPrice"):
-                    vals.append(int(res["gasPrice"], 16) / 1e9)
-            if vals:
-                vals.sort()
-                eff = vals[len(vals) // 2]
+            r = rpc_post({"jsonrpc": "2.0", "id": 1,
+                          "method": "eth_getTransactionReceipt", "params": [tx]},
+                         sleep=0.15)
         except Exception:
-            pass
+            continue
+        if not isinstance(r, dict) or r.get("error"):
+            continue
+        res = r.get("result") or {}
+        px = res.get("effectiveGasPrice") or res.get("gasPrice")
+        if px:
+            vals.append(int(px, 16) / 1e9)
+    eff = sorted(vals)[len(vals) // 2] if vals else None
     return eff, base
 
 
@@ -167,7 +177,7 @@ def main() -> int:
     OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
     OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUT_PARQUET, index=False)
-    df.to_csv(OUT_CSV, index=False)
+    df.to_parquet(OUT_CSV, index=False)
 
     print(f"\nresolved {df.eth_usd.notna().sum()}/{len(df)} ETH prices, "
           f"{df.gas_gwei.notna().sum()}/{len(df)} gas prices")
@@ -175,6 +185,9 @@ def main() -> int:
     y = df.set_index("date").resample("YS").median(numeric_only=True)
     for idx, r in y.iterrows():
         print(f"  {idx.year}   ETH ${r.eth_usd:>8,.0f}   gas {r.gas_gwei:>7.1f} gwei")
+    for a in (OUT_PARQUET, OUT_CSV):
+        stamp(a, code_sources=CODE_SOURCES, rows=len(df),
+              notes=f"receipt medians resolved for {int(df.gas_gwei_receipt.notna().sum())}/{len(df)} days")
     print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)}")
     return 0
 

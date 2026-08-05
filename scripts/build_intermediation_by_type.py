@@ -24,7 +24,7 @@ would inflate its measured intermediation share.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/intermediation_by_type_daily.parquet
-        output/exhibits/intermediation_by_type.csv
+        output/exhibits/intermediation_by_type.parquet
 
 Run     .venv/bin/python scripts/build_intermediation_by_type.py [--workers N]
 """
@@ -44,7 +44,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 ROOT = Path(__file__).resolve().parents[1]
 UNIFIED = ROOT / "data" / "unified"
 OUT_PARQUET = ROOT / "data" / "processed" / "intermediation_by_type_daily.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "intermediation_by_type.csv"
+OUT_CSV = ROOT / "output" / "exhibits" / "intermediation_by_type.parquet"
 
 from ddvc.asset_types import TYPES, classify  # noqa: E402
 
@@ -140,7 +140,7 @@ def main() -> int:
     OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
     OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUT_PARQUET, index=False)
-    df.to_csv(OUT_CSV, index=False)
+    df.to_parquet(OUT_CSV, index=False)
 
     y = df.set_index("date").resample("YS").agg(
         {**{f"cnt_{t}": "sum" for t in TYPES},
