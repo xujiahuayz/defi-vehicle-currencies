@@ -2,9 +2,9 @@
 
 Uniswap V1 gave every ERC20 token exactly one exchange contract holding an ETH-token pair, so a token-to-token trade had no direct pool and the protocol routed it through ETH. ETH was a *mandated* vehicle currency. Traders never chose it. Uniswap V2, live 2020-05-05, allowed arbitrary ERC20/ERC20 pools and withdrew the mandate. That is a discontinuity in this paper's dependent variable, on a date we did not choose, and this document measures it.
 
-The verdict, stated first because it is negative in the places that matter. One large, clean, robust fact comes out of this. **The mandate was withdrawn and native-asset pairing did not retreat at all.** Six years on, 95 to 98% of single-leg Uniswap V2 trades still execute on a pool containing WETH, and the WETH share of newly created pairs *rose* from 84% in 2020 to 98% by 2023. Everything sharper than that fails. The obvious event study on V1's own flow is absorbed by a mechanical confound. The test that would isolate voluntary vehicle persistence among V1-era tokens cannot be run at all, because the V1 exchange-to-token crosswalk is not recoverable from this repo's data and the statistical substitute has a measured false-positive rate equal to its hit rate. A weaker version of that test does run on all V2 pairs and returns something interesting but not identified.
+The verdict, stated first because it is negative in the places that matter. One large, clean, robust fact comes out of this. **The mandate was withdrawn and native-asset pairing did not retreat at all.** Six years on, 95 to 98% of single-leg Uniswap V2 trades still execute on a pool containing WETH, and the WETH share of newly created pairs *rose* from 84% in 2020 to 98% by 2023. Everything sharper than that fails. The obvious event study on V1's own flow is absorbed by a mechanical confound. The test that would isolate voluntary vehicle persistence among V1-era tokens cannot be run at all, because the V1 exchange-to-token crosswalk is not recoverable from this repo's data and the statistical substitute has a measured false-positive rate equal to its hit rate. A weaker version of that test does run on all V2 pairs and returns something interesting but not identified. Section 8, added later, runs the token-level version of the event study that section 2's aggregate arithmetic cannot generate, and it reaches the same negative destination by a route that the thinning confound cannot touch.
 
-Built by `scripts/build_v1_forced_vehicle.py`, `scripts/build_v2_token_panel.py`, and `scripts/run_v1_forced_vehicle_tests.py`. Every number below is reproducible from those three; the machine-readable output is `output/exhibits/v1_forced_vehicle_report.md`.
+Built by `scripts/build_v1_forced_vehicle.py`, `scripts/build_v2_token_panel.py`, and `scripts/run_v1_forced_vehicle_tests.py`, plus `scripts/process/build_v1_exchange_class_panel.py` and `scripts/run_v1_forced_vehicle_token_level.py` for section 8. Every number below is reproducible from those five; the machine-readable output is `output/exhibits/v1_forced_vehicle_report.md` and, for section 8, `output/exhibits/v1_forced_vehicle_token_level_report.md`.
 
 ## 1. The institutional premise, verified, and one correction to how it appears in the data
 
@@ -212,3 +212,119 @@ Within a cohort there is genuine decay in horizon, clearest for 2021 (0.48 down 
 Not as an identification spine. As a motivating fact, section 3 is strong. A hard architectural constraint was removed, and six years later 97% of pools on that venue still hold the asset the constraint had mandated, with new-pool creation converging *toward* it. That is a good opening fact for a paper about how dominance is made, and it is cheap to defend.
 
 Three things would change the verdict, in order of cost. Re-fetch the V1 subgraph's `exchange` entity with `tokenAddress` and `tokenSymbol`, which turns section 4 from impossible into routine and makes the V1-restricted persistence test available. Point the existing transaction-time quoter at the pair-availability panel from section 5, which converts a description of routing into a test of whether the cheaper route was declined. Extend section 5 beyond `uniswap_v2` on the unified layer, which removes the single-venue bias that currently inflates every measured ETH share. Only the second of those makes the experiment identifying; the first two make it honest.
+
+## 8. The token-level test, which the aggregate arithmetic cannot generate
+
+Section 2's verdict stands as a statement about aggregates and nothing here supersedes it. What follows is a different test on the same event, and the reason to run it is that section 2's own two concessions leave the N-squared benchmark unable to speak to it. The benchmark is a claim about the COMPOSITION of aggregate flow as the live-exchange count falls, it assumes uniform trade propensity across pairs, and thinning is endogenous to the treatment. None of that has cross-sectional content. It does not say that a V1 exchange with a high forced-routing share loses its own ETH-paired flow faster than an exchange of the same size with a low one. So the question this section asks is the token-level one: conditional on a V1 exchange's OWN pre-V2 activity, does how heavily it was used as a forced-routing endpoint predict how fast it left V1? Once own pre-V2 size is held fixed the combinatorial argument cannot generate that coefficient in either direction, and thinning stops mattering as a rival explanation because thinning is not being used as a control. Built by `scripts/process/build_v1_exchange_class_panel.py` and `scripts/run_v1_forced_vehicle_token_level.py`; the machine-readable output is `output/exhibits/v1_forced_vehicle_token_level_report.md` and the ten `output/exhibits/v1_token_level_*.jsonl` exhibits.
+
+Two design choices matter more than anything else in the section and both are departures from the obvious version of the test. First, the outcome is dated on the exchange's own ETH-PAIRED flow, not on its total flow. Date exit on total trade count and an exchange whose flow was 40% forced routing loses 40% of its count the instant forced routing disappears, so the treatment mechanically produces the outcome; the treatment here is what share of an exchange's flow was forced routing and the outcome is how fast the REST of its flow died. Second, exit is dated against an ABSOLUTE floor of three ETH-paired legs in a thirty-day month as well as against 10% of the exchange's own pre-V2 baseline, because a threshold proportional to the ETH-paired baseline is itself lower for high-forced-share exchanges at any given total activity, which lengthens their measured survival for arithmetic rather than economic reasons. The absolute-floor version has no arithmetic connection to the treatment at all and is the primary specification. The total-count version is reported anyway, labelled as mechanically contaminated, because it is the design a reader would otherwise ask for.
+
+The unit is a V1 exchange, identified by `exchangeAddress`. Token identity remains unrecoverable (section 4) and is not needed: the address is a valid fixed identifier for an exchange whose token is unknown, and every variable here is constructed from that exchange's own transaction flow. The treatment is measured over the 182 days before 2020-05-05, the same pre-window section 2 uses. Forced-route legs are identified by the corrected signature from section 1, two rows sharing a transaction hash with one carrying only `ethPurchaseEvents` and the other only `tokenPurchaseEvents`; rows carrying both arrays are single-pool round trips and are excluded. A new panel was built for this because `data/processed/v1_exchange_day.parquet` folds liquidity provision, single-pool round trips and three-or-more-exchange transactions into its ETH-paired bucket, which is harmless for section 2's shares and not harmless for a dependent variable that is supposed to be an ETH-paired swap count.
+
+### Sample, and what was filtered
+
+| filter | exchanges | share kept |
+|---|---|---|
+| V1 exchanges with any activity in the 182 days before launch | 1,496 | 1.000 |
+| pre-window ETH-paired legs at least 50 | 261 | 0.174 |
+| traded ETH-paired within 30 days of the launch | 247 | 0.165 |
+| nonzero pre-window ETH-paired volume, i.e. not dust-only | 247 | 0.165 |
+| pool size resolved and positive at the launch date | 247 | 0.165 |
+
+**247 exchanges** is the identifying sample and it is the number to hold onto. The 50-leg minimum removes 83% of exchanges that touched V1 in that window and is the binding filter; it is there because a forced-route share computed on a handful of legs is mostly measurement error. Pool-size resolution at the launch date is 100% of the exchanges that reach that step, so nothing was imputed and nothing was silently dropped. Forced-route intensity has mean 0.189, median 0.142, standard deviation 0.167, interquartile range 0.074 to 0.258 and maximum 0.924, and 98.0% of these exchanges carry at least one forced-route leg, so there is real cross-sectional spread in the treatment rather than a rare-event indicator. On the primary outcome 216 of 247 exchanges exit inside 24 thirty-day months, with a median of 4 months, so censoring is 31 units and the duration is well measured.
+
+### Covariate balance, and the threat that intensity just labels peripheral tokens
+
+| covariate | high-intensity median | low-intensity median | normalised difference |
+|---|---|---|---|
+| pre-V2 ETH-paired legs | 267 | 323 | 0.138 |
+| pre-V2 ETH-paired volume, ETH | 77.4 | 95.5 | 0.218 |
+| pool size at launch, ETH | 35.2 | 14.3 | 0.153 |
+| age in days at launch | 230 | 178 | 0.141 |
+| active days in the pre-window | 104 | 68 | 0.369 |
+| distinct forced-route counterparties | 25 | 7 | 0.555 |
+| log pre-window activity trend | -0.254 | -0.268 | 0.003 |
+
+The specific threat named in advance, that forced-route intensity is a proxy for being a small peripheral token, is not what the data show. Intensity correlates **-0.012** with log pre-V2 ETH-paired legs and **+0.161** with log pool size, so on size the two groups are close to balanced and on depth the imbalance runs the wrong way for that threat: heavily routed exchanges are slightly DEEPER, not thinner. The imbalances that are real are activity breadth, 104 against 68 active days, and forced-route counterparty count, a median of 25 against 7. Those say the heavily routed exchanges were more central, not more peripheral, and that turns out to be the whole story of the sign.
+
+### The estimate
+
+| outcome | controls | n | forced-route intensity | robust se | t | R-squared |
+|---|---|---|---|---|---|---|
+| ETH-paired, absolute floor | none | 247 | +1.034 | 0.325 | +3.19 | 0.028 |
+| ETH-paired, absolute floor | size only | 247 | +0.827 | 0.280 | +2.95 | 0.351 |
+| **ETH-paired, absolute floor** | **full** | **247** | **+0.276** | **0.307** | **+0.90** | **0.471** |
+| ETH-paired, 10% of own baseline | full | 247 | +0.260 | 0.323 | +0.81 | 0.287 |
+| all legs, 10% of own baseline (contaminated) | full | 247 | -0.305 | 0.339 | -0.90 | 0.245 |
+
+A negative coefficient is the mandate hypothesis: more forced-route intensity, faster exit. Standard errors are heteroskedasticity-robust, which is exactly what a variance clustered on the exchange collapses to when each exchange contributes one spell, and it is labelled that way rather than dressed up as clustering. The primary estimate is **+0.276 log-months per unit of forced-route intensity with a robust standard error of 0.307, t = +0.90, on 247 exchanges**. That is the WRONG SIGN for the hypothesis and it is not significant. Scaled to one standard deviation of intensity the point estimate is +0.046 log-months with a 95% interval of [-0.055, +0.147], a survival-time ratio between 0.95 and 1.16; across the 0.52 spread from the 5th to the 95th percentile of intensity the interval on the survival-time ratio is [0.84, 1.59]. Randomisation inference agrees with the asymptotics and is the inference to prefer at this sample size: reshuffling intensity across exchanges gives a two-sided p of **0.355** over 5,000 draws, and reshuffling only within size quintiles gives 0.359.
+
+The grouped-time proportional hazard on the exchange-month panel is the one specification where clustering has content, and it is where the standard errors are clustered on the exchange. On the primary outcome, 2,457 exchange-months in 247 clusters with 216 failures, forced-route intensity enters the complementary-log-log hazard at **+0.026 with a cluster-robust standard error of 0.431**, a hazard ratio of 1.004 per standard deviation of intensity. That is as close to a literal zero as this exercise produces. The contaminated total-legs outcome gives +0.739 (se 0.477), in the hypothesised direction and still insignificant, which is what one expects from the outcome in which the treatment removes part of the dependent variable by construction.
+
+### One wrong-signed significant result, and what it actually is
+
+Dichotomising intensity at its median produces a coefficient that clears significance with the wrong sign, **+0.222 log-months, robust standard error 0.103, t = +2.15** with the full controls, and it survives matching: within size-quintile by depth-tercile strata the stratum-fixed-effects estimate is +0.297 (se 0.116, t = +2.56) on the **235 of 247 exchanges** that sit in a stratum containing both a high- and a low-intensity exchange, and +0.268 (t = +2.54) with the continuous controls added on top of the strata. It has to be reported as a real wrong-signed result, and then read against two things that dissolve it as a dose-response.
+
+| intensity quintile | exchanges | mean forced share | log survival vs quintile 1 | robust se |
+|---|---|---|---|---|
+| 1 | 50 | 0.029 | 0 | |
+| 2 | 49 | 0.087 | +0.009 | 0.165 |
+| 3 | 49 | 0.143 | +0.445 | 0.165 |
+| 4 | 49 | 0.226 | +0.288 | 0.165 |
+| 5 | 50 | 0.457 | +0.137 | 0.168 |
+
+First, the profile is hump-shaped rather than monotone. The most heavily routed quintile sits closer to the reference than quintiles 3 and 4 do, the four dummies are jointly significant at a Wald statistic of 11.22 on 4 degrees of freedom (p = 0.024), and the continuous version of the same stratified comparison is +0.328 with a standard error of 0.315 (t = +1.04). A monotone effect of intensity cannot produce that pattern; the median dichotomy is significant because of where it happens to cut, not because survival rises with intensity.
+
+Second, the sign belongs to routing BREADTH rather than routing intensity. Breadth is the number of distinct counterparty exchanges an exchange was routed to or from in the pre-window; it correlates +0.362 with intensity and is the most imbalanced covariate in the sample.
+
+| specification | treatment | robust se | t | breadth coefficient | t on breadth |
+|---|---|---|---|---|---|
+| continuous intensity, pre-specified controls | +0.276 | 0.307 | +0.90 | | |
+| continuous intensity, plus routing breadth | -0.531 | 0.328 | -1.62 | +0.357 | +3.50 |
+| above-median intensity, pre-specified controls | +0.222 | 0.103 | +2.15 | | |
+| above-median intensity, plus routing breadth | -0.000 | 0.121 | -0.00 | +0.289 | +2.67 |
+
+Holding breadth fixed, intensity turns negative, which is the direction the mandate hypothesis predicts, and the significant dichotomy collapses to zero. Every quintile dummy turns negative as well (joint Wald 10.68 on 4 degrees of freedom, p = 0.030). This specification is not promoted to primary, for a reason that must be stated rather than glossed: breadth is itself a function of the treatment, since an exchange with no forced routes has no counterparties, so conditioning on it partials out part of the object being measured. It is a decomposition of forced routing into intensity and reach, not a cleaner identification of intensity. What it establishes is that the **sign of the token-level estimate is not identified** — positive under the pre-specified controls, negative under a defensible addition to them, significant under neither — while the magnitude stays small in both.
+
+### Robustness, reported including the parts that move
+
+| variant | n | exits | forced-route intensity | robust se | t |
+|---|---|---|---|---|---|
+| baseline | 247 | 216 | +0.276 | 0.307 | +0.90 |
+| minimum pre-V2 legs 20 | 351 | 318 | -0.009 | 0.268 | -0.03 |
+| minimum pre-V2 legs 200 | 141 | 113 | +0.875 | 0.468 | +1.87 |
+| horizon 12 months | 247 | 181 | +0.214 | 0.277 | +0.77 |
+| horizon 36 months | 247 | 224 | +0.259 | 0.319 | +0.81 |
+| treatment: strict-leg forced share | 247 | 216 | +0.390 | 0.297 | +1.31 |
+| treatment: ETH-volume forced share | 247 | 216 | +0.199 | 0.338 | +0.59 |
+| treatment: forced-route SOURCE legs only | 247 | 216 | +0.369 | 0.551 | +0.67 |
+| treatment: forced-route DESTINATION legs only | 247 | 216 | +0.500 | 0.535 | +0.93 |
+| drop the bottom decile of pool size | 222 | 191 | +0.558 | 0.326 | +1.71 |
+| drop the five largest exchanges by legs | 242 | 215 | +0.280 | 0.312 | +0.90 |
+
+Nothing here reaches significance and the point estimate moves across the sample cut, from -0.009 at a 20-leg minimum to +0.875 at a 200-leg minimum. That instability is itself evidence against a real dose-response rather than around it: an effect of the size the hypothesis needs would not flip sign when the sample doubles. The two directional treatments, forced-route source legs and destination legs taken separately, are individually uninformative because splitting an already-noisy treatment roughly doubles its standard error.
+
+### Falsification, both checks, pass and fail
+
+**Falsification 1 FAILED on its pre-stated rule.** The rule, fixed before the placebo ran: shift the event to 2019-11-05, six months before V2, truncate follow-up at six months so the whole outcome window closes on 2020-05-04 and cannot be contaminated by the event being falsified, re-estimate the real event on the same six-month horizon, and PASS only if the placebo coefficient is insignificant at 5% AND smaller in absolute value than the real one. The placebo gives +0.0333 (t = +0.12) on 99 exchanges with 17 exits; the real six-month estimate gives +0.0311 (t = +0.15) on 247 exchanges with 124 exits. The placebo is insignificant but it is larger in absolute value, by 0.0021 log-months, so the rule fails. The failure is uninformative rather than damning and the reason is stated rather than used to rewrite the rule: V1 in late 2019 was less than half the venue it was in May 2020, so the placebo carries a seventh of the exits and a larger standard error, and both coefficients are within a quarter of a standard error of zero, which makes the ordering condition a coin flip. A rule that compares magnitudes cannot discriminate when both magnitudes are noise. It is reported as FAIL.
+
+**Falsification 2 PASSED, and it is the one that makes the null mean something.** A placebo date answers whether the design finds an effect that is not there. It does not answer the question that matters when the estimate is zero, which is whether the design would have found an effect that was. So: fit the primary specification with the treatment excluded, rebuild the outcome as that fit plus a KNOWN coefficient on intensity plus residuals resampled with replacement, and count how often the design recovers it at 5% with the right sign. The pre-stated criterion, fixed before the simulation ran, was at least 80% power against a halving of survival time between the 5th and 95th percentile of intensity.
+
+| true survival ratio, 95th against 5th percentile of intensity | implied coefficient | power at 5%, correct sign |
+|---|---|---|
+| 0.90 | -0.201 | 9.2% |
+| 0.75 | -0.549 | 42.2% |
+| **0.50** | **-1.322** | **98.4%** |
+| 0.25 | -2.643 | 100.0% |
+
+Power against a halving is **98.4%** against a threshold of 80%, so this is a PASS, and the consequence is that the estimate above is not small merely because 247 units cannot see anything. An effect that halved the lifetime of the most heavily routed exchanges would have been detected in 98 of 100 samples like this one and it was not detected. The honest boundary is also in the table: power against a 25% shortening is 42%, so effects in that range are out of reach and are not being claimed against, and the breadth-conditioned specification has a wider interval whose lower end reaches a survival ratio of about 0.54 across the same spread. This is a bound that excludes large token-level effects, not a knife-edge zero.
+
+### Does this change the verdict on the V1 natural experiment
+
+**No, and it changes what the negative verdict rests on.** Section 2 said the aggregate differential is fully accounted for by network thinning and therefore uninformative. The token-level test is not vulnerable to that argument and reaches the same destination by a different route: conditional on an exchange's own pre-V2 size, depth, age and activity pattern, how heavily it was used as a forced-routing endpoint carries no information about how fast its own ETH-paired flow died. The point estimate is of the wrong sign, insignificant on both asymptotic and randomisation inference, literally zero in the hazard formulation, and unstable in sign across a defensible control and across the sample cut. The one significant result in the section is a median dichotomy which is non-monotone in intensity and vanishes once routing breadth is held fixed, and what breadth is measuring is that heavily routed exchanges were popular exchanges, which is the reverse of the peripherality story the design was built to guard against.
+
+That is a stronger negative than section 2's, because it does not depend on a combinatorial benchmark that section 2 itself conceded might be off by a constant factor. It is also a bounded negative rather than an unbounded one, since falsification 2 establishes that an effect of the magnitude the hypothesis needs would have been visible. What it is NOT is a precise zero: 247 units cannot resolve a 25% difference in exchange lifetime, and the breadth-conditioned specification leaves room for something around a 0.54 survival ratio at the bottom of its interval. So the position to hold is that the V1 mandate's removal has no detectable token-level footprint in exit speed at a resolution of roughly a 30% change in lifetime, that the aggregate differential in section 2 has no cross-sectional counterpart, and that section 7's verdict is unchanged: the V1-to-V2 discontinuity is a motivating fact and not an identification spine. Section 7's ranked list of what would change the verdict also stands unchanged, since none of its three items is a token-level exit test.
+
+### A numerical correction to section 1's denominator
+
+Rebuilding the classification from the raw layer surfaced an arithmetic error in section 1's count shares, which is recorded here rather than left in place. The count denominator quoted there, 2,724,038 swap transactions, double-counts the strict forced-route subset: `token_to_token_strict` is a reported subset of `token_to_token` and not a partition cell, and 2,724,038 is exactly 2,522,120 plus the 201,918 strict routes. The correct swap-transaction count in `data/processed/v1_trade_classes_daily.parquet` is **2,522,120**, so section 1's count shares are all understated by a factor of 1.080: ETH to token is 47.71% rather than 44.18%, token to ETH 42.66% rather than 39.50%, forced token to token **8.60% rather than 7.97%**, single-pool round trips 0.48% and three-or-more-exchange transactions 0.54%. The ETH-volume shares in that table are unaffected, because they were taken over the correct volume total. Nothing in sections 2 through 7 turns on the difference, and the direction of the correction slightly enlarges the mandate's measured bite rather than shrinking it.

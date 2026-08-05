@@ -37,7 +37,7 @@ Bias directions, both stated because they cut opposite ways:
 
 Reads   data/raw/thegraph/{uniswap_v2,sushiswap_v2}/*_{swaps,hourly_reserves}_*.gz
 Writes  data/processed/counterfactual_dominance.parquet
-        output/exhibits/counterfactual_dominance_summary.parquet
+        output/exhibits/counterfactual_dominance_summary.jsonl
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 RAW = ROOT / "data" / "raw" / "thegraph"
 OUT_PARQUET = ROOT / "data" / "processed" / "counterfactual_dominance.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "counterfactual_dominance_summary.parquet"
+OUT_EXHIBIT = ROOT / "output" / "exhibits" / "counterfactual_dominance_summary.jsonl"
 
 from ddvc.asset_types import classify  # noqa: E402
 from ddvc.cpquote import Pool, quote_one_hop  # noqa: E402
@@ -265,7 +265,7 @@ def main() -> int:
     df = pd.concat(parts, ignore_index=True)
     df = df[df.gap_bps.notna()]
     OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
+    OUT_EXHIBIT.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUT_PARQUET, index=False)
 
     print(f"\ncomparable intermediated routes with a direct alternative: {len(df):,}")
@@ -291,8 +291,8 @@ def main() -> int:
         routes=("gap_bps", "size"),
         pct_dominated=("gap_bps", lambda x: 100 * (x > 0).mean()),
         median_gap_bps=("gap_bps", "median"),
-    ).to_parquet(OUT_CSV)
-    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_CSV.relative_to(ROOT)}")
+    ).to_parquet(OUT_EXHIBIT)
+    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
     print("\nBIAS DIRECTIONS, both live: v2-family venues only understates the best "
           "alternative (dominance is a LOWER bound), while quotes gross of gas "
           "favour the two-hop route (dominance is an UPPER bound). Neither is "

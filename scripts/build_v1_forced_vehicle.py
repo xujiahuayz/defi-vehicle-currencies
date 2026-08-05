@@ -13,7 +13,7 @@ Reads   data/raw/thegraph/uniswap_v1/uniswap_v1_swaps_YYYYMMDD.jsonl.gz
         data/raw/thegraph/uniswap_v1/uniswap_v1_daily_YYYYMMDD.jsonl.gz
 Writes  data/processed/v1_trade_classes_daily.parquet
         data/processed/v1_exchange_day.parquet
-        output/exhibits/v1_trade_classes_daily.parquet
+        output/exhibits/v1_trade_classes_daily.jsonl
 
 Run     .venv/bin/python scripts/build_v1_forced_vehicle.py [--workers N]
 """
@@ -30,11 +30,13 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.tables import write_exhibit
+
 ROOT = Path(__file__).resolve().parents[1]
 V1 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v1"
 OUT_DAILY = ROOT / "data" / "processed" / "v1_trade_classes_daily.parquet"
 OUT_EXCH = ROOT / "data" / "processed" / "v1_exchange_day.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "v1_trade_classes_daily.parquet"
+OUT_EXHIBIT = ROOT / "output" / "exhibits" / "v1_trade_classes_daily.jsonl"
 
 # Trade classes. The first three are the partition the paper cares about; the
 # last three are residual patterns kept visible rather than folded away, because
@@ -315,10 +317,10 @@ def main() -> int:
     exch = exch.sort_values(["exchange", "date"]).reset_index(drop=True)
 
     OUT_DAILY.parent.mkdir(parents=True, exist_ok=True)
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
+    OUT_EXHIBIT.parent.mkdir(parents=True, exist_ok=True)
     daily.to_parquet(OUT_DAILY, index=False)
     exch.to_parquet(OUT_EXCH, index=False)
-    daily.to_parquet(OUT_CSV, index=False)
+    write_exhibit(daily, OUT_EXHIBIT)
 
     tot_tx = daily["n_tx"].sum()
     tot_swap = daily["n_swap_tx"].sum()
@@ -366,7 +368,7 @@ def main() -> int:
               f"{r.n_token_to_token_strict / max(r.n_swap_tx, 1):>16.2%}")
 
     print(f"\nwrote {OUT_DAILY.relative_to(ROOT)}, {OUT_EXCH.relative_to(ROOT)}, "
-          f"{OUT_CSV.relative_to(ROOT)}")
+          f"{OUT_EXHIBIT.relative_to(ROOT)}")
     return 0
 
 

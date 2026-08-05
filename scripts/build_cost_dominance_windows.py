@@ -42,7 +42,7 @@ trade against a large intermediated one is not like-for-like.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cost_dominance_cells.parquet
-        output/exhibits/cost_dominance_summary.parquet
+        output/exhibits/cost_dominance_summary.jsonl
 """
 
 from __future__ import annotations
@@ -59,9 +59,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 UNIFIED = ROOT / "data" / "unified"
 OUT_PARQUET = ROOT / "data" / "processed" / "cost_dominance_cells.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "cost_dominance_summary.parquet"
+OUT_EXHIBIT = ROOT / "output" / "exhibits" / "cost_dominance_summary.jsonl"
 
 from ddvc.asset_types import classify  # noqa: E402
+from ddvc.tables import write_exhibit  # noqa: E402
 
 COLS = ["tx_hash", "component_id", "token_in", "token_out", "token_in_sym",
         "token_out_sym", "amount_in", "amount_out", "amount_usd", "log_index"]
@@ -173,7 +174,7 @@ def main() -> int:
     cells = pd.concat(parts, ignore_index=True).sort_values("date")
 
     OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
+    OUT_EXHIBIT.parent.mkdir(parents=True, exist_ok=True)
     cells.to_parquet(OUT_PARQUET, index=False)
 
     n = len(cells)
@@ -215,8 +216,8 @@ def main() -> int:
         print(f"  {row['year']}  cells {row['cells']:7,}  dominated {row['pct_dominated']:5.1f}%"
               f"  median indirect share {row['median_indirect_share_in_dominated']:6.1%}"
               f"  persistent {row['persistent_cells']:6,}")
-    pd.DataFrame(summary).to_parquet(OUT_CSV, index=False)
-    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_CSV.relative_to(ROOT)}")
+    write_exhibit(pd.DataFrame(summary), OUT_EXHIBIT)
+    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
     print("\nREAD THIS BEFORE USING THE NUMBERS: rates are gross of gas, so a "
           "two-hop route losing on rate may still win all-in. This is an upper "
           "bound on cost dominance and the gas-inclusive version is required "

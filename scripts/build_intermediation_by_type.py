@@ -24,7 +24,7 @@ would inflate its measured intermediation share.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/intermediation_by_type_daily.parquet
-        output/exhibits/intermediation_by_type.parquet
+        output/exhibits/intermediation_by_type.jsonl
 
 Run     .venv/bin/python scripts/build_intermediation_by_type.py [--workers N]
 """
@@ -44,9 +44,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 ROOT = Path(__file__).resolve().parents[1]
 UNIFIED = ROOT / "data" / "unified"
 OUT_PARQUET = ROOT / "data" / "processed" / "intermediation_by_type_daily.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "intermediation_by_type.parquet"
+OUT_EXHIBIT = ROOT / "output" / "exhibits" / "intermediation_by_type.jsonl"
 
 from ddvc.asset_types import TYPES, classify  # noqa: E402
+from ddvc.tables import write_exhibit  # noqa: E402
 
 COLS = ["tx_hash", "component_id", "token_in", "token_out", "amount_usd", "log_index"]
 
@@ -138,9 +139,9 @@ def main() -> int:
         df[f"share_{t}"] = df[f"cnt_{t}"] / df["episodes"]
 
     OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
+    OUT_EXHIBIT.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUT_PARQUET, index=False)
-    df.to_parquet(OUT_CSV, index=False)
+    write_exhibit(df, OUT_EXHIBIT)
 
     y = df.set_index("date").resample("YS").agg(
         {**{f"cnt_{t}": "sum" for t in TYPES},
@@ -161,7 +162,7 @@ def main() -> int:
     for idx, r in y.iterrows():
         tot = sum(r[f"usd_{t}"] for t in TYPES) or 1
         print(f"  {idx.year} " + "".join(f"{r[f'usd_{t}']/tot:14.1%} " for t in TYPES))
-    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_CSV.relative_to(ROOT)}")
+    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
     return 0
 
 

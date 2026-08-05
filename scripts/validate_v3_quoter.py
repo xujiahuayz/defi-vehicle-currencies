@@ -20,7 +20,7 @@ directional by construction, so a pooled error statistic would average a broken
 direction against a working one and hide it.
 
 Reads   data/raw/thegraph/uniswap_v3/uniswap_v3_{swaps,mints,burns}_*.jsonl.gz
-Writes  output/exhibits/v3_quoter_validation.parquet
+Writes  output/exhibits/v3_quoter_validation.jsonl
 """
 
 from __future__ import annotations
@@ -36,9 +36,10 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 RAW = ROOT / "data" / "raw" / "thegraph" / "uniswap_v3"
-OUT = ROOT / "output" / "exhibits" / "v3_quoter_validation.parquet"
+OUT = ROOT / "output" / "exhibits" / "v3_quoter_validation.jsonl"
 
 from ddvc.pricing.v3quote import quote_exact_input  # noqa: E402
+from ddvc.tables import write_exhibit  # noqa: E402
 from ddvc.provenance import stamp  # noqa: E402
 
 # Deep pools with unambiguous fee tiers. Token ORDER is deliberately NOT recorded
@@ -171,7 +172,7 @@ def main() -> int:
         return 1
     df["abs_err"] = df.err_pct.abs()
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(OUT, index=False)
+    write_exhibit(df, OUT)
 
     print(f"\n{len(df):,} realised swaps re-quoted offline\n")
     print("BY DIRECTION (a tick-traversal fault is directional, so never pool these):")

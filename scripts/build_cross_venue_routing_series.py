@@ -39,7 +39,7 @@ primary and the value series as secondary.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cross_venue_routing_daily.parquet
-        output/exhibits/cross_venue_routing_series.parquet
+        output/exhibits/cross_venue_routing_series.jsonl
 
 Run     .venv/bin/python scripts/build_cross_venue_routing_series.py [--workers N]
 Rebuild is idempotent: delete the outputs and rerun to regenerate byte-identically.
@@ -54,10 +54,12 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.tables import write_exhibit
+
 ROOT = Path(__file__).resolve().parents[1]
 UNIFIED = ROOT / "data" / "unified"
 OUT_PARQUET = ROOT / "data" / "processed" / "cross_venue_routing_daily.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "cross_venue_routing_series.parquet"
+OUT_EXHIBIT = ROOT / "output" / "exhibits" / "cross_venue_routing_series.jsonl"
 
 COLS = ["tx_hash", "component_id", "source", "amount_usd", "route_class",
         "token_in", "token_out"]
@@ -152,9 +154,9 @@ def main() -> int:
     df = df[df["routes"] > 0].copy()
 
     OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
+    OUT_EXHIBIT.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUT_PARQUET, index=False)
-    df.to_parquet(OUT_CSV, index=False)
+    write_exhibit(df, OUT_EXHIBIT)
 
     # monthly view, which is what a figure would plot
     m = df.set_index("date").resample("MS").agg(
@@ -184,7 +186,7 @@ def main() -> int:
               f"  {row.cross_venue_usd_share:6.1%}"
               f"   rt={row.round_trip_share:5.1%}"
               f"   venues {int(row.venues_active)}")
-    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_CSV.relative_to(ROOT)}")
+    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
     return 0
 
 

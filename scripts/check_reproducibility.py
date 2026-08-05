@@ -49,11 +49,11 @@ ARTEFACT_DIRS = (
     "output/tables",
     "output/figures",
 )
-# Parquet for data panels, TeX and PDF for paper-facing exhibits, images for
-# figures. Delimited-text artefacts are absent by design: the repository forbids
-# generating them and a test enforces it, so there is nothing of that kind left to
-# scan for.
-SUFFIXES = (".parquet", ".pkl", ".tex", ".pdf", ".png", ".svg")
+# Parquet for analytic panels, JSON Lines for paper-facing exhibits, TeX and PDF
+# for rendered tables, images for figures. Delimited text is absent by design: the
+# repository forbids generating it and a test enforces that, so there is nothing of
+# that kind left to scan for.
+SUFFIXES = (".parquet", ".pkl", ".jsonl", ".json", ".gz", ".tex", ".pdf", ".png", ".svg")
 
 
 def collect() -> list[Path]:

@@ -25,7 +25,7 @@ median is preferred and the base fee is kept for comparison.
 
 Reads   data/raw/thegraph/uniswap_v2/uniswap_v2_{hourly_reserves,swaps}_*.jsonl.gz
 Writes  data/processed/daily_gas_eth.parquet
-        output/exhibits/daily_gas_eth.parquet
+        output/exhibits/daily_gas_eth.jsonl
 """
 
 from __future__ import annotations
@@ -44,9 +44,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 RAW = ROOT / "data" / "raw" / "thegraph" / "uniswap_v2"
 OUT_PARQUET = ROOT / "data" / "processed" / "daily_gas_eth.parquet"
-OUT_CSV = ROOT / "output" / "exhibits" / "daily_gas_eth.parquet"
+OUT_EXHIBIT = ROOT / "output" / "exhibits" / "daily_gas_eth.jsonl"
 
 from ddvc.provenance import stamp  # noqa: E402
+from ddvc.tables import write_exhibit  # noqa: E402
 from ddvc.quoter import rpc_post  # noqa: E402
 
 CODE_SOURCES = ["scripts/build_daily_gas_and_eth.py", "src/ddvc/quoter.py"]
@@ -175,9 +176,9 @@ def main() -> int:
     df["gas_gwei"] = df.gas_gwei.ffill().bfill()
 
     OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
-    OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
+    OUT_EXHIBIT.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUT_PARQUET, index=False)
-    df.to_parquet(OUT_CSV, index=False)
+    write_exhibit(df, OUT_EXHIBIT)
 
     print(f"\nresolved {df.eth_usd.notna().sum()}/{len(df)} ETH prices, "
           f"{df.gas_gwei.notna().sum()}/{len(df)} gas prices")
@@ -185,7 +186,7 @@ def main() -> int:
     y = df.set_index("date").resample("YS").median(numeric_only=True)
     for idx, r in y.iterrows():
         print(f"  {idx.year}   ETH ${r.eth_usd:>8,.0f}   gas {r.gas_gwei:>7.1f} gwei")
-    for a in (OUT_PARQUET, OUT_CSV):
+    for a in (OUT_PARQUET, OUT_EXHIBIT):
         stamp(a, code_sources=CODE_SOURCES, rows=len(df),
               notes=f"receipt medians resolved for {int(df.gas_gwei_receipt.notna().sum())}/{len(df)} days")
     print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)}")

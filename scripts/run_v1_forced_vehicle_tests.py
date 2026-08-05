@@ -18,7 +18,7 @@ Reads   data/processed/v1_trade_classes_daily.parquet
         data/unified/YYYYMMDD.parquet
 Writes  data/processed/v1_exchange_token_crosswalk.parquet
         data/processed/v2_pair_routing_daily.parquet
-        output/exhibits/v1_forced_vehicle_*.parquet
+        output/exhibits/v1_forced_vehicle_*.jsonl
 
 Run     .venv/bin/python scripts/run_v1_forced_vehicle_tests.py [--workers N]
 """
@@ -31,6 +31,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from ddvc.tables import write_exhibit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -150,8 +152,8 @@ def test1_differential(out: list[str]) -> pd.DataFrame:
              "t2t_share_strict"]
         ])
     )
-    m.to_parquet(EX / "v1_forced_vehicle_monthly.parquet")
-    tab.to_parquet(EX / "v1_forced_vehicle_windows.parquet", index=False)
+    write_exhibit(m, EX / "v1_forced_vehicle_monthly.jsonl")
+    write_exhibit(tab, EX / "v1_forced_vehicle_windows.jsonl")
     test1_thinning_check(d, out)
     return tab
 
