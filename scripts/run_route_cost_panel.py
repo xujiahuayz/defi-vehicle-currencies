@@ -212,7 +212,17 @@ def _routes_by_pair(legs: pd.DataFrame, top_pairs: int) -> pd.DataFrame:
         columns={"token_out": "token", "token_out_sym": "symbol", "tout_role": "role"}
     )
     roles = pd.concat([left, right], ignore_index=True)
-    roles["token"] = roles["token"].str.lower()
+    # Canonicalise route ENDPOINTS the same way pool tokens are canonicalised.
+    # Applying `canonical_token` to pool tokens but not to src/tgt made native ETH
+    # resolve to WETH on one side of the join and stay as the zero address on the
+    # other, so no pool key could ever match a native-ETH endpoint. 2,568,384 rows
+    # carried direct_available and vehicle_available at exactly 0.000 against 0.722
+    # and 0.336 elsewhere, which deleted precisely the pairs the native-asset
+    # question is about, and it also starved Uniswap v4, whose pools are
+    # native-ETH-paired: v4 legs survived on 30 of the 546 days its flow exists.
+    roles["token"] = [canonical_token(x, unify_wrapped=UNIFY_WRAPPED) or ""
+                      for x in roles["token"].astype(str).str.lower()]
+    roles = roles[roles["token"].astype(bool)]
     sources = (
         roles[roles["role"].eq("source")][["component_key", "token", "symbol"]]
         .drop_duplicates()

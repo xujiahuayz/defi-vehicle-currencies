@@ -56,18 +56,18 @@ OUT = ROOT / "output" / "exhibits" / "dominance_mechanicalness_screen.jsonl"
 
 
 def estimate(sub: pd.DataFrame, label: str) -> dict | None:
-    """Absorb the cell effect on a restricted sample, clustering by pair."""
+    """Absorb the fixed effect effect on a restricted sample, clustering by pair."""
     import pyfixest as pf
 
-    mix = sub.groupby("cell_id").native.agg(["mean", "size"])
+    mix = sub.groupby("fe_id").native.agg(["mean", "size"])
     ident = mix[(mix["mean"] > 0) & (mix["mean"] < 1)].index
-    s = sub[sub.cell_id.isin(ident)]
+    s = sub[sub.fe_id.isin(ident)]
     if s.empty or s.native.nunique() < 2 or s.pair_id.nunique() < 2:
         return None
-    fit = pf.feols("dominated ~ native | cell_id", data=s, vcov={"CRV1": "pair_id"})
+    fit = pf.feols("dominated ~ native | fe_id", data=s, vcov={"CRV1": "pair_id"})
     row = fit.tidy().loc["native"]
     coef, se = float(row["Estimate"]), float(row["Std. Error"])
-    return {"screen": label, "n": int(len(s)), "identifying_cells": int(len(ident)),
+    return {"screen": label, "n": int(len(s)), "identifying_groups": int(len(ident)),
             "clusters": int(s.pair_id.nunique()), "coef": coef, "se": se,
             "p": float(row["Pr(>|t|)"]), "mde_80": 2.80 * se,
             "dominated_rate": float(s.dominated.mean())}
@@ -76,7 +76,8 @@ def estimate(sub: pd.DataFrame, label: str) -> dict | None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--window", type=int, default=7)
+    ap.add_argument("--window", type=int, default=12,
+                    help="control-window width in HOURS")
     args = ap.parse_args()
 
     import run_vehicle_dominance_hdfe as hdfe
@@ -84,7 +85,7 @@ def main() -> int:
     df = hdfe.load(args.window, 100.0)
     df["mid_type"] = df.vehicle.map({v: classify(v)[1] for v in df.vehicle.unique()})
     df["native"] = (df.mid_type == "native").astype(float)
-    print(f"base sample {len(df):,} routes, window {args.window}d")
+    print(f"base sample {len(df):,} routes, window {args.window}h")
     print(f"vehicle mix: {df.mid_type.value_counts().to_dict()}\n")
 
     rows = []
@@ -122,7 +123,7 @@ def main() -> int:
     print(f"\n  {'screen':<34}{'n':>12}{'ident.':>9}{'clust':>7}"
           f"{'coef':>10}{'se':>8}{'p':>7}{'MDE80':>8}{'dom.rate':>10}")
     for r in rows:
-        print(f"  {r['screen']:<34}{r['n']:>12,}{r['identifying_cells']:>9,}"
+        print(f"  {r['screen']:<34}{r['n']:>12,}{r['identifying_groups']:>9,}"
               f"{r['clusters']:>7,}{r['coef']:>10.4f}{r['se']:>8.4f}"
               f"{r['p']:>7.3f}{r['mde_80']:>8.4f}{r['dominated_rate']:>10.1%}")
 

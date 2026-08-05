@@ -40,7 +40,8 @@ OUT = ROOT / "output" / "exhibits" / "dominance_crosscheck.jsonl"
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--window", type=int, default=7)
+    ap.add_argument("--window", type=int, default=12,
+                    help="control-window width in HOURS")
     ap.add_argument("--min-notional", type=float, default=100.0)
     ap.add_argument("--tol", type=float, default=1e-4,
                     help="absolute tolerance on the coefficient; the two engines "
@@ -54,12 +55,12 @@ def main() -> int:
     df["native"] = (df.mid_type == "native").astype(int)
     py = hdfe.summarise(df.assign(native=df.native.astype(float)), args.window)
     if py is None:
-        print("no identifying cells")
+        print("no identifying fixed effects")
         return 1
 
-    mix = df.groupby("cell_id").native.agg(["mean", "size"])
+    mix = df.groupby("fe_id").native.agg(["mean", "size"])
     ident = mix[(mix["mean"] > 0) & (mix["mean"] < 1)].index
-    sub = df[df.cell_id.isin(ident)][["dominated", "native", "cell_id", "pair_id"]]
+    sub = df[df.fe_id.isin(ident)][["dominated", "native", "fe_id", "pair_id"]]
     TRANSIENT.parent.mkdir(parents=True, exist_ok=True)
     # Written by DuckDB rather than pandas: the repository forbids emitting delimited
     # text from source, DuckDB's COPY is far faster on 11 million rows, and this keeps
@@ -87,14 +88,14 @@ def main() -> int:
     delta = abs(r_coef - py["coef"])
     agree = delta < args.tol
 
-    print(f"window {args.window}d, {py['n']:,} rows, {py['identifying_cells']:,} identifying cells")
+    print(f"window {args.window}h, {py['n']:,} rows, {py['identifying_groups']:,} identifying fixed effects")
     print(f"  pyfixest  coef {py['coef']:+.6f}  se {py['se']:.6f}")
     print(f"  R fixest  coef {r_coef:+.6f}  se {r_se:.6f}")
     print(f"  |difference| {delta:.2e}  ->  {'AGREE' if agree else 'DISAGREE, do not use either until resolved'}")
 
     write_exhibit(pd.DataFrame([{
-        "window_days": args.window, "n": py["n"],
-        "identifying_cells": py["identifying_cells"], "clusters": py["clusters"],
+        "window_hours": args.window, "n": py["n"],
+        "identifying_groups": py["identifying_groups"], "clusters": py["clusters"],
         "pyfixest_coef": py["coef"], "pyfixest_se": py["se"],
         "r_fixest_coef": r_coef, "r_fixest_se": r_se,
         "abs_difference": delta, "tolerance": args.tol, "agree": agree,
