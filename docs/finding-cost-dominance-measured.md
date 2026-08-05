@@ -1,4 +1,6 @@
-# Cost-dominance windows exist. The native vehicle's apparent advantage is composition.
+# Cost-dominance windows exist. Whether the native vehicle has a routing advantage is not settled here.
+
+> **SUPERSEDED IN PART, 2026-08-06.** The title of this document previously asserted that the native advantage was composition. Its own body no longer supports that: the pair-day estimate it rests on identifies from 703 fixed effects out of 22,991 with a minimum detectable effect near 24 percentage points, so it can neither confirm a native advantage nor exclude a large one. The finding that cost-dominance windows EXIST is unaffected, since that is a marginal frequency needing no controls, and it is the part of this document to cite. The routing-advantage question moved to the multi-venue panel and is tracked in `docs/finding-native-intermediation-advantage.md`, itself provisional pending a five-venue rebuild.
 
 Supersedes the negative result in `docs/finding-cost-dominance-not-yet-established.md`, which failed because it compared realised trades across a day and intraday price movement swamped execution cost by 34 to 1. This prices both routes at identical reconstructed state, so price movement cannot enter.
 
