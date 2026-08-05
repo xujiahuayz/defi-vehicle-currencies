@@ -218,8 +218,21 @@ SCHEMAS: dict[str, SchemaSpec] = {
                 stream="daily",
                 entity="poolSnapshots",
                 fields=(
-                    "id timestamp swapVolume swapFees liquidity pool { id poolType swapFee "
-                    "tokens { address symbol decimals balance weight } }"
+                    "id timestamp amounts totalShares swapVolume swapFees liquidity "
+                    "swapsCount pool { id poolType poolTypeVersion swapFee amp totalWeight "
+                    "tokensList tokens { address symbol decimals balance weight } }"
+                ),
+            ),
+            # Balancer balances move on joins and exits as well as on swaps, so a pool's
+            # within-day balance path cannot be replayed from swaps alone. Without this stream
+            # any pool taking a mid-day join has an unobservable balance jump, which is
+            # indistinguishable from the pool running different maths.
+            EntitySpec(
+                stream="joins_exits",
+                entity="joinExits",
+                fields=(
+                    "id type sender user amounts valueUSD timestamp block tx "
+                    "pool { id tokensList }"
                 ),
             ),
         ),

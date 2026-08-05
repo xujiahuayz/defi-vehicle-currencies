@@ -5,7 +5,7 @@ Three questions, and the third is the one that decides what goes in the panel.
 
 First, is the weighted-geometric-mean implementation right. The v2, v3 and v4 quoters were accepted only after reproducing realised swaps to a median absolute error of 0.0000% and Curve cleared 0.022%, so Balancer has to clear the same bar before its quotes enter the route-cost panel.
 
-Second, does the balance reconstruction hold. Balancer balances arrive as one daily `poolSnapshots.amounts` record, and mixing state measured at different instants is the defect that once made an "hour" compare pools up to 23 hours apart in this project. The reconstruction in `ddvc.pricing.weighted` reads that record as the day's CLOSING state, nets the day's whole swap flow off it to recover the opening state, and replays the flow forward so every trade is quoted against the balances it actually faced. If that reading of the snapshot is wrong the error will show it, and this script prints the two rival readings alongside it so the comparison is on the page instead of in a commit message.
+Second, does the balance reconstruction hold. Balancer balances arrive as one daily `poolSnapshots.amounts` record, and mixing state measured at different instants is the defect that once made an "hour" compare pools up to 23 hours apart in this project. The reconstruction in `ddvc.pricing.weighted` reads that record as the day's CLOSING state, nets the day's whole flow off it to recover the opening state, and replays the flow forward so every trade is quoted against the balances it actually faced. Swaps are not the whole flow: joins and exits move balances too, so both streams are merged into one ordered sequence, and leaving the liquidity events out was measured to cost most of the venue's coverage while looking like a maths failure. If the reading of the snapshot instant is wrong the error will show it, so this script scores the two rival readings on the same trades and prints them alongside, which puts the comparison on the page instead of in a commit message.
 
 Third, which pools run different maths. Balancer's vault hosts stable, composable-stable, Gyroscope, linear and boosted pools, none of which is a weighted geometric mean. Excluding them on the `poolType` label would be excluding on a name, and the equivalent shortcut on Curve let crypto-pools through an amplification range that merely looked plausible and produced 36% median errors. So every pool is fitted on alternate trades from its day whatever its type says, acceptance is the achieved error on those, and the score is computed only on the trades in between, which no fit ever saw. Exclusions are then reported as a share of VOLUME and attributed to pool types by volume, because a count of excluded pools says nothing about how much of the venue the panel loses.
 
@@ -29,12 +29,15 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.pricing.weighted import (  # noqa: E402
+    FIT_QUANTILE,
     MAX_CALIBRATION_ERROR,
+    MIN_QUOTED_SHARE,
     ONE,
+    BalanceEvent,
     WeightedPool,
     calibrate_fee,
     calibrate_weight_ratio,
-    median_quote_error,
+    quote_error_at,
     quote_errors,
     quote_exact_input,
     rebuild_pre_trade_balances,
@@ -54,18 +57,25 @@ def _rows(path: Path):
                 yield json.loads(line)
 
 
-def days_with_amounts() -> list[str]:
-    """Days whose daily file carries per-token balances.
+def days_with_state() -> list[str]:
+    """Days carrying both per-token balances and the liquidity events needed to replay them.
 
-    The field is requested by the current schema but absent from every file fetched before that
-    schema changed, and `skip_existing` kept those files, so presence has to be read off the
-    file itself. A raw file records when it was fetched and not which fields were asked for.
+    `amounts` is requested by the current schema but absent from every file fetched before that
+    schema changed, and `skip_existing` kept those files, so presence has to be read off the file
+    itself. A raw file records when it was fetched and not which fields were asked for, which is
+    exactly how this venue looked unpriceable for longer than it was.
+
+    A day missing its joins-and-exits file is dropped instead of reconstructed from swaps alone,
+    because the swap-only walk silently misattributes every liquidity event to the invariant.
     """
     out = []
     for p in sorted(RAW.glob("balancer_daily_*.jsonl.gz")):
+        day = p.name[len("balancer_daily_"):-len(".jsonl.gz")]
+        if not (RAW / f"balancer_joins_exits_{day}.jsonl.gz").exists():
+            continue
         for r in _rows(p):
             if r.get("amounts"):
-                out.append(p.name[len("balancer_daily_"):-len(".jsonl.gz")])
+                out.append(day)
             break
     return out
 
@@ -104,12 +114,19 @@ def load_pools(day: str) -> dict[str, dict]:
     return pools
 
 
-def load_trades(day: str) -> tuple[dict[str, list], dict[str, float]]:
-    """The day's swaps per pool in execution order, with each pool's USD volume.
+def _log_index(entity_id: str) -> int:
+    """The decimal log index the subgraph suffixes to a transaction hash in an entity id."""
+    return int(entity_id[66:]) if len(entity_id) > 66 else 0
+
+
+def load_events(day: str) -> tuple[dict[str, list], dict[str, float]]:
+    """The day's swaps and liquidity events per pool in execution order, plus USD swap volume.
 
     Order matters because the reconstruction replays the flow. `block` orders across blocks and
-    the decimal log index suffixed to the swap id orders within one block, which is the only
-    intra-block ordering the raw layer carries.
+    the decimal log index suffixed to the entity id orders within one block, which is the only
+    intra-block ordering the raw layer carries. Joins and exits are merged into the same sequence
+    because they move balances too, and a swap-only sequence leaves an unobservable jump wherever
+    liquidity entered or left.
     """
     staged: dict[str, list] = defaultdict(list)
     volume: dict[str, float] = defaultdict(float)
@@ -123,12 +140,24 @@ def load_trades(day: str) -> tuple[dict[str, list], dict[str, float]]:
             usd = 0.0
         volume[pid] += max(usd, 0.0)
         try:
-            sid = str(s["id"])
-            log_index = int(sid[66:]) if len(sid) > 66 else 0
             staged[pid].append((
-                int(s["block"]), log_index,
+                int(s["block"]), _log_index(str(s["id"])), "swap",
                 (s["tokenIn"] or "").lower(), (s["tokenOut"] or "").lower(),
-                Decimal(s["tokenAmountIn"]), Decimal(s["tokenAmountOut"]), usd))
+                Decimal(s["tokenAmountIn"]), Decimal(s["tokenAmountOut"]), None))
+        except (KeyError, TypeError, ValueError, ArithmeticError):
+            continue
+    for e in _rows(RAW / f"balancer_joins_exits_{day}.jsonl.gz"):
+        pool = e.get("pool") or {}
+        pid = (pool.get("id") or "").lower()
+        order = [str(a).lower() for a in (pool.get("tokensList") or [])]
+        amounts = e.get("amounts") or []
+        if not pid or len(order) != len(amounts):
+            continue
+        sign = -1 if str(e.get("type") or "").lower() == "exit" else 1
+        try:
+            signed = {a: sign * Decimal(v) for a, v in zip(order, amounts)}
+            staged[pid].append((int(e["block"]), _log_index(str(e["id"])),
+                                "liquidity", None, None, None, None, signed))
         except (KeyError, TypeError, ValueError, ArithmeticError):
             continue
     for v in staged.values():
@@ -139,19 +168,37 @@ def load_trades(day: str) -> tuple[dict[str, list], dict[str, float]]:
 def build_observations(meta: dict, staged: list) -> list | None:
     """One observation per trade, each carrying the balances that trade faced."""
     dec = dict(zip(meta["tokens"], meta["decimals"]))
-    trades = []
-    for _, _, t_in, t_out, amt_in, amt_out, usd in staged:
-        if t_in not in dec or t_out not in dec or t_in == t_out:
-            return None
-        try:
-            trades.append((t_in, t_out, _raw(str(amt_in), dec[t_in]),
-                           _raw(str(amt_out), dec[t_out])))
-        except ArithmeticError:
-            return None
-    if any(a <= 0 or b <= 0 for _, _, a, b in trades):
-        return None
-    path = rebuild_pre_trade_balances(meta["closing"], meta["tokens"], trades)
-    if path is None:
+    idx = {t: i for i, t in enumerate(meta["tokens"])}
+    n = len(meta["tokens"])
+    events: list[BalanceEvent] = []
+    trades: list[tuple[str, str, int, int]] = []
+    for _, _, kind, t_in, t_out, amt_in, amt_out, signed in staged:
+        deltas = [0] * n
+        if kind == "swap":
+            if t_in not in dec or t_out not in dec or t_in == t_out:
+                return None
+            try:
+                raw_in = _raw(str(amt_in), dec[t_in])
+                raw_out = _raw(str(amt_out), dec[t_out])
+            except ArithmeticError:
+                return None
+            if raw_in <= 0 or raw_out <= 0:
+                return None
+            deltas[idx[t_in]] = raw_in
+            deltas[idx[t_out]] = -raw_out
+            trades.append((t_in, t_out, raw_in, raw_out))
+            events.append(BalanceEvent(deltas=tuple(deltas), is_swap=True))
+            continue
+        for token, amount in signed.items():
+            if token not in idx:
+                continue                       # a token the snapshot does not carry
+            try:
+                deltas[idx[token]] = _raw(str(amount), dec[token])
+            except ArithmeticError:
+                return None
+        events.append(BalanceEvent(deltas=tuple(deltas), is_swap=False))
+    path = rebuild_pre_trade_balances(meta["closing"], events)
+    if path is None or len(path) != len(trades):
         return None
     obs = []
     for balances, (t_in, t_out, amt_in, amt_out) in zip(path, trades):
@@ -207,8 +254,12 @@ def fit_pool_day(fit_obs: list, gate: float) -> tuple[str, dict, int | None, flo
 
     When no tier clears the gate the pool-day is excluded, whatever its `poolType` says. That is
     the whole point: the label is a name and the fit error is a measurement.
+
+    The gate is read at `FIT_QUANTILE` of the fitting set's error and not at its median, because a
+    median gate was measured to be gameable: a stable pool cleared a 0.1% median gate on its
+    fitting trades and then returned 34% median error on the trades in between.
     """
-    reported = median_quote_error(fit_obs)
+    reported = quote_error_at(fit_obs)
     if reported is not None and reported <= gate:
         return "reported", {}, None, reported
 
@@ -233,10 +284,12 @@ def fit_pool_day(fit_obs: list, gate: float) -> tuple[str, dict, int | None, flo
         if r is None:
             continue
         errs.extend(quote_errors([o], weight_ratio=r))
-    if len(errs) < max(1, len(fit_obs) // 4):
+    # Every trade in the fitting set has to be covered by some pair's fitted ratio, not just the
+    # pairs that happened to fit. A pool-day accepted on a subset would be quoted on the rest.
+    if len(errs) < max(1, int(MIN_QUOTED_SHARE * len(fit_obs))):
         return None
     errs.sort()
-    achieved = errs[len(errs) // 2]
+    achieved = errs[min(len(errs) - 1, int(FIT_QUANTILE * len(errs)))]
     if achieved > gate:
         return None
     return "weight_fitted", ratios, None, achieved
@@ -258,7 +311,7 @@ def score(obs: list, ratios: dict, fee: int | None) -> list[float]:
 def evaluate_day(day: str, min_swaps: int, gate: float) -> dict | None:
     """Score one day, returning its exhibit row, or None when nothing on it is scorable."""
     pools = load_pools(day)
-    staged, volume = load_trades(day)
+    staged, volume = load_events(day)
     day_volume = sum(volume.values())
 
     priced = excluded = untested = 0
@@ -275,7 +328,8 @@ def evaluate_day(day: str, min_swaps: int, gate: float) -> dict | None:
     for pid, rec in staged.items():
         vol = volume.get(pid, 0.0)
         meta = pools.get(pid)
-        if meta is None or len(rec) < min_swaps:
+        n_swaps = sum(1 for e in rec if e[2] == "swap")
+        if meta is None or n_swaps < min_swaps:
             untested += 1
             vol_untested += vol
             continue
@@ -378,9 +432,9 @@ def main() -> int:
                     help="achieved fit error above which a pool-day is excluded")
     args = ap.parse_args()
 
-    days = days_with_amounts()
+    days = days_with_state()
     if not days:
-        print("no re-fetched Balancer days carry per-token balances yet")
+        print("no Balancer days carry both per-token balances and liquidity events yet")
         return 1
     # One slot per requested day, evenly spaced over the whole span, and a slot landing on a day
     # nothing can be said about walks forward inside its own slot. A day is scorable only if some
@@ -446,6 +500,11 @@ def main() -> int:
     print("stable family runs the StableSwap invariant with its own amplification coefficient,")
     print("which the current schema now fetches as `Pool.amp`, so those pools are a job for")
     print("ddvc.pricing.stableswap and not for this module.")
+    print("\nOne caveat on the denominator, which cuts the bound's true size. Linear and boosted")
+    print("pool swaps are internal legs of a batch swap through a composable-stable pool, so")
+    print("`valueUSD` counts the same end-user trade more than once and the linear families sit")
+    print("high in that ranking partly for that reason. The bound is therefore an upper bound on")
+    print("what the panel loses, and it is not small even so.")
     write_exhibit(pd.DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0
