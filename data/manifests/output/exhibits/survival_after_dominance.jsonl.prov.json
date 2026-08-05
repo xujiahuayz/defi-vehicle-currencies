@@ -1,0 +1,29 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/survival_after_dominance.jsonl",
+ "code_fingerprint": "3dd58a01f6f4e9445da21502c6d820f71b163358673c4802452f8e49967ba376",
+ "code_sources": [
+  "scripts/run_survival_after_dominance.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T23:18:15+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "0b4559f6cb8f831604e6a37cb31c85171c2805b1",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "v.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 6,
+ "script": "scripts/run_survival_after_dominance.py"
+}
