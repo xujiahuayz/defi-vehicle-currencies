@@ -1,0 +1,29 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/displacement_asymmetry.jsonl",
+ "code_fingerprint": "224aa10828afc844a7fae9ca9dae8d2dfcf30e89d6ec2b21afd2480015b6cb74",
+ "code_sources": [
+  "scripts/run_displacement_asymmetry.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T23:20:46+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "725c1c64b8110a5e97dcf7f86fc71c71da2bdc68",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "v.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 1,
+ "script": "scripts/run_displacement_asymmetry.py"
+}
