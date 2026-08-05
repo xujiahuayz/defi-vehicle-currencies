@@ -1,0 +1,29 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/dominance_windows_screened.jsonl",
+ "code_fingerprint": "0f05629913a6bc9058ea3192348fa06c813250df50118961e5ddcbad901cdc22",
+ "code_sources": [
+  "scripts/measure_dominance_windows.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T23:14:52+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "e59dfde2ae40d3924af28df0f7bd53d1c3a31b0c",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "v.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 7,
+ "script": "scripts/measure_dominance_windows.py"
+}

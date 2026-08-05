@@ -1,0 +1,7 @@
+{"dominated_allin": 0.9214285714285714, "dominated_gross": 0.85, "routes": 280, "scope": "type:imported"}
+{"dominated_allin": 0.6714697406340058, "dominated_gross": 0.6195965417867435, "routes": 347, "scope": "type:native"}
+{"dominated_allin": 0.8135313531353136, "dominated_gross": 0.6905940594059405, "routes": 1212, "scope": "type:stable"}
+{"dominated_allin": 0.8031538879825992, "dominated_gross": 0.7014681892332789, "routes": 1839, "scope": "ALL"}
+{"dominated_allin": 0.8519900497512438, "dominated_gross": 0.6741293532338308, "routes": 804, "scope": "size:1000"}
+{"dominated_allin": 0.8082408874801902, "dominated_gross": 0.7464342313787639, "routes": 631, "scope": "size:10000"}
+{"dominated_allin": 0.698019801980198, "dominated_gross": 0.6856435643564357, "routes": 404, "scope": "size:100000"}
