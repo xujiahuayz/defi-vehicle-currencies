@@ -1,18 +1,22 @@
 # Conference deck outline: Nanyang Blockchain Conference, NTU Singapore, 21-22 August 2026
 
-Slot: 30 minutes including Q&A, so roughly 20 minutes of speaking. Main deck 18 slides at about one slide per minute, cover and references consuming seconds. Appendix 25 slides, unpresented, held for Q&A. Paper title, settled 2026-08-06: "The Making of Dominant Vehicle Currencies: Evidence from DeFi". Deck order follows the title's word order, so the making of the role comes first, dominance as a measured share second, and the DeFi evidence third.
+Slot: 30 minutes including Q&A, so roughly 20 minutes of speaking. Main deck 17 slides, of which cover and references consume seconds, leaving 15 slides carrying content at about 80 seconds each. Appendix 29 slides, unpresented, reached by number when a question lands. Paper title, settled 2026-08-06: "The Making of Dominant Vehicle Currencies: Evidence from DeFi".
 
-Every slide below is tagged **FOUNDATION** or **RESERVED**. Foundation slides rest on measurements already in this repository and can be rendered today. Reserved slides carry a title and the claim they must support; they ship only once that claim has a measured result behind it, and an unpopulated reserved slide is cut from the running deck instead of shipped as a placeholder.
+The deck is built on the survival estimand. The question the talk asks and answers is how long the vehicle role survives once the asset carrying it stops being the cheapest route, priced in dollars foregone and in days of delay, with the asymmetry between the edge a challenger needs to displace an incumbent and the edge a displaced incumbent needs to return separating hysteresis from persistence. Deck order follows the paper architecture in `docs/paper-spine.md` section 1.3, whose section 3 leads on the state itself, section 4 carries the survival estimand, and section 6 defends the measured object as a numbered section. One divergence is recorded and held: the paper reads the migration in which asset intermediates as the time axis inside section 3, and the deck puts it before the state on slide 7, because an audience needs the setting before it can be told what happens inside the setting.
 
-Two boundaries hold across every slide. Slide text is phrases and short clauses, never a full sentence, and the 40-word body budget binds on appendix slides as hard as on core slides. Measurement belongs on slides and the way the work was organised does not, so quoter validation, gas receipts, screens and coverage bounds are all admissible while anything about how the analysis was assembled is not.
+The level comparison between asset types appears in the appendix as a validation exhibit at about -25.3 basis points on the continuous gap (0.037). The retired binary version at -0.383, which was measuring quote collapse, and the retired size gradient, whose interaction with log size reads +0.0023 (0.914), appear only as the appendix line that says why they went.
 
-Figure assets live under `output/figures/deck/` as one file per slide, and all diagrams live as tabs in a single `output/figures/deck/diagrams.drawio` with transparent page background, exported on build.
+Every slide is tagged **[BUILDABLE]** where every number and every axis on it can be rendered from artefacts in this repository today, and **[NEEDS REBUILD]** where the slide waits on the full-sample six-venue panel now running. Four priced days, 2023-06-01 to 2023-06-04, carry the results at cross-section, which is enough for the frequency, the share retention and the dollar total, and not enough for a duration. A slide tagged NEEDS REBUILD is cut from the running deck if its result has not landed, and it is never shipped with a placeholder number.
+
+Two boundaries hold on every slide. Slide text is phrases and short clauses with a 40-word body budget, on appendix slides as hard as on core slides. Measurement belongs on slides and the organisation of the work does not, so quoter validation, gas receipts, support screens and coverage bounds are all admissible while anything describing how the analysis was assembled is not.
+
+Figure assets live under `output/figures/deck/` as one file per slide. Diagrams live as tabs in a single `output/figures/deck/diagrams.drawio` with a transparent page background, exported on build. Asset-type colours are fixed once on slide 6 and every later chart inherits them.
 
 ---
 
 ## Main deck
 
-### 1. Cover [FOUNDATION]
+### 1. Cover [BUILDABLE]
 
 - Title: The Making of Dominant Vehicle Currencies
 - Subtitle: Evidence from DeFi
@@ -23,39 +27,54 @@ Figure assets live under `output/figures/deck/` as one file per slide, and all d
 
 ---
 
-### 2. A vehicle currency written into the contract [FOUNDATION]
+### 2. The state the data never contain [BUILDABLE]
 
-- Uniswap V1: one exchange contract per ERC20, ETH on the other side
-- Token-to-token: no pool exists, so the protocol hops through ETH
-- 217,003 forced routes, 8.60% of V1 swap transactions
-- 87.4% of forced routes report exactly equal ETH legs
+- An incumbent's cost advantage is a consequence of its incumbency
+- Sterling to dollar: the road not taken has no price
+- Needed: a currency holding the role while strictly beaten
+- On-chain the beaten route is quotable at the same state
 
-**Visual.** `deck/v1_star_topology.svg`, drawio tab `v1_mandate`. A star graph: ETH as the single hub vertex, eight token vertices on the rim, every rim vertex joined to the hub and to nothing else. One highlighted two-leg path token A to ETH to token B, both legs labelled with the same ETH amount. The reader should see that no rim-to-rim edge exists, so the hop is a property of the graph and not of a choice. Verification of the equal-legs signature is the annotation on the highlighted path.
+**Visual.** `deck/identification_gap.svg`, drawio tab `identification_gap`. Two side-by-side panels in identical geometry. Left panel, labelled with the FX setting, shows an ordered pair of endpoint currencies joined by a solid arrow through a vehicle vertex, and a direct edge drawn as a dashed grey line ending in a question mark, with a hatched box over the price label. Right panel, same graph, same vertex positions, with the direct edge solid and carrying a price, and a bracket between the two paths labelled with the gap in basis points. The reader should see that the two panels differ in exactly one element, the price on the road not taken, and that the whole design turns on recovering it. No legend strip; the hatched box is annotated in place.
 
-**Citations.** Uniswap V1 protocol documentation for the one-exchange-per-token rule; Krugman (1980) for the vehicle-currency object; Kiyotaki and Wright (1989) for why a medium of exchange concentrates.
+**Citations.** Krugman (1980) for the vehicle role resting on the lowest-cost route through the exchange structure; Flandreau and Jobst (2009) for persistence measured without strong lock-in; Eichengreen and Flandreau on inertia in the sterling-to-dollar turnover; Somogyi (2026) for dollar dominance measured as a share of FX trading.
 
-**Grounding.** `docs/finding-v1-forced-vehicle.md` sections 1 and the numerical correction at the end.
+**Grounding.** `docs/review-node-i-round1.md` section 4 states the capability and names the estimand it is for.
 
 ---
 
-### 3. The mandate goes, the pairing climbs [FOUNDATION]
+### 3. A vehicle currency written into the contract [BUILDABLE]
+
+- Uniswap V1: one exchange contract per ERC20, ETH on the other side
+- Token-to-token: no pool exists, so the protocol hops through ETH
+- 217,003 forced routes, 8.60% of 2,522,120 V1 swap transactions
+- 87.4% of forced routes report exactly equal ETH legs
+
+**Visual.** `deck/v1_star_topology.svg`, drawio tab `v1_mandate`. A star graph: ETH as the single hub vertex, eight token vertices on the rim, every rim vertex joined to the hub and to nothing else. One highlighted two-leg path token A to ETH to token B, both legs labelled with the same ETH amount. The reader should see that no rim-to-rim edge exists, so the hop is a property of the graph and not of a choice, with the equal-legs signature annotated on the highlighted path.
+
+**Citations.** Uniswap V1 protocol documentation for the one-exchange-per-token rule; Kiyotaki and Wright (1989) for why a medium of exchange concentrates.
+
+**Grounding.** `docs/finding-v1-forced-vehicle.md` section 1 and the numerical correction at the end.
+
+---
+
+### 4. The mandate goes, the pairing climbs [BUILDABLE]
 
 - V2 live 2020-05-05, arbitrary ERC20 pairs allowed
 - Constraint withdrawn, outcome unmoved
 - 97.1% of 477,633 pairs ever traded on V2 hold WETH
-- New-pair WETH share 84.1% in 2020, 99.0% by 2023
+- New-pair WETH share 84.1% in 2020, 99.0% by 2023, 97.9% in 2026
 
-**Visual, and the deck's strongest exhibit.** `deck/pairing_null.svg`, two stacked panels sharing an x axis of calendar year 2020 to 2026, with a vertical rule at 2020-05-05 labelled with the architecture change and nothing else. Upper panel, y axis is the WETH share of newly created pairs in percent on a 80 to 100 scale, plotted as a line with a marker per cohort year, values 84.1, 92.9, 96.5, 99.0, 98.0, 98.1, 97.9. Lower panel, y axis is the share of single-leg V2 trades executing on a WETH pool in percent on a 75 to 100 scale, two series, count-weighted and value-weighted. The read is that the vertical rule marks the removal of the constraint and neither series bends at it, and the supply of new pools converges toward the asset the constraint had mandated. A null exhibited as a picture, with the event date visible so the audience can check the absence themselves.
+**Visual.** `deck/pairing_null.svg`. Two stacked panels sharing an x axis of calendar year 2020 to 2026, with a vertical rule at 2020-05-05 labelled with the architecture change and nothing else. Upper panel, y axis the WETH share of newly created pairs in percent on an 80 to 100 scale, one line with a marker per cohort year at 84.1, 92.9, 96.5, 99.0, 98.0, 98.1, 97.9. Lower panel, y axis the share of single-leg V2 trades executing on a WETH pool in percent on a 75 to 100 scale, two series, count-weighted and value-weighted. The read is that the vertical rule marks the removal of the constraint, neither series bends at it, and the supply of new pools converges toward the asset the constraint had mandated. A null exhibited as a picture with the event date visible so the audience can check the absence themselves.
 
-**Citations.** Uniswap V2 whitepaper for arbitrary-pair support; Flandreau and Jobst (2009) for persistence without strong lock-in; Dowd and Greenaway (1993) for switching costs and network externalities.
+**Citations.** Uniswap V2 whitepaper for arbitrary-pair support; Dowd and Greenaway (1993) for switching costs and network externalities.
 
-**Caveats the speaker states aloud.** Uniswap V2 only, and V2 became a legacy venue after V3 arrived in May 2021, so this describes the venue that lost the mandate and says nothing about the native asset elsewhere. Launch-template convention would produce the same pattern as optimisation would, and this exhibit cannot separate the two.
+**Caveats the speaker states aloud.** Uniswap V2 only, and V2 became a legacy venue after V3 arrived in May 2021, so this describes the venue that lost the mandate. Launch-template convention would produce the same pattern that optimisation would, and this exhibit cannot separate the two.
 
 **Grounding.** `docs/finding-v1-forced-vehicle.md` sections 3 and 7.
 
 ---
 
-### 4. Four architectures of one role [FOUNDATION]
+### 5. Four architectures of one role [BUILDABLE]
 
 - V1: ETH mandated by code
 - V2: any pair allowed, ETH wrapped as WETH
@@ -63,197 +82,193 @@ Figure assets live under `output/figures/deck/` as one file per slide, and all d
 - V4: native ETH restored as a pool asset, no wrapping
 - Mandated, then chosen and wrapped, then chosen and unwrapped
 
-**Visual.** `deck/architecture_progression.svg`, drawio tab `architecture_arc`. Four panels left to right on one horizontal timeline with the launch dates beneath. Panel one is the V1 star. Panel two is a complete-ish graph with WETH still the highest-degree vertex, a small wrapping badge on the WETH vertex. Panel three is the same graph with pool edges drawn as narrow bands instead of lines, showing range concentration. Panel four is the same graph with the WETH vertex relabelled to native ETH and the wrapping badge removed. Vertex shape and fill stay identical across panels so only the labelled change moves; the wrapping badge is the one shape that appears and then disappears.
+**Visual.** `deck/architecture_progression.svg`, drawio tab `architecture_arc`. Four panels left to right on one horizontal timeline with launch dates beneath. Panel one is the V1 star. Panel two is a dense graph with WETH as the highest-degree vertex and a small wrapping badge on it. Panel three is the same graph with pool edges drawn as narrow bands instead of lines, showing range concentration. Panel four is the same graph with the WETH vertex relabelled to native ETH and the wrapping badge gone. Vertex shape and fill stay identical across panels so only the labelled change moves, and the wrapping badge is the one shape that appears and then disappears.
 
 **Citations.** Adams, Zinsmeister and Robinson (2021) for concentrated liquidity; Uniswap v4 documentation for native-asset pools; Lehar and Parlour (2024) for AMM liquidity provision.
 
 ---
 
-### 5. Status is binary, dominance is a share [FOUNDATION]
+### 6. Types before tickers [BUILDABLE]
 
-- One bridging swap confers vehicle status
-- Extent of capture is what varies
-- Two axes: whether an asset intermediates, and how much of the role it holds
-- Continuous share is the object measured here
-
-**Visual.** `deck/status_vs_dominance.svg`, drawio tab `two_axes`. A plane with the horizontal axis running from zero to one as the share of intermediation episodes an asset carries, and the vertical axis a binary strip marking whether the asset intermediates at all. Four labelled positions plotted, one for an asset that never intermediates, one for an asset with status and a 2% share, one at a 35% share, one at an 80% share. The reader should see that the binary axis saturates immediately while the share axis carries all the variation, so a categorical vehicle label discards the quantity of interest. Two clean axes, no 2x2 implying the axes are exclusive.
-
-**Citations.** Krugman (1980) and Gopinath et al. (2020) for the categorical usage in the currency literature; Somogyi (2026) for dollar dominance measured as a share in FX trading.
-
-**Grounding.** `docs/research-workflow.md` section 3.
-
----
-
-### 6. Types before tickers [FOUNDATION]
-
-- Native platform asset, thick pairing network, high volatility. Proxy WETH and native ETH
+- Native platform asset, thick pairing network, high volatility. Proxies WETH and native ETH
 - Stable numeraire, unit of account. Proxies USDC, USDT, DAI
 - Imported store of value, wrapped in. Proxies WBTC, tokenised gold
 - Staked native derivative, same exposure, separate instrument
 - Traditional-finance counterpart named for each
 
-**Visual.** `deck/asset_types.svg`, drawio tab `asset_taxonomy`. Four cards in a 2x2 grid, one per type, each card carrying the type name in bold, the ticker proxies in monospace, and the traditional-finance counterpart in italic on a hairline-separated lower band. Card fill is the one colour used for that type in every other chart in the deck, so the type-to-colour mapping is established here once and carried by consistency thereafter. Staked native appears as a hairline-bordered inset on the native card, signalling that whether it is the same currency is a specification choice.
+**Visual.** `deck/asset_types.svg`, drawio tab `asset_taxonomy`. Four cards in a 2x2 grid, one per type, each carrying the type name in bold, the ticker proxies in monospace, and the traditional-finance counterpart in italic on a hairline-separated lower band. Card fill is the one colour used for that type in every other chart in the deck, so the type-to-colour mapping is established here once and carried by consistency thereafter. Staked native appears as a hairline-bordered inset on the native card, signalling that whether it is the same currency is a specification choice.
 
 **Citations.** Gopinath and Stein (2021) for the incumbent international currency; Gorton and Zhang (2023) and Lyons and Viswanath-Natraj (2023) for the stable unit; Amiti, Itskhoki and Konings (2022) for invoicing-currency choice.
 
-**Grounding.** `src/ddvc/asset_types.py`; `docs/research-workflow.md` section 3.
+**Grounding.** `src/ddvc/asset_types.py`.
 
 ---
 
-### 7. What the panel contains [FOUNDATION, mandatory slide]
+### 7. The role moves, and it takes six years [BUILDABLE]
 
-- 123.8M quoted route comparisons, 2,238 days, 2020-05-14 to 2026-06-30
-- 24 hourly pool states per day on 2,234 days
-- 30.0M comparisons with a direct and a vehicle route both quoted
-- 19,343 endpoint tokens, 41,836 ordered pairs, 5 vehicle candidates, $1k / $10k / $100k
-- Four venues quoted: uniswap v2, v3, v4, sushiswap v2
+- Native share of intermediated value 73.0% in 2020, 14.8% in 2026
+- Stable share 21.2% to 50.1%
+- Value crossover 2022-Q1, sustained from 2022-Q4
+- Count crossover only in the final two quarters
+- Imported store of value 1.3% to 9.9% of intermediated value
 
-**Visual.** `deck/data_overview.svg`, two elements side by side. Left, five stat tiles reading 123.8M, 2,238, 30.0M, 19,343, $2.46tn, each with a small-caps label beneath. Right, a stacked area chart, x axis calendar time 2020 to 2026 at monthly resolution, y axis the share of best direct legs won by each venue summing to 100%, four bands in the deck's venue colours. The read is that the venue carrying the cheapest direct route turns over completely twice, uniswap v2 at 88.7% in 2020, uniswap v3 at 86.4% by 2025, and uniswap v4 taking 51.5% of best direct legs on the 30 days where v4 is priced. A shaded vertical band marks that 30-day window so the audience sees the coverage limit on the same axes as the claim.
-
-**Citations.** Makarov and Schoar (2022) and Schär (2021) for the venue landscape.
-
-**Caveats the speaker states aloud.** Pair universe is the 200 most heavily bridged ordered pairs per day, so this is a hub-and-long-tail panel and not a census. Concentrated-liquidity pricing begins 2021-05-04 with V3, and v4 pricing covers June 2026 only.
-
-**Grounding.** `data/empirical/route_cost_panel_v2.parquet`; `scripts/run_route_cost_panel.py`.
-
----
-
-### 8. The cost regime moves by three orders of magnitude [FOUNDATION]
-
-- Per-transaction gas price, exact, 1,883 days
-- Annual medians 70.51 gwei in 2021 to 0.12 gwei in 2026
-- 28.37 gwei before 2024-03-13, 1.11 gwei after
-- Fixed per-hop cost, so the vehicle route's penalty moves with it
-
-**Visual.** `deck/gas_regime.svg`. One panel, x axis calendar time 2021-05 to 2026-06, y axis median gas price in gwei on a log scale from 0.03 to 500, the daily median as a thin line with the interquartile band as a light ribbon behind it. A vertical rule at 2024-03-13 labelled with the blob-fee change. A right-hand secondary annotation gives the extra gas of a second hop translated into basis points at each of the three notionals, 478 bp on $100 and 0.5 bp on $100,000. The read is that a two-hop route's handicap is not a constant of the technology and swings by three orders of magnitude inside the sample, so any statement about which route is cheaper is a statement about a date.
-
-**Citations.** Caparros, Chaudhary and Klein (2024) for gas and liquidity concentration; Barbon and Ranaldo for validator gas dominating trader cost.
-
-**Grounding.** `data/processed/daily_gas_price_graph.parquet`; `docs/finding-cost-dominance-measured.md`.
-
----
-
-### 9. Which type of asset intermediates [FOUNDATION]
-
-- Native share of intermediation episodes 68.7% in 2020, 32.9% in 2026
-- Stable share 26.8% to 36.4% count-weighted
-- Value-weighted crossover 2022-Q1, sustained from 2022-Q4
-- Count-weighted crossover only in the final two quarters
-- Imported store of value 0.2% to 5.8% of episodes
-
-**Visual.** `deck/intermediation_transition.svg`, two panels sharing an x axis of calendar time 2020 to 2026. Upper panel count-weighted, lower panel value-weighted, y axis in both the share of intermediation episodes in percent from 0 to 80, one line per asset type in the type colours fixed on slide 6. Crossover points marked with a small open circle on each panel. The read is that the same transition happens twice at two different dates, four years apart, and the value-weighted one is the one that is sustained.
+**Visual.** `deck/intermediation_transition.svg`. Two panels sharing an x axis of calendar time 2020 to 2026 at quarterly resolution. Upper panel count-weighted, lower panel value-weighted, y axis in both the share of intermediation episodes in percent from 0 to 80, one line per asset type in the slide 6 colours. Each panel's crossover marked with a small open circle and a date label. The read is one transition happening twice at two dates four years apart, with the value-weighted one sustained and the count-weighted one arriving at the sample edge. This is the time axis every later slide is read against, and it is what makes duration the question, because a role that eventually moves is a role whose survival time is finite and measurable.
 
 **Citations.** Gopinath and Stein (2021) for a dominant currency being made; Somogyi (2026) for the FX analogue measured as a share; Chen and Duffie (2021) for fragmentation.
 
-**Caveats the speaker states aloud.** Count-weighted crossover sits at the very end of the sample, so it cannot be called sustained. The unclassified residual reaches 24.2% of episodes across 9,283 distinct intermediary tokens, and no type claim is made beyond the classified set. Folding staked-native into native leaves the crossover intact at 33.7% against 36.4%.
+**Caveats the speaker states aloud.** The count-weighted crossover sits at the sample edge and cannot be called sustained. The unclassified residual reaches 24.2% of 2026 episodes across 9,283 distinct intermediary tokens, and no type claim extends past the classified set. Folding staked native into native leaves the count crossover intact at 33.7% against 36.4%.
 
 **Grounding.** `docs/finding-intermediation-transition.md`.
 
 ---
 
-### 10. The feasible set flips before the flow does [FOUNDATION]
+### 8. What the panel contains [BUILDABLE, mandatory data slide]
 
-- Quoted two-hop availability by vehicle candidate, hourly state
-- WETH availability 86.0% in 2021, 50.4% in 2026
-- USDC 33.4% to 57.8%, overtaking WETH from 2025-Q4
-- Availability sets the choice set, and allocative choice picks inside it
+- 2,277 daily files, 2020-02-11 to 2026-06-30, 471.6M swap legs, 364.3M route units
+- Six venues priced: uniswap v2, v3, v4, sushiswap v2, curve, balancer
+- 2,238 quoted days, 24 hourly pool states per day, 19,343 endpoint tokens
+- Five vehicle candidates at $1k, $10k, $100k
+- Venues active 3 in 2020, 8 in 2025
 
-**Visual.** `deck/vehicle_availability.svg`. One panel, x axis calendar quarter 2020-Q2 to 2026-Q2, y axis the share of pair-hours in which a two-hop route through that candidate can be quoted, 0 to 100%, five lines in the type colours from slide 6. Crossing point of USDC over WETH annotated at 2025-Q4. A second thin panel beneath, same x axis, plots the share of panel rows whose endpoint pair the quoting layer can price at all, so the coverage decline is visible directly under the series it could bias. The read is that the route the router is allowed to take changes composition before any claim about which route it prefers.
+**Visual.** `deck/data_overview.svg`, two elements side by side. Left, four stat tiles reading 364.3M route units, 2,277 days, 19,343 endpoint tokens, 6 venues priced, each with a small-caps label beneath. Right, a stacked area chart, x axis calendar time 2020 to 2026 at yearly resolution, y axis each venue's share of panel volume summing to 100%, seven bands with the six priced venues in the deck's venue colours and the one unpriced venue hatched. Measured shares: uniswap v3 rising 0.0 to 66.8 to 49.4, uniswap v2 falling 77.5 to 2.4, curve holding 11.4 to 13.5 throughout, uniswap v4 entering at 22.1 in 2025 and 34.2 in 2026, balancer peaking at 8.8 in 2023, sushiswap v2 falling 11.1 to 0.1, sushiswap v3 never above 0.2. The read is that the venue carrying the market turns over twice inside the sample and the hatched band stays negligible, so a single-venue study drifts progressively away from the market and this one does not.
 
-**Citations.** Chen and Duffie (2021) for fragmentation; Adams, Zinsmeister and Robinson (2021) for why concentrated liquidity makes availability state-dependent.
+**Citations.** Makarov and Schoar (2022) and Schär (2021) for the venue landscape.
 
-**Caveats the speaker states aloud.** This is the feasible-set layer and it leads nothing. The crossover quarter moves from 2025-Q3 to 2025-Q4 depending on whether pairs with a native-ETH endpoint are kept, and on the 30 days where v4 is priced the WETH-to-USDC gap narrows from 7.7 to 2.3 percentage points, so the magnitude is coverage-dependent and the sign is not.
+**Caveats the speaker states aloud.** The quoted pair universe is the 200 most heavily bridged ordered pairs per day, which is a hub-and-long-tail panel and not a census, and pairs enter on the intensity of the behaviour under study. Concentrated-liquidity pricing begins 2021-05-04 with V3.
 
-**Grounding.** `data/empirical/route_cost_panel_v2.parquet`.
+**Grounding.** `docs/venue-coverage-bounds.md`; `docs/router-identification-feasibility.md`; `data/empirical/route_cost_panel_v2.parquet`.
 
 ---
 
-### 11. Pricing the road not taken [FOUNDATION]
+### 9. Pricing the road not taken [BUILDABLE]
 
 - Both routes quoted at one reconstructed pool state
 - Price movement cannot enter the comparison
-- Constant product for v2-family, tick traversal for v3 and v4
-- Gas added per route topology from receipts
+- Constant product, tick traversal, StableSwap, weighted geometric mean
+- Gas priced per leg from receipts, by venue and by candidate
 
-**Visual.** `deck/counterfactual_design.svg`, drawio tab `counterfactual`. Two horizontal lanes issuing from a single state box labelled with the hour's reconstructed reserves and ticks. Upper lane, one solid arrow labelled "quote direct i to o" into an output box. Lower lane, two solid arrows labelled "quote i to k" and "quote k to o" into a second output box, with a dashed arrow from a gas box labelled "add 74,096 units" joining the lower lane only. A single bracket between the two output boxes labelled with the gap in basis points. The reader should see that one state feeds both lanes, which is what removes price movement, and that the gas asymmetry attaches to exactly one lane.
+**Visual.** `deck/counterfactual_design.svg`, drawio tab `counterfactual`. Two horizontal lanes issuing from a single state box labelled with the hour's reconstructed reserves, ticks and balances. Upper lane, one solid arrow labelled "quote direct i to o" into an output box. Lower lane, two solid arrows labelled "quote i to k" and "quote k to o" into a second output box. One gas box sits below and sends a dashed arrow to every leg arrow in both lanes, each dashed arrow labelled with that leg's own venue-specific gas draw, so the diagram shows a per-leg cost that differs across candidates and not one constant attached to the vehicle lane. A single bracket between the two output boxes labelled with the gap in basis points. The reader should see one state feeding both lanes, which is what removes price movement, and should see the gas term varying with which pools the route touches.
 
 **Citations.** Angeris, Chitra, Evans and Boyd for gas-aware optimal routing being mixed-integer convex, so a shortfall against an optimum is measurable; Barbon and Ranaldo for total cost as slippage plus fee plus gas over notional; Xu, Paruch, Cousaert and Feng for design-specific slippage.
 
-**Grounding.** `src/ddvc/cpquote.py`; `src/ddvc/pricing/v3quote.py`; `scripts/build_counterfactual_dominance.py`.
+**Grounding.** `src/ddvc/pricing/`; `scripts/run_route_cost_panel.py`.
 
 ---
 
-### 12. Cost-dominance windows are common [FOUNDATION]
+### 10. Quoting only where the quoter was validated [BUILDABLE]
 
-- 103,857 intermediated two-leg routes with a direct alternative
-- 17.9% dominated gross of gas, 30.0% all-in
-- $100 to $1k trades: 17.0% gross, 39.1% all-in
-- Above $100k: 33.5% gross, 33.5% all-in
-- The state the FX literature cannot observe is observable here
+- Every quoter validated on swaps that executed
+- Realised trade size at 0.34% of the input reserve at the median, 3.3% at the 90th percentile
+- Screen refuses any leg whose own price impact exceeds 5%
+- Median gap at $100k falls from 4,655 to 20.8 basis points
+- 70% to 86% of quotable routes removed
 
-**Visual.** `deck/dominance_windows.svg`. A slope chart, x axis carrying two positions labelled gross of gas and all-in, y axis the share of routes dominated in percent from 0 to 45, one line per trade-size bucket in a sequential ramp from small to large. The read is that the smallest bucket rises steeply from 17.0 to 39.1 while the largest bucket is flat at 33.5, which is the signature of a fixed cost, and that dominance is common in every bucket at every measurement.
+**Visual.** `deck/support_screen.svg`. Two panels sharing a log x axis of the gap in basis points from 1 to 100,000. Upper panel, the distribution of the same-state gap before the screen, plotted as a filled density with the median marked at 4,655 basis points at the $100k notional and a shaded region beyond the atomic-arbitrage threshold. Lower panel, the same distribution after the screen, median at 20.8 basis points, same axes and same shading. A small inset in the lower panel plots the empirical distribution of realised trade size as a fraction of the input reserve, x axis on a log scale, with a vertical rule at the 5% cap sitting near the 95th percentile at 0.0541. The read is that the unscreened panel was quoting trades no pool could absorb, and that the surviving gaps are the order of magnitude of the effects being measured.
 
-**Citations.** Krugman (1980) and Flandreau and Jobst (2009) for the identification limit this addresses; Milionis, Moallemi and Roughgarden (2023) for AMM liquidity economics.
+**Citations.** Makarov and Schoar (2020) for what a defensible measured deviation looks like and for the frictions that have to sustain one; Daian et al. (2020) and Milionis, Moallemi and Roughgarden (2023) for why an unconstrained same-block cycle does not survive.
 
-**Caveats the speaker states aloud.** Dominance incidence is a lower bound on venue coverage since the alternative is understated, and an upper bound on gas since some measured dominance disappears all-in. Marginal frequency needs no controls, and it does not license a claim about which asset type is the better intermediary.
+**Caveats the speaker states aloud.** The screen is ex ante on each leg's own impact and never on the gap, so it does not condition on the outcome. A material minority of surviving gaps at $10k still imply a cycle that pays, 38.5% at that notional, and the surviving sample is characterised on the next slide before any frequency is read off it.
 
-**Grounding.** `docs/finding-cost-dominance-measured.md`.
-
----
-
-### 13. RESERVED: does the asset type matter once the trade is held fixed
-
-**Claim this slide must support.** Conditional on the same ordered pair at the same hour and the same notional, whether the intermediary is the native asset changes the probability that the route was cost-dominated, with a coefficient whose sign is identified. The existing pooled estimate of -0.049 (0.008) is confounded by composition, and the existing pair-by-day fixed-effects estimate of +0.094 (0.269) has a minimum detectable effect near 24 percentage points on 158 clusters, so 96.2% of that panel contributes nothing. The multi-venue panel quotes every vehicle candidate for every pair-hour by construction, which removes the coincidence the within-pair estimator waits on.
-
-**Figure to build once the result exists.** A coefficient plot, y axis the specification from pooled through pair-hour fixed effects, x axis the native coefficient in percentage points with 95% intervals and a vertical zero rule. The read must be whether the interval crosses zero and whether it narrows enough to exclude the effect size the incumbency story needs.
-
-**Cut rule.** If the sign stays unresolved, the slide is cut and slide 12 stands alone as a marginal frequency.
+**Grounding.** `output/exhibits/quoter_support_bounds.jsonl`; `output/exhibits/gap_arbitrage_bound.jsonl`.
 
 ---
 
-### 14. RESERVED: how fast routing migrates when a window opens
+### 11. Dominated at the state they executed in [BUILDABLE, and the deck's centre until slide 15 lands]
 
-**Claim this slide must support.** When an incumbent route becomes strictly cost-dominated on an executable all-in basis, routed share moves toward the cheaper route at a measurable speed, and that speed is the quantity the inertia literature cannot observe. Candidate windows are gas-regime shifts, fee-tier introductions, protocol-version migrations, and the March 2023 depeg.
+- 27.2% of realised multi-leg routing strictly beaten by a direct pool at its own state
+- Population-weighted, covering 79.0% of realised routing
+- Native 23.7%, stable 45.4%, imported 61.4%
+- Matched sample carries 1.9% of realised routes, median trade $11,594 against $866
+- The role held while strictly cost-dominated, observed
 
-**Figure to build once the result exists.** Event-time panel, x axis days from window opening at negative 30 to positive 90, y axis the incumbent's share of routed volume for that pair, mean with a confidence ribbon, one line per window class. The read must be whether the response has a visible onset and a half-life measurable in days.
+**Visual, the deck's strongest exhibit.** `deck/realised_dominance.svg`, two panels on one row with the left panel given two thirds of the width.
 
-**Cut rule.** Cut unless the windows are dated on an all-in basis with per-day gas, since a window dated on gross quotes is not a window a trader faced.
+Left panel, a Marimekko. X axis is the share of realised multi-leg routing, 0 to 100%, with column width set by that share: native 66.9%, stable 11.4%, imported 0.7%, and a final column of 21.0% for the routing the matched panel does not cover. Y axis is dominance incidence, 0 to 100%. Each covered column is filled to its measured incidence, native to 23.7, stable to 45.4, imported to 61.4, in the slide 6 type colours, with the space above each fill in a light neutral. The uncovered column is hatched across its full height and labelled with the coverage gap. Filled area across the three covered columns is 27.2% of the whole plotting area and that equality is printed once inside the panel. The reader should see the headline emerge as an area, should see that the type carrying most of the routing is the type least often beaten, and should see the coverage gap drawn on the same axes as the claim instead of stated beside it.
 
----
+Right panel, the magnitude. X axis is the direct pool's advantage over the route the trader actually took, in basis points, on a symmetric log scale from -10,000 through 0 to +10,000, with the sign convention printed under each half as "vehicle route was cheaper" on the left and "direct pool was cheaper" on the right. Y axis is count of matched realised routes, 1,762 in total, as a filled histogram with one vertical rule at zero. Mass to the right of zero filled in the accent colour and mass to the left in a light neutral, the shaded share annotated in place at 41.3% as the raw matched mean, and the median of the shaded region printed in basis points. The reader should see that the state has a size and not only a frequency, and should see the raw matched mean standing well above the population-weighted headline in the left panel, which is the selection made visible.
 
-### 15. RESERVED: spillover to venues that did not change
+**Citations.** Krugman (1980) and Flandreau and Jobst (2009) for the identification limit this addresses; Makarov and Schoar (2020) for reporting the magnitude alongside the frequency.
 
-**Claim this slide must support.** An architecture change on one venue moves the vehicle share on venues that did not change, which is non-mechanical and shares any macro episode with the treated venue. This is the cleanest identification the setting offers.
+**Caveats the speaker states aloud.** 1,762 of 90,705 realised multi-leg routes on those days matched a priced counterfactual, because the panel prices 200 pairs at three fixed notionals, so the matched set is 64.5% stable-intermediated where the population is 66.9% native-intermediated, and it covers 71 pairs against 17,851. The raw matched mean of 41.3% inverts on candidate type against the population, and it is shown for that reason. Enumerating every candidate a router could have chosen answers a different question and returns 70.1% gross and 80.3% all-in. Round trips are excluded, since a route whose first input equals its last output moved no value. Remaining venue gaps would make the direct alternative better, so the incidence is a floor.
 
-**Figure to build once the result exists.** Before-and-after panels, left the treated venue and right the untreated venues, x axis calendar month around the activation date, y axis vehicle share by asset type. The read must be a movement on the right panel that a common shock cannot produce alone.
-
-**Cut rule.** Cut if the untreated venues cannot be shown to be untreated, since a router splitting across both makes the control a treated unit.
-
----
-
-### 16. RESERVED: where incumbency can live at all
-
-**Claim this slide must support.** Routing is executed by deterministic graph optimisers, so a preference for the incumbent when a cheaper route existed is not evidence of habit. Incumbency operates through a state variable, so it must be found in liquidity-provider capital allocation, where switching costs, gas and attention limits bind on a slower cadence.
-
-**Figure to build once the result exists.** Two panels, upper the quote-time cost gap between incumbent and challenger routes for a pair, lower the incumbent pool's share of that pair's active capital, on one shared calendar axis. The read must be that the lower series moves on a slower cadence than the upper one, which locates the stickiness in capital and not in quote-time choice.
-
-**Cut rule.** Cut if the capital measure is not rebuilt across venues, since a single-venue capital share is a different quantity.
+**Grounding.** `docs/finding-dominance-and-persistence.md`; `output/exhibits/realised_dominance.jsonl`; `output/exhibits/dominance_windows_screened.jsonl`.
 
 ---
 
-### 17. Recap [FOUNDATION shell, one line reserved]
+### 12. The role does not leave [BUILDABLE]
 
-- A vehicle role mandated by code, then withdrawn, then never surrendered
-- Vehicle status is trivially satisfied and dominance is the share that varies
-- Which type intermediates flips by value four years before it flips by count
-- The state the FX literature cannot observe is observable and common here
-- One line reserved for the identified result slide 13 or 14 delivers
+- Being beaten costs a vehicle share, and does not cost it the role
+- Native 68.6% of its pair's multi-leg volume when cheapest, 39.4% when beaten
+- Stable 43.4% to 28.2%
+- Imported 6.1% to 2.8%
+- Roughly half to two thirds retained on every type
 
-**Visual.** No chart. Five hairline-separated rows in the outcomes-table pattern, each row a bold head and a short gloss, in the order the body covered them.
+**Visual.** `deck/persistence_slope.svg`. A slope chart. X axis carries two positions, labelled "vehicle was cheapest" and "a direct pool was cheaper", with generous horizontal separation. Y axis is the vehicle's mean share of its pair's multi-leg volume in percent from 0 to 75. Three lines in the slide 6 type colours, native from 68.6 to 39.4, stable from 43.4 to 28.2, imported from 6.1 to 2.8, each line endpoint carrying its value and its observation count as a small annotation. A faint reference line drawn from each left endpoint to zero on the right shows where full cost minimisation would land the series. The read is three lines that fall and none that reaches the reference, so routing responds to the price and does not obey it. Median shares behave the same way and are annotated as hairline markers beside each mean.
+
+**Citations.** Flandreau and Jobst (2009) for persistence measured without strong lock-in; Dowd and Greenaway (1993) for the switching cost that a partial response implies; Krugman (1980) for the multiple-equilibrium structure that makes the residual share the object of interest.
+
+**Caveats the speaker states aloud.** 223 pair-day-vehicle observations across four days, which supports a cross-section and not a duration. The imported type rests on 4 undominated observations and its level is read as a direction only. Routers quote at a block and the panel prices at an hour boundary, and intra-day state movement on the deepest pool runs at a median 0.345% against gaps of tens of basis points, so part of the measured dominance is a state a router could not have seen; this is the open threat to persistence and it does not touch the frequency on slide 11, which is a statement about a state. The word hysteresis is not used here, because a partial response is equally consistent with slow information and with symmetric switching frictions, and the test that separates them is on slide 15.
+
+**Grounding.** `output/exhibits/survival_after_dominance.jsonl`.
 
 ---
 
-### 18. References [FOUNDATION]
+### 13. Eighty-three million dollars through a beaten vehicle [BUILDABLE]
+
+- $83.1m of realised multi-leg volume through vehicles a direct pool beat, four days
+- $69.7m of it through the stable numeraire
+- $9.1m native, $4.2m imported
+- More value through beaten vehicles than through cheapest ones
+
+**Visual.** `deck/dollars_foregone.svg`. Two stacked bars side by side, x axis carrying the two states, "vehicle was cheapest" and "a direct pool was cheaper", y axis USD millions of realised multi-leg volume from 0 to 90. Left bar totals 73.2 and splits into stable 58.7, native 12.2, imported 2.3. Right bar totals 83.1 and splits into stable 69.7, native 9.1, imported 4.2. Segment fills are the slide 6 type colours, segment values printed in-bar, bar totals printed above, and a hairline bracket between the bar tops carrying the difference. A narrow strip below the bars, on the same vertical scale and therefore almost flat, holds the shortfall itself, being the gap in basis points applied to the volume that carried it. The read is that the taller bar is the one where a cheaper route sat available and was declined, and that the money left on the table is a small fraction of the money exposed to the choice.
+
+**Citations.** Makarov and Schoar (2020) for money left on the table as the reported quantity; Barbon and Ranaldo for total trader cost including validator gas.
+
+**Caveats the speaker states aloud.** Four days and the matched sample of slide 11, so this is a rate and not a cumulative total for the sample. Dollars routed through a dominated vehicle and dollars foregone are separate objects and the slide keeps them apart: $83.1m passing through at a median gap of tens of basis points is a foregone figure in the low hundreds of thousands, and reading the exposure as the loss overstates the result by three orders of magnitude. The shortfall strip renders once the gap-weighted total lands, and the slide ships without it until then.
+
+**Grounding.** `docs/finding-dominance-and-persistence.md`; `output/exhibits/survival_after_dominance.jsonl`.
+
+---
+
+### 14. Days of delay [NEEDS REBUILD]
+
+**Claim this slide must support.** Once a vehicle stops being the cheapest route on a pair, the number of days it keeps the majority of that pair's multi-leg volume has a measurable distribution, with a median in days, and that distribution is the object the inertia literature has wanted and never had. The cross-section on slides 12 and 13 establishes that survival is positive; this slide gives it a length.
+
+**Figure to build once the result exists.** `deck/survival_curve.svg`. Kaplan-Meier survival curves, x axis days since the vehicle first became dominated on that pair from 0 to 90, y axis the share of pair-vehicle spells in which the vehicle still carries the largest share of that pair's multi-leg volume, 0 to 1, one curve per asset type in the slide 6 colours with a shaded confidence band per curve. A horizontal rule at 0.5 with each curve's median survival dropped to the x axis and labelled in days. Censoring ticks drawn on each curve. The read must be a median measured in days with a visible separation between types, or an overlap reported as an overlap.
+
+**What it waits on.** A consecutive run of at least 20 priced days against the 4 that exist, so a spell can start and end inside the sample. The full-sample six-venue panel supplies it.
+
+**Cut rule.** Cut if the run of priced days cannot support a spell length, and slide 12 stands alone as a cross-sectional retention. A survival curve fitted on four days is not shipped under any framing.
+
+**Grounding when built.** `output/exhibits/displacement_asymmetry.jsonl` records the day requirement as 20 against 4 available.
+
+---
+
+### 15. The edge to win against the edge to return [NEEDS REBUILD]
+
+**Claim this slide must support.** A displaced incumbent needs a larger cost edge to retake the role than the challenger needed to take it, which is hysteresis, and if the two curves lie on top of each other the finding is symmetric friction and is reported as a null. This is the asymmetry that no FX dataset can test, because it requires the counterfactual price on both sides of the switch, and it is the paper's single most important figure.
+
+**Figure to build once the result exists.** `deck/edge_asymmetry.svg`, the deck's rendering of spine figure 3. One panel, x axis days from the moment the cost edge opens, 0 to 90, y axis the share of pair-vehicle spells in which the role has not yet turned over, 0 to 1. Two survival curves estimated on the same pairs, the retention arm for an incumbent holding the role while dominated and the displacement arm for a challenger holding a cost edge over an incumbent that still leads, each with a confidence band, drawn in two distinguishable line styles. The area between them shaded and labelled as the incumbency premium in days, with the horizontal distance between the two median crossings bracketed at the 0.5 rule and printed. The read must be whether the retention curve sits above the displacement curve and by how many days at the median, or whether the two overlap.
+
+**What it waits on.** Both arms on the same pairs, which needs the date on which a challenger's edge opens on a pair the incumbent still holds. The three-point notional grid dates that coarsely, and the same consecutive run of priced days as slide 14 is required.
+
+**Cut rule.** Cut unless both arms are measured on the same pairs, since curves estimated on different pair populations compare two samples and not two directions. An overlap is a result and ships as one.
+
+---
+
+### 16. Recap [BUILDABLE shell, two lines conditional]
+
+- A vehicle role mandated by code, withdrawn, and never surrendered
+- The role migrates by value four years before it migrates by count
+- 27.2% of realised routing held the role while a direct pool beat it
+- Being beaten costs a vehicle roughly a third of its share and not the role
+- Two lines reserved for the duration and the asymmetry that slides 14 and 15 deliver
+
+**Visual.** No chart. Five hairline-separated rows in the outcomes-table pattern, each row a bold head and a short gloss, in the order the body covered them. The two conditional rows render only when their slides ship, and the slide is laid out for both heights.
+
+---
+
+### 17. References [BUILDABLE]
 
 - Two columns of author-year entries, cited works only
 - Data and code availability line at the foot
@@ -266,7 +281,16 @@ Figure assets live under `output/figures/deck/` as one file per slide, and all d
 
 Not presented. Reached by number when a question lands. Every slide keeps the phrase discipline and the body budget.
 
-### A1. What is priced against what [FOUNDATION]
+### A1. Status is binary, dominance is a share [BUILDABLE]
+
+- One bridging swap confers vehicle status
+- Extent of capture is what varies
+- Two axes: whether an asset intermediates, and how much of the role it holds
+- Continuous share is the object measured here
+
+**Visual.** `deck/appendix_status_vs_dominance.svg`, drawio tab `two_axes`. A plane with the horizontal axis running zero to one as the share of intermediation episodes an asset carries and the vertical axis a binary strip marking whether the asset intermediates at all. Four labelled positions plotted, at no intermediation, at a 2% share, at 35% and at 80%. The reader should see the binary axis saturating immediately while the share axis carries all the variation.
+
+### A2. What is priced against what [BUILDABLE]
 
 - One reconstructed state per pool-hour
 - Direct route and every candidate vehicle route quoted from that state
@@ -275,25 +299,25 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_state_reconstruction.svg`, drawio tab `state_recon`. Timeline of one hour with swap events as ticks, an end-of-hour reserve box on the right, and a backward arrow labelled "unwind swaps" reaching the pre-trade state box on the left. The reader should see that the pre-trade state is derived and not assumed.
 
-### A2. Constant-product quoting, and its validation [FOUNDATION]
+### A3. Constant-product quoting, and its validation [BUILDABLE]
 
 - v2-family pools priced from unwound hourly reserves
 - Median absolute error 0.0000% against realised swaps
 - 95.2% of quotes within 0.01%
 - Pool-hours failing reserve continuity dropped, roughly 3.2%
 
-**Visual.** `deck/appendix_v2_validation.svg`. Histogram, x axis absolute quote error in percent on a log scale from 1e-6 to 1e0, y axis count of validated swaps, with the median marked. The read is that the mass sits below the axis resolution of any economic quantity in the paper.
+**Visual.** `deck/appendix_v2_validation.svg`. Histogram, x axis absolute quote error in percent on a log scale from 1e-6 to 1e0, y axis count of validated swaps, median marked. The read is that the mass sits below the axis resolution of any economic quantity in the paper.
 
-### A3. Concentrated liquidity, and why direction matters [FOUNDATION]
+### A4. Concentrated liquidity, and why direction matters [BUILDABLE]
 
 - Active liquidity accumulated from every mint and burn since pool inception
 - Quote traverses initialized ticks, piecewise on price
 - Errors reported by direction and by whether a tick was crossed
 - A pooled error statistic hides a directional fault
 
-**Visual.** `deck/appendix_tick_traversal.svg`, drawio tab `tick_traversal`. Price axis horizontal with initialized ticks as vertical hairlines, liquidity depth as a step function above it, and a solid arrow showing a quote consuming depth across three ticks. Two arrows drawn, one each direction, in the same style, so the symmetry of the object and the asymmetry of the failure mode are distinguishable.
+**Visual.** `deck/appendix_tick_traversal.svg`, drawio tab `tick_traversal`. Price axis horizontal with initialized ticks as vertical hairlines, liquidity depth as a step function above it, and a solid arrow showing a quote consuming depth across three ticks. Two arrows drawn, one each direction, in the same style, so the symmetry of the object and the asymmetry of the failure mode are both visible.
 
-### A4. Concentrated-liquidity validation, all four cells [FOUNDATION]
+### A5. Concentrated-liquidity validation, all four cells [BUILDABLE]
 
 - Consecutive swaps in one pool give the pre-trade state
 - v3: median absolute error 0.0000%, 100% within 1%, all four direction-by-crossing cells
@@ -302,7 +326,7 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_tick_validation.svg`. A 2x2 small-multiple of error distributions, rows the swap direction and columns whether an initialized tick was crossed, each cell a box plot on a shared log x axis of absolute error in percent. The read is four cells at the same location, which is the point of splitting them.
 
-### A5. What a pooled error statistic concealed [FOUNDATION]
+### A6. What a pooled error statistic concealed [BUILDABLE]
 
 - Upward tick-crossing quotes were low by a median 62.6%
 - Every other cell read exact
@@ -311,7 +335,29 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_directional_fault.svg`. Paired bar chart, four bars for the pre-correction cells and four for the post-correction cells, y axis median absolute error in percent on a log scale. The read is one bar out of eight standing three orders of magnitude above the others, then all eight level.
 
-### A6. Pool statics recovered from identities [FOUNDATION]
+### A7. StableSwap quoting, with the amplification coefficient identified from trades [BUILDABLE]
+
+- Curve pools priced on the StableSwap invariant, A fitted per pool-day on the first half of the day's trades
+- Held-out median absolute error 0.033% across four sampled days
+- 98.9% to 100% of held-out quotes within 1%
+- Pools whose fit misses by more than 1% excluded and not approximated
+
+**Visual.** `deck/appendix_curve_validation.svg`. Four small-multiple panels, one per validation day, x axis absolute held-out quote error in percent on a log scale, y axis count, median marked in each and the 1% acceptance threshold drawn as a vertical rule. The read is four independent days landing at the same median with the threshold far to the right of the mass.
+
+**Grounding.** `output/exhibits/curve_quoter_validation.jsonl`.
+
+### A8. Weighted-pool quoting, at hourly balances [BUILDABLE]
+
+- Balancer weighted pools priced on the weighted geometric mean
+- Median absolute error 0.0000% on held-out trades, 100% within 1%
+- Daily snapshot held flat across the day costs a median 1.7% of quote error
+- Hourly state recovered by netting the day's flow off the closing balance
+
+**Visual.** `deck/appendix_balancer_validation.svg`. A dumbbell chart, y axis the twelve sampled validation days, x axis median absolute quote error in percent on a log scale from 1e-10 to 1e1, two markers per row joined by a line, one for the hourly-state quote and one for the flat daily snapshot. The read is two clouds separated by nine orders of magnitude, which is what makes hourly state load-bearing here and not on Curve.
+
+**Grounding.** `output/exhibits/weighted_quoter_validation.jsonl`.
+
+### A9. Pool statics recovered from identities [BUILDABLE]
 
 - Fee tier from the CREATE2 address identity, 100.0% of pools in every era tested
 - Decimals from the sqrtPriceX96-against-amounts identity, median error 0.0002
@@ -320,7 +366,7 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** None needed. Two stat tiles and a four-row hairline list.
 
-### A7. Gas measured from receipts [FOUNDATION]
+### A10. Gas measured from receipts [BUILDABLE]
 
 - Median gasUsed 154,604 for one leg
 - Median gasUsed 228,701 for two legs
@@ -329,25 +375,27 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_gas_hops.svg`. Two horizontal bars, y axis the route topology at one leg and two legs, x axis median gas units from 0 to 250,000, with the difference bracketed and labelled. The read is the size of the handicap the vehicle route carries before any price effect.
 
-### A8. Gas translated into cost [FOUNDATION]
+### A11. The cost regime moves by three orders of magnitude [BUILDABLE]
 
-- 74,096 units at the day's median gas price and the day's ETH price
+- Per-transaction gas price, exact, 1,883 days
+- Annual medians 70.51 gwei in 2021 to 0.12 gwei in 2026
+- 28.37 gwei before 2024-03-13, 1.11 gwei after
 - 478 bp of a $100 notional, 0.5 bp of a $100,000 notional
-- 70.51 gwei median in 2021, 0.12 gwei in 2026
-- Flat gas and flat ETH price would misstate both ends of the sample
 
-**Visual.** `deck/appendix_gas_in_bp.svg`. Heat map, x axis calendar year 2021 to 2026, y axis notional bucket, cell value the extra hop's cost in basis points on a sequential ramp with the values printed in-cell. The read is that the same physical hop costs three orders of magnitude more in one corner than the other.
+**Visual.** `deck/appendix_gas_regime.svg`. Upper panel, x axis calendar time 2021-05 to 2026-06, y axis median gas price in gwei on a log scale from 0.03 to 500, the daily median as a thin line with the interquartile band as a light ribbon behind it, and a vertical rule at 2024-03-13 labelled with the blob-fee change. Lower panel on the same x axis, a heat strip of the extra hop's cost in basis points by notional bucket on a sequential ramp. The read is that a two-hop route's handicap is not a constant of the technology and swings by three orders of magnitude inside the sample.
 
-### A9. Why gas is not a control [FOUNDATION]
+**Citations.** Caparros, Chaudhary and Klein (2024) for gas and liquidity concentration; Barbon and Ranaldo for validator gas dominating trader cost.
 
-- Gas drives whether the vehicle route is optimal
-- Gas drives liquidity-provider repositioning
-- Repositioning is highest in the deepest pools
+### A12. Why gas is in the outcome and not in the controls [BUILDABLE]
+
+- Gas enters the quoted cost of each route topology directly
+- Gas also drives liquidity-provider repositioning, which drives depth
 - A variable on the causal path cannot be netted out by including it
+- Measured in the outcome, absent from the right-hand side
 
-**Visual.** `deck/appendix_gas_causal_path.svg`, drawio tab `gas_path`. A small directed graph, gas price vertex with solid arrows to route choice and to repositioning, repositioning with a solid arrow to pool depth, pool depth with a solid arrow to route choice. Every arrow verb-labelled. The reader should see that gas sits upstream of both the treatment and the outcome, which is the definition of the problem.
+**Visual.** `deck/appendix_gas_causal_path.svg`, drawio tab `gas_path`. A small directed graph, gas price vertex with solid arrows to route cost and to repositioning, repositioning with a solid arrow to pool depth, pool depth with a solid arrow to route cost. Every arrow verb-labelled, and the route-cost vertex drawn in the outcome fill so its role is visible from the shape. The reader should see gas sitting upstream of both the treatment and the outcome, and should see it entering the outcome as a measured term.
 
-### A10. Asset types and their traditional-finance counterparts [FOUNDATION]
+### A13. Asset types and their traditional-finance counterparts [BUILDABLE]
 
 - Native platform asset: the incumbent international currency resting on thick-market externalities
 - Stable numeraire: the managed or pegged stable unit
@@ -357,16 +405,16 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_taxonomy_map.svg`, drawio tab `taxonomy_map`. Two columns of cards, left the DeFi type with its ticker proxies, right the traditional-finance counterpart, joined by one labelled solid arrow per row. Card fill matches the type colours used throughout.
 
-### A11. Coverage of the taxonomy, and the tail [FOUNDATION]
+### A14. Coverage of the taxonomy, and the tail [BUILDABLE]
 
 - Selected by measuring intermediation over 57 stratified days
 - 2,149,718 episodes, 9,283 distinct intermediary tokens
 - Six head tokens carry 81.7% of episodes
-- Native ETH at the zero address was once misfiled, 19.8% of the residual in 2026 samples
+- Corrected classification places native ETH at the zero address in the native type
 
 **Visual.** `deck/appendix_taxonomy_coverage.svg`. Cumulative-coverage curve, x axis intermediary tokens ranked by episode count on a log scale, y axis cumulative share of episodes from 0 to 100%, with the 81.7% level marked at rank six. The read is a steep head and a long tail that no cutoff can absorb quietly.
 
-### A12. The specification alternative a referee will ask for [FOUNDATION]
+### A15. The specification alternative a referee will ask for [BUILDABLE]
 
 - Staked native folded into native, the registered alternative
 - 2026 count-weighted crossover survives: native plus staked 33.7% against stable 36.4%
@@ -375,7 +423,7 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_staked_alternative.svg`. Dumbbell chart, y axis the year, x axis the native share in percent, two markers per row for the two definitions joined by a line, with the stable share drawn as a vertical reference. The read is that the crossover survives the alternative.
 
-### A13. Where the routes come from [FOUNDATION]
+### A16. Where the routes come from [BUILDABLE]
 
 - 2,277 daily files, 2020-02-11 to 2026-06-30, roughly 215k swap legs per day
 - Eight venues: uniswap v1 to v4, sushiswap v2 and v3, curve, balancer, fluid
@@ -384,34 +432,80 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_route_reconstruction.svg`, drawio tab `route_recon`. One transaction box containing three pool boxes on two different venues, solid arrows carrying the token flow through them, one dashed arrow from the transaction receipt box to a gas annotation. The reader should see that the unit of observation is the reconstructed route and not the swap leg.
 
-### A14. How the quoted panel is built [FOUNDATION]
+### A17. How a realised route is matched to its counterfactual [BUILDABLE]
 
-- 200 most heavily bridged ordered pairs per day
-- Five vehicle candidates, three notionals, 24 hourly states
-- Best direct pool against best two-hop path at the same state
-- 30.0M of 123.8M comparisons have both sides quotable
+- Interior token identified from the reconstructed multi-leg route
+- Same ordered pair, same hour state, nearest notional on the quoted grid
+- 1,762 of roughly 90,700 realised multi-leg routes matched on four days
+- Matched set is selected toward heavily bridged pairs and near-grid sizes
 
-**Visual.** `deck/appendix_panel_cells.svg`. A nested-rectangle area diagram sized to the cell counts, outer rectangle all comparisons, inner rectangle the both-quotable subset, with counts printed. The read is the fraction of the panel that supports a comparison at all.
+**Visual.** `deck/appendix_match_diagram.svg`, drawio tab `realised_match`. A realised route box on the left carrying its endpoint pair, interior token, hour and notional, four hairline arrows to the four match keys drawn as small boxes in the centre, and one solid arrow into a panel-row box on the right carrying the quoted direct and vehicle outputs. Keys that must match exactly drawn as solid arrows and the notional key, which snaps to the nearest grid point, drawn as a dashed arrow with its tolerance labelled. The reader should see which single key is approximate and therefore where the matched set's selection comes from.
 
-### A15. Coverage bounds, signed [FOUNDATION]
+### A18. What matching costs, measured [BUILDABLE]
 
-- Venue omission understates the best alternative, so dominance incidence is a lower bound
-- Gross-of-gas quotes overstate it, so the all-in figure is the binding one
-- Concentrated-liquidity pricing starts 2021-05-04
-- v4 pricing covers June 2026 only, 30 days of 546 with v4 flow
+- Matching retains 1.9% of realised multi-leg routes
+- Median trade $11,594 matched against $866 unmatched, 90th percentile $208,204 against $6,454
+- Matched routing 64.5% stable-intermediated, population 66.9% native-intermediated
+- 71 pairs covered against 17,851, and the `other` category absent
 
-**Visual.** `deck/appendix_coverage_bounds.svg`. Gantt-style coverage bars, y axis the venue, x axis calendar time 2020 to 2026, one bar per venue for the period in which its pools are priced, drawn against a lighter bar for the period in which its flow exists. The read is the gap between flow and pricing, per venue, with the v4 gap the largest.
+**Visual.** `deck/appendix_matched_selection.svg`. A dumbbell chart, y axis the selection dimensions of median trade size, 90th-percentile trade size, native share, stable share, imported share, other share and routes per pair, x axis the matched-to-unmatched ratio on a log scale from 0.01 to 100 with a vertical rule at parity. Two markers per row joined by a line, one for the matched sample and one for the unmatched, and the ratio printed at the right of each row. The read is a fan of rows spreading in both directions from parity, with trade size and the stable share far to one side and the native and other shares far to the other, so the audience sees which way the matched frequency is pulled and by how much.
 
-### A16. Screens applied before any estimate [FOUNDATION]
+**Grounding.** `docs/paper-spine.md` table 2; `docs/finding-dominance-and-persistence.md`.
+
+### A19. Screens applied before any estimate [BUILDABLE]
 
 - Round-trip exclusion mandatory: 25.6% of multi-leg routes by count, 90.5% by value on the day inspected
+- Support screen on each leg's own price impact at 5%, removing 70% to 86% of quotable routes
 - Mispriced tokens filtered: absolute gap at most 10,000 bps, notional $100 to $50m, keeping 99.0%
-- Notional band removes 36.9% of pair-days and correlates with the outcome
-- Sandwiched trades flagged, submission channel not used as a control
+- Notional band removes 36.9% of pair-days, correlates with the outcome, and its selection is measured on A18 at 13 times the median trade size
 
 **Visual.** `deck/appendix_screens_waterfall.svg`. Waterfall chart, x axis the screens in application order, y axis routes surviving, each bar annotated with the share kept. The read is which screen is binding and by how much.
 
-### A17. Identifying a forced route in V1 [FOUNDATION]
+### A20. Coverage bounds, signed [BUILDABLE]
+
+- Venue omission understates the best alternative, so dominance incidence is a lower bound
+- Curve's calibration gate removes 65.2% of its native-leg volume against 21.1% of its stable-leg volume
+- The native-against-stable gap holds in every year, at least 33 points and reaching 54 in 2023
+- sushiswap v3 at 0.016% of priced volume and 4.1% pair-unique, excluded and not approximated
+
+**Visual.** `deck/appendix_coverage_bounds.svg`. Two panels. Upper, Gantt-style coverage bars, y axis the venue, x axis calendar time 2020 to 2026, one bar per venue for the period in which its pools are priced drawn against a lighter bar for the period in which its flow exists. Lower, a diverging bar chart, y axis calendar year, x axis the excluded share of Curve volume in percent, two bars per year for the native leg and the stable leg in the slide 6 type colours. The read is that every remaining gap pushes the comparison in one direction, and that the direction is signed year by year.
+
+**Grounding.** `docs/venue-coverage-bounds.md`.
+
+### A21. The level comparison, kept as a validation exhibit [BUILDABLE]
+
+- Native-intermediated routes about 25.3 basis points cheaper on the continuous gap (0.037)
+- Pair-by-window-by-size cell effects, clustered by pair, 732 routes in 274 cells
+- Binary version of the same comparison reads -0.043 (0.543)
+- Native interacted with log size reads +0.0023 (0.914), which is why no size claim is made anywhere
+
+**Visual.** `deck/appendix_specification_curve.svg`. A specification curve. Upper panel, y axis the coefficient with 95% intervals and a horizontal zero rule, x axis the specifications ordered by design dimension, points coloured by whether the outcome is the continuous gap in basis points or the binary indicator, with the two outcomes on separate y scales drawn as two stacked upper panels so the units are never mixed. Lower panel, the analytical-choice dashboard, rows the design dimensions of fixed-effect structure, outcome definition, venue set and candidate count, marks showing which choice each specification made. The read is that the sign is stable and the significance lives in the continuous outcome, and that the size interaction sits on zero.
+
+**Citations.** Simonsohn, Simmons and Nelson for the specification curve and its joint inference test.
+
+**Grounding.** `output/exhibits/dominance_specification_curve.jsonl`.
+
+### A22. Four ways the persistence result could be mechanical [BUILDABLE]
+
+- Measured against the same vehicle's undominated share, and not against zero
+- Block-against-hour staleness open, intra-day movement at a median 0.345%
+- Venue gaps leave a router with no cheaper pool to see, bounded and signed
+- Quoted output is not the router's whole objective, and MEV exposure is unobserved here
+
+**Visual.** `deck/appendix_persistence_threats.svg`, drawio tab `persistence_threats`. Four threat boxes in a column, each with a solid arrow into a verdict box on the right reading closed, open or bounded, and each arrow labelled with the quantity that decides it. The open threat's box and arrow drawn in the deck's alert fill so the one unresolved item is visible from the shape and not from reading. The reader should see which threats are discharged and which one is carried into the paper as a stated limit.
+
+**Grounding.** `docs/node-e-screen-persistence.md`.
+
+### A23. Why realised trades cannot answer this [BUILDABLE]
+
+- Daily-median comparison on realised rates, 16,586 cells across 5,656 pairs
+- Median absolute gap 691 bps, only 3.6% of cells within 10 bps
+- Stable-to-stable pairs 23 bps against volatile pairs 775 bps
+- Intraday price movement swamps execution cost 34 to 1 on 97% of the sample
+
+**Visual.** `deck/appendix_price_movement_swamp.svg`. Two overlaid density curves, x axis absolute rate gap in basis points on a log scale, y axis density, one curve for stable-to-stable pairs and one for volatile pairs, with the 10 bp execution-cost band shaded. The read is one curve inside the band and one two orders of magnitude outside it, which is why same-state quoting is required.
+
+### A24. Identifying a forced route in V1 [BUILDABLE]
 
 - V1 keys its transaction entity on transaction hash plus exchange address
 - A token-to-token trade lands as two rows sharing one hash
@@ -420,7 +514,7 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** `deck/appendix_v1_signature.svg`, drawio tab `v1_signature`. Two row boxes side by side sharing a bracketed transaction hash above them, each row's populated event array highlighted and the empty one greyed, with a solid arrow between them labelled with the equal ETH amount. A separate single box to the right shows the both-arrays case labelled as a round trip. The reader should see why a single-row test would recover none of the forced routes.
 
-### A18. Composition of V1 flow [FOUNDATION]
+### A25. Composition of V1 flow [BUILDABLE]
 
 Last-resort table, five rows, three columns, used because the shares are the point and no plot beats them at five categories.
 
@@ -435,16 +529,16 @@ Last-resort table, five rows, three columns, used because the shares are the poi
 - 2,522,120 swap transactions, 2,798 days, 2018-11-02 to 2026-06-30
 - Liquidity provision and withdrawal excluded from the denominator, 2.19% of rows
 
-### A19. Why the V1 event study fails [FOUNDATION]
+### A26. Why the V1 event study fails [BUILDABLE]
 
 - Token-to-token needs two live exchanges, ETH-paired needs one
 - Feasible pairs fall with the square of the live count
 - Excess over the thinning benchmark sits between 0.83 and 1.07 throughout
 - Treatment and confound are the same event
 
-**Visual.** `deck/appendix_v1_thinning.svg`. Two lines on one panel, x axis calendar month 2020-03 to 2021-06, y axis indexed to 2020-05 at 1.0, one line the ratio of forced to ETH-paired flow and one line the live-exchange count, with the excess plotted as a bar series beneath at a 0.8 to 1.1 scale. The read is two lines that fall together, so the differential has nothing left to explain.
+**Visual.** `deck/appendix_v1_thinning.svg`. Two lines on one panel, x axis calendar month 2020-03 to 2021-06, y axis indexed to 2020-05 at 1.0, one line the ratio of forced to ETH-paired flow and one the live-exchange count, with the excess plotted as a bar series beneath at a 0.8 to 1.1 scale. The read is two lines that fall together, so the differential has nothing left to explain.
 
-### A20. The token-level test, and the bound it establishes [FOUNDATION]
+### A27. The token-level test, and the bound it establishes [BUILDABLE]
 
 - 247 V1 exchanges, outcome dated on the exchange's own ETH-paired flow
 - Forced-route intensity +0.276, robust se 0.307, t +0.90
@@ -454,50 +548,17 @@ Last-resort table, five rows, three columns, used because the shares are the poi
 
 **Visual.** `deck/appendix_v1_power.svg`. Power curve, x axis the true survival-time ratio between the 95th and 5th percentile of intensity from 0.25 to 0.90, y axis power at 5% with correct sign from 0 to 100%, with the 80% pre-stated criterion drawn as a horizontal rule and the four measured points marked. The read is where the design can see and where it cannot, which turns a null into a bound.
 
-### A21. Voluntary vehicle routing after a direct pool exists [FOUNDATION]
+### A28. Voluntary vehicle routing after a direct pool exists [BUILDABLE]
 
 - 2,222 V2 pairs with a direct pool, 20 or more trades, and some ETH-routed trade
 - Before the direct pool: 444,651 ETH-routed trades and 0 direct
 - Median pair sends 32% through ETH at three to six months, 20% at six to twelve
 - Without a liveness filter the same series reads 99%, which dead pools produce
-- Cohort and calendar dominate horizon, so the profile is not identified
+- Cohort and calendar dominate horizon, so the profile is descriptive
 
 **Visual.** `deck/appendix_persistence_decay.svg`. Two lines on one panel, x axis weeks since the direct pool first traded on a log scale, y axis median per-pair ETH-routed share of trade count from 0 to 100%, one line with no liveness condition and one requiring a direct trade in the trailing 28 days. The read is two lines that diverge to opposite conclusions, which is what makes the filter load-bearing.
 
-### A22. Cost dominance under controls [FOUNDATION]
-
-Last-resort table, five rows, three columns.
-
-| specification | native coefficient | p |
-|---|---|---|
-| pooled | -0.049 | (0.008) |
-| plus log notional | -0.051 | (0.008) |
-| plus year effects | -0.049 | (0.008) |
-| pair-by-day fixed effects | +0.094 | (0.269) |
-| pair-by-day, gap in bps | +186 | (0.078) |
-
-- Larger trades less often dominated within a pair-day, log notional -0.042 (0.000)
-- 3,654 pair clusters in the pooled specifications
-
-### A23. Why the within-pair estimate cannot settle the sign [FOUNDATION]
-
-- 703 identifying pair-day cells of 22,991
-- 3,865 routes of 102,845, so 96.2% contributes nothing
-- 158 clusters, standard error 0.085, minimum detectable effect near 24 percentage points
-- A pair-day rarely sees a native and a non-native intermediary both used on one venue
-
-**Visual.** `deck/appendix_within_pair_power.svg`. Nested-rectangle area diagram, outer rectangle all routes in the panel and inner rectangle the identifying subset, sized to scale with counts printed, and a minimum-detectable-effect bar drawn to the same horizontal scale as the estimate. The read is a sliver identifying the coefficient and an interval far wider than the effect in question.
-
-### A24. Why realised trades cannot answer this [FOUNDATION]
-
-- Daily-median comparison on realised rates, 16,586 cells across 5,656 pairs
-- Median absolute gap 691 bps, only 3.6% of cells within 10 bps
-- Stable-to-stable pairs 23 bps against volatile pairs 775 bps
-- Intraday price movement swamps execution cost 34 to 1 on 97% of the sample
-
-**Visual.** `deck/appendix_price_movement_swamp.svg`. Two overlaid density curves, x axis absolute rate gap in basis points on a log scale, y axis density, one curve for stable-to-stable pairs and one for volatile pairs, with the 10 bp execution-cost band shaded. The read is one curve inside the band and one two orders of magnitude outside it, which is why same-state quoting is required.
-
-### A25. Extended references [FOUNDATION]
+### A29. Extended references [BUILDABLE]
 
 - Full author-year list including works cited only in the appendix
 - Data sources with their coverage dates
@@ -508,30 +569,32 @@ Last-resort table, five rows, three columns.
 
 ## What H needs from G
 
-The spine is G's to set and the deck cannot converge without four decisions from it. Each one changes slide ordering or slide existence, and none of them is a wording question.
+The spine rebuild answered the two structural questions the previous version of this file asked, and both answers are already built in above: section 3 leads on the state, and section 6 defends the measured object as a numbered section, so slide 10 stays in the core deck. Four items remain, and none of them is a wording question.
 
-**1. Which result leads, and whether the intermediation transition leads or supports.** Section 4.1 of `docs/research-workflow.md` ranks the intermediation transition first, while section 8 item 3 states a revised inclination putting cross-venue spillover first. Those two lists disagree, and section 8's numbering refers to a superseded list, since it calls result (1) "cross-aggregator routing choice" where 4.1's (1) is the intermediation transition, and it calls (2) "incumbency in liquidity supply" where 4.1's (2) is cost-dominance windows. Section 4.0 separately retires cross-aggregator routing choice, since the entry contract identifies the executor and not the aggregator, with the executor population fragmenting to 397 senders and a hand registry reaching 11.8% of swaps. So section 8 item 3 needs either a rewrite against 4.1's numbering or an explicit statement that 4.1 supersedes it. Until then slide 9's position in the arc is a guess, and slides 13 through 16 cannot be ordered.
+**1. The four rival accounts of survival, verbatim, as running labels.** Spine section 5 now races liquidity supply as the slow state variable, aggregator integration scope, the cost of holding the intermediary, and software defaults. The deck needs those four in G's exact words, because they become the recurring annotation on slides 12 through 15 and the audience must hear in the talk the same labels a referee reads in the paper. Until they land, slides 12 and 15 carry a mechanism-free description and the recap has no line naming which account survives.
 
-**2. The named rival mechanisms, verbatim, as running labels.** Section 1 identifies the horse race as the craft pattern that replaces formal hypotheses in no-model empirical JFE papers, with Bolton and Kacperczyk italicising three competing hypotheses in the introduction and using them as running labels through the results. The deck needs those labels in G's exact words, because they become the recurring annotation on slides 12 through 16 and the audience must hear the same words in the talk that a referee reads in the paper.
+**2. Whether the deck may open on the migration when the paper does not.** The paper reads the migration as the time axis inside section 3 and leads on the state. The deck puts the migration on slide 7, ahead of the state on slide 11, because a listener cannot be told what happens inside a setting before being given the setting. If G rules that the deck must follow the paper's order, slide 7 moves to sit after slide 13 as the axis the survival results are read against, which reorders five slides and changes what the recap's second row says. This is recorded as a divergence and held open for one decision.
 
-**3. Which objections are dispatched in the body and therefore need a core slide.** Section 1 records that objections are named and dispatched in numbered subsections and that an appendix does not discharge them. The appendix here holds A19, A23 and A24, each of which discharges an objection. If G dispatches any of those in a numbered subsection, its slide is promoted out of the appendix into the core deck, which pushes the core count past 18 and forces slide 10 out. G's list of body-dispatched objections decides that.
+**3. The headline figure the paper will print, since two are live.** `docs/finding-dominance-and-persistence.md` reports 27.2% population-weighted covering 79.0% of realised routing, and spine table 3 panel A still prints the raw matched pooled mean of 41.3% with the value column PENDING. Slide 11 carries both, with 27.2% as the headline and 41.3% shown as the selection made visible, which is the only presentation that satisfies spine H3 and the finding document at once. If G settles on one number, the slide keeps both and the emphasis moves; if G retires the matched mean from the paper, the right panel of the figure loses its annotation and the histogram stays.
 
-**4. Bibliography entries the deck cites and `literature/vehicle-currencies.bib` does not carry.** Nine works are cited on slides above and absent from the bib: Barbon and Ranaldo on total cost; Angeris, Chitra, Evans and Boyd on gas-aware routing as a mixed-integer convex problem; Xu, Paruch, Cousaert and Feng on design-specific slippage; Cartea, Drissi and Monga on gas-netted liquidity-provider return; Chu, Dowling and Li (2026, JIMF) on impermanent-loss pricing; Uniswap V1, V2 and v4 protocol references for the architectural arc; Eichengreen and Chinn and Frankel for the inertia strand; Yuan (2005) on benchmark securities, which section 4.1 already leans on for the centrality-curse prediction. Slides 2, 3, 4, 8, 11 and 12 carry inline citations to these, and the references slide cannot render without them. Full author, year, venue and DOI for each, from G, since G owns the reference list.
+**4. Bibliography entries the deck cites and `literature/vehicle-currencies.bib` does not carry.** Eight works are cited on slides above and absent from the bib: Barbon and Ranaldo on total trader cost; Angeris, Chitra, Evans and Boyd on gas-aware routing as a mixed-integer convex problem; Xu, Paruch, Cousaert and Feng on design-specific slippage; Eichengreen and Flandreau on sterling-to-dollar inertia; Simonsohn, Simmons and Nelson on the specification curve and its joint inference test; and the Uniswap V1, V2 and v4 protocol references for the architectural arc. Slides 2, 3, 4, 5, 9 and 13 and appendix slides A11 and A21 carry inline citations to these, and the references slide cannot render without them. Full author, year, venue and DOI for each, from G, since G owns the reference list.
 
-**5. Confirmation that the deck adds no claim of its own.** The convergence condition in section 6 requires every slide to map to a G section. Slides 5, 6, 10, 11 and 12 currently assert things a paper section must also assert, in particular that vehicle status and dominance are separate axes, that the availability layer sets the feasible set without leading, and that dominance incidence is bounded below by venue coverage and above by gas treatment. If any of those has no G section, either G gains the section or the slide loses the claim.
+**5. Confirmation that the deck adds no claim of its own.** Slides 2, 10, 11, 12 and 13 assert things a paper section must also assert: that the unobservable state is the price on the road not taken and not the routing choice, that the support screen is a property of where the quoters were validated and therefore ex ante on the leg, that the population-weighted incidence and the raw matched mean are two numbers with two readings, that a partial share response is neither hysteresis nor persistence until the asymmetry is measured, and that dollars routed through a dominated vehicle and dollars foregone differ by three orders of magnitude. If any of those has no G section, either G gains the section or the slide loses the claim.
 
 ## What H needs from F
 
-Four measurement items block reserved slides, and two data defects block foundation slides that are otherwise ready.
+**1. A consecutive run of priced days long enough to hold a spell, which slides 14 and 15 exist to carry.** `output/exhibits/displacement_asymmetry.jsonl` states the requirement as 20 consecutive days against the 4 that exist and returns `insufficient_days` for both arms. Slide 14 needs, per pair-vehicle spell, the day the vehicle first became dominated, the day it stopped carrying the largest share of that pair's multi-leg volume, and a censoring indicator for spells still open at the end of the run. Slide 15 needs the same spells with the mirror arm, in which a challenger holding a cost edge over an incumbent that still leads is followed on the same pairs. Without both arms on the same pairs slide 15 is cut, slide 14 ships alone, and the deck has no centre once the audience asks how long the role lasts.
 
-**1. The multi-venue within-pair-hour estimate, which slide 13 exists to carry.** The pair-by-day design on the v2-only panel identifies from 703 cells of 22,991 with a minimum detectable effect near 24 percentage points, so it can neither confirm a native advantage nor exclude a substantial native disadvantage. `data/empirical/route_cost_panel_v2.parquet` quotes every vehicle candidate for every pair-hour by construction, which removes the coincidence the estimator waits on. Slide 13 needs the coefficient on native intermediation with the pair-by-hour fixed effect, its cluster count, its standard error, and the minimum detectable effect that standard error implies, so the slide can state what the design can and cannot see instead of stating a point estimate alone.
+**2. Dollars foregone, which slide 13 has a strip reserved for and cannot fill.** Slide 13 reports $83.1m of realised multi-leg volume through vehicles a direct pool beat. The economic quantity is the shortfall itself, being the gap in basis points applied to the notional that carried it, summed over dominated realised routes and reported with its median and its distribution. Spine table 4 panel C is the shell and nothing computes it. This is the Makarov and Schoar magnitude and it is the difference between a slide about exposure and a slide about loss.
 
-**2. All-in dominance on per-day gas and per-day ETH price.** `docs/finding-cost-dominance-measured.md` computes its all-in figures at a flat 25.8 gwei and ETH at $2,500 across the whole 2020 to 2026 span, which is wrong in both directions at different times, because annual median gas runs 70.51 gwei in 2021 and 0.12 gwei in 2026, and the blob-fee change alone moves the median from 28.37 to 1.11 gwei. `data/processed/daily_gas_price_graph.parquet` holds the exact per-transaction series for 1,883 days. Slide 12's all-in column and slide 14's window dating both need the per-day version, because a window dated on flat gas is not a window a trader faced.
+**3. The 27.2% recomputed on the full sample, with an interval and a time profile.** The headline rests on four days in June 2023, which is one gas regime, one venue mix and one month. Slide 11 needs the population-weighted incidence across the priced span reported by year, so the audience can see whether the state is common throughout or concentrated in one regime, and it needs a standard error or an interval so the number is not read as exact. The reweighting also needs its coverage recomputed, since the 21.0% uncovered column on the left panel is a four-day figure.
 
-**3. Window dating, for slide 14.** Slide 14 needs windows defined as intervals in which the incumbent route is cost-dominated all-in for a given pair and notional, with an opening date, a closing date, and the incumbent's routed share through the window. Candidate window classes named in section 4.0 are gas-regime shifts, fee-tier introductions, protocol-version migrations, and the March 2023 depeg. Without dated intervals there is no event time and therefore no figure.
+**4. Dominance incidence by intermediary type on realised routes, over time.** Spine table 3 panel B is PENDING and spine figure 2 is the exhibit that joins the migration to the estimand. Slide 7 and slide 11 currently sit on two different panels with no line connecting them, and the join is the single thing that would let the talk say why the role moved instead of only that it moved and that it lingered.
 
-**4. Cross-venue capital allocation, for slide 16.** The liquidity measures in `src/ddvc/analysis/lp_concentration.py` read `data/raw/thegraph/uniswap_v3/` only, so every quantity built on them is a Uniswap-V3-only quantity. Slide 16 locates incumbency in capital allocation, which requires the incumbent pool's share of a pair's active capital measured across venues on the same axis as the quote-time cost gap.
+**5. Endpoint tokens canonicalised in the route-cost panel, which selects on the paper's own asset.** Pool token addresses pass through `canonical_token` with `unify_wrapped` set, so native ETH at the zero address resolves to WETH, while the endpoint `src` and `tgt` columns keep the raw address. Every panel row whose endpoint pair contains the zero address therefore has `direct_available` and `vehicle_available` both false, measured at 0.000 on every day inspected against 0.843 and 0.453 for other pairs on the same day. That is 6.3% of rows in 2025 and 12.6% in 2026, and it deletes exactly the pairs the native-asset question is about. Slide 8's coverage figures, slide 11's uncovered column and every survival result on a native-endpoint pair need the panel rebuilt with endpoints canonicalised on the same rule as pool tokens.
 
-**5. Endpoint tokens are not canonicalised in the route-cost panel, and it selects on the paper's own asset.** Pool token addresses pass through `canonical_token` with `unify_wrapped` set, so native ETH at the zero address resolves to WETH, while the endpoint `src` and `tgt` columns keep the raw address. Every panel row whose endpoint pair contains the zero address therefore has `direct_available` and `vehicle_available` both false, measured at 0.000 on every day inspected, against 0.843 and 0.453 for other pairs on the same day. That is 6.3% of rows in 2025 and 12.6% in 2026, and it deletes exactly the pairs the native-asset question is about. Slide 7's coverage figures and slide 10's availability series both need the panel rebuilt with endpoints canonicalised on the same rule as pool tokens. The crossover on slide 10 survives either way, moving between 2025-Q3 and 2025-Q4, so this changes magnitudes and coverage and does not change the sign.
+**6. Uniswap v4 priced across its full 546 days.** Raw v4 files cover 2025-01-01 to 2026-06-30 and v4 legs entered the panel only from 2026-06-01. v4 is 22.1% of panel volume in 2025 and 34.2% in 2026 by the coverage measurement, so a survival result on 2025 or 2026 pairs priced without it is measuring a market with a third of its depth removed. The architectural arc on slide 5 ends on v4, and a floor audience will ask what v4 does to the survival curve first.
 
-**6. Uniswap v4 is priced on 30 days of the 546 for which its flow exists.** Raw v4 files cover 2025-01-01 to 2026-06-30, and v4 legs appear in the panel only from 2026-06-01. The bias is measurable and it runs against the native asset, because on the 30 days where v4 prices, WETH two-hop availability is 65.8% against 45.2% on 2026 days where it does not, and USDC is 68.1% against 52.9%, so adding v4 lifts WETH by 20.6 percentage points and USDC by 15.2. On those same days v4 wins 51.5% of best direct legs and 57.8% of first hops. Slide 7's venue composition, slide 10's crossover magnitude, and any all-in dominance figure covering 2025 onward all need v4 priced across its full 546 days. This is the single largest coverage gap in the panel and it is the one a referee will find first, because the architectural arc on slide 4 ends on v4 and the evidence for v4 currently rests on one month.
+**7. Balancer's excluded pool families, with the exclusion's direction signed.** The weighted quoter is wired in and validated, and the families it declines are large on the days they trade: AaveLinear and ERC4626Linear reach 58.8% and 63.7% of a day's excluded Balancer volume, and ComposableStable reaches 83.3% on another. Those are stable-side families, so their exclusion runs opposite to the Curve gate's native-side exclusion, and the two have never been netted. Slide A20 signs the Curve gate year by year and states the panel's bound as one-directional, and slide 11's floor caveat rests on that statement. It is not currently safe, and it needs the Balancer exclusion measured on the same leg split before either ships.
+
+**8. Per-leg gas by venue and by candidate, which slide 9's diagram now advertises.** The diagram shows a gas draw attaching to every leg and differing across candidates, because a per-hop constant common to all candidates is absorbed by any within-cell design and moves nothing. A Curve StableSwap leg, a tick-crossing concentrated-liquidity leg and a constant-product leg do not cost the same gas, and the receipt-measured 154,604 and 228,701 unit medians are pooled over all of them. Slide 9 draws the term the deck claims to price, and A10 currently reports the pooled version, so either the per-venue medians land or the diagram reverts to one lane and A10 says so.
