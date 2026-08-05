@@ -873,18 +873,42 @@ def _price_chunk(payload: dict) -> int:
             advance_tick_venues(s, ticks, state)
     built = 0
     for s in payload["stamps"]:
-        day_state = day_ticks = None
-        if not payload["no_v3"] and s >= V3_START:
-            advance_tick_venues(s, ticks, state)
-            day_state, day_ticks = state, ticks
         cache_path = _day_cache_path(s)
-        if cache_path.exists():
+        cached = cache_path.exists()
+        # The index is a running sum from inception, so a cached day still has to be
+        # walked or every later day quotes against stale liquidity.
+        buckets: dict[str, dict[int, dict[str, list]]] = {}
+        if not payload["no_v3"]:
+            for venue, start in (("uniswap_v3", V3_START), ("uniswap_v4", V4_START)):
+                if s >= start:
+                    buckets[venue] = load_day_tick_events(venue, s)
+        if cached:
+            for venue, per_hour in buckets.items():
+                for h in range(24):
+                    apply_hour_events(venue, per_hour[h],
+                                      ticks.setdefault(venue, {}),
+                                      state.setdefault(venue, {}))
             continue
-        parts = [
-            _build_day(s, sizes, top_pairs=payload["top_pairs"], hour=h,
-                       tick_state=day_state, tick_ticks=day_ticks, all_hours=hours)
-            for h in hours
-        ]
+        parts = []
+        for h in hours:
+            # Advance every tick venue THROUGH this hour before pricing it, so the
+            # concentrated-liquidity venues sit at the same instant as the v2 family's
+            # end-of-hour reserves.
+            for venue, per_hour in buckets.items():
+                apply_hour_events(venue, per_hour[h],
+                                  ticks.setdefault(venue, {}),
+                                  state.setdefault(venue, {}))
+            parts.append(_build_day(s, sizes, top_pairs=payload["top_pairs"], hour=h,
+                                    tick_state=(state if buckets or state else None),
+                                    tick_ticks=(ticks if buckets or ticks else None),
+                                    all_hours=hours))
+        # Hours not priced still have to be applied, or the next day starts stale.
+        for venue, per_hour in buckets.items():
+            for h in range(24):
+                if h not in hours:
+                    apply_hour_events(venue, per_hour[h],
+                                      ticks.setdefault(venue, {}),
+                                      state.setdefault(venue, {}))
         parts = [x for x in parts if not x.empty]
         day = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
         _write(_canonicalize_cost_measure(day), cache_path)
