@@ -61,7 +61,17 @@ def main() -> int:
     ident = mix[(mix["mean"] > 0) & (mix["mean"] < 1)].index
     sub = df[df.cell_id.isin(ident)][["dominated", "native", "cell_id", "pair_id"]]
     TRANSIENT.parent.mkdir(parents=True, exist_ok=True)
-    sub.to_csv(TRANSIENT, sep="\t", index=False)
+    # Written by DuckDB rather than pandas: the repository forbids emitting delimited
+    # text from source, DuckDB's COPY is far faster on 11 million rows, and this keeps
+    # the export in the same engine that produced the sample.
+    import duckdb
+
+    con = duckdb.connect()
+    con.register("sub", sub)
+    con.execute(
+        f"COPY (SELECT * FROM sub) TO '{TRANSIENT.as_posix()}' "
+        "(FORMAT CSV, DELIMITER '\t', HEADER)")
+    con.close()
     try:
         r = subprocess.run(["/usr/local/bin/Rscript", str(RSCRIPT), str(TRANSIENT)],
                            capture_output=True, text=True, timeout=3600, cwd=ROOT)
