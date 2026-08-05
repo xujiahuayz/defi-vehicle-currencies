@@ -131,9 +131,29 @@ def main() -> int:
     ap.add_argument("--min-notional", type=float, default=100.0)
     args = ap.parse_args()
 
-    d = pd.read_parquet(PANEL)
-    n0 = len(d)
-    d = d[d.direct_available & d.vehicle_available].copy()
+    # Read only the columns this test needs, and filter to comparable rows row
+    # group by row group. The panel is 123.8 million rows across 23 columns, so
+    # loading it whole is roughly 20 GB and is what killed the panel assembly
+    # earlier: the process is killed by the OS with no traceback after the
+    # expensive work is done. Only ~30 million rows have both routes quoted.
+    import pyarrow.parquet as pq
+
+    need = ["date", "src", "tgt", "vehicle", "trade_size_usd", "direct_available",
+            "vehicle_available", "direct_cost_advantage"]
+    pf = pq.ParquetFile(PANEL)
+    n0 = pf.metadata.num_rows
+    keep_parts = []
+    for i in range(pf.num_row_groups):
+        g = pf.read_row_group(i, columns=need).to_pandas()
+        g = g[g.direct_available.astype(bool) & g.vehicle_available.astype(bool)]
+        if not g.empty:
+            keep_parts.append(g)
+        if (i + 1) % 25 == 0 or i + 1 == pf.num_row_groups:
+            print(f"  scanned row group {i+1}/{pf.num_row_groups}, "
+                  f"kept {sum(len(x) for x in keep_parts):,}", flush=True)
+    d = (pd.concat(keep_parts, ignore_index=True) if keep_parts
+         else pd.DataFrame(columns=need))
+    del keep_parts
     print(f"panel {n0:,} rows -> {len(d):,} with BOTH a direct and a vehicle route quoted")
 
     # Junk screen. This project has repeatedly been misled by unclassified tokens

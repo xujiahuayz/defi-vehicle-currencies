@@ -1,0 +1,32 @@
+{
+ "argv": [
+  "--pools",
+  "6",
+  "--max-per-pool",
+  "200"
+ ],
+ "artefact": "output/exhibits/v4_quoter_validation.jsonl",
+ "code_fingerprint": "9fec23324f8e8d5e084a7d784e0819770af414d7e2588afa0c51462a6407e6de",
+ "code_sources": [
+  "scripts/validate_v4_quoter.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T06:57:21+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "c09bf0892ca61a4a48bb0c43cd428baf34a51d2b",
+  "dirty": false,
+  "dirty_tracked_files": []
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 1200,
+ "script": "scripts/validate_v4_quoter.py"
+}

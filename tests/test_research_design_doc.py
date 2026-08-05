@@ -48,9 +48,23 @@ class ResearchDesignDocumentTests(unittest.TestCase):
         self.assertIn("Computer-science paper", self.text)
         self.assertIn("local corpus includes the published version", self.text)
 
-    def test_design_remains_on_execution_hold(self) -> None:
-        self.assertIn("## Execution hold", self.text)
-        self.assertIn("Do not run or modify empirical experiment scripts", self.text)
+    def test_design_states_who_approves_what(self) -> None:
+        """The gate must name an approver for every class of choice.
+
+        This replaced a test asserting the execution hold text stayed present. That
+        test made the hold unremovable without editing the test, which is the right
+        instinct for a real gate and the wrong one once the gate is delegated: it
+        kept blocking agents on checkboxes that did not need Java. What must not
+        regress is the DIVISION OF RIGHTS, so that is what is asserted.
+        """
+        self.assertIn("## Approval gate", self.text)
+        self.assertIn("published", self.text)
+        self.assertIn("JFE", self.text)
+        # Java's reserved decisions must stay named and reserved.
+        for reserved in ("title", "lead", "RQ5"):
+            self.assertIn(reserved, self.text)
+        # And the delegated set must stay explicitly vetoable.
+        self.assertIn("veto", self.text)
 
 
 if __name__ == "__main__":

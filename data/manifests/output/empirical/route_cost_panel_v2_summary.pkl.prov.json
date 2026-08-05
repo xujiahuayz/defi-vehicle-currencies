@@ -1,0 +1,43 @@
+{
+ "argv": [
+  "--start",
+  "2026-06-01",
+  "--end",
+  "2026-06-06",
+  "--hours",
+  "0,12",
+  "--workers",
+  "3",
+  "--force"
+ ],
+ "artefact": "output/empirical/route_cost_panel_v2_summary.pkl",
+ "code_fingerprint": "3612a44378b95c2f8351d6a0b9665cbf10af11489223da847e527eaaf50ad00d",
+ "code_sources": [
+  "scripts/run_route_cost_panel.py",
+  "src/ddvc/pricing/v2quote.py",
+  "src/ddvc/pricing/v3pools.py",
+  "src/ddvc/pricing/v3quote.py"
+ ],
+ "created_at": "2026-08-05T07:35:29+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "b06258c0660639658581471573e9428f6d32dfce",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "cripts/run_route_cost_panel.py",
+   "src/ddvc/asset_types.py",
+   "src/ddvc/fetch/schemas.py"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 15,
+ "script": "scripts/run_route_cost_panel.py"
+}

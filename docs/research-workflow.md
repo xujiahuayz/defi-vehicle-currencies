@@ -64,7 +64,7 @@ An independent review (2026-08-05) correctly demolished the version-1 reading of
 
 ## 3. Definitions to settle first (node C, blocking)
 
-**Vehicle status and dominance are separate axes.** Vehicle status is a role that is binary and trivially satisfied: one bridging swap qualifies. What matters and what we measure is the *extent* to which one asset captures that role. The literature uses "vehicle currency" as a categorical label for what is really a continuous share, and making that precise is part of the contribution. Working title, a one-word insertion into the original public title so the public record stays continuous: **"The Making of Dominant Vehicle Currencies."**
+**Vehicle status and dominance are separate axes.** Vehicle status is a role that is binary and trivially satisfied: one bridging swap qualifies. What matters and what we measure is the *extent* to which one asset captures that role. The literature uses "vehicle currency" as a categorical label for what is really a continuous share, and making that precise is part of the contribution. Working title, a one-word insertion into the original public title so the public record stays continuous: **"The Making of Dominant Vehicle Currencies: Evidence from DeFi"** (decided by Java, 2026-08-06).
 
 **Asset types before tickers.** DeFi is the laboratory and the claim is about currency types, so tickers appear only as proxies:
 - *Native platform asset*: thickest incumbent pairing network, high volatility. Proxy: WETH. TradFi analogue: the incumbent international currency whose role rests on thick-market externalities.
@@ -200,6 +200,6 @@ Ordering: A and B complete before C. C blocks D. D blocks E. E locks before F. F
 
 ## 8. Open decisions for Java
 
-1. Title: "The Making of Dominant Vehicle Currencies" (proposed, section 3).
-2. Pure-empirics lane confirmed, with a model added only if a specific coefficient demands it (proposed, section 1).
+1. Title: **DECIDED by Java 2026-08-06** — "The Making of Dominant Vehicle Currencies: Evidence from DeFi".
+2. Pure-empirics lane: **ALREADY DECIDED, do not reopen.** Java settled this when the graph was first proposed, after rejecting an earlier "model-first per JFE convention" claim of mine as presumptuous. Re-derived from the 14 exemplar PDFs rather than from a summary: 6 of 14 have no formal model, and of the 3 that pair a model with data only 1 leads with theory. The JFE author profile says "IF the paper has a model, make the model do work", which is a conditional that I had flattened into an imperative. So: purely empirical is the lane, a model is added only if it raises the acceptance odds and only if done properly, and this line exists to stop the question resurfacing a third time.
 3. Which of the five candidate results in section 4.1 lead. Revised inclination after the independent review: **cross-venue spillover (4) as the headline**, since it was rated the strongest and is the cleanest identification available; **cross-aggregator routing choice (1) as the second**, since it is the direct answer to the routing-agency objection and nobody has run it; **incumbency in liquidity supply (2)** as the mechanism; fragmentation-with-concentration (3) and rent incidence (5) as supporting. Architectural results stay in the paper as the feasible-set layer, never leading.

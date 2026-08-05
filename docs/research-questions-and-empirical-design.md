@@ -331,14 +331,23 @@ RQ5 has three separable answers. Experiment A establishes whether economic vehic
 
 ## Review decisions before execution
 
-- [ ] Approve the five revised RQs and their ordering.
-- [ ] Approve the distinction between quote-output cost and all-in route cost, including the fee/price-impact/gas audit decomposition.
-- [ ] Approve the RQ1 fixed notionals and use of observed transaction size for route-level validation.
-- [ ] Approve the RQ2 provider-controller look-through rule, outside-token shift-share shock, and fee/LVR/net-return decomposition.
-- [ ] Approve RQ3 horizons \(7/30/90\), the three-day persistent edge crossing, and fixed challenger-edge knots \(0/25/50/100/200\) basis points.
-- [ ] Approve the bounded interpretation of the global V3 and V4 event studies; neither is presented as equivalent in strength to a staggered instrument or regression discontinuity.
-- [ ] Approve RQ5 as a main RQ rather than an extension; its LP-capital experiment is the strongest bridge from V4 mechanics to traditional market-making theory.
+- [ ] **JAVA'S CALL** — approve the five revised RQs and their ordering (which results lead).
+- [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the distinction between quote-output cost and all-in route cost, including the fee/price-impact/gas audit decomposition.
+- [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the RQ1 fixed notionals and use of observed transaction size for route-level validation.
+- [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the RQ2 provider-controller look-through rule, outside-token shift-share shock, and fee/LVR/net-return decomposition.
+- [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve RQ3 horizons \(7/30/90\), the three-day persistent edge crossing, and fixed challenger-edge knots \(0/25/50/100/200\) basis points.
+- [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the bounded interpretation of the global V3 and V4 event studies; neither is presented as equivalent in strength to a staggered instrument or regression discontinuity.
+- [ ] **JAVA'S CALL** — approve RQ5 as a main RQ rather than an extension; its LP-capital experiment is the strongest bridge from V4 mechanics to traditional market-making theory.
 
-## Execution hold
+## Approval gate (replaces the former execution hold)
 
-Do not run or modify empirical experiment scripts, build result tables, or write result prose until the RQs, measurements, and primary specifications above are approved. Rendering the notation registry for review is permitted and does not count as running an experiment.
+Java lifted the execution hold on 2026-08-06 and delegated approval, on the grounds that she asked for an agentic graph and the gate should therefore be enforced by the graph rather than by her inbox. The hold had become a defect in its own right: it blocked on seven checkboxes of which only two needed her, and it tripped every agent that read this file while empirical work proceeded anyway under her live instruction.
+
+What replaces it is stricter in substance and cheaper for Java. Approval requires passing an adversarial self-check against the golden standard she named, published JFE papers, a corpus of which sits in `literature/papers/`. A specification is approved when independent reviewer agents, each reading the corpus directly rather than a summary of it, cannot show that the choice would be rejected at that venue. Reviewers are instructed to try to reject rather than to confirm, because a reviewer asked to check conformance will find it.
+
+Division of rights, stated so the gate cannot silently expand:
+
+- **Java's, and only Java's.** The title, now decided as "The Making of Dominant Vehicle Currencies: Evidence from DeFi". Whether the paper stays a pure-empirics lane. Which results lead. Whether RQ5 is a main RQ or an extension.
+- **Delegated, decided in this document with reasoning, and vetoable by Java in one sentence.** RQ1 fixed notionals. RQ3 horizons, the persistent-edge crossing, and the challenger-edge knots. The quote-output versus all-in cost distinction and its fee, price-impact and gas decomposition. The RQ2 provider-controller look-through rule and the shift-share construction. The bounded reading of the V3 and V4 event studies.
+
+Every delegated choice carries its reasoning where it is specified, so a veto costs Java a sentence rather than a re-derivation.

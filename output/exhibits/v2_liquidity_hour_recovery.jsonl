@@ -1,0 +1,5 @@
+{"clean": 11729, "day": "20210615", "explained_by_liquidity": 1554, "flagged": 1571, "flagged_share": 0.1181203007518797, "pool_hours": 13300, "recovered_share_of_flagged": 0.9891788669637174, "status": "ok", "still_unexplained": 17}
+{"clean": 5654, "day": "20220615", "explained_by_liquidity": 278, "flagged": 306, "flagged_share": 0.05134228187919463, "pool_hours": 5960, "recovered_share_of_flagged": 0.9084967320261438, "status": "ok", "still_unexplained": 28}
+{"clean": 7277, "day": "20230615", "explained_by_liquidity": 343, "flagged": 388, "flagged_share": 0.050619699934768426, "pool_hours": 7665, "recovered_share_of_flagged": 0.884020618556701, "status": "ok", "still_unexplained": 45}
+{"clean": 10504, "day": "20240115", "explained_by_liquidity": 257, "flagged": 354, "flagged_share": 0.0326026892613741, "pool_hours": 10858, "recovered_share_of_flagged": 0.7259887005649718, "status": "ok", "still_unexplained": 97}
+{"clean": 9573, "day": "20250615", "explained_by_liquidity": 146, "flagged": 312, "flagged_share": 0.03156297420333839, "pool_hours": 9885, "recovered_share_of_flagged": 0.46794871794871795, "status": "ok", "still_unexplained": 166}

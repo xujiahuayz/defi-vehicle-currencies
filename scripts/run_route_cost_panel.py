@@ -960,9 +960,14 @@ def main() -> int:
 
             # The summary needs only a handful of columns, so read those back with
             # projection rather than holding the whole panel.
-            summary_cols = ["date", "src_sym", "tgt_sym", "vehicle_sym",
-                            "trade_size_usd", "direct_available", "vehicle_available",
-                            "direct_cost_advantage", "direct_source", "hop1_source"]
+            # Must cover every column _summarize touches. Omitting one turns a
+            # completed 763 MB panel into a KeyError after all the work is done.
+            summary_cols = ["date", "method", "src", "src_sym", "tgt", "tgt_sym",
+                            "vehicle", "vehicle_sym", "trade_size_usd",
+                            "direct_available", "vehicle_available",
+                            "direct_output_usd", "vehicle_output_usd",
+                            "direct_cost_advantage", "direct_source", "hop1_source",
+                            "realized_bridge_volume_usd", "n_realized_routes"]
             have = set(pq.ParquetFile(out_path).schema.names) if n_rows else set()
             panel = (pq.read_table(out_path,
                                    columns=[c for c in summary_cols if c in have])
