@@ -1,4 +1,4 @@
-# Cost-dominance windows exist, and the native vehicle is rarely in them
+# Cost-dominance windows exist. The native vehicle's apparent advantage is composition.
 
 Supersedes the negative result in `docs/finding-cost-dominance-not-yet-established.md`, which failed because it compared realised trades across a day and intraday price movement swamped execution cost by 34 to 1. This prices both routes at identical reconstructed state, so price movement cannot enter.
 
@@ -23,21 +23,48 @@ Dominance by intermediary type, filtered, gross of gas:
 
 Pooled across the sample, the native asset is dominated least often, and the median native-intermediated route returns 2,459 bps more than the best available direct pool would have. That gap is an order of magnitude larger than for any other type.
 
-**The year-by-year claim does not survive the filter, and an earlier version of this document was wrong to make it.** On the unfiltered panel native appeared to be dominated less often in all seven years. Filtered, it holds in five of seven:
+**Temporal variation is the phenomenon, not a robustness failure.** An earlier version of this document reported the year-by-year pattern as "holds in five of seven years" and treated the two reversals as weakening the result. That was a conceptual error, flagged by Java: this paper is about how vehicle dominance is *made*, so the time dimension is the object of study. Demanding that the pattern hold uniformly across years assumes stationarity in a paper about non-stationarity, and it discards exactly the variation the paper exists to explain.
 
-| year | native | other | |
-|---|---|---|---|
-| 2020 | 10.7% | 22.4% | native lower |
-| 2021 | 12.7% | 22.0% | native lower |
-| 2022 | 14.6% | 13.8% | **reversed** |
-| 2023 | 15.8% | 16.0% | native lower, within noise |
-| 2024 | 13.1% | 12.2% | **reversed** |
-| 2025 | 7.7% | 9.3% | native lower |
-| 2026 | 16.4% | 30.0% | native lower |
+The legitimate version of the robustness question is whether the pooled result depends on any single period. It does not. Leave-one-year-out never flips the sign, with the native advantage ranging from +2.2pp (excluding 2021) to +6.3pp (excluding 2022).
 
-So the defensible statement is the pooled one, plus the observation that the ordering is not uniform through time and reverses in two years. The junk-token contamination was inflating measured dominance among non-native intermediaries, which flattered the original claim.
+What the quarterly series shows instead, in percentage points by which non-native intermediaries are dominated more often than native:
 
-**What still supports the reading against naive inertia.** An asset carried by habit should be dominated more often than alternatives, since habit keeps routing flow through it after it stops being best. Pooled, the opposite holds, and the median-gap difference is large and one-directional. What the evidence supports is incumbency operating through a state variable: the native asset's pools are deepest, so routing through it is genuinely optimal in most instances, while the reason those pools are deepest may still be historical. The two reversal years mean this is a tendency and not a law, and the paper should say so.
+| quarter | native advantage | native share of v2 intermediation |
+|---|---|---|
+| 2020 Q3 | +12.3 | 17.5% |
+| 2020 Q4 | +12.7 | 14.8% |
+| 2021 Q1 | +14.8 | 13.9% |
+| **2021 Q2** | **+20.4** | 17.4% |
+| 2021 Q3 | +0.4 | 22.0% |
+| 2021 Q4 | +0.3 | 25.3% |
+| 2022 Q1 | +0.2 | 24.2% |
+| 2022 Q3 | -2.1 | 16.8% |
+| 2023 Q1 | -5.8 | 25.5% |
+| 2023 Q2 | +7.1 | 30.2% |
+| 2025 Q4 | +8.3 | 7.1% |
+| 2026 Q2 | +23.4 | 8.9% |
+
+**The native asset's routing advantage collapses in 2021 Q3, from +20.4pp to +0.4pp in a single quarter, and stays near zero for roughly two years.** Uniswap V3 launched in May 2021, which is 2021 Q2. An architecture change followed within a quarter by a step change in which asset it pays to route through is the paper's subject matter arriving in the data.
+
+A composition alternative has to be ruled out before that reading is claimed. This panel is v2-only, so what is observed is the native advantage *within v2* after V3 began pulling liquidity elsewhere. If the best native-intermediated routes migrated to V3 first, the residual v2 native routes would look worse without the native asset's role having changed at all. Distinguishing the two requires extending the counterfactual to V3, which needs the tick map. Until then this is a documented association with a named confound.
+
+**The controlled comparison overturns the descriptive result.** Java's point: subsample splits are fine as robustness, but the claim needs a controlled experiment. Run in `scripts/run_dominance_regressions.py`, and it changes the conclusion.
+
+| specification | native coefficient | p |
+|---|---|---|
+| (1) pooled | -0.049 | 0.008 |
+| (2) + log notional | -0.051 | 0.008 |
+| (3) + year effects | -0.049 | 0.008 |
+| **(4) pair-by-day fixed effects** | **+0.094** | 0.269 |
+| (5) pair-by-day FE, gap in bps | +186 | 0.078 |
+
+Specifications (1) to (3) reproduce the descriptive finding: native-intermediated routes are about 5 percentage points less likely to be dominated, on 3,654 pair clusters. Specification (4) compares routes between the same two tokens on the same day that used different intermediaries, so pair liquidity, token characteristics, that day's volatility and the gas regime are all held fixed. The coefficient flips sign and loses significance.
+
+**So the native advantage is a composition effect.** The native asset is used on pairs and days where dominance is less likely in any case; conditional on the trade, there is no evidence it is a better intermediary, and the point estimate leans the other way. No amount of descriptive splitting or leave-one-year-out robustness would have revealed this, since both operate on the pooled comparison that the confound lives inside.
+
+Two things this does not license. It does not show the native asset is a *worse* intermediary: specification (4) rests on 703 identifying cells and 158 clusters, so it is underpowered and a null there is weak evidence. And it does not touch the earlier finding that dominance windows exist at all, which is a marginal frequency and needs no controls.
+
+One incidental result survives strongly in the controlled design: larger trades are markedly less likely to be dominated within a pair-day (log notional coefficient -0.042, p<0.001), consistent with the fixed-cost mechanics of gas and with larger flow attracting better routing.
 
 ## Gas behaves exactly as a fixed cost should
 
