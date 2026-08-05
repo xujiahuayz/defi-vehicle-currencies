@@ -62,7 +62,7 @@ Specifications (1) to (3) reproduce the descriptive finding: native-intermediate
 
 **The pooled comparison is confounded by composition, and specification (4) is too weak to say what remains.** The descriptive gap does not survive holding the trade fixed, so the pooled 5 percentage points cannot be read as an asset-role effect. What specification (4) itself establishes is much less than an earlier version of this document claimed by calling the result a composition effect and stopping there.
 
-The reason is power, and it should be stated as a number rather than as a caveat. Specification (4) identifies from 703 pair-day cells out of 22,991 and 3,865 routes out of 102,845, so **96.2% of the panel contributes nothing to that coefficient**, on 158 clusters. Its standard error of 0.085 puts the minimum detectable effect near 24 percentage points at conventional power. The estimate is +0.094. So the design can neither confirm a native advantage nor exclude a substantial native *dis*advantage, and describing it as a null asserts an absence the data cannot support.
+The reason is power, and it should be stated as a number rather than as a caveat. Specification (4) identifies from 703 pair-day fixed effects out of 22,991 and 3,865 routes out of 102,845, so **96.2% of the panel contributes nothing to that coefficient**, on 158 clusters. Its standard error of 0.085 puts the minimum detectable effect near 24 percentage points at conventional power. The estimate is +0.094. So the design can neither confirm a native advantage nor exclude a substantial native *dis*advantage, and describing it as a null asserts an absence the data cannot support.
 
 Why identification is so thin here is itself informative: within a single venue, a pair-day rarely sees both a native and a non-native intermediary actually used, so the estimator waits on a coincidence. The multi-venue route-cost panel quotes every vehicle candidate for every pair-day by construction, which removes the coincidence and is the correct place to settle this. Until that panel is read, the honest statement is that the sign is unresolved and the point estimate leans toward the native asset being the worse intermediary conditional on the trade, which would contradict the incumbency-advantage story and be the more interesting result of the two.
 
@@ -83,7 +83,7 @@ Adding the receipt-measured gas of the extra hop (74,096 units, from median gasU
 
 Small trades flip in large numbers; trades above $100k do not move at all, because one extra hop is 0.5 bp of a $100,000 notional and 478 bp of a $100 notional.
 
-The >$100k row is the anomaly worth chasing: those routes have the highest gross dominance at 33.5%, meaning large trades were intermediated when a direct pool would have paid more, and gas cannot explain it away at that size. Candidate explanations to test: split routing across venues our v2-only counterfactual cannot see, MEV protection, or a genuinely suboptimal router. It is a small cell at 847 routes.
+The >$100k row is the anomaly worth chasing: those routes have the highest gross dominance at 33.5%, meaning large trades were intermediated when a direct pool would have paid more, and gas cannot explain it away at that size. Candidate explanations to test: split routing across venues our v2-only counterfactual cannot see, MEV protection, or a genuinely suboptimal router. It is a small fixed effect at 847 routes.
 
 ## Limits, stated
 
