@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import sys
 import time
@@ -373,14 +374,46 @@ def cmd_fetch(args: argparse.Namespace) -> int:
         days = iter_days(start, end)
         if args.max_days:
             days = days[: args.max_days]
-        for day in days:
-            if args.dry_run:
-                names = stream_names_for_source(name) if streams is None else sorted(streams)
+        if args.dry_run:
+            names = stream_names_for_source(name) if streams is None else sorted(streams)
+            for day in days:
                 targets = [str(raw_path(name, stream, day)) for stream in names]
                 print(json.dumps({"source": name, "day": day.isoformat(), "targets": targets}))
-                continue
-            meta = fetch_source_day(source, day, streams=streams, skip_existing=not args.overwrite)
-            print(json.dumps(meta, sort_keys=True))
+            continue
+
+        # Days are independent and the work is waiting on gateway replies, not CPU,
+        # so fetching them one at a time left the machine idle: a measured 64
+        # seconds per day put a two-stream backfill of 2,248 days at roughly 38
+        # hours. `fetch_source_day` already builds its own client per day, so it is
+        # safe to run several at once, and threads are the right tool because the
+        # GIL is released during requests. Concurrency is capped near the number of
+        # LIVE keys rather than pushed higher: twelve concurrent workers is what
+        # tripped the public RPC endpoints' rate limits earlier, and the same
+        # mistake is available here.
+        workers = max(1, args.workers)
+        if workers == 1:
+            for day in days:
+                meta = fetch_source_day(source, day, streams=streams,
+                                        skip_existing=not args.overwrite)
+                print(json.dumps(meta, sort_keys=True))
+            continue
+        done = 0
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futs = {
+                pool.submit(fetch_source_day, source, day, streams=streams,
+                            skip_existing=not args.overwrite): day
+                for day in days
+            }
+            for fut in as_completed(futs):
+                day = futs[fut]
+                try:
+                    print(json.dumps(fut.result(), sort_keys=True))
+                except Exception as exc:
+                    print(json.dumps({"source": name, "day": day.isoformat(),
+                                      "error": f"{type(exc).__name__}: {exc}"[:300]}))
+                done += 1
+                if done % 50 == 0 or done == len(days):
+                    print(f"# {name}: {done}/{len(days)} days", flush=True)
     return 0
 
 
@@ -390,6 +423,11 @@ def build_parser() -> argparse.ArgumentParser:
     for name, fn in [("plan", cmd_plan), ("fetch", cmd_fetch), ("coverage", cmd_coverage), ("audit-genesis", cmd_audit_genesis)]:
         p = sub.add_parser(name)
         p.add_argument("--dex", nargs="+", default=["all"], help="Source names or 'all'.")
+        if name == "fetch":
+            p.add_argument("--workers", type=int, default=5,
+                           help="days fetched concurrently. Default matches the "
+                                "number of live Graph keys; the work is gateway "
+                                "latency, not CPU.")
         if name != "audit-genesis":
             p.add_argument("--start", default="genesis", help="'genesis' or YYYY-MM-DD.")
             p.add_argument("--end", default=None, help="Exclusive YYYY-MM-DD; defaults to current month start.")

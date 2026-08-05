@@ -93,6 +93,33 @@ SCHEMAS: dict[str, SchemaSpec] = {
                     "symbol decimals } } reserve0 reserve1 hourlyVolumeUSD"
                 ),
             ),
+            # Liquidity events, needed because `pairHourDatas` reserves are an
+            # end-of-hour snapshot and unwinding an hour's swaps backwards from it
+            # only reconstructs pre-trade state when nothing OTHER than a swap moved
+            # the reserves. A mint, burn or direct transfer breaks that, which is
+            # detectable from reserve continuity but not correctable without these
+            # streams, so roughly 3.2% of pool-hours are currently dropped. The
+            # exclusion is not random, since liquidity events concentrate in actively
+            # managed and newly launched pools, so recovering them removes a
+            # selection concern rather than merely adding coverage.
+            EntitySpec(
+                stream="mints",
+                entity="mints",
+                fields=(
+                    "id timestamp transaction { id blockNumber timestamp } "
+                    "pair { id token0 { id symbol decimals } token1 { id symbol decimals } } "
+                    "liquidity amount0 amount1 amountUSD sender to logIndex"
+                ),
+            ),
+            EntitySpec(
+                stream="burns",
+                entity="burns",
+                fields=(
+                    "id timestamp transaction { id blockNumber timestamp } "
+                    "pair { id token0 { id symbol decimals } token1 { id symbol decimals } } "
+                    "liquidity amount0 amount1 amountUSD sender to logIndex needsComplete"
+                ),
+            ),
         ),
     ),
     "uniswap_v3": SchemaSpec(

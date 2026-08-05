@@ -34,6 +34,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from ddvc.asset_types import canonical_token  # noqa: E402
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
 from ddvc.provenance import cache_key  # noqa: E402
 from ddvc.provenance import stamp as record_provenance  # noqa: E402
@@ -106,7 +107,8 @@ def _configure_cache(hours: tuple[int, ...], top_pairs: int, sizes: list[float],
                      no_v3: bool) -> Path:
     global DAY_CACHE
     hspec = "all" if len(hours) == 24 else "-".join(str(h) for h in hours)
-    spec = f"h{hspec}_p{top_pairs}_s{'-'.join(str(int(x)) for x in sizes)}{'_nov3' if no_v3 else ''}"
+    spec = (f"h{hspec}_p{top_pairs}_s{'-'.join(str(int(x)) for x in sizes)}"
+            f"{'_nov3' if no_v3 else ''}{'_splitwrapped' if not UNIFY_WRAPPED else ''}")
     DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}" / spec
     DAY_CACHE.mkdir(parents=True, exist_ok=True)
     return DAY_CACHE
@@ -276,8 +278,8 @@ def _load_v2_pools_by_hour(stamp: str,
                     r1 = float(rec.get("reserve1") or 0)
                 except (TypeError, ValueError):
                     continue
-                a0 = str(t0.get("id", "")).lower()
-                a1 = str(t1.get("id", "")).lower()
+                a0 = canonical_token(t0.get("id"), unify_wrapped=UNIFY_WRAPPED)
+                a1 = canonical_token(t1.get("id"), unify_wrapped=UNIFY_WRAPPED)
                 if not a0 or not a1 or r0 <= 0 or r1 <= 0:
                     continue
                 pools[frozenset((a0, a1))].append(Pool(
@@ -327,13 +329,38 @@ def _infer_tick_spacing(ticks: dict[int, int]) -> int:
     return 200
 
 
-def _apply_v3_liquidity_events(
+# Concentrated-liquidity venues, and how each reports a liquidity change. Uniswap
+# v3 splits additions and removals into `mints` and `burns`, so the sign is carried
+# by the stream. Uniswap v4 emits one `modify_liquidities` stream whose `amount` is
+# already signed, a removal being negative, so its sign multiplier is +1.
+TICK_VENUES: dict[str, tuple[tuple[str, int], ...]] = {
+    "uniswap_v3": (("mints", 1), ("burns", -1)),
+    "uniswap_v4": (("modify_liquidities", 1),),
+}
+V4_START = "20250101"
+
+# Whether native ETH (Uniswap v4's zero address) and WETH are ONE currency or two.
+# Set from --split-wrapped and included in the cache key, because it changes which
+# routes exist rather than merely how they are labelled. See
+# ddvc.asset_types.canonical_token for why the unified reading is primary.
+UNIFY_WRAPPED = True
+
+
+def _apply_tick_liquidity_events(
+    venue: str,
     stamp: str,
     tick_net_by_pool: dict[str, dict[int, int]],
-    tick_spacing_by_pool: dict[str, int],
 ) -> None:
-    for stream, sign in (("mints", 1), ("burns", -1)):
-        path = _raw_path("uniswap_v3", stream, stamp)
+    """Accumulate net liquidity per initialized tick for one venue-day.
+
+    Tick spacing is deliberately NOT tracked here. It was recomputed by taking a
+    greatest common divisor over every tick in the pool on every single liquidity
+    event, which is quadratic in events per pool per day and was a large share of
+    the index warm-up, and the quoter never reads it: traversal is driven by the
+    initialized ticks themselves.
+    """
+    for stream, sign in TICK_VENUES[venue]:
+        path = _raw_path(venue, stream, stamp)
         if not path.exists():
             continue
         with gzip.open(path, "rt") as fh:
@@ -357,15 +384,23 @@ def _apply_v3_liquidity_events(
                     del ticks[lower]
                 if ticks.get(upper) == 0:
                     del ticks[upper]
-                tick_spacing_by_pool[pool] = _infer_tick_spacing(ticks)
 
 
-def _update_v3_swap_state(
+def _update_tick_swap_state(
+    venue: str,
     stamp: str,
     state_by_pool: dict[str, V3PoolState],
-    tick_spacing_by_pool: dict[str, int],
 ) -> None:
-    path = _raw_path("uniswap_v3", "swaps", stamp)
+    """Latest observed price state per pool for one venue-day.
+
+    Pool statics come from different places by venue, and neither is guessed. v3
+    carries no `feeTier` in this raw layer, so the fee is recovered exactly from the
+    CREATE2 pool address and decimals from the sqrtPriceX96 identity. v4 carries
+    both `feeTier` and token `decimals` directly, and its fees are hook-settable, so
+    they are read rather than matched against v3's four tiers: pools at fee 0 and 7
+    price exactly and would be rejected by any tier whitelist.
+    """
+    path = _raw_path(venue, "swaps", stamp)
     if not path.exists():
         return
     with gzip.open(path, "rt") as fh:
@@ -375,8 +410,10 @@ def _update_v3_swap_state(
             t0 = pool.get("token0") or {}
             t1 = pool.get("token1") or {}
             pool_id = str(pool.get("id", "")).lower()
-            a0 = str(t0.get("id", "")).lower()
-            a1 = str(t1.get("id", "")).lower()
+            raw0 = str(t0.get("id", "")).lower()
+            raw1 = str(t1.get("id", "")).lower()
+            a0 = canonical_token(raw0, unify_wrapped=UNIFY_WRAPPED)
+            a1 = canonical_token(raw1, unify_wrapped=UNIFY_WRAPPED)
             if not pool_id or not a0 or not a1:
                 continue
             try:
@@ -385,7 +422,6 @@ def _update_v3_swap_state(
                 log_index = int(rec.get("logIndex") or 0)
                 sqrt_price = int(rec.get("sqrtPriceX96") or rec.get("sqrtPrice") or 0)
                 tick = int(rec.get("tick") or 0)
-                fee = int(pool.get("feeTier") or 0)
             except (TypeError, ValueError):
                 continue
             if sqrt_price <= 0:
@@ -393,49 +429,68 @@ def _update_v3_swap_state(
             old = state_by_pool.get(pool_id)
             if old is not None and (block, log_index) <= (old.block, old.log_index):
                 continue
-            # Fee tier EXACTLY, by CREATE2 address match, not inferred from tick
-            # spacing. The raw layer carries no `feeTier`, so the old path always
-            # fell through to a spacing guess defaulting to 3000, which silently
-            # mispriced every 0.01%, 0.05% and 1% pool. A pool the canonical
-            # factory did not deploy is excluded rather than quoted on a guess.
-            sample = _SWAP_SAMPLE.setdefault(pool_id, [])
-            if len(sample) < 12:
-                sample.append(rec)
-            exact_fee = derive_fee_tier(pool_id, a0, a1)
-            if exact_fee is None:
-                continue
-            fee = exact_fee
-            spacing = tick_spacing_for_fee(fee)
-            sym0 = str(t0.get("symbol", ""))
-            sym1 = str(t1.get("symbol", ""))
-            # Decimals by identity against sqrtPriceX96, never defaulted to 18. A
-            # wrong exponent here is a factor-of-10^k error in every quote on the
-            # pool, so an unresolvable pool is dropped instead.
-            dec = resolve_decimals(a0, a1, sample)
-            if dec is None:
-                continue
+
+            if venue == "uniswap_v4":
+                try:
+                    fee = int(pool.get("feeTier"))
+                    dec = (int(t0.get("decimals")), int(t1.get("decimals")))
+                except (TypeError, ValueError):
+                    continue
+            else:
+                sample = _SWAP_SAMPLE.setdefault(pool_id, [])
+                if len(sample) < 12:
+                    sample.append(rec)
+                # CREATE2 needs the pool's ACTUAL tokens; a canonicalised
+                # native-ETH-to-WETH substitution would never match an address.
+                exact_fee = derive_fee_tier(pool_id, raw0, raw1)
+                if exact_fee is None:
+                    continue
+                fee = exact_fee
+                dec = resolve_decimals(raw0, raw1, sample)
+                if dec is None:
+                    continue
+
             state_by_pool[pool_id] = V3PoolState(
                 pool=pool_id,
                 token0=a0,
                 token1=a1,
-                sym0=sym0,
-                sym1=sym1,
+                sym0=str(t0.get("symbol", "")),
+                sym1=str(t1.get("symbol", "")),
                 dec0=dec[0],
                 dec1=dec[1],
                 sqrt_price_x96=sqrt_price,
                 tick=tick,
                 fee_pips=fee,
-                tick_spacing=spacing,
+                tick_spacing=tick_spacing_for_fee(fee),
                 block=block,
                 log_index=log_index,
             )
+
+
+def advance_tick_venues(
+    stamp: str,
+    ticks_by_venue: dict[str, dict[str, dict[int, int]]],
+    state_by_venue: dict[str, dict[str, V3PoolState]],
+) -> None:
+    """Apply one day of liquidity events and price updates for every tick venue.
+
+    Kept as one function so a caller cannot advance v3 and forget v4: the index is
+    a running sum from inception, and a venue silently left un-advanced would quote
+    against stale liquidity without failing.
+    """
+    for venue, start in (("uniswap_v3", V3_START), ("uniswap_v4", V4_START)):
+        if stamp < start:
+            continue
+        _apply_tick_liquidity_events(venue, stamp, ticks_by_venue.setdefault(venue, {}))
+        _update_tick_swap_state(venue, stamp, state_by_venue.setdefault(venue, {}))
 
 
 def _active_liquidity(ticks: dict[int, int], current_tick: int) -> int:
     return sum(v for t, v in ticks.items() if t <= current_tick)
 
 
-def _load_v3_pools_from_state(
+def _load_tick_pools_from_state(
+    venue: str,
     state_by_pool: dict[str, V3PoolState],
     tick_net_by_pool: dict[str, dict[int, int]],
     required_pairs: set[frozenset[str]] | None = None,
@@ -454,9 +509,9 @@ def _load_v3_pools_from_state(
         sorted_ticks = tuple(sorted(ticks))
         sqrt_ticks = tuple(get_sqrt_ratio_at_tick(t) for t in sorted_ticks)
         pools[key].append(Pool(
-                source="uniswap_v3",
+                source=venue,
                 pool=pool_id,
-                kind="v3_exact",
+                kind="tick_exact",
                 token0=st.token0,
                 token1=st.token1,
                 sym0=st.sym0,
@@ -483,6 +538,12 @@ def _best_quote(
     token_out: str,
     amount_in: float,
 ) -> tuple[float, str, str] | tuple[float, None, None]:
+    """Best output across every pool joining the two tokens.
+
+    A pool that matches neither the constant-product nor the tick-map branch is a
+    defect rather than a pool to skip, so it is counted and reported instead of
+    silently contributing nothing.
+    """
     best = 0.0
     best_source = None
     best_pool = None
@@ -491,7 +552,13 @@ def _best_quote(
             out = quote_exact_input_float(amount_in, p.reserve0, p.reserve1)
         elif p.kind == "v2" and token_in == p.token1 and token_out == p.token0:
             out = quote_exact_input_float(amount_in, p.reserve1, p.reserve0)
-        elif p.kind == "v3_exact" and token_in in (p.token0, p.token1) and token_out in (p.token0, p.token1):
+        # Dispatch on whether the pool HAS a tick map rather than on a kind string.
+        # Renaming the kind from "v3_exact" to "tick_exact" while this branch still
+        # tested the old value made every concentrated-liquidity pool load, enter the
+        # pool dict, and then be skipped without quoting or erroring. The panel came
+        # out at 123.8 million rows containing no v3 or v4 at all, which looks exactly
+        # like a successful build. A behavioural test cannot drift that way.
+        elif p.tick_net is not None and token_in in (p.token0, p.token1) and token_out in (p.token0, p.token1):
             zero_for_one = token_in == p.token0
             dec_in = p.dec0 if zero_for_one else p.dec1
             dec_out = p.dec1 if zero_for_one else p.dec0
@@ -527,8 +594,8 @@ def _build_day(
     trade_sizes: list[float],
     top_pairs: int,
     hour: int,
-    v3_state: dict[str, V3PoolState] | None,
-    v3_ticks: dict[str, dict[int, int]] | None,
+    tick_state: dict[str, dict[str, V3PoolState]] | None,
+    tick_ticks: dict[str, dict[str, dict[int, int]]] | None,
     all_hours: tuple[int, ...] | None = None,
 ) -> pd.DataFrame:
     date = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}"
@@ -545,8 +612,13 @@ def _build_day(
     pairs = _routes_by_pair(legs, top_pairs=top_pairs)
     if pairs.empty:
         return pd.DataFrame()
-    pools = _load_v2_pools(stamp, hour=hour, hours=all_hours or (hour,))
-    if v3_state and v3_ticks:
+    # Copy, because the day's v2 pools are cached and shared across the hours of
+    # that day: extending the cached mapping in place would leak one hour's
+    # concentrated-liquidity pools into every later hour of the same day.
+    pools = defaultdict(list)
+    for key, vals in _load_v2_pools(stamp, hour=hour, hours=all_hours or (hour,)).items():
+        pools[key].extend(vals)
+    if tick_state and tick_ticks:
         required_pairs: set[frozenset[str]] = set()
         for r in pairs.itertuples(index=False):
             required_pairs.add(frozenset((r.src, r.tgt)))
@@ -555,7 +627,13 @@ def _build_day(
                     continue
                 required_pairs.add(frozenset((r.src, veh)))
                 required_pairs.add(frozenset((veh, r.tgt)))
-        v3_pools = _load_v3_pools_from_state(v3_state, v3_ticks, required_pairs=required_pairs)
+        for venue in sorted(tick_state):
+            v_pools = _load_tick_pools_from_state(
+                venue, tick_state[venue], tick_ticks.get(venue, {}),
+                required_pairs=required_pairs)
+            for key, vals in v_pools.items():
+                pools[key].extend(vals)
+        v3_pools = {}
         for key, vals in v3_pools.items():
             pools[key].extend(vals)
     if not pools:
@@ -698,6 +776,7 @@ def _summarize(panel: pd.DataFrame) -> pd.DataFrame:
 
 
 def _price_chunk(payload: dict) -> int:
+    global UNIFY_WRAPPED
     """Warm the V3 index up to this chunk of days, then price and cache them.
 
     The day loop looks serial because a V3 pool's active liquidity is the running
@@ -710,29 +789,27 @@ def _price_chunk(payload: dict) -> int:
     an hour of core time. Workers touch disjoint day files, so the cache needs no
     locking.
     """
+    UNIFY_WRAPPED = bool(payload.get("unify_wrapped", True))
     hours = tuple(payload["hours"])
     sizes = list(payload["sizes"])
     _configure_cache(hours, payload["top_pairs"], sizes, payload["no_v3"])
-    ticks: dict[str, dict[int, int]] = {}
-    state: dict[str, V3PoolState] = {}
-    spacing: dict[str, int] = {}
+    ticks: dict[str, dict[str, dict[int, int]]] = {}
+    state: dict[str, dict[str, V3PoolState]] = {}
     if not payload["no_v3"]:
         for s in payload["warm"]:
-            _apply_v3_liquidity_events(s, ticks, spacing)
-            _update_v3_swap_state(s, state, spacing)
+            advance_tick_venues(s, ticks, state)
     built = 0
     for s in payload["stamps"]:
         day_state = day_ticks = None
         if not payload["no_v3"] and s >= V3_START:
-            _apply_v3_liquidity_events(s, ticks, spacing)
-            _update_v3_swap_state(s, state, spacing)
+            advance_tick_venues(s, ticks, state)
             day_state, day_ticks = state, ticks
         cache_path = _day_cache_path(s)
         if cache_path.exists():
             continue
         parts = [
             _build_day(s, sizes, top_pairs=payload["top_pairs"], hour=h,
-                       v3_state=day_state, v3_ticks=day_ticks, all_hours=hours)
+                       tick_state=day_state, tick_ticks=day_ticks, all_hours=hours)
             for h in hours
         ]
         parts = [x for x in parts if not x.empty]
@@ -754,6 +831,10 @@ def main() -> int:
     ap.add_argument("--top-pairs", type=int, default=200)
     ap.add_argument("--trade-sizes", default="1000,10000,100000")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--split-wrapped", action="store_true",
+                    help="treat native ETH and WETH as DISTINCT assets. Default "
+                         "unifies them, since wrapping is one-for-one and routers "
+                         "wrap silently, so a trader spending ETH never chose WETH")
     ap.add_argument("--workers", type=int, default=10,
                     help="parallel day-chunk workers; each replays the cheap V3 "
                          "liquidity scan then prices its own contiguous chunk")
@@ -764,6 +845,9 @@ def main() -> int:
     )
     ap.add_argument("--no-v3", action="store_true", help="only use V2-style constant-product pools")
     args = ap.parse_args()
+
+    global UNIFY_WRAPPED
+    UNIFY_WRAPPED = not args.split_wrapped
 
     if args.migrate_day_cache:
         return _migrate_day_cache()
@@ -786,9 +870,8 @@ def main() -> int:
         print(f"day cache: {cache_dir.relative_to(ROOT)}", flush=True)
         frames = []
         stamps = _available_stamps(args.start, args.end)
-        v3_ticks: dict[str, dict[int, int]] = {}
-        v3_state: dict[str, V3PoolState] = {}
-        v3_spacing: dict[str, int] = {}
+        v3_ticks: dict[str, dict[str, dict[int, int]]] = {}
+        v3_state: dict[str, dict[str, V3PoolState]] = {}
 
         # WARM THE LIQUIDITY INDEX FROM V3 LAUNCH, whatever --start says.
         #
@@ -811,11 +894,10 @@ def main() -> int:
                       f"{warm[0]}..{warm[-1]} before the first output day",
                       flush=True)
                 for j, stamp in enumerate(warm, 1):
-                    _apply_v3_liquidity_events(stamp, v3_ticks, v3_spacing)
-                    _update_v3_swap_state(stamp, v3_state, v3_spacing)
+                    advance_tick_venues(stamp, v3_ticks, v3_state)
                     if j % 200 == 0 or j == len(warm):
                         print(f"  warm [{j}/{len(warm)}] {stamp} "
-                              f"({len(v3_ticks):,} pools indexed)", flush=True)
+                              f"({sum(len(x) for x in v3_ticks.values()):,} pools indexed)", flush=True)
 
         if parallel:
             all_stamps = _available_stamps(None, None)
@@ -827,7 +909,8 @@ def main() -> int:
                     if not args.no_v3 else []
                 payloads.append({"stamps": ch, "warm": warm, "hours": list(hours),
                                  "sizes": sizes, "top_pairs": args.top_pairs,
-                                 "no_v3": args.no_v3})
+                                 "no_v3": args.no_v3,
+                                 "unify_wrapped": UNIFY_WRAPPED})
             print(f"pricing {len(stamps):,} days in {len(chunks)} chunks across "
                   f"{args.workers} workers "
                   f"({min(len(c) for c in chunks)}-{max(len(c) for c in chunks)} days each)",
@@ -838,19 +921,56 @@ def main() -> int:
                     built = fut.result()
                     print(f"  chunk {futs[fut] + 1}/{len(payloads)} done "
                           f"({built} days priced) [{k}/{len(payloads)} chunks]", flush=True)
-            frames = []
-            for stamp in stamps:
-                cp = _day_cache_path(stamp)
-                if cp.exists():
+            # Stream the day shards into one Parquet file instead of concatenating
+            # them in memory. At 24 hours a day over 2,277 days the panel is about
+            # 124 million rows, and building that as a single pandas frame consumed
+            # enough memory that the parent was killed by the OS after the shards
+            # were already complete: no traceback, no summary, and a Parquet file on
+            # disk that looked finished. Writing row group by row group keeps memory
+            # flat and makes the failure mode impossible.
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+
+            writer = None
+            n_rows = 0
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                for i_s, stamp in enumerate(stamps, 1):
+                    cp = _day_cache_path(stamp)
+                    if not cp.exists():
+                        continue
                     dd = _canonicalize_cost_measure(pd.read_parquet(cp))
-                    if not dd.empty:
-                        frames.append(dd)
-            panel = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
-            _write(panel, out_path)
+                    if dd.empty:
+                        continue
+                    tbl = pa.Table.from_pandas(dd, preserve_index=False)
+                    if writer is None:
+                        writer = pq.ParquetWriter(out_path, tbl.schema,
+                                                  compression="snappy")
+                    else:
+                        tbl = tbl.cast(writer.schema)
+                    writer.write_table(tbl)
+                    n_rows += len(dd)
+                    if i_s % 250 == 0:
+                        print(f"  assembling [{i_s}/{len(stamps)}] {n_rows:,} rows",
+                              flush=True)
+            finally:
+                if writer is not None:
+                    writer.close()
+            print(f"assembled {n_rows:,} rows into {out_path.name}", flush=True)
+
+            # The summary needs only a handful of columns, so read those back with
+            # projection rather than holding the whole panel.
+            summary_cols = ["date", "src_sym", "tgt_sym", "vehicle_sym",
+                            "trade_size_usd", "direct_available", "vehicle_available",
+                            "direct_cost_advantage", "direct_source", "hop1_source"]
+            have = set(pq.ParquetFile(out_path).schema.names) if n_rows else set()
+            panel = (pq.read_table(out_path,
+                                   columns=[c for c in summary_cols if c in have])
+                     .to_pandas() if n_rows else pd.DataFrame())
             summary = _summarize(panel)
             summary_path.parent.mkdir(parents=True, exist_ok=True)
             summary.to_pickle(summary_path)
-            record_provenance(out_path, code_sources=QUOTE_SOURCES, rows=len(panel),
+            record_provenance(out_path, code_sources=QUOTE_SOURCES, rows=n_rows,
                               notes=f"quote engine {QUOTE_ENGINE}; "
                                     f"day cache {DAY_CACHE.name}; {len(hours)} hour(s)/day")
             record_provenance(summary_path, code_sources=QUOTE_SOURCES, rows=len(summary))
@@ -862,8 +982,7 @@ def main() -> int:
             day_v3_state = None
             day_v3_ticks = None
             if not args.no_v3 and stamp >= V3_START:
-                _apply_v3_liquidity_events(stamp, v3_ticks, v3_spacing)
-                _update_v3_swap_state(stamp, v3_state, v3_spacing)
+                advance_tick_venues(stamp, v3_ticks, v3_state)
                 day_v3_state = v3_state
                 day_v3_ticks = v3_ticks
             cache_path = _day_cache_path(stamp)
@@ -881,8 +1000,8 @@ def main() -> int:
                         top_pairs=args.top_pairs,
                         hour=h,
                         all_hours=hours,
-                        v3_state=day_v3_state,
-                        v3_ticks=day_v3_ticks,
+                        tick_state=day_v3_state,
+                        tick_ticks=day_v3_ticks,
                     )
                     for h in hours
                 ]

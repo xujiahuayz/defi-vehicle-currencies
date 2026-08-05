@@ -131,6 +131,12 @@ def asset_type(address: str | None) -> str:
 # ---------------------------------------------------------------------------
 
 ALTERNATIVES = {
+    "wrapped_native_identity": (
+        "Native ETH (zero address, Uniswap v4) and WETH treated as ONE currency "
+        "(default) or as two distinct assets. Wrapping is one-for-one and routers "
+        "wrap silently, so the currency-level view is primary; the split is kept "
+        "because wrapping costs gas and is a distinct venue."
+    ),
     "staked_native_in_native": (
         "Fold staked_native into native. Defensible because wstETH and stETH "
         "carry the same underlying exposure as ETH; contestable because they "
@@ -159,3 +165,46 @@ ALTERNATIVES = {
         "primary."
     ),
 }
+
+# ---------------------------------------------------------------------------
+# Wrapped and native ETH: one currency or two?
+#
+# Uniswap v4 restored native ETH as a pool asset, so from 2025 the same currency
+# appears under two identifiers: the zero address for native ETH and the WETH
+# contract for the wrapped claim. Whether those are ONE vehicle or two is a
+# modelling choice, not a fact, and the paper reports both.
+#
+# The case for treating them as one currency is the stronger of the two, and it is
+# behavioural rather than aesthetic: WETH is redeemable one-for-one on demand, and
+# routers routinely accept native ETH and wrap it inside the same transaction, so a
+# trader who spent ETH never chose WETH at all. Counting that route as a
+# "WETH-intermediated" trade would attribute to the trader a decision the router
+# made silently. Under this reading the wrapper is plumbing and the vehicle is ETH.
+#
+# The case for treating them as two is that wrapping is not free. It costs gas and
+# introduces a distinct contract, so a pool holding native ETH is a genuinely
+# different execution venue even when the currency is the same. That distinction
+# matters for cost comparisons, and it is why the split is kept available rather
+# than argued away.
+#
+# Both are therefore expressible, the currency-level view is primary, and the
+# venue-level split is a robustness specification.
+# ---------------------------------------------------------------------------
+
+NATIVE_ETH = "0x0000000000000000000000000000000000000000"
+WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+
+
+def canonical_token(address: object, *, unify_wrapped: bool = True) -> str | None:
+    """Token identity for routing, optionally collapsing native ETH onto WETH.
+
+    With `unify_wrapped`, native ETH resolves to the WETH address so that a v4
+    native-ETH pool and a v3 WETH pool are the same vehicle. Without it, the two
+    stay distinct and a route through one is not a route through the other.
+    """
+    if not isinstance(address, str) or not address:
+        return None
+    a = address.lower()
+    if unify_wrapped and a == NATIVE_ETH:
+        return WETH
+    return a
