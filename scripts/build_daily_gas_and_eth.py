@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 import sys
 from decimal import Decimal
@@ -45,6 +46,11 @@ sys.path.insert(0, str(ROOT / "src"))
 RAW = ROOT / "data" / "raw" / "thegraph" / "uniswap_v2"
 OUT_PARQUET = ROOT / "data" / "processed" / "daily_gas_eth.parquet"
 OUT_EXHIBIT = ROOT / "output" / "exhibits" / "daily_gas_eth.jsonl"
+# One small file per resolved day. Fetching 2,248 days costs thousands of calls
+# against shared public endpoints, and a mid-run rate-limit stall previously threw
+# away 1,500 days of completed work. Caching per day makes the job resumable, so a
+# stall costs only the days still outstanding.
+DAY_CACHE = ROOT / "data" / "interim" / "gas_days"
 
 from ddvc.provenance import stamp  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
@@ -110,14 +116,15 @@ def _blocks_and_txs(day: str, n: int = 12) -> tuple[list[int], list[str]]:
     return blocks[:n], txs[:n]
 
 
-def gas_price_gwei(day: str) -> tuple[float | None, float | None]:
+def gas_price_gwei(day: str, n_receipts: int = 3) -> tuple[float | None, float | None]:
     """(receipt median, block base fee) in gwei; either may be None."""
     blocks, txs = _blocks_and_txs(day)
     base = None
     if blocks:
         try:
             r = rpc_post({"jsonrpc": "2.0", "id": 1, "method": "eth_getBlockByNumber",
-                          "params": [hex(blocks[len(blocks) // 2]), False]}, sleep=0.3)
+                          "params": [hex(blocks[len(blocks) // 2]), False]},
+                         sleep=0.05, timeout=12, retries=2)
             b = (r or {}).get("result") or {}
             if b.get("baseFeePerGas"):
                 base = int(b["baseFeePerGas"], 16) / 1e9
@@ -129,11 +136,17 @@ def gas_price_gwei(day: str) -> tuple[float | None, float | None]:
     # and, because the failure was swallowed, silently degraded those days to
     # base-fee-only gas, which omits priority tips.
     vals = []
-    for tx in txs[:8]:
+    # Three receipts, not eight. The per-day figure feeds annual medians over
+    # hundreds of days, so the marginal accuracy of receipts four through eight is
+    # negligible against the cost: eight receipts over 2,248 days is 18,000 calls to
+    # shared public endpoints, which is what tripped their rate limits and turned a
+    # 15x speedup into a stall. A short timeout matters for the same reason, since a
+    # throttled call blocking a worker for a minute is worse than losing that day.
+    for tx in txs[:n_receipts]:
         try:
             r = rpc_post({"jsonrpc": "2.0", "id": 1,
                           "method": "eth_getTransactionReceipt", "params": [tx]},
-                         sleep=0.15)
+                         sleep=0.05, timeout=12, retries=2)
         except Exception:
             continue
         if not isinstance(r, dict) or r.get("error"):
@@ -151,6 +164,12 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--stride", type=int, default=12)
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--workers", type=int, default=4,
+                    help="concurrent day fetches. Kept low deliberately: 12 workers "
+                         "tripped the free endpoints' rate limits, and the resulting "
+                         "throttling was slower than running fewer in parallel")
+    ap.add_argument("--receipts", type=int, default=3,
+                    help="receipts sampled per day for the priority-tip component")
     args = ap.parse_args()
 
     days = sorted(p.name.removeprefix("uniswap_v2_swaps_").removesuffix(".jsonl.gz")
@@ -159,15 +178,39 @@ def main() -> int:
         days = days[: args.limit]
     print(f"resolving gas and ETH price for {len(days)} day(s)", flush=True)
 
-    rows = []
-    for i, day in enumerate(days, 1):
+    # Each day is independent and the work is dominated by waiting on RPC replies,
+    # so this ran at 0% CPU on 14 cores for hours. Threads are the right tool: the
+    # bottleneck is network latency, not the interpreter, so the GIL is released
+    # while requests are in flight and there is nothing to pickle between workers.
+    DAY_CACHE.mkdir(parents=True, exist_ok=True)
+
+    def one_day(day: str) -> dict:
+        cached = DAY_CACHE / f"{day}.json"
+        if cached.exists():
+            rec = json.loads(cached.read_text())
+            rec["date"] = pd.to_datetime(rec["day"], format="%Y%m%d")
+            return rec
         px, depth = eth_price(day)
-        eff, base = gas_price_gwei(day)
-        rows.append({"date": pd.to_datetime(day, format="%Y%m%d"),
-                     "eth_usd": px, "pool_depth_usd": depth,
-                     "gas_gwei_receipt": eff, "gas_gwei_basefee": base})
-        if i % 20 == 0:
-            print(f"  {i}/{len(days)}", flush=True)
+        eff, base = gas_price_gwei(day, n_receipts=args.receipts)
+        rec = {"day": day, "eth_usd": px, "pool_depth_usd": depth,
+               "gas_gwei_receipt": eff, "gas_gwei_basefee": base}
+        cached.write_text(json.dumps(rec))
+        rec = dict(rec)
+        rec["date"] = pd.to_datetime(day, format="%Y%m%d")
+        return rec
+
+    rows = []
+    done = 0
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        futs = {pool.submit(one_day, d): d for d in days}
+        for fut in as_completed(futs):
+            try:
+                rows.append(fut.result())
+            except Exception as exc:
+                print(f"  {futs[fut]} failed: {type(exc).__name__} {exc}", flush=True)
+            done += 1
+            if done % 100 == 0 or done == len(days):
+                print(f"  {done}/{len(days)}", flush=True)
 
     df = pd.DataFrame(rows).sort_values("date")
     # prefer the receipt median, since it includes priority tips

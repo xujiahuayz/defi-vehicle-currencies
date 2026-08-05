@@ -7,6 +7,9 @@ import os
 import re
 import time
 from collections.abc import Iterable
+import datetime as dt
+import threading
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -46,12 +49,74 @@ def _read_dotenv_keys() -> str:
     return values.get("GRAPH_API_KEYS") or values.get("GRAPH_API_KEY") or ""
 
 
+# Per-key health, persisted so every process does not rediscover the same dead
+# keys. Free Graph quota is per ACCOUNT and resets monthly, so a key is marked dead
+# only for the current UTC month and is retried automatically next month.
+KEY_STATE_PATH = REPO_ROOT / "data" / ".graph_key_state.json"
+_STATE_LOCK = threading.Lock()
+
+
+def _month() -> str:
+    return dt.datetime.now(dt.UTC).strftime("%Y-%m")
+
+
+def _load_key_state() -> dict[str, Any]:
+    try:
+        state = json.loads(KEY_STATE_PATH.read_text())
+    except (OSError, ValueError):
+        return {}
+    return state if isinstance(state, dict) else {}
+
+
+def _save_key_state(state: dict[str, Any]) -> None:
+    try:
+        KEY_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        KEY_STATE_PATH.write_text(json.dumps(state, indent=1, sort_keys=True) + "\n")
+    except OSError:
+        pass
+
+
+def mark_key_exhausted(key: str) -> None:
+    """Record that this key has no quota left this month."""
+    with _STATE_LOCK:
+        state = _load_key_state()
+        state.setdefault("exhausted", {})[key[-8:]] = _month()
+        _save_key_state(state)
+
+
+def key_is_exhausted(key: str) -> bool:
+    return _load_key_state().get("exhausted", {}).get(key[-8:]) == _month()
+
+
+class AllKeysExhausted(RuntimeError):
+    """Every key in the pool is out of quota for the current month."""
+
+
 @dataclass
 class GraphClient:
+    """Rotating Graph gateway client.
+
+    Rotation is the whole point of holding a key pool, and it previously failed in
+    five ways that all surfaced as "the Graph is down" rather than as a key problem.
+    The index restarted at zero for every client, so with the first five of eleven
+    keys exhausted each new client spent five failed round-trips before reaching a
+    live one. Rotation never wrapped, so reaching the last key disabled the client
+    permanently even though free quota is monthly and earlier keys recover. Nothing
+    was persisted, so every process rediscovered the same dead keys. The index was
+    mutated without a lock while several threads shared one client, which can rotate
+    past a healthy key. And only 401, 403, 429 and "payment required" rotated, so a
+    5xx or a timeout raised immediately with no retry at all.
+
+    Now: dead keys are skipped from the start and remembered for the month, rotation
+    wraps, mutation is locked, transient failures back off and retry, and the only
+    fatal condition is every key being genuinely out of quota.
+    """
+
     subgraph_id: str
     keys: list[str]
     graph_path: str = "subgraphs/id"
     sleep_seconds: float = 0.1
+    max_transient_retries: int = 4
 
     def __post_init__(self) -> None:
         if not self.keys:
@@ -60,7 +125,12 @@ class GraphClient:
 
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": DEFAULT_USER_AGENT})
-        self._key_index = 0
+        self._lock = threading.Lock()
+        # Begin on a key not already known to be out of quota this month.
+        self._key_index = next(
+            (i for i, k in enumerate(self.keys) if not key_is_exhausted(k)), 0)
+        self._dead: set[int] = {
+            i for i, k in enumerate(self.keys) if key_is_exhausted(k)}
 
     @property
     def url(self) -> str:
@@ -70,30 +140,87 @@ class GraphClient:
             subgraph_id=self.subgraph_id,
         )
 
-    def _rotate(self) -> bool:
-        if self._key_index + 1 >= len(self.keys):
+    def _advance(self, *, exhausted: bool) -> bool:
+        """Move to the next usable key. False when the pool is spent."""
+        with self._lock:
+            if exhausted:
+                self._dead.add(self._key_index)
+                mark_key_exhausted(self.keys[self._key_index])
+            if len(self._dead) >= len(self.keys):
+                return False
+            idx = self._key_index
+            for _ in range(len(self.keys)):
+                idx = (idx + 1) % len(self.keys)
+                if idx not in self._dead:
+                    self._key_index = idx
+                    return True
             return False
-        self._key_index += 1
-        return True
 
     def query(self, query: str, variables: dict[str, Any]) -> dict[str, Any]:
+        transient = 0
         while True:
-            response = self.session.post(
-                self.url,
-                json={"query": query, "variables": variables},
-                timeout=90,
-            )
-            if response.status_code in {401, 403, 429} and self._rotate():
+            try:
+                response = self.session.post(
+                    self.url,
+                    json={"query": query, "variables": variables},
+                    timeout=90,
+                )
+            except Exception:
+                transient += 1
+                if transient > self.max_transient_retries:
+                    raise
+                time.sleep(min(2 ** transient, 20))
                 continue
+
+            if response.status_code in {401, 403}:
+                if self._advance(exhausted=True):
+                    continue
+                raise AllKeysExhausted(
+                    f"all {len(self.keys)} keys rejected (HTTP {response.status_code})")
+            if response.status_code == 429:
+                # Throttling is about rate, not quota, so the key stays usable.
+                if self._advance(exhausted=False):
+                    time.sleep(self.sleep_seconds)
+                    continue
+            if response.status_code >= 500:
+                transient += 1
+                if transient > self.max_transient_retries:
+                    response.raise_for_status()
+                time.sleep(min(2 ** transient, 20))
+                continue
+
             response.raise_for_status()
             payload = response.json()
             errors = payload.get("errors") or []
             if errors:
                 text = json.dumps(errors)
-                if "payment required" in text.lower() and self._rotate():
-                    continue
+                low = text.lower()
+                if "payment required" in low or "auth error" in low:
+                    if self._advance(exhausted=True):
+                        continue
+                    raise AllKeysExhausted(
+                        f"all {len(self.keys)} keys out of quota this month: {text[:200]}")
                 raise RuntimeError(text)
             return payload["data"]
+
+
+def live_keys(subgraph_id: str, keys: list[str] | None = None) -> list[str]:
+    """Probe EVERY key and return those that answer. Never sample a pool.
+
+    Reporting a pool as exhausted from a partial probe sent this project chasing a
+    paid top-up when 5 of 11 keys were live: the dead ones sat at the front of a
+    list that had grown by appending, so the first four looked conclusive.
+    """
+    pool = keys if keys is not None else graph_keys()
+    out = []
+    for k in pool:
+        try:
+            c = GraphClient(subgraph_id, [k])
+            c.query("{_meta{block{number}}}", {})
+            out.append(k)
+        except Exception:
+            continue
+    return out
 
 
 def _where_literal(where: dict[str, Any]) -> str:

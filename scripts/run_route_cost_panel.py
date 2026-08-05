@@ -21,6 +21,7 @@ import json
 import math
 import sys
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -34,7 +35,8 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
-from ddvc.provenance import cache_key, stamp  # noqa: E402
+from ddvc.provenance import cache_key  # noqa: E402
+from ddvc.provenance import stamp as record_provenance  # noqa: E402
 from ddvc.pricing.v2quote import quote_exact_input_float  # noqa: E402
 from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick, quote_exact_input  # noqa: E402
 from ddvc.pricing.v3pools import (  # noqa: E402
@@ -82,9 +84,29 @@ QUOTE_ENGINE = cache_key(QUOTE_SOURCES)
 DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}"
 
 
-def _configure_cache(hour: int, top_pairs: int, sizes: list[float], no_v3: bool) -> Path:
+def parse_hours(spec: str) -> tuple[int, ...]:
+    """'12' | '0,6,12,18' | '0-23' | 'all' -> a tuple of UTC hours."""
+    s = spec.strip().lower()
+    if s == "all":
+        return tuple(range(24))
+    out: set[int] = set()
+    for part in s.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "-" in part:
+            a, b = part.split("-", 1)
+            out.update(range(int(a), int(b) + 1))
+        else:
+            out.add(int(part))
+    return tuple(sorted(h for h in out if 0 <= h <= 23))
+
+
+def _configure_cache(hours: tuple[int, ...], top_pairs: int, sizes: list[float],
+                     no_v3: bool) -> Path:
     global DAY_CACHE
-    spec = f"h{hour}_p{top_pairs}_s{'-'.join(str(int(x)) for x in sizes)}{'_nov3' if no_v3 else ''}"
+    hspec = "all" if len(hours) == 24 else "-".join(str(h) for h in hours)
+    spec = f"h{hspec}_p{top_pairs}_s{'-'.join(str(int(x)) for x in sizes)}{'_nov3' if no_v3 else ''}"
     DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}" / spec
     DAY_CACHE.mkdir(parents=True, exist_ok=True)
     return DAY_CACHE
@@ -220,9 +242,21 @@ def _routes_by_pair(legs: pd.DataFrame, top_pairs: int) -> pd.DataFrame:
     return out
 
 
-def _load_v2_pools(stamp: str, hour: int) -> dict[frozenset[str], list[Pool]]:
-    target_ts = int(pd.Timestamp(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]} {hour:02d}:00:00", tz="UTC").timestamp())
-    pools: dict[frozenset[str], list[Pool]] = defaultdict(list)
+def _load_v2_pools_by_hour(stamp: str,
+                           hours: tuple[int, ...]) -> dict[int, dict[frozenset[str], list[Pool]]]:
+    """Pools for several hours of one day, in a single pass over each file.
+
+    Reading the file once per hour would multiply IO by the number of hours for no
+    gain, since every hour's rows sit in the same file. This keys rows by their
+    `hourStartUnix` instead, so asking for all 24 hours costs one read.
+    """
+    ts_to_hour = {
+        int(pd.Timestamp(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]} {h:02d}:00:00",
+                         tz="UTC").timestamp()): h
+        for h in hours
+    }
+    by_hour: dict[int, dict[frozenset[str], list[Pool]]] = {
+        h: defaultdict(list) for h in hours}
     for source in V2_SOURCES:
         path = _raw_path(source, "hourly_reserves", stamp)
         if not path.exists():
@@ -230,8 +264,10 @@ def _load_v2_pools(stamp: str, hour: int) -> dict[frozenset[str], list[Pool]]:
         with gzip.open(path, "rt") as fh:
             for line in fh:
                 rec = json.loads(line)
-                if int(rec.get("hourStartUnix", -1)) != target_ts:
+                hour = ts_to_hour.get(int(rec.get("hourStartUnix", -1)))
+                if hour is None:
                     continue
+                pools = by_hour[hour]
                 pair = rec.get("pair") or {}
                 t0 = pair.get("token0") or {}
                 t1 = pair.get("token1") or {}
@@ -257,7 +293,22 @@ def _load_v2_pools(stamp: str, hour: int) -> dict[frozenset[str], list[Pool]]:
                     reserve0=r0,
                     reserve1=r1,
                 ))
-    return pools
+    return by_hour
+
+
+# One day's reserves, held for as long as that day is being priced. Days are
+# processed in order, so a single entry is enough to turn 24 hourly lookups into one
+# file read without holding the whole sample in memory.
+_V2_DAY: dict[str, object] = {"stamp": None, "hours": None, "pools": None}
+
+
+def _load_v2_pools(stamp: str, hour: int,
+                   hours: tuple[int, ...] | None = None) -> dict[frozenset[str], list[Pool]]:
+    want = hours or (hour,)
+    if _V2_DAY["stamp"] != stamp or _V2_DAY["hours"] != want:
+        _V2_DAY.update(stamp=stamp, hours=want,
+                       pools=_load_v2_pools_by_hour(stamp, want))
+    return _V2_DAY["pools"].get(hour, {})
 
 
 def _infer_tick_spacing(ticks: dict[int, int]) -> int:
@@ -478,6 +529,7 @@ def _build_day(
     hour: int,
     v3_state: dict[str, V3PoolState] | None,
     v3_ticks: dict[str, dict[int, int]] | None,
+    all_hours: tuple[int, ...] | None = None,
 ) -> pd.DataFrame:
     date = f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}"
     unified = DATA_DIR / "unified" / f"{stamp}.parquet"
@@ -493,7 +545,7 @@ def _build_day(
     pairs = _routes_by_pair(legs, top_pairs=top_pairs)
     if pairs.empty:
         return pd.DataFrame()
-    pools = _load_v2_pools(stamp, hour=hour)
+    pools = _load_v2_pools(stamp, hour=hour, hours=all_hours or (hour,))
     if v3_state and v3_ticks:
         required_pairs: set[frozenset[str]] = set()
         for r in pairs.itertuples(index=False):
@@ -644,14 +696,67 @@ def _summarize(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows).sort_values(["trade_size_usd", "vehicle"])
 
 
+
+def _price_chunk(payload: dict) -> int:
+    """Warm the V3 index up to this chunk of days, then price and cache them.
+
+    The day loop looks serial because a V3 pool's active liquidity is the running
+    sum of every mint and burn since inception, so a day cannot be priced before its
+    predecessors have been applied. Measured, though, that accumulation is 270s over
+    986 days while pricing one hour of one day is 1.36s, so the scan is 0.4% of a
+    run and the quoting is all of it. Each worker can therefore replay the cheap
+    prefix itself and then price a contiguous chunk in parallel: 20.6 hours of
+    serial pricing becomes about 2, at a total duplicated warm-up cost of well under
+    an hour of core time. Workers touch disjoint day files, so the cache needs no
+    locking.
+    """
+    hours = tuple(payload["hours"])
+    sizes = list(payload["sizes"])
+    _configure_cache(hours, payload["top_pairs"], sizes, payload["no_v3"])
+    ticks: dict[str, dict[int, int]] = {}
+    state: dict[str, V3PoolState] = {}
+    spacing: dict[str, int] = {}
+    if not payload["no_v3"]:
+        for s in payload["warm"]:
+            _apply_v3_liquidity_events(s, ticks, spacing)
+            _update_v3_swap_state(s, state, spacing)
+    built = 0
+    for s in payload["stamps"]:
+        day_state = day_ticks = None
+        if not payload["no_v3"] and s >= V3_START:
+            _apply_v3_liquidity_events(s, ticks, spacing)
+            _update_v3_swap_state(s, state, spacing)
+            day_state, day_ticks = state, ticks
+        cache_path = _day_cache_path(s)
+        if cache_path.exists():
+            continue
+        parts = [
+            _build_day(s, sizes, top_pairs=payload["top_pairs"], hour=h,
+                       v3_state=day_state, v3_ticks=day_ticks, all_hours=hours)
+            for h in hours
+        ]
+        parts = [x for x in parts if not x.empty]
+        day = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
+        _write(_canonicalize_cost_measure(day), cache_path)
+        built += 1
+    return built
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Run DVC route-cost counterfactual panel.")
     ap.add_argument("--start", default=None)
     ap.add_argument("--end", default=None)
-    ap.add_argument("--hour", type=int, default=12)
+    ap.add_argument(
+        "--hours", default="12",
+        help="UTC hours of each day to price, as a comma list or range: '12', "
+             "'0,6,12,18', or 'all' for every hour. A single hour samples one state "
+             "per day, which is 1/24 of the hourly reserve data actually held.")
     ap.add_argument("--top-pairs", type=int, default=200)
     ap.add_argument("--trade-sizes", default="1000,10000,100000")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--workers", type=int, default=10,
+                    help="parallel day-chunk workers; each replays the cheap V3 "
+                         "liquidity scan then prices its own contiguous chunk")
     ap.add_argument(
         "--migrate-day-cache",
         action="store_true",
@@ -673,7 +778,11 @@ def main() -> int:
             _write(panel, out_path)
     else:
         sizes = [float(x) for x in args.trade_sizes.split(",") if x.strip()]
-        cache_dir = _configure_cache(args.hour, args.top_pairs, sizes, args.no_v3)
+        hours = parse_hours(args.hours)
+        if not hours:
+            sys.exit("--hours resolved to nothing")
+        cache_dir = _configure_cache(hours, args.top_pairs, sizes, args.no_v3)
+        print(f"pricing {len(hours)} hour(s) per day: {hours}", flush=True)
         print(f"day cache: {cache_dir.relative_to(ROOT)}", flush=True)
         frames = []
         stamps = _available_stamps(args.start, args.end)
@@ -690,7 +799,11 @@ def main() -> int:
         # were wrong by orders of magnitude WITHOUT FAILING: a one-day run finished
         # in two seconds and wrote a plausible-looking panel. --start now selects
         # which days are OUTPUT, never what the index has accumulated.
-        if not args.no_v3 and stamps:
+        # Only the serial path needs the parent to hold the index. In the parallel
+        # path each worker replays the prefix for its own chunk, so warming here
+        # would be several minutes of work thrown away.
+        parallel = args.workers > 1 and len(stamps) > args.workers
+        if not args.no_v3 and stamps and not parallel:
             warm = [s for s in _available_stamps(None, None)
                     if V3_START <= s < min(stamps)]
             if warm:
@@ -703,6 +816,47 @@ def main() -> int:
                     if j % 200 == 0 or j == len(warm):
                         print(f"  warm [{j}/{len(warm)}] {stamp} "
                               f"({len(v3_ticks):,} pools indexed)", flush=True)
+
+        if parallel:
+            all_stamps = _available_stamps(None, None)
+            width = -(-len(stamps) // args.workers)          # ceil division
+            chunks = [stamps[j:j + width] for j in range(0, len(stamps), width)]
+            payloads = []
+            for ch in chunks:
+                warm = [s for s in all_stamps if V3_START <= s < min(ch)] \
+                    if not args.no_v3 else []
+                payloads.append({"stamps": ch, "warm": warm, "hours": list(hours),
+                                 "sizes": sizes, "top_pairs": args.top_pairs,
+                                 "no_v3": args.no_v3})
+            print(f"pricing {len(stamps):,} days in {len(chunks)} chunks across "
+                  f"{args.workers} workers "
+                  f"({min(len(c) for c in chunks)}-{max(len(c) for c in chunks)} days each)",
+                  flush=True)
+            with ProcessPoolExecutor(max_workers=args.workers) as pool:
+                futs = {pool.submit(_price_chunk, pl): i for i, pl in enumerate(payloads)}
+                for k, fut in enumerate(as_completed(futs), 1):
+                    built = fut.result()
+                    print(f"  chunk {futs[fut] + 1}/{len(payloads)} done "
+                          f"({built} days priced) [{k}/{len(payloads)} chunks]", flush=True)
+            frames = []
+            for stamp in stamps:
+                cp = _day_cache_path(stamp)
+                if cp.exists():
+                    dd = _canonicalize_cost_measure(pd.read_parquet(cp))
+                    if not dd.empty:
+                        frames.append(dd)
+            panel = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+            _write(panel, out_path)
+            summary = _summarize(panel)
+            summary_path.parent.mkdir(parents=True, exist_ok=True)
+            summary.to_pickle(summary_path)
+            record_provenance(out_path, code_sources=QUOTE_SOURCES, rows=len(panel),
+                              notes=f"quote engine {QUOTE_ENGINE}; "
+                                    f"day cache {DAY_CACHE.name}; {len(hours)} hour(s)/day")
+            record_provenance(summary_path, code_sources=QUOTE_SOURCES, rows=len(summary))
+            print(f"wrote {len(panel):,} rows -> {out_path}")
+            print(f"wrote summary -> {summary_path}")
+            return 0
 
         for i, stamp in enumerate(stamps, 1):
             day_v3_state = None
@@ -720,14 +874,20 @@ def main() -> int:
                 if needs_migration:
                     _write(day, cache_path)
             else:
-                day = _build_day(
-                    stamp,
-                    sizes,
-                    top_pairs=args.top_pairs,
-                    hour=args.hour,
-                    v3_state=day_v3_state,
-                    v3_ticks=day_v3_ticks,
-                )
+                parts = [
+                    _build_day(
+                        stamp,
+                        sizes,
+                        top_pairs=args.top_pairs,
+                        hour=h,
+                        all_hours=hours,
+                        v3_state=day_v3_state,
+                        v3_ticks=day_v3_ticks,
+                    )
+                    for h in hours
+                ]
+                parts = [x for x in parts if not x.empty]
+                day = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
                 day = _canonicalize_cost_measure(day)
                 _write(day, cache_path)
             if not day.empty:
@@ -739,9 +899,9 @@ def main() -> int:
     summary = _summarize(panel)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary.to_pickle(summary_path)
-    stamp(out_path, code_sources=QUOTE_SOURCES, rows=len(panel),
-          notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}")
-    stamp(summary_path, code_sources=QUOTE_SOURCES, rows=len(summary))
+    record_provenance(out_path, code_sources=QUOTE_SOURCES, rows=len(panel),
+                      notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}")
+    record_provenance(summary_path, code_sources=QUOTE_SOURCES, rows=len(summary))
     print(f"wrote {len(panel):,} rows -> {out_path}")
     print(f"wrote summary -> {summary_path}")
     return 0

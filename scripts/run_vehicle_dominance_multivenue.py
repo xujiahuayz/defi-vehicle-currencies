@@ -79,6 +79,25 @@ def pval(t: float) -> float:
     return erfc(abs(t) / sqrt(2)) if np.isfinite(t) else float("nan")
 
 
+
+# Control-window widths in DAYS. Integers only: a calendar month drifts between 28
+# and 31 days, so a month-based window silently changes width across the sample,
+# and pandas rejects several multiples of a week as non-fixed frequencies. A plain
+# day count is uniform, orderable and needs no frequency strings.
+WINDOW_DAYS = (1, 3, 7, 14, 30, 60, 120)
+
+
+def day_index(dates: pd.Series) -> pd.Series:
+    """Whole days since a fixed epoch, safe against the column's time unit.
+
+    Never take `astype("int64")` on a datetime column to get a day number: these
+    panels are `datetime64[us]`, so that yields MICROseconds and dividing by a
+    nanosecond constant silently collapses distinct days together. Subtracting a
+    timestamp and reading `.dt.days` is unit-agnostic.
+    """
+    return (pd.to_datetime(dates).dt.normalize() - pd.Timestamp("2000-01-01")).dt.days
+
+
 def demean(df: pd.DataFrame, cols: list[str], group: pd.Series) -> pd.DataFrame:
     return df[cols] - df[cols].groupby(group).transform("mean")
 
@@ -175,6 +194,45 @@ def main() -> int:
           f"a non-native candidate, covering {len(c):,} of {len(d):,} rows "
           f"({len(c)/max(len(d),1):.1%})")
     print("  compare the v2-only design: 703 of 22,991 cells (3.1%), 3,865 of 102,845 rows (3.8%)")
+
+    # A ladder over the control window, because the cell IS the control and its
+    # width is a bias-against-power trade that should be shown rather than asserted.
+    # A 1-day cell holds pool depth, that day's volatility and the gas regime fixed;
+    # a 120-day cell holds them fixed only to within four months, and gas moved
+    # violently inside single weeks in 2021. Reading it: a coefficient that stays put
+    # while the identifying sample grows means the narrow estimate was merely noisy,
+    # and one that drifts means confound is being readmitted.
+    print("\ncontrol-window ladder (window in days):")
+    print(f"  {'window':>8}{'cells':>10}{'ident.':>9}{'ident%':>8}{'rows':>10}"
+          f"{'coef':>10}{'se':>9}{'p':>8}{'MDE80':>9}")
+    ladder = []
+    di = day_index(d.date)
+    for w in WINDOW_DAYS:
+        cellw = d.pair + "_" + (di // w).astype(str) + "_" + d.trade_size_usd.astype(str)
+        mixw = d.assign(_c=cellw).groupby("_c").native.agg(["mean", "size"])
+        identw = mixw[(mixw["mean"] > 0) & (mixw["mean"] < 1)].index
+        cw = d.assign(_c=cellw)
+        cw = cw[cw._c.isin(identw)]
+        if cw.empty:
+            continue
+        dmw = demean(cw, ["dominated", "native"], cw._c)
+        b, se, g = ols_cluster(dmw.dominated.to_numpy(), np.column_stack([dmw.native]),
+                               cw.pair.to_numpy(), k_absorbed=cw._c.nunique())
+        t_ = b[0] / se[0] if se[0] > 0 else np.nan
+        print(f"  {str(w) + 'd':>8}{cellw.nunique():>10,}{len(identw):>9,}"
+              f"{len(identw) / max(cellw.nunique(), 1):>7.1%}{len(cw):>10,}"
+              f"{b[0]:>10.4f}{se[0]:>9.4f}{pval(t_):>8.3f}{2.80 * se[0]:>9.4f}")
+        ladder.append({"spec": f"(4w) FE, {w}d cell", "n": int(len(cw)),
+                       "clusters": int(g), "identifying_cells": int(len(identw)),
+                       "coef": float(b[0]), "se": float(se[0]), "t": float(t_),
+                       "p": float(pval(t_)), "mde_80": float(2.80 * se[0])})
+    rows.extend(ladder)
+    if len(ladder) > 1:
+        spread = max(x["coef"] for x in ladder) - min(x["coef"] for x in ladder)
+        med_se = float(np.median([x["se"] for x in ladder]))
+        print(f"\n  coefficient spread across windows {spread:.4f} against a median "
+              f"standard error of {med_se:.4f}: "
+              f"{'window choice is not driving the answer' if spread < 2 * med_se else 'WINDOW CHOICE MATTERS, do not pick one silently'}")
 
     write_exhibit(pd.DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")

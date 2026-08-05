@@ -42,6 +42,30 @@ PANEL = ROOT / "data" / "processed" / "counterfactual_dominance_clean.parquet"
 OUT = ROOT / "output" / "exhibits" / "dominance_regressions.jsonl"
 
 
+
+# Control-window widths in DAYS. Integers only: a calendar month drifts between 28
+# and 31 days, so a month-based window silently changes width across the sample,
+# and pandas rejects several multiples of a week as non-fixed frequencies. A plain
+# day count is uniform, orderable and needs no frequency strings.
+WINDOW_DAYS = (1, 3, 7, 14, 30, 60, 120)
+
+
+def day_index(dates: pd.Series) -> pd.Series:
+    """Whole days since a fixed epoch, safe against the column's time unit.
+
+    Never take `astype("int64")` on a datetime column to get a day number: these
+    panels are `datetime64[us]`, so that yields MICROseconds and dividing by a
+    nanosecond constant silently collapses distinct days together. Subtracting a
+    timestamp and reading `.dt.days` is unit-agnostic.
+    """
+    return (pd.to_datetime(dates).dt.normalize() - pd.Timestamp("2000-01-01")).dt.days
+
+
+def pval(t: float) -> float:
+    from math import erfc, sqrt
+    return erfc(abs(t) / sqrt(2)) if np.isfinite(t) else float("nan")
+
+
 def demean(df: pd.DataFrame, cols: list[str], group: pd.Series) -> pd.DataFrame:
     """Absorb a fixed effect by within-group demeaning."""
     return df[cols] - df[cols].groupby(group).transform("mean")
@@ -133,6 +157,38 @@ def main() -> int:
                        np.column_stack([dmg.native, dmg.log_usd]),
                        ["native", "log_usd"], c.pair.to_numpy(),
                        k_absorbed=c.cell.nunique()))
+
+    # Widening the cell trades conditioning for power, so show the trade rather
+    # than settle it. Identification needs a native AND a non-native intermediary to
+    # have actually been USED on the same pair inside the same window, which at daily
+    # width is a coincidence. Note what widening does and does not buy here: the
+    # panel samples every 12th day, so windows below 14 days cannot merge two
+    # observations at all, and beyond that the identifying CELL count falls while the
+    # identifying ROW count rises, because cells merge into fewer, larger ones.
+    print("\ncontrol-window ladder (window in days; cell = pair x window x nothing else):")
+    print(f"  {'window':>8}{'cells':>9}{'ident.':>8}{'ident%':>8}{'rows':>9}"
+          f"{'coef':>9}{'se':>8}{'p':>7}{'MDE80':>8}")
+    di = day_index(f.date)
+    for w in WINDOW_DAYS:
+        cw = f.pair + "_" + (di // w).astype(str)
+        mx = f.assign(_c=cw).groupby("_c").native.agg(["mean", "size"])
+        idw = mx[(mx["mean"] > 0) & (mx["mean"] < 1)].index
+        sub = f.assign(_c=cw)
+        sub = sub[sub._c.isin(idw)]
+        if sub.empty:
+            continue
+        dmw = demean(sub, ["dominated", "native", "log_usd"], sub._c)
+        b, se, g = ols_cluster(dmw.dominated.to_numpy(),
+                               np.column_stack([dmw.native, dmw.log_usd]),
+                               sub.pair.to_numpy(), k_absorbed=sub._c.nunique())
+        tt = b[0] / se[0] if se[0] > 0 else float("nan")
+        print(f"  {str(w) + 'd':>8}{cw.nunique():>9,}{len(idw):>8,}"
+              f"{len(idw) / max(cw.nunique(), 1):>7.1%}{len(sub):>9,}"
+              f"{b[0]:>9.4f}{se[0]:>8.4f}{pval(tt):>7.3f}{2.80 * se[0]:>8.4f}")
+        rows.append({"spec": f"(4w) pair-by-{w}d FE", "n": int(len(sub)),
+                     "clusters": int(g), "coef": float(b[0]), "se": float(se[0]),
+                     "t": float(tt), "p": float(pval(tt)),
+                     "identifying_cells": int(len(idw)), "mde_80": float(2.80 * se[0])})
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     write_exhibit(pd.DataFrame(rows), OUT)
