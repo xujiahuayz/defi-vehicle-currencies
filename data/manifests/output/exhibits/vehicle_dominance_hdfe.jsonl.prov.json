@@ -1,0 +1,30 @@
+{
+ "argv": [],
+ "artefact": "output/exhibits/vehicle_dominance_hdfe.jsonl",
+ "code_fingerprint": "b65f8aef867b4f203896c50bff62240c7bf94378d3825d360470b1dff421e537",
+ "code_sources": [
+  "scripts/run_vehicle_dominance_hdfe.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T17:50:52+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "62d014288394355476892b2d0c121d856669aba5",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "ocs/research-workflow.md",
+   "scripts/run_vehicle_dominance_hdfe.py"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 7,
+ "script": "scripts/run_vehicle_dominance_hdfe.py"
+}

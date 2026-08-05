@@ -1,0 +1,1 @@
+{"abs_difference": 3.548351929505422e-07, "agree": true, "clusters": 944, "identifying_cells": 45630, "n": 11248255, "pyfixest_coef": -0.38338764516480706, "pyfixest_se": 0.03719559772512573, "r_fixest_coef": -0.383388, "r_fixest_se": 0.037196, "tolerance": 0.0001, "window_days": 7}

@@ -175,6 +175,9 @@ F. Empirics ....................... per E. Specification curves. Multi-agent
      NSE with the critique round before estimates fix.
 G. Paper .......................... six sections, JFE invariants of section 1,
      pure-empirics lane, named rival mechanisms as the horse race.
+     Output: docs/paper-spine.md (architecture, claim inventory with
+     EXISTS/PENDING status, table shells, definitions text, horse race,
+     plus the two convergence sections F and H read).
 H. Deck ........................... derived from G.
 
         F <-> G <-> H IS ONE ITERATING CLUSTER, not a chain with a cycle on
@@ -193,6 +196,14 @@ H. Deck ........................... derived from G.
         claim of its own; and one complete pass generates no new demand in
         either direction. Two consecutive passes changing nothing but wording
         means converged, and the work moves to I.
+
+        CONVERGENCE IS NOT COMPROMISE (Java, 2026-08-06). The standard stays a
+        JFE-level paper, so the cluster converges by MEETING that bar, never by
+        lowering a claim until the three nodes agree. If a claim cannot be
+        supported, it leaves the paper; it does not get softened until it fits.
+        Escalation rule: if five full passes do not close the gap and the
+        remaining distance is no longer shrinking, stop and hand it to Java
+        rather than declaring convergence on a weaker claim.
 I. Cross-family review ............ Codex/Gemini. Feeds back into C..H.
      Desk-reject filter first, then rank-ordered referee.
 J. Gates .......................... run on every G/H artefact (section 7).

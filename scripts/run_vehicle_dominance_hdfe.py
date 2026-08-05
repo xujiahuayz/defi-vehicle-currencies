@@ -80,8 +80,13 @@ def load(window_days: int, min_notional: float) -> pd.DataFrame:
             src, tgt, vehicle,
             trade_size_usd,
             direct_cost_advantage                          AS adv,
-            CAST(epoch(CAST(date AS TIMESTAMP)) / 86400 AS BIGINT)
-                / {int(window_days)}                       AS win
+            -- Integer division with an explicit FLOOR. DuckDB's `/` on BIGINT is
+            -- FLOAT division, so `day_index / 3` returned 6707.667 and stayed unique
+            -- per day: the window never widened, every width produced identical
+            -- cells, and the script then reported that the window choice did not
+            -- matter. That is a fabricated robustness result, not a finding.
+            CAST(FLOOR(CAST(epoch(CAST(date AS TIMESTAMP)) / 86400 AS BIGINT)
+                       / CAST({int(window_days)} AS DOUBLE)) AS BIGINT)   AS win
         FROM read_parquet('{PANEL.as_posix()}')
         WHERE direct_available
           AND vehicle_available
