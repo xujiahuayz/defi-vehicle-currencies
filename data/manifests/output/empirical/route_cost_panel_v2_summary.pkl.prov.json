@@ -1,32 +1,31 @@
 {
  "argv": [
   "--start",
-  "2026-06-01",
+  "2024-01-14",
   "--end",
-  "2026-06-06",
+  "2024-01-16",
   "--hours",
-  "0,12",
+  "0,6,12,18",
   "--workers",
-  "3",
+  "2",
   "--force"
  ],
  "artefact": "output/empirical/route_cost_panel_v2_summary.pkl",
- "code_fingerprint": "3612a44378b95c2f8351d6a0b9665cbf10af11489223da847e527eaaf50ad00d",
+ "code_fingerprint": "8234ad038ae003f70885b2160ebf1d7388058b101ed4dcd219f7f24674432f8f",
  "code_sources": [
   "scripts/run_route_cost_panel.py",
   "src/ddvc/pricing/v2quote.py",
   "src/ddvc/pricing/v3pools.py",
   "src/ddvc/pricing/v3quote.py"
  ],
- "created_at": "2026-08-05T07:35:29+00:00",
+ "created_at": "2026-08-05T18:26:13+00:00",
  "git": {
   "branch": "main",
-  "commit": "b06258c0660639658581471573e9428f6d32dfce",
+  "commit": "dffed35ac05fbffedc224fd4b73f0f864f62393f",
   "dirty": true,
   "dirty_tracked_files": [
-   "cripts/run_route_cost_panel.py",
-   "src/ddvc/asset_types.py",
-   "src/ddvc/fetch/schemas.py"
+   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
+   "scripts/run_route_cost_panel.py"
   ]
  },
  "inputs": [],

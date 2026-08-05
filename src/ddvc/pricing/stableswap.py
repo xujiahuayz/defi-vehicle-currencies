@@ -47,8 +47,18 @@ FEE_DENOMINATOR = 10 ** 10
 # plain A and applies the n^n factors explicitly, matching the reference get_D.
 A_PRECISION = 100
 
-# Pools outside this range are not StableSwap pools and must be excluded, not quoted.
-A_MIN, A_MAX = 1, 100_000
+# Nominal bounds only. The binding test is the FIT, not this range: an A_MIN of 1 let
+# Curve crypto-pools through to be fitted with the wrong invariant, and they came back
+# with a best-fit A of 3 and a 36% median quote error rather than being rejected.
+A_MIN, A_MAX = 1, 1_000_000
+
+# A pool is only quotable if its calibration actually reproduced trades. Curve launched
+# crypto-pools from 2021, which price a different curve, CryptoSwap, for volatile pairs.
+# Fitting StableSwap to one of those minimises a large error rather than finding a real
+# parameter, so acceptance is decided by the achieved error and not by whether A lands
+# in a plausible-looking band. Route costs here are measured in tens of basis points, so
+# the threshold sits an order of magnitude below the effects being estimated.
+MAX_CALIBRATION_ERROR = 0.01
 
 
 @dataclass(frozen=True)
@@ -162,7 +172,8 @@ def quote_exact_input(pool: StablePool, token_in: str, token_out: str,
 def calibrate_amp(balances: tuple[int, ...], decimals: tuple[int, ...],
                   tokens: tuple[str, ...], observations: list[tuple[str, str, int, int]],
                   fee_pips: int = 4_000_000,
-                  candidates: tuple[int, ...] | None = None) -> tuple[int, float] | None:
+                  candidates: tuple[int, ...] | None = None,
+                  max_error: float = MAX_CALIBRATION_ERROR) -> tuple[int, float] | None:
     """Recover A by fitting realised trades, returning (A, median absolute error).
 
     Every quantity in the invariant except A is observed, so A is identified rather
@@ -225,4 +236,9 @@ def calibrate_amp(balances: tuple[int, ...], decimals: tuple[int, ...],
             lo = m1
             if e2 < best[1]:
                 best = (m2, e2)
+    # Reject rather than return a bad fit. A pool whose best achievable error is large
+    # is not a StableSwap pool, and quoting it would inject that error into the panel as
+    # though it were market depth.
+    if best[1] > max_error:
+        return None
     return best
