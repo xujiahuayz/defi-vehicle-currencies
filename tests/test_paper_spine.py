@@ -93,12 +93,22 @@ class PaperSpineTests(unittest.TestCase):
                 self.fail(f"loose p-value notation at line {number}: {match.group(0)!r}")
         self.assertTrue(BARE_P_VALUE.search(self.text))
 
-    def test_section_architecture_is_six_sections_ending_in_a_conclusion(self) -> None:
+    def test_section_architecture_is_seven_sections_ending_in_a_conclusion(self) -> None:
+        """Seven, not six, and the seventh is evidence and not drift.
+
+        The corpus re-derivation off `literature/text/*.txt` found Makarov and Schoar's
+        section 8, "Discussion of arbitrages and constraints", a top-level defence of the
+        measured object sitting immediately before their conclusion. This paper's object
+        is a counterfactual quote for a route nobody executed, so it takes the same slot.
+        Seven top-level sections is inside the observed band of 4 to 9 and matches two of
+        the nine papers read. The gate holds the band and the terminal conclusion.
+        """
         block = re.search(r"```\n(1\. Introduction.*?)```", self.text, flags=re.DOTALL)
         self.assertIsNotNone(block, "the architecture block is missing")
         top_level = re.findall(r"^(\d)\. (.+?)(?:\s{2,}|$)", block.group(1), flags=re.MULTILINE)
-        self.assertEqual([n for n, _ in top_level], ["1", "2", "3", "4", "5", "6"])
+        self.assertEqual([n for n, _ in top_level], ["1", "2", "3", "4", "5", "6", "7"])
         self.assertTrue(top_level[-1][1].startswith("Conclusion"))
+        self.assertIn("Are the measured gaps real?", block.group(1))
 
     def test_definitions_live_in_a_numbered_subsection(self) -> None:
         self.assertIn("2.2 Definitions", self.text)
