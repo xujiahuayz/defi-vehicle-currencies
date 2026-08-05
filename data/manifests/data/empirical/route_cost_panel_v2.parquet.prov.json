@@ -1,9 +1,9 @@
 {
  "argv": [
   "--start",
-  "2023-01-20",
+  "2023-06-01",
   "--end",
-  "2023-01-24",
+  "2023-06-04",
   "--hours",
   "0,12",
   "--workers",
@@ -11,20 +11,27 @@
   "--force"
  ],
  "artefact": "data/empirical/route_cost_panel_v2.parquet",
- "code_fingerprint": "396551f3f2aaf0bf805a443f7163c13e6cb4650a7cbf3b3878312f934e8e4962",
+ "code_fingerprint": "82574a1ad9993c4d0b4a558444d9ceb072af21e55899855d8a7622f50cb54de2",
  "code_sources": [
   "scripts/run_route_cost_panel.py",
+  "src/ddvc/pricing/stableswap.py",
   "src/ddvc/pricing/v2quote.py",
   "src/ddvc/pricing/v3pools.py",
-  "src/ddvc/pricing/v3quote.py"
+  "src/ddvc/pricing/v3quote.py",
+  "src/ddvc/pricing/weighted.py"
  ],
- "created_at": "2026-08-05T19:11:58+00:00",
+ "created_at": "2026-08-05T20:26:04+00:00",
  "git": {
   "branch": "main",
-  "commit": "5bcadf7e7b9969aa01da94c23b73699459633ef5",
+  "commit": "de4d9f0789ded7dda01e599435f912e7f43b39f3",
   "dirty": true,
   "dirty_tracked_files": [
-   "cripts/run_route_cost_panel.py"
+   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
+   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json",
+   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
+   "output/exhibits/gap_arbitrage_bound.jsonl",
+   "scripts/run_route_cost_panel.py",
+   "uv.lock"
   ]
  },
  "inputs": [],
@@ -34,8 +41,8 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "quote engine 396551f3f2aa; day cache h0-12_p200_s1000-10000-100000; 2 hour(s)/day",
+ "notes": "quote engine 82574a1ad999; day cache h0-12_p200_s1000-10000-100000; 2 hour(s)/day",
  "python": "3.14.5",
- "rows": 22794,
+ "rows": 18120,
  "script": "scripts/run_route_cost_panel.py"
 }

@@ -86,6 +86,54 @@ V3_START = "20210504"
 CURVE_START = "20200211"
 BALANCER_START = "20210422"          # Balancer v2's first indexed swap day
 WETH_ADDR = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+
+# SUPPORT BOUND. A leg is not quoted when its input exceeds this fraction of the pool's
+# input-side reserve.
+#
+# Every quoter here was validated on REALISED swaps, which are by construction trades
+# someone chose to make in a pool deep enough to serve them. Applying them to hypothetical
+# routes through pools no router would touch is extrapolation with no measured error, and
+# the consequence was quantified: between 44.5% and 82.0% of the panel's gaps implied an
+# arbitrage cycle that pays after three pool fees and three-hop gas, with a median gap of
+# 4,655 basis points at a 100,000 dollar trade. A 46.5% same-block arbitrage would be
+# taken instantly with a flash loan and no capital, so those gaps were not economics.
+#
+# The screen is EX-ANTE on the pool and never on the gap. Filtering on the gap conditions
+# on the magnitude of a monotone function of the outcome, which is selection on the
+# dependent variable, and that error already voided this project's previous defence
+# against quote collapse.
+#
+# The level is a judgement and is stated as one. Measured over 932,270 realised swaps that
+# clear the physical bound, trade size as a fraction of the input reserve is 0.0034 at the
+# median, 0.0329 at the 90th percentile, 0.0541 at the 95th and 0.1486 at the 99th. The
+# 99.9th percentile is 0.7833, and taking it would be wrong: a trade at 78% of a reserve
+# moves price by roughly that much and is exactly what manufactures impossible gaps. The
+# 95th percentile keeps essentially all ordinary trading while capping a single leg's price
+# impact near a few hundred basis points, which is the order of the effects being measured.
+# Reported as a parameter with sensitivity, never as a buried constant.
+MAX_INPUT_TO_RESERVE = 0.05
+
+# The same bound, expressed venue-agnostically as the leg's OWN price impact, so it
+# applies to concentrated liquidity, StableSwap and weighted pools as well. A leg is
+# rejected when its effective price is worse than its marginal price by more than this.
+#
+# Applying the reserve-ratio form to the constant-product branch alone was not enough:
+# the median gap at a 100,000 dollar trade fell from 4,655 to 1,164 basis points, but
+# 70.4% of gaps still implied a cycle that pays, because Uniswap v3 supplies most quotes
+# and had no bound at all.
+#
+# This is NOT selection on the outcome. Price impact is a property of one leg against its
+# own marginal price, computed without reference to the competing route, whereas the
+# outcome is whether the direct route beats the vehicle route. Rejecting a leg nobody
+# would take does not condition on which route wins.
+MAX_PRICE_IMPACT = 0.05
+
+
+def _impact_ok(marginal_out: float, actual_out: float) -> bool:
+    """Is this leg inside the support, judged by its own slippage?"""
+    if marginal_out <= 0 or actual_out <= 0:
+        return False
+    return (marginal_out - actual_out) / marginal_out <= MAX_PRICE_IMPACT
 OUT_DATA = DATA_DIR / "empirical"
 OUT = OUTPUT_DIR / "empirical"
 
@@ -1095,6 +1143,11 @@ def _best_quote(
     best_source = None
     best_pool = None
     for p in pools.get(frozenset((token_in, token_out)), []):
+        # Support bound, applied before the quote so it can never depend on the answer.
+        if p.kind == "v2":
+            res_in = p.reserve0 if token_in == p.token0 else p.reserve1
+            if res_in <= 0 or amount_in > MAX_INPUT_TO_RESERVE * res_in:
+                continue
         if p.kind == "v2" and token_in == p.token0 and token_out == p.token1:
             out = quote_exact_input_float(amount_in, p.reserve0, p.reserve1)
         elif p.kind == "v2" and token_in == p.token1 and token_out == p.token0:
@@ -1108,10 +1161,15 @@ def _best_quote(
                 continue
             dec_in = p.dec0 if token_in == p.token0 else p.dec1
             dec_out = p.dec1 if token_in == p.token0 else p.dec0
-            raw_out = _stable_quote(p.stable, token_in, token_out,
-                                    int(amount_in * 10 ** dec_in))
-            if raw_out:
+            amt_atomic = int(amount_in * 10 ** dec_in)
+            raw_out = _stable_quote(p.stable, token_in, token_out, amt_atomic)
+            probe_atomic = max(1, amt_atomic // 10_000)
+            probe_raw = _stable_quote(p.stable, token_in, token_out, probe_atomic)
+            if raw_out and probe_raw:
                 out = raw_out / 10 ** dec_out
+                marginal = (probe_raw / 10 ** dec_out) * (amt_atomic / probe_atomic)
+                if not _impact_ok(marginal, out):
+                    continue
                 if out > best:
                     best, best_source, best_pool = out, p.source, p.pool
             continue
@@ -1140,6 +1198,8 @@ def _best_quote(
         # out at 123.8 million rows containing no v3 or v4 at all, which looks exactly
         # like a successful build. A behavioural test cannot drift that way.
         elif p.tick_net is not None and token_in in (p.token0, p.token1) and token_out in (p.token0, p.token1):
+            # Probe with a trade small enough to be effectively marginal, then require
+            # the real trade's unit price to stay within the support bound of it.
             zero_for_one = token_in == p.token0
             dec_in = p.dec0 if zero_for_one else p.dec1
             dec_out = p.dec1 if zero_for_one else p.dec0
@@ -1159,6 +1219,24 @@ def _best_quote(
                     sqrt_ticks=p.sqrt_ticks,
                 )
                 out = q.amount_out / (10 ** dec_out)
+                probe_atomic = max(1, amount_atomic // 10_000)
+                pq = quote_exact_input(
+                    zero_for_one=zero_for_one,
+                    amount_in=probe_atomic,
+                    sqrt_price_x96=p.sqrt_price_x96,
+                    liquidity=p.liquidity,
+                    tick_net=p.tick_net or {},
+                    tick_spacing=p.tick_spacing,
+                    fee_pips=p.fee_pips,
+                    sorted_ticks=p.sorted_ticks,
+                    sqrt_ticks=p.sqrt_ticks,
+                )
+                probe_out = pq.amount_out / (10 ** dec_out)
+                if probe_out <= 0:
+                    continue
+                marginal = probe_out * (amount_atomic / probe_atomic)
+                if not _impact_ok(marginal, out):
+                    continue
             except Exception:
                 continue
         else:

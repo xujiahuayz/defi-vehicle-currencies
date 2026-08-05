@@ -1,0 +1,33 @@
+{
+ "argv": [
+  "--days",
+  "8"
+ ],
+ "artefact": "output/exhibits/quoter_support_bounds.jsonl",
+ "code_fingerprint": "9bc1ebd8b6e0287cc425453a40e842b8db0caf7277f83a836a5fb5d3f742256a",
+ "code_sources": [
+  "scripts/measure_quoter_support.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-05T20:11:25+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "ab5e826a0743bb883521e15183944c195f202188",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "cripts/run_route_cost_panel.py",
+   "uv.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 9,
+ "script": "scripts/measure_quoter_support.py"
+}
