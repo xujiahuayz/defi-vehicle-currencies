@@ -150,6 +150,56 @@ def draft_parts() -> tuple[str, str]:
     return clean(body), clean(heads)
 
 
+def domain_vocabulary(min_papers: int = 2) -> set[str]:
+    """Words the DOMAIN literature actually uses, from the 54 papers this project cites.
+
+    The venue exemplars are general finance, on banks, dealers and carbon, so they cannot
+    vouch for the vocabulary of decentralised exchange and a word absent from them says
+    nothing about whether it is a term of art. Reading the draft's own emphasis instead was
+    worse, because it let the draft license whatever it had emphasised once.
+
+    The literature this paper cites is the right authority, and it settles the cases
+    cleanly: "pool" appears in 18 of the 54, "liquidity" in 50, "arbitrage" in 27, while
+    "verdict" and "quoter" appear in none. A word used by neither the venue nor the field is
+    coined, and a coined term is legitimate only when the paper DEFINES it.
+    """
+    lit = ROOT / "literature" / "text"
+    if not lit.exists():
+        return set()
+    seen: Counter = Counter()
+    for p in sorted(lit.glob("*.txt")):
+        seen.update(set(WORD.findall(p.read_text(errors="ignore").lower())))
+    return {w for w, n in seen.items() if n >= min_papers}
+
+
+def formally_defined(term: str) -> bool:
+    """Is this term DEFINED in the paper, in the way a reader could rely on?
+
+    Emphasis is not definition. A term set in italics on first use is a typographic hint,
+    and a reader meeting a coined word needs a sentence saying what it denotes, so the test
+    is definitional syntax and a definition environment, not \\emph.
+    """
+    # Only explicitly definitional syntax counts. An earlier version accepted "is the",
+    # which matches any sentence of the form "the verdict is the sign of m" and duly
+    # certified "verdict" as a defined term of art when it appears in none of the 54 domain
+    # papers and is defined nowhere. A loose definition test reintroduces exactly the
+    # false negatives that moving to the domain corpus was meant to remove.
+    pats = [rf"\\begin\{{definition\}}[^\\]{{0,240}}\b{re.escape(term)}\b",
+            rf"\b{re.escape(term)}\b[^.]{{0,40}}\b(?:denotes|is defined as|are defined as|"
+            rf"we define as)\b",
+            rf"\b(?:we\s+)?(?:define|denote|term)\s+(?:the\s+|a\s+)?[^.]{{0,30}}?"
+            rf"\b{re.escape(term)}\b",
+            rf"\b{re.escape(term)}\b\s*,\s*(?:meaning|namely)\b"]
+    for d in (ROOT / "paper" / "sections",):
+        if not d.exists():
+            continue
+        for p in sorted(d.rglob("*.tex")):
+            raw = p.read_text(encoding="utf-8")
+            if any(re.search(x, raw, flags=re.I | re.S) for x in pats):
+                return True
+    return False
+
+
 def domain_terms() -> set[str]:
     """Words this paper actually defines or names as technical, from its own text.
 
@@ -215,15 +265,15 @@ def compare(draft: str, corpus: list[str], n: int, min_count: int, label: str,
             # Absent from the corpus AND introduced by this paper as technical: subject
             # matter. Absent from the corpus but never defined here: a word choice.
             toks = {w for w in g.split() if w != MASK}
-            coined = ENGLISH and toks and not (toks <= ENGLISH)
             if mx > 0.0:
-                kind = "style"          # the corpus uses it, the draft uses it more
-            elif coined:
-                kind = "topic"          # coined or technical, so subject matter
+                kind = "style"           # the venue uses it, the draft uses it more
+            elif toks and toks <= DOMAIN:
+                kind = "topic"           # the field's own literature uses it
+            elif toks and all(formally_defined(w) for w in toks - DOMAIN):
+                kind = "topic"           # coined here, and defined here
             else:
-                # Ordinary English the corpus never uses. Not decidable automatically, and
-                # reported for judgement instead of being waved through as terminology.
-                kind = "check"
+                # Used by neither the venue nor the field, and not defined in this paper.
+                kind = "undefined"
             found.append({"segment": label, "n": n, "expression": g, "draft_count": c,
                           "draft_rate": drate[g], "corpus_max": mx, "corpus_median": med,
                           "kind": kind})
@@ -240,7 +290,7 @@ def main() -> int:
     args = ap.parse_args()
 
     global DOMAIN
-    DOMAIN = domain_terms()
+    DOMAIN = domain_vocabulary()
     corpus = corpus_texts()
     if not corpus:
         print(f"no readable exemplars under {EXEMPLARS}")
@@ -270,10 +320,10 @@ def main() -> int:
         for r in sel[:args.top]:
             print(f"  {r['expression']:<34}{r['draft_rate']:>10.3f}"
                   f"{r['corpus_max']:>12.3f}{r['draft_count']:>7}")
-        chk = [r for r in rows if r["segment"] == seg and r["kind"] == "check"]
+        chk = [r for r in rows if r["segment"] == seg and r["kind"] == "undefined"]
         if chk:
-            print(f"  {len(chk)} ordinary English expression(s) the corpus NEVER uses, "
-                  f"for judgement:")
+            print(f"  {len(chk)} expression(s) used by neither the venue nor the field's "
+                  f"own literature, and not defined here:")
             for r in chk[:10]:
                 print(f"    {r['expression']:<32}{r['draft_rate']:>8.3f}"
                       f"{'':>12}{r['draft_count']:>7}")
@@ -284,7 +334,7 @@ def main() -> int:
         print()
 
     write_exhibit(__import__("pandas").DataFrame(rows), OUT)
-    style = [r for r in rows if r["kind"] in ("style", "check")]
+    style = [r for r in rows if r["kind"] in ("style", "undefined")]
     print(f"wrote {OUT.relative_to(ROOT)}")
     print("\nEvery row is a construction the draft uses more often than any of the 14")
     print("published papers. Nobody named them in advance, which is the point: the list")
