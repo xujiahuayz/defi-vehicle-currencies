@@ -53,6 +53,19 @@ def leg(
     }
 
 
+def search_panel(rows: object) -> pd.DataFrame:
+    """Build synthetic search cells with explicit executable-path identities."""
+    frame = rows.copy() if isinstance(rows, pd.DataFrame) else pd.DataFrame(rows)
+    for prefix in ("direct", "hop1", "hop2"):
+        source = f"{prefix}_source"
+        pool = f"{prefix}_pool"
+        if source in frame and pool not in frame:
+            frame[pool] = frame[source].map(
+                lambda value: f"{value}-{prefix}-pool" if pd.notna(value) else None
+            )
+    return frame
+
+
 class RealisedMatchingTests(unittest.TestCase):
     def test_linear_extraction_values_execution_and_preserves_venue_reach(self) -> None:
         legs = []
@@ -237,7 +250,7 @@ class RealisedMatchingTests(unittest.TestCase):
     def test_cost_panel_reader_materialises_only_requested_day(self) -> None:
         import duckdb
 
-        rows = pd.DataFrame(
+        rows = search_panel(
             [
                 {
                     "date": day,
@@ -266,7 +279,7 @@ class RealisedMatchingTests(unittest.TestCase):
     def test_search_cost_panel_reader_materialises_frontier_columns(self) -> None:
         import duckdb
 
-        rows = pd.DataFrame(
+        rows = search_panel(
             [
                 {
                     "date": "2025-01-02",
@@ -293,6 +306,7 @@ class RealisedMatchingTests(unittest.TestCase):
             connection.close()
         self.assertEqual(len(day), 1)
         self.assertEqual(float(day.iloc[0]["vehicle_output_usd"]), 990.0)
+        self.assertEqual(day.iloc[0]["direct_pool"], "uniswap_v2-direct-pool")
 
     def test_search_efficiency_interpolates_log_size_inside_observed_reach(self) -> None:
         routes = pd.DataFrame(
@@ -312,7 +326,7 @@ class RealisedMatchingTests(unittest.TestCase):
                 }
             ]
         )
-        panel = pd.DataFrame(
+        panel = search_panel(
             [
                 {
                     "date": "2025-01-02",
@@ -331,10 +345,59 @@ class RealisedMatchingTests(unittest.TestCase):
         )
         out = match_within_vehicle_search_efficiency(routes, panel).iloc[0]
         self.assertEqual(out["search_match_status"], "within_observed_venue_reach")
-        self.assertAlmostEqual(float(out["frontier_output_rate"]), 0.94)
+        self.assertFalse(bool(out["search_frontier_path_switch"]))
+        self.assertAlmostEqual(float(out["interpolated_frontier_output_rate"]), 0.94)
         self.assertAlmostEqual(float(out["search_shortfall"]), 1.0 - 0.90 / 0.94)
         self.assertAlmostEqual(float(out["lower_size_ratio"]), 10 ** -0.5)
         self.assertAlmostEqual(float(out["upper_size_ratio"]), 10 ** 0.5)
+
+    def test_search_efficiency_quarantines_a_same_vehicle_path_switch(self) -> None:
+        routes = pd.DataFrame(
+            [
+                {
+                    "route_id": "r1",
+                    "day": "20250102",
+                    "hour": 7,
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": "k",
+                    "input_usd": 10**3.5,
+                    "output_usd": 0.90 * 10**3.5,
+                    "realised_output_rate": 0.90,
+                    "realised_hop1_source": "uniswap_v2",
+                    "realised_hop2_source": "uniswap_v3",
+                }
+            ]
+        )
+        panel = search_panel(
+            [
+                {
+                    "date": "2025-01-02",
+                    "reserve_hour_utc": 7,
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": "k",
+                    "trade_size_usd": size,
+                    "vehicle_available": True,
+                    "vehicle_output_usd": rate * size,
+                    "hop1_source": "uniswap_v2",
+                    "hop1_pool": hop1,
+                    "hop2_source": "uniswap_v3",
+                    "hop2_pool": hop2,
+                }
+                for size, rate, hop1, hop2 in (
+                    (1_000.0, 0.98, "pool-a1", "pool-k1"),
+                    (10_000.0, 0.90, "pool-a2", "pool-k2"),
+                )
+            ]
+        )
+        out = match_within_vehicle_search_efficiency(routes, panel).iloc[0]
+        self.assertEqual(
+            out["search_match_status"],
+            "frontier_switches_between_quote_sizes",
+        )
+        self.assertTrue(bool(out["search_frontier_path_switch"]))
+        self.assertTrue(pd.isna(out["search_shortfall"]))
 
     def test_search_efficiency_separates_support_failures(self) -> None:
         base = {
@@ -376,7 +439,7 @@ class RealisedMatchingTests(unittest.TestCase):
                         "hop2_source": source,
                     }
                 )
-        out = match_within_vehicle_search_efficiency(routes, pd.DataFrame(panel_rows)).set_index(
+        out = match_within_vehicle_search_efficiency(routes, search_panel(panel_rows)).set_index(
             "route_id"
         )
         self.assertEqual(out.loc["outside-reach", "search_match_status"], "frontier_outside_observed_venue_reach")
@@ -416,9 +479,9 @@ class RealisedMatchingTests(unittest.TestCase):
             "hop2_source": "uniswap_v2",
         }
         with self.assertRaisesRegex(ValueError, "duplicate quote cells"):
-            match_within_vehicle_search_efficiency(route, pd.DataFrame([row, row]))
+            match_within_vehicle_search_efficiency(route, search_panel([row, row]))
 
-    def test_path_efficiency_selects_best_direct_or_alternative_vehicle(self) -> None:
+    def test_path_efficiency_quarantines_a_frontier_path_switch(self) -> None:
         route = pd.DataFrame(
             [
                 {
@@ -463,12 +526,71 @@ class RealisedMatchingTests(unittest.TestCase):
                         "hop2_source": source,
                     }
                 )
-        out = match_observed_reach_path_efficiency(route, pd.DataFrame(rows)).iloc[0]
-        self.assertEqual(out["path_match_status"], "within_observed_venue_reach")
+        out = match_observed_reach_path_efficiency(route, search_panel(rows)).iloc[0]
+        self.assertEqual(
+            out["path_match_status"], "frontier_switches_between_quote_sizes"
+        )
+        self.assertTrue(bool(out["path_frontier_switch"]))
         self.assertEqual(out["lower_frontier_vehicle"], "m")
         self.assertEqual(out["upper_frontier_path_type"], "direct")
-        self.assertAlmostEqual(float(out["path_frontier_output_rate"]), 0.955)
-        self.assertAlmostEqual(float(out["path_shortfall"]), 1.0 - 0.90 / 0.955)
+        self.assertAlmostEqual(
+            float(out["interpolated_path_frontier_output_rate"]), 0.955
+        )
+        self.assertTrue(pd.isna(out["path_shortfall"]))
+
+    def test_path_efficiency_interpolates_only_when_the_frontier_path_is_stable(self) -> None:
+        route = pd.DataFrame(
+            [
+                {
+                    "route_id": "r1",
+                    "day": "20250102",
+                    "hour": 7,
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": "k",
+                    "input_usd": 10**3.5,
+                    "output_usd": 0.90 * 10**3.5,
+                    "realised_output_rate": 0.90,
+                    "realised_hop1_source": "uniswap_v2",
+                    "realised_hop2_source": "uniswap_v3",
+                }
+            ]
+        )
+        rows = []
+        for size, direct_rate, alternative_rate in (
+            (1_000.0, 0.96, 0.97),
+            (10_000.0, 0.94, 0.95),
+        ):
+            for vehicle, rate, source in (
+                ("k", 0.92, "uniswap_v2"),
+                ("m", alternative_rate, "uniswap_v3"),
+            ):
+                rows.append(
+                    {
+                        "date": "2025-01-02",
+                        "reserve_hour_utc": 7,
+                        "src": "a",
+                        "tgt": "b",
+                        "vehicle": vehicle,
+                        "trade_size_usd": size,
+                        "direct_available": True,
+                        "direct_output_usd": direct_rate * size,
+                        "direct_source": "uniswap_v2",
+                        "vehicle_available": True,
+                        "vehicle_output_usd": rate * size,
+                        "hop1_source": source,
+                        "hop2_source": source,
+                    }
+                )
+        out = match_observed_reach_path_efficiency(route, search_panel(rows)).iloc[0]
+        self.assertEqual(out["path_match_status"], "within_observed_venue_reach")
+        self.assertFalse(bool(out["path_frontier_switch"]))
+        self.assertEqual(out["lower_frontier_vehicle"], "m")
+        self.assertEqual(out["upper_frontier_vehicle"], "m")
+        self.assertAlmostEqual(
+            float(out["interpolated_path_frontier_output_rate"]), 0.96
+        )
+        self.assertAlmostEqual(float(out["path_shortfall"]), 1.0 - 0.90 / 0.96)
 
     def test_path_efficiency_rejects_inconsistent_direct_frontier(self) -> None:
         route = pd.DataFrame(
@@ -508,7 +630,7 @@ class RealisedMatchingTests(unittest.TestCase):
                 }
             )
         with self.assertRaisesRegex(ValueError, "direct frontier differs"):
-            match_observed_reach_path_efficiency(route, pd.DataFrame(rows))
+            match_observed_reach_path_efficiency(route, search_panel(rows))
 
     def test_path_efficiency_separates_grid_reach_and_missing_cells(self) -> None:
         base = {
@@ -547,7 +669,7 @@ class RealisedMatchingTests(unittest.TestCase):
                     "hop2_source": "curve",
                 }
             )
-        out = match_observed_reach_path_efficiency(routes, pd.DataFrame(rows)).set_index(
+        out = match_observed_reach_path_efficiency(routes, search_panel(rows)).set_index(
             "route_id"
         )
         self.assertEqual(out.loc["outside-grid", "path_match_status"], "outside_quote_size_grid")

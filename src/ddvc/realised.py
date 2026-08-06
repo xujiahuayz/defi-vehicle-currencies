@@ -29,6 +29,11 @@ MATCH_KEYS = ["day", "hour", "src", "tgt", "vehicle"]
 PAIR_MATCH_KEYS = ["day", "hour", "src", "tgt"]
 
 
+def _same_nullable(left: pd.Series, right: pd.Series) -> pd.Series:
+    """Compare path-identity fields while treating two missing values as equal."""
+    return left.eq(right) | (left.isna() & right.isna())
+
+
 def cost_panel_days(connection: object, panel_path: Path) -> list[str]:
     """Calendar in a route-cost Parquet, read without materialising the panel."""
     rows = connection.execute(  # type: ignore[attr-defined]
@@ -63,8 +68,8 @@ def read_search_cost_panel_day(
         f"""
         SELECT CAST(date AS DATE) AS date, reserve_hour_utc, src, tgt, vehicle,
                trade_size_usd, direct_available, direct_output_usd,
-               direct_source, vehicle_available, vehicle_output_usd,
-               hop1_source, hop2_source
+               direct_source, direct_pool, vehicle_available, vehicle_output_usd,
+               hop1_source, hop1_pool, hop2_source, hop2_pool
         FROM read_parquet('{panel_path.as_posix()}')
         WHERE CAST(date AS DATE) = ?
         """,
@@ -381,7 +386,9 @@ def match_within_vehicle_search_efficiency(
             "vehicle_available",
             "vehicle_output_usd",
             "hop1_source",
+            "hop1_pool",
             "hop2_source",
+            "hop2_pool",
         ]
     )
     missing_routes = sorted(route_required - set(routes.columns))
@@ -406,7 +413,9 @@ def match_within_vehicle_search_efficiency(
         "vehicle_available",
         "vehicle_output_usd",
         "hop1_source",
+        "hop1_pool",
         "hop2_source",
+        "hop2_pool",
     ]
     candidates = observed[["_route_row", *MATCH_KEYS, "input_usd"]].merge(
         costs.drop(columns=["date", "reserve_hour_utc"]),
@@ -465,19 +474,27 @@ def match_within_vehicle_search_efficiency(
     within_reach.loc[supported] = out.loc[supported].apply(
         frontier_within_observed_reach, axis=1
     )
+    out["search_frontier_path_switch"] = supported & ~(
+        _same_nullable(out["lower_hop1_source"], out["upper_hop1_source"])
+        & _same_nullable(out["lower_hop2_source"], out["upper_hop2_source"])
+        & _same_nullable(out["lower_hop1_pool"], out["upper_hop1_pool"])
+        & _same_nullable(out["lower_hop2_pool"], out["upper_hop2_pool"])
+    )
     out["search_match_status"] = np.select(
         [
             ~has_cost_cell,
             has_cost_cell & ~bounded,
             bounded & ~supported,
             supported & ~within_reach,
-            supported & within_reach,
+            supported & within_reach & out["search_frontier_path_switch"],
+            supported & within_reach & ~out["search_frontier_path_switch"],
         ],
         [
             "no_cost_cell",
             "outside_quote_size_grid",
             "vehicle_frontier_unsupported",
             "frontier_outside_observed_venue_reach",
+            "frontier_switches_between_quote_sizes",
             "within_observed_venue_reach",
         ],
         default="invalid_search_match",
@@ -491,13 +508,14 @@ def match_within_vehicle_search_efficiency(
     )
     lower_rate = out["lower_vehicle_output_usd"] / out["lower_trade_size_usd"]
     upper_rate = out["upper_vehicle_output_usd"] / out["upper_trade_size_usd"]
-    out["frontier_output_rate"] = lower_rate + interpolation_weight * (
+    out["interpolated_frontier_output_rate"] = lower_rate + interpolation_weight * (
         upper_rate - lower_rate
     )
     comparable = out["search_match_status"].eq("within_observed_venue_reach")
     out["search_shortfall"] = np.where(
-        comparable & out["frontier_output_rate"].gt(0),
-        1.0 - out["realised_output_rate"] / out["frontier_output_rate"],
+        comparable & out["interpolated_frontier_output_rate"].gt(0),
+        1.0
+        - out["realised_output_rate"] / out["interpolated_frontier_output_rate"],
         np.nan,
     )
     out["lower_size_ratio"] = out["lower_trade_size_usd"] / out["input_usd"]
@@ -535,10 +553,13 @@ def match_observed_reach_path_efficiency(
         "direct_available",
         "direct_output_usd",
         "direct_source",
+        "direct_pool",
         "vehicle_available",
         "vehicle_output_usd",
         "hop1_source",
+        "hop1_pool",
         "hop2_source",
+        "hop2_pool",
     }
     missing_routes = sorted(route_required - set(routes.columns))
     missing_panel = sorted(panel_required - set(panel.columns))
@@ -559,6 +580,7 @@ def match_observed_reach_path_efficiency(
         "direct_available",
         "direct_output_usd",
         "direct_source",
+        "direct_pool",
     ]
     direct_variation = costs.groupby(pair_size_key, dropna=False)[
         direct_contract
@@ -575,7 +597,9 @@ def match_observed_reach_path_efficiency(
             "vehicle_available",
             "vehicle_output_usd",
             "hop1_source",
+            "hop1_pool",
             "hop2_source",
+            "hop2_pool",
         ]
     ].rename(
         columns={
@@ -583,7 +607,9 @@ def match_observed_reach_path_efficiency(
             "vehicle_available": "path_available",
             "vehicle_output_usd": "path_output_usd",
             "hop1_source": "path_hop1_source",
+            "hop1_pool": "path_hop1_pool",
             "hop2_source": "path_hop2_source",
+            "hop2_pool": "path_hop2_pool",
         }
     )
     vehicles["frontier_path_type"] = "two_hop"
@@ -594,9 +620,11 @@ def match_observed_reach_path_efficiency(
             "direct_available": "path_available",
             "direct_output_usd": "path_output_usd",
             "direct_source": "path_hop1_source",
+            "direct_pool": "path_hop1_pool",
         }
     )
     direct["path_hop2_source"] = None
+    direct["path_hop2_pool"] = None
     direct["frontier_vehicle"] = None
     direct["frontier_path_type"] = "direct"
     paths = pd.concat([direct, vehicles], ignore_index=True, sort=False)
@@ -640,7 +668,9 @@ def match_observed_reach_path_efficiency(
         "frontier_path_type",
         "frontier_vehicle",
         "path_hop1_source",
+        "path_hop1_pool",
         "path_hop2_source",
+        "path_hop2_pool",
     ]
     frontier = (
         eligible.sort_values(
@@ -687,17 +717,33 @@ def match_observed_reach_path_efficiency(
     frontier_bounded = out["lower_trade_size_usd"].notna() & out[
         "upper_trade_size_usd"
     ].notna()
+    identity_columns = [
+        "frontier_path_type",
+        "frontier_vehicle",
+        "path_hop1_source",
+        "path_hop1_pool",
+        "path_hop2_source",
+        "path_hop2_pool",
+    ]
+    same_path = pd.Series(True, index=out.index)
+    for column in identity_columns:
+        same_path &= _same_nullable(
+            out[f"lower_{column}"], out[f"upper_{column}"]
+        )
+    out["path_frontier_switch"] = frontier_bounded & ~same_path
     out["path_match_status"] = np.select(
         [
             ~has_cost_cell,
             has_cost_cell & ~inside_grid,
             inside_grid & ~frontier_bounded,
-            inside_grid & frontier_bounded,
+            inside_grid & frontier_bounded & out["path_frontier_switch"],
+            inside_grid & frontier_bounded & ~out["path_frontier_switch"],
         ],
         [
             "no_cost_cell",
             "outside_quote_size_grid",
             "frontier_unsupported_within_observed_reach",
+            "frontier_switches_between_quote_sizes",
             "within_observed_venue_reach",
         ],
         default="invalid_path_match",
@@ -709,15 +755,17 @@ def match_observed_reach_path_efficiency(
     interpolation_weight = np.where(
         span.abs().gt(1e-12), (input_log - lower_log) / span, 0.0
     )
-    out["path_frontier_output_rate"] = out[
+    out["interpolated_path_frontier_output_rate"] = out[
         "lower_path_output_rate"
     ] + interpolation_weight * (
         out["upper_path_output_rate"] - out["lower_path_output_rate"]
     )
     comparable = out["path_match_status"].eq("within_observed_venue_reach")
     out["path_shortfall"] = np.where(
-        comparable & out["path_frontier_output_rate"].gt(0),
-        1.0 - out["realised_output_rate"] / out["path_frontier_output_rate"],
+        comparable & out["interpolated_path_frontier_output_rate"].gt(0),
+        1.0
+        - out["realised_output_rate"]
+        / out["interpolated_path_frontier_output_rate"],
         np.nan,
     )
     out["path_lower_size_ratio"] = out["lower_trade_size_usd"] / out["input_usd"]
