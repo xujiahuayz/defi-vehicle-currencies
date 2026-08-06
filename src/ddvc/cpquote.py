@@ -332,9 +332,21 @@ def gas_cost_bps(n_legs: int, notional_usd: float,
     is the term that makes route choice size-dependent: the same hop is negligible
     on a large trade and decisive on a small one.
     """
-    if notional_usd <= 0:
+    return gas_cost_bps_from_units(
+        gas_units(n_legs), notional_usd, gas_price_gwei, eth_usd
+    )
+
+
+def gas_cost_bps_from_units(
+    route_gas_units: float,
+    notional_usd: float,
+    gas_price_gwei: float,
+    eth_usd: float,
+) -> float | None:
+    """Gas cost in basis points from receipt-measured route gas units."""
+    if notional_usd <= 0 or route_gas_units < 0:
         return None
-    eth = gas_units(n_legs) * gas_price_gwei * 1e-9
+    eth = route_gas_units * gas_price_gwei * 1e-9
     return 10_000 * (eth * eth_usd) / notional_usd
 
 
@@ -353,11 +365,31 @@ def all_in_direct_advantage_bps(
     owned here: when the vehicle route has more legs, adding gas increases the
     direct advantage relative to the gross-of-gas comparison.
     """
-    direct_gas = gas_cost_bps(
-        direct_legs, notional_usd, gas_price_gwei, eth_usd
+    return all_in_direct_advantage_bps_from_units(
+        gross_direct_advantage_bps,
+        direct_gas_units=gas_units(direct_legs),
+        vehicle_gas_units=gas_units(vehicle_legs),
+        notional_usd=notional_usd,
+        gas_price_gwei=gas_price_gwei,
+        eth_usd=eth_usd,
     )
-    vehicle_gas = gas_cost_bps(
-        vehicle_legs, notional_usd, gas_price_gwei, eth_usd
+
+
+def all_in_direct_advantage_bps_from_units(
+    gross_direct_advantage_bps: float,
+    *,
+    direct_gas_units: float,
+    vehicle_gas_units: float,
+    notional_usd: float,
+    gas_price_gwei: float,
+    eth_usd: float,
+) -> float | None:
+    """Direct-route advantage using gas units measured for the matched routes."""
+    direct_gas = gas_cost_bps_from_units(
+        direct_gas_units, notional_usd, gas_price_gwei, eth_usd
+    )
+    vehicle_gas = gas_cost_bps_from_units(
+        vehicle_gas_units, notional_usd, gas_price_gwei, eth_usd
     )
     if direct_gas is None or vehicle_gas is None:
         return None

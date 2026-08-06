@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from ddvc.cpquote import (
     all_in_direct_advantage_bps,
+    all_in_direct_advantage_bps_from_units,
     apply_reserve_deltas,
     cost_gap_bps,
     hour_is_clean,
@@ -33,6 +34,25 @@ class ConstantProductStateTests(unittest.TestCase):
         self.assertIsNotNone(adjusted)
         assert adjusted is not None
         self.assertGreater(adjusted, -10.0)
+
+    def test_topology_wrapper_delegates_to_explicit_gas_units(self) -> None:
+        topology = all_in_direct_advantage_bps(
+            5.0,
+            direct_legs=1,
+            vehicle_legs=2,
+            notional_usd=10_000.0,
+            gas_price_gwei=20.0,
+            eth_usd=2_500.0,
+        )
+        explicit = all_in_direct_advantage_bps_from_units(
+            5.0,
+            direct_gas_units=154_604,
+            vehicle_gas_units=228_701,
+            notional_usd=10_000.0,
+            gas_price_gwei=20.0,
+            eth_usd=2_500.0,
+        )
+        self.assertEqual(topology, explicit)
 
     def test_ordered_state_lookup_uses_strict_block_log_order(self) -> None:
         swaps = [
