@@ -6,6 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import pandas as pd
+
 from scripts import measure_quoter_support
 
 
@@ -40,6 +42,28 @@ class MeasureQuoterSupportTests(unittest.TestCase):
         vanilla = support[(support["year"] == "ALL") & support["supported"]].iloc[0]
         self.assertEqual(vanilla["swap_share"], 0.5)
         self.assertAlmostEqual(vanilla["volume_share"], 2 / 3)
+
+    def test_v4_writer_refuses_incomplete_statics(self) -> None:
+        frame = pd.DataFrame(
+            [
+                {
+                    "year": "ALL",
+                    "status": "incomplete_statics",
+                    "supported": False,
+                    "swaps": 1,
+                    "swap_share": 1.0,
+                    "volume_usd": 1.0,
+                    "volume_share": 1.0,
+                }
+            ]
+        )
+        original = measure_quoter_support.measure_v4_support
+        measure_quoter_support.measure_v4_support = lambda: frame
+        try:
+            with self.assertRaisesRegex(RuntimeError, "unusable statics"):
+                measure_quoter_support.write_v4_support()
+        finally:
+            measure_quoter_support.measure_v4_support = original
 
 
 if __name__ == "__main__":

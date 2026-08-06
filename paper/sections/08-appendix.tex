@@ -61,7 +61,8 @@ with the sign set by the direction of travel. The quoter carries the contract's 
 The active tick map is accumulated from every mint and burn since pool inception, and the pre-trade state comes free from the swap record: consecutive swaps in one pool leave \texttt{sqrtPriceX96} and \texttt{tick} on the earlier event, and nothing except a swap moves the price inside a pool. Errors are reported by trade direction crossed with whether the quote traversed an initialised tick, because a traversal fault is directional by construction and a pooled error statistic averages a broken direction against a working one. That is not a hypothetical: an upward search that returned the tick just crossed produced a zero-width step and under-quoted upward tick-crossing swaps by a median 62.6\%, while every non-crossing quote read exact and the downward direction validated at $-0.0006\%$.
 % src/ddvc/pricing/v3quote.py, _next_init_tick measured docstring against realised swaps
 
-Table~\ref{tab:app:cl} reports the four cells on Uniswap v4, whose pools exercise the same code path on a fee schedule v3 never carried, including hook-driven tiers of 0 and 7 hundredths of a basis point.
+Table~\ref{tab:app:cl} reports the four cells on Uniswap v4, whose supported pools exercise the same code path on static fee tiers v3 never carried, including 0, 7, 8 and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because their per-swap hook cash flows and realised fee are not present in the raw rows; Appendix~\ref{app:coverage} measures that support boundary.
+% output/exhibits/v4_quoter_validation.jsonl, observed static fee tiers; output/exhibits/v4_quote_support.jsonl, support statuses
 
 \begin{table}[t]
 \centering
@@ -70,27 +71,27 @@ Table~\ref{tab:app:cl} reports the four cells on Uniswap v4, whose pools exercis
 \begin{tabular}{lrrrrr}
 \toprule
 Cell & Swaps & Median & 90th pct. & Maximum & Within 1\% \\
-% output/exhibits/v4_quoter_validation.jsonl, column headings for 1,200 validated v4 swaps
+% output/exhibits/v4_quoter_validation.jsonl, column headings for 4,218 validated v4 swaps
 \midrule
-token0 in, no tick crossed & 523 & $0$ & $1.7\times10^{-5}$ & $8.7\times10^{-5}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, 523 of 1,200 validated v4 swaps
-token0 in, tick crossed & 82 & $2.6\times10^{-6}$ & $5.0\times10^{-5}$ & $1.8\times10^{-4}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, 82 of 1,200 validated v4 swaps
-token1 in, no tick crossed & 543 & $9.7\times10^{-9}$ & $1.1\times10^{-5}$ & $1.5\times10^{-4}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, 543 of 1,200 validated v4 swaps
-token1 in, tick crossed & 52 & $4.2\times10^{-6}$ & $3.5\times10^{-5}$ & $1.7\times10^{-4}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, 52 of 1,200 validated v4 swaps
+token0 in, no tick crossed & 2{,}162 & $0$ & $0$ & $9.98\times10^{-4}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, 2,162 of 4,218 validated v4 swaps
+token0 in, tick crossed & 185 & $0$ & $2.71\times10^{-7}$ & $3.24\times10^{-6}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, 185 of 4,218 validated v4 swaps
+token1 in, no tick crossed & 1{,}707 & $0$ & $1.69\times10^{-8}$ & $1.48\times10^{-4}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, 1,707 of 4,218 validated v4 swaps
+token1 in, tick crossed & 164 & $1.98\times10^{-8}$ & $4.13\times10^{-7}$ & $5.20\times10^{-6}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, 164 of 4,218 validated v4 swaps
 \midrule
-Pooled & 1{,}200 & $5.1\times10^{-8}$ & & $1.8\times10^{-4}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, all 1,200 validated v4 swaps
+Pooled & 4{,}218 & $0$ & $8.31\times10^{-9}$ & $9.98\times10^{-4}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, all 4,218 validated v4 swaps
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Absolute quote error in percent of realised output. 1,200 realised Uniswap v4 swaps across six pools and five pairs at fee tiers 0, 7, 100 and 500, each re-quoted against the state left by the preceding swap in the same pool.
+\footnotesize Absolute quote error in percent of realised output. 4,218 realised Uniswap v4 swaps on three dates across 13 pools and nine pairs, at static fee tiers 0, 7, 8, 100, 500, 10,000 and 20,000. Each quote uses liquidity events ordered strictly before the swap and the price state left by the preceding swap in the same pool.
 \end{table}
 
-The four cells sit at the same location, which is what splitting them is for. Every cell reproduces realised output to within two parts in a million at the worst observed swap, against route-cost differences the body measures in tens of basis points.
-% output/exhibits/v4_quoter_validation.jsonl, maximum absolute error 1.8e-4 percent over 1,200 swaps
+The four cells sit at the same location, which is what splitting them is for. Every cell reproduces realised output within 0.001\% at the worst observed swap, against route-cost differences the body measures in tens of basis points.
+% output/exhibits/v4_quoter_validation.jsonl, maximum absolute error 0.000998 percent over 4,218 swaps
 
 \subsection{StableSwap pools}
 \label{app:quoters:stable}
@@ -354,6 +355,9 @@ Pooled & 56.02 & 14.98 & 13.73 & 5.45 & 3.92 & 5.88 & 0.02 \\
 \footnotesize Percentage shares within the seven-venue panel. every seventh calendar day from 2018-11-02 to 2026-06-30, 400 sampled days.
 \end{table}
 
+Uniswap v4 carries its own within-venue support boundary. Exact-ID enrichment leaves zero swaps with incomplete or invalid immutable statics across 29,005,863 rows. Vanilla static-fee pools account for 84.02\% of swaps and 99.05\% of reported value pooled; the corresponding 2026 shares are 79.89\% and 95.57\%. The excluded remainder is hook-bearing or dynamic-fee-plus-hook activity, whose per-swap cash-flow rule is not identified from the raw event.
+% output/exhibits/v4_quote_support.jsonl, ALL and 2026 rows by support status
+
 Curve carries between 11\% and 19\% of panel volume in every year it existed and ranks second in four of those years, which makes its internal calibration gate the largest coverage question the panel has. The gate declines a pool-day whose amplification fit misses by more than 1\%, and measured on 28 pool-days from 2020-02-11 to 2026-04-28 it accepts 621 pools and rejects 588, removing 34.2\% of the Curve volume it rules on, \$1.83bn of \$5.36bn. A further 2.75\% of Curve volume sits in pool-days with too few trades to fit and score apart, and halving the fit threshold from eight trades to four moves the yearly excluded shares by at most 1.3 percentage points.
 % docs/venue-coverage-bounds.md, 28 measured pool-days from 2020-02-11 to 2026-04-28
 
@@ -401,8 +405,8 @@ The last column of Panel A is the sign of the bound and Panel B shows it repeati
 One venue in the top eight is excluded outright. Sushiswap's concentrated-liquidity deployment presents as a balance-and-weights venue by field inventory, and its weight vector takes exactly one value across every sampled day, the default a two-token schema writes when no weights exist, so a weighted-product quoter has nothing to read. Correct weights would not help, because the venue is a concentrated-liquidity fork whose reserves sit across ticks and a geometric mean over total balances prices a pool that does not exist. The tick quoter cannot be pointed at it either, since the schema serves neither \texttt{sqrtPriceX96} nor in-range liquidity nor the tick spacing at any date. The exclusion costs almost nothing: the venue is 0.016\% of the five priced venues' volume pooled, peaking at 0.176\% in 2026, and across fourteen sampled days only 4.1\% of its volume sits on token pairs no priced venue hosts that day, never exceeding \$37,609 of unique-pair volume on any sampled day.
 % docs/venue-coverage-bounds.md, sushiswap_v3_schema_probe.jsonl and sushiswap_v3_pair_overlap.jsonl, 14 sampled days
 
-Balancer is the largest outstanding coverage gain, at 3.9\% of panel volume pooled and 8.8\% at its 2023 peak, with a quoter that clears the validation bar of Table~\ref{tab:app:weighted} and no route-cost integration, so the venue is absent from both sides of every comparison. Its weighted pools host the 80/20 native-asset pairings alongside the multi-asset stable baskets, which points its absence the same way the Curve gate points.
-% docs/venue-coverage-bounds.md, venue_volume_by_year.jsonl, 400 sampled days
+Balancer is 3.9\% of measured venue volume pooled and 8.8\% at its 2023 peak. The weighted-family quoter clears the validation bar of Table~\ref{tab:app:weighted} and is integrated into the corrected route-cost rebuild. The remaining omission is signed but narrower: linear and boosted families are still excluded, while 23 of 29 sampled composable-stable pools reduce to two real tokens after their own BPT is removed and remain a feasible extension once historical rate-provider state is recovered.
+% docs/venue-coverage-bounds.md, venue_volume_by_year.jsonl, 400 sampled days; docs/research-workflow.md, Balancer family audit
 
 \section{Block-level pricing and the triangle residual}
 \label{app:timing}

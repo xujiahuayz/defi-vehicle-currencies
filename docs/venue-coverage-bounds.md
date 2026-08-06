@@ -32,12 +32,12 @@ Every 7th calendar day from 2018-11-02 to 2026-06-30, 400 sampled days, shares w
 | uniswap_v3 | yes | `ddvc.pricing.v3quote`, tick-crossing on `sqrtPriceX96` and reconstructed ticks |
 | uniswap_v4 | yes | same quoter, same fields |
 | curve | yes, with an exclusion gate | `ddvc.pricing.stableswap`, A calibrated per pool-day, 0.022% median error, gate measured below |
-| balancer | quoter built, integration pending | `ddvc.pricing.weighted`, weighted geometric mean, 0.0000% median error on backward-rolled balances |
+| balancer | weighted family integrated into corrected rebuild | `ddvc.pricing.weighted`, weighted geometric mean, 0.0000% median error on backward-rolled balances; linear, boosted and unresolved composable-stable families remain excluded |
 | sushiswap_v3 | no, and should stay that way | ruled on below |
 
 Uniswap v1 sits outside the panel and is the laboratory of the forced-vehicle study rather than a route-cost venue. Its volume relative to the same base is 2.14% in 2020 and between 0.004% and 0.018% every year after, so nothing in the route-cost estimates turns on it.
 
-Two readings matter for the bound. Curve holds between 11% and 19% of panel volume in every year it existed and is the second largest venue in four of those seven years and never below fourth, so its internal exclusion gate is the single largest coverage question the panel has. Balancer at 3.9% pooled and 8.8% at its 2023 peak is the largest venue with no route-cost quotes yet, which makes its integration the largest outstanding coverage gain, and its quoter already clears the validation bar.
+Two readings matter for the bound. Curve holds between 11% and 19% of panel volume in every year it existed and is the second largest venue in four of those seven years and never below fourth, so its internal exclusion gate is the single largest coverage question the panel has. Balancer is 3.9% pooled and 8.8% at its 2023 peak. Its weighted family is integrated into the corrected rebuild; the live coverage gap is the linear, boosted and unresolved composable-stable families, not the whole venue.
 
 ## Curve's calibration gate, measured in volume rather than pools
 

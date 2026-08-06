@@ -160,6 +160,20 @@ def write_v4_support() -> None:
     support = measure_v4_support()
     if support.empty:
         raise RuntimeError("no v4 swaps available for support audit")
+    invalid = support[
+        support["year"].eq("ALL")
+        & support["status"].isin({"incomplete_statics", "invalid_statics"})
+    ]
+    invalid_swaps = int(invalid["swaps"].sum())
+    if invalid_swaps:
+        statuses = ", ".join(
+            f"{row.status}={int(row.swaps):,}"
+            for row in invalid.itertuples(index=False)
+        )
+        raise RuntimeError(
+            f"v4 support audit found {invalid_swaps:,} swaps with unusable statics: "
+            f"{statuses}"
+        )
     write_exhibit(support, V4_OUT, inputs=[V4_RAW])
     supported = support[(support["year"] == "ALL") & support["supported"]]
     swap_share = float(supported.iloc[0]["swap_share"]) if not supported.empty else 0.0

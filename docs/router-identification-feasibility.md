@@ -77,6 +77,20 @@ The new column is the key bound on the aggregator mechanism. Economic multi-leg 
 
 Routing complexity rises at the same time, particularly after 2024. Routes using more than two swap legs increase from 10.3% in 2020 to 39.4% in 2026; mean legs per economic multi-leg route rise from 2.12 to 3.23 and mean venues from 1.02 to 1.80. This is evidence that execution ceased to be a collection of siloed two-leg venue-local paths. It is not yet evidence that the extra complexity improved prices: leg count combines sequential hops with pool splitting, the venue universe expands mechanically, and an inefficient router can also use more legs. The realised-to-frontier test must show cost-gap compression within fixed reach and complexity cells before the paper calls the market more efficient.
 
+## Balanced-venue check: integration is real, the late acceleration is partly entry
+
+The full-sample rise is not allowed to stand on an expanding data perimeter. A second series keeps only complete routes whose every leg lies in the same five venue families observed throughout the V3 era: Uniswap V2, SushiSwap V2, Curve, Balancer and Uniswap V3. The table begins in 2022 so every row is a full calendar year.
+
+| year | cross-venue count share | cross-venue value share | routes with >2 legs | mean legs | mean venues | economic multi-leg routes |
+|---|---:|---:|---:|---:|---:|---:|
+| 2022 | 19.1% | 49.4% | 15.1% | 2.25 | 1.22 | 6,517,916 |
+| 2023 | 19.1% | 47.1% | 13.6% | 2.26 | 1.20 | 9,469,598 |
+| 2024 | 28.4% | 55.4% | 14.6% | 2.31 | 1.30 | 11,639,378 |
+| 2025 | 36.0% | 55.1% | 17.7% | 2.37 | 1.39 | 8,431,036 |
+| 2026 | 43.6% | 55.5% | 20.0% | 2.39 | 1.47 | 2,542,322 |
+
+The count result survives strongly inside a fixed perimeter, rising 24.5 percentage points from 2022 to 2026, as do smaller increases in route complexity and venue count. The value result does not have the same shape: it rises only 6.1 points over the four years and is essentially flat near 55% from 2024 onward. The headline 2026 levels of 60.6% by count, 89.4% by value and 39.4% above two legs therefore combine two facts: deeper integration among incumbent venues and the arrival of later venues, especially V4 and Fluid. The paper can call the market more integrated on counts. It cannot attribute the late value surge or full complexity surge to aggregator optimisation.
+
 ## Does the vehicle transition occur only on integrated routes?
 
 No. The full split uses canonical currency identity, collapsing native ETH and WETH so wrapping is not counted as intermediation, and contains 42,974,290 episodes. From 2024 to 2026, the stable episode share rises from 18.6% to 41.2% on single-venue routes and from 18.9% to 46.7% on cross-venue routes; the native share falls from 75.7% to 45.7% and from 60.7% to 33.7%. On equal-weighted daily stable shares within native-plus-stable episodes, the corresponding changes are +26.9 percentage points (Newey-West SE 1.8) and +33.3 points (SE 1.8), both p<0.001. The parallel movement rejects the simple composition account in which stable intermediation rises only because more transactions enter the cross-venue routing regime.
@@ -95,7 +109,7 @@ The route-level timing instrument now closes the narrower causal-order and amoun
 
 ## Market-maturation test locked before the panel rebuild
 
-The new hypothesis is not “aggregators made DEX efficient” as a single claim. It is a sequence of tests. First, document the expansion of the feasible routing set using venue count, cross-venue route share, hop count and route complexity. Second, estimate realised-to-same-vehicle and realised-to-best-path shortfalls within fixed endpoint, vehicle, observed-reach and notional cells, so changing composition cannot manufacture convergence. Third, ask whether conditional shortfalls compress over calendar time and whether that compression is larger on complex or cross-venue paths. Fourth, add relative search performance to the pair-candidate-period vehicle-succession specification and test whether the stable-numéraire transition remains. Executor addresses can support heterogeneity, but the label “aggregator effect” is withheld unless sender/origin coverage and quote authorship are audited: the executor contract is not necessarily the system that chose the route.
+The new hypothesis is not “aggregators made DEX efficient” as a single claim. It is a sequence of tests. First, document the expansion of the feasible routing set using venue count, cross-venue route share, hop count and route complexity, on both the full and balanced venue perimeters. Second, estimate realised-to-same-vehicle and realised-to-best-path shortfalls within fixed endpoint, vehicle, observed-reach and notional cells, so changing composition cannot manufacture convergence. Third, ask whether conditional shortfalls compress over calendar time and whether that compression is larger on complex or cross-venue paths. Fourth, add relative search performance to the pair-candidate-period vehicle-succession specification and test whether the stable-numéraire transition remains. Executor addresses can support heterogeneity, but the label “aggregator effect” is withheld unless sender/origin coverage and quote authorship are audited: the executor contract is not necessarily the system that chose the route.
 
 The smoke run also caught a panel-key defect before a full estimator could conceal it. Native ETH and WETH had been unified to one canonical address, but endpoint display symbols remained inside the grouping key. The assembled panel consequently contained 1,372,248 duplicated quote cells among 123,262,704 rows, always multiplicity two. Canonical addresses now determine the cell, ambiguous canonical endpoints are excluded, labels are attached afterward, and the matcher refuses duplicate cells.
 

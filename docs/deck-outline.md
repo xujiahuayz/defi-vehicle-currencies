@@ -321,8 +321,8 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 - Consecutive swaps in one pool give the pre-trade state
 - v3: median absolute error 0.0000%, 100% within 1%, all four direction-by-crossing cells
-- v4: 1,200 realised swaps, median absolute error 0.0000%, 100% within 1%, all four cells
-- v4 pools span fee tiers 0, 7, 100 and 500, so hook-driven fees price correctly
+- v4: 4,218 realised swaps on three dates, median absolute error 0.0000%, 100% within 1%, all four direction-by-crossing cells
+- supported v4 pools span static fee tiers 0, 7, 8, 100, 500, 10,000 and 20,000; hook-bearing and dynamic-fee pools are outside the vanilla-quoter contract and measured as excluded support
 
 **Visual.** `deck/appendix_tick_validation.svg`. A 2x2 small-multiple of error distributions, rows the swap direction and columns whether an initialized tick was crossed, each cell a box plot on a shared log x axis of absolute error in percent. The read is four cells at the same location, which is the point of splitting them.
 
@@ -593,7 +593,7 @@ The spine rebuild answered the two structural questions the previous version of 
 
 **5. Endpoint tokens canonicalised in the route-cost panel, which selects on the paper's own asset.** Pool token addresses pass through `canonical_token` with `unify_wrapped` set, so native ETH at the zero address resolves to WETH, while the endpoint `src` and `tgt` columns keep the raw address. Every panel row whose endpoint pair contains the zero address therefore has `direct_available` and `vehicle_available` both false, measured at 0.000 on every day inspected against 0.843 and 0.453 for other pairs on the same day. That is 6.3% of rows in 2025 and 12.6% in 2026, and it deletes exactly the pairs the native-asset question is about. Slide 8's coverage figures, slide 11's uncovered column and every survival result on a native-endpoint pair need the panel rebuilt with endpoints canonicalised on the same rule as pool tokens.
 
-**6. Uniswap v4 priced across its full 546 days.** Raw v4 files cover 2025-01-01 to 2026-06-30 and v4 legs entered the panel only from 2026-06-01. v4 is 22.1% of panel volume in 2025 and 34.2% in 2026 by the coverage measurement, so a survival result on 2025 or 2026 pairs priced without it is measuring a market with a third of its depth removed. The architectural arc on slide 5 ends on v4, and a floor audience will ask what v4 does to the survival curve first.
+**6. Uniswap v4 priced across its full observed history.** Exact-ID statics enrichment now covers all 523 raw calendar files from 2025-01-24 to 2026-06-30, including 522 positive-swap days. The vanilla static-fee quoter supports 84.0% of swaps and 99.0% of reported value pooled, and strict early/mid/late validation reproduces all 4,218 sampled realised swaps within 1%. v4 is 22.1% of panel volume in 2025 and 34.2% in 2026 by the coverage measurement, so a survival result on 2025 or 2026 pairs priced without it is measuring a market with a third of its depth removed. The architectural arc on slide 5 ends on v4, and a floor audience will ask what v4 does to the survival curve first.
 
 **7. Balancer's excluded pool families, with the exclusion's direction signed.** The weighted quoter is wired in and validated, and the families it declines are large on the days they trade: AaveLinear and ERC4626Linear reach 58.8% and 63.7% of a day's excluded Balancer volume, and ComposableStable reaches 83.3% on another. Those are stable-side families, so their exclusion runs opposite to the Curve gate's native-side exclusion, and the two have never been netted. Slide A20 signs the Curve gate year by year and states the panel's bound as one-directional, and slide 11's floor caveat rests on that statement. It is not currently safe, and it needs the Balancer exclusion measured on the same leg split before either ships.
 
