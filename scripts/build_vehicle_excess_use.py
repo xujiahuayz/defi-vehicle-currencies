@@ -118,7 +118,7 @@ def main() -> int:
         OUT_PANEL,
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
-        notes="cycles excluded; endpoints include direct and indirect clean routes",
+        notes="topology-valid cycles excluded; counts use full support; value fields retain all routes plus nested 2x and 20 percent source-intermediary-sink coherence bands",
     )
 
     panel["year"] = panel["date"].dt.year
@@ -187,9 +187,9 @@ def main() -> int:
         inputs=[OUT_PANEL],
     )
     print(f"\n{panel.date.nunique():,} days, {len(panel):,} token-days")
-    print("annual excess-use ratio by asset type, prespecified currencies only")
+    print("annual excess-use ratio by asset type, prespecified currencies only (20 percent value-coherence support)")
     table = type_year.pivot(
-        index="year", columns="asset_type", values="vehicle_excess_use_ratio"
+        index="year", columns="asset_type", values="vehicle_excess_use_ratio_within_20pct"
     )
     print(table.round(2).to_string())
     count_table = type_year.pivot(
@@ -198,9 +198,9 @@ def main() -> int:
     print("\ncount-weighted robustness")
     print(count_table.round(2).to_string())
     backing_table = backing_year.pivot(
-        index="year", columns="backing", values="vehicle_excess_use_ratio"
+        index="year", columns="backing", values="vehicle_excess_use_ratio_within_20pct"
     )
-    print("\nstable-backing robustness, value weighted")
+    print("\nstable-backing robustness, value weighted on 20 percent coherence support")
     print(backing_table.round(2).to_string())
     unsupported = panel[
         (panel["intermediate_share"] > 0) & (~panel["endpoint_supported"])

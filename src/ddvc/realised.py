@@ -10,7 +10,7 @@ import pandas as pd
 from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR
 from ddvc.prices import PRICE_COLUMNS, day_prices
-from ddvc.route_roles import component_eligibility, role_token_values
+from ddvc.route_roles import component_eligibility, component_value_support, role_token_values
 
 ROUTE_COLUMNS = [
     "tx_hash",
@@ -101,7 +101,11 @@ def _normalise_search_costs(panel: pd.DataFrame) -> pd.DataFrame:
     return costs
 
 
-def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
+def extract_realised_routes(
+    legs: pd.DataFrame,
+    *,
+    require_positive_value: bool = True,
+) -> pd.DataFrame:
     """Return one row per coherent route-intermediary, preserving transaction identity."""
     missing = sorted(set(ROUTE_COLUMNS) - set(legs.columns))
     if missing:
@@ -135,6 +139,15 @@ def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
     components = components.merge(
         eligibility.eligible, on=component_keys, how="inner"
     ).drop(columns=["source_tokens", "sink_tokens"])
+    components = components.merge(
+        component_value_support(
+            d,
+            keys=component_keys,
+            token_roles=eligibility.token_roles,
+        ),
+        on=component_keys,
+        how="inner",
+    )
     vehicles = role_token_values(
         d,
         "intermediate",
@@ -143,7 +156,8 @@ def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
     ).rename(
         columns={"token": "vehicle", "amount_usd": "usd"}
     )
-    vehicles = vehicles[vehicles["usd"].gt(0)]
+    if require_positive_value:
+        vehicles = vehicles[vehicles["usd"].gt(0)]
     out = components.merge(vehicles, on=component_keys, how="inner")
     out = out[out["vehicle"].ne(out["src"]) & out["vehicle"].ne(out["tgt"])]
     if out.empty:
@@ -179,18 +193,31 @@ def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
             "legs",
             "venues",
             "cross_venue",
+            "source_usd",
+            "sink_usd",
+            "endpoint_value_ratio",
+            "value_ratio_min",
+            "value_ratio_max",
+            "within_2x",
+            "within_20pct",
         ]
     ]
 
 
 def realised_routes(
-    day: str, unified_dir: Path = DATA_DIR / "unified"
+    day: str,
+    unified_dir: Path = DATA_DIR / "unified",
+    *,
+    require_positive_value: bool = True,
 ) -> pd.DataFrame:
     """Load a UTC day and return its coherent non-cyclic vehicle routes."""
     path = unified_dir / f"{day}.parquet"
     if not path.exists():
         return pd.DataFrame()
-    out = extract_realised_routes(pd.read_parquet(path, columns=ROUTE_COLUMNS))
+    out = extract_realised_routes(
+        pd.read_parquet(path, columns=ROUTE_COLUMNS),
+        require_positive_value=require_positive_value,
+    )
     if not out.empty:
         out.insert(0, "day", day)
     return out

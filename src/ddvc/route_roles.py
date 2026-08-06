@@ -11,6 +11,12 @@ import pandas as pd
 
 
 ROUTE_KEYS = ("tx_hash", "component_id")
+VALUE_SUPPORT_BANDS = {
+    "within_2x": (0.5, 2.0),
+    "within_20pct": (0.8, 1.2),
+}
+VALUE_SUPPORT_COLUMNS = tuple(VALUE_SUPPORT_BANDS)
+VALUE_SUPPORT_SCOPES = ("all_routes", *VALUE_SUPPORT_COLUMNS)
 
 
 @dataclass(frozen=True)
@@ -94,6 +100,35 @@ def _cyclic_components(
     return pd.DataFrame(rows, columns=keys)
 
 
+def token_flow_values(
+    legs: pd.DataFrame,
+    *,
+    keys: Sequence[str] = ROUTE_KEYS,
+    token_roles: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Sum input- and output-side dollars for every component-token."""
+    key_columns = list(keys)
+    required = set(key_columns + ["token_in", "token_out", "amount_usd"])
+    missing = sorted(required - set(legs.columns))
+    if missing:
+        raise ValueError(f"route-token flows are missing columns: {', '.join(missing)}")
+    roles = token_roles if token_roles is not None else topological_token_roles(legs, keys=key_columns)
+    input_side = legs[key_columns + ["token_in", "amount_usd"]].rename(
+        columns={"token_in": "token", "amount_usd": "input_side_usd"}
+    )
+    output_side = legs[key_columns + ["token_out", "amount_usd"]].rename(
+        columns={"token_out": "token", "amount_usd": "output_side_usd"}
+    )
+    flows = pd.concat([input_side, output_side], ignore_index=True)
+    for column in ("input_side_usd", "output_side_usd"):
+        flows[column] = pd.to_numeric(flows[column], errors="coerce")
+    flows = flows.groupby(key_columns + ["token"], as_index=False).agg(
+        input_side_usd=("input_side_usd", "sum"),
+        output_side_usd=("output_side_usd", "sum"),
+    )
+    return flows.merge(roles, on=key_columns + ["token"], how="inner")
+
+
 def role_token_values(
     legs: pd.DataFrame,
     role: str,
@@ -106,38 +141,80 @@ def role_token_values(
     A sequential route records an intermediary on both adjacent legs, while a split route can record it on several incoming and outgoing legs. Summing either side and then averaging the two flow directions counts the routed value once in both cases. Source and sink values are their net component flows after topology fixes their economic roles.
     """
     key_columns = list(keys)
-    required = set(key_columns + ["token_in", "token_out", "amount_usd"])
-    missing = sorted(required - set(legs.columns))
-    if missing:
-        raise ValueError(f"route-role values are missing columns: {', '.join(missing)}")
     if role not in {"source", "sink", "intermediate"}:
         raise ValueError(f"unsupported route role: {role}")
-    roles = token_roles if token_roles is not None else topological_token_roles(legs, keys=key_columns)
-    selected_tokens = roles.loc[roles["role"].eq(role), key_columns + ["token"]]
-    rows = []
-    for side in ("in", "out"):
-        token_column = f"token_{side}"
-        value_column = f"{side}_usd"
-        selected = legs[key_columns + [token_column, "amount_usd"]].rename(
-            columns={token_column: "token", "amount_usd": value_column}
-        ).merge(selected_tokens, on=key_columns + ["token"], how="inner")
-        selected[value_column] = pd.to_numeric(selected[value_column], errors="coerce")
-        rows.append(selected)
-    combined = pd.concat(rows, ignore_index=True)
-    if combined.empty:
+    values = token_flow_values(legs, keys=key_columns, token_roles=token_roles)
+    values = values[values["role"].eq(role)].copy()
+    if values.empty:
         return pd.DataFrame(columns=[*key_columns, "token", "amount_usd"])
-    combined = combined.dropna(subset=["token"])
-    values = combined.groupby(key_columns + ["token"], as_index=False).agg(
-        in_usd=("in_usd", "sum"),
-        out_usd=("out_usd", "sum"),
-    )
     if role == "source":
-        values["amount_usd"] = values["in_usd"] - values["out_usd"]
+        values["amount_usd"] = values["input_side_usd"] - values["output_side_usd"]
     elif role == "sink":
-        values["amount_usd"] = values["out_usd"] - values["in_usd"]
+        values["amount_usd"] = values["output_side_usd"] - values["input_side_usd"]
     elif role == "intermediate":
-        values["amount_usd"] = (values["in_usd"] + values["out_usd"]) / 2
+        values["amount_usd"] = (values["input_side_usd"] + values["output_side_usd"]) / 2
     return values[key_columns + ["token", "amount_usd"]]
+
+
+def component_value_support(
+    legs: pd.DataFrame,
+    *,
+    keys: Sequence[str] = ROUTE_KEYS,
+    token_roles: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Audit dollar-flow coherence without letting dollars define route identity.
+
+    Source-to-sink value must reconcile, and every intermediary's total outgoing
+    value must reconcile with its total incoming value. Summing by token before
+    testing preserves valid split and join routes. The nested bands match the
+    project's transaction-size support convention.
+    """
+    key_columns = list(keys)
+    flows = token_flow_values(legs, keys=key_columns, token_roles=token_roles)
+    sources = flows[flows["role"].eq("source")].groupby(key_columns, as_index=False).agg(
+        source_usd=("input_side_usd", "sum")
+    )
+    sinks = flows[flows["role"].eq("sink")].groupby(key_columns, as_index=False).agg(
+        sink_usd=("output_side_usd", "sum")
+    )
+    out = sources.merge(sinks, on=key_columns, how="inner")
+    intermediates = flows[flows["role"].eq("intermediate")].copy()
+    intermediates["value_ratio"] = (
+        intermediates["input_side_usd"] / intermediates["output_side_usd"]
+    )
+    intermediates["value_positive"] = (
+        intermediates["input_side_usd"].gt(0)
+        & intermediates["output_side_usd"].gt(0)
+    )
+    intermediate_bounds = intermediates.groupby(key_columns, as_index=False).agg(
+        intermediate_ratio_min=("value_ratio", "min"),
+        intermediate_ratio_max=("value_ratio", "max"),
+        intermediate_values_positive=("value_positive", "all"),
+    )
+    out = out.merge(intermediate_bounds, on=key_columns, how="left")
+    out[["intermediate_ratio_min", "intermediate_ratio_max"]] = out[
+        ["intermediate_ratio_min", "intermediate_ratio_max"]
+    ].fillna(1.0)
+    out["intermediate_values_positive"] = out[
+        "intermediate_values_positive"
+    ].fillna(True).astype(bool)
+    out["endpoint_value_ratio"] = out["sink_usd"] / out["source_usd"]
+    out["value_ratio_min"] = out[
+        ["endpoint_value_ratio", "intermediate_ratio_min"]
+    ].min(axis=1)
+    out["value_ratio_max"] = out[
+        ["endpoint_value_ratio", "intermediate_ratio_max"]
+    ].max(axis=1)
+    positive = out["source_usd"].gt(0) & out["sink_usd"].gt(0)
+    for label, (lower, upper) in VALUE_SUPPORT_BANDS.items():
+        out[label] = (
+            positive
+            & out["intermediate_values_positive"]
+            & out["value_ratio_min"].ge(lower)
+            & out["value_ratio_max"].le(upper)
+        )
+    out["amount_usd"] = (out["source_usd"] + out["sink_usd"]) / 2
+    return out
 
 
 def component_notional(
@@ -148,19 +225,9 @@ def component_notional(
 ) -> pd.DataFrame:
     """Return one component notional as the mean of total source and sink flow."""
     key_columns = list(keys)
-    sources = role_token_values(
-        legs, "source", keys=key_columns, token_roles=token_roles
-    ).groupby(
-        key_columns, as_index=False
-    )["amount_usd"].sum().rename(columns={"amount_usd": "source_usd"})
-    sinks = role_token_values(
-        legs, "sink", keys=key_columns, token_roles=token_roles
-    ).groupby(
-        key_columns, as_index=False
-    )["amount_usd"].sum().rename(columns={"amount_usd": "sink_usd"})
-    out = sources.merge(sinks, on=key_columns, how="inner")
-    out["amount_usd"] = (out["source_usd"] + out["sink_usd"]) / 2
-    return out[key_columns + ["amount_usd"]]
+    return component_value_support(
+        legs, keys=key_columns, token_roles=token_roles
+    )[key_columns + ["amount_usd"]]
 
 
 def component_endpoints(

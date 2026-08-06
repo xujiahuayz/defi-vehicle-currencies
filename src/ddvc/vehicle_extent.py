@@ -16,7 +16,12 @@ import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import canonical_token, classify
-from ddvc.route_roles import component_eligibility, role_token_values
+from ddvc.route_roles import (
+    VALUE_SUPPORT_COLUMNS,
+    component_eligibility,
+    component_value_support,
+    role_token_values,
+)
 
 CLEAN_ROUTE_CLASSES = ("single", "coherent")
 KEYS = ["tx_hash", "component_id"]
@@ -51,13 +56,19 @@ def aggregate_vehicle_extent(
     period_keys: list[str],
 ) -> pd.DataFrame:
     """Aggregate raw extent numerators before constructing period-specific shares."""
-    out = frame.groupby(keys, as_index=False).agg(
-        intermediate_usd=("intermediate_usd", "sum"),
-        endpoint_usd=("endpoint_usd", "sum"),
-        intermediate_routes=("intermediate_routes", "sum"),
-        endpoint_routes=("endpoint_routes", "sum"),
-        days=("date", "nunique"),
-    )
+    aggregations: dict[str, tuple[str, str]] = {
+        "intermediate_usd": ("intermediate_usd", "sum"),
+        "endpoint_usd": ("endpoint_usd", "sum"),
+        "intermediate_routes": ("intermediate_routes", "sum"),
+        "endpoint_routes": ("endpoint_routes", "sum"),
+        "days": ("date", "nunique"),
+    }
+    for support in VALUE_SUPPORT_COLUMNS:
+        for role in ("intermediate", "endpoint"):
+            column = f"{role}_usd_{support}"
+            if column in frame:
+                aggregations[column] = (column, "sum")
+    out = frame.groupby(keys, as_index=False).agg(**aggregations)
     by_period = out.groupby(period_keys)
     out["intermediate_share"] = (
         out["intermediate_usd"] / by_period["intermediate_usd"].transform("sum")
@@ -69,6 +80,25 @@ def aggregate_vehicle_extent(
         out["intermediate_share"]
         / out["endpoint_share"].where(out["endpoint_share"].gt(0))
     )
+    for support in VALUE_SUPPORT_COLUMNS:
+        intermediate_column = f"intermediate_usd_{support}"
+        endpoint_column = f"endpoint_usd_{support}"
+        if intermediate_column not in out or endpoint_column not in out:
+            continue
+        intermediate_share = f"intermediate_share_{support}"
+        endpoint_share = f"endpoint_share_{support}"
+        out[intermediate_share] = (
+            out[intermediate_column]
+            / by_period[intermediate_column].transform("sum")
+        )
+        out[endpoint_share] = (
+            out[endpoint_column]
+            / by_period[endpoint_column].transform("sum")
+        )
+        out[f"vehicle_excess_use_ratio_{support}"] = (
+            out[intermediate_share]
+            / out[endpoint_share].where(out[endpoint_share].gt(0))
+        )
     out["intermediate_count_share"] = (
         out["intermediate_routes"]
         / by_period["intermediate_routes"].transform("sum")
@@ -90,10 +120,10 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
     if missing:
         raise ValueError(f"vehicle extent is missing columns: {', '.join(missing)}")
     d = legs.loc[
-        legs["route_class"].isin(CLEAN_ROUTE_CLASSES)
-        & pd.to_numeric(legs["amount_usd"], errors="coerce").gt(0),
+        legs["route_class"].isin(CLEAN_ROUTE_CLASSES),
         REQUIRED_COLUMNS,
     ].copy()
+    d["amount_usd"] = pd.to_numeric(d["amount_usd"], errors="coerce")
     if d.empty:
         return pd.DataFrame()
     d["token_in"] = d["token_in"].map(lambda value: canonical_token(value) or "")
@@ -107,6 +137,9 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
     if eligible.empty:
         return pd.DataFrame()
     d = d.merge(eligible[KEYS], on=KEYS, how="inner")
+    value_support = component_value_support(
+        d, keys=KEYS, token_roles=eligibility.token_roles
+    )
     sources = role_token_values(
         d, "source", keys=KEYS, token_roles=eligibility.token_roles
     )
@@ -128,10 +161,16 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
         intermediate["token"].ne(intermediate["src"])
         & intermediate["token"].ne(intermediate["tgt"])
     ].drop(columns=["src", "tgt"])
+    intermediate = intermediate.merge(
+        value_support[KEYS + list(VALUE_SUPPORT_COLUMNS)], on=KEYS, how="inner"
+    )
     endpoints = pd.concat([sources, sinks], ignore_index=True)
     endpoints = (
         endpoints.groupby(KEYS + ["token"], as_index=False)["amount_usd"].mean()
         if not endpoints.empty else endpoints
+    )
+    endpoints = endpoints.merge(
+        value_support[KEYS + list(VALUE_SUPPORT_COLUMNS)], on=KEYS, how="inner"
     )
 
     iv = intermediate.groupby("token")["amount_usd"].sum() if not intermediate.empty else pd.Series(dtype=float)
@@ -146,6 +185,25 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
         "intermediate_routes": ic.reindex(tokens, fill_value=0).to_numpy(dtype="int64"),
         "endpoint_routes": ec.reindex(tokens, fill_value=0).to_numpy(dtype="int64"),
     })
+    for support in VALUE_SUPPORT_COLUMNS:
+        supported_intermediate = intermediate[intermediate[support]]
+        supported_endpoints = endpoints[endpoints[support]]
+        supported_iv = (
+            supported_intermediate.groupby("token")["amount_usd"].sum()
+            if not supported_intermediate.empty
+            else pd.Series(dtype=float)
+        )
+        supported_ev = (
+            supported_endpoints.groupby("token")["amount_usd"].sum()
+            if not supported_endpoints.empty
+            else pd.Series(dtype=float)
+        )
+        out[f"intermediate_usd_{support}"] = supported_iv.reindex(
+            tokens, fill_value=0.0
+        ).to_numpy()
+        out[f"endpoint_usd_{support}"] = supported_ev.reindex(
+            tokens, fill_value=0.0
+        ).to_numpy()
     total_i = float(out["intermediate_usd"].sum())
     total_e = float(out["endpoint_usd"].sum())
     total_ic = int(out["intermediate_routes"].sum())

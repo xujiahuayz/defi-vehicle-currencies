@@ -27,6 +27,7 @@ def leg(
     tin_role: str,
     tout_role: str,
     log_index: int,
+    usd: float = 100.0,
 ) -> dict[str, object]:
     return {
         "tx_hash": tx,
@@ -34,7 +35,7 @@ def leg(
         "source": source,
         "token_in": token_in,
         "token_out": token_out,
-        "amount_usd": 100.0,
+        "amount_usd": usd,
         "log_index": log_index,
         "route_class": "coherent",
         "tin_role": tin_role,
@@ -44,6 +45,38 @@ def leg(
 
 
 class IntermediationByTypeTests(unittest.TestCase):
+    def test_route_counts_do_not_depend_on_usd_price_support(self) -> None:
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "20250101.parquet"
+            pd.DataFrame(
+                [
+                    leg(
+                        "missing",
+                        "v2",
+                        "A",
+                        USDC,
+                        "source",
+                        "intermediate",
+                        0,
+                        float("nan"),
+                    ),
+                    leg(
+                        "missing",
+                        "v3",
+                        USDC,
+                        "B",
+                        "intermediate",
+                        "sink",
+                        1,
+                        float("nan"),
+                    ),
+                ]
+            ).to_parquet(path, index=False)
+            result = one_day(path)
+        self.assertEqual(result["cnt_stable"], 1)
+        self.assertEqual(result["usd_stable"], 0.0)
+        self.assertEqual(result["usd_within_2x_stable"], 0.0)
+
     def test_route_type_composition_is_split_by_cross_venue_status(self) -> None:
         rows = [
             leg("native", "v2", "A", WETH, "source", "intermediate", 0),
@@ -89,6 +122,22 @@ class IntermediationByTypeTests(unittest.TestCase):
             result = one_day(path)
         self.assertEqual(result["cnt_single_venue_two_leg_stable"], 1)
         self.assertEqual(result["cnt_cross_venue_more_than_two_legs_stable"], 1)
+
+    def test_value_composition_keeps_raw_and_nested_coherence_support(self) -> None:
+        rows = [
+            leg("good", "v2", "A", USDC, "source", "intermediate", 0, 100.0),
+            leg("good", "v3", USDC, "B", "intermediate", "sink", 1, 95.0),
+            leg("bad", "v2", "A", USDC, "source", "intermediate", 0, 100.0),
+            leg("bad", "v3", USDC, "B", "intermediate", "sink", 1, 20.0),
+        ]
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "20250101.parquet"
+            pd.DataFrame(rows).to_parquet(path, index=False)
+            result = one_day(path)
+        self.assertEqual(result["cnt_stable"], 2)
+        self.assertEqual(result["usd_stable"], 157.5)
+        self.assertEqual(result["usd_within_2x_stable"], 97.5)
+        self.assertEqual(result["usd_within_20pct_stable"], 97.5)
 
     def test_integration_rival_keeps_count_and_value_results_separate(self) -> None:
         rows = []

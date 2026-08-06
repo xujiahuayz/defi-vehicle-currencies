@@ -23,12 +23,14 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "date": pd.date_range("2021-01-01", periods=5, freq="D"),
                 "economic_routes": [20, 20, 999, 20, 20],
                 "economic_multileg_routes": [10, 10, 999, 5, 5],
+                "intermediated_routes": [10, 10, 999, 5, 5],
                 "economic_multileg_swap_legs": [20, 20, 999, 15, 15],
                 "economic_multileg_venue_count": [10, 20, 999, 10, 10],
                 "economic_multileg_over_two_routes": [0, 0, 999, 5, 5],
                 "cross_venue_routes": [0, 10, 999, 5, 5],
                 "balanced_economic_routes": [20, 20, 999, 20, 20],
                 "balanced_economic_multileg_routes": [10, 10, 999, 5, 5],
+                "balanced_intermediated_routes": [10, 10, 999, 5, 5],
                 "balanced_economic_multileg_swap_legs": [20, 20, 999, 15, 15],
                 "balanced_economic_multileg_venue_count": [10, 20, 999, 10, 10],
                 "balanced_economic_multileg_over_two_routes": [0, 0, 999, 5, 5],
@@ -56,9 +58,13 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "economic_routes": [10, 10, 10, 10],
                 "economic_multileg_routes": [4, 6, 2, 2],
                 "economic_multileg_share": [0.4, 0.6, 0.2, 0.2],
+                "intermediated_routes": [4, 6, 2, 2],
+                "intermediated_share": [0.4, 0.6, 0.2, 0.2],
                 "balanced_economic_routes": [10, 10, 8, 8],
                 "balanced_economic_multileg_routes": [4, 6, 1, 1],
                 "balanced_economic_multileg_share": [0.4, 0.6, 0.125, 0.125],
+                "balanced_intermediated_routes": [4, 6, 1, 1],
+                "balanced_intermediated_share": [0.4, 0.6, 0.125, 0.125],
             }
         )
         result = routing_incidence_change_tests(panel, hac_lag=0).set_index("scope")
@@ -122,7 +128,64 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
         self.assertEqual(result["economic_multileg_mean_legs"], 2.0)
         self.assertEqual(result["economic_multileg_mean_venues"], 2.0)
         self.assertEqual(result["cross_venue_routes"], 1)
+        self.assertEqual(result["intermediated_routes"], 1)
+        self.assertEqual(result["direct_split_routes"], 0)
         self.assertEqual(result["round_trip_routes"], 0)
+
+    def test_parallel_direct_pool_split_is_not_indirect_intermediation(self) -> None:
+        rows = [
+            {
+                "tx_hash": "split",
+                "component_id": 0,
+                "source": source,
+                "amount_usd": amount,
+                "route_class": "coherent",
+                "token_in": "A",
+                "token_out": "B",
+                "tin_role": "source",
+                "tout_role": "sink",
+                "log_index": index,
+            }
+            for index, (source, amount) in enumerate((("v2", 60.0), ("v3", 40.0)))
+        ]
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "20250101.parquet"
+            pd.DataFrame(rows).to_parquet(path, index=False)
+            result = one_day(path)
+        assert result is not None
+        self.assertEqual(result["economic_multileg_routes"], 1)
+        self.assertEqual(result["direct_split_routes"], 1)
+        self.assertEqual(result["intermediated_routes"], 0)
+        self.assertEqual(result["cross_venue_routes"], 0)
+        self.assertEqual(result["cross_venue_share_unfiltered"], 1.0)
+
+    def test_value_shares_report_nested_flow_coherence_support(self) -> None:
+        rows = [
+            {
+                "tx_hash": "mismatch",
+                "component_id": 0,
+                "source": source,
+                "amount_usd": amount,
+                "route_class": "coherent",
+                "token_in": token_in,
+                "token_out": token_out,
+                "tin_role": "source" if index == 0 else "intermediate",
+                "tout_role": "intermediate" if index == 0 else "sink",
+                "log_index": index,
+            }
+            for index, (source, amount, token_in, token_out) in enumerate(
+                (("v2", 100.0, "A", "K"), ("v3", 50.0, "K", "B"))
+            )
+        ]
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "20250101.parquet"
+            pd.DataFrame(rows).to_parquet(path, index=False)
+            result = one_day(path)
+        assert result is not None
+        self.assertEqual(result["intermediated_usd"], 75.0)
+        self.assertEqual(result["intermediated_usd_within_2x"], 75.0)
+        self.assertEqual(result["intermediated_usd_within_20pct"], 0.0)
+        self.assertTrue(pd.isna(result["cross_venue_usd_share_within_20pct"]))
 
     def test_round_trip_is_excluded_from_headline_but_retained_as_diagnostic(self) -> None:
         rows = [

@@ -2,7 +2,8 @@
 """Full-panel daily series of route composition across the consolidated venue layer.
 
 Answers one descriptive question on every day of the sample: of the routes that
-pass through an intermediary at all, what share span more than one venue?
+pass through an intermediary at all, what share span more than one venue? Direct
+pool splits are measured separately instead of being mislabeled as indirect routes.
 
 The same measures are also reported for a balanced five-venue perimeter observed
 throughout the V3 era. That series excludes any route touching a later entrant, so
@@ -18,10 +19,11 @@ can be stated with a full series behind it.
 Definitions used here, narrow by design so nothing depends on the
 still-open vehicle-asset definitions:
   route       one reconstructed input-to-output path, keyed (tx_hash, component_id)
-  multi-leg   a route whose legs number more than one
-  cross-venue a multi-leg route whose legs touch more than one `source`
-  economic    a multi-leg route whose first input token differs from its last
-              output token
+  multi-leg    a route whose legs number more than one, including pool splits
+  intermediated a topology-valid route with at least one internal token
+  direct split a multi-leg route with no internal token
+  cross-venue  an intermediated route whose legs touch more than one `source`
+  economic     a topology-valid route with distinct source and sink currencies
 
 WHY THE ECONOMIC FILTER EXISTS. A route that starts and ends in the same token
 (A -> K -> A) moves no value between two parties: it is atomic arbitrage or wash
@@ -65,7 +67,11 @@ import pandas as pd
 from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
 from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
-from ddvc.route_roles import component_eligibility, component_notional
+from ddvc.route_roles import (
+    VALUE_SUPPORT_SCOPES,
+    component_eligibility,
+    component_value_support,
+)
 from ddvc.runtime import exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 
@@ -125,6 +131,12 @@ def empty_day(date: object) -> dict[str, object]:
         "economic_routes": 0,
         "economic_multileg_routes": 0,
         "economic_multileg_share": float("nan"),
+        "intermediated_routes": 0,
+        "intermediated_share": float("nan"),
+        "direct_split_routes": 0,
+        "direct_split_share": float("nan"),
+        "pure_sequential_routes": 0,
+        "mixed_indirect_routes": 0,
         "economic_multileg_swap_legs": 0,
         "economic_multileg_venue_count": 0,
         "economic_multileg_over_two_routes": 0,
@@ -138,6 +150,12 @@ def empty_day(date: object) -> dict[str, object]:
         "balanced_economic_routes": 0,
         "balanced_economic_multileg_routes": 0,
         "balanced_economic_multileg_share": float("nan"),
+        "balanced_intermediated_routes": 0,
+        "balanced_intermediated_share": float("nan"),
+        "balanced_direct_split_routes": 0,
+        "balanced_direct_split_share": float("nan"),
+        "balanced_pure_sequential_routes": 0,
+        "balanced_mixed_indirect_routes": 0,
         "balanced_economic_multileg_swap_legs": 0,
         "balanced_economic_multileg_venue_count": 0,
         "balanced_economic_multileg_over_two_routes": 0,
@@ -147,17 +165,31 @@ def empty_day(date: object) -> dict[str, object]:
         "balanced_cross_venue_routes": 0,
         "balanced_cross_venue_share": float("nan"),
         "balanced_cross_venue_usd_share": float("nan"),
+        "balanced_cross_venue_usd_share_within_2x": float("nan"),
+        "balanced_cross_venue_usd_share_within_20pct": float("nan"),
+        "balanced_intermediated_usd": 0.0,
+        "balanced_intermediated_usd_within_2x": 0.0,
+        "balanced_intermediated_usd_within_20pct": 0.0,
         "balanced_economic_multileg_usd": 0.0,
         "balanced_cross_venue_usd": 0.0,
+        "balanced_cross_venue_usd_within_2x": 0.0,
+        "balanced_cross_venue_usd_within_20pct": 0.0,
         "cross_venue_routes": 0,
         "cross_venue_share": float("nan"),
         "cross_venue_usd_share": float("nan"),
+        "cross_venue_usd_share_within_2x": float("nan"),
+        "cross_venue_usd_share_within_20pct": float("nan"),
         "cross_venue_share_unfiltered": float("nan"),
         "cross_venue_usd_share_unfiltered": float("nan"),
         "round_trip_share_of_multileg": float("nan"),
         "round_trip_usd_share_of_multileg": float("nan"),
         "economic_multileg_usd": 0.0,
+        "intermediated_usd": 0.0,
+        "intermediated_usd_within_2x": 0.0,
+        "intermediated_usd_within_20pct": 0.0,
         "cross_venue_usd": 0.0,
+        "cross_venue_usd_within_2x": 0.0,
+        "cross_venue_usd_within_20pct": 0.0,
         "total_usd": 0.0,
         "venues_active": 0,
     }
@@ -185,9 +217,18 @@ def one_day(path: Path) -> dict | None:
     balanced = g["_balanced_venue"].all()
     diagnostic_usd = g["amount_usd"].max()
     eligibility = component_eligibility(df, keys=keys)
-    route_usd = component_notional(
+    value_support = component_value_support(
         df, keys=keys, token_roles=eligibility.token_roles
-    ).set_index(keys)["amount_usd"].reindex(legs.index)
+    ).set_index(keys).reindex(legs.index)
+    route_usd = value_support["amount_usd"]
+    supported = {
+        support: (
+            pd.Series(True, index=legs.index)
+            if support == "all_routes"
+            else value_support[support].fillna(False).astype(bool)
+        )
+        for support in VALUE_SUPPORT_SCOPES
+    }
     eligible_index = pd.MultiIndex.from_frame(eligibility.eligible[keys])
     cyclic_index = pd.MultiIndex.from_frame(eligibility.cyclic[keys])
     ambiguous_index = pd.MultiIndex.from_frame(eligibility.ambiguous[keys])
@@ -196,13 +237,27 @@ def one_day(path: Path) -> dict | None:
     economic_route = pd.Series(legs.index.isin(eligible_index), index=legs.index)
     round_trip = multi & pd.Series(legs.index.isin(cyclic_index), index=legs.index)
     ambiguous = pd.Series(legs.index.isin(ambiguous_index), index=legs.index)
+    intermediary_counts = (
+        eligibility.token_roles[eligibility.token_roles["role"].eq("intermediate")]
+        .groupby(keys)
+        .size()
+        .reindex(legs.index, fill_value=0)
+    )
     econ = multi & economic_route
     cross_all = multi & (venues > 1)
-    cross = econ & (venues > 1)
+    intermediated = economic_route & intermediary_counts.gt(0)
+    direct_split = econ & ~intermediated
+    pure_sequential = intermediated & legs.eq(intermediary_counts + 1)
+    mixed_indirect = intermediated & ~pure_sequential
+    cross = intermediated & (venues > 1)
     complex_route = econ & (legs > 2)
     balanced_econ = econ & balanced
     balanced_economic_route = economic_route & balanced
-    balanced_cross = balanced_econ & (venues > 1)
+    balanced_intermediated = intermediated & balanced
+    balanced_direct_split = direct_split & balanced
+    balanced_pure_sequential = pure_sequential & balanced
+    balanced_mixed_indirect = mixed_indirect & balanced
+    balanced_cross = balanced_intermediated & (venues > 1)
     balanced_complex = balanced_econ & (legs > 2)
 
     def share(num, den):
@@ -213,7 +268,7 @@ def one_day(path: Path) -> dict | None:
         d = weights[den].sum()
         return float(weights[num].sum() / d) if d else float("nan")
 
-    return {
+    result = {
         "date": pd.to_datetime(path.stem, format="%Y%m%d"),
         "legs": int(len(df)),
         "routes": int(len(legs)),
@@ -224,6 +279,12 @@ def one_day(path: Path) -> dict | None:
         "economic_routes": int(economic_route.sum()),
         "economic_multileg_routes": int(econ.sum()),
         "economic_multileg_share": share(econ, economic_route),
+        "intermediated_routes": int(intermediated.sum()),
+        "intermediated_share": share(intermediated, economic_route),
+        "direct_split_routes": int(direct_split.sum()),
+        "direct_split_share": share(direct_split, economic_route),
+        "pure_sequential_routes": int(pure_sequential.sum()),
+        "mixed_indirect_routes": int(mixed_indirect.sum()),
         "economic_multileg_swap_legs": int(legs[econ].sum()),
         "economic_multileg_venue_count": int(venues[econ].sum()),
         "economic_multileg_over_two_routes": int(complex_route.sum()),
@@ -239,6 +300,16 @@ def one_day(path: Path) -> dict | None:
         "balanced_economic_multileg_share": share(
             balanced_econ, balanced_economic_route
         ),
+        "balanced_intermediated_routes": int(balanced_intermediated.sum()),
+        "balanced_intermediated_share": share(
+            balanced_intermediated, balanced_economic_route
+        ),
+        "balanced_direct_split_routes": int(balanced_direct_split.sum()),
+        "balanced_direct_split_share": share(
+            balanced_direct_split, balanced_economic_route
+        ),
+        "balanced_pure_sequential_routes": int(balanced_pure_sequential.sum()),
+        "balanced_mixed_indirect_routes": int(balanced_mixed_indirect.sum()),
         "balanced_economic_multileg_swap_legs": int(legs[balanced_econ].sum()),
         "balanced_economic_multileg_venue_count": int(venues[balanced_econ].sum()),
         "balanced_economic_multileg_over_two_routes": int(balanced_complex.sum()),
@@ -248,14 +319,12 @@ def one_day(path: Path) -> dict | None:
             balanced_complex, balanced_econ
         ),
         "balanced_cross_venue_routes": int(balanced_cross.sum()),
-        "balanced_cross_venue_share": share(balanced_cross, balanced_econ),
-        "balanced_cross_venue_usd_share": ushare(balanced_cross, balanced_econ, route_usd),
+        "balanced_cross_venue_share": share(
+            balanced_cross, balanced_intermediated
+        ),
         "balanced_economic_multileg_usd": float(route_usd[balanced_econ].sum()),
-        "balanced_cross_venue_usd": float(route_usd[balanced_cross].sum()),
         "cross_venue_routes": int(cross.sum()),
-        # headline: of ECONOMIC intermediated routes, what share spans venues
-        "cross_venue_share": share(cross, econ),
-        "cross_venue_usd_share": ushare(cross, econ, route_usd),
+        "cross_venue_share": share(cross, intermediated),
         # audit trail: the same statistic WITHOUT the economic filter, so the
         # contamination is visible in the panel rather than only in a comment
         "cross_venue_share_unfiltered": share(cross_all, multi),
@@ -263,10 +332,33 @@ def one_day(path: Path) -> dict | None:
         "round_trip_share_of_multileg": share(round_trip, multi),
         "round_trip_usd_share_of_multileg": ushare(round_trip, multi, diagnostic_usd),
         "economic_multileg_usd": float(route_usd[econ].sum()),
-        "cross_venue_usd": float(route_usd[cross].sum()),
         "total_usd": float(diagnostic_usd.sum()),
         "venues_active": int(df["source"].nunique()),
     }
+    for support in VALUE_SUPPORT_SCOPES:
+        suffix = "" if support == "all_routes" else f"_{support}"
+        support_mask = supported[support]
+        result[f"intermediated_usd{suffix}"] = float(
+            route_usd[intermediated & support_mask].sum()
+        )
+        result[f"cross_venue_usd{suffix}"] = float(
+            route_usd[cross & support_mask].sum()
+        )
+        result[f"cross_venue_usd_share{suffix}"] = ushare(
+            cross & support_mask, intermediated & support_mask, route_usd
+        )
+        result[f"balanced_intermediated_usd{suffix}"] = float(
+            route_usd[balanced_intermediated & support_mask].sum()
+        )
+        result[f"balanced_cross_venue_usd{suffix}"] = float(
+            route_usd[balanced_cross & support_mask].sum()
+        )
+        result[f"balanced_cross_venue_usd_share{suffix}"] = ushare(
+            balanced_cross & support_mask,
+            balanced_intermediated & support_mask,
+            route_usd,
+        )
+    return result
 
 
 def routing_incidence_change_tests(
@@ -303,15 +395,15 @@ def routing_incidence_change_tests(
         )
         if denominator <= 0:
             return None
-        numerator = yearly_sum("economic_multileg_routes", year) - yearly_sum(
-            "balanced_economic_multileg_routes", year
+        numerator = yearly_sum("intermediated_routes", year) - yearly_sum(
+            "balanced_intermediated_routes", year
         )
         return numerator / denominator
 
     rows: list[dict[str, object]] = []
     for scope, prefix in (("full", ""), ("balanced", "balanced_")):
-        share_column = f"{prefix}economic_multileg_share"
-        numerator_column = f"{prefix}economic_multileg_routes"
+        share_column = f"{prefix}intermediated_share"
+        numerator_column = f"{prefix}intermediated_routes"
         denominator_column = f"{prefix}economic_routes"
         sample = data[["year", share_column]].dropna()
         estimate = year_endpoint_change(
@@ -389,6 +481,9 @@ def routing_technology_windows(
         for period, start, end in periods:
             selected = data[data["date"].between(start, end)]
             for scope, prefix in (("full", ""), ("balanced", "balanced_")):
+                intermediated = float(
+                    selected[f"{prefix}intermediated_routes"].sum()
+                )
                 economic_multileg = float(
                     selected[f"{prefix}economic_multileg_routes"].sum()
                 )
@@ -406,11 +501,13 @@ def routing_technology_windows(
                         "window_end": end,
                         "calendar_days": len(selected),
                         "scope": scope,
+                        "intermediated_routes": int(intermediated),
                         "economic_multileg_routes": int(economic_multileg),
                         "cross_venue_share": ratio(
                             float(selected[f"{prefix}cross_venue_routes"].sum()),
-                            economic_multileg,
+                            intermediated,
                         ),
+                        "intermediated_share": ratio(intermediated, economic_routes),
                         "economic_multileg_share": ratio(
                             economic_multileg,
                             economic_routes,
@@ -490,7 +587,7 @@ def main() -> int:
         OUT_PARQUET,
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
-        notes="clean single/coherent routes only; round trips retained as diagnostics",
+        notes="topology-valid routes; indirect incidence requires an intermediary; direct pool splits are separate; values report all, 2x and 20 percent flow-coherence bands",
     )
     write_exhibit(
         df,
@@ -520,18 +617,24 @@ def main() -> int:
     print("\nannual ratios of totals (count-weighted, then value-weighted):")
     a = df.set_index("date").resample("YS").agg(
         econ=("economic_multileg_routes", "sum"),
+        intermed=("intermediated_routes", "sum"),
+        direct_split=("direct_split_routes", "sum"),
         econ_legs=("economic_multileg_swap_legs", "sum"),
         econ_venues=("economic_multileg_venue_count", "sum"),
         complex_routes=("economic_multileg_over_two_routes", "sum"),
         cross=("cross_venue_routes", "sum"),
         cross_usd=("cross_venue_usd", "sum"),
-        econ_usd=("economic_multileg_usd", "sum"),
+        cross_usd_20=("cross_venue_usd_within_20pct", "sum"),
+        intermed_usd=("intermediated_usd", "sum"),
+        intermed_usd_20=("intermediated_usd_within_20pct", "sum"),
         round_trip=("round_trip_routes", "sum"),
         multi=("multi_leg_routes", "sum"),
         routes=("routes", "sum"),
         economic_routes=("economic_routes", "sum"),
         venues_active=("venues_active", "max"),
         balanced_econ=("balanced_economic_multileg_routes", "sum"),
+        balanced_intermed=("balanced_intermediated_routes", "sum"),
+        balanced_direct_split=("balanced_direct_split_routes", "sum"),
         balanced_routes=("balanced_routes", "sum"),
         balanced_economic_routes=("balanced_economic_routes", "sum"),
         balanced_econ_legs=("balanced_economic_multileg_swap_legs", "sum"),
@@ -539,41 +642,50 @@ def main() -> int:
         balanced_complex_routes=("balanced_economic_multileg_over_two_routes", "sum"),
         balanced_cross=("balanced_cross_venue_routes", "sum"),
         balanced_cross_usd=("balanced_cross_venue_usd", "sum"),
-        balanced_econ_usd=("balanced_economic_multileg_usd", "sum"),
+        balanced_cross_usd_20=("balanced_cross_venue_usd_within_20pct", "sum"),
+        balanced_intermed_usd=("balanced_intermediated_usd", "sum"),
+        balanced_intermed_usd_20=("balanced_intermediated_usd_within_20pct", "sum"),
     )
-    a["cross_venue_share_of_multileg"] = a["cross"] / a["econ"]
-    a["cross_venue_usd_share"] = a["cross_usd"] / a["econ_usd"]
+    a["cross_venue_share_of_intermed"] = a["cross"] / a["intermed"]
+    a["cross_venue_usd_share"] = a["cross_usd"] / a["intermed_usd"]
+    a["cross_venue_usd_share_20"] = a["cross_usd_20"] / a["intermed_usd_20"]
     a["round_trip_share"] = a["round_trip"] / a["multi"]
     a["economic_multileg_share"] = a["econ"] / a["economic_routes"]
+    a["intermediated_share"] = a["intermed"] / a["economic_routes"]
+    a["direct_split_share"] = a["direct_split"] / a["economic_routes"]
     a["mean_legs"] = a["econ_legs"] / a["econ"]
     a["mean_venues"] = a["econ_venues"] / a["econ"]
     a["complex_share"] = a["complex_routes"] / a["econ"]
-    print("  year   count   value   multi/all   >2 legs   mean legs   mean venues   rt share   venues")
+    print("  year   cross count   cross value20   indirect/all   split/all   >2 legs   mean legs   mean venues   rt share   venues")
     for idx, row in a.iterrows():
-        print(f"  {idx.year}   {row.cross_venue_share_of_multileg:6.1%}"
-              f"  {row.cross_venue_usd_share:6.1%}"
-              f"     {row.economic_multileg_share:6.1%}"
+        print(f"  {idx.year}        {row.cross_venue_share_of_intermed:6.1%}"
+              f"          {row.cross_venue_usd_share_20:6.1%}"
+              f"          {row.intermediated_share:6.1%}"
+              f"      {row.direct_split_share:6.1%}"
               f"     {row.complex_share:6.1%}"
               f"        {row.mean_legs:5.2f}"
               f"          {row.mean_venues:5.2f}"
               f"     {row.round_trip_share:6.1%}"
               f"        {int(row.venues_active)}")
-    a["balanced_cross_share"] = a["balanced_cross"] / a["balanced_econ"]
-    a["balanced_cross_usd_share"] = a["balanced_cross_usd"] / a["balanced_econ_usd"]
+    a["balanced_cross_share"] = a["balanced_cross"] / a["balanced_intermed"]
+    a["balanced_cross_usd_share_20"] = a["balanced_cross_usd_20"] / a["balanced_intermed_usd_20"]
     a["balanced_economic_multileg_share"] = a["balanced_econ"] / a["balanced_economic_routes"]
+    a["balanced_intermediated_share"] = a["balanced_intermed"] / a["balanced_economic_routes"]
+    a["balanced_direct_split_share"] = a["balanced_direct_split"] / a["balanced_economic_routes"]
     a["balanced_complex_share"] = a["balanced_complex_routes"] / a["balanced_econ"]
     a["balanced_mean_legs"] = a["balanced_econ_legs"] / a["balanced_econ"]
     a["balanced_mean_venues"] = a["balanced_econ_venues"] / a["balanced_econ"]
     print("\nbalanced five-venue ratios (same perimeter throughout the V3 era):")
-    print("  year   count   value   multi/all   >2 legs   mean legs   mean venues   routes")
+    print("  year   cross count   cross value20   indirect/all   split/all   >2 legs   mean legs   mean venues   routes")
     for idx, row in a[a.index >= "2021-05-04"].iterrows():
-        print(f"  {idx.year}   {row.balanced_cross_share:6.1%}"
-              f"  {row.balanced_cross_usd_share:6.1%}"
-              f"     {row.balanced_economic_multileg_share:6.1%}"
+        print(f"  {idx.year}        {row.balanced_cross_share:6.1%}"
+              f"          {row.balanced_cross_usd_share_20:6.1%}"
+              f"          {row.balanced_intermediated_share:6.1%}"
+              f"      {row.balanced_direct_split_share:6.1%}"
               f"    {row.balanced_complex_share:6.1%}"
               f"        {row.balanced_mean_legs:5.2f}"
               f"          {row.balanced_mean_venues:5.2f}"
-              f"   {int(row.balanced_econ):>10,}")
+              f"   {int(row.balanced_intermed):>10,}")
     print("\nrouting-technology release windows (full market, descriptive):")
     print(
         technology_windows.loc[
@@ -582,6 +694,7 @@ def main() -> int:
                 "event",
                 "period",
                 "cross_venue_share",
+                "intermediated_share",
                 "economic_multileg_share",
                 "over_two_legs_share",
                 "mean_legs",

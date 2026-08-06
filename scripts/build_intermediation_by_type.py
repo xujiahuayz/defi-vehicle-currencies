@@ -26,6 +26,7 @@ import pandas as pd
 from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
 from ddvc.asset_types import TYPES, classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.route_roles import VALUE_SUPPORT_SCOPES
 from ddvc.realised import realised_routes
 from ddvc.runtime import exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
@@ -55,6 +56,10 @@ COMPLEXITY_SCOPES = (
     "single_venue_more_than_two_legs",
     "cross_venue_more_than_two_legs",
 )
+def value_field(asset_type: str, *, scope: str = "all", support: str = "all_routes") -> str:
+    scope_prefix = "" if scope == "all" else f"{scope}_"
+    support_prefix = "usd_" if support == "all_routes" else f"usd_{support}_"
+    return f"{support_prefix}{scope_prefix}{asset_type}"
 
 
 def bounded_workers(requested: int) -> int:
@@ -69,19 +74,26 @@ def empty_day(day: str) -> dict[str, object]:
     }
     for asset_type in TYPES:
         out[f"cnt_{asset_type}"] = 0
-        out[f"usd_{asset_type}"] = 0.0
+        for support in VALUE_SUPPORT_SCOPES:
+            out[value_field(asset_type, support=support)] = 0.0
         for scope in INTEGRATION_SCOPES:
             out[f"cnt_{scope}_{asset_type}"] = 0
-            out[f"usd_{scope}_{asset_type}"] = 0.0
+            for support in VALUE_SUPPORT_SCOPES:
+                out[value_field(asset_type, scope=scope, support=support)] = 0.0
         for scope in COMPLEXITY_SCOPES:
             out[f"cnt_{scope}_{asset_type}"] = 0
-            out[f"usd_{scope}_{asset_type}"] = 0.0
+            for support in VALUE_SUPPORT_SCOPES:
+                out[value_field(asset_type, scope=scope, support=support)] = 0.0
     return out
 
 
 def one_day(path: Path) -> dict[str, object]:
     try:
-        routes = realised_routes(path.stem, path.parent)
+        routes = realised_routes(
+            path.stem,
+            path.parent,
+            require_positive_value=False,
+        )
     except Exception as exc:
         return {"date": path.stem, "error": f"{type(exc).__name__}: {exc}"[:160]}
     if routes.empty:
@@ -107,26 +119,42 @@ def one_day(path: Path) -> dict[str, object]:
     for asset_type in TYPES:
         selected = routes[routes["asset_type"].eq(asset_type)]
         out[f"cnt_{asset_type}"] = int(len(selected))
-        out[f"usd_{asset_type}"] = float(selected["usd"].sum())
+        for support in VALUE_SUPPORT_SCOPES:
+            supported = selected if support == "all_routes" else selected[selected[support]]
+            out[value_field(asset_type, support=support)] = float(supported["usd"].sum())
         for scope in INTEGRATION_SCOPES:
             cell = selected[selected["integration_scope"].eq(scope)]
             out[f"cnt_{scope}_{asset_type}"] = int(len(cell))
-            out[f"usd_{scope}_{asset_type}"] = float(cell["usd"].sum())
+            for support in VALUE_SUPPORT_SCOPES:
+                supported = cell if support == "all_routes" else cell[cell[support]]
+                out[value_field(asset_type, scope=scope, support=support)] = float(
+                    supported["usd"].sum()
+                )
         for complexity_scope in ("two_leg", "more_than_two_legs"):
             complexity_cell = selected[
                 selected["complexity_scope"].eq(complexity_scope)
             ]
             out[f"cnt_{complexity_scope}_{asset_type}"] = int(len(complexity_cell))
-            out[f"usd_{complexity_scope}_{asset_type}"] = float(
-                complexity_cell["usd"].sum()
-            )
+            for support in VALUE_SUPPORT_SCOPES:
+                supported = (
+                    complexity_cell
+                    if support == "all_routes"
+                    else complexity_cell[complexity_cell[support]]
+                )
+                out[value_field(asset_type, scope=complexity_scope, support=support)] = float(
+                    supported["usd"].sum()
+                )
             for integration_scope in INTEGRATION_SCOPES:
                 scope = f"{integration_scope}_{complexity_scope}"
                 cell = complexity_cell[
                     complexity_cell["integration_scope"].eq(integration_scope)
                 ]
                 out[f"cnt_{scope}_{asset_type}"] = int(len(cell))
-                out[f"usd_{scope}_{asset_type}"] = float(cell["usd"].sum())
+                for support in VALUE_SUPPORT_SCOPES:
+                    supported = cell if support == "all_routes" else cell[cell[support]]
+                    out[value_field(asset_type, scope=scope, support=support)] = float(
+                        supported["usd"].sum()
+                    )
     for symbol, count in routes["symbol"].dropna().value_counts().items():
         out[f"cnt_{symbol}"] = int(count)
     return out
@@ -135,11 +163,7 @@ def one_day(path: Path) -> dict[str, object]:
 def annual_composition(panel: pd.DataFrame) -> pd.DataFrame:
     data = panel.copy()
     data["year"] = pd.to_datetime(data["date"]).dt.year
-    columns = [
-        column
-        for column in data.columns
-        if column.startswith("cnt_") or column.startswith("usd_")
-    ]
+    columns = [column for column in data.columns if column.startswith("cnt_") or column.startswith("usd_")]
     annual = data.groupby("year", as_index=False)[columns].sum()
     rows: list[dict[str, object]] = []
     for observed in annual.itertuples(index=False):
@@ -148,26 +172,29 @@ def annual_composition(panel: pd.DataFrame) -> pd.DataFrame:
                 asset_type: f"cnt_{asset_type}" if scope == "all" else f"cnt_{scope}_{asset_type}"
                 for asset_type in TYPES
             }
-            value_columns = {
-                asset_type: f"usd_{asset_type}" if scope == "all" else f"usd_{scope}_{asset_type}"
-                for asset_type in TYPES
-            }
             count_total = sum(float(getattr(observed, column)) for column in count_columns.values())
-            value_total = sum(float(getattr(observed, column)) for column in value_columns.values())
             for asset_type in TYPES:
                 count = float(getattr(observed, count_columns[asset_type]))
-                value = float(getattr(observed, value_columns[asset_type]))
-                rows.append(
-                    {
-                        "year": int(observed.year),
-                        "integration_scope": scope,
-                        "asset_type": asset_type,
-                        "episodes": int(count),
-                        "episode_share": count / count_total if count_total else None,
-                        "usd": value,
-                        "usd_share": value / value_total if value_total else None,
+                row = {
+                    "year": int(observed.year),
+                    "integration_scope": scope,
+                    "asset_type": asset_type,
+                    "episodes": int(count),
+                    "episode_share": count / count_total if count_total else None,
+                }
+                for support in VALUE_SUPPORT_SCOPES:
+                    value_columns = {
+                        candidate: value_field(candidate, scope=scope, support=support)
+                        for candidate in TYPES
                     }
-                )
+                    value_total = sum(
+                        float(getattr(observed, column)) for column in value_columns.values()
+                    )
+                    value = float(getattr(observed, value_columns[asset_type]))
+                    suffix = "" if support == "all_routes" else f"_{support}"
+                    row[f"usd{suffix}"] = value
+                    row[f"usd_share{suffix}"] = value / value_total if value_total else None
+                rows.append(row)
     return pd.DataFrame(rows)
 
 
@@ -196,14 +223,24 @@ def _stable_share_change_tests(
     if baseline_year not in years or comparison_year not in years:
         raise ValueError("route-regime rival requires both comparison endpoint years")
     rows: list[dict[str, object]] = []
-    for weighting, column_prefix in (("episode", "cnt_"), ("value", "usd_")):
+    estimands = [
+        ("episode", "all_routes", "cnt_"),
+        ("value", "all_routes", "usd_"),
+        ("value", "within_2x", "usd_within_2x_"),
+        ("value", "within_20pct", "usd_within_20pct_"),
+    ]
+    for weighting, value_support, column_prefix in estimands:
         for scope in scopes:
             scope_prefix = "" if scope == "all" else f"{scope}_"
+            stable_column = f"{column_prefix}{scope_prefix}stable"
+            native_column = f"{column_prefix}{scope_prefix}native"
+            if stable_column not in data or native_column not in data:
+                continue
             stable = pd.to_numeric(
-                data[f"{column_prefix}{scope_prefix}stable"], errors="coerce"
+                data[stable_column], errors="coerce"
             )
             native = pd.to_numeric(
-                data[f"{column_prefix}{scope_prefix}native"], errors="coerce"
+                data[native_column], errors="coerce"
             )
             denominator = stable + native
             sample = data[["year"]].copy()
@@ -220,6 +257,7 @@ def _stable_share_change_tests(
                 {
                     scope_field: scope,
                     "weighting": weighting,
+                    "value_support": value_support,
                     "baseline_year": baseline_year,
                     "comparison_year": comparison_year,
                     "baseline_daily_mean": estimate.baseline_mean,
@@ -342,7 +380,7 @@ def main() -> int:
         OUT_PARQUET,
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
-        notes="clean coherent non-cyclic realised routes; one episode per intermediary",
+        notes="topology-valid non-cyclic routes; counts use full topology support; values report all, 2x and 20 percent source-intermediary-sink coherence bands",
     )
     write_exhibit(
         annual,
@@ -385,6 +423,7 @@ def main() -> int:
                 [
                     "integration_scope",
                     "weighting",
+                    "value_support",
                     "baseline_daily_mean",
                     "comparison_daily_mean",
                     "change",
@@ -399,6 +438,7 @@ def main() -> int:
             [
                 "routing_scope",
                 "weighting",
+                "value_support",
                 "baseline_daily_mean",
                 "comparison_daily_mean",
                 "change",

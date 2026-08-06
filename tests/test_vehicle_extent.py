@@ -41,6 +41,16 @@ def leg(
 
 
 class VehicleExtentTests(unittest.TestCase):
+    def test_route_counts_do_not_depend_on_usd_price_support(self) -> None:
+        rows = [
+            leg("missing", 0, "a", "k", "source", "intermediate", float("nan")),
+            leg("missing", 0, "k", "b", "intermediate", "sink", float("nan")),
+        ]
+        out = compute_vehicle_extent(pd.DataFrame(rows)).set_index("token")
+        self.assertEqual(out.loc["k", "intermediate_routes"], 1)
+        self.assertEqual(out.loc["k", "intermediate_usd"], 0.0)
+        self.assertEqual(out.loc["k", "intermediate_usd_within_2x"], 0.0)
+
     def test_vehicle_extent_workers_are_bounded(self) -> None:
         self.assertEqual(bounded_workers(0), 1)
         self.assertEqual(bounded_workers(4), 4)
@@ -142,7 +152,23 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertAlmostEqual(extent.loc["a", "endpoint_usd"], 100.0)
         self.assertAlmostEqual(extent.loc["b", "endpoint_usd"], 99.0)
         self.assertAlmostEqual(extent.loc["k", "intermediate_usd"], 99.5)
+        self.assertAlmostEqual(extent.loc["k", "intermediate_usd_within_20pct"], 99.5)
         self.assertAlmostEqual(realised.loc["k", "usd"], 99.5)
+
+    def test_value_incoherence_is_quarantined_without_removing_route_counts(self) -> None:
+        rows = [
+            leg("broken", 0, "a", "k", "source", "intermediate", 100, log_index=0),
+            leg("broken", 0, "k", "m", "intermediate", "intermediate", 1_000, log_index=1),
+            leg("broken", 0, "m", "b", "intermediate", "sink", 100, log_index=2),
+            leg("direct", 0, "a", "b", "source", "sink", 100, "single", log_index=0),
+        ]
+        out = compute_vehicle_extent(pd.DataFrame(rows)).set_index("token")
+        self.assertEqual(out.loc["k", "intermediate_routes"], 1)
+        self.assertEqual(out.loc["m", "intermediate_routes"], 1)
+        self.assertAlmostEqual(out.loc["k", "intermediate_usd"], 550.0)
+        self.assertEqual(out.loc["k", "intermediate_usd_within_2x"], 0.0)
+        self.assertEqual(out.loc["m", "intermediate_usd_within_20pct"], 0.0)
+        self.assertAlmostEqual(out.loc["a", "endpoint_usd_within_20pct"], 100.0)
 
     def test_branched_dag_is_economic_not_cyclic(self) -> None:
         rows = [
