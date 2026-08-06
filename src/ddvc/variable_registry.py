@@ -662,13 +662,14 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$\mathrm{IShare}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}"
-            r"{\sum_{j}\mathrm{IVol}_{j,t}}$"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}\mathrm{IVol}_{j,t}}$"
         ),
         unit="Fraction (0--1)",
         construction=(
             r"Token $k$'s share of clean, non-cyclic route value carried as an "
             r"intermediary; a repeated appearance of $k$ inside one reconstructed "
-            r"component is counted once."
+            r"component is counted once. Primary shares use the prespecified currency "
+            r"types and exclude the residual unclassified-contract bucket."
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
         used_for="Numerator of the primary vehicle-extent measure.",
@@ -681,13 +682,13 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         notation=r"$\mathrm{EShare}_{k,t}$",
         formula=(
             r"$\displaystyle\frac{\mathrm{EVol}_{k,t}}"
-            r"{\sum_{j}\mathrm{EVol}_{j,t}}$"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}\mathrm{EVol}_{j,t}}$"
         ),
         unit="Fraction (0--1)",
         construction=(
             r"Token $k$'s share of source-or-sink value across all clean, non-cyclic "
             r"routes, including direct routes so the benchmark does not condition "
-            r"on intermediation."
+            r"on intermediation. Primary shares use the same prespecified currency types."
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
         used_for="Fundamental endpoint-demand benchmark for vehicle extent.",

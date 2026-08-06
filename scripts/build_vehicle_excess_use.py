@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from ddvc.provenance import stamp  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
 from ddvc.vehicle_extent import REQUIRED_COLUMNS, compute_vehicle_extent  # noqa: E402
+from ddvc.asset_types import CURRENCY_TYPES  # noqa: E402
 
 UNIFIED = ROOT / "data" / "unified"
 OUT_PANEL = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
@@ -59,6 +60,12 @@ def _aggregate(frame: pd.DataFrame, keys: list[str], level: str) -> pd.DataFrame
         / out["endpoint_share"].where(out["endpoint_share"].gt(0))
     )
     out.insert(0, "level", level)
+    return out
+
+
+def _scope(frame: pd.DataFrame, scope: str) -> pd.DataFrame:
+    out = frame.copy()
+    out.insert(0, "scope", scope)
     return out
 
 
@@ -108,15 +115,28 @@ def main() -> int:
     tmp.replace(OUT_PANEL)
 
     panel["year"] = panel["date"].dt.year
-    type_year = _aggregate(panel, ["year", "asset_type"], "asset_type")
-    token_year = _aggregate(
-        panel, ["year", "token", "symbol", "asset_type"], "token"
+    candidate = panel[panel["asset_type"].isin(CURRENCY_TYPES)]
+    type_year = _scope(
+        _aggregate(candidate, ["year", "asset_type"], "asset_type"),
+        "candidate_currencies",
+    )
+    token_year = _scope(
+        _aggregate(
+            candidate, ["year", "token", "symbol", "asset_type"], "token"
+        ),
+        "candidate_currencies",
     )
     token_year = token_year[
         token_year["endpoint_share"].ge(0.001)
         | token_year["intermediate_share"].ge(0.001)
     ]
-    exhibit = pd.concat([type_year, token_year], ignore_index=True, sort=False)
+    all_asset_type_year = _scope(
+        _aggregate(panel, ["year", "asset_type"], "asset_type"),
+        "all_assets_diagnostic",
+    )
+    exhibit = pd.concat(
+        [type_year, token_year, all_asset_type_year], ignore_index=True, sort=False
+    )
     write_exhibit(exhibit, OUT_EXHIBIT)
     stamp(
         OUT_PANEL,
@@ -133,7 +153,7 @@ def main() -> int:
     )
 
     print(f"\n{panel.date.nunique():,} days, {len(panel):,} token-days")
-    print("annual excess-use ratio by asset type")
+    print("annual excess-use ratio by asset type, prespecified currencies only")
     table = type_year.pivot(
         index="year", columns="asset_type", values="vehicle_excess_use_ratio"
     )

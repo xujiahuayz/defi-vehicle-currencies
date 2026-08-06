@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from ddvc.asset_types import WETH
+from ddvc.asset_types import CURRENCY_TYPES, WETH
 from ddvc.vehicle_extent import compute_vehicle_extent
 
 
@@ -35,6 +35,12 @@ def leg(
 
 
 class VehicleExtentTests(unittest.TestCase):
+    def test_primary_currency_types_exclude_only_the_residual_bucket(self) -> None:
+        self.assertEqual(
+            CURRENCY_TYPES,
+            ("native", "staked_native", "stable", "imported"),
+        )
+
     def test_direct_routes_enter_endpoint_demand_but_not_intermediation(self) -> None:
         rows = [
             leg("indirect", 0, "a", "k", "source", "intermediate", 100),

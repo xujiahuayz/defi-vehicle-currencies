@@ -136,6 +136,9 @@ IMPORTED = {
 }
 
 TYPES = ("native", "staked_native", "stable", "imported", "other")
+# Primary currency-role results exclude the residual `other` bucket. It contains every
+# unclassified contract and therefore is not a prespecified economic candidate set.
+CURRENCY_TYPES = tuple(t for t in TYPES if t != "other")
 
 _LOOKUP: dict[str, tuple[str, str]] = {}
 for _m, _t in ((NATIVE, "native"), (STAKED_NATIVE, "staked_native"),
