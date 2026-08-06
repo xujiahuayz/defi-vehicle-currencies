@@ -48,6 +48,6 @@ A vehicle currency is an asset that lies on the paths between other assets, so b
 
 **Sampled days and sampled sources.** Centrality is computed on every 120th day with k=150 source nodes, so year-level figures rest on a handful of graphs each.
 
-**Round trips are excluded** from the volume basis, since a route whose first input equals its last output moved no value, and leaving them in inverted an earlier result in this project at 25.6% of multi-leg routes by count and 90.5% by value.
+**Round trips are excluded** from the volume basis, since a route whose first input equals its last output moved no value, and leaving them in inverted an earlier result in this project. They run 12.7% of multi-leg routes by count and 21.7% by value on the median of 79 sampled days, reaching 25.9% and 91.3% on 2025-12-06, the worst.
 
 **No causal claim.** This is a description of how the role's concentration evolved. Nothing here identifies why, and the architectural events that plausibly drive it are the subject of the cross-venue spillover work.

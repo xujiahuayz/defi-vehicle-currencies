@@ -7,8 +7,12 @@ route priced at the SAME reconstructed state sits inside one block, where there 
 settlement latency, no short-sale constraint and no capital control. Makarov and Schoar
 devote a full section of a JFE paper to explaining why their 15-to-40% Korean premium
 survived, naming exactly those frictions, and none of them exists here. This repository's
-own round-trip statistic, 25.6% of multi-leg routes by count and 90.5% by value, shows
-the arbitrage capacity is present. So a median same-state gap of -2,459 basis points is
+own round-trip statistic, a median day at 12.7% of multi-leg routes by count and 21.7% by
+value across 79 sampled days, shows the arbitrage capacity is present, and it is present
+in every sampled day rather than in an episode: the minimum day still runs 4.5% by count.
+An earlier version of this docstring quoted 25.6% and 90.5% here, which are real but are
+the single most extreme day in the sample and were carrying far more rhetorical weight
+than the corpus supports. So a median same-state gap of -2,459 basis points is
 more likely to be quoter error off-support than an economic fact, and the quoter is
 validated on swaps that happened while being applied to 123.8 million that did not.
 

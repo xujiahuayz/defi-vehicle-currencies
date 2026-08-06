@@ -149,7 +149,7 @@ Mukhin 2022 supplies the succession object in the same shape. His Figure 3, "Tra
 
 ## 5. What counts as a route
 
-**Current definition.** A reconstructed multi-leg path within one transaction, one coherent component being one route unit regardless of leg count, with round trips excluded at 25.6% of multi-leg routes by count and 90.5% by value on the inspected day.
+**Current definition.** A reconstructed multi-leg path within one transaction, one coherent component being one route unit regardless of leg count, with round trips excluded at 12.7% of multi-leg routes by count and 21.7% by value on the median of 79 sampled days, 25.9% and 91.3% on 2025-12-06, the worst.
 
 **What the literature does.** The exclusion of round trips is the best-supported definition in this file. Heimbach, Pahari and Schertenleib 2024 name cyclic arbitrage as one of the three canonical MEV types, "the most commonly observed and measured types of MEV on Ethereum are sandwich attacks, cyclic arbitrage, and liquidations", and treat it as extraction and not as user trading throughout. Daian et al 2020 establish the same category. A route whose first input equals its last output is a member of that category and not a payment.
 

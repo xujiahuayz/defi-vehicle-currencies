@@ -52,8 +52,10 @@ choice changes the answer:
   better measure of the vehicle role, which is about how often traders route through an
   asset and not how much value they move. It is also the more robust of the two here,
   because this project has already been inverted once by value weighting: round-trip wash
-  trades were 25.6% of multi-leg routes by COUNT and 90.5% by VALUE, so contamination
-  concentrates precisely where volume weighting puts its weight. A single large transfer
+  trades run 12.7% of multi-leg routes by COUNT against 21.7% by VALUE on the median day,
+  and on the worst day observed 25.9% against 91.3%, so contamination concentrates
+  precisely where volume weighting puts its weight, and its dispersion across days is far
+  wider on value than on count. A single large transfer
   can make a pair look like a highway; a thousand small ones mean it is one.
 
   COST-WEIGHTED. Edges carry the measured execution cost of the pair, so a shortest path

@@ -32,8 +32,8 @@ contrast is clean within each measure.
 
 Count matters on its own terms here. The vehicle role is about how often traders route
 through an asset and not how much value they move, and value weighting is where this data
-is most contaminated, since round trips were 25.6% of multi-leg routes by count and 90.5%
-by value. A single large transfer can make an asset look central; a thousand small ones
+is most contaminated, since round trips run 12.7% of multi-leg routes by count against
+21.7% by value on the median day, and reach 25.9% against 91.3% on the worst day observed. A single large transfer can make an asset look central; a thousand small ones
 mean it is.
 
 Reads   data/unified/YYYYMMDD.parquet

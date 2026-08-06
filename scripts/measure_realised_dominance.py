@@ -16,8 +16,9 @@ state the FX literature cannot observe: the incumbent was used while strictly wo
 
 Round trips are excluded, since a route whose first input equals its last output is
 atomic arbitrage or a wash trade and moved no value, and this project has already been
-inverted once by leaving them in, where they were 25.6% of multi-leg routes by count and
-90.5% by value.
+inverted once by leaving them in, where on 2025-12-06 they reached 25.6% of multi-leg
+routes by count and 90.5% by value. That day is the most extreme of 79 sampled; the median
+day runs 12.7% by count and 21.7% by value.
 
 Reads   data/unified/YYYYMMDD.parquet          realised routes
         data/empirical/route_cost_panel_v2.parquet   counterfactual costs

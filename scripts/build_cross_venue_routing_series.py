@@ -21,8 +21,10 @@ still-open vehicle-asset definitions:
 
 WHY THE ECONOMIC FILTER EXISTS. A route that starts and ends in the same token
 (A -> K -> A) moves no value between two parties: it is atomic arbitrage or wash
-trading. Measured on 2025-12-06, such round trips were 25.6% of multi-leg routes
-by count and 90.5% by dollar value, and including them drove the cross-venue
+trading. On 2025-12-06 such round trips were 25.6% of multi-leg routes by count
+and 90.5% by dollar value, which is the most extreme day of 79 sampled across the
+corpus, where the median day runs 12.7% by count and 21.7% by value and no other
+sampled day exceeds 81.8% by value. That single day drove the cross-venue
 value share to 9.6% while the count share sat at 60.6%. Excluding them puts the
 value share at 88.8%. So the entire apparent 2025-Q4 reversal in the
 value-weighted series was round-trip flow in the denominator. One contributing

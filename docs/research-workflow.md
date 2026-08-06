@@ -143,7 +143,7 @@ Non-negotiable, because getting these wrong invalidates everything above. Adopt 
 - **Transaction-time state.** Transactions earlier in a block move reserves and ticks; report the wedge if daily state is used anywhere.
 - **Sign the venue exclusions.** Under full-venue logic an omitted venue mechanically flatters whichever route depends on covered venues, so state the direction of the bias as well as its share.
 - **Endogeneity, answered where it can be.** Whether an asset becomes the vehicle because costs are low or costs are low because vehicle liquidity accumulated is answered by cost-dominance windows and cross-venue spillover. The cross-aggregator cross-section cannot answer it, since a snapshot of routers contains no variation in incumbency holding cost fixed.
-- **Wash and arbitrage screens before any regression.** Round-trip exclusion is already implemented and mandatory: round trips ran 25.6% of multi-leg routes by count and 90.5% by value on the day inspected. The turnover-spike and volume-spike screens, arbitrage-cycle detection and organic-versus-MEV decomposition in the reference repo's `ddc.integrity` still need applying on top.
+- **Wash and arbitrage screens before any regression.** Round-trip exclusion is already implemented and mandatory: round trips run 12.7% of multi-leg routes by count and 21.7% by value on the median of 79 sampled days, reaching 25.9% and 91.3% on 2025-12-06, the worst. The turnover-spike and volume-spike screens, arbitrage-cycle detection and organic-versus-MEV decomposition in the reference repo's `ddc.integrity` still need applying on top.
 
 ### 4.3 Verification gaps to close before the framing locks
 

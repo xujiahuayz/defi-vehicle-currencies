@@ -454,7 +454,7 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 ### A19. Screens applied before any estimate [BUILDABLE]
 
-- Round-trip exclusion mandatory: 25.6% of multi-leg routes by count, 90.5% by value on the day inspected
+- Round-trip exclusion mandatory: median day 12.7% of multi-leg routes by count, 21.7% by value, reaching 25.9% and 91.3% on 2025-12-06, the most extreme day observed
 - Support screen on each leg's own price impact at 5%, removing 70% to 86% of quotable routes
 - Mispriced tokens filtered: absolute gap at most 10,000 bps, notional $100 to $50m, keeping 99.0%
 - Notional band removes 36.9% of pair-days, correlates with the outcome, and its selection is measured on A18 at 13 times the median trade size
