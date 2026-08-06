@@ -59,9 +59,28 @@ What does move the flip rate is the fee wedge, and this is the result of the exe
 \[
 m^{w}_{a,k,b} \;=\; m_{a,k,b} - w, \qquad w \;=\; f_{ak} + f_{kb} - f_{ab},
 \]
-and displacing the verdict boundary by $w$ carries it out of the region where the residual oscillates. At a net wedge of 30 basis points, the fee difference between a two-leg route on two 30-basis-point pools and one direct pool of the same tier, the flip rate falls to 24.5\%. At 60 basis points it is 15.6\% and at 100 basis points 8.9\%.
-% output/exhibits/block_vs_hour_verdict.jsonl, fee-wedge sweep in scripts/test_block_vs_hour_verdict.py
+and displacing the verdict boundary by $w$ carries it out of the region where the residual oscillates. At a net wedge of 30 basis points, the fee difference between a two-leg route on two 30-basis-point pools and one direct pool of the same tier, the flip rate falls to 24.5\%. At 60 basis points it is 15.6\% and at 100 basis points 8.9\%. Figure~\ref{fig:exec:wedge} plots the whole sweep against the share of observations the own-block residual classifies as dominated at the same wedge.
+% output/exhibits/block_vs_hour_verdict.jsonl, fee-wedge sweep in scripts/test_block_vs_hour_verdict.py; output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows
 The timing threat is therefore a function of trade economics and has no single number. A retail-sized route across two thin pools carries a large wedge and a verdict that is stable under repricing; a large route across two deep pools of the cheapest tier carries almost none and a verdict that is not.
+
+\begin{figure}[tbp]
+\centering
+\caption{Verdict instability against the net fee wedge a two-leg route pays}
+\label{fig:exec:wedge}
+\begin{tikzpicture}
+\begin{axis}[width=0.85\textwidth, height=6.4cm, xlabel={Net fee wedge $w$, basis points}, ylabel={Percent of route observations}, xmin=-5, xmax=105, ymin=0, ymax=55, xtick={0,5,10,30,60,100}, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=black!35, fill=white, at={(0.97,0.96)}, anchor=north east}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
+\addplot[black, thick, mark=*, mark size=1.9pt] coordinates {(0,37.96) (5,36.58) (10,34.25) (30,24.50) (60,15.60) (100,8.91)};
+\addlegendentry{verdict flip rate}
+\addplot[black!55, thick, dashed, mark=square*, mark size=1.9pt, mark options={solid, fill=white, draw=black!55}] coordinates {(0,48.74) (5,41.88) (10,37.06) (30,23.05) (60,12.99) (100,7.39)};
+\addlegendentry{dominated share}
+\end{axis}
+\end{tikzpicture}
+\par\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize\raggedright \emph{Notes.} The verdict boundary is displaced by the net fee wedge $w = f_{ak} + f_{kb} - f_{ab}$ and the triangle residual is recomputed at each realised swap's own block and again at its hour-boundary state. \emph{Verdict flip rate} is the share of route observations whose dominance sign disagrees between the two states at that wedge, and \emph{dominated share} is the share the own-block residual classifies as dominated at the same wedge. The wedge applies to every observation, which keeps the route count constant across the sweep., 190,073 route observations across 371 triangles on seven sampled days from 2021-12-25 to 2025-11-04.
+\end{minipage}
+\end{figure}
+% output/exhibits/block_vs_hour_conditional.jsonl, cut=fee_wedge_bps rows, 190,073 route observations on seven sampled days
 
 The test validates itself on a dimension a coding error would not reproduce. A route executing seconds before its hour closes is priced at nearly the state the panel used and cannot flip, and one executing early in an hour has a full hour of drift ahead of it. The measured flip rate rises monotonically with the time remaining to the boundary, from roughly 15\% for routes executing within a minute of the close to 44.9\% for routes executing 30 to 60 minutes before it.
 % output/exhibits/block_vs_hour_verdict.jsonl, time-to-boundary check in scripts/test_block_vs_hour_verdict.py
@@ -74,7 +93,7 @@ The correction is a separation and not a second reconstruction, and its specific
 % docs/venue-coverage-bounds.md, backward unwinding at 0.0000% median error against 11.8% replaying forward
 Appendix~\ref{app:state} states that reconstruction and the continuity test that audits it, together with the independent replication on a second venue family. The quantity that reports the size of the correction is the verdict-flip rate between hour pricing and block pricing on the matched realised routes themselves, and the wedge sweep above is the target it has to beat.
 
-One further gap between what the panel prices and what the router optimised is stated as a limit and is not controlled. Quoted output is not the router's whole objective: it also weighs gas, exposure to sandwiching, the probability that a path reverts, and, for aggregators, access to private orderflow. Gas is handled, since the all-in cost comparison charges the extra hop at receipt-measured units and is reported alongside the gross comparison throughout. The others are not recoverable from the swap record, which retains executed swaps and their receipts and carries nothing about the arrangements between searchers and block builders under which a route was submitted. The estimand is the share of routing classified as dominated for which the measured gap is smaller than a plausible charge for one of those considerations, which would make the routing choice optimal on an objective the panel cannot see, and it is the strongest objection a referee can raise against any behavioural reading of the classification.
+One further gap between what the panel prices and what the router optimised is stated as a limit and is not controlled. Quoted output is not the router's whole objective: it also weighs gas, exposure to sandwiching, the probability that a path reverts,, for aggregators, access to private orderflow. Gas is handled, since the all-in cost comparison charges the extra hop at receipt-measured units and is reported alongside the gross comparison throughout. The others are not recoverable from the swap record, which retains executed swaps and their receipts and carries nothing about the arrangements between searchers and block builders under which a route was submitted. The estimand is the share of routing classified as dominated for which the measured gap is smaller than a plausible charge for one of those considerations, which would make the routing choice optimal on an objective the panel cannot see, and it is the strongest objection a referee can raise against any behavioural reading of the classification.
 
 \subsection{What an unexploited gap implies, and the arbitrage bound}
 \label{sec:executability:arbitrage}
@@ -91,7 +110,7 @@ Both costs are known, and together they compute the threshold at which the gap d
 with $f_{\mathrm{leg}}$ the per-leg pool fee in basis points, $g_{3}$ the gas units of a three-hop cycle, $p_{\mathrm{gas}}$ and $p_{\mathrm{ETH}}$ the gas price and the ETH price, and $V$ the notional. A measured gap exceeding $\gamma(V)$ implies a cycle that pays at that size. The extra fee burden is charged at 60 basis points, two additional legs at the 30-basis-point constant-product tier, which is the conservative direction because concentrated-liquidity and stableswap venues charge less and a lower fee makes the threshold smaller and the excludable tail larger. Three-hop gas at the panel's median of 13.7 gwei over 1,883 measured days, converted at an ETH price of \$2,500, costs \$10.94, which is 109.4 basis points of a \$1,000 trade, 10.9 of a \$10,000 trade and 1.1 of a \$100,000 trade. The thresholds are therefore 169.4, 70.9 and 61.1 basis points at the three notionals.
 % output/exhibits/gap_arbitrage_bound.jsonl; scripts/test_gap_arbitrage_bound.py; data/processed/daily_gas_price_graph.parquet, 1,883 days
 
-Below its threshold a gap is economically possible. Nobody can profit from removing it, so it can stand for as long as the state that produced it stands, and it is admissible evidence about what routing cost. Above its threshold a gap implies a cycle that pays, which should be competed away inside a block, so observing one is evidence about the pricing engine and not about market structure. On the screened panel the median sits below the threshold at every notional: 31.1 basis points at \$1,000 on 804 comparable routes, 33.9 at \$10,000 on 631, and 20.8 at \$100,000 on 404. The 90th percentiles are 218.4, 343.0 and 110.2 basis points.
+Below its threshold a gap is economically possible. Nobody can profit from removing it, so it can stand for as long as the state that produced it stands, and it is admissible evidence about what routing cost. Above its threshold a gap implies a cycle that pays, which should be competed away inside a block, so observing one is evidence about the pricing engine and not about market structure. On the screened panel the median sits below the threshold at every notional: 31.1 basis points at \$1,000 on 804 comparable routes, 33.9 at \$10,000 on 631, and 20.8 at \$100,000 on 404. The 90th percentiles are 218.4, 343.0 and 110.2 basis points. Figure~\ref{fig:exec:arb} sets both against the threshold across the three notionals.
 % output/exhibits/gap_arbitrage_bound.jsonl, post-screen, 1,839 comparable routes across three notionals
 
 \begin{table}[t]
@@ -111,8 +130,29 @@ Trade size & Routes & Gas & Fee burden & Threshold & Median gap & 90th pct. & Ab
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize All cost columns in basis points of notional. \emph{Gas} is three-hop gas at the panel's median gas price converted at an ETH price of \$2,500, \emph{Fee burden} is the two extra pool fees a cycle pays at the 30-basis-point constant-product tier, and \emph{Threshold} is their sum, the value of $\gamma(V)$ above which a cycle pays. \emph{Above} is the share of screened routes whose measured gap exceeds it. Source \texttt{output/exhibits/gap\_arbitrage\_bound.jsonl} via \texttt{scripts/test\_gap\_arbitrage\_bound.py}, 1,839 comparable routes across the three notionals.
+\footnotesize All cost columns in basis points of notional. \emph{Gas} is three-hop gas at the panel's median gas price converted at an ETH price of \$2,500, \emph{Fee burden} is the two extra pool fees a cycle pays at the 30-basis-point constant-product tier, and \emph{Threshold} is their sum, the value of $\gamma(V)$ above which a cycle pays. \emph{Above} is the share of screened routes whose measured gap exceeds it. 1,839 comparable routes across the three notionals.
 \end{table}
+
+\begin{figure}[tbp]
+\centering
+\caption{The screened gap distribution against the arbitrage-cycle threshold}
+\label{fig:exec:arb}
+\begin{tikzpicture}
+\begin{axis}[xmode=log, log basis x=10, width=0.85\textwidth, height=6.4cm, xlabel={Trade size, US dollars}, ylabel={Basis points of notional}, xmin=600, xmax=170000, ymin=0, ymax=370, xtick={1000,10000,100000}, xticklabels={1{,}000, 10{,}000, 100{,}000}, ytick={0,50,100,150,200,250,300,350}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=none, fill=none, at={(0.5,1.02)}, anchor=south, legend columns=3, column sep=1.1em}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
+\addplot[black, thick, mark=*, mark size=1.9pt] coordinates {(1000,169.36) (10000,70.94) (100000,61.09)};
+\addlegendentry{threshold $\gamma(V)$}
+\addplot[black!55, thick, dashed, mark=triangle*, mark size=2.4pt, mark options={solid, fill=white, draw=black!55}] coordinates {(1000,218.45) (10000,342.96) (100000,110.16)};
+\addlegendentry{gap, 90th percentile}
+\addplot[black!55, thick, dotted, mark=square*, mark size=1.9pt, mark options={solid, fill=black!55, draw=black!55}] coordinates {(1000,31.08) (10000,33.91) (100000,20.83)};
+\addlegendentry{gap, median}
+\end{axis}
+\end{tikzpicture}
+\par\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize\raggedright \emph{Notes.} The threshold is $\gamma(V) = 2 f_{\mathrm{leg}} + 10^{4} g_{3} p_{\mathrm{gas}} p_{\mathrm{ETH}} / V$, charging two extra legs at the 30-basis-point constant-product tier and three-hop gas at the panel's median gas price of 13.7 gwei converted at an ETH price of \$2,500. A gap above the threshold implies a cycle that pays at that size and is read as evidence about the pricing engine, and a gap below it is one nobody could remove at a profit. The median of the screened distribution sits below the threshold at all three notionals and the 90th percentile sits above it at all three., 804, 631 and 404 post-screen comparable routes priced at \$1,000, \$10,000 and \$100,000.
+\end{minipage}
+\end{figure}
+% output/exhibits/gap_arbitrage_bound.jsonl, 1,839 post-screen comparable routes across the three notionals
 
 The tail above the threshold is the part of the measurement this paper cannot yet defend, and it is reported as an upper bound on measurement error and never netted out. It runs 13.6\% of routes at \$1,000, 38.5\% at \$10,000 and 22.0\% at \$100,000, which is 109, 243 and 89 routes of the 804, 631 and 404 priced at each notional.
 % output/exhibits/gap_arbitrage_bound.jsonl, share_above_threshold against thresholds of 169.4, 70.9 and 61.1 bps
@@ -120,7 +160,7 @@ These are not a random subset of the panel. They concentrate wherever the engine
 
 What would split the tail into arbitrage that was taken and quoter error is a single test, and its specification is fixed. Join each flagged cell to the sequence of swaps in the same block and report the share of flagged cells in which a closing cycle appears, meaning a swap sequence returning to the input token across the pools the flagged comparison names. A closing cycle means the gap was real and was captured, which makes it evidence about the market. Its absence means the gap was never available at the size the panel quoted, which makes it quoter error or an unmodelled constraint on the route. The population that has to be checked is bounded by the counts above, and the test is what would convert the current upper bound into a split.
 
-\subsection{Venue coverage, signed}
+\subsection{Signed venue coverage}
 \label{sec:executability:coverage}
 
 A counterfactual is only as good as the graph it prices over, and a panel that omits a venue understates the best available alternative \citep{ChenDuffie2021Fragmentation}. Six venues are priced, on the terms set out in Section~\ref{sec:setting:pricing}. Two coverage gaps remain inside them, and both have a measured sign.

@@ -37,7 +37,10 @@ NUMERIC = re.compile(r"(?<![\w.])(?:\d{1,3}(?:,\d{3})+|\d+\.\d+|\d+\\%|\\\$[\d,]
 # Trailing punctuation belongs to the prose around the path, not to the path. Leaving it
 # in made this test report a dozen files as missing that were all present, which is a
 # gate that cries wolf and gets ignored.
-PROVENANCE_PATH = re.compile(r"(?:output|docs|scripts|src|data|literature)/[\w./{},*-]+")
+# The class includes a backslash because paths written inside \texttt{} carry escaped
+# underscores; without it the match truncates at the first one and reports a file that is
+# present as missing.
+PROVENANCE_PATH = re.compile(r"(?:output|docs|scripts|src|data|literature)/[\w./{},*\\-]+")
 
 # Section 7 restates section 3 in words and asserts no new numbers in its own header, and
 # the abstract carries none by venue convention. Both are exempt from the comment rule.
@@ -89,7 +92,7 @@ class PaperProvenanceTests(unittest.TestCase):
                 if not line.lstrip().startswith("%"):
                     continue
                 for ref in PROVENANCE_PATH.findall(line):
-                    ref = ref.rstrip('.,;:')
+                    ref = ref.rstrip('.,;:}').replace('\\_', '_').rstrip('}')
                     # A brace expansion names several siblings at once.
                     if "{" in ref:
                         head, rest = ref.split("{", 1)

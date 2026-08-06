@@ -64,6 +64,9 @@ out = {
   "has_appendix": int(bool(re.search(r"\n\s*Appendix\s+[A-Z1]?", text))),
   "words": len(text.split()),
   "greek": len(re.findall(r"[\u03b1-\u03c9\u0391-\u03a9]", text)),
+  # Regression apparatus: a paper reporting conditional estimates says so in these words.
+  "fixed_effects": len(re.findall(r"fixed effect", low)),
+  "std_errors": len(re.findall(r"standard error|clustered|t-statistic|\bR2\b|R\u00b2|adjusted R", low)),
 }
 print(json.dumps(out))
 """
@@ -99,6 +102,8 @@ def measure_draft() -> dict:
         "has_appendix": int(bool(re.search(r"\\appendix|\\section\{Appendix", body))),
         "words": len(re.sub(r"\\[a-zA-Z]+\*?|[{}$\\]", " ", body).split()),
         "greek": len(re.findall(r"\\(?:alpha|beta|gamma|delta|theta|lambda|mu|sigma|tau|phi|psi|omega|rho|pi|eta)\b", body)),
+        "fixed_effects": len(re.findall(r"fixed effect", body, flags=re.IGNORECASE)),
+        "std_errors": len(re.findall(r"standard error|clustered|t-statistic|R\^?2", body, flags=re.IGNORECASE)),
     }
 
 
@@ -127,7 +132,8 @@ def main() -> int:
         return 1
 
     draft = measure_draft()
-    fields = ["pages", "words", "tables", "figures", "equations", "citations", "greek"]
+    fields = ["pages", "words", "tables", "figures", "equations", "citations", "greek",
+              "fixed_effects", "std_errors"]
     print(f"  {'feature':<12}{'min':>8}{'p25':>8}{'median':>9}{'p75':>8}{'max':>8}"
           f"{'DRAFT':>9}{'verdict':>12}")
     rows = []

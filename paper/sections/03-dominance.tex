@@ -61,7 +61,7 @@ Staked native (\%) & 0.0 & 0.2 & 0.00 \\
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Realised multi-leg routes on the four consecutively priced days 2023-06-01 to 2023-06-04, split by whether the route could be matched to a counterfactual quote for the same pair, candidate and state. Matched routes number 1,762 on 71 pairs; the realised population is 90,705 routes on 17,851 pairs. Shares are of routes, and the type of a route is the type of the asset it was intermediated through. Source: \texttt{output/exhibits/matched\_sample\_characterisation.jsonl}.
+\footnotesize\raggedright \emph{Notes.} Realised multi-leg routes on the four consecutively priced days 2023-06-01 to 2023-06-04, split by whether the route could be matched to a counterfactual quote for the same pair, candidate and state. Matched routes number 1,762 on 71 pairs; the realised population is 90,705 routes on 17,851 pairs. Shares are of routes, and the type of a route is the type of the asset it was intermediated through.
 \end{minipage}
 \end{table}
 
@@ -94,7 +94,7 @@ Raw matched mean & 0.413 & & \\
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} The matched rate is the share of matched realised routes through a candidate of that type that a direct pool would have beaten at the same state and size. The population weight is the type's share of the 90,705 realised multi-leg routes on the four priced days 2023-06-01 to 2023-06-04. Contribution is the product of the two, and the reweighted incidence is the summed contribution divided by the covered weight, 0.215 over 0.790. Types carrying no matched rate, \emph{other} and staked native, make up the uncovered 0.210. Rows are rounded for display. Sources: \texttt{output/exhibits/realised\_dominance.jsonl} and \texttt{docs/finding-dominance-and-persistence.md}.
+\footnotesize\raggedright \emph{Notes.} The matched rate is the share of matched realised routes through a candidate of that type that a direct pool would have beaten at the same state and size. The population weight is the type's share of the 90,705 realised multi-leg routes on the four priced days 2023-06-01 to 2023-06-04. Contribution is the product of the two, and the reweighted incidence is the summed contribution divided by the covered weight, 0.215 over 0.790. Types carrying no matched rate, \emph{other} and staked native, make up the uncovered 0.210. Rows are rounded for display.
 \end{minipage}
 \end{table}
 
@@ -160,7 +160,7 @@ Dominance incidence on realised routes runs from 23.7\% for the native asset to 
 \end{picture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Realised routing: the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at the same state and size, on 1,762 matched routes over the four consecutively priced days 2023-06-01 to 2023-06-04. Enumerated: the same share computed over every candidate vehicle priced for each post-screen route, gross of gas, on 1,839 routes over the same days. Sources: \texttt{docs/finding-dominance-and-persistence.md} and \texttt{output/exhibits/dominance\_windows\_screened.jsonl}.
+\footnotesize\raggedright \emph{Notes.} Realised routing: the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at the same state and size, on 1,762 matched routes over the four consecutively priced days 2023-06-01 to 2023-06-04. Enumerated: the same share computed over every candidate vehicle priced for each post-screen route, gross of gas, on 1,839 routes over the same days.
 \end{minipage}
 \end{figure}
 % docs/finding-dominance-and-persistence.md per-type panel, 23.7 / 45.4 / 61.4 on 1,762 matched routes; output/exhibits/dominance_windows_screened.jsonl dominated_gross by scope, 62.0 / 69.1 / 85.0 on 347 / 1,212 / 280 post-screen routes
@@ -189,7 +189,7 @@ All covered types & 27.2 & 79.0 & 70.1 & 80.3 & 1,839 \\
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Realised routing: the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at the same state and size, with the type's weight in the 90,705 realised routes of the four priced days 2023-06-01 to 2023-06-04. The all-covered-types row is the reweighted incidence of Table~\ref{tab:reweighting}. Enumerated candidates: every candidate vehicle priced for each post-screen route, gross of gas and all-in of a flat gas charge for the extra hop, on 1,839 routes over the same days. Sources: \texttt{docs/finding-dominance-and-persistence.md}, \texttt{output/exhibits/realised\_dominance.jsonl} and \texttt{output/exhibits/dominance\_windows\_screened.jsonl}.
+\footnotesize\raggedright \emph{Notes.} Realised routing: the share of matched realised multi-leg routes through a candidate of each type that a direct pool would have beaten at the same state and size, with the type's weight in the 90,705 realised routes of the four priced days 2023-06-01 to 2023-06-04. The all-covered-types row is the reweighted incidence of Table~\ref{tab:reweighting}. Enumerated candidates: every candidate vehicle priced for each post-screen route, gross of gas and all-in of a flat gas charge for the extra hop, on 1,839 routes over the same days.
 \end{minipage}
 \end{table}
 
@@ -373,7 +373,7 @@ Dominance incidence is a statement about a moment, and the moments in this sampl
 \end{picture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Share of intermediation episodes passing through the native asset (filled circles, solid) and through the stable numeraire (open squares, dashed), by year. Left panel weights each episode equally; right panel weights it by the value routed. Round trips are excluded. Sample: 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30; the value-weighted series is reported for 2020, 2022, 2024 and 2026. Source: \texttt{docs/finding-intermediation-transition.md}.
+\footnotesize\raggedright \emph{Notes.} Share of intermediation episodes passing through the native asset (filled circles, solid) and through the stable numeraire (open squares, dashed), by year. Left panel weights each episode equally; right panel weights it by the value routed. Round trips are excluded. Sample: 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30; the value-weighted series is reported for 2020, 2022, 2024 and 2026.
 \end{minipage}
 \end{figure}
 % docs/finding-intermediation-transition.md, count-weighted and value-weighted panels; 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30
@@ -581,7 +581,7 @@ Concentration falls throughout the period on both bases. Weighting intermediatio
 \end{picture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Effective number of vehicles, the inverse of the year's mean Herfindahl index over intermediation shares (left), and the leading asset's share of intermediation (right), value-weighted (filled circles, solid) and count-weighted (open squares, dashed). Sample: 15 days sampled at a 30-day stride, 2020-09-03 to 2026-06-04, round trips excluded. Source: \texttt{output/exhibits/vehicle\_concentration.jsonl}.
+\footnotesize\raggedright \emph{Notes.} Effective number of vehicles, the inverse of the year's mean Herfindahl index over intermediation shares (left), and the leading asset's share of intermediation (right), value-weighted (filled circles, solid) and count-weighted (open squares, dashed). Sample: 15 days sampled at a 30-day stride, 2020-09-03 to 2026-06-04, round trips excluded.
 \end{minipage}
 \end{figure}
 % output/exhibits/vehicle_concentration.jsonl, hhi and cr1 by year on bases share_volume and share_count; 15 sampled days 20200903 to 20260604
@@ -616,7 +616,7 @@ Year & Days & HHI & $1/\text{HHI}$ & CR1 (\%) & Native & HHI & $1/\text{HHI}$ & 
 \end{tabular}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Shares of intermediation across interior assets on 15 days sampled at a 30-day stride, 2020-09-03 to 2026-06-04, with round trips excluded. Days is the number of sampled days in the year. HHI is the year's mean Herfindahl index over vehicle shares and $1/\text{HHI}$ is its inverse, the effective number of vehicles. CR1 is the leading asset's share. Native is the number of sampled days on which the native asset led. Sources: \texttt{output/exhibits/vehicle\_concentration.jsonl} and \texttt{data/processed/vehicle\_concentration.parquet}.
+\footnotesize\raggedright \emph{Notes.} Shares of intermediation across interior assets on 15 days sampled at a 30-day stride, 2020-09-03 to 2026-06-04, with round trips excluded. Days is the number of sampled days in the year. HHI is the year's mean Herfindahl index over vehicle shares and $1/\text{HHI}$ is its inverse, the effective number of vehicles. CR1 is the leading asset's share. Native is the number of sampled days on which the native asset led.
 \end{minipage}
 \end{table}
 

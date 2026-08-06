@@ -1,0 +1,13 @@
+{"construction": "trailing_appositive", "corpus_max": 0.11953858107704261, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "em_dash", "corpus_max": 1.870400905667807, "corpus_median": 0.15965089670586982, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "en_dash_in_prose", "corpus_max": 1.7135862913096696, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "contrast_confirmation", "corpus_max": 0.2128678622744931, "corpus_median": 0.036388777700957026, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "rather_than", "corpus_max": 0.5357416194703811, "corpus_median": 0.14840465001236705, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "genuinely", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "what_matters", "corpus_max": 0.26787080973519056, "corpus_median": 0.03947108742845865, "corpus_min": 0.0, "draft": 0.026662400682557458, "verdict": "in range"}
+{"construction": "it_is_worth", "corpus_max": 0.03826725853359865, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "importantly", "corpus_max": 0.7875372234390766, "corpus_median": 0.12368583797155226, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "triple_list", "corpus_max": 3.0303030303030303, "corpus_median": 1.5965089670586983, "corpus_min": 0.39167686658506734, "draft": 0.053324801365114916, "verdict": "in range"}
+{"construction": "so_that_tail", "corpus_max": 1.5012428321807398, "corpus_median": 0.09791921664626684, "corpus_min": 0.0, "draft": 0.5332480136511492, "verdict": "in range"}
+{"construction": "document_self_reference", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "hedging_stack", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}

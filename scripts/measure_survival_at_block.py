@@ -62,6 +62,7 @@ from test_block_vs_hour_verdict import load_day, PoolView, oriented  # noqa: E40
 UNIFIED = ROOT / "data" / "unified"
 OUT = ROOT / "output" / "exhibits" / "survival_at_block.jsonl"
 SPELLS = ROOT / "output" / "exhibits" / "survival_at_block_spells.jsonl"
+HAZ_PANEL = ROOT / "output" / "exhibits" / "survival_at_block_panel.jsonl"
 
 # A two-leg route pays two pool fees where a direct route pays one. Uniswap v3's common
 # tiers are 5, 30 and 100 basis points, so 30 is the extra burden when all three legs sit
@@ -306,6 +307,9 @@ def main() -> int:
 
     # THE ESTIMAND FIRST. One event, conditioned two ways, on the same pairs and days.
     haz = pd.DataFrame(turnover_hazard(panel, args.dominated_at))
+    if not haz.empty:
+        write_exhibit(haz, HAZ_PANEL)
+        print(f"\nwrote {HAZ_PANEL.relative_to(ROOT)} for the conditional estimation")
     out = []
     if not haz.empty:
         print(f"\nturnover of the vehicle role, one event conditioned on the holder's cost "

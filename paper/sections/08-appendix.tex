@@ -59,7 +59,7 @@ with the sign set by the direction of travel. The quoter carries the contract's 
 % src/ddvc/pricing/v3quote.py, integer port of SwapMath.computeSwapStep and TickMath
 
 The active tick map is accumulated from every mint and burn since pool inception, and the pre-trade state comes free from the swap record: consecutive swaps in one pool leave \texttt{sqrtPriceX96} and \texttt{tick} on the earlier event, and nothing except a swap moves the price inside a pool. Errors are reported by trade direction crossed with whether the quote traversed an initialised tick, because a traversal fault is directional by construction and a pooled error statistic averages a broken direction against a working one. That is not a hypothetical: an upward search that returned the tick just crossed produced a zero-width step and under-quoted upward tick-crossing swaps by a median 62.6\%, while every non-crossing quote read exact and the downward direction validated at $-0.0006\%$.
-% src/ddvc/pricing/v3quote.py, _next_init_tick docstring, measured against realised swaps
+% src/ddvc/pricing/v3quote.py, _next_init_tick measured docstring against realised swaps
 
 Table~\ref{tab:app:cl} reports the four cells on Uniswap v4, whose pools exercise the same code path on a fee schedule v3 never carried, including hook-driven tiers of 0 and 7 hundredths of a basis point.
 
@@ -86,7 +86,7 @@ Pooled & 1{,}200 & $5.1\times10^{-8}$ & & $1.8\times10^{-4}$ & 100.0\% \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Absolute quote error in percent of realised output. Source \texttt{output/exhibits/v4\_quoter\_validation.jsonl}, 1,200 realised Uniswap v4 swaps across six pools and five pairs at fee tiers 0, 7, 100 and 500, each re-quoted against the state left by the preceding swap in the same pool.
+\footnotesize Absolute quote error in percent of realised output. 1,200 realised Uniswap v4 swaps across six pools and five pairs at fee tiers 0, 7, 100 and 500, each re-quoted against the state left by the preceding swap in the same pool.
 \end{table}
 
 The four cells sit at the same location, which is what splitting them is for. Every cell reproduces realised output to within two parts in a million at the worst observed swap, against route-cost differences the body measures in tens of basis points.
@@ -141,7 +141,7 @@ Day & Pools fitted & Pools excluded & Held-out trades & Median $\widehat{A}$ & M
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Source \texttt{output/exhibits/curve\_quoter\_validation.jsonl}, four sampled days. $\widehat{A}$ is reported in the module's convention, which carries the on-chain precision factor of 100. Median error is the median absolute deviation of the quote from realised output on trades the calibration never saw.
+\footnotesize four sampled days. $\widehat{A}$ is reported in the module's convention, which carries the on-chain precision factor of 100. Median error is the median absolute deviation of the quote from realised output on trades the calibration never saw.
 \end{table}
 
 Four independent days land at the same held-out median, between 0.029\% and 0.039\%, with the acceptance threshold two orders of magnitude to the right of that mass, and the fitted coefficient rises across the sample as the Curve pool population the gate admits shifts toward tighter stable baskets.
@@ -202,7 +202,7 @@ Day & Held-out trades & Backward & Flat & Opening & Pools priced / excluded \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. Source \texttt{output/exhibits/weighted\_quoter\_validation.jsonl}, twelve sampled days from 2021-04 to 2026-02.
+\footnotesize Median absolute quote error in percent of realised output, on trades no fit ever saw. \emph{Backward} reconstructs per-swap balances by rolling the day's event sequence back from the closing snapshot, \emph{Flat} keeps the snapshot balances constant across the day, and \emph{Opening} treats the snapshot as the day's opening state and rolls forward. twelve sampled days from 2021-04 to 2026-02.
 \end{table}
 
 Across the twelve days the backward reading returns a median of 0.0000\% and prices 256 of 473 testable pool-days, and the pools the gate declines carry a median 91.8\% of tested swap volume, which is the coverage bound this venue arrives with.
@@ -222,20 +222,20 @@ which is a single reverse pass over the period. The alternative reading takes th
 \widetilde{R}^{\,\mathrm{pre}}_{s} \;=\; R^{\mathrm{end}}_{\mathrm{prev}} + \sum_{t < s} \Delta_t ,
 \]
 which accumulates every unrecorded balance change between the two stored points into the state it hands the quoter. The two readings use identical inputs and differ only in direction, and they do not perform alike. Replaying forward returns a median absolute quote error of 11.8\% against realised outputs, and unwinding backward returns 0.0000\%.
-% src/ddvc/cpquote.py, unwind_hour docstring, measured on 8,024 executed v2 swaps
+% src/ddvc/cpquote.py, unwind_hour measured docstring on 8,024 executed v2 swaps
 
 The reconstruction also audits itself, which is what removes the need to fetch mint and burn events for correctness. Unwinding a period all the way to its start and comparing with the previous period's stored end value tests whether swaps were the only thing that moved reserves,
 \[
 \left|\frac{R^{\mathrm{pre}}_{1} - R^{\mathrm{end}}_{\mathrm{prev}}}{R^{\mathrm{end}}_{\mathrm{prev}}}\right| < \tau .
 \]
 Agreement means the unwind is exact. Disagreement means a mint, a burn or a direct transfer intervened, and every pre-state in that period is displaced by the same amount. On 2024-01-15, 96.8\% of comparable pool-hours reconcile and 3.2\% are flagged, and the flagged share coincides with the 3.3\% of quotes that miss 1\% accuracy, so the continuity test identifies the inaccurate cases and does not merely correlate with them. Dropping flagged hours is not random sampling, since liquidity events concentrate in actively managed and newly launched pools, and that selection is carried as a limitation of the constant-product legs.
-% src/ddvc/cpquote.py, hour_is_clean docstring, measured on 2024-01-15
+% src/ddvc/cpquote.py, hour_is_clean measured docstring on 2024-01-15
 
 The same result appeared independently on the weighted-pool family, where the reconstruction question takes a different form and the answer repeats. Three readings of \texttt{poolSnapshots.amounts} were scored against realised Balancer trades on the twelve days of Table~\ref{tab:app:weighted}: holding the snapshot flat across the day gives a median 1.7\%, treating it as the day's opening state and rolling forward gives 2.8\%, and treating it as the day's closing state and rolling the event sequence backward gives 0.0000\%.
 % output/exhibits/weighted_quoter_validation.jsonl, medians across 12 sampled days
 
 Two features of that replication make it informative about the constant-product result and not only about Balancer. The venues share no code, no schema and no event stream, so a common bug is not available as an explanation. And the weighted-pool walk had to merge joins and exits into the same ordered sequence as swaps, because a swap-only walk charges every liquidity event to the invariant and reads exactly like a pool running different mathematics, which collapsed coverage from 87 of 105 testable pool-days to 177 of 367 and left 96.9\% of tested volume excluded. The correction there was a second event stream and not a looser tolerance.
-% src/ddvc/pricing/weighted.py, balance-reconstruction docstring, measured on the same twelve days
+% src/ddvc/pricing/weighted.py, balance-reconstruction measured docstring on the same twelve days
 
 \section{The support screen}
 \label{app:support}
@@ -279,15 +279,45 @@ Pooled & 932{,}270 & 0.34\% & 3.29\% & 14.86\% & 78.33\% & 100.00\% \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Trade size as a percentage of the input-side reserve of the pool traversed, over the constant-product swaps the quoters were validated against. Source \texttt{output/exhibits/quoter\_support\_bounds.jsonl} via \texttt{scripts/measure\_quoter\_support.py}, eight sampled days from 2020-05-05 to 2025-09-23.
+\footnotesize Trade size as a percentage of the input-side reserve of the pool traversed, over the constant-product swaps the quoters were validated against. eight sampled days from 2020-05-05 to 2025-09-23.
 \end{table}
 
-The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 99th of 14.86\% of the pooled distribution, and it sits in that same interval on seven of the eight days taken separately. The tail beyond the 99.9th percentile is trades that consume most of a pool, which is the shape of the distribution the quoters were never asked to price and the region the panel now declines.
+The panel's threshold of 5\% sits between the 90th percentile of 3.29\% and the 99th of 14.86\% of the pooled distribution, and it sits in that same interval on seven of the eight days taken separately. Figure~\ref{fig:app:support} draws that interval day by day with the threshold across it. The tail beyond the 99.9th percentile is trades that consume most of a pool, which is the shape of the distribution the quoters were never asked to price and the region the panel now declines.
 % output/exhibits/quoter_support_bounds.jsonl, pooled over 932,270 validated swaps on eight sampled days
+
+\begin{figure}[tbp]
+\centering
+\caption{Where the 5\% support screen sits in the validation population}
+\label{fig:app:support}
+\begin{tikzpicture}
+\begin{axis}[width=0.85\textwidth, height=6.6cm, xlabel={Validation day}, ylabel={Trade size as percent of input reserve}, xmin=0.4, xmax=9.6, ymin=0, ymax=22, ytick={0,5,10,15,20}, xtick={1,2,3,4,5,6,7,8,9}, xticklabels={2020-05-05,2021-02-10,2021-11-18,2022-08-26,2023-06-03,2024-03-10,2024-12-16,2025-09-23,Pooled}, x tick label style={rotate=45, anchor=east, font=\scriptsize}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=black!35, fill=white, at={(0.03,0.96)}, anchor=north west}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
+\addplot[black!40, forget plot] coordinates {(1,1.00) (1,1.00)};
+\addplot[black!40, forget plot] coordinates {(2,2.00) (2,8.68)};
+\addplot[black!40, forget plot] coordinates {(3,2.24) (3,13.15)};
+\addplot[black!40, forget plot] coordinates {(4,3.66) (4,18.44)};
+\addplot[black!40, forget plot] coordinates {(5,4.93) (5,19.36)};
+\addplot[black!40, forget plot] coordinates {(6,3.61) (6,15.11)};
+\addplot[black!40, forget plot] coordinates {(7,3.05) (7,13.25)};
+\addplot[black!40, forget plot] coordinates {(8,2.51) (8,19.92)};
+\addplot[black!40, forget plot] coordinates {(9,3.29) (9,14.86)};
+\addplot[only marks, black, mark=*, mark size=1.9pt] coordinates {(1,1.00) (2,2.00) (3,2.24) (4,3.66) (5,4.93) (6,3.61) (7,3.05) (8,2.51) (9,3.29)};
+\addlegendentry{90th percentile}
+\addplot[only marks, black, mark=o, mark size=2.2pt] coordinates {(1,1.00) (2,8.68) (3,13.15) (4,18.44) (5,19.36) (6,15.11) (7,13.25) (8,19.92) (9,14.86)};
+\addlegendentry{99th percentile}
+\addplot[black, thick, dashed, no marks] coordinates {(0.4,5) (9.6,5)};
+\addlegendentry{panel screen at 5\%}
+\end{axis}
+\end{tikzpicture}
+\par\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize\raggedright \emph{Notes.} The screening statistic is a leg's input amount as a fraction of the input-side reserve of the pool it would measured traverse over the constant-product swaps the quoters were validated against. The screen at 5\% falls between the 90th and the 99th percentile on the pooled distribution and on seven of the eight days taken separately, the exception being 2020-05-05, which carries two validated swaps at an identical size-to-depth ratio., 932,270 validated swaps on eight sampled days from 2020-05-05 to 2025-09-23.
+\end{minipage}
+\end{figure}
+% output/exhibits/quoter_support_bounds.jsonl, per-day and pooled 90th and 99th percentiles, 932,270 validated swaps on eight sampled days
 
 The screen is expensive and its cost is reported in the body. What it cannot do is measure the engine's error inside the region it defines, because the routes in question were never executed and have no realised output to compare against. The bound on that error is the arbitrage argument of Section~\ref{sec:executability:arbitrage} and is indirect.
 
-\section{Venue coverage, signed}
+\section{Signed venue coverage}
 \label{app:coverage}
 
 A counterfactual is only as good as the graph it prices over, and a panel that omits a venue understates the best available alternative on every leg that venue could have served \citep{Schar2021DeFi}. Coverage is therefore measured in volume and not in venue counts. Comparing volume across seven subgraphs required rebuilding the two Messari-schema venues from their own swaps on the smaller-leg basis, because their daily streams count both legs of a trade where the Uniswap family counts one, and because the subgraph oracles fail on thin exotic pools and fail large: one Curve pool reports a \$456m day whose own swaps sum to \$8, and a constant-product pair with \$255 of reserves reports \$1.36bn. Every pool-day must clear three physical bounds before it enters the base, and those bounds remove between 0.10\% and 0.24\% of pool-days a year.
@@ -321,7 +351,7 @@ Pooled & 56.02 & 14.98 & 13.73 & 5.45 & 3.92 & 5.88 & 0.02 \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Percentage shares within the seven-venue panel. Source \texttt{docs/venue-coverage-bounds.md} via \texttt{output/exhibits/venue\_volume\_by\_year.jsonl}, every seventh calendar day from 2018-11-02 to 2026-06-30, 400 sampled days.
+\footnotesize Percentage shares within the seven-venue panel. every seventh calendar day from 2018-11-02 to 2026-06-30, 400 sampled days.
 \end{table}
 
 Curve carries between 11\% and 19\% of panel volume in every year it existed and ranks second in four of those years, which makes its internal calibration gate the largest coverage question the panel has. The gate declines a pool-day whose amplification fit misses by more than 1\%, and measured on 28 pool-days from 2020-02-11 to 2026-04-28 it accepts 621 pools and rejects 588, removing 34.2\% of the Curve volume it rules on, \$1.83bn of \$5.36bn. A further 2.75\% of Curve volume sits in pool-days with too few trades to fit and score apart, and halving the fit threshold from eight trades to four moves the yearly excluded shares by at most 1.3 percentage points.
@@ -362,7 +392,7 @@ Year & \multicolumn{2}{r}{Native leg} & \multicolumn{2}{r}{Stable leg} & Other v
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise. Source \texttt{docs/venue-coverage-bounds.md} via \texttt{output/exhibits/curve\_excluded\_composition.jsonl} and \texttt{curve\_excluded\_by\_year\_leg.jsonl}, 28 measured Curve pool-days from 2020-02-11 to 2026-04-28. Pool leg is assigned by a token registry pass followed by a symbol pass over stable derivatives, which is required because the registry alone labels metapools pairing a stablecoin against the three-token base-pool claim as volatile pairs.
+\footnotesize A pool serves the \emph{native} leg when it contains ETH or a staking derivative, the \emph{stable} leg when every token is stable including baskets and interest-bearing wrappers, and the \emph{other volatile} leg otherwise., 28 measured Curve pool-days from 2020-02-11 to 2026-04-28. Pool leg is assigned by a token registry pass followed by a symbol pass over stable derivatives, which is required because the registry alone labels metapools pairing a stablecoin against the three-token base-pool claim as volatile pairs.
 \end{table}
 
 The last column of Panel A is the sign of the bound and Panel B shows it repeating in every year of the sample, with the native-against-stable gap never below 33 percentage points and reaching 54 in 2023. The mechanism is identifiable and specific. The tricrypto pools pairing WBTC and WETH against a stable numeraire are \$818m of the \$1.83bn excluded on their own, 44.6\%, and they account for seven of the twelve largest excluded pool-days including the top two. They price CryptoSwap by construction, and they are where Curve's ETH-leg depth lived.
@@ -430,7 +460,7 @@ Pooled & 371 & 189{,}857 & 38.0\% & 29.3 & 26.6 \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Flip rate is route-weighted across triangles within a day. Median gap is the median across triangles of the per-triangle median own-block residual, in basis points, and median change is the median across triangles of the per-triangle median absolute repricing change. Source \texttt{output/exhibits/block\_vs\_hour\_verdict.jsonl} via \texttt{scripts/test\_block\_vs\_hour\_verdict.py}, seven sampled days from 2021-12-25 to 2025-11-04.
+\footnotesize Flip rate is route-weighted across triangles within a day. Median gap is the median across triangles of the per-triangle median own-block residual, in basis points, and median change is the median across triangles of the per-triangle median absolute repricing change. seven sampled days from 2021-12-25 to 2025-11-04.
 \end{table}
 
 The flip rate varies little across four years and two market regimes, between 29.1\% and 42.1\%, which is what a mechanical timing artefact looks like and what a behavioural quantity would not. Table~\ref{tab:app:conditional} conditions it three ways.
@@ -492,11 +522,28 @@ above 250 bps & 9{,}860 & 36.8\% \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Source \texttt{output/exhibits/block\_vs\_hour\_conditional.jsonl} via \texttt{scripts/test\_block\_vs\_hour\_verdict.py}, 190,073 route observations across 371 triangles on seven sampled days. Panel A applies the wedge to all observations, so its route count is constant across rows. \emph{Dominated share} is the share of observations the own-block residual classifies as dominated at that wedge.
+\footnotesize 190,073 route observations across 371 triangles on seven sampled days. Panel A applies the wedge to all observations, so its route count is constant across rows. \emph{Dominated share} is the share of observations the own-block residual classifies as dominated at that wedge.
 \end{table}
 
 Panel C is the diagnostic that rules out a size threshold as a remedy: the flip rate stays inside a range of 33.3\% to 44.0\% across every bucket of the own-block residual, reading 36.8\% in the top bucket against 40.4\% in the bottom one, which follows from what $m$ is at zero size.
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows over 190,073 route observations A triangular-arbitrage residual is a quantity searchers keep oscillating around zero within blocks, and a large value of it is transient wherever it appears in the distribution. Panel B validates the test on a dimension a coding error would not reproduce, since a route executing seconds before its hour closes is priced at nearly the state the panel used and cannot flip, while one executing early in an hour has a full hour of drift ahead of it. A flat profile there would have indicated a defect.
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows over 190,073 route observations
+A triangular-arbitrage residual is a quantity searchers keep oscillating around zero within blocks, and a large value of it is transient wherever it appears in the distribution. Panel B validates the test on a dimension a coding error would not reproduce, since a route executing seconds before its hour closes is priced at nearly the state the panel used and cannot flip, while one executing early in an hour has a full hour of drift ahead of it. A flat profile there would have indicated a defect, and Figure~\ref{fig:app:boundary} shows the profile the test returns.
+
+\begin{figure}[tbp]
+\centering
+\caption{Verdict instability by time remaining to the hour boundary}
+\label{fig:app:boundary}
+\begin{tikzpicture}
+\begin{axis}[ybar, width=0.85\textwidth, height=6.4cm, bar width=0.9cm, symbolic x coords={under 1,1 to 5,5 to 15,15 to 30,30 to 60}, xtick=data, xlabel={Minutes remaining to the close of the route's hour}, ylabel={Verdict flip rate, percent}, ymin=0, ymax=54, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, nodes near coords, nodes near coords style={font=\footnotesize}, point meta=explicit symbolic, grid=major, grid style={black!10}, axis line style={black!70}, enlarge x limits=0.12]
+\addplot[draw=black, fill=black!20] coordinates {(under 1,15.56) [15.6] (1 to 5,21.03) [21.0] (5 to 15,32.35) [32.3] (15 to 30,38.88) [38.9] (30 to 60,44.87) [44.9]};
+\end{axis}
+\end{tikzpicture}
+\par\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize\raggedright \emph{Notes.} A route executing seconds before its hour closes is priced at nearly the state the counterfactual panel used and has almost no room to flip, and one executing early in an hour has a full hour of drift ahead of it. The buckets carry 10,774, 13,084, 31,568, 48,534 and 86,113 route observations from left to right., 190,073 route observations across 371 triangles on seven sampled days from 2021-12-25 to 2025-11-04.
+\end{minipage}
+\end{figure}
+% output/exhibits/block_vs_hour_conditional.jsonl, cut=time_to_hour_boundary rows, 190,073 route observations on seven sampled days
 
 Panel A carries the result. A two-leg route pays two pool fees where a direct route pays one, and that offset is a property of the venues traversed and does not move with the market, so it displaces the verdict boundary away from the region where the residual oscillates. The timing threat is therefore a function of trade economics and has no single number attached to it.
 
@@ -550,8 +597,32 @@ Maximum & 25.93\% & 91.31\% \\
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Round trips as a share of multi-leg routes. Source \texttt{output/exhibits/round\_trip\_share\_by\_day.jsonl} via \texttt{scripts/measure\_round\_trip\_share.py}, 79 sampled days from 2020-06-01 to 2026-04-27 covering 13,160,047 routes, of which 2,488,399 are multi-leg and 351,553 are round trips. Days carrying fewer than 200 multi-leg routes are omitted, since a share formed on a handful of routes is sampling noise.
+\footnotesize Round trips as a share of multi-leg routes. 79 sampled days from 2020-06-01 to 2026-04-27 covering 13,160,047 routes, of which 2,488,399 are multi-leg and 351,553 are round trips. Days carrying fewer than 200 multi-leg routes are omitted, since a share formed on a handful of routes is sampling noise.
 \end{table}
 
-The value-weighted share exceeds the count-weighted share at every quantile, by a factor between 1.7 and 3.5, which is the signature of a population of large atomic cycles sitting inside a much larger population of small ordinary routes. No sampled day is free of them, and the floor of 4.45\% by count falls on 2020-06-01, the earliest day sampled. Count-weighting is used throughout the body for exactly this reason, since a value-weighted routing statistic on an unscreened panel would be reporting the arbitrage population.
+The value-weighted share exceeds the count-weighted share at every quantile, by a factor between 1.7 and 3.5, which is the signature of a population of large atomic cycles sitting inside a much larger population of small ordinary routes. No sampled day is free of them, and the floor of 4.45\% by count falls on 2020-06-01, the earliest day sampled. Count-weighting is used throughout the body for exactly this reason, since a value-weighted routing statistic on an unscreened panel would be reporting the arbitrage population. Figure~\ref{fig:app:roundtrip} plots both shares for every sampled day, with the two medians and the extreme day marked.
 % output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days from 2020-06-01 to 2026-04-27
+
+\begin{figure}[tbp]
+\centering
+\caption{Round-trip contamination of multi-leg routing, day by day}
+\label{fig:app:roundtrip}
+\begin{tikzpicture}
+\begin{axis}[width=0.92\textwidth, height=7.2cm, xlabel={Sampled day}, ylabel={Share of multi-leg routes, percent}, xmin=2020.2, xmax=2027.4, ymin=0, ymax=98, xtick={2021,2022,2023,2024,2025,2026}, xticklabel style={/pgf/number format/1000 sep={}}, ytick={0,20,40,60,80}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, legend style={font=\footnotesize, draw=black!35, fill=white, at={(0.02,0.97)}, anchor=north west}, legend cell align=left, grid=major, grid style={black!10}, axis line style={black!70}]
+\addplot[only marks, black, mark=*, mark size=1.5pt] coordinates {(2020.416,11.54) (2020.493,11.17) (2020.569,10.12) (2020.646,12.63) (2020.723,19.62) (2020.799,15.52) (2020.876,20.01) (2020.953,22.80) (2021.027,34.15) (2021.104,27.91) (2021.181,26.67) (2021.257,27.94) (2021.334,20.43) (2021.411,18.29) (2021.487,71.24) (2021.564,46.11) (2021.641,21.64) (2021.717,25.35) (2021.794,20.09) (2021.871,19.68) (2021.947,25.18) (2022.025,28.33) (2022.101,17.92) (2022.178,21.79) (2022.255,18.23) (2022.331,32.62) (2022.408,25.40) (2022.485,17.46) (2022.561,17.57) (2022.638,26.10) (2022.715,23.11) (2022.791,21.72) (2022.868,28.88) (2022.945,21.89) (2023.022,24.93) (2023.099,32.43) (2023.175,29.56) (2023.252,7.40) (2023.329,15.30) (2023.405,18.70) (2023.482,16.53) (2023.559,14.40) (2023.635,16.37) (2023.712,13.02) (2023.789,41.78) (2023.865,20.14) (2023.942,17.71) (2024.019,17.73) (2024.096,18.82) (2024.172,18.63) (2024.249,13.20) (2024.326,28.25) (2024.402,41.03) (2024.479,18.05) (2024.556,48.16) (2024.632,30.62) (2024.709,19.25) (2024.786,21.13) (2024.862,26.10) (2024.939,25.16) (2025.014,17.86) (2025.090,29.68) (2025.167,16.14) (2025.244,10.08) (2025.320,13.06) (2025.397,40.91) (2025.474,37.54) (2025.550,26.28) (2025.627,64.39) (2025.704,35.52) (2025.780,81.75) (2025.857,61.61) (2025.928,91.31) (2025.934,36.64) (2026.011,28.65) (2026.088,20.32) (2026.164,20.06) (2026.241,15.06) (2026.318,63.70)};
+\addlegendentry{share by value}
+\addplot[only marks, black!60, mark=o, mark size=1.7pt] coordinates {(2020.416,4.45) (2020.493,8.49) (2020.569,9.83) (2020.646,9.41) (2020.723,13.70) (2020.799,14.72) (2020.876,16.42) (2020.953,15.81) (2021.027,17.48) (2021.104,11.64) (2021.181,11.77) (2021.257,10.76) (2021.334,11.07) (2021.411,13.21) (2021.487,15.79) (2021.564,16.84) (2021.641,14.08) (2021.717,16.98) (2021.794,11.57) (2021.871,11.19) (2021.947,16.75) (2022.025,17.82) (2022.101,10.33) (2022.178,15.72) (2022.255,10.13) (2022.331,12.96) (2022.408,18.46) (2022.485,19.69) (2022.561,17.53) (2022.638,16.72) (2022.715,18.80) (2022.791,9.71) (2022.868,19.18) (2022.945,11.17) (2023.022,8.89) (2023.099,8.82) (2023.175,6.60) (2023.252,8.18) (2023.329,8.09) (2023.405,13.02) (2023.482,11.40) (2023.559,6.94) (2023.635,5.88) (2023.712,8.51) (2023.789,12.33) (2023.865,11.64) (2023.942,7.70) (2024.019,8.89) (2024.096,9.00) (2024.172,5.47) (2024.249,6.44) (2024.326,9.60) (2024.402,8.45) (2024.479,11.29) (2024.556,11.53) (2024.632,18.46) (2024.709,19.17) (2024.786,12.70) (2024.862,9.58) (2024.939,9.92) (2025.014,8.85) (2025.090,16.50) (2025.167,17.04) (2025.244,17.00) (2025.320,16.29) (2025.397,14.59) (2025.474,12.06) (2025.550,11.94) (2025.627,16.09) (2025.704,18.79) (2025.780,21.91) (2025.857,22.56) (2025.928,25.93) (2025.934,23.44) (2026.011,19.58) (2026.088,23.65) (2026.164,25.55) (2026.241,20.03) (2026.318,20.80)};
+\addlegendentry{share by count}
+\addplot[black, dashed, thin, no marks, forget plot] coordinates {(2020.2,21.72) (2026.45,21.72)};
+\addplot[black!60, dotted, thin, no marks, forget plot] coordinates {(2020.2,12.70) (2026.45,12.70)};
+\node[anchor=west, font=\scriptsize] at (axis cs:2026.5,21.72) {median 21.7};
+\node[anchor=west, font=\scriptsize, black!60] at (axis cs:2026.5,12.70) {median 12.7};
+\node[anchor=east, font=\scriptsize] at (axis cs:2025.86,91.31) {2025-12-06};
+\end{axis}
+\end{tikzpicture}
+\par\vspace{6pt}
+\begin{minipage}{0.92\textwidth}
+\footnotesize\raggedright \emph{Notes.} Each mark is one sampled day. \emph{Share by value} is round-trip routes as a share of the notional traded through multi-leg routes that day, and \emph{share by count} is the same share formed on route counts. The dashed and dotted lines are the medians across the 79 days, 21.72\% by value and 12.70\% by count. The labelled day 2025-12-06 is the maximum on both measures, at 25.93\% by count and 91.31\% by value. Days carrying fewer than 200 multi-leg routes are omitted., 79 sampled days from 2020-06-01 to 2026-04-27 covering 2,488,399 multi-leg routes.
+\end{minipage}
+\end{figure}
+% output/exhibits/round_trip_share_by_day.jsonl, share_by_count and share_by_value on 79 sampled days from 2020-06-01 to 2026-04-27
