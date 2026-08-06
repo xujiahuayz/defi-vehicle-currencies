@@ -38,6 +38,8 @@ from __future__ import annotations
 import gzip
 import inspect
 import json
+import math
+import numbers
 from pathlib import Path
 
 import pandas as pd
@@ -93,7 +95,9 @@ def _caller_sources(extra: list[str] | None) -> list[str]:
 
 
 def write_exhibit(df: pd.DataFrame, path: str | Path,
-                  code_sources: list[str] | None = None) -> Path:
+                  code_sources: list[str] | None = None,
+                  inputs: list[str | Path] | None = None,
+                  notes: str | None = None) -> Path:
     """Write a paper-facing table as JSON Lines, one record per line.
 
     Refuses a frame large enough to belong in Parquet instead of silently writing
@@ -109,11 +113,29 @@ def write_exhibit(df: pd.DataFrame, path: str | Path,
         p = p.with_suffix(".jsonl")
     p.parent.mkdir(parents=True, exist_ok=True)
     frame = _stringify_big_ints(df)
-    opener = (lambda: gzip.open(p, "wt")) if p.suffix == ".gz" else (lambda: open(p, "w"))
-    with opener() as fh:
-        for rec in frame.to_dict("records"):
-            fh.write(json.dumps(rec, default=str, sort_keys=True) + "\n")
-    stamp(p, code_sources=_caller_sources(code_sources), rows=len(df))
+    tmp = p.with_name(p.name + ".tmp")
+    opener = (lambda: gzip.open(tmp, "wt")) if p.suffix == ".gz" else (lambda: open(tmp, "w"))
+    try:
+        with opener() as fh:
+            for rec in frame.to_dict("records"):
+                clean = {
+                    key: None if value is None or _is_missing(value) else value
+                    for key, value in rec.items()
+                }
+                fh.write(
+                    json.dumps(clean, allow_nan=False, default=str, sort_keys=True) + "\n"
+                )
+        tmp.replace(p)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+    stamp(
+        p,
+        code_sources=_caller_sources(code_sources),
+        inputs=inputs,
+        rows=len(df),
+        notes=notes,
+    )
     return p
 
 
@@ -126,10 +148,42 @@ def read_exhibit(path: str | Path) -> pd.DataFrame:
 
 
 def write_panel(df: pd.DataFrame, path: str | Path,
-                code_sources: list[str] | None = None) -> Path:
+                code_sources: list[str] | None = None,
+                inputs: list[str | Path] | None = None,
+                notes: str | None = None) -> Path:
     """Write an analytic panel as Parquet, which is what code reads."""
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(p, index=False)
-    stamp(p, code_sources=_caller_sources(code_sources), rows=len(df))
+    tmp = p.with_name(p.name + ".tmp")
+    try:
+        df.to_parquet(tmp, index=False)
+        tmp.replace(p)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+    stamp(
+        p,
+        code_sources=_caller_sources(code_sources),
+        inputs=inputs,
+        rows=len(df),
+        notes=notes,
+    )
     return p
+
+
+def _is_missing(value: object) -> bool:
+    """Whether a scalar needs JSON null instead of a non-standard NaN token."""
+    if isinstance(value, numbers.Real):
+        try:
+            if not math.isfinite(value):
+                return True
+        except OverflowError:
+            pass
+    try:
+        missing = pd.isna(value)
+    except (TypeError, ValueError):
+        return False
+    try:
+        return bool(missing)
+    except (TypeError, ValueError):
+        return False

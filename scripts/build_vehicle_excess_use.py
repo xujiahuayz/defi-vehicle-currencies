@@ -167,26 +167,24 @@ def main() -> int:
     exhibit = pd.concat(
         [type_year, token_year, all_asset_type_year], ignore_index=True, sort=False
     )
-    write_exhibit(exhibit, OUT_EXHIBIT)
-    write_exhibit(type_quarter, OUT_QUARTERLY)
+    write_exhibit(
+        exhibit,
+        OUT_EXHIBIT,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PANEL],
+    )
+    write_exhibit(
+        type_quarter,
+        OUT_QUARTERLY,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PANEL],
+    )
     stamp(
         OUT_PANEL,
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
         rows=len(panel),
         notes="cycles excluded; endpoints include direct and indirect clean routes",
-    )
-    stamp(
-        OUT_EXHIBIT,
-        code_sources=CODE_SOURCES,
-        inputs=[OUT_PANEL],
-        rows=len(exhibit),
-    )
-    stamp(
-        OUT_QUARTERLY,
-        code_sources=CODE_SOURCES,
-        inputs=[OUT_PANEL],
-        rows=len(type_quarter),
     )
 
     print(f"\n{panel.date.nunique():,} days, {len(panel):,} token-days")
