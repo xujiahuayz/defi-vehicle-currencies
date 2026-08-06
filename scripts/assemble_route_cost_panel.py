@@ -67,13 +67,19 @@ def fullest_spec() -> Path | None:
     return winners[0]
 
 
+def resolve_spec(value: str, *, root: Path = REPO_ROOT) -> Path:
+    """Interpret a CLI cache path relative to the repository root."""
+    path = Path(value).expanduser()
+    return path if path.is_absolute() else root / path
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--spec", default=None, help="cache directory, defaults to the fullest")
     args = ap.parse_args()
 
-    spec = Path(args.spec) if args.spec else fullest_spec()
+    spec = resolve_spec(args.spec) if args.spec else fullest_spec()
     if spec is None:
         print(f"no day cache under {CACHE.relative_to(REPO_ROOT)}")
         return 1

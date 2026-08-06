@@ -111,6 +111,19 @@ class PanelAssemblyTests(unittest.TestCase):
             finally:
                 route_assembly.CACHE = original
 
+    def test_explicit_relative_cache_is_resolved_from_repository_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.assertEqual(
+                route_assembly.resolve_spec("data/cache", root=root),
+                root / "data" / "cache",
+            )
+            absolute = root / "absolute-cache"
+            self.assertEqual(
+                route_assembly.resolve_spec(str(absolute), root=root),
+                absolute,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
