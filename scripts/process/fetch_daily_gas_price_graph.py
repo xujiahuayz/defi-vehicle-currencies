@@ -107,18 +107,25 @@ def sample_blocks_for_day(day: str, count: int) -> tuple[list[int], str | None]:
 
 def block_gas_prices(block: int) -> list[float]:
     """Every transaction gas price in one stored full block, expressed in gwei."""
-    response = rpc_post(
-        {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "eth_getBlockByNumber",
-            "params": [hex(block), True],
-        },
-        timeout=20,
-        retries=2,
-        sleep=0.02,
-    )
-    transactions = ((response or {}).get("result") or {}).get("transactions") or []
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_getBlockByNumber",
+        "params": [hex(block), True],
+    }
+    transactions = []
+    for _attempt in range(3):
+        response = rpc_post(
+            payload,
+            timeout=20,
+            retries=2,
+            sleep=0.02,
+        )
+        transactions = (
+            ((response or {}).get("result") or {}).get("transactions") or []
+        )
+        if transactions:
+            break
     prices = []
     for transaction in transactions:
         value = transaction.get("gasPrice")

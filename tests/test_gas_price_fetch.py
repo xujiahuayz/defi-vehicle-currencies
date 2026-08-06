@@ -86,6 +86,15 @@ class DailyGasPriceFetchTests(unittest.TestCase):
         self.assertEqual(row["gas_gwei_p25"], 20.0)
         self.assertEqual(row["gas_gwei_p75"], 40.0)
 
+    def test_empty_full_block_response_rotates_to_another_endpoint(self) -> None:
+        responses = [
+            {"result": {"transactions": []}},
+            {"result": {"transactions": [{"gasPrice": "0x3b9aca00"}]}},
+        ]
+        with patch.object(gas_fetch, "rpc_post", side_effect=responses) as request:
+            self.assertEqual(gas_fetch.block_gas_prices(100), [1.0])
+        self.assertEqual(request.call_count, 2)
+
     def test_day_fetch_refuses_one_resolved_block_out_of_three(self) -> None:
         original_cache = gas_fetch.CACHE
         with TemporaryDirectory() as temporary:
