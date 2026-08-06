@@ -40,6 +40,7 @@ def load_v3_day(path: Path) -> V3DayState:
     swap_samples: dict[str, list[dict]] = defaultdict(list)
     series: dict[str, list[SwapState]] = defaultdict(list)
     events: dict[tuple[str, int], SwapEvent] = {}
+    raw_events: dict[tuple[str, int], dict] = {}
     transaction_first_log: dict[str, int] = {}
     if not path.exists():
         return V3DayState(tokens, decimals, series, events, transaction_first_log)
@@ -70,6 +71,14 @@ def load_v3_day(path: Path) -> V3DayState:
                 and sqrt_price_x96 > 0
             ):
                 continue
+            event_key = (transaction_id, log_index)
+            if event_key in raw_events:
+                prior = {key: value for key, value in raw_events[event_key].items() if key != "id"}
+                current = {key: value for key, value in row.items() if key != "id"}
+                if current == prior:
+                    continue
+                raise ValueError(f"conflicting V3 transaction-log event: {event_key}")
+            raw_events[event_key] = row
             tokens[pool_id] = (token0, token1)
             raw_decimals = (
                 (pool.get("token0") or {}).get("decimals"),
@@ -88,9 +97,6 @@ def load_v3_day(path: Path) -> V3DayState:
             sample = swap_samples[pool_id]
             if len(sample) < 12:
                 sample.append(row)
-            event_key = (transaction_id, log_index)
-            if event_key in events:
-                raise ValueError(f"duplicate V3 transaction-log event: {event_key}")
             events[event_key] = SwapEvent(pool_id, block, log_index)
             transaction_first_log[transaction_id] = min(
                 log_index,
@@ -110,12 +116,10 @@ def load_v3_day(path: Path) -> V3DayState:
         token0, token1 = tokens[pool_id]
         resolved = resolve_decimals(token0, token1, swap_samples[pool_id])
         explicit = explicit_decimals.get(pool_id)
-        if resolved is not None and explicit is not None and resolved != explicit:
-            raise ValueError(f"V3 token decimals conflict with canonical resolver: {pool_id}")
-        if resolved is not None:
-            decimals[pool_id] = resolved
-        elif explicit is not None:
+        if explicit is not None:
             decimals[pool_id] = explicit
+        elif resolved is not None:
+            decimals[pool_id] = resolved
     return V3DayState(tokens, decimals, series, events, transaction_first_log)
 
 

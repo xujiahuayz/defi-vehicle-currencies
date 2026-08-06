@@ -75,6 +75,57 @@ class PoolViewTests(unittest.TestCase):
         self.assertEqual(day.decimals["0xpool"], (6, 18))
         self.assertEqual([state[1] for state in day.series["0xpool"]], [3, 9])
 
+    def test_day_loader_deduplicates_reindexed_copy_of_same_chain_event(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "swaps.jsonl.gz"
+            row = {
+                "id": "0xabc#first",
+                "transaction": {"id": "0xabc", "blockNumber": "100"},
+                "logIndex": "3",
+                "timestamp": "3601",
+                "sqrtPriceX96": str(1 << 96),
+                "amount0": "1",
+                "amount1": "-1",
+                "pool": {
+                    "id": "0xpool",
+                    "token0": {"id": "0xa", "decimals": "18"},
+                    "token1": {"id": "0xb", "decimals": "18"},
+                },
+            }
+            duplicate = {**row, "id": "0xabc#second"}
+            with gzip.open(path, "wt") as handle:
+                for observation in (row, duplicate):
+                    handle.write(json.dumps(observation) + "\n")
+            day = load_v3_day(path)
+
+        self.assertEqual(len(day.events), 1)
+        self.assertEqual(len(day.series["0xpool"]), 1)
+
+    def test_day_loader_rejects_conflicting_duplicate_chain_event(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "swaps.jsonl.gz"
+            row = {
+                "id": "0xabc#first",
+                "transaction": {"id": "0xabc", "blockNumber": "100"},
+                "logIndex": "3",
+                "timestamp": "3601",
+                "sqrtPriceX96": str(1 << 96),
+                "amount0": "1",
+                "amount1": "-1",
+                "pool": {
+                    "id": "0xpool",
+                    "token0": {"id": "0xa", "decimals": "18"},
+                    "token1": {"id": "0xb", "decimals": "18"},
+                },
+            }
+            conflict = {**row, "id": "0xabc#second", "sqrtPriceX96": str(2 << 96)}
+            with gzip.open(path, "wt") as handle:
+                for observation in (row, conflict):
+                    handle.write(json.dumps(observation) + "\n")
+
+            with self.assertRaisesRegex(ValueError, "conflicting V3 transaction-log event"):
+                load_v3_day(path)
+
     def test_day_loader_resolves_missing_decimals_without_zero_default(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "swaps.jsonl.gz"
@@ -95,6 +146,34 @@ class PoolViewTests(unittest.TestCase):
                 handle.write(json.dumps(row) + "\n")
             day = load_v3_day(path)
         self.assertEqual(day.decimals["0xpool"], (6, 18))
+
+    def test_day_loader_prefers_consistent_explicit_decimals_over_noisy_inference(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "swaps.jsonl.gz"
+            row = {
+                "transaction": {"id": "0xabc", "blockNumber": "100"},
+                "logIndex": "3",
+                "timestamp": "3601",
+                "sqrtPriceX96": "13682920509911759910807789978049265",
+                "amount0": "-0.000003342469470821",
+                "amount1": "10",
+                "pool": {
+                    "id": "0xpool",
+                    "token0": {
+                        "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                        "decimals": "18",
+                    },
+                    "token1": {
+                        "id": "0xd393064eb5d52f98f87e838303570e4e40da0bd5",
+                        "decimals": "18",
+                    },
+                },
+            }
+            with gzip.open(path, "wt") as handle:
+                handle.write(json.dumps(row) + "\n")
+            day = load_v3_day(path)
+
+        self.assertEqual(day.decimals["0xpool"], (18, 18))
 
     def test_day_loader_leaves_unresolved_decimals_unsupported(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
