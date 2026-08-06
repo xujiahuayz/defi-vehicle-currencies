@@ -31,6 +31,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.asset_types import canonical_token, classify
+from ddvc.calendar import nearest_monthly_days
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.quoter import rpc_post
 from ddvc.runtime import atomic_output
@@ -59,25 +60,6 @@ CODE_SOURCES = [
     "src/ddvc/asset_types.py",
     "src/ddvc/quoter.py",
 ]
-
-
-def fixed_monthly_days(unified_dir: Path = UNIFIED) -> list[str]:
-    """Calendar day nearest the 15th in every available month."""
-    days = sorted(
-        path.stem
-        for path in unified_dir.glob("[0-9]" * 8 + ".parquet")
-    )
-    if not days:
-        return []
-    calendar = pd.DataFrame({"day": days})
-    calendar["date"] = pd.to_datetime(calendar["day"], format="%Y%m%d")
-    calendar["month"] = calendar["date"].dt.to_period("M")
-    calendar["distance"] = (calendar["date"].dt.day - 15).abs()
-    return (
-        calendar.sort_values(["month", "distance", "date"])
-        .drop_duplicates("month")["day"]
-        .tolist()
-    )
 
 
 def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
@@ -260,7 +242,9 @@ def main() -> int:
     if args.workers < 1:
         parser.error("--workers must be positive")
 
-    days = args.days or fixed_monthly_days()
+    days = args.days or nearest_monthly_days(
+        path.stem for path in UNIFIED.glob("[0-9]" * 8 + ".parquet")
+    )
     parts = []
     for index, day in enumerate(days, 1):
         path = UNIFIED / f"{day}.parquet"
