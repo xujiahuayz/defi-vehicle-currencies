@@ -1,22 +1,46 @@
 {
  "argv": [
   "--workers",
-  "5"
+  "8"
  ],
  "artefact": "output/exhibits/daily_gas_price_graph.jsonl",
- "code_fingerprint": "a9290c79233c2baa7490b98f19ac5278fe5734bd626f5b06585fe28124015325",
+ "code_fingerprint": "3ef5f6010a2ea6425f0b923256c34c3d3eca6b556f88248bbf4d77a6ab9e9e07",
  "code_sources": [
   "scripts/process/fetch_daily_gas_price_graph.py",
   "src/ddvc/quoter.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T17:44:15+00:00",
+ "created_at": "2026-08-06T19:49:00+00:00",
  "git": {
-  "branch": "glotl/workflow-status",
-  "commit": "04439e09f5440d32035668bb0e12d8522a47c31a",
+  "branch": "main",
+  "commit": "a97c1dbd597c46dfa89aaaf4dbe54de7cb04f1a6",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/processed/daily_gas_price_graph.parquet.prov.json"
+   "data/manifests/data/processed/counterfactual_dominance.parquet.prov.json",
+   "data/manifests/data/processed/daily_gas_price_graph.parquet.prov.json",
+   "data/manifests/output/exhibits/counterfactual_dominance_summary.jsonl.prov.json",
+   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
+   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "output/exhibits/counterfactual_dominance_summary.jsonl",
+   "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/tables/bridge_denominator_robustness.pdf",
+   "output/tables/liquidity_robustness.pdf",
+   "output/tables/measurement_robustness.pdf",
+   "output/tables/route_cost_distribution_weighting.pdf",
+   "output/tables/route_cost_distribution_weighting.tex",
+   "output/tables/route_cost_robustness.pdf",
+   "output/tables/route_cost_robustness.tex",
+   "output/tables/stress_robustness.pdf",
+   "output/tables/stress_rotation_decomposition.pdf",
+   "output/tables/v4_match_balance.pdf",
+   "output/tables/v4_robustness.pdf",
+   "output/exhibits/realised_dominance_reweighting.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []

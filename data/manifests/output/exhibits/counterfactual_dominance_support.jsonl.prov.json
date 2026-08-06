@@ -1,23 +1,27 @@
 {
- "argv": [
-  "--workers",
-  "8"
- ],
- "artefact": "data/processed/daily_gas_price_graph.parquet",
- "code_fingerprint": "3ef5f6010a2ea6425f0b923256c34c3d3eca6b556f88248bbf4d77a6ab9e9e07",
+ "argv": [],
+ "artefact": "output/exhibits/counterfactual_dominance_support.jsonl",
+ "code_fingerprint": "92366d9818a86834090a27f03aef69a25890da8e02436e6ab2f8330502d8e14b",
  "code_sources": [
-  "scripts/process/fetch_daily_gas_price_graph.py",
-  "src/ddvc/quoter.py",
+  "scripts/build_counterfactual_dominance.py",
+  "src/ddvc/asset_types.py",
+  "src/ddvc/calendar.py",
+  "src/ddvc/cpquote.py",
+  "src/ddvc/gas.py",
+  "src/ddvc/prices.py",
+  "src/ddvc/realised.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T19:48:59+00:00",
+ "created_at": "2026-08-06T20:03:12+00:00",
  "git": {
   "branch": "main",
-  "commit": "a97c1dbd597c46dfa89aaaf4dbe54de7cb04f1a6",
-  "dirty": false,
+  "commit": "29e1022efcbe2747cb411f44769b4d721b4b52ac",
+  "dirty": true,
   "dirty_generated_files": [
    "data/manifests/data/processed/counterfactual_dominance.parquet.prov.json",
+   "data/manifests/data/processed/daily_gas_price_graph.parquet.prov.json",
    "data/manifests/output/exhibits/counterfactual_dominance_summary.jsonl.prov.json",
+   "data/manifests/output/exhibits/daily_gas_price_graph.jsonl.prov.json",
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
@@ -41,44 +45,18 @@
    "output/tables/v4_robustness.pdf",
    "output/exhibits/realised_dominance_reweighting.jsonl"
   ],
-  "dirty_tracked_files": [],
+  "dirty_tracked_files": [
+   "scripts/build_cross_venue_routing_series.py",
+   "tests/test_cross_venue_routing_series.py"
+  ],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "entries": 2277,
+   "bytes": 9124512,
    "exists": true,
-   "kind": "directory",
-   "path": "data/interim/gas_price_graph",
-   "tree_fingerprint": "a651c5b581f7b9563f8cab75b5a630f138faf677cc8f8a4961eb3e1ecf9bbea7"
-  },
-  {
-   "entries": 2277,
-   "exists": true,
-   "kind": "directory",
-   "path": "data/unified",
-   "tree_fingerprint": "b121431024bb92afbfddf54f0bb8b44dc4b7872485689f7394e0aa8930a82c0b"
-  },
-  {
-   "entries": 8394,
-   "exists": true,
-   "kind": "directory",
-   "path": "data/raw/thegraph/uniswap_v1",
-   "tree_fingerprint": "3cfc6043659b387428fc08079c1935a713f3ba2cd2eef37d761bbaac2f74cddd"
-  },
-  {
-   "entries": 13581,
-   "exists": true,
-   "kind": "directory",
-   "path": "data/raw/thegraph/uniswap_v2",
-   "tree_fingerprint": "2f2fdffc5bd5854c3d6e127c90cc3757e856d396add463c65724b104828f0dab"
-  },
-  {
-   "entries": 9420,
-   "exists": true,
-   "kind": "directory",
-   "path": "data/raw/thegraph/uniswap_v3",
-   "tree_fingerprint": "f45dab14aa51240de52e86f01449373b9d9e000710ebd16078ff51fc87a58206"
+   "path": "data/processed/counterfactual_dominance.parquet",
+   "sha256": "d550f4b89037a4a0ee9ff9290c3d61b344e3ab87c2bcb921cb49990ed5028831"
   }
  ],
  "libraries": {
@@ -87,8 +65,8 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "daily gas-price median from 3 evenly spaced full blocks",
+ "notes": "reserve-state support split; adjacent means all three prior observations are one hour back with no liquidity event, bridged advances a more distant observed state through all intervening raw events, and replayed includes at least one mint or burn",
  "python": "3.14.5",
- "rows": 2277,
- "script": "scripts/process/fetch_daily_gas_price_graph.py"
+ "rows": 24,
+ "script": "scripts/build_counterfactual_dominance.py"
 }

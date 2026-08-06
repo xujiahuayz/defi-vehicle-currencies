@@ -1,35 +1,60 @@
 {
- "argv": [
-  "--days",
-  "20220115"
- ],
+ "argv": [],
  "artefact": "output/exhibits/counterfactual_dominance_summary.jsonl",
- "code_fingerprint": "26c0f65edfaa0d2c8c7c2b9f5cbf82abddca2a484da7eb15a1e5f299b17b94a2",
+ "code_fingerprint": "92366d9818a86834090a27f03aef69a25890da8e02436e6ab2f8330502d8e14b",
  "code_sources": [
   "scripts/build_counterfactual_dominance.py",
   "src/ddvc/asset_types.py",
+  "src/ddvc/calendar.py",
   "src/ddvc/cpquote.py",
+  "src/ddvc/gas.py",
   "src/ddvc/prices.py",
   "src/ddvc/realised.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T17:53:38+00:00",
+ "created_at": "2026-08-06T20:03:12+00:00",
  "git": {
-  "branch": "glotl/workflow-status",
-  "commit": "613ccb449b27255ac5d89ddd090b894c88bdbfef",
-  "dirty": false,
+  "branch": "main",
+  "commit": "29e1022efcbe2747cb411f44769b4d721b4b52ac",
+  "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/data/processed/counterfactual_dominance.parquet.prov.json"
+   "data/manifests/data/processed/counterfactual_dominance.parquet.prov.json",
+   "data/manifests/data/processed/daily_gas_price_graph.parquet.prov.json",
+   "data/manifests/output/exhibits/daily_gas_price_graph.jsonl.prov.json",
+   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
+   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/tables/bridge_denominator_robustness.pdf",
+   "output/tables/liquidity_robustness.pdf",
+   "output/tables/measurement_robustness.pdf",
+   "output/tables/route_cost_distribution_weighting.pdf",
+   "output/tables/route_cost_distribution_weighting.tex",
+   "output/tables/route_cost_robustness.pdf",
+   "output/tables/route_cost_robustness.tex",
+   "output/tables/stress_robustness.pdf",
+   "output/tables/stress_rotation_decomposition.pdf",
+   "output/tables/v4_match_balance.pdf",
+   "output/tables/v4_robustness.pdf",
+   "output/exhibits/realised_dominance_reweighting.jsonl"
   ],
-  "dirty_tracked_files": [],
+  "dirty_tracked_files": [
+   "scripts/build_cross_venue_routing_series.py",
+   "tests/test_cross_venue_routing_series.py"
+  ],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 97707,
+   "bytes": 9124512,
    "exists": true,
    "path": "data/processed/counterfactual_dominance.parquet",
-   "sha256": "7ebc43aae40927888e2b8a1cac5812645d4517370e838aeb6d81ac2d0b68a696"
+   "sha256": "d550f4b89037a4a0ee9ff9290c3d61b344e3ab87c2bcb921cb49990ed5028831"
   }
  ],
  "libraries": {
@@ -40,6 +65,6 @@
  },
  "notes": "annual exact-size V2-family direct counterfactual; positive price-free output improvement means the direct route returns more; input-normalized gas adjustment uses historical prices and measured route-topology medians and is not yet venue-specific",
  "python": "3.14.5",
- "rows": 8,
+ "rows": 50,
  "script": "scripts/build_counterfactual_dominance.py"
 }
