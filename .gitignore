@@ -22,7 +22,7 @@ data/raw/
 data/interim/
 data/processed/
 data/external/
-data/unified/
+data/unified
 data/metrics/
 data/exhibits/
 data/empirical/
