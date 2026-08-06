@@ -10,6 +10,7 @@ from __future__ import annotations
 import calendar
 import datetime as dt
 import gzip
+import io
 import json
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,7 @@ from ddvc.fetch.graph import GraphClient, graph_keys, head_block, paginate
 from ddvc.fetch.schemas import EntitySpec, get_schema
 from ddvc.fetch.sources import DexSource, get_source
 from ddvc.paths import DATA_DIR
+from ddvc.runtime import atomic_output
 
 
 def midnight_ts(day: dt.date) -> int:
@@ -45,29 +47,24 @@ def meta_path(source: str, day: dt.date) -> Path:
 
 
 def write_jsonl_gz(path: Path, rows: list[dict[str, Any]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    try:
-        with gzip.open(tmp, "wt", encoding="utf-8") as fh:
-            for row in rows:
-                fh.write(json.dumps(row, separators=(",", ":"), sort_keys=True))
-                fh.write("\n")
-        tmp.replace(path)
-    finally:
-        if tmp.exists():
-            tmp.unlink()
+    with atomic_output(path) as temporary:
+        with temporary.open("wb") as raw_handle:
+            with gzip.GzipFile(
+                filename="",
+                mode="wb",
+                fileobj=raw_handle,
+                mtime=0,
+            ) as compressed:
+                with io.TextIOWrapper(compressed, encoding="utf-8", newline="\n") as fh:
+                    for row in rows:
+                        fh.write(json.dumps(row, separators=(",", ":"), sort_keys=True))
+                        fh.write("\n")
 
 
 def write_json(path: Path, value: dict[str, Any]) -> None:
     """Atomically replace a JSON object and remove a failed write's temporary file."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    try:
-        tmp.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
-        tmp.replace(path)
-    finally:
-        if tmp.exists():
-            tmp.unlink()
+    with atomic_output(path) as temporary:
+        temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
 
 
 def where_for_entity(entity: EntitySpec, day: dt.date) -> dict[str, str]:

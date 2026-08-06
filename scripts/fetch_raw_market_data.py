@@ -48,6 +48,8 @@ from ddvc.fetch.sources import (
     last_complete_month_exclusive,
     source_names,
 )
+from ddvc.paths import DATA_DIR
+from ddvc.runtime import exclusive_job
 
 MAX_GRAPH_WORKERS = 8
 
@@ -510,6 +512,12 @@ def cmd_fetch(args: argparse.Namespace) -> int:
 
 
 def cmd_enrich_v4_statics(args: argparse.Namespace) -> int:
+    lock_path = DATA_DIR / ".locks" / "v4-statics-enrichment.lock"
+    with exclusive_job(lock_path, job="V4 static enrichment"):
+        return _enrich_v4_statics(args)
+
+
+def _enrich_v4_statics(args: argparse.Namespace) -> int:
     start, end = effective_range("uniswap_v4", args.start, args.end)
     days = iter_days(start, end)
     if args.max_days:

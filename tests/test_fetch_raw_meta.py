@@ -23,6 +23,15 @@ from scripts.fetch_raw_market_data import enrich_v4_statics_day
 
 
 class RawMetaMergeTests(unittest.TestCase):
+    def test_raw_gzip_is_byte_reproducible(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "rows.jsonl.gz"
+            rows = [{"b": 2, "a": 1}]
+            write_jsonl_gz(target, rows)
+            first = target.read_bytes()
+            write_jsonl_gz(target, rows)
+            self.assertEqual(target.read_bytes(), first)
+
     def test_transaction_accessors_support_nested_and_scalar_graph_schemas(self) -> None:
         nested = {
             "transaction": {"id": "0xabc", "blockNumber": "123", "timestamp": "456"}

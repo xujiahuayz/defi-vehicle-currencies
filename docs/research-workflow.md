@@ -22,6 +22,8 @@ The reason it is a loop is that content and conformance interfere. Every rewrite
 
 **Order nodes by the cost of redoing them, and freeze a node's input before running an expensive one.**
 
+**Expensive nodes have one executable owner.** A long build must acquire a non-blocking job lock before it reads or writes shared artifacts, record its process and command in that lock, and refuse an overlapping launch. Every final artifact is installed from a unique temporary sibling by atomic replacement; a fixed `.tmp` name is unsafe because two processes can truncate the same file before either replaces it. After an interruption, the workflow validates the artifact and its manifest before deciding whether to resume or recompute. The canonical implementation is `ddvc.runtime`, not a session note or an agent-specific convention. This rule was made executable after two V4 enrichment processes were found writing an overlapping date range on 2026-08-06.
+
 Two classes of node, and the graph must not mix them up.
 
 *Idempotent gates* cost nothing to re-run and carry no state: measurement, linting, conformance. They run continuously, after every change, and re-running them on unchanged input is free.
