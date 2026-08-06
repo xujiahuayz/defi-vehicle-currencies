@@ -38,6 +38,11 @@ UNI_V3_BURN_FIELDS = (
     "tickLower tickUpper logIndex"
 )
 
+UNISWAP_V4_STATIC_FIELDS = (
+    "id pool { id feeTier: fee token0 { id symbol decimals } "
+    "token1 { id symbol decimals } }"
+)
+
 
 SCHEMAS: dict[str, SchemaSpec] = {
     "uniswap_v1": SchemaSpec(

@@ -47,11 +47,27 @@ def meta_path(source: str, day: dt.date) -> Path:
 def write_jsonl_gz(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
-    with gzip.open(tmp, "wt", encoding="utf-8") as fh:
-        for row in rows:
-            fh.write(json.dumps(row, separators=(",", ":"), sort_keys=True))
-            fh.write("\n")
-    tmp.replace(path)
+    try:
+        with gzip.open(tmp, "wt", encoding="utf-8") as fh:
+            for row in rows:
+                fh.write(json.dumps(row, separators=(",", ":"), sort_keys=True))
+                fh.write("\n")
+        tmp.replace(path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def write_json(path: Path, value: dict[str, Any]) -> None:
+    """Atomically replace a JSON object and remove a failed write's temporary file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    try:
+        tmp.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+        tmp.replace(path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
 
 
 def where_for_entity(entity: EntitySpec, day: dt.date) -> dict[str, str]:
@@ -91,13 +107,29 @@ def page_size_for_entity(entity: EntitySpec) -> int:
     return 1000
 
 
+def transaction_value(row: dict[str, Any], field: str) -> Any:
+    """Read transaction data from either nested or scalar Graph schemas.
+
+    Older Uniswap subgraphs expose ``transaction { id blockNumber timestamp }``;
+    the current v4 schema exposes the transaction hash as a scalar string. Keeping
+    that variant handling here prevents every downstream reader from growing its
+    own slightly different schema shim.
+    """
+    transaction = row.get("transaction")
+    if isinstance(transaction, dict):
+        return transaction.get(field)
+    if field == "id" and isinstance(transaction, str):
+        return transaction
+    return None
+
+
 def _block_values(rows: list[dict[str, Any]]) -> list[int]:
     values: list[int] = []
     for row in rows:
         candidates = [
             row.get("block"),
             row.get("blockNumber"),
-            (row.get("transaction") or {}).get("blockNumber"),
+            transaction_value(row, "blockNumber"),
         ]
         for value in candidates:
             if value is None:
@@ -122,7 +154,7 @@ def timestamp_value(row: dict[str, Any] | None) -> int | None:
         return None
     candidates = [
         row.get("timestamp"),
-        (row.get("transaction") or {}).get("timestamp"),
+        transaction_value(row, "timestamp"),
         row.get("hourStartUnix"),
         row.get("date"),
     ]
@@ -134,6 +166,42 @@ def timestamp_value(row: dict[str, Any] | None) -> int | None:
         except (TypeError, ValueError):
             continue
     return None
+
+
+def transaction_id(row: dict[str, Any]) -> str | None:
+    value = transaction_value(row, "id")
+    return str(value) if value else None
+
+
+def v4_statics_complete(row: dict[str, Any]) -> bool:
+    pool = row.get("pool") or {}
+    return (
+        pool.get("feeTier") is not None
+        and (pool.get("token0") or {}).get("decimals") is not None
+        and (pool.get("token1") or {}).get("decimals") is not None
+    )
+
+
+def merge_v4_statics(row: dict[str, Any], auxiliary: dict[str, Any]) -> None:
+    """Merge only immutable v4 pool statics, refusing any identity mismatch."""
+    primary_pool = row.get("pool") or {}
+    auxiliary_pool = auxiliary.get("pool") or {}
+    identities = (
+        (row.get("id"), auxiliary.get("id")),
+        (primary_pool.get("id"), auxiliary_pool.get("id")),
+        ((primary_pool.get("token0") or {}).get("id"), (auxiliary_pool.get("token0") or {}).get("id")),
+        ((primary_pool.get("token1") or {}).get("id"), (auxiliary_pool.get("token1") or {}).get("id")),
+    )
+    if any(
+        left is None or right is None or str(left).lower() != str(right).lower()
+        for left, right in identities
+    ):
+        raise RuntimeError(f"v4 static identity mismatch for swap {row.get('id')}")
+    primary_pool["feeTier"] = auxiliary_pool.get("feeTier")
+    for token in ("token0", "token1"):
+        primary_pool[token]["decimals"] = auxiliary_pool[token].get("decimals")
+    if not v4_statics_complete(row):
+        raise RuntimeError(f"v4 auxiliary statics incomplete for swap {row.get('id')}")
 
 
 def merge_stream_metadata(existing: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
@@ -225,9 +293,7 @@ def fetch_source_day(
             meta = merge_stream_metadata(json.loads(meta_out.read_text()), meta)
         except (OSError, json.JSONDecodeError):
             pass
-    tmp = meta_out.with_name(meta_out.name + ".tmp")
-    tmp.write_text(json.dumps(meta, indent=2, sort_keys=True))
-    tmp.replace(meta_out)
+    write_json(meta_out, meta)
     return meta
 
 

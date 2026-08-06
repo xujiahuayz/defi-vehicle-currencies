@@ -3,12 +3,19 @@ from __future__ import annotations
 import datetime as dt
 import unittest
 
+from scripts.fetch_raw_market_data import bounded_graph_workers
+
 from ddvc.fetch.raw import raw_path, where_for_entity
 from ddvc.fetch.schemas import EntitySpec, get_schema
 from ddvc.fetch.sources import get_source, iter_days, last_complete_month_exclusive
 
 
 class FetchPlanningTests(unittest.TestCase):
+    def test_graph_worker_count_is_bounded(self) -> None:
+        self.assertEqual(bounded_graph_workers(0), 1)
+        self.assertEqual(bounded_graph_workers(5), 5)
+        self.assertEqual(bounded_graph_workers(100), 8)
+
     def test_last_complete_month_exclusive(self) -> None:
         self.assertEqual(last_complete_month_exclusive(dt.date(2026, 7, 1)), dt.date(2026, 7, 1))
         self.assertEqual(last_complete_month_exclusive(dt.date(2026, 7, 31)), dt.date(2026, 7, 1))
@@ -33,6 +40,11 @@ class FetchPlanningTests(unittest.TestCase):
         self.assertLessEqual({"swaps", "daily", "mints", "burns"}, streams)
         streams = {entity.stream for entity in get_schema("uniswap_v4").entities}
         self.assertLessEqual({"swaps", "daily", "modify_liquidities"}, streams)
+        v4_swaps = next(
+            entity for entity in get_schema("uniswap_v4").entities if entity.stream == "swaps"
+        )
+        self.assertIn("feeTier", v4_swaps.fields)
+        self.assertIn("transaction {", v4_swaps.fields)
 
     def test_where_for_timestamp_and_date_entities(self) -> None:
         day = dt.date(2026, 6, 30)

@@ -31,6 +31,7 @@ import pandas as pd
 from scipy import stats
 
 from ddvc.asset_types import canonical_token
+from ddvc.fetch.raw import block_value, timestamp_value
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.provenance import cache_key
 from ddvc.provenance import stamp as record_provenance
@@ -510,8 +511,10 @@ def _absorb_swap_state(venue: str, rec: dict,
     if not pool_id or not a0 or not a1:
         return
     try:
-        tx = rec.get("transaction") or {}
-        block = int(tx.get("blockNumber") or 0)
+        # Alternate v4 Graph schemas can expose the transaction hash as a scalar
+        # and omit blockNumber. Ethereum timestamps order their blocks, so a
+        # timestamp is the honest fallback within a raw day.
+        block = int(block_value(rec) or timestamp_value(rec) or 0)
         log_index = int(rec.get("logIndex") or 0)
         sqrt_price = int(rec.get("sqrtPriceX96") or rec.get("sqrtPrice") or 0)
         tick = int(rec.get("tick") or 0)
@@ -631,8 +634,7 @@ def load_day_tick_events(venue: str, stamp: str) -> dict[int, dict[str, list]]:
             for line in fh:
                 rec = json.loads(line)
                 try:
-                    ts = int(rec.get("timestamp")
-                             or (rec.get("transaction") or {}).get("timestamp") or 0)
+                    ts = int(timestamp_value(rec) or 0)
                 except (TypeError, ValueError):
                     continue
                 if ts <= 0:

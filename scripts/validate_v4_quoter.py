@@ -32,19 +32,16 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
-import sys
-from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+from ddvc.fetch.raw import block_value, timestamp_value
+from ddvc.paths import DATA_DIR, OUTPUT_DIR
+from ddvc.pricing.v3quote import quote_exact_input
+from ddvc.tables import write_exhibit
 
-from ddvc.pricing.v3quote import quote_exact_input  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
-
-RAW = ROOT / "data" / "raw" / "thegraph" / "uniswap_v4"
-OUT = ROOT / "output" / "exhibits" / "v4_quoter_validation.jsonl"
+RAW = DATA_DIR / "raw" / "thegraph" / "uniswap_v4"
+OUT = OUTPUT_DIR / "exhibits" / "v4_quoter_validation.jsonl"
 
 
 def days() -> list[str]:
@@ -106,9 +103,13 @@ def main() -> int:
     net = accumulate_ticks(day, set(busiest))
     out = []
     for pid in busiest:
-        s = sorted(rows_by_pool[pid],
-                   key=lambda r: (int(r["transaction"]["blockNumber"]),
-                                  int(r.get("logIndex") or 0)))
+        s = sorted(
+            rows_by_pool[pid],
+            key=lambda r: (
+                int(block_value(r) or timestamp_value(r) or 0),
+                int(r.get("logIndex") or 0),
+            ),
+        )
         pool = s[0]["pool"]
         t0, t1 = pool["token0"], pool["token1"]
         try:
@@ -173,9 +174,9 @@ def main() -> int:
         print(f"  {pair:<22} fee={fee:<7} n={len(g):>5}  "
               f"median |err| {g.abs_err.median():>9.4f}%")
     write_exhibit(df, OUT)
-    print(f"\nwrote {OUT.relative_to(ROOT)}")
+    print(f"\nwrote {OUT.relative_to(OUTPUT_DIR.parent)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

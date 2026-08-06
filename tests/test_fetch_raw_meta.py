@@ -1,11 +1,146 @@
 from __future__ import annotations
 
+import datetime as dt
+import json
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
-from ddvc.fetch.raw import merge_stream_metadata
+from ddvc.fetch.raw import (
+    block_value,
+    merge_stream_metadata,
+    merge_v4_statics,
+    timestamp_value,
+    transaction_id,
+    v4_statics_complete,
+    write_json,
+    write_jsonl_gz,
+)
+from scripts.fetch_raw_market_data import enrich_v4_statics_day
 
 
 class RawMetaMergeTests(unittest.TestCase):
+    def test_transaction_accessors_support_nested_and_scalar_graph_schemas(self) -> None:
+        nested = {
+            "transaction": {"id": "0xabc", "blockNumber": "123", "timestamp": "456"}
+        }
+        scalar = {"transaction": "0xdef", "timestamp": "789"}
+        self.assertEqual(transaction_id(nested), "0xabc")
+        self.assertEqual(block_value(nested), 123)
+        self.assertEqual(timestamp_value(nested), 456)
+        self.assertEqual(transaction_id(scalar), "0xdef")
+        self.assertIsNone(block_value(scalar))
+        self.assertEqual(timestamp_value(scalar), 789)
+
+    def test_v4_static_merge_changes_only_fee_and_decimals(self) -> None:
+        primary = {
+            "id": "swap-1",
+            "amount0": "1",
+            "amount1": "-2",
+            "transaction": {"id": "tx", "blockNumber": "3"},
+            "pool": {
+                "id": "pool",
+                "token0": {"id": "token-a", "symbol": "A"},
+                "token1": {"id": "token-b", "symbol": "B"},
+            },
+        }
+        auxiliary = {
+            "id": "swap-1",
+            "pool": {
+                "id": "pool",
+                "feeTier": 500,
+                "token0": {"id": "token-a", "symbol": "A", "decimals": "18"},
+                "token1": {"id": "token-b", "symbol": "B", "decimals": "6"},
+            },
+        }
+        merge_v4_statics(primary, auxiliary)
+        self.assertTrue(v4_statics_complete(primary))
+        self.assertEqual(primary["amount0"], "1")
+        self.assertEqual(primary["amount1"], "-2")
+        self.assertEqual(primary["transaction"]["blockNumber"], "3")
+        self.assertEqual(primary["pool"]["feeTier"], 500)
+        self.assertEqual(primary["pool"]["token0"]["decimals"], "18")
+
+    def test_v4_static_merge_refuses_a_pool_identity_mismatch(self) -> None:
+        primary = {
+            "id": "swap-1",
+            "pool": {
+                "id": "pool-a",
+                "token0": {"id": "token-a"},
+                "token1": {"id": "token-b"},
+            },
+        }
+        auxiliary = {
+            "id": "swap-1",
+            "pool": {
+                "id": "pool-b",
+                "feeTier": 500,
+                "token0": {"id": "token-a", "decimals": "18"},
+                "token1": {"id": "token-b", "decimals": "6"},
+            },
+        }
+        with self.assertRaisesRegex(RuntimeError, "identity mismatch"):
+            merge_v4_statics(primary, auxiliary)
+
+    def test_v4_enrichment_recovers_metadata_after_an_interrupted_raw_write(self) -> None:
+        day = dt.date(2025, 9, 14)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw = root / "swaps.jsonl.gz"
+            metadata = root / "meta.json"
+            write_jsonl_gz(
+                raw,
+                [
+                    {
+                        "id": "swap-1",
+                        "pool": {
+                            "id": "pool",
+                            "feeTier": 500,
+                            "token0": {"id": "token-a", "decimals": "18"},
+                            "token1": {"id": "token-b", "decimals": "6"},
+                        },
+                    }
+                ],
+            )
+            write_json(
+                metadata,
+                {
+                    "source": "uniswap_v4",
+                    "day": day.isoformat(),
+                    "statics_enrichment": {"status": "prepared"},
+                },
+            )
+            with (
+                patch("scripts.fetch_raw_market_data.raw_path", return_value=raw),
+                patch("scripts.fetch_raw_market_data.meta_path", return_value=metadata),
+            ):
+                result = enrich_v4_statics_day(day)
+            self.assertEqual(result["status"], "recovered")
+            recorded = json.loads(metadata.read_text())
+            self.assertEqual(recorded["statics_enrichment"]["status"], "complete")
+
+    def test_v4_static_merge_refuses_a_swap_identity_mismatch(self) -> None:
+        primary = {
+            "id": "swap-1",
+            "pool": {
+                "id": "pool",
+                "token0": {"id": "token-a"},
+                "token1": {"id": "token-b"},
+            },
+        }
+        auxiliary = {
+            "id": "swap-2",
+            "pool": {
+                "id": "pool",
+                "feeTier": 500,
+                "token0": {"id": "token-a", "decimals": "18"},
+                "token1": {"id": "token-b", "decimals": "6"},
+            },
+        }
+        with self.assertRaisesRegex(RuntimeError, "identity mismatch"):
+            merge_v4_statics(primary, auxiliary)
+
     def test_partial_refresh_preserves_other_streams_and_recomputes_bounds(self) -> None:
         old = {
             "head_block_at_fetch": 100,

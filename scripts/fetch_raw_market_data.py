@@ -18,33 +18,110 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import gzip
 import json
 import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
 from ddvc.fetch.dune import dune_meta_path, dune_path, fetch_dune_month, month_ranges, stream_names_for_dune_source
-from ddvc.fetch.graph import GraphClient, first_record, graph_keys
+from ddvc.fetch.graph import GraphClient, first_record, graph_keys, paginate
 from ddvc.fetch.raw import (
     block_value,
     fetch_source_day,
     meta_path,
+    merge_v4_statics,
     midnight_ts,
     raw_path,
     stream_names_for_source,
     timestamp_value,
+    v4_statics_complete,
+    write_json,
+    write_jsonl_gz,
 )
-from ddvc.fetch.schemas import get_schema
+from ddvc.fetch.schemas import UNISWAP_V4_STATIC_FIELDS, get_schema
 from ddvc.fetch.sources import (
     DEX_SOURCES,
+    UNISWAP_V4_STATICS_SUBGRAPH_ID,
     get_source,
     iter_days,
     last_complete_month_exclusive,
     source_names,
 )
+
+MAX_GRAPH_WORKERS = 8
+
+
+def bounded_graph_workers(requested: int) -> int:
+    return min(MAX_GRAPH_WORKERS, max(1, requested))
+
+
+def enrich_v4_statics_day(day: dt.date) -> dict[str, object]:
+    """Fill fee/decimal statics without replacing signed amounts or block provenance."""
+    path = raw_path("uniswap_v4", "swaps", day)
+    if not path.exists():
+        raise RuntimeError(f"missing canonical v4 swaps for {day}")
+    with gzip.open(path, "rt") as fh:
+        rows = [json.loads(line) for line in fh if line.strip()]
+    metadata_path = meta_path("uniswap_v4", day)
+    try:
+        metadata = json.loads(metadata_path.read_text())
+    except (OSError, json.JSONDecodeError):
+        metadata = {"source": "uniswap_v4", "day": day.isoformat()}
+
+    incomplete = [row for row in rows if not v4_statics_complete(row)]
+    missing_ids = [row.get("id") for row in incomplete]
+    if any(not isinstance(row_id, str) or not row_id for row_id in missing_ids):
+        raise RuntimeError(f"canonical v4 swaps contain a missing record ID on {day}")
+    missing = set(missing_ids)
+    if len(missing) != len(missing_ids):
+        raise RuntimeError(f"canonical v4 swaps contain duplicate record IDs on {day}")
+    if not missing:
+        enrichment = metadata.get("statics_enrichment")
+        if isinstance(enrichment, dict) and enrichment.get("status") == "prepared":
+            enrichment["status"] = "complete"
+            enrichment["enriched_at_utc"] = dt.datetime.now(dt.timezone.utc).isoformat()
+            write_json(metadata_path, metadata)
+            return {"day": day.isoformat(), "rows": len(rows), "enriched": 0, "status": "recovered"}
+        return {"day": day.isoformat(), "rows": len(rows), "enriched": 0, "status": "already_complete"}
+
+    client = GraphClient(UNISWAP_V4_STATICS_SUBGRAPH_ID, graph_keys())
+    start = midnight_ts(day)
+    auxiliary_rows = paginate(
+        client,
+        entity="swaps",
+        fields=UNISWAP_V4_STATIC_FIELDS,
+        base_where={"timestamp_gte": str(start), "timestamp_lt": str(start + 86_400)},
+    )
+    auxiliary_ids = [row.get("id") for row in auxiliary_rows]
+    if any(not isinstance(row_id, str) or not row_id for row_id in auxiliary_ids):
+        raise RuntimeError(f"auxiliary v4 swaps contain a missing record ID on {day}")
+    auxiliary = dict(zip(auxiliary_ids, auxiliary_rows, strict=True))
+    if len(auxiliary) != len(auxiliary_rows):
+        raise RuntimeError(f"auxiliary v4 swaps contain duplicate record IDs on {day}")
+    unresolved = sorted(missing.difference(auxiliary))
+    if unresolved:
+        raise RuntimeError(
+            f"v4 statics source misses {len(unresolved):,}/{len(missing):,} canonical swaps on {day}"
+        )
+    for row in rows:
+        row_id = row.get("id")
+        if row_id in missing:
+            merge_v4_statics(row, auxiliary[row_id])
+    metadata["statics_enrichment"] = {
+        "source_subgraph_id": UNISWAP_V4_STATICS_SUBGRAPH_ID,
+        "matched_by": "swap_id",
+        "fields": ["pool.feeTier", "pool.token0.decimals", "pool.token1.decimals"],
+        "rows": len(missing),
+        "status": "prepared",
+        "prepared_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+    }
+    write_json(metadata_path, metadata)
+    write_jsonl_gz(path, rows)
+    metadata["statics_enrichment"]["status"] = "complete"
+    metadata["statics_enrichment"]["enriched_at_utc"] = dt.datetime.now(dt.timezone.utc).isoformat()
+    write_json(metadata_path, metadata)
+    return {"day": day.isoformat(), "rows": len(rows), "enriched": len(missing), "status": "enriched"}
 
 
 def parse_date(value: str) -> dt.date:
@@ -330,6 +407,7 @@ def fetch_gap_days(
 
 
 def cmd_fetch(args: argparse.Namespace) -> int:
+    failures: list[tuple[str, str, str]] = []
     if args.gaps_only:
         totals = {}
         end_by_source = {}
@@ -390,7 +468,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
         # LIVE keys rather than pushed higher: twelve concurrent workers is what
         # tripped the public RPC endpoints' rate limits earlier, and the same
         # mistake is available here.
-        workers = max(1, args.workers)
+        workers = bounded_graph_workers(args.workers)
         if workers == 1:
             for day in days:
                 meta = fetch_source_day(source, day, streams=streams,
@@ -409,11 +487,49 @@ def cmd_fetch(args: argparse.Namespace) -> int:
                 try:
                     print(json.dumps(fut.result(), sort_keys=True))
                 except Exception as exc:
+                    failures.append((name, day.isoformat(), f"{type(exc).__name__}: {exc}"))
                     print(json.dumps({"source": name, "day": day.isoformat(),
                                       "error": f"{type(exc).__name__}: {exc}"[:300]}))
                 done += 1
                 if done % 50 == 0 or done == len(days):
                     print(f"# {name}: {done}/{len(days)} days", flush=True)
+    if failures:
+        print(
+            f"error: {len(failures):,} day fetch(es) failed; first was "
+            f"{failures[0][0]} {failures[0][1]}: {failures[0][2][:200]}",
+            file=sys.stderr,
+        )
+        return 2
+    return 0
+
+
+def cmd_enrich_v4_statics(args: argparse.Namespace) -> int:
+    start, end = effective_range("uniswap_v4", args.start, args.end)
+    days = iter_days(start, end)
+    if args.max_days:
+        days = days[: args.max_days]
+    failures: list[tuple[str, str]] = []
+    done = 0
+    with ThreadPoolExecutor(max_workers=bounded_graph_workers(args.workers)) as pool:
+        futures = {pool.submit(enrich_v4_statics_day, day): day for day in days}
+        for future in as_completed(futures):
+            day = futures[future]
+            try:
+                print(json.dumps(future.result(), sort_keys=True), flush=True)
+            except Exception as exc:
+                error = f"{type(exc).__name__}: {exc}"
+                failures.append((day.isoformat(), error))
+                print(json.dumps({"day": day.isoformat(), "error": error[:500]}), flush=True)
+            done += 1
+            if done % 50 == 0 or done == len(days):
+                print(f"# uniswap_v4 statics: {done}/{len(days)} days", flush=True)
+    if failures:
+        print(
+            f"error: {len(failures):,} v4 static-enrichment day(s) failed; first was "
+            f"{failures[0][0]}: {failures[0][1][:200]}",
+            file=sys.stderr,
+        )
+        return 2
     return 0
 
 
@@ -447,6 +563,15 @@ def build_parser() -> argparse.ArgumentParser:
     sub.choices["fetch"].add_argument("--gaps-only", action="store_true", help="Fetch only missing day/stream targets.")
     sub.choices["fetch"].add_argument("--dune-sleep", type=float, default=2.0, help="Seconds to sleep between day-sized Dune gap fetches.")
     sub.choices["fetch"].add_argument("--max-retries", type=int, default=50, help="Per-day retries for transient provider/indexer errors in --gaps-only mode.")
+    enrich = sub.add_parser(
+        "enrich-v4-statics",
+        help="merge fee/decimal statics into canonical signed v4 swaps by exact record ID",
+    )
+    enrich.add_argument("--start", default="genesis", help="'genesis' or YYYY-MM-DD")
+    enrich.add_argument("--end", default=None, help="exclusive YYYY-MM-DD")
+    enrich.add_argument("--workers", type=int, default=5)
+    enrich.add_argument("--max-days", type=int, default=0)
+    enrich.set_defaults(func=cmd_enrich_v4_statics)
     return parser
 
 

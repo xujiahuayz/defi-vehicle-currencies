@@ -48,7 +48,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.paths import DATA_DIR
-from ddvc.fetch.raw import raw_path
+from ddvc.fetch.raw import block_value, raw_path, timestamp_value, transaction_id
 from ddvc.fetch.dune import dune_path
 import datetime as _dt
 
@@ -156,10 +156,9 @@ def _norm_uni_signed(rec: dict) -> dict | None:
         tin, tout, in_amt, out_amt = t0, t1, abs(a0), abs(a1)
     else:
         tin, tout, in_amt, out_amt = t1, t0, abs(a1), abs(a0)
-    txn = rec.get("transaction") or {}
     return {
-        "tx": txn.get("id"), "log": _i(rec.get("logIndex")),
-        "block": _i(txn.get("blockNumber")), "ts": _i(rec.get("timestamp") or txn.get("timestamp")),
+        "tx": transaction_id(rec), "log": _i(rec.get("logIndex")),
+        "block": block_value(rec) or 0, "ts": timestamp_value(rec) or 0,
         "tin": tin.get("symbol"), "tin_id": tin.get("id"),
         "tout": tout.get("symbol"), "tout_id": tout.get("id"),
         "usd": _f(rec.get("amountUSD")), "pool": pool.get("id"),
@@ -179,10 +178,9 @@ def _norm_uni_v2(rec: dict) -> dict | None:
         tin, tout, in_amt, out_amt = t1, t0, a1in, a0out
     else:
         return None
-    txn = rec.get("transaction") or {}
     return {
-        "tx": txn.get("id"), "log": _i(rec.get("logIndex")),
-        "block": _i(txn.get("blockNumber")), "ts": _i(rec.get("timestamp") or txn.get("timestamp")),
+        "tx": transaction_id(rec), "log": _i(rec.get("logIndex")),
+        "block": block_value(rec) or 0, "ts": timestamp_value(rec) or 0,
         "tin": tin.get("symbol"), "tin_id": tin.get("id"),
         "tout": tout.get("symbol"), "tout_id": tout.get("id"),
         "usd": _f(rec.get("amountUSD")), "pool": pair.get("id"),

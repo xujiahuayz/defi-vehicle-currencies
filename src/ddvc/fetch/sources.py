@@ -12,6 +12,12 @@ import datetime as dt
 from dataclasses import dataclass
 
 
+# Auxiliary current-schema deployment used only to fill immutable pool statics into
+# signed v4 swap records from the canonical deployment. Its swap amounts are unsigned,
+# so it must never replace the canonical raw stream wholesale.
+UNISWAP_V4_STATICS_SUBGRAPH_ID = "8B2wKxnkciCTc5HSgsAojF6vhKn6wxQ1nVecYzMge1hA"
+
+
 @dataclass(frozen=True)
 class DexSource:
     name: str
@@ -94,7 +100,7 @@ DEX_SOURCES: dict[str, DexSource] = {
         genesis_date_utc=dt.date(2025, 1, 24),
         subgraph_id="DiYPVdygkfjDWhbxGSqAQxwBKmfKnkWQojqeM2rkLb3G",
         genesis_block=21_696_375,
-        notes="Official Uniswap V4 schema; modifyLiquidities captures LP updates. Genesis is first raw-store swap block.",
+        notes="Signed Uniswap V4 schema; modifyLiquidities captures LP updates. Missing immutable pool statics can be enriched by exact record ID from the auxiliary current-schema deployment.",
     ),
     "fluid": DexSource(
         name="fluid",
