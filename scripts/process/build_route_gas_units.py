@@ -196,6 +196,16 @@ def deterministic_cell_sample(
     return out.drop(columns=["_rank"]).reset_index(drop=True)
 
 
+def worker_batches(
+    days: list[str], workers: int, tasks_per_worker: int = 4
+) -> list[list[str]]:
+    """Bound process lifetime without relying on executor worker replacement."""
+    if workers < 1 or tasks_per_worker < 1:
+        raise ValueError("worker batch bounds must be positive")
+    size = workers * tasks_per_worker
+    return [days[start : start + size] for start in range(0, len(days), size)]
+
+
 def _cached_day_sample(
     cache_dir: Path, day: str, per_cell: int
 ) -> tuple[int, pd.DataFrame] | None:
@@ -339,23 +349,26 @@ def _main_unlocked() -> int:
     parts = []
     candidate_count = 0
     cache_hits = 0
-    with ProcessPoolExecutor(max_workers=args.workers, max_tasks_per_child=4) as pool:
-        futures = [
-            pool.submit(sample_day, day, args.per_cell, str(candidate_cache))
-            for day in days
-        ]
-        for index, future in enumerate(as_completed(futures), 1):
-            count, sample_part, cached = future.result()
-            candidate_count += count
-            cache_hits += int(cached)
-            if not sample_part.empty:
-                parts.append(sample_part)
-            if index % 12 == 0 or index == len(days):
-                print(
-                    f"  candidate days {index}/{len(days)} | rows {candidate_count:,} "
-                    f"| cached {cache_hits}",
-                    flush=True,
-                )
+    completed = 0
+    for batch in worker_batches(days, args.workers):
+        with ProcessPoolExecutor(max_workers=args.workers) as pool:
+            futures = [
+                pool.submit(sample_day, day, args.per_cell, str(candidate_cache))
+                for day in batch
+            ]
+            for future in as_completed(futures):
+                count, sample_part, cached = future.result()
+                candidate_count += count
+                cache_hits += int(cached)
+                completed += 1
+                if not sample_part.empty:
+                    parts.append(sample_part)
+                if completed % 12 == 0 or completed == len(days):
+                    print(
+                        f"  candidate days {completed}/{len(days)} | "
+                        f"rows {candidate_count:,} | cached {cache_hits}",
+                        flush=True,
+                    )
     if not parts:
         print("no exact one-component route transactions")
         return 1

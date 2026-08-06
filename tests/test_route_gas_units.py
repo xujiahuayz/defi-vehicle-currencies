@@ -13,6 +13,7 @@ from scripts.process.build_route_gas_units import (
     deterministic_cell_sample,
     parse_receipt,
     sample_day,
+    worker_batches,
 )
 
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
@@ -46,6 +47,11 @@ def leg(
 
 
 class RouteGasUnitTests(unittest.TestCase):
+    def test_worker_recycling_uses_explicit_bounded_batches(self) -> None:
+        batches = worker_batches([str(day) for day in range(19)], workers=2)
+        self.assertEqual([len(batch) for batch in batches], [8, 8, 3])
+        self.assertEqual([day for batch in batches for day in batch], [str(day) for day in range(19)])
+
     def test_candidates_cover_every_registered_venue(self) -> None:
         frame = pd.DataFrame(
             [
