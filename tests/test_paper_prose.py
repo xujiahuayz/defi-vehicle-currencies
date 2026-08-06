@@ -25,7 +25,9 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PAPER_DIR = ROOT / "paper" / "sections"
+
+SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
+PAPER_DIR = SECTIONS_DIR
 DECK_DIR = ROOT / "deck"
 
 BANNED_SUBSTRINGS = ("—", "–", "rather than", "genuinely", "deliberate")

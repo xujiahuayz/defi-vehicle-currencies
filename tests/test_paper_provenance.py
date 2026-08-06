@@ -26,7 +26,9 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SECTIONS = ROOT / "paper" / "sections"
+
+SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
+SECTIONS = SECTIONS_DIR
 
 # A claim worth sourcing. Bare small integers ("two arms", "section 3", "four days") are
 # structural prose and not measurements, so the threshold is a decimal, a percentage, a
