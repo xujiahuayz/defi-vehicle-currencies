@@ -172,6 +172,47 @@ def domain_vocabulary(min_papers: int = 2) -> set[str]:
     return {w for w, n in seen.items() if n >= min_papers}
 
 
+def sense_matches(term: str, min_overlap: float = 0.18) -> bool:
+    """Does the field use this word in the SAME sense the draft uses it?
+
+    Presence of a token in the domain literature is not evidence of shared meaning, and
+    treating it as such was the remaining false negative. "survival" occurs in two of the 54
+    papers, once as "survival of the system" for a protocol that failed and once as
+    "survival probability" for the complement of default. Neither is duration analysis of a
+    market role, so the field vouches for a different word spelled the same way.
+
+    Sense is approximated by company kept. The content words within a few positions of the
+    term are collected in the domain corpus and in the draft, and the senses are treated as
+    the same only when those neighbourhoods overlap. It is crude, and it separates "survival
+    of the system" from "survival of the vehicle role" without needing to know what either
+    means.
+    """
+    def bag(text: str) -> Counter:
+        ws = WORD.findall(text.lower())
+        out: Counter = Counter()
+        for i, w in enumerate(ws):
+            if w == term:
+                for j in range(max(0, i - 4), min(len(ws), i + 5)):
+                    if j != i and ws[j] not in CLOSED:
+                        out[ws[j]] += 1
+        return out
+
+    lit = ROOT / "literature" / "text"
+    corpus_bag: Counter = Counter()
+    for p in sorted(lit.glob("*.txt")) if lit.exists() else []:
+        corpus_bag += bag(p.read_text(errors="ignore"))
+    if not corpus_bag:
+        return False
+    draft_bag: Counter = Counter()
+    for d in (ROOT / "paper" / "sections",):
+        for p in sorted(d.rglob("*.tex")) if d.exists() else []:
+            draft_bag += bag(p.read_text(encoding="utf-8"))
+    if not draft_bag:
+        return False
+    shared = set(corpus_bag) & set(draft_bag)
+    return len(shared) / min(len(corpus_bag), len(draft_bag)) >= min_overlap
+
+
 def formally_defined(term: str) -> bool:
     """Is this term DEFINED in the paper, in the way a reader could rely on?
 
@@ -267,8 +308,10 @@ def compare(draft: str, corpus: list[str], n: int, min_count: int, label: str,
             toks = {w for w in g.split() if w != MASK}
             if mx > 0.0:
                 kind = "style"           # the venue uses it, the draft uses it more
+            elif toks and toks <= DOMAIN and all(sense_matches(w) for w in toks):
+                kind = "topic"           # the field uses it, in the same sense
             elif toks and toks <= DOMAIN:
-                kind = "topic"           # the field's own literature uses it
+                kind = "sense"           # the field uses the token, in another sense
             elif toks and all(formally_defined(w) for w in toks - DOMAIN):
                 kind = "topic"           # coined here, and defined here
             else:
@@ -327,6 +370,12 @@ def main() -> int:
             for r in chk[:10]:
                 print(f"    {r['expression']:<32}{r['draft_rate']:>8.3f}"
                       f"{'':>12}{r['draft_count']:>7}")
+        sen = [r for r in rows if r["segment"] == seg and r["kind"] == "sense"]
+        if sen:
+            print(f"  {len(sen)} expression(s) the field uses in a DIFFERENT sense:")
+            for r in sen[:8]:
+                print(f"    {r['expression']:<32}{r['draft_rate']:>8.3f}{'':>12}"
+                      f"{r['draft_count']:>7}")
         topic = [r for r in rows if r["segment"] == seg and r["kind"] == "topic"]
         if topic:
             print(f"  ({len(topic)} further expression(s) absent from the corpus entirely, "
@@ -334,7 +383,7 @@ def main() -> int:
         print()
 
     write_exhibit(__import__("pandas").DataFrame(rows), OUT)
-    style = [r for r in rows if r["kind"] in ("style", "undefined")]
+    style = [r for r in rows if r["kind"] in ("style", "undefined", "sense")]
     print(f"wrote {OUT.relative_to(ROOT)}")
     print("\nEvery row is a construction the draft uses more often than any of the 14")
     print("published papers. Nobody named them in advance, which is the point: the list")
