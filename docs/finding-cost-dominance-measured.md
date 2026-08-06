@@ -1,98 +1,67 @@
-# Cost-dominance windows exist. Whether the native vehicle has a routing advantage is not settled here.
+# Direct-route dominance exists, but the V2-family survivor panel cannot identify market maturation
 
-> **SUPERSEDED IN PART, 2026-08-06.** The title of this document previously asserted that the native advantage was composition. Its own body no longer supports that: the pair-day estimate it rests on identifies from 703 fixed effects out of 22,991 with a minimum detectable effect near 24 percentage points, so it can neither confirm a native advantage nor exclude a large one. The finding that cost-dominance windows EXIST is unaffected, since that is a marginal frequency needing no controls, and it is the part of this document to cite. The routing-advantage question moved to the multi-venue panel and is tracked in `docs/finding-native-intermediation-advantage.md`, itself provisional pending a five-venue rebuild.
+Built by `scripts/build_counterfactual_dominance.py` from strict pre-transaction pool state and calibrated by `scripts/process/build_route_gas_units.py`. The canonical outputs are `data/processed/counterfactual_dominance.parquet`, `output/exhibits/counterfactual_dominance_summary.jsonl`, `output/exhibits/counterfactual_dominance_support.jsonl`, and `output/exhibits/route_gas_units_summary.jsonl`.
 
-Supersedes the negative result in `docs/finding-cost-dominance-not-yet-established.md`, which failed because it compared realised trades across a day and intraday price movement swamped execution cost by 34 to 1. This prices both routes at identical reconstructed state, so price movement cannot enter.
+This document supersedes every earlier figure based on the retired 103,857-route enumerated panel, the four-day matched panel, pooled gas constants, or hour-end state. In particular, 17.9%, 30.0%, 27.2%, 41.3%, and 70.1% are not admissible paper findings.
 
-Built by `scripts/build_counterfactual_dominance.py` on `src/ddvc/cpquote.py`. **103,857 intermediated two-leg routes with an available direct alternative, across 186 days sampled from 2020-05-29 to 2026-06-27.**
+## Estimand
 
-## The question, and the answer
+For each realised two-leg route in the Uniswap V2 and SushiSwap V2 families, the estimator asks whether an available one-leg pool would have returned more output for the exact realised input. The two alternatives share the same endpoints, transaction order, reconstructed pre-transaction state, token prices, and historical gas price. Reserve state is advanced through intervening swaps, mints, and burns. The comparison therefore measures a direct path omitted by a realised legacy two-hop route. It does not enumerate every path a contemporary multi-venue router could have chosen.
 
-The FX inertia literature's stated limit is that an incumbent's cost advantage is a consequence of its incumbency, so the data never contain the state where a currency holds the vehicle role while strictly cost-dominated. On-chain, that state is observable and common: **17.9% of intermediated routes were dominated gross of gas, 30.0% all-in.** So the windows exist.
+The fixed calendar contains 74 monthly dates; 73 are nonempty, yielding 45,720 unique comparable routes from June 2020 through June 2026. There are no duplicate route identifiers and no missing all-in estimates.
 
-## The result that matters, and a correction to a first reading
+## Main level result
 
-**First, a data filter that changes the claim.** The unfiltered panel contains mispriced tokens: 994 routes show gaps above 10,000 bps (one reaches 11.5 billion bps) and 22 report notionals above $50m, one of them $208 billion. Every top offender is an unclassified token with a null symbol, the same repricing failure that produced the wash-trade contamination elsewhere in this project. Filtering to plausible economics (absolute gap at most 10,000 bps, notional between $100 and $50m) keeps 99.0% of routes and is applied throughout below.
+The direct pool returns more gross of gas on 5,361 routes, or 11.7%. Within the prespecified 20% input/output valuation-coherence band, 4,291 of 40,773 routes are dominated, or 10.5%. The median gross direct advantage among dominated routes is 76.7 basis points of input notional.
 
-Dominance by intermediary type, filtered, gross of gas:
+Historically priced, receipt-calibrated gas changes the economic comparison materially. The direct route is cheaper all-in on 14,229 routes, or 31.1%. Substituting the lower and upper quartiles of the matched gas cells gives 24.8% and 35.8%. The median all-in advantage among dominated routes is 134.7 basis points.
 
-| type | routes | dominated | median gap |
-|---|---|---|---|
-| native | 19,339 | **13.2%** | **-2,459 bps** |
-| stable | 33,037 | 16.8% | -492 bps |
-| other | 48,441 | 18.7% | -171 bps |
-| imported | 2,028 | 23.1% | -123 bps |
+| intermediary type | routes | gross direct dominance | strict-value gross dominance | median-gas all-in dominance | gas-IQR range |
+|---|---:|---:|---:|---:|---:|
+| imported | 1,129 | 8.7% | 8.4% | 51.6% | 40.6–63.9% |
+| native | 12,395 | 8.4% | 7.3% | 17.1% | 12.9–22.1% |
+| other | 6,430 | 10.2% | 6.4% | 16.4% | 12.0–22.6% |
+| stable | 25,766 | 13.8% | 13.2% | 40.7% | 33.1–44.4% |
 
-Pooled across the sample, the native asset is dominated least often, and the median native-intermediated route returns 2,459 bps more than the best available direct pool would have. That gap is an order of magnitude larger than for any other type.
+The gross result says most legacy two-hop routes beat the available direct pool on quote output. The all-in result says the extra execution burden overturns that output advantage often, especially for stable and imported intermediaries. These are different economic objects and both belong in the paper.
 
-**Temporal variation is the phenomenon, not a robustness failure.** An earlier version of this document reported the year-by-year pattern as "holds in five of seven years" and treated the two reversals as weakening the result. That was a conceptual error, flagged by Java: this paper is about how vehicle dominance is *made*, so the time dimension is the object of study. Demanding that the pattern hold uniformly across years assumes stationarity in a paper about non-stationarity, and it discards exactly the variation the paper exists to explain.
+## Gas is measured as route support, not a pooled constant
 
-The legitimate version of the robustness question is whether the pooled result depends on any single period. It does not. Leave-one-year-out never flips the sign, with the native advantage ranging from +2.2pp (excluding 2021) to +6.3pp (excluding 2022).
+The receipt panel samples 31,128 successful transactions across 77 monthly dates and 2,655 year-by-topology-by-venue-by-vehicle cells. Median gas use is 162,413 units for one-leg routes, 325,007 for two-leg routes, and 422,210 for three-leg routes. On 162 same-year, same-executor, same-venue comparisons, a repeated-venue second leg adds a median 67,172 units, with an interquartile range of 44,342 to 98,984; 90.1% of cells have a positive increment.
 
-What the quarterly series shows instead, in percentage points by which non-native intermediaries are dominated more often than native:
+Every dominance observation matches the direct leg at year-by-venue-by-vehicle support. The realised vehicle route matches that same level for 39,290 observations and year-by-venue-by-type for the remaining 6,430. Broader topology fallbacks exist in code but are unused here. Gas uncertainty is retained in the estimand through the matched-cell interquartile range.
 
-| quarter | native advantage | native share of v2 intermediation |
-|---|---|---|
-| 2020 Q3 | +12.3 | 17.5% |
-| 2020 Q4 | +12.7 | 14.8% |
-| 2021 Q1 | +14.8 | 13.9% |
-| **2021 Q2** | **+20.4** | 17.4% |
-| 2021 Q3 | +0.4 | 22.0% |
-| 2021 Q4 | +0.3 | 25.3% |
-| 2022 Q1 | +0.2 | 24.2% |
-| 2022 Q3 | -2.1 | 16.8% |
-| 2023 Q1 | -5.8 | 25.5% |
-| 2023 Q2 | +7.1 | 30.2% |
-| 2025 Q4 | +8.3 | 7.1% |
-| 2026 Q2 | +23.4 | 8.9% |
+The fixed-cost pattern is visible by realised notional:
 
-**The native asset's routing advantage collapses in 2021 Q3, from +20.4pp to +0.4pp in a single quarter, and stays near zero for roughly two years.** Uniswap V3 launched in May 2021, which is 2021 Q2. An architecture change followed within a quarter by a step change in which asset it pays to route through is the paper's subject matter arriving in the data.
+| notional | routes | gross direct dominance | strict-value gross dominance | median-gas all-in dominance | gas-IQR range |
+|---|---:|---:|---:|---:|---:|
+| $100–1,000 | 20,544 | 13.9% | 12.8% | 46.7% | 37.9–52.4% |
+| $1,000–10,000 | 19,706 | 10.2% | 9.3% | 20.7% | 15.5–25.3% |
+| $10,000–100,000 | 4,936 | 7.7% | 6.2% | 9.0% | 8.2–9.9% |
+| above $100,000 | 534 | 20.4% | 4.8% | 20.4% | 20.4–20.4% |
 
-A composition alternative has to be ruled out before that reading is claimed. This panel is v2-only, so what is observed is the native advantage *within v2* after V3 began pulling liquidity elsewhere. If the best native-intermediated routes migrated to V3 first, the residual v2 native routes would look worse without the native asset's role having changed at all. Distinguishing the two requires extending the counterfactual to V3, which needs the tick map. Until then this is a documented association with a named confound.
+Gas flips many small routes and almost none of the large routes. The gross 20.4% rate above $100,000 is not evidence that large routing is worse: only 4.8% remains inside strict valuation support, and the cell contains 534 routes. It is a tail diagnostic.
 
-**The controlled comparison overturns the descriptive result.** Java's point: subsample splits are fine as robustness, but the claim needs a controlled experiment. Run in `scripts/run_dominance_regressions.py`, and it changes the conclusion.
+## State support and venue reach
 
-| specification | native coefficient | p |
-|---|---|---|
-| (1) pooled | -0.049 | 0.008 |
-| (2) + log notional | -0.051 | 0.008 |
-| (3) + year effects | -0.049 | 0.008 |
-| **(4) pair-by-day fixed effects** | **+0.094** | 0.269 |
-| (5) pair-by-day FE, gap in bps | +186 | 0.078 |
+The result does not depend on one reserve-reconstruction class.
 
-Specifications (1) to (3) reproduce the descriptive finding: native-intermediated routes are about 5 percentage points less likely to be dominated, on 3,654 pair clusters. Specification (4) compares routes between the same two tokens on the same day that used different intermediaries, so pair liquidity, token characteristics, that day's volatility and the gas regime are all held fixed. The coefficient flips sign and loses significance.
+| reserve support | routes | gross direct dominance | strict-value gross dominance | median-gas all-in dominance | gas-IQR range |
+|---|---:|---:|---:|---:|---:|
+| adjacent, no liquidity event | 7,777 | 13.5% | 11.7% | 29.7% | 22.6–34.7% |
+| bridged, no liquidity event | 4,384 | 9.7% | 7.8% | 21.1% | 14.7–28.0% |
+| liquidity replayed | 33,559 | 11.6% | 10.6% | 32.8% | 26.7–37.0% |
 
-**The pooled comparison is confounded by composition, and specification (4) is too weak to say what remains.** The descriptive gap does not survive holding the trade fixed, so the pooled 5 percentage points cannot be read as an asset-role effect. What specification (4) itself establishes is much less than an earlier version of this document claimed by calling the result a composition effect and stopping there.
+Only 1,030 of the 5,361 gross-dominated routes, or 19.2%, use a best direct pool outside the realised route's venue set. Most detected misses are therefore within observed V2-family venue reach. This does not prove the executor knew the pool or authored the quote.
 
-The reason is power, and it should be stated as a number rather than as a caveat. Specification (4) identifies from 703 pair-day fixed effects out of 22,991 and 3,865 routes out of 102,845, so **96.2% of the panel contributes nothing to that coefficient**, on 158 clusters. Its standard error of 0.085 puts the minimum detectable effect near 24 percentage points at conventional power. The estimate is +0.094. So the design can neither confirm a native advantage nor exclude a substantial native *dis*advantage, and describing it as a null asserts an absence the data cannot support.
+## Why this is a level bound, not a maturation trend
 
-Why identification is so thin here is itself informative: within a single venue, a pair-day rarely sees both a native and a non-native intermediary actually used, so the estimator waits on a coincidence. The multi-venue route-cost panel quotes every vehicle candidate for every pair-day by construction, which removes the coincidence and is the correct place to settle this. Until that panel is read, the honest statement is that the sign is unresolved and the point estimate leans toward the native asset being the worse intermediary conditional on the trade, which would contradict the incumbency-advantage story and be the more interesting result of the two.
+Comparable support is concentrated early: 16,075 routes in 2020 and 21,907 in 2021, then 3,155 in 2022, 2,028 in 2023, 1,817 in 2024, 629 in 2025, and 109 in 2026. The late observations are survivors inside a shrinking legacy-venue perimeter while routing migrates to concentrated liquidity, new venues, aggregators, and universal routers. Annual dominance rates therefore mix efficiency with endogenous support exit.
 
-Two things this does not touch. It says nothing against dominance windows existing at all, which is a marginal frequency needing no controls. And it does not license the reverse claim either, for exactly the reason above.
+The correct market-maturation design must hold the public opportunity set, endpoint pair, size, vehicle, and observed reach fixed while expanding transaction-state coverage across venues. It should separately measure direct-path omission, same-vehicle search shortfall, best-public-path regret, route integration, and path complexity. Executor heterogeneity can be reported only after establishing that an executor identifies the quote-authoring system.
 
-One incidental result survives strongly in the controlled design: larger trades are markedly less likely to be dominated within a pair-day (log notional coefficient -0.042, p<0.001), consistent with the fixed-cost mechanics of gas and with larger flow attracting better routing.
+## Permitted interpretation
 
-## Gas behaves exactly as a fixed cost should
+The admissible claim is narrow and economically useful: direct-route dominance exists on legacy V2-family support, and historically measured fixed execution costs make it substantially more common than quote-output comparisons imply. This shows that a vehicle can retain realised flow when a direct path is cheaper all-in, which opens the state required for a persistence test.
 
-Adding the receipt-measured gas of the extra hop (74,096 units, from median gasUsed of 154,604 for one leg against 228,701 for two) raises overall dominance from 17.9% to 30.0%, and the change concentrates where a fixed cost must bite hardest:
-
-| trade size | n | dominated gross | dominated all-in |
-|---|---|---|---|
-| $100-1k | 50,283 | 17.0% | 39.1% |
-| $1k-10k | 42,051 | 18.9% | 22.2% |
-| $10k-100k | 10,674 | 17.0% | 17.3% |
-| >$100k | 847 | 33.5% | 33.5% |
-
-Small trades flip in large numbers; trades above $100k do not move at all, because one extra hop is 0.5 bp of a $100,000 notional and 478 bp of a $100 notional.
-
-The >$100k row is the anomaly worth chasing: those routes have the highest gross dominance at 33.5%, meaning large trades were intermediated when a direct pool would have paid more, and gas cannot explain it away at that size. Candidate explanations to test: split routing across venues our v2-only counterfactual cannot see, MEV protection, or a genuinely suboptimal router. It is a small fixed effect at 847 routes.
-
-## Limits, stated
-
-**Flat gas and ETH price.** The all-in figures use 25.8 gwei and ETH at $2,500 across the whole 2020-2026 span, which is wrong in both directions at different times: gas ran far higher in 2021 and far lower after EIP-4844, and ETH ranged from a few hundred dollars to several thousand. Per-day gas price is recoverable from receipts and per-day ETH price from the pools themselves. This is the next refinement and it will move the all-in numbers, though not the ordering across intermediary types, which is measured gross of gas too.
-
-**v2-family venues only.** Concentrated liquidity needs the tick map. Omitting venues understates the best alternative route, so dominance incidence is a lower bound. The v2 sample also thins badly late as volume migrated to v3 and v4, which is why native n falls to 118 in 2026; the 2025 and 2026 rows should be read with that in mind rather than as a trend.
-
-**Contaminated pool-hours excluded.** Hours failing the reserve-continuity check are dropped, roughly 3.2%, and their exclusion is not random since liquidity events concentrate in actively managed pools.
-
-**Two legs only.** Longer routes are excluded from this panel.
+It does not yet show that a particular vehicle retains the role because of inertia, that aggregators caused convergence, or that market-wide routing became more efficient. The V2-family incidence is a lower bound with respect to omitted direct venues, but not a population estimate because support selection can work in either direction.

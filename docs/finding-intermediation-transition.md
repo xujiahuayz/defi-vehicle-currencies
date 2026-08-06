@@ -1,52 +1,55 @@
 # The intermediation transition, measured
 
-Built 2026-08-05 by `scripts/build_intermediation_by_type.py` over `data/unified/` (2,240 days with intermediated routing, 2020-05-06 to 2026-06-30). Asset types from `src/ddvc/asset_types.py`. Round-trip routes are excluded as atomic arbitrage or wash trading, matching the cross-venue series.
+Rebuilt 2026-08-07 by `scripts/build_intermediation_by_type.py` over all 2,277 days of `data/unified/`, covering 43,705,695 topology-valid intermediary routes and 47,606,817 intermediary episodes from 2020-02-11 to 2026-06-30. Asset types and dated backing regimes come from `src/ddvc/asset_types.py`. Canonical endpoint round trips are excluded. Directed token flow defines the route and intermediary role; dollar estimates only weight that object and report raw, within-2x and within-20% source-to-intermediary-to-sink support.
 
-This asks the FX literature's dominance-transition question where the answer is observable. When a trade passes through an intermediary, which *type* of asset does it pass through, and has the role moved from the native platform asset to the stable numeraire?
+This asks the FX literature's dominance-transition question where the intermediary is directly observable. When exchange passes through another asset, which type carries the middle leg, how does that role differ from ordinary endpoint demand, and does the composition change when venue integration and route complexity are held fixed?
 
-## Result
+## Primary one-vehicle result
 
-Share of intermediation episodes, count-weighted:
+The locked vehicle-choice unit is an exact two-leg intermediary route. It gives each economic choice one vehicle and one vote, so the rise of longer paths cannot mechanically raise a type's weight. On month-days common to the endpoint years, the equal-weighted daily stable share within native plus stable rises from 16.9% in 2024 to 42.3% in 2026, a 25.4 percentage-point change. On strict within-20% value support it rises from 32.7% to 76.5%, a 43.9-point change. The broader all-episode measure below remains the network-extent extension.
 
-| year | native | staked native | stable | imported | other |
-|---|---|---|---|---|---|
-| 2020 | 68.7% | 0.0% | 26.8% | 0.2% | 4.3% |
-| 2021 | 72.4% | 0.0% | 21.3% | 2.0% | 4.3% |
-| 2022 | 62.9% | 0.2% | 25.6% | 1.3% | 10.1% |
-| 2023 | 71.3% | 0.3% | 13.9% | 0.9% | 13.7% |
-| 2024 | 66.0% | 0.9% | 14.1% | 1.3% | 17.7% |
-| 2025 | 45.1% | 1.1% | 28.9% | 4.1% | 20.7% |
-| 2026 | 32.9% | 0.8% | 36.4% | 5.8% | 24.2% |
+## Network-extent result
 
-Value-weighted (secondary, per the round-trip caveat):
+Share of intermediary episodes, count-weighted:
 
 | year | native | staked native | stable | imported | other |
-|---|---|---|---|---|---|
-| 2020 | 73.0% | 0.0% | 21.2% | 1.3% | 4.5% |
-| 2022 | 24.3% | 0.3% | 46.2% | 4.3% | 24.9% |
-| 2024 | 36.0% | 6.7% | 29.5% | 3.6% | 24.2% |
-| 2026 | 14.8% | 1.5% | 50.1% | 9.9% | 23.7% |
+|---|---:|---:|---:|---:|---:|
+| 2020 | 70.5% | 0.0% | 26.1% | 0.1% | 3.2% |
+| 2021 | 71.7% | 0.0% | 23.4% | 2.1% | 2.7% |
+| 2022 | 59.7% | 0.2% | 33.2% | 1.4% | 5.7% |
+| 2023 | 72.5% | 0.4% | 21.6% | 1.1% | 4.4% |
+| 2024 | 75.3% | 0.9% | 17.2% | 1.5% | 5.1% |
+| 2025 | 57.0% | 1.1% | 30.7% | 3.5% | 7.7% |
+| 2026 | 42.0% | 0.9% | 41.9% | 4.9% | 10.4% |
+
+Value share on the strict within-20% support band:
+
+| year | native | staked native | stable | imported | other |
+|---|---:|---:|---:|---:|---:|
+| 2020 | 79.3% | 0.0% | 18.4% | 1.1% | 1.1% |
+| 2021 | 56.8% | 0.0% | 37.7% | 2.4% | 3.0% |
+| 2022 | 33.9% | 0.1% | 44.0% | 3.0% | 19.0% |
+| 2023 | 40.4% | 1.2% | 36.3% | 1.1% | 21.0% |
+| 2024 | 53.3% | 5.9% | 33.6% | 3.0% | 4.1% |
+| 2025 | 22.8% | 2.5% | 62.6% | 9.3% | 2.8% |
+| 2026 | 16.7% | 1.0% | 71.2% | 8.6% | 2.4% |
 
 ## What can and cannot be claimed
 
-**Strong, value-weighted.** The stable numeraire first exceeds the native asset as intermediary in 2022-Q1 and the lead is sustained from 2022-Q4 onward, so roughly four years of the sample have the stable type dominant by value. Native falls from 73.0% to 14.8% across the sample.
+**The late rotation is large, but not monotone.** Native intermediation rebounds in 2023 and 2024 before the stable type rises sharply. Stable value exceeds native in 2022, loses that lead during 2023–24, and then leads in every quarter from 2025-Q1 through the end of the sample. Count-weighted network extent reaches parity only in 2026-H1; among native-plus-stable episodes, stable first exceeds one-half in 2026-Q2. The paper can describe a late native-to-stable rotation that survives the one-vehicle route definition, not a smooth secular transition or a long-established count dominance.
 
-**Tentative, count-weighted.** The crossover appears only in the final two quarters (2026-H1) and therefore cannot be called sustained: the sample ends 2026-06-30, so no four-quarter run is even possible. State it as a crossover occurring at the very end of the sample, with the caveat attached, and avoid describing the count-weighted series as having transitioned.
+**Vehicle role and absolute scale are different objects.** On the prespecified currency perimeter in 2026, stable assets carry 46.7% of intermediary episodes against 33.2% of endpoint route demand, for a count excess-use ratio of 1.41. Their strict-support value shares are 72.9% as intermediaries and 61.1% at endpoints, for an excess-use ratio of 1.19. Native ratios are 0.77 by count and 0.68 by strict-support value. Stable assets were disproportionately likely to serve as intermediaries before they became the largest absolute category; the late result is a change in scale layered on an older vehicle role.
 
-**Robust to the registered specification alternative.** Folding staked-native derivatives into native (the `staked_native_in_native` alternative in `asset_types.py`) leaves the 2026 count-weighted crossover intact (native plus staked 33.7% against stable 36.4%). Report this, since the alternative is defensible and a referee will ask.
+**Venue integration and route complexity do not absorb the rotation.** On the 181 calendar days common to 2024 and 2026, stable share within native-plus-stable episodes rises 23.0 percentage points on single-venue routes and 30.4 points on cross-venue routes, both with p<0.001. The corresponding strict-support value changes are 35.0 and 43.2 points. Count changes remain positive in every integration-by-complexity cell, ranging from 16.3 points on routes with more than two legs to 31.5 points on cross-venue two-leg routes. These strata reject opportunity-set expansion and observed leg-count composition as complete explanations; they do not identify aggregator causality or the economic reason a stable asset is selected.
 
-**Not monotone.** Native rises in 2021 and again in 2023 before falling, so a smooth decline would misdescribe it.
+**The value result is support-bounded.** In 2026 the within-20% band covers 71.6% of native raw intermediary value and 55.1% of stable raw intermediary value. On cross-venue routes the corresponding coverage is 66.3% and 50.6%. The lower stable coverage makes the strict-support share conservative relative to raw value, but the excluded tail remains economically material. Counts therefore stay primary, with raw, within-2x and within-20% value estimates shown together.
 
-## The count-value divergence is itself a finding
+## Backing regimes are not interchangeable
 
-Large trades moved to the stable numeraire roughly four years before small trades did. That is economically sensible: an intermediary asset is held for the duration of the hop, so the cost of the intermediary's own volatility scales with notional, and large trades have more reason to route through a low-volatility unit. The mechanism also predicts the observed ordering, with the value crossover arriving early and the count crossover late, so it was not fitted after the fact.
+Fiat-reserve stables account for 96.1% of strict-support stable intermediary value in 2026 against 90.5% of stable endpoint value, an excess-use ratio of 1.06. On-chain-collateralized stables have a ratio of 0.06, synthetic stables 0.49, and the DAI-to-USDS transition regime 0.32. Non-USD stables have a ratio above one but less than 0.01% of stable value, so they are a diagnostic, not a mechanism result. The stable-numeraire finding is principally a fiat-reserve result; a generic “stablecoin backing” interpretation would be false.
 
-## Two things this exhibit needs before it is presentable
+At token level, USDT carries 36.8% and USDC 33.0% of strict-support intermediary value in 2026. Their excess-use ratios are 1.42 and 1.14, respectively. WETH carries 17.2% with a ratio of 0.69. DAI remains count-overrepresented but value-underrepresented, with ratios of 1.39 and 0.71. This is why backing must be dated and why “on-chain collateralized” replaces the older static “crypto-collateral” label.
 
-**The residual is large and so far unexplained.** `other` runs 24.2% of episodes by 2026, across 9,283 distinct intermediary tokens over the stratified sample. Part of that is genuine diversification and part may be further classifiable assets. The taxonomy was built by measuring the top intermediaries, so coverage is good at the head and weak in the tail; the tail needs either a documented cutoff rule or an explicit statement that beyond the classified set no type claim is made.
+## Corrections that changed the result
 
-**Imported store of value is rising and currently unremarked.** The imported type (wrapped bitcoin plus tokenised gold) grows from 0.2% to 5.8% of episodes and 1.3% to 9.9% of value. Tokenised gold serving as a route intermediary is a clean traditional-finance analogue and worth its own sentence, since a metallic reserve asset intermediating exchange is the pre-fiat arrangement reappearing.
-
-## A correction worth recording
-
-The first version of this exhibit carried only the five original candidate tokens and therefore filed **native ETH at the zero address** as `other`. That single omission was 19.8% of the `other` bucket in 2026 samples and understated the native share by roughly 6 percentage points, which flattered the transition. Newer stables (crvUSD, USDe, USD1, FRAX), staked-ETH derivatives, and tokenised gold were also misfiled. The taxonomy now rests on measured intermediation over 57 stratified days, replacing the candidate set inherited from earlier work.
+The prior exhibit treated every economic multi-leg component as intermediated, although some were direct pool splits with no intermediary token. It also allowed positive downstream dollar values to decide which topology entered the count and used inconsistent leg-level dollar fields to weight otherwise identical routes. The corrected build separates direct split-routing from sequential intermediation, retains topology-valid routes even when value is unsupported, and audits the source, every intermediary, and the sink under nested support bands. The intermediation, cross-venue and vehicle-excess families now reconcile exactly on all 2,277 dates, 43,705,695 routes, 47,606,817 episodes, and raw/2x/20% values. That correction overturns two earlier statements: count dominance has not yet become sustained, while cross-venue value migration is strong instead of null.

@@ -1,6 +1,6 @@
 # Research questions and empirical design (review draft)
 
-**Status:** revised design for Java's review, 17 July 2026. No experiment in this document has been run, and no existing result is treated as evidence for the revised specifications.
+**Status:** exploratory design menu, superseded for execution on 2026-08-07 by the hashed machine-readable lock in `docs/specification-lock.json`. This file preserves the wider candidate set and its reasoning; it is not authority to run a withheld estimator or promote an unapproved claim.
 
 **Organizing question:** how do trading technology, liquidity-provider capital, and settlement technology create or break increasing returns to a vehicle asset?
 
@@ -35,7 +35,7 @@ The anchor audit below is based on the local PDF corpus and the keys in [`litera
 
 ## Proposed RQ set
 
-1. **RQ1. When and why does two-leg intermediation dominate direct exchange?**
+1. **RQ1. When and why does indirect intermediation dominate direct exchange?**
 2. **RQ2. Does vehicle use create a liquidity multiplier, and who captures the rents?**
 3. **RQ3. Does vehicle dominance exhibit hysteresis and abrupt displacement?**
 4. **RQ4. Does liquidity-enhancing execution technology decentralize exchange or entrench the vehicle?**
@@ -49,7 +49,7 @@ The questions are deliberately mechanism-based rather than protocol-feature-base
 - All direct and indirect alternatives in a comparison use the same block state, input token, output token, input USD notional, token prices, and gas-price convention.
 - Quote-output cost and all-in cost are not interchangeable: \(C^D\), \(C^I\), and \(\Delta C^{D,\mathrm{all}}\) include gas, while \(\Delta C^D\) remains the quote-output-only measure.
 - Each all-in route cost retains the registered fee, price-impact, and gas components \(C^{D,\mathrm{fee}}\), \(C^{D,\mathrm{impact}}\), \(C^{D,\mathrm{gas}}\), \(C^{I,\mathrm{fee}}\), \(C^{I,\mathrm{impact}}\), and \(C^{I,\mathrm{gas}}\) even when the regression uses their sum.
-- USD volume shares are primary; count shares, pair coverage, and all-route denominators are robustness outcomes.
+- Episode counts are primary for the vehicle transition because topology coverage is complete while price support is type-dependent. Strict 20% valuation-coherent USD shares are secondary; raw value, pair coverage, and all-route denominators remain diagnostics.
 - \(\mathrm{VehicleHHI}_{i,o,t}\) is concentration conditional on the fixed candidate set; every HHI result must be accompanied by \(\mathrm{Coverage}^{\mathcal K}_{i,o,t}\) and repeated with an expanded candidate set so changing out-of-set routing cannot masquerade as concentration.
 - Every result table must report the coefficient, standard error, 95% confidence interval, \(p\)-value, sample size, fixed effects, clustering method, and an economically scaled effect.
 - A predicted sign is supported only when its two-sided 95% confidence interval excludes zero; Holm-adjusted \(p\)-values are reported within each RQ's primary coefficient family.
@@ -67,7 +67,7 @@ The questions are deliberately mechanism-based rather than protocol-feature-base
 | RQ4 | Concentrated liquidity can improve execution while either deepening direct markets or concentrating routes around a few vehicle spokes | Fixed-universe heterogeneous V3 event study using pre-V3 direct constraint and pair volatility | Better depth together with falling indirect share/vehicle HHI means decentralization; better depth together with rising indirect share/vehicle HHI means entrenchment |
 | RQ5 | V4 can net physical movements without eliminating the two economic swaps or their LP fees | Receipt-audited V3/V4 comparison plus pre-exposure pair and LP-capital event studies | Physical settlement intensity falls; route use, gas, LP flow, fee yield, net return, and turnover reveal whether netting expands, contracts, or merely virtualizes vehicle intermediation |
 
-## RQ1. When and why does two-leg intermediation dominate direct exchange?
+## RQ1. When and why does indirect intermediation dominate direct exchange?
 
 ### Literature anchors
 
@@ -110,8 +110,8 @@ The unit is pair-candidate-day, restricted to executable via-\(k\) alternatives 
 The 2020 to 2026 transition also spans the diffusion of aggregators, universal routers, cross-venue execution, and faster arbitrage. The routing layer has two opposing implications for vehicle use. It can find direct liquidity across previously siloed pools and reduce indirect routing, or it can combine fragmented spoke liquidity and make a stable intermediary more usable. It can also make observed routes more efficient without changing the underlying vehicle-cost frontier. This is a competing mechanism for the time-series vehicle transition, not a one-sign explanation for whichever transition the data show.
 
 - **Opportunity-set efficiency:** by month, measure the dispersion of same-state triangular residuals, direct-versus-best-route cost gaps, within-block correction, and the share of transactions executing across multiple pools or venues. Keep cost-surface efficiency separate from realised router choice.
-- **Disintermediation versus activation:** report economic multi-leg incidence among economic routes separately from the intermediary composition of those routes, on both the full and balanced venue perimeters. Canonical endpoint round trips enter neither numerator nor denominator. A fall in incidence supports direct-liquidity discovery; stable-share growth conditional on remaining indirect supports activation of fragmented stable liquidity. Report balanced-perimeter coverage and incidence among entrant-touching routes, because chosen-route support exit can make incumbent-only incidence fall even without better search. None of these mechanisms can be inferred from cross-venue growth alone.
-- **Behaviour-first router proxy:** use transaction-level multi-pool and cross-venue execution as the primary search-sophistication measure. `sender` identifies an executor, not the originating aggregator; labelled-address results remain a partial-coverage sensitivity using the versioned registry and never define the primary sample.
+- **Disintermediation versus activation:** report true intermediary-route incidence among economic routes separately from direct pool splitting and from the intermediary composition of the remaining indirect routes, on both the full and balanced venue perimeters. Canonical endpoint round trips enter neither numerator nor denominator. A fall in incidence supports direct-liquidity discovery; stable-share growth conditional on remaining indirect supports activation of fragmented stable liquidity. Report balanced-perimeter coverage and incidence among entrant-touching routes, because chosen-route support exit can make incumbent-only incidence fall even without better search. None of these mechanisms can be inferred from cross-venue growth alone.
+- **Behaviour-first router proxy:** use transaction-level direct splitting, sequential intermediation, route complexity, and cross-venue execution as separate search-sophistication measures. `sender` identifies an executor, not the originating aggregator; labelled-address results remain a partial-coverage sensitivity using the versioned registry and never define the primary sample.
 - **Transition test:** re-estimate vehicle extent and candidate choice within date-pair-size opportunity sets, stratified by search sophistication, and interact candidate type with the monthly efficiency measures. Report whether the stable-vehicle transition occurs inside comparable search regimes or is concentrated in the adoption of more integrated routing.
 - **Interpretation bound:** if stable dominance disappears after conditioning on these measures, the result is a routing-technology transition. If it survives within comparable opportunity and search sets, liquidity composition remains the live mechanism. If sophisticated routing disproportionately selects stable vehicles from a dispersed pool set, routing technology is a mechanism that activates stable liquidity, not a nuisance control.
 
@@ -119,7 +119,7 @@ The 2020 to 2026 transition also spans the diffusion of aggregators, universal r
 
 | Finding | Answer |
 |---|---|
-| Economically important common-support cells have \(\Delta C^{D,\mathrm{all}}<0\), especially at larger \(q\), and \(\beta_C,\beta_K<0\) significantly | Two-leg intermediation dominates when deeper vehicle spokes save more price impact than the second fee and gas leg costs; this supports Krugman's scale mechanism and expands Somogyi with observed route choice |
+| Economically important common-support cells have \(\Delta C^{D,\mathrm{all}}<0\), especially at larger \(q\), and \(\beta_C,\beta_K<0\) significantly | Indirect intermediation dominates when deeper vehicle spokes save more price impact than the added fees and route gas; this supports Krugman's scale mechanism and expands Somogyi with observed route choice |
 | Indirect routes win only before gas is added | Vehicle routing is a quote-quality phenomenon but not an all-in economic advantage for users |
 | Indirect routes remain common when \(\Delta C^{D,\mathrm{all}}>0\), and lagged scale/liquidity remains significant | Current cost is incomplete; persistence, reliability, private order flow, or coordination moves to RQ3 rather than being labelled irrationality |
 | All-in cost does not predict realized route choice | Refute the proposed cost mechanism or revisit route reconstruction, unobserved router objectives, and quote timing before making a formation claim |
@@ -342,13 +342,13 @@ RQ5 has three separable answers. Experiment A establishes whether economic vehic
 
 ## Review decisions before execution
 
-- [ ] **JAVA'S CALL** — approve the five revised RQs and their ordering (which results lead).
+- [x] **LOCKED BY NODE E, 2026-08-07** — the five-RQ menu is narrowed for the current paper: vehicle transition leads, rent incidence is the mechanism, exact-state direct dominance is the foundation, routing maturation is the first rival, persistence/hysteresis is withheld, and V4 settlement remains an extension.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the distinction between quote-output cost and all-in route cost, including the fee/price-impact/gas audit decomposition.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the RQ1 fixed notionals and use of observed transaction size for route-level validation.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the RQ2 provider-controller look-through rule, outside-token shift-share shock, and fee/LVR/net-return decomposition.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve RQ3 horizons \(7/30/90\), the three-day persistent edge crossing, and fixed challenger-edge knots \(0/25/50/100/200\) basis points.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the bounded interpretation of the global V3 and V4 event studies; neither is presented as equivalent in strength to a staggered instrument or regression discontinuity.
-- [ ] **JAVA'S CALL** — approve RQ5 as a main RQ rather than an extension; its LP-capital experiment is the strongest bridge from V4 mechanics to traditional market-making theory.
+- [x] **LOCKED BY NODE E, 2026-08-07** — RQ5 is an extension. It does not enter the main claim family unless node I shows that the narrower paper cannot meet the venue bar without it.
 
 ## Approval gate (replaces the former execution hold)
 
