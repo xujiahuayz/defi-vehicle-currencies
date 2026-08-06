@@ -18,11 +18,10 @@ tick-traversal fault is directional and a pooled statistic hides it. That is not
 hypothetical: the same check on v3 found upward-crossing quotes low by a median
 62.6% while every other cell was exact.
 
-One v4-specific caveat this reports rather than hides. Hooks can set dynamic fees,
-and some pools carry a `feeTier` far outside v3's four tiers, so a pool whose fee
-changed within the day cannot be priced from a single static fee. Those show up as
-error rather than being silently absorbed, which is why the per-pool breakdown is
-printed alongside the pooled figure.
+Hook-bearing and dynamic-fee pools are outside this quoter's contract because the
+subgraph rows do not expose their per-swap hook cash flows or realised fee. They are
+excluded explicitly and measured in the separate v4 support audit. Static-fee pools
+use their actual tick spacing and can carry fee tiers outside v3's four-tier set.
 
 Writes  output/exhibits/v4_quoter_validation.jsonl
 """
@@ -35,7 +34,7 @@ import json
 
 import pandas as pd
 
-from ddvc.fetch.raw import block_value, timestamp_value
+from ddvc.fetch.raw import block_value, timestamp_value, v4_pool_quote_supported
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.pricing.v3quote import quote_exact_input
 from ddvc.tables import write_exhibit
@@ -90,15 +89,20 @@ def main() -> int:
 
     day = args.day or days()[-1]
     rows_by_pool: dict[str, list[dict]] = {}
+    excluded = 0
     with gzip.open(RAW / f"uniswap_v4_swaps_{day}.jsonl.gz", "rt") as fh:
         for line in fh:
             r = json.loads(line)
+            if not v4_pool_quote_supported(r):
+                excluded += 1
+                continue
             pid = ((r.get("pool") or {}).get("id") or "").lower()
             if pid:
                 rows_by_pool.setdefault(pid, []).append(r)
     busiest = sorted(rows_by_pool, key=lambda k: -len(rows_by_pool[k]))[: args.pools]
     print(f"validating on {day}: {len(rows_by_pool):,} pools traded, "
-          f"taking the {len(busiest)} busiest", flush=True)
+          f"taking the {len(busiest)} busiest; {excluded:,} unsupported hook/dynamic swaps excluded",
+          flush=True)
 
     net = accumulate_ticks(day, set(busiest))
     out = []
@@ -115,6 +119,7 @@ def main() -> int:
         try:
             d0, d1 = int(t0["decimals"]), int(t1["decimals"])
             fee = int(pool["feeTier"])
+            tick_spacing = int(pool["tickSpacing"])
         except (KeyError, TypeError, ValueError):
             continue
         ticks = net[pid]
@@ -144,7 +149,7 @@ def main() -> int:
             q = quote_exact_input(zero_for_one=zero_for_one,
                                   amount_in=int(amt_in_h * 10 ** dec_in),
                                   sqrt_price_x96=sqrt_before, liquidity=liq,
-                                  tick_net=ticks, tick_spacing=60, fee_pips=fee)
+                                  tick_net=ticks, tick_spacing=tick_spacing, fee_pips=fee)
             pred = q.amount_out / 10 ** dec_out
             out.append({"pool": pid[:18], "pair": f"{t0['symbol']}/{t1['symbol']}",
                         "fee": fee, "zero_for_one": zero_for_one,
@@ -168,8 +173,7 @@ def main() -> int:
     for (zfo, cr), g in df.assign(cr=df.crossed > 0).groupby(["zero_for_one", "cr"]):
         print(f"  {'0->1' if zfo else '1->0'}  crossed={str(cr):<5} n={len(g):>5}  "
               f"median signed {g.err_pct.median():>+10.4f}%")
-    print("\nPER POOL (a pool whose hook changed its fee intraday cannot be priced "
-          "from one static fee, and should show up here):")
+    print("\nPER SUPPORTED POOL:")
     for (pair, fee), g in df.groupby(["pair", "fee"]):
         print(f"  {pair:<22} fee={fee:<7} n={len(g):>5}  "
               f"median |err| {g.abs_err.median():>9.4f}%")

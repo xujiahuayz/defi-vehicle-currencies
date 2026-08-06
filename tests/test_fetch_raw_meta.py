@@ -13,6 +13,8 @@ from ddvc.fetch.raw import (
     merge_v4_statics,
     timestamp_value,
     transaction_id,
+    v4_pool_quote_supported,
+    v4_quote_status,
     v4_statics_complete,
     write_json,
     write_jsonl_gz,
@@ -33,7 +35,7 @@ class RawMetaMergeTests(unittest.TestCase):
         self.assertIsNone(block_value(scalar))
         self.assertEqual(timestamp_value(scalar), 789)
 
-    def test_v4_static_merge_changes_only_fee_and_decimals(self) -> None:
+    def test_v4_static_merge_changes_only_declared_quote_statics(self) -> None:
         primary = {
             "id": "swap-1",
             "amount0": "1",
@@ -50,6 +52,8 @@ class RawMetaMergeTests(unittest.TestCase):
             "pool": {
                 "id": "pool",
                 "feeTier": 500,
+                "tickSpacing": 10,
+                "hooks": "0x0000000000000000000000000000000000000000",
                 "token0": {"id": "token-a", "symbol": "A", "decimals": "18"},
                 "token1": {"id": "token-b", "symbol": "B", "decimals": "6"},
             },
@@ -60,7 +64,30 @@ class RawMetaMergeTests(unittest.TestCase):
         self.assertEqual(primary["amount1"], "-2")
         self.assertEqual(primary["transaction"]["blockNumber"], "3")
         self.assertEqual(primary["pool"]["feeTier"], 500)
+        self.assertEqual(primary["pool"]["tickSpacing"], 10)
         self.assertEqual(primary["pool"]["token0"]["decimals"], "18")
+
+    def test_v4_quote_support_excludes_dynamic_fees_and_hooks(self) -> None:
+        def row(fee: int, hooks: str = "0x0000000000000000000000000000000000000000"):
+            return {
+                "id": "swap",
+                "pool": {
+                    "id": "pool",
+                    "feeTier": fee,
+                    "tickSpacing": 10,
+                    "hooks": hooks,
+                    "token0": {"id": "token-a", "decimals": "18"},
+                    "token1": {"id": "token-b", "decimals": "6"},
+                },
+            }
+
+        self.assertTrue(v4_pool_quote_supported(row(9_000)))
+        self.assertEqual(v4_quote_status(row(1 << 23)), "dynamic_fee")
+        self.assertEqual(v4_quote_status(row(500, "0x0000000000000000000000000000000000000001")), "hooks")
+        self.assertEqual(
+            v4_quote_status(row(1 << 23, "0x0000000000000000000000000000000000000001")),
+            "dynamic_fee_and_hooks",
+        )
 
     def test_v4_static_merge_refuses_a_pool_identity_mismatch(self) -> None:
         primary = {
@@ -76,6 +103,8 @@ class RawMetaMergeTests(unittest.TestCase):
             "pool": {
                 "id": "pool-b",
                 "feeTier": 500,
+                "tickSpacing": 10,
+                "hooks": "0x0000000000000000000000000000000000000000",
                 "token0": {"id": "token-a", "decimals": "18"},
                 "token1": {"id": "token-b", "decimals": "6"},
             },
@@ -97,6 +126,8 @@ class RawMetaMergeTests(unittest.TestCase):
                         "pool": {
                             "id": "pool",
                             "feeTier": 500,
+                            "tickSpacing": 10,
+                            "hooks": "0x0000000000000000000000000000000000000000",
                             "token0": {"id": "token-a", "decimals": "18"},
                             "token1": {"id": "token-b", "decimals": "6"},
                         },
@@ -134,6 +165,8 @@ class RawMetaMergeTests(unittest.TestCase):
             "pool": {
                 "id": "pool",
                 "feeTier": 500,
+                "tickSpacing": 10,
+                "hooks": "0x0000000000000000000000000000000000000000",
                 "token0": {"id": "token-a", "decimals": "18"},
                 "token1": {"id": "token-b", "decimals": "6"},
             },

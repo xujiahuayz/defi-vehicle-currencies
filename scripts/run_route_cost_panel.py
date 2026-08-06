@@ -31,8 +31,14 @@ import pandas as pd
 from scipy import stats
 
 from ddvc.asset_types import canonical_token
-from ddvc.fetch.raw import block_value, timestamp_value
+from ddvc.fetch.raw import (
+    block_value,
+    timestamp_value,
+    v4_pool_quote_supported,
+    v4_statics_complete,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.provenance import cache_key
 from ddvc.provenance import stamp as record_provenance
 from ddvc.pricing.v2quote import quote_exact_input_float
@@ -125,6 +131,7 @@ MAX_INPUT_TO_RESERVE = 0.05
 # outcome is whether the direct route beats the vehicle route. Rejecting a leg nobody
 # would take does not condition on which route wins.
 MAX_PRICE_IMPACT = 0.05
+MAX_ROUTE_WORKERS = 10
 
 
 def _impact_ok(marginal_out: float, actual_out: float) -> bool:
@@ -132,6 +139,10 @@ def _impact_ok(marginal_out: float, actual_out: float) -> bool:
     if marginal_out <= 0 or actual_out <= 0:
         return False
     return (marginal_out - actual_out) / marginal_out <= MAX_PRICE_IMPACT
+
+
+def bounded_route_workers(requested: int) -> int:
+    return min(MAX_ROUTE_WORKERS, max(1, requested))
 OUT_DATA = DATA_DIR / "empirical"
 OUT = OUTPUT_DIR / "empirical"
 
@@ -164,6 +175,7 @@ QUOTE_INPUTS = [
     )),
 ]
 QUOTE_ENGINE = cache_key(QUOTE_SOURCES, inputs=QUOTE_INPUTS)
+PANEL_SOURCES = [*QUOTE_SOURCES, "src/ddvc/panel_assembly.py"]
 
 # Cached day content also depends on the arguments that decide WHAT is computed,
 # not only on the code that computes it. The cache ignored them, so a run at
@@ -496,9 +508,9 @@ def _absorb_swap_state(venue: str, rec: dict,
     Pool statics come from different places by venue and neither is guessed. v3 carries
     no feeTier in this raw layer, so the fee is recovered exactly from the CREATE2 pool
     address and decimals from the sqrtPriceX96 identity. v4 carries both feeTier and
-    token decimals directly, and its fees are hook-settable, so they are read rather
-    than matched against v3's four tiers: pools at fee 0 and 7 price exactly and any
-    tier whitelist would reject them.
+    token decimals and tick spacing directly. Vanilla static-fee pools are priced at
+    their declared fee, including non-v3 tiers. Dynamic-fee and hook-bearing pools are
+    excluded because these rows do not reveal the per-swap hook cash flows or fee.
     """
     pool = rec.get("pool") or {}
     t0 = pool.get("token0") or {}
@@ -526,8 +538,11 @@ def _absorb_swap_state(venue: str, rec: dict,
     if old is not None and (block, log_index) <= (old.block, old.log_index):
         return
     if venue == "uniswap_v4":
+        if not v4_pool_quote_supported(rec):
+            return
         try:
             fee = int(pool.get("feeTier"))
+            tick_spacing = int(pool.get("tickSpacing"))
             dec = (int(t0.get("decimals")), int(t1.get("decimals")))
         except (TypeError, ValueError):
             return
@@ -542,45 +557,40 @@ def _absorb_swap_state(venue: str, rec: dict,
         dec = resolve_decimals(raw0, raw1, sample)
         if dec is None:
             return
+        tick_spacing = tick_spacing_for_fee(fee)
     state_by_pool[pool_id] = V3PoolState(
         pool=pool_id, token0=a0, token1=a1,
         sym0=str(t0.get("symbol", "")), sym1=str(t1.get("symbol", "")),
         dec0=dec[0], dec1=dec[1],
         sqrt_price_x96=sqrt_price, tick=tick, fee_pips=fee,
-        tick_spacing=tick_spacing_for_fee(fee), block=block, log_index=log_index)
-
-
-def _v4_swap_has_required_statics(rec: dict) -> bool:
-    """Whether a v4 swap can identify fees and token units without guessing."""
-    pool = rec.get("pool") or {}
-    token0 = pool.get("token0") or {}
-    token1 = pool.get("token1") or {}
-    return (
-        pool.get("feeTier") is not None
-        and token0.get("decimals") is not None
-        and token1.get("decimals") is not None
-    )
+        tick_spacing=tick_spacing, block=block, log_index=log_index)
 
 
 def _validate_v4_swap_schema(stamps: list[str]) -> None:
     """Refuse a build when any nonempty v4 day predates the required raw schema."""
     invalid: list[str] = []
+    missing: list[str] = []
     for stamp in stamps:
         if stamp < V4_START:
             continue
         path = _raw_path("uniswap_v4", "swaps", stamp)
         if not path.exists():
+            missing.append(stamp)
             continue
         with gzip.open(path, "rt") as fh:
-            first = next((json.loads(line) for line in fh if line.strip()), None)
-        if first is not None and not _v4_swap_has_required_statics(first):
-            invalid.append(stamp)
-    if invalid:
-        preview = ", ".join(invalid[:5])
-        more = f" and {len(invalid) - 5:,} more" if len(invalid) > 5 else ""
+            if any(
+                not v4_statics_complete(json.loads(line))
+                for line in fh
+                if line.strip()
+            ):
+                invalid.append(stamp)
+    if invalid or missing:
+        problems = [*(f"{stamp} (missing)" for stamp in missing), *invalid]
+        preview = ", ".join(problems[:5])
+        more = f" and {len(problems) - 5:,} more" if len(problems) > 5 else ""
         raise RuntimeError(
-            "Uniswap v4 raw swaps lack feeTier/token decimals on "
-            f"{len(invalid):,} nonempty day(s): {preview}{more}. "
+            "Uniswap v4 raw swaps are missing or lack fee/tick-spacing/hook/token-decimal "
+            f"statics on {len(problems):,} day(s): {preview}{more}. "
             "Refetch the swaps stream before pricing."
         )
 
@@ -1582,6 +1592,7 @@ def main() -> int:
     )
     ap.add_argument("--no-v3", action="store_true", help="only use V2-style constant-product pools")
     args = ap.parse_args()
+    args.workers = bounded_route_workers(args.workers)
 
     global UNIFY_WRAPPED
     UNIFY_WRAPPED = not args.split_wrapped
@@ -1663,41 +1674,29 @@ def main() -> int:
                     built = fut.result()
                     print(f"  chunk {futs[fut] + 1}/{len(payloads)} done "
                           f"({built} days priced) [{k}/{len(payloads)} chunks]", flush=True)
-            # Stream the day shards into one Parquet file instead of concatenating
-            # them in memory. At 24 hours a day over 2,277 days the panel is about
-            # 124 million rows, and building that as a single pandas frame consumed
-            # enough memory that the parent was killed by the OS after the shards
-            # were already complete: no traceback, no summary, and a Parquet file on
-            # disk that looked finished. Writing row group by row group keeps memory
-            # flat and makes the failure mode impossible.
-            import pyarrow as pa
+            # Assemble through the same strict, atomic owner as the recovery command.
+            # This scans every shard schema before writing, refuses missing shards,
+            # and never exposes a partial panel at the final path.
             import pyarrow.parquet as pq
 
-            writer = None
-            n_rows = 0
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                for i_s, stamp in enumerate(stamps, 1):
-                    cp = _day_cache_path(stamp)
-                    if not cp.exists():
-                        continue
-                    dd = _canonicalize_cost_measure(pd.read_parquet(cp))
-                    if dd.empty:
-                        continue
-                    tbl = pa.Table.from_pandas(dd, preserve_index=False)
-                    if writer is None:
-                        writer = pq.ParquetWriter(out_path, tbl.schema,
-                                                  compression="snappy")
-                    else:
-                        tbl = tbl.cast(writer.schema)
-                    writer.write_table(tbl)
-                    n_rows += len(dd)
-                    if i_s % 250 == 0:
-                        print(f"  assembling [{i_s}/{len(stamps)}] {n_rows:,} rows",
-                              flush=True)
-            finally:
-                if writer is not None:
-                    writer.close()
+            cache_paths = [_day_cache_path(stamp) for stamp in stamps]
+            missing = [path.stem for path in cache_paths if not path.exists()]
+            if missing:
+                preview = ", ".join(missing[:5])
+                raise RuntimeError(
+                    f"cannot assemble: {len(missing):,} expected day shard(s) missing: {preview}"
+                )
+
+            def assembly_progress(index: int, total: int, rows: int) -> None:
+                if index % 250 == 0 or index == total:
+                    print(f"  assembling [{index}/{total}] {rows:,} rows", flush=True)
+
+            assembled = assemble_parquet_shards(
+                cache_paths,
+                out_path,
+                progress=assembly_progress,
+            )
+            n_rows = assembled.rows
             print(f"assembled {n_rows:,} rows into {out_path.name}", flush=True)
 
             # The summary needs only a handful of columns, so read those back with
@@ -1717,7 +1716,7 @@ def main() -> int:
             summary = _summarize(panel)
             summary_path.parent.mkdir(parents=True, exist_ok=True)
             summary.to_pickle(summary_path)
-            record_provenance(out_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,
+            record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,
                               rows=n_rows,
                               notes=f"quote engine {QUOTE_ENGINE}; "
                                     f"day cache {DAY_CACHE.name}; {len(hours)} hour(s)/day")
@@ -1767,7 +1766,7 @@ def main() -> int:
     summary = _summarize(panel)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary.to_pickle(summary_path)
-    record_provenance(out_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,
+    record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,
                       rows=len(panel),
                       notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}")
     record_provenance(summary_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,

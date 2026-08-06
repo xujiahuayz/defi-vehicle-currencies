@@ -26,7 +26,9 @@ chosen. What comes out is a ratio, and the panel then declines to quote any rout
 size-to-depth exceeds it, reporting how much of the route universe that removes.
 
 Reads   data/raw/thegraph/uniswap_v2/uniswap_v2_{swaps,hourly_reserves}_*.jsonl.gz
+        data/raw/thegraph/uniswap_v4/uniswap_v4_swaps_*.jsonl.gz
 Writes  output/exhibits/quoter_support_bounds.jsonl
+        output/exhibits/v4_quote_support.jsonl
 """
 
 from __future__ import annotations
@@ -34,19 +36,20 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
-import sys
+import math
 from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+from ddvc.fetch.raw import v4_quote_status
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.tables import write_exhibit
 
-from ddvc.tables import write_exhibit  # noqa: E402
-
-RAW = ROOT / "data" / "raw" / "thegraph" / "uniswap_v2"
-OUT = ROOT / "output" / "exhibits" / "quoter_support_bounds.jsonl"
+RAW = DATA_DIR / "raw" / "thegraph" / "uniswap_v2"
+V4_RAW = DATA_DIR / "raw" / "thegraph" / "uniswap_v4"
+OUT = OUTPUT_DIR / "exhibits" / "quoter_support_bounds.jsonl"
+V4_OUT = OUTPUT_DIR / "exhibits" / "v4_quote_support.jsonl"
 
 
 def _rows(path: Path):
@@ -106,11 +109,78 @@ def measure_day(day: str) -> list[float]:
     return ratios
 
 
+def measure_v4_support() -> pd.DataFrame:
+    """Swap- and value-weighted coverage of the vanilla v4 quoter contract."""
+    counts: defaultdict[tuple[str, str], int] = defaultdict(int)
+    volumes: defaultdict[tuple[str, str], float] = defaultdict(float)
+    for path in sorted(V4_RAW.glob("uniswap_v4_swaps_*.jsonl.gz")):
+        day = path.name[len("uniswap_v4_swaps_"):-len(".jsonl.gz")]
+        year = day[:4]
+        with gzip.open(path, "rt") as fh:
+            for line in fh:
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                status = v4_quote_status(row)
+                counts[(year, status)] += 1
+                try:
+                    volume = abs(float(row.get("amountUSD") or 0))
+                except (TypeError, ValueError):
+                    volume = 0.0
+                if math.isfinite(volume):
+                    volumes[(year, status)] += volume
+
+    rows = []
+    years = sorted({year for year, _ in counts})
+    for year in [*years, "ALL"]:
+        scoped_counts: defaultdict[str, int] = defaultdict(int)
+        scoped_volumes: defaultdict[str, float] = defaultdict(float)
+        for (observed_year, status), count in counts.items():
+            if year == "ALL" or year == observed_year:
+                scoped_counts[status] += count
+                scoped_volumes[status] += volumes[(observed_year, status)]
+        total_count = sum(scoped_counts.values())
+        total_volume = sum(scoped_volumes.values())
+        for status in sorted(scoped_counts):
+            rows.append(
+                {
+                    "year": year,
+                    "status": status,
+                    "supported": status == "vanilla_static_fee",
+                    "swaps": scoped_counts[status],
+                    "swap_share": scoped_counts[status] / total_count if total_count else None,
+                    "volume_usd": scoped_volumes[status],
+                    "volume_share": scoped_volumes[status] / total_volume if total_volume else None,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def write_v4_support() -> None:
+    support = measure_v4_support()
+    if support.empty:
+        raise RuntimeError("no v4 swaps available for support audit")
+    write_exhibit(support, V4_OUT, inputs=[V4_RAW])
+    supported = support[(support["year"] == "ALL") & support["supported"]]
+    swap_share = float(supported.iloc[0]["swap_share"]) if not supported.empty else 0.0
+    volume_share = float(supported.iloc[0]["volume_share"]) if not supported.empty else 0.0
+    print(
+        f"v4 vanilla-static support: {swap_share:.1%} of swaps, "
+        f"{volume_share:.1%} of reported volume"
+    )
+    print(f"wrote {V4_OUT.relative_to(REPO_ROOT)}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", type=int, default=8)
+    ap.add_argument("--v4-only", action="store_true")
     args = ap.parse_args()
+
+    if args.v4_only:
+        write_v4_support()
+        return 0
 
     days = sorted(p.name[len("uniswap_v2_swaps_"):-len(".jsonl.gz")]
                   for p in RAW.glob("uniswap_v2_swaps_*.jsonl.gz"))
@@ -158,10 +228,11 @@ def main() -> int:
 
     write_exhibit(pd.DataFrame(rows + [{"day": "POOLED", "n": len(pooled),
                                         "median": q(0.5), "p90": q(0.9), "p99": q(0.99),
-                                        "p999": q(0.999), "max": pooled[-1]}]), OUT)
-    print(f"\nwrote {OUT.relative_to(ROOT)}")
+                                        "p999": q(0.999), "max": pooled[-1]}]), OUT, inputs=[RAW])
+    print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
+    write_v4_support()
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

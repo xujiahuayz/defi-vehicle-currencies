@@ -57,7 +57,7 @@ def bounded_graph_workers(requested: int) -> int:
 
 
 def enrich_v4_statics_day(day: dt.date) -> dict[str, object]:
-    """Fill fee/decimal statics without replacing signed amounts or block provenance."""
+    """Fill quote statics without replacing signed amounts or block provenance."""
     path = raw_path("uniswap_v4", "swaps", day)
     if not path.exists():
         raise RuntimeError(f"missing canonical v4 swaps for {day}")
@@ -111,7 +111,13 @@ def enrich_v4_statics_day(day: dt.date) -> dict[str, object]:
     metadata["statics_enrichment"] = {
         "source_subgraph_id": UNISWAP_V4_STATICS_SUBGRAPH_ID,
         "matched_by": "swap_id",
-        "fields": ["pool.feeTier", "pool.token0.decimals", "pool.token1.decimals"],
+        "fields": [
+            "pool.feeTier",
+            "pool.tickSpacing",
+            "pool.hooks",
+            "pool.token0.decimals",
+            "pool.token1.decimals",
+        ],
         "rows": len(missing),
         "status": "prepared",
         "prepared_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -565,7 +571,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.choices["fetch"].add_argument("--max-retries", type=int, default=50, help="Per-day retries for transient provider/indexer errors in --gaps-only mode.")
     enrich = sub.add_parser(
         "enrich-v4-statics",
-        help="merge fee/decimal statics into canonical signed v4 swaps by exact record ID",
+        help="merge quote statics into canonical signed v4 swaps by exact record ID",
     )
     enrich.add_argument("--start", default="genesis", help="'genesis' or YYYY-MM-DD")
     enrich.add_argument("--end", default=None, help="exclusive YYYY-MM-DD")

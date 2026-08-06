@@ -39,7 +39,7 @@ UNI_V3_BURN_FIELDS = (
 )
 
 UNISWAP_V4_STATIC_FIELDS = (
-    "id pool { id feeTier: fee token0 { id symbol decimals } "
+    "id pool { id feeTier: fee tickSpacing hooks token0 { id symbol decimals } "
     "token1 { id symbol decimals } }"
 )
 
@@ -161,7 +161,8 @@ SCHEMAS: dict[str, SchemaSpec] = {
                 entity="swaps",
                 fields=(
                     "id transaction { id blockNumber timestamp } timestamp pool { id feeTier "
-                    "token0 { id symbol decimals } token1 { id symbol decimals } } sender origin "
+                    "tickSpacing hooks token0 { id symbol decimals } "
+                    "token1 { id symbol decimals } } sender origin "
                     "amount0 amount1 amountUSD sqrtPriceX96 tick logIndex"
                 ),
             ),

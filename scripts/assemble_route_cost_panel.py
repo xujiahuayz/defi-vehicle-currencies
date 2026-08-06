@@ -18,9 +18,9 @@ in the last step should never cost the first four hours again. And the panel bui
 source is part of the cache key, so editing it to fix this would invalidate every one of the
 2,277 cached days and force the whole rebuild.
 
-The schema is unified before anything is written: a column typed `null` anywhere is promoted
-to `large_string`, and the union of all days' fields is taken from a scan, so no day can
-narrow the schema for the days that follow.
+The schema is unified across every shard before anything is written, so no day can narrow
+the schema for the days that follow. Assembly writes to a temporary file, refuses an
+unreadable shard, and replaces the final panel only after all shards succeed.
 
 Reads   data/empirical/_route_cost_day_cache/engine_*/h*/YYYYMMDD.parquet
 Writes  data/empirical/route_cost_panel_v2.parquet
@@ -29,19 +29,17 @@ Writes  data/empirical/route_cost_panel_v2.parquet
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
-import pyarrow as pa
-import pyarrow.parquet as pq
-
-ROOT = Path(__file__).resolve().parents[1]
+from ddvc.panel_assembly import assemble_parquet_shards
+from ddvc.paths import DATA_DIR, REPO_ROOT
 from ddvc.provenance import stamp
 
-CACHE = ROOT / "data" / "empirical" / "_route_cost_day_cache"
-OUT = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
+CACHE = DATA_DIR / "empirical" / "_route_cost_day_cache"
+OUT = DATA_DIR / "empirical" / "route_cost_panel_v2.parquet"
 CODE_SOURCES = [
     "scripts/assemble_route_cost_panel.py",
+    "src/ddvc/panel_assembly.py",
     "scripts/run_route_cost_panel.py",
     "src/ddvc/pricing/stableswap.py",
     "src/ddvc/pricing/v2quote.py",
@@ -51,115 +49,49 @@ CODE_SOURCES = [
 ]
 
 
-def newest_spec() -> Path | None:
-    """The cache directory holding the most priced days."""
+def fullest_spec() -> Path | None:
+    """Return the unique fullest cache, refusing an ambiguous engine tie."""
     dirs = [d for d in CACHE.glob("engine_*/*") if d.is_dir()]
     if not dirs:
         return None
-    return max(dirs, key=lambda d: len(list(d.glob("[0-9]*.parquet"))))
-
-
-def unified_schema(files: list[Path], scan: int) -> pa.Schema:
-    """Union of every day's fields, with null-typed columns promoted to string.
-
-    Scanning a sample and taking the union is what stops one unlucky day from deciding the
-    types for two thousand others.
-    """
-    fields: dict[str, pa.DataType] = {}
-    step = max(1, len(files) // scan)
-    for f in files[::step][:scan] + files[-3:]:
-        for fld in pq.ParquetFile(f).schema_arrow:
-            t = fld.type
-            if pa.types.is_null(t):
-                t = pa.large_string()
-            prev = fields.get(fld.name)
-            if prev is None or pa.types.is_null(prev):
-                fields[fld.name] = t
-            elif prev != t:
-                # Widen rather than fail. A column read as int on one day and float on
-                # another is the same measurement at different precision.
-                if pa.types.is_integer(prev) and pa.types.is_floating(t):
-                    fields[fld.name] = t
-                elif pa.types.is_string(t) or pa.types.is_large_string(t):
-                    fields[fld.name] = pa.large_string()
-    return pa.schema([pa.field(k, v) for k, v in fields.items()])
+    counts = {directory: len(list(directory.glob("[0-9]*.parquet"))) for directory in dirs}
+    fullest = max(counts.values())
+    winners = sorted(directory for directory, count in counts.items() if count == fullest)
+    if len(winners) != 1:
+        choices = ", ".join(str(path.relative_to(CACHE)) for path in winners)
+        raise RuntimeError(f"ambiguous fullest caches ({fullest:,} days): {choices}; pass --spec")
+    return winners[0]
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--scan", type=int, default=120,
-                    help="days sampled when deriving the unified schema")
     ap.add_argument("--spec", default=None, help="cache directory, defaults to the fullest")
     args = ap.parse_args()
 
-    spec = Path(args.spec) if args.spec else newest_spec()
+    spec = Path(args.spec) if args.spec else fullest_spec()
     if spec is None:
-        print(f"no day cache under {CACHE.relative_to(ROOT)}")
+        print(f"no day cache under {CACHE.relative_to(REPO_ROOT)}")
         return 1
     files = sorted(spec.glob("[0-9]*.parquet"))
     if not files:
         print(f"no cached days in {spec}")
         return 1
-    print(f"assembling {len(files):,} cached days from {spec.relative_to(ROOT)}", flush=True)
+    print(f"assembling {len(files):,} cached days from {spec.relative_to(REPO_ROOT)}", flush=True)
 
-    schema = unified_schema(files, args.scan)
-    print(f"unified schema: {len(schema)} columns", flush=True)
+    def progress(index: int, total: int, rows: int) -> None:
+        if index % 250 == 0 or index == total:
+            print(f"  [{index}/{total}] {rows:,} rows", flush=True)
 
-    writer = None
-    rows = skipped = 0
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    tmp = OUT.with_suffix(".tmp.parquet")
-    try:
-        for i, f in enumerate(files, 1):
-            try:
-                tbl = pq.read_table(f)
-            except Exception as exc:
-                print(f"  {f.name}: unreadable, {type(exc).__name__}")
-                skipped += 1
-                continue
-            if tbl.num_rows == 0:
-                continue
-            # Add any column this day lacks, as nulls of the unified type, then reorder.
-            cols, names = [], []
-            for fld in schema:
-                names.append(fld.name)
-                if fld.name in tbl.column_names:
-                    col = tbl.column(fld.name)
-                    if col.type != fld.type:
-                        try:
-                            col = col.cast(fld.type)
-                        except Exception:
-                            col = pa.chunked_array(
-                                [pa.array([None] * tbl.num_rows, type=fld.type)])
-                    cols.append(col)
-                else:
-                    cols.append(pa.chunked_array(
-                        [pa.array([None] * tbl.num_rows, type=fld.type)]))
-            out = pa.Table.from_arrays([c.combine_chunks() for c in cols], names=names)
-            if writer is None:
-                writer = pq.ParquetWriter(tmp, schema, compression="snappy")
-            writer.write_table(out)
-            rows += out.num_rows
-            if i % 250 == 0:
-                print(f"  [{i}/{len(files)}] {rows:,} rows", flush=True)
-    finally:
-        if writer is not None:
-            writer.close()
-    if writer is None:
-        print("nothing assembled")
-        return 1
-    tmp.replace(OUT)
-    print(f"\nassembled {rows:,} rows from {len(files) - skipped:,} days into "
-          f"{OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1e6:.0f} MB)")
-    if skipped:
-        print(f"{skipped} day(s) were unreadable and are named above")
-    manifest = stamp(OUT, code_sources=CODE_SOURCES, inputs=[spec], rows=rows,
-                     notes=(f"assembled {len(files) - skipped} readable day shards from "
-                            f"{spec.relative_to(ROOT)}; {skipped} unreadable"))
-    print(f"stamped {manifest.relative_to(ROOT)}")
+    result = assemble_parquet_shards(files, OUT, progress=progress)
+    print(f"\nassembled {result.rows:,} rows from {result.shards:,} nonempty days into "
+          f"{OUT.relative_to(REPO_ROOT)} ({OUT.stat().st_size / 1e6:.0f} MB)")
+    manifest = stamp(OUT, code_sources=CODE_SOURCES, inputs=[spec], rows=result.rows,
+                     notes=(f"assembled all {len(files)} readable day shards from "
+                            f"{spec.relative_to(REPO_ROOT)}; {result.shards} nonempty"))
+    print(f"stamped {manifest.relative_to(REPO_ROOT)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
