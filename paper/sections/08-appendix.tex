@@ -438,33 +438,33 @@ Computing $m$ at each realised swap's own block and again at its hour-boundary s
 \label{tab:app:verdictday}
 \begin{tabular}{lrrrrr}
 \toprule
-Day & Triangles & Route obs. & Flip rate & Median gap & Median change \\
+Day & Triangles & Snapshots & Flip rate & Median gap & Median change \\
 \midrule
-2021-12-25 & 36 & 29{,}488 & 40.4\% & 63.3 & 39.8 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 36 triangles and 29,488 route observations on 2021-12-25
-2022-08-17 & 70 & 20{,}565 & 29.1\% & 45.5 & 32.8 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 20,565 route observations on 2022-08-17
-2023-04-09 & 41 & 14{,}446 & 42.1\% & 83.1 & 47.2 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 41 triangles and 14,446 route observations on 2023-04-09
-2023-11-30 & 32 & 11{,}121 & 34.6\% & 25.4 & 25.8 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 32 triangles and 11,121 route observations on 2023-11-30
-2024-07-22 & 52 & 19{,}337 & 37.3\% & 22.8 & 20.0 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 52 triangles and 19,337 route observations on 2024-07-22
-2025-03-14 & 70 & 35{,}288 & 39.7\% & 18.7 & 18.2 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 35,288 route observations on 2025-03-14
-2025-11-04 & 70 & 59{,}612 & 38.6\% & 30.7 & 33.8 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 59,612 route observations on 2025-11-04
+2021-12-25 & 36 & 29{,}462 & 38.9\% & 69.7 & 62.5 \\
+% output/exhibits/block_vs_hour_verdict.jsonl, 36 triangles and 29,462 opportunity snapshots on 2021-12-25
+2022-08-17 & 70 & 20{,}524 & 30.1\% & 66.0 & 53.0 \\
+% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 20,524 opportunity snapshots on 2022-08-17
+2023-04-09 & 41 & 14{,}425 & 43.4\% & 98.6 & 69.9 \\
+% output/exhibits/block_vs_hour_verdict.jsonl, 41 triangles and 14,425 opportunity snapshots on 2023-04-09
+2023-11-30 & 32 & 11{,}100 & 35.8\% & 34.4 & 31.9 \\
+% output/exhibits/block_vs_hour_verdict.jsonl, 32 triangles and 11,100 opportunity snapshots on 2023-11-30
+2024-07-22 & 52 & 19{,}301 & 39.4\% & 28.2 & 24.3 \\
+% output/exhibits/block_vs_hour_verdict.jsonl, 52 triangles and 19,301 opportunity snapshots on 2024-07-22
+2025-03-14 & 70 & 35{,}239 & 40.4\% & 23.9 & 24.4 \\
+% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 35,239 opportunity snapshots on 2025-03-14
+2025-11-04 & 70 & 59{,}571 & 40.4\% & 36.7 & 37.0 \\
+% output/exhibits/block_vs_hour_verdict.jsonl, 70 triangles and 59,571 opportunity snapshots on 2025-11-04
 \midrule
-Pooled & 371 & 189{,}857 & 38.0\% & 29.3 & 26.6 \\
-% output/exhibits/block_vs_hour_verdict.jsonl, all 371 triangles and 189,857 route observations
+Pooled & 371 & 189{,}622 & 38.9\% & 38.3 & 35.5 \\
+% output/exhibits/block_vs_hour_verdict.jsonl, all 371 triangles and 189,622 opportunity snapshots
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize Flip rate is route-weighted across triangles within a day. Median gap is the median across triangles of the per-triangle median own-block residual, in basis points, and median change is the median across triangles of the per-triangle median absolute repricing change. seven sampled days from 2021-12-25 to 2025-11-04.
+\footnotesize Flip rate is snapshot-weighted across triangles within a day. Median gap is the median across triangles of the per-triangle median strict pre-event residual, in basis points, and median change is the median across triangles of the per-triangle median absolute repricing change. Seven sampled days from 2021-12-25 to 2025-11-04.
 \end{table}
 
-The flip rate varies little across four years and two market regimes, between 29.1\% and 42.1\%, which is what a mechanical timing artefact looks like and what a behavioural quantity would not. Table~\ref{tab:app:conditional} conditions it three ways.
-% output/exhibits/block_vs_hour_verdict.jsonl, per-day route-weighted flip rates on seven sampled days
+The flip rate varies between 30.1\% and 43.4\% across four years and two market regimes. Table~\ref{tab:app:conditional} conditions it three ways.
+% output/exhibits/block_vs_hour_verdict.jsonl, per-day snapshot-weighted flip rates on seven sampled days
 
 \begin{table}[t]
 \centering
@@ -475,58 +475,58 @@ The flip rate varies little across four years and two market regimes, between 29
 \multicolumn{3}{l}{\emph{Panel A: by the fee wedge a two-leg route pays over a direct route}} \\
 Wedge & Flip rate & Dominated share \\
 \midrule
-0 bps & 38.0\% & 48.7\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 190,073 route observations
-5 bps & 36.6\% & 41.9\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 190,073 route observations
-10 bps & 34.3\% & 37.1\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 190,073 route observations
-30 bps & 24.5\% & 23.1\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 190,073 route observations
-60 bps & 15.6\% & 13.0\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 190,073 route observations
-100 bps & 8.9\% & 7.4\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 190,073 route observations
+0 bps & 38.9\% & 49.6\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
+5 bps & 37.6\% & 43.1\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
+10 bps & 35.5\% & 38.3\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
+30 bps & 25.3\% & 24.1\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
+60 bps & 16.1\% & 13.6\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
+100 bps & 9.4\% & 7.9\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows, 189,622 opportunity snapshots
 \midrule
 \multicolumn{3}{l}{\emph{Panel B: by time remaining to the hour boundary}} \\
-Bucket & Route obs. & Flip rate \\
+Bucket & Snapshots & Flip rate \\
 \midrule
-under 1 min & 10{,}774 & 15.6\% \\
+under 1 min & 10{,}613 & 22.5\% \\
 % output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-1 to 5 min & 13{,}084 & 21.0\% \\
+1 to 5 min & 13{,}059 & 22.3\% \\
 % output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-5 to 15 min & 31{,}568 & 32.3\% \\
+5 to 15 min & 31{,}525 & 32.8\% \\
 % output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-15 to 30 min & 48{,}534 & 38.9\% \\
+15 to 30 min & 48{,}454 & 39.1\% \\
 % output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
-30 to 60 min & 86{,}113 & 44.9\% \\
+30 to 60 min & 85{,}971 & 45.5\% \\
 % output/exhibits/block_vs_hour_conditional.jsonl, time_to_hour_boundary rows
 \midrule
-\multicolumn{3}{l}{\emph{Panel C: by the size of the own-block residual}} \\
-Bucket & Route obs. & Flip rate \\
+\multicolumn{3}{l}{\emph{Panel C: by the size of the pre-event residual}} \\
+Bucket & Snapshots & Flip rate \\
 \midrule
-under 5 bps & 26{,}389 & 40.4\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows
-5 to 10 bps & 18{,}105 & 44.0\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows
-10 to 25 bps & 41{,}096 & 40.4\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows
-25 to 50 bps & 39{,}095 & 36.8\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows
-50 to 100 bps & 33{,}298 & 33.3\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows
-100 to 250 bps & 22{,}230 & 35.1\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows
-above 250 bps & 9{,}860 & 36.8\% \\
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows
+under 5 bps & 25{,}056 & 41.0\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
+5 to 10 bps & 17{,}978 & 44.5\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
+10 to 25 bps & 41{,}201 & 41.5\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
+25 to 50 bps & 40{,}381 & 38.4\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
+50 to 100 bps & 33{,}146 & 34.1\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
+100 to 250 bps & 22{,}223 & 36.4\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
+above 250 bps & 9{,}637 & 36.2\% \\
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows
 \bottomrule
 \end{tabular}
 \\[4pt]
-\footnotesize 190,073 route observations across 371 triangles on seven sampled days. Panel A applies the wedge to all observations, so its route count is constant across rows. \emph{Dominated share} is the share of observations the own-block residual classifies as dominated at that wedge.
+\footnotesize 189,622 opportunity snapshots across 371 triangles on seven sampled days. Panel A applies the wedge to all observations, so its denominator is constant across rows. \emph{Dominated share} is the share of observations the strict pre-event residual classifies as dominated at that wedge.
 \end{table}
 
-Panel C is the diagnostic that rules out a size threshold as a remedy: the flip rate stays inside a range of 33.3\% to 44.0\% across every bucket of the own-block residual, reading 36.8\% in the top bucket against 40.4\% in the bottom one, which follows from what $m$ is at zero size.
-% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_block rows over 190,073 route observations
+Panel C is the diagnostic that rules out a size threshold as a remedy: the flip rate stays inside a range of 34.1\% to 44.5\% across every bucket of the pre-event residual, reading 36.2\% in the top bucket against 41.0\% in the bottom one, which follows from what $m$ is at zero size.
+% output/exhibits/block_vs_hour_conditional.jsonl, gap_at_own_event rows over 189,622 opportunity snapshots
 A triangular-arbitrage residual is a quantity searchers keep oscillating around zero within blocks, and a large value of it is transient wherever it appears in the distribution. Panel B validates the test on a dimension a coding error would not reproduce, since a route executing seconds before its hour closes is priced at nearly the state the panel used and cannot flip, while one executing early in an hour has a full hour of drift ahead of it. A flat profile there would have indicated a defect, and Figure~\ref{fig:app:boundary} shows the profile the test returns.
 
 \begin{figure}[tbp]
@@ -535,15 +535,15 @@ A triangular-arbitrage residual is a quantity searchers keep oscillating around 
 \label{fig:app:boundary}
 \begin{tikzpicture}
 \begin{axis}[ybar, width=0.85\textwidth, height=6.4cm, bar width=0.9cm, symbolic x coords={under 1,1 to 5,5 to 15,15 to 30,30 to 60}, xtick=data, xlabel={Minutes remaining to the close of the route's hour}, ylabel={Verdict flip rate, percent}, ymin=0, ymax=54, ytick={0,10,20,30,40,50}, tick align=outside, tick label style={font=\footnotesize}, label style={font=\footnotesize}, nodes near coords, nodes near coords style={font=\footnotesize}, point meta=explicit symbolic, grid=major, grid style={black!10}, axis line style={black!70}, enlarge x limits=0.12]
-\addplot[draw=black, fill=black!20] coordinates {(under 1,15.56) [15.6] (1 to 5,21.03) [21.0] (5 to 15,32.35) [32.3] (15 to 30,38.88) [38.9] (30 to 60,44.87) [44.9]};
+\addplot[draw=black, fill=black!20] coordinates {(under 1,22.49) [22.5] (1 to 5,22.31) [22.3] (5 to 15,32.79) [32.8] (15 to 30,39.13) [39.1] (30 to 60,45.55) [45.5]};
 \end{axis}
 \end{tikzpicture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} A route executing seconds before its hour closes is priced at nearly the state the counterfactual panel used and has almost no room to flip, and one executing early in an hour has a full hour of drift ahead of it. The buckets carry 10,774, 13,084, 31,568, 48,534 and 86,113 route observations from left to right., 190,073 route observations across 371 triangles on seven sampled days from 2021-12-25 to 2025-11-04.
+\footnotesize\raggedright \emph{Notes.} An opportunity observed seconds before its hour closes is priced near the state the counterfactual panel used, while one observed early in an hour has a full hour of drift ahead. The buckets carry 10,613, 13,059, 31,525, 48,454 and 85,971 snapshots from left to right, for 189,622 opportunity snapshots across 371 triangles on seven sampled days from 2021-12-25 to 2025-11-04.
 \end{minipage}
 \end{figure}
-% output/exhibits/block_vs_hour_conditional.jsonl, cut=time_to_hour_boundary rows, 190,073 route observations on seven sampled days
+% output/exhibits/block_vs_hour_conditional.jsonl, cut=time_to_hour_boundary rows, 189,622 opportunity snapshots on seven sampled days
 
 Panel A carries the result. A two-leg route pays two pool fees where a direct route pays one, and that offset is a property of the venues traversed and does not move with the market, so it displaces the verdict boundary away from the region where the residual oscillates. The timing threat is therefore a function of trade economics and has no single number attached to it.
 

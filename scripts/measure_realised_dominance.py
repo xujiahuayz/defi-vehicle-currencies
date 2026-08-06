@@ -7,7 +7,7 @@ It reports forced routes (no direct quote), chosen routes (both route families
 available), unsupported routes, and dominance only inside the chosen sample.
 
 The match is an hourly proxy, not transaction-state identification. Any claim about
-what the router could have chosen remains withheld until the own-block validation passes.
+what the router could have chosen remains withheld until transaction-state counterfactual validation passes.
 
 Reads   data/unified/YYYYMMDD.parquet
         data/empirical/route_cost_panel_v2.parquet
@@ -146,7 +146,7 @@ def main() -> int:
         OUT,
         code_sources=CODE_SOURCES,
         inputs=[PANEL, DATA_DIR / "unified"],
-        notes="exact-hour, nearest-log-size proxy; own-block choice claims withheld",
+        notes="exact-hour, nearest-log-size proxy; transaction-state choice claims withheld",
     )
     type_detail = result[result["period"].eq("ALL")].copy()
     write_exhibit(

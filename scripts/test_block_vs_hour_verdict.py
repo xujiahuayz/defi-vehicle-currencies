@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Does hour-boundary pricing change the DOMINANCE VERDICT, or only the price level?
 
-`scripts/reprice_realised_at_block.py` measured how far a pool's own state sits from
-the hour-boundary state the panel priced at, found a median 86.2% of observations moving more
-than 25 basis points, and the persistence result was withdrawn on that number. The number
-is right and the inference from it is not tested, which is what this script fixes.
+An earlier pool-level diagnostic measured how far one pool's state moved before the
+hour boundary. That level statistic could not test a dominance verdict, which is a
+comparison of routes, and it ordered only by block. The diagnostic is retired; this
+script keeps the useful triangle comparison and uses the shared strict block-log owner.
 
 The reason is that a dominance verdict is a COMPARISON, and both sides of it are priced at
 the same state. When the market moves between a route's own block and the close of its
