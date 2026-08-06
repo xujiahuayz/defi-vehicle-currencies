@@ -94,6 +94,30 @@ class RegressionPrimitiveTests(unittest.TestCase):
         )
         self.assertTrue(np.isnan(result.beta).all())
 
+    def test_cluster_hac_lag_zero_matches_clustered_inference(self) -> None:
+        time = np.repeat(np.arange(6), 2)
+        x_value = np.tile([0.0, 1.0], 6) + time
+        outcome = 1.0 + 0.5 * x_value + np.repeat([0.0, 1.0, -0.5], 4)
+        clustered = ols_clustered(outcome, x_value, time)
+        hac_zero = ols_clustered(
+            outcome[::-1],
+            x_value[::-1],
+            time[::-1],
+            cluster_hac_lag=0,
+        )
+        np.testing.assert_allclose(hac_zero.beta, clustered.beta)
+        np.testing.assert_allclose(hac_zero.covariance, clustered.covariance)
+        hac_forward = ols_clustered(outcome, x_value, time, cluster_hac_lag=2)
+        hac_reverse = ols_clustered(
+            outcome[::-1], x_value[::-1], time[::-1], cluster_hac_lag=2
+        )
+        np.testing.assert_allclose(hac_reverse.beta, hac_forward.beta)
+        np.testing.assert_allclose(hac_reverse.covariance, hac_forward.covariance)
+
+    def test_cluster_hac_rejects_negative_lag(self) -> None:
+        with self.assertRaisesRegex(ValueError, "nonnegative"):
+            ols_clustered(np.arange(4.0), np.arange(4.0), [0, 0, 1, 1], cluster_hac_lag=-1)
+
     def test_clustered_ols_counts_absorbed_fixed_effect_degrees_of_freedom(self) -> None:
         x_value = np.arange(12, dtype=float)
         outcome = 1.0 + 0.25 * x_value + np.array([0.0, 1.0, -1.0] * 4)

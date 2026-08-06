@@ -328,12 +328,42 @@ class PoolViewTests(unittest.TestCase):
             pd.DataFrame(rows), recurrence_thresholds=(2,)
         )
         result = summary[
-            summary["panel"].eq("fixed_support")
+            summary["panel"].eq("recurrent_support")
             & summary["identity"].eq("economic_triangle")
         ].iloc[0]
         self.assertAlmostEqual(float(result["log_gap_time_beta"]), -0.2, places=3)
         self.assertAlmostEqual(float(result["annual_compression"]), 1 - math.exp(-0.2), places=3)
         self.assertEqual(int(result["absorbed_degrees_of_freedom"]), 1)
+
+        short_lived = []
+        for index, date in enumerate(dates[:6]):
+            elapsed_years = (date - dates[0]).days / 365.25
+            short_lived.append(
+                {
+                    "day": date.strftime("%Y%m%d"),
+                    "src": "c",
+                    "tgt": "t",
+                    "vehicle": "k",
+                    "direct_pool": "c-d",
+                    "hop1_pool": "c-1",
+                    "hop2_pool": "c-2",
+                    "median_gap_bps": math.exp(6.0 - 0.2 * elapsed_years),
+                    "n_observations": 100,
+                }
+            )
+        extended = summarise_triangle_maturation(
+            pd.DataFrame([*rows, *short_lived]), recurrence_thresholds=(2,)
+        )
+        recurrent = extended[
+            extended["panel"].eq("recurrent_support")
+            & extended["identity"].eq("economic_triangle")
+        ].iloc[0]
+        balanced = extended[
+            extended["panel"].eq("horizon_balanced")
+            & extended["identity"].eq("economic_triangle")
+        ].iloc[0]
+        self.assertEqual(int(recurrent["triangles"]), 3)
+        self.assertEqual(int(balanced["triangles"]), 2)
 
     def test_timing_conditionals_stream_daily_frames(self) -> None:
         first = pd.DataFrame(

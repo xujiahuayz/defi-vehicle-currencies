@@ -41,7 +41,7 @@ small trades and does not discharge it for large ones, and the script says which
 Reads   data/raw/thegraph/uniswap_v3/uniswap_v3_swaps_*.jsonl.gz
 Writes  output/exhibits/block_vs_hour_verdict.jsonl        per-triangle rows
         output/exhibits/block_vs_hour_conditional.jsonl    the conditional tables
-        output/exhibits/triangle_gap_maturation.jsonl       fixed-support trends
+        output/exhibits/triangle_gap_maturation.jsonl       recurrent and horizon-balanced trends
 """
 
 from __future__ import annotations
@@ -421,13 +421,15 @@ def main() -> int:
     maturation = summarise_triangle_maturation(df)
     if not maturation.empty:
         print("\nwithin-triangle annual compression in the marginal price gap")
-        fixed = maturation[maturation["panel"].eq("fixed_support")]
-        for row in fixed.itertuples():
-            print(
-                f"  {row.identity}, >= {int(row.minimum_dates)} dates: "
-                f"{row.annual_compression:>6.1%}/year "
-                f"(p={row.p:.3f}; {int(row.triangle_days):,} triangle-days)"
-            )
+        for panel in ("recurrent_support", "horizon_balanced"):
+            print(f"  {panel.replace('_', ' ')}")
+            selected = maturation[maturation["panel"].eq(panel)]
+            for row in selected.itertuples():
+                print(
+                    f"    {row.identity}, >= {int(row.minimum_dates)} dates: "
+                    f"{row.annual_compression:>6.1%}/year "
+                    f"(p={row.p:.3f}; {int(row.triangle_days):,} triangle-days)"
+                )
         annual = maturation[maturation["panel"].eq("annual_descriptive")]
         for row in annual.itertuples():
             print(
@@ -459,7 +461,7 @@ def main() -> int:
                 MATURATION_OUT,
                 code_sources=CODE_SOURCES,
                 inputs=[V3],
-                notes="V3 strict transaction-state triangle gaps; fixed-support time trends",
+                notes="V3 strict transaction-state triangle gaps; recurrent and horizon-balanced time trends",
             )
     print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
     if not cond.empty:

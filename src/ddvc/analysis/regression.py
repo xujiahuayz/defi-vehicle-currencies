@@ -120,8 +120,11 @@ def ols_clustered(
     absorbed_groups: tuple[pd.Series | np.ndarray, ...] = (),
     min_observations: int = 1,
     min_clusters: int = 2,
+    cluster_hac_lag: int | None = None,
 ) -> ClusteredOLSResult:
-    """Fit OLS with a one-way CR1 cluster-robust covariance matrix."""
+    """Fit OLS with CR1 inference, optionally HAC across ordered clusters."""
+    if cluster_hac_lag is not None and cluster_hac_lag < 0:
+        raise ValueError("cluster HAC lag must be nonnegative")
     y_array = np.asarray(y, dtype=float).reshape(-1)
     x_array = np.asarray(x, dtype=float)
     cluster_array = np.asarray(cluster).reshape(-1)
@@ -144,7 +147,9 @@ def ols_clustered(
     if add_constant:
         x_array = np.column_stack([np.ones(len(x_array)), x_array])
     n, k = x_array.shape
-    cluster_codes, unique_clusters = pd.factorize(cluster_array, sort=False)
+    cluster_codes, unique_clusters = pd.factorize(
+        cluster_array, sort=cluster_hac_lag is not None
+    )
     n_clusters = len(unique_clusters)
     absorbed_rank = _absorbed_fixed_effect_rank(group_arrays)
     absorbed_degrees_of_freedom = k_absorbed + max(
@@ -169,11 +174,16 @@ def ols_clustered(
     xtx_inverse = np.linalg.pinv(x_array.T @ x_array)
     beta = xtx_inverse @ (x_array.T @ y_array)
     residual = y_array - x_array @ beta
-    meat = np.zeros((k, k))
+    scores = np.zeros((n_clusters, k))
     for code in range(n_clusters):
         selected = cluster_codes == code
-        score = x_array[selected].T @ residual[selected]
-        meat += np.outer(score, score)
+        scores[code] = x_array[selected].T @ residual[selected]
+    meat = scores.T @ scores
+    if cluster_hac_lag is not None:
+        for offset in range(1, min(cluster_hac_lag, n_clusters - 1) + 1):
+            weight = 1.0 - offset / (cluster_hac_lag + 1.0)
+            autocovariance = scores[offset:].T @ scores[:-offset]
+            meat += weight * (autocovariance + autocovariance.T)
     scale = (n_clusters / (n_clusters - 1)) * (
         (n - 1) / (n - k - absorbed_degrees_of_freedom)
     )
@@ -197,6 +207,7 @@ def ols_clustered_named(
     absorbed_groups: tuple[pd.Series | np.ndarray, ...] = (),
     min_observations: int = 1,
     min_clusters: int = 2,
+    cluster_hac_lag: int | None = None,
 ) -> tuple[int, int, dict[str, float]]:
     """Fit clustered OLS and expose named statistics for a DataFrame design."""
     result = ols_clustered(
@@ -208,6 +219,7 @@ def ols_clustered_named(
         absorbed_groups=absorbed_groups,
         min_observations=min_observations,
         min_clusters=min_clusters,
+        cluster_hac_lag=cluster_hac_lag,
     )
     return (
         result.n_observations,

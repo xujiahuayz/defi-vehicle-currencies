@@ -199,8 +199,12 @@ def summarise_triangle_maturation(
     triangles: pd.DataFrame,
     *,
     recurrence_thresholds: tuple[int, ...] = (2, 3, 4, 6, 10),
+    horizon_bins: int = 4,
+    cluster_hac_lag: int = 3,
 ) -> pd.DataFrame:
-    """Estimate within-triangle annual compression in marginal price gaps."""
+    """Estimate price-gap compression on recurrent and horizon-balanced triangles."""
+    if horizon_bins < 2:
+        raise ValueError("triangle maturation requires at least two horizon bins")
     required = {
         "day",
         "src",
@@ -243,47 +247,68 @@ def summarise_triangle_maturation(
         + "|"
         + frame["hop2_pool"].astype(str)
     )
+    elapsed = (frame["date"] - frame["date"].min()).dt.total_seconds()
+    span = float(elapsed.max())
+    frame["horizon_bin"] = (
+        (elapsed / span * horizon_bins).clip(upper=horizon_bins - 1).astype(int)
+        if span > 0
+        else 0
+    )
     rows: list[dict[str, object]] = []
     for identity in ("economic_triangle", "exact_pool_triangle"):
         recurrence = frame.groupby(identity)["date"].transform("nunique")
+        covered_bins = frame.groupby(identity)["horizon_bin"].transform("nunique")
         for minimum_dates in recurrence_thresholds:
-            sample = frame[recurrence.ge(minimum_dates)].copy()
-            if sample.empty:
-                continue
-            y = absorb_fixed_effects(sample["log_gap"], sample[identity])
-            x = absorb_fixed_effects(sample["year"], sample[identity])
-            fit = ols_clustered(
-                y,
-                x,
-                sample["date"],
-                absorbed_groups=(sample[identity],),
-                min_observations=30,
-            )
-            beta = float(fit.beta[1])
-            rows.append(
-                {
-                    "panel": "fixed_support",
-                    "identity": identity,
-                    "minimum_dates": minimum_dates,
-                    "triangle_days": fit.n_observations,
-                    "triangles": int(sample[identity].nunique()),
-                    "dates": fit.n_clusters,
-                    "absorbed_degrees_of_freedom": fit.absorbed_degrees_of_freedom,
-                    "log_gap_time_beta": beta,
-                    "annual_compression": (
-                        float(1 - np.exp(beta)) if np.isfinite(beta) else np.nan
-                    ),
-                    "standard_error": float(fit.standard_errors[1]),
-                    "t": float(fit.t_statistics[1]),
-                    "p": float(fit.p_values[1]),
-                }
-            )
+            recurrent = recurrence.ge(minimum_dates)
+            panels = {
+                "recurrent_support": recurrent,
+                "horizon_balanced": recurrent & covered_bins.eq(horizon_bins),
+            }
+            for panel, selected in panels.items():
+                sample = frame[selected].copy()
+                if sample.empty:
+                    continue
+                y = absorb_fixed_effects(sample["log_gap"], sample[identity])
+                x = absorb_fixed_effects(sample["year"], sample[identity])
+                fit = ols_clustered(
+                    y,
+                    x,
+                    sample["date"],
+                    absorbed_groups=(sample[identity],),
+                    min_observations=30,
+                    cluster_hac_lag=cluster_hac_lag,
+                )
+                beta = float(fit.beta[1])
+                rows.append(
+                    {
+                        "panel": panel,
+                        "identity": identity,
+                        "minimum_dates": minimum_dates,
+                        "required_horizon_bins": (
+                            horizon_bins if panel == "horizon_balanced" else 0
+                        ),
+                        "cluster_hac_lag": cluster_hac_lag,
+                        "triangle_days": fit.n_observations,
+                        "triangles": int(sample[identity].nunique()),
+                        "dates": fit.n_clusters,
+                        "absorbed_degrees_of_freedom": fit.absorbed_degrees_of_freedom,
+                        "log_gap_time_beta": beta,
+                        "annual_compression": (
+                            float(1 - np.exp(beta)) if np.isfinite(beta) else np.nan
+                        ),
+                        "standard_error": float(fit.standard_errors[1]),
+                        "t": float(fit.t_statistics[1]),
+                        "p": float(fit.p_values[1]),
+                    }
+                )
     for year, sample in frame.groupby(frame["date"].dt.year):
         rows.append(
             {
                 "panel": "annual_descriptive",
                 "identity": "all_sampled_triangles",
                 "minimum_dates": np.nan,
+                "required_horizon_bins": np.nan,
+                "cluster_hac_lag": np.nan,
                 "triangle_days": len(sample),
                 "triangles": int(sample["economic_triangle"].nunique()),
                 "dates": int(sample["date"].nunique()),
