@@ -318,7 +318,27 @@ def by_role(df: pd.DataFrame, venue: str, gas_only: bool = True) -> pd.DataFrame
             "capital_basis": "reserves" if venue == "uniswap_v2"
                              else "CPMM-equivalent virtual reserves",
         })
-    return pd.DataFrame(rows).sort_values("capital_days_usd_bn", ascending=False)
+    result = pd.DataFrame(rows)
+    if result.empty:
+        return result
+    return result.sort_values("capital_days_usd_bn", ascending=False)
+
+
+def by_role_over_time(df: pd.DataFrame, venue: str) -> pd.DataFrame:
+    """Keep pooled role incidence and the annual capital/return bridge together."""
+    pooled = by_role(df, venue)
+    pooled.insert(0, "year", pd.NA)
+    pooled.insert(0, "scope", "pooled")
+    annual: list[pd.DataFrame] = []
+    years = pd.to_datetime(df["date"]).dt.year
+    for year, group in df.groupby(years, sort=True):
+        table = by_role(group, venue)
+        if table.empty:
+            continue
+        table.insert(0, "year", int(year))
+        table.insert(0, "scope", "annual")
+        annual.append(table)
+    return pd.concat([pooled, *annual], ignore_index=True, sort=False)
 
 
 def by_size(df: pd.DataFrame, venue: str) -> pd.DataFrame:
@@ -416,7 +436,7 @@ def main() -> int:
               f"{df.pool.nunique():,} pools, {df.day.nunique():,} days")
         for s in steps:
             print(f"   {s['screen']:<52} {s['pool_days']:>12,} pool-days  {s['pools']:>8,} pools")
-        role_tabs.append(by_role(df, venue))
+        role_tabs.append(by_role_over_time(df, venue))
         size_tabs.append(by_size(df, venue))
 
     screens = pd.DataFrame(all_steps)
@@ -425,7 +445,7 @@ def main() -> int:
     roles = pd.concat(role_tabs, ignore_index=True)
     print("\n=== Rent incidence by pool asset role (annualised) ===")
     fmt = lambda v: f"{v:,.4f}"
-    print(roles[roles.venue == "uniswap_v2"][
+    print(roles[(roles.venue == "uniswap_v2") & roles.scope.eq("pooled")][
         ["pool_role", "pools", "pool_days", "capital_days_usd_bn",
          "med_fee_yield_apr", "med_lvr_rate_apr", "mean_gas_rate_apr",
          "share_days_with_lp_event", "med_net_yield_apr", "share_net_positive",
@@ -433,7 +453,7 @@ def main() -> int:
     print("\n=== Scale-free rent incidence, both venues ===")
     print("(v3 capital is CPMM-equivalent virtual reserves, so only these columns "
           "and the SIGN of a v3 yield are comparable across venues)")
-    print(roles[["venue", "pool_role", "pools", "token_pairs", "pool_days",
+    print(roles[roles.scope.eq("pooled")][["venue", "pool_role", "pools", "token_pairs", "pool_days",
                  "net_musd", "fee_over_lvr", "fee_over_lvr_plus_gas",
                  "med_pool_day_fee_over_lvr", "share_net_positive",
                  "share_net_positive_pre_gas"]].to_string(index=False, float_format=fmt))

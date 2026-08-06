@@ -10,10 +10,39 @@ from scripts.build_counterfactual_dominance import (
     add_topology_gas_adjustment,
     classify_state_support,
     counterfactual_days,
+    dominance_level_summary,
 )
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
+    def test_level_summary_keeps_weighting_uncertainty_and_dollars(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "date": pd.to_datetime(
+                    ["2024-01-15", "2024-01-15", "2024-02-15", "2024-02-15"]
+                ),
+                "gross_direct_advantage_bps": [100.0, -100.0, 200.0, -200.0],
+                "dominated_gross": [True, False, True, False],
+                "all_in_direct_advantage_bps_iqr_lower": [25.0, -25.0, 25.0, -25.0],
+                "all_in_direct_advantage_bps": [50.0, -50.0, 50.0, -50.0],
+                "all_in_direct_advantage_bps_iqr_upper": [75.0, -75.0, 75.0, -75.0],
+                "valuation_coherent_20pct": [True, True, True, True],
+                "usd": [1_000.0, 1_000.0, 1_000.0, 1_000.0],
+            }
+        )
+
+        summary = dominance_level_summary(frame)
+        gross = summary[
+            summary["economic_object"].eq("gross_output")
+            & summary["value_support"].eq("all_routes")
+            & summary["weighting"].eq("route")
+        ].iloc[0]
+        self.assertEqual(gross["routes"], 4)
+        self.assertEqual(gross["dominated_routes"], 2)
+        self.assertAlmostEqual(gross["pct_dominated"], 50.0)
+        self.assertAlmostEqual(gross["aggregate_savings_usd_sampled_dates"], 30.0)
+        self.assertIn("confidence_interval_95_lower_pct", summary.columns)
+
     def test_gas_adjustment_uses_route_cells_and_reports_iqr_sensitivity(self) -> None:
         frame = pd.DataFrame(
             {

@@ -52,6 +52,7 @@ from decimal import Decimal
 
 import pandas as pd
 
+from ddvc.analysis.regression import mean_clustered
 from ddvc.asset_types import WETH, classify
 from ddvc.calendar import nearest_monthly_days
 from ddvc.cpquote import (
@@ -641,6 +642,96 @@ def state_support_summary(frame: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def dominance_level_summary(frame: pd.DataFrame) -> pd.DataFrame:
+    """Pooled incidence, weighting sensitivity, uncertainty, and dollar magnitude."""
+    definitions = {
+        "gross_output": ("gross_direct_advantage_bps", "dominated_gross"),
+        "matched_gas_p25_bound": (
+            "all_in_direct_advantage_bps_iqr_lower",
+            None,
+        ),
+        "matched_gas_median": ("all_in_direct_advantage_bps", None),
+        "matched_gas_p75_bound": (
+            "all_in_direct_advantage_bps_iqr_upper",
+            None,
+        ),
+    }
+    support_masks = {
+        "all_routes": pd.Series(True, index=frame.index),
+        "within_20pct": frame["valuation_coherent_20pct"].fillna(False),
+    }
+    rows: list[dict[str, object]] = []
+    for support, support_mask in support_masks.items():
+        for economic_object, (advantage_column, indicator_column) in definitions.items():
+            sample = frame.loc[support_mask & frame[advantage_column].notna()].copy()
+            if sample.empty:
+                continue
+            dominated = (
+                sample[indicator_column].astype(bool)
+                if indicator_column is not None
+                else sample[advantage_column].gt(0)
+            )
+            inference = mean_clustered(
+                dominated.astype(float), pd.to_datetime(sample["date"])
+            )
+            savings = (
+                sample[advantage_column].where(dominated, 0.0).clip(lower=0)
+                * sample["usd"]
+                / 10_000
+            )
+            dominated_savings = savings.loc[dominated]
+            rows.append(
+                {
+                    "scope": "pooled_level",
+                    "weighting": "route",
+                    "value_support": support,
+                    "economic_object": economic_object,
+                    "routes": len(sample),
+                    "dates": pd.to_datetime(sample["date"]).nunique(),
+                    "dominated_routes": int(dominated.sum()),
+                    "pct_dominated": 100 * inference.estimate,
+                    "date_clustered_standard_error_pp": 100 * inference.standard_error,
+                    "confidence_interval_95_lower_pct": 100
+                    * max(inference.confidence_interval_lower, 0.0),
+                    "confidence_interval_95_upper_pct": 100
+                    * min(inference.confidence_interval_upper, 1.0),
+                    "median_advantage_bps_if_dominated": float(
+                        sample.loc[dominated, advantage_column].median()
+                    ),
+                    "median_savings_usd_if_dominated": float(
+                        dominated_savings.median()
+                    ),
+                    "aggregate_savings_usd_sampled_dates": float(savings.sum()),
+                }
+            )
+            daily_incidence = (
+                pd.DataFrame(
+                    {
+                        "date": pd.to_datetime(sample["date"]),
+                        "dominated": dominated.to_numpy(dtype=float),
+                    }
+                )
+                .groupby("date", sort=True)["dominated"]
+                .mean()
+            )
+            rows.append(
+                {
+                    "scope": "pooled_level",
+                    "weighting": "equal_date",
+                    "value_support": support,
+                    "economic_object": economic_object,
+                    "routes": len(sample),
+                    "dates": len(daily_incidence),
+                    "dominated_routes": int(dominated.sum()),
+                    "pct_dominated": 100 * float(daily_incidence.mean()),
+                    "daily_incidence_p25_pct": 100 * float(daily_incidence.quantile(0.25)),
+                    "daily_incidence_p50_pct": 100 * float(daily_incidence.quantile(0.50)),
+                    "daily_incidence_p75_pct": 100 * float(daily_incidence.quantile(0.75)),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -746,8 +837,12 @@ def main() -> int:
               f"  median advantage "
               f"{d.gross_direct_advantage_bps.median() if len(d) else float('nan'):8.1f} bps")
     print("\nby size bin:")
-    df["bin"] = pd.cut(df.usd, [100, 1e3, 1e4, 1e5, 1e12],
-                       labels=["100-1k", "1k-10k", "10k-100k", ">100k"])
+    df["bin"] = pd.cut(
+        df.usd,
+        [100, 1e3, 1e4, 1e5, 1e12],
+        labels=["100-1k", "1k-10k", "10k-100k", ">100k"],
+        include_lowest=True,
+    )
     for b, s in df.groupby("bin", observed=True):
         d = s[s.direct_output_improvement_bps > 0]
         print(f"  {b:>9}  routes {len(s):7,}  dominated {100*len(d)/len(s):5.1f}%"
@@ -793,12 +888,18 @@ def main() -> int:
             lambda x: 100 * (x.dropna() > 0).mean(),
         ),
     ).reset_index()
+    annual.insert(0, "scope", "annual_type_reach")
+    summary = pd.concat(
+        [dominance_level_summary(df), annual],
+        ignore_index=True,
+        sort=False,
+    )
     write_exhibit(
-        annual,
+        summary,
         OUT_EXHIBIT,
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
-        notes="annual exact-size V2-family direct counterfactual; positive price-free output improvement means the direct route returns more; input-normalized gas adjustment uses historical prices and receipt medians matched by year, venue sequence and intermediary with labelled fallbacks and IQR sensitivity",
+        notes="pooled and annual exact-size V2-family direct counterfactual; pooled rows retain route and equal-date weighting, date-clustered uncertainty, dollar magnitude, strict valuation support and matched-gas IQR sensitivity; annual rows split intermediary type and realised venue reach",
     )
     support = state_support_summary(df)
     write_exhibit(

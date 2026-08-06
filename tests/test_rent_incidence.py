@@ -13,7 +13,10 @@ import importlib.util
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
+
+from scripts.run_rent_incidence import by_role_over_time
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,6 +24,38 @@ _spec = importlib.util.spec_from_file_location(
     "build_rent_incidence_panel", ROOT / "scripts" / "build_rent_incidence_panel.py")
 brp = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(brp)
+
+
+def test_role_exhibit_keeps_pooled_and_annual_bridge_rows():
+    dates = pd.to_datetime(["2024-01-01"] * 500 + ["2025-01-01"] * 500)
+    frame = pd.DataFrame(
+        {
+            "date": dates,
+            "day": dates.strftime("%Y%m%d"),
+            "pool_role": "native / other",
+            "pool": [f"pool-{index % 2}" for index in range(1_000)],
+            "token0": "native",
+            "token1": "other",
+            "tvl_usd": 100_000.0,
+            "fee_yield": 0.001,
+            "lvr_rate": 0.002,
+            "gas_rate": 0.0001,
+            "n_mint": 1,
+            "n_burn": 0,
+            "net_yield": -0.0011,
+            "net_pre_gas_yield": -0.001,
+            "fees_usd": 100.0,
+            "lvr_usd": 200.0,
+            "gas_usd": 10.0,
+            "net_usd": -110.0,
+        }
+    )
+
+    result = by_role_over_time(frame, "uniswap_v2")
+
+    assert set(result["scope"]) == {"pooled", "annual"}
+    assert set(result.loc[result.scope.eq("annual"), "year"]) == {2024, 2025}
+    assert result.loc[result.scope.eq("pooled"), "pool_days"].iloc[0] == 1_000
 
 
 def test_fenwick_matches_brute_force_prefix_sums():
