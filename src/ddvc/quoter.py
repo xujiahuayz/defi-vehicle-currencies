@@ -35,6 +35,7 @@ from __future__ import annotations
 import gzip
 import json
 import os
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -61,6 +62,7 @@ _DEFAULT_RPCS = (
     "https://1rpc.io/eth",
 )
 _rpc_idx = 0
+_rpc_idx_lock = threading.Lock()
 
 
 def rpc_urls() -> list[str]:
@@ -86,7 +88,8 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
     global _rpc_idx
     data = json.dumps(payload).encode()
     urls = rpc_urls()
-    start = _rpc_idx % len(urls)
+    with _rpc_idx_lock:
+        start = _rpc_idx % len(urls)
     ordered = urls[start:] + urls[:start]
     throttled = False
     last: Exception | None = None
@@ -98,7 +101,8 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
                 method="POST")
             try:
                 with urllib.request.urlopen(req, timeout=timeout) as r:
-                    _rpc_idx = (urls.index(url) + 1) % len(urls)
+                    with _rpc_idx_lock:
+                        _rpc_idx = (urls.index(url) + 1) % len(urls)
                     if sleep:
                         time.sleep(sleep)
                     return json.loads(r.read())
