@@ -48,6 +48,7 @@ MANIFESTS = ROOT / "data" / "manifests"
 # raw layer runs to gigabytes per venue, and rehashing it on every build would
 # make stamping expensive enough that people would switch it off.
 CONTENT_HASH_MAX_BYTES = 64 * 1024 * 1024
+GENERATED_PREFIXES = ("output/", "data/manifests/")
 
 
 def _run(cmd: list[str]) -> str | None:
@@ -67,20 +68,28 @@ def git_state(exclude_paths: list[str | Path] | None = None) -> dict[str, object
     sha = _run(["git", "rev-parse", "HEAD"])
     status = _run(["git", "status", "--porcelain"])
     excluded = {str(_rel(Path(path))) for path in (exclude_paths or [])}
-    tracked = None
+    tracked = untracked = generated = None
     if status is not None:
-        tracked = [
-            ln[3:]
-            for ln in status.splitlines()
-            if ln[:2].strip()
-            and not ln.startswith("??")
-            and ln[3:] not in excluded
-        ]
+        tracked, untracked, generated = [], [], []
+        for line in status.splitlines():
+            if not line[:2].strip():
+                continue
+            path = line[3:]
+            if path in excluded:
+                continue
+            if path.startswith(GENERATED_PREFIXES):
+                generated.append(path)
+            elif line.startswith("??"):
+                untracked.append(path)
+            else:
+                tracked.append(path)
     return {
         "commit": sha,
         "branch": _run(["git", "rev-parse", "--abbrev-ref", "HEAD"]),
-        "dirty": bool(tracked) if tracked is not None else None,
+        "dirty": bool(tracked or untracked) if tracked is not None else None,
         "dirty_tracked_files": tracked[:40] if tracked else [],
+        "dirty_untracked_files": untracked[:40] if untracked else [],
+        "dirty_generated_files": generated[:40] if generated else [],
     }
 
 

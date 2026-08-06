@@ -66,6 +66,35 @@ class ProvenanceInputTests(unittest.TestCase):
         self.assertFalse(state["dirty"])
         self.assertEqual(state["dirty_tracked_files"], [])
 
+    @patch("ddvc.provenance._run")
+    def test_other_generated_outputs_do_not_taint_code_state(self, run) -> None:
+        run.side_effect = [
+            "abc123",
+            " M output/exhibits/first.jsonl\n M data/manifests/output/exhibits/first.jsonl.prov.json",
+            "main",
+        ]
+        state = git_state()
+        self.assertFalse(state["dirty"])
+        self.assertEqual(
+            state["dirty_generated_files"],
+            [
+                "output/exhibits/first.jsonl",
+                "data/manifests/output/exhibits/first.jsonl.prov.json",
+            ],
+        )
+
+    @patch("ddvc.provenance._run")
+    def test_untracked_source_marks_build_dirty(self, run) -> None:
+        run.side_effect = [
+            "abc123",
+            "?? src/ddvc/new_estimator.py\n?? output/exhibits/new.jsonl",
+            "main",
+        ]
+        state = git_state()
+        self.assertTrue(state["dirty"])
+        self.assertEqual(state["dirty_untracked_files"], ["src/ddvc/new_estimator.py"])
+        self.assertEqual(state["dirty_generated_files"], ["output/exhibits/new.jsonl"])
+
 
 if __name__ == "__main__":
     unittest.main()
