@@ -1,10 +1,10 @@
 {
  "argv": [
   "--workers",
-  "8"
+  "4"
  ],
  "artefact": "output/exhibits/intermediation_by_type.jsonl",
- "code_fingerprint": "ce9c67e3a34c61e427fd134b19338ad025cd19d01f3bdbd7f62d0fc0a69f4086",
+ "code_fingerprint": "be301d5274d00a8d9919c4617ce52f80c3ef52fb4de9f8c5247992e041bb0fc2",
  "code_sources": [
   "scripts/build_intermediation_by_type.py",
   "src/ddvc/analysis/regression.py",
@@ -12,27 +12,13 @@
   "src/ddvc/realised.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T11:07:35+00:00",
+ "created_at": "2026-08-06T19:00:05+00:00",
  "git": {
-  "branch": "main",
-  "commit": "7bd54d988192278236c6ee0e0729fcdfb73b9977",
+  "branch": "glotl/workflow-status",
+  "commit": "44b74d674c57c391c88a7b2c0114807ea19b3b00",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json",
-   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
-   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_technology_rival.jsonl.prov.json",
-   "output/exhibits/dominance_specification_curve.jsonl",
-   "output/exhibits/realised_dominance.jsonl",
-   "output/exhibits/survival_after_dominance.jsonl",
-   "output/exhibits/v4_quoter_validation.jsonl",
-   "output/exhibits/vehicle_dominance_hdfe.jsonl",
-   "output/exhibits/venue_technology_rival.jsonl",
-   "output/exhibits/realised_dominance_reweighting.jsonl"
+   "data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -42,7 +28,7 @@
    "bytes": 698924,
    "exists": true,
    "path": "data/processed/intermediation_by_type_daily.parquet",
-   "sha256": "908cc1ad5f3be038d87e2037e668779d362312d199cc2fdf83d587f4032c2474"
+   "sha256": "da896ee2e4b289326c05d0c7f79f788bcbc4670f335e778835f63be2c36100e8"
   }
  ],
  "libraries": {
