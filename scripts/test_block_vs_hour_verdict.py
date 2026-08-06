@@ -207,7 +207,7 @@ def main() -> int:
     flip = float((df.flip_rate * df.n_observations).sum() / n_tot)
     print(f"\n{len(df)} triangles over {n_tot:,} opportunity snapshots")
     print(f"  verdict flip rate, own event against hour boundary : {flip:.2%}")
-    print(f"  median triangle gap at own block                   : "
+    print(f"  median triangle gap at own event                   : "
           f"{df.median_gap_bps.median():.1f} bps")
     print(f"  median change in the gap from repricing            : "
           f"{df.median_delta_bps.median():.1f} bps")
@@ -265,7 +265,7 @@ def main() -> int:
             flips_w = ((own > 0) != (hr > 0)).mean()
             print(f"  {f'{w} bps':<26}{len(rt):>10,}{flips_w:>11.2%}"
                   f"{(own < 0).mean():>11.1%}")
-        print("  'dominated' is the share where the two-leg route wins at own-block state,")
+        print("  'dominated' is the share where the two-leg route wins at event-time state,")
         print("  which is the estimand itself and moves with the wedge as it should.")
 
         for thresh in (25, 50, 100):
