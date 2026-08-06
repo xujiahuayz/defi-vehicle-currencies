@@ -153,8 +153,63 @@ def routing_shares(day: str) -> dict[tuple[str, str, str], float]:
             if totals[(kk[0], kk[1])] >= 5}
 
 
+def turnover_hazard(panel: pd.DataFrame, dominated_at: float) -> list[dict]:
+    """How much faster does the role turn over when its holder is dominated?
+
+    THIS IS THE ESTIMAND, and the two-arm version below is descriptive only. The reason is
+    a defect in the naive comparison that shows up as soon as it is measured. A retention
+    spell ends when ANY challenger takes the lead, while a displacement spell asks whether
+    ONE NAMED challenger takes it, so retention is a minimum over the candidate set and
+    displacement is a single draw from it. With several candidates on a pair, retention is
+    shorter by construction, and the gap widens with the number of candidates instead of
+    with any economic force. Measured over sixty days the naive arms give 5.74 days against
+    23.90, which is that artefact and not a finding.
+
+    The symmetric question uses ONE event, leadership on a pair changing hands, and
+    conditions it on whether the current holder is dominated. Both conditions are evaluated
+    on the same pairs, over the same days, with the same event. The comparison is then a
+    hazard ratio: how much more likely is the role to move on a day when its holder is
+    losing on cost than on a day when it is not.
+
+    Hysteresis is a hazard ratio near one, meaning that losing the cost advantage barely
+    raises the chance of losing the role, which is protection a symmetric friction cannot
+    produce. A large ratio is the competitive case, where the role follows cost.
+    """
+    rows: list[dict] = []
+    for (a, b), g in panel.groupby(["src", "tgt"], sort=False):
+        days = sorted(g.day.unique())
+        if len(days) < 5:
+            continue
+        lead = {d: sub.sort_values("share", ascending=False).iloc[0].vehicle
+                for d, sub in g.groupby("day")}
+        dom = {(r.day, r.vehicle): r.dominated for r in g.itertuples()}
+        n_cand = g.groupby("day").vehicle.nunique()
+        for i, d in enumerate(days[:-1]):
+            k = lead.get(d)
+            if k is None:
+                continue
+            dv = dom.get((d, k))
+            if dv is None:
+                continue
+            rows.append({
+                "src": a, "tgt": b, "day": d, "holder": k,
+                "holder_dominated": int(dv >= dominated_at),
+                # The event: did the role move to a different asset the next day?
+                "turned_over": int(lead.get(days[i + 1]) not in (None, k)),
+                # Carried so the ratio can be reported holding the candidate count fixed,
+                # since more candidates mean more ways for the role to move.
+                "n_candidates": int(n_cand.get(d, 1)),
+                "mid_type": classify(k)[1],
+            })
+    return rows
+
+
 def spells(panel: pd.DataFrame, dominated_at: float) -> list[dict]:
-    """Retention and displacement spells, on the same pairs, with right-censoring."""
+    """Retention and displacement spells, on the same pairs, with right-censoring.
+
+    Descriptive only. See `turnover_hazard` for why the difference between these two arms
+    is contaminated by a minimum-over-candidates artefact and is not the estimand.
+    """
     rows: list[dict] = []
     for (a, b), g in panel.groupby(["src", "tgt"], sort=False):
         g = g.sort_values("day")
@@ -249,14 +304,61 @@ def main() -> int:
     print(f"\n{len(panel):,} pair-candidate-days over {n_days} days, "
           f"{panel.groupby(['src', 'tgt']).ngroups:,} pairs")
 
+    # THE ESTIMAND FIRST. One event, conditioned two ways, on the same pairs and days.
+    haz = pd.DataFrame(turnover_hazard(panel, args.dominated_at))
+    out = []
+    if not haz.empty:
+        print(f"\nturnover of the vehicle role, one event conditioned on the holder's cost "
+              f"position, {len(haz):,} pair-days")
+        print(f"  {'holder':<26}{'pair-days':>11}{'turned over':>13}")
+        rate = {}
+        for dominated, g in haz.groupby("holder_dominated"):
+            lab = "losing on cost" if dominated else "cheapest available"
+            rate[int(dominated)] = float(g.turned_over.mean())
+            print(f"  {lab:<26}{len(g):>11,}{g.turned_over.mean():>12.2%}")
+            out.append({"arm": f"turnover_holder_{'dominated' if dominated else 'cheapest'}",
+                        "spells": int(len(g)), "censored_share": float("nan"),
+                        "mean_days": float(g.turned_over.mean()),
+                        "median_days": float("nan"),
+                        "wedge_bps": args.wedge_bps, "days_measured": int(n_days)})
+        if 0 in rate and 1 in rate and rate[0] > 0:
+            ratio = rate[1] / rate[0]
+            print(f"\n  hazard ratio {ratio:.2f}: losing the cost advantage multiplies the "
+                  f"daily chance of losing the role by this much")
+            out.append({"arm": "turnover_hazard_ratio", "spells": int(len(haz)),
+                        "censored_share": float("nan"), "mean_days": ratio,
+                        "median_days": float("nan"), "wedge_bps": args.wedge_bps,
+                        "days_measured": int(n_days)})
+            if ratio < 1.5:
+                print("  A ratio near one is the hysteresis reading: cost is losing its grip")
+                print("  on who holds the role, which is protection a symmetric friction")
+                print("  cannot produce.")
+            else:
+                print("  The role follows cost closely, which is the competitive reading and")
+                print("  leaves little room for an incumbency premium.")
+        # Holding the candidate count fixed, since more candidates mean more ways to move.
+        print(f"\n  {'candidates on the pair':<26}{'cheapest':>11}{'dominated':>12}")
+        for n, g in haz.groupby("n_candidates"):
+            if len(g) < 100:
+                continue
+            a0 = g[g.holder_dominated == 0].turned_over
+            a1 = g[g.holder_dominated == 1].turned_over
+            if len(a0) < 30 or len(a1) < 30:
+                continue
+            print(f"  {n:<26}{a0.mean():>10.2%}{a1.mean():>12.2%}")
+
     rows = spells(panel, args.dominated_at)
     if not rows:
         print("no spell cleared the definition")
         return 1
     sp = pd.DataFrame(rows)
     write_exhibit(sp, SPELLS)
+    print("\nThe two arms below are DESCRIPTIVE. A retention spell ends when any challenger")
+    print("takes the lead and a displacement spell asks whether one named challenger does,")
+    print("so retention is a minimum over the candidate set and displacement a single draw")
+    print("from it. Their difference widens with the number of candidates, and the estimand")
+    print("above avoids that by conditioning one event two ways.")
 
-    out = []
     print(f"\n  {'arm':<14}{'spells':>8}{'censored':>10}{'mean days':>11}{'median':>8}")
     for arm, g in sp.groupby("arm"):
         out.append({"arm": arm, "spells": int(len(g)),
