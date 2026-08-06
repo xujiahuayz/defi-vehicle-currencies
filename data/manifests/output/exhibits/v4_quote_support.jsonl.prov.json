@@ -1,27 +1,26 @@
 {
  "argv": [],
  "artefact": "output/exhibits/v4_quote_support.jsonl",
- "code_fingerprint": "fe9991c5083227d1c0fcf209e468635d97d60e3c8ab75d446436ffdfe70695d1",
+ "code_fingerprint": "ebac521636e936119135f6b56bdf96cedb6993e42a1b6bdf8099c5c00e1818c5",
  "code_sources": [
   "scripts/measure_quoter_support.py",
   "src/ddvc/fetch/raw.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T19:26:40+00:00",
+ "created_at": "2026-08-06T19:36:20+00:00",
  "git": {
   "branch": "main",
-  "commit": "e4b5c241a8e1f0e281f0c60e6faf2496a2c97d54",
+  "commit": "174a714a79bebe94695b88f00887307c5cf5395b",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
-   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
    "data/manifests/output/exhibits/quoter_support_bounds.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
    "output/exhibits/dominance_specification_curve.jsonl",
-   "output/exhibits/gap_arbitrage_bound.jsonl",
+   "output/exhibits/quoter_support_bounds.jsonl",
    "output/exhibits/realised_dominance.jsonl",
    "output/exhibits/survival_after_dominance.jsonl",
    "output/exhibits/vehicle_dominance_hdfe.jsonl",
