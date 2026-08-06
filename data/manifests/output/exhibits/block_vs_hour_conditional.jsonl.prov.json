@@ -1,50 +1,30 @@
 {
  "argv": [
   "--days",
-  "8",
+  "74",
   "--triangles",
-  "70"
+  "60",
+  "--workers",
+  "2"
  ],
  "artefact": "output/exhibits/block_vs_hour_conditional.jsonl",
- "code_fingerprint": "6f32aac3e1c2504061f6f16d9ecb625b8f0a9b1d8a7be718296a8495a13bce47",
+ "code_fingerprint": "97babc22434a516b8714952dc82d68ced427ed05510026dc1626c4439a6cfdaf",
  "code_sources": [
   "scripts/test_block_vs_hour_verdict.py",
   "src/ddvc/analysis/block_timing.py",
+  "src/ddvc/analysis/regression.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T11:48:32+00:00",
+ "created_at": "2026-08-06T17:13:23+00:00",
  "git": {
-  "branch": "main",
-  "commit": "a5d95671f43c1847b4be624dacec9ae7e2745b34",
+  "branch": "glotl/workflow-status",
+  "commit": "857ff71147db18345c6c8d44ad57567d4e025ccc",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/block_vs_hour_verdict.jsonl.prov.json",
-   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
-   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
-   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
    "output/exhibits/block_vs_hour_verdict.jsonl",
-   "output/exhibits/dominance_specification_curve.jsonl",
-   "output/exhibits/gap_arbitrage_bound.jsonl",
-   "output/exhibits/realised_dominance.jsonl",
-   "output/exhibits/survival_after_dominance.jsonl",
-   "output/exhibits/v4_quoter_validation.jsonl",
-   "output/exhibits/vehicle_dominance_hdfe.jsonl",
-   "output/tables/bridge_denominator_robustness.pdf",
-   "output/tables/liquidity_robustness.pdf",
-   "output/tables/measurement_robustness.pdf",
-   "output/tables/route_cost_distribution_weighting.pdf",
-   "output/tables/route_cost_distribution_weighting.tex",
-   "output/tables/route_cost_robustness.pdf",
-   "output/tables/route_cost_robustness.tex",
-   "output/tables/stress_robustness.pdf",
-   "output/tables/stress_rotation_decomposition.pdf",
-   "output/tables/v4_match_balance.pdf",
-   "output/tables/v4_robustness.pdf",
-   "output/exhibits/realised_dominance_reweighting.jsonl"
+   "data/manifests/output/exhibits/triangle_gap_maturation.jsonl.prov.json",
+   "output/exhibits/triangle_gap_maturation.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -54,7 +34,7 @@
    "entries": 9420,
    "exists": true,
    "kind": "directory",
-   "path": "data/raw/thegraph/uniswap_v3",
+   "path": "/private/tmp/ddvc-workflow.wCJwgP/data/raw/thegraph/uniswap_v3",
    "tree_fingerprint": "f45dab14aa51240de52e86f01449373b9d9e000710ebd16078ff51fc87a58206"
   }
  ],
@@ -66,6 +46,6 @@
  },
  "notes": "V3 direct-pool opportunity snapshots; strict pre-event block-log state",
  "python": "3.14.5",
- "rows": 19,
+ "rows": 22,
  "script": "scripts/test_block_vs_hour_verdict.py"
 }

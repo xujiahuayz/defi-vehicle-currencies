@@ -1,19 +1,22 @@
-{"bucket": "under 5 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 25056, "value": 0.40988186462324394}
-{"bucket": "5 to 10 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 17978, "value": 0.4448770719768606}
-{"bucket": "10 to 25 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 41201, "value": 0.4149171136622897}
-{"bucket": "25 to 50 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 40381, "value": 0.3844382258983185}
-{"bucket": "50 to 100 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 33146, "value": 0.34079526941410726}
-{"bucket": "100 to 250 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 22223, "value": 0.3635872744453944}
-{"bucket": "above 250 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 9637, "value": 0.36214589602573416}
-{"bucket": "under 1 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 10613, "value": 0.2249128427400358}
-{"bucket": "1 to 5 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 13059, "value": 0.22306455318171375}
-{"bucket": "5 to 15 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 31525, "value": 0.327898493259318}
-{"bucket": "15 to 30 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 48454, "value": 0.39125768770380154}
-{"bucket": "30 to 60 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 85971, "value": 0.45547917320957065}
-{"bucket": "0", "cut": "fee_wedge_bps", "dominated_share": 0.4957125228085349, "observations": 189622, "value": 0.38894748499646664}
-{"bucket": "5", "cut": "fee_wedge_bps", "dominated_share": 0.4309204628154961, "observations": 189622, "value": 0.37625381021189525}
-{"bucket": "10", "cut": "fee_wedge_bps", "dominated_share": 0.3831728385946778, "observations": 189622, "value": 0.35477950870679564}
-{"bucket": "30", "cut": "fee_wedge_bps", "dominated_share": 0.24149096623809474, "observations": 189622, "value": 0.2533672253219563}
-{"bucket": "60", "cut": "fee_wedge_bps", "dominated_share": 0.13609180369366425, "observations": 189622, "value": 0.16148442691248907}
-{"bucket": "100", "cut": "fee_wedge_bps", "dominated_share": 0.07855101201337397, "observations": 189622, "value": 0.09433504551159676}
-{"bucket": "all", "cut": "pooled", "dominated_share": null, "observations": 189622, "value": 0.38894748499646664}
+{"bucket": "under 5 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 285641, "value": 0.42107400548240626}
+{"bucket": "5 to 10 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 206309, "value": 0.428701607782501}
+{"bucket": "10 to 25 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 454098, "value": 0.3868504155490665}
+{"bucket": "25 to 50 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 398736, "value": 0.36824114200874764}
+{"bucket": "50 to 100 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 304606, "value": 0.36026867494402603}
+{"bucket": "100 to 250 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 174310, "value": 0.3667144742126097}
+{"bucket": "above 250 bps", "cut": "gap_at_own_event", "dominated_share": null, "observations": 74033, "value": 0.38037091567274056}
+{"bucket": "under 1 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 103973, "value": 0.2174795379569696}
+{"bucket": "1 to 5 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 132640, "value": 0.2236127864897467}
+{"bucket": "5 to 15 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 321813, "value": 0.3188311224220277}
+{"bucket": "15 to 30 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 476792, "value": 0.39455150254198895}
+{"bucket": "30 to 60 min", "cut": "time_to_hour_boundary", "dominated_share": null, "observations": 862515, "value": 0.45222054109203896}
+{"bucket": "0", "cut": "fee_wedge_bps", "dominated_share": 0.5042569212845011, "observations": 1897733, "value": 0.38627246298609974}
+{"bucket": "5", "cut": "fee_wedge_bps", "dominated_share": 0.42826888714060407, "observations": 1897733, "value": 0.3704024749530097}
+{"bucket": "10", "cut": "fee_wedge_bps", "dominated_share": 0.37348510038029586, "observations": 1897733, "value": 0.34777758515028195}
+{"bucket": "30", "cut": "fee_wedge_bps", "dominated_share": 0.22372852240014796, "observations": 1897733, "value": 0.23525596066464566}
+{"bucket": "60", "cut": "fee_wedge_bps", "dominated_share": 0.12164830352847318, "observations": 1897733, "value": 0.1336431415799799}
+{"bucket": "100", "cut": "fee_wedge_bps", "dominated_share": 0.06578954995249595, "observations": 1897733, "value": 0.07422171612128788}
+{"bucket": "all", "cut": "pooled", "dominated_share": null, "observations": 1897733, "value": 0.38627246298609974}
+{"bucket": "25", "cut": "gap_minimum_bps", "dominated_share": null, "observations": 951685, "value": 0.3663533627198075}
+{"bucket": "50", "cut": "gap_minimum_bps", "dominated_share": null, "observations": 552949, "value": 0.36499206979305504}
+{"bucket": "100", "cut": "gap_minimum_bps", "dominated_share": null, "observations": 248343, "value": 0.3707855667363284}

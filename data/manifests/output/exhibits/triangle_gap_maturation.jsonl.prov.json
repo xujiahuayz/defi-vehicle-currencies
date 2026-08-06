@@ -7,7 +7,7 @@
   "--workers",
   "2"
  ],
- "artefact": "output/exhibits/block_vs_hour_verdict.jsonl",
+ "artefact": "output/exhibits/triangle_gap_maturation.jsonl",
  "code_fingerprint": "97babc22434a516b8714952dc82d68ced427ed05510026dc1626c4439a6cfdaf",
  "code_sources": [
   "scripts/test_block_vs_hour_verdict.py",
@@ -15,16 +15,16 @@
   "src/ddvc/analysis/regression.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T17:13:22+00:00",
+ "created_at": "2026-08-06T17:13:23+00:00",
  "git": {
   "branch": "glotl/workflow-status",
   "commit": "857ff71147db18345c6c8d44ad57567d4e025ccc",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/block_vs_hour_conditional.jsonl.prov.json",
+   "data/manifests/output/exhibits/block_vs_hour_verdict.jsonl.prov.json",
    "output/exhibits/block_vs_hour_conditional.jsonl",
-   "data/manifests/output/exhibits/triangle_gap_maturation.jsonl.prov.json",
-   "output/exhibits/triangle_gap_maturation.jsonl"
+   "output/exhibits/block_vs_hour_verdict.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -44,8 +44,8 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "V3 direct-pool opportunity snapshots; strict pre-event block-log state",
+ "notes": "V3 strict transaction-state triangle gaps; recurrent and horizon-balanced time trends",
  "python": "3.14.5",
- "rows": 3636,
+ "rows": 26,
  "script": "scripts/test_block_vs_hour_verdict.py"
 }
