@@ -27,6 +27,7 @@ from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_cha
 from ddvc.asset_types import TYPES, classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.realised import realised_routes
+from ddvc.runtime import exclusive_job
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
@@ -34,6 +35,7 @@ OUT_PARQUET = DATA_DIR / "processed" / "intermediation_by_type_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "intermediation_by_type.jsonl"
 OUT_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
 OUT_COMPLEXITY_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_complexity_rival.jsonl"
+LOCK = OUT_PARQUET.with_suffix(".lock")
 MAX_WORKERS = 8
 HAC_LAG = 30
 INTEGRATION_RIVAL_WINDOWS = ((2023, 2024), (2024, 2026))
@@ -414,4 +416,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    with exclusive_job(LOCK, job="intermediation-by-type panel"):
+        sys.exit(main())
