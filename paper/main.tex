@@ -1,0 +1,45 @@
+% The Making of Dominant Vehicle Currencies: Evidence from DeFi
+%
+% Architecture follows docs/paper-spine.md, which derives it from nine JFE papers read
+% first-hand. Seven top-level sections ending in the conclusion, two levels of nesting
+% everywhere, no standalone literature review, and no proof in the body.
+%
+% Section files are separate so they can be written and reviewed independently. Numbers
+% come from output/exhibits/ and are never typed from memory; every one carries a comment
+% naming the exhibit it was read from.
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage[hidelinks]{hyperref}
+
+\bibliographystyle{chicago}
+\onehalfspacing
+
+\title{The Making of Dominant Vehicle Currencies:\\ Evidence from DeFi}
+\author{Jiahua Xu\thanks{University College London, Centre for Blockchain Technologies.}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/01-introduction}
+\input{sections/02-setting}
+\input{sections/03-dominance}
+\input{sections/04-survival}
+\input{sections/05-rivals}
+\input{sections/06-executability}
+\input{sections/07-conclusion}
+
+\bibliography{references}
+
+\end{document}

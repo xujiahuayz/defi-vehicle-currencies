@@ -1,0 +1,77 @@
+% Section 2. Institutional setting, definitions, and data.
+%
+% Every number here is read from an exhibit under output/exhibits/ or from a docs/finding-*
+% file, and the comment above each one names the source. Nothing in this section is typed
+% from memory. Six of nine JFE empirical papers read for this project make no causal claim
+% and substitute a data moat plus a validation apparatus, so this section carries weight
+% the identification strategy does not.
+
+\section{Setting, definitions, and data}
+\label{sec:setting}
+
+\subsection{What a route is, and who chooses it}
+\label{sec:setting:route}
+
+A trader who wants to exchange one token for another does not choose a pool. The trader signs a transaction addressed to a router contract, and the router selects a path through the pool graph, splits the order across paths when splitting pays, and executes every leg inside a single atomic transaction. If any leg fails the whole transaction reverts, so a multi-leg path either completes in full or does not happen. The economic object is therefore the path and not the leg, and this paper's unit of observation is the route: one coherent multi-leg component within one transaction, counted once whatever its leg count.
+
+That the router is a deterministic optimiser matters for what this paper can identify. In foreign exchange, an incumbent vehicle currency's advantage is inseparable from habit, relationship, and the attention of a human dealer. On chain the selection is a graph search run afresh at every quote, holding no memory of yesterday's choice, so quote-time habit is removed as a channel. Whatever incumbency survives has to operate through state variables, meaning where liquidity sits, which pairs exist, and what each path costs. This narrows the mechanism and makes the object measurable in a way the currency literature has not had available.
+
+Two consequences shape the measurement. Because the router quotes at a specific block and settles in the next, the state against which a route was chosen is a block and not a day or an hour, and Section~\ref{sec:executability} reports what that costs when the panel prices at a coarser state. And because the router optimises over the graph it can reach, a counterfactual that omits venues understates the best alternative and biases every cost comparison in the same direction.
+
+\subsection{Definitions}
+\label{sec:setting:definitions}
+
+A \emph{vehicle} is an asset that a route passes through without the trader wanting to hold it: the intermediate token $k$ in a path from $a$ to $b$. The \emph{vehicle role} for an asset on a date is the extent to which routes between other assets pass through it, and this paper measures that extent two ways, as a share of intermediated flow and as betweenness centrality on the daily trading graph. The two answer different questions, flow asking where value moves and betweenness asking which paths must cross an asset, and Section~\ref{sec:dominance} reports both because they disagree in an informative way.
+
+A route is \emph{dominated} when a direct pool between its endpoints, quoted at the same reconstructed state and the same size, would have returned more of the output token than the path the router took. Dominance is a property of a state and not of a decision, so a dominated route is not evidence that the router erred: the direct pool may have been unreachable, the quote may have moved between choice and settlement, or the comparison may omit a cost the router priced. What dominance identifies is the configuration the foreign exchange literature cannot observe, an asset holding the vehicle role at a moment when routing through it was not the cheapest way to trade.
+
+\emph{Round-trip routes}, whose first input token equals their last output token, are excluded everywhere before anything is measured. Such a route moves no value between counterparties and is atomic arbitrage or wash trading. On the median of 79 sampled days they run 12.7\% of multi-leg routes by count and 21.7\% by value, and on 2025-12-06, the most extreme day observed, 25.9\% and 91.3\%.
+% output/exhibits/round_trip_share_by_day.jsonl, via scripts/measure_round_trip_share.py
+
+Assets are classified into four types. The \emph{native} asset is the platform's own unit of account and the asset with the thickest incumbent pairing network. The \emph{stable numeraire} class holds tokens targeting a fixed value against a fiat currency. \emph{Imported} assets are wrapped claims on off-chain or cross-chain value. Everything else is \emph{other}. One implication is load-bearing and is stated here so no result later leans on it: because the native type is defined by having the thickest pairing network, any finding that the native asset is the most connected, the most central, or the cheapest to route through restates that definition. Such comparisons appear in this paper only as validation that the pricing engine reproduces a known ordering.
+
+\subsection{Data, and how routes were reconstructed}
+\label{sec:setting:data}
+
+The sample is every swap on the eight largest Ethereum automated market makers from 2020-02-11 to 2026-06-30, 2,277 daily files carrying roughly 215,000 swap legs a day. Legs are assembled into routes within each transaction, so multi-leg paths are recovered across venues and not only within one.
+% docs/research-workflow.md section 2
+
+Cross-venue assembly is what makes the sample usable for this question, and its importance grows across the period. The share of multi-leg routes touching more than one venue rises from 1.2\% to 61.1\% count-weighted over the sample. A single-venue study is therefore not merely incomplete at the end of the period, it is measuring a different object from the one it measures at the start.
+% docs/router-identification-feasibility.md, cross-venue series
+
+The advantage this reconstruction confers should be described accurately. On-chain data is public to anyone with an endpoint, so nothing here is proprietary. What is costly is attribution: assembling multi-leg routes across eight venues at scale, resolving token decimals, and reconstructing pool state at the moment each route executed. That is engineering difficulty and not private information, and it does not substitute for identification.
+
+The executor of a route is recoverable from the calling contract, and the author of the routing decision is only partly so. Across 74,323 swaps on the sampled days, 241 distinct senders appear, a population that fragments to 397 by late 2025, and a hand-built registry names 11.8\% of them. Results in this paper are therefore reported over routes and not over routers.
+% docs/router-identification-feasibility.md
+
+\subsection{Pricing the counterfactual, and where the quotes were validated}
+\label{sec:setting:pricing}
+
+Comparing a route the trader took against one the trader did not requires quoting the alternative at the state that stood when the route executed. Six venues are priced, each with the venue's own invariant and each accepted only after reproducing swaps that actually happened. Constant-product venues are quoted in closed form. Concentrated-liquidity venues are quoted by walking the tick map with the exact swap step the contract implements, reproducing realised output at 0.0000\% median error in all four combinations of trade direction and tick crossing. Curve pools are quoted on the StableSwap invariant with the amplification coefficient calibrated per pool-day, at 0.022\% median error. Balancer pools are quoted on the weighted geometric mean at 0.0000\% median error.
+% docs/venue-coverage-bounds.md; src/ddvc/pricing/{v3quote,stableswap,weighted}.py
+
+One venue in the top eight is not priced, and the exclusion carries a number. Sushiswap's concentrated-liquidity deployment is 0.016\% of priced-venue volume pooled across the sample, and 4.1\% of its own volume sits on pairs that no priced venue hosts, so omitting it cannot move any quantity reported here.
+% docs/venue-coverage-bounds.md
+
+Reconstructing pool state at a past moment turned out to have a direction, and getting it backwards is silent. State is stored at period ends, so recovering the state at an earlier moment requires unwinding the intervening swaps backward from the stored value. Replaying forward from the previous period's stored state instead accumulates every unrecorded liquidity event and returns a median 11.8\% error, where backward unwinding returns 0.0000\%. The same result appeared independently on a second venue family, where a flat within-period assumption gave 1.7\%, an opening-state assumption 2.8\%, and backward unwinding 0.0000\%. This is treated as a property of the data and applied throughout.
+% docs/venue-coverage-bounds.md and the Balancer quoter validation
+
+\subsection{The support screen}
+\label{sec:setting:support}
+
+Every quoter above was accepted against swaps that happened, and trades that happened are trades whose pool was deep enough to serve them. Applying those quoters to hypothetical routes extends them into a region where no error has been measured, and in that region a quote is an extrapolation. The consequence is not theoretical: before any screen, the median cost gap at a \$100,000 trade is 4,655 basis points, which implies an arbitrage cycle paying after three pool fees and three-hop gas, and a 46.5\% same-block arbitrage would be taken immediately by anyone with a flash loan.
+% output/exhibits/gap_arbitrage_bound.jsonl; scripts/measure_dominance_windows.py
+
+The screen has to be applied before the quote and not after it. Filtering on the size of the measured gap would condition on a monotone function of the outcome, which is selection on the dependent variable and discharges nothing. The screen is therefore stated in a quantity known in advance, the trade's own price impact in the pool it would traverse, and the threshold is read off the distribution of realised behaviour. Pooled over 932,270 validated swaps across eight sampled days, the median trade moves 0.34\% of the pool's input-side reserve, the 90th percentile 3.3\%, and the 99th 14.9\%. The panel declines to quote any leg whose own price impact would exceed 5\%.
+% output/exhibits/quoter_support_bounds.jsonl
+
+The screen is expensive and its cost is reported. It removes between 70\% and 86\% of quotable routes, and it moves the median gap from thousands of basis points to tens: 31 basis points at \$1,000, 34 at \$10,000 and 21 at \$100,000.
+% output/exhibits/dominance_windows_screened.jsonl
+
+\subsection{Validation: level costs across intermediary types}
+\label{sec:setting:validation}
+
+A quoting engine that reproduces an ordering the literature already assumes is an engine behaving as expected, and that is the purpose of this subsection. On the screened panel, with a fixed effect for pair by time window by trade size, the native indicator on the continuous cost gap is $-25.3$ basis points with a standard error of $11.4$ (0.037), estimated on 732 routes in 274 cells. The binary form of the same specification is $-0.043$ (0.543).
+% output/exhibits/dominance_specification_curve.jsonl
+
+The ordering matches what the thick-network definition of the native type implies, and this paper takes no credit for it. It is reported because a reader is entitled to see the engine produce a known result before being asked to accept an unknown one, and because the continuous form is the object this paper owns. A coefficient on a binary outcome at a threshold the design absorbs is a shift in a distribution function and has no mapping to basis points without the density at that threshold, so the binary figure appears here and nowhere else.
