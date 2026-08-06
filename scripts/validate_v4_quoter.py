@@ -246,6 +246,11 @@ def main() -> int:
     write_exhibit(
         df,
         OUT,
+        code_sources=[
+            "src/ddvc/fetch/raw.py",
+            "src/ddvc/pricing/tick_state.py",
+            "src/ddvc/pricing/v3quote.py",
+        ],
         inputs=[RAW],
         notes="strict requested-date coverage; unsupported hook and dynamic-fee pools excluded",
     )

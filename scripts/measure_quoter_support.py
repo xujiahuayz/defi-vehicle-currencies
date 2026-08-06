@@ -174,7 +174,12 @@ def write_v4_support() -> None:
             f"v4 support audit found {invalid_swaps:,} swaps with unusable statics: "
             f"{statuses}"
         )
-    write_exhibit(support, V4_OUT, inputs=[V4_RAW])
+    write_exhibit(
+        support,
+        V4_OUT,
+        code_sources=["src/ddvc/fetch/raw.py"],
+        inputs=[V4_RAW],
+    )
     supported = support[(support["year"] == "ALL") & support["supported"]]
     swap_share = float(supported.iloc[0]["swap_share"]) if not supported.empty else 0.0
     volume_share = float(supported.iloc[0]["volume_share"]) if not supported.empty else 0.0
