@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from collections import defaultdict, deque
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+import numpy as np
 import pandas as pd
 
 
@@ -16,6 +18,80 @@ class ComponentEligibility:
     eligible: pd.DataFrame
     cyclic: pd.DataFrame
     ambiguous: pd.DataFrame
+    token_roles: pd.DataFrame
+
+
+def topological_token_roles(
+    legs: pd.DataFrame,
+    *,
+    keys: Sequence[str] = ROUTE_KEYS,
+) -> pd.DataFrame:
+    """Assign source, sink and intermediary roles from directed token flow."""
+    key_columns = list(keys)
+    required = set(key_columns + ["token_in", "token_out"])
+    missing = sorted(required - set(legs.columns))
+    if missing:
+        raise ValueError(f"route topology is missing columns: {', '.join(missing)}")
+    inputs = legs[key_columns + ["token_in"]].rename(
+        columns={"token_in": "token"}
+    ).drop_duplicates().assign(_has_out=True)
+    outputs = legs[key_columns + ["token_out"]].rename(
+        columns={"token_out": "token"}
+    ).drop_duplicates().assign(_has_in=True)
+    roles = inputs.merge(outputs, on=key_columns + ["token"], how="outer")
+    has_out = roles["_has_out"].fillna(False).astype(bool)
+    has_in = roles["_has_in"].fillna(False).astype(bool)
+    roles["role"] = np.select(
+        [has_out & ~has_in, has_in & ~has_out],
+        ["source", "sink"],
+        default="intermediate",
+    )
+    return roles[key_columns + ["token", "role"]]
+
+
+def _has_directed_cycle(edges: pd.DataFrame) -> bool:
+    adjacency: dict[str, set[str]] = defaultdict(set)
+    indegree: dict[str, int] = {}
+    for token_in, token_out in edges[["token_in", "token_out"]].itertuples(index=False, name=None):
+        indegree.setdefault(token_in, 0)
+        indegree.setdefault(token_out, 0)
+        if token_out not in adjacency[token_in]:
+            adjacency[token_in].add(token_out)
+            indegree[token_out] += 1
+    queue = deque(token for token, degree in indegree.items() if degree == 0)
+    visited = 0
+    while queue:
+        token = queue.popleft()
+        visited += 1
+        for successor in adjacency[token]:
+            indegree[successor] -= 1
+            if indegree[successor] == 0:
+                queue.append(successor)
+    return visited != len(indegree)
+
+
+def _cyclic_components(
+    legs: pd.DataFrame,
+    token_roles: pd.DataFrame,
+    keys: list[str],
+) -> pd.DataFrame:
+    edges = legs[keys + ["token_in", "token_out"]].drop_duplicates()
+    edge_counts = edges.groupby(keys).size().rename("edges")
+    node_counts = token_roles.groupby(keys).size().rename("nodes")
+    candidates = edge_counts.to_frame().join(node_counts).query("edges >= nodes").index
+    if len(candidates) == 0:
+        return pd.DataFrame(columns=keys)
+    marked = edges.merge(
+        candidates.to_frame(index=False).assign(_cycle_candidate=True),
+        on=keys,
+        how="inner",
+    )
+    rows = []
+    for component_key, group in marked.groupby(keys, sort=False):
+        if _has_directed_cycle(group):
+            values = component_key if isinstance(component_key, tuple) else (component_key,)
+            rows.append(dict(zip(keys, values, strict=True)))
+    return pd.DataFrame(rows, columns=keys)
 
 
 def role_token_values(
@@ -23,23 +99,28 @@ def role_token_values(
     role: str,
     *,
     keys: Sequence[str] = ROUTE_KEYS,
+    token_roles: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Return net or pass-through value per component-token for one route role.
 
-    A sequential route records an intermediary on both adjacent legs, while a split route can record it on several incoming and outgoing legs. Summing either side and then averaging the two flow directions counts the routed value once in both cases. Source and sink values are their net component flows, matching the role assignment in route reconstruction.
+    A sequential route records an intermediary on both adjacent legs, while a split route can record it on several incoming and outgoing legs. Summing either side and then averaging the two flow directions counts the routed value once in both cases. Source and sink values are their net component flows after topology fixes their economic roles.
     """
     key_columns = list(keys)
-    required = set(key_columns + ["token_in", "token_out", "tin_role", "tout_role", "amount_usd"])
+    required = set(key_columns + ["token_in", "token_out", "amount_usd"])
     missing = sorted(required - set(legs.columns))
     if missing:
         raise ValueError(f"route-role values are missing columns: {', '.join(missing)}")
+    if role not in {"source", "sink", "intermediate"}:
+        raise ValueError(f"unsupported route role: {role}")
+    roles = token_roles if token_roles is not None else topological_token_roles(legs, keys=key_columns)
+    selected_tokens = roles.loc[roles["role"].eq(role), key_columns + ["token"]]
     rows = []
-    for side, role_column in (("in", "tin_role"), ("out", "tout_role")):
+    for side in ("in", "out"):
         token_column = f"token_{side}"
         value_column = f"{side}_usd"
-        selected = legs.loc[
-            legs[role_column].eq(role), key_columns + [token_column, "amount_usd"]
-        ].rename(columns={token_column: "token", "amount_usd": value_column})
+        selected = legs[key_columns + [token_column, "amount_usd"]].rename(
+            columns={token_column: "token", "amount_usd": value_column}
+        ).merge(selected_tokens, on=key_columns + ["token"], how="inner")
         selected[value_column] = pd.to_numeric(selected[value_column], errors="coerce")
         rows.append(selected)
     combined = pd.concat(rows, ignore_index=True)
@@ -56,8 +137,6 @@ def role_token_values(
         values["amount_usd"] = values["out_usd"] - values["in_usd"]
     elif role == "intermediate":
         values["amount_usd"] = (values["in_usd"] + values["out_usd"]) / 2
-    else:
-        raise ValueError(f"unsupported route role: {role}")
     return values[key_columns + ["token", "amount_usd"]]
 
 
@@ -65,13 +144,18 @@ def component_notional(
     legs: pd.DataFrame,
     *,
     keys: Sequence[str] = ROUTE_KEYS,
+    token_roles: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Return one component notional as the mean of total source and sink flow."""
     key_columns = list(keys)
-    sources = role_token_values(legs, "source", keys=key_columns).groupby(
+    sources = role_token_values(
+        legs, "source", keys=key_columns, token_roles=token_roles
+    ).groupby(
         key_columns, as_index=False
     )["amount_usd"].sum().rename(columns={"amount_usd": "source_usd"})
-    sinks = role_token_values(legs, "sink", keys=key_columns).groupby(
+    sinks = role_token_values(
+        legs, "sink", keys=key_columns, token_roles=token_roles
+    ).groupby(
         key_columns, as_index=False
     )["amount_usd"].sum().rename(columns={"amount_usd": "sink_usd"})
     out = sources.merge(sinks, on=key_columns, how="inner")
@@ -86,16 +170,16 @@ def component_endpoints(
 ) -> pd.DataFrame:
     """Return source and sink identities plus their counts for each component."""
     key_columns = list(keys)
-    source_tokens = role_token_values(legs, "source", keys=key_columns)
-    sink_tokens = role_token_values(legs, "sink", keys=key_columns)
-    return _component_endpoints_from_values(source_tokens, sink_tokens, key_columns)
+    roles = topological_token_roles(legs, keys=key_columns)
+    return _component_endpoints_from_roles(roles, key_columns)
 
 
-def _component_endpoints_from_values(
-    source_tokens: pd.DataFrame,
-    sink_tokens: pd.DataFrame,
+def _component_endpoints_from_roles(
+    token_roles: pd.DataFrame,
     keys: list[str],
 ) -> pd.DataFrame:
+    source_tokens = token_roles[token_roles["role"].eq("source")]
+    sink_tokens = token_roles[token_roles["role"].eq("sink")]
     sources = source_tokens.groupby(keys, as_index=False).agg(
         src=("token", "first"), source_tokens=("token", "nunique")
     )
@@ -112,34 +196,10 @@ def component_eligibility(
 ) -> ComponentEligibility:
     """Partition components into economic routes, cycles, and ambiguous residue."""
     key_columns = list(keys)
-    source_tokens = role_token_values(legs, "source", keys=key_columns)
-    sink_tokens = role_token_values(legs, "sink", keys=key_columns)
-    endpoints = _component_endpoints_from_values(
-        source_tokens, sink_tokens, key_columns
-    )
-    role_cyclic = source_tokens[key_columns + ["token"]].merge(
-        sink_tokens[key_columns + ["token"]],
-        on=key_columns + ["token"],
-        how="inner",
-    )[key_columns]
+    token_roles = topological_token_roles(legs, keys=key_columns)
+    endpoints = _component_endpoints_from_roles(token_roles, key_columns)
     all_components = legs[key_columns].drop_duplicates()
-    endpoint_presence = all_components.merge(
-        source_tokens[key_columns].drop_duplicates().assign(_has_source=True),
-        on=key_columns,
-        how="left",
-    ).merge(
-        sink_tokens[key_columns].drop_duplicates().assign(_has_sink=True),
-        on=key_columns,
-        how="left",
-    )
-    no_endpoint_cycles = endpoint_presence.loc[
-        endpoint_presence["_has_source"].isna()
-        & endpoint_presence["_has_sink"].isna(),
-        key_columns,
-    ]
-    cyclic = pd.concat(
-        [role_cyclic, no_endpoint_cycles], ignore_index=True
-    ).drop_duplicates()
+    cyclic = _cyclic_components(legs, token_roles, key_columns)
     eligible = endpoints[
         endpoints["source_tokens"].eq(1)
         & endpoints["sink_tokens"].eq(1)
@@ -161,4 +221,5 @@ def component_eligibility(
         eligible=eligible,
         cyclic=cyclic,
         ambiguous=ambiguous,
+        token_roles=token_roles,
     )

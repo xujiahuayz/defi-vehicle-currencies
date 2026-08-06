@@ -107,14 +107,20 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
     if eligible.empty:
         return pd.DataFrame()
     d = d.merge(eligible[KEYS], on=KEYS, how="inner")
-    sources = role_token_values(d, "source", keys=KEYS)
-    sinks = role_token_values(d, "sink", keys=KEYS)
+    sources = role_token_values(
+        d, "source", keys=KEYS, token_roles=eligibility.token_roles
+    )
+    sinks = role_token_values(
+        d, "sink", keys=KEYS, token_roles=eligibility.token_roles
+    )
 
     # A token appears on both adjacent legs when it is an intermediary. Average its
     # repeated role observations within the component so A->K->B gives K the route's
     # value once, not twice. The same rule handles a split component without allowing
     # its number of recorded legs to manufacture intermediation volume.
-    intermediate = role_token_values(d, "intermediate", keys=KEYS)
+    intermediate = role_token_values(
+        d, "intermediate", keys=KEYS, token_roles=eligibility.token_roles
+    )
     intermediate = intermediate.merge(
         eligible[KEYS + ["src", "tgt"]], on=KEYS, how="inner"
     )

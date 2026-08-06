@@ -3,8 +3,9 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from ddvc.runtime import atomic_output, exclusive_job
+from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
 
 
 class RuntimeGuardTests(unittest.TestCase):
@@ -29,6 +30,15 @@ class RuntimeGuardTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "test job is already running"):
                     with exclusive_job(lock_path, job="test job"):
                         self.fail("a second owner acquired the same job lock")
+
+    def test_interrupted_process_pool_terminates_workers(self) -> None:
+        executor = MagicMock()
+        with patch("ddvc.runtime.ProcessPoolExecutor", return_value=executor):
+            with self.assertRaisesRegex(RuntimeError, "stop"):
+                with interruptible_process_pool(2):
+                    raise RuntimeError("stop")
+        executor.terminate_workers.assert_called_once_with()
+        executor.shutdown.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -187,6 +187,19 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertTrue((out["routes_cyclic_excluded"] == 0).all())
         self.assertTrue((out["routes_ambiguous_excluded"] == 0).all())
 
+    def test_economic_path_with_internal_cycle_is_excluded(self) -> None:
+        rows = [
+            leg("good", 0, "a", "k", "source", "intermediate", 100, log_index=0),
+            leg("good", 0, "k", "b", "intermediate", "sink", 100, log_index=1),
+            leg("cycle-tail", 0, "a", "k", "source", "intermediate", 1_000, log_index=0),
+            leg("cycle-tail", 0, "k", "m", "intermediate", "intermediate", 1_000, log_index=1),
+            leg("cycle-tail", 0, "m", "k", "intermediate", "intermediate", 1_000, log_index=2),
+            leg("cycle-tail", 0, "k", "b", "intermediate", "sink", 1_000, log_index=3),
+        ]
+        out = compute_vehicle_extent(pd.DataFrame(rows))
+        self.assertTrue((out["routes_cyclic_excluded"] == 1).all())
+        self.assertAlmostEqual(out.set_index("token").loc["k", "intermediate_usd"], 100)
+
     def test_native_eth_is_canonicalised_to_weth(self) -> None:
         zero = "0x0000000000000000000000000000000000000000"
         rows = [

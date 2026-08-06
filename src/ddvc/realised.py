@@ -135,7 +135,12 @@ def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
     components = components.merge(
         eligibility.eligible, on=component_keys, how="inner"
     ).drop(columns=["source_tokens", "sink_tokens"])
-    vehicles = role_token_values(d, "intermediate", keys=component_keys).rename(
+    vehicles = role_token_values(
+        d,
+        "intermediate",
+        keys=component_keys,
+        token_roles=eligibility.token_roles,
+    ).rename(
         columns={"token": "vehicle", "amount_usd": "usd"}
     )
     vehicles = vehicles[vehicles["usd"].gt(0)]

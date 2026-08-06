@@ -57,7 +57,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -66,7 +66,7 @@ from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_cha
 from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_roles import component_eligibility, component_notional
-from ddvc.runtime import exclusive_job
+from ddvc.runtime import exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
@@ -184,8 +184,10 @@ def one_day(path: Path) -> dict | None:
     venues = g["source"].nunique()
     balanced = g["_balanced_venue"].all()
     diagnostic_usd = g["amount_usd"].max()
-    route_usd = component_notional(df, keys=keys).set_index(keys)["amount_usd"].reindex(legs.index)
     eligibility = component_eligibility(df, keys=keys)
+    route_usd = component_notional(
+        df, keys=keys, token_roles=eligibility.token_roles
+    ).set_index(keys)["amount_usd"].reindex(legs.index)
     eligible_index = pd.MultiIndex.from_frame(eligibility.eligible[keys])
     cyclic_index = pd.MultiIndex.from_frame(eligibility.cyclic[keys])
     ambiguous_index = pd.MultiIndex.from_frame(eligibility.ambiguous[keys])
@@ -458,7 +460,7 @@ def main() -> int:
     print(f"reducing {len(days):,} days with {args.workers} workers", flush=True)
 
     rows, errors = [], []
-    with ProcessPoolExecutor(max_workers=args.workers) as pool:
+    with interruptible_process_pool(args.workers) as pool:
         futures = {pool.submit(one_day, d): d for d in days}
         for i, fut in enumerate(as_completed(futures), 1):
             r = fut.result()

@@ -7,6 +7,7 @@ import json
 import os
 import sys
 import tempfile
+from concurrent.futures import ProcessPoolExecutor
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -58,3 +59,26 @@ def exclusive_job(lock_path: Path, *, job: str) -> Iterator[None]:
     finally:
         fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
         handle.close()
+
+
+@contextmanager
+def interruptible_process_pool(max_workers: int) -> Iterator[ProcessPoolExecutor]:
+    """Terminate worker processes promptly when a long reduction is interrupted."""
+    executor = ProcessPoolExecutor(max_workers=max_workers)
+    try:
+        yield executor
+    except BaseException:
+        terminate_workers = getattr(executor, "terminate_workers", None)
+        if terminate_workers is not None:
+            terminate_workers()
+        else:
+            processes = list(getattr(executor, "_processes", {}).values())
+            executor.shutdown(wait=False, cancel_futures=True)
+            for process in processes:
+                if process.is_alive():
+                    process.terminate()
+            for process in processes:
+                process.join(timeout=1)
+        raise
+    else:
+        executor.shutdown(wait=True)

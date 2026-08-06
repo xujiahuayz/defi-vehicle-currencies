@@ -10,14 +10,14 @@ Writes  data/processed/vehicle_excess_use_daily.parquet
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import as_completed
 from pathlib import Path
 
 import pandas as pd
 
 from ddvc.asset_types import CURRENCY_TYPES, backing
 from ddvc.paths import REPO_ROOT
-from ddvc.runtime import exclusive_job
+from ddvc.runtime import exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 from ddvc.vehicle_extent import (
     REQUIRED_COLUMNS,
@@ -93,7 +93,7 @@ def main() -> int:
     )
     parts: list[pd.DataFrame] = []
     failures: list[tuple[str, str]] = []
-    with ProcessPoolExecutor(max_workers=workers) as pool:
+    with interruptible_process_pool(workers) as pool:
         futures = {pool.submit(one_day, path): path for path in files}
         for i, future in enumerate(as_completed(futures), 1):
             path = futures[future]

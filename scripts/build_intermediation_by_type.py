@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -27,7 +27,7 @@ from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_cha
 from ddvc.asset_types import TYPES, classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.realised import realised_routes
-from ddvc.runtime import exclusive_job
+from ddvc.runtime import exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
@@ -313,7 +313,7 @@ def main() -> int:
 
     rows: list[dict[str, object]] = []
     errors: list[dict[str, object]] = []
-    with ProcessPoolExecutor(max_workers=workers) as pool:
+    with interruptible_process_pool(workers) as pool:
         futures = {pool.submit(one_day, day): day for day in days}
         for index, future in enumerate(as_completed(futures), 1):
             result = future.result()
