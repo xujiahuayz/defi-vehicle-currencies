@@ -52,6 +52,7 @@ from decimal import Decimal
 import pandas as pd
 
 from ddvc.asset_types import WETH, classify
+from ddvc.calendar import nearest_monthly_days
 from ddvc.cpquote import (
     Pool,
     ReserveEvent,
@@ -75,6 +76,7 @@ OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_summary.jsonl"
 GAS_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
 CODE_SOURCES = [
     "scripts/build_counterfactual_dominance.py",
+    "src/ddvc/calendar.py",
     "src/ddvc/cpquote.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/prices.py",
@@ -83,6 +85,14 @@ CODE_SOURCES = [
 
 VENUES = ("uniswap_v2", "sushiswap_v2")
 MIN_USD = 100.0            # below this, gas dominates and the comparison is moot
+
+
+def counterfactual_days(
+    available: list[str], *, explicit: list[str] | None = None, limit: int | None = None
+) -> list[str]:
+    """Select the prespecified monthly calendar, or exact explicit validation days."""
+    days = list(dict.fromkeys(explicit)) if explicit else nearest_monthly_days(available)
+    return days[:limit] if limit is not None else days
 
 
 def _net(s: dict) -> tuple[Decimal, Decimal]:
@@ -475,20 +485,16 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", nargs="+", help="explicit YYYYMMDD days")
-    ap.add_argument("--stride", type=int, default=30)
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()
-    if args.stride < 1:
-        ap.error("--stride must be positive")
+    if args.limit is not None and args.limit < 1:
+        ap.error("--limit must be positive")
 
-    if args.days:
-        days = args.days
-    else:
-        avail = sorted(p.name.removeprefix("uniswap_v2_swaps_").removesuffix(".jsonl.gz")
-                       for p in (RAW / "uniswap_v2").glob("uniswap_v2_swaps_*.jsonl.gz"))
-        days = avail[:: args.stride]
-        if args.limit:
-            days = days[: args.limit]
+    available = sorted(
+        p.name.removeprefix("uniswap_v2_swaps_").removesuffix(".jsonl.gz")
+        for p in (RAW / "uniswap_v2").glob("uniswap_v2_swaps_*.jsonl.gz")
+    )
+    days = counterfactual_days(available, explicit=args.days, limit=args.limit)
     print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
 
     parts = []
