@@ -9,6 +9,7 @@ import pandas as pd
 
 from ddvc.asset_types import canonical_token, classify
 from ddvc.fetch.sources import DEX_SOURCES
+from ddvc.route_roles import component_eligibility, component_notional
 
 SUPPORTED_VENUES = frozenset(DEX_SOURCES)
 REQUIRED_COLUMNS = [
@@ -21,8 +22,6 @@ REQUIRED_COLUMNS = [
     "amount_usd",
     "log_index",
     "route_class",
-    "tin_role",
-    "tout_role",
 ]
 SAMPLE_CELLS = ["year", "legs", "venue_sequence", "gas_vehicle"]
 CANDIDATE_COLUMNS = [
@@ -45,8 +44,31 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
     missing = sorted(set(REQUIRED_COLUMNS) - set(frame.columns))
     if missing:
         raise ValueError(f"gas-unit candidates are missing columns: {', '.join(missing)}")
+    clean = frame.copy()
+    clean["token_in"] = clean["token_in"].map(lambda value: canonical_token(value) or "")
+    clean["token_out"] = clean["token_out"].map(lambda value: canonical_token(value) or "")
+    clean = clean[
+        clean["token_in"].astype(bool)
+        & clean["token_out"].astype(bool)
+        & clean["route_class"].isin(["single", "coherent"])
+    ]
+    if clean.empty:
+        return pd.DataFrame(columns=CANDIDATE_COLUMNS)
+    keys = ["tx_hash", "component_id"]
+    eligibility = component_eligibility(clean, keys=keys)
+    eligible_keys = set(eligibility.eligible[keys].itertuples(index=False, name=None))
+    intermediary_tokens = {
+        key: set(group["token"])
+        for key, group in eligibility.token_roles[
+            eligibility.token_roles["role"].eq("intermediate")
+        ].groupby(keys, sort=False)
+    }
+    notionals = component_notional(
+        clean, keys=keys, token_roles=eligibility.token_roles
+    ).set_index(keys)["amount_usd"].to_dict()
+
     rows = []
-    for tx_hash, group in frame.groupby("tx_hash", sort=False):
+    for tx_hash, group in clean.groupby("tx_hash", sort=False):
         if not group["source"].isin(SUPPORTED_VENUES).all():
             continue
         if group["component_id"].nunique() != 1:
@@ -63,16 +85,11 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
         expected_class = "single" if legs == 1 else "coherent"
         if not ordered["route_class"].eq(expected_class).all():
             continue
-        if ordered.iloc[0]["tin_role"] != "source":
-            continue
-        if ordered.iloc[-1]["tout_role"] != "sink":
-            continue
-        if ordered["tin_role"].eq("source").sum() != 1:
-            continue
-        if ordered["tout_role"].eq("sink").sum() != 1:
+        component_key = (tx_hash, ordered.iloc[0]["component_id"])
+        if component_key not in eligible_keys:
             continue
         connected = all(
-            canonical_token(left) == canonical_token(right)
+            left == right
             for left, right in zip(
                 ordered["token_out"].iloc[:-1],
                 ordered["token_in"].iloc[1:],
@@ -81,15 +98,7 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
         )
         if not connected:
             continue
-        intermediaries = set()
-        intermediate_values = [
-            *ordered.loc[ordered["tin_role"].eq("intermediate"), "token_in"],
-            *ordered.loc[ordered["tout_role"].eq("intermediate"), "token_out"],
-        ]
-        for value in intermediate_values:
-            token = canonical_token(value)
-            if token:
-                intermediaries.add(token)
+        intermediaries = intermediary_tokens.get(component_key, set())
         if legs == 1:
             mid = None
             mid_symbol = None
@@ -102,7 +111,7 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
             mid_symbol = None
             mid_type = "multi"
         gas_vehicle = mid if mid_symbol is not None else mid_type
-        route_notional = float(pd.to_numeric(ordered["amount_usd"], errors="coerce").max())
+        route_notional = float(notionals.get(component_key, float("nan")))
         if not math.isfinite(route_notional) or route_notional <= 0:
             continue
         rows.append(

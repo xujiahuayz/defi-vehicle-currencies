@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -40,18 +40,21 @@ from ddvc.route_gas import (
     candidate_transactions,
     deterministic_cell_sample,
 )
-from ddvc.runtime import atomic_output, exclusive_job
+from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
 CACHE = DATA_DIR / "interim" / "route_gas_receipts"
 CANDIDATE_CACHE_ROOT = DATA_DIR / "empirical" / "_route_gas_candidate_cache"
+RECEIPT_SNAPSHOT = DATA_DIR / "empirical" / "route_gas_receipt_selection.jsonl"
 LOCK = DATA_DIR / "empirical" / ".route_gas_units.lock"
 OUT_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "route_gas_units_summary.jsonl"
 CODE_SOURCES = [
     "scripts/process/build_route_gas_units.py",
     "src/ddvc/route_gas.py",
+    "src/ddvc/route_roles.py",
+    "src/ddvc/runtime.py",
     "src/ddvc/calendar.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/fetch/sources.py",
@@ -59,10 +62,16 @@ CODE_SOURCES = [
 ]
 CANDIDATE_CODE_SOURCES = [
     "src/ddvc/route_gas.py",
+    "src/ddvc/route_roles.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/fetch/sources.py",
 ]
 SUMMARY_CELLS = [*SAMPLE_CELLS, "mid_type"]
+MAX_WORKERS = 8
+
+
+def bounded_workers(requested: int) -> int:
+    return min(MAX_WORKERS, max(1, requested))
 
 
 def worker_batches(
@@ -187,6 +196,19 @@ def fetch_receipt(tx_hash: str) -> dict:
     return row
 
 
+def write_receipt_snapshot(receipts: list[dict], path: Path = RECEIPT_SNAPSHOT) -> Path:
+    """Install the exact selected receipt inputs in deterministic transaction order."""
+    ordered = sorted(receipts, key=lambda row: str(row["tx_hash"]))
+    hashes = [str(row["tx_hash"]) for row in ordered]
+    if len(hashes) != len(set(hashes)):
+        raise ValueError("selected receipt snapshot contains duplicate transactions")
+    with atomic_output(path) as temporary:
+        with temporary.open("w", encoding="utf-8") as handle:
+            for row in ordered:
+                handle.write(json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n")
+    return path
+
+
 def _main_unlocked() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -205,6 +227,7 @@ def _main_unlocked() -> int:
         parser.error("--per-cell must be positive")
     if args.workers < 1:
         parser.error("--workers must be positive")
+    args.workers = bounded_workers(args.workers)
 
     days = list(
         dict.fromkeys(
@@ -221,7 +244,7 @@ def _main_unlocked() -> int:
     cache_hits = 0
     completed = 0
     for batch in worker_batches(days, args.workers):
-        with ProcessPoolExecutor(max_workers=args.workers) as pool:
+        with interruptible_process_pool(args.workers) as pool:
             futures = [
                 pool.submit(sample_day, day, args.per_cell, str(candidate_cache))
                 for day in batch
@@ -289,11 +312,12 @@ def _main_unlocked() -> int:
         raise RuntimeError("a reconstructed swap transaction has a failed receipt")
     if not panel["gas_used"].gt(0).all():
         raise RuntimeError("a selected receipt has non-positive gas usage")
+    receipt_snapshot = write_receipt_snapshot(receipts)
     write_panel(
         panel,
         OUT_PANEL,
         code_sources=CODE_SOURCES,
-        inputs=[UNIFIED, CACHE],
+        inputs=[UNIFIED, receipt_snapshot],
         notes=f"hash-ranked cap of {args.per_cell} exact one-component transactions per year-topology-venue-intermediary cell",
     )
     summary = panel.groupby(SUMMARY_CELLS, as_index=False).agg(

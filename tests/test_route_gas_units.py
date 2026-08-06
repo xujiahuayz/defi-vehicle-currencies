@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,9 +12,11 @@ from ddvc.fetch.sources import DEX_SOURCES
 from ddvc.route_gas import candidate_transactions, deterministic_cell_sample
 from scripts.process import build_route_gas_units as route_gas
 from scripts.process.build_route_gas_units import (
+    bounded_workers,
     parse_receipt,
     sample_day,
     worker_batches,
+    write_receipt_snapshot,
 )
 
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
@@ -47,6 +50,11 @@ def leg(
 
 
 class RouteGasUnitTests(unittest.TestCase):
+    def test_worker_count_is_bounded(self) -> None:
+        self.assertEqual(bounded_workers(0), 1)
+        self.assertEqual(bounded_workers(4), 4)
+        self.assertEqual(bounded_workers(100), 8)
+
     def test_monthly_calendar_affects_output_but_not_per_day_candidate_cache(self) -> None:
         self.assertIn("src/ddvc/calendar.py", route_gas.CODE_SOURCES)
         self.assertNotIn("src/ddvc/calendar.py", route_gas.CANDIDATE_CODE_SOURCES)
@@ -171,6 +179,17 @@ class RouteGasUnitTests(unittest.TestCase):
         self.assertEqual(via["mid_type"], "stable")
         self.assertEqual(via["gas_vehicle"], USDC)
 
+    def test_candidate_roles_come_from_topology_not_stored_value_tolerance(self) -> None:
+        frame = pd.DataFrame(
+            [
+                leg("via", 0, "a", USDC, "sink", "source"),
+                leg("via", 1, USDC, "b", "sink", "source"),
+            ]
+        )
+        out = candidate_transactions(frame, "20220115")
+        self.assertEqual(set(out["tx_hash"]), {"via"})
+        self.assertEqual(out.iloc[0]["mid_type"], "stable")
+
     def test_hash_sample_is_deterministic_and_capped_within_cells(self) -> None:
         frame = pd.DataFrame(
             {
@@ -247,6 +266,23 @@ class RouteGasUnitTests(unittest.TestCase):
             finally:
                 route_gas.CACHE = original_cache
         self.assertTrue(request.call_args.kwargs["retry_json_errors"])
+
+    def test_receipt_snapshot_is_sorted_and_byte_deterministic(self) -> None:
+        receipts = [
+            {"tx_hash": "0xb", "gas_used": 2, "status": 1},
+            {"tx_hash": "0xa", "gas_used": 1, "status": 1},
+        ]
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "selection.jsonl"
+            write_receipt_snapshot(receipts, path)
+            first = path.read_bytes()
+            write_receipt_snapshot(list(reversed(receipts)), path)
+            second = path.read_bytes()
+        self.assertEqual(first, second)
+        self.assertEqual(
+            [json.loads(line)["tx_hash"] for line in first.decode().splitlines()],
+            ["0xa", "0xb"],
+        )
 
     def test_day_candidate_sample_is_resumable_and_schema_checked(self) -> None:
         original = route_gas.UNIFIED
