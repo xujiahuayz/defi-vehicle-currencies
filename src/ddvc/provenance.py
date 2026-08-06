@@ -39,7 +39,9 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+from ddvc.paths import REPO_ROOT
+
+ROOT = REPO_ROOT
 MANIFESTS = ROOT / "data" / "manifests"
 
 # Content-hash inputs up to this size; above it, identify by size and mtime. The
@@ -56,7 +58,7 @@ def _run(cmd: list[str]) -> str | None:
     return r.stdout.rstrip() if r.returncode == 0 else None
 
 
-def git_state() -> dict[str, object]:
+def git_state(exclude_paths: list[str | Path] | None = None) -> dict[str, object]:
     """Commit, branch and dirtiness. `dirty` is the field that matters.
 
     A stamp from a dirty tree cannot be reproduced from the commit alone, so it is
@@ -64,10 +66,16 @@ def git_state() -> dict[str, object]:
     """
     sha = _run(["git", "rev-parse", "HEAD"])
     status = _run(["git", "status", "--porcelain"])
+    excluded = {str(_rel(Path(path))) for path in (exclude_paths or [])}
     tracked = None
     if status is not None:
-        tracked = [ln[3:] for ln in status.splitlines()
-                   if ln[:2].strip() and not ln.startswith("??")]
+        tracked = [
+            ln[3:]
+            for ln in status.splitlines()
+            if ln[:2].strip()
+            and not ln.startswith("??")
+            and ln[3:] not in excluded
+        ]
     return {
         "commit": sha,
         "branch": _run(["git", "rev-parse", "--abbrev-ref", "HEAD"]),
@@ -191,12 +199,16 @@ def stamp(artefact: str | Path, *, code_sources: list[str],
           inputs: list[str | Path] | None = None, rows: int | None = None,
           notes: str | None = None, script: str | None = None) -> Path:
     """Record how `artefact` was produced. Returns the sidecar path."""
+    out = sidecar_path(artefact)
     prov = Provenance(
         artefact=str(_rel(Path(artefact))),
         script=script or str(_rel(Path(sys.argv[0]))) if sys.argv and sys.argv[0] else "<unknown>",
         argv=list(sys.argv[1:]),
         created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        git=git_state(),
+        # A tracked generated artefact necessarily becomes modified before it can be
+        # stamped, and an existing sidecar is modified by the same operation. Neither
+        # is evidence that the CODE used for the build was dirty.
+        git=git_state([artefact, out]),
         code_fingerprint=code_fingerprint(code_sources),
         code_sources=sorted(code_sources),
         inputs=[describe_input(i) for i in (inputs or [])],
@@ -204,7 +216,6 @@ def stamp(artefact: str | Path, *, code_sources: list[str],
         notes=notes,
         libraries=_libraries(),
     )
-    out = sidecar_path(artefact)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(asdict(prov), indent=1, sort_keys=True) + "\n")
     return out

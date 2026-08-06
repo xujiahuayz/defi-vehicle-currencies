@@ -3,8 +3,9 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from ddvc.provenance import cache_key, describe_input, input_matches
+from ddvc.provenance import cache_key, describe_input, git_state, input_matches
 
 
 class ProvenanceInputTests(unittest.TestCase):
@@ -37,6 +38,33 @@ class ProvenanceInputTests(unittest.TestCase):
             (root / "b.txt").write_text("b")
             after = cache_key(sources, inputs=[root])
             self.assertNotEqual(before, after)
+
+    @patch("ddvc.provenance._run")
+    def test_generated_target_does_not_mark_its_own_build_dirty(self, run) -> None:
+        run.side_effect = [
+            "abc123",
+            " M output/exhibits/result.jsonl\n M src/ddvc/model.py",
+            "main",
+        ]
+        state = git_state(["output/exhibits/result.jsonl"])
+        self.assertTrue(state["dirty"])
+        self.assertEqual(state["dirty_tracked_files"], ["src/ddvc/model.py"])
+
+    @patch("ddvc.provenance._run")
+    def test_only_generated_targets_yield_a_clean_build_state(self, run) -> None:
+        run.side_effect = [
+            "abc123",
+            " M output/exhibits/result.jsonl\n M data/manifests/output/exhibits/result.jsonl.prov.json",
+            "main",
+        ]
+        state = git_state(
+            [
+                "output/exhibits/result.jsonl",
+                "data/manifests/output/exhibits/result.jsonl.prov.json",
+            ]
+        )
+        self.assertFalse(state["dirty"])
+        self.assertEqual(state["dirty_tracked_files"], [])
 
 
 if __name__ == "__main__":

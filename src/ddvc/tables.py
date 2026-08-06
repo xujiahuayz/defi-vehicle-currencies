@@ -44,7 +44,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.provenance import ROOT, stamp
+from ddvc.paths import REPO_ROOT
+from ddvc.provenance import stamp
 
 # Above this many rows an artefact is a panel, whatever directory it sits in, and
 # the columnar format wins on measured read cost.
@@ -86,8 +87,8 @@ def _caller_sources(extra: list[str] | None) -> list[str]:
     try:
         for frame in inspect.stack()[1:]:
             f = Path(frame.filename).resolve()
-            if f.is_relative_to(ROOT) and "ddvc/tables.py" not in str(f):
-                out.append(str(f.relative_to(ROOT)))
+            if f.is_relative_to(REPO_ROOT) and "ddvc/tables.py" not in str(f):
+                out.append(str(f.relative_to(REPO_ROOT)))
                 break
     except (ValueError, OSError):
         pass
