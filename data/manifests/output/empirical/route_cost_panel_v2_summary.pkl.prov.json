@@ -1,31 +1,64 @@
 {
  "argv": [
-  "--hours",
-  "all",
-  "--workers",
-  "8"
+  "--spec",
+  "data/empirical/_route_cost_day_cache/engine_6a8414831c66/hall_p200_s1000-10000-100000"
  ],
  "artefact": "output/empirical/route_cost_panel_v2_summary.pkl",
- "code_fingerprint": "82574a1ad9993c4d0b4a558444d9ceb072af21e55899855d8a7622f50cb54de2",
+ "code_fingerprint": "66ee11f7562429307d52d6afed12a2b0e8e513d882594a489981281acd618f6b",
  "code_sources": [
+  "scripts/assemble_route_cost_panel.py",
   "scripts/run_route_cost_panel.py",
+  "src/ddvc/panel_assembly.py",
   "src/ddvc/pricing/stableswap.py",
   "src/ddvc/pricing/v2quote.py",
   "src/ddvc/pricing/v3pools.py",
   "src/ddvc/pricing/v3quote.py",
-  "src/ddvc/pricing/weighted.py"
+  "src/ddvc/pricing/weighted.py",
+  "src/ddvc/route_cost_summary.py"
  ],
- "created_at": "2026-08-06T02:01:53+00:00",
+ "created_at": "2026-08-06T19:16:40+00:00",
  "git": {
   "branch": "main",
-  "commit": "9ed8427d347380759cd7b7bfbdc1125bbe19aea9",
-  "dirty": true,
-  "dirty_tracked_files": [
-   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
-   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json"
-  ]
+  "commit": "f17d9c1091a36b0d71e44f0090b21f8bade71744",
+  "dirty": false,
+  "dirty_generated_files": [
+   "data/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
+   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
+   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/gap_arbitrage_bound.jsonl",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/tables/bridge_denominator_robustness.pdf",
+   "output/tables/liquidity_robustness.pdf",
+   "output/tables/measurement_robustness.pdf",
+   "output/tables/route_cost_distribution_weighting.pdf",
+   "output/tables/route_cost_distribution_weighting.tex",
+   "output/tables/route_cost_robustness.pdf",
+   "output/tables/route_cost_robustness.tex",
+   "output/tables/stress_robustness.pdf",
+   "output/tables/stress_rotation_decomposition.pdf",
+   "output/tables/v4_match_balance.pdf",
+   "output/tables/v4_robustness.pdf",
+   "output/exhibits/realised_dominance_reweighting.jsonl"
+  ],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
  },
- "inputs": [],
+ "inputs": [
+  {
+   "bytes": 880070422,
+   "exists": true,
+   "hashed": false,
+   "mtime_ns": 1786043786350571406,
+   "path": "data/empirical/route_cost_panel_v2.parquet"
+  }
+ ],
  "libraries": {
   "numpy": "2.5.1",
   "pandas": "3.0.3",
@@ -35,5 +68,5 @@
  "notes": null,
  "python": "3.14.5",
  "rows": 15,
- "script": "scripts/run_route_cost_panel.py"
+ "script": "scripts/assemble_route_cost_panel.py"
 }
