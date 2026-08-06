@@ -1,7 +1,7 @@
-{"dominated_allin": 0.9153289803195376, "dominated_gross": 0.8761541536665947, "routes": 2176270, "scope": "type:imported"}
-{"dominated_allin": 0.7284602436571094, "dominated_gross": 0.6483098096391091, "routes": 3808713, "scope": "type:native"}
-{"dominated_allin": 0.7672208683872941, "dominated_gross": 0.6543185666898176, "routes": 11728822, "scope": "type:stable"}
-{"dominated_allin": 0.7770829587431949, "dominated_gross": 0.6802807189082187, "routes": 17713805, "scope": "ALL"}
-{"dominated_allin": 0.858934473379663, "dominated_gross": 0.6752682274310626, "routes": 7628228, "scope": "size:1000"}
-{"dominated_allin": 0.7446116858353591, "dominated_gross": 0.69717345186582, "routes": 6075184, "scope": "size:10000"}
-{"dominated_allin": 0.6705814118466694, "dominated_gross": 0.6642249275819103, "routes": 4010393, "scope": "size:100000"}
+{"dominated_allin": 0.8263002972244691, "dominated_gross": 0.7923693241374029, "routes": 2089330, "scope": "type:imported"}
+{"dominated_allin": 0.6531336718814851, "dominated_gross": 0.5823172685825844, "routes": 3806844, "scope": "type:native"}
+{"dominated_allin": 0.7489547799511937, "dominated_gross": 0.6366045832661297, "routes": 11246914, "scope": "type:stable"}
+{"dominated_allin": 0.7371030236792812, "dominated_gross": 0.6435333587507688, "routes": 17143088, "scope": "ALL"}
+{"dominated_allin": 0.8132096748192176, "dominated_gross": 0.6378199186870191, "routes": 7449979, "scope": "size:1000"}
+{"dominated_allin": 0.7097749063170664, "dominated_gross": 0.663526926055586, "routes": 5890614, "scope": "size:10000"}
+{"dominated_allin": 0.6303274560518817, "dominated_gross": 0.6237544033588472, "routes": 3802495, "scope": "size:100000"}

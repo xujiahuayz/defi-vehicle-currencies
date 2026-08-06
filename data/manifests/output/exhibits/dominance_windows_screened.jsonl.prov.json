@@ -1,35 +1,45 @@
 {
  "argv": [],
  "artefact": "output/exhibits/dominance_windows_screened.jsonl",
- "code_fingerprint": "0f05629913a6bc9058ea3192348fa06c813250df50118961e5ddcbad901cdc22",
+ "code_fingerprint": "5417985ed239b7062d6b1a967c0bc2b1b94926316f074941b6cf3416f1394cd3",
  "code_sources": [
   "scripts/measure_dominance_windows.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T06:38:23+00:00",
+ "created_at": "2026-08-06T19:26:51+00:00",
  "git": {
   "branch": "main",
-  "commit": "20fe3de0f6cd9fc1191e960a0d37451ff0cf19ee",
-  "dirty": true,
-  "dirty_tracked_files": [
-   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
-   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json",
-   "data/manifests/output/exhibits/displacement_asymmetry.jsonl.prov.json",
+  "commit": "e4b5c241a8e1f0e281f0c60e6faf2496a2c97d54",
+  "dirty": false,
+  "dirty_generated_files": [
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
-   "data/manifests/output/exhibits/dominance_windows_screened.jsonl.prov.json",
    "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
-   "data/manifests/output/exhibits/matched_sample_characterisation.jsonl.prov.json",
    "data/manifests/output/exhibits/quoter_support_bounds.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/v4_quote_support.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
-   "output/exhibits/dominance_windows_screened.jsonl",
-   "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/venue_shape.jsonl",
-   "scripts/measure_venue_shape.py"
-  ]
+   "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/gap_arbitrage_bound.jsonl",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/tables/bridge_denominator_robustness.pdf",
+   "output/tables/liquidity_robustness.pdf",
+   "output/tables/measurement_robustness.pdf",
+   "output/tables/route_cost_distribution_weighting.pdf",
+   "output/tables/route_cost_distribution_weighting.tex",
+   "output/tables/route_cost_robustness.pdf",
+   "output/tables/route_cost_robustness.tex",
+   "output/tables/stress_robustness.pdf",
+   "output/tables/stress_rotation_decomposition.pdf",
+   "output/tables/v4_match_balance.pdf",
+   "output/tables/v4_robustness.pdf",
+   "output/exhibits/realised_dominance_reweighting.jsonl"
+  ],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
