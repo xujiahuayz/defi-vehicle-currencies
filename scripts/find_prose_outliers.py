@@ -74,6 +74,19 @@ more less least more-than very too also only just even still already yet again o
 one two three first second such same other others another own
 """.split())
 MASK = "\u00b7"
+DOMAIN: set[str] = set()
+# The system English lexicon. A word in it is ordinary English however this paper uses it,
+# and a word absent from it is coined or technical. This is external to both the corpus and
+# the draft, which is what makes it non-circular: reading the paper's own emphasis to decide
+# what counts as its subject lets the draft license its own vocabulary, and that is how
+# "verdict" was first classified as domain terminology when it is a word choice.
+ENGLISH: set[str] = set()
+try:
+    ENGLISH = {w.strip().lower() for w in
+               Path("/usr/share/dict/words").read_text(errors="ignore").splitlines()
+               if w.strip()}
+except OSError:
+    pass
 
 
 def templates(ws: list[str]) -> list[str]:
@@ -137,6 +150,36 @@ def draft_parts() -> tuple[str, str]:
     return clean(body), clean(heads)
 
 
+def domain_terms() -> set[str]:
+    """Words this paper actually defines or names as technical, from its own text.
+
+    The first version classified any expression absent from the corpus as subject matter,
+    which is wrong for ordinary English used oddly. "verdict" occurs nowhere in the fourteen
+    published papers and is not DeFi terminology: it is a word choice, and the corpus would
+    write "classification". Absence from the corpus alone cannot tell the two apart.
+
+    A term is treated as this paper's subject only if the paper introduces it as one, in a
+    definition environment, in emphasis on first use, in a maths command, or as a proper
+    noun or symbol. Everything else absent from the corpus is a stylistic choice and is
+    reported as one.
+    """
+    terms: set[str] = set()
+    for d in (ROOT / "paper" / "sections", ROOT / "deck"):
+        if not d.exists():
+            continue
+        for p in sorted(d.rglob("*.tex")):
+            raw = p.read_text(encoding="utf-8")
+            for pat in (r"\\emph\{([^}]*)\}", r"\\textit\{([^}]*)\}",
+                        r"\\begin\{definition\}(.{0,120})",
+                        r"\\mathrm\{([^}]*)\}", r"\\texttt\{([^}]*)\}"):
+                for m in re.finditer(pat, raw, flags=re.S):
+                    terms |= set(WORD.findall(m.group(1).lower()))
+            # Capitalised names and code-like tokens are subject matter wherever they appear.
+            terms |= {w.lower() for w in re.findall(r"\b[A-Z][a-zA-Z]*[0-9A-Z][a-zA-Z0-9]*\b", raw)}
+            terms |= {w.lower() for w in re.findall(r"\b(?:Uniswap|Sushiswap|Curve|Balancer|Ethereum|StableSwap|WETH|USDC)\w*", raw)}
+    return terms
+
+
 def corpus_headings(texts: list[str]) -> str:
     """Numbered section titles, which is how this venue's headings appear in extracted text."""
     out = []
@@ -169,7 +212,18 @@ def compare(draft: str, corpus: list[str], n: int, min_count: int, label: str,
         if drate[g] > mx and drate[g] > 0:
             # Subject matter, or style? A term absent from the corpus entirely is this
             # paper's topic; one the corpus uses less often is a stylistic difference.
-            kind = "topic" if mx == 0.0 else "style"
+            # Absent from the corpus AND introduced by this paper as technical: subject
+            # matter. Absent from the corpus but never defined here: a word choice.
+            toks = {w for w in g.split() if w != MASK}
+            coined = ENGLISH and toks and not (toks <= ENGLISH)
+            if mx > 0.0:
+                kind = "style"          # the corpus uses it, the draft uses it more
+            elif coined:
+                kind = "topic"          # coined or technical, so subject matter
+            else:
+                # Ordinary English the corpus never uses. Not decidable automatically, and
+                # reported for judgement instead of being waved through as terminology.
+                kind = "check"
             found.append({"segment": label, "n": n, "expression": g, "draft_count": c,
                           "draft_rate": drate[g], "corpus_max": mx, "corpus_median": med,
                           "kind": kind})
@@ -185,6 +239,8 @@ def main() -> int:
     ap.add_argument("--top", type=int, default=18, help="rows to print per segment")
     args = ap.parse_args()
 
+    global DOMAIN
+    DOMAIN = domain_terms()
     corpus = corpus_texts()
     if not corpus:
         print(f"no readable exemplars under {EXEMPLARS}")
@@ -214,6 +270,13 @@ def main() -> int:
         for r in sel[:args.top]:
             print(f"  {r['expression']:<34}{r['draft_rate']:>10.3f}"
                   f"{r['corpus_max']:>12.3f}{r['draft_count']:>7}")
+        chk = [r for r in rows if r["segment"] == seg and r["kind"] == "check"]
+        if chk:
+            print(f"  {len(chk)} ordinary English expression(s) the corpus NEVER uses, "
+                  f"for judgement:")
+            for r in chk[:10]:
+                print(f"    {r['expression']:<32}{r['draft_rate']:>8.3f}"
+                      f"{'':>12}{r['draft_count']:>7}")
         topic = [r for r in rows if r["segment"] == seg and r["kind"] == "topic"]
         if topic:
             print(f"  ({len(topic)} further expression(s) absent from the corpus entirely, "
@@ -221,7 +284,7 @@ def main() -> int:
         print()
 
     write_exhibit(__import__("pandas").DataFrame(rows), OUT)
-    style = [r for r in rows if r["kind"] == "style"]
+    style = [r for r in rows if r["kind"] in ("style", "check")]
     print(f"wrote {OUT.relative_to(ROOT)}")
     print("\nEvery row is a construction the draft uses more often than any of the 14")
     print("published papers. Nobody named them in advance, which is the point: the list")
