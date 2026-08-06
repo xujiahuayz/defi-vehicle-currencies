@@ -176,6 +176,7 @@ def fetch_receipt(tx_hash: str) -> dict:
         timeout=20,
         retries=2,
         sleep=0.02,
+        retry_json_errors=True,
     )
     row = parse_receipt(tx_hash, response)
     if row is None:

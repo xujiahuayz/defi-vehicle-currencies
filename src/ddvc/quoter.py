@@ -79,7 +79,8 @@ class Throttled(RuntimeError):
 
 
 def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
-             retries: int = 3, sleep: float = 0.0) -> Any:
+             retries: int = 3, sleep: float = 0.0,
+             retry_json_errors: bool = False) -> Any:
     """POST a JSON-RPC payload, rotating endpoints on failure.
 
     Raises Throttled when every endpoint refuses for rate-limit reasons, so the
@@ -101,11 +102,22 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
                 method="POST")
             try:
                 with urllib.request.urlopen(req, timeout=timeout) as r:
+                    response = json.loads(r.read())
+                    if (
+                        retry_json_errors
+                        and isinstance(response, dict)
+                        and response.get("error")
+                    ):
+                        error = response["error"]
+                        last = RuntimeError(
+                            f"JSON-RPC error {error.get('code')}: {error.get('message')}"
+                        )
+                        break
                     with _rpc_idx_lock:
                         _rpc_idx = (urls.index(url) + 1) % len(urls)
                     if sleep:
                         time.sleep(sleep)
-                    return json.loads(r.read())
+                    return response
             except urllib.error.HTTPError as exc:
                 last = exc
                 if exc.code in (429, 503, 403):

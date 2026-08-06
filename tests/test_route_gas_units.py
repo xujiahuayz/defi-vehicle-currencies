@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -227,6 +228,25 @@ class RouteGasUnitTests(unittest.TestCase):
         self.assertEqual(row["tx_to"], "0xrouter")
         self.assertEqual(row["tx_from"], "0xsender")
         self.assertEqual(row["effective_gas_price_wei"], 100)
+
+    def test_receipt_fetch_rotates_past_json_rpc_error_bodies(self) -> None:
+        original_cache = route_gas.CACHE
+        with tempfile.TemporaryDirectory() as temporary:
+            route_gas.CACHE = Path(temporary)
+            response = {
+                "result": {
+                    "gasUsed": "0x3e8",
+                    "status": "0x1",
+                    "to": "0xrouter",
+                    "from": "0xsender",
+                }
+            }
+            try:
+                with patch.object(route_gas, "rpc_post", return_value=response) as request:
+                    route_gas.fetch_receipt("0xabc")
+            finally:
+                route_gas.CACHE = original_cache
+        self.assertTrue(request.call_args.kwargs["retry_json_errors"])
 
     def test_day_candidate_sample_is_resumable_and_schema_checked(self) -> None:
         original = route_gas.UNIFIED
