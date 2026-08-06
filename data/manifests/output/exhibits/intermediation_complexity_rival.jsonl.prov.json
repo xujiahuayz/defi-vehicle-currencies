@@ -1,62 +1,36 @@
 {
- "argv": [
-  "--workers",
-  "8"
- ],
+ "argv": [],
  "artefact": "output/exhibits/intermediation_complexity_rival.jsonl",
- "code_fingerprint": "617d973342941c5de03ef66bde8cc02ffaadbc710120ad89f9eb4279db9b77be",
+ "code_fingerprint": "702eb35d1848cc44b7f249c35b3e6b800fdbc755fea9f867d8fbe65ce56b7185",
  "code_sources": [
   "scripts/build_intermediation_by_type.py",
   "src/ddvc/analysis/regression.py",
   "src/ddvc/asset_types.py",
   "src/ddvc/realised.py",
+  "src/ddvc/route_roles.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T19:56:48+00:00",
+ "created_at": "2026-08-06T23:48:56+00:00",
  "git": {
-  "branch": "main",
-  "commit": "bda367777fe85d0f0f8f37f072e37aabbe4aae72",
+  "branch": "glotl/fgh-evidence",
+  "commit": "d0c0dbf0fd35b7eccf50d954379bf74a114f7a6f",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/processed/counterfactual_dominance.parquet.prov.json",
-   "data/manifests/data/processed/daily_gas_price_graph.parquet.prov.json",
    "data/manifests/data/processed/intermediation_by_type_daily.parquet.prov.json",
-   "data/manifests/output/exhibits/counterfactual_dominance_summary.jsonl.prov.json",
-   "data/manifests/output/exhibits/daily_gas_price_graph.jsonl.prov.json",
-   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
    "data/manifests/output/exhibits/intermediation_by_type.jsonl.prov.json",
    "data/manifests/output/exhibits/intermediation_integration_rival.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
-   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
-   "output/exhibits/counterfactual_dominance_summary.jsonl",
-   "output/exhibits/dominance_specification_curve.jsonl",
-   "output/exhibits/realised_dominance.jsonl",
-   "output/exhibits/survival_after_dominance.jsonl",
-   "output/exhibits/vehicle_dominance_hdfe.jsonl",
-   "output/tables/bridge_denominator_robustness.pdf",
-   "output/tables/liquidity_robustness.pdf",
-   "output/tables/measurement_robustness.pdf",
-   "output/tables/route_cost_distribution_weighting.pdf",
-   "output/tables/route_cost_distribution_weighting.tex",
-   "output/tables/route_cost_robustness.pdf",
-   "output/tables/route_cost_robustness.tex",
-   "output/tables/stress_robustness.pdf",
-   "output/tables/stress_rotation_decomposition.pdf",
-   "output/tables/v4_match_balance.pdf",
-   "output/tables/v4_robustness.pdf",
-   "output/exhibits/realised_dominance_reweighting.jsonl"
+   "output/exhibits/intermediation_by_type.jsonl",
+   "output/exhibits/intermediation_integration_rival.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 1528897,
+   "bytes": 3396732,
    "exists": true,
    "path": "data/processed/intermediation_by_type_daily.parquet",
-   "sha256": "efb324e2cb8b42784b6ae4494cac52dab1f3579e00b9ee6fb63c74bfc4b3ce04"
+   "sha256": "81610e56d0b39ee6a7e590430dfcd2e54062704b9d53bcce761a377843d09900"
   }
  ],
  "libraries": {
@@ -67,6 +41,6 @@
  },
  "notes": "equal-weighted daily stable share within native plus stable by route-complexity and integration cell; leg count is a complexity proxy, not an efficiency measure; Newey-West Bartlett covariance",
  "python": "3.14.5",
- "rows": 12,
+ "rows": 48,
  "script": "scripts/build_intermediation_by_type.py"
 }
