@@ -1,11 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
-import sys
 import unittest
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from ddvc.fetch.raw import raw_path, where_for_entity
 from ddvc.fetch.schemas import EntitySpec, get_schema
