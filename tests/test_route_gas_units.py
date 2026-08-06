@@ -46,6 +46,10 @@ def leg(
 
 
 class RouteGasUnitTests(unittest.TestCase):
+    def test_monthly_calendar_affects_output_but_not_per_day_candidate_cache(self) -> None:
+        self.assertIn("src/ddvc/calendar.py", route_gas.CODE_SOURCES)
+        self.assertNotIn("src/ddvc/calendar.py", route_gas.CANDIDATE_CODE_SOURCES)
+
     def test_worker_recycling_uses_explicit_bounded_batches(self) -> None:
         batches = worker_batches([str(day) for day in range(19)], workers=2)
         self.assertEqual([len(batch) for batch in batches], [8, 8, 3])

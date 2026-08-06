@@ -52,6 +52,7 @@ OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "route_gas_units_summary.jsonl"
 CODE_SOURCES = [
     "scripts/process/build_route_gas_units.py",
     "src/ddvc/route_gas.py",
+    "src/ddvc/calendar.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/fetch/sources.py",
     "src/ddvc/quoter.py",
