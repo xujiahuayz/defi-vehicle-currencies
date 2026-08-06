@@ -330,6 +330,14 @@ def main() -> int:
     ap.add_argument("--min-count", type=int, default=6,
                     help="minimum occurrences in the draft before an expression is reported")
     ap.add_argument("--top", type=int, default=18, help="rows to print per segment")
+    # A gate that cannot pass is not a gate. Reporting every expression above the corpus
+    # ceiling guarantees rows for a specialised topic: "the" runs at 90.3 per thousand words
+    # against a ceiling of 87.6, a 3% excess that means nothing. The gate fails on material
+    # excess, and the report still lists everything so nothing is hidden.
+    ap.add_argument("--fail-ratio", type=float, default=1.6,
+                    help="fail when the draft rate exceeds the corpus ceiling by this factor")
+    ap.add_argument("--fail-count", type=int, default=8,
+                    help="fail only on expressions occurring at least this often")
     args = ap.parse_args()
 
     global DOMAIN
@@ -355,6 +363,24 @@ def main() -> int:
     # Headings are short, so the count threshold has to drop or nothing clears it.
     for n in (1, 2):
         compare(heads, [chead], n, 2, "heading", rows)
+
+    # Content words compared against a corpus on another subject are confounded by topic: a
+    # routing paper will always exceed a corpus about banks on "pool" and "route", and that
+    # is the subject and not the style. So the venue corpus is the reference for SYNTAX, and
+    # the field's own 54 papers are the reference for VOCABULARY. An expression has to clear
+    # both ceilings before it counts as excess.
+    dom_rate: dict[str, float] = {}
+    lit = ROOT / "literature" / "text"
+    if lit.exists():
+        for n in (1, 2, 3):
+            per_paper = [rates(words(p.read_text(errors="ignore")), n)
+                         for p in sorted(lit.glob("*.txt"))]
+            for r in rows:
+                if r["segment"] == "body" and r["n"] == n:
+                    dom_rate[r["expression"]] = max(
+                        (x.get(r["expression"], 0.0) for x in per_paper), default=0.0)
+    for r in rows:
+        r["field_max"] = dom_rate.get(r["expression"], 0.0)
 
     for seg in ("template", "body", "heading"):
         sel = [r for r in rows if r["segment"] == seg and r["kind"] == "style"]
@@ -383,7 +409,23 @@ def main() -> int:
         print()
 
     write_exhibit(__import__("pandas").DataFrame(rows), OUT)
-    style = [r for r in rows if r["kind"] in ("style", "undefined", "sense")]
+
+    def material(r: dict) -> bool:
+        if r["draft_count"] < args.fail_count:
+            return False
+        # Coined-and-undefined terms and sense mismatches fail on presence, since neither is
+        # a matter of degree. Style excess fails only when it is large.
+        if r["kind"] in ("undefined", "sense"):
+            return True
+        # Clear the venue ceiling AND, for body vocabulary, the field's ceiling too.
+        ceiling = max(r["corpus_max"], r.get("field_max", 0.0), 1e-9)
+        return r["draft_rate"] / ceiling >= args.fail_ratio
+
+    style = [r for r in rows if material(r)]
+    if style:
+        print(f"\n{len(style)} expression(s) fail the gate: at least {args.fail_count} uses "
+              f"and either undefined, a sense mismatch, or {args.fail_ratio:g} times the "
+              f"corpus ceiling.")
     print(f"wrote {OUT.relative_to(ROOT)}")
     print("\nEvery row is a construction the draft uses more often than any of the 14")
     print("published papers. Nobody named them in advance, which is the point: the list")

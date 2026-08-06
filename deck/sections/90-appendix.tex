@@ -78,7 +78,7 @@
 \item v2-family pools priced from unwound hourly reserves
 \item Pool-hours failing reserve continuity flagged, 3.2\% to 11.8\% across five sampled days
 \item Most flagged hours recovered by reading the hour's own liquidity events
-\item Hours that stay unexplained are dropped and not approximated
+\item Hours that stay unexplained are dropped
 \end{itemize}
 \end{column}
 \begin{column}{0.58\textwidth}
@@ -201,7 +201,7 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}{A8. Why gas is in the outcome and not in the controls}
+\begin{frame}{A8. Gas in the outcome}
 \begin{columns}[T]
 \begin{column}{0.42\textwidth}
 \begin{itemize}
@@ -256,7 +256,7 @@
 \item Newer stables, staked-ETH derivatives and tokenised gold were misfiled in the same version
 \end{itemize}
 \vspace{0.4em}
-\srcnote{Coverage is good at the head and weak in the tail, and the tail is stated and not absorbed}
+\srcnote{Coverage is good at the head and weak in the tail, and the tail is stated openly}
 \end{frame}
 
 \begin{frame}{A11. The specification alternative a referee will ask for}
@@ -309,7 +309,7 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{A13. What matching costs, measured}
+\begin{frame}{A13. What matching measured costs}
 \begin{columns}[T]
 \begin{column}{0.38\textwidth}
 \begin{itemize}
@@ -421,13 +421,13 @@
 \srcnote{A level statistic. The verdict is a difference, and A16 measures the difference on its own terms}
 \end{frame}
 
-\begin{frame}{A18. Venue coverage, signed}
+\begin{frame}{A18. Signed venue coverage}
 \begin{columns}[T]
 \begin{column}{0.38\textwidth}
 \begin{itemize}
 \item Curve's calibration gate removes 65.2\% of its native-leg volume against 21.1\% of its stable-leg volume
 \item Tricrypto pools \$818m of the \$1.83bn excluded, 44.6\%
-\item Balancer 3.9\% of panel volume pooled, 8.8\% at its 2023 peak, validated and not integrated
+\item Balancer 3.9\% of panel volume pooled, 8.8\% at its 2023 peak, validated with integration outstanding
 \item Sushiswap v3 at 0.016\% of priced volume
 \item Every remaining gap withholds depth from the native side
 \end{itemize}
@@ -599,7 +599,7 @@ three or more & 13,736 & 0.54\% \\
 \begin{frame}{A25. Defaults, and the cross-venue bound}
 \begin{itemize}
 \item Concentrated-liquidity launch of 2021-05-05 moves native-minus-stable betweenness on untreated venues by $+0.020$ (0.489)
-\item Minimum detectable effect 0.106 against a pre-event base of 0.689, so this is a ceiling and not a point estimate
+\item Minimum detectable effect 0.106 against a pre-event base of 0.689, so this is a ceiling
 \item Same specification at the midpoint of the pre-event window returns a pseudo-break of $+0.043$ (0.000), roughly twice the estimated jump
 \item Betweenness is the only outcome family whose placebo passes: $+0.006$ (0.787) and $+0.007$ (0.783)
 \item New-pair composition fails the same placebo at $+0.055$ (0.000) and $+0.062$ (0.000)
@@ -647,7 +647,7 @@ three or more & 13,736 & 0.54\% \\
 \item[] {\scriptsize Realised dominance, matched sample characterisation, screened windows}
 \item[] {\scriptsize Arbitrage bound at three notionals}
 \item[] {\scriptsize Block against hour verdict, 371 triangles on seven days}
-\item[] {\scriptsize Curve and Balancer exclusion, signed by year and by leg}
+\item[] {\scriptsize Curve and Balancer signed exclusion by year and by leg}
 \item[] {\scriptsize V1 forced-vehicle classification and its token-level tests}
 \end{itemize}
 \end{column}
