@@ -1,15 +1,17 @@
 {
  "argv": [
-  "--workers",
-  "12"
+  "--stride",
+  "150",
+  "--k",
+  "120"
  ],
- "artefact": "data/processed/cross_venue_spillover_daily.parquet",
- "code_fingerprint": "44512248a4bd3c39fa2e976a9be96de43f13a785d5d602cad584e21dc2b9093b",
+ "artefact": "data/processed/cost_weighted_centrality.parquet",
+ "code_fingerprint": "0c6bc163eec5f546e3b38ac5e968b36b37f0dd67505257d1f2664999b786c5bb",
  "code_sources": [
-  "scripts/build_cross_venue_spillover_panel.py",
+  "scripts/build_cost_weighted_centrality.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T00:46:04+00:00",
+ "created_at": "2026-08-06T00:40:17+00:00",
  "git": {
   "branch": "main",
   "commit": "f8adde626ce59c6c3f14d10f725898cb5e6d9fee",
@@ -22,7 +24,6 @@
    "data/manifests/output/empirical/rent_incidence/robustness.jsonl.prov.json",
    "data/manifests/output/empirical/rent_incidence/screens.jsonl.prov.json",
    "data/manifests/output/empirical/rent_incidence/summary.json.prov.json",
-   "scripts/run_rent_incidence.py",
    "uv.lock"
   ]
  },
@@ -35,6 +36,6 @@
  },
  "notes": null,
  "python": "3.14.5",
- "rows": 4554,
- "script": "scripts/build_cross_venue_spillover_panel.py"
+ "rows": 21369,
+ "script": "scripts/build_cost_weighted_centrality.py"
 }

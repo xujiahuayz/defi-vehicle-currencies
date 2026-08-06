@@ -55,6 +55,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from ddvc.tables import write_exhibit  # noqa: E402
 
 PANEL = ROOT / "data" / "processed" / "cross_venue_spillover_daily.parquet"
+STRATA = ROOT / "data" / "processed" / "cross_venue_spillover_strata.parquet"
 EX = ROOT / "output" / "exhibits"
 FIG = ROOT / "output" / "figures"
 
@@ -86,7 +87,12 @@ DIFFS = {
 
 WINDOW = 180        # days each side, primary
 BIN = 30            # event-time bin width for the pre-trend exhibit
-MIN_DENOM = 25      # a day with fewer than this many episodes carries no share
+# Denominator floors, per denominator column. A share built on almost nothing is
+# noise, and the betweenness denominator is a sum of normalised centralities that
+# lives near one, so a single floor across outcomes would silently delete a whole
+# outcome family. That is exactly what an earlier version of this script did.
+MIN_DENOM = {"episodes": 25, "newpairs": 5, "btw_total": 0.5}
+MIN_NODES = 100     # a graph smaller than this is not a routing network
 HAC_LAG = 30        # Bartlett bandwidth, one month of daily autocorrelation
 RI_GAP = 200        # placebo dates must sit this far from every real event
 
@@ -137,39 +143,48 @@ def fit_break(d: pd.DataFrame) -> dict:
 
 
 def pretrend_test(d: pd.DataFrame) -> dict:
-    """Wald test that every pre-event bin coefficient is zero.
+    """Two pre-trend diagnostics on the pre-window alone.
 
-    A spillover claim with a pre-trend is not a spillover claim, so this runs on
-    the pre-window alone with bin dummies against the omitted bin nearest the
-    event, and its p-value is reported next to every estimate.
+    A spillover claim with a pre-trend is not a spillover claim. The first
+    diagnostic is the pre-window slope in share points per 100 days, which is
+    what a drift already under way looks like. The second is a PSEUDO-BREAK at
+    the midpoint of the pre-window, fitted on pre-window data only: if the
+    identical specification finds a jump where nothing happened, the specification
+    finds jumps in this series generally and the real estimate means less.
+
+    An earlier version tested joint significance of monthly pre-window bin dummies
+    and returned 0.000 for every outcome including the placebos, because a daily
+    routing share has real month-to-month variation and the test was asking
+    whether the pre-window was flat. A diagnostic that fires on everything ranks
+    nothing, so it was replaced.
     """
     pre = d[d["rel"] < 0].copy()
-    if pre.empty:
-        return {"pretrend_p": np.nan, "pretrend_bins": 0, "pretrend_maxabs": np.nan}
-    # floor puts rel in [-30,-1] into bin -1, the bin adjacent to the event
-    pre["bin"] = np.floor(pre["rel"] / BIN).astype(int)
-    bins = sorted(pre["bin"].unique())
-    omit = max(bins)
-    use = [b for b in bins if b != omit]
-    if not use:
-        return {"pretrend_p": np.nan, "pretrend_bins": 0, "pretrend_maxabs": np.nan}
-    x = np.column_stack([np.ones(len(pre))]
-                        + [(pre["bin"] == b).to_numpy(float) for b in use])
+    out = {"pre_slope_per100d": np.nan, "pre_slope_p": np.nan,
+           "pseudo_jump": np.nan, "pseudo_jump_p": np.nan}
+    if len(pre) < 60:
+        return out
+    t = pre["rel"].to_numpy(float) / 100.0
     y = pre["y"].to_numpy(float)
+    beta, cov = ols_hac(y, np.column_stack([np.ones(len(pre)), t]), HAC_LAG)
+    se = float(np.sqrt(max(cov[1, 1], 0.0)))
+    out["pre_slope_per100d"] = float(beta[1])
+    if se > 0:
+        out["pre_slope_p"] = float(2 * stats.t.sf(abs(beta[1] / se), len(pre) - 2))
+
+    cut = float(np.median(pre["rel"]))
+    # Event time must be recentred on the pseudo date, or the coefficient reports
+    # the gap between the two fitted segments extrapolated to the real event date
+    # instead of the jump at the pseudo date. That error made this diagnostic
+    # report pre-window jumps larger than the estimates it was meant to police.
+    tc = (pre["rel"].to_numpy(float) - cut) / 100.0
+    fake = (pre["rel"].to_numpy() >= cut).astype(float)
+    x = np.column_stack([np.ones(len(pre)), tc, fake, tc * fake])
     beta, cov = ols_hac(y, x, HAC_LAG)
-    r = np.zeros((len(use), x.shape[1]))
-    for i in range(len(use)):
-        r[i, i + 1] = 1.0
-    rb = r @ beta
-    rcr = r @ cov @ r.T
-    try:
-        wald = float(rb @ np.linalg.pinv(rcr) @ rb)
-    except np.linalg.LinAlgError:
-        return {"pretrend_p": np.nan, "pretrend_bins": len(use),
-                "pretrend_maxabs": np.nan}
-    return {"pretrend_p": float(stats.chi2.sf(wald, len(use))),
-            "pretrend_bins": len(use),
-            "pretrend_maxabs": float(np.nanmax(np.abs(beta[1:])))}
+    se = float(np.sqrt(max(cov[2, 2], 0.0)))
+    out["pseudo_jump"] = float(beta[2])
+    if se > 0:
+        out["pseudo_jump_p"] = float(2 * stats.t.sf(abs(beta[2] / se), len(pre) - 4))
+    return out
 
 
 def event_time_bins(d: pd.DataFrame) -> pd.DataFrame:
@@ -215,15 +230,16 @@ def randomisation(series: pd.DataFrame, real_dates: list[pd.Timestamp],
 
 def build_series(panel: pd.DataFrame, venue_set: str, outcome: str) -> pd.DataFrame:
     d = panel[panel.venue_set == venue_set].copy()
+    d = d[d["nodes"] >= MIN_NODES]
     if outcome in DIFFS:
         a, b = DIFFS[outcome]
         na, da = OUTCOMES[a]
         nb, db = OUTCOMES[b]
-        d = d[(d[da] >= MIN_DENOM) & (d[db] >= MIN_DENOM)]
+        d = d[(d[da] >= MIN_DENOM[da]) & (d[db] >= MIN_DENOM[db])]
         d["y"] = d[na] / d[da] - d[nb] / d[db]
     else:
         num, den = OUTCOMES[outcome]
-        d = d[d[den] >= MIN_DENOM]
+        d = d[d[den] >= MIN_DENOM[den]]
         d["y"] = d[num] / d[den]
     keep = ["date", "y", "episodes", "nodes", "routes_intermediated", "newpairs"]
     return d[keep].dropna(subset=["y"]).sort_values("date").reset_index(drop=True)
@@ -285,7 +301,7 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--window", type=int, default=WINDOW)
     ap.add_argument("--windows", default="90,270", help="robustness windows")
-    ap.add_argument("--ri-step", type=int, default=7)
+    ap.add_argument("--ri-step", type=int, default=3)
     ap.add_argument("--no-figure", action="store_true")
     args = ap.parse_args()
 
@@ -332,7 +348,7 @@ def main() -> int:
         scr.append({
             "venue_set": vset,
             "days": int(len(g)),
-            "days_dropped_thin_episodes": int((g.episodes < MIN_DENOM).sum()),
+            "days_dropped_thin_episodes": int((g.episodes < MIN_DENOM["episodes"]).sum()),
             "routes_multi": int(g.routes_multi.sum()),
             "routes_roundtrip_dropped": int(g.routes_roundtrip.sum()),
             "roundtrip_share": float(g.routes_roundtrip.sum()
@@ -348,7 +364,8 @@ def main() -> int:
     pd.set_option("display.width", 220)
     pd.set_option("display.max_columns", 40)
     show = ["event", "outcome", "days_pre", "days_post", "pre_mean", "jump", "se",
-            "p", "ri_p", "mde_randomisation", "pretrend_p"]
+            "p", "ri_p", "ri_draws", "mde_randomisation", "pre_slope_per100d", "pre_slope_p",
+            "pseudo_jump", "pseudo_jump_p"]
     print("\nSPILLOVER ESTIMATES (outcome measured on untreated venues only)\n")
     for ev in est.event.unique():
         print(f"--- {ev} ---")
@@ -357,9 +374,95 @@ def main() -> int:
         print()
     print("SCREENS\n", pd.DataFrame(scr).to_string(index=False))
 
+    per = persistence(panel)
+    write_exhibit(per, EX / "cross_venue_spillover_persistence.jsonl")
+    print("\nPERSISTENCE: outcome level by post-event horizon, against the pre-window mean\n")
+    print(per.to_string(index=False, float_format=lambda v: f"{v:.4f}"))
+
+    if STRATA.exists():
+        sel = selection_check()
+        write_exhibit(sel, EX / "cross_venue_spillover_selection.jsonl")
+        print("\nSELECTION CHECK: composition of the routes the purity rule drops\n")
+        print(sel.to_string(index=False, float_format=lambda v: f"{v:.4f}"))
+
     if not args.no_figure:
         make_figure(pd.concat(pre_rows, ignore_index=True))
     return 0
+
+
+def persistence(panel: pd.DataFrame) -> pd.DataFrame:
+    """Where the outcome sits at three horizons after the event.
+
+    A level break caused by an architecture change should still be there a year
+    on, because the architecture is. An episode that reverts inside a quarter is
+    something else that happened at the same time, and the break specification
+    cannot tell the two apart on its own.
+    """
+    rows = []
+    for ev_name, ev_date, vset, is_placebo in EVENTS:
+        ev = pd.Timestamp(ev_date)
+        for outcome in DIFFS:
+            s = build_series(panel, vset, outcome)
+            if s.empty:
+                continue
+            s = s.assign(rel=(s["date"] - ev).dt.days)
+            base = s.loc[s.rel.between(-180, -1), "y"]
+            if len(base) < 40:
+                continue
+            row = {"event": ev_name, "outcome": outcome,
+                   "pre_180d": float(base.mean())}
+            for lo, hi, lab in ((1, 90, "post_1_90"), (91, 180, "post_91_180"),
+                                (181, 365, "post_181_365"),
+                                (366, 730, "post_366_730")):
+                w = s.loc[s.rel.between(lo, hi), "y"]
+                row[lab] = float(w.mean()) if len(w) >= 30 else np.nan
+                row[lab + "_vs_pre"] = (row[lab] - row["pre_180d"]
+                                        if len(w) >= 30 else np.nan)
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def selection_check() -> pd.DataFrame:
+    """Does the break survive on the routes the purity rule drops, and on all routes?
+
+    The one mechanical story that would produce a spillover estimate with nothing
+    happening on the untreated venues: routes migrating to the new venue are
+    disproportionately intermediated by one asset type, so the composition of what
+    stays behind moves by arithmetic. Three numbers settle it. The composition of
+    the migrating routes, the composition of what stays, and the break estimated
+    on ALL routes including the treated venue. If the migrating routes tilt the
+    opposite way to the estimate, migration cannot have produced it.
+    """
+    sp = pd.read_parquet(STRATA)
+    sp["date"] = pd.to_datetime(sp["date"])
+    ev_dates = {"uniswap_v3_launch": "2021-05-05", "uniswap_v4_launch": "2025-01-31"}
+    rows = []
+    for (ev, st), g in sp.groupby(["event", "stratum"]):
+        ev_ts = pd.Timestamp(ev_dates[ev])
+        g = g[g.episodes >= MIN_DENOM["episodes"]].sort_values("date").copy()
+        g["rel"] = (g["date"] - ev_ts).dt.days
+        g["y"] = g.cnt_native / g.episodes - g.cnt_stable / g.episodes
+        post = g[g.rel >= 0]
+        pre = g[g.rel < 0]
+        row = {"event": ev, "stratum": st,
+               "days_pre": int(len(pre)), "days_post": int(len(post)),
+               "episodes_pre": int(pre.episodes.sum()),
+               "episodes_post": int(post.episodes.sum()),
+               "native_share_post": float(post.cnt_native.sum()
+                                          / max(post.episodes.sum(), 1)),
+               "stable_share_post": float(post.cnt_stable.sum()
+                                          / max(post.episodes.sum(), 1)),
+               "episode_share_of_all_post": np.nan}
+        if len(pre) >= 40 and len(post) >= 40:
+            fit = fit_break(g)
+            row.update({"jump_native_less_stable": fit["jump"], "se": fit["se"],
+                        "p": fit["p"]})
+        rows.append(row)
+    out = pd.DataFrame(rows)
+    for ev, g in out.groupby("event"):
+        tot = float(g.loc[g.stratum == "all_routes", "episodes_post"].iloc[0])
+        out.loc[g.index, "episode_share_of_all_post"] = g.episodes_post / max(tot, 1)
+    return out
 
 
 def make_figure(bins: pd.DataFrame) -> None:

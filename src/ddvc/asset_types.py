@@ -85,6 +85,45 @@ STABLE = {
 # different currency and not merely a different issuer of the same one.
 NON_USD_STABLE = {"agEUR", "EURS"}
 
+# ---------------------------------------------------------------------------
+# Backing regime, crossing the `stable` type. Added by node C round 2
+# (docs/node-c-definitions-round2.md section 3) because the corpus cuts
+# stablecoins here and we were pooling across the cut.
+#
+# Catalini, de Gortari and Shah (2022) split stablecoins into fiat-backed,
+# crypto-asset-backed, and those "backed partially or fully by their own
+# investment token [which] only rely on their own algorithms and smart
+# contracts", and state the consequence: "unlike stablecoins backed by fiat
+# assets or cryptocurrencies, the true solvency of an algorithmic coin is
+# linked to the public's confidence in the coin". Lyons and Viswanath-Natraj
+# (2023) build their result on the same line: "in contrast to dollar-backed
+# stablecoins, there is no clear arbitrage mechanism to restore prices when
+# TerraUSD is priced at a discount." Four papers in this project's corpus exist
+# principally because backing regimes behave differently.
+#
+# Weight, measured on incident-edge strength in data/processed/
+# vehicle_centrality.parquet: 89.4% of `stable` intermediation value is
+# fiat-backed pooled across the sample, so this moves no aggregate. It matters
+# on the time axis the paper reads its transition against, where crypto
+# collateral is 30.3% of stable intermediation in 2020 and 3.3% in 2026, and
+# the synthetic regime appears from 2024 at roughly 4.5%.
+# ---------------------------------------------------------------------------
+
+STABLE_BACKING = {
+    "USDC": "fiat", "USDT": "fiat", "PYUSD": "fiat", "TUSD": "fiat",
+    "USDP": "fiat", "GUSD": "fiat", "BUSD": "fiat", "USD1": "fiat",
+    "DAI": "crypto_collateral", "LUSD": "crypto_collateral",
+    "crvUSD": "crypto_collateral", "alUSD": "crypto_collateral",
+    "DOLA": "crypto_collateral", "sUSD": "crypto_collateral",
+    "USDS": "crypto_collateral", "MIM": "crypto_collateral",
+    "USDe": "synthetic", "sUSDe": "synthetic",
+    "FRAX": "fractional_algorithmic",
+    "agEUR": "non_usd", "EURS": "non_usd",
+}
+
+BACKINGS = ("fiat", "crypto_collateral", "synthetic", "fractional_algorithmic",
+            "non_usd", "not_applicable")
+
 # Non-native stores of value, wrapped onto the platform. Includes tokenised
 # gold, which is the cleanest available analogue of a metallic reserve asset.
 IMPORTED = {
@@ -119,6 +158,20 @@ def classify(address: object) -> tuple[str | None, str]:
 
 def asset_type(address: str | None) -> str:
     return classify(address)[1]
+
+
+def backing(address: object) -> str:
+    """Backing regime for a token, 'not_applicable' outside the `stable` type.
+
+    The primary axis stays the five-value asset type. This crosses it, so a
+    result reported at `stable` level carries a required robustness row at
+    backing level and the prose can stop saying "the stable numeraire" as if
+    USDC and USDe were the same instrument.
+    """
+    sym, typ = classify(address)
+    if typ != "stable" or sym is None:
+        return "not_applicable"
+    return STABLE_BACKING.get(sym, "not_applicable")
 
 
 # ---------------------------------------------------------------------------
@@ -156,6 +209,15 @@ ALTERNATIVES = {
         "bitcoin. Gold is a metallic reserve asset while wrapped BTC is a "
         "foreign crypto reserve asset, and the TradFi analogue differs. "
         "Combined weight roughly 0.38% of episodes."
+    ),
+    "stable_backing_pooled": (
+        "Pool all backing regimes inside `stable` (the state before node C "
+        "round 2) or report the stable-type results once at backing level "
+        "(now required). The corpus cuts stablecoins by backing and four of "
+        "its papers exist because the regimes behave differently, so pooling "
+        "is the choice that has to be defended. Pooled weight is 89.4% "
+        "fiat-backed, so the aggregate does not move; the 2020 to 2022 window "
+        "does, where crypto collateral runs 30.3% down to 7.8%."
     ),
     "candidate_set_only": (
         "Restrict to the five original candidates (WETH, USDC, USDT, DAI, "

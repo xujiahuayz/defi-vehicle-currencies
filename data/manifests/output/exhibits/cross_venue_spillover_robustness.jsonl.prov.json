@@ -1,0 +1,37 @@
+{
+ "argv": [
+  "--no-figure"
+ ],
+ "artefact": "output/exhibits/cross_venue_spillover_robustness.jsonl",
+ "code_fingerprint": "9a0d6f2acadc634ca91cbbea811f51e156a64daac1727f531be90372ce1b4017",
+ "code_sources": [
+  "scripts/run_cross_venue_spillover.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-06T00:53:27+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "bc2b025f636e3907ad371c4216112829e645bf5f",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "ata/manifests/data/processed/cross_venue_spillover_daily.parquet.prov.json",
+   "docs/finding-fragmentation-not-succession.md",
+   "scripts/build_cross_venue_spillover_panel.py",
+   "scripts/build_vehicle_centrality.py",
+   "scripts/run_cross_venue_spillover.py",
+   "src/ddvc/asset_types.py",
+   "uv.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 108,
+ "script": "scripts/run_cross_venue_spillover.py"
+}

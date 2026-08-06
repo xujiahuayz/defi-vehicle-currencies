@@ -230,6 +230,46 @@ def one_day(path: Path) -> list[dict]:
     return rows
 
 
+STRATA_PANEL = ROOT / "data" / "processed" / "cross_venue_spillover_strata.parquet"
+
+# Event windows for the selection diagnostic below.
+STRATA_EVENTS = {
+    "uniswap_v3_launch": ("2021-05-05", "untreated_v3"),
+    "uniswap_v4_launch": ("2025-01-31", "untreated_v4"),
+}
+
+
+def strata_day(args: tuple) -> list[dict]:
+    """Intermediation composition of the routes the purity rule KEEPS and DROPS.
+
+    The one way a spillover estimate on untreated venues can be manufactured
+    without anything happening on those venues: if the routes that migrate to the
+    new venue are disproportionately intermediated by one asset type, the
+    composition of what stays behind moves arithmetically. The check is direct.
+    Measure the composition of the dropped, treated-touching routes alongside the
+    kept ones. If the two strata look alike, migration cannot move the kept share,
+    whatever else did.
+    """
+    path, ev_name = args
+    venues = UNTREATED[STRATA_EVENTS[ev_name][1]]
+    df = _load(path)
+    if df is None:
+        return []
+    date = pd.to_datetime(path.stem, format="%Y%m%d")
+    df = df.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
+    df["rid"] = ((df.tx_hash != df.tx_hash.shift())
+                 | (df.component_id != df.component_id.shift())).cumsum().to_numpy()
+    off = (df.assign(_off=~df.source.isin(venues))
+             .groupby("rid", sort=False)["_off"].transform("max")).to_numpy()
+    rows = []
+    for stratum, mask in (("kept_untreated", ~off), ("dropped_treated", off),
+                          ("all_routes", np.ones(len(df), bool))):
+        r = {"date": date, "event": ev_name, "stratum": stratum}
+        r.update(_intermediation(df[mask]))
+        rows.append(r)
+    return rows
+
+
 def new_pairs(days: list[Path]) -> pd.DataFrame:
     """First-appearance date of every unordered token pair, per untreated set."""
     seen: dict[str, set] = {k: set() for k in UNTREATED}
@@ -270,6 +310,9 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--workers", type=int, default=10)
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--strata-only", action="store_true",
+                    help="build only the selection diagnostic")
+    ap.add_argument("--strata-window", type=int, default=180)
     args = ap.parse_args()
 
     days = sorted(UNIFIED.glob("[0-9]" * 8 + ".parquet"))
@@ -277,6 +320,33 @@ def main() -> int:
         days = days[: args.limit]
     if not days:
         sys.exit(f"no unified day files under {UNIFIED}")
+
+    if args.strata_only:
+        jobs = []
+        for ev, (ev_date, _) in STRATA_EVENTS.items():
+            lo = pd.Timestamp(ev_date) - pd.Timedelta(days=args.strata_window)
+            hi = pd.Timestamp(ev_date) + pd.Timedelta(days=args.strata_window)
+            for d in days:
+                if lo <= pd.Timestamp(d.stem) <= hi:
+                    jobs.append((d, ev))
+        print(f"selection diagnostic on {len(jobs):,} day-events", flush=True)
+        srows: list[dict] = []
+        with ProcessPoolExecutor(max_workers=args.workers) as pool:
+            for i, f in enumerate(as_completed([pool.submit(strata_day, j)
+                                                for j in jobs]), 1):
+                srows.extend(f.result())
+                if i % 200 == 0:
+                    print(f"  {i:,}/{len(jobs):,}", flush=True)
+        sp = pd.DataFrame(srows).sort_values(["event", "stratum", "date"])
+        write_panel(sp.reset_index(drop=True), STRATA_PANEL)
+        print(f"wrote {STRATA_PANEL.relative_to(ROOT)}  rows={len(sp):,}")
+        for (ev, st), g in sp.groupby(["event", "stratum"]):
+            tot = max(g.episodes.sum(), 1)
+            print(f"  {ev:<20} {st:<16} episodes {g.episodes.sum():>12,}  "
+                  f"native {g.cnt_native.sum()/tot:6.1%}  "
+                  f"stable {g.cnt_stable.sum()/tot:6.1%}")
+        return 0
+
     print(f"reducing {len(days):,} days with {args.workers} workers", flush=True)
 
     rows: list[dict] = []

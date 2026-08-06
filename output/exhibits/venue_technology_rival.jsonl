@@ -1,0 +1,43 @@
+{"basis": "all venues", "day": "20200903", "imported": 0.0034095481356109995, "native": 0.8366833575868171, "other": 0.026802475063922044, "stable": 0.13310461921364977, "year": 2020}
+{"basis": "constant-product only", "day": "20200903", "imported": 7.911245451670742e-05, "native": 0.8755755013418499, "other": 0.02451756986338995, "stable": 0.09982781634024346, "year": 2020}
+{"basis": "all venues", "day": "20210131", "imported": 0.0633515416527303, "native": 0.616851397019712, "other": 0.13589251069216368, "stable": 0.18390455063539388, "year": 2021}
+{"basis": "constant-product only", "day": "20210131", "imported": 0.06510662494177953, "native": 0.6781013854636457, "other": 0.14832666696392346, "stable": 0.10846532263065135, "year": 2021}
+{"basis": "all venues", "day": "20210630", "imported": 0.08497773525642738, "native": 0.44241922142390744, "other": 0.0491586215170485, "stable": 0.42344442180261666, "year": 2021}
+{"basis": "constant-product only", "day": "20210630", "imported": 0.054244264454222556, "native": 0.5076144670852094, "other": 0.06304883353123603, "stable": 0.37509243492933203, "year": 2021}
+{"basis": "stableswap venues only", "day": "20210630", "imported": 0.034783419981537736, "native": 0.3983336224042983, "other": 0.13760951563045426, "stable": 0.4292734419837096, "year": 2021}
+{"basis": "all venues", "day": "20211127", "imported": 0.03003524950698772, "native": 0.44599900872032466, "other": 0.1424974764685536, "stable": 0.38146826530413397, "year": 2021}
+{"basis": "constant-product only", "day": "20211127", "imported": 0.02386481463539848, "native": 0.4926829113063925, "other": 0.1463802662756259, "stable": 0.33707200778258317, "year": 2021}
+{"basis": "stableswap venues only", "day": "20211127", "imported": 0.0, "native": 0.25129649529887843, "other": 0.00702559229567274, "stable": 0.7416779124054489, "year": 2021}
+{"basis": "all venues", "day": "20220426", "imported": 0.0588507381106691, "native": 0.3273274944848502, "other": 0.13502760612270592, "stable": 0.47116128825624587, "year": 2022}
+{"basis": "constant-product only", "day": "20220426", "imported": 0.04775171267427859, "native": 0.3783297729266885, "other": 0.12071240546484498, "stable": 0.4530208321194463, "year": 2022}
+{"basis": "stableswap venues only", "day": "20220426", "imported": 0.24133474727722679, "native": 0.04942965020090114, "other": 0.4888950063543162, "stable": 0.22034059616755586, "year": 2022}
+{"basis": "all venues", "day": "20220923", "imported": 0.1080193189010908, "native": 0.19215230865542168, "other": 0.296584353643168, "stable": 0.4011371193552446, "year": 2022}
+{"basis": "constant-product only", "day": "20220923", "imported": 0.09981042802686829, "native": 0.2556311385167826, "other": 0.12370263426700258, "stable": 0.5172897795855029, "year": 2022}
+{"basis": "stableswap venues only", "day": "20220923", "imported": 0.01215075265151237, "native": 0.001489985416573293, "other": 0.8876126674843413, "stable": 0.09855727448255601, "year": 2022}
+{"basis": "all venues", "day": "20230220", "imported": 0.00762015475062592, "native": 0.3091057855198937, "other": 0.3612825370284914, "stable": 0.30981179877992865, "year": 2023}
+{"basis": "constant-product only", "day": "20230220", "imported": 0.0073342668091477, "native": 0.3813471478830922, "other": 0.29557490750165705, "stable": 0.3157074071951555, "year": 2023}
+{"basis": "stableswap venues only", "day": "20230220", "imported": 5.153127518953672e-08, "native": 0.010332342519577013, "other": 0.8265258174134921, "stable": 0.14486386451680103, "year": 2023}
+{"basis": "all venues", "day": "20230720", "imported": 0.0033185939954056298, "native": 0.3381878611592518, "other": 0.2661863742707007, "stable": 0.3700439389185747, "year": 2023}
+{"basis": "constant-product only", "day": "20230720", "imported": 0.0033642459361416586, "native": 0.5548784870791679, "other": 0.16246772462109713, "stable": 0.27853972637805147, "year": 2023}
+{"basis": "stableswap venues only", "day": "20230720", "imported": 0.00027998033483873154, "native": 0.005651594190751285, "other": 0.7800274042217695, "stable": 0.14841874045158054, "year": 2023}
+{"basis": "all venues", "day": "20231217", "imported": 0.009338549114077964, "native": 0.4500171126101905, "other": 0.2162103240026444, "stable": 0.2779025687399978, "year": 2023}
+{"basis": "constant-product only", "day": "20231217", "imported": 0.00261570800319271, "native": 0.5152101535687995, "other": 0.24544891682052958, "stable": 0.22954591540386557, "year": 2023}
+{"basis": "stableswap venues only", "day": "20231217", "imported": 0.0, "native": 0.050034659273633965, "other": 0.16773088794759944, "stable": 0.13017604850784745, "year": 2023}
+{"basis": "all venues", "day": "20240515", "imported": 0.04550338262988023, "native": 0.3237787030970926, "other": 0.1806807341835823, "stable": 0.36035097146656575, "year": 2024}
+{"basis": "constant-product only", "day": "20240515", "imported": 0.049671269754152765, "native": 0.43521835301839706, "other": 0.2292516785620338, "stable": 0.24573739179703424, "year": 2024}
+{"basis": "stableswap venues only", "day": "20240515", "imported": 0.00351406415707795, "native": 0.2760138190707671, "other": 0.29349544762149826, "stable": 0.01587685083417601, "year": 2024}
+{"basis": "all venues", "day": "20241012", "imported": 0.024335971292607, "native": 0.41628019031780855, "other": 0.30818532752759437, "stable": 0.22621754793069834, "year": 2024}
+{"basis": "constant-product only", "day": "20241012", "imported": 0.020612372002566815, "native": 0.45831047365694244, "other": 0.30425947310651796, "stable": 0.21363611972182575, "year": 2024}
+{"basis": "stableswap venues only", "day": "20241012", "imported": 4.135309929744464e-05, "native": 0.07736601109464811, "other": 0.23161773008668649, "stable": 0.17286748643327515, "year": 2024}
+{"basis": "all venues", "day": "20250311", "imported": 0.10188593234679155, "native": 0.24188046536640262, "other": 0.12011948213216847, "stable": 0.47320960764077047, "year": 2025}
+{"basis": "constant-product only", "day": "20250311", "imported": 0.0924413421802549, "native": 0.3011248869710957, "other": 0.102872755885583, "stable": 0.49688021798283816, "year": 2025}
+{"basis": "stableswap venues only", "day": "20250311", "imported": 0.0276115777440797, "native": 0.05811755049314899, "other": 0.1888269714183631, "stable": 0.025387900278374502, "year": 2025}
+{"basis": "all venues", "day": "20250808", "imported": 0.02416877959392338, "native": 0.15279971461502972, "other": 0.17154176932096363, "stable": 0.6355887762117371, "year": 2025}
+{"basis": "constant-product only", "day": "20250808", "imported": 0.031061488416374777, "native": 0.25855433832662045, "other": 0.2417098412846046, "stable": 0.4662502561997593, "year": 2025}
+{"basis": "stableswap venues only", "day": "20250808", "imported": 0.0027057072139636397, "native": 0.130670413157477, "other": 0.24070035521179203, "stable": 0.0018991135372680914, "year": 2025}
+{"basis": "all venues", "day": "20260105", "imported": 0.07764670387077528, "native": 0.14531952014394559, "other": 0.24447534193023054, "stable": 0.5218729256188903, "year": 2026}
+{"basis": "constant-product only", "day": "20260105", "imported": 0.04800944773492237, "native": 0.20386805103978112, "other": 0.16390819729637116, "stable": 0.5837343171412782, "year": 2026}
+{"basis": "stableswap venues only", "day": "20260105", "imported": 0.0, "native": 0.7615970387281069, "other": 0.21970674162979217, "stable": 0.01868266838473607, "year": 2026}
+{"basis": "all venues", "day": "20260604", "imported": 0.10060784446446175, "native": 0.16714846486395557, "other": 0.22517914592524507, "stable": 0.4993840104920169, "year": 2026}
+{"basis": "constant-product only", "day": "20260604", "imported": 0.10119312434099086, "native": 0.18712603098941571, "other": 0.10418982341774302, "stable": 0.6055078025676223, "year": 2026}
+{"basis": "stableswap venues only", "day": "20260604", "imported": 0.0, "native": 0.14435844537480566, "other": 0.4823274395792882, "stable": 0.37331411504590617, "year": 2026}

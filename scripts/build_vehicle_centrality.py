@@ -1,19 +1,40 @@
 #!/usr/bin/env python3
 """Vehicle extent as a network property: betweenness centrality in the trading graph.
 
-This project has been measuring the vehicle role as a volume share, which is a proxy for
-the thing and not the thing. A vehicle currency is an asset that lies on the PATH between
-other assets, so the concept is a network one and betweenness centrality is its direct
-measure: the share of shortest paths between all other pairs that run through a node.
-Section 3 of the workflow already says vehicle status and dominance are separate axes and
-that what matters is the continuous EXTENT to which one asset captures the role, and
-centrality is what makes that continuous rather than categorical.
+DEMOTED TO A ROBUSTNESS EXHIBIT BY NODE C ROUND 2, 2026-08-06. Read
+docs/node-c-definitions-round2.md section 1 before using anything this script writes as
+a primary measure. Three findings from that pass bind here.
 
-It is also the direct link to the closest prior work. Flandreau and Jobst (2009), "The
-Empirics of International Currencies: Network Externalities, History and Persistence",
-estimate a network model of currency use and reject strong lock-in while confirming
-persistence. A paper claiming to open that question with better data should speak the
-same language, and a volume share does not.
+First, the justification below was uncheckable. Flandreau and Jobst is not in this
+project's corpus: `grep -ari flandreau literature/text/` returns nothing, including from
+every reference list. The claim that betweenness is what connects this paper to that
+conversation cannot be verified against anything in this repository, and it was carrying
+a definitional decision on its own.
+
+Second, no corpus paper uses this class of statistic. Across 53 papers and 1,974 pages,
+`grep -aci` returns zero files for `centrality`, zero for `betweenness`, zero for
+`eigenvector`, zero for `closeness centrality` and zero for `shortest path`. The eight
+papers that operationalise a currency's international role all use a use share netted
+against a benchmark of fundamental demand. Krugman (1980, p. 519) has the vehicle
+entering "into more transactions than A's role in world payments would by itself
+justify"; Gopinath and Stein (2021) report the dollar's invoicing share as "4.7 times the
+share of U.S. goods in imports" against 1.2 for the euro; Somogyi (2026) takes "the
+difference between interdealer volume and my implied measure of fundamental trading
+demand".
+
+Third, betweenness on THIS graph is close to a restatement of degree, and degree is the
+property by which asset_types.py defines the native asset. Measured on the 18 days in
+data/processed/vehicle_centrality.parquet: Spearman +0.958 between WETH's betweenness
+share and its degree share, +0.948 between the betweenness HHI and the degree HHI, and
+the betweenness leader equals the degree leader on 18 of 18 days. Between 87.8% and 96.8%
+of nodes carry exactly zero betweenness. Switching to current-flow betweenness, which is
+the correct statistic for a flow problem, changes nothing: same leader on both days
+tested, and a correlation with degree of +0.62 and +0.70. Eigenvector centrality is the
+one that moves the answer, putting USDC first and WETH third on 2026-03-06.
+
+What this script still earns its place doing is showing that the topological reading of
+the role behaves differently from the excess-use reading, with the degree correlation
+reported next to it so a reader can see how much of it is listing convention.
 
 Three graphs are built per period, because the right edge weight is not obvious and the
 choice changes the answer:
@@ -24,7 +45,16 @@ choice changes the answer:
   question of what routes are possible at all.
 
   VOLUME-WEIGHTED. Edges carry realised volume and are traversed in inverse proportion,
-  so heavily traded pairs are short. This measures where trading actually flows.
+  so heavily traded pairs are short. This measures where value flows.
+
+  COUNT-WEIGHTED. Edges carry the NUMBER of trades and are traversed in inverse
+  proportion, so frequently used pairs are short. Java's addition, and it is arguably the
+  better measure of the vehicle role, which is about how often traders route through an
+  asset and not how much value they move. It is also the more robust of the two here,
+  because this project has already been inverted once by value weighting: round-trip wash
+  trades were 25.6% of multi-leg routes by COUNT and 90.5% by VALUE, so contamination
+  concentrates precisely where volume weighting puts its weight. A single large transfer
+  can make a pair look like a highway; a thousand small ones mean it is one.
 
   COST-WEIGHTED. Edges carry the measured execution cost of the pair, so a shortest path
   is a cheapest path. This is the version that speaks to the thick-market externality,
@@ -80,7 +110,9 @@ def centralities(e: pd.DataFrame, k: int | None) -> pd.DataFrame:
     for r in e.itertuples(index=False):
         # Inverse volume as distance, so a heavily traded pair is a short hop and a
         # shortest path is the path trade actually finds easy.
-        g.add_edge(r.a, r.b, usd=float(r.usd), inv=1.0 / max(float(r.usd), 1.0))
+        g.add_edge(r.a, r.b, usd=float(r.usd), legs=int(r.legs),
+                   inv=1.0 / max(float(r.usd), 1.0),
+                   inv_count=1.0 / max(float(r.legs), 1.0))
     if g.number_of_nodes() < 4:
         return pd.DataFrame()
     # k samples the source nodes; exact betweenness is O(nm) and these graphs run to
@@ -89,6 +121,7 @@ def centralities(e: pd.DataFrame, k: int | None) -> pd.DataFrame:
     kk = min(k or g.number_of_nodes(), g.number_of_nodes())
     topo = nx.betweenness_centrality(g, k=kk, normalized=True, seed=7)
     vol = nx.betweenness_centrality(g, k=kk, weight="inv", normalized=True, seed=7)
+    cnt = nx.betweenness_centrality(g, k=kk, weight="inv_count", normalized=True, seed=7)
     deg = dict(g.degree())
     strength = {n: sum(g[n][m]["usd"] for m in g[n]) for n in g}
     rows = []
@@ -97,6 +130,7 @@ def centralities(e: pd.DataFrame, k: int | None) -> pd.DataFrame:
         rows.append({"token": n, "symbol": sym, "asset_type": typ,
                      "betweenness_topological": topo.get(n, 0.0),
                      "betweenness_volume": vol.get(n, 0.0),
+                     "betweenness_count": cnt.get(n, 0.0),
                      "degree": deg.get(n, 0), "strength_usd": strength.get(n, 0.0)})
     return pd.DataFrame(rows)
 
@@ -166,7 +200,8 @@ def main() -> int:
     print("\nBetweenness centrality by asset TYPE, share of the total, by year.")
     print("Topological betweenness is how often a path MUST pass through the type.")
     panel["year"] = panel.date.dt.year
-    for metric in ("betweenness_topological", "betweenness_volume"):
+    for metric in ("betweenness_topological", "betweenness_count",
+                   "betweenness_volume"):
         print(f"\n  {metric}")
         piv = panel.groupby(["year", "asset_type"])[metric].sum().unstack(fill_value=0.0)
         piv = piv.div(piv.sum(axis=1).clip(lower=1e-12), axis=0)
@@ -187,7 +222,8 @@ def main() -> int:
             print(f"    {yr}  {r.symbol:<8} {r.betweenness_topological:.4f}")
 
     write_exhibit(panel.groupby(["year", "asset_type"], as_index=False)[
-        ["betweenness_topological", "betweenness_volume", "degree", "strength_usd"]
+        ["betweenness_topological", "betweenness_count", "betweenness_volume",
+         "degree", "strength_usd"]
     ].sum(), OUT_EXHIBIT)
     print(f"\nwrote {args.out.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
     return 0

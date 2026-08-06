@@ -1,0 +1,36 @@
+{
+ "argv": [
+  "--stride",
+  "150"
+ ],
+ "artefact": "output/exhibits/venue_technology_rival.jsonl",
+ "code_fingerprint": "2b958efd8f08cac8b33f68c990767969301f68fa116abe1d5dfc3337f954aba2",
+ "code_sources": [
+  "scripts/test_venue_technology_rival.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-06T00:52:29+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "794cc01330ac4bd7e63e18f7fabd81f4018cc6df",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "ata/manifests/data/processed/cross_venue_spillover_daily.parquet.prov.json",
+   "scripts/build_cross_venue_spillover_panel.py",
+   "scripts/run_cross_venue_spillover.py",
+   "src/ddvc/asset_types.py",
+   "uv.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 43,
+ "script": "scripts/test_venue_technology_rival.py"
+}
