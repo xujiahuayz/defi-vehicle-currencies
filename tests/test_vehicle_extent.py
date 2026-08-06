@@ -5,7 +5,11 @@ import unittest
 import pandas as pd
 
 from ddvc.asset_types import CURRENCY_TYPES, WETH
-from ddvc.vehicle_extent import compute_vehicle_extent
+from ddvc.vehicle_extent import (
+    aggregate_vehicle_extent,
+    compute_vehicle_extent,
+    restrict_routes_to_venues,
+)
 
 
 def leg(
@@ -131,6 +135,38 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertAlmostEqual(
             out.loc[WETH, "vehicle_excess_use_ratio"], 4.0
         )
+
+    def test_venue_restriction_keeps_only_complete_components(self) -> None:
+        rows = [
+            {**leg("kept", 0, "a", "k", "source", "intermediate", 100), "source": "v2"},
+            {**leg("kept", 0, "k", "b", "intermediate", "sink", 100), "source": "v2"},
+            {**leg("mixed", 0, "a", "k", "source", "intermediate", 100), "source": "v2"},
+            {**leg("mixed", 0, "k", "b", "intermediate", "sink", 100), "source": "curve"},
+        ]
+        out = restrict_routes_to_venues(pd.DataFrame(rows), {"v2"})
+        self.assertEqual(set(out["tx_hash"]), {"kept"})
+
+    def test_aggregation_normalises_within_each_period_scope(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "date": pd.to_datetime(["2025-01-01", "2025-01-01"]),
+                "year": [2025, 2025],
+                "scope": ["all", "all"],
+                "asset_type": ["native", "stable"],
+                "intermediate_usd": [75.0, 25.0],
+                "endpoint_usd": [50.0, 50.0],
+                "intermediate_routes": [3, 1],
+                "endpoint_routes": [2, 2],
+            }
+        )
+        out = aggregate_vehicle_extent(
+            frame,
+            ["year", "scope", "asset_type"],
+            level="asset_type",
+            period_keys=["year", "scope"],
+        ).set_index("asset_type")
+        self.assertAlmostEqual(out.loc["native", "vehicle_excess_use_ratio"], 1.5)
+        self.assertAlmostEqual(out.loc["stable", "vehicle_excess_use_count_ratio"], 0.5)
 
 
 if __name__ == "__main__":

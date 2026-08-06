@@ -19,7 +19,11 @@ ROOT = Path(__file__).resolve().parents[1]
 from ddvc.asset_types import CURRENCY_TYPES, backing
 from ddvc.provenance import stamp
 from ddvc.tables import write_exhibit
-from ddvc.vehicle_extent import REQUIRED_COLUMNS, compute_vehicle_extent
+from ddvc.vehicle_extent import (
+    REQUIRED_COLUMNS,
+    aggregate_vehicle_extent,
+    compute_vehicle_extent,
+)
 
 UNIFIED = ROOT / "data" / "unified"
 OUT_PANEL = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
@@ -38,45 +42,6 @@ def one_day(path: Path) -> pd.DataFrame:
     if out.empty:
         return out
     out.insert(0, "date", pd.to_datetime(path.stem, format="%Y%m%d"))
-    return out
-
-
-def _aggregate(
-    frame: pd.DataFrame,
-    keys: list[str],
-    level: str,
-    period_keys: list[str],
-) -> pd.DataFrame:
-    out = frame.groupby(keys, as_index=False).agg(
-        intermediate_usd=("intermediate_usd", "sum"),
-        endpoint_usd=("endpoint_usd", "sum"),
-        intermediate_routes=("intermediate_routes", "sum"),
-        endpoint_routes=("endpoint_routes", "sum"),
-        days=("date", "nunique"),
-    )
-    by_period = out.groupby(period_keys)
-    out["intermediate_share"] = (
-        out["intermediate_usd"] / by_period["intermediate_usd"].transform("sum")
-    )
-    out["endpoint_share"] = (
-        out["endpoint_usd"] / by_period["endpoint_usd"].transform("sum")
-    )
-    out["vehicle_excess_use_ratio"] = (
-        out["intermediate_share"]
-        / out["endpoint_share"].where(out["endpoint_share"].gt(0))
-    )
-    out["intermediate_count_share"] = (
-        out["intermediate_routes"]
-        / by_period["intermediate_routes"].transform("sum")
-    )
-    out["endpoint_count_share"] = (
-        out["endpoint_routes"] / by_period["endpoint_routes"].transform("sum")
-    )
-    out["vehicle_excess_use_count_ratio"] = (
-        out["intermediate_count_share"]
-        / out["endpoint_count_share"].where(out["endpoint_count_share"].gt(0))
-    )
-    out.insert(0, "level", level)
     return out
 
 
@@ -136,15 +101,20 @@ def main() -> int:
     candidate = panel[panel["asset_type"].isin(CURRENCY_TYPES)].copy()
     candidate["backing"] = candidate["token"].map(backing)
     type_year = _scope(
-        _aggregate(candidate, ["year", "asset_type"], "asset_type", ["year"]),
+        aggregate_vehicle_extent(
+            candidate,
+            ["year", "asset_type"],
+            level="asset_type",
+            period_keys=["year"],
+        ),
         "candidate_currencies",
     )
     token_year = _scope(
-        _aggregate(
+        aggregate_vehicle_extent(
             candidate,
             ["year", "token", "symbol", "asset_type"],
-            "token",
-            ["year"],
+            level="token",
+            period_keys=["year"],
         ),
         "candidate_currencies",
     )
@@ -153,25 +123,30 @@ def main() -> int:
         | token_year["intermediate_share"].ge(0.001)
     ]
     all_asset_type_year = _scope(
-        _aggregate(panel, ["year", "asset_type"], "asset_type", ["year"]),
+        aggregate_vehicle_extent(
+            panel,
+            ["year", "asset_type"],
+            level="asset_type",
+            period_keys=["year"],
+        ),
         "all_assets_diagnostic",
     )
     backing_year = _scope(
-        _aggregate(
+        aggregate_vehicle_extent(
             candidate,
             ["year", "backing"],
-            "stable_backing",
-            ["year"],
+            level="stable_backing",
+            period_keys=["year"],
         ),
         "candidate_currencies",
     )
     backing_year = backing_year[backing_year["backing"].ne("not_applicable")]
     type_quarter = _scope(
-        _aggregate(
+        aggregate_vehicle_extent(
             candidate,
             ["quarter", "asset_type"],
-            "asset_type",
-            ["quarter"],
+            level="asset_type",
+            period_keys=["quarter"],
         ),
         "candidate_currencies",
     )

@@ -30,6 +30,56 @@ REQUIRED_COLUMNS = KEYS + [
 ]
 
 
+def restrict_routes_to_venues(legs: pd.DataFrame, venues: set[str] | frozenset[str]) -> pd.DataFrame:
+    """Keep complete route components only when every leg uses an allowed venue."""
+    missing = sorted(set(KEYS + ["source"]) - set(legs.columns))
+    if missing:
+        raise ValueError(f"venue restriction is missing columns: {', '.join(missing)}")
+    keep = legs.groupby(KEYS)["source"].transform(lambda values: values.isin(venues).all())
+    return legs.loc[keep].copy()
+
+
+def aggregate_vehicle_extent(
+    frame: pd.DataFrame,
+    keys: list[str],
+    *,
+    level: str,
+    period_keys: list[str],
+) -> pd.DataFrame:
+    """Aggregate raw extent numerators before constructing period-specific shares."""
+    out = frame.groupby(keys, as_index=False).agg(
+        intermediate_usd=("intermediate_usd", "sum"),
+        endpoint_usd=("endpoint_usd", "sum"),
+        intermediate_routes=("intermediate_routes", "sum"),
+        endpoint_routes=("endpoint_routes", "sum"),
+        days=("date", "nunique"),
+    )
+    by_period = out.groupby(period_keys)
+    out["intermediate_share"] = (
+        out["intermediate_usd"] / by_period["intermediate_usd"].transform("sum")
+    )
+    out["endpoint_share"] = (
+        out["endpoint_usd"] / by_period["endpoint_usd"].transform("sum")
+    )
+    out["vehicle_excess_use_ratio"] = (
+        out["intermediate_share"]
+        / out["endpoint_share"].where(out["endpoint_share"].gt(0))
+    )
+    out["intermediate_count_share"] = (
+        out["intermediate_routes"]
+        / by_period["intermediate_routes"].transform("sum")
+    )
+    out["endpoint_count_share"] = (
+        out["endpoint_routes"] / by_period["endpoint_routes"].transform("sum")
+    )
+    out["vehicle_excess_use_count_ratio"] = (
+        out["intermediate_count_share"]
+        / out["endpoint_count_share"].where(out["endpoint_count_share"].gt(0))
+    )
+    out.insert(0, "level", level)
+    return out
+
+
 def _role_rows(legs: pd.DataFrame, side: str, role: str) -> pd.DataFrame:
     token = f"token_{side}"
     role_col = "tin_role" if side == "in" else "tout_role"
