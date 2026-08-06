@@ -39,10 +39,10 @@ realised output on 8,024 executed swaps. That is more accurate than the archive
 -RPC quoter this replaces (93.7% within 1%), costs nothing, and has no rate limit.
 
 Remaining caveats, all reportable:
-  - liquidity events are unaccounted for the v2 venues, since mints and burns are
-    not in the fetched dataset. They change depth without changing the price
-    ratio, and they are far rarer than swaps, which is consistent with the
-    measured accuracy above. Fetch them before the final build.
+  - mint, burn and direct-transfer events are not in the fetched dataset. Reserve
+    continuity detects and drops affected pool-hours, preserving state accuracy
+    but selecting away from actively managed and newly launched pools. Fetching
+    liquidity events would recover that support.
   - quotes are gross of gas. A two-hop route costs more gas than one hop, so a
     gas-inclusive comparison is required before any all-in claim. Gas per route
     topology must be measured from receipts.
@@ -52,6 +52,7 @@ Remaining caveats, all reportable:
 
 from __future__ import annotations
 
+import bisect
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -87,6 +88,15 @@ class Pool:
         if t == self.token1:
             return self.token0
         return None
+
+
+@dataclass(frozen=True)
+class ReserveEvent:
+    """One constant-product swap with exact causal order and reserve states."""
+
+    order: tuple[int, int]
+    before: tuple[Decimal, Decimal]
+    after: tuple[Decimal, Decimal]
 
 
 def quote_one_hop(pool: Pool, token_in: str, amount_in: Decimal) -> Decimal | None:
@@ -180,6 +190,37 @@ def unwind_hour(stored: tuple[Decimal, Decimal],
     return pre
 
 
+def ordered_reserve_events(
+    stored: tuple[Decimal, Decimal],
+    swaps: list[tuple[tuple[int, int], tuple[Decimal, Decimal]]],
+) -> list[ReserveEvent]:
+    """Reconstruct pre/post states for block-log ordered swaps in one pool-hour."""
+    ordered = sorted(swaps, key=lambda item: item[0])
+    deltas = [delta for _order, delta in ordered]
+    before = unwind_hour(stored, deltas)
+    return [
+        ReserveEvent(
+            order=order,
+            before=pre,
+            after=(pre[0] + delta[0], pre[1] + delta[1]),
+        )
+        for (order, delta), pre in zip(ordered, before, strict=True)
+    ]
+
+
+def reserve_state_before(
+    events: list[ReserveEvent], target: tuple[int, int]
+) -> tuple[Decimal, Decimal] | None:
+    """State strictly before a target block-log order inside one clean pool-hour."""
+    if not events:
+        return None
+    orders = [event.order for event in events]
+    index = bisect.bisect_left(orders, target)
+    if index < len(events):
+        return events[index].before
+    return events[-1].after
+
+
 def hour_is_clean(stored_prev: tuple[Decimal, Decimal] | None,
                   stored: tuple[Decimal, Decimal],
                   swaps: list[tuple[Decimal, Decimal]],
@@ -210,10 +251,10 @@ def hour_is_clean(stored_prev: tuple[Decimal, Decimal] | None,
         if r0 <= 0 or r1 <= 0:
             return False          # unwind went negative: definitely contaminated
     if stored_prev is None:
-        return True               # nothing to compare; unwind is at least coherent
+        return False              # coherence is not evidence of reserve continuity
     p0, p1 = stored_prev
     if p0 <= 0 or p1 <= 0:
-        return True
+        return False
     return (abs(float((r0 - p0) / p0)) < tol
             and abs(float((r1 - p1) / p1)) < tol)
 
@@ -265,3 +306,29 @@ def gas_cost_bps(n_legs: int, notional_usd: float,
         return None
     eth = gas_units(n_legs) * gas_price_gwei * 1e-9
     return 10_000 * (eth * eth_usd) / notional_usd
+
+
+def all_in_direct_advantage_bps(
+    gross_direct_advantage_bps: float,
+    *,
+    direct_legs: int,
+    vehicle_legs: int,
+    notional_usd: float,
+    gas_price_gwei: float,
+    eth_usd: float,
+) -> float | None:
+    """Direct-route advantage after charging each route its topology gas.
+
+    A positive value means the direct route costs less. The sign is intentionally
+    owned here: when the vehicle route has more legs, adding gas increases the
+    direct advantage relative to the gross-of-gas comparison.
+    """
+    direct_gas = gas_cost_bps(
+        direct_legs, notional_usd, gas_price_gwei, eth_usd
+    )
+    vehicle_gas = gas_cost_bps(
+        vehicle_legs, notional_usd, gas_price_gwei, eth_usd
+    )
+    if direct_gas is None or vehicle_gas is None:
+        return None
+    return gross_direct_advantage_bps + vehicle_gas - direct_gas

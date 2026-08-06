@@ -33,10 +33,11 @@ def leg(
     amount_in: float | None = None,
     amount_out: float | None = None,
     source: str | None = None,
+    component_id: int = 0,
 ) -> dict[str, object]:
     return {
         "tx_hash": tx,
-        "component_id": 0,
+        "component_id": component_id,
         "source": source or ("v2" if log_index == 0 else "v3"),
         "token_in": token_in.lower(),
         "token_out": token_out.lower(),
@@ -104,6 +105,55 @@ class RealisedMatchingTests(unittest.TestCase):
         self.assertTrue((out["output_usd"] - 995.0).abs().lt(1e-9).all())
         self.assertTrue((out["realised_output_rate"] - 0.995).abs().lt(1e-12).all())
         self.assertTrue(out["venue_set"].eq("uniswap_v2|uniswap_v3").all())
+
+    def test_linear_extraction_keeps_route_components_separate_within_transaction(self) -> None:
+        legs = pd.DataFrame(
+            [
+                leg(
+                    "multi-route-tx",
+                    0,
+                    "A",
+                    "K",
+                    "source",
+                    "intermediate",
+                    component_id=0,
+                ),
+                leg(
+                    "multi-route-tx",
+                    1,
+                    "K",
+                    "B",
+                    "intermediate",
+                    "sink",
+                    component_id=0,
+                ),
+                leg(
+                    "multi-route-tx",
+                    2,
+                    "A",
+                    "M",
+                    "source",
+                    "intermediate",
+                    component_id=1,
+                ),
+                leg(
+                    "multi-route-tx",
+                    3,
+                    "M",
+                    "B",
+                    "intermediate",
+                    "sink",
+                    component_id=1,
+                ),
+                leg("price-support", 0, "A", "N", "source", "intermediate"),
+                leg("price-support", 1, "N", "B", "intermediate", "sink"),
+            ]
+        )
+        out = extract_linear_realised_routes(legs)
+        same_transaction = out[out["tx_hash"].eq("multi-route-tx")]
+        self.assertEqual(len(same_transaction), 2)
+        self.assertEqual(set(same_transaction["component_id"]), {0, 1})
+        self.assertEqual(same_transaction["route_id"].nunique(), 2)
 
     def test_linear_extraction_excludes_routes_with_more_than_one_intermediary(self) -> None:
         legs = pd.DataFrame(

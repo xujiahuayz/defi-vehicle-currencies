@@ -218,7 +218,11 @@ def realised_routes(
     return out
 
 
-def extract_linear_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
+def extract_linear_realised_routes(
+    legs: pd.DataFrame,
+    *,
+    prices: dict[str, tuple[str, float]] | None = None,
+) -> pd.DataFrame:
     """Return exact two-leg routes with realised input/output value and venue reach."""
     missing = sorted(set(LINEAR_ROUTE_COLUMNS) - set(legs.columns))
     if missing:
@@ -299,7 +303,8 @@ def extract_linear_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
         price_legs[column] = price_legs[column].map(
             lambda value: canonical_token(value) or ""
         )
-    prices = day_prices(price_legs)
+    if prices is None:
+        prices = day_prices(price_legs)
     out["src_price_usd"] = out["src"].map(
         {token: value[1] for token, value in prices.items()}
     )

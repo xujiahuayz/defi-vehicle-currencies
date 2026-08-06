@@ -17,7 +17,7 @@ Method, per executed indirect (two-leg) route:
      (validated at median absolute error 0.0000%, 95.2% within 0.01%)
   2. keep only pool-hours whose reserve continuity checks out, since a mint, burn
      or direct transfer would corrupt the unwind
-  3. quote the realised intermediated path at those reserves
+  3. read the realised output of the canonical two-leg route component
   4. quote the best available DIRECT pool for the same endpoints and input size at
      the same reserves
   5. the gap in basis points is the cost of the road taken against the road not
@@ -27,13 +27,13 @@ A cell is a cost-dominance window when the direct quote strictly exceeds the
 intermediated quote, meaning the trade would have been better off going direct at
 the moment it was made.
 
-Bias directions, both stated because they cut opposite ways:
+Bias directions:
   - venue coverage is v2-family only, so the best alternative is understated and
     dominance incidence is a LOWER bound
-  - quotes are gross of gas, and a two-hop route burns more gas, so on an all-in
-    basis some measured dominance would disappear. Dominance incidence is an
-    UPPER bound in that respect. Both need stating together; the gas-inclusive
-    version requires receipt-measured gas per route topology.
+  - quotes are gross of gas, and a two-hop route burns more gas, so omitting gas
+    favours the realised vehicle route. Gross-of-gas dominance is also a LOWER
+    bound on all-in dominance. The gas-inclusive version requires historical gas
+    prices and receipt-measured gas per route topology.
 
 Reads   data/raw/thegraph/{uniswap_v2,sushiswap_v2}/*_{swaps,hourly_reserves}_*.gz
 Writes  data/processed/counterfactual_dominance.parquet
@@ -46,20 +46,37 @@ import argparse
 import collections
 import gzip
 import json
-import sys
 from decimal import Decimal
-from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-RAW = ROOT / "data" / "raw" / "thegraph"
-OUT_PARQUET = ROOT / "data" / "processed" / "counterfactual_dominance.parquet"
-OUT_EXHIBIT = ROOT / "output" / "exhibits" / "counterfactual_dominance_summary.jsonl"
+from ddvc.asset_types import WETH, classify
+from ddvc.cpquote import (
+    Pool,
+    ReserveEvent,
+    all_in_direct_advantage_bps,
+    hour_is_clean,
+    ordered_reserve_events,
+    quote_one_hop,
+    reserve_state_before,
+)
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.prices import PRICE_COLUMNS, day_prices
+from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
+from ddvc.tables import write_exhibit, write_panel
 
-from ddvc.asset_types import classify  # noqa: E402
-from ddvc.cpquote import Pool, quote_one_hop  # noqa: E402
+RAW = DATA_DIR / "raw" / "thegraph"
+UNIFIED = DATA_DIR / "unified"
+OUT_PARQUET = DATA_DIR / "processed" / "counterfactual_dominance.parquet"
+OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_summary.jsonl"
+GAS_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
+CODE_SOURCES = [
+    "scripts/build_counterfactual_dominance.py",
+    "src/ddvc/cpquote.py",
+    "src/ddvc/asset_types.py",
+    "src/ddvc/prices.py",
+    "src/ddvc/realised.py",
+]
 
 VENUES = ("uniswap_v2", "sushiswap_v2")
 MIN_USD = 100.0            # below this, gas dominates and the comparison is moot
@@ -83,7 +100,7 @@ def _load_day(day: str) -> tuple[dict, dict, dict]:
                 for line in fh:
                     d = json.loads(line)
                     pr = d.get("pair") or {}
-                    pid = pr.get("id")
+                    pid = str(pr.get("id") or "").lower()
                     if not pid:
                         continue
                     reserves[(pid, int(d["hourStartUnix"]))] = (
@@ -94,21 +111,20 @@ def _load_day(day: str) -> tuple[dict, dict, dict]:
             with gzip.open(sp, "rt") as fh:
                 for line in fh:
                     s = json.loads(line)
-                    pid = (s.get("pair") or {}).get("id")
+                    pid = str((s.get("pair") or {}).get("id") or "").lower()
                     ts = int(s.get("timestamp", 0))
-                    if pid:
-                        s["_tx"] = (s.get("transaction") or {}).get("id") or s.get("id", "")
+                    transaction = s.get("transaction") or {}
+                    try:
+                        order = (int(transaction.get("blockNumber")), int(s.get("logIndex")))
+                    except (TypeError, ValueError):
+                        continue
+                    if pid and ts:
+                        s["_tx"] = str(
+                            transaction.get("id") or s.get("id", "")
+                        ).lower()
+                        s["_order"] = order
                         swaps[(pid, ts - (ts % 3600))].append(s)
     return reserves, meta, swaps
-
-
-def _state_at(states: list[tuple[int, Decimal, Decimal]], ts: int):
-    """Reserves of a pool at or just before `ts`, from its reconstructed series."""
-    import bisect
-    i = bisect.bisect_right([s[0] for s in states], ts) - 1
-    if i < 0:
-        i = 0
-    return (states[i][1], states[i][2]) if states else None
 
 
 def one_day(day: str) -> pd.DataFrame | None:
@@ -116,91 +132,127 @@ def one_day(day: str) -> pd.DataFrame | None:
     if not reserves or not swaps:
         return None
 
-    # exact pre-trade reserves per swap, and per-hour cleanliness
-    pre: dict[str, tuple[Decimal, Decimal, str]] = {}   # swap id -> reserves + pool
+    # Exact block-log ordered state timelines for pool-hours whose reserve
+    # continuity proves that swaps were the only state changes.
     clean_hours: set[tuple[str, int]] = set()
+    pool_hour_events: dict[tuple[str, int], list[ReserveEvent]] = {}
     for (pid, hour), group in swaps.items():
         stored = reserves.get((pid, hour))
         if stored is None:
             continue
-        group.sort(key=lambda x: (int(x["timestamp"]), int(x.get("logIndex", 0))))
-        r0, r1 = stored
-        rev: list[tuple[str, Decimal, Decimal]] = []
-        ok = True
-        for s in reversed(group):
-            d0, d1 = _net(s)
-            r0 -= d0
-            r1 -= d1
-            if r0 <= 0 or r1 <= 0:
-                ok = False
-                break
-            rev.append((s["id"], r0, r1))
-        if not ok:
+        group.sort(key=lambda row: row["_order"])
+        deltas = [_net(swap) for swap in group]
+        previous = reserves.get((pid, hour - 3600))
+        if not hour_is_clean(previous, stored, deltas):
             continue
-        prev = reserves.get((pid, hour - 3600))
-        if prev is not None and prev[0] > 0 and prev[1] > 0:
-            if (abs(float((r0 - prev[0]) / prev[0])) > 1e-9
-                    or abs(float((r1 - prev[1]) / prev[1])) > 1e-9):
-                continue          # unaccounted liquidity event: skip the hour
+        events = ordered_reserve_events(
+            stored,
+            [(swap["_order"], delta) for swap, delta in zip(group, deltas, strict=True)],
+        )
+        if any(
+            value <= 0
+            for event in events
+            for state in (event.before, event.after)
+            for value in state
+        ):
+            continue
         clean_hours.add((pid, hour))
-        for sid, a, b in rev:
-            pre[sid] = (a, b, pid)
+        pool_hour_events[(pid, hour)] = events
 
-    # index reconstructed states by pool, in time order, for O(log n) lookup
-    pool_states: dict[str, list[tuple[int, Decimal, Decimal]]] = collections.defaultdict(list)
-    for (pid, hour), group in swaps.items():
-        if (pid, hour) not in clean_hours:
-            continue
-        for s in group:
-            st = pre.get(s["id"])
-            if st is not None:
-                pool_states[pid].append((int(s["timestamp"]), st[0], st[1]))
-    for pid in pool_states:
-        pool_states[pid].sort(key=lambda x: x[0])
-    pair_index: dict[frozenset, dict[str, list]] = collections.defaultdict(dict)
-    for pid, states in pool_states.items():
+    # Keep pool-hour boundaries: a clean state in an earlier hour cannot stand in for an
+    # unobserved or contaminated current hour.
+    pair_index: dict[frozenset, dict[str, dict[int, list[ReserveEvent]]]] = collections.defaultdict(dict)
+    for (pid, hour), events in pool_hour_events.items():
         mm = meta.get(pid)
         if mm:
-            pair_index[frozenset((mm[0], mm[1]))][pid] = states
+            pair_index[frozenset((mm[0], mm[1]))].setdefault(pid, {})[hour] = events
 
-    # group swaps into routes by transaction, to find realised two-leg routes
-    tx_groups: dict[str, list[dict]] = collections.defaultdict(list)
+    unified_path = UNIFIED / f"{day}.parquet"
+    if not unified_path.exists():
+        return None
+    unified = pd.read_parquet(unified_path, columns=LINEAR_ROUTE_COLUMNS)
+    prices = day_prices(unified[PRICE_COLUMNS])
+    routes = extract_linear_realised_routes(unified, prices=prices)
+    if routes.empty:
+        return None
+    routes = routes[
+        routes["realised_hop1_source"].isin(VENUES)
+        & routes["realised_hop2_source"].isin(VENUES)
+    ].copy()
+    if routes.empty:
+        return None
+    component_keys = ["tx_hash", "component_id"]
+    eligible_keys = {
+        (str(tx_hash).lower(), int(component_id))
+        for tx_hash, component_id in zip(
+            routes["tx_hash"], routes["component_id"], strict=True
+        )
+    }
+    route_legs = unified[
+        unified["route_class"].eq("coherent")
+        & unified["source"].isin(VENUES)
+    ].copy()
+    route_legs = route_legs[
+        [
+            (str(tx_hash).lower(), int(component_id)) in eligible_keys
+            for tx_hash, component_id in zip(
+                route_legs["tx_hash"], route_legs["component_id"], strict=True
+            )
+        ]
+    ]
+    grouped_legs = {
+        (str(key[0]).lower(), int(key[1])): group.sort_values(
+            "log_index", kind="stable"
+        )
+        for key, group in route_legs.groupby(component_keys, sort=False)
+    }
+
+    raw_events: dict[tuple[str, int], dict] = {}
     for (pid, hour), group in swaps.items():
-        if (pid, hour) not in clean_hours:
-            continue
         for s in group:
             s["_pool"] = pid
-            tx_groups[s["_tx"]].append(s)
+            s["_hour"] = hour
+            key = (s["_tx"], int(s["logIndex"]))
+            prior = raw_events.get(key)
+            if prior is not None:
+                if (
+                    prior["_pool"] == pid
+                    and prior["_order"] == s["_order"]
+                    and _net(prior) == _net(s)
+                ):
+                    continue
+                raise ValueError(f"conflicting V2 transaction-log event: {key}")
+            raw_events[key] = s
 
     rows = []
-    for tx, legs in tx_groups.items():
-        if len(legs) != 2:
+    for route in routes.to_dict("records"):
+        tx = str(route["tx_hash"]).lower()
+        component_key = (tx, int(route["component_id"]))
+        legs = grouped_legs.get(component_key)
+        if legs is None or len(legs) != 2:
             continue
-        legs.sort(key=lambda x: int(x.get("logIndex", 0)))
-        l1, l2 = legs
-        m1, m2 = meta.get(l1["_pool"]), meta.get(l2["_pool"])
-        if not m1 or not m2:
+        raw_legs = [
+            raw_events.get((tx, int(log_index)))
+            for log_index in legs["log_index"]
+        ]
+        if any(leg is None for leg in raw_legs):
             continue
-        if l1["id"] not in pre or l2["id"] not in pre:
+        l1, l2 = raw_legs
+        assert l1 is not None and l2 is not None
+        if any(
+            (leg["_pool"], leg["_hour"]) not in clean_hours
+            for leg in (l1, l2)
+        ):
             continue
-
-        def io(s: dict, m: tuple[str, str, str]):
-            a0i = Decimal(s.get("amount0In", "0")); a1i = Decimal(s.get("amount1In", "0"))
-            a0o = Decimal(s.get("amount0Out", "0")); a1o = Decimal(s.get("amount1Out", "0"))
-            if a0i > 0 and a1o > 0:
-                return m[0], m[1], a0i, a1o
-            if a1i > 0 and a0o > 0:
-                return m[1], m[0], a1i, a0o
-            return None
-
-        r1_, r2_ = io(l1, m1), io(l2, m2)
-        if not r1_ or not r2_:
+        if l1["_order"][0] != l2["_order"][0] or l1["_hour"] != l2["_hour"]:
             continue
-        a_in, mid1, amt_in, mid_amt = r1_
-        mid2, b_out, _, out_amt = r2_
-        if mid1 != mid2 or a_in == b_out:      # must chain, and no round trips
-            continue
-        usd = float(l1.get("amountUSD") or 0)
+        route_order = min(l1["_order"], l2["_order"])
+        a_in = str(route["src"]).lower()
+        mid1 = str(route["vehicle"]).lower()
+        b_out = str(route["tgt"]).lower()
+        amt_in = Decimal(str(route["realised_amount_in"]))
+        out_amt = Decimal(str(route["realised_amount_out"]))
+        usd = float(route["input_usd"])
         if usd < MIN_USD:
             continue
 
@@ -210,27 +262,97 @@ def one_day(day: str) -> pd.DataFrame | None:
         if not cands:
             continue                            # no direct pool existed: not a window
         best_direct = None
+        best_direct_pool = None
         t_route = int(l1["timestamp"])
-        for pid_d, states in cands.items():
+        route_hour = t_route - (t_route % 3600)
+        for pid_d, hours in cands.items():
             mm = meta[pid_d]
-            st = _state_at(states, t_route)
+            events = hours.get(route_hour)
+            st = reserve_state_before(events, route_order) if events else None
             if st is None:
                 continue
             q = quote_one_hop(Pool(pid_d, mm[0], mm[1], st[0], st[1], mm[2]), a_in, amt_in)
             if q and (best_direct is None or q > best_direct):
                 best_direct = q
+                best_direct_pool = pid_d
         if best_direct is None:
             continue
+        assert best_direct_pool is not None
 
         sym, typ = classify(mid1)
+        hop1_source = str(route["realised_hop1_source"])
+        hop2_source = str(route["realised_hop2_source"])
+        direct_source = meta[best_direct_pool][2]
+        realised_venue_set = {hop1_source, hop2_source}
+        target_price = prices[b_out][1]
+        direct_output_usd = float(best_direct) * target_price
+        realised_output_usd = float(route["output_usd"])
+        gross_direct_advantage_bps = (
+            10_000 * (direct_output_usd - realised_output_usd) / usd
+        )
+        eth_price = prices.get(WETH)
         rows.append({
             "date": pd.to_datetime(day, format="%Y%m%d"),
-            "tx": tx, "token_in": a_in, "token_out": b_out, "mid": mid1,
+            "route_id": route["route_id"], "tx": tx,
+            "component_id": int(route["component_id"]),
+            "block": route_order[0], "first_log_index": route_order[1],
+            "token_in": a_in, "token_out": b_out, "mid": mid1,
             "mid_symbol": sym, "mid_type": typ, "usd": usd,
             "realised_out": float(out_amt), "direct_quote": float(best_direct),
-            "gap_bps": float(10_000 * (best_direct - out_amt) / out_amt) if out_amt > 0 else None,
+            "realised_output_usd": realised_output_usd,
+            "direct_output_usd": direct_output_usd,
+            "eth_usd": eth_price[1] if eth_price else None,
+            "hop1_pool": l1["_pool"], "hop2_pool": l2["_pool"],
+            "hop1_source": hop1_source, "hop2_source": hop2_source,
+            "direct_pool": best_direct_pool, "direct_source": direct_source,
+            "best_direct_outside_realised_venue_set": (
+                direct_source not in realised_venue_set
+            ),
+            "gross_direct_advantage_bps": gross_direct_advantage_bps,
+            "gross_output_shortfall_bps": (
+                float(10_000 * (best_direct - out_amt) / out_amt)
+                if out_amt > 0
+                else None
+            ),
         })
     return pd.DataFrame(rows) if rows else None
+
+
+def add_topology_gas_adjustment(
+    frame: pd.DataFrame, gas_panel=GAS_PANEL
+) -> pd.DataFrame:
+    """Join historical gas and apply the shared one-hop versus two-hop sign."""
+    out = frame.copy()
+    if gas_panel.exists():
+        gas = pd.read_parquet(
+            gas_panel, columns=["date", "gas_gwei_median"]
+        ).rename(columns={"gas_gwei_median": "gas_gwei"})
+        gas["date"] = pd.to_datetime(gas["date"])
+        if gas["date"].duplicated().any():
+            raise ValueError("historical gas panel has duplicate dates")
+        out = out.merge(gas, on="date", how="left", validate="many_to_one")
+    else:
+        out["gas_gwei"] = float("nan")
+    out["all_in_direct_advantage_bps"] = [
+        all_in_direct_advantage_bps(
+            gross,
+            direct_legs=1,
+            vehicle_legs=2,
+            notional_usd=notional,
+            gas_price_gwei=gas_gwei,
+            eth_usd=eth_usd,
+        )
+        if pd.notna(gas_gwei) and pd.notna(eth_usd)
+        else None
+        for gross, notional, gas_gwei, eth_usd in zip(
+            out["gross_direct_advantage_bps"],
+            out["usd"],
+            out["gas_gwei"],
+            out["eth_usd"],
+            strict=True,
+        )
+    ]
+    return out
 
 
 def main() -> int:
@@ -240,6 +362,8 @@ def main() -> int:
     ap.add_argument("--stride", type=int, default=30)
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()
+    if args.stride < 1:
+        ap.error("--stride must be positive")
 
     if args.days:
         days = args.days
@@ -252,7 +376,7 @@ def main() -> int:
     print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
 
     parts = []
-    for i, d in enumerate(days, 1):
+    for d in days:
         r = one_day(d)
         if r is not None and len(r):
             parts.append(r)
@@ -260,45 +384,92 @@ def main() -> int:
         else:
             print(f"  {d}: none", flush=True)
     if not parts:
-        sys.exit("no comparable routes")
+        print("no comparable routes")
+        return 1
 
     df = pd.concat(parts, ignore_index=True)
-    df = df[df.gap_bps.notna()]
-    OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
-    OUT_EXHIBIT.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(OUT_PARQUET, index=False)
+    df = df[df.gross_direct_advantage_bps.notna()]
+    df = add_topology_gas_adjustment(df)
+    write_panel(
+        df,
+        OUT_PARQUET,
+        code_sources=CODE_SOURCES,
+        inputs=[*[RAW / venue for venue in VENUES], UNIFIED, GAS_PANEL],
+        notes="V2-family exact-size direct counterfactual at strict pre-transaction block-log state; historical gas with measured topology medians where available",
+    )
 
     print(f"\ncomparable intermediated routes with a direct alternative: {len(df):,}")
     print(f"date range: {df.date.min().date()} to {df.date.max().date()}")
-    dom = df[df.gap_bps > 0]
+    dom = df[df.gross_direct_advantage_bps > 0]
     print(f"\nroutes where DIRECT would have returned more (gross of gas): "
           f"{len(dom):,} ({100*len(dom)/len(df):.1f}%)")
-    print(f"  median gap among those: {dom.gap_bps.median():.1f} bps")
-    print(f"  median gap over all routes: {df.gap_bps.median():.1f} bps")
+    print(f"  median advantage among those: "
+          f"{dom.gross_direct_advantage_bps.median():.1f} bps of notional")
+    print(f"  median advantage over all routes: "
+          f"{df.gross_direct_advantage_bps.median():.1f} bps of notional")
+    outside = dom[dom["best_direct_outside_realised_venue_set"]]
+    outside_share = 100 * len(outside) / len(dom) if len(dom) else float("nan")
+    print(
+        "  dominated via a best direct pool outside the realised venue set: "
+        f"{len(outside):,} ({outside_share:.1f}% of dominated routes)"
+    )
+    gas_supported = df[df["all_in_direct_advantage_bps"].notna()]
+    if len(gas_supported):
+        all_in_dominated = gas_supported["all_in_direct_advantage_bps"].gt(0)
+        print(
+            "  topology-gas-adjusted direct dominance on historical-gas support: "
+            f"{100*all_in_dominated.mean():.1f}% ({len(gas_supported):,} routes)"
+        )
     print("\nby intermediary type:")
     for t, s in df.groupby("mid_type"):
-        d = s[s.gap_bps > 0]
+        d = s[s.gross_direct_advantage_bps > 0]
         print(f"  {t:<14} routes {len(s):7,}  dominated {100*len(d)/len(s):5.1f}%"
-              f"  median gap {d.gap_bps.median() if len(d) else float('nan'):8.1f} bps")
+              f"  median advantage "
+              f"{d.gross_direct_advantage_bps.median() if len(d) else float('nan'):8.1f} bps")
     print("\nby size bin:")
     df["bin"] = pd.cut(df.usd, [100, 1e3, 1e4, 1e5, 1e12],
                        labels=["100-1k", "1k-10k", "10k-100k", ">100k"])
     for b, s in df.groupby("bin", observed=True):
-        d = s[s.gap_bps > 0]
+        d = s[s.gross_direct_advantage_bps > 0]
         print(f"  {b:>9}  routes {len(s):7,}  dominated {100*len(d)/len(s):5.1f}%"
-              f"  median gap {d.gap_bps.median() if len(d) else float('nan'):8.1f} bps")
-    df.groupby([pd.Grouper(key="date", freq="YS"), "mid_type"]).agg(
-        routes=("gap_bps", "size"),
-        pct_dominated=("gap_bps", lambda x: 100 * (x > 0).mean()),
-        median_gap_bps=("gap_bps", "median"),
-    ).to_parquet(OUT_EXHIBIT)
-    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
-    print("\nBIAS DIRECTIONS, both live: v2-family venues only understates the best "
-          "alternative (dominance is a LOWER bound), while quotes gross of gas "
-          "favour the two-hop route (dominance is an UPPER bound). Neither is "
-          "resolved until gas is measured from receipts.")
+              f"  median advantage "
+              f"{d.gross_direct_advantage_bps.median() if len(d) else float('nan'):8.1f} bps")
+    annual = df.groupby(
+        [
+            pd.Grouper(key="date", freq="YS"),
+            "mid_type",
+            "best_direct_outside_realised_venue_set",
+        ]
+    ).agg(
+        routes=("gross_direct_advantage_bps", "size"),
+        pct_dominated_gross=(
+            "gross_direct_advantage_bps", lambda x: 100 * (x > 0).mean()
+        ),
+        median_gross_direct_advantage_bps=(
+            "gross_direct_advantage_bps", "median"
+        ),
+        gas_supported_routes=("all_in_direct_advantage_bps", "count"),
+        pct_dominated_topology_gas_adjusted=(
+            "all_in_direct_advantage_bps", lambda x: 100 * (x.dropna() > 0).mean()
+        ),
+    ).reset_index()
+    write_exhibit(
+        annual,
+        OUT_EXHIBIT,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+        notes="annual exact-size V2-family direct counterfactual; positive advantage means direct route costs less; gas adjustment uses historical prices and measured route-topology medians and is not yet venue-specific",
+    )
+    print(
+        f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)} and "
+        f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}"
+    )
+    print("\nBIAS DIRECTIONS: v2-family venue coverage understates the best direct "
+          "alternative, and omitting gas favours the two-hop vehicle route. Both "
+          "make gross direct-dominance incidence a LOWER bound. The historical "
+          "topology adjustment remains diagnostic until gas is venue-specific.")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
