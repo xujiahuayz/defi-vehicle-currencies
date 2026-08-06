@@ -16,7 +16,7 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-from ddvc.asset_types import CURRENCY_TYPES
+from ddvc.asset_types import CURRENCY_TYPES, backing
 from ddvc.provenance import stamp
 from ddvc.tables import write_exhibit
 from ddvc.vehicle_extent import REQUIRED_COLUMNS, compute_vehicle_extent
@@ -133,7 +133,8 @@ def main() -> int:
 
     panel["year"] = panel["date"].dt.year
     panel["quarter"] = panel["date"].dt.to_period("Q").astype(str)
-    candidate = panel[panel["asset_type"].isin(CURRENCY_TYPES)]
+    candidate = panel[panel["asset_type"].isin(CURRENCY_TYPES)].copy()
+    candidate["backing"] = candidate["token"].map(backing)
     type_year = _scope(
         _aggregate(candidate, ["year", "asset_type"], "asset_type", ["year"]),
         "candidate_currencies",
@@ -155,6 +156,16 @@ def main() -> int:
         _aggregate(panel, ["year", "asset_type"], "asset_type", ["year"]),
         "all_assets_diagnostic",
     )
+    backing_year = _scope(
+        _aggregate(
+            candidate,
+            ["year", "backing"],
+            "stable_backing",
+            ["year"],
+        ),
+        "candidate_currencies",
+    )
+    backing_year = backing_year[backing_year["backing"].ne("not_applicable")]
     type_quarter = _scope(
         _aggregate(
             candidate,
@@ -165,7 +176,9 @@ def main() -> int:
         "candidate_currencies",
     )
     exhibit = pd.concat(
-        [type_year, token_year, all_asset_type_year], ignore_index=True, sort=False
+        [type_year, token_year, backing_year, all_asset_type_year],
+        ignore_index=True,
+        sort=False,
     )
     write_exhibit(
         exhibit,
@@ -198,6 +211,11 @@ def main() -> int:
     )
     print("\ncount-weighted robustness")
     print(count_table.round(2).to_string())
+    backing_table = backing_year.pivot(
+        index="year", columns="backing", values="vehicle_excess_use_ratio"
+    )
+    print("\nstable-backing robustness, value weighted")
+    print(backing_table.round(2).to_string())
     unsupported = panel[
         (panel["intermediate_share"] > 0) & (~panel["endpoint_supported"])
     ]
