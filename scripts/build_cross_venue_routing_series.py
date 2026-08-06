@@ -46,6 +46,7 @@ primary and the value series as secondary.
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cross_venue_routing_daily.parquet
         output/exhibits/cross_venue_routing_series.jsonl
+        output/exhibits/cross_venue_routing_inference.jsonl
 
 Run     ./scripts/run scripts/build_cross_venue_routing_series.py [--workers N]
 Rebuild is idempotent: delete the outputs and rerun to regenerate byte-identically.
@@ -60,15 +61,20 @@ from pathlib import Path
 
 import pandas as pd
 
+from ddvc.analysis.regression import year_endpoint_change
+from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "cross_venue_routing_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "cross_venue_routing_series.jsonl"
+OUT_INFERENCE = OUTPUT_DIR / "exhibits" / "cross_venue_routing_inference.jsonl"
 MAX_WORKERS = 8
 CODE_SOURCES = [
     "scripts/build_cross_venue_routing_series.py",
+    "src/ddvc/analysis/regression.py",
+    "src/ddvc/asset_types.py",
     "src/ddvc/reconstruct/__init__.py",
 ]
 
@@ -96,7 +102,9 @@ def empty_day(date: object) -> dict[str, object]:
         "single_leg_routes": 0,
         "multi_leg_routes": 0,
         "round_trip_routes": 0,
+        "economic_routes": 0,
         "economic_multileg_routes": 0,
+        "economic_multileg_share": float("nan"),
         "economic_multileg_swap_legs": 0,
         "economic_multileg_venue_count": 0,
         "economic_multileg_over_two_routes": 0,
@@ -106,7 +114,10 @@ def empty_day(date: object) -> dict[str, object]:
         "balanced_routes": 0,
         "balanced_single_leg_routes": 0,
         "balanced_multi_leg_routes": 0,
+        "balanced_round_trip_routes": 0,
+        "balanced_economic_routes": 0,
         "balanced_economic_multileg_routes": 0,
+        "balanced_economic_multileg_share": float("nan"),
         "balanced_economic_multileg_swap_legs": 0,
         "balanced_economic_multileg_venue_count": 0,
         "balanced_economic_multileg_over_two_routes": 0,
@@ -149,16 +160,19 @@ def one_day(path: Path) -> dict | None:
     venues = g["source"].nunique()
     balanced = g["_balanced_venue"].all()
     usd = g["amount_usd"].max()  # route notional, not the sum of its legs
-    first_in = g["token_in"].first()
-    last_out = g["token_out"].last()
+    first_in = g["token_in"].first().map(canonical_token)
+    last_out = g["token_out"].last().map(canonical_token)
 
     multi = legs > 1
-    round_trip = multi & (first_in == last_out)   # atomic arbitrage / wash
-    econ = multi & ~round_trip                   # genuine A -> K -> B exchange
+    same_endpoint = first_in == last_out
+    round_trip = multi & same_endpoint            # atomic arbitrage / wash
+    economic_route = ~same_endpoint
+    econ = multi & economic_route                 # genuine A -> K -> B exchange
     cross_all = multi & (venues > 1)             # unfiltered, kept for the audit
     cross = econ & (venues > 1)                  # headline
     complex_route = econ & (legs > 2)
     balanced_econ = econ & balanced
+    balanced_economic_route = economic_route & balanced
     balanced_cross = balanced_econ & (venues > 1)
     balanced_complex = balanced_econ & (legs > 2)
 
@@ -177,7 +191,9 @@ def one_day(path: Path) -> dict | None:
         "single_leg_routes": int((~multi).sum()),
         "multi_leg_routes": int(multi.sum()),
         "round_trip_routes": int(round_trip.sum()),
+        "economic_routes": int(economic_route.sum()),
         "economic_multileg_routes": int(econ.sum()),
+        "economic_multileg_share": share(econ, economic_route),
         "economic_multileg_swap_legs": int(legs[econ].sum()),
         "economic_multileg_venue_count": int(venues[econ].sum()),
         "economic_multileg_over_two_routes": int(complex_route.sum()),
@@ -187,7 +203,12 @@ def one_day(path: Path) -> dict | None:
         "balanced_routes": int(balanced.sum()),
         "balanced_single_leg_routes": int((balanced & ~multi).sum()),
         "balanced_multi_leg_routes": int((balanced & multi).sum()),
+        "balanced_round_trip_routes": int((balanced & round_trip).sum()),
+        "balanced_economic_routes": int(balanced_economic_route.sum()),
         "balanced_economic_multileg_routes": int(balanced_econ.sum()),
+        "balanced_economic_multileg_share": share(
+            balanced_econ, balanced_economic_route
+        ),
         "balanced_economic_multileg_swap_legs": int(legs[balanced_econ].sum()),
         "balanced_economic_multileg_venue_count": int(venues[balanced_econ].sum()),
         "balanced_economic_multileg_over_two_routes": int(balanced_complex.sum()),
@@ -216,6 +237,59 @@ def one_day(path: Path) -> dict | None:
         "total_usd": float(usd.sum()),
         "venues_active": int(df["source"].nunique()),
     }
+
+
+def routing_incidence_change_tests(
+    panel: pd.DataFrame,
+    *,
+    baseline_year: int = 2022,
+    comparison_year: int = 2026,
+    hac_lag: int = 30,
+) -> pd.DataFrame:
+    """Test the change in indirect-route incidence on full and fixed perimeters."""
+    data = panel.copy().sort_values("date", kind="stable")
+    data["year"] = pd.to_datetime(data["date"]).dt.year
+    data = data[data["year"].between(baseline_year, comparison_year)]
+    rows: list[dict[str, object]] = []
+    for scope, prefix in (("full", ""), ("balanced", "balanced_")):
+        share_column = f"{prefix}economic_multileg_share"
+        numerator_column = f"{prefix}economic_multileg_routes"
+        denominator_column = f"{prefix}economic_routes"
+        sample = data[["year", share_column]].dropna()
+        estimate = year_endpoint_change(
+            sample[share_column],
+            sample["year"],
+            baseline_year=baseline_year,
+            comparison_year=comparison_year,
+            hac_lag=hac_lag,
+        )
+
+        def ratio_of_totals(year: int) -> float:
+            selected = data["year"].eq(year)
+            denominator = data.loc[selected, denominator_column].sum()
+            if denominator <= 0:
+                raise ValueError("routing-incidence denominator must be positive")
+            return float(data.loc[selected, numerator_column].sum() / denominator)
+
+        rows.append(
+            {
+                "scope": scope,
+                "baseline_year": baseline_year,
+                "comparison_year": comparison_year,
+                "baseline_ratio_of_totals": ratio_of_totals(baseline_year),
+                "comparison_ratio_of_totals": ratio_of_totals(comparison_year),
+                "baseline_daily_mean": estimate.baseline_mean,
+                "comparison_daily_mean": estimate.comparison_mean,
+                "change": estimate.change,
+                "hac_standard_error": estimate.standard_error,
+                "t_statistic": estimate.t_statistic,
+                "p_value": estimate.p_value,
+                "days": estimate.n_observations,
+                "hac_lag_days": hac_lag,
+                "share_denominator": "economic routes excluding canonical endpoint round trips",
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def main() -> int:
@@ -255,6 +329,9 @@ def main() -> int:
     if len(df) != len(days):
         print(f"expected {len(days):,} days but built {len(df):,}; refusing partial output")
         return 1
+    if args.limit is not None:
+        print(f"smoke reduction complete on {len(df):,} days; canonical outputs unchanged")
+        return 0
 
     write_panel(
         df,
@@ -268,6 +345,14 @@ def main() -> int:
         OUT_EXHIBIT,
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
+    )
+    inference = routing_incidence_change_tests(df)
+    write_exhibit(
+        inference,
+        OUT_INFERENCE,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+        notes="equal-weighted daily indirect-route incidence; Newey-West Bartlett covariance",
     )
 
     print(f"\ndays retained: {len(df):,}   {df.date.min().date()} to {df.date.max().date()}")
@@ -284,9 +369,11 @@ def main() -> int:
         round_trip=("round_trip_routes", "sum"),
         multi=("multi_leg_routes", "sum"),
         routes=("routes", "sum"),
+        economic_routes=("economic_routes", "sum"),
         venues_active=("venues_active", "max"),
         balanced_econ=("balanced_economic_multileg_routes", "sum"),
         balanced_routes=("balanced_routes", "sum"),
+        balanced_economic_routes=("balanced_economic_routes", "sum"),
         balanced_econ_legs=("balanced_economic_multileg_swap_legs", "sum"),
         balanced_econ_venues=("balanced_economic_multileg_venue_count", "sum"),
         balanced_complex_routes=("balanced_economic_multileg_over_two_routes", "sum"),
@@ -297,7 +384,7 @@ def main() -> int:
     a["cross_venue_share_of_multileg"] = a["cross"] / a["econ"]
     a["cross_venue_usd_share"] = a["cross_usd"] / a["econ_usd"]
     a["round_trip_share"] = a["round_trip"] / a["multi"]
-    a["economic_multileg_share_all"] = a["econ"] / a["routes"]
+    a["economic_multileg_share"] = a["econ"] / a["economic_routes"]
     a["mean_legs"] = a["econ_legs"] / a["econ"]
     a["mean_venues"] = a["econ_venues"] / a["econ"]
     a["complex_share"] = a["complex_routes"] / a["econ"]
@@ -305,7 +392,7 @@ def main() -> int:
     for idx, row in a.iterrows():
         print(f"  {idx.year}   {row.cross_venue_share_of_multileg:6.1%}"
               f"  {row.cross_venue_usd_share:6.1%}"
-              f"     {row.economic_multileg_share_all:6.1%}"
+              f"     {row.economic_multileg_share:6.1%}"
               f"     {row.complex_share:6.1%}"
               f"        {row.mean_legs:5.2f}"
               f"          {row.mean_venues:5.2f}"
@@ -313,7 +400,7 @@ def main() -> int:
               f"        {int(row.venues_active)}")
     a["balanced_cross_share"] = a["balanced_cross"] / a["balanced_econ"]
     a["balanced_cross_usd_share"] = a["balanced_cross_usd"] / a["balanced_econ_usd"]
-    a["balanced_economic_multileg_share_all"] = a["balanced_econ"] / a["balanced_routes"]
+    a["balanced_economic_multileg_share"] = a["balanced_econ"] / a["balanced_economic_routes"]
     a["balanced_complex_share"] = a["balanced_complex_routes"] / a["balanced_econ"]
     a["balanced_mean_legs"] = a["balanced_econ_legs"] / a["balanced_econ"]
     a["balanced_mean_venues"] = a["balanced_econ_venues"] / a["balanced_econ"]
@@ -322,12 +409,16 @@ def main() -> int:
     for idx, row in a[a.index >= "2021-05-04"].iterrows():
         print(f"  {idx.year}   {row.balanced_cross_share:6.1%}"
               f"  {row.balanced_cross_usd_share:6.1%}"
-              f"     {row.balanced_economic_multileg_share_all:6.1%}"
+              f"     {row.balanced_economic_multileg_share:6.1%}"
               f"    {row.balanced_complex_share:6.1%}"
               f"        {row.balanced_mean_legs:5.2f}"
               f"          {row.balanced_mean_venues:5.2f}"
               f"   {int(row.balanced_econ):>10,}")
-    print(f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)} and {OUT_EXHIBIT.relative_to(REPO_ROOT)}")
+    print(
+        f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)}, "
+        f"{OUT_EXHIBIT.relative_to(REPO_ROOT)} and "
+        f"{OUT_INFERENCE.relative_to(REPO_ROOT)}"
+    )
     return 0
 
 

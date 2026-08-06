@@ -53,6 +53,20 @@ class ClusteredOLSResult:
         return statistics
 
 
+@dataclass(frozen=True)
+class YearEndpointChange:
+    """HAC contrast between two endpoint-year means in an ordered series."""
+
+    baseline_mean: float
+    comparison_mean: float
+    change: float
+    standard_error: float
+    t_statistic: float
+    p_value: float
+    n_observations: int
+    degrees_freedom: int
+
+
 def absorb_fixed_effects(
     values: pd.Series | pd.DataFrame,
     *groups: pd.Series,
@@ -249,3 +263,54 @@ def ols_hac(y: np.ndarray, x: np.ndarray, lag: int) -> tuple[np.ndarray, np.ndar
     finite_sample_scale = n / max(n - k, 1)
     covariance = xtx_inverse @ meat @ xtx_inverse * finite_sample_scale
     return beta, covariance
+
+
+def year_endpoint_change(
+    values: pd.Series | np.ndarray,
+    years: pd.Series | np.ndarray,
+    *,
+    baseline_year: int,
+    comparison_year: int,
+    hac_lag: int,
+) -> YearEndpointChange:
+    """Estimate an endpoint-year mean change with intervening year indicators."""
+    value_array = np.asarray(values, dtype=float).reshape(-1)
+    year_array = np.asarray(years).reshape(-1)
+    if len(value_array) != len(year_array):
+        raise ValueError("year-change values and years must have the same row count")
+    finite = np.isfinite(value_array) & pd.notna(year_array)
+    value_array = value_array[finite]
+    year_array = year_array[finite].astype(int)
+    observed_years = sorted(set(year_array))
+    if baseline_year not in observed_years or comparison_year not in observed_years:
+        raise ValueError("year-change contrast requires both endpoint years")
+    comparison_years = [year for year in observed_years if year != baseline_year]
+    design = np.column_stack(
+        [
+            np.ones(len(value_array)),
+            *[year_array == year for year in comparison_years],
+        ]
+    ).astype(float)
+    beta, covariance = ols_hac(value_array, design, hac_lag)
+    comparison_column = 1 + comparison_years.index(comparison_year)
+    standard_error = float(
+        np.sqrt(max(covariance[comparison_column, comparison_column], 0.0))
+    )
+    change = float(beta[comparison_column])
+    t_statistic = change / standard_error if standard_error > 0 else np.nan
+    degrees_freedom = max(len(value_array) - design.shape[1], 1)
+    p_value = (
+        float(2 * stats.t.sf(abs(t_statistic), degrees_freedom))
+        if np.isfinite(t_statistic)
+        else np.nan
+    )
+    return YearEndpointChange(
+        baseline_mean=float(value_array[year_array == baseline_year].mean()),
+        comparison_mean=float(value_array[year_array == comparison_year].mean()),
+        change=change,
+        standard_error=standard_error,
+        t_statistic=float(t_statistic),
+        p_value=p_value,
+        n_observations=len(value_array),
+        degrees_freedom=degrees_freedom,
+    )

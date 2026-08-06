@@ -17,11 +17,9 @@ import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-from scipy import stats
 
-from ddvc.analysis.regression import ols_hac
+from ddvc.analysis.regression import year_endpoint_change
 from ddvc.asset_types import TYPES, classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.realised import realised_routes
@@ -149,9 +147,6 @@ def integration_rival_tests(
     years = sorted(int(value) for value in data["year"].unique())
     if baseline_year not in years or comparison_year not in years:
         raise ValueError("integration rival requires both comparison endpoint years")
-    comparison_column = 1 + [year for year in years if year != baseline_year].index(
-        comparison_year
-    )
     rows: list[dict[str, object]] = []
     for weighting, column_prefix in (("episode", "cnt_"), ("value", "usd_")):
         for scope in ("all", *INTEGRATION_SCOPES):
@@ -166,42 +161,26 @@ def integration_rival_tests(
             sample = data[["year"]].copy()
             sample["share"] = stable / denominator.where(denominator.gt(0))
             sample = sample.dropna(subset=["share"])
-            design = np.column_stack(
-                [
-                    np.ones(len(sample)),
-                    *[
-                        sample["year"].eq(year).to_numpy(dtype=float)
-                        for year in years
-                        if year != baseline_year
-                    ],
-                ]
+            estimate = year_endpoint_change(
+                sample["share"],
+                sample["year"],
+                baseline_year=baseline_year,
+                comparison_year=comparison_year,
+                hac_lag=hac_lag,
             )
-            beta, covariance = ols_hac(
-                sample["share"].to_numpy(dtype=float), design, hac_lag
-            )
-            standard_error = float(np.sqrt(max(covariance[comparison_column, comparison_column], 0)))
-            change = float(beta[comparison_column])
-            degrees_freedom = max(len(sample) - design.shape[1], 1)
-            t_statistic = change / standard_error if standard_error > 0 else np.nan
-            p_value = (
-                float(2 * stats.t.sf(abs(t_statistic), degrees_freedom))
-                if np.isfinite(t_statistic)
-                else np.nan
-            )
-            means = sample.groupby("year")["share"].mean()
             rows.append(
                 {
                     "integration_scope": scope,
                     "weighting": weighting,
                     "baseline_year": baseline_year,
                     "comparison_year": comparison_year,
-                    "baseline_daily_mean": float(means.loc[baseline_year]),
-                    "comparison_daily_mean": float(means.loc[comparison_year]),
-                    "change": change,
-                    "hac_standard_error": standard_error,
-                    "t_statistic": t_statistic,
-                    "p_value": p_value,
-                    "days": int(len(sample)),
+                    "baseline_daily_mean": estimate.baseline_mean,
+                    "comparison_daily_mean": estimate.comparison_mean,
+                    "change": estimate.change,
+                    "hac_standard_error": estimate.standard_error,
+                    "t_statistic": estimate.t_statistic,
+                    "p_value": estimate.p_value,
+                    "days": estimate.n_observations,
                     "hac_lag_days": hac_lag,
                     "share_denominator": "native_plus_stable",
                 }

@@ -6,14 +6,36 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 
+from ddvc.asset_types import NATIVE_ETH, WETH
 from scripts.build_cross_venue_routing_series import (
     BALANCED_VENUES,
     bounded_workers,
     one_day,
+    routing_incidence_change_tests,
 )
 
 
 class CrossVenueRoutingSeriesTests(unittest.TestCase):
+    def test_incidence_change_separates_full_and_balanced_perimeters(self) -> None:
+        panel = pd.DataFrame(
+            {
+                "date": pd.to_datetime(
+                    ["2022-01-01", "2022-01-02", "2026-01-01", "2026-01-02"]
+                ),
+                "economic_routes": [10, 10, 10, 10],
+                "economic_multileg_routes": [4, 6, 2, 2],
+                "economic_multileg_share": [0.4, 0.6, 0.2, 0.2],
+                "balanced_economic_routes": [10, 10, 10, 10],
+                "balanced_economic_multileg_routes": [4, 6, 1, 1],
+                "balanced_economic_multileg_share": [0.4, 0.6, 0.1, 0.1],
+            }
+        )
+        result = routing_incidence_change_tests(panel, hac_lag=0).set_index("scope")
+        self.assertAlmostEqual(result.loc["full", "change"], -0.3)
+        self.assertAlmostEqual(result.loc["balanced", "change"], -0.4)
+        self.assertAlmostEqual(result.loc["full", "comparison_ratio_of_totals"], 0.2)
+        self.assertAlmostEqual(result.loc["balanced", "comparison_ratio_of_totals"], 0.1)
+
     def test_clean_routes_are_ordered_and_ambiguous_components_are_excluded(self) -> None:
         rows = [
             {
@@ -92,8 +114,35 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
             result = one_day(path)
         assert result is not None
         self.assertEqual(result["round_trip_routes"], 1)
+        self.assertEqual(result["economic_routes"], 0)
         self.assertEqual(result["economic_multileg_routes"], 0)
         self.assertEqual(result["cross_venue_routes"], 0)
+
+    def test_native_and_wrapped_eth_are_one_economic_endpoint(self) -> None:
+        rows = [
+            {
+                "tx_hash": "wrap-cycle",
+                "component_id": 0,
+                "source": source,
+                "amount_usd": 100.0,
+                "route_class": "coherent",
+                "token_in": token_in,
+                "token_out": token_out,
+                "log_index": log_index,
+            }
+            for source, token_in, token_out, log_index in [
+                ("uniswap_v4", NATIVE_ETH, "K", 1),
+                ("uniswap_v3", "K", WETH, 2),
+            ]
+        ]
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "20250101.parquet"
+            pd.DataFrame(rows).to_parquet(path, index=False)
+            result = one_day(path)
+        assert result is not None
+        self.assertEqual(result["round_trip_routes"], 1)
+        self.assertEqual(result["economic_routes"], 0)
+        self.assertEqual(result["economic_multileg_routes"], 0)
 
     def test_route_complexity_is_aggregated_over_economic_routes(self) -> None:
         rows = [
@@ -148,19 +197,25 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 ("new", old_a, 200.0, "C", "M", 1),
                 ("new", "uniswap_v4", 200.0, "M", "D", 2),
                 ("direct", old_a, 50.0, "E", "F", 1),
+                ("cycle", old_a, 80.0, "G", "H", 1),
+                ("cycle", old_b, 80.0, "H", "G", 2),
             ]
         ]
-        rows[-1]["route_class"] = "single"
+        rows[-3]["route_class"] = "single"
         with TemporaryDirectory() as temporary:
             path = Path(temporary) / "20250101.parquet"
             pd.DataFrame(rows).to_parquet(path, index=False)
             result = one_day(path)
         assert result is not None
         self.assertEqual(result["economic_multileg_routes"], 2)
-        self.assertEqual(result["balanced_routes"], 2)
+        self.assertEqual(result["economic_routes"], 3)
+        self.assertEqual(result["balanced_routes"], 3)
         self.assertEqual(result["balanced_single_leg_routes"], 1)
-        self.assertEqual(result["balanced_multi_leg_routes"], 1)
+        self.assertEqual(result["balanced_multi_leg_routes"], 2)
+        self.assertEqual(result["balanced_round_trip_routes"], 1)
+        self.assertEqual(result["balanced_economic_routes"], 2)
         self.assertEqual(result["balanced_economic_multileg_routes"], 1)
+        self.assertEqual(result["balanced_economic_multileg_share"], 0.5)
         self.assertEqual(result["balanced_cross_venue_routes"], 1)
         self.assertEqual(result["balanced_cross_venue_share"], 1.0)
         self.assertEqual(result["balanced_economic_multileg_usd"], 100.0)

@@ -10,10 +10,32 @@ from ddvc.analysis.regression import (
     ols_clustered,
     ols_clustered_named,
     ols_hac,
+    year_endpoint_change,
 )
 
 
 class RegressionPrimitiveTests(unittest.TestCase):
+    def test_year_endpoint_change_owns_year_dummy_hac_contrast(self) -> None:
+        estimate = year_endpoint_change(
+            np.array([0.0, 0.2, 0.4, 0.8, 1.0, 1.2]),
+            np.array([2022, 2022, 2024, 2024, 2026, 2026]),
+            baseline_year=2022,
+            comparison_year=2026,
+            hac_lag=0,
+        )
+        self.assertAlmostEqual(estimate.baseline_mean, 0.1)
+        self.assertAlmostEqual(estimate.comparison_mean, 1.1)
+        self.assertAlmostEqual(estimate.change, 1.0)
+        self.assertEqual(estimate.n_observations, 6)
+        with self.assertRaisesRegex(ValueError, "both endpoint years"):
+            year_endpoint_change(
+                np.array([0.0, 0.2]),
+                np.array([2022, 2022]),
+                baseline_year=2022,
+                comparison_year=2026,
+                hac_lag=0,
+            )
+
     def test_hac_preserves_the_ols_point_estimate(self) -> None:
         x_value = np.arange(12, dtype=float)
         design = np.column_stack([np.ones(len(x_value)), x_value])
