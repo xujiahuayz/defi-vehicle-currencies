@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""Daily vehicle-type composition, split by single- versus cross-venue routes.
+"""Daily vehicle-type composition by venue integration and route complexity.
 
 Each coherent non-cyclic route contributes one episode for every intermediary it uses.
 The cross-venue split tests whether the native-to-stable transition is confined to the
 aggregator-era integration margin or also occurs inside venue-local routing.
+The leg-count split tests the narrower composition rival that the transition is confined
+to increasingly complex routes; leg count is not interpreted as execution efficiency.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/intermediation_by_type_daily.parquet
         output/exhibits/intermediation_by_type.jsonl
+        output/exhibits/intermediation_integration_rival.jsonl
+        output/exhibits/intermediation_complexity_rival.jsonl
 """
 
 from __future__ import annotations
@@ -29,6 +33,7 @@ UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "intermediation_by_type_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "intermediation_by_type.jsonl"
 OUT_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
+OUT_COMPLEXITY_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_complexity_rival.jsonl"
 MAX_WORKERS = 8
 HAC_LAG = 30
 CODE_SOURCES = [
@@ -38,6 +43,14 @@ CODE_SOURCES = [
     "src/ddvc/asset_types.py",
 ]
 INTEGRATION_SCOPES = ("single_venue", "cross_venue")
+COMPLEXITY_SCOPES = (
+    "two_leg",
+    "more_than_two_legs",
+    "single_venue_two_leg",
+    "cross_venue_two_leg",
+    "single_venue_more_than_two_legs",
+    "cross_venue_more_than_two_legs",
+)
 
 
 def bounded_workers(requested: int) -> int:
@@ -54,6 +67,9 @@ def empty_day(day: str) -> dict[str, object]:
         out[f"cnt_{asset_type}"] = 0
         out[f"usd_{asset_type}"] = 0.0
         for scope in INTEGRATION_SCOPES:
+            out[f"cnt_{scope}_{asset_type}"] = 0
+            out[f"usd_{scope}_{asset_type}"] = 0.0
+        for scope in COMPLEXITY_SCOPES:
             out[f"cnt_{scope}_{asset_type}"] = 0
             out[f"usd_{scope}_{asset_type}"] = 0.0
     return out
@@ -76,6 +92,9 @@ def one_day(path: Path) -> dict[str, object]:
     routes["integration_scope"] = routes["cross_venue"].map(
         {False: "single_venue", True: "cross_venue"}
     )
+    routes["complexity_scope"] = routes["legs"].eq(2).map(
+        {True: "two_leg", False: "more_than_two_legs"}
+    )
     out = empty_day(path.stem)
     out["routes_intermediated"] = int(
         routes[["tx_hash", "component_id"]].drop_duplicates().shape[0]
@@ -89,6 +108,21 @@ def one_day(path: Path) -> dict[str, object]:
             cell = selected[selected["integration_scope"].eq(scope)]
             out[f"cnt_{scope}_{asset_type}"] = int(len(cell))
             out[f"usd_{scope}_{asset_type}"] = float(cell["usd"].sum())
+        for complexity_scope in ("two_leg", "more_than_two_legs"):
+            complexity_cell = selected[
+                selected["complexity_scope"].eq(complexity_scope)
+            ]
+            out[f"cnt_{complexity_scope}_{asset_type}"] = int(len(complexity_cell))
+            out[f"usd_{complexity_scope}_{asset_type}"] = float(
+                complexity_cell["usd"].sum()
+            )
+            for integration_scope in INTEGRATION_SCOPES:
+                scope = f"{integration_scope}_{complexity_scope}"
+                cell = complexity_cell[
+                    complexity_cell["integration_scope"].eq(integration_scope)
+                ]
+                out[f"cnt_{scope}_{asset_type}"] = int(len(cell))
+                out[f"usd_{scope}_{asset_type}"] = float(cell["usd"].sum())
     for symbol, count in routes["symbol"].dropna().value_counts().items():
         out[f"cnt_{symbol}"] = int(count)
     return out
@@ -133,14 +167,16 @@ def annual_composition(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def integration_rival_tests(
+def _stable_share_change_tests(
     panel: pd.DataFrame,
     *,
+    scopes: tuple[str, ...],
+    scope_field: str,
     baseline_year: int = 2024,
     comparison_year: int = 2026,
     hac_lag: int = HAC_LAG,
 ) -> pd.DataFrame:
-    """Estimate the stable share change within each integration regime."""
+    """Estimate the stable share change within prespecified route regimes."""
     data = panel.copy().sort_values("date", kind="stable")
     data["year"] = pd.to_datetime(data["date"]).dt.year
     data = data[data["year"].between(baseline_year, comparison_year)]
@@ -154,10 +190,10 @@ def integration_rival_tests(
     ]
     years = sorted(int(value) for value in data["year"].unique())
     if baseline_year not in years or comparison_year not in years:
-        raise ValueError("integration rival requires both comparison endpoint years")
+        raise ValueError("route-regime rival requires both comparison endpoint years")
     rows: list[dict[str, object]] = []
     for weighting, column_prefix in (("episode", "cnt_"), ("value", "usd_")):
-        for scope in ("all", *INTEGRATION_SCOPES):
+        for scope in scopes:
             scope_prefix = "" if scope == "all" else f"{scope}_"
             stable = pd.to_numeric(
                 data[f"{column_prefix}{scope_prefix}stable"], errors="coerce"
@@ -178,7 +214,7 @@ def integration_rival_tests(
             )
             rows.append(
                 {
-                    "integration_scope": scope,
+                    scope_field: scope,
                     "weighting": weighting,
                     "baseline_year": baseline_year,
                     "comparison_year": comparison_year,
@@ -195,6 +231,42 @@ def integration_rival_tests(
                 }
             )
     return pd.DataFrame(rows)
+
+
+def integration_rival_tests(
+    panel: pd.DataFrame,
+    *,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Estimate the stable share change within each integration regime."""
+    return _stable_share_change_tests(
+        panel,
+        scopes=("all", *INTEGRATION_SCOPES),
+        scope_field="integration_scope",
+        baseline_year=baseline_year,
+        comparison_year=comparison_year,
+        hac_lag=hac_lag,
+    )
+
+
+def complexity_rival_tests(
+    panel: pd.DataFrame,
+    *,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Estimate stable-share changes within route-complexity and integration cells."""
+    return _stable_share_change_tests(
+        panel,
+        scopes=COMPLEXITY_SCOPES,
+        scope_field="routing_scope",
+        baseline_year=baseline_year,
+        comparison_year=comparison_year,
+        hac_lag=hac_lag,
+    )
 
 
 def main() -> int:
@@ -239,6 +311,7 @@ def main() -> int:
         )
     annual = annual_composition(panel)
     rival = integration_rival_tests(panel)
+    complexity_rival = complexity_rival_tests(panel)
     write_panel(
         panel,
         OUT_PARQUET,
@@ -258,6 +331,13 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
         notes="equal-weighted daily stable share within native plus stable; Newey-West Bartlett covariance",
+    )
+    write_exhibit(
+        complexity_rival,
+        OUT_COMPLEXITY_RIVAL,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+        notes="equal-weighted daily stable share within native plus stable by route-complexity and integration cell; leg count is a complexity proxy, not an efficiency measure; Newey-West Bartlett covariance",
     )
 
     print(
@@ -285,9 +365,24 @@ def main() -> int:
             ]
         ].round(4).to_string(index=False)
     )
+    print("\n2024 to 2026 stable-share changes by route-complexity cell")
+    print(
+        complexity_rival[
+            [
+                "routing_scope",
+                "weighting",
+                "baseline_daily_mean",
+                "comparison_daily_mean",
+                "change",
+                "hac_standard_error",
+                "p_value",
+            ]
+        ].round(4).to_string(index=False)
+    )
     print(
         f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)}, "
-        f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}, and {OUT_RIVAL.relative_to(REPO_ROOT)}"
+        f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}, {OUT_RIVAL.relative_to(REPO_ROOT)}, "
+        f"and {OUT_COMPLEXITY_RIVAL.relative_to(REPO_ROOT)}"
     )
     return 0
 
