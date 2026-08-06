@@ -65,6 +65,7 @@ import pandas as pd
 from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
 from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.route_roles import component_eligibility, component_notional
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
@@ -78,10 +79,11 @@ CODE_SOURCES = [
     "src/ddvc/analysis/regression.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/reconstruct/__init__.py",
+    "src/ddvc/route_roles.py",
 ]
 
 COLS = ["tx_hash", "component_id", "source", "amount_usd", "route_class",
-        "token_in", "token_out", "log_index"]
+        "token_in", "token_out", "log_index", "tin_role", "tout_role"]
 
 # These five venue families are all observed from 2021-05-04 through the sample end.
 # Keeping only complete reconstructed routes whose every leg is in this set separates
@@ -117,6 +119,7 @@ def empty_day(date: object) -> dict[str, object]:
         "single_leg_routes": 0,
         "multi_leg_routes": 0,
         "round_trip_routes": 0,
+        "ambiguous_routes": 0,
         "economic_routes": 0,
         "economic_multileg_routes": 0,
         "economic_multileg_share": float("nan"),
@@ -168,23 +171,30 @@ def one_day(path: Path) -> dict | None:
     if df.empty:
         return empty_day(pd.to_datetime(path.stem, format="%Y%m%d"))
 
+    df["token_in"] = df["token_in"].map(lambda value: canonical_token(value) or "")
+    df["token_out"] = df["token_out"].map(lambda value: canonical_token(value) or "")
+    df = df[df["token_in"].astype(bool) & df["token_out"].astype(bool)]
     df = df.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
     df["_balanced_venue"] = df["source"].isin(BALANCED_VENUES)
-    g = df.groupby(["tx_hash", "component_id"], sort=False)
+    keys = ["tx_hash", "component_id"]
+    g = df.groupby(keys, sort=False)
     legs = g.size()
     venues = g["source"].nunique()
     balanced = g["_balanced_venue"].all()
-    usd = g["amount_usd"].max()  # route notional, not the sum of its legs
-    first_in = g["token_in"].first().map(canonical_token)
-    last_out = g["token_out"].last().map(canonical_token)
+    diagnostic_usd = g["amount_usd"].max()
+    route_usd = component_notional(df, keys=keys).set_index(keys)["amount_usd"].reindex(legs.index)
+    eligibility = component_eligibility(df, keys=keys)
+    eligible_index = pd.MultiIndex.from_frame(eligibility.eligible[keys])
+    cyclic_index = pd.MultiIndex.from_frame(eligibility.cyclic[keys])
+    ambiguous_index = pd.MultiIndex.from_frame(eligibility.ambiguous[keys])
 
     multi = legs > 1
-    same_endpoint = first_in == last_out
-    round_trip = multi & same_endpoint            # atomic arbitrage / wash
-    economic_route = ~same_endpoint
-    econ = multi & economic_route                 # genuine A -> K -> B exchange
-    cross_all = multi & (venues > 1)             # unfiltered, kept for the audit
-    cross = econ & (venues > 1)                  # headline
+    economic_route = pd.Series(legs.index.isin(eligible_index), index=legs.index)
+    round_trip = multi & pd.Series(legs.index.isin(cyclic_index), index=legs.index)
+    ambiguous = pd.Series(legs.index.isin(ambiguous_index), index=legs.index)
+    econ = multi & economic_route
+    cross_all = multi & (venues > 1)
+    cross = econ & (venues > 1)
     complex_route = econ & (legs > 2)
     balanced_econ = econ & balanced
     balanced_economic_route = economic_route & balanced
@@ -195,9 +205,9 @@ def one_day(path: Path) -> dict | None:
         d = den.sum()
         return float(num.sum() / d) if d else float("nan")
 
-    def ushare(num, den):
-        d = usd[den].sum()
-        return float(usd[num].sum() / d) if d else float("nan")
+    def ushare(num, den, weights):
+        d = weights[den].sum()
+        return float(weights[num].sum() / d) if d else float("nan")
 
     return {
         "date": pd.to_datetime(path.stem, format="%Y%m%d"),
@@ -206,6 +216,7 @@ def one_day(path: Path) -> dict | None:
         "single_leg_routes": int((~multi).sum()),
         "multi_leg_routes": int(multi.sum()),
         "round_trip_routes": int(round_trip.sum()),
+        "ambiguous_routes": int(ambiguous.sum()),
         "economic_routes": int(economic_route.sum()),
         "economic_multileg_routes": int(econ.sum()),
         "economic_multileg_share": share(econ, economic_route),
@@ -234,22 +245,22 @@ def one_day(path: Path) -> dict | None:
         ),
         "balanced_cross_venue_routes": int(balanced_cross.sum()),
         "balanced_cross_venue_share": share(balanced_cross, balanced_econ),
-        "balanced_cross_venue_usd_share": ushare(balanced_cross, balanced_econ),
-        "balanced_economic_multileg_usd": float(usd[balanced_econ].sum()),
-        "balanced_cross_venue_usd": float(usd[balanced_cross].sum()),
+        "balanced_cross_venue_usd_share": ushare(balanced_cross, balanced_econ, route_usd),
+        "balanced_economic_multileg_usd": float(route_usd[balanced_econ].sum()),
+        "balanced_cross_venue_usd": float(route_usd[balanced_cross].sum()),
         "cross_venue_routes": int(cross.sum()),
         # headline: of ECONOMIC intermediated routes, what share spans venues
         "cross_venue_share": share(cross, econ),
-        "cross_venue_usd_share": ushare(cross, econ),
+        "cross_venue_usd_share": ushare(cross, econ, route_usd),
         # audit trail: the same statistic WITHOUT the economic filter, so the
         # contamination is visible in the panel rather than only in a comment
         "cross_venue_share_unfiltered": share(cross_all, multi),
-        "cross_venue_usd_share_unfiltered": ushare(cross_all, multi),
+        "cross_venue_usd_share_unfiltered": ushare(cross_all, multi, diagnostic_usd),
         "round_trip_share_of_multileg": share(round_trip, multi),
-        "round_trip_usd_share_of_multileg": ushare(round_trip, multi),
-        "economic_multileg_usd": float(usd[econ].sum()),
-        "cross_venue_usd": float(usd[cross].sum()),
-        "total_usd": float(usd.sum()),
+        "round_trip_usd_share_of_multileg": ushare(round_trip, multi, diagnostic_usd),
+        "economic_multileg_usd": float(route_usd[econ].sum()),
+        "cross_venue_usd": float(route_usd[cross].sum()),
+        "total_usd": float(diagnostic_usd.sum()),
         "venues_active": int(df["source"].nunique()),
     }
 

@@ -10,6 +10,7 @@ import pandas as pd
 from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR
 from ddvc.prices import PRICE_COLUMNS, day_prices
+from ddvc.route_roles import component_eligibility, role_token_values
 
 ROUTE_COLUMNS = [
     "tx_hash",
@@ -116,56 +117,28 @@ def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
     d = d.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
     d["_timestamp"] = pd.to_numeric(d["timestamp_utc"], errors="coerce")
     d["_usd"] = pd.to_numeric(d["amount_usd"], errors="coerce")
+    d["amount_usd"] = d["_usd"]
     component_keys = ["tx_hash", "component_id"]
     components = d.groupby(component_keys, as_index=False).agg(
         legs=("log_index", "size"),
         timestamp_utc=("_timestamp", "median"),
-        usd=("_usd", "max"),
         venues=("source", "nunique"),
     )
     components = components[
         components["legs"].ge(2)
         & components["timestamp_utc"].notna()
-        & components["usd"].gt(0)
     ]
     if components.empty:
         return pd.DataFrame()
 
-    token_roles = pd.concat(
-        [
-            d[component_keys + ["token_in", "tin_role"]].rename(
-                columns={"token_in": "token", "tin_role": "role"}
-            ),
-            d[component_keys + ["token_out", "tout_role"]].rename(
-                columns={"token_out": "token", "tout_role": "role"}
-            ),
-        ],
-        ignore_index=True,
-    ).dropna(subset=["token"])
-    token_roles = token_roles.drop_duplicates(component_keys + ["role", "token"])
-
-    def endpoints(role: str, token_name: str, count_name: str) -> pd.DataFrame:
-        return token_roles.loc[token_roles["role"].eq(role)].groupby(
-            component_keys, as_index=False
-        ).agg(**{token_name: ("token", "first"), count_name: ("token", "nunique")})
-
+    eligibility = component_eligibility(d, keys=component_keys)
     components = components.merge(
-        endpoints("source", "src", "source_tokens"), on=component_keys, how="inner"
-    ).merge(
-        endpoints("sink", "tgt", "sink_tokens"), on=component_keys, how="inner"
+        eligibility.eligible, on=component_keys, how="inner"
+    ).drop(columns=["source_tokens", "sink_tokens"])
+    vehicles = role_token_values(d, "intermediate", keys=component_keys).rename(
+        columns={"token": "vehicle", "amount_usd": "usd"}
     )
-    components = components[
-        components["source_tokens"].eq(1)
-        & components["sink_tokens"].eq(1)
-        & components["src"].ne(components["tgt"])
-    ].drop(columns=["source_tokens", "sink_tokens"])
-    vehicles = (
-        token_roles.loc[
-            token_roles["role"].eq("intermediate"), component_keys + ["token"]
-        ]
-        .rename(columns={"token": "vehicle"})
-        .drop_duplicates()
-    )
+    vehicles = vehicles[vehicles["usd"].gt(0)]
     out = components.merge(vehicles, on=component_keys, how="inner")
     out = out[out["vehicle"].ne(out["src"]) & out["vehicle"].ne(out["tgt"])]
     if out.empty:

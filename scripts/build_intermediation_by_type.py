@@ -36,10 +36,12 @@ OUT_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
 OUT_COMPLEXITY_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_complexity_rival.jsonl"
 MAX_WORKERS = 8
 HAC_LAG = 30
+INTEGRATION_RIVAL_WINDOWS = ((2023, 2024), (2024, 2026))
 CODE_SOURCES = [
     "scripts/build_intermediation_by_type.py",
     "src/ddvc/analysis/regression.py",
     "src/ddvc/realised.py",
+    "src/ddvc/route_roles.py",
     "src/ddvc/asset_types.py",
 ]
 INTEGRATION_SCOPES = ("single_venue", "cross_venue")
@@ -251,6 +253,27 @@ def integration_rival_tests(
     )
 
 
+def integration_rival_windows(
+    panel: pd.DataFrame,
+    *,
+    windows: tuple[tuple[int, int], ...] = INTEGRATION_RIVAL_WINDOWS,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Measure the prespecified reversal and subsequent transition windows."""
+    return pd.concat(
+        [
+            integration_rival_tests(
+                panel,
+                baseline_year=baseline_year,
+                comparison_year=comparison_year,
+                hac_lag=hac_lag,
+            )
+            for baseline_year, comparison_year in windows
+        ],
+        ignore_index=True,
+    )
+
+
 def complexity_rival_tests(
     panel: pd.DataFrame,
     *,
@@ -310,7 +333,7 @@ def main() -> int:
             panel["episodes"].gt(0)
         )
     annual = annual_composition(panel)
-    rival = integration_rival_tests(panel)
+    rival = integration_rival_windows(panel)
     complexity_rival = complexity_rival_tests(panel)
     write_panel(
         panel,
@@ -351,20 +374,23 @@ def main() -> int:
         ].pivot(index="year", columns="asset_type", values="episode_share")
         print(f"\n{scope}: native and stable episode shares")
         print(view.round(3).to_string())
-    print("\n2024 to 2026 stable-share changes, daily HAC inference")
-    print(
-        rival[
-            [
-                "integration_scope",
-                "weighting",
-                "baseline_daily_mean",
-                "comparison_daily_mean",
-                "change",
-                "hac_standard_error",
-                "p_value",
-            ]
-        ].round(4).to_string(index=False)
-    )
+    for (baseline_year, comparison_year), comparison in rival.groupby(
+        ["baseline_year", "comparison_year"], sort=True
+    ):
+        print(f"\n{baseline_year} to {comparison_year} stable-share changes, daily HAC inference")
+        print(
+            comparison[
+                [
+                    "integration_scope",
+                    "weighting",
+                    "baseline_daily_mean",
+                    "comparison_daily_mean",
+                    "change",
+                    "hac_standard_error",
+                    "p_value",
+                ]
+            ].round(4).to_string(index=False)
+        )
     print("\n2024 to 2026 stable-share changes by route-complexity cell")
     print(
         complexity_rival[

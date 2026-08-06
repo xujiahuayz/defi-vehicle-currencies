@@ -17,7 +17,11 @@ from ddvc.realised import (
     read_cost_panel_day,
     read_search_cost_panel_day,
 )
-from scripts.measure_realised_dominance import pool_summaries, summarise_matches
+from scripts.measure_realised_dominance import (
+    choice_regime_rival_tests,
+    pool_summaries,
+    summarise_matches,
+)
 
 
 def leg(
@@ -197,6 +201,19 @@ class RealisedMatchingTests(unittest.TestCase):
         self.assertEqual(set(out["tx_hash"]), {"long"})
         self.assertEqual(set(out["vehicle"]), {"k", "m"})
         self.assertTrue(out["legs"].eq(3).all())
+
+    def test_extraction_assigns_each_intermediary_its_own_adjacent_value(self) -> None:
+        out = extract_realised_routes(
+            pd.DataFrame(
+                [
+                    leg("long", 0, "A", "K", "source", "intermediate", usd=100.0),
+                    leg("long", 1, "K", "M", "intermediate", "intermediate", usd=110.0),
+                    leg("long", 2, "M", "B", "intermediate", "sink", usd=10_000.0),
+                ]
+            )
+        ).set_index("vehicle")
+        self.assertAlmostEqual(out.loc["k", "usd"], 105.0)
+        self.assertAlmostEqual(out.loc["m", "usd"], 5_055.0)
 
     def test_extraction_unifies_native_eth_with_wrapped_native(self) -> None:
         native_eth = "0x0000000000000000000000000000000000000000"
@@ -732,6 +749,7 @@ class RealisedMatchingTests(unittest.TestCase):
                 {
                     "route_id": "chosen-1",
                     "vehicle": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "quoted_to_realised_size": 1.0,
                     "match_status": "chosen_with_direct",
                     "usd": 100.0,
                     "dominated": True,
@@ -739,6 +757,7 @@ class RealisedMatchingTests(unittest.TestCase):
                 {
                     "route_id": "chosen-2",
                     "vehicle": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "quoted_to_realised_size": 1.0,
                     "match_status": "chosen_with_direct",
                     "usd": 300.0,
                     "dominated": False,
@@ -746,6 +765,7 @@ class RealisedMatchingTests(unittest.TestCase):
                 {
                     "route_id": "forced",
                     "vehicle": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "quoted_to_realised_size": 1.0,
                     "match_status": "forced_no_direct",
                     "usd": 900.0,
                     "dominated": pd.NA,
@@ -758,6 +778,66 @@ class RealisedMatchingTests(unittest.TestCase):
         self.assertEqual(chosen["dominated_share"], 0.5)
         self.assertEqual(chosen["dominated_usd_share"], 0.25)
         self.assertTrue(pd.isna(forced["dominated_share"]))
+
+    def test_summary_reports_nested_notional_support(self) -> None:
+        matches = pd.DataFrame(
+            [
+                {
+                    "route_id": "close",
+                    "vehicle": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "quoted_to_realised_size": 1.1,
+                    "match_status": "chosen_with_direct",
+                    "dominated": True,
+                    "usd": 100.0,
+                },
+                {
+                    "route_id": "far",
+                    "vehicle": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+                    "quoted_to_realised_size": 3.0,
+                    "match_status": "chosen_with_direct",
+                    "dominated": False,
+                    "usd": 100.0,
+                },
+            ]
+        )
+        pooled = pool_summaries(summarise_matches(matches, "20250101"), "ALL")
+        by_scope = pooled.set_index("size_scope")
+        self.assertEqual(by_scope.loc["all_routes", "routes"], 2)
+        self.assertEqual(by_scope.loc["within_20pct", "routes"], 1)
+
+    def test_choice_regime_rival_keeps_supported_regimes_separate(self) -> None:
+        rows = []
+        for year, stable_routes in ((2023, 60.0), (2024, 40.0), (2026, 70.0)):
+            for day in range(2):
+                for size_scope in ("all_routes", "within_20pct"):
+                    for match_status in ("forced_no_direct", "chosen_with_direct"):
+                        rows.extend(
+                            [
+                                {
+                                    "period": f"{year}010{day + 1}",
+                                    "size_scope": size_scope,
+                                    "mid_type": "stable",
+                                    "match_status": match_status,
+                                    "routes": stable_routes,
+                                    "usd": stable_routes,
+                                },
+                                {
+                                    "period": f"{year}010{day + 1}",
+                                    "size_scope": size_scope,
+                                    "mid_type": "native",
+                                    "match_status": match_status,
+                                    "routes": 100.0 - stable_routes,
+                                    "usd": 100.0 - stable_routes,
+                                },
+                            ]
+                        )
+        result = choice_regime_rival_tests(pd.DataFrame(rows), hac_lag=1)
+        self.assertEqual(set(result["size_scope"]), {"all_routes", "within_20pct"})
+        self.assertEqual(
+            set(zip(result["baseline_year"], result["comparison_year"])),
+            {(2023, 2024), (2024, 2026)},
+        )
+        self.assertEqual(set(result["match_status"]), {"forced_no_direct", "chosen_with_direct"})
 
 
 if __name__ == "__main__":

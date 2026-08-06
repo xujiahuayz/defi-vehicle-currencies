@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import canonical_token, classify
+from ddvc.route_roles import component_eligibility, role_token_values
 
 CLEAN_ROUTE_CLASSES = ("single", "coherent")
 KEYS = ["tx_hash", "component_id"]
@@ -83,16 +84,6 @@ def aggregate_vehicle_extent(
     return out
 
 
-def _role_rows(legs: pd.DataFrame, side: str, role: str) -> pd.DataFrame:
-    token = f"token_{side}"
-    role_col = "tin_role" if side == "in" else "tout_role"
-    return (
-        legs.loc[legs[role_col].eq(role), KEYS + [token, "amount_usd"]]
-        .rename(columns={token: "token"})
-        .copy()
-    )
-
-
 def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
     """One row per token for one period, with auditable numerator and denominator."""
     missing = sorted(set(REQUIRED_COLUMNS) - set(legs.columns))
@@ -109,38 +100,28 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
     d["token_out"] = d["token_out"].map(lambda value: canonical_token(value) or "")
     d = d[d["token_in"].astype(bool) & d["token_out"].astype(bool)]
 
-    sources = _role_rows(d, "in", "source")
-    sinks = _role_rows(d, "out", "sink")
-    role_cyclic = sources[KEYS + ["token"]].merge(
-        sinks[KEYS + ["token"]], on=KEYS + ["token"], how="inner"
-    )[KEYS].drop_duplicates()
-    ordered = d.sort_values(KEYS + ["log_index"], kind="stable")
-    bounds = ordered.groupby(KEYS, as_index=False).agg(
-        first_token=("token_in", "first"),
-        last_token=("token_out", "last"),
-    )
-    ordered_cyclic = bounds.loc[
-        bounds["first_token"].eq(bounds["last_token"]), KEYS
-    ]
-    cyclic = pd.concat([role_cyclic, ordered_cyclic], ignore_index=True).drop_duplicates()
-    if not cyclic.empty:
-        d = d.merge(cyclic.assign(_cycle=1), on=KEYS, how="left")
-        d = d[d["_cycle"].isna()].drop(columns="_cycle")
-        sources = _role_rows(d, "in", "source")
-        sinks = _role_rows(d, "out", "sink")
+    eligibility = component_eligibility(d, keys=KEYS)
+    cyclic = eligibility.cyclic
+    eligible = eligibility.eligible
+    ambiguous = eligibility.ambiguous
+    if eligible.empty:
+        return pd.DataFrame()
+    d = d.merge(eligible[KEYS], on=KEYS, how="inner")
+    sources = role_token_values(d, "source", keys=KEYS)
+    sinks = role_token_values(d, "sink", keys=KEYS)
 
     # A token appears on both adjacent legs when it is an intermediary. Average its
     # repeated role observations within the component so A->K->B gives K the route's
     # value once, not twice. The same rule handles a split component without allowing
     # its number of recorded legs to manufacture intermediation volume.
-    intermediate = pd.concat(
-        [_role_rows(d, "in", "intermediate"), _role_rows(d, "out", "intermediate")],
-        ignore_index=True,
+    intermediate = role_token_values(d, "intermediate", keys=KEYS)
+    intermediate = intermediate.merge(
+        eligible[KEYS + ["src", "tgt"]], on=KEYS, how="inner"
     )
-    intermediate = (
-        intermediate.groupby(KEYS + ["token"], as_index=False)["amount_usd"].mean()
-        if not intermediate.empty else intermediate
-    )
+    intermediate = intermediate[
+        intermediate["token"].ne(intermediate["src"])
+        & intermediate["token"].ne(intermediate["tgt"])
+    ].drop(columns=["src", "tgt"])
     endpoints = pd.concat([sources, sinks], ignore_index=True)
     endpoints = (
         endpoints.groupby(KEYS + ["token"], as_index=False)["amount_usd"].mean()
@@ -185,4 +166,5 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
     out["endpoint_supported"] = out["endpoint_share"] > 0
     out["routes_clean"] = int(d[KEYS].drop_duplicates().shape[0])
     out["routes_cyclic_excluded"] = int(cyclic.shape[0])
+    out["routes_ambiguous_excluded"] = int(ambiguous.shape[0])
     return out.sort_values("intermediate_share", ascending=False).reset_index(drop=True)

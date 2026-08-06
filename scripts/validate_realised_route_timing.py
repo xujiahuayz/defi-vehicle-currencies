@@ -40,6 +40,7 @@ CODE_SOURCES = [
     "scripts/validate_realised_route_timing.py",
     "src/ddvc/analysis/block_timing.py",
     "src/ddvc/realised.py",
+    "src/ddvc/route_roles.py",
     "src/ddvc/prices.py",
 ]
 

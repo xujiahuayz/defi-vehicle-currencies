@@ -17,8 +17,8 @@ import pandas as pd
 
 from ddvc.asset_types import CURRENCY_TYPES, backing
 from ddvc.paths import REPO_ROOT
-from ddvc.provenance import stamp
-from ddvc.tables import write_exhibit
+from ddvc.runtime import exclusive_job
+from ddvc.tables import write_exhibit, write_panel
 from ddvc.vehicle_extent import (
     REQUIRED_COLUMNS,
     aggregate_vehicle_extent,
@@ -29,11 +29,18 @@ UNIFIED = REPO_ROOT / "data" / "unified"
 OUT_PANEL = REPO_ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 OUT_EXHIBIT = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use.jsonl"
 OUT_QUARTERLY = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use_quarterly.jsonl"
+LOCK = OUT_PANEL.with_suffix(".lock")
+MAX_WORKERS = 8
 CODE_SOURCES = [
     "scripts/build_vehicle_excess_use.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/vehicle_extent.py",
+    "src/ddvc/route_roles.py",
 ]
+
+
+def bounded_workers(requested: int) -> int:
+    return min(MAX_WORKERS, max(1, requested))
 
 
 def one_day(path: Path) -> pd.DataFrame:
@@ -72,6 +79,7 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()
+    workers = bounded_workers(args.workers)
 
     files = sorted(UNIFIED.glob("*.parquet"))
     if args.limit:
@@ -80,12 +88,12 @@ def main() -> int:
         print(f"no unified files under {UNIFIED.relative_to(REPO_ROOT)}")
         return 1
     print(
-        f"measuring excess use on {len(files):,} days with {args.workers} workers",
+        f"measuring excess use on {len(files):,} days with {workers} workers",
         flush=True,
     )
     parts: list[pd.DataFrame] = []
     failures: list[tuple[str, str]] = []
-    with ProcessPoolExecutor(max_workers=max(1, args.workers)) as pool:
+    with ProcessPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(one_day, path): path for path in files}
         for i, future in enumerate(as_completed(futures), 1):
             path = futures[future]
@@ -105,10 +113,13 @@ def main() -> int:
     panel = pd.concat(parts, ignore_index=True).sort_values(
         ["date", "intermediate_share"], ascending=[True, False]
     )
-    OUT_PANEL.parent.mkdir(parents=True, exist_ok=True)
-    tmp = OUT_PANEL.with_suffix(".tmp.parquet")
-    panel.to_parquet(tmp, index=False)
-    tmp.replace(OUT_PANEL)
+    write_panel(
+        panel,
+        OUT_PANEL,
+        code_sources=CODE_SOURCES,
+        inputs=[UNIFIED],
+        notes="cycles excluded; endpoints include direct and indirect clean routes",
+    )
 
     panel["year"] = panel["date"].dt.year
     panel["quarter"] = panel["date"].dt.to_period("Q").astype(str)
@@ -175,14 +186,6 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=[OUT_PANEL],
     )
-    stamp(
-        OUT_PANEL,
-        code_sources=CODE_SOURCES,
-        inputs=[UNIFIED],
-        rows=len(panel),
-        notes="cycles excluded; endpoints include direct and indirect clean routes",
-    )
-
     print(f"\n{panel.date.nunique():,} days, {len(panel):,} token-days")
     print("annual excess-use ratio by asset type, prespecified currencies only")
     table = type_year.pivot(
@@ -214,4 +217,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    with exclusive_job(LOCK, job="vehicle excess-use panel"):
+        raise SystemExit(main())

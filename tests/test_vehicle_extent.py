@@ -5,12 +5,13 @@ import unittest
 import pandas as pd
 
 from ddvc.asset_types import CURRENCY_TYPES, WETH
+from ddvc.realised import extract_realised_routes
 from ddvc.vehicle_extent import (
     aggregate_vehicle_extent,
     compute_vehicle_extent,
     restrict_routes_to_venues,
 )
-from scripts.build_vehicle_excess_use import stable_backing_year
+from scripts.build_vehicle_excess_use import bounded_workers, stable_backing_year
 
 
 def leg(
@@ -40,6 +41,11 @@ def leg(
 
 
 class VehicleExtentTests(unittest.TestCase):
+    def test_vehicle_extent_workers_are_bounded(self) -> None:
+        self.assertEqual(bounded_workers(0), 1)
+        self.assertEqual(bounded_workers(4), 4)
+        self.assertEqual(bounded_workers(100), 8)
+
     def test_primary_currency_types_exclude_only_the_residual_bucket(self) -> None:
         self.assertEqual(
             CURRENCY_TYPES,
@@ -91,6 +97,52 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertAlmostEqual(
             out.set_index("token").loc["k", "intermediate_usd"], 100
         )
+
+    def test_multiple_endpoint_components_are_removed_from_both_sides(self) -> None:
+        rows = [
+            leg("good", 0, "a", "k", "source", "intermediate", 100),
+            leg("good", 0, "k", "b", "intermediate", "sink", 100),
+            leg("ambiguous", 0, "a", "m", "source", "intermediate", 10_000),
+            leg("ambiguous", 0, "c", "m", "source", "intermediate", 10_000),
+            leg("ambiguous", 0, "m", "b", "intermediate", "sink", 10_000),
+        ]
+        out = compute_vehicle_extent(pd.DataFrame(rows))
+        self.assertTrue((out["routes_ambiguous_excluded"] == 1).all())
+        self.assertNotIn("m", set(out["token"]))
+        self.assertAlmostEqual(out.set_index("token").loc["k", "intermediate_usd"], 100)
+
+    def test_extent_and_realised_routes_share_intermediary_value_contract(self) -> None:
+        rows = [
+            leg("linear", 0, "a", "k", "source", "intermediate", 100, log_index=0),
+            leg("linear", 0, "k", "b", "intermediate", "sink", 110, log_index=1),
+            leg("long", 0, "a", "k", "source", "intermediate", 200, log_index=0),
+            leg("long", 0, "k", "m", "intermediate", "intermediate", 220, log_index=1),
+            leg("long", 0, "m", "b", "intermediate", "sink", 240, log_index=2),
+        ]
+        frame = pd.DataFrame(rows)
+        frame["source"] = "venue"
+        frame["timestamp_utc"] = 7 * 3600
+        extent = compute_vehicle_extent(frame).set_index("token")["intermediate_usd"]
+        realised = extract_realised_routes(frame).groupby("vehicle")["usd"].sum()
+        pd.testing.assert_series_equal(
+            extent.reindex(realised.index), realised, check_names=False
+        )
+
+    def test_parallel_route_values_sum_branches_before_balancing_sides(self) -> None:
+        rows = [
+            leg("split", 0, "a", "k", "source", "intermediate", 60, log_index=0),
+            leg("split", 0, "a", "k", "source", "intermediate", 40, log_index=1),
+            leg("split", 0, "k", "b", "intermediate", "sink", 99, log_index=2),
+        ]
+        frame = pd.DataFrame(rows)
+        frame["source"] = "venue"
+        frame["timestamp_utc"] = 7 * 3600
+        extent = compute_vehicle_extent(frame).set_index("token")
+        realised = extract_realised_routes(frame).set_index("vehicle")
+        self.assertAlmostEqual(extent.loc["a", "endpoint_usd"], 100.0)
+        self.assertAlmostEqual(extent.loc["b", "endpoint_usd"], 99.0)
+        self.assertAlmostEqual(extent.loc["k", "intermediate_usd"], 99.5)
+        self.assertAlmostEqual(realised.loc["k", "usd"], 99.5)
 
     def test_ordered_round_trip_is_removed_when_roles_have_no_endpoints(self) -> None:
         rows = [

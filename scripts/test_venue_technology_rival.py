@@ -24,6 +24,7 @@ import pandas as pd
 
 from ddvc.asset_types import CURRENCY_TYPES
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
+from ddvc.runtime import exclusive_job
 from ddvc.tables import write_exhibit
 from ddvc.vehicle_extent import (
     REQUIRED_COLUMNS,
@@ -35,11 +36,13 @@ from ddvc.venues import VENUE_ROBUSTNESS_SCOPES
 
 UNIFIED = DATA_DIR / "unified"
 OUT = OUTPUT_DIR / "exhibits" / "venue_technology_rival.jsonl"
+LOCK = OUT.with_suffix(".lock")
 INPUT_COLUMNS = REQUIRED_COLUMNS + ["source"]
 CODE_SOURCES = [
     "scripts/test_venue_technology_rival.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/vehicle_extent.py",
+    "src/ddvc/route_roles.py",
     "src/ddvc/venues.py",
 ]
 MAX_WORKERS = 8
@@ -162,4 +165,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    with exclusive_job(LOCK, job="venue technology rival"):
+        raise SystemExit(main())

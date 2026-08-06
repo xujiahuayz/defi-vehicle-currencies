@@ -79,6 +79,8 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "route_class": "coherent",
                 "token_in": "K",
                 "token_out": "B",
+                "tin_role": "intermediate",
+                "tout_role": "sink",
                 "log_index": 2,
             },
             {
@@ -89,6 +91,8 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "route_class": "coherent",
                 "token_in": "A",
                 "token_out": "K",
+                "tin_role": "source",
+                "tout_role": "intermediate",
                 "log_index": 1,
             },
             {
@@ -99,6 +103,8 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "route_class": "tricky_bridged",
                 "token_in": "X",
                 "token_out": "Y",
+                "tin_role": "source",
+                "tout_role": "sink",
                 "log_index": 0,
             },
         ]
@@ -128,6 +134,8 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "route_class": "coherent",
                 "token_in": "A",
                 "token_out": "K",
+                "tin_role": "intermediate",
+                "tout_role": "intermediate",
                 "log_index": 1,
             },
             {
@@ -138,6 +146,8 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "route_class": "coherent",
                 "token_in": "K",
                 "token_out": "A",
+                "tin_role": "intermediate",
+                "tout_role": "intermediate",
                 "log_index": 2,
             },
         ]
@@ -151,6 +161,36 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
         self.assertEqual(result["economic_multileg_routes"], 0)
         self.assertEqual(result["cross_venue_routes"], 0)
 
+    def test_multiple_endpoint_component_is_ambiguous_not_economic(self) -> None:
+        rows = [
+            {
+                "tx_hash": "ambiguous",
+                "component_id": 0,
+                "source": source,
+                "amount_usd": amount,
+                "route_class": "coherent",
+                "token_in": token_in,
+                "token_out": token_out,
+                "tin_role": tin_role,
+                "tout_role": tout_role,
+                "log_index": log_index,
+            }
+            for source, amount, token_in, token_out, tin_role, tout_role, log_index in [
+                ("v2", 60.0, "A", "K", "source", "intermediate", 1),
+                ("v3", 40.0, "C", "K", "source", "intermediate", 2),
+                ("v3", 99.0, "K", "B", "intermediate", "sink", 3),
+            ]
+        ]
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "20250101.parquet"
+            pd.DataFrame(rows).to_parquet(path, index=False)
+            result = one_day(path)
+        assert result is not None
+        self.assertEqual(result["routes"], 1)
+        self.assertEqual(result["ambiguous_routes"], 1)
+        self.assertEqual(result["economic_routes"], 0)
+        self.assertEqual(result["economic_multileg_routes"], 0)
+
     def test_native_and_wrapped_eth_are_one_economic_endpoint(self) -> None:
         rows = [
             {
@@ -161,6 +201,8 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "route_class": "coherent",
                 "token_in": token_in,
                 "token_out": token_out,
+                "tin_role": "intermediate",
+                "tout_role": "intermediate",
                 "log_index": log_index,
             }
             for source, token_in, token_out, log_index in [
@@ -187,6 +229,8 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "route_class": "coherent",
                 "token_in": token_in,
                 "token_out": token_out,
+                "tin_role": "source" if log_index == 1 else "intermediate",
+                "tout_role": "sink" if log_index == 3 else "intermediate",
                 "log_index": log_index,
             }
             for log_index, source, token_in, token_out in [
@@ -222,6 +266,8 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "route_class": "coherent",
                 "token_in": token_in,
                 "token_out": token_out,
+                "tin_role": "intermediate" if tx == "cycle" else ("source" if log_index == 1 else "intermediate"),
+                "tout_role": "intermediate" if tx == "cycle" else ("sink" if log_index == 2 or tx == "direct" else "intermediate"),
                 "log_index": log_index,
             }
             for tx, source, amount, token_in, token_out, log_index in [

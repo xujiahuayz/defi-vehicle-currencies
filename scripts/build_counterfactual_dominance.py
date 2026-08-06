@@ -85,6 +85,7 @@ CODE_SOURCES = [
     "src/ddvc/asset_types.py",
     "src/ddvc/prices.py",
     "src/ddvc/realised.py",
+    "src/ddvc/route_roles.py",
 ]
 
 VENUES = ("uniswap_v2", "sushiswap_v2")

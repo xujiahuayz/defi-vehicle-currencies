@@ -11,6 +11,7 @@ from scripts.build_intermediation_by_type import (
     annual_composition,
     bounded_workers,
     complexity_rival_tests,
+    integration_rival_windows,
     integration_rival_tests,
     one_day,
 )
@@ -115,6 +116,24 @@ class IntermediationByTypeTests(unittest.TestCase):
             & result["weighting"].eq("value")
         ].iloc[0]
         self.assertGreater(single_episode["change"], single_value["change"])
+
+    def test_integration_rival_windows_preserve_both_transition_phases(self) -> None:
+        rows = []
+        for year, stable_count in ((2023, 60.0), (2024, 40.0), (2026, 70.0)):
+            for day in range(2):
+                row: dict[str, object] = {"date": f"{year}-01-{day + 1:02d}"}
+                for scope in ("", "single_venue_", "cross_venue_"):
+                    row[f"cnt_{scope}stable"] = stable_count
+                    row[f"cnt_{scope}native"] = 100.0 - stable_count
+                    row[f"usd_{scope}stable"] = stable_count
+                    row[f"usd_{scope}native"] = 100.0 - stable_count
+                rows.append(row)
+        result = integration_rival_windows(pd.DataFrame(rows), hac_lag=1)
+        self.assertEqual(
+            set(zip(result["baseline_year"], result["comparison_year"])),
+            {(2023, 2024), (2024, 2026)},
+        )
+        self.assertEqual(len(result), 12)
 
     def test_complexity_rival_keeps_combined_route_regimes_separate(self) -> None:
         rows = []
