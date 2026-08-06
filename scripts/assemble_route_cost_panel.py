@@ -32,13 +32,15 @@ import argparse
 from pathlib import Path
 
 from ddvc.panel_assembly import assemble_parquet_shards
-from ddvc.paths import DATA_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.provenance import stamp
+from ddvc.route_cost_summary import write_route_cost_summary
 from ddvc.runtime import exclusive_job
 from scripts.run_route_cost_panel import QUOTE_CELL_KEYS
 
 CACHE = DATA_DIR / "empirical" / "_route_cost_day_cache"
 OUT = DATA_DIR / "empirical" / "route_cost_panel_v2.parquet"
+SUMMARY = OUTPUT_DIR / "empirical" / "route_cost_panel_v2_summary.pkl"
 CODE_SOURCES = [
     "scripts/assemble_route_cost_panel.py",
     "src/ddvc/panel_assembly.py",
@@ -97,6 +99,17 @@ def main() -> int:
                      notes=(f"assembled all {len(files)} readable day shards from "
                             f"{spec.relative_to(REPO_ROOT)}; {result.shards} nonempty"))
     print(f"stamped {manifest.relative_to(REPO_ROOT)}")
+    summary = write_route_cost_summary(OUT, SUMMARY)
+    summary_manifest = stamp(
+        SUMMARY,
+        code_sources=[*CODE_SOURCES, "src/ddvc/route_cost_summary.py"],
+        inputs=[OUT],
+        rows=len(summary),
+    )
+    print(
+        f"wrote {len(summary):,} summary rows and stamped "
+        f"{summary_manifest.relative_to(REPO_ROOT)}"
+    )
     return 0
 
 

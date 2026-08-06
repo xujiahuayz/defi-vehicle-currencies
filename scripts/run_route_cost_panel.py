@@ -28,7 +28,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 from ddvc.asset_types import WETH, canonical_token
 from ddvc.fetch.raw import (
@@ -72,6 +71,7 @@ from ddvc.pricing.v3pools import (
     tick_spacing_for_fee,
 )
 from ddvc.runtime import atomic_output, exclusive_job
+from ddvc.route_cost_summary import write_route_cost_summary
 
 ROOT = REPO_ROOT
 
@@ -180,6 +180,7 @@ QUOTE_INPUTS = [
 ]
 QUOTE_ENGINE = cache_key(QUOTE_SOURCES, inputs=QUOTE_INPUTS)
 PANEL_SOURCES = [*QUOTE_SOURCES, "src/ddvc/panel_assembly.py"]
+SUMMARY_SOURCES = [*QUOTE_SOURCES, "src/ddvc/route_cost_summary.py"]
 
 # Cached day content also depends on the arguments that decide WHAT is computed,
 # not only on the code that computes it. The cache ignored them, so a run at
@@ -1446,47 +1447,6 @@ def _migrate_day_cache() -> int:
     return 0
 
 
-def _summarize(panel: pd.DataFrame) -> pd.DataFrame:
-    if panel.empty:
-        return pd.DataFrame()
-    x = panel.copy()
-    rows = []
-    for (vehicle, size), g in x.groupby(["vehicle_sym", "trade_size_usd"]):
-        avail = g[g["vehicle_available"]]
-        both = g[
-            g["vehicle_available"]
-            & g["direct_available"]
-            & np.isfinite(g["direct_cost_advantage"])
-        ]
-        adv = (
-            both["direct_cost_advantage"].clip(lower=-10, upper=10)
-            if len(both)
-            else pd.Series(dtype=float)
-        )
-        t_stat = p_value = math.nan
-        if len(adv) > 2 and float(adv.std()) > 0:
-            t_stat, p_value = stats.ttest_1samp(adv.to_numpy(dtype=float), 0.0)
-        rows.append({
-            "vehicle": vehicle,
-            "trade_size_usd": size,
-            "rows": int(len(g)),
-            "vehicle_available_share": float(g["vehicle_available"].mean()),
-            "direct_available_share": float(g["direct_available"].mean()),
-            "both_available_rows": int(len(both)),
-            "vehicle_beats_direct_share": float((both["direct_cost_advantage"] < 0).mean()) if len(both) else math.nan,
-            "direct_cost_advantage_median": float(both["direct_cost_advantage"].median()) if len(both) else math.nan,
-            "direct_cost_advantage_p25": float(both["direct_cost_advantage"].quantile(0.25)) if len(both) else math.nan,
-            "direct_cost_advantage_p75": float(both["direct_cost_advantage"].quantile(0.75)) if len(both) else math.nan,
-            "direct_cost_advantage_winsor_mean": float(adv.mean()) if len(adv) else math.nan,
-            "t_winsor_mean": float(t_stat) if np.isfinite(t_stat) else math.nan,
-            "p_winsor_mean": float(p_value) if np.isfinite(p_value) else math.nan,
-            "no_direct_vehicle_available_rows": int((~g["direct_available"] & g["vehicle_available"]).sum()),
-            "covered_realized_volume_usd": float(avail["realized_bridge_volume_usd"].sum()),
-        })
-    return pd.DataFrame(rows).sort_values(["trade_size_usd", "vehicle"])
-
-
-
 def _price_chunk(payload: dict) -> int:
     global UNIFY_WRAPPED
     """Warm the V3 index up to this chunk of days, then price and cache them.
@@ -1693,30 +1653,14 @@ def main() -> int:
             n_rows = assembled.rows
             print(f"assembled {n_rows:,} rows into {out_path.name}", flush=True)
 
-            # The summary needs only a handful of columns, so read those back with
-            # projection rather than holding the whole panel.
-            # Must cover every column _summarize touches. Omitting one turns a
-            # completed 763 MB panel into a KeyError after all the work is done.
-            summary_cols = ["date", "method", "src", "src_sym", "tgt", "tgt_sym",
-                            "vehicle", "vehicle_sym", "trade_size_usd",
-                            "direct_available", "vehicle_available",
-                            "direct_output_usd", "vehicle_output_usd",
-                            "direct_cost_advantage", "direct_source", "hop1_source",
-                            "realized_bridge_volume_usd", "n_realized_routes"]
-            have = set(pq.ParquetFile(out_path).schema.names) if n_rows else set()
-            panel = (pq.read_table(out_path,
-                                   columns=[c for c in summary_cols if c in have])
-                     .to_pandas() if n_rows else pd.DataFrame())
-            summary = _summarize(panel)
-            summary_path.parent.mkdir(parents=True, exist_ok=True)
-            summary.to_pickle(summary_path)
+            summary = write_route_cost_summary(out_path, summary_path)
             record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,
                               rows=n_rows,
                               notes=f"quote engine {QUOTE_ENGINE}; "
                                     f"day cache {DAY_CACHE.name}; {len(hours)} hour(s)/day")
-            record_provenance(summary_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,
+            record_provenance(summary_path, code_sources=SUMMARY_SOURCES, inputs=[out_path],
                               rows=len(summary))
-            print(f"wrote {len(panel):,} rows -> {out_path}")
+            print(f"wrote {n_rows:,} rows -> {out_path}")
             print(f"wrote summary -> {summary_path}")
             return 0
 
@@ -1758,13 +1702,11 @@ def main() -> int:
         panel = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
         assert_unique_quote_cells(panel, context="serial route-cost panel")
         _write(panel, out_path)
-    summary = _summarize(panel)
-    summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary.to_pickle(summary_path)
+    summary = write_route_cost_summary(out_path, summary_path)
     record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,
                       rows=len(panel),
                       notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}")
-    record_provenance(summary_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,
+    record_provenance(summary_path, code_sources=SUMMARY_SOURCES, inputs=[out_path],
                       rows=len(summary))
     print(f"wrote {len(panel):,} rows -> {out_path}")
     print(f"wrote summary -> {summary_path}")
