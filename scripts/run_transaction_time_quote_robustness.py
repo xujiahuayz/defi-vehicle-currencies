@@ -18,6 +18,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from ddvc.prices import day_prices
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 DATA = ROOT / "data"
@@ -31,7 +33,6 @@ from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
 from run_route_cost_panel import (  # noqa: E402
     VEHICLE_BY_ADDRESS,
     _best_quote,
-    _day_prices,
     _load_v2_pools,
 )
 
@@ -219,7 +220,7 @@ def run(max_days: int | None = None, force: bool = False) -> pd.DataFrame:
         unified = pd.read_parquet(DATA / "unified" / f"{stamp}.parquet", columns=[
             "token_in", "token_out", "token_in_sym", "token_out_sym", "amount_in", "amount_out", "amount_usd"
         ])
-        prices = _day_prices(unified)
+        prices = day_prices(unified)
         noon = _load_v2_pools(stamp, 12)
         by_hour = {int(h): _load_v2_pools(stamp, int(h)) for h in sorted(d["hour"].dropna().unique())}
         for r in d.itertuples(index=False):

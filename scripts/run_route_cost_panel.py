@@ -39,6 +39,7 @@ from ddvc.fetch.raw import (
 )
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.panel_assembly import assemble_parquet_shards
+from ddvc.prices import day_prices
 from ddvc.provenance import cache_key
 from ddvc.provenance import stamp as record_provenance
 from ddvc.pricing.v2quote import quote_exact_input_float
@@ -273,34 +274,6 @@ def _available_stamps(start: str | None, end: str | None) -> list[str]:
         e = end.replace("-", "")
         stamps = [x for x in stamps if x <= e]
     return stamps
-
-
-def _day_prices(legs: pd.DataFrame) -> dict[str, tuple[str, float]]:
-    rows = []
-    for side in ("in", "out"):
-        amount = legs[f"amount_{side}"].replace(0, np.nan)
-        px = legs["amount_usd"] / amount
-        tmp = pd.DataFrame({
-            "token": legs[f"token_{side}"].str.lower(),
-            "symbol": legs[f"token_{side}_sym"],
-            "price": px,
-            "weight": legs["amount_usd"],
-        })
-        rows.append(tmp)
-    d = pd.concat(rows, ignore_index=True)
-    d = d[np.isfinite(d["price"]) & (d["price"] > 0) & (d["price"] < 1_000_000)]
-    out: dict[str, tuple[str, float]] = {}
-    for token, g in d.groupby("token"):
-        if len(g) < 3:
-            continue
-        # Weighted median without pulling in extra dependencies.
-        g = g.sort_values("price")
-        w = g["weight"].clip(lower=1e-9).to_numpy()
-        cdf = np.cumsum(w) / w.sum()
-        price = float(g["price"].to_numpy()[np.searchsorted(cdf, 0.5)])
-        symbol = str(g["symbol"].mode().iloc[0]) if not g["symbol"].mode().empty else token[:8]
-        out[token] = (symbol, price)
-    return out
 
 
 def _routes_by_pair(legs: pd.DataFrame, top_pairs: int) -> pd.DataFrame:
@@ -1322,7 +1295,7 @@ def _build_day(
         "tin_role", "tout_role",
     ]
     legs = pd.read_parquet(unified, columns=cols)
-    prices = _day_prices(legs)
+    prices = day_prices(legs)
     pairs = _routes_by_pair(legs, top_pairs=top_pairs)
     if pairs.empty:
         return pd.DataFrame()

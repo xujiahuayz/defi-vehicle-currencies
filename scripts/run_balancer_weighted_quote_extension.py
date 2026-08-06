@@ -19,6 +19,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ddvc.prices import day_prices
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 DATA = ROOT / "data"
@@ -29,7 +31,6 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from build_paper_exhibits import _int, _num, _pct, _write_table  # noqa: E402
-from run_route_cost_panel import _day_prices  # noqa: E402
 
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 
@@ -78,7 +79,7 @@ def _prices(stamp: str) -> dict[str, float]:
     legs = pd.read_parquet(path, columns=[
         "token_in", "token_out", "token_in_sym", "token_out_sym", "amount_in", "amount_out", "amount_usd"
     ])
-    return {k: v[1] for k, v in _day_prices(legs).items()}
+    return {k: v[1] for k, v in day_prices(legs).items()}
 
 
 def _load_pools(stamp: str) -> dict[frozenset[str], list[WeightedPool]]:

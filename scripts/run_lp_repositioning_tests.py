@@ -19,6 +19,7 @@ import pandas as pd
 from scipy import stats
 
 from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.prices import day_prices
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -31,7 +32,6 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
-from run_route_cost_panel import _day_prices  # noqa: E402
 
 VEHICLES = {"WETH", "USDC", "USDT", "DAI", "WBTC"}
 FEE_TO_SPACING = {100: 1, 500: 10, 3000: 60, 10000: 200}
@@ -57,7 +57,7 @@ def _prices(stamp: str) -> tuple[dict[str, float], dict[str, float]]:
     legs = pd.read_parquet(path, columns=[
         "token_in", "token_out", "token_in_sym", "token_out_sym", "amount_in", "amount_out", "amount_usd"
     ])
-    by_addr = {k: v[1] for k, v in _day_prices(legs).items()}
+    by_addr = {k: v[1] for k, v in day_prices(legs).items()}
     rows = []
     for side in ("in", "out"):
         amount = legs[f"amount_{side}"].replace(0, np.nan)
