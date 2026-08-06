@@ -58,7 +58,7 @@ Range boundaries sit on a geometric tick grid and each initialised tick carries 
 with the sign set by the direction of travel. The quoter carries the contract's own integer Q96 arithmetic, including the round-up conventions on the input side and the round-down conventions on the output side, so a quote is exact given the state.
 % src/ddvc/pricing/v3quote.py, integer port of SwapMath.computeSwapStep and TickMath
 
-The active tick map is accumulated from every mint and burn since pool inception, and the pre-trade state comes free from the swap record: consecutive swaps in one pool leave \texttt{sqrtPriceX96} and \texttt{tick} on the earlier event, and nothing except a swap moves the price inside a pool. Errors are reported by trade direction crossed with whether the quote traversed an initialised tick, because a traversal fault is directional by construction and a pooled error statistic averages a broken direction against a working one. That is not a hypothetical: an upward search that returned the tick just crossed produced a zero-width step and under-quoted upward tick-crossing swaps by a median 62.6\%, while every non-crossing quote read exact and the downward direction validated at $-0.0006\%$.
+The active tick map is accumulated from every mint and burn strictly before the validation day, then same-day liquidity changes and swaps are replayed together by block and log index. Consecutive swaps in one pool supply the price state: the earlier event leaves \texttt{sqrtPriceX96} and \texttt{tick} immediately before the later swap, while the interleaved event stream supplies the active liquidity it actually faced. Errors are reported by trade direction crossed with whether the quote traversed an initialised tick, because a traversal fault is directional by construction and a pooled error statistic averages a broken direction against a working one. That is not a hypothetical: an upward search that returned the tick just crossed produced a zero-width step and under-quoted upward tick-crossing swaps by a median 62.6\%, while every non-crossing quote read exact and the downward direction validated at $-0.0006\%$.
 % src/ddvc/pricing/v3quote.py, _next_init_tick measured docstring against realised swaps
 
 Table~\ref{tab:app:cl} reports the four cells on Uniswap v4, whose supported pools exercise the same code path on static fee tiers v3 never carried, including 0, 7, 8 and 20,000 hundredths of a basis point. Hook-bearing and dynamic-fee pools are excluded because their per-swap hook cash flows and realised fee are not present in the raw rows; Appendix~\ref{app:coverage} measures that support boundary.
@@ -73,16 +73,16 @@ Table~\ref{tab:app:cl} reports the four cells on Uniswap v4, whose supported poo
 Cell & Swaps & Median & 90th pct. & Maximum & Within 1\% \\
 % output/exhibits/v4_quoter_validation.jsonl, column headings for 4,218 validated v4 swaps
 \midrule
-token0 in, no tick crossed & 2{,}162 & $0$ & $0$ & $9.98\times10^{-4}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, 2,162 of 4,218 validated v4 swaps
-token0 in, tick crossed & 185 & $0$ & $2.71\times10^{-7}$ & $3.24\times10^{-6}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, 185 of 4,218 validated v4 swaps
-token1 in, no tick crossed & 1{,}707 & $0$ & $1.69\times10^{-8}$ & $1.48\times10^{-4}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, 1,707 of 4,218 validated v4 swaps
-token1 in, tick crossed & 164 & $1.98\times10^{-8}$ & $4.13\times10^{-7}$ & $5.20\times10^{-6}$ & 100.0\% \\
-% output/exhibits/v4_quoter_validation.jsonl, 164 of 4,218 validated v4 swaps
+token0 in, no tick crossed & 2{,}290 & $0$ & $0$ & $9.98\times10^{-4}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, 2,290 of 4,218 validated v4 swaps
+token0 in, tick crossed & 57 & $0$ & $0$ & $3.45\times10^{-7}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, 57 of 4,218 validated v4 swaps
+token1 in, no tick crossed & 1{,}816 & $0$ & $1.69\times10^{-8}$ & $1.48\times10^{-4}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, 1,816 of 4,218 validated v4 swaps
+token1 in, tick crossed & 55 & $0$ & $5.44\times10^{-9}$ & $8.74\times10^{-9}$ & 100.0\% \\
+% output/exhibits/v4_quoter_validation.jsonl, 55 of 4,218 validated v4 swaps
 \midrule
-Pooled & 4{,}218 & $0$ & $8.31\times10^{-9}$ & $9.98\times10^{-4}$ & 100.0\% \\
+Pooled & 4{,}218 & $0$ & $1.15\times10^{-14}$ & $9.98\times10^{-4}$ & 100.0\% \\
 % output/exhibits/v4_quoter_validation.jsonl, all 4,218 validated v4 swaps
 \bottomrule
 \end{tabular}
