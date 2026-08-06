@@ -47,18 +47,16 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
-from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-
 from ddvc.analysis.block_timing import PoolView, load_v3_swap_day, oriented
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.tables import write_exhibit
 
-V3 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v3"
-OUT = ROOT / "output" / "exhibits" / "block_vs_hour_verdict.jsonl"
-COND_OUT = ROOT / "output" / "exhibits" / "block_vs_hour_conditional.jsonl"
+V3 = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
+OUT = OUTPUT_DIR / "exhibits" / "block_vs_hour_verdict.jsonl"
+COND_OUT = OUTPUT_DIR / "exhibits" / "block_vs_hour_conditional.jsonl"
 CODE_SOURCES = [
     "scripts/test_block_vs_hour_verdict.py",
     "src/ddvc/analysis/block_timing.py",
@@ -154,7 +152,13 @@ def measure_day(day: str, max_triangles: int, min_swaps: int,
             gaps_own.sort()
             deltas.sort()
             rows.append({
-                "day": day, "direct_pool": direct[:10], "vehicle": k[:10],
+                "day": day,
+                "src": a,
+                "tgt": b,
+                "vehicle": k,
+                "direct_pool": direct,
+                "hop1_pool": leg1,
+                "hop2_pool": leg2,
                 "n_observations": n, "flip_rate": flips / n,
                 "median_gap_bps": gaps_own[len(gaps_own) // 2],
                 "median_delta_bps": deltas[len(deltas) // 2],
@@ -175,7 +179,7 @@ def main() -> int:
     days = sorted(p.name[len("uniswap_v3_swaps_"):-len(".jsonl.gz")]
                   for p in V3.glob("uniswap_v3_swaps_*.jsonl.gz"))
     if not days:
-        print(f"no v3 swap files under {V3.relative_to(ROOT)}")
+        print(f"no v3 swap files under {V3.relative_to(REPO_ROOT)}")
         return 1
     step = max(1, len(days) // args.days)
     picked = days[::step][: args.days]
@@ -297,7 +301,7 @@ def main() -> int:
         inputs=[V3],
         notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
     )
-    print(f"\nwrote {OUT.relative_to(ROOT)}")
+    print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
 
     # PERSIST THE CONDITIONAL TABLES, not only the per-triangle rows. An audit of the
     # paper found the fee-wedge sweep, the gap-conditional profile and the time-to-boundary
@@ -336,7 +340,7 @@ def main() -> int:
             inputs=[V3],
             notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
         )
-        print(f"wrote {COND_OUT.relative_to(ROOT)}")
+        print(f"wrote {COND_OUT.relative_to(REPO_ROOT)}")
     return 0
 
 
