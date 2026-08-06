@@ -5,11 +5,22 @@ DEMOTED TO A ROBUSTNESS EXHIBIT BY NODE C ROUND 2, 2026-08-06. Read
 docs/node-c-definitions-round2.md section 1 before using anything this script writes as
 a primary measure. Three findings from that pass bind here.
 
-First, the justification below was uncheckable. Flandreau and Jobst is not in this
-project's corpus: `grep -ari flandreau literature/text/` returns nothing, including from
-every reference list. The claim that betweenness is what connects this paper to that
-conversation cannot be verified against anything in this repository, and it was carrying
-a definitional decision on its own.
+First, the justification below did not survive checking, and the paper it appealed to
+argues the other way. Flandreau and Jobst was absent from the corpus when that sentence
+was written, so it was cited from memory of a summary. The author-deposited precursor is
+now here, CEPR Discussion Paper 5529 of March 2006 behind the Economic Journal article of
+2009, 41 pages at `literature/text/2009-FlandreauJobst2009Empirics-working-paper-*.txt`,
+and it does not support this statistic. Over that extract `grep -aoic` returns 0 for
+centrality, 0 for betweenness, 0 for eigenvector and 0 for shortest path. Their own term
+is "strategic externalities", 14 occurrences against 0 for "network externalities". Their
+network is a binary exchange matrix of which currencies were quoted in which foreign
+exchange markets, their externality is a liquidity and popularity feedback estimated at a
+parameter product of 0.463, giving "persistence but no lock-in effects", and the quantity
+they read off the network is the number of foreign markets quoting a currency. That is
+DEGREE. So the one prior paper measuring the international currency role on a network uses
+the same statistic `asset_types.py` uses to define the native asset, which is the
+circularity in the third finding below and not a defence against it. Nothing may be
+attributed to the published 2009 version, which could not be retrieved.
 
 Second, no corpus paper uses this class of statistic. Across 53 papers and 1,974 pages,
 `grep -aci` returns zero files for `centrality`, zero for `betweenness`, zero for

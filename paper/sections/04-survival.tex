@@ -1,0 +1,43 @@
+% Section 4. The central estimand: how long the vehicle role survives dominance.
+%
+% The retention ratios measured at hour-boundary state are not reported here. Section 6
+% measures the misclassification that pricing at that state produces, and it is too large
+% for a contrast that turns on a few percentage points. This section states the estimand,
+% both arms of the specification, and what is known about the obstacle, in finished prose.
+
+\section{How long the role survives}
+\label{sec:survival}
+
+\subsection{The question the inertia literature has always wanted}
+\label{sec:survival:question}
+
+Section~\ref{sec:dominance} establishes that an asset can hold the vehicle role at moments when routing through it is not the cheapest way to trade, and that this happens on 27.2\% of realised multi-leg routing. A frequency is a statement about states. What the literature on currency inertia actually asks is a statement about duration: given that the incumbent has lost its cost advantage, how long does it keep the role, and does it keep it longer than a challenger with an equivalent advantage takes to take it.
+
+That asymmetry is what separates two mechanisms which look identical in a cross-section. Under \emph{persistence} the role is slow to move in both directions, because both moving to a new vehicle and moving away from an old one meet the same frictions, and the durations match. Under \emph{hysteresis} the incumbent holds on longer than the challenger takes to break in, so the system's response depends on the direction of the shock and the incumbent enjoys a protection that a symmetric friction cannot produce. Foreign exchange data cannot separate them, because the moments when an incumbent currency is strictly cost-dominated are not observable and the counterfactual network is not in the data. On chain both arms are measurable on the same pairs, at the same states, with the same pricing engine.
+
+\subsection{Specification}
+\label{sec:survival:spec}
+
+Both arms are defined on one quantity, the routing share that an asset $k$ holds on the pair $(a,b)$ on date $t$, written $s_{abkt}$, together with the dominance indicator $d_{abkt}$ of Section~\ref{sec:setting:definitions} evaluated at the state each route executed in.
+
+The \emph{retention arm} takes every pair-candidate spell in which an incumbent, defined as the asset holding the largest routing share on that pair, becomes dominated, and measures the number of consecutive days it holds the largest share thereafter. The spell ends on the first date another asset takes the largest share, and spells still running at the end of the sample are right-censored and enter the estimate as censored observations.
+
+The \emph{displacement arm} takes every pair-candidate spell in which a non-incumbent becomes strictly cheaper than the incumbent and measures the number of consecutive days until it takes the largest routing share, censored the same way. The two arms are computed on the same pairs, so the comparison holds the pair's liquidity, its token characteristics and its trading population fixed by construction.
+
+The object of interest is the difference between the two durations. Equality is persistence under symmetric frictions. Retention exceeding displacement is hysteresis, and its magnitude in days is the quantity the currency literature has been unable to measure.
+
+Two robustness checks are specified with the estimand and not chosen after seeing it. The duration ordering is re-estimated at each of the three priced notionals, to establish whether it is common across trade size or an artefact of the fixed grid. And it is re-estimated at a 2\% and a 10\% price-impact ceiling in place of the 5\% of Section~\ref{sec:setting:support}, to establish whether the support screen selects the spells.
+
+\subsection{The price of survival}
+\label{sec:survival:price}
+
+Duration is one currency for the cost of inertia and money is the other, and the two answer different questions. The dollars \emph{routed} through a dominated vehicle measure the exposure. The dollars \emph{foregone} measure the loss, and they are the matched realised routes' notional multiplied by the realised cost gap in basis points, summed over dominated routes. The second is the quantity comparable to the magnitudes the arbitrage literature reports, and it is the one this section will report, because a large flow through a slightly worse route and a small flow through a much worse route are different phenomena that the exposure figure cannot distinguish.
+
+\subsection{Why the naive measurement does not answer this}
+\label{sec:survival:obstacle}
+
+Computing the retention arm on dominance verdicts evaluated at the close of each hour is available immediately, and it does not identify what this section asks. A smart-order router quotes at a block and settles in the next. Classifying a route by the state that stood at the end of its hour records as dominated a route that was cheapest when the router chose and was overtaken afterwards, which the router could not have avoided. A retention ratio computed on that classification mixes the behaviour with the staleness of the measurement.
+
+The size of that mixing is measured in Section~\ref{sec:executability} and it is a function of trade economics. At the fee wedges these routes pay, roughly 15\% to 25\% of dominance verdicts differ between own-block and hour-boundary state. A duration contrast that turns on differences of a few percentage points between asset types cannot be separated from a misclassification of that size, and the arms are therefore estimated on verdicts evaluated at each route's own block. That is a heavier computation and not a different design, since the specification above is unchanged by the state at which $d_{abkt}$ is evaluated.
+
+The one thing the timing correction cannot change is the sign of the question. Whether retention exceeds displacement is a comparison between two arms measured with the same instrument, so a misclassification that applies to both arms alike moves both durations toward the middle and shrinks the measured asymmetry. The estimate is therefore conservative with respect to hysteresis: a timing error of this kind can hide an asymmetry that exists and cannot manufacture one that does not.

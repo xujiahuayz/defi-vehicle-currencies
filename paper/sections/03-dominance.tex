@@ -1,0 +1,64 @@
+% Section 3. The lead result: incumbents holding the vehicle role while dominated.
+%
+% Every number carries a trailing comment naming the exhibit it was read from. The
+% matched-sample limitation is disclosed in the body and not in a footnote, because it is
+% the reason the headline is the reweighted figure and not the raw matched mean.
+
+\section{Incumbents hold the role while dominated}
+\label{sec:dominance}
+
+\subsection{Dominance on routing that actually executed}
+\label{sec:dominance:realised}
+
+The configuration the currency literature cannot observe is an asset holding the vehicle role at a moment when routing through it was not the cheapest way to trade. In foreign exchange the state is unobservable in principle, because an incumbent's cost advantage is a consequence of its incumbency and the counterfactual network is not in the data. Here it is observable on routes that executed, and it is common.
+
+Of realised multi-leg routing, 27.2\% was strictly dominated by a direct pool available at the same reconstructed state and the same size. The figure is population-weighted and covers 79.0\% of realised routing.
+% output/exhibits/realised_dominance.jsonl, REWEIGHTED row; docs/finding-dominance-and-persistence.md
+
+That number arrives close to the 30.0\% all-in figure reported by an earlier single-venue analysis of this market, by a path that reuses none of that computation. The agreement is reported as a convergence and not as a confirmation, since two estimates sharing an error in the underlying quoting would agree for the wrong reason.
+% docs/finding-dominance-and-persistence.md
+
+\subsection{Why the headline is the reweighted figure}
+\label{sec:dominance:matching}
+
+The raw mean over matched routes is 41.3\%, and it is not the population figure. Matching a realised route to a counterfactual quote requires the panel to carry that pair, that candidate vehicle and that state, and only 1.9\% of realised multi-leg routes clear that bar, on 71 pairs against 17,851. The survivors are not a random sample of routing, and the direction of the difference is measured: matched routes have a median notional of \$11,594 against \$866 for unmatched, they are 64.1\% stable-intermediated where the realised population is 67.7\% native-intermediated, and the entire \emph{other} category is absent from them.
+% output/exhibits/matched_sample_characterisation.jsonl
+
+Because dominance incidence differs by a factor of two and a half across candidate types, quoting the matched mean as a population figure would report a statement about large trades on busy pairs through stablecoins. Reweighting the matched type-specific rates to the population's candidate composition gives 27.2\% and covers 79.0\% of realised routing, with the residual 21.0\% being \emph{other} and staked-native routing for which no matched rate exists. The arithmetic is reported in full in Table~\ref{tab:reweighting} so a reader can redo it.
+
+One thing the reweighting cannot fix is stated plainly. Nothing conditional on trade size generalises from this sample, because the panel prices three fixed notionals and matched trades are an order of magnitude larger than the population's. Any size gradient in what follows is therefore reported as a property of the matched sample.
+
+\subsection{Which assets are dominated, and how that changed}
+\label{sec:dominance:types}
+
+Dominance incidence on realised routes differs sharply by intermediary type, at 23.7\% for the native asset, 45.4\% for the stable numeraire and 61.4\% for imported assets.
+% scripts/measure_realised_dominance.py; scripts/characterise_matched_sample.py
+
+That ordering is what the thick-network definition of the native type implies, so it is reported as description. What the ordering cannot do is carry a claim that routing through the native asset is cheaper, for the reason given in Section~\ref{sec:setting:definitions}: the native type is defined as the asset with the thickest pairing network, and a finding that the thickest-network asset is the hardest to beat restates the definition.
+
+Enumerating every candidate a router could have chosen, instead of only the one it took, returns 70.1\% gross and 80.3\% all-in on 1,839 post-screen routes. This answers a different question and is reported as the enumeration bound. Most enumerated two-hop routes are ones nobody took, and holding the vehicle role means being used, so the realised figure is the one that speaks to the role.
+% output/exhibits/dominance_windows_screened.jsonl
+
+\subsection{The migration the incidence is read against}
+\label{sec:dominance:transition}
+
+Dominance incidence is a statement about a moment, and the moments in this sample are not exchangeable, because the vehicle role itself moves across the period. Value-weighted, the native asset's share of intermediation falls from 73.0\% to 14.8\% while the stable numeraire's rises from 21.2\% to 50.1\%, measured over 2,240 days. The value-weighted crossover arrives in 2022-Q1 and is sustained from 2022-Q4. The count-weighted crossover appears only in 2026-H1.
+% docs/finding-intermediation-transition.md
+
+The gap between those two crossover dates is itself informative and is taken up in Section~\ref{sec:rivals}: value moves to the stable numeraire years before the count of routes does, which is what a transition led by large trades looks like.
+
+Concentration falls at the same time as the leader changes. The effective number of vehicles rises from 2.06 to 10.84 and the leading asset's share of intermediated value falls from 68.9\% to 20.4\%, with leadership alternating between the native asset and the stable numeraire from 2022 onward.
+% docs/finding-fragmentation-not-succession.md
+
+This distinguishes two worlds the currency literature states but cannot separate. Under succession one vehicle replaces another, concentration holds, and only the leader's identity changes, which is the sterling to dollar transition. Under fragmentation the role spreads across several assets, so concentration falls while the incumbent may still lead. What the data show is both at once on the value basis, and the distinction matters because the dollar against the euro and the renminbi is exactly this question.
+
+\subsection{Robustness of the measurement}
+\label{sec:dominance:robustness}
+
+The incidence figure is a frequency, and a frequency is a statement about a state that does not require the router to have had a choice. That is what keeps this section standing where Section~\ref{sec:survival} is more constrained: an error in the state at which a route is priced changes the magnitude of a frequency and does not change its kind. Section~\ref{sec:executability} measures that error and reports what it does to the classification.
+
+Two screens applied throughout are worth restating here because they move the number. Round trips are excluded before anything is measured, and the support screen of Section~\ref{sec:setting:support} declines to quote any leg whose own price impact would exceed 5\%, which removes between 70\% and 86\% of quotable routes and moves the median gap from thousands of basis points to tens.
+% output/exhibits/dominance_windows_screened.jsonl
+
+The retired single-venue figure of 17.9\% is superseded in three respects at once, being constant-product only, unscreened, and enumerated instead of realised, and it is noted here only so a reader tracing this literature can see which of the three changes moved it.
+% docs/finding-cost-dominance-measured.md, superseded
