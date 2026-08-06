@@ -1,0 +1,5 @@
+{"corpus_median": 20.0, "corpus_p25": 20.0, "corpus_p75": 21.0, "draft": 27.0, "feature": "sentence_words", "gap_fraction": 0.35, "on_target": 0}
+{"corpus_median": 2.0, "corpus_p25": 2.0, "corpus_p75": 2.0, "draft": 3.0, "feature": "clauses_per_sentence", "gap_fraction": 0.5, "on_target": 0}
+{"corpus_median": 1.0, "corpus_p25": 1.0, "corpus_p75": 1.0, "draft": 1.0, "feature": "commas_per_sentence", "gap_fraction": 0.0, "on_target": 1}
+{"corpus_median": 0.0, "corpus_p25": 0.0, "corpus_p75": 0.0, "draft": 0.0, "feature": "share_simple_declarative", "gap_fraction": 0.0, "on_target": 1}
+{"corpus_median": 1.0, "corpus_p25": 1.0, "corpus_p75": 1.0, "draft": 1.0, "feature": "share_paragraphs_opening_on_claim", "gap_fraction": 0.0, "on_target": 1}

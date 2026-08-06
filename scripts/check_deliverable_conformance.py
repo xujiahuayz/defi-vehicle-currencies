@@ -43,6 +43,10 @@ STAGES = [
     ("discovered over-used constructions, nobody naming them first",
      [str(PY), "scripts/find_prose_outliers.py"],
      "a word, phrase or syntactic template is used above every published paper's rate"),
+    ("prose shape against the venue's own distributions",
+     [str(PY), "scripts/measure_venue_shape.py"],
+     "sentence length or clause count sits outside the venue's range, which no amount of "
+     "word-level correction can fix"),
     ("house voice and register",
      [str(PY), "-m", "pytest", "tests/test_paper_prose.py", "-q"],
      "banned register, em dashes, hard-wrapped prose, or process language in a deliverable"),
