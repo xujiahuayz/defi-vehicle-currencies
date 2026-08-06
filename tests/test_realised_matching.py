@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 
+from ddvc.asset_types import WETH
 from ddvc.realised import (
     cost_panel_days,
     extract_realised_routes,
@@ -30,8 +31,8 @@ def leg(
         "tx_hash": tx,
         "component_id": 0,
         "source": "v2" if log_index == 0 else "v3",
-        "token_in": token_in,
-        "token_out": token_out,
+        "token_in": token_in.lower(),
+        "token_out": token_out.lower(),
         "amount_usd": usd,
         "log_index": log_index,
         "route_class": "coherent",
@@ -72,8 +73,20 @@ class RealisedMatchingTests(unittest.TestCase):
         )
         out = extract_realised_routes(legs)
         self.assertEqual(set(out["tx_hash"]), {"long"})
-        self.assertEqual(set(out["vehicle"]), {"K", "M"})
+        self.assertEqual(set(out["vehicle"]), {"k", "m"})
         self.assertTrue(out["legs"].eq(3).all())
+
+    def test_extraction_unifies_native_eth_with_wrapped_native(self) -> None:
+        native_eth = "0x0000000000000000000000000000000000000000"
+        out = extract_realised_routes(
+            pd.DataFrame(
+                [
+                    leg("native", 0, "A", native_eth, "source", "intermediate"),
+                    leg("native", 1, native_eth, "B", "intermediate", "sink"),
+                ]
+            )
+        )
+        self.assertEqual(out.iloc[0]["vehicle"], WETH)
 
     def test_match_is_exact_hour_and_uses_log_nearest_size(self) -> None:
         routes = extract_realised_routes(
@@ -90,9 +103,9 @@ class RealisedMatchingTests(unittest.TestCase):
                 {
                     "date": "2025-01-01",
                     "reserve_hour_utc": 7,
-                    "src": "A",
-                    "tgt": "B",
-                    "vehicle": "K",
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": "k",
                     "trade_size_usd": size,
                     "direct_available": True,
                     "vehicle_available": True,
@@ -124,9 +137,9 @@ class RealisedMatchingTests(unittest.TestCase):
                 {
                     "date": "2025-01-01",
                     "reserve_hour_utc": 7,
-                    "src": "A",
-                    "tgt": "B",
-                    "vehicle": "K",
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": "k",
                     "trade_size_usd": 5_000.0,
                     "direct_available": False,
                     "vehicle_available": True,
@@ -151,9 +164,9 @@ class RealisedMatchingTests(unittest.TestCase):
         row = {
             "date": "2025-01-01",
             "reserve_hour_utc": 7,
-            "src": "A",
-            "tgt": "B",
-            "vehicle": "K",
+            "src": "a",
+            "tgt": "b",
+            "vehicle": "k",
             "trade_size_usd": 5_000.0,
             "direct_available": True,
             "vehicle_available": True,

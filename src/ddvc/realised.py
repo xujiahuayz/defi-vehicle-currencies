@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR
 
 ROUTE_COLUMNS = [
@@ -56,6 +57,11 @@ def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
     if missing:
         raise ValueError(f"realised routes are missing columns: {', '.join(missing)}")
     d = legs.loc[legs["route_class"].eq("coherent"), ROUTE_COLUMNS].copy()
+    if d.empty:
+        return pd.DataFrame()
+    d["token_in"] = d["token_in"].map(lambda value: canonical_token(value) or "")
+    d["token_out"] = d["token_out"].map(lambda value: canonical_token(value) or "")
+    d = d[d["token_in"].astype(bool) & d["token_out"].astype(bool)]
     if d.empty:
         return pd.DataFrame()
     d = d.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
