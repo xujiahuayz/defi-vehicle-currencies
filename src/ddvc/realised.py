@@ -59,58 +59,95 @@ def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
     if d.empty:
         return pd.DataFrame()
     d = d.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
-    rows: list[dict[str, object]] = []
-    for (tx_hash, component_id), group in d.groupby(
-        ["tx_hash", "component_id"], sort=False
-    ):
-        if len(group) < 2:
-            continue
-        token_roles = pd.concat(
-            [
-                group[["token_in", "tin_role"]].rename(
-                    columns={"token_in": "token", "tin_role": "role"}
-                ),
-                group[["token_out", "tout_role"]].rename(
-                    columns={"token_out": "token", "tout_role": "role"}
-                ),
-            ],
-            ignore_index=True,
-        ).dropna(subset=["token"])
-        sources = sorted(set(token_roles.loc[token_roles["role"].eq("source"), "token"]))
-        sinks = sorted(set(token_roles.loc[token_roles["role"].eq("sink"), "token"]))
-        if len(sources) != 1 or len(sinks) != 1 or sources[0] == sinks[0]:
-            continue
-        src, tgt = sources[0], sinks[0]
-        vehicles = sorted(
-            set(token_roles.loc[token_roles["role"].eq("intermediate"), "token"])
-            - {src, tgt}
-        )
-        if not vehicles:
-            continue
-        timestamps = pd.to_numeric(group["timestamp_utc"], errors="coerce").dropna()
-        amounts = pd.to_numeric(group["amount_usd"], errors="coerce").dropna()
-        if timestamps.empty or amounts.empty or float(amounts.max()) <= 0:
-            continue
-        timestamp = int(timestamps.median())
-        for vehicle in vehicles:
-            route_id = f"{tx_hash}:{component_id}:{vehicle}"
-            rows.append(
-                {
-                    "route_id": route_id,
-                    "tx_hash": tx_hash,
-                    "component_id": int(component_id),
-                    "timestamp_utc": timestamp,
-                    "hour": timestamp // 3600 % 24,
-                    "src": src,
-                    "tgt": tgt,
-                    "vehicle": vehicle,
-                    "usd": float(amounts.max()),
-                    "legs": int(len(group)),
-                    "venues": int(group["source"].nunique()),
-                    "cross_venue": bool(group["source"].nunique() > 1),
-                }
-            )
-    return pd.DataFrame(rows)
+    d["_timestamp"] = pd.to_numeric(d["timestamp_utc"], errors="coerce")
+    d["_usd"] = pd.to_numeric(d["amount_usd"], errors="coerce")
+    component_keys = ["tx_hash", "component_id"]
+    components = d.groupby(component_keys, as_index=False).agg(
+        legs=("log_index", "size"),
+        timestamp_utc=("_timestamp", "median"),
+        usd=("_usd", "max"),
+        venues=("source", "nunique"),
+    )
+    components = components[
+        components["legs"].ge(2)
+        & components["timestamp_utc"].notna()
+        & components["usd"].gt(0)
+    ]
+    if components.empty:
+        return pd.DataFrame()
+
+    token_roles = pd.concat(
+        [
+            d[component_keys + ["token_in", "tin_role"]].rename(
+                columns={"token_in": "token", "tin_role": "role"}
+            ),
+            d[component_keys + ["token_out", "tout_role"]].rename(
+                columns={"token_out": "token", "tout_role": "role"}
+            ),
+        ],
+        ignore_index=True,
+    ).dropna(subset=["token"])
+    token_roles = token_roles.drop_duplicates(component_keys + ["role", "token"])
+
+    def endpoints(role: str, token_name: str, count_name: str) -> pd.DataFrame:
+        return token_roles.loc[token_roles["role"].eq(role)].groupby(
+            component_keys, as_index=False
+        ).agg(**{token_name: ("token", "first"), count_name: ("token", "nunique")})
+
+    components = components.merge(
+        endpoints("source", "src", "source_tokens"), on=component_keys, how="inner"
+    ).merge(
+        endpoints("sink", "tgt", "sink_tokens"), on=component_keys, how="inner"
+    )
+    components = components[
+        components["source_tokens"].eq(1)
+        & components["sink_tokens"].eq(1)
+        & components["src"].ne(components["tgt"])
+    ].drop(columns=["source_tokens", "sink_tokens"])
+    vehicles = (
+        token_roles.loc[
+            token_roles["role"].eq("intermediate"), component_keys + ["token"]
+        ]
+        .rename(columns={"token": "vehicle"})
+        .drop_duplicates()
+    )
+    out = components.merge(vehicles, on=component_keys, how="inner")
+    out = out[out["vehicle"].ne(out["src"]) & out["vehicle"].ne(out["tgt"])]
+    if out.empty:
+        return pd.DataFrame()
+    out = out.sort_values(component_keys + ["vehicle"], kind="stable").reset_index(drop=True)
+    out["component_id"] = pd.to_numeric(out["component_id"], errors="raise").astype(int)
+    out["timestamp_utc"] = out["timestamp_utc"].astype(int)
+    out["hour"] = out["timestamp_utc"].floordiv(3600).mod(24)
+    out["usd"] = out["usd"].astype(float)
+    out["legs"] = out["legs"].astype(int)
+    out["venues"] = out["venues"].astype(int)
+    out["cross_venue"] = out["venues"].gt(1)
+    out.insert(
+        0,
+        "route_id",
+        out["tx_hash"].astype(str)
+        + ":"
+        + out["component_id"].astype(str)
+        + ":"
+        + out["vehicle"].astype(str),
+    )
+    return out[
+        [
+            "route_id",
+            "tx_hash",
+            "component_id",
+            "timestamp_utc",
+            "hour",
+            "src",
+            "tgt",
+            "vehicle",
+            "usd",
+            "legs",
+            "venues",
+            "cross_venue",
+        ]
+    ]
 
 
 def realised_routes(

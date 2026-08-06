@@ -59,6 +59,22 @@ class RealisedMatchingTests(unittest.TestCase):
         self.assertTrue(out["hour"].eq(7).all())
         self.assertTrue(out["cross_venue"].all())
 
+    def test_extraction_handles_multiple_intermediaries_and_rejects_ambiguous_endpoints(self) -> None:
+        legs = pd.DataFrame(
+            [
+                leg("long", 0, "A", "K", "source", "intermediate"),
+                leg("long", 1, "K", "M", "intermediate", "intermediate"),
+                leg("long", 2, "M", "B", "intermediate", "sink"),
+                leg("ambiguous", 0, "A", "K", "source", "intermediate"),
+                leg("ambiguous", 1, "C", "K", "source", "intermediate"),
+                leg("ambiguous", 2, "K", "B", "intermediate", "sink"),
+            ]
+        )
+        out = extract_realised_routes(legs)
+        self.assertEqual(set(out["tx_hash"]), {"long"})
+        self.assertEqual(set(out["vehicle"]), {"K", "M"})
+        self.assertTrue(out["legs"].eq(3).all())
+
     def test_match_is_exact_hour_and_uses_log_nearest_size(self) -> None:
         routes = extract_realised_routes(
             pd.DataFrame(
