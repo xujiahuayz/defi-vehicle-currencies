@@ -1,8 +1,16 @@
 from __future__ import annotations
 
+import gzip
+import json
+import math
+import tempfile
 import unittest
+from pathlib import Path
 
-from ddvc.analysis.block_timing import PoolView
+import pandas as pd
+
+from ddvc.analysis.block_timing import PoolView, SwapEvent, V3DayState, load_v3_day, oriented_human
+from scripts.validate_realised_route_timing import route_timing_observation
 
 
 class PoolViewTests(unittest.TestCase):
@@ -30,6 +38,146 @@ class PoolViewTests(unittest.TestCase):
         )
         self.assertEqual(view.at_hour(0), 2.0)
         self.assertEqual(view.at_hour(1), 3.0)
+
+    def test_day_loader_indexes_transaction_order_and_token_decimals(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "swaps.jsonl.gz"
+            rows = []
+            for log_index in (9, 3):
+                rows.append(
+                    {
+                        "transaction": {
+                            "id": "0xabc",
+                            "blockNumber": "100",
+                        },
+                        "logIndex": str(log_index),
+                        "timestamp": "3601",
+                        "sqrtPriceX96": str(1 << 96),
+                        "pool": {
+                            "id": "0xpool",
+                            "token0": {
+                                "id": "0xa",
+                                "decimals": "6",
+                            },
+                            "token1": {
+                                "id": "0xb",
+                                "decimals": "18",
+                            },
+                        },
+                    }
+                )
+            with gzip.open(path, "wt") as handle:
+                for row in rows:
+                    handle.write(json.dumps(row) + "\n")
+            day = load_v3_day(path)
+        self.assertEqual(day.transaction_first_log["0xabc"], 3)
+        self.assertEqual(day.events[("0xabc", 9)].pool_id, "0xpool")
+        self.assertEqual(day.decimals["0xpool"], (6, 18))
+        self.assertEqual([state[1] for state in day.series["0xpool"]], [3, 9])
+
+    def test_day_loader_resolves_missing_decimals_without_zero_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "swaps.jsonl.gz"
+            row = {
+                "transaction": {"id": "0xabc", "blockNumber": "100"},
+                "logIndex": "3",
+                "timestamp": "3601",
+                "sqrtPriceX96": str(1 << 96),
+                "amount0": "1",
+                "amount1": "-0.000000000001",
+                "pool": {
+                    "id": "0xpool",
+                    "token0": {"id": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"},
+                    "token1": {"id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"},
+                },
+            }
+            with gzip.open(path, "wt") as handle:
+                handle.write(json.dumps(row) + "\n")
+            day = load_v3_day(path)
+        self.assertEqual(day.decimals["0xpool"], (6, 18))
+
+    def test_day_loader_leaves_unresolved_decimals_unsupported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "swaps.jsonl.gz"
+            row = {
+                "transaction": {"id": "0xabc", "blockNumber": "100"},
+                "logIndex": "3",
+                "timestamp": "3601",
+                "sqrtPriceX96": str(1 << 96),
+                "amount0": "1",
+                "amount1": "-1",
+                "pool": {
+                    "id": "0xpool",
+                    "token0": {"id": "0x0000000000000000000000000000000000000001"},
+                    "token1": {"id": "0x0000000000000000000000000000000000000002"},
+                },
+            }
+            with gzip.open(path, "wt") as handle:
+                handle.write(json.dumps(row) + "\n")
+            day = load_v3_day(path)
+        self.assertNotIn("0xpool", day.decimals)
+
+    def test_human_price_orientation_applies_decimal_scale(self) -> None:
+        forward = oriented_human(0.0, "a", "b", 6, 18, "a", "b")
+        reverse = oriented_human(0.0, "a", "b", 6, 18, "b", "a")
+        self.assertAlmostEqual(float(forward), -12 * math.log(10))
+        self.assertAlmostEqual(float(reverse), 12 * math.log(10))
+
+    def test_realised_route_uses_state_before_transaction_first_log(self) -> None:
+        pool1 = "pool1"
+        pool2 = "pool2"
+        sequences = {
+            pool1: [
+                (99, 1, 3_590, 0, 0.0),
+                (100, 3, 3_601, 1, math.log(0.99)),
+            ],
+            pool2: [
+                (99, 2, 3_591, 0, 0.0),
+                (100, 5, 3_601, 1, math.log(0.99)),
+            ],
+        }
+        state = V3DayState(
+            tokens={pool1: ("a", "k"), pool2: ("k", "b")},
+            decimals={pool1: (18, 18), pool2: (18, 18)},
+            series=sequences,
+            events={
+                ("0xtx", 3): SwapEvent(pool1, 100, 3),
+                ("0xtx", 5): SwapEvent(pool2, 100, 5),
+            },
+            transaction_first_log={"0xtx": 3},
+        )
+        route = pd.Series(
+            {
+                "route_id": "0xtx:0:k",
+                "tx_hash": "0xtx",
+                "component_id": 0,
+                "timestamp_utc": 3_601,
+                "src": "a",
+                "tgt": "b",
+                "vehicle": "k",
+                "realised_amount_in": 100.0,
+                "realised_amount_out": 98.0,
+            }
+        )
+        legs = pd.DataFrame(
+            [
+                {"log_index": 3, "token_in": "a", "token_out": "k"},
+                {"log_index": 5, "token_in": "k", "token_out": "b"},
+            ]
+        )
+        observation = route_timing_observation(
+            route,
+            legs,
+            state,
+            {pool_id: PoolView(sequence) for pool_id, sequence in sequences.items()},
+        )
+        self.assertIsNotNone(observation)
+        assert observation is not None
+        self.assertAlmostEqual(float(observation["own_state_shortfall"]), 0.02)
+        self.assertAlmostEqual(
+            float(observation["hour_state_shortfall"]),
+            1.0 - 0.98 / (0.99 * 0.99),
+        )
 
 
 if __name__ == "__main__":

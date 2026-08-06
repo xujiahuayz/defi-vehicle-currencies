@@ -7,20 +7,42 @@ import gzip
 import json
 import math
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
+
+from ddvc.pricing.v3pools import resolve_decimals
 
 Q96 = 1 << 96
 SwapState = tuple[int, int, int, int, float]
 
 
-def load_v3_swap_day(
-    path: Path,
-) -> tuple[dict[str, tuple[str, str]], dict[str, list[SwapState]]]:
-    """Load token identities and post-swap states in block-log order."""
+@dataclass(frozen=True)
+class SwapEvent:
+    pool_id: str
+    block: int
+    log_index: int
+
+
+@dataclass
+class V3DayState:
+    tokens: dict[str, tuple[str, str]]
+    decimals: dict[str, tuple[int, int]]
+    series: dict[str, list[SwapState]]
+    events: dict[tuple[str, int], SwapEvent]
+    transaction_first_log: dict[str, int]
+
+
+def load_v3_day(path: Path) -> V3DayState:
+    """Load V3 metadata, event identities and post-swap states in causal order."""
     tokens: dict[str, tuple[str, str]] = {}
+    decimals: dict[str, tuple[int, int]] = {}
+    explicit_decimals: dict[str, tuple[int, int]] = {}
+    swap_samples: dict[str, list[dict]] = defaultdict(list)
     series: dict[str, list[SwapState]] = defaultdict(list)
+    events: dict[tuple[str, int], SwapEvent] = {}
+    transaction_first_log: dict[str, int] = {}
     if not path.exists():
-        return tokens, series
+        return V3DayState(tokens, decimals, series, events, transaction_first_log)
     with gzip.open(path, "rt") as handle:
         for line in handle:
             if not line.strip():
@@ -30,6 +52,7 @@ def load_v3_swap_day(
             pool_id = str(pool.get("id") or "").lower()
             token0 = str((pool.get("token0") or {}).get("id") or "").lower()
             token1 = str((pool.get("token1") or {}).get("id") or "").lower()
+            transaction_id = str((row.get("transaction") or {}).get("id") or "").lower()
             try:
                 block = int((row.get("transaction") or {}).get("blockNumber") or 0)
                 log_index = int(row.get("logIndex") or 0)
@@ -41,12 +64,38 @@ def load_v3_swap_day(
                 pool_id
                 and token0
                 and token1
+                and transaction_id
                 and block
                 and timestamp
                 and sqrt_price_x96 > 0
             ):
                 continue
             tokens[pool_id] = (token0, token1)
+            raw_decimals = (
+                (pool.get("token0") or {}).get("decimals"),
+                (pool.get("token1") or {}).get("decimals"),
+            )
+            if all(value is not None and value != "" for value in raw_decimals):
+                try:
+                    parsed_decimals = tuple(int(value) for value in raw_decimals)
+                except (TypeError, ValueError):
+                    parsed_decimals = ()
+                if len(parsed_decimals) == 2 and all(0 <= value <= 255 for value in parsed_decimals):
+                    prior = explicit_decimals.get(pool_id)
+                    if prior is not None and prior != parsed_decimals:
+                        raise ValueError(f"inconsistent V3 token decimals for pool: {pool_id}")
+                    explicit_decimals[pool_id] = parsed_decimals
+            sample = swap_samples[pool_id]
+            if len(sample) < 12:
+                sample.append(row)
+            event_key = (transaction_id, log_index)
+            if event_key in events:
+                raise ValueError(f"duplicate V3 transaction-log event: {event_key}")
+            events[event_key] = SwapEvent(pool_id, block, log_index)
+            transaction_first_log[transaction_id] = min(
+                log_index,
+                transaction_first_log.get(transaction_id, log_index),
+            )
             series[pool_id].append(
                 (
                     block,
@@ -58,7 +107,24 @@ def load_v3_swap_day(
             )
     for pool_id in series:
         series[pool_id].sort()
-    return tokens, series
+        token0, token1 = tokens[pool_id]
+        resolved = resolve_decimals(token0, token1, swap_samples[pool_id])
+        explicit = explicit_decimals.get(pool_id)
+        if resolved is not None and explicit is not None and resolved != explicit:
+            raise ValueError(f"V3 token decimals conflict with canonical resolver: {pool_id}")
+        if resolved is not None:
+            decimals[pool_id] = resolved
+        elif explicit is not None:
+            decimals[pool_id] = explicit
+    return V3DayState(tokens, decimals, series, events, transaction_first_log)
+
+
+def load_v3_swap_day(
+    path: Path,
+) -> tuple[dict[str, tuple[str, str]], dict[str, list[SwapState]]]:
+    """Compatibility projection for triangle analyses."""
+    day = load_v3_day(path)
+    return day.tokens, day.series
 
 
 class PoolView:
@@ -98,3 +164,23 @@ def oriented(
     if token0 == token_out and token1 == token_in:
         return -log_price
     return None
+
+
+def oriented_human(
+    log_price: float,
+    token0: str,
+    token1: str,
+    decimals0: int,
+    decimals1: int,
+    token_in: str,
+    token_out: str,
+) -> float | None:
+    """Orient a raw-unit V3 log price into human output units per input unit."""
+    human_token1_per_token0 = log_price + (decimals0 - decimals1) * math.log(10)
+    return oriented(
+        human_token1_per_token0,
+        token0,
+        token1,
+        token_in,
+        token_out,
+    )
