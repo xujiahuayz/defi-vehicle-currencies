@@ -1,0 +1,111 @@
+% Section 6. Defence of the measured object.
+%
+% The object this paper measures is a quote for a route nobody executed, so what is
+% defended here is the object and not a coefficient. Every number carries a trailing
+% comment naming the exhibit it was read from, and every one states the sample it was
+% measured on: a figure measured on four days, on eight sampled days, or on forty pools is
+% reported with that denominator attached and is never promoted to a constant of the corpus.
+
+\section{Are the measured gaps real?}
+\label{sec:executability}
+
+Every cost comparison in this paper has one observed side and one constructed side. What a trader received is in the record. What a direct pool between the same endpoints would have returned at the same reconstructed state, at the same size, is a quote for a route nobody took, produced by an engine that reproduces the venue's own invariant. A referee is entitled to ask whether that constructed side is a price a trader faced, and the question has more force here than in the exchange-rate settings this design is modelled on. Makarov and Schoar (2020) give a top-level section to defending a cross-exchange bitcoin premium averaging 15\% a day and peaking near 40\%, and they defend it by naming the frictions that hold it open: roughly an hour for a transaction to register and several hours to several days for a fiat transfer, alongside the absence of short selling on the exchanges trading at the largest premium. A direct pool and a two-leg route through a vehicle sit on the same chain, in the same block, at the same state, and the cycle joining them is capturable inside a single atomic transaction with a flash loan and no capital at risk. None of the frictions that license a large measured deviation elsewhere is available here. The defence has to be quantitative.
+
+Four questions decide whether the constructed side is admissible. Whether the pricing engine is being asked to quote inside the region where its error was measured. Whether the state the panel prices is the state the router faced. Whether a gap that nobody removed is economically possible, given what removing it would cost. And whether the venues the panel cannot see push the comparison in a known direction. This section answers them in that order and reports what each answer leaves open.
+
+\subsection{Where the quotes are validated, and where they are not}
+\label{sec:executability:support}
+
+Each venue quoter was accepted only after reproducing swaps that happened, and a swap that happened is a trade whose pool was deep enough to serve it. Applying those quoters to hypothetical routes extends them into a region where no error has been measured, and in that region a quote is an extrapolation. That is the structural weakness of the constructed side, and it is the reason the panel carries the support screen of Section~\ref{sec:setting:support}.
+
+The screen's defensive property is its timing. It is stated in the trade's own price impact in the pool it would traverse, which is known before any quote is formed, and its threshold is read off the size-to-depth distribution of the population the quoters were validated against, sitting between the 90th and 99th percentiles of that distribution.
+% output/exhibits/quoter_support_bounds.jsonl, pooled over 932,270 validated swaps on eight sampled days
+A screen stated in the size of the measured gap would condition on a monotone function of the outcome, which is selection on the dependent variable and defends nothing. This one conditions on pool state and on nothing downstream of it.
+
+What the screen does is bound the region in which the engine is asked to quote. What it does not do is measure the engine's error inside that region, and no direct measurement of that error is available, because the routes in question were not executed and have no realised output to compare against. The bound on it is indirect and is the subject of Section~\ref{sec:executability:arbitrage}: a gap large enough to be removed at a profit should have been removed, so the share of surviving gaps that exceed the cost of removing them is an upper bound on how much of the measured distribution is error.
+
+\subsection{Whether the router faced the state the panel prices}
+\label{sec:executability:timing}
+
+A smart-order router quotes at a specific block and settles in the next. The counterfactual panel prices at the close of an hour. A route that was cheapest when the router chose and dominated by the time its hour closed records as dominated when the router had no way to avoid it, and any behavioural reading of the resulting classification would be reading staleness.
+
+The size of the pricing error is measured directly. Taking each swap's own immediately prior pool state against the hour-boundary state the panel would have used, across the 40 busiest pools and 30,768 swaps, the median pool's median deviation is 1.166\% and 86.2\% of its routes are mispriced by more than 25 basis points.
+% output/exhibits/repricing_at_block.jsonl; scripts/reprice_realised_at_block.py, 40 pools, 30,768 swaps
+Against route-cost differences measured in tens of basis points, that is an error of the same order as the signal.
+
+The error also concentrates where the validation exercise did not look, which is why it stayed invisible for as long as it did. The deepest stable-against-native pools are close to unaffected, at a 0.085\% median deviation with 16.5\% of routes past the 25-basis-point threshold on the 5-basis-point USDC/WETH pool and 0.012\% with 13.5\% on WETH/USDT. Volatile pools run 1.8\% to 4.9\% median deviation with 89\% to 97\% of routes past the same threshold.
+% output/exhibits/repricing_at_block.jsonl, per-pool rows
+The quoters were validated on trades that happened, and trades happen disproportionately in the deep pairs, so a validation exercise weighted toward those pairs sees almost none of this.
+
+That measurement is a level, and a dominance verdict is a comparison in which both sides are priced at the same state. When the market moves between a route's block and the close of its hour, the direct pool and both vehicle legs move together, and a common component does nothing to the difference between the two routes. Discarding a classification on the strength of a level statistic when the estimand is a difference risks discarding a true result. The comparison is therefore measured on its own terms. For endpoints $a$ and $b$ and intermediary $k$, with a direct pool $ab$ and legs $ak$ and $kb$, define
+\[
+m_{a,k,b} \;=\; \log P(a \to b) \;-\; \log P(a \to k) \;-\; \log P(k \to b),
+\]
+which is positive exactly when the direct pool returns more of $b$ per unit of $a$ than the two-leg route does, in the zero-size limit where the marginal price is the pool price. The sign of $m$ is the dominance verdict. Two properties make the test exact. Token decimals enter each leg as a constant and sum to zero around a closed triangle, so the residual can be formed in raw price units and inherits no decimals-resolution error. And the concentrated-liquidity venues carry \texttt{sqrtPriceX96} on the swap event itself, so the state immediately after any swap is observed and not reconstructed.
+
+Computing $m$ at each realised swap's own block and again at its hour-boundary state, over 371 triangles and 190,073 route observations on seven sampled days spanning 2021-12-25 to 2025-11-04, the verdict flips 38.0\% of the time. The median triangle gap at own-block state is 29.3 basis points and the median change in that gap from repricing is 26.6 basis points, with a 90th percentile of 85.0.
+% output/exhibits/block_vs_hour_verdict.jsonl; scripts/test_block_vs_hour_verdict.py, 371 triangles, 7 days
+
+Restricting to large gaps does not rescue the verdict. On the 32,090 route observations whose own-block gap exceeds 100 basis points, the flip rate is 35.6\%, against 38.0\% pooled.
+% output/exhibits/block_vs_hour_verdict.jsonl, route-level conditioning in scripts/test_block_vs_hour_verdict.py
+The reason is visible in what $m$ is at zero size: a triangular-arbitrage residual, which searchers keep oscillating around zero within blocks, so a large value of it is transient wherever it appears in the distribution.
+
+What does move the flip rate is the fee wedge, and this is the result of the exercise. A two-leg route pays two pool fees where the direct route pays one, and that offset is a property of the venues traversed and does not move with the market, so it shifts the verdict boundary away from the region where the residual oscillates. At a net wedge of 30 basis points, the fee difference between a two-leg route on two 30-basis-point pools and one direct pool of the same tier, the flip rate falls to 24.5\%. At 60 basis points it is 15.6\% and at 100 basis points 8.9\%.
+% output/exhibits/block_vs_hour_verdict.jsonl, fee-wedge sweep in scripts/test_block_vs_hour_verdict.py
+The timing threat is therefore a function of trade economics and has no single number. A retail-sized route across two thin pools carries a large wedge and a verdict that is stable under repricing; a large route across two deep pools of the cheapest tier carries almost none and a verdict that is not.
+
+The test validates itself on a dimension a coding error would not reproduce. A route executing seconds before its hour closes is priced at nearly the state the panel used and cannot flip, and one executing early in an hour has a full hour of drift ahead of it. The measured flip rate rises monotonically with the time remaining to the boundary, from roughly 15\% for routes executing within a minute of the close to 44.9\% for routes executing 30 to 60 minutes before it.
+% output/exhibits/block_vs_hour_verdict.jsonl, time-to-boundary check in scripts/test_block_vs_hour_verdict.py
+A flat profile there would have indicated a defect in the test.
+
+Two consequences follow, and they differ across the paper's two estimands. The dominance frequency of Section~\ref{sec:dominance} is a statement about a state at a moment and does not require the router to have had a choice, so the timing error changes the magnitude of a frequency and leaves its kind intact. The survival estimand of Section~\ref{sec:survival} does require the router to have had a choice, and its type contrast turns on differences of a few percentage points, which is smaller than a misclassification rate of 15\% to 25\% at the wedges these routes actually pay. That is why Section~\ref{sec:survival} states the retention estimand and its specification and reports no retention ratio at hour-boundary state.
+
+The correction is a separation and not a second reconstruction, and its specification is settled. The counterfactual panel is a cost surface sampled at regular intervals and stays hourly, because a surface is what the enumeration bound is read off. The realised-route analysis moves to block-level state: for the concentrated-liquidity venues, the last swap in the pool at or before the route's own block supplies \texttt{sqrtPriceX96} and \texttt{tick} directly, and for the constant-product family the state is unwound backward from the stored end-of-hour reserve, a procedure this paper's quoters already reproduce at 0.0000\% median error.
+% docs/venue-coverage-bounds.md, backward unwinding at 0.0000% median error against 11.8% replaying forward
+The quantity that reports the size of the correction is the verdict-flip rate between hour pricing and block pricing on the matched realised routes themselves, and the wedge sweep above is the target it has to beat.
+
+One further gap between what the panel prices and what the router optimised is stated as a limit and is not controlled. Quoted output is not the router's whole objective: it also weighs gas, exposure to sandwiching, the probability that a path reverts, and, for aggregators, access to private orderflow. Gas is handled, since the all-in cost comparison charges the extra hop at receipt-measured units and is reported alongside the gross comparison throughout. The others are not recoverable from the swap record, which retains executed swaps and their receipts and holds nothing about the arrangements between searchers and block builders under which a route was submitted. The estimand is the share of routing classified as dominated for which the measured gap is smaller than a plausible charge for one of those considerations, which would make the routing choice optimal on an objective the panel cannot see, and it is the strongest objection a referee can raise against any behavioural reading of the classification.
+
+\subsection{What an unexploited gap implies, and the arbitrage bound}
+\label{sec:executability:arbitrage}
+
+The sharpest form of the objection to the constructed side is that nothing stops a gap being taken. If a direct pool and a two-leg route disagree by hundreds of basis points at the same state, a cycle out through the expensive route and back through the cheap one converts the disagreement into profit inside one block, and the capacity to run that cycle is present in this market continuously. Round-trip routes, which are that cycle when it executes, run 12.7\% of multi-leg routes by count and 21.7\% by value at the median of 79 sampled days, and the floor across those days is 4.5\% by count and 7.4\% by value. No sampled day is without them.
+% output/exhibits/round_trip_share_by_day.jsonl, 79 sampled days
+
+A gap is not by itself an arbitrage, and the distinction is what makes the objection answerable. The cycle pays three pool fees where the one-way comparison pays one, since the two-leg side charges two, and it pays gas for three hops at the receipt-measured 319,906 units against 154,604 for a single hop. Both costs are known, and together they compute a threshold at which the gap distribution splits. The extra fee burden is charged at 60 basis points, two additional legs at the 30-basis-point constant-product tier, which is the conservative direction because concentrated-liquidity and stableswap venues charge less and a lower fee makes the threshold smaller and the excludable tail larger. Three-hop gas at the panel's median of 13.7 gwei over 1,883 measured days, converted at an ETH price of \$2,500, costs \$10.94, which is 109.4 basis points of a \$1,000 trade, 10.9 of a \$10,000 trade and 1.1 of a \$100,000 trade. The thresholds are therefore 169.4, 70.9 and 61.1 basis points at the three notionals.
+% output/exhibits/gap_arbitrage_bound.jsonl; scripts/test_gap_arbitrage_bound.py; data/processed/daily_gas_price_graph.parquet, 1,883 days
+
+Below its threshold a gap is economically possible. Nobody can profit from removing it, so it can stand for as long as the state that produced it stands, and it is admissible evidence about what routing cost. Above its threshold a gap implies a cycle that pays, which should be competed away inside a block, so observing one is evidence about the pricing engine and not about market structure. On the screened panel the median sits below the threshold at every notional: 31.1 basis points at \$1,000 on 804 comparable routes, 33.9 at \$10,000 on 631, and 20.8 at \$100,000 on 404. The 90th percentiles are 218.4, 343.0 and 110.2 basis points.
+% output/exhibits/gap_arbitrage_bound.jsonl, post-screen, 1,839 comparable routes across three notionals
+
+The tail above the threshold is the part of the measurement this paper cannot yet defend, and it is reported as an upper bound on measurement error and never netted out. It runs 13.6\% of routes at \$1,000, 38.5\% at \$10,000 and 22.0\% at \$100,000, which is 109, 243 and 89 routes of the 804, 631 and 404 priced at each notional.
+% output/exhibits/gap_arbitrage_bound.jsonl, share_above_threshold against thresholds of 169.4, 70.9 and 61.1 bps
+These are not a random subset of the panel. They concentrate wherever the engine extrapolates furthest, which is the same place the support screen was built to keep it out of. The residual tail is what survived that screen.
+
+What would split the tail into arbitrage that was taken and quoter error is a single test, and its specification is fixed. Join each flagged cell to the sequence of swaps in the same block and report the share of flagged cells in which a closing cycle appears, meaning a swap sequence returning to the input token across the pools the flagged comparison names. A closing cycle means the gap was real and was captured, which makes it evidence about the market. Its absence means the gap was never available at the size the panel quoted, which makes it quoter error or an unmodelled constraint on the route. The population that has to be checked is bounded by the counts above, and the test is what would convert the current upper bound into a split.
+
+\subsection{Venue coverage, signed}
+\label{sec:executability:coverage}
+
+A counterfactual is only as good as the graph it prices over, and a panel that omits a venue understates the best available alternative. Six venues are priced, on the terms set out in Section~\ref{sec:setting:pricing}. Two coverage gaps remain inside them, and both have a measured sign.
+
+The larger one is internal to Curve. The stableswap calibration gate declines pool-days it cannot fit, and what it declines is not neutral across the comparison this paper makes: it removes 65.2\% of Curve's native-leg volume against 21.1\% of its stable-leg volume, and the gap between those two shares is at least 33 percentage points in every year of the sample and reaches 54 in 2023. The mechanism is identifiable. The tricrypto pools holding WBTC, WETH and a stable numeraire are \$818m of the \$1.83bn excluded on their own, 44.6\%, and they are crypto-pools by construction, pricing a different invariant. What survives the gate is 79.9\% of priced Curve volume on the stable side against 15.7\% on the native side, so Curve enters the panel as a nearly pure stable-leg venue.
+% docs/venue-coverage-bounds.md; output/exhibits/curve_excluded_by_year_leg.jsonl, curve_excluded_composition.jsonl
+
+The second gap is Balancer, which is 3.9\% of panel volume pooled and 8.8\% at its 2023 peak, the largest venue with a validated quoter and no route-cost integration. Its quoter reproduces realised output at 0.0000\% median error on backward-rolled balances, so the gap is one of integration and not of pricing, and the venue is currently absent from both sides of every comparison.
+% docs/venue-coverage-bounds.md; output/exhibits/weighted_quoter_validation.jsonl, venue_volume_by_year.jsonl
+
+One residual is unsigned and it is small. Pool-days too thin to fit any invariant are 2.75\% of Curve volume pooled, an order of magnitude below the native-leg exclusion it would have to overturn to change the direction of the bound.
+% docs/venue-coverage-bounds.md
+
+The direction is the point of this subsection. Every remaining gap withholds depth from the native side of the comparison and leaves the stable side close to intact, so any native-versus-stable cost comparison in this paper is a floor and not a point estimate, and the coverage gaps understate it instead of manufacturing it. The claim is falsifiable on its own terms: pricing Curve's crypto-pools on the CryptoSwap invariant should widen the measured native advantage, and a narrowing would refute the sign argued here.
+% docs/venue-coverage-bounds.md, stated as a prediction
+
+Coverage bears differently on the paper's two estimands, and the difference runs against the intuition that a floor is always the safe reading. For the dominance frequency the sign is clean: a cheaper direct route the panel cannot see would raise measured dominance, so the reported incidence is a lower bound. For survival the same gap cuts the other way, because a router that could not reach the cheaper direct pool is a router that had no choice to forgo, and a coverage gap that raises measured dominance also raises the share of dominated routes nobody could have avoided.
+
+\subsection{What this section settles}
+\label{sec:executability:verdict}
+
+Three of the four questions have answers with numbers attached. The gaps carrying this paper's frequency sit below the level at which anyone could remove them at a profit, at every notional the panel prices, and the share that does not is bounded and counted. The timing error has a measured size that depends on the fee wedge a route pays, running from 38.0\% verdict instability at zero size to 8.9\% at a 100-basis-point wedge, and the correction that closes it has a specification and a target to beat. The venue gaps are signed, and they are signed against the direction that would flatter the paper's comparisons.
+
+Two things are open and are carried openly. The share of above-threshold gaps that were arbitrage taken, as against quoter error, is unresolved, and the same-block cycle test named in Section~\ref{sec:executability:arbitrage} is what resolves it. The share of dominated routing that a router preferred on an objective the panel cannot observe is unbounded, and nothing in the swap record bounds it. The first governs how much of the measured distribution is real. The second governs whether a real dominated route was a choice, and it is the reason this paper reports a frequency and a duration and stops short of a claim about why a router did what it did.

@@ -42,6 +42,7 @@ from ddvc.tables import write_exhibit  # noqa: E402
 UNIFIED = ROOT / "data" / "unified"
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 OUT = ROOT / "output" / "exhibits" / "realised_dominance.jsonl"
+REWEIGHT_OUT = ROOT / "output" / "exhibits" / "realised_dominance_reweighting.jsonl"
 
 
 def realised_routes(day: str) -> pd.DataFrame:
@@ -164,6 +165,25 @@ def main() -> int:
             rows.append({"day": "REWEIGHTED", "realised_multileg": int(len(P)),
                          "matched": int(len(M)), "dominated": float(num / den),
                          "value_weighted": float("nan")})
+            # Emit the reweighting ROW BY ROW, at full precision, so the paper's table is
+            # the artefact and not a transcription. Reconstructing this table from the
+            # per-type rates as they appear rounded in prose returns 26.8% against the
+            # 27.2% headline, which is a table that fails to reproduce the number it sits
+            # under. A reader redoing the arithmetic has to be able to land on the
+            # published figure exactly, so the exhibit carries the unrounded weights.
+            detail = [{
+                "mid_type": t,
+                "matched_rate": float(by_t[t]),
+                "population_weight": float(pop_w[t]),
+                "matched_weight": float((M.mid_type == t).mean()),
+                "contribution": float(by_t[t] * pop_w[t]),
+                "matched_n": int((M.mid_type == t).sum()),
+            } for t in common]
+            detail.append({"mid_type": "TOTAL", "matched_rate": float(w),
+                           "population_weight": float(den), "matched_weight": 1.0,
+                           "contribution": float(num), "matched_n": int(len(M))})
+            write_exhibit(pd.DataFrame(detail), REWEIGHT_OUT)
+            print(f"  wrote {REWEIGHT_OUT.relative_to(ROOT)}")
     write_exhibit(pd.DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0

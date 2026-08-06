@@ -56,3 +56,13 @@ paper/*.synctex.gz
 # artefact was produced, and provenance that does not travel with the repository
 # is not provenance. They are small JSON sidecars.
 !data/manifests/
+
+# LaTeX build artefacts. The PDF is regenerable from the sources with one latexmk call.
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/main.pdf
