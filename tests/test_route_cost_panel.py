@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 
 import pandas as pd
 
@@ -90,6 +92,17 @@ class RouteCostPairSelectionTests(unittest.TestCase):
                 pd.DataFrame([row, row]),
                 context="test panel",
             )
+
+    def test_missing_day_cache_returns_only_absent_shards(self) -> None:
+        original_cache = run_route_cost_panel.DAY_CACHE
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                run_route_cost_panel.DAY_CACHE = Path(tmp)
+                (Path(tmp) / "20250101.parquet").touch()
+                missing = run_route_cost_panel._missing_day_cache(["20250101", "20250102"])
+                self.assertEqual(missing, [Path(tmp) / "20250102.parquet"])
+        finally:
+            run_route_cost_panel.DAY_CACHE = original_cache
 
 
 if __name__ == "__main__":

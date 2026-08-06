@@ -1410,6 +1410,11 @@ def _day_cache_path(stamp: str) -> Path:
     return DAY_CACHE / f"{stamp}.parquet"
 
 
+def _missing_day_cache(stamps: list[str]) -> list[Path]:
+    """Return the requested day shards that still need pricing."""
+    return [path for stamp in stamps if not (path := _day_cache_path(stamp)).exists()]
+
+
 def _canonicalize_cost_measure(panel: pd.DataFrame) -> pd.DataFrame:
     """Expose only the direct-minus-indirect fraction in persisted panels."""
 
@@ -1637,34 +1642,38 @@ def main() -> int:
                               f"({sum(len(x) for x in v3_ticks.values()):,} pools indexed)", flush=True)
 
         if parallel:
-            all_stamps = _available_stamps(None, None)
-            width = -(-len(stamps) // args.workers)          # ceil division
-            chunks = [stamps[j:j + width] for j in range(0, len(stamps), width)]
-            payloads = []
-            for ch in chunks:
-                warm = [s for s in all_stamps if V3_START <= s < min(ch)] \
-                    if not args.no_v3 else []
-                payloads.append({"stamps": ch, "warm": warm, "hours": list(hours),
-                                 "sizes": sizes, "top_pairs": args.top_pairs,
-                                 "no_v3": args.no_v3,
-                                 "unify_wrapped": UNIFY_WRAPPED})
-            print(f"pricing {len(stamps):,} days in {len(chunks)} chunks across "
-                  f"{args.workers} workers "
-                  f"({min(len(c) for c in chunks)}-{max(len(c) for c in chunks)} days each)",
-                  flush=True)
-            with ProcessPoolExecutor(max_workers=args.workers) as pool:
-                futs = {pool.submit(_price_chunk, pl): i for i, pl in enumerate(payloads)}
-                for k, fut in enumerate(as_completed(futs), 1):
-                    built = fut.result()
-                    print(f"  chunk {futs[fut] + 1}/{len(payloads)} done "
-                          f"({built} days priced) [{k}/{len(payloads)} chunks]", flush=True)
+            if _missing_day_cache(stamps):
+                all_stamps = _available_stamps(None, None)
+                width = -(-len(stamps) // args.workers)          # ceil division
+                chunks = [stamps[j:j + width] for j in range(0, len(stamps), width)]
+                payloads = []
+                for ch in chunks:
+                    warm = [s for s in all_stamps if V3_START <= s < min(ch)] \
+                        if not args.no_v3 else []
+                    payloads.append({"stamps": ch, "warm": warm, "hours": list(hours),
+                                     "sizes": sizes, "top_pairs": args.top_pairs,
+                                     "no_v3": args.no_v3,
+                                     "unify_wrapped": UNIFY_WRAPPED})
+                print(f"pricing {len(stamps):,} days in {len(chunks)} chunks across "
+                      f"{args.workers} workers "
+                      f"({min(len(c) for c in chunks)}-{max(len(c) for c in chunks)} days each)",
+                      flush=True)
+                with ProcessPoolExecutor(max_workers=args.workers) as pool:
+                    futs = {pool.submit(_price_chunk, pl): i for i, pl in enumerate(payloads)}
+                    for k, fut in enumerate(as_completed(futs), 1):
+                        built = fut.result()
+                        print(f"  chunk {futs[fut] + 1}/{len(payloads)} done "
+                              f"({built} days priced) [{k}/{len(payloads)} chunks]", flush=True)
+            else:
+                print(f"all {len(stamps):,} day shards cached; skipping liquidity replay",
+                      flush=True)
             # Assemble through the same strict, atomic owner as the recovery command.
             # This scans every shard schema before writing, refuses missing shards,
             # and never exposes a partial panel at the final path.
             import pyarrow.parquet as pq
 
             cache_paths = [_day_cache_path(stamp) for stamp in stamps]
-            missing = [path.stem for path in cache_paths if not path.exists()]
+            missing = [path.stem for path in _missing_day_cache(stamps)]
             if missing:
                 preview = ", ".join(missing[:5])
                 raise RuntimeError(
