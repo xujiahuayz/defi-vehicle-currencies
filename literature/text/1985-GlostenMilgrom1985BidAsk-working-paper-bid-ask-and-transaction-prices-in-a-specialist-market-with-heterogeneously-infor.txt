@@ -2,123 +2,846 @@
 
 ===== PAGE 1 =====
 
-
+Discussion Paper No. 570
+Bid, Ask and Transaction Prices in a Specialist
+Market with Heterogeneously Informed Traders
+by
+Lawrence R. Glosten*
+Northwestern University
+and
+Paul R. Milgrom
+Yale University
+August 1983
+Abstract
+We examine properties of bid and ask prices quoted by a risk-rental,
+zero-profit specialist facing heterogeneously informed traders. The presence
+of traders with superior information leads to a positive bid-ask spread. The
+resulting transaction prices converg information and if volume of trade (n)
+increases the spread decreases with the average squared spread in the order of
+1/n. An increase in insider activity or an increase in the quality of their
+information leads to larger spreads. A bid-ask spread implies a divergence
+between observed returns and realizable returns. Observed returns are
+approximately realizable returns plus what uninformed anticipate losing to
+informed.
+*Lawrence R. Glosten
+J.L. Kellogg Graduate School of Managmeent
+Northwestern University
+Evanston, Illinois 60201
 
 ===== PAGE 2 =====
 
-
+Acknowledgements
+Milgrom's research was supported by National Science Foundation Grant
+IST - 8208600. We wish to thank Rolf Banz (INSEAD), Dan Galai (UCLA), Jay
+Ritter (Wharton) and the participants in the University of Chicago Finance
+Workshop for helpful comments.
 
 ===== PAGE 3 =====
 
-
+- 1 -
+I. Introduction
+The usual view of markets is as a place where buyers and sellers come
+together and trade at a common price, the price at which supply equals
+demand. Securities exchanges are often pointed out as excellent examples of
+markets that operate this way. In fact, however, trading on exchanges takes
+place over time, and some institutional arrangements are necessary to help
+match buyers and sellers whose orders arrive at different points in time. On
+exchanges like the New York Stock Exchange, the economic function of the
+specialists and the floor traders is to match traders in this environment
+where supply and demand cannot be equal at each point in time.
+The matching problem is most acute in trading shares of small companies,
+where the volume in trade is relatively low. A common problem in this
+environment involves the number of insiders who trade in the shares relative
+to the total trading volume. Many questions arise; among them: How
+completely do prices reflect insider information (Fama (1970))? How large are
+insider profits? How does the specialist behave in this environment?
+A number of researchers have examined the optimal behavior of a
+specialist and how it leads to a bid-ask spread. The usual approach examines
+the management of inventory by a monopolist specialist, concentrating on the
+effect that inventory costs have on the bid ask spread; e.g. Ho and Stoll
+(1981) Amihud and Mendelson (1980) and Garman (1976) •
+The approach pursued here, is to show that the bid ask spread can be a
+function of informational differences, even when there are no inventory costs
+and competition forces the specialist's profit to zero. Specifically, the
+specialist faces an adverse selection problem, since a customer agreeing to
+trade at the specialist's ask or bid price may be trading because he knows
+something that the specialist does not. In effect, then, the specialist must
 
 ===== PAGE 4 =====
 
-
+- 2 =
+offset the losses suffered in trades with the well informed by gains in trades
+with liquidity traders. These gains are achieved by setting a spread. This
+informational source of the spread has also been suggested by Bagehot (1971)
+and formally analyzed by Copeland and Galai (1980).1
+In this paper, we posit a risk neutral competitive specialist. The
+specialist may have to compete for orders with floor traders, or there may be
+competition among specialists at geographically separated markets. This
+specification allows the derivation of the transaction price process and an
+investigation of its informational characteristics. We find in Section II
+that the transaction price process exhibits a semi-strong form of efficiency,
+and if per period trading is allowed to increase indefinitely, that both the
+spread and the gains to superior information disappear. We also examine the
+spread and find that it is larger when, other things equal, the proportion of
+insiders is greater or their information is better or the liquidity trading
+motives of uninformed investors is weaker.
+In section III, we examine a variation of the market model in which a
+fixed postive return is expected by uninformed traders. The existence of a
+spread implies that using the transaction price process to measure holding
+period return overstates the realizable returns. Further, we show that such
+observed returns are approximately a normal return plus a return available
+only to insiders. This along with the results of section II identifies one
+possible source of such anomalies as the small firm effect (Banz (1981) ) and
+the ignored firm effect (Arbel and Strebel (1981)). The evidence suggests
+that much of the excess returns on small firm investments occur in January.
+If the annual report for small firms tends to contain a considerable amount of
+new information and if insiders have early access to that information, then
+our analysis would predict an especially large spread in the period before the
 
 ===== PAGE 5 =====
 
-
+- 3 -
+report is made public and presumably after the end of the firm's fiscal
+year. This combined with a "required rate of return" assumption will lead to
+observed large returns and normal realizable returns.?
+Section IV indicates areas of future research and provides concluding
+comments.
+II. The Basic Model
+The market that we are modelling is a pure dealership market, i.e., the
+specialist performs no brokerage services, and in effect all orders are market
+orders. Trade occurs according to the following sequence of events. The
+specialist sets a bid and ask price with the interpretation that he is willing
+to sell one unit of stock at the ask and buy one unit of stock at the bid. An
+investor arrives at the market and is informed of the bid and ask at which
+time he is free to buy one unit at the ask or sell one unit at the bid or
+leave. The specialist is free to (and in general will) change the bid and ask
+at any time after an arriving investor has made a decision and before the next
+arrival of an investor. That is, if an arriving order leads to a trade, the
+trade takes place at the quoted bid or ask. After the trade, the specialist
+may revise the bid and ask.
+To examine the informational characteristics of such a market, we assume
+that there are informed investors and purely "liquidity" traders. At some
+time I, in the future, some random dollar value V (V ≥ 0, Var(V) <∞) per
+share will be realized, and the informed have information about this random
+variable V. Time I may be interpreted as the time at which some
+informational event occurs — an earnings announcement, for example. At that
+time, there will be agreement on the value of the firm and the informational
+differences between insiders and outsiders will be minimal. The informed
 
 ===== PAGE 6 =====
 
-
+- 4-
+receive information sequentially and their orders are placed sequentially.
+When an informed trader comes to the market, his decision to buy, sell or
+leave is based on his information. The informed trader may be speculating
+based on inside information or superior analysis, or he may simply have a
+"liquidity" reason for trading. We will refer to the informed traders as
+insiders though other interpretations are possible.
+As is typical (and necessary) in models that have traders with superior
+information, the active participation of uninformed is posited exogenously.
+Thus, we assume that there are uninformed investors, each of whom is willing
+to buy (or sell ) if the price is below (or above ) his personal reservation
+price. We assume that investors arrive one by one, randomly and anonymously
+at the specialist's post; these arrivals form an arbitrary arrival process. 3
+All participants, informed, uninformed and the specialist, are risk
+neutral. Each participant assigns random utility to shares of stock, x, and
+current consumption, c, as u(x,c/p) = pxV + c, where p is a parameter of
+the individual investor's utility function representing his personal trade-off
+between current and future consumption derived from ownership of the asset.
+For the specialist, we take p = 1; this is just a normalization. Generally, a
+high p indicates a desire to invest for the future; a low p indicates a
+desire for current consumption. This "liquidity parameter" could be the
+result of imperfect access to capital markets or it could represent
+differential subjective assessments of the distribution of the random variable
+V. The risk neutrality assumption implies that in order for there to be
+trade, there must be some variation in p across market participants, for
+otherwise the "no trade theorem" of Milgrom and Stokey (1982) will imply that
+the spread is large enough to preclude all market activity. Since p is to be
+unknown to the specialist, and a pure preference parameter, we treat it as a
 
 ===== PAGE 7 =====
 
-
+-5 -
+random variable independent of V and any information about V and independent
+across traders. We allow the possibility that p might follow a different
+distribution for the informed and the uninformed.
+Investors, upon arriving at the market and hearing the bid and ask,
+maximize expected utility given their information to date. For uninformed
+investors, this information consists of all past transaction prices, the
+current bid and ask as well as any publicly available information. The
+informed also have access to the previous transaction price sequence, the
+current bid and ask, and all public announcements, but in addition they have
+been able to see some private signal. Formally, let Hy denote the
+information available publicly, up to clock time t. If an uninformed
+investor arrives at time t, then his information, upon arrival, is Hy joined
+with the information generated by the quoted bid and ask. If an arrival at
+time t is informed, then his information is represented by the join of his
+private information It, the information generated by the quoted bid and ask
+and the public information H. By including the specification of who is
+informed in the sample space, we can generally represent the information of an
+arrival at time t by Ft, a refinement of Hy, including the information
+conveyed by the quoted bid and ask.
+Putting the utility functions and information structures together, the
+optimal decision of an investor arriving at time t, given bid B and ask A is
+given by
+buy if I > A
+sell if Z< B
+where Zy is given by
+where Ut is one
+if the arrival at t is uninformed and zero otherwise.
 
 ===== PAGE 8 =====
 
-
+- 6 -
+Given the above behavior of the market participants, the specialist
+chooses bid and ask prices. Let the information available to the specialist at
+time t be represented by St• Assuming anonymity, the specialist cannot know
+when the bid and ask prices are set whether the next customer will be an
+insider or an outsider. Given the investors' behavior, the specialist's
+expected profit from an arrival at time t, given the information available to
+him at time t, St, and bid and ask prices B and A is:
+or
+CA - ELVISE, Z> APEZE > AISE -(B-ELVIS ZE BIPEZE BIST.
+The above holds as long as there are zero costs associated with all short
+positions in cash or stock. Our central assumption about the specialist is
+that he earns zero expected profits on each purchase and each sale. To
+illustrate how competition might lead to such a description, suppose there are
+two specialists in this one stock. Both have the same information and face
+the same population. Suppose the first specialist sets an ask price Al so
+that A! > ElV|S ,2,> A'1. The second specialist will rationally undercut
+the first by choosing an ask, A? ‹ A' and A2 > ElVIS,, 24 > A21. The
+competitive, (or Bertrand) equilibrium at time t (if it exists) is a pair of
+functions Ay and By satisfying
+B (W) = ELVIS DZE<B (W)I(W).
+Where Z=P ElV|FE and At and By are measurable with respect to Et
+(i.e., the customer knows the bid and ask prices).
+General existence of such functions would be difficult to show, since it
+involves a "rational expectations" type of fixed point condition. The
 
 ===== PAGE 9 =====
 
-
+- 7-
+definition is not vacuous, however, as the following examples show. If the
+specialist's information, Se, is a finer partition than the information of the
+informed, then Ay and By will both be equal to the conditional mean of V given
+the information St. If, on the other hand, the specialist's information is
+the same as the publicly available information Ht, then Ay and By are given
+by:
+At = infla: a ≥ ElV He, Ze > all
+Be= sup/b: b & ElV|H, Le< bl}
+Io insure that the customer's decision rule is formally well defined, and
+to illustrate the source of the spread, we must prove that at all times the
+ask exceeds the bid and, if insider trading actually occurs--or more precisely
+if it could occur--that the expectation of V lies strictly between the bid and
+ask. This proof and a later one both rely on the facts from probability
+theory that for any random variable X with finite expectation,
+E[XX > al > E[X] and EIX|X ≥ al is nondecreasing in a. The inequality
+is strict whenever 0 < P(X > a} < 1.
+Henceforth, we shall use Ey to denote conditional expectations given the
+common knowledge at time t, i.e., Ell • 1= El a 1St Ell, where the
+"meet" St Ey denotes the events which are in both Sy and Fy. Notice that At
+= ELlAy and By = ElBel, since the bid and ask prices are always common
+knowledge and hence are effectively constants at time t. Also, our informal
+assumptions about Pt (that it conveys no information about V nor about an
+informed trader's opinions) can be adequately formalized by:
+Proposition 1
+Suppose equilibrium bid and ask prices exist satisfying the zero expected
 
 ===== PAGE 10 =====
 
-
+-8 -
+profit conditions:
+BLE ElVISE, ZE < BEl.
+Then the ask price is greater and the bid price is less than the expectation
+The inequalities are strict if adverse selection
+is possible, i.e., if
+PIZE > ELIVI, EVEL > ELVIS > O and
+Proof
+We prove only the first inequality, since the proof of the second is
+similar. Also, for brevity, we omit the time subscripts. Let C be the event
+that the customer makes a purchase:
+C = (2 > A} = {EIV|F] › A/p}. Then, A = EIV|s, 0] so
+A = E[A|C] = E[E[V|S, C] |C] = E[V|C] = E[E[V|C, 0]|C]
+= ELE[EIV|E, 6, 01|0,01|C] = E[ELE[V|E,01|6,01|C]
+= ELE[E[V|F]|C,p]|C] > ELECEIV, Fl|01|c]
+= E[E[V] |C] = E[V].
+If the additional condition stated in the proposition holds, then the
+inequality is strict. Q.E.D.
+The proof of the above proposition shows why the competitive specialist
+must maintain a spread. If the ask is not set higher than the conditional
+expectation, E[VI, then the specialist will lose money on average on
+transactions with informed traders. He will not make money on transactions
+with uninformed traders, for as soon as an uninformed trader sees such an ask
+he will have as much of the specialist's information as he needs. Thus, the
+specialist, setting such an ask price will lose on average. If the proportion
+of liquidity traders is high or if their transactions motives are sufficiently
 
 ===== PAGE 11 =====
 
-
+- 9-
+strong or if the insiders' informational advantage is small, then there will
+exist bid and ask prices at which the losses to informed traders will on
+average balance the gains from uninformed traders. These prices involve a
+spread that is due solely to the adverse selection phenomenon and not to any
+risk aversion or monopoly power of the specialist. If these conditions fail
+to hold, the equilibrium ask may be so high and the bid so low that no trade
+can take place. When this happens, we say that the market has shut down. The
+market will "reopen" when enough public information emerges to neutralize the
+insiders' advantage.
+We now assume that both the specialist and the traders see the results of
+every trade, and know the quoted bid and ask. Let Mi and st be respectively
+the information available to the uninformed and the specialist just after a
+trade at time t. These fields include information about whether a trader has
+arrived at time t, whether he bought of sold, and the price at which trade
+occured.
+Let Ik be the times at which trades occur. The above discussion shows
+that the Iy are stopping times relative to (st) and lly. Define Sy and the
+by sy a sit and He - i (A280, any process subscripted with a k will
+understood to be the value of the process at time In. If the kth trade takes
+place at the ask at time t, i.e., there is an arrival at time t and Z, exceeds
+At, then the transaction price will be the ask price, which in this event is
+equal to ElVIS!. Similarly, if there is a trade at the bid, the
+transaction price is the bid price which in this case is also given by
+This observation allows us to write the kth transaction price as
+Pk = ElVIS!, as long as k trades take place (i.e., as long as Ik is
+finite). This motivates our definition of the transaction price process
+as Pk = ElVIS Thus, if J trades actually take place, then Py, ..., Py are
 
 ===== PAGE 12 =====
 
-
+- 10 -
+the prices at which trades occur, and Pj+l is some value intermediate between
+the bid and ask prices at the end of the trading period (this convention is
+not far from what CRSP does in calculating daily returns). The specification
+of He from the preceding paragraph implies that P is measurable with
+respect to # which allows us to prove the following proposition.
+Proposition 2
+The sequence of transaction prices (Pat forms a martingale relative to
+the specialist's information, (Sk' and the public information, (Ht.
+Proof
+From the above, Pr = ElVsel. Thus,
+Since He is contained in Skand since Pk is measurable with respect to He, the
+sequence of transaction prices (P} forms a martingale relative to lEt as
+well. Q.E.D.
+The above proposition predicts that if, for example, one were to look at
+daily closing prices, these prices would form a martingale (i.e., price
+differences would be uncorrelated). The usual explanation for this is that
+investors, using public information, will drive away any return to this
+information, and at equilibrium, prices must form a martingale (or a
+discounted martingale). The use of public information also leads us to the
+conclusion that prices form a martingale, but here it is competition among
+risk-neutral specialists, rather than the activity of rational investors that
+leads to the result. 4
+The result above is actually stronger than the usual statement of the
+semi-strong form of the efficient markets hypothesis--prices form a martingale
+relative to all public information and the information known to the
 
 ===== PAGE 13 =====
 
-
+- 11 -
+specialist. The assumed competition among equally informed specialists
+implies that there are no profit opportunities arising from the information
+known by the specialist. Furthermore, at the instant that a trade occurs and
+the price is announced, the specialist and all outsiders agree on the expected
+value of V.
+The fact that prices form a martingale suggests that if we allow the
+volume of customers arriving in the trading period to rise without limit, the
+spread will get small or trading will cease. Since transaction prices form a
+positive martingale, they converge. This means that after a large number of
+trades there cannot be large jumps in the price. What we show below is that if
+there is sufficient trading activity involving both buyers and sellers, then
+the spread will converge to zero.
+Proposition 3
+Assume that for all t, the (endogenous) probabilities that a customer
+arriving at time t buys or sells are bounded away from zero, i.e.,
+PEZ, > AyS 2 a > 0, and PIZE < BelSE > B > O. The sequence of
+transaction prices {Pk' converges. Moreover, Ik (the time of the kth trade)
+is finite for every k, and the root mean square spread over the first k trades
+tends to zero as 1/k; V1/X)ElE(A - B, & YVar (V)/aBk .
+Proof
+From Proposition 1, transaction prices form a martingale. Since these
+transaction prices are conditional expectations of a positive random variable
+with finite variance, this martingale converges almost surely. Since the
+probability of no trade at any arrival is bounded away from one, an infinite
+number of arrivals will lead to an infinite number of trades almost surely;
+1.e., Ik is finite almost surely for all k.
 
 ===== PAGE 14 =====
 
-
+- 12 -
+Since Pk is a conditional expectation of V, the variance of V exceeds the
+variance of Pk• Taking Po to be ElV], we have:
+=BIE-P-131+281288-PIE-PI
+The increments in a martingale are uncorrelated and have mean zero, so the
+second expectation is zero. Hence, for all k:
+manipulation shows that
+ELP, 5-122149, By 12 ABCA, -B, 22
+Thus, Var (V) ≥ aB El(A
+When the condition that the probabilities of buying and selling are both
+bounded below by a positive number fails to hold, the spread may not shrink to
+zero. One possibility is that the market may close down entirely, as would
+occur, for example, if each trader had p equal to 1 and the Z's of the
+informed followed any continuous distribution (c.f. Milgrom and Stokey
+(1982)). Another possibility is that all trades occur at the bid price, as
+would happen if it were known to the specialist that each trader had p less
+than one. The bounded probabilities condition can be proved to hold whenever
+Pip > 1} and Pip ‹ 1} are both positive and there are no informed traders,
+or more generally when the liquidity motive for trade (measured by the
+dispersion of p above and below one) is sufficiently large given the
+insider trading motive (as determined by the proportion of insiders and the
+nature of their information). Henceforth we assume that p has a continuous
+distribution with median one so that buying and selling motives are balanced.
+The result of Proposition 3, that the spread goes to zero, means that
 
 ===== PAGE 15 =====
 
-
+- 13 -
+prices "reflect" information. Since the only source of the spread in this
+model is informational differences, the fact that the spread goes away with
+many trades suggests that informational differences must go away as well--
+i.e., prices must eventually reflect essentially all the information of the
+informed traders. This intuition is sharpened in Proposition 4, where it is
+shown that the probability that the specialist and an arrival will disagree by
+much on the expected value of V goes to zero as the number of trades gets
+large.
+Proposition 4.
+If the assumptions of Proposition 3 hold, then the expectations of the
+specialist and the traders converge, i.e., ElVISk! - ElV|Ekl converges to zero
+in probability (where Ex is the information of the trader who makes the kth
+trade).
+Proof
+We use the notation and results of Proposition 1 and two general facts
+from probability theory cited earlier. The suppressed time subscript is now
+A = ELV/C] = ELE[V|F, p1|C] = ELEIV FI|EIVE] > A/PI
+• ELE[VIE] EIV|F] > EIVI/PI.
+Define D by D = EIV|F] - ElV]. Then,
+A - E[VI > EID|D > E[VI (1-P)/P]
+> PEp & 1} EIDID > 01
+> PÍP < 1} PID > EJE
+= P{D & E}E/2.
+By Propositions 1 and 3, Ay - E[VI converges almost surely to zero, so
+P{De > e) must also converge to zero for all positive e. A similar argument
+using bid prices shows that PiD & -e} goes to zero. Thus, EIV|Ekl - ExIV]
 
 ===== PAGE 16 =====
 
-
+- 14 -
+converges in probability to zero. Also, Ex|V|Sk! = Ex|V] (both are equal to
+An if the customer buys and By if he sells). Q.E.D.
+Thus, in the long run, the market converges to an informational steady
+state in which traders all have the same expectation of V and the gains to
+private information evaporate. The market is also stable in the sense that in
+the limit, the specialist's inventory of stock and cash is a driftless random
+walk.
+Corrollary 1
+The specialist's inventory of stocks tends to a driftless random walk;
+i.e.,
+PrOOf
+Using the results of the Proposition 4, let p* be the limit of ElV|Skl
+and let ? = pp*. Then,
+= Pfp < 1} - PÍp > 1) = 0. where s* is the
+specialist's limiting information. Q.E.D.
+That the specialist's inventory will not drift on average is only true in
+the limit. After some finite number of trades, there is no guarantee that for
+the next finite number of trades the specialist does not expect a change in
+his inventory. Only when the market is at the informational steady state is
+it in equilibrium in the more conventional sense that expected supply equals
+expected demand.
+To summarize, we have shown that a risk neutral competitive (zero profit)
+specialist will in general set a positive spread between bid and ask price
+when there are insiders present. Despite the existence of a spread, the fact
 
 ===== PAGE 17 =====
 
-
+- 15 -
+that the specialist acts competitively implies that the transaction price
+sequence forms a martingale relative to his information, and hence relative to
+all public information. If the volume of trade rises without limit, and both
+buyers and sellers are active, then the spread converges to zero. More
+specifically, the average spread is bounded on the order of the square root of
+the number of trades. In the limit, insiders, outsiders and the specialist
+agree on the conditional expected value of v.
+We now turn to an analysis of various environmental assumptions. In
+particular, we will see that the proportion of insiders and the quality of
+inside information are directly related to the magnitude of the spread. The
+dispersion of uninformed liquidity parameters is inversely related to the
+spread and the thickness of the market (frequency of arrivals of orders) is
+inversely related to the spread.
+To distinguish sharply between insiders and liquidity traders, we assume
+that the insiders have no liquidity reasons for trading (their p is equal to
+one). We also assume that the specialist has access only to public
+information; i.e., St = Hy• If there is an arrival at time t, we can express
+the reservation price Z, by:
+Z= (1 - UEIVHY I + UP ELVIA, where (as above) Uy is one if an
+arrival at t is uninformed and zero otherwise (for the succeeding discussion,
+time subscripts have been dropped to simplify the notation). We now prove
+some comparative equilibrium results.
+Proposition 5
+For any given time t, the ask price Ay increases and the bid price Be
+decreases when, other things being equal,
+(1) the insider's information at time t becomes better (i.e., finer),
 
 ===== PAGE 18 =====
 
-
+- 16 -
+(ii) the ratio of informed to uninformed arrival rates at t is
+increased, or
+(i11) the dispersion of the uninformed preference parameter Pe
+(around its median) at t is decreased.
+Proof
+Define M by M = E[V|I] and let G be the distribution function of the
+liquidity parameter. Recalling that A and B, the ask and bid, are the
+smallest a and largest b satisfying
+a ≥ ElV|Z > al, b & ElV|Z< bl, then, for ask price A and bid price B,
+AP{Z> A} - ElVI(Z> All > 0, and
+ElVIiZ< - BP{Z < B} > 0. The left sides can be expanded to
+El (1 - U) (A - M)I (M > A) + UCA - ELVI)(1 - G(A/E|VI»| = EL@(A, U, M,G) I
+El (1 - U)(M - B)I (M < B} + U(EIVI - B)G(B/ElVI) = ElW(B, U,M,G)].
+The functions (.) and V(.) are concave in M and increasing in U. Also, (.)
+is decreasing in G(A/E[V]) and Y(.) is increasing in G(B/E[V]).
+For (1), let A' and B' be the ask and bid prices associated with insider
+information I' and define M' by M' = E[V|I'] where I' is finer than I. For
+(i1), let A" and B" be the ask and bid prices when the arrival of uninformed
+is governed by U", where U'(w) & U(W). For (iii), let A"' and B"' be the ask
+and bid prices when the distribution function of p is G"' where
+G''(x) < G(x) for x & 1 and 1 - G"'(x) ≤ 1 - G(x) for x > 1.
+If I' is finer than I, then M = E[M'|I]. This and Jensen's inequality
+allow us to conclude:
+Eld (A', U,M,G)] ≥ El(A',U,M',G)]. Since d is increasing in U, and U" & U,
+EI (A", U,M,G)] ≥ EID(A", U",M,G)]. Also, since & is decreasing in G,
+EI (A"' ,U,M,G) | ≥ E[(A"' ,U,M,G"')]. (Similar inequalities hold for the
+function Y(.)). By the definitions of A', A", and A"' the right hand sides
 
 ===== PAGE 19 =====
 
-
+- 17 -
+are all nonnegative. But, A = inffa|Eld (a, U,M,G)] ≥ O}, so A', A", and A"'
+all exceed A. The same argument will prove the corresponding bid
+inequalities. Q.E.D.
+Intuitively, the adverse selection problem is worse the greater the
+fraction of informed traders and the better their information. The specialist
+is forced to set a higher spread if there are more informed or if they have
+better information in order to avoid losses. On the other hand, the greater
+the desire of the uninformed to trade (measured by the dispersion of p), the
+easier is the specialist able to make back his losses to informed traders.
+The zero-profit condition then results in a smaller spread.
+It is, of course, possible that in the case of increasing spreads, that
+the increase will drive out too many liquidity traders and so fail to
+eliminate the adverse selection. This is identical to the famous "lemons
+problem" and, as in Akerlof's model (1970), the market can break down entirely
+with Ay and By set to preclude trade.
+Proposition 5 does not state that on average, spreads will be smaller for
+stocks with a small percentage of insiders than for stocks with a larger
+percentage of insiders. For any given information, spreads are larger, the
+more informed there are.
+There appear to be opposing forces at work. First, as the proportion of
+insiders increases, the insiders have more of an impact on prices and hence
+their information is revealed in prices more quickly. Initial spreads are
+wide, but as the information is revealed, the spread may go to zero more
+quickly. On the other hand, the more insiders there are, the larger is the
+initial spread and hence the fewer trades take place. This will tend to make
+the spread larger for a longer period of time. The same caveat applies to the
+case when the information that the insiders have is better. The proposition
 
 ===== PAGE 20 =====
 
-
+- 18 -
+does not claim that average spreads will always be wider when insiders have
+higher quality information. Once again, there are competing forces. There
+will be probabilistically fewer trades when insiders have better information,
+but each trade will be more informative.
+Proposition 5 suggests that we might observe the following. For some
+period of time, we expect firms with a relatively high proportion of insider
+stockholders to have relatively wide spreads. Just prior to predictable
+informational events, assuming that insiders have early access to the
+information, we might expect to see larger spreads than after such an event
+when the insider advantage is small. Thus, for example, in the month or so
+before a company's earnings report is made public, proposition 4 would suggest
+that we would observe larger spreads than after the report is made public.
+Furthermore, the convergence result might suggest that the spread on average
+will be smaller immediately prior to the announcement than say one month
+before the announcement.
+While the above propositions do not address the question of average
+spreads, the following discussion relates average spread to average volume.
+Suppose one were to watch the bid ask spread for t units of clock time. Let N
+be the stochastic process describing transactions, i.e., one will see Nt
+will be the last transaction
+transactions during this time period, and ENt
+price observed. Since this price is a conditional expectation of V, its
+variance is less than or equal to the variance of V. Recall the expression
+N
+from Proposition 3: Var(V) ≥ Var(PN If the aB CATK
+underlying arrival process is Poisson with rate I, then for large I, Ne is on
+the order of (a + B)rt. where a and B are as in Propostion 3. That is, the
+average spread is on the order of 1/tr(a + B) i.e., on the order of the
+square root of the average volume per t units of time.
 
 ===== PAGE 21 =====
 
-
+- 19 -
+This result reflects the fact that transactions reveal information,
+albeit imperfectly. Thus, the higher the volume, the more information is
+conveyed (i.e. becomes public) per unit time and hence the smaller the
+informational difference between insiders and outsiders. This argument is
+somewhat different from the usual justification for the observed relationship
+between volume and spreads. The more common argument is that markets with
+higher volume are more liquid hence the specialist (who provides liquidity)
+will receive a lower compensation for the liquidity he provides; i.e. will set
+smaller spreads. In our analysis, the higher the "liquidity" of the market
+the more quickly is insider information "revealed," i.e., reflected in prices.
+This has the effect of lowering the average spread.
+III. A Model with Discounting
+The model discussed in the previous section is based on a particular
+normalization of reservation prices that was mathematically convenient. This
+normalization took the form of the specialist having a p of one, while the
+median of the p's of the traders was one. Another normalization that is of
+economic interest is the following: the reservation price of an individual
+arriving at time t is 2 given by 44 = exp(-r,(I,-t))Ze where Ze is as
+defined in the previous section, and I, is the time of the informational
+event. The parameter It may arise from other unmodeled market opportunities
+and depends only on time, not on any personal characteristics. The zero
+profit condition for the specialist now becomes a zero excess return condition
+and may be stated as (if solutions exist):
 
 ===== PAGE 22 =====
 
-
+- 20 -
+Since the market now being described is merely a renormalization of the one
+described in section II, it is straightforward to show that A" and Be are
+given by A = exp(-s (I,
+Ay and By satisfy (as above)
+Be = ElVISE, ZE < BEl
+To insure that outsiders have an incentive to be involved in the market,
+the following hypothesis is offered. Let I be a holding period. The expected
+gross holding period return of someone buying at time t and holding for
+I periods of time is • It is assumed that at any time t,
+A+
+ELIB Itt!
+= eiT where i is an exogenously given rate of return.
+Although this is implicitly a hypothesis about the exogenous variables, it is
+stated in terms of market parameters and appears to be testable. The variable
+i might be taken to be a required return consistent with the risk of the
+stock. The important limitation such a condition imposes on the data is that
+i be unrelated to the magnitude of the spread and constant through time. In
+effect, this assumption defines It• Since Bety is a function of
+Futt and A, is a function of It, a terminal condition and the above expected
+holding period return condition will define It. The proof of the following
+proposition is tedious, and is relegated to an appendix.
 
 ===== PAGE 23 =====
 
-
+- 21 -
+Proposition 6
+Let the expected realizable return of an uninformed trader over the
+normal holding period be i, i.e., * I = elT for all t. Assume that
+after the informational event at Io, V becomes known so that for
+Gie. fett i for te lIot, Iol). Then It, the discount rate at t, is
+the normal return i plus a premium:
+F= 1 + (1+1)/ (I-t)log(k) where
+BEtt BEt (n+1)E 131/(1+1)
+={E!
+AttT Attnt
+and ttnt & lIT, I.).
+The discount rate applied at time t, It, has a particularly interesting
+interpretation. Notice that
+Se is the expected geonetric mean gross return
+per I units of time earned by an investor that follows a strategy of buying
+and selling every I periods of time in a market with no discounting. The log
+of this is thus the continuously compounded expected return from such a
+strategy. Obviously, such a return is negative. Recall from the definition
+of At and By that the specialists sets the bid and ask so that on average what
+he loses to the informed is made up by what he gains from the uninformed
+liquidity traders. Thus, (nt1)/(I,-t)log(k) ( a positive number) is, in
+return (per unit time) terms, what the uninformed on average lose to the
+informed. Thus, It represents the expected holding period return, i, plus the
+return that the uninformed anticipate losing to the informed. Note that It
+depends upon the holding period I. In particular, ntl in Proposition 6 is
 
 ===== PAGE 24 =====
 
-
+- 22 -
+approximately (Io-t)/T, and hence It is approximately i + (1/1) 108(k).
+The above proposition, with i specified exogenously, closes the model in
+the sense that 2, 4, Be are now specified. The resulting price process
+will be ip with pee p, where Pe is as spectied in the pretous.
+section. The observed holding period return will be If To-t is large
+relative to I, then fy and fety will be approximately equal, in which
+case * will be on average approximately equal to • The observed
+returns will be larger than i, the hypothesized holding period return, since
+** and PA", and hence which is equal to
+AttT
+eiT in expectation. That is, returns calculated by observing transaction
+prices will always be at least as large as the returns that one could realize
+by buying at time t and selling at time t+t.
+On the other hand, it is easy to see that the existence of a bid ask
+spread is less important the longer is the investment horizon. Intuitively,
+this spread can be amortized over a larger number of periods. To see this,
+the expected value of the return that can be realized long term is:
+P
+t t+t Petnt
+1 = BEI ...
+P
+t t t+(n-1)T t+nt
+(- t+T ttnt .... — 1
+P. P
+t + (n-1) 1 t+nt
 
 ===== PAGE 25 =====
 
-
+- 23 -
+- BLA GEtT
+t+nt
+...- * → ]
+PEt (n- 1) + P tInt
+Since Py& At, the above expected return is less than the observed return. If
+Iot is large, however, then (t/A will be close to one, and the
+long term per period mean return will be close to the observed (from the
+transaction price sequence) per period return.
+These observations may provide some insight into such "anomalies" as the
+"small firm effect" and the "ignored firm effect." In both cases it may be
+reasonable to conjecture that informational differences between market
+participants may be significant. In the case of the small firm effect, it may
+be the case that insiders hold a larger proportion of the stock. As the
+results in section II show, this will indicate (other things equal) a larger
+spread and hence a larger divergence between It and i. In the latter case,
+the lack of public reporting on a firm may imply that there is a larger
+informational difference between insiders and outsiders. This will also mean
+a larger spread and hence a greater difference between It and i. The above
+results suggest that the measured "excess returns" are not realizable in a
+short run basis. Rather, the spread, which represents the expected loss of
+the uninformed to the informed, leaves an outsider with a "normal" rate of
+return. In the long run, returns will indeed be larger on average, but these
+higher returns can only be realized by buying and holding.
+IV. Conclusion
+To summarize the above results, we have shown that the existence of
+traders better informed than the specialist will generate a spread between bid
 
 ===== PAGE 26 =====
 
-
+- 24 -
+and ask. The resulting transaction price process is a martingale (or
+submartingale with discounting of the future) relative to all public
+information. Insiders, however, profit from their information but if we allow
+trade to continue indefinitely, the profits of late arriving informed traders
+tends to zero. The model predicts that the average spread should be inversely
+proportional to the square root of the average volume, and the spread
+increases with the proportion of insiders and the quality of their
+information. The existence of a spread implies that returns calculated by
+examining the transaction price process will overstate the realizable
+returns. It is shown that if a normal expected return goes to the outsiders,
+then the return that is measured will be approximately this normal return plus
+what outsiders expect to lose to insiders.
+The analysis shows that prices are informative and hence (loosely
+speaking) spreads should decline through time. This along with the results of
+section III should indicate declining excess returns as the time of the
+informational event is approached. Furthermore, as the spread decreases, the
+volatility of the stock price should decrease. This entire analysis is of
+course predicated on their being an informational event, and the existence of
+individuals with prior access to the information trading based on that
+information. The model would suggest that further studies of excess returns
+should control for numbers of insiders, the timing of informational events
+and, to the extent possible, the quality of inside information relative to
+publicly available information. It also suggests that the spread itself is of
+practical importance and should be analyzed in terms of the above variables.
+There are several compromises and omissions of the model presented here
+that should be addressed by further research. First, the restriction of trade
+to unit lots is unrealistic. Specialists implicitly have a price schedule for
 
 ===== PAGE 27 =====
 
-
+- 25 -
+various volumes of trade, and a model that allows such schedules could deal
+with the question of the informational content of volume. It would appear to
+have the added benefit of predicting a relationship between volume and price
+volatility. Second, further development of investor behavior facing a
+specialist market is required. That is, an analysis of other investment
+opportunities is necessary to develop fully the "required rate of return"
+notion introduced in section III. Third, the informational source of the
+spread should be integrated with the other sources of spread due to the fact
+that the specialist is risk averse (as discussed in Ho and Stoll) to come up
+with a more complete model of securities pricing. Fourth, while the
+strategies of the specialist and market participants are dynamic, the
+exogenous uncertainty is unchanging. A further development that is in line
+with other models of the specialist might be to specify some exogenous
+stochastic process representing the "intrinsic value" of the firm. Finally,
+an analysis of the welfare effects of the spread and a comparison with those
+of other possible trading institutions could prove to be interesting.
 
 ===== PAGE 28 =====
 
-
+- 26 -
+APPENDIX
+Proof of Proposition 4
+First consider t E (T Then
+BetT
+ELlA - 1 = exp(-i(I.-t-+)) • That is,
+t
+e
+Io-t
+F, = 1 + 10g11 ].
+FalBE+T
+For ttt ‹ Io, and tint e lI, 1, Io, suppose
+FEtT=1 +(0/(I-t=+))108(KEtT ) •
+= E lexp(-(1+(n/ (I -*=+))108(K++"(I -*=T))Bett 1
+and 10g (-
+t BE+I
+KEtT
+1/I.-t
+= i + 10g [(
+Bett
+KEtT
+BEtT Bett
+Bet (nt1). 11
+Now, ELl-
+KE+T Attt A Etnt
 
 ===== PAGE 29 =====
 
-
+- 27 -
+BEtT
+MetKE
+since E++(k+1)+|— - = 1.
+Attkt
+Thus, It = 1 + ((n+1)/(I -t))log(k). The (backwards) induction argument shows
+that It is as claimed. Q.E.D.
 
 ===== PAGE 30 =====
 
-
+- 28 -
+ENDNOTES
+1. Copeland and Galai argue that the specialist effectively supplies a call
+to buyers and a put to sellers. On average, the specialist loses the value of
+the call and put to informed traders and makes the spread from uninformed
+traders
+2. This model may not be providing the whole story, since as Keim (1981) has
+noted, much of the excess January return occurs in the first few days of
+January--before insiders might be presumed to have accurate information.
+3. It is convenient, but not necessary to think of the arrivals as forming a
+Poisson process. Most of the conditions imposed on the arrival process in the
+propositions will be satisfied if arrivals are Poisson.
+4. It should be noted that for small differencing intervals, the martingale
+property has not held up empirically. As others have argued (1970), this may
+be the result of bid and ask limit orders piling up on the specialist's
+book. The result is that transaction prices often appear negatively
+correlated.
 
 ===== PAGE 31 =====
 
+- 29 -
+REFERENCES
+1. Akerlof, G. A., 1970, The Market for 'Lemons', Qualitative Uncertainty and
+the Market Mechanism, Quarterly Journal of Economics, 84, 488-500.
+2. ata , ator on ia, Mendelson, 1980, Dealereht Market, Journal of
+Jou are 05, 4a er (paeud.), 1971, The Only Gane in Town, Financtal Analyste
+Bon, Balf, 10 he alt a seen REUT and Markot Value of
+6. Copeland, Thomas and Dan Galai, 1980, Information Effects on the Economics
+of the Bid Ask Spread, UCLA Working Paper.
+Lap a Joe, i 1970 Fifteen Captal warkets; A Revdex of Theory and
+Garman, Mark B., 1976, Market Microstructure, Journal of Financial
+Ecnomics 3 257-275.
+2 Tossman San orde se he tency of Compete, ve 553-s Markets
+When Traders
+10. Ho, Thomas and Hans R. Stoll, 1981, Optimal Dealer Pricing under
+Transactions and Return Uncertainty, Journal of Financial Economics, 9 47-
+Seasonin, mart emper, Size Relate, Animerses od Stocke turking Paper.
+22o el go Paul of on a T Stoke 26, 12, Trformation, Trade and Conson

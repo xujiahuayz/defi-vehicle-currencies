@@ -79,6 +79,26 @@ def main() -> int:
                 failed += 1
                 print(f"  {p.stem}: FAILED {type(exc).__name__} {str(exc)[:80]}", flush=True)
                 continue
+            # NEVER replace a longer extract with a shorter one. Two papers in this corpus
+            # are scans with no text layer, and their extracts were produced by OCR through
+            # a route this script does not have. pypdf returns almost nothing for them, so
+            # a --force run would silently overwrite 57,533 and 44,748 characters of real
+            # text with a few hundred, restoring the exact defect the OCR fixed and leaving
+            # no trace that anything was lost.
+            if dest.exists():
+                have = dest.read_text(errors="replace")
+                if len(have) > max(2000, 2 * len(text)):
+                    print(f"  {p.stem}: KEPT existing {len(have):,}-char extract, this run "
+                          f"produced only {len(text):,} (probably a scan carrying OCR)",
+                          flush=True)
+                    text, pages = have, have.count("===== PAGE ")
+                    index.append({"stem": p.stem, "pages": pages, "chars": len(text),
+                                  "title_guess": next((ln.strip() for ln in
+                                                       text.split("===== PAGE 1 =====", 1)[-1]
+                                                       .strip().splitlines()
+                                                       if len(ln.strip()) > 20), "")[:140],
+                                  "pdf_mb": round(p.stat().st_size / 1e6, 2)})
+                    continue
             dest.write_text(text)
         # First non-trivial line of page 1 is a serviceable title guess, and a bad
         # guess is visible rather than silent because the raw text sits beside it.
