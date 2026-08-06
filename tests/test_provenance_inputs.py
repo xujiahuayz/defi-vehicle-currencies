@@ -9,6 +9,22 @@ from ddvc.provenance import cache_key, describe_input, git_state, input_matches
 
 
 class ProvenanceInputTests(unittest.TestCase):
+    def test_absolute_data_symlink_keeps_its_logical_repo_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "worktree"
+            shared = Path(tmp) / "shared"
+            shared.mkdir()
+            (shared / "day.parquet").write_text("data")
+            link = root / "data" / "unified"
+            link.parent.mkdir(parents=True)
+            link.symlink_to(shared, target_is_directory=True)
+
+            with patch("ddvc.provenance.ROOT", root):
+                record = describe_input(link)
+                self.assertTrue(input_matches(record))
+
+            self.assertEqual(record["path"], "data/unified")
+
     def test_file_change_invalidates_recorded_input(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "input.txt"

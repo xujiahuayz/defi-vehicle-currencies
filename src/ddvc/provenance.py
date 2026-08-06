@@ -161,6 +161,11 @@ def describe_input(path: str | Path) -> dict[str, object]:
 
 
 def _rel(p: Path) -> Path:
+    if p.is_absolute():
+        try:
+            return p.relative_to(ROOT)
+        except ValueError:
+            pass
     try:
         return p.resolve().relative_to(ROOT)
     except ValueError:

@@ -12,6 +12,8 @@ Every claim in the "grounding" column below was measured or read in this project
 
 **One runner owns the research environment.** Invoke scripts and tests through `./scripts/run`; individual entry points never mutate `sys.path`. The runner places the current worktree's `src` and repository root on the import path, suppresses script-directory shadowing, and may reuse the primary checkout's environment without importing its source. Reusable logic still belongs in `src/ddvc/`, while `scripts/` remains thin entry points. This is a correctness gate, not only style: an editable environment shared with a linked worktree otherwise imports the primary checkout silently and can validate code other than the code under review.
 
+**Logical data identity survives worktrees.** Provenance and cache keys record the repository-relative lexical input path, even when that path is a symlink to a shared data tree; the fingerprint still traverses and identifies the target contents. Resolving the symlink target into an absolute host path makes identical inputs look different across linked worktrees, destroys valid resumable caches at merge time and writes machine-specific manifests. A generated cache may move to the corrected logical key only after its marker, schema, row-count and deterministic-sample contracts pass.
+
 **Sync.** Commit and push after every node. An unpushed completed node counts as unfinished.
 
 **Supersede means delete.** When a new version of any artefact exists, delete the old one in the same commit. Git history is the archive. Two live copies of a deck already caused a full review cycle to be spent on the wrong file.
