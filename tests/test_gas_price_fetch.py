@@ -11,6 +11,14 @@ import scripts.process.fetch_daily_gas_price_graph as gas_fetch
 
 
 class DailyGasPriceFetchTests(unittest.TestCase):
+    def test_panel_schema_does_not_depend_on_record_key_order(self) -> None:
+        first = {column: index for index, column in enumerate(gas_fetch.PANEL_COLUMNS)}
+        second = dict(reversed(first.items()))
+
+        frame = gas_fetch.daily_panel_frame([first, second])
+
+        self.assertEqual(list(frame.columns), gas_fetch.PANEL_COLUMNS)
+
     def test_legacy_valid_cache_rows_receive_their_source_identity(self) -> None:
         original_cache = gas_fetch.CACHE
         with TemporaryDirectory() as temporary:

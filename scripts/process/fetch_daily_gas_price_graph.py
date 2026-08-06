@@ -43,6 +43,19 @@ CODE_SOURCES = [
     "src/ddvc/quoter.py",
 ]
 BLOCK_SAMPLE_VERSION = "full_blocks_v1"
+PANEL_COLUMNS = [
+    "day",
+    "source",
+    "method",
+    "n_tx",
+    "n_blocks",
+    "gas_gwei_median",
+    "gas_gwei_p25",
+    "gas_gwei_p75",
+    "calendar_source",
+    "sampling_version",
+    "requested_blocks_per_day",
+]
 
 
 def _sample_blocks_from_file(
@@ -162,6 +175,11 @@ def summarise_prices(
     return rec
 
 
+def daily_panel_frame(rows: list[dict]) -> pd.DataFrame:
+    """Build the analytic frame with a stable schema independent of task completion order."""
+    return pd.DataFrame.from_records(rows, columns=PANEL_COLUMNS)
+
+
 def fetch_day(
     day: str,
     blocks_per_day: int = 3,
@@ -266,7 +284,7 @@ def main() -> int:
             if i % 100 == 0 or i == len(days):
                 print(f"  {i}/{len(days)}  ({failed} failed)", flush=True)
 
-    df = pd.DataFrame(rows)
+    df = daily_panel_frame(rows)
     df = df[df.get("gas_gwei_median").notna()] if "gas_gwei_median" in df else df
     if df.empty:
         print("no gas prices resolved")
