@@ -28,20 +28,21 @@ import argparse
 import gzip
 import json
 import statistics
-import sys
 from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.pricing.stableswap import StablePool, calibrate_amp, quote_exact_input
+from ddvc.tables import write_exhibit
 
-from ddvc.pricing.stableswap import StablePool, calibrate_amp, quote_exact_input  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
-
-RAW = ROOT / "data" / "raw" / "thegraph" / "curve"
-OUT = ROOT / "output" / "exhibits" / "curve_quoter_validation.jsonl"
+RAW = DATA_DIR / "raw" / "thegraph" / "curve"
+OUT = OUTPUT_DIR / "exhibits" / "curve_quoter_validation.jsonl"
+CODE_SOURCES = [
+    "scripts/validate_curve_quoter.py",
+    "src/ddvc/pricing/stableswap.py",
+]
 
 
 def _rows(path: Path):
@@ -66,6 +67,24 @@ def days_with_balances(limit: int | None) -> list[str]:
     return out
 
 
+def summarise_errors(signed_errors_pct: list[float]) -> dict[str, float]:
+    """Tail and direction diagnostics in percentage points of realised output."""
+    signed = pd.Series(signed_errors_pct, dtype=float)
+    absolute = signed.abs()
+    return {
+        "median_abs_err_pct": float(absolute.median()),
+        "p25_abs_err_pct": float(absolute.quantile(0.25)),
+        "p75_abs_err_pct": float(absolute.quantile(0.75)),
+        "p90_abs_err_pct": float(absolute.quantile(0.90)),
+        "p95_abs_err_pct": float(absolute.quantile(0.95)),
+        "p99_abs_err_pct": float(absolute.quantile(0.99)),
+        "max_abs_err_pct": float(absolute.max()),
+        "within_1pct": float(100 * absolute.lt(1).mean()),
+        "overquote_gt_10bps_pct": float(100 * signed.gt(0.10).mean()),
+        "overquote_gt_25bps_pct": float(100 * signed.gt(0.25).mean()),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -84,6 +103,7 @@ def main() -> int:
           f"{picked[0]}..{picked[-1]}\n")
 
     rows = []
+    pooled_signed_errors: list[float] = []
     for day in picked:
         pools: dict[str, dict] = {}
         for r in _rows(RAW / f"curve_daily_{day}.jsonl.gz"):
@@ -117,7 +137,7 @@ def main() -> int:
                 trades[pid].append((ti, to, ai, ao))
 
         fitted = scored = excluded = 0
-        errs: list[float] = []
+        signed_errors: list[float] = []
         amps: list[int] = []
         for pid, obs in trades.items():
             if len(obs) < args.min_swaps:
@@ -139,38 +159,52 @@ def main() -> int:
                 q = quote_exact_input(pool, ti, to, ai)
                 if q is None:
                     continue
-                errs.append(100 * abs(q - ao) / ao)
+                signed_errors.append(100 * (q - ao) / ao)
                 scored += 1
-        if not errs:
+        if not signed_errors:
             print(f"  {day}: no scorable pool-days")
             continue
-        errs.sort()
-        rows.append({"day": day, "pools_fitted": fitted, "pools_excluded": excluded,
-                     "held_out_trades": scored,
-                     "median_abs_err_pct": errs[len(errs) // 2],
-                     "p25_abs_err_pct": errs[len(errs) // 4],
-                     "p75_abs_err_pct": errs[3 * len(errs) // 4],
-                     "within_1pct": 100 * sum(1 for e in errs if e < 1) / len(errs),
-                     "median_amp": statistics.median(amps) if amps else None})
+        pooled_signed_errors.extend(signed_errors)
+        rows.append({
+            "day": day,
+            "pools_fitted": fitted,
+            "pools_excluded": excluded,
+            "held_out_trades": scored,
+            **summarise_errors(signed_errors),
+            "median_amp": statistics.median(amps) if amps else None,
+        })
         r = rows[-1]
         print(f"  {day}: {fitted:>4} pools fitted, {excluded:>3} excluded, "
               f"{scored:>6,} held-out trades | median |err| {r['median_abs_err_pct']:>8.3f}% "
-              f"| within 1% {r['within_1pct']:>5.1f}% | median A {r['median_amp']}")
+              f"| p90 {r['p90_abs_err_pct']:>7.3f}% | p99 {r['p99_abs_err_pct']:>7.3f}% "
+              f"| overquote >25 bps {r['overquote_gt_25bps_pct']:>5.1f}%")
 
     if not rows:
         return 1
-    allmed = statistics.median([r["median_abs_err_pct"] for r in rows])
-    w1 = statistics.median([r["within_1pct"] for r in rows])
-    print(f"\nacross days: median of daily median errors {allmed:.3f}%, "
-          f"median within-1% share {w1:.1f}%")
+    pooled = summarise_errors(pooled_signed_errors)
+    print(
+        f"\npooled {len(pooled_signed_errors):,} held-out trades: "
+        f"median |error| {pooled['median_abs_err_pct']:.3f}%, "
+        f"p90 {pooled['p90_abs_err_pct']:.3f}%, "
+        f"p95 {pooled['p95_abs_err_pct']:.3f}%, "
+        f"p99 {pooled['p99_abs_err_pct']:.3f}%, "
+        f"max {pooled['max_abs_err_pct']:.2f}%; "
+        f"overquote >25 bps {pooled['overquote_gt_25bps_pct']:.1f}%"
+    )
     print("\nReading. A small error means the invariant is right AND daily balance")
     print("snapshots are adequate for Curve legs, because both would have to hold. A")
     print("large error cannot distinguish the two, so the next step would be per-block")
     print("balances via gateway time-travel queries before blaming the implementation.")
-    write_exhibit(pd.DataFrame(rows), OUT)
-    print(f"\nwrote {OUT.relative_to(ROOT)}")
+    write_exhibit(
+        pd.DataFrame(rows),
+        OUT,
+        code_sources=CODE_SOURCES,
+        inputs=[RAW],
+        notes="held-out Curve quote errors with upper-tail and signed-overquote diagnostics",
+    )
+    print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
