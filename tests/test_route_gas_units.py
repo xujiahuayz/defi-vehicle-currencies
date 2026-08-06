@@ -155,6 +155,7 @@ class RouteGasUnitTests(unittest.TestCase):
         self.assertEqual(via["legs"], 2)
         self.assertEqual(via["venue_sequence"], "uniswap_v2>sushiswap_v2")
         self.assertEqual(via["mid_type"], "stable")
+        self.assertEqual(via["gas_vehicle"], USDC)
 
     def test_hash_sample_is_deterministic_and_capped_within_cells(self) -> None:
         frame = pd.DataFrame(
@@ -163,12 +164,13 @@ class RouteGasUnitTests(unittest.TestCase):
                 "legs": [1] * 5,
                 "venue_sequence": ["uniswap_v2"] * 5,
                 "mid_type": ["direct"] * 5,
+                "gas_vehicle": ["direct", "direct", "direct", "other", "other"],
                 "tx_hash": [f"tx-{index}" for index in range(5)],
             }
         )
         first = deterministic_cell_sample(frame, 2)
         second = deterministic_cell_sample(frame.sample(frac=1, random_state=4), 2)
-        self.assertEqual(len(first), 2)
+        self.assertEqual(len(first), 4)
         self.assertEqual(set(first["tx_hash"]), set(second["tx_hash"]))
 
     def test_receipt_parser_normalises_hex_fields(self) -> None:

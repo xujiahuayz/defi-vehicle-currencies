@@ -62,6 +62,8 @@ CODE_SOURCES = [
     "src/ddvc/fetch/sources.py",
     "src/ddvc/quoter.py",
 ]
+SAMPLE_CELLS = ["year", "legs", "venue_sequence", "gas_vehicle"]
+SUMMARY_CELLS = [*SAMPLE_CELLS, "mid_type"]
 
 
 def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
@@ -131,6 +133,8 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
             mid = "|".join(sorted(intermediaries)) or None
             mid_symbol = None
             mid_type = "multi"
+        # Named intermediaries keep exact identity; the unclassified long tail shares one bounded cell.
+        gas_vehicle = mid if mid_symbol is not None else mid_type
         route_notional = float(
             pd.to_numeric(ordered["amount_usd"], errors="coerce").max()
         )
@@ -147,6 +151,7 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
                 "mid": mid,
                 "mid_symbol": mid_symbol,
                 "mid_type": mid_type,
+                "gas_vehicle": gas_vehicle,
                 "route_notional_usd": route_notional,
             }
         )
@@ -166,10 +171,9 @@ def deterministic_cell_sample(
         hashlib.sha256(f"{year}|{tx_hash}".encode()).hexdigest()
         for year, tx_hash in zip(out["year"], out["tx_hash"], strict=True)
     ]
-    cells = ["year", "legs", "venue_sequence", "mid_type"]
     out = (
-        out.sort_values(cells + ["_rank"], kind="stable")
-        .groupby(cells, as_index=False, group_keys=False)
+        out.sort_values(SAMPLE_CELLS + ["_rank"], kind="stable")
+        .groupby(SAMPLE_CELLS, as_index=False, group_keys=False)
         .head(per_cell)
     )
     return out.drop(columns=["_rank"]).reset_index(drop=True)
@@ -268,7 +272,7 @@ def main() -> int:
     sample = deterministic_cell_sample(candidates, args.per_cell)
     print(
         f"selected {len(sample):,} of {len(candidates):,} candidates across "
-        f"{sample[['year', 'legs', 'venue_sequence', 'mid_type']].drop_duplicates().shape[0]:,} cells",
+        f"{sample[SAMPLE_CELLS].drop_duplicates().shape[0]:,} cells",
         flush=True,
     )
 
@@ -314,8 +318,8 @@ def main() -> int:
         inputs=[UNIFIED, CACHE],
         notes=f"hash-ranked cap of {args.per_cell} exact one-component transactions per year-topology-venue-intermediary cell",
     )
-    cells = ["year", "legs", "venue_sequence", "mid_type"]
-    summary = panel.groupby(cells, as_index=False).agg(
+    summary = panel.groupby(SUMMARY_CELLS, as_index=False).agg(
+        mid_symbol=("mid_symbol", "first"),
         transactions=("gas_used", "size"),
         routers=("router", "nunique"),
         median_gas_used=("gas_used", "median"),
