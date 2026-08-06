@@ -36,8 +36,21 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from ddvc.provenance import stamp  # noqa: E402
+
 CACHE = ROOT / "data" / "empirical" / "_route_cost_day_cache"
 OUT = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
+CODE_SOURCES = [
+    "scripts/assemble_route_cost_panel.py",
+    "scripts/run_route_cost_panel.py",
+    "src/ddvc/pricing/stableswap.py",
+    "src/ddvc/pricing/v2quote.py",
+    "src/ddvc/pricing/v3pools.py",
+    "src/ddvc/pricing/v3quote.py",
+    "src/ddvc/pricing/weighted.py",
+]
 
 
 def newest_spec() -> Path | None:
@@ -143,6 +156,10 @@ def main() -> int:
           f"{OUT.relative_to(ROOT)} ({OUT.stat().st_size / 1e6:.0f} MB)")
     if skipped:
         print(f"{skipped} day(s) were unreadable and are named above")
+    manifest = stamp(OUT, code_sources=CODE_SOURCES, inputs=[spec], rows=rows,
+                     notes=(f"assembled {len(files) - skipped} readable day shards from "
+                            f"{spec.relative_to(ROOT)}; {skipped} unreadable"))
+    print(f"stamped {manifest.relative_to(ROOT)}")
     return 0
 
 

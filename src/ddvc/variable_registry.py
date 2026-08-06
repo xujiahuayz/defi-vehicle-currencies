@@ -657,6 +657,65 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Vehicle-use measures",
+        name="Intermediate-use share",
+        column="intermediate_share",
+        notation=r"$\mathrm{IShare}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IVol}_{k,t}}"
+            r"{\sum_{j}\mathrm{IVol}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Token $k$'s share of clean, non-cyclic route value carried as an "
+            r"intermediary; a repeated appearance of $k$ inside one reconstructed "
+            r"component is counted once."
+        ),
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Numerator of the primary vehicle-extent measure.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Endpoint-demand share",
+        column="endpoint_share",
+        notation=r"$\mathrm{EShare}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{EVol}_{k,t}}"
+            r"{\sum_{j}\mathrm{EVol}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Token $k$'s share of source-or-sink value across all clean, non-cyclic "
+            r"routes, including direct routes so the benchmark does not condition "
+            r"on intermediation."
+        ),
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Fundamental endpoint-demand benchmark for vehicle extent.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Vehicle excess-use ratio",
+        column="vehicle_excess_use_ratio",
+        notation=r"$\mathrm{ExcessUse}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IShare}_{k,t}}"
+            r"{\mathrm{EShare}_{k,t}}$"
+        ),
+        unit="Ratio",
+        construction=(
+            r"Intermediate-use share divided by endpoint-demand share on the same clean, "
+            r"non-cyclic route universe; undefined when endpoint demand is zero."
+        ),
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for=(
+            "Primary measure of vehicle extent; values above one indicate use beyond "
+            "endpoint demand."
+        ),
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
         name="Vehicle count share",
         column="bridge_count_share",
         notation=r"$\mathrm{VehicleCountShare}_{k,t}$",
@@ -820,7 +879,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"where $k$ is the input or output endpoint. Superscripts identify each route role."
         ),
         source="data/metrics/<date>.parquet",
-        used_for="Network-theoretic vehicle proxy.",
+        used_for="Network-topology robustness only; not a primary vehicle-extent measure.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
         summary_unit="Fraction (0--1)",

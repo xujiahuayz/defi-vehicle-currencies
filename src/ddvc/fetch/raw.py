@@ -136,6 +136,30 @@ def timestamp_value(row: dict[str, Any] | None) -> int | None:
     return None
 
 
+def merge_stream_metadata(existing: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
+    """Merge a partial stream refresh without deleting provenance for other streams."""
+    merged = {**existing, **fresh}
+    streams = dict(existing.get("streams") or {})
+    for name, item in (fresh.get("streams") or {}).items():
+        if item.get("status") == "skipped" and name in streams:
+            continue
+        streams[name] = item
+    merged["streams"] = streams
+    mins = [
+        int(item["min_block"])
+        for item in streams.values()
+        if item.get("min_block") is not None
+    ]
+    maxes = [
+        int(item["max_block"])
+        for item in streams.values()
+        if item.get("max_block") is not None
+    ]
+    merged["min_block"] = min(mins) if mins else None
+    merged["max_block"] = max(maxes) if maxes else None
+    return merged
+
+
 def fetch_source_day(
     source: DexSource,
     day: dt.date,
@@ -196,6 +220,11 @@ def fetch_source_day(
     }
     meta_out = meta_path(source.name, day)
     meta_out.parent.mkdir(parents=True, exist_ok=True)
+    if meta_out.exists():
+        try:
+            meta = merge_stream_metadata(json.loads(meta_out.read_text()), meta)
+        except (OSError, json.JSONDecodeError):
+            pass
     tmp = meta_out.with_name(meta_out.name + ".tmp")
     tmp.write_text(json.dumps(meta, indent=2, sort_keys=True))
     tmp.replace(meta_out)

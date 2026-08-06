@@ -104,6 +104,23 @@ def describe_input(path: str | Path) -> dict[str, object]:
     if not p.exists():
         return {"path": str(_rel(p)), "exists": False}
     st = p.stat()
+    if p.is_dir():
+        h = hashlib.sha256()
+        entries = 0
+        for child in sorted(q for q in p.rglob("*") if q.is_file()):
+            rel = child.relative_to(p)
+            child_stat = child.stat()
+            h.update(str(rel).encode())
+            h.update(str(child_stat.st_size).encode())
+            h.update(str(child_stat.st_mtime_ns).encode())
+            entries += 1
+        return {
+            "path": str(_rel(p)),
+            "exists": True,
+            "kind": "directory",
+            "entries": entries,
+            "tree_fingerprint": h.hexdigest(),
+        }
     d: dict[str, object] = {"path": str(_rel(p)), "exists": True, "bytes": st.st_size}
     if st.st_size <= CONTENT_HASH_MAX_BYTES:
         d["sha256"] = hashlib.sha256(p.read_bytes()).hexdigest()
@@ -180,6 +197,26 @@ def stamp(artefact: str | Path, *, code_sources: list[str],
     return out
 
 
+def _recorded_input_path(record: dict[str, object]) -> Path:
+    value = Path(str(record.get("path", "")))
+    return value if value.is_absolute() else ROOT / value
+
+
+def input_matches(record: dict[str, object]) -> bool:
+    """Whether a recorded input is byte-for-byte or tree-state current."""
+    current = describe_input(_recorded_input_path(record))
+    keys = (
+        "exists",
+        "kind",
+        "bytes",
+        "sha256",
+        "mtime_ns",
+        "entries",
+        "tree_fingerprint",
+    )
+    return all(current.get(key) == record.get(key) for key in keys if key in record)
+
+
 def verify(artefact: str | Path) -> dict[str, object]:
     """Is this artefact still the product of the code now in the tree?
 
@@ -195,12 +232,21 @@ def verify(artefact: str | Path) -> dict[str, object]:
         return {"artefact": str(_rel(p)), "status": "unstamped"}
     rec = json.loads(side.read_text())
     now = code_fingerprint(rec.get("code_sources") or [])
-    ok = now == rec.get("code_fingerprint")
+    code_ok = now == rec.get("code_fingerprint")
+    input_changes = [
+        str(item.get("path"))
+        for item in rec.get("inputs") or []
+        if not input_matches(item)
+    ]
+    inputs_ok = not input_changes
     return {
         "artefact": str(_rel(p)),
-        "status": "ok" if ok else "stale",
+        "status": "ok" if code_ok and inputs_ok else "stale",
         "stamped_fingerprint": rec.get("code_fingerprint"),
         "current_fingerprint": now,
+        "code_current": code_ok,
+        "inputs_current": inputs_ok,
+        "changed_inputs": input_changes,
         "stamped_commit": (rec.get("git") or {}).get("commit"),
         "was_dirty": (rec.get("git") or {}).get("dirty"),
         "created_at": rec.get("created_at"),
