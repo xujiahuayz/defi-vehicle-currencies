@@ -25,16 +25,18 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 "economic_routes": [10, 10, 10, 10],
                 "economic_multileg_routes": [4, 6, 2, 2],
                 "economic_multileg_share": [0.4, 0.6, 0.2, 0.2],
-                "balanced_economic_routes": [10, 10, 10, 10],
+                "balanced_economic_routes": [10, 10, 8, 8],
                 "balanced_economic_multileg_routes": [4, 6, 1, 1],
-                "balanced_economic_multileg_share": [0.4, 0.6, 0.1, 0.1],
+                "balanced_economic_multileg_share": [0.4, 0.6, 0.125, 0.125],
             }
         )
         result = routing_incidence_change_tests(panel, hac_lag=0).set_index("scope")
         self.assertAlmostEqual(result.loc["full", "change"], -0.3)
-        self.assertAlmostEqual(result.loc["balanced", "change"], -0.4)
+        self.assertAlmostEqual(result.loc["balanced", "change"], -0.375)
         self.assertAlmostEqual(result.loc["full", "comparison_ratio_of_totals"], 0.2)
-        self.assertAlmostEqual(result.loc["balanced", "comparison_ratio_of_totals"], 0.1)
+        self.assertAlmostEqual(result.loc["balanced", "comparison_ratio_of_totals"], 0.125)
+        self.assertAlmostEqual(result.loc["balanced", "balanced_route_coverage_comparison"], 0.8)
+        self.assertAlmostEqual(result.loc["balanced", "entrant_touching_incidence_comparison"], 0.5)
 
     def test_clean_routes_are_ordered_and_ambiguous_components_are_excluded(self) -> None:
         rows = [

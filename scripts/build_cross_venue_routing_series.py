@@ -250,6 +250,25 @@ def routing_incidence_change_tests(
     data = panel.copy().sort_values("date", kind="stable")
     data["year"] = pd.to_datetime(data["date"]).dt.year
     data = data[data["year"].between(baseline_year, comparison_year)]
+
+    def yearly_sum(column: str, year: int) -> float:
+        return float(data.loc[data["year"].eq(year), column].sum())
+
+    def support_share(year: int) -> float:
+        denominator = yearly_sum("economic_routes", year)
+        return yearly_sum("balanced_economic_routes", year) / denominator
+
+    def complement_incidence(year: int) -> float | None:
+        denominator = yearly_sum("economic_routes", year) - yearly_sum(
+            "balanced_economic_routes", year
+        )
+        if denominator <= 0:
+            return None
+        numerator = yearly_sum("economic_multileg_routes", year) - yearly_sum(
+            "balanced_economic_multileg_routes", year
+        )
+        return numerator / denominator
+
     rows: list[dict[str, object]] = []
     for scope, prefix in (("full", ""), ("balanced", "balanced_")):
         share_column = f"{prefix}economic_multileg_share"
@@ -287,6 +306,10 @@ def routing_incidence_change_tests(
                 "days": estimate.n_observations,
                 "hac_lag_days": hac_lag,
                 "share_denominator": "economic routes excluding canonical endpoint round trips",
+                "balanced_route_coverage_baseline": support_share(baseline_year),
+                "balanced_route_coverage_comparison": support_share(comparison_year),
+                "entrant_touching_incidence_baseline": complement_incidence(baseline_year),
+                "entrant_touching_incidence_comparison": complement_incidence(comparison_year),
             }
         )
     return pd.DataFrame(rows)
