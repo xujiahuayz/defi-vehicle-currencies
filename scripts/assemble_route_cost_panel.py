@@ -36,9 +36,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
-from ddvc.provenance import stamp  # noqa: E402
+from ddvc.provenance import stamp
 
 CACHE = ROOT / "data" / "empirical" / "_route_cost_day_cache"
 OUT = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"

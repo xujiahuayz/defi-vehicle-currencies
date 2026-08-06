@@ -9,19 +9,16 @@ Writes  data/processed/vehicle_excess_use_daily.parquet
 from __future__ import annotations
 
 import argparse
-import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
-from ddvc.provenance import stamp  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
-from ddvc.vehicle_extent import REQUIRED_COLUMNS, compute_vehicle_extent  # noqa: E402
-from ddvc.asset_types import CURRENCY_TYPES  # noqa: E402
+from ddvc.asset_types import CURRENCY_TYPES
+from ddvc.provenance import stamp
+from ddvc.tables import write_exhibit
+from ddvc.vehicle_extent import REQUIRED_COLUMNS, compute_vehicle_extent
 
 UNIFIED = ROOT / "data" / "unified"
 OUT_PANEL = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"

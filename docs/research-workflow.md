@@ -36,6 +36,8 @@ This was violated on 2026-08-06 and the cost was legible in advance. Node P was 
 3. Every open decision in section 8 is decided.
 4. Two consecutive F <-> G passes generate no new claim and retire none.
 
+**Research-state reconciliation is executable.** After every F to G pass, update `docs/findings-freeze.md` and run `python scripts/audit_findings_freeze.py`. The audit checks the live artefacts, their input-aware provenance, panel coverage, retired estimands in the refresh graph, and the unchanged-pass counter. Commit order, document recency, and a green paper build are not evidence that findings are frozen. This gate was added after prose work began while the full panel manifest still described 18,120 rows, v4 was priced on 30 of its historical days, and the downstream refresher still ran estimands the definition audit had retired.
+
 Until then, write to `memo/` freely. Discovery register is correct there, because a record is judged on whether it is complete and traceable and never on whether it reads like the venue.
 
 **The transform must be a FUNCTION of its input, never an edit to it.** Node P writes `paper/` FROM `memo/` and leaves the memo untouched. That is what makes it re-runnable: when a finding changes, the affected section is regenerated rather than patched, and patching is the mode that was measured not to converge. Rewriting the memo in place would destroy the input and make the second run impossible.
