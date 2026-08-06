@@ -4,6 +4,7 @@ import unittest
 
 import pandas as pd
 
+from ddvc.fetch.sources import DEX_SOURCES
 from scripts.process.build_route_gas_units import (
     candidate_transactions,
     deterministic_cell_sample,
@@ -41,7 +42,29 @@ def leg(
 
 
 class RouteGasUnitTests(unittest.TestCase):
-    def test_candidates_keep_only_exact_single_component_v2_family_routes(self) -> None:
+    def test_candidates_cover_every_registered_venue(self) -> None:
+        frame = pd.DataFrame(
+            [
+                leg(
+                    f"tx-{source}",
+                    0,
+                    "a",
+                    "b",
+                    "source",
+                    "sink",
+                    source=source,
+                    route_class="single",
+                )
+                for source in DEX_SOURCES
+            ]
+        )
+        out = candidate_transactions(frame, "20220115")
+        self.assertEqual(
+            set(out["venue_sequence"]),
+            set(DEX_SOURCES),
+        )
+
+    def test_candidates_keep_only_exact_single_component_registered_routes(self) -> None:
         frame = pd.DataFrame(
             [
                 leg(
@@ -64,13 +87,24 @@ class RouteGasUnitTests(unittest.TestCase):
                     source="sushiswap_v2",
                 ),
                 leg(
-                    "mixed",
+                    "v3",
                     0,
                     "a",
                     "b",
                     "source",
                     "sink",
                     source="uniswap_v3",
+                    route_class="single",
+                ),
+                leg(
+                    "unknown",
+                    0,
+                    "a",
+                    "b",
+                    "source",
+                    "sink",
+                    source="unknown_dex",
+                    route_class="single",
                 ),
                 leg(
                     "components",
@@ -116,7 +150,7 @@ class RouteGasUnitTests(unittest.TestCase):
             ]
         )
         out = candidate_transactions(frame, "20220115")
-        self.assertEqual(set(out["tx_hash"]), {"direct", "via"})
+        self.assertEqual(set(out["tx_hash"]), {"direct", "via", "v3"})
         via = out[out["tx_hash"].eq("via")].iloc[0]
         self.assertEqual(via["legs"], 2)
         self.assertEqual(via["venue_sequence"], "uniswap_v2>sushiswap_v2")

@@ -4,7 +4,7 @@
 The paper currently carries three pooled constants for one-, two- and three-leg
 routes, but the script that produced them did not survive. That is not reproducible
 and it cannot support venue-specific all-in route costs. This instrument selects
-transactions containing exactly one coherent reconstructed route component, keeps
+transactions containing exactly one linear reconstructed route component, keeps
 its ordered venue sequence and intermediary type, fetches one stored receipt per
 transaction, and reports the distribution of total gas used.
 
@@ -32,6 +32,7 @@ import pandas as pd
 
 from ddvc.asset_types import canonical_token, classify
 from ddvc.calendar import nearest_monthly_days
+from ddvc.fetch.sources import DEX_SOURCES
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.quoter import rpc_post
 from ddvc.runtime import atomic_output
@@ -41,7 +42,7 @@ UNIFIED = DATA_DIR / "unified"
 CACHE = DATA_DIR / "interim" / "route_gas_receipts"
 OUT_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "route_gas_units_summary.jsonl"
-VENUES = {"uniswap_v2", "sushiswap_v2"}
+SUPPORTED_VENUES = frozenset(DEX_SOURCES)
 REQUIRED_COLUMNS = [
     "tx_hash",
     "component_id",
@@ -58,18 +59,19 @@ REQUIRED_COLUMNS = [
 CODE_SOURCES = [
     "scripts/process/build_route_gas_units.py",
     "src/ddvc/asset_types.py",
+    "src/ddvc/fetch/sources.py",
     "src/ddvc/quoter.py",
 ]
 
 
 def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
-    """One row per exact one-component V2-family transaction."""
+    """One row per exact one-component transaction on registered venues."""
     missing = sorted(set(REQUIRED_COLUMNS) - set(frame.columns))
     if missing:
         raise ValueError(f"gas-unit candidates are missing columns: {', '.join(missing)}")
     rows = []
     for tx_hash, group in frame.groupby("tx_hash", sort=False):
-        if not group["source"].isin(VENUES).all():
+        if not group["source"].isin(SUPPORTED_VENUES).all():
             continue
         if group["component_id"].nunique() != 1:
             continue
