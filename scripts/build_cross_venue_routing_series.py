@@ -56,15 +56,47 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.tables import write_exhibit
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.tables import write_exhibit, write_panel
 
-ROOT = Path(__file__).resolve().parents[1]
-UNIFIED = ROOT / "data" / "unified"
-OUT_PARQUET = ROOT / "data" / "processed" / "cross_venue_routing_daily.parquet"
-OUT_EXHIBIT = ROOT / "output" / "exhibits" / "cross_venue_routing_series.jsonl"
+UNIFIED = DATA_DIR / "unified"
+OUT_PARQUET = DATA_DIR / "processed" / "cross_venue_routing_daily.parquet"
+OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "cross_venue_routing_series.jsonl"
+MAX_WORKERS = 8
+CODE_SOURCES = [
+    "scripts/build_cross_venue_routing_series.py",
+    "src/ddvc/reconstruct/__init__.py",
+]
 
 COLS = ["tx_hash", "component_id", "source", "amount_usd", "route_class",
-        "token_in", "token_out"]
+        "token_in", "token_out", "log_index"]
+
+
+def bounded_workers(requested: int) -> int:
+    return min(MAX_WORKERS, max(1, requested))
+
+
+def empty_day(date: object) -> dict[str, object]:
+    return {
+        "date": date,
+        "legs": 0,
+        "routes": 0,
+        "single_leg_routes": 0,
+        "multi_leg_routes": 0,
+        "round_trip_routes": 0,
+        "economic_multileg_routes": 0,
+        "cross_venue_routes": 0,
+        "cross_venue_share": float("nan"),
+        "cross_venue_usd_share": float("nan"),
+        "cross_venue_share_unfiltered": float("nan"),
+        "cross_venue_usd_share_unfiltered": float("nan"),
+        "round_trip_share_of_multileg": float("nan"),
+        "round_trip_usd_share_of_multileg": float("nan"),
+        "economic_multileg_usd": 0.0,
+        "cross_venue_usd": 0.0,
+        "total_usd": 0.0,
+        "venues_active": 0,
+    }
 
 
 def one_day(path: Path) -> dict | None:
@@ -73,9 +105,11 @@ def one_day(path: Path) -> dict | None:
         df = pd.read_parquet(path, columns=COLS)
     except Exception as exc:  # a malformed day should not kill the panel
         return {"date": path.stem, "error": str(exc)[:120]}
+    df = df[df["route_class"].isin(["single", "coherent"])].copy()
     if df.empty:
-        return {"date": path.stem, "legs": 0, "routes": 0}
+        return empty_day(pd.to_datetime(path.stem, format="%Y%m%d"))
 
+    df = df.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
     g = df.groupby(["tx_hash", "component_id"], sort=False)
     legs = g.size()
     venues = g["source"].nunique()
@@ -128,6 +162,7 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int, default=None, help="first N days only, for a smoke test")
     args = ap.parse_args()
+    args.workers = bounded_workers(args.workers)
 
     days = sorted(UNIFIED.glob("*.parquet"))
     if args.limit:
@@ -151,44 +186,53 @@ def main() -> int:
         print(f"\n{len(errors)} day(s) failed to read:")
         for e in errors[:10]:
             print("  ", e["date"], e["error"])
+        print("refusing to write a partial cross-venue panel")
+        return 1
 
     df = pd.DataFrame(rows).sort_values("date").reset_index(drop=True)
-    df = df[df["routes"] > 0].copy()
+    if len(df) != len(days):
+        print(f"expected {len(days):,} days but built {len(df):,}; refusing partial output")
+        return 1
 
-    OUT_PARQUET.parent.mkdir(parents=True, exist_ok=True)
-    OUT_EXHIBIT.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(OUT_PARQUET, index=False)
-    write_exhibit(df, OUT_EXHIBIT)
-
-    # monthly view, which is what a figure would plot
-    m = df.set_index("date").resample("MS").agg(
-        econ=("economic_multileg_routes", "sum"),
-        cvr=("cross_venue_routes", "sum"),
-        rt=("round_trip_routes", "sum"),
-        multi=("multi_leg_routes", "sum"),
-        routes=("routes", "sum"),
-        venues_active=("venues_active", "max"),
-        cross_venue_usd=("cross_venue_usd", "sum"),
-        econ_usd=("economic_multileg_usd", "sum"),
+    write_panel(
+        df,
+        OUT_PARQUET,
+        code_sources=CODE_SOURCES,
+        inputs=[UNIFIED],
+        notes="clean single/coherent routes only; round trips retained as diagnostics",
     )
-    m["cross_venue_share_of_multileg"] = m.cvr / m.econ
-    m["cross_venue_usd_share"] = m.cross_venue_usd / m.econ_usd
-    m["round_trip_share"] = m.rt / m.multi
+    write_exhibit(
+        df,
+        OUT_EXHIBIT,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+    )
 
     print(f"\ndays retained: {len(df):,}   {df.date.min().date()} to {df.date.max().date()}")
     print(f"total legs: {df.legs.sum():,}   total routes: {df.routes.sum():,}")
-    print("\nannual means of the headline share (count-weighted, then value-weighted):")
-    a = m.resample("YS").agg({"cross_venue_share_of_multileg": "mean",
-                              "cross_venue_usd_share": "mean",
-                              "round_trip_share": "mean",
-                              "venues_active": "max"})
-    print("  year   count   value   (round trips excluded, share of multileg shown)")
+    print("\nannual ratios of totals (count-weighted, then value-weighted):")
+    a = df.set_index("date").resample("YS").agg(
+        econ=("economic_multileg_routes", "sum"),
+        cross=("cross_venue_routes", "sum"),
+        cross_usd=("cross_venue_usd", "sum"),
+        econ_usd=("economic_multileg_usd", "sum"),
+        round_trip=("round_trip_routes", "sum"),
+        multi=("multi_leg_routes", "sum"),
+        routes=("routes", "sum"),
+        venues_active=("venues_active", "max"),
+    )
+    a["cross_venue_share_of_multileg"] = a["cross"] / a["econ"]
+    a["cross_venue_usd_share"] = a["cross_usd"] / a["econ_usd"]
+    a["round_trip_share"] = a["round_trip"] / a["multi"]
+    a["economic_multileg_share_all"] = a["econ"] / a["routes"]
+    print("  year   count   value   multi/all   rt share   venues")
     for idx, row in a.iterrows():
         print(f"  {idx.year}   {row.cross_venue_share_of_multileg:6.1%}"
               f"  {row.cross_venue_usd_share:6.1%}"
-              f"   rt={row.round_trip_share:5.1%}"
-              f"   venues {int(row.venues_active)}")
-    print(f"\nwrote {OUT_PARQUET.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
+              f"     {row.economic_multileg_share_all:6.1%}"
+              f"     {row.round_trip_share:6.1%}"
+              f"        {int(row.venues_active)}")
+    print(f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)} and {OUT_EXHIBIT.relative_to(REPO_ROOT)}")
     return 0
 
 
