@@ -32,8 +32,10 @@ import argparse
 from pathlib import Path
 
 from ddvc.panel_assembly import assemble_parquet_shards
-from ddvc.paths import DATA_DIR, REPO_ROOT
+from ddvc.paths import DATA_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.provenance import stamp
+from ddvc.runtime import exclusive_job
+from scripts.run_route_cost_panel import QUOTE_CELL_KEYS
 
 CACHE = DATA_DIR / "empirical" / "_route_cost_day_cache"
 OUT = DATA_DIR / "empirical" / "route_cost_panel_v2.parquet"
@@ -83,7 +85,12 @@ def main() -> int:
         if index % 250 == 0 or index == total:
             print(f"  [{index}/{total}] {rows:,} rows", flush=True)
 
-    result = assemble_parquet_shards(files, OUT, progress=progress)
+    result = assemble_parquet_shards(
+        files,
+        OUT,
+        progress=progress,
+        unique_keys=QUOTE_CELL_KEYS,
+    )
     print(f"\nassembled {result.rows:,} rows from {result.shards:,} nonempty days into "
           f"{OUT.relative_to(REPO_ROOT)} ({OUT.stat().st_size / 1e6:.0f} MB)")
     manifest = stamp(OUT, code_sources=CODE_SOURCES, inputs=[spec], rows=result.rows,
@@ -94,4 +101,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    with exclusive_job(ROUTE_COST_JOB_LOCK, job="route-cost panel build or assembly"):
+        raise SystemExit(main())

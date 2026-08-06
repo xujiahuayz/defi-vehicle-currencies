@@ -57,6 +57,29 @@ class PanelAssemblyTests(unittest.TestCase):
 
             self.assertEqual(output.read_bytes(), before)
             self.assertFalse((root / "panel.parquet.tmp").exists())
+            self.assertEqual(list(root.glob(".panel.parquet.*.tmp")), [])
+
+    def test_duplicate_key_contract_preserves_previous_output(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shard = root / "20200101.parquet"
+            output = root / "panel.parquet"
+            pq.write_table(pa.table({"day": [0], "pair": ["old"]}), output)
+            before = output.read_bytes()
+            pq.write_table(
+                pa.table({"day": [1, 1], "pair": ["a", "a"]}),
+                shard,
+            )
+
+            with self.assertRaisesRegex(ValueError, "duplicate keys"):
+                assemble_parquet_shards(
+                    [shard],
+                    output,
+                    unique_keys=("day", "pair"),
+                )
+
+            self.assertEqual(output.read_bytes(), before)
+            self.assertEqual(list(root.glob(".panel.parquet.*.tmp")), [])
 
     def test_automatic_cache_selection_refuses_a_fullest_tie(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

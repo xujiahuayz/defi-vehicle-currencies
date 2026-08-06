@@ -32,6 +32,7 @@ def sections_dir() -> Path:
     return prose_root() / "sections"
 DATA_DIR = REPO_ROOT / "data"
 OUTPUT_DIR = REPO_ROOT / "output"
+ROUTE_COST_JOB_LOCK = DATA_DIR / "empirical" / ".route_cost_panel.lock"
 
 LITERATURE_BIB = LITERATURE_DIR / "vehicle-currencies.bib"
 LITERATURE_PDF_SOURCES = LITERATURE_DIR / "pdf-sources.json"

@@ -76,6 +76,21 @@ class RouteCostPairSelectionTests(unittest.TestCase):
         )
         self.assertTrue(run_route_cost_panel._routes_by_pair(legs, top_pairs=200).empty)
 
+    def test_duplicate_quote_cells_are_rejected_before_write(self) -> None:
+        row = {
+            "date": "2025-01-01",
+            "reserve_hour_utc": 7,
+            "src": "a",
+            "tgt": "b",
+            "vehicle": "k",
+            "trade_size_usd": 1_000.0,
+        }
+        with self.assertRaisesRegex(ValueError, "duplicate quote cells"):
+            run_route_cost_panel.assert_unique_quote_cells(
+                pd.DataFrame([row, row]),
+                context="test panel",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

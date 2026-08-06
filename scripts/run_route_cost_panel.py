@@ -37,7 +37,7 @@ from ddvc.fetch.raw import (
     v4_pool_quote_supported,
     v4_statics_complete,
 )
-from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.prices import day_prices
 from ddvc.provenance import cache_key
@@ -70,6 +70,7 @@ from ddvc.pricing.v3pools import (
     resolve_decimals,
     tick_spacing_for_fee,
 )
+from ddvc.runtime import atomic_output, exclusive_job
 
 ROOT = REPO_ROOT
 
@@ -184,6 +185,27 @@ PANEL_SOURCES = [*QUOTE_SOURCES, "src/ddvc/panel_assembly.py"]
 # reused the narrower pair set. Both belong in the key for the same reason the
 # code fingerprint does.
 DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}"
+QUOTE_CELL_KEYS = (
+    "date",
+    "reserve_hour_utc",
+    "src",
+    "tgt",
+    "vehicle",
+    "trade_size_usd",
+)
+
+
+def assert_unique_quote_cells(frame: pd.DataFrame, *, context: str) -> None:
+    """Enforce the route-cost panel's one-row-per-economic-cell contract."""
+    if frame.empty:
+        return
+    missing = sorted(set(QUOTE_CELL_KEYS) - set(frame.columns))
+    if missing:
+        raise ValueError(f"{context} is missing quote-cell columns: {', '.join(missing)}")
+    duplicates = frame.duplicated(list(QUOTE_CELL_KEYS), keep=False)
+    if duplicates.any():
+        sample = frame.loc[duplicates, list(QUOTE_CELL_KEYS)].iloc[0].to_dict()
+        raise ValueError(f"{context} has duplicate quote cells: {sample}")
 
 
 def parse_hours(spec: str) -> tuple[int, ...]:
@@ -1401,14 +1423,14 @@ def _build_day(
                     "realized_bridge_volume_usd": float(r.realized_bridge_volume_usd),
                     "n_realized_routes": int(r.n_routes),
                 })
-    return pd.DataFrame(rows)
+    out = pd.DataFrame(rows)
+    assert_unique_quote_cells(out, context=f"route-cost day {stamp} hour {hour}")
+    return out
 
 
 def _write(df: pd.DataFrame, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp.parquet")
-    df.to_parquet(tmp, index=False)
-    tmp.replace(path)
+    with atomic_output(path) as temporary:
+        df.to_parquet(temporary, index=False)
 
 
 def _day_cache_path(stamp: str) -> Path:
@@ -1684,6 +1706,7 @@ def main() -> int:
                 cache_paths,
                 out_path,
                 progress=assembly_progress,
+                unique_keys=QUOTE_CELL_KEYS,
             )
             n_rows = assembled.rows
             print(f"assembled {n_rows:,} rows into {out_path.name}", flush=True)
@@ -1751,6 +1774,7 @@ def main() -> int:
             if i % 25 == 0 or i == len(stamps):
                 print(f"route-cost panel [{i}/{len(stamps)}] {stamp}", flush=True)
         panel = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+        assert_unique_quote_cells(panel, context="serial route-cost panel")
         _write(panel, out_path)
     summary = _summarize(panel)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1766,4 +1790,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    with exclusive_job(ROUTE_COST_JOB_LOCK, job="route-cost panel build or assembly"):
+        raise SystemExit(main())
