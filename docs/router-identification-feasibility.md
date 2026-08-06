@@ -63,35 +63,37 @@ Rebuilt 2026-08-06 by `scripts/build_cross_venue_routing_series.py` over all 2,2
 
 Of economically meaningful intermediated routes (multi-leg, first input token differing from last output token), the share spanning more than one venue:
 
-| year | count-weighted | value-weighted | economic multi-leg / all routes | routes with >2 legs | mean legs | mean venues | round-trip share of multi-leg (excluded) | venues active |
+| year | count-weighted | value-weighted | economic multi-leg / economic routes | routes with >2 legs | mean legs | mean venues | round-trip share of multi-leg (excluded) | venues active |
 |---|---|---|---|---|---|---|---|---|
-| 2020 | 1.4% | 15.4% | 18.5% | 10.3% | 2.12 | 1.02 | 14.1% | 3 |
-| 2021 | 7.3% | 34.1% | 20.4% | 8.1% | 2.11 | 1.08 | 13.4% | 5 |
-| 2022 | 19.1% | 49.4% | 18.8% | 15.1% | 2.25 | 1.22 | 15.1% | 5 |
-| 2023 | 19.2% | 47.2% | 14.3% | 13.6% | 2.27 | 1.20 | 9.4% | 6 |
-| 2024 | 28.5% | 56.3% | 15.0% | 14.7% | 2.32 | 1.30 | 10.9% | 7 |
-| 2025 | 47.8% | 82.4% | 15.6% | 27.5% | 2.72 | 1.59 | 17.1% | 8 |
-| 2026 | 60.6% | 89.4% | 16.6% | 39.4% | 3.23 | 1.80 | 20.7% | 8 |
+| 2020 | 1.4% | 15.4% | 19.1% | 10.3% | 2.12 | 1.02 | 14.1% | 3 |
+| 2021 | 7.3% | 34.1% | 21.0% | 8.1% | 2.11 | 1.08 | 13.4% | 5 |
+| 2022 | 19.1% | 49.4% | 19.5% | 15.1% | 2.25 | 1.22 | 15.1% | 5 |
+| 2023 | 19.2% | 47.2% | 14.5% | 13.6% | 2.27 | 1.20 | 9.4% | 6 |
+| 2024 | 28.5% | 56.3% | 15.3% | 14.7% | 2.32 | 1.30 | 10.9% | 7 |
+| 2025 | 46.4% | 82.3% | 15.7% | 27.0% | 2.72 | 1.57 | 19.3% | 8 |
+| 2026 | 58.7% | 89.3% | 16.6% | 38.5% | 3.23 | 1.78 | 24.8% | 8 |
 
 Stated conservatively, since the series trends upward but is **not monotone**: the cross-venue share of intermediated routing rises by roughly an order of magnitude across the sample on counts, and reaches close to nine-tenths of intermediated trade value by 2026. The value-weighted series sits consistently above the count-weighted one, so larger trades span venues more than smaller ones, which is what a depth constraint implies.
 
-The new column is the key bound on the aggregator mechanism. Economic multi-leg routes do not rise as a share of all routes: the annual ratio stays between 14.3% and 20.4%, ending at 16.6% against 18.5% in 2020. Venue and aggregator integration therefore changed where a multi-leg route sources liquidity much more than how often routes are multi-leg. This does not identify routing efficiency. The conditional test still has to hold the reachable venue/pool set fixed and ask whether realised-to-best cost gaps compress.
+The third column is the key bound on the aggregator mechanism. Economic multi-leg incidence does not rise with integration: among economic routes it falls from 19.5% in 2022 to 16.6% in 2026. On equal-weighted daily shares the change is -2.61 percentage points (Newey-West SE 0.47, p<0.001). The long series is not monotone, ranging from 14.5% to 21.0%, but the endpoint evidence rejects the claim that integration mechanically produced more indirect routing. Venue integration changed where a remaining multi-leg route sources liquidity while the extensive indirect-routing margin contracted. This is consistent with direct-liquidity discovery, not proof of routing efficiency or aggregator causality. The conditional test still has to hold the reachable venue/pool set fixed and ask whether realised-to-best cost gaps compress.
 
-Routing complexity rises at the same time, particularly after 2024. Routes using more than two swap legs increase from 10.3% in 2020 to 39.4% in 2026; mean legs per economic multi-leg route rise from 2.12 to 3.23 and mean venues from 1.02 to 1.80. This is evidence that execution ceased to be a collection of siloed two-leg venue-local paths. It is not yet evidence that the extra complexity improved prices: leg count combines sequential hops with pool splitting, the venue universe expands mechanically, and an inefficient router can also use more legs. The realised-to-frontier test must show cost-gap compression within fixed reach and complexity cells before the paper calls the market more efficient.
+Routing complexity rises at the same time, particularly after 2024. Routes using more than two swap legs increase from 10.3% in 2020 to 38.5% in 2026; mean legs per economic multi-leg route rise from 2.12 to 3.23 and mean venues from 1.02 to 1.78. This is evidence that execution ceased to be a collection of siloed two-leg venue-local paths. It is not yet evidence that the extra complexity improved prices: leg count combines sequential hops with pool splitting, the venue universe expands mechanically, and an inefficient router can also use more legs. The realised-to-frontier test must show cost-gap compression within fixed reach and complexity cells before the paper calls the market more efficient.
 
 ## Balanced-venue check: integration is real, the late acceleration is partly entry
 
 The full-sample rise is not allowed to stand on an expanding data perimeter. A second series keeps only complete routes whose every leg lies in the same five venue families observed throughout the V3 era: Uniswap V2, SushiSwap V2, Curve, Balancer and Uniswap V3. The table begins in 2022 so every row is a full calendar year.
 
-| year | cross-venue count share | cross-venue value share | routes with >2 legs | mean legs | mean venues | economic multi-leg routes |
+| year | cross-venue count share | cross-venue value share | economic multi-leg / economic routes | routes with >2 legs | mean legs | mean venues | economic multi-leg routes |
 |---|---:|---:|---:|---:|---:|---:|
-| 2022 | 19.1% | 49.4% | 15.1% | 2.25 | 1.22 | 6,517,916 |
-| 2023 | 19.1% | 47.1% | 13.6% | 2.26 | 1.20 | 9,469,598 |
-| 2024 | 28.4% | 55.4% | 14.6% | 2.31 | 1.30 | 11,639,378 |
-| 2025 | 36.0% | 55.1% | 17.7% | 2.37 | 1.39 | 8,431,036 |
-| 2026 | 43.6% | 55.5% | 20.0% | 2.39 | 1.47 | 2,542,322 |
+| 2022 | 19.1% | 49.4% | 19.5% | 15.1% | 2.25 | 1.22 | 6,517,916 |
+| 2023 | 19.1% | 47.1% | 14.5% | 13.6% | 2.26 | 1.20 | 9,469,598 |
+| 2024 | 28.4% | 55.4% | 15.2% | 14.6% | 2.31 | 1.30 | 11,639,378 |
+| 2025 | 36.0% | 55.1% | 13.1% | 17.7% | 2.37 | 1.39 | 8,431,036 |
+| 2026 | 43.6% | 55.5% | 10.3% | 20.0% | 2.39 | 1.47 | 2,542,322 |
 
-The count result survives strongly inside a fixed perimeter, rising 24.5 percentage points from 2022 to 2026, as do smaller increases in route complexity and venue count. The value result does not have the same shape: it rises only 6.1 points over the four years and is essentially flat near 55% from 2024 onward. The headline 2026 levels of 60.6% by count, 89.4% by value and 39.4% above two legs therefore combine two facts: deeper integration among incumbent venues and the arrival of later venues, especially V4 and Fluid. The paper can call the market more integrated on counts. It cannot attribute the late value surge or full complexity surge to aggregator optimisation.
+The count result survives strongly inside a fixed perimeter, rising 24.5 percentage points from 2022 to 2026, as do smaller increases in route complexity and venue count. At the same time, economic multi-leg incidence nearly halves from 19.5% to 10.3%; the equal-weighted daily change is -9.02 percentage points (Newey-West SE 0.41, p<0.001). The value result does not have the same shape: it rises only 6.1 points over the four years and is essentially flat near 55% from 2024 onward. The headline 2026 levels of 58.7% by count, 89.3% by value and 38.5% above two legs therefore combine three facts: deeper integration among incumbent venues, a contracting indirect-routing margin inside that perimeter, and the arrival of later venues, especially V4 and Fluid. The paper can call the market more integrated on counts and can document conditional disintermediation. It cannot attribute either result to aggregator optimisation without the realised-to-frontier and integration-date tests.
+
+The corrected build also closes an identity leak in the economic-route filter. Raw endpoint equality treated native ETH and WETH as different currencies, reclassifying 310,595 routes in 2025 and 321,473 in 2026 as economic exchange instead of canonical endpoint round trips. Canonicalising endpoints revises the full cross-venue count share from 47.8% to 46.4% in 2025 and from 60.6% to 58.7% in 2026; the 2026 value share changes only from 89.4% to 89.3%. The incidence denominator now excludes all canonical endpoint round trips instead of counting them among economic routes.
 
 ## Does the vehicle transition occur only on integrated routes?
 
