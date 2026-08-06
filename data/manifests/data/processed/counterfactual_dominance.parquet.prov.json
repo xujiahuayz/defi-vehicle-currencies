@@ -1,0 +1,64 @@
+{
+ "argv": [
+  "--days",
+  "20220115"
+ ],
+ "artefact": "data/processed/counterfactual_dominance.parquet",
+ "code_fingerprint": "26c0f65edfaa0d2c8c7c2b9f5cbf82abddca2a484da7eb15a1e5f299b17b94a2",
+ "code_sources": [
+  "scripts/build_counterfactual_dominance.py",
+  "src/ddvc/asset_types.py",
+  "src/ddvc/cpquote.py",
+  "src/ddvc/prices.py",
+  "src/ddvc/realised.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-06T17:53:38+00:00",
+ "git": {
+  "branch": "glotl/workflow-status",
+  "commit": "613ccb449b27255ac5d89ddd090b894c88bdbfef",
+  "dirty": false,
+  "dirty_generated_files": [],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "entries": 13581,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/uniswap_v2",
+   "tree_fingerprint": "2f2fdffc5bd5854c3d6e127c90cc3757e856d396add463c65724b104828f0dab"
+  },
+  {
+   "entries": 8504,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/sushiswap_v2",
+   "tree_fingerprint": "c47278d962c93c84e1441ac40963933ad68c8ebf26dc71d48432bde4d6a09df6"
+  },
+  {
+   "entries": 2277,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/unified",
+   "tree_fingerprint": "b121431024bb92afbfddf54f0bb8b44dc4b7872485689f7394e0aa8930a82c0b"
+  },
+  {
+   "bytes": 98287,
+   "exists": true,
+   "path": "data/processed/daily_gas_price_graph.parquet",
+   "sha256": "624f11a11c802163d954315f4a8c46b017950f502c6b27475533239be1786e12"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "V2-family exact-size direct counterfactual at strict pre-transaction block-log state; historical gas with measured topology medians where available",
+ "python": "3.14.5",
+ "rows": 258,
+ "script": "scripts/build_counterfactual_dominance.py"
+}
