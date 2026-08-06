@@ -42,10 +42,9 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
-from ddvc.asset_types import classify  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.asset_types import classify
+from ddvc.realised import realised_routes
+from ddvc.tables import write_exhibit
 
 UNIFIED = ROOT / "data" / "unified"
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
@@ -54,32 +53,12 @@ OUT = ROOT / "output" / "exhibits" / "survival_after_dominance.jsonl"
 
 def realised_shares(day: str) -> pd.DataFrame:
     """Share of each pair's multi-leg volume routed through each interior token."""
-    p = UNIFIED / f"{day}.parquet"
-    if not p.exists():
+    routes = realised_routes(day, UNIFIED)
+    if routes.empty:
         return pd.DataFrame()
-    d = pd.read_parquet(p, columns=["tx_hash", "component_id", "token_in", "token_out",
-                                    "amount_usd", "log_index", "route_class"])
-    d = d[d.route_class.isin(["single", "coherent"])]
-    if d.empty:
-        return pd.DataFrame()
-    d = d.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
-    rec = []
-    for (_t, _c), g in d.groupby(["tx_hash", "component_id"], sort=False):
-        if len(g) < 2:
-            continue
-        tin, tout = g.token_in.tolist(), g.token_out.tolist()
-        if tin[0] == tout[-1]:
-            continue
-        usd = float(g.amount_usd.max())
-        for interior in {t for t in tout[:-1] if t}:
-            rec.append({"src": tin[0], "tgt": tout[-1], "vehicle": interior, "usd": usd})
-    if not rec:
-        return pd.DataFrame()
-    r = pd.DataFrame(rec)
-    tot = r.groupby(["src", "tgt"]).usd.transform("sum")
-    r["share"] = r.usd / tot.clip(lower=1e-9)
-    r["day"] = day
-    return r.groupby(["day", "src", "tgt", "vehicle"], as_index=False).agg(
+    totals = routes.groupby(["src", "tgt"]).usd.transform("sum")
+    routes["share"] = routes.usd / totals.clip(lower=1e-9)
+    return routes.groupby(["day", "src", "tgt", "vehicle"], as_index=False).agg(
         usd=("usd", "sum"), share=("share", "sum"))
 
 

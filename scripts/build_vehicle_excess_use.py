@@ -51,6 +51,20 @@ def _scope(frame: pd.DataFrame, scope: str) -> pd.DataFrame:
     return out
 
 
+def stable_backing_year(candidate: pd.DataFrame) -> pd.DataFrame:
+    """Compare backing regimes within stablecoins, not against other currency types."""
+    stable = candidate[candidate["asset_type"].eq("stable")].copy()
+    return _scope(
+        aggregate_vehicle_extent(
+            stable,
+            ["year", "backing"],
+            level="stable_backing",
+            period_keys=["year"],
+        ),
+        "stable_currencies",
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -134,16 +148,7 @@ def main() -> int:
         ),
         "all_assets_diagnostic",
     )
-    backing_year = _scope(
-        aggregate_vehicle_extent(
-            candidate,
-            ["year", "backing"],
-            level="stable_backing",
-            period_keys=["year"],
-        ),
-        "candidate_currencies",
-    )
-    backing_year = backing_year[backing_year["backing"].ne("not_applicable")]
+    backing_year = stable_backing_year(candidate)
     type_quarter = _scope(
         aggregate_vehicle_extent(
             candidate,

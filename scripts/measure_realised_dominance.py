@@ -1,191 +1,175 @@
 #!/usr/bin/env python3
-"""When a trader ACTUALLY routed through an intermediary, was that route dominated?
+"""Separate forced from chosen vehicle use at the same hourly cost opportunity set.
 
-This is the paper's foundational claim and the previous measurement of it answered a
-different question. The FX inertia literature's stated limit is that an incumbent's cost
-advantage is a consequence of its incumbency, so FX data never contain the state in which
-a currency HOLDS the vehicle role while being strictly cost-dominated. Holding the role
-means being used. Enumerating every candidate a router could have chosen and asking how
-often a direct pool beats it answers a different and much easier question, and it returns
-70.1% because most enumerated two-hop routes are ones nobody took.
+For each realised coherent vehicle route, this estimator matches the route to the
+counterfactual panel in the same UTC hour and at the nearest notional in log size.
+It reports forced routes (no direct quote), chosen routes (both route families
+available), unsupported routes, and dominance only inside the chosen sample.
 
-So the measurement joins realised routing to counterfactual cost. For each multi-leg swap
-that actually happened, identify the interior token it went through, then ask whether the
-best direct pool at that same reconstructed state would have returned more. A yes is the
-state the FX literature cannot observe: the incumbent was used while strictly worse.
+The match is an hourly proxy, not transaction-state identification. Any claim about
+what the router could have chosen remains withheld until the own-block validation passes.
 
-Round trips are excluded, since a route whose first input equals its last output is
-atomic arbitrage or a wash trade and moved no value, and this project has already been
-inverted once by leaving them in, where on 2025-12-06 they reached 25.6% of multi-leg
-routes by count and 90.5% by value. That day is the most extreme of 79 sampled; the median
-day runs 12.7% by count and 21.7% by value.
-
-Reads   data/unified/YYYYMMDD.parquet          realised routes
-        data/empirical/route_cost_panel_v2.parquet   counterfactual costs
+Reads   data/unified/YYYYMMDD.parquet
+        data/empirical/route_cost_panel_v2.parquet
 Writes  output/exhibits/realised_dominance.jsonl
+        output/exhibits/realised_dominance_reweighting.jsonl
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
-from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+from ddvc.asset_types import classify
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.realised import (
+    cost_panel_days,
+    match_realised_to_cost_panel,
+    read_cost_panel_day,
+    realised_routes,
+)
+from ddvc.tables import write_exhibit
 
-from ddvc.asset_types import classify  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
+PANEL = DATA_DIR / "empirical" / "route_cost_panel_v2.parquet"
+OUT = OUTPUT_DIR / "exhibits" / "realised_dominance.jsonl"
+TYPE_OUT = OUTPUT_DIR / "exhibits" / "realised_dominance_reweighting.jsonl"
+CODE_SOURCES = [
+    "scripts/measure_realised_dominance.py",
+    "src/ddvc/realised.py",
+    "src/ddvc/asset_types.py",
+]
 
-UNIFIED = ROOT / "data" / "unified"
-PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
-OUT = ROOT / "output" / "exhibits" / "realised_dominance.jsonl"
-REWEIGHT_OUT = ROOT / "output" / "exhibits" / "realised_dominance_reweighting.jsonl"
 
-
-def realised_routes(day: str) -> pd.DataFrame:
-    """Multi-leg routes that actually executed, with their interior token."""
-    p = UNIFIED / f"{day}.parquet"
-    if not p.exists():
+def summarise_matches(matches: pd.DataFrame, period: str) -> pd.DataFrame:
+    """Additive cells that can be pooled without averaging daily rates."""
+    if matches.empty:
         return pd.DataFrame()
-    d = pd.read_parquet(p, columns=["tx_hash", "component_id", "token_in", "token_out",
-                                    "amount_usd", "log_index", "route_class"])
-    d = d[d.route_class.isin(["single", "coherent"])]
-    if d.empty:
-        return pd.DataFrame()
-    d = d.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
-    out = []
-    for (_tx, _c), g in d.groupby(["tx_hash", "component_id"], sort=False):
-        if len(g) < 2:
-            continue
-        tin = g.token_in.tolist()
-        tout = g.token_out.tolist()
-        if tin[0] == tout[-1]:
-            continue                      # round trip: no value moved
-        for interior in {t for t in tout[:-1] if t}:
-            out.append({"src": tin[0], "tgt": tout[-1], "vehicle": interior,
-                        "usd": float(g.amount_usd.max())})
-    return pd.DataFrame(out)
+    data = matches.copy()
+    data["mid_type"] = data["vehicle"].map(
+        {value: classify(value)[1] for value in data["vehicle"].unique()}
+    )
+    data["dominated_flag"] = data["dominated"].eq(True)
+    data["dominated_usd"] = data["usd"].where(data["dominated_flag"], 0.0)
+    out = (
+        data.groupby(["mid_type", "match_status"], as_index=False)
+        .agg(
+            routes=("route_id", "size"),
+            usd=("usd", "sum"),
+            dominated_routes=("dominated_flag", "sum"),
+            dominated_usd=("dominated_usd", "sum"),
+        )
+    )
+    out.insert(0, "period", period)
+    return out
+
+
+def pool_summaries(cells: pd.DataFrame, period: str) -> pd.DataFrame:
+    if cells.empty:
+        return cells
+    out = (
+        cells.groupby(["mid_type", "match_status"], as_index=False)[
+            ["routes", "usd", "dominated_routes", "dominated_usd"]
+        ]
+        .sum()
+    )
+    totals = out.groupby("mid_type")
+    out["route_share_within_type"] = out["routes"] / totals["routes"].transform("sum")
+    out["usd_share_within_type"] = out["usd"] / totals["usd"].transform("sum")
+    comparable = out["match_status"].eq("chosen_with_direct")
+    out["dominated_share"] = (
+        out["dominated_routes"] / out["routes"].where(comparable & out["routes"].gt(0))
+    )
+    out["dominated_usd_share"] = (
+        out["dominated_usd"] / out["usd"].where(comparable & out["usd"].gt(0))
+    )
+    out.insert(0, "period", period)
+    return out
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--days", type=int, default=6)
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("--days", type=int, default=None, help="first N panel days")
+    args = parser.parse_args()
+
+    if not PANEL.exists():
+        print(f"missing {PANEL.relative_to(REPO_ROOT)}")
+        return 1
 
     import duckdb
 
-    con = duckdb.connect()
-    panel = con.execute(f"""
-        SELECT CAST(date AS DATE) AS d, src, tgt, vehicle, trade_size_usd,
-               direct_cost_advantage AS adv
-        FROM read_parquet('{PANEL.as_posix()}')
-        WHERE direct_available AND vehicle_available
-          AND direct_cost_advantage IS NOT NULL
-    """).df()
-    con.close()
-    if panel.empty:
-        print("no screened counterfactual costs available")
-        return 1
-    # Format explicitly. Taking str() of a date column yields "2023-06-01 00:00:00",
-    # so stripping hyphens leaves a time component and every unified-file lookup missed.
-    panel["daystr"] = pd.to_datetime(panel.d).dt.strftime("%Y%m%d")
-    days = sorted(panel.daystr.unique())
-    print(f"screened panel covers {len(days)} days: {days[0]}..{days[-1]}")
+    connection = duckdb.connect()
+    daily: list[pd.DataFrame] = []
+    try:
+        days = cost_panel_days(connection, PANEL)
+        if args.days is not None:
+            days = days[: max(0, args.days)]
+        if not days:
+            print("no priced days in the route-cost panel")
+            return 1
+        print(f"matching realised routes on {len(days):,} priced days", flush=True)
 
-    rows = []
-    all_matched, all_pop = [], []
-    for day in days[: args.days]:
-        rr = realised_routes(day)
-        if rr.empty:
-            continue
-        all_pop.append(rr)
-        pk = panel[panel.daystr == day]
-        # Match each realised route to the counterfactual at the nearest quoted size,
-        # since the panel prices fixed notionals and realised trades are continuous.
-        merged = rr.merge(pk[["src", "tgt", "vehicle", "trade_size_usd", "adv"]],
-                          on=["src", "tgt", "vehicle"], how="inner")
-        if merged.empty:
-            continue
-        merged["size_gap"] = (merged.trade_size_usd - merged.usd).abs()
-        merged = merged.sort_values("size_gap").drop_duplicates(
-            subset=["src", "tgt", "vehicle", "usd"], keep="first")
-        merged["mid_type"] = merged.vehicle.map(
-            {v: classify(v)[1] for v in merged.vehicle.unique()})
-        merged["dominated"] = (merged.adv > 0).astype(float)
-        all_matched.append(merged)
-        rows.append({"day": day, "realised_multileg": int(len(rr)),
-                     "matched": int(len(merged)),
-                     "dominated": float(merged.dominated.mean()),
-                     "value_weighted": float(
-                         (merged.dominated * merged.usd).sum() / max(merged.usd.sum(), 1))})
-        r = rows[-1]
-        print(f"  {day}: {r['realised_multileg']:>7,} realised multi-leg routes, "
-              f"{r['matched']:>6,} matched to a counterfactual | "
-              f"dominated {r['dominated']:>6.1%} by count, "
-              f"{r['value_weighted']:>6.1%} by value")
-
-    if not rows:
-        print("\nNo realised route matched a screened counterfactual. That is itself the")
-        print("finding to chase: the support screen may be removing exactly the routes")
-        print("traders used, which would make the screened panel unrepresentative.")
+        for index, day in enumerate(days, 1):
+            realised = realised_routes(day)
+            if realised.empty:
+                continue
+            quoted = read_cost_panel_day(connection, PANEL, day)
+            matched = match_realised_to_cost_panel(realised, quoted)
+            summary = summarise_matches(matched, day)
+            if not summary.empty:
+                daily.append(summary)
+            if index % 25 == 0 or index == len(days):
+                chosen = int(matched["match_status"].eq("chosen_with_direct").sum())
+                forced = int(matched["match_status"].eq("forced_no_direct").sum())
+                print(
+                    f"  {index:,}/{len(days):,} {day}: {len(realised):,} vehicle routes, "
+                    f"{chosen:,} chosen-with-direct, {forced:,} forced",
+                    flush=True,
+                )
+    finally:
+        connection.close()
+    if not daily:
+        print("no realised vehicle route matched the priced calendar")
         return 1
-    tot_m = sum(r["matched"] for r in rows)
-    w = sum(r["dominated"] * r["matched"] for r in rows) / max(tot_m, 1)
-    print(f"\npooled over {tot_m:,} matched realised routes: {w:.1%} were dominated at "
-          f"the state they executed in")
-    print("  the pre-screen, enumerate-every-candidate figure was 70.1%, and the")
-    print("  original v2-only realised figure was 17.9%")
-    # REWEIGHT to the population's vehicle-type composition. The matched sample is not
-    # a random 2%: it is 64.1% stable-intermediated where the realised population is
-    # 67.7% native-intermediated, an inversion, and dominance rates differ sharply by
-    # candidate type. Quoting the raw matched mean as a population figure would be a
-    # statement about large trades on busy pairs through stablecoins.
-    if all_matched:
-        M = pd.concat(all_matched, ignore_index=True)
-        P = pd.concat(all_pop, ignore_index=True)
-        M["mid_type"] = M.vehicle.map({v: classify(v)[1] for v in M.vehicle.unique()})
-        P["mid_type"] = P.vehicle.map({v: classify(v)[1] for v in P.vehicle.unique()})
-        pop_w = P.mid_type.value_counts(normalize=True)
-        by_t = M.groupby("mid_type").dominated.mean()
-        common = [t for t in by_t.index if t in pop_w.index]
-        if common:
-            num = sum(by_t[t] * pop_w[t] for t in common)
-            den = sum(pop_w[t] for t in common)
-            print(f"\n  dominance by candidate type in the matched sample:")
-            for t in common:
-                print(f"    {t:<14}{by_t[t]:>7.1%}   population weight {pop_w[t]:>6.1%}"
-                      f"   matched weight {(M.mid_type == t).mean():>6.1%}")
-            print(f"\n  raw matched mean          {w:.1%}")
-            print(f"  reweighted to population  {num / den:.1%}   "
-                  f"(covers {den:.1%} of realised routing)")
-            rows.append({"day": "REWEIGHTED", "realised_multileg": int(len(P)),
-                         "matched": int(len(M)), "dominated": float(num / den),
-                         "value_weighted": float("nan")})
-            # Emit the reweighting ROW BY ROW, at full precision, so the paper's table is
-            # the artefact and not a transcription. Reconstructing this table from the
-            # per-type rates as they appear rounded in prose returns 26.8% against the
-            # 27.2% headline, which is a table that fails to reproduce the number it sits
-            # under. A reader redoing the arithmetic has to be able to land on the
-            # published figure exactly, so the exhibit carries the unrounded weights.
-            detail = [{
-                "mid_type": t,
-                "matched_rate": float(by_t[t]),
-                "population_weight": float(pop_w[t]),
-                "matched_weight": float((M.mid_type == t).mean()),
-                "contribution": float(by_t[t] * pop_w[t]),
-                "matched_n": int((M.mid_type == t).sum()),
-            } for t in common]
-            detail.append({"mid_type": "TOTAL", "matched_rate": float(w),
-                           "population_weight": float(den), "matched_weight": 1.0,
-                           "contribution": float(num), "matched_n": int(len(M))})
-            write_exhibit(pd.DataFrame(detail), REWEIGHT_OUT)
-            print(f"  wrote {REWEIGHT_OUT.relative_to(ROOT)}")
-    write_exhibit(pd.DataFrame(rows), OUT)
-    print(f"\nwrote {OUT.relative_to(ROOT)}")
+
+    cells = pd.concat(daily, ignore_index=True)
+    cells["year"] = cells["period"].str[:4]
+    pooled = [pool_summaries(cells, "ALL")]
+    for year, group in cells.groupby("year"):
+        pooled.append(pool_summaries(group, str(year)))
+    result = pd.concat(pooled, ignore_index=True)
+    write_exhibit(
+        result,
+        OUT,
+        code_sources=CODE_SOURCES,
+        inputs=[PANEL, DATA_DIR / "unified"],
+        notes="exact-hour, nearest-log-size proxy; own-block choice claims withheld",
+    )
+    type_detail = result[result["period"].eq("ALL")].copy()
+    write_exhibit(
+        type_detail,
+        TYPE_OUT,
+        code_sources=CODE_SOURCES,
+        inputs=[PANEL, DATA_DIR / "unified"],
+        notes="type-stratified cells; no composition reweighting imposed",
+    )
+
+    overall = result[result["period"].eq("ALL")]
+    print("\nfull-period exact-hour decomposition")
+    for row in overall.itertuples(index=False):
+        dominated = (
+            f", dominated {row.dominated_share:.1%}"
+            if row.match_status == "chosen_with_direct"
+            else ""
+        )
+        print(
+            f"  {row.mid_type:<14} {row.match_status:<27} "
+            f"{row.routes:>10,.0f} ({row.route_share_within_type:>6.1%}){dominated}"
+        )
+    print(f"\nwrote {OUT.relative_to(REPO_ROOT)} and {TYPE_OUT.relative_to(REPO_ROOT)}")
     return 0
 
 

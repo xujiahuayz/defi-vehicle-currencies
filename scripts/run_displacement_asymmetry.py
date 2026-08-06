@@ -41,10 +41,8 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-
-sys.path.insert(0, str(ROOT / "scripts"))
-from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.realised import realised_routes
+from ddvc.tables import write_exhibit
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 OUT = ROOT / "output" / "exhibits" / "displacement_asymmetry.jsonl"
@@ -58,8 +56,6 @@ def main() -> int:
     args = ap.parse_args()
 
     import duckdb
-
-    from measure_realised_dominance import realised_routes  # noqa: E402
 
     con = duckdb.connect()
     panel = con.execute(f"""

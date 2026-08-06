@@ -31,16 +31,20 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
-import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "scripts"))
+from ddvc.asset_types import classify
+from ddvc.realised import (
+    cost_panel_days,
+    match_realised_to_cost_panel,
+    read_cost_panel_day,
+    realised_routes,
+)
+from ddvc.tables import write_exhibit
 
-from ddvc.asset_types import classify  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
+ROOT = Path(__file__).resolve().parents[1]
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 OUT = ROOT / "output" / "exhibits" / "matched_sample_characterisation.jsonl"
@@ -53,43 +57,68 @@ def main() -> int:
 
     import duckdb
 
-    from measure_realised_dominance import realised_routes
+    with TemporaryDirectory(prefix="ddvc-matched-sample-") as temporary:
+        con = duckdb.connect()
+        written = 0
+        try:
+            days = cost_panel_days(con, PANEL)
+            if not days:
+                print("no screened counterfactual costs")
+                return 1
+            for day in days:
+                rr = realised_routes(day)
+                if rr.empty:
+                    continue
+                matched = match_realised_to_cost_panel(
+                    rr, read_cost_panel_day(con, PANEL, day)
+                )
+                matched["matched"] = matched["match_status"].eq("chosen_with_direct")
+                matched["mid_type"] = matched.vehicle.map(
+                    {value: classify(value)[1] for value in matched.vehicle.unique()}
+                )
+                matched[["matched", "usd", "mid_type", "src", "tgt"]].to_parquet(
+                    Path(temporary) / f"{day}.parquet", index=False
+                )
+                written += len(matched)
+            if not written:
+                print("no realised routes on priced days")
+                return 1
+            glob = (Path(temporary) / "*.parquet").as_posix()
+            counts = con.execute(
+                f"SELECT CAST(matched AS BOOLEAN) matched, count(*) n FROM read_parquet('{glob}') GROUP BY 1"
+            ).df()
+            stats = con.execute(
+                f"""
+                SELECT CAST(matched AS BOOLEAN) matched, median(usd) median_usd,
+                       avg(usd) mean_usd, quantile_cont(usd, 0.9) p90_usd
+                FROM read_parquet('{glob}') GROUP BY 1
+                """
+            ).df()
+            shares = con.execute(
+                f"""
+                SELECT CAST(matched AS BOOLEAN) matched, mid_type,
+                       count(*)::DOUBLE / sum(count(*)) OVER (PARTITION BY matched) share
+                FROM read_parquet('{glob}') GROUP BY 1, 2
+                """
+            ).df()
+            pair_stats = con.execute(
+                f"""
+                WITH pair_counts AS (
+                    SELECT CAST(matched AS BOOLEAN) matched, src, tgt, count(*) routes
+                    FROM read_parquet('{glob}') GROUP BY 1, 2, 3
+                )
+                SELECT matched, count(*) distinct_pairs, avg(routes) routes_per_pair
+                FROM pair_counts GROUP BY 1
+                """
+            ).df()
+        finally:
+            con.close()
 
-    con = duckdb.connect()
-    panel = con.execute(f"""
-        SELECT DISTINCT CAST(date AS DATE) AS d, src, tgt, vehicle
-        FROM read_parquet('{PANEL.as_posix()}')
-        WHERE direct_available AND vehicle_available
-          AND direct_cost_advantage IS NOT NULL
-    """).df()
-    con.close()
-    if panel.empty:
-        print("no screened counterfactual costs")
-        return 1
-    panel["day"] = pd.to_datetime(panel.d).dt.strftime("%Y%m%d")
-    days = sorted(panel.day.unique())
-
-    all_rr = []
-    for day in days:
-        rr = realised_routes(day)
-        if rr.empty:
-            continue
-        rr["day"] = day
-        all_rr.append(rr)
-    if not all_rr:
-        print("no realised routes on priced days")
-        return 1
-    rr = pd.concat(all_rr, ignore_index=True)
-
-    key = set(map(tuple, panel[["day", "src", "tgt", "vehicle"]].values))
-    rr["matched"] = [tuple(x) in key for x in
-                     rr[["day", "src", "tgt", "vehicle"]].values]
-    rr["mid_type"] = rr.vehicle.map({v: classify(v)[1] for v in rr.vehicle.unique()})
-    rr["log_usd"] = np.log(rr.usd.clip(lower=1))
-
-    n_m = int(rr.matched.sum())
-    print(f"{len(rr):,} realised multi-leg route-legs on {len(days)} priced days")
-    print(f"  matched to a screened counterfactual: {n_m:,} ({n_m/len(rr):.1%})\n")
+    by_match = counts.set_index("matched")["n"].to_dict()
+    total = int(sum(by_match.values()))
+    n_m = int(by_match.get(True, 0))
+    print(f"{total:,} realised vehicle routes on {len(days)} priced days")
+    print(f"  exact-hour chosen-with-direct matches: {n_m:,} ({n_m/total:.1%})\n")
 
     rows = []
     print(f"  {'attribute':<30}{'matched':>14}{'unmatched':>14}{'ratio':>9}")
@@ -100,31 +129,38 @@ def main() -> int:
         r = (mv / uv) if uv else float("nan")
         print(f"  {label:<30}{mv:>14,.2f}{uv:>14,.2f}{r:>9.2f}")
 
-    m, u = rr[rr.matched], rr[~rr.matched]
-    line("median trade USD", float(m.usd.median()), float(u.usd.median()))
-    line("mean trade USD", float(m.usd.mean()), float(u.usd.mean()))
-    line("p90 trade USD", float(m.usd.quantile(0.9)), float(u.usd.quantile(0.9)))
+    by_stats = stats.set_index("matched")
+    def statistic(matched: bool, column: str) -> float:
+        return float(by_stats.loc[matched, column]) if matched in by_stats.index else float("nan")
+
+    line("median trade USD", statistic(True, "median_usd"), statistic(False, "median_usd"))
+    line("mean trade USD", statistic(True, "mean_usd"), statistic(False, "mean_usd"))
+    line("p90 trade USD", statistic(True, "p90_usd"), statistic(False, "p90_usd"))
 
     print(f"\n  {'vehicle type':<30}{'matched %':>14}{'unmatched %':>14}")
-    for t in sorted(rr.mid_type.unique()):
-        mv = float((m.mid_type == t).mean()) if len(m) else 0.0
-        uv = float((u.mid_type == t).mean()) if len(u) else 0.0
+    share_map = shares.set_index(["matched", "mid_type"])["share"].to_dict()
+    for t in sorted(shares.mid_type.unique()):
+        mv = float(share_map.get((True, t), 0.0))
+        uv = float(share_map.get((False, t), 0.0))
         rows.append({"attribute": f"share {t}", "matched": mv, "unmatched": uv,
                      "ratio": (mv / uv) if uv else float("nan")})
         print(f"  {t:<30}{mv:>13.1%}{uv:>14.1%}")
 
-    mp = m.groupby(["src", "tgt"]).size()
-    up = u.groupby(["src", "tgt"]).size()
-    print(f"\n  distinct pairs: matched {len(mp):,}, unmatched {len(up):,}")
-    print(f"  routes per pair: matched {mp.mean():.1f}, unmatched {up.mean():.1f}")
-    rows.append({"attribute": "routes per pair", "matched": float(mp.mean()),
-                 "unmatched": float(up.mean()),
-                 "ratio": float(mp.mean() / up.mean()) if len(up) else float("nan")})
+    by_pair = pair_stats.set_index("matched")
+    matched_pairs = int(by_pair.loc[True, "distinct_pairs"]) if True in by_pair.index else 0
+    unmatched_pairs = int(by_pair.loc[False, "distinct_pairs"]) if False in by_pair.index else 0
+    matched_rpp = float(by_pair.loc[True, "routes_per_pair"]) if True in by_pair.index else float("nan")
+    unmatched_rpp = float(by_pair.loc[False, "routes_per_pair"]) if False in by_pair.index else float("nan")
+    print(f"\n  distinct pairs: matched {matched_pairs:,}, unmatched {unmatched_pairs:,}")
+    print(f"  routes per pair: matched {matched_rpp:.1f}, unmatched {unmatched_rpp:.1f}")
+    rows.append({"attribute": "routes per pair", "matched": matched_rpp,
+                 "unmatched": unmatched_rpp,
+                 "ratio": matched_rpp / unmatched_rpp if unmatched_rpp else float("nan")})
 
     print("\nReading. The matched set is the busiest pairs at near-grid notionals with")
     print("legs inside the support, so it is not a random 2%. Any ratio far from 1")
-    print("names an attribute on which the 41.3% figure cannot be generalised without")
-    print("reweighting, and the outcome itself is unobservable on the unmatched side")
+    print("names an attribute on which the chosen-with-direct estimate cannot be generalised")
+    print("without a design correction; the outcome is unobservable on the unmatched side")
     print("because the counterfactual is exactly what is missing there.")
     write_exhibit(pd.DataFrame(rows), OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")

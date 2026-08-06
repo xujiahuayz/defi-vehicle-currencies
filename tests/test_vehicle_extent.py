@@ -10,6 +10,7 @@ from ddvc.vehicle_extent import (
     compute_vehicle_extent,
     restrict_routes_to_venues,
 )
+from scripts.build_vehicle_excess_use import stable_backing_year
 
 
 def leg(
@@ -167,6 +168,25 @@ class VehicleExtentTests(unittest.TestCase):
         ).set_index("asset_type")
         self.assertAlmostEqual(out.loc["native", "vehicle_excess_use_ratio"], 1.5)
         self.assertAlmostEqual(out.loc["stable", "vehicle_excess_use_count_ratio"], 0.5)
+
+    def test_backing_ratios_are_conditional_on_stable_currencies(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "date": pd.to_datetime(["2025-01-01"] * 3),
+                "year": [2025] * 3,
+                "asset_type": ["stable", "stable", "native"],
+                "backing": ["fiat_reserve", "synthetic", "not_applicable"],
+                "intermediate_usd": [75.0, 25.0, 900.0],
+                "endpoint_usd": [50.0, 50.0, 100.0],
+                "intermediate_routes": [3, 1, 9],
+                "endpoint_routes": [2, 2, 1],
+            }
+        )
+        out = stable_backing_year(frame).set_index("backing")
+        self.assertEqual(set(out.index), {"fiat_reserve", "synthetic"})
+        self.assertTrue(out["scope"].eq("stable_currencies").all())
+        self.assertAlmostEqual(out.loc["fiat_reserve", "vehicle_excess_use_ratio"], 1.5)
+        self.assertAlmostEqual(out.loc["synthetic", "vehicle_excess_use_count_ratio"], 0.5)
 
 
 if __name__ == "__main__":
