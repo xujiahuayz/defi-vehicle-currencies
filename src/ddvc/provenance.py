@@ -22,9 +22,9 @@ inputs it read, and the script and arguments that produced it. `verify` then
 answers the only question that matters when reading a stale artefact: was this
 built by the code I am looking at?
 
-Fingerprints cover SOURCE, not the environment. That is deliberate: a code change
-is the failure mode observed here, and file hashes catch it without a container.
-Library versions are recorded for the record but not compared, since upgrading
+Fingerprints cover declared source and input state, not the environment. That is deliberate:
+file hashes and input-tree metadata catch the observed stale-cache failures without a
+container. Library versions are recorded for the record but not compared, since upgrading
 pandas should not invalidate a panel whose numbers it does not change.
 """
 
@@ -53,7 +53,7 @@ def _run(cmd: list[str]) -> str | None:
         r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=15)
     except (OSError, subprocess.SubprocessError):
         return None
-    return r.stdout.strip() if r.returncode == 0 else None
+    return r.stdout.rstrip() if r.returncode == 0 else None
 
 
 def git_state() -> dict[str, object]:
@@ -90,13 +90,26 @@ def code_fingerprint(sources: list[str]) -> str:
     return h.hexdigest()
 
 
-def cache_key(sources: list[str], length: int = 12) -> str:
-    """Short fingerprint for use in a cache directory name.
+def dependency_fingerprint(
+    sources: list[str], inputs: list[str | Path] | None = None
+) -> str:
+    """Stable sha256 over code and every declared input state."""
+    h = hashlib.sha256()
+    h.update(code_fingerprint(sources).encode())
+    for item in sorted((describe_input(path) for path in (inputs or [])), key=lambda x: str(x["path"])):
+        h.update(json.dumps(item, sort_keys=True, separators=(",", ":")).encode())
+    return h.hexdigest()
+
+
+def cache_key(
+    sources: list[str], *, inputs: list[str | Path] | None = None, length: int = 12
+) -> str:
+    """Short dependency fingerprint for use in a cache directory name.
 
     Putting the key in the PATH rather than in a column means a stale generation
     cannot be read at all, instead of being readable and merely mislabelled.
     """
-    return code_fingerprint(sources)[:length]
+    return dependency_fingerprint(sources, inputs)[:length]
 
 
 def describe_input(path: str | Path) -> dict[str, object]:
@@ -203,7 +216,7 @@ def _recorded_input_path(record: dict[str, object]) -> Path:
 
 
 def input_matches(record: dict[str, object]) -> bool:
-    """Whether a recorded input is byte-for-byte or tree-state current."""
+    """Whether a recorded file-content or directory-tree fingerprint is current."""
     current = describe_input(_recorded_input_path(record))
     keys = (
         "exists",

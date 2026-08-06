@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from ddvc.provenance import describe_input, input_matches
+from ddvc.provenance import cache_key, describe_input, input_matches
 
 
 class ProvenanceInputTests(unittest.TestCase):
@@ -27,6 +27,16 @@ class ProvenanceInputTests(unittest.TestCase):
             self.assertTrue(input_matches(record))
             (root / "b.txt").write_text("b")
             self.assertFalse(input_matches(record))
+
+    def test_cache_key_changes_with_declared_input_tree(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "a.txt").write_text("a")
+            sources = ["tests/test_provenance_inputs.py"]
+            before = cache_key(sources, inputs=[root])
+            (root / "b.txt").write_text("b")
+            after = cache_key(sources, inputs=[root])
+            self.assertNotEqual(before, after)
 
 
 if __name__ == "__main__":

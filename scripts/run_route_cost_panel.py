@@ -30,43 +30,40 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
-from ddvc.asset_types import canonical_token  # noqa: E402
-from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
-from ddvc.provenance import cache_key  # noqa: E402
-from ddvc.provenance import stamp as record_provenance  # noqa: E402
-from ddvc.pricing.v2quote import quote_exact_input_float  # noqa: E402
-from ddvc.pricing.stableswap import StablePool  # noqa: E402
-from ddvc.pricing.stableswap import calibrate_amp as _calibrate_amp  # noqa: E402
-from ddvc.pricing.stableswap import quote_exact_input as _stable_quote  # noqa: E402
-from ddvc.pricing.weighted import (  # noqa: E402
+from ddvc.asset_types import canonical_token
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.provenance import cache_key
+from ddvc.provenance import stamp as record_provenance
+from ddvc.pricing.v2quote import quote_exact_input_float
+from ddvc.pricing.stableswap import StablePool
+from ddvc.pricing.stableswap import calibrate_amp as _calibrate_amp
+from ddvc.pricing.stableswap import quote_exact_input as _stable_quote
+from ddvc.pricing.weighted import (
     FIT_QUANTILE as _WEIGHTED_QUANTILE,
 )
-from ddvc.pricing.weighted import (  # noqa: E402
+from ddvc.pricing.weighted import (
     MAX_CALIBRATION_ERROR as _WEIGHTED_GATE,
 )
-from ddvc.pricing.weighted import (  # noqa: E402
+from ddvc.pricing.weighted import (
     MIN_QUOTED_SHARE as _WEIGHTED_MIN_SHARE,
 )
-from ddvc.pricing.weighted import ONE as _WEIGHTED_ONE  # noqa: E402
-from ddvc.pricing.weighted import BalanceEvent, WeightedPool  # noqa: E402
-from ddvc.pricing.weighted import calibrate_fee as _calibrate_fee  # noqa: E402
-from ddvc.pricing.weighted import (  # noqa: E402
+from ddvc.pricing.weighted import ONE as _WEIGHTED_ONE
+from ddvc.pricing.weighted import BalanceEvent, WeightedPool
+from ddvc.pricing.weighted import calibrate_fee as _calibrate_fee
+from ddvc.pricing.weighted import (
     calibrate_weight_ratio as _calibrate_weight_ratio,
 )
-from ddvc.pricing.weighted import quote_error_at as _weighted_error  # noqa: E402
-from ddvc.pricing.weighted import quote_exact_input as _weighted_quote  # noqa: E402
-from ddvc.pricing.weighted import rebuild_pre_trade_balances  # noqa: E402
-from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick, quote_exact_input  # noqa: E402
-from ddvc.pricing.v3pools import (  # noqa: E402
+from ddvc.pricing.weighted import quote_error_at as _weighted_error
+from ddvc.pricing.weighted import quote_exact_input as _weighted_quote
+from ddvc.pricing.weighted import rebuild_pre_trade_balances
+from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick, quote_exact_input
+from ddvc.pricing.v3pools import (
     derive_fee_tier,
     resolve_decimals,
     tick_spacing_for_fee,
 )
+
+ROOT = REPO_ROOT
 
 # Swap samples per pool, used only to pin token decimals by the sqrtPriceX96
 # identity. Capped per pool, so this stays small next to the swap stream itself.
@@ -154,7 +151,18 @@ QUOTE_SOURCES = [
     "src/ddvc/pricing/weighted.py",
     "scripts/run_route_cost_panel.py",
 ]
-QUOTE_ENGINE = cache_key(QUOTE_SOURCES)
+QUOTE_INPUTS = [
+    DATA_DIR / "unified",
+    *(DATA_DIR / "raw" / "thegraph" / venue for venue in (
+        "uniswap_v2",
+        "sushiswap_v2",
+        "uniswap_v3",
+        "uniswap_v4",
+        "curve",
+        "balancer",
+    )),
+]
+QUOTE_ENGINE = cache_key(QUOTE_SOURCES, inputs=QUOTE_INPUTS)
 
 # Cached day content also depends on the arguments that decide WHAT is computed,
 # not only on the code that computes it. The cache ignored them, so a run at
@@ -537,6 +545,41 @@ def _absorb_swap_state(venue: str, rec: dict,
         dec0=dec[0], dec1=dec[1],
         sqrt_price_x96=sqrt_price, tick=tick, fee_pips=fee,
         tick_spacing=tick_spacing_for_fee(fee), block=block, log_index=log_index)
+
+
+def _v4_swap_has_required_statics(rec: dict) -> bool:
+    """Whether a v4 swap can identify fees and token units without guessing."""
+    pool = rec.get("pool") or {}
+    token0 = pool.get("token0") or {}
+    token1 = pool.get("token1") or {}
+    return (
+        pool.get("feeTier") is not None
+        and token0.get("decimals") is not None
+        and token1.get("decimals") is not None
+    )
+
+
+def _validate_v4_swap_schema(stamps: list[str]) -> None:
+    """Refuse a build when any nonempty v4 day predates the required raw schema."""
+    invalid: list[str] = []
+    for stamp in stamps:
+        if stamp < V4_START:
+            continue
+        path = _raw_path("uniswap_v4", "swaps", stamp)
+        if not path.exists():
+            continue
+        with gzip.open(path, "rt") as fh:
+            first = next((json.loads(line) for line in fh if line.strip()), None)
+        if first is not None and not _v4_swap_has_required_statics(first):
+            invalid.append(stamp)
+    if invalid:
+        preview = ", ".join(invalid[:5])
+        more = f" and {len(invalid) - 5:,} more" if len(invalid) > 5 else ""
+        raise RuntimeError(
+            "Uniswap v4 raw swaps lack feeTier/token decimals on "
+            f"{len(invalid):,} nonempty day(s): {preview}{more}. "
+            "Refetch the swaps stream before pricing."
+        )
 
 
 def _update_tick_swap_state(venue: str, stamp: str,
@@ -1562,6 +1605,11 @@ def main() -> int:
         print(f"day cache: {cache_dir.relative_to(ROOT)}", flush=True)
         frames = []
         stamps = _available_stamps(args.start, args.end)
+        history_stamps = [
+            stamp for stamp in _available_stamps(None, None)
+            if not stamps or stamp <= max(stamps)
+        ]
+        _validate_v4_swap_schema(history_stamps)
         v3_ticks: dict[str, dict[str, dict[int, int]]] = {}
         v3_state: dict[str, dict[str, V3PoolState]] = {}
 
@@ -1667,10 +1715,12 @@ def main() -> int:
             summary = _summarize(panel)
             summary_path.parent.mkdir(parents=True, exist_ok=True)
             summary.to_pickle(summary_path)
-            record_provenance(out_path, code_sources=QUOTE_SOURCES, rows=n_rows,
+            record_provenance(out_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,
+                              rows=n_rows,
                               notes=f"quote engine {QUOTE_ENGINE}; "
                                     f"day cache {DAY_CACHE.name}; {len(hours)} hour(s)/day")
-            record_provenance(summary_path, code_sources=QUOTE_SOURCES, rows=len(summary))
+            record_provenance(summary_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,
+                              rows=len(summary))
             print(f"wrote {len(panel):,} rows -> {out_path}")
             print(f"wrote summary -> {summary_path}")
             return 0
@@ -1715,9 +1765,11 @@ def main() -> int:
     summary = _summarize(panel)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary.to_pickle(summary_path)
-    record_provenance(out_path, code_sources=QUOTE_SOURCES, rows=len(panel),
+    record_provenance(out_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,
+                      rows=len(panel),
                       notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}")
-    record_provenance(summary_path, code_sources=QUOTE_SOURCES, rows=len(summary))
+    record_provenance(summary_path, code_sources=QUOTE_SOURCES, inputs=QUOTE_INPUTS,
+                      rows=len(summary))
     print(f"wrote {len(panel):,} rows -> {out_path}")
     print(f"wrote summary -> {summary_path}")
     return 0

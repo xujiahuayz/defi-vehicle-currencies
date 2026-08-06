@@ -1,5 +1,8 @@
 import importlib.util
+import gzip
+import json
 import sys
+import tempfile
 import unittest
 from decimal import Decimal
 from functools import lru_cache
@@ -192,6 +195,37 @@ class BalancerPanelWiringTests(unittest.TestCase):
     def test_weighted_source_is_in_the_cache_fingerprint(self) -> None:
         """A quoter outside QUOTE_SOURCES means tightening its gate invalidates no cached day."""
         self.assertIn("src/ddvc/pricing/weighted.py", _panel().QUOTE_SOURCES)
+
+    def test_raw_and_unified_inputs_are_in_the_cache_fingerprint(self) -> None:
+        """Changing routes or pool state must make the old day cache unreachable."""
+        paths = {path.relative_to(_panel().ROOT).as_posix() for path in _panel().QUOTE_INPUTS}
+        self.assertIn("data/unified", paths)
+        self.assertIn("data/raw/thegraph/uniswap_v4", paths)
+
+    def test_v4_schema_contract_requires_fee_and_both_decimals(self) -> None:
+        complete = {
+            "pool": {
+                "feeTier": "500",
+                "token0": {"decimals": "18"},
+                "token1": {"decimals": "6"},
+            }
+        }
+        self.assertTrue(_panel()._v4_swap_has_required_statics(complete))
+        del complete["pool"]["token1"]["decimals"]
+        self.assertFalse(_panel()._v4_swap_has_required_statics(complete))
+
+    def test_v4_schema_preflight_refuses_an_old_nonempty_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "old.jsonl.gz"
+            with gzip.open(path, "wt") as fh:
+                fh.write(json.dumps({"pool": {"token0": {}, "token1": {}}}) + "\n")
+            original = _panel()._raw_path
+            try:
+                _panel()._raw_path = lambda *_: path
+                with self.assertRaisesRegex(RuntimeError, "lack feeTier/token decimals"):
+                    _panel()._validate_v4_swap_schema(["20250124"])
+            finally:
+                _panel()._raw_path = original
 
 
 if __name__ == "__main__":
