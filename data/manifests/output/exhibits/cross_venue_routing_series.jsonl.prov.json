@@ -1,19 +1,16 @@
 {
- "argv": [
-  "--workers",
-  "4"
- ],
+ "argv": [],
  "artefact": "output/exhibits/cross_venue_routing_series.jsonl",
- "code_fingerprint": "a00e9e92bf5617b3f67f64dbfd55471aad3a03dc1e3ebbef95d7cb62742c6e54",
+ "code_fingerprint": "88ba40b295b3a3ef45db295a858385dc61721d3924f765c9b1a1205e252a0d6d",
  "code_sources": [
   "scripts/build_cross_venue_routing_series.py",
   "src/ddvc/reconstruct/__init__.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T12:13:18+00:00",
+ "created_at": "2026-08-06T12:49:26+00:00",
  "git": {
   "branch": "main",
-  "commit": "992ea5abb1df7c5f6675274766a02ee95930d9be",
+  "commit": "902708b3fd5b4d278820a374553e7bc57eeb9ab4",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/data/processed/cross_venue_routing_daily.parquet.prov.json",
@@ -41,17 +38,19 @@
    "output/tables/stress_rotation_decomposition.pdf",
    "output/tables/v4_match_balance.pdf",
    "output/tables/v4_robustness.pdf",
-   "output/exhibits/realised_dominance_reweighting.jsonl"
+   "data/manifests/output/exhibits/v4_quote_support.jsonl.prov.json",
+   "output/exhibits/realised_dominance_reweighting.jsonl",
+   "output/exhibits/v4_quote_support.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 416382,
+   "bytes": 633330,
    "exists": true,
    "path": "data/processed/cross_venue_routing_daily.parquet",
-   "sha256": "6cb6076d2f5b0dce9cebcc4ea256bbc807f0b08009c849b180ce8d69822ba41d"
+   "sha256": "13b2a936693e7fa175dd9806f446254047acbb104b68ee12b2ca8c0b2e8c8450"
   }
  ],
  "libraries": {

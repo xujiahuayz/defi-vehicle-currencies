@@ -1,29 +1,18 @@
 {
  "argv": [
-  "--day",
-  "20250201",
-  "--day",
-  "20250914",
-  "--day",
-  "20260630",
-  "--pools",
-  "6",
-  "--max-per-pool",
-  "250"
+  "--v4-only"
  ],
- "artefact": "output/exhibits/v4_quoter_validation.jsonl",
- "code_fingerprint": "dbb5d8e41ee7861dde615c3989a16e4dcf2a78def7342289319f5e1a9f44868a",
+ "artefact": "output/exhibits/v4_quote_support.jsonl",
+ "code_fingerprint": "fe9991c5083227d1c0fcf209e468635d97d60e3c8ab75d446436ffdfe70695d1",
  "code_sources": [
-  "scripts/validate_v4_quoter.py",
+  "scripts/measure_quoter_support.py",
   "src/ddvc/fetch/raw.py",
-  "src/ddvc/pricing/tick_state.py",
-  "src/ddvc/pricing/v3quote.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T12:59:17+00:00",
+ "created_at": "2026-08-06T13:04:17+00:00",
  "git": {
   "branch": "main",
-  "commit": "7a9e622fa229a355682162ba440f82f723793de5",
+  "commit": "5574788158eb6d500135094a84481ed30d6b6fa2",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/data/processed/cross_venue_routing_daily.parquet.prov.json",
@@ -33,12 +22,14 @@
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
    "output/exhibits/cross_venue_routing_series.jsonl",
    "output/exhibits/dominance_specification_curve.jsonl",
    "output/exhibits/gap_arbitrage_bound.jsonl",
    "output/exhibits/realised_dominance.jsonl",
    "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/v4_quoter_validation.jsonl",
    "output/exhibits/vehicle_dominance_hdfe.jsonl",
    "output/tables/bridge_denominator_robustness.pdf",
    "output/tables/liquidity_robustness.pdf",
@@ -51,9 +42,9 @@
    "output/tables/stress_rotation_decomposition.pdf",
    "output/tables/v4_match_balance.pdf",
    "output/tables/v4_robustness.pdf",
-   "data/manifests/output/exhibits/v4_quote_support.jsonl.prov.json",
+   "data/manifests/output/exhibits/v3_quoter_validation.jsonl.prov.json",
    "output/exhibits/realised_dominance_reweighting.jsonl",
-   "output/exhibits/v4_quote_support.jsonl"
+   "output/exhibits/v3_quoter_validation.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -73,8 +64,8 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "strict requested-date coverage; unsupported hook and dynamic-fee pools excluded",
+ "notes": null,
  "python": "3.14.5",
- "rows": 4218,
- "script": "scripts/validate_v4_quoter.py"
+ "rows": 9,
+ "script": "scripts/measure_quoter_support.py"
 }

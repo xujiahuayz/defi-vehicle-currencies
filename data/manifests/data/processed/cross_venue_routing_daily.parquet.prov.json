@@ -1,21 +1,19 @@
 {
- "argv": [
-  "--workers",
-  "4"
- ],
+ "argv": [],
  "artefact": "data/processed/cross_venue_routing_daily.parquet",
- "code_fingerprint": "a00e9e92bf5617b3f67f64dbfd55471aad3a03dc1e3ebbef95d7cb62742c6e54",
+ "code_fingerprint": "88ba40b295b3a3ef45db295a858385dc61721d3924f765c9b1a1205e252a0d6d",
  "code_sources": [
   "scripts/build_cross_venue_routing_series.py",
   "src/ddvc/reconstruct/__init__.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T12:13:18+00:00",
+ "created_at": "2026-08-06T12:49:26+00:00",
  "git": {
   "branch": "main",
-  "commit": "992ea5abb1df7c5f6675274766a02ee95930d9be",
+  "commit": "902708b3fd5b4d278820a374553e7bc57eeb9ab4",
   "dirty": false,
   "dirty_generated_files": [
+   "data/manifests/output/exhibits/cross_venue_routing_series.jsonl.prov.json",
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
    "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
@@ -23,6 +21,7 @@
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "output/exhibits/cross_venue_routing_series.jsonl",
    "output/exhibits/dominance_specification_curve.jsonl",
    "output/exhibits/gap_arbitrage_bound.jsonl",
    "output/exhibits/realised_dominance.jsonl",
@@ -40,7 +39,9 @@
    "output/tables/stress_rotation_decomposition.pdf",
    "output/tables/v4_match_balance.pdf",
    "output/tables/v4_robustness.pdf",
-   "output/exhibits/realised_dominance_reweighting.jsonl"
+   "data/manifests/output/exhibits/v4_quote_support.jsonl.prov.json",
+   "output/exhibits/realised_dominance_reweighting.jsonl",
+   "output/exhibits/v4_quote_support.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []

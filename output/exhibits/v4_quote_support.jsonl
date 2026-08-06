@@ -1,0 +1,9 @@
+{"status": "dynamic_fee_and_hooks", "supported": false, "swap_share": 0.050853147501776975, "swaps": 574574, "volume_share": 0.0012157793298639232, "volume_usd": 672748415.1387328, "year": "2025"}
+{"status": "hooks", "supported": false, "swap_share": 0.04435142088583536, "swaps": 501113, "volume_share": 0.0033981602544082743, "volume_usd": 1880363376.3015807, "year": "2025"}
+{"status": "vanilla_static_fee", "supported": true, "swap_share": 0.9047954316123876, "swaps": 10223004, "volume_share": 0.9953860604157279, "volume_usd": 550794357287.5336, "year": "2025"}
+{"status": "dynamic_fee_and_hooks", "supported": false, "swap_share": 0.06096953257132195, "swaps": 1079598, "volume_share": 0.024155287139148537, "volume_usd": 1888627885.3226242, "year": "2026"}
+{"status": "hooks", "supported": false, "swap_share": 0.14009989850440263, "swaps": 2480773, "volume_share": 0.0201325894727896, "volume_usd": 1574105481.0497046, "year": "2026"}
+{"status": "vanilla_static_fee", "supported": true, "swap_share": 0.7989305689242754, "swaps": 14146801, "volume_share": 0.9557121233880619, "volume_usd": 74724202456.12593, "year": "2026"}
+{"status": "dynamic_fee_and_hooks", "supported": false, "swap_share": 0.05702888412594378, "swaps": 1654172, "volume_share": 0.004055798513243259, "volume_usd": 2561376300.461357, "year": "ALL"}
+{"status": "hooks", "supported": false, "swap_share": 0.10280287126778473, "swaps": 2981886, "volume_share": 0.005469961462970855, "volume_usd": 3454468857.351285, "year": "ALL"}
+{"status": "vanilla_static_fee", "supported": true, "swap_share": 0.8401682446062715, "swaps": 24369805, "volume_share": 0.9904742400237859, "volume_usd": 625518559743.6595, "year": "ALL"}
