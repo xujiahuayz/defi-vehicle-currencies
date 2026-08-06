@@ -268,7 +268,7 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
         dd = panel.copy()
         y = absorb_fixed_effects(dd[y_name], dd["token"], dd["date"])
         x = pd.DataFrame({name: absorb_fixed_effects(dd[name], dd["token"], dd["date"]) for name in x_names})
-        n, clusters, res = ols_clustered_named(y, x, dd["date"], min_observations=30)
+        n, clusters, res = ols_clustered_named(y, x, dd["date"], absorbed_groups=(dd["token"], dd["date"]), min_observations=30)
         for name in x_names:
             rows.append(
                 {
@@ -549,7 +549,7 @@ def common_liquidity_tests(pool: pd.DataFrame) -> pd.DataFrame:
         dd = d.copy()
         y = absorb_fixed_effects(dd["dlog_liquidity"], dd["pool_vehicle_id"])
         x = pd.DataFrame({name: absorb_fixed_effects(dd[name], dd["pool_vehicle_id"]) for name in names})
-        n, clusters, res = ols_clustered_named(y, x, dd["date"], min_observations=30)
+        n, clusters, res = ols_clustered_named(y, x, dd["date"], absorbed_groups=(dd["pool_vehicle_id"],), min_observations=30)
         for name in names:
             rows.append(
                 {
@@ -722,7 +722,7 @@ def actual_route_choice_tests(actual: pd.DataFrame) -> pd.DataFrame:
     for outcome, y_raw, units in specs:
         y = absorb_fixed_effects(y_raw, d["pair_date"])
         x = pd.DataFrame({name: absorb_fixed_effects(d[name], d["pair_date"]) for name in x_names})
-        n, clusters, res = ols_clustered_named(y, x, d["date"], min_observations=30)
+        n, clusters, res = ols_clustered_named(y, x, d["date"], absorbed_groups=(d["pair_date"],), min_observations=30)
         for name in x_names:
             rows.append(
                 {
@@ -811,7 +811,7 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
     for outcome, y_name, units in specs:
         y = absorb_fixed_effects(d[y_name], d["token"], d["date"])
         x = pd.DataFrame({name: absorb_fixed_effects(d[name], d["token"], d["date"]) for name in x_names})
-        n, clusters, res = ols_clustered_named(y, x, d["date"], min_observations=30)
+        n, clusters, res = ols_clustered_named(y, x, d["date"], absorbed_groups=(d["token"], d["date"]), min_observations=30)
         for name in x_names:
             rows.append(
                 {
@@ -915,7 +915,7 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
                 )
             }
         )
-        n, clusters, res = ols_clustered_named(y, x, base["date"], min_observations=30)
+        n, clusters, res = ols_clustered_named(y, x, base["date"], absorbed_groups=(base["pair"], base["date"]), min_observations=30)
         rows.append(
             {
                 "Panel": "A. Pair-level regression",
@@ -1014,7 +1014,7 @@ def v3_dose_response_tests() -> pd.DataFrame:
         for outcome, y_col, scale, units in outcomes:
             y = absorb_fixed_effects(scale * g[y_col].astype(float), g["pair"])
             x = pd.DataFrame({"post_v3": absorb_fixed_effects(g["post_v3"], g["pair"])})
-            n, clusters, res = ols_clustered_named(y, x, g["pair"], min_observations=30)
+            n, clusters, res = ols_clustered_named(y, x, g["pair"], absorbed_groups=(g["pair"],), min_observations=30)
             rows.append(
                 {
                     "Pre-V3 direct availability quartile": str(quartile),
@@ -1061,7 +1061,7 @@ def v4_route_use_persistence_tests() -> pd.DataFrame:
     for outcome, y_col, x_col, reg_label in specs:
         y = absorb_fixed_effects(d[y_col], d["vehicle"], d["week_label"])
         x = pd.DataFrame({reg_label: absorb_fixed_effects(d[x_col], d["vehicle"], d["week_label"])})
-        n, clusters, res = ols_clustered_named(y, x, d["week"], min_observations=30)
+        n, clusters, res = ols_clustered_named(y, x, d["week"], absorbed_groups=(d["vehicle"], d["week_label"]), min_observations=30)
         rows.append(
             {
                 "Panel": "A. Matched-cell route-use persistence",
@@ -1132,7 +1132,7 @@ def common_liquidity_heterogeneity_tests() -> pd.DataFrame:
                 "vehicle_factor_loo": absorb_fixed_effects(g["vehicle_factor_loo"], g["pool_vehicle_id"]),
             }
         )
-        n, clusters, res = ols_clustered_named(y, x, g["date"], min_observations=30)
+        n, clusters, res = ols_clustered_named(y, x, g["date"], absorbed_groups=(g["pool_vehicle_id"],), min_observations=30)
         for name in ["market_factor_loo", "vehicle_factor_loo"]:
             rows.append(
                 {

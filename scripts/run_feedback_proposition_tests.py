@@ -49,6 +49,7 @@ def p2_feedback_loop() -> pd.DataFrame:
             absorb_fixed_effects(dd["future_bridge_share"], dd["token"], dd["date"]),
             x,
             dd["date"],
+            absorbed_groups=(dd["token"], dd["date"]),
             min_observations=20,
         )
         n, clusters = fit.n_observations, fit.n_clusters
@@ -82,6 +83,7 @@ def p2_feedback_loop() -> pd.DataFrame:
                 absorb_fixed_effects(dd[outcome], dd["token"], dd["date"]),
                 x_rev,
                 dd["date"],
+                absorbed_groups=(dd["token"], dd["date"]),
                 min_observations=20,
             )
             n, clusters = fit.n_observations, fit.n_clusters
@@ -167,6 +169,7 @@ def p4b_netting_lp_response() -> pd.DataFrame:
             absorb_fixed_effects(d[outcome], d["token"], d["week"]),
             x,
             d["week"],
+            absorbed_groups=(d["token"], d["week"]),
             min_observations=20,
         )
         n, clusters = fit.n_observations, fit.n_clusters

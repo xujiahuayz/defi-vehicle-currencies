@@ -104,15 +104,16 @@ def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
         d["y"] = value_at_day_offset(d, "BridgeShare", horizon)
         d = d.dropna(subset=["y", "lp_concentration_share"])
         specs = {
-            "No FE": (d["y"], d["lp_concentration_share"]),
-            "Token FE": (absorb_fixed_effects(d["y"], d["token"]), absorb_fixed_effects(d["lp_concentration_share"], d["token"])),
+            "No FE": (d["y"], d["lp_concentration_share"], ()),
+            "Token FE": (absorb_fixed_effects(d["y"], d["token"]), absorb_fixed_effects(d["lp_concentration_share"], d["token"]), (d["token"],)),
             "Token + date FE": (
                 absorb_fixed_effects(d["y"], d["token"], d["date"]),
                 absorb_fixed_effects(d["lp_concentration_share"], d["token"], d["date"]),
+                (d["token"], d["date"]),
             ),
         }
-        for spec, (y, x) in specs.items():
-            fit = ols_clustered(y, x, d["date"], min_observations=4)
+        for spec, (y, x, absorbed_groups) in specs.items():
+            fit = ols_clustered(y, x, d["date"], absorbed_groups=absorbed_groups, min_observations=4)
             n, clusters = fit.n_observations, fit.n_clusters
             beta, se, t, p = (
                 fit.beta[1],

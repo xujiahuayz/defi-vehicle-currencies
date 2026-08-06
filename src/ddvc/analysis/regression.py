@@ -17,6 +17,7 @@ class ClusteredOLSResult:
     covariance: np.ndarray
     n_observations: int
     n_clusters: int
+    absorbed_degrees_of_freedom: int
 
     @property
     def standard_errors(self) -> np.ndarray:
@@ -82,6 +83,33 @@ def absorb_fixed_effects(
     raise RuntimeError("fixed-effect absorption did not converge")
 
 
+def _absorbed_fixed_effect_rank(groups: list[np.ndarray]) -> int:
+    """Exact dummy-matrix rank for one or two fixed effects."""
+    if not groups:
+        return 0
+    codes = [pd.factorize(group, sort=False)[0] for group in groups]
+    levels = [int(code.max()) + 1 if len(code) else 0 for code in codes]
+    if len(groups) == 1:
+        return levels[0]
+
+    first_levels, second_levels = levels
+    parents = list(range(first_levels + second_levels))
+
+    def root(index: int) -> int:
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    for first, second in zip(codes[0], codes[1], strict=True):
+        left = root(int(first))
+        right = root(first_levels + int(second))
+        if left != right:
+            parents[right] = left
+    components = len({root(index) for index in range(len(parents))})
+    return max(first_levels + second_levels - components, 0)
+
+
 def ols_clustered(
     y: pd.Series | np.ndarray,
     x: pd.DataFrame | np.ndarray,
@@ -89,6 +117,7 @@ def ols_clustered(
     *,
     add_constant: bool = True,
     k_absorbed: int = 0,
+    absorbed_groups: tuple[pd.Series | np.ndarray, ...] = (),
     min_observations: int = 1,
     min_clusters: int = 2,
 ) -> ClusteredOLSResult:
@@ -100,22 +129,40 @@ def ols_clustered(
         x_array = x_array[:, None]
     if len(y_array) != len(x_array) or len(y_array) != len(cluster_array):
         raise ValueError("clustered OLS inputs must have the same row count")
+    group_arrays = [np.asarray(group).reshape(-1) for group in absorbed_groups]
+    if any(len(group) != len(y_array) for group in group_arrays):
+        raise ValueError("absorbed fixed-effect groups must align with the regression inputs")
+    if len(group_arrays) > 2:
+        raise ValueError("absorbed degree-of-freedom correction supports at most two fixed effects")
     finite = np.isfinite(y_array) & np.isfinite(x_array).all(axis=1) & pd.notna(cluster_array)
+    for group in group_arrays:
+        finite &= pd.notna(group)
     y_array = y_array[finite]
     x_array = x_array[finite]
     cluster_array = cluster_array[finite]
+    group_arrays = [group[finite] for group in group_arrays]
     if add_constant:
         x_array = np.column_stack([np.ones(len(x_array)), x_array])
     n, k = x_array.shape
     cluster_codes, unique_clusters = pd.factorize(cluster_array, sort=False)
     n_clusters = len(unique_clusters)
+    absorbed_rank = _absorbed_fixed_effect_rank(group_arrays)
+    absorbed_degrees_of_freedom = k_absorbed + max(
+        absorbed_rank - int(add_constant and absorbed_rank > 0),
+        0,
+    )
     empty = ClusteredOLSResult(
         beta=np.full(k, np.nan),
         covariance=np.full((k, k), np.nan),
         n_observations=n,
         n_clusters=n_clusters,
+        absorbed_degrees_of_freedom=absorbed_degrees_of_freedom,
     )
-    if n < min_observations or n_clusters < min_clusters or n <= k + k_absorbed:
+    if (
+        n < min_observations
+        or n_clusters < min_clusters
+        or n <= k + absorbed_degrees_of_freedom
+    ):
         return empty
     if np.linalg.matrix_rank(x_array) < k:
         return empty
@@ -128,7 +175,7 @@ def ols_clustered(
         score = x_array[selected].T @ residual[selected]
         meat += np.outer(score, score)
     scale = (n_clusters / (n_clusters - 1)) * (
-        (n - 1) / (n - k - k_absorbed)
+        (n - 1) / (n - k - absorbed_degrees_of_freedom)
     )
     covariance = scale * xtx_inverse @ meat @ xtx_inverse
     return ClusteredOLSResult(
@@ -136,6 +183,7 @@ def ols_clustered(
         covariance=covariance,
         n_observations=n,
         n_clusters=n_clusters,
+        absorbed_degrees_of_freedom=absorbed_degrees_of_freedom,
     )
 
 
@@ -146,6 +194,7 @@ def ols_clustered_named(
     *,
     add_constant: bool = True,
     k_absorbed: int = 0,
+    absorbed_groups: tuple[pd.Series | np.ndarray, ...] = (),
     min_observations: int = 1,
     min_clusters: int = 2,
 ) -> tuple[int, int, dict[str, float]]:
@@ -156,6 +205,7 @@ def ols_clustered_named(
         cluster,
         add_constant=add_constant,
         k_absorbed=k_absorbed,
+        absorbed_groups=absorbed_groups,
         min_observations=min_observations,
         min_clusters=min_clusters,
     )

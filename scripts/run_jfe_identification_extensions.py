@@ -71,14 +71,14 @@ def v3_event_time_pretrends() -> pd.DataFrame:
     for col, label, units in outcomes:
         y = absorb_fixed_effects(monthly[col], monthly["pair"])
         post = absorb_fixed_effects(monthly["post_v3"], monthly["pair"])
-        fit = ols_clustered(y, post, monthly["pair"], min_observations=10)
+        fit = ols_clustered(y, post, monthly["pair"], absorbed_groups=(monthly["pair"],), min_observations=10)
         n, c = fit.n_observations, fit.n_clusters
         beta, se, t, p = fit.beta[1], fit.standard_errors[1], fit.t_statistics[1], fit.p_values[1]
 
         pre = monthly[monthly["rel_month"].between(-12, -1)].copy()
         y_pre = absorb_fixed_effects(pre[col], pre["pair"])
         x_pre = absorb_fixed_effects(pre["rel_month"].astype(float), pre["pair"])
-        pre_fit = ols_clustered(y_pre, x_pre, pre["pair"], min_observations=10)
+        pre_fit = ols_clustered(y_pre, x_pre, pre["pair"], absorbed_groups=(pre["pair"],), min_observations=10)
         npre, cpre = pre_fit.n_observations, pre_fit.n_clusters
         slope, slope_se, slope_t, slope_p = (
             pre_fit.beta[1],

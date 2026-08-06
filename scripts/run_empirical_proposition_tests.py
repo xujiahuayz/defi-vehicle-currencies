@@ -66,7 +66,13 @@ def _write(df: pd.DataFrame, path: Path) -> None:
     else:
         df.to_pickle(path)
 
-def _ols_y_on_x(y: np.ndarray, x: np.ndarray, name: str) -> RegressionResult:
+def _ols_y_on_x(
+    y: np.ndarray,
+    x: np.ndarray,
+    name: str,
+    *,
+    k_absorbed: int = 0,
+) -> RegressionResult:
     ok = np.isfinite(y) & np.isfinite(x)
     y = y[ok].astype(float)
     x = x[ok].astype(float)
@@ -76,7 +82,7 @@ def _ols_y_on_x(y: np.ndarray, x: np.ndarray, name: str) -> RegressionResult:
     xmat = np.column_stack([np.ones(n), x])
     beta = np.linalg.lstsq(xmat, y, rcond=None)[0]
     resid = y - xmat @ beta
-    dof = n - xmat.shape[1]
+    dof = n - xmat.shape[1] - k_absorbed
     sigma2 = float((resid @ resid) / dof) if dof > 0 else np.nan
     cov = sigma2 * np.linalg.inv(xmat.T @ xmat)
     se = float(math.sqrt(cov[1, 1]))
@@ -284,6 +290,7 @@ def liquidity_formation_tests(bridge: pd.DataFrame, lp: pd.DataFrame) -> pd.Data
         y.to_numpy(),
         z.to_numpy(),
         "P2 within-token: VehicleShare on lagged LP concentration (7 days)",
+        k_absorbed=max(int(x["token"].nunique()) - 1, 0),
     ).__dict__)
 
     out = pd.DataFrame(rows)

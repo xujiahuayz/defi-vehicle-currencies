@@ -94,6 +94,35 @@ class RegressionPrimitiveTests(unittest.TestCase):
         )
         self.assertTrue(np.isnan(result.beta).all())
 
+    def test_clustered_ols_counts_absorbed_fixed_effect_degrees_of_freedom(self) -> None:
+        x_value = np.arange(12, dtype=float)
+        outcome = 1.0 + 0.25 * x_value + np.array([0.0, 1.0, -1.0] * 4)
+        cluster = np.repeat(np.arange(4), 3)
+        one_way = np.repeat(["a", "b", "c"], 4)
+        uncorrected = ols_clustered(outcome, x_value, cluster)
+        corrected = ols_clustered(
+            outcome,
+            x_value,
+            cluster,
+            absorbed_groups=(one_way,),
+        )
+        self.assertEqual(corrected.absorbed_degrees_of_freedom, 2)
+        np.testing.assert_allclose(corrected.beta, uncorrected.beta)
+        np.testing.assert_allclose(
+            corrected.covariance,
+            uncorrected.covariance * ((12 - 2) / (12 - 2 - 2)),
+        )
+
+        first = np.array(["a", "a", "b", "b", "c", "c"])
+        second = np.array([1, 2, 2, 3, 3, 1])
+        connected = ols_clustered(
+            np.arange(6, dtype=float),
+            np.arange(6, dtype=float),
+            np.repeat(["x", "y", "z"], 2),
+            absorbed_groups=(first, second),
+        )
+        self.assertEqual(connected.absorbed_degrees_of_freedom, 4)
+
 
 if __name__ == "__main__":
     unittest.main()

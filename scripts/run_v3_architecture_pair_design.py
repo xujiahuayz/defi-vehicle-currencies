@@ -51,7 +51,7 @@ def run() -> pd.DataFrame:
     for name, y_raw in outcomes.items():
         y = absorb_fixed_effects(y_raw, d["pair"])
         x = absorb_fixed_effects(d["post_v3"], d["pair"])
-        fit = ols_clustered(y, x, d["pair"], min_observations=10)
+        fit = ols_clustered(y, x, d["pair"], absorbed_groups=(d["pair"],), min_observations=10)
         n, clusters = fit.n_observations, fit.n_clusters
         beta, se, t, p = fit.beta[1], fit.standard_errors[1], fit.t_statistics[1], fit.p_values[1]
         scale = 100 if "availability" in name.lower() else 1

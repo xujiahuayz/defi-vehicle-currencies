@@ -45,7 +45,7 @@ def run() -> pd.DataFrame:
                 "current_bridge_share": absorb_fixed_effects(dd["BridgeShare"], dd["token"], dd["date"]),
             }
         )
-        fit = ols_clustered(y, x, dd["date"], min_observations=20)
+        fit = ols_clustered(y, x, dd["date"], absorbed_groups=(dd["token"], dd["date"]), min_observations=20)
         n, clusters = fit.n_observations, fit.n_clusters
         res = fit.named_statistics(list(x.columns), offset=1)
         rows.append(

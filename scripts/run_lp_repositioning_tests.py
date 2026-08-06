@@ -194,7 +194,7 @@ def run() -> pd.DataFrame:
         for var in ["net_reposition_usd_share", "active_net_reposition_usd_share", "near_net_reposition_usd_share", "near_gross_reposition_usd_share"]:
             y = absorb_fixed_effects(y_raw, d["token"], d["date"])
             x = absorb_fixed_effects(d[var], d["token"], d["date"])
-            fit = ols_clustered(y, x, d["date"], min_observations=10)
+            fit = ols_clustered(y, x, d["date"], absorbed_groups=(d["token"], d["date"]), min_observations=10)
             n, clusters = fit.n_observations, fit.n_clusters
             beta, se, t, p = (
                 fit.beta[1],
