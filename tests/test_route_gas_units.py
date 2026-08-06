@@ -7,10 +7,9 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.fetch.sources import DEX_SOURCES
+from ddvc.route_gas import candidate_transactions, deterministic_cell_sample
 from scripts.process import build_route_gas_units as route_gas
 from scripts.process.build_route_gas_units import (
-    candidate_transactions,
-    deterministic_cell_sample,
     parse_receipt,
     sample_day,
     worker_batches,
