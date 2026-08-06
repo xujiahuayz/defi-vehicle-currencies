@@ -1,0 +1,31 @@
+{
+ "argv": [
+  "v2"
+ ],
+ "artefact": "data/processed/rent_incidence_v2_pool_day.parquet",
+ "code_fingerprint": "601fc0810e2661a5045db5dc4fe823c205e3ffda828c982947cc47e7c6724d15",
+ "code_sources": [
+  "scripts/build_rent_incidence_panel.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-06T00:01:11+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "d0429b7081ca63bab25c63bf0a90bf8d254fa857",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "v.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 7667786,
+ "script": "scripts/build_rent_incidence_panel.py"
+}

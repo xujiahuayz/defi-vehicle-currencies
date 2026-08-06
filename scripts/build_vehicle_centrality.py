@@ -101,12 +101,31 @@ def centralities(e: pd.DataFrame, k: int | None) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _one_day(day: str, min_usd: float, k: int | None) -> pd.DataFrame | None:
+    e = day_edges(day, min_usd)
+    if e.empty:
+        return None
+    c = centralities(e, k)
+    if c.empty:
+        return None
+    c["day"] = day
+    c["nodes"] = e[["a", "b"]].stack().nunique()
+    c["edges"] = len(e)
+    return c
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--stride", type=int, default=90, help="sample every Nth day")
     ap.add_argument("--min-usd", type=float, default=1000.0)
     ap.add_argument("--k", type=int, default=250, help="source nodes sampled per graph")
+    ap.add_argument("--jobs", type=int, default=1,
+                    help="days built in parallel; reading a day's unified parquet "
+                         "dominates the cost and is independent across days")
+    ap.add_argument("--out", type=Path, default=OUT_PANEL,
+                    help="panel path, so a denser sample can be built without "
+                         "replacing the one other nodes already read")
     args = ap.parse_args()
 
     days = sorted(p.stem for p in UNIFIED.glob("[0-9]" * 8 + ".parquet"))[:: args.stride]
@@ -114,27 +133,35 @@ def main() -> int:
           f"({days[0]}..{days[-1]}), k={args.k} source nodes\n")
 
     frames = []
-    for i, day in enumerate(days, 1):
-        e = day_edges(day, args.min_usd)
-        if e.empty:
-            continue
-        c = centralities(e, args.k)
-        if c.empty:
-            continue
-        c["day"] = day
-        c["nodes"] = e[["a", "b"]].stack().nunique()
-        c["edges"] = len(e)
-        frames.append(c)
-        if i % 5 == 0 or i == len(days):
-            print(f"  {i}/{len(days)} {day}: {c.nodes.iloc[0]:,} tokens, "
-                  f"{len(e):,} pairs", flush=True)
+    if args.jobs > 1:
+        from concurrent.futures import ProcessPoolExecutor
+        from functools import partial
+        with ProcessPoolExecutor(max_workers=args.jobs) as ex:
+            for i, c in enumerate(ex.map(partial(_one_day, min_usd=args.min_usd,
+                                                 k=args.k), days), 1):
+                if c is None or c.empty:
+                    continue
+                frames.append(c)
+                if i % 5 == 0 or i == len(days):
+                    print(f"  {i}/{len(days)} {c.day.iloc[0]}: "
+                          f"{c.nodes.iloc[0]:,} tokens, {c.edges.iloc[0]:,} pairs",
+                          flush=True)
+    else:
+        for i, day in enumerate(days, 1):
+            c = _one_day(day, args.min_usd, args.k)
+            if c is None or c.empty:
+                continue
+            frames.append(c)
+            if i % 5 == 0 or i == len(days):
+                print(f"  {i}/{len(days)} {day}: {c.nodes.iloc[0]:,} tokens, "
+                      f"{c.edges.iloc[0]:,} pairs", flush=True)
 
     if not frames:
         print("no graphs built")
         return 1
     panel = pd.concat(frames, ignore_index=True)
     panel["date"] = pd.to_datetime(panel.day, format="%Y%m%d")
-    write_panel(panel, OUT_PANEL)
+    write_panel(panel, args.out)
 
     print("\nBetweenness centrality by asset TYPE, share of the total, by year.")
     print("Topological betweenness is how often a path MUST pass through the type.")
@@ -162,7 +189,7 @@ def main() -> int:
     write_exhibit(panel.groupby(["year", "asset_type"], as_index=False)[
         ["betweenness_topological", "betweenness_volume", "degree", "strength_usd"]
     ].sum(), OUT_EXHIBIT)
-    print(f"\nwrote {OUT_PANEL.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
+    print(f"\nwrote {args.out.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
     return 0
 
 

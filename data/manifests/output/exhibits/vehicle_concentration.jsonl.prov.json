@@ -1,0 +1,35 @@
+{
+ "argv": [
+  "--stride",
+  "120"
+ ],
+ "artefact": "output/exhibits/vehicle_concentration.jsonl",
+ "code_fingerprint": "3d45abff9d62aa254f5201bf12c6ae8213024ddd487e14150ea20f4c78c7c89c",
+ "code_sources": [
+  "scripts/build_vehicle_concentration.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-06T00:20:33+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "00f3173e2a4f923b23913cf5cb9528b3927fa57f",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "ata/manifests/output/exhibits/vehicle_centrality.jsonl.prov.json",
+   "output/exhibits/vehicle_centrality.jsonl",
+   "scripts/build_vehicle_centrality.py",
+   "uv.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 14,
+ "script": "scripts/build_vehicle_concentration.py"
+}

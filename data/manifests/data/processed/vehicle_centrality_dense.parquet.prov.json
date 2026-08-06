@@ -7,7 +7,7 @@
   "--out",
   "data/processed/vehicle_centrality_dense.parquet"
  ],
- "artefact": "output/exhibits/vehicle_centrality.jsonl",
+ "artefact": "data/processed/vehicle_centrality_dense.parquet",
  "code_fingerprint": "4b3f22f3ffadc3181e4a2f81caba986177815c5276769880f035d27ea4ed405c",
  "code_sources": [
   "scripts/build_vehicle_centrality.py",
@@ -19,8 +19,7 @@
   "commit": "d0429b7081ca63bab25c63bf0a90bf8d254fa857",
   "dirty": true,
   "dirty_tracked_files": [
-   "utput/exhibits/vehicle_centrality.jsonl",
-   "scripts/build_vehicle_centrality.py",
+   "cripts/build_vehicle_centrality.py",
    "uv.lock"
   ]
  },
@@ -33,6 +32,6 @@
  },
  "notes": null,
  "python": "3.14.5",
- "rows": 35,
+ "rows": 169413,
  "script": "scripts/build_vehicle_centrality.py"
 }

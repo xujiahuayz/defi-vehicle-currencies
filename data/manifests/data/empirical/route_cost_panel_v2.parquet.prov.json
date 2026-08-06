@@ -1,14 +1,9 @@
 {
  "argv": [
-  "--start",
-  "2023-06-01",
-  "--end",
-  "2023-06-04",
   "--hours",
-  "0,12",
+  "all",
   "--workers",
-  "2",
-  "--force"
+  "5"
  ],
  "artefact": "data/empirical/route_cost_panel_v2.parquet",
  "code_fingerprint": "82574a1ad9993c4d0b4a558444d9ceb072af21e55899855d8a7622f50cb54de2",
@@ -20,17 +15,15 @@
   "src/ddvc/pricing/v3quote.py",
   "src/ddvc/pricing/weighted.py"
  ],
- "created_at": "2026-08-05T20:26:04+00:00",
+ "created_at": "2026-08-06T00:20:54+00:00",
  "git": {
   "branch": "main",
-  "commit": "de4d9f0789ded7dda01e599435f912e7f43b39f3",
+  "commit": "00f3173e2a4f923b23913cf5cb9528b3927fa57f",
   "dirty": true,
   "dirty_tracked_files": [
-   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
-   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json",
-   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
-   "output/exhibits/gap_arbitrage_bound.jsonl",
-   "scripts/run_route_cost_panel.py",
+   "ata/manifests/output/exhibits/vehicle_centrality.jsonl.prov.json",
+   "output/exhibits/vehicle_centrality.jsonl",
+   "scripts/build_vehicle_centrality.py",
    "uv.lock"
   ]
  },
@@ -41,7 +34,7 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "quote engine 82574a1ad999; day cache h0-12_p200_s1000-10000-100000; 2 hour(s)/day",
+ "notes": "quote engine 82574a1ad999; day cache engine_82574a1ad999",
  "python": "3.14.5",
  "rows": 18120,
  "script": "scripts/run_route_cost_panel.py"
