@@ -10,20 +10,15 @@
   "src/ddvc/quoter.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T17:43:21+00:00",
+ "created_at": "2026-08-06T17:44:15+00:00",
  "git": {
   "branch": "glotl/workflow-status",
-  "commit": "f49aa6116d555c210ec2677d9af19c9e7ea2a0a4",
-  "dirty": true,
+  "commit": "04439e09f5440d32035668bb0e12d8522a47c31a",
+  "dirty": false,
   "dirty_generated_files": [
    "data/manifests/data/processed/daily_gas_price_graph.parquet.prov.json"
   ],
-  "dirty_tracked_files": [
-   "docs/findings-freeze.md",
-   "docs/research-workflow.md",
-   "scripts/process/fetch_daily_gas_price_graph.py",
-   "tests/test_gas_price_fetch.py"
-  ],
+  "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [

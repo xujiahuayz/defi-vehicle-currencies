@@ -10,21 +10,13 @@
   "src/ddvc/quoter.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T17:43:20+00:00",
+ "created_at": "2026-08-06T17:44:14+00:00",
  "git": {
   "branch": "glotl/workflow-status",
-  "commit": "f49aa6116d555c210ec2677d9af19c9e7ea2a0a4",
-  "dirty": true,
-  "dirty_generated_files": [
-   "data/manifests/output/exhibits/daily_gas_price_graph.jsonl.prov.json",
-   "output/exhibits/daily_gas_price_graph.jsonl"
-  ],
-  "dirty_tracked_files": [
-   "docs/findings-freeze.md",
-   "docs/research-workflow.md",
-   "scripts/process/fetch_daily_gas_price_graph.py",
-   "tests/test_gas_price_fetch.py"
-  ],
+  "commit": "04439e09f5440d32035668bb0e12d8522a47c31a",
+  "dirty": false,
+  "dirty_generated_files": [],
+  "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [
@@ -33,7 +25,7 @@
    "exists": true,
    "kind": "directory",
    "path": "/private/tmp/ddvc-workflow.wCJwgP/data/interim/gas_price_graph",
-   "tree_fingerprint": "a290ee3b42394d266c79df764f74d6ca63afd83f14f19211225b156cd3f12cc2"
+   "tree_fingerprint": "6f008447eab70b1a93dae91ab8a094803080ff85d16dd5033154c41a65be4ea6"
   },
   {
    "entries": 2277,
