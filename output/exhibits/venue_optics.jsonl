@@ -1,0 +1,8 @@
+{"draft": 24, "exemplar_max": 86, "exemplar_median": 55, "exemplar_min": 21, "exemplar_p25": 42, "exemplar_p75": 69, "feature": "pages", "verdict": "below p25"}
+{"draft": 12849, "exemplar_max": 40633, "exemplar_median": 20297, "exemplar_min": 11640, "exemplar_p25": 16904, "exemplar_p75": 26132, "feature": "words", "verdict": "below p25"}
+{"draft": 0, "exemplar_max": 15, "exemplar_median": 8, "exemplar_min": 0, "exemplar_p25": 0, "exemplar_p75": 10, "feature": "tables", "verdict": "absent"}
+{"draft": 0, "exemplar_max": 11, "exemplar_median": 7, "exemplar_min": 0, "exemplar_p25": 4, "exemplar_p75": 7, "feature": "figures", "verdict": "absent"}
+{"draft": 0, "exemplar_max": 281, "exemplar_median": 68, "exemplar_min": 3, "exemplar_p25": 25, "exemplar_p75": 98, "feature": "equations", "verdict": "absent"}
+{"draft": 0, "exemplar_max": 125, "exemplar_median": 55, "exemplar_min": 34, "exemplar_p25": 45, "exemplar_p75": 76, "feature": "citations", "verdict": "absent"}
+{"draft": 0, "exemplar_max": 3027, "exemplar_median": 228, "exemplar_min": 0, "exemplar_p25": 2, "exemplar_p75": 475, "feature": "greek", "verdict": "absent"}
+{"draft": 0, "exemplar_max": 14, "exemplar_median": 9, "exemplar_min": 0, "exemplar_p25": 0, "exemplar_p75": 14, "feature": "appendix", "verdict": "absent"}
