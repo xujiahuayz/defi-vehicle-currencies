@@ -2,8 +2,8 @@
 """CLI wrapper for the candidate-linked liquidity exhibit.
 
 Usage:
-    python3 scripts/run_lp_concentration.py --start YYYY-MM-DD --end YYYY-MM-DD
-    python3 scripts/run_lp_concentration.py --start 2023-01-01 --end 2023-01-03
+    ./scripts/run scripts/run_lp_concentration.py --start YYYY-MM-DD --end YYYY-MM-DD
+    ./scripts/run scripts/run_lp_concentration.py --start 2023-01-01 --end 2023-01-03
 """
 import argparse
 import sys

@@ -20,7 +20,7 @@ Writes  data/processed/v1_exchange_token_crosswalk.parquet
         data/processed/v2_pair_routing_daily.parquet
         output/exhibits/v1_forced_vehicle_*.jsonl
 
-Run     .venv/bin/python scripts/run_v1_forced_vehicle_tests.py [--workers N]
+Run     ./scripts/run scripts/run_v1_forced_vehicle_tests.py [--workers N]
 """
 
 from __future__ import annotations
@@ -35,7 +35,6 @@ import pandas as pd
 from ddvc.tables import write_exhibit
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 PROC = ROOT / "data" / "processed"
 UNIFIED = ROOT / "data" / "unified"
@@ -68,10 +67,8 @@ CLASSES = ("eth_to_token", "token_to_eth", "token_to_token",
 def md(df: pd.DataFrame) -> str:
     """Markdown table without pandas.to_markdown.
 
-    `scripts/tabulate/` is a package directory in this repo, and a script run as
-    `python scripts/x.py` puts `scripts/` first on sys.path, so it shadows the real
-    `tabulate` distribution and `to_markdown` raises on import. Formatting here is
-    shorter than fighting that.
+    Keep this report independent of pandas' optional `tabulate` formatter and its
+    version-specific output details.
     """
     def cell(v: object) -> str:
         if isinstance(v, float):

@@ -11,7 +11,7 @@ Reads   data/raw/thegraph/uniswap_v1/uniswap_v1_swaps_YYYYMMDD.jsonl.gz
 Writes  data/processed/v1_exchange_class_day.parquet   one row per exchange-day, legs and ETH by class
         data/processed/v1_t2t_route_pairs_daily.parquet  one row per (day, sell exchange, buy exchange)
 
-Run     .venv/bin/python scripts/process/build_v1_exchange_class_panel.py [--workers N]
+Run     ./scripts/run scripts/process/build_v1_exchange_class_panel.py [--workers N]
 """
 
 from __future__ import annotations

@@ -46,8 +46,6 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "scripts"))
 
 from ddvc.asset_types import classify  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
@@ -80,7 +78,7 @@ def main() -> int:
                     help="control-window width in HOURS")
     args = ap.parse_args()
 
-    import run_vehicle_dominance_hdfe as hdfe
+    from scripts import run_vehicle_dominance_hdfe as hdfe
 
     df = hdfe.load(args.window, 100.0)
     df["mid_type"] = df.vehicle.map({v: classify(v)[1] for v in df.vehicle.unique()})

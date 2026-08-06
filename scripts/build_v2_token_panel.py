@@ -17,7 +17,7 @@ Writes  data/processed/v2_token_price_daily.parquet
         data/processed/v2_token_decimals.parquet
         data/processed/v2_pair_first_trade.parquet
 
-Run     .venv/bin/python scripts/build_v2_token_panel.py [--workers N] [--until YYYYMMDD]
+Run     ./scripts/run scripts/build_v2_token_panel.py [--workers N] [--until YYYYMMDD]
 """
 
 from __future__ import annotations

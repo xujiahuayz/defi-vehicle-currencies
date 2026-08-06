@@ -18,8 +18,8 @@ Both directions are needed and both are kept. The blacklist says which construct
 disqualifying; this says what to write instead. A draft is finished when it sits inside
 these bands AND clears the two discovery gates.
 
-  python scripts/measure_venue_shape.py                    corpus bands, and the whole draft
-  python scripts/measure_venue_shape.py --section 03       one section against the bands
+  ./scripts/run scripts/measure_venue_shape.py                    corpus bands, and the whole draft
+  ./scripts/run scripts/measure_venue_shape.py --section 03       one section against the bands
 
 Reads   ../defi-dominant-currency/lit/jfe-exemplars/*.pdf
         paper/sections/*.tex
@@ -36,7 +36,6 @@ from pathlib import Path
 from statistics import median
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.tables import write_exhibit  # noqa: E402
 

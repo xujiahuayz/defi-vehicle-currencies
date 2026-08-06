@@ -2,9 +2,9 @@
 """CLI wrapper for the ddvc reconstruct layer.
 
 Usage:
-    python3 scripts/run_reconstruct.py --start YYYY-MM-DD --end YYYY-MM-DD
-    python3 scripts/run_reconstruct.py --day YYYY-MM-DD
-    python3 scripts/run_reconstruct.py --all
+    ./scripts/run scripts/run_reconstruct.py --start YYYY-MM-DD --end YYYY-MM-DD
+    ./scripts/run scripts/run_reconstruct.py --day YYYY-MM-DD
+    ./scripts/run scripts/run_reconstruct.py --all
 """
 import argparse
 import sys

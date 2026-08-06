@@ -72,7 +72,7 @@ def summary_row(panel: str, notation: str, unit: str, values: pd.Series) -> Summ
 if not DEFAULT_OBSERVATIONS_TABLE.exists():
     raise FileNotFoundError(
         f"Required input is missing: {DEFAULT_OBSERVATIONS_TABLE}. "
-        "Run .venv/bin/python scripts/process/build_observations_table.py first."
+        "Run ./scripts/run scripts/process/build_observations_table.py first."
     )
 
 panel = pd.read_parquet(DEFAULT_OBSERVATIONS_TABLE)

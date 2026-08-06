@@ -15,8 +15,8 @@ never a number frozen into a test.
 Run it after ANY content change to the paper or the deck, and before calling either one
 done. `docs/research-workflow.md` names it as the gate that closes the writing loop.
 
-  python scripts/check_deliverable_conformance.py            check
-  python scripts/check_deliverable_conformance.py --brief    also print an agent brief
+  ./scripts/run scripts/check_deliverable_conformance.py            check
+  ./scripts/run scripts/check_deliverable_conformance.py --brief    also print an agent brief
                                                              naming exactly what to fix
 """
 

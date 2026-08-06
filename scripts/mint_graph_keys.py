@@ -6,7 +6,7 @@ confirmed email, and each carries 100k queries a month. Confirmation codes are
 read out of Gmail through the `glotl gmail` CLI, using +graphN aliases of one
 inbox so they all land in the same place.
 
-  .venv/bin/python scripts/mint_graph_keys.py --count 5 --email you@gmail.com
+  ./scripts/run scripts/mint_graph_keys.py --count 5 --email you@gmail.com
 
 New keys are appended to GRAPH_API_KEYS in .env and recorded, with the wallet that
 owns each account, in secrets/minted_graph_keys.json. That ledger is the only way
@@ -28,7 +28,6 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.fetch.mint import alias_for, mint_one
 

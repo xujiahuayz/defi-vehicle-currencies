@@ -47,7 +47,7 @@ Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cross_venue_routing_daily.parquet
         output/exhibits/cross_venue_routing_series.jsonl
 
-Run     .venv/bin/python scripts/build_cross_venue_routing_series.py [--workers N]
+Run     ./scripts/run scripts/build_cross_venue_routing_series.py [--workers N]
 Rebuild is idempotent: delete the outputs and rerun to regenerate byte-identically.
 """
 

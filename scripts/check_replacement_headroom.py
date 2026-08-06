@@ -16,7 +16,7 @@ A negative number means the word is already a tell and adding one makes it worse
 It reuses `find_prose_outliers.py`'s own functions, so its verdict cannot drift from the
 gate that will later judge the draft.
 
-  python scripts/check_replacement_headroom.py restriction versus relative each all
+  ./scripts/run scripts/check_replacement_headroom.py restriction versus relative each all
 
 Reads   ../defi-dominant-currency/lit/jfe-exemplars/*.pdf   the venue
         literature/text/*.txt                               the field

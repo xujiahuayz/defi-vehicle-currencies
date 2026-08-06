@@ -42,7 +42,7 @@ last output token) are dropped as atomic arbitrage or wash trading.
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cross_venue_spillover_daily.parquet
 
-Run     .venv/bin/python scripts/build_cross_venue_spillover_panel.py [--workers N]
+Run     ./scripts/run scripts/build_cross_venue_spillover_panel.py [--workers N]
 """
 
 from __future__ import annotations
@@ -57,7 +57,6 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.asset_types import TYPES, classify  # noqa: E402
 from ddvc.tables import write_panel  # noqa: E402

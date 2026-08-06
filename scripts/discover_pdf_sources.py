@@ -20,9 +20,6 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-SCRIPT_REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(SCRIPT_REPO_ROOT / "src"))
-
 from ddvc.http import DEFAULT_USER_AGENT  # noqa: E402
 from ddvc.paths import LITERATURE_BIB, LITERATURE_PDF_SOURCES  # noqa: E402
 

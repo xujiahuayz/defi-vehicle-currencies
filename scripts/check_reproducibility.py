@@ -21,7 +21,7 @@ does not fail the run, since that would block every existing artefact at once;
 use `--strict` to fail on those too once coverage is complete.
 
 Usage
-    python3 scripts/check_reproducibility.py [--strict] [--json]
+    ./scripts/run scripts/check_reproducibility.py [--strict] [--json]
 """
 
 from __future__ import annotations
@@ -32,7 +32,6 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.provenance import git_state, verify  # noqa: E402
 

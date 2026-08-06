@@ -605,7 +605,7 @@ feasibility and cost measures.
 def fmt_route_cost(df: pd.DataFrame) -> str:
     if df.empty:
         return (
-            "Not yet run in this empirical pass. Run `python3 scripts/run_route_cost_panel.py` "
+            "Not yet run in this empirical pass. Run `./scripts/run scripts/run_route_cost_panel.py` "
             "to build the direct-versus-vehicle route-cost counterfactual panel."
         )
     keep = df[df["vehicle"].eq("WETH")][
@@ -631,7 +631,7 @@ def fmt_v4_settlement() -> str:
     if not paired_path.exists() or not dex_path.exists():
         return (
             "Not yet run in this empirical pass. Run "
-            "`python3 scripts/run_v4_settlement_identification.py` to match V3/V4 "
+            "`./scripts/run scripts/run_v4_settlement_identification.py` to match V3/V4 "
             "route units and test ERC-20 transfer incidence from receipts."
         )
     paired = pd.read_pickle(paired_path)

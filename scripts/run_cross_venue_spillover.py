@@ -36,7 +36,7 @@ Writes  output/exhibits/cross_venue_spillover_estimates.jsonl
         output/exhibits/cross_venue_spillover_screens.jsonl
         output/figures/cross_venue_spillover.pdf
 
-Run     .venv/bin/python scripts/run_cross_venue_spillover.py
+Run     ./scripts/run scripts/run_cross_venue_spillover.py
 """
 
 from __future__ import annotations
@@ -51,7 +51,6 @@ from scipy import stats
 
 from ddvc.analysis.regression import ols_hac
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.provenance import stamp  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402

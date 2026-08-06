@@ -3,10 +3,10 @@
 
 Examples:
 
-  python3 scripts/fetch_raw_market_data.py plan --dex all
-  python3 scripts/fetch_raw_market_data.py audit-genesis --dex all
-  python3 scripts/fetch_raw_market_data.py fetch --dex uniswap_v3 --start genesis --end 2026-07-01
-  GRAPH_API_KEYS=... python3 scripts/fetch_raw_market_data.py fetch --dex all --streams swaps daily mints burns modify_liquidities hourly_reserves
+  ./scripts/run scripts/fetch_raw_market_data.py plan --dex all
+  ./scripts/run scripts/fetch_raw_market_data.py audit-genesis --dex all
+  ./scripts/run scripts/fetch_raw_market_data.py fetch --dex uniswap_v3 --start genesis --end 2026-07-01
+  GRAPH_API_KEYS=... ./scripts/run scripts/fetch_raw_market_data.py fetch --dex all --streams swaps daily mints burns modify_liquidities hourly_reserves
 
 The script is raw-first and intentionally over-fetches fields. Outputs are
 verbatim gzipped JSONL under data/raw/thegraph/ or data/raw/dune/, plus per-day

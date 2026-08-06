@@ -2,9 +2,9 @@
 """CLI wrapper for the ddvc metrics layer.
 
 Usage:
-    python3 scripts/run_metrics.py --start YYYY-MM-DD --end YYYY-MM-DD
-    python3 scripts/run_metrics.py --day YYYY-MM-DD
-    python3 scripts/run_metrics.py --all
+    ./scripts/run scripts/run_metrics.py --start YYYY-MM-DD --end YYYY-MM-DD
+    ./scripts/run scripts/run_metrics.py --day YYYY-MM-DD
+    ./scripts/run scripts/run_metrics.py --all
 """
 import argparse
 import sys

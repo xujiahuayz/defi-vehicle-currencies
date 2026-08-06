@@ -8,7 +8,7 @@ paper/slides own table numbering.
 
 For a clean reproducible rebuild from tracked scripts, run:
 
-    .venv/bin/python scripts/build_results_evidence_outputs.py
+    ./scripts/run scripts/build_results_evidence_outputs.py
 
 The TeX output is tracked. The PDF output is a local ignored render because
 different TeX engines produce different PDF byte streams.
@@ -31,7 +31,7 @@ EMP = ROOT / "output" / "empirical"
 PAPER = ROOT / "paper"
 OUT_TEX = PAPER / "results_evidence_map.tex"
 OUT_PDF = PAPER / "results_evidence_map.pdf"
-FULL_REBUILD_COMMAND = ".venv/bin/python scripts/build_results_evidence_outputs.py"
+FULL_REBUILD_COMMAND = "./scripts/run scripts/build_results_evidence_outputs.py"
 NUMBERED_ARTIFACT_RE = re.compile(r"^(?:table|figure)_(?:[a-z]\d+|\d+)_", re.IGNORECASE)
 
 

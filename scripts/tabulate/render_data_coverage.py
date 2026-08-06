@@ -37,7 +37,7 @@ def row(*cells: str) -> str:
 if not INVENTORY.exists():
     raise FileNotFoundError(
         f"Required input is missing: {INVENTORY}. "
-        "Run .venv/bin/python scripts/process/build_raw_data_inventory.py first."
+        "Run ./scripts/run scripts/process/build_raw_data_inventory.py first."
     )
 
 coverage = summarize_raw_data_inventory(pd.read_parquet(INVENTORY))

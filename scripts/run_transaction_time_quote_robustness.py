@@ -26,7 +26,7 @@ OUT = ROOT / "output"
 EMP = OUT / "empirical"
 
 from ddvc.paper_tables import _int, _num, _p, _write_table
-from run_route_cost_panel import (  # noqa: E402
+from scripts.run_route_cost_panel import (
     VEHICLE_BY_ADDRESS,
     _best_quote,
     _load_v2_pools,

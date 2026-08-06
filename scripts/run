@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+common_dir=$(git -C "$repo_root" rev-parse --path-format=absolute --git-common-dir)
+primary_root=$(dirname -- "$common_dir")
+
+if [ -n "${DDVC_PYTHON:-}" ]; then
+    python=$DDVC_PYTHON
+elif [ "$repo_root" != "$primary_root" ] && [ -x "$primary_root/.venv/bin/python" ]; then
+    python=$primary_root/.venv/bin/python
+elif [ -x "$repo_root/.venv/bin/python" ]; then
+    python=$repo_root/.venv/bin/python
+else
+    printf '%s\n' 'No project Python environment found. Run `uv sync` in the primary checkout.' >&2
+    exit 1
+fi
+
+export PYTHONPATH="$repo_root/src:$repo_root${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONSAFEPATH=1
+exec "$python" -P "$@"

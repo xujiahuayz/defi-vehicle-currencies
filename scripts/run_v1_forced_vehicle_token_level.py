@@ -20,7 +20,7 @@ Writes  data/processed/v1_exchange_exit_units.parquet
         output/exhibits/v1_token_level_*.jsonl
         output/exhibits/v1_forced_vehicle_token_level_report.md
 
-Run     .venv/bin/python scripts/run_v1_forced_vehicle_token_level.py
+Run     ./scripts/run scripts/run_v1_forced_vehicle_token_level.py
 """
 
 from __future__ import annotations

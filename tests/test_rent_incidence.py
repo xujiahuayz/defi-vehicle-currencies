@@ -10,14 +10,12 @@ closed form, which is asserted in prose everywhere and derived nowhere.
 from __future__ import annotations
 
 import importlib.util
-import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 _spec = importlib.util.spec_from_file_location(
     "build_rent_incidence_panel", ROOT / "scripts" / "build_rent_incidence_panel.py")

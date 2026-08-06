@@ -48,7 +48,6 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.asset_types import classify  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402

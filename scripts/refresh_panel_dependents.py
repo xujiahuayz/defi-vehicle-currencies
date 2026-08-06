@@ -17,9 +17,9 @@ about the others, but it does report every failure at the end and exits non-zero
 partial refresh cannot be mistaken for a complete one.
 
 Usage
-  python scripts/refresh_panel_dependents.py --dry-run     list what would run
-  python scripts/refresh_panel_dependents.py               run them
-  python scripts/refresh_panel_dependents.py --only measure_realised_dominance
+  ./scripts/run scripts/refresh_panel_dependents.py --dry-run     list what would run
+  ./scripts/run scripts/refresh_panel_dependents.py               run them
+  ./scripts/run scripts/refresh_panel_dependents.py --only measure_realised_dominance
 """
 
 from __future__ import annotations
@@ -33,7 +33,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
-PY = ROOT / ".venv" / "bin" / "python"
 LOGS = ROOT / "logs" / "refresh"
 
 # (script, args, why it sits here in the order). Withheld scripts are deliberately absent;
@@ -146,7 +145,7 @@ def main() -> int:
         print(f"  {i:>2}/{len(stages)} {script:<44} running", end="", flush=True)
         try:
             with log.open("w") as fh:
-                r = subprocess.run([str(PY), str(path), *extra], cwd=ROOT, env=env,
+                r = subprocess.run([sys.executable, str(path), *extra], cwd=ROOT, env=env,
                                    stdout=fh, stderr=subprocess.STDOUT,
                                    timeout=args.timeout)
             took = time.time() - started

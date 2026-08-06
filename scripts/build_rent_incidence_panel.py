@@ -50,8 +50,6 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.pricing.v3pools import derive_fee_tier  # noqa: E402
 from ddvc.tables import write_panel  # noqa: E402

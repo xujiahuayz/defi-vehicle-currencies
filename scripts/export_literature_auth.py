@@ -6,7 +6,7 @@ in literature/pdf-sources.json. After Java signs in or clears publisher checks,
 the script writes domain Cookie headers to gitignored
 literature/auth/headers.local.json. Then run:
 
-    python3 scripts/fetch_literature.py --strict
+    ./scripts/run scripts/fetch_literature.py --strict
 
 Requires the optional auth dependency:
 
@@ -19,14 +19,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import sys
 import time
 import urllib.parse
 from pathlib import Path
 from typing import Any
-
-SCRIPT_REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(SCRIPT_REPO_ROOT / "src"))
 
 from ddvc.paths import (  # noqa: E402
     LITERATURE_BIB,

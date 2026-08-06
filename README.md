@@ -28,7 +28,7 @@ This repository contains the data pipeline, analysis code, literature workspace,
 - Build the canonical wide observations table before rendering summary statistics, regressions, or exploratory plots:
 
 ```bash
-.venv/bin/python scripts/process/build_observations_table.py
+./scripts/run scripts/process/build_observations_table.py
 ```
 
 This writes `data/processed/observations_token_day.parquet`. Table renderers should read this table or another explicit processing output in a native serialized format.
@@ -36,10 +36,10 @@ This writes `data/processed/observations_token_day.parquet`. Table renderers sho
 Build the incremental raw-file inventory and render the descriptive tables with:
 
 ```bash
-.venv/bin/python scripts/process/build_raw_data_inventory.py
-.venv/bin/python scripts/tabulate/render_data_coverage.py
-.venv/bin/python scripts/tabulate/render_sample_coverage.py
-.venv/bin/python scripts/tabulate/render_summary_statistics.py
+./scripts/run scripts/process/build_raw_data_inventory.py
+./scripts/run scripts/tabulate/render_data_coverage.py
+./scripts/run scripts/tabulate/render_sample_coverage.py
+./scripts/run scripts/tabulate/render_summary_statistics.py
 ```
 
 The inventory is `data/processed/raw_data_inventory.parquet`. It caches exact record counts only for raw files whose sidecars do not contain stream counts; the cache is consumed by the coverage tabulator and avoids rescanning unchanged compressed files. The paper-facing products are the tracked, unnumbered TeX/PDF pairs under `output/tables/`.
@@ -49,7 +49,7 @@ The inventory is `data/processed/raw_data_inventory.parquet`. It caches exact re
 Subgraph fetches read a rotating pool of gateway keys from `GRAPH_API_KEYS` in `.env`, comma-separated. `src/ddvc/fetch/graph.py` advances to the next key when one answers 401, 403, 429, or "payment required", so an exhausted key costs a wasted request rather than a failed run. Top the pool up with:
 
 ```bash
-.venv/bin/python scripts/mint_graph_keys.py --count 5 --email you@gmail.com
+./scripts/run scripts/mint_graph_keys.py --count 5 --email you@gmail.com
 ```
 
 The Free Plan meters 100k queries a month per *account*, so each key needs a fresh account, which needs a burner wallet and a confirmed email. Each is recorded in `secrets/minted_graph_keys.json` with the wallet that owns it, the only route back into an account if a key must be reissued. That ledger holds private keys, so `secrets/` is gitignored and it needs an out-of-band backup. Spreading the free tier over many accounts is grey against The Graph's terms of service; the Growth plan, about $2 per 100k queries, is the clean alternative.
@@ -72,12 +72,14 @@ For tests and development tools, install the development extra:
 uv sync --extra dev
 ```
 
+Run every project script and test through `./scripts/run`. It injects the current worktree's package source once, uses the primary checkout's environment when a linked worktree has none, and keeps a script directory from shadowing installed packages.
+
 ## Results Evidence Map
 
 Regenerate the ignored result tables, the tracked TeX evidence map, and a local PDF render with:
 
 ```bash
-.venv/bin/python scripts/build_results_evidence_outputs.py
+./scripts/run scripts/build_results_evidence_outputs.py
 ```
 
 This orchestrates the descriptive tabulators, supporting analytics, JFE main tables, core RQ tables, then `paper/results_evidence_map.tex` and `paper/results_evidence_map.pdf`. Analysis intermediates stay in native serialized formats under ignored analysis folders such as `output/empirical/`; `output/tables/` is reserved for tracked, descriptive TeX/PDF table artifacts. Both evidence-map artifacts are tracked. The PDF step uses `tectonic`, `latexmk`, or `pdflatex` when available, and falls back to a matplotlib review PDF on machines without a TeX engine.

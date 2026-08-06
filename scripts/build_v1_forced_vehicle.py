@@ -15,7 +15,7 @@ Writes  data/processed/v1_trade_classes_daily.parquet
         data/processed/v1_exchange_day.parquet
         output/exhibits/v1_trade_classes_daily.jsonl
 
-Run     .venv/bin/python scripts/build_v1_forced_vehicle.py [--workers N]
+Run     ./scripts/run scripts/build_v1_forced_vehicle.py [--workers N]
 """
 
 from __future__ import annotations

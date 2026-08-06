@@ -34,7 +34,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
-sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.tables import write_exhibit  # noqa: E402
 

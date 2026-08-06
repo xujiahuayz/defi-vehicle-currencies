@@ -12,7 +12,6 @@ import argparse
 import json
 import math
 import os
-import sys
 import time
 import urllib.error
 import urllib.request
@@ -26,9 +25,6 @@ import pandas as pd
 from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
 
 from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
 

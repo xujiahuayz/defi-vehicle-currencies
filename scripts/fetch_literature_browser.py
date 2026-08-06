@@ -17,15 +17,11 @@ import json
 import os
 import re
 import signal
-import sys
 import time
 import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
-SCRIPT_REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(SCRIPT_REPO_ROOT / "src"))
 
 from ddvc.paths import (  # noqa: E402
     LITERATURE_BIB,
