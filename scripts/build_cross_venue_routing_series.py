@@ -85,6 +85,12 @@ def empty_day(date: object) -> dict[str, object]:
         "multi_leg_routes": 0,
         "round_trip_routes": 0,
         "economic_multileg_routes": 0,
+        "economic_multileg_swap_legs": 0,
+        "economic_multileg_venue_count": 0,
+        "economic_multileg_over_two_routes": 0,
+        "economic_multileg_mean_legs": float("nan"),
+        "economic_multileg_mean_venues": float("nan"),
+        "economic_multileg_over_two_share": float("nan"),
         "cross_venue_routes": 0,
         "cross_venue_share": float("nan"),
         "cross_venue_usd_share": float("nan"),
@@ -122,6 +128,7 @@ def one_day(path: Path) -> dict | None:
     econ = multi & ~round_trip                   # genuine A -> K -> B exchange
     cross_all = multi & (venues > 1)             # unfiltered, kept for the audit
     cross = econ & (venues > 1)                  # headline
+    complex_route = econ & (legs > 2)
 
     def share(num, den):
         d = den.sum()
@@ -139,6 +146,12 @@ def one_day(path: Path) -> dict | None:
         "multi_leg_routes": int(multi.sum()),
         "round_trip_routes": int(round_trip.sum()),
         "economic_multileg_routes": int(econ.sum()),
+        "economic_multileg_swap_legs": int(legs[econ].sum()),
+        "economic_multileg_venue_count": int(venues[econ].sum()),
+        "economic_multileg_over_two_routes": int(complex_route.sum()),
+        "economic_multileg_mean_legs": float(legs[econ].mean()),
+        "economic_multileg_mean_venues": float(venues[econ].mean()),
+        "economic_multileg_over_two_share": share(complex_route, econ),
         "cross_venue_routes": int(cross.sum()),
         # headline: of ECONOMIC intermediated routes, what share spans venues
         "cross_venue_share": share(cross, econ),
@@ -213,6 +226,9 @@ def main() -> int:
     print("\nannual ratios of totals (count-weighted, then value-weighted):")
     a = df.set_index("date").resample("YS").agg(
         econ=("economic_multileg_routes", "sum"),
+        econ_legs=("economic_multileg_swap_legs", "sum"),
+        econ_venues=("economic_multileg_venue_count", "sum"),
+        complex_routes=("economic_multileg_over_two_routes", "sum"),
         cross=("cross_venue_routes", "sum"),
         cross_usd=("cross_venue_usd", "sum"),
         econ_usd=("economic_multileg_usd", "sum"),
@@ -225,11 +241,17 @@ def main() -> int:
     a["cross_venue_usd_share"] = a["cross_usd"] / a["econ_usd"]
     a["round_trip_share"] = a["round_trip"] / a["multi"]
     a["economic_multileg_share_all"] = a["econ"] / a["routes"]
-    print("  year   count   value   multi/all   rt share   venues")
+    a["mean_legs"] = a["econ_legs"] / a["econ"]
+    a["mean_venues"] = a["econ_venues"] / a["econ"]
+    a["complex_share"] = a["complex_routes"] / a["econ"]
+    print("  year   count   value   multi/all   >2 legs   mean legs   mean venues   rt share   venues")
     for idx, row in a.iterrows():
         print(f"  {idx.year}   {row.cross_venue_share_of_multileg:6.1%}"
               f"  {row.cross_venue_usd_share:6.1%}"
               f"     {row.economic_multileg_share_all:6.1%}"
+              f"     {row.complex_share:6.1%}"
+              f"        {row.mean_legs:5.2f}"
+              f"          {row.mean_venues:5.2f}"
               f"     {row.round_trip_share:6.1%}"
               f"        {int(row.venues_active)}")
     print(f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)} and {OUT_EXHIBIT.relative_to(REPO_ROOT)}")
