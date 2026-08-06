@@ -12,10 +12,10 @@
   "src/ddvc/reconstruct/__init__.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T18:48:56+00:00",
+ "created_at": "2026-08-06T18:55:27+00:00",
  "git": {
   "branch": "glotl/workflow-status",
-  "commit": "c07443e6880891d1eff9bc1405d91e3b3fe058ee",
+  "commit": "81b00069dac2382401abda8adb70ed640ef9f9f6",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/data/processed/cross_venue_routing_daily.parquet.prov.json"
