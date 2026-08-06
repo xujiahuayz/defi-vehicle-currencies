@@ -42,6 +42,31 @@ CODE_SOURCES = [
     "src/ddvc/vehicle_extent.py",
     "src/ddvc/venues.py",
 ]
+MAX_WORKERS = 8
+
+
+def bounded_workers(requested: int) -> int:
+    return min(MAX_WORKERS, max(1, requested))
+
+
+def support_status(daily: pd.DataFrame) -> pd.DataFrame:
+    """State whether a scope-year contains intermediation that identifies the ratio."""
+    support = daily.groupby(["year", "scope"], as_index=False).agg(
+        intermediate_usd_support=("intermediate_usd", "sum"),
+        intermediate_routes_support=("intermediate_routes", "sum"),
+        endpoint_usd_support=("endpoint_usd", "sum"),
+        endpoint_routes_support=("endpoint_routes", "sum"),
+    )
+    support["support_status"] = "identified"
+    no_intermediation = support["intermediate_routes_support"].eq(0) | support[
+        "intermediate_usd_support"
+    ].le(0)
+    no_endpoints = support["endpoint_routes_support"].eq(0) | support[
+        "endpoint_usd_support"
+    ].le(0)
+    support.loc[no_endpoints, "support_status"] = "no_endpoint_demand"
+    support.loc[~no_endpoints & no_intermediation, "support_status"] = "no_intermediation"
+    return support
 
 
 def one_day(path: Path) -> pd.DataFrame:
@@ -75,6 +100,7 @@ def main() -> int:
     )
     ap.add_argument("--workers", type=int, default=8)
     args = ap.parse_args()
+    workers = bounded_workers(args.workers)
 
     files = sorted(UNIFIED.glob("[0-9]" * 8 + ".parquet"))
     if not files:
@@ -83,7 +109,7 @@ def main() -> int:
     print(f"measuring {len(files):,} days across four venue scopes", flush=True)
     parts: list[pd.DataFrame] = []
     failures: list[tuple[str, str]] = []
-    with ProcessPoolExecutor(max_workers=max(1, args.workers)) as pool:
+    with ProcessPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(one_day, path): path for path in files}
         for i, future in enumerate(as_completed(futures), 1):
             path = futures[future]
@@ -116,12 +142,13 @@ def main() -> int:
         .agg(route_components=("route_components", "sum"))
     )
     result = result.merge(coverage, on=["year", "scope"], how="left")
+    result = result.merge(support_status(daily), on=["year", "scope"], how="left")
     write_exhibit(
         result,
         OUT,
         code_sources=CODE_SOURCES,
         inputs=[UNIFIED],
-        notes="complete route components; candidate-currency denominator",
+        notes="complete route components; candidate-currency denominator; unsupported scope-years labelled",
     )
 
     for scope in result["scope"].drop_duplicates():
