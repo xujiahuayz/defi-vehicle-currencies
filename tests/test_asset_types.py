@@ -8,6 +8,7 @@ USDe is pooling across the cut the literature treats as the interesting one.
 
 from __future__ import annotations
 
+from datetime import date
 import unittest
 
 from ddvc.asset_types import (
@@ -44,7 +45,31 @@ class BackingRegimeTests(unittest.TestCase):
         self.assertEqual(asset_type(usdc), "stable")
         self.assertEqual(
             [backing(usdc), backing(dai), backing(usde), backing(frax)],
-            ["fiat", "crypto_collateral", "synthetic", "fractional_algorithmic"],
+            ["fiat_reserve", "time_varying", "synthetic", "time_varying"],
+        )
+
+    def test_dai_backing_uses_dated_composition_regimes(self) -> None:
+        dai = "0x6b175474e89094c44da98b954eedeac495271d0f"
+        self.assertEqual(backing(dai, date(2020, 3, 16)), "on_chain_collateralized")
+        self.assertEqual(backing(dai, date(2020, 3, 17)), "mixed_with_fiat_stablecoin")
+        self.assertEqual(backing(dai, date(2021, 4, 15)), "mixed_with_fiat_stablecoin")
+        self.assertEqual(backing(dai, date(2021, 4, 16)), "mixed_including_rwa")
+
+    def test_usds_inherits_the_post_rwa_maker_backing_pool(self) -> None:
+        usds = "0xdc035d45d973e3ec169d2276ddab16f1e407384f"
+        self.assertEqual(backing(usds, date(2024, 9, 18)), "mixed_including_rwa")
+
+    def test_susd_is_a_synthetic_debt_pool_not_crypto_collateral(self) -> None:
+        susd = "0x57ab1ec28d129707052df4df418d58a2d46d5f51"
+        self.assertEqual(backing(susd, date(2021, 1, 1)), "synthetic")
+
+    def test_frax_changes_after_the_full_collateralization_target_vote(self) -> None:
+        frax = "0x853d955acef822db058eb8505911ed77f175b99e"
+        self.assertEqual(backing(frax), "time_varying")
+        self.assertEqual(backing(frax, date(2023, 2, 22)), "fractional_algorithmic")
+        self.assertEqual(
+            backing(frax, date(2023, 2, 23)),
+            "transition_to_full_exogenous_collateralization",
         )
 
     def test_backing_is_not_applicable_outside_the_stable_type(self) -> None:
@@ -57,7 +82,10 @@ class BackingRegimeTests(unittest.TestCase):
         self.assertEqual(backing(float("nan")), "not_applicable")
 
     def test_backing_is_case_insensitive_like_classify(self) -> None:
-        self.assertEqual(backing("0xA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"), "fiat")
+        self.assertEqual(
+            backing("0xA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"),
+            "fiat_reserve",
+        )
 
 
 class TypeAxisTests(unittest.TestCase):

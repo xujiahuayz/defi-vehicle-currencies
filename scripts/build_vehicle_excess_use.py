@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
 from ddvc.asset_types import CURRENCY_TYPES, backing
+from ddvc.paths import REPO_ROOT
 from ddvc.provenance import stamp
 from ddvc.tables import write_exhibit
 from ddvc.vehicle_extent import (
@@ -25,10 +25,10 @@ from ddvc.vehicle_extent import (
     compute_vehicle_extent,
 )
 
-UNIFIED = ROOT / "data" / "unified"
-OUT_PANEL = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
-OUT_EXHIBIT = ROOT / "output" / "exhibits" / "vehicle_excess_use.jsonl"
-OUT_QUARTERLY = ROOT / "output" / "exhibits" / "vehicle_excess_use_quarterly.jsonl"
+UNIFIED = REPO_ROOT / "data" / "unified"
+OUT_PANEL = REPO_ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
+OUT_EXHIBIT = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use.jsonl"
+OUT_QUARTERLY = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use_quarterly.jsonl"
 CODE_SOURCES = [
     "scripts/build_vehicle_excess_use.py",
     "src/ddvc/asset_types.py",
@@ -63,7 +63,7 @@ def main() -> int:
     if args.limit:
         files = files[: args.limit]
     if not files:
-        print(f"no unified files under {UNIFIED.relative_to(ROOT)}")
+        print(f"no unified files under {UNIFIED.relative_to(REPO_ROOT)}")
         return 1
     print(
         f"measuring excess use on {len(files):,} days with {args.workers} workers",
@@ -99,7 +99,10 @@ def main() -> int:
     panel["year"] = panel["date"].dt.year
     panel["quarter"] = panel["date"].dt.to_period("Q").astype(str)
     candidate = panel[panel["asset_type"].isin(CURRENCY_TYPES)].copy()
-    candidate["backing"] = candidate["token"].map(backing)
+    candidate["backing"] = [
+        backing(token, observed)
+        for token, observed in zip(candidate["token"], candidate["date"], strict=True)
+    ]
     type_year = _scope(
         aggregate_vehicle_extent(
             candidate,
@@ -199,8 +202,8 @@ def main() -> int:
         "demand; retained as unsupported diagnostics"
     )
     print(
-        f"wrote {OUT_PANEL.relative_to(ROOT)}, {OUT_EXHIBIT.relative_to(ROOT)}, "
-        f"and {OUT_QUARTERLY.relative_to(ROOT)}"
+        f"wrote {OUT_PANEL.relative_to(REPO_ROOT)}, {OUT_EXHIBIT.relative_to(REPO_ROOT)}, "
+        f"and {OUT_QUARTERLY.relative_to(REPO_ROOT)}"
     )
     return 0
 

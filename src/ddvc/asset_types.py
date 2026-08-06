@@ -36,6 +36,8 @@ protocol versions.
 
 from __future__ import annotations
 
+from datetime import date, datetime
+
 # Native platform asset. The zero address is native ETH, which several routers
 # and newer protocol versions handle without wrapping.
 NATIVE = {
@@ -101,28 +103,49 @@ NON_USD_STABLE = {"agEUR", "EURS"}
 # TerraUSD is priced at a discount." Four papers in this project's corpus exist
 # principally because backing regimes behave differently.
 #
-# Weight, measured on incident-edge strength in data/processed/
-# vehicle_centrality.parquet: 89.4% of `stable` intermediation value is
-# fiat-backed pooled across the sample, so this moves no aggregate. It matters
-# on the time axis the paper reads its transition against, where crypto
-# collateral is 30.3% of stable intermediation in 2020 and 3.3% in 2026, and
-# the synthetic regime appears from 2024 at roughly 4.5%.
+# Regime weights belong in generated findings, not this definition module. That
+# separation matters here because the first static classification materially
+# misdescribed DAI/USDS and sUSD; freezing its measured shares into code comments
+# made the empirical conclusion look like a property of the taxonomy.
 # ---------------------------------------------------------------------------
 
+# DAI cannot carry one static label over this sample. USDC became admissible Maker
+# collateral on 2020-03-17, and the first operational real-world-asset vault was
+# executed on 2021-04-16. These dates mark changes in the set of backing Maker could
+# hold, not claims about a day's portfolio weights. The empirical output therefore
+# names them composition regimes and never relabels DAI itself as fiat-backed.
+DAI_USDC_COLLATERAL_DATE = date(2020, 3, 17)
+DAI_RWA_COLLATERAL_DATE = date(2021, 4, 16)
+# FIP-188's Snapshot vote closed at 2023-02-22 18:58 UTC. Daily observations
+# switch on the first full UTC day after the decision. The post-vote label is a
+# transition target, not a claim that FRAX was already 100% collateralized.
+FRAX_FULL_COLLATERAL_TARGET_DATE = date(2023, 2, 23)
+
 STABLE_BACKING = {
-    "USDC": "fiat", "USDT": "fiat", "PYUSD": "fiat", "TUSD": "fiat",
-    "USDP": "fiat", "GUSD": "fiat", "BUSD": "fiat", "USD1": "fiat",
-    "DAI": "crypto_collateral", "LUSD": "crypto_collateral",
-    "crvUSD": "crypto_collateral", "alUSD": "crypto_collateral",
-    "DOLA": "crypto_collateral", "sUSD": "crypto_collateral",
-    "USDS": "crypto_collateral", "MIM": "crypto_collateral",
+    "USDC": "fiat_reserve", "USDT": "fiat_reserve", "PYUSD": "fiat_reserve",
+    "TUSD": "fiat_reserve", "USDP": "fiat_reserve", "GUSD": "fiat_reserve",
+    "BUSD": "fiat_reserve", "USD1": "fiat_reserve",
+    "DAI": "time_varying", "LUSD": "on_chain_collateralized",
+    "crvUSD": "on_chain_collateralized", "alUSD": "on_chain_collateralized",
+    "DOLA": "on_chain_collateralized", "MIM": "on_chain_collateralized",
+    "USDS": "mixed_including_rwa", "sUSD": "synthetic",
     "USDe": "synthetic", "sUSDe": "synthetic",
-    "FRAX": "fractional_algorithmic",
+    "FRAX": "time_varying",
     "agEUR": "non_usd", "EURS": "non_usd",
 }
 
-BACKINGS = ("fiat", "crypto_collateral", "synthetic", "fractional_algorithmic",
-            "non_usd", "not_applicable")
+BACKINGS = (
+    "fiat_reserve",
+    "on_chain_collateralized",
+    "mixed_with_fiat_stablecoin",
+    "mixed_including_rwa",
+    "synthetic",
+    "fractional_algorithmic",
+    "transition_to_full_exogenous_collateralization",
+    "non_usd",
+    "time_varying",
+    "not_applicable",
+)
 
 # Non-native stores of value, wrapped onto the platform. Includes tokenised
 # gold, which is the cleanest available analogue of a metallic reserve asset.
@@ -163,7 +186,18 @@ def asset_type(address: str | None) -> str:
     return classify(address)[1]
 
 
-def backing(address: object) -> str:
+def _date_value(value: object) -> date:
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"invalid backing-regime date: {value!r}") from exc
+
+
+def backing(address: object, when: object | None = None) -> str:
     """Backing regime for a token, 'not_applicable' outside the `stable` type.
 
     The primary axis stays the five-value asset type. This crosses it, so a
@@ -174,6 +208,21 @@ def backing(address: object) -> str:
     sym, typ = classify(address)
     if typ != "stable" or sym is None:
         return "not_applicable"
+    if sym == "DAI":
+        if when is None:
+            return "time_varying"
+        observed = _date_value(when)
+        if observed < DAI_USDC_COLLATERAL_DATE:
+            return "on_chain_collateralized"
+        if observed < DAI_RWA_COLLATERAL_DATE:
+            return "mixed_with_fiat_stablecoin"
+        return "mixed_including_rwa"
+    if sym == "FRAX":
+        if when is None:
+            return "time_varying"
+        if _date_value(when) < FRAX_FULL_COLLATERAL_TARGET_DATE:
+            return "fractional_algorithmic"
+        return "transition_to_full_exogenous_collateralization"
     return STABLE_BACKING.get(sym, "not_applicable")
 
 
@@ -218,9 +267,9 @@ ALTERNATIVES = {
         "round 2) or report the stable-type results once at backing level "
         "(now required). The corpus cuts stablecoins by backing and four of "
         "its papers exist because the regimes behave differently, so pooling "
-        "is the choice that has to be defended. Pooled weight is 89.4% "
-        "fiat-backed, so the aggregate does not move; the 2020 to 2022 window "
-        "does, where crypto collateral runs 30.3% down to 7.8%."
+        "is the choice that has to be defended. DAI is classified by dated "
+        "composition regime because its admissible backing set changes inside "
+        "the sample; generated exhibits, not this registry, measure the weights."
     ),
     "candidate_set_only": (
         "Restrict to the five original candidates (WETH, USDC, USDT, DAI, "
