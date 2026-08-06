@@ -1,6 +1,10 @@
 ---
 freeze_status: red
 stable_passes: 0
+active_node: D
+parent_loop: C <-> K
+next_edge: D -> C -> E -> I
+prose_node: closed
 updated: 2026-08-06
 ---
 
@@ -32,4 +36,4 @@ This is the live handoff between the research graph and prose node P. A recent p
 
 ## Loop position
 
-Current edge: `C <-> K`, with `C -> E -> I` active on the routing-efficiency branch. The replacement vehicle-extent definition, dated backing attack, venue-technology rival, single-versus-cross-venue split, balanced venue perimeter and historical v4 contract are implemented. The actual-route transaction-order validator passes its causal-order and amount-orientation contract, after rejecting a zero-decimals default and separating per-leg effective rates from a tolerated intermediate-flow mismatch. The within-vehicle and alternative-path diagnostics remain unfrozen because their counterfactual routes are still priced at hour end. The corrected route-cost panel and triplet-period dominance design remain red. Any defect found here routes back to C/E; no defect is patched only in prose.
+Active execution node: `D`, opened by the `C <-> K` definitions-and-ideation loop. On success the next edge is `D -> C -> E -> I`: validate the corrected data layer against the definitions, lock the efficiency specifications, then run cross-family review. The replacement vehicle-extent definition, dated backing attack, venue-technology rival, single-versus-cross-venue split, balanced venue perimeter and historical v4 contract are implemented. The actual-route transaction-order validator passes its causal-order and amount-orientation contract, after rejecting a zero-decimals default and separating per-leg effective rates from a tolerated intermediate-flow mismatch. The within-vehicle and alternative-path diagnostics remain unfrozen because their counterfactual routes are still priced at hour end. The corrected route-cost panel and triplet-period dominance design remain red. Node P is closed. Any defect found here routes back to C/E; no defect is patched only in prose.

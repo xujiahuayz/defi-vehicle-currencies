@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import gzip
 import json
-import re
 from pathlib import Path
 
 import duckdb
@@ -19,6 +18,7 @@ EXTENT = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 V4 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v4"
 REFRESH = ROOT / "scripts" / "refresh_panel_dependents.py"
 STATE = ROOT / "docs" / "findings-freeze.md"
+GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
 
 
 def _manifest(path: Path) -> dict:
@@ -37,18 +37,48 @@ def _nonempty_v4_days() -> set[str]:
     return days
 
 
-def _state_value(name: str) -> str | None:
-    if not STATE.exists():
-        return None
-    match = re.search(rf"^{re.escape(name)}:\s*(.+)$", STATE.read_text(), re.MULTILINE)
-    return match.group(1).strip() if match else None
+def parse_state_frontmatter(text: str) -> dict[str, str]:
+    """Read the scalar workflow state from the document's leading frontmatter."""
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    fields: dict[str, str] = {}
+    for line in lines[1:]:
+        if line.strip() == "---":
+            return fields
+        name, separator, value = line.partition(":")
+        if separator and name.strip():
+            fields[name.strip()] = value.strip()
+    return {}
+
+
+def _state_fields() -> dict[str, str]:
+    return parse_state_frontmatter(STATE.read_text()) if STATE.exists() else {}
+
+
+def graph_status(fields: dict[str, str]) -> str:
+    """One-line status contract for terminal, chat and automated logs."""
+    return (
+        f"active={fields.get('active_node') or 'missing'}; "
+        f"parent={fields.get('parent_loop') or 'missing'}; "
+        f"next={fields.get('next_edge') or 'missing'}; "
+        f"prose={fields.get('prose_node') or 'missing'}"
+    )
 
 
 def main() -> int:
     checks: list[tuple[str, bool, str]] = []
+    state = _state_fields()
 
     def record(name: str, passed: bool, detail: str) -> None:
         checks.append((name, passed, detail))
+
+    missing_graph_fields = [name for name in GRAPH_FIELDS if not state.get(name)]
+    record(
+        "workflow graph state",
+        not missing_graph_fields,
+        graph_status(state),
+    )
 
     if PANEL.exists():
         meta = pq.ParquetFile(PANEL).metadata
@@ -135,13 +165,14 @@ def main() -> int:
         "only validated diagnostics may run",
     )
 
-    stable_passes = int(_state_value("stable_passes") or 0)
+    stable_passes = int(state.get("stable_passes") or 0)
     record(
         "two unchanged findings passes",
         stable_passes >= 2,
         f"stable_passes={stable_passes}",
     )
 
+    print(f"GRAPH  {graph_status(state)}\n")
     width = max(len(name) for name, _passed, _detail in checks)
     for name, passed, detail in checks:
         print(f"{'PASS' if passed else 'FAIL'}  {name:<{width}}  {detail}")
@@ -150,6 +181,8 @@ def main() -> int:
         f"\nfreeze gate: {'PASS' if not failures else 'RED'} "
         f"({len(failures)} blocking check(s))"
     )
+    if failures:
+        print("blocking: " + "; ".join(failures))
     return 0 if not failures else 1
 
 

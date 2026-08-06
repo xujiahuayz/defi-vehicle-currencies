@@ -379,7 +379,7 @@ K. Ideation ....................... proposes what nobody asked for. ADDED
 J. Gates .......................... run on every G/H artefact (section 7).
 ```
 
-Ordering: A and B complete before C. C blocks D. D blocks E. E locks before F. F feeds G. G and H iterate. I runs on C, on E before the lock, and on G/H. Nothing proceeds on a guess.
+Graph contract: A and B feed C; C and K reopen each other; C sends data-changing definitions through D and then E; F, G and H iterate in both directions; I can return a defect to C, E, F, G or H; J runs continuously; P remains closed until the findings freeze. The active edge, parent loop and next edge live in the machine-readable frontmatter of `docs/findings-freeze.md`, so a long-running D build never makes the project look as though it has left C <-> K or entered prose.
 
 ---
 
