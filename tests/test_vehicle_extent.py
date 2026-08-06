@@ -144,6 +144,25 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertAlmostEqual(extent.loc["k", "intermediate_usd"], 99.5)
         self.assertAlmostEqual(realised.loc["k", "usd"], 99.5)
 
+    def test_branched_dag_is_economic_not_cyclic(self) -> None:
+        rows = [
+            leg("branch", 0, "a", "k1", "source", "intermediate", 60, log_index=0),
+            leg("branch", 0, "a", "k2", "source", "intermediate", 40, log_index=1),
+            leg("branch", 0, "k1", "b", "intermediate", "sink", 59, log_index=2),
+            leg("branch", 0, "k2", "b", "intermediate", "sink", 39, log_index=3),
+        ]
+        frame = pd.DataFrame(rows)
+        frame["source"] = "venue"
+        frame["timestamp_utc"] = 7 * 3600
+        extent = compute_vehicle_extent(frame).set_index("token")
+        realised = extract_realised_routes(frame).set_index("vehicle")
+        self.assertTrue((extent["routes_clean"] == 1).all())
+        self.assertTrue((extent["routes_cyclic_excluded"] == 0).all())
+        self.assertAlmostEqual(extent.loc["a", "endpoint_usd"], 100.0)
+        self.assertAlmostEqual(extent.loc["b", "endpoint_usd"], 98.0)
+        self.assertAlmostEqual(realised.loc["k1", "usd"], 59.5)
+        self.assertAlmostEqual(realised.loc["k2", "usd"], 39.5)
+
     def test_ordered_round_trip_is_removed_when_roles_have_no_endpoints(self) -> None:
         rows = [
             leg("good", 0, "a", "k", "source", "intermediate", 100),
