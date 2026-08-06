@@ -220,6 +220,8 @@ def summarise_triangle_maturation(
     if missing:
         raise ValueError(f"triangle maturation is missing columns: {sorted(missing)}")
     frame = triangles.copy()
+    for column in ("median_gap_bps", "n_observations"):
+        frame[column] = pd.to_numeric(frame[column], errors="coerce")
     frame["date"] = pd.to_datetime(frame["day"], format="%Y%m%d")
     frame = frame[
         np.isfinite(frame["median_gap_bps"])

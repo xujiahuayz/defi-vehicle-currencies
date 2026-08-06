@@ -324,9 +324,10 @@ class PoolViewTests(unittest.TestCase):
                         "n_observations": 100,
                     }
                 )
-        summary = summarise_triangle_maturation(
-            pd.DataFrame(rows), recurrence_thresholds=(2,)
-        )
+        frame = pd.DataFrame(rows)
+        frame["median_gap_bps"] = frame["median_gap_bps"].astype(str)
+        frame["n_observations"] = frame["n_observations"].astype(object)
+        summary = summarise_triangle_maturation(frame, recurrence_thresholds=(2,))
         result = summary[
             summary["panel"].eq("recurrent_support")
             & summary["identity"].eq("economic_triangle")
