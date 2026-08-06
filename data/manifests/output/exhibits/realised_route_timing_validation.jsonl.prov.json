@@ -1,0 +1,79 @@
+{
+ "argv": [
+  "--day",
+  "20220615",
+  "--day",
+  "20240615",
+  "--day",
+  "20250914",
+  "--max-routes",
+  "10000"
+ ],
+ "artefact": "output/exhibits/realised_route_timing_validation.jsonl",
+ "code_fingerprint": "1143139598481f29a1eb17ba6fbf52e6e4257ad1ab2fe6582019df6d140ae3df",
+ "code_sources": [
+  "scripts/validate_realised_route_timing.py",
+  "src/ddvc/analysis/block_timing.py",
+  "src/ddvc/prices.py",
+  "src/ddvc/realised.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-06T12:09:27+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "478aa0eaef9753bceb502f33d7044d360ac55ed7",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
+   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/gap_arbitrage_bound.jsonl",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/v4_quoter_validation.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/tables/bridge_denominator_robustness.pdf",
+   "output/tables/liquidity_robustness.pdf",
+   "output/tables/measurement_robustness.pdf",
+   "output/tables/route_cost_distribution_weighting.pdf",
+   "output/tables/route_cost_distribution_weighting.tex",
+   "output/tables/route_cost_robustness.pdf",
+   "output/tables/route_cost_robustness.tex",
+   "output/tables/stress_robustness.pdf",
+   "output/tables/stress_rotation_decomposition.pdf",
+   "output/tables/v4_match_balance.pdf",
+   "output/tables/v4_robustness.pdf",
+   "data/manifests/data/processed/realised_route_timing_validation.parquet.prov.json",
+   "output/exhibits/realised_dominance_reweighting.jsonl"
+  ],
+  "dirty_tracked_files": [
+   "docs/findings-freeze.md",
+   "docs/research-workflow.md",
+   "docs/router-identification-feasibility.md"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 2914537,
+   "exists": true,
+   "path": "data/processed/realised_route_timing_validation.parquet",
+   "sha256": "475708c151addee8d9b7ed3161153367e234ce05a31ee3726e410b4678c9054d"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "pooled and per-day transaction-state timing validation",
+ "python": "3.14.5",
+ "rows": 4,
+ "script": "scripts/validate_realised_route_timing.py"
+}

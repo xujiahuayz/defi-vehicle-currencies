@@ -1,0 +1,110 @@
+{
+ "argv": [
+  "--day",
+  "20220615",
+  "--day",
+  "20240615",
+  "--day",
+  "20250914",
+  "--max-routes",
+  "10000"
+ ],
+ "artefact": "data/processed/realised_route_timing_validation.parquet",
+ "code_fingerprint": "1143139598481f29a1eb17ba6fbf52e6e4257ad1ab2fe6582019df6d140ae3df",
+ "code_sources": [
+  "scripts/validate_realised_route_timing.py",
+  "src/ddvc/analysis/block_timing.py",
+  "src/ddvc/prices.py",
+  "src/ddvc/realised.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-06T12:09:27+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "478aa0eaef9753bceb502f33d7044d360ac55ed7",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
+   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/gap_arbitrage_bound.jsonl",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/v4_quoter_validation.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/tables/bridge_denominator_robustness.pdf",
+   "output/tables/liquidity_robustness.pdf",
+   "output/tables/measurement_robustness.pdf",
+   "output/tables/route_cost_distribution_weighting.pdf",
+   "output/tables/route_cost_distribution_weighting.tex",
+   "output/tables/route_cost_robustness.pdf",
+   "output/tables/route_cost_robustness.tex",
+   "output/tables/stress_robustness.pdf",
+   "output/tables/stress_rotation_decomposition.pdf",
+   "output/tables/v4_match_balance.pdf",
+   "output/tables/v4_robustness.pdf",
+   "data/manifests/output/exhibits/realised_route_timing_validation.jsonl.prov.json",
+   "output/exhibits/realised_dominance_reweighting.jsonl",
+   "output/exhibits/realised_route_timing_validation.jsonl"
+  ],
+  "dirty_tracked_files": [
+   "docs/findings-freeze.md",
+   "docs/research-workflow.md",
+   "docs/router-identification-feasibility.md"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 11103816,
+   "exists": true,
+   "path": "/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/data/raw/thegraph/uniswap_v3/uniswap_v3_swaps_20220615.jsonl.gz",
+   "sha256": "ae620e804649d99d0b4b6d5d9eec8083620a2097d6cab8ac326aec8598c4b627"
+  },
+  {
+   "bytes": 11246809,
+   "exists": true,
+   "path": "data/unified/20220615.parquet",
+   "sha256": "96b7950c9dd5c3a6998541d58ddc7474ec60af9c30fe428e40a9f72c196e169f"
+  },
+  {
+   "bytes": 12780710,
+   "exists": true,
+   "path": "/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/data/raw/thegraph/uniswap_v3/uniswap_v3_swaps_20240615.jsonl.gz",
+   "sha256": "17661f161f1320c523a05d7b06719c50397b187fae76184e22ac173a789f3a8c"
+  },
+  {
+   "bytes": 21128776,
+   "exists": true,
+   "path": "data/unified/20240615.parquet",
+   "sha256": "e10a59c52354826d93571ccfdf53abbec8621b43bc16875ecc5999661a270cd8"
+  },
+  {
+   "bytes": 20620314,
+   "exists": true,
+   "path": "/Users/dsf-pro16-m3/projects/defi-vehicle-currencies/data/raw/thegraph/uniswap_v3/uniswap_v3_swaps_20250914.jsonl.gz",
+   "sha256": "847282133d439aca408697d07cf488f4e09930adc69f01eed918f3487479183b"
+  },
+  {
+   "bytes": 27395845,
+   "exists": true,
+   "path": "data/unified/20250914.parquet",
+   "sha256": "02cb2b4cddbf0af0d8c5f7533e2adbe34b0c87ac7901b3aadecc11e9cbaecf8b"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "two-leg V3 realised effective rates; strict state before transaction first swap log",
+ "python": "3.14.5",
+ "rows": 12931,
+ "script": "scripts/validate_realised_route_timing.py"
+}
