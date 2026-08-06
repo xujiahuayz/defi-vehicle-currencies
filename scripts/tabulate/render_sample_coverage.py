@@ -6,7 +6,7 @@ from __future__ import annotations
 import pandas as pd
 
 from ddvc.paths import DATA_DIR
-from utils import write_table_artifacts
+from ddvc.paper_tables import write_table_artifacts
 
 
 def count(value: int | float) -> str:

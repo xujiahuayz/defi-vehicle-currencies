@@ -21,7 +21,6 @@ import gzip
 import json
 import math
 import re
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -29,6 +28,7 @@ import pandas as pd
 from scipy import stats
 
 from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered_named
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -36,10 +36,7 @@ DATA = ROOT / "data"
 OUT = ROOT / "output"
 EMP = OUT / "empirical"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
+from ddvc.paper_tables import _int, _num, _p, _write_table
 
 
 VEHICLES = ["WETH", "USDC", "USDT", "DAI", "WBTC"]
@@ -63,47 +60,6 @@ def _ensure_dirs() -> None:
     (DATA / "empirical").mkdir(parents=True, exist_ok=True)
     EMP.mkdir(parents=True, exist_ok=True)
     (OUT / "tables").mkdir(parents=True, exist_ok=True)
-
-
-def _twoway_demean(s: pd.Series, a: pd.Series, b: pd.Series) -> pd.Series:
-    return s - s.groupby(a).transform("mean") - s.groupby(b).transform("mean") + s.mean()
-
-
-def _oneway_demean(s: pd.Series, a: pd.Series) -> pd.Series:
-    return s - s.groupby(a).transform("mean")
-
-
-def _cluster_ols(y: pd.Series, xvars: pd.DataFrame, cluster: pd.Series) -> tuple[int, int, dict[str, float]]:
-    d = pd.concat([y.rename("y"), xvars, cluster.rename("cluster")], axis=1).replace([np.inf, -np.inf], np.nan).dropna()
-    n = len(d)
-    c = d["cluster"].nunique()
-    names = list(xvars.columns)
-    empty = {f"{name}_{stat}": math.nan for name in names for stat in ["beta", "se", "t", "p"]}
-    if n < 30 or c < 2:
-        return n, c, empty
-    x = np.column_stack([np.ones(n)] + [d[name].to_numpy(float) for name in names])
-    yy = d["y"].to_numpy(float)
-    if np.linalg.matrix_rank(x) < x.shape[1]:
-        return n, c, empty
-    beta = np.linalg.lstsq(x, yy, rcond=None)[0]
-    resid = yy - x @ beta
-    bread = np.linalg.inv(x.T @ x)
-    meat = np.zeros((x.shape[1], x.shape[1]))
-    for _, idx in d.groupby("cluster").indices.items():
-        score = x[idx].T @ resid[idx][:, None]
-        meat += score @ score.T
-    finite = (c / (c - 1)) * ((n - 1) / max(n - x.shape[1], 1))
-    cov = finite * bread @ meat @ bread
-    out: dict[str, float] = {}
-    for j, name in enumerate(names, start=1):
-        se = float(math.sqrt(max(cov[j, j], 0.0)))
-        t = float(beta[j] / se) if se > 0 else math.nan
-        p = float(2 * stats.t.sf(abs(t), c - 1)) if np.isfinite(t) else math.nan
-        out[f"{name}_beta"] = float(beta[j])
-        out[f"{name}_se"] = se
-        out[f"{name}_t"] = t
-        out[f"{name}_p"] = p
-    return n, c, out
 
 
 def variable_construction_table() -> pd.DataFrame:
@@ -310,9 +266,9 @@ def core_panel_regressions(panel: pd.DataFrame) -> pd.DataFrame:
     ]
     for rq, y_name, label, horizon in specs:
         dd = panel.copy()
-        y = _twoway_demean(dd[y_name], dd["token"], dd["date"])
-        x = pd.DataFrame({name: _twoway_demean(dd[name], dd["token"], dd["date"]) for name in x_names})
-        n, clusters, res = _cluster_ols(y, x, dd["date"])
+        y = absorb_fixed_effects(dd[y_name], dd["token"], dd["date"])
+        x = pd.DataFrame({name: absorb_fixed_effects(dd[name], dd["token"], dd["date"]) for name in x_names})
+        n, clusters, res = ols_clustered_named(y, x, dd["date"], min_observations=30)
         for name in x_names:
             rows.append(
                 {
@@ -591,9 +547,9 @@ def common_liquidity_tests(pool: pd.DataFrame) -> pd.DataFrame:
     ]
     for sample, names in specs:
         dd = d.copy()
-        y = _oneway_demean(dd["dlog_liquidity"], dd["pool_vehicle_id"])
-        x = pd.DataFrame({name: _oneway_demean(dd[name], dd["pool_vehicle_id"]) for name in names})
-        n, clusters, res = _cluster_ols(y, x, dd["date"])
+        y = absorb_fixed_effects(dd["dlog_liquidity"], dd["pool_vehicle_id"])
+        x = pd.DataFrame({name: absorb_fixed_effects(dd[name], dd["pool_vehicle_id"]) for name in names})
+        n, clusters, res = ols_clustered_named(y, x, dd["date"], min_observations=30)
         for name in names:
             rows.append(
                 {
@@ -764,9 +720,9 @@ def actual_route_choice_tests(actual: pd.DataFrame) -> pd.DataFrame:
     ]
     x_names = ["direct_cost_advantage", "vehicle_available", "vehicle_depth"]
     for outcome, y_raw, units in specs:
-        y = _oneway_demean(y_raw, d["pair_date"])
-        x = pd.DataFrame({name: _oneway_demean(d[name], d["pair_date"]) for name in x_names})
-        n, clusters, res = _cluster_ols(y, x, d["date"])
+        y = absorb_fixed_effects(y_raw, d["pair_date"])
+        x = pd.DataFrame({name: absorb_fixed_effects(d[name], d["pair_date"]) for name in x_names})
+        n, clusters, res = ols_clustered_named(y, x, d["date"], min_observations=30)
         for name in x_names:
             rows.append(
                 {
@@ -853,9 +809,9 @@ def lp_allocation_feedback_tests(panel: pd.DataFrame, core: pd.DataFrame) -> pd.
         ("Change in log VehicleLinkedLiquidity", "delta_log_liquidity_t30", "log points"),
     ]
     for outcome, y_name, units in specs:
-        y = _twoway_demean(d[y_name], d["token"], d["date"])
-        x = pd.DataFrame({name: _twoway_demean(d[name], d["token"], d["date"]) for name in x_names})
-        n, clusters, res = _cluster_ols(y, x, d["date"])
+        y = absorb_fixed_effects(d[y_name], d["token"], d["date"])
+        x = pd.DataFrame({name: absorb_fixed_effects(d[name], d["token"], d["date"]) for name in x_names})
+        n, clusters, res = ols_clustered_named(y, x, d["date"], min_observations=30)
         for name in x_names:
             rows.append(
                 {
@@ -951,15 +907,15 @@ def pair_challenger_displacement_tests(actual: pd.DataFrame) -> pd.DataFrame:
         ("Incumbent VehicleShare change", "incumbent_delta_t30_pp", "pp"),
         ("Challenger exceeds incumbent", "challenger_beats_incumbent_t30_pp", "pp"),
     ]:
-        y = _twoway_demean(base[y_name], base["pair"], base["date"])
+        y = absorb_fixed_effects(base[y_name], base["pair"], base["date"])
         x = pd.DataFrame(
             {
-                "challenger_cost_edge": _twoway_demean(
+                "challenger_cost_edge": absorb_fixed_effects(
                     base["challenger_cost_edge"], base["pair"], base["date"]
                 )
             }
         )
-        n, clusters, res = _cluster_ols(y, x, base["date"])
+        n, clusters, res = ols_clustered_named(y, x, base["date"], min_observations=30)
         rows.append(
             {
                 "Panel": "A. Pair-level regression",
@@ -1056,9 +1012,9 @@ def v3_dose_response_tests() -> pd.DataFrame:
     ]
     for quartile, g in d.groupby("Pre-V3 direct availability quartile", observed=False):
         for outcome, y_col, scale, units in outcomes:
-            y = _oneway_demean(scale * g[y_col].astype(float), g["pair"])
-            x = pd.DataFrame({"post_v3": _oneway_demean(g["post_v3"], g["pair"])})
-            n, clusters, res = _cluster_ols(y, x, g["pair"])
+            y = absorb_fixed_effects(scale * g[y_col].astype(float), g["pair"])
+            x = pd.DataFrame({"post_v3": absorb_fixed_effects(g["post_v3"], g["pair"])})
+            n, clusters, res = ols_clustered_named(y, x, g["pair"], min_observations=30)
             rows.append(
                 {
                     "Pre-V3 direct availability quartile": str(quartile),
@@ -1103,9 +1059,9 @@ def v4_route_use_persistence_tests() -> pd.DataFrame:
         ("Log V4 route volume", "log_v4_usd", "log_v3_usd", "log V3 route volume"),
     ]
     for outcome, y_col, x_col, reg_label in specs:
-        y = _twoway_demean(d[y_col], d["vehicle"], d["week_label"])
-        x = pd.DataFrame({reg_label: _twoway_demean(d[x_col], d["vehicle"], d["week_label"])})
-        n, clusters, res = _cluster_ols(y, x, d["week"])
+        y = absorb_fixed_effects(d[y_col], d["vehicle"], d["week_label"])
+        x = pd.DataFrame({reg_label: absorb_fixed_effects(d[x_col], d["vehicle"], d["week_label"])})
+        n, clusters, res = ols_clustered_named(y, x, d["week"], min_observations=30)
         rows.append(
             {
                 "Panel": "A. Matched-cell route-use persistence",
@@ -1169,14 +1125,14 @@ def common_liquidity_heterogeneity_tests() -> pd.DataFrame:
     ]
     rows = []
     for sample, g in samples:
-        y = _oneway_demean(g["dlog_liquidity"], g["pool_vehicle_id"])
+        y = absorb_fixed_effects(g["dlog_liquidity"], g["pool_vehicle_id"])
         x = pd.DataFrame(
             {
-                "market_factor_loo": _oneway_demean(g["market_factor_loo"], g["pool_vehicle_id"]),
-                "vehicle_factor_loo": _oneway_demean(g["vehicle_factor_loo"], g["pool_vehicle_id"]),
+                "market_factor_loo": absorb_fixed_effects(g["market_factor_loo"], g["pool_vehicle_id"]),
+                "vehicle_factor_loo": absorb_fixed_effects(g["vehicle_factor_loo"], g["pool_vehicle_id"]),
             }
         )
-        n, clusters, res = _cluster_ols(y, x, g["date"])
+        n, clusters, res = ols_clustered_named(y, x, g["date"], min_observations=30)
         for name in ["market_factor_loo", "vehicle_factor_loo"]:
             rows.append(
                 {

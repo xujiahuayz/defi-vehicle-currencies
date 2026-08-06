@@ -9,7 +9,6 @@ or scripts/diagram; this file only preserves the older bundle entry point.
 from __future__ import annotations
 
 import math
-import re
 import shutil
 import subprocess
 import sys
@@ -17,6 +16,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from ddvc.paper_tables import (
+    _int,
+    _num,
+    _p,
+    _pct,
+    _write_table,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -28,68 +35,11 @@ MANIFEST = OUT / "exhibits" / "paper_exhibit_manifest.md"
 TABULATE = ROOT / "scripts" / "tabulate"
 
 VEHICLE_ORDER = ["WETH", "USDC", "USDT", "DAI", "WBTC"]
-NUMBERED_ARTIFACT_RE = re.compile(r"^(?:table|figure)_(?:[a-z]\d+|\d+)_", re.IGNORECASE)
-
-if str(TABULATE) not in sys.path:
-    sys.path.insert(0, str(TABULATE))
-
-from utils import render_standalone_pdf  # noqa: E402
 
 
 def _ensure_dirs() -> None:
     for path in (TABLES, FIGURES, MANIFEST.parent):
         path.mkdir(parents=True, exist_ok=True)
-
-
-def _pct(x: float, digits: int = 1) -> str:
-    if pd.isna(x):
-        return ""
-    return f"{100 * float(x):.{digits}f}"
-
-
-def _num(x: float, digits: int = 2) -> str:
-    if pd.isna(x):
-        return ""
-    return f"{float(x):.{digits}f}"
-
-
-def _int(x: float) -> str:
-    if pd.isna(x):
-        return ""
-    return f"{int(round(float(x))):,}"
-
-
-def _p(x: float) -> str:
-    if pd.isna(x):
-        return ""
-    x = float(x)
-    if x < 0.001:
-        return "<0.001"
-    return f"{x:.3f}"
-
-
-def _latex_escape(value: object, *, allow_breaks: bool = False) -> str:
-    text = "" if value is None else str(value)
-    escaped = (
-        text.replace("\\", "\\textbackslash{}")
-        .replace("&", "\\&")
-        .replace("%", "\\%")
-        .replace("$", "\\$")
-        .replace("#", "\\#")
-        .replace("_", "\\_")
-        .replace("{", "\\{")
-        .replace("}", "\\}")
-    )
-    escaped = escaped.replace("<", r"\ensuremath{<}").replace(">", r"\ensuremath{>}")
-    if allow_breaks:
-        escaped = escaped.replace(r"\_", r"\_\allowbreak{}").replace("/", r"/\allowbreak{}")
-    return escaped
-
-
-def _artifact_stem(stem: str) -> str:
-    """Drop legacy paper-order prefixes from generated output filenames."""
-
-    return NUMBERED_ARTIFACT_RE.sub("", stem)
 
 
 def _with_canonical_vol_share(df: pd.DataFrame) -> pd.DataFrame:
@@ -100,48 +50,6 @@ def _with_canonical_vol_share(df: pd.DataFrame) -> pd.DataFrame:
     if "VShare" in df.columns:
         return df.rename(columns={"VShare": "VolShare"})
     raise ValueError("Empirical summary has no VolShare column.")
-
-
-def _write_table(
-    df: pd.DataFrame,
-    stem: str,
-    caption: str,
-    label: str,
-    *,
-    align: str | None = None,
-    note: str | None = None,
-) -> None:
-    stem = _artifact_stem(stem)
-    tex_path = TABLES / f"{stem}.tex"
-    pdf_path = TABLES / f"{stem}.pdf"
-    align = align or ("l" + "r" * (len(df.columns) - 1))
-    use_tabularx = "X" in align
-    begin = (
-        f"\\begin{{tabularx}}{{\\linewidth}}{{{align}}}"
-        if use_tabularx
-        else f"\\begin{{tabular}}{{{align}}}"
-    )
-    end = "\\end{tabularx}" if use_tabularx else "\\end{tabular}"
-    lines = [
-        begin,
-        "\\toprule",
-        " & ".join(_latex_escape(c) for c in df.columns) + " \\\\",
-        "\\midrule",
-    ]
-    for row in df.itertuples(index=False, name=None):
-        lines.append(
-            " & ".join(_latex_escape(v, allow_breaks=use_tabularx) for v in row) + " \\\\"
-        )
-    lines.extend(["\\bottomrule", end])
-    if note:
-        lines.append(f"% Notes for paper wrapper: {_latex_escape(note)}")
-    table_latex = "\n".join(lines) + "\n"
-    tex_path.write_text(table_latex, encoding="utf-8")
-    render_standalone_pdf(
-        table_latex,
-        pdf_path,
-        preview_width="24cm" if use_tabularx else None,
-    )
 
 
 def _copy_if_exists(src: Path, dest: Path) -> None:

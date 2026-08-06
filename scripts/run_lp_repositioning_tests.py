@@ -10,15 +10,13 @@ from __future__ import annotations
 
 import gzip
 import json
-import math
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 from ddvc.prices import day_prices
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,10 +26,7 @@ OUT = ROOT / "output"
 EMP = OUT / "empirical"
 CACHE = DATA / "empirical" / "_lp_repositioning_day_cache"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
+from ddvc.paper_tables import _int, _num, _p, _write_table
 
 VEHICLES = {"WETH", "USDC", "USDT", "DAI", "WBTC"}
 FEE_TO_SPACING = {100: 1, 500: 10, 3000: 60, 10000: 200}
@@ -168,33 +163,6 @@ def _day(stamp: str) -> pd.DataFrame:
     return out
 
 
-def _cluster_ols(y: pd.Series, x: pd.Series, cluster: pd.Series) -> tuple[int, int, float, float, float, float]:
-    d = pd.DataFrame({"y": y, "x": x, "cluster": cluster}).replace([np.inf, -np.inf], np.nan).dropna()
-    n = len(d)
-    c = d["cluster"].nunique()
-    if n < 10 or c < 2 or np.isclose(float(d["x"].var()), 0):
-        return n, c, math.nan, math.nan, math.nan, math.nan
-    xmat = np.column_stack([np.ones(n), d["x"].to_numpy(float)])
-    yy = d["y"].to_numpy(float)
-    beta = np.linalg.lstsq(xmat, yy, rcond=None)[0]
-    resid = yy - xmat @ beta
-    bread = np.linalg.inv(xmat.T @ xmat)
-    meat = np.zeros((2, 2))
-    for _, idx in d.groupby("cluster").indices.items():
-        score = xmat[idx].T @ resid[idx][:, None]
-        meat += score @ score.T
-    finite = (c / (c - 1)) * ((n - 1) / max(n - xmat.shape[1], 1))
-    cov = finite * bread @ meat @ bread
-    se = float(math.sqrt(max(cov[1, 1], 0.0)))
-    t = float(beta[1] / se) if se > 0 else math.nan
-    p = float(2 * stats.t.sf(abs(t), c - 1)) if np.isfinite(t) else math.nan
-    return n, c, float(beta[1]), se, t, p
-
-
-def _demean_two(s: pd.Series, a: pd.Series, b: pd.Series) -> pd.Series:
-    return s - s.groupby(a).transform("mean") - s.groupby(b).transform("mean") + s.mean()
-
-
 def run() -> pd.DataFrame:
     stamps = sorted(p.stem for p in (DATA / "unified").glob("[0-9]" * 8 + ".parquet") if p.stem >= "20210505")
     frames = []
@@ -224,9 +192,16 @@ def run() -> pd.DataFrame:
         )
         y_raw = d[f"BridgeShare_t{horizon}"]
         for var in ["net_reposition_usd_share", "active_net_reposition_usd_share", "near_net_reposition_usd_share", "near_gross_reposition_usd_share"]:
-            y = _demean_two(y_raw, d["token"], d["date"])
-            x = _demean_two(d[var], d["token"], d["date"])
-            n, clusters, beta, se, t, p = _cluster_ols(y, x, d["date"])
+            y = absorb_fixed_effects(y_raw, d["token"], d["date"])
+            x = absorb_fixed_effects(d[var], d["token"], d["date"])
+            fit = ols_clustered(y, x, d["date"], min_observations=10)
+            n, clusters = fit.n_observations, fit.n_clusters
+            beta, se, t, p = (
+                fit.beta[1],
+                fit.standard_errors[1],
+                fit.t_statistics[1],
+                fit.p_values[1],
+            )
             rows.append({
                 "Horizon (days)": horizon,
                 "Regressor": var.replace("_usd_share", "").replace("_", " "),

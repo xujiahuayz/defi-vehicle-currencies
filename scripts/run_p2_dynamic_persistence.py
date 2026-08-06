@@ -11,15 +11,13 @@ but it makes P2 fully aligned with the bounded model.
 """
 from __future__ import annotations
 
-import math
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -27,46 +25,7 @@ DATA = ROOT / "data"
 OUT = ROOT / "output"
 EMP = OUT / "empirical"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
-
-
-def _demean_two(s: pd.Series, a: pd.Series, b: pd.Series) -> pd.Series:
-    return s - s.groupby(a).transform("mean") - s.groupby(b).transform("mean") + s.mean()
-
-
-def _cluster_ols_multi(y: pd.Series, xvars: pd.DataFrame, cluster: pd.Series) -> tuple[int, int, dict[str, float]]:
-    d = pd.concat([y.rename("y"), xvars, cluster.rename("cluster")], axis=1).replace([np.inf, -np.inf], np.nan).dropna()
-    n = len(d)
-    c = d["cluster"].nunique()
-    names = list(xvars.columns)
-    if n < 20 or c < 2:
-        return n, c, {f"{name}_{stat}": math.nan for name in names for stat in ["beta", "se", "t", "p"]}
-    x = np.column_stack([np.ones(n)] + [d[name].to_numpy(float) for name in names])
-    yy = d["y"].to_numpy(float)
-    if np.linalg.matrix_rank(x) < x.shape[1]:
-        return n, c, {f"{name}_{stat}": math.nan for name in names for stat in ["beta", "se", "t", "p"]}
-    beta = np.linalg.lstsq(x, yy, rcond=None)[0]
-    resid = yy - x @ beta
-    bread = np.linalg.inv(x.T @ x)
-    meat = np.zeros((x.shape[1], x.shape[1]))
-    for _, idx in d.groupby("cluster").indices.items():
-        score = x[idx].T @ resid[idx][:, None]
-        meat += score @ score.T
-    finite = (c / (c - 1)) * ((n - 1) / max(n - x.shape[1], 1))
-    cov = finite * bread @ meat @ bread
-    out: dict[str, float] = {}
-    for j, name in enumerate(names, start=1):
-        se = float(math.sqrt(max(cov[j, j], 0.0)))
-        t = float(beta[j] / se) if se > 0 else math.nan
-        p = float(2 * stats.t.sf(abs(t), c - 1)) if np.isfinite(t) else math.nan
-        out[f"{name}_beta"] = float(beta[j])
-        out[f"{name}_se"] = se
-        out[f"{name}_t"] = t
-        out[f"{name}_p"] = p
-    return n, c, out
+from ddvc.paper_tables import _int, _num, _p, _write_table
 
 
 def run() -> pd.DataFrame:
@@ -79,14 +38,16 @@ def run() -> pd.DataFrame:
     for h in [1, 7, 14, 30]:
         dd = d.copy()
         dd["future_bridge_share"] = value_at_day_offset(dd, "BridgeShare", h)
-        y = _demean_two(dd["future_bridge_share"], dd["token"], dd["date"])
+        y = absorb_fixed_effects(dd["future_bridge_share"], dd["token"], dd["date"])
         x = pd.DataFrame(
             {
-                "lp_concentration": _demean_two(dd["lp_concentration_share"], dd["token"], dd["date"]),
-                "current_bridge_share": _demean_two(dd["BridgeShare"], dd["token"], dd["date"]),
+                "lp_concentration": absorb_fixed_effects(dd["lp_concentration_share"], dd["token"], dd["date"]),
+                "current_bridge_share": absorb_fixed_effects(dd["BridgeShare"], dd["token"], dd["date"]),
             }
         )
-        n, clusters, res = _cluster_ols_multi(y, x, dd["date"])
+        fit = ols_clustered(y, x, dd["date"], min_observations=20)
+        n, clusters = fit.n_observations, fit.n_clusters
+        res = fit.named_statistics(list(x.columns), offset=1)
         rows.append(
             {
                 "Horizon (days)": h,

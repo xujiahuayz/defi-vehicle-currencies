@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import gzip
 import json
-import sys
 from pathlib import Path
 
 import pandas as pd
@@ -21,10 +20,7 @@ DATA = ROOT / "data"
 OUT = ROOT / "output"
 EMP = OUT / "empirical"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _pct, _write_table  # noqa: E402
+from ddvc.paper_tables import _int, _num, _pct, _write_table
 
 NONUNI = ["curve", "balancer", "fluid"]
 

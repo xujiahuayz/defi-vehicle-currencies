@@ -10,13 +10,12 @@ These checks tighten two architecture claims that the independent review flagged
 """
 from __future__ import annotations
 
-import math
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats
+
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -24,37 +23,7 @@ DATA = ROOT / "data"
 OUT = ROOT / "output"
 EMP = OUT / "empirical"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _p, _pct, _write_table  # noqa: E402
-
-
-def _cluster_ols(y: pd.Series, x: pd.Series, cluster: pd.Series) -> tuple[int, int, float, float, float, float]:
-    d = pd.DataFrame({"y": y, "x": x, "cluster": cluster}).replace([np.inf, -np.inf], np.nan).dropna()
-    n = len(d)
-    c = d["cluster"].nunique()
-    if n < 10 or c < 2 or np.isclose(float(d["x"].var()), 0):
-        return n, c, math.nan, math.nan, math.nan, math.nan
-    xmat = np.column_stack([np.ones(n), d["x"].to_numpy(float)])
-    yy = d["y"].to_numpy(float)
-    beta = np.linalg.lstsq(xmat, yy, rcond=None)[0]
-    resid = yy - xmat @ beta
-    bread = np.linalg.inv(xmat.T @ xmat)
-    meat = np.zeros((2, 2))
-    for _, idx in d.groupby("cluster").indices.items():
-        score = xmat[idx].T @ resid[idx][:, None]
-        meat += score @ score.T
-    finite = (c / (c - 1)) * ((n - 1) / max(n - xmat.shape[1], 1))
-    cov = finite * bread @ meat @ bread
-    se = float(math.sqrt(max(cov[1, 1], 0.0)))
-    t = float(beta[1] / se) if se > 0 else math.nan
-    p = float(2 * stats.t.sf(abs(t), c - 1)) if np.isfinite(t) else math.nan
-    return n, c, float(beta[1]), se, t, p
-
-
-def _demean(s: pd.Series, by: pd.Series) -> pd.Series:
-    return s - s.groupby(by).transform("mean")
+from ddvc.paper_tables import _int, _num, _p, _pct, _write_table
 
 
 def v3_event_time_pretrends() -> pd.DataFrame:
@@ -100,14 +69,23 @@ def v3_event_time_pretrends() -> pd.DataFrame:
         ("direct_cost_advantage", "Direct cost advantage against WETH route", "fraction"),
     ]
     for col, label, units in outcomes:
-        y = _demean(monthly[col], monthly["pair"])
-        post = _demean(monthly["post_v3"], monthly["pair"])
-        n, c, beta, se, t, p = _cluster_ols(y, post, monthly["pair"])
+        y = absorb_fixed_effects(monthly[col], monthly["pair"])
+        post = absorb_fixed_effects(monthly["post_v3"], monthly["pair"])
+        fit = ols_clustered(y, post, monthly["pair"], min_observations=10)
+        n, c = fit.n_observations, fit.n_clusters
+        beta, se, t, p = fit.beta[1], fit.standard_errors[1], fit.t_statistics[1], fit.p_values[1]
 
         pre = monthly[monthly["rel_month"].between(-12, -1)].copy()
-        y_pre = _demean(pre[col], pre["pair"])
-        x_pre = _demean(pre["rel_month"].astype(float), pre["pair"])
-        npre, cpre, slope, slope_se, slope_t, slope_p = _cluster_ols(y_pre, x_pre, pre["pair"])
+        y_pre = absorb_fixed_effects(pre[col], pre["pair"])
+        x_pre = absorb_fixed_effects(pre["rel_month"].astype(float), pre["pair"])
+        pre_fit = ols_clustered(y_pre, x_pre, pre["pair"], min_observations=10)
+        npre, cpre = pre_fit.n_observations, pre_fit.n_clusters
+        slope, slope_se, slope_t, slope_p = (
+            pre_fit.beta[1],
+            pre_fit.standard_errors[1],
+            pre_fit.t_statistics[1],
+            pre_fit.p_values[1],
+        )
 
         scale = 100 if units == "pp" else 1
         rows.append(

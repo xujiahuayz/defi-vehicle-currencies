@@ -35,6 +35,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 from ddvc.tables import write_exhibit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,34 +67,15 @@ def pval(t: float) -> float:
     return erfc(abs(t) / sqrt(2)) if np.isfinite(t) else float("nan")
 
 
-def demean(df: pd.DataFrame, cols: list[str], group: pd.Series) -> pd.DataFrame:
-    """Absorb a fixed effect by within-group demeaning."""
-    return df[cols] - df[cols].groupby(group).transform("mean")
-
-
-def ols_cluster(y: np.ndarray, X: np.ndarray, cluster: np.ndarray,
-                k_absorbed: int = 0) -> tuple[np.ndarray, np.ndarray, int]:
-    """OLS with cluster-robust standard errors. Returns (beta, se, n_clusters)."""
-    XtX_inv = np.linalg.pinv(X.T @ X)
-    beta = XtX_inv @ (X.T @ y)
-    resid = y - X @ beta
-    meat = np.zeros((X.shape[1], X.shape[1]))
-    uniq = np.unique(cluster)
-    for c in uniq:
-        m = cluster == c
-        Xg, ug = X[m], resid[m]
-        s = Xg.T @ ug
-        meat += np.outer(s, s)
-    n, k = X.shape
-    g = len(uniq)
-    dof = max(1, n - k - k_absorbed)
-    scale = (g / max(1, g - 1)) * ((n - 1) / dof)
-    V = XtX_inv @ meat @ XtX_inv * scale
-    return beta, np.sqrt(np.maximum(np.diag(V), 0)), g
-
-
 def report(name: str, y, X, cols, cluster, k_absorbed=0, extra: str = "") -> dict:
-    b, se, g = ols_cluster(y, X, cluster, k_absorbed)
+    fit = ols_clustered(
+        y,
+        X,
+        cluster,
+        add_constant=False,
+        k_absorbed=k_absorbed,
+    )
+    b, se, g = fit.beta, fit.standard_errors, fit.n_clusters
     print(f"\n{name}   n={len(y):,}  clusters={g:,}  {extra}")
     print(f"  {'term':<22}{'coef':>10}{'se':>10}{'t':>8}{'p':>9}")
     out = {"spec": name, "n": len(y), "clusters": g}
@@ -177,10 +159,15 @@ def main() -> int:
         sub = sub[sub._c.isin(idw)]
         if sub.empty:
             continue
-        dmw = demean(sub, ["dominated", "native", "log_usd"], sub._c)
-        b, se, g = ols_cluster(dmw.dominated.to_numpy(),
-                               np.column_stack([dmw.native, dmw.log_usd]),
-                               sub.pair.to_numpy(), k_absorbed=sub._c.nunique())
+        dmw = absorb_fixed_effects(sub[["dominated", "native", "log_usd"]], sub._c)
+        fit = ols_clustered(
+            dmw.dominated.to_numpy(),
+            np.column_stack([dmw.native, dmw.log_usd]),
+            sub.pair.to_numpy(),
+            add_constant=False,
+            k_absorbed=sub._c.nunique(),
+        )
+        b, se, g = fit.beta, fit.standard_errors, fit.n_clusters
         tt = b[0] / se[0] if se[0] > 0 else float("nan")
         print(f"  {str(w) + 'd':>8}{cw.nunique():>9,}{len(idw):>8,}"
               f"{len(idw) / max(cw.nunique(), 1):>7.1%}{len(sub):>9,}"

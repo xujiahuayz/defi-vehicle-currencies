@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import argparse
 import math
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -33,13 +32,11 @@ import pyarrow.parquet as pq
 from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
 
-from ddvc.analysis.dynamics import value_at_day_offset  # noqa: E402
-from ddvc.metrics import CLEAN_ROUTE_CLASSES, _routes  # noqa: E402
-from ddvc.paths import DATA_DIR, OUTPUT_DIR  # noqa: E402
+from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.regression import absorb_fixed_effects
+from ddvc.metrics import CLEAN_ROUTE_CLASSES, _routes
+from ddvc.paths import DATA_DIR, OUTPUT_DIR
 
 
 VEHICLES = ("WETH", "USDC", "USDT", "DAI", "WBTC")
@@ -86,10 +83,6 @@ def _ols_y_on_x(y: np.ndarray, x: np.ndarray, name: str) -> RegressionResult:
     t = float(beta[1] / se) if se > 0 else np.nan
     p = float(2 * stats.t.sf(abs(t), dof)) if dof > 0 and np.isfinite(t) else np.nan
     return RegressionResult(name, n, float(beta[1]), se, t, p)
-
-
-def _demean(values: pd.Series, by: pd.Series) -> pd.Series:
-    return values - values.groupby(by).transform("mean")
 
 
 def _available_unified(start: str | None, end: str | None) -> list[Path]:
@@ -285,8 +278,8 @@ def liquidity_formation_tests(bridge: pd.DataFrame, lp: pd.DataFrame) -> pd.Data
 
     # Within-token version: asks whether a token's own liquidity concentration
     # being above its normal level predicts its later bridge use.
-    y = _demean(x["BridgeShare_fwd7"], x["token"])
-    z = _demean(x["lp_concentration_share"], x["token"])
+    y = absorb_fixed_effects(x["BridgeShare_fwd7"], x["token"])
+    z = absorb_fixed_effects(x["lp_concentration_share"], x["token"])
     rows.append(_ols_y_on_x(
         y.to_numpy(),
         z.to_numpy(),

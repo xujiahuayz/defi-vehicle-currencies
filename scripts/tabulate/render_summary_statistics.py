@@ -9,7 +9,7 @@ import pandas as pd
 
 from ddvc.analysis.observations import DEFAULT_OBSERVATIONS_TABLE
 from ddvc.variable_registry import SUMMARY_SPECS
-from utils import write_table_artifacts
+from ddvc.paper_tables import write_table_artifacts
 
 
 @dataclass(frozen=True)

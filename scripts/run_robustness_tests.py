@@ -12,6 +12,7 @@ import pandas as pd
 from scipy import stats
 
 from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -20,10 +21,7 @@ OUT = ROOT / "output"
 EMP = OUT / "empirical"
 ROB = OUT / "robustness"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _p, _pct, _write_table  # noqa: E402
+from ddvc.paper_tables import _int, _num, _p, _pct, _write_table
 
 VEHICLES = ["WETH", "USDC", "USDT", "DAI", "WBTC"]
 STABLES = {"USDC", "USDT", "DAI"}
@@ -56,40 +54,6 @@ def _ols(y: pd.Series, x: pd.Series) -> tuple[int, float, float, float, float]:
     t = float(beta[1] / se) if se > 0 else math.nan
     p = float(2 * stats.t.sf(abs(t), dof)) if np.isfinite(t) else math.nan
     return n, float(beta[1]), se, t, p
-
-
-def _cluster_ols(y: pd.Series, x: pd.Series, cluster: pd.Series) -> tuple[int, int, float, float, float, float]:
-    d = pd.DataFrame({"y": y, "x": x, "cluster": cluster}).replace([np.inf, -np.inf], np.nan).dropna()
-    n = len(d)
-    groups = d["cluster"].nunique()
-    if n < 4 or groups < 2 or np.isclose(float(d["x"].var()), 0):
-        return n, groups, math.nan, math.nan, math.nan, math.nan
-    xmat = np.column_stack([np.ones(n), d["x"].to_numpy(float)])
-    yy = d["y"].to_numpy(float)
-    beta = np.linalg.lstsq(xmat, yy, rcond=None)[0]
-    resid = yy - xmat @ beta
-    bread = np.linalg.inv(xmat.T @ xmat)
-    meat = np.zeros((2, 2))
-    for _, idx in d.groupby("cluster").indices.items():
-        xg = xmat[idx]
-        ug = resid[idx][:, None]
-        score = xg.T @ ug
-        meat += score @ score.T
-    k = xmat.shape[1]
-    finite = (groups / (groups - 1)) * ((n - 1) / max(n - k, 1))
-    cov = finite * bread @ meat @ bread
-    se = float(math.sqrt(max(cov[1, 1], 0.0)))
-    t = float(beta[1] / se) if se > 0 else math.nan
-    p = float(2 * stats.t.sf(abs(t), groups - 1)) if np.isfinite(t) else math.nan
-    return n, groups, float(beta[1]), se, t, p
-
-
-def _demean_one(s: pd.Series, group: pd.Series) -> pd.Series:
-    return s - s.groupby(group).transform("mean")
-
-
-def _demean_two(s: pd.Series, group_a: pd.Series, group_b: pd.Series) -> pd.Series:
-    return s - s.groupby(group_a).transform("mean") - s.groupby(group_b).transform("mean") + s.mean()
 
 
 def measurement_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
@@ -141,14 +105,21 @@ def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
         d = d.dropna(subset=["y", "lp_concentration_share"])
         specs = {
             "No FE": (d["y"], d["lp_concentration_share"]),
-            "Token FE": (_demean_one(d["y"], d["token"]), _demean_one(d["lp_concentration_share"], d["token"])),
+            "Token FE": (absorb_fixed_effects(d["y"], d["token"]), absorb_fixed_effects(d["lp_concentration_share"], d["token"])),
             "Token + date FE": (
-                _demean_two(d["y"], d["token"], d["date"]),
-                _demean_two(d["lp_concentration_share"], d["token"], d["date"]),
+                absorb_fixed_effects(d["y"], d["token"], d["date"]),
+                absorb_fixed_effects(d["lp_concentration_share"], d["token"], d["date"]),
             ),
         }
         for spec, (y, x) in specs.items():
-            n, clusters, beta, se, t, p = _cluster_ols(y, x, d["date"])
+            fit = ols_clustered(y, x, d["date"], min_observations=4)
+            n, clusters = fit.n_observations, fit.n_clusters
+            beta, se, t, p = (
+                fit.beta[1],
+                fit.standard_errors[1],
+                fit.t_statistics[1],
+                fit.p_values[1],
+            )
             rows.append({
                 "Horizon (days)": horizon,
                 "Specification": spec,

@@ -1,21 +1,15 @@
 from __future__ import annotations
 
-import sys
 import unittest
 from pathlib import Path
 
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts" / "tabulate"))
-
+from ddvc.paper_tables import _latex_escape, validate_output_stem
 from ddvc.variable_registry import (
     NOTATION_DEFINITIONS,
     OBSERVATIONS_TABLE_COLUMNS,
     SUMMARY_SPECS,
     VARIABLE_SPECS,
 )
-from build_paper_exhibits import _latex_escape
-from utils import validate_output_stem
 
 
 class VariableRegistryTests(unittest.TestCase):
@@ -751,7 +745,7 @@ class VariableRegistryTests(unittest.TestCase):
     def test_table_artifact_logging_is_centralized(self) -> None:
         root = Path(__file__).resolve().parents[1]
         tabulate = root / "scripts" / "tabulate"
-        helper = (tabulate / "utils.py").read_text(encoding="utf-8")
+        helper = (root / "src" / "ddvc" / "paper_tables.py").read_text(encoding="utf-8")
         self.assertEqual(helper.count('LOGGER.info("wrote %s"'), 2)
         for script in tabulate.glob("render_*.py"):
             self.assertNotIn('print(f"wrote', script.read_text(encoding="utf-8"), script.name)
@@ -785,8 +779,8 @@ class VariableRegistryTests(unittest.TestCase):
 
     def test_paper_table_writer_does_not_emit_data_sidecars(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        text = (root / "scripts" / "build_paper_exhibits.py").read_text(encoding="utf-8")
-        writer = text.split("def _write_table(", 1)[1].split("\ndef _copy_if_exists", 1)[0]
+        text = (root / "src" / "ddvc" / "paper_tables.py").read_text(encoding="utf-8")
+        writer = text.split("def _write_table(", 1)[1]
         self.assertNotIn(".to_pickle(", writer)
         self.assertNotIn(".to_parquet(", writer)
 

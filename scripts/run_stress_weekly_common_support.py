@@ -23,10 +23,7 @@ OUT = ROOT / "output"
 EMP = OUT / "empirical"
 CACHE = DATA / "empirical" / "_stress_daily_pair_cache"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
+from ddvc.paper_tables import _int, _num, _p, _write_table
 
 
 def _load_empirical_module():

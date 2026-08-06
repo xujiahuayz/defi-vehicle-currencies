@@ -11,7 +11,6 @@ import argparse
 import gzip
 import json
 import math
-import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,10 +26,7 @@ DATA = ROOT / "data"
 OUT = ROOT / "output"
 EMP = OUT / "empirical"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _pct, _write_table  # noqa: E402
+from ddvc.paper_tables import _int, _num, _pct, _write_table
 
 WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 

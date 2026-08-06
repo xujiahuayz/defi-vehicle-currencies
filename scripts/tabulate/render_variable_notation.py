@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from ddvc.variable_registry import NOTATION_DEFINITIONS, specs_by_group
-from utils import write_table_artifacts
+from ddvc.paper_tables import write_table_artifacts
 
 
 LATEX_ESCAPES = {

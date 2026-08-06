@@ -31,7 +31,6 @@ factor moves the gas term alone, and it moves it toward profitability.
 from __future__ import annotations
 
 import json
-import sys
 from math import erfc, sqrt
 from pathlib import Path
 
@@ -39,12 +38,11 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT / "src"))
 
-from ddvc.asset_types import asset_type  # noqa: E402
-from ddvc.provenance import stamp  # noqa: E402
-from ddvc.tables import write_exhibit, write_panel  # noqa: E402
+from ddvc.asset_types import asset_type
+from ddvc.analysis.regression import ols_clustered
+from ddvc.provenance import stamp
+from ddvc.tables import write_exhibit, write_panel
 
 PROC = ROOT / "data" / "processed"
 OUT = ROOT / "output" / "empirical" / "rent_incidence"
@@ -66,24 +64,6 @@ MAX_HOURLY_MOVE = 100.0
 # inference
 # ---------------------------------------------------------------------------
 
-def ols_cluster(y, X, cluster, k_absorbed: int = 0):
-    """OLS with cluster-robust standard errors. Returns (beta, V, n_clusters)."""
-    XtX_inv = np.linalg.pinv(X.T @ X)
-    beta = XtX_inv @ (X.T @ y)
-    resid = y - X @ beta
-    order = np.argsort(cluster, kind="stable")
-    Xs, us, cs = X[order], resid[order], cluster[order]
-    bounds = np.flatnonzero(np.r_[True, cs[1:] != cs[:-1], True])
-    meat = np.zeros((X.shape[1], X.shape[1]))
-    for a, b in zip(bounds[:-1], bounds[1:]):
-        s = Xs[a:b].T @ us[a:b]
-        meat += np.outer(s, s)
-    n, k = X.shape
-    g = len(bounds) - 1
-    scale = (g / max(1, g - 1)) * ((n - 1) / max(1, n - k - k_absorbed))
-    return beta, XtX_inv @ meat @ XtX_inv * scale, g
-
-
 def pval(t: float) -> float:
     return erfc(abs(t) / sqrt(2)) if np.isfinite(t) else float("nan")
 
@@ -100,7 +80,14 @@ def wald(beta, V, idx) -> tuple[float, int, float]:
 
 
 def report(name, y, X, cols, cluster, k_absorbed=0, focus=None):
-    beta, V, g = ols_cluster(y, X, cluster, k_absorbed)
+    fit = ols_clustered(
+        y,
+        X,
+        cluster,
+        add_constant=False,
+        k_absorbed=k_absorbed,
+    )
+    beta, V, g = fit.beta, fit.covariance, fit.n_clusters
     se = np.sqrt(np.maximum(np.diag(V), 0))
     print(f"\n{name}   n={len(y):,}  clusters={g:,}")
     print(f"  {'term':<28}{'coef':>12}{'se':>12}{'t':>8}{'p':>8}{'MDE':>12}")

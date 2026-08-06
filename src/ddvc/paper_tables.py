@@ -1,4 +1,4 @@
-"""Shared helpers for table-rendering scripts."""
+"""Canonical formatting and rendering helpers for paper-facing tables."""
 
 from __future__ import annotations
 
@@ -9,17 +9,74 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2]
-TABLE_OUTPUT_FOLDER = "output/tables"
-TABLES_DIR = ROOT / TABLE_OUTPUT_FOLDER
-NUMBERED_ARTIFACT_RE = re.compile(r"^(?:table|figure)_(?:[a-z]\d+|\d+)(?:_|$)", re.IGNORECASE)
+from ddvc.paths import REPO_ROOT
+
+
+TABLES_DIR = REPO_ROOT / "output" / "tables"
+NUMBERED_ARTIFACT_RE = re.compile(
+    r"^(?:table|figure)_(?:[a-z]\d+|\d+)(?:_|$)", re.IGNORECASE
+)
 LOGGER = logging.getLogger(__name__)
 
 
-def validate_output_stem(stem: str) -> str:
-    """Return a valid descriptive artifact stem or raise on hard-coded numbering."""
+def _pct(value: float, digits: int = 1) -> str:
+    if pd.isna(value):
+        return ""
+    return f"{100 * float(value):.{digits}f}"
 
+
+def _num(value: float, digits: int = 2) -> str:
+    if pd.isna(value):
+        return ""
+    return f"{float(value):.{digits}f}"
+
+
+def _int(value: float) -> str:
+    if pd.isna(value):
+        return ""
+    return f"{int(round(float(value))):,}"
+
+
+def _p(value: float) -> str:
+    if pd.isna(value):
+        return ""
+    value = float(value)
+    if value < 0.001:
+        return "<0.001"
+    return f"{value:.3f}"
+
+
+def _latex_escape(value: object, *, allow_breaks: bool = False) -> str:
+    text = "" if value is None else str(value)
+    escaped = (
+        text.replace("\\", "\\textbackslash{}")
+        .replace("&", "\\&")
+        .replace("%", "\\%")
+        .replace("$", "\\$")
+        .replace("#", "\\#")
+        .replace("_", "\\_")
+        .replace("{", "\\{")
+        .replace("}", "\\}")
+    )
+    escaped = escaped.replace("<", r"\ensuremath{<}").replace(
+        ">", r"\ensuremath{>}"
+    )
+    if allow_breaks:
+        escaped = escaped.replace(r"\_", r"\_\allowbreak{}").replace(
+            "/", r"/\allowbreak{}"
+        )
+    return escaped
+
+
+def _artifact_stem(stem: str) -> str:
+    """Drop legacy paper-order prefixes from generated output filenames."""
+    return NUMBERED_ARTIFACT_RE.sub("", stem)
+
+
+def validate_output_stem(stem: str) -> str:
+    """Return a descriptive artifact stem or reject hard-coded numbering."""
     if stem.endswith((".tex", ".pdf", ".pkl")):
         raise ValueError("Pass an artifact stem without a file extension.")
     if NUMBERED_ARTIFACT_RE.match(stem):
@@ -113,28 +170,30 @@ def render_standalone_pdf(
     preview_width: str | None = None,
 ) -> Path:
     """Compile a table fragment into a standalone inspection PDF."""
-
-    with tempfile.TemporaryDirectory(prefix="dvc_table_") as tmp:
-        tmp_dir = Path(tmp)
-        out_dir = tmp_dir / "out"
+    with tempfile.TemporaryDirectory(prefix="dvc_table_") as temporary:
+        temporary_dir = Path(temporary)
+        out_dir = temporary_dir / "out"
         out_dir.mkdir()
-        tex_path = tmp_dir / "standalone_table.tex"
+        tex_path = temporary_dir / "standalone_table.tex"
         tex_path.write_text(
-            _standalone_document(table_latex, preview_width),
-            encoding="utf-8",
+            _standalone_document(table_latex, preview_width), encoding="utf-8"
         )
-
         errors: list[str] = []
         compiled: Path | None = None
-        for compiler in (_compile_with_tectonic, _compile_with_latexmk, _compile_with_pdflatex):
+        for compiler in (
+            _compile_with_tectonic,
+            _compile_with_latexmk,
+            _compile_with_pdflatex,
+        ):
             try:
                 compiled = compiler(tex_path, out_dir)
                 break
             except (FileNotFoundError, subprocess.CalledProcessError) as exc:
                 errors.append(f"{compiler.__name__}: {exc}")
         if compiled is None or not compiled.exists():
-            raise RuntimeError("Could not compile standalone table PDF. " + " | ".join(errors))
-
+            raise RuntimeError(
+                "Could not compile standalone table PDF. " + " | ".join(errors)
+            )
         pdf_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(compiled, pdf_path)
     return pdf_path
@@ -146,14 +205,61 @@ def write_table_artifacts(
     *,
     preview_width: str | None = None,
 ) -> tuple[Path, Path]:
-    """Write a paper-input .tex fragment and matching standalone table PDF."""
-
+    """Write a paper-input TeX fragment and matching standalone PDF."""
     stem = validate_output_stem(stem)
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
     tex_path = TABLES_DIR / f"{stem}.tex"
     pdf_path = TABLES_DIR / f"{stem}.pdf"
     tex_path.write_text(table_latex, encoding="utf-8")
     render_standalone_pdf(table_latex, pdf_path, preview_width=preview_width)
-    LOGGER.info("wrote %s", tex_path.relative_to(ROOT))
-    LOGGER.info("wrote %s", pdf_path.relative_to(ROOT))
+    LOGGER.info("wrote %s", tex_path.relative_to(REPO_ROOT))
+    LOGGER.info("wrote %s", pdf_path.relative_to(REPO_ROOT))
     return tex_path, pdf_path
+
+
+def _write_table(
+    frame: pd.DataFrame,
+    stem: str,
+    caption: str,
+    label: str,
+    *,
+    align: str | None = None,
+    note: str | None = None,
+) -> None:
+    """Write the legacy table fragment and inspection PDF used by runners."""
+    del caption, label
+    stem = _artifact_stem(stem)
+    TABLES_DIR.mkdir(parents=True, exist_ok=True)
+    tex_path = TABLES_DIR / f"{stem}.tex"
+    pdf_path = TABLES_DIR / f"{stem}.pdf"
+    align = align or ("l" + "r" * (len(frame.columns) - 1))
+    use_tabularx = "X" in align
+    begin = (
+        f"\\begin{{tabularx}}{{\\linewidth}}{{{align}}}"
+        if use_tabularx
+        else f"\\begin{{tabular}}{{{align}}}"
+    )
+    end = "\\end{tabularx}" if use_tabularx else "\\end{tabular}"
+    lines = [
+        begin,
+        "\\toprule",
+        " & ".join(_latex_escape(column) for column in frame.columns) + " \\\\",
+        "\\midrule",
+    ]
+    for row in frame.itertuples(index=False, name=None):
+        lines.append(
+            " & ".join(
+                _latex_escape(value, allow_breaks=use_tabularx) for value in row
+            )
+            + " \\\\"
+        )
+    lines.extend(["\\bottomrule", end])
+    if note:
+        lines.append(f"% Notes for paper wrapper: {_latex_escape(note)}")
+    table_latex = "\n".join(lines) + "\n"
+    tex_path.write_text(table_latex, encoding="utf-8")
+    render_standalone_pdf(
+        table_latex,
+        pdf_path,
+        preview_width="24cm" if use_tabularx else None,
+    )

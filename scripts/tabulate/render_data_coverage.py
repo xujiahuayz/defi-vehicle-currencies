@@ -7,7 +7,7 @@ import pandas as pd
 
 from ddvc.analysis.raw_data_inventory import summarize_raw_data_inventory
 from ddvc.paths import DATA_DIR
-from utils import write_table_artifacts
+from ddvc.paper_tables import write_table_artifacts
 
 
 INVENTORY = DATA_DIR / "processed" / "raw_data_inventory.parquet"

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import argparse
 import math
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -23,10 +22,7 @@ OUT = ROOT / "output"
 EMP = OUT / "empirical"
 CACHE = DATA / "empirical" / "_stress_hourly_cache"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
+from ddvc.paper_tables import _int, _num, _p, _write_table
 
 STABLES = {"USDC", "USDT", "DAI"}
 CLEAN_ROUTE_CLASSES = {"single", "coherent"}

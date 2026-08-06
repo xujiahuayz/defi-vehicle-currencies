@@ -2,15 +2,13 @@
 """Empirical tests for liquidity-route feedback and netting-related LP response."""
 from __future__ import annotations
 
-import math
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -18,47 +16,7 @@ DATA = ROOT / "data"
 OUT = ROOT / "output"
 EMP = OUT / "empirical"
 
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
-from build_paper_exhibits import _int, _num, _p, _write_table  # noqa: E402
-
-
-def _demean_two(s: pd.Series, a: pd.Series, b: pd.Series) -> pd.Series:
-    return s - s.groupby(a).transform("mean") - s.groupby(b).transform("mean") + s.mean()
-
-
-def _cluster_ols_multi(y: pd.Series, xvars: pd.DataFrame, cluster: pd.Series) -> tuple[int, int, dict[str, float]]:
-    d = pd.concat([y.rename("y"), xvars, cluster.rename("cluster")], axis=1).replace([np.inf, -np.inf], np.nan).dropna()
-    n = len(d)
-    c = d["cluster"].nunique()
-    names = list(xvars.columns)
-    empty = {f"{name}_{stat}": math.nan for name in names for stat in ["beta", "se", "t", "p"]}
-    if n < 20 or c < 2:
-        return n, c, empty
-    x = np.column_stack([np.ones(n)] + [d[name].to_numpy(float) for name in names])
-    yy = d["y"].to_numpy(float)
-    if np.linalg.matrix_rank(x) < x.shape[1]:
-        return n, c, empty
-    beta = np.linalg.lstsq(x, yy, rcond=None)[0]
-    resid = yy - x @ beta
-    bread = np.linalg.inv(x.T @ x)
-    meat = np.zeros((x.shape[1], x.shape[1]))
-    for _, idx in d.groupby("cluster").indices.items():
-        score = x[idx].T @ resid[idx][:, None]
-        meat += score @ score.T
-    finite = (c / (c - 1)) * ((n - 1) / max(n - x.shape[1], 1))
-    cov = finite * bread @ meat @ bread
-    out: dict[str, float] = {}
-    for j, name in enumerate(names, start=1):
-        se = float(math.sqrt(max(cov[j, j], 0.0)))
-        t = float(beta[j] / se) if se > 0 else math.nan
-        p = float(2 * stats.t.sf(abs(t), c - 1)) if np.isfinite(t) else math.nan
-        out[f"{name}_beta"] = float(beta[j])
-        out[f"{name}_se"] = se
-        out[f"{name}_t"] = t
-        out[f"{name}_p"] = p
-    return n, c, out
+from ddvc.paper_tables import _int, _num, _p, _write_table
 
 
 def p2_feedback_loop() -> pd.DataFrame:
@@ -83,15 +41,18 @@ def p2_feedback_loop() -> pd.DataFrame:
         )
         x = pd.DataFrame(
             {
-                "lp_concentration": _demean_two(dd["lp_concentration_share"], dd["token"], dd["date"]),
-                "current_bridge_share": _demean_two(dd["BridgeShare"], dd["token"], dd["date"]),
+                "lp_concentration": absorb_fixed_effects(dd["lp_concentration_share"], dd["token"], dd["date"]),
+                "current_bridge_share": absorb_fixed_effects(dd["BridgeShare"], dd["token"], dd["date"]),
             }
         )
-        n, clusters, res = _cluster_ols_multi(
-            _demean_two(dd["future_bridge_share"], dd["token"], dd["date"]),
+        fit = ols_clustered(
+            absorb_fixed_effects(dd["future_bridge_share"], dd["token"], dd["date"]),
             x,
             dd["date"],
+            min_observations=20,
         )
+        n, clusters = fit.n_observations, fit.n_clusters
+        res = fit.named_statistics(list(x.columns), offset=1)
         rows.append(
             {
                 "Panel": "A. Lagged liquidity -> VehicleShare",
@@ -109,19 +70,22 @@ def p2_feedback_loop() -> pd.DataFrame:
         )
         x_rev = pd.DataFrame(
             {
-                "current_bridge_share": _demean_two(dd["BridgeShare"], dd["token"], dd["date"]),
-                "lp_concentration": _demean_two(dd["lp_concentration_share"], dd["token"], dd["date"]),
+                "current_bridge_share": absorb_fixed_effects(dd["BridgeShare"], dd["token"], dd["date"]),
+                "lp_concentration": absorb_fixed_effects(dd["lp_concentration_share"], dd["token"], dd["date"]),
             }
         )
         for outcome, label in [
             ("future_lp_concentration", "LP concentration"),
             ("future_log_lp_liquidity", "log LP liquidity"),
         ]:
-            n, clusters, res = _cluster_ols_multi(
-                _demean_two(dd[outcome], dd["token"], dd["date"]),
+            fit = ols_clustered(
+                absorb_fixed_effects(dd[outcome], dd["token"], dd["date"]),
                 x_rev,
                 dd["date"],
+                min_observations=20,
             )
+            n, clusters = fit.n_observations, fit.n_clusters
+            res = fit.named_statistics(list(x_rev.columns), offset=1)
             rows.append(
                 {
                     "Panel": "B. Lagged VehicleShare -> liquidity",
@@ -196,10 +160,17 @@ def p4b_netting_lp_response() -> pd.DataFrame:
     ]:
         x = pd.DataFrame(
             {
-                "post_x_netting_exposure": _demean_two(d["post_x_netting_exposure"], d["token"], d["week"]),
+                "post_x_netting_exposure": absorb_fixed_effects(d["post_x_netting_exposure"], d["token"], d["week"]),
             }
         )
-        n, clusters, res = _cluster_ols_multi(_demean_two(d[outcome], d["token"], d["week"]), x, d["week"])
+        fit = ols_clustered(
+            absorb_fixed_effects(d[outcome], d["token"], d["week"]),
+            x,
+            d["week"],
+            min_observations=20,
+        )
+        n, clusters = fit.n_observations, fit.n_clusters
+        res = fit.named_statistics(list(x.columns), offset=1)
         beta = res["post_x_netting_exposure_beta"]
         rows.append(
             {
