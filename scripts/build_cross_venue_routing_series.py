@@ -66,6 +66,7 @@ from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_cha
 from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_roles import component_eligibility, component_notional
+from ddvc.runtime import exclusive_job
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
@@ -73,6 +74,7 @@ OUT_PARQUET = DATA_DIR / "processed" / "cross_venue_routing_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "cross_venue_routing_series.jsonl"
 OUT_INFERENCE = OUTPUT_DIR / "exhibits" / "cross_venue_routing_inference.jsonl"
 OUT_TECHNOLOGY_WINDOWS = OUTPUT_DIR / "exhibits" / "routing_technology_windows.jsonl"
+LOCK = OUT_PARQUET.with_suffix(".lock")
 MAX_WORKERS = 8
 CODE_SOURCES = [
     "scripts/build_cross_venue_routing_series.py",
@@ -595,4 +597,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    with exclusive_job(LOCK, job="cross-venue routing panel"):
+        sys.exit(main())
