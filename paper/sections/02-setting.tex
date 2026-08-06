@@ -286,7 +286,7 @@ Every quoter above was accepted against swaps that happened, and trades that hap
 
 The screen has to be applied before the quote and never after it. Filtering on the size of the measured gap would condition on a monotone function of the outcome in \eqref{eq:gap}, which is selection on the dependent variable and discharges nothing. The screen is therefore stated in a quantity known in advance, namely a leg's own price impact against its own marginal price, with the threshold read off the distribution of realised behaviour,
 \begin{equation}
-\label{eq:screen}
+\label{eq:support}
 \pi_{\ell}(x,t) \;=\; \frac{\tilde{q}_{\ell}(x,t) - q_{\ell}(x,t)}{\tilde{q}_{\ell}(x,t)} \;\leq\; \bar{\pi},
 \qquad
 \frac{x}{R_{a,p,t}} \;\leq\; \bar{\pi},
@@ -298,7 +298,7 @@ where $\tilde{q}_{\ell}$ prices leg $\ell$ at the pool's marginal rate and the s
 The screen is expensive and its cost is reported. It removes between 70\% and 86\% of quotable routes on the four measured days, and it moves the median gap from thousands of basis points to tens: 31 basis points at \$1,000, 34 at \$10,000 and 21 at \$100,000.
 % removal shares: scripts/measure_dominance_windows.py on four measured days; median gaps: output/exhibits/gap_arbitrage_bound.jsonl
 
-Applying the reserve-ratio form alone was insufficient, for a compositional reason. Most quotes entering \eqref{eq:direct} and \eqref{eq:vehicle} come from pools whose reserves sit on a tick map, where a reserve ratio has no meaning, and the impact form in \eqref{eq:screen} is what binds there. With the constant-product branch screened alone the median gap at a \$100,000 trade fell only to 1,164 basis points and 70.4\% of gaps still implied a cycle that pays.
+Applying the reserve-ratio form alone was insufficient, for a compositional reason. Most quotes entering \eqref{eq:direct} and \eqref{eq:vehicle} come from pools whose reserves sit on a tick map, where a reserve ratio has no meaning, and the impact form in \eqref{eq:support} is what binds there. With the constant-product branch screened alone the median gap at a \$100,000 trade fell only to 1,164 basis points and 70.4\% of gaps still implied a cycle that pays.
 % scripts/run_route_cost_panel.py, MAX_INPUT_TO_RESERVE and MAX_PRICE_IMPACT
 
 \subsection{Validation: level costs across intermediary types}

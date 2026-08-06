@@ -1,42 +1,42 @@
-% Section 4. The estimand: how fast the vehicle role changes hands, and whether the
-% incumbent's cost position moves that speed.
+% Section 4. The estimand: the speed at which the vehicle role changes hands, and whether
+% the incumbent's cost position moves that speed.
 %
 % The estimand is the turnover hazard computed by scripts/measure_survival_at_block.py,
-% function turnover_hazard. The two-arm duration difference is retained as description,
-% with the minimum-over-candidates artefact that contaminates it stated beside it. Every
-% number carries a trailing comment naming the exhibit and the sample it was read from.
+% function turnover_hazard. The two duration arms are retained as description, with the
+% minimum-over-candidates artefact that contaminates them stated beside them. Every number
+% carries a trailing comment naming the exhibit and the sample it was read from.
 
-\section{Turnover of the vehicle role}
+\section{Vehicle role turnover}
 \label{sec:survival}
 
-\subsection{The quantity a frequency cannot deliver}
+\subsection{Frequency and duration}
 \label{sec:survival:question}
 
-Section~\ref{sec:dominance} establishes that an asset occupies the vehicle role at moments when routing through it is not the cheapest way to trade, on 27.2\% of realised multi-leg routing over the four days priced for it. A frequency is a statement about states. Theories of indirect exchange make their sharpest statement about time: thick-market externalities support several media of exchange as equilibria at once \citep{Krugman1980VehicleCurrencies,KiyotakiWright1989MoneyMedium}, and what separates those equilibria empirically is the speed at which the role changes hands once the incumbent stops being cheap \citep{DowdGreenaway1993CurrencyCompetition,GopinathStein2021Making}.
+Section~\ref{sec:dominance} puts an asset in the vehicle role at moments when routing through it was the more expensive way to trade, on 27.2\% of realised multi-leg routing over four consecutively priced days. A frequency of that kind is a statement about states, and the sharpest statement the theory of indirect exchange makes is about time. Thick-market externalities support several media of exchange as equilibria at once, the classical account of a vehicle currency rests on that multiplicity, and no cross-section separates one of those equilibria from another \citep{Krugman1980VehicleCurrencies,KiyotakiWright1989MoneyMedium}. The separation is a speed, the rate at which the role changes hands on a pair whose incumbent has lost its cost advantage \citep{DowdGreenaway1993CurrencyCompetition,GopinathStein2021Making}.
 % output/exhibits/realised_dominance.jsonl, REWEIGHTED row, 1,762 matched routes over four consecutively priced days
 
-Two mechanisms produce the same cross-section and differ in that speed. Under \emph{persistence} the role moves slowly in both directions, because entering and leaving meet the same frictions, and the incumbent's cost position still governs the timing. Under \emph{hysteresis} the incumbent's cost position stops governing who leads the pair at all, which is a protection no symmetric friction can generate. Historical currency networks measure inertia through the number of markets quoting a currency, a degree statistic carrying no counterfactual price \citep{FlandreauJobst2006Empirics}, and the modern foreign exchange record gives the vehicle's share of turnover without the price of the road not taken \citep{Somogyi2026DollarDominanceFX,ErenMalamud2022DominantDebt}. The state in which an incumbent is strictly cost-dominated is unobservable in both. On chain it is observable at the block, on the same pairs, with the same pricing engine.
+Two mechanisms produce that cross-section and differ in the speed they imply. Under \emph{persistence} the role moves slowly in both directions, because entering and leaving meet the same frictions, and the incumbent's cost position still governs the timing when the role moves at all. Under \emph{hysteresis} cost stops governing who leads the pair at all, a protection that no symmetric friction generates. Historical currency networks measure inertia through the number of markets quoting a currency, a degree statistic carrying no counterfactual price \citep{FlandreauJobst2006Empirics}. The modern foreign exchange record gives the vehicle's share of turnover, day by day and pair by pair, and it gives no price for the road not taken \citep{Somogyi2026DollarDominanceFX,ErenMalamud2022DominantDebt}. In both records a strictly cost-dominated incumbent is an unobservable state, and the quotes that would identify it are missing by construction. On chain that state is observable at the block, where the pool's own reserves are readable at the moment the trade cleared, on the same pairs and through the same pricing engine.
 
 \subsection{Notation}
 \label{sec:survival:notation}
 
-Fix an unordered pair of assets $(a,b)$ and a date $t$. The candidate set $K_{abt}$ collects the assets through which routing from $a$ to $b$ was priceable on that date, $n_{abt} = |K_{abt}|$ counts them, and $s_{abkt}$ is the share of realised multi-leg routing between $a$ and $b$ that passed through candidate $k$. The incumbent on the pair is the candidate carrying the largest share,
+Fix an unordered pair of assets $(a,b)$, a date $t$, and the panel of realised routing on that date. The candidate set $K_{abt}$ collects the assets through which routing from $a$ to $b$ was priceable on the date, and $n_{abt} = |K_{abt}|$ counts them. Write $s_{abkt}$ for the share of realised multi-leg routing between $a$ and $b$ that passed through candidate $k$, with the shares summing to one over the candidate set. The incumbent on the pair is the candidate carrying the largest share,
 \begin{equation}
 \ell_{abt} \;=\; \arg\max_{k \in K_{abt}} s_{abkt}, \qquad s_{abkt} \in [0,1], \qquad \sum_{k \in K_{abt}} s_{abkt} \;=\; 1 .
 \label{eq:incumbent}
 \end{equation}
 
-Dominance is judged at the state each route executed in. Write $\mathcal{B}_{abt}$ for the blocks on date $t$ at which the direct pool between $a$ and $b$ traded, $P_{uv\beta}$ for the marginal price of $v$ in units of $u$ at block $\beta$, and $\delta$ for the extra pool fee a two-leg route pays over a one-leg route. The routing margin and the day's dominance indicator are
+Dominance is judged at the state each route executed in, and not at the state that stood when the day closed. Write $\mathcal{B}_{abt}$ for the blocks on date $t$ at which the direct pool between $a$ and $b$ traded, $P_{uv\beta}$ for the marginal price of $v$ in units of $u$ at block $\beta$, and $\delta$ for the extra pool fee a two-leg route pays over a one-leg route. The routing margin and the day's dominance indicator are
 \begin{align}
 \mu_{abk\beta} &\;=\; \log P_{ab\beta} \;-\; \bigl(\log P_{ak\beta} + \log P_{kb\beta}\bigr) \;+\; \delta, \label{eq:margin}\\
 \bar{d}_{abkt} &\;=\; \frac{1}{|\mathcal{B}_{abt}|}\sum_{\beta \in \mathcal{B}_{abt}} \mathbf{1}\{\mu_{abk\beta} > 0\}, \qquad d_{abkt} \;=\; \mathbf{1}\bigl\{\bar{d}_{abkt} \geq \tfrac{1}{2}\bigr\}. \label{eq:dominated}
 \end{align}
-A positive margin says the direct pool returned more of the output token than the path through $k$. The indicator $d_{abkt}=1$ marks a candidate that was the worse way to trade on the majority of the day's blocks. Token decimals cancel around the closed triangle in \eqref{eq:margin}, and on concentrated-liquidity venues the three prices are read from the pool's own state variable at the block, with no reconstruction step between the swap record and the margin \citep{AdamsZinsmeisterRobinson2021UniswapV3}.
+A positive margin says the direct pool returned more of the output token, at that block and that size, than the path through $k$ did. The indicator $d_{abkt}=1$ marks a candidate that was the worse way to trade, on the majority of the day's blocks and at the state each of them stood in. Token decimals enter each leg as a constant, and they cancel around the closed triangle in \eqref{eq:margin}. On concentrated-liquidity venues the three prices are read from the pool's own state variable at the block, with no reconstruction step between the swap record and the margin \citep{AdamsZinsmeisterRobinson2021UniswapV3}.
 
-\subsection{Two durations, and why their difference is not an estimand}
+\subsection{Two duration arms}
 \label{sec:survival:spec}
 
-The pair of durations the inertia literature asks for is defined on \eqref{eq:incumbent} and \eqref{eq:dominated}. A \emph{retention} spell opens on the first date $t_0$ at which the incumbent is dominated, meaning $\ell_{abt_0} = k$ and $d_{abkt_0} = 1$ with one of those two failing at $t_0-1$, and it runs until another candidate takes the largest share. A \emph{displacement} spell opens when a challenger becomes cheap, meaning $\ell_{abt_0} \neq k$ and $d_{abkt_0}=0$ with $d_{abk,t_0-1}=1$, and it runs until that named challenger takes the largest share. Writing $\bar{t}$ for the last date of the window,
+The pair of durations the inertia literature asks for is defined on \eqref{eq:incumbent} and \eqref{eq:dominated}, and both are spells on a single pair. A \emph{retention} spell opens on the first date $t_0$ at which the incumbent is dominated, meaning $\ell_{abt_0} = k$ and $d_{abkt_0} = 1$ with one of the two failing at $t_0-1$, and it runs until another candidate takes the largest share. A \emph{displacement} spell opens when a challenger becomes cheap, meaning $\ell_{abt_0} \neq k$ and $d_{abkt_0}=0$ with $d_{abk,t_0-1}=1$, and it runs until that named challenger takes the largest share. Writing $\bar{t}$ for the last date of the window,
 \begin{align}
 \tau^{R}_{abkt_0} &\;=\; \min\{h \geq 0 \;:\; \ell_{ab,\,t_0+h+1} \neq k\}, \label{eq:retention}\\
 \tau^{D}_{abkt_0} &\;=\; \min\{h \geq 0 \;:\; \ell_{ab,\,t_0+h+1} = k\}, \label{eq:displacement}
@@ -46,43 +46,41 @@ and a spell still running at the end of the window enters censored,
 c^{R}_{abkt_0} \;=\; \mathbf{1}\bigl\{\ell_{abu} = k \;\; \text{for every } u \in (t_0, \bar{t}\,]\bigr\}, \qquad \tau^{R}_{abkt_0} \;=\; \bar{t} - t_0 \;\; \text{on} \;\; \{c^{R}_{abkt_0}=1\},
 \label{eq:censoring}
 \end{equation}
-with $c^{D}$ defined the same way on \eqref{eq:displacement}. Both arms are computed on the same pairs, which fixes the pair's liquidity, its token characteristics and its trading population by construction.
+with $c^{D}$ defined the same way on \eqref{eq:displacement}. Both arms run on the same pairs, so that the pair's liquidity, its token characteristics and its trading population are fixed by construction.
 
-The difference $\mathbb{E}[\tau^{R}] - \mathbb{E}[\tau^{D}]$ is contaminated, and the contamination is arithmetic. A retention spell closes when \emph{any} candidate takes the lead while a displacement spell asks whether \emph{one named} candidate takes it. Equation~\eqref{eq:retention} is a minimum over the candidate set and \eqref{eq:displacement} is a single draw from it. Take the benchmark in which each of the $n_{abt}-1$ challengers takes the lead independently with daily probability $q$:
+The difference $\mathbb{E}[\tau^{R}] - \mathbb{E}[\tau^{D}]$ is contaminated, and the source of the contamination is arithmetic. A retention spell closes when \emph{any} candidate takes the lead, and a displacement spell asks about \emph{one named} candidate. Equation~\eqref{eq:retention} is a minimum over the candidate set, \eqref{eq:displacement} is a single draw from it, and the two are not comparable. Take the benchmark in which each of the $n_{abt}-1$ challengers takes the lead independently, with daily probability $q$:
 \begin{equation}
 \Pr\bigl(\tau^{R} \geq h\bigr) \;=\; (1-q)^{(n-1)h}, \qquad \Pr\bigl(\tau^{D} \geq h\bigr) \;=\; (1-q)^{h}, \qquad \frac{\mathbb{E}[\tau^{D}]}{\mathbb{E}[\tau^{R}]} \;\xrightarrow[q \to 0]{}\; n-1 .
 \label{eq:artefact}
 \end{equation}
-Retention is shorter by construction, the gap grows with the number of candidates on the pair, and no economic force is required to produce it. A measured ordering of the two arms therefore reads as a statement about $n_{abt}$ and carries no information about the frictions that separate persistence from hysteresis.
+Retention is shorter by construction, the gap grows with the number of candidates on the pair, and no economic force is required to produce it. A measured ordering of the two arms therefore reads as a statement about $n_{abt}$, and it carries no information about the frictions separating persistence from hysteresis. Holding the candidate count fixed across the two arms is the one thing a single-event comparison does on its own, and the estimand below rests on that property.
 
-\subsection{The estimand: one event, conditioned on the incumbent's cost position}
+\subsection{The turnover hazard}
 \label{sec:survival:hazard}
 
-The symmetric question uses a single event. Leadership on a pair changes hands between $t$ and $t+1$,
+The symmetric comparison uses a single event. Leadership on a pair changes hands between $t$ and $t+1$,
 \begin{equation}
 y_{ab,\,t+1} \;=\; \mathbf{1}\bigl\{\ell_{ab,\,t+1} \neq \ell_{abt}\bigr\},
 \label{eq:event}
 \end{equation}
-and that event is conditioned on whether the incumbent was the cheapest way to trade on the day it was still leading. The discrete-time hazard of the role moving, and the ratio of its two arms, are
+and that event is conditioned on the incumbent's cost position on the day it was still leading. The discrete-time hazard of the role moving, and the ratio of its two arms, are
 \begin{equation}
 \lambda_j \;=\; \Pr\bigl(y_{ab,\,t+1} = 1 \;\big|\; d_{ab\,\ell_{abt}\,t} = j\bigr), \quad j \in \{0,1\}, \qquad \theta \;=\; \frac{\lambda_1}{\lambda_0} .
 \label{eq:hazard}
 \end{equation}
-Both conditions are evaluated on the same pairs, over the same days, with the same event. The candidate count enters $\lambda_1$ and $\lambda_0$ identically and cancels out of $\theta$. The hazard ratio $\theta$ is the estimand.
-
-The two readings sit at opposite ends of $\theta$. A ratio near one says that losing the cost advantage barely moves the chance of losing the role, meaning cost has lost its grip on who intermediates the pair, which is the hysteresis reading and the protection a symmetric friction cannot generate. A large ratio says the role follows cost closely, which is the competitive reading and leaves little room for an incumbency premium. Persistence sits between them, with $\theta$ above one and both arms small.
+Both conditions are evaluated on the same pairs, over the same days, with the same event. The candidate count enters $\lambda_1$ and $\lambda_0$ identically, and it cancels out of $\theta$. The hazard ratio $\theta$ is the estimand, and the two readings of inertia sit at opposite ends of it. A ratio near one says the chance of losing the role barely moves when the cost advantage goes, so cost has lost its grip on who intermediates the pair, and that is the hysteresis reading. A large ratio says the role follows cost closely, the competitive reading, and it leaves little room for an incumbency premium. Persistence sits between them, with $\theta$ above one and both arms small.
 
 The estimate that conditions on the pair and on the size of the candidate set is a grouped-duration hazard with a complementary log-log link,
 \begin{equation}
 \Pr\bigl(y_{ab,\,t+1}=1 \mid \cdot\bigr) \;=\; 1 - \exp\Bigl(-\exp\bigl(\alpha_{ab} + \gamma\, d_{ab\,\ell_{abt}\,t} + \psi\, n_{abt} + \rho\, \bar{d}_{ab\,\ell_{abt}\,t}\bigr)\Bigr), \qquad \theta \;=\; \exp(\gamma),
 \label{eq:cloglog}
 \end{equation}
-where $\alpha_{ab}$ absorbs the pair, $\psi$ carries the mechanical effect of more candidates on the number of ways the role can move, and $\rho$ reads the intensity of dominance within the day against its indicator. Estimating \eqref{eq:cloglog} needs pairs carrying several candidates in both conditions, and the block-level window below is dominated by pairs carrying one. The ratio reported there is the unconditional \eqref{eq:hazard}.
+where $\alpha_{ab}$ absorbs the pair, $\psi$ carries the mechanical effect of more candidates on the number of ways the role can move, and $\rho$ reads the intensity of dominance within the day beside its indicator. Estimating \eqref{eq:cloglog} needs pairs carrying several candidates in both conditions, and the block-level window below is dominated by pairs carrying one. The ratio reported there is the unconditional \eqref{eq:hazard}, and the conditional estimate waits on the six-venue panel.
 
-\subsection{What the block-level window measures}
+\subsection{The block-level window}
 \label{sec:survival:measured}
 
-Over sixty consecutive days from 2024-01-01 to 2024-02-29, priced at a 30 basis point fee wedge on 177 pairs of Uniswap v3 triangles carrying 3,924 pair-candidate-days, leadership changes hands on 12.88\% of the 1,444 pair-days whose incumbent was losing on cost against 11.01\% of the 109 pair-days whose incumbent was the cheapest available, giving $\theta = 1.17$. Table~\ref{tab:turnover} reports the two conditions and the ratio.
+The window is sixty consecutive days, 2024-01-01 to 2024-02-29, priced at a 30 basis point fee wedge on 177 pairs of Uniswap v3 triangles, and it carries 3,924 pair-candidate-days on which the incumbent and its cost position are both defined. Leadership changes hands on 12.88\% of the 1,444 pair-days whose incumbent was losing on cost, and on 11.01\% of the 109 pair-days whose incumbent was the cheapest available. The ratio of those two rates is $\theta = 1.17$, the estimand of \eqref{eq:hazard} evaluated at the state each route executed in. Table~\ref{tab:turnover} sets the two conditions, their pair-day counts, and the ratio side by side.
 % output/exhibits/survival_at_block.jsonl, arms turnover_holder_dominated, turnover_holder_cheapest, turnover_hazard_ratio; 60 days 20240101-20240229, 30 bps wedge, Uniswap v3 triangles at block state
 
 \begin{table}[t]
@@ -102,44 +100,40 @@ All pair-days & 1{,}553 & & 1.17 \\
 % output/exhibits/survival_at_block.jsonl, arm turnover_hazard_ratio, same 60 days and wedge
 \bottomrule
 \end{tabular}
-
-\vspace{0.6em}
+\par\vspace{6pt}
 \begin{minipage}{0.86\textwidth}
-\footnotesize
-The event is \eqref{eq:event}, leadership on a pair passing to a different asset the next day. The conditioning variable is \eqref{eq:dominated} evaluated for the incumbent on the day it was still leading, at a 30 basis point fee wedge. The window is sixty consecutive days from 2024-01-01 to 2024-02-29 on 177 Uniswap v3 pairs, with the margin \eqref{eq:margin} evaluated at every block at which the direct pool traded and joined to realised routing shares from the route panel. The ratio is $\theta = \lambda_1/\lambda_0$ from \eqref{eq:hazard}.
+\footnotesize\raggedright \emph{Notes.} The event is \eqref{eq:event}, leadership on a pair passing to a different asset the next day. The conditioning variable is \eqref{eq:dominated} evaluated for the incumbent on the day it was still leading, at a 30 basis point fee wedge. The window is sixty consecutive days from 2024-01-01 to 2024-02-29 on 177 Uniswap v3 pairs, with the margin \eqref{eq:margin} evaluated at every block at which the direct pool traded and joined to realised routing shares from the route panel. The ratio is $\theta = \lambda_1/\lambda_0$ from \eqref{eq:hazard}.
 % output/exhibits/survival_at_block.jsonl; scripts/measure_survival_at_block.py, function turnover_hazard
 \end{minipage}
 \end{table}
 
-A ratio of 1.17 sits close to one. Strict cost dominance raises the daily chance of the role moving by about a sixth of its base rate, on a market where the routing decision is a graph search re-solved at every quote and quote-time habit is unavailable as a channel. The role is close to indifferent to the incumbent's cost position over a horizon of one day, which is the hysteresis reading of \eqref{eq:hazard} and the configuration foreign exchange data cannot reach. Two features of the window bound how far the reading carries. The conditioning is unbalanced, with 1,444 of the 1,553 pair-days sitting in the dominated condition, which leaves $\lambda_0$ resting on 109 pair-days. And $\theta$ is estimated over a one-day step, which measures the speed of the role and leaves the pair's eventual destination open.
+A ratio of 1.17 sits close to one, and the distance from one is the whole of the cost effect. Strict cost dominance raises the daily chance of the role moving by about a sixth of its base rate, on a market where the routing decision is a graph search re-solved at every quote and quote-time habit is unavailable as a channel. Over a horizon of one day the role is close to indifferent to the incumbent's cost position, and that is the hysteresis reading of \eqref{eq:hazard}, the configuration foreign exchange data cannot reach. Two features of the window bound how far that reading carries, and both are properties of the sample and not of the estimand. The conditioning is unbalanced, with 1,444 of the 1,553 pair-days sitting in the dominated condition, so $\lambda_0$ rests on 109 pair-days. And $\theta$ is estimated over a one-day step, which measures the speed of the role and leaves the pair's eventual destination open.
 % output/exhibits/survival_at_block.jsonl, arms turnover_holder_dominated and turnover_holder_cheapest, 60 days at a 30 bps wedge
 
-The two arms of \eqref{eq:retention} and \eqref{eq:displacement} are reported as description on the same window, with the artefact of \eqref{eq:artefact} attached to them. Retention spells average 5.74 days over 289 spells at 32.2\% censoring, with a median of 2.0 days, and displacement spells average 23.90 days over 110 spells at 92.7\% censoring, with a median of 18.5 days. Read naively, an incumbent gives up the lead eighteen days faster than a named challenger takes it, which inverts the hysteresis ordering and would reject the asymmetry outright. That reading is unavailable. Retention is the minimum over every challenger on the pair and displacement is a single draw, and \eqref{eq:artefact} generates a gap of exactly this shape from the candidate count alone.
+The two arms of \eqref{eq:retention} and \eqref{eq:displacement} are reported as description on the same window, with the artefact of \eqref{eq:artefact} attached to them, and neither is read as an estimand. Retention spells average 5.74 days over 289 spells at 32.2\% censoring, with a median of 2.0 days. Displacement spells average 23.90 days over 110 spells at 92.7\% censoring, with a median of 18.5 days. Read naively, an incumbent gives up the lead eighteen days faster than a named challenger takes it, an inversion of the hysteresis ordering that would reject the asymmetry outright. That reading is unavailable, because retention is the minimum over every challenger on the pair and displacement is a single draw, and \eqref{eq:artefact} generates a gap of exactly this shape from the candidate count alone.
 % output/exhibits/survival_at_block.jsonl, arms retention and displacement; output/exhibits/survival_at_block_spells.jsonl for the spell-level records, 60 days at a 30 bps wedge
 
-Two limits keep the block-level estimate preliminary and both are measured. Censoring at 92.7\% on the displacement arm says the sixty-day window is shorter than the durations present in it, which makes that arm's mean a lower bound on a quantity the window cannot see. The venue scope is one family priced at the marginal price, which omits depth and omits the venues the family does not cover, on a market where 61.1\% of multi-leg routes touch more than one venue by the end of the sample. The hour-level panel across six venues carries the opposite weakness, having the coverage and pricing at a coarser state. The two are complements, and a hazard ratio standing in both is not an artefact of either.
+Two limits keep the block-level estimate preliminary, and both of them are measured. Censoring at 92.7\% on the displacement arm says the sixty-day window is shorter than the durations present in it, so that arm's mean is a lower bound on a quantity the window cannot see. The venue scope is one family priced at the marginal price, with no depth term and no cover of the venues the family omits, on a market where 61.1\% of multi-leg routes touch more than one venue by the end of the sample. The hour-level panel across six venues carries the opposite weakness, the wider cover, and pricing at a coarser state. The two are complements, and a hazard ratio standing in both is not an artefact of either.
 % output/exhibits/survival_at_block.jsonl, displacement arm censored_share; docs/router-identification-feasibility.md, cross-venue series
 
-\subsection{The dollars behind the days}
+\subsection{Days and dollars}
 \label{sec:survival:price}
 
-Days are one currency for the cost of inertia and dollars are the other, and they answer different questions. The notional \emph{routed} through a dominated vehicle measures exposure. The value \emph{foregone} measures loss, summing each dominated route's own notional against its own realised gap,
+Days are one currency for the cost of inertia, dollars are the other, and the two answer different questions. The value \emph{routed} through a dominated vehicle measures exposure, and it is the larger of the two numbers by construction. The value \emph{foregone} measures loss, summing each dominated route's own size in dollars, weighted by its own realised gap,
 \begin{equation}
 L_t \;=\; \sum_{r \in \mathcal{R}_t} \mathbf{1}\{d_{r} = 1\} \, V_r \, \frac{g_r}{10^{4}},
 \label{eq:foregone}
 \end{equation}
-where $\mathcal{R}_t$ indexes realised multi-leg routes on date $t$, $V_r$ is the route's notional in dollars, and $g_r$ is its realised cost gap in basis points. The second quantity is the one comparable to the magnitudes the arbitrage literature reports for this market \citep{MakarovSchoar2020Arbitrage,HeimbachPahariSchertenleib2024NonAtomic}. A large flow through a slightly worse route and a small flow through a much worse route are different phenomena, and only \eqref{eq:foregone} distinguishes them.
+where $\mathcal{R}_t$ indexes realised multi-leg routes on date $t$, $V_r$ is the route's size in dollars, and $g_r$ is its realised cost gap in basis points. The second quantity is the one comparable to the magnitudes the arbitrage literature reports for this market, in dollars and over the same routes \citep{MakarovSchoar2020Arbitrage,HeimbachPahariSchertenleib2024NonAtomic}. A large flow through a slightly worse route and a small flow through a much worse route are different phenomena, and only \eqref{eq:foregone} separates them.
 
-\subsection{Why the verdict is judged at the block}
+\subsection{Classification at the block}
 \label{sec:survival:obstacle}
 
-A smart-order router quotes at one block and settles in the next. Classifying a route by the state that stood at the close of its hour records as dominated a route that was cheapest when the router chose and was overtaken afterwards, which is a state the router could not have avoided. A hazard estimated on that classification mixes the behaviour with the staleness of the measurement.
-
-The size of that mixing is a function of trade economics and is measured in Section~\ref{sec:executability}. At the fee wedges these routes pay, roughly 15\% to 25\% of dominance verdicts differ between own-block and hour-boundary state. The estimand of \eqref{eq:hazard} turns on a ratio of two rates that differ by under two percentage points, which is well inside a misclassification of that size, and $d_{abkt}$ is therefore evaluated at each route's own block throughout. Nothing in \eqref{eq:incumbent} through \eqref{eq:hazard} changes with the state at which the verdict is judged, and the cost of judging it at the block is computational.
+A smart-order router quotes at one block, and it settles in the next. Classifying a route by the state that stood at the close of its hour records as dominated a route that was cheapest when the router chose, and was overtaken before the hour closed, a state the router could not have avoided. A hazard estimated on that classification mixes the behaviour with the staleness of the measurement, and the two are not separable after the fact. The size of the mixing is a function of trade economics, and Section~\ref{sec:executability} measures it. At the fee wedges these routes pay, roughly 15\% to 25\% of dominance classifications differ between own-block state and hour-boundary state. The estimand of \eqref{eq:hazard} turns on a ratio of two rates that differ by under two percentage points, well inside a misclassification of that size, and $d_{abkt}$ is therefore evaluated at each route's own block throughout. Nothing in \eqref{eq:incumbent} through \eqref{eq:hazard} moves with the state at which the classification is made, and the cost of making it at the block is computational.
 % output/exhibits/block_vs_hour_conditional.jsonl, fee_wedge_bps rows
 
-Misclassification of that kind has a sign, and the sign runs against the reading the window returns. A verdict error applied to both conditions of \eqref{eq:hazard} alike moves $\lambda_1$ and $\lambda_0$ toward their pooled mean, which attenuates $\theta$ toward one. A measured 1.17 is therefore a lower bound on the true ratio, and hysteresis is the reading a timing error manufactures where the truth is competitive. Evaluating $d_{abkt}$ at the block is what closes that channel, and the window above closes it.
+Misclassification of that kind has a sign, and the sign runs opposite to the reading the window returns. An error applied to both conditions of \eqref{eq:hazard} alike moves $\lambda_1$ and $\lambda_0$ toward their pooled mean, and that attenuates $\theta$ toward one. A measured 1.17 is therefore a lower bound on the true ratio, and hysteresis, on this reasoning, is what a timing error manufactures out of a competitive truth. Evaluating $d_{abkt}$ at the block closes that channel, and the window above closes it.
 % output/exhibits/survival_at_block.jsonl, arm turnover_hazard_ratio; output/exhibits/block_vs_hour_conditional.jsonl
 
-Robustness is fixed with the estimand and is not chosen after seeing it. The ratio is re-estimated at each of the three priced notionals, which establishes whether it is common across trade size or a property of the fixed grid, and at a 2\% and a 10\% price-impact ceiling in place of the 5\% of Section~\ref{sec:setting:support}, which establishes whether the support screen selects the pair-days entering \eqref{eq:hazard}. The fee wedge $\delta$ carries its own sweep, since the verdict in \eqref{eq:margin} is sensitive to it and the tiers on this venue family run from 5 to 100 basis points.
+Robustness is fixed with the estimand, and it is not chosen after seeing the estimate. The ratio is re-estimated at each of the three priced trade sizes, and that establishes whether it is common across size or a property of the fixed grid. It is re-estimated at a 2\% and a 10\% price-impact ceiling in place of the 5\% of Section~\ref{sec:setting:support}, and that establishes whether the support restriction selects the pair-days entering \eqref{eq:hazard}. The fee wedge $\delta$ carries its own sweep, since the sign in \eqref{eq:margin} is sensitive to it, and the tiers on this venue family run from 5 to 100 basis points.
 % output/exhibits/quoter_support_bounds.jsonl, which sets the 5 per cent ceiling the alternatives bracket; scripts/measure_survival_at_block.py, the fee-wedge sweep
