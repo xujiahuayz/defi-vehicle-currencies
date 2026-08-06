@@ -66,6 +66,16 @@ PROBES: list[tuple[str, str, str]] = [
     ("document_self_reference",
      r"\bthis (?:paper|section|subsection|table|figure) (?:does|asks|establishes|shows that|is stated)\b",
      "the document describing itself"),
+    ("screen_word", r"\bscreen(?:s|ed|ing)?\b", "'screen' as noun or verb"),
+    ("against_prep", r"\bagainst\b", "'against' as a preposition"),
+    ("what_cleft",
+     r"\bwhat\s+(?:\w+\s+){0,3}?(?:is|are|was|were|does|do|did|means|makes|shows|matters|follows|remains|survives|holds)\b",
+     "'what X does' cleft construction"),
+    ("negation_periphrastic",
+     r"\b(?:does|do|did|is|are|was|were|can|could|would|will|has|have|had)\s+not\b|\bcannot\b",
+     "periphrastic negation, 'does not X'"),
+    ("not_any", r"\bnot\b", "any use of 'not'"),
+    ("neither_nor", r"\bneither\b|\bnor\b", "'neither ... nor'"),
     ("hedging_stack", r"\b(?:may|might|could) (?:possibly|perhaps|arguably)\b", "stacked hedges"),
 ]
 

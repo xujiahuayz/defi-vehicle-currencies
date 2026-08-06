@@ -10,4 +10,10 @@
 {"construction": "triple_list", "corpus_max": 3.0303030303030303, "corpus_median": 1.5965089670586983, "corpus_min": 0.39167686658506734, "draft": 0.053324801365114916, "verdict": "in range"}
 {"construction": "so_that_tail", "corpus_max": 1.5012428321807398, "corpus_median": 0.09791921664626684, "corpus_min": 0.0, "draft": 0.5332480136511492, "verdict": "in range"}
 {"construction": "document_self_reference", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "screen_word", "corpus_max": 0.5920663114268798, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 1.3331200341278728, "verdict": "OVERUSED"}
+{"construction": "against_prep", "corpus_max": 1.7160433867573255, "corpus_median": 0.24634182391486426, "corpus_min": 0.0, "draft": 3.4661120887324697, "verdict": "OVERUSED"}
+{"construction": "what_cleft", "corpus_max": 0.7770762506070908, "corpus_median": 0.11953858107704261, "corpus_min": 0.0, "draft": 0.7732096197941662, "verdict": "in range"}
+{"construction": "negation_periphrastic", "corpus_max": 5.38970787291118, "corpus_median": 1.970734591318914, "corpus_min": 1.1280521087296678, "draft": 3.3594624860022395, "verdict": "in range"}
+{"construction": "not_any", "corpus_max": 6.324908325745084, "corpus_median": 2.6604916982805342, "corpus_min": 1.2008296641315819, "draft": 3.839385698288274, "verdict": "in range"}
+{"construction": "neither_nor", "corpus_max": 0.3436426116838488, "corpus_median": 0.04922107646494229, "corpus_min": 0.0, "draft": 0.2666240068255746, "verdict": "in range"}
 {"construction": "hedging_stack", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
