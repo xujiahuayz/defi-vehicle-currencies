@@ -35,8 +35,11 @@ def restrict_routes_to_venues(legs: pd.DataFrame, venues: set[str] | frozenset[s
     missing = sorted(set(KEYS + ["source"]) - set(legs.columns))
     if missing:
         raise ValueError(f"venue restriction is missing columns: {', '.join(missing)}")
-    keep = legs.groupby(KEYS)["source"].transform(lambda values: values.isin(venues).all())
-    return legs.loc[keep].copy()
+    blocked = legs.loc[~legs["source"].isin(venues), KEYS].drop_duplicates()
+    if blocked.empty:
+        return legs.copy()
+    marked = legs.merge(blocked.assign(_venue_blocked=True), on=KEYS, how="left", sort=False)
+    return marked.loc[marked["_venue_blocked"].isna(), legs.columns].copy()
 
 
 def aggregate_vehicle_extent(
