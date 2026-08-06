@@ -67,6 +67,28 @@ class YearEndpointChange:
     degrees_freedom: int
 
 
+def common_calendar_day_mask(
+    dates: pd.Series | np.ndarray,
+    years: pd.Series | np.ndarray,
+    *,
+    baseline_year: int,
+    comparison_year: int,
+) -> np.ndarray:
+    """Keep only month-days observed in both endpoint years."""
+    date_array = pd.to_datetime(pd.Series(np.asarray(dates).reshape(-1)), errors="coerce")
+    year_array = np.asarray(years).reshape(-1)
+    if len(date_array) != len(year_array):
+        raise ValueError("calendar-balance dates and years must have the same row count")
+    valid = date_array.notna().to_numpy() & pd.notna(year_array)
+    stamps = date_array.dt.strftime("%m-%d").to_numpy()
+    baseline_days = set(stamps[valid & (year_array == baseline_year)])
+    comparison_days = set(stamps[valid & (year_array == comparison_year)])
+    common_days = baseline_days & comparison_days
+    if not common_days:
+        raise ValueError("calendar balance requires common endpoint-year days")
+    return valid & np.isin(stamps, list(common_days))
+
+
 def absorb_fixed_effects(
     values: pd.Series | pd.DataFrame,
     *groups: pd.Series,

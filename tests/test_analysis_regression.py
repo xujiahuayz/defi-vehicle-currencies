@@ -7,6 +7,7 @@ import pandas as pd
 
 from ddvc.analysis.regression import (
     absorb_fixed_effects,
+    common_calendar_day_mask,
     ols_clustered,
     ols_clustered_named,
     ols_hac,
@@ -15,6 +16,19 @@ from ddvc.analysis.regression import (
 
 
 class RegressionPrimitiveTests(unittest.TestCase):
+    def test_common_calendar_mask_balances_a_partial_endpoint_year(self) -> None:
+        dates = pd.to_datetime(
+            ["2022-01-01", "2022-07-01", "2024-01-01", "2024-07-01", "2026-01-01"]
+        )
+        years = dates.year.to_numpy()
+        mask = common_calendar_day_mask(
+            dates,
+            years,
+            baseline_year=2022,
+            comparison_year=2026,
+        )
+        self.assertEqual(mask.tolist(), [True, False, True, False, True])
+
     def test_year_endpoint_change_owns_year_dummy_hac_contrast(self) -> None:
         estimate = year_endpoint_change(
             np.array([0.0, 0.2, 0.4, 0.8, 1.0, 1.2]),

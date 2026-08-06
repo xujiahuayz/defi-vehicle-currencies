@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.analysis.regression import year_endpoint_change
+from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
 from ddvc.asset_types import TYPES, classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.realised import realised_routes
@@ -141,9 +141,17 @@ def integration_rival_tests(
     hac_lag: int = HAC_LAG,
 ) -> pd.DataFrame:
     """Estimate the stable share change within each integration regime."""
-    data = panel.copy()
+    data = panel.copy().sort_values("date", kind="stable")
     data["year"] = pd.to_datetime(data["date"]).dt.year
     data = data[data["year"].between(baseline_year, comparison_year)]
+    data = data.loc[
+        common_calendar_day_mask(
+            data["date"],
+            data["year"],
+            baseline_year=baseline_year,
+            comparison_year=comparison_year,
+        )
+    ]
     years = sorted(int(value) for value in data["year"].unique())
     if baseline_year not in years or comparison_year not in years:
         raise ValueError("integration rival requires both comparison endpoint years")
@@ -182,6 +190,7 @@ def integration_rival_tests(
                     "p_value": estimate.p_value,
                     "days": estimate.n_observations,
                     "hac_lag_days": hac_lag,
+                    "calendar_support": "month-days observed in both endpoint years",
                     "share_denominator": "native_plus_stable",
                 }
             )

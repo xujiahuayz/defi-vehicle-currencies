@@ -61,7 +61,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.analysis.regression import year_endpoint_change
+from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
 from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.tables import write_exhibit, write_panel
@@ -250,6 +250,15 @@ def routing_incidence_change_tests(
     data = panel.copy().sort_values("date", kind="stable")
     data["year"] = pd.to_datetime(data["date"]).dt.year
     data = data[data["year"].between(baseline_year, comparison_year)]
+    data = data.loc[
+        common_calendar_day_mask(
+            data["date"],
+            data["year"],
+            baseline_year=baseline_year,
+            comparison_year=comparison_year,
+        )
+    ]
+    calendar_days = int(pd.to_datetime(data["date"]).dt.strftime("%m-%d").nunique())
 
     def yearly_sum(column: str, year: int) -> float:
         return float(data.loc[data["year"].eq(year), column].sum())
@@ -305,6 +314,8 @@ def routing_incidence_change_tests(
                 "p_value": estimate.p_value,
                 "days": estimate.n_observations,
                 "hac_lag_days": hac_lag,
+                "calendar_days": calendar_days,
+                "calendar_support": "month-days observed in both endpoint years",
                 "share_denominator": "economic routes excluding canonical endpoint round trips",
                 "balanced_route_coverage_baseline": support_share(baseline_year),
                 "balanced_route_coverage_comparison": support_share(comparison_year),
