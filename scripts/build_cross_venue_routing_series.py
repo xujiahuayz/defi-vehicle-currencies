@@ -47,6 +47,7 @@ Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cross_venue_routing_daily.parquet
         output/exhibits/cross_venue_routing_series.jsonl
         output/exhibits/cross_venue_routing_inference.jsonl
+        output/exhibits/routing_technology_windows.jsonl
 
 Run     ./scripts/run scripts/build_cross_venue_routing_series.py [--workers N]
 Rebuild is idempotent: delete the outputs and rerun to regenerate byte-identically.
@@ -70,6 +71,7 @@ UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "cross_venue_routing_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "cross_venue_routing_series.jsonl"
 OUT_INFERENCE = OUTPUT_DIR / "exhibits" / "cross_venue_routing_inference.jsonl"
+OUT_TECHNOLOGY_WINDOWS = OUTPUT_DIR / "exhibits" / "routing_technology_windows.jsonl"
 MAX_WORKERS = 8
 CODE_SOURCES = [
     "scripts/build_cross_venue_routing_series.py",
@@ -87,6 +89,19 @@ COLS = ["tx_hash", "component_id", "source", "amount_usd", "route_class",
 # Fluid and Uniswap V4 later in the sample.
 BALANCED_VENUES = frozenset(
     {"uniswap_v2", "sushiswap_v2", "curve", "balancer", "uniswap_v3"}
+)
+ROUTING_TECHNOLOGY_EVENTS = (
+    ("auto_router_v1", "2021-09-16", "https://blog.uniswap.org/auto-router"),
+    (
+        "cross_version_auto_router",
+        "2021-12-16",
+        "https://blog.uniswap.org/SuperiorReturnsForLiquidityProviders.pdf",
+    ),
+    (
+        "universal_router",
+        "2022-11-17",
+        "https://blog.uniswap.org/permit2-and-universal-router",
+    ),
 )
 
 
@@ -326,6 +341,94 @@ def routing_incidence_change_tests(
     return pd.DataFrame(rows)
 
 
+def routing_technology_windows(
+    panel: pd.DataFrame,
+    *,
+    events: tuple[tuple[str, str, str], ...] = ROUTING_TECHNOLOGY_EVENTS,
+    window_days: int = 60,
+) -> pd.DataFrame:
+    """Descriptive symmetric windows around public routing-technology releases."""
+    if window_days < 1:
+        raise ValueError("routing-technology window must be positive")
+    data = panel.copy()
+    data["date"] = pd.to_datetime(data["date"]).dt.normalize()
+    rows: list[dict[str, object]] = []
+
+    def ratio(numerator: float, denominator: float) -> float | None:
+        return float(numerator / denominator) if denominator > 0 else None
+
+    for event, event_date_text, source_url in events:
+        event_date = pd.Timestamp(event_date_text).normalize()
+        periods = (
+            (
+                "pre",
+                event_date - pd.Timedelta(days=window_days),
+                event_date - pd.Timedelta(days=1),
+            ),
+            (
+                "post",
+                event_date + pd.Timedelta(days=1),
+                event_date + pd.Timedelta(days=window_days),
+            ),
+        )
+        for period, start, end in periods:
+            selected = data[data["date"].between(start, end)]
+            for scope, prefix in (("full", ""), ("balanced", "balanced_")):
+                economic_multileg = float(
+                    selected[f"{prefix}economic_multileg_routes"].sum()
+                )
+                economic_routes = float(
+                    selected[f"{prefix}economic_routes"].sum()
+                )
+                rows.append(
+                    {
+                        "event": event,
+                        "event_date": event_date,
+                        "source_url": source_url,
+                        "window_days": window_days,
+                        "period": period,
+                        "window_start": start,
+                        "window_end": end,
+                        "calendar_days": len(selected),
+                        "scope": scope,
+                        "economic_multileg_routes": int(economic_multileg),
+                        "cross_venue_share": ratio(
+                            float(selected[f"{prefix}cross_venue_routes"].sum()),
+                            economic_multileg,
+                        ),
+                        "economic_multileg_share": ratio(
+                            economic_multileg,
+                            economic_routes,
+                        ),
+                        "over_two_legs_share": ratio(
+                            float(
+                                selected[
+                                    f"{prefix}economic_multileg_over_two_routes"
+                                ].sum()
+                            ),
+                            economic_multileg,
+                        ),
+                        "mean_legs": ratio(
+                            float(
+                                selected[
+                                    f"{prefix}economic_multileg_swap_legs"
+                                ].sum()
+                            ),
+                            economic_multileg,
+                        ),
+                        "mean_venues": ratio(
+                            float(
+                                selected[
+                                    f"{prefix}economic_multileg_venue_count"
+                                ].sum()
+                            ),
+                            economic_multileg,
+                        ),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -388,6 +491,14 @@ def main() -> int:
         inputs=[OUT_PARQUET],
         notes="equal-weighted daily indirect-route incidence; Newey-West Bartlett covariance",
     )
+    technology_windows = routing_technology_windows(df)
+    write_exhibit(
+        technology_windows,
+        OUT_TECHNOLOGY_WINDOWS,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+        notes="descriptive symmetric market-wide windows excluding each public routing release date; not an aggregator treatment effect",
+    )
 
     print(f"\ndays retained: {len(df):,}   {df.date.min().date()} to {df.date.max().date()}")
     print(f"total legs: {df.legs.sum():,}   total routes: {df.routes.sum():,}")
@@ -448,10 +559,26 @@ def main() -> int:
               f"        {row.balanced_mean_legs:5.2f}"
               f"          {row.balanced_mean_venues:5.2f}"
               f"   {int(row.balanced_econ):>10,}")
+    print("\nrouting-technology release windows (full market, descriptive):")
+    print(
+        technology_windows.loc[
+            technology_windows["scope"].eq("full"),
+            [
+                "event",
+                "period",
+                "cross_venue_share",
+                "economic_multileg_share",
+                "over_two_legs_share",
+                "mean_legs",
+                "mean_venues",
+            ],
+        ].round(4).to_string(index=False)
+    )
     print(
         f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)}, "
         f"{OUT_EXHIBIT.relative_to(REPO_ROOT)} and "
-        f"{OUT_INFERENCE.relative_to(REPO_ROOT)}"
+        f"{OUT_INFERENCE.relative_to(REPO_ROOT)} and "
+        f"{OUT_TECHNOLOGY_WINDOWS.relative_to(REPO_ROOT)}"
     )
     return 0
 

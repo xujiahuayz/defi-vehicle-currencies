@@ -12,10 +12,41 @@ from scripts.build_cross_venue_routing_series import (
     bounded_workers,
     one_day,
     routing_incidence_change_tests,
+    routing_technology_windows,
 )
 
 
 class CrossVenueRoutingSeriesTests(unittest.TestCase):
+    def test_technology_windows_exclude_event_day_and_preserve_both_scopes(self) -> None:
+        panel = pd.DataFrame(
+            {
+                "date": pd.date_range("2021-01-01", periods=5, freq="D"),
+                "economic_routes": [20, 20, 999, 20, 20],
+                "economic_multileg_routes": [10, 10, 999, 5, 5],
+                "economic_multileg_swap_legs": [20, 20, 999, 15, 15],
+                "economic_multileg_venue_count": [10, 20, 999, 10, 10],
+                "economic_multileg_over_two_routes": [0, 0, 999, 5, 5],
+                "cross_venue_routes": [0, 10, 999, 5, 5],
+                "balanced_economic_routes": [20, 20, 999, 20, 20],
+                "balanced_economic_multileg_routes": [10, 10, 999, 5, 5],
+                "balanced_economic_multileg_swap_legs": [20, 20, 999, 15, 15],
+                "balanced_economic_multileg_venue_count": [10, 20, 999, 10, 10],
+                "balanced_economic_multileg_over_two_routes": [0, 0, 999, 5, 5],
+                "balanced_cross_venue_routes": [0, 10, 999, 5, 5],
+            }
+        )
+        result = routing_technology_windows(
+            panel,
+            events=(("test", "2021-01-03", "source"),),
+            window_days=2,
+        )
+        self.assertEqual(len(result), 4)
+        full = result[result["scope"].eq("full")].set_index("period")
+        self.assertEqual(full.loc["pre", "economic_multileg_routes"], 20)
+        self.assertEqual(full.loc["post", "economic_multileg_routes"], 10)
+        self.assertEqual(full.loc["pre", "cross_venue_share"], 0.5)
+        self.assertEqual(full.loc["post", "over_two_legs_share"], 1.0)
+
     def test_incidence_change_separates_full_and_balanced_perimeters(self) -> None:
         panel = pd.DataFrame(
             {
