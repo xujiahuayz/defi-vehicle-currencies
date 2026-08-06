@@ -30,7 +30,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from ddvc.asset_types import canonical_token
+from ddvc.asset_types import WETH, canonical_token
 from ddvc.fetch.raw import (
     block_value,
     timestamp_value,
@@ -301,16 +301,30 @@ def _routes_by_pair(legs: pd.DataFrame, top_pairs: int) -> pd.DataFrame:
     roles["token"] = [canonical_token(x, unify_wrapped=UNIFY_WRAPPED) or ""
                       for x in roles["token"].astype(str).str.lower()]
     roles = roles[roles["token"].astype(bool)]
-    sources = (
-        roles[roles["role"].eq("source")][["component_key", "token", "symbol"]]
-        .drop_duplicates()
-        .rename(columns={"token": "src", "symbol": "src_sym"})
+
+    symbol_rows = roles[["token", "symbol"]].copy()
+    symbol_rows["symbol"] = symbol_rows["symbol"].fillna("").astype(str).str.strip()
+    symbol_rows = symbol_rows[symbol_rows["symbol"].astype(bool)].drop_duplicates()
+    symbol_rows["preferred"] = (
+        symbol_rows["token"].eq(WETH)
+        & symbol_rows["symbol"].str.upper().eq("WETH")
     )
-    sinks = (
-        roles[roles["role"].eq("sink")][["component_key", "token", "symbol"]]
-        .drop_duplicates()
-        .rename(columns={"token": "tgt", "symbol": "tgt_sym"})
-    )
+    symbol_rows = symbol_rows.sort_values(
+        ["token", "preferred", "symbol"],
+        ascending=[True, False, True],
+        kind="stable",
+    ).drop_duplicates("token")
+    symbols = dict(zip(symbol_rows["token"], symbol_rows["symbol"], strict=True))
+
+    def unique_endpoint(role: str, name: str) -> pd.DataFrame:
+        endpoint = roles.loc[
+            roles["role"].eq(role), ["component_key", "token"]
+        ].drop_duplicates()
+        counts = endpoint.groupby("component_key")["token"].transform("nunique")
+        return endpoint.loc[counts.eq(1)].rename(columns={"token": name})
+
+    sources = unique_endpoint("source", "src")
+    sinks = unique_endpoint("sink", "tgt")
     if sources.empty or sinks.empty:
         return pd.DataFrame()
 
@@ -324,11 +338,13 @@ def _routes_by_pair(legs: pd.DataFrame, top_pairs: int) -> pd.DataFrame:
     if out.empty:
         return pd.DataFrame()
     out = (
-        out.groupby(["src", "src_sym", "tgt", "tgt_sym"], as_index=False)
+        out.groupby(["src", "tgt"], as_index=False)
         .agg(realized_bridge_volume_usd=("volume", "sum"), n_routes=("volume", "size"))
         .sort_values("realized_bridge_volume_usd", ascending=False)
         .head(top_pairs)
     )
+    out.insert(1, "src_sym", out["src"].map(symbols).fillna(""))
+    out.insert(3, "tgt_sym", out["tgt"].map(symbols).fillna(""))
     return out
 
 
