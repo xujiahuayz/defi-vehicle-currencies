@@ -1,56 +1,36 @@
 {
- "argv": [],
+ "argv": [
+  "--workers",
+  "4"
+ ],
  "artefact": "output/exhibits/cross_venue_routing_series.jsonl",
- "code_fingerprint": "88ba40b295b3a3ef45db295a858385dc61721d3924f765c9b1a1205e252a0d6d",
+ "code_fingerprint": "f4a4a5dd4693355b5184cd1ee1fad36b7333926ccca93537b3fa2c1a3040241e",
  "code_sources": [
   "scripts/build_cross_venue_routing_series.py",
+  "src/ddvc/analysis/regression.py",
+  "src/ddvc/asset_types.py",
   "src/ddvc/reconstruct/__init__.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T12:49:26+00:00",
+ "created_at": "2026-08-06T18:38:24+00:00",
  "git": {
-  "branch": "main",
-  "commit": "902708b3fd5b4d278820a374553e7bc57eeb9ab4",
+  "branch": "glotl/workflow-status",
+  "commit": "b7f2741f9d55efe09dec9943bf3ae5a8c310b25c",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/data/processed/cross_venue_routing_daily.parquet.prov.json",
-   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
-   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
-   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
-   "output/exhibits/dominance_specification_curve.jsonl",
-   "output/exhibits/gap_arbitrage_bound.jsonl",
-   "output/exhibits/realised_dominance.jsonl",
-   "output/exhibits/survival_after_dominance.jsonl",
-   "output/exhibits/v4_quoter_validation.jsonl",
-   "output/exhibits/vehicle_dominance_hdfe.jsonl",
-   "output/tables/bridge_denominator_robustness.pdf",
-   "output/tables/liquidity_robustness.pdf",
-   "output/tables/measurement_robustness.pdf",
-   "output/tables/route_cost_distribution_weighting.pdf",
-   "output/tables/route_cost_distribution_weighting.tex",
-   "output/tables/route_cost_robustness.pdf",
-   "output/tables/route_cost_robustness.tex",
-   "output/tables/stress_robustness.pdf",
-   "output/tables/stress_rotation_decomposition.pdf",
-   "output/tables/v4_match_balance.pdf",
-   "output/tables/v4_robustness.pdf",
-   "data/manifests/output/exhibits/v4_quote_support.jsonl.prov.json",
-   "output/exhibits/realised_dominance_reweighting.jsonl",
-   "output/exhibits/v4_quote_support.jsonl"
+   "data/manifests/output/exhibits/cross_venue_routing_inference.jsonl.prov.json",
+   "output/exhibits/cross_venue_routing_inference.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
  },
  "inputs": [
   {
-   "bytes": 633330,
+   "bytes": 759157,
    "exists": true,
    "path": "data/processed/cross_venue_routing_daily.parquet",
-   "sha256": "13b2a936693e7fa175dd9806f446254047acbb104b68ee12b2ca8c0b2e8c8450"
+   "sha256": "8a8b872a1565661c701f9e7a38cd3cb65b8a239f10e8c5ea9c579d743bbfa0c7"
   }
  ],
  "libraries": {
