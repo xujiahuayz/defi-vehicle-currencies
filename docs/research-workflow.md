@@ -218,6 +218,33 @@ H. Deck ........................... derived from G.
         rather than declaring convergence on a weaker claim.
 I. Cross-family review ............ Codex/Gemini. Feeds back into C..H.
      Desk-reject filter first, then rank-ordered referee.
+K. Ideation ....................... proposes what nobody asked for. ADDED
+     2026-08-06 on Java's diagnosis that the graph had no generator.
+
+        WHY K EXISTS. Every other node either builds what is specified or
+        attacks what is built. A..D construct, E screens, F estimates, G and H
+        write, I rejects, J gates. Nothing PROPOSES. The symptom was that the
+        two best ideas of a long session, measuring the vehicle role as network
+        betweenness and separating succession from fragmentation with a
+        Herfindahl index over vehicle shares, both came from Java and neither
+        came from the graph. A workflow whose only creative input is its owner
+        is not an agentic workflow, it is a very elaborate executor.
+
+        WHAT K DOES, and the constraints that stop it being a platitude
+        generator. It reads the DATA's affordances, meaning what is measurable
+        here that is not being measured, and it reads the literature for
+        concepts that exist but have not been operationalised on this data. Each
+        proposal must name an estimand, sketch its identification, state what
+        would falsify it, and say which existing result it would displace or
+        support. A proposal with no identification sketch is an idea and not a
+        candidate, and is rejected by K itself before it reaches E.
+
+        HOW K IS SCORED. By whether its proposals survive node I, not by how
+        many it makes. K runs CONTINUOUSLY rather than once, because the
+        affordances change as the data layer grows: centrality only became
+        proposable once the unified layer covered every venue, and the
+        succession-against-fragmentation question only became sharp once
+        centrality existed.
 J. Gates .......................... run on every G/H artefact (section 7).
 ```
 
