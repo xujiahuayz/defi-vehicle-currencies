@@ -35,6 +35,7 @@ from ddvc.realised import (
     realised_routes,
 )
 from ddvc.runtime import exclusive_job
+from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.tables import write_exhibit, write_panel
 
 PANEL = DATA_DIR / "empirical" / "route_cost_panel_v2.parquet"
@@ -58,6 +59,7 @@ SIZE_SCOPES = (
     ("within_2x", 0.5, 2.0),
     ("within_20pct", 0.8, 1.2),
 )
+VALUE_SUPPORTS = ("all_routes", *VALUE_SUPPORT_COLUMNS)
 
 
 def summarise_matches(matches: pd.DataFrame, period: str) -> pd.DataFrame:
@@ -70,27 +72,39 @@ def summarise_matches(matches: pd.DataFrame, period: str) -> pd.DataFrame:
     )
     data["dominated_flag"] = data["dominated"].eq(True)
     data["dominated_usd"] = data["usd"].where(data["dominated_flag"], 0.0)
+    missing = sorted(set(VALUE_SUPPORT_COLUMNS) - set(data.columns))
+    if missing:
+        raise ValueError(
+            "realised matches are missing route-value support: " + ", ".join(missing)
+        )
     rows: list[pd.DataFrame] = []
     ratio = pd.to_numeric(data["quoted_to_realised_size"], errors="coerce")
-    for scope, lower, upper in SIZE_SCOPES:
-        selected = (
+    for size_scope, lower, upper in SIZE_SCOPES:
+        size_selected = (
             data
             if lower is None or upper is None
             else data[ratio.between(lower, upper, inclusive="both")]
         )
-        if selected.empty:
-            continue
-        summary = (
-            selected.groupby(["mid_type", "match_status"], as_index=False)
-            .agg(
-                routes=("route_id", "size"),
-                usd=("usd", "sum"),
-                dominated_routes=("dominated_flag", "sum"),
-                dominated_usd=("dominated_usd", "sum"),
+        for value_support in VALUE_SUPPORTS:
+            selected = (
+                size_selected
+                if value_support == "all_routes"
+                else size_selected[size_selected[value_support].fillna(False)]
             )
-        )
-        summary.insert(0, "size_scope", scope)
-        rows.append(summary)
+            if selected.empty:
+                continue
+            summary = (
+                selected.groupby(["mid_type", "match_status"], as_index=False)
+                .agg(
+                    routes=("route_id", "size"),
+                    usd=("usd", "sum"),
+                    dominated_routes=("dominated_flag", "sum"),
+                    dominated_usd=("dominated_usd", "sum"),
+                )
+            )
+            summary.insert(0, "value_support", value_support)
+            summary.insert(0, "size_scope", size_scope)
+            rows.append(summary)
     out = pd.concat(rows, ignore_index=True)
     out.insert(0, "period", period)
     return out
@@ -100,12 +114,15 @@ def pool_summaries(cells: pd.DataFrame, period: str) -> pd.DataFrame:
     if cells.empty:
         return cells
     out = (
-        cells.groupby(["size_scope", "mid_type", "match_status"], as_index=False)[
+        cells.groupby(
+            ["size_scope", "value_support", "mid_type", "match_status"],
+            as_index=False,
+        )[
             ["routes", "usd", "dominated_routes", "dominated_usd"]
         ]
         .sum()
     )
-    totals = out.groupby(["size_scope", "mid_type"])
+    totals = out.groupby(["size_scope", "value_support", "mid_type"])
     out["route_share_within_type"] = out["routes"] / totals["routes"].transform("sum")
     out["usd_share_within_type"] = out["usd"] / totals["usd"].transform("sum")
     comparable = out["match_status"].eq("chosen_with_direct")
@@ -132,12 +149,16 @@ def choice_regime_rival_tests(
     ].copy()
     data["date"] = pd.to_datetime(data["period"], format="%Y%m%d")
     rows: list[dict[str, object]] = []
-    for size_scope in data["size_scope"].drop_duplicates():
+    support_cells = data[["size_scope", "value_support"]].drop_duplicates()
+    for size_scope, value_support in support_cells.itertuples(index=False, name=None):
         for match_status in CHOICE_STATUSES:
             selected = data[
                 data["size_scope"].eq(size_scope)
+                & data["value_support"].eq(value_support)
                 & data["match_status"].eq(match_status)
             ]
+            if selected.empty:
+                continue
             for weighting, value_column in (("episode", "routes"), ("value", "usd")):
                 daily = selected.pivot_table(
                     index="date",
@@ -164,6 +185,10 @@ def choice_regime_rival_tests(
                             comparison_year=comparison_year,
                         )
                     ].dropna(subset=["stable_share"])
+                    if not {baseline_year, comparison_year}.issubset(
+                        set(sample["year"])
+                    ):
+                        continue
                     estimate = year_endpoint_change(
                         sample["stable_share"],
                         sample["year"],
@@ -174,6 +199,7 @@ def choice_regime_rival_tests(
                     rows.append(
                         {
                             "size_scope": size_scope,
+                            "value_support": value_support,
                             "match_status": match_status,
                             "weighting": weighting,
                             "baseline_year": baseline_year,
@@ -262,7 +288,7 @@ def main() -> int:
             DAILY_OUT,
             code_sources=CODE_SOURCES,
             inputs=[PANEL, DATA_DIR / "unified"],
-            notes="daily additive exact-hour match cells with nested notional support",
+            notes="daily additive exact-hour match cells with separate nested route-value coherence and quote-notional support",
         )
     cells["year"] = cells["period"].str[:4]
     pooled = [pool_summaries(cells, "ALL")]
@@ -294,8 +320,13 @@ def main() -> int:
     )
 
     overall = result[result["period"].eq("ALL")]
-    for size_scope, support in overall.groupby("size_scope", sort=False):
-        print(f"\nfull-period exact-hour decomposition: {size_scope}")
+    for (size_scope, value_support), support in overall.groupby(
+        ["size_scope", "value_support"], sort=False
+    ):
+        print(
+            f"\nfull-period exact-hour decomposition: "
+            f"size={size_scope}, value={value_support}"
+        )
         for row in support.itertuples(index=False):
             dominated = (
                 f", dominated {row.dominated_share:.1%}"
@@ -313,6 +344,7 @@ def main() -> int:
                 "baseline_year",
                 "comparison_year",
                 "size_scope",
+                "value_support",
                 "match_status",
                 "weighting",
                 "change",

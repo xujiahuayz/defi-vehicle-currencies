@@ -753,6 +753,8 @@ class RealisedMatchingTests(unittest.TestCase):
                     "match_status": "chosen_with_direct",
                     "usd": 100.0,
                     "dominated": True,
+                    "within_2x": True,
+                    "within_20pct": True,
                 },
                 {
                     "route_id": "chosen-2",
@@ -761,6 +763,8 @@ class RealisedMatchingTests(unittest.TestCase):
                     "match_status": "chosen_with_direct",
                     "usd": 300.0,
                     "dominated": False,
+                    "within_2x": True,
+                    "within_20pct": True,
                 },
                 {
                     "route_id": "forced",
@@ -769,6 +773,8 @@ class RealisedMatchingTests(unittest.TestCase):
                     "match_status": "forced_no_direct",
                     "usd": 900.0,
                     "dominated": pd.NA,
+                    "within_2x": True,
+                    "within_20pct": True,
                 },
             ]
         )
@@ -789,6 +795,8 @@ class RealisedMatchingTests(unittest.TestCase):
                     "match_status": "chosen_with_direct",
                     "dominated": True,
                     "usd": 100.0,
+                    "within_2x": True,
+                    "within_20pct": True,
                 },
                 {
                     "route_id": "far",
@@ -797,13 +805,17 @@ class RealisedMatchingTests(unittest.TestCase):
                     "match_status": "chosen_with_direct",
                     "dominated": False,
                     "usd": 100.0,
+                    "within_2x": False,
+                    "within_20pct": False,
                 },
             ]
         )
         pooled = pool_summaries(summarise_matches(matches, "20250101"), "ALL")
-        by_scope = pooled.set_index("size_scope")
-        self.assertEqual(by_scope.loc["all_routes", "routes"], 2)
-        self.assertEqual(by_scope.loc["within_20pct", "routes"], 1)
+        by_scope = pooled.set_index(["size_scope", "value_support"])
+        self.assertEqual(by_scope.loc[("all_routes", "all_routes"), "routes"], 2)
+        self.assertEqual(by_scope.loc[("within_20pct", "all_routes"), "routes"], 1)
+        self.assertEqual(by_scope.loc[("all_routes", "within_20pct"), "routes"], 1)
+        self.assertEqual(by_scope.loc[("within_20pct", "within_20pct"), "routes"], 1)
 
     def test_choice_regime_rival_keeps_supported_regimes_separate(self) -> None:
         rows = []
@@ -816,6 +828,7 @@ class RealisedMatchingTests(unittest.TestCase):
                                 {
                                     "period": f"{year}010{day + 1}",
                                     "size_scope": size_scope,
+                                    "value_support": "within_20pct",
                                     "mid_type": "stable",
                                     "match_status": match_status,
                                     "routes": stable_routes,
@@ -824,6 +837,7 @@ class RealisedMatchingTests(unittest.TestCase):
                                 {
                                     "period": f"{year}010{day + 1}",
                                     "size_scope": size_scope,
+                                    "value_support": "within_20pct",
                                     "mid_type": "native",
                                     "match_status": match_status,
                                     "routes": 100.0 - stable_routes,
@@ -833,6 +847,7 @@ class RealisedMatchingTests(unittest.TestCase):
                         )
         result = choice_regime_rival_tests(pd.DataFrame(rows), hac_lag=1)
         self.assertEqual(set(result["size_scope"]), {"all_routes", "within_20pct"})
+        self.assertEqual(set(result["value_support"]), {"within_20pct"})
         self.assertEqual(
             set(zip(result["baseline_year"], result["comparison_year"])),
             {(2023, 2024), (2024, 2026)},
