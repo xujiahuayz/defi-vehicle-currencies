@@ -64,6 +64,7 @@ from ddvc.cpquote import (
     quote_one_hop,
     reserve_state_before,
 )
+from ddvc.gas import load_daily_gas_prices
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.prices import PRICE_COLUMNS, day_prices
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
@@ -78,6 +79,7 @@ CODE_SOURCES = [
     "scripts/build_counterfactual_dominance.py",
     "src/ddvc/calendar.py",
     "src/ddvc/cpquote.py",
+    "src/ddvc/gas.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/prices.py",
     "src/ddvc/realised.py",
@@ -449,16 +451,14 @@ def add_topology_gas_adjustment(
 ) -> pd.DataFrame:
     """Join historical gas and apply the shared one-hop versus two-hop sign."""
     out = frame.copy()
-    if gas_panel.exists():
-        gas = pd.read_parquet(
-            gas_panel, columns=["date", "gas_gwei_median"]
-        ).rename(columns={"gas_gwei_median": "gas_gwei"})
-        gas["date"] = pd.to_datetime(gas["date"])
-        if gas["date"].duplicated().any():
-            raise ValueError("historical gas panel has duplicate dates")
-        out = out.merge(gas, on="date", how="left", validate="many_to_one")
-    else:
-        out["gas_gwei"] = float("nan")
+    out["date"] = pd.to_datetime(out["date"]).dt.normalize()
+    gas = load_daily_gas_prices(
+        gas_panel,
+        required_dates=out["date"],
+    )[["date", "gas_gwei_median"]].rename(
+        columns={"gas_gwei_median": "gas_gwei"}
+    )
+    out = out.merge(gas, on="date", how="left", validate="many_to_one")
     out["all_in_direct_advantage_bps"] = [
         all_in_direct_advantage_bps(
             gross,

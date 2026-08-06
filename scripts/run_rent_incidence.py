@@ -41,12 +41,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.asset_types import asset_type
 from ddvc.analysis.regression import ols_clustered
+from ddvc.gas import load_daily_gas_prices
 from ddvc.provenance import stamp
 from ddvc.tables import write_exhibit, write_panel
 
 PROC = ROOT / "data" / "processed"
 OUT = ROOT / "output" / "empirical" / "rent_incidence"
-SRC = ["scripts/run_rent_incidence.py", "scripts/build_rent_incidence_panel.py"]
+SRC = [
+    "scripts/run_rent_incidence.py",
+    "scripts/build_rent_incidence_panel.py",
+    "src/ddvc/gas.py",
+]
 
 MIN_TVL = 10_000.0
 BALANCE_TOL = 3.0          # CPMM holds equal value on both legs; 3x is generous
@@ -139,9 +144,11 @@ def _prices() -> pd.DataFrame:
 
 
 def _gas() -> pd.DataFrame:
-    g = pd.read_parquet(PROC / "daily_gas_price_graph.parquet",
-                        columns=["day", "gas_gwei_median"])
     p = _prices()
+    g = load_daily_gas_prices(
+        PROC / "daily_gas_price_graph.parquet",
+        required_dates=p["day"],
+    )[["day", "gas_gwei_median"]]
     eth = p[(p.token == WETH) & p.price_ok][["day", "price_usd"]].rename(
         columns={"price_usd": "eth_usd"})
     return g.merge(eth, on="day", how="left")

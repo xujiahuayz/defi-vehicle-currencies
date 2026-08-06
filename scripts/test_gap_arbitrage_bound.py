@@ -57,6 +57,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 
+from ddvc.gas import load_daily_gas_prices  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
@@ -88,13 +89,17 @@ def main() -> int:
         return 1
     con = duckdb.connect()
 
-    gas_median = None
-    if GAS.exists():
-        gas_median = con.execute(
-            f"SELECT median(gas_gwei_median) FROM read_parquet('{GAS.as_posix()}')"
-        ).fetchone()[0]
-    if not gas_median:
-        gas_median = 25.8
+    panel_dates = [
+        row[0]
+        for row in con.execute(
+            f"SELECT DISTINCT CAST(date AS DATE) FROM read_parquet('{PANEL.as_posix()}')"
+        ).fetchall()
+    ]
+    gas_median = float(
+        load_daily_gas_prices(GAS, required_dates=panel_dates)[
+            "gas_gwei_median"
+        ].median()
+    )
     print(f"gas price used: {gas_median:.2f} gwei (median over the measured panel)")
     print(f"ETH price used: ${args.eth_usd:,.0f}\n")
 
@@ -145,7 +150,12 @@ def main() -> int:
         print("\nAlmost all gaps are too small to arbitrage after gas and fees, so they")
         print("can persist and are admissible evidence about routing cost. Node I's")
         print("objection is answered by the bound rather than by argument.")
-    write_exhibit(pd.DataFrame(out), OUT)
+    write_exhibit(
+        pd.DataFrame(out),
+        OUT,
+        code_sources=["scripts/test_gap_arbitrage_bound.py", "src/ddvc/gas.py"],
+        inputs=[PANEL, GAS],
+    )
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0
 

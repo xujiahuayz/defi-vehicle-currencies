@@ -7,10 +7,37 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+import pandas as pd
+
+from ddvc.gas import load_daily_gas_prices
 import scripts.process.fetch_daily_gas_price_graph as gas_fetch
 
 
 class DailyGasPriceFetchTests(unittest.TestCase):
+    def test_consumer_refuses_incomplete_required_calendar(self) -> None:
+        with TemporaryDirectory() as temporary:
+            panel = Path(temporary) / "gas.parquet"
+            pd.DataFrame(
+                {"day": ["20200101"], "gas_gwei_median": [10.0]}
+            ).to_parquet(panel, index=False)
+            with self.assertRaisesRegex(ValueError, "misses 1 required dates"):
+                load_daily_gas_prices(
+                    panel,
+                    required_dates=["2020-01-01", "2020-01-02"],
+                )
+
+    def test_consumer_refuses_duplicate_dates(self) -> None:
+        with TemporaryDirectory() as temporary:
+            panel = Path(temporary) / "gas.parquet"
+            pd.DataFrame(
+                {
+                    "date": ["2020-01-01", "2020-01-01"],
+                    "gas_gwei_median": [10.0, 11.0],
+                }
+            ).to_parquet(panel, index=False)
+            with self.assertRaisesRegex(ValueError, "duplicate dates"):
+                load_daily_gas_prices(panel)
+
     def test_panel_schema_does_not_depend_on_record_key_order(self) -> None:
         first = {column: index for index, column in enumerate(gas_fetch.PANEL_COLUMNS)}
         second = dict(reversed(first.items()))
