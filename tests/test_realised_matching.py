@@ -29,6 +29,7 @@ def leg(
     return {
         "tx_hash": tx,
         "component_id": 0,
+        "source": "v2" if log_index == 0 else "v3",
         "token_in": token_in,
         "token_out": token_out,
         "amount_usd": usd,
@@ -56,6 +57,7 @@ class RealisedMatchingTests(unittest.TestCase):
         self.assertEqual(set(out["tx_hash"]), {"tx1", "tx2"})
         self.assertEqual(out["route_id"].nunique(), 2)
         self.assertTrue(out["hour"].eq(7).all())
+        self.assertTrue(out["cross_venue"].all())
 
     def test_match_is_exact_hour_and_uses_log_nearest_size(self) -> None:
         routes = extract_realised_routes(

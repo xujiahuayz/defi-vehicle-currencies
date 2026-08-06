@@ -12,6 +12,7 @@ from ddvc.paths import DATA_DIR
 ROUTE_COLUMNS = [
     "tx_hash",
     "component_id",
+    "source",
     "token_in",
     "token_out",
     "amount_usd",
@@ -105,6 +106,8 @@ def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
                     "vehicle": vehicle,
                     "usd": float(amounts.max()),
                     "legs": int(len(group)),
+                    "venues": int(group["source"].nunique()),
+                    "cross_venue": bool(group["source"].nunique() > 1),
                 }
             )
     return pd.DataFrame(rows)
