@@ -9,7 +9,11 @@ from unittest.mock import patch
 import pandas as pd
 
 from ddvc.fetch.sources import DEX_SOURCES
-from ddvc.route_gas import candidate_transactions, deterministic_cell_sample
+from ddvc.route_gas import (
+    candidate_transactions,
+    deterministic_cell_sample,
+    estimate_route_gas,
+)
 from scripts.process import build_route_gas_units as route_gas
 from scripts.process.build_route_gas_units import (
     bounded_workers,
@@ -50,6 +54,71 @@ def leg(
 
 
 class RouteGasUnitTests(unittest.TestCase):
+    def test_route_gas_estimates_use_exact_cells_then_label_fallbacks(self) -> None:
+        panel = pd.DataFrame(
+            {
+                "year": [2025, 2025, 2025, 2025, 2024],
+                "legs": [1, 1, 2, 2, 2],
+                "venue_sequence": [
+                    "uniswap_v2",
+                    "uniswap_v2",
+                    "uniswap_v2>uniswap_v2",
+                    "uniswap_v2>uniswap_v2",
+                    "uniswap_v2>uniswap_v2",
+                ],
+                "gas_vehicle": ["direct", "direct", USDC, USDC, USDC],
+                "mid_type": ["direct", "direct", "stable", "stable", "stable"],
+                "gas_used": [100, 120, 200, 240, 300],
+                "status": [1, 1, 1, 1, 1],
+            }
+        )
+        requests = pd.DataFrame(
+            {
+                "year": [2025, 2025, 2025, 2030],
+                "legs": [2, 2, 2, 2],
+                "venue_sequence": [
+                    "uniswap_v2>uniswap_v2",
+                    "uniswap_v2>uniswap_v2",
+                    "sushiswap_v2>sushiswap_v2",
+                    "unknown>unknown",
+                ],
+                "gas_vehicle": [USDC, "another-stable", "another-stable", "unknown"],
+                "mid_type": ["stable", "stable", "stable", "stable"],
+            }
+        )
+        out = estimate_route_gas(requests, panel)
+        self.assertEqual(out.loc[0, "gas_units_median"], 220)
+        self.assertEqual(out.loc[0, "gas_support_level"], "year_venue_vehicle")
+        self.assertEqual(out.loc[1, "gas_units_median"], 220)
+        self.assertEqual(out.loc[1, "gas_support_level"], "year_venue_type")
+        self.assertEqual(out.loc[2, "gas_support_level"], "year_type")
+        self.assertEqual(out.loc[3, "gas_support_level"], "topology")
+
+    def test_route_gas_broad_fallbacks_are_cell_balanced(self) -> None:
+        panel = pd.DataFrame(
+            {
+                "year": [2025] * 5,
+                "legs": [2] * 5,
+                "venue_sequence": ["uniswap_v2>uniswap_v2"] * 5,
+                "gas_vehicle": [USDC, USDC, USDC, "other", "other"],
+                "mid_type": ["stable", "stable", "stable", "other", "other"],
+                "gas_used": [100, 100, 100, 300, 300],
+                "status": [1] * 5,
+            }
+        )
+        request = pd.DataFrame(
+            {
+                "year": [2025],
+                "legs": [2],
+                "venue_sequence": ["missing>missing"],
+                "gas_vehicle": ["missing"],
+                "mid_type": ["missing"],
+            }
+        )
+        out = estimate_route_gas(request, panel)
+        self.assertEqual(out.loc[0, "gas_units_median"], 200)
+        self.assertEqual(out.loc[0, "gas_support_cells"], 2)
+
     def test_worker_count_is_bounded(self) -> None:
         self.assertEqual(bounded_workers(0), 1)
         self.assertEqual(bounded_workers(4), 4)

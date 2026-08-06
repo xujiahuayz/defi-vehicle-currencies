@@ -57,7 +57,7 @@ from ddvc.calendar import nearest_monthly_days
 from ddvc.cpquote import (
     Pool,
     ReserveEvent,
-    all_in_direct_advantage_bps,
+    all_in_direct_advantage_bps_from_units,
     cost_gap_bps,
     hour_is_clean,
     ordered_reserve_events,
@@ -69,6 +69,7 @@ from ddvc.gas import load_daily_gas_prices
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.prices import PRICE_COLUMNS, day_prices
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
+from ddvc.route_gas import GAS_ESTIMATE_COLUMNS, estimate_route_gas
 from ddvc.tables import write_exhibit, write_panel
 
 RAW = DATA_DIR / "raw" / "thegraph"
@@ -77,6 +78,7 @@ OUT_PARQUET = DATA_DIR / "processed" / "counterfactual_dominance.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_summary.jsonl"
 OUT_SUPPORT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_support.jsonl"
 GAS_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
+ROUTE_GAS_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
 CODE_SOURCES = [
     "scripts/build_counterfactual_dominance.py",
     "src/ddvc/calendar.py",
@@ -85,6 +87,7 @@ CODE_SOURCES = [
     "src/ddvc/asset_types.py",
     "src/ddvc/prices.py",
     "src/ddvc/realised.py",
+    "src/ddvc/route_gas.py",
     "src/ddvc/route_roles.py",
 ]
 
@@ -450,11 +453,15 @@ def one_day(day: str) -> pd.DataFrame | None:
 
 
 def add_topology_gas_adjustment(
-    frame: pd.DataFrame, gas_panel=GAS_PANEL
+    frame: pd.DataFrame,
+    gas_panel=GAS_PANEL,
+    route_gas_panel=ROUTE_GAS_PANEL,
 ) -> pd.DataFrame:
-    """Join historical gas and apply the shared one-hop versus two-hop sign."""
+    """Join historical prices and receipt-calibrated gas by exact route support."""
     out = frame.copy()
+    out = out.drop(columns=["gas_gwei"], errors="ignore")
     out["date"] = pd.to_datetime(out["date"]).dt.normalize()
+    out["year"] = out["date"].dt.year
     gas = load_daily_gas_prices(
         gas_panel,
         required_dates=out["date"],
@@ -462,25 +469,79 @@ def add_topology_gas_adjustment(
         columns={"gas_gwei_median": "gas_gwei"}
     )
     out = out.merge(gas, on="date", how="left", validate="many_to_one")
-    out["all_in_direct_advantage_bps"] = [
-        all_in_direct_advantage_bps(
-            gross,
-            direct_legs=1,
-            vehicle_legs=2,
-            notional_usd=notional,
-            gas_price_gwei=gas_gwei,
-            eth_usd=eth_usd,
+    receipt_panel = (
+        route_gas_panel.copy()
+        if isinstance(route_gas_panel, pd.DataFrame)
+        else pd.read_parquet(route_gas_panel)
+    )
+    direct_requests = pd.DataFrame(
+        {
+            "year": out["year"],
+            "legs": 1,
+            "venue_sequence": out["direct_source"],
+            "gas_vehicle": "direct",
+            "mid_type": "direct",
+        },
+        index=out.index,
+    )
+    vehicle_requests = pd.DataFrame(
+        {
+            "year": out["year"],
+            "legs": 2,
+            "venue_sequence": out["hop1_source"] + ">" + out["hop2_source"],
+            "gas_vehicle": out["mid"],
+            "mid_type": out["mid_type"],
+        },
+        index=out.index,
+    )
+    for prefix, estimates in (
+        ("direct", estimate_route_gas(direct_requests, receipt_panel)),
+        ("vehicle", estimate_route_gas(vehicle_requests, receipt_panel)),
+    ):
+        out[[f"{prefix}_{column}" for column in GAS_ESTIMATE_COLUMNS]] = (
+            estimates[GAS_ESTIMATE_COLUMNS]
         )
-        if pd.notna(gas_gwei) and pd.notna(eth_usd)
-        else None
-        for gross, notional, gas_gwei, eth_usd in zip(
-            out["gross_direct_advantage_bps"],
-            out["usd"],
-            out["gas_gwei"],
-            out["eth_usd"],
-            strict=True,
-        )
-    ]
+
+    def apply_units(direct_column: str, vehicle_column: str) -> list[float | None]:
+        return [
+            all_in_direct_advantage_bps_from_units(
+                gross,
+                direct_gas_units=direct_units,
+                vehicle_gas_units=vehicle_units,
+                notional_usd=notional,
+                gas_price_gwei=gas_gwei,
+                eth_usd=eth_usd,
+            )
+            if all(
+                pd.notna(value)
+                for value in (
+                    direct_units,
+                    vehicle_units,
+                    gas_gwei,
+                    eth_usd,
+                )
+            )
+            else None
+            for gross, direct_units, vehicle_units, notional, gas_gwei, eth_usd in zip(
+                out["gross_direct_advantage_bps"],
+                out[direct_column],
+                out[vehicle_column],
+                out["usd"],
+                out["gas_gwei"],
+                out["eth_usd"],
+                strict=True,
+            )
+        ]
+
+    out["all_in_direct_advantage_bps"] = apply_units(
+        "direct_gas_units_median", "vehicle_gas_units_median"
+    )
+    out["all_in_direct_advantage_bps_iqr_lower"] = apply_units(
+        "direct_gas_units_p75", "vehicle_gas_units_p25"
+    )
+    out["all_in_direct_advantage_bps_iqr_upper"] = apply_units(
+        "direct_gas_units_p25", "vehicle_gas_units_p75"
+    )
     return out
 
 
@@ -534,6 +595,28 @@ def state_support_summary(frame: pd.DataFrame) -> pd.DataFrame:
                 "pct_dominated_topology_gas_adjusted": (
                     100 * float(gas["all_in_direct_advantage_bps"].gt(0).mean())
                     if len(gas)
+                    else None
+                ),
+                "pct_dominated_gas_iqr_lower": (
+                    100
+                    * float(
+                        group["all_in_direct_advantage_bps_iqr_lower"]
+                        .dropna()
+                        .gt(0)
+                        .mean()
+                    )
+                    if group["all_in_direct_advantage_bps_iqr_lower"].notna().any()
+                    else None
+                ),
+                "pct_dominated_gas_iqr_upper": (
+                    100
+                    * float(
+                        group["all_in_direct_advantage_bps_iqr_upper"]
+                        .dropna()
+                        .gt(0)
+                        .mean()
+                    )
+                    if group["all_in_direct_advantage_bps_iqr_upper"].notna().any()
                     else None
                 ),
                 "dominated_routes": len(dominated),
@@ -607,8 +690,8 @@ def main() -> int:
         df,
         OUT_PARQUET,
         code_sources=CODE_SOURCES,
-        inputs=[*[RAW / venue for venue in VENUES], UNIFIED, GAS_PANEL],
-        notes="V2-family exact-size direct counterfactual at strict pre-transaction block-log state; historical gas with measured topology medians where available",
+        inputs=[*[RAW / venue for venue in VENUES], UNIFIED, GAS_PANEL, ROUTE_GAS_PANEL],
+        notes="V2-family exact-size direct counterfactual at strict pre-transaction block-log state; historical gas prices and receipt-calibrated route gas with explicit fallback support",
     )
 
     print(f"\ncomparable intermediated routes with a direct alternative: {len(df):,}")
@@ -642,10 +725,20 @@ def main() -> int:
     gas_supported = df[df["all_in_direct_advantage_bps"].notna()]
     if len(gas_supported):
         all_in_dominated = gas_supported["all_in_direct_advantage_bps"].gt(0)
+        lower = gas_supported["all_in_direct_advantage_bps_iqr_lower"].gt(0)
+        upper = gas_supported["all_in_direct_advantage_bps_iqr_upper"].gt(0)
         print(
-            "  topology-gas-adjusted direct dominance on historical-gas support: "
-            f"{100*all_in_dominated.mean():.1f}% ({len(gas_supported):,} routes)"
+            "  receipt-calibrated direct dominance on historical-gas support: "
+            f"{100*all_in_dominated.mean():.1f}% "
+            f"(IQR sensitivity {100*lower.mean():.1f}% to {100*upper.mean():.1f}%; "
+            f"{len(gas_supported):,} routes)"
         )
+        for prefix in ("direct", "vehicle"):
+            support = gas_supported[f"{prefix}_gas_support_level"].value_counts()
+            print(
+                f"    {prefix} gas support: "
+                + ", ".join(f"{level}={count:,}" for level, count in support.items())
+            )
     print("\nby intermediary type:")
     for t, s in df.groupby("mid_type"):
         d = s[s.direct_output_improvement_bps > 0]
@@ -691,13 +784,21 @@ def main() -> int:
         pct_dominated_topology_gas_adjusted=(
             "all_in_direct_advantage_bps", lambda x: 100 * (x.dropna() > 0).mean()
         ),
+        pct_dominated_gas_iqr_lower=(
+            "all_in_direct_advantage_bps_iqr_lower",
+            lambda x: 100 * (x.dropna() > 0).mean(),
+        ),
+        pct_dominated_gas_iqr_upper=(
+            "all_in_direct_advantage_bps_iqr_upper",
+            lambda x: 100 * (x.dropna() > 0).mean(),
+        ),
     ).reset_index()
     write_exhibit(
         annual,
         OUT_EXHIBIT,
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
-        notes="annual exact-size V2-family direct counterfactual; positive price-free output improvement means the direct route returns more; input-normalized gas adjustment uses historical prices and measured route-topology medians and is not yet venue-specific",
+        notes="annual exact-size V2-family direct counterfactual; positive price-free output improvement means the direct route returns more; input-normalized gas adjustment uses historical prices and receipt medians matched by year, venue sequence and intermediary with labelled fallbacks and IQR sensitivity",
     )
     support = state_support_summary(df)
     write_exhibit(
@@ -717,6 +818,8 @@ def main() -> int:
                 "pct_dominated_gross",
                 "pct_dominated_valuation_coherent_20pct",
                 "pct_dominated_topology_gas_adjusted",
+                "pct_dominated_gas_iqr_lower",
+                "pct_dominated_gas_iqr_upper",
             ],
         ].round(2).to_string(index=False)
     )
@@ -727,8 +830,9 @@ def main() -> int:
     )
     print("\nBIAS DIRECTIONS: v2-family venue coverage understates the best direct "
           "alternative, and omitting gas favours the two-hop vehicle route. Both "
-          "make gross direct-dominance incidence a LOWER bound. The historical "
-          "topology adjustment remains diagnostic until gas is venue-specific.")
+          "make gross direct-dominance incidence a LOWER bound. Receipt gas includes "
+          "router overhead beyond AMM execution, so the labelled fallback hierarchy "
+          "and IQR sensitivity remain part of the estimand.")
     return 0
 
 

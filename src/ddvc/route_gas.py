@@ -24,6 +24,29 @@ REQUIRED_COLUMNS = [
     "route_class",
 ]
 SAMPLE_CELLS = ["year", "legs", "venue_sequence", "gas_vehicle"]
+GAS_REQUEST_COLUMNS = [
+    "year",
+    "legs",
+    "venue_sequence",
+    "gas_vehicle",
+    "mid_type",
+]
+GAS_SUPPORT_LEVELS = (
+    ("year_venue_vehicle", ["year", "legs", "venue_sequence", "gas_vehicle"]),
+    ("year_venue_type", ["year", "legs", "venue_sequence", "mid_type"]),
+    ("year_venue", ["year", "legs", "venue_sequence"]),
+    ("year_type", ["year", "legs", "mid_type"]),
+    ("year_topology", ["year", "legs"]),
+    ("topology", ["legs"]),
+)
+GAS_ESTIMATE_COLUMNS = [
+    "gas_units_median",
+    "gas_units_p25",
+    "gas_units_p75",
+    "gas_support_level",
+    "gas_support_cells",
+    "gas_support_transactions",
+]
 CANDIDATE_COLUMNS = [
     "date",
     "day",
@@ -149,3 +172,85 @@ def deterministic_cell_sample(candidates: pd.DataFrame, per_cell: int) -> pd.Dat
         .head(per_cell)
     )
     return out.drop(columns=["_rank"]).reset_index(drop=True)
+
+
+def _gas_sample_cells(panel: pd.DataFrame) -> pd.DataFrame:
+    """Collapse the capped receipt sample to its prespecified sampling cells."""
+    required = set(GAS_REQUEST_COLUMNS + ["gas_used", "status"])
+    missing = sorted(required - set(panel.columns))
+    if missing:
+        raise ValueError(f"route-gas panel is missing columns: {', '.join(missing)}")
+    valid = panel[
+        panel["status"].eq(1)
+        & pd.to_numeric(panel["gas_used"], errors="coerce").gt(0)
+    ].copy()
+    if valid.empty:
+        raise ValueError("route-gas panel has no successful positive-gas receipts")
+    return valid.groupby(SAMPLE_CELLS, as_index=False, dropna=False).agg(
+        mid_type=("mid_type", "first"),
+        gas_units_median=("gas_used", "median"),
+        gas_units_p25=("gas_used", lambda values: values.quantile(0.25)),
+        gas_units_p75=("gas_used", lambda values: values.quantile(0.75)),
+        gas_support_transactions=("gas_used", "size"),
+    )
+
+
+def _gas_level_lookup(
+    cells: pd.DataFrame, level: str, keys: list[str]
+) -> pd.DataFrame:
+    """Build one cell-balanced fallback level for route-gas estimation."""
+    if keys == SAMPLE_CELLS:
+        exact = cells.copy()
+        exact["gas_support_cells"] = 1
+        exact["gas_support_level"] = level
+        return exact[keys + GAS_ESTIMATE_COLUMNS]
+    lookup = cells.groupby(keys, as_index=False, dropna=False).agg(
+        gas_units_median=("gas_units_median", "median"),
+        gas_units_p25=("gas_units_p25", "median"),
+        gas_units_p75=("gas_units_p75", "median"),
+        gas_support_cells=("gas_units_median", "size"),
+        gas_support_transactions=("gas_support_transactions", "sum"),
+    )
+    lookup["gas_support_level"] = level
+    return lookup[keys + GAS_ESTIMATE_COLUMNS]
+
+
+def estimate_route_gas(
+    requests: pd.DataFrame, receipt_panel: pd.DataFrame
+) -> pd.DataFrame:
+    """Estimate gas units with explicit exact-cell-to-topology fallback support.
+
+    The deterministic receipt sample is capped within year, topology, venue
+    sequence and intermediary cells. Broader fallbacks therefore aggregate cell
+    medians, not raw transactions, so vehicles with more selected receipts do not
+    receive accidental extra weight.
+    """
+    missing = sorted(set(GAS_REQUEST_COLUMNS) - set(requests.columns))
+    if missing:
+        raise ValueError(f"route-gas requests are missing columns: {', '.join(missing)}")
+    cells = _gas_sample_cells(receipt_panel)
+    query = requests[GAS_REQUEST_COLUMNS].reset_index(drop=True).copy()
+    query["_gas_row"] = range(len(query))
+    result = pd.DataFrame(index=range(len(query)))
+    for column in GAS_ESTIMATE_COLUMNS:
+        result[column] = pd.NA if column == "gas_support_level" else float("nan")
+    for level, keys in GAS_SUPPORT_LEVELS:
+        unresolved = result["gas_units_median"].isna()
+        if not unresolved.any():
+            break
+        lookup = _gas_level_lookup(cells, level, keys)
+        matches = query.loc[unresolved, ["_gas_row", *keys]].merge(
+            lookup,
+            on=keys,
+            how="left",
+            validate="many_to_one",
+        )
+        matches = matches[matches["gas_units_median"].notna()]
+        if matches.empty:
+            continue
+        rows = matches["_gas_row"].astype(int).to_numpy()
+        result.loc[rows, GAS_ESTIMATE_COLUMNS] = matches[
+            GAS_ESTIMATE_COLUMNS
+        ].to_numpy()
+    result.index = requests.index
+    return result
