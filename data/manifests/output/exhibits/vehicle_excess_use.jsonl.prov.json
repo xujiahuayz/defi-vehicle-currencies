@@ -1,0 +1,60 @@
+{
+ "argv": [
+  "--workers",
+  "8"
+ ],
+ "artefact": "output/exhibits/vehicle_excess_use.jsonl",
+ "code_fingerprint": "b1187da3f94b6670d3a8b7dc8b79e7c6ba9819743358b50f85bd97f6577c0559",
+ "code_sources": [
+  "scripts/build_vehicle_excess_use.py",
+  "src/ddvc/asset_types.py",
+  "src/ddvc/tables.py",
+  "src/ddvc/vehicle_extent.py"
+ ],
+ "created_at": "2026-08-06T10:21:38+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "eb4a238ffa6d785df581995592b7a312fea38338",
+  "dirty": false,
+  "dirty_generated_files": [
+   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
+   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_technology_rival.jsonl.prov.json",
+   "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/v4_quoter_validation.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/exhibits/venue_technology_rival.jsonl",
+   "data/manifests/data/processed/vehicle_excess_use_daily.parquet.prov.json",
+   "data/manifests/output/exhibits/vehicle_excess_use_quarterly.jsonl.prov.json",
+   "output/exhibits/realised_dominance_reweighting.jsonl",
+   "output/exhibits/vehicle_excess_use_quarterly.jsonl"
+  ],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "bytes": 476908362,
+   "exists": true,
+   "hashed": false,
+   "mtime_ns": 1786011696474295055,
+   "path": "data/processed/vehicle_excess_use_daily.parquet"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 217,
+ "script": "scripts/build_vehicle_excess_use.py"
+}
