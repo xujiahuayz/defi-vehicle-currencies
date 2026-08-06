@@ -41,6 +41,7 @@ from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.prices import day_prices
 from ddvc.provenance import cache_key
 from ddvc.provenance import stamp as record_provenance
+from ddvc.route_cost import MAX_INPUT_TO_RESERVE, MAX_PRICE_IMPACT, QUOTE_CELL_KEYS
 from ddvc.pricing.v2quote import quote_exact_input_float
 from ddvc.pricing.stableswap import StablePool
 from ddvc.pricing.stableswap import calibrate_amp as _calibrate_amp
@@ -94,46 +95,8 @@ CURVE_START = "20200211"
 BALANCER_START = "20210422"          # Balancer v2's first indexed swap day
 WETH_ADDR = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 
-# SUPPORT BOUND. A leg is not quoted when its input exceeds this fraction of the pool's
-# input-side reserve.
-#
-# Every quoter here was validated on REALISED swaps, which are by construction trades
-# someone chose to make in a pool deep enough to serve them. Applying them to hypothetical
-# routes through pools no router would touch is extrapolation with no measured error, and
-# the consequence was quantified: between 44.5% and 82.0% of the panel's gaps implied an
-# arbitrage cycle that pays after three pool fees and three-hop gas, with a median gap of
-# 4,655 basis points at a 100,000 dollar trade. A 46.5% same-block arbitrage would be
-# taken instantly with a flash loan and no capital, so those gaps were not economics.
-#
-# The screen is EX-ANTE on the pool and never on the gap. Filtering on the gap conditions
-# on the magnitude of a monotone function of the outcome, which is selection on the
-# dependent variable, and that error already voided this project's previous defence
-# against quote collapse.
-#
-# The level is a judgement and is stated as one. Measured over 932,270 realised swaps that
-# clear the physical bound, trade size as a fraction of the input reserve is 0.0034 at the
-# median, 0.0329 at the 90th percentile, 0.0541 at the 95th and 0.1486 at the 99th. The
-# 99.9th percentile is 0.7833, and taking it would be wrong: a trade at 78% of a reserve
-# moves price by roughly that much and is exactly what manufactures impossible gaps. The
-# 95th percentile keeps essentially all ordinary trading while capping a single leg's price
-# impact near a few hundred basis points, which is the order of the effects being measured.
-# Reported as a parameter with sensitivity, never as a buried constant.
-MAX_INPUT_TO_RESERVE = 0.05
-
-# The same bound, expressed venue-agnostically as the leg's OWN price impact, so it
-# applies to concentrated liquidity, StableSwap and weighted pools as well. A leg is
-# rejected when its effective price is worse than its marginal price by more than this.
-#
-# Applying the reserve-ratio form to the constant-product branch alone was not enough:
-# the median gap at a 100,000 dollar trade fell from 4,655 to 1,164 basis points, but
-# 70.4% of gaps still implied a cycle that pays, because Uniswap v3 supplies most quotes
-# and had no bound at all.
-#
-# This is NOT selection on the outcome. Price impact is a property of one leg against its
-# own marginal price, computed without reference to the competing route, whereas the
-# outcome is whether the direct route beats the vehicle route. Rejecting a leg nobody
-# would take does not condition on which route wins.
-MAX_PRICE_IMPACT = 0.05
+# The support rule and quote-cell identity are owned by ``ddvc.route_cost`` so the
+# builder, diagnostics, assembler, and cache fingerprint cannot drift independently.
 MAX_ROUTE_WORKERS = 10
 
 
@@ -155,6 +118,7 @@ OUT = OUTPUT_DIR / "empirical"
 # and merely mislabelled, which is how the hand-managed `v3_exact_tick` label let
 # 2,242 days of quotes from a broken quoter survive two correctness fixes.
 QUOTE_SOURCES = [
+    "src/ddvc/route_cost.py",
     "src/ddvc/pricing/v3quote.py",
     "src/ddvc/pricing/v3pools.py",
     "src/ddvc/pricing/tick_state.py",
@@ -188,14 +152,6 @@ SUMMARY_SOURCES = [*QUOTE_SOURCES, "src/ddvc/route_cost_summary.py"]
 # reused the narrower pair set. Both belong in the key for the same reason the
 # code fingerprint does.
 DAY_CACHE = OUT_DATA / "_route_cost_day_cache" / f"engine_{QUOTE_ENGINE}"
-QUOTE_CELL_KEYS = (
-    "date",
-    "reserve_hour_utc",
-    "src",
-    "tgt",
-    "vehicle",
-    "trade_size_usd",
-)
 
 
 def assert_unique_quote_cells(frame: pd.DataFrame, *, context: str) -> None:

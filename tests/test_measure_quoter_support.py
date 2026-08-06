@@ -12,6 +12,10 @@ from scripts import measure_quoter_support
 
 
 class MeasureQuoterSupportTests(unittest.TestCase):
+    def test_reported_support_contract_matches_quote_engine(self) -> None:
+        self.assertEqual(measure_quoter_support.MAX_INPUT_TO_RESERVE, 0.05)
+        self.assertEqual(measure_quoter_support.SUPPORT_QUANTILE, 0.95)
+
     def test_v4_support_reports_swap_and_value_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

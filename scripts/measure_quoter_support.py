@@ -44,6 +44,7 @@ import pandas as pd
 
 from ddvc.fetch.raw import v4_quote_status
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.route_cost import MAX_INPUT_TO_RESERVE, SUPPORT_QUANTILE
 from ddvc.tables import write_exhibit
 
 RAW = DATA_DIR / "raw" / "thegraph" / "uniswap_v2"
@@ -238,16 +239,30 @@ def main() -> int:
     print("\nReading. A constant-product quote for a trade at fraction x of the input")
     print("reserve moves the price by roughly x, so the tail of this distribution is")
     print("where the quoter stops being tested. A panel that quotes routes far beyond")
-    print("the 99.9th percentile of what traders actually did is extrapolating, and the")
-    print("arbitrage bound says that is where the impossible gaps come from.")
-    print(f"\nRECOMMENDED SUPPORT BOUND: decline to quote a leg whose input amount")
-    print(f"exceeds {q(0.999):.4f} of that pool's input-side reserve, the 99.9th")
-    print(f"percentile of realised behaviour. That keeps essentially every trade anyone")
-    print(f"actually made while refusing to price routes nobody would take.")
+    print("the upper tail of realised trades is not an admissible support rule: at 78%")
+    print("of the input reserve, the quote itself creates the impossible price movement.")
+    measured = q(SUPPORT_QUANTILE)
+    print(f"\nPANEL SUPPORT BOUND: {MAX_INPUT_TO_RESERVE:.4f} of the input-side reserve.")
+    print(f"The measured {SUPPORT_QUANTILE:.0%} percentile is {measured:.4f}; the engine uses")
+    print("the nearby rounded-down value, which retains ordinary realised trades without")
+    print("letting extreme observations define the region where the quoter is trusted.")
 
-    write_exhibit(pd.DataFrame(rows + [{"day": "POOLED", "n": len(pooled),
-                                        "median": q(0.5), "p90": q(0.9), "p99": q(0.99),
-                                        "p999": q(0.999), "max": pooled[-1]}]), OUT, inputs=[RAW])
+    contract = {
+        "panel_support_bound": MAX_INPUT_TO_RESERVE,
+        "support_quantile": SUPPORT_QUANTILE,
+    }
+    evidence = [
+        {**row, **contract}
+        for row in rows + [{"day": "POOLED", "n": len(pooled),
+                            "median": q(0.5), "p90": q(0.9), "p99": q(0.99),
+                            "p999": q(0.999), "max": pooled[-1]}]
+    ]
+    write_exhibit(
+        pd.DataFrame(evidence),
+        OUT,
+        code_sources=["src/ddvc/route_cost.py"],
+        inputs=[RAW],
+    )
     print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
     write_v4_support()
     return 0

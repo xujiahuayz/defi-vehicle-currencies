@@ -34,9 +34,9 @@ from pathlib import Path
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.provenance import stamp
+from ddvc.route_cost import QUOTE_CELL_KEYS
 from ddvc.route_cost_summary import write_route_cost_summary
 from ddvc.runtime import exclusive_job
-from scripts.run_route_cost_panel import QUOTE_CELL_KEYS
 
 CACHE = DATA_DIR / "empirical" / "_route_cost_day_cache"
 OUT = DATA_DIR / "empirical" / "route_cost_panel_v2.parquet"
@@ -44,6 +44,7 @@ SUMMARY = OUTPUT_DIR / "empirical" / "route_cost_panel_v2_summary.pkl"
 CODE_SOURCES = [
     "scripts/assemble_route_cost_panel.py",
     "src/ddvc/panel_assembly.py",
+    "src/ddvc/route_cost.py",
     "scripts/run_route_cost_panel.py",
     "src/ddvc/pricing/stableswap.py",
     "src/ddvc/pricing/v2quote.py",
