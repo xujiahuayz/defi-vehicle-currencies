@@ -105,6 +105,15 @@ The unit is pair-candidate-day, restricted to executable via-\(k\) alternatives 
 - **Primary signs:** \(\beta_K<0\), because a candidate with a cheaper indirect route has a smaller direct cost advantage and should capture more share; \(\beta_L>0\) is evidence that candidate-linked scale predicts selection beyond measured contemporaneous route cost.
 - **Algebra rule:** do not place \(\mathrm{IndirectDepth}_{i,o,k,q,t}\) and a cost measure built from the same \(O^I\) in one pair-date specification and interpret both structurally.
 
+### Experiment D: routing-search efficiency and market integration
+
+The 2020 to 2026 transition also spans the diffusion of aggregators, universal routers, cross-venue execution, and faster arbitrage. Those changes can make observed routes more efficient without changing the underlying vehicle-cost frontier, or can expand the searched opportunity set in a way that favors whichever candidate has fragmented depth across many pools. This is a competing mechanism for the time-series vehicle transition and a possible channel through which stable liquidity becomes usable.
+
+- **Opportunity-set efficiency:** by month, measure the dispersion of same-state triangular residuals, direct-versus-best-route cost gaps, within-block correction, and the share of transactions executing across multiple pools or venues. Keep cost-surface efficiency separate from realised router choice.
+- **Behaviour-first router proxy:** use transaction-level multi-pool and cross-venue execution as the primary search-sophistication measure. `sender` identifies an executor, not the originating aggregator; labelled-address results remain a partial-coverage sensitivity using the versioned registry and never define the primary sample.
+- **Transition test:** re-estimate vehicle extent and candidate choice within date-pair-size opportunity sets, stratified by search sophistication, and interact candidate type with the monthly efficiency measures. Report whether the stable-vehicle transition occurs inside comparable search regimes or is concentrated in the adoption of more integrated routing.
+- **Interpretation bound:** if stable dominance disappears after conditioning on these measures, the result is a routing-technology transition. If it survives within comparable opportunity and search sets, liquidity composition remains the live mechanism. If sophisticated routing disproportionately selects stable vehicles from a dispersed pool set, routing technology is a mechanism that activates stable liquidity, not a nuisance control.
+
 ### Decision rule for RQ1
 
 | Finding | Answer |
@@ -113,6 +122,7 @@ The unit is pair-candidate-day, restricted to executable via-\(k\) alternatives 
 | Indirect routes win only before gas is added | Vehicle routing is a quote-quality phenomenon but not an all-in economic advantage for users |
 | Indirect routes remain common when \(\Delta C^{D,\mathrm{all}}>0\), and lagged scale/liquidity remains significant | Current cost is incomplete; persistence, reliability, private order flow, or coordination moves to RQ3 rather than being labelled irrationality |
 | All-in cost does not predict realized route choice | Refute the proposed cost mechanism or revisit route reconstruction, unobserved router objectives, and quote timing before making a formation claim |
+| The stable-vehicle transition is confined to high-search or late-efficiency regimes | Attribute the transition to routing integration, or to routing integration activating fragmented stable liquidity; do not describe it as unconditional currency succession |
 
 **Potentially surprising result:** two swaps can be cheaper than one only above a trade-size region because direct-pool price impact is convex, even though the indirect route pays two fee legs and more gas.
 
