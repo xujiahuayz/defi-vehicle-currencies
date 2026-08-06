@@ -103,6 +103,9 @@ def empty_day(date: object) -> dict[str, object]:
         "economic_multileg_mean_legs": float("nan"),
         "economic_multileg_mean_venues": float("nan"),
         "economic_multileg_over_two_share": float("nan"),
+        "balanced_routes": 0,
+        "balanced_single_leg_routes": 0,
+        "balanced_multi_leg_routes": 0,
         "balanced_economic_multileg_routes": 0,
         "balanced_economic_multileg_swap_legs": 0,
         "balanced_economic_multileg_venue_count": 0,
@@ -181,6 +184,9 @@ def one_day(path: Path) -> dict | None:
         "economic_multileg_mean_legs": float(legs[econ].mean()),
         "economic_multileg_mean_venues": float(venues[econ].mean()),
         "economic_multileg_over_two_share": share(complex_route, econ),
+        "balanced_routes": int(balanced.sum()),
+        "balanced_single_leg_routes": int((balanced & ~multi).sum()),
+        "balanced_multi_leg_routes": int((balanced & multi).sum()),
         "balanced_economic_multileg_routes": int(balanced_econ.sum()),
         "balanced_economic_multileg_swap_legs": int(legs[balanced_econ].sum()),
         "balanced_economic_multileg_venue_count": int(venues[balanced_econ].sum()),
@@ -280,6 +286,7 @@ def main() -> int:
         routes=("routes", "sum"),
         venues_active=("venues_active", "max"),
         balanced_econ=("balanced_economic_multileg_routes", "sum"),
+        balanced_routes=("balanced_routes", "sum"),
         balanced_econ_legs=("balanced_economic_multileg_swap_legs", "sum"),
         balanced_econ_venues=("balanced_economic_multileg_venue_count", "sum"),
         balanced_complex_routes=("balanced_economic_multileg_over_two_routes", "sum"),
@@ -306,14 +313,16 @@ def main() -> int:
               f"        {int(row.venues_active)}")
     a["balanced_cross_share"] = a["balanced_cross"] / a["balanced_econ"]
     a["balanced_cross_usd_share"] = a["balanced_cross_usd"] / a["balanced_econ_usd"]
+    a["balanced_economic_multileg_share_all"] = a["balanced_econ"] / a["balanced_routes"]
     a["balanced_complex_share"] = a["balanced_complex_routes"] / a["balanced_econ"]
     a["balanced_mean_legs"] = a["balanced_econ_legs"] / a["balanced_econ"]
     a["balanced_mean_venues"] = a["balanced_econ_venues"] / a["balanced_econ"]
     print("\nbalanced five-venue ratios (same perimeter throughout the V3 era):")
-    print("  year   count   value   >2 legs   mean legs   mean venues   routes")
+    print("  year   count   value   multi/all   >2 legs   mean legs   mean venues   routes")
     for idx, row in a[a.index >= "2021-05-04"].iterrows():
         print(f"  {idx.year}   {row.balanced_cross_share:6.1%}"
               f"  {row.balanced_cross_usd_share:6.1%}"
+              f"     {row.balanced_economic_multileg_share_all:6.1%}"
               f"    {row.balanced_complex_share:6.1%}"
               f"        {row.balanced_mean_legs:5.2f}"
               f"          {row.balanced_mean_venues:5.2f}"

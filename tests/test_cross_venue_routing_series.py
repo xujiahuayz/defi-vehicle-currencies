@@ -147,14 +147,19 @@ class CrossVenueRoutingSeriesTests(unittest.TestCase):
                 ("old", old_b, 100.0, "K", "B", 2),
                 ("new", old_a, 200.0, "C", "M", 1),
                 ("new", "uniswap_v4", 200.0, "M", "D", 2),
+                ("direct", old_a, 50.0, "E", "F", 1),
             ]
         ]
+        rows[-1]["route_class"] = "single"
         with TemporaryDirectory() as temporary:
             path = Path(temporary) / "20250101.parquet"
             pd.DataFrame(rows).to_parquet(path, index=False)
             result = one_day(path)
         assert result is not None
         self.assertEqual(result["economic_multileg_routes"], 2)
+        self.assertEqual(result["balanced_routes"], 2)
+        self.assertEqual(result["balanced_single_leg_routes"], 1)
+        self.assertEqual(result["balanced_multi_leg_routes"], 1)
         self.assertEqual(result["balanced_economic_multileg_routes"], 1)
         self.assertEqual(result["balanced_cross_venue_routes"], 1)
         self.assertEqual(result["balanced_cross_venue_share"], 1.0)
