@@ -4,20 +4,22 @@
   "8"
  ],
  "artefact": "data/processed/intermediation_by_type_daily.parquet",
- "code_fingerprint": "d544d6ca4fb393ba90eccdf63da0bf7c7ad8f7e2d03e9fb743911af1e680a701",
+ "code_fingerprint": "ce9c67e3a34c61e427fd134b19338ad025cd19d01f3bdbd7f62d0fc0a69f4086",
  "code_sources": [
   "scripts/build_intermediation_by_type.py",
+  "src/ddvc/analysis/regression.py",
   "src/ddvc/asset_types.py",
   "src/ddvc/realised.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T10:48:43+00:00",
+ "created_at": "2026-08-06T11:07:35+00:00",
  "git": {
   "branch": "main",
-  "commit": "f12ea7a855b1e9efe4ec6b57285c76003999907c",
+  "commit": "7bd54d988192278236c6ee0e0729fcdfb73b9977",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/intermediation_by_type.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
@@ -25,6 +27,7 @@
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_technology_rival.jsonl.prov.json",
    "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/intermediation_by_type.jsonl",
    "output/exhibits/realised_dominance.jsonl",
    "output/exhibits/survival_after_dominance.jsonl",
    "output/exhibits/v4_quoter_validation.jsonl",
