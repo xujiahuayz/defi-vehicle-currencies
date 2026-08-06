@@ -179,6 +179,8 @@ B. Domain literature .............. partially complete
      01_source_fidelity.md holds 14 papers, two independent reads each.
      Extend for: Eichengreen/Krugman inertia; LVR and rent incidence.
 C. Definitions and measurement .... section 3. BLOCKING on everything below.
+     RECURRING, not phase 0. Reopened by K, by I, and by any F result that
+     the current definition cannot express. See the note below.
 D. Cross-venue data layer ......... rebuild all measures on data/unified/.
      Full-panel cross-venue routing series. Validation apparatus (the moat).
 E. Design + specification lock .... section 4 hypotheses, decision registry,
@@ -218,6 +220,37 @@ H. Deck ........................... derived from G.
         rather than declaring convergence on a weaker claim.
 I. Cross-family review ............ Codex/Gemini. Feeds back into C..H.
      Desk-reject filter first, then rank-ordered referee.
+        C IS THE HIGHEST-LEVERAGE NODE AND IT WAS THE ONE THAT COULD NOT
+        LEARN. Java's diagnosis, 2026-08-06, sharper than the missing-generator
+        one it followed. The specification in this graph comes from C, which
+        fixes definitions and measurement, and from E, which screens candidates.
+        Both ran ONCE in an early pass. E screens the list in section 4.1, but
+        that list was written in the same early pass, so E cannot regenerate
+        what it screens. The result is a graph whose definitions are frozen at
+        the moment of least knowledge.
+
+        The evidence is that measuring the vehicle role as network betweenness
+        was not a new candidate RESULT, it was a better DEFINITION. Vehicle
+        extent had been operationalised as a volume share, which is a proxy for
+        the concept, when the concept is that a vehicle lies on the paths
+        between other assets. That correction belongs in C and could only
+        arrive from outside the graph because C was closed.
+
+        C IS THEREFORE THE MOST LITERATURE-DEPENDENT NODE, not merely one that
+        cites. Betweenness is the right definition BECAUSE Flandreau and Jobst
+        model currency use as a network with externalities, so the definition is
+        what connects this paper to the conversation it wants to join. A
+        definition chosen without that reading produces a measurement nobody in
+        the field can engage with, however clean it is. So C reads the corpus
+        for how the target literature FORMALISES the object, and not only for
+        what it found.
+
+        REOPENING RULES, so C recurs on a trigger and not on a whim. C reopens
+        when K proposes a measure the current definition cannot express, when I
+        rejects a claim on definitional grounds, and when an F result is true
+        but uninteresting because the definition made it close to a tautology,
+        which is exactly what happened to native intermediation is cheaper.
+
 K. Ideation ....................... proposes what nobody asked for. ADDED
      2026-08-06 on Java's diagnosis that the graph had no generator.
 
