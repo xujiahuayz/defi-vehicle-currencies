@@ -25,7 +25,7 @@ import argparse
 import hashlib
 import json
 import math
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -179,6 +179,16 @@ def deterministic_cell_sample(
     return out.drop(columns=["_rank"]).reset_index(drop=True)
 
 
+def sample_day(day: str, per_cell: int) -> tuple[int, pd.DataFrame]:
+    """Read one day and retain its exact contribution to the global cell top-k."""
+    path = UNIFIED / f"{day}.parquet"
+    if not path.exists():
+        return 0, pd.DataFrame()
+    frame = pd.read_parquet(path, columns=REQUIRED_COLUMNS)
+    candidates = candidate_transactions(frame, day)
+    return len(candidates), deterministic_cell_sample(candidates, per_cell)
+
+
 def parse_receipt(tx_hash: str, response: object) -> dict | None:
     """Normalised successful JSON-RPC receipt, or None when unusable."""
     if not isinstance(response, dict) or response.get("error"):
@@ -241,7 +251,12 @@ def main() -> int:
     )
     parser.add_argument("--days", nargs="+")
     parser.add_argument("--per-cell", type=int, default=25)
-    parser.add_argument("--workers", type=int, default=3)
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=3,
+        help="bounded candidate-extraction processes and receipt-fetch threads",
+    )
     args = parser.parse_args()
     if args.per_cell < 1:
         parser.error("--per-cell must be positive")
@@ -252,26 +267,27 @@ def main() -> int:
         path.stem for path in UNIFIED.glob("[0-9]" * 8 + ".parquet")
     )
     parts = []
-    for index, day in enumerate(days, 1):
-        path = UNIFIED / f"{day}.parquet"
-        if path.exists():
-            frame = pd.read_parquet(path, columns=REQUIRED_COLUMNS)
-            candidates = candidate_transactions(frame, day)
-            if not candidates.empty:
-                parts.append(candidates)
-        if index % 12 == 0 or index == len(days):
-            print(
-                f"  candidate days {index}/{len(days)} | "
-                f"rows {sum(map(len, parts)):,}",
-                flush=True,
-            )
+    candidate_count = 0
+    with ProcessPoolExecutor(max_workers=args.workers) as pool:
+        futures = [pool.submit(sample_day, day, args.per_cell) for day in days]
+        for index, future in enumerate(as_completed(futures), 1):
+            count, sample_part = future.result()
+            candidate_count += count
+            if not sample_part.empty:
+                parts.append(sample_part)
+            if index % 12 == 0 or index == len(days):
+                print(
+                    f"  candidate days {index}/{len(days)} | rows {candidate_count:,}",
+                    flush=True,
+                )
     if not parts:
         print("no exact one-component route transactions")
         return 1
-    candidates = pd.concat(parts, ignore_index=True)
-    sample = deterministic_cell_sample(candidates, args.per_cell)
+    sample = deterministic_cell_sample(
+        pd.concat(parts, ignore_index=True), args.per_cell
+    )
     print(
-        f"selected {len(sample):,} of {len(candidates):,} candidates across "
+        f"selected {len(sample):,} of {candidate_count:,} candidates across "
         f"{sample[SAMPLE_CELLS].drop_duplicates().shape[0]:,} cells",
         flush=True,
     )

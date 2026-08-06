@@ -173,6 +173,28 @@ class RouteGasUnitTests(unittest.TestCase):
         self.assertEqual(len(first), 4)
         self.assertEqual(set(first["tx_hash"]), set(second["tx_hash"]))
 
+    def test_partitioned_cell_top_k_equals_full_sample(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "year": [2022] * 8,
+                "legs": [2] * 8,
+                "venue_sequence": ["uniswap_v2>uniswap_v3"] * 8,
+                "mid_type": ["stable"] * 8,
+                "gas_vehicle": [USDC] * 8,
+                "tx_hash": [f"tx-{index}" for index in range(8)],
+            }
+        )
+        expected = deterministic_cell_sample(frame, 2)
+        partitioned = pd.concat(
+            [
+                deterministic_cell_sample(frame.iloc[:4], 2),
+                deterministic_cell_sample(frame.iloc[4:], 2),
+            ],
+            ignore_index=True,
+        )
+        actual = deterministic_cell_sample(partitioned, 2)
+        self.assertEqual(set(actual["tx_hash"]), set(expected["tx_hash"]))
+
     def test_receipt_parser_normalises_hex_fields(self) -> None:
         row = parse_receipt(
             "0xABC",
