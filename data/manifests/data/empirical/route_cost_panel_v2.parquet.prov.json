@@ -4,7 +4,7 @@
   "data/empirical/_route_cost_day_cache/engine_6a8414831c66/hall_p200_s1000-10000-100000"
  ],
  "artefact": "data/empirical/route_cost_panel_v2.parquet",
- "code_fingerprint": "ed3ca8f0351225b8c95e2d9890a5fca9a828ad26f2031a355670d5abc7a51711",
+ "code_fingerprint": "cc78fe2585dba371b9853d6305ba7e751812aa3ed78d11a930b3ae32f615a36b",
  "code_sources": [
   "scripts/assemble_route_cost_panel.py",
   "scripts/run_route_cost_panel.py",
@@ -13,22 +13,21 @@
   "src/ddvc/pricing/v2quote.py",
   "src/ddvc/pricing/v3pools.py",
   "src/ddvc/pricing/v3quote.py",
-  "src/ddvc/pricing/weighted.py"
+  "src/ddvc/pricing/weighted.py",
+  "src/ddvc/route_cost.py"
  ],
- "created_at": "2026-08-06T19:16:39+00:00",
+ "created_at": "2026-08-06T20:11:05+00:00",
  "git": {
   "branch": "main",
-  "commit": "f17d9c1091a36b0d71e44f0090b21f8bade71744",
+  "commit": "4e46fbe29328f1e9a2fc7f0deb414240c25bb215",
   "dirty": false,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
-   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
    "output/exhibits/dominance_specification_curve.jsonl",
-   "output/exhibits/gap_arbitrage_bound.jsonl",
    "output/exhibits/realised_dominance.jsonl",
    "output/exhibits/survival_after_dominance.jsonl",
    "output/exhibits/vehicle_dominance_hdfe.jsonl",
