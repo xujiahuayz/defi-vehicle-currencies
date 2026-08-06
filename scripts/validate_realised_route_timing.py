@@ -30,11 +30,12 @@ import pandas as pd
 from ddvc.analysis.block_timing import PoolView, V3DayState, load_v3_day, oriented_human
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
-from ddvc.tables import write_exhibit
+from ddvc.tables import write_exhibit, write_panel
 
 RAW = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
 UNIFIED = DATA_DIR / "unified"
 OUT = OUTPUT_DIR / "exhibits" / "realised_route_timing_validation.jsonl"
+OUT_PANEL = DATA_DIR / "processed" / "realised_route_timing_validation.parquet"
 CODE_SOURCES = [
     "scripts/validate_realised_route_timing.py",
     "src/ddvc/analysis/block_timing.py",
@@ -214,6 +215,39 @@ def validate_day(day: str, max_routes: int) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def summarise_validation(output: pd.DataFrame) -> pd.DataFrame:
+    """Return one compact evidence row per day plus the pooled validation."""
+    groups: list[tuple[str, pd.DataFrame]] = [("all", output)]
+    groups.extend(
+        (str(day), group)
+        for day, group in output.groupby("validation_day", sort=True)
+    )
+    rows = []
+    for scope, group in groups:
+        shift = group["marginal_state_shift_bps"]
+        conservation = group["intermediate_conservation_gap"]
+        rows.append(
+            {
+                "validation_day": scope,
+                "routes": int(len(group)),
+                "negative_own_state": int(group["own_state_shortfall"].lt(0).sum()),
+                "negative_own_state_share": float(group["own_state_shortfall"].lt(0).mean()),
+                "own_state_shortfall_median": float(group["own_state_shortfall"].median()),
+                "own_state_shortfall_p99": float(group["own_state_shortfall"].quantile(0.99)),
+                "negative_hour_state_share": float(group["hour_state_shortfall"].lt(0).mean()),
+                "hour_state_shortfall_median": float(group["hour_state_shortfall"].median()),
+                "state_shift_median_bps": float(shift.median()),
+                "state_shift_absolute_median_bps": float(shift.abs().median()),
+                "state_shift_absolute_over_30bps_share": float(shift.abs().gt(30).mean()),
+                "state_shift_absolute_over_100bps_share": float(shift.abs().gt(100).mean()),
+                "intermediate_conservation_gap_median": float(conservation.median()),
+                "intermediate_conservation_gap_p99": float(conservation.quantile(0.99)),
+                "intermediate_conservation_gap_max": float(conservation.max()),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--day", action="append", help="repeat for strict multi-date validation")
@@ -262,14 +296,25 @@ def main() -> int:
                 UNIFIED / f"{day}.parquet",
             ]
         )
-    write_exhibit(
+    write_panel(
         output,
-        OUT,
+        OUT_PANEL,
         code_sources=CODE_SOURCES,
         inputs=inputs,
         notes="two-leg V3 realised effective rates; strict state before transaction first swap log",
     )
-    print(f"wrote {OUT.relative_to(OUTPUT_DIR.parent)}")
+    summary = summarise_validation(output)
+    write_exhibit(
+        summary,
+        OUT,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PANEL],
+        notes="pooled and per-day transaction-state timing validation",
+    )
+    print(
+        f"wrote {OUT_PANEL.relative_to(DATA_DIR.parent)} and "
+        f"{OUT.relative_to(OUTPUT_DIR.parent)}"
+    )
     return 0
 
 

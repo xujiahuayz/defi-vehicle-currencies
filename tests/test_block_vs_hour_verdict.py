@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.analysis.block_timing import PoolView, SwapEvent, V3DayState, load_v3_day, oriented_human
-from scripts.validate_realised_route_timing import route_timing_observation
+from scripts.validate_realised_route_timing import route_timing_observation, summarise_validation
 
 
 class PoolViewTests(unittest.TestCase):
@@ -195,6 +195,24 @@ class PoolViewTests(unittest.TestCase):
         self.assertAlmostEqual(
             float(observation["hour_state_shortfall"]),
             1.0 - realised_rate / (0.99 * 0.99),
+        )
+
+    def test_validation_summary_keeps_compact_day_and_pooled_rows(self) -> None:
+        rows = pd.DataFrame(
+            {
+                "validation_day": ["20220101", "20220101", "20230101"],
+                "own_state_shortfall": [0.01, 0.02, 0.03],
+                "hour_state_shortfall": [-0.01, 0.01, 0.02],
+                "marginal_state_shift_bps": [20.0, -40.0, 200.0],
+                "intermediate_conservation_gap": [0.0, 0.001, 0.0],
+            }
+        )
+        summary = summarise_validation(rows).set_index("validation_day")
+        self.assertEqual(list(summary.index), ["all", "20220101", "20230101"])
+        self.assertEqual(int(summary.loc["all", "routes"]), 3)
+        self.assertAlmostEqual(
+            float(summary.loc["all", "state_shift_absolute_over_30bps_share"]),
+            2 / 3,
         )
 
 
