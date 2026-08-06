@@ -41,16 +41,16 @@ Cross-venue assembly is what makes the sample usable for this question, and its 
 
 The advantage this reconstruction confers should be described accurately. On-chain data is public to anyone with an endpoint, so nothing here is proprietary. What is costly is attribution: assembling multi-leg routes across eight venues at scale, resolving token decimals, and reconstructing pool state at the moment each route executed. That is engineering difficulty and not private information, and it does not substitute for identification.
 
-The executor of a route is recoverable from the calling contract, and the author of the routing decision is only partly so. Across 74,323 swaps on the sampled days, 241 distinct senders appear, a population that fragments to 397 by late 2025, and a hand-built registry names 11.8\% of them. Results in this paper are therefore reported over routes and not over routers.
+The executor of a route is recoverable from the calling contract, and the author of the routing decision is only partly so. On a 2024 snapshot of 74,323 swaps, 241 distinct senders appear, and a hand-built registry of the ten largest accounts for 67.7\% of those swaps. By a 2025 snapshot the population has fragmented to 397 senders across 130,282 swaps and the same registry reaches 11.8\% of swaps. Results in this paper are therefore reported over routes and not over routers.
 % docs/router-identification-feasibility.md
 
 \subsection{Pricing the counterfactual, and where the quotes were validated}
 \label{sec:setting:pricing}
 
-Comparing a route the trader took against one the trader did not requires quoting the alternative at the state that stood when the route executed. Six venues are priced, each with the venue's own invariant and each accepted only after reproducing swaps that actually happened. Constant-product venues are quoted in closed form. Concentrated-liquidity venues are quoted by walking the tick map with the exact swap step the contract implements, reproducing realised output at 0.0000\% median error in all four combinations of trade direction and tick crossing. Curve pools are quoted on the StableSwap invariant with the amplification coefficient calibrated per pool-day, at 0.022\% median error. Balancer pools are quoted on the weighted geometric mean at 0.0000\% median error.
+Comparing a route the trader took against one the trader did not requires quoting the alternative at the state that stood when the route executed. Six venues are priced, each with the venue's own invariant and each accepted only after reproducing swaps that actually happened. Constant-product venues are quoted in closed form. Concentrated-liquidity venues are quoted by walking the tick map with the exact swap step the contract implements, reproducing realised output at 0.0000\% median error in all four combinations of trade direction and tick crossing. Curve pools are quoted on the StableSwap invariant with the amplification coefficient calibrated per pool-day, at 0.033\% median error. Balancer pools are quoted on the weighted geometric mean at 0.0000\% median error.
 % docs/venue-coverage-bounds.md; src/ddvc/pricing/{v3quote,stableswap,weighted}.py
 
-One venue in the top eight is not priced, and the exclusion carries a number. Sushiswap's concentrated-liquidity deployment is 0.016\% of priced-venue volume pooled across the sample, and 4.1\% of its own volume sits on pairs that no priced venue hosts, so omitting it cannot move any quantity reported here.
+One venue in the top eight is not priced, and the exclusion carries a number. Sushiswap's concentrated-liquidity deployment is 0.016\% of the priced venues' volume pooled across the sample, and on fourteen sampled days 4.1\% of its own volume sits on pairs that no priced venue hosts, so omitting it cannot move any quantity reported here.
 % docs/venue-coverage-bounds.md
 
 Reconstructing pool state at a past moment turned out to have a direction, and getting it backwards is silent. State is stored at period ends, so recovering the state at an earlier moment requires unwinding the intervening swaps backward from the stored value. Replaying forward from the previous period's stored state instead accumulates every unrecorded liquidity event and returns a median 11.8\% error, where backward unwinding returns 0.0000\%. The same result appeared independently on a second venue family, where a flat within-period assumption gave 1.7\%, an opening-state assumption 2.8\%, and backward unwinding 0.0000\%. This is treated as a property of the data and applied throughout.
@@ -65,8 +65,8 @@ Every quoter above was accepted against swaps that happened, and trades that hap
 The screen has to be applied before the quote and not after it. Filtering on the size of the measured gap would condition on a monotone function of the outcome, which is selection on the dependent variable and discharges nothing. The screen is therefore stated in a quantity known in advance, the trade's own price impact in the pool it would traverse, and the threshold is read off the distribution of realised behaviour. Pooled over 932,270 validated swaps across eight sampled days, the median trade moves 0.34\% of the pool's input-side reserve, the 90th percentile 3.3\%, and the 99th 14.9\%. The panel declines to quote any leg whose own price impact would exceed 5\%.
 % output/exhibits/quoter_support_bounds.jsonl
 
-The screen is expensive and its cost is reported. It removes between 70\% and 86\% of quotable routes, and it moves the median gap from thousands of basis points to tens: 31 basis points at \$1,000, 34 at \$10,000 and 21 at \$100,000.
-% output/exhibits/dominance_windows_screened.jsonl
+The screen is expensive and its cost is reported. It removes between 70\% and 86\% of quotable routes on the four measured days, and it moves the median gap from thousands of basis points to tens: 31 basis points at \$1,000, 34 at \$10,000 and 21 at \$100,000.
+% removal shares: scripts/measure_dominance_windows.py on four measured days; median gaps: output/exhibits/gap_arbitrage_bound.jsonl
 
 \subsection{Validation: level costs across intermediary types}
 \label{sec:setting:validation}

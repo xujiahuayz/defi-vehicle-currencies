@@ -37,7 +37,8 @@ still flip at $100,000 through a thin pool. So a low flip rate bounds the timing
 small trades and does not discharge it for large ones, and the script says which it found.
 
 Reads   data/raw/thegraph/uniswap_v3/uniswap_v3_swaps_*.jsonl.gz
-Writes  output/exhibits/block_vs_hour_verdict.jsonl
+Writes  output/exhibits/block_vs_hour_verdict.jsonl        per-triangle rows
+        output/exhibits/block_vs_hour_conditional.jsonl    the conditional tables
 """
 
 from __future__ import annotations
@@ -60,6 +61,7 @@ from ddvc.tables import write_exhibit  # noqa: E402
 
 V3 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v3"
 OUT = ROOT / "output" / "exhibits" / "block_vs_hour_verdict.jsonl"
+COND_OUT = ROOT / "output" / "exhibits" / "block_vs_hour_conditional.jsonl"
 # Roughly one hour at 12 second blocks. The panel's hour boundary is a wall-clock hour and
 # this is a block-count proxy for it; the swap timestamp is also carried, so the hour is
 # taken from the timestamp and this constant is not used for bucketing.
@@ -344,6 +346,39 @@ def main() -> int:
     print("profile there would have meant a bug in this script instead of a finding.")
     write_exhibit(df, OUT)
     print(f"\nwrote {OUT.relative_to(ROOT)}")
+
+    # PERSIST THE CONDITIONAL TABLES, not only the per-triangle rows. An audit of the
+    # paper found the fee-wedge sweep, the gap-conditional profile and the time-to-boundary
+    # check were quotable from this script's stdout and checkable against nothing, which
+    # makes them assertions with a citation attached. They carry the section's argument, so
+    # they belong on disk beside the rows they are computed from.
+    if routes:
+        cond: list[dict] = []
+        for lo, hi, lab in ((0, 5, "under 5 bps"), (5, 10, "5 to 10 bps"),
+                            (10, 25, "10 to 25 bps"), (25, 50, "25 to 50 bps"),
+                            (50, 100, "50 to 100 bps"), (100, 250, "100 to 250 bps"),
+                            (250, 10 ** 9, "above 250 bps")):
+            sel = rt[(rt.gap_bps >= lo) & (rt.gap_bps < hi)]
+            if len(sel) >= 50:
+                cond.append({"cut": "gap_at_own_block", "bucket": lab,
+                             "routes": int(len(sel)), "value": float(sel.flipped.mean())})
+        for lo, hi, lab in ((0, 60, "under 1 min"), (60, 300, "1 to 5 min"),
+                            (300, 900, "5 to 15 min"), (900, 1800, "15 to 30 min"),
+                            (1800, 3600, "30 to 60 min")):
+            sel = rt[(rt.secs_to_boundary >= lo) & (rt.secs_to_boundary < hi)]
+            if len(sel) >= 50:
+                cond.append({"cut": "time_to_hour_boundary", "bucket": lab,
+                             "routes": int(len(sel)), "value": float(sel.flipped.mean())})
+        for wedge in (0, 5, 10, 30, 60, 100):
+            own, hr = rt.m_own_bps + wedge, rt.m_hr_bps + wedge
+            cond.append({"cut": "fee_wedge_bps", "bucket": str(wedge),
+                         "routes": int(len(rt)),
+                         "value": float(((own > 0) != (hr > 0)).mean()),
+                         "dominated_share": float((own < 0).mean())})
+        cond.append({"cut": "pooled", "bucket": "all", "routes": int(len(rt)),
+                     "value": float(rt.flipped.mean())})
+        write_exhibit(pd.DataFrame(cond), COND_OUT)
+        print(f"wrote {COND_OUT.relative_to(ROOT)}")
     return 0
 
 

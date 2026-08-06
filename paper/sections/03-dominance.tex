@@ -12,7 +12,7 @@
 
 The configuration the currency literature cannot observe is an asset holding the vehicle role at a moment when routing through it was not the cheapest way to trade. In foreign exchange the state is unobservable in principle, because an incumbent's cost advantage is a consequence of its incumbency and the counterfactual network is not in the data. Here it is observable on routes that executed, and it is common.
 
-Of realised multi-leg routing, 27.2\% was strictly dominated by a direct pool available at the same reconstructed state and the same size. The figure is population-weighted and covers 79.0\% of realised routing.
+Of realised multi-leg routing, 27.2\% was strictly dominated by a direct pool available at the same reconstructed state and the same size. The figure is population-weighted and covers 79.0\% of realised routing. It rests on 1,762 routes matched to a counterfactual out of 90,705 realised multi-leg routes, over four consecutively priced days, and the sample is stated here because it is the binding limit on this number and not on its construction.
 % output/exhibits/realised_dominance.jsonl, REWEIGHTED row; docs/finding-dominance-and-persistence.md
 
 That number arrives close to the 30.0\% all-in figure reported by an earlier single-venue analysis of this market, by a path that reuses none of that computation. The agreement is reported as a convergence and not as a confirmation, since two estimates sharing an error in the underlying quoting would agree for the wrong reason.
@@ -48,8 +48,11 @@ Dominance incidence is a statement about a moment, and the moments in this sampl
 
 The gap between those two crossover dates is itself informative and is taken up in Section~\ref{sec:rivals}: value moves to the stable numeraire years before the count of routes does, which is what a transition led by large trades looks like.
 
-Concentration falls at the same time as the leader changes. The effective number of vehicles rises from 2.06 to 10.84 and the leading asset's share of intermediated value falls from 68.9\% to 20.4\%, with leadership alternating between the native asset and the stable numeraire from 2022 onward.
-% docs/finding-fragmentation-not-succession.md
+Concentration falls throughout, and it falls on both bases. Weighting intermediation by value, the effective number of vehicles rises from 1.42 to 8.43 while the leading asset's share falls from 83.7\% to 25.5\%. Weighting by transaction count, the same quantities move from 1.86 to 7.31 and from 71.5\% to 27.9\%. Fragmentation is therefore not an artefact of the weighting.
+% output/exhibits/vehicle_concentration.jsonl, share_volume and share_count bases, 2020 and 2026
+
+Whether the role also changes hands is a different matter, and here the two bases disagree. Leadership alternates between the native asset and the stable numeraire from 2022 onward on the value basis alone. On the count basis the native asset leads in every year of the sample. An earlier reading of this project reported the succession signal without that qualification, and matching the weighting across the share and the concentration measures removed it from three of the four cells, so the succession claim is made on the value basis and stated as such.
+% output/exhibits/vehicle_concentration.jsonl; the matched two-by-two grid of share and centrality on each basis
 
 This distinguishes two worlds the currency literature states but cannot separate. Under succession one vehicle replaces another, concentration holds, and only the leader's identity changes, which is the sterling to dollar transition. Under fragmentation the role spreads across several assets, so concentration falls while the incumbent may still lead. What the data show is both at once on the value basis, and the distinction matters because the dollar against the euro and the renminbi is exactly this question.
 
