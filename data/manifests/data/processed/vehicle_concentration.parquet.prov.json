@@ -1,24 +1,23 @@
 {
  "argv": [
   "--stride",
-  "120"
+  "150"
  ],
  "artefact": "data/processed/vehicle_concentration.parquet",
- "code_fingerprint": "3d45abff9d62aa254f5201bf12c6ae8213024ddd487e14150ea20f4c78c7c89c",
+ "code_fingerprint": "5f0a475e16405a0004f8a0343d11b0847e6dc1fb06c10de4455cc43afed12a71",
  "code_sources": [
   "scripts/build_vehicle_concentration.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T00:20:33+00:00",
+ "created_at": "2026-08-06T01:08:32+00:00",
  "git": {
   "branch": "main",
-  "commit": "00f3173e2a4f923b23913cf5cb9528b3927fa57f",
+  "commit": "887d93b0bab5cc9af4608f0416be831851cf7403",
   "dirty": true,
   "dirty_tracked_files": [
-   "ata/manifests/output/exhibits/vehicle_centrality.jsonl.prov.json",
-   "output/exhibits/vehicle_centrality.jsonl",
-   "scripts/build_vehicle_centrality.py",
-   "uv.lock"
+   "ata/manifests/data/processed/vehicle_centrality.parquet.prov.json",
+   "data/manifests/output/exhibits/vehicle_centrality.jsonl.prov.json",
+   "output/exhibits/vehicle_centrality.jsonl"
   ]
  },
  "inputs": [],
@@ -30,6 +29,6 @@
  },
  "notes": null,
  "python": "3.14.5",
- "rows": 36,
+ "rows": 75,
  "script": "scripts/build_vehicle_concentration.py"
 }

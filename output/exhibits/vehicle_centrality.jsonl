@@ -1,35 +1,34 @@
-{"asset_type": "imported", "betweenness_topological": 0.050218886039509976, "betweenness_volume": 0.111685407431527, "degree": 93, "strength_usd": 200590568.44906715, "year": 2020}
-{"asset_type": "native", "betweenness_topological": 9.80070401137196, "betweenness_volume": 9.891367052594235, "degree": 5535, "strength_usd": 2235773958.563519, "year": 2020}
-{"asset_type": "other", "betweenness_topological": 0.26303624650956897, "betweenness_volume": 0.35178788980437015, "degree": 7285, "strength_usd": 1743407836.4331994, "year": 2020}
-{"asset_type": "stable", "betweenness_topological": 0.971716288637169, "betweenness_volume": 2.554842357963224, "degree": 1128, "strength_usd": 1382266388.2879162, "year": 2020}
-{"asset_type": "staked_native", "betweenness_topological": 0.0, "betweenness_volume": 0.0, "degree": 1, "strength_usd": 10210.890317362944, "year": 2020}
-{"asset_type": "imported", "betweenness_topological": 0.11668630273834639, "betweenness_volume": 0.20937241616213398, "degree": 513, "strength_usd": 3132205256.682431, "year": 2021}
-{"asset_type": "native", "betweenness_topological": 14.612865591277602, "betweenness_volume": 14.916932239349652, "degree": 24112, "strength_usd": 33847509192.02044, "year": 2021}
-{"asset_type": "other", "betweenness_topological": 0.7294475956068198, "betweenness_volume": 0.9111496537337075, "degree": 33505, "strength_usd": 20153938203.992176, "year": 2021}
-{"asset_type": "stable", "betweenness_topological": 2.2109748537347764, "betweenness_volume": 3.3547159518197467, "degree": 5999, "strength_usd": 28128120267.74042, "year": 2021}
-{"asset_type": "staked_native", "betweenness_topological": 0.00797520098928156, "betweenness_volume": 0.01324237607525028, "degree": 43, "strength_usd": 113751169.47283605, "year": 2021}
-{"asset_type": "imported", "betweenness_topological": 0.13556433156406997, "betweenness_volume": 0.21062016102848508, "degree": 434, "strength_usd": 2465333691.727719, "year": 2022}
-{"asset_type": "native", "betweenness_topological": 14.365213489833202, "betweenness_volume": 14.634088733377412, "degree": 21822, "strength_usd": 19920612533.289757, "year": 2022}
-{"asset_type": "other", "betweenness_topological": 0.6393481382549815, "betweenness_volume": 0.7464937888882841, "degree": 30934, "strength_usd": 8374426485.835484, "year": 2022}
-{"asset_type": "stable", "betweenness_topological": 3.3281159212568325, "betweenness_volume": 5.226141069929806, "degree": 6701, "strength_usd": 25265967131.56125, "year": 2022}
-{"asset_type": "staked_native", "betweenness_topological": 0.021580445997972306, "betweenness_volume": 0.04518078709962616, "degree": 139, "strength_usd": 241202454.69653317, "year": 2022}
-{"asset_type": "imported", "betweenness_topological": 0.11104616487074094, "betweenness_volume": 0.15193056404713223, "degree": 417, "strength_usd": 1273736422.5922096, "year": 2023}
-{"asset_type": "native", "betweenness_topological": 14.662160062834472, "betweenness_volume": 14.859553941275921, "degree": 27801, "strength_usd": 13375528543.547922, "year": 2023}
-{"asset_type": "other", "betweenness_topological": 0.6296935714309684, "betweenness_volume": 0.756184391553732, "degree": 36496, "strength_usd": 7416068451.96535, "year": 2023}
-{"asset_type": "stable", "betweenness_topological": 2.506661127833598, "betweenness_volume": 4.143426764532422, "degree": 5920, "strength_usd": 14235928648.110117, "year": 2023}
-{"asset_type": "staked_native", "betweenness_topological": 0.0972365178074197, "betweenness_volume": 0.16065838716981357, "degree": 450, "strength_usd": 693692730.4357128, "year": 2023}
-{"asset_type": "imported", "betweenness_topological": 0.11038432059611032, "betweenness_volume": 0.1552570599010919, "degree": 527, "strength_usd": 3589031205.6434264, "year": 2024}
-{"asset_type": "native", "betweenness_topological": 15.6873285533469, "betweenness_volume": 15.871425197937668, "degree": 37803, "strength_usd": 20415881611.581795, "year": 2024}
-{"asset_type": "other", "betweenness_topological": 0.7909151527102946, "betweenness_volume": 0.9281472659407395, "degree": 49428, "strength_usd": 9496210869.182728, "year": 2024}
-{"asset_type": "stable", "betweenness_topological": 2.272565515182959, "betweenness_volume": 3.268174101924429, "degree": 7020, "strength_usd": 17687410325.85047, "year": 2024}
-{"asset_type": "staked_native", "betweenness_topological": 0.095007501833635, "betweenness_volume": 0.1837871916632808, "degree": 738, "strength_usd": 1787223828.5328476, "year": 2024}
-{"asset_type": "imported", "betweenness_topological": 0.24391404045676768, "betweenness_volume": 0.26472456219308466, "degree": 751, "strength_usd": 4026898153.0319943, "year": 2025}
-{"asset_type": "native", "betweenness_topological": 14.807693963678432, "betweenness_volume": 15.347046619922441, "degree": 24758, "strength_usd": 22849012858.09778, "year": 2025}
-{"asset_type": "other", "betweenness_topological": 1.5092647956617011, "betweenness_volume": 1.2343935962481498, "degree": 33903, "strength_usd": 14708389300.579475, "year": 2025}
-{"asset_type": "stable", "betweenness_topological": 3.5678587099073744, "betweenness_volume": 6.53361341776782, "degree": 6440, "strength_usd": 27775730823.66465, "year": 2025}
-{"asset_type": "staked_native", "betweenness_topological": 0.12484265534836456, "betweenness_volume": 0.19196794782012985, "degree": 644, "strength_usd": 1121731059.104668, "year": 2025}
-{"asset_type": "imported", "betweenness_topological": 0.15560072061784985, "betweenness_volume": 0.17112140263704254, "degree": 373, "strength_usd": 998259778.970678, "year": 2026}
-{"asset_type": "native", "betweenness_topological": 7.2077642227843475, "betweenness_volume": 7.602419866217092, "degree": 9552, "strength_usd": 3495948355.46535, "year": 2026}
-{"asset_type": "other", "betweenness_topological": 0.7195431219560716, "betweenness_volume": 0.5866545887312512, "degree": 13225, "strength_usd": 3229249916.9373956, "year": 2026}
-{"asset_type": "stable", "betweenness_topological": 2.3348761655070844, "betweenness_volume": 5.913612185787829, "degree": 2923, "strength_usd": 10006592568.304752, "year": 2026}
-{"asset_type": "staked_native", "betweenness_topological": 0.08584643392161033, "betweenness_volume": 0.11317846842885373, "degree": 227, "strength_usd": 204829632.4282465, "year": 2026}
+{"asset_type": "imported", "betweenness_count": 0.0030349013657056142, "betweenness_topological": 0.0007608329118192547, "betweenness_volume": 0.0030349013657056142, "degree": 6, "strength_usd": 28726682.323131982, "year": 2020}
+{"asset_type": "native", "betweenness_count": 0.9961557916034395, "betweenness_topological": 0.988262097454055, "betweenness_volume": 0.9959914011127972, "degree": 636, "strength_usd": 887258982.9168537, "year": 2020}
+{"asset_type": "other", "betweenness_count": 0.007587253414264036, "betweenness_topological": 0.006119199576644011, "betweenness_volume": 0.046149415760234284, "degree": 837, "strength_usd": 692748430.6991669, "year": 2020}
+{"asset_type": "stable", "betweenness_count": 0.08702579666160849, "betweenness_topological": 0.07175349856685215, "betweenness_volume": 0.09300708143651998, "degree": 103, "strength_usd": 462355838.84863585, "year": 2020}
+{"asset_type": "imported", "betweenness_count": 0.03448417726645042, "betweenness_topological": 0.02525290650138129, "betweenness_volume": 0.0572630099074641, "degree": 102, "strength_usd": 462325548.3804055, "year": 2021}
+{"asset_type": "native", "betweenness_count": 2.9941935914309097, "betweenness_topological": 2.9362204948253425, "betweenness_volume": 2.9946262264616985, "degree": 4602, "strength_usd": 5094548808.544792, "year": 2021}
+{"asset_type": "other", "betweenness_count": 0.1089544028664378, "betweenness_topological": 0.1252923295441297, "betweenness_volume": 0.15965052579918784, "degree": 6381, "strength_usd": 3275516748.421564, "year": 2021}
+{"asset_type": "stable", "betweenness_count": 0.6256921380054736, "betweenness_topological": 0.4471253800743167, "betweenness_volume": 0.6807452964995419, "degree": 1186, "strength_usd": 3862232353.0773244, "year": 2021}
+{"asset_type": "staked_native", "betweenness_count": 0.011366140908394658, "betweenness_topological": 0.005643172081348069, "betweenness_volume": 0.0019002375296912114, "degree": 9, "strength_usd": 4530395.443828615, "year": 2021}
+{"asset_type": "imported", "betweenness_count": 0.02377742587367463, "betweenness_topological": 0.005620042398506581, "betweenness_volume": 0.025099302939107546, "degree": 57, "strength_usd": 365096231.89766294, "year": 2022}
+{"asset_type": "native", "betweenness_count": 1.9797898570538692, "betweenness_topological": 1.9171886720330122, "betweenness_volume": 1.961003838140515, "degree": 3025, "strength_usd": 2546137090.407078, "year": 2022}
+{"asset_type": "other", "betweenness_count": 0.1058733223512413, "betweenness_topological": 0.09724777312235137, "betweenness_volume": 0.14028782419258698, "degree": 4366, "strength_usd": 1087742290.5888352, "year": 2022}
+{"asset_type": "stable", "betweenness_count": 0.5525681697706174, "betweenness_topological": 0.429011947871314, "betweenness_volume": 0.6943429560839336, "degree": 953, "strength_usd": 2672865844.1001406, "year": 2022}
+{"asset_type": "staked_native", "betweenness_count": 0.005335149516374166, "betweenness_topological": 0.002050722093054032, "betweenness_volume": 0.00264375413086583, "degree": 15, "strength_usd": 29847636.60270494, "year": 2022}
+{"asset_type": "imported", "betweenness_count": 0.05411858286787557, "betweenness_topological": 0.03202239279376177, "betweenness_volume": 0.05573236842586244, "degree": 81, "strength_usd": 155172607.17502144, "year": 2023}
+{"asset_type": "native", "betweenness_count": 2.979767305994728, "betweenness_topological": 2.922894913038408, "betweenness_volume": 2.966605564932073, "degree": 5736, "strength_usd": 2698752225.826501, "year": 2023}
+{"asset_type": "other", "betweenness_count": 0.1829264267059066, "betweenness_topological": 0.1776420661176374, "betweenness_volume": 0.21691790997068022, "degree": 7675, "strength_usd": 1544153018.1547391, "year": 2023}
+{"asset_type": "stable", "betweenness_count": 0.6439337835294308, "betweenness_topological": 0.48930070441814877, "betweenness_volume": 0.7603086299218835, "degree": 1220, "strength_usd": 2191211347.875499, "year": 2023}
+{"asset_type": "staked_native", "betweenness_count": 0.029118210727772258, "betweenness_topological": 0.026446834488000132, "betweenness_volume": 0.03320116471373193, "degree": 96, "strength_usd": 142918813.5329179, "year": 2023}
+{"asset_type": "imported", "betweenness_count": 0.03386182317492078, "betweenness_topological": 0.015980046072956042, "betweenness_volume": 0.034182969419980065, "degree": 73, "strength_usd": 172707801.37279394, "year": 2024}
+{"asset_type": "native", "betweenness_count": 1.9934734089952384, "betweenness_topological": 1.9703994248327243, "betweenness_volume": 1.9851823074694264, "degree": 5160, "strength_usd": 1808823104.0827036, "year": 2024}
+{"asset_type": "other", "betweenness_count": 0.08757654799847656, "betweenness_topological": 0.0791673844529108, "betweenness_volume": 0.10180053511845863, "degree": 6738, "strength_usd": 970914740.2057832, "year": 2024}
+{"asset_type": "stable", "betweenness_count": 0.3259860694259937, "betweenness_topological": 0.25376368694398455, "betweenness_volume": 0.4002169562301711, "degree": 848, "strength_usd": 1694411568.7902324, "year": 2024}
+{"asset_type": "staked_native", "betweenness_count": 0.017148847303997943, "betweenness_topological": 0.009286221284279009, "betweenness_volume": 0.009515140581350216, "degree": 93, "strength_usd": 229164761.37593403, "year": 2024}
+{"asset_type": "imported", "betweenness_count": 0.04195103372179373, "betweenness_topological": 0.032898703824561205, "betweenness_volume": 0.043406637466959, "degree": 101, "strength_usd": 655282073.5954022, "year": 2025}
+{"asset_type": "native", "betweenness_count": 1.9879051123036566, "betweenness_topological": 1.9355680774034347, "betweenness_volume": 1.9800460702760936, "degree": 3559, "strength_usd": 3562587591.557109, "year": 2025}
+{"asset_type": "other", "betweenness_count": 0.18639998159116908, "betweenness_topological": 0.20103504904498917, "betweenness_volume": 0.23450394068277214, "degree": 4903, "strength_usd": 1142323528.867763, "year": 2025}
+{"asset_type": "stable", "betweenness_count": 0.5719953463672633, "betweenness_topological": 0.4650039167506456, "betweenness_volume": 0.6931737099597238, "degree": 906, "strength_usd": 5311252061.405342, "year": 2025}
+{"asset_type": "staked_native", "betweenness_count": 0.016473927150429796, "betweenness_topological": 0.018778537374284955, "betweenness_volume": 0.026446602884816744, "degree": 97, "strength_usd": 323065799.4093416, "year": 2025}
+{"asset_type": "imported", "betweenness_count": 0.03589473684210527, "betweenness_topological": 0.031202723637000503, "betweenness_volume": 0.037316563467492264, "degree": 117, "strength_usd": 642049971.3091786, "year": 2026}
+{"asset_type": "native", "betweenness_count": 2.1388477259324783, "betweenness_topological": 1.9786673371925683, "betweenness_volume": 2.141769810555801, "degree": 2612, "strength_usd": 1292957657.9903953, "year": 2026}
+{"asset_type": "other", "betweenness_count": 0.13186625176386343, "betweenness_topological": 0.18951962637961922, "betweenness_volume": 0.14827049240748932, "degree": 3911, "strength_usd": 710896251.8327864, "year": 2026}
+{"asset_type": "stable", "betweenness_count": 1.0532152597881257, "betweenness_topological": 0.7114072098538047, "betweenness_volume": 1.6291757518796992, "degree": 946, "strength_usd": 3575585446.127853, "year": 2026}
+{"asset_type": "staked_native", "betweenness_count": 0.011328560371517029, "betweenness_topological": 0.014439582052706101, "betweenness_volume": 0.020310703228659886, "degree": 70, "strength_usd": 48577104.04749688, "year": 2026}
