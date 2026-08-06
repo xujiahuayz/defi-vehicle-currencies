@@ -6,6 +6,7 @@ from decimal import Decimal
 from ddvc.cpquote import (
     all_in_direct_advantage_bps,
     apply_reserve_deltas,
+    cost_gap_bps,
     hour_is_clean,
     ordered_reserve_events,
     prior_observed_state,
@@ -15,6 +16,11 @@ from ddvc.cpquote import (
 
 
 class ConstantProductStateTests(unittest.TestCase):
+    def test_output_cost_gap_is_price_free_and_signed(self) -> None:
+        self.assertAlmostEqual(cost_gap_bps(Decimal("110"), Decimal("100")), 1_000.0)
+        self.assertAlmostEqual(cost_gap_bps(Decimal("90"), Decimal("100")), -1_000.0)
+        self.assertIsNone(cost_gap_bps(Decimal("110"), Decimal("0")))
+
     def test_two_hop_gas_increases_the_direct_route_advantage(self) -> None:
         adjusted = all_in_direct_advantage_bps(
             -10.0,

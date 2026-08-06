@@ -56,6 +56,7 @@ from ddvc.cpquote import (
     Pool,
     ReserveEvent,
     all_in_direct_advantage_bps,
+    cost_gap_bps,
     hour_is_clean,
     ordered_reserve_events,
     prior_observed_state,
@@ -398,6 +399,7 @@ def one_day(day: str) -> pd.DataFrame | None:
         gross_direct_advantage_bps = (
             10_000 * (direct_output_usd - realised_output_usd) / usd
         )
+        direct_output_improvement_bps = cost_gap_bps(best_direct, out_amt)
         eth_price = prices.get(WETH)
         hop1_support = state_support[(l1["_pool"], l1["_hour"])]
         hop2_support = state_support[(l2["_pool"], l2["_hour"])]
@@ -412,6 +414,7 @@ def one_day(day: str) -> pd.DataFrame | None:
             "realised_out": float(out_amt), "direct_quote": float(best_direct),
             "realised_output_usd": realised_output_usd,
             "direct_output_usd": direct_output_usd,
+            "realised_to_input_value_ratio": realised_output_usd / usd,
             "eth_usd": eth_price[1] if eth_price else None,
             "hop1_pool": l1["_pool"], "hop2_pool": l2["_pool"],
             "hop1_source": hop1_source, "hop2_source": hop2_source,
@@ -426,11 +429,7 @@ def one_day(day: str) -> pd.DataFrame | None:
                 direct_source not in realised_venue_set
             ),
             "gross_direct_advantage_bps": gross_direct_advantage_bps,
-            "gross_output_shortfall_bps": (
-                float(10_000 * (best_direct - out_amt) / out_amt)
-                if out_amt > 0
-                else None
-            ),
+            "direct_output_improvement_bps": direct_output_improvement_bps,
         })
     return pd.DataFrame(rows) if rows else None
 
@@ -505,8 +504,21 @@ def main() -> int:
         return 1
 
     df = pd.concat(parts, ignore_index=True)
-    df = df[df.gross_direct_advantage_bps.notna()]
+    df = df[df.direct_output_improvement_bps.notna()]
     df = add_topology_gas_adjustment(df)
+    df["dominated_gross"] = df["direct_output_improvement_bps"].gt(0)
+    df["valuation_coherent_2x"] = df[
+        "realised_to_input_value_ratio"
+    ].between(0.5, 2.0)
+    df["valuation_coherent_20pct"] = df[
+        "realised_to_input_value_ratio"
+    ].between(0.8, 1.2)
+    df["dominated_valuation_coherent_2x"] = df["dominated_gross"].where(
+        df["valuation_coherent_2x"]
+    )
+    df["dominated_valuation_coherent_20pct"] = df["dominated_gross"].where(
+        df["valuation_coherent_20pct"]
+    )
     write_panel(
         df,
         OUT_PARQUET,
@@ -517,13 +529,26 @@ def main() -> int:
 
     print(f"\ncomparable intermediated routes with a direct alternative: {len(df):,}")
     print(f"date range: {df.date.min().date()} to {df.date.max().date()}")
-    dom = df[df.gross_direct_advantage_bps > 0]
+    dom = df[df.direct_output_improvement_bps > 0]
     print(f"\nroutes where DIRECT would have returned more (gross of gas): "
           f"{len(dom):,} ({100*len(dom)/len(df):.1f}%)")
     print(f"  median advantage among those: "
           f"{dom.gross_direct_advantage_bps.median():.1f} bps of notional")
     print(f"  median advantage over all routes: "
           f"{df.gross_direct_advantage_bps.median():.1f} bps of notional")
+    print(
+        "  median price-free output improvement over all routes: "
+        f"{df.direct_output_improvement_bps.median():.1f} bps of realised output"
+    )
+    for label, column in (
+        ("within 2x", "valuation_coherent_2x"),
+        ("within 20%", "valuation_coherent_20pct"),
+    ):
+        supported = df[df[column]]
+        print(
+            f"  valuation-coherence sensitivity ({label}): {len(supported):,} routes, "
+            f"{100 * supported.dominated_gross.mean():.1f}% dominated"
+        )
     outside = dom[dom["best_direct_outside_realised_venue_set"]]
     outside_share = 100 * len(outside) / len(dom) if len(dom) else float("nan")
     print(
@@ -539,7 +564,7 @@ def main() -> int:
         )
     print("\nby intermediary type:")
     for t, s in df.groupby("mid_type"):
-        d = s[s.gross_direct_advantage_bps > 0]
+        d = s[s.direct_output_improvement_bps > 0]
         print(f"  {t:<14} routes {len(s):7,}  dominated {100*len(d)/len(s):5.1f}%"
               f"  median advantage "
               f"{d.gross_direct_advantage_bps.median() if len(d) else float('nan'):8.1f} bps")
@@ -547,7 +572,7 @@ def main() -> int:
     df["bin"] = pd.cut(df.usd, [100, 1e3, 1e4, 1e5, 1e12],
                        labels=["100-1k", "1k-10k", "10k-100k", ">100k"])
     for b, s in df.groupby("bin", observed=True):
-        d = s[s.gross_direct_advantage_bps > 0]
+        d = s[s.direct_output_improvement_bps > 0]
         print(f"  {b:>9}  routes {len(s):7,}  dominated {100*len(d)/len(s):5.1f}%"
               f"  median advantage "
               f"{d.gross_direct_advantage_bps.median() if len(d) else float('nan'):8.1f} bps")
@@ -560,10 +585,23 @@ def main() -> int:
     ).agg(
         routes=("gross_direct_advantage_bps", "size"),
         pct_dominated_gross=(
-            "gross_direct_advantage_bps", lambda x: 100 * (x > 0).mean()
+            "direct_output_improvement_bps", lambda x: 100 * (x > 0).mean()
         ),
         median_gross_direct_advantage_bps=(
             "gross_direct_advantage_bps", "median"
+        ),
+        median_direct_output_improvement_bps=(
+            "direct_output_improvement_bps", "median"
+        ),
+        valuation_coherent_2x_routes=("valuation_coherent_2x", "sum"),
+        pct_dominated_valuation_coherent_2x=(
+            "dominated_valuation_coherent_2x",
+            lambda x: 100 * x.dropna().mean(),
+        ),
+        valuation_coherent_20pct_routes=("valuation_coherent_20pct", "sum"),
+        pct_dominated_valuation_coherent_20pct=(
+            "dominated_valuation_coherent_20pct",
+            lambda x: 100 * x.dropna().mean(),
         ),
         gas_supported_routes=("all_in_direct_advantage_bps", "count"),
         pct_dominated_topology_gas_adjusted=(
@@ -575,7 +613,7 @@ def main() -> int:
         OUT_EXHIBIT,
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
-        notes="annual exact-size V2-family direct counterfactual; positive advantage means direct route costs less; gas adjustment uses historical prices and measured route-topology medians and is not yet venue-specific",
+        notes="annual exact-size V2-family direct counterfactual; positive price-free output improvement means the direct route returns more; input-normalized gas adjustment uses historical prices and measured route-topology medians and is not yet venue-specific",
     )
     print(
         f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)} and "
