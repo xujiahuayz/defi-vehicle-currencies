@@ -11,6 +11,7 @@ from ddvc.realised import (
     cost_panel_days,
     extract_linear_realised_routes,
     extract_realised_routes,
+    match_observed_reach_path_efficiency,
     match_realised_to_cost_panel,
     match_within_vehicle_search_efficiency,
     read_cost_panel_day,
@@ -274,6 +275,9 @@ class RealisedMatchingTests(unittest.TestCase):
                     "tgt": "b",
                     "vehicle": "k",
                     "trade_size_usd": 1_000.0,
+                    "direct_available": True,
+                    "direct_output_usd": 980.0,
+                    "direct_source": "uniswap_v2",
                     "vehicle_available": True,
                     "vehicle_output_usd": 990.0,
                     "hop1_source": "uniswap_v2",
@@ -413,6 +417,142 @@ class RealisedMatchingTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(ValueError, "duplicate quote cells"):
             match_within_vehicle_search_efficiency(route, pd.DataFrame([row, row]))
+
+    def test_path_efficiency_selects_best_direct_or_alternative_vehicle(self) -> None:
+        route = pd.DataFrame(
+            [
+                {
+                    "route_id": "r1",
+                    "day": "20250102",
+                    "hour": 7,
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": "k",
+                    "input_usd": 10 ** 3.5,
+                    "output_usd": 0.90 * 10 ** 3.5,
+                    "realised_output_rate": 0.90,
+                    "realised_hop1_source": "uniswap_v2",
+                    "realised_hop2_source": "uniswap_v3",
+                }
+            ]
+        )
+        rows = []
+        for size, direct_rate, alternative_rate in (
+            (1_000.0, 0.96, 0.97),
+            (10_000.0, 0.94, 0.93),
+        ):
+            for vehicle, rate, source in (
+                ("k", 0.92, "uniswap_v2"),
+                ("m", alternative_rate, "uniswap_v3"),
+                ("n", 0.99, "curve"),
+            ):
+                rows.append(
+                    {
+                        "date": "2025-01-02",
+                        "reserve_hour_utc": 7,
+                        "src": "a",
+                        "tgt": "b",
+                        "vehicle": vehicle,
+                        "trade_size_usd": size,
+                        "direct_available": True,
+                        "direct_output_usd": direct_rate * size,
+                        "direct_source": "uniswap_v2",
+                        "vehicle_available": True,
+                        "vehicle_output_usd": rate * size,
+                        "hop1_source": source,
+                        "hop2_source": source,
+                    }
+                )
+        out = match_observed_reach_path_efficiency(route, pd.DataFrame(rows)).iloc[0]
+        self.assertEqual(out["path_match_status"], "within_observed_venue_reach")
+        self.assertEqual(out["lower_frontier_vehicle"], "m")
+        self.assertEqual(out["upper_frontier_path_type"], "direct")
+        self.assertAlmostEqual(float(out["path_frontier_output_rate"]), 0.955)
+        self.assertAlmostEqual(float(out["path_shortfall"]), 1.0 - 0.90 / 0.955)
+
+    def test_path_efficiency_rejects_inconsistent_direct_frontier(self) -> None:
+        route = pd.DataFrame(
+            [
+                {
+                    "route_id": "r1",
+                    "day": "20250102",
+                    "hour": 7,
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": "k",
+                    "input_usd": 1_000.0,
+                    "output_usd": 990.0,
+                    "realised_output_rate": 0.99,
+                    "realised_hop1_source": "uniswap_v2",
+                    "realised_hop2_source": "uniswap_v2",
+                }
+            ]
+        )
+        rows = []
+        for vehicle, direct_output in (("k", 990.0), ("m", 980.0)):
+            rows.append(
+                {
+                    "date": "2025-01-02",
+                    "reserve_hour_utc": 7,
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": vehicle,
+                    "trade_size_usd": 1_000.0,
+                    "direct_available": True,
+                    "direct_output_usd": direct_output,
+                    "direct_source": "uniswap_v2",
+                    "vehicle_available": True,
+                    "vehicle_output_usd": 980.0,
+                    "hop1_source": "uniswap_v2",
+                    "hop2_source": "uniswap_v2",
+                }
+            )
+        with self.assertRaisesRegex(ValueError, "direct frontier differs"):
+            match_observed_reach_path_efficiency(route, pd.DataFrame(rows))
+
+    def test_path_efficiency_separates_grid_reach_and_missing_cells(self) -> None:
+        base = {
+            "hour": 7,
+            "src": "a",
+            "tgt": "b",
+            "vehicle": "k",
+            "output_usd": 900.0,
+            "realised_output_rate": 0.90,
+            "realised_hop1_source": "uniswap_v2",
+            "realised_hop2_source": "uniswap_v2",
+        }
+        routes = pd.DataFrame(
+            [
+                {**base, "route_id": "outside-grid", "day": "20250102", "input_usd": 100.0},
+                {**base, "route_id": "outside-reach", "day": "20250102", "input_usd": 3_000.0},
+                {**base, "route_id": "no-cell", "day": "20250103", "input_usd": 3_000.0},
+            ]
+        )
+        rows = []
+        for size in (1_000.0, 10_000.0):
+            rows.append(
+                {
+                    "date": "2025-01-02",
+                    "reserve_hour_utc": 7,
+                    "src": "a",
+                    "tgt": "b",
+                    "vehicle": "k",
+                    "trade_size_usd": size,
+                    "direct_available": True,
+                    "direct_output_usd": 0.98 * size,
+                    "direct_source": "curve",
+                    "vehicle_available": True,
+                    "vehicle_output_usd": 0.97 * size,
+                    "hop1_source": "curve",
+                    "hop2_source": "curve",
+                }
+            )
+        out = match_observed_reach_path_efficiency(routes, pd.DataFrame(rows)).set_index(
+            "route_id"
+        )
+        self.assertEqual(out.loc["outside-grid", "path_match_status"], "outside_quote_size_grid")
+        self.assertEqual(out.loc["outside-reach", "path_match_status"], "frontier_unsupported_within_observed_reach")
+        self.assertEqual(out.loc["no-cell", "path_match_status"], "no_cost_cell")
 
     def test_summary_keeps_forced_routes_out_of_dominance_denominator(self) -> None:
         matches = pd.DataFrame(

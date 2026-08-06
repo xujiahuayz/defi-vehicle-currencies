@@ -26,6 +26,7 @@ ROUTE_COLUMNS = [
 ]
 LINEAR_ROUTE_COLUMNS = list(dict.fromkeys([*ROUTE_COLUMNS, *PRICE_COLUMNS]))
 MATCH_KEYS = ["day", "hour", "src", "tgt", "vehicle"]
+PAIR_MATCH_KEYS = ["day", "hour", "src", "tgt"]
 
 
 def cost_panel_days(connection: object, panel_path: Path) -> list[str]:
@@ -61,13 +62,37 @@ def read_search_cost_panel_day(
     return connection.execute(  # type: ignore[attr-defined]
         f"""
         SELECT CAST(date AS DATE) AS date, reserve_hour_utc, src, tgt, vehicle,
-               trade_size_usd, vehicle_available, vehicle_output_usd,
+               trade_size_usd, direct_available, direct_output_usd,
+               direct_source, vehicle_available, vehicle_output_usd,
                hop1_source, hop2_source
         FROM read_parquet('{panel_path.as_posix()}')
         WHERE CAST(date AS DATE) = ?
         """,
         [observed],
     ).df()
+
+
+def _normalise_search_costs(panel: pd.DataFrame) -> pd.DataFrame:
+    """Normalise shared quote keys and enforce one row per vehicle cost cell."""
+    costs = panel.copy()
+    costs["day"] = pd.to_datetime(costs["date"]).dt.strftime("%Y%m%d")
+    costs["hour"] = pd.to_numeric(
+        costs["reserve_hour_utc"], errors="raise"
+    ).astype(int)
+    for column in (
+        "trade_size_usd",
+        "direct_output_usd",
+        "vehicle_output_usd",
+    ):
+        if column in costs:
+            costs[column] = pd.to_numeric(costs[column], errors="coerce")
+    costs = costs[costs["trade_size_usd"].gt(0)].copy()
+    cell_key = MATCH_KEYS + ["trade_size_usd"]
+    duplicates = costs.duplicated(cell_key, keep=False)
+    if duplicates.any():
+        sample = costs.loc[duplicates, cell_key].iloc[0].to_dict()
+        raise ValueError(f"cost panel has duplicate quote cells: {sample}")
+    return costs
 
 
 def extract_realised_routes(legs: pd.DataFrame) -> pd.DataFrame:
@@ -371,23 +396,7 @@ def match_within_vehicle_search_efficiency(
     if routes.empty:
         return routes.copy()
 
-    costs = panel.copy()
-    costs["day"] = pd.to_datetime(costs["date"]).dt.strftime("%Y%m%d")
-    costs["hour"] = pd.to_numeric(
-        costs["reserve_hour_utc"], errors="raise"
-    ).astype(int)
-    costs["trade_size_usd"] = pd.to_numeric(
-        costs["trade_size_usd"], errors="coerce"
-    )
-    costs["vehicle_output_usd"] = pd.to_numeric(
-        costs["vehicle_output_usd"], errors="coerce"
-    )
-    costs = costs[costs["trade_size_usd"].gt(0)].copy()
-    cost_key = MATCH_KEYS + ["trade_size_usd"]
-    duplicates = costs.duplicated(cost_key, keep=False)
-    if duplicates.any():
-        sample = costs.loc[duplicates, cost_key].iloc[0].to_dict()
-        raise ValueError(f"cost panel has duplicate quote cells: {sample}")
+    costs = _normalise_search_costs(panel)
 
     observed = routes.copy().reset_index(drop=True)
     observed["_route_row"] = observed.index
@@ -493,6 +502,226 @@ def match_within_vehicle_search_efficiency(
     )
     out["lower_size_ratio"] = out["lower_trade_size_usd"] / out["input_usd"]
     out["upper_size_ratio"] = out["upper_trade_size_usd"] / out["input_usd"]
+    return out.drop(columns="_route_row")
+
+
+def match_observed_reach_path_efficiency(
+    routes: pd.DataFrame, panel: pd.DataFrame
+) -> pd.DataFrame:
+    """Compare execution with the best path on the route's observed venues.
+
+    The frontier includes direct paths and every candidate intermediary in the
+    panel. Venue inclusion is observable; executor pool support is not, so this
+    remains a venue-reach diagnostic until executor support can be recovered.
+    """
+    route_required = set(
+        PAIR_MATCH_KEYS
+        + [
+            "route_id",
+            "input_usd",
+            "output_usd",
+            "realised_output_rate",
+            "realised_hop1_source",
+            "realised_hop2_source",
+        ]
+    )
+    panel_required = {
+        "date",
+        "reserve_hour_utc",
+        "src",
+        "tgt",
+        "vehicle",
+        "trade_size_usd",
+        "direct_available",
+        "direct_output_usd",
+        "direct_source",
+        "vehicle_available",
+        "vehicle_output_usd",
+        "hop1_source",
+        "hop2_source",
+    }
+    missing_routes = sorted(route_required - set(routes.columns))
+    missing_panel = sorted(panel_required - set(panel.columns))
+    if missing_routes or missing_panel:
+        detail = []
+        if missing_routes:
+            detail.append(f"routes: {', '.join(missing_routes)}")
+        if missing_panel:
+            detail.append(f"panel: {', '.join(missing_panel)}")
+        raise ValueError("path matching inputs are missing " + "; ".join(detail))
+    if routes.empty:
+        return routes.copy()
+
+    costs = _normalise_search_costs(panel)
+
+    pair_size_key = PAIR_MATCH_KEYS + ["trade_size_usd"]
+    direct_contract = [
+        "direct_available",
+        "direct_output_usd",
+        "direct_source",
+    ]
+    direct_variation = costs.groupby(pair_size_key, dropna=False)[
+        direct_contract
+    ].nunique(dropna=False)
+    if not direct_variation.empty and direct_variation.max(axis=1).gt(1).any():
+        key = direct_variation.index[direct_variation.max(axis=1).gt(1)][0]
+        sample = dict(zip(pair_size_key, key, strict=True))
+        raise ValueError(f"direct frontier differs across vehicle rows: {sample}")
+
+    vehicles = costs[
+        pair_size_key
+        + [
+            "vehicle",
+            "vehicle_available",
+            "vehicle_output_usd",
+            "hop1_source",
+            "hop2_source",
+        ]
+    ].rename(
+        columns={
+            "vehicle": "frontier_vehicle",
+            "vehicle_available": "path_available",
+            "vehicle_output_usd": "path_output_usd",
+            "hop1_source": "path_hop1_source",
+            "hop2_source": "path_hop2_source",
+        }
+    )
+    vehicles["frontier_path_type"] = "two_hop"
+    direct = costs.drop_duplicates(pair_size_key)[
+        pair_size_key + direct_contract
+    ].rename(
+        columns={
+            "direct_available": "path_available",
+            "direct_output_usd": "path_output_usd",
+            "direct_source": "path_hop1_source",
+        }
+    )
+    direct["path_hop2_source"] = None
+    direct["frontier_vehicle"] = None
+    direct["frontier_path_type"] = "direct"
+    paths = pd.concat([direct, vehicles], ignore_index=True, sort=False)
+
+    observed = routes.copy().reset_index(drop=True)
+    observed["_route_row"] = observed.index
+    observed["input_usd"] = pd.to_numeric(observed["input_usd"], errors="coerce")
+    candidates = observed[
+        [
+            "_route_row",
+            *PAIR_MATCH_KEYS,
+            "input_usd",
+            "realised_hop1_source",
+            "realised_hop2_source",
+        ]
+    ].merge(paths, on=PAIR_MATCH_KEYS, how="left", sort=False)
+    candidates = candidates[candidates["trade_size_usd"].notna()].copy()
+    candidate_route_rows = set(candidates["_route_row"])
+    first_reached = candidates["realised_hop1_source"].astype(str)
+    second_reached = candidates["realised_hop2_source"].astype(str)
+    hop1 = candidates["path_hop1_source"]
+    hop2 = candidates["path_hop2_source"]
+    hop1_reached = hop1.notna() & (
+        hop1.astype(str).eq(first_reached) | hop1.astype(str).eq(second_reached)
+    )
+    hop2_reached = hop2.isna() | (
+        hop2.astype(str).eq(first_reached) | hop2.astype(str).eq(second_reached)
+    )
+    available = (
+        candidates["path_available"].fillna(False).astype(bool)
+        & candidates["path_output_usd"].gt(0)
+    )
+    eligible = candidates[available & hop1_reached & hop2_reached].copy()
+    eligible["path_output_rate"] = (
+        eligible["path_output_usd"] / eligible["trade_size_usd"]
+    )
+    frontier_columns = [
+        "trade_size_usd",
+        "path_output_usd",
+        "path_output_rate",
+        "frontier_path_type",
+        "frontier_vehicle",
+        "path_hop1_source",
+        "path_hop2_source",
+    ]
+    frontier = (
+        eligible.sort_values(
+            [
+                "_route_row",
+                "trade_size_usd",
+                "path_output_rate",
+                "frontier_path_type",
+                "frontier_vehicle",
+            ],
+            ascending=[True, True, False, True, True],
+            kind="stable",
+            na_position="first",
+        )
+        .drop_duplicates(["_route_row", "trade_size_usd"])
+    )
+    lower = (
+        frontier[frontier["trade_size_usd"].le(frontier["input_usd"])]
+        .sort_values(["_route_row", "trade_size_usd"], ascending=[True, False])
+        .drop_duplicates("_route_row")
+        [["_route_row", *frontier_columns]]
+        .rename(columns={column: f"lower_{column}" for column in frontier_columns})
+    )
+    upper = (
+        frontier[frontier["trade_size_usd"].ge(frontier["input_usd"])]
+        .sort_values(["_route_row", "trade_size_usd"], ascending=[True, True])
+        .drop_duplicates("_route_row")
+        [["_route_row", *frontier_columns]]
+        .rename(columns={column: f"upper_{column}" for column in frontier_columns})
+    )
+    grid = candidates.groupby("_route_row")["trade_size_usd"].agg(
+        grid_min="min",
+        grid_max="max",
+    )
+    out = observed.merge(grid, on="_route_row", how="left").merge(
+        lower, on="_route_row", how="left"
+    ).merge(upper, on="_route_row", how="left")
+    has_cost_cell = out["_route_row"].isin(candidate_route_rows)
+    inside_grid = (
+        has_cost_cell
+        & out["input_usd"].ge(out["grid_min"])
+        & out["input_usd"].le(out["grid_max"])
+    )
+    frontier_bounded = out["lower_trade_size_usd"].notna() & out[
+        "upper_trade_size_usd"
+    ].notna()
+    out["path_match_status"] = np.select(
+        [
+            ~has_cost_cell,
+            has_cost_cell & ~inside_grid,
+            inside_grid & ~frontier_bounded,
+            inside_grid & frontier_bounded,
+        ],
+        [
+            "no_cost_cell",
+            "outside_quote_size_grid",
+            "frontier_unsupported_within_observed_reach",
+            "within_observed_venue_reach",
+        ],
+        default="invalid_path_match",
+    )
+    lower_log = np.log(out["lower_trade_size_usd"])
+    upper_log = np.log(out["upper_trade_size_usd"])
+    input_log = np.log(out["input_usd"])
+    span = upper_log - lower_log
+    interpolation_weight = np.where(
+        span.abs().gt(1e-12), (input_log - lower_log) / span, 0.0
+    )
+    out["path_frontier_output_rate"] = out[
+        "lower_path_output_rate"
+    ] + interpolation_weight * (
+        out["upper_path_output_rate"] - out["lower_path_output_rate"]
+    )
+    comparable = out["path_match_status"].eq("within_observed_venue_reach")
+    out["path_shortfall"] = np.where(
+        comparable & out["path_frontier_output_rate"].gt(0),
+        1.0 - out["realised_output_rate"] / out["path_frontier_output_rate"],
+        np.nan,
+    )
+    out["path_lower_size_ratio"] = out["lower_trade_size_usd"] / out["input_usd"]
+    out["path_upper_size_ratio"] = out["upper_trade_size_usd"] / out["input_usd"]
     return out.drop(columns="_route_row")
 
 
