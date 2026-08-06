@@ -30,22 +30,19 @@ from __future__ import annotations
 
 import argparse
 import statistics
-import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
-
-from ddvc.fetch.graph import GraphClient, graph_keys  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.fetch.graph import GraphClient, graph_keys
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.tables import write_exhibit, write_panel
 
 UNISWAP_V3 = "5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV"
-OUT_PANEL = ROOT / "data" / "processed" / "daily_gas_price_graph.parquet"
-OUT_EXHIBIT = ROOT / "output" / "exhibits" / "daily_gas_price_graph.jsonl"
-CACHE = ROOT / "data" / "interim" / "gas_price_graph"
+OUT_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
+OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "daily_gas_price_graph.jsonl"
+CACHE = DATA_DIR / "interim" / "gas_price_graph"
+CODE_SOURCES = ["scripts/process/fetch_daily_gas_price_graph.py"]
 
 QUERY = """
 query($start: Int!, $end: Int!, $first: Int!) {
@@ -102,7 +99,8 @@ def main() -> int:
                     help="one per live key, so rotation is not fighting itself")
     args = ap.parse_args()
 
-    unified = sorted(p.stem for p in (ROOT / "data" / "unified").glob("[0-9]" * 8 + ".parquet"))
+    unified_dir = DATA_DIR / "unified"
+    unified = sorted(p.stem for p in unified_dir.glob("[0-9]" * 8 + ".parquet"))
     days = [d for d in unified if d >= args.start and (args.end is None or d <= args.end)]
     print(f"{len(days):,} days to price from the subgraph "
           f"({args.per_day} tx/day, {len(graph_keys())} keys in pool)", flush=True)
@@ -129,9 +127,20 @@ def main() -> int:
     df["date"] = pd.to_datetime(df.day, format="%Y%m%d")
     df = df.sort_values("date").reset_index(drop=True)
 
-    OUT_PANEL.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(OUT_PANEL, index=False)
-    write_exhibit(df.drop(columns=["day"]), OUT_EXHIBIT)
+    write_panel(
+        df,
+        OUT_PANEL,
+        code_sources=CODE_SOURCES,
+        inputs=[CACHE, unified_dir],
+        notes=f"daily median from up to {args.per_day:,} V3 transaction gas prices",
+    )
+    write_exhibit(
+        df.drop(columns=["day"]),
+        OUT_EXHIBIT,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PANEL],
+        notes="human-readable daily gas-price evidence",
+    )
 
     print(f"\nresolved {len(df):,} days, {failed} failed, "
           f"median sample {df.n_tx.median():.0f} tx/day")
@@ -140,9 +149,9 @@ def main() -> int:
     for idx, r in y.iterrows():
         print(f"  {idx.year}   {r.gas_gwei_median:>8.2f}   "
               f"[p25 {r.gas_gwei_p25:>7.2f}, p75 {r.gas_gwei_p75:>8.2f}]")
-    print(f"\nwrote {OUT_PANEL.relative_to(ROOT)}")
+    print(f"\nwrote {OUT_PANEL.relative_to(REPO_ROOT)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
