@@ -428,7 +428,7 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 - 2,277 daily files, 2020-02-11 to 2026-06-30, roughly 215k swap legs per day
 - Eight venues: uniswap v1 to v4, sushiswap v2 and v3, curve, balancer, fluid
 - Multi-leg routes reconstructed inside one transaction across venues
-- Cross-venue share of multi-leg routes 11.7% in 2021 to 49.8% in 2025
+- Cross-venue share of clean economic multi-leg routes 1.4% in 2020 to 60.6% in 2026; economic multi-leg incidence itself stays broadly flat
 
 **Visual.** `deck/appendix_route_reconstruction.svg`, drawio tab `route_recon`. One transaction box containing three pool boxes on two different venues, solid arrows carrying the token flow through them, one dashed arrow from the transaction receipt box to a gas annotation. The reader should see that the unit of observation is the reconstructed route and not the swap leg.
 

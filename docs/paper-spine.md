@@ -108,7 +108,7 @@ The introduction narrates the whole argument in prose carrying no notation and p
 | Whether the incumbent holds on longer than a challenger takes to break in separates hysteresis from persistence | Same script, both arms defined on the same quantity | PENDING (rebuild) | No |
 | The vehicle role migrated from the native platform asset to the stable numeraire inside six years, in both directions | `docs/finding-intermediation-transition.md`, native 73.0% to 14.8% value-weighted, stable 21.2% to 50.1% | EXISTS | No |
 | Removing a hard architectural mandate to use the native asset did not reduce native-asset pairing | `docs/finding-v1-forced-vehicle.md` section 3, new-pair WETH share 84.1% in 2020 rising to 97.9% in 2026 | EXISTS | No |
-| Studying one venue becomes progressively wrong across the sample | `docs/router-identification-feasibility.md` cross-venue series, 1.2% to 61.1% count-weighted | EXISTS | Partly |
+| Studying one venue becomes progressively wrong across the sample | `docs/router-identification-feasibility.md` clean-route cross-venue series, 1.4% to 60.6% count-weighted while economic multi-leg incidence stays broadly flat | EXISTS | Partly |
 
 The introduction may not describe the native asset as cheaper to route through as a finding. Per Node I section 5 and accepted here, the native platform asset is defined in `docs/research-workflow.md` section 3 as the asset with the thickest incumbent pairing network, so a result that the thickest-network asset is the cheapest route restates the maintained assumption of Krugman (1980) and of the literature this paper cites. The level comparison appears in section 2.5 as evidence that the quoting engine reproduces a known ordering, which is what a validation exhibit is for.
 
@@ -225,7 +225,7 @@ Rows are filters in application order; columns record what each filter costs. Sa
 
 | Filter | Route units $r$ | Share kept | $\mathrm{Vol}_t$ summed, USD | Share kept |
 |---|---|---|---|---|
-| All reconstructed route units | 364,324,757 | 1.000 | PENDING | 1.000 |
+| All clean reconstructed route units | 358,027,668 | 1.000 | PENDING | 1.000 |
 | Route units with at least one intermediate, $N^I_t$ | PENDING | PENDING | PENDING | PENDING |
 | Economic intermediation, first input token differing from last output token | PENDING | PENDING | PENDING | PENDING |
 | Round trips excluded | PENDING | PENDING | PENDING | PENDING |
@@ -235,7 +235,7 @@ Rows are filters in application order; columns record what each filter costs. Sa
 | Support screen applied, price impact per leg at most 5% | PENDING | PENDING | PENDING | PENDING |
 | Matched to a counterfactual direct quote at the same state | PENDING | PENDING | PENDING | PENDING |
 
-The last two rows are new and they are the expensive ones. On the four measured days the support screen removes 70% to 86% of quotable routes and the counterfactual match retains 1,762 of 90,705 realised multi-leg routes, which is 1.9%. Memo rows from `docs/router-identification-feasibility.md`: 471,616,631 swap legs reduce to 364,324,757 route units across 2,277 days, and venues active rise from 3 in 2020 to 8 in 2025 and 2026.
+The last two rows are new and they are the expensive ones. On the four measured days the support screen removes 70% to 86% of quotable routes and the counterfactual match retains 1,762 of 90,705 realised multi-leg routes, which is 1.9%. Those matching figures are withdrawn pending the exact-hour rebuild. Memo rows from `docs/router-identification-feasibility.md`: 461,041,454 clean swap legs reduce to 358,027,668 clean route units across 2,277 days, and venues active rise from 3 in 2020 to 8 in 2025 and 2026.
 
 ### Table 2. The matched sample against the realised population
 

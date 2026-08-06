@@ -201,7 +201,7 @@ Within a cohort there is genuine decay in horizon, clearest for 2021 (0.48 down 
 
 *Composition of the pair panel.* The 2,222 pairs are 1,308 other-plus-stable and 807 other-plus-other by endpoint asset type, so the panel is a long-tail-token panel and its results should not be read as being about major pairs.
 
-*Single venue.* Section 5 counts only `uniswap_v2` legs, so a trade routed A to WETH on V2 and WETH to B on V3 is invisible, and cross-venue multi-leg routing rose from 11.7% to 49.8% of multi-leg routes across the sample. Omitting other venues understates the availability of alternatives, which inflates measured ETH routing.
+*Single venue.* Section 5 counts only `uniswap_v2` legs, so a trade routed A to WETH on V2 and WETH to B on V3 is invisible. On the full clean-route series, cross-venue routing rises from 1.4% of economic multi-leg routes in 2020 to 60.6% in 2026 by count. Omitting other venues understates the availability of alternatives, which inflates measured ETH routing.
 
 *Filters that are not random.* The notional band removes 36.9% of pair-days, and small trades are exactly where gas makes the vehicle route uneconomic, so the band is correlated with the outcome.
 

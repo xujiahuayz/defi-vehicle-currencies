@@ -55,23 +55,25 @@ Sound, with the caveats above stated in the paper:
 
 # Cross-venue routing: the full-panel series, and the filter it required
 
-Built 2026-08-05 by `scripts/build_cross_venue_routing_series.py` over all 2,277 days of `data/unified/`: **471,616,631 swap legs reduced to 364,324,757 routes.**
+Rebuilt 2026-08-06 by `scripts/build_cross_venue_routing_series.py` over all 2,277 days of `data/unified/`: **461,041,454 clean swap legs reduced to 358,027,668 clean route units.** Only `single` and `coherent` reconstructed components enter; the earlier build admitted ambiguous components and relied on file row order for route endpoints. Enforcing the stated contract removes 10,575,177 legs and 6,297,089 route units without changing the integration pattern.
 
 ## Headline series
 
 Of economically meaningful intermediated routes (multi-leg, first input token differing from last output token), the share spanning more than one venue:
 
-| year | count-weighted | value-weighted | round-trip share of multi-leg (excluded) | venues active |
-|---|---|---|---|---|
-| 2020 | 1.2% | 11.1% | 11.8% | 3 |
-| 2021 | 7.6% | 33.9% | 13.4% | 5 |
-| 2022 | 19.0% | 47.0% | 15.4% | 5 |
-| 2023 | 19.4% | 46.1% | 9.6% | 6 |
-| 2024 | 28.8% | 59.1% | 11.0% | 7 |
-| 2025 | 48.3% | 81.7% | 16.9% | 8 |
-| 2026 | 61.1% | 89.1% | 20.5% | 8 |
+| year | count-weighted | value-weighted | economic multi-leg / all routes | round-trip share of multi-leg (excluded) | venues active |
+|---|---|---|---|---|---|
+| 2020 | 1.4% | 15.4% | 18.5% | 14.1% | 3 |
+| 2021 | 7.3% | 34.1% | 20.4% | 13.4% | 5 |
+| 2022 | 19.1% | 49.4% | 18.8% | 15.1% | 5 |
+| 2023 | 19.2% | 47.2% | 14.3% | 9.4% | 6 |
+| 2024 | 28.5% | 56.3% | 15.0% | 10.9% | 7 |
+| 2025 | 47.8% | 82.4% | 15.6% | 17.1% | 8 |
+| 2026 | 60.6% | 89.4% | 16.6% | 20.7% | 8 |
 
-Stated conservatively, since the quarterly series is upward-trending but **not monotone** (2023 flattens and reverses slightly, and 2026-Q2 dips against Q1): the cross-venue share of intermediated routing rises by roughly an order of magnitude across the sample on counts, and reaches close to nine-tenths of intermediated trade value by 2026. The value-weighted series sits consistently above the count-weighted one, so larger trades span venues more than smaller ones, which is what a depth constraint implies.
+Stated conservatively, since the series trends upward but is **not monotone**: the cross-venue share of intermediated routing rises by roughly an order of magnitude across the sample on counts, and reaches close to nine-tenths of intermediated trade value by 2026. The value-weighted series sits consistently above the count-weighted one, so larger trades span venues more than smaller ones, which is what a depth constraint implies.
+
+The new column is the key bound on the aggregator mechanism. Economic multi-leg routes do not rise as a share of all routes: the annual ratio stays between 14.3% and 20.4%, ending at 16.6% against 18.5% in 2020. Venue and aggregator integration therefore changed where a multi-leg route sources liquidity much more than how often routes are multi-leg. This does not identify routing efficiency. The conditional test still has to hold the reachable venue/pool set fixed and ask whether realised-to-best cost gaps compress.
 
 ## The filter this required, and why the first attempt was wrong
 
