@@ -14,10 +14,9 @@ Constant-product pools need neither. Their quote is closed form:
     out = (in * (1 - f) * R_out) / (R_in + in * (1 - f))
 
 with f the pool fee (30 bp on Uniswap v2 and SushiSwap v2). Given reserves, the
-quote is exact rather than approximate, and we hold hourly reserves for both
-venues across the sample. Both the direct and the intermediated route are priced
-against the *same* hourly snapshot, so the comparison is internally consistent at
-identical state, which is precisely the property the realised-trade test lacked.
+quote is exact. The direct alternative is reconstructed immediately before the
+realised route's first block-log event, while the vehicle route uses its realised
+output. Both therefore refer to the same causal market moment.
 
 Scope, and the direction of its bias. This covers Uniswap v2 and SushiSwap v2.
 Uniswap v3, Curve and Balancer are excluded, since concentrated liquidity needs
@@ -29,20 +28,20 @@ dominance is therefore a lower bound, which is the conservative direction for a
 claim that such windows exist.
 
 State reconstruction, and a subtlety that matters. The subgraph's PairHourData
-reserves are updated on every swap in the hour, so the stored value is the state
-at the END of the hour, after the last swap. Replaying swaps FORWARD from it is
-therefore wrong and measures badly (median absolute error 11.8% against realised
-swaps). Unwinding BACKWARD from it, subtracting each swap's net amounts in
-reverse order, recovers the exact pre-trade state: validated at median absolute
-error 0.0000%, with 96.7% of quotes within 1% and 95.2% within 0.01% of the
-realised output on 8,024 executed swaps. That is more accurate than the archive
--RPC quoter this replaces (93.7% within 1%), costs nothing, and has no rate limit.
+reserve is the end-of-hour state. Replaying swaps forward from it is wrong and
+measures badly. The state owner instead unwinds every known reserve change in
+reverse block-log order, including Uniswap v2 mints and burns, and validates the
+result against the nearest prior observed reserve after advancing every known
+intervening change. Residual continuity breaks are excluded. Swap-only validation
+had median absolute error 0.0000%, with 96.7% of quotes within 1% and 95.2% within
+0.01% of realised output on 8,024 swaps; replaying liquidity events recovers most
+of the selected-away support without weakening that continuity contract.
 
 Remaining caveats, all reportable:
-  - mint, burn and direct-transfer events are not in the fetched dataset. Reserve
-    continuity detects and drops affected pool-hours, preserving state accuracy
-    but selecting away from actively managed and newly launched pools. Fetching
-    liquidity events would recover that support.
+  - SushiSwap v2 liquidity events remain unavailable. Direct transfers and
+    fee-on-transfer tokens are also not explicit state events. Reserve continuity
+    detects and drops their residual breaks, preserving accuracy but selecting
+    support.
   - quotes are gross of gas. A two-hop route costs more gas than one hop, so a
     gas-inclusive comparison is required before any all-in claim. Gas per route
     topology must be measured from receipts.
@@ -192,10 +191,20 @@ def unwind_hour(stored: tuple[Decimal, Decimal],
 
 def ordered_reserve_events(
     stored: tuple[Decimal, Decimal],
-    swaps: list[tuple[tuple[int, int], tuple[Decimal, Decimal]]],
+    changes: list[tuple[tuple[int, int], tuple[Decimal, Decimal]]],
 ) -> list[ReserveEvent]:
-    """Reconstruct pre/post states for block-log ordered swaps in one pool-hour."""
-    ordered = sorted(swaps, key=lambda item: item[0])
+    """Reconstruct pre/post states for block-log ordered reserve changes.
+
+    The changes may be swaps, mints or burns. Exact duplicate raw events are
+    idempotent; two different deltas at one block-log identity are a hard conflict.
+    """
+    unique: dict[tuple[int, int], tuple[Decimal, Decimal]] = {}
+    for order, delta in changes:
+        prior = unique.get(order)
+        if prior is not None and prior != delta:
+            raise ValueError(f"conflicting reserve changes at block-log {order}")
+        unique[order] = delta
+    ordered = sorted(unique.items(), key=lambda item: item[0])
     deltas = [delta for _order, delta in ordered]
     before = unwind_hour(stored, deltas)
     return [
@@ -221,31 +230,52 @@ def reserve_state_before(
     return events[-1].after
 
 
+def apply_reserve_deltas(
+    state: tuple[Decimal, Decimal],
+    deltas: list[tuple[Decimal, Decimal]],
+) -> tuple[Decimal, Decimal]:
+    """Advance one reserve state through known swaps and liquidity events."""
+    reserve0, reserve1 = state
+    for delta0, delta1 in deltas:
+        reserve0 += delta0
+        reserve1 += delta1
+    return reserve0, reserve1
+
+
+def prior_observed_state(
+    observed: dict[int, tuple[Decimal, Decimal]],
+    known_deltas: dict[int, list[tuple[Decimal, Decimal]]],
+    target_period: int,
+) -> tuple[tuple[Decimal, Decimal], int] | None:
+    """Nearest prior reserve advanced through known intervening periods."""
+    periods = sorted(observed)
+    prior_index = bisect.bisect_left(periods, target_period) - 1
+    if prior_index < 0:
+        return None
+    prior_period = periods[prior_index]
+    state = observed[prior_period]
+    for period in sorted(known_deltas):
+        if prior_period < period < target_period:
+            state = apply_reserve_deltas(state, known_deltas[period])
+    return state, prior_period
+
+
 def hour_is_clean(stored_prev: tuple[Decimal, Decimal] | None,
                   stored: tuple[Decimal, Decimal],
-                  swaps: list[tuple[Decimal, Decimal]],
+                  deltas: list[tuple[Decimal, Decimal]],
                   tol: float = 1e-9) -> bool:
-    """Was this pool-hour free of unaccounted reserve changes?
+    """Are all reserve changes since the observed prior state accounted for?
 
-    Unwinds the hour's swaps back to its start and compares with the previous
-    hour's stored end reserve. Agreement means swaps were the only thing moving
-    reserves, so the reconstruction is exact. Disagreement means a mint, burn or
-    direct transfer intervened, and every pre-state in the hour is off by that
-    amount.
+    Unwinds known swaps, mints and burns from the stored end state and compares
+    with the nearest prior state advanced through any known intervening changes.
+    Agreement makes the reconstruction exact. Disagreement means an unobserved
+    reserve change remains, so every reconstructed pre-state may be wrong.
 
-    This makes mint and burn data unnecessary for correctness: contamination is
-    detectable from reserve continuity alone. Measured on 2024-01-15, 96.8% of
-    comparable pool-hours are exact and 3.2% are flagged, which matches the 3.3%
-    of quotes that missed 1% accuracy, so the flag identifies precisely the
-    inaccurate cases.
-
-    Selection caveat: liquidity events concentrate in actively managed and newly
-    launched pools, so dropping flagged hours is not random. Fetching mint and
-    burn events would recover them and remove that concern, which is a
-    refinement and not a fix for a correctness problem.
+    Liquidity events are observed for Uniswap v2 but not SushiSwap v2. Residual
+    breaks remain excluded, and their selection must be reported.
     """
     r0, r1 = stored
-    for d0, d1 in reversed(swaps):
+    for d0, d1 in reversed(deltas):
         r0 -= d0
         r1 -= d1
         if r0 <= 0 or r1 <= 0:
