@@ -9,10 +9,11 @@ three-receipt median is a poor estimate of a day's gas price.
 The V3 subgraph exposes `Transaction.gasPrice` directly, exactly. One page of
 swaps per day therefore yields hundreds of transaction gas prices without RPC.
 The V2 subgraph does not expose that field. Before V3 launch, V2 swap files select
-three blocks across each UTC day and `eth_getBlockByNumber(..., true)` returns the
-full transaction objects and their gas prices. This gives hundreds of observations
-per day in three calls, closing the 394-day hole left by a V3-only calendar without
-falling back to three individual receipts.
+three blocks across each UTC day, with the active V1 stream supplying the calendar
+on early days when V2 has no swaps. `eth_getBlockByNumber(..., true)` then returns
+the full transaction objects and their gas prices. This gives hundreds of
+observations per day in three calls, closing the 394-day hole left by a V3-only
+calendar without falling back to three individual receipts.
 
 What this deliberately does NOT take from the subgraph. `Transaction.gasUsed`
 returns `0` on current subgraph versions, so gas UNITS still come from receipts.
@@ -36,6 +37,7 @@ import gzip
 import json
 import statistics
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 
 import pandas as pd
 
@@ -50,6 +52,7 @@ V2_SOURCE = get_source("uniswap_v2")
 V3_SOURCE = get_source("uniswap_v3")
 V3_START = "20210505"
 RAW_V2 = DATA_DIR / "raw" / "thegraph" / "uniswap_v2"
+RAW_V1 = DATA_DIR / "raw" / "thegraph" / "uniswap_v1"
 OUT_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "daily_gas_price_graph.jsonl"
 CACHE = DATA_DIR / "interim" / "gas_price_graph"
@@ -77,22 +80,28 @@ def day_bounds(day: str) -> tuple[int, int]:
 
 
 def source_name_for_day(day: str) -> str:
-    """Venue whose subgraph covers the gas-price calendar on this day."""
-    return "uniswap_v2" if day < V3_START else "uniswap_v3"
+    """Data source that supplies transaction gas prices on this day."""
+    return "ethereum_block" if day < V3_START else "uniswap_v3"
 
 
-def v2_sample_blocks(day: str, count: int) -> list[int]:
-    """Evenly spaced V2 swap blocks anchoring a pre-V3 UTC day."""
-    path = RAW_V2 / f"uniswap_v2_swaps_{day}.jsonl.gz"
+def _sample_blocks_from_file(
+    path: Path, count: int, *, nested_transaction: bool
+) -> list[int]:
+    """Evenly spaced block identifiers from one venue-day stream."""
     if not path.exists() or count < 1:
         return []
     blocks: set[int] = set()
     with gzip.open(path, "rt") as handle:
         for line in handle:
-            transaction = (json.loads(line).get("transaction") or {})
+            row = json.loads(line)
+            value = (
+                (row.get("transaction") or {}).get("blockNumber")
+                if nested_transaction
+                else row.get("block")
+            )
             try:
-                blocks.add(int(transaction["blockNumber"]))
-            except (KeyError, TypeError, ValueError):
+                blocks.add(int(value))
+            except (TypeError, ValueError):
                 continue
     ordered = sorted(blocks)
     if len(ordered) <= count:
@@ -104,6 +113,29 @@ def v2_sample_blocks(day: str, count: int) -> list[int]:
         for position in range(count)
     }
     return [ordered[index] for index in sorted(indices)]
+
+
+def pre_v3_sample_blocks(day: str, count: int) -> tuple[list[int], str | None]:
+    """Pre-V3 block calendar, preferring V2 and falling back to active V1."""
+    candidates = (
+        (
+            "uniswap_v2",
+            RAW_V2 / f"uniswap_v2_swaps_{day}.jsonl.gz",
+            True,
+        ),
+        (
+            "uniswap_v1",
+            RAW_V1 / f"uniswap_v1_swaps_{day}.jsonl.gz",
+            False,
+        ),
+    )
+    for source_name, path, nested in candidates:
+        blocks = _sample_blocks_from_file(
+            path, count, nested_transaction=nested
+        )
+        if blocks:
+            return blocks, source_name
+    return [], None
 
 
 def block_gas_prices(block: int) -> list[float]:
@@ -166,14 +198,17 @@ def fetch_day(
     if cached.exists():
         rec = json.loads(cached.read_text())
         if rec.get("gas_gwei_median") is not None:
-            rec.setdefault("source", source_name_for_day(day))
+            rec["source"] = source_name_for_day(day)
             rec.setdefault(
                 "method", "block_transactions" if day < V3_START else "subgraph"
             )
+            if day < V3_START and not rec.get("calendar_source"):
+                _blocks, calendar_source = pre_v3_sample_blocks(day, 1)
+                rec["calendar_source"] = calendar_source
             return rec
     source_name = source_name_for_day(day)
-    if source_name == "uniswap_v2":
-        blocks = v2_sample_blocks(day, blocks_per_day)
+    if source_name == "ethereum_block":
+        blocks, calendar_source = pre_v3_sample_blocks(day, blocks_per_day)
         prices = []
         for block in blocks:
             prices.extend(block_gas_prices(block))
@@ -186,6 +221,7 @@ def fetch_day(
             prices,
             n_blocks=len(blocks),
         )
+        rec["calendar_source"] = calendar_source
         CACHE.mkdir(parents=True, exist_ok=True)
         with atomic_output(cached) as temporary:
             temporary.write_text(json.dumps(rec))
