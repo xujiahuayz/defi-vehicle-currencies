@@ -91,9 +91,22 @@ COMMA_TAIL = re.compile(r",\s+and\s+(?:what|where|why|whether|which|how)\b", re.
 # --------------------------------------------------------------------------- text plumbing
 
 def exemplar_text(path: Path) -> str:
-    r = subprocess.run([BREW_PY, "-c", EXTRACT, str(path)],
-                       capture_output=True, text=True, timeout=240)
-    return r.stdout if r.returncode == 0 else ""
+    """Extract one exemplar, and treat a failure as fatal rather than as a smaller corpus.
+
+    The first version swallowed timeouts and returned "", so a run where two PDFs were slow
+    silently computed its target bands from twelve papers instead of fourteen. The bands then
+    moved between runs on identical inputs, and a section measured against one run was judged
+    against a different ruler on the next. A target that is not reproducible is not a target.
+    """
+    try:
+        r = subprocess.run([BREW_PY, "-c", EXTRACT, str(path)],
+                           capture_output=True, text=True, timeout=600)
+    except subprocess.TimeoutExpired:
+        raise SystemExit(f"FATAL: extraction timed out on {path.name}; bands would be "
+                         f"computed from an incomplete corpus")
+    if r.returncode != 0 or not r.stdout.strip():
+        raise SystemExit(f"FATAL: no text extracted from {path.name}")
+    return r.stdout
 
 
 def corpus_paragraphs(text: str) -> list[str]:
@@ -170,6 +183,52 @@ def sentences(par: str) -> list[str]:
 
 # --------------------------------------------------------------------------- measurement
 
+STOP = set("""
+a an the this that these those there here it its they them their we our i my he she his her
+and or but nor so yet for as if then than because since while whereas although though unless
+until of in on at by to from with without within into onto over under above below between
+among across against through during before after about around near past per via up down out
+off again is are was were be been being am do does did done doing have has had having can
+could shall should will would may might must ought need not no never none nothing neither
+either both all any some each every few many most much several what which who whom whose when
+where why how whether more less least very too also only just even still already once one two
+three first second such same other others another own
+""".split())
+
+
+def content(sent: str) -> list[str]:
+    ws = [w.lower().rstrip("'s").rstrip("s") for w in re.findall(r"[A-Za-z][A-Za-z'-]+", sent)]
+    return [w for w in ws if w not in STOP and len(w) > 2]
+
+
+def cohesion(paras: list[str]) -> float:
+    """Share of sentences that OPEN on information the previous sentence already carried.
+
+    This is the texture the other metrics are blind to. A paragraph can sit inside every
+    length and clause band and still read as a list of assertions, because each sentence
+    starts on a subject the reader has not met. Venue prose threads: the new sentence opens
+    where the last one landed, and the fresh material arrives at the end.
+
+    "The thick-network definition of the native type implies that ordering", following a
+    sentence about the ordering, opens on the new thing and buries the given one. Reversed,
+    it opens on "That ordering" and reads connected. Sentence length does not move, clause
+    count does not move, and the prose stops sounding generated.
+
+    Measured as: do the first four content words of a sentence overlap the content words of
+    the sentence before it?
+    """
+    hits = tot = 0
+    for par in paras:
+        ss = sentences(par)
+        for prev, cur in zip(ss, ss[1:]):
+            pc, cc = set(content(prev)), content(cur)[:4]
+            if not cc:
+                continue
+            tot += 1
+            hits += any(w in pc for w in cc)
+    return 100.0 * hits / tot if tot else 0.0
+
+
 def shape(paras: list[str]) -> dict:
     sents, per_par = [], []
     for p in paras:
@@ -194,6 +253,7 @@ def shape(paras: list[str]) -> dict:
         "plain_declarative_share": 100.0 * sum(plain) / len(sents),
         "over_40_words_share": 100.0 * sum(long40) / len(sents),
         "sentences_per_paragraph": sum(per_par) / len(per_par) if per_par else 0.0,
+        "given_opening_share": cohesion(paras),
     }
 
 
@@ -223,6 +283,65 @@ def draft_headings(only: str | None = None) -> list[str]:
     return out
 
 
+def numbered_tree(text: str) -> dict[str, int]:
+    """Top-level section number -> count of its direct subsections, from one paper.
+
+    Grammar is only half of what a heading carries. The other half is structure: how many
+    subsections a section is cut into, and which sections carry none at all. A venue where
+    the introduction and the conclusion run unbroken says so in this count and nowhere in
+    the wording, so measuring wording alone would never surface it.
+    """
+    tree: dict[str, int] = {}
+    for m in re.finditer(
+            r"\n\s*(\d{1,2}(?:\.\d{1,2})*)\.?\s+([A-Z][A-Za-z ,:'\-]{6,70})\s*\n", text):
+        num = m.group(1)
+        parts = num.split(".")
+        if len(parts) == 1:
+            tree.setdefault(num, 0)
+        elif len(parts) == 2:
+            tree.setdefault(parts[0], 0)
+            tree[parts[0]] += 1
+    return tree
+
+
+def structure_stats(tree: dict[str, int]) -> dict:
+    if not tree:
+        return {}
+    order = sorted(tree, key=lambda k: int(k))
+    counts = [tree[k] for k in order]
+    return {
+        "sections": len(order),
+        "subsections_per_section": sum(counts) / len(counts),
+        "sections_without_subsections_pct": 100.0 * sum(c == 0 for c in counts) / len(counts),
+        "first_section_subsections": counts[0],
+        "last_section_subsections": counts[-1],
+    }
+
+
+def draft_tree() -> dict[str, int]:
+    """Draft sections in the order main.tex includes them, with their subsection counts."""
+    main = (ROOT / "paper" / "main.tex").read_text(encoding="utf-8")
+    order = re.findall(r"\\(?:input|include)\{sections/([^}]+)\}", main)
+    names = [o if o.endswith(".tex") else o + ".tex" for o in order]
+    if not names:
+        names = [p.name for p in sorted((ROOT / "paper" / "sections").rglob("*.tex"))]
+    tree, cur, i = {}, None, 0
+    for name in names:
+        f = ROOT / "paper" / "sections" / name
+        if not f.exists():
+            continue
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line.lstrip().startswith("%") or "\\appendix" in line:
+                continue
+            if re.match(r"\s*\\section\*?\{", line):
+                i += 1
+                cur = str(i)
+                tree.setdefault(cur, 0)
+            elif re.match(r"\s*\\subsection\*?\{", line) and cur:
+                tree[cur] += 1
+    return tree
+
+
 def heading_shape(hs: list[str]) -> dict:
     if not hs:
         return {}
@@ -243,11 +362,16 @@ FIELDS = [
     ("clauses_per_sentence", "subordinate clauses per sentence"),
     ("plain_declarative_share", "sentences with NO subordinate clause, %"),
     ("over_40_words_share", "sentences over 40 words, %"),
-    ("sentences_per_paragraph", "sentences per paragraph"),   # corpus-side may be unusable
+    ("sentences_per_paragraph", "sentences per paragraph"),
+    ("given_opening_share", "sentences opening on given information, %"),   # corpus-side may be unusable
     ("heading_words_median", "median heading, words"),
     ("wh_opening_share", "headings opening on a wh-word, %"),
     ("comma_tail_share", "headings with a comma plus wh-clause, %"),
     ("negating_share", "headings that negate, %"),
+    ("subsections_per_section", "subsections per section"),
+    ("sections_without_subsections_pct", "sections with NO subsection, %"),
+    ("first_section_subsections", "subsections in the first section"),
+    ("last_section_subsections", "subsections in the last section"),
 ]
 
 
@@ -263,15 +387,20 @@ def main() -> int:
         return 1
     print(f"measuring {len(pdfs)} published papers, then the draft\n", flush=True)
 
-    texts = [t for t in (exemplar_text(p) for p in pdfs) if t]
+    texts = [exemplar_text(p) for p in pdfs]
+    if len(texts) != len(pdfs):
+        raise SystemExit("FATAL: corpus incomplete")
     per_paper = []
-    for t in texts:
-        s = shape(corpus_paragraphs(t))
-        if s:
-            per_paper.append(s)
+    for pdf, t in zip(pdfs, texts):
+        st = shape(corpus_paragraphs(t))
+        if not st:
+            raise SystemExit(f"FATAL: no prose recovered from {pdf.name}")
+        per_paper.append(st)
     chead = heading_shape(corpus_headings(texts))
+    cstruct = [s for s in (structure_stats(numbered_tree(t)) for t in texts) if s]
 
     label = args.section or "whole draft"
+    dstruct = {} if args.section else structure_stats(draft_tree())
     dshape = shape(draft_paragraphs(args.section))
     dhead = heading_shape(draft_headings(args.section))
     if not dshape:
@@ -284,7 +413,12 @@ def main() -> int:
 
     rows, out_of_band = [], []
     for key, desc in FIELDS:
-        if key in chead:
+        if key in (cstruct[0] if cstruct else {}):
+            vals = sorted(p[key] for p in cstruct)
+            lo = vals[int(len(vals) * 0.25)]
+            med = median(vals)
+            hi = vals[int(len(vals) * 0.75)]
+        elif key in chead:
             vals = [chead[key]]
             lo = hi = med = chead[key]
         else:
@@ -292,7 +426,7 @@ def main() -> int:
             lo = vals[int(len(vals) * 0.25)]
             med = median(vals)
             hi = vals[int(len(vals) * 0.75)]
-        d = dhead.get(key, dshape.get(key))
+        d = dstruct.get(key, dhead.get(key, dshape.get(key)))
         if d is None:
             continue
         # Paragraph boundaries survive in the LaTeX and are lost in PDF extraction, which
