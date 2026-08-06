@@ -26,7 +26,7 @@ This is the live handoff between the research graph and prose node P. A recent p
 | Route-cost panel | 123,262,704 rows over 2,238 nonempty days, but its manifest predates assembly and is wrong |
 | Uniswap v4 | raw swaps cover the historical period; panel quotes v4 on only 30 days because pre-June-2026 swap rows were fetched without fee tier and token decimals; refetch and rebuild required |
 | Vehicle extent | full-sample candidate-currency panel built; all-asset version retained only as a diagnostic because residual contracts carry 19 to 22 percent of 2022 to 2023 intermediation |
-| Panel-dependent refresher | unsafe: still caps realised dominance at 400 days and runs two retired duration estimands |
+| Panel-dependent refresher | restricted to validated support, screened-window, and arbitrage-bound diagnostics; all finding estimators remain withheld until their definitions lock |
 | Prose | frozen; existing paper and deck are evidence maps, not final deliverables |
 
 ## Loop position

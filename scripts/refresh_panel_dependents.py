@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Re-run everything that reads the route-cost panel, in order, after the panel changes.
+"""Re-run the validated route-cost diagnostics after the panel changes.
 
-Nineteen scripts read `data/empirical/route_cost_panel_v2.parquet`, and most of the
-paper's claims are downstream of one of them. When the panel is rebuilt, every one of
-those numbers is stale until its script runs again, and a stale exhibit is indistinguishable
-from a fresh one by inspection. Doing this by hand invites the failure where eleven files
-carry a number and nine of them get refreshed.
+Many scripts read `data/empirical/route_cost_panel_v2.parquet`, but the definition audit
+withheld most of their estimands: route-level realised incidence is not the required
+pair-candidate-period unit, the realised join omitted quote hour, the two duration arms
+compare asymmetric events, and the old HDFE result uses a retired vehicle definition.
+Automatically running those scripts would convert a fresh panel into fresh-looking invalid
+findings. This refresher therefore owns only the diagnostics whose definitions survive.
 
-The order below is a dependency order and not an alphabetical one. Scripts that establish
-the screen and the matched sample run before scripts that report rates conditional on
-them, and the paper-exhibit assembly runs last.
+The order below is a dependency order and not an alphabetical one. Support is measured
+before screened windows, and the arbitrage bound reads those windows. Finding estimators
+return here only after their specification is locked in `docs/findings-freeze.md`.
 
 Two things this refuses to do. It will not run while a rebuild is in flight or against a panel that predates one, for the reason in `rebuild_in_flight`. And it does not stop at the first failure, since a failure in one arm says nothing
 about the others, but it does report every failure at the end and exits non-zero, so a
@@ -35,32 +36,15 @@ PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 PY = ROOT / ".venv" / "bin" / "python"
 LOGS = ROOT / "logs" / "refresh"
 
-# (script, args, why it sits here in the order)
+# (script, args, why it sits here in the order). Withheld scripts are deliberately absent;
+# `audit_findings_freeze.py` tests that they do not silently return.
 STAGES: list[tuple[str, list[str], str]] = [
     ("measure_quoter_support.py", [],
      "the support bound every later screen depends on"),
     ("measure_dominance_windows.py", [],
-     "the screened enumeration, which defines the quotable population"),
-    ("characterise_matched_sample.py", [],
-     "how the matched sample differs from the population, needed to reweight"),
-    ("measure_realised_dominance.py", ["--days", "400"],
-     "the lead result, and the reweighting rows the paper's table is built from"),
-    ("run_dominance_specification_curve.py", [],
-     "the specification surface and the formal size interaction"),
-    ("run_vehicle_dominance_hdfe.py", [],
-     "the high-dimensional fixed-effect estimates across window lengths"),
-    ("run_survival_after_dominance.py", [],
-     "the retention arm of the survival estimand"),
-    ("run_displacement_asymmetry.py", [],
-     "the displacement arm, which refuses below 20 consecutive priced days"),
+     "the screened cost-surface diagnostic, which defines the quotable population"),
     ("test_gap_arbitrage_bound.py", [],
-     "whether the surviving gaps could have been taken"),
-    ("run_robustness_tests.py", [],
-     "robustness of whatever the arms report"),
-    ("run_jfe_construct_validity_checks.py", [],
-     "construct validity, which reads the refreshed exhibits"),
-    ("build_paper_exhibits.py", [],
-     "assembles the paper-facing tables last, so it sees every refresh above"),
+     "whether gaps surviving the support screen could have been taken"),
 ]
 
 
@@ -185,8 +169,9 @@ def main() -> int:
         print("stale and others fresh, which is the state hardest to detect later, so fix")
         print("these before reading any number downstream of them.")
         return 1
-    print(f"all {len(stages)} stages completed. Every panel-dependent exhibit is now")
-    print("consistent with the panel reported above.")
+    print(f"all {len(stages)} validated diagnostic stages completed.")
+    print("Finding estimators and paper exhibits remain withheld until their definitions")
+    print("lock and scripts/audit_findings_freeze.py passes.")
     return 0
 
 

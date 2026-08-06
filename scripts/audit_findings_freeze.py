@@ -117,14 +117,22 @@ def main() -> int:
     refresh = REFRESH.read_text() if REFRESH.exists() else ""
     retired = [
         name
-        for name in ("run_survival_after_dominance.py", "run_displacement_asymmetry.py")
+        for name in (
+            "measure_realised_dominance.py",
+            "run_dominance_specification_curve.py",
+            "run_vehicle_dominance_hdfe.py",
+            "run_survival_after_dominance.py",
+            "run_displacement_asymmetry.py",
+            "run_jfe_construct_validity_checks.py",
+            "build_paper_exhibits.py",
+        )
         if name in refresh
     ]
     record(
         "refresh graph excludes retired estimands",
-        not retired and '["--days", "400"]' not in refresh,
+        not retired,
         f"retired={retired or 'none'}; "
-        f"capped_realised={'yes' if '[\"--days\", \"400\"]' in refresh else 'no'}",
+        "only validated diagnostics may run",
     )
 
     stable_passes = int(_state_value("stable_passes") or 0)
