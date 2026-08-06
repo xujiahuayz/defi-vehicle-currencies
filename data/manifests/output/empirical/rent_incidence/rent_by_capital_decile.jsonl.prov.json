@@ -1,23 +1,27 @@
 {
  "argv": [],
  "artefact": "output/empirical/rent_incidence/rent_by_capital_decile.jsonl",
- "code_fingerprint": "b360651e3631dbffd8acc6c6673464a849d9bf4c0baf1ec7a5dca843c27c2a39",
+ "code_fingerprint": "4a8c8bb9782f2c21f7ab1bc9037b0758a980f570544d494513e9e8d2244a3c0e",
  "code_sources": [
   "scripts/build_rent_incidence_panel.py",
   "scripts/run_rent_incidence.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T00:25:29+00:00",
+ "created_at": "2026-08-06T00:47:45+00:00",
  "git": {
   "branch": "main",
-  "commit": "00f3173e2a4f923b23913cf5cb9528b3927fa57f",
+  "commit": "f8adde626ce59c6c3f14d10f725898cb5e6d9fee",
   "dirty": true,
   "dirty_tracked_files": [
-   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
-   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json",
-   "data/manifests/output/exhibits/vehicle_centrality.jsonl.prov.json",
-   "output/exhibits/vehicle_centrality.jsonl",
-   "scripts/build_vehicle_centrality.py",
+   "ata/manifests/data/processed/cross_venue_spillover_daily.parquet.prov.json",
+   "data/manifests/data/processed/rent_incidence_pool_month.parquet.prov.json",
+   "data/manifests/output/empirical/rent_incidence/centrality_curse_regressions.jsonl.prov.json",
+   "data/manifests/output/empirical/rent_incidence/rent_by_asset_role.jsonl.prov.json",
+   "data/manifests/output/empirical/rent_incidence/rent_by_capital_decile.jsonl.prov.json",
+   "data/manifests/output/empirical/rent_incidence/robustness.jsonl.prov.json",
+   "data/manifests/output/empirical/rent_incidence/screens.jsonl.prov.json",
+   "data/manifests/output/empirical/rent_incidence/summary.json.prov.json",
+   "scripts/run_rent_incidence.py",
    "uv.lock"
   ]
  },

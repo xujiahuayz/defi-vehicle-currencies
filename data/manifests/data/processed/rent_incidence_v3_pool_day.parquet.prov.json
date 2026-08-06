@@ -1,0 +1,32 @@
+{
+ "argv": [
+  "v3"
+ ],
+ "artefact": "data/processed/rent_incidence_v3_pool_day.parquet",
+ "code_fingerprint": "0f8af4681885c8d784962aba9555415eefb49c74d94efa254decf771455d2fec",
+ "code_sources": [
+  "scripts/build_rent_incidence_panel.py",
+  "src/ddvc/pricing/v3pools.py",
+  "src/ddvc/tables.py"
+ ],
+ "created_at": "2026-08-06T00:31:09+00:00",
+ "git": {
+  "branch": "main",
+  "commit": "5a416110d20a4b9800ba241f75d70df85c941bb9",
+  "dirty": true,
+  "dirty_tracked_files": [
+   "v.lock"
+  ]
+ },
+ "inputs": [],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": null,
+ "python": "3.14.5",
+ "rows": 420019,
+ "script": "scripts/build_rent_incidence_panel.py"
+}

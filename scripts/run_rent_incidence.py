@@ -311,7 +311,18 @@ def by_role(df: pd.DataFrame, venue: str, gas_only: bool = True) -> pd.DataFrame
             "cw_lvr_rate_apr": float(g.lvr_usd.sum() / g.tvl_usd.sum() * 365),
             "cw_gas_rate_apr": float(g.gas_usd.sum() / g.tvl_usd.sum() * 365),
             "cw_net_yield_apr": float(g.net_usd.sum() / g.tvl_usd.sum() * 365),
+            # Scale-free. Fee revenue, LVR and gas are all dollars, so these
+            # survive the fact that v3 capital is measured as CPMM-equivalent
+            # virtual reserves and is therefore many times the sum deposited.
+            "net_musd": float(g.net_usd.sum() / 1e6),
             "fee_over_lvr": float(g.fees_usd.sum() / g.lvr_usd.sum()) if g.lvr_usd.sum() > 0 else np.nan,
+            "fee_over_lvr_plus_gas": float(
+                g.fees_usd.sum() / (g.lvr_usd.sum() + g.gas_usd.sum()))
+            if (g.lvr_usd.sum() + g.gas_usd.sum()) > 0 else np.nan,
+            "med_pool_day_fee_over_lvr": float(
+                (g.fees_usd / g.lvr_usd.replace(0, np.nan)).median()),
+            "capital_basis": "reserves" if venue == "uniswap_v2"
+                             else "CPMM-equivalent virtual reserves",
         })
     return pd.DataFrame(rows).sort_values("capital_days_usd_bn", ascending=False)
 
@@ -419,15 +430,25 @@ def main() -> int:
 
     roles = pd.concat(role_tabs, ignore_index=True)
     print("\n=== Rent incidence by pool asset role (annualised) ===")
+    fmt = lambda v: f"{v:,.4f}"
+    print(roles[roles.venue == "uniswap_v2"][
+        ["pool_role", "pools", "pool_days", "capital_days_usd_bn",
+         "med_fee_yield_apr", "med_lvr_rate_apr", "mean_gas_rate_apr",
+         "share_days_with_lp_event", "med_net_yield_apr", "share_net_positive",
+         "cw_net_yield_apr"]].to_string(index=False, float_format=fmt))
+    print("\n=== Scale-free rent incidence, both venues ===")
+    print("(v3 capital is CPMM-equivalent virtual reserves, so only these columns "
+          "and the SIGN of a v3 yield are comparable across venues)")
     print(roles[["venue", "pool_role", "pools", "token_pairs", "pool_days",
-                 "capital_days_usd_bn", "med_fee_yield_apr", "med_lvr_rate_apr",
-                 "mean_gas_rate_apr", "share_days_with_lp_event",
-                 "med_net_yield_apr", "share_net_positive", "cw_net_yield_apr",
-                 "fee_over_lvr"]].to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
+                 "net_musd", "fee_over_lvr", "fee_over_lvr_plus_gas",
+                 "med_pool_day_fee_over_lvr", "share_net_positive",
+                 "share_net_positive_pre_gas"]].to_string(index=False, float_format=fmt))
     write_exhibit(roles, OUT / "rent_by_asset_role.jsonl", code_sources=SRC)
 
     sizes = pd.concat(size_tabs, ignore_index=True)
-    print("\n=== Net yield by capital decile (the gas threshold) ===")
+    sizes = sizes[sizes.venue == "uniswap_v2"]
+    print("\n=== Net yield by capital decile, v2 only because a v3 decile would sort "
+          "on virtual and not deposited capital (the gas threshold) ===")
     print(sizes.to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
     write_exhibit(sizes, OUT / "rent_by_capital_decile.jsonl", code_sources=SRC)
 
