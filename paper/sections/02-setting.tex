@@ -33,7 +33,7 @@ Assets are classified into four types. The \emph{native} asset is the platform's
 \subsection{Data, and how routes were reconstructed}
 \label{sec:setting:data}
 
-The sample is every swap on the eight largest Ethereum automated market makers from 2020-02-11 to 2026-06-30, 2,277 daily files carrying roughly 215,000 swap legs a day. Legs are assembled into routes within each transaction, so multi-leg paths are recovered across venues and not only within one.
+The sample is every swap on the eight largest Ethereum automated market makers from 2020-02-11 to 2026-06-30, carrying roughly 215,000 swap legs a day. Coverage is 2,277 days of the 2,332 in that span, with the 55 absent days concentrated in the earliest weeks, when several of the venues did not yet exist. Legs are assembled into routes within each transaction, so multi-leg paths are recovered across venues and not only within one.
 % docs/research-workflow.md section 2
 
 Cross-venue assembly is what makes the sample usable for this question, and its importance grows across the period. The share of multi-leg routes touching more than one venue rises from 1.2\% to 61.1\% count-weighted over the sample. A single-venue study is therefore not merely incomplete at the end of the period, it is measuring a different object from the one it measures at the start.

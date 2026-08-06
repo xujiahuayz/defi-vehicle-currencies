@@ -15,8 +15,8 @@ The configuration the currency literature cannot observe is an asset holding the
 Of realised multi-leg routing, 27.2\% was strictly dominated by a direct pool available at the same reconstructed state and the same size. The figure is population-weighted and covers 79.0\% of realised routing. It rests on 1,762 routes matched to a counterfactual out of 90,705 realised multi-leg routes, over four consecutively priced days, and the sample is stated here because it is the binding limit on this number and not on its construction.
 % output/exhibits/realised_dominance.jsonl, REWEIGHTED row; docs/finding-dominance-and-persistence.md
 
-That number arrives close to the 30.0\% all-in figure reported by an earlier single-venue analysis of this market, by a path that reuses none of that computation. The agreement is reported as a convergence and not as a confirmation, since two estimates sharing an error in the underlying quoting would agree for the wrong reason.
-% docs/finding-dominance-and-persistence.md
+An earlier single-venue measurement of this market put the same quantity at 30.0\%, and that agreement is not corroboration. The 30.0\% is the 17.9\% figure this paper retires, recomputed on the identical 103,857 routes over the identical 186 days with a flat gas charge added for the extra hop, so it is one computation reported twice and not two computations agreeing. It is also an all-in figure where 27.2\% is gross of gas. Both differences point the same way, and neither supports the newer number.
+% docs/finding-cost-dominance-measured.md, superseded: 17.9% gross to 30.0% all-in on one panel
 
 \subsection{Why the headline is the reweighted figure}
 \label{sec:dominance:matching}
@@ -64,5 +64,5 @@ The incidence figure is a frequency, and a frequency is a statement about a stat
 Two screens applied throughout are worth restating here because they move the number. Round trips are excluded before anything is measured, and the support screen of Section~\ref{sec:setting:support} declines to quote any leg whose own price impact would exceed 5\%, which removes between 70\% and 86\% of quotable routes and moves the median gap from thousands of basis points to tens.
 % output/exhibits/dominance_windows_screened.jsonl
 
-The retired single-venue figure of 17.9\% is superseded in three respects at once, being constant-product only, unscreened, and enumerated instead of realised, and it is noted here only so a reader tracing this literature can see which of the three changes moved it.
+The retired single-venue figure of 17.9\% is superseded in two respects at once, being constant-product only and unscreened, and it is noted here only so a reader tracing this literature can see which change moved it.
 % docs/finding-cost-dominance-measured.md, superseded
