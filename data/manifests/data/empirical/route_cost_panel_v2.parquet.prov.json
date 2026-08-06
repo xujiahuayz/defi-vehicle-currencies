@@ -3,7 +3,7 @@
   "--hours",
   "all",
   "--workers",
-  "5"
+  "8"
  ],
  "artefact": "data/empirical/route_cost_panel_v2.parquet",
  "code_fingerprint": "82574a1ad9993c4d0b4a558444d9ceb072af21e55899855d8a7622f50cb54de2",
@@ -15,16 +15,14 @@
   "src/ddvc/pricing/v3quote.py",
   "src/ddvc/pricing/weighted.py"
  ],
- "created_at": "2026-08-06T00:20:54+00:00",
+ "created_at": "2026-08-06T02:01:53+00:00",
  "git": {
   "branch": "main",
-  "commit": "00f3173e2a4f923b23913cf5cb9528b3927fa57f",
+  "commit": "9ed8427d347380759cd7b7bfbdc1125bbe19aea9",
   "dirty": true,
   "dirty_tracked_files": [
-   "ata/manifests/output/exhibits/vehicle_centrality.jsonl.prov.json",
-   "output/exhibits/vehicle_centrality.jsonl",
-   "scripts/build_vehicle_centrality.py",
-   "uv.lock"
+   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
+   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json"
   ]
  },
  "inputs": [],

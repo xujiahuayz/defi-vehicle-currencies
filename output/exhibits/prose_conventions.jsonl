@@ -4,16 +4,16 @@
 {"construction": "contrast_confirmation", "corpus_max": 0.2128678622744931, "corpus_median": 0.036388777700957026, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
 {"construction": "rather_than", "corpus_max": 0.5357416194703811, "corpus_median": 0.14840465001236705, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
 {"construction": "genuinely", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "what_matters", "corpus_max": 0.26787080973519056, "corpus_median": 0.03947108742845865, "corpus_min": 0.0, "draft": 0.026662400682557458, "verdict": "in range"}
+{"construction": "what_matters", "corpus_max": 0.26787080973519056, "corpus_median": 0.03947108742845865, "corpus_min": 0.0, "draft": 0.026525902543834055, "verdict": "in range"}
 {"construction": "it_is_worth", "corpus_max": 0.03826725853359865, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
 {"construction": "importantly", "corpus_max": 0.7875372234390766, "corpus_median": 0.12368583797155226, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "triple_list", "corpus_max": 3.0303030303030303, "corpus_median": 1.5965089670586983, "corpus_min": 0.39167686658506734, "draft": 0.053324801365114916, "verdict": "in range"}
-{"construction": "so_that_tail", "corpus_max": 1.5012428321807398, "corpus_median": 0.09791921664626684, "corpus_min": 0.0, "draft": 0.5332480136511492, "verdict": "in range"}
+{"construction": "triple_list", "corpus_max": 3.0303030303030303, "corpus_median": 1.5965089670586983, "corpus_min": 0.39167686658506734, "draft": 0.0, "verdict": "in range"}
+{"construction": "so_that_tail", "corpus_max": 1.5012428321807398, "corpus_median": 0.09791921664626684, "corpus_min": 0.0, "draft": 0.6366216610520173, "verdict": "in range"}
 {"construction": "document_self_reference", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "screen_word", "corpus_max": 0.5920663114268798, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 1.3331200341278728, "verdict": "OVERUSED"}
-{"construction": "against_prep", "corpus_max": 1.7160433867573255, "corpus_median": 0.24634182391486426, "corpus_min": 0.0, "draft": 3.4661120887324697, "verdict": "OVERUSED"}
-{"construction": "what_cleft", "corpus_max": 0.7770762506070908, "corpus_median": 0.11953858107704261, "corpus_min": 0.0, "draft": 0.7732096197941662, "verdict": "in range"}
-{"construction": "negation_periphrastic", "corpus_max": 5.38970787291118, "corpus_median": 1.970734591318914, "corpus_min": 1.1280521087296678, "draft": 3.3594624860022395, "verdict": "in range"}
-{"construction": "not_any", "corpus_max": 6.324908325745084, "corpus_median": 2.6604916982805342, "corpus_min": 1.2008296641315819, "draft": 3.839385698288274, "verdict": "in range"}
-{"construction": "neither_nor", "corpus_max": 0.3436426116838488, "corpus_median": 0.04922107646494229, "corpus_min": 0.0, "draft": 0.2666240068255746, "verdict": "in range"}
+{"construction": "screen_word", "corpus_max": 0.5920663114268798, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.9018806864903578, "verdict": "OVERUSED"}
+{"construction": "against_prep", "corpus_max": 1.7160433867573255, "corpus_median": 0.24634182391486426, "corpus_min": 0.0, "draft": 2.997426987453248, "verdict": "OVERUSED"}
+{"construction": "what_cleft", "corpus_max": 0.7770762506070908, "corpus_median": 0.11953858107704261, "corpus_min": 0.0, "draft": 0.7427252712273535, "verdict": "in range"}
+{"construction": "negation_periphrastic", "corpus_max": 5.38970787291118, "corpus_median": 1.970734591318914, "corpus_min": 1.1280521087296678, "draft": 3.289211915435423, "verdict": "in range"}
+{"construction": "not_any", "corpus_max": 6.324908325745084, "corpus_median": 2.6604916982805342, "corpus_min": 1.2008296641315819, "draft": 2.626064351839571, "verdict": "in range"}
+{"construction": "neither_nor", "corpus_max": 0.3436426116838488, "corpus_median": 0.04922107646494229, "corpus_min": 0.0, "draft": 0.2917849279821746, "verdict": "in range"}
 {"construction": "hedging_stack", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}

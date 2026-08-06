@@ -20,7 +20,45 @@ Every claim in the "grounding" column below was measured or read in this project
 
 The reason it is a loop is that content and conformance interfere. Every rewrite for content can break register, structure and resemblance again, and the failure mode this replaces is real: the paper was written, optics were measured once, an agent was dispatched by hand to fix what the measurement found, and the next content change silently undid part of it. A check that depends on someone remembering to dispatch it is not a check.
 
-**Conventions come from the corpus, not from a blacklist.** When a stylistic tell is suspected, it is added as a PROBE to `scripts/measure_prose_conventions.py`, which reports its rate per thousand words in the published corpus beside its rate in the draft, and flags only constructions the draft uses at rates no published paper reaches. This replaces the pattern of banning one phrase per incident, which only ever catches tells someone already noticed. It also protects against over-correction: the corpus uses em dashes, "rather than" and three-item lists freely, so those are venue conventions and any ban on them is an author preference that must be labelled as one and not confused with venue conformance.
+**Order nodes by the cost of redoing them, and freeze a node's input before running an expensive one.**
+
+Two classes of node, and the graph must not mix them up.
+
+*Idempotent gates* cost nothing to re-run and carry no state: measurement, linting, conformance. They run continuously, after every change, and re-running them on unchanged input is free.
+
+*Non-idempotent transforms* consume a settled input and produce an artefact that has to be regenerated in full when that input moves: the prose rewrite (node P), deck authoring (H), figure polish. Running one of these before its input freezes buys rework in direct proportion to how much the input still moves.
+
+This was violated on 2026-08-06 and the cost was legible in advance. Node P was launched while the horse race still carried one account with *no completed test at all* and another whose *discriminating test is blocked by a measure*, and while section 5 of the paper itself ends "the ranking here moves when the six-venue panel returns its own". Section 5's prose was therefore scheduled to be rewritten twice before anyone had written it once. Three of the four verification gaps in section 4.3 were also still open, and two of them sit under results that lead the paper.
+
+**FREEZE GATE on node P.** It does not start until all four hold:
+1. Every claim that leads a section has a completed test, so no headline rests on "blocked" or "no completed test".
+2. Every source the paper CITES AND CHARACTERISES has been read first-hand and its characterisation checked (section 4.3). This is accuracy, not novelty; novelty sweeps are off.
+3. Every open decision in section 8 is decided.
+4. Two consecutive F <-> G passes generate no new claim and retire none.
+
+Until then, write to `memo/` freely. Discovery register is correct there, because a record is judged on whether it is complete and traceable and never on whether it reads like the venue.
+
+**The transform must be a FUNCTION of its input, never an edit to it.** Node P writes `paper/` FROM `memo/` and leaves the memo untouched. That is what makes it re-runnable: when a finding changes, the affected section is regenerated rather than patched, and patching is the mode that was measured not to converge. Rewriting the memo in place would destroy the input and make the second run impossible.
+
+**A gate that cannot pass yet must REPORT and not FAIL.** While `paper/` does not exist, the shape gate measures the memo and reports the distance the rewrite has to travel, which is useful. Wiring that distance into a red build would leave conformance permanently red, and a permanently red gate trains everyone to ignore it, which is how a real failure gets missed later.
+
+**Conventions come from the corpus in BOTH directions, and one direction alone does not converge.**
+
+*Subtractive half, already in place.* When a stylistic tell is suspected, it is added as a PROBE to `scripts/measure_prose_conventions.py`, and `scripts/find_prose_outliers.py` discovers tells nobody named first. Both report the draft's rate per thousand words beside the published corpus and flag only what no published paper reaches.
+
+*Positive half, added 2026-08-06 because the subtractive half was measured to be insufficient.* `scripts/measure_venue_shape.py` measures what venue prose IS and reports target bands: sentence length and its long tail, commas, subordinate clauses, share of sentences carrying none, sentences per paragraph, heading grammar, heading STRUCTURE (subsections per section, and which sections carry none), and the share of sentences that open on information the previous sentence already carried.
+
+The grounding is a measured failure. Forty-two clean deletions of a banned construction moved the discovered-tell count by a third and moved both gates by nothing, because deleting a tell never installs a convention. Three findings from that round:
+
+- **The draft was lexically saturated.** Nearly every candidate replacement was already at or past its own corpus ceiling (`bound` -18 occurrences of headroom, `threshold` -19, `quote` -35, `reading` -28). A document with no vocabulary headroom has a sentence-architecture problem, and word substitution has nowhere to move.
+- **Shape survives synonym substitution.** Rewriting "and not at economics" as "and never at economics" changed the word and kept the banned correction-by-negation shape exactly.
+- **Over-correction is invisible to the subtractive gates.** A first pass on section 3 cut the median sentence from 26 words to 14 and the venue's long tail to zero. Every subtractive gate approved. Only the positive bands caught it.
+
+*Both gates bind.* A section is done when it sits inside the shape bands AND clears the two discovery gates. Neither alone is sufficient, and the positive bands are aimed at the venue's interquartile range, never at zero.
+
+*A target computed from a varying corpus is not a target.* `measure_venue_shape.py` treats an exemplar that fails to extract as FATAL. The first version swallowed timeouts, so bands were silently computed from twelve papers instead of fourteen and moved between runs on identical inputs, and a section measured against one run was judged against a different ruler on the next.
+
+It remains true that the corpus uses em dashes, "rather than" and three-item lists freely, so those are venue conventions and any ban on them is an author preference that must be labelled as one and not confused with venue conformance.
 
 **A reported comparison is not a result until it is estimated conditionally.** Raw rates, shares and differences identify nothing on their own, since composition, the number of candidates, calendar conditions and pair heterogeneity all move them. Every headline comparison carries a specification with fixed effects, controls and clustered standard errors, and `fixed_effects` and `std_errors` are measured features in the optics comparison for exactly this reason. The failure this prevents: a turnover hazard ratio of 1.17 was reported from unconditional pair-day rates before any absorption was applied.
 
@@ -157,10 +195,38 @@ Non-negotiable, because getting these wrong invalidates everything above. Adopt 
 
 Named because a plausible-sounding claim resting on an unread source is how this project has gone wrong before.
 
-- **Flandreau and Jobst (2009)** went structural on currency networks and **reject strong lock-in** while confirming persistence. That is the closest prior claim to resolving the question this paper claims to open, and it is currently abstract-verified only. Highest-priority read.
-- **Chu, Dowling and Li, "Impermanent loss in cryptocurrency," JIMF 160 (2026)** reportedly prices impermanent-loss risk in LP returns with pool-level controls, making it the paper most likely to already contain the cross-section item 3 needs. Read first-hand; a summary will not do.
-- **SSRN was unsearchable during the prior-art sweep**, so finance-side working papers are unchecked. A referee's first move on a novelty claim is an SSRN search.
-- **An untraced MetaMask multi-aggregator study** is structurally the cleanest natural experiment for router-choice questions and needs locating before any novelty claim near that margin.
+- **Flandreau and Jobst: CLOSED 2026-08-06, read first-hand.** Verified in `literature/text/2009-FlandreauJobst2009Empirics-*.txt`, and every claim the paper makes about them holds.
+  - The number is right. Section IV.A: *"Table 3, column III, implies that γ1γ2=0.463, which is smaller than 1. The data thus suggests that there is persistence but no lock-in effects."*
+  - The degree-statistic characterisation is right. Their currency-status variable is literally *"Number of Markets Where Given Countries' Currencies are Traded"* (Table 1 heading), so it counts quoting markets and is silent on how much trade routes through a currency, which is what our differentiation sentence asserts.
+  - γ1γ2 is the feedback between international circulation and the interest rate, as the paper states.
+
+  **Two things the read surfaced that were NOT known before.**
+
+  *Citation version, needs a decision.* The bib entry `FlandreauJobst2006Empirics` is the CEPR Discussion Paper 5529 (2006), so the paper renders "Flandreau and Jobst (2006)". The deck's reference slide says "Flandreau and Jobst (2009), *The Economic Journal*". These disagree in a shipped deliverable. The published article is EJ 119(537), 2009. A referee who knows this literature knows the EJ version exists, and citing the discussion paper for a number that appears in a published article invites the question of why. Cite the 2009 EJ article and re-verify that Table 3 column III carries the same 0.463 there, since the provenance comment currently points at the discussion paper's table.
+
+  *An interpretive bridge the paper does not currently make.* F&J's persistence regime is not just "slow"; they describe it as a state in which *"the country has higher interest rates and lower popularity than is warranted by the long-run equilibrium"*, with formerly minor powers experiencing *"a delayed rise to monetary leadership"*. That is the challenger's delayed rise. This paper measures the mirror image, the incumbent's delayed fall, and it can condition on the cost state where they cannot. The two are the same adjustment process observed from opposite ends, which is a sharper relation than "closest empirical precedent" and is worth one sentence in the introduction.
+
+  *The number reconciles, and HOW it reconciles is a warning.* 0.463 = 0.89 x 0.52, matching the γ1 and γ2 that F&J state in their own prose for column III. The extracted Table 3 in `literature/text/` disagrees: its γ1 row reads (-1.09, -0.87, -0.91), which would give 0.473, and its stated γ1 list in prose (-0.89, -0.91, -1.12) is a third ordering. The table extraction is column-scrambled by the PDF reader, so **a number read out of an extracted table in `literature/text/` is not verified**, and only the surrounding prose is. The paper's provenance comment currently reads "Table 3 column III", which points at the one representation that cannot be trusted. Point it at section IV.A, where F&J state the product in words, and re-verify against the published EJ table before submission.
+
+  **Do NOT map θ onto γ1γ2 numerically.** They are not on the same scale: γ1γ2 is a long-run structural product from a two-equation feedback system, θ is a one-day-horizon hazard ratio. The honest statement is that both address whether the system returns to cost-efficiency, that F&J answer "it converges, slowly" from quotation counts with no counterfactual, and that this paper answers the same question with the declined route priced. Any stronger equivalence would be the kind of unearned bridge this section exists to prevent.
+**Novelty sweeps are OFF. Standing decision by Java, 2026-08-06, and it overrides the three gaps that used to sit here.**
+
+Novelty is overrated and no result gets binned because someone else may have reached it. Corroborating an existing claim on better data is a contribution, and this paper's data prices the road not taken, which is the thing the FX literature cannot do whoever else has tried. A result stands or falls on whether it is measured correctly here.
+
+Three former "gaps" are struck, and they were all novelty policing rather than accuracy:
+- A working-paper sweep, SSRN or otherwise. Working papers are not a bar this paper has to clear, nothing here may depend on one, and reading a pile of them before forming a view is how a project inherits someone else's framing. Do NOT run one, and do not raise it again, unless Java explicitly asks.
+- Chu, Dowling and Li on impermanent loss, previously flagged as the paper most likely to pre-empt the rent-incidence cross-section. If the rent result is right it is right, and if we do not cite them there is nothing to verify.
+- The untraced MetaMask multi-aggregator study, flagged for the same reason.
+
+**What survives, because it is a different obligation.** Any source this paper CITES and CHARACTERISES must be read first-hand and the characterisation checked. That is accuracy and not novelty, and it is where the real risk lives: a mis-stated precedent is a referee's first target, and it is the failure this project has actually had. Verify what we say about what we cite. Do not go looking for who else got there first.
+
+**First check under the accuracy framing found a real error, 2026-08-06.** The load-bearing LVR closed form in equation `eq:lvr` was cited to `MilionisMoallemiRoughgarden2023Myersonian`, "A Myersonian Framework for Optimal Liquidity Provision in Automated Market Makers". That paper is 10,831 words and contains ZERO occurrences of "rebalanc", "loss-versus" or "impermanent"; it is about Bayesian updating, no-trade gaps and the bid-ask spread under asymmetric information. The result actually comes from Milionis, Moallemi, Roughgarden AND ZHANG, "Automated Market Making and Loss-Versus-Rebalancing" (arXiv 2208.06046), a different paper with the same three lead authors, which is exactly why it was confusable. Corrected in `05-liquidity.tex` and in the provenance comment in `05-rivals.tex`, with the correct entry added to the bib.
+
+The formula itself is right: instantaneous LVR of one eighth of the variance rate times pool value is standard for the constant-product invariant. So the rent-incidence result stands unchanged and only the attribution was wrong. That is the good case, and it is worth noticing how much rested on it: `eq:lvr`, `eq:lvrrate`, the -5.96% median net yield, and the arithmetic rejection of the centrality curse, which turns on LVR as a share of capital carrying no depth term.
+
+The lesson generalises. The exposure was never that somebody else had reached the result first; it was that the paper said something false about a source it leans on, in a paper whose whole substitute for identification is a validation apparatus. Check what we assert about what we cite, especially where several papers share authors.
+
+Independence is the point. Form the reading from our own measurement, then check the sources we lean on.
 
 ## 5. Method discipline adopted from documented practice (node F)
 
@@ -201,6 +267,17 @@ G. Paper .......................... six sections, JFE invariants of section 1,
      EXISTS/PENDING status, table shells, definitions text, horse race,
      plus the two convergence sections F and H read).
 H. Deck ........................... derived from G.
+P. Prose rewrite .................. GATED. Does not start until the freeze gate in
+     section 0 passes. Writes paper/ FROM memo/, per
+     section, against the shape bands and the two discovery gates, and never
+     edits memo/. Re-runs by regenerating a section whenever G changes it.
+     A second "clean" copy was tried on 2026-08-06 and deleted the same day
+     (a92295d). The standing rule applies to the paper as much as to the deck:
+     two live copies cost a review cycle spent on the wrong file, and the
+     content of record is git history, not a parallel directory.
+     What does NOT work is word-level correction; see the standing rule above.
+     The rewrite is at sentence and paragraph shape, which is why it is a
+     rewrite node and not a lint.
 
         F <-> G <-> H IS ONE ITERATING CLUSTER, not a chain with a cycle on
         the end. G decides which results the narrative NEEDS; F decides which
@@ -299,6 +376,8 @@ Ordering: A and B complete before C. C blocks D. D blocks E. E locks before F. F
 - **Language, and it stays a real gate.** `python3 ~/glotl/scripts/style_gate.py --corpus ../defi-dominant-currency/lit/jfe-exemplars --target <file> --ignore paper/domain_terms.txt --fail-on-outlier`. Three layers: pattern metrics calibrated leave-one-out against the 14 papers, n-grams absent from the whole corpus, and log-odds over style vocabulary. Catalogue encoded from Wikipedia:Signs_of_AI_writing. Measured baseline for my own prose: em-dashes ran 10x the corpus maximum against a corpus median of zero, and "X, not Y" ran 39x the maximum.
 
   The independent review called this cargo-culting on the grounds that referees reject for weak identification and never for punctuation. **Java overrules that, and the argument is availability bias.** Before generative models, em-dash density was not a signal about anything, so nobody rejected on it. In 2026 a manuscript that reads as machine-written raises a referee's eyebrow about everything else in it, including whether the analysis was done carefully. The prose is evidence about the author's care, so the gate stays binding. Two guards against the review's legitimate worry: the gate may never be satisfied by convoluted phrasing (a flagged sentence gets rewritten simpler), and it never outranks substance in review priority. It also supplements and does not replace the house-voice blocklist, since roughly half those rules are voice and not venue anomaly.
+- **Prose shape, the positive gate.** `python scripts/measure_venue_shape.py [--section NN]`. Reports the venue's interquartile band for each shape target beside the draft. Binding alongside the two subtractive gates, never instead of them. Aim at the band, never at zero, and never satisfy it by convoluted phrasing.
+
 - **Deck craft.** Load `slide-deck-authoring` and `diagram-design` before authoring; failing to do so last time produced 17 tables against one image. Data-overview slide mandatory. Every result a plot or diagram first, table only in backup. Phrases and short clauses, never full sentences, on core and backup slides alike. Inline citations throughout, plus a references slide. p-values as bare parentheses, `(0.003)`, and `(0.000)` below 0.001. No TODO frames ship.
 - **Reproducibility.** Delete outputs, rebuild from one script, byte-compare. Pinned manifest, RNG seeds, execution order, auto-generated README.
 - **Cleanup.** Superseded artefacts deleted in the same commit.

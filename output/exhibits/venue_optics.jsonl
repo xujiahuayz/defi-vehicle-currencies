@@ -1,5 +1,5 @@
 {"draft": 63, "exemplar_max": 86, "exemplar_median": 55, "exemplar_min": 21, "exemplar_p25": 42, "exemplar_p75": 69, "feature": "pages", "verdict": "in range"}
-{"draft": 32622, "exemplar_max": 40633, "exemplar_median": 20297, "exemplar_min": 11640, "exemplar_p25": 16904, "exemplar_p75": 26132, "feature": "words", "verdict": "in range"}
+{"draft": 32420, "exemplar_max": 40633, "exemplar_median": 20297, "exemplar_min": 11640, "exemplar_p25": 16904, "exemplar_p75": 26132, "feature": "words", "verdict": "in range"}
 {"draft": 21, "exemplar_max": 15, "exemplar_median": 8, "exemplar_min": 0, "exemplar_p25": 0, "exemplar_p75": 10, "feature": "tables", "verdict": "in range"}
 {"draft": 8, "exemplar_max": 11, "exemplar_median": 7, "exemplar_min": 0, "exemplar_p25": 4, "exemplar_p75": 7, "feature": "figures", "verdict": "in range"}
 {"draft": 41, "exemplar_max": 281, "exemplar_median": 68, "exemplar_min": 3, "exemplar_p25": 25, "exemplar_p75": 98, "feature": "equations", "verdict": "in range"}

@@ -1,15 +1,15 @@
 {
  "argv": [],
- "artefact": "output/exhibits/quoter_support_bounds.jsonl",
- "code_fingerprint": "9bc1ebd8b6e0287cc425453a40e842b8db0caf7277f83a836a5fb5d3f742256a",
+ "artefact": "output/exhibits/venue_shape.jsonl",
+ "code_fingerprint": "23bfb2fbec26ff24c9a7b70a0be60ef32dc75bec744bebae6668ae5405cd0942",
  "code_sources": [
-  "scripts/measure_quoter_support.py",
+  "scripts/measure_venue_shape.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T06:38:12+00:00",
+ "created_at": "2026-08-06T07:14:18+00:00",
  "git": {
   "branch": "main",
-  "commit": "20fe3de0f6cd9fc1191e960a0d37451ff0cf19ee",
+  "commit": "a92295dc0f660c80bc73abcad7f775cb2ea69c7a",
   "dirty": true,
   "dirty_tracked_files": [
    "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
@@ -23,11 +23,23 @@
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "docs/research-workflow.md",
+   "output/exhibits/dominance_windows_screened.jsonl",
    "output/exhibits/prose_conventions.jsonl",
    "output/exhibits/prose_outliers.jsonl",
    "output/exhibits/venue_optics.jsonl",
    "output/exhibits/venue_shape.jsonl",
-   "scripts/measure_venue_shape.py"
+   "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
+   "scripts/check_deliverable_conformance.py",
+   "scripts/find_prose_outliers.py",
+   "scripts/lint_prose_shapes.py",
+   "scripts/measure_prose_conventions.py",
+   "scripts/measure_venue_optics.py",
+   "scripts/measure_venue_shape.py",
+   "src/ddvc/paths.py",
+   "tests/test_paper_prose.py",
+   "tests/test_paper_provenance.py"
   ]
  },
  "inputs": [],
@@ -39,6 +51,6 @@
  },
  "notes": null,
  "python": "3.14.5",
- "rows": 9,
- "script": "scripts/measure_quoter_support.py"
+ "rows": 16,
+ "script": "scripts/measure_venue_shape.py"
 }

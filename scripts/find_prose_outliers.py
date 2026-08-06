@@ -42,6 +42,8 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.tables import write_exhibit  # noqa: E402
@@ -130,7 +132,7 @@ def strip_drawing(text: str) -> str:
 def draft_parts() -> tuple[str, str]:
     """(body prose, headings) from the LaTeX sources, markup stripped."""
     body, heads = [], []
-    for d in (ROOT / "paper" / "sections", ROOT / "deck"):
+    for d in (SECTIONS_DIR, ROOT / "deck"):
         if not d.exists():
             continue
         for p in sorted(d.rglob("*.tex")):
@@ -204,7 +206,7 @@ def sense_matches(term: str, min_overlap: float = 0.18) -> bool:
     if not corpus_bag:
         return False
     draft_bag: Counter = Counter()
-    for d in (ROOT / "paper" / "sections",):
+    for d in (SECTIONS_DIR,):
         for p in sorted(d.rglob("*.tex")) if d.exists() else []:
             draft_bag += bag(p.read_text(encoding="utf-8"))
     if not draft_bag:
@@ -231,7 +233,7 @@ def formally_defined(term: str) -> bool:
             rf"\b(?:we\s+)?(?:define|denote|term)\s+(?:the\s+|a\s+)?[^.]{{0,30}}?"
             rf"\b{re.escape(term)}\b",
             rf"\b{re.escape(term)}\b\s*,\s*(?:meaning|namely)\b"]
-    for d in (ROOT / "paper" / "sections",):
+    for d in (SECTIONS_DIR,):
         if not d.exists():
             continue
         for p in sorted(d.rglob("*.tex")):
@@ -255,7 +257,7 @@ def domain_terms() -> set[str]:
     reported as one.
     """
     terms: set[str] = set()
-    for d in (ROOT / "paper" / "sections", ROOT / "deck"):
+    for d in (SECTIONS_DIR, ROOT / "deck"):
         if not d.exists():
             continue
         for p in sorted(d.rglob("*.tex")):

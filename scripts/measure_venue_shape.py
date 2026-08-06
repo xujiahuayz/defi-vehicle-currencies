@@ -136,6 +136,9 @@ def corpus_paragraphs(text: str) -> list[str]:
     return out
 
 
+SECTION_DIR = ROOT / "paper" / "sections"
+
+
 def draft_paragraphs(only: str | None = None) -> list[str]:
     """Prose paragraphs from the LaTeX sources.
 
@@ -144,7 +147,7 @@ def draft_paragraphs(only: str | None = None) -> list[str]:
     inferred for the corpus.
     """
     out = []
-    for p in sorted((ROOT / "paper" / "sections").rglob("*.tex")):
+    for p in sorted(SECTION_DIR.rglob("*.tex")):
         if only and not p.name.startswith(only):
             continue
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -267,7 +270,7 @@ def corpus_headings(texts: list[str]) -> list[str]:
 
 def draft_headings(only: str | None = None) -> list[str]:
     out = []
-    for p in sorted((ROOT / "paper" / "sections").rglob("*.tex")):
+    for p in sorted(SECTION_DIR.rglob("*.tex")):
         if only and not p.name.startswith(only):
             continue
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -379,7 +382,15 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--section", help="measure one section file prefix, e.g. 03")
+    ap.add_argument("--dir", default=None,
+                    help="section directory to measure, e.g. paper/v2/sections")
     args = ap.parse_args()
+    global SECTION_DIR
+    SECTION_DIR = (ROOT / args.dir) if args.dir else (
+        ROOT / "paper" / "sections" if (ROOT / "paper" / "sections").is_dir()
+        else ROOT / "memo" / "sections")
+    if not SECTION_DIR.exists():
+        raise SystemExit(f"no such section directory: {args.dir}")
 
     pdfs = sorted(EXEMPLARS.glob("*.pdf"))
     if not pdfs:

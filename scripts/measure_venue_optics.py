@@ -32,12 +32,14 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.tables import write_exhibit  # noqa: E402
 
 EXEMPLARS = ROOT.parent / "defi-dominant-currency" / "lit" / "jfe-exemplars"
-SECTIONS = ROOT / "paper" / "sections"
+SECTIONS = SECTIONS_DIR
 OUT = ROOT / "output" / "exhibits" / "venue_optics.jsonl"
 
 # Homebrew python carries PyMuPDF; the project venv does not, and adding it for a
@@ -88,7 +90,7 @@ def measure_draft() -> dict:
     """The same features, read off the LaTeX source and the compiled PDF."""
     tex = "\n".join(p.read_text(encoding="utf-8") for p in sorted(SECTIONS.glob("*.tex")))
     body = "\n".join(ln for ln in tex.splitlines() if not ln.lstrip().startswith("%"))
-    pdf = ROOT / "paper" / "main.pdf"
+    pdf = SECTIONS_DIR.parent / "main.pdf"
     pages = 0
     if pdf.exists():
         got = measure_pdf(pdf)

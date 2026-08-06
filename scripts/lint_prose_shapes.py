@@ -13,6 +13,8 @@ from pathlib import Path
 
 ROOT = Path("/Users/dsf-pro16-m3/projects/defi-vehicle-currencies")
 
+SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
+
 SHAPES = [
     ("correction-by-negation",
      r"\b(?:and|,)\s+(?:and\s+)?(?:not|never|no)\s+(?:at|about|a|an|the|its|his|her|their|to|in|on|of|by|from|for|as|with|because|that|what|when|where|whether|it|this|these|those|onto|into)\b",
@@ -41,7 +43,7 @@ SHAPES = [
 
 def sources():
     out = []
-    for d in (ROOT / "paper" / "sections", ROOT / "deck"):
+    for d in (SECTIONS_DIR, ROOT / "deck"):
         out += sorted(d.rglob("*.tex")) if d.exists() else []
     return out
 

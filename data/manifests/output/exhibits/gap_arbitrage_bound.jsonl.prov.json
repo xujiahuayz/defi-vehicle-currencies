@@ -1,23 +1,29 @@
 {
  "argv": [],
  "artefact": "output/exhibits/gap_arbitrage_bound.jsonl",
- "code_fingerprint": "58bd08cc1ce88cb9dffba04e220efc05972d670d9707bba3e380930245d8a099",
+ "code_fingerprint": "1ccde5684927f7c1ec589ba9e171f2dd7c210cf412e79b87da05b7dc40ab3f69",
  "code_sources": [
   "scripts/test_gap_arbitrage_bound.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-05T20:26:05+00:00",
+ "created_at": "2026-08-06T02:57:19+00:00",
  "git": {
   "branch": "main",
-  "commit": "de4d9f0789ded7dda01e599435f912e7f43b39f3",
+  "commit": "15fd3b13138cbd2c8c449c9637d241643191a2b7",
   "dirty": true,
   "dirty_tracked_files": [
    "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
    "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json",
-   "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
-   "output/exhibits/gap_arbitrage_bound.jsonl",
-   "scripts/run_route_cost_panel.py",
-   "uv.lock"
+   "data/manifests/output/exhibits/displacement_asymmetry.jsonl.prov.json",
+   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
+   "data/manifests/output/exhibits/dominance_windows_screened.jsonl.prov.json",
+   "data/manifests/output/exhibits/matched_sample_characterisation.jsonl.prov.json",
+   "data/manifests/output/exhibits/quoter_support_bounds.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl"
   ]
  },
  "inputs": [],

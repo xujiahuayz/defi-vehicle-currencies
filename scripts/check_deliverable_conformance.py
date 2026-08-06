@@ -94,7 +94,8 @@ def main() -> int:
         if not ok:
             failures.append((label, meaning))
 
-    for name, path in (("paper", ROOT / "paper"), ("deck", ROOT / "deck")):
+    doc = ROOT / "paper" if (ROOT / "paper" / "main.tex").exists() else ROOT / "memo"
+    for name, path in ((doc.name, doc), ("deck", ROOT / "deck")):
         ok, detail = build(path)
         print(f"  {'ok  ' if ok else 'FAIL'}  {name} compiles cleanly ({detail})")
         if not ok:

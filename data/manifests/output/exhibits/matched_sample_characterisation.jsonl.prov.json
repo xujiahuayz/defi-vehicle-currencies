@@ -6,13 +6,16 @@
   "scripts/characterise_matched_sample.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-05T23:22:19+00:00",
+ "created_at": "2026-08-06T02:56:24+00:00",
  "git": {
   "branch": "main",
-  "commit": "67b39028db2a21a3546d9cbe0451602e552764be",
+  "commit": "15fd3b13138cbd2c8c449c9637d241643191a2b7",
   "dirty": true,
   "dirty_tracked_files": [
-   "v.lock"
+   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
+   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json",
+   "data/manifests/output/exhibits/dominance_windows_screened.jsonl.prov.json",
+   "data/manifests/output/exhibits/quoter_support_bounds.jsonl.prov.json"
   ]
  },
  "inputs": [],

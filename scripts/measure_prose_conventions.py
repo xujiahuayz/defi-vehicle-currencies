@@ -34,6 +34,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 sys.path.insert(0, str(ROOT / "src"))
 
 from ddvc.tables import write_exhibit  # noqa: E402
@@ -94,7 +96,7 @@ def exemplar_text(path: Path) -> str:
 
 def draft_text() -> str:
     parts = []
-    for d in (ROOT / "paper" / "sections", ROOT / "deck"):
+    for d in (SECTIONS_DIR, ROOT / "deck"):
         for p in sorted(d.rglob("*.tex")) if d.exists() else []:
             body = "\n".join(ln for ln in p.read_text(encoding="utf-8").splitlines()
                              if not ln.lstrip().startswith("%"))
