@@ -104,6 +104,7 @@ def measure_day(day: str, max_triangles: int, min_swaps: int,
             flips = same = 0
             gaps_own: list[float] = []
             deltas: list[float] = []
+            triangle_observations: list[tuple[float, float, int]] = []
             # Direct-pool swaps supply observed event times at which all three marginal
             # prices can be compared. They are opportunity snapshots, not route choices.
             for blk, log_index, own_ts, hour, _p in series[direct]:
@@ -138,17 +139,18 @@ def measure_day(day: str, max_triangles: int, min_swaps: int,
                 deltas.append(abs(m_own - m_hr) * 10_000)
                 # Keep each opportunity snapshot so the flip rate can be conditioned on
                 # its true gap and its distance from the hour boundary.
-                if observations is not None:
-                    observations.append(
-                        (
-                            m_own * 10_000,
-                            m_hr * 10_000,
-                            max(0, vd.hour_end_ts.get(hour, own_ts) - own_ts),
-                        )
+                triangle_observations.append(
+                    (
+                        m_own * 10_000,
+                        m_hr * 10_000,
+                        max(0, vd.hour_end_ts.get(hour, own_ts) - own_ts),
                     )
+                )
             n = flips + same
             if n < min_swaps:
                 continue
+            if observations is not None:
+                observations.extend(triangle_observations)
             gaps_own.sort()
             deltas.sort()
             rows.append({
@@ -197,9 +199,14 @@ def main() -> int:
         return 1
     df = pd.DataFrame(rows)
     n_tot = int(df.n_observations.sum())
+    if n_tot != len(observations):
+        raise RuntimeError(
+            "conditional and per-triangle observation counts disagree: "
+            f"{len(observations):,} != {n_tot:,}"
+        )
     flip = float((df.flip_rate * df.n_observations).sum() / n_tot)
     print(f"\n{len(df)} triangles over {n_tot:,} opportunity snapshots")
-    print(f"  verdict flip rate, own block against hour boundary : {flip:.2%}")
+    print(f"  verdict flip rate, own event against hour boundary : {flip:.2%}")
     print(f"  median triangle gap at own block                   : "
           f"{df.median_gap_bps.median():.1f} bps")
     print(f"  median change in the gap from repricing            : "
@@ -279,7 +286,7 @@ def main() -> int:
     print("it is the fee wedge, which is stable and does not move with the market. So the")
     print("timing threat is a function of trade economics and not a single number, and the")
     print("wedge table above is the result rather than the pooled rate.")
-    print("\nThe test validates itself on the time column. A route executing seconds before")
+    print("\nThe test validates itself on the time column. An observation seconds before")
     print("its hour closes is priced at nearly the state the panel used and cannot flip,")
     print("and the measured rate rises monotonically with the time remaining. A flat")
     print("profile there would have meant a bug in this script instead of a finding.")
