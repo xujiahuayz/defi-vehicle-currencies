@@ -52,6 +52,7 @@ from scipy import stats
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from ddvc.provenance import stamp  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
 
 PANEL = ROOT / "data" / "processed" / "cross_venue_spillover_daily.parquet"
@@ -493,6 +494,8 @@ def make_figure(bins: pd.DataFrame) -> None:
             ax.tick_params(labelsize=7)
     fig.tight_layout()
     fig.savefig(FIG / "cross_venue_spillover.pdf")
+    stamp(FIG / "cross_venue_spillover.pdf", code_sources=[__file__],
+          inputs=[PANEL], notes="event-time bin means, native less stable")
     print(f"\nwrote {(FIG / 'cross_venue_spillover.pdf').relative_to(ROOT)}")
 
 

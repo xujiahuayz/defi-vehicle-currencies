@@ -22,11 +22,19 @@ pair of statistics does the work that neither does alone:
   Reporting either alone cannot tell them apart, so both are reported and the leader is
   named in every period.
 
-Computed on two bases, because they can disagree and the disagreement is informative.
-Volume shares say where trade flows. Centrality shares, from the betweenness panel, say
-which asset is structurally indispensable. An asset can lose flow while remaining the
-node paths must cross, and that gap is what a thick-market externality looks like when it
-outlives the trading that created it.
+Computed on a two-by-two, because a share and a centrality are only comparable when they
+are weighted the same way. An earlier version compared VOLUME shares against TOPOLOGICAL
+betweenness, which is unweighted, so any disagreement between them could have been the
+weighting and not the measure. Java caught it. The grid fixes it: volume share against
+volume-weighted centrality, and count share against count-weighted centrality, so the
+share-versus-centrality contrast is clean within each weighting and the volume-versus-count
+contrast is clean within each measure.
+
+Count matters on its own terms here. The vehicle role is about how often traders route
+through an asset and not how much value they move, and value weighting is where this data
+is most contaminated, since round trips were 25.6% of multi-leg routes by count and 90.5%
+by value. A single large transfer can make an asset look central; a thousand small ones
+mean it is.
 
 Reads   data/unified/YYYYMMDD.parquet
         data/processed/vehicle_centrality.parquet
@@ -55,8 +63,8 @@ OUT_PANEL = ROOT / "data" / "processed" / "vehicle_concentration.parquet"
 OUT_EXHIBIT = ROOT / "output" / "exhibits" / "vehicle_concentration.jsonl"
 
 
-def intermediation_shares(day: str) -> pd.Series:
-    """Volume routed through each interior token on one day."""
+def intermediation_shares(day: str, basis: str = "volume") -> pd.Series:
+    """Volume, or trade count, routed through each interior token on one day."""
     p = UNIFIED / f"{day}.parquet"
     if not p.exists():
         return pd.Series(dtype=float)
@@ -74,9 +82,9 @@ def intermediation_shares(day: str) -> pd.Series:
         tin, tout = g.token_in.tolist(), g.token_out.tolist()
         if tin[0] == tout[-1]:
             continue                    # round trip moved no value
-        usd = float(g.amount_usd.max())
+        w = float(g.amount_usd.max()) if basis == "volume" else 1.0
         for interior in {t for t in tout[:-1] if t}:
-            acc[interior] = acc.get(interior, 0.0) + usd
+            acc[interior] = acc.get(interior, 0.0) + w
     return pd.Series(acc, dtype=float)
 
 
@@ -107,25 +115,29 @@ def main() -> int:
 
     rows = []
     for i, day in enumerate(days, 1):
-        s = intermediation_shares(day)
-        if s.empty:
-            continue
-        c = concentration(s)
-        if not c:
-            continue
-        c.update(day=day, basis="volume")
-        rows.append(c)
+        for b in ("volume", "count"):
+            s = intermediation_shares(day, basis=b)
+            if s.empty:
+                continue
+            c = concentration(s)
+            if c:
+                c.update(day=day, basis=f"share_{b}")
+                rows.append(c)
         if i % 10 == 0 or i == len(days):
             print(f"  {i}/{len(days)} {day}", flush=True)
 
     if CENTRALITY.exists():
         cen = pd.read_parquet(CENTRALITY)
         for day, g in cen.groupby("day"):
-            s = g.set_index("token").betweenness_topological
-            c = concentration(s)
-            if c:
-                c.update(day=str(day), basis="centrality")
-                rows.append(c)
+            for col, lab in (("betweenness_volume", "centrality_volume"),
+                             ("betweenness_count", "centrality_count"),
+                             ("betweenness_topological", "centrality_topological")):
+                if col not in g.columns:
+                    continue
+                c = concentration(g.set_index("token")[col])
+                if c:
+                    c.update(day=str(day), basis=lab)
+                    rows.append(c)
 
     if not rows:
         print("nothing measured")
@@ -135,7 +147,8 @@ def main() -> int:
     panel["year"] = panel.date.dt.year
     write_panel(panel, OUT_PANEL)
 
-    for basis in ("volume", "centrality"):
+    for basis in ("share_volume", "centrality_volume", "share_count",
+                  "centrality_count", "centrality_topological"):
         b = panel[panel.basis == basis]
         if b.empty:
             continue
@@ -150,7 +163,10 @@ def main() -> int:
             print(f"  {yr:>6}{g.hhi.mean():>9.3f}{g.effective_vehicles.mean():>11.2f}"
                   f"{g.cr1.mean():>9.1%}{g.cr3.mean():>9.1%}{lead:>10}{ltype:>14}")
 
-    v = panel[panel.basis == "volume"].sort_values("date")
+    print("\n  READ THE GRID IN MATCHED PAIRS. share_volume against centrality_volume,")
+    print("  and share_count against centrality_count. Comparing a volume share to an")
+    print("  unweighted centrality confounds the weighting with the measure.")
+    v = panel[panel.basis == "share_volume"].sort_values("date")
     if len(v) > 4:
         first, last = v.iloc[:max(3, len(v)//10)], v.iloc[-max(3, len(v)//10):]
         d_hhi = last.hhi.mean() - first.hhi.mean()
