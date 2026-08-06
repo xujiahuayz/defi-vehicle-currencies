@@ -1,36 +1,53 @@
 {
  "argv": [],
  "artefact": "output/exhibits/quoter_support_bounds.jsonl",
- "code_fingerprint": "9bc1ebd8b6e0287cc425453a40e842b8db0caf7277f83a836a5fb5d3f742256a",
+ "code_fingerprint": "37dc75340823b8b252ba4b113b6a0ebb221e077167e622c3f649880b6b1d23de",
  "code_sources": [
   "scripts/measure_quoter_support.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T06:38:12+00:00",
+ "created_at": "2026-08-06T19:24:24+00:00",
  "git": {
   "branch": "main",
-  "commit": "20fe3de0f6cd9fc1191e960a0d37451ff0cf19ee",
-  "dirty": true,
-  "dirty_tracked_files": [
-   "ata/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
-   "data/manifests/output/empirical/route_cost_panel_v2_summary.pkl.prov.json",
-   "data/manifests/output/exhibits/displacement_asymmetry.jsonl.prov.json",
+  "commit": "fffe640a21f5a334965a0662f9cf42bf11d7f509",
+  "dirty": false,
+  "dirty_generated_files": [
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
-   "data/manifests/output/exhibits/dominance_windows_screened.jsonl.prov.json",
    "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
-   "data/manifests/output/exhibits/matched_sample_characterisation.jsonl.prov.json",
-   "data/manifests/output/exhibits/quoter_support_bounds.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
+   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
-   "output/exhibits/prose_conventions.jsonl",
-   "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/venue_optics.jsonl",
-   "output/exhibits/venue_shape.jsonl",
-   "scripts/measure_venue_shape.py"
-  ]
+   "output/exhibits/dominance_specification_curve.jsonl",
+   "output/exhibits/gap_arbitrage_bound.jsonl",
+   "output/exhibits/realised_dominance.jsonl",
+   "output/exhibits/survival_after_dominance.jsonl",
+   "output/exhibits/vehicle_dominance_hdfe.jsonl",
+   "output/tables/bridge_denominator_robustness.pdf",
+   "output/tables/liquidity_robustness.pdf",
+   "output/tables/measurement_robustness.pdf",
+   "output/tables/route_cost_distribution_weighting.pdf",
+   "output/tables/route_cost_distribution_weighting.tex",
+   "output/tables/route_cost_robustness.pdf",
+   "output/tables/route_cost_robustness.tex",
+   "output/tables/stress_robustness.pdf",
+   "output/tables/stress_rotation_decomposition.pdf",
+   "output/tables/v4_match_balance.pdf",
+   "output/tables/v4_robustness.pdf",
+   "output/exhibits/realised_dominance_reweighting.jsonl"
+  ],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
  },
- "inputs": [],
+ "inputs": [
+  {
+   "entries": 13581,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/uniswap_v2",
+   "tree_fingerprint": "2f2fdffc5bd5854c3d6e127c90cc3757e856d396add463c65724b104828f0dab"
+  }
+ ],
  "libraries": {
   "numpy": "2.5.1",
   "pandas": "3.0.3",

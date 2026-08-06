@@ -1,7 +1,5 @@
 {
- "argv": [
-  "--v4-only"
- ],
+ "argv": [],
  "artefact": "output/exhibits/v4_quote_support.jsonl",
  "code_fingerprint": "fe9991c5083227d1c0fcf209e468635d97d60e3c8ab75d446436ffdfe70695d1",
  "code_sources": [
@@ -9,27 +7,23 @@
   "src/ddvc/fetch/raw.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T13:04:17+00:00",
+ "created_at": "2026-08-06T19:26:40+00:00",
  "git": {
   "branch": "main",
-  "commit": "5574788158eb6d500135094a84481ed30d6b6fa2",
+  "commit": "e4b5c241a8e1f0e281f0c60e6faf2496a2c97d54",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/processed/cross_venue_routing_daily.parquet.prov.json",
-   "data/manifests/output/exhibits/cross_venue_routing_series.jsonl.prov.json",
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
    "data/manifests/output/exhibits/gap_arbitrage_bound.jsonl.prov.json",
+   "data/manifests/output/exhibits/quoter_support_bounds.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
    "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/v4_quoter_validation.jsonl.prov.json",
    "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
-   "output/exhibits/cross_venue_routing_series.jsonl",
    "output/exhibits/dominance_specification_curve.jsonl",
    "output/exhibits/gap_arbitrage_bound.jsonl",
    "output/exhibits/realised_dominance.jsonl",
    "output/exhibits/survival_after_dominance.jsonl",
-   "output/exhibits/v4_quoter_validation.jsonl",
    "output/exhibits/vehicle_dominance_hdfe.jsonl",
    "output/tables/bridge_denominator_robustness.pdf",
    "output/tables/liquidity_robustness.pdf",
@@ -42,9 +36,7 @@
    "output/tables/stress_rotation_decomposition.pdf",
    "output/tables/v4_match_balance.pdf",
    "output/tables/v4_robustness.pdf",
-   "data/manifests/output/exhibits/v3_quoter_validation.jsonl.prov.json",
-   "output/exhibits/realised_dominance_reweighting.jsonl",
-   "output/exhibits/v3_quoter_validation.jsonl"
+   "output/exhibits/realised_dominance_reweighting.jsonl"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
