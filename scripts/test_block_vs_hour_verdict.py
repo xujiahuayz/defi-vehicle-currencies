@@ -41,26 +41,60 @@ small trades and does not discharge it for large ones, and the script says which
 Reads   data/raw/thegraph/uniswap_v3/uniswap_v3_swaps_*.jsonl.gz
 Writes  output/exhibits/block_vs_hour_verdict.jsonl        per-triangle rows
         output/exhibits/block_vs_hour_conditional.jsonl    the conditional tables
+        output/exhibits/triangle_gap_maturation.jsonl       fixed-support trends
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
 
 import pandas as pd
 
-from ddvc.analysis.block_timing import PoolView, load_v3_swap_day, oriented
+from ddvc.analysis.block_timing import (
+    PoolView,
+    load_v3_swap_day,
+    oriented,
+    summarise_timing_conditionals,
+    summarise_triangle_maturation,
+)
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.provenance import cache_key
+from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.tables import write_exhibit
 
 V3 = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
 OUT = OUTPUT_DIR / "exhibits" / "block_vs_hour_verdict.jsonl"
 COND_OUT = OUTPUT_DIR / "exhibits" / "block_vs_hour_conditional.jsonl"
+MATURATION_OUT = OUTPUT_DIR / "exhibits" / "triangle_gap_maturation.jsonl"
+CACHE_ROOT = DATA_DIR / "empirical" / "_block_vs_hour_day_cache"
+LOCK = DATA_DIR / "empirical" / ".block_vs_hour_verdict.lock"
+OUTPUT_LOCK = OUTPUT_DIR / "exhibits" / ".block_vs_hour_outputs.lock"
 CODE_SOURCES = [
     "scripts/test_block_vs_hour_verdict.py",
     "src/ddvc/analysis/block_timing.py",
+    "src/ddvc/analysis/regression.py",
 ]
+TRIANGLE_COLUMNS = [
+    "day",
+    "src",
+    "tgt",
+    "vehicle",
+    "direct_pool",
+    "hop1_pool",
+    "hop2_pool",
+    "n_observations",
+    "flip_rate",
+    "median_gap_bps",
+    "median_delta_bps",
+    "p90_delta_bps",
+]
+OBSERVATION_COLUMNS = ["m_own_bps", "m_hr_bps", "secs_to_boundary"]
+
+
 def load_day(day: str):
     """Load one raw V3 day through the shared block-timing owner."""
     return load_v3_swap_day(V3 / f"uniswap_v3_swaps_{day}.jsonl.gz")
@@ -168,45 +202,165 @@ def measure_day(day: str, max_triangles: int, min_swaps: int,
     return rows
 
 
+def _pick_days(days: list[str], count: int) -> list[str]:
+    if count < 1:
+        raise ValueError("--days must be positive")
+    if count >= len(days):
+        return days
+    if count == 1:
+        return [days[len(days) // 2]]
+    indices = [round(index * (len(days) - 1) / (count - 1)) for index in range(count)]
+    return [days[index] for index in dict.fromkeys(indices)]
+
+
+def _cache_paths(cache_dir: Path, day: str) -> tuple[Path, Path, Path]:
+    return (
+        cache_dir / f"{day}.triangles.parquet",
+        cache_dir / f"{day}.observations.parquet",
+        cache_dir / f"{day}.complete.json",
+    )
+
+
+def _cached_day(cache_dir: Path, day: str) -> dict[str, object] | None:
+    triangles, observations, marker = _cache_paths(cache_dir, day)
+    if not (triangles.exists() and observations.exists() and marker.exists()):
+        return None
+    record = json.loads(marker.read_text(encoding="utf-8"))
+    if record.get("day") != day:
+        return None
+    triangle_frame = pd.read_parquet(triangles, columns=["n_observations"])
+    observation_frame = pd.read_parquet(observations, columns=["m_own_bps"])
+    if int(record.get("triangles", -1)) != len(triangle_frame):
+        return None
+    if int(record.get("observations", -1)) != len(observation_frame):
+        return None
+    if int(triangle_frame["n_observations"].sum()) != len(observation_frame):
+        return None
+    return record
+
+
+def _measure_and_cache_day(
+    day: str,
+    max_triangles: int,
+    min_swaps: int,
+    cache_dir_text: str,
+    force: bool,
+) -> dict[str, object]:
+    cache_dir = Path(cache_dir_text)
+    if not force:
+        cached = _cached_day(cache_dir, day)
+        if cached is not None:
+            return {**cached, "cached": True}
+    observations: list[tuple[float, float, int]] = []
+    rows = measure_day(day, max_triangles, min_swaps, observations)
+    triangles = pd.DataFrame(rows, columns=TRIANGLE_COLUMNS)
+    observation_frame = pd.DataFrame(observations, columns=OBSERVATION_COLUMNS)
+    expected = int(triangles["n_observations"].sum()) if not triangles.empty else 0
+    if expected != len(observation_frame):
+        raise RuntimeError(
+            f"{day}: triangle and observation counts disagree: "
+            f"{expected:,} != {len(observation_frame):,}"
+        )
+    triangle_path, observation_path, marker_path = _cache_paths(cache_dir, day)
+    with atomic_output(triangle_path) as temporary:
+        triangles.to_parquet(temporary, index=False)
+    with atomic_output(observation_path) as temporary:
+        observation_frame.to_parquet(temporary, index=False)
+    record: dict[str, object] = {
+        "day": day,
+        "triangles": len(triangles),
+        "observations": len(observation_frame),
+        "weighted_flip_rate": (
+            float(
+                (triangles["flip_rate"] * triangles["n_observations"]).sum()
+                / expected
+            )
+            if expected
+            else None
+        ),
+    }
+    with atomic_output(marker_path) as temporary:
+        temporary.write_text(json.dumps(record, sort_keys=True) + "\n", encoding="utf-8")
+    return {**record, "cached": False}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", type=int, default=6)
     ap.add_argument("--triangles", type=int, default=60, help="triangles per day")
     ap.add_argument("--min-swaps", type=int, default=30)
+    ap.add_argument("--workers", type=int, default=1)
+    ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
+    if args.workers < 1:
+        ap.error("--workers must be positive")
 
     days = sorted(p.name[len("uniswap_v3_swaps_"):-len(".jsonl.gz")]
                   for p in V3.glob("uniswap_v3_swaps_*.jsonl.gz"))
     if not days:
         print(f"no v3 swap files under {V3.relative_to(REPO_ROOT)}")
         return 1
-    step = max(1, len(days) // args.days)
-    picked = days[::step][: args.days]
-    print(f"testing {len(picked)} days: {picked[0]}..{picked[-1]}\n", flush=True)
+    picked = _pick_days(days, args.days)
+    generation = cache_key(CODE_SOURCES, inputs=[V3])
+    cache_dir = (
+        CACHE_ROOT
+        / generation
+        / f"triangles_{args.triangles}_minswaps_{args.min_swaps}"
+    )
+    print(
+        f"testing {len(picked)} days: {picked[0]}..{picked[-1]} "
+        f"with {args.workers} bounded worker(s)\n",
+        flush=True,
+    )
 
-    rows: list[dict] = []
-    observations: list[tuple[float, float, int]] = []
-    for day in picked:
-        got = measure_day(day, args.triangles, args.min_swaps, observations)
-        rows.extend(got)
-        if got:
-            fr = sum(r["flip_rate"] * r["n_observations"] for r in got) / sum(r["n_observations"] for r in got)
-            print(f"  {day}: {len(got):>3} triangles, "
-                  f"{sum(r['n_observations'] for r in got):>7,} observations, flip rate {fr:>6.2%}",
-                  flush=True)
-        else:
-            print(f"  {day}: no triangle cleared the thresholds", flush=True)
+    with exclusive_job(LOCK, job="block-vs-hour verdict"):
+        payloads = [
+            (day, args.triangles, args.min_swaps, str(cache_dir), args.force)
+            for day in picked
+        ]
+        with ProcessPoolExecutor(
+            max_workers=args.workers,
+            max_tasks_per_child=1,
+        ) as executor:
+            futures = {
+                executor.submit(_measure_and_cache_day, *payload): payload[0]
+                for payload in payloads
+            }
+            for future in as_completed(futures):
+                result = future.result()
+                if result["triangles"]:
+                    source = "cached" if result["cached"] else "built"
+                    print(
+                        f"  {result['day']}: {int(result['triangles']):>3} triangles, "
+                        f"{int(result['observations']):>7,} observations, "
+                        f"flip rate {float(result['weighted_flip_rate']):>6.2%} [{source}]",
+                        flush=True,
+                    )
+                else:
+                    print(
+                        f"  {result['day']}: no triangle cleared the thresholds",
+                        flush=True,
+                    )
 
-    if not rows:
+    triangle_frames = [
+        pd.read_parquet(_cache_paths(cache_dir, day)[0]) for day in picked
+    ]
+    df = pd.concat(triangle_frames, ignore_index=True)
+    if df.empty:
         print("\nnothing measurable")
         return 1
-    df = pd.DataFrame(rows)
     n_tot = int(df.n_observations.sum())
-    if n_tot != len(observations):
+    records = [_cached_day(cache_dir, day) for day in picked]
+    if any(record is None for record in records):
+        raise RuntimeError("a selected day lost its complete cache marker before assembly")
+    cached_observations = sum(
+        int(record["observations"]) for record in records if record is not None
+    )
+    if n_tot != cached_observations:
         raise RuntimeError(
             "conditional and per-triangle observation counts disagree: "
-            f"{len(observations):,} != {n_tot:,}"
+            f"{cached_observations:,} != {n_tot:,}"
         )
     flip = float((df.flip_rate * df.n_observations).sum() / n_tot)
     print(f"\n{len(df)} triangles over {n_tot:,} opportunity snapshots")
@@ -223,62 +377,32 @@ def main() -> int:
     # concentrate near zero, where an hour of drift can cross the boundary, then a
     # restriction away from the boundary buys back a usable sample, and the cost of that
     # restriction is the share of opportunity snapshots it discards.
-    if observations:
-        rt = pd.DataFrame(observations, columns=["m_own_bps", "m_hr_bps", "secs_to_boundary"])
-        # The verdict is the sign of m, so a flip is a sign disagreement.
-        rt["flipped"] = ((rt.m_own_bps > 0) != (rt.m_hr_bps > 0)).astype(int)
-        rt["gap_bps"] = rt.m_own_bps.abs()
-        rt = rt.sort_values("gap_bps")
-        print(f"\nflip rate conditional on how far the gap sits from zero")
+    cond = summarise_timing_conditionals(
+        pd.read_parquet(_cache_paths(cache_dir, day)[1]) for day in picked
+    )
+    if not cond.empty:
+        print("\nflip rate conditional on how far the gap sits from zero")
         print(f"  {'gap at own event':<26}{'observations':>14}{'flip rate':>12}")
-        edges = [0, 5, 10, 25, 50, 100, 250, 10 ** 9]
-        labels = ["under 5 bps", "5 to 10 bps", "10 to 25 bps", "25 to 50 bps",
-                  "50 to 100 bps", "100 to 250 bps", "above 250 bps"]
-        for lo, hi, lab in zip(edges[:-1], edges[1:], labels):
-            sel = rt[(rt.gap_bps >= lo) & (rt.gap_bps < hi)]
-            if len(sel) < 50:
-                continue
-            print(f"  {lab:<26}{len(sel):>10,}{sel.flipped.mean():>11.2%}")
-        # A CHECK ON THIS TEST ITSELF. A route executing seconds before its hour closes is
-        # priced at almost the state the panel used, so its verdict cannot flip. If the
-        # flip rate were flat in the time remaining to the boundary, the finding would be
-        # an artefact of this script rather than a property of the pricing scheme.
-        print(f"\n  check: flip rate against time remaining to the hour boundary")
-        for lo, hi, lab in ((0, 60, "under 1 min"), (60, 300, "1 to 5 min"),
-                            (300, 900, "5 to 15 min"), (900, 1800, "15 to 30 min"),
-                            (1800, 3600, "30 to 60 min")):
-            sel = rt[(rt.secs_to_boundary >= lo) & (rt.secs_to_boundary < hi)]
-            if len(sel) < 50:
-                continue
-            print(f"    {lab:<24}{len(sel):>10,}{sel.flipped.mean():>11.2%}")
-
-        # THE SIZE THE VERDICT IS ACTUALLY TAKEN AT. Everything above is the zero-size
-        # limit, where m is a pure arbitrage residual and mean-reverts within blocks. A
-        # real route pays fees, and a two-leg route pays two where the direct pays one, so
-        # the comparison carries a STABLE wedge that does not move with the market. Adding
-        # a constant w to m shifts the boundary away from the region where the residual
-        # oscillates, and the flip rate falls if that is what drives the instability. The
-        # wedge is a fee difference in basis points: 30 is a two-leg 30bp pair against one
-        # 30bp direct pool, and larger values stand in for price impact at larger size.
-        print(f"\n  flip rate once the two-leg route's extra fee is charged")
-        print(f"  {'net fee wedge':<26}{'observations':>14}{'flip rate':>12}"
-              f"{'dominated':>12}")
-        for w in (0, 5, 10, 30, 60, 100):
-            own = rt.m_own_bps + w
-            hr = rt.m_hr_bps + w
-            flips_w = ((own > 0) != (hr > 0)).mean()
-            print(f"  {f'{w} bps':<26}{len(rt):>10,}{flips_w:>11.2%}"
-                  f"{(own < 0).mean():>11.1%}")
+        for row in cond[cond["cut"].eq("gap_at_own_event")].itertuples():
+            print(f"  {row.bucket:<26}{row.observations:>10,}{row.value:>11.2%}")
+        print("\n  check: flip rate against time remaining to the hour boundary")
+        for row in cond[cond["cut"].eq("time_to_hour_boundary")].itertuples():
+            print(f"    {row.bucket:<24}{row.observations:>10,}{row.value:>11.2%}")
+        print("\n  flip rate once the two-leg route's extra fee is charged")
+        print(f"  {'net fee wedge':<26}{'observations':>14}{'flip rate':>12}{'dominated':>12}")
+        for row in cond[cond["cut"].eq("fee_wedge_bps")].itertuples():
+            print(
+                f"  {f'{row.bucket} bps':<26}{row.observations:>10,}"
+                f"{row.value:>11.2%}{row.dominated_share:>11.1%}"
+            )
         print("  'dominated' is the share where the two-leg route wins at event-time state,")
         print("  which is the estimand itself and moves with the wedge as it should.")
-
-        for thresh in (25, 50, 100):
-            keep = rt[rt.gap_bps >= thresh]
-            if len(keep) < 50:
-                continue
-            print(f"  restricting to gaps of at least {thresh:>3} bps keeps "
-                  f"{len(keep) / len(rt):>5.1%} of observations at a "
-                  f"{keep.flipped.mean():.2%} flip rate")
+        for row in cond[cond["cut"].eq("gap_minimum_bps")].itertuples():
+            print(
+                f"  restricting to gaps of at least {int(row.bucket):>3} bps keeps "
+                f"{row.observations / n_tot:>5.1%} of observations at a "
+                f"{row.value:.2%} flip rate"
+            )
 
     print("\nReading. The earlier diagnostic measured a pool's own price against the")
     print("hour-boundary price and found most observations moving more than 25 bps. That is a")
@@ -294,53 +418,54 @@ def main() -> int:
     print("its hour closes is priced at nearly the state the panel used and cannot flip,")
     print("and the measured rate rises monotonically with the time remaining. A flat")
     print("profile there would have meant a bug in this script instead of a finding.")
-    write_exhibit(
-        df,
-        OUT,
-        code_sources=CODE_SOURCES,
-        inputs=[V3],
-        notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
-    )
-    print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
-
-    # PERSIST THE CONDITIONAL TABLES, not only the per-triangle rows. An audit of the
-    # paper found the fee-wedge sweep, the gap-conditional profile and the time-to-boundary
-    # check were quotable from this script's stdout and checkable against nothing, which
-    # makes them assertions with a citation attached. They carry the section's argument, so
-    # they belong on disk beside the rows they are computed from.
-    if observations:
-        cond: list[dict] = []
-        for lo, hi, lab in ((0, 5, "under 5 bps"), (5, 10, "5 to 10 bps"),
-                            (10, 25, "10 to 25 bps"), (25, 50, "25 to 50 bps"),
-                            (50, 100, "50 to 100 bps"), (100, 250, "100 to 250 bps"),
-                            (250, 10 ** 9, "above 250 bps")):
-            sel = rt[(rt.gap_bps >= lo) & (rt.gap_bps < hi)]
-            if len(sel) >= 50:
-                cond.append({"cut": "gap_at_own_event", "bucket": lab,
-                             "observations": int(len(sel)), "value": float(sel.flipped.mean())})
-        for lo, hi, lab in ((0, 60, "under 1 min"), (60, 300, "1 to 5 min"),
-                            (300, 900, "5 to 15 min"), (900, 1800, "15 to 30 min"),
-                            (1800, 3600, "30 to 60 min")):
-            sel = rt[(rt.secs_to_boundary >= lo) & (rt.secs_to_boundary < hi)]
-            if len(sel) >= 50:
-                cond.append({"cut": "time_to_hour_boundary", "bucket": lab,
-                             "observations": int(len(sel)), "value": float(sel.flipped.mean())})
-        for wedge in (0, 5, 10, 30, 60, 100):
-            own, hr = rt.m_own_bps + wedge, rt.m_hr_bps + wedge
-            cond.append({"cut": "fee_wedge_bps", "bucket": str(wedge),
-                         "observations": int(len(rt)),
-                         "value": float(((own > 0) != (hr > 0)).mean()),
-                         "dominated_share": float((own < 0).mean())})
-        cond.append({"cut": "pooled", "bucket": "all", "observations": int(len(rt)),
-                     "value": float(rt.flipped.mean())})
+    maturation = summarise_triangle_maturation(df)
+    if not maturation.empty:
+        print("\nwithin-triangle annual compression in the marginal price gap")
+        fixed = maturation[maturation["panel"].eq("fixed_support")]
+        for row in fixed.itertuples():
+            print(
+                f"  {row.identity}, >= {int(row.minimum_dates)} dates: "
+                f"{row.annual_compression:>6.1%}/year "
+                f"(p={row.p:.3f}; {int(row.triangle_days):,} triangle-days)"
+            )
+        annual = maturation[maturation["panel"].eq("annual_descriptive")]
+        for row in annual.itertuples():
+            print(
+                f"  {int(row.year)}: median {row.median_gap_bps:.1f} bps; "
+                f"snapshot-weighted mean {row.snapshot_weighted_mean_gap_bps:.1f} bps"
+            )
+    # Keep the three exhibits from one invocation together. Cache population and output
+    # assembly have separate locks so a long rebuild does not block a completed cache from
+    # being inspected, while two differently sized runs cannot interleave their exhibits.
+    with exclusive_job(OUTPUT_LOCK, job="block-vs-hour output assembly"):
         write_exhibit(
-            pd.DataFrame(cond),
-            COND_OUT,
+            df,
+            OUT,
             code_sources=CODE_SOURCES,
             inputs=[V3],
             notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
         )
+        if not cond.empty:
+            write_exhibit(
+                cond,
+                COND_OUT,
+                code_sources=CODE_SOURCES,
+                inputs=[V3],
+                notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
+            )
+        if not maturation.empty:
+            write_exhibit(
+                maturation,
+                MATURATION_OUT,
+                code_sources=CODE_SOURCES,
+                inputs=[V3],
+                notes="V3 strict transaction-state triangle gaps; fixed-support time trends",
+            )
+    print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
+    if not cond.empty:
         print(f"wrote {COND_OUT.relative_to(REPO_ROOT)}")
+    if not maturation.empty:
+        print(f"wrote {MATURATION_OUT.relative_to(REPO_ROOT)}")
     return 0
 
 

@@ -7,9 +7,14 @@ import gzip
 import json
 import math
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+
+from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 from ddvc.pricing.v3pools import resolve_decimals
 
 Q96 = 1 << 96
@@ -188,3 +193,189 @@ def oriented_human(
         token_in,
         token_out,
     )
+
+
+def summarise_triangle_maturation(
+    triangles: pd.DataFrame,
+    *,
+    recurrence_thresholds: tuple[int, ...] = (2, 3, 4, 6, 10),
+) -> pd.DataFrame:
+    """Estimate within-triangle annual compression in marginal price gaps."""
+    required = {
+        "day",
+        "src",
+        "tgt",
+        "vehicle",
+        "direct_pool",
+        "hop1_pool",
+        "hop2_pool",
+        "median_gap_bps",
+        "n_observations",
+    }
+    missing = required - set(triangles.columns)
+    if missing:
+        raise ValueError(f"triangle maturation is missing columns: {sorted(missing)}")
+    frame = triangles.copy()
+    frame["date"] = pd.to_datetime(frame["day"], format="%Y%m%d")
+    frame = frame[
+        np.isfinite(frame["median_gap_bps"])
+        & frame["median_gap_bps"].gt(0)
+        & frame["n_observations"].gt(0)
+    ].copy()
+    if frame.empty:
+        return pd.DataFrame()
+    frame["year"] = (
+        (frame["date"] - frame["date"].min()).dt.total_seconds()
+        / (365.25 * 24 * 60 * 60)
+    )
+    frame["log_gap"] = np.log(frame["median_gap_bps"])
+    frame["economic_triangle"] = (
+        frame["src"].astype(str)
+        + "|"
+        + frame["tgt"].astype(str)
+        + "|"
+        + frame["vehicle"].astype(str)
+    )
+    frame["exact_pool_triangle"] = (
+        frame["direct_pool"].astype(str)
+        + "|"
+        + frame["hop1_pool"].astype(str)
+        + "|"
+        + frame["hop2_pool"].astype(str)
+    )
+    rows: list[dict[str, object]] = []
+    for identity in ("economic_triangle", "exact_pool_triangle"):
+        recurrence = frame.groupby(identity)["date"].transform("nunique")
+        for minimum_dates in recurrence_thresholds:
+            sample = frame[recurrence.ge(minimum_dates)].copy()
+            if sample.empty:
+                continue
+            y = absorb_fixed_effects(sample["log_gap"], sample[identity])
+            x = absorb_fixed_effects(sample["year"], sample[identity])
+            fit = ols_clustered(
+                y,
+                x,
+                sample["date"],
+                absorbed_groups=(sample[identity],),
+                min_observations=30,
+            )
+            beta = float(fit.beta[1])
+            rows.append(
+                {
+                    "panel": "fixed_support",
+                    "identity": identity,
+                    "minimum_dates": minimum_dates,
+                    "triangle_days": fit.n_observations,
+                    "triangles": int(sample[identity].nunique()),
+                    "dates": fit.n_clusters,
+                    "absorbed_degrees_of_freedom": fit.absorbed_degrees_of_freedom,
+                    "log_gap_time_beta": beta,
+                    "annual_compression": (
+                        float(1 - np.exp(beta)) if np.isfinite(beta) else np.nan
+                    ),
+                    "standard_error": float(fit.standard_errors[1]),
+                    "t": float(fit.t_statistics[1]),
+                    "p": float(fit.p_values[1]),
+                }
+            )
+    for year, sample in frame.groupby(frame["date"].dt.year):
+        rows.append(
+            {
+                "panel": "annual_descriptive",
+                "identity": "all_sampled_triangles",
+                "minimum_dates": np.nan,
+                "triangle_days": len(sample),
+                "triangles": int(sample["economic_triangle"].nunique()),
+                "dates": int(sample["date"].nunique()),
+                "year": int(year),
+                "median_gap_bps": float(sample["median_gap_bps"].median()),
+                "snapshot_weighted_mean_gap_bps": float(
+                    np.average(
+                        sample["median_gap_bps"],
+                        weights=sample["n_observations"],
+                    )
+                ),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def summarise_timing_conditionals(
+    observation_frames: Iterable[pd.DataFrame],
+) -> pd.DataFrame:
+    """Aggregate timing diagnostics from an iterable of daily observation frames."""
+    gap_buckets = (
+        (0, 5, "under 5 bps"),
+        (5, 10, "5 to 10 bps"),
+        (10, 25, "10 to 25 bps"),
+        (25, 50, "25 to 50 bps"),
+        (50, 100, "50 to 100 bps"),
+        (100, 250, "100 to 250 bps"),
+        (250, 10**9, "above 250 bps"),
+    )
+    time_buckets = (
+        (0, 60, "under 1 min"),
+        (60, 300, "1 to 5 min"),
+        (300, 900, "5 to 15 min"),
+        (900, 1800, "15 to 30 min"),
+        (1800, 3600, "30 to 60 min"),
+    )
+    totals: dict[tuple[str, str], dict[str, int]] = defaultdict(
+        lambda: {"observations": 0, "flips": 0, "dominated": 0}
+    )
+    for raw in observation_frames:
+        frame = raw.copy()
+        if frame.empty:
+            continue
+        required = {"m_own_bps", "m_hr_bps", "secs_to_boundary"}
+        missing = required - set(frame.columns)
+        if missing:
+            raise ValueError(f"timing observations are missing columns: {sorted(missing)}")
+        frame["flipped"] = (frame["m_own_bps"].gt(0) != frame["m_hr_bps"].gt(0)).astype(int)
+        frame["gap_bps"] = frame["m_own_bps"].abs()
+
+        def add(
+            cut: str,
+            bucket: str,
+            selected: pd.DataFrame,
+            *,
+            dominated: pd.Series | None = None,
+        ) -> None:
+            record = totals[(cut, bucket)]
+            record["observations"] += len(selected)
+            record["flips"] += int(selected["flipped"].sum())
+            if dominated is not None:
+                record["dominated"] += int(dominated.sum())
+
+        for lower, upper, label in gap_buckets:
+            add("gap_at_own_event", label, frame[frame["gap_bps"].between(lower, upper, inclusive="left")])
+        for lower, upper, label in time_buckets:
+            add(
+                "time_to_hour_boundary",
+                label,
+                frame[frame["secs_to_boundary"].between(lower, upper, inclusive="left")],
+            )
+        for wedge in (0, 5, 10, 30, 60, 100):
+            own = frame["m_own_bps"] + wedge
+            hour = frame["m_hr_bps"] + wedge
+            selected = frame.assign(flipped=(own.gt(0) != hour.gt(0)).astype(int))
+            add("fee_wedge_bps", str(wedge), selected, dominated=own.lt(0))
+        add("pooled", "all", frame)
+        for threshold in (25, 50, 100):
+            add("gap_minimum_bps", str(threshold), frame[frame["gap_bps"].ge(threshold)])
+
+    rows: list[dict[str, object]] = []
+    for (cut, bucket), record in totals.items():
+        observations = record["observations"]
+        if observations < 50 and cut in {"gap_at_own_event", "time_to_hour_boundary"}:
+            continue
+        row: dict[str, object] = {
+            "cut": cut,
+            "bucket": bucket,
+            "observations": observations,
+            "value": record["flips"] / observations if observations else np.nan,
+        }
+        if cut == "fee_wedge_bps":
+            row["dominated_share"] = record["dominated"] / observations if observations else np.nan
+        rows.append(row)
+    return pd.DataFrame(rows)

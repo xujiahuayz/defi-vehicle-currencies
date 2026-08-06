@@ -9,8 +9,17 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.analysis.block_timing import PoolView, SwapEvent, V3DayState, load_v3_day, oriented_human
+from ddvc.analysis.block_timing import (
+    PoolView,
+    SwapEvent,
+    V3DayState,
+    load_v3_day,
+    oriented_human,
+    summarise_timing_conditionals,
+    summarise_triangle_maturation,
+)
 from scripts.validate_realised_route_timing import route_timing_observation, summarise_validation
+from scripts.test_block_vs_hour_verdict import _cached_day, _pick_days
 
 
 class PoolViewTests(unittest.TestCase):
@@ -293,6 +302,89 @@ class PoolViewTests(unittest.TestCase):
             float(summary.loc["all", "state_shift_absolute_over_30bps_share"]),
             2 / 3,
         )
+
+    def test_triangle_maturation_recovers_within_triangle_time_trend(self) -> None:
+        rows = []
+        dates = pd.date_range("2000-01-01", periods=20, freq="365D")
+        for triangle, intercept, missing in (("a", 4.0, set()), ("b", 5.0, {1})):
+            for index, date in enumerate(dates):
+                if index in missing:
+                    continue
+                elapsed_years = (date - dates[0]).days / 365.25
+                rows.append(
+                    {
+                        "day": date.strftime("%Y%m%d"),
+                        "src": triangle,
+                        "tgt": "t",
+                        "vehicle": "k",
+                        "direct_pool": f"{triangle}-d",
+                        "hop1_pool": f"{triangle}-1",
+                        "hop2_pool": f"{triangle}-2",
+                        "median_gap_bps": math.exp(intercept - 0.2 * elapsed_years),
+                        "n_observations": 100,
+                    }
+                )
+        summary = summarise_triangle_maturation(
+            pd.DataFrame(rows), recurrence_thresholds=(2,)
+        )
+        result = summary[
+            summary["panel"].eq("fixed_support")
+            & summary["identity"].eq("economic_triangle")
+        ].iloc[0]
+        self.assertAlmostEqual(float(result["log_gap_time_beta"]), -0.2, places=3)
+        self.assertAlmostEqual(float(result["annual_compression"]), 1 - math.exp(-0.2), places=3)
+        self.assertEqual(int(result["absorbed_degrees_of_freedom"]), 1)
+
+    def test_timing_conditionals_stream_daily_frames(self) -> None:
+        first = pd.DataFrame(
+            {
+                "m_own_bps": [1.0] * 30,
+                "m_hr_bps": [-1.0] * 30,
+                "secs_to_boundary": [30] * 30,
+            }
+        )
+        second = pd.DataFrame(
+            {
+                "m_own_bps": [1.0] * 30,
+                "m_hr_bps": [2.0] * 30,
+                "secs_to_boundary": [30] * 30,
+            }
+        )
+        summary = summarise_timing_conditionals(iter((first, second))).set_index(
+            ["cut", "bucket"]
+        )
+        self.assertEqual(int(summary.loc[("pooled", "all"), "observations"]), 60)
+        self.assertAlmostEqual(float(summary.loc[("pooled", "all"), "value"]), 0.5)
+        self.assertAlmostEqual(
+            float(summary.loc[("gap_at_own_event", "under 5 bps"), "value"]),
+            0.5,
+        )
+
+    def test_even_day_selection_includes_both_sample_endpoints(self) -> None:
+        days = [f"202001{day:02d}" for day in range(1, 11)]
+        picked = _pick_days(days, 4)
+        self.assertEqual(len(picked), 4)
+        self.assertEqual(picked[0], days[0])
+        self.assertEqual(picked[-1], days[-1])
+
+    def test_daily_cache_requires_a_consistent_completion_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            cache = Path(temporary)
+            day = "20200101"
+            pd.DataFrame({"n_observations": [2]}).to_parquet(
+                cache / f"{day}.triangles.parquet", index=False
+            )
+            pd.DataFrame({"m_own_bps": [1.0, 2.0]}).to_parquet(
+                cache / f"{day}.observations.parquet", index=False
+            )
+            marker = cache / f"{day}.complete.json"
+            marker.write_text(
+                json.dumps({"day": day, "triangles": 1, "observations": 2}),
+                encoding="utf-8",
+            )
+            self.assertIsNotNone(_cached_day(cache, day))
+            marker.unlink()
+            self.assertIsNone(_cached_day(cache, day))
 
 
 if __name__ == "__main__":
