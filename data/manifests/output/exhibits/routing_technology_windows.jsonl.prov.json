@@ -3,7 +3,7 @@
   "--workers",
   "8"
  ],
- "artefact": "data/processed/cross_venue_routing_daily.parquet",
+ "artefact": "output/exhibits/routing_technology_windows.jsonl",
  "code_fingerprint": "7be521e061bffb0b90e2e9b98ba9cb50d47803ca0255ead8f55edd076018d807",
  "code_sources": [
   "scripts/build_cross_venue_routing_series.py",
@@ -18,6 +18,9 @@
   "commit": "3234394950e938967e89f49cd4128c08010bf09f",
   "dirty": false,
   "dirty_generated_files": [
+   "data/manifests/data/processed/cross_venue_routing_daily.parquet.prov.json",
+   "data/manifests/output/exhibits/cross_venue_routing_inference.jsonl.prov.json",
+   "data/manifests/output/exhibits/cross_venue_routing_series.jsonl.prov.json",
    "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
    "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
@@ -45,11 +48,10 @@
  },
  "inputs": [
   {
-   "entries": 2277,
+   "bytes": 759157,
    "exists": true,
-   "kind": "directory",
-   "path": "data/unified",
-   "tree_fingerprint": "b121431024bb92afbfddf54f0bb8b44dc4b7872485689f7394e0aa8930a82c0b"
+   "path": "data/processed/cross_venue_routing_daily.parquet",
+   "sha256": "8a8b872a1565661c701f9e7a38cd3cb65b8a239f10e8c5ea9c579d743bbfa0c7"
   }
  ],
  "libraries": {
@@ -58,8 +60,8 @@
   "pyarrow": "25.0.0",
   "scipy": "1.18.0"
  },
- "notes": "clean single/coherent routes only; round trips retained as diagnostics",
+ "notes": "descriptive symmetric market-wide windows excluding each public routing release date; not an aggregator treatment effect",
  "python": "3.14.5",
- "rows": 2277,
+ "rows": 12,
  "script": "scripts/build_cross_venue_routing_series.py"
 }
