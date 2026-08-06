@@ -17,8 +17,11 @@ import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from scipy import stats
 
+from ddvc.analysis.regression import ols_hac
 from ddvc.asset_types import TYPES, classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.realised import realised_routes
@@ -27,9 +30,12 @@ from ddvc.tables import write_exhibit, write_panel
 UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "intermediation_by_type_daily.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "intermediation_by_type.jsonl"
+OUT_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
 MAX_WORKERS = 8
+HAC_LAG = 30
 CODE_SOURCES = [
     "scripts/build_intermediation_by_type.py",
+    "src/ddvc/analysis/regression.py",
     "src/ddvc/realised.py",
     "src/ddvc/asset_types.py",
 ]
@@ -129,6 +135,80 @@ def annual_composition(panel: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def integration_rival_tests(
+    panel: pd.DataFrame,
+    *,
+    baseline_year: int = 2024,
+    comparison_year: int = 2026,
+    hac_lag: int = HAC_LAG,
+) -> pd.DataFrame:
+    """Estimate the stable share change within each integration regime."""
+    data = panel.copy()
+    data["year"] = pd.to_datetime(data["date"]).dt.year
+    data = data[data["year"].between(baseline_year, comparison_year)]
+    years = sorted(int(value) for value in data["year"].unique())
+    if baseline_year not in years or comparison_year not in years:
+        raise ValueError("integration rival requires both comparison endpoint years")
+    comparison_column = 1 + [year for year in years if year != baseline_year].index(
+        comparison_year
+    )
+    rows: list[dict[str, object]] = []
+    for weighting, column_prefix in (("episode", "cnt_"), ("value", "usd_")):
+        for scope in ("all", *INTEGRATION_SCOPES):
+            scope_prefix = "" if scope == "all" else f"{scope}_"
+            stable = pd.to_numeric(
+                data[f"{column_prefix}{scope_prefix}stable"], errors="coerce"
+            )
+            native = pd.to_numeric(
+                data[f"{column_prefix}{scope_prefix}native"], errors="coerce"
+            )
+            denominator = stable + native
+            sample = data[["year"]].copy()
+            sample["share"] = stable / denominator.where(denominator.gt(0))
+            sample = sample.dropna(subset=["share"])
+            design = np.column_stack(
+                [
+                    np.ones(len(sample)),
+                    *[
+                        sample["year"].eq(year).to_numpy(dtype=float)
+                        for year in years
+                        if year != baseline_year
+                    ],
+                ]
+            )
+            beta, covariance = ols_hac(
+                sample["share"].to_numpy(dtype=float), design, hac_lag
+            )
+            standard_error = float(np.sqrt(max(covariance[comparison_column, comparison_column], 0)))
+            change = float(beta[comparison_column])
+            degrees_freedom = max(len(sample) - design.shape[1], 1)
+            t_statistic = change / standard_error if standard_error > 0 else np.nan
+            p_value = (
+                float(2 * stats.t.sf(abs(t_statistic), degrees_freedom))
+                if np.isfinite(t_statistic)
+                else np.nan
+            )
+            means = sample.groupby("year")["share"].mean()
+            rows.append(
+                {
+                    "integration_scope": scope,
+                    "weighting": weighting,
+                    "baseline_year": baseline_year,
+                    "comparison_year": comparison_year,
+                    "baseline_daily_mean": float(means.loc[baseline_year]),
+                    "comparison_daily_mean": float(means.loc[comparison_year]),
+                    "change": change,
+                    "hac_standard_error": standard_error,
+                    "t_statistic": t_statistic,
+                    "p_value": p_value,
+                    "days": int(len(sample)),
+                    "hac_lag_days": hac_lag,
+                    "share_denominator": "native_plus_stable",
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -170,6 +250,7 @@ def main() -> int:
             panel["episodes"].gt(0)
         )
     annual = annual_composition(panel)
+    rival = integration_rival_tests(panel)
     write_panel(
         panel,
         OUT_PARQUET,
@@ -183,6 +264,13 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=[OUT_PARQUET],
     )
+    write_exhibit(
+        rival,
+        OUT_RIVAL,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+        notes="equal-weighted daily stable share within native plus stable; Newey-West Bartlett covariance",
+    )
 
     print(
         f"\n{len(panel):,} days, {int(panel.routes_intermediated.sum()):,} "
@@ -195,7 +283,24 @@ def main() -> int:
         ].pivot(index="year", columns="asset_type", values="episode_share")
         print(f"\n{scope}: native and stable episode shares")
         print(view.round(3).to_string())
-    print(f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)} and {OUT_EXHIBIT.relative_to(REPO_ROOT)}")
+    print("\n2024 to 2026 stable-share changes, daily HAC inference")
+    print(
+        rival[
+            [
+                "integration_scope",
+                "weighting",
+                "baseline_daily_mean",
+                "comparison_daily_mean",
+                "change",
+                "hac_standard_error",
+                "p_value",
+            ]
+        ].round(4).to_string(index=False)
+    )
+    print(
+        f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)}, "
+        f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}, and {OUT_RIVAL.relative_to(REPO_ROOT)}"
+    )
     return 0
 
 

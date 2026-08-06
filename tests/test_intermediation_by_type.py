@@ -7,7 +7,12 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 
 from ddvc.asset_types import STABLE, WETH
-from scripts.build_intermediation_by_type import annual_composition, bounded_workers, one_day
+from scripts.build_intermediation_by_type import (
+    annual_composition,
+    bounded_workers,
+    integration_rival_tests,
+    one_day,
+)
 
 USDC = next(address for address, symbol in STABLE.items() if symbol == "USDC")
 
@@ -67,6 +72,33 @@ class IntermediationByTypeTests(unittest.TestCase):
         self.assertEqual(bounded_workers(0), 1)
         self.assertEqual(bounded_workers(4), 4)
         self.assertEqual(bounded_workers(100), 8)
+
+    def test_integration_rival_keeps_count_and_value_results_separate(self) -> None:
+        rows = []
+        for year, stable_count, stable_value in (
+            (2024, 20.0, 40.0),
+            (2025, 40.0, 45.0),
+            (2026, 60.0, 42.0),
+        ):
+            for day in range(4):
+                row: dict[str, object] = {"date": f"{year}-01-{day + 1:02d}"}
+                for scope in ("", "single_venue_", "cross_venue_"):
+                    row[f"cnt_{scope}stable"] = stable_count + day
+                    row[f"cnt_{scope}native"] = 100.0 - stable_count
+                    row[f"usd_{scope}stable"] = stable_value + day
+                    row[f"usd_{scope}native"] = 100.0 - stable_value
+                rows.append(row)
+        result = integration_rival_tests(pd.DataFrame(rows), hac_lag=1)
+        self.assertEqual(set(result["weighting"]), {"episode", "value"})
+        single_episode = result[
+            result["integration_scope"].eq("single_venue")
+            & result["weighting"].eq("episode")
+        ].iloc[0]
+        single_value = result[
+            result["integration_scope"].eq("single_venue")
+            & result["weighting"].eq("value")
+        ].iloc[0]
+        self.assertGreater(single_episode["change"], single_value["change"])
 
 
 if __name__ == "__main__":

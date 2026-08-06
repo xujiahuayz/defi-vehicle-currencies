@@ -49,6 +49,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from ddvc.analysis.regression import ols_hac
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -99,23 +100,6 @@ RI_GAP = 200        # placebo dates must sit this far from every real event
 
 
 # ----------------------------------------------------------------- estimation
-
-
-def ols_hac(y: np.ndarray, x: np.ndarray, lag: int) -> tuple[np.ndarray, np.ndarray]:
-    """OLS with a Newey-West Bartlett covariance. Returns (beta, cov)."""
-    n, k = x.shape
-    xtx_inv = np.linalg.pinv(x.T @ x)
-    beta = xtx_inv @ (x.T @ y)
-    u = y - x @ beta
-    s = (x * u[:, None])
-    meat = s.T @ s
-    for j in range(1, min(lag, n - 1) + 1):
-        w = 1.0 - j / (lag + 1.0)
-        g = s[j:].T @ s[:-j]
-        meat += w * (g + g.T)
-    scale = n / max(n - k, 1)
-    cov = xtx_inv @ meat @ xtx_inv * scale
-    return beta, cov
 
 
 def break_spec(d: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
