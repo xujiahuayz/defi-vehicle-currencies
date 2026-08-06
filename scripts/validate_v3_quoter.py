@@ -28,19 +28,16 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
-import sys
-from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-RAW = ROOT / "data" / "raw" / "thegraph" / "uniswap_v3"
-OUT = ROOT / "output" / "exhibits" / "v3_quoter_validation.jsonl"
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.pricing.tick_state import active_liquidity, apply_tick_change, iter_pretrade_states
+from ddvc.pricing.v3quote import quote_exact_input
+from ddvc.tables import write_exhibit
 
-from ddvc.pricing.v3quote import quote_exact_input  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
-from ddvc.provenance import stamp  # noqa: E402
+RAW = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
+OUT = OUTPUT_DIR / "exhibits" / "v3_quoter_validation.jsonl"
 
 # Deep pools with unambiguous fee tiers. Token ORDER is deliberately NOT recorded
 # here: V3 orders token0/token1 by address, so hardcoding it invites exactly the
@@ -62,17 +59,20 @@ DECIMALS = {
 }
 
 
-def _days(start: str, end: str) -> list[str]:
-    return sorted(p.name[len("uniswap_v3_swaps_"):-len(".jsonl.gz")]
-                  for p in RAW.glob("uniswap_v3_swaps_*.jsonl.gz")
-                  if start <= p.name[len("uniswap_v3_swaps_"):-len(".jsonl.gz")] <= end)
+def _liquidity_days_before(target_day: str) -> list[str]:
+    days = {
+        path.name.rsplit("_", 1)[-1][:-len(".jsonl.gz")]
+        for kind in ("mints", "burns")
+        for path in RAW.glob(f"uniswap_v3_{kind}_*.jsonl.gz")
+    }
+    return sorted(day for day in days if day < target_day)
 
 
-def accumulate_ticks(target_day: str, pools: set[str]) -> dict[str, dict[int, int]]:
-    """Net liquidity per initialized tick, from inception through target_day."""
+def accumulate_ticks_before(target_day: str, pools: set[str]) -> dict[str, dict[int, int]]:
+    """Net liquidity per initialized tick strictly before ``target_day``."""
     net: dict[str, dict[int, int]] = {p: {} for p in pools}
     files = 0
-    for day in _days("00000000", target_day):
+    for day in _liquidity_days_before(target_day):
         for kind, sign in (("mints", 1), ("burns", -1)):
             p = RAW / f"uniswap_v3_{kind}_{day}.jsonl.gz"
             if not p.exists():
@@ -84,19 +84,26 @@ def accumulate_ticks(target_day: str, pools: set[str]) -> dict[str, dict[int, in
                     pid = ((r.get("pool") or {}).get("id") or "").lower()
                     if pid not in net:
                         continue
-                    amt = int(r.get("amount") or 0)
-                    if amt == 0:
-                        continue
-                    lo, hi = int(r["tickLower"]), int(r["tickUpper"])
-                    d = net[pid]
-                    d[lo] = d.get(lo, 0) + sign * amt
-                    d[hi] = d.get(hi, 0) - sign * amt
-    print(f"  accumulated {files} liquidity-event files through {target_day}", flush=True)
+                    apply_tick_change(net[pid], r, sign=sign)
+    print(f"  accumulated {files} liquidity-event files before {target_day}", flush=True)
     return net
 
 
-def active_liquidity(ticks: dict[int, int], tick: int) -> int:
-    return sum(v for t, v in ticks.items() if t <= tick)
+def day_liquidity_changes(
+    target_day: str, pools: set[str]
+) -> dict[str, list[tuple[int, dict]]]:
+    changes: dict[str, list[tuple[int, dict]]] = {pool: [] for pool in pools}
+    for kind, sign in (("mints", 1), ("burns", -1)):
+        path = RAW / f"uniswap_v3_{kind}_{target_day}.jsonl.gz"
+        if not path.exists():
+            continue
+        with gzip.open(path, "rt") as fh:
+            for line in fh:
+                row = json.loads(line)
+                pool = ((row.get("pool") or {}).get("id") or "").lower()
+                if pool in changes:
+                    changes[pool].append((sign, row))
+    return changes
 
 
 def main() -> int:
@@ -106,7 +113,8 @@ def main() -> int:
     ap.add_argument("--max-per-pool", type=int, default=400)
     args = ap.parse_args()
 
-    net = accumulate_ticks(args.day, set(POOLS))
+    net = accumulate_ticks_before(args.day, set(POOLS))
+    changes = day_liquidity_changes(args.day, set(POOLS))
     for pid, (label, *_rest) in POOLS.items():
         print(f"  {label}: {len(net[pid]):,} initialized ticks", flush=True)
 
@@ -122,7 +130,6 @@ def main() -> int:
     for pid, (label, fee) in POOLS.items():
         s = sorted(swaps[pid], key=lambda r: (int(r["transaction"]["blockNumber"]),
                                               int(r.get("logIndex") or 0)))
-        ticks = net[pid]
         if not s:
             print(f"  {label}: no swaps on this day")
             continue
@@ -135,7 +142,7 @@ def main() -> int:
         print(f"  {label}: token0={s[0]['pool']['token0']['symbol']}({d0}) "
               f"token1={s[0]['pool']['token1']['symbol']}({d1})")
         used = 0
-        for prev, cur in zip(s, s[1:]):
+        for prev, cur, ticks in iter_pretrade_states(s, changes[pid], net[pid]):
             if used >= args.max_per_pool:
                 break
             sqrt_before = int(prev.get("sqrtPriceX96") or 0)
@@ -172,7 +179,18 @@ def main() -> int:
         return 1
     df["abs_err"] = df.err_pct.abs()
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    write_exhibit(df, OUT)
+    notes = f"strict transaction-order replay; median |err| {df.abs_err.median():.6f}% over {len(df)} realised swaps"
+    write_exhibit(
+        df,
+        OUT,
+        code_sources=[
+            "src/ddvc/pricing/v3quote.py",
+            "src/ddvc/pricing/v3pools.py",
+            "src/ddvc/pricing/tick_state.py",
+        ],
+        inputs=[RAW],
+        notes=notes,
+    )
 
     print(f"\n{len(df):,} realised swaps re-quoted offline\n")
     print("BY DIRECTION (a tick-traversal fault is directional, so never pool these):")
@@ -184,14 +202,9 @@ def main() -> int:
     for (zfo, cr), g in df.assign(cr=df.crossed > 0).groupby(["zero_for_one", "cr"]):
         d = "0->1" if zfo else "1->0"
         print(f"  {d}  crossed={str(cr):<5} n={len(g):>5}  median signed err {g.err_pct.median():>+9.4f}%")
-    stamp(OUT, code_sources=["src/ddvc/pricing/v3quote.py",
-                             "src/ddvc/pricing/v3pools.py",
-                             "scripts/validate_v3_quoter.py"],
-          rows=len(df),
-          notes=f"median |err| {df.abs_err.median():.6f}% over {len(df)} realised swaps")
-    print(f"\nwrote {OUT.relative_to(ROOT)}")
+    print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

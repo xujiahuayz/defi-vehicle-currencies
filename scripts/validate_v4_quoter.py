@@ -32,13 +32,13 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
-from collections.abc import Iterator
 
 import pandas as pd
 
-from ddvc.fetch.raw import block_value, timestamp_value, v4_pool_quote_supported
+from ddvc.fetch.raw import v4_pool_quote_supported
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.pricing.v3quote import quote_exact_input
+from ddvc.pricing.tick_state import apply_tick_change, iter_pretrade_states
 from ddvc.tables import write_exhibit
 
 RAW = DATA_DIR / "raw" / "thegraph" / "uniswap_v4"
@@ -48,26 +48,6 @@ OUT = OUTPUT_DIR / "exhibits" / "v4_quoter_validation.jsonl"
 def days() -> list[str]:
     return sorted(p.name[len("uniswap_v4_swaps_"):-len(".jsonl.gz")]
                   for p in RAW.glob("uniswap_v4_swaps_*.jsonl.gz"))
-
-
-def apply_liquidity_change(ticks: dict[int, int], row: dict) -> None:
-    """Apply one signed V4 liquidity modification to its boundary ticks."""
-    try:
-        amount = int(row.get("amount") or 0)
-        lower, upper = int(row["tickLower"]), int(row["tickUpper"])
-    except (TypeError, ValueError, KeyError):
-        return
-    if amount == 0:
-        return
-    ticks[lower] = ticks.get(lower, 0) + amount
-    ticks[upper] = ticks.get(upper, 0) - amount
-
-
-def event_order(row: dict) -> tuple[int, int]:
-    return (
-        int(block_value(row) or timestamp_value(row) or 0),
-        int(row.get("logIndex") or 0),
-    )
 
 
 def accumulate_ticks_before(day: str, pools: set[str]) -> dict[str, dict[int, int]]:
@@ -88,13 +68,15 @@ def accumulate_ticks_before(day: str, pools: set[str]) -> dict[str, dict[int, in
                 pid = ((r.get("pool") or {}).get("id") or "").lower()
                 if pid not in net:
                     continue
-                apply_liquidity_change(net[pid], r)
+                apply_tick_change(net[pid], r)
     print(f"  read {seen} liquidity-event files before {day}", flush=True)
     return net
 
 
-def day_liquidity_changes(day: str, pools: set[str]) -> dict[str, list[dict]]:
-    changes: dict[str, list[dict]] = {pool: [] for pool in pools}
+def day_liquidity_changes(
+    day: str, pools: set[str]
+) -> dict[str, list[tuple[int, dict]]]:
+    changes: dict[str, list[tuple[int, dict]]] = {pool: [] for pool in pools}
     path = RAW / f"uniswap_v4_modify_liquidities_{day}.jsonl.gz"
     if not path.exists():
         return changes
@@ -103,29 +85,8 @@ def day_liquidity_changes(day: str, pools: set[str]) -> dict[str, list[dict]]:
             row = json.loads(line)
             pool = ((row.get("pool") or {}).get("id") or "").lower()
             if pool in changes:
-                changes[pool].append(row)
+                changes[pool].append((1, row))
     return changes
-
-
-def iter_pretrade_states(
-    swaps: list[dict],
-    changes: list[dict],
-    initial_ticks: dict[int, int],
-) -> Iterator[tuple[dict, dict, dict[int, int]]]:
-    """Yield consecutive swaps with the tick map immediately before the latter."""
-    stream = [(*event_order(row), 0, index, row) for index, row in enumerate(changes)]
-    stream.extend(
-        (*event_order(row), 1, index, row) for index, row in enumerate(swaps)
-    )
-    ticks = dict(initial_ticks)
-    previous_swap: dict | None = None
-    for _block, _log_index, kind, _sequence, row in sorted(stream):
-        if kind == 0:
-            apply_liquidity_change(ticks, row)
-            continue
-        if previous_swap is not None:
-            yield previous_swap, row, dict(ticks)
-        previous_swap = row
 
 
 def resolve_validation_days(

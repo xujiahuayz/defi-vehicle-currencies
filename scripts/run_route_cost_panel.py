@@ -65,6 +65,7 @@ from ddvc.pricing.weighted import quote_error_at as _weighted_error
 from ddvc.pricing.weighted import quote_exact_input as _weighted_quote
 from ddvc.pricing.weighted import rebuild_pre_trade_balances
 from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick, quote_exact_input
+from ddvc.pricing.tick_state import active_liquidity, apply_tick_change
 from ddvc.pricing.v3pools import (
     derive_fee_tier,
     resolve_decimals,
@@ -156,6 +157,7 @@ OUT = OUTPUT_DIR / "empirical"
 QUOTE_SOURCES = [
     "src/ddvc/pricing/v3quote.py",
     "src/ddvc/pricing/v3pools.py",
+    "src/ddvc/pricing/tick_state.py",
     "src/ddvc/pricing/v2quote.py",
     # Curve and Balancer price legs too, so a change to either changes quotes. Omitting
     # them left the fingerprint dishonest: tightening the Curve calibration gate would
@@ -495,21 +497,8 @@ def _apply_tick_liquidity_events(
                 pool = str((rec.get("pool") or {}).get("id", "")).lower()
                 if not pool:
                     continue
-                try:
-                    amt = int(rec.get("amount") or 0)
-                    lower = int(rec.get("tickLower"))
-                    upper = int(rec.get("tickUpper"))
-                except (TypeError, ValueError):
-                    continue
-                if amt == 0:
-                    continue
                 ticks = tick_net_by_pool.setdefault(pool, {})
-                ticks[lower] = ticks.get(lower, 0) + sign * amt
-                ticks[upper] = ticks.get(upper, 0) - sign * amt
-                if ticks[lower] == 0:
-                    del ticks[lower]
-                if ticks.get(upper) == 0:
-                    del ticks[upper]
+                apply_tick_change(ticks, rec, sign=sign)
 
 
 def _absorb_swap_state(venue: str, rec: dict,
@@ -672,20 +661,8 @@ def apply_hour_events(venue: str, bucket: dict[str, list],
         pool = str((rec.get("pool") or {}).get("id", "")).lower()
         if not pool:
             continue
-        try:
-            amt = int(rec.get("amount") or 0)
-            lower, upper = int(rec["tickLower"]), int(rec["tickUpper"])
-        except (TypeError, ValueError, KeyError):
-            continue
-        if amt == 0:
-            continue
         ticks = tick_net_by_pool.setdefault(pool, {})
-        ticks[lower] = ticks.get(lower, 0) + sign * amt
-        ticks[upper] = ticks.get(upper, 0) - sign * amt
-        if ticks[lower] == 0:
-            del ticks[lower]
-        if ticks.get(upper) == 0:
-            del ticks[upper]
+        apply_tick_change(ticks, rec, sign=sign)
     for rec in bucket["swaps"]:
         _absorb_swap_state(venue, rec, state_by_pool)
 
@@ -708,10 +685,6 @@ def advance_tick_venues(
         _update_tick_swap_state(venue, stamp, state_by_venue.setdefault(venue, {}))
 
 
-def _active_liquidity(ticks: dict[int, int], current_tick: int) -> int:
-    return sum(v for t, v in ticks.items() if t <= current_tick)
-
-
 def _load_tick_pools_from_state(
     venue: str,
     state_by_pool: dict[str, V3PoolState],
@@ -726,7 +699,7 @@ def _load_tick_pools_from_state(
         ticks = tick_net_by_pool.get(pool_id)
         if not ticks:
             continue
-        liq = _active_liquidity(ticks, st.tick)
+        liq = active_liquidity(ticks, st.tick)
         if liq <= 0:
             continue
         sorted_ticks = tuple(sorted(ticks))
