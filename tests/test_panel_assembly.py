@@ -12,6 +12,21 @@ from scripts import assemble_route_cost_panel as route_assembly
 
 
 class PanelAssemblyTests(unittest.TestCase):
+    def test_skips_zero_column_empty_shard_before_nonempty_data(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            empty = root / "20200101.parquet"
+            populated = root / "20200102.parquet"
+            output = root / "panel.parquet"
+            pq.write_table(pa.table({}), empty)
+            pq.write_table(pa.table({"day": [2], "vehicle": ["USDC"]}), populated)
+
+            result = assemble_parquet_shards([empty, populated], output)
+
+            self.assertEqual(result.rows, 1)
+            self.assertEqual(result.shards, 1)
+            self.assertEqual(pq.read_table(output).to_pydict(), {"day": [2], "vehicle": ["USDC"]})
+
     def test_unifies_all_shards_when_the_first_column_is_null_typed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
