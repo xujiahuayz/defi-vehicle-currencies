@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 
 import pandas as pd
 
 from ddvc.fetch.sources import DEX_SOURCES
+from scripts.process import build_route_gas_units as route_gas
 from scripts.process.build_route_gas_units import (
     candidate_transactions,
     deterministic_cell_sample,
     parse_receipt,
+    sample_day,
 )
 
 USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
@@ -211,8 +215,38 @@ class RouteGasUnitTests(unittest.TestCase):
         assert row is not None
         self.assertEqual(row["tx_hash"], "0xabc")
         self.assertEqual(row["gas_used"], 1_000)
-        self.assertEqual(row["router"], "0xrouter")
+        self.assertEqual(row["tx_to"], "0xrouter")
+        self.assertEqual(row["tx_from"], "0xsender")
         self.assertEqual(row["effective_gas_price_wei"], 100)
+
+    def test_day_candidate_sample_is_resumable_and_schema_checked(self) -> None:
+        original = route_gas.UNIFIED
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            unified = root / "unified"
+            cache = root / "cache"
+            unified.mkdir()
+            pd.DataFrame(
+                [
+                    leg(
+                        "direct",
+                        0,
+                        "a",
+                        "b",
+                        "source",
+                        "sink",
+                        route_class="single",
+                    )
+                ]
+            ).to_parquet(unified / "20220115.parquet", index=False)
+            route_gas.UNIFIED = unified
+            try:
+                first = sample_day("20220115", 2, str(cache))
+                second = sample_day("20220115", 2, str(cache))
+            finally:
+                route_gas.UNIFIED = original
+        self.assertEqual((first[0], len(first[1]), first[2]), (1, 1, False))
+        self.assertEqual((second[0], len(second[1]), second[2]), (1, 1, True))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Receipt-measured gas units by route topology, venue sequence and router.
+"""Receipt-measured gas units by route topology, venue sequence and executor.
 
 The paper currently carries three pooled constants for one-, two- and three-leg
 routes, but the script that produced them did not survive. That is not reproducible
@@ -11,8 +11,9 @@ transaction, and reports the distribution of total gas used.
 Receipt gas is transaction-level. Restricting to one reconstructed component
 removes visible route mixtures, but a router transaction may still perform token
 approvals, transfers or bookkeeping outside the AMM logs. Medians and interquartile
-ranges are therefore primary, and the raw sampled panel retains the router address
-so later matching can compare like with like.
+ranges are therefore primary. The receipt's `to` field is retained as the top-level
+transaction callee. It is an executor address, not evidence about who authored the
+route, and it enters support diagnostics before any like-for-like comparison.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/route_gas_units.parquet
@@ -34,12 +35,15 @@ from ddvc.asset_types import canonical_token, classify
 from ddvc.calendar import nearest_monthly_days
 from ddvc.fetch.sources import DEX_SOURCES
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.provenance import cache_key
 from ddvc.quoter import rpc_post
-from ddvc.runtime import atomic_output
+from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
 CACHE = DATA_DIR / "interim" / "route_gas_receipts"
+CANDIDATE_CACHE_ROOT = DATA_DIR / "empirical" / "_route_gas_candidate_cache"
+LOCK = DATA_DIR / "empirical" / ".route_gas_units.lock"
 OUT_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "route_gas_units_summary.jsonl"
 SUPPORTED_VENUES = frozenset(DEX_SOURCES)
@@ -64,6 +68,19 @@ CODE_SOURCES = [
 ]
 SAMPLE_CELLS = ["year", "legs", "venue_sequence", "gas_vehicle"]
 SUMMARY_CELLS = [*SAMPLE_CELLS, "mid_type"]
+CANDIDATE_COLUMNS = [
+    "date",
+    "day",
+    "year",
+    "tx_hash",
+    "legs",
+    "venue_sequence",
+    "mid",
+    "mid_symbol",
+    "mid_type",
+    "gas_vehicle",
+    "route_notional_usd",
+]
 
 
 def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
@@ -155,7 +172,7 @@ def candidate_transactions(frame: pd.DataFrame, day: str) -> pd.DataFrame:
                 "route_notional_usd": route_notional,
             }
         )
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=CANDIDATE_COLUMNS)
 
 
 def deterministic_cell_sample(
@@ -179,14 +196,59 @@ def deterministic_cell_sample(
     return out.drop(columns=["_rank"]).reset_index(drop=True)
 
 
-def sample_day(day: str, per_cell: int) -> tuple[int, pd.DataFrame]:
-    """Read one day and retain its exact contribution to the global cell top-k."""
+def _cached_day_sample(
+    cache_dir: Path, day: str, per_cell: int
+) -> tuple[int, pd.DataFrame] | None:
+    panel_path = cache_dir / f"{day}.parquet"
+    marker_path = cache_dir / f"{day}.complete.json"
+    if not (panel_path.exists() and marker_path.exists()):
+        return None
+    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    if marker.get("day") != day or marker.get("per_cell") != per_cell:
+        return None
+    panel = pd.read_parquet(panel_path)
+    if list(panel.columns) != CANDIDATE_COLUMNS:
+        return None
+    if len(panel) != marker.get("sample_rows"):
+        return None
+    if panel["tx_hash"].duplicated().any():
+        return None
+    if not panel.empty and panel.groupby(SAMPLE_CELLS).size().max() > per_cell:
+        return None
+    candidate_count = marker.get("candidate_rows")
+    if not isinstance(candidate_count, int) or candidate_count < len(panel):
+        return None
+    return candidate_count, panel
+
+
+def sample_day(
+    day: str, per_cell: int, cache_dir_text: str
+) -> tuple[int, pd.DataFrame, bool]:
+    """Read and cache one day's exact contribution to the global cell top-k."""
+    cache_dir = Path(cache_dir_text)
+    cached = _cached_day_sample(cache_dir, day, per_cell)
+    if cached is not None:
+        return *cached, True
     path = UNIFIED / f"{day}.parquet"
     if not path.exists():
-        return 0, pd.DataFrame()
+        return 0, pd.DataFrame(columns=CANDIDATE_COLUMNS), False
     frame = pd.read_parquet(path, columns=REQUIRED_COLUMNS)
     candidates = candidate_transactions(frame, day)
-    return len(candidates), deterministic_cell_sample(candidates, per_cell)
+    sample = deterministic_cell_sample(candidates, per_cell)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    panel_path = cache_dir / f"{day}.parquet"
+    marker_path = cache_dir / f"{day}.complete.json"
+    with atomic_output(panel_path) as temporary:
+        sample.to_parquet(temporary, index=False)
+    marker = {
+        "candidate_rows": len(candidates),
+        "day": day,
+        "per_cell": per_cell,
+        "sample_rows": len(sample),
+    }
+    with atomic_output(marker_path) as temporary:
+        temporary.write_text(json.dumps(marker, sort_keys=True) + "\n")
+    return len(candidates), sample, False
 
 
 def parse_receipt(tx_hash: str, response: object) -> dict | None:
@@ -203,8 +265,8 @@ def parse_receipt(tx_hash: str, response: object) -> dict | None:
         "tx_hash": tx_hash.lower(),
         "gas_used": gas_used,
         "status": status,
-        "router": str(result.get("to") or "").lower() or None,
-        "sender": str(result.get("from") or "").lower() or None,
+        "tx_to": str(result.get("to") or "").lower() or None,
+        "tx_from": str(result.get("from") or "").lower() or None,
         "effective_gas_price_wei": (
             int(result["effectiveGasPrice"], 16)
             if result.get("effectiveGasPrice")
@@ -222,6 +284,7 @@ def fetch_receipt(tx_hash: str) -> dict:
             row.get("tx_hash") == tx_hash.lower()
             and isinstance(row.get("gas_used"), int)
             and row["gas_used"] > 0
+            and "tx_to" in row
         ):
             return row
     response = rpc_post(
@@ -244,7 +307,7 @@ def fetch_receipt(tx_hash: str) -> dict:
     return row
 
 
-def main() -> int:
+def _main_unlocked() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -263,21 +326,34 @@ def main() -> int:
     if args.workers < 1:
         parser.error("--workers must be positive")
 
-    days = args.days or nearest_monthly_days(
-        path.stem for path in UNIFIED.glob("[0-9]" * 8 + ".parquet")
+    days = list(
+        dict.fromkeys(
+            args.days
+            or nearest_monthly_days(
+                path.stem for path in UNIFIED.glob("[0-9]" * 8 + ".parquet")
+            )
+        )
     )
+    generation = cache_key(CODE_SOURCES, inputs=[UNIFIED])
+    candidate_cache = CANDIDATE_CACHE_ROOT / generation / f"per_cell_{args.per_cell}"
     parts = []
     candidate_count = 0
-    with ProcessPoolExecutor(max_workers=args.workers) as pool:
-        futures = [pool.submit(sample_day, day, args.per_cell) for day in days]
+    cache_hits = 0
+    with ProcessPoolExecutor(max_workers=args.workers, max_tasks_per_child=4) as pool:
+        futures = [
+            pool.submit(sample_day, day, args.per_cell, str(candidate_cache))
+            for day in days
+        ]
         for index, future in enumerate(as_completed(futures), 1):
-            count, sample_part = future.result()
+            count, sample_part, cached = future.result()
             candidate_count += count
+            cache_hits += int(cached)
             if not sample_part.empty:
                 parts.append(sample_part)
             if index % 12 == 0 or index == len(days):
                 print(
-                    f"  candidate days {index}/{len(days)} | rows {candidate_count:,}",
+                    f"  candidate days {index}/{len(days)} | rows {candidate_count:,} "
+                    f"| cached {cache_hits}",
                     flush=True,
                 )
     if not parts:
@@ -337,7 +413,7 @@ def main() -> int:
     summary = panel.groupby(SUMMARY_CELLS, as_index=False).agg(
         mid_symbol=("mid_symbol", "first"),
         transactions=("gas_used", "size"),
-        routers=("router", "nunique"),
+        executors=("tx_to", "nunique"),
         median_gas_used=("gas_used", "median"),
         p25_gas_used=("gas_used", lambda values: values.quantile(0.25)),
         p75_gas_used=("gas_used", lambda values: values.quantile(0.75)),
@@ -355,6 +431,11 @@ def main() -> int:
         f"and {OUT_EXHIBIT.relative_to(REPO_ROOT)} with {len(summary):,} cells"
     )
     return 0
+
+
+def main() -> int:
+    with exclusive_job(LOCK, job="route gas units"):
+        return _main_unlocked()
 
 
 if __name__ == "__main__":
