@@ -39,6 +39,7 @@ Bias directions:
 Reads   data/raw/thegraph/{uniswap_v2,sushiswap_v2}/*_{swaps,hourly_reserves}_*.gz
 Writes  data/processed/counterfactual_dominance.parquet
         output/exhibits/counterfactual_dominance_summary.jsonl
+        output/exhibits/counterfactual_dominance_support.jsonl
 """
 
 from __future__ import annotations
@@ -74,6 +75,7 @@ RAW = DATA_DIR / "raw" / "thegraph"
 UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "counterfactual_dominance.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_summary.jsonl"
+OUT_SUPPORT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_support.jsonl"
 GAS_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
 CODE_SOURCES = [
     "scripts/build_counterfactual_dominance.py",
@@ -481,6 +483,80 @@ def add_topology_gas_adjustment(
     return out
 
 
+def classify_state_support(frame: pd.DataFrame) -> pd.Series:
+    """Label whether three pre-trade states are adjacent, bridged, or replayed."""
+    gap_columns = [
+        "hop1_prior_state_gap_hours",
+        "hop2_prior_state_gap_hours",
+        "direct_prior_state_gap_hours",
+    ]
+    liquidity_columns = [
+        "hop1_liquidity_events_replayed",
+        "hop2_liquidity_events_replayed",
+        "direct_liquidity_events_replayed",
+    ]
+    missing = sorted(set(gap_columns + liquidity_columns) - set(frame.columns))
+    if missing:
+        raise ValueError("state-support classification is missing " + ", ".join(missing))
+    liquidity_replayed = frame[liquidity_columns].gt(0).any(axis=1)
+    adjacent = frame[gap_columns].eq(1).all(axis=1) & ~liquidity_replayed
+    labels = pd.Series("bridged_no_liquidity", index=frame.index, dtype="object")
+    labels.loc[adjacent] = "adjacent_no_liquidity"
+    labels.loc[liquidity_replayed] = "liquidity_replayed"
+    return labels
+
+
+def state_support_summary(frame: pd.DataFrame) -> pd.DataFrame:
+    """Annual and pooled dominance diagnostics by reserve-state support class."""
+    data = frame.copy()
+    data["year"] = pd.to_datetime(data["date"]).dt.year
+    rows: list[dict[str, object]] = []
+
+    def append(scope: str, year: int | None, support: str, group: pd.DataFrame) -> None:
+        coherent = group[group["valuation_coherent_20pct"]]
+        gas = group[group["all_in_direct_advantage_bps"].notna()]
+        dominated = group[group["dominated_gross"]]
+        rows.append(
+            {
+                "scope": scope,
+                "year": year,
+                "state_support": support,
+                "routes": len(group),
+                "pct_dominated_gross": 100 * float(group["dominated_gross"].mean()),
+                "valuation_coherent_20pct_routes": len(coherent),
+                "pct_dominated_valuation_coherent_20pct": (
+                    100 * float(coherent["dominated_gross"].mean())
+                    if len(coherent)
+                    else None
+                ),
+                "gas_supported_routes": len(gas),
+                "pct_dominated_topology_gas_adjusted": (
+                    100 * float(gas["all_in_direct_advantage_bps"].gt(0).mean())
+                    if len(gas)
+                    else None
+                ),
+                "dominated_routes": len(dominated),
+                "pct_dominated_outside_realised_venue_set": (
+                    100
+                    * float(
+                        dominated["best_direct_outside_realised_venue_set"].mean()
+                    )
+                    if len(dominated)
+                    else None
+                ),
+                "median_price_free_output_improvement_bps": float(
+                    group["direct_output_improvement_bps"].median()
+                ),
+            }
+        )
+
+    for support, group in data.groupby("state_support", sort=True):
+        append("pooled", None, str(support), group)
+    for (year, support), group in data.groupby(["year", "state_support"], sort=True):
+        append("annual", int(year), str(support), group)
+    return pd.DataFrame(rows)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -525,6 +601,7 @@ def main() -> int:
     df["dominated_valuation_coherent_20pct"] = df["dominated_gross"].where(
         df["valuation_coherent_20pct"]
     )
+    df["state_support"] = classify_state_support(df)
     write_panel(
         df,
         OUT_PARQUET,
@@ -621,9 +698,31 @@ def main() -> int:
         inputs=[OUT_PARQUET],
         notes="annual exact-size V2-family direct counterfactual; positive price-free output improvement means the direct route returns more; input-normalized gas adjustment uses historical prices and measured route-topology medians and is not yet venue-specific",
     )
+    support = state_support_summary(df)
+    write_exhibit(
+        support,
+        OUT_SUPPORT,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PARQUET],
+        notes="reserve-state support split; adjacent means all three prior observations are one hour back with no liquidity event, bridged advances a more distant observed state through all intervening raw events, and replayed includes at least one mint or burn",
+    )
+    print("\nby reserve-state support:")
     print(
-        f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)} and "
-        f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}"
+        support.loc[
+            support["scope"].eq("pooled"),
+            [
+                "state_support",
+                "routes",
+                "pct_dominated_gross",
+                "pct_dominated_valuation_coherent_20pct",
+                "pct_dominated_topology_gas_adjusted",
+            ],
+        ].round(2).to_string(index=False)
+    )
+    print(
+        f"\nwrote {OUT_PARQUET.relative_to(REPO_ROOT)}, "
+        f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}, and "
+        f"{OUT_SUPPORT.relative_to(REPO_ROOT)}"
     )
     print("\nBIAS DIRECTIONS: v2-family venue coverage understates the best direct "
           "alternative, and omitting gas favours the two-hop vehicle route. Both "

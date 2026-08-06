@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.build_counterfactual_dominance import counterfactual_days
+import pandas as pd
+
+from scripts.build_counterfactual_dominance import (
+    classify_state_support,
+    counterfactual_days,
+)
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
@@ -15,6 +20,26 @@ class CounterfactualDominanceTests(unittest.TestCase):
         self.assertEqual(
             counterfactual_days([], explicit=["20220115", "20210115", "20220115"], limit=2),
             ["20220115", "20210115"],
+        )
+
+    def test_state_support_distinguishes_adjacent_bridged_and_liquidity_replay(self) -> None:
+        frame = pd.DataFrame(
+            {
+                "hop1_prior_state_gap_hours": [1, 2, 1],
+                "hop2_prior_state_gap_hours": [1, 1, 1],
+                "direct_prior_state_gap_hours": [1, 1, 1],
+                "hop1_liquidity_events_replayed": [0, 0, 0],
+                "hop2_liquidity_events_replayed": [0, 0, 1],
+                "direct_liquidity_events_replayed": [0, 0, 0],
+            }
+        )
+        self.assertEqual(
+            classify_state_support(frame).tolist(),
+            [
+                "adjacent_no_liquidity",
+                "bridged_no_liquidity",
+                "liquidity_replayed",
+            ],
         )
 
 
