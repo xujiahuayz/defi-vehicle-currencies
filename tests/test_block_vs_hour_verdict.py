@@ -161,8 +161,20 @@ class PoolViewTests(unittest.TestCase):
         )
         legs = pd.DataFrame(
             [
-                {"log_index": 3, "token_in": "a", "token_out": "k"},
-                {"log_index": 5, "token_in": "k", "token_out": "b"},
+                {
+                    "log_index": 3,
+                    "token_in": "a",
+                    "token_out": "k",
+                    "amount_in": 100.0,
+                    "amount_out": 99.0,
+                },
+                {
+                    "log_index": 5,
+                    "token_in": "k",
+                    "token_out": "b",
+                    "amount_in": 99.1,
+                    "amount_out": 98.0,
+                },
             ]
         )
         observation = route_timing_observation(
@@ -173,10 +185,16 @@ class PoolViewTests(unittest.TestCase):
         )
         self.assertIsNotNone(observation)
         assert observation is not None
-        self.assertAlmostEqual(float(observation["own_state_shortfall"]), 0.02)
+        realised_rate = 0.99 * (98.0 / 99.1)
+        self.assertAlmostEqual(
+            float(observation["own_state_shortfall"]), 1.0 - realised_rate
+        )
+        self.assertAlmostEqual(
+            float(observation["intermediate_conservation_gap"]), 0.1 / 99.1
+        )
         self.assertAlmostEqual(
             float(observation["hour_state_shortfall"]),
-            1.0 - 0.98 / (0.99 * 0.99),
+            1.0 - realised_rate / (0.99 * 0.99),
         )
 
 

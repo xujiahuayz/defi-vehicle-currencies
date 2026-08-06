@@ -7,10 +7,11 @@ each leg, takes both pools' last observed state strictly before the transaction'
 first V3 swap log, and compares the realised output rate with the marginal rate
 through those same pools. It repeats the comparison at the hour-end state.
 
-The own-state shortfall includes pool fees and finite-size price impact because
-the realised rate does and the marginal benchmark does not. A negative value is
-a contract failure unless some unobserved state transition or route
-reconstruction issue remains. The difference between own-state and hour-state
+The own-state shortfall compares the product of the two legs' realised effective
+rates with the product of their pre-transaction marginal rates. It includes pool
+fees and finite-size price impact because the realised rates do and the marginal
+benchmark does not. A negative value is a contract failure unless some unobserved
+state transition remains. The difference between own-state and hour-state
 shortfalls measures the timing contamination in the hourly diagnostic.
 
 This validates executed-route timing and amount orientation. It does not reprice
@@ -125,11 +126,20 @@ def route_timing_observation(
         own_parts.append(own_oriented)
         hour_parts.append(hour_oriented)
         pools.append(pool_id)
+    leg_amounts = ordered_legs[["amount_in", "amount_out"]].astype(float)
+    if not np.isfinite(leg_amounts.to_numpy()).all() or not leg_amounts.gt(0).all().all():
+        return None
+    actual_log_rate = float(
+        np.log(leg_amounts["amount_out"] / leg_amounts["amount_in"]).sum()
+    )
     amount_in = float(route["realised_amount_in"])
     amount_out = float(route["realised_amount_out"])
-    if amount_in <= 0 or amount_out <= 0:
-        return None
-    actual_log_rate = math.log(amount_out / amount_in)
+    endpoint_output_rate = amount_out / amount_in if amount_in > 0 and amount_out > 0 else math.nan
+    intermediate_out = float(leg_amounts.iloc[0]["amount_out"])
+    intermediate_in = float(leg_amounts.iloc[1]["amount_in"])
+    intermediate_conservation_gap = abs(intermediate_out - intermediate_in) / max(
+        intermediate_out, intermediate_in
+    )
     own_log_rate = sum(own_parts)
     hour_log_rate = sum(hour_parts)
     return {
@@ -145,6 +155,8 @@ def route_timing_observation(
         "hop1_pool": pools[0],
         "hop2_pool": pools[1],
         "actual_output_rate": math.exp(actual_log_rate),
+        "endpoint_output_rate": endpoint_output_rate,
+        "intermediate_conservation_gap": intermediate_conservation_gap,
         "own_marginal_output_rate": math.exp(own_log_rate),
         "hour_marginal_output_rate": math.exp(hour_log_rate),
         "own_state_shortfall": 1.0 - math.exp(actual_log_rate - own_log_rate),
@@ -255,7 +267,7 @@ def main() -> int:
         OUT,
         code_sources=CODE_SOURCES,
         inputs=inputs,
-        notes="actual two-leg V3 routes; strict state before transaction first swap log",
+        notes="two-leg V3 realised effective rates; strict state before transaction first swap log",
     )
     print(f"wrote {OUT.relative_to(OUTPUT_DIR.parent)}")
     return 0
