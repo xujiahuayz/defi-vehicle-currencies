@@ -195,6 +195,7 @@ def choice_regime_rival_tests(
                         baseline_year=baseline_year,
                         comparison_year=comparison_year,
                         hac_lag=hac_lag,
+                        dates=sample["date"],
                     )
                     rows.append(
                         {

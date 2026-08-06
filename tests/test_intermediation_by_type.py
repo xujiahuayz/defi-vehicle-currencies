@@ -159,12 +159,16 @@ class IntermediationByTypeTests(unittest.TestCase):
         single_episode = result[
             result["integration_scope"].eq("single_venue")
             & result["weighting"].eq("episode")
+            & result["transformation"].eq("share_level")
         ].iloc[0]
         single_value = result[
             result["integration_scope"].eq("single_venue")
             & result["weighting"].eq("value")
+            & result["transformation"].eq("share_level")
         ].iloc[0]
         self.assertGreater(single_episode["change"], single_value["change"])
+        self.assertEqual(set(result["transformation"]), {"share_level", "log_odds"})
+        self.assertTrue(result["p_value_holm"].notna().all())
 
     def test_integration_rival_windows_preserve_both_transition_phases(self) -> None:
         rows = []
@@ -182,7 +186,7 @@ class IntermediationByTypeTests(unittest.TestCase):
             set(zip(result["baseline_year"], result["comparison_year"])),
             {(2023, 2024), (2024, 2026)},
         )
-        self.assertEqual(len(result), 12)
+        self.assertEqual(len(result), 24)
 
     def test_complexity_rival_keeps_combined_route_regimes_separate(self) -> None:
         rows = []

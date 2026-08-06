@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "locked_at": "2026-08-07",
+  "lock_hash": "4203fb8c4576f9b16b47eb6aa87d53ec93f00efc3ff85a1be289616b907776f2",
+  "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
+  "global_rules": {
+    "asset_identity": "canonical contract address; symbols are labels only",
+    "route_unit": "one directed economic input-to-output path keyed by transaction hash and component id",
+    "intermediary_unit": "one non-endpoint asset occurrence on a topology-valid clean-leg route",
+    "primary_vehicle_choice_unit": "one exact two-leg intermediary route, which has one vehicle and one vote",
+    "round_trips": "canonical endpoint round trips are excluded from economic-route numerators and denominators",
+    "primary_weighting": "episode count",
+    "value_weighting": "secondary, with raw, within-2x, and within-20-percent support reported separately",
+    "primary_value_support": "within-20-percent input-output valuation coherence",
+    "inference": "two-sided 95 percent intervals; HAC lag 30 days for daily series; clustering at the economic assignment level for panels",
+    "multiplicity": "Holm adjustment within each claim's primary coefficient family",
+    "causal_language": "permitted only after timing, pretrend, balance, exclusion, and placebo gates pass",
+    "missing_data": "retain topology-valid counts; unsupported values contribute zero and remain visible in coverage",
+    "prose_gate": "no claim enters prose until its status is enter_fgh or supporting and two stable F-G-H passes add no claim and retire none"
+  },
+  "claims": [
+    {
+      "id": "vehicle_transition",
+      "status": "enter_fgh_primary",
+      "role": "lead finding",
+      "estimand": "change in stable share of native-plus-stable exact two-leg intermediary routes between 2024 and 2026 on common calendar support",
+      "sample": "topology-valid clean-leg routes with exactly two pool legs and one intermediary; month-days observed in both endpoint years; full venue perimeter",
+      "unit": "day by routing stratum",
+      "dependent_variable": "stable intermediary episode share within native plus stable",
+      "transformation": "level share and percentage-point change",
+      "outlier_treatment": "none for counts; canonical endpoint round trips excluded by route definition",
+      "inference": "difference in daily means with 30-day HAC standard error",
+      "primary_comparison": "2024 versus 2026",
+      "mandatory_alternatives": {
+        "dependent_variable": [
+          "episode count share",
+          "within-20-percent value share",
+          "vehicle excess-use ratio"
+        ],
+        "transformation": [
+          "share level",
+          "log-odds on days strictly inside zero and one"
+        ],
+        "support": [
+          "full venue perimeter",
+          "balanced five-venue perimeter",
+          "all intermediary episodes",
+          "single venue",
+          "cross venue",
+          "two legs",
+          "more than two legs"
+        ],
+        "backing": [
+          "fiat reserve",
+          "on-chain collateralized",
+          "mixed including real-world assets",
+          "synthetic",
+          "transition"
+        ]
+      },
+      "falsifier": "the increase disappears within fixed opportunity, integration, complexity, or routing-search-efficiency cells",
+      "admissible_interpretation": "vehicle composition rotates toward stable assets; count dominance is not sustained before 2026-Q2 and the backing mechanism is not homogeneous",
+      "forbidden_interpretation": "monotone stable succession or aggregator causality",
+      "inputs": [
+        "data/processed/intermediation_by_type_daily.parquet",
+        "data/processed/cross_venue_routing_daily.parquet",
+        "data/processed/vehicle_excess_use_daily.parquet"
+      ],
+      "outputs": [
+        "output/exhibits/intermediation_by_type.jsonl",
+        "output/exhibits/intermediation_integration_rival.jsonl",
+        "output/exhibits/intermediation_complexity_rival.jsonl",
+        "output/exhibits/vehicle_excess_use.jsonl"
+      ]
+    },
+    {
+      "id": "routing_maturation_rival",
+      "status": "descriptive_only_pending_transaction_state_frontier",
+      "role": "first rival mechanism",
+      "estimand": "changes in opportunity-set integration, direct splitting, true intermediation, path complexity, and realised routing regret",
+      "sample": "economic routes on full and balanced venue perimeters",
+      "unit": "route for topology; endpoint-vehicle-reach-notional-state cell for regret",
+      "dependent_variable": "separate topology margins and same-state cost shortfalls",
+      "transformation": "incidence levels, percentage-point changes, and basis-point cost gaps",
+      "outlier_treatment": "canonical endpoint round trips excluded; topology counts retained without value support; cost gaps require exact transaction state",
+      "inference": "30-day HAC for daily topology changes; pair and date clustering for cost panels",
+      "mandatory_alternatives": {
+        "opportunity_set": [
+          "realised venue reach",
+          "balanced public venue set",
+          "full public venue set"
+        ],
+        "benchmark": [
+          "direct path",
+          "best path through realised vehicle",
+          "best public path"
+        ],
+        "routing_scope": [
+          "direct split",
+          "pure sequential",
+          "mixed indirect",
+          "two legs",
+          "more than two legs"
+        ]
+      },
+      "falsifier": "stable transition vanishes inside fixed opportunity and search-efficiency cells",
+      "admissible_interpretation": "integration expands while true intermediation contracts; this is consistent with improved direct-liquidity discovery",
+      "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption",
+      "blocking_measurement": "multi-venue alternatives are still priced at hour end rather than strict pre-transaction state",
+      "inputs": [
+        "data/processed/cross_venue_routing_daily.parquet",
+        "data/empirical/route_cost_panel_v2.parquet"
+      ],
+      "outputs": [
+        "output/exhibits/cross_venue_routing_series.jsonl",
+        "output/exhibits/cross_venue_routing_inference.jsonl",
+        "output/exhibits/routing_technology_windows.jsonl"
+      ]
+    },
+    {
+      "id": "direct_cost_dominance",
+      "status": "enter_fgh_foundation",
+      "role": "necessary state for persistence, not a persistence estimate",
+      "estimand": "share of realised V2-family two-leg routes for which an available direct pool returns more or costs less all-in at strict pre-transaction state",
+      "sample": "realised Uniswap V2 and SushiSwap V2 two-leg routes with input notional at least 100 dollars and an exact-state direct alternative on a fixed 74-month calendar",
+      "unit": "unique realised route",
+      "dependent_variable": "direct output improvement above zero and all-in direct advantage above zero",
+      "transformation": "binary incidence and basis-point advantage",
+      "outlier_treatment": "no upper notional trim; within-2x and within-20-percent valuation-coherence screens are mandatory",
+      "inference": "route-weighted incidence with date-clustered 95 percent interval; equal-date weighting is mandatory sensitivity",
+      "mandatory_alternatives": {
+        "economic_object": [
+          "gross quote output",
+          "median matched gas all-in",
+          "matched gas p25",
+          "matched gas p75"
+        ],
+        "state_support": [
+          "adjacent no liquidity",
+          "bridged no liquidity",
+          "liquidity replayed"
+        ],
+        "venue_reach": [
+          "inside realised venue set",
+          "outside realised venue set"
+        ],
+        "weighting": [
+          "route weighted",
+          "equal date"
+        ]
+      },
+      "falsifier": "gross and all-in incidence vanish on strict valuation and exact reserve support",
+      "admissible_interpretation": "a cheaper direct path coexists with realised legacy vehicle routing",
+      "forbidden_interpretation": "market-wide incidence, efficiency trend, inertia, or aggregator effect",
+      "inputs": [
+        "data/processed/counterfactual_dominance.parquet",
+        "data/processed/route_gas_units.parquet",
+        "data/processed/daily_gas_price_graph.parquet"
+      ],
+      "outputs": [
+        "output/exhibits/counterfactual_dominance_summary.jsonl",
+        "output/exhibits/counterfactual_dominance_support.jsonl",
+        "output/exhibits/route_gas_units_summary.jsonl"
+      ]
+    },
+    {
+      "id": "liquidity_rent_incidence",
+      "status": "enter_fgh_mechanism",
+      "role": "mechanism finding",
+      "estimand": "fee revenue minus LVR minus LP gas by pool asset role",
+      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of capital; top-400 Uniswap V3 pools as directional replication",
+      "unit": "pool-day descriptives and pool-month inference",
+      "dependent_variable": "risk-adjusted net return and indicator that fees exceed LVR plus gas",
+      "transformation": "annualised rates and fee-to-LVR ratio",
+      "outlier_treatment": "anchored-leg price within four times its centered 91-day median; stable price between 0.5 and 2 dollars; no hourly pool-price move above 100 times; capital at least 10000 dollars",
+      "inference": "month fixed effects with standard errors clustered by pool; joint role tests",
+      "mandatory_alternatives": {
+        "lvr_sampling": [
+          "hourly realised variance",
+          "four-hour realised variance",
+          "open-to-close variance"
+        ],
+        "gas_units": [
+          "0.5 times receipt benchmark",
+          "1 times receipt benchmark",
+          "4 times receipt benchmark"
+        ],
+        "weighting": [
+          "equal pool-day",
+          "capital weighted"
+        ],
+        "venue": [
+          "Uniswap V2 full screened cross-section",
+          "Uniswap V3 top-400 directional replication"
+        ]
+      },
+      "falsifier": "native-other net return becomes nonnegative under open-to-close LVR or role differences disappear in clustered pool-month tests",
+      "admissible_interpretation": "trading revenue does not compensate native-long-tail LPs for measured adverse selection and gas; the direction survives the conservative LVR bound",
+      "forbidden_interpretation": "all LP compensation is negative, token incentives are absent, or V2 and selected V3 levels are comparable",
+      "inputs": [
+        "data/processed/daily_gas_price_graph.parquet",
+        "data/processed/vehicle_centrality_dense.parquet"
+      ],
+      "outputs": [
+        "output/empirical/rent_incidence"
+      ]
+    },
+    {
+      "id": "persistence_hysteresis",
+      "status": "withheld",
+      "role": "excluded from current claims",
+      "estimand": "pair-candidate-period persistence and asymmetric displacement conditional on current all-in economics",
+      "blocking_measurement": "multi-venue strict transaction-state candidate costs and symmetric incumbent-challenger event construction",
+      "forbidden_interpretation": "the V2-family level incidence identifies persistence or hysteresis"
+    },
+    {
+      "id": "v1_forced_vehicle",
+      "status": "supporting",
+      "role": "institutional and architectural evidence",
+      "estimand": "token-to-token routes mechanically forced through ETH under the V1 exchange architecture",
+      "sample": "paired V1 exchange rows sharing a transaction hash with opposite single event arrays",
+      "unit": "transaction",
+      "dependent_variable": "forced-route incidence and cross-leg ETH amount agreement",
+      "outlier_treatment": "strict one-percent ETH flow agreement reported separately",
+      "admissible_interpretation": "protocol architecture can mechanically assign a vehicle role",
+      "forbidden_interpretation": "V1 identifies the later stable transition"
+    }
+  ]
+}

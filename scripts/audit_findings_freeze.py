@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import json
 from pathlib import Path
 
@@ -24,7 +25,13 @@ CROSS_VENUE = ROOT / "data" / "processed" / "cross_venue_routing_daily.parquet"
 V4 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v4"
 REFRESH = ROOT / "scripts" / "refresh_panel_dependents.py"
 STATE = ROOT / "docs" / "findings-freeze.md"
+SPECIFICATION_LOCK = ROOT / "docs" / "specification-lock.json"
 GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
+LOCKED_CLAIM_STATUSES = {
+    "enter_fgh_primary",
+    "enter_fgh_foundation",
+    "enter_fgh_mechanism",
+}
 
 
 def _manifest(path: Path) -> dict:
@@ -70,6 +77,59 @@ def graph_status(fields: dict[str, str]) -> str:
         f"next={fields.get('next_edge') or 'missing'}; "
         f"prose={fields.get('prose_node') or 'missing'}"
     )
+
+
+def validate_specification_lock(payload: dict) -> tuple[bool, str]:
+    """Validate the canonical hash and minimum decision contract for node E."""
+    declared_hash = str(payload.get("lock_hash") or "")
+    hash_payload = {key: value for key, value in payload.items() if key != "lock_hash"}
+    actual_hash = hashlib.sha256(
+        json.dumps(hash_payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    claims = payload.get("claims") or []
+    ids = [str(claim.get("id") or "") for claim in claims if isinstance(claim, dict)]
+    locked_claims = [
+        claim
+        for claim in claims
+        if isinstance(claim, dict) and claim.get("status") in LOCKED_CLAIM_STATUSES
+    ]
+    required = {
+        "id",
+        "status",
+        "role",
+        "estimand",
+        "sample",
+        "unit",
+        "dependent_variable",
+        "transformation",
+        "outlier_treatment",
+        "inference",
+        "mandatory_alternatives",
+        "falsifier",
+        "admissible_interpretation",
+        "forbidden_interpretation",
+        "inputs",
+        "outputs",
+    }
+    incomplete = [
+        str(claim.get("id") or "missing")
+        for claim in locked_claims
+        if required - set(claim)
+    ]
+    passed = bool(
+        payload.get("schema_version") == 1
+        and declared_hash == actual_hash
+        and len(ids) == len(claims)
+        and len(ids) == len(set(ids))
+        and len(locked_claims) >= 3
+        and not incomplete
+    )
+    detail = (
+        f"hash={'ok' if declared_hash == actual_hash else 'mismatch'}; "
+        f"claims={len(claims)}; locked={len(locked_claims)}; "
+        f"incomplete={incomplete or 'none'}"
+    )
+    return passed, detail
 
 
 def route_measurement_invariants(
@@ -216,6 +276,19 @@ def main() -> int:
         not missing_graph_fields,
         graph_status(state),
     )
+    if SPECIFICATION_LOCK.exists():
+        try:
+            lock_payload = json.loads(SPECIFICATION_LOCK.read_text())
+            lock_passed, lock_detail = validate_specification_lock(lock_payload)
+        except (json.JSONDecodeError, OSError) as exc:
+            lock_passed, lock_detail = False, type(exc).__name__
+        record("node E specification lock", lock_passed, lock_detail)
+    else:
+        record(
+            "node E specification lock",
+            False,
+            str(SPECIFICATION_LOCK.relative_to(ROOT)),
+        )
 
     if PANEL.exists():
         meta = pq.ParquetFile(PANEL).metadata

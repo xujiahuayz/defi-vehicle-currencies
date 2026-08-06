@@ -8,6 +8,8 @@ import pandas as pd
 from ddvc.analysis.regression import (
     absorb_fixed_effects,
     common_calendar_day_mask,
+    holm_adjusted_pvalues,
+    mean_clustered,
     ols_clustered,
     ols_clustered_named,
     ols_hac,
@@ -16,6 +18,21 @@ from ddvc.analysis.regression import (
 
 
 class RegressionPrimitiveTests(unittest.TestCase):
+    def test_clustered_mean_uses_cluster_scores_not_bernoulli_iid_variance(self) -> None:
+        result = mean_clustered(
+            np.array([1.0, 1.0, 0.0, 0.0]),
+            np.array(["a", "a", "b", "b"]),
+        )
+        self.assertAlmostEqual(result.estimate, 0.5)
+        self.assertEqual(result.n_observations, 4)
+        self.assertEqual(result.n_clusters, 2)
+        self.assertGreater(result.standard_error, 0.0)
+
+    def test_holm_adjustment_is_monotone_in_sorted_pvalues(self) -> None:
+        adjusted = holm_adjusted_pvalues(np.array([0.01, 0.04, 0.03, np.nan]))
+        np.testing.assert_allclose(adjusted[:3], [0.03, 0.06, 0.06])
+        self.assertTrue(np.isnan(adjusted[3]))
+
     def test_common_calendar_mask_balances_a_partial_endpoint_year(self) -> None:
         dates = pd.to_datetime(
             ["2022-01-01", "2022-07-01", "2024-01-01", "2024-07-01", "2026-01-01"]
@@ -59,6 +76,38 @@ class RegressionPrimitiveTests(unittest.TestCase):
         np.testing.assert_allclose(beta, expected)
         np.testing.assert_allclose(covariance, covariance.T)
         self.assertTrue(np.isfinite(covariance).all())
+
+    def test_hac_calendar_index_does_not_join_unsupported_gaps(self) -> None:
+        outcome = np.array([0.0, 1.0, 0.0, 1.0])
+        design = np.ones((4, 1))
+        adjacent_dates = pd.to_datetime(
+            ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04"]
+        )
+        gapped_dates = pd.to_datetime(
+            ["2024-01-01", "2024-01-02", "2025-01-01", "2025-01-02"]
+        )
+        _beta, adjacent = ols_hac(
+            outcome, design, lag=1, time_index=adjacent_dates
+        )
+        _beta, gapped = ols_hac(
+            outcome, design, lag=1, time_index=gapped_dates
+        )
+        self.assertNotAlmostEqual(float(adjacent[0, 0]), float(gapped[0, 0]))
+
+    def test_year_endpoint_change_uses_calendar_dates_when_supplied(self) -> None:
+        dates = pd.to_datetime(
+            ["2024-01-01", "2024-01-02", "2025-01-01", "2026-01-01", "2026-01-02"]
+        )
+        estimate = year_endpoint_change(
+            np.array([0.0, 0.2, 0.4, 0.8, 1.0]),
+            dates.year.to_numpy(),
+            baseline_year=2024,
+            comparison_year=2026,
+            hac_lag=1,
+            dates=dates,
+        )
+        self.assertAlmostEqual(estimate.change, 0.8)
+        self.assertEqual(estimate.n_observations, 5)
 
     def test_hac_rejects_misaligned_inputs(self) -> None:
         with self.assertRaisesRegex(ValueError, "one outcome"):

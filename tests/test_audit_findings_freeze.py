@@ -9,10 +9,48 @@ from scripts.audit_findings_freeze import (
     graph_status,
     parse_state_frontmatter,
     route_measurement_invariants,
+    validate_specification_lock,
 )
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_specification_lock_requires_hash_and_complete_entered_claims(self) -> None:
+        import hashlib
+        import json
+
+        claim = {
+            "id": "lead",
+            "status": "enter_fgh_primary",
+            "role": "lead",
+            "estimand": "change",
+            "sample": "sample",
+            "unit": "day",
+            "dependent_variable": "share",
+            "transformation": "level",
+            "outlier_treatment": "none",
+            "inference": "HAC",
+            "mandatory_alternatives": {"weighting": ["count", "value"]},
+            "falsifier": "zero",
+            "admissible_interpretation": "change",
+            "forbidden_interpretation": "cause",
+            "inputs": ["input"],
+            "outputs": ["output"],
+        }
+        payload = {
+            "schema_version": 1,
+            "locked_at": "2026-08-07",
+            "global_rules": {},
+            "claims": [claim, {**claim, "id": "foundation", "status": "enter_fgh_foundation"}, {**claim, "id": "mechanism", "status": "enter_fgh_mechanism"}],
+        }
+        payload["lock_hash"] = hashlib.sha256(
+            json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        passed, detail = validate_specification_lock(payload)
+        self.assertTrue(passed, detail)
+        payload["claims"][0].pop("falsifier")
+        passed, detail = validate_specification_lock(payload)
+        self.assertFalse(passed, detail)
+
     def test_route_measurement_invariants_reconcile_all_families(self) -> None:
         intermediation = {
             "date": [pd.Timestamp("2026-01-01")],

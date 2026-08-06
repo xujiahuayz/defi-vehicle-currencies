@@ -405,13 +405,14 @@ def routing_incidence_change_tests(
         share_column = f"{prefix}intermediated_share"
         numerator_column = f"{prefix}intermediated_routes"
         denominator_column = f"{prefix}economic_routes"
-        sample = data[["year", share_column]].dropna()
+        sample = data[["date", "year", share_column]].dropna()
         estimate = year_endpoint_change(
             sample[share_column],
             sample["year"],
             baseline_year=baseline_year,
             comparison_year=comparison_year,
             hac_lag=hac_lag,
+            dates=sample["date"],
         )
 
         def ratio_of_totals(year: int) -> float:

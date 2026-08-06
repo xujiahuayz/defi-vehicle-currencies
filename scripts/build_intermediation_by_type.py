@@ -21,9 +21,14 @@ import sys
 from concurrent.futures import as_completed
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
-from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
+from ddvc.analysis.regression import (
+    common_calendar_day_mask,
+    holm_adjusted_pvalues,
+    year_endpoint_change,
+)
 from ddvc.asset_types import TYPES, classify
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_roles import VALUE_SUPPORT_SCOPES
@@ -243,36 +248,56 @@ def _stable_share_change_tests(
                 data[native_column], errors="coerce"
             )
             denominator = stable + native
-            sample = data[["year"]].copy()
-            sample["share"] = stable / denominator.where(denominator.gt(0))
-            sample = sample.dropna(subset=["share"])
-            estimate = year_endpoint_change(
-                sample["share"],
-                sample["year"],
-                baseline_year=baseline_year,
-                comparison_year=comparison_year,
-                hac_lag=hac_lag,
-            )
-            rows.append(
-                {
-                    scope_field: scope,
-                    "weighting": weighting,
-                    "value_support": value_support,
-                    "baseline_year": baseline_year,
-                    "comparison_year": comparison_year,
-                    "baseline_daily_mean": estimate.baseline_mean,
-                    "comparison_daily_mean": estimate.comparison_mean,
-                    "change": estimate.change,
-                    "hac_standard_error": estimate.standard_error,
-                    "t_statistic": estimate.t_statistic,
-                    "p_value": estimate.p_value,
-                    "days": estimate.n_observations,
-                    "hac_lag_days": hac_lag,
-                    "calendar_support": "month-days observed in both endpoint years",
-                    "share_denominator": "native_plus_stable",
-                }
-            )
-    return pd.DataFrame(rows)
+            base_sample = data[["date", "year"]].copy()
+            base_sample["share"] = stable / denominator.where(denominator.gt(0))
+            base_sample = base_sample.dropna(subset=["share"])
+            for transformation in ("share_level", "log_odds"):
+                sample = base_sample.copy()
+                if transformation == "log_odds":
+                    sample = sample[sample["share"].between(0, 1, inclusive="neither")]
+                    sample["estimand"] = np.log(sample["share"] / (1 - sample["share"]))
+                else:
+                    sample["estimand"] = sample["share"]
+                estimate = year_endpoint_change(
+                    sample["estimand"],
+                    sample["year"],
+                    baseline_year=baseline_year,
+                    comparison_year=comparison_year,
+                    hac_lag=hac_lag,
+                    dates=sample["date"],
+                )
+                rows.append(
+                    {
+                        scope_field: scope,
+                        "weighting": weighting,
+                        "value_support": value_support,
+                        "transformation": transformation,
+                        "baseline_year": baseline_year,
+                        "comparison_year": comparison_year,
+                        "baseline_daily_mean": estimate.baseline_mean,
+                        "comparison_daily_mean": estimate.comparison_mean,
+                        "change": estimate.change,
+                        "hac_standard_error": estimate.standard_error,
+                        "t_statistic": estimate.t_statistic,
+                        "p_value": estimate.p_value,
+                        "days": estimate.n_observations,
+                        "hac_lag_days": hac_lag,
+                        "calendar_support": "month-days observed in both endpoint years; calendar-day HAC with unsupported gaps excluded",
+                        "share_denominator": "native_plus_stable",
+                    }
+                )
+    result = pd.DataFrame(rows)
+    family = [
+        "baseline_year",
+        "comparison_year",
+        "weighting",
+        "value_support",
+        "transformation",
+    ]
+    result["p_value_holm"] = result.groupby(family, sort=False)["p_value"].transform(
+        holm_adjusted_pvalues
+    )
+    return result
 
 
 def integration_rival_tests(

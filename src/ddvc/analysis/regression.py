@@ -9,6 +9,27 @@ import pandas as pd
 from scipy import stats
 
 
+def holm_adjusted_pvalues(values: pd.Series | np.ndarray) -> np.ndarray:
+    """Holm family-wise adjusted p-values, preserving missing positions."""
+    pvalues = np.asarray(values, dtype=float).reshape(-1)
+    adjusted = np.full(len(pvalues), np.nan, dtype=float)
+    finite_positions = np.flatnonzero(np.isfinite(pvalues))
+    if not len(finite_positions):
+        return adjusted
+    ordered_positions = finite_positions[
+        np.argsort(pvalues[finite_positions], kind="stable")
+    ]
+    scaled = np.array(
+        [
+            min((len(ordered_positions) - rank) * pvalues[position], 1.0)
+            for rank, position in enumerate(ordered_positions)
+        ]
+    )
+    monotone = np.maximum.accumulate(scaled)
+    adjusted[ordered_positions] = monotone
+    return adjusted
+
+
 @dataclass(frozen=True)
 class ClusteredOLSResult:
     """OLS estimates and one-way cluster-robust inference."""
@@ -51,6 +72,66 @@ class ClusteredOLSResult:
             statistics[f"{name}_t"] = float(self.t_statistics[index])
             statistics[f"{name}_p"] = float(self.p_values[index])
         return statistics
+
+
+@dataclass(frozen=True)
+class ClusteredMeanResult:
+    """Mean and confidence interval with one-way cluster dependence."""
+
+    estimate: float
+    standard_error: float
+    confidence_interval_lower: float
+    confidence_interval_upper: float
+    n_observations: int
+    n_clusters: int
+
+
+def mean_clustered(
+    values: pd.Series | np.ndarray,
+    clusters: pd.Series | np.ndarray,
+    *,
+    confidence_level: float = 0.95,
+) -> ClusteredMeanResult:
+    """Estimate a mean with a finite-cluster CR1 confidence interval."""
+    value_array = np.asarray(values, dtype=float).reshape(-1)
+    cluster_array = np.asarray(clusters).reshape(-1)
+    if len(value_array) != len(cluster_array):
+        raise ValueError("clustered mean requires one cluster per observation")
+    if not 0 < confidence_level < 1:
+        raise ValueError("clustered mean confidence level must lie inside zero and one")
+    finite = np.isfinite(value_array) & pd.notna(cluster_array)
+    value_array = value_array[finite]
+    cluster_array = cluster_array[finite]
+    if not len(value_array):
+        raise ValueError("clustered mean inputs cannot be empty")
+    estimate = float(value_array.mean())
+    scores = pd.Series(value_array - estimate).groupby(cluster_array).sum()
+    n_clusters = len(scores)
+    if n_clusters < 2:
+        standard_error = float("nan")
+        lower = float("nan")
+        upper = float("nan")
+    else:
+        variance = (
+            n_clusters
+            / (n_clusters - 1)
+            * float(scores.pow(2).sum())
+            / len(value_array) ** 2
+        )
+        standard_error = float(np.sqrt(max(variance, 0.0)))
+        critical = float(
+            stats.t.ppf(0.5 + confidence_level / 2, n_clusters - 1)
+        )
+        lower = estimate - critical * standard_error
+        upper = estimate + critical * standard_error
+    return ClusteredMeanResult(
+        estimate=estimate,
+        standard_error=standard_error,
+        confidence_interval_lower=lower,
+        confidence_interval_upper=upper,
+        n_observations=len(value_array),
+        n_clusters=n_clusters,
+    )
 
 
 @dataclass(frozen=True)
@@ -264,8 +345,18 @@ def ols_clustered_named(
     )
 
 
-def ols_hac(y: np.ndarray, x: np.ndarray, lag: int) -> tuple[np.ndarray, np.ndarray]:
-    """OLS coefficients with a Newey-West Bartlett covariance matrix."""
+def ols_hac(
+    y: np.ndarray,
+    x: np.ndarray,
+    lag: int,
+    *,
+    time_index: pd.Series | np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """OLS coefficients with a Newey-West Bartlett covariance matrix.
+
+    When ``time_index`` is present, lags are calendar-day distances and gaps do not
+    become adjacent merely because unsupported dates were removed from the sample.
+    """
     if y.ndim != 1 or x.ndim != 2 or len(y) != len(x):
         raise ValueError("HAC inputs require one outcome per design-matrix row")
     if lag < 0:
@@ -273,14 +364,43 @@ def ols_hac(y: np.ndarray, x: np.ndarray, lag: int) -> tuple[np.ndarray, np.ndar
     n, k = x.shape
     if n == 0 or k == 0:
         raise ValueError("HAC inputs cannot be empty")
+    time_codes: np.ndarray | None = None
+    if time_index is not None:
+        timestamps = pd.to_datetime(
+            pd.Series(np.asarray(time_index).reshape(-1)), errors="coerce"
+        )
+        if len(timestamps) != n or timestamps.isna().any():
+            raise ValueError("HAC time index requires one valid date per observation")
+        time_codes = timestamps.to_numpy(dtype="datetime64[D]").astype(np.int64)
+        if len(np.unique(time_codes)) != n or np.any(np.diff(time_codes) <= 0):
+            raise ValueError("HAC time index must be unique and strictly increasing")
     xtx_inverse = np.linalg.pinv(x.T @ x)
     beta = xtx_inverse @ (x.T @ y)
     residual = y - x @ beta
     scores = x * residual[:, None]
     meat = scores.T @ scores
-    for offset in range(1, min(lag, n - 1) + 1):
+    positions = (
+        {int(value): index for index, value in enumerate(time_codes)}
+        if time_codes is not None
+        else None
+    )
+    max_offset = lag if time_codes is not None else min(lag, n - 1)
+    for offset in range(1, max_offset + 1):
         weight = 1.0 - offset / (lag + 1.0)
-        autocovariance = scores[offset:].T @ scores[:-offset]
+        if time_codes is None or positions is None:
+            current = np.arange(offset, n)
+            previous = np.arange(0, n - offset)
+        else:
+            pairs = [
+                (index, positions[int(value) - offset])
+                for index, value in enumerate(time_codes)
+                if int(value) - offset in positions
+            ]
+            if not pairs:
+                continue
+            current = np.fromiter((pair[0] for pair in pairs), dtype=int)
+            previous = np.fromiter((pair[1] for pair in pairs), dtype=int)
+        autocovariance = scores[current].T @ scores[previous]
         meat += weight * (autocovariance + autocovariance.T)
     finite_sample_scale = n / max(n - k, 1)
     covariance = xtx_inverse @ meat @ xtx_inverse * finite_sample_scale
@@ -294,6 +414,7 @@ def year_endpoint_change(
     baseline_year: int,
     comparison_year: int,
     hac_lag: int,
+    dates: pd.Series | np.ndarray | None = None,
 ) -> YearEndpointChange:
     """Estimate an endpoint-year mean change with intervening year indicators."""
     value_array = np.asarray(values, dtype=float).reshape(-1)
@@ -301,6 +422,15 @@ def year_endpoint_change(
     if len(value_array) != len(year_array):
         raise ValueError("year-change values and years must have the same row count")
     finite = np.isfinite(value_array) & pd.notna(year_array)
+    date_array: np.ndarray | None = None
+    if dates is not None:
+        parsed_dates = pd.to_datetime(
+            pd.Series(np.asarray(dates).reshape(-1)), errors="coerce"
+        )
+        if len(parsed_dates) != len(value_array):
+            raise ValueError("year-change dates must align with values")
+        finite &= parsed_dates.notna().to_numpy()
+        date_array = parsed_dates.to_numpy()[finite]
     value_array = value_array[finite]
     year_array = year_array[finite].astype(int)
     observed_years = sorted(set(year_array))
@@ -313,7 +443,12 @@ def year_endpoint_change(
             *[year_array == year for year in comparison_years],
         ]
     ).astype(float)
-    beta, covariance = ols_hac(value_array, design, hac_lag)
+    beta, covariance = ols_hac(
+        value_array,
+        design,
+        hac_lag,
+        time_index=date_array,
+    )
     comparison_column = 1 + comparison_years.index(comparison_year)
     standard_error = float(
         np.sqrt(max(covariance[comparison_column, comparison_column], 0.0))
