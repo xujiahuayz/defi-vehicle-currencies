@@ -96,19 +96,34 @@ def compute_vehicle_extent(legs: pd.DataFrame) -> pd.DataFrame:
 
     iv = intermediate.groupby("token")["amount_usd"].sum() if not intermediate.empty else pd.Series(dtype=float)
     ev = endpoints.groupby("token")["amount_usd"].sum() if not endpoints.empty else pd.Series(dtype=float)
+    ic = intermediate.groupby("token").size() if not intermediate.empty else pd.Series(dtype="int64")
+    ec = endpoints.groupby("token").size() if not endpoints.empty else pd.Series(dtype="int64")
     tokens = iv.index.union(ev.index)
     out = pd.DataFrame({
         "token": tokens,
         "intermediate_usd": iv.reindex(tokens, fill_value=0.0).to_numpy(),
         "endpoint_usd": ev.reindex(tokens, fill_value=0.0).to_numpy(),
+        "intermediate_routes": ic.reindex(tokens, fill_value=0).to_numpy(dtype="int64"),
+        "endpoint_routes": ec.reindex(tokens, fill_value=0).to_numpy(dtype="int64"),
     })
     total_i = float(out["intermediate_usd"].sum())
     total_e = float(out["endpoint_usd"].sum())
+    total_ic = int(out["intermediate_routes"].sum())
+    total_ec = int(out["endpoint_routes"].sum())
     out["intermediate_share"] = out["intermediate_usd"] / total_i if total_i else 0.0
     out["endpoint_share"] = out["endpoint_usd"] / total_e if total_e else 0.0
     out["vehicle_excess_use_ratio"] = np.where(
         out["endpoint_share"] > 0,
         out["intermediate_share"] / out["endpoint_share"],
+        np.nan,
+    )
+    out["intermediate_count_share"] = (
+        out["intermediate_routes"] / total_ic if total_ic else 0.0
+    )
+    out["endpoint_count_share"] = out["endpoint_routes"] / total_ec if total_ec else 0.0
+    out["vehicle_excess_use_count_ratio"] = np.where(
+        out["endpoint_count_share"] > 0,
+        out["intermediate_count_share"] / out["endpoint_count_share"],
         np.nan,
     )
     labels = out["token"].map(classify)

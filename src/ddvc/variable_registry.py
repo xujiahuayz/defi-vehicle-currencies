@@ -717,6 +717,60 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Vehicle-use measures",
+        name="Intermediate-use count share",
+        column="intermediate_count_share",
+        notation=r"$\mathrm{IShare}^{N}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{N^{I}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}N^{I}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Token $k$'s share of clean, non-cyclic route components in which it is an "
+            r"intermediary; one component-token appearance is counted once."
+        ),
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Count-weighted numerator robustness for vehicle extent.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Endpoint-demand count share",
+        column="endpoint_count_share",
+        notation=r"$\mathrm{EShare}^{N}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{N^{E}_{k,t}}"
+            r"{\sum_{j:\mathrm{Type}(j)\ne\mathrm{other}}N^{E}_{j,t}}$"
+        ),
+        unit="Fraction (0--1)",
+        construction=(
+            r"Token $k$'s share of source-or-sink appearances across all clean, "
+            r"non-cyclic route components, including direct routes."
+        ),
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Count-weighted endpoint-demand benchmark.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
+        name="Vehicle excess-use count ratio",
+        column="vehicle_excess_use_count_ratio",
+        notation=r"$\mathrm{ExcessUse}^{N}_{k,t}$",
+        formula=(
+            r"$\displaystyle\frac{\mathrm{IShare}^{N}_{k,t}}"
+            r"{\mathrm{EShare}^{N}_{k,t}}$"
+        ),
+        unit="Ratio",
+        construction=(
+            r"Count-share analogue of vehicle excess use on the same clean, non-cyclic "
+            r"route universe; undefined when endpoint count is zero."
+        ),
+        source="data/processed/vehicle_excess_use_daily.parquet",
+        used_for="Count-weighted robustness of the primary vehicle-extent measure.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Vehicle-use measures",
         name="Vehicle count share",
         column="bridge_count_share",
         notation=r"$\mathrm{VehicleCountShare}_{k,t}$",

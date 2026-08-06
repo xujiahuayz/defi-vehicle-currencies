@@ -53,6 +53,10 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertFalse(bool(out.loc["k", "endpoint_supported"]))
         self.assertAlmostEqual(out.loc["a", "endpoint_share"], 0.5)
         self.assertAlmostEqual(out.loc["b", "endpoint_share"], 0.5)
+        self.assertEqual(out.loc["k", "intermediate_routes"], 1)
+        self.assertEqual(out.loc["a", "endpoint_routes"], 2)
+        self.assertEqual(out.loc["b", "endpoint_routes"], 2)
+        self.assertAlmostEqual(out.loc["k", "intermediate_count_share"], 1.0)
 
     def test_ratio_uses_endpoint_roles_not_all_leg_volume(self) -> None:
         rows = [
@@ -65,6 +69,9 @@ class VehicleExtentTests(unittest.TestCase):
         self.assertAlmostEqual(out.loc["k", "endpoint_share"], 0.25)
         self.assertAlmostEqual(
             out.loc["k", "vehicle_excess_use_ratio"], 4.0
+        )
+        self.assertAlmostEqual(
+            out.loc["k", "vehicle_excess_use_count_ratio"], 4.0
         )
 
     def test_cycles_are_removed_from_both_sides(self) -> None:

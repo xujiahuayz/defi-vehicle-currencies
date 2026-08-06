@@ -4,6 +4,7 @@
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/vehicle_excess_use_daily.parquet
         output/exhibits/vehicle_excess_use.jsonl
+        output/exhibits/vehicle_excess_use_quarterly.jsonl
 """
 
 from __future__ import annotations
@@ -23,6 +24,7 @@ from ddvc.vehicle_extent import REQUIRED_COLUMNS, compute_vehicle_extent
 UNIFIED = ROOT / "data" / "unified"
 OUT_PANEL = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 OUT_EXHIBIT = ROOT / "output" / "exhibits" / "vehicle_excess_use.jsonl"
+OUT_QUARTERLY = ROOT / "output" / "exhibits" / "vehicle_excess_use_quarterly.jsonl"
 CODE_SOURCES = [
     "scripts/build_vehicle_excess_use.py",
     "src/ddvc/asset_types.py",
@@ -39,22 +41,40 @@ def one_day(path: Path) -> pd.DataFrame:
     return out
 
 
-def _aggregate(frame: pd.DataFrame, keys: list[str], level: str) -> pd.DataFrame:
+def _aggregate(
+    frame: pd.DataFrame,
+    keys: list[str],
+    level: str,
+    period_keys: list[str],
+) -> pd.DataFrame:
     out = frame.groupby(keys, as_index=False).agg(
         intermediate_usd=("intermediate_usd", "sum"),
         endpoint_usd=("endpoint_usd", "sum"),
+        intermediate_routes=("intermediate_routes", "sum"),
+        endpoint_routes=("endpoint_routes", "sum"),
         days=("date", "nunique"),
     )
-    by_year = out.groupby("year")
+    by_period = out.groupby(period_keys)
     out["intermediate_share"] = (
-        out["intermediate_usd"] / by_year["intermediate_usd"].transform("sum")
+        out["intermediate_usd"] / by_period["intermediate_usd"].transform("sum")
     )
     out["endpoint_share"] = (
-        out["endpoint_usd"] / by_year["endpoint_usd"].transform("sum")
+        out["endpoint_usd"] / by_period["endpoint_usd"].transform("sum")
     )
     out["vehicle_excess_use_ratio"] = (
         out["intermediate_share"]
         / out["endpoint_share"].where(out["endpoint_share"].gt(0))
+    )
+    out["intermediate_count_share"] = (
+        out["intermediate_routes"]
+        / by_period["intermediate_routes"].transform("sum")
+    )
+    out["endpoint_count_share"] = (
+        out["endpoint_routes"] / by_period["endpoint_routes"].transform("sum")
+    )
+    out["vehicle_excess_use_count_ratio"] = (
+        out["intermediate_count_share"]
+        / out["endpoint_count_share"].where(out["endpoint_count_share"].gt(0))
     )
     out.insert(0, "level", level)
     return out
@@ -112,14 +132,18 @@ def main() -> int:
     tmp.replace(OUT_PANEL)
 
     panel["year"] = panel["date"].dt.year
+    panel["quarter"] = panel["date"].dt.to_period("Q").astype(str)
     candidate = panel[panel["asset_type"].isin(CURRENCY_TYPES)]
     type_year = _scope(
-        _aggregate(candidate, ["year", "asset_type"], "asset_type"),
+        _aggregate(candidate, ["year", "asset_type"], "asset_type", ["year"]),
         "candidate_currencies",
     )
     token_year = _scope(
         _aggregate(
-            candidate, ["year", "token", "symbol", "asset_type"], "token"
+            candidate,
+            ["year", "token", "symbol", "asset_type"],
+            "token",
+            ["year"],
         ),
         "candidate_currencies",
     )
@@ -128,13 +152,23 @@ def main() -> int:
         | token_year["intermediate_share"].ge(0.001)
     ]
     all_asset_type_year = _scope(
-        _aggregate(panel, ["year", "asset_type"], "asset_type"),
+        _aggregate(panel, ["year", "asset_type"], "asset_type", ["year"]),
         "all_assets_diagnostic",
+    )
+    type_quarter = _scope(
+        _aggregate(
+            candidate,
+            ["quarter", "asset_type"],
+            "asset_type",
+            ["quarter"],
+        ),
+        "candidate_currencies",
     )
     exhibit = pd.concat(
         [type_year, token_year, all_asset_type_year], ignore_index=True, sort=False
     )
     write_exhibit(exhibit, OUT_EXHIBIT)
+    write_exhibit(type_quarter, OUT_QUARTERLY)
     stamp(
         OUT_PANEL,
         code_sources=CODE_SOURCES,
@@ -148,6 +182,12 @@ def main() -> int:
         inputs=[OUT_PANEL],
         rows=len(exhibit),
     )
+    stamp(
+        OUT_QUARTERLY,
+        code_sources=CODE_SOURCES,
+        inputs=[OUT_PANEL],
+        rows=len(type_quarter),
+    )
 
     print(f"\n{panel.date.nunique():,} days, {len(panel):,} token-days")
     print("annual excess-use ratio by asset type, prespecified currencies only")
@@ -155,6 +195,11 @@ def main() -> int:
         index="year", columns="asset_type", values="vehicle_excess_use_ratio"
     )
     print(table.round(2).to_string())
+    count_table = type_year.pivot(
+        index="year", columns="asset_type", values="vehicle_excess_use_count_ratio"
+    )
+    print("\ncount-weighted robustness")
+    print(count_table.round(2).to_string())
     unsupported = panel[
         (panel["intermediate_share"] > 0) & (~panel["endpoint_supported"])
     ]
@@ -163,7 +208,8 @@ def main() -> int:
         "demand; retained as unsupported diagnostics"
     )
     print(
-        f"wrote {OUT_PANEL.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}"
+        f"wrote {OUT_PANEL.relative_to(ROOT)}, {OUT_EXHIBIT.relative_to(ROOT)}, "
+        f"and {OUT_QUARTERLY.relative_to(ROOT)}"
     )
     return 0
 
