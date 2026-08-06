@@ -253,7 +253,8 @@ def _main_unlocked() -> int:
 
     receipts = []
     failed = []
-    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+    pool = ThreadPoolExecutor(max_workers=args.workers)
+    try:
         futures = {
             pool.submit(fetch_receipt, tx_hash): tx_hash
             for tx_hash in sample["tx_hash"]
@@ -269,6 +270,8 @@ def _main_unlocked() -> int:
                     f"  receipts {index}/{len(futures)} | failed {len(failed)}",
                     flush=True,
                 )
+    finally:
+        pool.shutdown(wait=True, cancel_futures=True)
     if not receipts:
         print("no receipts resolved")
         return 1
