@@ -366,23 +366,24 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 
 **Visual.** None needed. Two stat tiles and a four-row hairline list.
 
-### A10. Gas measured from receipts [BUILDABLE]
+### A10. Gas measured from receipts [BLOCKED ON ROUTE-GAS SAMPLE]
 
-- Median gasUsed 154,604 for one leg
-- Median gasUsed 228,701 for two legs
-- Extra hop 74,096 units
+- The pooled one-, two- and three-leg constants are fallbacks, not final evidence
+- The live instrument samples exact single-component transactions by year, topology, exact venue sequence and intermediary identity
+- Report medians and interquartile ranges only after the full support distribution fixes the fallback hierarchy
+- Executor addresses are heterogeneity diagnostics and do not identify the route author
 - Direction-asymmetric: one direction deducts from output, the other shrinks the input budget
 
 **Visual.** `deck/appendix_gas_hops.svg`. Two horizontal bars, y axis the route topology at one leg and two legs, x axis median gas units from 0 to 250,000, with the difference bracketed and labelled. The read is the size of the handicap the vehicle route carries before any price effect.
 
-### A11. The cost regime moves by three orders of magnitude [BUILDABLE]
+### A11. The cost regime moves by three orders of magnitude [PRICE SERIES BUILDABLE; ALL-IN BPS BLOCKED]
 
-- Per-transaction gas price, exact, 1,883 days
-- Annual medians 70.51 gwei in 2021 to 0.12 gwei in 2026
-- 28.37 gwei before 2024-03-13, 1.11 gwei after
-- 478 bp of a $100 notional, 0.5 bp of a $100,000 notional
+- Daily median from every transaction in three spanning full blocks, all 2,277 project days
+- Annual medians 84.00 gwei in 2021 and 0.13 gwei in 2026
+- 32.84 gwei before 2024-03-13 and 1.35 gwei after
+- Notional-scaled all-in basis points wait for the completed route-gas and gas-token-price join
 
-**Visual.** `deck/appendix_gas_regime.svg`. Upper panel, x axis calendar time 2021-05 to 2026-06, y axis median gas price in gwei on a log scale from 0.03 to 500, the daily median as a thin line with the interquartile band as a light ribbon behind it, and a vertical rule at 2024-03-13 labelled with the blob-fee change. Lower panel on the same x axis, a heat strip of the extra hop's cost in basis points by notional bucket on a sequential ramp. The read is that a two-hop route's handicap is not a constant of the technology and swings by three orders of magnitude inside the sample.
+**Visual.** `deck/appendix_gas_regime.svg`. Upper panel, x axis calendar time 2020-02 to 2026-06, y axis median gas price in gwei on a log scale from 0.03 to 500, the daily median as a thin line with the interquartile band as a light ribbon behind it, and a vertical rule at 2024-03-13 labelled with the blob-fee change. Lower panel on the same x axis, added only after the route-gas join, is a heat strip of the extra route cost in basis points by notional bucket on a sequential ramp. The read is that a vehicle route's gas handicap is not a constant of the technology and swings by three orders of magnitude inside the sample.
 
 **Citations.** Caparros, Chaudhary and Klein (2024) for gas and liquidity concentration; Barbon and Ranaldo for validator gas dominating trader cost.
 
