@@ -112,11 +112,6 @@ def component_eligibility(
 ) -> ComponentEligibility:
     """Partition components into economic routes, cycles, and ambiguous residue."""
     key_columns = list(keys)
-    ordered = legs.sort_values(key_columns + ["log_index"], kind="stable")
-    bounds = ordered.groupby(key_columns, as_index=False).agg(
-        first_token=("token_in", "first"),
-        last_token=("token_out", "last"),
-    )
     source_tokens = role_token_values(legs, "source", keys=key_columns)
     sink_tokens = role_token_values(legs, "sink", keys=key_columns)
     endpoints = _component_endpoints_from_values(
@@ -127,21 +122,34 @@ def component_eligibility(
         on=key_columns + ["token"],
         how="inner",
     )[key_columns]
-    ordered_cyclic = bounds.loc[
-        bounds["first_token"].eq(bounds["last_token"]), key_columns
+    all_components = legs[key_columns].drop_duplicates()
+    endpoint_presence = all_components.merge(
+        source_tokens[key_columns].drop_duplicates().assign(_has_source=True),
+        on=key_columns,
+        how="left",
+    ).merge(
+        sink_tokens[key_columns].drop_duplicates().assign(_has_sink=True),
+        on=key_columns,
+        how="left",
+    )
+    no_endpoint_cycles = endpoint_presence.loc[
+        endpoint_presence["_has_source"].isna()
+        & endpoint_presence["_has_sink"].isna(),
+        key_columns,
     ]
-    cyclic = pd.concat([role_cyclic, ordered_cyclic], ignore_index=True).drop_duplicates()
+    cyclic = pd.concat(
+        [role_cyclic, no_endpoint_cycles], ignore_index=True
+    ).drop_duplicates()
     eligible = endpoints[
         endpoints["source_tokens"].eq(1)
         & endpoints["sink_tokens"].eq(1)
         & endpoints["src"].ne(endpoints["tgt"])
-    ].merge(bounds, on=key_columns, how="inner")
+    ].copy()
     if not cyclic.empty:
         eligible = eligible.merge(
             cyclic.assign(_cyclic=True), on=key_columns, how="left"
         )
         eligible = eligible[eligible["_cyclic"].isna()].drop(columns="_cyclic")
-    all_components = legs[key_columns].drop_duplicates()
     classified = pd.concat(
         [cyclic[key_columns], eligible[key_columns]], ignore_index=True
     ).drop_duplicates()
@@ -150,7 +158,7 @@ def component_eligibility(
     )
     ambiguous = ambiguous[ambiguous["_classified"].isna()][key_columns]
     return ComponentEligibility(
-        eligible=eligible.drop(columns=["first_token", "last_token"]),
+        eligible=eligible,
         cyclic=cyclic,
         ambiguous=ambiguous,
     )

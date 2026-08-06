@@ -175,6 +175,18 @@ class VehicleExtentTests(unittest.TestCase):
             out.set_index("token").loc["k", "intermediate_usd"], 100
         )
 
+    def test_log_order_does_not_override_unique_economic_endpoints(self) -> None:
+        rows = [
+            leg("interleaved", 0, "x", "y", "intermediate", "intermediate", 100, log_index=0),
+            leg("interleaved", 0, "y", "b", "intermediate", "sink", 100, log_index=1),
+            leg("interleaved", 0, "a", "x", "source", "intermediate", 100, log_index=2),
+        ]
+        out = compute_vehicle_extent(pd.DataFrame(rows))
+        self.assertFalse(out.empty)
+        self.assertTrue((out["routes_clean"] == 1).all())
+        self.assertTrue((out["routes_cyclic_excluded"] == 0).all())
+        self.assertTrue((out["routes_ambiguous_excluded"] == 0).all())
+
     def test_native_eth_is_canonicalised_to_weth(self) -> None:
         zero = "0x0000000000000000000000000000000000000000"
         rows = [
