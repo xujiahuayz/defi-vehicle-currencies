@@ -1,0 +1,152 @@
+% Slides 2 to 5. The identification limit, the mandated vehicle, the null after the mandate
+% goes, and the architectural arc. Sources: paper sections 1 and 5.4;
+% docs/finding-v1-forced-vehicle.md sections 1, 3 and the numerical correction at the end;
+% docs/finding-cross-venue-spillover.md for the two architecture dates.
+
+\begin{frame}{The state the data never contain}
+\begin{columns}[T]
+\begin{column}{0.38\textwidth}
+\begin{itemize}
+\item Cheap because used, used because cheap
+\item Sterling to dollar: no price on the road not taken
+\item Wanted: an incumbent holding the role while strictly beaten
+\item On chain: the beaten route quotable at the same state
+\end{itemize}
+\vspace{0.4em}
+\srcnote{Krugman (1980); Flandreau and Jobst (2009)}
+\end{column}
+\begin{column}{0.60\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.94,transform shape]
+\node[font=\scriptsize\bfseries,anchor=north] (t1) at (2.0,3.5) {Foreign exchange};
+\node[vtx] (a1) at (0.2,1.5) {$a$};
+\node[vtx,fill=cnative,text=white] (v1) at (2.0,2.9) {$k$};
+\node[vtx] (b1) at (3.8,1.5) {$b$};
+\draw[flow] (a1) -- (v1);
+\draw[flow] (v1) -- (b1);
+\draw[ghost] (a1) -- (b1);
+\node[rectangle,draw=cother,pattern=north east lines,pattern color=crule,minimum width=1.6cm,minimum height=0.45cm] (h1) at (2.0,0.85) {};
+\node[font=\scriptsize,anchor=north] (q1) at (2.0,0.55) {price unobserved};
+\node[font=\scriptsize\bfseries,anchor=north] (t2) at (7.4,3.5) {Decentralised exchange};
+\node[vtx] (a2) at (5.6,1.5) {$a$};
+\node[vtx,fill=cnative,text=white] (v2) at (7.4,2.9) {$k$};
+\node[vtx] (b2) at (9.2,1.5) {$b$};
+\draw[flow] (a2) -- (v2);
+\draw[flow] (v2) -- (b2);
+\draw[flow,draw=cstable] (a2) -- (b2);
+\node[font=\scriptsize,anchor=south,text=cstable] (q2) at (7.4,1.62) {quoted at one state};
+\draw[flow,draw=caccent] (7.4,0.4) -- (7.4,1.28);
+\node[font=\scriptsize,anchor=north,text=caccent] (g2) at (7.4,0.4) {gap in basis points};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{A vehicle currency written into the contract}
+\begin{columns}[T]
+\begin{column}{0.44\textwidth}
+\begin{itemize}
+\item Uniswap V1: one exchange contract per token, native asset on the other side
+\item Token to token: no direct pool exists, so the protocol hops
+\item \keyfig{217,003} forced routes, \keyfig{8.60\%} of 2,522,120 V1 swap transactions
+\item 87.4\% of forced routes report exactly equal legs
+\end{itemize}
+\vspace{0.4em}
+\srcnote{Kiyotaki and Wright (1989)}
+\end{column}
+\begin{column}{0.54\textwidth}
+\centering
+% docs/finding-v1-forced-vehicle.md section 1 and its closing numerical correction
+\begin{tikzpicture}[scale=0.92,transform shape]
+\node[vtx,fill=cnative,text=white,minimum size=24pt,font=\scriptsize] (hub) at (0,0) {ETH};
+\foreach \a/\n in {90/1,45/2,0/3,315/4,270/5,225/6,180/7,135/8}{\node[vtx] (r\n) at (\a:2.05) {};}
+\foreach \n in {1,2,3,4,5,6,7,8}{\draw[draw=crule,line width=0.8pt] (hub) -- (r\n);}
+\draw[flow,draw=caccent] (r7) -- (hub);
+\draw[flow,draw=caccent] (hub) -- (r3);
+\node[font=\tiny,anchor=east] (la) at (-2.25,0) {token $a$};
+\node[font=\tiny,anchor=west] (lb) at (2.25,0) {token $b$};
+\node[font=\tiny,text=caccent,anchor=south] (e1) at (-1.05,0.1) {$x$ ETH};
+\node[font=\tiny,text=caccent,anchor=south] (e2) at (1.05,0.1) {$x$ ETH};
+\node[font=\scriptsize,anchor=north,align=center] (cap) at (0,-2.5) {no rim to rim edge exists};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{The mandate goes, the pairing climbs}
+\begin{columns}[T]
+\begin{column}{0.37\textwidth}
+\begin{itemize}
+\item V2 live 2020-05-05, arbitrary token pairs allowed
+\item Constraint removed, outcome unmoved
+\item \keyfig{97.1\%} of 477,633 pairs ever traded hold the wrapped native asset
+\item New-pair share 84.1\% in 2020, 99.0\% in 2023, 97.9\% in 2026
+\end{itemize}
+\vspace{0.3em}
+\srcnote{Uniswap V2 only, the venue that lost the mandate}
+\end{column}
+\begin{column}{0.61\textwidth}
+\centering
+% docs/finding-v1-forced-vehicle.md section 3, both tables
+\begin{tikzpicture}
+\begin{axis}[deckaxis,width=8.4cm,height=5.4cm,xmin=2019.6,xmax=2026.4,ymin=76,ymax=101,xtick={2020,2021,2022,2023,2024,2025,2026},xticklabel style={/pgf/number format/1000 sep=},ylabel={share holding the wrapped native asset, \%},legend style={at={(0.5,-0.20)},anchor=north,legend columns=3,draw=none,font=\tiny},legend cell align=left]
+\addplot[color=cnative,mark=*,mark size=1.6pt] coordinates {(2020,84.1) (2021,92.9) (2022,96.5) (2023,99.0) (2024,98.0) (2025,98.1) (2026,97.9)};
+\addlegendentry{new pairs}
+\addplot[color=cstable,mark=square*,mark size=1.5pt] coordinates {(2020,95.1) (2021,95.2) (2022,93.4) (2023,97.9) (2024,97.7) (2025,95.4) (2026,95.5)};
+\addlegendentry{single leg, count}
+\addplot[color=cimported,mark=triangle*,mark size=1.8pt] coordinates {(2020,81.2) (2021,90.2) (2022,85.1) (2023,94.1) (2024,85.2) (2025,94.1) (2026,84.6)};
+\addlegendentry{single leg, value}
+\draw[draw=caccent,line width=1pt,dashed] (axis cs:2020.35,76) -- (axis cs:2020.35,101);
+\node[font=\tiny,text=caccent,anchor=west,align=left] (evt) at (axis cs:2020.45,78.6) {2020-05-05\\arbitrary pairs allowed};
+\end{axis}
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Four architectures of one role}
+\centering
+% Launch dates: V1 first trading day 2018-11-02 (docs/finding-v1-forced-vehicle.md section 1);
+% V2 2020-05-05 (same); V3 2021-05-05 and V4 2025-01-31 (docs/finding-cross-venue-spillover.md)
+\begin{tikzpicture}[scale=0.95,transform shape]
+\foreach \x/\lab/\dt in {0/V1/2018-11, 3.4/V2/2020-05, 6.8/V3/2021-05, 10.2/V4/2025-01}{\node[font=\scriptsize\bfseries,anchor=south] at (\x+1.25,3.35) {\lab};\node[font=\tiny,text=cother,anchor=north] at (\x+1.25,-0.35) {\dt};}
+\draw[draw=crule,line width=1pt] (-0.3,-0.15) -- (11.9,-0.15);
+\foreach \x in {1.25,4.65,8.05,11.45}{\filldraw[cnative] (\x,-0.15) circle (2.2pt);}
+\begin{scope}[shift={(0,0)}]
+\node[vtx,fill=cnative,text=white,minimum size=13pt] (h1) at (1.25,1.95) {};
+\foreach \a in {30,102,174,246,318}{\node[vtx,minimum size=8pt] (p1\a) at ($(1.25,1.95)+(\a:0.95)$) {};\draw[draw=crule,line width=0.7pt] (h1) -- (p1\a);}
+\node[font=\tiny,anchor=north,align=center] at (1.25,0.75) {mandated};
+\end{scope}
+\begin{scope}[shift={(3.4,0)}]
+\node[vtx,fill=cnative,text=white,minimum size=13pt] (h2) at (1.25,1.95) {};
+\foreach \a in {30,102,174,246,318}{\node[vtx,minimum size=8pt] (p2\a) at ($(1.25,1.95)+(\a:0.95)$) {};\draw[draw=crule,line width=0.7pt] (h2) -- (p2\a);}
+\draw[draw=crule,line width=0.5pt] (p230) -- (p2102);
+\draw[draw=crule,line width=0.5pt] (p2174) -- (p2246);
+\draw[draw=crule,line width=0.5pt] (p2318) -- (p230);
+\node[circle,draw=cimported,fill=white,inner sep=0.5pt,font=\tiny,text=cimported] (w2) at (1.90,2.70) {w};
+\node[font=\tiny,anchor=north,align=center] at (1.25,0.75) {chosen, wrapped};
+\end{scope}
+\begin{scope}[shift={(6.8,0)}]
+\node[vtx,fill=cnative,text=white,minimum size=13pt] (h3) at (1.25,1.95) {};
+\foreach \a in {30,102,174,246,318}{\node[vtx,minimum size=8pt] (p3\a) at ($(1.25,1.95)+(\a:0.95)$) {};\draw[draw=crule,line width=2.6pt] (h3) -- (p3\a);}
+\draw[draw=crule,line width=1.6pt] (p330) -- (p3102);
+\draw[draw=crule,line width=1.6pt] (p3174) -- (p3246);
+\node[circle,draw=cimported,fill=white,inner sep=0.5pt,font=\tiny,text=cimported] (w3) at (1.90,2.70) {w};
+\node[font=\tiny,anchor=north,align=center] at (1.25,0.75) {depth in ticks};
+\end{scope}
+\begin{scope}[shift={(10.2,0)}]
+\node[vtx,fill=cnative,text=white,minimum size=13pt] (h4) at (1.25,1.95) {};
+\foreach \a in {30,102,174,246,318}{\node[vtx,minimum size=8pt] (p4\a) at ($(1.25,1.95)+(\a:0.95)$) {};\draw[draw=crule,line width=2.6pt] (h4) -- (p4\a);}
+\draw[draw=crule,line width=1.6pt] (p430) -- (p4102);
+\draw[draw=crule,line width=1.6pt] (p4174) -- (p4246);
+\node[font=\tiny,anchor=north,align=center] at (1.25,0.75) {native, unwrapped};
+\end{scope}
+\end{tikzpicture}
+\vspace{0.5em}
+\begin{itemize}
+\item Mandated by code, then chosen and wrapped, then chosen and unwrapped
+\item Same role across four designs, one wrapping badge appearing and going
+\end{itemize}
+\vspace{0.2em}
+\srcnote{Adams, Zinsmeister and Robinson (2021) for concentrated liquidity}
+\end{frame}

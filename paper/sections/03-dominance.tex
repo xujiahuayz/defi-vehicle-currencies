@@ -25,7 +25,7 @@ The raw mean over matched routes is 41.3\%, and it is not the population figure.
 % output/exhibits/matched_sample_characterisation.jsonl
 
 Because dominance incidence differs by a factor of two and a half across candidate types, quoting the matched mean as a population figure would report a statement about large trades on busy pairs through stablecoins. Reweighting the matched type-specific rates to the population's candidate composition gives 27.2\% and covers 79.0\% of realised routing, with the residual 21.0\% being \emph{other} and staked-native routing for which no matched rate exists. The arithmetic is one line per candidate type, each contributing its population weight multiplied by its matched dominance rate, and it is reported at full precision so a reader can land on the published figure exactly.
-% output/exhibits/realised_dominance_reweighting.jsonl, emitted by scripts/measure_realised_dominance.py
+% scripts/measure_realised_dominance.py, which emits the per-type reweighting rows at full precision
 
 One thing the reweighting cannot fix is stated plainly. Nothing conditional on trade size generalises from this sample, because the panel prices three fixed notionals and matched trades are an order of magnitude larger than the population's. Any size gradient in what follows is therefore reported as a property of the matched sample.
 

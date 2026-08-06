@@ -1,0 +1,153 @@
+% Slides 11 to 15. The lead result, the survival estimand and its two arms, the measured
+% timing obstacle, the concentration reading, and the horse race. Sources: paper sections 3,
+% 4, 5 and 6; output/exhibits/realised_dominance.jsonl; matched_sample_characterisation.jsonl;
+% docs/finding-fragmentation-not-succession.md; docs/finding-rent-incidence.md.
+
+\begin{frame}{Dominated at the state they executed in}
+\begin{columns}[T]
+\begin{column}{0.32\textwidth}
+\begin{itemize}
+\item \keyfig{27.2\%} of realised multi-leg routing beaten by a direct pool at its own state
+\item Population-weighted, covering 79.0\% of realised routing
+\item Native 23.7\%, stable 45.4\%, imported 61.4\%
+\item Matched routes 1.9\% of realised, median trade \$11,594 against \$866
+\end{itemize}
+\vspace{0.2em}
+\srcnote{The role held while strictly cost-dominated, observed}
+\end{column}
+\begin{column}{0.66\textwidth}
+\centering
+% Incidence by candidate type: paper section 3.3. Population weights: the unmatched column of
+% output/exhibits/matched_sample_characterisation.jsonl. Headline: realised_dominance.jsonl.
+\begin{tikzpicture}
+\begin{axis}[deckaxis,name=inc,width=5.5cm,height=5.0cm,ybar,bar width=19pt,bar shift=0pt,ymin=0,ymax=88,symbolic x coords={native,stable,imported},xtick={native,stable,imported},xticklabels={native\\67.7\%,stable\\10.3\%,imported\\0.5\%},xticklabel style={font=\tiny,align=center},ylabel={dominance incidence, \%},title={by candidate type},nodes near coords,every node near coord/.append style={font=\tiny,color=cink,fill=white,inner sep=1pt}]
+\addplot[fill=cnative!45,draw=cnative] coordinates {(native,23.7)};
+\addplot[fill=cstable!45,draw=cstable] coordinates {(stable,45.4)};
+\addplot[fill=cimported!45,draw=cimported] coordinates {(imported,61.4)};
+\draw[draw=caccent,line width=1pt,dashed] (axis cs:native,27.2) -- (axis cs:imported,27.2);
+\node[font=\tiny,text=caccent,anchor=north west] at (axis cs:native,86) {27.2\% population-weighted};
+\draw[draw=caccent,line width=0.5pt] (axis cs:stable,80.5) -- (axis cs:stable,28.5);
+\end{axis}
+% output/exhibits/realised_dominance.jsonl, four priced days and the REWEIGHTED row
+\begin{axis}[deckaxis,at={(inc.east)},xshift=1.3cm,anchor=west,width=5.2cm,height=5.0cm,ybar,bar width=11pt,ymin=0,ymax=88,symbolic x coords={06-01,06-02,06-03,06-04},xtick=data,xticklabel style={font=\tiny},title={matched routes, by day},nodes near coords,every node near coord/.append style={font=\tiny,color=cink,fill=white,inner sep=1pt}]
+\addplot[fill=cother!35,draw=cother] coordinates {(06-01,49.5) (06-02,38.0) (06-03,39.2) (06-04,37.9)};
+\draw[draw=cink,line width=1pt,dashed] (axis cs:06-01,41.3) -- (axis cs:06-04,41.3);
+\node[font=\tiny,text=cink,anchor=south east] at (axis cs:06-04,62.0) {41.3\% raw matched};
+\draw[draw=caccent,line width=1pt,dashed] (axis cs:06-01,27.2) -- (axis cs:06-04,27.2);
+\node[font=\tiny,text=caccent,anchor=north east] at (axis cs:06-04,25.6) {27.2\% reweighted};
+\end{axis}
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{How long does the role survive}
+\begin{columns}[T]
+\begin{column}{0.35\textwidth}
+\begin{itemize}
+\item A frequency is a statement about states
+\item The inertia literature asks for a duration
+\item Two arms on the same pairs, the same states, one pricing engine
+\item Equal durations: \textbf{persistence}
+\item Retention above displacement: \textbf{hysteresis}
+\end{itemize}
+\vspace{0.2em}
+\srcnote{Neither arm is observable in foreign exchange}
+\end{column}
+\begin{column}{0.63\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.92,transform shape]
+\node[font=\scriptsize\bfseries,text=cnative,anchor=west] (l1) at (-0.6,2.55) {retention};
+\draw[draw=crule,line width=1pt] (0,2.0) -- (9.4,2.0);
+\fill[cnative!25] (2.0,1.82) rectangle (6.4,2.18);
+\filldraw[cnative] (2.0,2.0) circle (2.4pt);
+\filldraw[cnative] (6.4,2.0) circle (2.4pt);
+\node[font=\tiny,anchor=south,align=center] (r1) at (2.0,2.2) {incumbent\\becomes dominated};
+\node[font=\tiny,anchor=south,align=center] (r2) at (6.4,2.2) {another asset takes\\the largest share};
+\node[font=\tiny,text=cnative,anchor=north] (r3) at (4.2,1.8) {days holding the largest routing share};
+\draw[draw=cnative,line width=1.4pt] (8.6,1.75) -- (8.6,2.25);
+\node[font=\tiny,text=cother,anchor=north] (r4) at (8.6,1.72) {censored};
+\node[font=\scriptsize\bfseries,text=cstable,anchor=west] (l2) at (-0.6,0.75) {displacement};
+\draw[draw=crule,line width=1pt] (0,0.2) -- (9.4,0.2);
+\fill[cstable!25] (2.0,0.02) rectangle (4.6,0.38);
+\filldraw[cstable] (2.0,0.2) circle (2.4pt);
+\filldraw[cstable] (4.6,0.2) circle (2.4pt);
+\node[font=\tiny,anchor=south,align=center] (d1) at (2.0,0.4) {challenger becomes\\strictly cheaper};
+\node[font=\tiny,anchor=south,align=center] (d2) at (4.6,0.4) {challenger takes\\the largest share};
+\node[font=\tiny,text=cstable,anchor=north] (d3) at (3.3,0.0) {days to take it};
+\draw[decorate,decoration={brace,mirror,amplitude=4pt},draw=caccent] (4.6,-0.55) -- (6.4,-0.55);
+\node[font=\tiny,text=caccent,anchor=north,align=center] (gap) at (5.5,-0.75) {the difference in days};
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{The state a router quotes at}
+\begin{columns}[T]
+\begin{column}{0.40\textwidth}
+\begin{itemize}
+\item Router quotes at a block, the panel prices at the close of an hour
+\item Verdict flips \keyfig{38.0\%} at zero size, 371 triangles, 189,857 route observations
+\item Two pool fees against one shift the boundary
+\item Flip rate rises with time to the hour boundary, roughly 15\% to 44.9\%
+\item Frequency intact, duration estimated at each route's own block
+\end{itemize}
+\end{column}
+\begin{column}{0.58\textwidth}
+\centering
+% paper section 6.2, fee-wedge sweep read from output/exhibits/block_vs_hour_verdict.jsonl
+\begin{tikzpicture}
+\begin{axis}[deckaxis,width=7.0cm,height=5.0cm,ybar,bar width=22pt,ymin=0,ymax=45,symbolic x coords={0,30,60,100},xtick=data,xlabel={net fee wedge of the two-leg route, basis points},ylabel={verdicts flipping under repricing, \%},nodes near coords,every node near coord/.append style={font=\scriptsize,color=cink}]
+\addplot[fill=caccent!40,draw=caccent] coordinates {(0,38.0) (30,24.5) (60,15.6) (100,8.9)};
+\end{axis}
+\end{tikzpicture}
+\par\vspace{-0.2em}
+\srcnote{Seven sampled days, 2021-12-25 to 2025-11-04}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Fragmentation against succession}
+\begin{columns}[T]
+\begin{column}{0.34\textwidth}
+\begin{itemize}
+\item Effective vehicles \keyfig{1.42} to \keyfig{8.43} by value, \keyfig{1.86} to \keyfig{7.31} by count
+\item Leader's share of value 83.7\% to 25.5\%, of count 71.5\% to 27.9\%
+\item Leadership alternating from 2022 on value alone, native leads every year on count
+\item Succession: concentration holds, the leader changes
+\item Fragmentation: concentration falls, the incumbent may lead
+\end{itemize}
+\vspace{0.2em}
+\srcnote{The dollar against the euro and the renminbi is this question}
+\end{column}
+\begin{column}{0.64\textwidth}
+\centering
+% output/exhibits/vehicle_concentration.jsonl, share_volume basis, effective = 1/HHI
+\begin{tikzpicture}
+\begin{axis}[deckaxis,width=7.6cm,height=5.0cm,xmin=2019.7,xmax=2026.3,ymin=0,ymax=10,xtick={2020,2021,2022,2023,2024,2025,2026},xticklabel style={/pgf/number format/1000 sep=},ylabel={effective number of vehicles},axis y line*=left]
+\addplot[color=cnative,mark=*,mark size=1.8pt] coordinates {(2020,1.42) (2021,3.25) (2022,5.98) (2023,5.33) (2024,5.56) (2025,6.17) (2026,8.43)};
+\node[font=\tiny,text=cnative,anchor=north] at (axis cs:2024.0,4.2) {effective vehicles};
+\end{axis}
+\begin{axis}[deckaxis,width=7.6cm,height=5.0cm,xmin=2019.7,xmax=2026.3,ymin=0,ymax=95,axis y line*=right,axis x line=none,ylabel={leader share of intermediated value, \%},grid=none]
+\addplot[color=cimported,mark=square*,mark size=1.6pt,dashed] coordinates {(2020,83.7) (2021,50.2) (2022,26.5) (2023,36.6) (2024,37.0) (2025,25.8) (2026,25.5)};
+\node[font=\tiny,text=cimported,anchor=west] at (axis cs:2022.3,58.0) {leader share of value};
+\end{axis}
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{What holds the role there}
+\centering
+\begin{tikzpicture}[scale=0.95,transform shape]
+\node[card,draw=crule,minimum width=5.6cm,minimum height=1.6cm,anchor=north west] (a) at (0,0) {\textbf{Slow capital} \raisebox{0pt}{\color{cother}\itshape premise held, test blocked}\\depth follows committed capital\\median net yield $-5.96\%$ on 100,639 pools\\cross-venue depth measure still owed};
+\node[card,draw=crule,minimum width=5.6cm,minimum height=1.6cm,anchor=north west] (b) at (6.2,0) {\textbf{Integration scope} \raisebox{0pt}{\color{cother}\itshape no completed test}\\a cheaper route no aggregator reaches\\routing authored off chain\\labelled executor share 67.7\% to 11.8\%};
+\node[card,draw=crule,minimum width=5.6cm,minimum height=1.6cm,anchor=north west] (c) at (0,-2.3) {\textbf{Holding cost} \raisebox{0pt}{\color{caccent}\itshape half rejected}\\the intermediary's own volatility\\size interaction $+0.0023$ (0.914)\\crossover ordering survives its rival};
+\node[card,draw=cnative,fill=cnative!10,minimum width=5.6cm,minimum height=1.6cm,anchor=north west] (d) at (6.2,-2.3) {\textbf{\color{cnative}Defaults} \raisebox{0pt}{\color{cnative}\itshape leads on the evidence}\\routing software and launch templates\\mandate removal left pairing where it was\\power 98.4\% against a halving};
+\end{tikzpicture}
+\vspace{0.4em}
+\begin{itemize}
+\item Trader habit unavailable: a graph search re-solved at every quote
+\item Each account names a state variable, and the duration measures its speed
+\end{itemize}
+\end{frame}

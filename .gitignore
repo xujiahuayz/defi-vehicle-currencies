@@ -66,3 +66,12 @@ paper/*.fls
 paper/*.log
 paper/*.out
 paper/main.pdf
+deck/*.aux
+deck/*.fdb_latexmk
+deck/*.fls
+deck/*.log
+deck/*.nav
+deck/*.out
+deck/*.snm
+deck/*.toc
+deck/main.pdf

@@ -1,0 +1,91 @@
+% The Making of Dominant Vehicle Currencies: Evidence from DeFi
+% Conference deck, Nanyang Blockchain Conference, NTU Singapore.
+% Self-contained: standard beamer, TikZ and pgfplots only. No external theme, no image files.
+% Every number carries a trailing comment naming the exhibit, finding document or paper
+% section it was read from. Nothing here is typed from memory.
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{positioning,arrows.meta,patterns,calc,fit,backgrounds,decorations.pathreplacing}
+
+\usetheme{default}
+\usecolortheme{default}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+
+% Asset-type palette. Fixed once on the taxonomy slide and inherited by every later chart.
+\definecolor{cnative}{RGB}{27,78,124}
+\definecolor{cstable}{RGB}{0,124,110}
+\definecolor{cimported}{RGB}{186,110,16}
+\definecolor{cstaked}{RGB}{124,166,205}
+\definecolor{cother}{RGB}{150,150,150}
+\definecolor{cink}{RGB}{28,32,38}
+\definecolor{crule}{RGB}{200,205,212}
+\definecolor{caccent}{RGB}{166,28,48}
+\definecolor{cpanel}{RGB}{243,245,248}
+
+\setbeamercolor{normal text}{fg=cink}
+\setbeamercolor{structure}{fg=cnative}
+\setbeamercolor{frametitle}{fg=cink,bg=white}
+\setbeamercolor{itemize item}{fg=cnative}
+\setbeamercolor{itemize subitem}{fg=cother}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{itemize/enumerate body}{size=\small}
+\setbeamerfont{itemize/enumerate subbody}{size=\footnotesize}
+\setbeamertemplate{itemize item}{\raisebox{0.15ex}{\rule{0.45em}{0.45em}}}
+\setbeamertemplate{itemize subitem}{\raisebox{0.2ex}{\rule{0.3em}{0.3em}}}
+
+\setbeamertemplate{frametitle}{\vspace{0.9em}\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}\insertframetitle\par\vspace{0.25em}{\color{cnative}\hrule height 1.1pt}\vspace{-0.2em}}
+
+\setbeamertemplate{footline}{\hfill\usebeamerfont{footline}{\color{cother}\scriptsize\insertframenumber}\hspace{1.2em}\vspace{0.7em}}
+
+\newcommand{\srcnote}[1]{{\color{cother}\scriptsize #1}}
+\newcommand{\keyfig}[1]{{\color{cnative}\bfseries #1}}
+
+% Shared chart and diagram styles, each declared on one line so the source carries no wrapped lines.
+\pgfplotsset{deckaxis/.style={font=\scriptsize,axis line style={crule},tick style={crule},grid=major,grid style={crule,very thin},xlabel style={font=\scriptsize},ylabel style={font=\scriptsize},title style={font=\scriptsize\bfseries},legend style={font=\scriptsize,draw=crule,fill=white},every axis plot/.append style={line width=1.1pt}}}
+\pgfplotsset{nearlabels/.style={nodes near coords,point meta=explicit symbolic,every node near coord/.append style={font=\tiny,color=cink,inner sep=1.5pt}}}
+\tikzset{card/.style={rectangle,rounded corners=2pt,draw=crule,fill=cpanel,inner sep=5pt,align=left,font=\scriptsize}}
+\tikzset{tile/.style={rectangle,rounded corners=2pt,draw=crule,fill=cpanel,inner sep=5pt,align=center,minimum width=2.5cm,font=\scriptsize}}
+\tikzset{vtx/.style={circle,draw=cink,fill=white,inner sep=0pt,minimum size=15pt,font=\tiny}}
+\tikzset{flow/.style={-{Stealth[length=4pt]},line width=0.9pt}}
+\tikzset{ghost/.style={-{Stealth[length=4pt]},line width=0.9pt,dashed,draw=cother}}
+
+\title{The Making of Dominant Vehicle Currencies}
+\subtitle{Evidence from DeFi}
+\author{Jiahua Xu}
+\institute{University College London, Centre for Blockchain Technologies}
+\date{Nanyang Blockchain Conference, NTU Singapore}
+
+\begin{document}
+
+\begin{frame}[plain,noframenumbering]
+\vspace{0.6cm}
+\noindent{\color{cnative}\rule{\textwidth}{2.4pt}}\par
+\vspace{0.35cm}
+{\Large\bfseries The Making of Dominant Vehicle Currencies\par}
+\vspace{0.15cm}
+{\large\color{cstable}Evidence from DeFi\par}
+\vspace{0.9cm}
+{\normalsize Jiahua Xu\par}
+{\small\color{cother}University College London, Centre for Blockchain Technologies\par}
+\vspace{0.6cm}
+{\small\color{cother}Nanyang Blockchain Conference, NTU Singapore\par}
+\vspace{0.5cm}
+\noindent{\color{cstable}\rule{3.2cm}{1.6pt}}\par
+\end{frame}
+
+\input{sections/01-identification}
+\input{sections/02-objects}
+\input{sections/03-design}
+\input{sections/04-results}
+\input{sections/05-close}
+\input{sections/90-appendix}
+
+\end{document}

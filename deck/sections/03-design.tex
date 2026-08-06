@@ -1,0 +1,75 @@
+% Slides 9 and 10. How the counterfactual is priced, and where the quoters are allowed to
+% quote. Sources: paper sections 2.4 and 2.5; output/exhibits/quoter_support_bounds.jsonl;
+% output/exhibits/gap_arbitrage_bound.jsonl; output/exhibits/dominance_windows_screened.jsonl.
+
+\begin{frame}{Pricing the road not taken}
+\centering
+\begin{tikzpicture}[scale=0.95,transform shape]
+\node[card,fill=cpanel,draw=cnative,minimum width=2.6cm,minimum height=1.5cm,align=center] (st) at (0,1.25) {\textbf{one state}\\reserves\\ticks\\balances};
+\node[card,draw=crule,minimum width=1.9cm,align=center] (d1) at (4.6,2.5) {quote $a \to b$};
+\node[card,draw=crule,minimum width=1.9cm,align=center] (v1) at (3.4,0.0) {quote $a \to k$};
+\node[card,draw=crule,minimum width=1.9cm,align=center] (v2) at (6.1,0.0) {quote $k \to b$};
+\node[card,fill=cstable!12,draw=cstable,minimum width=1.9cm,align=center] (o1) at (8.6,2.5) {direct output};
+\node[card,fill=cnative!12,draw=cnative,minimum width=1.9cm,align=center] (o2) at (8.6,0.0) {vehicle output};
+\draw[flow] (st.east) to[out=20,in=180] (d1.west);
+\draw[flow] (d1.east) -- (o1.west);
+\draw[flow] (st.east) to[out=-20,in=180] (v1.west);
+\draw[flow] (v1.east) -- (v2.west);
+\draw[flow] (v2.east) -- (o2.west);
+\node[card,fill=cimported!12,draw=cimported,minimum width=2.0cm,align=center] (g) at (0.4,-1.5) {gas per leg\\from receipts};
+\draw[ghost,draw=cimported] (g.north east) to[out=40,in=250] (d1.south);
+\draw[ghost,draw=cimported] (g.east) to[out=10,in=210] (v1.south west);
+\draw[ghost,draw=cimported] (g.east) to[out=0,in=250] (v2.south);
+\draw[decorate,decoration={brace,amplitude=4pt},draw=caccent] (9.9,2.5) -- (9.9,0.0);
+\node[font=\scriptsize,text=caccent,anchor=west,align=left] (gp) at (10.05,1.25) {gap in\\basis points};
+\end{tikzpicture}
+\vspace{0.5em}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\begin{itemize}
+\item Both routes quoted at one reconstructed state
+\item Price movement cannot enter the comparison
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{itemize}
+\item Constant product, tick traversal, StableSwap, weighted geometric mean
+\item Every quoter accepted only against swaps that executed
+\end{itemize}
+\end{column}
+\end{columns}
+\vspace{0.2em}
+\srcnote{Adams, Zinsmeister and Robinson (2021); Lehar and Parlour (2024)}
+\end{frame}
+
+\begin{frame}{Quoting only where the quoter was validated}
+\begin{columns}[T]
+\begin{column}{0.34\textwidth}
+\begin{itemize}
+\item Realised trade at \keyfig{0.34\%} of the input reserve at the median, 3.3\% at the 90th percentile
+\item Screen refuses any leg whose own price impact exceeds \keyfig{5\%}
+\item Median gap at \$100k falls from 4,655 to 20.8 basis points
+\item 70\% to 86\% of quotable routes removed
+\end{itemize}
+\vspace{0.2em}
+\srcnote{Stated in pool state, known before the quote}
+\end{column}
+\begin{column}{0.64\textwidth}
+\centering
+% output/exhibits/quoter_support_bounds.jsonl POOLED row, 932,270 validated swaps on eight days
+\begin{tikzpicture}
+\begin{axis}[deckaxis,name=sz,nearlabels,width=5.0cm,height=4.8cm,ybar,bar width=10pt,ymode=log,ymin=0.1,ymax=600,symbolic x coords={median,p90,p99,p999},xtick=data,xticklabels={median,90th,99th,99.9th},title={realised size over input reserve, \%}]
+\addplot[fill=cnative!35,draw=cnative] coordinates {(median,0.34) [0.34] (p90,3.29) [3.29] (p99,14.86) [14.9] (p999,78.33) [78.3]};
+\draw[draw=caccent,line width=1pt,dashed] (axis cs:median,5) -- (axis cs:p999,5);
+\node[font=\tiny,text=caccent,anchor=south west,fill=white,inner sep=0.5pt] at (axis cs:median,5.4) {5\% screen};
+\end{axis}
+% output/exhibits/gap_arbitrage_bound.jsonl post-screen medians; paper section 2.5 for the 4,655
+\begin{axis}[deckaxis,at={(sz.east)},xshift=1.3cm,anchor=west,nearlabels,width=5.4cm,height=4.8cm,ybar,bar width=13pt,ymode=log,ymin=5,ymax=30000,symbolic x coords={a,b,c},xtick=data,xticklabels={\$1k,\$10k,\$100k},title={median cost gap, basis points}]
+\addplot[fill=cstable!45,draw=cstable] coordinates {(a,31.1) [31.1] (b,33.9) [33.9] (c,20.8) [20.8]};
+\draw[draw=cother,line width=1pt,dashed] (axis cs:a,4655) -- (axis cs:c,4655);
+\node[font=\tiny,text=cother,anchor=south] at (axis cs:b,5400) {before the screen at \$100k, 4,655};
+\end{axis}
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}

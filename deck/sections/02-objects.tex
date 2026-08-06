@@ -1,0 +1,106 @@
+% Slides 6 to 8. The taxonomy that fixes the colour mapping, the migration that supplies the
+% time axis, and the mandatory data slide. Sources: paper sections 2.2 to 2.4;
+% docs/finding-intermediation-transition.md; docs/finding-native-intermediation-advantage.md;
+% output/exhibits/venue_volume_by_year.jsonl.
+
+\begin{frame}{Types before tickers}
+\centering
+\begin{tikzpicture}[scale=0.95,transform shape]
+\node[card,fill=cnative!12,draw=cnative,minimum width=5.6cm,minimum height=1.5cm,anchor=north west] (n) at (0,0) {\textbf{\color{cnative}Native platform asset}\\thickest pairing network, high volatility\\{\ttfamily WETH, native ETH}\\{\itshape incumbent international currency}};
+\node[card,fill=cstable!12,draw=cstable,minimum width=5.6cm,minimum height=1.5cm,anchor=north west] (s) at (6.2,0) {\textbf{\color{cstable}Stable numeraire}\\unit of account, low volatility\\{\ttfamily USDC, USDT, DAI}\\{\itshape managed or pegged stable unit}};
+\node[card,fill=cimported!12,draw=cimported,minimum width=5.6cm,minimum height=1.5cm,anchor=north west] (i) at (0,-2.3) {\textbf{\color{cimported}Imported store of value}\\wrapped claim brought on platform\\{\ttfamily WBTC, tokenised gold}\\{\itshape gold or a foreign reserve asset}};
+\node[card,fill=cstaked!12,draw=cstaked,minimum width=5.6cm,minimum height=1.5cm,anchor=north west] (o) at (6.2,-2.3) {\textbf{\color{cstaked}Staked native derivative}\\same exposure, separate instrument\\{\ttfamily stETH and equivalents}\\{\itshape whether it is the same currency is a choice}};
+\end{tikzpicture}
+\vspace{0.4em}
+\begin{itemize}
+\item Traditional-finance counterpart named for each type
+\item Everything else is other, 24.2\% of 2026 episodes, and no type claim extends past the classified set
+\end{itemize}
+\vspace{0.1em}
+\srcnote{Gopinath and Stein (2021); Gorton and Zhang (2023); Lyons and Viswanath-Natraj (2023)}
+\end{frame}
+
+\begin{frame}{The role moves, and it takes six years}
+\begin{columns}[T]
+\begin{column}{0.30\textwidth}
+\begin{itemize}
+\item Native share of intermediated value \keyfig{73.0\%} in 2020, \keyfig{14.8\%} in 2026
+\item Stable 21.2\% to 50.1\%
+\item Value crossover 2022-Q1, held from 2022-Q4
+\item Count crossover only at the sample edge, 2026-H1
+\item Imported 1.3\% to 9.9\% of value
+\end{itemize}
+\end{column}
+\begin{column}{0.68\textwidth}
+\centering
+% docs/finding-intermediation-transition.md, both share tables
+\begin{tikzpicture}
+\begin{axis}[deckaxis,name=cnt,width=5.2cm,height=5.0cm,xmin=2019.7,xmax=2026.3,ymin=0,ymax=80,xtick={2020,2022,2024,2026},xticklabel style={/pgf/number format/1000 sep=},title={count-weighted},ylabel={share of episodes, \%},legend style={at={(1.12,-0.16)},anchor=north,legend columns=4,draw=none,font=\tiny},legend cell align=left]
+\addplot[color=cnative,mark=*,mark size=1.4pt] coordinates {(2020,68.7) (2021,72.4) (2022,62.9) (2023,71.3) (2024,66.0) (2025,45.1) (2026,32.9)};
+\addlegendentry{native}
+\addplot[color=cstable,mark=square*,mark size=1.3pt] coordinates {(2020,26.8) (2021,21.3) (2022,25.6) (2023,13.9) (2024,14.1) (2025,28.9) (2026,36.4)};
+\addlegendentry{stable}
+\addplot[color=cimported,mark=triangle*,mark size=1.6pt] coordinates {(2020,0.2) (2021,2.0) (2022,1.3) (2023,0.9) (2024,1.3) (2025,4.1) (2026,5.8)};
+\addlegendentry{imported}
+\addplot[color=cother,mark=diamond*,mark size=1.4pt,dashed] coordinates {(2020,4.3) (2021,4.3) (2022,10.1) (2023,13.7) (2024,17.7) (2025,20.7) (2026,24.2)};
+\addlegendentry{other}
+\node[circle,draw=caccent,fill=none,inner sep=2.2pt,line width=0.8pt] at (axis cs:2026,34.6) {};
+\node[font=\tiny,text=caccent,anchor=north east] at (axis cs:2026.2,76.0) {crossover 2026-H1};
+\draw[draw=caccent,line width=0.5pt] (axis cs:2025.9,72.0) -- (axis cs:2026,38.5);
+\end{axis}
+\begin{axis}[deckaxis,at={(cnt.east)},xshift=1.1cm,anchor=west,width=5.2cm,height=5.0cm,xmin=2019.7,xmax=2026.3,ymin=0,ymax=80,xtick={2020,2022,2024,2026},xticklabel style={/pgf/number format/1000 sep=},title={value-weighted}]
+\addplot[color=cnative,mark=*,mark size=1.4pt] coordinates {(2020,73.0) (2022,24.3) (2024,36.0) (2026,14.8)};
+\addplot[color=cstable,mark=square*,mark size=1.3pt] coordinates {(2020,21.2) (2022,46.2) (2024,29.5) (2026,50.1)};
+\addplot[color=cimported,mark=triangle*,mark size=1.6pt] coordinates {(2020,1.3) (2022,4.3) (2024,3.6) (2026,9.9)};
+\addplot[color=cother,mark=diamond*,mark size=1.4pt,dashed] coordinates {(2020,4.5) (2022,24.9) (2024,24.2) (2026,23.7)};
+\node[circle,draw=caccent,fill=none,inner sep=2.2pt,line width=0.8pt] at (axis cs:2021.3,36.0) {};
+\node[font=\tiny,text=caccent,anchor=north west] at (axis cs:2019.9,76.0) {crossover 2022-Q1};
+\draw[draw=caccent,line width=0.5pt] (axis cs:2020.6,70.0) -- (axis cs:2021.25,39.5);
+\end{axis}
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{What the panel contains}
+\centering
+\begin{tikzpicture}[scale=0.95,transform shape]
+\node[tile,minimum width=2.9cm] (t1) at (0,0) {\textbf{\large 123.8m}\\quoted routes};
+\node[tile,minimum width=2.9cm] (t2) at (3.15,0) {\textbf{\large 2,277}\\daily files};
+\node[tile,minimum width=2.9cm] (t3) at (6.3,0) {\textbf{\large 2,238}\\quoted days, 24 states each};
+\node[tile,minimum width=2.9cm] (t4) at (9.45,0) {\textbf{\large 6}\\venues priced of eight};
+\end{tikzpicture}
+\vspace{0.3em}
+\begin{columns}[T]
+\begin{column}{0.34\textwidth}
+\begin{itemize}
+\item 2020-02-11 to 2026-06-30, roughly 215,000 swap legs a day
+\item \keyfig{30.0m} routes carrying a direct and a vehicle quote at one state
+\item Cross-venue share of multi-leg routes 1.2\% to 61.1\%
+\item Heavily bridged ordered pairs, a head and tail panel and not a census
+\end{itemize}
+\end{column}
+\begin{column}{0.64\textwidth}
+\centering
+% output/exhibits/venue_volume_by_year.jsonl, share_pct by venue and year
+\begin{tikzpicture}
+\begin{axis}[deckaxis,width=8.6cm,height=4.9cm,stack plots=y,area style,xmin=2020,xmax=2026,ymin=0,ymax=100,xtick={2020,2021,2022,2023,2024,2025,2026},xticklabel style={/pgf/number format/1000 sep=},ylabel={share of panel volume, \%},legend style={at={(0.5,-0.18)},anchor=north,legend columns=4,draw=none,font=\tiny},legend cell align=left,grid=none]
+\addplot[fill=cnative,draw=white,line width=0.4pt] coordinates {(2020,75.9) (2021,31.3) (2022,7.0) (2023,9.3) (2024,11.7) (2025,4.8) (2026,2.4)} \closedcycle;
+\addlegendentry{uni v2}
+\addplot[fill=cnative!55,draw=white,line width=0.4pt] coordinates {(2020,0.0) (2021,38.0) (2022,64.1) (2023,66.8) (2024,69.3) (2025,60.1) (2026,49.3)} \closedcycle;
+\addlegendentry{uni v3}
+\addplot[fill=cstaked,draw=white,line width=0.4pt] coordinates {(2020,0.0) (2021,0.0) (2022,0.0) (2023,0.0) (2024,0.0) (2025,22.1) (2026,34.2)} \closedcycle;
+\addlegendentry{uni v4}
+\addplot[fill=cstable,draw=white,line width=0.4pt] coordinates {(2020,11.1) (2021,12.2) (2022,18.7) (2023,13.9) (2024,12.6) (2025,11.0) (2026,13.5)} \closedcycle;
+\addlegendentry{curve}
+\addplot[fill=cimported,draw=white,line width=0.4pt] coordinates {(2020,0.0) (2021,1.2) (2022,5.9) (2023,8.8) (2024,5.9) (2025,1.7) (2026,0.2)} \closedcycle;
+\addlegendentry{balancer}
+\addplot[fill=cother,draw=white,line width=0.4pt] coordinates {(2020,10.9) (2021,17.3) (2022,4.3) (2023,1.2) (2024,0.5) (2025,0.3) (2026,0.1)} \closedcycle;
+\addlegendentry{sushi v2}
+\addplot[pattern=north east lines,pattern color=cother,draw=white,line width=0.4pt] coordinates {(2020,2.1) (2021,0.0) (2022,0.0) (2023,0.0) (2024,0.0) (2025,0.0) (2026,0.3)} \closedcycle;
+\addlegendentry{not priced}
+\end{axis}
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
