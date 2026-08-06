@@ -37,15 +37,18 @@ from __future__ import annotations
 
 import gzip
 import inspect
+import io
 import json
 import math
 import numbers
+from contextlib import ExitStack
 from pathlib import Path
 
 import pandas as pd
 
 from ddvc.paths import REPO_ROOT
 from ddvc.provenance import stamp
+from ddvc.runtime import atomic_output
 
 # Above this many rows an artefact is a panel, whatever directory it sits in, and
 # the columnar format wins on measured read cost.
@@ -112,24 +115,27 @@ def write_exhibit(df: pd.DataFrame, path: str | Path,
             f"limit; write it as a Parquet panel with write_panel() instead")
     if p.suffix not in (".jsonl", ".gz"):
         p = p.with_suffix(".jsonl")
-    p.parent.mkdir(parents=True, exist_ok=True)
     frame = _stringify_big_ints(df)
-    tmp = p.with_name(p.name + ".tmp")
-    opener = (lambda: gzip.open(tmp, "wt")) if p.suffix == ".gz" else (lambda: open(tmp, "w"))
-    try:
-        with opener() as fh:
+    with atomic_output(p) as temporary:
+        with ExitStack() as stack:
+            if p.suffix == ".gz":
+                binary = stack.enter_context(temporary.open("wb"))
+                compressed = stack.enter_context(
+                    gzip.GzipFile(filename="", mode="wb", fileobj=binary, mtime=0)
+                )
+                handle = stack.enter_context(
+                    io.TextIOWrapper(compressed, encoding="utf-8")
+                )
+            else:
+                handle = stack.enter_context(temporary.open("w", encoding="utf-8"))
             for rec in frame.to_dict("records"):
                 clean = {
                     key: None if value is None or _is_missing(value) else value
                     for key, value in rec.items()
                 }
-                fh.write(
+                handle.write(
                     json.dumps(clean, allow_nan=False, default=str, sort_keys=True) + "\n"
                 )
-        tmp.replace(p)
-    finally:
-        if tmp.exists():
-            tmp.unlink()
     stamp(
         p,
         code_sources=_caller_sources(code_sources),
@@ -154,14 +160,8 @@ def write_panel(df: pd.DataFrame, path: str | Path,
                 notes: str | None = None) -> Path:
     """Write an analytic panel as Parquet, which is what code reads."""
     p = Path(path)
-    p.parent.mkdir(parents=True, exist_ok=True)
-    tmp = p.with_name(p.name + ".tmp")
-    try:
-        df.to_parquet(tmp, index=False)
-        tmp.replace(p)
-    finally:
-        if tmp.exists():
-            tmp.unlink()
+    with atomic_output(p) as temporary:
+        df.to_parquet(temporary, index=False)
     stamp(
         p,
         code_sources=_caller_sources(code_sources),

@@ -10,13 +10,13 @@ currency-inertia literature has never been able to measure.
 
 Both arms need a dominance verdict per pair, per candidate, per day. The route-cost panel
 supplies one at the close of each hour, and `scripts/test_block_vs_hour_verdict.py` measured
-what that costs: at the fee wedges these routes actually pay, 15% to 25% of verdicts differ
-from the verdict at the route's own block. A duration contrast that turns on a few
+what that costs at V3 direct-pool swap times: at plausible fee wedges, 15% to 25% of
+opportunity snapshots differ from the event-time verdict. A duration contrast that turns on a few
 percentage points between asset types cannot be separated from a misclassification of that
 size, which is why the arms are not reported off hour-boundary state.
 
-This computes them at block level instead, on the population where block state is OBSERVED
-and needs no reconstruction. Uniswap v3 carries `sqrtPriceX96` on the swap event, so for a
+This computes a pair-day robustness at event level instead, on the population where state is
+observed at V3 direct-pool swap times. It is not the realised route's own state. Uniswap v3 carries `sqrtPriceX96` on the swap event, so for a
 triangle of pools joining a, b and an intermediary k, the sign of
 
     m = log P(a->b) - [log P(a->k) + log P(k->b)] + wedge
@@ -26,8 +26,8 @@ closed triangle. The wedge is the extra pool fee a two-leg route pays over a dir
 which is the stable part of the comparison and the part that decides the verdict at
 realistic size.
 
-What this is and is not. It is a block-exact measurement on one venue family at the
-marginal price, so it omits depth and it omits the venues v3 does not cover. It is the
+What this is and is not. It is an event-ordered measurement on one venue family at the
+marginal price, weighted by direct-pool swap opportunities. It omits depth, realised-route timing and the venues v3 does not cover. It is the
 right robustness counterpart to an hour-level panel estimate over six venues: the two have
 opposite weaknesses, and a duration ordering that survives both is not an artefact of
 either. Where they disagree, the block-level one is right about timing and the panel is
@@ -42,24 +42,19 @@ Writes  output/exhibits/survival_at_block.jsonl       the two arms, with censori
 from __future__ import annotations
 
 import argparse
-import sys
 from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
-from ddvc.asset_types import classify  # noqa: E402
-from ddvc.tables import write_exhibit  # noqa: E402
-
-# Reuse the validated triangle machinery instead of restating it. Its decimals argument and
-# its orientation handling are the part most likely to be got wrong twice.
-sys.path.insert(0, str(ROOT / "scripts"))
-from test_block_vs_hour_verdict import load_day, PoolView, oriented  # noqa: E402
+from ddvc.analysis.block_timing import PoolView, load_v3_swap_day, oriented
+from ddvc.asset_types import classify
+from ddvc.tables import write_exhibit
 
 UNIFIED = ROOT / "data" / "unified"
+V3 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v3"
 OUT = ROOT / "output" / "exhibits" / "survival_at_block.jsonl"
 SPELLS = ROOT / "output" / "exhibits" / "survival_at_block_spells.jsonl"
 HAZ_PANEL = ROOT / "output" / "exhibits" / "survival_at_block_panel.jsonl"
@@ -70,6 +65,11 @@ HAZ_PANEL = ROOT / "output" / "exhibits" / "survival_at_block_panel.jsonl"
 # test_block_vs_hour_verdict.py shows the verdict is sensitive to this, so it is a
 # parameter and the headline is reported across a range of it.
 DEFAULT_WEDGE_BPS = 30.0
+
+
+def load_day(day: str):
+    """Load one raw V3 day through the shared block-timing owner."""
+    return load_v3_swap_day(V3 / f"uniswap_v3_swaps_{day}.jsonl.gz")
 
 
 def dominance_by_day(day: str, wedge_bps: float, min_swaps: int,
@@ -106,10 +106,10 @@ def dominance_by_day(day: str, wedge_bps: float, min_swaps: int,
             if not leg1 or not leg2 or leg1 == direct or leg2 == direct:
                 continue
             dom = tot = 0
-            for blk, _ts, _hr, _p in series[direct]:
+            for blk, log_index, _ts, _hr, _p in series[direct]:
                 parts = []
                 for pool, (u, v) in ((direct, (a, b)), (leg1, (a, k)), (leg2, (k, b))):
-                    lp = views[pool].at_block(blk)
+                    lp = views[pool].before(blk, log_index)
                     if lp is None:
                         break
                     t0, t1 = tokens[pool]

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Does hour-boundary pricing change the DOMINANCE VERDICT, or only the price level?
 
-`scripts/reprice_realised_at_block.py` measured how far a pool's own pre-state sits from
-the hour-boundary state the panel priced at, found a median 86.2% of routes moving more
+`scripts/reprice_realised_at_block.py` measured how far a pool's own state sits from
+the hour-boundary state the panel priced at, found a median 86.2% of observations moving more
 than 25 basis points, and the persistence result was withdrawn on that number. The number
 is right and the inference from it is not tested, which is what this script fixes.
 
@@ -22,14 +22,16 @@ AB and legs AK and KB, define
 
 which is positive exactly when the direct pool returns more B per unit of A than the
 two-leg route does, in the zero-size limit where the marginal price is the pool price.
-The sign of m IS the dominance verdict. Compute m at each realised swap's own block and
-again at its hour-boundary state, and count how often the sign disagrees.
+The sign of m IS the dominance verdict. Compute m immediately before each observed swap
+in the direct pool and again at its hour-boundary state, and count how often the sign
+disagrees. These are opportunity snapshots at direct-pool swap times, not realised
+multi-leg routes.
 
 Two properties make this exact rather than approximate. Token decimals enter each leg as a
 constant, and around a closed triangle those constants sum to zero, so working in raw
 sqrtPriceX96 units needs no decimals resolution and inherits none of its errors. And
 `sqrtPriceX96` is carried on the swap event itself, so the state immediately after any
-swap is observed and not reconstructed.
+swap is observed and the state before a later event is the prior event in block-log order.
 
 What it cannot see. This is the marginal price, so it holds for small trades and omits the
 size-dependent part of execution cost, which is depth. A verdict that is robust here can
@@ -44,96 +46,30 @@ Writes  output/exhibits/block_vs_hour_verdict.jsonl        per-triangle rows
 from __future__ import annotations
 
 import argparse
-import bisect
-import gzip
-import json
-import math
-import sys
 from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
 
-from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.analysis.block_timing import PoolView, load_v3_swap_day, oriented
+from ddvc.tables import write_exhibit
 
 V3 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v3"
 OUT = ROOT / "output" / "exhibits" / "block_vs_hour_verdict.jsonl"
 COND_OUT = ROOT / "output" / "exhibits" / "block_vs_hour_conditional.jsonl"
-# Roughly one hour at 12 second blocks. The panel's hour boundary is a wall-clock hour and
-# this is a block-count proxy for it; the swap timestamp is also carried, so the hour is
-# taken from the timestamp and this constant is not used for bucketing.
-Q96 = 1 << 96
-
-
+CODE_SOURCES = [
+    "scripts/test_block_vs_hour_verdict.py",
+    "src/ddvc/analysis/block_timing.py",
+]
 def load_day(day: str):
-    """Per pool: its ordered token pair, and the (block, hour, sqrtPrice) sequence."""
-    tokens: dict[str, tuple[str, str]] = {}
-    series: dict[str, list[tuple[int, int, float]]] = defaultdict(list)
-    p = V3 / f"uniswap_v3_swaps_{day}.jsonl.gz"
-    if not p.exists():
-        return tokens, series
-    with gzip.open(p, "rt") as fh:
-        for line in fh:
-            if not line.strip():
-                continue
-            r = json.loads(line)
-            pool = r.get("pool") or {}
-            pid = (pool.get("id") or "").lower()
-            t0 = ((pool.get("token0") or {}).get("id") or "").lower()
-            t1 = ((pool.get("token1") or {}).get("id") or "").lower()
-            try:
-                blk = int((r.get("transaction") or {}).get("blockNumber") or 0)
-                ts = int(r.get("timestamp") or 0)
-                sq = int(r.get("sqrtPriceX96") or 0)
-            except (TypeError, ValueError):
-                continue
-            if not (pid and t0 and t1 and blk and ts and sq > 0):
-                continue
-            tokens[pid] = (t0, t1)
-            # Work in logs from the start. The squared ratio overflows float for pools
-            # whose decimals differ by 18, and the log is what every comparison needs.
-            series[pid].append((blk, ts, ts // 3600, 2.0 * math.log(sq / Q96)))
-    for pid in series:
-        series[pid].sort()
-    return tokens, series
-
-
-class PoolView:
-    """State lookups for one pool: last observation at or before a block, and per hour."""
-
-    def __init__(self, seq: list[tuple[int, int, float]]) -> None:
-        self.blocks = [b for b, _t, _h, _p in seq]
-        self.logp = [p for _b, _t, _h, p in seq]
-        # The panel prices at the state that stands at the close of the hour, so the
-        # boundary state is the LAST observation within that hour.
-        self.by_hour: dict[int, float] = {}
-        self.hour_end_ts: dict[int, int] = {}
-        for _b, t, h, p in seq:
-            self.by_hour[h] = p
-            self.hour_end_ts[h] = t
-
-    def at_block(self, blk: int) -> float | None:
-        i = bisect.bisect_right(self.blocks, blk) - 1
-        return self.logp[i] if i >= 0 else None
-
-    def at_hour(self, hour: int) -> float | None:
-        return self.by_hour.get(hour)
-
-
-def oriented(logp: float, t0: str, t1: str, u: str, v: str) -> float | None:
-    """log(units of v per unit of u), from a pool quoted as token0 -> token1."""
-    if t0 == u and t1 == v:
-        return logp
-    if t0 == v and t1 == u:
-        return -logp
-    return None
+    """Load one raw V3 day through the shared block-timing owner."""
+    return load_v3_swap_day(V3 / f"uniswap_v3_swaps_{day}.jsonl.gz")
 
 
 def measure_day(day: str, max_triangles: int, min_swaps: int,
-                routes: list[tuple[float, int]] | None = None) -> list[dict]:
+                observations: list[tuple[float, float, int]] | None = None) -> list[dict]:
     tokens, series = load_day(day)
     if not series:
         return []
@@ -168,15 +104,15 @@ def measure_day(day: str, max_triangles: int, min_swaps: int,
             flips = same = 0
             gaps_own: list[float] = []
             deltas: list[float] = []
-            # Each realised swap in the direct pool stands for a route the router priced
-            # at that block, which is the population the persistence result is about.
-            for blk, own_ts, hour, _p in series[direct]:
+            # Direct-pool swaps supply observed event times at which all three marginal
+            # prices can be compared. They are opportunity snapshots, not route choices.
+            for blk, log_index, own_ts, hour, _p in series[direct]:
                 parts_own, parts_hr = [], []
                 ok = True
                 for pool, (u, v) in ((direct, (a, b)), (leg1, (a, k)), (leg2, (k, b))):
                     vw = views[pool]
                     t0, t1 = tokens[pool]
-                    lo, lh = vw.at_block(blk), vw.at_hour(hour)
+                    lo, lh = vw.before(blk, log_index), vw.at_hour(hour)
                     if lo is None or lh is None:
                         ok = False
                         break
@@ -200,13 +136,16 @@ def measure_day(day: str, max_triangles: int, min_swaps: int,
                     flips += 1
                 gaps_own.append(abs(m_own) * 10_000)
                 deltas.append(abs(m_own - m_hr) * 10_000)
-                # Keep the route-level pair so the flip rate can be conditioned on how
-                # far the true gap sits from zero. A pooled rate treats a route whose
-                # routes differ by 2 basis points the same as one differing by 200, and
-                # only the first can plausibly flip on an hour of staleness.
-                if routes is not None:
-                    routes.append((m_own * 10_000, m_hr * 10_000,
-                                   max(0, vd.hour_end_ts.get(hour, own_ts) - own_ts)))
+                # Keep each opportunity snapshot so the flip rate can be conditioned on
+                # its true gap and its distance from the hour boundary.
+                if observations is not None:
+                    observations.append(
+                        (
+                            m_own * 10_000,
+                            m_hr * 10_000,
+                            max(0, vd.hour_end_ts.get(hour, own_ts) - own_ts),
+                        )
+                    )
             n = flips + same
             if n < min_swaps:
                 continue
@@ -214,7 +153,7 @@ def measure_day(day: str, max_triangles: int, min_swaps: int,
             deltas.sort()
             rows.append({
                 "day": day, "direct_pool": direct[:10], "vehicle": k[:10],
-                "n_routes": n, "flip_rate": flips / n,
+                "n_observations": n, "flip_rate": flips / n,
                 "median_gap_bps": gaps_own[len(gaps_own) // 2],
                 "median_delta_bps": deltas[len(deltas) // 2],
                 "p90_delta_bps": deltas[int(0.9 * len(deltas))],
@@ -241,14 +180,14 @@ def main() -> int:
     print(f"testing {len(picked)} days: {picked[0]}..{picked[-1]}\n", flush=True)
 
     rows: list[dict] = []
-    routes: list[tuple[float, int]] = []
+    observations: list[tuple[float, float, int]] = []
     for day in picked:
-        got = measure_day(day, args.triangles, args.min_swaps, routes)
+        got = measure_day(day, args.triangles, args.min_swaps, observations)
         rows.extend(got)
         if got:
-            fr = sum(r["flip_rate"] * r["n_routes"] for r in got) / sum(r["n_routes"] for r in got)
+            fr = sum(r["flip_rate"] * r["n_observations"] for r in got) / sum(r["n_observations"] for r in got)
             print(f"  {day}: {len(got):>3} triangles, "
-                  f"{sum(r['n_routes'] for r in got):>7,} routes, flip rate {fr:>6.2%}",
+                  f"{sum(r['n_observations'] for r in got):>7,} observations, flip rate {fr:>6.2%}",
                   flush=True)
         else:
             print(f"  {day}: no triangle cleared the thresholds", flush=True)
@@ -257,9 +196,9 @@ def main() -> int:
         print("\nnothing measurable")
         return 1
     df = pd.DataFrame(rows)
-    n_tot = int(df.n_routes.sum())
-    flip = float((df.flip_rate * df.n_routes).sum() / n_tot)
-    print(f"\n{len(df)} triangles over {n_tot:,} realised routes")
+    n_tot = int(df.n_observations.sum())
+    flip = float((df.flip_rate * df.n_observations).sum() / n_tot)
+    print(f"\n{len(df)} triangles over {n_tot:,} opportunity snapshots")
     print(f"  verdict flip rate, own block against hour boundary : {flip:.2%}")
     print(f"  median triangle gap at own block                   : "
           f"{df.median_gap_bps.median():.1f} bps")
@@ -272,15 +211,15 @@ def main() -> int:
     # evenly over the gap distribution then hour pricing is simply unusable. If they
     # concentrate near zero, where an hour of drift can cross the boundary, then a
     # restriction away from the boundary buys back a usable sample, and the cost of that
-    # restriction is the share of routes it discards.
-    if routes:
-        rt = pd.DataFrame(routes, columns=["m_own_bps", "m_hr_bps", "secs_to_boundary"])
+    # restriction is the share of opportunity snapshots it discards.
+    if observations:
+        rt = pd.DataFrame(observations, columns=["m_own_bps", "m_hr_bps", "secs_to_boundary"])
         # The verdict is the sign of m, so a flip is a sign disagreement.
         rt["flipped"] = ((rt.m_own_bps > 0) != (rt.m_hr_bps > 0)).astype(int)
         rt["gap_bps"] = rt.m_own_bps.abs()
         rt = rt.sort_values("gap_bps")
         print(f"\nflip rate conditional on how far the gap sits from zero")
-        print(f"  {'gap at own block':<26}{'routes':>10}{'flip rate':>12}")
+        print(f"  {'gap at own event':<26}{'observations':>14}{'flip rate':>12}")
         edges = [0, 5, 10, 25, 50, 100, 250, 10 ** 9]
         labels = ["under 5 bps", "5 to 10 bps", "10 to 25 bps", "25 to 50 bps",
                   "50 to 100 bps", "100 to 250 bps", "above 250 bps"]
@@ -311,7 +250,7 @@ def main() -> int:
         # wedge is a fee difference in basis points: 30 is a two-leg 30bp pair against one
         # 30bp direct pool, and larger values stand in for price impact at larger size.
         print(f"\n  flip rate once the two-leg route's extra fee is charged")
-        print(f"  {'net fee wedge':<26}{'routes':>10}{'flip rate':>12}"
+        print(f"  {'net fee wedge':<26}{'observations':>14}{'flip rate':>12}"
               f"{'dominated':>12}")
         for w in (0, 5, 10, 30, 60, 100):
             own = rt.m_own_bps + w
@@ -327,11 +266,11 @@ def main() -> int:
             if len(keep) < 50:
                 continue
             print(f"  restricting to gaps of at least {thresh:>3} bps keeps "
-                  f"{len(keep) / len(rt):>5.1%} of routes at a "
+                  f"{len(keep) / len(rt):>5.1%} of observations at a "
                   f"{keep.flipped.mean():.2%} flip rate")
 
     print("\nReading. The earlier diagnostic measured a pool's own price against the")
-    print("hour-boundary price and found most routes moving more than 25 bps. That is a")
+    print("hour-boundary price and found most observations moving more than 25 bps. That is a")
     print("LEVEL. This is the DIFFERENCE the verdict depends on, where a common move")
     print("cancels across the three legs.")
     print("At zero size the verdict is unstable, and restricting to large gaps does not")
@@ -344,7 +283,13 @@ def main() -> int:
     print("its hour closes is priced at nearly the state the panel used and cannot flip,")
     print("and the measured rate rises monotonically with the time remaining. A flat")
     print("profile there would have meant a bug in this script instead of a finding.")
-    write_exhibit(df, OUT)
+    write_exhibit(
+        df,
+        OUT,
+        code_sources=CODE_SOURCES,
+        inputs=[V3],
+        notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
+    )
     print(f"\nwrote {OUT.relative_to(ROOT)}")
 
     # PERSIST THE CONDITIONAL TABLES, not only the per-triangle rows. An audit of the
@@ -352,7 +297,7 @@ def main() -> int:
     # check were quotable from this script's stdout and checkable against nothing, which
     # makes them assertions with a citation attached. They carry the section's argument, so
     # they belong on disk beside the rows they are computed from.
-    if routes:
+    if observations:
         cond: list[dict] = []
         for lo, hi, lab in ((0, 5, "under 5 bps"), (5, 10, "5 to 10 bps"),
                             (10, 25, "10 to 25 bps"), (25, 50, "25 to 50 bps"),
@@ -360,27 +305,33 @@ def main() -> int:
                             (250, 10 ** 9, "above 250 bps")):
             sel = rt[(rt.gap_bps >= lo) & (rt.gap_bps < hi)]
             if len(sel) >= 50:
-                cond.append({"cut": "gap_at_own_block", "bucket": lab,
-                             "routes": int(len(sel)), "value": float(sel.flipped.mean())})
+                cond.append({"cut": "gap_at_own_event", "bucket": lab,
+                             "observations": int(len(sel)), "value": float(sel.flipped.mean())})
         for lo, hi, lab in ((0, 60, "under 1 min"), (60, 300, "1 to 5 min"),
                             (300, 900, "5 to 15 min"), (900, 1800, "15 to 30 min"),
                             (1800, 3600, "30 to 60 min")):
             sel = rt[(rt.secs_to_boundary >= lo) & (rt.secs_to_boundary < hi)]
             if len(sel) >= 50:
                 cond.append({"cut": "time_to_hour_boundary", "bucket": lab,
-                             "routes": int(len(sel)), "value": float(sel.flipped.mean())})
+                             "observations": int(len(sel)), "value": float(sel.flipped.mean())})
         for wedge in (0, 5, 10, 30, 60, 100):
             own, hr = rt.m_own_bps + wedge, rt.m_hr_bps + wedge
             cond.append({"cut": "fee_wedge_bps", "bucket": str(wedge),
-                         "routes": int(len(rt)),
+                         "observations": int(len(rt)),
                          "value": float(((own > 0) != (hr > 0)).mean()),
                          "dominated_share": float((own < 0).mean())})
-        cond.append({"cut": "pooled", "bucket": "all", "routes": int(len(rt)),
+        cond.append({"cut": "pooled", "bucket": "all", "observations": int(len(rt)),
                      "value": float(rt.flipped.mean())})
-        write_exhibit(pd.DataFrame(cond), COND_OUT)
+        write_exhibit(
+            pd.DataFrame(cond),
+            COND_OUT,
+            code_sources=CODE_SOURCES,
+            inputs=[V3],
+            notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
+        )
         print(f"wrote {COND_OUT.relative_to(ROOT)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
