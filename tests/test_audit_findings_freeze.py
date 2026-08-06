@@ -2,10 +2,72 @@ from __future__ import annotations
 
 import unittest
 
-from scripts.audit_findings_freeze import graph_status, parse_state_frontmatter
+import pandas as pd
+
+from ddvc.asset_types import TYPES
+from scripts.audit_findings_freeze import (
+    graph_status,
+    parse_state_frontmatter,
+    route_measurement_invariants,
+)
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_route_measurement_invariants_reconcile_all_families(self) -> None:
+        intermediation = {
+            "date": [pd.Timestamp("2026-01-01")],
+            "routes_intermediated": [2],
+            "episodes": [3],
+        }
+        for asset_type in TYPES:
+            intermediation[f"cnt_{asset_type}"] = [
+                3 if asset_type == "stable" else 0
+            ]
+            intermediation[f"usd_{asset_type}"] = [
+                30.0 if asset_type == "stable" else 0.0
+            ]
+            intermediation[f"usd_within_2x_{asset_type}"] = [
+                24.0 if asset_type == "stable" else 0.0
+            ]
+            intermediation[f"usd_within_20pct_{asset_type}"] = [
+                20.0 if asset_type == "stable" else 0.0
+            ]
+        cross_venue = pd.DataFrame(
+            {
+                "date": [pd.Timestamp("2026-01-01")],
+                "economic_multileg_routes": [3],
+                "intermediated_routes": [2],
+                "direct_split_routes": [1],
+                "pure_sequential_routes": [1],
+                "mixed_indirect_routes": [1],
+                "intermediated_usd": [40.0],
+                "intermediated_usd_within_2x": [32.0],
+                "intermediated_usd_within_20pct": [28.0],
+            }
+        )
+        vehicle = pd.DataFrame(
+            {
+                "date": [pd.Timestamp("2026-01-01")],
+                "vehicle_intermediate_routes": [3],
+                "vehicle_intermediate_usd": [30.0],
+                "vehicle_intermediate_usd_within_2x": [24.0],
+                "vehicle_intermediate_usd_within_20pct": [20.0],
+            }
+        )
+        checks = route_measurement_invariants(
+            pd.DataFrame(intermediation), cross_venue, vehicle
+        )
+        self.assertTrue(all(passed for _name, passed, _detail in checks))
+        vehicle.loc[0, "vehicle_intermediate_routes"] = 2
+        checks = route_measurement_invariants(
+            pd.DataFrame(intermediation), cross_venue, vehicle
+        )
+        self.assertFalse(
+            {
+                name: passed for name, passed, _detail in checks
+            }["intermediary episode counts reconcile"]
+        )
+
     def test_graph_status_is_read_only_from_leading_frontmatter(self) -> None:
         state = parse_state_frontmatter(
             """---

@@ -8,13 +8,19 @@ import json
 from pathlib import Path
 
 import duckdb
+import numpy as np
+import pandas as pd
 import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
+from ddvc.asset_types import TYPES
 from ddvc.provenance import sidecar_path, verify
+from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 EXTENT = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
+INTERMEDIATION = ROOT / "data" / "processed" / "intermediation_by_type_daily.parquet"
+CROSS_VENUE = ROOT / "data" / "processed" / "cross_venue_routing_daily.parquet"
 V4 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v4"
 REFRESH = ROOT / "scripts" / "refresh_panel_dependents.py"
 STATE = ROOT / "docs" / "findings-freeze.md"
@@ -64,6 +70,137 @@ def graph_status(fields: dict[str, str]) -> str:
         f"next={fields.get('next_edge') or 'missing'}; "
         f"prose={fields.get('prose_node') or 'missing'}"
     )
+
+
+def route_measurement_invariants(
+    intermediation: pd.DataFrame,
+    cross_venue: pd.DataFrame,
+    vehicle_daily: pd.DataFrame,
+) -> list[tuple[str, bool, str]]:
+    """Cross-family identities that must hold before route findings can freeze."""
+    merged = intermediation.merge(
+        cross_venue,
+        on="date",
+        how="outer",
+        validate="one_to_one",
+        indicator=True,
+        suffixes=("_type", "_routing"),
+    ).merge(
+        vehicle_daily,
+        on="date",
+        how="outer",
+        validate="one_to_one",
+        indicator="_vehicle_merge",
+    )
+
+    def exact(left: pd.Series, right: pd.Series) -> bool:
+        return bool(
+            np.array_equal(
+                pd.to_numeric(left, errors="coerce").to_numpy(),
+                pd.to_numeric(right, errors="coerce").to_numpy(),
+                equal_nan=True,
+            )
+        )
+
+    def close(left: pd.Series, right: pd.Series) -> bool:
+        return bool(
+            np.allclose(
+                pd.to_numeric(left, errors="coerce"),
+                pd.to_numeric(right, errors="coerce"),
+                rtol=1e-9,
+                atol=1e-6,
+                equal_nan=True,
+            )
+        )
+
+    results: list[tuple[str, bool, str]] = []
+    calendar_ok = bool(
+        merged["_merge"].eq("both").all()
+        and merged["_vehicle_merge"].eq("both").all()
+    )
+    results.append(
+        ("route measurement calendars reconcile", calendar_ok, f"days={len(merged):,}")
+    )
+    route_identity = exact(
+        merged["routes_intermediated"], merged["intermediated_routes"]
+    )
+    results.append(
+        (
+            "intermediated route counts reconcile",
+            route_identity,
+            f"routes={merged['routes_intermediated'].sum():,.0f}",
+        )
+    )
+    split_identity = exact(
+        merged["economic_multileg_routes"],
+        merged["intermediated_routes"] + merged["direct_split_routes"],
+    )
+    sequence_identity = exact(
+        merged["intermediated_routes"],
+        merged["pure_sequential_routes"] + merged["mixed_indirect_routes"],
+    )
+    results.append(
+        (
+            "routing topology partitions reconcile",
+            split_identity and sequence_identity,
+            "multileg=intermediated+direct_split; intermediated=sequential+mixed",
+        )
+    )
+    type_episode_total = sum(
+        (merged[f"cnt_{asset_type}"] for asset_type in TYPES),
+        start=pd.Series(0, index=merged.index, dtype="int64"),
+    )
+    episode_identity = exact(merged["episodes"], type_episode_total) and exact(
+        merged["episodes"], merged["vehicle_intermediate_routes"]
+    )
+    results.append(
+        (
+            "intermediary episode counts reconcile",
+            episode_identity,
+            f"episodes={merged['episodes'].sum():,.0f}",
+        )
+    )
+    value_columns = {
+        "all_routes": "usd",
+        **{support: f"usd_{support}" for support in VALUE_SUPPORT_COLUMNS},
+    }
+    values_ok = True
+    details = []
+    for support, prefix in value_columns.items():
+        type_total = sum(
+            (merged[f"{prefix}_{asset_type}"] for asset_type in TYPES),
+            start=pd.Series(0.0, index=merged.index),
+        )
+        vehicle_column = (
+            "vehicle_intermediate_usd"
+            if support == "all_routes"
+            else f"vehicle_intermediate_usd_{support}"
+        )
+        matched = close(type_total, merged[vehicle_column])
+        values_ok &= matched
+        details.append(f"{support}={'ok' if matched else 'mismatch'}")
+    nested = bool(
+        merged["vehicle_intermediate_usd_within_20pct"].le(
+            merged["vehicle_intermediate_usd_within_2x"] + 1e-6
+        ).all()
+        and merged["vehicle_intermediate_usd_within_2x"].le(
+            merged["vehicle_intermediate_usd"] + 1e-6
+        ).all()
+        and merged["intermediated_usd_within_20pct"].le(
+            merged["intermediated_usd_within_2x"] + 1e-6
+        ).all()
+        and merged["intermediated_usd_within_2x"].le(
+            merged["intermediated_usd"] + 1e-6
+        ).all()
+    )
+    results.append(
+        (
+            "intermediary values reconcile and support nests",
+            values_ok and nested,
+            "; ".join(details) + f"; nested={'ok' if nested else 'fail'}",
+        )
+    )
+    return results
 
 
 def main() -> int:
@@ -135,6 +272,19 @@ def main() -> int:
         extent_days = con.execute(
             f"SELECT count(DISTINCT date) FROM read_parquet('{EXTENT.as_posix()}')"
         ).fetchone()[0]
+        vehicle_daily = con.execute(
+            f"""
+            SELECT
+                date,
+                sum(intermediate_routes) AS vehicle_intermediate_routes,
+                sum(intermediate_usd) AS vehicle_intermediate_usd,
+                sum(intermediate_usd_within_2x) AS vehicle_intermediate_usd_within_2x,
+                sum(intermediate_usd_within_20pct) AS vehicle_intermediate_usd_within_20pct
+            FROM read_parquet('{EXTENT.as_posix()}')
+            GROUP BY date
+            ORDER BY date
+            """
+        ).df()
         con.close()
         record(
             "vehicle extent full sample",
@@ -143,6 +293,38 @@ def main() -> int:
         )
     else:
         record("vehicle extent exists", False, str(EXTENT.relative_to(ROOT)))
+
+    if EXTENT.exists() and INTERMEDIATION.exists() and CROSS_VENUE.exists():
+        route_verdicts = {
+            path.name: verify(path).get("status")
+            for path in (INTERMEDIATION, CROSS_VENUE)
+        }
+        record(
+            "route measurement provenance current",
+            all(status == "ok" for status in route_verdicts.values()),
+            "; ".join(
+                f"{name}={status}" for name, status in route_verdicts.items()
+            ),
+        )
+        intermediation = pd.read_parquet(INTERMEDIATION)
+        cross_venue = pd.read_parquet(CROSS_VENUE)
+        for name, passed, detail in route_measurement_invariants(
+            intermediation,
+            cross_venue,
+            vehicle_daily,
+        ):
+            record(name, passed, detail)
+    else:
+        missing_route_panels = [
+            str(path.relative_to(ROOT))
+            for path in (INTERMEDIATION, CROSS_VENUE)
+            if not path.exists()
+        ]
+        record(
+            "route measurement panels exist",
+            False,
+            f"missing={missing_route_panels}",
+        )
 
     refresh = REFRESH.read_text() if REFRESH.exists() else ""
     retired = [
