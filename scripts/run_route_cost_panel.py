@@ -30,12 +30,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import WETH, canonical_token
-from ddvc.fetch.raw import (
-    block_value,
-    timestamp_value,
-    v4_pool_quote_supported,
-    v4_statics_complete,
-)
+from ddvc.fetch.raw import timestamp_value, v4_statics_complete
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.prices import day_prices
@@ -65,11 +60,11 @@ from ddvc.pricing.weighted import quote_error_at as _weighted_error
 from ddvc.pricing.weighted import quote_exact_input as _weighted_quote
 from ddvc.pricing.weighted import rebuild_pre_trade_balances
 from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick, quote_exact_input
-from ddvc.pricing.tick_state import active_liquidity, apply_tick_change
-from ddvc.pricing.v3pools import (
-    derive_fee_tier,
-    resolve_decimals,
-    tick_spacing_for_fee,
+from ddvc.pricing.tick_state import (
+    TickPoolState,
+    absorb_swap_state,
+    active_liquidity,
+    apply_tick_change,
 )
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.route_cost_summary import write_route_cost_summary
@@ -224,21 +219,7 @@ class Pool:
     weight_ratio: object | None = None
 
 
-@dataclass
-class V3PoolState:
-    pool: str
-    token0: str
-    token1: str
-    sym0: str
-    sym1: str
-    dec0: int
-    dec1: int
-    sqrt_price_x96: int
-    tick: int
-    fee_pips: int
-    tick_spacing: int
-    block: int
-    log_index: int
+V3PoolState = TickPoolState
 
 
 def _raw_path(source: str, stream: str, stamp: str) -> Path:
@@ -460,67 +441,14 @@ def _apply_tick_liquidity_events(
 
 def _absorb_swap_state(venue: str, rec: dict,
                        state_by_pool: dict[str, V3PoolState]) -> None:
-    """Fold one swap into a venue's price state, keeping the latest by (block, log).
-
-    Pool statics come from different places by venue and neither is guessed. v3 carries
-    no feeTier in this raw layer, so the fee is recovered exactly from the CREATE2 pool
-    address and decimals from the sqrtPriceX96 identity. v4 carries both feeTier and
-    token decimals and tick spacing directly. Vanilla static-fee pools are priced at
-    their declared fee, including non-v3 tiers. Dynamic-fee and hook-bearing pools are
-    excluded because these rows do not reveal the per-swap hook cash flows or fee.
-    """
-    pool = rec.get("pool") or {}
-    t0 = pool.get("token0") or {}
-    t1 = pool.get("token1") or {}
-    pool_id = str(pool.get("id", "")).lower()
-    raw0 = str(t0.get("id", "")).lower()
-    raw1 = str(t1.get("id", "")).lower()
-    a0 = canonical_token(raw0, unify_wrapped=UNIFY_WRAPPED)
-    a1 = canonical_token(raw1, unify_wrapped=UNIFY_WRAPPED)
-    if not pool_id or not a0 or not a1:
-        return
-    try:
-        # Alternate v4 Graph schemas can expose the transaction hash as a scalar
-        # and omit blockNumber. Ethereum timestamps order their blocks, so a
-        # timestamp is the honest fallback within a raw day.
-        block = int(block_value(rec) or timestamp_value(rec) or 0)
-        log_index = int(rec.get("logIndex") or 0)
-        sqrt_price = int(rec.get("sqrtPriceX96") or rec.get("sqrtPrice") or 0)
-        tick = int(rec.get("tick") or 0)
-    except (TypeError, ValueError):
-        return
-    if sqrt_price <= 0:
-        return
-    old = state_by_pool.get(pool_id)
-    if old is not None and (block, log_index) <= (old.block, old.log_index):
-        return
-    if venue == "uniswap_v4":
-        if not v4_pool_quote_supported(rec):
-            return
-        try:
-            fee = int(pool.get("feeTier"))
-            tick_spacing = int(pool.get("tickSpacing"))
-            dec = (int(t0.get("decimals")), int(t1.get("decimals")))
-        except (TypeError, ValueError):
-            return
-    else:
-        sample = _SWAP_SAMPLE.setdefault(pool_id, [])
-        if len(sample) < 12:
-            sample.append(rec)
-        exact_fee = derive_fee_tier(pool_id, raw0, raw1)
-        if exact_fee is None:
-            return
-        fee = exact_fee
-        dec = resolve_decimals(raw0, raw1, sample)
-        if dec is None:
-            return
-        tick_spacing = tick_spacing_for_fee(fee)
-    state_by_pool[pool_id] = V3PoolState(
-        pool=pool_id, token0=a0, token1=a1,
-        sym0=str(t0.get("symbol", "")), sym1=str(t1.get("symbol", "")),
-        dec0=dec[0], dec1=dec[1],
-        sqrt_price_x96=sqrt_price, tick=tick, fee_pips=fee,
-        tick_spacing=tick_spacing, block=block, log_index=log_index)
+    """Compatibility adapter to the canonical concentrated-liquidity replay owner."""
+    absorb_swap_state(
+        venue,
+        rec,
+        state_by_pool,
+        swap_samples=_SWAP_SAMPLE,
+        unify_wrapped=UNIFY_WRAPPED,
+    )
 
 
 def _validate_v4_swap_schema(stamps: list[str]) -> None:

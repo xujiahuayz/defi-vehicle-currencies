@@ -3,8 +3,30 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from dataclasses import dataclass
 
-from ddvc.fetch.raw import block_value, timestamp_value
+from ddvc.asset_types import canonical_token
+from ddvc.fetch.raw import block_value, timestamp_value, v4_pool_quote_supported
+from ddvc.pricing.v3pools import derive_fee_tier, resolve_decimals, tick_spacing_for_fee
+
+
+@dataclass
+class TickPoolState:
+    """Latest quotable concentrated-liquidity pool state in chain order."""
+
+    pool: str
+    token0: str
+    token1: str
+    sym0: str
+    sym1: str
+    dec0: int
+    dec1: int
+    sqrt_price_x96: int
+    tick: int
+    fee_pips: int
+    tick_spacing: int
+    block: int
+    log_index: int
 
 
 def event_order(row: dict) -> tuple[int, int]:
@@ -35,6 +57,80 @@ def apply_tick_change(ticks: dict[int, int], row: dict, *, sign: int = 1) -> Non
 def active_liquidity(ticks: dict[int, int], current_tick: int) -> int:
     """Active liquidity implied by boundary-tick net changes at ``current_tick``."""
     return sum(value for tick, value in ticks.items() if tick <= current_tick)
+
+
+def absorb_swap_state(
+    venue: str,
+    row: dict,
+    state_by_pool: dict[str, TickPoolState],
+    *,
+    swap_samples: dict[str, list[dict]],
+    unify_wrapped: bool = True,
+) -> None:
+    """Fold one V3/V4 swap into the canonical latest-state index.
+
+    V3 fee and decimals are recovered from the canonical pool identity and swap
+    price identity. V4 statics come from the raw row, and unsupported dynamic-fee
+    or hook-bearing pools never enter the index. Callers own the bounded sample
+    dictionary because replay jobs may maintain independent histories.
+    """
+    pool = row.get("pool") or {}
+    token0 = pool.get("token0") or {}
+    token1 = pool.get("token1") or {}
+    pool_id = str(pool.get("id", "")).lower()
+    raw0 = str(token0.get("id", "")).lower()
+    raw1 = str(token1.get("id", "")).lower()
+    canonical0 = canonical_token(raw0, unify_wrapped=unify_wrapped)
+    canonical1 = canonical_token(raw1, unify_wrapped=unify_wrapped)
+    if not pool_id or not canonical0 or not canonical1:
+        return
+    try:
+        block = int(block_value(row) or timestamp_value(row) or 0)
+        log_index = int(row.get("logIndex") or 0)
+        sqrt_price_x96 = int(row.get("sqrtPriceX96") or row.get("sqrtPrice") or 0)
+        tick = int(row.get("tick") or 0)
+    except (TypeError, ValueError):
+        return
+    if sqrt_price_x96 <= 0:
+        return
+    old = state_by_pool.get(pool_id)
+    if old is not None and (block, log_index) <= (old.block, old.log_index):
+        return
+    if venue == "uniswap_v4":
+        if not v4_pool_quote_supported(row):
+            return
+        try:
+            fee_pips = int(pool.get("feeTier"))
+            tick_spacing = int(pool.get("tickSpacing"))
+            decimals = (int(token0.get("decimals")), int(token1.get("decimals")))
+        except (TypeError, ValueError):
+            return
+    else:
+        sample = swap_samples.setdefault(pool_id, [])
+        if len(sample) < 12:
+            sample.append(row)
+        fee_pips = derive_fee_tier(pool_id, raw0, raw1)
+        if fee_pips is None:
+            return
+        decimals = resolve_decimals(raw0, raw1, sample)
+        if decimals is None:
+            return
+        tick_spacing = tick_spacing_for_fee(fee_pips)
+    state_by_pool[pool_id] = TickPoolState(
+        pool=pool_id,
+        token0=canonical0,
+        token1=canonical1,
+        sym0=str(token0.get("symbol", "")),
+        sym1=str(token1.get("symbol", "")),
+        dec0=decimals[0],
+        dec1=decimals[1],
+        sqrt_price_x96=sqrt_price_x96,
+        tick=tick,
+        fee_pips=fee_pips,
+        tick_spacing=tick_spacing,
+        block=block,
+        log_index=log_index,
+    )
 
 
 def iter_pretrade_states(
