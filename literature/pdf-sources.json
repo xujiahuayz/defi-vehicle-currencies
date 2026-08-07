@@ -415,6 +415,14 @@
         "version": "published"
       }
     ],
+    "HuangRanaldoSchrimpfSomogyi2025Constrained": [
+      {
+        "access": "public",
+        "label": "ScienceDirect open-access PDF",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X25000364/pdfft",
+        "version": "published"
+      }
+    ],
     "KiyotakiWright1989MoneyMedium": [
       {
         "access": "authenticated",

@@ -31,10 +31,18 @@ import json
 import sys
 from pathlib import Path
 
+from ddvc.runtime import atomic_output
+
 ROOT = Path(__file__).resolve().parents[1]
 PAPERS = ROOT / "literature" / "papers"
 OUT = ROOT / "literature" / "text"
+INDEX = OUT / "_index.jsonl"
 PAGE_MARK = "\n\n===== PAGE {n} =====\n\n"
+
+
+def normalize_extracted_text(text: str) -> str:
+    """Remove extractor-only trailing spaces without changing page content."""
+    return "\n".join(line.rstrip() for line in text.split("\n"))
 
 
 def extract(path: Path) -> tuple[str, int]:
@@ -47,8 +55,34 @@ def extract(path: Path) -> tuple[str, int]:
             txt = page.extract_text() or ""
         except Exception:
             txt = ""
-        parts.append(PAGE_MARK.format(n=i) + txt)
+        parts.append(PAGE_MARK.format(n=i) + normalize_extracted_text(txt))
     return "".join(parts), len(reader.pages)
+
+
+def load_index(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    records: dict[str, dict] = {}
+    for line in path.read_text(errors="replace").splitlines():
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        stem = str(record.get("stem") or "")
+        if stem:
+            records[stem] = record
+    return records
+
+
+def merge_index_records(
+    current: list[dict],
+    previous: dict[str, dict],
+    text_stems: set[str],
+) -> list[dict]:
+    """Keep durable text-only records while replacing every live PDF record."""
+    merged = {stem: record for stem, record in previous.items() if stem in text_stems}
+    merged.update({str(record["stem"]): record for record in current})
+    return [merged[stem] for stem in sorted(merged)]
 
 
 def main() -> int:
@@ -65,6 +99,7 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     print(f"extracting {len(pdfs)} PDFs to {OUT.relative_to(ROOT)}", flush=True)
 
+    previous_index = load_index(INDEX)
     index = []
     failed = 0
     for i, p in enumerate(pdfs, 1):
@@ -99,7 +134,8 @@ def main() -> int:
                                                        if len(ln.strip()) > 20), "")[:140],
                                   "pdf_mb": round(p.stat().st_size / 1e6, 2)})
                     continue
-            dest.write_text(text)
+            with atomic_output(dest) as temporary:
+                temporary.write_text(text)
         # First non-trivial line of page 1 is a serviceable title guess, and a bad
         # guess is visible rather than silent because the raw text sits beside it.
         head = text.split("===== PAGE 1 =====", 1)[-1].strip().splitlines()
@@ -109,8 +145,15 @@ def main() -> int:
         if i % 10 == 0 or i == len(pdfs):
             print(f"  {i}/{len(pdfs)}", flush=True)
 
-    (OUT / "_index.jsonl").write_text(
-        "".join(json.dumps(r, sort_keys=True) + "\n" for r in index))
+    index = merge_index_records(
+        index,
+        previous_index,
+        {path.stem for path in OUT.glob("*.txt")},
+    )
+    with atomic_output(INDEX) as temporary:
+        temporary.write_text(
+            "".join(json.dumps(r, sort_keys=True) + "\n" for r in index)
+        )
     empty = [r["stem"] for r in index if r["chars"] < 2000]
     print(f"\nextracted {len(index)} papers, {failed} failed, "
           f"{sum(r['pages'] for r in index):,} pages, "

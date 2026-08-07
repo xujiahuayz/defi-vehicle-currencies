@@ -193,6 +193,16 @@ def pdf_from_response(response: Any) -> bytes | None:
     return data if is_pdf(data) else None
 
 
+def pdf_from_download(download: Any) -> bytes | None:
+    """Wait for a browser download to finish, then return only a complete PDF."""
+    try:
+        path = download.path()
+        data = Path(path).read_bytes() if path else b""
+    except Exception:
+        return None
+    return data if is_pdf(data) else None
+
+
 def goto_page(page: Any, url: str, timeout_ms: int) -> Any | None:
     response = page.goto(url, wait_until="commit", timeout=timeout_ms)
     try:
@@ -217,6 +227,12 @@ def access_block_detail(page: Any) -> str | None:
         return "ucl-login-required"
     if "request access" in text.lower() and "informs.org" in page.url:
         return "publisher-request-access"
+    parsed = urllib.parse.urlparse(page.url)
+    if (
+        parsed.netloc == "pdf.sciencedirectassets.com"
+        and "security verification" in text.lower()
+    ):
+        return "sciencedirect-security-verification"
     return None
 
 
@@ -363,8 +379,15 @@ def sciencedirect_pdf_from_page(page: Any, timeout_ms: int) -> tuple[bytes | Non
     try:
         button = first_visible(page, selectors)
         if button:
-            button.click(timeout=5000)
-            page.wait_for_timeout(min(timeout_ms, 8000))
+            try:
+                with page.expect_download(timeout=timeout_ms) as download_info:
+                    button.click(timeout=5000)
+                download = download_info.value
+                data = pdf_from_download(download)
+                if data:
+                    return data, f"sciencedirect-download {download.url}"
+            except Exception:
+                page.wait_for_timeout(min(timeout_ms, 8000))
     except Exception:
         pass
     finally:
@@ -536,11 +559,9 @@ def _browser_fetch_pdf(
         with page.expect_download(timeout=5000) as download_info:
             response = goto_page(page, navigation_url, timeout_ms)
         download = download_info.value
-        path = download.path()
-        if path:
-            data = Path(path).read_bytes()
-            if is_pdf(data):
-                return data, f"download {download.url}"
+        data = pdf_from_download(download)
+        if data:
+            return data, f"download {download.url}"
     except Exception as exc:  # noqa: BLE001 - caller records exact failure.
         if "Timeout" in type(exc).__name__:
             try:
@@ -552,11 +573,9 @@ def _browser_fetch_pdf(
                 with page.expect_download(timeout=timeout_ms) as download_info:
                     goto_page(page, navigation_url, timeout_ms)
                 download = download_info.value
-                path = download.path()
-                if path:
-                    data = Path(path).read_bytes()
-                    if is_pdf(data):
-                        return data, f"download {download.url}"
+                data = pdf_from_download(download)
+                if data:
+                    return data, f"download {download.url}"
             except Exception as download_exc:  # noqa: BLE001
                 return None, f"download {type(download_exc).__name__}: {download_exc}"
             return None, f"download not-pdf: {exc}"
@@ -583,6 +602,9 @@ def _browser_fetch_pdf(
     sciencedirect_data, sciencedirect_detail = sciencedirect_pdf_from_page(page, timeout_ms)
     if sciencedirect_data:
         return sciencedirect_data, sciencedirect_detail or f"sciencedirect-pdf {page.url}"
+    block = access_block_detail(page)
+    if block:
+        return None, f"{block}; final={page.url}"
 
     candidates = [response, *reversed(responses)]
     for candidate in candidates:

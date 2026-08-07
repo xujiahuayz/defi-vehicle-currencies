@@ -162,6 +162,11 @@ def complete_literature_card(fields: dict[str, str]) -> bool:
     return fields_present and evidence_written
 
 
+def published_venue_version(fields: dict[str, str]) -> bool:
+    """A published venue cannot be calibrated from a pre-publication layout."""
+    return fields.get("version", "").strip().lower().startswith("published ")
+
+
 def validate_literature_audit(
     text: str,
     cited_keys: set[str],
@@ -187,6 +192,7 @@ def validate_literature_audit(
         for key in venue_cards
         if cards.get(key, {}).get("status")
         in {"full-text-read", "claim-verified", "independently-re-read"}
+        and published_venue_version(cards[key])
     }
     central = {
         key

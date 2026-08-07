@@ -20,6 +20,90 @@ def load_fetcher():
 
 
 class LiteratureBrowserHelperTests(unittest.TestCase):
+    def test_download_reader_waits_for_and_validates_pdf(self) -> None:
+        fetcher = load_fetcher()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "paper.pdf"
+            path.write_bytes(b"%PDF-1.7\ncomplete")
+
+            class Download:
+                def path(self):
+                    return path
+
+            self.assertEqual(fetcher.pdf_from_download(Download()), path.read_bytes())
+
+    def test_sciencedirect_click_captures_completed_download(self) -> None:
+        fetcher = load_fetcher()
+        payload = b"%PDF-1.7\ncomplete"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "paper.pdf"
+            path.write_bytes(payload)
+
+            class Download:
+                url = "https://pdf.sciencedirectassets.com/paper.pdf"
+
+                def path(self):
+                    return path
+
+            class DownloadInfo:
+                value = Download()
+
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *_args):
+                    return False
+
+            class Button:
+                def count(self):
+                    return 1
+
+                def is_visible(self, timeout=None):
+                    return True
+
+                def click(self, timeout=None):
+                    return None
+
+            class Locator:
+                first = Button()
+
+            class Page:
+                url = "https://www.sciencedirect.com/science/article/pii/example"
+
+                def on(self, *_args):
+                    return None
+
+                def remove_listener(self, *_args):
+                    return None
+
+                def locator(self, _selector):
+                    return Locator()
+
+                def expect_download(self, timeout=None):
+                    return DownloadInfo()
+
+            data, detail = fetcher.sciencedirect_pdf_from_page(Page(), 100)
+        self.assertEqual(data, payload)
+        self.assertIn("sciencedirect-download", detail)
+
+    def test_sciencedirect_security_page_is_an_explicit_block(self) -> None:
+        fetcher = load_fetcher()
+
+        class Body:
+            def inner_text(self, timeout=None):
+                return "Security verification"
+
+        class Page:
+            url = "https://pdf.sciencedirectassets.com/issue/main.pdf?token=redacted"
+
+            def locator(self, _selector):
+                return Body()
+
+        self.assertEqual(
+            fetcher.access_block_detail(Page()),
+            "sciencedirect-security-verification",
+        )
+
     def test_sciencedirect_pdfft_normalizes_to_article_page(self) -> None:
         fetcher = load_fetcher()
         url = "https://www.sciencedirect.com/science/article/pii/S0304405X17302337/pdfft"

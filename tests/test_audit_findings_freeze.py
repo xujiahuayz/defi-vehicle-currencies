@@ -11,6 +11,7 @@ from scripts.audit_findings_freeze import (
     graph_status,
     parse_literature_cards,
     parse_state_frontmatter,
+    published_venue_version,
     route_measurement_invariants,
     transaction_frontier_support_checks,
     validate_literature_audit,
@@ -86,6 +87,15 @@ status: complete
         )
         self.assertTrue(passed, detail)
         self.assertTrue(complete_literature_card(cards["PaperA"]))
+        self.assertTrue(published_venue_version(cards["venue:one"]))
+        working_only = text.replace(
+            "Version: Published JFE version, 2021",
+            "Version: Revised working paper, 2021; later published in JFE",
+        )
+        passed, detail = validate_literature_audit(
+            working_only, {"PaperA"}, {"venue:one"}
+        )
+        self.assertFalse(passed, detail)
         missing_optics = text.replace(
             "- Optics: Calibrated title, early result preview, and a compact exhibit hierarchy\n",
             "",
