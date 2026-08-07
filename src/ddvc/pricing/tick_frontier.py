@@ -32,6 +32,86 @@ def build_pool_index(
     return index
 
 
+def quote_tick_pool(
+    token_in: str,
+    token_out: str,
+    amount_in: float,
+    *,
+    venue: str,
+    pool_id: str,
+    states_by_venue: dict[str, dict[str, TickPoolState]],
+    ticks_by_venue: dict[str, dict[str, dict[int, int]]],
+    max_price_impact: float | None,
+) -> LegQuote | None:
+    """Quote one identified pool at the replayed state."""
+    state = states_by_venue.get(venue, {}).get(pool_id)
+    ticks = ticks_by_venue.get(venue, {}).get(pool_id)
+    if state is None or ticks is None:
+        return None
+    quote = quote_tick_state(
+        state,
+        ticks,
+        token_in,
+        token_out,
+        amount_in,
+        max_price_impact=max_price_impact,
+    )
+    if quote is None:
+        return None
+    return LegQuote(
+        amount_out=quote.amount_out,
+        venue=venue,
+        pool=pool_id,
+        price_impact=quote.price_impact,
+    )
+
+
+def quote_tick_path(
+    token_in: str,
+    token_out: str,
+    vehicle: str,
+    amount_in: float,
+    *,
+    venues: tuple[str, str],
+    pools: tuple[str, str],
+    states_by_venue: dict[str, dict[str, TickPoolState]],
+    ticks_by_venue: dict[str, dict[str, dict[int, int]]],
+    max_price_impact: float | None,
+) -> PathQuote | None:
+    """Quote one identified sequential two-leg path."""
+    first = quote_tick_pool(
+        token_in,
+        vehicle,
+        amount_in,
+        venue=venues[0],
+        pool_id=pools[0],
+        states_by_venue=states_by_venue,
+        ticks_by_venue=ticks_by_venue,
+        max_price_impact=max_price_impact,
+    )
+    if first is None:
+        return None
+    second = quote_tick_pool(
+        vehicle,
+        token_out,
+        first.amount_out,
+        venue=venues[1],
+        pool_id=pools[1],
+        states_by_venue=states_by_venue,
+        ticks_by_venue=ticks_by_venue,
+        max_price_impact=max_price_impact,
+    )
+    if second is None:
+        return None
+    return PathQuote(
+        amount_out=second.amount_out,
+        vehicle=vehicle,
+        venues=venues,
+        pools=pools,
+        price_impacts=(first.price_impact, second.price_impact),
+    )
+
+
 def tick_leg_quotes(
     token_in: str,
     token_out: str,
@@ -49,28 +129,19 @@ def tick_leg_quotes(
     for venue, pool_id in sorted(candidates):
         if allowed_venues is not None and venue not in allowed_venues:
             continue
-        state = states_by_venue.get(venue, {}).get(pool_id)
-        ticks = ticks_by_venue.get(venue, {}).get(pool_id)
-        if state is None or ticks is None:
-            continue
-        quote = quote_tick_state(
-            state,
-            ticks,
+        quote = quote_tick_pool(
             token_in,
             token_out,
             amount_in,
+            venue=venue,
+            pool_id=pool_id,
+            states_by_venue=states_by_venue,
+            ticks_by_venue=ticks_by_venue,
             max_price_impact=max_price_impact,
         )
         if quote is None:
             continue
-        quotes.append(
-            LegQuote(
-                amount_out=quote.amount_out,
-                venue=venue,
-                pool=pool_id,
-                price_impact=quote.price_impact,
-            )
-        )
+        quotes.append(quote)
     return quotes
 
 

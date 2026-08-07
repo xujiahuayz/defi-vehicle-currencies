@@ -6,6 +6,7 @@ from ddvc.pricing.tick_frontier import (
     best_tick_public_path,
     best_tick_vehicle_path,
     build_pool_index,
+    quote_tick_path,
 )
 from ddvc.pricing.tick_state import TickPoolState
 
@@ -86,6 +87,23 @@ class TickFrontierTests(unittest.TestCase):
             max_price_impact=0.05,
         )
         self.assertIsNone(quote)
+
+    def test_identified_path_quotes_the_declared_pools_in_sequence(self) -> None:
+        quote = quote_tick_path(
+            "a",
+            "b",
+            "k",
+            1.0,
+            venues=("v3", "v3"),
+            pools=("ak", "kb"),
+            states_by_venue=self.states,
+            ticks_by_venue=self.ticks,
+            max_price_impact=None,
+        )
+        self.assertIsNotNone(quote)
+        assert quote is not None
+        self.assertEqual(quote.pools, ("ak", "kb"))
+        self.assertGreater(quote.amount_out, 0)
 
 
 if __name__ == "__main__":
