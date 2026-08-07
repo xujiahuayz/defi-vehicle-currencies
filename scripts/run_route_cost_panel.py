@@ -117,6 +117,7 @@ QUOTE_SOURCES = [
     "src/ddvc/route_cost.py",
     "src/ddvc/pricing/v3quote.py",
     "src/ddvc/pricing/v3pools.py",
+    "src/ddvc/pricing/tick_quote.py",
     "src/ddvc/pricing/tick_state.py",
     "src/ddvc/pricing/v2quote.py",
     # Curve and Balancer price legs too, so a change to either changes quotes. Omitting

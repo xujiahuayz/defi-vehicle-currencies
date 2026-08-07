@@ -196,6 +196,10 @@ class BalancerPanelWiringTests(unittest.TestCase):
         """A quoter outside QUOTE_SOURCES means tightening its gate invalidates no cached day."""
         self.assertIn("src/ddvc/pricing/weighted.py", _panel().QUOTE_SOURCES)
 
+    def test_shared_tick_quoter_is_in_the_cache_fingerprint(self) -> None:
+        """Changing full-input or prepared-index logic must invalidate every tick quote."""
+        self.assertIn("src/ddvc/pricing/tick_quote.py", _panel().QUOTE_SOURCES)
+
     def test_raw_and_unified_inputs_are_in_the_cache_fingerprint(self) -> None:
         """Changing routes or pool state must make the old day cache unreachable."""
         paths = {path.relative_to(_panel().ROOT).as_posix() for path in _panel().QUOTE_INPUTS}
