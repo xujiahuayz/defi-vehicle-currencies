@@ -6,6 +6,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import duckdb
@@ -26,6 +27,24 @@ V4 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v4"
 REFRESH = ROOT / "scripts" / "refresh_panel_dependents.py"
 STATE = ROOT / "docs" / "findings-freeze.md"
 SPECIFICATION_LOCK = ROOT / "docs" / "specification-lock.json"
+LITERATURE_AUDIT = ROOT / "docs" / "literature-audit.md"
+PAPER_SECTIONS = ROOT / "paper" / "sections"
+JFE_VENUE_CARDS = {
+    "venue:bolton-kacperczyk-carbon",
+    "venue:carletti-banks-patient-lenders",
+    "venue:chang-ripples-into-waves",
+    "venue:cong-li-wang-token-platform",
+    "venue:diamond-hu-rajan-liquidity-pledgeability",
+    "venue:eren-malamud-dominant-currency-debt",
+    "venue:graham-corporate-culture",
+    "venue:hajda-nikolov-product-market",
+    "venue:hinzen-bitcoin-adoption",
+    "venue:huang-constrained-liquidity-fx",
+    "venue:li-ye-zheng-refusing-best-price",
+    "venue:makarov-schoar-crypto-arbitrage",
+    "venue:mayer-financing-breakthroughs",
+    "venue:pastor-sustainable-investing",
+}
 GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
 LOCKED_CLAIM_STATUSES = {
     "enter_fgh_primary",
@@ -68,6 +87,70 @@ def parse_state_frontmatter(text: str) -> dict[str, str]:
 
 def _state_fields() -> dict[str, str]:
     return parse_state_frontmatter(STATE.read_text()) if STATE.exists() else {}
+
+
+def cited_bibliography_keys(paths: list[Path]) -> set[str]:
+    """Extract every bibliography key used by the manuscript's cite commands."""
+    keys: set[str] = set()
+    for path in paths:
+        for group in re.findall(r"\\cite\w*\{([^}]+)\}", path.read_text()):
+            keys.update(key.strip() for key in group.split(",") if key.strip())
+    return keys
+
+
+def parse_literature_cards(text: str) -> dict[str, dict[str, str]]:
+    """Parse mechanically auditable fields from level-three paper cards."""
+    matches = list(re.finditer(r"^###\s+(\S+)\s*$", text, flags=re.MULTILINE))
+    cards: dict[str, dict[str, str]] = {}
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        fields: dict[str, str] = {}
+        for line in text[match.end():end].splitlines():
+            field = re.match(r"^-\s+([^:]+):\s*(.+?)\s*$", line)
+            if field:
+                fields[field.group(1).strip().lower()] = field.group(2).strip()
+        cards[match.group(1)] = fields
+    return cards
+
+
+def validate_literature_audit(
+    text: str,
+    cited_keys: set[str],
+    venue_cards: set[str],
+) -> tuple[bool, str]:
+    """Require individual full-text cards before findings may freeze."""
+    frontmatter = parse_state_frontmatter(text)
+    cards = parse_literature_cards(text)
+    verified_citations = {
+        key for key in cited_keys if cards.get(key, {}).get("status") == "claim-verified"
+    }
+    read_venues = {
+        key
+        for key in venue_cards
+        if cards.get(key, {}).get("status") in {"full-text-read", "claim-verified"}
+    }
+    central = {
+        key
+        for key, fields in cards.items()
+        if "central" in {
+            role.strip() for role in fields.get("roles", "").split(",")
+        }
+    }
+    independent = {
+        key for key in central if cards[key].get("independent") == "complete"
+    }
+    passed = bool(
+        frontmatter.get("status") == "complete"
+        and verified_citations == cited_keys
+        and read_venues == venue_cards
+        and independent == central
+    )
+    return passed, (
+        f"status={frontmatter.get('status') or 'missing'}; "
+        f"cited={len(verified_citations)}/{len(cited_keys)}; "
+        f"venue={len(read_venues)}/{len(venue_cards)}; "
+        f"independent={len(independent)}/{len(central)}"
+    )
 
 
 def graph_status(fields: dict[str, str]) -> str:
@@ -289,6 +372,19 @@ def main() -> int:
             "node E specification lock",
             False,
             str(SPECIFICATION_LOCK.relative_to(ROOT)),
+        )
+
+    if LITERATURE_AUDIT.exists():
+        cited = cited_bibliography_keys(sorted(PAPER_SECTIONS.glob("*.tex")))
+        literature_passed, literature_detail = validate_literature_audit(
+            LITERATURE_AUDIT.read_text(), cited, JFE_VENUE_CARDS
+        )
+        record("node B full-text literature ledger", literature_passed, literature_detail)
+    else:
+        record(
+            "node B full-text literature ledger",
+            False,
+            str(LITERATURE_AUDIT.relative_to(ROOT)),
         )
 
     if PANEL.exists():

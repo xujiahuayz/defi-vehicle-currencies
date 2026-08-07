@@ -40,9 +40,13 @@ This was violated on 2026-08-06 and the cost was legible in advance. Node P was 
 
 **FREEZE GATE on node P.** It does not start until all four hold:
 1. Every claim that leads a section has a completed test, so no headline rests on "blocked" or "no completed test".
-2. Every source the paper CITES AND CHARACTERISES has been read first-hand and its characterisation checked (section 4.3). This is accuracy, not novelty; novelty sweeps are off.
+2. The durable literature ledger is complete: every source carrying scientific or venue-design weight has an individual full-text paper card, every cited characterisation resolves to an exact location in the saved source, and central scientific uses have an independent second read. Abstracts, search hits, extraction scripts, corpus counts and an agent transcript do not satisfy this gate.
 3. Every open decision in section 8 is decided.
 4. Two consecutive F <-> G passes generate no new claim and retire none.
+
+**LITERATURE GATE on B, C, F, G and P.** Literature is evidence on two axes. The scientific axis covers framing, theory and mechanism, measurement, identification, estimates, boundary conditions and limitations. The venue axis covers section architecture, content allocation, depth, breadth, objections, tables, figures, captions, notation, prose density and page optics. Every load-bearing source and every venue exemplar is read in full as an individual paper; aggregate measurement is allowed only after the individual card exists. `docs/literature-audit.md` is the durable ledger and must link the exact source version, reading status, card, bibliography key and every manuscript use. A new citation, mechanism, design precedent or venue claim reopens B. A disagreement or attribution failure reopens the downstream node that used it.
+
+**Incident status, 2026-08-07.** The old venue profile said all fourteen JFE exemplars were independently read but stored the detail only in agent output, while `docs/paper-spine.md` later described a nine-paper architecture corpus. Neither denominator resolved to durable paper cards, so the workflow could not establish which papers were read for substance, which for structure or optics, and which only entered aggregate scripts. Those claims are provisional until reconciled in the ledger. This is why a wrong LVR attribution survived: a text search eventually caught it, but the workflow had no paper-by-paper evidence gate.
 
 **Research-state reconciliation is executable.** After every F to G pass, update `docs/findings-freeze.md` and run `./scripts/run scripts/audit_findings_freeze.py`. The audit checks the live artefacts, their input-aware provenance, panel coverage, retired estimands in the refresh graph, and the unchanged-pass counter. Commit order, document recency, and a green paper build are not evidence that findings are frozen. This gate was added after prose work began while the full panel manifest still described 18,120 rows, v4 was priced on 30 of its historical days, and the downstream refresher still ran estimands the definition audit had retired.
 
@@ -88,9 +92,9 @@ It remains true that the corpus uses em dashes, "rather than" and three-item lis
 
 ---
 
-## 1. What the venue actually requires (node A output, already complete)
+## 1. What the venue appears to require (node A output, literature audit reopened)
 
-Derived by reading all 14 published JFE papers in `../defi-dominant-currency/lit/jfe-exemplars/`, one independent reader each. Full detail in the agent output; the load-bearing conclusions:
+The existing profile reports results from a fourteen-paper JFE venue corpus, and the current paper spine reports a nine-paper architecture subset. The underlying PDFs and aggregate measurements survive, but “full detail in the agent output” does not. Treat every count below as provisional until its denominator resolves to completed full-text cards in `docs/literature-audit.md`; the audit must cover both scientific content and venue craft paper by paper.
 
 **Invariants, to comply with:**
 - No standalone literature-review section (14/14). The review sits inside the introduction, each strand closing with a differentiation sentence.

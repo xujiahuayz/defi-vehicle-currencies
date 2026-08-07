@@ -6,14 +6,57 @@ import pandas as pd
 
 from ddvc.asset_types import TYPES
 from scripts.audit_findings_freeze import (
+    cited_bibliography_keys,
     graph_status,
+    parse_literature_cards,
     parse_state_frontmatter,
     route_measurement_invariants,
+    validate_literature_audit,
     validate_specification_lock,
 )
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_literature_gate_requires_individual_verified_cards(self) -> None:
+        text = """---
+status: complete
+---
+
+### PaperA
+- Status: claim-verified
+- Roles: central, mechanism
+- Independent: complete
+
+### venue:one
+- Status: full-text-read
+- Roles: venue
+- Independent: pending
+"""
+        cards = parse_literature_cards(text)
+        self.assertEqual(cards["PaperA"]["status"], "claim-verified")
+        passed, detail = validate_literature_audit(
+            text, {"PaperA"}, {"venue:one"}
+        )
+        self.assertTrue(passed, detail)
+        passed, _detail = validate_literature_audit(
+            text.replace("Independent: complete", "Independent: pending"),
+            {"PaperA"},
+            {"venue:one"},
+        )
+        self.assertFalse(passed)
+
+    def test_citation_inventory_reads_every_key_in_a_group(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "section.tex"
+            path.write_text(r"\\citet{PaperA,PaperB} and \\citep{PaperC}")
+            self.assertEqual(
+                cited_bibliography_keys([path]),
+                {"PaperA", "PaperB", "PaperC"},
+            )
+
     def test_specification_lock_requires_hash_and_complete_entered_claims(self) -> None:
         import hashlib
         import json
