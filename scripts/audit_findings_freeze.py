@@ -29,6 +29,40 @@ STATE = ROOT / "docs" / "findings-freeze.md"
 SPECIFICATION_LOCK = ROOT / "docs" / "specification-lock.json"
 LITERATURE_AUDIT = ROOT / "docs" / "literature-audit.md"
 PAPER_SECTIONS = ROOT / "paper" / "sections"
+LITERATURE_CARD_REQUIRED_FIELDS = frozenset(
+    {
+        "status",
+        "roles",
+        "source",
+        "version",
+        "uses",
+        "scientific",
+        "structure",
+        "depth",
+        "breadth",
+        "optics",
+        "locations",
+        "implication",
+        "first reader",
+        "independent",
+    }
+)
+LITERATURE_CARD_PLACEHOLDERS = frozenset({"", "todo", "tbd", "n/a"})
+LITERATURE_CARD_EVIDENCE_FIELDS = frozenset(
+    {
+        "source",
+        "version",
+        "uses",
+        "scientific",
+        "structure",
+        "depth",
+        "breadth",
+        "optics",
+        "locations",
+        "implication",
+        "first reader",
+    }
+)
 JFE_VENUE_CARDS = {
     "venue:bolton-kacperczyk-carbon",
     "venue:carletti-banks-patient-lenders",
@@ -113,6 +147,19 @@ def parse_literature_cards(text: str) -> dict[str, dict[str, str]]:
     return cards
 
 
+def complete_literature_card(fields: dict[str, str]) -> bool:
+    """Reject cards that omit an evidence axis or leave a placeholder behind."""
+    fields_present = all(
+        fields.get(field, "").strip().lower() not in LITERATURE_CARD_PLACEHOLDERS
+        for field in LITERATURE_CARD_REQUIRED_FIELDS
+    )
+    evidence_written = all(
+        fields.get(field, "").strip().lower() != "pending"
+        for field in LITERATURE_CARD_EVIDENCE_FIELDS
+    )
+    return fields_present and evidence_written
+
+
 def validate_literature_audit(
     text: str,
     cited_keys: set[str],
@@ -121,13 +168,23 @@ def validate_literature_audit(
     """Require individual full-text cards before findings may freeze."""
     frontmatter = parse_state_frontmatter(text)
     cards = parse_literature_cards(text)
+    required_cards = cited_keys | venue_cards
+    complete_cards = {
+        key
+        for key in required_cards
+        if key in cards and complete_literature_card(cards[key])
+    }
     verified_citations = {
-        key for key in cited_keys if cards.get(key, {}).get("status") == "claim-verified"
+        key
+        for key in cited_keys
+        if cards.get(key, {}).get("status")
+        in {"claim-verified", "independently-re-read"}
     }
     read_venues = {
         key
         for key in venue_cards
-        if cards.get(key, {}).get("status") in {"full-text-read", "claim-verified"}
+        if cards.get(key, {}).get("status")
+        in {"full-text-read", "claim-verified", "independently-re-read"}
     }
     central = {
         key
@@ -141,12 +198,14 @@ def validate_literature_audit(
     }
     passed = bool(
         frontmatter.get("status") == "complete"
+        and complete_cards == required_cards
         and verified_citations == cited_keys
         and read_venues == venue_cards
         and independent == central
     )
     return passed, (
         f"status={frontmatter.get('status') or 'missing'}; "
+        f"five-axis-cards={len(complete_cards)}/{len(required_cards)}; "
         f"cited={len(verified_citations)}/{len(cited_keys)}; "
         f"venue={len(read_venues)}/{len(venue_cards)}; "
         f"independent={len(independent)}/{len(central)}"

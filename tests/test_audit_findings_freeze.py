@@ -7,6 +7,7 @@ import pandas as pd
 from ddvc.asset_types import TYPES
 from scripts.audit_findings_freeze import (
     cited_bibliography_keys,
+    complete_literature_card,
     graph_status,
     parse_literature_cards,
     parse_state_frontmatter,
@@ -25,11 +26,33 @@ status: complete
 ### PaperA
 - Status: claim-verified
 - Roles: central, mechanism
+- Source: literature/papers/paper-a.pdf
+- Version: Journal version, 2020
+- Uses: Contribution and mechanism claims in sections 1 and 3
+- Scientific: Identifies the mechanism with a panel design and states its limits
+- Structure: Motivation, model, design, results, mechanisms, and robustness
+- Depth: Concentrates detail in identification and mechanism validation
+- Breadth: Covers two mechanisms and rules out the leading alternative
+- Optics: Calibrated title, early result preview, and a compact exhibit hierarchy
+- Locations: Sections 1 and 4, pages 2 and 18, Table 3
+- Implication: Lead with the priced counterfactual and keep descriptive breadth subordinate
+- First reader: Reader A
 - Independent: complete
 
 ### venue:one
 - Status: full-text-read
 - Roles: venue
+- Source: literature/venue/paper-one.pdf
+- Version: Published JFE version, 2021
+- Uses: Venue structure and presentation benchmark
+- Scientific: Uses a focused finance question and a design matched to the claim
+- Structure: Introduction, setting, design, results, channels, and conclusion
+- Depth: Gives the main design and two robustness families most of the space
+- Breadth: Addresses the principal rival while keeping external scope bounded
+- Optics: Short title, two-page opening, early main table, and restrained claims
+- Locations: Pages 1 to 5 and 18 to 24, Tables 2 and 5
+- Implication: Put the lead estimate early and move diagnostics behind the main table
+- First reader: Reader B
 - Independent: pending
 """
         cards = parse_literature_cards(text)
@@ -38,6 +61,16 @@ status: complete
             text, {"PaperA"}, {"venue:one"}
         )
         self.assertTrue(passed, detail)
+        self.assertTrue(complete_literature_card(cards["PaperA"]))
+        missing_optics = text.replace(
+            "- Optics: Calibrated title, early result preview, and a compact exhibit hierarchy\n",
+            "",
+            1,
+        )
+        passed, detail = validate_literature_audit(
+            missing_optics, {"PaperA"}, {"venue:one"}
+        )
+        self.assertFalse(passed, detail)
         passed, _detail = validate_literature_audit(
             text.replace("Independent: complete", "Independent: pending"),
             {"PaperA"},

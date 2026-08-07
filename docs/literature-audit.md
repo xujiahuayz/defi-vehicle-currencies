@@ -8,15 +8,15 @@ Status opened 2026-08-07. This ledger repairs a project-level evidence gap: earl
 
 ## Completion contract
 
-Each paper is classified as load-bearing, contextual, venue exemplar, or more than one. A complete card records:
+Each paper is classified as load-bearing, contextual, venue exemplar, or more than one. A complete card records five distinct reading axes, not a generic prose summary:
 
 - exact title, authors, year, publication/version and saved source;
 - project roles and every bibliography key or manuscript claim that uses it;
-- question, contribution, theory or mechanism;
-- data, measurement, identification and main estimates;
-- boundary conditions, limitations and credible alternative readings;
-- top-level and subsection architecture, content allocation, depth and breadth;
-- tables, figures, captions, notation, prose density and page optics;
+- `Scientific`: question, contribution, theory or mechanism, data, measurement, identification, main estimates, boundary conditions and credible alternative readings;
+- `Structure`: top-level and subsection architecture and the function of each major block;
+- `Depth`: where the paper spends analytical, institutional and robustness effort, and what it treats lightly;
+- `Breadth`: scope, literatures, mechanisms, objections, alternatives and boundary discipline;
+- `Optics`: title, opening, claim calibration, tables, figures, captions, notation, prose density, page allocation and reviewer-facing credibility;
 - exact page, section, table or equation supporting every project use;
 - first reader, completion status and independent-reader status.
 
@@ -50,4 +50,4 @@ Cards are added one paper at a time below. No aggregate venue statement is final
 
 The fourteen required venue-card identifiers are `venue:bolton-kacperczyk-carbon`, `venue:carletti-banks-patient-lenders`, `venue:chang-ripples-into-waves`, `venue:cong-li-wang-token-platform`, `venue:diamond-hu-rajan-liquidity-pledgeability`, `venue:eren-malamud-dominant-currency-debt`, `venue:graham-corporate-culture`, `venue:hajda-nikolov-product-market`, `venue:hinzen-bitcoin-adoption`, `venue:huang-constrained-liquidity-fx`, `venue:li-ye-zheng-refusing-best-price`, `venue:makarov-schoar-crypto-arbitrage`, `venue:mayer-financing-breakthroughs`, and `venue:pastor-sustainable-investing`.
 
-Each completed card starts with a level-three heading containing its bibliography key or venue identifier, followed by `Status`, `Roles`, and `Independent` fields. `Status: claim-verified` is required for cited sources; `Status: full-text-read` is sufficient for venue-only exemplars. A card with `central` among its roles requires `Independent: complete`.
+Each completed card starts with a level-three heading containing its bibliography key or venue identifier. The executable schema requires `Status`, `Roles`, `Source`, `Version`, `Uses`, `Scientific`, `Structure`, `Depth`, `Breadth`, `Optics`, `Locations`, `Implication`, `First reader`, and `Independent`. `Locations` records exact page, section, table or equation evidence; `Implication` states what the paper should preserve, change or decline on the five axes. `Status: claim-verified` is required for cited sources; `Status: full-text-read` is sufficient for venue-only exemplars. A card with `central` among its roles requires `Independent: complete`.
