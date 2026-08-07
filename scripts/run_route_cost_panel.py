@@ -67,6 +67,7 @@ from ddvc.pricing.tick_state import (
     active_liquidity,
     apply_tick_change,
 )
+from ddvc.pricing.v3pools import load_token_decimals
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.route_cost_summary import write_route_cost_summary
 
@@ -75,6 +76,8 @@ ROOT = REPO_ROOT
 # Swap samples per pool, used only to pin token decimals by the sqrtPriceX96
 # identity. Capped per pool, so this stays small next to the swap stream itself.
 _SWAP_SAMPLE: dict[str, list[dict]] = {}
+_TOKEN_DECIMALS: dict[str, int] = {}
+TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 
 
 VEHICLE_BY_ADDRESS = {
@@ -130,6 +133,7 @@ QUOTE_SOURCES = [
 ]
 QUOTE_INPUTS = [
     DATA_DIR / "unified",
+    TOKEN_DECIMALS,
     *(DATA_DIR / "raw" / "thegraph" / venue for venue in (
         "uniswap_v2",
         "sushiswap_v2",
@@ -444,11 +448,14 @@ def _apply_tick_liquidity_events(
 def _absorb_swap_state(venue: str, rec: dict,
                        state_by_pool: dict[str, V3PoolState]) -> None:
     """Compatibility adapter to the canonical concentrated-liquidity replay owner."""
+    if not _TOKEN_DECIMALS:
+        _TOKEN_DECIMALS.update(load_token_decimals(TOKEN_DECIMALS))
     absorb_swap_state(
         venue,
         rec,
         state_by_pool,
         swap_samples=_SWAP_SAMPLE,
+        token_decimals=_TOKEN_DECIMALS,
         unify_wrapped=UNIFY_WRAPPED,
     )
 

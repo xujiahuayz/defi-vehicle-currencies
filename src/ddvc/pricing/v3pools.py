@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import math
 from functools import lru_cache
+from pathlib import Path
 
 try:                                                  # preferred, already a dep
     from eth_hash.auto import keccak as _keccak
@@ -57,6 +58,8 @@ POOL_INIT_CODE_HASH = bytes.fromhex(
 # The only tiers ever enabled on Ethereum mainnet, with their canonical spacings.
 FEE_TIERS = (100, 500, 3000, 10000)
 FEE_TO_TICK_SPACING = {100: 1, 500: 10, 3000: 60, 10000: 200}
+DECIMAL_SAMPLE_SIZE = 12
+DECIMAL_CONSENSUS_SHARE = 0.75
 
 # Decimals we assert rather than derive. These are the vehicle candidates and the
 # stablecoin anchors, so an error here would propagate everywhere; they are
@@ -108,16 +111,48 @@ def tick_spacing_for_fee(fee: int) -> int:
     return FEE_TO_TICK_SPACING.get(fee, 60)
 
 
-def decimals_gap_from_swaps(swaps: list[dict], min_obs: int = 1,
+def record_token_decimals(
+    known: dict[str, int], token: str, decimals: int
+) -> None:
+    """Register one address-level decimal identity and reject conflicting pools."""
+    address = token.lower()
+    value = int(decimals)
+    if not 0 <= value <= 36:
+        raise ValueError(f"implausible token decimals for {address}: {value}")
+    prior = ANCHOR_DECIMALS.get(address, known.get(address))
+    if prior is not None and prior != value:
+        raise ValueError(
+            f"conflicting token decimals for {address}: {prior} versus {value}"
+        )
+    known[address] = value
+
+
+def load_token_decimals(path: str | Path) -> dict[str, int]:
+    """Load one validated address-level decimal registry from a parquet artefact."""
+    import pandas as pd
+
+    frame = pd.read_parquet(path, columns=["token", "decimals"])
+    if frame.empty:
+        raise ValueError(f"empty token-decimal registry: {path}")
+    registry: dict[str, int] = {}
+    for token, decimals in zip(frame["token"], frame["decimals"], strict=True):
+        record_token_decimals(registry, str(token), int(decimals))
+    if len(registry) != len(frame):
+        raise ValueError(f"duplicate token identities in decimal registry: {path}")
+    return registry
+
+
+def decimals_gap_from_swaps(swaps: list[dict], min_obs: int = DECIMAL_SAMPLE_SIZE,
                             tol: float = 0.30) -> int | None:
     """`d1 - d0` from the gap between raw `sqrtPriceX96` and human amounts.
 
-    One swap is enough. Measured against the pools where BOTH legs have known
-    decimals, so the true gap is observable, the identity recovers it with median
-    absolute error 0.0002 and p99 0.0038 over 15,727 swaps: the only slack is the
-    fee and the swap's own price impact, both far too small to move a base-10
-    exponent. Requiring several observations therefore buys no accuracy and costs
-    real coverage, since thin pools are exactly the ones with few swaps.
+    Twelve swaps are required because this estimator feeds a maximum over every
+    public pool. A single high-impact swap can put its average execution price near
+    the wrong integer gap even when the ending marginal price is valid. That rare
+    pool-level error is selected by the optimiser and becomes a 10x or 100x false
+    route. The median of a rolling twelve-row sample rejects that failure while
+    keeping the memory cost fixed. Pools without twelve mutually consistent usable
+    observations remain outside exact-quote support.
 
     What the tolerance is for. A derived gap must land NEAR an integer, because a
     decimals gap is one by definition. A value sitting between integers means the
@@ -144,13 +179,23 @@ def decimals_gap_from_swaps(swaps: list[dict], min_obs: int = 1,
         return None
     gaps.sort()
     med = gaps[len(gaps) // 2]
-    if abs(med - round(med)) > tol:
+    candidate = round(med)
+    support = sum(abs(gap - candidate) <= tol for gap in gaps)
+    if (
+        abs(med - candidate) > tol
+        or support / len(gaps) < DECIMAL_CONSENSUS_SHARE
+    ):
         return None                    # identity failed: rebasing or fee-on-transfer
-    return int(round(med))
+    return int(candidate)
 
 
-def resolve_decimals(token0: str, token1: str,
-                     swaps: list[dict]) -> tuple[int, int] | None:
+def resolve_decimals(
+    token0: str,
+    token1: str,
+    swaps: list[dict],
+    *,
+    known_decimals: dict[str, int] | None = None,
+) -> tuple[int, int] | None:
     """(dec0, dec1), using anchors where known and the price identity elsewhere.
 
     Returns None when neither leg is an anchor and the gap alone cannot pin the
@@ -158,14 +203,23 @@ def resolve_decimals(token0: str, token1: str,
     than quoted on a guessed 18.
     """
     t0, t1 = token0.lower(), token1.lower()
-    a0, a1 = ANCHOR_DECIMALS.get(t0), ANCHOR_DECIMALS.get(t1)
-    if a0 is not None and a1 is not None:
-        return a0, a1
+    known = known_decimals or {}
+    anchor0, anchor1 = ANCHOR_DECIMALS.get(t0), ANCHOR_DECIMALS.get(t1)
+    if anchor0 is not None and anchor1 is not None:
+        return anchor0, anchor1
+    a0 = anchor0 if anchor0 is not None else known.get(t0)
+    a1 = anchor1 if anchor1 is not None else known.get(t1)
     gap = decimals_gap_from_swaps(swaps)
     if gap is None:
         return None
+    if a0 is not None and a1 is not None:
+        return (a0, a1) if gap == a1 - a0 else None
     if a0 is not None:
-        return a0, a0 + gap
-    if a1 is not None:
-        return a1 - gap, a1
-    return None
+        inferred = (a0, a0 + gap)
+    elif a1 is not None:
+        inferred = (a1 - gap, a1)
+    else:
+        return None
+    if any(value < 0 or value > 36 for value in inferred):
+        return None
+    return inferred

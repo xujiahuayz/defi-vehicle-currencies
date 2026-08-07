@@ -37,6 +37,7 @@ from ddvc.pricing.tick_replay import (
     load_tick_day_events,
     warm_tick_day,
 )
+from ddvc.pricing.v3pools import load_token_decimals
 from ddvc.prices import PRICE_COLUMNS, day_prices
 from ddvc.provenance import cache_key
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
@@ -52,6 +53,7 @@ OUT_SUMMARY = OUTPUT_DIR / "exhibits" / "transaction_state_tick_frontier_summary
 OUT_SUPPORT = OUTPUT_DIR / "exhibits" / "transaction_state_tick_frontier_support.jsonl"
 TICK_VENUES = ("uniswap_v3", "uniswap_v4")
 REPLAY_START = "20210504"
+TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 MIN_INPUT_USD = 100.0
 VALIDATION_TOLERANCE = 0.01
 PILOT_DAYS = ("20220615", "20240615", "20250615", "20260615")
@@ -63,6 +65,7 @@ CODE_SOURCES = [
     "src/ddvc/pricing/tick_quote.py",
     "src/ddvc/pricing/tick_replay.py",
     "src/ddvc/pricing/tick_state.py",
+    "src/ddvc/pricing/v3pools.py",
     "src/ddvc/pricing/v3quote.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/realised.py",
@@ -420,7 +423,7 @@ def main() -> int:
     support_rows: list[dict[str, object]] = []
     replay_generation = cache_key(
         REPLAY_SOURCES,
-        inputs=[RAW / "uniswap_v3", RAW / "uniswap_v4"],
+        inputs=[RAW / "uniswap_v3", RAW / "uniswap_v4", TOKEN_DECIMALS],
     )
     checkpoint_dir = (
         DATA_DIR
@@ -434,7 +437,7 @@ def main() -> int:
         replay_start = selected[0]
         print(f"loaded replay checkpoint before {selected[0]}", flush=True)
     else:
-        replay = TickReplayState()
+        replay = TickReplayState(token_decimals=load_token_decimals(TOKEN_DECIMALS))
         replay_start = REPLAY_START
     calendar = pd.date_range(
         pd.to_datetime(replay_start, format="%Y%m%d"),
@@ -468,7 +471,7 @@ def main() -> int:
         return 1
     support = pd.DataFrame(support_rows)
     summary = summarise(panel)
-    inputs = [UNIFIED, RAW / "uniswap_v3", RAW / "uniswap_v4"]
+    inputs = [UNIFIED, RAW / "uniswap_v3", RAW / "uniswap_v4", TOKEN_DECIMALS]
     write_panel(
         panel,
         OUT_PANEL,

@@ -121,6 +121,7 @@ class TickReplayState:
     pool_index: PoolIndex = field(default_factory=dict)
     quote_indexes_by_venue: TickQuoteIndexes = field(default_factory=dict)
     swap_samples: dict[str, list[dict]] = field(default_factory=dict)
+    token_decimals: dict[str, int] = field(default_factory=dict)
 
     def apply_liquidity(self, venue: str, row: dict, *, sign: int) -> None:
         ticks = self.ticks_by_venue.setdefault(venue, {})
@@ -141,6 +142,7 @@ class TickReplayState:
             row,
             states,
             swap_samples=self.swap_samples,
+            token_decimals=self.token_decimals,
             unify_wrapped=self.unify_wrapped,
         )
         current = states.get(pool)

@@ -7,7 +7,13 @@ from dataclasses import dataclass
 
 from ddvc.asset_types import canonical_token
 from ddvc.fetch.raw import block_value, timestamp_value, v4_pool_quote_supported
-from ddvc.pricing.v3pools import derive_fee_tier, resolve_decimals, tick_spacing_for_fee
+from ddvc.pricing.v3pools import (
+    DECIMAL_SAMPLE_SIZE,
+    derive_fee_tier,
+    record_token_decimals,
+    resolve_decimals,
+    tick_spacing_for_fee,
+)
 
 
 @dataclass
@@ -65,6 +71,7 @@ def absorb_swap_state(
     state_by_pool: dict[str, TickPoolState],
     *,
     swap_samples: dict[str, list[dict]],
+    token_decimals: dict[str, int],
     unify_wrapped: bool = True,
 ) -> None:
     """Fold one V3/V4 swap into the canonical latest-state index.
@@ -131,16 +138,26 @@ def absorb_swap_state(
             decimals = (int(token0.get("decimals")), int(token1.get("decimals")))
         except (TypeError, ValueError):
             return
+        record_token_decimals(token_decimals, raw0, decimals[0])
+        record_token_decimals(token_decimals, raw1, decimals[1])
     else:
         sample = swap_samples.setdefault(pool_id, [])
-        if len(sample) < 12:
-            sample.append(row)
+        sample.append(row)
+        if len(sample) > DECIMAL_SAMPLE_SIZE:
+            del sample[0]
         fee_pips = derive_fee_tier(pool_id, raw0, raw1)
         if fee_pips is None:
             return
-        decimals = resolve_decimals(raw0, raw1, sample)
+        decimals = resolve_decimals(
+            raw0,
+            raw1,
+            sample,
+            known_decimals=token_decimals,
+        )
         if decimals is None:
             return
+        record_token_decimals(token_decimals, raw0, decimals[0])
+        record_token_decimals(token_decimals, raw1, decimals[1])
         tick_spacing = tick_spacing_for_fee(fee_pips)
     state_by_pool[pool_id] = TickPoolState(
         pool=pool_id,

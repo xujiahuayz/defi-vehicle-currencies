@@ -44,7 +44,9 @@ class TickStateTests(unittest.TestCase):
             },
         )
         state = {}
-        absorb_swap_state("uniswap_v4", record, state, swap_samples={})
+        absorb_swap_state(
+            "uniswap_v4", record, state, swap_samples={}, token_decimals={}
+        )
         self.assertEqual(state["pool"].tick_spacing, 180)
         self.assertEqual((state["pool"].block, state["pool"].log_index), (5, 7))
 
@@ -87,7 +89,9 @@ class TickStateTests(unittest.TestCase):
         )
         state = {"pool": prior}
         with patch("ddvc.pricing.tick_state.resolve_decimals") as resolve:
-            absorb_swap_state("uniswap_v3", record, state, swap_samples={})
+            absorb_swap_state(
+                "uniswap_v3", record, state, swap_samples={}, token_decimals={}
+            )
         resolve.assert_not_called()
         self.assertEqual(state["pool"].dec1, 6)
         self.assertEqual(state["pool"].fee_pips, 500)
@@ -110,11 +114,15 @@ class TickStateTests(unittest.TestCase):
             },
         )
         state = {}
-        absorb_swap_state("uniswap_v4", record, state, swap_samples={})
+        absorb_swap_state(
+            "uniswap_v4", record, state, swap_samples={}, token_decimals={}
+        )
         record["transaction"]["blockNumber"] = "6"
         record["pool"]["tickSpacing"] = "60"
         with self.assertRaisesRegex(ValueError, "statics changed"):
-            absorb_swap_state("uniswap_v4", record, state, swap_samples={})
+            absorb_swap_state(
+                "uniswap_v4", record, state, swap_samples={}, token_decimals={}
+            )
 
     def test_zeroed_boundary_ticks_are_removed(self) -> None:
         ticks = {0: 5, 10: -5}
