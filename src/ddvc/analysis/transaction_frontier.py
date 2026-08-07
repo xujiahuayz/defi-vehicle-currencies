@@ -114,10 +114,11 @@ def score_tick_frontier(
         max_price_impact=max_price_impact,
         quote_indexes_by_venue=quote_indexes_by_venue,
     )
+    public_vehicles = tuple(sorted(set(vehicles) | {route.vehicle}))
     public = best_tick_public_path(
         route.token_in,
         route.token_out,
-        vehicles,
+        public_vehicles,
         route.amount_in,
         pool_index=pool_index,
         states_by_venue=states_by_venue,

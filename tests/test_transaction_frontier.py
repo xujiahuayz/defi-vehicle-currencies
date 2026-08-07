@@ -100,6 +100,23 @@ class TransactionFrontierTests(unittest.TestCase):
         )
         self.assertIsNone(score)
 
+    def test_public_frontier_retains_a_realised_noncandidate_vehicle(self) -> None:
+        score = score_tick_frontier(
+            self.route,
+            vehicles=(),
+            pool_index=self.index,
+            states_by_venue=self.states,
+            ticks_by_venue=self.ticks,
+            max_price_impact=0.05,
+            validation_tolerance=0.01,
+        )
+        self.assertIsNotNone(score)
+        assert score is not None
+        self.assertGreaterEqual(
+            float(score["public_path_regret_bps"]),
+            float(score["public_reach_same_vehicle_regret_bps"]),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

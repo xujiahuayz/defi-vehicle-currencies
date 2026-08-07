@@ -11,7 +11,9 @@ funnel rather than silently treated as covered.
 from __future__ import annotations
 
 import argparse
+import pickle
 from collections import defaultdict
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -36,8 +38,10 @@ from ddvc.pricing.tick_replay import (
     warm_tick_day,
 )
 from ddvc.prices import PRICE_COLUMNS, day_prices
+from ddvc.provenance import cache_key
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.route_cost import MAX_PRICE_IMPACT
+from ddvc.runtime import atomic_output
 from ddvc.tables import write_exhibit, write_panel
 
 
@@ -65,6 +69,13 @@ CODE_SOURCES = [
     "src/ddvc/prices.py",
     "src/ddvc/route_roles.py",
 ]
+REPLAY_SOURCES = [
+    "src/ddvc/pricing/tick_replay.py",
+    "src/ddvc/pricing/tick_state.py",
+    "src/ddvc/pricing/v3pools.py",
+    "src/ddvc/asset_types.py",
+    "src/ddvc/fetch/raw.py",
+]
 
 
 def candidate_vehicles() -> tuple[str, ...]:
@@ -78,6 +89,20 @@ def candidate_vehicles() -> tuple[str, ...]:
             }
         )
     )
+
+
+def save_replay_checkpoint(path: Path, replay: TickReplayState) -> None:
+    with atomic_output(path) as temporary:
+        with temporary.open("wb") as handle:
+            pickle.dump(replay, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def load_replay_checkpoint(path: Path) -> TickReplayState:
+    with path.open("rb") as handle:
+        replay = pickle.load(handle)
+    if not isinstance(replay, TickReplayState):
+        raise TypeError(f"invalid tick replay checkpoint: {path}")
+    return replay
 
 
 def available_days() -> list[str]:
@@ -390,18 +415,39 @@ def main() -> int:
         print(f"error: {error}")
         return 1
     vehicles = candidate_vehicles()
-    replay = TickReplayState()
     selected_set = set(selected)
     frames: list[pd.DataFrame] = []
     support_rows: list[dict[str, object]] = []
+    replay_generation = cache_key(
+        REPLAY_SOURCES,
+        inputs=[RAW / "uniswap_v3", RAW / "uniswap_v4"],
+    )
+    checkpoint_dir = (
+        DATA_DIR
+        / "empirical"
+        / "_tick_replay_checkpoints"
+        / f"engine_{replay_generation}"
+    )
+    first_checkpoint = checkpoint_dir / f"pre_{selected[0]}.pkl"
+    if first_checkpoint.exists():
+        replay = load_replay_checkpoint(first_checkpoint)
+        replay_start = selected[0]
+        print(f"loaded replay checkpoint before {selected[0]}", flush=True)
+    else:
+        replay = TickReplayState()
+        replay_start = REPLAY_START
     calendar = pd.date_range(
-        pd.to_datetime(REPLAY_START, format="%Y%m%d"),
+        pd.to_datetime(replay_start, format="%Y%m%d"),
         pd.to_datetime(max(selected), format="%Y%m%d"),
         freq="D",
     )
     for index, observed in enumerate(calendar, 1):
         day = observed.strftime("%Y%m%d")
         if day in selected_set:
+            checkpoint = checkpoint_dir / f"pre_{day}.pkl"
+            if not checkpoint.exists():
+                save_replay_checkpoint(checkpoint, replay)
+                print(f"wrote replay checkpoint before {day}", flush=True)
             events = load_tick_day_events(RAW, day)
             frame, support = score_day(day, events, replay, vehicles)
             frames.append(frame)

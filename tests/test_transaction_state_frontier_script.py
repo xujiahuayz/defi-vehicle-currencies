@@ -1,15 +1,20 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pandas as pd
 
 from ddvc.asset_types import NATIVE_ETH, WETH
 from scripts.build_transaction_state_frontier import (
     candidate_vehicles,
+    load_replay_checkpoint,
+    save_replay_checkpoint,
     select_days,
     summarise,
 )
+from ddvc.pricing.tick_replay import TickReplayState
 
 
 class TransactionStateFrontierScriptTests(unittest.TestCase):
@@ -53,6 +58,15 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             float(pooled.loc["all", "public_path_regret_positive_share"]),
             1.0,
         )
+
+    def test_replay_checkpoint_round_trips_exact_state(self) -> None:
+        replay = TickReplayState()
+        replay.ticks_by_venue = {"uniswap_v3": {"pool": {-10: 5, 10: -5}}}
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "checkpoint.pkl"
+            save_replay_checkpoint(path, replay)
+            restored = load_replay_checkpoint(path)
+        self.assertEqual(restored.ticks_by_venue, replay.ticks_by_venue)
 
 
 if __name__ == "__main__":

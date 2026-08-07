@@ -157,6 +157,7 @@ def absorb_swap_state(
         block=block,
         log_index=log_index,
     )
+    swap_samples.pop(pool_id, None)
 
 
 def iter_pretrade_states(
