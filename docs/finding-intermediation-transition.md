@@ -6,7 +6,7 @@ This asks the FX literature's dominance-transition question where the intermedia
 
 ## Primary one-vehicle result
 
-The locked vehicle-choice unit is an exact two-leg intermediary route. It gives each economic choice one vehicle and one vote, so the rise of longer paths cannot mechanically raise a type's weight. On month-days common to the endpoint years, the equal-weighted daily stable share within native plus stable rises from 16.9% in 2024 to 42.3% in 2026, a 25.4 percentage-point change. On strict within-20% value support it rises from 32.7% to 76.5%, a 43.9-point change. The broader all-episode measure below remains the network-extent extension.
+The locked vehicle-choice unit is an exact two-leg intermediary route. It gives each economic choice one vehicle and one vote, so the rise of longer paths cannot mechanically raise a type's weight. On month-days common to the endpoint years, the equal-weighted daily stable share within native plus stable rises from 16.9% in 2024 to 42.3% in 2026, a 25.4 percentage-point change with a calendar-HAC standard error of 1.05 points (Holm-adjusted p=3.36e-87). On strict within-20% value support it rises from 32.7% to 76.5%, a 43.9-point change with a 2.02-point standard error (Holm-adjusted p=4.48e-75). The corresponding log-odds changes are 1.30 and 1.98, and ratio-of-total weighting gives changes of 27.5 and 43.9 points. The broader all-episode measure below remains the network-extent extension.
 
 ## Network-extent result
 

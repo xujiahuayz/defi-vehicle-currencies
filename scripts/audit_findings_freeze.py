@@ -31,6 +31,7 @@ LOCKED_CLAIM_STATUSES = {
     "enter_fgh_primary",
     "enter_fgh_foundation",
     "enter_fgh_mechanism",
+    "enter_fgh_companion",
 }
 
 

@@ -1,6 +1,6 @@
 # Rent incidence, with gas netted
 
-Built 2026-08-06 by `scripts/build_rent_incidence_panel.py` and `scripts/run_rent_incidence.py`. Uniswap v2 over 2,235 days, 2020-05-05 to 2026-06-30, 3,358,539 screened pool-days across 113,895 pools. Uniswap v3 over 1,884 days, 2021-05-04 to 2026-06-30, 366,876 screened pool-days across the 392 pools that survive screening from the 400 most traded. Asset roles from `src/ddvc/asset_types.py`. Gas prices from `data/processed/daily_gas_price_graph.parquet`, centrality from `data/processed/vehicle_centrality_dense.parquet` (94 sampled days, rebuilt at stride 24 for this node). Artefacts in `output/empirical/rent_incidence/`.
+Built 2026-08-07 by `scripts/build_rent_incidence_panel.py` and `scripts/run_rent_incidence.py`. Uniswap v2 covers 2,235 days from 2020-05-05 to 2026-06-30, with 3,358,539 screened pool-days across 113,895 pools. Uniswap v3 covers 1,884 days from 2021-05-04 to 2026-06-30, with 366,876 screened pool-days across the 392 pools that survive screening from the 400 most traded. Asset roles come from `src/ddvc/asset_types.py`. Gas prices come from `data/processed/daily_gas_price_graph.parquet`, and centrality comes from `data/processed/vehicle_centrality_dense.parquet` (94 sampled days, rebuilt at stride 24 for this node). Artefacts live in `output/empirical/rent_incidence/`.
 
 This asks workflow item 4.1.3. Does intermediating pay, once the loss to arbitrageurs and the gas bill are both charged against fee revenue, and does the answer depend on the role the pool's assets play.
 
@@ -35,28 +35,28 @@ Uniswap v2, annualised, equal-weighted across pool-days except where the column 
 
 | pool role | pools | pool-days | capital-days ($bn) | fee yield | LVR rate | gas rate (mean) | net yield | share paying | capital-weighted net |
 |---|---|---|---|---|---|---|---|---|---|
-| native / other | 100,639 | 2,699,499 | 1,920.3 | 0.60% | 10.23% | 3.55% | -5.96% | 21.6% | -0.99% |
-| native / stable | 12 | 14,929 | 408.9 | 4.46% | 3.87% | 0.18% | +0.36% | 58.0% | +7.56% |
-| other / stable | 1,817 | 274,256 | 278.8 | 1.68% | 7.18% | 0.68% | -3.55% | 23.1% | -0.21% |
-| stable / stable | 13 | 8,828 | 107.5 | 0.57% | 0.09% | 0.18% | +0.24% | 89.6% | +1.53% |
-| imported / native | 4 | 3,932 | 92.3 | 2.34% | 1.42% | 0.09% | +0.47% | 75.4% | +1.18% |
-| native / staked native | 3 | 1,987 | 7.1 | 4.71% | 0.37% | 0.21% | +3.58% | 89.3% | +6.57% |
-| imported / other | 82 | 12,854 | 6.8 | 0.55% | 2.26% | 1.09% | -1.14% | 27.2% | -1.53% |
-| imported / stable | 8 | 4,732 | 4.5 | 1.60% | 1.51% | 0.72% | +0.04% | 52.3% | +0.83% |
+| native / other | 111,154 | 2,978,376 | 2,382.4 | 0.90% | 11.85% | 3.80% | -6.87% | 21.2% | -89.23% |
+| native / stable | 12 | 17,614 | 619.1 | 5.23% | 4.38% | 0.42% | +0.57% | 59.7% | +11.20% |
+| other / stable | 2,538 | 322,543 | 348.8 | 1.91% | 8.75% | 1.81% | -4.82% | 21.0% | -34.82% |
+| imported / native | 4 | 4,801 | 179.2 | 2.83% | 1.81% | 0.23% | +0.50% | 72.4% | +3.10% |
+| stable / stable | 24 | 10,981 | 140.1 | 0.84% | 0.15% | 0.28% | +0.32% | 87.8% | +2.59% |
+| imported / other | 135 | 15,663 | 17.4 | 0.63% | 3.00% | 2.20% | -1.75% | 24.3% | -24.39% |
+| native / staked native | 3 | 2,113 | 7.2 | 4.78% | 0.40% | 0.44% | +3.40% | 86.5% | +6.41% |
+| imported / stable | 11 | 5,476 | 7.0 | 1.83% | 1.84% | 0.99% | +0.04% | 51.8% | +3.22% |
 
 Fee yield, LVR rate and net yield are pool-day medians; the gas rate is a mean because its median is zero, since only 13.1% of native-other pool-days carry any liquidity event at all. In v2 the pool is the pair, so the pools column is also the count of distinct token pairs identifying each row, and the profitable rows rest on very few of them.
 
-The pattern is a partition and not a gradient. Where both legs are major assets the intermediation business pays: stable against stable pays on 89.6% of pool-days, native against staked native on 89.3%, imported against native on 75.4%, native against stable on 58.0%. Where the native asset is paired with the long tail it does not: 21.6% of pool-days pay, fee revenue is 13.4% of LVR in aggregate dollars, and the bucket loses 5.22 billion dollars over the sample. That bucket is 100,639 of the 113,895 pools and 80% of the pool-days.
+The pattern is a partition and not a gradient. Where both legs are major assets the intermediation business usually pays: stable against stable pays on 87.8% of pool-days, native against staked native on 86.5%, imported against native on 72.4%, and native against stable on 59.7%. Where the native asset is paired with the long tail it does not: 21.2% of pool-days pay, fee revenue is 17.0% of LVR in aggregate dollars, and the bucket loses 5.82 billion dollars over the sample. That bucket contains 111,154 of the 113,895 screened pools and 88.7% of the pool-days.
 
-Role differences are tested, with no difference read off the table. At the pool-month level, 88,684 pool-months over 12,925 pools with month fixed effects and standard errors clustered by pool, the hypothesis that every role effect on the risk-adjusted net return is zero is rejected at chi2(6) = 101.59 (0.000), and on the probability that a pool-month pays at chi2(6) = 504.89 (0.000). Against a native-other base whose own paying probability is 4.2%, stable-stable adds 0.818 (0.000), imported-native adds 0.621 (0.000), native-stable adds 0.475 (0.000), imported-stable adds 0.375 (0.011). Other-stable adds -0.016 (0.118) with a minimum detectable effect of 0.029, so the long-tail pools quoted against a stablecoin are bounded to within three percentage points of the long-tail pools quoted against the native asset and are not distinguishable from them.
+Role differences are tested, with no difference read off the table. At the pool-month level, 98,966 observations over 14,307 pools with month fixed effects and standard errors clustered by pool, the hypothesis that every role effect on the risk-adjusted net return is zero is rejected at chi2(6) = 113.65 (0.000), and on the probability that a pool-month pays at chi2(6) = 463.33 (0.000). Other-stable is 2.1 percentage points below the native-other base in the paying-probability regression (0.020), while every major-to-major role is economically higher. Long-tail pools do not become privately profitable merely because the quote asset is stable.
 
 Uniswap v3 gives the same ordering on scale-free objects. The median pool-day earns more in fees than it loses to LVR in every major role, with a median pool-day ratio of 10.92 for stable-stable, 4.93 for native-staked-native, 2.30 for imported-imported, 1.36 for native-other, 1.24 for native-stable and 1.02 for other-stable, and between 49.4% and 81.8% of pool-days pay. The zero-role-effect hypothesis is again rejected, chi2(7) = 17.50 (0.014) on the probability a pool-month pays over 12,160 pool-months and 380 pools, with other-stable at -0.135 (0.007) and stable-stable at +0.238 (0.008) against a native-other base. The aggregate dollar ratio for v3 is not the headline, because it is dominated by a small number of large-move pool-days and those are exactly where the in-range approximation overstates LVR worst. The two venues disagree on the native-other bucket, which pays on 60.9% of v3 pool-days against 21.6% on v2, and the disagreement is a sample-selection artefact and not a venue effect: the v3 universe is the 400 most traded pools, so its native-other row is the head of the distribution while v2's is the whole of it, including the hundred thousand pools in the tail. Any comparison of the two venues' levels has to carry that, and the role ORDERING is what survives it.
 
 ## The gas threshold
 
-Gas is a fixed cost per operation, so its incidence falls with the size of the capital base it is spread over. Across v2 capital deciles the median gas rate on the pool-days that carry a liquidity event falls from 18.96% annualised in the smallest decile, median capital 12,998 dollars, to 0.30% in the largest, median capital 2.39 million dollars, a factor of 63. Cartea, Drissi and Monga's point that net profitability has a size threshold therefore reproduces here across a hundred thousand pools instead of one.
+Gas is a fixed cost per operation, so its incidence falls with the size of the capital base it is spread over. Across v2 capital deciles the median gas rate on the pool-days that carry a liquidity event falls from 19.22% annualised in the smallest decile, median capital 13,126 dollars, to 0.47% in the largest, median capital 2.67 million dollars, a factor of 41. Cartea, Drissi and Monga's point that net profitability has a size threshold therefore reproduces here across a hundred thousand pools instead of one.
 
-Gas is not what makes intermediation unprofitable. Quadrupling the per-operation gas assumption moves the median v2 net yield from -5.29% to -5.81% annualised and the paying share from 22.3% to 21.9%; halving it moves them to -5.11% and 22.5%. LVR is what dominates, and the size gradient in net yield runs through the fee-to-LVR ratio, not through gas.
+Gas is not what makes intermediation unprofitable. Quadrupling the per-operation gas assumption moves the median v2 net yield from -6.20% to -7.00% annualised and the paying share from 21.8% to 21.2%; halving it moves them to -5.94% and 22.1%. LVR is what dominates, and the size gradient in net yield runs through the fee-to-LVR ratio, not through gas.
 
 ## The centrality curse does not hold, and the arithmetic says it cannot
 
@@ -68,30 +68,38 @@ Regressions run at the pool-month level with month fixed effects and clustering 
 
 | specification | v2 coefficient | v2 p | v2 MDE | v3 coefficient | v3 p | v3 MDE |
 |---|---|---|---|---|---|---|
-| risk-adjusted net return, month FE only | 0.0082 | 0.309 | 0.0226 | 0.0100 | 0.672 | 0.0659 |
-| risk-adjusted net return, plus depth and volatility | 0.0355 | 0.000 | 0.0173 | 0.0922 | 0.000 | 0.0618 |
-| probability the pool-month pays | 0.0151 | 0.000 | 0.0114 | 0.0708 | 0.000 | 0.0503 |
-| log fee revenue over LVR | 0.2019 | 0.034 | 0.2667 | 0.2850 | 0.001 | 0.2346 |
-| fee yield annualised | 0.0564 | 0.161 | 0.1128 | -0.0001 | 0.990 | 0.0237 |
-| degree in place of betweenness | 0.0346 | 0.000 | 0.0182 | 0.0900 | 0.000 | 0.0542 |
+| risk-adjusted net return, month FE only | 0.0135 | 0.092 | 0.0224 | 0.0102 | 0.663 | 0.0658 |
+| risk-adjusted net return, plus depth and volatility | 0.0375 | 0.000 | 0.0164 | 0.0923 | 0.000 | 0.0618 |
+| probability the pool-month pays | 0.0149 | 0.000 | 0.0104 | 0.0709 | 0.000 | 0.0504 |
+| log fee revenue over LVR | 0.2778 | 0.001 | 0.2263 | 0.2850 | 0.001 | 0.2346 |
+| fee yield annualised | 0.0994 | 0.138 | 0.1879 | -0.0001 | 0.990 | 0.0237 |
+| degree in place of betweenness | 0.0370 | 0.000 | 0.0177 | 0.0901 | 0.000 | 0.0541 |
 
-v2 rests on 78,649 pool-months over 11,877 pools and 62 months; v3 on 11,905 pool-months over 385 pools and 62 months.
+v2 rests on 88,062 pool-months over 13,175 pools and 73 months; v3 on 11,905 pool-months over 385 pools and 62 months.
 
-Unconditionally the coefficient is a bounded null on both venues, and the bound is tight enough to be worth stating: a curse would have to be smaller than 0.023 standard-deviation units of monthly Sharpe per log unit of centrality on v2 and 0.066 on v3 to hide inside these standard errors. Conditional on depth and volatility the sign is positive and significant, which is the opposite of the prediction. The informational version fails in the same direction: fee revenue per dollar of LVR rises with centrality, 0.202 (0.034) on v2 and 0.285 (0.001) on v3, so a more central pool collects more fee-generating flow for each dollar of adverse selection it absorbs, which is what Yuan's mechanism running backwards looks like.
+Unconditionally the coefficient is a bounded null on both venues, and the bound is tight enough to be worth stating: a curse would have to be smaller than 0.022 standard-deviation units of monthly Sharpe per log unit of centrality on v2 and 0.066 on v3 to hide inside these standard errors. Conditional on depth and volatility the sign is positive and significant, which is the opposite of the prediction. The informational version fails in the same direction: fee revenue per dollar of LVR rises with centrality, 0.278 (0.001) on v2 and 0.285 (0.001) on v3, so a more central pool collects more fee-generating flow for each dollar of adverse selection it absorbs.
 
-The positive sign is not the mechanical channel in which a central token routes more volume and volume is the fee base, because the fee-yield regression is itself a bounded null, 0.056 (0.161) with a minimum detectable effect of 0.113 on v2 and -0.000 (0.990) with a minimum detectable effect of 0.024 on v3. What moves is the ratio, through the LVR side.
+The positive sign is not the mechanical channel in which a central token routes more volume and volume is the fee base, because the fee-yield regression is itself a bounded null, 0.099 (0.138) with a minimum detectable effect of 0.188 on v2 and -0.000 (0.990) with a minimum detectable effect of 0.024 on v3. What moves is the ratio, through the LVR side.
 
-Within pools quoted against the native asset, where the quote leg is held fixed and the surviving variation is the hub status of the other leg, the v2 coefficient is 0.171 (0.000) over 58,709 pool-months and 9,923 pools. The interaction with the other leg's role is tested formally on that subsample. On v2 all centrality-by-role interactions are jointly non-zero at chi2(2) = 14.86 (0.001), driven by imported legs at -0.070 (0.001), with stable legs at -0.003 (0.905) and a minimum detectable effect of 0.074. On v3 the joint test gives chi2(3) = 11.36 (0.010), with staked-native legs at -0.081 (0.005) and imported legs at -0.082 (0.026). The centrality premium is therefore smaller when the other leg is itself a major asset, which is consistent with the premium coming from the long tail and not from the hub.
+Within pools quoted against the native asset, where the quote leg is held fixed and the surviving variation is the hub status of the other leg, the v2 coefficient is 0.169 (0.000) over 66,062 pool-months and 10,859 pools. The role interactions on v2 are jointly insignificant at chi2(2) = 3.99 (0.136); on v3 they are jointly non-zero at chi2(3) = 11.62 (0.009), driven by staked-native and imported legs. The old claim that v2 role interactions identify a long-tail centrality premium is therefore withdrawn.
 
-## What this says about the paper's mechanism
+## Temporal bridge to vehicle succession
 
-The vehicle role is held by the native asset through its pairing network with the long tail, and it is exactly those pairings that lose money. Providers of the native-other pools supplied 1.92 trillion dollars of capital-days, earned 0.60% annualised in fees at the median pool-day against a 10.23% LVR rate, and gave up 5.22 billion dollars in aggregate. The thick-market externality that sustains the incumbency is therefore supplied at a loss by the liquidity providers who make it thick, while the profitable half of the intermediation business sits in pools joining two assets that are already major. That is a subsidised incumbency, and it means the mechanism sustaining the role cannot be the private profitability of supplying it.
+The annual bridge normalizes capital-days by observed days, so the partial 2026 sample cannot masquerade as capital withdrawal. On v2, native-other mean daily capital falls from 1.011 billion dollars in 2024 to 0.344 billion in 2026, but its share of all screened capital rises from 70.2% to 77.8%. Other-stable capital falls from 0.151 billion to 0.023 billion and from 10.5% to 5.1%; native-stable falls from 0.232 billion to 0.044 billion and from 16.1% to 10.0%. Over the same period, native-other profitability improves: median net APR rises from -11.1% to -0.5% and the paying share from 16.0% to 34.0%. This is the opposite temporal ordering from a migration of capital or deteriorating native-spoke returns causing the stable vehicle transition.
+
+The v3 panel shows apparent growth in other-stable CPMM-equivalent virtual reserves, but virtual reserves change with concentration and are not deposited capital. The document already forbids comparing v3 capital levels across roles; it therefore cannot revive the mechanism through that series. Measuring deposited v3 capital would require a position-level reconstruction outside the current lock.
+
+## What this says about the paper
+
+The vehicle role is held by the native asset through its pairing network with the long tail, and it is exactly those pairings that lose money. Providers of native-other pools supplied 2.38 trillion dollars of capital-days, earned 0.90% annualised in fees at the median pool-day against an 11.85% LVR rate, and gave up 5.82 billion dollars in aggregate. This is a strong incidence result: trading revenue alone does not privately compensate the providers who make the long-tail network thick.
+
+It is not the mechanism of the 2024 to 2026 vehicle succession in the evidence currently available. The admissible v2 temporal bridge moves against that interpretation, and v3 deposited capital is unmeasured. Rent incidence therefore enters the paper as a companion distributional finding, not as the explanation for why stable assets gained the intermediary role.
 
 The centrality curse being absent sharpens this. Hub status is not what makes intermediation unprofitable; pairing with the long tail is. Conditional on depth and volatility, hub status helps.
 
 ## Threats
 
-The largest is the LVR measurement. Realised variance comes from the pool's own hourly marginal price, and in a constant-product pool that price only moves when someone trades, so a round trip through the fee band and through price impact registers as variance that no arbitrageur harvested. The bias inflates LVR and is largest in thin pools, which is the native-other bucket carrying the headline loss. Bounding it by sampling the price every four hours moves the median v2 net yield from -5.29% to -2.63% annualised and the paying share from 22.3% to 28.3%; using only the open-to-close move, the most conservative estimator this data supports, gives -1.80% and 32.1%. The sign survives the most aggressive de-biasing available here and the magnitude falls by a factor of three, so the direction is safe and the level is not, and settling the level needs an external reference price at higher frequency than the pool provides.
+The largest threat is LVR measurement. Realised variance comes from the pool's own hourly marginal price, and in a constant-product pool that price only moves when someone trades, so a round trip through the fee band and price impact registers as variance that no arbitrageur harvested. The bias inflates LVR and is largest in thin pools, which is the native-other bucket carrying the headline loss. Sampling every four hours moves the median v2 net yield from -6.20% to -2.99% annualised and the paying share from 21.8% to 28.3%; using only the open-to-close move gives -1.92% and 32.7%. The sign survives the most aggressive de-biasing available here and the magnitude falls sharply, so the direction is safe and the level is not.
 
 Second, liquidity mining is outside the accounting. A pool that loses money on fees may have paid its providers in tokens, so "does not pay" means "does not pay out of trading revenue", and the subsidy reading is exactly what an unmeasured token subsidy would also produce.
 

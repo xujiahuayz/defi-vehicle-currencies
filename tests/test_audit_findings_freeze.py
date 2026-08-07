@@ -40,7 +40,12 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             "schema_version": 1,
             "locked_at": "2026-08-07",
             "global_rules": {},
-            "claims": [claim, {**claim, "id": "foundation", "status": "enter_fgh_foundation"}, {**claim, "id": "mechanism", "status": "enter_fgh_mechanism"}],
+            "claims": [
+                claim,
+                {**claim, "id": "foundation", "status": "enter_fgh_foundation"},
+                {**claim, "id": "mechanism", "status": "enter_fgh_mechanism"},
+                {**claim, "id": "companion", "status": "enter_fgh_companion"},
+            ],
         }
         payload["lock_hash"] = hashlib.sha256(
             json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
