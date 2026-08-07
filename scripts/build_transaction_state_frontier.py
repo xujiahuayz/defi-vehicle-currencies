@@ -11,6 +11,7 @@ Balancer, and Fluid remain outside the exact-state perimeter.
 from __future__ import annotations
 
 import argparse
+import json
 import pickle
 from collections import defaultdict
 from functools import partial
@@ -131,6 +132,59 @@ def checkpoint_day(path: Path) -> str:
     if not name.startswith("pre_") or len(name) != 12 or not name[4:].isdigit():
         raise ValueError(f"invalid replay checkpoint name: {path.name}")
     return name[4:]
+
+
+def load_cached_day(
+    directory: Path,
+    day: str,
+) -> tuple[pd.DataFrame, dict[str, object]] | None:
+    """Load a complete day result; the support marker is installed last."""
+    panel_path = directory / f"{day}.parquet"
+    support_path = directory / f"{day}.support.json"
+    if not support_path.exists():
+        return None
+    support = json.loads(support_path.read_text(encoding="utf-8"))
+    if support.get("day") != day:
+        raise ValueError(f"frontier day-cache marker disagrees with filename: {support_path}")
+    expected = int(support.get("scored_routes", -1))
+    if expected < 0:
+        raise ValueError(f"frontier day-cache marker lacks scored_routes: {support_path}")
+    if expected == 0:
+        return pd.DataFrame(), support
+    if not panel_path.exists():
+        raise ValueError(f"frontier day-cache marker lacks panel: {panel_path}")
+    panel = pd.read_parquet(panel_path)
+    if len(panel) != expected:
+        raise ValueError(
+            f"frontier day-cache row mismatch for {day}: {len(panel):,} != {expected:,}"
+        )
+    return panel, support
+
+
+def write_cached_day(
+    directory: Path,
+    day: str,
+    panel: pd.DataFrame,
+    support: dict[str, object],
+) -> None:
+    """Atomically cache one scored audit day, installing its marker last."""
+    if str(support.get("day")) != day:
+        raise ValueError("frontier support day disagrees with cache key")
+    if int(support.get("scored_routes", -1)) != len(panel):
+        raise ValueError("frontier support count disagrees with cached panel")
+    directory.mkdir(parents=True, exist_ok=True)
+    if not panel.empty:
+        with atomic_output(directory / f"{day}.parquet") as temporary:
+            panel.to_parquet(temporary, index=False)
+    serialisable = {
+        key: value.item() if isinstance(value, np.generic) else value
+        for key, value in support.items()
+    }
+    with atomic_output(directory / f"{day}.support.json") as temporary:
+        temporary.write_text(
+            json.dumps(serialisable, sort_keys=True, allow_nan=False) + "\n",
+            encoding="utf-8",
+        )
 
 
 def latest_replay_checkpoint(directory: Path, target_day: str) -> Path | None:
@@ -623,6 +677,20 @@ def main() -> int:
     selected_set = set(selected)
     frames: list[pd.DataFrame] = []
     support_rows: list[dict[str, object]] = []
+    inputs = [
+        UNIFIED,
+        *(RAW / venue for venue in EXACT_VENUES),
+        TOKEN_DECIMALS,
+    ]
+    frontier_generation = cache_key(CODE_SOURCES, inputs=inputs)
+    day_cache = (
+        DATA_DIR
+        / "empirical"
+        / "_transaction_state_frontier_day_cache"
+        / f"engine_{frontier_generation}"
+    )
+    cached_days = {day: load_cached_day(day_cache, day) for day in selected}
+    uncached_days = [day for day in selected if cached_days[day] is None]
     replay_generation = cache_key(
         REPLAY_SOURCES,
         inputs=[RAW / "uniswap_v3", RAW / "uniswap_v4", TOKEN_DECIMALS],
@@ -633,20 +701,37 @@ def main() -> int:
         / "_tick_replay_checkpoints"
         / f"engine_{replay_generation}"
     )
-    resume_checkpoint = latest_replay_checkpoint(checkpoint_dir, selected[0])
-    if resume_checkpoint is not None:
-        replay = load_replay_checkpoint(resume_checkpoint)
-        replay_start = checkpoint_day(resume_checkpoint)
-        print(f"loaded replay checkpoint before {replay_start}", flush=True)
-    else:
-        replay = TickReplayState(token_decimals=load_token_decimals(TOKEN_DECIMALS))
-        replay_start = min(REPLAY_START, selected[0])
-    calendar = pd.date_range(
-        pd.to_datetime(replay_start, format="%Y%m%d"),
-        pd.to_datetime(max(selected), format="%Y%m%d"),
-        freq="D",
+    replay_start: str | None = None
+    replay: TickReplayState | None = None
+    if uncached_days:
+        resume_checkpoint = latest_replay_checkpoint(checkpoint_dir, uncached_days[0])
+        if resume_checkpoint is not None:
+            replay = load_replay_checkpoint(resume_checkpoint)
+            replay_start = checkpoint_day(resume_checkpoint)
+            print(f"loaded replay checkpoint before {replay_start}", flush=True)
+        else:
+            replay = TickReplayState(token_decimals=load_token_decimals(TOKEN_DECIMALS))
+            replay_start = min(REPLAY_START, uncached_days[0])
+    for day in selected:
+        if replay_start is not None and day >= replay_start:
+            break
+        cached = cached_days[day]
+        if cached is None:
+            raise RuntimeError(f"uncached frontier day precedes replay start: {day}")
+        frame, support = cached
+        frames.append(frame)
+        support_rows.append(support)
+    calendar = (
+        pd.date_range(
+            pd.to_datetime(replay_start, format="%Y%m%d"),
+            pd.to_datetime(max(selected), format="%Y%m%d"),
+            freq="D",
+        )
+        if replay_start is not None
+        else []
     )
     for index, observed in enumerate(calendar, 1):
+        assert replay is not None
         day = observed.strftime("%Y%m%d")
         checkpoint = checkpoint_dir / f"pre_{day}.pkl"
         if day in selected_set or (index - 1) % CHECKPOINT_INTERVAL_DAYS == 0:
@@ -654,15 +739,23 @@ def main() -> int:
                 save_replay_checkpoint(checkpoint, replay)
                 print(f"wrote replay checkpoint before {day}", flush=True)
         if day in selected_set:
-            events = load_tick_day_events(RAW, day)
-            v2_replay = load_v2_replay_day(RAW, day)
-            frame, support = score_day(day, events, replay, v2_replay, vehicles)
+            cached = cached_days[day]
+            if cached is not None:
+                frame, support = cached
+                warm_tick_day(RAW, day, replay)
+                cache_note = " [cached]"
+            else:
+                events = load_tick_day_events(RAW, day)
+                v2_replay = load_v2_replay_day(RAW, day)
+                frame, support = score_day(day, events, replay, v2_replay, vehicles)
+                write_cached_day(day_cache, day, frame, support)
+                cache_note = ""
             frames.append(frame)
             support_rows.append(support)
             print(
                 f"{day}: {support['all_exact_two_leg_routes']:,} exact two-leg; "
                 f"{support['exact_venue_two_leg_routes']:,} V2/V3/V4; "
-                f"{support['scored_routes']:,} exact-state scored",
+                f"{support['scored_routes']:,} exact-state scored{cache_note}",
                 flush=True,
             )
         else:
@@ -675,11 +768,6 @@ def main() -> int:
         return 1
     support = pd.DataFrame(support_rows)
     summary = summarise(panel)
-    inputs = [
-        UNIFIED,
-        *(RAW / venue for venue in EXACT_VENUES),
-        TOKEN_DECIMALS,
-    ]
     write_panel(
         panel,
         OUT_PANEL,

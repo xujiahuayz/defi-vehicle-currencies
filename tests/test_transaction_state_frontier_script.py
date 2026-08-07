@@ -18,12 +18,14 @@ from scripts.build_transaction_state_frontier import (
     candidate_vehicles,
     checkpoint_day,
     latest_replay_checkpoint,
+    load_cached_day,
     load_target_routes,
     load_replay_checkpoint,
     save_replay_checkpoint,
     select_days,
     summarise,
     validation_error_diagnostics,
+    write_cached_day,
 )
 from ddvc.pricing.tick_replay import TickReplayState
 from ddvc.pricing.v2_replay import V2ReplayDay
@@ -122,6 +124,30 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             selected = latest_replay_checkpoint(root, "20230615")
         assert selected is not None
         self.assertEqual(checkpoint_day(selected), "20230101")
+
+    def test_day_cache_installs_support_marker_after_panel(self) -> None:
+        panel = pd.DataFrame({"route_id": ["one"], "public_path_regret_bps": [1.0]})
+        support = {"day": "20230415", "scored_routes": 1}
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_cached_day(root, "20230415", panel, support)
+            cached = load_cached_day(root, "20230415")
+        assert cached is not None
+        cached_panel, cached_support = cached
+        pd.testing.assert_frame_equal(cached_panel, panel)
+        self.assertEqual(cached_support, support)
+
+    def test_empty_day_cache_needs_no_zero_column_parquet(self) -> None:
+        support = {"day": "20200214", "scored_routes": 0}
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_cached_day(root, "20200214", pd.DataFrame(), support)
+            self.assertFalse((root / "20200214.parquet").exists())
+            cached = load_cached_day(root, "20200214")
+        assert cached is not None
+        cached_panel, cached_support = cached
+        self.assertTrue(cached_panel.empty)
+        self.assertEqual(cached_support, support)
 
     def test_empty_day_preserves_calendar_support(self) -> None:
         empty_replay = V2ReplayDay({}, {}, {}, {}, {}, {})
