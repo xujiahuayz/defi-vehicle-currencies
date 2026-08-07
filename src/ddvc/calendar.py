@@ -6,10 +6,10 @@ from collections.abc import Iterable
 from datetime import datetime
 
 
-def nearest_monthly_days(
+def nearest_day_per_month(
     days: Iterable[str], *, target_day: int = 15
 ) -> list[str]:
-    """One available YYYYMMDD day per month, nearest target and earlier on ties."""
+    """One daily audit snapshot per month, nearest target and earlier on ties."""
     if not 1 <= target_day <= 31:
         raise ValueError("target_day must be between 1 and 31")
     parsed = sorted(

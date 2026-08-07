@@ -298,6 +298,9 @@ def transaction_frontier_support_checks(
     required = {
         "day",
         "scored_routes",
+        "invalid_realised_input",
+        "invalid_realised_output",
+        "invalid_chosen_output",
         "within_20pct_chosen_quote_available",
         "within_20pct_chosen_output_mismatch",
     }
@@ -329,7 +332,7 @@ def transaction_frontier_support_checks(
             f"coherent={available:,}; mismatches={mismatches:,}; pass={reproduction:.2%}",
         ),
         (
-            "transaction frontier monthly coverage",
+            "transaction frontier audit-day coverage",
             len(days) == 77 and days[0] == "20200214" and days[-1] == "20260615",
             f"days={len(days)}; range={days[0] if days else 'none'}..{days[-1] if days else 'none'}",
         ),

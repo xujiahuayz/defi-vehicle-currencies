@@ -24,6 +24,9 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             {
                 "day": ["20250615"],
                 "scored_routes": [100],
+                "invalid_realised_input": [0],
+                "invalid_realised_output": [0],
+                "invalid_chosen_output": [0],
                 "within_20pct_chosen_quote_available": [101],
                 "within_20pct_chosen_output_mismatch": [1],
             }
@@ -37,7 +40,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         }
         self.assertTrue(checks["transaction frontier row contract"][0])
         self.assertTrue(checks["transaction frontier chosen-output validation"][0])
-        self.assertFalse(checks["transaction frontier monthly coverage"][0])
+        self.assertFalse(checks["transaction frontier audit-day coverage"][0])
 
     def test_literature_gate_requires_individual_verified_cards(self) -> None:
         text = """---

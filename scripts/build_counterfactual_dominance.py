@@ -51,7 +51,7 @@ import pandas as pd
 
 from ddvc.analysis.regression import mean_clustered
 from ddvc.asset_types import WETH, classify
-from ddvc.calendar import nearest_monthly_days
+from ddvc.calendar import nearest_day_per_month
 from ddvc.cpquote import (
     Pool,
     all_in_direct_advantage_bps_from_units,
@@ -93,8 +93,8 @@ MIN_USD = 100.0            # below this, gas dominates and the comparison is moo
 def counterfactual_days(
     available: list[str], *, explicit: list[str] | None = None, limit: int | None = None
 ) -> list[str]:
-    """Select the prespecified monthly calendar, or exact explicit validation days."""
-    days = list(dict.fromkeys(explicit)) if explicit else nearest_monthly_days(available)
+    """Select one audit day per month, or exact explicit validation days."""
+    days = list(dict.fromkeys(explicit)) if explicit else nearest_day_per_month(available)
     return days[:limit] if limit is not None else days
 
 

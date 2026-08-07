@@ -19,7 +19,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ddvc.analysis.transaction_frontier import RealisedPath, score_frontier
+from ddvc.analysis.transaction_frontier import (
+    RealisedPath,
+    chosen_output_error,
+    positive_finite_amount,
+    score_frontier_from_quote,
+)
 from ddvc.asset_types import (
     IMPORTED,
     NATIVE,
@@ -28,7 +33,7 @@ from ddvc.asset_types import (
     asset_type,
     canonical_token,
 )
-from ddvc.calendar import nearest_monthly_days
+from ddvc.calendar import nearest_day_per_month
 from ddvc.fetch.raw import block_value, transaction_id, timestamp_value
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.pricing.mixed_frontier import (
@@ -145,12 +150,12 @@ def select_days(
     available: list[str],
     *,
     explicit: list[str] | None,
-    monthly: bool,
+    audit_calendar: bool,
 ) -> list[str]:
     if explicit:
         selected = list(dict.fromkeys(day.replace("-", "") for day in explicit))
-    elif monthly:
-        selected = nearest_monthly_days(available)
+    elif audit_calendar:
+        selected = nearest_day_per_month(available)
     else:
         selected = [day for day in PILOT_DAYS if day in set(available)]
     missing = sorted(set(selected) - set(available))
@@ -340,6 +345,9 @@ def load_target_routes(
         "raw_tx_log_mapped_routes": mapped,
         "routes_at_least_100usd": above_minimum,
         "scored_routes": 0,
+        "invalid_realised_input": 0,
+        "invalid_realised_output": 0,
+        "invalid_chosen_output": 0,
         "chosen_state_unavailable": 0,
         "chosen_output_mismatch": 0,
         "quarantined_tick_pools": 0,
@@ -413,6 +421,9 @@ def score_day(
                 v2_hour=int(target["v2_hour"]),
                 v2_order=target["v2_order"],
             )
+            if not positive_finite_amount(route.amount_in):
+                support["invalid_realised_input"] += 1
+                continue
 
             def quote_chosen(chosen_route: RealisedPath) -> PathQuote | None:
                 return quote_mixed_path(
@@ -436,20 +447,25 @@ def score_day(
             if chosen is None:
                 support["chosen_state_unavailable"] += 1
                 continue
-            validation_error = abs(chosen.amount_out - route.amount_out) / route.amount_out
-            validation_errors_bps.append(
-                10_000 * (chosen.amount_out - route.amount_out) / route.amount_out
-            )
+            signed_validation_error = chosen_output_error(route, chosen)
+            if signed_validation_error is None:
+                if not positive_finite_amount(route.amount_out):
+                    support["invalid_realised_output"] += 1
+                else:
+                    support["invalid_chosen_output"] += 1
+                continue
+            validation_error = abs(signed_validation_error)
+            validation_errors_bps.append(10_000 * signed_validation_error)
             if bool(target["within_20pct"]):
                 coherent_validation_errors_bps.append(validation_errors_bps[-1])
             if validation_error > VALIDATION_TOLERANCE:
                 support["chosen_output_mismatch"] += 1
                 continue
-            score = score_frontier(
+            score = score_frontier_from_quote(
                 route,
+                chosen=chosen,
                 vehicles=vehicles,
                 quote_legs=quote_legs,
-                quote_chosen=quote_chosen,
                 validation_tolerance=VALIDATION_TOLERANCE,
             )
             if score is None:
@@ -588,10 +604,18 @@ def summarise(panel: pd.DataFrame) -> pd.DataFrame:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--day", action="append", help="repeat for explicit YYYYMMDD days")
-    parser.add_argument("--monthly", action="store_true", help="use the fixed nearest-15th calendar")
+    parser.add_argument(
+        "--audit-calendar",
+        action="store_true",
+        help="audit one exact daily snapshot per calendar month, nearest the 15th",
+    )
     args = parser.parse_args()
     try:
-        selected = select_days(available_days(), explicit=args.day, monthly=args.monthly)
+        selected = select_days(
+            available_days(),
+            explicit=args.day,
+            audit_calendar=args.audit_calendar,
+        )
     except ValueError as error:
         print(f"error: {error}")
         return 1

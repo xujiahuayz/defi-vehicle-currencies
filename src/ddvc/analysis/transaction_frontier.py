@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from functools import partial
+from math import isfinite
 
 from ddvc.pricing.path_frontier import (
     LegEnumerator,
@@ -38,6 +39,25 @@ RealisedTickPath = RealisedPath
 ChosenPathQuoter = Callable[[RealisedPath], PathQuote | None]
 
 
+def positive_finite_amount(value: float) -> bool:
+    """Whether an amount can enter a relative route-output comparison."""
+    return isfinite(value) and value > 0
+
+
+def chosen_output_error(
+    route: RealisedPath,
+    chosen: PathQuote | None,
+) -> float | None:
+    """Relative chosen-route reproduction error, or None off valid support."""
+    if chosen is None:
+        return None
+    if not positive_finite_amount(route.amount_out):
+        return None
+    if not positive_finite_amount(chosen.amount_out):
+        return None
+    return (chosen.amount_out - route.amount_out) / route.amount_out
+
+
 def _gain_bps(frontier: float, realised: float) -> float:
     return 10_000.0 * max(0.0, frontier - realised) / realised
 
@@ -56,14 +76,35 @@ def score_frontier(
     even if its own impact exceeds the counterfactual support boundary. That keeps
     every regret weakly non-negative without admitting an unsupported alternative.
     """
-    if route.amount_in <= 0 or route.amount_out <= 0:
+    if not positive_finite_amount(route.amount_in):
         return None
     chosen = quote_chosen(route)
-    if chosen is None:
+    return score_frontier_from_quote(
+        route,
+        chosen=chosen,
+        vehicles=vehicles,
+        quote_legs=quote_legs,
+        validation_tolerance=validation_tolerance,
+    )
+
+
+def score_frontier_from_quote(
+    route: RealisedPath,
+    *,
+    chosen: PathQuote | None,
+    vehicles: tuple[str, ...],
+    quote_legs: LegEnumerator,
+    validation_tolerance: float,
+) -> dict[str, object] | None:
+    """Score a frontier from one already-computed chosen-route quote."""
+    if not positive_finite_amount(route.amount_in):
         return None
-    validation_error = (chosen.amount_out - route.amount_out) / route.amount_out
+    validation_error = chosen_output_error(route, chosen)
+    if validation_error is None:
+        return None
     if abs(validation_error) > validation_tolerance:
         return None
+    assert chosen is not None
 
     observed_venues = set(route.venues)
 

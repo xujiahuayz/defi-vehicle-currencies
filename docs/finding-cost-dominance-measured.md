@@ -10,7 +10,7 @@ This document supersedes every earlier figure based on the retired 103,857-route
 
 For each realised two-leg route in the Uniswap V2 and SushiSwap V2 families, the estimator asks whether an available one-leg pool would have returned more output for the exact realised input. The two alternatives share the same endpoints, transaction order, reconstructed pre-transaction state, token prices, and historical gas price. Reserve state is advanced through intervening swaps, mints, and burns. The comparison therefore measures a direct path omitted by a realised legacy two-hop route. It does not enumerate every path a contemporary multi-venue router could have chosen.
 
-The fixed calendar contains 74 monthly dates; 73 are nonempty, yielding 45,720 unique comparable routes from June 2020 through June 2026. There are no duplicate route identifiers and no missing all-in estimates.
+The fixed calendar contains 74 one-day snapshots stratified by calendar month; 73 are nonempty, yielding 45,720 unique comparable routes from June 2020 through June 2026. There are no duplicate route identifiers and no missing all-in estimates.
 
 ## Main level result and economic magnitude
 
@@ -31,7 +31,7 @@ The gross result says most legacy two-hop routes beat the available direct pool 
 
 ## Gas is measured as route support, not a pooled constant
 
-The receipt panel samples 31,128 successful transactions across 77 monthly dates and 2,655 year-by-topology-by-venue-by-vehicle cells. Median gas use is 162,413 units for one-leg routes, 325,007 for two-leg routes, and 422,210 for three-leg routes. On 162 same-year, same-executor, same-venue comparisons, a repeated-venue second leg adds a median 67,172 units, with an interquartile range of 44,342 to 98,984; 90.1% of cells have a positive increment.
+The receipt panel samples 31,128 successful transactions across 77 one-day snapshots stratified by calendar month and 2,655 year-by-topology-by-venue-by-vehicle cells. Median gas use is 162,413 units for one-leg routes, 325,007 for two-leg routes, and 422,210 for three-leg routes. On 162 same-year, same-executor, same-venue comparisons, a repeated-venue second leg adds a median 67,172 units, with an interquartile range of 44,342 to 98,984; 90.1% of cells have a positive increment.
 
 Every cost-domination observation matches the direct leg at year-by-venue-by-vehicle support. The realised vehicle route matches that same level for 39,290 observations and year-by-venue-by-type for the remaining 6,430. Broader topology fallbacks exist in code but are unused here. Gas uncertainty is retained in the estimand through the matched-cell interquartile range.
 
@@ -64,7 +64,7 @@ The first V2/V3/V4 frontier pilot prices 2025-06-15 at strict pre-transaction st
 
 On the 7,515 coherent routes carrying $12.00 million of input, 42.48% have best-public-path regret above 0.01 basis points, 35.60% exceed 1 basis point, and 17.33% exceed 10 basis points. The median is effectively zero and the 90th percentile is 29.29 basis points. Mean within-observed-reach search regret is 1.36 basis points, mean public-reach expansion is 14.09 basis points, and mean vehicle/path-choice expansion is 0.42 basis points. The reach mean is tail-sensitive: its median is zero and one route reaches 54,157 basis points. Direct paths are available on 14.54% of scored routes and strictly improve 3.43%. The sampled aggregate public-path gain is $12,258, of which the top 1% supply 65.3%.
 
-This is a support and arithmetic pass, not a maturation finding. The unqualified positive-regret rate is not economically interpretable because it counts floating-point improvements near $10^{-12}$ basis points. The single date cannot identify a time trend; the top tail still mixes routing mistakes with arbitrage, liquidation, private intent, and token-specific anomalies; and an executor address does not identify the quote author or an aggregator. F must run the fixed monthly calendar and report the 0.01, 1, and 10 basis-point thresholds before G can assign mechanism weight.
+This is a support and arithmetic pass, not a maturation finding. The unqualified positive-regret rate is not economically interpretable because it counts floating-point improvements near $10^{-12}$ basis points. The single date cannot identify a time trend; the top tail still mixes routing mistakes with arbitrage, liquidation, private intent, and token-specific anomalies; and an executor address does not identify the quote author or an aggregator. F must run the 77-date audit calendar, one exact daily snapshot per calendar month, and report the 0.01, 1, and 10 basis-point thresholds before G can assign mechanism weight.
 
 ## Why this is a level bound, not a maturation trend
 

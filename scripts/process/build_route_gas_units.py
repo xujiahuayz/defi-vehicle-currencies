@@ -29,7 +29,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.calendar import nearest_monthly_days
+from ddvc.calendar import nearest_day_per_month
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.provenance import cache_key
 from ddvc.quoter import rpc_post
@@ -232,7 +232,7 @@ def _main_unlocked() -> int:
     days = list(
         dict.fromkeys(
             args.days
-            or nearest_monthly_days(
+            or nearest_day_per_month(
                 path.stem for path in UNIFIED.glob("[0-9]" * 8 + ".parquet")
             )
         )

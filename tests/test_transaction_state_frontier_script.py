@@ -8,6 +8,12 @@ from unittest.mock import patch
 import pandas as pd
 
 from ddvc.asset_types import NATIVE_ETH, WETH
+from ddvc.analysis.transaction_frontier import (
+    RealisedPath,
+    chosen_output_error,
+    positive_finite_amount,
+)
+from ddvc.pricing.path_frontier import PathQuote
 from scripts.build_transaction_state_frontier import (
     candidate_vehicles,
     checkpoint_day,
@@ -35,11 +41,27 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         selected = select_days(
             ["20220615", "20240615"],
             explicit=["2022-06-15"],
-            monthly=False,
+            audit_calendar=False,
         )
         self.assertEqual(selected, ["20220615"])
         with self.assertRaisesRegex(ValueError, "unavailable"):
-            select_days(["20220615"], explicit=["20230615"], monthly=False)
+            select_days(
+                ["20220615"],
+                explicit=["20230615"],
+                audit_calendar=False,
+            )
+
+    def test_zero_realised_output_has_no_relative_validation_error(self) -> None:
+        route = RealisedPath("a", "b", "k", 1.0, 0.0, ("v2", "v2"), ("ak", "kb"))
+        chosen = PathQuote(
+            vehicle="k",
+            amount_out=1.0,
+            venues=("v2", "v2"),
+            pools=("ak", "kb"),
+            price_impacts=(0.0, 0.0),
+        )
+        self.assertIsNone(chosen_output_error(route, chosen))
+        self.assertFalse(positive_finite_amount(route.amount_out))
 
     def test_summary_keeps_all_and_valuation_coherent_samples_separate(self) -> None:
         panel = pd.DataFrame(
