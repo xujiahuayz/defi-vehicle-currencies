@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from ddvc.pricing.tick_frontier import (
     PoolIndex,
+    TickQuoteIndexes,
     best_tick_leg,
     best_tick_public_path,
     best_tick_vehicle_path,
@@ -38,6 +39,7 @@ def score_tick_frontier(
     ticks_by_venue: dict[str, dict[str, dict[int, int]]],
     max_price_impact: float,
     validation_tolerance: float,
+    quote_indexes_by_venue: TickQuoteIndexes | None = None,
 ) -> dict[str, object] | None:
     """Validate the chosen path, then score nested routing opportunity sets.
 
@@ -57,6 +59,7 @@ def score_tick_frontier(
         states_by_venue=states_by_venue,
         ticks_by_venue=ticks_by_venue,
         max_price_impact=None,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     if chosen is None:
         return None
@@ -74,6 +77,7 @@ def score_tick_frontier(
         ticks_by_venue=ticks_by_venue,
         allowed_venues=observed_venues,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     direct_public = best_tick_leg(
         route.token_in,
@@ -84,6 +88,7 @@ def score_tick_frontier(
         ticks_by_venue=ticks_by_venue,
         allowed_venues=None,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     same_observed = best_tick_vehicle_path(
         route.token_in,
@@ -95,6 +100,7 @@ def score_tick_frontier(
         ticks_by_venue=ticks_by_venue,
         allowed_venues=observed_venues,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     same_public = best_tick_vehicle_path(
         route.token_in,
@@ -106,6 +112,7 @@ def score_tick_frontier(
         ticks_by_venue=ticks_by_venue,
         allowed_venues=None,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     public = best_tick_public_path(
         route.token_in,
@@ -117,6 +124,7 @@ def score_tick_frontier(
         ticks_by_venue=ticks_by_venue,
         allowed_venues=None,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
 
     realised = route.amount_out

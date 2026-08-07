@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from ddvc.fetch.raw import transaction_id
+from ddvc.pricing.tick_quote import prepare_tick_quote_index
 from ddvc.pricing.tick_replay import (
     TickReplayEvent,
     TickReplayState,
@@ -73,6 +74,22 @@ class TickReplayTests(unittest.TestCase):
             events = load_tick_day_events(root, "20250101")
         self.assertEqual([event.order for event in events], [(100, 4), (100, 9)])
         self.assertEqual([event.venue for event in events], ["uniswap_v4", "uniswap_v3"])
+
+    def test_liquidity_change_invalidates_prepared_quote_index(self) -> None:
+        state = TickReplayState()
+        ticks = {-10: 1000, 10: -1000}
+        state.ticks_by_venue = {"uniswap_v4": {"pool": dict(ticks)}}
+        state.quote_indexes_by_venue = {
+            "uniswap_v4": {"pool": prepare_tick_quote_index(ticks)}
+        }
+        change = {
+            "pool": {"id": "pool"},
+            "tickLower": "-20",
+            "tickUpper": "20",
+            "amount": "500",
+        }
+        state.apply(TickReplayEvent((101, 1), "uniswap_v4", "liquidity", change, 1))
+        self.assertNotIn("pool", state.quote_indexes_by_venue["uniswap_v4"])
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ddvc.fetch.raw import timestamp_value
-from ddvc.pricing.tick_frontier import PoolIndex
+from ddvc.pricing.tick_frontier import PoolIndex, TickQuoteIndexes
 from ddvc.pricing.tick_state import TickPoolState, absorb_swap_state, apply_tick_change
 
 
@@ -119,6 +119,7 @@ class TickReplayState:
     ticks_by_venue: dict[str, dict[str, dict[int, int]]] = field(default_factory=dict)
     states_by_venue: dict[str, dict[str, TickPoolState]] = field(default_factory=dict)
     pool_index: PoolIndex = field(default_factory=dict)
+    quote_indexes_by_venue: TickQuoteIndexes = field(default_factory=dict)
     swap_samples: dict[str, list[dict]] = field(default_factory=dict)
 
     def apply(self, event: TickReplayEvent) -> None:
@@ -133,6 +134,7 @@ class TickReplayState:
                 event.row,
                 sign=event.sign,
             )
+            self.quote_indexes_by_venue.setdefault(event.venue, {}).pop(pool, None)
             return
         prior = states.get(pool)
         absorb_swap_state(

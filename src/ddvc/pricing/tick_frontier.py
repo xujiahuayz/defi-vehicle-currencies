@@ -11,11 +11,16 @@ from ddvc.pricing.path_frontier import (
     best_public_path,
     best_vehicle_path,
 )
-from ddvc.pricing.tick_quote import quote_tick_state
+from ddvc.pricing.tick_quote import (
+    TickQuoteIndex,
+    prepare_tick_quote_index,
+    quote_tick_state,
+)
 from ddvc.pricing.tick_state import TickPoolState
 
 
 PoolIndex = dict[frozenset[str], list[tuple[str, str]]]
+TickQuoteIndexes = dict[str, dict[str, TickQuoteIndex]]
 
 
 def build_pool_index(
@@ -42,12 +47,20 @@ def quote_tick_pool(
     states_by_venue: dict[str, dict[str, TickPoolState]],
     ticks_by_venue: dict[str, dict[str, dict[int, int]]],
     max_price_impact: float | None,
+    quote_indexes_by_venue: TickQuoteIndexes | None = None,
 ) -> LegQuote | None:
     """Quote one identified pool at the replayed state."""
     state = states_by_venue.get(venue, {}).get(pool_id)
     ticks = ticks_by_venue.get(venue, {}).get(pool_id)
     if state is None or ticks is None:
         return None
+    prepared = None
+    if quote_indexes_by_venue is not None:
+        venue_indexes = quote_indexes_by_venue.setdefault(venue, {})
+        prepared = venue_indexes.get(pool_id)
+        if prepared is None:
+            prepared = prepare_tick_quote_index(ticks)
+            venue_indexes[pool_id] = prepared
     quote = quote_tick_state(
         state,
         ticks,
@@ -55,6 +68,7 @@ def quote_tick_pool(
         token_out,
         amount_in,
         max_price_impact=max_price_impact,
+        prepared=prepared,
     )
     if quote is None:
         return None
@@ -77,6 +91,7 @@ def quote_tick_path(
     states_by_venue: dict[str, dict[str, TickPoolState]],
     ticks_by_venue: dict[str, dict[str, dict[int, int]]],
     max_price_impact: float | None,
+    quote_indexes_by_venue: TickQuoteIndexes | None = None,
 ) -> PathQuote | None:
     """Quote one identified sequential two-leg path."""
     first = quote_tick_pool(
@@ -88,6 +103,7 @@ def quote_tick_path(
         states_by_venue=states_by_venue,
         ticks_by_venue=ticks_by_venue,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     if first is None:
         return None
@@ -100,6 +116,7 @@ def quote_tick_path(
         states_by_venue=states_by_venue,
         ticks_by_venue=ticks_by_venue,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     if second is None:
         return None
@@ -122,6 +139,7 @@ def tick_leg_quotes(
     ticks_by_venue: dict[str, dict[str, dict[int, int]]],
     allowed_venues: set[str] | None,
     max_price_impact: float | None,
+    quote_indexes_by_venue: TickQuoteIndexes | None = None,
 ) -> list[LegQuote]:
     """Return every supported single-pool quote in deterministic identity order."""
     candidates = pool_index.get(frozenset((token_in, token_out)), [])
@@ -138,6 +156,7 @@ def tick_leg_quotes(
             states_by_venue=states_by_venue,
             ticks_by_venue=ticks_by_venue,
             max_price_impact=max_price_impact,
+            quote_indexes_by_venue=quote_indexes_by_venue,
         )
         if quote is None:
             continue
@@ -155,6 +174,7 @@ def best_tick_leg(
     ticks_by_venue: dict[str, dict[str, dict[int, int]]],
     allowed_venues: set[str] | None,
     max_price_impact: float | None,
+    quote_indexes_by_venue: TickQuoteIndexes | None = None,
 ) -> LegQuote | None:
     """Return the highest-output supported single pool."""
     quote_legs = partial(
@@ -164,6 +184,7 @@ def best_tick_leg(
         ticks_by_venue=ticks_by_venue,
         allowed_venues=allowed_venues,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     return best_leg(token_in, token_out, amount_in, quote_legs=quote_legs)
 
@@ -179,6 +200,7 @@ def best_tick_vehicle_path(
     ticks_by_venue: dict[str, dict[str, dict[int, int]]],
     allowed_venues: set[str] | None,
     max_price_impact: float | None,
+    quote_indexes_by_venue: TickQuoteIndexes | None = None,
 ) -> PathQuote | None:
     """Return the best sequential two-leg path through one fixed vehicle."""
     quote_legs = partial(
@@ -188,6 +210,7 @@ def best_tick_vehicle_path(
         ticks_by_venue=ticks_by_venue,
         allowed_venues=allowed_venues,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     return best_vehicle_path(
         token_in,
@@ -209,6 +232,7 @@ def best_tick_public_path(
     ticks_by_venue: dict[str, dict[str, dict[int, int]]],
     allowed_venues: set[str] | None,
     max_price_impact: float | None,
+    quote_indexes_by_venue: TickQuoteIndexes | None = None,
 ) -> PathQuote | None:
     """Return the best direct or prespecified one-vehicle path."""
     quote_legs = partial(
@@ -218,6 +242,7 @@ def best_tick_public_path(
         ticks_by_venue=ticks_by_venue,
         allowed_venues=allowed_venues,
         max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
     )
     return best_public_path(
         token_in,

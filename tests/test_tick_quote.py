@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from ddvc.pricing.tick_quote import quote_tick_state
+from ddvc.pricing.tick_quote import prepare_tick_quote_index, quote_tick_state
 from ddvc.pricing.tick_state import TickPoolState
 
 
@@ -59,6 +59,28 @@ class TickQuoteTests(unittest.TestCase):
                 max_price_impact=0.05,
             )
         )
+
+    def test_prepared_index_is_quote_equivalent(self) -> None:
+        plain = quote_tick_state(
+            self.state,
+            self.ticks,
+            "a",
+            "b",
+            1.0,
+            max_price_impact=0.05,
+        )
+        prepared = prepare_tick_quote_index(self.ticks)
+        indexed = quote_tick_state(
+            self.state,
+            self.ticks,
+            "a",
+            "b",
+            1.0,
+            max_price_impact=0.05,
+            prepared=prepared,
+        )
+        self.assertEqual(plain, indexed)
+        self.assertEqual(prepared.active_liquidity(0), 10**24)
         self.assertIsNone(
             quote_tick_state(
                 self.state,

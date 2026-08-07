@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import bisect
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -28,6 +29,33 @@ class SupportedTickQuote:
     crossed_ticks: int
 
 
+@dataclass(frozen=True)
+class TickQuoteIndex:
+    """Liquidity boundaries prepared once for repeated quotes of one tick map."""
+
+    sorted_ticks: tuple[int, ...]
+    sqrt_ticks: tuple[int, ...]
+    active_after_tick: tuple[int, ...]
+
+    def active_liquidity(self, current_tick: int) -> int:
+        position = bisect.bisect_right(self.sorted_ticks, current_tick) - 1
+        return self.active_after_tick[position] if position >= 0 else 0
+
+
+def prepare_tick_quote_index(tick_net: dict[int, int]) -> TickQuoteIndex:
+    sorted_ticks = tuple(sorted(tick_net))
+    running = 0
+    active: list[int] = []
+    for tick in sorted_ticks:
+        running += tick_net[tick]
+        active.append(running)
+    return TickQuoteIndex(
+        sorted_ticks=sorted_ticks,
+        sqrt_ticks=tuple(get_sqrt_ratio_at_tick(tick) for tick in sorted_ticks),
+        active_after_tick=tuple(active),
+    )
+
+
 def quote_tick_state(
     state: TickStateLike,
     tick_net: dict[int, int],
@@ -36,6 +64,7 @@ def quote_tick_state(
     amount_in: float,
     *,
     max_price_impact: float | None,
+    prepared: TickQuoteIndex | None = None,
 ) -> SupportedTickQuote | None:
     """Quote one exact input and apply an ex-ante own-leg impact boundary.
 
@@ -56,11 +85,23 @@ def quote_tick_state(
     amount_atomic = int(amount_in * 10**decimals_in)
     if amount_atomic <= 0:
         return None
-    liquidity = active_liquidity(tick_net, state.tick)
+    state_liquidity = int(getattr(state, "liquidity", 0) or 0)
+    state_sorted_ticks = getattr(state, "sorted_ticks", None)
+    state_sqrt_ticks = getattr(state, "sqrt_ticks", None)
+    if prepared is not None:
+        liquidity = prepared.active_liquidity(state.tick)
+        sorted_ticks = prepared.sorted_ticks
+        sqrt_ticks = prepared.sqrt_ticks
+    elif state_liquidity > 0 and state_sorted_ticks and state_sqrt_ticks:
+        liquidity = state_liquidity
+        sorted_ticks = tuple(state_sorted_ticks)
+        sqrt_ticks = tuple(state_sqrt_ticks)
+    else:
+        liquidity = active_liquidity(tick_net, state.tick)
+        sorted_ticks = tuple(sorted(tick_net))
+        sqrt_ticks = tuple(get_sqrt_ratio_at_tick(tick) for tick in sorted_ticks)
     if liquidity <= 0:
         return None
-    sorted_ticks = tuple(sorted(tick_net))
-    sqrt_ticks = tuple(get_sqrt_ratio_at_tick(tick) for tick in sorted_ticks)
     quote = quote_exact_input(
         zero_for_one=zero_for_one,
         amount_in=amount_atomic,
