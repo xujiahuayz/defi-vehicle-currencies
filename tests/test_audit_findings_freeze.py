@@ -12,12 +12,33 @@ from scripts.audit_findings_freeze import (
     parse_literature_cards,
     parse_state_frontmatter,
     route_measurement_invariants,
+    transaction_frontier_support_checks,
     validate_literature_audit,
     validate_specification_lock,
 )
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_transaction_frontier_gate_separates_validation_from_calendar(self) -> None:
+        support = pd.DataFrame(
+            {
+                "day": ["20250615"],
+                "scored_routes": [100],
+                "within_20pct_chosen_quote_available": [101],
+                "within_20pct_chosen_output_mismatch": [1],
+            }
+        )
+        checks = {
+            name: (passed, detail)
+            for name, passed, detail in transaction_frontier_support_checks(
+                support,
+                panel_rows=100,
+            )
+        }
+        self.assertTrue(checks["transaction frontier row contract"][0])
+        self.assertTrue(checks["transaction frontier chosen-output validation"][0])
+        self.assertFalse(checks["transaction frontier monthly coverage"][0])
+
     def test_literature_gate_requires_individual_verified_cards(self) -> None:
         text = """---
 status: complete

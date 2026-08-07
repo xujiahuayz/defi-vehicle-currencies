@@ -23,6 +23,8 @@ PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 EXTENT = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 INTERMEDIATION = ROOT / "data" / "processed" / "intermediation_by_type_daily.parquet"
 CROSS_VENUE = ROOT / "data" / "processed" / "cross_venue_routing_daily.parquet"
+TRANSACTION_FRONTIER = ROOT / "data" / "processed" / "transaction_state_frontier.parquet"
+TRANSACTION_FRONTIER_SUPPORT = ROOT / "output" / "exhibits" / "transaction_state_frontier_support.jsonl"
 V4 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v4"
 REFRESH = ROOT / "scripts" / "refresh_panel_dependents.py"
 STATE = ROOT / "docs" / "findings-freeze.md"
@@ -287,6 +289,53 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
     return passed, detail
 
 
+def transaction_frontier_support_checks(
+    support: pd.DataFrame,
+    *,
+    panel_rows: int,
+) -> list[tuple[str, bool, str]]:
+    """Validate the fixed-calendar frontier funnel and chosen-output reproduction."""
+    required = {
+        "day",
+        "scored_routes",
+        "within_20pct_chosen_quote_available",
+        "within_20pct_chosen_output_mismatch",
+    }
+    missing = sorted(required - set(support.columns))
+    if missing:
+        return [("transaction frontier support schema", False, f"missing={missing}")]
+    days = sorted(support["day"].astype(str).unique())
+    scored = int(pd.to_numeric(support["scored_routes"], errors="coerce").sum())
+    available = int(
+        pd.to_numeric(
+            support["within_20pct_chosen_quote_available"], errors="coerce"
+        ).sum()
+    )
+    mismatches = int(
+        pd.to_numeric(
+            support["within_20pct_chosen_output_mismatch"], errors="coerce"
+        ).sum()
+    )
+    reproduction = 1.0 - mismatches / available if available else 0.0
+    return [
+        (
+            "transaction frontier row contract",
+            scored == panel_rows,
+            f"panel={panel_rows:,}; support={scored:,}",
+        ),
+        (
+            "transaction frontier chosen-output validation",
+            reproduction >= 0.99,
+            f"coherent={available:,}; mismatches={mismatches:,}; pass={reproduction:.2%}",
+        ),
+        (
+            "transaction frontier monthly coverage",
+            len(days) == 77 and days[0] == "20200214" and days[-1] == "20260615",
+            f"days={len(days)}; range={days[0] if days else 'none'}..{days[-1] if days else 'none'}",
+        ),
+    ]
+
+
 def route_measurement_invariants(
     intermediation: pd.DataFrame,
     cross_venue: pd.DataFrame,
@@ -507,6 +556,39 @@ def main() -> int:
         )
     else:
         record("route-cost panel exists", False, str(PANEL.relative_to(ROOT)))
+
+    if TRANSACTION_FRONTIER.exists() and TRANSACTION_FRONTIER_SUPPORT.exists():
+        frontier_rows = pq.ParquetFile(TRANSACTION_FRONTIER).metadata.num_rows
+        frontier_verdicts = {
+            TRANSACTION_FRONTIER.name: verify(TRANSACTION_FRONTIER).get("status"),
+            TRANSACTION_FRONTIER_SUPPORT.name: verify(
+                TRANSACTION_FRONTIER_SUPPORT
+            ).get("status"),
+        }
+        record(
+            "transaction frontier provenance current",
+            all(status == "ok" for status in frontier_verdicts.values()),
+            "; ".join(
+                f"{name}={status}" for name, status in frontier_verdicts.items()
+            ),
+        )
+        frontier_support = pd.read_json(TRANSACTION_FRONTIER_SUPPORT, lines=True)
+        for name, passed, detail in transaction_frontier_support_checks(
+            frontier_support,
+            panel_rows=frontier_rows,
+        ):
+            record(name, passed, detail)
+    else:
+        missing_frontier = [
+            str(path.relative_to(ROOT))
+            for path in (TRANSACTION_FRONTIER, TRANSACTION_FRONTIER_SUPPORT)
+            if not path.exists()
+        ]
+        record(
+            "transaction frontier exists",
+            False,
+            f"missing={missing_frontier}",
+        )
 
     if EXTENT.exists():
         con = duckdb.connect()
