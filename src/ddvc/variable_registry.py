@@ -1696,7 +1696,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"share than the day-$t$ incumbent at exact calendar horizon $t+\tau$."
         ),
         source="to be constructed from pair-level vehicle shares before estimation",
-        used_for="RQ3 displacement probability at 7-, 30-, and 90-day horizons.",
+        used_for="RQ3 displacement probability at the exact calendar-day horizons registered in the empirical design.",
         in_observations_table=False,
     ),
     VariableSpec(

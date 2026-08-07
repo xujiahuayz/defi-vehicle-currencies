@@ -203,7 +203,7 @@ Use the phrase **liquidity multiplier** only if vehicle use predicts future capi
 
 ### Experiment A: persistence conditional on current economics
 
-For common-support pair-candidate-days, estimate exact future horizons \(\tau\in\{7,30,90\}\):
+For common-support pair-candidate-days, estimate exact future horizons \(\tau\in\{1,7,30,120\}\). These are fixed elapsed calendar days, spanning immediate adjustment, one week, one month and a medium-run response without substituting variable-length calendar months:
 
 \[\mathrm{VehicleShare}_{i,o,k,t+\tau}=\alpha_{i,o,k}+\lambda_{i,o,t}+\rho_\tau\mathrm{VehicleShare}_{i,o,k,t}+\beta_\tau\Delta C^{D,\mathrm{all}}_{i,o,k,q,t}+\gamma_\tau\mathrm{LPConc}_{k,t}+\chi_\tau\mathrm{CandidateStress}_{k,t}+\varepsilon_{i,o,k,t+\tau}.\]
 
@@ -346,7 +346,7 @@ RQ5 has three separable answers. Experiment A establishes whether economic vehic
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the distinction between quote-output cost and all-in route cost, including the fee/price-impact/gas audit decomposition.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the RQ1 fixed notionals and use of observed transaction size for route-level validation.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the RQ2 provider-controller look-through rule, outside-token shift-share shock, and fee/LVR/net-return decomposition.
-- [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve RQ3 horizons \(7/30/90\), the three-day persistent edge crossing, and fixed challenger-edge knots \(0/25/50/100/200\) basis points.
+- [x] **CORRECTED BY JAVA, 2026-08-07** — RQ3 uses exact 1/7/30/120-day horizons, not 7/30/90 and not calendar-month horizons. The three-day persistent edge crossing and fixed challenger-edge knots \(0/25/50/100/200\) basis points remain delegated choices.
 - [x] **DELEGATED, decided 2026-08-06, Java may veto** — approve the bounded interpretation of the global V3 and V4 event studies; neither is presented as equivalent in strength to a staggered instrument or regression discontinuity.
 - [x] **LOCKED BY NODE E, 2026-08-07** — RQ5 is an extension. It does not enter the main claim family unless node I shows that the narrower paper cannot meet the venue bar without it.
 
