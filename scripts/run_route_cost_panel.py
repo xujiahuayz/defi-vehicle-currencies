@@ -59,7 +59,8 @@ from ddvc.pricing.weighted import (
 from ddvc.pricing.weighted import quote_error_at as _weighted_error
 from ddvc.pricing.weighted import quote_exact_input as _weighted_quote
 from ddvc.pricing.weighted import rebuild_pre_trade_balances
-from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick, quote_exact_input
+from ddvc.pricing.tick_quote import quote_tick_state
+from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick
 from ddvc.pricing.tick_state import (
     TickPoolState,
     absorb_swap_state,
@@ -1122,45 +1123,18 @@ def _best_quote(
         # out at 123.8 million rows containing no v3 or v4 at all, which looks exactly
         # like a successful build. A behavioural test cannot drift that way.
         elif p.tick_net is not None and token_in in (p.token0, p.token1) and token_out in (p.token0, p.token1):
-            # Probe with a trade small enough to be effectively marginal, then require
-            # the real trade's unit price to stay within the support bound of it.
-            zero_for_one = token_in == p.token0
-            dec_in = p.dec0 if zero_for_one else p.dec1
-            dec_out = p.dec1 if zero_for_one else p.dec0
-            amount_atomic = int(amount_in * (10 ** dec_in))
-            if amount_atomic <= 0:
-                continue
             try:
-                q = quote_exact_input(
-                    zero_for_one=zero_for_one,
-                    amount_in=amount_atomic,
-                    sqrt_price_x96=p.sqrt_price_x96,
-                    liquidity=p.liquidity,
-                    tick_net=p.tick_net or {},
-                    tick_spacing=p.tick_spacing,
-                    fee_pips=p.fee_pips,
-                    sorted_ticks=p.sorted_ticks,
-                    sqrt_ticks=p.sqrt_ticks,
+                quote = quote_tick_state(
+                    p,
+                    p.tick_net,
+                    token_in,
+                    token_out,
+                    amount_in,
+                    max_price_impact=MAX_PRICE_IMPACT,
                 )
-                out = q.amount_out / (10 ** dec_out)
-                probe_atomic = max(1, amount_atomic // 10_000)
-                pq = quote_exact_input(
-                    zero_for_one=zero_for_one,
-                    amount_in=probe_atomic,
-                    sqrt_price_x96=p.sqrt_price_x96,
-                    liquidity=p.liquidity,
-                    tick_net=p.tick_net or {},
-                    tick_spacing=p.tick_spacing,
-                    fee_pips=p.fee_pips,
-                    sorted_ticks=p.sorted_ticks,
-                    sqrt_ticks=p.sqrt_ticks,
-                )
-                probe_out = pq.amount_out / (10 ** dec_out)
-                if probe_out <= 0:
+                if quote is None:
                     continue
-                marginal = probe_out * (amount_atomic / probe_atomic)
-                if not _impact_ok(marginal, out):
-                    continue
+                out = quote.amount_out
             except Exception:
                 continue
         else:
