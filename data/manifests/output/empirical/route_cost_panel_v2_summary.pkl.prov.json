@@ -17,34 +17,13 @@
   "src/ddvc/route_cost.py",
   "src/ddvc/route_cost_summary.py"
  ],
- "created_at": "2026-08-06T20:11:07+00:00",
+ "created_at": "2026-08-07T00:56:12+00:00",
  "git": {
-  "branch": "main",
-  "commit": "4e46fbe29328f1e9a2fc7f0deb414240c25bb215",
+  "branch": "glotl/fgh-evidence",
+  "commit": "c27da6d8e7de2c648b33a2c9388aa9b4e1dbfa29",
   "dirty": false,
   "dirty_generated_files": [
-   "data/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json",
-   "data/manifests/output/exhibits/dominance_specification_curve.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/realised_dominance_reweighting.jsonl.prov.json",
-   "data/manifests/output/exhibits/survival_after_dominance.jsonl.prov.json",
-   "data/manifests/output/exhibits/vehicle_dominance_hdfe.jsonl.prov.json",
-   "output/exhibits/dominance_specification_curve.jsonl",
-   "output/exhibits/realised_dominance.jsonl",
-   "output/exhibits/survival_after_dominance.jsonl",
-   "output/exhibits/vehicle_dominance_hdfe.jsonl",
-   "output/tables/bridge_denominator_robustness.pdf",
-   "output/tables/liquidity_robustness.pdf",
-   "output/tables/measurement_robustness.pdf",
-   "output/tables/route_cost_distribution_weighting.pdf",
-   "output/tables/route_cost_distribution_weighting.tex",
-   "output/tables/route_cost_robustness.pdf",
-   "output/tables/route_cost_robustness.tex",
-   "output/tables/stress_robustness.pdf",
-   "output/tables/stress_rotation_decomposition.pdf",
-   "output/tables/v4_match_balance.pdf",
-   "output/tables/v4_robustness.pdf",
-   "output/exhibits/realised_dominance_reweighting.jsonl"
+   "data/manifests/data/empirical/route_cost_panel_v2.parquet.prov.json"
   ],
   "dirty_tracked_files": [],
   "dirty_untracked_files": []
@@ -54,7 +33,7 @@
    "bytes": 880070422,
    "exists": true,
    "hashed": false,
-   "mtime_ns": 1786047053536970566,
+   "mtime_ns": 1786064160971073450,
    "path": "data/empirical/route_cost_panel_v2.parquet"
   }
  ],
