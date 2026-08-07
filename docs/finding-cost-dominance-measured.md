@@ -10,11 +10,13 @@ For each realised two-leg route in the Uniswap V2 and SushiSwap V2 families, the
 
 The fixed calendar contains 74 monthly dates; 73 are nonempty, yielding 45,720 unique comparable routes from June 2020 through June 2026. There are no duplicate route identifiers and no missing all-in estimates.
 
-## Main level result
+## Main level result and economic magnitude
 
-The direct pool returns more gross of gas on 5,361 routes, or 11.7%. Within the prespecified 20% input/output valuation-coherence band, 4,291 of 40,773 routes are dominated, or 10.5%. The median gross direct advantage among dominated routes is 76.7 basis points of input notional.
+The direct pool returns more gross of gas on 5,361 routes, or 11.7% (date-clustered 95% interval 8.8% to 14.7%). Equal weighting across the 73 nonempty dates gives 13.2%, with a daily interquartile range of 8.1% to 15.6%. Within the prespecified 20% input/output valuation-coherence band, 4,291 of 40,773 routes are dominated, or 10.5% (7.8% to 13.2%); equal-date weighting gives 11.0%. The median gross direct advantage among strict-support dominated routes is 58.2 basis points of input notional.
 
-Historically priced, receipt-calibrated gas changes the economic comparison materially. The direct route is cheaper all-in on 14,229 routes, or 31.1%. Substituting the lower and upper quartiles of the matched gas cells gives 24.8% and 35.8%. The median all-in advantage among dominated routes is 134.7 basis points.
+Historically priced, receipt-calibrated gas changes the economic comparison materially. The direct route is cheaper all-in on 14,229 routes, or 31.1% (26.8% to 35.5%). Within strict value support, the incidence is 30.9% (26.4% to 35.5%), and substituting the lower and upper quartiles of matched gas cells gives 24.3% and 35.8%. Equal-date weighting lowers the strict estimate to 22.1%, with a daily interquartile range of 11.8% to 31.7%. The distinction matters: routing activity is concentrated on dates with higher dominance incidence.
+
+Incidence is not loss magnitude. Within strict value support, the median all-in advantage among dominated routes is 128.4 basis points but the median dollar saving is only $8.43. The sum across the sampled dates is $836,745, of which the top 1% of dominated routes supply 72.8%; 67.7% of dominated routes have notional below $1,000. The unconstrained $108.2 million aggregate is inadmissible because 99.1% comes from its top 1% and the underlying tail fails value coherence. The evidence establishes a frequent, concentrated fixed-cost and search friction. It does not establish a large representative welfare loss.
 
 | intermediary type | routes | gross direct dominance | strict-value gross dominance | median-gas all-in dominance | gas-IQR range |
 |---|---:|---:|---:|---:|---:|
@@ -33,14 +35,14 @@ Every dominance observation matches the direct leg at year-by-venue-by-vehicle s
 
 The fixed-cost pattern is visible by realised notional:
 
-| notional | routes | gross direct dominance | strict-value gross dominance | median-gas all-in dominance | gas-IQR range |
-|---|---:|---:|---:|---:|---:|
-| $100–1,000 | 20,544 | 13.9% | 12.8% | 46.7% | 37.9–52.4% |
-| $1,000–10,000 | 19,706 | 10.2% | 9.3% | 20.7% | 15.5–25.3% |
-| $10,000–100,000 | 4,936 | 7.7% | 6.2% | 9.0% | 8.2–9.9% |
-| above $100,000 | 534 | 20.4% | 4.8% | 20.4% | 20.4–20.4% |
+| notional | strict routes | strict gross dominance | strict median-gas dominance | median saving if dominated |
+|---|---:|---:|---:|---:|
+| $100–1,000 | 17,842 | 12.8% | 47.8% | $6.10 |
+| $1,000–10,000 | 18,096 | 9.4% | 20.6% | $13.85 |
+| $10,000–100,000 | 4,616 | 6.3% | 7.5% | $95.28 |
+| above $100,000 | 219 | 5.0% | 5.0% | $3,559.90 |
 
-Gas flips many small routes and almost none of the large routes. The gross 20.4% rate above $100,000 is not evidence that large routing is worse: only 4.8% remains inside strict valuation support, and the cell contains 534 routes. It is a tail diagnostic.
+Gas flips many small routes and almost none of the large strict-support routes. The full-sample gross 20.4% rate above $100,000 is a valuation-tail artefact: only 219 of the 534 routes remain on strict support and their gross incidence is 5.0%.
 
 ## State support and venue reach
 
@@ -62,6 +64,6 @@ The correct market-maturation design must hold the public opportunity set, endpo
 
 ## Permitted interpretation
 
-The admissible claim is narrow and economically useful: direct-route dominance exists on legacy V2-family support, and historically measured fixed execution costs make it substantially more common than quote-output comparisons imply. This shows that a vehicle can retain realised flow when a direct path is cheaper all-in, which opens the state required for a persistence test.
+The admissible claim is narrow and economically useful: direct-route dominance exists on legacy V2-family support, and historically measured fixed execution costs make it substantially more common than quote-output comparisons imply. The median dollar consequence is small and the aggregate is concentrated. This shows that a vehicle can retain realised flow when a direct path is cheaper all-in, which opens the state required for a persistence test but does not establish persistence itself.
 
 It does not yet show that a particular vehicle retains the role because of inertia, that aggregators caused convergence, or that market-wide routing became more efficient. The V2-family incidence is a lower bound with respect to omitted direct venues, but not a population estimate because support selection can work in either direction.

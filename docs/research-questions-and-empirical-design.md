@@ -123,7 +123,7 @@ The 2020 to 2026 transition also spans the diffusion of aggregators, universal r
 | Indirect routes win only before gas is added | Vehicle routing is a quote-quality phenomenon but not an all-in economic advantage for users |
 | Indirect routes remain common when \(\Delta C^{D,\mathrm{all}}>0\), and lagged scale/liquidity remains significant | Current cost is incomplete; persistence, reliability, private order flow, or coordination moves to RQ3 rather than being labelled irrationality |
 | All-in cost does not predict realized route choice | Refute the proposed cost mechanism or revisit route reconstruction, unobserved router objectives, and quote timing before making a formation claim |
-| The stable-vehicle transition is confined to high-search or late-efficiency regimes | Attribute the transition to routing integration, or to routing integration activating fragmented stable liquidity; do not describe it as unconditional currency succession |
+| The stable-vehicle transition is confined to high-search or late-efficiency regimes | Attribute the transition to routing integration, or to routing integration activating fragmented stable liquidity; do not describe it as unconditional or persistent currency replacement |
 
 **Potentially surprising result:** two swaps can be cheaper than one only above a trade-size region because direct-pool price impact is convex, even though the indirect route pays two fee legs and more gas.
 

@@ -83,7 +83,7 @@ The positive sign is not the mechanical channel in which a central token routes 
 
 Within pools quoted against the native asset, where the quote leg is held fixed and the surviving variation is the hub status of the other leg, the v2 coefficient is 0.169 (0.000) over 66,062 pool-months and 10,859 pools. The role interactions on v2 are jointly insignificant at chi2(2) = 3.99 (0.136); on v3 they are jointly non-zero at chi2(3) = 11.62 (0.009), driven by staked-native and imported legs. The old claim that v2 role interactions identify a long-tail centrality premium is therefore withdrawn.
 
-## Temporal bridge to vehicle succession
+## Temporal bridge to vehicle rotation
 
 The annual bridge normalizes capital-days by observed days, so the partial 2026 sample cannot masquerade as capital withdrawal. On v2, native-other mean daily capital falls from 1.011 billion dollars in 2024 to 0.344 billion in 2026, but its share of all screened capital rises from 70.2% to 77.8%. Other-stable capital falls from 0.151 billion to 0.023 billion and from 10.5% to 5.1%; native-stable falls from 0.232 billion to 0.044 billion and from 16.1% to 10.0%. Over the same period, native-other profitability improves: median net APR rises from -11.1% to -0.5% and the paying share from 16.0% to 34.0%. This is the opposite temporal ordering from a migration of capital or deteriorating native-spoke returns causing the stable vehicle transition.
 
@@ -93,7 +93,7 @@ The v3 panel shows apparent growth in other-stable CPMM-equivalent virtual reser
 
 The vehicle role is held by the native asset through its pairing network with the long tail, and it is exactly those pairings that lose money. Providers of native-other pools supplied 2.38 trillion dollars of capital-days, earned 0.90% annualised in fees at the median pool-day against an 11.85% LVR rate, and gave up 5.82 billion dollars in aggregate. This is a strong incidence result: trading revenue alone does not privately compensate the providers who make the long-tail network thick.
 
-It is not the mechanism of the 2024 to 2026 vehicle succession in the evidence currently available. The admissible v2 temporal bridge moves against that interpretation, and v3 deposited capital is unmeasured. Rent incidence therefore enters the paper as a companion distributional finding, not as the explanation for why stable assets gained the intermediary role.
+It is not the mechanism of the 2024 to 2026 vehicle rotation in the evidence currently available. The admissible v2 temporal bridge moves against that interpretation, and v3 deposited capital is unmeasured. Rent incidence therefore enters the paper as a companion distributional finding, not as the explanation for why stable assets gained the intermediary role.
 
 The centrality curse being absent sharpens this. Hub status is not what makes intermediation unprofitable; pairing with the long tail is. Conditional on depth and volatility, hub status helps.
 
