@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Build the strict pre-transaction V3/V4 route frontier for node F.
+"""Build the strict pre-transaction V2/V3/V4 route frontier for node F.
 
-This first exact-state branch deliberately names its perimeter. It scores routes
-whose two realised legs both execute on Uniswap V3/V4 and compares them only with
-V3/V4 public pools. V2-family integration is a separate adapter; Curve, Balancer
-and Fluid remain outside this exact-state frontier and are reported in the support
-funnel rather than silently treated as covered.
+The frontier scores routes whose two realised legs execute on the exact-state V2,
+V3, or V4 adapters and searches all supported paths at the same pre-transaction
+state. Pure V4 routes lack a block number in the raw source, so their opportunity
+set remains V3/V4-only; that bound is explicit in the support funnel. Curve,
+Balancer, and Fluid remain outside the exact-state perimeter.
 """
 
 from __future__ import annotations
@@ -13,12 +13,13 @@ from __future__ import annotations
 import argparse
 import pickle
 from collections import defaultdict
+from functools import partial
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from ddvc.analysis.transaction_frontier import RealisedTickPath, score_tick_frontier
+from ddvc.analysis.transaction_frontier import RealisedPath, score_frontier
 from ddvc.asset_types import (
     IMPORTED,
     NATIVE,
@@ -28,9 +29,14 @@ from ddvc.asset_types import (
     canonical_token,
 )
 from ddvc.calendar import nearest_monthly_days
-from ddvc.fetch.raw import transaction_id
+from ddvc.fetch.raw import block_value, transaction_id, timestamp_value
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
-from ddvc.pricing.tick_frontier import quote_tick_path
+from ddvc.pricing.mixed_frontier import (
+    MixedFrontierState,
+    mixed_leg_quotes,
+    quote_mixed_path,
+)
+from ddvc.pricing.path_frontier import PathQuote
 from ddvc.pricing.tick_replay import (
     TickReplayEvent,
     TickReplayState,
@@ -38,6 +44,7 @@ from ddvc.pricing.tick_replay import (
     warm_tick_day,
 )
 from ddvc.pricing.v3pools import load_token_decimals
+from ddvc.pricing.v2_replay import V2ReplayDay, V2_VENUES, load_v2_replay_day
 from ddvc.provenance import cache_key
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.route_cost import MAX_PRICE_IMPACT
@@ -47,10 +54,11 @@ from ddvc.tables import write_exhibit, write_panel
 
 RAW = DATA_DIR / "raw" / "thegraph"
 UNIFIED = DATA_DIR / "unified"
-OUT_PANEL = DATA_DIR / "processed" / "transaction_state_tick_frontier.parquet"
-OUT_SUMMARY = OUTPUT_DIR / "exhibits" / "transaction_state_tick_frontier_summary.jsonl"
-OUT_SUPPORT = OUTPUT_DIR / "exhibits" / "transaction_state_tick_frontier_support.jsonl"
+OUT_PANEL = DATA_DIR / "processed" / "transaction_state_frontier.parquet"
+OUT_SUMMARY = OUTPUT_DIR / "exhibits" / "transaction_state_frontier_summary.jsonl"
+OUT_SUPPORT = OUTPUT_DIR / "exhibits" / "transaction_state_frontier_support.jsonl"
 TICK_VENUES = ("uniswap_v3", "uniswap_v4")
+EXACT_VENUES = (*V2_VENUES, *TICK_VENUES)
 REPLAY_START = "20210504"
 TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 MIN_INPUT_USD = 100.0
@@ -62,12 +70,16 @@ CODE_SOURCES = [
     "scripts/build_transaction_state_frontier.py",
     "src/ddvc/analysis/transaction_frontier.py",
     "src/ddvc/pricing/path_frontier.py",
+    "src/ddvc/pricing/mixed_frontier.py",
     "src/ddvc/pricing/tick_frontier.py",
     "src/ddvc/pricing/tick_quote.py",
     "src/ddvc/pricing/tick_replay.py",
     "src/ddvc/pricing/tick_state.py",
     "src/ddvc/pricing/v3pools.py",
     "src/ddvc/pricing/v3quote.py",
+    "src/ddvc/pricing/v2_frontier.py",
+    "src/ddvc/pricing/v2_replay.py",
+    "src/ddvc/cpquote.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/realised.py",
     "src/ddvc/prices.py",
@@ -165,22 +177,23 @@ def _event_key(event: TickReplayEvent) -> tuple[str, str, int] | None:
 def load_target_routes(
     day: str,
     events: list[TickReplayEvent],
+    v2_replay: V2ReplayDay,
 ) -> tuple[list[dict[str, object]], dict[str, object]]:
     path = UNIFIED / f"{day}.parquet"
     legs = pd.read_parquet(path, columns=LINEAR_ROUTE_COLUMNS)
     all_routes = extract_linear_realised_routes(legs)
-    tick_routes = all_routes[
-        all_routes["realised_hop1_source"].isin(TICK_VENUES)
-        & all_routes["realised_hop2_source"].isin(TICK_VENUES)
+    exact_routes = all_routes[
+        all_routes["realised_hop1_source"].isin(EXACT_VENUES)
+        & all_routes["realised_hop2_source"].isin(EXACT_VENUES)
     ].copy()
     route_keys = {
         (str(tx_hash).lower(), int(component_id))
         for tx_hash, component_id in zip(
-            tick_routes["tx_hash"], tick_routes["component_id"], strict=True
+            exact_routes["tx_hash"], exact_routes["component_id"], strict=True
         )
     }
     route_legs = legs[
-        legs["route_class"].eq("coherent") & legs["source"].isin(TICK_VENUES)
+        legs["route_class"].eq("coherent") & legs["source"].isin(EXACT_VENUES)
     ].copy()
     route_legs = route_legs[
         [
@@ -196,37 +209,73 @@ def load_target_routes(
         )
         for key, group in route_legs.groupby(["tx_hash", "component_id"], sort=False)
     }
-    raw_events: dict[tuple[str, str, int], TickReplayEvent] = {}
+    raw_tick_events: dict[tuple[str, str, int], TickReplayEvent] = {}
     for event in events:
         key = _event_key(event)
         if key is None:
             continue
-        prior = raw_events.get(key)
+        prior = raw_tick_events.get(key)
         if prior is not None and prior.row != event.row:
             raise ValueError(f"conflicting raw tick swap identity: {key}")
-        raw_events[key] = event
+        raw_tick_events[key] = event
 
     targets: list[dict[str, object]] = []
     mapped = 0
     above_minimum = 0
-    for route in tick_routes.to_dict("records"):
+    block_order_unavailable = 0
+    for route in exact_routes.to_dict("records"):
         tx_hash = str(route["tx_hash"]).lower()
         component_id = int(route["component_id"])
         selected_legs = grouped_legs.get((tx_hash, component_id))
         if selected_legs is None or len(selected_legs) != 2:
             continue
-        matched_events = []
+        matched_events: list[dict[str, object]] = []
         for leg in selected_legs.itertuples(index=False):
             try:
                 log_index = int(leg.log_index)
             except (TypeError, ValueError):
                 matched_events = []
                 break
-            event = raw_events.get((str(leg.source), tx_hash, log_index))
-            if event is None:
-                matched_events = []
-                break
-            matched_events.append(event)
+            venue = str(leg.source)
+            if venue in V2_VENUES:
+                event = v2_replay.swaps_by_identity.get((venue, tx_hash, log_index))
+                if event is None:
+                    matched_events = []
+                    break
+                matched_events.append(
+                    {
+                        "venue": venue,
+                        "pool": event.pool,
+                        "timestamp": event.timestamp,
+                        "log_index": log_index,
+                        "block": event.order[0],
+                    }
+                )
+            else:
+                event = raw_tick_events.get((venue, tx_hash, log_index))
+                if event is None:
+                    matched_events = []
+                    break
+                pool = str((event.row.get("pool") or {}).get("id") or "").lower()
+                try:
+                    timestamp = int(timestamp_value(event.row) or 0)
+                    block = block_value(event.row)
+                    block_number = int(block) if block is not None else None
+                except (TypeError, ValueError):
+                    matched_events = []
+                    break
+                if not pool or timestamp <= 0:
+                    matched_events = []
+                    break
+                matched_events.append(
+                    {
+                        "venue": venue,
+                        "pool": pool,
+                        "timestamp": timestamp,
+                        "log_index": log_index,
+                        "block": block_number,
+                    }
+                )
         if len(matched_events) != 2:
             continue
         mapped += 1
@@ -234,37 +283,64 @@ def load_target_routes(
         if not np.isfinite(input_usd) or input_usd < MIN_INPUT_USD:
             continue
         above_minimum += 1
-        pools = tuple(
-            str((event.row.get("pool") or {}).get("id") or "").lower()
+        pools = tuple(str(event["pool"]) for event in matched_events)
+        venues = tuple(str(event["venue"]) for event in matched_events)
+        target_order = min(
+            (int(event["timestamp"]), int(event["log_index"]))
             for event in matched_events
         )
-        if any(not pool for pool in pools):
-            continue
-        venues = tuple(event.venue for event in matched_events)
-        target_order = min(event.order for event in matched_events)
+        blocks = {
+            int(event["block"])
+            for event in matched_events
+            if event["block"] is not None
+        }
+        if len(blocks) > 1:
+            raise ValueError(f"route legs disagree on block number: {route['route_id']}")
+        v2_order = (
+            (blocks.pop(), min(int(event["log_index"]) for event in matched_events))
+            if blocks
+            else None
+        )
+        if v2_order is None:
+            block_order_unavailable += 1
         targets.append(
             {
                 **route,
                 "day": day,
                 "tx_hash": tx_hash,
                 "target_order": target_order,
+                "v2_hour": int(target_order[0]) - int(target_order[0]) % 3600,
+                "v2_order": v2_order,
                 "realised_venues": venues,
                 "realised_pools": pools,
                 "vehicle_type": asset_type(str(route["vehicle"])),
             }
         )
     targets.sort(key=lambda row: (row["target_order"], row["route_id"]))
+    tick_only = exact_routes[
+        exact_routes["realised_hop1_source"].isin(TICK_VENUES)
+        & exact_routes["realised_hop2_source"].isin(TICK_VENUES)
+    ]
+    v2_only = exact_routes[
+        exact_routes["realised_hop1_source"].isin(V2_VENUES)
+        & exact_routes["realised_hop2_source"].isin(V2_VENUES)
+    ]
     support = {
         "day": day,
         "all_exact_two_leg_routes": int(len(all_routes)),
-        "tick_venue_exact_two_leg_routes": int(len(tick_routes)),
-        "tick_venue_share": float(len(tick_routes) / len(all_routes)) if len(all_routes) else None,
+        "exact_venue_two_leg_routes": int(len(exact_routes)),
+        "exact_venue_share": float(len(exact_routes) / len(all_routes)) if len(all_routes) else None,
+        "tick_venue_exact_two_leg_routes": int(len(tick_only)),
+        "v2_venue_exact_two_leg_routes": int(len(v2_only)),
+        "mixed_family_exact_two_leg_routes": int(len(exact_routes) - len(tick_only) - len(v2_only)),
+        "block_order_unavailable_routes": block_order_unavailable,
         "raw_tx_log_mapped_routes": mapped,
         "routes_at_least_100usd": above_minimum,
         "scored_routes": 0,
         "chosen_state_unavailable": 0,
         "chosen_output_mismatch": 0,
         "quarantined_tick_pools": 0,
+        "clean_v2_pool_hours": int(len(v2_replay.pool_hour_events)),
     }
     return targets, support
 
@@ -300,9 +376,10 @@ def score_day(
     day: str,
     events: list[TickReplayEvent],
     replay: TickReplayState,
+    v2_replay: V2ReplayDay,
     vehicles: tuple[str, ...],
 ) -> tuple[pd.DataFrame, dict[str, object]]:
-    targets, support = load_target_routes(day, events)
+    targets, support = load_target_routes(day, events, v2_replay)
     by_order: dict[tuple[int, int], list[dict[str, object]]] = defaultdict(list)
     for target in targets:
         by_order[target["target_order"]].append(target)
@@ -315,7 +392,7 @@ def score_day(
             replay.apply(events[cursor])
             cursor += 1
         for target in by_order[order]:
-            route = RealisedTickPath(
+            route = RealisedPath(
                 token_in=str(target["src"]),
                 token_out=str(target["tgt"]),
                 vehicle=str(target["vehicle"]),
@@ -324,18 +401,35 @@ def score_day(
                 venues=target["realised_venues"],
                 pools=target["realised_pools"],
             )
-            chosen = quote_tick_path(
-                route.token_in,
-                route.token_out,
-                route.vehicle,
-                route.amount_in,
-                venues=route.venues,
-                pools=route.pools,
-                states_by_venue=replay.states_by_venue,
-                ticks_by_venue=replay.ticks_by_venue,
-                max_price_impact=None,
-                quote_indexes_by_venue=replay.quote_indexes_by_venue,
+            frontier_state = MixedFrontierState(
+                tick_pool_index=replay.pool_index,
+                tick_states_by_venue=replay.states_by_venue,
+                tick_ticks_by_venue=replay.ticks_by_venue,
+                tick_quote_indexes_by_venue=replay.quote_indexes_by_venue,
+                v2_replay=v2_replay,
+                v2_hour=int(target["v2_hour"]),
+                v2_order=target["v2_order"],
             )
+
+            def quote_chosen(chosen_route: RealisedPath) -> PathQuote | None:
+                return quote_mixed_path(
+                    chosen_route.token_in,
+                    chosen_route.token_out,
+                    chosen_route.vehicle,
+                    chosen_route.amount_in,
+                    venues=chosen_route.venues,
+                    pools=chosen_route.pools,
+                    state=frontier_state,
+                    max_support=None,
+                )
+
+            quote_legs = partial(
+                mixed_leg_quotes,
+                state=frontier_state,
+                allowed_venues=None,
+                max_support=MAX_PRICE_IMPACT,
+            )
+            chosen = quote_chosen(route)
             if chosen is None:
                 support["chosen_state_unavailable"] += 1
                 continue
@@ -348,15 +442,12 @@ def score_day(
             if validation_error > VALIDATION_TOLERANCE:
                 support["chosen_output_mismatch"] += 1
                 continue
-            score = score_tick_frontier(
+            score = score_frontier(
                 route,
                 vehicles=vehicles,
-                pool_index=replay.pool_index,
-                states_by_venue=replay.states_by_venue,
-                ticks_by_venue=replay.ticks_by_venue,
-                max_price_impact=MAX_PRICE_IMPACT,
+                quote_legs=quote_legs,
+                quote_chosen=quote_chosen,
                 validation_tolerance=VALIDATION_TOLERANCE,
-                quote_indexes_by_venue=replay.quote_indexes_by_venue,
             )
             if score is None:
                 raise AssertionError("validated chosen path was rejected during frontier scoring")
@@ -375,6 +466,7 @@ def score_day(
                     "component_id": int(target["component_id"]),
                     "timestamp_utc": int(target["timestamp_utc"]),
                     "first_log_index": int(order[1]),
+                    "v2_block_order_available": target["v2_order"] is not None,
                     "src": route.token_in,
                     "tgt": route.token_out,
                     "vehicle": route.vehicle,
@@ -450,15 +542,35 @@ def summarise(panel: pd.DataFrame) -> pd.DataFrame:
                     frame["public_reach_same_vehicle_regret_bps"].gt(0).mean()
                 ),
                 "public_path_regret_positive_share": float(regret.gt(0).mean()),
+                "public_path_regret_over_0p01bps_share": float(regret.gt(0.01).mean()),
+                "public_path_regret_over_1bps_share": float(regret.gt(1.0).mean()),
                 "public_path_regret_over_10bps_share": float(regret.gt(10).mean()),
                 "public_path_regret_median_bps": float(regret.median()),
                 "public_path_regret_p90_bps": float(regret.quantile(0.9)),
                 "within_reach_increment_mean_bps": float(
                     frame["within_reach_search_regret_bps"].mean()
                 ),
+                "within_reach_regret_over_0p01bps_share": float(
+                    frame["within_reach_search_regret_bps"].gt(0.01).mean()
+                ),
+                "within_reach_regret_over_1bps_share": float(
+                    frame["within_reach_search_regret_bps"].gt(1.0).mean()
+                ),
                 "reach_increment_mean_bps": float(frame["reach_increment_bps"].mean()),
+                "reach_increment_over_0p01bps_share": float(
+                    frame["reach_increment_bps"].gt(0.01).mean()
+                ),
+                "reach_increment_over_1bps_share": float(
+                    frame["reach_increment_bps"].gt(1.0).mean()
+                ),
                 "path_choice_increment_mean_bps": float(
                     frame["path_choice_increment_bps"].mean()
+                ),
+                "path_choice_increment_over_0p01bps_share": float(
+                    frame["path_choice_increment_bps"].gt(0.01).mean()
+                ),
+                "path_choice_increment_over_1bps_share": float(
+                    frame["path_choice_increment_bps"].gt(1.0).mean()
                 ),
                 "direct_available_share": float(direct.notna().mean()),
                 "direct_omission_positive_share": float(direct.fillna(0).gt(0).mean()),
@@ -501,7 +613,7 @@ def main() -> int:
         print(f"loaded replay checkpoint before {replay_start}", flush=True)
     else:
         replay = TickReplayState(token_decimals=load_token_decimals(TOKEN_DECIMALS))
-        replay_start = REPLAY_START
+        replay_start = min(REPLAY_START, selected[0])
     calendar = pd.date_range(
         pd.to_datetime(replay_start, format="%Y%m%d"),
         pd.to_datetime(max(selected), format="%Y%m%d"),
@@ -516,12 +628,13 @@ def main() -> int:
                 print(f"wrote replay checkpoint before {day}", flush=True)
         if day in selected_set:
             events = load_tick_day_events(RAW, day)
-            frame, support = score_day(day, events, replay, vehicles)
+            v2_replay = load_v2_replay_day(RAW, day)
+            frame, support = score_day(day, events, replay, v2_replay, vehicles)
             frames.append(frame)
             support_rows.append(support)
             print(
                 f"{day}: {support['all_exact_two_leg_routes']:,} exact two-leg; "
-                f"{support['tick_venue_exact_two_leg_routes']:,} V3/V4; "
+                f"{support['exact_venue_two_leg_routes']:,} V2/V3/V4; "
                 f"{support['scored_routes']:,} exact-state scored",
                 flush=True,
             )
@@ -535,32 +648,39 @@ def main() -> int:
         return 1
     support = pd.DataFrame(support_rows)
     summary = summarise(panel)
-    inputs = [UNIFIED, RAW / "uniswap_v3", RAW / "uniswap_v4", TOKEN_DECIMALS]
+    inputs = [
+        UNIFIED,
+        *(RAW / venue for venue in EXACT_VENUES),
+        TOKEN_DECIMALS,
+    ]
     write_panel(
         panel,
         OUT_PANEL,
         code_sources=CODE_SOURCES,
         inputs=inputs,
-        notes="strict pre-transaction V3/V4 realised and public-path frontier",
+        notes="strict pre-transaction V2/V3/V4 realised and public-path frontier",
     )
     write_exhibit(
         summary,
         OUT_SUMMARY,
         code_sources=CODE_SOURCES,
         inputs=[OUT_PANEL],
-        notes="route and dollar magnitudes for nested V3/V4 exact-state frontiers",
+        notes="route and dollar magnitudes for nested V2/V3/V4 exact-state frontiers",
     )
     write_exhibit(
         support,
         OUT_SUPPORT,
         code_sources=CODE_SOURCES,
         inputs=inputs,
-        notes="explicit V3/V4 exact-state support funnel; other venue families outside perimeter",
+        notes="explicit V2/V3/V4 exact-state support funnel; V2 alternatives excluded when block order is unavailable",
     )
-    pooled = summary[(summary["day"] == "pooled") & (summary["sample"] == "all")].iloc[0]
+    pooled = summary[
+        (summary["day"] == "pooled") & (summary["sample"] == "within_20pct")
+    ].iloc[0]
     print(
-        f"pooled: {int(pooled.routes):,} routes; public regret positive "
-        f"{100 * pooled.public_path_regret_positive_share:.2f}%; "
+        f"pooled coherent: {int(pooled.routes):,} routes; public regret >1 bp "
+        f"{100 * pooled.public_path_regret_over_1bps_share:.2f}%, >10 bp "
+        f"{100 * pooled.public_path_regret_over_10bps_share:.2f}%; "
         f"median {pooled.public_path_regret_median_bps:.2f} bps; "
         f"aggregate gain ${pooled.aggregate_public_gain_usd:,.2f}"
     )

@@ -61,6 +61,14 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             float(pooled.loc["all", "public_path_regret_positive_share"]),
             1.0,
         )
+        self.assertAlmostEqual(
+            float(pooled.loc["all", "public_path_regret_over_1bps_share"]),
+            1.0,
+        )
+        self.assertAlmostEqual(
+            float(pooled.loc["all", "path_choice_increment_over_1bps_share"]),
+            1 / 3,
+        )
 
     def test_replay_checkpoint_round_trips_exact_state(self) -> None:
         replay = TickReplayState()

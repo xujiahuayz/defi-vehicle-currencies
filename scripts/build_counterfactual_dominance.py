@@ -45,9 +45,6 @@ Writes  data/processed/counterfactual_dominance.parquet
 from __future__ import annotations
 
 import argparse
-import collections
-import gzip
-import json
 from decimal import Decimal
 
 import pandas as pd
@@ -57,19 +54,15 @@ from ddvc.asset_types import WETH, classify
 from ddvc.calendar import nearest_monthly_days
 from ddvc.cpquote import (
     Pool,
-    ReserveEvent,
     all_in_direct_advantage_bps_from_units,
     cost_gap_bps,
-    hour_is_clean,
-    ordered_reserve_events,
-    prior_observed_state,
     quote_one_hop,
-    reserve_state_before,
 )
 from ddvc.gas import load_daily_gas_prices
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.prices import PRICE_COLUMNS, day_prices
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
+from ddvc.pricing.v2_replay import V2_VENUES, load_v2_replay_day
 from ddvc.route_gas import GAS_ESTIMATE_COLUMNS, estimate_route_gas
 from ddvc.tables import write_exhibit, write_panel
 
@@ -84,6 +77,7 @@ CODE_SOURCES = [
     "scripts/build_counterfactual_dominance.py",
     "src/ddvc/calendar.py",
     "src/ddvc/cpquote.py",
+    "src/ddvc/pricing/v2_replay.py",
     "src/ddvc/gas.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/prices.py",
@@ -92,7 +86,7 @@ CODE_SOURCES = [
     "src/ddvc/route_roles.py",
 ]
 
-VENUES = ("uniswap_v2", "sushiswap_v2")
+VENUES = V2_VENUES
 MIN_USD = 100.0            # below this, gas dominates and the comparison is moot
 
 
@@ -104,196 +98,10 @@ def counterfactual_days(
     return days[:limit] if limit is not None else days
 
 
-def _net(s: dict) -> tuple[Decimal, Decimal]:
-    return (Decimal(s.get("amount0In", "0")) - Decimal(s.get("amount0Out", "0")),
-            Decimal(s.get("amount1In", "0")) - Decimal(s.get("amount1Out", "0")))
-
-
-def _load_day(day: str) -> tuple[dict, dict, dict, dict]:
-    """Return reserves, pool metadata, swaps and ordered liquidity changes."""
-    reserves: dict[tuple[str, int], tuple[Decimal, Decimal]] = {}
-    meta: dict[str, tuple[str, str, str]] = {}
-    swaps: dict[tuple[str, int], list[dict]] = collections.defaultdict(list)
-    liquidity: dict[
-        tuple[str, int],
-        list[tuple[tuple[int, int], tuple[Decimal, Decimal]]],
-    ] = collections.defaultdict(list)
-    previous_day = (
-        pd.to_datetime(day, format="%Y%m%d") - pd.Timedelta(days=1)
-    ).strftime("%Y%m%d")
-    for venue in VENUES:
-        previous_path = (
-            RAW
-            / venue
-            / f"{venue}_hourly_reserves_{previous_day}.jsonl.gz"
-        )
-        latest_previous: dict[
-            str, tuple[int, tuple[Decimal, Decimal], tuple[str, str, str]]
-        ] = {}
-        if previous_path.exists():
-            with gzip.open(previous_path, "rt") as handle:
-                for line in handle:
-                    row = json.loads(line)
-                    pair = row.get("pair") or {}
-                    pid = str(pair.get("id") or "").lower()
-                    try:
-                        hour = int(row["hourStartUnix"])
-                        state = (
-                            Decimal(row["reserve0"]),
-                            Decimal(row["reserve1"]),
-                        )
-                        pool_meta = (
-                            pair["token0"]["id"].lower(),
-                            pair["token1"]["id"].lower(),
-                            venue,
-                        )
-                    except (KeyError, TypeError, ValueError):
-                        continue
-                    prior = latest_previous.get(pid)
-                    if pid and (prior is None or hour > prior[0]):
-                        latest_previous[pid] = (hour, state, pool_meta)
-        for pid, (hour, state, pool_meta) in latest_previous.items():
-            reserves[(pid, hour)] = state
-            meta[pid] = pool_meta
-
-        rp = RAW / venue / f"{venue}_hourly_reserves_{day}.jsonl.gz"
-        sp = RAW / venue / f"{venue}_swaps_{day}.jsonl.gz"
-        if rp.exists():
-            with gzip.open(rp, "rt") as fh:
-                for line in fh:
-                    d = json.loads(line)
-                    pr = d.get("pair") or {}
-                    pid = str(pr.get("id") or "").lower()
-                    if not pid:
-                        continue
-                    reserves[(pid, int(d["hourStartUnix"]))] = (
-                        Decimal(d["reserve0"]), Decimal(d["reserve1"]))
-                    meta[pid] = (pr["token0"]["id"].lower(),
-                                 pr["token1"]["id"].lower(), venue)
-        if sp.exists():
-            with gzip.open(sp, "rt") as fh:
-                for line in fh:
-                    s = json.loads(line)
-                    pid = str((s.get("pair") or {}).get("id") or "").lower()
-                    ts = int(s.get("timestamp", 0))
-                    transaction = s.get("transaction") or {}
-                    try:
-                        order = (int(transaction.get("blockNumber")), int(s.get("logIndex")))
-                    except (TypeError, ValueError):
-                        continue
-                    if pid and ts:
-                        s["_tx"] = str(
-                            transaction.get("id") or s.get("id", "")
-                        ).lower()
-                        s["_order"] = order
-                        swaps[(pid, ts - (ts % 3600))].append(s)
-        for stream, sign in (("mints", Decimal(1)), ("burns", Decimal(-1))):
-            liquidity_path = RAW / venue / f"{venue}_{stream}_{day}.jsonl.gz"
-            if not liquidity_path.exists():
-                continue
-            with gzip.open(liquidity_path, "rt") as handle:
-                for line in handle:
-                    event = json.loads(line)
-                    pid = str(
-                        ((event.get("pair") or {}).get("id") or "")
-                    ).lower()
-                    transaction = event.get("transaction") or {}
-                    try:
-                        timestamp = int(event["timestamp"])
-                        order = (
-                            int(transaction["blockNumber"]),
-                            int(event["logIndex"]),
-                        )
-                        delta = (
-                            sign * Decimal(event["amount0"]),
-                            sign * Decimal(event["amount1"]),
-                        )
-                    except (KeyError, TypeError, ValueError):
-                        continue
-                    if pid:
-                        hour = timestamp - (timestamp % 3600)
-                        liquidity[(pid, hour)].append((order, delta))
-    return reserves, meta, swaps, liquidity
-
-
 def one_day(day: str) -> pd.DataFrame | None:
-    reserves, meta, swaps, liquidity = _load_day(day)
-    if not reserves or not swaps:
+    replay = load_v2_replay_day(RAW, day, venues=VENUES)
+    if not replay.pool_hour_events or not replay.swaps_by_pool_hour:
         return None
-
-    # Exact block-log ordered state timelines for pool-hours whose reserve
-    # continuity is explained by the fetched swaps, mints and burns.
-    clean_hours: set[tuple[str, int]] = set()
-    candidate_events: dict[tuple[str, int], list[ReserveEvent]] = {}
-    event_deltas: dict[
-        tuple[str, int], list[tuple[Decimal, Decimal]]
-    ] = {}
-    for pid, hour in sorted(set(swaps) | set(liquidity)):
-        stored = reserves.get((pid, hour))
-        if stored is None:
-            continue
-        group = swaps.get((pid, hour), [])
-        group.sort(key=lambda row: row["_order"])
-        changes = [
-            *((swap["_order"], _net(swap)) for swap in group),
-            *liquidity.get((pid, hour), []),
-        ]
-        events = ordered_reserve_events(stored, changes)
-        deltas = [
-            (
-                event.after[0] - event.before[0],
-                event.after[1] - event.before[1],
-            )
-            for event in events
-        ]
-        if any(
-            value <= 0
-            for event in events
-            for state in (event.before, event.after)
-            for value in state
-        ):
-            continue
-        candidate_events[(pid, hour)] = events
-        event_deltas[(pid, hour)] = deltas
-
-    reserve_states: dict[
-        str, dict[int, tuple[Decimal, Decimal]]
-    ] = collections.defaultdict(dict)
-    deltas_by_pool: dict[
-        str, dict[int, list[tuple[Decimal, Decimal]]]
-    ] = collections.defaultdict(dict)
-    for (pid, hour), state in reserves.items():
-        reserve_states[pid][hour] = state
-    for (pid, hour), deltas in event_deltas.items():
-        deltas_by_pool[pid][hour] = deltas
-
-    pool_hour_events: dict[tuple[str, int], list[ReserveEvent]] = {}
-    state_support: dict[tuple[str, int], tuple[int, int]] = {}
-    for (pid, hour), events in candidate_events.items():
-        prior = prior_observed_state(
-            reserve_states[pid], deltas_by_pool[pid], hour
-        )
-        if prior is None:
-            continue
-        expected_start, previous_hour = prior
-        if not hour_is_clean(
-            expected_start, reserves[(pid, hour)], event_deltas[(pid, hour)]
-        ):
-            continue
-        clean_hours.add((pid, hour))
-        pool_hour_events[(pid, hour)] = events
-        state_support[(pid, hour)] = (
-            (hour - previous_hour) // 3600,
-            len(liquidity.get((pid, hour), [])),
-        )
-
-    # Keep pool-hour boundaries: a clean state in an earlier hour cannot stand in for an
-    # unobserved or contaminated current hour.
-    pair_index: dict[frozenset, dict[str, dict[int, list[ReserveEvent]]]] = collections.defaultdict(dict)
-    for (pid, hour), events in pool_hour_events.items():
-        mm = meta.get(pid)
-        if mm:
-            pair_index[frozenset((mm[0], mm[1]))].setdefault(pid, {})[hour] = events
 
     unified_path = UNIFIED / f"{day}.parquet"
     if not unified_path.exists():
@@ -335,23 +143,6 @@ def one_day(day: str) -> pd.DataFrame | None:
         for key, group in route_legs.groupby(component_keys, sort=False)
     }
 
-    raw_events: dict[tuple[str, int], dict] = {}
-    for (pid, hour), group in swaps.items():
-        for s in group:
-            s["_pool"] = pid
-            s["_hour"] = hour
-            key = (s["_tx"], int(s["logIndex"]))
-            prior = raw_events.get(key)
-            if prior is not None:
-                if (
-                    prior["_pool"] == pid
-                    and prior["_order"] == s["_order"]
-                    and _net(prior) == _net(s)
-                ):
-                    continue
-                raise ValueError(f"conflicting V2 transaction-log event: {key}")
-            raw_events[key] = s
-
     rows = []
     for route in routes.to_dict("records"):
         tx = str(route["tx_hash"]).lower()
@@ -360,21 +151,23 @@ def one_day(day: str) -> pd.DataFrame | None:
         if legs is None or len(legs) != 2:
             continue
         raw_legs = [
-            raw_events.get((tx, int(log_index)))
-            for log_index in legs["log_index"]
+            replay.swaps_by_identity.get((str(source), tx, int(log_index)))
+            for source, log_index in zip(
+                legs["source"], legs["log_index"], strict=True
+            )
         ]
         if any(leg is None for leg in raw_legs):
             continue
         l1, l2 = raw_legs
         assert l1 is not None and l2 is not None
         if any(
-            (leg["_pool"], leg["_hour"]) not in clean_hours
+            (leg.venue, leg.pool, leg.hour) not in replay.pool_hour_events
             for leg in (l1, l2)
         ):
             continue
-        if l1["_order"][0] != l2["_order"][0] or l1["_hour"] != l2["_hour"]:
+        if l1.order[0] != l2.order[0] or l1.hour != l2.hour:
             continue
-        route_order = min(l1["_order"], l2["_order"])
+        route_order = min(l1.order, l2.order)
         a_in = str(route["src"]).lower()
         mid1 = str(route["vehicle"]).lower()
         b_out = str(route["tgt"]).lower()
@@ -386,23 +179,26 @@ def one_day(day: str) -> pd.DataFrame | None:
 
         # counterfactual: best DIRECT pool for the same endpoints at the same state.
         # Indexed by unordered pair, so this is a lookup instead of a scan.
-        cands = pair_index.get(frozenset((a_in, b_out)))
+        cands = replay.candidates(a_in, b_out)
         if not cands:
             continue                            # no direct pool existed: not a window
         best_direct = None
         best_direct_pool = None
-        t_route = int(l1["timestamp"])
+        t_route = l1.timestamp
         route_hour = t_route - (t_route % 3600)
-        for pid_d, hours in cands.items():
-            mm = meta[pid_d]
-            events = hours.get(route_hour)
-            st = reserve_state_before(events, route_order) if events else None
+        for venue_d, pid_d in cands:
+            mm = replay.meta[(venue_d, pid_d)]
+            st = replay.state_before(venue_d, pid_d, route_hour, route_order)
             if st is None:
                 continue
-            q = quote_one_hop(Pool(pid_d, mm[0], mm[1], st[0], st[1], mm[2]), a_in, amt_in)
+            q = quote_one_hop(
+                Pool(pid_d, mm.token0, mm.token1, st[0], st[1], mm.venue),
+                a_in,
+                amt_in,
+            )
             if q and (best_direct is None or q > best_direct):
                 best_direct = q
-                best_direct_pool = pid_d
+                best_direct_pool = (venue_d, pid_d)
         if best_direct is None:
             continue
         assert best_direct_pool is not None
@@ -410,7 +206,7 @@ def one_day(day: str) -> pd.DataFrame | None:
         sym, typ = classify(mid1)
         hop1_source = str(route["realised_hop1_source"])
         hop2_source = str(route["realised_hop2_source"])
-        direct_source = meta[best_direct_pool][2]
+        direct_source, direct_pool = best_direct_pool
         realised_venue_set = {hop1_source, hop2_source}
         target_price = prices[b_out][1]
         direct_output_usd = float(best_direct) * target_price
@@ -420,9 +216,9 @@ def one_day(day: str) -> pd.DataFrame | None:
         )
         direct_output_improvement_bps = cost_gap_bps(best_direct, out_amt)
         eth_price = prices.get(WETH)
-        hop1_support = state_support[(l1["_pool"], l1["_hour"])]
-        hop2_support = state_support[(l2["_pool"], l2["_hour"])]
-        direct_support = state_support[(best_direct_pool, route_hour)]
+        hop1_support = replay.state_support[(l1.venue, l1.pool, l1.hour)]
+        hop2_support = replay.state_support[(l2.venue, l2.pool, l2.hour)]
+        direct_support = replay.state_support[(direct_source, direct_pool, route_hour)]
         rows.append({
             "date": pd.to_datetime(day, format="%Y%m%d"),
             "route_id": route["route_id"], "tx": tx,
@@ -435,9 +231,9 @@ def one_day(day: str) -> pd.DataFrame | None:
             "direct_output_usd": direct_output_usd,
             "realised_to_input_value_ratio": realised_output_usd / usd,
             "eth_usd": eth_price[1] if eth_price else None,
-            "hop1_pool": l1["_pool"], "hop2_pool": l2["_pool"],
+            "hop1_pool": l1.pool, "hop2_pool": l2.pool,
             "hop1_source": hop1_source, "hop2_source": hop2_source,
-            "direct_pool": best_direct_pool, "direct_source": direct_source,
+            "direct_pool": direct_pool, "direct_source": direct_source,
             "hop1_prior_state_gap_hours": hop1_support[0],
             "hop2_prior_state_gap_hours": hop2_support[0],
             "direct_prior_state_gap_hours": direct_support[0],

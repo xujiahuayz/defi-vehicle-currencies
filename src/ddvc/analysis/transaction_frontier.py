@@ -1,22 +1,30 @@
-"""Route-level scoring against a strict pre-transaction tick-venue frontier."""
+"""Route-level scoring against a strict pre-transaction path frontier."""
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
+from functools import partial
 
+from ddvc.pricing.path_frontier import (
+    LegEnumerator,
+    LegQuote,
+    PathQuote,
+    best_leg,
+    best_public_path,
+    best_vehicle_path,
+)
 from ddvc.pricing.tick_frontier import (
     PoolIndex,
     TickQuoteIndexes,
-    best_tick_leg,
-    best_tick_public_path,
-    best_tick_vehicle_path,
     quote_tick_path,
+    tick_leg_quotes,
 )
 from ddvc.pricing.tick_state import TickPoolState
 
 
 @dataclass(frozen=True)
-class RealisedTickPath:
+class RealisedPath:
     token_in: str
     token_out: str
     vehicle: str
@@ -26,20 +34,21 @@ class RealisedTickPath:
     pools: tuple[str, str]
 
 
+RealisedTickPath = RealisedPath
+ChosenPathQuoter = Callable[[RealisedPath], PathQuote | None]
+
+
 def _gain_bps(frontier: float, realised: float) -> float:
     return 10_000.0 * max(0.0, frontier - realised) / realised
 
 
-def score_tick_frontier(
-    route: RealisedTickPath,
+def score_frontier(
+    route: RealisedPath,
     *,
     vehicles: tuple[str, ...],
-    pool_index: PoolIndex,
-    states_by_venue: dict[str, dict[str, TickPoolState]],
-    ticks_by_venue: dict[str, dict[str, dict[int, int]]],
-    max_price_impact: float,
+    quote_legs: LegEnumerator,
+    quote_chosen: ChosenPathQuoter,
     validation_tolerance: float,
-    quote_indexes_by_venue: TickQuoteIndexes | None = None,
 ) -> dict[str, object] | None:
     """Validate the chosen path, then score nested routing opportunity sets.
 
@@ -49,18 +58,7 @@ def score_tick_frontier(
     """
     if route.amount_in <= 0 or route.amount_out <= 0:
         return None
-    chosen = quote_tick_path(
-        route.token_in,
-        route.token_out,
-        route.vehicle,
-        route.amount_in,
-        venues=route.venues,
-        pools=route.pools,
-        states_by_venue=states_by_venue,
-        ticks_by_venue=ticks_by_venue,
-        max_price_impact=None,
-        quote_indexes_by_venue=quote_indexes_by_venue,
-    )
+    chosen = quote_chosen(route)
     if chosen is None:
         return None
     validation_error = (chosen.amount_out - route.amount_out) / route.amount_out
@@ -68,64 +66,49 @@ def score_tick_frontier(
         return None
 
     observed_venues = set(route.venues)
-    direct_observed = best_tick_leg(
+
+    def within_observed(
+        token_in: str, token_out: str, amount_in: float
+    ) -> Iterable[LegQuote]:
+        return [
+            quote
+            for quote in quote_legs(token_in, token_out, amount_in)
+            if quote.venue in observed_venues
+        ]
+
+    direct_observed = best_leg(
         route.token_in,
         route.token_out,
         route.amount_in,
-        pool_index=pool_index,
-        states_by_venue=states_by_venue,
-        ticks_by_venue=ticks_by_venue,
-        allowed_venues=observed_venues,
-        max_price_impact=max_price_impact,
-        quote_indexes_by_venue=quote_indexes_by_venue,
+        quote_legs=within_observed,
     )
-    direct_public = best_tick_leg(
+    direct_public = best_leg(
         route.token_in,
         route.token_out,
         route.amount_in,
-        pool_index=pool_index,
-        states_by_venue=states_by_venue,
-        ticks_by_venue=ticks_by_venue,
-        allowed_venues=None,
-        max_price_impact=max_price_impact,
-        quote_indexes_by_venue=quote_indexes_by_venue,
+        quote_legs=quote_legs,
     )
-    same_observed = best_tick_vehicle_path(
+    same_observed = best_vehicle_path(
         route.token_in,
         route.token_out,
         route.vehicle,
         route.amount_in,
-        pool_index=pool_index,
-        states_by_venue=states_by_venue,
-        ticks_by_venue=ticks_by_venue,
-        allowed_venues=observed_venues,
-        max_price_impact=max_price_impact,
-        quote_indexes_by_venue=quote_indexes_by_venue,
+        quote_legs=within_observed,
     )
-    same_public = best_tick_vehicle_path(
+    same_public = best_vehicle_path(
         route.token_in,
         route.token_out,
         route.vehicle,
         route.amount_in,
-        pool_index=pool_index,
-        states_by_venue=states_by_venue,
-        ticks_by_venue=ticks_by_venue,
-        allowed_venues=None,
-        max_price_impact=max_price_impact,
-        quote_indexes_by_venue=quote_indexes_by_venue,
+        quote_legs=quote_legs,
     )
     public_vehicles = tuple(sorted(set(vehicles) | {route.vehicle}))
-    public = best_tick_public_path(
+    public = best_public_path(
         route.token_in,
         route.token_out,
         public_vehicles,
         route.amount_in,
-        pool_index=pool_index,
-        states_by_venue=states_by_venue,
-        ticks_by_venue=ticks_by_venue,
-        allowed_venues=None,
-        max_price_impact=max_price_impact,
-        quote_indexes_by_venue=quote_indexes_by_venue,
+        quote_legs=quote_legs,
     )
 
     realised = route.amount_out
@@ -134,12 +117,12 @@ def score_tick_frontier(
     public_out = max(realised, public.amount_out if public else 0.0)
     if same_public_out + 1e-12 < same_observed_out or public_out + 1e-12 < same_public_out:
         raise AssertionError("nested transaction-state frontiers are not monotone")
-    same_observed_winner = (
-        same_observed if same_observed is not None and same_observed.amount_out > realised else None
-    )
-    same_public_winner = (
-        same_public if same_public is not None and same_public.amount_out > realised else None
-    )
+    same_observed_winner = same_observed if (
+        same_observed is not None and same_observed.amount_out > realised
+    ) else None
+    same_public_winner = same_public if (
+        same_public is not None and same_public.amount_out > realised
+    ) else None
     public_winner = public if public is not None and public.amount_out > realised else None
 
     return {
@@ -195,3 +178,48 @@ def score_tick_frontier(
             else "|".join(route.pools)
         ),
     }
+
+
+def score_tick_frontier(
+    route: RealisedPath,
+    *,
+    vehicles: tuple[str, ...],
+    pool_index: PoolIndex,
+    states_by_venue: dict[str, dict[str, TickPoolState]],
+    ticks_by_venue: dict[str, dict[str, dict[int, int]]],
+    max_price_impact: float,
+    validation_tolerance: float,
+    quote_indexes_by_venue: TickQuoteIndexes | None = None,
+) -> dict[str, object] | None:
+    """Compatibility adapter for a frontier containing only tick venues."""
+    quote_legs = partial(
+        tick_leg_quotes,
+        pool_index=pool_index,
+        states_by_venue=states_by_venue,
+        ticks_by_venue=ticks_by_venue,
+        allowed_venues=None,
+        max_price_impact=max_price_impact,
+        quote_indexes_by_venue=quote_indexes_by_venue,
+    )
+
+    def quote_chosen(chosen_route: RealisedPath) -> PathQuote | None:
+        return quote_tick_path(
+            chosen_route.token_in,
+            chosen_route.token_out,
+            chosen_route.vehicle,
+            chosen_route.amount_in,
+            venues=chosen_route.venues,
+            pools=chosen_route.pools,
+            states_by_venue=states_by_venue,
+            ticks_by_venue=ticks_by_venue,
+            max_price_impact=None,
+            quote_indexes_by_venue=quote_indexes_by_venue,
+        )
+
+    return score_frontier(
+        route,
+        vehicles=vehicles,
+        quote_legs=quote_legs,
+        quote_chosen=quote_chosen,
+        validation_tolerance=validation_tolerance,
+    )
