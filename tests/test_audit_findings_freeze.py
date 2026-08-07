@@ -115,7 +115,12 @@ status: complete
         payload = {
             "schema_version": 1,
             "locked_at": "2026-08-07",
-            "global_rules": {},
+            "global_rules": {
+                "vehicle_status": "binary intermediary-use indicator",
+                "vehicle_dominance": "continuous degree of intermediary use",
+                "cost_domination": "route loses to an available alternative",
+                "abstract_question": "what makes a vehicle currency dominant",
+            },
             "claims": [
                 claim,
                 {**claim, "id": "foundation", "status": "enter_fgh_foundation"},
@@ -131,6 +136,48 @@ status: complete
         payload["claims"][0].pop("falsifier")
         passed, detail = validate_specification_lock(payload)
         self.assertFalse(passed, detail)
+
+    def test_specification_lock_requires_semantic_distinctions(self) -> None:
+        import hashlib
+        import json
+
+        claim = {
+            "id": "lead",
+            "status": "enter_fgh_primary",
+            "role": "lead",
+            "estimand": "change",
+            "sample": "sample",
+            "unit": "day",
+            "dependent_variable": "share",
+            "transformation": "level",
+            "outlier_treatment": "none",
+            "inference": "HAC",
+            "mandatory_alternatives": {"weighting": ["count", "value"]},
+            "falsifier": "zero",
+            "admissible_interpretation": "change",
+            "forbidden_interpretation": "cause",
+            "inputs": ["input"],
+            "outputs": ["output"],
+        }
+        payload = {
+            "schema_version": 1,
+            "global_rules": {
+                "vehicle_status": "binary intermediary-use indicator",
+                "vehicle_dominance": "continuous degree of intermediary use",
+                "cost_domination": "route loses to an available alternative",
+            },
+            "claims": [
+                claim,
+                {**claim, "id": "foundation", "status": "enter_fgh_foundation"},
+                {**claim, "id": "mechanism", "status": "enter_fgh_mechanism"},
+            ],
+        }
+        payload["lock_hash"] = hashlib.sha256(
+            json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        passed, detail = validate_specification_lock(payload)
+        self.assertFalse(passed)
+        self.assertIn("abstract_question", detail)
 
     def test_route_measurement_invariants_reconcile_all_families(self) -> None:
         intermediation = {

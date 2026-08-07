@@ -16,7 +16,9 @@ The corpus is `literature/text/*.txt`, 53 papers over 1,974 pages. Every count b
 
 ---
 
-## 1. Vehicle extent
+## 1. Vehicle status and vehicle dominance
+
+**Correction after the 2026-08-07 semantic audit.** Vehicle status is binary: an asset is used as an intermediary on a route or it is not. Vehicle dominance is continuous: it is the degree to which an asset holds that role. The raw intermediary share measures dominance within vehicle use; the excess-use ratio measures normalized dominance after netting out endpoint demand. The paper's question is what makes a vehicle currency dominant, not what makes an asset a vehicle currency.
 
 **Current definition.** Two live measures. A volume share of intermediation episodes, and, since commit `d0429b7`, betweenness centrality by token and day in `data/processed/vehicle_centrality.parquet`, computed on an undirected daily graph with an edge wherever a direct pool joined two tokens carrying at least $1,000, with source-node sampling at k=150. `docs/finding-fragmentation-not-succession.md` makes betweenness the primary measure and the volume share the proxy.
 
@@ -56,7 +58,7 @@ So the committed sentence "By network centrality the role fragments and never ch
 
 Current-flow betweenness is the theoretically correct object for a routing problem and it changes nothing: same leader on both days, same qualitative fall, and a correlation with degree of +0.62 and +0.70, which is at or above shortest-path betweenness's. Closeness is degenerate on a scale-free graph and carries no concentration information at all. Eigenvector centrality is the one that moves, and it moves the headline: on 2026-03-06 the eigenvector top three are USDC 0.664, USDT 0.569, WETH 0.465, so the native asset is third and the role has changed hands. **The claim "fragments without changing hands" is a fact about which of four graph statistics was picked, and none of the four has corpus support.**
 
-**What the definition should become.** Vehicle extent is an asset's share of intermediate legs divided by its share of endpoint legs, per period, value-weighted. That is Gopinath and Stein's multiple, it is Krugman's excess over secure volume, and it is Somogyi's residual, computed the way this data allows. `data/unified/*.parquet` already carries `tin_role` and `tout_role` with values `source`, `intermediate` and `sink`, so no new reconstruction is needed. Computed now on `single` and `coherent` routes:
+**What the definition should become.** Vehicle dominance is the continuous intermediary-use share. Normalized vehicle dominance is an asset's share of intermediate legs divided by its share of endpoint legs, per period, value-weighted. That normalization is Gopinath and Stein's multiple, Krugman's excess over secure volume, and Somogyi's residual, computed the way this data allows. `data/unified/*.parquet` already carries `tin_role` and `tout_role` with values `source`, `intermediate` and `sink`, so no new reconstruction is needed. Computed now on `single` and `coherent` routes:
 
 | day | asset | intermediate share | endpoint share | **vehicle ratio** |
 |---|---|---|---|---|
@@ -79,21 +81,23 @@ The ratio also works as a data screen for free. On 2026-03-06 the token `0xbffa3
 
 ---
 
-## 2. Dominance
+## 2. Cost domination and route regret
+
+**Correction after the 2026-08-07 semantic audit.** This section had conflated currency dominance with route cost domination. Somogyi's triplet-period object is defined from vehicle-use volumes and fundamental demand, so it supports section 1's continuous dominance measure. It does not license calling a route's cost disadvantage `dominance`. The route-level binary is now `cost-dominated`; the signed continuous object is route regret or cost gap. These measures discipline mechanisms for vehicle dominance but do not define it.
 
 **Current definition.** A binary at the route level, the best direct route returning more than the best two-leg route at the same reconstructed state. Node I objected that a coefficient on a binary at an absorbed threshold is a shift in a CDF and not a cost, the objection was accepted in `docs/paper-spine.md` section 2.5, and the project moved to a continuous gap in basis points, currently reported as -25.3 bps with a standard error of 11.4.
 
-**What the literature does.** The corpus supports the binary form and the continuous reporting object together, and it contradicts the route-level unit.
+**What the literature does.** Krugman supports reporting both the binary direct-versus-indirect cost boundary and the continuous signed cost gap. That support is for route economics, not for naming either object vehicle dominance.
 
 Krugman 1980 page 519 states the binary as a parameter condition, "We have labeled the currencies so that t_ab and t_ca are both less than t_bc, and this insures the alphas will be used as a vehicle", and then splits the outcome into two regimes at exactly our threshold: partial indirect exchange when `(1-t_ab)(1-t_ca) < (1-t_bc)`, meaning indirect is more costly than direct, and total indirect exchange when the inequality reverses. Our binary is Krugman's regime boundary, so the form is right.
 
 Krugman also names the continuous object and it is ours. His `D`, which he calls the clockwisdom, is the deviation from triangular arbitrage, and in the partial-indirect equilibrium it equals `(1-t_bc)/((1-t_ab)(1-t_ca))`, which is the log gap between the direct route and the two-leg route. That is our basis-point gap with a different name.
 
-Somogyi 2026 is decisive on the unit and on the binary-continuous question together. Definition 1: "A triplet of currency pairs (i.e., $X, $Y, and XY) is dominated by the U.S. dollar if, within a triplet, (i) the trading volume in each of the two dollar currency pairs (i.e., $X and $Y) exceeds the trading volume in the respective nondollar pair (i.e., XY), and (ii) if actual trading volume in dollar pairs exceeds their fundamental trading demands." He then reports a continuous version and says why: his empirical measure in Equation (10) is in log units for "every currency pair triplet and point in time t rather than just the binary outcome of whether the dollar dominates or not (i.e., extensive margin)", and a positive figure implies dominance while a negative one disproves it. So the field's current practice is a binary definition and a signed continuous measure of the same object, both reported.
+Somogyi 2026 is decisive for section 1, not for the cost object here. Definition 1 classifies a triplet as dollar-dominated from the relative volumes of the two dollar pairs, the nondollar pair, and excess trading over fundamental demand. Equation (10) reports a continuous triplet-period measure of that same vehicle-use construct. It is evidence that currency dominance belongs on the volume/excess-use axis and evidence against the old conflation with a signed route-cost gap.
 
-**Do they match. The form matches, the unit does not.** Every corpus paper that measures dominance measures it at the level of a currency **triplet** over a period, meaning one non-vehicle pair plus its two vehicle legs. Somogyi's panel is 15 triplets by 2,586 days with triplet and time fixed effects. We measure at the level of an individual route, which is a single trade. That is a much finer unit, and it is the reason the matched sample is 1.9% of realised multi-leg routes on 71 pairs against 17,851, and the reason the raw matched mean of 41.3% had to be reweighted to 27.2% because the matched routes are 13 times larger at the median and inverted on candidate type.
+**Do they match. The cost form matches Krugman's boundary; the old name does not match the currency-use literature.** The route is the correct primitive for asking whether an executed path left output on the table at its own pre-trade state. A pair-candidate-period cell is the correct aggregation only for a persistence or transition estimand. The matched sample's 1.9% coverage and its inversion toward large stable-intermediated routes remain selection problems, but Somogyi's triplet unit does not solve them by relabeling the cost gap.
 
-**What the definition should become.** Keep the continuous gap. Change the unit of observation from the route to the **(pair, candidate vehicle, period)** triplet, which is Somogyi's unit, and define the period's dominance as the value-weighted mean signed gap across the routes in that cell. The route stays as the measurement primitive and stops being the unit of analysis.
+**What the definition should become.** Keep the route-level binary cost-domination indicator and continuous cost gap as measurement primitives. Aggregate them to **(pair, candidate vehicle, period)** only when the estimand concerns persistence or transition at that level. Somogyi's triplet-period unit motivates the dominance measure in section 1, not the aggregation of a cost gap.
 
 **Cost to switch, and why it is a benefit and not only a cost.** The aggregation is a groupby on a panel we already have. The gain is that the selection problem which forced the 27.2% reweighting attaches to the route level and mostly dissolves at the triplet level, because a triplet is either priced in a period or it is not, and coverage becomes a stated property of the panel instead of a composition bias inside it. The gain also includes comparability: a referee who knows Somogyi can read our number against his.
 
@@ -139,7 +143,7 @@ Mukhin 2022 supplies the succession object in the same shape. His Figure 3, "Tra
 
 **Do they match. No, and the HHI is not merely non-standard, it is not identified for this question.** A Herfindahl over aggregate vehicle shares cannot separate the two worlds it is being asked to separate. HHI = 0.5 over two vehicles is produced both by a world where every pair splits its routing evenly between two vehicles, which is fragmentation, and by a world where half the pairs route entirely through vehicle A and the other half entirely through vehicle B, which is two coexisting monopolies and is not fragmentation at all. The aggregate share vector is the same in both. Only a per-pair leader assignment tells them apart, and that is exactly what Somogyi's regime classification and Mukhin's switching order are.
 
-**What the definition should become.** Assign a regime label to every (pair, period) cell using the sign of the continuous dominance gap from section 2, taking three values: incumbent-dominant, multiplicity, challenger-dominant. Then report two statistics. The first is the count of cells in each regime by period, which is Somogyi's Figure 4 aggregated. The second is the switching order, meaning for the cells that changed leader, the distribution of switch dates by pair characteristic, which is Mukhin's Figure 3 made empirical. Succession is many cells switching leader with each cell staying concentrated. Fragmentation is cells moving into the multiplicity region and staying there.
+**What the definition should become.** Assign a regime label to every (pair, period) cell using vehicle-use shares and the normalized dominance conditions from section 1, taking three values: incumbent-dominant, multiplicity, challenger-dominant. Then report two statistics. The first is the count of cells in each regime by period, which is Somogyi's Figure 4 aggregated. The second is the switching order, meaning for the cells that changed leader, the distribution of switch dates by pair characteristic, which is Mukhin's Figure 3 made empirical. Succession is many cells switching leader with each cell staying concentrated. Fragmentation is cells moving into the multiplicity region and staying there.
 
 **Cost to switch.** The pair-period panel is the same object section 2 already needs, so this is one additional labelling step on top of it. The current `build_vehicle_concentration.py` HHI can remain as a one-line descriptive statistic and stops being the instrument that answers the question.
 
@@ -159,7 +163,7 @@ Krugman's unit is the payment `P_ij` between two parties, resolved either direct
 
 There is one gap the corpus exposes. Multi-leg is treated as equivalent to intermediated in our definition, but a two-leg route through an asset is a vehicle route only when a direct pool existed and was passed over. When no direct pool exists the two-leg route is the only route, which is Krugman's total indirect exchange, and it is a statement about the feasible set. Our current definition pools the forced case with the chosen case. Krugman keeps them apart at page 519 and calls them different equilibrium structures, and the distinction survives into `docs/finding-v1-forced-vehicle.md` under a different name without being carried into the route definition.
 
-**What the definition should become.** Keep the route primitive unchanged. Add a required binary attribute to every multi-leg route, `direct_pool_existed`, and never report an extent or dominance figure that pools the two values of it. Aggregate to the (pair, candidate, period) cell for analysis.
+**What the definition should become.** Keep the route primitive unchanged. Add a required binary attribute to every multi-leg route, `direct_pool_existed`, and never report a vehicle-dominance or cost-regret figure that pools the two values of it. Aggregate to the (pair, candidate, period) cell only for estimands defined at that level.
 
 **Cost to switch.** The attribute is a lookup against the same pool registry the counterfactual quoter already uses, so the cost is a join, not a rebuild. Reporting doubles in width for the affected tables.
 
@@ -176,8 +180,8 @@ Applied to every definition in this file, the test being whether the result coul
 | Betweenness centrality as vehicle extent | **Yes** | Rank correlation +0.958 with degree share, leader identical on 18 of 18 days, and the native type is defined by degree |
 | Volume share as vehicle extent | **Nearly** | Krugman's own model sets `t = F(V)` with `F' < 0` at page 520, so cost falling in volume is the model's assumption and regressing cost on a volume share recovers `F` |
 | Excess-use ratio as vehicle extent | No | Nets out endpoint demand, so an asset cannot score high by being widely listed; WETH's ratio falls below 1.0 by 2026 while its volume share stays second |
-| Continuous dominance gap | No | The gap can take either sign at any state and its sign is not implied by any type definition |
-| Binary dominance at route level | No, but underpowered | The threshold is a real regime boundary in Krugman, and the objection Node I raised is about the estimator and not the definition |
+| Continuous route-cost gap | No | The gap can take either sign at any state and its sign is not implied by any type definition |
+| Binary route cost domination | No, but underpowered | The threshold is a real regime boundary in Krugman, and the objection Node I raised is about the estimator and not the definition |
 | Asset types with backing crossed in | No | Backing regime is an issuance fact and is not derived from any routing quantity |
 | HHI plus leader identity for succession | Not tautological, not identified | Two different worlds produce the same share vector, so the statistic cannot answer the question it is assigned |
 | Round-trip exclusion | No | Corpus-supported as an MEV category and defined on the transaction and not on any outcome |
@@ -190,8 +194,8 @@ The pattern worth naming: **both of this project's tautologies came from definin
 
 | Object | Verdict | Change | Invalidates |
 |---|---|---|---|
-| Vehicle extent | **Replace** | Excess-use ratio, intermediate share over endpoint share, per period. Betweenness demoted to a robustness exhibit reported with its degree correlation | The `centrality` columns and the "never changes hands" sentence in `docs/finding-fragmentation-not-succession.md` |
-| Dominance | **Keep the form, change the unit** | Continuous signed gap, unit moves from the route to the (pair, candidate, period) cell | Re-bases 27.2%, 41.3% and 70.1% onto a different denominator |
+| Vehicle status and dominance | **Replace** | Status is binary intermediary use; dominance is continuous intermediary share; normalized dominance is the excess-use ratio. Betweenness is demoted to a robustness exhibit reported with its degree correlation | The `centrality` columns and the "never changes hands" sentence in `docs/finding-fragmentation-not-succession.md` |
+| Cost domination and regret | **Rename and separate** | Keep the route-level indicator and continuous signed cost gap; aggregate to pair-candidate-period only for a period-level persistence estimand | Invalidates using 27.2%, 41.3% or 70.1% as measures of vehicle dominance; they remain cost-friction diagnostics on their stated denominators |
 | Asset types | **Keep, extend** | Add dated `backing` regimes crossing the `stable` type and normalize backing shares within stablecoins | Withdraws the static backing split; preserves the top-level transition while narrowing its interpretation to increasingly fiat-reserve intermediation |
 | Succession against fragmentation | **Replace** | Per-cell three-region regime label plus switching order, after Somogyi and Mukhin | The identification argument in `docs/finding-fragmentation-not-succession.md` |
 | What counts as a route | **Keep, split** | Add `direct_pool_existed` and never pool across it | Splits the 2020 figures, where the architecture forced the vehicle |

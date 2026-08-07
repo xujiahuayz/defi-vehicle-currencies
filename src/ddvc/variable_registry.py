@@ -674,7 +674,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"types and exclude the residual unclassified-contract bucket."
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
-        used_for="Numerator of the primary vehicle-extent measure.",
+        used_for="Numerator of vehicle dominance and of its normalized excess-use measure.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -693,7 +693,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"on intermediation. Primary shares use the same prespecified currency types."
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
-        used_for="Fundamental endpoint-demand benchmark for vehicle extent.",
+        used_for="Fundamental endpoint-demand benchmark for normalized vehicle dominance.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -712,7 +712,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
         used_for=(
-            "Primary measure of vehicle extent; values above one indicate use beyond "
+            "Normalized vehicle-dominance measure; values above one indicate use beyond "
             "endpoint demand."
         ),
         in_observations_table=False,
@@ -732,7 +732,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"intermediary; one component-token appearance is counted once."
         ),
         source="data/processed/vehicle_excess_use_daily.parquet",
-        used_for="Count-weighted numerator robustness for vehicle extent.",
+        used_for="Count-weighted vehicle-dominance measure.",
         in_observations_table=False,
     ),
     VariableSpec(
@@ -813,7 +813,7 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
             r"candidate-vehicle volume."
         ),
         source="data/empirical/bridge_daily.parquet",
-        used_for="Pair-level dominance and robustness.",
+        used_for="Pair-level vehicle dominance and robustness.",
         include_in_summary=True,
         summary_panel="Vehicle-use measures, token-day",
         summary_unit="Percent",

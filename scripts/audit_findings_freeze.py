@@ -259,6 +259,16 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
         for claim in locked_claims
         if required - set(claim)
     ]
+    global_rules = payload.get("global_rules") or {}
+    required_semantic_rules = {
+        "vehicle_status",
+        "vehicle_dominance",
+        "cost_domination",
+        "abstract_question",
+    }
+    missing_semantic_rules = sorted(
+        key for key in required_semantic_rules if not str(global_rules.get(key) or "").strip()
+    )
     passed = bool(
         payload.get("schema_version") == 1
         and declared_hash == actual_hash
@@ -266,11 +276,13 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
         and len(ids) == len(set(ids))
         and len(locked_claims) >= 3
         and not incomplete
+        and not missing_semantic_rules
     )
     detail = (
         f"hash={'ok' if declared_hash == actual_hash else 'mismatch'}; "
         f"claims={len(claims)}; locked={len(locked_claims)}; "
-        f"incomplete={incomplete or 'none'}"
+        f"incomplete={incomplete or 'none'}; "
+        f"missing_semantic_rules={missing_semantic_rules or 'none'}"
     )
     return passed, detail
 
@@ -516,7 +528,7 @@ def main() -> int:
         ).df()
         con.close()
         record(
-            "vehicle extent full sample",
+            "vehicle dominance full sample",
             extent_days == 2_277 and verify(EXTENT).get("status") == "ok",
             f"days={extent_days:,}; provenance={verify(EXTENT).get('status')}",
         )

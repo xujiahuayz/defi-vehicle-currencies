@@ -1,13 +1,17 @@
 {
   "schema_version": 1,
   "locked_at": "2026-08-07",
-  "lock_hash": "d5607c64fc0dc7bfc1c10a1ee4874a9264579997f2a0e5192d9d422acb296583",
+  "lock_hash": "82f03045e376565a0dda4fc222b157a59c5c262e09453a0527248265485c146c",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
     "route_unit": "one directed economic input-to-output path keyed by transaction hash and component id",
     "intermediary_unit": "one non-endpoint asset occurrence on a topology-valid clean-leg route",
     "primary_vehicle_choice_unit": "one exact two-leg intermediary route, which has one vehicle and one vote",
+    "vehicle_status": "binary: an asset has vehicle status on a route if it is used as a non-endpoint intermediary",
+    "vehicle_dominance": "continuous: the degree of vehicle use, measured by intermediary share and normalized by endpoint-demand share as the excess-use ratio",
+    "cost_domination": "a route-level comparison in which an available alternative returns more at the same reconstructed state; never call this dominance without the cost qualifier",
+    "abstract_question": "what makes a vehicle currency dominant, not what makes an asset a vehicle currency",
     "round_trips": "canonical endpoint round trips are excluded from economic-route numerators and denominators",
     "primary_weighting": "episode count",
     "value_weighting": "secondary, with raw, within-2x, and within-20-percent support reported separately",
@@ -59,7 +63,7 @@
         ]
       },
       "falsifier": "the increase disappears within fixed opportunity, integration, complexity, or routing-search-efficiency cells",
-      "admissible_interpretation": "vehicle composition rotates toward stable assets; count dominance is not sustained before 2026-Q2 and the backing mechanism is not homogeneous",
+      "admissible_interpretation": "vehicle composition rotates toward stable assets; count leadership is not sustained before 2026-Q2 and the backing mechanism is not homogeneous",
       "forbidden_interpretation": "monotone stable transition, persistent replacement before it is observed, or aggregator causality",
       "inputs": [
         "data/processed/intermediation_by_type_daily.parquet",
