@@ -230,6 +230,12 @@
     "FlandreauJobst2009Empirics": [
       {
         "access": "authenticated",
+        "label": "Oxford Academic version-of-record page",
+        "url": "https://academic.oup.com/ej/article-abstract/119/537/643/5089548",
+        "version": "published"
+      },
+      {
+        "access": "authenticated",
         "label": "Wiley Online Library, UCL Shibboleth",
         "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1468-0297.2009.02219.x",
         "version": "published"

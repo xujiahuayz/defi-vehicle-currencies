@@ -14,9 +14,11 @@ import argparse
 import base64
 import contextlib
 import json
+import multiprocessing
 import os
 import re
 import signal
+import tempfile
 import time
 import urllib.parse
 from dataclasses import dataclass
@@ -31,13 +33,10 @@ from ddvc.paths import (  # noqa: E402
     LITERATURE_PDF_SOURCES,
     REPO_ROOT,
 )
+from ddvc.runtime import atomic_output
 
 
 PROFILE_DIR = LITERATURE_DIR / "auth" / "browser-profile"
-
-
-class SourceTimeout(RuntimeError):
-    pass
 
 
 @dataclass(frozen=True)
@@ -153,30 +152,11 @@ def is_pdf(data: bytes) -> bool:
     return data.startswith(b"%PDF")
 
 
-@contextlib.contextmanager
-def source_deadline(timeout_ms: int):
-    if timeout_ms <= 0:
-        yield
-        return
-
-    def raise_timeout(_signum, _frame):
-        raise SourceTimeout(f"source exceeded {timeout_ms}ms")
-
-    old_handler = signal.signal(signal.SIGALRM, raise_timeout)
-    signal.setitimer(signal.ITIMER_REAL, timeout_ms / 1000)
-    try:
-        yield
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, old_handler)
-
-
 def write_pdf(path: Path, data: bytes, overwrite: bool) -> str:
     if path.exists() and not overwrite:
         return "exists"
-    tmp = path.with_suffix(".pdf.tmp")
-    tmp.write_bytes(data)
-    tmp.replace(path)
+    with atomic_output(path) as temporary:
+        temporary.write_bytes(data)
     return f"{len(data)} bytes"
 
 
@@ -524,12 +504,34 @@ def browser_fetch_pdf(
     password: str | None,
 ) -> tuple[bytes | None, str]:
     responses: list[Any] = []
-    navigation_url = jstor_article_url(url) or sciencedirect_article_url(url) or url
 
     def remember_response(response: Any) -> None:
         responses.append(response)
 
     page.on("response", remember_response)
+    try:
+        return _browser_fetch_pdf(
+            page,
+            url,
+            timeout_ms,
+            username,
+            password,
+            responses,
+        )
+    finally:
+        with contextlib.suppress(Exception):
+            page.remove_listener("response", remember_response)
+
+
+def _browser_fetch_pdf(
+    page: Any,
+    url: str,
+    timeout_ms: int,
+    username: str | None,
+    password: str | None,
+    responses: list[Any],
+) -> tuple[bytes | None, str]:
+    navigation_url = jstor_article_url(url) or sciencedirect_article_url(url) or url
     try:
         with page.expect_download(timeout=5000) as download_info:
             response = goto_page(page, navigation_url, timeout_ms)
@@ -633,6 +635,151 @@ def browser_fetch_pdf(
     return None, f"{detail}; browser-fetch not-pdf; final={final_url}"
 
 
+def _source_worker(
+    result_path_text: str,
+    data_path_text: str,
+    log_path_text: str,
+    profile_text: str,
+    url: str,
+    timeout_ms: int,
+    username: str | None,
+    password: str | None,
+    headless: bool,
+    channel: str,
+) -> None:
+    """Run one browser source in an independently killable process."""
+    if hasattr(os, "setsid"):
+        os.setsid()
+    with Path(log_path_text).open("a", encoding="utf-8") as log_handle:
+        os.dup2(log_handle.fileno(), 1)
+        os.dup2(log_handle.fileno(), 2)
+        result_path = Path(result_path_text)
+        data_path = Path(data_path_text)
+        try:
+            sync_playwright, _ = import_playwright()
+            with sync_playwright() as playwright:
+                kwargs: dict[str, Any] = {
+                    "user_data_dir": profile_text,
+                    "headless": headless,
+                    "accept_downloads": True,
+                    "viewport": {"width": 1400, "height": 1000},
+                    "args": ["--disable-blink-features=AutomationControlled"],
+                }
+                if channel:
+                    kwargs["channel"] = channel
+                context = playwright.chromium.launch_persistent_context(**kwargs)
+                try:
+                    page = context.pages[0] if context.pages else context.new_page()
+                    data, detail = browser_fetch_pdf(
+                        page,
+                        url,
+                        timeout_ms,
+                        username,
+                        password,
+                    )
+                    if data:
+                        with atomic_output(data_path) as temporary:
+                            temporary.write_bytes(data)
+                    result = {"detail": detail, "has_data": bool(data)}
+                    with atomic_output(result_path) as temporary:
+                        temporary.write_text(json.dumps(result, sort_keys=True) + "\n", encoding="utf-8")
+                finally:
+                    context.close()
+        except BaseException as exc:  # noqa: BLE001 - returned to the supervising process.
+            if not result_path.exists():
+                result = {"detail": f"worker {type(exc).__name__}: {exc}", "has_data": False}
+                with atomic_output(result_path) as temporary:
+                    temporary.write_text(json.dumps(result, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def read_source_worker_result(
+    result_path: Path,
+    data_path: Path,
+) -> tuple[bytes | None, str] | None:
+    """Read a complete worker handoff; incomplete writes never become results."""
+    if not result_path.exists():
+        return None
+    try:
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return None, f"invalid source-worker result: {type(exc).__name__}: {exc}"
+    detail = str(result.get("detail") or "worker returned no PDF")
+    if not bool(result.get("has_data")):
+        return None, detail
+    try:
+        data = data_path.read_bytes()
+    except OSError as exc:
+        return None, f"source worker reported PDF without payload: {type(exc).__name__}: {exc}"
+    if not is_pdf(data):
+        return None, "source worker returned a non-PDF payload"
+    return data, detail
+
+
+def browser_fetch_with_deadline(
+    *,
+    profile: Path,
+    url: str,
+    timeout_ms: int,
+    source_timeout_ms: int,
+    username: str | None,
+    password: str | None,
+    headless: bool,
+    channel: str,
+) -> tuple[bytes | None, str]:
+    """Fetch one source behind an operating-system-enforced deadline."""
+    process_context = multiprocessing.get_context("spawn")
+    with tempfile.TemporaryDirectory(prefix="literature-source-") as directory:
+        root = Path(directory)
+        result_path = root / "result.json"
+        data_path = root / "payload.pdf"
+        log_path = root / "worker.log"
+        process = process_context.Process(
+            target=_source_worker,
+            args=(
+                str(result_path),
+                str(data_path),
+                str(log_path),
+                str(profile),
+                url,
+                timeout_ms,
+                username,
+                password,
+                headless,
+                channel,
+            ),
+        )
+        process.start()
+        process.join(None if source_timeout_ms <= 0 else source_timeout_ms / 1000)
+        timed_out = process.is_alive()
+        if timed_out:
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except (AttributeError, ProcessLookupError, PermissionError):
+                process.terminate()
+            process.join(5)
+            if process.is_alive():
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except (AttributeError, ProcessLookupError, PermissionError):
+                    process.kill()
+                process.join()
+        worker_result = read_source_worker_result(result_path, data_path)
+        if worker_result is not None:
+            data, detail = worker_result
+            if data is not None and timed_out:
+                return data, f"{detail}; worker cleanup exceeded {source_timeout_ms}ms and was terminated"
+            if not timed_out:
+                return data, detail
+        if timed_out:
+            return None, f"source exceeded {source_timeout_ms}ms and worker was terminated"
+        if worker_result is None:
+            worker_log = log_path.read_text(encoding="utf-8", errors="replace") if log_path.exists() else ""
+            tail = worker_log[-1000:].strip()
+            detail = f"source worker exited {process.exitcode} without a result"
+            return None, f"{detail}; log={tail}" if tail else detail
+        return worker_result
+
+
 def attempt_record(source: Source, detail: str, *, ok: bool = False) -> dict[str, Any]:
     return {
         "ok": ok,
@@ -666,7 +813,7 @@ def main() -> int:
     username = os.environ.get(args.username_env)
     password = os.environ.get(args.password_env)
 
-    sync_playwright, _ = import_playwright()
+    import_playwright()
     entries = parse_bibtex(args.bib)
     openathens_domain, source_map = load_sources(args.sources)
     keys = list(entries)
@@ -680,84 +827,69 @@ def main() -> int:
     args.profile.mkdir(parents=True, exist_ok=True)
 
     records: list[dict[str, Any]] = []
-    with sync_playwright() as p:
-        kwargs: dict[str, Any] = {
-            "user_data_dir": str(args.profile),
-            "headless": args.headless,
-            "accept_downloads": True,
-            "viewport": {"width": 1400, "height": 1000},
-            "args": ["--disable-blink-features=AutomationControlled"],
-        }
-        if args.channel:
-            kwargs["channel"] = args.channel
-        ctx = p.chromium.launch_persistent_context(**kwargs)
-        try:
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
-            for key in keys:
-                entry = entries[key]
-                committed = source_map.get(key, [])
-                sources = [
-                    *ordered_sources(with_openathens(committed, openathens_domain), args.prefer),
-                    *(
-                        []
-                        if committed
-                        else ordered_sources(with_openathens(default_sources_from_bib(entry), openathens_domain), args.prefer)
-                    ),
-                ]
-                attempts: list[dict[str, Any]] = []
-                for index, source in enumerate(sources, start=1):
-                    target = args.out / safe_filename(entry, source)
-                    existing = existing_files_for_key(args.out, key)
-                    if existing and not should_replace_existing(existing, source, args.overwrite):
-                        existing_file = existing[0]
-                        remove_weaker_versions(existing, file_version(existing_file), existing_file)
-                        print(f"ok {key}: {existing_file.relative_to(REPO_ROOT)} ({source.version}, existing)")
-                        records.append(
-                            {
-                                "key": key,
-                                "status": "ok",
-                                "file": str(existing_file.relative_to(REPO_ROOT)),
-                                "version": "existing",
-                                "access": source.access,
-                                "url": source.url,
-                                "attempts": [attempt_record(source, "exists", ok=True)],
-                            }
-                        )
-                        break
-                    print(f"try {key} [{index}/{len(sources)}] {source.version}: {source.url}", flush=True)
-                    try:
-                        with source_deadline(args.source_timeout_ms):
-                            data, detail = browser_fetch_pdf(page, source.url, args.timeout_ms, username, password)
-                    except SourceTimeout as exc:
-                        data, detail = None, str(exc)
-                        try:
-                            page.close()
-                        except Exception:
-                            pass
-                        page = ctx.new_page()
-                    if data:
-                        remove_weaker_versions(existing, source.version, target)
-                        saved = write_pdf(target, data, args.overwrite)
-                        print(f"ok {key}: {target.relative_to(REPO_ROOT)} ({source.version}, {saved})")
-                        records.append(
-                            {
-                                "key": key,
-                                "status": "ok",
-                                "file": str(target.relative_to(REPO_ROOT)),
-                                "version": source.version,
-                                "access": source.access,
-                                "url": source.url,
-                                "attempts": [*attempts, attempt_record(source, detail, ok=True)],
-                            }
-                        )
-                        break
-                    attempts.append(attempt_record(source, detail))
-                    print(f"miss {key} [{index}/{len(sources)}] {source.version}: {detail}", flush=True)
-                    time.sleep(0.5)
-                else:
-                    records.append({"key": key, "status": "miss", "attempts": attempts, "sources": [source.__dict__ for source in sources]})
-        finally:
-            ctx.close()
+    for key in keys:
+        entry = entries[key]
+        committed = source_map.get(key, [])
+        sources = [
+            *ordered_sources(with_openathens(committed, openathens_domain), args.prefer),
+            *(
+                []
+                if committed
+                else ordered_sources(with_openathens(default_sources_from_bib(entry), openathens_domain), args.prefer)
+            ),
+        ]
+        attempts: list[dict[str, Any]] = []
+        for index, source in enumerate(sources, start=1):
+            target = args.out / safe_filename(entry, source)
+            existing = existing_files_for_key(args.out, key)
+            if existing and not should_replace_existing(existing, source, args.overwrite):
+                existing_file = existing[0]
+                remove_weaker_versions(existing, file_version(existing_file), existing_file)
+                print(f"ok {key}: {existing_file.relative_to(REPO_ROOT)} ({source.version}, existing)")
+                records.append(
+                    {
+                        "key": key,
+                        "status": "ok",
+                        "file": str(existing_file.relative_to(REPO_ROOT)),
+                        "version": "existing",
+                        "access": source.access,
+                        "url": source.url,
+                        "attempts": [attempt_record(source, "exists", ok=True)],
+                    }
+                )
+                break
+            print(f"try {key} [{index}/{len(sources)}] {source.version}: {source.url}", flush=True)
+            data, detail = browser_fetch_with_deadline(
+                profile=args.profile,
+                url=source.url,
+                timeout_ms=args.timeout_ms,
+                source_timeout_ms=args.source_timeout_ms,
+                username=username,
+                password=password,
+                headless=args.headless,
+                channel=args.channel,
+            )
+            if data:
+                remove_weaker_versions(existing, source.version, target)
+                saved = write_pdf(target, data, args.overwrite)
+                print(f"ok {key}: {target.relative_to(REPO_ROOT)} ({source.version}, {saved})")
+                records.append(
+                    {
+                        "key": key,
+                        "status": "ok",
+                        "file": str(target.relative_to(REPO_ROOT)),
+                        "version": source.version,
+                        "access": source.access,
+                        "url": source.url,
+                        "attempts": [*attempts, attempt_record(source, detail, ok=True)],
+                    }
+                )
+                break
+            attempts.append(attempt_record(source, detail))
+            print(f"miss {key} [{index}/{len(sources)}] {source.version}: {detail}", flush=True)
+            time.sleep(0.5)
+        else:
+            records.append({"key": key, "status": "miss", "attempts": attempts, "sources": [source.__dict__ for source in sources]})
 
     args.manifest.write_text(json.dumps(records, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     ok_count = sum(1 for record in records if record["status"] == "ok")
