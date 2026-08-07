@@ -1,7 +1,7 @@
 {
  "argv": [],
  "artefact": "data/processed/counterfactual_dominance.parquet",
- "code_fingerprint": "9898d62830bc6b4d375dd57836d689355cd70682ce2bc1fc8fc24d95ebd38f1d",
+ "code_fingerprint": "e5f632bd1baa5cd5146a70154746e21afe4e33ca58798193fbe869f51c72cb83",
  "code_sources": [
   "scripts/build_counterfactual_dominance.py",
   "src/ddvc/asset_types.py",
@@ -14,10 +14,10 @@
   "src/ddvc/route_roles.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-06T23:10:23+00:00",
+ "created_at": "2026-08-07T00:22:34+00:00",
  "git": {
-  "branch": "glotl/workflow-status",
-  "commit": "62252512521c28d5644ee1e6fd4386a1700efdb9",
+  "branch": "glotl/fgh-evidence",
+  "commit": "782be28712c68a2a5d47b0ca7557055e021ff6c6",
   "dirty": false,
   "dirty_generated_files": [],
   "dirty_tracked_files": [],
