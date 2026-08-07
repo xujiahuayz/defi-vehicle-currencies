@@ -680,6 +680,8 @@ def dominance_level_summary(frame: pd.DataFrame) -> pd.DataFrame:
                 / 10_000
             )
             dominated_savings = savings.loc[dominated]
+            top_one_percent_count = max(1, (len(dominated_savings) + 99) // 100)
+            aggregate_savings = float(savings.sum())
             rows.append(
                 {
                     "scope": "pooled_level",
@@ -701,7 +703,19 @@ def dominance_level_summary(frame: pd.DataFrame) -> pd.DataFrame:
                     "median_savings_usd_if_dominated": float(
                         dominated_savings.median()
                     ),
-                    "aggregate_savings_usd_sampled_dates": float(savings.sum()),
+                    "aggregate_savings_usd_sampled_dates": aggregate_savings,
+                    "top_1pct_savings_share_pct": (
+                        100
+                        * float(dominated_savings.nlargest(top_one_percent_count).sum())
+                        / aggregate_savings
+                        if aggregate_savings
+                        else None
+                    ),
+                    "pct_dominated_routes_below_1000_usd_notional": (
+                        100 * float(sample.loc[dominated, "usd"].lt(1_000).mean())
+                        if dominated.any()
+                        else None
+                    ),
                 }
             )
             daily_incidence = (

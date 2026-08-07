@@ -41,6 +41,10 @@ class CounterfactualDominanceTests(unittest.TestCase):
         self.assertEqual(gross["dominated_routes"], 2)
         self.assertAlmostEqual(gross["pct_dominated"], 50.0)
         self.assertAlmostEqual(gross["aggregate_savings_usd_sampled_dates"], 30.0)
+        self.assertAlmostEqual(gross["top_1pct_savings_share_pct"], 2 / 3 * 100)
+        self.assertAlmostEqual(
+            gross["pct_dominated_routes_below_1000_usd_notional"], 0.0
+        )
         self.assertIn("confidence_interval_95_lower_pct", summary.columns)
 
     def test_gas_adjustment_uses_route_cells_and_reports_iqr_sensitivity(self) -> None:
