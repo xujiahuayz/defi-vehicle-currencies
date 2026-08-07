@@ -11,6 +11,7 @@ from ddvc.fetch.raw import (
     block_value,
     merge_stream_metadata,
     merge_v4_statics,
+    source_event_payload,
     timestamp_value,
     transaction_id,
     v4_pool_quote_supported,
@@ -43,6 +44,13 @@ class RawMetaMergeTests(unittest.TestCase):
         self.assertEqual(transaction_id(scalar), "0xdef")
         self.assertIsNone(block_value(scalar))
         self.assertEqual(timestamp_value(scalar), 789)
+
+    def test_source_event_payload_excludes_only_provider_entity_id(self) -> None:
+        row = {"id": "provider-index", "transaction": "0xabc", "logIndex": "7"}
+        self.assertEqual(
+            source_event_payload(row),
+            {"transaction": "0xabc", "logIndex": "7"},
+        )
 
     def test_v4_static_merge_changes_only_declared_quote_statics(self) -> None:
         primary = {

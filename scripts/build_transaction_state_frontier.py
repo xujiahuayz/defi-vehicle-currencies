@@ -87,6 +87,7 @@ CODE_SOURCES = [
     "src/ddvc/pricing/v2_replay.py",
     "src/ddvc/cpquote.py",
     "src/ddvc/asset_types.py",
+    "src/ddvc/fetch/raw.py",
     "src/ddvc/realised.py",
     "src/ddvc/prices.py",
     "src/ddvc/route_roles.py",

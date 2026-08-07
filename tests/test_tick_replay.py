@@ -91,6 +91,34 @@ class TickReplayTests(unittest.TestCase):
         self.assertEqual([event.order for event in events], [(100, 4), (100, 9)])
         self.assertEqual([event.venue for event in events], ["uniswap_v4", "uniswap_v3"])
 
+    def test_day_loader_deduplicates_source_ids_for_one_chain_event(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "uniswap_v4" / "uniswap_v4_swaps_20250101.jsonl.gz"
+            path.parent.mkdir(parents=True)
+            rows = [
+                {**v4_swap(), "id": "0xabc#1"},
+                {**v4_swap(), "id": "0xabc#2"},
+            ]
+            with gzip.open(path, "wt") as handle:
+                for row in rows:
+                    handle.write(json.dumps(row) + "\n")
+            events = load_tick_day_events(root, "20250101")
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].row["id"], "0xabc#1")
+
+    def test_day_loader_rejects_conflicting_rows_for_one_chain_order(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "uniswap_v4" / "uniswap_v4_swaps_20250101.jsonl.gz"
+            path.parent.mkdir(parents=True)
+            rows = [v4_swap(), {**v4_swap(), "amount0": "1"}]
+            with gzip.open(path, "wt") as handle:
+                for row in rows:
+                    handle.write(json.dumps(row) + "\n")
+            with self.assertRaisesRegex(ValueError, "conflicting tick events"):
+                load_tick_day_events(root, "20250101")
+
     def test_liquidity_change_invalidates_prepared_quote_index(self) -> None:
         state = TickReplayState()
         ticks = {-10: 1000, 10: -1000}

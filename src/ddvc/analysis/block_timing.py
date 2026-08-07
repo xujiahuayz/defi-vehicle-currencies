@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
+from ddvc.fetch.raw import source_event_payload
 from ddvc.pricing.v3pools import resolve_decimals
 
 Q96 = 1 << 96
@@ -78,9 +79,7 @@ def load_v3_day(path: Path) -> V3DayState:
                 continue
             event_key = (transaction_id, log_index)
             if event_key in raw_events:
-                prior = {key: value for key, value in raw_events[event_key].items() if key != "id"}
-                current = {key: value for key, value in row.items() if key != "id"}
-                if current == prior:
+                if source_event_payload(row) == source_event_payload(raw_events[event_key]):
                     continue
                 raise ValueError(f"conflicting V3 transaction-log event: {event_key}")
             raw_events[event_key] = row

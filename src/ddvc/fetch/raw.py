@@ -170,6 +170,11 @@ def transaction_id(row: dict[str, Any]) -> str | None:
     return str(value) if value else None
 
 
+def source_event_payload(row: dict[str, Any]) -> dict[str, Any]:
+    """Return chain-event content without the provider's mutable entity ID."""
+    return {key: value for key, value in row.items() if key != "id"}
+
+
 def v4_statics_complete(row: dict[str, Any]) -> bool:
     pool = row.get("pool") or {}
     return (

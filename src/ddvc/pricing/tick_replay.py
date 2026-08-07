@@ -7,7 +7,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ddvc.fetch.raw import timestamp_value
+from ddvc.fetch.raw import source_event_payload, timestamp_value, transaction_id
 from ddvc.pricing.tick_frontier import PoolIndex, TickQuoteIndexes
 from ddvc.pricing.tick_state import TickPoolState, absorb_swap_state, apply_tick_change
 
@@ -65,6 +65,19 @@ def _load_stream(
     return events
 
 
+def _same_chain_event(left: TickReplayEvent, right: TickReplayEvent) -> bool:
+    """Identify duplicate source entities for one on-chain log."""
+    if (
+        left.venue != right.venue
+        or left.kind != right.kind
+        or left.sign != right.sign
+        or transaction_id(left.row) is None
+        or transaction_id(left.row) != transaction_id(right.row)
+    ):
+        return False
+    return source_event_payload(left.row) == source_event_payload(right.row)
+
+
 def load_tick_day_events(
     raw_root: Path,
     day: str,
@@ -104,7 +117,7 @@ def load_tick_day_events(
                 and prior.kind == event.kind
                 and prior.sign == event.sign
                 and prior.row == event.row
-            ):
+            ) or _same_chain_event(prior, event):
                 continue
             raise ValueError(f"conflicting tick events at timestamp-log {event.order}")
         unique.append(event)
