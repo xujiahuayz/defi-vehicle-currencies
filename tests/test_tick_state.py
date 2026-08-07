@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
 from ddvc.pricing.tick_state import (
+    TickPoolState,
     absorb_swap_state,
     apply_tick_change,
     iter_pretrade_states,
@@ -55,6 +57,64 @@ class TickStateTests(unittest.TestCase):
         states = list(iter_pretrade_states(swaps, changes, {0: 10}))
         self.assertEqual(states[0][2], {0: 15, 10: -5})
         self.assertEqual(states[1][2], {0: 12, 10: -2})
+
+    def test_resolved_v3_pool_reuses_static_metadata(self) -> None:
+        prior = TickPoolState(
+            pool="pool",
+            token0="0xa",
+            token1="0xb",
+            sym0="A",
+            sym1="B",
+            dec0=18,
+            dec1=6,
+            sqrt_price_x96=1 << 96,
+            tick=0,
+            fee_pips=500,
+            tick_spacing=10,
+            block=1,
+            log_index=1,
+        )
+        record = row(
+            2,
+            1,
+            sqrtPriceX96=str(2 << 96),
+            tick="10",
+            pool={
+                "id": "pool",
+                "token0": {"id": "0xa", "symbol": "changed"},
+                "token1": {"id": "0xb", "symbol": "changed"},
+            },
+        )
+        state = {"pool": prior}
+        with patch("ddvc.pricing.tick_state.resolve_decimals") as resolve:
+            absorb_swap_state("uniswap_v3", record, state, swap_samples={})
+        resolve.assert_not_called()
+        self.assertEqual(state["pool"].dec1, 6)
+        self.assertEqual(state["pool"].fee_pips, 500)
+        self.assertEqual(state["pool"].sym0, "A")
+        self.assertEqual((state["pool"].block, state["pool"].tick), (2, 10))
+
+    def test_existing_v4_pool_rejects_static_drift(self) -> None:
+        record = row(
+            5,
+            7,
+            sqrtPriceX96=str(1 << 96),
+            tick="0",
+            pool={
+                "id": "pool",
+                "feeTier": "9000",
+                "tickSpacing": "180",
+                "hooks": "0x0000000000000000000000000000000000000000",
+                "token0": {"id": "0xa", "symbol": "A", "decimals": "18"},
+                "token1": {"id": "0xb", "symbol": "B", "decimals": "18"},
+            },
+        )
+        state = {}
+        absorb_swap_state("uniswap_v4", record, state, swap_samples={})
+        record["transaction"]["blockNumber"] = "6"
+        record["pool"]["tickSpacing"] = "60"
+        with self.assertRaisesRegex(ValueError, "statics changed"):
+            absorb_swap_state("uniswap_v4", record, state, swap_samples={})
 
     def test_zeroed_boundary_ticks_are_removed(self) -> None:
         ticks = {0: 5, 10: -5}

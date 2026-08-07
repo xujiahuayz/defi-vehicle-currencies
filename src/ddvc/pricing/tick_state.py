@@ -96,7 +96,33 @@ def absorb_swap_state(
     old = state_by_pool.get(pool_id)
     if old is not None and (block, log_index) <= (old.block, old.log_index):
         return
-    if venue == "uniswap_v4":
+    if old is not None:
+        if (canonical0, canonical1) != (old.token0, old.token1):
+            raise ValueError(f"concentrated-liquidity pool token identity changed: {pool_id}")
+        if venue == "uniswap_v4":
+            if not v4_pool_quote_supported(row):
+                return
+            try:
+                observed_statics = (
+                    int(pool.get("feeTier")),
+                    int(pool.get("tickSpacing")),
+                    int(token0.get("decimals")),
+                    int(token1.get("decimals")),
+                )
+            except (TypeError, ValueError):
+                return
+            expected_statics = (
+                old.fee_pips,
+                old.tick_spacing,
+                old.dec0,
+                old.dec1,
+            )
+            if observed_statics != expected_statics:
+                raise ValueError(f"Uniswap v4 pool statics changed: {pool_id}")
+        fee_pips = old.fee_pips
+        tick_spacing = old.tick_spacing
+        decimals = (old.dec0, old.dec1)
+    elif venue == "uniswap_v4":
         if not v4_pool_quote_supported(row):
             return
         try:
@@ -120,8 +146,8 @@ def absorb_swap_state(
         pool=pool_id,
         token0=canonical0,
         token1=canonical1,
-        sym0=str(token0.get("symbol", "")),
-        sym1=str(token1.get("symbol", "")),
+        sym0=old.sym0 if old is not None else str(token0.get("symbol", "")),
+        sym1=old.sym1 if old is not None else str(token1.get("symbol", "")),
         dec0=decimals[0],
         dec1=decimals[1],
         sqrt_price_x96=sqrt_price_x96,
