@@ -45,7 +45,7 @@ class TickReplayTests(unittest.TestCase):
         self.assertEqual(timestamp_order(row), (123, 7))
 
     def test_state_applies_liquidity_before_indexing_swap(self) -> None:
-        state = TickReplayState()
+        state = TickReplayState(token_decimals={"0xa": 18, "0xb": 18})
         change = {
             "pool": {"id": "pool"},
             "tickLower": "-10",
@@ -56,6 +56,21 @@ class TickReplayTests(unittest.TestCase):
         state.apply(TickReplayEvent((100, 4), "uniswap_v4", "swap", v4_swap()))
         self.assertEqual(state.ticks_by_venue["uniswap_v4"]["pool"], {-10: 1000, 10: -1000})
         self.assertEqual(state.pool_index[frozenset(("0xa", "0xb"))], [("uniswap_v4", "pool")])
+
+    def test_quarantined_pool_releases_tick_and_state_indexes(self) -> None:
+        state = TickReplayState(token_decimals={"0xa": 0, "0xb": 18})
+        change = {
+            "pool": {"id": "pool"},
+            "tickLower": "-10",
+            "tickUpper": "10",
+            "amount": "1000",
+        }
+        state.apply(TickReplayEvent((100, 3), "uniswap_v4", "liquidity", change, 1))
+        state.apply(TickReplayEvent((100, 4), "uniswap_v4", "swap", v4_swap()))
+        self.assertEqual(state.quarantined_pools, {"uniswap_v4": {"pool"}})
+        self.assertEqual(state.ticks_by_venue["uniswap_v4"], {})
+        self.assertEqual(state.states_by_venue["uniswap_v4"], {})
+        self.assertEqual(state.pool_index, {})
 
     def test_day_loader_interleaves_venues_by_timestamp_and_log(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

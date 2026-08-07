@@ -77,6 +77,7 @@ ROOT = REPO_ROOT
 # identity. Capped per pool, so this stays small next to the swap stream itself.
 _SWAP_SAMPLE: dict[str, list[dict]] = {}
 _TOKEN_DECIMALS: dict[str, int] = {}
+_QUARANTINED_TICK_POOLS: dict[str, set[str]] = {}
 TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 
 
@@ -439,7 +440,7 @@ def _apply_tick_liquidity_events(
             for line in fh:
                 rec = json.loads(line)
                 pool = str((rec.get("pool") or {}).get("id", "")).lower()
-                if not pool:
+                if not pool or pool in _QUARANTINED_TICK_POOLS.get(venue, set()):
                     continue
                 ticks = tick_net_by_pool.setdefault(pool, {})
                 apply_tick_change(ticks, rec, sign=sign)
@@ -456,6 +457,7 @@ def _absorb_swap_state(venue: str, rec: dict,
         state_by_pool,
         swap_samples=_SWAP_SAMPLE,
         token_decimals=_TOKEN_DECIMALS,
+        quarantined_pools=_QUARANTINED_TICK_POOLS,
         unify_wrapped=UNIFY_WRAPPED,
     )
 
@@ -553,12 +555,15 @@ def apply_hour_events(venue: str, bucket: dict[str, list],
     """Advance one tick venue's liquidity index and price state by a single hour."""
     for sign, rec in bucket["liq"]:
         pool = str((rec.get("pool") or {}).get("id", "")).lower()
-        if not pool:
+        if not pool or pool in _QUARANTINED_TICK_POOLS.get(venue, set()):
             continue
         ticks = tick_net_by_pool.setdefault(pool, {})
         apply_tick_change(ticks, rec, sign=sign)
     for rec in bucket["swaps"]:
         _absorb_swap_state(venue, rec, state_by_pool)
+    for pool in _QUARANTINED_TICK_POOLS.get(venue, set()):
+        tick_net_by_pool.pop(pool, None)
+        state_by_pool.pop(pool, None)
 
 
 def advance_tick_venues(
@@ -577,6 +582,9 @@ def advance_tick_venues(
             continue
         _apply_tick_liquidity_events(venue, stamp, ticks_by_venue.setdefault(venue, {}))
         _update_tick_swap_state(venue, stamp, state_by_venue.setdefault(venue, {}))
+        for pool in _QUARANTINED_TICK_POOLS.get(venue, set()):
+            ticks_by_venue[venue].pop(pool, None)
+            state_by_venue[venue].pop(pool, None)
 
 
 def _load_tick_pools_from_state(
@@ -587,6 +595,8 @@ def _load_tick_pools_from_state(
 ) -> dict[frozenset[str], list[Pool]]:
     pools: dict[frozenset[str], list[Pool]] = defaultdict(list)
     for pool_id, st in state_by_pool.items():
+        if pool_id in _QUARANTINED_TICK_POOLS.get(venue, set()):
+            continue
         key = frozenset((st.token0, st.token1))
         if required_pairs is not None and key not in required_pairs:
             continue

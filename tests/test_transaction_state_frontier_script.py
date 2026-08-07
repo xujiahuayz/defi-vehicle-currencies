@@ -9,6 +9,8 @@ import pandas as pd
 from ddvc.asset_types import NATIVE_ETH, WETH
 from scripts.build_transaction_state_frontier import (
     candidate_vehicles,
+    checkpoint_day,
+    latest_replay_checkpoint,
     load_replay_checkpoint,
     save_replay_checkpoint,
     select_days,
@@ -67,6 +69,15 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             save_replay_checkpoint(path, replay)
             restored = load_replay_checkpoint(path)
         self.assertEqual(restored.ticks_by_venue, replay.ticks_by_venue)
+
+    def test_latest_checkpoint_never_jumps_past_target(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            for day in ("20220101", "20230101", "20240101"):
+                (root / f"pre_{day}.pkl").touch()
+            selected = latest_replay_checkpoint(root, "20230615")
+        assert selected is not None
+        self.assertEqual(checkpoint_day(selected), "20230101")
 
 
 if __name__ == "__main__":

@@ -122,11 +122,12 @@ class TickReplayState:
     quote_indexes_by_venue: TickQuoteIndexes = field(default_factory=dict)
     swap_samples: dict[str, list[dict]] = field(default_factory=dict)
     token_decimals: dict[str, int] = field(default_factory=dict)
+    quarantined_pools: dict[str, set[str]] = field(default_factory=dict)
 
     def apply_liquidity(self, venue: str, row: dict, *, sign: int) -> None:
         ticks = self.ticks_by_venue.setdefault(venue, {})
         pool = str((row.get("pool") or {}).get("id") or "").lower()
-        if not pool:
+        if not pool or pool in self.quarantined_pools.get(venue, set()):
             return
         apply_tick_change(ticks.setdefault(pool, {}), row, sign=sign)
         self.quote_indexes_by_venue.setdefault(venue, {}).pop(pool, None)
@@ -143,8 +144,22 @@ class TickReplayState:
             states,
             swap_samples=self.swap_samples,
             token_decimals=self.token_decimals,
+            quarantined_pools=self.quarantined_pools,
             unify_wrapped=self.unify_wrapped,
         )
+        if pool in self.quarantined_pools.get(venue, set()):
+            removed = states.pop(pool, None) or prior
+            self.ticks_by_venue.setdefault(venue, {}).pop(pool, None)
+            self.quote_indexes_by_venue.setdefault(venue, {}).pop(pool, None)
+            self.swap_samples.pop(pool, None)
+            if removed is not None:
+                key = frozenset((removed.token0, removed.token1))
+                candidates = self.pool_index.get(key, [])
+                if (venue, pool) in candidates:
+                    candidates.remove((venue, pool))
+                if not candidates:
+                    self.pool_index.pop(key, None)
+            return
         current = states.get(pool)
         if prior is None and current is not None:
             key = frozenset((current.token0, current.token1))

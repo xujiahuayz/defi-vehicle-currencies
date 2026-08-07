@@ -56,6 +56,8 @@ REPLAY_START = "20210504"
 TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 MIN_INPUT_USD = 100.0
 VALIDATION_TOLERANCE = 0.01
+CHECKPOINT_INTERVAL_DAYS = 180
+CHECKPOINT_GLOB = "pre_" + "[0-9]" * 8 + ".pkl"
 PILOT_DAYS = ("20220615", "20240615", "20250615", "20260615")
 CODE_SOURCES = [
     "scripts/build_transaction_state_frontier.py",
@@ -106,6 +108,22 @@ def load_replay_checkpoint(path: Path) -> TickReplayState:
     if not isinstance(replay, TickReplayState):
         raise TypeError(f"invalid tick replay checkpoint: {path}")
     return replay
+
+
+def checkpoint_day(path: Path) -> str:
+    name = path.stem
+    if not name.startswith("pre_") or len(name) != 12 or not name[4:].isdigit():
+        raise ValueError(f"invalid replay checkpoint name: {path.name}")
+    return name[4:]
+
+
+def latest_replay_checkpoint(directory: Path, target_day: str) -> Path | None:
+    candidates = [
+        path
+        for path in directory.glob(CHECKPOINT_GLOB)
+        if checkpoint_day(path) <= target_day
+    ]
+    return max(candidates, key=checkpoint_day) if candidates else None
 
 
 def available_days() -> list[str]:
@@ -248,6 +266,7 @@ def load_target_routes(
         "scored_routes": 0,
         "chosen_state_unavailable": 0,
         "chosen_output_mismatch": 0,
+        "quarantined_tick_pools": 0,
     }
     return targets, support
 
@@ -345,6 +364,9 @@ def score_day(
             cursor += 1
     replay.apply_all(events[cursor:])
     support["scored_routes"] = len(rows)
+    support["quarantined_tick_pools"] = sum(
+        len(pools) for pools in replay.quarantined_pools.values()
+    )
     return pd.DataFrame(rows), support
 
 
@@ -431,11 +453,11 @@ def main() -> int:
         / "_tick_replay_checkpoints"
         / f"engine_{replay_generation}"
     )
-    first_checkpoint = checkpoint_dir / f"pre_{selected[0]}.pkl"
-    if first_checkpoint.exists():
-        replay = load_replay_checkpoint(first_checkpoint)
-        replay_start = selected[0]
-        print(f"loaded replay checkpoint before {selected[0]}", flush=True)
+    resume_checkpoint = latest_replay_checkpoint(checkpoint_dir, selected[0])
+    if resume_checkpoint is not None:
+        replay = load_replay_checkpoint(resume_checkpoint)
+        replay_start = checkpoint_day(resume_checkpoint)
+        print(f"loaded replay checkpoint before {replay_start}", flush=True)
     else:
         replay = TickReplayState(token_decimals=load_token_decimals(TOKEN_DECIMALS))
         replay_start = REPLAY_START
@@ -446,11 +468,12 @@ def main() -> int:
     )
     for index, observed in enumerate(calendar, 1):
         day = observed.strftime("%Y%m%d")
-        if day in selected_set:
-            checkpoint = checkpoint_dir / f"pre_{day}.pkl"
+        checkpoint = checkpoint_dir / f"pre_{day}.pkl"
+        if day in selected_set or (index - 1) % CHECKPOINT_INTERVAL_DAYS == 0:
             if not checkpoint.exists():
                 save_replay_checkpoint(checkpoint, replay)
                 print(f"wrote replay checkpoint before {day}", flush=True)
+        if day in selected_set:
             events = load_tick_day_events(RAW, day)
             frame, support = score_day(day, events, replay, vehicles)
             frames.append(frame)

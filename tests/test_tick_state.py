@@ -45,7 +45,12 @@ class TickStateTests(unittest.TestCase):
         )
         state = {}
         absorb_swap_state(
-            "uniswap_v4", record, state, swap_samples={}, token_decimals={}
+            "uniswap_v4",
+            record,
+            state,
+            swap_samples={},
+            token_decimals={},
+            quarantined_pools={},
         )
         self.assertEqual(state["pool"].tick_spacing, 180)
         self.assertEqual((state["pool"].block, state["pool"].log_index), (5, 7))
@@ -90,7 +95,12 @@ class TickStateTests(unittest.TestCase):
         state = {"pool": prior}
         with patch("ddvc.pricing.tick_state.resolve_decimals") as resolve:
             absorb_swap_state(
-                "uniswap_v3", record, state, swap_samples={}, token_decimals={}
+                "uniswap_v3",
+                record,
+                state,
+                swap_samples={},
+                token_decimals={},
+                quarantined_pools={},
             )
         resolve.assert_not_called()
         self.assertEqual(state["pool"].dec1, 6)
@@ -114,15 +124,64 @@ class TickStateTests(unittest.TestCase):
             },
         )
         state = {}
+        token_decimals = {"0xa": 18, "0xb": 18}
         absorb_swap_state(
-            "uniswap_v4", record, state, swap_samples={}, token_decimals={}
+            "uniswap_v4",
+            record,
+            state,
+            swap_samples={},
+            token_decimals=token_decimals,
+            quarantined_pools={},
         )
         record["transaction"]["blockNumber"] = "6"
         record["pool"]["tickSpacing"] = "60"
         with self.assertRaisesRegex(ValueError, "statics changed"):
             absorb_swap_state(
-                "uniswap_v4", record, state, swap_samples={}, token_decimals={}
+                "uniswap_v4",
+                record,
+                state,
+                swap_samples={},
+                token_decimals=token_decimals,
+                quarantined_pools={},
             )
+
+    def test_v4_pool_with_conflicting_token_metadata_is_quarantined(self) -> None:
+        record = row(
+            5,
+            7,
+            sqrtPriceX96=str(1 << 96),
+            tick="0",
+            pool={
+                "id": "pool",
+                "feeTier": "9000",
+                "tickSpacing": "180",
+                "hooks": "0x0000000000000000000000000000000000000000",
+                "token0": {
+                    "id": "0x0000000000000000000000000000000000000001",
+                    "symbol": "A",
+                    "decimals": "18",
+                },
+                "token1": {
+                    "id": "0x0000000000000000000000000000000000000002",
+                    "symbol": "B",
+                    "decimals": "18",
+                },
+            },
+        )
+        state: dict[str, TickPoolState] = {}
+        quarantine: dict[str, set[str]] = {}
+        absorb_swap_state(
+            "uniswap_v4",
+            record,
+            state,
+            swap_samples={},
+            token_decimals={
+                "0x0000000000000000000000000000000000000001": 0
+            },
+            quarantined_pools=quarantine,
+        )
+        self.assertEqual(state, {})
+        self.assertEqual(quarantine, {"uniswap_v4": {"pool"}})
 
     def test_zeroed_boundary_ticks_are_removed(self) -> None:
         ticks = {0: 5, 10: -5}

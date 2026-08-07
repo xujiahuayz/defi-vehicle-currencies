@@ -8,7 +8,9 @@ from dataclasses import dataclass
 from ddvc.asset_types import canonical_token
 from ddvc.fetch.raw import block_value, timestamp_value, v4_pool_quote_supported
 from ddvc.pricing.v3pools import (
+    ANCHOR_DECIMALS,
     DECIMAL_SAMPLE_SIZE,
+    decimals_gap_from_swaps,
     derive_fee_tier,
     record_token_decimals,
     resolve_decimals,
@@ -72,6 +74,7 @@ def absorb_swap_state(
     *,
     swap_samples: dict[str, list[dict]],
     token_decimals: dict[str, int],
+    quarantined_pools: dict[str, set[str]],
     unify_wrapped: bool = True,
 ) -> None:
     """Fold one V3/V4 swap into the canonical latest-state index.
@@ -90,6 +93,9 @@ def absorb_swap_state(
     canonical0 = canonical_token(raw0, unify_wrapped=unify_wrapped)
     canonical1 = canonical_token(raw1, unify_wrapped=unify_wrapped)
     if not pool_id or not canonical0 or not canonical1:
+        return
+    venue_quarantine = quarantined_pools.setdefault(venue, set())
+    if pool_id in venue_quarantine:
         return
     try:
         block = int(block_value(row) or timestamp_value(row) or 0)
@@ -135,9 +141,33 @@ def absorb_swap_state(
         try:
             fee_pips = int(pool.get("feeTier"))
             tick_spacing = int(pool.get("tickSpacing"))
-            decimals = (int(token0.get("decimals")), int(token1.get("decimals")))
+            reported_decimals = (
+                int(token0.get("decimals")),
+                int(token1.get("decimals")),
+            )
         except (TypeError, ValueError):
             return
+        known_decimals = (
+            ANCHOR_DECIMALS.get(raw0, token_decimals.get(raw0)),
+            ANCHOR_DECIMALS.get(raw1, token_decimals.get(raw1)),
+        )
+        if any(
+            known is not None and known != reported
+            for known, reported in zip(
+                known_decimals, reported_decimals, strict=True
+            )
+        ) or any(value < 0 or value > 36 for value in reported_decimals):
+            venue_quarantine.add(pool_id)
+            return
+        if any(value is None for value in known_decimals):
+            sample = swap_samples.setdefault(pool_id, [])
+            sample.append(row)
+            if len(sample) > DECIMAL_SAMPLE_SIZE:
+                del sample[0]
+            gap = decimals_gap_from_swaps(sample)
+            if gap is None or gap != reported_decimals[1] - reported_decimals[0]:
+                return
+        decimals = reported_decimals
         record_token_decimals(token_decimals, raw0, decimals[0])
         record_token_decimals(token_decimals, raw1, decimals[1])
     else:
