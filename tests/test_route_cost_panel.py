@@ -104,6 +104,9 @@ class RouteCostPairSelectionTests(unittest.TestCase):
         finally:
             run_route_cost_panel.DAY_CACHE = original_cache
 
+    def test_price_owner_invalidates_quote_cache(self) -> None:
+        self.assertIn("src/ddvc/prices.py", run_route_cost_panel.QUOTE_SOURCES)
+
 
 if __name__ == "__main__":
     unittest.main()

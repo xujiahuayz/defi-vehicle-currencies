@@ -119,6 +119,7 @@ OUT = OUTPUT_DIR / "empirical"
 # 2,242 days of quotes from a broken quoter survive two correctness fixes.
 QUOTE_SOURCES = [
     "src/ddvc/route_cost.py",
+    "src/ddvc/prices.py",
     "src/ddvc/pricing/v3quote.py",
     "src/ddvc/pricing/v3pools.py",
     "src/ddvc/pricing/tick_quote.py",
