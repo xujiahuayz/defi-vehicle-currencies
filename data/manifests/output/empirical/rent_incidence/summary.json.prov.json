@@ -1,29 +1,27 @@
 {
  "argv": [],
  "artefact": "output/empirical/rent_incidence/summary.json",
- "code_fingerprint": "f9d2da50d8d3a8a902ef9d8ed8ba8fe58f7bb38c9cee0425b4db123c8d622a69",
+ "code_fingerprint": "581183148db1240bb4d3e38847fbc1863017be48d10ee74aaf7ded4281a4bdc6",
  "code_sources": [
   "scripts/build_rent_incidence_panel.py",
-  "scripts/run_rent_incidence.py"
+  "scripts/run_rent_incidence.py",
+  "src/ddvc/gas.py"
  ],
- "created_at": "2026-08-06T00:47:55+00:00",
+ "created_at": "2026-08-07T00:07:52+00:00",
  "git": {
-  "branch": "main",
-  "commit": "f8adde626ce59c6c3f14d10f725898cb5e6d9fee",
-  "dirty": true,
-  "dirty_tracked_files": [
-   "ata/manifests/data/processed/cross_venue_spillover_daily.parquet.prov.json",
+  "branch": "glotl/fgh-evidence",
+  "commit": "7a4e21bbd4ff43d2d957f7a58bfb07bdc7b78576",
+  "dirty": false,
+  "dirty_generated_files": [
    "data/manifests/data/processed/rent_incidence_pool_month.parquet.prov.json",
    "data/manifests/output/empirical/rent_incidence/centrality_curse_regressions.jsonl.prov.json",
    "data/manifests/output/empirical/rent_incidence/rent_by_asset_role.jsonl.prov.json",
    "data/manifests/output/empirical/rent_incidence/rent_by_capital_decile.jsonl.prov.json",
    "data/manifests/output/empirical/rent_incidence/robustness.jsonl.prov.json",
-   "data/manifests/output/empirical/rent_incidence/screens.jsonl.prov.json",
-   "data/manifests/output/empirical/rent_incidence/summary.json.prov.json",
-   "scripts/run_cross_venue_spillover.py",
-   "scripts/run_rent_incidence.py",
-   "uv.lock"
-  ]
+   "data/manifests/output/empirical/rent_incidence/screens.jsonl.prov.json"
+  ],
+  "dirty_tracked_files": [],
+  "dirty_untracked_files": []
  },
  "inputs": [],
  "libraries": {
