@@ -292,6 +292,11 @@ def by_role(df: pd.DataFrame, venue: str, gas_only: bool = True) -> pd.DataFrame
             "days": int(g.day.nunique()),
             "median_tvl_usd": float(g.tvl_usd.median()),
             "capital_days_usd_bn": float(g.tvl_usd.sum() / 1e9),
+            "mean_daily_capital_usd_bn": float(
+                g.tvl_usd.sum() / g.day.nunique() / 1e9
+            ),
+            "capital_share": float(g.tvl_usd.sum() / d.tvl_usd.sum()),
+            "pool_day_share": float(len(g) / len(d)),
             # equal-weighted pool-day medians, annualised
             "med_fee_yield_apr": float(g.fee_yield.median() * 365),
             "med_lvr_rate_apr": float(g.lvr_rate.median() * 365),

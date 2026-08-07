@@ -55,7 +55,11 @@ def test_role_exhibit_keeps_pooled_and_annual_bridge_rows():
 
     assert set(result["scope"]) == {"pooled", "annual"}
     assert set(result.loc[result.scope.eq("annual"), "year"]) == {2024, 2025}
-    assert result.loc[result.scope.eq("pooled"), "pool_days"].iloc[0] == 1_000
+    pooled = result.loc[result.scope.eq("pooled")].iloc[0]
+    assert pooled["pool_days"] == 1_000
+    assert pooled["mean_daily_capital_usd_bn"] == pytest.approx(0.05)
+    assert pooled["capital_share"] == pytest.approx(1.0)
+    assert pooled["pool_day_share"] == pytest.approx(1.0)
 
 
 def test_fenwick_matches_brute_force_prefix_sums():
