@@ -13,6 +13,7 @@ from ddvc.pricing.tick_replay import (
     TickReplayState,
     load_tick_day_events,
     timestamp_order,
+    warm_tick_day,
 )
 
 
@@ -90,6 +91,35 @@ class TickReplayTests(unittest.TestCase):
         }
         state.apply(TickReplayEvent((101, 1), "uniswap_v4", "liquidity", change, 1))
         self.assertNotIn("pool", state.quote_indexes_by_venue["uniswap_v4"])
+
+    def test_streaming_warm_matches_ordered_end_of_day_state(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            change = {
+                "timestamp": "99",
+                "logIndex": "3",
+                "pool": {"id": "pool"},
+                "tickLower": "-10",
+                "tickUpper": "10",
+                "amount": "1000",
+            }
+            rows = {
+                ("uniswap_v4", "modify_liquidities"): [change],
+                ("uniswap_v4", "swaps"): [v4_swap()],
+            }
+            for (venue, stream), values in rows.items():
+                path = root / venue / f"{venue}_{stream}_20250101.jsonl.gz"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with gzip.open(path, "wt") as handle:
+                    for value in values:
+                        handle.write(json.dumps(value) + "\n")
+            ordered = TickReplayState()
+            ordered.apply_all(load_tick_day_events(root, "20250101"))
+            streamed = TickReplayState()
+            warm_tick_day(root, "20250101", streamed)
+        self.assertEqual(streamed.ticks_by_venue, ordered.ticks_by_venue)
+        self.assertEqual(streamed.states_by_venue, ordered.states_by_venue)
+        self.assertEqual(streamed.pool_index, ordered.pool_index)
 
 
 if __name__ == "__main__":

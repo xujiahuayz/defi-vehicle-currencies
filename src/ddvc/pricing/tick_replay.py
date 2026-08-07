@@ -122,24 +122,23 @@ class TickReplayState:
     quote_indexes_by_venue: TickQuoteIndexes = field(default_factory=dict)
     swap_samples: dict[str, list[dict]] = field(default_factory=dict)
 
-    def apply(self, event: TickReplayEvent) -> None:
-        ticks = self.ticks_by_venue.setdefault(event.venue, {})
-        states = self.states_by_venue.setdefault(event.venue, {})
-        pool = str((event.row.get("pool") or {}).get("id") or "").lower()
+    def apply_liquidity(self, venue: str, row: dict, *, sign: int) -> None:
+        ticks = self.ticks_by_venue.setdefault(venue, {})
+        pool = str((row.get("pool") or {}).get("id") or "").lower()
         if not pool:
             return
-        if event.kind == "liquidity":
-            apply_tick_change(
-                ticks.setdefault(pool, {}),
-                event.row,
-                sign=event.sign,
-            )
-            self.quote_indexes_by_venue.setdefault(event.venue, {}).pop(pool, None)
+        apply_tick_change(ticks.setdefault(pool, {}), row, sign=sign)
+        self.quote_indexes_by_venue.setdefault(venue, {}).pop(pool, None)
+
+    def apply_swap(self, venue: str, row: dict) -> None:
+        states = self.states_by_venue.setdefault(venue, {})
+        pool = str((row.get("pool") or {}).get("id") or "").lower()
+        if not pool:
             return
         prior = states.get(pool)
         absorb_swap_state(
-            event.venue,
-            event.row,
+            venue,
+            row,
             states,
             swap_samples=self.swap_samples,
             unify_wrapped=self.unify_wrapped,
@@ -147,12 +146,49 @@ class TickReplayState:
         current = states.get(pool)
         if prior is None and current is not None:
             key = frozenset((current.token0, current.token1))
-            entry = (event.venue, pool)
+            entry = (venue, pool)
             candidates = self.pool_index.setdefault(key, [])
             if entry not in candidates:
                 candidates.append(entry)
                 candidates.sort()
 
+    def apply(self, event: TickReplayEvent) -> None:
+        if event.kind == "liquidity":
+            self.apply_liquidity(event.venue, event.row, sign=event.sign)
+        else:
+            self.apply_swap(event.venue, event.row)
+
     def apply_all(self, events: list[TickReplayEvent]) -> None:
         for event in events:
             self.apply(event)
+
+
+def warm_tick_day(
+    raw_root: Path,
+    day: str,
+    replay: TickReplayState,
+    *,
+    venues: tuple[str, ...] = ("uniswap_v3", "uniswap_v4"),
+) -> None:
+    """Stream one non-target day into end-of-day state without sorting events.
+
+    Tick liquidity changes are additive, and ``absorb_swap_state`` retains the
+    latest block-log state even if a source file is not ordered. Only target days
+    need a globally interleaved event list for strict pre-transaction scoring.
+    """
+    for venue in venues:
+        for stream, sign in TICK_LIQUIDITY_STREAMS[venue]:
+            path = _raw_path(raw_root, venue, stream, day)
+            if not path.exists():
+                continue
+            with gzip.open(path, "rt") as handle:
+                for line in handle:
+                    if line.strip():
+                        replay.apply_liquidity(venue, json.loads(line), sign=sign)
+        path = _raw_path(raw_root, venue, "swaps", day)
+        if not path.exists():
+            continue
+        with gzip.open(path, "rt") as handle:
+            for line in handle:
+                if line.strip():
+                    replay.apply_swap(venue, json.loads(line))

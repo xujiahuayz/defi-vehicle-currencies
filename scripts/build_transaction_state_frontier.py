@@ -29,7 +29,12 @@ from ddvc.calendar import nearest_monthly_days
 from ddvc.fetch.raw import transaction_id
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.pricing.tick_frontier import quote_tick_path
-from ddvc.pricing.tick_replay import TickReplayEvent, TickReplayState, load_tick_day_events
+from ddvc.pricing.tick_replay import (
+    TickReplayEvent,
+    TickReplayState,
+    load_tick_day_events,
+    warm_tick_day,
+)
 from ddvc.prices import PRICE_COLUMNS, day_prices
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.route_cost import MAX_PRICE_IMPACT
@@ -396,8 +401,8 @@ def main() -> int:
     )
     for index, observed in enumerate(calendar, 1):
         day = observed.strftime("%Y%m%d")
-        events = load_tick_day_events(RAW, day)
         if day in selected_set:
+            events = load_tick_day_events(RAW, day)
             frame, support = score_day(day, events, replay, vehicles)
             frames.append(frame)
             support_rows.append(support)
@@ -408,7 +413,7 @@ def main() -> int:
                 flush=True,
             )
         else:
-            replay.apply_all(events)
+            warm_tick_day(RAW, day, replay)
         if index % 180 == 0:
             print(f"replayed through {day} ({index:,}/{len(calendar):,} days)", flush=True)
     panel = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
