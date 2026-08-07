@@ -15,6 +15,7 @@ from scripts.build_transaction_state_frontier import (
     save_replay_checkpoint,
     select_days,
     summarise,
+    validation_error_diagnostics,
 )
 from ddvc.pricing.tick_replay import TickReplayState
 
@@ -69,6 +70,15 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             save_replay_checkpoint(path, replay)
             restored = load_replay_checkpoint(path)
         self.assertEqual(restored.ticks_by_venue, replay.ticks_by_venue)
+
+    def test_validation_diagnostics_keep_rejected_tail_visible(self) -> None:
+        diagnostics = validation_error_diagnostics([0.0, -10.0, 200.0, -500.0])
+        self.assertEqual(diagnostics["quote_available"], 4)
+        self.assertEqual(diagnostics["output_mismatch"], 2)
+        self.assertEqual(diagnostics["validation_abs_max_bps"], 500.0)
+        self.assertEqual(diagnostics["mismatch_abs_min_bps"], 200.0)
+        self.assertEqual(diagnostics["mismatch_abs_max_bps"], 500.0)
+        self.assertEqual(diagnostics["validation_within_tolerance_share"], 0.5)
 
     def test_latest_checkpoint_never_jumps_past_target(self) -> None:
         with TemporaryDirectory() as directory:

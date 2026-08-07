@@ -269,6 +269,33 @@ def load_target_routes(
     return targets, support
 
 
+def validation_error_diagnostics(errors_bps: list[float]) -> dict[str, object]:
+    """Summarise every available chosen-route quote, including rejected tails."""
+    absolute = pd.Series(errors_bps, dtype=float).abs()
+    mismatch = absolute[absolute.gt(10_000 * VALIDATION_TOLERANCE)]
+
+    def quantile(values: pd.Series, probability: float) -> float | None:
+        return float(values.quantile(probability)) if not values.empty else None
+
+    return {
+        "quote_available": int(len(absolute)),
+        "output_mismatch": int(len(mismatch)),
+        "validation_abs_median_bps": quantile(absolute, 0.5),
+        "validation_abs_p90_bps": quantile(absolute, 0.9),
+        "validation_abs_p99_bps": quantile(absolute, 0.99),
+        "validation_abs_max_bps": quantile(absolute, 1.0),
+        "validation_within_tolerance_share": (
+            float(absolute.le(10_000 * VALIDATION_TOLERANCE).mean())
+            if not absolute.empty
+            else None
+        ),
+        "mismatch_abs_min_bps": quantile(mismatch, 0.0),
+        "mismatch_abs_median_bps": quantile(mismatch, 0.5),
+        "mismatch_abs_p90_bps": quantile(mismatch, 0.9),
+        "mismatch_abs_max_bps": quantile(mismatch, 1.0),
+    }
+
+
 def score_day(
     day: str,
     events: list[TickReplayEvent],
@@ -280,6 +307,8 @@ def score_day(
     for target in targets:
         by_order[target["target_order"]].append(target)
     rows: list[dict[str, object]] = []
+    validation_errors_bps: list[float] = []
+    coherent_validation_errors_bps: list[float] = []
     cursor = 0
     for order in sorted(by_order):
         while cursor < len(events) and events[cursor].order < order:
@@ -311,6 +340,11 @@ def score_day(
                 support["chosen_state_unavailable"] += 1
                 continue
             validation_error = abs(chosen.amount_out - route.amount_out) / route.amount_out
+            validation_errors_bps.append(
+                10_000 * (chosen.amount_out - route.amount_out) / route.amount_out
+            )
+            if bool(target["within_20pct"]):
+                coherent_validation_errors_bps.append(validation_errors_bps[-1])
             if validation_error > VALIDATION_TOLERANCE:
                 support["chosen_output_mismatch"] += 1
                 continue
@@ -364,6 +398,15 @@ def score_day(
     support["scored_routes"] = len(rows)
     support["quarantined_tick_pools"] = sum(
         len(pools) for pools in replay.quarantined_pools.values()
+    )
+    diagnostics = validation_error_diagnostics(validation_errors_bps)
+    support.update({f"chosen_{key}": value for key, value in diagnostics.items()})
+    coherent_diagnostics = validation_error_diagnostics(coherent_validation_errors_bps)
+    support.update(
+        {
+            f"within_20pct_chosen_{key}": value
+            for key, value in coherent_diagnostics.items()
+        }
     )
     return pd.DataFrame(rows), support
 
