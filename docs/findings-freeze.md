@@ -1,9 +1,9 @@
 ---
 freeze_status: red
 stable_passes: 0
-active_node: C
-parent_loop: I -> C
-next_edge: C -> E -> F <-> G <-> H
+active_node: F
+parent_loop: C -> E
+next_edge: F <-> G <-> H -> I
 prose_node: closed
 updated: 2026-08-07
 ---
@@ -39,4 +39,4 @@ This is the live handoff between the research graph and prose node P. A recent p
 
 ## Loop position
 
-Active execution node: `C`, reopened by node I. The data layer passes every cross-family identity, but the review found that intermediary-episode weighting gives longer routes several votes while path length rises. The definition now makes exact two-leg, one-vehicle routes primary and keeps all intermediary episodes as the network-extent extension; the existing result survives that correction. The same review exposed filtered-calendar HAC treating unsupported gaps as adjacent, so the shared covariance primitive now accepts actual dates and every affected exhibit must regenerate. The next edge is `C -> E -> F <-> G <-> H`. The exact-state V2-family level bound remains a level result, and the full multi-venue transaction-state frontier remains withheld. Node P is closed. Any defect found here routes back to C/E; no defect is patched only in prose.
+Active execution node: `F`, entered after the node-I corrections returned through C and the node-E specification lock. The data layer passes every cross-family identity, exact two-leg routes own the one-vehicle primary unit, actual calendar dates own HAC distance, and all locked exhibits have clean provenance. The first F pass now attacks the full multi-venue transaction-state frontier, with direct omission, same-vehicle search shortfall and best-public-path regret as separate estimands. The next edge is `F -> G -> H`, looping back whenever an attack changes a claim. Stable passes remain zero and node P is closed.
