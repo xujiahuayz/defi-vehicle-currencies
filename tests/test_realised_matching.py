@@ -167,7 +167,10 @@ class RealisedMatchingTests(unittest.TestCase):
                 leg("long", 2, "M", "B", "intermediate", "sink"),
             ]
         )
-        self.assertTrue(extract_linear_realised_routes(legs).empty)
+        out = extract_linear_realised_routes(legs)
+        self.assertTrue(out.empty)
+        self.assertIn("realised_hop1_source", out.columns)
+        self.assertIn("realised_hop2_source", out.columns)
 
     def test_extraction_uses_roles_and_preserves_transaction_identity(self) -> None:
         legs = pd.DataFrame(

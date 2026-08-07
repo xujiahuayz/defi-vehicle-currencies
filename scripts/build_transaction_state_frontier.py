@@ -195,14 +195,17 @@ def load_target_routes(
     route_legs = legs[
         legs["route_class"].eq("coherent") & legs["source"].isin(EXACT_VENUES)
     ].copy()
-    route_legs = route_legs[
+    route_mask = pd.Series(
         [
             (str(tx_hash).lower(), int(component_id)) in route_keys
             for tx_hash, component_id in zip(
                 route_legs["tx_hash"], route_legs["component_id"], strict=True
             )
-        ]
-    ]
+        ],
+        index=route_legs.index,
+        dtype=bool,
+    )
+    route_legs = route_legs.loc[route_mask].copy()
     grouped_legs = {
         (str(key[0]).lower(), int(key[1])): group.sort_values(
             "log_index", kind="stable"

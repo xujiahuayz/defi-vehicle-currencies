@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -11,6 +12,7 @@ from scripts.build_transaction_state_frontier import (
     candidate_vehicles,
     checkpoint_day,
     latest_replay_checkpoint,
+    load_target_routes,
     load_replay_checkpoint,
     save_replay_checkpoint,
     select_days,
@@ -18,6 +20,8 @@ from scripts.build_transaction_state_frontier import (
     validation_error_diagnostics,
 )
 from ddvc.pricing.tick_replay import TickReplayState
+from ddvc.pricing.v2_replay import V2ReplayDay
+from ddvc.realised import LINEAR_ROUTE_COLUMNS
 
 
 class TransactionStateFrontierScriptTests(unittest.TestCase):
@@ -96,6 +100,20 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             selected = latest_replay_checkpoint(root, "20230615")
         assert selected is not None
         self.assertEqual(checkpoint_day(selected), "20230101")
+
+    def test_empty_day_preserves_calendar_support(self) -> None:
+        empty_replay = V2ReplayDay({}, {}, {}, {}, {}, {})
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            pd.DataFrame(columns=LINEAR_ROUTE_COLUMNS).to_parquet(
+                root / "20200214.parquet",
+                index=False,
+            )
+            with patch("scripts.build_transaction_state_frontier.UNIFIED", root):
+                targets, support = load_target_routes("20200214", [], empty_replay)
+        self.assertEqual(targets, [])
+        self.assertEqual(support["all_exact_two_leg_routes"], 0)
+        self.assertEqual(support["exact_venue_two_leg_routes"], 0)
 
 
 if __name__ == "__main__":

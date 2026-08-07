@@ -28,6 +28,43 @@ ROUTE_COLUMNS = [
 LINEAR_ROUTE_COLUMNS = list(dict.fromkeys([*ROUTE_COLUMNS, *PRICE_COLUMNS]))
 MATCH_KEYS = ["day", "hour", "src", "tgt", "vehicle"]
 PAIR_MATCH_KEYS = ["day", "hour", "src", "tgt"]
+REALISED_ROUTE_OUTPUT_COLUMNS = [
+    "route_id",
+    "tx_hash",
+    "component_id",
+    "timestamp_utc",
+    "hour",
+    "src",
+    "tgt",
+    "vehicle",
+    "usd",
+    "legs",
+    "venues",
+    "cross_venue",
+    "source_usd",
+    "sink_usd",
+    "endpoint_value_ratio",
+    "value_ratio_min",
+    "value_ratio_max",
+    "within_2x",
+    "within_20pct",
+]
+LINEAR_REALISED_ROUTE_OUTPUT_COLUMNS = [
+    *REALISED_ROUTE_OUTPUT_COLUMNS,
+    "realised_hop1_source",
+    "realised_amount_in",
+    "realised_hop2_source",
+    "realised_amount_out",
+    "input_usd",
+    "output_usd",
+    "venue_set",
+    "realised_output_rate",
+]
+
+
+def _empty_routes(columns: list[str]) -> pd.DataFrame:
+    """Return an empty frame that still honours the extractor's schema contract."""
+    return pd.DataFrame(columns=columns)
 
 
 def _same_nullable(left: pd.Series, right: pd.Series) -> pd.Series:
@@ -112,12 +149,12 @@ def extract_realised_routes(
         raise ValueError(f"realised routes are missing columns: {', '.join(missing)}")
     d = legs.loc[legs["route_class"].eq("coherent"), ROUTE_COLUMNS].copy()
     if d.empty:
-        return pd.DataFrame()
+        return _empty_routes(REALISED_ROUTE_OUTPUT_COLUMNS)
     d["token_in"] = d["token_in"].map(lambda value: canonical_token(value) or "")
     d["token_out"] = d["token_out"].map(lambda value: canonical_token(value) or "")
     d = d[d["token_in"].astype(bool) & d["token_out"].astype(bool)]
     if d.empty:
-        return pd.DataFrame()
+        return _empty_routes(REALISED_ROUTE_OUTPUT_COLUMNS)
     d = d.sort_values(["tx_hash", "component_id", "log_index"], kind="stable")
     d["_timestamp"] = pd.to_numeric(d["timestamp_utc"], errors="coerce")
     d["_usd"] = pd.to_numeric(d["amount_usd"], errors="coerce")
@@ -133,7 +170,7 @@ def extract_realised_routes(
         & components["timestamp_utc"].notna()
     ]
     if components.empty:
-        return pd.DataFrame()
+        return _empty_routes(REALISED_ROUTE_OUTPUT_COLUMNS)
 
     eligibility = component_eligibility(d, keys=component_keys)
     components = components.merge(
@@ -161,7 +198,7 @@ def extract_realised_routes(
     out = components.merge(vehicles, on=component_keys, how="inner")
     out = out[out["vehicle"].ne(out["src"]) & out["vehicle"].ne(out["tgt"])]
     if out.empty:
-        return pd.DataFrame()
+        return _empty_routes(REALISED_ROUTE_OUTPUT_COLUMNS)
     out = out.sort_values(component_keys + ["vehicle"], kind="stable").reset_index(drop=True)
     out["component_id"] = pd.to_numeric(out["component_id"], errors="raise").astype(int)
     out["timestamp_utc"] = out["timestamp_utc"].astype(int)
@@ -179,29 +216,7 @@ def extract_realised_routes(
         + ":"
         + out["vehicle"].astype(str),
     )
-    return out[
-        [
-            "route_id",
-            "tx_hash",
-            "component_id",
-            "timestamp_utc",
-            "hour",
-            "src",
-            "tgt",
-            "vehicle",
-            "usd",
-            "legs",
-            "venues",
-            "cross_venue",
-            "source_usd",
-            "sink_usd",
-            "endpoint_value_ratio",
-            "value_ratio_min",
-            "value_ratio_max",
-            "within_2x",
-            "within_20pct",
-        ]
-    ]
+    return out[REALISED_ROUTE_OUTPUT_COLUMNS]
 
 
 def realised_routes(
@@ -232,12 +247,12 @@ def extract_linear_realised_routes(
         raise ValueError(f"linear realised routes are missing columns: {', '.join(missing)}")
     routes = extract_realised_routes(legs)
     if routes.empty:
-        return pd.DataFrame()
+        return _empty_routes(LINEAR_REALISED_ROUTE_OUTPUT_COLUMNS)
     component_keys = ["tx_hash", "component_id"]
     vehicle_counts = routes.groupby(component_keys)["vehicle"].transform("size")
     routes = routes[routes["legs"].eq(2) & vehicle_counts.eq(1)].copy()
     if routes.empty:
-        return pd.DataFrame()
+        return _empty_routes(LINEAR_REALISED_ROUTE_OUTPUT_COLUMNS)
 
     route_legs = legs.loc[
         legs["route_class"].eq("coherent"), LINEAR_ROUTE_COLUMNS
@@ -330,7 +345,7 @@ def extract_linear_realised_routes(
             "last_token_in",
             "last_token_out",
         ]
-    ).reset_index(drop=True)
+    )[LINEAR_REALISED_ROUTE_OUTPUT_COLUMNS].reset_index(drop=True)
 
 
 def linear_realised_routes(
