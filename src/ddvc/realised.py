@@ -9,7 +9,7 @@ import pandas as pd
 
 from ddvc.asset_types import canonical_token
 from ddvc.paths import DATA_DIR
-from ddvc.prices import PRICE_COLUMNS, day_prices
+from ddvc.prices import PRICE_COLUMNS
 from ddvc.route_roles import component_eligibility, component_value_support, role_token_values
 
 ROUTE_COLUMNS = [
@@ -225,8 +225,6 @@ def realised_routes(
 
 def extract_linear_realised_routes(
     legs: pd.DataFrame,
-    *,
-    prices: dict[str, tuple[str, float]] | None = None,
 ) -> pd.DataFrame:
     """Return exact two-leg routes with realised input/output value and venue reach."""
     missing = sorted(set(LINEAR_ROUTE_COLUMNS) - set(legs.columns))
@@ -303,27 +301,14 @@ def extract_linear_realised_routes(
         & out["last_token_in"].eq(out["vehicle"])
         & out["last_token_out"].eq(out["tgt"])
     ].copy()
-    price_legs = legs[PRICE_COLUMNS].copy()
-    for column in ("token_in", "token_out"):
-        price_legs[column] = price_legs[column].map(
-            lambda value: canonical_token(value) or ""
-        )
-    if prices is None:
-        prices = day_prices(price_legs)
-    out["src_price_usd"] = out["src"].map(
-        {token: value[1] for token, value in prices.items()}
-    )
-    out["tgt_price_usd"] = out["tgt"].map(
-        {token: value[1] for token, value in prices.items()}
-    )
     out["realised_amount_in"] = pd.to_numeric(
         out["realised_amount_in"], errors="coerce"
     )
     out["realised_amount_out"] = pd.to_numeric(
         out["realised_amount_out"], errors="coerce"
     )
-    out["input_usd"] = out["realised_amount_in"] * out["src_price_usd"]
-    out["output_usd"] = out["realised_amount_out"] * out["tgt_price_usd"]
+    out["input_usd"] = pd.to_numeric(out["source_usd"], errors="coerce")
+    out["output_usd"] = pd.to_numeric(out["sink_usd"], errors="coerce")
     out = out[out["input_usd"].gt(0) & out["output_usd"].gt(0)].copy()
     first_source = out["realised_hop1_source"].astype(str)
     second_source = out["realised_hop2_source"].astype(str)
@@ -344,8 +329,6 @@ def extract_linear_realised_routes(
             "first_token_out",
             "last_token_in",
             "last_token_out",
-            "src_price_usd",
-            "tgt_price_usd",
         ]
     ).reset_index(drop=True)
 

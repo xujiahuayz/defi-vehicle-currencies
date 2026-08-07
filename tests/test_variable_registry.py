@@ -424,7 +424,9 @@ class VariableRegistryTests(unittest.TestCase):
             r"$k\notin\{i,o\}$",
             "at least three finite token-side",
             "USD-per-token observations",
-            "realized-USD-volume-weighted median",
+            "at least 75 percent",
+            "fivefold band",
+            "volume-weighted median inside that consensus band",
             "does not require either quote to execute",
         ]:
             with self.subTest(required=required):

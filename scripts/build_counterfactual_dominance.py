@@ -300,7 +300,7 @@ def one_day(day: str) -> pd.DataFrame | None:
         return None
     unified = pd.read_parquet(unified_path, columns=LINEAR_ROUTE_COLUMNS)
     prices = day_prices(unified[PRICE_COLUMNS])
-    routes = extract_linear_realised_routes(unified, prices=prices)
+    routes = extract_linear_realised_routes(unified)
     if routes.empty:
         return None
     routes = routes[

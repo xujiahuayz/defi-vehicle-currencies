@@ -469,8 +469,10 @@ NOTATION_DEFINITIONS: tuple[NotationDefinition, ...] = (
             r"where clean means route class \texttt{single} or \texttt{coherent}, "
             r"$k\notin\{i,o\}$, and each of $i$, $o$, and $k$ has a valid day-price "
             r"estimate. A valid estimate requires at least three finite token-side "
-            r"USD-per-token observations in $(0,\$1{,}000{,}000)$ and equals their "
-            r"realized-USD-volume-weighted median. Each pair is submitted to the direct "
+            r"USD-per-token observations in $(0,\$1{,}000{,}000)$, at least 75 percent "
+            r"of observations within a fivefold band around their ordinary median, and "
+            r"equals the realized-USD-volume-weighted median inside that consensus band. "
+            r"Each pair is submitted to the direct "
             r"and via-$k$ quote engines at input $q$; membership does not require either "
             r"quote to execute."
         ),

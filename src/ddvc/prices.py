@@ -14,10 +14,13 @@ PRICE_COLUMNS = [
     "amount_out",
     "amount_usd",
 ]
+MIN_PRICE_OBSERVATIONS = 3
+PRICE_CONSENSUS_FACTOR = 5.0
+PRICE_CONSENSUS_SHARE = 0.75
 
 
 def day_prices(legs: pd.DataFrame) -> dict[str, tuple[str, float]]:
-    """Return realised-USD-volume-weighted median prices by token address."""
+    """Return consensus-screened, volume-weighted day prices by token address."""
     missing = sorted(set(PRICE_COLUMNS) - set(legs.columns))
     if missing:
         raise ValueError(f"day prices are missing columns: {', '.join(missing)}")
@@ -45,9 +48,20 @@ def day_prices(legs: pd.DataFrame) -> dict[str, tuple[str, float]]:
     ]
     prices: dict[str, tuple[str, float]] = {}
     for token, group in data.groupby("token"):
-        if len(group) < 3:
+        if len(group) < MIN_PRICE_OBSERVATIONS:
             continue
-        ordered = group.sort_values("price")
+        ordinary_median = float(group["price"].median())
+        consensus = group["price"].between(
+            ordinary_median / PRICE_CONSENSUS_FACTOR,
+            ordinary_median * PRICE_CONSENSUS_FACTOR,
+            inclusive="both",
+        )
+        if (
+            int(consensus.sum()) < MIN_PRICE_OBSERVATIONS
+            or float(consensus.mean()) < PRICE_CONSENSUS_SHARE
+        ):
+            continue
+        ordered = group[consensus].sort_values("price")
         weights = ordered["weight"].clip(lower=1e-9).to_numpy()
         cumulative = np.cumsum(weights) / weights.sum()
         price = float(ordered["price"].to_numpy()[np.searchsorted(cumulative, 0.5)])

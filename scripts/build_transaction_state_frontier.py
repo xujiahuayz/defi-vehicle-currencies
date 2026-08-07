@@ -38,7 +38,6 @@ from ddvc.pricing.tick_replay import (
     warm_tick_day,
 )
 from ddvc.pricing.v3pools import load_token_decimals
-from ddvc.prices import PRICE_COLUMNS, day_prices
 from ddvc.provenance import cache_key
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.route_cost import MAX_PRICE_IMPACT
@@ -169,8 +168,7 @@ def load_target_routes(
 ) -> tuple[list[dict[str, object]], dict[str, object]]:
     path = UNIFIED / f"{day}.parquet"
     legs = pd.read_parquet(path, columns=LINEAR_ROUTE_COLUMNS)
-    prices = day_prices(legs[PRICE_COLUMNS])
-    all_routes = extract_linear_realised_routes(legs, prices=prices)
+    all_routes = extract_linear_realised_routes(legs)
     tick_routes = all_routes[
         all_routes["realised_hop1_source"].isin(TICK_VENUES)
         & all_routes["realised_hop2_source"].isin(TICK_VENUES)
