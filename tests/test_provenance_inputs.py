@@ -6,15 +6,56 @@ from pathlib import Path
 from unittest.mock import patch
 
 from ddvc.provenance import (
+    _fingerprint_contents,
+    _legacy_semantic_compatible,
     cache_key,
     describe_input,
     git_state,
     input_matches,
     require_current_artifacts,
+    semantic_code_fingerprint,
 )
 
 
 class ProvenanceInputTests(unittest.TestCase):
+    def test_semantic_fingerprint_ignores_docstrings_but_not_code(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "module.py"
+            source.write_text('"""old explanation"""\n\ndef value():\n    """old detail"""\n    return 1\n')
+            with patch("ddvc.provenance.ROOT", root):
+                before = semantic_code_fingerprint(["module.py"])
+                source.write_text('"""new explanation"""\n\ndef value():\n    """new detail"""\n    return 1\n')
+                after_documentation = semantic_code_fingerprint(["module.py"])
+                source.write_text('"""new explanation"""\n\ndef value():\n    return 2\n')
+                after_code = semantic_code_fingerprint(["module.py"])
+            self.assertEqual(before, after_documentation)
+            self.assertNotEqual(before, after_code)
+
+    @patch("ddvc.provenance._git_source")
+    def test_legacy_stamp_requires_exact_old_bytes_before_ast_fallback(self, git_source) -> None:
+        old = b'"""old"""\nvalue = 1\n'
+        new = b'"""new"""\nvalue = 1\n'
+        changed = b'"""new"""\nvalue = 2\n'
+        git_source.return_value = old
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "module.py"
+            source.write_bytes(new)
+            record = {
+                "code_sources": ["module.py"],
+                "code_fingerprint": _fingerprint_contents({"module.py": old}, semantic=False),
+                "git": {"commit": "abc", "dirty_tracked_files": [], "dirty_untracked_files": []},
+            }
+            with patch("ddvc.provenance.ROOT", root):
+                self.assertTrue(_legacy_semantic_compatible(record))
+                source.write_bytes(changed)
+                self.assertFalse(_legacy_semantic_compatible(record))
+            record["code_fingerprint"] = "not-the-stamped-bytes"
+            with patch("ddvc.provenance.ROOT", root):
+                source.write_bytes(new)
+                self.assertFalse(_legacy_semantic_compatible(record))
+
     @patch("ddvc.provenance.verify")
     def test_consumer_gate_rejects_any_noncurrent_input(self, verify) -> None:
         verify.side_effect = [
@@ -73,7 +114,6 @@ class ProvenanceInputTests(unittest.TestCase):
             (root / "b.txt").write_text("b")
             after = cache_key(sources, inputs=[root])
             self.assertNotEqual(before, after)
-
     @patch("ddvc.provenance._run")
     def test_generated_target_does_not_mark_its_own_build_dirty(self, run) -> None:
         run.side_effect = [

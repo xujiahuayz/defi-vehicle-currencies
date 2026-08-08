@@ -30,6 +30,8 @@ pandas should not invalidate a panel whose numbers it does not change.
 
 from __future__ import annotations
 
+import ast
+import functools
 import hashlib
 import json
 import os
@@ -105,6 +107,108 @@ def code_fingerprint(sources: list[str]) -> str:
         h.update(rel.encode())
         h.update(p.read_bytes() if p.exists() else b"<missing>")
     return h.hexdigest()
+
+
+class _WithoutDocstrings(ast.NodeTransformer):
+    """Remove docstrings while preserving every executable AST node."""
+
+    @staticmethod
+    def _strip(body: list[ast.stmt]) -> list[ast.stmt]:
+        if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+            return body[1:]
+        return body
+
+    def visit_Module(self, node: ast.Module) -> ast.AST:
+        node.body = self._strip(node.body)
+        return self.generic_visit(node)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.AST:
+        node.body = self._strip(node.body)
+        return self.generic_visit(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> ast.AST:
+        node.body = self._strip(node.body)
+        return self.generic_visit(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> ast.AST:
+        node.body = self._strip(node.body)
+        return self.generic_visit(node)
+
+
+def _semantic_source(relative: str, content: bytes) -> bytes:
+    """Canonical executable representation, falling back to exact bytes."""
+    if not relative.endswith(".py"):
+        return content
+    try:
+        tree = ast.parse(content.decode("utf-8"))
+    except (SyntaxError, UnicodeDecodeError):
+        return content
+    stripped = _WithoutDocstrings().visit(tree)
+    ast.fix_missing_locations(stripped)
+    return ast.dump(stripped, annotate_fields=True, include_attributes=False).encode()
+
+
+def _fingerprint_contents(contents: dict[str, bytes], *, semantic: bool) -> str:
+    h = hashlib.sha256()
+    for relative in sorted(contents):
+        h.update(relative.encode())
+        payload = contents[relative]
+        h.update(_semantic_source(relative, payload) if semantic else payload)
+    return h.hexdigest()
+
+
+def semantic_code_fingerprint(sources: list[str]) -> str:
+    """Fingerprint executable Python structure while ignoring formatting and docstrings."""
+    contents = {
+        relative: (ROOT / relative).read_bytes() if (ROOT / relative).exists() else b"<missing>"
+        for relative in sources
+    }
+    return _fingerprint_contents(contents, semantic=True)
+
+
+@functools.lru_cache(maxsize=512)
+def _git_source(commit: str, relative: str) -> bytes | None:
+    try:
+        result = subprocess.run(
+            ["git", "show", f"{commit}:{relative}"],
+            cwd=ROOT,
+            capture_output=True,
+            timeout=15,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return result.stdout if result.returncode == 0 else None
+
+
+def _legacy_semantic_compatible(record: dict[str, object]) -> bool:
+    """Accept an old byte stamp only after reconstructing it exactly and proving an AST-only match."""
+    git = record.get("git") or {}
+    if not isinstance(git, dict):
+        return False
+    commit = str(git.get("commit") or "")
+    if not commit:
+        return False
+    dirty = {
+        str(path)
+        for key in ("dirty_tracked_files", "dirty_untracked_files")
+        for path in (git.get(key) or [])
+    }
+    stamped: dict[str, bytes] = {}
+    current: dict[str, bytes] = {}
+    for relative_value in record.get("code_sources") or []:
+        relative = str(relative_value)
+        path = ROOT / relative
+        current[relative] = path.read_bytes() if path.exists() else b"<missing>"
+        if relative in dirty:
+            stamped[relative] = current[relative]
+        else:
+            prior = _git_source(commit, relative)
+            if prior is None:
+                return False
+            stamped[relative] = prior
+    if _fingerprint_contents(stamped, semantic=False) != record.get("code_fingerprint"):
+        return False
+    return _fingerprint_contents(stamped, semantic=True) == _fingerprint_contents(current, semantic=True)
 
 
 def dependency_fingerprint(
@@ -270,7 +374,9 @@ def verify(artefact: str | Path) -> dict[str, object]:
         return {"artefact": str(_rel(p)), "status": "unstamped"}
     rec = json.loads(side.read_text())
     now = code_fingerprint(rec.get("code_sources") or [])
-    code_ok = now == rec.get("code_fingerprint")
+    byte_code_ok = now == rec.get("code_fingerprint")
+    documentation_only_change = not byte_code_ok and _legacy_semantic_compatible(rec)
+    code_ok = byte_code_ok or documentation_only_change
     input_changes = [
         str(item.get("path"))
         for item in rec.get("inputs") or []
@@ -283,6 +389,8 @@ def verify(artefact: str | Path) -> dict[str, object]:
         "stamped_fingerprint": rec.get("code_fingerprint"),
         "current_fingerprint": now,
         "code_current": code_ok,
+        "byte_code_current": byte_code_ok,
+        "documentation_only_change": documentation_only_change,
         "inputs_current": inputs_ok,
         "changed_inputs": input_changes,
         "stamped_commit": (rec.get("git") or {}).get("commit"),

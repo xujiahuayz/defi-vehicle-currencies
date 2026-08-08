@@ -1,0 +1,1081 @@
+
+
+===== PAGE 1 =====
+
+Journal of Fmanclal Econonucs 9 (1981) 47--73. North-Holland Publishmg Company
+OPTIMAL DEALER PRICING UNDER TRANSACTIONS
+AND RETURN UNCERTAINTY*
+Thomas HO
+New York University, New York, NY 10006, USA
+Hans R. STOLL
+Vanderbdt University, Nashville, TN 37240, USA
+Received October 1979, final version received September 1980
+The paper exammes the optimal behavior of a smgle dealer who 1s faced with a stochastic
+demand to trade (modeled by a continuous time Pmsson Jump process) and facmg return risk
+on his stock and on the rest of his portfolio (modeled by diffusion processes). Usmg stochastic
+dynamic programmmg, we dertve the optimal bid and ask prices that maxnmze the dealer’s
+expected utility of termmal wealth as a function of the state m which he finds himself. The
+relationshIp of the bid and ask prices to inventory of the dealer, mstantaneous variance of
+return, stochastic arrival of transactions and other variables is examined.
+1. Introduction
+Dealers in securities markets stand ready to trade immediately fixed
+amounts of securities at stated bid or ask prices. In this paper the optimal
+bid and ask prices are determined such that the dealer’s expected utility of
+terminal wealth is maximized. Our concern is primarily with the risk
+assumed by the dealer, which in this case arises not only from uncertainty
+about the return on his inventory but also from the uncertainty about when
+future transactions will occur (which affects how long he must bear return
+uncertainty). We consider a single dealer trading a single stock and facing a
+downward sloping stochastic demand for the service of immediacy provided
+by the dealer.
+This paper is related to an earlier paper by Stoll (1978a); indeed the
+economic setting of the problem is much the same. What is different is the
+nature of uncertainty (primarily the introduction of transactions uncertainty),
+explicit treatment of a multiperiod strategy for the dealer, and the in-
+troduction of the demand side. The paper should also be placed in the
+context of the growing literature on the micro-structure of securities markets.
+*We wish to thank Thomas Copeland, E. Phlhp Jones, Robert Schwartz and the referee for
+their helpful comments
+
+===== PAGE 2 =====
+
+48 ‘1: Ho and H.R. Stall, Optimal dealer pricing
+This literature is concerned with the difference between transactions prices
+and ‘true’ underlying prices as determined by the available information set.
+One approach to this issue is to propose price or return generating processes
+that are consistent with our understanding of market structure but do not
+necessarily derive from any principles of individual economic behavior. The
+end product of such research is the relationship between the observed
+distribution of returns and the ‘true’ underlying distribution. The work of
+Clark (1973) Blattberg and Gonedes (1974) Westerfield (1977), Oldfield,
+Rogalski and Jarrow (1977) Schwartz and Whitcomb (1977) and Goldman
+and Beja (1979) is in this spirit. The latter paper is most closely related to
+our paper since it is concerned with the impact of the specialist on the
+process by which transactions prices adjust to the evolving ‘true’ price of the
+stock. However, they do not build an explicit micro-economic model of the
+dealer.
+An alternative approach is to specify the demand for and supply of the
+services of intermediaries - i.e., dealers - whose compensation is reflected
+in a transaction price different from the ‘true’ price. For an extensive review
+of the literature, see Cohen, Maier, Schwartz and Whitcomb [CMSW]
+(1979). On the supply side, work began with the paper by Demsetz (1968),
+and additional theoretical contributions were made by Tinic (1972) and Stoll
+(1978a). There are also a host of empirical papers on bid-ask spreads that
+have arisen out of this or closely related approaches. In addition to Demsetz
+and Tinic, see Tinic and West (1972), Benston and Hagerman (1974) Stoll
+(1978b), and Smidt (1979), for example. Papers by Copeland (1976), Epps
+(1976), CMSW (1978), and Goldman and Sosin (1979) can be viewed as the
+basis for the demand for dealer services because they specify why investors
+trade and how trading affects prices. However, the role of intermediaries is
+not explicitly considered.
+In an excellent paper, Garman (1976) does consider the role of the
+intermediation process, but he is more concerned with the equilibrium price
+of securities rather than the equilibrium price of the services of inter-
+mediaries. We\take the dealer’s opinion of the ‘true’ price of the stock to be
+exogenously determined by his information set and ask how the dealer prices
+relative to his ‘true’ price whereas Garman is concerned with the necessary
+behavior of transactions prices to meet an exogenous inventory objective of
+the dealer. We adopt Garman’s concept of stochastic supply of and demand
+for securities but view both the demand to sell securities and the demand to
+buy securities as demands for dealer services. Unlike Garman and recent
+papers by Amihud and Mendelson (1979) and Mildenstein and Schleef
+(1979), based on Garman, we do not require our dealer to maximize expected
+profits. Indeed our key concern is with the risk the dealer faces, and how this
+affects his willingness to supply dealer services. In addition we introduce
+stochastic processes for the ‘true’ return on the dealer’s stock and the other
+
+===== PAGE 3 =====
+
+7: Ho and H.R. Stall, Optimal dealer pricing 49
+components of his portfolio. In the face of stochastic transactions and
+stochastic returns, the dealer maximizes expected utility of terminal wealth
+by adjusting bid and ask prices through time. We present a dynamic
+programming solution to this more general problem. Mildenstein and Schleef
+also employ dynamic programming but they assume a risk premium for the
+dealer rather than deriving the premium in their analysis.
+This paper is limited to the behavior of a single dealer making a market in
+a single stock. The generalization to many stocks is not difficult but adds
+needless complexity and is not considered in this paper. The determination of
+market bid and ask prices when there are several’ dealers (or, for that matter,
+individuals placing limit orders) is also considered elsewhere.’
+The next section of this paper discusses the assumptions underlying our
+model. The dynamic programming problem is then stated and a solution
+presented. The model is used to analyze the dealer’s optimal bid-ask spread
+and price adjustment strategy under symmetric as well as asymmetric
+demand conditions. A numerical illustration is also presented. The model is
+then used to analyze the decision to become a dealer in a particular stock.
+Finally the paper is summarized.
+2. Assumptions
+Transactions are assumed to evolve as a stationary continuous time
+stochastic jump process as in Garman (1976). A different process is allowed
+for purchases by the dealer and sales by the dealer. The process may be
+represented as follows:
+Dealer sales (public purchases):
+/l,dt
+dpr-------z
+1 - E,,dt
+(la)
+Dealer purchases (public sales):
+&dt
+(lb)
+1 - R,dt
+where Q is the jump size (number of shares in a transaction), and A,,& are
+the intensities of processes, representing the average number of public
+purchase or public sale transactions respectively per unit time. &,dt and i,,dt
+can be interpreted as the probabilities of a dealer sale or a dealer purchase
+over the next instant.
+‘A simplified version of our approach and some results are m Ho and Stoll (1980).
+
+===== PAGE 4 =====
+
+50 7: Ho and H.R. Stall, Optimal dealer pwmg
+The use of a Poisson jump process to model transactions is quite natural.
+In actual markets, dealers are obligated to trade a minimum quantity (i.e.,
+100 shares), and transactions occur at discrete time intervals.
+The dealer determines a price of immediacy, b, should a public sale (dealer
+purchase) order arrive and a price, a, should a public purchase (dealer sale)
+order arrive. The dealer does not directly quote b, a. Rather he quotes bid
+and ask prices which are defined as
+where p is the dealer’s opinion of the true price of the stock at the time he
+sets the bid-ask quotation. The public’s opinion of the true price is denoted
+by p*, and the two need not be the same.
+The dealer is assumed to trade only with the public in a passive way. That
+is, he sets prices and must wait until a transaction occurs. He cannot
+immediately dispose of inventory by trading with a dealer of last resort. The
+arrival rate of dealer purchases, &, and dealer sales, A,, depends on. the
+dealer’s buying fee and selling fee respectively. Linear demand curves are
+shown in fig. 1. By raising b, the dealer can reduce the probability of further
+public sales and by lowering a, he raises the probability of public purchases.
+Of course public purchases and sales are also influenced by the difference
+between p and p*. This difference is assumed to be parameterized in the
+functions i, and A,.
+$ PuMic sellers)
+Fig. 1 Average pubhc demand to buy from dealer, &, and average pubhc demand to sell to
+dealer, i,. when pubWE opmton of ‘true’ puce (p*) and dealer’s opmlon of ‘true’ prxe (p) ddfer
+Eealer sets bid price (p,,) and ask price (p,) and regulates demand at ic and A:
+
+===== PAGE 5 =====
+
+7: Ho and H.R. Stall, Optimal dealer pricing 51
+In addition to uncertainty about the timing of subsequent transactions, the
+dealer faces uncertainty about the return on his existing portfolio. In the
+absence of a transaction, portfolio growth, dX, is represented by a stochastic
+differential equation of the following form:
+dX = r,X dt + X dZ,, (3)
+where rx is the mean return per unit time; dZ, is a (non-standardized)
+Wiener process with mean zero and instantaneous variance, &.
+The dealer’s wealth is divided into three components:
+(1) Cash
+Cash is accumulated when the dealer sells securities (short selling is
+permitted) and paid out when the dealer buys securities. Any balance in the
+cash account earns (or pays) the risk free rate of interest, r. The change in
+the value of the cash account, F, is
+dF=rFdt-(p-b)dq,+(p+n)dq,. (4)
+Uncertainty in the cash account is due to uncertainty about transactions not
+to any uncertainty about the interest to be earned.
+(2) Inuentory
+The dealer’s inventory consists of shares of the one stock in which he
+makes a market. The change in the value of the inventory account, I, is
+dl=r,ldt+pdq,-pdq,+IdZ,, (5)
+where notation is as in (3) and (4). Shares enter inventory at p whereas the
+associated cash flow in the cash account is (p-b) or (p +a) per share. The
+difference reflects the dealer’s profit. Uncertainty arises both from transac-
+tions uncertainty reflected in dq, and dq, and from uncertainty about the
+return on the stock which is reflected in the instantaneous variance of, of the
+Wiener process, dZ,. Over time, the dealer experiences discrete jumps in
+inventory due to transactions of Q shares at price p. There is an offsetting
+jump of slightly smaller size (smaller by the transaction cost, a or b) in the
+cash account. The fluctuations in value between jumps are due to return
+uncertainty represented by the last term in (5), and this return uncertainty is
+the underlying source of risk facing the dealer.
+In the real world, fluctuations in return are reflected in the price of the
+stock (absent dividend payments). In our model this would require a
+complex accounting through time of the relation between return fluctuations and
+
+===== PAGE 6 =====
+
+52 T Ho and H.R. Stall, Optimal dealer pricing
+price fluctuations. However, allowing the price to fluctuate introduces no
+new element of uncertainty that is not already reflected in return uncertainty.
+Thus we adopt the convention that the true price, p, is kept constant. This
+implies that return uncertainty shows up as a continuous stock dividend that
+keeps the true price constant. It should be emphasized that this assumption
+of constant p is an accounting convention and that no sources of uncertainty
+are ignored. The change in shares outstanding could ultimately affect the
+demand to trade in the dealer’s stock; but the effect would be diffused across
+all stocks, and given the short time horizon of the model, would be unlikely
+to be consequential to the dealer’s decision on how to set his spread today.
+(3) Base wealth
+The dealer has base wealth Y On the day he starts as a dealer F,=O and
+I, =O, and base wealth is his wealth. The dealer is assumed to have one
+consumption point at time T, and base wealth is an optimally diversified
+portfolio with respect to that time horizon. Base wealth serves as collateral
+to back up the borrowing of shares or money that arises in the course of
+acting as a dealer. The change in base wealth is
+dY=r,Ydt+ YdZ,, (6)
+where notation is as in (3). Unlike Garman (1976) we are not concerned
+with bankruptcy of the dealer. We assume the time horizon is sufficiently
+short and the collateral is sufficiently large to make bankruptcy an un-
+important consideration in light of the Wiener process in which sudden
+jumps in return are not possible and in light of the dealer’s ability to adjust
+prices. The effect of bankruptcy m a model with extended time horizon and
+price jumps deserves further investigation.
+The objective of the dealer is to maximize the expected utility of his total
+wealth, ELI(W.), at time 7; his horizon, where
+W,.=F,+I,.+ Y,. (7)
+The world ends at Tand the dealer is assumed to liquidate his inventory and
+base wealth at their market values without transactions costs.2 While
+consumption occurs once in our model, the multiperiod aspects are reflected
+in the random shocks to the opportunity set arising from numerous
+transactions and price changes prior to the horizon date. We seek the
+optimal strategy for choosing the values of a and b that maximize the
+dealer’s preference function. This involves weighing the costs and benefits of
+‘We could impose an arbitary liquidation fee whtch would affect our mathematical results but
+would not add greatly to our understandlng of the risks and appropriate dealer strategy in the
+periods prior to the consumption point
+
+===== PAGE 7 =====
+
+T. Ho und H.R. Stall, Optimal dealer pricmg 53
+being a dealer. The costs arise from the non-optimal portfolio the dealer
+stands ready to accept. Not only is his degree of diversification and level of
+risk not optimal but the presence of transactions uncertainty makes un-
+certain when and how much his portfolio will be unbalanced. The benefits
+arise from the fee he is able to charge for his service of immediate trading.
+Because the model assumes a single dealer in the stock, that dealer has the
+ability to earn monopoly profits.
+The optimal strategy is complicated by the multiperiod framework which
+permits the dealer to adjust a and b as he moves through time - usually in
+response to inventory changes. Although stochastic, these inventory changes
+are in turn influenced by the bid and ask prices. This is known as a closed
+loop control problem because the optimal values of a and b depend on the
+observed state variables (F,I, Y) as well as on time, t. In other words the
+optimal dealer strategy we seek is a fincrion that specified the choice of a
+and b for any position (described by t, F, I, Y) in which the dealer finds
+himself. The appropriate procedure for such a problem is dynamic
+programming.
+Two points about the relationship of our analysis to the literature on
+portfolio theory and capital asset pricing should be emphasized. First, ours is
+a partial equilibrium analysis that is concerned only with the individual
+dealer’s portfolio problem. No assumptions are made about equilibrium asset
+prices and no solutions are offered to equilibrium asset pricing in the
+presence of a dealer. Second, our analysis does not assume multiperiod
+consumption. In our model, as in standard one period portfolio models, the
+dealer costlessly liquidates all assets at the horizon date. The model differs in
+the multiperiod evolution of the opportunity set. Despite the single con-
+sumption horizon, time dependencies in the opportunity set, induced by the
+dealer’s bid and ask pricing strategy, make it impossible to reduce our
+problem to the standard one period problem. We leave to future research the
+development of a more complete multiperiod portfolio analysis of the dealer
+and the integration of dealer behavior into the theory of equilibrium asset
+pricing.
+3. Statement of dynamic programming problem
+For any state of the world which is described by time and the values of
+the state variables - dealer’s cash, inventory and base wealth - the dealer
+chooses a and‘ b to maximize the expected utility of his terminal wealth.
+Define the optimal performance function J( ) as
+J(t,F,I,Y)=max[EG’(W,)It,F,Z,Y].
+o.b (8)
+
+===== PAGE 8 =====
+
+54 7: Ho and H.R. Stall, Opttmal dealer pncing
+The function J( ) is the solution to the maximization problem (8) for an
+optimal bid and ask strategy from t, to 7: It can be viewed as a derived
+utility function which describes the result of optimal dealer behavior
+conditional on any observed t, F, I, Y Since there is no intermediate
+consumption prior to IT; the fundamental recurrence relation implied by the
+principle of optimality of dynamic programming is simply that
+maxdJ(t,F,Z, Y)=O,
+a.b
+(9a)
+and
+J(xF,Z, Y)=U(W,). (9b)
+In other words J must meet the condition that the maximized increments to
+J are always zero; for if they were not, one could increase derived utility by
+an alternative bid-ask strategy. Also, at time IT; J must give the same level of
+utility as the elementary utility function, U.
+Writing out the partial differential equation implied by (9a) - Bellman’s
+equation - gives
+max (dJ/dt) = J, + LJ
+o,b
++~~~{UJ(F+PQ+~Q,Z-PQ, Y)-J(F,Z, Y)] a,b
++&t-J(F-PQ+bQ,Z+pQ, Y)-J(F,Z, y)])=O, (10)
+where J, is the partial derivative of J with respect to time and L is defined as
+the operator that takes the differential with respect to time of the mean
+returns and Wiener risk components of the function J using Ito’s Lemma.
+Thus3
+LJ = J,rF + J,r,Z + J,r,Y+iJ,,a:Z2 +$J,,a$ Y2 + J,,a,,Z X (11)
+where rsf and C: are the instantaneous variance of dZ, and of dZ,
+respectively, and ~,r is the covariance between dZ, and dZ,, and where
+subscripts on a function indicate the variable with respect to which a partial
+derivative is taken. As is evident in (4) (5) and (6) the mean returns and
+Wiener risks do not depend directly on a and b, and therefore LJ does not
+involve maximization over a and b. Thus J, + LJ simply represents the total
+3A source on the dynamtc programming solutton to problems in stochasttc control IS Davts
+(1977). Davis also uses the operator Lin the sense we do To illustrate the operator L, consider
+a stmplitied problem. Suppose y=f(t,x) where dx is gtven by (3). Usmg Ito’s Lemma and takmg
+expectattons gives E dy =f,dt +f,Edx +fJx,E(dX)2 =f, dr +fxE[r,X dt + X dZ,] + 5 /xxX2a: dt.
+Noting that E dy=dEy [see Davts (1977)] and that E(X dZ .)=O, It follows that dEy/dr =f, + Lf
+where Lf=f,r,X +ffxx us X2, whtch is analogous m form to (11).
+
+===== PAGE 9 =====
+
+7: Ho and H.R. Stall, Optimal dealer pricing 55
+time derivative of derived utility when there are no transactions. (Of course a
+and ‘b indirectly affect Y, I and thereby influence the dealer’s ultimate return
+and risk.)
+More important to the dealer and to our problem are the last two lines of
+(10) which represent the maximized increments to J( ) resulting from
+transactions the value of which are PQ and which occur with probability A,dt
+in the case of dealer sales or I,dt in the case of the dealer purchases. The
+dealer also adds his fee, aQ or bQ, to his cash account. These increments do
+depend on a and b. The independence of the processes, dq, and dq,, allows
+us to write the effect as the sum of the two increments. The time argument in
+J( ) has been suppressed.
+It is convenient to restate the problem in terms of time remaining to the
+horizon date 7: Let 7 denote this amount of time, and replace t in (8) by 7.
+In other words we now think of J as a derived utility function that depends
+on the time remaining to the horizon date. Thus when s=O,
+J(O,F,I,Y)=U(W). (12)
+The derived utility at the horizon data is just the utility of wealth at that
+point. The transformation of the time variable also implies that
+J,= -J,. (13)
+Next consider the last two lines of (lo), and since p is arbitrary let p= 1.
+Because aQ and bQ are small relative to Q, we make the following first-order
+approximations:
+J(F+Q+aQ,I-Q, Y)=J(F+Q,I-Q, Y)
++ J&F + Q, 1 -Q, Y)aQ,
+J(F-Q+bQ,I+Q, Y)=J(F-Q,I+Q, Y)
++J,(F-Q,I+Q, Y)bQ.
+(14a)
+(lab)
+Note that there is no approximation with respect to the effect of a
+transaction on J; the approximation is only with respect to the fee collected
+on a transaction.
+We assume the same linear demand relation for dealer sales and
+purchases:
+&=l(a)=a-pa,
+i,, = i(b) = c( - /lb.
+Wa)
+(15b)
+
+===== PAGE 10 =====
+
+56 T Ho and H.R. Stall, Optimal dealer pricing
+This assumption of symmetric demand is made for expositional clarity and
+will be relaxed later. Now define the sell operator, S, as
+SJ=S[J(F,Z, Y)]=J(F+Q,Z-Q, Y), U6a)
+and define the buy operator, B, as
+BJ=B[J(F,Z, Y)]=J(F-Q,Z+Q, Y). (16b)
+The sell operator acting on J describes the dealer’s derived utility after a sale
+by the dealer but before including the selling fee. Utility will decrease if the
+sale drives the dealer farther away from his desired portfolio by increasing a
+short inventory position. Utility will increase if the sale reduces a long
+inventory position. A corresponding result holds on the buy side.
+Substituting (13), (14) and (15) into (10) and using (16) allows us to restate
+(10) as follows:
+J,=LJ+max {[l(a)aQSJF-L(a)(J-SJ)]
+0.b
++ [A(b)bQBJ, - ;L(b)(J - BJ)]}. (17)
+This equation says that the change with respect to time remaining of derived
+utility depends on the return and risk of the dealer’s current wealth (LJ),
+over which he has no direct control, and the maximized value of two terms
+that reflect the net contribution to the dealer’s derived utility from dealer sales
+and purchases respectively, over which he has control. The essence of the
+dealer’s problem is contained in these two terms.
+Consider the last term of (17), which represents the net benefit from a
+purchase by the dealer. The expected gross benefit (in utile dimensions) from
+a dealer purchase is
+WPQBJ,,
+where L(b)bQ is the expected revenue from purchase transactions; and BJ, is
+the marginal utility of cash after a purchase transaction, i.e., BJF converts
+expected revenues into ‘utiles’. Since Q and BJF are given and since A(b) has
+been assumed to be linear, the expected gross benefit is a quadratic function
+of b and is drawn in fig. 2. The curve passes through the origin, is at a
+maximum when b =u/2/? [from (15)], and is zero again at b=u//?. Because of
+the assumed symmetry in demand conditions and on the temporary assum-
+ption that BJF= SJ, the curve is identical for dealer sale transactions. The
+assumption BJ, = SJ,, which implies that the marginal derived utility of cash
+after a sale equals the marginal derived utility of cash after a purchase, is
+made for expositional purposes only and is not used in the formal develop-
+ment of the model,
+
+===== PAGE 11 =====
+
+7: Ho and H.R. Stolf, Opfimal dealer pricing
+Fig. 2. Dealer’s expected (gross) benetit functton for a purchase or sale transactton
+= I(x)xQBJ,, with x = a, b, where a, b are the selling and buying fee respectively, j.( .) is the
+mean arrival rate of transaction, Q is the transaction size, and BJF is the marginal utrhty of the
+fee after the transaction. Dealer’s expected (gross) cost func!ion for a purchase, condrtional on
+positive inmal mventory = (J - BJ)i(b), where (J - BJ) > 0 IS the decrease on the dealer’s derived
+utility resulting from a purchase. Dealer’s expected (gross) cost function for a sale conditional on
+positive initial inventory=(J -S.l)l(a), where (J- SJ)<O is the decrease in the dealer’s derived
+utility resulting from a sale. Dealer maximizes expected, risk adjusted, (net) benefit by choosing
+optimal selling fee, u*, and optimal buying fee, b*. Risk neutral buymg or selhng fee is a/2)9.
+What is typically different between an incremental purchase and an
+incremental sale is the gross ‘cost’ to the dealer (in utile dimensions). Unless
+the dealer begins with zero inventory, he prefers one type of transaction over
+the other. Suppose the dealer begins with positive inventory which makes
+him reluctant to purchase additional shares. The expected decrease in derived
+utility from a purchase,
+4bNJ--BJ),
+is positive because (J -BJ) >O. Since A(b) is linear and downward sloping
+this ‘cost’ function is also linear and downward sloping as shown in fig. 2.
+The larger b the lower is the probability of a dealer purchase and therefore
+the lower is the expected ‘cost’ to the dealer of a purchase. The optimum
+buying fee, b*, is set to maximize the difference between the ‘benefit’ and
+‘cost’ curve. Performing this maximization yields
+b* = c(/2p + (J - BJ)/2BJ,Q. (18a)
+In other words, set b at the level which maximizes expected profits associated
+with the stochastic arrival of public sellers plus a risk premium term. The
+risk premium term ultimately depends on the dealer’s fundamental attitude
+toward risk and the level of return and transactions uncertainty of the stock,
+
+===== PAGE 12 =====
+
+58 7: Ho and H.R. Stall, Optimul dealer prwing
+all of which enter into J and L?J.4 On the other hand, when Inventory is
+positive, utility is increased by a sale transaction, i.e., i.(u)(J - SJ) < 0 because
+(J - SJ) < 0. The new position after a sale, SJ, would be superior to the old
+position, J. Thus the ‘cost’ function for a sale transaction is negative and
+upward sloping as shown in fig. 2. The larger is u, the lower is the
+probability of a dealer sale and therefore the less negative is the expected
+cost (the smaller is the expected increase in utility). The optimum sellmg fee,
+u*, is a set to maximize the difference between the ‘benefit’ curve and the
+‘cost’ curve for sales. Analogously to the case of a purchase this solution is
+u* = c(/2,8 + (J - SJ)/ZSJ,Q. (18b)
+Because the dealer has positive inventory, b* >a* in fig. 2, as one would
+expect. When dealer inventory is zero, the two ‘cost’ functions coincide and
+are downward slopmg, in which case a* = b*. As inventory changes, the ‘cost’
+functions shift in opposite directions and a and b change in opposite
+directions. For given p, this implies that both the bid price (pb) and ask price
+(p,) fall in response to inventory increases and both rise in response to
+inventory decreases, as shown in fig. 3. We shall see later that the spread, the
+difference between p, and pb, is to an important degree invariant with respect
+to inventory changes.
+pa b
+‘b
+‘b
+1
+Fig 3 Adjustment of btd prxe (p,,) and ask pr~e (p,) relative to ‘true’ pr~e, p, wth constant
+spread, s = (I+ h, and changmg prtce adjustment, d = a - b
+“Carman’s dealer would set h*=a/2P, and the analysis m that case IS, for example,
+concerned wth the time until bankruptcy. Amlhud and Mend&on allow the dealer to adjust his
+price ~ in our model, a and h - to avold fadure. But they mamtam the assumption of risk
+neutrahty.
+
+===== PAGE 13 =====
+
+7: Ho and 1f.R Stall, OptImaI dealer prrcmg 59
+Until now our methodology has been quite standard. We have formulated
+the dynamic programming problem and stated the solution - (18) - in
+terms of marginal conditions on the derived utility function. However, we
+wish to go beyond the qualitative conclusions contained in our discussion of
+fig. 2 and eq. (18) and analyse the specific determinants of the dealer’s bid-
+ask strategy in a multiperiod environment. This requires a solution for J.
+We now proceed to a final statement of the dynamic programming
+problem by performing the maximization required in (17). This has in fact
+been done in (Isa) and (18b). Substitution of (18) into (17) and using (15)
+yields
+J, = LJ + [cN,Q - fl(J - SJ)]‘/4PSJ,Q
++ [ctBJ,Q -B (J - BJ)]2/4fiBJ,Q. (19)
+The problem is to solve (19) for J subject to (18) and the terminal condition,
+(12). The solution for J can then be substituted into (18) to yield the overall
+optimal values of a and b as functions of the state variables, F, I, Y
+4. Solution
+Unfortunately to our knowledge there is no closed form solution for
+equations of the form (19). However by using Taylor’s series expansion we
+can, in principle, come arbitrarily close to the solution. Indeed this pro-
+cedure has certain advantages since it allows one to see the nature of the
+solution as a function of time to the horizon date. Thus write .J( ) as a
+Taylor’s expansion around 5 = 0,
+J(T,F.I,Y)=~~(F,Z,Y)+~~(F,I,Y)~+~~(F,I,Y)~~+..., (201
+where higher-order terms are assumed to be small enough to be neglected. It
+will be evident from the methodology that follows that higher-order terms
+could be incorporated. However, for the purpose of this paper the increased
+complexity that results is not offset by a corresponding increase in under-
+standing of the dealer. The interpretation of (20) is that J( ) depends on
+how much time remains in the dealer’s planning horizon. When r=O, only
+the first term of (20) is relevant. When r>O but sufficiently small, only the
+second term is relevant, and so on.’
+The solution to (20) is found by finding the different functions 4’( ),
+c$‘( ) and +‘( ). Th e superscripts on the $ are notations associating each
+function with the degree of the derivative of J with respect to T. Eq. (20)
+holds for all values of 7. For t=O, J is given by (12). Therefore
+#‘(F,I, Y)= u(W), (21)
+‘As a practical matter the omltted hlghel order terms are not hkely to be large for the short
+plannmg horizons over which most dealers operate
+
+===== PAGE 14 =====
+
+60 7: Ho and H.R. Stall, Optind dder pricing
+the utility of terminal wealth. In other words if the dealer is at maturity the
+optimal performance function is just his utility function.
+For r ~0, (19) must be satisfied. Substituting for J,, J and J, in (19) from
+(20) and evaluating the resulting expression at T=O gives the solution for
+47 k6
+(22)
+where
+The operator, L, has been defined in (11). Its application in this case leads to
+where
+TW =W’IW) +rrUIW+r,(Y/W ),
+and U’ >O and U” ~0 are the lirst and second derivatives of U(W). In other
+words LU( W)= Lq5’ represents the positive contribution of mean return to
+utility when there is only a short instant of time remaining plus the negative
+contribution of return variance. The term, fZ, is the maximum expected
+profits from either sales or purchases (which are the same under symmetric
+demand assumed here).’ The term 2U’fl thus represents the contribution to
+dealer welfare of the profits he expects to make from purchase plus sale
+transactions. Transactions uncertainty does not enter into 4’.
+6From (20),
+(J,Ir=O)=@, (JJr=OJ=@=U, (J,)r=O)=r’$P/W=U’.
+Thus (19) evaluated at r=O ts
+Because U= SU =BU and Sb”=BU’= LJ’ (since at the hortzon date there IS no rusk and the
+utrlity of a dollar IS the same whether held in inventory or cash),
+4’ = LU +2U’(~x’Q;4@), whtch is (22).
+‘Usmg (15a) expected profit per sale transaction of size Q 1s
+A,Q = IQ - /IQa”
+The value of u whtch maxtmizes thts expression IS u=ai2P Substitutmg thrs tn the expected
+protit expresston ytelds maxtmum expected profit equal to a’Q,‘4P a value denoted by II. Fmally
+substttutmg the value. ~128, m the demand relatton ytelds the opttmal arrival rate at the prtce
+whtch maxtmtzes expected proftt, I.e.. a/2. Corresponding terms arise m the case of dealer
+purchases.
+
+===== PAGE 15 =====
+
+7: Ho und H.R. Stall, Optimal dealer priung 61
+The function $’ is found in a similar way. Substitute for J,, J and J, in
+(19) from (20), take the derivative with respect to time, and evaluate at t =O.
+The solution uses the solutions for 4” and 4’, and involves derivatives and
+moments of third and fourth order. To simplify the problem, we now assume
+the dealer’s elementary utility function is quadratic so that we may restrict
+ourselves to a mean-variance world.8 The solution for 4’ is then’
+~2=~l~U(W)+U’rn+2U”n2+2U”~r,W+)U~~~~Q2. (23)
+This expression is a negative adjustment to the dealer’s derived utility for
+aspects of return uncertainty and the effect of transactions on portfolio
+return uncertainty. The first term of (23) reflects the compound effect of
+return and return risk resulting from twice applying the operator Lto U(W).
+The term is written out in the footnote and inspection will indicate that it is
+normally negative.” The second term is the increase in utility resulting from
+the interest earnings on the transaction profit. Because U”<O the remaining
+terms are always negative. The third term, 2U”n2, is an adjustment to the
+profit term, 2U’f7, that appears in 4’. If the dealer restricts himself to a very
+short horizon, transactions appear very profitable because he sees only the
+fee he collects immediately. As his horizon is extended, derived utility is
+adjusted downward to reflect the uncertainty of maintaining that pro-
+fitability. The fourth term is a similar adjustment for the compound effect of
+!7 and total portfolio return r,l/l!
+The last term is an adjustment for transactions uncertainty. Transactions
+uncertainty is not undesirable per se. It is undesirable only because it affects
+return uncertainty. Therefore C: IS part of this term. The expression, 42, 1s
+the expected arrival rate of purchases or sales at the dealer’s a, b which
+maximizes expected profits (see footnote 7). When viewed in the context of a
+‘Smce we are examm~ng a short term Interval, the change m dealer wealth IS small so that he
+will not be drawn mto the unreasonable range of the quadratlc utdtty function.
+‘The procedure for derlvmg (23) IS as follows. Take the derlrative of (19).
+where fS and fB are the second and thud terms respectively of (19) and are fun&Ions of time
+From (20),
+Thus,
+(J,,Is=O)=2@, (J,(r=O)=@, which is gven by (22)
+2~2=L~‘+(/slr=O)+(SpIr=O)
+Takmg the derlvatlves, fs and fy, IS IS laborious The steps are avadable by wrltmg the authors.
+‘oLZL;=~“(rF+r,l+r~Y)2+(I’(rZF+r~I+r~Y)+U”(rr~r,lz+cr,~r,lY+o,urulY+a~r,Y2)
++ L”‘(r,nfI* + (r,+ r, )cT,,IY+~,.cT:Y’)+ li”(fa~12+a~,IY+~cr~YZ)
+
+===== PAGE 16 =====
+
+62 7: Ho und H.R. Stall, Optimal dealer pricmg
+small time interval, u/2 is the probability of a purchase or sale (i.e., (a/2)dt is
+the probability). Thus for a stock in which the probability of a transaction is
+large, the probability of incurring return risk (the value of which is c$Q’) is
+also large. Since U” ~0, this term has a negative effect on J.
+5. Dealer’s pricing strategy
+Having c#J’, C#J’ and c#J*, we have the solution for J as given by (20); and we
+can specify how the dealer’s bid and ask prices depend on the return
+characteristics of the stoci. the stochastic demand for dealer services and the
+dealer’s elementary utility function. We describe the dealer’s pricing strategy
+by specifying the dealer’s spread, s, and a price adjustment variable, d. The
+spread is defined as s=a + b. (Since p= 1, this is the proportional spread.)
+We show first that the spread is largely independent of the dealer’s inventory
+position and depends on fundamental characteristics of the stock and the
+dealer. Second, the dealer encourages public customers to trade in the
+direction he desires by changing the adjustment variable which is defined as
+d =a- b, not by changing the spread. With the help of fig. 3 one can see that
+d -0 whenever the mid-point of the spread is at p, d ~0 whenever the mid-
+point is less than p (and the dealer is relatively more anxious to sell than to
+buy), d>O whenever the mid-point is greater than p (and the dealer is
+relatively more anxious to buy than to sell). l1 Given s and d, the selling fee
+and buying fee can always be derived according to
+a= (s+d)/2, b=(s-d)/2.
+6. The hid-ask spread
+From (18a) and (18b) the dealer’s spread is
+s = IX//I + (J - SJ)/2SJ,Q + (J - BJ)/2BJ,Q. (24)
+The first term in (24) is the spread which maximizes expected revenues per
+share from sale and purchase transactions from the symmetric linear demand
+functions. The more inelastic the demand for dealer services the larger the
+spread.’ 2 The remaining terms are ‘risk premiums’ for a sale and purchase
+transaction, which assume optimal dealer behavior in the future. The sum of
+the risk premiums is required because the dealer sets the spread without
+knowing whether the next transaction will be a purchase or sale.
+“Smidt (1979) has called the mtd-pomt of the dealer’s spread (p+d), the market prrce, and he
+has called our p the equihbrrum prtce. He wews the dealer as adjusting his inventory by altering
+the difference between ‘market price’ and the ‘equihbrium price’, I.e., by altering our d.
+12The papers of Garman (1976) and Amthud and Mendelson (1979) are concerned wrth thus
+term or the relatea expresston for profits.
+
+===== PAGE 17 =====
+
+7: Ho and H.R. Stall, Optimal dealer pricing 63
+Substitution of the solution for J into (24) yields the following optimal
+dealer spread :
+s=r-fZ(Q/W)
+P
+afz+jZ(Q/W)af[(r,-ri-GG,)+Z(r,+2fI/W)]t2,
+(25)
+where Z = U” W/U’, the coefficient of relative risk aversion, and G, = rr +$oi,
+which is the instantaneous growth in the variance of I. The spread equation
+actually omits certain small second order terms. The full equation and the
+procedure for deriving it are in a mathematical appendix available from the
+authors.
+We can now see what factors determine the spread and how the spread is
+changed as the horizon of the dealer is lengthened. When r=O, the dealer
+does not look beyond the current moment and is concerned only with the fee
+he can collect from a purchase or sale. Thus only the risk neutral, spread, a/p,
+already discussed above, is relevant.
+At the time horizon increases, the second term of (25) which is the lirst-
+order risk adjustment, is relevant; and the spread is higher since all variables
+are positive. This term is one half the risk premium term derived in Stoll
+(1978a) where a one period framework was relied upon. The difference arises
+from the fact that we have maximized expected utility of a monopolistic
+dealer wheras in Stoll (1978a) demand conditions are not considered, and bid
+and ask prices are determined that maintain the dealer’s original expected
+utility of terminal wealth. As was the case in Stoll (1978a), the first-order risk
+adjustment term does not depend on the dealer’s inventory. Rather it
+depends on factors which are relatively stationary through time, i.e.:
+(1) The dealer’s attitude toward risk as reflected in the coefficient of relative
+risk aversion, Z.
+(2) The relative value of the transaction for which the bid-ask quotation is
+made, Q. (Recall p= 1.) Larger transactions require larger spreads.
+(3) The risk of the stock as measured by the instantaneous variance, uf.
+Note that as far as the spread is concerned ‘total risk’ not just
+‘systematic risk’ matters. With respect to base wealth, an efficient
+portfolio, the risk of inventory is measured by the covariance between
+the return on inventory and the return on base wealth, crIY. However
+that risk is offset by the expected excess return, r,-r, and therefore does
+not appear in the final expression, (25). Because the dealer moves to a
+sub-optimal portfolio, the variance matters with respect to that fraction
+of his wealth, Q/w which exceeds the optimal investment in the stock.
+In fact, inventory position does not appear anywhere in (25) (except as it
+affects rw). The reason is that the dealer adjusts the bid and ask prices
+
+===== PAGE 18 =====
+
+64 7: Ho and H.R. Sroll, Optimul de&r pr~cmg
+equally whenever there is an inventory change. Thus when he acquires
+shares, he lowers his bid price (raises b) to discourage additional sales to
+him; and he lowers his ask price (lowers a) to encourage additional
+purchases from him. In other words he places himself on the margin where
+he is indifferent to a public sale or purchase because the higher compensation
+derived from a sale to him is equal in utility to the lower risk (cum smaller
+compensation) from a purchase from him.
+Lengthening the dealer’s time horizon makes the last term of (25) relevant
+and causes the spread to be still larger since the term is positive. For a given
+time horizon, one might expect the spread to be less under our multiperiod
+model than under the one period model of Stoll (1978a) since the dealer has
+an opportunity to adjust prices as his inventory changes. However, this is
+not the case. In a one-period model, one transaction occurs; and the dealer
+holds the risky position to the horizon. In our multiperiod model, additional
+transactions as well as dealer price adjustments may occur. The uncertainty
+of these additional transactions (which increases the uncertainty of the
+dealer’s portfolio return and profits) more than offsets the risk reduction the
+dealer chooses to achieve by changing his prices. The single period approxi-
+mation simply ignores these additional risks.
+As in the case of the first-order risk adjustment, the second-order risk
+adjustment depends on the dealer’s attitude toward risk, the transaction
+value, and the stock’s return variance, which are multiplied by the bracketed
+term. The first term inside the brackets is a risk premium plus the growth in
+the variance of I. The second term is the coefficient of relative risk aversion
+multiplied by the return from two sources - the expected return on his total
+portfolio (rw) and expected dealer profits expressed as a fraction of his
+wealth (2lZ/W). Since the expected returns and growth in variance of I are
+likely to be small relative to the dealer’s horizon, the principal effect comes
+from 2lI/W: the larger the monopoly profits today the more the dealer
+stands to lose tomorrow, and therefore the larger the second-order risk
+adjustment.
+Probably more surprising than the terms which enter (25) are the terms
+that do not enter. We had expected the transactions processes to play a more
+explicit role. They do not enter at all in the first-order risk term. They enter
+the second-order risk term through II, but this is simply an adjustment for
+the expected growth in dealer wealth from his monopoly profits. There is no
+term for the variance of the transactions process. The absence of such a term
+in the spread equations is due to two factors. First, in this model transac-
+tions uncertainty is not undesirable per se because there is no direct adverse
+effect of a below average number of buyers or sellers. We have not assumed
+a minimum cost of doing business, for example. Transactions uncertainty is
+undesirable only because it increases the uncertainty of the return on the
+dealer’s portfolio by making uncertain how large an unbalanced position
+
+===== PAGE 19 =====
+
+T Ho and H.R Stall, Optimal dealer prrcrng 65
+must be held. The effect is seen in (23) in the term (c42)a~Q’. Second, the
+reason that this term does not appear in (25) is analogous to the reason that
+inventory does not appear. For any I, the dealer sets his bid and ask price so
+that he is indifferent on the margin as to whether the next transaction is a
+purchase or sale. This is true whatever is the probability of the next purchase
+or sale even if those probabilities were to differ because of asymmetric
+demand. As a result the term, (42)c7fQ2, does not enter the spread. Just as
+current inventory does not matter for the spread, the expected change in
+inventory does not affect the spread.13
+7. Price adjustment
+On the assumption of symmetric demand, the price adlustment variable
+derived from (18a) uld (18b) is
+d=t((J-SJ)/SJ,Q)-+((J-BJ)/BJ,Q). (26)
+The principal function of d is to promote adjustment of the dealer’s
+inventory when it is temporarily thrown out of balance by the random
+arrival of transactions. Substituting the solution for J into (26) yields
+d= -Z(I/W)a:r-Z(I/W)a:[r,-r+G,+Z(r,+2n/w)]?’, (27)
+where certain small terms have again been neglected. The full equation is in
+a mathematical appendix available from the authors.
+Eq. (27) is identical to (25) except for the fact that 21 replaces Q. Whereas
+the spread depends on the size of the transaction yet to come (Q), the price
+adjustment depends on the inventory which has been acquired (I). Eq. (27) is
+an inventory response equation that specifies the price adjustment variable
+be negative (positive) when inventory is positive (negative). When d<O, both
+the bid price and ask price are ‘low’ so as to encourage dealer sales and
+discourage dealer purchases, thereby reducing the dealer’s inventory. When
+1~0, d > 0 to encourage dealer purchases and discourage dealer sales. The
+degree of price response to an inventory change depends on the same factors
+determining the size of the spread - dealer’s risk aversion, variance of the
+stock, and, in the second-order term, future increases in wealth which will be
+at risk.
+130ne mtght ask whether transacttons uncertamty would be more crtttcal of one mtroduced
+sertal dependence m the process for purchases and sales. Postttive sertal dependence m purchases
+and in sales would be like Increasing the transactton stze Q, and would therefore mcrease the
+spread Negattve sertal dependence would reduce the spread Whether any addtttonal effects
+would enter IS not at all obvious, and we have not worked out thts case.
+
+===== PAGE 20 =====
+
+66 7: Ho and H.R. Stall, Optrmal dealer pricing
+8. Asymmetric demand
+Asymmetric demand arises if the dealer’s perception of the true price, p,
+differs from the public’s perception, p *. For example if p* >p, the expected
+number of dealer sales at p exceeds the expected number of dealer purchases
+at p as in fig. 1. Suppose the demand curves for dealer sales and purchases
+differ both in their slope and intercept,
+2, = a, - Aa,
+A, = ab -&b.
+(15c)
+(154
+Asymmetric demand alters the spread equation by changing the first term
+in (24) or (25) from a/P to (cz,/2~,+a,/2/$). However, if this term - the risk
+neutral spread - and expected dealer profits remain the same under
+symmetric as under asymmetric demand, there is no additional effect on
+spread through the risk premium terms in (25).14 For example suppose that
+ao=ab= 100 initially, that a, rises to 120 and a,, falls to 50, and that the
+appropriate changes occur in /?, and fib to hold constant expected profits and
+the risk neutral spread. Then there is no additional effect through the risk
+terms despite the fact that the expected number of public sellers at p now
+exceeds the expected number of public buyers at p (a,= 120 vs a,=50). This
+is because the dealer knows today that he can follow a price adjustment
+strategy in the future that makes him indifferent to this asymmetry.
+What is crucially affected by asymmetric demand is the price adjustment
+variable, d. Just as the dealer adjusts prices if current inventory is non-zero
+so he adjusts prices for expected imbalances in demand which could drive
+future inventory to undesirable levels and thereby increase the dealer’s risk to
+undesirable levels. Let d’ denote the price adjustment under asymmetric
+demand. Following the procedure used in deriving (27), except that we now
+assume (15~) and (15d), gives
+d’ = Ca,IW, -ath%J -tZ(QIW)b:((a,-aClb)/2)t2 +4 (28)
+where d is given by (27).
+The first term is simply the price adjustment necessary to maximize
+expected profits. This may require inventory accumulation because the stock
+is a good buy (p>p*) or inventory reductions because the stock is a poor
+buy (p<p*)?
+l4The term 2f7 1s now defined as af/4/l,,+~$/4/& See footnote 7. We consider only changes
+for which this term remams constant because we are not analyzmg changes m the monopoly
+power of the dealer.
+IsThis term may be zero even m the case of asymmetrlc demand If the demand curves are
+displaced so that prolits continue to be maxlmlzed at the same prices. This IS the case for a
+rotation that mamtams the elastuty of demand; for example a,, =2a, and /?a = 2,$,.
+
+===== PAGE 21 =====
+
+7: Ho and H.R. Stall, Oprimal dealer pricing 67
+However, an expected imbalance in orders significantly raises the dealer’s
+portfolio risk, and this requires a change in d by the amount of the second
+term of (28). The expected dollar inventory change is ((a,-c(J~)Q, and the
+relative inventory risk for which the dealer must adjust his price is therefore
+((a,-aJ2)(Q/W)a~. If the probability of a sale exceeds that of a purchase
+(a,>a& the dealer raises d’ to discourage public sellers and encourage public
+buyers; and the converse is true if the probability of a purchase exceeds
+that of a sale. As in the case of the adjustment to current inventory, the
+magnitude of the change in d’ depends on the instantaneous variance of the
+stock and the dealer’s attitude toward risk.
+These price adjustments do not eliminate inventory accumulation or
+reduction because the source of this inventory change is the favorable or
+unfavorable price of the stock in the opinion of the dealer. The price
+adjustment compensates the dealer for the loss of portfolio diversification
+and change in portfolio risk resulting from the additions to or reductions
+from inventory. If the dealer always sets p =p*, where p* is defined as the
+price at which the expected demand for dealer sales is equal to the expected
+demand for dealer purchases, LX,, =a,; and the case of asymmetric demand
+would not arise.“j
+9. Numerical illustration
+Consider a dealer with a planning horizon of t =0.04 of a year, appro-
+ximately two weeks. For simplicity assume he faces symmetric demand.
+What will be his spread and price adjustment for the following assumed
+values of the exogenous variables?
+a= 2000 per year. Expected number of purchase transactions plus expected
+number of sale transactions at optimal dealer fee assuming symmetric
+demand.”
+/I = 100,000 per year. Determined to give risk neutral spread of x/P = 0.02.
+2 = - U” W/U’ = 2. Coefficient of relative risk aversion, assumed constant.
+r6The problem then is how to determme expected demand One possibthty IS to base thts
+expectation on recent transacttons thereby causmg p=p* to be based on the evolutton of
+transacttons.
+“Under risk neutral pricing and symmetrtc demand the expected arrival rate of purchases or
+sales ts a/2. The number chosen ts based on Smtdt (1979) who found stx of twelve NYSE stocks
+had fewer than 6000 transactions per year and on the assumption that the speciahst partrctpated
+as a dealer m one third of those transactions.
+
+===== PAGE 22 =====
+
+68 7: Ho und H.R. SM. Optrmcrl dewier pricing
+0; =0.50 per year.‘*
+r, = 0.20 per year, rr = 0.22 per year, r = 0.10 per year.
+0: = 0.06 per year, (T,,, = 0.05 per year,
+We also assume the dealer begins anew from alternative initial positions on
+which he has not earned profits so that F = -I and W= Y
+On the basis of these assumed values (25) and (27) now become
+s1 =f(Q/W)~+~(Q/W)[0.99+0.21/W+40Q/W]t2,
+d = - (I/W)t - (l/‘W)[0.99+0.21/W+40Q/WJz2,
+(250
+(27’)
+where s1 =s-LX/P. The risk neutral spread, x/p=O.O2 in this illustration, is
+invariant to the variables of interest to us, and we look only at the risk
+premium terms. It is obvious from the equation that, under the assumption
+of constant relative risk aversion, only the ratios, Q/W and I/l/t: are
+important. Values of s1 and d for alternative values of these ratios are given
+in table 1. In the equation, the spread depends on I because the level of I
+affects portfolio return, rw, in (25). However, as the table shows, this effect is
+less than one basis point and our earlier assertion that for practical purposes
+the spread is independent of inventory position is correct.
+Table 1
+Price adjustment ((1) and risk premium component of spread (,$I). stated m percent, by
+transaction value as a fraction of wealth (Q/W) and Inventory value as a fraction of wealth
+(II W) Dealer’s horlron IS assumed to be r =0.04 years
+I ‘W
+Q II’ - 0.40 -020 -0 IO -005 0.0 0 05 0 IO 0 20 040
+000 ;’ 0.000 0.000 0 000 0 000 0.000 0.000 0.000 0.000 0.000
+I.668 0.830 0.415 0 208 0.000 -0208 -0416 -0833 - 1.668
+0 05 :; 0.112 0 112 0 I12 0.1 I2 0 112 0 II2 0 112 0.112 0 112
+1.786 0 894 0 447 0.224 0.000 -0224 -0448 -0 897 ~ 1 796
+0.10 ~I 0 239 0.239 0.240 0.240 0 240 0.240 0 240 0 240 0 240
+1914 0.958 0 379 0 240 0.000 ~ 0.240 -0480 -0.961 ~ 1.924
+0 20 fi’ 0 542 0 543 0.543 0.543 0 544 0.544 0 544 0 544 0 545
+2 170 1.086 0.543 0 272 0 000 -0.272 -0 544 - 1 089 -2 180
+0.40 ;’ 1 341 1.342 1.343 I 343 1.343 1.344 I 344 1.345 1 346
+2 682 1.342 0671 0.336 0.000 -0 336 -0672 -1 345 -2692 ___
+“The annual return barlance IS on the high side m part to capture the special risk of the
+dealer from mformational trading, which IS not exphcltly modeled here. By standing ready to
+trade at bid or ask prxe, the dealer mcurs losses when mvestors have mformatton Since the
+dealer’s positIon tends to mcrease Just before a price declme and decreases Just before a price
+Incrra\e. hl\ risk IS greater than ImplIed by the underlylng variance of the stock’s true return
+
+===== PAGE 23 =====
+
+7: Ho and HA. Std. Optimal dealer priang 69
+It is evident from the table that for a wealthy individual the risks of
+making a market in a single stock can be small. For example for Q/W=O.O5
+the risk premium in the spread is only 0.122 percent ‘for values of I/W
+between -0.40 and +0.40) or $6.10 on a $5000 transaction. This implies a
+proportional buying or selling fee net of monopoly profits of only 0.061
+percent or $3.05. We expect that for certain classes of dealers, such as
+certain NYSE specialists, block positioning firms, or underwriters, the ratio,
+Q/W may be considerably higher. And in such cases the risk premium term
+in the spread can increase significantly as the table shows. An obvious
+recommendation for improving the quality of securities markets is to increase
+the amount of wealth devoted to market making either by raising wealth of
+the dealer or by having more dealers. However one cannot compel an
+increase in a dealer’s wealth, and institutional restrictions (as on the NYSE)
+as well as clerical and informational economics of scale may limit the
+number of dealers in a stock.
+The values in table 1 depend on the time horizon of r =0.04. Doubling
+r to 0.08 of a year would raise the spread (for Q/W=O.O5) to 0.248 percent
+or $12.40 on a $5000 transaction. The spread more than doubles because the
+second-order term becomes relatively more important. Nevertheless its
+contribution to sr is only 0.048 percent, which implies that the degree of
+approximation achieved by eq. (10) is still adequate. While the variance of
+inventory return, a:r, increases as t and the variance of inventory due to
+transactions, (2, +A&, increases as t, the combined effect on portfolio risk,
+which appears in the second-order term increases faster than T.
+The table is helpful in understanding the behavior of bid and ask prices
+implied by our model. Let a prime on a variable indicate the risk premium
+component of the variable. Now consider a particular transaction size, say
+Q/ W=O.O5, where sr = 0.00112. At I = 0, d = 0, and
+p;=p+a’=p+(s’+d)/2=1.00056,
+and
+p;=p-b’=p-(s’-d)/2=0.99944.
+Suppose the dealer acquired $5000 of inventory so that I/W=O.O5. He would
+lower his prices by setting d = -0.00224 so that
+pa = p + (sl + d)/2 = 0.99944,
+and
+JFE D
+pb = p - (as1 - d)/2 =0.99832.
+
+===== PAGE 24 =====
+
+70 T Ho and H.R. Stall, Optimal de&r prwng
+The dealer has lowered bid and ask prices by the value of the spread, which,
+in the absence of monopoly profits, causes not only his bid price but also his
+ask price to fall below his opinion of the true price. Because the dealer has
+monopoly power it is unlikely that the ask price will in fact fall below p.
+Noting that s=si +a/jI and a//3=0.02, the actual ask and bid price cor-
+responding to the previous example when I/W=O.O5 are
+p,=p+(s+d)/2=1.00944,
+and
+&, =p - (s - d)/2 = 0.98832.
+If, by chance, no additional transaction occurs before the horizon date, the
+model assumes the dealer liquidates his inventory at p, thereby yielding an
+expected fee of b. If additional transactions occur that cause ending
+inventory to be zero, the dealer earns no risk premium because in effect he
+has borne no risk. Of course, prior to the horizon date, there is uncertainty
+about his ending inventory which increases the dealer’s portfolio risk, and
+this causes him to demand a risk premium today.
+10. Demand conditions and the decision to become a dealer
+Our model is perhaps most applicable to the NYSE where each stock has
+only one dealer - the specialist. Consider the question of whether a newly
+listed stock would always find a specialist willing to make a market in the
+stock. That decision depends on the demand conditions and on the risk of
+being a dealer. The demand conditions in turn depend on the fundamental
+desires of investors to trade the stock and on the alternative sources of
+immediacy. There may be competing markets which reduce c( and increase p
+to the specialist. Furthermore the demand for dealer services depends on the
+ease with which investors could ‘make their own immediacy’ by using limit
+orders and borrowing or lending. For example instead of selling immediately
+to the specialist at the specialist’s pb an investor could enter a higher limit
+price and borrow funds while he waits for his transaction to be executed.
+The cost to investors of these competing sources of immediacy influence the
+elasticity of demand for dealer services.
+In- terms of our model an individual will not become a dealer if the spread
+he must set to cover his risk is so large as to cut off the demand for his
+service. Under symmetric demand the spread required by the dealer is given
+
+===== PAGE 25 =====
+
+7: Ho und H.R. Stall, Optimal dealer pricing 71
+by (25). Starting from a zero inventory position the spread at which the
+expected arrival of transactions is zero is 2u//? (see footnote 7). Thus the
+condition for being a dealer is that the required spread be less than the
+spread at which trading is zero,
++iZ(Q/W)af[(r,-r+GI)+Z(rW+21TI/W)]r2. (29)
+This condition can always be satisfied for transaction size, Q, small enough.
+But suppose there is some minimum Q the dealer must be ready to trade.
+Then the condition can be violated if c(, the transactions arrival rate when
+the dealer’s fee is zero, is sufficiently small. For example when cr=200, Q/Y
+= 0.1, z = 2, C$ = 0.5 per year, r = 0.10 per year, ry = 0.20 per year, /I = 100,000,
+and r=O.O4, the dealer would not make a market, for in that case expected
+profits would not offset the risk. It is also clear that condition (29) is less
+likely to be satisfied the larger an individual’s Z or the smaller his wealth.
+Regulations to increase the transactions size for which a bid-ask quotation
+must be honored would reduce the willingness of individuals to become a
+dealer. Since the NYSE specialist also earns brokerage on limit orders he
+executes, one may see an individual declare his willingness to be a specialist
+without at the same time being willing to act as a dealer. In such
+circumstances the provision of immediacy by the specialist is likely to be
+particularly poor.
+11. Summary
+We have considered the optimal behavior of a single dealer in a single
+stock who is faced with a stochastic demand for his services (modeled by a
+continuous time Poisson jump process) and faces return risk on his stock
+and on the rest of his portfolio (modeled by diffusion processes). As time
+unfolds and transactions occur, the dealer is able to set his bid price and ask
+price relative to his opinion of the ‘true’ price of the stock so as to maximize
+the expected utility of terminal wealth. This stochastic dynamic programming
+problem is solved for the dealer’s derived utility function; and using this
+solution, we are able to specify how the dealer sets the bid and ask price at
+any moment of time as a function of the state in which he finds himself.
+Indeed the solution could be programmed on the computer.
+We show that the spread, the difference between the ask price and bid
+price, is given by a risk neutral spread that maximizes expected profits for
+the given stochastic demand functions plus a risk premium that depends on
+transaction size, the return variance of the stock and the dealer’s attitude
+toward risk. Consistent with the one period model of Stoll (1978a), the
+spread does not depend on the dealer’s inventory position. However dealer
+
+===== PAGE 26 =====
+
+72 7I Ho and H.R. Stall, Optimal dealer pricing
+price adjustment does depend on inventory. When inventory increases both
+bid price and ask price decline, and the converse is true when inventory
+decreases.
+Despite the dealer’s ability to adjust prices in response to inventory
+changes as time unfolds, the dealer’s risk is greater than implied by the one
+period model of Stoll (1978a). This results from the fact that the uncertainty
+of the demand to trade with the dealer is not totally eliminated or offset by
+the dealer’s pricing strategy.
+Other issues investigated are the case of asymmetric demand for trading
+with the dealer and the conditions under which an individual chooses or
+refuses to make a market in a stock. In an inactive stock, when the dealer is
+required to trade a minimum amount, the expected profit from trading may
+not be enough to offset the risk.
+Although couched in terms of a dealer, our model can apply to any
+individual who is determining his reservation price for a stock as a function
+of his opinion of the stock’s value and the degree to which the stock will
+cause his portfolio to be unbalanced. Thus the placement of limit orders by
+individuals could, for example, be modeled by our approach.
+References
+Amihud, Y. and H. Mendelson, 1980, Dealership market: Market making with inventory,
+Journal of Financial Economics 8, no. 1, 31-54.
+Benston, G. and R. Hagerman, 1974, Determinants of bid-asked spread in the over-the-counter
+market, Journal of Fmancial Economics 1, no. 4, 353-364.
+Blattberg, R. and N. Gonedes, 1974, A comparison of the stable and student distribution as
+statistical models for stock prices, Journal of Business 47, April.
+Clark. Peter. 1973. A subordinated stochastic process model with finite variance for speculative
+prices, Econometrica 41, Jan.
+Cohen, K.J., SF. Maier, R.A. Schwartz and D.K. Whitcomb, 1978a, The returns generation
+orocess returns variance and the effect of thinness in securities markets, Journal of Finance
+33, March.
+Cohen, K.J., SF. Maier, R.A. Schwartz and D.K. Whitcomb, 1978b, Limit orders, market
+structure, and the returns generation process, Journal of Finance 33, June.
+Cohen, K.J., S.F. Maier, R.A. Schwartz and D.K. Whitcomb, 1979, Market makers and the
+market spread: A review of recent hterature, Working paper, Aug.
+Copeland, T., 1976, A model of asset trading under the assumption of sequential Information
+arrival, Journal of Finance 31, Sept.
+Davis, M.A.A., 1977, Linear estimation and stochastic control (Chapman and Hall, London, and
+Wiley, New York).
+Epps, T., 1976, The demand for broker’s services: The relation between security trading volume
+and transaction cost, Bell Journal of Economics 7, Spring.
+Garbade, K. and W. Silber, 1979, Structural organization of secondary markets: Clearing
+frequency, dealer activity and liquidity risk, Journal of Finance 34, June.
+Garman, Mark, 1976, Market microstructure, Journal of Financial Economics 3, no. 3, 257-275.
+Goldman, M.B. and A. Beja, 1979, Market prices vs equihbrmm prices: Returns variance, serial
+correlation and the role of the specialist, Journal of Finance 34, June.
+Goldman, M.B. and H.B. Sosin, 1979, Informanon disseminatton, market efhctency and the
+frequency of transactions, Journal of Financial Economics 7, no. 1, 2961.
+
+===== PAGE 27 =====
+
+T. Ho and H.R. Stall, Optimal dealer pricing 73
+Ho, T. and H. Stall, 1980, On dealer markets under competttton, Journal of Finance 35, May.
+Mildenstem, E. and H. Schleef, 1980, The optimal pricing policy of a monopolistic marketmaker
+in the equity market, Working paper (University of Oregon, Eugene, OR).
+Oldfield, G., R. Rogalski and R. Jarrow, 1977, An autoregressive jump process for common
+stock returns, Journal of Financial Economics 5, no. 3, 3899418.
+Schwartz, R. and D. Whitcomb, 1977, The time-variance relationshtp: Evidence on autocor-
+relation in common stock returns, Journal of Finance 32, March.
+Smrdt, Seymour, 1979, Contmuous vs. intermrttent tradmg on auction markets, Paper presented
+at the Westerm Fmance Assocratton Meetings, June 22, 1979.
+Stoll, Hans R., 197ga. The supply of dealer servtces in securnies markets, Journal of Finance 33,
+Sept.
+Stall, Hans R., 1978b, The pricing of security dealer services: An emputcal study of NASDAQ
+stocks, Journal of Fmance 33, Sept.
+Time, Seha, 1972, The economics of hqutdtty services, Quarterly Journal of Economics 86, Feb.
+Tinic, Seha and R. West, 1972, Competition and the pricing of dealer services in the over-the-
+counter market, Journal of Financial and Quantitative Analysis 7, June.
+Westertield, R., 1977, The distribution of common stock prtce changes. An apphcatton of
+transactions time and subordinated stochastic models, Journal of Financial and Quantttative
+Analysis, Dec.

@@ -1,0 +1,1865 @@
+
+
+===== PAGE 1 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Market Liquidity and Funding Liquidity
+Markus K. Brunnermeier Lasse Heje Pedersen
+Princeton, CEPR, NBER NYU, CEPR, NBER
+
+===== PAGE 2 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Motivation
+• Market liquidity
+• ease of trading an asset
+• asset-speciﬁc
+• Funding liquidity
+• availability of funds
+• agent-speciﬁc
+• these liquidity concepts are mutually reinforcing
+• funding liquidity to dealers, hedge funds, investment banks
+etc.
+⇒ enhances trading and market liquidity
+• market liquidity improves collateral value, i.e. lowers
+margins
+⇒ eases funding restriction
+
+===== PAGE 3 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Stylized Facts on Market Liquidity
+1 Sudden liquidity “dry-ups”
+2 Correlated with volatility
+• cross section
+• time series
+3 Flight to quality
+4 Commonality of liquidity
+• within asset class (e.g. stocks)
+• across asset classes
+5 Moves with the market
+
+===== PAGE 4 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Outline
+1 Capital Constraint - Model Setup
+2 Time-series Properties
+Liquidity Dry-ups/ Fragility
+Liquidity Spirals
+3 Cross-Sectional Properties
+Commonality of Market Liquidity
+Flight to Quality
+4 Risk of Liquidity Crisis
+Skewness and Kurtosis
+5 Related Literature
+
+===== PAGE 5 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Leverage and Margins
+• Financing a long position of x j+
+t > 0 shares at price
+pj
+t = 100:
+• Borrow 90 dollars per share;
+• Margin/haircut: mj+
+t = 100 − 90 = 10
+• Capital use: 10 x j+
+t
+• Financing a short position of x j−
+t > 0 shares:
+• Borrow securities, and lend collateral of 110 dollars per
+share
+• Short-sell securities at price of 100 dollars
+• Margin/haircut: mj−
+t = 110 − 100 = 10
+• Capital use: 10 x j−
+t
+• Margins/haircuts must be ﬁnanced with capital:
+∑
+j
+(
+x j+
+t mj+
+t + x j−
+t mj−
+t
+)
+≤ Wt
+where x j
+t = x j+
+t − x j−
+t
+
+===== PAGE 6 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Capital
+• Capital Wt:
+• Equity capital
+• LLP: NA V, subject to lock up
+• LLC: equity, reduced by assets that cannot be readily
+employed (e.g. goodwill, intangible assets, property)
+• Long-term unsecured debt
+• line of credit (material adverse change clause)
+• bonds/ loans: diﬃcult to get for smaller securities ﬁrms
+• Short term debt: not counted
+• short-term loans, commercial paper, demand deposits
+
+===== PAGE 7 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Cross-Margining
+• Margins/haircuts must be ﬁnanced with capital,
+∑
+j
+(
+x j+
+t mj+
+t + x j−
+t mj−
+t
+)
+≤ Wt, (1)
+where x j
+t = x j+
+t − x j−
+t
+• Alternative: perfect cross-margining
+net out all oﬀsetting risks, including diversiﬁcation
+beneﬁts, leading to a portfolio constraint:
+Mt
+(
+x 1
+t , . . . ,x J
+t
+)
+≤ Wt (2)
+
+===== PAGE 8 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Regulatory Capital Requirements
+• Basel Accord: banks
+• regulatory capital subject to constraint similar to (1)
+• alternatively, a bank can use its own model similar to (2)
+• SEC Net Capital Rule: brokers
+• net capital = capital minus haircuts (compare to (1))
+• net capital must exceed a certain fraction of aggregate
+debt
+• Regulation T: customers of brokers trading US equity
+• initial margin must be at least 50%
+
+===== PAGE 9 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Model Setup
+• Time: t = 0, 1, 2, 3
+• J assets:
+• fundamental value v j
+t = Et[v j ] with ﬁnal payoﬀ v j at t = 3
+• stochastic volatility with ARCH structure
+v j
+t = v j
+t−1 + ∆v j
+t = vt−1 + σj
+tεj
+t, where εj
+t ∼iid N (0, 1)
+σj
+t+1 = σj + θ|∆v j
+t |
+• Market participants
+1 risk-averse customers
+2 speculators (dealers, hedge funds, ...)
+3 ﬁnanciers (set margins speculators face)
+• Competitive stable equilibria
+• Let Λ j
+t := pj
+t − v j
+t and |Λj
+t| be a measure of illiquidity
+
+===== PAGE 10 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Customers
+• 3 diﬀerent types of customers k ∈ {0, 1, 2}
+• CARA utility function: u(W k
+3 ) = − exp{−γW k
+3 }
+• endowment shock zk in t = 3 s.t. ∑2
+k=0 zk = 0
+• become aware of t = 3-endowment shocks zk
+• simultaneously at t = 0 [with prob. (1 − a)]
+• sequentially at t = k ∈ {0, 1, 2} [with “small” prob. a < ¯a]
+• wealth dynamics: W k
+t+1 = W k
+t +
+(
+pt+1 − pt
+)′ (yk
+t + zk )
+• customer k’s demand
+y j,k
+t = v j
+1 − pj
+1
+γ(σj
+t+1)2
+− z j,k for t = 1, 2
+
+===== PAGE 11 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Speculators/Dealers
+• risk-neutral
+• wealth dynamics: Wt+1 = Wt +
+(
+pt+1 − pt
+)′ xt + ηt+1
+• margin constraint: ∑
+j
+(
+x j+
+t mj+
+t + x j−
+t mj−
+t
+)
+≤ Wt
+• speculators’ demand for J = 1
+x i
+t =
+
+
+
+Wt/m+
+t if pt < vt
+−Wt/m−
+t if pt > vt
+∈
+[
+−Wt/m−
+t , Wt/m+
+t
+]
+if pt = vt
+for t = 1, 2
+x i
+0 = ...
+
+===== PAGE 12 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Financiers - Margin setting
+• Margins are set based on Value-at-Risk (VaR)
+π = Pr (−∆pj
+t+1 > mj+
+t | Ff
+t )
+• Informed ﬁnanciers (vt ∈ F f
+t ):
+π = Pr (−∆v j
+2 − Λj
+2
+=0
++Λj
+1 > mj+
+1 ) = 1 − Φ
+(
+mj+
+1 −Λj
+1
+σj
+2
+)
+mj+
+1 = Φ −1 (1 − π) σj
+2 + Λj
+1 = ¯σj + ¯θ|∆v j
+1| + Λj
+1
+mj−
+1 = ... = ¯σj + ¯θ|∆v j
+1| − Λj
+1
+• Uninformed ﬁnanciers (for a → 0):
+mj+
+1 = Φ −1 (1 − π) σ2 = ¯σj + ¯θ|∆p1| = mj−
+1
+
+===== PAGE 13 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Financiers - Margin setting
+• Margins are set based on Value-at-Risk (VaR)
+π = Pr (−∆pj
+t+1 > mj+
+t | Fi
+t )
+• Informed ﬁnanciers ⇒ stabilizing margins
+π = Pr (−∆v j
+2 − Λj
+2
+=0
++Λj
+1 > mj+
+1 ) = 1 − Φ
+(
+mj+
+1 −Λj
+1
+σj
+2
+)
+mj+
+1 = ¯σj + ¯θ|∆v j
+1|+Λj
+1
+mj−
+1 = ¯σj + ¯θ|∆v j
+1|−Λj
+1
+• Uninformed ﬁnanciers (for a → 0) ⇒ destab. margins?
+mj
+1 = ¯σj + ¯θ|∆p1|
+
+===== PAGE 14 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+1 Capital Constraint - Model Setup
+2 Time-series Properties
+Liquidity Dry-ups/ Fragility
+Liquidity Spirals
+3 Cross-Sectional Properties
+Commonality of Market Liquidity
+Flight to Quality
+4 Risk of Liquidity Crisis
+Skewness and Kurtosis
+5 Related Literature
+
+===== PAGE 15 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Liquidity Dry-ups/Fragility
+Deﬁnition 1
+Liquidity is fragile if the price correspondence p∗
+t (η1, vt) is
+discontinuous in ηt or vt.
+Proposition 1
+(i) With informed ﬁnanciers, the market is fragile at time 1 if
+x0 is large enough.
+(ii) With uninformed ﬁnanciers, the market is fragile at time 1
+if x0 large enough or if margins are increasing enough with
+illiquidity Λ 1. The latter happens if θ is large enough (i.e.
+ARCH eﬀects are strong) and the ﬁnancier’s prior on a
+fundamental shock (1 − a) is large enough (i.e. a < ¯a).
+
+===== PAGE 16 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Informed ﬁnancier,
+ARCH & x0 = 0 ( J = 1)
+Constraints: short: W1
+¯σ+¯θ|∆v1|−Λ1
+& long: W1
+¯σ+¯θ|∆v1|+Λ1
+
+
+===== PAGE 17 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Informed ﬁnancier,
+ARCH & x0 = 0
+Short region ( p1 > v1) & long region ( p1 < v1)
+
+
+===== PAGE 18 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Informed ﬁnancier,
+ARCH & x0 = 0
+Speculators’ demand
+
+
+===== PAGE 19 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Informed ﬁnancier,
+ARCH & x0 = 0
+Add customers’ supply
+
+
+===== PAGE 20 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Informed ﬁnancier,
+ARCH & x0 = 0
+⇒ No fragility — “Cushioning eﬀect of margins”
+
+
+===== PAGE 21 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Uninformed ﬁnancier,
+ARCH & x0 = 0
+Constraints: short: x1 ≥ − W1
+¯σ+¯θ|∆p1| & long: x1 ≤ W1
+¯σ+¯θ|∆p1|
+
+
+===== PAGE 22 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Uninformed ﬁnancier,
+ARCH & x0 = 0
+Short region ( p1 > v1) & long region ( p1 < v1)
+
+
+===== PAGE 23 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Uninformed ﬁnancier,
+ARCH & x0 = 0
+Speculators’ demand
+
+
+===== PAGE 24 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Uninformed ﬁnancier,
+ARCH & x0 = 0
+Add customers’ supply — two stable equilibria
+
+
+===== PAGE 25 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Uninformed ﬁnancier,
+ARCH & x0 = 0
+Add customers’ supply — fragility for η1 = −150
+
+
+===== PAGE 26 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Uninformed ﬁnancier,
+ARCH & x0 = 0
+Example: fragility due to destabilizing margins
+p1 as correspondence of η1 p1 as correspondence of ∆ v1
+
+===== PAGE 27 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: Uninformed ﬁnancier,
+ARCH & x0 = 10 > 0
+Leveraged x0-position — ‘tilted star’ & bankruptcy line
+
+
+===== PAGE 28 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Liquidity Spirals
+
+
+===== PAGE 29 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Liquidity Spirals
+Proposition 2
+In a stable illiquid equilibrium with Z1 > 0, x1 > 0, and
+∂p1
+∂η1
+= 1
+2
+γ(σ2)2 m+
+1 + ∂m+
+1
+∂p1
+x1 − x0
+.
+A margin spiral arises if ∂m+
+1
+∂p1
+< 0, which can happen if
+ﬁnaniers are uninformed and a is small.
+A loss spiral arises if speculators’ previous position is in the
+opposite direction as the demand pressure x0Z1 > 0.
+1
+k − l = 1
+k + l
+k 2 + l 2
+k 3 + ...
+
+===== PAGE 30 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: 1987 Crash
+• Increased volatility caused banks to require more margin
+• funding problems for marketmakers
+• failures at NYSE, Amex, OTC, trading ﬁrms, etc.
+• “thirteen [NYSE specialist] units had no buying power”
+because of their funding constraint (SEC (1988))
+• ⇒ mutually reinforcing
+• Fed response:
+“calls were placed by high ranking oﬃcials of the FRBNY
+to senior management of the major NYC banks, indicating
+that ... they should encourage their Wall Street lending
+groups to use additional liquidity being supplied by the
+FRBNY to support the securities community”
+
+===== PAGE 31 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Margin for S&P500 Futures
+Margin requirement for CME members
+as a fraction of the S&P500 index level
+0%
+2%
+4%
+6%
+8%
+10%
+12%
+14%
+Jan-82 Jan-84 Jan-86 Jan-88 Jan-90 Jan-92 Jan-94 Jan-96 Jan-98 Jan-00 Jan-02 Jan-04 Jan-06
+US/Iraq war LTCM
+Asian crisis
+Black Monday
+10/19/87
+1989 mini crash
+
+===== PAGE 32 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Example: 1998 Liquidity Crisis
+• Salomon closed down proprietary trading
+• η-shock: less aggregate funding of trading in certain
+markets
+• Russian default
+• ∆v -shock: adverse fundamental shocks
+• increased spreads & reduced market liquidity
+• increased margins/haircuts & reduced funding liquidity
+
+===== PAGE 33 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+De-leveraging of I-Banks
+esp. in Fall of 1998 — Source: Adrian-Shin (2008)
+
+
+===== PAGE 34 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+1 Capital Constraint - Model Setup
+2 Time-series Properties
+Liquidity Dry-ups/ Fragility
+Liquidity Spirals
+3 Cross-Sectional Properties
+Commonality of Market Liquidity
+Flight to Quality
+4 Risk of Liquidity Crisis
+Skewness and Kurtosis
+5 Related Literature
+
+===== PAGE 35 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Multiple Assets - Speculators’ Optimal Strategy
+Speculator maximizes expected proﬁt per capital use
+• expected proﬁt v j
+1 − pj
+1 = −Λj
+1 or −(v j
+1 − pj
+1) = Λ j
+1
+• capital use mj
+1
+Shadow cost of capital, funding liquidity ,
+φ1 = 1 + max {max
+j
+v j
+1 − pj
+1
+mj+
+1
+, max
+j
+−(v j
+1 − pj
+1)
+mj−
+1
+}
+speculators
+• invest only in securities with highest ratio |Λj
+1|
+mj
+1
+(speculators determine price)
+• do not invest in securities with lower ratio
+(customers determine price)
+(If funding is abundant, φ1 = 1 and Λ j
+1 = 0 ∀j.)
+
+===== PAGE 36 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Equilibrium
+either
+• funding is abundant, φ1 = 1, and
+market illiquidity Λ j
+1 = 0 for all j;
+or
+• funding is tight, φ1 > 1, and
+|Λj
+1|(φ1) = min {(φ1 − 1)mj
+1  
+x j
+1̸=0
+, |¯Λj
+1(Z1, ·)|  
+x j
+1=0
+}
+Recall,
+Λj
+1 = pj
+1 − v j
+1
+
+===== PAGE 37 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Commonality of Market Liquidity
+Proposition 3
+(iii) (Commonality of Market Liquidity) The market
+illiquidity |Λ| of any two securities k and l comove,
+Cov0
+[
+|Λk
+1|, |Λl
+1|
+]
+≥ 0
+and market illiquidity comoves with funding illiquidity, φ1
+Cov0
+[
+|Λk
+1|, φ1
+]
+≥ 0
+(iv) (Commonality of Fragility) Jumps in market liquidity
+occurs simultaneously for all assets for which speculators are
+marginal.
+• Intuition: Funding liquidity is the driving common factor.
+
+===== PAGE 38 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Commonality and Flight to Quality
+Two asset example: σ2 = 7.5 > 5 = σ1 (Hint: asset 2 = light blue curve)
+
+
+===== PAGE 39 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Flight to Quality
+Proposition 3, continued
+(i) (Quality=Liquidity) Assets with lower fundamental
+volatility have better market liquidity.
+(ii) (Flight to Quality) The market liquidity diﬀerential
+between high- and low-fundamental-volatility securities is bigger
+when speculator funding is tight, that is, σl < σ k implies that
+|Λk
+1| increases more then |Λl
+1| with a negative funding shock,
+∂|Λl
+1|
+∂(−η1) ≤ ∂|Λk
+1|
+∂(−η1) ,
+Cov0[|Λl
+1|, φ1] ≤ Cov0[|Λk
+1|, φ1] .
+
+===== PAGE 40 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Commonality and Flight to Quality
+Tow asset example: σ2 = 7.5 > 5 = σ1 (Hint: asset 2 = light blue curve)
+
+
+===== PAGE 41 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+1 Capital Constraint - Model Setup
+2 Time-series Properties
+Liquidity Dry-ups/ Fragility
+Liquidity Spirals
+3 Cross-Sectional Properties
+Commonality of Market Liquidity
+Flight to Quality
+4 Risk of Liquidity Crisis
+Skewness and Kurtosis
+5 Related Literature
+
+===== PAGE 42 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Risk of Liquidity Crisis - t = 0
+1 pricing kernel depends on future funding liquidity, φt+1
+2 funding liquidity risk can matter even before margin
+requirements actually bind
+3 conditional skewness of price p1 due to the funding
+constraint
+4 margins m0 and illiquidity Λ 0 can be positively related due
+to liquidity risk even if ﬁnanciers are informed.
+
+===== PAGE 43 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Risk of Liquidity Crisis - t = 0
+• Pledgable capital interpretation of Wt
+• if Wt < 0, losses have to be covered with unpledgable
+capital
+• speculators’ “utility” φ1W1 (also for W1 < 0)
+• weakest assumption that curbs speculators’ risk taking,
+since objective function linear.
+1 Pricing kernel reﬂects funding liquidity (shadow cost) φt+1.
+p0 = E0[ φ1
+E0[φ1]  
+kernel
+p1], if φ0 = 1 (unconstrained case).
+p0 = E0[φ1]E0[p1] + Cov0[ φ1
+E0[φ1] , p1]
+
+===== PAGE 44 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+p0 and E0[p1]
+
+
+===== PAGE 45 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Conditional Skewness and Kurtosis
+
+
+===== PAGE 46 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Conditional Skewness in FX
+Brunnermeier, Nagel, Pedersen (NBER Macro Annual 2008)
+AUD
+CAD
+JPY
+NZD
+NOK
+CHF
+GBP
+EUR
+-.5
+0
+.5
+1
+-.01 -.005 0 .005 .01
+i*-i
+Skewness
+AUD
+CAD
+JPY
+NZD
+NOK
+CHF
+GBP
+EUR
+-.5
+0
+.5
+1
+-.01 -.005 0 .005 .01
+i*-i
+Risk Reversals
+
+===== PAGE 47 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Margins m0 can increase with |Λ0|
+• in t = 1: margins, m1, are only increasing in |Λ1| if
+• ﬁnanciers are uninformed
+• fundamentals follow ARCH structure
+• in t = 0: margins, m0, can be increasing with |Λ0| even
+when ﬁnanciers are informed.
+• decline in W0 leads to
+• increase in |Λ0|
+• increase in m0 since p1 is more volatile
+
+
+===== PAGE 48 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Related Theoretical Literature
+This Paper: Related Theoretical Literature:
+Cushioning Eﬀect Gromb-Vayanos (2002), Geanakopolos (2003)
+Conditions for
+destabilizing margins —
+Fragility Asym. info: Gennotte-Leland (1990)
+Loss Spiral Grossman (1988), Kiyotaki-Moore (1997),
+Shleifer-Vishny (1997), Xiong (2001),
+Gromb-Vayanos (2002), Morris-Shin (2004)
+Margin Spiral Vayanos (2004)
+Flight to Quality —
+Commonality of Liquidity Contagion: Allen-Gale(2000b), Kyle-Xiong(2001)
+Paper links literatures on:
+asset pricing, microstructure, limits of arb, corporate ﬁnance, macro, GE
+
+===== PAGE 49 =====
+
+Market &
+Funding
+Liquidity
+Brunnermeier
+& Pedersen
+Capital
+Constraint &
+Model
+Capital
+Model
+Time-series
+Fragility
+Liquidity Spirals
+Cross-
+Sectional
+Commonality
+Flight to Quality
+Liquidity Risk
+Skewness
+∂m0
+∂|Λ0 | > 0
+Literature
+Conclusion
+1 Sudden liquidity “dry-ups”
+• fragility
+• liquidity spirals
+• due to destabilizing margins (ﬁnanciers imperfectly informed + ARCH)
+2 Market liquidity correlated with volatility:
+• volatile securities require more capital to ﬁnance
+3 Flight to quality / ﬂight to liquidity:
+• when capital is scarce, traders withdraw more from
+“capital intensive” high-margin securities
+4 Commonality of liquidity:
+• these funding problems aﬀect many securities
+5 Market liquidity moves with the market
+• because funding conditions do

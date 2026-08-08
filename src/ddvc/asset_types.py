@@ -4,10 +4,7 @@ The paper's claim is about currency TYPES, not tickers. DeFi is the laboratory,
 so every ticker below is a proxy for a type that has a traditional-finance
 counterpart, and the paper's language should stay at the type level:
 
-  native            the platform's own settlement asset. Thickest incumbent
-                    pairing network, high volatility. TradFi counterpart: the
-                    incumbent international currency whose role rests on
-                    thick-market externalities.
+  native            the platform's own settlement asset. Pairing degree, volume, depth, route cost and volatility are measured properties, not classification inputs. TradFi counterpart: the incumbent international currency.
   staked_native     a liquid-staking derivative of the native asset. Same
                     underlying exposure, different instrument. Held apart from
                     `native` because whether it counts as the same currency is a

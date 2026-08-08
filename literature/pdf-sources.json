@@ -13,6 +13,18 @@
       "main": "BoltonKacperczyk2021CarbonRisk",
       "status": "complete"
     },
+    "BrunnermeierPedersen2009Liquidity": {
+      "checks": {
+        "article": "literature/text/2009-BrunnermeierPedersen2009Liquidity-market-liquidity-and-funding-liquidity.txt",
+        "author_or_repository": "https://markus.scholar.princeton.edu/publications/market-liquidity-and-funding-liquidity",
+        "publisher_or_doi": "https://doi.org/10.1093/rfs/hhn098"
+      },
+      "companions": [
+        "BrunnermeierPedersen2009LiquiditySlides"
+      ],
+      "main": "BrunnermeierPedersen2009Liquidity",
+      "status": "complete"
+    },
     "CarlettiDeMarcoIoannidouSette2021PatientLenders": {
       "checks": {
         "article": "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt",
@@ -23,6 +35,16 @@
         "CarlettiDeMarcoIoannidouSette2021PatientLendersAppendix"
       ],
       "main": "CarlettiDeMarcoIoannidouSette2021PatientLenders",
+      "status": "complete"
+    },
+    "CataliniDeGortariShah2022Stablecoins": {
+      "checks": {
+        "article": "literature/text/2022-CataliniDeGortariShah2022Stablecoins-some-simple-economics-of-stablecoins.txt",
+        "author_or_repository": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4267974",
+        "publisher_or_doi": "https://doi.org/10.1146/annurev-financial-111621-101151"
+      },
+      "companions": [],
+      "main": "CataliniDeGortariShah2022Stablecoins",
       "status": "complete"
     },
     "ChangDuLouPolk2022Ripples": {
@@ -60,6 +82,16 @@
       "main": "DiamondHuRajan2022LiquidityPledgeability",
       "status": "complete"
     },
+    "DowdGreenaway1993CurrencyCompetition": {
+      "checks": {
+        "article": "literature/text/1993-DowdGreenaway1993CurrencyCompetition-currency-competition-network-externalities-and-switching-costs-towards-an-altern.txt",
+        "author_or_repository": "https://durham-repository.worktribe.com/output/1452961/currency-competition-network-externalities-and-switching-costs-towards-an-alternative-view-of-optimal-currency-areas",
+        "publisher_or_doi": "https://doi.org/10.2307/2234244"
+      },
+      "companions": [],
+      "main": "DowdGreenaway1993CurrencyCompetition",
+      "status": "complete"
+    },
     "ErenMalamud2022DominantDebt": {
       "checks": {
         "article": "literature/text/2022-ErenMalamud2022DominantDebt-dominant-currency-debt.txt",
@@ -82,6 +114,32 @@
         "GrahamGrennanHarveyRajgopal2022CorporateCultureAppendix"
       ],
       "main": "GrahamGrennanHarveyRajgopal2022CorporateCulture",
+      "status": "complete"
+    },
+    "GrossmanMiller1988Liquidity": {
+      "checks": {
+        "article": "literature/text/1988-GrossmanMiller1988Liquidity-liquidity-and-market-structure.txt",
+        "author_or_repository": "https://www.nber.org/papers/w2641",
+        "publisher_or_doi": "https://doi.org/10.1111/j.1540-6261.1988.tb04594.x"
+      },
+      "companions": [
+        "GrossmanMiller1988LiquidityDiscussion"
+      ],
+      "main": "GrossmanMiller1988Liquidity",
+      "status": "complete"
+    },
+    "HoStoll1981OptimalDealer": {
+      "checks": {
+        "article": "literature/text/1981-HoStoll1981OptimalDealer-optimal-dealer-pricing-under-transactions-and-return-uncertainty.txt",
+        "author_or_repository": "https://rodneywhitecenter.wharton.upenn.edu/wp-content/uploads/2014/03/7927.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/0304-405X(81)90020-9"
+      },
+      "companions": [
+        "HoStoll1981OptimalDealerMathematicalAppendix"
+      ],
+      "main": "HoStoll1981OptimalDealer",
+      "non_text_companions": [],
+      "non_text_dispositions": [],
       "status": "complete"
     },
     "HajdaNikolov2022ProductMarket": {
@@ -408,6 +466,16 @@
       "main": "KiyotakiWright1989MoneyMedium",
       "status": "complete"
     },
+    "Krugman1980VehicleCurrencies": {
+      "checks": {
+        "article": "literature/text/1980-Krugman1980VehicleCurrencies-vehicle-currencies-and-the-structure-of-international-exchange.txt",
+        "author_or_repository": "https://www.nber.org/papers/w0333",
+        "publisher_or_doi": "https://doi.org/10.2307/1991725"
+      },
+      "companions": [],
+      "main": "Krugman1980VehicleCurrencies",
+      "status": "complete"
+    },
     "LeharParlour2024Uniswap": {
       "checks": {
         "article": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt",
@@ -690,9 +758,23 @@
     "BrunnermeierPedersen2009Liquidity": [
       {
         "access": "authenticated",
-        "label": "Crossref similarity-checking",
+        "label": "Review of Financial Studies version-of-record PDF",
         "url": "https://academic.oup.com/rfs/article-pdf/22/6/2201/5313013/hhn098.pdf",
         "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "Pedersen author-hosted version-of-record mirror",
+        "url": "https://pages.stern.nyu.edu/~lpederse/papers/Mkt_Fun_Liquidity.pdf",
+        "version": "published"
+      }
+    ],
+    "BrunnermeierPedersen2009LiquiditySlides": [
+      {
+        "access": "public",
+        "label": "Brunnermeier author-hosted presentation companion, May 2008; non-evidentiary",
+        "url": "https://www.princeton.edu/~markus/research/papers/liquidity_slides.pdf",
+        "version": "supplement"
       }
     ],
     "CaparrosChaudharyKlein2024BlockchainScaling": [
@@ -885,14 +967,8 @@
     ],
     "DowdGreenaway1993CurrencyCompetition": [
       {
-        "access": "public",
-        "label": "JSTOR stable PDF with terms flag",
-        "url": "https://www.jstor.org/stable/pdf/2234244.pdf?acceptTC=1",
-        "version": "published"
-      },
-      {
         "access": "authenticated",
-        "label": "JSTOR stable PDF",
+        "label": "JSTOR published scan",
         "url": "https://www.jstor.org/stable/pdf/2234244.pdf",
         "version": "published"
       }
@@ -1163,6 +1239,26 @@
         "label": "Journal of Finance PDF",
         "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1540-6261.1988.tb04594.x",
         "version": "published"
+      },
+      {
+        "access": "authenticated",
+        "label": "JSTOR published article PDF",
+        "url": "https://www.jstor.org/stable/pdf/2328186.pdf?acceptTC=1",
+        "version": "published"
+      }
+    ],
+    "GrossmanMiller1988LiquidityDiscussion": [
+      {
+        "access": "authenticated",
+        "label": "Official Journal of Finance published discussion PDF",
+        "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1540-6261.1988.tb04595.x",
+        "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "Archived NYU Stern institutional copy of the published discussion",
+        "url": "https://web.archive.org/web/20111216033019id_/http://pages.stern.nyu.edu:80/~lpederse/courses/LAP/papers/InventoryRisk/GrossmanMillerDiscussion.pdf",
+        "version": "published"
       }
     ],
     "HajdaNikolov2022ProductMarket": [
@@ -1272,15 +1368,23 @@
     "HoStoll1981OptimalDealer": [
       {
         "access": "public",
-        "label": "Wharton Rodney L. White Center PDF",
-        "url": "https://rodneywhitecenter.wharton.upenn.edu/wp-content/uploads/2014/03/7927.pdf",
-        "version": "working-paper"
+        "label": "University of Eastern Piedmont institutional scan of published JFE version",
+        "url": "https://www.dir.uniupo.it/pluginfile.php/1460498/mod_folder/content/0/Optimal%20dealer%20pricing%20under%20transactions%20and%20return%20uncertainty%20Ho%20and%20Stoll.pdf",
+        "version": "published"
       },
       {
         "access": "authenticated",
         "label": "ScienceDirect PDF",
         "url": "https://www.sciencedirect.com/science/article/pii/0304405X81900209/pdfft",
         "version": "published"
+      }
+    ],
+    "HoStoll1981OptimalDealerMathematicalAppendix": [
+      {
+        "access": "public",
+        "label": "Mathematical appendix embedded in Wharton Working Paper 27-79, PDF pages 43 to 45",
+        "url": "https://rodneywhitecenter.wharton.upenn.edu/wp-content/uploads/2014/03/7927.pdf",
+        "version": "supplement"
       }
     ],
     "HuangRanaldoSchrimpfSomogyi2025Constrained": [
@@ -1357,8 +1461,8 @@
     ],
     "Krugman1980VehicleCurrencies": [
       {
-        "access": "public",
-        "label": "JSTOR stable PDF with terms flag",
+        "access": "authenticated",
+        "label": "JSTOR published scan",
         "url": "https://www.jstor.org/stable/pdf/1991725.pdf?acceptTC=1",
         "version": "published"
       },

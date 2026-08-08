@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import subprocess
 import unittest
+from unittest.mock import Mock, call, patch
 
 import pandas as pd
 
 from ddvc.asset_types import TYPES
+from scripts import refresh_panel_dependents as refresher
 from scripts.audit_findings_freeze import (
     cited_bibliography_keys,
     companion_sources_closed,
@@ -30,9 +33,61 @@ from scripts.audit_findings_freeze import (
     validate_specification_lock,
     validate_unified_route_layer,
 )
+from scripts.refresh_panel_dependents import (
+    CLAIM_INPUT_STAGES,
+    DAILY_FRONTIER_PREREQUISITES,
+)
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    @patch("scripts.refresh_panel_dependents.os.killpg")
+    def test_refresh_timeout_terminates_then_kills_worker_group(self, killpg) -> None:
+        process = Mock(pid=123)
+        process.poll.return_value = None
+        process.wait.side_effect = [subprocess.TimeoutExpired("stage", 10), 0]
+        refresher.terminate_process_group(process)
+        self.assertEqual(
+            killpg.call_args_list,
+            [
+                call(123, refresher.signal.SIGTERM),
+                call(123, refresher.signal.SIGKILL),
+            ],
+        )
+
+    @patch("scripts.refresh_panel_dependents.terminate_process_group")
+    @patch("scripts.refresh_panel_dependents.subprocess.Popen")
+    def test_refresh_interrupt_cleans_up_worker_group(self, popen, terminate) -> None:
+        process = popen.return_value
+        process.wait.side_effect = KeyboardInterrupt
+        with self.assertRaises(KeyboardInterrupt):
+            refresher.run_stage(["stage"], log=Mock(), env={}, timeout=10)
+        terminate.assert_called_once_with(process)
+
+    def test_d3_refresh_owns_every_stale_canonical_claim_input(self) -> None:
+        outputs = {
+            output
+            for _script, _args, _why, stage_outputs in CLAIM_INPUT_STAGES
+            for output in stage_outputs
+        }
+        self.assertEqual(
+            outputs,
+            {
+                "data/processed/counterfactual_dominance.parquet",
+                "data/processed/cross_venue_routing_daily.parquet",
+                "data/processed/daily_gas_price_graph.parquet",
+                "data/processed/intermediation_by_type_daily.parquet",
+                "data/processed/rent_incidence_v2_pool_day.parquet",
+                "data/processed/rent_incidence_v3_pool_day.parquet",
+                "data/processed/route_gas_units.parquet",
+                "data/processed/vehicle_centrality_dense.parquet",
+                "data/processed/vehicle_excess_use_daily.parquet",
+            },
+        )
+        self.assertEqual(len(DAILY_FRONTIER_PREREQUISITES), 3)
+        self.assertFalse(
+            any("run_" in script for script, _args, _why, _outputs in CLAIM_INPUT_STAGES)
+        )
+
     def test_claim_input_gate_rejects_raw_missing_and_stale_inputs(self) -> None:
         import tempfile
         from pathlib import Path

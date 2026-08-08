@@ -144,7 +144,7 @@ The strongest rival explanation for the paper's headline has not been stated any
 
 ### K8. Pair graduation, and whether it reverses
 
-Krugman's structure predicts a discrete switch and not a gradient: a currency pair trades directly once its own volume crosses a threshold, and below that threshold it routes through a vehicle. Multiple equilibria imply the switch is harder to undo than to make. This project has the pair panel to date both events and has never dated either. `data/processed/v2_pair_routing_daily.parquet` holds 12.8 million rows keyed on ordered pair, day and route kind.
+Krugman's structure distinguishes partial- and total-indirect regimes through cost inequalities, but routed volume varies with the payment imbalance inside the partial regime. It therefore supplies a categorical regime precedent without ruling out gradients in observed vehicle use. Conditional multiplicity motivates testing asymmetric entry and exit, but the published article gives no formal transition dynamics and does not itself imply that a switch is harder to undo than to make. This project has the pair panel to date both events and has never dated either. `data/processed/v2_pair_routing_daily.parquet` holds 12.8 million rows keyed on ordered pair, day and route kind.
 
 **Estimand.** The hazard of graduation, meaning the day an ordered pair's direct route first captures the majority of its own flow, as a function of the pair's own volume, set against the hazard of reversion back to majority-intermediated routing evaluated at the same own-volume level. The gap between the two hazards at equal volume is the pair-level incumbency premium, and it is measured in a running variable that has nothing to do with a counterfactual quote.
 

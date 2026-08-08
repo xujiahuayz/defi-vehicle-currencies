@@ -177,11 +177,11 @@ An independent review (2026-08-05) correctly demolished the version-1 reading of
 **Vehicle status and dominance are separate axes.** Vehicle status is a role that is binary and trivially satisfied: one bridging swap qualifies. What matters and what we measure is the *extent* to which one asset captures that role. The literature uses "vehicle currency" as a categorical label for what is really a continuous share, and making that precise is part of the contribution. Working title, a one-word insertion into the original public title so the public record stays continuous: **"The Making of Dominant Vehicle Currencies: Evidence from DeFi"** (decided by Java, 2026-08-06).
 
 **Asset types before tickers.** DeFi is the laboratory and the claim is about currency types, so tickers appear only as proxies:
-- *Native platform asset*: thickest incumbent pairing network, high volatility. Proxy: WETH. TradFi analogue: the incumbent international currency whose role rests on thick-market externalities.
+- *Native platform asset*: the platform's own settlement asset, classified independently of its pairing degree, volume, depth, route cost or volatility. Proxy: WETH. TradFi analogue: the incumbent international currency whose role may rest on thick-market externalities.
 - *Stable numéraire*: low volatility, unit of account. Proxies: USDC, USDT, DAI. TradFi analogue: the managed or pegged stable unit.
 - *Imported store of value*: non-native, wrapped. Proxy: WBTC. TradFi analogue: gold or a foreign reserve asset.
 
-The general question is then venue- and coin-independent: does the vehicle role stay with the thick-network incumbent or migrate to the low-volatility numéraire, and what triggers migration? That is the FX dominance-transition question, and we can observe the road not taken where FX cannot.
+The general question is then venue- and coin-independent: does the vehicle role stay with the platform-native incumbent or migrate to the low-volatility numéraire, and what triggers migration? Pairing degree, volume, depth and cost are candidate explanations, never definitional inputs. That is the FX dominance-transition question, and we can observe the road not taken where FX cannot.
 
 **Definitions belong on a slide and in a numbered subsection**, stated explicitly.
 
@@ -465,4 +465,4 @@ Graph contract: A and B feed C; C and K reopen each other; C sends data-changing
 
    **DEMOTED: cross-venue spillover**, which section 8 previously ranked second. It cannot carry a result. The Merge placebo fails on new pairs at +0.055 (0.000), which is the outcome carrying the large V3 estimate; one of nine cells passes both pre-trend diagnostics; and the untreated venues are most of the market, so the V4 untreated estimate recovers 85% of the all-venue figure and the restriction differences out almost nothing. What survives is a bounded null at V3 and a descriptive contrast, and the identified version needs a within-day control group holding the calendar fixed.
 
-   **COMPROMISED: the centrality framing of fragmentation.** The betweenness leader equals the degree leader on 15 of 15 days while native is DEFINED as the thickest pairing network, so the leader-never-changes half restates a definition, and eigenvector centrality reverses the ordering. The share-based transition carries this instead.
+   **COMPROMISED: the centrality framing of fragmentation.** The betweenness leader equals the degree leader on 15 of 15 days, while eigenvector centrality reverses the ordering. Native status does not choose either measure, so the problem is metric sensitivity and the absence of an ex ante economic reason to privilege betweenness, not definitional circularity. The share-based transition carries this instead.

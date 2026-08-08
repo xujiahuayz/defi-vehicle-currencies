@@ -85,6 +85,16 @@ def merge_index_records(
     return [merged[stem] for stem in sorted(merged)]
 
 
+def should_keep_existing_extract(existing: str, replacement: str) -> bool:
+    """Keep a materially richer OCR extract when a scan yields almost no embedded text."""
+    return len(existing) > max(200, 2 * len(replacement))
+
+
+def needs_ocr(record: dict) -> bool:
+    """Flag sparse extraction by page density so short companions are not false positives."""
+    return int(record.get("chars", 0)) < max(200, 200 * int(record.get("pages", 0)))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -122,7 +132,7 @@ def main() -> int:
             # no trace that anything was lost.
             if dest.exists():
                 have = dest.read_text(errors="replace")
-                if len(have) > max(2000, 2 * len(text)):
+                if should_keep_existing_extract(have, text):
                     print(f"  {p.stem}: KEPT existing {len(have):,}-char extract, this run "
                           f"produced only {len(text):,} (probably a scan carrying OCR)",
                           flush=True)
@@ -154,7 +164,7 @@ def main() -> int:
         temporary.write_text(
             "".join(json.dumps(r, sort_keys=True) + "\n" for r in index)
         )
-    empty = [r["stem"] for r in index if r["chars"] < 2000]
+    empty = [r["stem"] for r in index if needs_ocr(r)]
     print(f"\nextracted {len(index)} papers, {failed} failed, "
           f"{sum(r['pages'] for r in index):,} pages, "
           f"{sum(r['chars'] for r in index) / 1e6:.1f}m characters")

@@ -37,6 +37,15 @@ class LiteratureTextCacheTests(unittest.TestCase):
         self.assertEqual([record["stem"] for record in merged], ["paper-a", "paper-b"])
         self.assertEqual(merged[0]["pages"], 10)
 
+    def test_short_math_appendix_keeps_richer_ocr(self) -> None:
+        builder = load_builder()
+        self.assertTrue(builder.should_keep_existing_extract("x" * 1000, "x" * 60))
+        self.assertFalse(builder.should_keep_existing_extract("x" * 100, "x" * 60))
+        self.assertFalse(builder.should_keep_existing_extract("x" * 1000, "x" * 900))
+        self.assertFalse(builder.needs_ocr({"chars": 1062, "pages": 3}))
+        self.assertTrue(builder.needs_ocr({"chars": 66, "pages": 3}))
+        self.assertTrue(builder.needs_ocr({"chars": 100, "pages": 0}))
+
     def test_index_loader_ignores_invalid_and_unkeyed_rows(self) -> None:
         builder = load_builder()
         with tempfile.TemporaryDirectory() as directory:
