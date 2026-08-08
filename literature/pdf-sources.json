@@ -251,7 +251,7 @@
       "non_text_companions": [
         "https://doi.org/10.7910/DVN/CI13SP"
       ],
-      "status": "incomplete"
+      "status": "complete"
     },
     "GriffinShams2020Untethered": {
       "checks": {
@@ -265,9 +265,10 @@
       ],
       "main": "GriffinShams2020Untethered",
       "non_text_companions": [
-        "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0002-ReplicationCode.zip"
+        "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0002-ReplicationCode.zip",
+        "https://web.archive.org/web/20210717202445id_/https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903%26file=jofi12903-sup-0002-ReplicationCode.zip"
       ],
-      "status": "incomplete"
+      "status": "complete"
     },
     "HendershottJonesMenkveld2011Algorithmic": {
       "checks": {
@@ -851,6 +852,12 @@
     "GopinathStein2021MakingAppendix": [
       {
         "access": "public",
+        "label": "Wayback capture of the author-hosted QJE Online Appendix PDF",
+        "url": "https://web.archive.org/web/20210507073112id_/https://scholar.harvard.edu/files/stein/files/dominant_currency_september_2020_appendix.pdf",
+        "version": "supplement"
+      },
+      {
+        "access": "public",
         "label": "Author-hosted QJE Online Appendix PDF",
         "url": "https://stein.scholars.harvard.edu/sites/g/files/omnuum5951/files/stein/files/dominant_currency_september_2020_appendix.pdf",
         "version": "supplement"
@@ -915,6 +922,12 @@
     "GriffinShams2020UntetheredAppendix": [
       {
         "access": "public",
+        "label": "Wayback capture of the official Journal of Finance Internet Appendix PDF",
+        "url": "https://web.archive.org/web/20210717202452id_/https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903%26file=jofi12903-sup-0001-InternetAppendix.pdf",
+        "version": "supplement"
+      },
+      {
+        "access": "public",
         "label": "Official Journal of Finance Internet Appendix PDF",
         "url": "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0001-InternetAppendix.pdf",
         "version": "supplement"
@@ -927,6 +940,12 @@
       }
     ],
     "GriffinShams2020UntetheredDisclosure": [
+      {
+        "access": "public",
+        "label": "Wayback capture of the official Journal of Finance disclosure PDF",
+        "url": "https://web.archive.org/web/20210717203714id_/https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903%26file=jofi12903-sup-0003-disclosures.pdf",
+        "version": "supplement"
+      },
       {
         "access": "public",
         "label": "Official Journal of Finance supporting-information disclosure PDF",

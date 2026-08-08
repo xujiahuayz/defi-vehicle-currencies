@@ -1,0 +1,366 @@
+
+
+===== PAGE 1 =====
+
+[Online Appendix]
+Banking, Trade, and the Making of a Dominant Currency
+Gita Gopinath
+Harvard and NBER
+Jeremy C. Stein
+Harvard and NBER
+September 15, 2020
+1
+
+===== PAGE 2 =====
+
+A Appendix
+A.1 Proof of Proposition 2
+From the risk averse importers problem we have,
+D$ =M− 1
+ψδσ 2 (Q$−Qh)
+Qh =δ
+Market clearing requires that D$ = B$ +X$. /T_here are two possible scenarios. One where the demand
+for dollar safe assets is high enough, that is M≥ ¯M , which incentivizes domestic banks to also produce
+them, that is B$> 0. In this case it follows from Proposition 1 that,
+Q$−β
+Qh−β = ¯E
+Sinceδ≡ θ +β, it follows that Q$−Qh = θ( ¯E− 1) andD$ = M− θ( ¯E−1)
+ψδσ 2 . A second scenario is one
+where the demand for dollar safe assets is so low that it is not worthwhile for domestic banks to produce
+them, that is B$ = 0. In this case, D$ = X$, to give the solution for (Q$−Qh) = (M−X$)ψδσ 2. For
+this to be an equilibrium it must be that (M−X$)ψδσ 2<θ ( ¯E− 1). ¯M is the cut-oﬀ level of imports M
+at which this equation holds with strict equality, that is ¯M =X$ + θ( ¯E−1)
+ψδσ 2 .
+A.2 Proof of Proposition 3
+/T_he model in Section 3 is characterized by the following system of equations:
+D$ =M− 1
+ψδσ 2 (Q$−Qh) (1)
+D$ =B$ +X$ (2)
+η =
+
+
+
+0 if Q$−Qh< 0
+∈ [0, 1] if Q$−Qh = 0
+1 if Q$−Qh> 0
+(3)
+Q$−Qh =θ( ¯E− 1) if B$>γ LN (4)
+along with the condition, B$ =ηγLN , when the return diﬀerential between the dollar and local currency
+is positive but not big enough i.e. 0≤Q$−Qh<θ ( ¯E− 1). /T_he /f_irst equation stems from the importer’s
+demand for dollar deposits, the second comes from market clearing, the third and the forth equations
+are derived from from the bank’s optimization problem. To ease exposition, we consider four diﬀerent
+scenarios forM .
+2
+
+===== PAGE 3 =====
+
+[Case 1: M < X$] In this region of the parameter space, B$ must be equal to zero because otherwise
+(i.e. ifB$> 0) bothD$>X $ andQ$−Qh≥ 0 should hold. /T_he /f_irst inequality is a result of (2), while the
+second comes from the bank’s funding decision. /T_he two inequalities lead to a contradiction in view of (1).
+WithB$ = 0 in place, it is now straightforward that D$ =X$,η = 0, andQ$−Qh = (M−X$)ψδσ 2.
+Essentially,M≡X$ acts as a cutoﬀ for this type of solution.
+[Case 2:X$≤M <X$ +γLN ] Again, we proveB$ =ηγLN by contradiction. Suppose B$>ηγ LN .
+To make it consistent with the bank’s funding decision,Q$−Qh =θ( ¯E− 1)> 0 andη = 1 must hold. /T_he
+/f_irst condition implies thatD$−M <0 in light of (1), which contradictsM <X$+γLN <X$+B$ =D$.
+Suppose now that the opposite inequality is true i.e. B$ < ηγLN . To make it consistent with the bank’s
+funding decision,Q$−Qh< 0 has to be satis/f_ied, which makesη = 0. /T_his is again a contradiction since
+X$≤M impliesD$−M <0 whenB$≤ 0, which is not consistent with (1). /T_hus,B$ =ηγLN . Given
+this result, consider the case η > 0,1 which is equivalent to Q$−Qh = 0 . /T_hen we haveD$ = M in
+view of (1). η is also pinned down by B$ = M−X$ = ηγLN . Again, using these results, we shall use
+ˆM =γLN to denote the cutoﬀ of M to be able to sustain this type of solutions.
+[Case 3: X$ +γLN ≤ M < X$ +γLN + θ( ¯E−1)
+ψδσ 2 ] In this region, there is no currency mismatch
+(B$ = γLN ) because the resulting Q$−Qh is positive but still smaller than θ( ¯E− 1). /T_his can be seen
+more clearly when you substitute D$ =γLN +X$ into (1). /T_hus, we haveη = 1,D$ =X$ +γLN and
+Q$−Qh = (M−X$−γLN)ψδσ 2. /T_he cutoﬀ for this region is ¯M .
+[Case 4:X$ +γLN + θ( ¯E−1)
+ψδσ 2 ≤M ] /T_his is where the currency mismatch kicks in.Q$−Qh =θ( ¯E− 1)
+holds.D$ is thus equal to M− θ( ¯E−1)
+ψδσ 2 in view of (1), and η = 1.
+A.3 Proof of Proposition 4
+Consider a symmetric equilibrium in which ηi≡η for alli.M in Proposition 3 is now replaced by M =
+a+bη. /T_he cutoﬀ ofa, which corresponds toM previously, is then given by ¯a =M . A Case-1 equilibrium
+(as in Proposition 3) is sustainable only ifa≤a. /T_he cutoﬀ corresponding to¯M isa =X$+γLN +θ(E−1)
+ψδσ 2 ,
+so a Case-4 equilibrium is sustainable only if a>a . Furthermore, if b is large enough,b>γ LN + θ(E−1)
+ψδσ 2 ,
+the size of these two cutoﬀs is /f_lipped so we havea< ¯a.
+1One can easily show that the case with η = 0 is not sustainable in this region
+3
+
+===== PAGE 4 =====
+
+A.4 Proof of Proposition 5
+We can rewrite the objective function of importers as
+C0i +δ
+(
+E0[C1i]− ψ
+2 V0[C1]
+)
+=W−QhiDhi−Q$D$i−QeDei
++δ(Dhi +D$i +Dei−M)
+− δψσ 2
+2 [(D$i−M$)2 + (Dei−Me)2 + 2ρ(Dei−Me)(D$i−M$)]
+whereM≡M$ +Me. /T_he /f_irst order conditions yield
+0 =−Q$ +δ−δψσ 2 ((D$i−M$) +ρ(Dei−Me))
+0 =−Qe +δ−δψσ 2 ((Dei−Me) +ρ(D$i−M$))
+0 =−Qh +δ
+Solving this system of equations, it follows that
+D$i =M$− 1
+ψδσ 2(1−ρ) ((Q$−Qhi)−ρ(Qe−Qhi))
+Dei =Me− 1
+ψδσ 2(1−ρ) ((Qe−Qhi)−ρ(Q$−Qhi))
+Qh =δ
+From this point onwards, we consider three types of equilibria and provide conditions under which these
+equilibria exist.
+[Case 1: η$i = η$i = 0 ] Suppose that all imported products are invoiced in local currency; we later
+verify that this is indeed an optimal behavior of /f_irms since foreign currency interest rates are higher than
+local currency interest rate i.e. Q$−Qhi < 0 andQe−Qhi < 0 hold. Given this invoicing decision,
+importers faceM$ =Me =a. /T_he demands for foreign currency deposits are now characterized by
+D$i =a− 1
+ψδσ 2(1−ρ) ((Q$−Qhi)−ρ(Qe−Qhi))
+Dei =a− 1
+ψδσ 2(1−ρ) ((Qe−Qhi)−ρ(Q$−Qhi))
+Qh =δ
+4
+
+===== PAGE 5 =====
+
+In view of the market clearing conditions, these equations can be converted to
+X =a− 1
+ψδσ 2(1−ρ) ((Q$−δ)−ρ(Qe−δ))
+X =a− 1
+ψδσ 2(1−ρ) ((Qe−δ)−ρ(Q$−δ))
+So we have
+Q$ =Qe =δ−δψσ 2(1 +ρ) (X−a)
+A suﬃcient and neccesary condition to sustain this equilibrium is thereforeX≥aM . We shall use¯an =X
+to denote the corresponding cutoﬀ.
+[Case 2 η$i,η e = (1, 0) or (0, 1)] Suppose now that exporters invoice all of their foreign revenues in
+dollars. /T_hat is,α$ =a +b andαe =a. It follows from the demand functions that
+Q$ =δ−δψσ 2(D$i− (a +b)) +ρ (X−a)) (5)
+Qe =δ−δψσ 2((X−a) +ρ (D$i− (a +b))) (6)
+On the other hand, the /f_irst order conditions for the bank’s problem yield
+Q$−Qhi =θ( ¯E− 1) (7)
+at an interior solution where B$i > 0 andBhi > 0. Plugging (7) into (5) and (6), we can pin down the
+equilibrium value of dollar deposits:
+D$i = (a +b)−ρ(X−a)− θ( ¯E− 1)
+δψσ 2
+We can then compute interest rates on foreign currency deposits by plugging this back to (5) and (6). /T_hat
+is,
+Q$ =θ( ¯E− 1) +δ
+Qe =ρθ( ¯E− 1) +δ−δψσ 2(1−ρ2)(X−a)
+To verify that this is indeed an equilibrium, we need to ensure that there is currency mismatch in the
+balance sheet and that the interest rate on dollar deposits is lower than the interest rate on euro deposits.
+5
+
+===== PAGE 6 =====
+
+Put diﬀerently,
+D$i≥γLN +X (8)
+Q$≥Qe (9)
+Letas denote the threshold such that eq. (8) holds with equality and ¯as denote the threshold such that
+eq. (9) holds with equality.
+as =X + γLN
+(1 +ρ) + θ( ¯E− 1)
+(1 +ρ)δψσ 2−b
+¯as =X + θ( ¯E− 1)
+(1 +ρ)δψσ 2
+/T_herefore, it follows that a single dominant-currency equilibrium is sustainable if and only ifa∈ [as, ¯as]
+[Case 3: η$i =ηe = 0.5] Next, we turn to the case where both euros and dollars are used for interna-
+tional transactions. Consider a potential equilibrium where η$i = 0.5 andηei = 0.5 hold for all country
+i. From the bank’s /f_irst order conditions, we have
+Q$−Qhi =Qe−Qhi =θ( ¯E− 1) (10)
+/T_he demand functions, on the other hand, lead to
+Q$ =δ−δψσ 2(D$i− (a + 0.5b)) +ρ (Dei− (a + 0.5b))) (11)
+Qe =δ−δψσ 2 (Dei− (a + 0.5b)) +ρ(D$i− (a + 0.5b))) (12)
+SinceQ$−δ =Qe−δ andρ< 1, it is easy to show
+D$i− (a + 0.5b) =Dei− (a + 0.5b)
+LetD≡D$i =Dei. Combining (10), (11) and (12), we have
+D− (a +bη$) =− θ(E− 1)
+δψσ 2(1 +ρ)
+Let ¯ab denote the cutoﬀ such that D =X + 0.5γLN . /T_hat is,
+¯ab =X + θ(E− 1)
+δψσ 2(1 +ρ) + γLN
+2 − b
+2
+/T_herefore, the proposed equilibrium is sustainable if and only ifa≥ ¯ab.
+6
+
+===== PAGE 7 =====
+
+A.5 Asymmetric Case: Euro versus Dollar
+In this section, we elaborate on computational details when the two currencies, the dollar and the euro,
+have diﬀerent technological characteristics. We shed light on two factors: (i) the share of imports and
+(ii) the outside supply of foreign currency deposits. /T_hat is, the share of emerging markets’ imports from
+the U.S. and European countries are diﬀerent, a$ ⁄= ae, which constitutes M$ = a$ +b
+∫
+iη$idi and
+Me = ae +b
+∫
+iηeidi. Furthermore, the exogenous supply of foreign currency assets, X$ andXe, may
+take on diﬀerent values as opposed to the symmetric case developed in the main dra/f_t. Given this setup,
+this section aims to characterize equilibrium conditions under which the dollar or the euro emerges as
+a global dominant currency. We then present numerical examples that underscore the asymmetry. Path
+dependency, which we brie/f_ly discussed in Section 5, begins to play a key role.
+[Case 1: η$i = η$i = 0] In this case, the demand fucntions for dollar- and euro-denominated deposits
+can be wri/t_ten as
+Q$ =δ−δψσ 2 ((X$−a$) +ρ(Xe−ae))
+Qe =δ−δψσ 2 ((Xe−ae) +ρ(X$−a$))
+Qh =δ
+To make this equilibrium sustainable, we should ensure that the parameter space, (a$,a e,X $,X e), satis-
+/f_iesQ$<Q hi andQe<Q hi.
+[Case 2 η$i,η e = (1, 0) or (0, 1)] Suppose now that exporters invoice all of their foreign revenues in
+dollars. As before, it follows from the demand functions that
+Q$ =δ−δψσ 2(D$i− (a$ +b)) +ρ (Xe−ae)) (13)
+Qe =δ−δψσ 2(Xe−ae) +ρ (D$i− (a$ +b))) (14)
+/T_he /f_irst order conditions for the bank’s problem yield
+Q$−Qhi =θ( ¯E− 1)
+at an interior solution. In view of this condition, we can write the equilibrium value of dollar deposits as
+D$i = (a$ +b)−ρ(Xe−ae)− θ( ¯E− 1)
+δψσ 2
+7
+
+===== PAGE 8 =====
+
+Substituting this equation into (13) and (14), we have
+Q$ =θ( ¯E− 1) +δ
+Qe =ρθ( ¯E− 1) +δ−δψσ 2(1−ρ2)(Xe−ae)
+To make this equilibrium sustainable, we need to ensure that
+D$i≥γLN +X$
+Q$≥Qe
+/T_hese conditions are used to draw a region of parameter space where a single dominant-currency equilib-
+rium is sustainable.
+[Case 3: η$i = ηe = 0.5] Next, we turn to the case where both euros and dollars act as dominant
+currencies. Among possible equilibria, we focus on the symmetric invoicing case where η$i =ηe = 0.5.
+It follows from the bank’s /f_irst order conditions that
+Q$−Qhi =Qe−Qhi =θ(E− 1)
+We can then write the demand functions as
+[
+Q$−δ
+Qe−δ
+]
+=
+[
+−δψσ 2 −ρδψσ 2
+−ρδψσ 2 −δψσ 2
+][
+D$i− (a$ + 0.5b)
+Dei− (ae + 0.5b)
+]
+/T_he above system of equations can be converted into
+D$i = (a$ + 0.5b)− θ( ¯E− 1)
+δψσ 2(1 +ρ)
+Dei = (ae + 0.5b)− θ( ¯E− 1)
+δψσ 2(1 +ρ)
+To make this equilibrium sustainable, we need to ensure that
+(a$ + 0.5b)− θ( ¯E− 1)
+δψσ 2(1 +ρ)≥X$ + 0.5γLN
+(ae + 0.5b)− θ( ¯E− 1)
+δψσ 2(1 +ρ)≥Xe + 0.5γLN
+We now turn to a numerical example.
+8
+
+===== PAGE 9 =====
+
+A.5.1 Example 1: Asymmetric a$ andae
+/T_he equilibrium conditions we have derived in the preceding subsection can be used to illustrate various
+scenarios associated with the competition between the euro and the dollar to become a global dominant
+currency. As the /f_irst exercise, we revisit the formation of Eurozone in Section 5. Conceptually, the for-
+mation of the currency union can be thought of as a structural change which raises aei relative to a$i
+in emerging markets. We have claimed that the global economy prior to this change might as well be
+described by an equilibrium in which the dollar was the lone dominant currency. /T_he diagram in Figure
+A.I illustrates this point when we allow for ae⁄=a$. Assume, for the moment, that Xe =X$. /T_he set of
+no-dominant currency equilibria is ruled out here because this is not our current interest. One can easily
+compute the corresponding region by using conditions in Appendix A.5. In any case, the light blue area
+at the bo/t_tom of the /f_igure displays the region of parametric space where the dollar is the only dominant
+currency. As ae rises, we can reach the space where the equilibrium selection is indeterminate. Multiple
+equilibria can survive in darker areas. We can consider two equilibrium pathways in association with the
+Eurozone example.
+1.2
+-sa
+-ba
+-na
+as
+-
+0
+0 as -na -ba -sa 1.2 -
+a$
+(iv) η  = 0.5
+η  = 0.5
+$
+€
+(iv) η  = 0.5$
+€
+η  = 0,  η  = 1
+(ii) η  = 1,  η  = 0$
+$
+η  = 0
+(i) η  = 1$
+€
+η  = 1
+(iii) η  = 0$
+€
+€
+€
+or
+(a) Exogenous Trade Shares
+::::,
+Q)
+1.5
+1
+0.5
+o�---�---
+o 0.5 1 1.5
+η  = 0
+(i) η $ = 1
+€
+η
+ = 1
+(i
+ii) η $ = 0
+€
+η  = 0,  η  = 1
+(ii
+) η $ = 1,  η  = 0
+or
+€
+€
+$$
+η  = 0.5
+(iv) (iv)η η   = =  0.5 0.5$ $
+€ € (b) Exogenous Safe Asset Supply
+Figure A.I: Sustainable Equilibria Regions
+Path 1: (i)→ (ii) One thought experiment we can conduct in this context is the rising importance of Euro
+as a medium of exchange in international trade. A/f_ter the integration of European currencies, emerging
+markets have to bear a larger amount of euro-denominated revenue irrespective of their invoicing deci-
+sions. To describe such a trajectory, we investigate an equilibrium path starting from (a$,a e) = (0.5, 0)
+towards (a$,a e) = (0.5, 0.5). /T_he diagram in Figure A.I shows that this equilibrium path passes through
+three diﬀerent regions colored by light blue, dark blue and dark yellow respectively. We then computed
+howη$ andηe respond as the global economy moves along this trajectory. Our numerical example indeed
+illustrates the intuition that the dollar could still retain its sole dominance despite the fact that, in theory,
+9
+
+===== PAGE 10 =====
+
+multiple equilibria can arise. One caveat here is that we /f_ixed X$ = Xe in this example, while ae is
+increased. In the context of the Eurozone example, we can think of this assumption as implying that the
+supply of euro denominated assets has barely been changed relative to the trade invoicing.
+Path 1: (i) → (iv) An alternative scenario we can consider is the rising importance of both central
+countries, U.S. and Eurozone, even with no catch-up of the later relative to the former. In other words,
+the two countries are so important as a share of global trade — that the only possible equilibrium is one
+where both the dollar and the euro are used by other countries to invoice their exports. To conduct this
+experiment, we investigate the equilibrium path starting from (a$,a e) = (0 .5, 0) towards (a$,a e) =
+(1.2, 1.2). /T_he diagram con/f_irms our proposition that the global economy may end up in a situation where
+the only possible outcome is a dual-dominant equilibrium.
+A.5.2 Example 2: Asymmetric X$ andXe
+In addition to a$ andae, our model can /f_lexibly admit a diﬀerence between the foreign safe asset sup-
+pliesX$ andXe. Essentially, this se/t_ting re/f_lects the fact that the market of the European bonds are more
+fragmented than that of U.S. treasury bonds. One can think of a situation in which the supply of dollar-
+denominated assets outside emerging markets is greater than the supply of Euro denominated assets. How
+much does this gap between X$ andXe ma/t_ter in sustaining a single dominant currency equilibrium? To
+address this question, we revisit the numerical example and draw a region of the parameter space for
+sustaining each type of equilibria. We /f_ix a$ = ae = 1.08 and, again, rule out no-dominant currency
+equilibria to focus on the main question. /T_he diagram in Figure A.I(b) shows that a dollar dominant equi-
+librium is more likely to emerge when X$ is low relative to Xe. Yet, path dependency still ma/t_ters as we
+have seen in the previous subsection
+10

@@ -1,0 +1,94 @@
+
+
+===== PAGE 1 =====
+
+Disclosure Statement - John M. Grifﬁn
+(1) Every submitted article must state each source of ﬁnancial support for the
+particular research it describes. If none, that fact should be stated.
+Grifﬁn receives ﬁnancial support from the University of Texas. All data was
+either scraped by Integra FEC LLC or Amin Shams, or purchased by Integra FEC
+LLC. John Grifﬁn is the owner/CEO of Integra FEC LLC. Integra FEC LLC pro-
+vided conceptual and research assistance with the cryptocurrency data.
+(2) Each author of a submitted article should identify each interested party from
+whom he or she has received signiﬁcant ﬁnancial support, summing to at least
+$10,000 in the past three years or that will exceed this threshold under contracts
+in place at the time of submission. Support includes ﬁnancial support (e.g., con-
+sulting fees, retainers, grants, research support, equity shares or stock options,
+and the like), and in-kind support (e.g., access to data). An interested party is any
+individual, group, organization, or business entity that has a stake (e.g., ﬁnancial,
+political, regulatory, etc.) related to the article.
+Grifﬁn is an owner/CEO of Integra FEC LLC, which engages in litigation con-
+sulting on a variety of issues related to fraud, including fraud in cryptocurrencies.
+Integra FEC LLC does not receive funding for research but does receive payment
+for consulting services.
+(3) Each author should disclose any and all paid or unpaid positions as an ofﬁcer,
+director, corporate advisor, or board member of relevant non-proﬁt organizations
+or proﬁtmaking entities. A “relevant” organization is one whose policy positions,
+goals, or ﬁnancial interests relate to the article.
+
+===== PAGE 2 =====
+
+Grifﬁn is an owner/CEO of Integra FEC LLC and Integra REC LLC. Integra
+FEC LLC consults on issues of fraud that includes cryptocurrencies.
+(4) The disclosures required above apply to any close relative or partner of any
+author.
+I am not aware of any close relatives who consult on issues related to this
+paper.
+(5) Each author must disclose if another party had the right to review the paper
+prior to its circulation.
+No third-party had a right to review the paper.
+(6) If any support provided to an author by an interested party is subject to any
+non-disclosure obligation, this fact must be disclosed to the Journal along with
+the nature of the conﬂict.
+Integra FEC LLC consults on a variety of issues related to fraud, including
+cryptocurrencies. The clients of Integra FEC LLC are subject to non-disclosure
+conﬁdentiality agreements.
+(7) Any submitted article reporting research that involved the collection of data
+on human subjects must disclose whether the author obtained approval for such
+data collection from the Institutional Review Board (“IRB”) of the author’s home
+institution. If IRB approval was not obtained, the author(s) must state the reason.
+This paper does not involve human subjects.
+
+===== PAGE 3 =====
+
+Disclosure Statement - Amin Shams
+(1) Every submitted article must state each source of ﬁnancial support for the
+particular research it describes. If none, that fact should be stated.
+I received no ﬁnancial support for this particular research. All data was either
+scraped by Integra FEC LLC or Amin Shams, or purchased by Integra FEC LLC.
+(2) Each author of a submitted article should identify each interested party from
+whom he or she has received signiﬁcant ﬁnancial support, summing to at least
+$10,000 in the past three years or that will exceed this threshold under contracts
+in place at the time of submission. Support includes ﬁnancial support (e.g., con-
+sulting fees, retainers, grants, research support, equity shares or stock options,
+and the like), and in-kind support (e.g., access to data). An interested party is any
+individual, group, organization, or business entity that has a stake (e.g., ﬁnancial,
+political, regulatory, etc.) related to the article.
+I only received ﬁnancial support from the University of Texas at Austin and
+recently from the Ohio State University and have no other funding sources to
+disclose.
+(3) Each author should disclose any and all paid or unpaid positions as an ofﬁcer,
+director, corporate advisor, or board member of relevant non-proﬁt organizations
+or proﬁt-making entities. A “relevant” organization is one whose policy positions,
+goals, or ﬁnancial interests relate to the article.
+I hold no paid or unpaid positions as an ofﬁcer, director, corporate advisor, or
+board member of relevant non-proﬁt organizations or proﬁt-making entities.
+
+===== PAGE 4 =====
+
+(4) The disclosures required above apply to any close relative or partner of any
+author.
+The disclosures above apply to any close relative or partner of mine.
+(5) Each author must disclose if another party had the right to review the paper
+prior to its circulation.
+No third-party had a right to review the paper.
+(6) If any support provided to an author by an interested party is subject to any
+non-disclosure obligation, this fact must be disclosed to the Journal along with
+the nature of the conﬂict.
+No interested party provided any ﬁnancial support to me subject to any non-
+disclosure obligation.
+(7) Any submitted article reporting research that involved the collection of data
+on human subjects must disclose whether the author obtained approval for such
+data collection from the Institutional Review Board (“IRB”) of the author’s home
+institution. If IRB approval was not obtained, the author(s) must state the reason.
+This paper does not involve human subjects.

@@ -1,0 +1,1483 @@
+
+
+===== PAGE 1 =====
+
+Internet Appendix for “Is Bitcoin Really Un-Tethered?”
+JOHN M. GRIFFIN and AMIN SHAMS*
+This Internet Appendix provides additional information on our empirical strat-
+egy for analyzing blockchain data and presents supplementary results to the main
+analyses of the paper. Section I explains our labeling and veriﬁcation algorithm
+for wallets on Bitcoin and Tether blockchains. Section II provides representa-
+tive addresses that can be used to identify wallet clusters associated with major
+exchanges. Section III describes the timing and characteristics of currency move-
+ments on Bitcoin and Tether blockchains. Finally, the following supplementary
+Figures and Tables are included in this Appendix.
+Figures:
+• IA1. Snapshot of a 10-minute random sample of transactions on the Bitcoin
+blockchain.
+• IA2. Snapshots of Tether blockchain over time.
+• IA3. Flow of Tether to Bitﬁnex, Poloniex, and Bittrex after printing Tether.
+• IA4. Examples of Tether grants and changes in Bitﬁnex wallet balance.
+• IA5. The accuracy of the labeling procedure.
+• IA6. Net ﬂow of Bitcoin and Tether for quantiles of lagged returns.
+• IA7. Top addresses associated with ﬂow of Tether and Bitcoin between Bitﬁnex,
+Poloniex, and Bittrex.
+• IA8. The accuracy of the labeling procedure for 1LSg accounts.
+• IA9. The accuracy of the labeling procedure for 1LSg accounts for ﬂows backward.
+• IA10. Prices of Bitcoin and other cryptocurrencies around high 1LSg ﬂow events.
+• IA11. Bitcoin prices around events matched with high-ﬂow hours based on lagged
+returns.
+• IA12. Relationship between high-lagged-ﬂow hours to other accounts and Bitcoin
+returns.
+• IA13. Bitcoin prices around September 15, 2017.
+• IA14. Flow of Tether to Poloniex and Bittrex and trading volume on Tether ex-
+changes.
+• IA15. Top accounts associated with the ﬂow of Tether from Bitﬁnex.
+*Citation format: Griffin, John M., and Amin Shams, Internet Appendix for “Is Bitcoin Really
+Un-Tethered?” Journal of Finance, DOI: 10.1111/jofi.12903. Please note: Wiley-Blackwell is not
+responsible for the content or functionality of any supporting information supplied by the authors.
+Any queries (other than missing material) should be directed to the authors of the article.
+
+1
+
+===== PAGE 2 =====
+
+Tables:
+• IAI. Example of a Transaction with Multiple Inputs and Outputs on the Bitcoin
+Blockchain
+• IAII. The Relationship between Flow of Tether and Bitcoin V olatility and Returns
+• IAIII. The Effect of 1LSg Flow on Other Cryptocurrency Returns
+• IAIV . Cross-Section of Exchange Returns Around High-Flow Hours
+• IA V . Bitcoin Compounded Returns Excluding Hours with High Lagged Flows
+• IA VI. Bitcoin Return Reversals and 1LSg Flow
+• IA VII. Bitcoin Return Reversals and 1LSg Flow
+• IA VIII. The Effect of Tether Issuance on Bitcoin EOM Returns
+• IAIX. The Relationship between Monthly Tether Issuance and Outﬂow of Bitcoin
+from Exchange Reserve Wallets in Days before EOM
+• IAX. The Relationship between Tether and Bitcoin Flows and Synthetic Tether-
+USD versus BTC-USD Rates
+• IAXI. The Relationship between Tether and Bitcoin Flows and Value-Weighted
+Tether-USD Rate Across Exchanges versus BTC-USD Rates
+• IAXII. The Relationship between Tether and Bitcoin Flows and Equally-Weighted
+Tether-USD Rate Across Exchanges versus BTC-USD Rates
+• IAXIII. The Relationship between Tether and Bitcoin Flows for 1LSg and other
+accounts and Tether-USD versus BTC-USD Rates
+• IAXIV . The Relationship between Flows, Bitcoin Returns, and Cross-Exchange
+Spread
+2
+
+===== PAGE 3 =====
+
+I. Identifying and Verifying the Wallet Labeling Procedure
+This appendix explains our labeling and veriﬁcation algorithm for wallets
+on Tether blockchain and their corresponding clusters of wallets on the Bitcoin
+blockchain.
+A. Identifying Exchanges
+For the Tether Blockchain, the identities of major Tether entities are identiﬁed
+based on the Tether rich list reported by Tether Limited.1 At each point in time, the
+rich list reports the top-50 wallets in terms of balance and the exchange identity
+that the rich wallets belong to. Because the list changes over time, we go back
+through Internet Archive and collect the identity of any known wallet in the top-
+50 addresses at any point in time.
+For the Bitcoin blockchain, after we cluster wallets that are likely to be con-
+trolled by the same entities based on the algorithm explained in Section II.B, we
+assign valid labels to major clusters using extensive public data on the identities
+of representative wallet addresses within a given cluster. We then verify the ac-
+curacy of these labels by matching and correlating the ﬂow of Bitcoin between
+these labeled clusters with the ﬂow of Tether between corresponding Tether play-
+ers whose identities are extracted from the Tether rich list. We explain these two
+steps in detail below.
+We extensively search public forums such as Reddit and BitcoinTalk for the
+wallets associated with our major exchanges. For example, we ﬁnd several wallet
+addresses that are associated with Bitﬁnex. When we match these wallets with our
+clusters, we ﬁnd that all of these wallets belong to the same cluster, so we label
+that cluster including all of these wallet addresses as Bitﬁnex. Following this pro-
+cedure, we are able to label most major exchanges. Note that the readers can label
+these exchanges by ﬁnding the identity of any small subset of the wallets in their
+associated cluster and would not need all of the wallet addresses. Nevertheless, to
+make the procedure replicable and veriﬁable for future research, in Internet Ap-
+pendix Section II we provide a list of representative Bitcoin addresses that can be
+matched with the clustered wallets to identify major exchanges.
+B. Cross-Verifying Tether and Bitcoin Flows
+Next, to verify our labeling accuracy, we compare the correlation and magni-
+tude of the Bitcoin ﬂows between major exchanges labeled based on our algorithm
+with the Tether ﬂows between exchanges labeled based on the Tether rich list. If
+Tether is used mainly to purchase Bitcoin, we should see a correlated ﬂow mim-
+icking the exchange of Tether for Bitcoin across the two blockchains. We proceed
+as follows.
+1The rich list can be found here: https://wallet.tether.to/richlist
+3
+
+===== PAGE 4 =====
+
+1) We compute the daily Tether ﬂows from Bitﬁnex to Poloniex and from
+Bitﬁnex to Bittrex.
+2) We compute the daily Bitcoin ﬂows between any two top-20 exchanges in
+terms of trading volume that we can label using public data. These exchanges are
+Binance, Bitﬁnex, Bitﬂyer, Bitstamp, Bittrex, BTC38, BTC-e, BtcTrade, CHBTC,
+Coinbase, EXMO, Gemini, HitBTC, Huobi, Korbit, Kraken, OKCoin, OKEx,
+Poloniex, and QuadrigaCX. The list includes both major Tether-based exchanges
+and ﬁat-based exchanges.
+3) We match the Tether ﬂows from Bitﬁnex to Poloniex and from
+Bitﬁnex to Bittrex on the Tether blockchain ( TetherFlow BF X→P LX
+t and
+TetherFlow BF X→BT X
+t , respectively) to the daily pairwise Bitcoin ﬂows between
+any of the two exchanges, BTCFlow X→Y
+t , where X andY could be any of the
+exchanges in the list of top-20 exchanges above.
+4) We examine the correlation and the difference in magnitude of Tether and
+Bitcoin ﬂows when our labeled X and Y exchanges match the corresponding
+exchanges on the Tether rich list versus when they have different identities.
+The top-left panel of Figure IA5 shows the distribution of the computed cor-
+relations between the Tether ﬂows from Bitﬁnex to Poloniex and the Bitcoin
+ﬂows between any two labeled exchanges on the Bitcoin blockchain. The black
+bar shows that the correlation stands out for Bitcoin ﬂow between our labeled
+“Poloniex” and “Bitﬁnex” wallets (BTCFlow (X=P LX→Y =BF X)
+t ). The blue bars
+include Bitcoin ﬂows from major Tether-based exchanges such as Binance, OKEx,
+and even Bittrex, but the correlation for the labeled Poloniex wallet is an outlier.
+The top-right panel shows similar results for Bittrex. Results are similar if we use
+different time intervals, such as 12- or three-hour periods.
+The middle-left panel shows the distribution of the adjusted R2s for the re-
+gression
+BTCFlow X→Y
+t =α +βTetherFlow BF X→P LX
+t +εt, (IA1)
+whereX andY could be any two top-20 exchanges. The black bar shows that
+the adjusted R2 is higher than 0.5 for BTCFlow (X=P LX→Y =BF X)
+t , but signiﬁ-
+cantly lower and close to zero for the majority of other exchange pairs.
+While the results above show the high correlation between the ﬂow of Tether
+and the ﬂow of Bitcoin for our clustered wallets, another test to validate our clus-
+tering algorithm is to compare the magnitude of the Tether and Bitcoin ﬂows. The
+bottom-left panel shows the distribution of the coefﬁcient β. The closer this co-
+efﬁcient is to one, the closer is the magnitude of the ﬂows of Bitcoin and Tether.
+The graph shows that the coefﬁcient is again an outlier when X =Poloniex and
+Y = Bitfinex , which suggests that the magnitude of the ﬂows is closest when
+our labels are used as opposed to when we scramble the labels.
+4
+
+===== PAGE 5 =====
+
+Overall, the labeled wallets have by far the highest correlation and explanatory
+power in the time-series regression, and also the magnitude of the transferred
+Bitcoin ﬂow is closest to the amount of Tether transferred when we use our labeled
+wallets.
+C. Cross-Verifying Tether Flows with Exchange Volume
+As a further check on the relation between Tether and exchange transactions,
+we examine the three-hour moving average inﬂow of Tether to Poloniex and Bit-
+trex and the ofﬁcial reported exchange volume. Figure IA14 shows that the in-
+ﬂow of Tether to Poloniex is highly correlated with the Poloniex exchange vol-
+ume for the Bitcoin-Tether pair. When the exchange volume on Poloniex is re-
+gressed on the inﬂow of Tether to Poloneix, the adjusted R2 is 0.30 as shown in
+the top-left panel of Figure IA14. (The R2 is 0.48 using daily data.) We next
+estimate placebo regressions with the same explanatory variable (Tether inﬂow to
+Poloniex) but we use Binance exchange volume as the dependent variable. The
+second panel shows that the adjusted R2 is only 0.02. Similarly, the other panels
+show that while there is a general positive relationship, the adjustedR2s are signif-
+icantly smaller and close to zero when we replace the exchange trading volume of
+Poloniex and Bittrex with that of other Tether exchanges. TheR2s from regressing
+Binance, HitBTC, Huobi, Kraken, and OKEx exchange volume on Tether inﬂow
+to Poloniex are 0.02, 0.01, 0.00, 0.00, and 0.00, respectively. The last panel shows
+that even the R2 from regressing Bittrex volume on Tether inﬂow to Poloniex is
+very small at 0.01.
+For Bittrex, regressing Bittrex volume on Bittrex Tether inﬂow yields an ad-
+justedR2 of 0.23 (0.48 when using daily data). However, the adjusted R2s from
+the placebo regressions of Binance, HitBTC, Huobi, Kraken, and OKEx exchange
+volume on Bittrex Tether inﬂow are close to zero at 0.02, 0.05, 0.00, 0.00, and
+0.00, respectively. The R2 from regressing Poloniex volume on Tether inﬂow to
+Bittrex is 0.06. The results demonstrate that the strong linear relation is present
+only when we match Poloniex and Bittrex ﬂows to their respective exchanges and
+thus is not simply due to time-varying volatility or overall trading volume.
+D. Identifying the Main Players
+In this appendix, we describe how we drill down on the nature of the ﬂows
+out of Bitﬁnex and the corresponding Bitcoin ﬂows back by focusing on the ex-
+act deposit addresses used to move the coins. Typically, to electronically detect
+which user has deposited funds and to credit these funds to her account, each ex-
+change user receives her own unique deposit wallet address. As shown in Panel
+A of Figure 4, 90% of the Tether ﬂows from Bitﬁnex to Poloniex go to a sin-
+gle deposit address, 1J1dCYzS5EerUuJCJ6iJYVPytCMVLXrgM9, which we la-
+bel as 1J1d. Moreover, 72% of the Tether ﬂows from Bitﬁnex to Bittrex go to
+5
+
+===== PAGE 6 =====
+
+1AA6iP6hrZfYiacfzb3VS5JoyKeZZBEYRW, (which we label as 1AA6). Addi-
+tionally, the Bitcoin blockchain data reveals that 66% of the Bitcoin ﬂowing from
+Poloniex and Bittrex to Bitﬁnex goes to the single Bitﬁnex deposit address that
+we label as 1LSg, 1LSgEKji3ZoGdvzBgkcJMej74iBd38fySb.2
+We examine whether the Tether ﬂow to 1J1d and 1AA6 on the Tether
+blockchain corresponds to the Bitcoin ﬂow from Poloniex and Bittrex to 1LSg. We
+compare the Tether ﬂow to 1J1d and 1AA6 to the Bitcoin ﬂow from Poloniex and
+Bittrex to the top-100 largest Bitcoin addresses on Bitﬁnex, including 1LSg. The
+correlation between Bitcoin ﬂows from Poloniex to 1LSg on Bitﬁnex and Tether
+ﬂows from Bitﬁnex to 1J1d on Poloniex is 0.69. Similarly, the correlation be-
+tween Bitcoin ﬂows from Bittrex to 1LSg and Tether ﬂows from Bitﬁnex to 1AA6
+on Bittrex is 0.64. These results strongly suggest that the ﬂows on these wallets
+are linked. We calculate similar correlations between Tether ﬂows from Bitﬁnex
+to 1J1d and 1AA6 ( TetherFlow BF X
+1J1d
+−−→P LX
+t and TetherFlow BF X
+1AA6
+−−−→BT X
+t ,
+respectively) to the daily Bitcoin ﬂows from Poloniex and Bittrex to any other
+top-100 deposit addresses on Bitﬁnex. The blue bars in the top panel of Figure
+IA8 show that other large deposit accounts on Bitﬁnex show signiﬁcantly lower
+ﬂow correlations with the Tether ﬂows into 1J1d and 1AA6.
+The second- and third-row panels show the distribution of the adjusted R2s
+and theβ coefﬁcients for the regressions
+BTCFlow P LX
+X
+− →BF X
+t =α +βTetherFlow BF X
+1J1d
+−−→P LX
+t +εt, (IA2)
+and
+BTCFlow BT X
+Y
+− →BF X
+t =α +βTetherFlow BF X
+1AA6
+−−−→BT X
+t +εt, (IA3)
+where BTC
+i
+k
+− →j
+is the amount of Bitcoins transferred from exchange i to ex-
+changej through deposit addressk andTether
+i
+k
+− →j
+is the amount of Tether trans-
+ferred from exchange i to exchange j through deposit address k. Here, X can
+be any of the top-100 Bitﬁnex recipients of Bitcoin from Poloniex, and Y can
+be any of the top-100 Bitﬁnex recipients of Bitcoin from Bittrex. The black bar
+shows that the adjustedR2s are by far the largest forX = 1LSg for Poloniex and
+Y = 1LSg for Bittrex, suggesting that the 1LSg deposit address on the Bitﬁnex
+exchange has the closest tie to the two Tether deposit addresses on Poloniex and
+Bittrex, 1J1d and 1AA6. Finally, the bottom panels show the distribution of the
+coefﬁcient β above and conﬁrms that the magnitude of the daily Tether ﬂows to
+2Figure IA15 shows the ﬂows to these addresses separately for before and after December
+2017.
+6
+
+===== PAGE 7 =====
+
+1J1d and 1AA6 is most similar in size to the magnitude of the Bitcoin back to
+1LSg. These results suggest that it is highly likely that 1J1d Poloniex Tether wal-
+let, 1AA6 Bittrex Tether wallet, and 1LSg Bitﬁnex Bitcoin wallet are controlled
+by the same entity/individual to exchange Tether for Bitcoin. For simplicity, we
+label their activity as 1LSg throughout the paper.
+To examine the net Tether and Bitcoin ﬂows, we subtract the Tether ﬂows
+back from Poloniex and Bittrex to Bitﬁnex and the Bitcoin ﬂows back from
+Bitﬁnex to Poloniex and Bittrex. We ﬁnd that the ﬂows back are also
+handled mainly through one large deposit address. Tether wallet 1MZA-
+ayfFJ9Kki2csoYjFVRKHFFSkdoMLtX moves most of the Tether from both
+Poloniex and Bittrex back to Biﬁnex. We label this wallet as 1MZA. Moreover,
+two Bitcoin deposit addresses –1DEc on Poloniex and 1PCw on Bittrex – account
+for the largest Bitcoin ﬂows back from Bitﬁnex to Poloniex and Bittrex, respec-
+tively. We estimate similar results for these ﬂows back in Figure IA9. The results
+show that these wallets are likely to be controlled by the same entity.
+The table below summarizes the wallets that we identify as associated with the
+main movements of coins between Bitﬁnex, Poloniex, and Bittrex. The relation-
+ships between these wallets are further illustrated in Figure IA7.
+Blockchain Sender Recipient Deposit Address
+Tether Bitﬁnex Poloniex 1J1d
+Tether Bitﬁnex Bittrex 1AA6
+Bitcoin Poloniex and Bittrex Bitﬁnex 1LSg
+Tether Poloniex and Bittrex Bitﬁnex 1MZA
+Bitcoin Bitﬁnex Poloniex 1DEc
+Bitcoin Bitﬁnex Bittrex 1PCw
+E. Formal Deﬁnition of Flows
+The net average ﬂow associated with these wallets is formally deﬁned as the
+signed net amount of capital transferred between these wallets. We label this
+value as “1LSg ﬂow” throughout the paper and deﬁne it formally following our
+ﬂow calculations in equations (1), (2), and (3),
+NetBTCFlow 1LSg
+t = (
+t∑
+t−1
+BTC
+P LX
+1LSg
+−−−→BF X
+−
+t∑
+t−1
+BTC
+BF X
+1DEc
+−−−→P LX
+)
++(
+t∑
+t−1
+BTC
+BT X
+1LSg
+−−−→BF X
+−
+t∑
+t−1
+BTC
+BF X
+1P Cw
+−−−→BT X
+),
+(IA4)
+7
+
+===== PAGE 8 =====
+
+whereBTC
+i
+k
+− →j
+is the amount of coins transferred from exchange i to exchange
+j through deposit address k between hours t− 1 and t. For Tether, to measure
+the value relative to Bitcoin prices, we cumulate the Bitcoin-denominated value
+of Tether using Bitcoin prices at the time of the transaction. Similar to the ﬂow of
+Bitcoin, we deﬁne the net ﬂow of Tether as
+NetTetherFlow 1LSg
+t = (
+t∑
+t−1
+Tether
+BF X
+1J1d
+−−→P LX
+−
+t∑
+t−1
+Tether
+P LX
+1M ZA
+− −−− →BF X
+)
++(
+t∑
+t−1
+Tether
+BF X
+1AA6
+−−−→BT X
+−
+t∑
+t−1
+Tether
+BT X
+1M ZA
+− −−− →BF X
+),
+(IA5)
+whereTether
+i
+k
+− →j
+is the amount of coins transferred from exchangei to exchange
+j through deposit addressk between hourst−1 andt. The “1LSg ﬂow” is deﬁned
+as
+1LSgFlow = (NetTetherFlow 1LSg
+t +NetTetherFlow 1LSg
+t )/2. (IA6)
+Throughout the paper, we decompose the aggregate ﬂows to Poloniex and
+Bittrex into those through the 1LSg channel and those through other non-1LSg
+accounts on Poloniex and Bittrex,
+Other_PLX/BTX _Flow t =Tether/BitcoinFlow t− 1LSgFlow t, (IA7)
+whereTether/BitcoinFlow is the aggregate ﬂow to Poloniex and Bittrex as de-
+ﬁned in equation (3).
+Finally, the net average ﬂows of Bitcoin and Tether between Bitﬁnex and ﬁve
+other Tether exchanges (Binance, HitBTC, Huobi, Kraken, and OKEx) are calcu-
+lated in a similar fashion as for Poloniex and Bittrex again following (1), (2), and
+(3).
+8
+
+===== PAGE 9 =====
+
+II. Representative Addresses to Identify Wallet Clusters Associated with Major Exchanges
+Exchange Address1 Address2
+Bitﬁnex 1Kr6QSydW9bFQG1mXiPNNu6WpJGmUa9i1g 3D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r
+Binance 1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s 16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe
+Bitﬂyer 3JEAszztBTBtsGgxT75mX1QMmvp3FbtLZy 3A4U175prUGEn3B1gUDkz32u8fnF9Nx3Ly
+Bitstamp 32RQLBAMSndugVSjA9kyeV4AjzfXXJQ2gp 36mwH1Jg3AMVsEQqVaDSe9YFBTGebaHR1A
+Bittrex 13vHWR3iLsHeYwT42RnuKYNBoVPrKKZgRv 1N52wHoVR79PMDishab2XmRHsbekCdGquK
+Btc38 16fSNxBHxyP8RMYzVU7oYyhscUFNqRkV29 1EKYZAkJQD1mBws7Fo6vgCBcm2dbTAC9DX
+Btce 18gSAdDXKRatd8aGFBpBotchCq1gBQw9Jm 16uD5AfFSRPw96FgSejamvu9vYMHjFbMSQ
+Btctrade 1NvvccV8poyNmYgGC1Jt14uhpd5tq5QTr5 17sBKe2PazSfzB485yhcNtsU6rLrDcSzCK
+Cbase 16DjTmFX52LqTMRkozuPrsubhFjkV5VEye 1MMdVUrmE8896QE1sWF54qE9tjYxhZcNzp
+Chbtc 1LpxLRyBXMXZxRYeyo1YJAZ273dFT4DhVa 1NGMdbQWau5Vdbq9Loh3z5LHPdrW AY AgRE
+Exmo 19W5TDzh7MzWHLgCKKKCf6qjUc8Qm4htnZ 1KAqexqZ4FVUhG2qmmXZvccbp5MMrxzuvC
+Gemini 1J37CY8hcdUXQ1KfBhMCsUVafa8XjDsdCn 1NY Ad6fA2dc5xowuweFUSDRqRTEzDwk28
+Hitbtc 3JjPf13Rd8g6W Ayvg8yiPnrsdjJt1NP4FC 1EEqRvnS7XqMoXDcaGL7bLS3hzZi1qUZm1
+Huobi 19iVyH1qUxgywY8LJSbpV4VavjZmyuEyxV 1Po4J4SNyJuGnMGYJfGTXLEvGgAZKiddr7
+Korbit 16jce8CbnyF2dYkBzrXKEdeG2wGMwShkPq 1Jw2vULvXpdFjzTVsKWw21CzFwZhBAjjTk
+Kraken 1Kd6zLb9iAjcrgq8HzWnoWNVLYYWjp3swA 1A7znRYE24Z6K8MCAKXLmEvuS5ixzvUrjH
+Okcoin 143Feqwz3WmAaYUBcani9GGEmzyFAes8tP 19QC9XoMVWxP43TkzkSKZhtcY4oZFqWb1d
+Okex 37Tm3Qz8Zw2VJrheUUhArDAoq58S6YrS3g 3Dqq4kUPr7jDqfqPMBfm54Bz5BcQwG1Wmb
+Poloniex 17A16QmavnUfCW11DAApiJxp7ARnxN5pGX 12cgpFdJViXbwHbhrA3TuW1EGnL25Zqc3P
+Quadrigacx 3Betb5uAZzEX9MU4U2wPYSbRfUtYxtwaj6 3A7h7kZJCLYLBuqTiibjnw5GZfkRJtKzzv
+9
+
+===== PAGE 10 =====
+
+III. Timing and Characteristics of Currency Movements
+In this appendix, we examine the timing and characteristics of the ﬂow of coins
+between Bitﬁnex and other exchanges. First, we examine the timing of the ﬂow
+relative to the time when Tether is printed. As described in Figure 1, the transfer of
+Tether from Tether authorizer (account labeled 3MbY) to Tether treasuries (1NTM
+and 3BbD), all colored in red, is referred to as Tether “authorization.” There are
+cases where Tether moves quickly in and out of Bitﬁnex right after authorization,
+but it is also common to see a delay of a few days between Tether authorization
+and the ﬂow of coins from Bitﬁnex to other Tether exchanges, mainly Poloniex
+and Bittrex. For example, 50 million Tether was printed on December 20, 2017
+and was subsequently moved to Bitﬁnex the following day, increasing the Bitﬁnex
+net balance of Tether by almost 50 million.3 However, it took almost four days for
+this amount to be fully moved out of Bitﬁnex.
+To better understand the timing of the Tether ﬂows, we examine inﬂows of
+Tether to Bitﬁnex as well as outﬂows of Tether from Bitﬁnex to the two exchanges
+in response to printing of Tether by Tether Limited. Here we estimate a V AR
+model with ﬁve lags and examine the impulse response functions, which have
+been used extensively to examine the ﬂows of capital between countries (Froot,
+O’Connell, and Seasholes (2001)). The impulse response of Tether ﬂows shows
+the response of ﬂows to a one-standard-deviation shock to printing of Tether. The
+regression used to estimate the V AR model is
+yt =c +A1yt−1 +A2yt−2 +... +A5yt−5 +εt, (IA8)
+where yt is a 2-by-1 vector of Tether issuance and Tether ﬂow, Ai is a time-
+invariant 2-by-2 coefﬁcient matrix, c is a 2-by-1 vector of constants, and εt is
+a 2-by-1 vector of error terms.
+Panel A of Figure 5 indicates that the inﬂow to Bitﬁnex increases signiﬁcantly
+after Tether is printed at Tether Limited, but not all of the Tether ﬂows into Bitﬁnex
+immediately. On average, it can take between three and four days for most of
+the Tether to move to Bitﬁnex. Similarly, Panel B shows that the ﬂow of Tether
+from Bitﬁnex to the other exchanges increases on the day of Tether authorization,
+though not as much as the inﬂow to Bitﬁnex in Panel A. Even after three days,
+ﬂows are still moving out from Bitﬁnex to the other exchanges. Throughout the
+paper we use this delay in the ﬂow of Tether to formally test how Bitcoin prices
+are affected when there is an oversupply of Tether in the system.
+3Examples are provided in Internet Appendix Figure IA3.
+10
+
+===== PAGE 11 =====
+
+REFERENCES
+Froot, Kenneth A., Paul G.J. O’connell, and Mark S. Seasholes, 2001, The port-
+folio ﬂows of international investors, Journal of Financial Economics 59,
+151–193.
+11
+
+===== PAGE 12 =====
+
+Figure IA1. Snapshot of a 10-minute random sample of transactions on the Bitcoin
+blockchain. This ﬁgure shows the ﬂow of Bitcoin recorded on the Bitcoin blockchain over a
+10-minute random sample in 2017. The thickness of the edges is proportional to the magnitude of
+the ﬂow between two nodes, and the node size is proportional to aggregate inﬂow and outﬂow for
+each node. The direction of the ﬂow is shown by the curvature of the edges, with Bitcoin moving
+clockwise from a sender to a recipient.
+12
+
+===== PAGE 13 =====
+
+Jun 2017
+ Aug 2017
+Oct 2017
+ Dec 2017
+Figure IA2. Snapshots of Tether blockchain over time. This ﬁgure shows the aggregate ﬂow
+of Tether between major exchanges and market participants from genesis until different points
+in time. Tether transactions are captured on Omni Layer as transactions with the coin ID 31.
+The data include conﬁrmed transactions with the following action types: Grant Property Tokens,
+Simple Send, and Send All. Wallet identities of the exchanges on Tether blockchains are obtained
+from the Tether rich list. The thickness of the edges is proportional to the magnitude of the ﬂow
+between two nodes, and the node size is proportional to aggregate inﬂow and outﬂow for each
+node. Intranode ﬂows are excluded. The direction of the ﬂow is shown by the curvature of the
+edges, with Tether moving clockwise from a sender to a recipient.
+13
+
+===== PAGE 14 =====
+
+Panel A. Inﬂow to Bitﬁnex
+Panel B. Outﬂow from Bitﬁnex
+Figure IA3. Flow of Tether to Bitﬁnex, Poloniex, and Bittrex after printing Tether.This ﬁgure
+plots impulse response functions describing the change in Tether ﬂow between major exchanges
+in response to a one-standard-deviation shock to Tether authorization. Panel A shows the inﬂow
+from the Tether treasury to Bitﬁnex over 10 days after Tether authorization. Panel B shows the
+outﬂow from Bitﬁnex to Poloniex and Bittrex. The sample period is March 1, 2017 to March 31,
+2018. The V AR is estimated using daily data with ﬁve lags, and shocks are orthogonalized using a
+Cholesky factorization with ordering of authorization of Tether before the ﬂow of Tether from the
+Tether treasury to Bitﬁnex and from Bitﬁnex to other Tether exchanges. The dashed lines show
+the 95% conﬁdence intervals.
+14
+
+===== PAGE 15 =====
+
+Figure IA4. Examples of Tether grants and changes in Bitﬁnex wallet balance. This ﬁgure shows multiple examples of Tether grants, inﬂow of
+Tether to Bitﬁnex, and the Tether balance on Bitﬁnex over the subsequent days. Large gray bars show the Tether balance on Bitﬁnex, the medium
+blue bars show Tether grants, and the red narrow bars show the inﬂow of Tether to Bitﬁnex.
+15
+
+===== PAGE 16 =====
+
+Poloniex Bittrex
+Correlations:
+AdjustedR2s:
+Regression Coefﬁcients:
+Figure IA5. The accuracy of the labeling procedure. This ﬁgure compares the daily Tether
+ﬂows from Bitﬁnex to Poloniex and from Bitﬁnex to Bittrex identiﬁed using wallet identities
+on the Tether rich list with Bitcoin ﬂows between exchanges identiﬁed using the clustering al-
+gorithm in this paper. The Tether ﬂows TetherFlow BF X→P LX
+t and TetherFlow BF X→BT X
+t
+are compared with Bitcoin ﬂows between any two top-20 exchanges in terms of trading volume,
+BTCFlow X→Y
+t , where X andY could be any of Binance, Bitﬁnex, Bitﬂyer, Bitstamp, Bittrex,
+BTC38, BTC-e, BtcTrade, CHBTC, Coinbase, EXMO, Gemini, HitBTC, Huobi, Korbit, Kraken,
+OKCoin, OKEx, Poloniex, and QuadrigaCX. The top-left panel shows the distribution of correla-
+tions betweenTetherFlow BF X→P LX
+t and Bitcoin ﬂows between any two exchanges. The black
+bar shows the correlation when the correct label is used ( BTCFlow P LX→BF X
+t ), and the blue
+bars show the distribution of the correlation with other inter-exchange Bitcoin ﬂows. The mid-
+dle and bottom panels show the distribution of adjusted R2s and regression coefﬁcients for the
+regression of BTCFlow X→Y
+t on TetherFlow BF X→P LX
+t , where X and Y can be any of the
+exchanges listed above. The black bars show the true match using the algorithm in this paper. The
+right panels show similar results for Bittrex.
+16
+
+===== PAGE 17 =====
+
+Panel A. Tether Flow
+Panel B. Bitcoin Flow
+Figure IA6. Net ﬂow of Bitcoin and Tether for quantiles of lagged returns. This ﬁgure shows
+net hourly ﬂow of Bitcoin and Tether between Bitﬁnex and two major Tether exchanges, Poloniex
+and Bittrex, as a function of lagged three-hour average returns. The sample period is March 1, 2017
+to March 31, 2018. The graphs show the average ﬂow per quantile of lagged return, controlling for
+three-hour lagged volatility calculated using ﬁve-minute returns. Panel A shows the net outﬂow
+of Tether from Bitﬁnex to Poloniex and Bittrex, and Panel B shows the net inﬂow of Bitcoin from
+Poloniex and Bittrex to Bitﬁnex. The red lines show the ﬁtted values of the ﬂow as a second-order
+polynomial of the lagged return, controlling for lagged volatility.
+17
+
+===== PAGE 18 =====
+
+Figure IA7. Top addresses associated with ﬂow of Tether and Bitcoin between Bitﬁnex,
+Poloniex, and Bittrex. This ﬁgure shows the relationships between top addresses associated with
+the ﬂows of Tether and Bitcoin between Bitﬁnex, Poloniex, and Bittrex. Tether wallets 1J1d and
+1AA6 are the top recipients of Tether directly from Bitﬁnex on Poloniex and Bittrex. Bitcoin wal-
+let 1LSg is the largest deposit address for Bitcoin on Bitﬁnex between March 1, 2017 and March
+31, 2018. The link between these wallets is described in the Internet Appendix Section I. Part of
+the Tether received by Poloniex and Bittrex goes back to Bitﬁnex through the 1MZA Tether wallet,
+and in exchange, Bitcoin is sent back to Poloniex and Bittrex through 1DEc and 1PCw.
+18
+
+===== PAGE 19 =====
+
+Poloniex Bittrex
+Correlations:
+AdjustedR2s:
+Regression Coefﬁcients:
+Figure IA8. The accuracy of the labeling procedure for 1LSg accounts. This ﬁgure com-
+pares the daily Tether ﬂows from Bitﬁnex to 1J1d on Poloniex and Bitﬁnex to 1AA6 on Bit-
+trex with Bitcoin ﬂows back from Poloniex and Bittrex to top-100 Bitﬁnex Bitcoin recip-
+ient wallets from Poloniex and Bittrex. The Tether ﬂows TetherFlow BF X
+1J1d
+−−−→P LX
+t and
+TetherFlow BF X
+1AA6
+−−−→BT X
+t are compared with daily Bitcoin ﬂows BTCFlow P LX
+X
+−→BF X
+t
+and BTCFlow BT X
+Y
+− →BF X
+t , where X can be any of the top-100 Bitﬁnex recipients of Bitcoin
+from Poloniex, and Y can be any of the top-100 Bitﬁnex recipients of Bitcoin from Bittrex.
+The black bar in the top-left panel shows the correlations between TetherFlow BF X
+1J1d
+−−−→P LX
+t
+and BTCFlow P LX
+1LSg
+−−−→BF X
+t and the blue bars show the distribution of correlations between
+TetherFlow BF X
+1J1d
+−−−→P LX
+t and Bitcoin ﬂows from Poloniex to any other top 100 Bitﬁnex
+recipients of Bitcoin from Poloniex. The middle and bottom panels show the distribution
+of adjusted R2s and regression coefﬁcients for the regression of BTCFlow P LX
+X
+−→BF X
+t on
+TetherFlow BF X
+1J1d
+−−−→P LX
+t , where X can be any of the top-100 Bitﬁnex recipients of Bitcoin
+from Poloniex. The black bars show the results for X = 1LSg. The right panels show similar
+results for Bittrex.
+19
+
+===== PAGE 20 =====
+
+Poloniex Bittrex
+Correlations:
+AdjustedR2s:
+Regression Coefﬁcients:
+Figure IA9. The accuracy of the labeling procedure for 1LSg accounts for ﬂows backward.
+This ﬁgure compares the daily Tether ﬂows from Poloniex and Bittrex back to Bitﬁnex through
+1MZA account with Bitcoin ﬂows from Bitﬁnex to top-100 Poloniex and top-100 Bittrex Bit-
+coin recipient wallets. The left panels compare the Tether ﬂows TetherFlow P LX
+1M ZA
+−−−−→BF X
+t
+with daily Bitcoin ﬂows from Bitﬁnex to deposit addresses on Poloniex,BTCFlow BF X
+X
+−→P LX
+t ,
+where X can be any of the top-100 Poloniex recipients of Bitcoin from Bitﬁnex. The black
+bar in the top-left panel shows the correlations between TetherFlow P LX
+1M ZA
+−−−−→BF X
+t and
+BTCFlow BF X
+1DEc
+− −−− →P LX
+t and the blue bars show the distribution of correlations with Bitcoin
+ﬂows from Bitﬁnex to any other top 100 Poloniex recipients of Bitcoin. The middle and bot-
+tom panels show the distribution of adjusted R2s and regression coefﬁcients for the regression of
+BTCFlow BF X
+X
+−→P LX
+t onTetherFlow P LX
+1M ZA
+−−−−→BF X
+t , where X can be any of the top-100
+Poloniex recipients of Bitcoin from Bitﬁnex. The black bars show the results forX = 1DEc. The
+right panels show similar results for 1PCw wallet on Bittrex.
+20
+
+===== PAGE 21 =====
+
+Figure IA10. Prices of Bitcoin and other cryptocurrencies around high 1LSg ﬂow events.
+Panel A shows Bitcoin prices three hours before and after the top 1% of high 1LSg ﬂow hours.
+Prices are scaled to one at time -3 before the event and at time 0 at the end of the event window.
+Scaled prices are averaged across the events. High 1LSg ﬂows occur between time -1 and time 0
+and are deﬁned as in Figure 7. Panel B shows similar results for the other major cryptocurrencies.
+The sample period is March 1, 2017 to March 31, 2018.
+21
+
+===== PAGE 22 =====
+
+Figure IA11. Bitcoin prices around events matched with high-ﬂow hours based on lagged
+returns. This ﬁgure shows Bitcoin prices three hours before and after the hours that are closest
+matches to the high-ﬂow hours to Poloniex and Bittrex in terms of the compounded returns be-
+tween times -3 to 0. Prices are scaled to one at time -3 before the event and at time 0 at the end of
+the event window. Scaled prices are averaged across the events. High-ﬂow hours are deﬁned as in
+Figure 5. The sample period is March 1, 2017 to March 31, 2018.
+22
+
+===== PAGE 23 =====
+
+Based on Other PLX-BTX Flows
+ Based on Flows to Other Tether Exchanges
+Figure IA12. Relationship between high-lagged-ﬂow hours to other accounts and Bitcoin
+returns. The orange bars show the buy-and-hold return of Bitcoin from March 1, 2017 to March
+31, 2018. The gray bars in the left panels show the distribution of returns if the top hours with
+high lagged net ﬂows from Bitﬁnex to other Poloniex and Bittrex wallets (non-1LSg) are replaced
+with a random sample of returns in other hours, bootstrapped 10,000 times. The gray bars in the
+right panels show the distribution of returns if the top hours with high lagged net aggregate ﬂow
+from Bitﬁnex to all other Tether exchanges are replaced with a random sample of returns in other
+hours, bootstrapped 10,000 times. The return distribution in the top panel replaces the top 1% of
+high lagged ﬂow hours with a random sample of returns in other hours, and the middle and bottom
+panels replace the top 5% and 10%, respectively.
+23
+
+===== PAGE 24 =====
+
+Figure IA13. Bitcoin prices around September 15, 2017. This ﬁgure shows hourly Bitcoin
+prices around September 15, 2017, when Tether released a limited audit of the cash balance. Tether
+later ﬁred the auditor because of “the excruciatingly detailed procedures” it was undertaking.
+24
+
+===== PAGE 25 =====
+
+Poloniex Bittrex
+Adjusted R2=0.3
+ Adjusted R2=0.23
+Adjusted R2=0.02
+ Adjusted R2=0.02
+Adjusted R2=0.01
+ Adjusted R2=0.05
+Figure IA14. Flow of Tether to Poloniex and Bittrex and trading volume on Tether ex-
+changes. This ﬁgure shows binscatter plots of three-hour moving average trade volume on Tether
+exchanges Poloniex, Bittrex, Binance, HitBTC, Huobi, Kraken, and OKEx as a function of Tether
+inﬂow to Poloniex and Bittrex. The reported R2s correspond to a regression of exchange volume
+on Tether ﬂows. The left panels report results for Tether ﬂows to Poloniex, and the right panels
+for Bittrex. The sample period is March 1, 2017 to March 31, 2018.
+25
+
+===== PAGE 26 =====
+
+Adjusted R2=0.00
+ Adjusted R2=0.00
+Adjusted R2=0.00
+ Adjusted R2=0.00
+Adjusted R2=0.00
+ Adjusted R2=0.00
+Adjusted R2=0.01
+ Adjusted R2=0.06
+26
+
+===== PAGE 27 =====
+
+Panel A. Before December 2017
+Panel B. From December 2017
+Figure IA15. Top accounts associated with the ﬂow of Tether from Bitﬁnex.This ﬁgure shows
+the largest recipients of Tether from Bitﬁnex recorded on the Tether blockchain between March
+1, 2017 and March 31, 2018. Exchange wallet identities are obtained from the Tether rich list.
+Intermediary wallets that receive Tether from Bitﬁnex but send all Tether to wallets of a particular
+exchange are labeled as that exchange. Exchanges are distinguished by colors, and the partitions
+show unique wallets within each exchange. The two largest recipients of Tether from Bitﬁnex on
+Bittrex and Poloniex are labeled by the ﬁrst four characters of their wallet ID as 1AA6 and 1J1d.
+Panel A shows the results for before December 1, 2017, and Panel B for after.
+27
+
+===== PAGE 28 =====
+
+Table IAI
+Example of a Transaction with Multiple Inputs and Outputs on the Bitcoin Blockchain
+This table shows the inputs (senders) and outputs (recipients) for the Bitcoin transaction with
+hash ID 5c6f2f3b70d57b32a77b220fbbde79913c0caaf8c72f3bb824dc539f135979cd on March
+30, 2018 at 13:44:21 UTC time.
+Sender Amt_Sent Recipient Amt_Received
+1129qSnNqHSTdmfaAUoKCytUAu29xgjgfJ 0.05899683 112B9PzJz4u47A3JEzjpaiVduowD7gS1vP 0.23028745
+121cUjoRtGKU25pkuZpxc33LBf2LTHFwab 0.1151668 125qULxTDsx4jEjWEoJe3ynyKCUKECVEyt 0.17216561
+125KBUcrLHuXP8YbCedRr2fbf9KHq7ENz2 0.10526526 126uZRfEqqnn2gPvXTJiA6Sabf6X6MEwMX 0.13101183
+125dwAk8He9k9ieGD9gThwofS7SRbN46PF 0.05936999 12AUPDUfDz59cFTEMgb64Bzk7VQwTiyo5d 0.04331562
+12A4y9dxy1C5jFtR1xsBecY69CCE9dgt8W 0.04798837 12YDZofcxT61JT2SggP8U9jg94xAEjYKsH 0.25638395
+12Xf5rRKi1V oeMKoumFGEvWQ9pw9g9kx4L 0.13439911 12YfRCsvNRqfTozfV8z27KS4EwsZkvB9fs 0.21959335
+12bRPtR5FVqe22oGpYqctX8qLd4eBm9Mbt 0.114555 12sNsPZFUVqVGFc8R4jhLM5a19Jj5xWUuZ 0.2443245
+12d3NBhcGqLGW7PTXnkELuviehY9hyr112 0.084468 12tEVnfmRPNAQ8G2GVpDzwJL9rcfuYeF12 0.27086641
+12go7FrWssrN5oxkacXKidDRT85GCHz1E7 0.12131453 12zFasV4qHNnpfgh8HQyct5NFRBqtC6bXh 0.14859831
+12hhsCepfdi9N4ALNi1YgsSu1bk7wBPtTZ 0.12306828 13NhZkG3vqXWCjEj1zm818EPyKXeFsRDMJ 0.12276955
+... ...
+1QBwQZr2URGKfV1Hup7hLRKrb6M16GmAfN 0.16809483 1Pj42QLhPdPYcyn68M1VprZygFF2uVBLLR 0.16177408
+1QEnxCnWx7RWNLﬁMPKQzb4kx1P4fzub9L 0.15477798 1PqGhJA9yCo5enbMkXdx3swgWV oBcqxEmM 0.10792842
+1QJ2FpabSeb23jGrZ7uJcSJW17wF6zqven 0.13 1PqxkEP1UNvNtV2r7Dc4mYiG9vrymJpDjm 0.17662456
+1QP8tyFRUdNDngDzno5kFdPS31BhU6mth 0.10856289 1Q1g8XmwLpvsYUf2wLP7J4CzGeAQFqXaw5 0.17042204
+1TiyBwNqkALSHiXw8sR7GWabig8FZr1h3 0.11509374 1Q1h1YQ2QZ8SPFJpS3pVfQbNeHrpLxFrBf 0.24294307
+1VHMSZxDmGqhNxa9JrVsZM6H1LQ3AoraA 0.12646174 1QB7yyYm2JE4Wur5wEsqQnZBmcNmE9WPRB 0.21583378
+1act2jbkqnbVCtcr9adqVQHeN6XrsE4F7 0.15357679 1QJnBEmeCXfdTjiU1MSshPQApao5TVN1vs 0.11199467
+1ruKkoPZkvgVHfHeyAmgeV oM59qCvA8gF 0.17539078 1S5iCdyaLzpVghTJxq4k9EghzebZE8xpi 0.20482052
+1whWUapyjrrBozaBkRLaHyk9g1aJRHJPb 0.13116103 1Vg7FnQT9oHbxuZqR7Cs53rsHv835iQAJ 0.26632879
+1wiAk4JyhjKv1MSRKgh6Gn76ydbZWp9F7 0.1373944 1XyQj4QBuskv7rqsyw3cadyTcJ3nP4Dy8 0.15614583
+1z4rqnRxp5rs3DAUE2PdTAsUPtrG6ep5p 3.96564064 1kmLcU8GxRWSw8UuUGxNu28iGbTHkSqJ6 0.15713512
+28
+
+===== PAGE 29 =====
+
+Table IAII
+The Relationship between Flow of Tether and Bitcoin Volatility and Returns
+This table shows OLS estimates for which the dependent variables are the net aggregate ﬂow of
+Tether from Bitﬁnex to Poloniex and Bittrex and the net ﬂow of Bitcoin from Poloniex and Bittrex
+to Bitﬁnex,
+Flow t =β0 +β1
+1
+3
+3∑
+i=1
+Rt−i +β2LaggedVol t +ϵt,
+whereRt is the hourly Bitcoin return, andLaggedVol t is the 24-hour lagged volatility constructed
+from hourly Bitcoin returns. Results are reported separately for hours with positive and negative
+lagged returns. Standard errors are robust to heteroskedasticity. t-statistics are reported in paren-
+theses. *p<0.05, **p<0.01, ***p<0.001.
+Tether Flow from Bitﬁnex Bitcoin Flow to Bitﬁnex
+Neg Lagged Ret Pos Lagged Ret Neg Lagged Ret Pos Lagged Ret
+Lagged Return -48.34 ∗∗∗ -1.150 -65.56 ∗∗∗ -2.228
+(-5.67) (-0.12) (-9.68) (-0.36)
+Lagged V olatility 6.610 ∗∗∗ 1.358 2.074 ∗ 3.987∗∗∗
+(4.44) (1.24) (2.02) (4.77)
+Constant -27.56 ∗∗∗ 6.278 9.353 ∗ 8.450∗
+(-3.98) (0.99) (1.98) (2.14)
+Observations 4,352 5,149 4,352 5,149
+AdjustedR2 0.024 -0.000 0.065 0.008
+29
+
+===== PAGE 30 =====
+
+Table IAIII
+The Effect of 1LSg Flow on Other Cryptocurrency Returns
+This table shows OLS estimates for which the dependent variable is the average three-hour returns
+for major cryptocurrencies other than Bitcoin,
+1
+3
+2∑
+i=0
+Rt+i =β0 +β1Flow t−1 +Controls +ϵt,
+whereRt is the hourly return using price data from the most liquid exchange for each cryptocur-
+rency between March 1, 2017 and March 31, 2018 and Flow t is the net hourly 1LSg ﬂow. The
+control variables include lagged returns, volatility calculated using hourly returns over the pre-
+vious 24 hours, and the interaction of lagged returns and volatility. Major cryptocurrencies are
+selected based on the criteria in Table I, conditional on being listed on at least one of the major
+Tether exchanges as of the beginning of March 2017. Panel A reports results for the 72 hours after
+Tether authorization and Panel B for other days. Panel C reports the results when the lagged return
+is negative and Panel D when the lagged return is positive. Panels E reports results conditioning
+on both 72 hours after Tether authorization and negative lagged returns. Standard errors are ad-
+justed for heteroskedasticity and autocorrelation.t-statistics are reported in parentheses. *p<0.05,
+**p<0.01, ***p<0.001.
+Panel A. Days Following Authorization
+Coin Coefﬁcient t-stat N
+DASH 7.40 3.44 2,645
+ETC 8.29 2.84 2,645
+ETH 6.33 2.74 2,645
+LTC 6.26 1.78 2,645
+XMR 5.09 2.01 2,645
+ZEC 6.39 2.54 2,645
+Panel B. Other Days
+Coin Coefﬁcient t-stat N
+DASH 0.65 0.60 6,833
+ETC -0.57 -0.45 6,833
+ETH 0.58 0.53 6,833
+LTC 1.73 1.49 6,833
+XMR 0.48 0.37 6,833
+ZEC 0.42 0.29 6,833
+Panel C. Following Negative Returns
+Coin Coefﬁcient t-stat N
+DASH 3.27 1.77 3,992
+ETC 2.78 1.98 4,679
+ETH 2.02 1.38 4,544
+LTC 3.67 2.46 4,668
+XMR 3.03 1.74 4,614
+ZEC 3.14 1.88 4,785
+Panel D. Following Positive Returns
+Coin Coefﬁcient t-stat N
+DASH 4.11 2.50 3,985
+ETC 1.38 0.63 4,732
+ETH 1.78 1.18 4,878
+LTC 2.52 1.12 4,581
+XMR 0.58 0.42 4,752
+ZEC 1.32 0.69 4,577
+Panel E. Negative Returns-Authorization
+Coin Coefﬁcient t-stat N
+DASH 11.01 3.44 1,063
+ETC 10.34 2.84 1,271
+ETH 9.40 2.74 1,246
+LTC 8.68 1.78 1,293
+XMR 8.23 2.01 1,244
+ZEC 8.38 2.54 1,293
+30
+
+===== PAGE 31 =====
+
+Table IAIV
+Cross-Section of Exchange Returns Around High-Flow Hours
+This table examines the cross-section of cryptocurrency exchanges’ returns around high-ﬂow
+hours. For any given exchange with pricing data on CoinAPI, an hourly exchange-level return
+index is calculated using all altcoin-BTC pairs listed on that exchange. Returns are calculated
+using prices denominated in Bitcoin and are value-weighted across coins over the prior two weeks
+trading volume. The sample includes three hours before and three hours after the high lagged ﬂow
+hours, with the high ﬂow occurring between time -1 and time 0. BFX/PLX/BTX is a dummy
+variable that takes the value of one for Bitﬁnex, Poloniex, and Bittrex exchanges and zero other-
+wise. The regression controls for time and exchange ﬁxed effects. Column (2) reports results when
+the returns are weighted by the logarithm of the prior two weeks trading volume, and Columns (3)
+and (4) report results when high-ﬂow hours are deﬁned based on 1LSg ﬂows. The sample period is
+March 1, 2017 to March 31, 2018. Standard errors are adjusted for heteroskedasticity. t-statistics
+are reported in parentheses. *p<0.05, **p<0.01, ***p<0.001
+Using Aggregate Flows Using 1LSg Flows
+(1) (2) (3) (4)
+Returns Returns Returns Returns
+T=-2 0.042 0.043 0.037 0.039
+(1.06) (1.03) (0.75) (0.82)
+T=-1 0.026 0.058 0.075 0.094
+(0.44) (0.96) (1.12) (1.37)
+T=0 -0.015 -0.013 0.042 0.036
+(-0.25) (-0.23) (0.53) (0.46)
+T=1 -0.009 0.003 0.028 0.032
+(-0.11) (0.04) (0.33) (0.41)
+T=2 0.010 0.025 0.078 0.067
+(0.17) (0.48) (1.04) (1.01)
+T=3 -0.003 0.013 0.011 0.023
+(-0.05) (0.25) (0.15) (0.41)
+BFX/PLX/BTX*T=-2 -0.079 -0.090 0.025 -0.010
+(-0.72) (-0.75) (0.16) (-0.07)
+BFX/PLX/BTX*T=-1 0.192 -0.012 0.039 -0.133
+(1.32) (-0.06) (0.24) (-0.66)
+BFX/PLX/BTX*T=0 0.368 ∗ 0.355∗∗∗ 0.286∗∗ 0.302∗∗
+(2.62) (3.62) (2.79) (3.14)
+BFX/PLX/BTX*T=1 0.473 ∗∗ 0.388∗∗ 0.434∗∗ 0.356∗∗
+(3.42) (3.02) (3.37) (2.82)
+BFX/PLX/BTX*T=2 0.323 ∗ 0.211 0.293 ∗ 0.252
+(2.34) (1.45) (2.06) (1.71)
+BFX/PLX/BTX*T=3 0.368 ∗ 0.247 0.370 ∗ 0.249
+(2.03) (1.89) (2.24) (1.74)
+Constant -0.146 ∗∗∗ -0.163∗∗∗ -0.185∗∗∗ -0.202∗∗∗
+(-4.21) (-5.22) (-4.00) (-4.83)
+Time FE Yes Yes Yes Yes
+Exchange FE Yes Yes Yes Yes
+Observations 9,828 9,828 10,395 10,395
+31
+
+===== PAGE 32 =====
+
+Table IA V
+Bitcoin Compounded Returns Excluding Hours with High Lagged Flows
+This table shows the compounded Bitcoin returns from March 1, 2017 to March 31, 2018, exclud-
+ing the top 1%, 5%, and 10% of hours with highest ﬂows in the previous hour. The ﬁrst three
+columns show the returns excluding these hours, and the second three columns show the percent-
+age decline relative to the actual Bitcoin buy-and-hold returns during the same period. The ﬁrst
+row reports returns when excluding top hours with high net average ﬂows for aggregate Poloniex
+and Bittrex accounts, the second row for 1LSg ﬂows, the third row for the rest of the Poloniex and
+Bittrex accounts, and the last row for net ﬂows to other Tether-based exchanges.
+Compounded Returns Decline Relative to Actual Returns
+Flow Ex. 1% Ex. 5% Ex. 10% Ex. 1% Ex. 5% Ex. 10%
+Agg. PLX BTX 198.6% 138.3% 217.7% 58.8% 71.3% 54.8%
+1LSg 216.8% 158.2% 100.1% 55.0% 67.2% 79.2%
+Oth. PLX BTX 369.3% 623.5% 419.1% 23.4% -29.4% 13.0%
+Others 522.8% 421.5% 460.9% -8.5% 12.5% 4.4%
+32
+
+===== PAGE 33 =====
+
+Table IA VI
+Bitcoin Return Reversals and 1LSg Flow
+This table shows OLS estimates for the autocorrelation of Bitcoin returns,
+Rt =β0 +β1Rt−1 +β2Flow t−1 +β3Rt−1∗Flow t−1 +Controls +ϵt,
+whereRt is the hourly return of an equal-weighted price index that aggregates Bitcoin prices on
+Tether exchanges,Flow t is the average net hourly ﬂow of Tether from Bitﬁnex to Poloniex and
+Bittrex and of Bitcoin from Poloniex and Bittrex to Bitﬁnex, and the control variables include
+lagged returns, volatility calculated using hourly returns over the previous 24 hours, and the in-
+teraction of lagged returns and volatility. The ﬂow variables are standardized by subtracting the
+mean and dividing by the standard deviation. Standard errors are adjusted for heteroskedasticity
+and autocorrelation.t-statistics are reported in parentheses. *p<0.05, **p<0.01, ***p<0.001.
+Full Sample Neg Lagged Return Pos Lagged Return
+Lag Ret -0.0180 -0.0058 -0.0462
+(-0.56) (-0.10) (-0.76)
+Lag Flow -0.0003 -0.0011 ∗ 0.0003
+(-0.85) (-2.17) (0.69)
+Lag Flow× Lag Ret -0.0326 ∗∗ -0.0463 -0.0015
+(-2.76) (-1.53) (-0.07)
+Lag V olatility 0.0086 0.0053 0.0101
+(1.28) (0.44) (0.89)
+Lag V olatility× Lag Ret -0.4175 -0.5584 -0.2354
+(-1.03) (-0.80) (-0.32)
+Lag Flow× Lag V olatility 0.0094 0.0175 -0.0046
+(1.39) (1.47) (-0.49)
+Constant -0.0002 -0.0001 -0.0001
+(-0.67) (-0.13) (-0.25)
+Observations 9,503 4,488 5,011
+AdjustedR2 0.008 0.013 0.001
+33
+
+===== PAGE 34 =====
+
+Table IA VII
+Bitcoin Return Reversals and 1LSg Flow
+This table shows OLS estimates for autocorrelation of Bitcoin returns,
+Rt =β0 +β1Rt−1 +β2HighFlow t−1 +β3Rt−1∗HighFlow t−1 +Controls +ϵt,
+whereRt is the hourly return of an equal-weighted price index that aggregates Bitcoin prices on
+Tether exchanges,Flow t is a dummy variable that takes the value of one for hours with top 1%,
+5%, and 10% of hours with high lagged ﬂows for 1LSg, other Poloniex and Bittrex accounts, and
+other Tether exchanges, and the control variables include lagged returns, top 1%, 5%, and 10%
+high-volatility hours, and the interaction of lagged returns and high-volatility dummies. Standard
+errors are adjusted for heteroscedasticity and autocorrelation.t-statistics are reported in parenthe-
+ses. *p<0.05, **p<0.01, ***p<0.001.
+Top 1% Top 5% Top 10%
+Lag Ret -0.0550 -0.0258 -0.0256
+(-1.76) (-0.75) (-0.64)
+Lag High 1LSg Flow 0.0056 -0.0002 -0.0004
+(1.04) (-0.08) (-0.32)
+Lag High 1LSg Flow=1× Lag Ret -0.5155 ∗∗ -0.3077∗∗ -0.1196
+(-2.59) (-2.64) (-1.31)
+Lag High V ol 0.0166 ∗ -0.0017 0.0009
+(2.53) (-0.68) (0.60)
+Lag High V ol=1× Lag Ret 0.2079 -0.1145 -0.0141
+(1.12) (-1.33) (-0.20)
+Lag High PLX/BTX Flow=1× Lag Ret -0.0637 -0.0253 -0.0928
+(-0.37) (-0.31) (-1.35)
+Lag High Other Flow=1× Lag Ret 0.2575 0.0975 0.0356
+(1.15) (1.15) (0.52)
+Constant 0.0000 0.0003 0.0002
+(0.07) (0.99) (0.58)
+Observations 4,488 4,488 4,488
+AdjustedR2 0.025 0.014 0.008
+34
+
+===== PAGE 35 =====
+
+Table IA VIII
+The Effect of Tether Issuance on Bitcoin EOM Returns
+This table shows OLS estimates for which the dependent variable is EOM Bitcoin returns and the
+independent variable is monthly Tether issuance,
+REOM
+t =β0 +β1Issuance t +ϵt,
+where the EOM return is deﬁned as in Figure 9 and Issuance t is total monthly Bitcoin-
+denominated ﬂow of Tether from the Tether treasury to Bitﬁnex, scaled by its standard deviation.
+Columns (1) and (3) report results for raw EOM returns and columns (2) and (4) for returns relative
+to the average return in the prior four days and subsequent four days. The value-weighted index
+reports results for the returns on a value-weighted portfolio of top-ﬁve cryptocurrencies. Each day
+in the sample, the top-ﬁve cryptocurrencies are selected based on the average market cap in the
+previous week reported on CoinMarketCap. The sample is March 2016 to March 2018. Panel
+B reports results excluding the two months with extreme issuance, December 2017 and January
+2018. Standard errors are robust to heteroskedasticity. t-statistics are reported in parentheses.
+*p<0.05, **p<0.01, ***p<0.001.
+Panel A. All Months
+BTC Returns Value-Weighted Index
+(1) (2) (3) (4)
+Raw Returns Relative to Days Around Raw Returns Relative to Days Around
+Issuance -0.0210 ∗∗ -0.0222∗∗ -0.0251∗∗∗ -0.0269∗∗∗
+(-2.85) (-3.08) (-4.85) (-4.58)
+Constant 0.00344 -0.00669 0.00696 ∗ -0.00188
+(0.88) (-1.72) (2.27) (-0.59)
+Observations 25 25 25 25
+AdjustedR2 0.380 0.374 0.626 0.567
+Panel B. Excluding December 2017 and January 2018
+BTC Returns Value-Weighted Index
+Raw Returns Relative to Days Around Raw Returns Relative to Days Around
+Issuance -0.00528 -0.0107 -0.0140 ∗∗ -0.0186∗∗
+(-1.26) (-1.54) (-2.97) (-2.94)
+Constant -0.000449 -0.00869 0.00419 -0.00301
+(-0.11) (-1.97) (1.48) (-0.86)
+Observations 23 23 23 23
+AdjustedR2 0.021 0.130 0.403 0.453
+35
+
+===== PAGE 36 =====
+
+Table IAIX
+The Relationship between Monthly Tether Issuance and Outﬂow of Bitcoin from Exchange
+Reserve Wallets in Days before EOM
+This ﬁgure estimates OLS regressions of total net outﬂow of Bitcoin from exchanges’ reserve
+wallets on monthly Tether issuance. Exchange reserve wallets have a high balance of coins and
+a large number of transactions that are received from the same exchange. The wallets are cap-
+tured through a multi-step procedure. In a ﬁrst pass, each month the wallets that receive at least
+100 different deposits from different addresses and have transaction volumes of at least 100 Bit-
+coins are selected as potential reserve wallets. Next, the daily holding balances of all of the
+candidate wallets are calculated using all their transactions on the blockchain. Finally, wallets
+that have an average daily balance of at least 1,000 Bitcoin during their active period and that
+received at least 90% of their deposit incidences from wallets of the same exchange are labeled
+as deposit addresses for those exchanges. The top-ﬁve wallets with the highest average reserves
+that are identiﬁed using this procedure are 3Nxwenay9Z8Lc9JBiywExpnEFiLp6Afp8v (Bitstamp
+cold wallet), 3D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r (Bitﬁnex cold wallet), 1MuYk-
+ciQTfRsU94ReAe5MiAfUpCrbLBcFR, 16rCmCmbuWDhPjWTrpQGaU3EPdZF7MTdUk (Bit-
+trex cold wallet), and 18rnfoQgGo1HqvVQaAN4QnxjYE7Sez9eca. The sample period is March
+1, 2016 to March 1, 2018. Standard errors are robust to heteroskedasticity.t-statistics are reported
+in parentheses. *p<0.05, **p<0.01, ***p<0.001.
+Issuance t-Issuance Constant t-Constant N
+Bitﬁnex 0.185** 3.14 -2516.0 -1.74 25
+Bitﬂyer -0.003 -0.12 -650.6 -1.33 25
+Bitstamp 0.129 0.70 337.4 0.25 25
+Bittrex -0.114 -1.05 513.3 0.71 25
+BTCtrade -0.004 -0.85 162.8 0.80 25
+Gemini 0.011 0.36 -361.7 -0.72 25
+Huobi -0.088 -1.01 1873.6 0.87 25
+OKCoin -0.228 -1.39 1085.0 1.47 12
+Poloniex 0.002 0.04 -522.2 -0.54 25
+Coinbase 0.007 1.28 -220.8 -1.84 20
+All Oth. Comb. -0.301 -1.30 594.4 0.17 25
+36
+
+===== PAGE 37 =====
+
+Table IAX
+The Relationship between Tether and Bitcoin Flows and Synthetic Tether-USD versus
+BTC-USD Rates
+This table shows OLS estimates for which the dependent variables are the net ﬂow of Tether from
+Bitﬁnex (Panel A) and the net ﬂow of Bitcoin to Bitﬁnex (Panel B), and the independent variables
+are multiple lags of BTC-USD and synthetic Tether-USD returns. The synthetic Tether-USD rate
+is calculated by dividing the average Bitcoin price on dollar exchanges by the Bitcoin price on
+Bitﬁnex,
+Flow t =α +
+5∑
+i=1
+βiSynthR T ether−U SD
+t−i +
+5∑
+i=1
+γiRBT C−U SD
+t−i +ϵt,
+whereRBT C−U SD
+t is the hourly return of Bitcoin prices in U.S. dollars andSynthR T ether−U SD
+t
+is the hourly return of the synthetic Tether-USD rate. The sample period is March 1, 2017 to
+March 1, 2018. All variables are standardized by subtracting the mean and dividing by the standard
+deviation. Standard errors are robust to heteroskedasticity.t-statistics are reported in parentheses.
+*p<0.05, **p<0.01, ***p<0.001.
+Panel A. Tether Flow
+L.Tether_USD_SynthRet -0.0186 -0.0212 -0.0233 -0.0244 -0.0244
+(-1.37) (-1.52) (-1.63) (-1.69) (-1.68)
+L2.Tether_USD_SynthRet -0.0172 -0.0200 -0.0230 -0.0233
+(-1.30) (-1.36) (-1.52) (-1.51)
+L3.Tether_USD_SynthRet -0.0097 -0.0129 -0.0140
+(-0.72) (-0.89) (-0.94)
+L4.Tether_USD_SynthRet -0.0114 -0.0119
+(-0.88) (-0.83)
+L5.Tether_USD_SynthRet -0.0032
+(-0.25)
+L.BTC_USD_Ret -0.0451 ∗∗∗ -0.0495∗∗∗ -0.0503∗∗∗ -0.0516∗∗∗ -0.0521∗∗∗
+(-3.31) (-3.62) (-3.69) (-3.78) (-3.80)
+L2.BTC_USD_Ret -0.0673 ∗∗∗ -0.0694∗∗∗ -0.0706∗∗∗ -0.0713∗∗∗
+(-4.90) (-4.95) (-5.02) (-5.06)
+L3.BTC_USD_Ret -0.0287 ∗ -0.0314∗∗ -0.0320∗∗
+(-2.56) (-2.79) (-2.79)
+L4.BTC_USD_Ret -0.0396 ∗∗ -0.0409∗∗
+(-3.04) (-3.11)
+L5.BTC_USD_Ret -0.0248
+(-1.82)
+Constant 0.0000 0.0000 -0.0002 -0.0006 -0.0007
+(0.00) (0.00) (-0.02) (-0.06) (-0.07)
+Observations 9,476 9,469 9,462 9,455 9,448
+Adjusted R2 0.002 0.007 0.007 0.009 0.009
+37
+
+===== PAGE 38 =====
+
+Panel B. Bitcoin Flow
+L.Tether_USD_SynthRet 0.0159 0.0198 0.0191 0.0176 0.0177
+(1.07) (1.28) (1.22) (1.12) (1.13)
+L2.Tether_USD_SynthRet 0.0046 0.0042 0.0003 -0.0014
+(0.31) (0.27) (0.02) (-0.09)
+L3.Tether_USD_SynthRet -0.0079 -0.0133 -0.0168
+(-0.53) (-0.83) (-1.04)
+L4.Tether_USD_SynthRet -0.0172 -0.0205
+(-1.16) (-1.33)
+L5.Tether_USD_SynthRet -0.0076
+(-0.55)
+L.BTC_USD_Ret -0.0942 ∗∗∗ -0.0966∗∗∗ -0.0997∗∗∗ -0.1012∗∗∗ -0.1022∗∗∗
+(-5.78) (-5.94) (-6.10) (-6.21) (-6.28)
+L2.BTC_USD_Ret -0.0749 ∗∗∗ -0.0783∗∗∗ -0.0803∗∗∗ -0.0814∗∗∗
+(-5.00) (-5.22) (-5.34) (-5.41)
+L3.BTC_USD_Ret -0.0666 ∗∗∗ -0.0702∗∗∗ -0.0692∗∗∗
+(-4.46) (-4.68) (-4.62)
+L4.BTC_USD_Ret -0.0438 ∗∗ -0.0455∗∗
+(-3.14) (-3.22)
+L5.BTC_USD_Ret -0.0210
+(-1.49)
+Constant -0.0007 -0.0010 -0.0007 -0.0007 -0.0010
+(-0.07) (-0.10) (-0.07) (-0.07) (-0.10)
+Observations 9,476 9,469 9,462 9,455 9,448
+Adjusted R2 0.009 0.015 0.019 0.021 0.021
+38
+
+===== PAGE 39 =====
+
+Table IAXI
+The Relationship between Tether and Bitcoin Flows and Value-Weighted Tether-USD Rate
+Across Exchanges versus BTC-USD Rates
+This table shows OLS estimates for which the dependent variables are the net ﬂow of Tether
+from Bitﬁnex (Panel A) and the net ﬂow of Bitcoin to Bitﬁnex (Panel B), and the independent
+variables are multiple lags of BTC-USD and value-weighted Tether-USD returns. The value-
+weighted Tether-USD returns are calculated using hourly returns of Tether-USD rates across all
+exchanges that list the Tether-USD pair, weighted by trading volume,
+Flow t =α +
+5∑
+i=1
+βiVWRet T ether−U SD
+t−i +
+5∑
+i=1
+γiRBT C−U SD
+t−i +ϵt,
+whereRBT C−U SD
+t is the hourly return of Bitcoin prices in U.S. dollars andVWRet T ether−U SD
+t
+is the value-weighted average of hourly returns of Tether-USD pairs. The sample period is March
+1, 2017 to March 1, 2018. All variables are standardized by subtracting the mean and dividing by
+the standard deviation. Standard errors are robust to heteroscedasticity. t-statistics are reported in
+parentheses. *p<0.05, **p<0.01, ***p<0.001.
+Panel A. Tether Flow
+L.Tether_USD_VWRet -0.0028 0.0017 0.0046 0.0045 0.0061
+(-0.29) (0.16) (0.42) (0.40) (0.53)
+L2.Tether_USD_VWRet 0.0110 0.0164 0.0164 0.0191
+(0.83) (1.17) (1.16) (1.27)
+L3.Tether_USD_VWRet 0.0162 0.0173 0.0208
+(1.54) (1.42) (1.55)
+L4.Tether_USD_VWRet 0.0029 0.0117
+(0.25) (0.76)
+L5.Tether_USD_VWRet 0.0206
+(1.19)
+L.BTC_USD_Ret -0.0459 ∗∗∗ -0.0489∗∗∗ -0.0508∗∗∗ -0.0508∗∗∗ -0.0505∗∗∗
+(-3.38) (-3.60) (-3.77) (-3.76) (-3.74)
+L2.BTC_USD_Ret -0.0689 ∗∗∗ -0.0709∗∗∗ -0.0733∗∗∗ -0.0727∗∗∗
+(-5.03) (-5.16) (-5.31) (-5.24)
+L3.BTC_USD_Ret -0.0308 ∗∗ -0.0329∗∗ -0.0342∗∗
+(-2.78) (-2.96) (-3.04)
+L4.BTC_USD_Ret -0.0392 ∗∗ -0.0395∗∗
+(-3.01) (-3.06)
+L5.BTC_USD_Ret -0.0262
+(-1.92)
+Constant -0.0002 -0.0014 -0.0025 -0.0028 -0.0036
+(-0.02) (-0.14) (-0.24) (-0.28) (-0.35)
+Observations 9,453 9,440 9,427 9,414 9,401
+Adjusted R2 0.002 0.007 0.008 0.009 0.010
+39
+
+===== PAGE 40 =====
+
+Panel B. Bitcoin Flow
+L.Tether_USD_VWRet 0.0026 0.0086 0.0082 0.0089 0.0107
+(0.20) (0.65) (0.61) (0.66) (0.79)
+L2.Tether_USD_VWRet 0.0095 0.0075 0.0091 0.0108
+(0.77) (0.56) (0.67) (0.78)
+L3.Tether_USD_VWRet -0.0095 -0.0051 -0.0042
+(-0.74) (-0.37) (-0.30)
+L4.Tether_USD_VWRet 0.0100 0.0084
+(0.80) (0.64)
+L5.Tether_USD_VWRet 0.0051
+(0.44)
+L.BTC_USD_Ret -0.0964 ∗∗∗ -0.1003∗∗∗ -0.1037∗∗∗ -0.1038∗∗∗ -0.1044∗∗∗
+(-5.91) (-6.17) (-6.42) (-6.44) (-6.51)
+L2.BTC_USD_Ret -0.0769 ∗∗∗ -0.0813∗∗∗ -0.0837∗∗∗ -0.0832∗∗∗
+(-5.17) (-5.48) (-5.63) (-5.59)
+L3.BTC_USD_Ret -0.0672 ∗∗∗ -0.0698∗∗∗ -0.0710∗∗∗
+(-4.57) (-4.74) (-4.82)
+L4.BTC_USD_Ret -0.0418 ∗∗ -0.0439∗∗
+(-3.01) (-3.17)
+L5.BTC_USD_Ret -0.0254
+(-1.82)
+Constant 0.0005 0.0006 0.0007 0.0004 -0.0006
+(0.05) (0.06) (0.07) (0.04) (-0.06)
+Observations 9,453 9,440 9,427 9,414 9,401
+Adjusted R2 0.009 0.015 0.020 0.022 0.022
+40
+
+===== PAGE 41 =====
+
+Table IAXII
+The Relationship between Tether and Bitcoin Flows and Equally-Weighted Tether-USD
+Rate Across Exchanges versus BTC-USD Rates
+This table shows OLS estimates for which the dependent variables are the net ﬂow of Tether from
+Bitﬁnex (Panel A) and the net ﬂow of Bitcoin to Bitﬁnex (Panel B), and the independent variables
+are multiple lags of BTC-USD and equally-weighted Tether-USD returns. The equally-weighted
+Tether-USD returns are calculated using hourly returns of Tether-USD rates across all exchanges
+that list the Tether-USD pair,
+Flow t =α +
+5∑
+i=1
+βiEWRet T ether−U SD
+t−i +
+5∑
+i=1
+γiRBT C−U SD
+t−i +ϵt,
+whereRBT C−U SD
+t is the hourly return of Bitcoin prices in U.S. dollars andEWRet T ether−U SD
+t
+is the equally-weighted average of hourly returns of Tether-USD pairs. The sample period is
+March 1, 2017 to March 1, 2018. All variables are standardized by subtracting the mean and
+dividing by the standard deviation. Standard errors are robust to heteroskedasticity.t-statistics are
+reported in parentheses. *p<0.05, **p<0.01, ***p<0.001.
+Panel A. Tether Flow
+L.Tether_USD_EWRet 0.0049 0.0033 0.0044 0.0032 0.0028
+(0.49) (0.30) (0.40) (0.29) (0.24)
+L2.Tether_USD_EWRet 0.0028 0.0025 -0.0002 -0.0002
+(0.20) (0.17) (-0.01) (-0.01)
+L3.Tether_USD_EWRet 0.0033 -0.0028 -0.0037
+(0.29) (-0.22) (-0.27)
+L4.Tether_USD_EWRet -0.0136 -0.0144
+(-1.09) (-0.97)
+L5.Tether_USD_EWRet -0.0010
+(-0.06)
+L.BTC_USD_Ret -0.0458 ∗∗∗ -0.0491∗∗∗ -0.0511∗∗∗ -0.0512∗∗∗ -0.0509∗∗∗
+(-3.38) (-3.62) (-3.80) (-3.80) (-3.78)
+L2.BTC_USD_Ret -0.0690 ∗∗∗ -0.0713∗∗∗ -0.0738∗∗∗ -0.0733∗∗∗
+(-5.04) (-5.18) (-5.34) (-5.28)
+L3.BTC_USD_Ret -0.0304 ∗∗ -0.0328∗∗ -0.0343∗∗
+(-2.73) (-2.95) (-3.04)
+L4.BTC_USD_Ret -0.0386 ∗∗ -0.0395∗∗
+(-2.98) (-3.07)
+L5.BTC_USD_Ret -0.0266
+(-1.95)
+Constant -0.0002 -0.0014 -0.0025 -0.0029 -0.0037
+(-0.02) (-0.14) (-0.24) (-0.28) (-0.36)
+Observations 9,453 9,440 9,427 9,414 9,401
+Adjusted R2 0.002 0.007 0.007 0.009 0.009
+41
+
+===== PAGE 42 =====
+
+Panel B. Bitcoin Flow
+L.Tether_USD_EWRet 0.0078 0.0083 0.0066 0.0062 0.0060
+(0.63) (0.65) (0.51) (0.49) (0.47)
+L2.Tether_USD_EWRet 0.0030 -0.0029 -0.0040 -0.0048
+(0.24) (-0.22) (-0.29) (-0.35)
+L3.Tether_USD_EWRet -0.0141 -0.0165 -0.0188
+(-1.04) (-1.13) (-1.28)
+L4.Tether_USD_EWRet -0.0044 -0.0131
+(-0.31) (-0.87)
+L5.Tether_USD_EWRet -0.0153
+(-1.18)
+L.BTC_USD_Ret -0.0965 ∗∗∗ -0.1006∗∗∗ -0.1040∗∗∗ -0.1042∗∗∗ -0.1047∗∗∗
+(-5.92) (-6.19) (-6.44) (-6.47) (-6.53)
+L2.BTC_USD_Ret -0.0767 ∗∗∗ -0.0810∗∗∗ -0.0835∗∗∗ -0.0831∗∗∗
+(-5.14) (-5.45) (-5.60) (-5.58)
+L3.BTC_USD_Ret -0.0667 ∗∗∗ -0.0697∗∗∗ -0.0709∗∗∗
+(-4.52) (-4.72) (-4.79)
+L4.BTC_USD_Ret -0.0425 ∗∗ -0.0449∗∗
+(-3.04) (-3.23)
+L5.BTC_USD_Ret -0.0254
+(-1.82)
+Constant 0.0005 0.0007 0.0007 0.0004 -0.0007
+(0.05) (0.06) (0.07) (0.04) (-0.07)
+Observations 9,453 9,440 9,427 9,414 9,401
+Adjusted R2 0.009 0.015 0.020 0.022 0.022
+42
+
+===== PAGE 43 =====
+
+Table IAXIII
+The Relationship between Tether and Bitcoin Flows for 1LSg and other accounts and
+Tether-USD versus BTC-USD Rates
+This table shows OLS estimates similar to the column (5) of Table VIII, where the dependent
+variables are the average net ﬂows of Tether and Bitcoin between Bitﬁnex and 1LSg accounts,
+other Poloniex and Bittrex accounts, and other Tether exchanges (Binance, Huobi, HitBTC, OKEx,
+and Kraken). Panel A reports results for Tether-USD rate on Kraken, and Panel B for the synthetic
+Tether-USD rate calculated as in Table IAX. The sample period is April 1, 2017 (when Kraken
+prices are ﬁrst available) to March 1, 2018 in Panel A and March 1, 2017 to March 1, 2018 in
+Panel B. Panel C estimates the same regression as Panel C of Table VIII for 1LSg and other ﬂows.
+All variables are standardized by subtracting the mean and dividing by the standard deviation.
+Standard errors are robust to heteroscedasticity. t-statistics are reported in parentheses. *p<0.05,
+**p<0.01, ***p<0.001.
+Panel A. Kraken Rates
+1LSg Other PLX/BTX Binance Huobi HitBTC OKEx Kraken
+L.Tether_USD_Ret 0.004 0.011 0.002 0.001 0.003 -0.010 0.029 ∗∗
+(0.32) (0.78) (0.07) (0.23) (0.37) (-0.69) (2.91)
+L2.Tether_USD_Ret 0.022 0.021 0.013 -0.002 0.003 0.020 0.023 ∗
+(1.32) (1.45) (0.47) (-0.24) (0.35) (1.05) (2.02)
+L3.Tether_USD_Ret 0.019 0.012 0.003 0.001 0.002 -0.004 0.017
+(1.26) (0.86) (0.12) (0.17) (0.21) (-0.25) (1.62)
+L4.Tether_USD_Ret 0.033 ∗ -0.009 0.033 0.009 -0.002 0.000 0.013
+(2.05) (-0.56) (1.25) (0.97) (-0.24) (0.01) (1.20)
+L5.Tether_USD_Ret 0.028 0.003 0.042 0.009 -0.010 0.013 0.006
+(1.58) (0.23) (1.82) (1.55) (-1.10) (1.02) (0.50)
+L.BTC_USD_Ret -0.083 ∗∗∗ -0.061∗∗∗ -0.069∗∗∗ 0.048∗∗∗ -0.017 0.016 -0.013
+(-5.40) (-4.97) (-3.84) (3.63) (-1.19) (1.27) (-1.46)
+L2.BTC_USD_Ret -0.085 ∗∗∗ -0.065∗∗∗ -0.035∗ 0.022 -0.034 0.022 -0.026 ∗∗
+(-5.81) (-4.73) (-2.19) (1.67) (-1.56) (1.78) (-2.88)
+L3.BTC_USD_Ret -0.049 ∗∗∗ -0.057∗∗∗ -0.019 0.044 ∗ 0.003 0.023 ∗ -0.018∗
+(-3.65) (-4.80) (-1.34) (2.56) (0.17) (2.03) (-2.04)
+L4.BTC_USD_Ret -0.047 ∗∗∗ -0.043∗∗ -0.016 0.035 ∗∗ 0.002 0.025 ∗ -0.013
+(-3.59) (-3.17) (-1.07) (2.82) (0.14) (2.07) (-1.57)
+L5.BTC_USD_Ret -0.025 -0.037 ∗∗ 0.001 0.031 ∗ 0.016 0.015 -0.022 ∗
+(-1.66) (-2.83) (0.04) (2.35) (1.34) (1.10) (-2.07)
+Constant 0.007 -0.002 0.000 0.007 0.000 0.001 -0.005
+(0.65) (-0.21) (0.00) (0.63) (0.01) (0.04) (-0.42)
+Observations 8,746 8,746 6,556 8,746 8,746 4,096 8,746
+Adjusted R2 0.017 0.012 0.007 0.005 0.001 0.001 0.001
+43
+
+===== PAGE 44 =====
+
+Panel B. Synthetic Rates
+1LSg Other PLX/BTX Binance Huobi HitBTC OKEx Kraken
+L.Teth_USD_SynthRet -0.012 0.001 0.022 0.003 -0.012 -0.018 0.011
+(-0.79) (0.09) (1.23) (0.27) (-0.96) (-1.12) (0.76)
+L2.Teth_USD_SynthRet -0.022 0.002 0.022 0.006 -0.001 -0.023 -0.004
+(-1.36) (0.19) (1.20) (0.50) (-0.05) (-1.24) (-0.35)
+L3.Teth_USD_SynthRet -0.019 -0.007 -0.002 0.005 -0.002 0.000 -0.009
+(-1.22) (-0.52) (-0.09) (0.41) (-0.15) (0.02) (-0.53)
+L4.Teth_USD_SynthRet -0.019 -0.008 -0.020 -0.000 -0.009 -0.003 -0.021
+(-1.31) (-0.56) (-1.21) (-0.00) (-0.64) (-0.17) (-1.87)
+L5.Teth_USD_SynthRet -0.008 0.003 0.000 0.004 0.010 -0.003 -0.010
+(-0.61) (0.23) (0.01) (0.45) (0.88) (-0.25) (-0.81)
+L.BTC_USD_Ret -0.082 ∗∗∗ -0.054∗∗∗ -0.065∗∗∗ 0.047∗∗∗ -0.017 0.014 -0.011
+(-5.49) (-4.09) (-3.65) (3.64) (-1.21) (1.12) (-1.25)
+L2.BTC_USD_Ret -0.083 ∗∗∗ -0.066∗∗∗ -0.037∗ 0.021 -0.032 0.021 -0.028 ∗∗
+(-5.89) (-4.88) (-2.28) (1.67) (-1.63) (1.70) (-2.99)
+L3.BTC_USD_Ret -0.047 ∗∗∗ -0.054∗∗∗ -0.022 0.042 ∗ 0.003 0.024 ∗ -0.020∗
+(-3.57) (-4.58) (-1.51) (2.53) (0.15) (2.04) (-2.33)
+L4.BTC_USD_Ret -0.046 ∗∗∗ -0.040∗∗ -0.019 0.033 ∗∗ 0.003 0.025 ∗ -0.013
+(-3.68) (-3.01) (-1.22) (2.75) (0.21) (2.07) (-1.65)
+L5.BTC_USD_Ret -0.021 -0.034 ∗∗ 0.002 0.030 ∗ 0.016 0.014 -0.020
+(-1.47) (-2.63) (0.11) (2.43) (1.44) (1.07) (-1.89)
+Constant -0.001 -0.001 -0.001 -0.001 -0.000 0.001 -0.000
+(-0.08) (-0.10) (-0.08) (-0.09) (-0.02) (0.07) (-0.02)
+Observations 9,448 9,448 6,544 9,448 9,448 4,084 9,448
+Adjusted R2 0.015 0.010 0.007 0.005 0.001 0.001 0.001
+Panel C. Price Differences Between USD and Tether Exchanges
+1LSg Other PLX/BTX Binance Huobi HitBTC OKEx Kraken
+Arbitrage Spread 0.00445 0.0201 0.0528 ∗ 0.0258∗∗ -0.00615 0.0135 0.00556
+(0.29) (1.68) (2.42) (2.63) (-0.57) (0.68) (0.46)
+Average Return -0.114 ∗∗∗ -0.0926∗∗∗ -0.0626∗∗∗ 0.0598∗∗∗ -0.0266 0.0333 ∗∗ -0.0283∗∗
+(-7.47) (-6.76) (-3.60) (3.87) (-1.55) (2.68) (-3.13)
+Constant 0.00003 0.00003 -0.00002 0.00003 -0.00000 0.00032 -0.00000
+(0.00) (0.00) (-0.00) (0.00) (-0.00) (0.02) (-0.00)
+Observations 9,501 9,501 6,556 9,501 9,501 4,096 9,501
+Adjusted R2 0.013 0.010 0.008 0.003 0.000 0.001 0.001
+44
+
+===== PAGE 45 =====
+
+Table IAXIV
+The Relationship between Flows, Bitcoin Returns, and Cross-Exchange Spread
+Columns (1) and (2) estimate OLS regressions of net Tether and Bitcoin ﬂows on the difference in
+three-hour Bitcoin lagged returns between Bitﬁnex and Poloniex ( Cross-ExchSpread ) and the
+average of three-hour Bitcoin lagged returns on Bitﬁnex and Poloniex (AverageReturn ),
+Flow t =β0 +β1
+1
+3
+3∑
+i=1
+AverageReturn t−i +β2
+1
+3
+3∑
+i=1
+Cross-ExchSpread t−i +ϵt,
+whereAverageReturn t = (RBF X
+t +RP LX
+t )
+2 andCross-ExchSpread t = RBF X
+t −RP LX
+t , both
+standardized by subtracting the mean and dividing by the standard deviation.RBF X
+t is the hourly
+Bitcoin return on the Bitﬁnex exchange and RP LX
+t is the hourly Bitcoin return on the Poloniex
+exchange. Columns (3) and (4) report similar results for the net ﬂows between the Bitﬁnex and
+Bittrex exchanges. Panels B and C estimate a similar regression where the dependent variables
+are the net ﬂows of Tether and Bitcoin between Bitﬁnex and 1LSg accounts, other Poloniex and
+Bittrex accounts, and other Tether exchanges (Binance, Huobi, HitBTC, OKEx, and Kraken). The
+cross-exchange spreads and average returns are calculated as in Panel A but between Bitﬁnex
+returns and the returns on the exchange under study in each column. For 1LSg ﬂows, the average
+of Poloniex and Bittrex returns are used. The sample period is March 1, 2017 to March 1, 2018.
+Standard errors are robust to heteroskedasticity.t-statistics are reported in parentheses. *p<0.05,
+**p<0.01, ***p<0.001.
+Panel A. Aggregate Net Flows
+Poloniex_Tether Poloniex_BTC Bittrex_Tether Bittrex_BTC
+Exch Spread 0.0419 ∗∗ 0.0370∗ 0.0336∗∗ 0.0400∗
+(3.13) (2.39) (2.72) (2.39)
+Avg Ret -0.0430 ∗∗∗ -0.0912∗∗∗ -0.0626∗∗ -0.120∗∗∗
+(-3.76) (-6.30) (-3.15) (-6.68)
+Constant -0.0174 -0.0205 0.00867 0.0301 ∗∗
+(-1.80) (-1.93) (0.73) (2.61)
+Observations 7,986 7,986 8,193 8,193
+Adjusted R2 0.005 0.011 0.005 0.017
+Panel B. Decomposed Net Tether Flows
+1LSg Other PLX Other BTX Binance Huobi HitBTC OKEx Kraken
+Exch Spread 0.039 ∗∗ 0.008 0.017 ∗ 0.122∗∗∗ 0.034 -0.002 0.040 ∗ 0.010
+(2.72) (0.41) (2.14) (3.32) (0.53) (-0.71) (1.96) (0.50)
+Avg Ret -0.059 ∗∗∗ -0.043∗∗∗ -0.013 -0.067 0.196 ∗∗ -0.014 0.032 -0.022
+(-4.36) (-3.73) (-0.91) (-1.76) (2.85) (-0.88) (1.37) (-1.50)
+Constant -0.003 -0.014 0.007 0.075 ∗ 0.129∗ -0.004 0.021 -0.000
+(-0.33) (-1.28) (0.62) (2.21) (2.07) (-0.35) (0.80) (-0.02)
+Observations 8,979 7,986 8,193 2,349 1,255 7,990 2,447 9,155
+Adjusted R2 0.006 0.002 0.000 0.008 0.007 -0.000 0.001 0.000
+Panel C. Decomposed Net Bitcoin Flows
+1LSg Other PLX Other BTX Binance Huobi HitBTC OKEx Kraken
+Exch Spread -0.000 0.020 0.035 ∗∗ 0.136∗∗∗ 0.109 -0.002 0.033 -0.031 ∗∗
+(-0.01) (1.46) (2.61) (3.39) (1.94) (-0.21) (0.62) (-2.99)
+Avg Ret -0.112 ∗∗∗ -0.058∗∗∗ -0.078∗∗∗ -0.140∗∗∗ 0.311∗∗∗ -0.025 0.074 ∗∗ -0.016∗
+(-6.88) (-5.18) (-4.78) (-3.89) (5.86) (-1.41) (2.89) (-1.98)
+Constant -0.006 -0.018 0.031 ∗∗ 0.323∗∗∗ 0.125∗∗ -0.000 0.024 -0.001
+(-0.62) (-1.69) (2.71) (10.95) (2.97) (-0.03) (0.94) (-0.13)
+Observations 8,979 7,986 8,193 2,349 1,255 7,990 2,447 9,155
+Adjusted R2 0.013 0.004 0.008 0.022 0.049 0.000 0.003 0.001
+45
