@@ -1,19 +1,19 @@
-{"construction": "trailing_appositive", "corpus_max": 0.11953858107704261, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "em_dash", "corpus_max": 1.870400905667807, "corpus_median": 0.15965089670586982, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "trailing_appositive", "corpus_max": 0.1392757660167131, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.08556515786771626, "verdict": "in range"}
+{"construction": "em_dash", "corpus_max": 2.006462922677255, "corpus_median": 0.09636696540425942, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
 {"construction": "en_dash_in_prose", "corpus_max": 1.7135862913096696, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "contrast_confirmation", "corpus_max": 0.2128678622744931, "corpus_median": 0.036388777700957026, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "rather_than", "corpus_max": 0.5357416194703811, "corpus_median": 0.14840465001236705, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "contrast_confirmation", "corpus_max": 0.18164479360610328, "corpus_median": 0.04818348270212971, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "rather_than", "corpus_max": 0.5729763517033024, "corpus_median": 0.16219284729543426, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
 {"construction": "genuinely", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "what_matters", "corpus_max": 0.26787080973519056, "corpus_median": 0.03947108742845865, "corpus_min": 0.0, "draft": 0.026525902543834055, "verdict": "in range"}
-{"construction": "it_is_worth", "corpus_max": 0.03826725853359865, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "importantly", "corpus_max": 0.7875372234390766, "corpus_median": 0.12368583797155226, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "triple_list", "corpus_max": 3.0303030303030303, "corpus_median": 1.5965089670586983, "corpus_min": 0.39167686658506734, "draft": 0.0, "verdict": "in range"}
-{"construction": "so_that_tail", "corpus_max": 1.5012428321807398, "corpus_median": 0.09791921664626684, "corpus_min": 0.0, "draft": 0.6366216610520173, "verdict": "in range"}
+{"construction": "what_matters", "corpus_max": 0.18006662465112092, "corpus_median": 0.045911574307883014, "corpus_min": 0.0, "draft": 0.08556515786771626, "verdict": "in range"}
+{"construction": "it_is_worth", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "importantly", "corpus_max": 0.5280165585992777, "corpus_median": 0.12164463547157571, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
+{"construction": "triple_list", "corpus_max": 2.0718897561915774, "corpus_median": 0.4803073967339097, "corpus_min": 0.12672397406382666, "draft": 0.0, "verdict": "in range"}
+{"construction": "so_that_tail", "corpus_max": 1.182757091262382, "corpus_median": 0.09791921664626684, "corpus_min": 0.0, "draft": 0.9412167365448789, "verdict": "in range"}
 {"construction": "document_self_reference", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}
-{"construction": "screen_word", "corpus_max": 0.5920663114268798, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.9018806864903578, "verdict": "OVERUSED"}
-{"construction": "against_prep", "corpus_max": 1.7160433867573255, "corpus_median": 0.24634182391486426, "corpus_min": 0.0, "draft": 2.997426987453248, "verdict": "OVERUSED"}
-{"construction": "what_cleft", "corpus_max": 0.7770762506070908, "corpus_median": 0.11953858107704261, "corpus_min": 0.0, "draft": 0.7427252712273535, "verdict": "in range"}
-{"construction": "negation_periphrastic", "corpus_max": 5.38970787291118, "corpus_median": 1.970734591318914, "corpus_min": 1.1280521087296678, "draft": 3.289211915435423, "verdict": "in range"}
-{"construction": "not_any", "corpus_max": 6.324908325745084, "corpus_median": 2.6604916982805342, "corpus_min": 1.2008296641315819, "draft": 2.626064351839571, "verdict": "in range"}
-{"construction": "neither_nor", "corpus_max": 0.3436426116838488, "corpus_median": 0.04922107646494229, "corpus_min": 0.0, "draft": 0.2917849279821746, "verdict": "in range"}
+{"construction": "screen_word", "corpus_max": 0.6427620403103622, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 1.1979122101480277, "verdict": "OVERUSED"}
+{"construction": "against_prep", "corpus_max": 1.7160433867573255, "corpus_median": 0.21346995410395986, "corpus_min": 0.0, "draft": 2.3102592624283393, "verdict": "OVERUSED"}
+{"construction": "what_cleft", "corpus_max": 0.7770762506070908, "corpus_median": 0.09636696540425942, "corpus_min": 0.0, "draft": 0.9412167365448789, "verdict": "OVERUSED"}
+{"construction": "negation_periphrastic", "corpus_max": 4.752149027393499, "corpus_median": 1.8678620984096488, "corpus_min": 1.039785475838669, "draft": 3.6793017883117995, "verdict": "in range"}
+{"construction": "not_any", "corpus_max": 5.660337508184257, "corpus_median": 2.698275031319264, "corpus_min": 1.5105740181268883, "draft": 2.3958244202960555, "verdict": "in range"}
+{"construction": "neither_nor", "corpus_max": 0.2937576499388005, "corpus_median": 0.042241324687942214, "corpus_min": 0.0, "draft": 0.5989561050740139, "verdict": "OVERUSED"}
 {"construction": "hedging_stack", "corpus_max": 0.0, "corpus_median": 0.0, "corpus_min": 0.0, "draft": 0.0, "verdict": "in range"}

@@ -18,7 +18,7 @@ gate that will later judge the draft.
 
   ./scripts/run scripts/check_replacement_headroom.py restriction versus relative each all
 
-Reads   ../defi-dominant-currency/lit/jfe-exemplars/*.pdf   the venue
+Reads   literature/pdf-sources.json and the registered JFE exemplar PDFs
         literature/text/*.txt                               the field
         paper/sections or memo/sections                     the draft
 """

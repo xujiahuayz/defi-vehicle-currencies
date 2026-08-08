@@ -21,7 +21,7 @@ these bands AND clears the two discovery gates.
   ./scripts/run scripts/measure_venue_shape.py                    corpus bands, and the whole draft
   ./scripts/run scripts/measure_venue_shape.py --section 03       one section against the bands
 
-Reads   ../defi-dominant-currency/lit/jfe-exemplars/*.pdf
+Reads   literature/pdf-sources.json and the registered JFE exemplar PDFs
         paper/sections/*.tex
 Writes  output/exhibits/venue_shape.jsonl
 """
@@ -38,8 +38,9 @@ from statistics import median
 ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.latex_text import strip_latex_markup  # noqa: E402
+from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
-EXEMPLARS = ROOT.parent / "defi-dominant-currency" / "lit" / "jfe-exemplars"
 OUT = ROOT / "output" / "exhibits" / "venue_shape.jsonl"
 BREW_PY = "/opt/homebrew/bin/python3"
 
@@ -160,14 +161,7 @@ def draft_paragraphs(only: str | None = None) -> list[str]:
 
 
 def clean_tex(s: str) -> str:
-    s = re.sub(r"\\(?:citep|citet|cite)\{[^}]*\}", "", s)
-    s = re.sub(r"\\(?:eq)?ref\{[^}]*\}", "1", s)
-    s = re.sub(r"\$[^$]*\$", "x", s)
-    s = re.sub(r"\\(?:emph|textit|texttt|textbf)\{([^}]*)\}", r"\1", s)
-    s = re.sub(r"\\[a-zA-Z]+\*?(?:\[[^\]]*\])?", " ", s)
-    s = re.sub(r"[{}$\\]", " ", s)
-    s = s.replace("~", " ")
-    return re.sub(r"\s+", " ", s).strip()
+    return strip_latex_markup(s)
 
 
 def sentences(par: str) -> list[str]:
@@ -391,10 +385,11 @@ def main() -> int:
     if not SECTION_DIR.exists():
         raise SystemExit(f"no such section directory: {args.dir}")
 
-    pdfs = sorted(EXEMPLARS.glob("*.pdf"))
-    if not pdfs:
-        print(f"no exemplars under {EXEMPLARS}")
+    corpus = resolve_venue_corpus()
+    if corpus.missing:
+        print("missing canonical JFE exemplars: " + ", ".join(corpus.missing))
         return 1
+    pdfs = list(corpus.pdfs)
     print(f"measuring {len(pdfs)} published papers, then the draft\n", flush=True)
 
     texts = [exemplar_text(p) for p in pdfs]

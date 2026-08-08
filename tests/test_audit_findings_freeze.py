@@ -13,6 +13,7 @@ from scripts.audit_findings_freeze import (
     expected_market_state_keys,
     expected_unified_route_venue_days,
     graph_status,
+    non_text_dispositions_closed,
     parse_literature_cards,
     parse_state_frontmatter,
     published_venue_version,
@@ -371,6 +372,15 @@ status: complete
             )
         )
         self.assertFalse(
+            source_set_record_closed(
+                {
+                    **complete,
+                    "non_text_companions": ["https://publisher.test/package.zip"],
+                },
+                materialized,
+            )
+        )
+        self.assertFalse(
             companion_sources_closed(
                 fields,
                 materialized={"PaperAAppendix": True},
@@ -379,6 +389,56 @@ status: complete
             )
         )
 
+    def test_non_text_companions_require_inspected_durable_dispositions(self) -> None:
+        import hashlib
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            papers = root / "literature" / "papers"
+            notes = root / "literature" / "source-notes"
+            papers.mkdir(parents=True)
+            notes.mkdir(parents=True)
+            artifact = papers / "package.zip"
+            artifact.write_bytes(b"PK\x03\x04test")
+            note = notes / "PaperAReplication.md"
+            note.write_text("inspected package")
+            source_set = {
+                "non_text_companions": ["https://publisher.test/package.zip"],
+            }
+            self.assertFalse(non_text_dispositions_closed(source_set, root=root))
+            materialized = {
+                **source_set,
+                "non_text_dispositions": [
+                    {
+                        "sources": source_set["non_text_companions"],
+                        "status": "materialized",
+                        "artifact": "literature/papers/package.zip",
+                        "note": "literature/source-notes/PaperAReplication.md",
+                        "bytes": artifact.stat().st_size,
+                        "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
+                    }
+                ],
+            }
+            self.assertTrue(non_text_dispositions_closed(materialized, root=root))
+            artifact.write_bytes(b"PK\x03\x04fail")
+            self.assertFalse(non_text_dispositions_closed(materialized, root=root))
+            artifact.write_bytes(b"PK\x03\x04test")
+            materialized["non_text_dispositions"][0]["bytes"] += 1
+            self.assertFalse(non_text_dispositions_closed(materialized, root=root))
+            unavailable = {
+                **source_set,
+                "non_text_dispositions": [
+                    {
+                        "sources": source_set["non_text_companions"],
+                        "status": "unavailable",
+                        "note": "literature/source-notes/PaperAReplication.md",
+                        "reason": "publisher endpoint no longer serves the declared artifact",
+                    }
+                ],
+            }
+            self.assertTrue(non_text_dispositions_closed(unavailable, root=root))
     def test_materialization_does_not_confuse_main_and_companion_prefixes(self) -> None:
         import tempfile
         from pathlib import Path

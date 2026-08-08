@@ -27,7 +27,7 @@ are plausibly this paper's subject from expressions that are general English, by
 whether the expression's words appear in the corpus at all: a term the corpus never uses is
 this paper's topic, while a term the corpus uses at a lower rate is a stylistic difference.
 
-Reads   ../defi-dominant-currency/lit/jfe-exemplars/*.pdf
+Reads   literature/pdf-sources.json and the registered JFE exemplar PDFs
         paper/sections/*.tex, deck/**/*.tex
 Writes  output/exhibits/prose_outliers.jsonl
 """
@@ -46,8 +46,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 
 from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.latex_text import strip_latex_markup  # noqa: E402
+from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
-EXEMPLARS = ROOT.parent / "defi-dominant-currency" / "lit" / "jfe-exemplars"
 OUT = ROOT / "output" / "exhibits" / "prose_outliers.jsonl"
 BREW_PY = "/opt/homebrew/bin/python3"
 
@@ -108,24 +109,18 @@ def rates(ws: list[str], n: int) -> dict[str, float]:
 
 
 def corpus_texts() -> list[str]:
+    corpus = resolve_venue_corpus()
+    if corpus.missing:
+        raise RuntimeError(
+            "missing canonical JFE exemplars: " + ", ".join(corpus.missing)
+        )
     out = []
-    for p in sorted(EXEMPLARS.glob("*.pdf")):
+    for p in corpus.pdfs:
         r = subprocess.run([BREW_PY, "-c", EXTRACT, str(p)],
                            capture_output=True, text=True, timeout=180)
         if r.returncode == 0 and r.stdout.strip():
             out.append(r.stdout)
     return out
-
-
-def strip_drawing(text: str) -> str:
-    """Remove drawing and tabular environments whole.
-
-    Their option keys (axis, column, style, width, font, coordinates) are not prose, and
-    leaving them in made the first run report "axis" and "itemize" as stylistic tells.
-    """
-    for env in ("tikzpicture", "axis", "picture", "tabular", "pgfplots", "table"):
-        text = re.sub(rf"\\begin\{{{env}\*?\}}.*?\\end\{{{env}\*?\}}", " ", text, flags=re.S)
-    return text
 
 
 def draft_parts() -> tuple[str, str]:
@@ -145,9 +140,7 @@ def draft_parts() -> tuple[str, str]:
                     continue
                 body.append(ln)
     def clean(xs):
-        t = strip_drawing("\n".join(xs))
-        t = re.sub(r"\\[a-zA-Z]+\*?(?:\[[^\]]*\])?", " ", t)
-        return re.sub(r"[{}$&\\]", " ", t)
+        return strip_latex_markup("\n".join(xs))
     return clean(body), clean(heads)
 
 
@@ -343,9 +336,13 @@ def main() -> int:
 
     global DOMAIN
     DOMAIN = domain_vocabulary()
-    corpus = corpus_texts()
+    try:
+        corpus = corpus_texts()
+    except RuntimeError as error:
+        print(error)
+        return 1
     if not corpus:
-        print(f"no readable exemplars under {EXEMPLARS}")
+        print("no readable canonical JFE exemplars")
         return 1
     body, heads = draft_parts()
     chead = corpus_headings(corpus)

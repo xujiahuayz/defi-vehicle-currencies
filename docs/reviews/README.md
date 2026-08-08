@@ -2,6 +2,9 @@
 
 Independent specialist reviews, newest first.
 
+- 2026-08-09T01:10:47+08:00 — **full-text-reader** · jfe (codex) on `2021-ChenDuffie2021FragmentationAppendix-supplement-online-appendix-to-market-fragmentation.pdf` → `2021-ChenDuffie2021FragmentationAppendix-supplement-online-appendix-to-market-fragmentation--full-text-reader--jfe--20260809011047.md`
+- 2026-08-09T00:57:43+08:00 — **full-text-reader** · jfe (codex) on `2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.pdf` → `2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker--full-text-reader--jfe--20260809005743.md`
+- 2026-08-09T00:57:05+08:00 — **full-text-reader** · jfe (codex) on `2021-ChenDuffie2021Fragmentation-market-fragmentation.pdf` → `2021-ChenDuffie2021Fragmentation-market-fragmentation--full-text-reader--jfe--20260809005705.md`
 - 2026-08-09T00:49:22+08:00 — **full-text-reader** · jfe (codex) on `2026-Somogyi2026DollarDominanceFXAppendix-supplement-online-appendix-to-dollar-dominance-in-fx-trading.pdf` → `2026-Somogyi2026DollarDominanceFXAppendix-supplement-online-appendix-to-dollar-dominance-in-fx-trading--full-text-reader--jfe--20260809004922.md`
 - 2026-08-09T00:45:02+08:00 — **full-text-reader** · jfe (codex) on `2022-Mukhin2022InternationalPriceSystemAppendix-supplement-online-appendix-to-an-equilibrium-model-of-the-international-price-system.pdf` → `2022-Mukhin2022InternationalPriceSystemAppendix-supplement-online-appendix-to-an-equilibrium-model-of-the-international-price-system--full-text-reader--jfe--20260809004502.md`
 - 2026-08-09T00:43:17+08:00 — **full-text-reader** · jfe (codex) on `2026-Somogyi2026DollarDominanceFX-dollar-dominance-in-fx-trading.pdf` → `2026-Somogyi2026DollarDominanceFX-dollar-dominance-in-fx-trading--full-text-reader--jfe--20260809004317.md`

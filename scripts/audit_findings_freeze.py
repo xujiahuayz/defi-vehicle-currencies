@@ -26,6 +26,7 @@ from ddvc.provenance import sidecar_path, verify
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.state_data import FAMILY_STREAMS
+from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 EXTENT = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
@@ -102,23 +103,6 @@ LITERATURE_CARD_EVIDENCE_FIELDS = frozenset(
         "first reader",
     }
 )
-JFE_VENUE_SOURCE_KEYS = {
-    "venue:bolton-kacperczyk-carbon": "BoltonKacperczyk2021CarbonRisk",
-    "venue:carletti-banks-patient-lenders": "CarlettiDeMarcoIoannidouSette2021PatientLenders",
-    "venue:chang-ripples-into-waves": "ChangDuLouPolk2022Ripples",
-    "venue:cong-li-wang-token-platform": "CongLiWang2022TokenPlatform",
-    "venue:diamond-hu-rajan-liquidity-pledgeability": "DiamondHuRajan2022LiquidityPledgeability",
-    "venue:eren-malamud-dominant-currency-debt": "ErenMalamud2022DominantDebt",
-    "venue:graham-corporate-culture": "GrahamGrennanHarveyRajgopal2022CorporateCulture",
-    "venue:hajda-nikolov-product-market": "HajdaNikolov2022ProductMarket",
-    "venue:hinzen-bitcoin-adoption": "HinzenJohnSaleh2022LimitedAdoption",
-    "venue:huang-constrained-liquidity-fx": "HuangRanaldoSchrimpfSomogyi2025Constrained",
-    "venue:li-ye-zheng-refusing-best-price": "LiYeZheng2023Refusing",
-    "venue:makarov-schoar-crypto-arbitrage": "MakarovSchoar2020Arbitrage",
-    "venue:mayer-financing-breakthroughs": "Mayer2022FinancingBreakthroughs",
-    "venue:pastor-sustainable-investing": "PastorStambaughTaylor2021SustainableInvesting",
-}
-JFE_VENUE_CARDS = frozenset(JFE_VENUE_SOURCE_KEYS)
 GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
 LOCKED_CLAIM_STATUSES = {
     "enter_fgh_primary",
@@ -345,7 +329,89 @@ def source_set_record_closed(
         and all(isinstance(key, str) for key in companions)
         and (tracked_article or materialized.get(main_key, False))
         and all(materialized.get(key, False) for key in companions)
+        and non_text_dispositions_closed(source_set, root=root)
     )
+
+
+def non_text_dispositions_closed(
+    source_set: dict,
+    *,
+    root: Path = ROOT,
+) -> bool:
+    """Bind every declared code/data URL to an inspected durable disposition."""
+    sources = source_set.get("non_text_companions", [])
+    dispositions = source_set.get("non_text_dispositions", [])
+    if not isinstance(sources, list) or any(not isinstance(url, str) for url in sources):
+        return False
+    if not sources:
+        return dispositions in (None, [])
+    if (
+        not isinstance(dispositions, list)
+        or not dispositions
+        or len(sources) != len(set(sources))
+    ):
+        return False
+
+    source_note_root = (root / "literature" / "source-notes").resolve()
+    paper_root = (root / "literature" / "papers").resolve()
+    covered: list[str] = []
+    for disposition in dispositions:
+        if not isinstance(disposition, dict):
+            return False
+        disposition_sources = disposition.get("sources")
+        if (
+            not isinstance(disposition_sources, list)
+            or not disposition_sources
+            or any(not isinstance(url, str) for url in disposition_sources)
+        ):
+            return False
+        covered.extend(disposition_sources)
+
+        note = disposition.get("note")
+        note_path = (root / note).resolve() if isinstance(note, str) else None
+        if not (
+            note_path
+            and note_path.is_relative_to(source_note_root)
+            and note_path.suffix == ".md"
+            and note_path.is_file()
+        ):
+            return False
+
+        status = disposition.get("status")
+        if status == "materialized":
+            artifact = disposition.get("artifact")
+            artifact_path = (root / artifact).resolve() if isinstance(artifact, str) else None
+            expected_bytes = disposition.get("bytes")
+            if not (
+                artifact_path
+                and artifact_path.is_relative_to(paper_root)
+                and artifact_path.is_file()
+                and isinstance(expected_bytes, int)
+                and expected_bytes > 0
+                and artifact_path.stat().st_size == expected_bytes
+                and re.fullmatch(r"[0-9a-f]{64}", str(disposition.get("sha256", "")))
+                and file_sha256(artifact_path) == disposition.get("sha256")
+            ):
+                return False
+        elif status == "unavailable":
+            if not str(disposition.get("reason", "")).strip():
+                return False
+        else:
+            return False
+
+    return bool(
+        len(covered) == len(set(covered))
+        and set(covered) == set(sources)
+    )
+
+
+def file_sha256(path: Path) -> str:
+    """Hash a package without loading a potentially large research dataset into memory."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def validate_literature_audit(

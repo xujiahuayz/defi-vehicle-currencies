@@ -17,7 +17,7 @@ draft in the same units. Every target below is an empirical quantile of 14 publi
 papers, and the gate that consumes this file fails on the features that are absent
 altogether, since a count of zero is a structural absence and not a stylistic preference.
 
-Reads   ../defi-dominant-currency/lit/jfe-exemplars/*.pdf
+Reads   literature/pdf-sources.json and the registered JFE exemplar PDFs
         paper/main.tex and paper/sections/*.tex
 Writes  output/exhibits/venue_optics.jsonl
 """
@@ -36,8 +36,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 
 from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
-EXEMPLARS = ROOT.parent / "defi-dominant-currency" / "lit" / "jfe-exemplars"
 SECTIONS = SECTIONS_DIR
 OUT = ROOT / "output" / "exhibits" / "venue_optics.jsonl"
 
@@ -114,10 +114,11 @@ def main() -> int:
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
-    pdfs = sorted(EXEMPLARS.glob("*.pdf"))
-    if not pdfs:
-        print(f"no exemplars under {EXEMPLARS}")
+    corpus = resolve_venue_corpus()
+    if corpus.missing:
+        print("missing canonical JFE exemplars: " + ", ".join(corpus.missing))
         return 1
+    pdfs = list(corpus.pdfs)
     print(f"measuring {len(pdfs)} published papers\n", flush=True)
 
     got = []

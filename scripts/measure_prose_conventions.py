@@ -19,7 +19,7 @@ That also settles disputes in the other direction. Several constructions that re
 "AI-ish" turn out to be entirely normal in this literature, and the corpus says so, which
 stops the house style from drifting into something no published paper resembles.
 
-Reads   ../defi-dominant-currency/lit/jfe-exemplars/*.pdf
+Reads   literature/pdf-sources.json and the registered JFE exemplar PDFs
         paper/sections/*.tex, deck/**/*.tex
 Writes  output/exhibits/prose_conventions.jsonl
 """
@@ -38,8 +38,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SECTIONS_DIR = (ROOT / "paper" / "sections") if (ROOT / "paper" / "sections").is_dir() else (ROOT / "memo" / "sections")
 
 from ddvc.tables import write_exhibit  # noqa: E402
+from ddvc.latex_text import strip_latex_markup  # noqa: E402
+from ddvc.venue_corpus import resolve_venue_corpus  # noqa: E402
 
-EXEMPLARS = ROOT.parent / "defi-dominant-currency" / "lit" / "jfe-exemplars"
 OUT = ROOT / "output" / "exhibits" / "prose_conventions.jsonl"
 BREW_PY = "/opt/homebrew/bin/python3"
 
@@ -100,10 +101,7 @@ def draft_text() -> str:
             body = "\n".join(ln for ln in p.read_text(encoding="utf-8").splitlines()
                              if not ln.lstrip().startswith("%"))
             parts.append(body)
-    text = "\n".join(parts)
-    # Strip markup so probes see prose and not command names.
-    text = re.sub(r"\\[a-zA-Z]+\*?(?:\[[^\]]*\])?", " ", text)
-    return re.sub(r"[{}$&\\]", " ", text)
+    return strip_latex_markup("\n".join(parts))
 
 
 def rate(text: str, pattern: str) -> float:
@@ -118,10 +116,11 @@ def main() -> int:
                     help="multiple of the exemplar maximum the draft may reach")
     args = ap.parse_args()
 
-    pdfs = sorted(EXEMPLARS.glob("*.pdf"))
-    if not pdfs:
-        print(f"no exemplars under {EXEMPLARS}")
+    corpus = resolve_venue_corpus()
+    if corpus.missing:
+        print("missing canonical JFE exemplars: " + ", ".join(corpus.missing))
         return 1
+    pdfs = list(corpus.pdfs)
     print(f"measuring {len(pdfs)} published papers, then the draft\n", flush=True)
 
     texts = [t for t in (exemplar_text(p) for p in pdfs) if t]

@@ -1,0 +1,1213 @@
+
+
+===== PAGE 1 =====
+
+THE EMPIRICS OF INTERNATIONAL CURRENCIES:
+NETWORK EXTERNALITIES, HISTORY AND PERSISTENCE*
+Marc Flandreau and Clemens Jobst
+Using a new database for the late nineteenth century, when the pound sterling was the world’s
+leading international currency, this article provides evidence on the empirical determinants of
+international currency status. We report evidence in favour of the search-theoretic models to
+international currencies. Using a microeconomic model of currency choice, we provide empirical
+support to strategic externalities. We ﬁnd strong conﬁrmation of the existence of persistence, but
+reject the view that the international monetary system was subject to pure path dependency and lock-
+in effects, suggesting that, even in the absence of WWI, the USD was bound to overtake sterling.
+‘For better or worse – and opinions differ on this – the choice of which lan-
+guage and which currency is made not on merit, or moral worth, but on size.’
+(Kindleberger, 1967, p. 11)
+One century ago, the US set up a special expert body, known as the National Monetary
+Commission, to discuss, among other things, of ways and means of promoting the role
+of the US dollar as an international currency and facilitating funding of its current
+account deﬁcit. The US National Monetary Commission led to the creation of the
+Federal Reserve System and the establishment of a large market of dollar ‘acceptances’
+that promoted foreign holdings of the US currency (Broz, 1997; Meltzer, 2003). In the
+following decades, the dollar began a gradual ascent that transformed it into a world
+currency (Eichengreen and Flandreau, 2008).
+Recently, the advent of a single European currency, mounting US external indebt-
+edness, and the rise of China have fuelled considerable interest in determining
+whether the dollar is at risk of losing its international currency role (Chinn and
+Frankel, forthcoming). Just as one century ago, it is generally agreed that monetary
+leadership helps to manage external imbalances. In contrast, countries with debts
+denominated in foreign currency become vulnerable to crises.
+Applied research sheds little light on the sources of monetary leadership. In par-
+ticular, the existing empirical literature does not take advantage of modern theory’s
+* The authors gratefully acknowledge ﬁnancial support from the Foundation Banque de France. Fland-
+reau thanks the IMF for its hospitality while writing part of this article (April 2005) and the BIS for having
+provided much precision on its Triennial Survey. Earlier versions of this article were presented at the Clio-
+metric Conference, Lake Tahoe, June 2005; Stanford University, June 2005; the European Economic History
+Conference, Istanbul, September 2005; the EHA meetings, Toronto, September 2005; the Paris X-Nanterre
+macroeconomics seminar, October 2005; the Bank of International Settlement seminar, November 2005; the
+Graduate Institute workshop on ‘Capital market integration’ in Geneva, December 2005; and the ASSA
+meetings in Boston, January 2006. We thank the editor of this Journal as well as two referees for suggestions
+and criticism. We are also grateful for discussions with colleagues and for comments from seminar partici-
+pants. We specially thank Michel Aglietta, Vincent Bignon, Mike Bordo, Claudio Borio, Lee Craig, Barry
+Eichengreen, Andrew Filardo, Price Fishback, Stefan Gerlach, Charles Goodhart, Avner Greif, Philip
+Hartmann, Paolo Mauro, Kris Mitchener, Frank Packer, Yung Chul Park, Peter Rousseau, Isabel Schnabel,
+Hui Tong, Gavin Wright and Charles Wyplosz. The views stated herein are those of the authors and are not
+necessarily those of the Oesterreichische Nationalbank. Responsibility for misinterpretations remains ours.
+The Economic Journal, 119 (April), 643–664. /C211The Author(s). Journal compilation /C211Royal Economic Society 2009. Published by
+Blackwell Publishing, 9600 Garsington Road, Oxford OX4 2DQ, UK and 350 Main Street, Malden, MA 02148, USA.
+[ 643 ]
+
+===== PAGE 2 =====
+
+critical advances. This article brings new methods to bear on this topic and provides the
+ﬁrst empirical exploration of the determinants of international currency status. We
+focus on the late nineteenth century, when the pound sterling was the ruling currency
+and develop a new empirical model of monetary leadership. Because of free capital
+mobility and lack of exchange controls, this period provides a natural experiment to
+study the forces through which international currencies emerge and are sustained.
+Our empirics rely on a new dataset described in previous research (Flandreau and
+Jobst 2005). This database records information on the currencies that were actually
+traded in every foreign exchange market in 1900 and, thus, captures the phenomenon
+of foreign circulation. We adapt insights from modern theories of international money
+to construct a simple model of the determinants of foreign circulation that can be
+estimated. These theories have three distinct features: they suggest that the emergence
+of international currencies is predicated on the existence of transaction costs; they
+emphasise the role of strategic externalities and they usually predict strong persistence
+in monetary leadership. Our aim is to provide new evidence on the empirical validity of
+these insights.
+The remainder of the article is organised as follows. Section 1 provides an overview of
+existing theoretical arguments. Section 2 contains a simple empirical study of the
+determinants of monetary leadership. Section 3 develops a complete empirical model
+featuring strategic externalities. Section 4 addresses the issue of persistence. We end
+with general conclusions and speculations for the future.
+1. The International Monetary System: Theory
+The central motivation of the theory of international currencies is to explain why, in
+general, a few currencies dominate the international scene, and one member of the
+group secures pre-eminence (Matsuyama et al. 1993): the Dutch guilder in the seven-
+teenth and eighteenth century, the pound sterling in the nineteenth and early twen-
+tieth century, and the US dollar since the mid-twentieth century. Following an age old
+tradition (Menger, 1892, p. 254) theoretical approaches emphasise the role of trans-
+action costs in coordinating agents on a single currency. Agents select as money the
+assets that entail the smallest difference between the price at which they can be
+acquired and the price at which they are resold (a difference also known as the bid–ask
+spread). ‘Liquidity’ is a primary determinant of the emergence of a given currency.
+From this common thread, the literature has provided two alternative emphases that
+are not mutually exclusive.
+1 On the one hand, von Hayek’s work on currency compe-
+tition related ‘liquidity’ to underlying policies (von Hayek, 1976). For instance,
+monetary instability creates uncertainty, making agents less willing to accept a currency
+unless they are provided with a greater margin to cover them against future losses.
+Currencies whose future is beyond suspicion displace the former ones (Calvo and
+Vegh, 1992). This does not imply that a single currency dominates but rather, that the
+number of currencies used internationally is smaller than the number of existing
+1 Ravikumar and Wallace (2001) argue that the framework in Matsuyama et al. (1993) is well suited to the
+study of currency substitution. The two approaches identiﬁed below are not mutually exclusive, see e.g. (Craig
+and Waller, 1999; Engineer, 2000; Head and Shi, 2003; Peterson, 2004).
+644 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 3 =====
+
+currencies. Currency substitution should also discipline monetary authorities through
+the cost it entails in the form of forgone seigniorage. This game-theoretic implication
+was anticipated by von Hayek (1976, Chap. VIII, p. 48) and is central in modern
+theories of credibility (Kydland and Prescott, 1977; Barro and Gordon, 1983). Li and
+Matsui (2005) have provided the ﬁrst explicit application of this insight to the theory of
+international currency in the framework of the search-theoretic approach to money.
+On the other hand Kindleberger (1967) suggested that transaction costs are deter-
+mined by market size. Currencies with a large area of circulation are easily resold, for
+one can conveniently meet some other consenting holder. One implication is that
+international currencies are valuable because many other parties are using them,
+generating strategic externalities: ‘World efﬁciency is achieved when all countries learn
+the same second language’ (Kindleberger, 1967, p. 9). This issue was ﬁrst formally
+discussed in Krugman (1980); see also Rey (2001). Strategic externalities are captured
+by positing a unit cost function that is decreasing with the volume of transactions using
+a given vehicle currency. This creates persistence. Rising trade powers have difﬁculties
+pushing their currency to the top, since the established currencies tend to capture the
+market for new transactions. Therefore ‘history’ determines current outcomes.
+2
+Matsuyama et al. (1993) and Kiyotaki and Wright (1993) provide search-theoretic
+foundations for these insights. Their models focus on the transaction services that
+currencies provide in an uncertain matching environment. When an opportunity to
+trade occurs, agents holding the ‘wrong’ currency suffer a utility loss. Here again,
+strategic externalities emerge naturally because equilibrium outcomes are inﬂuenced
+by other agents’ choices. Depending on the model’s parameters, various degrees of
+persistence are also observed. An alternative interpretation is that of Devereux and Shi
+(2005) who suggest that real resources must be used to set up permanent ‘trading
+posts’ where given currencies can be bought and sold against other ones. Because
+creating such posts entails ﬁxed costs, certain currencies emerge as vehicles.
+2. The International Monetary System: Evidence
+2.1. Exchange Matrices: Theory and Data
+A theory of international circulation explains why certain currencies are traded abroad
+while others are not. To show how such theories can be tested, we build on Krugman’s
+concept of the ‘exchange structure’ (Krugman, 1980). Consider a world where there
+are n countries, each with one currency and one foreign exchange market. Let us call
+aijkt the amount of currency i that has been sold against currency j on market k during
+period t. Recording aijkt for all i, j and k produces a three-dimensional matrix of
+dimension n /C2 n /C2 n. In this framework, a theory of international currencies is a set of
+arguments explaining why, in equilibrium, a minority of foreign exchange markets and
+currencies are used ( aijk > 0) while the majority is neglected ( aijk ¼ 0). In theoretical
+2 Krugman (1980, p. 523) argues that ‘ it seems clear that history will matter . Once an exchange structure is
+established, it will persist ... Suppose, for instance, that the currency of an economically dominant country
+becomes established as vehicle. This role will be self-reinforcing, swelling transactions in the currency etc.’
+(our italics). Krugman concludes that modern models ‘look as if they have something to do with the actual
+experience of international monetary history’.
+2009] 645EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 4 =====
+
+studies, we ﬁnd this general framework simpliﬁed in various fashions. Krugman (1980)
+for instance allowed for only one consolidated market for every currency pair, so that
+there is just one k ¼ /C22k. As in a given market exchanging currency i against currency j is
+the same as exchanging currency j against currency i (aij /C22k ¼ aji /C22k Þ, this leaves us with the
+following diagonal 3 /C2 3 matrix (Krugman considers a world with three countries):
+N ¼
+/C10 a12 a13
+/C10 a23
+/C10
+0
+@
+1
+A: ð1Þ
+Theoretical tractability encourages putting restrictions upon the format of the
+exchange structure so as to reduce its size. But empirical relevance calls for com-
+prehensiveness. Sheer lack of data, however, is a key challenge. For example, the
+latest version of the Bank of International Settlements’ Triennial Survey (the most
+complete source for bilateral foreign exchange activity), documents 41 independent
+currencies traded in 52 countries, yielding a total of 42,640 possible cells. 3 But the
+Survey only reports, for every market, the turnover of local currency against a
+selected list of currencies only (7 out of 40), plus a small number of pairs involving
+the US$ and the Euro against a third foreign currency (11 out of 780 possible
+currency pairs). The result is a matrix that contains information along the ij as well
+as the k dimension but one that is incomplete in both. As evidence from the
+ﬁnancial press suggested and interviews with BIS statisticians conﬁrmed, some
+relevant trades are left out. 4
+This selection bias is central to all empirical studies of which we are aware. For
+instance, Krugman (1984) and Rey (2001) discuss the historical relation between trade
+and currency status but their evidence is limited to two international currencies only.
+Similarly Frankel et al. (1996) and Hartmann (1998) concentrate on explaining the
+time-series pattern of bid–ask spreads for some leading bilateral foreign exchange
+markets. They ignore the reasons why a majority of currencies is never used.
+5
+Another set of empirical studies analyse the determinants of the currency com-
+position of international reserves. Researchers have studied the effects of factors
+such as the size of the issuing country and its record of price-level and exchange-
+rate stability (Dooley et al. , 1989; Eichengreen and Frankel, 1996; Eichengreen,
+1999; Eichengreen and Mathieson, 2001; Eichengreen, 2005; Chinn and Frankel,
+forthcoming). Others have looked at the currency of denomination of international
+bond issues (Eichengreen et al., 2005; Cohen, 2005; Bobba et al. , 2007). Finally,
+Goldberg and Tille (2005) use data on the choice of invoicing currency for 24
+countries. All these studies study focus on the choice among international curren-
+cies, given that these currencies do exist. But they do not study the reasons why
+international currencies exist.
+3 41 /C2 40/2 ¼ 820 currency pairs traded in 52 markets. See BIS (2005).
+4 Currency pairs not documented include ‘Nokkie-Stokkie’ (Norwegian krone vs. Swedish krona), ‘Huf-
+Puf’ (Hungarian forint vs. Polish zloty), ‘Kiwie-Aussie’ (pretty obvious), and others: See Jennifer Hughes,
+‘Non-dollar exchange traders hunting value cannot ignore US currency’, Financial Times (November 17,
+2005).
+5 Lyons and Moore (2005) derive conditions under which information asymmetries cause transactions to
+be concentrated in a handful of currencies.
+646 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 5 =====
+
+2.2. Monetary Status: A Limited-Dependent Analysis
+The database we use here distinguishes currencies with an international circulation
+from currencies without (Flandreau and Jobst, 2005). In the late nineteenth and early
+twentieth century every national ﬁnancial centre featured a foreign exchange market
+where bankers bought and sold foreign currency ‘bills of exchange’ or ‘foreign
+exchange’ against domestic currency. Foreign exchange market activity was monitored
+in local bulletins, which reported ﬁxing prices when relevant. We treat these publica-
+tions like spy-ware devices that inform us whether or not a given foreign exchange
+route was used. Availability of a quote reveals an underlying ﬂow of transactions. Our
+exchange structure matrix is thus both complete from an empirical point of view
+(including virtually all currencies of the world in 1900) but also conceptually superior
+to that posited by Krugman (1984) since it enables us to identify two different exchange
+markets for a given trade, corresponding to the home countries of the two currencies
+involved, which is not the case in Krugman (1984).
+6
+One can then construct an exchange matrix X, a mapping of the exchange structure
+whose elements are ones or zeros depending on whether there were active trades or not
+in the corresponding market. We redeﬁne for every currency pair ij x iji ¼ xjii ¼ xij,
+(currency pair ij traded in market i) and xijj ¼ xjij ¼ xji, (currency pair ij traded in
+market j), so that k can be dropped and the three dimensions of the exchange structure
+boil down to a two-dimensional matrix. Thus:
+X ¼
+/C3 x12 x13 ... x1n
+x21 /C3 ... ... ...
+x31 ... /C3 ... ...
+... ... ... /C3 xn/C0 1n
+xn1 ... ... ... /C3
+0
+BBBB
+@
+1
+CCCC
+A
+: ð2Þ
+The ﬁrst line of the matrix lists the currencies traded against domestic currency 1 in
+market 1, the second line those against currency 2 in market 2, and so forth. Explaining
+why certain currencies circulate abroad, comes to explaining why certain x
+ij terms equal
+one while others equal zero.
+With 45 countries in our sample, we have 990 currency pairs each potentially traded
+in two markets giving a total of 1980 observations. The information in the exchange
+matrix for 1900 is summarised in Figure 1, which aggregates the xij for all i ’s, 8j. This
+gives an indication of the international ‘popularity’ of alternative currencies, since it
+shows the number of foreign markets where a given currency is traded. Unsurprisingly,
+the pound sterling is ranked ﬁrst.
+Our strategy is to relate the availability of a given quote to the value that it creates for
+users. Calling uij the value of using currency j in market i, we can write
+xij ¼ 1i f uij > 0,
+0i f uij /C20 0.
+/C26
+ð3Þ
+6 While more general than Krugman’s, our way of coding leaves out the possibility of ‘Euromarkets’,
+speciﬁcally swaps of currency i against currency j in market k. In reality, this does not restrict the analysis,
+however. Euromarkets emerged in the 1950s in a highly regulated environment. There is no empirical
+evidence for such markets around 1900. That such markets did not exist in a time when there were few
+regulations is telling.
+2009] 647EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 6 =====
+
+Here uij may depend on any variable we wish. Calling yij the vector of variables
+inﬂuencing uij and assuming that it is a linear function of its arguments (b is a vector of
+parameters, gij a random shock, F the cumulative distribution of gij),
+Pr xij ¼ 1
+/C0/C1
+¼ Pr yij b þ gij /C21 0
+/C16/C17
+¼ 1 /C0 F yij b
+/C16/C17
+: ð4Þ
+In any market i, any banker can draw a draft denominated in any foreign currency.
+Resulting costs can be passed on to customers. The availability of a quote thus reﬂects
+that there is a critical number of customers ﬁnding enough value in such a service to be
+prepared to pay for it. We thus need to model the determinants of demand.
+On the one hand, there is less demand for trades in foreign currencies with a higher
+risk of losing value (Li and Matsui, 2005). This may be the case if the issuing country
+has a high inﬂation rate, displays exchange-rate volatility, has a high debt burden, a
+poor reputation, a bad economic record. In the absence of reliable price data for a
+number of countries in the sample, we capture monetary stability using a gold-standard
+dummy variable (Bordo and Rockoff, 1996; Flandreau and Zumer, 2004). This takes
+care not only of foreign exchange stability but also of price stability, since inﬂation is
+endogenous in a ﬁxed-exchange-rate system. Consistent with our previous remarks,
+these variables are supplemented with ﬁscal and reputation indicators.
+7 We proxy the
+0
+5
+10
+15
+20
+25
+30
+35
+GBR
+FRA
+DEU
+BEL
+BRA
+COL
+RO
+OTT
+SER
+NZL
+ICH
+GRC
+EGY
+CHL
+CAN
+AUS
+ARG
+URY
+JAV
+SGP
+PRT
+RUS
+NOR
+JPN
+DNK
+SW
+IND
+HKG
+CHN
+ESP
+USA
+ITA
+CHE
+AUH
+NLD
+Fig. 1. Foreign Circulation of Individual Currencies in 1900: Number of Markets Where Given
+Countries’ Currencies are Traded
+Source. Flandreau and Jobst (2005). To facilitate comparison with Figure 5 below and
+relation with econometric work in Section 4 we have restricted the ranking to countries
+usable in Section 4. This makes 35 currencies/countries. This is more limited than the
+sample used in regression analysis in Section 2.
+7 von Hayek (1976, Chap. VIII, p. 48) was the ﬁrst to emphasise the limits of ‘gold discipline’. See also
+Flood and Garber (1984).
+648 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 7 =====
+
+debt burden using the debt/revenue ratio (Flandreau and Zumer, 2004). We capture
+reputation using the yield on gold bonds issued in international markets. We measure
+economic performance using GDP per capita . This group of variables is called macro-
+economic policy performance factors.
+The second group of variables is referred to as friction factors which are inspired from
+search-theoretic approaches. One important ingredient is inventory costs. Kiyotaki and
+Wright (1989, 1993) allow for heterogeneous costs of holding different currencies.
+Another important friction is the probability of ‘meeting one’s match’. This probability
+falls when agents are somehow ‘distant’ from one another (Matsuyama et al. , 1993;
+Trejos and Wright, 1996; Ravikumar and Wallace, 2001; Kiyotaki and Moore, 2003) and
+increases with the size of the trading partners (Zhou, 1997).
+A natural way to measure inventory costs is to recognise that ‘foreign exchange’ was
+really international credit, so that the opportunity cost is the interest rate. This way of
+looking at things represents a signiﬁcant departure from the intuitive ‘portfolio’
+approach that is implicit in much literary discussion. But it is fully in line with the logic
+of search theoretic approaches that point to a demand for liabilities rather than for
+assets. Since money is intrinsically useless, agents are only prepared to bear the cost of
+holding it in return for the liquidity services it will provide. The same rationale would
+apply, if money were represented by interest bearing denominations that must be
+borrowed before a transaction occurs, as was indeed the case in the historical setting
+this article considers.
+8
+We next consider information costs. Because foreign exchange bills were private
+promises to pay certain sums in certain places, issuing them involved an element of
+uncertainty in that foreign market’s conditions cannot be known as well as domestic
+ones. In addition, this greater uncertainty created more scope for moral hazard.
+Therefore, frictions were presumably greater for more distant centres than for closer
+ones. This can be viewed as an equivalent to the bilateral ‘distance’ discussed in
+matching models.
+Finally, historians usually associate the development of drawing facilities with the
+existence of substantial trade. From an economic point of view, the logic is that money
+follows trade. When bilateral trade with a given country is important, drawing a bill
+payable in its currency is attractive because it ﬁnds ready domestic purchasers who need
+them to settle international transactions. Therefore, bilateral trade with country j as a
+share of the total trade of country i should increase the probability of ﬁnding the
+currency of country j in market i. Again, this intuition has a natural counterpart in the
+search-theoretic approach to money.
+9
+8 In his classic study of Renaissance ﬁnance, de Roover ﬁnds abundant anecdotal evidence of warnings
+against drawing bills on centres where interest rates are permanently or even temporarily high. For instance,
+one banker indicated that when interest rates were high in Barcelona, bankers in Florence and elsewhere
+refrained from drawing on that centre: ‘ laudiamo la rimessa ma non la tratta ’ (we recommend lending to but
+not drawing from) (de Roover, 1968, pp. 48–9). Flandreau and Gallice (2005) ﬁnd similar evidence for the
+late nineteenth century, with bills in leading merchant banks only coming from centers with low short term
+interest rates.
+9 The study by King et al. (1988) of the Hong Kong and Shanghai Banking Corporation (HSBC) in the
+second half of nineteenth century provides many examples. For instance, the authors explain that one reason
+why HSBC opened a branch in France (speciﬁcally, in the silk processing city of Lyons) was because of the
+bank’s leading role in providing ﬁnance to the global silk trade and France’s substantial business as both an
+importer and producer of silk.
+2009] 649EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 8 =====
+
+Before we turn to the empirical estimation of the model, it is important to explain
+why we can consistently record short-term commercial interest rates among friction
+variables, while yields on long-term government bonds are included in the perfor-
+mance indicators. While one might at ﬁrst sight suspect a strong positive relationship,
+long and short rates turn out to be only imperfectly correlated empirically. Table 2
+reports a correlation coefﬁcient of 0.54. A closer look reveals a more complex logic. If
+we distinguish between countries whose currencies enjoy at least some degree of
+international circulation (identiﬁed as ‘key’ and ‘intermediary’ in the automatic net-
+work analysis procedure designed in Flandreau and Jobst (2005) and countries issuing
+an only locally accepted currency (identiﬁed as ‘periphery’), we ﬁnd that the ﬁrst
+group sports low short (typically below 5%) as well as low long rates (below 4%). But
+the second group is a mixed bunch: it includes the British colonies or the Scandina-
+vians with long-term yields as low as those in the ﬁrst group, as well as countries in Latin
+America or Japan with much higher government borrowing costs. Short-run com-
+mercial rates, on the other hand, are indifferently high (on average 6.8%) in this entire
+group. Therefore, sound macroeconomic management, leads to low bond yields but
+does not guarantee low short rates.
+10 This makes inference drawn from results obtained
+when the two variables are put in competition particularly informative.
+We now assess the contribution of each group of factors by estimating (4) using logit
+(Table 1).11 To make results comparable across different speciﬁcations we keep only
+those observations for which we have information on all explanatory variables. At this
+stage we ignore simultaneity issues, which will be dealt with in detail in the remainder
+of the article. Column I reports parameter estimates for the general model. First, the
+model’s ﬁt is satisfactory in terms of both the pseudo-R
+2 and the percentage of cur-
+rencies whose quotation is correctly predicted. Second, we notice a different perfor-
+mance between the two groups of controls identiﬁed before. Friction variables perform
+very well. We observe that low short-term interest rates in the issuing country signiﬁ-
+cantly increase the probability of its currency being traded abroad, that agents appear
+more willing, other things being equal, to trade currencies issued by geographically
+close countries, and that a greater bilateral trade with a given country is associated with
+a greater probability of using its currency. On the other hand, parameters for macro-
+economic performance variables are much less satisfactory. Except for the debt burden,
+all are insigniﬁcant and some have the wrong sign.
+The two sets of explanatory factors are then tried independently. We ﬁrst experiment
+with friction factors alone. They perform essentially as well as the general model. In
+contrast, when the performance factors are considered independently, the quality of
+the ﬁt deteriorates markedly. Pseudo-R
+2 values are almost three times smaller than in
+the general model and some bizarre results emerge: for example, a signiﬁcant large but
+negative contribution of the gold standard, exactly the opposite of what conventional
+10 The result is that within these groups correlation is lower (0.17 and 0.42 respectively) than in the entire
+sample, while the overall correlation stems from the fact that we are mixing countries with both low short and
+long rates with countries with high short and on average high long rates.
+11 Probit estimates are similar and can be obtained from the authors.
+650 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 9 =====
+
+views would predict.12 Finally, the bottom part of the Table shows that this speciﬁcation
+has a poor predictive power for quotations. 13
+Two further exercises suggested by earlier readers are also provided. Column IV adds
+to the general model a colony dummy ( ¼1 when a colony considers quoting its
+metropolis) in order to assess the potential effect of imperial links. The hypothesis we
+test is that the existence of an empire favours currency internationalisation; see De Cecco
+(1974) for a discussion. This variable turns out to have zero contribution and other
+Table 1
+Explaining Foreign Circulation
+Equation
+General model Friction Macro performance With colonies Instrument trade
+(I) (II) (III a) (III b) (IV) (V)
+‘Good housekeeping’
+on gold /C0 0.33 /C0 0.64* /C0 0.00 /C0 0.33
+(/C0 0.89) ( /C0 2.32) ( /C0 0.01) ( /C0 0.89)
+debt burden /C0 0.14* /C0 0.00 /C0 0.05* /C0 0.14*
+(/C0 2.42) ( /C0 0.03) ( /C0 1.95) ( /C0 2.42)
+long-term interest rate 0.07 /C0 0.72** 0.07
+(0.60) ( /C0 6.13) (0.60)
+GDP per capita /C0 0.15 0.87** 1.51** /C0 0.15
+(/C0 0.59) (4.79) (8.04) ( /C0 0.59)
+‘Matching’
+interest rate /C0 0.99** /C0 0.82** /C0 0.99** /C0 0.82**
+(/C0 5.65) ( /C0 7.29) ( /C0 5.65) ( /C0 7.70)
+distance /C0 0.76** /C0 0.76** /C0 0.76** /C0 1.04**
+(/C0 6.52) ( /C0 6.59) ( /C0 6.49) ( /C0 9.98)
+share in bilateral trade 0.25** 0.27** 0.25**
+(9.54) (10.33) (9.45)
+Controls
+colony /C0 0.02
+(/C0 0.02)
+foreign GDP 0.77**
+(9.11)
+Coveragey 2.05** 2.01** 1.41** 1.34** 2.05** 1.12**
+(7.27) (7.25) (8.27) (8.12) (7.26) (5.53)
+constant 4.74 4.30** /C0 7.20** /C0 15.09** 4.74 /C0 4.18**
+(1.75) (3.48) ( /C0 4.50) ( /C0 10.59) (1.74) ( /C0 2.52)
+number of obs. 1,408 1,408 1,408 1,408 1,408 1,408
+Pseudo R2 0.59 0.58 0.21 0.16 0.59 0.44
+log likelihood /C0 247.23 /C0 251.57 /C0 470.21 /C0 503.07 /C0 247.23 /C0 333.25
+predicted vs. observed
+0 when truly 0 83.66 83.59 83.66 84.16 83.66 82.53
+1 when truly 1 10.80 10.87 2.56 1.28 10.80 8.31
+1 when truly 0 1.28 1.35 1.28 0.78 1.28 2.41
+0 when truly 1 4.26 4.19 12.50 13.78 4.26 6.75
+Sources. See text. z-statistics in parentheses, * and ** denote signiﬁcance at the 5% and 1% levels respectively.
+Results reported with a coverage factor, introduced to control for the fact that the extensiveness of coverage
+of the foreign exchange market varied marginally from one national source to the other. Parameter estimates
+without the coverage factor are identical but coverage improves ﬁt. Results available from the authors.
+Coverage is measured by the so-called expansiveness factor recommended in network econometrics
+(Wasserman and Faust, 1994).
+12 The distinction between columns III a and III b is motivated by the need to deal with possible multi-
+colinearity between debt burdens and reputation, as suggested in Flandreau and Zumer (2004).
+13 As can be calculated from the lower part of the Table, policy performance variables get only 17% of the
+1’s right while matching 72%.
+2009] 651EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 10 =====
+
+parameter estimates are unaffected. Finally, Column V controls for the possibility that
+trade is endogenous to quotation; to do so, we substitute for trade the standard variables
+of the gravity equation. Again, the coefﬁcient on the interest rate remains stable.
+Results suggest that friction factors are important. They also rule out the possibility
+that macroeconomic performance inﬂuence currency status through its inﬂuence on
+friction variables. This is demonstrated by the poor empirical record of policy perfor-
+mance when this variable is considered alone and by the correlation matrix in Table 2.
+We conclude that our evidence strongly supports the ‘matching’ dimension of modern
+search-theoretic approaches money.
+3. Strategic Externalities: Econometric Evidence
+3.1. A New Empirical Model
+This Section provides an original way of estimating feedbacks between individual
+choices and aggregate outcomes. This represents both a departure from and an ori-
+ginal contribution to existing research. While network externalities are a basic feature
+of theoretical models of international currencies, they are neglected from empirical
+studies or handled by inclusion of lagged endogenous variables (Bobba et al. , 2007;
+Chinn and Frankel, forthcoming).
+By contrast our empirical model, provides an explicit mechanism through which
+liquidity externalities arise. As in theoretical models, we assume that the externality
+appears because whether to use currency j in country i is decided given others’ decisions
+(Wright, 1995, 1999). We begin with (4) and call x
+c
+ij the exchange matrix that is equal
+to X except for term xij, which has been coded as missing ( xc
+ij represents other agents’
+decisions). We can therefore rewrite (4) as
+Pr xij ¼ 1
+/C0/C1
+¼ Pr yij b þ gij /C21 0 xj c
+ij
+/C16/C17
+¼ U yij b þ gij ; xc
+ij
+/C16/C17
+: ð5Þ
+Function U is the individual response function corresponding to a Nash strategy.
+Individual choices inﬂuence the response function of others, and equilibrium requires
+that ex post individual strategies be consistent with ex ante ones. Individual quoting
+decisions are jointly determined so that (5) captures the essence of strategic exter-
+nalities.
+Table 2
+Matrix of Correlations Between Explanatory Variables
+On gold Debt burden
+Long-term
+int’ rate GDP/cap
+Short-term
+int’ rate Distance Trade share
+On gold 1
+Debt burden /C0 0.21 1
+Long-term int’ rate /C0 0.52 0.27 1
+GDP/cap 0.45 /C0 0.00 /C0 0.43 1
+Short-term int’ rate /C0 0.17 /C0 0.27 0.54 /C0 0.39 1
+Distance /C0 0.09 /C0 0.02 0.12 /C0 0.05 0.23 1
+Trade share 0.14 /C0 0.10 /C0 0.24 0.26 /C0 0.27 /C0 0.26 1
+Source. Authors’ database.
+652 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 11 =====
+
+Next, we posit that strategic externalities operate via the effect that a large number of
+foreign quotations for a given currency has on the liquidity of the corresponding
+country’s money market. This approach, motivated by theoretical intuitions already
+discussed, is also consistent with historical insights. Nishimura (1971) provides narra-
+tive evidence that in the late nineteenth century, liquid ﬁnancial centres did attract
+foreign exchange business.
+14 Experts for the US National Monetary Commission
+writing circa 1910 argued that, barring exchange risk, money interest rates should
+equalise according to the interest parity condition – but only up to a liquidity premium,
+which would always be larger for narrower or less liquid markets. Assets that can be
+bought and sold on broad markets trade at a higher price (or equivalently, have a lower
+real return).
+15 In effect, these writers reasoned in terms of strategic externalities.
+Interest rates of leading currencies were lower because lots of agents were using them,
+so that their currencies were more likely to be quoted abroad and this further
+strengthened their leadership.
+16 Figure 2 provides empirical evidence of this relation:
+the larger the number of foreign quotations a currency received, the lower its interest
+rate.
+Of course causality can run either way or both. We thus complete the empirical
+model as follows. Let r
+jt be the interest rate in centre j at a date t. This interest rate can
+be written in terms of an imaginary, perfectly liquid, short-term ﬁnancial instrument
+whose interest rate is at. The spread between rjt and at is by deﬁnition equal to the sum
+of a liquidity premium and the expected rate of exchange-rate change with respect to
+the imaginary currency (used as nume ´raire). The liquidity premium is assumed to
+depend on two terms, the demand for currencyi in the global foreign exchange market
+(x
+i) and a set of variables that represents local money market development ( Y1t).
+Denoting the liquidity premium by p(xit,Y1it) and the expected depreciation by
+E(Deit/C0 1/eit), we have
+rit /C0 at ¼ pðxit ; Y1it Þþ EðDeitþ1=eit Þ: ð6Þ
+Because of a lack of systematic trends in exchange rates expected depreciation can
+safely be ignored.17 The demand for currency i in the global foreign exchange market
+is the sum of individual demands in local markets weighted by the relative share hk of
+each country. Country k’s demand for currency i is a function of its (unobservable)
+utility uki. Finally, the interest rate in market i is determined by international demand
+and domestic factors:
+14 Nishimura shows that, in the late nineteenth century, the share of bills drawn on London from outside
+the UK vastly surpassed the share drawn from within. King (1936, p. 282) states that Lombard Street, where
+London’s money market was located, ‘belonged to all nations’.
+15 ‘Thus it is that funds freely move to and fro between London, Paris, Berlin, and Amsterdam, an exact
+equality in [interest] rates being prevented by the fact that the discount markets in these cities differ in size... For instance,
+the Paris discount market is broader than that of Amsterdam, and there is consequently less risk in forwarding
+funds to Paris for investment than to Amsterdam. That the Paris discount rate should rule somewhat lower
+than that of Amsterdam is accordingly natural’ Jacobs (1910), pp. 7–8; our italics.
+16 Attractive interest rates in London, Jacobs acknowledged, led US bankers to hold London balances even
+though this would ‘add to the importance of London and militate against the development of New York as a
+ﬁnancial center’ (Jacobs, 1910, p. 13).
+17 Regressions limited to countries on a gold standard were also performed and did not change the results.
+2009] 653EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 12 =====
+
+rit ¼ c1
+X
+k6¼i
+hkukit þ Y1i b1 þ eit : ð7Þ
+This formula can be combined with the ‘friction’ equation from Section 2 where the
+value of holding currency j in market i is a function of the interest rate in market j,t h e
+share of bilateral trade with j in i ’s total trade, and bilateral distance. Denoting these
+latter two exogenous variables by Y2ij, we can write
+uijt ¼ cjt rjt þ Y2ijt b2 þ gijt : ð8Þ
+Since ri is an n /C2 1 vector (there are n countries) and since uij is a vector of
+dimension n(n /C0 1) /C2 1 (there are n(n /C0 1) bilateral exchange markets), we use the
+transformation matrices W and M to write the complete model in structural form as
+follows (we drop the indices for simplicity): 18
+r ¼ c1Wu þ Y 1b1 þ e
+u ¼ c2Mr þ Y 2b2 þ g: ð9Þ
+As can be seen, our model allows for two-way inﬂuence. The ﬁrst equation in system
+(9), or liquidity schedule, describes the incidence of greater value of the domestic cur-
+rency for foreigners on domestic interest rates. The second equation, or popularity
+schedule, describes the incidence of lower domestic rates on the value of holding that
+AHBEL
+DMK
+EGY
+ESP
+FRA
+GER
+GRE
+ITL
+NLD
+NOR
+POR
+RUM
+RUS
+SWE
+UK
+–1.0
+–0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+0 2 04 06 08 0 1 0 0
+Index of International Liquidity = 1910
+Fig. 2. Short Term Interest Rate Differentials vs. London and International Liquidity
+Source. Authors’ database.
+18 Here W is a weighting matrix and M simply assures that all markets for currency j depend on the same
+interest rj.
+654 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 13 =====
+
+currency for foreigners. System (9) describes the international monetary system that
+results from a Nash equilibrium. Figure 3 illustrates the equilibrium feedback for a
+given country. Equilibrium is deﬁned by point E.
+3.2. Estimation
+Because of simultaneity, it will not be enough to estimate the second equation using a
+standard probit method and then estimate the ﬁrst equation using the predicted utility
+variable obtained from the ﬁrst regression. One way of addressing this issue is to think
+of (9) as a sequential system. At date t /C0 1, agents make decisions regarding currency
+holdings based on the signals they receive (second equation). This determines the
+demand for each currency in each market and sets period– t interest differentials (ﬁrst
+equation). Rewriting (9) with time indices yields
+r
+t ¼ c1Wut þ Y1t b1 þ et
+ut ¼ c2Mrt/C0 1 þ Y2t b2 þ gt : ð10Þ
+Given thatet and gt are well-behaved Gaussian residuals, a straight estimation is possible:
+ﬁrst derive a probit estimate of the second equation; then replaceut in the ﬁrst equation
+by its ﬁtted value and use standard OLS techniques to estimate the equation
+rt ¼ c1W^ut þ Y1t b1 þ et : ð11Þ
+Liquidity (Interest differential
+against perfectly liquid currency)
+Popularity (Total value for
+foreigners/currency demand)
+E
+Liquidity schedule
+Popularity schedule
+Fig. 3. Equilibrium Foreign Circulation and Liquidity Premium for Country i’s Currency
+2009] 655EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 14 =====
+
+However, a superior approach is to recognise that r and u are simultaneously deter-
+mined. To take account of simultaneity, the system has to be ﬁrst estimated in reduced
+form and in a second step by OLS and probit using the ﬁtted values from the ﬁrst
+stage.19 The resulting estimation strategy, known as two-stage probit least squares (or
+2SPLS), produces robust estimates (Maddala, 1983). 20
+Results are reported in Table 3. 21 For domestic variables ( Y1) we used GDP per
+capita (a measure of domestic ﬁnancial development) and a democracy index. Neo-
+institutional perspectives have emphasised the role of democratic institutions, par-
+liamentary control of the executive, and the rule of law in ﬁnancial development
+(North and Weingast, 1989). Democracy is therefore a natural proxy for these
+factors.
+22
+Table 3 presents estimates for (I) the ‘naı ¨ve’ model that ignores that r and u are
+jointly determined, (II) the sequential model that assumes agents decide on foreign
+currency trading for 1900 based on signals received in 1890 (thus setting 1900 interest
+rates), and (III) the more sophisticated 2SPLS model. There is little difference between
+the output of the naı¨ve and sequential models. However, compared to columns I and
+II, 2SPLS estimation gives an enhanced effect of interest rate on the utility of holding
+the corresponding currency (c
+2 ¼/C0 0.52 instead of /C0 0.31 and /C0 0.36). The effect of the
+popularity of a given currency on interest rates, by contrast, is similar across equations
+(c1 ¼/C0 0.87, /C0 0.91 and /C0 1.09).
+The important conclusion to draw from these exercises is that we ﬁnd evidence of
+the two-way causality (from transaction costs to holding behaviour and from holding
+behaviour to transaction costs) that is a central feature of modern models of interna-
+tional currencies. There are strategic externalities, and they matter, just as theory
+predicts.
+4. Persistence
+4.1. Testing for Path Dependency
+One critical implication of strategic externalities is the emergence of persistence. To
+see how it arises in our framework, consider the following thought experiment. Starting
+from equilibrium at E, the economy experiences an increase of its total exports. The
+19 For this we must ﬁrst rewrite the system in reduced form. Because e and h are i.i.d., an unbiased
+estimation of the reduced-form system is feasible using maximum likelihood techniques. This provides ﬁtted
+values of ^r and ^u that are orthogonal to residuals; then ^r and ^u can be plugged back into the structural system
+(8). The second step in this approach involves OLS estimation of the ﬁrst equation and probit estimation of
+the second equation.
+20 Standard errors ought to be adjusted. The method in Maddala (1983, pp. 244–5), however, is not
+feasible, due to the weighing matrices. Instead, we calculated conﬁdence intervals using bootstrapping with
+1000 replications. Table 3 below reports the 2.5 and 97.5 percentiles of the simulated coefﬁcients, thus giving
+an equivalent to a 95% conﬁdence interval.
+21 To perform the matrix operations we need fully symmetric information, i.e. every quoting country must
+also be included as quoted country. This reduces the number of observations slightly compared to regressions
+in Section 2.
+22 We use the index of democracy of the Polyarchy dataset developed by Vanhanen (2000), available at
+http://new.prio.no/CSCW-Datasets/Data-on-Governance/The-Polyarchy-dataset/. The macro policy vari-
+ables have previously been shown not to explain currency circulation and can thus be used to identify the
+interest rate equation.
+656 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 15 =====
+
+result is that the value of holding its currency abroad is enhanced. This boosts inter-
+national demand for its money, causing further declines of its interest rate and so forth.
+The long-run effect depends on the product of parameters c
+1 and c2. Assuming for
+simplicity that c1c2 > 0 (as we have found is the case), two economically relevant
+regimes are distinguished. 23
+If 0 < c1c2 < 1 there will be persistence but no path dependence. The
+economy converges toward a new equilibrium but, while the process lasts, the
+country has higher interest rates and lower popularity than is warranted by the long-run
+equilibrium. Formerly minor trading powers, for instance, drag the anchor of their
+previous insigniﬁcance and experience a delayed rise to monetary leadership
+(Figure 4a).
+If c1c2 > 1 then the dynamics are explosive and lock-in (a speciﬁc instance of
+path dependency) emerges. Interest-rate declines fuel an expansion of foreign
+Table 3
+Estimating Strategic Externalities
+Equation (I) ‘Naive’ Probit – OLS (II) Sequential model (III) Two stage Probit
+ru /C0 1.09 /C0 0.87 /C0 0.91
+(/C0 7.10) ( /C0 4.72) ( /C0 2.83)
+[/C0 1.25, /C0 0.50]
+GDP per 0.27 0.19 0.15
+capita (0.68) (0.38) (0.25)
+[/C0 0.22, 0.55]
+democracy /C0 0.10 /C0 0.13 /C0 0.09
+index ( /C0 1.39) ( /C0 1.46) ( /C0 0.82)
+[/C0 0.15, /C0 0.04]
+constant 2.27 3.36 3.59
+(0.77) (0.91) (0.78)
+[0.30, 6.76]
+observations 35 35 35
+adjusted R2 0.68 0.51 0.33
+ur /C0 0.36 /C0 0.31 /C0 0.52
+(/C0 7.06) ( /C0 6.78) ( /C0 8.12)
+[/C0 0.69, /C0 0.36]
+distance /C0 0.46 /C0 0.38 /C0 0.44
+(/C0 6.91) ( /C0 5.64 ( /C0 6.28)
+[/C0 0.56, /C0 0.31]
+share 0.15 0.16 0.15
+(11.54) (12.36) (10.94)
+[0.11, 0.23]
+coverage 1.13 1.17 1.24
+(6.92) (7.04) (7.09)
+[0.90, 1.70]
+constant 2.09 1.03 2.70
+(3.12) (1.61) (3.73)
+[1.32, 3.93]
+observations 1,190 1,190 1,190
+log likelihood /C0 205.2 /C0 207.0 /C0 195.0
+Source. See text. t and z-statistics in parentheses, bootstrapping 95% conﬁdence intervals (deﬁned by the
+2.5 and 97.5 percentiles) in brackets (see footnote 19).
+23 We neglect here the degenerate regime where c1c2 ¼ 1, since it is statistically unimportant.
+2009] 657EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 16 =====
+
+holdings, which encourages reduction in liquidity premiums until they become zero
+and the greatest possible number of foreigners hold the currency. Moreover, there
+are no compensating forces and important currencies assume monopoly power
+while unimportant ones go the other way. Escape from such equilibrium is delayed
+Popularity (Total value for
+(b)
+(a)
+foreigners/currency demand)
+E
+Liquidity schedule
+Popularity schedules
+E′
+Liquidity (Interest differential
+against perfectly liquid currency)
+Liquidity (Interest differential
+against perfectly liquid currency)
+Popularity (Total value for
+foreigners/currency demand)
+E1
+Liquidity schedule
+Popularity schedules
+Unstable equilibrium
+Stable equilibria
+E2 E'2
+Fig. 4. ( a) Currency Status and Persistence: Stable Dynamics (0 < c1c2 < 1) ( b) Currency Status
+and Lock-in: Unstable Dynamics (1 < c1c2)
+658 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 17 =====
+
+and brutal. Intuitively, it arises when the liquidity-popularity feedback is ‘big
+enough’ (formally, when their product is greater than 1: Figure 4 b).24
+As observed (Table 3, column III) c1c2 ¼ 0.463. Bootstrapping (see footnote 21 for
+details) gives a 95% conﬁdence interval of [0.22, 0.72]. This means that the product of
+coefﬁcients is larger than zero but smaller than 1. The empirical evidence thus suggests
+that there is substantial persistence but no lock-in effects.
+4.2. A Counter-factual Assessment
+It is interesting to delve further into the matter and provide an estimation of the actual
+contribution of history to a given international monetary system – in this instance that
+of 1900. One way to do this involves recognising that, in our approach, the vehicles of
+persistence are interest rates and the value of holding given currencies. It is therefore
+possible to deﬁne two vectors that register the effect of past ‘events’ as the difference
+between the actual values and long-run equilibrium values. As indicated, a country
+whose formerly small trading power has increased encounters higher interest rates and
+lower value for its currency than it ‘ought to’. We deﬁne these vectors as e
+Ht and gHt ,
+respectively. Formally
+eH ¼ r /C0 rE
+gH ¼ u /C0 uE : ð12Þ
+where rE and uE are deﬁned as solutions to (hats denote estimated parameters from
+Table 3)
+rE ¼ ^c1WuE þ Y1 ^b1
+uE ¼ ^c2MrE þ Y2 ^b2:
+ð13Þ
+Because persistence acts in a symmetrical fashion for interest rates and the value of
+holding a given currency (as seen in Figure 4 a), one need only examine persistence in
+a single dimension. We thus consider the matter by performing the intuitively
+appealing comparison between the actual popularity of currencies in 1900 (measured
+by the number of quotes each received in foreign markets) and equilibrium popularity
+(measured by computing the counterfactual, ‘history free’ numbers for quotes each
+currency ought to have received as a solution to (13)).
+Figure 5 displays the results. The US, a rising trade power, was penalised during its
+ascendancy and received substantially fewer quotes than if history had not taken place.
+Conversely, several European countries were actually much more popular than in the
+history-free scenario and may be seen as beneﬁting from history. The most striking
+example is France, a former world-class trade leader, which received about 25% more
+quotes than it would have sans history.
+Another ﬁnding from this exercise is that while in the history-free scenario the US
+dollar enjoys a signiﬁcantly larger circulation, it is still far from the leading position of
+sterling. We interpret this as resulting from its geographical position, somewhat off the
+course of the bulk of international trade that was taking place in Europe. In a last step
+24 For convenience, Figures 4( a) and (b) illustrate what happens when c1 ¼ 1 so that c1c2 > 1 boils down
+to c2 > c1.
+2009] 659EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 18 =====
+
+we can therefore ask how large a shock to the fundamentals – in the instance, a
+proportional increase in the share of the US in world trade – would have had to be to
+propel the US dollar to the position it actually attained later in the twentieth century.
+25
+Figure 6 shows the relation between trade share and currency status. To overtake the
+franc or the mark, the US trade within our sample would have had to increase from
+about 11–2% to about 15–6%. After attaining that level, the effect of further increases
+in trade levels off.
+An interesting feature of Figure 6 is its characteristic sigmoid pattern. It shows that in
+our model, monetary inﬂuence does not provide a linear response to an increase in
+economic inﬂuence. This is because, although in the model the utility of holding a
+currency is determined in a linear system of equations (9), the worldwide popularity
+the dollar is determined by n demand functions ( n being the number of countries in
+the world), which are non-linear in the explanatory variables (probit functions). This is
+what generates the ‘contagious’ pattern exhibited in Figure 6. Intuitively, for every
+single country there is an area where marginal increases in trade serve to win new
+foreign holders, fuelling lower interest rates and further equilibrium use of the cur-
+rency. We conclude that loose reference to ‘tipping points’ and ‘network externalities’
+and their effect on persistence and lock-in effects may be misleading without due
+reference to more explicit microeconomic foundations as we provided here.
+0
+5
+10
+15
+20
+25
+30
+35
+observed quotes
+‘history free’ quotes
+GBR
+FRA
+DEU
+BEL
+BRA
+COL
+RO
+OTT
+SER
+NZL
+ICH
+GRC
+EGY
+CHL
+CAN
+AUS
+ARG
+URY
+JAV
+SGP
+PRT
+RUS
+NOR
+JPN
+DNK
+SW
+IND
+HKG
+CHN
+ESP
+USA
+ITA
+CHE
+AUH
+NLD
+Fig. 5. History Measured: Actual Versus Counterfactual Number of Foreign Markets Where Currencies
+Circulated in 1900
+Source. See text. Counterfactual is obtained by computing the long run ‘history free’
+equilibrium.
+25 To be precise, the share in the total trade of the 35 countries in the sample. To simulate the increase in
+the US trade share, we increased trade in all bilateral pairs that include the US while leaving trade among all
+other pairs of countries constant. In a gravity model of international trade, this would be the consequence of
+an increase in US GDP. Of course, we can think of alternative scenarios. For instance, we could have increased
+US market share in selected countries or continents and would have obtained different results, as currency
+circulation depends on the bilateral trade links and not on the share in world trade directly.
+660 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 19 =====
+
+4.3. Extensions
+We can think of several extensions: empirical, analytical and normative. The empirical
+extension would be to extend our framework to consider additional historical periods..
+For instance, if technological progress induces smaller distance frictions then the scope
+for strategic externalities might be increased. ‘Persistence’ could very well be historic-
+ally dependent.
+An analytical extension would be to adapt the framework under study to take into
+account alternative forms of persistence that could be tested against one another; David
+(1985) notes that declining average costs, if supplemented with switching costs could
+generate pure lock-in effects. This is unlike what happens in our model. But suppose that
+establishing a new local market or ‘trading post’ for a given currency involves paying a set-
+up cost. Then the scope for persistence would increase.
+26
+Finally, it would be interesting to provide normative assessments. Persistence may
+induce the world economy to deviate from its ‘optimal’ trajectory; see David (1985)
+and Leibowitz and Margolis (1990) for controversial discussions of this point in a
+different context. The evidence we reported of a long-run association between
+international currencies and trade shares suggests that the resulting diseconomy
+might not be so large, at least in the year 1900. We also observe that the economy
+that suffered the biggest disadvantage from persistence (the US) was prepared to
+subsidise the implementation of correctives, as the setting up the National Monetary
+Commission suggests.
+5. Conclusions
+This article provides the ﬁrst empirical model of the determinants of international
+currency status. We do this in the context of the late nineteenth-century international
+0%
+25%
+50%
+75%
+100%
+0 5 10 15 20 25 30
+US share in world trade
+Popularity of US$ simulated
+observed
+Fig. 6. Simulating an Increase in US Trade and its Effects on the International Circulation of the
+Dollar
+Sources. See text.
+26 In the cross-section that we have considered, such a dynamic feature cannot be identiﬁed but it could be
+dealt with if more periods are considered.
+2009] 661EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 20 =====
+
+monetary system. In line with the prediction of Charles Kindleberger, we did not ﬁnd
+much evidence that currencies become international as a result of the issuing country’s
+moral worth. In contrast, we found evidence of the importance of size, distance and
+inventory costs, evidence that is consistent with the prediction of search-theoretic
+models of international currencies. Moreover, we reported strong evidence of strategic
+externalities: currencies become international on account of their low liquidity premia
+and (conversely) had low liquidity premia on account of their international circulation.
+Such feedback, we explained, has the potential for creating persistence.
+We then estimated the size of this feedback and found it too small to generate strict
+path dependency. Nonetheless, persistence was found to be sizeable. Concrete evid-
+ence was provided by comparing observed monetary status in the late nineteenth
+century with its history-free, counterfactual equilibrium. We found that, in the late
+nineteenth century, history beneﬁted mostly European countries and disadvantaged
+the US. Our model suggests imputing this to Europe’s earlier lead in international
+trade.
+The evidence in this article thus leads to conclusions related to Kindleberger’s
+insight that size is everything. Our ﬁndings strongly support his notion that, over the
+very long run, economic mass and thus the share in international trade is a powerful
+driver of international monetary leadership. This simple insight, for which we reported
+abundant evidence, should go a long way toward explaining why it is the US dollar, not
+the pound sterling, that is the main international currency today. The implication must
+be that money and trade are complements.
+Graduate Institute Geneva and CEPR
+Oesterreichische Nationalbank
+Submitted: 21 June 2006
+Accepted: 16 May 2008
+References
+Barro, R.J. and Gordon, D.B. (1983). ‘Rules, discretion and reputation in a model of monetary policy’,Journal
+of Monetary Economics , vol. 12(1), pp. 101–21.
+Bank of International Settlements (BIS) (2005). Triennial Central Bank Survey , Basel: BIS.
+Bobba, M., della Corte, G., Powell, A. (2007), ‘On the determinants of international currency choice: will the
+Euro dominate the world?’, Working Paper, Inter-American Development Bank, June.
+Bordo, M. and Rockoff, H. (1996). ‘The gold standard as a good housekeeping seal of approval’, Journal of
+Economic History, vol. 56(2), pp. 389–428.
+Broz, L. (1997). International Origins of the Federal Reserve System , Ithaca: Cornell University Press.
+Calvo, G.A. and Vegh, C. (1992). ‘Currency substitution in developing countries: an introduction’, IMF
+Working Paper No. 92/40.
+Chinn, M. and Frankel J. (forthcoming). ‘The euro may over the next 15 years surpass the dollar as leading
+international currency’, International Finance.
+Cohen, B. (2005). ‘Currency choice in international bond issuance’, BIS Quarterly Review, (June), pp. 53–66.
+Craig, B. and Waller, C. J. (1999). ‘Currency portfolios and nominal exchange rates in a dual currency search
+economy’, Federal Reserve Bank of Cleveland, Working Paper No. 9916.
+David, P.A. (1985). ‘Clio and the economics of QWERTY’, American Economic Review, vol. 75(2), pp. 332–7.
+De Cecco, M. (1974). Money and Empire: the International Gold Standard, 1890–1914 , Oxford: Blackwell.
+de Roover, R.A. (1968). The Bruges Money Market around 1400 , Brussels: Paleis der Academie¨n.
+Devereux M.B. and Shi, S. (2005). ‘Vehicle currency’, mimeo, University of British Columbia.
+Dooley, M, Lizondo, P. and Mathieson D. (1989). ‘The currency composition of foreign exchange reserves’,
+IMF Staff Papers, vol. 36(2) (June), pp. 385–434.
+662 [ APRILTHE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 21 =====
+
+Eichengreen, B. (1999). ‘The euro as an international currency’, Journal of the Japanese and International
+Economies, vol. 12(4), pp. 483–506.
+Eichengreen, B. (2005). ‘Sterling’s past, dollar’s future: historical perspectives on reserve currency status’,
+NBER Working Paper, No. 11336.
+Eichengreen, B. and Flandreau, M. (2008), ‘The rise and fall of the dollar (or when did the dollar replace
+sterling as the leading reserve currency?)’, CEPR Discussion Paper No. DP6869, April.
+Eichengreen, B. and Frankel, J. (1996). ‘The SDR, reserve currencies, and the future of the international
+monetary system’, in (M. Mussa, J. Boughton, and P. Isard, eds.), The Future of the SDR in Light of Changes
+in the Internatioal Financial System , pp. 337–77, Washington, DC: IMF.
+Eichengreen, B., Hausmann, R. and Panizza, U. (2005). ‘The mystery of original sin’, in (B. Eichengreen and
+R. Hausmann, eds.), Other People’s Money: Debt Denomination and Financial Instability in Emerging Market
+Economies, pp. 233–65, Chicago: University of Chicago Press.
+Eichengreen B. and Mathieson, D. (2001). ‘The currency composition of international reserves: retrospect
+and prospect’, in (C. Wyplosz, ed.), The Impact of EMU on Europe and the Developing Countries , pp. 269–93,
+Oxford: Oxford University Press.
+Engineer, M. (2000). ‘Currency transaction costs and competing currencies’,Journal of International Economics,
+vol. 52(1), pp. 113–36.
+Flandreau, M. and Gallice, F. (2005). ‘Paris, London and the international money market: lessons from
+Paribas 1885–1913’, in (Y. Cassis and E. Bussie`re, eds.), London and Paris as International Financial Centres
+in the Twentieth Century , pp. 78–106, Oxford: Oxford University Press.
+Flandreau, M. and Jobst, C. (2005). ‘The ties that divide: a network analysis of the international monetary
+system 1890–1910’, Journal of Economic History , vol. 65(4), pp. 977–1007.
+Flandreau, M. and Zumer, F. (2004). The Making of Global Finance 1880–1914 , OECD Development Center
+monograph, Paris: OECD.
+Flood, R. and Garber, P. (1984). ‘Gold monetization and gold discipline’, Journal of Political Economy ,
+vol. 92(1), pp. 90–107.
+Frankel, J., Galli, G. and Giovannini, A. (1996). The Microstructure of Foreign Exchange Markets , Chicago: Uni-
+versity of Chicago Press.
+Goldberg, L. and Tille, C. (2005). ‘Vehicle currency use in international trade’, Federal Reserve Bank of
+New York Staff Report No. 200.
+Hartmann, P. (1998). Currency Competition and Foreign Exchange Markets: The Dollar, the Yen and the Euro ,
+Cambridge: Cambridge University Press.
+Head, A. and Shi, S. (2003). ‘A fundamental theory of exchange rates and direct currency trades’, Journal of
+Monetary Economics, vol. 50(7), pp. 1555–91.
+Jacobs, L. (1910). Bank Acceptances, Publications of the National Monetary Commission, Vol. 20(3), [US] 61st
+Cong., 2d Sess. Senate Doc. 569, Washington, DC: Government Printing Ofﬁce.
+Kindleberger, C. (1967). The Politics of International Money and World Language(Essays in International Finance,
+No. 61), Princeton: Princeton University Press.
+King, F.H., King, C.E. and King, D.J. (1988). The Hongkong Bank in Late Imperial China, 1864–1902: On an Even
+Keel, New York: Cambridge University Press.
+King, W.T.C. (1936). History of the London Discount Market , London: Routledge.
+Kiyotaki, N. and Moore, J. (2003). ‘A cost of uniﬁed currency’, in (P. Mizen, ed.), Central Banks, Monetary
+Theory and Policy: Essays in Honour of Charles Goodhart , Vol. 1, pp. 247–55, Cheltenham: Edward Elgar.
+Kiyotaki, N. and Wright, R. (1989) ‘On money as a medium of exchange’, Journal of Political Economy ,
+vol. 97(4), pp. 927–54.
+Kiyotaki, N. and Wright, R. (1993). ‘A search-theoretic approach to monetary economics’, American Economic
+Review, vol. 83(1), pp. 63–77.
+Krugman, P. R. (1980). ‘Vehicle currencies and the structure of international exchange’, Journal of Money,
+Credit and Banking, vol. 12(3), pp. 513–26.
+Krugman, P. R. (1984). ‘The international role of the dollar: theory and prospect’, in (J.F.O. Bilson and R.C.
+Marston, eds.), Exchange Rate Theory and Practice , pp. 261–78, Chicago: University of Chicago Press.
+Kydland, F.E. and Prescott, E.C. (1977). ‘Rules rather than discretion: the inconsistency of optimal plans’,
+Journal of Political Economy , vol. 85(3), pp. 473–91.
+Leibowitz, S.J. and Margolis, S.E. (1990). ‘The fable of the keys’, Journal of Law & Economics , vol. 33(1),
+pp. 1–25.
+Li, Y. and Matsui, A. (2005). ‘A theory of international currency and seigniorage competition’, CEPR Dis-
+cussion Paper No. 5529.
+Lyons, R. and Moore, J. (2005). ‘An information approach to international currencies’, NBER Working
+Paper, No. 11220.
+Maddala, G.S. (1983). Limited-Dependent and Qualitative Variables in Econometrics , Cambridge: Cambridge
+University Press.
+Matsuyama K., Kiyotaki, N. and Matsui, A. (1993). ‘Toward a theory of international currency’, Review of
+Economic Studies, vol. 60(2), pp. 283–307.
+2009] 663EMPIRICS OF INTERNATIONAL CURRENCIES
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+
+===== PAGE 22 =====
+
+Meltzer, A.H. (2003). A History of the Federal Reserve , vol 1: 1913–1951, Chicago: Chicago University Press.
+Menger, K. (1892). ‘On the origins of money’, Economic Journal, vol. 2(6), pp. 239–55.
+Nishimura, S. (1971). The Decline of Inland Bills of Exchange in the London Money Market, 1855–1913, Cambridge:
+Cambridge University Press.
+North, D.C. and Weingast, B. (1989). ‘Constitutions and commitment: the evolution of institutions governing
+public choice in seventeenth-century England’, Journal of Economic History , vol. 49(4), pp. 803–32.
+Peterson, B. (2004). ‘The effects of trade linkages on dollarization’, CEPR Discussion Paper No. 5529.
+Ravikumar, B. and Wallace, N. (2001). ‘A beneﬁt of uniform currency?’, Pennsylvania State University,
+manuscript.
+Rey, H. (2001). ‘International trade and currency exchange’,Review of Economic Studies, vol. 68(2), pp. 443–64.
+Trejos, A. and Wright, R. (1996). ‘Search-theoretic models of international currency’, Proceedings, Fed-
+eral Reserve Bank of St. Louis, May, pp. 117–32.
+Vanhanen, T. (2000). ‘A new dataset for measuring democracy, 1810–1998’, Journal of Peace Research ,
+vol. 37(2), pp. 251–65.
+von Hayek, F.A. (1976). Denationalization of Money, The Argument Reﬁned , 2nd ed., London: Institute of
+Economic Affairs, 1990.
+Wasserman, S. and Faust, K. (1994). Social Network Analysis. Methods and Applications , Cambridge: Cambridge
+University Press.
+Wright, R. (1995). ‘Search, evolution and money’, Journal of Economic Dynamics and Control , vol. 19(1–2),
+pp. 181–206.
+Wright, R. (1999). ‘A note on asymmetric and mixed strategy equilibria in the search-theoretic model of ﬁat
+money’,Economic Theory, vol. 14(2), pp. 463–71.
+Zhou, R. (1997). ‘Currency exchange in a random search model’, Review of Economic Studies , vol. 64(2),
+pp. 289–310.
+664 [ APRIL 2009]THE ECONOMIC JOURNAL
+/C211The Author(s). Journal compilation /C211Royal Economic Society 2009
+ 14680297, 2009, 537, Downloaded from https://onlinelibrary.wiley.com/doi/10.1111/j.1468-0297.2009.02219.x by University College London UCL Library Services, Wiley Online Library on [08/08/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License

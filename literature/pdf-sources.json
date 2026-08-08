@@ -253,6 +253,33 @@
       ],
       "status": "complete"
     },
+    "FlandreauJobst2009Empirics": {
+      "checks": {
+        "article": "literature/text/2009-FlandreauJobst2009Empirics-the-empirics-of-international-currencies-network-externalities-history-and-persistence.txt",
+        "author_or_repository": "https://repository.graduateinstitute.ch/record/3122",
+        "publisher_or_doi": "https://doi.org/10.1111/j.1468-0297.2009.02219.x"
+      },
+      "companions": [
+        "FlandreauJobst2009EmpiricsCodebook"
+      ],
+      "main": "FlandreauJobst2009Empirics",
+      "non_text_companions": [
+        "https://www.researchgate.net/profile/Clemens-Jobst/publication/263775569_flandreau_jobst_internationalcurrencies_data/data/0a85e53be43abc269d000000/flandreau-jobst-internationalcurrencies-data.txt"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2009-FlandreauJobst2009EmpiricsReplicationData-replication-data.txt",
+          "bytes": 246867,
+          "note": "literature/source-notes/2009-FlandreauJobst2009EmpiricsReplicationData.md",
+          "sha256": "37ce6f701744e7167eafa222eadc291fb7303307a5f256b321c0beed14d8cc54",
+          "sources": [
+            "https://www.researchgate.net/profile/Clemens-Jobst/publication/263775569_flandreau_jobst_internationalcurrencies_data/data/0a85e53be43abc269d000000/flandreau-jobst-internationalcurrencies-data.txt"
+          ],
+          "status": "materialized"
+        }
+      ],
+      "status": "complete"
+    },
     "GriffinShams2020Untethered": {
       "checks": {
         "article": "literature/text/2020-GriffinShams2020Untethered-is-bitcoin-really-untethered.txt",
@@ -267,6 +294,19 @@
       "non_text_companions": [
         "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0002-ReplicationCode.zip",
         "https://web.archive.org/web/20210717202445id_/https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903%26file=jofi12903-sup-0002-ReplicationCode.zip"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2020-GriffinShams2020UntetheredReplicationCode-supplement-replication-code.zip",
+          "bytes": 1335828,
+          "note": "literature/source-notes/2020-GriffinShams2020UntetheredReplicationCode.md",
+          "sha256": "884ad1dc7b43179aca1c30aa9a12f1a46f23cd180344f2fc8adfddacd36d82d5",
+          "sources": [
+            "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0002-ReplicationCode.zip",
+            "https://web.archive.org/web/20210717202445id_/https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903%26file=jofi12903-sup-0002-ReplicationCode.zip"
+          ],
+          "status": "materialized"
+        }
       ],
       "status": "complete"
     },
@@ -306,6 +346,16 @@
       "main": "KleinKozhanViswanathNatrajWang2026InformedLP",
       "status": "complete"
     },
+    "KiyotakiWright1989MoneyMedium": {
+      "checks": {
+        "article": "literature/text/1989-KiyotakiWright1989MoneyMedium-on-money-as-a-medium-of-exchange.txt",
+        "author_or_repository": "https://collaborate.princeton.edu/en/publications/on-money-as-a-medium-of-exchange/",
+        "publisher_or_doi": "https://doi.org/10.1086/261634"
+      },
+      "companions": [],
+      "main": "KiyotakiWright1989MoneyMedium",
+      "status": "complete"
+    },
     "LeharParlour2024Uniswap": {
       "checks": {
         "article": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt",
@@ -316,6 +366,18 @@
       "main": "LeharParlour2024Uniswap",
       "non_text_companions": [
         "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.13405&file=jofi13405-sup-0001-ReplicationCode.zip"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2024-LeharParlour2024UniswapReplicationCode-supplement-replication-code.zip",
+          "bytes": 2033280,
+          "note": "literature/source-notes/2024-LeharParlour2024UniswapReplicationCode.md",
+          "sha256": "10c396148575b4f11a666aaf2ac7898c20ea5e2f9558e7d10bf1ca424d52456e",
+          "sources": [
+            "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.13405&file=jofi13405-sup-0001-ReplicationCode.zip"
+          ],
+          "status": "materialized"
+        }
       ],
       "status": "complete"
     },
@@ -761,6 +823,20 @@
         "label": "Wiley pdfdirect variant",
         "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/j.1468-0297.2009.02219.x",
         "version": "published"
+      },
+      {
+        "access": "authenticated",
+        "label": "Graduate Institute repository version of record",
+        "url": "https://repository.graduateinstitute.ch/record/3122/files/j.1468-0297.2009.02219.x.pdf",
+        "version": "published"
+      }
+    ],
+    "FlandreauJobst2009EmpiricsCodebook": [
+      {
+        "access": "public",
+        "label": "Author-uploaded data codebook and introduction",
+        "url": "https://www.researchgate.net/profile/Clemens-Jobst/publication/263775448_flandreau_jobst_internationalcurrencies_intro/data/02e7e53be4267c724b000000/flandreau-jobst-internationalcurrencies-intro.pdf",
+        "version": "supplement"
       }
     ],
     "Fritsch2021ConcentratedLiquidity": [

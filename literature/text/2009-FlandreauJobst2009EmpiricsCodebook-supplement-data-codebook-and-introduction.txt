@@ -1,0 +1,302 @@
+
+
+===== PAGE 1 =====
+
+Marc Flandreau
+Clemens Jobst
+1
+
+Describing and explaining the international circulation of currencies 1890-1910 –
+The underlying data
+
+Please cite as:
+- When using the network data for 1890, 1900 or 1910:
+Flandreau, M. and C. Jobst (2005), ‘The ties that divide: a network analysis of the
+international monetary system 1890–1910’, Journal of Economic History , vol. 65(4).
+- When using the explanatory variables for 1900:
+Flandreau, M. and C. Jobst (2009), ‘The empirics of international currencies:
+Networks, history and persistence’, The Economic Journal , vol. 119(April).
+
+Introduction
+In the late nineteenth and early twentieth century every national financial centre featured a
+foreign exchange market where bankers bought and sold foreign currency, i.e. ‘bills of
+exchange’ or ‘foreign exchange’, against domestic c urrency. Foreign exchange market
+activity was monitored in local bulletins, which reported fixing prices when relevant.
+Availability of a quote reveals an underlying flow of transactions. The data base allows
+tracking the extent to which currencies circulated abroad and distinguishing between
+currencies with an international circulation from currencies without.
+Data have been collected for the years 1890, 1900 and 1910. The exchange structure matrix is
+complete from an empirical point of view, including virtually all currencies of the world in
+1890-1910. It also has the nice conceptual feature to identify two different exchange markets
+for a given currency pair, corresponding to the home countries of the two currencies involved
+(for a discussion on the operationalization of theories of international currencies see also
+Flandreau and Jobst 2009).
+A currency is considered to be traded in a given foreign country if there is evidence of active
+trading in at least one financial centre within the foreign country:
+(a)  Evidence of active trading: Active trading means that transactions take place regularly.
+If a currency is listed in a stock exchange bulletin but there are never prices quoted or
+quoted prices do not change, the link is coded as 0.
+(b)  In at least one financial centre of the country: This is relevant for countries with
+several foreign exchange centres, which occasionally specialized on particular foreign
+currencies. Countries with several foreign exchange centres include e.g. Germany,
+British India, Italy or the United States. Giving data per foreign exchange centre
+(rather than country) is not feasible as a number of listings aggregate foreign markets
+(e.g. instead of “Antwerp” and “Brussels” they woul d quote “Belgian centres”).
+For further details on data collection and coding see Flandreau and Jobst (2005). In addition
+to the data on foreign exchange trading, available for 1890, 1900 and 1910, the data set
+
+1 For questions contact clemens.jobst@oenb.at .
+
+===== PAGE 2 =====
+
+includes a number of explanatory variables used in the estimations in Flandreau and Jobst
+(2009). Unless stated otherwise all these explanatory variables refer to 1900.
+
+Presentation of the data
+The information on foreign exchange refers to ordered country pairs, i.e. for every country
+pair there are two observations: (1) whether the foreign exchange markets in the first country
+trade the second country’s currency and (2) whether the foreign exchange markets in the
+second country trade the first country’s currency. The data file is structured accordingly. The
+first two columns country_A and country_B identify the country pair, where country_A gives
+the location of the foreign exchange market and country_B the home country of the currency
+traded. There is information on 45 countries/currencies, yielding a total of 45*44 = 1980
+country pairs.
+
+Description of variables and data sources
+A first set of variables, including in the data on foreign exchange markets, refers to ordered
+country pairs, i.e. the entry for these variables is potentially different for (country_A = i,
+country_B = j) and (country_A = j, country_B = i):
+- quote1890 , quote1900 and quote1910 are indicator variables, which are =1 if in
+country_A there is an active market for the currency of country_B in 1890, 1900 and
+1910 respectively, and 0 otherwise.
+- colony is an indicator variable = 1 if country_A is a colony of country_B and 0
+otherwise.
+
+A second set of the variables refers to unordered country pairs, i.e. the observation
+(country_A = i, country_B = j) is the same as (country_A = j, country_B = i).
+- dist  gives the log distance as the crow flies between the cities with foreign exchange
+markets in country_A and country_B. In case foreign exchange markets are situated in
+several cities in country_A or country_B (as e.g. in Germany or the U.S.A.) the
+shortest distance is chosen. For a list of financial centres per country see table below.
+- bitrade  gives total trade between country_A and country_B in thousand US dollars.
+Data for 1900 are taken from Department of Commerce and Labor (1909), available
+under
+http://archive.org/details/cu31924030388791 ). Adjustments have been made to
+ensure conformity between currency areas and territories reporting trade. If trade
+volumes refer to a group of countries (e.g. Austro-Hungarian trade statistics refer to
+“British Australasia” including both Australia and New Zeeland) trade is split up
+according to flows reported from partner countries (e.g. Australia and New Zeeland
+reporting trade with Austria-Hungary in this case) if available or the relative size of
+the partner countries as measured by total trade. Mirror flows (e.g. Austro-Hungarian
+imports from Australia and Australian exports to Austria-Hungary) are harmonized by
+using a simple average. If no data is reported for a particular country pair bilateral
+trade is set to zero in order to avoid a loss of observations due to missing data. While
+trade is not strictly zero in these cases this procedure gives a reasonable approximation
+as trade flows not attributed to specific countries in national statistics are usually very
+small.
+
+
+===== PAGE 3 =====
+
+A third set of variables covers individual country characteristics. In order to facilitate the use
+of the data set for econometric exercises the data set includes these variables twice where
+appropriate: once for country_A (without subscript, e.g. gold for gold standard adherence) and
+once for country_B (with subscript _B, e.g. gold_B). Unless otherwise stated observations for
+individual country variables come from Flandreau and Zumer (2004), available under
+http://eh.net/databases/Finance/ , and complemented from various sources.
+- gold  is an indicator variable =1 if country_A has a currency convertible in gold in
+1900 and 0 otherwise.
+- debtburden  is the ratio of government debt over government revenues in 1900.
+- rlong  is the secondary market yield for gold denominated government debt in 1900.
+- rshort1900  is the market rate for 3 month lending, in most cases the discount rate for
+3 month commercial paper in 1900.
+- rshort1890  same as above for 1890.
+- rgdp  and rgdpcap give the log 1900 real gdp and the log real gdp per capita.
+- poldemo  reproduces the index of democracy (ID) of the Polyarchy dataset developed
+by Vanhanen (2000) for 1900.
+- coverage  is the logarithm of the number of currencies traded in country_A. Coverage
+is used to control for the fact that the extensiveness of coverage of the foreign
+exchange market varies marginally from one national source to the other.
+
+
+Data sources for foreign exchange market data
+The table below gives the list of centres examined for every country and the sources used
+(reproduced from Flandreau and Jobst 2005). TMC and SD refer respectively to Tate’s
+Modern cambist and Sonndorfer followed by the year of the edition used:
+
+Country Markets
+examined
+Sources
+Argentina Buenos Aires La Nacion [1890-1910]
+Bolsa de Comercio de Buenos Aires. Boletin Quincenal de Precios
+Corrientes [1900]
+Memoria de la Camara Sindical de Bolsa de Comercio de Buenos Aires
+correspondiente al año de 1889, and Memoria [...] de 1890 [1890]
+Australia Adelaide,
+Melbourne,
+Sydney
+The Australasian Insurance and Banking Record [1890-1910]
+TMC 1893, 1908
+Austria-Hungary Budapest Pester Lloyd [1890-1900]
+A Budapesti Árú- és Értéktózsde Hivatalos Árjegyzó Lapja [1910]
+Austria-Hungary Vienna Amtliches Cursblatt der Wien er Börse [1890-1910]
+Belgium Antwerp Cote Officielle de la Bourse d’Anve rs [1890-1910]
+Belgium Brussels Cours Authentique. Seul officiel, publié par la commission instituée en
+vertu de la loi du 11 juin 1883 [1890, 1900, 1910]
+Brazil Rio de Janeiro Jornal do Commercio [1890, 19 00, 1910]
+British India Bombay Times of India [1890, 1900, 19 10 (mail edition)]
+British India Calcutta TMC 1893, 1908
+Canada Montreal,
+Toronto
+The Monetary Times [1890-1910]
+The Montreal Gazette
+
+===== PAGE 4 =====
+
+TMC 1908
+Ceylon Colombo SD 1889, 1900, 1905, 1912
+TMC 1908
+Chile Valparaiso,
+Santiago
+El Mercurio [Valparaiso 1890], El Ferrocarril [Santiago 1900, 1910]
+China Shanghai North China Herald [1910]
+Columbia Bogotá SD 1889, 1900
+TMC 1893 1908
+Cuba Havana SD 1889, 1900, 1905, 1912
+TMC 1893 1908
+Denmark Copenhagen Den danske Landsmandsbank Hypthe k og Vekselbank i Kjøbenhavn.
+Börsenkurs d … [1890]
+Privatbanken i Kjøbenhavn (no title) [1900]
+Kjøbenhavns Handelsbank (no title) [1910]
+Dutch East
+Indies (Java)
+Batavia Jaarcijfers uitgegeven door de Centrale Com missie voor de Statistiek.
+Kolonien [1890-1910, volume 1921 for exchange rates with Singapore
+1910]
+SD 1889, 1900, 1905, 1912
+TMC 1893, 1908
+Ecuador Guayaquil SD 1889, 1900, 1905, 1912
+TMC 1908
+Egypt Cairo SD 1889, 1900, 1905, 1912
+TMC 1893, 1908
+Finland Helsingfors TMC 1893, 1908
+France Paris L’Economiste Français [1890-1910]
+La Semaine Financière [1890-1910]
+Germany  Berlin Cours-Bericht (Verlag der Hertel’sc hen Cours-Berichte) [1890]
+Hertel’scher Cours-Bericht [1900, 1910]
+Germany Frankfurt Oeffentliches Börsen-Coursblatt d es Wechselmakler-Syndicats zu
+Frankfurt a. M. [1890]
+Öffentliches Börsen-Kursblatt der Maklerkammer zu Frankfurt a. M.
+[1910]
+Germany Hamburg Amtlicher Kursbericht. Herausgegebe n vom Börsenvorstand [1900, 1910]
+Greece Athens Χ ΡΗ Μ Α ΤΙΣΤΙΡΙΟ Ν  Α Θ Η Ν Ω Ν  [1890, 1900]
+SD 1889, 1900, 1905, 1912
+TMC 1908
+Hong Kong Hong Kong China Mail [1890-1910]
+Indochina Saigon Bulletin de la Chambre de Commerce  de Saigon [1900]
+TMC 1893, 1908
+Italy Florence Estratto del Listino Officiale della  Borsa [1890, 1900]
+Italy Genoa Banca Commerciale Italiana. Corsi di ch iusura della Borsa di Genova del
+… [1910]
+Listino Ufficiale della Borsa di Genova [1910]
+Italy Milan Bollettino ufficiale della Borsa di Mil ano [1890]
+Bollettino ufficiale della Borsa [1900]
+Listino ufficiale della Borsa di Milano [1910]
+Italy Rome Listino officiale della Borsa di Commerc io di Roma [1890]
+Listino ufficiale [sic] della Borsa die Roma [1900, 1910]
+Japan Yokohama Hundred Years Statistics of the Japa nese Economy
+SD1889, 1900, 1905, 1912
+TMC 1908
+Mexico Mexico El Economista Mexicano [1890-1910]
+Netherlands Amsterdam Cours-Officiel de la Bourse  (Publié par le Comité) [1890-1900]
+Cours-Officiel de la Bourse d’Amsterdam (Publié par  le Comité) [1910]
+New Zealand Dunedin The Australasian Insurance and Banking Record [1890-1910]
+Norway Christiana Thon, E. and R. Due. Kristiania B ørs 1819-1919, Et tilbakeblikk ved 100
+aars jubilæet. Christiania, 1919.
+Ramm, H. I næringslivets tjeneste. Christiania Børs 1819-1924. Oslo børs
+1925-1969. Oslo, 1969.
+
+===== PAGE 5 =====
+
+Rygg, N. Norges Banks historie, annen del. Oslo, 1954.
+Øyvind, E., J. T. Klovland and J. Qvigstad. “Histor ical Monetary Statistics
+for Norway 1819-2003.” Norges Banks Occasional Pape rs 35. Oslo, 2004.
+Ottoman Empire Constantinople SD1889, 1900, 1905, 1 912
+TMC 1893, 1908
+(Additional information from the following newspapers: Die Freie Post
+[1899], Osmanischer Lloyd [1913], Iqtiham [1912])
+Persia Teheran, Bushire TMC 1893, 1908
+Peru Lima, Callao SD1889, 1900, 1905, 1912
+TMC 1893, 1908
+Philippines Manila SD1889, 1900, 1905, 1912
+TMC 1893, 1908
+Portugal Lisbon Jornal do Comercio [1890-1910]
+Rumania Bucharest Bursa din Bucuresci. Serviciul “C urierului Financiar” [1900]
+Bursa din Bucuresci. Serviciul Jurnalului “Curierul ui Financiar” [1910]
+SD 1889
+Russia Moscow Cote de la Bourse de Moscou. Edition du Comité de la Bourse de Moscou
+[1910]
+Russia Petersburg Cote officielle de la Bourse de S t. Pétersbourg [1890-1900]
+Russia Warsaw Cote officielle de la Bourse de Varso vie [1890-1910]
+Serbia Beograd SD1889, 1900, 1905, 1912
+Siam Bangkok SD 1905, 1912
+TMC 1893, 1908
+Singapore Singapore TMC 1893, 1908
+Spain Barcelona Cambios Corrientes dados por la Jun ta de Gobernio del Colegio de
+Corredores Reales de comercio de la plaza de Barcelona [1890-1900]
+Boletin Oficial de Cambios Corrientes dados por la Junta de Gobernio del
+Colegio de Corredores Reales de comercio de la plaza de Barcelona [1910]
+Spain Bilbao Boletin de Cotizacion Oficial de la Bo lsa de Comercio de Bilbao [1900-
+1910]
+Spain Madrid Boletin de Cotizacion Oficial de la Bo lsa de Comercio de Madrid [1890-
+1910]
+Sweden Stockholm Post & Inrikes Tidning [1890-1910]
+(Aftonbladet, Dagens Nyheter occasionally)
+Switzerland Basel Basler Börse: Oeffentliches Cours blatt der beeidigten Sensalen [1890]
+Bankverein Suisse. Cours official de la Bourse de Bâle [1900, 1910]
+Switzerland Geneva Bourse de Genève [1890]
+Cote journalière de la Bourse de Genève publié par la Société des Agents
+de Change [1910]
+Switzerland Zurich Kursblatt der Zürcher Effektenbö rse [1900, 1910]
+United Kingdom London The Economist [1880-1910]
+United States Chicago Chicago Tribune [1891-1910]
+United States  New Orleans The Daily Picayune [1882 , 1912]
+United States New York Commercial and Financial Chr onicle, New York Times, Wall Street
+Journal [all 1890-1910]
+SD1889, 1900, 1905, 1912
+United States San Francisco The Bulletin [1890-1910 ]
+Uruguay Montevideo SD 1889, 1900, 1905, 1912
+TMC 1893, 1908
+Venezuela Caracas SD 1889, 1900, 1905, 1912
+TMC 1893, 1908
+
+
+References
+Department of Commerce and Labor (1909), Statistical Abstract of Foreign Countries ,
+Washington.
+
+===== PAGE 6 =====
+
+Easton, H. T. (1908), Tate’s modern cambist: a manual of foreign exchanges and bullion with
+the monetary systems of the world and foreign weights and measures . 24th edition.
+London: Effingham Wilson.
+Flandreau, M. and C. Jobst (2005), ‘The ties that divide: a network analysis of the
+international monetary system 1890–1910’, Journal of Economic History , vol. 65(4).
+Flandreau, M. and C. Jobst (2009), ‘The empirics of international currencies: Networks,
+history and persistence’, The Economic Journal , vol. 119(April).
+Flandreau, M. and F. Zumer (2004), The Making of Global Finance 1880–1914 , OECD
+Development Center monograph, Paris.
+Schmidt, H. (1893), Tate's modern cambist; a manual of foreign exchange and bullion, with
+the moneys and other mediums of exchange of all trading nations; also, tables of
+foreign weights and measures, with their equivalents in English and French . 23rd
+edition. London: E. Wilson & Co.
+Sonndorfer, R. (1889), Die Technik des Welthandels. Handbuch der internationalen
+Handelskunde für Kaufleute . Vienna: Hölder.
+Sonndorfer, R. (1900), Die Technik des Welthandels. Handbuch der internationalen
+Handelskunde für Kaufleute , 2nd edition. Vienna: Hölder.
+Sonndorfer, R. (1905), Die Technik des Welthandels. Handbuch der internationalen
+Handelskunde für Kaufleute, Ex- und Importeure . 3rd edition. Vienna: Hölder.
+Sonndorfer, R. (1912), Technik des Welthandels. Handbuch der internationalen
+Handelskunde . 4th edition edited by Klemens Ottel. Vienna and Leipzig: Hölder.
+Vanhanen, T. (2000), ‘A new dataset for measuring democracy, 1810–1998’, Journal of
+Peace Research , vol. 37(2).
