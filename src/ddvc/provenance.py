@@ -313,6 +313,59 @@ def sidecar_path(artefact: str | Path) -> Path:
     return MANIFESTS / rel.with_suffix(rel.suffix + ".prov.json")
 
 
+def ensure_released_directory_alias(
+    artefact: str | Path,
+    *,
+    expected: str | Path,
+    under: str | Path,
+) -> Path | None:
+    """Alias a semantically current released cache to its new byte-keyed name.
+
+    Cache directories use exact source bytes in their names, while ``verify`` can prove
+    that an older release differs only in comments, formatting, or docstrings. Without
+    this bridge, a documentation edit makes consumers look in an empty cache and can
+    trigger a duplicate full rebuild. The released artefact's input record is the sole
+    authority for the old directory; an executable or input change makes ``verify``
+    stale and therefore cannot be aliased.
+
+    Existing paths are never replaced. The alias is relative and contains no copied
+    data, so a later executable generation remains separate and auditable.
+    """
+    expected_path = Path(expected)
+    if expected_path.exists() or expected_path.is_symlink():
+        return None
+    perimeter = Path(under).resolve()
+    verdict = verify(artefact)
+    if verdict.get("status") != "ok":
+        raise RuntimeError(
+            f"cannot alias a non-current release: {verdict.get('status')}"
+        )
+    record = json.loads(sidecar_path(artefact).read_text(encoding="utf-8"))
+    candidates = []
+    for item in record.get("inputs") or []:
+        candidate = _recorded_input_path(item)
+        if (
+            candidate.parent.resolve() == perimeter
+            and candidate.name.startswith("engine_")
+            and candidate.is_dir()
+        ):
+            candidates.append(candidate)
+    if len(candidates) != 1:
+        raise RuntimeError(
+            f"released cache record has {len(candidates)} engine directories under {perimeter}"
+        )
+    recorded = candidates[0]
+    expected_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        expected_path.symlink_to(
+            os.path.relpath(recorded, start=expected_path.parent),
+            target_is_directory=True,
+        )
+    except FileExistsError:
+        return None
+    return recorded
+
+
 def stamp(artefact: str | Path, *, code_sources: list[str],
           inputs: list[str | Path] | None = None, rows: int | None = None,
           notes: str | None = None, script: str | None = None) -> Path:

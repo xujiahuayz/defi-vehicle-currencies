@@ -52,7 +52,6 @@ import pandas as pd
 
 from ddvc.analysis.regression import mean_clustered
 from ddvc.asset_types import WETH, classify
-from ddvc.calendar import nearest_day_per_month
 from ddvc.data_release import require_node_d_release
 from ddvc.cpquote import (
     Pool,
@@ -67,7 +66,7 @@ from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.pricing.v2_replay import V2_VENUES, load_v2_replay_day
 from ddvc.provenance import require_current_artifacts
 from ddvc.route_gas import GAS_ESTIMATE_COLUMNS, estimate_route_gas
-from ddvc.runtime import exclusive_job
+from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.state_data import STATE_ROOT
 from ddvc.tables import write_exhibit, write_panel
 
@@ -111,8 +110,8 @@ def target_price_usd(
 def counterfactual_days(
     available: list[str], *, explicit: list[str] | None = None, limit: int | None = None
 ) -> list[str]:
-    """Select one audit day per month, or exact explicit validation days."""
-    days = list(dict.fromkeys(explicit)) if explicit else nearest_day_per_month(available)
+    """Select the full daily calendar, or exact explicit validation days."""
+    days = list(dict.fromkeys(explicit)) if explicit else sorted(set(available))
     return days[:limit] if limit is not None else days
 
 
@@ -567,6 +566,7 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", nargs="+", help="explicit YYYYMMDD days")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
     require_node_d_release(routes=True, market_state=True)
@@ -584,13 +584,19 @@ def main() -> int:
     print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
 
     parts = []
-    for d in days:
-        r = one_day(d)
-        if r is not None and len(r):
-            parts.append(r)
-            print(f"  {d}: {len(r):,} comparable two-leg routes", flush=True)
-        else:
-            print(f"  {d}: none", flush=True)
+    comparable = 0
+    with interruptible_process_pool(bounded_workers(args.workers, maximum=8)) as pool:
+        results = pool.map(one_day, days, chunksize=1)
+        for index, (day, result) in enumerate(zip(days, results, strict=True), 1):
+            if result is not None and len(result):
+                parts.append(result)
+                comparable += len(result)
+            if index % 25 == 0 or index == len(days):
+                print(
+                    f"  [{index:,}/{len(days):,}] through {day}: "
+                    f"{comparable:,} comparable two-leg routes",
+                    flush=True,
+                )
     if not parts:
         print("no comparable routes")
         return 1

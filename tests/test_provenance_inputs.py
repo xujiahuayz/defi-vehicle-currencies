@@ -10,6 +10,7 @@ from ddvc.provenance import (
     _legacy_semantic_compatible,
     cache_key,
     describe_input,
+    ensure_released_directory_alias,
     git_state,
     input_matches,
     require_current_artifacts,
@@ -18,6 +19,37 @@ from ddvc.provenance import (
 
 
 class ProvenanceInputTests(unittest.TestCase):
+    @patch("ddvc.provenance.verify", return_value={"status": "ok"})
+    @patch("ddvc.provenance.sidecar_path")
+    def test_documentation_only_release_aliases_recorded_engine_without_copying(
+        self, sidecar_path, _verify
+    ) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            perimeter = root / "cache"
+            released = perimeter / "engine_released"
+            expected = perimeter / "engine_current"
+            released.mkdir(parents=True)
+            marker = root / "release.prov.json"
+            marker.write_text(
+                '{"inputs": [{"path": "' + str(released) + '"}]}',
+                encoding="utf-8",
+            )
+            sidecar_path.return_value = marker
+
+            actual = ensure_released_directory_alias(
+                root / "release.parquet", expected=expected, under=perimeter
+            )
+
+            self.assertEqual(actual, released)
+            self.assertTrue(expected.is_symlink())
+            self.assertEqual(expected.resolve(), released.resolve())
+            self.assertIsNone(
+                ensure_released_directory_alias(
+                    root / "release.parquet", expected=expected, under=perimeter
+                )
+            )
+
     def test_semantic_fingerprint_ignores_docstrings_but_not_code(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

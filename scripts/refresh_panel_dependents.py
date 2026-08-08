@@ -33,14 +33,15 @@ import sys
 import time
 from pathlib import Path
 
-from ddvc.paths import SHARED_RUNTIME_DIR
-from ddvc.provenance import verify
+from ddvc.paths import DATA_DIR, SHARED_RUNTIME_DIR
+from ddvc.provenance import ensure_released_directory_alias, verify
 from ddvc.runtime import exclusive_job
 
 ROOT = Path(__file__).resolve().parents[1]
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 LOGS = ROOT / "logs" / "refresh"
 REFRESH_LOCK = SHARED_RUNTIME_DIR / "panel-dependent-refresh.lock"
+MARKET_STATE_LOCK = DATA_DIR / "processed" / ".market_state.lock"
 
 # (script, args, why it sits here in the order). Withheld scripts are deliberately absent;
 # `audit_findings_freeze.py` tests that they do not silently return.
@@ -108,8 +109,8 @@ CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
     ),
     (
         "build_counterfactual_dominance.py",
-        ["--panel-only"],
-        "legacy-support comparison retained as a bounded diagnostic",
+        ["--workers", "4", "--panel-only"],
+        "full-daily legacy-support comparison retained as a bounded diagnostic",
         ("data/processed/counterfactual_dominance.parquet",),
     ),
 ]
@@ -243,6 +244,21 @@ def main() -> int:
         return 0
 
     if args.scope in {"claim-inputs", "all"}:
+        from ddvc.data_release import MARKET_STATE_QUALITY_PANEL
+        from ddvc.state_data import STATE_ROOT
+
+        with exclusive_job(MARKET_STATE_LOCK, job="released market-state cache alias"):
+            released = ensure_released_directory_alias(
+                MARKET_STATE_QUALITY_PANEL,
+                expected=STATE_ROOT,
+                under=DATA_DIR / "processed" / "market_state",
+            )
+        if released is not None:
+            print(
+                f"verified documentation-only cache transition: {STATE_ROOT.name} "
+                f"aliases released {released.name}",
+                flush=True,
+            )
         ready, bad = current_artifacts(DAILY_FRONTIER_PREREQUISITES)
         if not ready:
             print(f"REFUSING: full-daily transaction frontier is incomplete or stale: {bad}")
