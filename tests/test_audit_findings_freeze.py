@@ -21,6 +21,7 @@ from scripts.audit_findings_freeze import (
     route_measurement_invariants,
     source_materialized,
     source_set_record_closed,
+    transaction_frontier_artifact_checks,
     transaction_frontier_support_checks,
     validate_literature_audit,
     validate_canonical_consumer_boundary,
@@ -184,6 +185,69 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         self.assertTrue(checks["transaction frontier row contract"][0])
         self.assertTrue(checks["transaction frontier chosen-output validation"][0])
         self.assertFalse(checks["transaction frontier audit-day coverage"][0])
+
+    def test_daily_frontier_gate_requires_all_artifacts_and_full_calendar(self) -> None:
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as directory:
+            root = Path(directory)
+            panel = root / "daily.parquet"
+            rejections = root / "daily_rejections.parquet"
+            support = root / "daily_support.parquet"
+            pd.DataFrame({"day": ["20200211"], "route_id": ["accepted"]}).to_parquet(
+                panel, index=False
+            )
+            pd.DataFrame({"day": ["20200211"], "route_id": ["rejected"]}).to_parquet(
+                rejections, index=False
+            )
+            pd.DataFrame(
+                {
+                    "day": ["20200211"],
+                    "scored_routes": [1],
+                    "rejected_routes": [1],
+                    "exact_venue_two_leg_routes": [2],
+                    "invalid_realised_input": [0],
+                    "invalid_realised_output": [0],
+                    "invalid_chosen_output": [0],
+                    "within_20pct_chosen_quote_available": [1],
+                    "within_20pct_chosen_output_mismatch": [0],
+                }
+            ).to_parquet(support, index=False)
+            with patch(
+                "scripts.audit_findings_freeze.verify",
+                return_value={"status": "ok"},
+            ):
+                checks = {
+                    name: (passed, detail)
+                    for name, passed, detail in transaction_frontier_artifact_checks(
+                        panel,
+                        rejections,
+                        support,
+                        prefix="transaction frontier daily",
+                        coverage_label="calendar",
+                        expected_days=1,
+                        first_day="20200211",
+                        last_day="20200211",
+                    )
+                }
+            self.assertTrue(checks["transaction frontier daily provenance current"][0])
+            self.assertTrue(checks["transaction frontier daily row contract"][0])
+            self.assertTrue(checks["transaction frontier daily calendar coverage"][0])
+            support.unlink()
+            missing = transaction_frontier_artifact_checks(
+                panel,
+                rejections,
+                support,
+                prefix="transaction frontier daily",
+                coverage_label="calendar",
+                expected_days=1,
+                first_day="20200211",
+                last_day="20200211",
+            )
+            self.assertEqual(missing[0][0], "transaction frontier daily exists")
+            self.assertFalse(missing[0][1])
 
     def test_literature_gate_requires_individual_verified_cards(self) -> None:
         text = """---

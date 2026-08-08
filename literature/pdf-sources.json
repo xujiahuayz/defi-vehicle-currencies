@@ -519,6 +519,21 @@
         "Nagel2012EvaporatingLiquidityAppendix"
       ],
       "main": "Nagel2012EvaporatingLiquidity",
+      "non_text_companions": [
+        "https://voices.uchicago.edu/stefannagel/files/2021/06/allretout.csv"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2012-Nagel2012EvaporatingLiquidityData-supplement-daily-reversal-returns.csv",
+          "bytes": 65901,
+          "note": "literature/source-notes/2012-Nagel2012EvaporatingLiquidityData.md",
+          "sha256": "2d75079d2df825ed363160ef5f9bafa9afe52ed0520d515d171fc1fc35acc8c7",
+          "sources": [
+            "https://voices.uchicago.edu/stefannagel/files/2021/06/allretout.csv"
+          ],
+          "status": "materialized"
+        }
+      ],
       "status": "complete"
     },
     "Somogyi2026DollarDominanceFX": {

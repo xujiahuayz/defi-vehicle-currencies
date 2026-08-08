@@ -35,6 +35,9 @@ CROSS_VENUE = ROOT / "data" / "processed" / "cross_venue_routing_daily.parquet"
 TRANSACTION_FRONTIER = ROOT / "data" / "processed" / "transaction_state_frontier_audit.parquet"
 TRANSACTION_FRONTIER_REJECTIONS = ROOT / "data" / "processed" / "transaction_state_frontier_audit_rejections.parquet"
 TRANSACTION_FRONTIER_SUPPORT = ROOT / "output" / "exhibits" / "transaction_state_frontier_audit_support.jsonl"
+TRANSACTION_FRONTIER_DAILY = ROOT / "data" / "processed" / "transaction_state_frontier_daily.parquet"
+TRANSACTION_FRONTIER_DAILY_REJECTIONS = ROOT / "data" / "processed" / "transaction_state_frontier_daily_rejections.parquet"
+TRANSACTION_FRONTIER_DAILY_SUPPORT = ROOT / "data" / "processed" / "transaction_state_frontier_daily_support.parquet"
 V4 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v4"
 REFRESH = ROOT / "scripts" / "refresh_panel_dependents.py"
 STATE = ROOT / "docs" / "findings-freeze.md"
@@ -853,8 +856,13 @@ def transaction_frontier_support_checks(
     *,
     panel_rows: int,
     rejection_rows: int,
+    prefix: str = "transaction frontier",
+    coverage_label: str = "audit-day",
+    expected_days: int = 77,
+    first_day: str = "20200214",
+    last_day: str = "20260615",
 ) -> list[tuple[str, bool, str]]:
-    """Validate the fixed-calendar frontier funnel and chosen-output reproduction."""
+    """Validate one frontier's fixed calendar, funnel and chosen-output reproduction."""
     required = {
         "day",
         "scored_routes",
@@ -868,7 +876,7 @@ def transaction_frontier_support_checks(
     }
     missing = sorted(required - set(support.columns))
     if missing:
-        return [("transaction frontier support schema", False, f"missing={missing}")]
+        return [(f"{prefix} support schema", False, f"missing={missing}")]
     days = sorted(support["day"].astype(str).unique())
     scored = int(pd.to_numeric(support["scored_routes"], errors="coerce").sum())
     rejected = int(pd.to_numeric(support["rejected_routes"], errors="coerce").sum())
@@ -888,22 +896,69 @@ def transaction_frontier_support_checks(
     reproduction = chosen_reproduction_share(available, mismatches)
     return [
         (
-            "transaction frontier row contract",
+            f"{prefix} row contract",
             scored == panel_rows and rejected == rejection_rows and scored + rejected == exact,
             f"scored panel={panel_rows:,}; support={scored:,}; "
             f"rejections={rejection_rows:,}; support={rejected:,}; exact={exact:,}",
         ),
         (
-            "transaction frontier chosen-output validation",
+            f"{prefix} chosen-output validation",
             reproduction >= MIN_CHOSEN_REPRODUCTION,
             f"coherent={available:,}; mismatches={mismatches:,}; pass={reproduction:.2%}",
         ),
         (
-            "transaction frontier audit-day coverage",
-            len(days) == 77 and days[0] == "20200214" and days[-1] == "20260615",
+            f"{prefix} {coverage_label} coverage",
+            len(days) == expected_days
+            and bool(days)
+            and days[0] == first_day
+            and days[-1] == last_day,
             f"days={len(days)}; range={days[0] if days else 'none'}..{days[-1] if days else 'none'}",
         ),
     ]
+
+
+def transaction_frontier_artifact_checks(
+    panel: Path,
+    rejections: Path,
+    support: Path,
+    *,
+    prefix: str,
+    coverage_label: str,
+    expected_days: int,
+    first_day: str,
+    last_day: str,
+) -> list[tuple[str, bool, str]]:
+    """Require all three published artifacts, current provenance and reconciled counts."""
+    artifacts = (panel, rejections, support)
+    missing = [str(path.relative_to(ROOT)) for path in artifacts if not path.exists()]
+    if missing:
+        return [(f"{prefix} exists", False, f"missing={missing}")]
+    verdicts = {path.name: verify(path).get("status") for path in artifacts}
+    checks = [
+        (
+            f"{prefix} provenance current",
+            all(status == "ok" for status in verdicts.values()),
+            "; ".join(f"{name}={status}" for name, status in verdicts.items()),
+        )
+    ]
+    support_frame = (
+        pd.read_json(support, lines=True)
+        if support.suffix == ".jsonl"
+        else pd.read_parquet(support)
+    )
+    checks.extend(
+        transaction_frontier_support_checks(
+            support_frame,
+            panel_rows=pq.ParquetFile(panel).metadata.num_rows,
+            rejection_rows=pq.ParquetFile(rejections).metadata.num_rows,
+            prefix=prefix,
+            coverage_label=coverage_label,
+            expected_days=expected_days,
+            first_day=first_day,
+            last_day=last_day,
+        )
+    )
+    return checks
 
 
 def route_measurement_invariants(
@@ -1228,53 +1283,29 @@ def main() -> int:
     else:
         record("route-cost panel exists", False, str(PANEL.relative_to(ROOT)))
 
-    if (
-        TRANSACTION_FRONTIER.exists()
-        and TRANSACTION_FRONTIER_REJECTIONS.exists()
-        and TRANSACTION_FRONTIER_SUPPORT.exists()
+    for name, passed, detail in transaction_frontier_artifact_checks(
+        TRANSACTION_FRONTIER,
+        TRANSACTION_FRONTIER_REJECTIONS,
+        TRANSACTION_FRONTIER_SUPPORT,
+        prefix="transaction frontier",
+        coverage_label="audit-day",
+        expected_days=77,
+        first_day="20200214",
+        last_day="20260615",
     ):
-        frontier_rows = pq.ParquetFile(TRANSACTION_FRONTIER).metadata.num_rows
-        frontier_rejection_rows = pq.ParquetFile(
-            TRANSACTION_FRONTIER_REJECTIONS
-        ).metadata.num_rows
-        frontier_verdicts = {
-            TRANSACTION_FRONTIER.name: verify(TRANSACTION_FRONTIER).get("status"),
-            TRANSACTION_FRONTIER_REJECTIONS.name: verify(
-                TRANSACTION_FRONTIER_REJECTIONS
-            ).get("status"),
-            TRANSACTION_FRONTIER_SUPPORT.name: verify(
-                TRANSACTION_FRONTIER_SUPPORT
-            ).get("status"),
-        }
-        record(
-            "transaction frontier provenance current",
-            all(status == "ok" for status in frontier_verdicts.values()),
-            "; ".join(
-                f"{name}={status}" for name, status in frontier_verdicts.items()
-            ),
-        )
-        frontier_support = pd.read_json(TRANSACTION_FRONTIER_SUPPORT, lines=True)
-        for name, passed, detail in transaction_frontier_support_checks(
-            frontier_support,
-            panel_rows=frontier_rows,
-            rejection_rows=frontier_rejection_rows,
-        ):
-            record(name, passed, detail)
-    else:
-        missing_frontier = [
-            str(path.relative_to(ROOT))
-            for path in (
-                TRANSACTION_FRONTIER,
-                TRANSACTION_FRONTIER_REJECTIONS,
-                TRANSACTION_FRONTIER_SUPPORT,
-            )
-            if not path.exists()
-        ]
-        record(
-            "transaction frontier exists",
-            False,
-            f"missing={missing_frontier}",
-        )
+        record(name, passed, detail)
+
+    for name, passed, detail in transaction_frontier_artifact_checks(
+        TRANSACTION_FRONTIER_DAILY,
+        TRANSACTION_FRONTIER_DAILY_REJECTIONS,
+        TRANSACTION_FRONTIER_DAILY_SUPPORT,
+        prefix="transaction frontier daily",
+        coverage_label="calendar",
+        expected_days=len(calendar_days(RESEARCH_SAMPLE_START, RESEARCH_SAMPLE_END)),
+        first_day=RESEARCH_SAMPLE_START,
+        last_day=RESEARCH_SAMPLE_END,
+    ):
+        record(name, passed, detail)
 
     if EXTENT.exists():
         con = duckdb.connect()
