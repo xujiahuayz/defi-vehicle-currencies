@@ -11,11 +11,15 @@ from unittest.mock import patch
 
 import ddvc.literature_sources as literature_sources
 from ddvc.literature_sources import (
+    Entry,
     existing_files_for_key,
     file_version,
     install_pdf,
+    partition_existing_by_identity,
+    pdf_identity_verdict,
     preferred_existing_file,
     remove_weaker_versions,
+    source_identity_verdict,
     source_keys_lock,
     write_manifest_records,
 )
@@ -50,7 +54,46 @@ class LiteratureBrowserHelperTests(unittest.TestCase):
                     (True, "installed"),
                 )
             urlopen.assert_not_called()
-            install.assert_called_once_with(target, b"%PDF-1.7\ncomplete", False)
+            install.assert_called_once_with(target, b"%PDF-1.7\ncomplete", False, entry=None)
+
+    def test_source_identity_rejects_wrong_pdf_with_valid_magic(self) -> None:
+        entry = Entry(
+            key="KiyotakiWright1989MoneyMedium",
+            kind="article",
+            fields={
+                "title": "On Money as a Medium of Exchange",
+                "author": "Nobuhiro Kiyotaki and Randall Wright",
+            },
+        )
+        self.assertEqual(
+            source_identity_verdict(
+                entry,
+                "2026 CATALOG Returning to Chicago: Renaissance Quarterly",
+            )[0],
+            False,
+        )
+        self.assertEqual(
+            source_identity_verdict(
+                entry,
+                "On Money as a Medium of Exchange by Nobuhiro Kiyotaki and Randall Wright",
+            )[0],
+            True,
+        )
+
+    def test_partition_existing_quarantines_identity_mismatch(self) -> None:
+        entry = Entry("Paper", "article", {"title": "Market Liquidity", "author": "Ada Smith"})
+        with tempfile.TemporaryDirectory() as directory:
+            valid = Path(directory) / "valid.pdf"
+            invalid = Path(directory) / "invalid.pdf"
+            valid.write_bytes(b"%PDF-valid")
+            invalid.write_bytes(b"%PDF-invalid")
+            with patch(
+                "ddvc.literature_sources.pdf_identity_verdict",
+                side_effect=[(True, "matched"), (False, "wrong title")],
+            ):
+                accepted, rejected = partition_existing_by_identity([valid, invalid], entry)
+        self.assertEqual(accepted, [valid])
+        self.assertEqual(rejected, [(invalid, "wrong title")])
 
     def test_incremental_direct_reader_enforces_total_deadline(self) -> None:
         direct = load_script("fetch_literature")
@@ -170,6 +213,20 @@ class LiteratureBrowserHelperTests(unittest.TestCase):
         self.assertIs(direct.load_source_registry, browser.load_source_registry)
         self.assertIs(direct.default_sources_from_bib, browser.default_sources_from_bib)
         self.assertIs(direct.ordered_sources, browser.ordered_sources)
+        self.assertIs(direct.partition_existing_by_identity, browser.partition_existing_by_identity)
+        self.assertIs(direct.remove_local_and_mirrored, browser.remove_local_and_mirrored)
+
+    def test_install_rejects_identity_mismatch_before_writing(self) -> None:
+        entry = Entry("Paper", "article", {"title": "Market Liquidity", "author": "Ada Smith"})
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "paper.pdf"
+            with patch(
+                "ddvc.literature_sources.pdf_identity_verdict",
+                return_value=(False, "title=0/2; author=none"),
+            ):
+                with self.assertRaisesRegex(ValueError, "identity mismatch"):
+                    install_pdf(target, b"%PDF-wrong", False, entry=entry)
+            self.assertFalse(target.exists())
 
     def test_pdf_install_mirrors_to_primary_checkout(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

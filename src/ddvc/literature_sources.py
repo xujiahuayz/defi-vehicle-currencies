@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fcntl
 import hashlib
+import io
 import json
 import re
 import urllib.parse
@@ -18,6 +19,25 @@ from ddvc.runtime import atomic_output
 
 
 WEAKER_VERSIONS = frozenset({"working-paper", "preprint", "accepted"})
+TITLE_STOPWORDS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "as",
+        "at",
+        "for",
+        "from",
+        "in",
+        "into",
+        "of",
+        "on",
+        "or",
+        "the",
+        "to",
+        "with",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -190,6 +210,71 @@ def is_pdf(data: bytes) -> bool:
     return data.startswith(b"%PDF")
 
 
+def _identity_words(value: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", re.sub(r"[{}\\]", " ", value.lower()))
+
+
+def _author_surnames(author_field: str) -> set[str]:
+    surnames: set[str] = set()
+    for author in re.split(r"\s+and\s+", author_field, flags=re.IGNORECASE):
+        words = _identity_words(author.partition(",")[0] if "," in author else author)
+        if words:
+            surnames.add(words[0] if "," in author else words[-1])
+    return surnames
+
+
+def source_identity_verdict(entry: Entry, extracted_text: str) -> tuple[bool, str]:
+    """Require title overlap and an author surname before accepting a PDF."""
+    observed = set(_identity_words(extracted_text))
+    title_words = {
+        word
+        for word in _identity_words(entry.fields.get("title", entry.key))
+        if len(word) >= 3 and word not in TITLE_STOPWORDS
+    }
+    author_surnames = _author_surnames(entry.fields.get("author", ""))
+    title_hits = len(title_words & observed)
+    title_required = max(1, (len(title_words) + 1) // 2)
+    author_hits = author_surnames & observed
+    passed = bool(title_hits >= title_required or (title_hits and author_hits))
+    return passed, (
+        f"title={title_hits}/{len(title_words)} (required={title_required}); "
+        f"author={','.join(sorted(author_hits)) or 'none'}"
+    )
+
+
+def pdf_identity_verdict(data: bytes, entry: Entry, *, page_limit: int = 5) -> tuple[bool, str]:
+    """Extract a bounded PDF header and verify it against bibliography identity."""
+    if not is_pdf(data):
+        return False, "not-pdf"
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(io.BytesIO(data))
+        extracted = "\n".join(
+            (page.extract_text() or "")
+            for page in reader.pages[:page_limit]
+        )
+    except Exception as exc:  # invalid or image-only sources need a manual verified route
+        return False, f"identity-extraction-{type(exc).__name__}"
+    return source_identity_verdict(entry, extracted)
+
+
+def partition_existing_by_identity(
+    existing: Iterable[Path],
+    entry: Entry,
+) -> tuple[list[Path], list[tuple[Path, str]]]:
+    """Separate reusable literature PDFs from wrong or unverifiable artifacts."""
+    valid: list[Path] = []
+    invalid: list[tuple[Path, str]] = []
+    for path in existing:
+        passed, detail = pdf_identity_verdict(path.read_bytes(), entry)
+        if passed:
+            valid.append(path)
+        else:
+            invalid.append((path, detail))
+    return valid, invalid
+
+
 def existing_files_for_key(out_dir: Path, key: str) -> list[Path]:
     """Return only files whose canonical filename contains the exact bibliography key."""
     return sorted(out_dir.glob(f"*-{key}-*.pdf"))
@@ -259,12 +344,17 @@ def install_pdf(
     data: bytes,
     overwrite: bool,
     *,
+    entry: Entry | None = None,
     repo_root: Path = REPO_ROOT,
     primary_root: Path = PRIMARY_REPO_ROOT,
 ) -> str:
     """Validate, atomically install, and primary-mirror one literature PDF."""
     if not is_pdf(data):
         raise ValueError("source payload is not a PDF")
+    if entry is not None:
+        matched, detail = pdf_identity_verdict(data, entry)
+        if not matched:
+            raise ValueError(f"source PDF identity mismatch for {entry.key}: {detail}")
     if path.exists() and not overwrite:
         mirror_validated_pdf(path, repo_root=repo_root, primary_root=primary_root)
         return "exists"
@@ -272,6 +362,27 @@ def install_pdf(
         temporary.write_bytes(data)
     mirror_validated_pdf(path, repo_root=repo_root, primary_root=primary_root)
     return f"{len(data)} bytes"
+
+
+def remove_local_and_mirrored(
+    paths: Iterable[Path],
+    *,
+    keep: Path,
+    repo_root: Path = REPO_ROOT,
+    primary_root: Path = PRIMARY_REPO_ROOT,
+) -> list[Path]:
+    """Remove verified-invalid or superseded files from both literature mirrors."""
+    removed: list[Path] = []
+    for path in paths:
+        if path == keep:
+            continue
+        path.unlink(missing_ok=True)
+        removed.append(path)
+        mirror = primary_mirror_path(path, repo_root=repo_root, primary_root=primary_root)
+        if mirror is not None and mirror.exists():
+            mirror.unlink()
+            removed.append(mirror)
+    return removed
 
 
 def remove_weaker_versions(
@@ -283,19 +394,14 @@ def remove_weaker_versions(
     primary_root: Path = PRIMARY_REPO_ROOT,
 ) -> list[Path]:
     """Remove superseded local and primary-mirror copies after a published source lands."""
-    removed: list[Path] = []
     if source_version != "published":
-        return removed
-    for path in existing:
-        if path == target or file_version(path) not in WEAKER_VERSIONS:
-            continue
-        path.unlink(missing_ok=True)
-        removed.append(path)
-        mirror = primary_mirror_path(path, repo_root=repo_root, primary_root=primary_root)
-        if mirror is not None and mirror.exists():
-            mirror.unlink()
-            removed.append(mirror)
-    return removed
+        return []
+    return remove_local_and_mirrored(
+        (path for path in existing if file_version(path) in WEAKER_VERSIONS),
+        keep=target,
+        repo_root=repo_root,
+        primary_root=primary_root,
+    )
 
 
 def write_manifest_records(

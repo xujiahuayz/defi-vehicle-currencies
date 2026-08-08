@@ -37,7 +37,9 @@ from ddvc.literature_sources import (  # noqa: E402
     openathens_url,
     ordered_sources,
     parse_bibtex,
+    partition_existing_by_identity,
     preferred_existing_file,
+    remove_local_and_mirrored,
     remove_weaker_versions,
     safe_filename,
     should_replace_existing,
@@ -768,6 +770,9 @@ def main() -> int:
                     source,
                 )
                 existing = existing_files_for_key(args.out, key)
+                existing, rejected = partition_existing_by_identity(existing, entry)
+                for rejected_path, reason in rejected:
+                    print(f"reject {key}: {rejected_path.relative_to(REPO_ROOT)} ({reason})")
                 if existing and not should_replace_existing(existing, source, args.overwrite):
                     existing_file = preferred_existing_file(existing)
                     remove_weaker_versions(existing, file_version(existing_file), existing_file)
@@ -798,7 +803,22 @@ def main() -> int:
                     executable_path=args.executable_path,
                 )
                 if data:
-                    saved = install_pdf(target, data, args.overwrite)
+                    try:
+                        saved = install_pdf(
+                            target,
+                            data,
+                            args.overwrite or any(path == target for path, _ in rejected),
+                            entry=entry,
+                        )
+                    except ValueError as exc:
+                        detail = str(exc)
+                        attempts.append(attempt_record(source, detail))
+                        print(f"miss {key} [{index}/{len(sources)}] {source.version}: {detail}", flush=True)
+                        continue
+                    remove_local_and_mirrored(
+                        (path for path, _ in rejected),
+                        keep=target,
+                    )
                     remove_weaker_versions(existing, source.version, target)
                     print(f"ok {key}: {target.relative_to(REPO_ROOT)} ({source.version}, {saved})")
                     records.append(

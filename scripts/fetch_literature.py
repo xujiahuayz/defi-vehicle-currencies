@@ -44,7 +44,9 @@ from ddvc.literature_sources import (  # noqa: E402
     mirror_validated_pdf,
     ordered_sources,
     parse_bibtex,
+    partition_existing_by_identity,
     preferred_existing_file,
+    remove_local_and_mirrored,
     remove_weaker_versions,
     safe_filename,
     should_replace_existing,
@@ -130,7 +132,13 @@ def request(url: str, headers: dict[str, str]) -> urllib.request.Request:
     return urllib.request.Request(url, headers=headers)
 
 
-def download(url: str, target: Path, headers: dict[str, str], overwrite: bool) -> tuple[bool, str]:
+def download(
+    url: str,
+    target: Path,
+    headers: dict[str, str],
+    overwrite: bool,
+    entry: Entry | None = None,
+) -> tuple[bool, str]:
     if target.exists() and not overwrite:
         mirror_validated_pdf(target)
         return True, "exists"
@@ -140,7 +148,7 @@ def download(url: str, target: Path, headers: dict[str, str], overwrite: bool) -
             data = read_response_with_deadline(response, timeout_seconds=120)
     if not is_pdf(data):
         return False, "not-pdf"
-    return True, install_pdf(target, data, overwrite)
+    return True, install_pdf(target, data, overwrite, entry=entry)
 
 
 def read_response_with_deadline(
@@ -215,6 +223,9 @@ def fetch_all(
                 source,
             )
             existing = existing_files_for_key(out_dir, key)
+            existing, rejected = partition_existing_by_identity(existing, entry)
+            for rejected_path, reason in rejected:
+                print(f"reject {key}: {rejected_path.relative_to(REPO_ROOT)} ({reason})")
             if existing and not should_replace_existing(existing, source, overwrite):
                 existing_file = preferred_existing_file(existing)
                 remove_weaker_versions(existing, file_version(existing_file), existing_file)
@@ -235,7 +246,13 @@ def fetch_all(
                 break
             headers = headers_for(source.url, global_headers, domain_headers)
             try:
-                ok, detail = download(source.url, target, headers, overwrite)
+                ok, detail = download(
+                    source.url,
+                    target,
+                    headers,
+                    overwrite or any(path == target for path, _ in rejected),
+                    entry,
+                )
             except urllib.error.HTTPError as exc:
                 detail = f"HTTP {exc.code}"
                 attempts.append(attempt_record(source, detail))
@@ -246,6 +263,10 @@ def fetch_all(
                 print(f"try {key} [{index}/{len(sources)}] {source.version}: {detail} {source.url}")
             else:
                 if ok:
+                    remove_local_and_mirrored(
+                        (path for path, _ in rejected),
+                        keep=target,
+                    )
                     remove_weaker_versions(existing, source.version, target)
                     print(f"ok {key}: {target.relative_to(REPO_ROOT)} ({source.version}, {detail})")
                     records.append(
