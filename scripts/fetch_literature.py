@@ -22,18 +22,36 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import shutil
 import subprocess
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from ddvc.http import DEFAULT_USER_AGENT  # noqa: E402
+from ddvc.literature_sources import (  # noqa: E402
+    Entry,
+    Source,
+    default_sources_from_bib,
+    existing_files_for_key,
+    file_version,
+    install_pdf,
+    is_pdf,
+    load_source_registry,
+    mirror_validated_pdf,
+    ordered_sources,
+    parse_bibtex,
+    preferred_existing_file,
+    remove_weaker_versions,
+    safe_filename,
+    should_replace_existing,
+    source_keys_lock,
+    write_manifest_records,
+    with_openathens,
+)
 from ddvc.paths import (  # noqa: E402
     LITERATURE_AUTH_HEADERS,
     LITERATURE_BIB,
@@ -44,64 +62,10 @@ from ddvc.paths import (  # noqa: E402
     REPO_ROOT,
 )
 
-
-@dataclass(frozen=True)
-class Entry:
-    key: str
-    kind: str
-    fields: dict[str, str]
-
-
-@dataclass(frozen=True)
-class Source:
-    url: str
-    version: str
-    access: str = "unknown"
-    label: str = ""
-
-
-def parse_bibtex(path: Path) -> dict[str, Entry]:
-    text = path.read_text(encoding="utf-8")
-    entries: dict[str, Entry] = {}
-    for match in re.finditer(r"@(\w+)\s*\{\s*([^,\s]+)\s*,(.*?)\n\}", text, re.S):
-        kind = match.group(1).strip().lower()
-        key = match.group(2).strip()
-        body = match.group(3)
-        fields: dict[str, str] = {}
-        for field in re.finditer(r"^\s*([A-Za-z]+)\s*=\s*\{(.*?)\}\s*,?\s*$", body, re.M):
-            fields[field.group(1).lower()] = field.group(2).strip()
-        entries[key] = Entry(key=key, kind=kind, fields=fields)
-    return entries
-
-
 def load_json(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def load_sources(path: Path) -> dict[str, list[Source]]:
-    data = load_json(path)
-    result: dict[str, list[Source]] = {}
-    for key, raw_sources in data.get("sources", {}).items():
-        sources: list[Source] = []
-        for raw in raw_sources:
-            sources.append(
-                Source(
-                    url=str(raw["url"]),
-                    version=str(raw.get("version", "unknown")),
-                    access=str(raw.get("access", "unknown")),
-                    label=str(raw.get("label", "")),
-                )
-            )
-        result[key] = sources
-    return result
-
-
-def load_openathens_domain(path: Path) -> str | None:
-    data = load_json(path)
-    value = data.get("openathens")
-    return str(value) if value else None
 
 
 def merge_sources(*maps: dict[str, list[Source]]) -> dict[str, list[Source]]:
@@ -154,43 +118,46 @@ def headers_for(url: str, global_headers: dict[str, str], domain_headers: dict[s
     for domain, extra in domain_headers.items():
         if host == domain or host.endswith("." + domain):
             headers.update(extra)
+    parsed = urllib.parse.urlparse(url)
+    if host == "onlinelibrary.wiley.com" and parsed.path == "/action/downloadSupplement":
+        doi = urllib.parse.parse_qs(parsed.query).get("doi", [""])[0]
+        if doi:
+            headers.setdefault("Referer", f"https://onlinelibrary.wiley.com/doi/{doi}")
     return headers
-
-
-def safe_filename(entry: Entry, source: Source) -> str:
-    year = entry.fields.get("year", "undated")
-    title = entry.fields.get("title", entry.key)
-    title = re.sub(r"[{}\\\\]", "", title)
-    title = re.sub(r"[^A-Za-z0-9]+", "-", title).strip("-").lower()
-    title = title[:80].strip("-")
-    suffix = "" if source.version == "published" else f"-{source.version}"
-    return f"{year}-{entry.key}{suffix}-{title}.pdf"
 
 
 def request(url: str, headers: dict[str, str]) -> urllib.request.Request:
     return urllib.request.Request(url, headers=headers)
 
 
-def is_pdf(data: bytes) -> bool:
-    return data.startswith(b"%PDF")
-
-
 def download(url: str, target: Path, headers: dict[str, str], overwrite: bool) -> tuple[bool, str]:
     if target.exists() and not overwrite:
+        mirror_validated_pdf(target)
         return True, "exists"
-    try:
-        with urllib.request.urlopen(request(url, headers), timeout=120) as response:
-            data = response.read()
-    except Exception as exc:
-        data = download_with_curl(url, headers)
-        if data is None:
-            raise exc
+    data = download_with_curl(url, headers)
+    if not data or not is_pdf(data):
+        with urllib.request.urlopen(request(url, headers), timeout=15) as response:
+            data = read_response_with_deadline(response, timeout_seconds=120)
     if not is_pdf(data):
         return False, "not-pdf"
-    tmp = target.with_suffix(".pdf.tmp")
-    tmp.write_bytes(data)
-    tmp.replace(target)
-    return True, f"{len(data)} bytes"
+    return True, install_pdf(target, data, overwrite)
+
+
+def read_response_with_deadline(
+    response: Any,
+    *,
+    timeout_seconds: float,
+) -> bytes:
+    """Read one HTTP response incrementally under a total wall-clock deadline."""
+    deadline = time.monotonic() + timeout_seconds
+    chunks: list[bytes] = []
+    while True:
+        if time.monotonic() >= deadline:
+            raise TimeoutError(f"direct download exceeded {timeout_seconds:g}s")
+        chunk = response.read1(1024 * 1024)
+        if not chunk:
+            return b"".join(chunks)
+        chunks.append(chunk)
 
 
 def download_with_curl(url: str, headers: dict[str, str]) -> bytes | None:
@@ -217,64 +184,11 @@ def download_with_curl(url: str, headers: dict[str, str]) -> bytes | None:
     return result.stdout
 
 
-def ordered_sources(sources: list[Source], prefer: str) -> list[Source]:
-    if prefer == "published":
-        priority = {"published": 0, "accepted": 1, "working-paper": 2, "preprint": 3, "whitepaper": 4}
-    elif prefer == "working":
-        priority = {"working-paper": 0, "preprint": 1, "published": 2, "accepted": 3, "whitepaper": 4}
-    else:
-        priority = {}
-    return sorted(sources, key=lambda source: priority.get(source.version, 50))
-
-
-def openathens_url(url: str, domain: str) -> str:
-    return f"https://go.openathens.net/redirector/{domain}?url={urllib.parse.quote(url, safe='')}"
-
-
-def with_openathens(sources: list[Source], domain: str | None) -> list[Source]:
-    if not domain:
-        return sources
-    expanded: list[Source] = []
-    for source in sources:
-        if source.version == "published" and source.access != "institutional" and source.url.startswith("http"):
-            expanded.append(
-                Source(
-                    url=openathens_url(source.url, domain),
-                    version=source.version,
-                    access="institutional",
-                    label=f"OpenAthens {domain}: {source.label}",
-                )
-            )
-        expanded.append(source)
-    return expanded
-
-
-def default_sources_from_bib(entry: Entry) -> list[Source]:
-    sources: list[Source] = []
-    doi = entry.fields.get("doi")
-    if doi:
-        doi_l = doi.lower()
-        version = "working-paper" if doi_l.startswith(("10.3386/", "10.59576/")) or entry.kind == "techreport" else "published"
-        sources.append(
-            Source(
-                url=f"https://doi.org/{doi}",
-                version=version,
-                access="authenticated",
-                label="DOI resolver",
-            )
-        )
-    url = entry.fields.get("url")
-    if url and url.startswith("http") and (not doi or doi not in url):
-        sources.append(Source(url=url, version="listed", access="unknown", label="BibTeX URL"))
-    return sources
-
-
 def fetch_all(
     entries: dict[str, Entry],
     sources_by_key: dict[str, list[Source]],
     openathens_domain: str | None,
     out_dir: Path,
-    manifest_path: Path,
     global_headers: dict[str, str],
     domain_headers: dict[str, dict[str, str]],
     prefer: str,
@@ -294,7 +208,31 @@ def fetch_all(
             continue
 
         for index, source in enumerate(sources, start=1):
-            target = out_dir / safe_filename(entry, source)
+            target = out_dir / safe_filename(
+                entry.key,
+                entry.fields.get("year", "undated"),
+                entry.fields.get("title", entry.key),
+                source,
+            )
+            existing = existing_files_for_key(out_dir, key)
+            if existing and not should_replace_existing(existing, source, overwrite):
+                existing_file = preferred_existing_file(existing)
+                remove_weaker_versions(existing, file_version(existing_file), existing_file)
+                mirror_validated_pdf(existing_file)
+                detail = "exists"
+                print(f"ok {key}: {existing_file.relative_to(REPO_ROOT)} ({file_version(existing_file)}, {detail})")
+                records.append(
+                    {
+                        "key": key,
+                        "status": "ok",
+                        "file": str(existing_file.relative_to(REPO_ROOT)),
+                        "version": file_version(existing_file),
+                        "access": source.access,
+                        "url": source.url,
+                        "attempts": [attempt_record(source, detail, ok=True)],
+                    }
+                )
+                break
             headers = headers_for(source.url, global_headers, domain_headers)
             try:
                 ok, detail = download(source.url, target, headers, overwrite)
@@ -308,6 +246,7 @@ def fetch_all(
                 print(f"try {key} [{index}/{len(sources)}] {source.version}: {detail} {source.url}")
             else:
                 if ok:
+                    remove_weaker_versions(existing, source.version, target)
                     print(f"ok {key}: {target.relative_to(REPO_ROOT)} ({source.version}, {detail})")
                     records.append(
                         {
@@ -334,7 +273,6 @@ def fetch_all(
                 }
             )
 
-    manifest_path.write_text(json.dumps(records, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return records
 
 
@@ -367,21 +305,21 @@ def main() -> int:
     if args.key:
         wanted = set(args.key)
         entries = {key: entry for key, entry in entries.items() if key in wanted}
-    committed_sources = load_sources(args.sources)
-    openathens_domain = load_openathens_domain(args.sources)
+    openathens_domain, committed_sources = load_source_registry(args.sources)
     local_sources = load_local_source_overlay(args.local_sources)
     global_headers, domain_headers = load_auth_headers(args.auth)
-    records = fetch_all(
-        entries,
-        merge_sources(local_sources, committed_sources),
-        openathens_domain,
-        args.out,
-        args.manifest,
-        global_headers,
-        domain_headers,
-        args.prefer,
-        args.overwrite,
-    )
+    with source_keys_lock(entries):
+        records = fetch_all(
+            entries,
+            merge_sources(local_sources, committed_sources),
+            openathens_domain,
+            args.out,
+            global_headers,
+            domain_headers,
+            args.prefer,
+            args.overwrite,
+        )
+        write_manifest_records(args.manifest, records, merge=bool(args.key))
 
     ok_count = sum(1 for record in records if record["status"] == "ok")
     print(f"downloaded_or_present={ok_count} total_entries={len(entries)} manifest={args.manifest}")

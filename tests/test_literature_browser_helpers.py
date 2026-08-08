@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fcntl
 import importlib.util
 import json
 import sys
@@ -8,10 +9,21 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import ddvc.literature_sources as literature_sources
+from ddvc.literature_sources import (
+    existing_files_for_key,
+    file_version,
+    install_pdf,
+    preferred_existing_file,
+    remove_weaker_versions,
+    source_keys_lock,
+    write_manifest_records,
+)
 
-def load_fetcher():
-    path = Path(__file__).resolve().parents[1] / "scripts" / "fetch_literature_browser.py"
-    spec = importlib.util.spec_from_file_location("fetch_literature_browser", path)
+
+def load_script(name: str):
+    path = Path(__file__).resolve().parents[1] / "scripts" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -19,7 +31,192 @@ def load_fetcher():
     return module
 
 
+def load_fetcher():
+    return load_script("fetch_literature_browser")
+
+
 class LiteratureBrowserHelperTests(unittest.TestCase):
+    def test_direct_download_prefers_bounded_curl_payload(self) -> None:
+        direct = load_script("fetch_literature")
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "paper.pdf"
+            with (
+                patch.object(direct, "download_with_curl", return_value=b"%PDF-1.7\ncomplete"),
+                patch.object(direct.urllib.request, "urlopen") as urlopen,
+                patch.object(direct, "install_pdf", return_value="installed") as install,
+            ):
+                self.assertEqual(
+                    direct.download("https://example.com/paper.pdf", target, {}, False),
+                    (True, "installed"),
+                )
+            urlopen.assert_not_called()
+            install.assert_called_once_with(target, b"%PDF-1.7\ncomplete", False)
+
+    def test_incremental_direct_reader_enforces_total_deadline(self) -> None:
+        direct = load_script("fetch_literature")
+
+        class Response:
+            def read1(self, _size):
+                return b"x"
+
+        with patch.object(direct.time, "monotonic", side_effect=[0.0, 0.1, 1.1]):
+            with self.assertRaisesRegex(TimeoutError, "exceeded 1s"):
+                direct.read_response_with_deadline(Response(), timeout_seconds=1)
+
+    def test_wiley_supplement_request_uses_article_referrer(self) -> None:
+        direct = load_script("fetch_literature")
+        url = (
+            "https://onlinelibrary.wiley.com/action/downloadSupplement?"
+            "doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0001-InternetAppendix.pdf"
+        )
+        headers = direct.headers_for(url, {}, {})
+        self.assertEqual(headers["Referer"], "https://onlinelibrary.wiley.com/doi/10.1111/jofi.12903")
+
+    def test_version_parser_ignores_version_words_inside_title_slug(self) -> None:
+        path = Path("2022-PaperAppendix-supplement-working-paper-with-online-appendix.pdf")
+        self.assertEqual(file_version(path), "supplement")
+
+    def test_selective_manifests_merge_by_exact_key(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = Path(directory) / "download-manifest.json"
+            write_manifest_records(manifest, [{"key": "PaperA", "status": "ok"}], merge=True)
+            installed = write_manifest_records(manifest, [{"key": "PaperB", "status": "miss"}], merge=True)
+            self.assertEqual([record["key"] for record in installed], ["PaperA", "PaperB"])
+            self.assertEqual(json.loads(manifest.read_text(encoding="utf-8")), installed)
+
+    def test_selective_manifest_replaces_only_its_owned_key(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = Path(directory) / "download-manifest.json"
+            write_manifest_records(
+                manifest,
+                [{"key": "PaperA", "status": "miss"}, {"key": "PaperB", "status": "ok"}],
+                merge=False,
+            )
+            installed = write_manifest_records(manifest, [{"key": "PaperA", "status": "ok"}], merge=True)
+            self.assertEqual(
+                installed,
+                [{"key": "PaperA", "status": "ok"}, {"key": "PaperB", "status": "ok"}],
+            )
+
+    def test_source_key_lock_excludes_an_overlapping_fetch_set(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = Path(directory)
+            with patch.object(literature_sources, "SHARED_RUNTIME_DIR", runtime):
+                with source_keys_lock(["PaperA"]):
+                    [lock_path] = list(runtime.glob("literature-source-*.lock"))
+                    with lock_path.open("a+", encoding="utf-8") as competing:
+                        with self.assertRaises(BlockingIOError):
+                            fcntl.flock(
+                                competing.fileno(),
+                                fcntl.LOCK_EX | fcntl.LOCK_NB,
+                            )
+                with lock_path.open("a+", encoding="utf-8") as after_release:
+                    fcntl.flock(
+                        after_release.fileno(),
+                        fcntl.LOCK_EX | fcntl.LOCK_NB,
+                    )
+                    fcntl.flock(after_release.fileno(), fcntl.LOCK_UN)
+
+    def test_browser_binary_route_has_unambiguous_precedence(self) -> None:
+        fetcher = load_fetcher()
+        self.assertEqual(fetcher.browser_executable_options("chrome", ""), {"channel": "chrome"})
+        self.assertEqual(fetcher.browser_executable_options("", "/Applications/Brave"), {"executable_path": "/Applications/Brave"})
+        with self.assertRaisesRegex(ValueError, "either"):
+            fetcher.browser_executable_options("chrome", "/Applications/Brave")
+
+    def test_existing_source_match_does_not_confuse_main_and_companion_keys(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            papers = Path(directory)
+            main = papers / "2021-Paper-main-title.pdf"
+            appendix = papers / "2021-PaperAppendix-supplement-online-appendix.pdf"
+            main.write_bytes(b"%PDF-1.7\nmain")
+            appendix.write_bytes(b"%PDF-1.7\nappendix")
+            self.assertEqual(existing_files_for_key(papers, "Paper"), [main])
+            self.assertEqual(existing_files_for_key(papers, "PaperAppendix"), [appendix])
+
+    def test_public_published_source_is_not_openathens_wrapped(self) -> None:
+        for name in ("fetch_literature", "fetch_literature_browser"):
+            with self.subTest(name=name):
+                fetcher = load_script(name)
+                source = fetcher.Source(
+                    url="https://authors.example/published.pdf",
+                    version="published",
+                    access="public",
+                    label="author copy",
+                )
+                self.assertEqual(fetcher.with_openathens([source], "ucl.ac.uk"), [source])
+
+    def test_authenticated_published_source_gets_openathens_fallback(self) -> None:
+        direct = load_script("fetch_literature")
+        browser = load_script("fetch_literature_browser")
+        self.assertIs(direct.with_openathens, browser.with_openathens)
+        source = direct.Source(
+            url="https://publisher.example/published.pdf",
+            version="published",
+            access="authenticated",
+            label="publisher copy",
+        )
+        expanded = direct.with_openathens([source], "ucl.ac.uk")
+        self.assertEqual(len(expanded), 2)
+        self.assertEqual(expanded[0].access, "institutional")
+        self.assertEqual(expanded[1], source)
+
+    def test_direct_and_browser_fetchers_share_install_and_naming_policy(self) -> None:
+        direct = load_script("fetch_literature")
+        browser = load_script("fetch_literature_browser")
+        self.assertIs(direct.install_pdf, browser.install_pdf)
+        self.assertIs(direct.safe_filename, browser.safe_filename)
+        self.assertIs(direct.parse_bibtex, browser.parse_bibtex)
+        self.assertIs(direct.load_source_registry, browser.load_source_registry)
+        self.assertIs(direct.default_sources_from_bib, browser.default_sources_from_bib)
+        self.assertIs(direct.ordered_sources, browser.ordered_sources)
+
+    def test_pdf_install_mirrors_to_primary_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            worktree = root / "worktree"
+            primary = root / "primary"
+            target = worktree / "literature" / "papers" / "paper.pdf"
+            target.parent.mkdir(parents=True)
+            detail = install_pdf(
+                target,
+                b"%PDF-1.7\ncomplete",
+                False,
+                repo_root=worktree,
+                primary_root=primary,
+            )
+            mirror = primary / "literature" / "papers" / "paper.pdf"
+            self.assertEqual(detail, "17 bytes")
+            self.assertEqual(target.read_bytes(), mirror.read_bytes())
+
+    def test_published_install_retires_weaker_versions_in_both_checkouts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            worktree = root / "worktree"
+            primary = root / "primary"
+            papers = worktree / "literature" / "papers"
+            primary_papers = primary / "literature" / "papers"
+            papers.mkdir(parents=True)
+            primary_papers.mkdir(parents=True)
+            weak = papers / "2020-Key-working-paper-title.pdf"
+            mirror = primary_papers / weak.name
+            published = papers / "2022-Key-title.pdf"
+            weak.write_bytes(b"%PDF-1.7\nweak")
+            mirror.write_bytes(weak.read_bytes())
+            published.write_bytes(b"%PDF-1.7\npublished")
+            self.assertEqual(preferred_existing_file([weak, published]), published)
+            removed = remove_weaker_versions(
+                [weak, published],
+                "published",
+                published,
+                repo_root=worktree,
+                primary_root=primary,
+            )
+            self.assertEqual(set(removed), {weak, mirror})
+            self.assertFalse(weak.exists())
+            self.assertFalse(mirror.exists())
+            self.assertTrue(published.exists())
+
     def test_download_reader_waits_for_and_validates_pdf(self) -> None:
         fetcher = load_fetcher()
         with tempfile.TemporaryDirectory() as directory:

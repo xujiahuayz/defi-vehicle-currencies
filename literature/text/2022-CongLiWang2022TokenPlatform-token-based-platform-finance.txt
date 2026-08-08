@@ -1,0 +1,2348 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 144 (2022) 972–991
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Token-based platform ﬁnance /p82
+Lin William Cong a , Ye Li b , ∗, Neng Wang c
+a Cornell University Johnson Graduate School of Management, United States
+b The Ohio State University Fisher College of Business, 2100 Neil Avenue, Columbus OH 43210, United States
+c Columbia Business School, ABFER, and NBER, United States
+a r t i c l e i n f o
+Article history:
+Received 8 September 2020
+Revised 4 May 2021
+Accepted 1 June 2021
+Available online 10 October 2021
+JEL classiﬁcation:
+E41
+E42
+E51
+G1
+G23
+G31
+G32
+G35
+Keywords:
+Blockchain
+Cryptocurrency
+Dynamic corporate ﬁnancing
+Durable goods
+Gig economy
+Optimal token supply
+Time inconsistency
+Token/coin offering
+a b s t r a c t
+We develop a dynamic model of a platform economy where tokens serve as a means of
+payment among platform users and are issued to ﬁnance investment in platform produc-
+tivity. Tokens are optimally rewarded to platform owners when token supply (normalized
+by productivity) is low and burnt to boost franchise value when the normalized supply is
+high. Although token price is determined in a liquid market, the platform’s ﬁnancial con-
+straint generates an endogenous token issuance cost that causes underinvestment through
+the conﬂict of interest between insiders (owners) and outsiders (users). Blockchain tech-
+nology mitigates underinvestment by addressing the owners’ time inconsistency problem.
+©2 0 2 1 Elsevier B.V. All rights reserved.
+/p82 We thank the anonymous referee, Patrick Bolton, Markus Brunnermeier, Peter DeMarzo, Darrell Duﬃe, Daniel Ferreira (discussant), Sebastian Gryglewicz
+(discussant), Zhiguo He, Wei Jiang, Andrew Karolyi, Maureen O’Hara, Dmitry Orlov (discussant), Emiliano S. Pagnotta (discussant), Christine Parlour, Uday
+Rajan, Jean-Charles Rochet, Fahad Saleh (discussant), David Skeie (discussant), Michael Sockin (discussant), René Stulz, Pierre-Olivier Weill, Ying Wu, Miao
+Zhang, and conference/seminar participants at ABFER/CEPR/CUHK Financial Economics Symposium, AFA 2020, Carnegie Mellon University Tepper School
+of Business, Central Bank Research Association 2019, CEPR ESSFM Gerzensee, Chicago Financial Institutions Conference, City University of Hong Kong,
+Cleveland Fed/OFR Financial Stability Conference, Cornell University, Econometric Society North America 2019, Erasmus Liquidity Conference, International
+Monetary Fund, Luohan Academy Digital Economy Conference, Maastricht University, Macro Finance Society 14th Meeting, Midwest Finance Association
+2019, Online Digital-Economy Seminar (Hong Kong Baptist U, Monash University, National Taiwan U, Renmin U), SFS Cavalcade North America 2020, Ohio
+State University (Finance), Stevens Institute of Technology, Tokenomics International Conference on Blockchain Economics, Rome Junior Finance Conference,
+Security and Protocols, University of British Columbia (Econ), University of Calgary Haskayne School of Business, University of Florida, USI Lugano, and
+University of Washington Bothell (Econ) for helpful comments. We also thank Desheng Ma and Yu Wang for their research assistance. Will is grateful for
+the ﬁnancial support from the Ewing Marion Kauffman Foundation . Ye is grateful for the ﬁnancial support from Studienzentrum Gerzensee. The contents
+of this publication are solely the responsibility of the authors. The paper subsumes results from previous drafts titled “Token-Based Corporate Finance” and
+“Tokenomics and Platform Finance.”
+∗ Corresponding author.
+E-mail addresses: will.cong@cornell.edu (L.W. Cong), li.8935@osu.edu (Y. Li), neng.wang@columbia.edu (N. Wang).
+https://doi.org/10.1016/j.jﬁneco.2021.10.002
+0304-405X/© 2021 Elsevier B.V. All rights reserved.
+
+===== PAGE 2 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+1. Introduction
+Digital platforms are reshaping the organization of eco-
+nomic activities. Traditional platforms rely heavily on pay-
+ment innovations to stimulate economic exchanges among
+users. Recently, blockchain technology offers alternative
+solutions. A new generation of digital platforms introduce
+crypto tokens as local currencies and allow the use of
+smart contracts to facilitate transactions among users, as
+well as the ﬁnancing of ongoing platform development.
+We develop a dynamic model of a digital platform to
+analyze the equilibrium dynamics of token-based com-
+munities. In our model, transactions on the platform are
+settled with native tokens. Users demand tokens as a
+means of payment, and their holdings are exposed to
+the ﬂuctuation of token price. The entrepreneur (rep-
+resenting platform owners) manages token issuance by
+solving a dynamic problem of token-based payout and
+token-ﬁnanced investment in platform productivity. The
+token market-clearing condition determines the evolution
+of the token price. The ratio of token supply to platform
+productivity (“normalized token supply”) is the key state
+variable. When it is high (i.e., the system is “inﬂated”), the
+platform cuts back investment and refrains from payout.
+To reduce token supply and boost token price, the plat-
+form may ﬁnd it optimal to buy back tokens, but doing so
+requires costly external funds. 1 The ﬁnancing cost of token
+buyback is the key friction that causes underinvestment in
+productivity. Our analysis applies to both traditional and
+blockchain-based platforms.
+Our model delivers several unique insights on the
+economics of tokens and platforms. First, tokens are akin
+to durable goods but defy Coase’s conjecture ( Coase, 1972 ).
+While the marginal cost of producing digital tokens is
+zero, the entrepreneur refrains from over-supply, and the
+equilibrium token price is positive. In contrast to the
+stationary demand in durable goods models (e.g., Stokey,
+1981; Bulow, 1982 ), token demand grows endogenously as
+the platform invests in its productivity. 2 Under a growing
+token demand, the entrepreneur optimally spreads out
+token payouts over time, trading off between milking the
+system now or in the future. The entrepreneur balances
+the growth of token supply with productivity. Speciﬁcally,
+the productivity-normalized token supply is endogenously
+bounded.
+Second, underinvestment arises from the conﬂict of in-
+terest between the entrepreneur and platform users. When
+tokens are issued to ﬁnance investment, token supply in-
+creases but the investment outcome is random. If produc-
+tivity improves, both the entrepreneur and users beneﬁt;
+otherwise, the users are free to reduce token holdings or
+even abandon the platform, while the entrepreneur, now
+facing an inﬂated system, may have to raise costly external
+1 Buying back and burning tokens means sending them to a public
+“eater address” from which they can never be retrieved because the ad-
+dress key is unobtainable. Practitioners often burn tokens to boost token
+price and reward token holders (e.g., Binance and Ripple).
+2 The platform network effect—the positive externality of one user’s
+adoption on other users—ampliﬁes the demand growth in a mechanism
+that is reminiscent of the knowledge spillover effect in Romer (1986) .
+funds to buy back tokens. Such asymmetry dampens the
+entrepreneur’s incentive to invest. The underinvestment in
+turn reduces user welfare, the equilibrium token price, and
+eventually, the entrepreneur’s value from token payouts.
+The root of the underinvestment problem is the en-
+trepreneur’s time inconsistency. If the entrepreneur is able
+to commit against underinvestment, the users would de-
+mand more tokens, which then increases the token price
+and the value of entrepreneur’s token payouts. However,
+time inconsistency arises as the predetermined level of
+investment (optimal ex ante) can be deemed suboptimal
+ex post as the conﬂict of interest arises between the
+entrepreneur and platform users. Blockchain technology
+enables commitment to predetermined rules of investment
+and can thus add value by addressing time inconsistency.
+Our paper is among the ﬁrst to show the value of commit-
+ment brought by blockchains. 3 That said, we recognize that
+in practice, blockchain commitment is far from perfect, and
+that is why it is important to consider both predetermined
+and discretionary token supply (our baseline case). 4
+We analyze tokens as monetary assets that facilitate
+transactions in a fully dynamic setting rather than tokens
+as dividend-paying assets and their difference from tradi-
+tional securities (e.g., Gryglewicz et al., 2020 ). Our paper
+builds upon Cong et al. (2021) (henceforth CLW). While
+CLW assume a ﬁxed token supply (standard in the litera-
+ture), in this paper, we analyze the optimal token supply
+and explore new questions on the dynamics of platform
+investment and ﬁnancing, the conﬂict of interest between
+the entrepreneur and users, and the role of blockchain
+technology in platform economics.
+Next, we further elaborate on our model setup and
+mechanisms. Users hold tokens as a means of payment
+on the platform, enjoying convenience yield that increases
+in platform productivity. Intuitively, the more productive
+a platform is, the more activities (and transactions) it
+supports. To capture the network effect, a distinguishing
+feature of platform businesses, we allow the convenience
+yield to depend on the number of users. The user base
+evolves endogenously for two reasons. First, the stochastic
+growth of productivity directly affects adoption. Second,
+users’ expectations of future token price varies over time.
+An intertemporal complementarity ampliﬁes the effects
+of productivity growth on user-base dynamics —w h e n
+potential users expect productivity growth and more users
+to join in future, they expect token price to appreciate and
+thus have a stronger incentive to adopt now.
+3 In a dynamic system where a large player interacts with a group
+of small players, the small players respond to the large player’s discre-
+tionary action. As a result, the large player’s decision-making environ-
+ment changes in response to her own action. The large player may ob-
+tain a higher value by forgoing discretion and committing to a plan. This
+mechanism lies behind studies on the commitment of monetary and ﬁscal
+policies (e.g., Fischer, 1980; Kydland and Prescott, 1980; Lucas and Stokey,
+1983; Barro and Gordon, 1983; Ljungqvist and Sargent, 2018 ) and, more
+recently, optimal corporate capital structure (e.g., DeMarzo and He, 2021 ).
+4 While some platforms restrict the maximum of token supply, such
+caps are typically large, leaving the gradual release of token reserves un-
+der the discretion of platform designers. Moreover, platform designers are
+often entitled to a signiﬁcant fraction of total allocation, through which
+they can inﬂuence token supply despite various vesting schemes. Ap-
+pendix A illustrates the discretionary allocation with examples.
+973
+
+===== PAGE 3 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+The platform’s investment in productivity is ﬁnanced by
+token issuances. Therefore, tokens not only enable users to
+transact with one another, but they also serve as ﬁnancing
+instruments. The platform can increase token supply and
+pay tokens to a pool of contributors for their efforts and
+resources that improve productivity. 5 Because the contrib-
+utors sell tokens to users who value the convenience yield
+and thus are the natural buyers, the amount of resources
+the platform can raise by issuing tokens depends on the
+token price. Token price is determined endogenously by
+the users’ token demand and the platform’s supply.
+The entrepreneur’s value is the present value of the
+tokens she is paid net the costs of token buybacks. In
+the Markov equilibrium, the entrepreneur’s value is a
+function of the current platform productivity and token
+supply, which are the two state variables. The marginal
+value of productivity is positive, capturing the equilibrium
+dynamics of users’ adoption and the valuation of the
+tokens. The marginal value of token supply is negative
+due to the downward pressure of supply on token price
+and the entrepreneur’s token payout. In order to protect
+the continuation value (i.e., the present value of future
+token payout), the entrepreneur may even ﬁnd it optimal
+to buy back tokens (through external ﬁnancing) and burn
+them out of circulation. 6 In equilibrium, the entrepreneur
+receives token payout when token supply is low relative
+to platform productivity and buys back tokens when token
+supply is relatively high. Fig. 1 provides a summary of the
+circulation of tokens in our dynamic platform economy. 7
+A key friction in our model is that when buying back
+tokens, the entrepreneur has to raise costly external funds.
+While token buybacks occur occasionally, the associated
+ﬁnancing cost propagates into a dynamic token issuance
+cost in every state of the world because every time
+more tokens are issued, the entrepreneur’s expectation
+of costly future buyback changes accordingly. Speciﬁcally,
+the entrepreneur’s cost of issuing one more token (i.e.,
+the marginal decline of continuation value) is larger than
+the market price of tokens (i.e., the users’ valuation of
+tokens). This wedge causes the platform to under-invest in
+productivity.
+In our model, tokens are perfectly liquid. For example,
+newly issued tokens are not subject to discounts due to
+informational asymmetry. They are simply valued by the
+marginal user’s indifference condition. Despite the perfect
+liquidity, tokens are not immune to ﬁnancial frictions. The
+token issuance cost emerges because the entrepreneur’s
+5 Our focus on decentralized contributions is consistent with the vi-
+sion of major token-based platforms that once the platform launches, the
+founding entrepreneurs’ contributions tend to be limited relative to the
+decentralized contributors’, such as KIN, a blockchain-based social net-
+work, and TON, a payment network.
+6 Burning tokens means sending them to a public “eater address” from
+which they can never be retrieved because the address key is unobtain-
+able. Practitioners often burn tokens to boost token price and reward to-
+ken holders (e.g., Binance and Ripple). Some also use Proof-of-Burn as
+an environmentally friendly alternative to Proof-of-Work to generate con-
+sensus (e.g., Counterparty (XCP) blockchain), or destroy unsold tokens or
+coins after an ICO or seasoned token issuances for fair play (e.g., Neblio’s
+burning of NEBL tokens).
+7 We thank our discussant Sebastian Gryglewicz for sharing this ﬁgure
+with us in his discussion slides.
+optimal buyback relies on costly external funds. In other
+words, the optimal strategy of token management trans-
+mits the traditional costs of external ﬁnancing into an
+endogenous cost of token issuance.
+The dynamic token issuance cost implies a conﬂict of
+interest between the entrepreneur and users. Productivity
+enhancement paid with tokens beneﬁts users via a higher
+convenience yield. But more tokens in circulation implies
+a higher likelihood of costly token buyback in the future.
+Therefore, while the entrepreneur bears the costs of future
+token buyback, the beneﬁts of token-ﬁnanced investment
+are shared with users. Admittedly, part of these beneﬁts
+ﬂow to the entrepreneur through a higher token price (and
+higher value of token payout), but the entrepreneur can-
+not seize all surplus from users. Users are heterogeneous
+in deriving convenience yield from tokens, so only the
+marginal user breaks even while those who derive more
+convenience yield enjoy a positive surplus. 8 Token over-
+hang, which is underinvestment due to the surplus leakage
+to users, is a fundamental feature of token-based ﬁnancing.
+After characterizing the optimal token-management
+strategy (i.e., investment, payout, and buyback), we analyze
+the value of introducing blockchain technology in our set-
+ting. Blockchains distinguish themselves from traditional
+technologies in several aspects: immutable record keeping
+due to their time-stamping and linked-list data structure,
+smart contracting for automating and ensuring execution,
+and distributed design for easier monitoring and decentral-
+ized governance. These features enable the commitment
+of predetermined token-supply rules that, we show, are
+valuable in addressing the underinvestment problem.
+Speciﬁcally, motivated by Ethereum, we consider a
+constant rate of token issuances that ﬁnance investment.
+We ﬁnd that commitment mitigates the underinvestment
+problem by severing the state-by-state linkage between
+investment and the token issuance cost. While the in-
+creased amount of tokens issued for investment results
+in more frequent costly token buyback, the entrepreneur’s
+value is higher than the case with discretionary token
+supply, because the token price is higher under faster
+trajectories of productivity and user-base growth. Previous
+studies of tokens assume predetermined rules of supply.
+In contrast, our analysis starts from the fully discretionary
+supply of tokens. By comparing the discretionary case with
+the predetermined case, we are able to identify the value
+added by commitment and to partly explain the popularity
+of blockchain technology among the platform businesses.
+Finally, our model also has implications for the design
+of stablecoins. Different from the approaches based on col-
+lateralization, the entrepreneur in our setting supports the
+franchise value by occasionally buying back tokens out of
+circulation. The buyback happens when the token supply
+is high relative to the platform productivity —p r e c i s e l y
+at the moment that token price is low but the marginal
+value of reducing token supply is high. The resulting token
+8 The intuition is related to the surplus that a monopolistic producer
+forgoes to consumers when price discrimination is impossible. Here to-
+kens are traded at a prevailing price among competitive users, so the
+entrepreneur cannot extract more value from users who derive a higher
+convenience yield from tokens.
+974
+
+===== PAGE 4 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+Fig. 1. Token ecosystem. The black and gray arrows represent token supply and demand, respectively. We thank our discussant Sebastian Gryglewicz for
+sharing with us this ﬁgure in his discussion slides.
+supply dynamics moderate the token price ﬂuctuations.
+Therefore, for platforms with endogenous productivity
+growth, their tokens are inherently stable.
+Overall, our model provides insight on the equilibrium
+dynamics of token-based communities and provides a
+guiding framework for practitioners. The various token
+offering schemes observed in practice can be viewed as
+special (suboptimal) cases. In Appendix A, we illustrate the
+institutional background and provide real-life examples.
+The paper that is most related to ours is
+Gryglewicz et al. (2020) , who also study endogenous
+platform productivity but focus on the founders’ efforts,
+rather than decentralized contributors’ efforts and re-
+sources. Mayer (2020) introduces speculators and studies
+the conﬂict of interest among various token holders.
+Our paper differs in our focus on tokens as a means of
+payment and on a different stage of platform life-cycle.
+Gryglewicz et al. (2020) model uncertainty in the exoge-
+nous arrival of platform launching and a constant token
+price post-launch. We study a post-launch platform with
+uncertainty from Brownian productivity shocks, and model
+the endogenous ﬂuctuation of token price. Finally, while
+they consider a ﬁxed token supply, we characterize the
+optimal state-contingent supply and highlight the value of
+commitment brought by blockchains.
+Our paper connects the literature on platform eco-
+nomics to dynamic corporate ﬁnance, especially the
+studies emphasizing the role of ﬁnancial slack and is-
+suance costs (e.g., Bolton et al., 2011; Hugonnier et al.,
+2015; Décamps et al., 2016 ). Instead of cash management,
+we analyze platforms’ token-supply management when
+investment induces user network effects and, importantly,
+the token price varies endogenously as users respond to
+supply variation. 9 From a methodological perspective, our
+paper is related to Brunnermeier and Sannikov (2016) and
+Li (2017) , who both study the endogenous price determi-
+9 Related to Cagan (1956) , the entrepreneur essentially maximizes the
+present value of seigniorage ﬂows.
+nation of inside money (deposits) issued by banks. The
+key distinction is that tokens are outside money instead of
+liabilities of the platforms.
+Our paper contributes to the broad literature on
+digital platforms. Studies on traditional platforms (e.g.,
+Rochet and Tirole, 2003 ) do not consider the use of
+tokens as platforms’ native currencies (local means of
+payment). 10 We share the view on platform tokens with
+Brunnermeier et al. (2019) : a platform is a currency area
+where a unique set of economic activities take place
+and its tokens derive value by facilitating the associated
+transactions. 11 Beyond this, we emphasize that a platform
+can invest in its quality, for example, payment eﬃciency
+( Duﬃe, 2019 ), thereby raising token value. We are the
+ﬁrst to formally analyze how platforms manage their
+investment and payout through token supply, and provide
+insights into the incentives and strategies of platform
+businesses.
+Our paper adds to emerging studies on blockchains
+and cryptocurrencies (see Chen et al. (2020) for a re-
+view). We innovate upon CLW by endogenizing token
+supply and incorporating the entrepreneur’s long-term
+interests (franchise value), which allows us to explore
+new issues concerning the dynamics of optimal platform
+investment and ﬁnancing, the conﬂict of interest between
+the entrepreneur and users, and the role of blockchain
+technology in platform economics. 12 By doing so, we
+are able to provide the ﬁrst uniﬁed theory of dynamic
+10 Stulz (2019) reviews the recent ﬁnancial innovations by major digital
+platforms.
+11 Our model differs from the majority of monetary-policy models be-
+cause token issuance ﬁnances investment, as in Bolton and Huang (2017) ,
+and payout rather than to stimulate nominal aggregate demand.
+12 The studies on the design issues of tokens (e.g., Proof-of-Work proto-
+cols) typically assume a ﬁxed user base (e.g., Chiu and Wong, 2015; Chiu
+and Koeppl, 2017 ). A ﬁxed token supply is a common feature among the
+models that examine the roles of tokens among users and contributors
+(e.g., miners in Sockin and Xiong, 2018; Pagnotta, 2018 ) and the existing
+models of token valuation (e.g., Fanti et al., 2019 ).
+975
+
+===== PAGE 5 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+corporate ﬁnance of post-launch platforms: optimal mon-
+etary, investment, and payout policies with both token
+price and user base being endogenously determined. We
+also demonstrate the commitment value of blockchains. 13
+Hinzen et al. (2019) show that limited adoption is an equi-
+librium outcome in Proof-of-Work (PoW) blockchains and
+Irresberger et al. (2019) empirically document that Proof-
+of-Stake (PoS) blockchains dominate in adoption scale. Our
+focus is on the use of tokens for platform ﬁnance and
+endogenous adoption, regardless of the consensus protocol
+and level of decentralization issues we explore in CLW.
+Furthermore, our paper adds to the discussion on token
+price volatility and stablecoins. On the demand side, high
+token price volatility could be an inherent feature of plat-
+form tokens due to technology uncertainty and endoge-
+nous user adoption (see CLW). 14 Saleh (2018) emphasizes
+that token supply under Proof-of-Burn (PoB) protocols can
+reduce price volatility. We endogenize both the demand
+for tokens driven by users’ transaction needs and dynamic
+adoption, and the supply of tokens for platform develop-
+ment and the founders’ rent extraction. We show that the
+optimal token supply strategy stabilizes the token price.
+Finally, our paper is broadly related to the literature
+on crowdsourcing and the gig economy. Blockchain-based
+consensus provisions in the form of cryptocurrency mining
+and resources (capital) raised via initial coin offerings
+(ICOs) are salient examples of decentralized on-demand
+contributions. Previous studies on ICOs and crowdfunding
+focus on one-time issuance of tokens before the platform
+launches (e.g., Canidio, 2018; Chod and Lyandres, 2018;
+Garratt and Van Oordt, 2019 ), yet platforms increase token
+supply on an on-going basis. Other studies center around
+the founders’ hidden efforts or asymmetric information
+pre-launch, whereas we emphasize decentralized contrib-
+utors’ effort post-launch that is highly relevant for digital
+platforms and the gig economy. 15 This distinction is a key
+consideration in determining whether or not tokens are
+securities or not based on the Howey test. 16
+2. The model
+In our model, three types of agents interact in a
+continuous-time economy: an entrepreneur (used inter-
+13 Even though commitments through tokens can be valuable in var-
+ious settings (e.g., Goldstein et al., 2019 ), in practice, the reliability of
+blockchain and the associated commitment value are not free of costs
+( Abadi and Brunnermeier, 2018 ). As analyzed by Biais et al. (2019) ,
+Proof-of-Work protocols can lead to competing records of transactions
+(“forks”). Commitment is often implemented via smart contracts, for
+which Cong and He (2019) provide some examples.
+14 Hu et al. (2018) and Liu and Tsyvinski (2021) document token price
+dynamics empirically.
+15 The entrepreneurs in the ICO models do not engage in dynamic token
+management for long-term platform development, and thus, do not con-
+cern the franchise value. Despite newly issued tokens from platforms, de-
+centralized contributors such as miners can also receive transaction fees
+(e.g., Basu et al., 2019; Easley et al., 2019; Huberman et al., 2019; Lehar
+and Parlour, 2020 ).
+16 For example, the SEC sued Telegram/TON that raised US$1.7 bil-
+lion through a private placement for not complying with securities laws
+( Michaels, 2019 ). The issue boils down to whether token investors post-
+launch expect to proﬁt from the entrepreneurs’ effort s or decentralized
+contributions.
+changeably with “platform owners”), a pool of contrib-
+utors, and a unit measure of users. The entrepreneur,
+representing the group of platform founders, key person-
+nel, and venture investors, designs the platform’s protocol.
+Contributors, who represent individual miners (transaction
+ledger keepers), third-party app developers, and other
+providers of on-demand labor in practice, devote efforts
+and resources required for the operation and continuing
+development of the platform. Users conduct peer-to-peer
+transactions and realize trade surpluses on the platform. A
+generic consumption good serves as the numeraire.
+2.1. Platform productivity and contributors
+We study a dynamically evolving platform whose
+productivity (synonymous with quality), A t , evolves as
+follows:
+dA t
+A t
+= L t dH t , (1)
+where L t is the decentralized contribution (contributors’
+resources and labor as described in Appendix A) the
+entrepreneur gathers through token payments to grow A t .
+dH t is an investment eﬃciency shock,
+d H t = μH d t + σ H dZ t . (2)
+Here Z t is a standard Brownian motion that generates the
+information ﬁltration. 17 A t broadly captures marketplace
+eﬃciencies, network security, processing capacity, regula-
+tory conditions, users’ interests, the variety of activities
+feasible on the platform, etc. It therefore directly affects
+users’ utility on the platform, which is made clear below.
+Our focus is on the dynamic interaction between the
+entrepreneur and users, so we do not explicitly model
+contributors’ decision-making but instead specify directly
+the required numeraire value of compensation for L t to
+be F ( L t , A t ) , which is increasing and convex in L t and
+may also depend on A t . Let P t denote the unit price of
+the token in terms of the numeraire goods. Given A t , to
+gather L t , the platform needs to issue F ( L t , A t ) /P t units of
+new tokens to workers, which adds to the total amount of
+circulating tokens, M t .
+A distinguishing feature of the labor supply in a “plat-
+form economy” or “gig economy” is that contributions
+are on-demand and contributors such as miners in Proof-
+of-Work-based public blockchains or ride-share drivers
+receive on-the-spot payments instead of long-term em-
+ployment contracts. Tokens facilitate the acquisition of on-
+demand labor by avoiding the limited commitment on the
+part of the platform that arises in the implementation of
+deferred compensation, especially when workers and the
+platform belong to different judicial areas. Moreover, since
+digital tokens are often programmable (via smart contract-
+ing), escrow accounts can be set up and enforced automat-
+ically so that tokens are released to workers only if their
+inputs (e.g., programming codes or solutions to cryptog-
+raphy puzzles) are received. Therefore, tokens also reduce
+17 The process H t may result from the entrepreneur’s effort s prior to
+platform launch, which we take as exogenous to differentiate our model
+from models on founders’ efforts as discussed in the literature review.
+976
+
+===== PAGE 6 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+the platform’s exposure to workers’ limited commitment. 18
+Finally, L t can also include the capital received from
+crowd-based investors. Investors receive tokens immedi-
+ately, instead of receiving contracts for future payments.
+When the platform is token-based, the concern of
+dilution naturally arises –w o r k e r s and investors’ tokens
+may depreciate if the platform issues more tokens in the
+future. In other words, while tokens avoid limited commit-
+ments by facilitating spot payments, the platform’s lack of
+commitment against increasing the token supply is still a
+concern. To see how our analysis of optimal token supply
+addresses this question, we ﬁrst introduce platform users.
+2.2. Platform users
+As in CLW, users can conduct transactions by holding
+tokens. We use x i,t to denote the value (real balance) of
+agent i ’s holdings in units of numeraires. By facilitating
+transactions, these holdings generate a ﬂow of utility (or
+convenience yield) over dt given by:
+x 1 −α
+i,t
+(
+N γ
+t A t u i
+)α
+dt , (3)
+where N t is the platform user base, u i captures agent i ’s
+needs for platform transactions, and α, γ ∈ ( 0 , 1 ) are con-
+stants. Similar to CLW, we provide a theoretical foundation
+in Appendix B. A crucial difference from CLW is that we
+endogenize A t and the token supply M t .
+The ﬂow utility of token holdings depends on N t , the
+total measure of users on the platform with x i,t > 0 . 19
+This speciﬁcation captures the network externality among
+users, such as the greater ease of ﬁnding trading or
+contracting counterparties in a larger community.
+We allow users’ transaction needs, u i , to be hetero-
+geneous. Let G t ( u ) and g t ( u ) denote the cross-sectional
+cumulative distribution and density function respectively
+that are continuously differentiable over a positive sup-
+port [ U t , U t ] . u i can be broadly interpreted: For payment
+blockchains (e.g., Ripple and Bitcoin), a high value of u i
+reﬂects user i ’s needs for international remittance. For
+smart-contracting platforms (e.g., Ethereum), u i captures
+user i ’s project productivity, and token holdings facilitate
+contracting. 20 In decentralized computation (e.g., Dﬁnity)
+18 Another reason to introduce tokens as a means of payment for L t
+is the heterogeneity in labor quality. Consider a subset of workers who
+supply high-quality effort s because they better understand the technolo-
+gies behind the platform. Naturally, these capable workers assign a higher
+value to tokens because they are not concerned about the adverse selec-
+tion problem that low-quality workers face due to their lack of technolog-
+ical knowledge. In other words, in contrast to cash-based compensation,
+token-based compensation screens out high-type workers and thereby
+improves the match between the employer (platform) and employees
+(workers).
+19 One example involves a producer who accepts tokens as a means of
+payment and earns net proﬁts equal to the full transaction surplus. The
+proﬁts depend on the scale of operation, i.e., the sales x i,t , and variables
+that determine the proﬁt margin, which include the total customer out-
+reach, N t , the platform eﬃciency A t , and the producer’s idiosyncratic pro-
+ductivity u i .
+20 For example, in a debt contract, the borrower’s Ethereum can be held
+in an escort or “margin” account, which is automatically transferred to
+the lender in case of default. Posting more Ethereum as margin allows for
+larger debt contracts, which in turn lead to projects of larger scale and
+proﬁts.
+and data storage (e.g., Filecoin) applications, u i corresponds
+to the need for secure and fast access to computing power
+and data.
+Recall that P t denotes the unit price of a token in terms
+of the numeraire. Let k i,t denote the number of tokens
+that user i holds, then the real balance is:
+x i,t = P t k i,t . (4)
+To join the platform (i.e., k i,t > 0 ), a user incurs a ﬂow cost
+φdt. For example, transacting on the platform requires
+attention; account maintenance and data migration also
+take effort. Therefore, only agents with suﬃciently high u i
+choose to join the platform.
+Let y i,t denote user i ’s cumulative utility from platform
+activities. We follow CLW and assume that the users are
+well-diversiﬁed so that their transaction surpluses and
+ﬁnancial gains on the platform are priced by an exogenous
+stochastic discount factor. Thus, we can interpret the
+equilibrium dynamics as dynamics under the risk-neutral
+measure. When users are risk neutral, the risk–neutral
+measure coincides with the data-generating probability
+(physical measure). User i ’s objective is given by:
+E
+[ ∫ ∞
+0
+e −rt dy i,t
+]
+, (5)
+where the incremental utility dy i,t is:
+dy i,t = max
+{
+0 , max
+k i,t > 0
+[
+( P t k i,t )
+1 −α (
+N γ
+t A t u i
+)α
+d t + k i,t E t [ d P t ]
+−φd t − P t k i,t rd t ]
+}
+. (6)
+The outer “max ”o p e r a t o r in Eq. (6) reﬂects user i ’s option
+to leave and obtain zero surplus from platform activities,
+and the inner “max ”o p e r a t o r reﬂects user i ’s optimal
+choice of k i,t . Inside the inner max operator are four
+terms that give the incremental transaction surpluses from
+platform activities. The ﬁrst corresponds to the payment
+convenience yield given in Eq. (3) . The second is the
+expected capital gains from holding k i,t units of tokens.
+The third is the participation cost and the last term is the
+ﬁnancing) cost of holding k i,t units of tokens.
+It is worth emphasizing that platform users must hold
+tokens for at least an instant, dt, to complete transactions
+and derive utility ﬂows, and are therefore exposed to a to-
+ken price change over dt. Appendix A contains motivating
+examples and institutional details. We implicitly assume a
+liquid secondary market for tokens. Hence, after receiving
+tokens, decentralized contributors can immediately sell
+tokens to users. Contributors can also be users themselves,
+and the model is not changed as long as the utility from
+token usage and the disutility from contributing L t (which
+gives rise to F ( ·) ) are additively separable.
+2.3. The entrepreneur
+We collectively refer to the founding entrepreneurs, the
+key developers, and initial investors who own the platform
+as the entrepreneur. Importantly, the entrepreneur designs
+the platform protocols and determines the investment
+strategies { L t , t ≥ 0 } . Over time, the entrepreneur receives
+977
+
+===== PAGE 7 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+a cumulative number of tokens D t as dividends and,
+similar to users, evaluates the tokens with a risk-neutral
+objective function and discount rate r:
+max
+{ L t ,D t } t≥0
+∫ + ∞
+t=0
+E
+[
+e −rt P t dD t
+[
+I { dD t ≥0 } + ( 1 + χ) I { dD t < 0 }
+]]
+. (7)
+When dD t > 0 , the entrepreneur receives token dividends
+that have a market value P t per unit, as a form of compen-
+sation for his essential human capital. 21 Note that token
+dividends can be either continuous (i.e., of dt order) or
+lumpy, and that in equilibrium, the entrepreneur immedi-
+ately sells her tokens to users who are the natural buyers
+of tokens because they derive an extra convenience yield
+from token holdings.
+We allow the entrepreneur to buy back and burn tokens
+to reduce the token supply (i.e., d D t < 0 ). When d D t < 0 ,
+the entrepreneur raises external ﬁnancing (numeraire
+goods) at a proportional cost χ for token buyback. 22 By
+reducing token supply, the entrepreneur can boost token
+price, and consequently increase the value of future token
+dividends. A higher token price also allows the platform to
+gather more resources for productivity growth. We allow
+the amount of token buyback to be continuous (i.e., of dt
+order) or lumpy.
+The key accounting identity that describes the evo-
+lution of token supply entails both the tokens issued
+to ﬁnance platform investment and the entrepreneur’s
+dividend/buyback:
+d M t =
+F ( L t , A t )
+P t
+d t + d D t . (8)
+When the platform invests (the ﬁrst term on the right-
+hand side) or distributes token dividends ( dD t > 0 ), the
+total amount of tokens in circulation increases; the token
+supply decreases when the entrepreneur burns tokens out
+of circulation ( dD t < 0 ). 23 In the next section, we show
+that the entrepreneur’s ﬁnancial slack decreases in M t .
+An increase in M t depresses token price P t , so when M t
+rises to a suﬃciently high level, the entrepreneur, who
+is concerned over the value of future token payouts (i.e.,
+the continuation value), pays the ﬁnancing cost to raise
+funds for token buyback that token price. Therefore, under
+the ﬁnancing cost χ, managing the token stock is akin to
+managing cash inventory, as in Bolton et al. (2011) and
+Hugonnier et al. (2015) . A ﬁrm’s ﬁnancial slack increases in
+21 For example, blockchain behemoth Bitmain Technologies Ltd. and
+Founders Fund (known for early bets on SpaceX and Airbnb) invest in EOS
+and hold ownership stakes that entitle them to future token rewards. The
+gradual distribution of token dividends can be viewed as contingent vest-
+ing in reality –a  certain amount of total tokens D t have been allocated
+by time t but are distributed over time (via dD t ) depending on the stages
+of platform development and the tokens outstanding (i.e., different values
+of A t and M t ).
+22 The external ﬁnancing cost assumption (via parameter χ) is in line
+with those in the corporate ﬁnance literature, e.g., Bolton et al. (2011) and
+Hugonnier et al. (2015) , who model in reduced form the information, in-
+centive, and transactions costs of raising external funds.
+23 It is suboptimal for the platform to pay contributors with costly ex-
+ternal ﬁnancing. Instead, it is generally optimal to use tokens (internal
+ﬁnancing) to compensate contributors as doing so delays incurring the
+costs of external ﬁnancing. However, using tokens as internal funds in-
+curs a shadow cost because an increase in token supply depresses token
+price, which reduces the entrepreneur’s token payout value.
+its cash holdings, because when its cash dries up, the ﬁrm
+has to resort to costly external funds. In our model, the
+ﬁnancial slack decreases in token supply, because when
+the token supply rises too high, the entrepreneur has to
+buy back tokens with costly external funds.
+In Deﬁnition 1 , we characterize a Markov equilibrium.
+The two state variables are the productivity A t , which
+measures the technological aspect of the platform, and the
+token supply M t , which inversely measures the ﬁnancial
+slack.
+Deﬁnition 1 . A Markov equilibrium with state variables A t
+and M t is comprised of agents’ decisions and token price
+dynamics, such that the token market-clearing condition
+holds, users optimally decide to participate (or not) and
+choose token holdings, contributors supply resources for
+the compensation of F ( L t , A t ) in numeraire value, and the
+platform strategies, i.e., L t and D t , are optimally designed
+to maximize the entrepreneur’s value.
+3. Dynamic equilibrium
+We ﬁrst derive the entrepreneur’s optimal investment
+and token payout and buyback, which in turn pin down
+the token supply. We then derive platform users’ optimal
+decisions on adoption and token holding in order to
+aggregate token demand. Finally, token market clearing
+yields the equilibrium dynamics of token price.
+3.1. Optimal token supply
+At time t, the entrepreneur’s continuation or franchise
+value V t (i.e., the time- t value function) satisﬁes the
+following Hamilton–Jacobi–Bellman (HJB) equation:
+rV ( M t , A t ) dt = max L t ,dD t P t dD t
+[
+I { dD t ≥0 } + ( 1 + χ) I { dD t < 0 }
+]
++ V M t
+[
+F ( L t , A t )
+P t
+dt + dD t
+]
++ V A t A t L t μH dt +
+1
+2
+V A t A t A 2
+t L 2
+t (σ H ) 2 dt. (9)
+The ﬁrst term in this HJB equation reﬂects the dividend
+payout ( dD t > 0 ) and buyback ( dD t < 0 ). When there are
+more tokens in circulation, the token price is depressed
+and the entrepreneur’s continuation value is reduced.
+Therefore, we expect V M t < 0 , which we later conﬁrm in
+the numerical solution. Payout occurs only if −V M t ≤ P t ,
+i.e., the market value of token weakly exceeds the marginal
+cost of increasing token supply. Token buyback happens
+when −V M t ≥ P t ( 1 + χ) , i.e., the marginal beneﬁt of de-
+creasing token supply is not lower than the cost of burning
+tokens. The second term is the product of the marginal
+value of token supply, V M t , and the drift of token supply,
+which consists of tokens paid to contributors and tokens
+distributed to or burned by the entrepreneur. The third
+term is the marginal beneﬁt of an increase in A t . The
+productivity increases in L t , but obtaining L t with token
+payments increases the token supply M t , which has a
+marginal cost of V M t
+F L t
+P t dt. Moreover, investment outcome
+is uncertain, so the fourth term captures how such risk
+978
+
+===== PAGE 8 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+enters into the choice of L t . We summarize the optimal
+policies in Proposition 1
+Proposition 1 (Optimal Token Supply). The optimal L t is
+solved implicitly as a function of state variables, A t and M t ,
+by:
+V A t A t μH + V A t A t A 2
+t L ∗
+t
+(σ H )2
+= F L ( L ∗
+t , A t )
+(−V M t
+P t
+)
+. (10)
+The optimal dD t is characterized as follows: the entrepreneur
+receives token payouts ( dD ∗
+t > 0 ) when P t ≥− V M t , and buys
+back and burns tokens ( dD ∗
+t < 0 ) when −V M t ≥ P t ( 1 + χ) .
+In Eq. (10) , we equate the marginal beneﬁt of in-
+vestment to the marginal cost. The left-hand side is the
+marginal impact on the drift of A t , evaluated by the
+entrepreneur’s marginal value of A t growth and adjusted
+for the risk of productivity shock via the second term.
+The right-hand side is the marginal cost of investment.
+Since the entrepreneur’s marginal cost of token sup-
+ply can be larger than the market value of tokens, the
+physical marginal cost F L is multiplied by −V M t /P t . This
+multiplier reﬂects a token issuance cost. Here the plat-
+form pays for investment with “undervalued” tokens.
+The payout/buyback policy in Proposition 1 implies that
+−V M t /P t ∈ [ 1 , 1 + χ] . Because the entrepreneur incurs a
+ﬁnancing cost χ > 0 when burning tokens, there exists a
+region of ( M t , A t ) such that V M t /P t > 1 , which reﬂects the
+cost of issuing tokens. A corollary from Proposition 1 high-
+lights the link between off-platform capital-market
+frictions and the platform’s token issuance cost:
+Corollary 1 (Token Issuance Cost). The ﬁnancing cost χ > 0
+leads to a token issuance cost for the entrepreneur (i.e.,
+−V M t /P t > 1 for a positive measure of ( M t , A t ) ). The issuance
+cost distorts the investment policy by amplifying the marginal
+cost of investment in Eq. (10) .
+Token issuance cost arises even though the token mar-
+ket is perfectly liquid. The ﬁnancing cost creates a conﬂict
+of interest between the insider (the entrepreneur) and
+outsiders (users). A productivity enhancement paid with
+new tokens beneﬁts users via a higher convenience yield.
+But more tokens in circulation implies a higher likelihood
+of token buyback and incidence of ﬁnancing cost in the
+future for the entrepreneur. While the entrepreneur bears
+the ﬁnancing cost, the beneﬁts are shared with users.
+Admittedly, as the token demand strengthens following
+a productivity increase, the entrepreneur beneﬁts from a
+higher token price (and higher value of token payout), but
+the entrepreneur cannot capture the full surplus.
+Users are heterogeneous in deriving convenience yield
+from tokens, so only the marginal user breaks even after
+token price increases, while those who derive more con-
+venience yield capture a positive surplus. The intuition
+is similar to that in a monopolistic producer’s problem
+when full price discrimination is impossible. Here tokens
+are traded at a prevailing price among competitive users,
+so the entrepreneur cannot extract more value from users
+who derive a higher convenience yield than the marginal
+token holder.
+As such, token-based ﬁnancing naturally exhibits token
+overhang, which is underinvestment due to the leakage of
+surplus to users. Uncertainty also plays a critical role here.
+Without dZ t , the productivity shock, L t , always increases
+A t . Then, with a suﬃciently eﬃcient investment technol-
+ogy F ( ·) (so that relatively few new tokens are needed to
+pay for L t ), we arrive at a situation where, following in-
+vestment, A t always grows faster than M t . As we will show
+below, the entrepreneur conducts costly token buyback
+when M t is too high relative to A t . Thus, with A t always
+growing faster than M t , the entrepreneur always moves
+away from costly token buyback after making an invest-
+ment. As a result, the ﬁnancing cost is never a concern
+given this suﬃciently eﬃcient F ( ·) . However, in the pres-
+ence of uncertainty in investment outcome, there always
+exists a probability that M t increases faster than A t after
+investment, moving the platform closer to costly buyback.
+In sum, the mechanism of token overhang relies
+on three ingredients in the model. First, when the en-
+trepreneur raises consumption goods to buy tokens out
+of circulation, the entrepreneur faces a ﬁnancing cost.
+Second, users are heterogeneous in deriving convenience
+yield from token holdings, so under a single token price
+that clears the competitive market, only the marginal user
+breaks even. Third, the outcome of platform investment
+is uncertain. The ﬁrst ingredient creates a private cost of
+investment for the entrepreneur, and the second implies a
+surplus leakage to users. Together, they generate a conﬂict
+of interest between the entrepreneur and users. Finally,
+the third ingredient, uncertainty, is needed so that despite
+the speciﬁcation of F ( ·) , token overhang always exists.
+Our characterization of the optimal investment and
+payout/buyback policies in some sense allays the concern
+over fraudulent designs or manipulations by the founding
+developers, for example, through building “back doors” in
+the protocol to steal tokens and depress the token price
+when selling the stolen tokens in secondary markets. As
+shown in Proposition 1 , our setup allows the entrepreneur
+to extract tokens as dividends, and the optimal payout
+policy already maximizes the entrepreneur’s value. In
+other words, the policy is incentive-compatible in this
+subgame perfect equilibrium between a large player (the
+entrepreneur) and a continuum of small players (users).
+From a regulatory perspective, a proposal of blockchain or
+platform design should disclose the policy of token payout
+to the platform owners, and it should be broadly in line
+with the above characterization.
+3.2. Aggregate token demand
+We conjecture and later verify that in equilibrium, the
+token price, P t , evolves as
+d P t = P t μP
+t d t + P t σ P
+t dZ t , (11)
+where μP
+t and σ P
+t are endogenously determined. Agents
+take the price process as given under rational expecta-
+tion. Conditioning on joining the platform, user i chooses
+the optimal token holdings, k ∗
+i,t , by using the following
+ﬁrst-order condition,
+( 1 − α)
+(
+N γ
+t A t u i
+P t k ∗
+i,t
+)α
++ μP
+t = r , (12)
+979
+
+===== PAGE 9 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+which states that the sum of marginal transaction surplus
+on the platform and the expected token price change is
+equal to the required rate of return, r.
+Rearranging this equation, we obtain the following
+expression for optimal token holdings:
+k ∗
+i,t =
+N γ
+t A t u i
+P t
+(
+1 − α
+r − μP
+t
+) 1
+α
+. (13)
+k ∗
+i,t has several properties. First, users hold more tokens
+when the common productivity, A t , or user-speciﬁc trans-
+action need, u i , is high, and also when the user base,
+N t , is larger due to network effects. Eq. (13) reﬂects an
+investment motive to hold tokens, that is k ∗
+i,t increases in
+the expected token appreciation, μP
+t .
+Using k ∗
+i,t , we obtain the following expression for the
+user’s maximized proﬁts conditional on participating on
+the platform:
+N γ
+t A t u i α
+(
+1 − α
+r − μP
+t
+) 1 −αα
+− φ. (14)
+User i only participates when the preceding expression is
+non-negative. That is, only those users with suﬃciently
+large u i participate. Let u t denote the type of the marginal
+user, then
+u t = u
+(
+N t ; A t , μP
+t
+)
+=
+φ
+N γ
+t A t α
+(
+r − μP
+t
+1 − α
+) 1 −αα
+. (15)
+The adoption threshold u t decreases in A t because a more
+productive platform attracts more users. The threshold
+also decreases when users expect a higher token price
+appreciation (i.e., higher μP
+t ). Because only agents with
+u i ≥ u t participate, the user base is then:
+N t = 1 − G t ( u t ) . (16)
+Eqs. (15) and (16) jointly determine the user base N t given
+A t and μP
+t . 24
+Proposition 2 (Token Demand and User Base). Given A t and
+μP
+t , the platform has a positive user base when Eqs. (15) and
+(16) have solutions for u t and N t . Conditional on participat-
+ing, user i ’s optimal token holding, k ∗
+i,t , is given by Eq. (13) .
+The token holding, k ∗
+i,t , decreases in P t and increases in A t ,
+μP
+t , u i , and N t .
+3.3. Token market clearing
+Clearing the token market pins down the token price.
+We deﬁne the participants’ aggregate transaction need by
+aggregating u i of participating users:
+U t :=
+∫
+u ≥u t
+ug t ( u ) du. (17)
+The market-clearing condition is:
+M t =
+∫
+i ∈ [ 0 , 1 ]
+k ∗
+i,t di. (18)
+24 We do not consider the trivial solution of zero adoption, which always
+leads to a zero token price.
+Substituting optimal holdings in Eq. (13) into the market-
+clearing condition in Eq. (18) , we arrive at the token
+pricing formula in Proposition 3 .
+Proposition 3 (Token Pricing). The equilibrium token price is
+given by
+P t =
+N γ
+t U t A t
+M t
+(
+1 − α
+r − μP
+t
+) 1
+α
+. (19)
+Token price increases in N t . The larger the user base,
+the higher the trade surplus individual participants can
+realize by holding tokens, and the stronger the token
+demand. The price-to-user base ratio increases in the
+productivity, the expected price appreciation, and the
+network participants’ aggregate transaction need, while
+it decreases in the token supply M t . 25 Eq. (19) implies a
+differential equation for P t in the state space of ( M t , A t ) .
+This can be clearly seen once we apply the inﬁnitesimal
+generator to P t = P ( M t , A t ) , expressing μP
+t into a collection
+of ﬁrst and second derivatives of P t by Itô’s lemma. Note
+that the equilibrium user base, N t , is already a function
+of A t and μP
+t , as shown in Proposition (2) . Therefore, the
+collection of token market-clearing conditions at every t
+essentially characterize the full dynamics of token price.
+This method of solving token price follows CLW.
+Eqs. (8) and (18) describe the primary and secondary
+token markets. The change of M t is a ﬂow variable, given
+by Eq. (8) , that includes the new issuances from platform
+investment and payout and the repurchases by the en-
+trepreneur. The token supply M t is a stock variable, and
+through Eq. (18) , it equals the token demand of users.
+The problem faced by a token-based platform is remi-
+niscent of a durable-good monopoly problem (e.g., Coase,
+1972; Stokey, 1981; Bulow, 1982 ). First, token issuance
+permanently increases the supply. When issuing tokens to
+ﬁnance investment or payout, the entrepreneur is compet-
+ing with future selves. Second, given a zero physical cost
+of creating tokens, the Coase intuition seems applicable:
+The entrepreneur can be tempted to satisfy the residual
+demand by ever lowering token price as long as the price
+is positive (i.e., above the marginal cost of production).
+Thus, users wait for lower prices, driving the token price
+to zero. Our model differs from the Coasian setting in two
+aspects. First, even though the physical cost of producing
+tokens is zero, the dynamic token issuance cost increases
+in the token supply as we show in the next section.
+This is reminiscent of the result in Kahn (1986) that the
+Coase intuition does not hold in the presence of increasing
+marginal cost of production. Second, in contrast to theories
+of durable-good monopoly, token demand in our model
+is not stationary; in fact, it increases geometrically with
+the endogenously growing A t , so users cannot expect a
+25 The formula reﬂects certain observations by practitioners, such as in-
+corporating DAA (daily active addresses) and NVT ratio (market cap to
+daily transaction volume) into token valuation framework, but instead of
+heuristically aggregating such inputs into a pricing formula, we solve both
+token pricing and user adoption as an equilibrium outcome. See, for ex-
+ample, Today ’ s Crypto Asset Valuation Frameworks by Ashley Lannquist
+at Blockchain at Berkeley and Haas FinTech.
+980
+
+===== PAGE 10 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+lower token price in the future. Therefore, we can solve an
+equilibrium with a positive token price in the next section.
+4. Equilibrium characterization
+We further characterize the equilibrium by analytically
+deriving and numerically solving the system of differential
+equations concerning token price and the entrepreneur’s
+value function. To streamline exposition and focus on core
+economic insights, we make some intuitive parametric
+assumptions.
+4.1. User distribution and investment cost function
+We assume that u i follows the commonly used Pareto
+distribution on [ U t , + ∞ ) with cumulative probability
+function (c.d.f.) given by the Pareto distribution:
+G t ( u ) = 1 −
+(U t
+u
+)ξ
+, (20)
+where ξ > 1 and U t = 1 /
+(ωA κ
+t
+)
+, ω > 0 , and κ ∈ [ 0 , 1 ] . The
+cross-section mean of u i is ξU t
+ξ−1 . It is assumed that U t de-
+creases in A t , which reﬂects the competition from follower
+platforms inspired by the success (high A t ) of the platform
+in question. For example, after the success of Bitcoin,
+alternative blockchains emerge as competitors in the area
+of payments. Similarly, there are alternative platforms
+to Ethereum for smart contracting. The overall effects of
+competition depend on the parameters ω and κ, while the
+parameter ξ governs how heterogeneous users transaction
+needs ( u i ) are (i.e., the dispersion of u i distribution). Ap-
+pendix D provides comparative statics of these parameters.
+Lemma 1 (Parameterized User Base). Given A t and μP
+t , from
+Proposition 2 , we have a unique non-degenerate solution, N t ,
+from Eqs. (15) and (16) , given by:
+N t = A ′
+t
+( α
+ωφ
+) ξ
+1 −ξγ
+(
+1 − α
+r − μP
+t
+)
+(
+ξ
+1 −ξγ
+)
+(
+1 −α
+α )
+,
+where A ′
+t ≡ A
+(1 −κ)( ξ
+1 −ξγ )
+t , (21)
+if u t ≥ 1
+ωA κ
+t
+, i.e., A 1 −κ
+t ( 1 −α
+r−μP
+t
+)
+1 −αα ≤ ωφ
+α ; otherwise, N t = 1 .
+A ′
+t is a transformed version of A t . It is the effective
+productivity that captures user homogeneity, platform
+competition, and user network effects. Intuitively, the way
+productivity matters is ampliﬁed by the network-effect
+parameter γ (introduced in Eq. (3) ) but dampened by the
+competition parameter κ. When there is no network effect
+( γ = 0 ) or competition ( κ = 0 ), the exponent is simply
+ξ, which measures user heterogeneity. The effect of user
+heterogeneity has two components. One is the interaction
+component with γ, as seen in the denominator of ξ
+1 −ξγ .
+When agents are more homogeneous (larger ξ), small
+changes in A t brings big changes in adoption, which is
+ampliﬁed by network effects. The second component is in
+the numerator of ξ
+1 −ξγ . Even without the network effect,
+greater homogeneity still means that there is a bigger
+adoption sensitivity with respect to platform productivity.
+Our later discussion focuses on ξγ < 1 , so that the user
+base, N t , increases in the platform productivity despite
+platform competition. This is realistic because a technol-
+ogy leader usually beneﬁts from its innovation despite the
+presence of competing followers. Moreover, we focus on
+low values of A t , such that N t < 1 in the Markov equilib-
+rium so as to examine how token allocation interacts with
+user base dynamics. Under the Pareto distribution, the
+aggregate transaction need is given by:
+U t = N t
+( ξ u t
+ξ −1
+)
+. (22)
+Lemma 2 (Parameterized Token Price). The equilibrium
+token price in Proposition 3 when N t < 1 is given by:
+P t =
+A ′
+t
+M t
+ξ
+(ξ −1) ω
+ξ
+1 −ξγ
+(α
+φ
+) ξ
+1 −ξγ −1 (
+1 − α
+r − μP
+t
+)1+
+(
+ξ
+1 −ξγ
+)
+(
+1 −α
+α )
+.
+(23)
+Next, we follow previous studies on investment in ﬁ-
+nance and macroeconomics (e.g., Hayashi, 1982 ) to specify
+a convex (quadratic) investment cost function:
+F ( L t , A t ) =
+(
+L t +
+θ
+2
+L 2
+t
+)
+A ′
+t , (24)
+and θ ≥ 0 can depend on the elasticity of contributors’
+resource supply. The particular functional form ensures
+analytical tractability because F (L t , A t ) being linear in A ′
+not only captures the reality that contribution compensa-
+tion depends on the effective productivity of the platform,
+but also allows us to reduce the dimensionality of the
+state variables when solving the model. The speciﬁcation
+also allows us to characterize optimality via the ﬁrst-order
+condition for investment, similar to the F.O.Cs in Hayashi-
+style q-theoretic models with convex adjustment costs. In
+general, the investment cost is higher when the platform
+is more productive because incremental improvements in
+the productivity become harder (note that L t enters into
+the growth rate of A t ). It is quadratic in the decentral-
+ized contribution the entrepreneur gathers to reﬂect the
+increasing marginal cost of adding L t . 26 For example, to
+induce more miners to mine Bitcoin, more rewards must
+be given as miners’ competition drives up their cost of
+mining through higher electricity prices.
+We characterize a Markov equilibrium in a transformed
+state space. The equilibrium variables depend on ( m t , A t ) ,
+where the productivity-normalized token supply is given
+by:
+m t =
+M t
+A ′
+t
+. (25)
+26 While we view this as a reasonable starting point, we are fully aware
+that the implicit adjustment costs for labor or capital may not be con-
+vex. Investment may be lumpy and ﬁxed costs can be important in real-
+ity. In corporate ﬁnance, Hugonnier et al. (2015) show that lumpy invest-
+ment for a ﬁnancially constrained ﬁrm facing costly external equity is-
+suance generates different investment and ﬁnancing dynamics from those
+in a model based on smooth investment adjustment costs, for example,
+Bolton et al. (2011) . For example, Hugonnier et al. (2015) show that the
+value function may not be globally concave and smooth pasting condi-
+tions may not guarantee optimality.
+981
+
+===== PAGE 11 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+By inspecting Eq. (23) , we can see that m t is the only state
+variable driving the token price. By Itô’s lemma, μP
+t is a
+function of m t if and only if P t is a function of m t .
+Moreover, the entrepreneur’s value function exhibits a
+homogeneity property, V (M t , A t ) = v (m t ) A ′
+t . These prop-
+erties signiﬁcantly simplify our analysis. In the interior
+region where dD t = 0 , denoting (1 − κ)( ξ
+1 −ξγ ) by δ, we
+simplify the HJB Eq. (9) under V t = v (m t ) A ′
+t to an ordinary
+differential equation for v (m t ) , as follows:
+rv ( m t ) = max
+L t
+v ′ ( m t )
+(
+L t + θ
+2 L 2
+t
+)
+P t
++
+[v ( m t ) − v ′ ( m t ) m t
+]
+×
+[
+δμH L t +
+1
+2
+δ(δ −1)(σ H ) 2 L 2
+t
+]
++
+1
+2
+v ′′ ( m t ) m 2
+t δ2 (σ H ) 2 L 2
+t . (26)
+Under the speciﬁcation of F (·) in Eq. (24) , the HJB
+equation implies the following optimal investment via the
+standard ﬁrst-order condition.
+Lemma 3 (Parameterized Optimal Investment). Under the
+speciﬁcation of investment cost function, F (·) , in Eq. (24) , the
+optimal investment is given by:
+L ∗
+t =
+[v ( m t ) − v ′ ( m t ) m t
+]δμH + v ′ ( m t )
+P t
+− v ′ ( m t )
+P t θ − v ′′ ( m t ) m 2
+t δ2 (σ H )2 −δ(δ −1)(σ H ) 2 [ v ( m t ) − v ′ ( m t ) m t ]
+.
+(27)
+The optimality conditions for dD t give us the boundary
+conditions for solving v ( m t ) and P (m t ) . The marginal value
+of retained tokens must be equal to the market value,
+−v ′ ( m ) = P ( m ) , (28)
+at the optimal payout boundary, m , and we have the
+standard “super contact” condition:
+−v ′′ ( m ) = P ′ ( m ) . (29)
+As the payout boundary is a reﬂecting boundary, to rule
+out arbitrage in the token market, we have:
+P ′ ( m ) = 0 . (30)
+Intuitively, the distribution of token dividends happens
+when the token supply is suﬃciently small relative to the
+platform productivity, i.e., low m t . Similarly, at the buyback
+boundary, denoted by m , we have the following conditions:
+−v ′ ( m ) = P ( m ) ( 1 + χ) ; (31)
+−v ′′ ( m ) = P ′ ( m ) ( 1 + χ) ; (32)
+P ′ ( m ) = 0 . (33)
+The optimal amounts of token payout or buyback
+are determined as follows. The payout boundary, m , is
+a reﬂecting boundary of m t = M t /A ′
+t . When m t = m , any
+decrease of m t (e.g., due to a positive shock to A ′
+t ) leads to
+payout, and the payout amount is precisely equal to the
+increase in M t (the numerator) that is required to bring
+m t back up to m . Similarly, at the buyback boundary, m ,
+is also a reﬂecting boundary of m t . At m , any increase
+of m t (e.g., due to a negative shock to A ′
+t ) leads to token
+buyback, and the buyback amount is equal to the decrease
+in M t that is required to bring m t back down to m .
+Proposition 4 (Solving the Markov Equilibrium). With
+Lemmas 1 , 2 , and 3 , there exists a Markov equilibrium with
+A t (equivalently A ′
+t ) and m t = M t /A ′
+t as the state variables,
+and the equilibrium has the following properties:
+(i) P ( m t ) and v ( m t ) uniquely solve the system of ordinary
+differential equations given by Eqs. (23) and (26) subject to
+boundary conditions given by Eqs. (28) to (33) .
+(ii) The entrepreneur’s optimal investment L t and deci-
+sions on whether to payout ( dD t > 0 ) or buy back tokens
+( D t < 0 ) all depend on m t only.
+(iii) Users’ optimal token holdings and participation deci-
+sions, together with the user base depend on both m t and A t ,
+according to Proposition 2 .
+For the parameters that affect user activities, we follow
+CLW to set α = 0 . 3 , φ = 1 , r = 0 . 05 , and the volatility
+parameter, σ H = 2 . For the mean productivity growth, we
+set μH = 0 . 5 , which generates a μP
+t in line with the values
+in CLW. We set χ = 7% for the ﬁnancing cost following
+empirical studies on equity issuance ( Eckbo et al., 2007 ).
+We set θ = 10 , 0 0 0 so the growth rate of productivity is
+in line with that in CLW. The rest of parameters are to il-
+lustrate the qualitative implications of the model: γ = 1 / 8
+for the network effect and ξ = 2 , κ = 5 / 8 , and ω = 100 for
+the distribution parameters of u i . The model’s qualitative
+implications are robust to the choice of these parameters.
+Blockchain platforms often feature a maximum to-
+tal token supply. One way to incorporate this into our
+framework is to have an absorbing upper bound of m t ,
+say ˜ m . In such case, once reaching a multiple of the
+platform productivity, i.e., ˜ m A ′
+t , the supply would grow
+proportionally with A ′
+t forever, and according to Lemma 2 ,
+token price will then be a constant. As for newly issued
+tokens, they are divided between the entrepreneur and
+contributors, and here the entrepreneur faces a standard
+consumption-savings trade-off: If she takes a larger share
+of the new tokens, the productivity grows slower. We
+leave this extension for future research.
+4.2. Endogenous platform development
+In Panel A of Fig. 2 , we plot the A ′ -scaled value function
+v ( m t ) . The curve starts at the payout boundary where the
+entrepreneur receives payouts in the form of newly issued
+tokens, and it ends at the buyback boundary where the
+entrepreneur raises funds to buy back and burn tokens
+out of circulation in order to support token price and the
+continuation value.
+The entrepreneur’s value declines in the normalized
+token supply (a notion of “inﬂation” practitioners casually
+refer to). Intuitively, when more tokens are circulating
+relative to productivity, it is more likely for the en-
+trepreneur to reach the buyback (upper) boundary and
+pay the ﬁnancing cost, and in the less likely event of token
+payout, the entrepreneur receives a lower value due to
+the depressed token price. The value function is always
+positive in Panel A, suggesting that the entrepreneur never
+abandons the platform.
+982
+
+===== PAGE 12 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+Fig. 2. Platform value and investment. In Panel A, we plot the A ′
+t -scaled value function. Panel B plots the optimal investment as a function of productivity-
+normalized token supply, m t . Panel C shows the ratio of the entrepreneur’s marginal value of tokens to the market price of tokens, and the wedge between
+this ratio and one represents the token issuance cost. Panel D shows the entrepreneur’s marginal value of A ′
+t .
+In Panel B of Fig. 2 , we plot the optimal platform
+investment (given by Eq. (27) ) against the normalized
+token supply. In Eq. (27) , the optimal L ∗
+t decreases in
+−V M t /P t , the ratio of the marginal cost of token issuance,
+−V M t = −v ′ (m t ) , to the token market price, P t . This ratio
+measures the valuation gap between the entrepreneur and
+the platform users (i.e., the token issuance cost). When the
+gap is high, it is costly from the entrepreneur’s perspective
+to ﬁnance investment with tokens. The ratio starts at
+one, as implied by the value-matching condition of the
+payout boundary. This is when the entrepreneur’s private
+valuation of tokens, which incorporates the expected cost
+of token buyback, coincides with the market or users’
+valuation. The gap widens as the token supply outpaces
+the growth of the effective productivity, i.e., as m t in-
+creases, and eventually, when the gap reaches ( 1 + χ) , the
+entrepreneur optimally buys back tokens. The increasing
+token issuance cost in Panel C (i.e., −V M t /P t increasing in
+m t ) largely contributes to the decreasing pattern of L ∗
+t .
+The optimal L ∗
+t given by Eq. (27) increases in
+the marginal value of effective productivity, ∂V t
+∂A ′
+t
+=
+v (m t ) − v ′ (m t ) m t , because on average, investment has a
+positive outcome, i.e., μH > 0 , so more resources gathered
+by token payments, L t , leads to a higher expected growth
+of A t and an expected increase in the entrepreneur’s value.
+Moreover, the marginal value of effective productivity also
+has a positive impact on L ∗
+t via the denominator of L ∗
+t in
+Eq. (27) . As shown in the HJB Eq. (26) , the marginal value
+of A ′
+t is multiplied by the drift of A ′ ( = A δ
+t ), which is equal
+to δμH L t + 1
+2 δ(δ −1)(σ H ) 2 L 2
+t given dA t in Eq. (2) . The
+denominator effect follows the quadratic term in the drift
+of A ′
+t . Near the buyback (upper) boundary, ∂V t
+∂A ′
+t
+is partic-
+ularly high because an increase in A ′
+t pulls down m t and
+thus reduces the likelihood of costly buyback. Overall, even
+though the marginal value of productivity is increasing
+in m t in Panel D, the economic force of token overhang
+(Panel C) dominates, resulting in an optimal investment
+that declines in the normalized token supply m t .
+Finally, according to Eq. (27) , the second-order deriva-
+tive of the A ′ -scaled value function, v ′′ (m t ) , also affects
+the optimal investment L ∗
+t via the denominator. Its impact
+is small under the current parameterization, so the plot is
+not included in Fig. 2 . However, the intuition of the poten-
+tial precautionary motive ( v ′′ (m t ) < 0 ) is still interesting.
+Token payout is largely a real option decision. While it
+is not completely irreversible, reversing it (i.e., buying
+back tokens) incurs the ﬁnancing cost. 27 The probability of
+incurring such cost increases as m t approaches the buy-
+back boundary, so the entrepreneur becomes increasingly
+cautious on making a risky investment given the shock in
+Eq. (2) . Therefore, the negative impact of precaution on
+investment is more prominent near the buyback (upper)
+boundary of m t .
+Overall, our model reveals a rich set of trade-offs in the
+choice of token-ﬁnanced investment. The model has the
+potential to explain various features of token distribution
+27 For example, the Synereo team has to hold multiple meetings and
+incur effort cost to explain to users when the team burned 33% of its
+cryptocurrency reserves.
+983
+
+===== PAGE 13 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+Fig. 3. Token price Dynamics and user adoption. In Panel A, we plot token price against productivity-normalized token supply, m t . In Panel B, we plot σ P
+t ,
+the P t -scaled diffusion term of token price. In Panel C, we show the P t -scaled drift of token price. In Panel D, we plot the user base, which depends on
+both m t and A ′
+t .
+to open-source engineers, miners (ledger maintainers),
+and crowd-sourced ﬁnanciers in practice.
+4.3. Token price and user adoption
+The dynamics of token price are directly linked to
+that of productivity-normalized token supply. As shown in
+Panel A of Fig. 3 , P t declines in m t . In Appendix C, we de-
+rive the negative shock loading (diffusion) of m t . Thus, a
+positive shock in productivity decreases m t by increasing
+A ′
+t , thus moving the economy closer to the payout (lower)
+boundary of m t . Token price increases in response and is
+therefore procyclical with respect to productivity shock. In
+stark contrast to the 200% per annum volatility of produc-
+tivity shock that we input, i.e., the fundamental volatility,
+σ P
+t is surprisingly small (below 0.15% in Panel B of Fig. 3 )
+because the entrepreneur receives newly issued tokens as
+payout when m t is low and raise funds to buy back and
+burn tokens when m t is high, actively moderating the vari-
+ation of the token price by controlling the supply. The en-
+trepreneur’s incentive to regulate the token supply is gov-
+erned by her marginal cost of raising token supply, − ∂V t
+∂M t =
+v ′ (m t ) < 0 . Corollary 2 directly follows from Corollary 1 .
+Corollary 2 . From Corollary 1 , the token price is bounded in [
+−
+(
+1
+1+ χ
+)
+v ′ (m t ) , −v ′ (m t )
+]
+.
+The optimality condition on payout imposes an upper
+bound on token price. At any m t , P (m t ) ≤− v ′ (m t ) because
+otherwise the entrepreneur prefers obtaining token payout
+(worth P (m t ) per unit of token) over preserving the con-
+tinuation value (worth −v ′ (m t ) ). The optimality condition
+on token buyback imposes a lower bound on token price.
+At any m t , P (m t ) ≥−
+(
+1
+1+ χ
+)
+v ′ (m t ) because otherwise
+the entrepreneur ﬁnds tokens too cheap in the secondary
+market and prefers raising costly funds to buy back tokens.
+In our model, the token value has two anchors. First, users
+need tokens for transactions. Second, to preserve the
+continuation value, the entrepreneur is willing to pay the
+ﬁnancing cost to raise funds and use such real resources
+to buy back and burn tokens out of circulation.
+Panel C of Fig. 3 shows the expected token price
+change. When m t is low, the expectation is negative, re-
+ﬂecting the likely token-supply increase due to token pay-
+out to the entrepreneur and increasing investment needs
+(Panel A of Fig. 2 ). As m t increases, the expected change
+in token price gradually increases and eventually becomes
+positive because, ﬁrst, the investment needs decline, and
+second, the likelihood of token buyback increases.
+Finally, we report the results on user-base dynamics. As
+shown in Proposition 2 , unlike other endogenous variables
+that only depends on m t , the user base N t depends on
+both m t (through the expected token price change μP (m t ) )
+and A ′
+t . In Panel D of Fig. 3 , we plot the user base against
+m t under different values of A ′
+t . Given A ′
+t , Panel D shows
+that as m t increases (and μP
+t increases), the user base
+increases because agents expect an improving capital gain
+984
+
+===== PAGE 14 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+from token holdings. Given any value m t , a higher value
+of productivity A t leads to a larger user base because
+A t directly enters users’ convenience yield from token
+holdings in Eq. (3) .
+Our model features mild volatility in the token price.
+The entrepreneur’s optimal payout and token buyback
+decisions impose two reﬂecting boundaries on the state
+variable m t . At both boundaries, the ﬁrst derivative
+of token price with respect to m t must be zero (e.g.,
+see Eq. (30) ) because otherwise arbitrage opportunities
+emerge: For example, at m , m t will be reﬂected upward, so
+P ′ (m t ) > 0 ( < 0 ) implies guaranteed instantaneous proﬁts
+from a long (short) position. By Itô’s lemma, P ′ (m t ) = 0 at
+the boundaries implies σ P (m t ) = 0 . Therefore, even in the
+interior region, token volatility σ P (m t ) can exceed zero;
+however, it cannot go far beyond zero as it is tied to zero
+at both boundaries.
+Therefore, in our model, the stability of token price
+relies on the dynamic payout and token buyback decisions
+of the entrepreneur. This mechanism differs signiﬁcantly
+from the stablecoin designs proposed by practitioners. A
+popular approach is to mimic open market operations by
+central banks. When token price is low, the platform issues
+token bonds to buy back tokens. Token bonds promise to
+pay the principal with interest in the future, but all pay-
+ments are in tokens. The problem with this design is that
+an inter-temporal substitution between current and future
+tokens does not introduce any real resources to support
+the token price, nor does it provide any incentive to eco-
+nomic agents to devote such resources. A champion of this
+design, the Basis stablecoin project, which attracted $133
+million of venture capital in April 2017, has closed down all
+operations, citing US securities regulations as the reason
+for its decision. An alternative design is collateralization,
+which backs token value with real resources, such as the
+US dollar (e.g., Tether, Circle, Gemini, JPM coin, or Paxos),
+oil reserves (e.g., Venezuela’s El Petro, OilCoin, or PetroDol-
+lars). 28 A derivative of such design is to further tranche
+the claims on real resources, so tokens are the most senior
+tranche, which is less information-sensitive and thus has
+a stable secondary-market value. Li and Mayer (2020) pro-
+vide a model on collateralized stablecoins.
+4.4. Comparative statics
+We further explore the mechanism of underinvestment
+by analyzing the comparative statics. Speciﬁcally, we focus
+on the root of the problem, which is the cost of external
+ﬁnancing for token buyback, and by comparing platforms
+with different degrees of network effects, we highlight
+the key role of risk in generating underinvestment. In
+Appendix D, we explore how competition (captured by
+the parameters ω and κ) and user distribution (captured
+by the parameter ξ) affect the platform value and optimal
+investment strategy.
+28 Such designs are often subject to manipulations (e.g., Griﬃn and
+Shams, 2020 ).
+4.4.1. External ﬁnancing cost
+The entrepreneur’s external ﬁnancing cost drives the
+divergence of interest between the entrepreneur and users.
+If the cost of buyback, χ, is zero, the dynamic token is-
+suance cost and thus underinvestment disappear as shown
+in Eq. (10) because −V M t = P t . 29 We now compare the
+model’s performances under χ = 7% (the baseline value)
+and χ = 8% .
+In Panel A of Fig. 4 , we see that the entrepreneur’s
+( A ′ -scaled) value function curve ends at a lower level of
+m t when χ is higher. While the buyback (right) boundary
+is lower, the payout (left) boundary remain roughly un-
+changed. Therefore, the overall level of m t is lower when
+χ increases. When the ﬁnancing cost is higher, the en-
+trepreneur faces a higher cost of issuing tokens. Therefore,
+the entrepreneur optimally maintains a low level of nor-
+malized token supply. Panel A of Fig. 4 also shows that, in-
+tuitively, a higher external ﬁnancing cost causes the value
+function to shift downward across different values of m t .
+We compare platform investment under different val-
+ues of χ in Panel B of Fig. 4 . A higher ﬁnancing cost leads
+to lower investment as the conﬂict of interest between the
+entrepreneur and users is exacerbated. Following a positive
+shock, the investment successfully enhances productivity,
+beneﬁting both the entrepreneur and users; following a
+negative shock, only the entrepreneur bears the downside
+of a higher likelihood of paying the ﬁnancing cost for
+token buyback because users are free to reduce token
+holdings and abandon the platform. A higher ﬁnancing
+cost implies a greater downside for the entrepreneur.
+4.4.2. Network effect
+As speciﬁed in Eq. (3) , the parameter γ governs the
+strength of the network effect. When γ is higher, an
+increase in the total number of users, N t , causes each
+user to demand more tokens. In Fig. 5 , we compare the
+entrepreneur’s value function (Panel A) and optimal in-
+vestment (Panel B) under γ = 0 . 125 (the baseline value)
+and γ = 0 . 124 .
+Interestingly, a weaker network effect induces the
+entrepreneur to be more aggressive in token issuance.
+Moreover, the entrepreneur’s value function shifts upward
+(Panel A), as a weaker network effect induces more invest-
+ment (Panel B). These observations are counterintuitive
+because when the network effect is weaker, the posi-
+tive feedback effect of increasing productivity to attract
+more and more users is dampened, which discourages
+investment in productivity. However, our model features a
+counteracting force.
+As previously discussed, the conﬂict of interest between
+the entrepreneur and users and the resultant underin-
+vestment problem depend on three ingredients: (1) the
+external ﬁnancing cost, (2) user heterogeneity, and (3)
+the uncertainty in investment outcome. When investment
+outcome is uncertain, the entrepreneur has to consider
+the potential downside, i.e., the increase in the likelihood
+29 In this case, the HJB equation of the owner’s valuation function de-
+generates. Once the token price is solved via the ODE implied by the to-
+ken market-clearing condition, the owner’s value function can be calcu-
+lated as an integral of token price, because −V M t = −v ′ ( m t ) = P ( m t ) .
+985
+
+===== PAGE 15 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+Fig. 4. Comparative statics: ﬁnancing cost. This ﬁgure shows the A ′ -scaled value function (Panel A) and optimal investment (Panel B) under χ = 0 . 08 and
+the baseline value χ = 0 . 07 .
+Fig. 5. Comparative statics: network effect. This ﬁgure shows the A ′ -scaled value function (Panel A) and optimal investment (Panel B) under γ = 0 . 124 and
+the baseline value γ = 0 . 125 .
+of costly token buyback follows a negative shock that
+increases m t (by decreasing productivity in the denom-
+inator). A weaker network effect dampens uncertainty.
+Following a positive shock, investment increases produc-
+tivity, but under a weaker network effect, the resultant
+increase in token demand and the price is smaller. Like-
+wise, following a negative shock, a weaker network effect
+implies a smaller decline in token demand and price.
+Therefore, even though a weaker network effect reduces
+the average positive impact of investment on token price
+and the entrepreneur’s payout (the mean effect), it also
+dampens the risk of investment, which is a key ingredient
+of the underinvestment problem.
+5. Blockchain and investment eﬃciency
+The entrepreneur faces a time inconsistency problem
+that features prominently in studies on macroeconomics
+(e.g., Kydland and Prescott, 1980; Barro and Gordon, 1983;
+Lucas and Stokey, 1983 ) and corporate capital structure
+(e.g., DeMarzo and He, 2021 ). If the entrepreneur is able
+to commit against underinvestment, the users would have
+demanded more tokens, which then increases the token
+price, as well as the value of token payouts to the en-
+trepreneur. However, a predetermined level of investment
+can be deemed suboptimal ex post as the conﬂict of inter-
+est arises between the entrepreneur and users, reﬂected
+in the gap between the entrepreneur’s private valuation of
+tokens, −V M t , and users’ valuation, P t .
+So far, we have focused on the discretionary token-
+supply policies of the platform. Next, we study how com-
+mitment to predetermined token-supply rules adds value.
+Our analysis provides insights on why tokens become a
+viable payment solution after the blockchain technology
+matures. The rise of tokens as a means of payment on
+digital platforms is a recent phenomenon with many
+applications inspired by the success of Bitcoin, Ethereum,
+and other blockchain-based startups. In Appendix A, we
+summarize the three aspects of blockchain technology
+that are critical in enabling commitment, including data
+structure, smart contracting, and decentralized governance,
+and we highlight both the advantages of blockchain-based
+commitment over traditional approaches (e.g., collateral)
+and its limitations.
+5.1. Constant token growth as commitment to investment
+To illustrate the impact of commitment brought forth
+by the blockchain technology, we consider a speciﬁc case
+where:
+d M t = F ( L t , A t ) /P t d t = μM M t d t, (34)
+986
+
+===== PAGE 16 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+i.e., a constant growth rate of token supply in the interior
+region ( dD t = 0 ) is used to ﬁnance the enhancement of
+platform productivity. This commitment is popular among
+blockchain applications primarily as a way to address
+users’ concerns over token-holding dilution via inﬂation. 30
+We show that the fundamental role of such commitment
+actually lies in the mitigation of underinvestment. This
+rule of token supply implies that the resources a platform
+gathers, L t , become a predetermined function of the state
+variables.
+We still allow the entrepreneur to receive token div-
+idends and buy back tokens, but with L t following a
+predetermined rule, the entrepreneur’s only control vari-
+able is dD t . The following HJB equation characterizes the
+value function:
+rV ( M t , A t ) dt = max
+dD t
+P t dD t
+[
+I { dD t ≥0 } + ( 1 + χ) I { dD t < 0 }
+]
++ V M t
+(μM M t dt + dD t
+)
++ V A t A t L t μH dt +
+1
+2
+V A t A t A 2
+t L 2
+t (σ H ) 2 dt. (35)
+Comparing it with Eq. (9) , the tokens used to pay for L t is
+replaced by μM M t dt. Under the same change of variable as
+in Section 4.1 , we have, in the interior region ( dD t = 0 )
+rv ( m t ) = v ′ ( m t )
+(
+L t + θ
+2 L 2
+t
+)
+P (m t )
++
+[v ( m t ) − v ′ ( m t ) m t
+]
+×
+[
+δμH L t +
+1
+2
+δ(δ −1)(σ H ) 2 L 2
+t
+]
++
+1
+2
+v ′′ ( m t ) m 2
+t δ2 (σ H ) 2 L 2
+t , (36)
+where L t , as a function of m t , is implicitly deﬁned by:
+L t +
+θ
+2
+L 2
+t = μM P (m t ) m t . (37)
+As the left-hand side of Eq. (37) is an increasing and
+convex function of L t , investment increases in the A ′ -
+scaled token market capitalization, i.e., P (m ) m = P t M t /A ′
+t .
+Intuitively, when tokens are more valuable, the constant
+growth of token supply gathers more resources for devel-
+opment. The boundary conditions are the same as those
+of the baseline model.
+Proposition 5 (Solution under Predetermined Token
+Growth). Under the commitment to a constant growth rate
+of token supply for investment in productivity, the investment
+given by Eq. (37) increases in A ′ -scaled token market capital-
+ization, i.e., P t m t . The entrepreneur receives token dividends
+( dD ∗
+t > 0 ) when P t ≥− V M t , and buys back and burns tokens
+out of circulation ( dD ∗
+t < 0 ) when −V M t ≥ P t ( 1 + χ) . Token
+price is determined by Eq. (23) as in the baseline model.
+In our numerical solution, we start with μM = 2 for
+illustrative purpose. Comparing Panel A of Fig. 6 with
+Panel A of Fig. 2 , we can see that the commitment in-
+creases the entrepreneur’s value by around 15% near the
+30 Blockchain applications emphasize predetermined rules of token-
+supply growth. Ethereum has roughly ﬁxed increments while Bitcoin’s
+minting rate is a constant that halves as the system matures via a longer
+transaction chain (speciﬁcally, every 210,0 0 0 more blocks).
+payout (lower) boundary and around 20% near the buy-
+back (upper) boundary. By comparing Panel B in the two
+ﬁgures, we see that such an increase mainly comes from
+a higher level of investment as the commitment mitigates
+the problem of underinvestment under token overhang.
+As previously discussed, to the entrepreneur, the value
+of tokens is −V M t , while to the users, it is P t . The wedge
+between −V M t and P t widens as the normalized token sup-
+ply, m t , increases, and the ratio, −V M t /P t , reaches 1 + χ,
+the ﬁnancing cost of token buyback, at the buyback (up-
+per) boundary of m t . Therefore, as shown in Eq. (10) , the
+closer to the buyback boundary, the more concerned the
+entrepreneur is over the token issuance cost, −V M t /P t > 1 .
+This implies that investment chosen by the entrepreneur
+declines in m t , as shown in Panel B of Fig. 2 . Therefore,
+commitment to the predetermined investment rule creates
+more value when m t is higher and closer to its upper
+boundary. This explains why the commitment-induced
+improvement in the entrepreneur’s value is greater near
+the buyback boundary (around 20% increase) than near
+the payout boundary (around 15% increase).
+Another difference between the commitment case
+and the baseline case of discretionary investment is that
+under commitment, investment increases in m t (Panel B of
+Fig. 6 ), while in the baseline case, investment decreases in
+m t (Panel B of Fig. 2 ). As previously discussed, the declin-
+ing pattern in the baseline case is due to the increasing
+cost of issuing tokens, i.e., the widening wedge between
+−V M t and P t . The increasing pattern in the commitment
+case is a numeric result. As m t increases, token price,
+P (m t ) , decreases, but the A ′
+t -scaled market capitalization,
+i.e., P (m t ) m t , may increase or decrease. Under the cur-
+rent parameterization, the P (m t ) m t increases in m t , so,
+according to Eq. (37) , L t increases in m t .
+To further demonstrate the economic mechanism, we
+also consider the solution when the committed growth of
+token supply is half as large, i.e., μM = 1 . The impact of
+reducing token-supply growth rate on investment and the
+entrepreneur’s value is unclear a priori. By reducing inﬂa-
+tion, a lower growth rate of token supply tends to increase
+the token price that users are willing to pay and thus in-
+crease L t , the resources gathered via token issuance. How-
+ever, as shown in Eq. (37) , L t depends on the token market
+capitalization, i.e., both the unit price and the quantity
+of tokens, so reducing the token-supply growth can also
+negatively impact L t . Under the current parameterization,
+the latter force dominates, which leads to a lower level of
+investment under μM = 1 (Panel D of Fig. 6 ) than the so-
+lution under μM = 2 (Panel B of Fig. 6 ). Comparing Panels
+A and C of Fig. 6 , we can see that the entrepreneur’s value
+also declines when μM declines from 2 to 1.
+What is more interesting is that the entrepreneur’s
+value near the payout (lower) boundary of m t is not only
+below the value under μM = 2 but also around 2% below
+the value in the baseline case of discretionary investment
+(Panel A of Fig. 2 ). As previously discussed, the wedge
+between the entrepreneur’s private cost of token issuance,
+−V M t , and users’ valuation, P t , widens as m t increases, so
+commitment adds more value when m t is higher. Indeed,
+the entrepreneur’s value is around 3% higher under μM = 1
+than in the discretionary case near the buyback (upper)
+987
+
+===== PAGE 17 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+Fig. 6. Platform value and investment under predetermined token-supply growth. In Panels A and C, we plot the A ′
+t -scaled value functions under μM = 2
+and μM = 1 , respectively. In Panel B and D, we plot the optimal investment under μM = 2 and μM = 1 , respectively.
+boundary. In contrast, commitment adds less value in
+the low- m t region, i.e., near the payout (lower) boundary,
+because the conﬂict of interest between the entrepreneur
+and users is less severe. Therefore, near m , the value
+added from commitment is small while the drawback of
+commitment—the entrepreneur cannot coordinate invest-
+ment ( L t ) and payout/buyback ( dD t ) decisions—dominates.
+As a result, the entrepreneur’s value actually decreases
+under commitment relative to the discretionary case.
+Regarding the coordination between investment and
+payout/buyback decisions, its importance can be seen from
+the difference in the range of m t on the horizontal axis
+between commitment cases ( Fig. 6 ) and the baseline case
+( Figs. 2 and 3 ). Under commitment, the range is much
+smaller. The entrepreneur pays the ﬁnancing cost to buy
+back and burn tokens at a much lower level of m t (i.e.,
+chooses a lower buyback boundary). Moreover, the payout
+boundaries under commitment (both μM = 1 and μM = 2 )
+are higher than that of the discretionary case. Therefore,
+when the entrepreneur loses control of the amount of
+tokens issued for investment, she turns more active in
+payout and buyback, effectively narrowing the equilibrium
+range of m t . This results in more frequent payments of the
+ﬁnancing cost.
+To sum up, commitment to predetermined investment
+rules adds value by addressing the token overhang prob-
+lem, but it also forces the entrepreneur to control the
+token supply more actively via the remaining margins (i.e.,
+payout and buyback), and to pay the ﬁnancing cost more
+frequently. Overall, when the former force dominates, the
+entrepreneur obtains a higher value via commitment: A
+higher level of investment translates into a higher token
+price through users’ expectations of faster productivity
+growth, and a higher token price in turn implies a more
+valuable token payout for the entrepreneur.
+5.2. Mitigating underinvestment through fees
+As demonstrated, commitment enabled by blockchains
+mitigates the problem of token-overhang and underin-
+vestment, but commitment to predetermined investment
+rules forces the entrepreneur to manage the token supply
+through more active payout and buyback, which results
+in paying ﬁnancing costs more frequently. An alternative
+solution is to ﬁnance investment with fees collected from
+users.
+To analyze the impact of fees, let f 0 ,t and f 1 ,t denote
+respectively the ﬁxed and proportional fees users pay at t.
+The users’ objective Eq. (6) is modiﬁed to:
+max
+{
+0 , max
+k i,t > 0
+[
+( P t k i,t )
+1 −α (
+N γ
+t A t u i
+)α
+d t + k i,t E t [ d P t ]
+−(φ + f t, 0 ) dt − P t k i,t (r + f 1 ,t ) dt ] } . (38)
+Under the parameterized distribution of u i , we follow the
+same procedure to solve the participation threshold and
+988
+
+===== PAGE 18 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+Fig. 7. Platform value, investment, and token price dynamics under fees. In Panel A, B, C, and D, we compare, respectively, the entrepreneur’s A ′
+t -scaled
+value function, optimal investment, the P t -scaled token-price drift, and the P t -scaled token-price diffusion under fees and in the baseline case without fees.
+then obtain a new measure of users:
+N t = A ′
+t
+( α
+ω(φ + f 0 ,t )
+) ξ
+1 −ξγ
+(
+1 − α
+r + f 1 ,t − μP (m t )
+)
+(
+ξ
+1 −ξγ
+)
+(
+1 −α
+α )
+≡ A ′
+t n ( f 0 ,t , f 1 ,t , m t ) . (39)
+It is clear that ∂n ( f 0 ,t , f 1 ,t ,m t )
+∂ f 0 ,t < 0 and ∂n ( f 0 ,t , f 1 ,t ,m t )
+∂ f 1 ,t < 0 (as
+α ∈ (0 , 1) and ξ ∈ ( 1 , 1 /γ] ). The platform faces a trade-
+off. Higher fees, either via f 0 ,t or f 1 ,t , lead to lower user
+participation, which directly reduces the revenue from
+ﬁxed fees, i.e., f 0 ,t N t . 31
+Meanwhile, higher fees also reduce users’ token de-
+mand, which leads to a lower token price and proportional
+fees. We follow the same procedure of solving users’ token
+demand, k i,t , and then from the token market-clearing
+condition, we obtain:
+P ( f 0 ,t , f 1 ,t , m t ) =
+ξ
+m t (ξ −1) ω
+ξ
+1 −ξγ
+( α
+φ + f 0 ,t
+) ξ
+1 −ξγ −1
+×
+(
+1 − α
+r + f 1 ,t − μP (m t )
+)1+
+(
+ξ
+1 −ξγ
+)
+(
+1 −α
+α )
+.
+(40)
+31 Note that the users’ expectations of the rate of token price change,
+μP (m t ) , is a function of the key state variable m t , which the platform
+takes as given when choosing its fees.
+We have ∂P( f 0 ,t , f 1 ,t ,m t )
+∂ f 0 ,t < 0 and ∂P( f 0 ,t , f 1 ,t ,m t )
+∂ f 1 ,t < 0 (as
+ξ
+1 −ξγ −1 > 0 under ξγ < 1 ), so the token price is
+negatively affected by the platform imposing fees on users.
+Overall, when choosing fees, the entrepreneur solves
+a problem akin to a monopolistic producer, trading off
+unit prices and quantities. The total fee revenues are equal
+to f 0 ,t N t + f 1 ,t P t M t , where we apply the token market-
+clearing condition,
+∫
+i ∈ [ 0 ,1 ] k i,t di = M t , to substitute out
+k i,t . Such revenues can be used to ﬁnance investment in
+productivity so that the need to issue tokens is reduced.
+The new law of motion of token supply is thus given by:
+d M t =
+F ( L t , A t ) − ( f 0 ,t N t + f 1 ,t P t M t )
+P t
+d t + d D t , (41)
+and in the interior region where dD t = 0 , the platform’s
+HJB Eq. (9) becomes:
+rV ( M t , A t ) dt = max
+{ f 0 ,t , f 1 ,t ,L t ,dD t }
+× V M t
+[
+F ( L t , A t ) − ( f 0 ,t N t + f 1 ,t P t M t )
+P t
+dt
+]
++ V A t A t L t μH dt +
+1
+2
+V A t A t A 2
+t L 2
+t (σ H ) 2 dt . (42)
+Under a negative marginal value of outstanding token
+supply, i.e., V M t < 0 , the entrepreneur chooses fees to
+minimize the expression in the square bracket on the
+right-hand side of Eq. (42) . Allowing the platform to
+charge fees provides an additional source of revenue that
+989
+
+===== PAGE 19 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+likely increases investment and the entrepreneur’s value,
+especially when the likelihood of costly token buyback is
+high near the upper (buyback) boundary of m t .
+Introducing fees entails costs and beneﬁts that are
+associated with traditional platform businesses. There are
+many studies on the complex economic forces that drive
+the determination of fees on platforms (e.g., Hagiu, 2006;
+Rochet and Tirole, 2006; Rysman, 2009 ). Given our focus
+on tokens, our setup does not capture all those forces.
+Therefore, we do not address the question of optimal
+fee setting. Instead, we illustrate the impact of fees in
+Fig. 7 using a particular fee structure, f 0 ,t = 0 . 1% and
+f 1 ,t = 0 . 1% . 32 The fee revenue, f 0 ,t N t + f 1 ,t P t M t , varies
+endogenously in the model, along with the user base, N t ,
+the token price, P t , and the outstanding token amount, M t .
+The constant fee parameters allow us to remain as close
+as possible to the baseline model and its solution method.
+The dashed line in Panel A of Fig. 7 shows that fees
+increase the platform owner’s value especially near the
+buyback (upper) boundary of m t . As previously discussed,
+near the upper boundary, the token issuance cost is high,
+so the platform refrains from token-ﬁnanced investment.
+This underinvestment problem is now mitigated by fee
+revenues (Panel B of Fig. 7 ). Introducing fees does not
+signiﬁcantly affect the dynamics of the token price (Panels
+C and D of Fig. 7 ) in terms of the drift and diffusion.
+A notable difference between our main model and the
+model with fees is that under fees, the entrepreneur
+delays costly token buyback, which is reﬂected in a higher
+upper boundary of m t (Panel D of Fig. 7 ). This additional
+ﬁnancial slack also helps to boost the entrepreneur’s value.
+Overall, fees increase the entrepreneur’s value by both
+alleviating the underinvestment problem and allowing the
+platform to reduce the impact of ﬁnancing costs by post-
+poning token buybacks. Our analysis thus points towards
+an interesting direction for future research: Analogous
+to macroeconomic management through monetary and
+ﬁscal policies, a platform may dynamically manage its
+state-contingent token-supply policy and fee structure.
+6. Conclusion
+We develop a dynamic model of a platform econ-
+omy, where tokens are used as a means of payment
+among users and issued to ﬁnance platform operation and
+growth. Tokens facilitate user transactions and compensate
+distributed ledger-keepers, open-source developers, and
+crowdfunders for their contributions to platform devel-
+opment. The platform owners maximize their seigniorage
+by managing token supply, subject to the conditions that
+users optimally decide on token demand and rationally
+form expectations of token price dynamics.
+We characterize the optimal token-supply strategy and
+its implications for user-base dynamics, endogenous plat-
+32 When fees are set by centralized platform owners, they are
+relatively stable, as we see in IBM Blockchain’s ﬂat fee for IBM
+Cloud, for example, see https://cloud.ibm.com/docs/blockchain?topic=
+blockchain- ibp- saas- pricing . Fee setting on permissionless, decentral-
+ized platforms has traditionally been linked to network congestion
+and service capacity, which are outside our model but discussed in
+Basu et al. (2019) and Cong et al. (2021) .
+form growth, and token price dynamics. A key mechanism
+is the wedge between insiders’ (the platform owners’)
+token valuation and that of outsiders (users). When the
+valuation wedge falls to zero, the platform owners op-
+timally receives token dividends; when it rises to an
+endogenously determined threshold, the platform opti-
+mally burns tokens out of circulation to stabilize the token
+value. The wedge creates underinvestment in platform
+productivity under the ﬁnancing cost of token buyback.
+By enabling commitment, blockchains enable rule-
+based token supply, thereby mitigating underinvestment
+by overcoming the platform owners’ time inconsistency.
+Financing investment with fees charged on users reduces
+the investment ineﬃciency at the expense of user par-
+ticipation and token demand. Beyond the main focus on
+token-ﬁnanced platform development, our paper provides
+broad implications of dynamic token allocation for token
+price, user adoption, stablecoins, among other issues.
+Supplementary material
+Supplementary material associated with this
+article can be found, in the online version, at
+doi: 10.1016/j.jﬁneco.2021.10.002 .
+References
+Abadi, J. , Brunnermeier, M. , 2018. Blockchain Economics. Technical Report.
+National Bureau of Economic Research .
+Barro, R.J., Gordon, D.B., 1983. A positive theory of monetary policy in
+a natural rate model. J. Polit. Economy 91 (4), 589–610. doi: 10.1086/
+261167 .
+Basu, S. , Easley, D. , O’Hara, M. , Sirer, E. , 2019. Towards a Functional Fee
+Market for Cryptocurrencies. Available at SSRN 3318327 .
+Biais, B. , Bisiere, C. , Bouvard, M. , Casamatta, C. , 2019. The blockchain folk
+theorem. Rev. Financ. Stud. 32 (5), 1662–1715 .
+Bolton, P., Chen, H., Wang, N., 2011. A uniﬁed theory of tobin’s q, corporate
+investment, ﬁnancing, and risk management. J. Finance 66 (5), 1545–
+1578. http://www.jstor.org/stable/41305169
+Bolton, P. , Huang, H. , 2017. The capital structure of nations. Rev. Financ.
+22 (1), 45–82 .
+Brunnermeier, M.K. , James, H. , Landau, J.-P. , 2019. The Digitalization of
+Money. Technical Report. Princeton University .
+Brunnermeier, M.K. , Sannikov, Y. , 2016. The I Theory of Money. Working
+paper. Princeton University .
+Bulow, J.I. , 1982. Durable-goods monopolists. J. Polit. Economy 90 (2),
+314–332 .
+Cagan, P.D. , 1956. The Monetary Dynamics of Hyperinﬂation. University of
+Chicago Press .
+Canidio, A. , 2018. Financial Incentives for Open Source Development: The
+Case of Blockchain. Working paper. IMT School of Advanced Studies .
+Chen, L. , Cong, L.W. , Xiao, Y. , 2020. A Brief Introduction to Blockchain Eco-
+nomics, pp. 1–40 . Chapter 1
+Chiu, J. , Koeppl, T.V. , 2017. The Economics of Cryptocurrencies – Bitcoin
+and Beyond .
+Chiu, J. , Wong, T.-N. , 2015. On the Essentiality of E-money. Technical Re-
+port. Bank of Canada Staff Working Paper .
+Chod, J. , Lyandres, E. , 2018. A Theory of ICOs: diversiﬁcation, Agency, and
+Asymmetric Information. Working paper. Boston University Questrom
+School of Business .
+Coase, R.H., 1972. Durability and monopoly. J. Law Econ. 15 (1), 143–149.
+http://www.jstor.org/stable/725018
+Cong, L.W. , He, Z. , 2019. Blockchain disruption and smart contracts. Rev.
+Financ. Stud. 32 (5), 1754–1797 .
+Cong, L.W., Li, Y., Wang, N., 2021. Tokenomics: dynamic adoption and val-
+uation. Rev. Financ. Stud. 34 (3), 1105–1155. doi: 10.1093/rfs/hhaa089 .
+Décamps, J.-P., Gryglewicz, S., Morellec, E., Villeneuve, S., 2016. Corporate
+policies with permanent and transitory shocks. Rev. Financ. Stud. 30
+(1), 162–210. doi: 10.1093/rfs/hhw078 .
+DeMarzo, P.M. , He, Z. , 2021. Leverage dynamics without commitment. J.
+Finance 76 (3), 1195–1250 .
+990
+
+===== PAGE 20 =====
+
+L.W. Cong, Y. Li and N. Wang Journal of Financial Economics 144 (2022) 972–991
+Duﬃe, D. , 2019. Digital Currencies and Fast Payment Systems: Disrup-
+tion is Coming. Working paper. Stanford University Graduate School
+of Business .
+Easley, D. , O’Hara, M. , Basu, S. , 2019. From mining to markets: the evolu-
+tion of bitcoin transaction fees. J. Financ. Econ. 134 (1), 91–109 .
+Eckbo, B.E. , Masulis, R.W. , Norli, O. , 2007. Chapter 6 –s e c u r i t y offer-
+ings. In: Eckbo, B.E. (Ed.), Handbook of Corporate Finance: Empiri-
+cal Corporate Finance . In: Handbook of Finance Series , vol. 1. Else-
+vier/North-Holland, pp. 233–373 .
+Fanti, G. , Kogan, L. , Viswanath, P. , 2019. Economics of Proof-of-Stake Pay-
+ment Systems. Working paper .
+Fischer, S., 1980. Dynamic inconsistency, cooperation and the benevolent
+dissembling government. J. Econ. Dyn. Control 2, 93–107. doi: 10.1016/
+0165- 1889(80)90053- 6 .
+Garratt, R. , Van Oordt, M.R. , 2019. Entrepreneurial Incentives and the Role
+of Initial Coin Offerings. Working paper. University of California at
+Santa Barbara and Bank of Canada .
+Goldstein, I. , Gupta, D. , Sverchkov, R. , 2019. Initial Coin Offerings as a
+Commitment to Competition. Available at SSRN 3484627 .
+Griﬃn, J.M. , Shams, A. , 2020. Is bitcoin really untethered? J. Finance 75
+(4), 1913–1964 .
+Gryglewicz, S. , Mayer, S. , Morellec, E. , 2020. Optimal Financing with To-
+kens. Working Paper. EPFL, Erasmus University Rotterdam, and Swiss
+Finance Institute .
+Hagiu, A., 2006. Pricing and commitment by two-sided platforms. Rand J.
+Econ. 37 (3), 720–737. doi: 10.1111/j.1756-2171.20 06.tb0 0 039.x .
+Hayashi, F. , 1982. Tobin’s marginal q and average q: a neoclassical inter-
+pretation. Econometrica 213–224 .
+Hinzen, F.J. , John, K. , Saleh, F. , 2019. Bitcoin’s Fatal Flaw: The Limited
+Adoption Problem. NYU Stern School of Business .
+Hu, A. , Parlour, C. , Rajan, U. , 2018. Cryptocurrencies: Stylized Facts on
+a New Investible Instrument. Working Paper. University of California
+Berkeley and University of Michigan .
+Huberman, G., Leshno, J. D., Moallemi, C. C., 2019. An economic analysis
+of the Bitcoin payment system.
+Hugonnier, J. , Malamud, S. , Morellec, E. , 2015. Capital supply uncertainty,
+cash holdings, and investment. Rev. Financ. Stud. 28 (2), 391–445 .
+Irresberger, F. , John, K. , Saleh, F. , 2019. The Public Blockchain Ecosystem:
+An Empirical analysis. NYU Stern School of Business .
+Kahn, C., 1986. The durable goods monopolist and consistency with in-
+creasing costs. Econometrica 54 (2), 275–294. http://www.jstor.org/
+stable/1913151
+Kydland, F.E., Prescott, E.C., 1980. Dynamic optimal taxation, rational ex-
+pectations and optimal control. J. Econ. Dyn. Control 2, 79–91. doi: 10.
+1016/0165- 1889(80)90052- 4 .
+Lehar, A. , Parlour, C.A. , 2020. Miner Collusion and the BitCoin Proto-
+col. Working Paper. University of Calgary and University of California
+Berkeley .
+Li, Y. , 2017. Procyclical Finance: The Money View. Dice Center Working
+Paper. The Ohio State University Fisher College of Business .
+Li, Y. , Mayer, S. , 2020. Managing Stablecoins: Optimal Strategies, Regula-
+tion, and Transaction Data as Productive Capital. Dice Center Working
+Paper. The Ohio State University Fisher College of Business .
+Liu, Y. , Tsyvinski, A. , 2021. Risks and returns of cryptocurrency. Rev. Fi-
+nanc. Stud. 34 (6), 2689–2727 .
+Ljungqvist, L. , Sargent, T.J. , 2018. Recursive Macroeconomic Theory. MIT
+press .
+Lucas, R.E., Stokey, N.L., 1983. Optimal ﬁscal and monetary policy in an
+economy without capital. J. Monet. Econ. 12 (1), 55–93. doi: 10.1016/
+0304-3932(83)90049-1 .
+Mayer, S. , 2020. Token-Based Platforms and Speculators. Working Paper.
+Erasmus University Rotterdam .
+Michaels, D. , 2019. U.S. regulators sue crypto startup telegram over initial
+coin offering. Wall Street J. October 11 .
+Pagnotta, E. , 2018. Bitcoin as decentralized money: prices, mining re-
+wards, and network security. Min. Rewards Netw. Secur. .
+Rochet, J.-C. , Tirole, J. , 2003. Platform competition in two-sided markets.
+J. Eur. Econ. Assoc. 1 (4), 990–1029 .
+Rochet, J.-C., Tirole, J., 2006. Two-sided markets: a progress report. Rand
+J. Econ. 37 (3), 645–667. http://www.jstor.org/stable/25046265
+Romer, P.M., 1986. Increasing returns and long-run growth. J. Polit. Econ-
+omy 94 (5), 1002–1037. doi: 10.1086/261420 .
+Rysman, M., 2009. The economics of two-sided markets. J. Econ. Perspect.
+23 (3), 125–143. doi: 10.1257/jep.23.3.125 .
+Saleh, F. , 2018. Volatility and Welfare in a Crypto Economy. Available at
+SSRN 3235467 .
+Sockin, M. , Xiong, W. , 2018. A Model of Cryptocurrencies. Working Paper .
+Stokey, N.L. , 1981. Rational expectations and durable goods pricing. Bell J.
+Econ. 112–128 .
+Stulz, R.M. , 2019. FinTech, BigTech, and the Future of Banks. Dice Center
+Working Paper. OSU Fisher College of Business .
+991

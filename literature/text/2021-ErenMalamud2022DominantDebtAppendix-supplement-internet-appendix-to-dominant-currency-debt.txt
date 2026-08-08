@@ -1,0 +1,2380 @@
+
+
+===== PAGE 1 =====
+
+INTERNET APPENDIX
+Dominant Currency Debt
+Egemen Eren ∗and Semyon Malamud †
+May 16, 2021
+.
+Abstract
+This Internet Appendix is the companion document to the paper “Dominant Currency Debt”
+by Egemen Eren and Semyon Malamud published at the Journal of Financial Economics .
+∗Bank for International Settlements (BIS), Centralbahnplatz 2, CH–4002 Basel, Switzerland. Tel.: + 41 61 280
+8408; Email: egemen.eren@bis.org
+†Corresponding author. Swiss Finance Institute EPFL, Extranef 213, UNIL Dorigny, 1015 Lausanne, Switzerland.
+Tel.: +41 21 693 2466. E-mail: semyon.malamud@epfl.ch
+1
+
+===== PAGE 2 =====
+
+A. Appendix to Section 2: Theory
+Proposition A.1 Suppose that ﬁrms have a possibility of hedging foreign exchange risk by ac-
+quiring ht≥ 0 units of a ﬁnancial derivative contract with a payoﬀ of Xt+1≥ 0 and a price of
+Et[Mt,t+1Xt+1] to be paid at time t. The ﬁrm always chooses ht = 0.
+The intuition behind this result is straightforward. Hedging eﬀectively plays a role of investment,
+and the ﬁrm only gets the payoﬀ Xt+1 from this investment in good (survival) states, while paying
+the market price at time t to get the payoﬀ in all states. Thus, hedging is just a transfer of funds
+from shareholders to debt–holders, and ﬁrms optimally decide to minimize this transfer. 1
+Proof of Proposition A.1 . The maximization problem is
+max
+ht
+{
+−Et[Mt,t+1Xt+1]ht
++Et
+[
+Mt,t+1
+∫
+Ωt+1Zt+1>Bt+1(Bt)−ht(1−τ)Xt+1
+(Ωt+1Zt+1−Bt+1(Bt) +ht(1−τ)Xt+1)φ(Zt+1)dZt+1
+]}
+.
+The derivative of this objective function with respect to ht is given by
+−Et[Mt,t+1Xt+1] + (1 −τ)Et
+[
+Mt,t+1Xt+1
+(
+1− Φ
+(Bt+1(Bt)−ht(1−τ)Xt+1
+Ωt+1
+))]
+< 0,
+and hence ht = 0 is optimal. Q.E.D.
+1There is ample evidence that ﬁrms often choose not to hedge their foreign currency risk. See, for example, Bodn´ ar
+(2006) who shows that only 4% of Hungarian ﬁrms with foreign currency debt hedge their currency risk exposure.
+Furthermore, according to Salomao and Varela (forthcoming): “data from the Central Bank of Peru reveals that
+only 6% of ﬁrms borrowing in foreign currency employ ﬁnancial instruments to hedge the exchange rate risk, and a
+similar number is found in Brazil.” Du and Schreger (2017) also provide evidence that ﬁrms do not fully hedge their
+currency risk exposures. See also Niepmann and Schmidt-Eisenlohr (2019), Bruno and Shin (2017). While it is known
+that costly external ﬁnancing makes hedging optimal (Froot, Scharfstein, and Stein, 1993; Hugonnier, Malamud, and
+Morellec, 2015), Rampini, Suﬁ, and Viswanathan (2014) show both theoretically and empirically that, in fact, more
+ﬁnancially constrained ﬁrms hedge less.
+2
+
+===== PAGE 3 =====
+
+Proof of Theorem 2.1 . Firm’s problem is to maximize
+∑
+j
+Et
+[
+Mt,t+1
+[(
+1− (1−ρ)
+(Bt+1(Bt)
+Ωt+1
+)ℓ)
+(1 +c)Ej,i,t+1
+]]
+Bj,t(1−q(j))
++ Et
+[
+Mt,t+1
+[
+−Bt+1(Bt)
+(
+1−
+(Bt+1(Bt)
+Ωt+1
+)ℓ)
++ Ωt+1ℓ(ℓ + 1)−1
+(
+1−
+(Bt+1(Bt)
+Ωt+1
+)ℓ+1)]]
+Diﬀerentiating, we get from the standard Kuhn–Tucker conditions that borrowing only in dollars
+is optimal if and only if
+Et
+[
+Mt,t+1
+[(
+1− (1−ρ)
+(Bt+1(Bt)
+Ωt+1
+)ℓ)
+(1 +c)Ej,i,t+1
+]]
+(1−q(j))
++Et
+[
+Mt,t+1
+[(
+−ℓ(1−ρ)
+(Bt+1(Bt)
+Ωt+1
+)ℓ−1
+Ω−1
+t+1
+)
+(1 +c)E$,i,t+1(1 +c(1−τ))Ej,i,t+1
+]]
+B$,t(1−q($))
+− (1 +c(1−τ))Et [Mt,t+1Ej,i,t+1]
++Et
+[
+Mt,t+1(ℓ + 1)
+(Bt+1(Bt)
+Ωt+1
+)ℓ
+(1 +c(1−τ))Ej,i,t+1
+−ℓ
+(Bt+1(Bt)
+Ωt+1
+)ℓ
+(1 +c(1−τ))Ej,i,t+1
+]
+≤ 0
+for all j with the identity for j = $. This inequality can be rewritten as
+Et[Mt,t+1Ej,i,t+1]((1−q(j))(1 +c)− (1 +c(1−τ)))
+≤ Et
+[
+Mt,t+1
+(Bt+1(Bt)
+Ωt+1
+)ℓ
+Ej,i,t+1
+]
+((1−ρ)(1 +c)[(1−q(j)) +ℓ(1−q($))]− (1 +c(1−τ)))
+At the same time, for the dollar debt we get
+Et[Mt,t+1E$,i,t+1]((1−q($))(1 +c)− (1 +c(1−τ)))
+= Et
+[
+Mt,t+1
+(Bt+1(Bt)
+Ωt+1
+)ℓ
+E$,i,t+1
+]
+((1 +ℓ)(1−ρ)(1 +c)(1−q($))− (1 +c(1−τ)))
+implying that
+B$,t(1 +c(1−τ)) =
+
+ Et[Mt,t+1E$,i,t+1]
+Et
+[
+Mt,t+1E$,i,t+1Ω−ℓ
+t+1
+]
+
+
+ℓ−1
+,
+3
+
+===== PAGE 4 =====
+
+and we get the Kuhn–Tucker conditions
+¯q(j, $)
+¯q($)
+Et[Mt,t+1Ej,i,t+1]
+Et
+[
+Mt,t+1Ω−ℓ
+t+1Ej,i,t+1
+] ≤ Et[Mt,t+1E$,i,t+1]
+Et
+[
+Mt,t+1E$,i,t+1Ω−ℓ
+t+1
+],
+and the claim follows. Q.E.D.
+The next lemma formulates the optimality in terms of the pricing kernelMk
+t,t+1 = M $
+t,t+1Ek,t,t+1
+in a diﬀerent currency k.
+Lemma A.2 Issuing in dollars is optimal if and only if
+¯q(j, $)
+¯q($)
+Et[Mk
+t,t+1Ej,k,t+1]
+Et
+[
+Mk
+t,t+1 ˜Ω−ℓ
+t+1Ej,k,t+1Eℓ
+$,k,t+1
+] ≤ Et[Mk
+t,t+1E$,k,t+1]
+Et
+[
+Mk
+t,t+1 ˜Ω−ℓ
+t+1E1+ℓ
+$,k,t+1
+]
+for all j.
+Proof. The currency–k price of debt denominated in currency j satisﬁes
+δj(Bt,k ) =Et[Mk
+t,t+1 (1− (1−ρ)Φ(Ψt+1(Bt))) (1 +c)Ej,t+1/Ek,t+1]
+where Mk
+t,t+1 =M $
+t,t+1Ek,t,t+1 is the pricing kernel in currency k.
+Let now ˜Vt = Vt/Ek,t be the ﬁrm equity value in dollars and similarly ˜Ω = Ω/Ek and ˜Bt+1 =
+Bt+1/Ek,t+1 is the debt payoﬀ denominated. Then,
+˜Vt = Vt/Ek,t = ˜ΩtZt + max
+Bt
+{ N∑
+j=1
+δj(Bt,k )Bj,t(1−q(j))+Et[Mk
+t,t+1 max{ ˜Vt+1− ˜Bt+1(Bt), 0}]
+}
+and thus nothing changes. Thus, repeating the above argument, dollar debt is optimal if and only
+if
+¯q(j, $)
+¯q($)
+Et[Mk
+t,t+1Ej,k,t+1]
+Et
+[
+Mk
+t,t+1 ˜Ω−ℓ
+t+1Ej,k,t+1Eℓ
+$,k,t+1
+] ≤ Et[Mk
+t,t+1E$,k,t+1]
+Et
+[
+Mk
+t,t+1 ˜Ω−ℓ
+t+1E1+ℓ
+$,k,t+1
+]
+Q.E.D.
+Proof of Theorem 2.3 . follows from the following known result.
+4
+
+===== PAGE 5 =====
+
+Lemma A.3 Suppose that f,g are monotone decreasing and bounded. Then,
+Covt(f(X),g (X)) ≥ 0
+for any bounded random variable X.
+We need to compute
+IRPt = ertCovt(Mt,t+1,Pi,t,t+1)
+Et[Pi,t+1] .
+For simplicity, we will assume that all idiosyncratic shocks are identically zero. Deﬁne ˜at =− logSt.
+Our goal is to prove that
+IRPt + 1 = Et[Mt,t+1Pi,t,t+1]
+Et[Mt,t+1]Et[Pi,t,t+1]
+= Et[e(φ+γ)˜at+1]
+Et[eγ˜at+1]Et[eφ˜at+1]
+is monotone increasing in φ. We have
+∂
+∂φ log(IRPt(φ) + 1) = Et[e˜at+1(φ+γ)˜at+1]
+Et[e˜at+1(φ+γ)] − Et[e˜at+1φ˜at+1]
+Et[e˜at+1φ]
+Making a change of measure d ˜P = e˜at+1φ/Et[e˜at+1φ], we can rewrite the required inequality as
+˜Et[eγ˜at+1˜at+1]
+˜Et[eγ˜at+1]
+> ˜Et[˜at+1],
+which is a direct consequence of Lemma A.3. Q.E.D.
+5
+
+===== PAGE 6 =====
+
+B. Appendix to Section 3: Evidence from Forward–Looking Mea-
+sures
+T able B.1. QRP, IRP, debt currency choice: Sample restricted to banks
+(1) (2) (3) (4) (5) (6)
+Sample: Banks Banks Banks Banks Banks Banks
+USD shr
+t USD shr
+t USD shr
+t USD shr
+t USD shr
+t USD shr
+t
+QRP 2Y
+e /$,t –3.369*** –1.512* –3.039***
+(0.403) (0.761) (0.467)
+IRP 2Y
+$,t –0.00366 0.000598 0.0487**
+(0.0204) (0.0258) (0.0211)
+IRP 2Y
+e ,t –0.192*** –0.203*** –0.163***
+(0.0319) (0.0513) (0.0302)
+Trend X X
+Control X X
+Period 09q4–15q3 09q4–15q3 09q4–15q3 99q1–19q4 99q1–19q4 99q1–19q4
+Observations 24 24 24 84 84 84
+R–squared 0.644 0.708 0.710 0.284 0.285 0.478
+Notes: Robust standard errors are shown in parentheses. *, **, *** denote signiﬁcance at the 10, 5, and
+1% levels respectively. Debt issuance data includes only banks. Latest observed values of QRP 2Y
+e/$,t,
+IRP 2Y
+$,t andIRP 2Y
+e,t in a given quarter are used. QRP 2Y
+e/$,t data come from Kremens and Martin (2019),
+and IRP 2Y
+$,t and IRP 2Y
+e,t come from H¨ ordahl and Tristani (2014). Trend refers to a linear time trend
+and control refers to the inclusion of total issuance as a control variable.
+6
+
+===== PAGE 7 =====
+
+T able B.2. QRP, IRP, debt currency choice: Sample restricted to non–banks
+(1) (2) (3) (4) (5) (6)
+Sample: Non–Banks Non–Banks Non–Banks Non–Banks Non–Banks Non–Banks
+USD shr
+t USD shr
+t USD shr
+t USD shr
+t USD shr
+t USD shr
+t
+QRP 2Y
+e /$,t –2.750*** –1.759 –2.859***
+(0.470) (1.174) (0.640)
+IRP 2Y
+$,t –0.000896 –0.0124 0.0232
+(0.0207) (0.0278) (0.0252)
+IRP 2Y
+e ,t –0.196*** –0.166*** –0.203***
+(0.0253) (0.0373) (0.0226)
+Trend X X
+Control X X
+Period 09q4–15q3 09q4–15q3 09q4–15q3 99q1–19q4 99q1–19q4 99q1–19q4
+Observations 24 24 24 84 84 84
+R–squared 0.509 0.531 0.512 0.319 0.325 0.379
+Notes: Robust standard errors are shown in parentheses. *, **, *** denote signiﬁcance at the 10, 5, and 1%
+levels respectively. Debt issuance data includes only non–banks. Latest observed values of QRP 2Y
+e/$,t,IRP 2Y
+$,t
+and IRP 2Y
+e,t in a given quarter are used. QRP 2Y
+e/$,t data come from Kremens and Martin (2019), and IRP 2Y
+$,t
+andIRP 2Y
+e,t come from H¨ ordahl and Tristani (2014). Trend refers to a linear time trend and control refers to
+the inclusion of total issuance as a control variable.
+
+===== PAGE 8 =====
+
+C. Appendix to Section 4: Evidence from Backward–Looking Mea-
+sures
+In order to complement the results from Section 4, in this appendix, we ﬁrst redo the regressions
+in Section 4.1, using bilateral exchange rates as opposed to the dollar index. We show that the
+results are qualitatively similar, especially in terms of the patterns of short–term and longer–term
+covariances. Next, guided by these results, we compare the international debt share of the yen and
+the pound, currencies of countries that command a roughly similar share of the world economy. We
+show that the share of the pound and the yen in international debt markets behave in line with the
+risk properties of these currencies, in line with the mechanisms in our theory. We repeat the VAR
+analysis with the MSCI World Index instead of S&P 500 and show that our results are similar and
+even stronger. Finally, we report the results of the simple regressions between the dollar index and
+stock market indices with non–overlapping observations.
+C.1 Backward–looking results with bilateral exchange rates
+In this section, we provide the results for the same regressions as in Section 4.1, but using
+bilateral exchange rates for the dollar against four other major currencies. As Figure C.1 shows,
+the dominant currency condition (2) holds empirically with currency j being the euro (EUR), the
+yen (JPY), or the Swiss franc (CHF). The only exception is British pound (GBP), for which our
+empirical proxy estimates in Figure C.1 for the covariance in (2) have a negative sign. However,
+these covariance estimates are statistically insigniﬁcantly diﬀerent from zero at the horizons of
+average debt maturity of ﬁrms. Thus, even absent diﬀerences in issuance costs, ﬁrms would strictly
+prefer issuing debt denominated in dollars, even if they could issue in EUR, JPY, or CHF. And even
+a slight diﬀerence in issuance costs favouring dollar to GBP would also make dollar immediately
+dominate over GBP.
+8
+
+===== PAGE 9 =====
+
+Fig. C.1. The betas of the bilateral exchange rate of the dollar against major currencies
+with respect to stock market indices
+S&P 500 Index
+−.4 −.2 0 .2 .4 .6
+Regression Coefficient and 95% CIs
+3 12 24 36 48 60 72 84 96 108 120
+Horizon (months)
+GBP EUR CHF JPY MSCI AC World Index
+−.4 −.2 0 .2 .4 .6
+Regression Coefficient and 95% CIs
+3 12 24 36 48 60 72 84 96 108 120
+Horizon (months)
+GBP EUR CHF JPY
+Notes: The graph on the left–hand side herein reports the regression coeﬃcients βh from the regressions (4) using
+the S&P 500 index. The graph on the right–hand side reports the regression coeﬃcients from the regressions (4)
+using the MSCI AC World Index. The dots show the corresponding values of the βh coeﬃcients, while the lines show
+the 95% conﬁdence intervals for these coeﬃcients. Standard errors are corrected using the Newey–West procedure
+with the number of lags being equal to the horizon h of returns for each respective regression. The sample period for
+the S&P 500 goes from January 1973–December 2019. The sample period for the MSCI AC World Index goes from
+January 1988–December 2019 since data are only available starting from 1988.
+C.2 Yen vs. Pound
+As we show in Section C.1, the risk properties of the dollar alone can explain why the dollar
+dominates the euro, the yen and the Swiss franc in the sense of Theorem 2.1. One notable case
+is the pound: By Figure C.1, the pound has favorable risk properties for debt issuers compared
+to most of the other major currencies. In reality, there are many reasons why the pound may
+not be the most obvious competitor to the dollar, such as diﬀerences in the size of the economies,
+lower issuance costs for the dollar etc. However, it is reasonable to compare the dynamics of debt
+issuance in GBP to that in JPY, since Japan and the Great Britain have similar size in the world
+economy. In this case, Figure C.1 shows that (2) holds empirically if we replace $ with GBP and
+choosej=JPY. Hence, ﬁrms should strictly prefer issuing in GBP to issuing in JPY. Figure C.2 is
+in line with this prediction of our model. Indeed, surprisingly, despite the slightly larger share of
+9
+
+===== PAGE 10 =====
+
+Japan in the world economy and lower nominal interest rates and inﬂation in Japan, the share of
+pound–denominated debt is higher than the share of yen–denominated debt.
+Fig. C.2. The yen versus the pound
+0 5 10 15
+2000 2005 2010 2015 2020
+Year
+Yen Debt Share Pound Debt Share
+Japan GDP Share UK GDP Share
+Source: BIS, IMF WEO, authors’ calculations
+C.3 V AR Results using the MSCI World Index
+In this subsection, we redo the VAR analysis conducted in Section 4 with the MSCI All Country
+World Index instead of the S&P 500. Note that due to data availability, our sample period runs
+only from 1988 to 2019. We present the results of the estimation of the VAR(2) model as well the
+cumulative impulse response functions to a negative shock to the MSCI All Country World Index
+below.
+C.4 Simple Regressions Using Non–Overlapping Observations
+In this appendix, we repeat the exercise in Section 4.1, but with non–overlapping observations,
+for example we using data from January 1973, January 1978... etc to calculate ﬁve–year returns,
+10
+
+===== PAGE 11 =====
+
+T able C.1. A VAR(2) model of the MSCI World
+Index and the FRED dollar index
+(1) (2)
+Ret MSCI t−1,t Ret USD t−1,t
+Ret MSCI t−2,t−1 –0.287 0.171**
+(0.208) (0.0716)
+Ret MSCI t−3,t−2 –0.236 0.118
+(0.220) (0.0756)
+Ret USD t−2,t−1 0.0140 0.219
+(0.536) (0.184)
+Ret USD t−3,t−2 –0.0452 –0.286
+(0.519) (0.179)
+Observations 30 30
+R–squared 0.1065 0.3433
+Notes: Standard errors that are adjusted for small–sample
+degrees of freedom in parantheses. *, **, *** denote sig-
+niﬁcance at the 10, 5, and 1% levels, respectively. The
+coeﬃcients are from a VAR(2) model of the yearly returns on
+the MSCI World Index and the FRED dollar index against
+major currencies (DTWEXM) between 1988 and 2019. The
+variance–covariance matrix for the error terms is estimated
+as: ˆΣ =
+
+ 0.0270
+− − 0.0027 0 .0032
+
+
+and proceed similarly for other horizons, without any overlap between observations. Since our
+sample period is not suﬃciently large, this approach necessarily leads to very small sample sizes.
+For example, since we have 46 years of data, ﬁve–year horizon only allows for 9 observations. We
+nevertheless report the results, for S&P 500 using a sample between 1973 and 2019, and for the
+MSCI World index, using a sample between 1988 and 2019, below. While in most cases, the results
+are not statistically signiﬁcant, they follow a similar pattern that we have shown in Section 4.1.
+11
+
+===== PAGE 12 =====
+
+Fig. C.3. Cumulative Impulse Response F unctions of a Shock to MSCI W orld Index
+IRF of MSCI World Index
+−1 −.8 −.6 −.4 −.2
+0 2 4 6 8 10
+Years IRF of the dollar index
+−.5 −.4 −.3 −.2 −.1 0
+0 2 4 6 8 10
+Years
+Source: Datastream, FRED, authors’ calculations.
+Notes: Figures show the cumulative impulse response functions of a negative 1 ppt shock to the MSCI World Index
+based on the estimates of a VAR(2) model of the yearly returns on the MSCI World Index and the FRED dollar
+index against major currencies (DTWEXM) between 1988 and 2019, reported in Table C.1. The lines in each graph
+represent the cumulative impulse response functions. The darker shaded areas represent the 90% conﬁdence intervals,
+while the lighter shaded areas represent the 95% conﬁdence intervals.
+
+===== PAGE 13 =====
+
+Fig. C.4. The betas of the USD index returns with respect to stock market indices
+using non–overlapping observations
+S&P 500 Index
+−.5 0 .5
+Regression Coefficient and 95% CIs
+3 12 24 36 48 60 72 84 96 108 120
+Horizon (months) MSCI AC World Index
+−.5 0 .5 1 1.5
+Regression Coefficient and 95% CIs
+3 12 24 36 48 60 72 84 96 108 120
+Horizon (months)
+Notes: The graphs report the regression coeﬃcients βh from the regressions (4) using non–overlapping samples across
+diﬀerent horizons, h. The round dots and the corresponding solid lines in both panels represent the point estimates,
+βh, and 95% conﬁdence intervals obtained using robust standard errors. The left–hand panel uses a sample period
+between January 1973 and December 2019. The right–hand panel uses a sample period between January 1988 and
+December 2019.
+
+===== PAGE 14 =====
+
+D. Appendix to Section 6: Dynamic Capital Structure
+Firm’s problem is to maximize
+W1(B0) =
+∑
+j
+E1
+[
+M1,2
+[(
+1− (1−ρ)
+(B2(B1 +B0)
+Ω2
+)ℓ)
+(1 +c)Ej,2
+]]
+Bj,1(1−qc(j))
++ E1
+[
+M1,2
+[
+−B2(B1 +B0)
+(
+1−
+(B2(B1 +B0)
+Ω2
+)ℓ)
++ Ω2ℓ(ℓ + 1)−1
+(
+1−
+(B2(B1 +B0)
+Ω2
+)ℓ+1)]]
+Diﬀerentiating, we get from the standard Kuhn–Tucker conditions that borrowing only in dollars
+is optimal if and only if
+E1
+[
+M1,2
+[(
+1− (1−ρ)
+(B2(B1 +B0)
+Ω2
+)ℓ)
+(1 +c)Ej,2
+]]
+(1−qc)
++E1
+[
+M1,2
+[(
+−ℓ(1−ρ)
+(B2(B1 +B0)
+Ω2
+)ℓ−1
+Ω−1
+2
+)
+(1 +c)(1 +c(1−τ))Ej,2
+]]
+B$,1(1−qc($))
+− (1 +c(1−τ))E1 [M1,2Ej,2]
++E1
+[
+M1,2(ℓ + 1)
+(B2(B1 +B0)
+Ω2
+)ℓ
+(1 +c(1−τ))Ej,2
+−ℓ
+(B2(B1 +B0)
+Ω2
+)ℓ
+(1 +c(1−τ))Ej,2
+]
+≤ 0
+for all j with the identity for j = $. This inequality can be rewritten as
+E1[M1,2Ej,2]((1−qc)(1 +c)− (1 +c(1−τ)))
+≤ E1
+[
+M1,2
+(B2(B1 +B0)
+Ω2
+)ℓ
+Ej,2
+]
+((1−ρ)(1 +c)[(1−qc)]− (1 +c(1−τ)))
++ (1 −qc)ℓ(1−ρ)(1 +c)(1 +c(1−τ))E1
+[
+M1,2
+[((B2(B1 +B0)
+Ω2
+)ℓ−1
+Ω−1
+2
+)
+Ej,2
+]]
+B$,1
+14
+
+===== PAGE 15 =====
+
+At the same time, for dollar debt we get
+E1[M1,2]((1−qc($))(1 +c)− (1 +c(1−τ)))
+= E1
+[
+M1,2
+(B2(B0) + (1 +c(1−τ))B1,$
+Ω2
+)ℓ]
+((1−ρ)(1 +c)[(1−q)]− (1 +c(1−τ)))
++ (1 −q)ℓ(1−ρ)(1 +c)E1
+[
+M1,2
+(B2(B0) + (1 +c(1−τ))B1,$
+Ω2
+)ℓ (1 +c(1−τ))B$,1
+B2(B0) + (1 +c(1−τ))B1,$
+]
+and
+E1[M1,2Ej,2]((1−q)(1 +c)− (1 +c(1−τ)))
+≤ E1
+[
+M1,2
+(B2(B0) + (1 +c(1−τ))B1,$
+Ω2
+)ℓ
+Ej,2
+]
+((1−ρ)(1 +c)[(1−q)]− (1 +c(1−τ)))
++ (1 −q)ℓ(1−ρ)(1 +c)E1
+[
+M1,2
+(B2(B0) + (1 +c(1−τ))B1,$
+Ω2
+)ℓ (1 +c(1−τ))B$,1
+B2(B0) + (1 +c(1−τ))B1,$
+Ej,2
+]
+Now, we will just be verifying the Kuhn–Tucker conditions at time zero when B0 is purely in US
+dollars. In this case,
+E1[M1,2Ej,2]((1−q)(1 +c)− (1 +c(1−τ)))
+≤ E1
+[
+M1,2
+((1 +c(1−τ))(B0,$ +B1,$)
+Ω2
+)ℓ
+Ej,2
+]
+((1−ρ)(1 +c)[(1−q)]− (1 +c(1−τ)))
++ (1 −q)ℓ(1−ρ)(1 +c)E1
+[
+M1,2
+((1 +c(1−τ))(B0,$ +B1,$)
+Ω2
+)ℓ B$,1
+B0,$ +B1,$
+Ej,2
+]
+while the dollar debt satisﬁes
+E1[M1,2]((1−q)(1 +c)− (1 +c(1−τ)))
+= E1
+[
+M1,2
+((1 +c(1−τ))(B0,$ +B1,$)
+Ω2
+)ℓ]
+((1−ρ)(1 +c)[(1−q)]− (1 +c(1−τ)))
++ (1 −q)ℓ(1−ρ)(1 +c)E1
+[
+M1,2
+((1 +c(1−τ))(B0,$ +B1,$)
+Ω2
+)ℓ B$,1
+B0,$ +B1,$
+]
+(D.1)
+15
+
+===== PAGE 16 =====
+
+Dividing, we get
+E1[M1,2]
+E1[M1,2Ω−ℓ
+2 ]
+= x(B0,$ +B1,$)ℓ +y(B0,$ +B1,$)ℓ−1B1,$
+whereas
+E1[M1,2Ej,2]
+E1[M1,2Ω−ℓ
+2 Ej,2]
+≤ E1[M1,2]
+E1[M1,2Ω−ℓ
+2 ]
+so the condition is still the same. Here, x,y > 0 (we assume that x > 0) are constants. This
+deﬁnes B1,$ = F (X1,B 0). However, to derive the ﬁrst order conditions, we will need to compute
+derivatives of F with respect to other debt components. To this end, we need to diﬀerentiate the
+implicit equation
+ε1E1[M1,2]
+= xE1
+
+M1,2
+
+∑
+j
+Ej,2Bj,0 +B1,$
+
+
+ℓ
+Ω−ℓ
+2
+
+
++E1
+
+M1,2Ω−ℓ
+2
+
+∑
+j
+Ej,2Bj,0 +B1,$
+
+
+ℓ−1
+B∗
+$,1
+
+
+Diﬀerentiating this identify with respect to B∗
+j,0, we get
+0 =xℓE1[M1,2Ω−ℓ
+2 (B0,$ +B1,$)ℓ−1(Ej,2 +B′
+1,$)] + E1
+[
+M1,2Ω−ℓ
+2
+(
+B0,$ +B1,$
+)ℓ−1]
+B′
+$,1
++ (ℓ− 1)E1[M1,2Ω−ℓ
+2 (B0,$ +B1,$)ℓ−2(Ej,2 +B′
+1,$)]B$,1
+implying that
+∂B$,1
+∂Bj,0
+= − E1[M1,2Ω−ℓ
+2 Ej,2](xℓ(B0,$ +B1,$)ℓ + (ℓ− 1)(B0,$ +B1,$)ℓ−1B$,1)
+E1[M1,2Ω−ℓ
+2 ](xℓ(B0,$ +B1,$)ℓ + [(ℓ− 1)B$,1(B0,$ +B1,$)ℓ−1) +
+(
+B0,$ +B1,$
+)ℓ]
+= −E1[M1,2Ω−ℓ
+2 Ej,2]
+E1[M1,2Ω−ℓ
+2 ]
+ℓε1E1[M1,2]−E1[M1,2Ω−ℓ
+2 ](B0,$ +B1,$)ℓ−1B$,1
+ℓε1E1[M1,2] +E1[M1,2Ω−ℓ
+2 ](B0,$ +B1,$)ℓ−1B$,0
+Now we can solve the time zero problem. The objective with respect to B0 is
+max
+B0
+{∑
+j
+δj(B0)Bj,0 + E[M0,1 max{W1(B0,X 1Z1)−
+∑
+j
+c1Bj,0(1−τ)Ej,1, 0}]
+}
+16
+
+===== PAGE 17 =====
+
+where
+δj,0(B0) = E[M0,1(c1Ej,1 +δj,1(B0 +F (X1,B 0)))1W1(B0,X1Z1)−∑
+jc1Bj,0(1−τ)Ej,1>0]
+and where
+W1(B0,X 1) = δ$,1(B0 +F (X1,B 0)))F (X1,B 0)(1−qc)
++E1[1Ω2>B2M1,2(ℓ(ℓ + 1)−1Ω2−B 2(B1 +B0))]
++ (ℓ + 1)−1E1
+[
+1Ω2>B2M1,2Ω−ℓ
+2 (B2(B1 +B0))ℓ+1
+]
+where we have deﬁned
+δj,1(B0 +F (X1,B 0))) = E1
+[
+M1,21Ω2>B2
+[(
+1− (1−ρ)
+(B2(F (X1,B 0) +B0)
+Ω2
+)ℓ)
+(1 +c)Ej,2
+]]
+Now, by assumption, Z1∼ ℓyℓ−1 on [0, 1]. First, we need to ﬁgure out the threshold Θ 1(X1,B 0)
+for default at time t = 1. It is determine via
+W1(B0,X 1Θ1)−
+∑
+j
+c1Bj,0(1−τ)Ej,1 = 0 .
+Substituting, we get the following equation for Θ 1 evaluated as B =B$,0 :
+δ$,1(B0 +B$,1(Θ1), Θ1)B$,1(Θ1)(1−qc)
++E1[1Ω2>B2/Θ1M1,2(ℓ(ℓ + 1)−1Ω2Θ1− (1 +c(1−τ))(B$,1(Θ1) +B0))]
++ (ℓ + 1)−1(1 +c(1−τ))ℓ+1E1
+[
+M1,21Ω2>B2/Θ1Θ−ℓ
+1 Ω−ℓ
+2 (B$,1(Θ1) +B0)ℓ+1
+]
+= c1B$,0(1−τ).
+We will impose a technical condition that at that threshold it is optimal not to issue any more debt
+(indeed, this is the default threshold, so it makes perfect sense). Hence, B1 is not there at Θ 1 and
+now the equation for Θ 1 becomes much simpler. By assumption, there are always some states in
+which the ﬁrm survives at time t = 2. This is equivalent to min(Ω2)Θ1>B $,0(1 +c(1−τ)). In this
+case,
+Θ1E1[M1,2ℓ(ℓ + 1)−1Ω2] + Bℓ+1
+$,0 Θ−ℓ
+1 (ℓ + 1)−1E1[M1,2Ω−ℓ
+2 ] = (1 + c(1−τ) +c1(1−τ))B$,0
+17
+
+===== PAGE 18 =====
+
+and hence
+Θ1 = Θ∗
+1B$,0
+where
+Θ∗
+1E1[M1,2ℓ(ℓ + 1)−1Ω2] + (Θ ∗
+1)−ℓ(ℓ + 1)−1E1[M1,2Ω−ℓ
+2 ] = (1 + c(1−τ) +c1(1−τ))
+and this equation has a solution if and only if
+(
+E1[M1,2Ω2]
+E1[M1,2Ω−ℓ
+2 ]
+)−1/(ℓ+1)
+E1[M1,2ℓ(ℓ + 1)−1Ω2] +
+(
+E1[M1,2Ω2]
+E1[M1,2Ω−ℓ
+2 ]
+)ℓ/(ℓ+1)
+(ℓ + 1)−1E1[M1,2Ω−ℓ
+2 ]
+< (1 +c(1−τ) +c1(1−τ))
+That is, default threshold is homogeneous in B$,0 when no new debt is issued at the default
+threshold. Let us now verify the technical condition: It is equivalent to
+1 +c(1−τ)
+min Ω2
+E1[M1,2ℓ(ℓ+1)−1Ω2] +
+(1 +c(1−τ)
+min Ω2
+)−ℓ
+(ℓ+1)−1E1[M1,2Ω−ℓ
+2 ]> 1+c(1−τ)+c1(1−τ)
+Now, we can integrate the idiosyncratic shock away:
+δj,0(B0) = E[M0,1c1Ej,1(1− Θ1(X1,B 0)ℓ)] + E[M0,1
+∫ 1
+Θ1(X1,B0)
+δj,1(B0 +F (X1q,B 0))ℓqℓ−1dq]
+= E[M0,1c1Ej,1(1− Θ1(X1,B 0)ℓ)]
++ E[M0,1
+∫ 1
+Θ1(X1,B0)
+E1
+[
+M1,2
+[(
+1− (1−ρ)
+((1 +c(1−τ))((F (X1q,B 0) +B0)
+Ω2q
+)ℓ)
+(1 +c)Ej,2
+]]
+ℓqℓ−1dq]
+= E[(M0,1c1Ej,1 +M0,2(1 +c)Ej,2)]−Bℓ
+0E[(M0,1c1Ej,1 +M0,2(1 +c)Ej,2)(Θ∗
+1)ℓ]
+− (1−ρ)E[M0,2(1 +c)Ej,2Ω−ℓ
+2 ℓ
+∫ 1
+B0Θ∗
+1
+B2(q)ℓq−1dq]
+We will also need
+¯W1(B0,X 1,Q ) =
+∫ 1
+Q
+W1(B0,X 1q)ℓqℓ−1dq
+18
+
+===== PAGE 19 =====
+
+and now we can ﬁnally write down the full value function:
+∑
+j
+δj(B0)Bj,0 −E[M0,1
+∑
+j
+c1Bj,0(1−τ)Ej,1(1− Θ1(X1,B 0)ℓ)]
++ E[M0,1 ¯W1(B0,X 1, Θ1(X1,B 0))]
+Our objective is to verify the Kuhn–Tucker conditions at the pure dollar debt equilibrium. We thus
+need to verify (note that the terms with Θ ′
+1 cancels out):
+δj(B0)(1−qc) + ∂
+∂Bj,0
+δ$(B0)B$,0(1−qc) −E[M0,1c1(1−τ)Ej,1(1− Θ1(X1,B 0)ℓ)]
++ E[M0,1
+∂
+∂Bj,0
+¯W1(B0,X 1, Θ1(X1,B 0))]< 0
+for all j̸= $. Now, we have
+∂
+∂Bj,0
+δ$(B0) = ∂
+∂Bj,0
+(
+E[M0,1c1(1− Θ1(X1,B 0))ℓ]
++ E[M0,1
+∫ 1
+Θ1(X1,B0)
+δ$,1(B0 +F (X1q,B 0))ℓqℓ−1dq]
+)
+=− ℓE[M0,1c1Θ1(X1,B 0)ℓ−1 ∂
+∂Bj,0
+Θ1(X1,B 0)]
+− ℓE[M0,1Θ1(X1,B 0)ℓ−1δ$,1(B0 +F (X1Θ1(X1,B 0),B 0)) ∂
+∂Bj,0
+Θ1(X1,B 0)]
++E[M0,1
+∫ 1
+Θ1(X1,B0)
+∂
+∂Bj,0
+δ$,1(B0 +F (qX1,B 0)))ℓqℓ−1dq]
+= −ℓE
+[
+M0,1Θℓ−1
+1
+(
+c1 +δ$,1(B0 +F (X1Θ1(X1,B 0),B 0))
+) ∂
+∂Bj,0
+Θ1(X1,B 0)
+]
+− E
+[
+M0,1
+∫ 1
+Θ1(X1,B0)
+ℓ(1−ρ)(1 +c(1−τ))ℓ
+E1
+[
+M1,2q−ℓΩ−ℓ
+2
+(F (qX1,B 0)
+∂Bj,0
++Ej,2
+)
+(F (qX1,B 0) +B0))ℓ−1 (1 +c)
+]
+ℓqℓ−1dq
+]
+= −ℓE
+[
+M0,1Θℓ−1
+1
+(
+c1 +δ$,1(B0 +F (X1Θ1(X1,B 0),B 0))
+) ∂
+∂Bj,0
+Θ1(X1,B 0)
+]
+− E
+[
+M0,1
+∫ 1
+Θ1(X1,B0)
+ℓ(1−ρ)(1 +c(1−τ))ℓ
+E1
+[
+M1,2q−ℓΩ−ℓ
+2
+(F (qX1,B 0)
+∂Bj,0
++Ej,2
+)
+(F (qX1,B 0) +B0))ℓ−1 (1 +c)
+]
+ℓqℓ−1dq
+]
+19
+
+===== PAGE 20 =====
+
+Furthermore, (recall that we are always evaluating the derivatives at Bk,0 = 0 for all k̸= $)
+∂
+∂Bj,0
+δ$,1(B0 +F (X1,B 0))) = ∂
+∂Bj,0
+E1
+[
+M1,2
+[(
+1− (1−ρ)
+(B2(F (X1,B 0) +B0)
+Ω2
+)ℓ)
+(1 +c)
+]]
+=−ℓ(1−ρ)(1 +c(1−τ))ℓE1
+[
+M1,2Ω−ℓ
+2
+(∂B$,1
+∂Bj,0
++Ek,2
+)
+(F (X1,B 0) +B0))ℓ−1 (1 +c)
+]
+and
+∂
+∂Bj,0
+Θ1(X1,B 0) = c1(1−τ)Ej,1
+W1,X(B0,X 1Θ1)X1
+whereas
+∂
+∂Bj,0
+W1(B0,X 1) = ∂
+∂Bj,0
+(
+δ$,1(B0 +B$,1)B$,1(1−qc)
++E1[M1,2(ℓ(ℓ + 1)−1Ω2−B 2(B1 +B0))]
++ (ℓ + 1)−1E1
+[
+M1,2Ω−ℓ
+2 (B2(B1 +B0))ℓ+1
+])
+= −ℓ(1−ρ)(1 +c(1−τ))ℓE1
+[
+M1,2Ω−ℓ
+2 Ej,2(B$,1 +B0)ℓ−1(1 +c)
+]
+B$,1(1−qc)
+− (1 +c(1−τ))E1[M1,2Ej,2] + (1 +c(1−τ))ℓ+1E1
+[
+M1,2Ω−ℓ
+2 (B$,1 +B0)ℓEj,2
+]
+and
+∂
+∂qW1(B0,X 1q) = ∂
+∂q
+(
+δ$,1(B0 +B$,1(q),q )B$,1(q)(1−qc)
++E1[M1,2(ℓ(ℓ + 1)−1Ω2q− (1 +c(1−τ))(B$,1(q) +B0))]
++ (ℓ + 1)−1E1
+[
+M1,2q−ℓΩ−ℓ
+2 (B$,1(q) +B0)ℓ+1
+])
+= ℓ(1−ρ)(1 +c(1−τ))ℓq−ℓ−1E1
+[
+M1,2Ω−ℓ
+2 (B$,1(q) +B0)ℓ(1 +c)
+]
+B$,1(q)(1−qc)
++E1[M1,2ℓ(ℓ + 1)−1Ω2] − ℓ(ℓ + 1)−1(1 +c(1−τ))ℓ+1E1
+[
+M1,2q−ℓ−1Ω−ℓ
+2 (B$,1(q) +B0)ℓ+1
+]
+20
+
+===== PAGE 21 =====
+
+but at Θ 1 (since we assume that no new debt is issued at the default threshold)
+∂
+∂qW1(B0,X 1q)|q=Θ1 = E1[M1,2ℓ(ℓ + 1)−1Ω2]
+− ℓ(ℓ + 1)−1(1 +c(1−τ))ℓ+1E1
+[
+M1,2Θ−ℓ−1
+1 Ω−ℓ
+2 (B$,1(q) +B0)ℓ+1
+]
+Furthermore, we know
+E1[M1,2ℓ(ℓ + 1)−1Ω2] + Bℓ+1
+$,0 Θ−ℓ−1
+1 (ℓ + 1)−1E1[M1,2Ω−ℓ
+2 ] = (1 + c(1−τ) +c1(1−τ))B$,0Θ−1
+1
+and therefore we can rewrite
+E1[M1,2ℓ(ℓ + 1)−1Ω2] − ℓ(ℓ + 1)−1(1 +c(1−τ))ℓ+1E1
+[
+M1,2Θ−ℓ−1
+1 Ω−ℓ
+2 (B$,1(q) +B0)ℓ+1
+]
+= E1[M1,2ℓ(ℓ + 1)−1Ω2] − ℓ
+(
+(1 +c(1−τ) +c1(1−τ))B$,0Θ−1
+1 −E1[M1,2ℓ(ℓ + 1)−1Ω2]
+)
+= ℓ(E1[M1,2Ω2]− (1 +c(1−τ) +c1(1−τ))(Θ∗
+1)−1)
+and hence
+∂
+∂Bj,0
+Θ1(X1,B 0) = c1(1−τ)Ej,1
+ℓ(E1[M1,2Ω2]− (1 +c(1−τ) +c1(1−τ))(Θ∗
+1)−1)
+Note that, by the envelope condition, we just need to diﬀerentiate with respect to B0, keeping
+B1,$ ﬁxed.
+21
+
+===== PAGE 22 =====
+
+Finally,
+∂
+∂Bj,0
+¯W1(B0,X 1,Q ) =
+∫ 1
+Q
+∂
+∂Bj,0
+W1(B0,X 1q)ℓqℓ−1dq
+=
+∫ 1
+Q
+ℓ
+(
+−ℓ(1−ρ)(1 +c(1−τ))ℓq−ℓE1
+[
+M1,2Ω−ℓ
+2 Ej,2(B$,1(q) +B0)ℓ−1(1 +c)
+]
+B$,1(q)(1−qc)
+− (1 +c(1−τ))E1[M1,2Ej,2] + (1 +c(1−τ))ℓ+1q−ℓE1
+[
+M1,2Ω−ℓ
+2 (B$,1(q) +B0)ℓEj,2
+])
+qℓ−1dq
+= −(1−Qℓ)(1 +c(1−τ))E1[M1,2Ej,2]
++ ℓ
+∫ 1
+Q
+q−1(1 +c(1−τ))ℓ
+(
+−ℓ(1−ρ)E1
+[
+M1,2Ω−ℓ
+2 Ej,2(B$,1(q) +B0)ℓ−1(1 +c)
+]
+B$,1(q)(1−qc)
++ (1 +c(1−τ))ℓ+1E1
+[
+M1,2Ω−ℓ
+2 (B$,1(q) +B0)ℓEj,2
+])
+dq.
+Thus,
+∂
+∂Bj,0
+δ$(B0)
+= −ℓE
+[
+M0,1Θℓ−1
+1
+(
+c1 +δ$,1(B0 +F (X1Θ1(X1,B 0),B 0))
+) ∂
+∂Bj,0
+Θ1(X1,B 0)
+]
+− E
+[
+M0,1
+∫ 1
+Θ1(X1,B0)
+ℓ(1−ρ)(1 +c(1−τ))ℓ
+E1
+[
+M1,2q−ℓΩ−ℓ
+2
+(F (qX1,B 0)
+∂Bj,0
++Ej,2
+)
+(F (qX1,B 0) +B0))ℓ−1 (1 +c)
+]
+ℓqℓ−1dq
+]
+= −ℓE
+[
+M0,1Θℓ−1
+1
+(
+c1 +δ$,1(B0 +F (X1Θ1(X1,B 0),B 0))
+)
+× c1(1−τ)Ej,1
+ℓ(E1[M1,2Ω2]− (1 +c(1−τ) +c1(1−τ))(Θ∗
+1)−1)
+]
+− E
+[
+M0,1
+∫ 1
+Θ1(X1,B0)
+ℓ(1−ρ)(1 +c(1−τ))ℓ
+E1
+[
+M1,2Ω−ℓ
+2
+(F (qX1,B 0)
+∂Bj,0
++Ej,2
+)
+(F (qX1,B 0) +B0))ℓ−1 (1 +c)
+]
+ℓq−1dq
+]
+22
+
+===== PAGE 23 =====
+
+whereas
+E[M0,1
+∂
+∂Bj,0
+¯W1(B0,X 1, Θ1(X1,B 0))]
+= E
+[
+M0,1
+(
+− (1− Θℓ
+1)(1 +c(1−τ))E1[M1,2Ej,2]
++ ℓ
+∫ 1
+Θ1
+q−1(1 +c(1−τ))ℓ
+(
+−ℓ(1−ρ)E1
+[
+M1,2Ω−ℓ
+2 Ej,2(B$,1(q) +B0)ℓ−1(1 +c)
+]
+B$,1(q)(1−qc)
++ (1 +c(1−τ))ℓ+1E1
+[
+M1,2Ω−ℓ
+2 (B$,1(q) +B0)ℓEj,2
+])
+dq
+)]
+To proceed further, we need to derive the ﬁrst order approximation to the policy function B$,1
+using (D.1) under the assumption that ((1 −q)(1 +c)− (1 +c(1−τ))) is small. In this case,
+E1[M1,2]((1−q)(1 +c)− (1 +c(1−τ)))
+= E1
+[
+M1,2
+((1 +c(1−τ))(B0,$ +B1,$)
+Ω2
+)ℓ]
+((1−ρ)(1 +c)[(1−q)]− (1 +c(1−τ)))
++ (1 −q)ℓ(1−ρ)(1 +c)E1
+[
+M1,2
+((1 +c(1−τ))(B0,$ +B1,$)
+Ω2
+)ℓ B$,1
+B0,$ +B1,$
+]
+Let
+ε1 = (1−q)(1 +c)− (1 +c(1−τ))
+(1−q)ℓ(1−ρ)(1 +c)(1 +c(1−τ))ℓ, ε2 = (1−q)(1−ρ)(1 +c)− (1 +c(1−τ))
+(1−q)ℓ(1−ρ)(1 +c)(1 +c(1−τ))ℓ
+and assume they are small (this is indeed the case when τ is small). Then, the gains from debt
+issuance are small and hence debt is small. Thus, B0 and B1 are proportional to ε1/ℓ
+1 and B1,$(q)
+(when Ω2 is multiplied by q) solves
+qℓ E1[M1,2]
+E1[M1,2Ω−ℓ
+2 ]
+ε1 = ( B0 +B1)ℓ−1B1 + x(B0 +B1)ℓ
+We will rescale them and denote B∗
+t =Bt/ε1/ℓ
+1 . Then,
+qℓ E1[M1,2]
+E1[M1,2Ω−ℓ
+2 ]
+= ( B∗
+0 +B∗
+1)ℓ−1B∗
+1 + x(B∗
+0 +B∗
+1)ℓ
+23
+
+===== PAGE 24 =====
+
+where we assume that x is constant.
+Now we can gather all the terms and rewrite the Kuhn–Tucker condition as
+δj(B0)(1−qc) + ∂
+∂Bj,0
+δ$(B0)B$,0(1−qc) −E[M0,1c1(1−τ)Ej,1(1− Θ1(X1,B 0)ℓ)]
++ E[M0,1
+∂
+∂Bj,0
+¯W1(B0,X 1, Θ1(X1,B 0))]
+=
+(
+E[(M0,1c1Ej,1 +M0,2(1 +c)Ej,2)]−Bℓ
+0E[(M0,1c1Ej,1 +M0,2(1 +c)Ej,2)(Θ∗
+1)ℓ]
+− (1−ρ)E[M0,2(1 +c)Ej,2Ω−ℓ
+2 ℓ
+∫ 1
+B0Θ∗
+1
+B2(q)ℓq−1dq]
+)
+(1−qc)
++B$,0
+(
+−ℓE
+[
+M0,1Θℓ−1
+1
+(
+c1 +δ$,1(B0 +F (X1Θ1(X1,B 0),B 0))
+)
+× c1(1−τ)Ej,1
+ℓ(E1[M1,2Ω2]− (1 +c(1−τ) +c1(1−τ))(Θ∗
+1)−1)
+]
+− E
+[
+M0,1
+∫ 1
+Θ1(X1,B0)
+ℓ(1−ρ)(1 +c(1−τ))ℓ
+E1
+[
+M1,2Ω−ℓ
+2
+(F (qX1,B 0)
+∂Bj,0
++Ej,2
+)
+(F (qX1,B 0) +B0))ℓ−1 (1 +c)
+]
+ℓq−1dq
+])
+(1−qc)
+−E[M0,1c1(1−τ)Ej,1(1− Θ1(X1,B 0)ℓ)]
++E
+[
+M0,1
+(
+− (1− Θℓ
+1)(1 +c(1−τ))E1[M1,2Ej,2]
++ ℓ
+∫ 1
+Θ1
+q−1(1 +c(1−τ))ℓ
+(
+−ℓ(1−ρ)E1
+[
+M1,2Ω−ℓ
+2 Ej,2(B$,1(q) +B0)ℓ−1(1 +c)
+]
+B$,1(q)(1−qc)
++ (1 +c(1−τ))ℓ+1E1
+[
+M1,2Ω−ℓ
+2 (B$,1(q) +B0)ℓEj,2
+])
+dq
+)]
+Now, since B0 is small, we will only keep the highest order terms (those of order Bℓ
+$,0) and ignore
+24
+
+===== PAGE 25 =====
+
+the terms of the order o(Bℓ
+$,0). This gives
+δj(B0)(1−qc) + ∂
+∂Bj,0
+δ$(B0)B$,0(1−qc) −E[M0,1c1(1−τ)Ej,1(1− Θ1(X1,B 0)ℓ)]
++ E[M0,1
+∂
+∂Bj,0
+¯W1(B0,X 1, Θ1(X1,B 0))]
+=
+(
+E[(M0,1c1Ej,1 +M0,2(1 +c)Ej,2)]−Bℓ
+0E[(M0,1c1Ej,1 +M0,2(1 +c)Ej,2)(Θ∗
+1)ℓ]
+− (1−ρ)E[M0,2(1 +c)Ej,2Ω−ℓ
+2 ℓ
+∫ 1
+Θ1
+B2(q)ℓq−1dq]
+)
+(1−qc)
++B$,0
+(
+−ℓBℓ−1
+$,0 E
+[
+M0,1(Θ∗
+1)ℓ−1
+(
+c1 +E1[M1,2(1 +c)]
+)
+× c1(1−τ)Ej,1
+ℓ(E1[M1,2Ω2]− (1 +c(1−τ) +c1(1−τ))(Θ∗
+1)−1)
+]
+− E
+[
+M0,1
+∫ 1
+Θ1
+ℓ(1−ρ)(1 +c(1−τ))ℓ
+E1
+[
+M1,2Ω−ℓ
+2
+(F (qX1,B 0)
+∂Bj,0
++Ej,2
+)
+(F (qX1,B 0) +B0))ℓ−1 (1 +c)
+]
+ℓq−1dq
+])
+(1−qc)
+−E[M0,1c1(1−τ)Ej,1(1−Bℓ
+$,0(Θ∗
+1)ℓ)]
++
+(
+E
+[
+M0,1
+(
+− (1−Bℓ
+$,0(Θ∗
+1)ℓ)(1 +c(1−τ))E1[M1,2Ej,2]
++ ℓ
+∫ 1
+Θ1
+q−1(1 +c(1−τ))ℓ
+(
+−ℓ(1−ρ)E1
+[
+M1,2Ω−ℓ
+2 Ej,2(B$,1(q) +B0)ℓ−1(1 +c)
+]
+B$,1(q)(1−qc)
++ (1 +c(1−τ))ℓ+1E1
+[
+M1,2Ω−ℓ
+2 (B$,1(q) +B0)ℓEj,2
+])
+dq
+)])
++ o(ε1/ℓ
+1 )
+25
+
+===== PAGE 26 =====
+
+We can now regroup this as
+E[(M0,1c1Ej,1 +M0,2cEj,2)](τ−qc)
++Bℓ
+$,0
+(
+−E[(M0,1c1Ej,1 +M0,2(1 +c)Ej,2)(Θ∗
+1)ℓ](1−qc)
+−ℓE
+[
+M0,1(Θ∗
+1)ℓ−1
+(
+c1 +E1[M1,2(1 +c)]
+)
+× c1(1−τ)Ej,1
+ℓ(E1[M1,2Ω2]− (1 +c(1−τ) +c1(1−τ))(Θ∗
+1)−1)
+]
+(1−qc)
++E[(M0,1c1(1−τ)Ej,1 + (1 +c(1−τ))M0,2Ej,2)(Θ∗
+1)ℓ]
+)
++
+∫ 1
+Θ1
+q−1
+(
+− (1−ρ)E[M0,2(1 +c)Ej,2Ω−ℓ
+2 ℓB2(q)ℓ(1−qc)
+−ℓ2E[M0,2(1−ρ)Ω−ℓ
+2 (1 +c(1−τ))
+(F (qX1,B 0)
+∂Bj,0
++Ej,2
+)
+B2(q)ℓ−1B$,0(1 +c)(1−qc)
++ℓE
+[
+M0,2(1 +c(1−τ))ℓ
+(
+−ℓ(1−ρ)
+[
+Ω−ℓ
+2 Ej,2(B$,1(q) +B0)ℓ−1(1 +c)
+]
+B$,1(q)(1−qc)
++ (1 +c(1−τ))ℓ+1
+[
+Ω−ℓ
+2 (B$,1(q) +B0)ℓEj,2
+]))
+dq + o(ε1/ℓ
+1 )
+Recalling that we assume that q,τ,ρ are all of the order as ε1. Thus,
+−(1−ρ)E[M0,2(1 +c)Ej,2Ω−ℓ
+2 ℓB2(q)ℓ(1−qc) + (1 +c(1−τ))ℓ+1
+[
+Ω−ℓ
+2 (B$,1(q) +B0)ℓEj,2
+]
+= O(ε2
+1)
+and
+Bℓ
+$,0(−E[(M0,1c1Ej,1+M0,2(1+c)Ej,2)(Θ∗
+1)ℓ](1−qc)+E[(M0,1c1(1−τ)Ej,1+(1+c(1−τ))M0,2Ej,2)(Θ∗
+1)ℓ]) =O(ε2
+1).
+26
+
+===== PAGE 27 =====
+
+Thus, we are only left with
+E[(M0,1c1Ej,1 +M0,2cEj,2)](τ−qc)
++Bℓ
+$,0
+(
+−ℓE
+[
+M0,1(Θ∗
+1)ℓ−1
+c1(1−τ)Ej,1
+(
+c1 +E1[M1,2(1 +c)]
+)
+ℓ(E1[M1,2Ω2]− (1 +c(1−τ) +c1(1−τ))(Θ∗
+1)−1)
+]
+(1−qc)
+)
++
+∫ 1
+Θ1
+q−1
+(
+−ℓ2E[M0,2(1−ρ)Ω−ℓ
+2 (1 +c(1−τ))F (qX1,B 0)
+∂Bj,0
+B2(q)ℓ−1B$,0(1 +c)(1−qc)]
+−ℓ2E
+[
+M0,2(1 +c(1−τ))ℓ
+(
+(1−ρ)
+[
+Ω−ℓ
+2 Ej,2(B$,1(q) +B0)ℓ(1 +c)
+]
+(1−qc)]
+))
+dq + o(ε1/ℓ
+1 )
+Now, the really surprising eﬀect is that whenB$,0 is close to zero, the integral produces a logarithm
+term through the following lemma.
+Lemma D.1 ∫ 1
+Θ∗
+1B
+f(q)q−1dq ≈ −log(Θ∗
+1B)f(Θ∗
+1B)
+as B→ 0.
+Thus, the key term is
+E[(M0,1c1Ej,1 +M0,2cEj,2)](τ−qc(j)) +ℓ2(B$,0)ℓ log(B$,0Θ∗
+1)
+E
+[
+M0,2(1 +c(1−τ))ℓ(1−ρ)
+[
+Ω−ℓ
+2 Ej,2(1 +c)
+]
+(1−qc($))
+]
+which should be non–positive for j̸= $ and zero for j = $. This leads to the inequality
+qc($)−qc(j)
+τ−qc($) ≤ E$[Ω−ℓ
+2 Ej,2]
+E$[Ω−ℓ
+2 ]
+c1e−r1($) +c2e−r2($)
+c1e−r1(j) +c2e−r2(j)− 1
+= E$[Ω−ℓ
+2 Ej,2]
+E$[Ω−ℓ
+2 ]E$[Ej,2]
+c1er2($)−r1($) +c2
+c1er2(j)−r1(j) +c2
+− 1
+= Cov$(Ω−ℓ
+2 ,Ej,2)
+E$[Ω−ℓ
+2 ]E$[Ej,2]
++ E$[Ω−ℓ
+2 Ej,2]
+E$[Ω−ℓ
+2 ]E$[Ej,2]
+c1(er2($)−r1($)−er2(j)−r1(j))
+c1er2(j)−r1(j) +c2
+where we have used that E$[Ej,2] = er2($)−r2(j).
+27
+
+===== PAGE 28 =====
+
+Proof of Proposition 6.1 . We need to show that
+−
+∑
+j
+E1
+[
+M1,2
+[(
+1− (1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ)
+(1 +c)Ej,2
+]]
+Bj,1
++ E1
+[
+M1,2
+[
+−B2(−B1 +B0)
+(
+1−
+(B2(−B1 +B0)
+Ω2
+)ℓ)
++ Ω2ℓ(ℓ + 1)−1
+(
+1−
+(B2(−B1 +B0)
+Ω2
+)ℓ+1)]]
+is monotone decreasing in Bj,1 for Bj,1≥ 0. Taking the derivative, we get
+−E1
+[
+M1,2
+[(
+1− (1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ)
+(1 +c)Ej,2
+]]
+−
+∑
+k
+E1
+[
+M1,2
+[(
+ℓ(1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ−1
+Ω−1
+2
+)
+(1 +c)(1 +c(1−τ))Ej,2Ek,2
+]]
+Bk,1
++ (1 +c(1−τ))E1 [M1,2Ej,2]
+−E1
+[
+M1,2(ℓ + 1)
+(B2(−B1 +B0)
+Ω2
+)ℓ
+(1 +c(1−τ))Ej,2
++ℓ
+(B2(−B1 +B0)
+Ω2
+)ℓ
+(1 +c(1−τ))Ej,2
+]
+= −E1
+[
+M1,2
+[(
+1− (1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ)
+(1 +c)Ej,2
+]]
+−
+∑
+k
+E1
+[
+M1,2
+[(
+ℓ(1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ−1
+Ω−1
+2
+)
+(1 +c)(1 +c(1−τ))Ej,2Ek,2
+]]
+Bk,1
++ (1 +c(1−τ))E1 [M1,2Ej,2]
+−E1
+[
+M1,2
+(B2(−B1 +B0)
+Ω2
+)ℓ
+(1 +c(1−τ))Ej,2
+]
+= −cτE 1[M1,2Ej,2]
++ ((1−ρ)(1 +c)− (1 +c(1−τ)))E1
+[
+M1,2
+(B2(−B1 +B0)
+Ω2
+)ℓ
+Ej,2
+]
+−
+∑
+k
+E1
+[
+M1,2
+[(
+ℓ(1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ−1
+Ω−1
+2
+)
+(1 +c)(1 +c(1−τ))Ej,2Ek,2
+]]
+Bk,1
+28
+
+===== PAGE 29 =====
+
+≤ −cτE 1[M1,2Ej,2]
++ ((1−ρ)(1 +c)− (1 +c(1−τ)))E1
+[
+M1,2
+(B2(−B1 +B0)
+Ω2
+)ℓ
+Ej,2
+]
+−
+∑
+k
+E1
+[
+M1,2
+[(
+ℓ(1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ−1
+Ω−1
+2
+)
+(1 +c)(1 +c(1−τ))Ej,2Ek,2
+]]
+Bk,11Bk,1≤0
+≤ −cτE 1[M1,2Ej,2]
++ ((1−ρ)(1 +c)− (1 +c(1−τ)))E1
+[
+M1,2
+(B2(−B1 +B0)
+Ω2
+)ℓ
+Ej,2
+]
++ ℓ(1−ρ)(1 +c)E1
+[
+M1,2
+(B2(−B1 +B0)
+Ω2
+)ℓ
+Ej,2
+]
+= −cτE 1[M1,2Ej,2] + ((1 + ℓ)(1−ρ)(1 +c)− (1 +c(1−τ)))E1
+[
+M1,2
+(B2(−B1 +B0)
+Ω2
+)ℓ
+Ej,2
+]
+and hence the result holds if
+sup
+(B2(−B1 +B0)
+Ω2
+)ℓ
+≤ cτ
+(1 +ℓ)(1−ρ)(1 +c)− (1 +c(1−τ)).
+Consider now the possibility that new debt is issued at time t = 1. The optimal amount of new
+debt in currency p satisﬁes
+0 = −cτE 1[M1,2Ep,2]
++ ((1−ρ)(1 +c)− (1 +c(1−τ)))E1
+[
+M1,2
+(B2(−B1 +B0)
+Ω2
+)ℓ
+Ep,2
+]
+−
+∑
+k
+E1
+[
+M1,2
+[(
+ℓ(1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ−1
+Ω−1
+2
+)
+(1 +c)(1 +c(1−τ))Ep,2Ek,2
+]]
+Bk,1
+Deﬁne the matrix
+Pj,k =
+[(
+ℓ(1−ρ)
+(B2(−B1 +B0)
+Ω2
+)ℓ−1
+Ω−1
+2
+)
+(1 +c)(1 +c(1−τ))Ej,2Ek,2
+]
+29
+
+===== PAGE 30 =====
+
+and the vector
+Qk = (((1 −ρ)(1 +c)− (1 +c(1−τ)))
+(B2(−B1 +B0)
+Ω2
+)ℓ
+−cτ)Ek,2 > 0.
+Then, ﬁrst order conditions can be rewritten as a system
+E1[M1,2P]B = E1[M1,2Q]
+In the extreme case when all exchange rates are identical, it follows immediately that the total net
+acquired-back det ∑
+kBk has to be strictly negative (meaning that the ﬁrm is issuing debt and is
+indiﬀerent about re-shuﬄing because all currencies are identical). But one currencies are slightly
+diﬀerent, the optimal debt issuance will feature approximately equal issuance amounts, all positive.
+Q.E.D.
+30
+
+===== PAGE 31 =====
+
+E. Additional results: Local currency and dollar debt
+The main goal of our paper is to explain the dominance of the dollar compared to other major
+international currencies primarily with global ﬁrms in mind. While it is not our primary focus
+to explain why ﬁrms in emerging markets issue debt in dollars as opposed to local currency, the
+mechanisms underlined in our paper do yield some predictions about that as well. In this appendix,
+we take as given the dominance of dollar among the major global currencies, and we investigate
+whether debt view can be used to explain the mixture of dollar– and local–currency denominated
+debt for non–ﬁnancial ﬁrms in a cross–section of emerging market economies.
+E.1 Results
+We develop and test the predictions of an extension of our model using a cross–section of the
+emerging market economies for which data on corporate debt in diﬀerent currencies are available. 2
+We prove the following extension of Theorem 2.1 for the case wherein ﬁrms issue a mixture of local
+currency (LC) and dollar–denominated debt (see Theorem E.2 in the Appendix for the proof. Note
+that, while Proposition E.1 is a partial equilibrium result, it still holds true in general equilibrium
+when debt overhang costs are suﬃciently small).
+Proposition E.1 Suppose that (1) q = q($) (that is, issuing in LC costs the same as issuing in
+dollars); (2) the variance of all shocks is suﬃciently small; and (3) issuing debt in both LC and
+dollars is optimal; (4) ℓ is close to 1. Then,
+(a) the fraction Bt
+Bt($)E$,i,t
+is monotone increasing in the covariance Covt(εi,t+1,ε $,t+1) if and only
+if Bt ≥ Bt($)E$,i,t;
+(b) the fraction Bt
+Bt($)E$,i,t
+is always monotone decreasing in σi,ε.
+The intuition for the ﬁrst theoretical result is that local currency debt partly replicates insurance
+properties of the dominant currency in downturns, while it is a better hedge against domestic
+2Data were obtained from the Institute for International Finance (IIF) for the period from 2005 Q1 to 2018 Q2.
+The countries in our sample are Argentina, Brazil, Chile, China, Colombia, Czechia, Hong Kong, Hungary, India,
+Indonesia, Israel, Republic of Korea, Malaysia, Mexico, Poland, Russian Federation, Saudi Arabia, Singapore, South
+Africa, Thailand and Turkey.
+31
+
+===== PAGE 32 =====
+
+productivity shocks. The second result is that volatile inﬂation generates volatility of proﬁts which
+the ﬁrms avoid by issuing less local currency debt.
+Items (a)–(b) of Proposition E.1 directly translate into the testable empirical hypotheses. We
+test the two implications of our theory:
+1. The local currency share of corporate debt is higher for countries in which domestic inﬂation
+correlates more with US inﬂation when controlling for relevant factors.
+2. Firms in countries with more volatile domestic inﬂation tend to have less debt denominated
+in local currency.
+Fig. E.1. Mean of the local currency to USD debt ratio by country
+0 10 20 30 40 50
+Mean of LCU/USD
+CN
+CZ
+HU
+PL
+0 1 2 3 4 5
+Mean of LCU/USD
+AR
+BR
+CL
+CO
+HK
+ID
+IL
+IN
+KR
+MX
+MY
+RU
+SA
+SG
+TH
+TR
+ZA
+Source: IIF, authors’ calculations
+Figure E.1 shows the mean of the debt ratio, ¯LCU
+USDi, for each country in our sample. The left–
+hand panel shows several outliers: China and the EU countries in the sample (Czechia, Hungary,
+and Poland), while the right–hand panel shows the rest of the countries. We exclude outliers from
+our regressions and focus only on the sample of countries listed in the right–hand panel.
+32
+
+===== PAGE 33 =====
+
+We ﬁnd statistically signiﬁcant evidence for the ﬁrst prediction. Our second test results in a
+coeﬃcient with the predicted sign, yet statistically insigniﬁcant.
+In order to test the ﬁrst hypothesis, we proceed as follows. For each in our sample, we estimated
+the following time series regression:
+πi
+t =γ0 +γ1·Ret MSCIACWorld t + Γ·Ret DomesticStockIndexi
+t +πres,i
+t , (E.1)
+whereπi
+t is the domestic monthly inﬂation rate in and Ret MSCIACWorld t is the monthly return
+on the MSCI AC World Index. Ret DomesticStockIndexi
+t is the monthly return on the domestic
+stock market index.πres,i
+t are the residuals from this regression. We also run the following regression
+for the US:
+πUS
+t =µ0 +µ1Ret MSCIACWorld t +πres,US
+t , (E.2)
+We then run the following regression to compute a proxy for the covariance Cov t(εi,t+1,ε $,t+1)
+between the residual domestic inﬂation and residual US inﬂation (see item (a) of Proposition E.1),
+πres,i
+t =α +βπres,US
+t +ϵt,
+where πres,i
+t is the residual domestic monthly inﬂation rate in from (E.1) and πres,US
+t is the
+residual monthly inﬂation rate in the US from (E.2). We denote the estimated slope coeﬃcient by
+ˆβπres,i
+t ,πres,US
+t
+i .
+We then run the following cross–sectional regression:
+¯LCU
+USD i
+=α1 +β1 ˆβπres,i
+t ,πres,US
+t
+i +Xi +ηi. (E.3)
+Here, ¯LCU
+USDi is the average ratio of debt denominated in local currency to debt denominated in
+dollars for corporates in the countries of the dataset; Xi denotes other control variables.
+Item (a) of Proposition E.1 predicts that the coeﬃcient β1 in the regression (E.3) should be
+positive.
+To test the second hypothesis, we calculate the standard deviation of πres,i
+t as a proxy for σε,i
+33
+
+===== PAGE 34 =====
+
+in Proposition E.1, and then run the following cross–sectional regression:
+¯LCU
+USD i
+=α2 +β2σπres,i
+t
+i +Xi +ηi. (E.4)
+Proposition E.1, item (b) predicts that β2< 0.
+In column (1), we run univariate regressions In column (2), we add an additional control variable
+¯kaopeni : a ﬁnancial openness index obtained from Chinn and Ito (2006). In column (3), we take
+the predictions of the model literally as they appear in item (a) of the Proposition E.1: β1 > 0
+for countries where ¯LCU
+USDi > 1 and we exclude Hong Kong where ¯LCU
+USDi < 1. In all three columns,
+regressions corroborate our hypothesis. 3 The ﬁrst three columns are in line with the predictions of
+our theory. Column (4) of Table E.1 shows the results of regression (E.4). Although the result is
+lacking statistical signiﬁcance, the sign of the coeﬃcient is indeed consistent with our theoretical
+prediction.
+3All our results are qualitatively and quantitatively similar when we use raw domestic and US inﬂation rates,
+instead of residuals. Moreover, all results remain valid if we use the share of local currency debt in total debt instead
+of the ratio of local currency debt to dollar debt.
+34
+
+===== PAGE 35 =====
+
+T able E.1. The cross–section of the local currency to dollar
+debt ratio
+(1) (2) (3) (4)
+¯LCU
+USDi
+¯LCU
+USDi
+¯LCU
+USDi
+¯LCU
+USDi
+ˆβπres,i
+t ,πres,US
+t
+i 6.523*** 6.094*** 6.019***
+(0.896) (1.097) (1.029)
+¯kaopeni –0.233 –0.192 –0.796*
+(0.347) (0.428) (0.398)
+σπres,i
+t
+i –1.784
+(1.479)
+Observations 17 17 16 17
+R–squared 0.697 0.709 0.664 0.254
+Notes: Robust standard errors in parentheses. *, **, *** denote
+signiﬁcance at the 10, 5, and 1% levels respectively. ¯LCU
+USDi is the
+mean share of local currency debt obtained from the IIF for each
+of the 17 emerging market economies between 2005 Q1 and 2019
+Q4. ˆβ
+πres,i
+t ,πres,U S
+t
+i is the estimated regression coeﬃcient for a linear
+regression of residuals of monthly domestic inﬂation rate from (E.1) on
+the residuals of the US inﬂation rate from (E.2). ¯kaopeni is the mean of
+the Chinn–Ito ﬁnancial openness index for each country (average of the
+data available between 1970–2018). σ
+πres,i
+t
+i is the standard deviation
+of the residuals of the monthly domestic inﬂation rate obtained from
+(E.1). In column (3), Hong Kong is excluded since the share of local
+currency debt to dollar debt is less than 1.
+
+===== PAGE 36 =====
+
+E.2 Proof of Proposition E.1
+We ﬁrst state the following extension of the Theorem 2.1 for the case of ﬁrms borrowing both
+in local currency and in dollars.
+Theorem E.2 Suppose that q =q($). Then, issuing in a mixture of local currency and dollars is
+optimal if and only if
+¯q(j, $)
+¯q($) − 1 ≤
+Cov$
+t
+((
+Ωt+1
+Bt+1(Bt)
+)−ℓ
+,Ej,t,t+1
+)
+E$
+t
+[(
+Ωt+1
+Bt+1(Bt)
+)−ℓ]
+E$
+t [Ej,t,t+1]
+for all j = 1,··· ,N.
+Proof of Theorem 2.1 and Proposition E.1 . The standard Kuhn–Tucker conditions that bor-
+rowing only in LC and dollars is optimal if and only if
+Et
+[
+Mt,t+1
+[(
+1− (1−ρ)
+(Bt+1(Bt)
+Ωt+1
+)ℓ)
+(1 +c)Ej,t+1
+]]
+(1−q(j))
++Et
+[
+Mt,t+1
+[(
+−ℓ(1−ρ)
+(Bt+1(Bt)
+Ωt+1
+)ℓ−1
+Ω−1
+t+1
+)
+(1 +c)Ej,t+1
+]
+Bt+1(Bt)
+]
+(1−q($))
+− (1 +c(1−τ))Et [Mt,t+1Ej,t+1]
++Et
+[
+Mt,t+1(ℓ + 1)
+(Bt+1(Bt)
+Ωt+1
+)ℓ
+(1 +c(1−τ))Ej,t+1
+−ℓ
+(Bt+1(Bt)
+Ωt+1
+)ℓ
+(1 +c(1−τ))Ej,t+1
+]
+≤ 0
+for all j with the identity for j =i, $. This inequality can be rewritten as
+¯q(j, $) Et[Mt,t+1Ej,t+1]
+Et
+[
+Mt,t+1
+(
+Bt+1(Bt)
+Ωt+1
+)ℓ
+Ej,t+1
+] ≤ 1 = ¯q($) Et[Mt,t+1E$,i,t+1]
+Et
+[
+Mt,t+1
+(
+Bt+1(Bt)
+Ωt+1
+)ℓ
+E$,i,t+1
+]
+and the ﬁrst claim follows.
+36
+
+===== PAGE 37 =====
+
+For the LC–$ mixture, we assume for simplicity that ℓ = 1. Then, we get the system
+1 = ¯q($) Et[Mt,t+1E$,i,t+1]
+Et
+[
+Mt,t+1
+(
+Bt+1(Bt)
+Ωt+1
+)
+E$,i,t+1
+]
+1 = ¯q($) Et[Mt,t+1]
+Et
+[
+Mt,t+1
+(
+Bt+1(Bt)
+Ωt+1
+)]
+whereby
+Bt+1(Bt) = (1 + c(1−τ)) (Bt + Bt($)E$,i,t+1)
+Thus, we get the system
+Et[Mt,t+1Ω−1
+t+1]Bt + Et[Mt,t+1Ω−1
+t+1E$,i,t+1]Bt($) = ˜q($)Et[Mt,t+1]
+Et[Mt,t+1Ω−1
+t+1E$,i,t+1]Bt + Et[Mt,t+1Ω−1
+t+1E2
+$,i,t+1]Bt($) = ˜q($)Et[Mt,t+1E$,i,t+1]
+where we have deﬁned
+˜q($) = ¯q($)/(1 +c(1−τ)).
+Thus,
+( Bt
+Bt($)
+)
+= ˜q($)∆−1
+t
+
+
+Et[Mt,t+1Ω−1
+t+1E2
+$,i,t+1] −Et[Mt,t+1Ω−1
+t+1E$,i,t+1]
+−Et[Mt,t+1Ω−1
+t+1E$,i,t+1] Et[Mt,t+1Ω−1
+t+1]
+
+
+( Et[Mt,t+1]
+Et[Mt,t+1E$,i,t+1]
+)
+.
+where
+∆t = Et[Mt,t+1Ω−1
+t+1E2
+$,i,t+1]Et[Mt,t+1Ω−1
+t+1]− (Et[Mt,t+1Ω−1
+t+1E$,i,t+1])2
+Thus,
+Bt
+Bt($)Et,$,i
+=
+−Cov$
+t (Ω−1
+t+1Et,t+1,$,i, E−1
+t,t+1,$,i)
+Cov$
+t (Ω−1
+t+1, E−1
+t,t+1,$,i)
+.
+Thus,
+Bt
+Bt($)Et,$,i
+=
+−Cov$
+t
+(( ¯C ˆη
+t+1e(η−1)ai,t+1P$,t,t+1
+)−1,P−1
+i,t,t+1P$,t,t+1
+)
+Cov$
+t
+(( ¯C ˆη
+t+1e(η−1)ai,t+1Pi,t,t+1
+)−1,P−1
+i,t,t+1P$,t,t+1
+) .
+37
+
+===== PAGE 38 =====
+
+Let now ˜ai,t+1 ≡ log( ¯C ˆη
+t+1e(η−1)ai,t+1)−β˜a$,t+1 where ˜a$,t+1 = log( ¯C ˆη
+t+1e(η−1)a$,t+1) and where β
+is such that ˜ai,t+1 and ˜a$,t+1 are uncorrelated.
+Recall also that we assume that
+logPi,t,t+1 = −ˆαi˜a$,t+1−αi˜ai,t+1 + εi,t+1, logP$,t,t+1 = −˜α$ˆa$,t+1 +ε$,t+1
+where εi,t+1∼N(0,σ 2
+ε,i). We also allow σε,i,$ ≡ Covt(εi,t+1,ε $,t+1) ̸= 0. Then, to the ﬁrst order
+in variance, the measure change is irrelevant and
+− Cov$
+t
+(( ¯C ˆη
+t+1e(η−1)ai,t+1P$,t,t+1
+)−1,P−1
+i,t,t+1P$,t,t+1
+)
+≈ −Covt(−˜ai,t+1−β˜a$,t+1 +α$˜a$,t+1 − ε$,t+1,−α$˜a$,t+1 + ε$,t+1 +αi˜ai,t+1 + ˆαi˜a$,t+1 − εi,t+1)
+whereas
+Cov$
+t
+(( ¯C ˆη
+t+1e(η−1)ai,t+1Pi,t,t+1
+)−1,P−1
+i,t,t+1P$,t,t+1
+)
+≈ Covt(−˜ai,t+1−β˜a$,t+1 +αi˜ai,t+1 + ˆαi˜a$,t+1 − εi,t+1,
+−α$˜a$,t+1 + ε$,t+1 +αi˜ai,t+1 + ˆαi˜a$,t+1 − εi,t+1)
+In the small variance approximation, we that’s get
+Bt
+Bt($)Et,$,i
+≈
+σ2
+ε,$−σε,i,$ +αiσ2
+c +α2
+$σ2
+c($)− (α$ +αiα$)σc(i, $)
+σ2
+ε,i−σε,i,$ + (1−αi)(α$σc(i, $)−αiσ2c)
+whereσ2
+c = Vart[log( ¯C ˆη
+t+1e(η−1)ai,t+1)] andσc(i, $) = Covt[log( ¯C ˆη
+t+1e(η−1)ai,t+1), log( ¯C ˆη
+t+1e(η−1)a$,t+1)].
+The claims (monotonicity in σε,i,$ and σ2
+ε,i) follow then by direct calculation. Q.E.D.
+38
+
+===== PAGE 39 =====
+
+References
+Bodn´ ar, K., 2006. Survey evidence on the exchange rate exposure of hungarian smes. MNB Bulletin
+1, 6–12.
+Bruno, V., Shin, H. S., 2017. Global dollar credit and carry trades: a ﬁrm-level analysis. Review of
+Financial Studies 30, 703–749.
+Chinn, M. D., Ito, H., 2006. What matters for ﬁnancial development? capital controls, institutions
+and interactions. Journal of Development Economics 81, 163–192.
+Du, W., Schreger, J., 2017. Sovereign risk, currency risk and corporate balance sheets. Tech. rep.,
+Federal Reserve Board.
+Froot, K. A., Scharfstein, D. S., Stein, J. C., 1993. Risk management: Coordinating corporate
+investment and ﬁnancing policies. The Journal of Finance 48, 1629–1658.
+H¨ ordahl, P., Tristani, O., 2014. Inﬂation risk premia in the euro area and the united states.
+International Journal of Central Banking 10, 1–47.
+Hugonnier, J., Malamud, S., Morellec, E., 2015. Capital supply uncertainty, cash holdings and
+investment,. Review of Financial Studies 28, 391–445.
+Kremens, L., Martin, I. W., 2019. The quanto theory of exchange rates. American Economic Review
+109, 810–843.
+Niepmann, F., Schmidt-Eisenlohr, T., 2019. Foreign currency loans and credit risk: Evidence from
+u.s. banks. Tech. rep., Federal Reserve Board.
+Rampini, A., Suﬁ, A., Viswanathan, S., 2014. Dynamic risk management. Journal of Financial
+Economics 111, 271–296.
+Salomao, J., Varela, L., forthcoming. Exchange rate exposure and ﬁrm dynamics. Review of
+Economic Studies .
+39

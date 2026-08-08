@@ -1,0 +1,2036 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 145 (2022) 217–238
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Ripples into waves: Trade networks, economic activity, and
+asset prices ✩
+Jeffery (Jinfan) Chang a , Huancheng Du b , ∗, Dong Lou c , Christopher Polk c
+a School of Management and Economics, Chinese University of Hong Kong, Shenzhen, China
+b School of Finance, Central University of Finance and Economics, Beijing, China
+c Department of Finance, London School of Economics, UK and CEPR, United Kingdom
+a r t i c l e i n f o
+Article history:
+Received 25 March 2021
+Revised 25 May 2021
+Accepted 10 June 2021
+Available online 15 August 2021
+JEL classiﬁcation:
+G12
+G15
+F40
+Keywords:
+Sovereign CDS
+Return predictability
+Trade networks
+Limited attention
+Information aggregation
+a b s t r a c t
+We exploit information in sovereign CDS spreads and the international trade network to
+provide causal evidence of the propagation of global economic shocks. We show that trade
+links are an important source of shock transmission using the natural experiments of the
+Japanese tsunami and the COVID-19 lockdown in China. We then conﬁrm more general
+and gradual information ﬂows along the trade network by showing extensive country-level
+credit/equity cross-sectional return predictability. News about country fundamentals ﬂows
+primarily from importers to exporters, depends on both direct and indirect links in the
+trade network, and is magniﬁed by the exporting country’s ﬁnancial vulnerability.
+©2 0 2 1 Elsevier B.V. All rights reserved.
+✩ We thank John Campbell, Vasco Carvalho, Randy Cohen, ML Cooper,
+Wenxin Du, Andrea Frazzini, Julian di Giovanni, Christian Julliard, Kalina
+Manova, Stuart McDonald, Veronica Rappoport, Robert Ready, Iván Ro-
+dríguez, Alireza Tahbaz-Salehi, Tuomo Vuolteenaho, as well as seminar
+participants at Aalto University, Arrowstreet Capital, Barclays Capital, Chi-
+nese University of Hong Kong (Shenzhen), HEC Paris, London Business
+School, London School of Economics, New York Federal Reserve, Renmin
+University, Tsinghua University, UBS, University of British Columbia, Uni-
+versity of Geneva, the 2018 Brazilian Finance Association Annual Meeting,
+the 2018 Finance UC Conference, the 2018 FIRS Conference, and the 2019
+American Finance Association Annual Meeting for helpful comments. Jef-
+fery (Jinfan) Chang, a.k.a. Jinfan Zhang, appreciates help from friends and
+colleagues at the International Monetary Fund (IMF) and acknowledges
+ﬁnancial support from the National Natural Science Foundation of China
+(under Project Number 71,733,004). Lou and Polk are grateful for fund-
+ing from the Paul Woolley Center at the LSE. All remaining errors are our
+own. An earlier draft of this paper was circulated under the title “Trade
+Networks and Asset Prices: Evidence from the SCDS Market.”
+∗ Corresponding author.
+E-mail addresses: zhangjinfan@cuhk.edu.cn (J. Chang),
+huancheng.du@gmail.com (H. Du), d.lou@lse.ac.uk (D. Lou),
+c.polk@lse.ac.uk (C. Polk).
+1. Introduction
+A growing number of studies examine the way shocks
+to individual sectors ( Acemoglu et al., 2012 ) and/or
+ﬁrms ( Gabaix, 2011 ) transmit and consequently aggregate
+through the corresponding economic network. A key take-
+away from these studies is that the nature and structure
+of the network are of great importance. In stark contrast
+to Lucas (1977) , where microeconomic shocks wash out
+and have negligible effects on aggregate outcomes, the in-
+terconnectedness of sectors and ﬁrms provides a network-
+based view of what drives aggregate ﬂuctuations. However,
+the way in which shocks propagate across countries re-
+mains an important research question in an increasingly
+interconnected world.
+We exploit the international trade network to reveal
+novel facts about the propagation of country-level shocks
+across the global macro-economy. In other words, our
+https://doi.org/10.1016/j.jﬁneco.2021.08.005
+0304-405X/© 2021 Elsevier B.V. All rights reserved.
+
+===== PAGE 2 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+work adds to the growing number of studies that try
+to differentiate between the transmission of idiosyncratic
+shocks and the common exposures to global shocks. 1 More
+speciﬁcally, our analysis provides a new perspective on the
+importance of trade links by exploiting information con-
+tained in the sovereign credit default swap (SCDS) con-
+tracts on foreign-currency-denominated debt of over 90
+developed and developing countries. We argue and show
+that these relatively liquid assets, compared to sovereign
+bond markets, provide a useful barometer of a country’s
+well-being. 2 This close link to country fundamentals con-
+trasts with equity markets where only a small proportion
+of volatility comes from cash-ﬂow news ( Shiller, 1981 ). 3
+We ﬁrst provide evidence of causal links by study-
+ing two natural experiments: the exogenous local shocks
+of the Japanese tsunami and the COVID-19-driven Wuhan
+lockdown. On March 11, 2011, a 9.1-magnitude earth-
+quake took place 231 miles northeast of Tokyo. This
+earthquake was the largest earthquake on record ever
+to hit Japan and generated a tsunami with waves over
+30 feet high, which damaged several nuclear reactors in
+the area. Conservative estimates indicate nearly 20,0 0 0
+deaths, 2500 missing persons, and damage from the earth-
+quake/tsunami/radioactivity of over $300 billion. On Jan-
+uary 23, 2020, China imposed a strict lockdown in Wuhan
+and other cities in the Hubei province in an effort to quar-
+antine the outbreak of COVID-19. At the time of the Wuhan
+lockdown, there were very few diagnosed COVID-19 cases
+outside of China. Both the Japanese tsunami and the lock-
+down in China are events that are initially entirely lo-
+cal/idiosyncratic in nature. We exploit this fact to identify
+the way country-level shocks propagate.
+In particular, we study the weeks and days surround-
+ing these two local events, linking SCDS returns to export-
+based measures of country exposures. We ﬁrst note that
+the SCDS spread of both countries increased signiﬁcantly
+on the event day, with Japan’s spread increasing from 75
+to 125 bps and China’s spread increasing from 33 to nearly
+40 bps. We then exploit the variation in each country’s ex-
+ports to the shocked country (i.e., Japan or China) as a frac-
+tion of its total exports in the prior year. Our results show
+that information ﬂows from both Japan and China to their
+upstream countries. In particular, the consequences of the
+local shock can be seen in the cross-section of SCDS re-
+1 See, for example, di Giovanni et al. ( 2014 , 2020 ), and
+Kramarz et al. (2020) . Unlike these papers, we focus on understand-
+ing the country-level trade network.
+2 Credit spreads are volatile throughout our sample period.
+Longstaff et al. (2011) investigate the extent to which local and global
+factors can explain variation in credit spreads. We show in Section 5 that
+a country’s SCDS return contains information about subsequent import
+growth and thus an export-weighted average of the SCDS returns on
+a country’s export destination contains signiﬁcant information about
+export and GDP growth.
+3 Shiller (1981) ’s excess volatility puzzle has been quantiﬁed in
+terms of return decomposition by a large literature starting with
+Campbell (1991) , who argues that roughly 80% of return volatility is due
+to discount-rate news. Others, such as Campbell et al. (2018) , conﬁrm
+similar numbers in data including our sample period. Consistent with this
+view, in Section 5.2 we document that a measure of investor sentiment
+( Baker and Wurgler, 2006 ) strongly forecasts aggregate stock market re-
+turns but has no ability to forecast future SCDS returns.
+turns with both a contemporaneous and a lagged response.
+Thus, we provide clear evidence that country-level shocks
+propagate through the trade network, in contrast to the al-
+ternative view that countries comove only because of com-
+mon exposures to aggregate shocks.
+We next turn to a broader study of information ﬂows
+in these markets, exploiting lead-lag return predictabil-
+ity. Speciﬁcally, we construct a time-varying matrix, T rade ,
+where each row corresponds to an exporting country and
+each column corresponds to an importing country. There-
+fore, each cell contains the fraction of total export ac-
+counted for by the importing country. For each country
+in our sample and in every month, we then calculate the
+export-weighted average SCDS return of the countries it
+exports to, namely T rad e t−1 × r CDS
+t , where r CDS
+t is the vec-
+tor of SCDS returns for the countries we study. Thus, our
+method exploits the time-varying import/export linkages
+that characterize the international trade network in con-
+junction with SCDS returns to identify the way in which
+country-speciﬁc information propagates through the global
+economy.
+With this measure, dubbed ExpRet, for each month, we
+sort countries based on their ExpRet signal and examine
+the subsequent abnormal returns on their own SCDS. We
+ﬁnd that our measure of ExpRet has an economically and
+statistically signiﬁcant effect on the cross-section of SCDS
+returns, a fact that is robust to a variety of controls for
+systematic risk in the SCDS market. For example, the top
+20% of countries sorted by ExpRet outperform the bottom
+20% by 47 bps per month with an associated t -statistic of
+3.69, implying an annualized Sharpe ratio of 1.1.
+In addition, we document important heterogeneity in
+this predictability linked to both a country’s position in the
+network, as well as the vulnerability of the country receiv-
+ing the shock. We ﬁnd that our effect is stronger for coun-
+tries on the periphery of the network and those countries
+that are ﬁnancially vulnerable. The former effect is consis-
+tent with a limited attention argument. The latter effect
+is true whether we sort on credit quality, leverage, or our
+vulnerability index, which combines these two measures.
+We further show that the returns on these portfolios
+are not driven by links in the cross-border capital-ﬂow net-
+work and are robust to controls for the gravity model of
+global trade. Moreover, our ﬁndings are robust across a va-
+riety of subsamples and subperiods. In particular, our re-
+sults continue to hold when we exclude China; safe haven
+countries with low SCDS spreads; the G20, the European
+Union, or OPEC countries; or the smallest or most illiquid
+countries from the sample. We also ﬁnd similar effects in
+the subperiods before and after the Global Financial Cri-
+sis. Thus, the predictability caused by trade-network links
+is not driven by a particular crisis event or a particular
+subset of countries; instead, our ﬁnding is a pervasive phe-
+nomenon. Moreover, these abnormal returns do not revert
+in the long run, consistent with a striking underreaction
+phenomenon in this global market.
+We then turn to analyzing the information contained
+in the indirect links between countries in the global
+trade network. The weights of these indirect links are the
+row elements of T rad e 2 = T rade × T rade . We calculate the
+export-weighted average SCDS return of a country’s indi-
+218
+
+===== PAGE 3 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+rect links as T rade 2
+t−1 × r CDS
+t , which we dub ExpRetInd. We
+then ask the question: To what extent does variation in the
+credit quality of one’s trading partners’ trading partners
+matter? In regressions with both E xp Re tand E xp Re tInd, the
+SCDS return predictability associated with indirect trade
+links is roughly as strong as that from direct links. Fur-
+thermore, information concerning the quality of one’s in-
+direct trading partners takes longer to show up in real-
+ized returns than that concerning the quality of one’s di-
+rect trading partners. These ﬁndings are consistent with
+fundamental shocks, particularly the indirect ones, taking
+time to work their way around the globe.
+If these patterns reﬂect information about fundamen-
+tals, we should see similar predictability in equity mar-
+kets, since the stock market must ultimately be driven by
+cash-ﬂow news. A simple equity strategy that buys the 20%
+of countries with the lowest ExpRet and sells the 20% of
+countries with the highest ExpRet earns roughly 1% per
+month, with an associated t -statistic of 3.26. 4 After we ad-
+just for market, value, and two different measures of eq-
+uity momentum, the resulting four-factor alpha increases
+to 1.05% and the t -statistic to 3.74. Thus, information about
+a country’s export destinations’ credit quality also helps
+describe the cross-section of average equity returns. Inter-
+estingly, the reverse is not true; that is, if we use export
+destinations’ equity market returns to compute an other-
+wise similarly deﬁned ExpSto ck , this alternative measure
+does not forecast the focal country’s sovereign credit re-
+turns. In other words, sovereign credit markets incorporate
+information faster than equity markets.
+Finally, we provide evidence that ExpRe t c,t indeed con-
+tains information about real economic activity that is di-
+rectly relevant to a country’s sovereign credit risk. We
+start by showing that a country’s SCDS return, OwnRe t c,t ,
+forecasts its own imports; in other words, if a country
+is performing relatively poorly in terms of credit quality,
+its future imports are relatively low. Building on this re-
+sult, we then use a country’s ExpRe t c,t to forecast its sub-
+sequent export growth, GDP growth, and changes in the
+external-debt-to-GDP ratio, which is more directly related
+to a country’s sovereign credit risk. We show that ExpRe t c,t
+indeed predicts the country’s export growth, GDP growth,
+and changes in the country’s external-debt-to-GDP ratio.
+In summary, we provide causal evidence of country-
+level information ﬂows through the trade network in the
+SCDS market. This information is distinct from other pos-
+sible network effects. News about one’s trading partners
+affects a country’s export activity, GDP growth, external-
+debt-to-GDP, SCDS spread, and stock market return. As the
+trade network is continually evolving and the typical coun-
+try has many trading partners, who in turn have many
+trading partners, our analysis reveals a novel mechanism
+by which many small ripples of information turn into a
+wave of return predictability across countries. 5
+4 This estimate implies an annualized Sharpe ratio of 0.95; for refer-
+ence, the annualized Sharpe ratio of a long position in the US equity mar-
+ket over our sample period is only 0.31.
+5 The top ten destinations for the typical country account for only 75%
+of the total export activity of the typical country in our sample. Given
+Our primary contribution is to the emerging literature
+that argues that the network of economic activity is impor-
+tant. Barrot and Sauvagnat (2016) show that the speciﬁcity
+of intermediate inputs allows ﬁrm idiosyncratic shocks to
+propagate in the supply-chain network by exploiting data
+on supplier-customer relations among US publicly listed
+ﬁrms. For example, disruptions to suppliers caused by nat-
+ural disasters lead to a two to three percentage point
+drop in customers’ sales growth; this negative shock fur-
+ther spills over to other suppliers of the same customer
+due to the complementary nature of intermediate inputs.
+Carvalho et al. (2021) provide evidence of both upstream
+and downstream shock propagation using Japanese input-
+output data. They document a 3.6% (2.9%) decline in the
+sales growth of ﬁrms whose suppliers (customers) were hit
+by the 2011 Japanese earthquake. In aggregate, this natural
+disaster caused a 0.47% decline in Japan’s real GDP in the
+following year. Unlike these papers that study ﬁrm link-
+ages, we focus on understanding the country-level inter-
+national trade network. In doing so, we provide the ﬁrst
+macroeconomic conﬁrmation that uses forward-looking ﬁ-
+nancial variables to show the importance of trade net-
+works to country-level shock propagation in a global set-
+ting.
+Our work also has a strong connection to the literature
+on international business cycle ﬂuctuations. These stud-
+ies argue that countries that trade more with each other
+have more correlated business cycles (e.g., Frankel and
+Rose 1998 ). The mechanisms underlying such correlation
+is a key question in the empirical macro literature. In par-
+ticular, researchers ask whether the increased correlation
+arises from the prevalence of common shocks hitting coun-
+tries that trade more together and thus increasing busi-
+ness cycle comovement of countries or from the propa-
+gation of country-speciﬁc shocks through the trade chan-
+nel ( Imbs, 2004 ). Our two natural-experiment tests show
+the causal importance of country-speciﬁc shocks along the
+trade network, and our methodology provides a general
+way to aggregate information in either fundamentals or
+prices in order to compare the importance of different
+network links. Moreover, given the fact that stock market
+cycles and business cycles have only a loose correlation
+( Fama and French, 1989 ), our insights regarding the impor-
+tance of the SCDS market may facilitate progress in the in-
+ternational business cycle literature.
+Exploiting ﬁnancial data to identify the propagation of
+macroeconomic activity via networks is an additional im-
+portant contribution of our work to this growing literature.
+Previous studies that focus on accounting/macro data are
+hamstrung by the fact that accounting realizations, such
+as sales or GDP, contain a large predictable component
+and are the result of activity only over the accounting
+quarter/year in question (so low frequency). In contrast,
+our approach allows us to examine the importance of the
+trade network not only at a higher frequency (which helps
+with identiﬁcation) but also by using forward-looking as-
+set prices, which should capitalize news about the value
+that we show the importance of indirect links, markets must aggregate
+information across a wide range of trading partners.
+219
+
+===== PAGE 4 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+of information contained in these links. Indeed, recogniz-
+ing these links allows us to describe novel variation in risk
+and in the average return for the cross-section of country-
+level equity and credit markets.
+This paper also contributes to the growing literature
+on sovereign credit by illustrating a new information-
+discovery mechanism in the SCDS market. While Pan and
+Singleton (2008) , Longstaff et al. (2011) , Xiao et al. (2021) ,
+and Augustin and Tedongap ( 2016 ) document the comove-
+ment of SCDS prices with global systemic risk factors, oth-
+ers focus on the relation between SCDS prices and country-
+speciﬁc risk. Acharya et al. (2014) illustrate the way the ﬁ-
+nancial strain of the contingent debt burden arising from
+public bank bailouts may feed into sovereign credit risk.
+Aizenman et al. (2013) show that country-speciﬁc macroe-
+conomic risk also feeds into the SCDS spread. Lee et al.
+(2016) document that SCDS spreads are related to the de-
+gree of property and creditor rights protection and the
+disclosure requirements. Complementary to these domes-
+tic ﬁnancial, macroeconomic, and institutional factors, we
+ﬁnd that the credit quality of a country’s export destina-
+tions also plays an important role in determining its SCDS
+spread.
+Our paper also sheds light on the way sovereign
+credit risk spills over across countries. The majority of
+the existing literature focuses on the sovereign credit
+risk spillover occurring during the European debt crisis,
+a time of high volatility and comovement. For example,
+Beirne and Fratzscher (2013) attribute the cross-country
+sovereign credit risk spillover during those times to in-
+vestors’ increased sensitivity to country-speciﬁc fundamen-
+tals. In contrast, our paper shows that sovereign credit
+risk spillover exists not just in crisis states, but also in
+normal times, and that spillover comes, at least in part,
+through the global trade network. Moreover, export des-
+tination credit risk can be spread not only through direct
+trade links but also through indirect trade links.
+This paper further contributes to the literature on in-
+vestors’ limited attention and information processing ca-
+pacity. Our ﬁndings provide insight on the extent to which
+macroeconomic information slowly diffuses in the ﬁnan-
+cial derivative markets, which is complimentary to prior
+studies on the diffusion of ﬁrm information in the stock
+market (e.g., DellaVigna and Pollet 2007 , Cohen and Frazz-
+ini 2008 , Cohen and Lou 2012 , Albuquerque et al. 2015 ,
+Xiao et al. 2021 and Wang et al. 2021 ). Our ﬁndings show
+that even ﬁnancial derivative markets, often presumed to
+be more eﬃcient in aggregating information than stock
+markets (e.g., Easley et al. 1998 and Pan and Poteshman
+2006 ), are subject to investors’ limited attention.
+Finally, this paper relates to the informational role
+of derivatives markets. A large literature studies the
+way information ﬂows across markets. For instance,
+Black (1975) emphasizes that the embedded leverage in
+most derivatives allows investors to trade their informa-
+tion more eﬃciently. Nevertheless, there remains a de-
+bate on the direction of information ﬂow between deriva-
+tive markets and the market for the underlying asset.
+On the one hand, Acharya and Johnson (2007) ﬁnd that
+the corporate CDS market forecasts future negative credit
+events. Furthermore, Lee et al. ( 2021 ) show that infor-
+mation in the corporate CDS market can be used to im-
+prove the price momentum strategy of Jegadeesh and Tit-
+man (1993) . Xiao et al. (2021) ﬁnd that the SCDS mar-
+ket forecasts stock markets and economic activities across
+countries with the predictive power coming almost en-
+tirely from the global, rather than country-speciﬁc, infor-
+mation from the sovereign CDS market. On the other hand,
+Hilscher et al. (2015) ﬁnd evidence that information ﬂows
+from the equity market to the corporate CDS market. Our
+paper contributes to this debate by providing additional
+evidence that SCDS contains information about trade that
+is gradually incorporated into country-level returns.
+The remainder of the paper is organized as follows.
+Section 2 describes our data. Section 3 examines responses
+of SCDS spreads to two natural experiments. Section 4 doc-
+uments slow transmissions of export destination news, and
+Section 5 discusses the underlying economic mechanisms.
+We conclude the paper in Section 6 .
+2. Data
+2.1. Sovereign credit default swaps
+Our SCDS data are from Markit, which collects daily
+SCDS quotes from major SCDS dealers and publishes the
+average SCDS spread following a careful data validation
+procedure. 6 Our sample covers 88 sovereign countries,
+from 2001 to 2015. We list when each country enters the
+sample in Appendix Table A1, Panel A. Our analysis focuses
+on USD-denominated, ﬁve-year maturity contracts with
+the underlying being senior unsecured debt. 7 We choose
+this type of SCDS contracts because they are the most ac-
+tively traded with the smallest trading cost. Table 1 pro-
+vides the summary statistics of our SCDS data. The average
+SCDS par spread is 243 bps, with a standard deviation of
+597 bps. The monthly average SCDS return is −0.01%, with
+a standard deviation of 2.61%. On average, a SCDS contract
+has ﬁve dealers providing quotes.
+2.1.1. The calculation of SCDS returns
+SCDS allows market participants to purchase or sell
+protection against the risk of default of a sovereign gov-
+ernment. During the term of the SCDS contract, the
+buyer makes quarterly payments based on the CDS
+coupon/spread to the seller in exchange for the seller’s
+promise of protection. Should a credit event occur, the par-
+ties settle the contract to allow the buyers to collect their
+6 Of the various providers of SCDS price data, Markit’s quality is
+deemed to be of the highest quality and is used by the IMF and World
+Bank to monitor sovereign credit risk. This high quality is in contrast to
+Bloomberg, whose data can be plagued by stale quotations (Rodriguez
+et al. 2019 ).
+7 While corporate CDS are usually traded under ISDA’s XR or MMR re-
+structuring clauses, sovereign reference entities typically trade under the
+CR/CR14 restructuring clause. This clause means that in the event of a
+restructuring credit event, there is no maturity limitation on deliverable
+obligations beyond the usual 30 years.
+220
+
+===== PAGE 5 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 1
+Summary statistics.
+This table shows summary statistics of the variables used in the paper. Panel A reports the number
+of trading partners each country has. Panel B provides summary statistics of other key variables used
+in our analyzes. Our sovereign CDS (SCDS) data cover the period January 2001 to September 2015. The
+CDS spread is the par spread provided by Markit. Monthly SCDS returns are calculated using the stan-
+dard CDS P&L model following O’Kane (2011) . We compute monthly SCDS returns using SCDS spreads
+on the 20th of each month to the 19th of the following month. Stock index returns in each country are
+the monthly US-dollar denominated stock index total returns from Bloomberg. In order to be consis-
+tent with the timing of SCDS monthly returns, monthly stock index returns are also from the 20th of
+each month to the 19th of the next month. The annual international trade data are obtained from the
+UN Comtrade database. Credit rating and credit outlook data include sovereign credit information from
+S&P, Fitch, and Moody’s, with rating grades converted into numerical values from 1 (“AAA/Aaa”) to 22
+(“D”). Credit Rating is the monthly average of the numerical credit rating of S&P, Fitch, and Moody’s.
+Inﬂation is calculated month-over-month using the seasonally-adjusted CPI index.
+Panel A: Trade network links
+Mean Std. Dev. 25% Median 75%
+Number of export destination countries 62.531 3.980 62.281 64.178 64.656
+Number of import source countries 63.013 6.962 63.210 65.278 65.948
+Cumulative trade value
+25% 50% 75%
+Number of export destination countries (per importing country) 1.730 4.086 10.016
+Number of import source countries (per exporting country) 1.816 4.392 10.677
+Panel B: Summary statistics
+No. of Obs. Mean Std. Dev. 25% 50% 75%
+SCDS spreads (bps) 11,997 242.651 596.924 35.022 116.218 266.588
+SCDS returns (%) 11,778 −0.014 2.612 −0.371 −0.005 0.219
+Number of dealers 11,997 5.063 2.300 3.000 5.136 7.000
+Export-to-GDP ratio (%) 15,441 47.473 32.326 28.108 39.483 57.141
+Monthly inﬂation (%) 15,431 0.391 0.884 0.042 0.262 0.573
+Annual GDP growth (%) 15,477 3.658 4.317 1.658 3.607 5.630
+Headline PMI 4897 51.325 4.879 49.032 51.671 54.227
+Credit rating 12,329 10.062 4.808 6.500 10.000 14.000
+Stock index returns (%) 10,814 0.997 7.950 −2.998 1.125 5.162
+credit risk protection payment, which is the face value loss
+of the sovereign debt. 8 , 9
+Following standard market practice, the SCDS return
+is deﬁned as the proﬁt/loss (P&L) of trading a unit of
+$1 nominal protection over a particular period of time.
+We calculate the mark-to-market SCDS return using the
+widely adopted ISDA CDS model, described in detail in
+O’Kane (2011) . The SCDS return increases when the un-
+derlying country’s creditworthiness deteriorates; that is, a
+higher SCDS return indicates bad news.
+There are two practical issues when applying this ap-
+proach to our data. First, there are four ﬁxed premium
+payment dates each year in the SCDS market: March 20,
+June 20, September 20, and December 20. A ﬁve-year con-
+tract will mature on the ﬁrst premium payment date after
+the contract exists for ﬁve years. For instance, a new ﬁve-
+year SCDS launched between March 20, 2015 and June 19,
+8 Credit Events are determined by the ISDA Determinations Committee
+and according to the ISDA deﬁnitions, include failure to pay, moratorium,
+obligation acceleration, and restructuring.
+9 In most cases, the parties use cash settlement with an auction
+process in which the CDS seller makes a cash payment based on an
+auction-generated market price of certain eligible debt obligations of the
+sovereign government. An alternative is physical settlement in which the
+protection buyers tender an eligible bond to the sellers and receive the
+par value of the bond.
+2015 will mature on June 20, 2020, unless a credit event
+is triggered before that day. The new SCDS contract traded
+in the market before the next premium payment date is
+called the on-the-run contract and has the highest liquid-
+ity (our SCDS price data are all on-the-run spreads). Given
+these institutional features, we compute the monthly SCDS
+return based on the spreads on the 20th of the current
+month and the 19th of the next month to ensure that these
+two spreads are from the same contract.
+Second, if the credit event happens during the holding
+period of the SCDS, the monthly return should be the re-
+alized loss on the bond, 1- R . We use the commonly used
+realized recovery rate R = 40 % to calculate the SCDS return
+in case of default. There are three sovereign defaults in our
+sample, all of which are auction-settled: Ecuador in 2009,
+Greece in 2012, and Argentina in 2014. 10
+2.2. Other data
+We obtain our annual US-dollar-denominated bilateral
+trade data from the United Nations Commodity Trade
+Statistics Database (UN Comtrade). As can be seen from
+Table 1 , a typical country in our sample exports to 62
+10 http://www.creditﬁxings.com/CreditEventAuctions/ﬁxings.jsp is the
+website providing the detailed information of each CDS credit event and
+settlement with data coming from the Markit and Creditex.
+221
+
+===== PAGE 6 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+countries and the total export accounts for 47.5% of a coun-
+try’s GDP. We gather information on bilateral foreign di-
+rect investment (FDI) from the United Nations UNCTAD’s
+Bilateral FDI Statistics database and information on bilat-
+eral portfolio investment from the IMF Coordinated Portfo-
+lio Investment Survey (CPIS) database.
+Other macroeconomic data, including the annual GDP
+growth rate and monthly seasonality-adjusted CPI inﬂa-
+tion rate, are collected from the International Monetary
+Fund’s World Economic Outlook (WEO) database. The aver-
+age GDP growth rate in our sample is 3.7%, with a standard
+deviation of 4.3%, while the seasonality-adjusted month-
+over-month inﬂation rate is 0.39%, with a standard devi-
+ation of 0.80%. Information on the purchasing manager in-
+dex (PMI) is obtained from Markit’s Global PMI database.
+The PMI is a key economic indicator derived from the
+monthly surveys of private sector companies in six cate-
+gories: production level, new orders from customers, speed
+of supplier deliveries, inventories, order backlogs, and em-
+ployment level. We focus on the headline PMI, which
+incorporates all sub-indices data. The average headline
+PMI is 51.3 in our sample, with a standard deviation
+of 4.9.
+We also collect information on sovereign credit rat-
+ings/outlook from major credit rating agencies: Moody’s,
+Standard & Poor’s, and Fitch. We ﬁrst convert all ratings
+into numerical scores: “AAA/Aaa” to 1 and “D ”t o 22. We
+then calculate for each country the monthly average credit
+rating across the three agencies as a measure of credit risk.
+The average credit rating for all countries is 10.1, equivalent
+to “BBB + .”
+Finally, we obtain daily USD-denominated returns of
+stock market indices from Bloomberg. The complete list of
+countries and their corresponding stock market indices are
+provided in Appendix Table A1, Panel A. To be consistent
+with the calculation of SCDS returns, we construct monthly
+stock index returns from the 20th of each month to the
+19th of the subsequent month.
+2.3. Summary statistics
+Table I provides the summary statistics of our sam-
+ple. Panel A of Table 1 also contains the basic statistics of
+the trade network. The ﬁrst two rows show that a typical
+country exports to and imports from most other countries
+in our sample: the average number of export destination
+countries is 62 and the average number of import source
+countries is 63. The third and fourth rows report the con-
+centration of export/import relations. For example, the top
+two export destinations account for more than 25% of a
+country’s total exports, and the top ten destinations ac-
+count for 75% of the total exports. Taken together, these
+results indicate that (a) trade is not spread evenly across
+all trading partners, and (b) our method relies on aggre-
+gating information across all trading partners. Panel B re-
+ports the summary statistics of the macroeconomic and ﬁ-
+nancial variables. For instance, the average SCDS spread is
+2.4%, and the average SCDS return is close to zero. There
+is, however, substantial volatility in this market, potentially
+related to news about country fundamentals.
+2.4. Measuring export destination news
+We use the SCDS returns on a country’s export destina-
+tions to reﬂect changes in its export demand. More speciﬁ-
+cally, we deﬁne our measure of the change in export desti-
+nation credit quality for each country as the weighted av-
+erage of export destinations’ SCDS returns using the bilat-
+eral export in the prior calendar year as the appropriate
+weight,
+E xp Re t c,t =
+∑
+i ̸ = c E xp o rt c
+i,y −1 Re t i, ( t−F +1 ,t )
+∑
+i ̸ = c E xp o rt c
+i,y −1
+. (1)
+ExpRe t c,t measures the export destination credit qual-
+ity of country c at the end of month t , and Expo rt c
+i,y −1
+denotes the dollar amount of export from country c to
+country i in the calendar year before month t . We use
+the prior calendar year export activity to weight returns
+to ensure that the export data would have been available
+to investors when calculating our measure. Re t i, ( t−F +1 ,t ) is
+country i ’s SCDS return from month t- F + 1 to t, where F
+is referred to as the formation period of the proxy. We typ-
+ically study the information in the past three-month SCDS
+return ( F = 3), unless otherwise speciﬁed. 11
+The typical country in our sample exports 81% of its
+total export to countries with traded SCDS, with a stan-
+dard deviation of 13%. Therefore, we argue that our mea-
+sure ExpRe t c,t reﬂects news about a signiﬁcant component
+of a country’s export destinations. Figs. 1 and 2 provide a
+visual representation of the rich network structure in 2001
+(the ﬁrst year of our sample) and 2015 (the last year), re-
+spectively. The time-varying network structure in conjunc-
+tion with SCDS returns are thus the two components of
+our ExpRe t c,t variable. 12
+3. Two natural experiments
+To show that patterns in the SCDS market are consis-
+tent with country shocks propagating through the network,
+we examine two natural experiments in Table 2 . Panels A1
+and A2 document the ripple effect of the Japanese triple-
+disasters (earthquake, tsunami, and radioactive fallout) in
+March 2011 while Panels B1 and B2 document the rip-
+ple effect of the Wuhan COVID-19 lockdown in January
+2020. In the right side of each panel, we focus on the
+three weeks surrounding the event. In Panels A1 and A2,
+we deﬁne the event as March 11, 2011 (the day the earth-
+quake hit Japan’s east coast), with week W0 being the
+event week. In Panels B1 and B2, we deﬁne the event as
+January 23, 2020 (the day the central government of China
+imposed a lockdown in Wuhan and other cities in Hubei
+11 We include all of country c ’s export destination countries which
+have traded SCDS. For instance, assume that in 2005, country c exports
+$100 billion and $50 billion to countries x and y, respectively. Denoting
+Re t x, ( t−2 ,t ) and Re t y, ( t−2 ,t ) as country x and y ’s SCDS returns from month
+t -2 to t , the resulting export destination return ExpRe t c,t in month t in
+2006 is then ExpRe t c,t =
+100 ∗Re t x, ( t−2 ,t ) +50 ∗Re t y, ( t−2 ,t )
+150 .
+12 The Sharpe ratio of our headline result declines by 32% if we ignore
+the evolution of the trade network over our sample and only use the
+beginning-of-the-sample trade links when computing Eq. (1) .
+222
+
+===== PAGE 7 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Fig. 1. The global trade network in 2001.
+This ﬁgure shows the global trade network in 2001. Each circle denotes an individual country. The size of the circle represents the size of the economy
+which is proportional to countries’ GDP. The arrow represents the export direction. The thickness of the arrow is proportional to each country’s bilateral
+export weight, which is measured as the ratio of bilateral export over the country’s total export. The degree of darkness inside each circle represents the
+eigenvector centrality of the country in the trade network.
+province to quarantine the initial COVID-19 outbreak). In
+the left side of the panels, we zoom in on the four days
+surrounding the event with day T0 being the event day.
+For each week or day in our sample, we conduct a
+cross-sectional regression (with bootstrapped standard er-
+rors) of each country’s SCDS return on its closeness to
+Japan (Panels A1 and A2) or China (Panels B1 and B2)
+in the trade network in terms of export activity to the
+shocked country. Our main independent variable, ExpShare ,
+is the share of a country’s export to Japan (Panels A1
+and A2) or China (Panels (B1 and B2) as a fraction of the
+country’s aggregate exports measured in 2010. Other con-
+trol variables include the country’s own lagged one-month
+sovereign CDS return and seasonally adjusted inﬂation rate.
+In Panels A1 and B1, we use ExpShare , and in Panels A2
+and B2, we construct a dummy variable ExpShar e DU M that
+equals one if the country’s share of export to Japan (Panel
+A1) or China (Panel B2) is in the top 20% of the sample,
+223
+
+===== PAGE 8 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Fig. 2. The global trade network in 2015.
+This ﬁgure shows the global trade network in 2015. Each circle is an individual country. The size of the circle represents the size of the economy which
+is proportional to countries’ GDP. The arrow represents the export direction. The thickness of the arrow is proportional to each country’s bilateral ex-
+port weight, which is measured as the ratio of bilateral export over the country’s total export. The degree of darkness inside each circle represents the
+eigenvector centrality of the country in the trade network.
+and zero otherwise. All of our ﬁndings are robust to using
+either ExpShare or ExpShar e DU M . We focus on the results
+related to the latter, given its simplicity and ease of inter-
+pretation.
+On the day of the triple-disaster, the Japanese SCDS
+spread experienced a large increase, moving from 75 to
+125 bps. If this idiosyncratic shock indeed propagates
+through the trade network, countries that export more to
+Japan should experience a larger decline in credit quality.
+Across both the weekly and daily speciﬁcations, the coeﬃ-
+cients on ExpShare and ExpShar e DU M are signiﬁcantly pos-
+itive. For example, the top 20% of countries in terms of
+exposure to import activity from Japan experienced an in-
+crease in their SCDS returns of 4.81% ( t -statistic = 2.98)
+the week of the Japanese tsunami. We note that in the
+two weeks following the event week, there is no evidence
+of any reversal of the week 0 effect. If we move from the
+weekly to the daily frequency, we ﬁnd that ExpShar e DU M
+is associated with a return of 2.48% ( t -statistic = 2.98)
+on the event day and 2.85% ( t -statistic = 2.56) on the
+224
+
+===== PAGE 9 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 2
+Spillover in the trade network during disaster events.
+This table reports the ripple effect in the SCDS market using two exogenous events. The ﬁrst event is the March 2011 Japanese triple-disasters (earth-
+quake, tsunami, and radioactive fallout). The second event is the January 2020 Wuhan lockdown driven by COVID-19 in China. We conduct event studies
+both on a daily (columns 1–5) and weekly basis (columns 6–8). T0/W0 represents the day / week when the event occurred. We focus on the effects during
+days and weeks following the event. We restrict our sample to countries that export to the country where events take place. For each week (day), we run
+a cross-sectional regression explaining exporting countries’ SCDS returns. Our main independent variable, ExpShare , is the total export share of a country’s
+bilateral export to the event country measured in the previous year. ExpShar e DU M is a dummy variable that takes the value of 1 if the exporting country’s
+export share falls into the top 20%, and takes the value of 0 otherwise. Other control variables include the country’s own lagged sovereign CDS return, the
+inﬂation rate measured in previous month, bilateral geographical distance measured as the inverse of the logarithm of distance, and the export-to-GDP
+ratio measured in the previous year. Panels A1 and A2 report results for the 2011 Japanese tsunami. Panels B1 and B2 report results for the COVID-19
+Wuhan lockdown. We report t -statistics based on bootstrapped standard errors in parentheses. ∗, ∗∗, and ∗∗∗ indicate statistical signiﬁcance at the 10%, 5%,
+and 1% levels, respectively.
+Daily returns Weekly returns
+T0 T1 T2 T3 T4 W0 W1 W2
+Panel A1: Japanese tsunami, continuous export share
+ExpShar e 0.106 ∗∗ 0.173 ∗∗∗ 0.041 0.000 −0.012 0.221 ∗∗∗ −0.001 −0.012
+(2.03) (2.64) (0.91) (0.01) ( −0.39) (2.61) ( −0.01) ( −0.21)
+Controls Yes Yes Yes Yes Yes Yes Yes Yes
+No. Obs. 71 71 71 71 71 71 71 71
+Adj. R 2 0.50 0.23 0.30 0.17 0.02 0.08 0.11 0.21
+Panel A2: Japanese tsunami, dummy variable
+ExpShar e DU M 0.025 ∗∗∗ 0.029 ∗∗∗ 0.000 −0.001 0.001 0.048 ∗∗∗ −0.005 0.010
+(2.98) (2.56) (0.02) ( −0.14) (0.16) (2.98) ( −0.36) (0.91)
+Controls Yes Yes Yes Yes Yes Yes Yes Yes
+No. Obs. 71 71 71 71 71 71 71 71
+Adj. R 2 0.54 0.28 0.29 0.17 0.02 0.13 0.11 0.22
+Panel B1: COVID-19 Wuhan lockdown, continuous export share
+ExpShar e 0.082 ∗∗ 0.079 ∗∗∗ 0.158 ∗∗∗ −0.061 −0.030 0.205 ∗∗∗ −0.029 −0.041
+(2.08) (3.17) (3.23) ( −1.12) ( −0.91) (2.73) ( −0.56) ( −1.06)
+Controls Yes Yes Yes Yes Yes Yes Yes Yes
+No. Obs. 60 60 60 60 60 60 60 60
+Adj. R 2 0.01 0.25 0.24 0.24 0.03 0.12 0.08 0.07
+Panel B2: COVID-19 Wuhan lockdown, dummy variable
+ExpShar e DU M 0.022 ∗∗∗ 0.017 ∗∗∗ 0.044 ∗∗∗ −0.009 −0.012 0.059 ∗∗∗ −0.008 −0.008
+(2.67) (2.59) (3.36) ( −0.62) ( −1.45) (3.15) ( −0.58) ( −0.91)
+Controls Yes Yes Yes Yes Yes Yes Yes Yes
+No. Obs. 60 60 60 60 60 60 60 60
+Adj. R 2 0.01 0.16 0.26 0.22 0.07 0.14 0.08 0.06
+subsequent day. Thus, our daily regressions further reveal
+that the negative shock, despite its extreme salience to not
+just SCDS market participants but economic agents more
+broadly, still takes more than a day to be fully incorporated
+into SCDS prices.
+On the day of the Wuhan lockdown, the Chinese SCDS
+spread increased from 33 bps to nearly 40 bps. Despite the
+diﬃculty in evaluating the ultimate consequences of the
+early stages of a pandemic, we continue to ﬁnd that coun-
+tries who have China comprising a relatively large share
+of their export activity have their SCDS strongly react to
+the news of the Wuhan lockdown. Indeed, the point es-
+timate associated with ExpShar e DU M in the event week is
+larger, 5.85% ( t -statistic = 3.15), than that found in the
+Japanese event. Again, no evidence of reversal is present
+in the two weeks following the event. We also ﬁnd that
+the Wuhan lockdown shock takes longer to ripple through
+the SCDS market, as the effect on China’s import source
+countries remains economically and statistically signiﬁcant
+even two days following the event. Speciﬁcally, we ﬁnd
+that ExpShar e DU M is associated with a return of 2.19% ( t -
+statistic = 2.67) on the event day, 1.74% ( t -statistic = 2.59)
+on the subsequent day, and 4.36% ( t -statistic = 3.36) on
+the third day.
+Together, our results conﬁrm that information ﬂows
+from the affected country to its upstream countries.
+Namely, the aftershock of the Japanese earthquake can also
+be felt in the global SCDS market, and the initial outbreak
+of COVID-19 can be traced in the global SCDS market as
+well. Thus, we conﬁrm that country-level shocks can prop-
+agate through the trade network, rather than the alterna-
+tive view that countries comove only because of exposures
+to common shocks. We ﬁnd these well-identiﬁed effects
+both contemporaneously and with a lag.
+4. Slow transmission of information: forecasting SCDS
+returns
+Generalizing the results in Table 2 , we now show that
+trade networks cause countries to (ultimately) move to-
+gether by exploiting the fact that abnormal return pre-
+dictability can reﬂect information ﬂow. In particular, if in-
+formation concerning export destination countries’ quality
+is relevant for exporting countries’ CDS prices but is only
+225
+
+===== PAGE 10 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+gradually incorporated into prices, then ExpRe t c,t should
+predict the exporting country’s SCDS returns. Given that
+even the quite salient Japanese tsunami and Wuhan lock-
+down took two to three days to be fully incorporated into
+prices, it is reasonable and perhaps quite likely that less
+salient events (ripples) that aggregate together may ul-
+timately result in slow-moving return waves. Therefore,
+in this section, we examine the information contained in
+ExpRe t c,t about an exporting country’s credit quality using
+either simple portfolio sorts or Fama-MacBeth regressions.
+4.1. Monthly long-short trading strategies
+We study the following trading strategy. At the end of
+each month, we sort countries into ﬁve quintiles, P1 (low)
+to P5 (high), based on ExpRe t c,t and study the resulting re-
+turns on these portfolios, as well as the difference between
+P5 and P1. This difference reﬂects the return to a zero-cost
+portfolio that buys credit default protection for countries
+whose export destination countries have seen their credit
+quality deteriorate and simultaneously writes default pro-
+tection on countries whose export destination countries
+have seen their credit quality improve. We report equal-
+weight portfolio returns over the next H months.
+Table 3 Panel A reports the proﬁts of our long/short
+strategy from January 2001 to September 2015 across var-
+ious combinations of formation periods, F , and portfolio
+holding periods, H . The return predictability is robust, as
+the long/short portfolio returns remain signiﬁcant across
+different combination of reasonable formation and holding
+periods. For instance, for formation period F = 3 months
+and holding period H = 1 month, our strategy generates a
+monthly return of 47 bps (5.76% on an annual basis) with
+a t -statistic of 3.69 and Sharpe ratio of 1.10. As can be seen
+in the table, the average returns increase monotonically,
+consistent with our slow information diffusion interpreta-
+tion.
+Since the eﬃcacy of our strategy declines as F becomes
+larger than three, the rest of our analysis focuses on that
+speciﬁcation. Nevertheless, even for other speciﬁcations we
+have studied, predictability remains economically and sta-
+tistically signiﬁcant. For example, if F = 6 months and
+H = 1 month, the long/short strategy generates a monthly
+return of 30 bps (or 3.6% annualized), with a t -statistic of
+2.62 and a Sharpe ratio of 0.85.
+In Table 3 Panel B, we further examine the robustness
+of the ability of ExpRe t c,t to forecast cross-sectional varia-
+tion in SCDS by controlling for other potential risk factors.
+More speciﬁcally, we regress the time series of returns to
+our long/short portfolio strategy (with F = 3, H = 1) on
+various risk factors documented in the literature. In the re-
+gression for the ﬁrst row of Panel B, we do not control for
+any risk factor and report the raw return of the long/short
+strategy for sake of comparison. In the regression for the
+second row, we control for a SCDS momentum factor based
+on a three-month formation period and a one-month hold-
+ing period as studied in Xiao et al. (2021) . In the regression
+for the third row, the risk factor is a market factor, namely
+the equal-weighted return of all SCDS in our sample. We
+include both this market return and the momentum re-
+turn together in the regression for the fourth row. Finally,
+in the regressions for the ﬁfth and sixth rows, we addition-
+ally control for the global momentum and value factors in
+Asness et al. ( 2013 ), as well as the US market factor. As can
+be seen, after controlling for all the risk factors, we still ob-
+tain a statistically signiﬁcant risk-adjusted abnormal return
+as the resulting monthly alpha is 0.23% ( t -statistic = 2.86).
+Panel B of Table 3 also reports the way our ﬁndings
+vary across different subperiods. Speciﬁcally, we study the
+pre-crisis period from January 2001 to November 2007, as
+well as the crisis and post-crisis periods from December
+2007 to December 2010 and January 2011 to September
+2015, respectively. The risk-adjusted abnormal returns are
+all positive and statistically signiﬁcant at the 5% level dur-
+ing the pre- and post-crisis periods. The average abnormal
+return becomes statistically insigniﬁcant (but still econom-
+ically sizable) during the crisis period, likely due to the ex-
+treme volatility and comovement of SCDS spreads occur-
+ring during that relatively short period of time.
+4.1.1. Heterogeneity across countries
+As transmission of information is facilitated by in-
+vestors’ attention, one would expect that more central
+countries in the network, such as Singapore, Hong Kong,
+China, United States, and the United Kingdom, would ex-
+perience weaker effects as investors are likely more atten-
+tive to trade information for these countries. We measure
+a country’s “centrality” using the most widely used eigen-
+centrality measure in network analysis (e.g., Allen and
+Babus 2008 and Acemoglu et al., 2012, 2013 ). Speciﬁcally,
+eigen-centrality is the corresponding eigenvalue calculated
+by applying the standard eigenvalue decomposition on the
+export destination matrix T rade in year t in a way similar
+to Richmond (2019) .
+Moreover, the SCDS of countries with relatively poor
+credit quality and/or relatively high external debt are likely
+more vulnerable to bad news about fundamentals. We
+measure the extent to which predictability increases with
+either of these two characteristics or with a composite vul-
+nerability index (the rank average of the export country’s
+credit rating and its external debt to GDP ratio).
+Panel C of Table 3 reports the results of double sorts
+using ExpRe t c,t in tandem with either network centrality,
+credit rating, external debt, or our vulnerability index. In
+each case, the observed heterogeneity is consistent with
+our economic story: our effect is stronger for countries
+on the periphery of the network and those countries that
+are ﬁnancially vulnerable. The former effect is consistent
+with a limited attention argument, which we conﬁrm in
+Section 5.3 . The latter effect is true whether we sort on
+credit quality, leverage, or our vulnerability index. All ef-
+fects are strongly statistically signiﬁcant.
+Finally, the information in ExpRe t c,t is publicly observ-
+able and arguably easy to understand. Therefore, limits to
+arbitrage likely play an important role in facilitating the re-
+turn predictability we document. To test this idea, we split
+our SCDS data into two subsamples based on the number
+of dealers providing price quotes. At each point in time,
+cross-sectional variation in the number of dealers likely
+proxies for cross-sectional variation in SCDS liquidity and
+thus limits to arbitrage. As shown in the last two rows,
+the long-short SCDS portfolio sorted by ExpRet generates
+226
+
+===== PAGE 11 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 3
+Forecasting SCDS returns.
+This table reports calendar-time portfolio returns of SCDS. At the end of each month, SCDS contracts are sorted into ﬁve groups (P1–P5) based on ExpRet, the weighted average SCDS return on a country’s
+export destinations over the past F months, where the weights are proportional to how much the country exported to its export destinations in the prior year. All countries are equally weighted within each
+quintile and the portfolios are held for H months. The long/short strategy is constructed by going long SCDS in quintile P5 and selling short SCDS in quintile P1. Panel A reports the average returns of these
+quintile portfolios based on different formation and holding periods. In Panel B, we further control for common risk factors in SCDS returns. We ﬁx the formation period F = 3 months and the holding period
+H = 1 month. The ﬁrst row of Panel B reports raw portfolio returns. The second row reports portfolio alpha after controlling for the sovereign CDS momentum factor (constructed based on a three-month
+formation period and a one-month holding period). The third row reports portfolio alpha after controlling for the equal-weight global SCDS return factor. The fourth row reports portfolio alpha controlling for
+both the SCDS momentum factor and the global SCDS return factor. Rows ﬁve and six add the global momentum and value factors (as in Asness et al. 2013 ) and the US stock market factor. In Panel C, we
+examine the returns to the long-short portfolio of SCDS for various subsamples: sorted by each country’s eigenvector centrality in the trade network, credit rating, external-debt-to-GDP ratio, the vulnerability
+index (which is the rank average of each country’s (inverse) credit rating and external-debt-to-GDP ratio), and SCDS liquidity measured by the number of SCDS dealers providing price quotes. We report
+t -statistics in parentheses that are based on Newey-West standard errors with a lag parameter of 12. ∗, ∗∗, and ∗∗∗ indicate statistical signiﬁcance at the 10%, 5%, and 1% levels, respectively.
+Panel A: Calendar-time portfolio returns of SCDS contracts (in%)
+Portfolio returns in the following month Holding period returns
+P1 P2 P3 P4 P5 Long/short strategy (P5 –P 1 )
+H = 1m H = 3m H = 6m
+F = 1 m −0.052 −0.076 −0.018 −0.012 0.148 0.200 ∗∗ 0.242 ∗∗∗ 0.133 ∗∗
+( −0.43) ( −0.81) ( −0.25) ( −0.11) (1.01) (2.00) (3.66) (2.24)
+Sharpe 0.45 0.85 0.77
+Ratio
+F = 3 m −0.242 ∗ −0.019 −0.027 −0.030 0.232 ∗ 0.474 ∗∗∗ 0.296 ∗∗∗ 0.201 ∗∗
+( −1.80) ( −0.23) ( −0.29) (0.38) (1.69) (3.69) (2.84) (2.11)
+Sharpe 1.10 0.87 0.81
+Ratio
+F = 6 m −0.212 −0.029 −0.046 0.030 0.091 0.303 ∗∗∗ 0.250 ∗∗ 0.204 ∗∗
+( −1.34) ( −0.31) ( −0.66) (0.30) (0.67) (2.62) (2.33) (2.05)
+Sharpe 0.85 0.82 0.79
+Ratio
+Panel B: Controlling for common risk factors (in%)
+Quintile portfolio returns Long/short strategy (P5 –P 1 )
+P1 P2 P3 P4 P5 Full Sample Pre-Crisis 01/01–11/07 Crisis 12/07–12/10 Post-Crisis 1/11–9/15
+Raw portfolio returns
+−0.242 ∗ −0.019 −0.027 −0.030 0.232 ∗ 0.474 ∗∗∗ 0.627 ∗∗∗ 0.356 ∗∗ 0.338 ∗∗
+( −1.80) ( −0.23) ( −0.29) ( −0.38) (1.69) (3.69) (2.74) (2.38) (2.04)
+Controlling for SCDS momentum
+−0.264 ∗∗ −0.088 −0.120 ∗ −0.108 ∗ 0.005 0.269 ∗∗∗ 0.309 ∗∗ 0.110 0.252 ∗∗
+( −2.42) ( −1.43) ( −1.94) ( −1.75) (0.07) (3.16) (2.27) (0.82) (2.54)
+Controlling for global SCDS returns
+−0.236 ∗∗∗ −0.014 −0.021 −0.025 0.241 ∗∗∗ 0.477 ∗∗∗ 0.672 ∗∗∗ 0.342 0.338 ∗∗
+( −3.08) ( −0.42) ( −0.55) ( −0.60) (3.38) (3.56) (2.85) (1.42) (2.06)
+Controlling for SCDS momentum + global SCDS returns
+−0.142 ∗∗ 0.006 −0.027 −0.016 0.139 ∗∗∗ 0.281 ∗∗∗ 0.324 ∗ 0.138 0.254 ∗∗
+( −2.41) (0.15) ( −0.82) ( −0.49) (3.28) (3.08) (1.92) (0.89) (2.48)
+Controlling for SCDS momentum + global SCDS, momentum and value
+−0.100 ∗ −0.004 −0.035 −0.034 0.140 ∗∗∗ 0.240 ∗∗∗ 0.253 ∗∗ 0.156 0.314 ∗∗∗
+( −1.87) ( −0.09) ( −1.08) ( −0.86) (3.38) (2.90) (2.10) (0.97) (2.78)
+Controlling for SCDS momentum + global SCDS, momentum and value + US stock market
+−0.097 ∗ −0.012 −0.025 −0.024 0.133 ∗∗∗ 0.230 ∗∗∗ 0.211 ∗ 0.156 0.377 ∗∗∗
+( −1.85) ( −0.29) ( −0.76) ( −0.62) (3.27) (2.86) (1.78) (0.97) (4.34)
+( continued on next page )
+227
+
+===== PAGE 12 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 3
+( continued )
+Panel C: Double sorts on country characteristics and ExpRet (in%)
+Portfolio returns in the month following formation Portfolio returns
+P1 P2 P3 P4 P5 (P5 –P 1 )
+Sort by centrality
+High −0.045 −0.054 0.012 −0.068 0.167 0.214
+( −0.38) ( −0.67) (0.19) ( −0.92) (1.29) (1.41)
+Low −0.332 ∗ 0.042 −0.147 0.059 0.216 0.592 ∗∗∗
+( −1.89) (0.32) ( −0.92) (0.53) (1.33) (3.42)
+Sort by credit ratings
+High −0.067 −0.013 −0.007 0.012 0.118 0.194 ∗∗
+( −0.95) ( −0.31) ( −0.20) (0.25) (1.56) (2.41)
+Low −0.334 ∗ −0.009 −0.098 −0.026 0.255 0.590 ∗∗∗
+( −1.88) ( −0.05) ( −0.60) ( −0.21) (1.41) (3.39)
+Sort by external debt
+High −0.437 ∗ −0.130 −0.233 0.113 0.194 0.635 ∗∗∗
+( −1.92) ( −0.34) ( −1.02) (0.56) (1.43) (3.12)
+Low −0.220 ∗ −0.027 −0.010 −0.048 0.185 0.414 ∗∗∗
+( −1.89) ( −0.34) ( −0.14) ( −0.71) (0.96) (2.74)
+Sort by the vulnerability index
+High −0.312 ∗ −0.080 −0.129 −0.065 0.341 0.682 ∗∗∗
+( −1.66) ( −0.39) ( −0.80) ( −0.45) (1.52) (2.89)
+Low −0.109 0.010 0.012 −0.005 0.059 0.170 ∗∗∗
+( −1.65) (0.24) (0.32) (0.11) (1.08) (2.72)
+Sort by liquidity
+High −0.226 −0.112 −0.0001 −0.072 0.148 0.374 ∗∗
+( −1.38) ( −1.15) ( −0.01) ( −0.85) (1.03) (2.34)
+Low −0.201 0.099 −0.128 0.043 0.305 ∗ 0.548 ∗∗∗
+( −1.48) (0.89) ( −1.16) (0.48) (1.81) (3.26)
+228
+
+===== PAGE 13 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Fig. 3. Buy-and-hold returns to the long-short SCDS portfolio.
+This ﬁgure shows the cumulative return to the long-short portfolio of SCDS contracts from three months before to twenty-four months after portfolio for-
+mation. At the end of month zero, countries are sorted into quintiles based on ExpRet, the weighted average SCDS return on a country’s export destinations
+over the past three months, where the weights are proportional to how much the country exported to its export destinations in the prior year.
+a monthly alpha of 37 bps for the high liquidity subgroup
+and 55 bps for the low liquidity subgroup. In other words,
+the return effect is indeed stronger for less liquid SCDS
+contracts, consistent with a liquidity-friction view.
+4.1.2. Buy-and-hold long-run returns
+The ability of ExpRe t c,t to forecast cross-sectional varia-
+tion in average country SCDS returns is consistent with an
+underreaction interpretation. Investors fail to incorporate
+the full extent of a country’s export destination sovereign
+credit risk information into the pricing of its own sovereign
+credit risk in a timely fashion and particularly so for coun-
+tries on the periphery of the trade network. 13 Of course, an
+overreaction interpretation is also possible. To differentiate
+between these two competing interpretations, we calcu-
+late the cumulative average return (CAR) of our long/short
+portfolio starting from 3 months before the formation of
+the portfolio (with the formation period F = 3 months) to
+24 months after and plot the results in Fig. 3 .
+In Fig. 3 , the cumulative long/short portfolio return
+is up 2% at the beginning of the holding period. The
+long/short portfolio return continues to drift after the ini-
+tial price response. This drift lasts for about 15 months
+and generates an additional 2.4% cumulative return. Most
+importantly, the long/short portfolio return does not show
+any sign of reversal. These results lend support to our view
+that SCDS returns underreact to information in a country’s
+export destinations’ credit quality.
+4.2. Fama-MacBeth regressions
+The above results provide evidence of cross-sectional
+variation in average SCDS returns and support the hypoth-
+esis that a country’s SCDS price reacts sluggishly to infor-
+mation in the trade network. However, there are at least
+13 See Section 5.3 for the complementary evidence of how contempora-
+neous return links vary with network location.
+three alternative explanations of these ﬁndings: (1) omit-
+ted characteristics, such as own-SCDS momentum, (2) sys-
+temic risk factors, and (3) ﬁnancial links. In this section,
+we use the Fama-MacBeth regression framework to con-
+trol for these possible effects and address these concerns
+( Fama and MacBeth, 1973 ).
+For each month t, we run a cross-sectional regression
+speciﬁed as follows:
+Re t c,t+1 = α + β1 ExpRe t c,t + β2 P rox y c,t + X ′
+c,t γ + ε c,t , (2)
+where Re t c,t+1 is country c ’s SCDS return in month t + 1.
+The time-series coeﬃcients in the monthly regressions are
+averaged following the standard Fama-MacBeth approach,
+and the standard errors are computed with a Newey-West
+correction based on 12 lags. X ′
+c,t contains a basic set of
+macro-variables that control for country characteristics, in-
+cluding GDP growth, inﬂation, and the export-to-GDP ratio.
+More importantly, we also control for other alternative in-
+terpretations via the inclusion of P rox y c,t , variables reﬂect-
+ing other potential explanations of the correlation between
+ExpRet, and subsequent SCDS returns that we have docu-
+mented.
+4.2.1. Controlling for SCDS momentum
+One potential explanation for this return predictability
+is that our results may instead just reﬂect a simple mo-
+mentum phenomenon. Shocks are not slowly propagating
+from export destination countries to the exporting coun-
+try but are rather news about the exporting country that
+is slowly being incorporated into its market price. Simply
+put, ExpRet could be correlated with the exporting coun-
+try’s own past CDS returns. In this section, we provide evi-
+dence conﬁrming that ExpRet’s predictive power is distinct
+from an own-country momentum effect. To facilitate com-
+parison with our previous analysis based on quintile sorts,
+we estimate the effect of the weighted variables in Table 4
+after ﬁrst converting them to quintile dummies.
+229
+
+===== PAGE 14 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 4
+Fama-MacBeth regressions of SCDS returns.
+This table reports results of forecasting regressions of monthly sovereign CDS (SCDS) returns. The main independent variable, ExpRet, the weighted
+average SCDS return, is deﬁned in Table 3 . The set of controls include the following variables. E xp S to c k t ( E xp Cur r t ) is the weighted average stock index
+(currency) return of a country’s export destinations over the past three months. OwnRe t t is the SCDS return for a country over the past three months.
+ImpRe t c,t is the weighted average SCDS return on a country’s import sources over the past three months, where the weights are proportional to how
+much the country imported from its import sources in the prior year. F DIRet in
+t ( F DIRet out
+t ) is the weighted average SCDS return on FDI source (destination)
+countries over the past three months, where weights are proportional to the inward (outward) FDI in the prior year. Port In v Ret in
+t ( Port In v Ret out
+t ) is the
+weighted average SCDS return on inward (outward) portfolio investment countries over the past three months, where the weights are proportional to
+the inward (outward) bilateral portfolio investment in the prior year. DistRe t t is the weighted average SCDS return over the past three months, where
+the weights are proportional to the inverse of the logarithm of the geographic distances to countries from the country in question. ExpGDPGro wt h t is the
+weighted average GDP growth across all export destination countries over the last year, where the weights are proportional to how much the country
+exported to its export destinations in the prior year. All independent variables are quintile dummies. Other controls that are included in each speciﬁcation
+but are not reported include lagged seasonally-adjusted month-over-month inﬂation, lagged annual GDP growth rate, and the lagged export-to-GDP ratio.
+We report t-statistics in parentheses that are based on Newey-West standard errors with a lag parameter of 12. ∗, ∗∗, and ∗∗∗ indicate statistical signiﬁcance
+at the 10%, 5%, and 1% levels, respectively.
+Forecasting monthly SCDS returns in ( t + 1)
+(1) (2) (3) (4) (5) (6)
+ExpRe t t 0.083 ∗∗∗ 0.053 ∗∗ 0.072 ∗∗ 0.091 ∗∗∗ 0.081 ∗∗ 0.091 ∗∗
+(4.26) (2.35) (2.44) (2.75) (2.36) (2.31)
+ExpS to c k t 0.016 −0.020 −0.024 −0.021 −0.036 −0.042
+( −0.67) ( −0.62) ( −0.70) ( −0.65) ( −1.20) ( −1.43)
+Exp Cur r t −0.008 0.017 0.013 0.012 0.003 −0.004
+( −0.24) (0.60) (0.46) (0.40) (0.12) ( −0.20)
+DistRe t t 0.011 0.001 0.011 0.016 0.016
+(0.42) (0.02) (0.33) (0.49) (0.50)
+OwnRe t t 7.065 ∗∗ 7.594 ∗∗ 7.589 ∗∗ 7.883 ∗∗ 8.003 ∗∗
+(2.06) (2.12) (2.11) (2.16) (2.15)
+ImpRe t t −0.032 −0.023 −0.031 −0.027 ∗
+( −1.57) ( −1.19) ( −1.61) ( −1.72)
+F DIRet in
+t −0.021 −0.027 −0.027
+( −0.97) ( −1.31) ( −1.29)
+F DIRet out
+t −0.014 −0.009 −0.009
+( −0.75) ( −0.60) ( −0.56)
+Port In v Ret in
+t 0.017 0.013
+(0.73) (0.53)
+Port In v Ret out
+t −0.017 −0.014
+( −0.61) ( −0.56)
+ExpGDPGro wt h t 0.025
+(0.87)
+No. of Obs. 173 172 172 172 172 171
+Average R 2 0.22 0.25 0.28 0.31 0.34 0.36
+In column 1 of Table 4 , we only include our export des-
+tination news variable, ExpRe t c,t , in conjunction with the
+corresponding stock and currency variables, ExpSto ck and
+Exp Cur r . In particular, we deﬁne
+E xp S to ck c,t =
+∑
+i ̸ = c E xp o rt c
+i,y −1 Ret Stock
+i, ( t−F +1 ,t ) ∑
+i ̸ = c E xp o rt c
+i,y −1
+, (3)
+E xp Curr c,t =
+∑
+i ̸ = c E xp o rt c
+i,y −1 Ret Curr
+i, ( t−F +1 ,t ) ∑
+i ̸ = c E xp o rt c
+i,y −1
+(4)
+where Ret St ock
+i, ( t−F +1 ,t ) is country i ’s US dollar denominated
+stock index return in the past F months and Ret Curr
+i, ( t−F +1 ,t )
+is country i ’s US dollar denominated currency return
+( Menkhoff et al., 2012 ).
+In column 2, we add the past three-month SCDS re-
+turn RetOwn and a variable DistRet where, following grav-
+ity theory, SCDS returns are weighted by the inverse of log
+geographic distance. The coeﬃcient on ExpRe t c,t in column
+2 is 0.0532 ( t -statistic = 2.35), conﬁrming that our ﬁnding
+does not simply reﬂect either a momentum effect or a sim-
+ple gravity phenomenon.
+4.2.2. Asymmetry between export and import measures
+A potential explanation of our ﬁndings is that our re-
+sults may instead reﬂect other non-trade economic chan-
+nels. For example, a country’s important trading partners
+may be geopolitically and/or economically similar and thus
+exposed to a common shock. Therefore, changes in trad-
+ing partners’ sovereign credit quality may simply reﬂect in-
+formation about the underlying country’s sovereign credit
+quality. To address this alternative interpretation, we in-
+troduce an import-source equivalent of our key variable.
+Speciﬁcally, we measure a weighted average of a coun-
+try’s import source countries’ SCDS returns, using the im-
+port amount of country c as the weight. For country c , the
+change in import source credit quality as of month t is cal-
+culated as follows:
+I mpRe t c,t =
+∑
+i ̸ = c I mpo rt c
+i,y −1 Re t i, ( t−F +1 ,t )
+∑
+i ̸ = c I mpo rt c
+i,y −1
+. (5)
+Import c
+i,y −1 is country c ’s import from country i in the
+calendar year before month t and Re t i, ( t−F +1 ,t ) is the SCDS
+return of country i from month t- F + 1 to t, where F
+identiﬁes the formation period similar in the deﬁnition of
+ExpRe t c,t . As with ExpRet, all trade variables are measured
+230
+
+===== PAGE 15 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+in US dollars. We set F = 3 for both ImpRe t c,t and ExpRe t c,t
+in the following tests.
+Since trade is bilateral, a country’s export destination
+countries and the import source countries are usually the
+same group of countries. Therefore, the main difference
+between ImpRe t c,t and ExpRe t c,t is the weight on each trad-
+ing partner. If a non-trade interpretation is correct, it is
+not obvious why ExpRe t c,t should have stronger predictive
+power than ImpRe t c,t . In contrast, our trade network inter-
+pretation clearly indicates an asymmetry: ExpRe t c,t should
+have stronger predictive power than ImpRe t c,t , because a
+country’s sovereign credit risk is affected by changing ex-
+ternal demand from its export destination countries, but
+has little to do with its import source countries’ credit
+risk. We run a horse race between ExpRe t c,t and ImpRe t c,t
+to identify which hypothesis better explains the data. As
+shown in column 3 of Table 4 , the coeﬃcient of ExpRe t c,t
+is statistically signiﬁcant while the coeﬃcient of ImpRe t c,t
+is not. Note that this ﬁnding is not due to a multicollinear-
+ity issue; the correlation between ExpRe t c,t and ImpRe t c,t
+is around 0.5. This asymmetric result lends support to our
+trade network hypothesis, which makes speciﬁc predic-
+tions about the direction of the links that matter.
+4.2.3. Trading links vs. ﬁnancial links
+We next consider a subtler alternative interpretation
+based on ﬁnancial links between countries. The trade links
+between two countries are often accompanied by ﬁnan-
+cial links. For instance, the US is both China’s major ex-
+port destination country and China’s capital inﬂow source
+country. A large negative shock to the US economy could
+affect China through both reduced imports and capital in-
+ﬂows. Bilateral capital ﬂows consist of both FDI, which is
+long-term direct equity investment, and portfolio invest-
+ment, which includes both debt and speculative equity in-
+vestment. To measure FDI ﬂow risk, we deﬁne both inward
+and outward measures, F DIRet in
+c,t and F DIRet out
+c,t as follows:
+F DIRet in
+c,t =
+∑
+i ̸ = c F DI _ inward c
+i,y −1 Re t i, ( t−F +1 ,t )
+∑
+i ̸ = c FD I _ inward c
+i,y −1
+(6)
+F DIRet out
+c,t =
+∑
+i ̸ = c F DI _ out ward c
+i,y −1 Re t i, ( t−F +1 ,t )
+∑
+i ̸ = c F DI _ out ward c
+i,y −1
+, (7)
+where F DI _ inward c
+i,y −1 ( F DI _ outward c
+i,y −1 ) is country c ’s in-
+ward (outward) FDI from (to) country i by the end of the
+calendar year prior to month t.
+Similarly, to measure portfolio investment risk, we
+deﬁne an inward portfolio investment risk measure,
+Port In v Ret in
+c,t , and an outward portfolio investment risk
+measure, Port In v Ret out
+c,t , as follows:
+P ort In v Ret in
+c,t =
+∑
+i ̸ = c P I _ inward c
+i,y −1 Re t i, ( t−F +1 ,t )
+∑
+i ̸ = c P I _ inward c
+i,y −1
+(8)
+P ort In v Ret out
+c,t =
+∑
+i ̸ = c P I _ out ward c
+i,y −1 Re t i, ( t−F +1 ,t )
+∑
+i ̸ = c P I _ out ward c
+i,y −1
+, (9)
+where P I _ inward c
+i,y −1 ( P I _ outward c
+i,y −1 ) is country c ’s in-
+ward (outward) portfolio investment from (to) country i by
+the end of the calendar year prior to month t.
+We run horse races among ExpRe t c,t , F DIRet in
+c,t ,
+F DI Ret out
+c,t , PortI n v Ret in
+c,t , and PortI n v Ret out
+c,t in a Fama-
+MacBeth regression setting. As shown in columns 4 and
+5 of Table 4 , only the coeﬃcient on ExpRe t c,t is statis-
+tically signiﬁcant. These results conﬁrm that the return
+predictability we document stems from trade links rather
+than from ﬁnancial links.
+4.2.4. Fundamental momentum controls
+Another possibility is that SCDS returns are correlated
+with past fundamental shocks, and it is the latter that pre-
+dicts future SCDS returns. In column 6, we further control
+for ExpGDP Growth , the weighted average GDP growth rate
+across all export destination countries in the past quarter.
+We construct this variable in a similar fashion to ExpRet,
+except that instead of using past SCDS returns as the proxy
+for fundamental news, we use past GDP growth. As com-
+pared to columns 4 and 5, the coeﬃcient on ExpRet is vir-
+tually unchanged, while the coeﬃcient on ExpGDP Growth
+is statistically insigniﬁcant. This result emphasizes the use-
+fulness of exploiting a forward-looking price-based mea-
+sure from the ﬁnancial markets when identifying the im-
+portance of trade networks and the information that these
+networks propagate.
+4.3. SCDS return predictability: robustness
+We conduct further robustness checks and present the
+results in Appendix Table A2. The analyzes are similar
+to that in Panel B of Table 3 (going long countries with
+the highest ExpRet and short countries with the lowest
+ExpRet). In the regression for all columns, we further con-
+trol for US market returns, as well as commodity mar-
+ket and carry strategy returns. As can be seen from col-
+umn 1 of Panel A, including these additional risk factors
+has virtually no impact on our main results. Column 2 re-
+ports portfolio alpha using market-adjusted SCDS returns
+instead of raw returns when constructing ExpRet c,t . Col-
+umn 3 reports portfolio alpha by scaling the long/short
+portfolio to have constant volatility following Barroso and
+Santa Clara ( 2015 ). Our results continue to hold. In Panel
+B of Appendix Table A2, we examine different subsamples.
+Columns 1–7 show that our key return predictability re-
+sults continue to hold when we exclude from our sample
+China (1), safe haven countries (2), G20 countries (3), Eu-
+ropean Union countries (4), the 10% smallest countries (5),
+the 10% most illiquid countries (6), and OPEC countries (7).
+5. The underlying mechanism
+Having established return predictability linked to
+ExpRe t c,t , we dig deeper into understanding the mecha-
+nisms through which information is incorporated in prices.
+In this section, we explore whether the predictability in
+SCDS returns that we document is driven by investors’
+inattention, whether ExpRet also predicts cross-sectional
+variation in average country-level equity returns, and
+whether the information in ExpRet can be traced back to
+information about fundamentals. We also examine the ex-
+tent to which information in trade networks is informative
+about contemporaneous links among countries.
+231
+
+===== PAGE 16 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 5
+Direct vs. indirect trade links.
+This table reports regressions forecasting weekly sovereign CDS (SCDS) returns. The dependent variable is the weekly SCDS return in the following one
+to eight weeks. The main independent variables are ExpRet, the weighted average SCDS return on a country’s export destinations over the past three
+months, where the weights are proportional to how much the country exported to its export destinations in the prior year, and ExpRetInd, the square of
+the import-export matrix multiplied by the vector of SCDS returns. We also include the following control variables (not reported for brevity): exporting
+countries’ own past three-month SCDS returns, lagged seasonally-adjusted inﬂation (month-over-month), the lagged one-year GDP growth rate, and the
+lagged one-year export-to-GDP ratio. All independent variables are measured at the end of week t . We report t -statistics in parentheses that are based on
+Newey-West standard errors with a lag parameter of 12. ∗, ∗∗, and ∗∗∗ indicate statistical signiﬁcance at the 10%, 5%, and 1% levels, respectively.
+Forecasting weekly SCDS returns in ( t + k )
+t + 1 t + 2 t + 3 t + 4 t + 5 t + 6 t + 7 t + 8
+ExpRe t t 0.110 ∗∗∗ 0.096 ∗∗ 0.060 0.072 ∗ 0.025 0.013 0.008 0.014
+(2.66) (2.00) (1.48) (1.92) (0.60) (0.36) (0.24) (0.38)
+ExpRetIn d t 0.032 0.076 0.098 ∗∗ 0.141 ∗∗∗ 0.066 0.089 ∗ 0.046 0.009
+(0.70) (1.55) (2.00) (2.65) (1.30) (1.77) (0.89) (0.17)
+Controls Yes Yes Yes Yes Yes Yes Yes Yes
+No. Obs. 746 746 746 746 746 746 746 746
+Adj. R 2 0.003 0.004 0.004 0.004 0.004 0.004 0.004 0.004
+5.1. Indirect trade links
+If investors underreact to the information contained in
+direct trade network information, incorporating news from
+indirect network links should take longer. For example,
+China is Australia’s major export destination country, while
+the US is the biggest export destination for China. The
+2008 Subprime Crisis resulted in a sovereign credit risk
+shock to the US and a signiﬁcant contraction of US imports
+from China, which dampened China’s economic growth.
+This dampening in turn reduced China’s import of raw ma-
+terials from Australia, reducing Australian sovereign credit
+quality. Therefore, China provides an indirect link through
+which US sovereign credit quality shocks should propagate
+to Australia.
+To measure information concerning the credit qual-
+ity of a country’s indirect export destinations, we pre-
+multiply ExpRet with the T rade matrix, and generate the
+indirect version of our measure, ExpRetIn d c,t . We measure
+the incremental information ﬂow occurring through direct
+and indirect channels by estimating a ( Fama and Mac-
+Beth, 1973 ) regression with the following speciﬁcation:
+Re t c,t+ h = α + β1 ExpRe t c,t + β2 ExpRet In d c,t + Cont rols + ε c,t . (10)
+E xp Re t c,t and E xp Re tIn d c,t are calculated using the cu-
+mulative SCDS return over the previous 12 weeks and then
+converted to quintile dummies. The control variables in-
+clude the country’s own CDS returns in the past 12 weeks,
+lagged monthly inﬂation, lagged annual GDP growth rate,
+and lagged export-to-GDP ratio.
+The regression results are shown in Table 5 . These
+estimates indicate that in the ﬁrst and second weeks
+after the sorting week ( h = 1, 2), the coeﬃcients on
+ExpRe t c,t are statistically larger than the corresponding co-
+eﬃcients on ExpRetIn d c,t . Moreover, only the coeﬃcients
+on ExpRe t c,t are statistically signiﬁcant. However, in the
+third and fourth weeks, the coeﬃcients on ExpRetIn d c,t in-
+crease and become statistically signiﬁcant. The regression
+results show that investors respond more rapidly to infor-
+mation in direct links than to information in indirect links
+but that indirect links nevertheless provide incremental in-
+formation that is relevant for returns. This ﬁnding supports
+the idea that information complexity plays an important
+role in the speed of information processing.
+5.2. Spillover from the SCDS market to the stock market
+A natural follow-up question is whether this trade in-
+formation is relevant for the stock market. To measure
+cross-market predictability, we create a long-short portfo-
+lio in the cross-section of country equity. Speciﬁcally, we
+sort countries into quintiles according to their past three-
+month export destination credit risk proxy ExpRe t c, t at the
+end of each month. We then go long the stock indices of
+countries in the lowest quintile and sell short stock indices
+of countries in the highest quintile, holding the resulting
+portfolio for one month. In the ﬁrst row of Panel A of
+Table 6 , we report the average return of the stock indices
+in each quintile and the long-short portfolio P1–P5. As can
+be seen, the long-short portfolio generates a monthly re-
+turn of 0.99%, with a t -statistic of 3.26 and a Sharpe ra-
+tio of 0.95. Moreover, the monthly equity index return de-
+clines monotonically from portfolios P1 to P5.
+To document the robustness of our ﬁnding, we report
+the average abnormal returns on the long-short portfolio
+P1–P5 after controlling for various risk factors. In the sec-
+ond row of Panel A of Table 6 , we control for an own stock
+index momentum factor based on a three-month forma-
+tion period and a one-month holding period. In the third
+row, we control for the equal-weighted average return of
+all the stock indices in our sample. We include both the
+market average return and the momentum return in the
+fourth row and further control for the global momentum
+and value factors in the ﬁfth row. Average abnormal re-
+turns are statistically signiﬁcant across all speciﬁcations.
+This ﬁnding lends further support to our argument that
+markets, including not only credit markets but also stock
+markets, incorporate trade network information in a slug-
+gish fashion.
+We investigate whether a trade-weighted measure us-
+ing stock returns (instead of SCDS returns) can predict
+cross-sectional variation in average country equity returns.
+We include both ExpRet c,t and ExpSto ck c,t in a Fama-
+232
+
+===== PAGE 17 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 6
+Forecasting stock market returns.
+In this table, we examine the ability of SCDS returns to forecast future stock market index returns. Panel A reports calendar-time portfolio returns of stock
+market indices. At the end of each month, stock market indices are sorted into ﬁve groups (P1–P5) based on the weighted average SCDS return ExpRet,
+which is deﬁned in Table 3 . All countries are equally weighted within a given portfolio, and the portfolios are held for one month. The ﬁrst row reports
+raw portfolio returns. The second row reports portfolio alpha after controlling for the stock market index momentum factor. The third row reports portfolio
+alpha after controlling for the equal-weight global stock market return. The fourth row reports portfolio alpha controlling for both the momentum factor
+and global stock market factor. Row ﬁve further includes the global momentum and value factors (as in Asness et al. 2013 ). Panel B reports forecasting
+regressions of monthly stock index returns on lagged SCDS returns. The main independent variable is ExpRet. Other control variables include ExpS to c k t
+( Exp Cur r t ), the weighted average stock index (currency) returns across all export destination countries in the past three months. DistRe t t is the weighted
+average stock return in the past three months, where the weight is proportional to the inverse of the logarithm of the geographic distance. We further
+control for the country’s previous-month stock market return ( OwnStoc k t ), currency return ( OwnCur r t ), seasonally-adjusted month-over-month inﬂation,
+the previous-year GDP growth rate, and the export-to-GDP ratio. We report t -statistics in parentheses that are based on Newey-West standard errors with
+a lag parameter of 12. ∗, ∗∗, and ∗∗∗ indicate statistical signiﬁcance at the 10%, 5%, and 1% levels, respectively.
+Panel A: Calendar-time stock market portfolio returns (in%)
+P1 P2 P3 P4 P5 P1 –P 5
+Raw portfolio returns
+1.578 ∗∗∗ 1.310 ∗∗ 0.974 ∗ 0.909 ∗ 0.585 0.993 ∗∗∗
+(2.75) (2.27) (1.81) (1.76) (1.03) (3.26)
+Controlling for stock index momentum (formation period = 3 months, holding period = 1 month)
+1.820 ∗∗∗ 1.368 ∗∗ 1.063 ∗∗ 1.009 ∗∗ 0.712 1.108 ∗∗∗
+(3.55) (2.59) (2.13) (2.02) (1.26) (3.39)
+Controlling for global stock market returns
+0.482 ∗∗ 0.250 ∗∗ −0.059 −0.143 −0.494 ∗∗∗ 0.975 ∗∗
+(2.28) (2.55) ( −0.59) ( −1.12) ( −3.30) (2.94)
+Controlling for SCDS momentum + global stock market returns
+0.633 ∗∗∗ 0.162 ∗∗ −0.100 −0.173 −0.492 ∗∗∗ 1.126 ∗∗∗
+(2.77) (2.02) ( −0.95) ( −1.30) ( −2.74) (2.93)
+Controlling for SCDS momentum + global stock market returns, momentum and value
+0.633 ∗∗∗ 0.187 ∗∗ −0.129 −0.266 ∗ −0.413 ∗∗∗ 1.046 ∗∗∗
+(3.30) (2.00) ( −1.23) ( −1.77) ( −3.10) (3.74)
+Panel B: Fama-MacBeth regressions of future stock market returns (in%)
+(1) (2) (3) (4)
+ExpRe t t −0.196 ∗∗∗ −0.177 ∗∗∗ −0.169 ∗∗∗ −0.101 ∗∗
+( −4.22) ( −3.74) ( −3.75) ( −2.02)
+ExpS to c k t 0.173 ∗∗∗ 0.137 ∗∗ 0.117 ∗ 0.119 ∗∗
+(2.75) (2.26) (1.95) (1.98)
+Exp Cur r t 0.004 0.010 −0.073 −0.0517
+(0.07) (0.17) ( −1.11) ( −0.89)
+OwnStoc k t 2.697 ∗∗∗ 3.899 ∗∗∗ 4.402 ∗∗∗
+(3.02) (4.55) (5.15)
+OwnCur r t 9.654 ∗∗∗ 9.530 ∗∗∗
+(3.59) (3.55)
+DistRe t t 0.089 ∗
+(1.75)
+In f latio n t 1.395
+(0.08)
+GDPGrowt h t 0.066 ∗
+(1.92)
+Expo rtTo GD P t −0.117
+( −0.73)
+No. of Obs. 173 173 173 173
+Adj-R 2 0.08 0.12 0.16 0.24
+MacBeth regression framework to test which variable is
+more informative.
+The results are reported in the Panel B of Table 6 . In
+the regression for column 1, we run a horse race among
+E xp Re t c,t , E xp S to ck c,t and Exp Curr c,t and ﬁnd that the coef-
+ﬁcient on ExpRet c,t remains negative and statistically sig-
+niﬁcant, although ExpSto ck c,t does have some predictive
+power. In the regression for column 2, we add the stock
+market return over the past three months to control for
+a country-level stock market momentum effect and ﬁnd
+that the coeﬃcient of ExpRet c,t is still negative and sta-
+tistically signiﬁcant. In the regression for columns 3 and
+4, we further include the currency market return over the
+past three months to control for a currency momentum ef-
+fect, as well as macroeconomic variables including inﬂa-
+tion, GDP growth, and the export-to-GDP ratio. We ﬁnd
+233
+
+===== PAGE 18 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 7
+Determinants of comovement in SCDS returns.
+This table reports the regression results of pairwise comovement in
+SCDS returns on bilateral export shares. The dependent variable in both
+columns 1 and 2 is the correlation in SCDS returns between two coun-
+tries, measured using monthly returns in each year. The main indepen-
+dent variable of interest, ExpShare AV G
+i, j,t , is the average fraction of country
+i and j ’s total exports that are accounted for by their bilateral trade.
+Other control variables include: Distance , the logarithm of the level of
+geographic distance between the two countries; Language , a dummy
+variable that equals one if the two countries speak a common oﬃ-
+cial language and zero otherwise; Colony is a dummy variable that
+equals one if the two countries had a colonial relationship in the past
+and zero otherwise. Year and region-pair ﬁxed effect are included in
+both columns. We report t -statistics based on standard errors double-
+clustered by both year and country pair in parentheses with ∗, ∗∗, and
+∗∗∗ indicating statistical signiﬁcance at the 10%, 5%, and 1% levels, re-
+spectively.
+(1) (2)
+Correlatio n i, j,t Correlatio n i, j,t
+ExpShare AV G
+i, j,t 0.616 ∗∗∗ 0.636 ∗∗∗
+(2.91) (2.83)
+Distance −0.004
+( −0.26)
+Language 0.004
+(0.26)
+Colony −0.036
+( −1.31)
+Double cluster Yes Yes
+Year ﬁxed effect Yes Yes
+Region pair ﬁxed effect Yes Yes
+No. of pairs 3380 3380
+No. of years 15 15
+Adj-R 2 0.113 0.114
+that the coeﬃcients on ExpRet c,t remain negative and sta-
+tistically signiﬁcant. For comparison, as shown in Table 4 ,
+ExpSto ck c,t does not forecast the country’s future SCDS re-
+turns. In other words, the sovereign credit market incorpo-
+rates information faster than equity markets.
+A potential explanation for this ﬁnding is that stock
+returns are noisier because they are much more affected
+by the sentiment of retail investors, while SCDS, a com-
+plex ﬁnancial derivative, is only traded by large sophisti-
+cated ﬁnancial institutions. In Online Appendix Table A6,
+we compare the relation between investor sentiment and
+future returns across these two different markets. As can
+be seen in columns 1–4, Baker and Wurgler’s ( 2006 ) well-
+known sentiment index strongly negatively forecasts US
+stock market returns 1–12 months in the future. In sharp
+contrast, as shown in columns 5–8, we are unable to re-
+ject the hypothesis that the same sentiment index is un-
+correlated with US SCDS returns over comparable forecast-
+ing horizons.
+5.3. Contemporaneous covariance
+In Table 7 , we examine the way country SCDS con-
+temporaneous return correlations vary with export activ-
+ity. 14 In particular, we estimate a regression explaining the
+pairwise correlation of SCDS returns using ExpShare AV G
+i, j,t−1 ,
+14 We provide additional evidence for the decomposition of the
+variance-covariance matrix of SCDS returns in Section 1 of the Online Ap-
+pendix.
+the average fraction of country i and j ’s total exports that
+are accounted for by their bilateral trade in the previous
+year. 15 We ﬁrst focus on explaining the correlation compo-
+nent using ExpShare AV G
+i, j,t−1 in the presence of year and re-
+gion pair ﬁxed effects (we list these regions in Appendix
+Table A1, Panel B). The estimate is statistically signiﬁcant
+( t -statistic = 2.91).
+Column 2 of Table 7 documents that this ﬁnding is
+robust to controlling for distance, language, and colony—
+pairwise characteristics often used to identify similar
+countries. In results not reported, if we instead forecast
+weighted covariances (i.e., the full second term in Online
+Appendix Eq. (1) ), the resulting t -statistic increases to 8.49
+and the R 2 nearly triples to 30.8%.
+In Section 2 of the Online Appendix, we trace the prop-
+agation of shocks reﬂected in weekly SCDS returns through
+trade links using the identiﬁcation through heteroscedas-
+ticity (ITH) method of Rigobon (2003) . That analysis shows
+that shock propagation in SCDS returns is strongly related
+to export links but not to import links.
+The analysis in the Online Appendix further connects
+these results to those in Section 4 by pointing out that
+whether our ﬁndings are increasing or decreasing with
+network centrality critically depends on whether we mea-
+sure the response using contemporaneous or lagged re-
+turns. Since investors’ inattention leads to slow informa-
+tion transmission, countries in the center of the trade net-
+work should experience stronger effects when it comes to
+contemporaneous return links. In other words, high “cen-
+trality” countries in the trade network should have weaker
+SCDS return predictability but stronger contemporaneous
+links according to our limited-attention hypothesis. In con-
+trast, higher ﬁnancial vulnerability should result in a large
+effect both in contemporaneous and future returns. Our
+results in the Online Appendix conﬁrm that the hetero-
+geneity that we ﬁnd in SCDS return predictability is also
+present in contemporaneous links exactly as we have pre-
+dicted.
+5.4. Forecasting country fundamentals
+We now provide evidence that ExpRe t c,t indeed con-
+tains information about real economic activity that is di-
+rectly relevant to a country’s sovereign credit risk. We use
+a panel regression to measure the information in ExpRe t c,t
+concerning subsequent real economic activity. Speciﬁcally,
+we regress year t + 1 export growth and GDP growth on
+ExpRe t c,t , which is calculated in the December of year t
+with a formation period F = 12. We forecast annual growth
+so that all countries in our sample are included in the
+analysis since higher-frequency export or GDP growth is
+not widely available. Our results are robust to using other
+formation periods when measuring ExpRe t c,t .
+The results in Panel A of Table 8 ﬁrst conﬁrm that a
+country’s SCDS return, OwnRe t c,t , forecasts its own imports.
+If a country is performing relatively poorly in terms of
+15 We exploit the technique of Anton and Polk (2015) , who introduce
+this methodology to forecast cross-sectional variation in ﬁrm-level stock
+return correlations.
+234
+
+===== PAGE 19 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Table 8
+SCDS returns forecasting real economic outcomes.
+This table reports regression results forecasting real economic outcomes with SCDS returns. The dependent variable in Panel A is the import growth
+of each country in year t + 1. The main independent variable of interest is the corresponding country’s SCDS return in year t ( OwnRe t t ). Other control
+variables include the country’s equity market return ( OwnStoc k t ), currency return ( OwnCur r t ), as well as import growth and GDP growth, all measured in
+year t . Panel B reports regression results for forecasting exporting countries’ future export growth, GDP growth, and changes in the external debt-to-GDP
+ratio with the importing countries’ SCDS returns. The dependent variable in columns 1 and 2 is an exporting country’s export growth rate in year t + 1,
+in columns 3 and 4 it is its GDP growth rate in year t + 1, and in columns 5 and 6, it is the annual growth in the external debt to GDP ratio in year
+t + 1. The main independent variable of interest is ExpRe t t , the weighted average SCDS return on a country’s export destinations over the past one year,
+where the weights are proportional to how much the country exported to its export destinations in the prior year. Other control variables include similar
+export-weighted averages of export destinations equity market returns ( ExpS to c k t ) and currency returns ( Exp Cur r t ), as well as the exporting country’s own
+SCDS return, OwnRe t t , export growth, GDP growth and external debt to GDP ratio. All independent variables are standardized to have a mean of zero and
+standard deviation of one. Time ﬁxed effects are included in all speciﬁcations. We report t -statistics based on standard errors double-clustered by time and
+country in parentheses with ∗, ∗∗, and ∗∗∗ indicating statistical signiﬁcance at the 10%, 5%, and 1% levels, respectively.
+Panel A: Forecasting import growth (in%)
+(1) (2) (3) (4) (5)
+OwnRe t t −2.134 ∗∗∗ −2.183 ∗∗∗ −1.988 ∗∗∗ −1.972 ∗∗ −1.963 ∗∗
+( −2.83) ( −3.10) ( −2.86) ( −2.49) ( −2.54)
+OwnStoc k t 2.651 ∗∗∗ 2.501 ∗∗∗
+(4.83) (4.47)
+OwnCur r t −0.543
+( −0.98)
+Import Growt h t 1.837 ∗ −0.209 −0.300 −0.390
+(1.67) ( −0.24) ( −0.32) ( −0.44)
+GDPGrowt h t 4.299 ∗∗∗ 3.834 ∗∗∗ 3.802 ∗∗∗
+(5.31) (4.95) (4.94)
+Time FE Yes Yes Yes Yes Yes
+No. of Obs. 866 864 864 768 756
+Adj. R 2 0.51 0.52 0.54 0.56 0.56
+Panel B: Forecasting growth in exports, GDP, and external debt to GDP (in%)
+Expo rt Growt h t+1 GDPGrowt h t+1 /Delta1ExDeb t/GD P t+1
+(1) (2) (3) (4) (5) (6)
+ExpRe t t −1.598 ∗∗ −1.645 ∗∗ −0.406 ∗∗∗ −0.340 ∗∗∗ 1.350 ∗∗ 1.396 ∗∗
+( −2.16) ( −2.09) ( −4.73) ( −3.89) (2.31) (2.31)
+ExpS to c k t 4.159 3.796 2.027 ∗∗∗ 1.843 ∗∗∗ 0.721 1.179
+(1.01) (0.93) (2.80) (2.75) (0.42) (0.72)
+Exp Cur r t 0.425 0.065 0.222 0.599 ∗ 1.281 1.622
+(0.30) (0.04) (0.51) (1.86) (1.00) (1.31)
+OwnRe t t −0.510 −0.502 −0.687 ∗∗∗ −0.558 ∗∗∗ 0.865 ∗∗∗ 0.837 ∗∗∗
+( −0.59) ( −0.57) ( −2.81) ( −2.91) (3.14) (3.11)
+Expo rt Growt h t −1.855
+( −0.76)
+GDPGrowt h t 2.502 ∗∗∗
+(8.73)
+ExDeb t/GD P t −1.065 ∗∗
+( −2.56)
+Time FE Yes Yes Yes Yes Yes Yes
+No. of Obs. 981 981 980 980 409 409
+Adj. R 2 0.62 0.63 0.28 0.53 0.20 0.22
+credit quality, its future imports are relatively low. The re-
+sults in column 1 indicate that the return on a country’s
+SCDS has information about that country’s import activ-
+ity. Subsequent results indicate that this predictive ability
+is robust to including lagged import growth, lagged GDP
+growth, OwnStoc k c,t , and OwnCur r c,t in the regressions. Of
+particular note is the fact that a country’s currency move-
+ments do not have any incremental ability to forecast im-
+portant activity. 16 This result continues to hold if we ex-
+16 In contrast, Panel A of Table 8 shows that OwnStoc k c,t does have sig-
+niﬁcant information about a country’s subsequent import growth. How-
+ever, Panel B shows that the ability of ExpS to c k c,t to forecast a country’s
+export growth is largely subsumed by ExpRe t c,t .
+clude countries in the Euro area, which share a common
+currency, from the analysis.
+We next exploit the trade network to examine the way
+this information propagates in the global macro-economy.
+In Panel B of Table 8 , column 1,2 report the results of
+regressions forecasting export growth. In the regression,
+we control for variation in a country’s own lagged an-
+nual SCDS return, OwnRe t c,t , as well as for variation in its
+lagged annual export growth, Expo rt Growt h c,t . We also in-
+clude ExpSto ck and Exp Cur r , the stock return and currency
+return counterparts of ExpRet (i.e., instead of SCDS returns,
+we now aggregate stock market returns and currency re-
+turns across export destinations).
+A country’s export growth is importantly determined
+by its export destination countries’ demand, which is af-
+235
+
+===== PAGE 20 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+fected by these countries’ sovereign credit risk. There-
+fore, a high ExpRe t c,t , which implies a decrease in trad-
+ing partners’ sovereign credit quality, should predict low
+export growth. Columns 1,2 show that the coeﬃcient on
+ExpRe t c,t is indeed negative and statistically signiﬁcant. To
+aid in interpretation, all forecasting variables are normal-
+ized to have a unit standard deviation. We ﬁnd that a one-
+standard-deviation increase in ExpRe t c,t reduces next year’s
+export growth by 1.64% after controlling for information in
+lagged stock and currency returns, as well as lagged export
+growth. No other variable is signiﬁcant in our full speciﬁ-
+cation.
+We repeat this analysis using GDP growth. Given the
+importance of export activity for the typical country in
+our sample ( Table 1 shows that the average export-to-
+GDP ratio is 47.5%), it is natural to expect that ExpRe t c,t
+should predict GDP growth as well. The regression results
+in columns 3,4 of Panel B in Table 8 conﬁrm this intuition;
+the coeﬃcient on ExpRet is negative and statistically signif-
+icant after controlling for lagged stock market and currency
+returns, as well as the lagged annual GDP growth rate. A
+one-standard-deviation increase in the export destination
+risk leads to a decline of 0.34 percentage points in a coun-
+try’s GDP growth in the following year.
+For a more precise test of the link between the news
+about a country’s export destinations and its SCDS returns,
+we examine changes in the export country’s external-debt-
+to-GDP ratio. 17 This ratio directly reﬂects the sustainabil-
+ity of the debt burden; as a result, variation in this ra-
+tio is more closely related to changes in the probability of
+sovereign default and thus SCDS returns. Columns 5 and
+6 in Panel B of Table 8 show that SCDS returns are a
+strong predictor of /Delta1ExDebt/GDP t + 1 . Speciﬁcally, we ﬁnd
+that the coeﬃcient on ExpRet t is 1.350 ( t -statistic = 2.31).
+Moreover, that coeﬃcient is not only robust to control-
+ling for ExpStock t , ExpCurr t , and OwnRet t , but is also ro-
+bust to controlling for the lagged external-debt-to-GDP ra-
+tio ( ExDebt/GDP t ).
+5.5. The asymmetry between upstream and downstream
+links
+Carvalho et al. (2021) examine the role of individual
+ﬁrms in the supply chain. Speciﬁcally, they show that
+when an individual ﬁrm is “removed” from the supply
+chain (due to, for example, a natural disaster), both its sup-
+pliers and customers experience production interruptions
+in the short run; thus, the effects on upstream and down-
+stream links are symmetric.
+This mechanism, however, does not directly apply to
+our setting. When a country’s sovereign credit risk goes up
+(e.g., because of a depletion of foreign reserves), its ability
+to import from another country goes down (as the coun-
+try can no longer pay in foreign currencies). The country’s
+ability to export, however, should not be severely dam-
+17 We focus on debt denominated in foreign currencies here, as debt
+denominated in local currencies can be “inﬂated” away. All credit events
+of SCDS contracts in our sample are triggered by default of external
+sovereign debts. See http://www.creditﬁxings.com/CreditEventAuctions/
+ﬁxings.jsp for detailed information on each SCDS credit event.
+aged. Indeed, the country now has a stronger incentive to
+export (to rebuild its foreign reserves) and is also poised
+to beneﬁt from a weaker currency.
+In Online Appendix Table A7, we examine the relation
+between a country’s SCDS returns and its subsequent ex-
+port growth to conﬁrm that the asymmetry we ﬁnd in pre-
+dicting returns is also present in predicting fundamentals.
+As shown in Panel A of the table, SCDS returns do not fore-
+cast the own country’s future export growth. This ﬁnding
+is in sharp contrast to the result in Panel A of Table 8 ,
+where we show that own SCDS returns are a strong pre-
+dictor of the country’s future import growth.
+In Panel B of Online Appendix Table A7, we further an-
+alyze whether ImpRet (the weighted average SCDS returns
+of upstream countries) helps forecast downstream coun-
+tries’ import growth. Consistent with the result shown in
+Panel A, we do not ﬁnd a signiﬁcant relation between
+ImpRet and the downstream country’s import growth.
+5.6. Linking variation in global SCDS returns to
+macroeconomic quantities
+Finally, we conduct a time-series analysis of the relation
+between global SCDS returns and global macro-economic
+conditions. Speciﬁcally, we deﬁne the global SCDS return,
+Re t g,t , as:
+Re t g,t =
+∑
+i
+w i,t−1 ∗ Re t i,t , (11)
+where the weight, w i,t , is measured as the share of global
+exports for country i at time t ,
+w i,t =
+expor t i,t
+expor t g,t
+. (12)
+We measure expor t i,t as the total export of country i at
+time t and expor t g,t as the aggregate export activity for all
+88 countries in our sample at time t . We deﬁne the global
+SCDS spread in a similar fashion.
+In the top panel of Fig. 4 , we plot quarterly values
+of the global SCDS spread against global GDP growth. 18
+We calculate global GDP as the trade-weighted average of
+quarterly real GDP growth over the 88 countries in our
+sample in order to be consistent with the calculation of the
+global SCDS spread. We ﬁnd a strong negative correlation
+( −0.58) between these variables.
+In the bottom panel of Fig. 4 , we repeat this exercise
+using trade-weighted PMI. This variable has the beneﬁt of
+being a monthly measure of economic activity that is avail-
+able for a large cross-section of countries over a relatively
+long period of time and that is widely used by investors
+as a barometer of economic conditions. Fig. 4 shows that
+monthly variation in the global SCDS spread is strongly
+negatively correlated ( −0.65) with economic conditions
+measured by PMI.
+6. Conclusions
+We introduce a novel way of tracing the propaga-
+tion of country-level shocks in the global trade network.
+18 See Section 3 of the Online Appendix for additional regression results.
+236
+
+===== PAGE 21 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+Fig. 4. Global SCDS spreads (bps) and real economic outcomes.
+This ﬁgure shows the time series of global SCDS spreads vs. real economic outcomes (GDP growth rates and Purchasing Managers’ Index) measured
+contemporaneously. All variables are calculated as the trade-weighted averages across all countries in our sample.
+Our analysis provides a new perspective on the impor-
+tance of trade links by exploiting information contained in
+sovereign credit default swap (SCDS) contracts. Our novel
+approach reveals that trade links play a signiﬁcant role in
+driving global SCDS returns, with information ﬂowing from
+importers to exporters.
+We ﬁrst use two natural experiments (the Japanese
+tsunami and the Wuhan COVID-19 lockdown) to conﬁrm
+the causal importance of the trade network, with local
+shocks spreading from these two shocked countries to
+other countries. We then establish broader return pre-
+dictability as countries respond, both immediately and
+with a substantial lag, to news contained in their export
+destinations countries’ SCDS returns. The size of the re-
+sponse depends both on the ﬁnancial vulnerability of the
+country in question and its location in the network. In par-
+237
+
+===== PAGE 22 =====
+
+J. Chang, H. Du, D. Lou et al. Journal of Financial Economics 145 (2022) 217–238
+ticular, the immediate response is weaker, and the lagged
+response is stronger for those countries on the periphery
+of the trade network.
+Consistent with the importance of a network under-
+standing of macroeconomic activity, we ﬁnd that indirect
+links matter as well: A country’s fundamentals depend
+not only on the quality of the fundamentals of its di-
+rect trading partners but also indirectly on the quality of
+those trading partners’ trading partners. Additional ana-
+lyzes support our narrative; for example, our measure of
+trade network news not only describes cross-sectional vari-
+ation in country credit returns but also describes cross-
+section variation in country equity returns. Our work is the
+ﬁrst macroeconomic conﬁrmation of the causal importance
+of network theories of shock propagation to country-level
+credit/equity markets using forward-looking ﬁnancial vari-
+ables.
+References
+Acemoglu, D. , Carvalho, V. , Ozdaglar, A. , Tahbaz-Salehi, A. , 2012. The
+network origins of aggregate ﬂuctuations. Econometrica 80, 1977–
+2016 .
+Acemoglu, D., Ozdaglar, A., Tahbaz-Salehi, A., 2013. The network origins of
+large economic downturns. NBER working paper, 19230 doi: 10.3386/
+w19230 .
+Acharya, V. , Johnson, T. , 2007. Insider trading in credit derivatives. J. Fi-
+nanc. Econ. 84, 110–141 .
+Acharya, V. , Drechsler, I. , Schnabl, P. , 2014. A pyrrhic victory? Bank
+bailouts and sovereign credit risk. J. Financ. 69, 2689–2739 .
+Aizenman, J. , Hutchison, M. , Jinjarak, Y. , 2013. What is the risk of Euro-
+pean sovereign debt defaults? Fiscal space, CDS spreads and market
+pricing of risk. J. Int. Money Financ. 34, 37–59 .
+Albuquerque, R. , Ramadorai, T. , Watugala, S. , 2015. Trade credit and cross–
+country predictable ﬁrm returns. J. Financ. Econ. 115, 592–613 .
+Allen, F. , Babus, A. , 2008. Networks in Finance. Wharton Financial Institu-
+tions Center Working Paper No. 08-07 .
+Anton, M. , Polk, C. , 2015. Connected stocks. J. Financ. 69, 1099–1127 .
+Asness, C. , Tobias, M. , Pedersen, L. , 2013. Value and momentum every-
+where. J. Financ. 68 (3), 929–985 .
+Augustin, P. , Tédongap, R. , 2016. Real economic shocks and sovereign
+credit risk. J. Financ. Quant. Anal. 51, 541–587 .
+Baker, M. , Wurgler, J. , 2006. Investor sentiment and the cross-section of
+stock returns. J. Financ. 61 (4), 1645–1680 .
+Barroso, P. , Santa-Clara, P. , 2015. Momentum has its moments. J. Financ.
+Econ. 116, 111–120 .
+Barrot, J. , Sauvagnat, J. , 2016. Input speciﬁcity and the propagation of
+idiosyncratic shocks in production networks. Q. J. Econ. 131 (3),
+1543–1592 .
+Beirne, J. , Fratzscher, M. , 2013. The pricing of sovereign risk and contagion
+during the European sovereign debt crisis. J. Int. Money Financ. 34,
+60–82 .
+Black, F. , 1975. Fact and fantasy in the use of options. Financ. Anal. J. 31,
+36–72 .
+Campbell, J. , 1991. A variance decomposition for stock returns. Econ. J. 101,
+157–179 .
+Campbell, J. , Giglio, S. , Polk, C. , Turley, R. , 2018. An intertemporal CAPM
+with stochastic volatility. J. Financ. Econ. 128, 207–233 .
+Carvalho, V. , Nirei, M. , Saito, Y. , Tahbaz-Salehi, A. , 2021. Supply chain dis-
+ruptions: evidence from the great east japan earthquake. Q. J. Econ.
+136, 1255–1321 .
+Cohen, L. , Lou, D. , 2012. Complicated ﬁrms. J Financ. Econ. 104, 383–400 .
+Cohen, L. , Frazzini, A. , 2008. Economic links and predictable returns. J. Fi-
+nanc. 63, 1977–2011 .
+DellaVigna, S. , Pollet, J. , 2007. Demographics and industry returns. Am.
+Econ. Rev. 97, 1667–1702 .
+di Giovanni, J. , Levchenko, A. , Medjean, I. , 2014. Firms, destinations, and
+aggregate ﬂuctuations. Econometrica 82, 1303–1340 .
+di Giovanni, J., Levchenko, A., Mejean, I., 2020. Foreign shocks as granular
+ﬂuctuations. NBER working paper 28123. doi: 10.3386/w28123 .
+Easley, D. , O’Hara, M. , Srinivas, P. , 1998. Option volume and stock prices:
+evidence on where informed traders trade. J. Financ. 53 .
+Fama, E. , French, K. , 1989. Business conditions and expected returns on
+stocks and bonds. J. Financ. Econ. 25, 23–49 .
+Fama, E. , MacBeth, J. , 1973. Risk, return, and equilibrium: empirical tests.
+The Journal of Political Economy 81 (3), 607–636 .
+Frankel, J. , Rose, A. , 1998. The endogeneity of the optimum currency area
+criteria. Econ. J. 108, 1009–1025 .
+Gabaix, X. , 2011. The granular origins of aggregate ﬂuctuations. Economet-
+rica 79, 733–772 .
+Hilscher, J. , Pollet, J. , Wilson, M. , 2015. Are credit default swaps a
+sideshow? Evidence that information ﬂows from equity to CDS mar-
+kets. J. Financ. Quant. Anal. 50 (3), 543–567 .
+Imbs, J. , 2004. Trade, ﬁnance, specialization, and synchronization. Rev.
+Econ. Stat. 86, 723–734 .
+Jegadeesh, N. , Titman, S. , 1993. Returns to buying winners and sell-
+ing losers: implications for stock market eﬃciency. J. Financ. 48 (1),
+65–91 .
+Kramarz, J. , Martin, J. , Mejean, I. , 2020. Volatility in the small and in the
+large: the lack of diversiﬁcation in international trade. J. Int. Econ.
+122, 1–19 .
+Lee, J. , Narnjo, A. , Sirmans, S. , et al. , 2016. Exodus from sovereign risk:
+global asset and information networks in the pricing of corporate
+credit risk. J. Financ. 71 (4), 1813–1856 .
+Lee, J. , Narnjo, A. , Sirmans, S. , 2021. CDS momentum: slow moving
+credit ratings and cross-market spillovers. Rev. Asset Pricing Stud. 11,
+352–401 .
+Longstaff, F. , Pedersen, L. , Pan, J. , Singleton, K. , 2011. How sovereign is
+sovereign credit risk. Am. Econ. J. Macroecon. 3 (2), 75–103 .
+Lucas, R. , 1977. Understanding business cycles. Carnegie Rochester Conf.
+Ser. Public Policy 5, 7–29 .
+Menkhoff, L. , Sarno, L. , Schmeling, M. , Schrimpf, A. , 2012. Currency mo-
+mentum strategies. J. Financ. Econ. 106, 660–684 .
+O’Kane, D. , 2011. Modeling Single-Name and Multi-Name Credit Deriva-
+tives. John Wiley & Sons .
+Pan, J. , Poteshman, A. , 2006. The information in option volume for future
+stock prices. Rev. Financ. Stud. 19, 871–908 .
+Pan, J. , Singleton, K. , 2008. Default and recovery implicit in the term struc-
+ture of sovereign CDS spreads. J. Financ. 63, 2345–2384 .
+Richmond, R. , 2019. Trade network centrality and currency risk premia. J.
+Financ. 74 (3), 1315–1361 .
+Rigobon, R. , 2003. Identiﬁcation through heteroscedasticity. Rev. Econ.
+Stat. 85, 777–792 .
+RodrÍguez, I. , Dandapani, K. , Lawrence, E. , 2019. Measuring sovereign risk:
+are CDS spreads better than sovereign credit ratings? Financ. Manag.
+48, 229–256 .
+Shiller, R. , 1981. Do stock prices move too much to be justiﬁed by subse-
+quent changes in dividends? Am. Econ. Rev. 71, 421–436 .
+Wang, X. , Xiao, Y. , Yan, H. , Zhang, J. , 2021. Under reaction in the sovereign
+CDS market. J. Bank. Financ. 130, 106191 .
+Xiao, Y., Yan, H., Zhang, J., 2021. A global version of Samuelson’s dictum.
+working paper. doi: 10.2139/ssrn.3810241 .
+238

@@ -1,0 +1,2684 @@
+
+
+===== PAGE 1 =====
+
+Online Appendix to “Dollar Dominance in FX Trading”
+by Fabricius Somogyi
+Appendix A. Contingent Demands
+In this section, I derive the optimal price and allocation with contingent demand schedules
+and contrast the equilibrium properties with the results derived in Section 4 for the uncontin-
+gent case.15 Throughout this paper, vectors and matrices are boldface, whereas scalars are in
+normal font. Every trader i submits their demand schedule qi,c(·) contingent on the exchange
+rates p of all other currency pairs in the economy. Within the context of contingent demand
+schedules it is convenient to approach the optimisation problem from the perspective of a
+(large) individual trader who optimises against the residual market qj(·), ∀j ̸= i. The suffi-
+cient statistic for residual market supply is given by trader i’s own residual supply function
+S−i
+k = − ∑j̸=i qj
+k(·) for all k ∈ K currency pairs, which is defined by aggregation and market
+clearing of other traders’ demand schedules. 16
+Since maximising the expected payoff in Eq. (B.1) is identical to maximising the ex post
+payoff pointwise for each currency pair k it holds that:
+max qi
+k(·)δ · (qi,c + qi
+0) − γi
+2 (qi,c + qi
+0) · Σ(qi,c + qi
+0) − p · qi,c, (A.1)
+given trader i’s demand for other currency pairs qi,c
+l , ∀l ̸= k and the residual supply func-
+tion S−i,c for all currency pairs, which must be correct in equilibrium, that is, S−i,c(·) =
+− ∑j̸=i qj,c(·). This result follows directly from the fact that the demand for each currency
+pair is measurable with respect to {p, qi
+0} and because the price distribution has full support.
+Pointwise optimisation of Eq. (A.1) creates an equilibrium characterisation in terms of two
+conditions that I derive in two simple steps. First, I take the first-order condition with respect
+to the demand for each currency pair qi,c
+k : for each k
+δk − γi(σk,k(qi,c
+k + qi
+0,k) +∑
+l̸=k
+σk,l(qi,c
+l + qi
+0,l))
+| {z }
+Marginal utility
+= pk + ∂pk
+∂qi,c
+k
+qi,c
+k + ∑
+l̸=k
+∂pl
+∂qi,c
+k
+qi,c
+l
+| {z }
+Marginal cost
+. (A.2)
+Assuming that the best-responses of all other traders j ̸= i are linear it must hold that the
+price impact across currency pairs ∂pl
+∂qi,c
+k
+≡ λi,c
+k,l is a scalar for each k, l, and i. Rewriting the
+first-order condition in matrix form yields:
+δ − γiΣ(qi,c + qi
+0) =p + Λi,cqi,c, (A.3)
+15The derivations in this section are closely following Rostek and Yoon (2021).
+16The idea of considering the optimisation problem of an individual trader against their residual market dates
+back to the seminal work of Klemperer and Meyer (1989) and Kyle (1989). Rostek and Weretka (2015) show
+that there is equivalence between optimisation in demand schedules and pointwise optimisation in terms of the
+fixed point in price impacts. See Malamud and Rostek (2017) for an equilibrium characterisation of contingent
+demands with heterogeneous risk aversions.
+41
+
+===== PAGE 2 =====
+
+where Λi,c = ∂p
+∂qi,c
+k
+is a K × K Jacobian matrix characterising the price impact of trader i. The
+off-diagonal elements in Λi,c define the change in exchange rate l following a demand change
+in currency pair k by trader i. Re-arranging the first order condition in Eq. (A.3) yields the
+best-response demand of trader i:
+qi,c(p) = (γiΣ + Λi,c)−1(δ − p − γiΣqi
+0), (A.4)
+given their price impact Λi,c, which is a sufficient statistic for trader i’s residual supply.
+Second, I endogenise price impact by exploiting the fact that the price impact in the point-
+wise optimisation problem of trader i must be correct in equilibrium. Put differently, the price
+impact must be equal to the K × K Jacobian matrix of the inverse residual supply function of
+trader i. Applying market clearing conditions to the best-response demands in Eq. (A.4) for
+traders j ̸= i yields the residual supply function S−i,c(·) of trader i:
+S−i,c = − ∑
+j̸=i
+(γjΣ + Λj,c)−1(δ − γjΣqj
+0) +∑
+j̸=i
+(γiΣ + Λj,c)−1p, (A.5)
+where the price impact of trader i is the transpose of the Jacobian of (S−i,c(·))−1, Λi,c ≡
+∂pl
+∂qi,c
+k
+
+k,l
+=
+
+∂S−i,c(·)
+∂p
+−1′
+. The characterisation based on demand schedules is equivalent to
+traders optimising given their assumed price impact, which has to be correct in equilibrium.
+Theorem A1 ( Equilibrium: Contingent Trading ): A profile of net demand schedules qi,c is a
+linear Bayesian Nash equilibrium if and only if, for every trader i,
+1. ( Optimisations, given price impact ) Demand schedules qi,c(·) are determined by pointwise
+equalisation of marginal utility and payment in Eq. (A.3), given their price impact Λi,c;
+2. ( Correct price impact) The price impact of trader i equals the transpose of the Jacobian matrix
+of their inverse residual supply function:
+Λi,c = ((∑
+j̸=i
+(γjΣ + Λj,c)−1)−1)′ (A.6)
+With contingent demands the fixed point for price impact matrices is defined by a system
+of I equations in Eq. (A.6) and can be solved in closed form: for each trader i
+Λi,c = βi,cγiΣ, (A.7)
+where βi,c =
+2−γib+
+√
+(γib)2+4
+2γib is the solution to the following quadratic equation:
+∑
+j
+(γib + 2 +
+q
+(γjb)2 + 4)−1 = 1/2. (A.8)
+For the case where risk aversions are symmetric, that is, γi = γ, ∀i the price impact is simply
+proportional to fundamental risk: Λi,c = 1
+I−2 Σ. As I → ∞, then Λi,c → 0 for all i. Hence, the
+competitive limit case coincides with the inverse marginal utility, given the quasilinearity of
+42
+
+===== PAGE 3 =====
+
+the payoff function. With a positive price impact (i.e., Λi,c > 0), trader i demands (or sells)
+less than their competitive schedule.
+Combining Eqs (A.4) and (A.7) yields the following expressions for demand coefficients
+Bc, Cc, and price impact Λc, respectively:
+Bc =(Σ + Λc)−1Σ = I − 2
+I − 1Id; (A.9)
+Cc =(Σ + Λc)−1; (A.10)
+Λc = 1
+I − 2 Σ, (A.11)
+where Id is a K × K identity matrix. Contrarily to the uncontingent market, traders’ demand
+coefficient Bc, Cc, and price impact Λc are independent of the distribution of traders’ initial
+transaction demands, that is, σ2
+0 and Ω, respectively. What is more, in the contingent market,
+where p = δ − γΣ ¯ q0, the second moment of the distribution of equilibrium price Var(p)
+is independent of the distribution of initial transaction demands and only depends on the
+exogenous covariance matrix Σ. Thus, the equilibrium trading volume is: for each trader i
+qi,c,∗ = (Σ + Λc)−1Σ( ¯ q0 − qi
+0). (A.12)
+There are three properties of the contingent market that do not hold when traders submit
+uncontingent demand schedules. First, the price impact of every trader is proportional to the
+fundamental covariance matrix of currency returns Σ (see Eq. (A.6)). Rostek and Yoon (2021)
+show that this proportionality has implications for market functioning that do not hold with
+limited demand conditioning. Second, a trader’s own price impact Λc is a sufficient statistic
+for the residual supply function in the best-response problem. This holds due to the one-to-
+one mapping between the contingent variable (i.e., price vector p) and the residual supply’s
+intercept (i.e., the vector s−i ≡ −∑j̸=i(γjΣ + Λj,c)−1(δ − γjΣqj
+0)) for all currency pairs. Third,
+the equilibrium is ex post given the one-to-one mapping described in the previous point.
+Appendix B. Uncontingent Demands
+The purpose of this section is threefold: First, provide a detailed step-by-step derivation of
+the equilibrium exchange rate in Eq. (4) and quantity in Eq. (5) along the lines of Rostek and
+Yoon (2021). Second, illustrate the equilibrium dynamics of the model by means of a simple
+simulation exercise. Third, collect the proofs of Propositions 1 and 2.
+Appendix B.1. Equilibrium
+Every trader i submits their uncontingent demand schedules qi
+k simultaneously across a
+triplet of K = 3 currency pairs maximising their expected payoff for each k:
+max qi
+k(·)E[δ · (qi + qi
+0) − γi
+2 (qi + qi
+0) · Σ(qi + qi
+0) − p · qi|pk, qi
+0], (B.1)
+43
+
+===== PAGE 4 =====
+
+subject to their residual supply function Si
+l(·) ≡ −∑j̸=i qj
+l(·) for all currency pairs and their
+demand for other currency pairs qi
+l̸=k(·). The trader’s objective function is very similar to the
+case where all markets clear jointly, except that the demand for currency pair k is contingent
+on both the exchange rate pk and fundamental trading demand qi
+0.
+Definition 2 (Demand Schedule): In a double auction with uncontingent schedules, each trader i
+submits K demand functions qi(·) ≡ qi
+1(p1), ...,qi
+K. Each q i
+k(·) specifies the amount of quote currency
+units to be exchanged for base currency units within currency pair k at a particular exchange rate p k.
+Each triplet of currency pairs comprises one non-dollar currency pair (e.g., GBPJPY) plus
+two dollar currency pairs (e.g., USDGBP and USDJPY). In a frictionless world, no-arbitrage
+would imply that the non-dollar exchange rate (e.g., XY =GBPJPY) is the same as the ratio of
+the two dollar rates (e.g., $ Y/$X =USDJPY/USDGBP). The direct implication of this is that
+the covariance matrix Σ is singular and has the following structure:
+Σ =
+
+
+σ2($x) cov($x, $y) cov($x, $y) − σ2($x)
+cov($x, $y) σ2($y) σ2($y) − cov($x, $y)
+cov($x, $y) − σ2($x) σ2($y) − cov($x, $y) σ2($x) +σ2($y) − 2cov($x, $y)
+
+ , (B.2)
+where $x and $y are the log returns associated with the two dollar currency pairs (e.g.,
+USDGBP and USDJPY). Clearly, if no-arbitrage holds perfectly within Σ then trading volume
+will be independent from price impact and only driven by fundamental trading demands.
+Hence, to keep matters interesting, I will assume that triangular no-arbitrage violations ∆
+within each currency pair triplet have the following properties:
+1. Normally distributed with mean 0 and variance σ2(∆);
+2. Correlated with exchange returns $x and $y (i.e., cov($x, ∆) as well as cov($y, ∆) ̸= 0).
+These assumptions are motivated by the empirical evidence in Chaboud et al. (2014) and
+Ranaldo and Santucci de Magistris (2022) showing that the vast majority of triangular no-
+arbitrage deviations are short-lived and typically too small (i.e., close to zero) to be profitable
+and hence, lie within the arbitrage boundaries. As a result the non-singular covariance matrix
+for a triplet of currency pair returns is as follows:
+Σ =
+
+
+σ2($x) cov($x,$y) cov($x,$y)−σ2($x) +cov($x,∆)
+cov($x,$y) σ2($y) σ2($y)−cov($x,$y) +cov($y,∆)
+cov($x,$y)−σ2($x) +cov($x,∆) σ2($y)−cov($x,$y) +cov($y,∆) σ2(xy)
+
+, (B.3)
+where σ2(xy) =σ2($x) +σ2($y) +σ2(∆) − 2cov($x, $y) − 2cov($x, ∆) +2cov($y, ∆).
+Each trader maximises their expected payoff pointwise for each currency pair with respect
+to pk and given their demand for other currency pairs qi
+l(·). The first order condition is given
+by the following expression:
+δ − γiΣqi
+0 − γiΣ E[qi|p, qi
+0]| {z }
+Expected trade of
+currency pairs K
+= p + Λi
+|{z}
+Zero price impact
+across currency pairs
+qi, (B.4)
+44
+
+===== PAGE 5 =====
+
+where the left hand side (LHS) is the expected marginal utility for buying or selling the base
+against the quote currency within currency pairs K and the right hand side (RHS) is the
+marginal cost (i.e., exchange rate p plus price impact Λiqi per unit of trade). The price impact
+Λiqi of every trader i is a K × K Jacobian matrix that is constant in a linear equilibrium. 17
+Moreover, the price impact across currency pairs is zero: λi
+k,l ≡ ∂pk
+∂qi
+k
+= 0 for all pl̸=k. This is
+because with uncontingent demand schedules currency pairs clear independently rather than
+jointly. As a result, the price impact matrices of all traders are diagonal matrices:
+Λi ≡ ∂pl
+∂qi
+k
+= diag (λi
+k). (B.5)
+However, even if the price impact across currency pairs is zero, equilibrium outcomes of
+exchange rates and quantities are not independent across currency pairs unless all currency
+pairs’ payoffs are independent (i.e., σk,l = 0, ∀l ̸= k). Thus, equilibrium in uncontingent
+markets can be characterised by two conditions: for each trader i
+1. their demands are a best response, given i’s residual supply;
+2. their residual supply function is correct.
+The equilibrium characterisation is more challenging compared to the contingent market since
+the requirements for ex post optimisation are not met. That is, the best response quantities
+cannot be solved pointwise with respect to the exchange rate vector p since expected trade
+E[qi
+l|pk, qi
+0] depends on the functional form of qi
+l(·). Given that the best-response demands
+are not ex post and depend on the distribution of the conditioning variable p, the price impact
+Λi itself is not a sufficient statistic for a trader’s residual supply. More generally, the price
+impact between any two currency pairs depends on the covariance matrix of returns for all
+pairs. The solution to this predicament involves two steps:
+1. endogenise all demand coefficients and conditional expectations E[qi
+l|pk, qi
+0];
+2. replace the exchange rate pk as a contingent variable by trader i’s residual supply inter-
+cept s−i
+k .
+The advantage of step 2 is that unlike the distribution of pk, that of s−i
+k is only determined by
+the demand of all other traders j ̸= i and is thus exogenous to the best-response problem of
+trader i.
+To parametrise a trader’s best-response schedules as a fixed point among the trader’s
+demand coefficients I conjecture that trader i’s best response for any other currency pair l ̸= k
+is a linear function of pl and qi
+0:
+qi
+l(pl) ≡ ai
+l − bi
+lqi
+0 − ci
+l pl, ∀l ̸= k (B.6)
+where ai
+l is the demand intercept, bi
+lqi
+0 the demand coefficients, and ci
+l the demand slope on
+pl. To recap, parametrising the best-response demands for currency pairs l ̸= k and changing
+17Rostek and Yoon (2021) prove that the equilibrium is unique for the case where markets are symmetric (i.e.,
+Σ follows the structure in Eq. (B.3)) and fundamental trading demands are independent across currency pairs
+(i.e., Ω = Id) and indeed linear if traders’ conjectured best responses are linear in both price and quantity.
+45
+
+===== PAGE 6 =====
+
+the contingent variable from pk to s−i
+k gives me the license to fully endogenise expected trades
+in the demand for currency pair k. Thus, the fixed point problem for best-response schedules
+qi
+k(·) has been transformed to one for demand coefficients, given residual supplies. Rostek
+and Yoon (2021) prove that the equilibrium fixed point in demand schedules is equivalent to
+a fixed point in price impact matrices.
+For the ease of exposition, I assume that all traders have identical risk preferences (i.e.,
+γi = γ, ∀i). This ensures that the best response fixed point has a unique solution and that
+equilibrium quantity and price impact do not depend on risk aversion γ. In order to derive
+the optimal exchange rates and quantities, I apply market clearing conditions to the best
+response schedules qj̸=i
+k for each k:
+S−i
+k (pk) =− ∑
+j̸=i
+(aj
+k − bj
+kqj
+0) +∑
+j̸=i
+cj
+k pk = s−i
+k + pk
+(λi
+k), (B.7)
+where s−i
+k is the residual supply intercept and (λi
+k)−1 the slope coefficient. To derive the equi-
+librium exchange rate trader i’s residual supply S−i
+k (pk) must be equal to the best response
+demand schedules of all other traders j ̸= i, otherwise markets do not clear. This allows me
+to derive pk as a function of demand coefficients ai = ai
+k, Bi = bi
+k, and Ci = diag (ci
+k):
+p∗ = (∑
+i
+ai − ∑
+i
+Biqi
+0) · (∑
+i
+Ci)−1. (B.8)
+To derive the equilibrium exchange rates and quantities for a representative trader, I ap-
+ply the solution concept of Bayesian Nash equilibria. Every trader i submits their demand
+schedules qi
+k at once for each currency pair. The demand schedules are optimal if they max-
+imise a trader’s expected return for each currency pair k subject to their residual supply
+function Si
+l(·) ≡ −∑j̸=i qj
+l(·) for all currency pairs and their demand for other pairs qi
+l̸=k(·)
+(see Theorem B2).
+Theorem B2 ( Equilibrium: Fixed Point in Demand Schedules ): Consider a market with K
+currency pairs. In a sub-game perfect Nash equilibrium, the (net) demand schedules are defined by the
+following (matrix) coefficients ai, B, and C, as well as price impact Λ = Λi: for each trader i,
+1. (Optimisation, given price impact) Given price impact matrices Λ, net demand coefficients
+ai, B, and C are characterised by:
+ai = C(δ − (γΣ − C−1B)E[ ¯ q0]))| {z }
+=p−C−1B ¯ q0
++ ((γΣ + Λ)−1γΣ − B)(E[ ¯ q0] − E[qi
+0])| {z }
+Adjustment due to inference effect
+; (B.9)
+B =
+ 
+(1 − σ2
+0 )(γΣ + Λ) +C−1σ2
+0| {z }
+Adjustment due to
+inference effect
+−1
+γΣ; (B.10)
+C =
+h
+(Σ + Λ) (BΩB′)[BΩB′]−1
+d| {z }
+Inference coefficient
+i−1
+d
+, (B.11)
+where [·]d is an operator such that for any matrix M, [M]d is a diagonal matrix with all off-
+46
+
+===== PAGE 7 =====
+
+diagonal elements equal to zero, ¯ q0 ≡ 1
+I ∑I qj
+0 is the average fundamental trading demand
+across traders, Ω = Cov(qi
+0,k, qi
+0,l) is a positive semi-definite covariance matrix of fundamental
+trading demands, and σ2
+0 ≡
+σ2
+cv+ 1
+I σ2
+pv
+σ2cv+σ2pv
+. Note that traders’ fundamental trading demand can
+be decomposed into a common ( qcv
+0 = qcv
+0,k ∼ N(E[qcv
+0,k], σ2
+cv)) and private value component
+(qi,pv
+0 = qi,pv
+0,k
+iid∼ N(E[qi,pv
+0,k ], σ2
+pv)), respectively. For each trader it holds that q i
+0,k = qcv
+0,k + qi,pv
+0,k .
+2. (Correct price impact) The parametric solutions to ai, B, and C are based on the work by
+Rostek and Weretka (2015) and Rostek and Yoon (2021) and imply that the price impact Λ is
+characterised by the slope of the inverse residual supply function:
+Λ = 1
+I − 1C−1 = 1
+I − 2
+h
+Σ (BΩB′)
+
+BΩB′−1
+d| {z }
+Inference coefficient
+i
+d
+, (B.12)
+where Λ is a diagonal matrix because the cross-exchange price impactΛk,l is zero since uncontin-
+gent demand schedules imply that currency pairs clear independently. Note that by construction
+all on-diagonal elements of the inference coefficient will be equal to one.
+Building on Theorem B2 and plugging the demand intercept ai into Eq. (B.8) yields the
+equilibrium exchange rate:
+p∗ =
+
+∑
+i
+C(δ − (γΣ − (Ci)−1Bi)E[ ¯ q0])) − ∑
+i
+Biqi
+0
+
+· (∑
+i
+Ci)−1; (B.13)
+p∗ =
+
+δ − (γΣ − (C)−1B)E[ ¯ q0]
+
+− C−1B ¯ q0. (B.14)
+Notice that ∑i ai = ∑i C(δ − (γΣ − C−1B)E[ ¯ q0])), since ((γΣ + Λ)−1γΣ − B) ∑i(E[ ¯ q0] − E[qi
+0])
+is zero. In contrast to the contingent market, the second moment Var(p) of the distribution
+of equilibrium prices depends on the distribution of initial transaction demands (through the
+endogenous demand coefficients B and C−1) rather than just on fundamental risk Σ. Specif-
+ically, the price covariance of any two currency pairs depends on the second moment of the
+joint distribution of all currency pairs. Moreover, given the special structure of the covariance
+matrix Σ in Eq. (B.3), the equilibrium exchange rates will also be consistent with no-arbitrage
+if the variance of expected no-arbitrage violations is zero (i.e., σ2(∆) =0) and if no-arbitrage
+violations are uncorrelated with exchange rate returns (i.e., cov($x, ∆) =cov($y, ∆) =0).
+Substituting exchange rate p∗ and demand coefficient ai into traders’ demand function
+Eq. (B.6) yields the equilibrium quantity: for every i,
+qi,∗ =((Σ + Λ)−1Σ − B)(E[ ¯ q0] − E[qi
+0]) +B( ¯ q0 − qi
+0), (B.15)
+and adding qi
+0 to both sides as well as collecting terms yields
+qi,∗ + qi
+0 =((Σ + Λ)−1Σ − B)(E[ ¯ q0] − E[qi
+0]) +B ¯ q0 + (Id − B)qi
+0, (B.16)
+where Id is a K × K identity matrix. Given qi,∗ it is only optimal to trade a non-zero amount
+if and only if there is dispersion in traders’ fundamental or initial transaction demands, that
+is, if E[ ¯ q0] − E[qi
+0] ̸= 0 and ¯ q0 − qi
+0 ̸= 0. Trader i’s distance to the average transaction demand
+47
+
+===== PAGE 8 =====
+
+¯ q0 determines whether she is a net-buyer or net-seller of the quote currency. Net-buyers have
+fundamental trading demands below the average (i.e., ¯q0,k > qi
+0,k), whereas the opposite is
+true for net-sellers (i.e., ¯q0,k < qi
+0,k).
+Rostek and Yoon (2021) prove that the equilibrium is unique for the case where markets
+are “symmetric” (i.e., all on-diagonal elements inΣ are identical and the off-diagonal elements
+are simply their scaled versions) and fundamental trading demands are independent across
+currency pairs (i.e., Ω = Id, where Id is the identity matrix). 18 Further, they show that in
+more general markets (e.g., the currency market with non-symmetric Σ and Ω), the numerical
+iteration that solves the equilibrium fixed point equation converges to the same equilibrium in
+extensive simulations including random initial values and different forms of the fixed points
+with respect to Λ and C. Note that in the context of the currency market the joint symmetry
+assumption on Σ would imply that price impacts are identical across currency pairs.
+There are two key determinants of price impact in this model: First, the price impact of
+every trader emanates from the concavity of preferences of their residual market. In particu-
+lar, price impact increases in traders’ risk aversion and is concave in the variance of currency
+returns. Hence, the residual market is less elastic when currency pairs are either more risky
+or when other traders are more risk-averse. Thus, if the residual market is very inelastic, an
+additional trade has a larger price impact because of the greater price concession required to
+absorb the extra marginal unit such that markets clear (Rostek and Yoon, forthcoming).
+Second, since demand schedules are uncontingent, price impact also depends on the dis-
+tribution of fundamental trading demands. Intuitively, this stems from the fact that each
+trader’s demand for a currency pair depends on expected rather than on realised trades for
+all other currency pairs. As a result, asymmetric information is inherently embedded into
+price impact, since traders do neither know their own demand in other currency pairs nor
+what other traders are going to demand in any currency pair. This effect is captured by the
+uncertainty of fundamental trading demands Ω, which directly affect price impact Λ via the
+inference coefficient (BΩB′)
+
+BΩB′−1
+d in Eq. (B.12). Following Corollary 2, an increase in the
+variance of fundamental trading demands in currency pair k lowers price impact λk.
+Appendix B.2. Simulation Exercise
+To illustrate the equilibrium dynamics of the theoretical framework in Section 4, I simu-
+late the model for a simple market setting with I=15 market participants trading a triplet of
+K=3 currency pairs (e.g., USDGBP, USDJPY, and GBPJPY). The goal is to start from an equi-
+librium that is symmetric (i.e., same price impact and trading volume across currency pairs)
+and hence, also unique (see Rostek and Yoon, 2021). Put differently, the simulation exercise
+starts from an equilibrium without dominance of any currency and then shows the transition
+towards an equilibrium with or without dollar dominance. In particular, I study how price
+impact and trading volume change conditional on changing the exogenous drivers in the
+18For the currency market one could assume that Σ follows the general structure in Eq. (B.3) and that σ2($x) =
+σ2($y) = σ2, cov($x, ∆) = σ2($x), cov($y, ∆) = σ2($y)(2ρ − 1), where ρ = cov($x, $y)/σ2, and σ2(∆) = σ2(3 −
+2ρ). More formally, Σk,k = σ2, ∀k and Σk,l = σ2ρ, ∀l ̸= k, where −0.5 < ρ < 1 and −0.5 < η < 1 need to hold for
+Σ and Ω to be positive semi-definite. Note that Σ only scales the level of price impact. Hence, the sign of ρ has
+no effect on price impact ranking across currency pairs.
+48
+
+===== PAGE 9 =====
+
+model. To construct a symmetric equilibrium, I have to make three assumptions about the
+properties of fundamental trading demands qi
+0, the covariance matrix of fundamental trad-
+ing demands Ω, and currency returns Σ, respectively. In Figure B.2 I relax all of these three
+assumptions and show the simulated comparative statics for the case of a non-symmetric
+equilibrium with a general positive semi-definite covariance matrix for both Ω and Σ.
+First, trader i has identical fundamental trading demands in each currency pair, that is,
+qi
+0 = [100, 100, 100]⊤ $mn. For simplicity’s sake, I set all other traders’ average fundamental
+trading demand ¯ q0 ≡ 1
+I ∑I
+j=1 ¯ qj
+0 equal to zero and hence, the net trading demand equals
+gross trading demand in terms of absolute value (i.e., | ¯ q0 − qi
+0| = qi
+0). Note that to facilitate
+comparison, I convert both fundamental trading demand qi
+0 and equilibrium volume qi,∗ into
+US dollars ($) irrespective of the base and quote currency. 19
+Second, the covariance matrix of fundamental trading demands Ω and currency returns Σ
+are such that all on-diagonal elements are identical and the off-diagonal elements are simply
+their scaled versions (see Eq. (B.17)). Specifically, I assume that Σ follows the general structure
+in Eq. (B.3) and that σ2($x) = σ2($y) = σ2, cov($x, ∆) = σ2($x), cov($y, ∆) = σ2($y)(2ρ − 1),
+where ρ = cov($x, $y)/σ2, and σ2(∆) = σ2(3 − 2ρ). More formally, Σk,k = σ2, ∀k and Σk,l =
+σ2ρ, ∀l ̸= k as well as Ωk,k = ω2, ∀k and Ωk,l = ω2η, ∀l ̸= k, where −0.5 < ρ < 1 and
+−0.5 < η < 1 need to hold for Σ and Ω to be positive semi-definite. Note that Σ and Ω only
+scale the level of price impact. Hence, the sign of ρ or η has no effect on the ranking of price
+impacts across currency pairs as long as −0.5 < ρ < 1 and −0.5 < η < 1, respectively.
+Third, for concreteness, I assume that the on-diagonal elements of Ω and Σ are identical
+and equal to 25 and 0.30, respectively. Second, the off-diagonal elements of Ω and Σ are also
+identical and equal to 2.5 and 0.25, respectively. Hence, while both covariance matrices are
+positive semi-definite, I rule out the effect of heterogeneous covariance terms on equilibrium
+trading volume (I relax this in Figure B.2). Note that this simulation exercise takes into
+account that price impact Λ, demand coefficients B and C−1, and trading volume qi,∗ are
+endogenous and hence, they must be determined simultaneously in equilibrium.
+Figure B.1 depicts the simulated comparative statics of equilibrium volume qi,∗ with re-
+spect to the risk aversion coefficient γ as well as the level of net fundamental trading demands
+qi
+0,k, the variance of fundamental trading demands Ωk,k, and the variance of currency returns
+Σk,k in currency pair k. For concreteness, I assume that currency pair k corresponds to one of
+the two dollar pairs (e.g., USDGBP or USDJPY) within a triplet of currency pairs. In addition
+to these four first order effects, the bottom two subfigures show the endogenous change in the
+equilibrium price impact given the change in Ωk,k and Σk,k, respectively. Notice that the equi-
+librium traded quantity (i.e., 93 $mn) is less than the initial net trading demand (i.e., 100 $mn)
+since price impact Λ is positive definite if the market is imperfectly competitive. 20 Thus, the
+key point of the simulation exercise is to show that even a symmetrical market with initially
+identical net trading demands across currency pairs can become skewed towards a single
+base-currency (e.g., the US dollar) if a minor disparity exists in the variance of fundamental
+19For example, positive 100 $mn in GBPJPY means buying pressure in the GBP, that is, the representative
+trader would like to exchange the quote currency (here JPY) equivalent of 100 $mn to GBP.
+20An increase in the number of traders I reduces the equilibrium price impact and hence the scale but not the
+shape of these simulated demand and price impact functions.
+49
+
+===== PAGE 10 =====
+
+trading demands or in currency returns, respectively.
+Figure B.1: Comparative Statics: Volume and Price Impact
+0.4 0.5 0.6 0.7 0.8
+Riskaversion.
+90
+95
+100 a.)Volumeqi;$in$mn
+25 30 35 40 45 50
+Varianceoffundamentaltradingdemands+
+85
+90
+95
+100
+105
+110 c.)Volumeqi;$in$mn
+25 30 35 40 45 50
+Varianceoffundamentaltradingdemands+
+4
+5
+6
+7 e.)Priceimpact$in%
+0.3 0.35 0.4 0.45 0.5 0.55 0.6
+Varianceofcurrencyreturns'
+85
+90
+95
+100
+105
+110 d.)Volumeqi;$in$mn
+0.3 0.35 0.4 0.45 0.5 0.55 0.6
+Varianceofcurrencyreturns'
+4
+5
+6
+7 f.)Priceimpact$in%
+100 105 110 115 120 125 130
+Fundamentaltradingdemandqi0
+90
+100
+110
+120 b.)Volumeqi;$in$mn
+Currencypairk Currencypairsl6=k
+Note: This figure plots the comparative statics of equilibrium trading volume qi,∗ for a simple market setting
+with I=15 market participants trading a triplet of K=3 currency pairs. The representative trader i has identical
+fundamental trading demands in each currency pair, that is, qi
+0 = [100, 100, 100]⊤ $mn. Subfigures a.) – d.) show
+how the equilibrium trading volume in dollar pair k (grey dots) and the other pairs l ̸= k (black squares) changes
+given that one of the exogenous input factors concerning currency pair k on the x-axis changes: risk aversion
+coefficient γ, fundamental trading demand qi
+0,k, variance of fundamental trading demands Ωk,k, and variance of
+currency returns Σk,k. Subfigures e.) and f.) illustrate how the endogenous price impact Λ differs across the dollar
+currency pair k (grey dots) and all other pairs l ̸= k (black squares) given a change in Ωk,k and Σk,k, respectively.
+There are four key takeaways from Figure B.1: First, following subfigure a.), the optimal
+traded quantity in each currency pair is independent of risk aversion γ. This is because the
+equilibrium volume is a combination of fundamental trading demands and the covariance
+matrix of currency returns with weights that do not depend on risk aversion.
+Second, following subfigure b.), an increase in the fundamental trading demand in dollar
+pair k corresponds to a linear increase in the equilibrium allocation. However, given the
+positive correlation in trading demands across currency pairs, the trading volume in the other
+currency pairs l ̸= k also increases, albeit at a slower rate. Notice that a change in the level of
+the fundamental trading demand in dollar pair k has no effect on the price impact in dollar
+50
+
+===== PAGE 11 =====
+
+pair k because the covariance matrix of fundamental trading demands is mean-invariant.
+Third, subfigure c.) shows that a trader with identical fundamental trading demand in
+each currency pair on average ends up trading larger volumes in dollar pairs relative to
+non-dollar pairs as the variance of fundamental trading demands in dollar pair k increases.
+This wedge is driven by the assumption that traders are strategic about their price impact
+and thus find trading more via dollar currency pairs optimal if the expected price impact
+is lower due to the increasing variance of trading demands Ωk,k in the dollar currency pair
+k. The economic reason for this drop in price impact (see subfigure e.)) is the fact that with
+uncontingent demand schedules Σ times the inference coefficient (i.e., [Σ(BΩB′)
+
+BΩB′−1
+d ]k,k)
+decreases in the variance of fundamental trading demands Ωk,k.
+Finally, subfigure d.) illustrates that an increase in the variance of currency returns in
+dollar currency pair k decreases trading volume in dollar pair k if Σk,k increases by more than
+15 percentage points (pps). This threshold, of course, depends on the specific parametric
+assumptions concerning Σ and Ω, respectively. In contrast, an increase in the variance of
+currency returns in dollar pair k by less than 15 pps increases trading volume in dollar pairs.
+This increase in volumes is due to a drop in the expected price impact of dollar pairs. The non-
+linear effect in subfigure f.) stems from the fact that the inference coefficient B is determined
+endogenously in the simulations rather than held constant.
+So far, the simulations have focused on the variance part of Ω and Σ, respectively, while
+holding the covariance terms constant. Against this backdrop, Figure B.3 explores the impact
+of an increase in the covariance between the two US dollar currency pairs (e.g., USDAUD and
+USDJPY) Σ$x,$y and finds that as the covariance increases, so does the price impact of dollar
+pairs relative to the direct non-dollar cross (i.e., AUDJPY). Hence, this simulation exercise can
+also speak to the question of how vehicle currency trading is affected by episodes of flight to
+safety that are typically characterised by strong commonality in currency returns. Specifically,
+an increase in the covariance of dollar currency returns makes the US dollar less attractive as
+a vehicle currency due to increasing the price impact of dollar pairs. Similarly, an increase in
+the covariance of fundamental trading demands Ω$x,$y between dollar pairs is associated with
+a higher price impact and less trading volume in dollar currency pairs relative to non-dollar
+pairs. However, the impact of Ω$x,$y is economically much smaller compared to changes in
+the covariance of currency returns (i.e., Σ$x,$y).
+Summary. Equilibrium volume is an increasing function of the mean and variance of fun-
+damental trading demands but is non-monotonic in the variance of currency returns. This
+result holds for both symmetric (Figure B.1) and non-symmetric equilibria (Figure B.2).
+Appendix B.3. Proofs
+Notation. I use the following notation: v is a vector in which the kth element is xk and M is
+a k × l matrix where the (k, l)th element is denoted by Mk,l. Note that vectors and matrices
+are boldface and in addition matrices are capitalised, whereas scalars are in normal font.
+Set-up. Assume that each triplet of currency pairs (i.e., K = 3) consists of two dollar cur-
+rency pairs and one non-dollar pair (e.g., GBPJPY). By triangular no-arbitrage it must hold
+51
+
+===== PAGE 12 =====
+
+Figure B.2: Comparative Statics for Non-Symmetric Equilibrium: Volume and Price Impact
+0.4 0.5 0.6 0.7 0.8
+Riskaversion.
+93.9
+93.95
+94
+94.05
+94.1
+a.)Volumeqi;$in$mn
+3 3.5 4 4.5 5 5.5 6
+Varianceoffundamentaltradingdemands+
+93.8
+94
+94.2
+94.4
+c.)Volumeqi;$in$mn
+3 3.5 4 4.5 5 5.5 6
+Varianceoffundamentaltradingdemands+
+28
+29
+30
+31
+32 e.)Priceimpact$in%
+4 4.5 5 5.5 6 6.5 7
+Varianceofcurrencyreturns'
+93.4
+93.6
+93.8
+94
+94.2 d.)Volumeqi;$in$mn
+4 4.5 5 5.5 6 6.5 7
+Varianceofcurrencyreturns'
+30
+40
+50
+60 f.)Priceimpact$in%
+100 105 110 115 120 125 130
+Fundamentaltradingdemandqi0
+90
+100
+110
+120
+130 b.)Volumeqi;$in$mn
+Currencypairk Currencypairsl6=k
+Note: This figure plots the comparative statics of equilibrium trading volume qi,∗ for a simple market setting with
+I=15 market participants trading a triplet of K=3 currency pairs. Subfigures a.) – d.) show how the equilibrium
+trading volume in dollar pair k (grey dots) and the other pairs l ̸= k (black squares) changes given that one of the
+exogenous input factors concerning currency pair k on the x-axis changes: risk aversion coefficient γ, fundamental
+trading demand qi
+0,k, variance of fundamental trading demands Ωk,k, and variance of currency returns Σk,k.
+Subfigures e.) and f.) illustrate how the endogenous price impact Λ differs across the dollar currency pair k (grey
+dots) and all other pairs l ̸= k (black squares) given a change in Ωk,k and Σk,k, respectively.
+that $y − $x = xy, where $x and $y are the log returns associated with the two dollar cur-
+rency pairs (e.g., X=USDGBP and Y=USDJPY) and xy is the log return based on the direct
+non-dollar pair (e.g., XY=GBPJPY).
+Matrix properties. This section collects the proofs of Propositions 1 and 2 for the case where
+the market equilibrium is symmetric (i.e., same price impact and trading volume across cur-
+rency pairs) and hence, also unique (see Rostek and Yoon, 2021). Thus, Σ, Ω, and Λ have the
+following properties:
+• Σ is a K × K positive semi-definite covariance matrix for a triplet of currency returns that
+follows the general structure in Eq. (B.3). For clarity, I assume that σ2($x) = σ2($y) =
+σ2, cov($x, ∆) = σ2($x), cov($y, ∆) = σ2($y)(2ρ − 1), where ρ = cov($x, $y)/σ2, and
+52
+
+===== PAGE 13 =====
+
+Figure B.3: Comparative Statics for Covariances: Volume and Price Impact
+2.5 3 3.5 4 4.5 5
+Covarianceoffundamentaltradingdemands: +$x;$y
+90
+92
+94
+96
+98
+100 a.)Volumeqi;$in$mn
+2.5 3 3.5 4 4.5 5
+Covarianceoffundamentaltradingdemands: +$x;$y
+3
+3.5
+4
+4.5
+5
+5.5 c.)Priceimpact$in%
+0.15 0.2 0.25 0.3
+Covarianceofcurrencyreturns: '$x;$y
+90
+92
+94
+96
+98
+100 b.)Volumeqi;$in$mn
+0.15 0.2 0.25 0.3
+Covarianceofcurrencyreturns: '$x;$y
+3
+3.5
+4
+4.5
+5
+5.5 d.)Priceimpact$in%
+Currencypairsk2USD Currencypairl =2USD
+Note: This figure plots the comparative statics of equilibrium trading volume qi,∗ for a simple market setting
+with I=15 market participants trading a triplet of K=3 currency pairs. The representative trader i has identical
+fundamental trading demands in each currency pair, that is, qi
+0 = [100, 100, 100]⊤ $mn. Subfigures a.) and
+b.) show how the equilibrium trading volume in dollar pairs k ∈ USD (grey dots) and the non-dollar pair
+l /∈ USD (black squares) changes given that either the covariance of fundamental trading demands Ω$x,$y or
+currency returns Σ$x,$y associated with dollar currency pairs increases. Subfigures c.) and d.) illustrate how the
+endogenous price impact Λ differs across the dollar currency pairs (grey dots) and the direct non-dollar cross
+(black squares) given a change in Ω$x,$y and Σ$x,$y, respectively.
+σ2(∆) =σ2(3 − 2ρ). Hence, Σ in Eq. (B.3) simplifies to:
+Σ =
+
+
+σ2 σ2ρ σ 2ρ
+σ2ρ σ 2 σ2ρ
+σ2ρ σ 2ρ σ 2
+
+ , (B.17)
+where for Σ to be positive semi-definite it has to hold that −0.5 < ρ < 1;
+• Ω is a K × K balanced covariance matrix (see Definition 3) of fundamental trading
+demands with Ωk,k = ω2, ∀k and Ωk,l = ω2η, ∀l ̸= k, where −0.5 < η < 1 needs to
+hold for Ω to be positive semi-definite;
+53
+
+===== PAGE 14 =====
+
+• Λ is a K × K diagonal matrix of price impacts.
+Given the properties of Σ and Ω it must hold that λk = λ, ∀k. Clearly, the covariance matrices
+Σ and Ω are by definition symmetric and positive semi-definite. 21 What is more, note that
+the partial derivatives ∂qi,∗
+∂di
+0,k
+, ∂qi,∗
+∂Ωk,k
+, and ∂qi,∗
+∂Σk,k
+in Proposition 1 are K × 1 vectors.
+Definition 3 ( Balanced matrix ): A matrix M is called balanced if all on-diagonal elements are
+identical (i.e., M k,k = m2, ∀k) and the off-diagonal elements are their scaled versions (i.e., M k,l =
+m2ψ, ∀l ̸= k, where −0.5 < ψ < 1). Hence, M is a symmetric and positive semi-definite matrix.
+Lemma 1: (Σ + Λ)−1Σ is a positive semi-definite matrix if markets are uncontingent, which implies
+that Λ is a positive definite diagonal matrix. This result follows directly from the properties of Σ and
+Λ and by standard matrix algebra. Moreover, it holds that (Σ + Λ)−1Σ = B if σ2
+0 = 0.
+Lemma 2: λXY = λ × 1−ρ
+ρ , where ρ = cov($x, $y)/σ2 and λ = λ$X = λ$Y. If exchange rate
+returns are perfectly correlated (i.e., σ2(∆) = 0, cov ($x, ∆) = 0, and cov ($y, ∆) = 0) then based
+on Eq. (B.12) it holds that λ = σ (ρ + 1) 1
+I−2 and λXY = σ (1−ρ2)
+ρ
+1
+I−2 and hence λXY
+λ = 1−ρ
+ρ after
+some simplification. Note that this result hinges on the observation that the special structure of Σ in
+Eq. (B.3) also translates to the structure of the inference coefficient B (see Lemma 3).
+Lemma 3: The inference coefficient B will have the following structure if price impactλXY = λ × 1−ρ
+ρ :
+B = 1
+λ + σ2 + σ2ρ
+
+
+σ2 σ2ρ σ 2ρ − σ2
+σ2ρ σ 2 σ2 − σ2ρ
+−σ2ρ σ 2ρ 2σ2ρ
+
+ . (B.18)
+From Eq. (B.18) it is obvious that the inference coefficient B follows the same structure as Σ except
+that the bottom row is multiplied by a factor of ρ
+1−ρ relative to what the structure in Σ would imply.
+Hence, the structure of the inference coefficient matrix is as follows:
+B =
+
+
+b b ρ bρ − b
+bρ b b − bρ
+(bρ − b) ρ
+1−ρ (b − bρ) ρ
+1−ρ (2b − 2bρ) ρ
+1−ρ
+
+ . (B.19)
+This result follows from the fact that the price impact in the non-dollar pair is scaled by 1−ρ
+ρ (i.e.,
+λXY = λ$X × 1−ρ
+ρ = λ$Y × 1−ρ
+ρ ). Moreover, notice that the inference coefficient B will have the same
+structure as Σ in Eq. (B.17) if price impact is identical across currency pairs (i.e., λk = λ, ∀k):
+B =
+
+
+b b ϕ bϕ
+bϕ b b ϕ
+bϕ bϕ b
+
+ . (B.20)
+This result follows from the fact that both the covariance matrix of currency returns Σ and also funda-
+mental trading demands Ω are balanced (see Definition 3).
+21The sum of two positive semi-definite matrices A and B is always positive semi-definite and the product
+AB is also semi-definite if the matrices are symmetric. Moreover, the inverse of a positive definite matrix is also
+positive semi-definite because the eigenvalues of the inverse are inverses of the eigenvalues.
+54
+
+===== PAGE 15 =====
+
+Proof of Lemmas 2 and 3. The proof follows from the fact that conditional on inference coef-
+ficient B having the structure in Eq. (B.19) it holds that λXY = λ$X × 1−ρ
+ρ = λ$Y × 1−ρ
+ρ .
+Conversely, conjecturing that price impact λXY is scaled by 1−ρ
+ρ relative to λ$X and λ$Y it is
+evident that in equilibrium B must follow the structure as in Eq. (B.19) unless price impact is
+identical across currency pairs.
+Corollary 1 (Proof of Eq. (7)): Note that di
+0 = | ¯ q0 − qi
+0| and the partial derivative ∂di
+0/∂qi
+0,k is
+a K × 1 vector where element k (i.e., ∂di
+0,k/∂qi
+0,k) is equal to 1 and all other elements are equal to 0
+(i.e., ∂di
+0,l/∂qi
+0,k = 0, ∀l ̸= k). Hence, it holds that ∂qi,∗
+k /∂qi
+0,k > 0. Moreover, in conjunction with
+Lemma 1 it follows directly that ∂qi,∗
+k
+∂qi
+0,k
+> ∂qi,∗
+l
+∂qi
+0,k
+> 0, ∀l ̸= k. Specifically, as long as Σ, Ω, and Λ are
+positive (semi-)definite matrices and exchange rate returns are not perfectly correlated (i.e., σ2(∆) ̸= 0,
+cov($x, ∆) ̸= 0, and cov($y, ∆) ̸= 0) the off-diagonal elements of these matrices will be strictly smaller
+in absolute terms than the on-diagonal elements, which implies that a marginal increase in di
+0,k benefits
+trading volume in currency pair k more than all other currency pairs l ̸= k.
+Corollary 2 (Proof of Eq. (8)): When currency returns are perfectly correlated (i.e., σ2(∆) = 0,
+cov($x, ∆) =0, and cov($y, ∆) =0) the inference coefficient B has the exact structure as in Eq.(B.19).
+As a result, a change in Ωk,k has no effect on the equilibrium price impact λk for a given B. However,
+when Σ is non-singular and follows the structure in Eq. (B.17) the partial derivative of price impact
+in currency pair k with respect to Ωk,k is non-zero. From Lemma 1 it follows directly that (Σ +
+Λ)−1Σ(Σ + Λ)−1 is a positive semi-definite matrix. Hence, all else equal, ∂Λk,k
+∂Ωk,k
+< ∂Λl,l
+∂Ωk,k
+, ∀k ̸= l, since
+(BΩB′)
+
+BΩB′−1
+d is a symmetric positive semi-definite matrix with all on-diagonal elements equal to
+1. This follows from the fact that BΩB′ is symmetric and positive semi-definite since Ω is positive
+semi-definite by the definition of a covariance matrix. Thus, the off-diagonal elements in column k of
+(BΩB′)
+
+BΩB′−1
+d decrease relative to all other columns l ̸= k as Ωk,k increases. This results into a
+lower price impact in currency pair k and hence it holds that ∂qi,∗
+k
+∂Ωk,k
+> ∂qi,∗
+l
+∂Ωk,k
+, ∀k ̸= l.
+Proof of Corollary 2. The derivative of price impact Λ with respect to Ωk,k is characterised by
+the following matrix equation assuming that I = K = 3 and hence 1
+I−2 = 1:
+∂Λ
+∂Ωk,k
+= Σ
+
+B ∂Ω
+∂Ωk,k
+B′
+
+BΩB′−1
+d − (BΩB′)
+h
+BΩB′−1
+d
+
+B ∂Ω
+∂Ωk,k
+B′
+
+[BΩB′−1
+d
+i
+d
+
+d
+, (B.21)
+where ∂Ω
+∂Ωk,k
+is a K × K matrix, where all elements except for {k, k} are zero. More specifically,
+price impact in currency pair k (i.e., λk) as well as its derivative with respect to Ωk,k, are given
+by the following expressions that result from applying standard matrix algebra to Eq. (B.12):
+λk = σ2  
+Ωk,k + 2 ω2 ϕ2 + 4 η ω2 ϕ + 2 η ω2 ρ + 2 ω2 ϕ ρ
+
+Ωk,k + 2 ω2 ϕ2 + 4 η ω2 ϕ + 2 η ω2 ϕ2 + ...
+...+ σ2(2 η ω2 ϕ2 + 2 ω2 ϕ2 ρ + 2 Ωk,k ϕ ρ + 4 η ω2 ϕ ρ + 6 η ω2 ϕ2 ρ)
+Ωk,k + 2 ω2 ϕ2 + 4 η ω2 ϕ + 2 η ω2 ϕ2 (B.22)
+∂λk
+∂Ωk,k
+= − 2 ω2 ρ σ2 (η + ϕ + η ϕ)
+ 
+−2 ϕ2 + ϕ + 1
+
+(Ωk,k + 2 ω2 ϕ2 + 4 η ω2 ϕ + 2 η ω2 ϕ2)2 < 0, (B.23)
+where the inequality in Eq. (B.23) only holds if 0 < ϕ < 1, 0 < η < 1, and 0 < ρ < 1 or more
+55
+
+===== PAGE 16 =====
+
+generally if sign (ϕ) = sign (η) = sign (ρ) and Σ, Ω, and B are all positive semi-definite (i.e.,
+−0.5 < ϕ < 1, −0.5 < η < 1, and −0.5 < ρ < 1).
+Corollary 3 (Proof of Eq. (9)): Note that the partial derivative ∂Σ
+∂Σk,k
+is a K × 1 vector where element
+k is equal to 1 and all other elements are equal to 0. Moreover, ∂Λk,k
+∂Σk,k
+> ∂Λl,l
+∂Σk,k
+≥ 0, ∀l ̸= k because
+(BΩB′)
+
+BΩB′−1
+d is positive semi-definite and symmetric matrix if Σ and B follow the structure in
+Eq. (B.17) and Eq. (B.20), respectively. In Eq. (9), the positive effect of an increase in Σk,k on q i,∗
+k is
+counterbalanced by the increase in Λk,k, which is directly induced by the increase in Σk,k. The latter
+offsets the former for a given inference coefficient B such that the increase in price impact dominates
+the net effect and hence it holds that ∂qi,∗
+k
+∂Σk,k
+< ∂qi,∗
+l
+∂Σk,k
+, ∀l ̸= k.
+Proof of Corollary 3. The derivative of equilibrium trading volume qi,∗ with respect to Σk,k is
+characterised by the following matrix equation assuming that I = K = 3 (i.e., 1
+I−2 = 1) and,
+for the sake of simplicity, that Ω is a diagonal matrix (the conditions under which Eq. (B.26)
+is negative still hold when all off-diagonal elements in Ω are equal to ω2η):
+∂qi,∗
+∂Σk,k
+=
+
+(Σ + Λ)−1 ∂Σ
+∂Σk,k
+− (Σ + Λ)−1
+ ∂Σ
+∂Σk,k
++ ∂Λ
+∂Σk,k
+
+(Σ + Λ)−1Σ
+
+di
+0, (B.24)
+where ∂Σ
+∂Σk,k
+is a K × K matrix, where all elements except for {k, k} are zero. In particular, equi-
+librium volume in currency pair k (i.e., qi,∗
+k ) and its derivative with respect to Σk,k, are given
+by the following expressions that result from applying standard matrix algebra to Eq. (B.15):
+qi,∗
+k =
+di
+k,0 (2 ϕ2+1) (4 ϕ2 ρ σ2+4 Σk,k ϕ2 ρ+4 Σk,k ϕ2+8 ϕ ρ2 σ2)
+2 (4 ϕ4 ρ σ2+8 Σk,k ϕ4 ρ+8 Σk,k ϕ4+12 ϕ3 ρ2 σ2+8 ϕ3 ρ σ2+8 Σk,k ϕ3 ρ+5 ϕ2 ρ2 σ2+...
+...+2 ϕ2 ρ σ2+6 Σk,k ϕ2 ρ+8 Σk,k ϕ2+2 ϕ ρ2 σ2+4 ϕ ρ σ2+4 Σk,k ϕ ρ−ρ2 σ2+Σk,k ρ+2 Σk,k)
++ ...
+...+
+di
+k,0 (2 ϕ2+1) (4 Σk,k ϕ ρ−2 ρ2 σ2+2 ρ σ2+Σk,k ρ+2 Σk,k)
+2 (4 ϕ4 ρ σ2+8 Σk,k ϕ4 ρ+8 Σk,k ϕ4+12 ϕ3 ρ2 σ2+8 ϕ3 ρ σ2+8 Σk,k ϕ3 ρ+5 ϕ2 ρ2 σ2+...
+...+2 ϕ2 ρ σ2+6 Σk,k ϕ2 ρ+8 Σk,k ϕ2+2 ϕ ρ2 σ2+4 ϕ ρ σ2+4 Σk,k ϕ ρ−ρ2 σ2+Σk,k ρ+2 Σk,k)
+(B.25)
+∂qi,∗
+k
+∂Σk,k
+= −
+di
+k,0 ρ σ2 (2 ϕ2+1) (ϕ−1)2 (16 ϕ4 ρ+16 ϕ4+16 ϕ3 ρ2+32 ϕ3 ρ)
+2 (4 ϕ4 ρ σ2+8 Σk,k ϕ4 ρ+8 Σk,k ϕ4+12 ϕ3 ρ2 σ2+8 ϕ3 ρ σ2+8 Σk,k ϕ3 ρ+5 ϕ2 ρ2 σ2+...
+...+2 ϕ2 ρ σ2+6 Σk,k ϕ2 ρ+8 Σk,k ϕ2+2 ϕ ρ2 σ2+4 ϕ ρ σ2+4 Σk,k ϕ ρ−ρ2 σ2+Σk,k ρ+2 Σk,k)2
+− ...
+... −
+di
+k,0 ρ σ2 (2 ϕ2+1) (ϕ−1)2 (12 ϕ2 ρ2+8 ϕ2 ρ+16 ϕ2+16 ϕ ρ−ρ2+4)
+2 (4 ϕ4 ρ σ2+8 Σk,k ϕ4 ρ+8 Σk,k ϕ4+12 ϕ3 ρ2 σ2+8 ϕ3 ρ σ2+8 Σk,k ϕ3 ρ+5 ϕ2 ρ2 σ2+...
+...+2 ϕ2 ρ σ2+6 Σk,k ϕ2 ρ+8 Σk,k ϕ2+2 ϕ ρ2 σ2+4 ϕ ρ σ2+4 Σk,k ϕ ρ−ρ2 σ2+Σk,k ρ+2 Σk,k)2
+< 0 (B.26)
+where the inequality in Eq. (B.26) holds only if 0 < ϕ < 1 and 0 < ρ < 1, respectively. For the
+general case, where Ω is not a diagonal matrix, it must hold in addition that 0 < η < 1.
+Proof of Proposition 1. The proof follows directly from Corollaries 1 to 3.
+Proof of Proposition 2. The first condition follows from Corollary 1, which implies that qi,∗
+k is
+an increasing function of qi
+k,0. Hence, min(qi
+$X,0, qi
+$Y,0) > qi
+XY,0, ∀i or equivalently ∑k∈$ qi
+k,0 >
+max (∑k∈X qi
+k,0, ∑k∈Y qi
+k,0), ∀i is, holding all else equal, a sufficient condition for Definition 1.
+The second condition is sufficient because of Corollary 2, which proves that qi,∗
+k is increas-
+ing in Ωk,k if sign (ϕ) = sign (η) = sign (ρ) and Σ, Ω, and B are all positive semi-definite.
+Hence, keeping all the off-diagonal covariance terms constant, min(Ω$X,$X, Ω$Y,$Y) > ΩXY,XY
+56
+
+===== PAGE 17 =====
+
+or equivalently ∑k∈$ Ωk,k > max (∑k∈X Ωk,k, ∑k∈Y Ωk,k) implies more trading volume in dollar
+currency pairs than non-dollar currency pairs (i.e., Definition 1). The third condition follows
+directly from Corollary 3 that can be interpreted as follows: as long as the increase in Λk,k
+is larger than the overall positive effect of Σk,k on qi,∗
+0,k, then the latter will be a decreasing
+function of Σk,k. Mathematically, this condition is satisfied only if the inference coefficient
+B is held constant such that the increase in price impact dominates the net effect of Σk,k on
+equilibrium trading volume (see Proof of Corollary 3).
+Appendix C. Additional Information on Data
+The goal of this section is to describe how CLS categorises market participants into price
+takers and market-makers and how this impacts the relative coverage of the order flow data
+set. CLS uses two distinct methods of categorising market participants, namely, the identity-
+based and behaviour-based approaches. For the first, CLS classifies market participants into
+corporates, funds, non-bank financial firms, and banks based on static identity information.
+The corporate category comprises any non-financial organisation. The fund category includes
+pension funds, hedge funds, and sovereign wealth funds, whereas non-bank financial are
+insurance companies, brokers, and clearing houses. The fund category may also include
+principal trading firms (PTFs) such as high-frequency trading firms and electronic non-bank
+market-makers (e.g., XTX Markets or Jump Trading). The majority of these PTFs relies on
+prime brokers to gain access to the FX market (Schrimpf and Sushko, 2019). Hence, if PTFs
+settle a trade via a prime broker who is a CLS member, then this trade would appear as a
+bank-to-bank transaction. However, inter-bank trades are excluded from the flow (but not
+from the volume) data set unless one of the counterparties is classified as a non-dealer bank.
+The above labels refer to the identities of the entities trading and not to the behaviour
+they exhibit. This is because CLS is a payment-versus-payment platform that solely observes
+the executed trade price used for settlement and does not see the market behaviour of bids
+and offers that precede the execution or any other such details. Hence, assuming that all
+corporates, funds and non-bank financial firms act as price takers leads to three possible
+transactor parings between price takers and market-makers: corporate-to-bank, fund-to-bank,
+and non-bank-to-bank.22
+The above pairings account for about 10–15% of the total activity in the FX market.23 Most
+activity in this market is bank-to-bank. Therefore, CLS carries out a second analysis focusing
+on bank-to-bank transactions for determining which banks are market-makers and which
+banks are price takers. CLS maps all FX activity as a network. Market participants are nodes,
+while FX transactions are edges. Nodes that are mutually tightly interlinked and maintain
+a consistently high coreness over time are considered market-makers, while all other nodes
+are considered price takers. Thus, the total buy-side activity considers the sum of the three
+22In this context, the term “price taker” is interchangeably used with the term “buy side,” and the term
+“market-maker” is used interchangeably with the term “sell side.”
+23See “Triennial central bank survey — global foreign exchange market turnover in 2022,” Bank for Interna-
+tional Settlements, September 2022, Hasbrouck and Levich (2017) and Ranaldo and Somogyi (2021).
+57
+
+===== PAGE 18 =====
+
+categories above plus all trades between price taker banks and market-maker banks, reaching
+a total of “all buy-side” versus “all sell-side” activity. 24 Hence, by construction, the sell side
+includes only banks that were identified to be market-makers. To avoid double counting,
+transactions between two market-makers or two price takers were excluded.
+Empirically, transactions between market-makers make up most of the activity in the FX
+market. Typically, a price taker does an initial trade with one market-maker, and that market-
+maker hedges the resulting risk by trading with other market-makers. A single initial trade
+can lead to a chain of downstream transactions where various market-makers pass the “hot
+potato” around or slice up the risk in various ways. Consequently, the activity among market-
+makers will be higher than that between price takers and market-makers. There are three
+further reasons why transactions between non-bank price takers and market-maker banks
+represent a relatively low share of total FX turnover settled by CLS. First, many hedge funds
+and proprietary trading firms settle through prime brokers. CLS does not have look-through
+on these trades, and hence, they appear as bank-to-bank transactions. If those prime brokers
+are also market-makers, the transactions would be excluded from the order flow data set.
+Second, CLS has relatively low client penetration among corporates and real money funds
+that trade FX infrequently and do not need a dedicated third-party settlement service. Third,
+market-maker banks may engage in price taking activity but price taker banks are unlikely to
+ever engage in market-making activity.
+24This relation only holds approximately since some of the customer trades are not included in the “buy-side”
+and “sell-side” classification (and hence do not show up in “all buy-side” versus “all sell-side” activity) because,
+for instance, the trades occur against a small regional bank that is not classified as “sell side” based on the network
+analysis. However, following my conversations with CLS Group such unclassified trades are extremely rare.
+58
+
+===== PAGE 19 =====
+
+Appendix D. Additional Empirical Results
+Figure D.1: Dollar Dominance in FX Trading (BIS)
+FXvolume GDP Realtrade Stockmarket Debtmarket Bankloans SWIFTpayments0
+20
+40
+60
+80
+100
+USDsharein%
+FXvolume GDP Realtrade Stockmarket Debtmarket Bankloans SWIFTpayments0
+20
+40
+60
+80
+100
+EURsharein%
+Note: This figure compares the time series average of the share (in %) of the US dollar (USD) and euro (EUR) in FX
+trading to the share of the US and EU in global economic activity. The USD and EUR FX volume shares add up
+to more than 100% because there are two currencies involved in every FX transaction. The underlying data come
+from six sources: First, spot FX trade data stem from the BIS triennial central bank survey in 2019. Second, yearly
+GDP data by country and currency come from the World Bank and OECD national accounts data. Third, monthly
+imports and exports by country and currency stem from the World Trade Organisation. Trade is defined as the
+sum of imports and exports between two countries. Fourth, the share of the US and EU in global stock markets
+is from Bloomberg and is based on the market value of all available equity securities. Fifth, the estimates of USD
+and EUR denominated debt securities and bank loans are from the BIS international debt securities statistics and
+comprise debt instruments that are issued outside of the local market of the borrower’s country (e.g., Eurobonds).
+Lastly, international payments data is directly from SWIFT. The sample covers the full year of 2019.
+59
+
+===== PAGE 20 =====
+
+Appendix D.1. Motivating Evidence (see Section 3)
+To come up with a pooled estimate of vehicle currency trading volume in dollar currency
+pairs I conduct an event study by running the following regression:
+volume k,t = µt + αk +
+M+
+∑
+m=M−
+βmDk,m + γ′wk,t + ϵk,t, (D.1)
+where the dependent variable is inter-dealer trading volume in dollar currency pair k on day
+t. µt are time series fixed effects and αk denotes currency pair fixed effects that control for
+any unobserved variation that is either constant across currency pairs or over time. The main
+regressor is Dk,m, which is an indicator variable equal to 1 m days before and after there is a
+non-overlapping holiday on dayt and is 0 otherwise. wk,t contains currency pair specific mea-
+sures of fundamental trading demands. Specifically, I use data on i) US imports and exports
+to proxy for real trading motives, ii) foreign purchases and sales of long-term US securities
+to control for cross-border financial flows, iii) dollar denominated debt instruments that are
+issued outside of the US to account for foreign demand of dollar debt (Eren and Malamud,
+2022), iv) interest rate differentials to capture speculatory trading 25 motives, v) covered inter-
+est rate parity deviations to gauge for dealer funding costs (Andersen et al., 2019; Rime et al.,
+2022) and foreign safe asset demand (Jiang et al., 2021), and vi) relative bid-ask spreads to
+account for variation in transaction costs. Note that all controls are given in absolute values
+because trading volume by definition is unsigned. The key parameters of interest (the β’s)
+are identified from how trading volume in dollar currency pairs changes before and after a
+non-overlapping holiday. Note that the number of non-overlapping holidays is different for
+each triplet of currency pairs and thus Dk,m depends on which currency pair triplets the dollar
+pair k is involved in.
+Figure D.2 shows that trading volume in dollar pairs is on average 1.9 $bn lower on
+non-overlapping holidays than on all other days. Note that the average daily inter-dealer
+trading volume in dollar currency pairs is 22.8 $bn. Put differently, on average at least 8%
+of the volume in dollar currency pairs on days that are not non-overlapping holidays is due
+to vehicle currency trading activity. The significant drop in volume the day after the non-
+overlapping holiday is driven by time zone differences. To show this, I use hourly data in
+Figure D.3 to accurately identify each hour of a non-overlapping holiday and find that trading
+volume is on average 7% lower during these hours.
+25The link between interest rate differentials and FX volume stems from the fact that carry trade speculators are
+long (short) in high ( low) interest rate currencies (Lustig and Verdelhan, 2007). Hence, currency pairs exhibiting a
+larger interest rate differential in absolute terms are more likely to end up in carry trade portfolios.
+60
+
+===== PAGE 21 =====
+
+Table D.1: Summary Statistics — Non-Overlapping Holidays
+AUD CAD CHF DKK EUR GBP JPY NOK NZD SEK Total
+USDAUD 45 24 148 51 268
+USDCAD 44 26 148 218
+USDCHF 21 28 49
+USDDKK 28 28
+USDEUR 53 33 13 50 28 147 25 41 390
+USDGBP 50 33 38 46 143 310
+USDJPY 54 35 45 23 157
+USDNOK 21 21
+USDNZD 35 35
+USDSEK 22 22
+Note: This table summarises the number of non-overlapping holidays across the 15 triplets of currency pairs. For
+instance, the number 24 in the row labelled USDAUD indicates that there were 24 days over the sample that were
+holidays in the UK (column GBP) but not in the US or Australia. Note that weekends are not included in the
+CLS order flow and volume data as CLS does not operate during weekends. The sample covers the period from
+1 September 2012 to 30 September 2022.
+Figure D.2: Event Study: Evidence of Vehicle Currency Trading
+-3 -2 -1 0 1 2 3
+Days relative to the non-overlapping holiday
+-4
+-3
+-2
+-1
+0
+1
+2in $bn
+Note: This figure shows the βm estimates and the 95% confidence intervals of the event study regression of the
+form volume k,t = µt + αk + ∑M+
+m=M− βmDk,m + γ′wk,t + ϵk,t for 3 days before and after a non-overlapping holiday.
+Dk,m is an indicator variable equal to 1 m days before/after there is a non-overlapping holiday on day t. wk,t
+contains the relative bid-ask spread, interest rate differential, and cross-currency basis as control variables. Each
+βm estimates by how much trading volume in dollar currency pairs differs m days before/after a non-overlapping
+holiday relative to all other days. Standard errors are based on Driscoll and Kraay (1998) allowing for random
+clustering and serial correlation up to 8 lags following Newey and West’s (1994) plug-in procedure. The sample
+is daily and covers the period from 1 September 2012 to 30 September 2022.
+61
+
+===== PAGE 22 =====
+
+Figure D.3: Event Study: Evidence of Vehicle Currency Trading from Hourly Data
+-3 -2 -1 0 1 2 3
+Days relative to the non-overlapping holiday
+-3
+-2
+-1
+0
+1
+2in $bn
+Note: This figure shows the βm estimates and the 95% confidence intervals of the event study regression of the
+form volume k,t = µt + αk + ∑M+
+m=M− βmDk,m + ϵk,t for 3 days before and after a non-overlapping holiday, which are
+identified using hourly data to account for time zone differences across countries. Dk,m is an indicator variable
+equal to 1 during each hour of the m days before/after there is a non-overlapping holiday on day t. Each
+βm estimates by how much trading volume in dollar currency pairs differs during every hour of the m days
+before/after a non-overlapping holiday relative to all other days. Standard errors are based on Driscoll and Kraay
+(1998) allowing for random clustering and serial correlation up to 8 lags following Newey and West’s (1994)
+plug-in procedure. The sample is hourly and covers the period from 1 September 2012 to 30 September 2022.
+62
+
+===== PAGE 23 =====
+
+Figure D.4: Rolling Window Event Study: Evidence of Vehicle Currency Trading
+2018 2019 2020 2021 2022-5
+-4
+-3
+-2
+-1
+0
+1in $bn
+Note: This figure shows the rolling window βm estimates and the 95% confidence intervals of the event study
+regression of the form volume k,t = µt + αk + βmDk,t + γ′wk,t + ϵk,t. The length of the rolling window is
+5-years. Dk,t is an indicator variable equal to 1 on non-overlapping holidays and 0 otherwise. wk,t contains
+the relative bid-ask spread, interest rate differential, and cross-currency basis as control variables. Standard
+errors are based on Driscoll and Kraay (1998) allowing for random clustering and serial correlation up
+to 4 lags following Newey and West (1994) plug-in procedure. The dates on the horizontal axis denote the
+end of the rolling window. The sample is daily and covers the period from 1 September 2012 to 30 September 2022.
+63
+
+===== PAGE 24 =====
+
+Figure D.5: Common Trend Assumption: Non-overlapping Holidays
+13
+14
+15
+16
+17
+18
+19
+20
+21
+225
+10
+15
+20
+25
+30
+35
+40
+45
+50
+55
+USDAUD
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+5
+10
+15
+20
+25
+30
+35
+40
+45
+50
+USDCAD
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+5
+10
+15
+20
+25
+USDCHF
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+0.5
+1
+1.5
+2
+2.5
+3
+USDDKK
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+50
+100
+150
+200
+250
+USDEUR
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+10
+20
+30
+40
+50
+60
+70
+USDGBP
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+20
+40
+60
+80
+100
+120
+140
+160
+180
+USDJPY
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+USDNOK
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+2
+4
+6
+8
+10
+12
+14
+16
+18
+USDNZD
+13
+14
+15
+16
+17
+18
+19
+20
+21
+220
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+4.5
+5
+USDSEK
+Treated(non-overlappingholiday=1) Control(non-overlappingholiday=0)
+Note: This figure provides evidence in favour of the internal validity of the parallel trend assumption. Every
+observation (black dots and grey circles) corresponds to the daily realisation of inter-dealer trading volume (mea-
+sured in $bn). The treated period comprises non-overlapping holidays, whereas the control period consists of all
+other days. For each currency pair I remove outliers that are defined as observations at the top and bottom 0.5
+percentiles. The bold black and grey lines are linear regression lines of the treated and control period, respectively.
+The sample is daily and covers the period from 1 September 2012 to 30 September 2022.
+64
+
+===== PAGE 25 =====
+
+Table D.2: Direct vs Indirect Trading in Non-Dollar Currency Pairs
+Direct Indirect Direct Indirect
+in $bn Mean in $bn Minimum in $bn in % Mean in % Minimum in %
+AUDJPY 2.60 3.98 2.39 39.58 60.42 47.83
+AUDNZD 1.12 1.54 0.85 42.04 57.96 43.21
+CADJPY 0.35 4.70 1.10 7.01 92.99 75.60
+EURAUD 1.57 7.67 0.00 17.00 83.00 0.21
+EURCAD 0.92 5.63 0.47 14.11 85.89 33.65
+EURCHF 4.85 2.34 0.00 67.47 32.53 0.00
+EURDKK 1.03 6.16 0.09 14.32 85.68 8.16
+EURGBP 8.20 17.30 1.80 32.16 67.84 17.99
+EURJPY 9.04 6.41 2.13 58.50 41.50 19.08
+EURNOK 3.51 10.80 0.01 24.53 75.47 0.30
+EURSEK 3.81 8.54 0.04 30.88 69.12 1.02
+GBPAUD 0.55 0.48 0.00 53.55 46.45 0.00
+GBPCAD 0.30 3.83 3.37 7.34 92.66 91.72
+GBPCHF 0.34 2.52 2.16 11.78 88.22 86.53
+GBPJPY 2.88 8.35 3.17 25.66 74.34 52.41
+Note: This table reports the absolute and relative amount of trading volume across 15 non-dollar pairs that flow
+directly and indirectly via the US dollar. The measures of indirect trading are based on estimates of vehicle
+currency trading volume that come from the regression volume t = α + βDt + γ′wt + φ′Dt × wt + φ′Dt × wt + ϵt,
+where Dt is an indicator variable equal to 1 if day t is a non-overlapping holiday and is 0 otherwise. wt contains
+measures of fundamental trading demands that are described in the text surrounding Eq. (1). The columns headed
+“Mean” (“Minimum”) are based on the average (minimum) vehicle currency volumes (see Figure 3) across the
+two US dollar legs (e.g., USDGBP and USDJPY). The sample is daily and spans from 1 September 2012 to 30
+September 2022.
+Table D.3: Evidence of Vehicle Currency Trading in Dollar Currency Pairs
+Average Minimum Maximum
+non-VCT in $bn VCT in $bn VCT in % VCT in $bn VCT in % VCT in $bn VCT in %
+USDAUD 11.86 0.61 4.87 0.00 0.00 1.35 10.86
+USDCAD 16.91 1.15 6.39 0.16 0.89 2.92 16.17
+USDCHF 5.71 0.00 0.00 0.00 0.00 2.14 37.51
+USDDKK 0.17 0.04 20.17 0.04 20.17 0.04 20.17
+USDEUR 42.39 8.22 16.24 1.70 3.36 14.69 29.03
+USDGBP 16.55 1.82 9.89 0.64 3.49 2.37 12.88
+USDJPY 24.77 3.48 12.33 2.70 9.56 5.38 19.04
+USDNOK 1.24 0.00 0.00 0.00 0.00 0.00 0.00
+USDNZD 3.17 0.37 10.33 0.37 10.33 0.37 10.33
+USDSEK 1.37 0.11 7.71 0.11 7.71 0.11 7.71
+Mean 25.43 3.97 11.04 1.24 4.02 7.04 20.77
+Note: This table reports the breakdown of customer trading volume due to fundamental (non-VCT) versus vehicle
+currency trading (VCT) activity across 10 dollar currency pairs. These numbers are based on estimates of β from
+the regression customer volume t = α + βDt + γ′wt + φ′Dt × wt + ϵt, where Dt is an indicator variable equal to 1
+if day t is a non-overlapping holiday and is 0 otherwise. wt contains measures of fundamental trading demands
+that are described in paper. Note that if ˆβ is positive, that is, there is no evidence of VCT, I report zero in columns
+3–8. The last row headed “Mean” shows the volume weighted average non-VCT and VCT trading activity across
+dollar currency pairs. The sample is daily and covers the period from 1 September 2012 to 30 September 2022.
+65
+
+===== PAGE 26 =====
+
+Figure D.6: Evidence of Vehicle Currency Trading in Dollar Currency Pairs
+USD-AUD-JPY
+USDAUD USDJPY
+-30
+-20
+-10
+0
+USD-AUD-NZD
+USDAUD USDNZD
+-30
+-20
+-10
+0
+USD-CAD-JPY
+USDCAD USDJPY
+-30
+-20
+-10
+0
+USD-EUR-AUD
+USDEUR USDAUD
+-30
+-20
+-10
+0
+USD-EUR-CAD
+USDEUR USDCAD
+-30
+-20
+-10
+0
+USD-EUR-CHF
+USDEUR USDCHF
+-30
+-20
+-10
+0
+USD-EUR-DKK
+USDEUR USDDKK
+-30
+-20
+-10
+0
+USD-EUR-GBP
+USDEUR USDGBP
+-30
+-20
+-10
+0
+USD-EUR-JPY
+USDEUR USDJPY
+-30
+-20
+-10
+0
+USD-EUR-NOK
+USDEUR USDNOK
+-30
+-20
+-10
+0
+USD-EUR-SEK
+USDEUR USDSEK
+-30
+-20
+-10
+0
+USD-GBP-AUD
+USDGBP USDAUD
+-30
+-20
+-10
+0
+USD-GBP-CAD
+USDGBP USDCAD
+-30
+-20
+-10
+0
+USD-GBP-CHF
+USDGBP USDCHF
+-30
+-20
+-10
+0
+USD-GBP-JPY
+USDGBP USDJPY
+-30
+-20
+-10
+0
+Note: This figure shows individual estimates for β in $bn separately for 15 triplets of currency pairs from the
+regression volume t = α + βDt + γ ft + ϵt, where Dt is a dummy equal to 1 if day t is a non-overlapping holiday in
+the given currency triplet. ft contains a measure of fundamental trading demand based on customer order flows
+from CLS. In particular, ft is the absolute value of the difference between buy and sell order volume associated
+with “funds” following the CLS classification. The grey ( black) bars correspond to significant ( insignificant) coeffi-
+cients at the 95% level. The inference is based on robust standard errors allowing for heteroskedasticity and serial
+correlation up to 8 lags (Newey and West, 1994). The sample is daily and covers the period from 1 September
+2012 to 30 September 2022.
+66
+
+===== PAGE 27 =====
+
+Table D.4: Details of Vehicle Currency Trading in Dollar Currency Pairs
+Currency Pairα Dt real trade financial flows credit issuance abs(cip-basis) abs(interest rate) bid-ask spread real trade×Dt financial flows×Dt credit issuance×Dt abs(cip-basis)×Dt abs(interest rate)×Dt bid-ask spread×Dt ¯R2in % # Obs.
+(1) USDAUD **6.50 ***−2.39 ** −1.47 **0.08 ***0.18 *** −16.52 ***14.68 ***3.25 −1.28 0.01 −0.05 ***18.26 *** −13.16 0.24 46.47 2587[2.13] [ 3.75] [ 2.33] [ 2.36] [ 4.18] [ 10.63] [ 10.07] [ 4.83] [ 0.96] [ 0.10] [ 0.55] [ 8.82] [ 6.71] [ 0.24]USDJPY ***21.29 ***−5.56 0.37 *** −0.15 ** −0.12 * −4.60 2.26 ***20.52 * −0.83 0.03 *0.14 −1.39 2.74 −2.68 57.33 2587[2.63] [ 3.63] [ 0.81] [ 5.15] [ 2.07] [ 1.87] [ 0.94] [ 15.46] [ 1.73] [ 0.54] [ 1.77] [ 0.34] [ 0.74] [ 1.36](2) USDAUD **6.47 **−2.23 ** −1.52 *0.06 ***0.20 *** −14.84 ***13.31 ***3.32 −0.85 0.06 −0.10 ***17.37 *** −11.93 −0.58 45.08 2587[2.09] [ 2.33] [ 2.40] [ 1.91] [ 4.55] [ 8.70] [ 8.95] [ 4.79] [ 0.79] [ 0.98] [ 1.16] [ 7.55] [ 5.98] [ 0.60]USDNZD **2.03 ***−0.85 **2.85 ** −0.17 *** −0.38 **0.62 ***0.66 ***0.47 ** −3.60 −0.08 0.34 0.49 −0.42 0.19 20.57 2587[2.16] [ 3.65] [ 2.52] [ 2.09] [ 2.93] [ 2.41] [ 4.64] [ 3.95] [ 2.08] [ 0.32] [ 0.81] [ 0.62] [ 0.89] [ 0.68](3) USDCAD 1.88 **−1.10 ***0.11 ***0.02 0.00 *** −7.79 **4.48 ***5.61 0.05 *** −0.03 0.01 3.51 −1.54 ** −3.01 32.73 2586[1.11] [ 2.44] [ 3.18] [ 4.39] [ 0.06] [ 3.69] [ 2.50] [ 11.44] [ 0.57] [ 2.75] [ 0.13] [ 1.09] [ 0.55] [ 2.34]USDJPY ***21.45 ***−8.30 0.37 *** −0.16 ** −0.11 * −4.64 2.32 ***20.51 * −0.84 0.03 *0.14 −1.36 2.69 −2.67 57.38 2587[2.66] [ 5.11] [ 0.81] [ 5.19] [ 1.99] [ 1.88] [ 0.97] [ 15.45] [ 1.74] [ 0.56] [ 1.71] [ 0.33] [ 0.73] [ 1.35](4) USDEUR ***55.43 ***−15.33 ***−0.80 *0.00 0.26 7.10 * −9.67 ***28.11 −0.04 −0.01 −0.03 ** −21.16 4.20 −1.81 40.12 2587[4.46] [ 6.02] [ 3.33] [ 1.70] [ 1.29] [ 1.29] [ 1.75] [ 12.21] [ 0.10] [ 0.66] [ 0.06] [ 2.13] [ 0.33] [ 0.34]USDAUD **6.25 0.00 ** −1.41 **0.07 ***0.18 *** −15.95 ***14.24 ***3.26 −0.83 −0.01 −0.08 ***17.84 *** −12.79 0.18 45.75 2587[2.04] [ 0.00] [ 2.22] [ 2.18] [ 4.26] [ 10.06] [ 9.66] [ 4.79] [ 0.61] [ 0.17] [ 0.90] [ 8.34] [ 6.43] [ 0.17](5) USDEUR ***55.38 ***−10.78 ***−0.81 *0.00 0.24 6.76 * −9.15 ***28.15 −0.02 −0.01 0.26 * −17.03 −6.24 −3.46 39.76 2587[4.46] [ 3.23] [ 3.35] [ 1.71] [ 1.23] [ 1.21] [ 1.65] [ 12.24] [ 0.04] [ 0.65] [ 0.58] [ 1.69] [ 0.48] [ 0.67]USDCAD 1.83 −0.47 ***0.11 ***0.02 0.00 *** −8.00 **4.50 ***5.61 0.04 *** −0.03 0.03 3.67 −1.99 ** −3.19 32.55 2586[1.09] [ 0.75] [ 3.15] [ 4.51] [ 0.10] [ 3.78] [ 2.53] [ 11.41] [ 0.49] [ 3.23] [ 0.40] [ 1.12] [ 0.65] [ 2.32](6) USDEUR ***56.23−5.13 ***−0.85 *0.01 0.23 5.02 −7.75 ***28.33 −0.54 0.00 ***0.88 −6.59 −10.77 0.65 39.38 2587[4.50] [ 1.14] [ 3.53] [ 1.89] [ 1.17] [ 0.94] [ 1.44] [ 12.39] [ 0.96] [ 0.37] [ 2.61] [ 0.30] [ 0.55] [ 0.09]USDCHF ***5.14 0.45 **−0.15 0.00 0.03 0.10 −0.25 ***1.54 −0.52 −0.04 0.14 −1.33 ** −2.22 ***1.51 20.20 2586[5.09] [ 0.67] [ 2.41] [ 0.64] [ 1.31] [ 0.23] [ 0.61] [ 5.97] [ 1.51] [ 1.18] [ 0.90] [ 1.20] [ 2.06] [ 4.02](7) USDEUR ***56.25 **−12.23 ***−0.84 *0.01 0.24 7.55 −9.00 ***28.18 −0.10 0.00 0.33 ** −21.90 −0.91 −1.98 39.77 2587[4.53] [ 2.10] [ 3.47] [ 1.83] [ 1.23] [ 1.35] [ 1.61] [ 12.28] [ 0.18] [ 0.50] [ 0.61] [ 2.07] [ 0.07] [ 0.31]USDDKK ***0.56 *−0.09 ***−0.29 ***0.03 −0.01 ***0.19 ** −0.08 ***0.03 ***0.50 *** −0.04 0.00 *** −0.28 0.08 *** −0.17 4.73 2586[12.04] [ 1.71] [ 4.20] [ 3.65] [ 1.55] [ 3.85] [ 2.03] [ 3.13] [ 3.64] [ 4.35] [ 0.28] [ 4.34] [ 1.47] [ 6.14](8) USDEUR ***51.07 ***−32.80 ***−0.66 0.00 0.28 **12.90 ** −14.43 ***27.78 0.15 −0.01 −0.02 −14.49 −4.15 −3.40 40.57 2587[4.11] [ 7.67] [ 2.69] [ 1.19] [ 1.41] [ 2.14] [ 2.43] [ 12.08] [ 0.37] [ 1.09] [ 0.05] [ 1.37] [ 0.33] [ 0.66]USDGBP ***27.29−1.80 0.15 *** −0.01 −0.04 −2.52 −0.02 ***5.45 −0.95 **0.01 −0.03 6.37 * −6.67 ** −4.93 25.39 2587[7.16] [ 1.52] [ 0.38] [ 5.44] [ 1.60] [ 1.10] [ 0.01] [ 10.02] [ 1.16] [ 2.16] [ 0.55] [ 1.47] [ 1.65] [ 2.46](9) USDEUR ***57.14 ***−10.69 ***−0.85 *0.01 0.25 6.34 −8.68 ***28.14 0.14 −0.01 0.00 ** −20.98 −3.33 −3.27 40.23 2587[4.64] [ 5.60] [ 3.56] [ 1.89] [ 1.25] [ 1.17] [ 1.60] [ 12.33] [ 0.33] [ 1.07] [ 0.00] [ 2.08] [ 0.24] [ 0.62]USDJPY ***21.11−2.13 0.38 *** −0.15 ** −0.11 * −4.53 2.20 ***20.53 * −0.82 0.03 *0.15 −1.20 2.53 −2.58 57.22 2587[2.60] [ 1.10] [ 0.82] [ 5.16] [ 2.04] [ 1.83] [ 0.91] [ 15.45] [ 1.72] [ 0.49] [ 1.86] [ 0.30] [ 0.70] [ 1.32](10) USDEUR ***56.83 ***−21.60 ***−0.86 **0.01 0.23 5.89 −7.76 ***28.29 −0.54 0.00 ***0.88 −7.67 −10.53 0.64 39.80 2587[4.55] [ 3.53] [ 3.58] [ 1.96] [ 1.14] [ 1.09] [ 1.43] [ 12.36] [ 0.97] [ 0.37] [ 2.62] [ 0.34] [ 0.54] [ 0.09]USDNOK ***1.73−0.01 ***−0.49 ***0.01 * −0.01 0.07 −0.02 0.00 * −0.52 **0.01 −0.01 0.08 0.06 *** −0.08 6.45 2587[16.18] [ 0.14] [ 4.50] [ 6.01] [ 1.77] [ 0.60] [ 0.16] [ 0.49] [ 1.95] [ 2.04] [ 0.86] [ 0.42] [ 0.44] [ 5.53](11) USDEUR ***57.29 ***−17.03 ***−0.89 **0.01 0.25 5.62 −7.51 ***28.38 *1.27 * −0.02 *** −1.63 *35.91 −17.63 −4.09 39.86 2587[4.62] [ 2.72] [ 3.69] [ 2.07] [ 1.24] [ 1.04] [ 1.39] [ 12.62] [ 1.81] [ 1.95] [ 2.92] [ 1.68] [ 0.86] [ 0.53]USDSEK ***1.25−0.04 ***0.35 0.01 *** −0.02 0.07 −0.02 **0.03 0.42 −0.05 0.00 −0.33 0.06 * −0.08 7.12 2587[8.28] [ 0.24] [ 4.81] [ 0.62] [ 4.49] [ 0.68] [ 0.19] [ 2.00] [ 0.76] [ 0.68] [ 0.02] [ 1.47] [ 0.24] [ 1.70](12) USDGBP ***26.97 ***−3.20 0.18 *** −0.01 −0.04 −2.38 −0.18 ***5.46 −0.97 *0.00 −0.04 2.18 −1.65 −3.87 25.14 2587[7.01] [ 3.00] [ 0.46] [ 5.51] [ 1.50] [ 1.02] [ 0.08] [ 10.06] [ 1.18] [ 1.90] [ 0.84] [ 0.60] [ 0.47] [ 1.52]USDAUD **6.30 2.25 ** −1.50 **0.08 ***0.18 *** −16.89 ***14.98 ***3.24 −0.71 0.01 −0.06 ***18.43 *** −13.44 0.04 46.03 2587[2.06] [ 1.26] [ 2.39] [ 2.42] [ 4.07] [ 10.38] [ 9.82] [ 4.80] [ 0.57] [ 0.14] [ 0.64] [ 8.89] [ 6.64] [ 0.04](13) USDGBP ***27.20 ***−3.37 0.17 *** −0.01 −0.04 −2.15 −0.27 ***5.45 −1.24 **0.01 −0.01 2.22 −3.05 * −4.94 25.39 2587[7.15] [ 2.99] [ 0.45] [ 5.49] [ 1.61] [ 0.92] [ 0.12] [ 10.03] [ 1.33] [ 2.08] [ 0.25] [ 0.58] [ 0.91] [ 1.90]USDCAD 1.54 ***−4.30 ***0.12 ***0.02 0.00 *** −7.25 **4.03 ***5.62 −0.01 −0.01 −0.06 3.56 −1.30 ** −3.06 32.46 2586[0.91] [ 3.80] [ 3.42] [ 4.05] [ 0.10] [ 3.40] [ 2.21] [ 11.50] [ 0.12] [ 0.75] [ 0.90] [ 1.15] [ 0.50] [ 2.41](14) USDGBP ***27.24−2.16 0.15 *** −0.01 −0.04 −2.54 0.00 ***5.46 −0.95 **0.01 −0.03 6.40 * −6.68 ** −4.93 25.40 2587[7.15] [ 1.60] [ 0.39] [ 5.46] [ 1.59] [ 1.11] [ 0.00] [ 10.03] [ 1.16] [ 2.17] [ 0.56] [ 1.48] [ 1.65] [ 2.46]USDCHF ***5.35 ***−2.88 ** −0.14 0.00 0.04 0.36 −0.46 ***1.50 −0.16 ** −0.04 −0.03 −0.36 −0.69 0.45 21.30 2586[5.29] [ 7.58] [ 2.17] [ 0.90] [ 1.38] [ 0.77] [ 1.09] [ 5.85] [ 1.00] [ 2.42] [ 0.31] [ 0.54] [ 1.16] [ 1.37](15) USDGBP ***27.49 ***−3.17 0.14 *** −0.01 * −0.04 −2.17 −0.21 ***5.45 −1.28 0.01 −0.03 3.10 −3.39 −3.81 25.56 2587[7.27] [ 4.26] [ 0.37] [ 5.48] [ 1.66] [ 0.93] [ 0.10] [ 10.12] [ 1.15] [ 1.25] [ 0.45] [ 0.75] [ 0.97] [ 1.53]USDJPY ***20.63 ***−13.52 0.43 *** −0.16 * −0.11 −3.61 1.37 ***20.46 * −0.92 0.03 0.13 −4.99 6.10 −2.22 57.40 2587[2.59] [ 6.41] [ 0.96] [ 5.26] [ 1.91] [ 1.45] [ 0.57] [ 15.45] [ 1.78] [ 0.55] [ 1.62] [ 1.01] [ 1.38] [ 1.14]
+Note: This table reports regression results for estimating the following regression volume t = α + βDt + γ′wt + φ′Dt × wt + ϵt for 15 currency pair triplets that each consist
+of two dollar currency pairs (see column labelled Currency Pair). Dt is an indicator variable equal to 1 if day t is a non-overlapping holiday and is 0 otherwise. wt contains
+measures of fundamental trading demands that are described in more detail in the text surrounding Eq. (1). Monthly real trade, financial flows, and credit issuance are in $bn,
+whereas daily abs(cip-basis), abs(interest rate), and bid-ask spread are measured in basis points. The key coefficient of interest (i.e., the β) is tabulated in the column labelled Dt and
+is in units of $bn. The sample is daily and spans from 1 September 2012 to 30 September 2022. The test statistics based on robust standard errors allowing for heteroskedasticity
+and serial correlation up to 8 lags (Newey and West, 1994) are reported in brackets. Asterisks *, **, and *** denote significance at the 90%, 95%, and 99% confidence levels.
+67
+
+===== PAGE 28 =====
+
+Appendix D.2. Evidence of Dollar Dominance in FX Trading (see Section 5.2)
+Table D.5: Euro Dominance Conditions: Hypothesis Tests
+ED C1 C2 C3 ED −C1 volume€X,t>flow€X,t volume€Y,t>flow€Y,t
+EUR-USD-DKK ***0.81 ***1.37 ***2.38 0.01 *** −0.56 ***2.61 ***1.01
+[16.43] [ 16.86] [ 14.80] [ 1.06] [ 5.65] [ 86.43] [ 17.65]
+EUR-USD-NOK ***0.89 *0.06 ** −0.18 *** −0.28 ***0.83 ***2.61 ***2.07
+[27.31] [ 1.74] [ 2.04] [ 11.68] [ 22.80] [ 86.43] [ 76.98]
+EUR-USD-SEK ***0.83 **0.06 −0.10 *** −0.37 ***0.77 ***2.61 ***2.00
+[18.34] [ 1.98] [ 1.32] [ 21.32] [ 16.65] [ 86.43] [ 89.96]
+Avg. #Obs. per triplet 2586 2586 2586 2587 2586 2587 2587
+Note: This table summarises the empirical counterparts of the three euro dominance conditions that are derived
+analogously to Proposition 2 for 3 triplets of currency pairs. A triplet is defined as one non-euro currency pair
+(e.g., USDSEK as shown at the beginning of each row) plus the two EUR legs (e.g., EURUSD and EURSEK). The
+first bar named ED refers to my empirical measure of euro dominance. The next three columns labelled C1, C2,
+and C3 each correspond to one of the three conditions measured in log units. The column labelled ED−C1 reports
+the difference between the columns labelled ED and C1. The last two columns test if inter-dealer trading volume
+exceeds customer flows in the two EUR legs, that is, if the log of the ratio of inter-dealer volume to customer
+flows is positive. The sample is daily and spans from 1 September 2012 to 30 September 2022. The test statistics
+based on Hodrick (1992) robust standard errors allowing for heteroskedasticity and serial correlation are reported
+in brackets. Asterisks *, **, and *** denote significance at the 90%, 95%, and 99% confidence levels.
+68
+
+===== PAGE 29 =====
+
+Figure D.7: Intraday Variation of Dollar Dominance
+USD-AUD-JPY
+1 6 11 16 210
+2
+4
+6
+8
+USD-AUD-NZD
+1 6 11 16 210
+2
+4
+6
+8
+10
+12
+USD-CAD-JPY
+1 6 11 16 210
+5
+10
+15
+USD-EUR-AUD
+1 6 11 16 210
+1
+2
+3
+4
+5
+6
+USD-EUR-CAD
+1 6 11 16 210
+2
+4
+6
+8
+10
+12
+USD-EUR-CHF
+1 6 11 16 210
+0.5
+1
+1.5
+2
+2.5
+3
+USD-EUR-DKK
+1 6 11 16 21-5
+0
+5
+10
+15
+20
+USD-EUR-GBP
+1 6 11 16 210
+1
+2
+3
+4
+5
+USD-EUR-JPY
+1 6 11 16 210
+0.5
+1
+1.5
+2
+2.5
+USD-EUR-NOK
+1 6 11 16 21
+0
+2
+4
+6
+8
+10
+USD-EUR-SEK
+1 6 11 16 21
+0
+2
+4
+6
+8
+10
+USD-GBP-AUD
+1 6 11 16 210
+2
+4
+6
+8
+10
+12
+USD-GBP-CAD
+1 6 11 16 210
+5
+10
+15
+20
+USD-GBP-CHF
+1 6 11 16 210
+5
+10
+15
+20
+USD-GBP-JPY
+1 6 11 16 210
+2
+4
+6
+8
+Note: This figure shows the intraday variation of log dollar dominance (i.e., log (doldom )j,t) for 15 triplets of
+currency pairs. Dollar dominance is defined as the ratio of the minimum inter-dealer trading volume in dollar
+currency pairs (e.g., USDGBP and USDJPY) relative to the direct trading volume in non-dollar pairs (e.g., GBPJPY).
+Each bar corresponds to an average over the respective hour across all trading days. The black bars highlight times
+when both non-dollar countries’ stock markets are open. The horizontal axis denotes the closing time, for instance,
+16 refers to dollar dominance computed based on volume from 3-4 pm (London time, GMT). The sample is hourly
+and covers the period from 1 September 2012 to 30 September 2022.
+69
+
+===== PAGE 30 =====
+
+Figure D.8: Time-variation of Dollar Dominance in Volume
+131415161718192021220
+5
+10
+15
+USD-AUD-JPY
+USD
+AUD
+JPY
+131415161718192021220
+2
+4
+6
+8
+10
+USD-AUD-NZD
+USD
+AUD
+NZD
+131415161718192021220
+50
+100
+150
+200
+250
+USD-CAD-JPY
+USD
+CAD
+JPY
+131415161718192021220
+5
+10
+15
+20
+25
+30
+USD-EUR-AUD
+USD
+EUR
+AUD
+131415161718192021220
+10
+20
+30
+40
+50
+USD-EUR-CAD
+USD
+EUR
+CAD
+131415161718192021220
+0.5
+1
+1.5
+2
+2.5
+3
+USD-EUR-CHF
+USD
+EUR
+CHF
+131415161718192021220
+2
+4
+6
+8
+USD-EUR-DKK
+USD
+EUR
+DKK
+131415161718192021220
+1
+2
+3
+4
+5
+USD-EUR-GBP
+USD
+EUR
+GBP
+131415161718192021220
+5
+10
+15
+USD-EUR-JPY
+USD
+EUR
+JPY
+131415161718192021220
+1
+2
+3
+4
+5
+USD-EUR-NOK
+USD
+EUR
+NOK
+131415161718192021220
+1
+2
+3
+4
+5
+USD-EUR-SEK
+USD
+EUR
+SEK
+131415161718192021220
+20
+40
+60
+80
+USD-GBP-AUD
+USD
+GBP
+AUD
+131415161718192021220
+50
+100
+150
+200
+USD-GBP-CAD
+USD
+GBP
+CAD
+131415161718192021220
+10
+20
+30
+40
+50
+60
+USD-GBP-CHF
+USD
+GBP
+CHF
+131415161718192021220
+5
+10
+15
+20
+USD-GBP-JPY
+USD
+GBP
+JPY
+Note: This figure shows the time-variation of dominance scores based on trading volume for the US dollar (i.e.,
+doldom j,t, solid black lines) as well as two other non-dollar currencies (dashed black and solid grey lines) within
+each of the 15 triplets of currency pairs. Dollar dominance in trading volume is defined as the ratio of the
+minimum inter-dealer trading volume in dollar currency pairs (e.g., USDGBP and USDJPY) relative to the direct
+volume in non-dollar pairs (e.g., GBPJPY). The plotted time series correspond to a 22-day moving average of the
+raw data. The sample is daily and covers the period from 1 September 2012 to 30 September 2022.
+70
+
+===== PAGE 31 =====
+
+Figure D.9: Time-variation of Amihud Price Impact
+2013 2016 2019 20220
+5
+10
+15
+20
+AUDJPY
+2013 2016 2019 20220
+7.5
+15
+22.5
+30
+AUDNZD
+2013 2016 2019 20220
+25
+50
+75
+100
+CADJPY
+2013 2016 2019 20220
+5
+10
+15
+20
+EURAUD
+2013 2016 2019 20220
+7.5
+15
+22.5
+30
+EURCAD
+2013 2016 2019 20220
+1
+2
+3
+4
+EURCHF
+2013 2016 2019 20220
+1
+2
+3
+4
+EURDKK
+2013 2016 2019 20220
+1
+2
+3
+4
+EURGBP
+2013 2016 2019 20220
+1
+2
+3
+4
+EURJPY
+2013 2016 2019 20220
+5
+10
+15
+20
+EURNOK
+2013 2016 2019 20220
+2
+4
+6
+8
+EURSEK
+2013 2016 2019 20220
+15
+30
+45
+60
+GBPAUD
+2013 2016 2019 20220
+27.5
+55
+82.5
+110
+GBPCAD
+2013 2016 2019 20220
+20
+40
+60
+80
+GBPCHF
+2013 2016 2019 20220
+2.5
+5
+7.5
+10
+GBPJPY
+2013 2016 2019 20220
+0.75
+1.5
+2.25
+3
+USDAUD
+2013 2016 2019 20220
+0.5
+1
+1.5
+2
+USDCAD
+2013 2016 2019 20220
+0.75
+1.5
+2.25
+3
+USDCHF
+2013 2016 2019 20220
+17.5
+35
+52.5
+70
+USDDKK
+2013 2016 2019 20220
+0.5
+1
+1.5
+2
+USDEUR
+2013 2016 2019 20220
+0.5
+1
+1.5
+2
+USDGBP
+2013 2016 2019 20220
+0.5
+1
+1.5
+2
+USDJPY
+2013 2016 2019 20220
+10
+20
+30
+40
+USDNOK
+2013 2016 2019 20220
+1.75
+3.5
+5.25
+7
+USDNZD
+2013 2016 2019 20220
+5
+10
+15
+20
+USDSEK
+AmihudinBPSper$bn
+Note: This figure shows the time-variation of Amihud’s price impact measure for 25 currency pairs. Following
+Ranaldo and Santucci de Magistris (2022), I estimate Amihud in BPS per $10mn as the ratio between intraday
+realised power variation and aggregate daily trading volume. To remove outliers, I winsorize Amihud at the top
+and bottom 0.5 percent of its observations. The plotted time series correspond to a 22-day moving average of the
+raw data. The sample is daily and covers the period from 1 September 2012 to 30 September 2022.
+71
+
+===== PAGE 32 =====
+
+Figure D.10: Time-variation of Dollar Dominance in Price Impact
+131415161718192021220
+1
+2
+3
+4
+5
+6
+USD-AUD-JPY
+USD
+AUD
+JPY
+131415161718192021220
+2
+4
+6
+8
+USD-AUD-NZD
+USD
+AUD
+NZD
+131415161718192021220
+1
+2
+3
+4
+USD-CAD-JPY
+USD
+CAD
+JPY
+131415161718192021220
+2
+4
+6
+8
+USD-EUR-AUD
+USD
+EUR
+AUD
+131415161718192021220
+1
+2
+3
+4
+5
+6
+USD-EUR-CAD
+USD
+EUR
+CAD
+131415161718192021220
+5
+10
+15
+20
+25
+USD-EUR-CHF
+USD
+EUR
+CHF
+131415161718192021220
+10
+20
+30
+40
+50
+USD-EUR-DKK
+USD
+EUR
+DKK
+131415161718192021220
+1
+2
+3
+4
+5
+USD-EUR-GBP
+USD
+EUR
+GBP
+131415161718192021220
+0.5
+1
+1.5
+2
+2.5
+3
+USD-EUR-JPY
+USD
+EUR
+JPY
+131415161718192021220
+20
+40
+60
+80
+100
+120
+USD-EUR-NOK
+USD
+EUR
+NOK
+131415161718192021220
+20
+40
+60
+80
+USD-EUR-SEK
+USD
+EUR
+SEK
+131415161718192021220
+0.5
+1
+1.5
+2
+2.5
+3
+USD-GBP-AUD
+USD
+GBP
+AUD
+131415161718192021220
+0.5
+1
+1.5
+2
+2.5
+USD-GBP-CAD
+USD
+GBP
+CAD
+131415161718192021220
+2
+4
+6
+8
+10
+USD-GBP-CHF
+USD
+GBP
+CHF
+131415161718192021220
+0.5
+1
+1.5
+2
+2.5
+3
+USD-GBP-JPY
+USD
+GBP
+JPY
+Note: This figure shows the time-variation of dominance scores based on price impact for the US dollar (i.e.,
+amihud j,t, solid black lines) as well as two other non-dollar currencies (dashed black and solid grey lines) within
+each of the 15 triplets of currency pairs. Dollar dominance in price impact is defined as the ratio of the maximum
+Amihud’s price impact in dollar currency pairs (e.g., USDGBP and USDJPY) relative to the direct price impact in
+non-dollar pairs (e.g., GBPJPY). Hence, a higher reading of amihud j,t implies that dollar currency pairs exhibit
+a higher price impact than non-dollar pairs. Put differently, there is less dollar dominance due to less vehicle
+currency trading activity when amihud j,t is high. The plotted time series correspond to a 22-day moving average
+of the raw data. The sample is daily and covers the period from 1 September 2012 to 30 September 2022.
+72
+
+===== PAGE 33 =====
+
+Table D.6: Determinants of Dollar Dominance (De-seasonalised)
+doldomj,t amihudj,t
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+C1j,t ***0.20 ***0.20 ***0.34
+[4.57] [ 4.60] [ 6.33]
+C2j,t ***0.16 ***0.15 ***0.15 ** −0.16 ** −0.16
+[4.37] [ 4.38] [ 4.01] [ 2.07] [ 2.06]
+C3j,t *0.04 **0.03 **0.03 ***0.15 ***0.16
+[1.95] [ 2.00] [ 2.06] [ 2.87] [ 3.01]
+bid-ask spreadj,t ***−0.12 *** −0.12 *** −0.12 0.00
+[2.71] [ 2.69] [ 2.69] [ 0.37]
+cip-basisj,t 0.00 −0.04
+[0.34] [ 1.34]
+Lagged dep. *** −0.42 *** −0.42 *** −0.43 *** −0.42 *** −0.42 *** −0.41 *** −0.44 *** −0.45 *** −0.44
+[55.46] [ 63.48] [ 78.92] [ 55.03] [ 63.19] [ 52.47] [ 36.10] [ 54.50] [ 38.18]
+R2in % 23.01 21.36 19.03 23.28 21.77 23.53 22.81 22.11 24.55
+OverallR2in % 34.48 33.08 31.11 34.71 33.44 34.81 29.22 28.59 30.87
+Avg. #Time periods 2585 2585 2585 2585 2585 2509 2585 2585 2509
+#Currency triplets 15 15 15 15 15 15 15 15 15
+Currency triplet FE yes yes yes yes yes yes yes yes yes
+Time series FE yes yes yes yes yes yes yes yes yes
+Note: This table reports results from daily fixed effects panel regressions of the form DDj,t = µt + αj + β1C1j,t +
+β2C2j,t + β3C3j,t + γ′wj,t + ϵj,t, where µt and αj denote time series and currency pair triplet fixed effects. The
+dependent variable DDj,t is a measure of dollar dominance that is either based on trading volume (i.e., doldom j,t)
+or on Amihud’s price impact (i.e., amihud j,t). C1, C2, and C3 are the empirical counterparts of the three conditions
+in Proposition 2. To mitigate multicollinearity, I orthogonalise C1 against C2 and C3 in column 6, where I jointly
+include all three conditions as regressors. bid-ask spread j,t is the daily average relative bid-ask spread. cip-basis j,t
+is the (absolute) cross-currency basis following the methodology in Du et al. (2018). These control variables in wj,t
+are computed separately within every currency pair triplet as the average across two dollar pairs. Both dependent
+and independent variables are taken in logs and first differences. The sample is daily and covers the period from
+1 September 2012 to 30 September 2022. The test statistics based on double-clustered standard errors (by time
+and currency triplets) allowing for serial correlation up to 8 lags are reported in bracket. The optimal lag length
+is based on Newey and West’s (1994) plug-in procedure. Asterisks *, **, and *** denote significance at the 90%,
+95%, and 99% confidence levels.
+73
+
+===== PAGE 34 =====
+
+Table D.7: Determinants of Dollar Dominance (De-trended)
+doldomj,t amihudj,t
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+C1j,t ***0.21 ***0.21 ***0.37
+[6.29] [ 6.32] [ 9.88]
+C2j,t ***0.15 ***0.15 ***0.15 ** −0.20 ** −0.20
+[5.30] [ 5.27] [ 4.77] [ 2.05] [ 2.04]
+C3j,t ***0.05 ***0.05 ***0.05 ***0.16 ***0.16
+[3.31] [ 3.57] [ 3.28] [ 3.06] [ 3.21]
+bid-ask spreadj,t ***−0.10 *** −0.11 *** −0.09 −0.01
+[3.01] [ 3.01] [ 2.86] [ 0.67]
+cip-basisj,t 0.02 −0.03
+[0.86] [ 1.21]
+R2in % 4.27 2.40 0.23 4.47 2.83 4.97 3.79 1.86 5.66
+OverallR2in % 18.19 16.59 14.73 18.36 16.96 18.70 11.77 9.99 13.53
+Avg. #Time periods 2586 2586 2586 2586 2586 2510 2586 2586 2510
+#Currency triplets 15 15 15 15 15 15 15 15 15
+Currency triplet FE yes yes yes yes yes yes yes yes yes
+Time series FE yes yes yes yes yes yes yes yes yes
+Note: This table reports results from daily fixed effects panel regressions of the form DDj,t = µt + αj + β1C1j,t +
+β2C2j,t + β3C3j,t + γ′wj,t + ϵj,t, where µt and αj denote time series and currency pair triplet fixed effects.
+The dependent variable DDj,t is a measure of dollar dominance that is either based on trading volume (i.e.,
+doldom j,t) or on Amihud’s price impact (i.e., amihud j,t). doldom j,t is computed based on de-trended trading vol-
+ume that I define as today’s volume divided by a moving average over the previous 22 days’ trading volume:
+volume k,t/( 1
+22 ∑22
+m=1 volume k,t−m). C1, C2, and C3 are the empirical counterparts of the three equilibrium condi-
+tions in Proposition 2. To mitigate multicollinearity, I orthogonalise C1 against C2 and C3 in column 6, where
+I jointly include all three conditions as regressors. bid-ask spread j,t is the daily average relative bid-ask spread.
+cip-basis j,t is the (absolute) cross-currency basis following the methodology in Du et al. (2018). These control
+variables in wj,t are computed separately within every currency pair triplet as the average across two dollar pairs.
+Both dependent and independent variables are taken in logs and first differences. The sample is daily and covers
+the period from 1 September 2012 to 30 September 2022. The test statistics based on double-clustered standard
+errors (by time and currency triplets) allowing for serial correlation up to 8 lags are reported in bracket. The opti-
+mal lag length is based on Newey and West’s (1994) plug-in procedure. Asterisks *, **, and *** denote significance
+at the 90%, 95%, and 99% confidence levels.
+74
+
+===== PAGE 35 =====
+
+Appendix D.3. Determinants of Trading Volume
+Volume elasticity. To empirically test the drivers of inter-dealer trading volume volume k,t I
+consider the following panel regression with fixed effects:
+volume k,t = µt + αk + β′fk,t + γ′wk,t + ϵk,t, (D.2)
+where µt are time series fixed effects, αk denotes currency pair fixed effects, and fk,t may in-
+clude customer trading demands f lowk,t, variance of customer trading demands var( f low)k,t,
+and realised variance volatility k,t as regressors. To mitigate multicollinearity, I orthogonalise
+f lowk,t against var( f low)k,t and volatility k,t when jointly including all three drivers as regres-
+sors. The regression above suffers from endogeneity and does not aim to estimate the causal
+effect of the regressors on trading volume. In some specifications, I also include the relative
+bid-ask spread bid-ask spread k,t, interest rate differential interest rate k,t, and cross-currency ba-
+sis cip-basis k,t as control variables in wk,t. Note that all three controls are given in absolute
+values because trading volume by definition is unsigned.
+I construct these three control variables as follows: First, I compute the relative bid-ask
+spread as the ratio of the absolute bid-ask spread and midquote (average of bid and ask
+rates). Second, I approximate the daily interest rate differential between the base and quote
+currency country by the forward discount or premium, which I compute as the difference
+between the overnight forward rate ft and the spot midquote st.26 Third, following Du et al.
+(2018), I estimate the cross-currency basis as the difference between the direct dollar interest
+rate in the base currency from the cash market and the synthetic interest rate obtained by
+swapping the quote currency into the base currency. 27
+The rationale for including each of these three variables as controls can be summarised
+as follows. First, the role of the relative bid-ask spread as a control is to address the concern
+that traditional transaction costs are an important determinant of trading volume (and also
+vehicle currency trading). In particular, for small volumes traders are primarily concerned
+about fixed trading costs (i.e., bid-ask spreads) rather than price impact. Second, the link
+between interest rate differentials and FX trading volume stems from the fact that carry trade
+speculators are long (short) in high (low) interest rate currencies (Lustig and Verdelhan, 2007).
+Hence, currency pairs exhibiting a larger interest rate differential in absolute terms are more
+likely to end up in the long or short leg of carry trade portfolios. Put differently, interest
+rate differentials aim to capture speculative trading motives as a potential driver of FX trad-
+ing activity. Lastly, since the decentralised FX market heavily relies on intermediation by
+dealers, I expect dealer funding costs to significantly covary with dealer-intermediated vol-
+ume. Following Andersen et al. (2019) and Rime et al. (2022), the cross-currency basis can be
+interpreted as a proxy for dealer funding costs.
+Across all specifications, both dependent and independent variables are taken in logs
+and first differences. FX volume in levels is non-stationary and persistent, hence taking first
+differences is an effective remedy to render the time series stationary. In addition, I divide
+26I obtain overnight forward points from Bloomberg using London closing rates.
+27Daily LIBOR and interbank fixing rates are also obtained from Bloomberg.
+75
+
+===== PAGE 36 =====
+
+each time series by the standard deviation of the respective variable across all currency pairs.
+Thus, regression coefficients can be interpreted as percentage point (pp) changes measured
+in units of standard deviation. Notice that standardising changes neither the sign nor the
+significance of the regression estimates.
+The frequency of these regressions is daily, hence preventing well-known intraday sea-
+sonalities (e.g., Ranaldo, 2009; Breedon and Ranaldo, 2013) from affecting my estimations.
+Robust standard errors are computed based on Driscoll and Kraay (1998), allowing for ran-
+dom clustering and serial correlation up to 8 lags (Newey and West (1994) plug-in procedure
+for automatic lag selection).
+Table D.8 presents the results of running various specifications of Eq. (D.2) and provides
+empirical evidence in line with the comparative statics in Proposition 1: Changes in inter-
+dealer volume volume k,t positively covary with changes in customer trading demands f lowk,t,
+variance of customer trading demands var( f low)k,t, and with realised variance of currency
+returns volatility k,t. The latter result is especially useful given that the sign of the volume
+elasticity with respect to volatility is theoretically ambiguous. The reason for this ambiguity
+is that changes in volatility have a direct positive and indirect negative effect on volume (by
+increasing price impact). Empirically, the first effect dominates causing a positive relation
+between trading volume and return volatility.
+In my model, trading volume is determined by fundamental trading demands on the one
+hand and vehicle currency trading due to strategic avoidance of price impact on the other.
+Specifically, the expected price impact in a currency pair hinges on the variance of trading
+demands and currency returns, respectively. The regression results in Table D.8 show that
+fundamental customer trading demands f lowk,t are the most important determinant of inter-
+dealer volume accounting for 13% of all the time series variation. Contrarily, changes in the
+realised variance of customer trading demands var( f low)k,t and currency returns volatility k,t
+account for 7.4% and 6.9% of the dispersion in inter-dealer volume. The fact that var( f low)k,t
+and volatility k,t are both economically and statistically significant provides evidence in favour
+of the decentralised market model in Section 4 rather than a competitive or centralised mar-
+ket. This is because both variables stress the importance of vehicle currency trading motives
+stemming from strategic avoidance of price impact besides actual customer trading demands
+as a key driver of FX inter-dealer volume.
+The sign and significance of all three model–based drivers of inter-dealer volume are ro-
+bust to including the relative bid-ask spreadbid-ask spread k,t, interest differential interest rate k,t,
+and cross-currency basis cip-basis k,t as control variables. In particular, the relative bid-ask
+spread is the only variable that is statistically significant. The fact that inter-dealer volume
+and spreads are positively correlated is consistent with theories of asymmetric information
+(e.g., Glosten and Milgrom, 1985) and supports the notion that fixed trading costs are a mean-
+ingful driver of (small) trading volumes.
+Price impact elasticity. Price impact is the key endogenous determinant of trading volume
+in Section 4. The dimensions of price impact hinge on two model–based primitives: i) the
+variance of fundamental trading demands and ii) the variance of currency returns. Empir-
+ically, I am interested in whether price impact is driven purely by the relative riskiness of
+76
+
+===== PAGE 37 =====
+
+Table D.8: Economic Drivers of Trading Volume
+volumek,t
+(1) (2) (3) (4) (5) (6) (7) (8)
+flowk,t ***0.31 ***0.30 ***0.27 ***0.27 ***0.24
+[13.86] [ 13.25] [ 12.87] [ 13.11] [ 13.64]
+var(flow)k,t ***0.23 ***0.21 ***0.21 ***0.21 ***0.19
+[10.30] [ 9.45] [ 11.91] [ 11.61] [ 10.03]
+volatilityk,t ***0.28 ***0.20 ***0.21 ***0.21 ***0.21
+[7.96] [ 6.70] [ 7.72] [ 7.40] [ 6.72]
+bid-ask spreadk,t ***0.25 ***0.12 ***0.10 ***0.11 ***0.11
+[8.72] [ 6.58] [ 6.59] [ 6.53] [ 5.59]
+abs(interest ratek,t) *0.02
+[1.85]
+abs(cip-basisk,t) 0.00
+[0.45]
+R2 in % 12.91 7.43 6.86 16.53 14.01 20.36 20.04 17.99
+OverallR2 in %
+Avg. #Time periods 2586 2586 2586 2586 2586 2586 2586 2581
+#Exchange rates 25 25 25 25 25 25 25 25
+Currency FE yes yes yes yes yes yes yes yes
+Time series FE yes yes yes yes yes yes yes yes
+Note: This table reports results from daily fixed effects panel regressions of the form volume k,t = µt + αk + β′fk,t +
+γ′wk,t + ϵk,t, where fk,t may include several regressors and wk,t collects all control variables. The dependent
+variable is the daily inter-bank trading volume volume k,t measured in US dollars. µt and αk denote time series and
+currency pair fixed effects, respectively. f lowk,t is the net daily customer order flow (absolute value of buy minus
+sell volume) measured in US dollars. var( f low)k,t is the daily variance of hourly customer flows. volatility k,t
+is the daily realised variance of currency returns computed from one minute spot rates. bid-ask spread k,t is the
+daily average relative bid-ask spread. interest rate k,t is the interest rate differential computed as the difference
+between the overnight forward rate ft and the spot midquote st. cip-basis k,t is the cross-currency basis following
+the methodology in Du et al. (2018). Both dependent and independent variables are taken in logs and first
+differences. The sample is daily and covers the period from 1 September 2012 to 30 September 2022. The test
+statistics based on double-clustered standard errors (by time and currencies) allowing for serial correlation up to
+8 lags are reported in bracket. The optimal lag length is based on Newey and West’s (1994) plug-in procedure.
+Asterisks *, **, and *** denote significance at the 90%, 95%, and 99% confidence levels.
+currency returns or to some extent also by the distribution of fundamental trading demands.
+To test this, I run the following panel regression with fixed effects:
+λk,t = µt + αk + β′fk,t + ϵk,t, (D.3)
+where µt are time series fixed effects, αk denotes currency pair fixed effects, and fk,t may in-
+clude the variance of customer trading demands var( f low)k,t and the realised variance of cur-
+rency returns volatility k,t as regressors alongside the relative bid-ask spread bid-ask spread k,t
+as a control for transaction costs. The dependent variable is the Amihud price impact λk,t
+in currency pair k at time t (Ranaldo and Santucci de Magistris, 2022). 28 To remove outliers,
+28Note that my empirical results are robust to using alternative price impact measures including Kyle (1985),
+Hasbrouck (1991b), and Gabaix, Gopikrishnan, Plerou, and Stanley (2006). The key advantage of the Amihud
+price impact measure is that unlike Kyle’s (1985) lambda it does not require order flow data and is always
+positive by construction. On the other hand, the impulse response functions in Hasbrouck (1991b) are forward
+looking but sensitive to the forecast horizon. Gabaix et al. (2006) is identical to Kyle (1985) but assumes that prices
+react to large signed orders with a change proportional to the square root of the order size.
+77
+
+===== PAGE 38 =====
+
+I winsorize Amihud at the top and bottom 0.5 percent of its observations. Both dependent
+and independent variables are taken in logs and first differences and are measured in units
+of standard deviations.
+Table D.9 shows the results of estimating different variants of the panel regression set-up
+in Eq. (D.3). Three main results are worth highlighting: First, an increase in the variance of
+fundamental trading demands var( f low)k,t is associated with a decrease in price impact. This
+is consistent with the observation that the inference coefficient in my model (see Section 4)
+decreases in the variance of trading demands. Second, price impact positively covaries with
+the variance of currency returns volatility k,t, albeit the point estimates are not statistically
+significant at any conventional confidence level. Conceptually, this agrees with my model,
+where Gaussian conditioning explains why price impact is concave in the variance of currency
+returns. Third, all findings are robust to including the relative bid-ask spread bid-ask spread k,t
+as a control for trading costs in columns 3, 4, and 6.
+Table D.9: Economic Drivers of Price Impact
+λk,t
+(1) (2) (3) (4) (5) (6)
+var(flow)k,t ***−0.43 *** −0.43 *** −0.43 *** −0.43
+[11.66] [ 11.61] [ 11.44] [ 11.45]
+volatilityk,t 0.02 0.01 0.05 0.04
+[0.25] [ 0.13] [ 0.87] [ 0.59]
+bid-ask spreadk,t 0.06 0.02 0.03
+[1.23] [ 0.66] [ 1.54]
+R2 in % 21.82 0.02 21.98 0.03 22.31 22.34
+OverallR2 in %
+Avg. #Time periods 2586 2586 2586 2586 2586 2586
+#Exchange rates 25 25 25 25 25 25
+Currency FE yes yes yes yes yes yes
+Time series FE yes yes yes yes yes yes
+Note: This table reports results from daily fixed effects panel regressions of the form λk,t = µt + αk + β′fk,t + ϵk,t,
+where fk,t may include several regressors. The dependent variable is Amihud’s price impact λk,t in currency
+pair k at time t. µt and αk denote time series and currency pair fixed effects, respectively. var( f low)k,t is the
+intraday realised variance of hourly customer flows. volatility k,t is the intraday realised variance of currency
+returns computed from one minute spot rates. bid-ask spread k,t is the daily average relative bid-ask spread. All
+variables are taken in logs and first differences and I standardise each time series, that is, divide by the standard
+deviation of the respective variable across all currency pairs. The sample is daily and spans from 1 September
+2012 to 30 September 2022. The test statistics based on double-clustered standard errors (by time and currencies)
+allowing for serial correlation up to 8 lags are reported in bracket. The optimal lag length is based on Newey and
+West’s (1994) plug-in procedure. Asterisks *, **, and *** denote significance at the 90%, 95%, and 99% confidence
+levels.
+Summary. Two findings emerge from this analysis: First, vehicle currency trading motives
+are almost equally important determinants of inter-dealer FX trading volume as customer
+trading demands. Second, price impact is contingent on both the relative riskiness of currency
+pairs and the distribution of fundamental trading demands. Taken together, the reduced form
+evidence in this section supports the decentralised market model in Section 4.
+78
+
+===== PAGE 39 =====
+
+References: Online Appendix
+Andersen, L., Duffie, D., and Song, Y., 2019. Funding value adjustments. The Journal of Finance , 74(1):
+145–192.
+Breedon, F. and Ranaldo, A., 2013. Intraday patterns in FX returns and order flow. Journal of Money,
+Credit and Banking, 45(5):953–965.
+Chaboud, A. P ., Chiquoine, B., Hjalmarsson, E., and Vega, C., 2014. Rise of the machines: Algorithmic
+trading in the foreign exchange market. The Journal of Finance, 69(5):2045–2084.
+Driscoll, J. C. and Kraay, A. C., 1998. Consistent covariance matrix estimation with spatially dependent
+panel data. Review of Economics and Statistics, 80(4):549–560.
+Du, W., Tepper, A., and Verdelhan, A., 2018. Deviations from covered interest rate parity. The Journal
+of Finance, 73(3):915–957.
+Eren, E. and Malamud, S., 2022. Dominant currency debt. Journal of Financial Economics, 144(2):571–589.
+Gabaix, X., Gopikrishnan, P ., Plerou, V ., and Stanley, H. E., 2006. Institutional investors and stock
+market volatility. The Quarterly Journal of Economics, 121(2):461–504.
+Glosten, L. R. and Milgrom, P . R., 1985. Bid, ask and transaction prices in a specialist market with
+heterogeneously informed traders. Journal of Financial Economics, 14(1):71–100.
+Hasbrouck, J., 1991. The summary informativeness of stock trades: An econometric analysis. The
+Review of Financial Studies, 4(3):571–595.
+Hasbrouck, J. and Levich, R., 2017. FX market metrics: New findings based on CLS bank settlement
+data. National Bureau of Economic Research.
+Hodrick, R. J., 1992. Dividend yields and expected stock returns: Alternative procedures for inference
+and measurement. Review of Financial Studies, 5(3):357–386.
+Jiang, Z., Krishnamurthy, A., and Lustig, H., 2021. Foreign safe asset demand and the dollar exchange
+rate. The Journal of Finance, 76(3):1049–1089.
+Klemperer, P . D. and Meyer, M. A., 1989. Supply function equilibria in oligopoly under uncertainty.
+Econometrica, 57(6):1243–1277.
+Kyle, A. S., 1985. Continuous auctions and insider trading. Econometrica, 53(6):1315–1335.
+Kyle, A. S., 1989. Informed speculation with imperfect competition. The Review of Economic Studies, 56
+(3):317–355.
+Lustig, H. and Verdelhan, A., 2007. The cross section of foreign currency risk premia and consumption
+growth risk. American Economic Review, 97(1):89–117.
+Malamud, S. and Rostek, M., 2017. Decentralized exchange. American Economic Review, 107(11):3320–
+3362.
+Newey, W. K. and West, K. D., 1994. Automatic lag selection in covariance matrix estimation. The
+Review of Economic Studies, 61(4):631–653.
+Ranaldo, A., 2009. Segmentation and time-of-day patterns in foreign exchange markets. Journal of
+Banking and Finance, 33(12):2199–2206.
+Ranaldo, A. and Santucci de Magistris, P ., 2022. Liquidity in the global currency market. Journal of
+Financial Economics, 146(3):859–883.
+Ranaldo, A. and Somogyi, F., 2021. Asymmetric information risk in FX markets. Journal of Financial
+Economics, 140(2):391–411.
+79
+
+===== PAGE 40 =====
+
+Rime, D., Schrimpf, A., and Syrstad, O., 2022. Covered interest parity arbitrage. The Review of Financial
+Studies.
+Rostek, M. and Weretka, M., 2015. Dynamic thin markets. The Review of Financial Studies , 28(10):
+2946–2992.
+Rostek, M. and Yoon, J. H., 2021. Exchange design and efficiency. Econometrica, 89(6):2887–2928.
+Rostek, M. J. and Yoon, J. H., forthcoming. Equilibrium theory of financial markets: Recent develop-
+ments. The Journal of Economic Literature.
+Schrimpf, A. and Sushko, V ., 2019. FX trade execution: Complex and highly fragmented. BIS Quarterly
+Review.
+80

@@ -1,0 +1,3302 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 142 (2021) 550–571
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Sustainable investing in equilibrium /p82
+Ľ uboš Pástor a , c , d , e , Robert F. Stambaugh b , c , Lucian A. Taylor b , ∗
+a University of Chicago, 5807 S. Woodlawn Ave., Chicago, IL 60637, USA
+b University of Pennsylvania, 3620 Locust Walk, Philadelphia, PA 19104, USA
+c NBER, USA
+d CEPR, United Kingdom
+e National Bank of Slovakia, Slovakia
+a r t i c l e i n f o
+Article history:
+Received 14 February 2020
+Revised 1 May 2020
+Accepted 14 May 2020
+Available online 31 December 2020
+JEL classiﬁcation:
+G11
+G12
+Keywords:
+Sustainable investing
+Socially responsible investing
+ESG
+Social impact
+a b s t r a c t
+We model investing that considers environmental, social, and governance (ESG) criteria. In
+equilibrium, green assets have low expected returns because investors enjoy holding them
+and because green assets hedge climate risk. Green assets nevertheless outperform when
+positive shocks hit the ESG factor, which captures shifts in customers’ tastes for green
+products and investors’ tastes for green holdings. The ESG factor and the market portfolio
+price assets in a two-factor model. The ESG investment industry is largest when investors’
+ESG preferences differ most. Sustainable investing produces positive social impact by mak-
+ing ﬁrms greener and by shifting real investment toward green ﬁrms.
+©2 0 2 1 Elsevier B.V. All rights reserved.
+1. Introduction
+Sustainable investing considers not only ﬁnancial objec-
+tives but also environmental, social, and governance crite-
+ria. This investment approach initially gained popularity by
+imposing negative screens under the umbrella of socially
+responsible investing (SRI), but its scope has expanded
+/p82 The views in this paper are the responsibility of the authors, not the
+institutions with which they are aﬃliated. We are grateful for comments
+from our discussants Bernard Dumas, Harrison Hong, and Jacob Sagi,
+and also from Rui Albuquerque, Malcolm Baker, George Constantinides,
+Alex Edmans, Gene Fama, Sam Hartzmark, John Heaton, Ravi Jagannathan,
+Ralph Koijen, Yrjo Koskinen, Stavros Panageas, Raghu Rajan, Jeff Wurgler,
+and Josef Zechner; conference participants at the 2020 Spring NBER Asset
+Pricing Meeting, the 2020 SFS Cavalcade, and the 2020 INSEAD Finance
+Symposium; and seminar participants at the University of Chicago, Uni-
+versity of Geneva, WU Vienna, and the National Bank of Slovakia.
+∗ Corresponding author.
+E-mail address: luket@wharton.upenn.edu (L.A. Taylor).
+signiﬁcantly in recent years. Assets managed with an eye
+on sustainability have grown to tens of trillions of dollars
+and seem poised to grow further. 1 Given this rapid growth,
+the effects of sustainable investing on asset prices and cor-
+porate behavior are important to understand.
+We analyze both ﬁnancial and real effects of sus-
+tainable investing through the lens of an equilibrium
+model. The model features many heterogeneous ﬁrms and
+agents, yet it is highly tractable, yielding simple and
+intuitive expressions for the quantities of interest. The
+model illuminates the key channels through which agents’
+preferences for sustainability can move asset prices, tilt
+1 According to the 2018 Global Sustainable Investment Review, sustain-
+able investing assets exceeded $30 trillion globally at the start of 2018,
+a 34% increase in two years. As of November 2019, more than 2600 or-
+ganizations have become signatories to the United Nations Principles of
+Responsible Investment (PRI), with more than 500 new signatories in
+2018/2019, according to the 2019 Annual Report of the PRI.
+https://doi.org/10.1016/j.jﬁneco.2020.12.011
+0304-405X/© 2021 Elsevier B.V. All rights reserved.
+
+===== PAGE 2 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+portfolio holdings, determine the size of the ESG invest-
+ment industry, and cause real impact on society.
+In the model, ﬁrms differ in the sustainability of their
+activities. “Green” ﬁrms generate positive externalities for
+society, “brown” ﬁrms impose negative externalities, and
+there are different shades of green and brown. Agents dif-
+fer in their preferences for sustainability, or “ESG prefer-
+ences,” which have multiple dimensions. First, agents de-
+rive utility from holdings of green ﬁrms and disutility from
+holdings of brown ﬁrms. Second, agents care about ﬁrms’
+aggregate social impact. In a model extension, agents addi-
+tionally care about climate risk. Naturally, agents also care
+about ﬁnancial wealth.
+We show that agents’ tastes for green holdings affect
+asset prices. Agents are willing to pay more for greener
+ﬁrms, thereby lowering the ﬁrms’ costs of capital. Green
+assets have negative CAPM alphas, whereas brown assets
+have positive alphas. Consequently, agents with stronger
+ESG preferences, whose portfolios tilt more toward green
+assets and away from brown assets, earn lower expected
+returns. Yet such agents are not unhappy because they de-
+rive utility from their holdings.
+The model implies three-fund separation, whereby each
+agent holds the market portfolio, the risk-free asset, and
+an “ESG portfolio” whose composition depends on assets’
+greenness. Agents with stronger than average tastes for
+green holdings deviate from the market largely by over-
+weighting green assets and underweighting brown ones.
+Agents with weaker ESG tastes deviate in the opposite
+direction, and agents with average tastes hold the mar-
+ket portfolio. If there is no dispersion in ESG tastes, all
+agents simply hold the market. Even if all agents derive a
+large amount of utility from green holdings, they neverthe-
+less hold only the market if their ESG tastes are equally
+strong, because asset prices then fully adjust to reﬂect
+those tastes. For the ESG industry to exist, dispersion in
+ESG tastes is necessary.
+We deﬁne the “ESG factor” as a scaled return on the
+ESG portfolio. We show that the ESG factor and the mar-
+ket portfolio together price assets in a two-factor model.
+Assets’ loadings on the ESG factor, their “ESG betas,” equal
+their ESG characteristics: green assets have positive ESG
+betas and brown assets have negative betas. A simple ver-
+sion of the ESG factor is a green-minus-brown portfolio re-
+turn, where both green and brown portfolios are weighted
+by ESG characteristics. Assets’ CAPM alphas reﬂect expo-
+sure to the omitted, priced ESG factor. The factor has a
+negative premium that comes from investors’ ESG tastes.
+We interpret the ESG factor as capturing unexpected
+changes in ESG concerns. These concerns can change in
+two ways: customers can shift their demand for goods of
+green providers, and investors can change their appreci-
+ation for green holdings. The ESG factor affects the rela-
+tive performance of green and brown assets; its positive
+realizations boost green assets while hurting brown ones.
+If ESG concerns strengthen unexpectedly and suﬃciently,
+green assets outperform brown ones despite having lower
+expected returns.
+To assess the model’s quantitative implications, we cal-
+ibrate a setting with two types of investors: those sharing
+equal concerns about ESG (“ESG investors”) and those hav-
+ing no concerns (“non-ESG investors”). Given their portfo-
+lios’ green tilts, ESG investors earn lower expected returns
+than non-ESG investors. The difference in expected returns
+increases with λ, the wealth share of ESG investors, and
+with /Delta1, the maximum certain return ESG investors are
+willing to forgo in exchange for investing in their desired
+portfolio instead of the market. Non-ESG investors earn an
+alpha that is positive and increasing in both λ and /Delta1. ESG
+investors earn a negative alpha whose magnitude is in-
+creasing in /Delta1, concave in λ, and greatest when the dis-
+persion in ESG tastes is greatest (i.e., λ = 0 . 5 ).
+Despite earning a negative alpha, ESG investors enjoy
+an “investor surplus”: they sacriﬁce less return than they
+are willing to in order to hold their desired portfolio. The
+reason is that equilibrium asset prices adjust to ESG tastes,
+thereby pushing the market portfolio toward the portfo-
+lio desired by ESG investors. Speciﬁcally, ESG tastes make
+green ﬁrms more valuable and brown ﬁrms less valuable.
+The market portfolio thus moves closer to ESG investors’
+desired portfolio, pushing those investors’ negative alpha
+closer to zero. For example, when ESG investors have /Delta1=
+4% , their alpha is at least −2 %. We deﬁne investor surplus
+to be the difference between alpha and −/Delta1. The surplus is
+always positive, ranging from /Delta1/ 2 to /Delta1.
+We measure the size of the ESG investment industry by
+the aggregate ESG dollar tilt away from the market port-
+folio. The ESG industry is largest when the dispersion in
+ESG tastes is greatest. In addition, the ESG industry’s size
+is reduced by the price adjustment mentioned above. For
+example, suppose that the ESG industry reaches 24% of the
+stock market’s value when /Delta1is 1%. Then, doubling the
+strength of ESG tastes by raising /Delta1to 2% increases that
+maximum industry size by less than half, to 35% of the
+market’s value.
+Our model implies that sustainable investing leads to
+positive social impact. We deﬁne a ﬁrm’s social impact as
+the product of the ﬁrm’s greenness and its scale. We show
+that agents’ tastes for green holdings increase ﬁrms’ so-
+cial impact through two channels. First, ﬁrms choose to
+become greener, because greener ﬁrms have higher mar-
+ket values. Second, real investment shifts from brown to
+green ﬁrms, due to shifts in ﬁrms’ cost of capital (up for
+brown ﬁrms, down for green ﬁrms). We obtain positive ag-
+gregate social impact even if agents have no direct prefer-
+ence for it, shareholders do not engage with management,
+and managers simply maximize market value.
+Finally, we extend the model by allowing climate to
+enter investors’ utility. Expected returns then depend not
+only on market betas and investors’ tastes but also on
+climate betas, which measure ﬁrms’ exposures to climate
+shocks. Evidence suggests that brown assets have higher
+climate betas than green assets (e.g., Choi et al., 2020; En-
+gle et al., 2020 ). This difference pushes up brown assets’
+expected returns in our model. The idea is that investors
+dislike unexpected deteriorations in the climate. If the cli-
+mate worsens unexpectedly, brown assets lose value rel-
+ative to green assets (e.g., due to new government regu-
+lation that penalizes brown ﬁrms). Because brown ﬁrms
+lose value in states of the world investors dislike, they are
+riskier, so they must offer higher expected returns. Brown
+stocks thus have positive CAPM alphas not only because of
+551
+
+===== PAGE 3 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+investors’ distaste for brown holdings, but also because of
+brown stocks’ larger exposures to climate risk.
+Our theoretical treatment of climate risk is related to
+recent empirical work on the implications of such risk for
+asset prices. Hong et al. (2019) analyze the response of
+food producers’ stock prices to climate risks. Bolton and
+Kacperczyk (2019) conclude that investors demand com-
+pensation for exposure to carbon risk in the form of higher
+returns on carbon-intensive ﬁrms. Ilhan et al. (2020) show
+that ﬁrms with higher carbon emissions exhibit more tail
+risk and more variance risk. Engle et al. (2020) develop a
+procedure to dynamically hedge climate risk by construct-
+ing mimicking portfolios that hedge innovations in climate
+news series obtained by textual analysis of news sources.
+Bansal et al. (2016) identify climate change as a long-run
+risk factor. Krueger et al. (2020) ﬁnd that institutional in-
+vestors consider climate risk to be an important invest-
+ment risk.
+Besides climate risk, other aspects of ESG-related
+risk have been studied. Hoepner et al. (2018) ﬁnd that
+ESG engagement reduces ﬁrms’ downside risk as well
+as their exposures to a downside-risk factor. Luo and
+Balvers (2017) ﬁnd a premium for boycott risk. We com-
+plement these studies with a theoretical contribution. We
+construct an ESG risk factor that is capable of pricing as-
+sets in a two-factor model, and we show that green and
+brown assets have opposite exposures to this factor.
+Prior studies report, in various contexts, that green
+assets underperform brown assets. Hong and Kacper-
+czyk (2009) ﬁnd that “sin” stocks (i.e., stocks of public
+ﬁrms producing alcohol, tobacco, and gaming, which we
+would classify as brown) outperform non-sin stocks. They
+argue that social norms lead investors to demand com-
+pensation for holding sin stocks. Barber et al. (2021) ﬁnd
+that venture capital funds that aim not only for ﬁnan-
+cial return but also for social impact earn lower returns
+than other funds. They argue that investors derive non-
+pecuniary utility from investing in dual-objective funds.
+Baker et al. (2018) and Zerbib (2019) ﬁnd that green bonds
+tend to be priced at a premium, offering lower yields than
+traditional bonds. Both studies argue that the premium
+is driven by investors’ environmental concerns. Similarly,
+Chava (2014) and El Ghoul et al. (2011) ﬁnd that greener
+ﬁrms have a lower implied cost of capital. All of these re-
+sults are consistent with our prediction that ESG tastes re-
+duce green ﬁrms’ costs of capital.
+Some studies ﬁnd the opposite result, that green as-
+sets outperform brown, using alternative deﬁnitions of
+green and brown. Firms perform better if they are better-
+governed, judging by employee satisfaction ( Edmans, 2011 )
+or by strong shareholder rights ( Gompers et al., 2003 ),
+or if they have higher ESG ratings in the 1992–2004 pe-
+riod ( Kempf and Osthoff, 2007 ). These results are also con-
+sistent with our model as long as ESG tastes strengthen
+unexpectedly over the sample period. We do not mean
+to imply that we can always declare empirical success
+for our model. The model clearly predicts that green as-
+sets underperform brown over a suﬃciently long period—
+a period long enough that unexpected changes in ESG
+tastes average to zero. We simply explain why it is
+diﬃcult to distinguish ex ante versus ex post effects of ESG
+concerns by looking at realized returns over periods dur-
+ing which ESG tastes shift. Disentangling alphas from ESG
+taste shifts is a major challenge for empirical work in this
+area.
+Our model is also related to previous theoretical stud-
+ies of sustainable investing. Heinkel et al. (2001) build an
+equilibrium model in which exclusionary ethical invest-
+ing affects ﬁrm investment. They consider two types of
+investors, one of which refuses to hold shares in pollut-
+ing ﬁrms. The resulting reduction in risk sharing increases
+the cost of capital of polluting ﬁrms, depressing their in-
+vestment. Albuquerque et al. (2019) construct a model in
+which a ﬁrm’s socially responsible investments increase
+customer loyalty, giving the ﬁrm more pricing power. This
+power makes the ﬁrm less risky and thus more valuable.
+Unlike these models, ours features neither a lack of risk
+sharing nor pricing power; instead, the main force is in-
+vestors’ tastes for holding green assets.
+Fama and French (2007) argue that tastes for holding
+green assets can affect prices. Baker et al. (2018) build a
+model featuring two types of investors with mean-variance
+preferences, where one type also has tastes for green as-
+sets. Their model predicts that green assets have lower ex-
+pected returns and more concentrated ownership, and they
+ﬁnd support for these predictions in the universe of green
+bonds. Pedersen et al. (2021) consider the same two types
+of mean-variance investors but also add a third type that
+is unaware of ﬁrms’ ESG scores. This lack of awareness is
+costly if ﬁrms’ ESG scores predict their proﬁts. The au-
+thors show that stocks with higher ESG scores can have
+either higher or lower expected returns, depending on the
+wealth of the third type of investors. They obtain four-fund
+separation and derive the ESG-eﬃcient frontier character-
+izing the tradeoff between the ESG score and the Sharpe
+ratio.
+While the models in these studies share some features
+with ours, we offer novel insights. We show that an ESG
+factor, along with the market portfolio, prices assets in a
+two-factor model. Positive realizations of this factor, which
+result from shifts in customers’ and investors’ tastes, can
+result in green assets outperforming brown. The size of
+the ESG investment industry, as well as investors’ alphas,
+crucially depend on the dispersion in investors’ ESG tastes.
+ESG investors earn an investor surplus. We have a contin-
+uum of investors with multiple dimensions of ESG prefer-
+ences. Including climate in those preferences results in the
+pricing of climate risk. Finally, ESG investing has positive
+social impact.
+Positive social impact also emerges from the model of
+Oehmke and Opp (2020) , but through a different chan-
+nel. Key ingredients to generating impact in their model
+are ﬁnancing constraints and coordination among agents.
+Our model does not include those ingredients, but it pro-
+duces social impact nevertheless, through tastes for green
+holdings. To emphasize these tastes, we do not model
+shareholder engagement with management, which is an-
+other channel through which ESG investing can poten-
+tially increase market value (e.g., Dimson et al., 2015 ). In
+our model, value-maximizing managers make their ﬁrms
+552
+
+===== PAGE 4 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+greener voluntarily, without pressure from shareholders,
+because greener ﬁrms command higher market values. 2
+Our assumption that some investors derive nonpe-
+cuniary beneﬁts from green holdings has considerable
+empirical support in the mutual fund literature. Mutual
+fund ﬂows respond to ESG-salient information, such as
+Morningstar sustainability ratings ( Hartzmark and Suss-
+man, 2019 ) and environmental disasters ( Bialkowski and
+Starks, 2016 ). Flows to SRI mutual funds are less volatile
+than ﬂows to non-SRI funds ( Bollen, 2007 ) and less respon-
+sive to negative past performance ( Renneboog et al., 2011 ).
+Investors in SRI funds also indicate a willingness to forgo
+ﬁnancial performance to accommodate their social prefer-
+ences ( Riedl and Smeets, 2017 ).
+This paper is organized as follows. Section 2 presents
+our baseline model. Section 3 discusses the ESG factor.
+Section 4 explores the model’s quantitative implications.
+Section 5 extends the baseline model by letting agents care
+about the climate, showing that climate risk commands
+a premium. Section 6 examines social impact. Section 7
+concludes.
+2. Model
+The model considers a single period, from time 0 to
+time 1, in which there are N ﬁrms, n = 1 , . . . , N. Let ˜ r n de-
+note the return on ﬁrm n ’s shares in excess of the riskless
+rate, r f , and let ˜ r be the N ×1 vector whose n th element
+is ˜ r n . We assume ˜ r is normally distributed:
+˜ r = μ + ˜ ϵ, (1)
+where μ contains equilibrium expected excess returns and
+˜ ϵ∼ N(0 , /Sigma1) . In addition to ﬁnancial payoffs, ﬁrms produce
+social impact. Each ﬁrm n has an observable “ESG char-
+acteristic” g n , which can be positive (for “green” ﬁrms)
+or negative (for “brown” ﬁrms). Firms with g n > 0 have
+positive social impact, meaning they generate positive ex-
+ternalities (e.g., cleaning up the environment). Firms with
+g n < 0 have negative social impact, meaning they generate
+negative externalities (e.g., polluting the environment). In
+Section 6 , we model ﬁrms’ social impact in greater detail.
+There is a continuum of agents who trade ﬁrms’ shares
+and the riskless asset. The riskless asset is in zero net sup-
+ply, whereas each ﬁrm’s stock is in positive net supply.
+Let X i denote an N ×1 vector whose n th element is the
+fraction of agent i ’s wealth invested in stock n . Agent i ’s
+wealth at time 1 is ˜ W 1 i = W 0 i
+(
+1 + r f + X ′
+i ˜ r
+)
+, where W 0 i is
+the agent’s initial wealth. Besides liking wealth, agents also
+derive utility from holding green stocks and disutility from
+holding brown stocks. 3 Each agent i has exponential utility
+2 Theoretical work on sustainable investing also includes Friedman and
+Heinle (2016) , Gollier and Pouget (2014) , and Luo and Balvers (2017) .
+Bank and Insam (2017) do not mention sustainable investing, but they
+model investors with preferences for other stock characteristics. Empiri-
+cal work on sustainable investing includes Geczy et al. (2005) , Hong and
+Kostovetsky (2012) , and Cheng et al. (2016) , among others. For recent ex-
+perimental work, see Humphrey et al. (2020) . For surveys of the early
+literature, see Bauer et al. (2005) and Renneboog et al. (2008) .
+3 We frame the discussion in terms of green and brown stocks, but our
+main ideas apply more broadly to any set of green and brown assets, such
+as bonds and private equity investments.
+V ( ˜ W 1 i , X i ) = −e −A i ˜ W 1 i −b ′
+i X i , (2)
+where A i is the agent’s absolute risk aversion and b i is
+an N ×1 vector of nonpecuniary beneﬁts that the agent
+derives from her stock holdings. Holding the riskless as-
+set brings no such beneﬁt. The beneﬁt vector has agent-
+speciﬁc and ﬁrm-speciﬁc components:
+b i = d i g, (3)
+where g is an N ×1 vector whose n th element is g n and
+d i ≥ 0 is a scalar measuring the degree of agent i ’s “ESG
+taste.” Agent i thus derives a nonpecuniary beneﬁt of d i g n
+from holding stock n . Agents with higher values of d i have
+stronger tastes for the ESG characteristics of their hold-
+ings. In addition to having ESG tastes, agents care about
+ﬁrms’ aggregate social impact, but that component of pref-
+erences does not affect agents’ portfolio choices or asset
+prices. Therefore, we postpone the discussion of that com-
+ponent until Section 6.3 .
+2.1. Expected returns
+Due to their inﬁnitesimal size, agents take asset prices
+(and thus the return distribution) as given when choosing
+their optimal portfolios at time 0. To derive the ﬁrst-order
+condition for X i , we compute the expectation of agent i ’s
+utility in Eq. (2) and differentiate it with respect to X i . As
+we show in the Appendix, agent i ’s portfolio weights on
+the N stocks are
+X i =
+1
+a i
+/Sigma1−1
+(
+μ +
+1
+a i
+b i
+)
+, (4)
+where a i ≡ A i W 0 i is agent i ’s relative risk aversion. For
+tractability, we assume that a i = a for all agents. We deﬁne
+ω i to be the ratio of agent i ’s initial wealth to total initial
+wealth: ω i ≡W 0 i /W 0 , where W 0 =
+∫
+i W 0 i di . Because we as-
+sume a zero aggregate position in the riskless asset, mar-
+ket clearing requires that w m , the N ×1 vector of weights
+in the market portfolio of stocks, satisﬁes
+w m =
+∫
+i
+ω i X i di
+=
+1
+a
+/Sigma1−1 μ +
+¯d
+a 2 /Sigma1−1 g, (5)
+where ¯d ≡
+∫
+i ω i d i di ≥ 0 is the wealth-weighted mean of
+ESG tastes d i across agents and ι′ w m = 1 , with ι denoting
+an N ×1 vector of ones. Note that ¯d > 0 unless the mass of
+agents who care about ESG is zero. Solving for μ gives
+μ = a /Sigma1w m −
+¯d
+a
+g. (6)
+Premultiplying by w ′
+m gives the market equity premium,
+μm = w ′
+m μ:
+μm = aσ2
+m −
+¯d
+a
+w ′
+m g, (7)
+where σ2
+m = w ′
+m /Sigma1w m is the variance of the market return.
+In general, the equity premium depends on the average of
+ESG tastes, ¯d , through w ′
+m g, which is the overall “green-
+ness” of the market portfolio. If the market is net green
+( w ′
+m g > 0 ), then stronger ESG tastes (i.e., larger ¯d ) reduce
+553
+
+===== PAGE 5 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+the equity premium. If the market is net brown ( w ′
+m g < 0 ),
+stronger ESG tastes increase the premium as investors de-
+mand compensation for this brownness. For simplicity, we
+assume that the market portfolio is ESG-neutral,
+w ′
+m g = 0 , (8)
+which implies that the equity premium in Eq. (7) is in-
+dependent of agents’ ESG tastes. Equivalently, we could
+view g as being deﬁned so that agents derive utility (disu-
+tility) from holdings that are greener (browner) than the
+market. Eqs. (7) and (8) imply a = μm /σ2
+m . Combining this
+with Eq. (6) and noting that the vector of market betas is
+βm = (1 /σ2
+m )/Sigma1w m , we obtain our ﬁrst proposition.
+Proposition 1 . Expected excess returns in equilibrium are
+given by
+μ = μm βm −
+¯d
+a
+g. (9)
+We see that expected excess returns deviate from their
+CAPM values, μm βm , due to ESG tastes for holding green
+stocks.
+Corollary 1 . If ¯d > 0 , the expected return on stock n is de-
+creasing in g n .
+As long as the mass of agents who care about sustain-
+ability is nonzero, ¯d is positive, and expected returns are
+decreasing in ESG characteristics. Given their ESG tastes,
+agents are willing to pay more for greener ﬁrms, thereby
+lowering the ﬁrms’ expected returns. Because the vec-
+tor of stocks’ CAPM alphas is deﬁned as α ≡ μ − μm βm ,
+Eq. (9) yields the following corollary.
+Corollary 2 . The CAPM alpha of stock n is given by
+αn = −
+¯d
+a
+g n . (10)
+If ¯d > 0 , green stocks have negative alphas, and brown stocks
+have positive alphas. Moreover, greener stocks have lower al-
+phas.
+As long as some agents care about sustainability,
+Eq. (10) implies that the alphas of stocks with g n > 0 are
+negative, the alphas of stocks with g n < 0 are positive, and
+αn is decreasing with g n . Furthermore, the negative rela-
+tion between αn and g n is stronger when risk aversion, a,
+is lower and when the average ESG taste, ¯d , is higher. 4
+Proposition 2 . The mean and variance of the excess return on
+agent i ’s portfolio are
+E ( ˜ r i ) = μm − δi
+( ¯d
+a 3 g ′ /Sigma1−1 g
+)
+(11)
+Var ( ˜ r i ) = σ2
+m + δ2
+i
+( 1
+a 4 g ′ /Sigma1−1 g
+)
+, (12)
+where δi ≡ d i − ¯d .
+4 Proposition 1 and its corollaries continue to hold if agents disagree
+on stocks’ ESG characteristics, g n . In that case, the results hold with g n
+replaced by the wealth-weighted average of agents’ perceived values of
+g n , adjusted for any covariance between those perceived values and ESG
+tastes. See the Appendix.
+Both equations are derived in the Appendix. Agents
+with δi > 0 accept below-market expected returns in ex-
+change for satisfying their stronger tastes for holding green
+stocks. As a result, agents whose tastes for green holdings
+are weaker ( δi < 0 ) enjoy above-market expected returns.
+In departing from market holdings, all agents with δi ⁄ = 0
+incur higher return volatility than that of the market port-
+folio.
+Corollary 3 . If ¯d > 0 and g ⁄ = 0 , agents with larger δi earn
+lower expected returns.
+Under the conditions of this corollary, the term in
+parentheses in Eq. (11) is strictly positive. Therefore, agents
+with stronger ESG tastes (i.e., larger δi ) earn lower ex-
+pected returns. The effect of δi on E ( ˜ r i ) is stronger when
+the average ESG taste is stronger (i.e., when ¯d is larger),
+when risk aversion a is smaller, and when g ′ /Sigma1−1 g is larger.
+The low expected returns earned by ESG-sensitive
+agents do not imply that these agents are unhappy. As we
+show in the Appendix, agent i ’s expected utility in equilib-
+rium is given by
+E
+{
+V ( ˜ W 1 i )
+}
+= ¯V e −
+δ2
+i
+2 a 2 g ′ /Sigma1−1 g , (13)
+where ¯V is the expected utility if the agent has δi = 0 . Ex-
+pected utility is increasing in δ2
+i (note from Eq. (2) that
+¯V < 0 ), so the more an agent’s ESG taste d i deviates from
+the average in either direction, the more ESG preferences
+contribute to the agent’s utility.
+2.2. Portfolio tilts and the ESG portfolio
+Substituting for μ from Eq. (9) into Eq. (4) , we obtain
+an agent’s portfolio weights:
+Proposition 3 . Agent i ’s equilibrium portfolio weights on the
+Ns t o c k s are given by
+X i = w m +
+(δi /a 2 )/Sigma1−1 g. (14)
+Proposition 3 implies three-fund separation, as each
+agent’s overall portfolio can be implemented with three as-
+sets: the riskless asset, the market portfolio, and an “ESG
+portfolio” whose weights are proportional to /Sigma1−1 g. The
+fraction of agent i ’s wealth in the riskless asset, 1 − ι′ X i =
+−
+(δi /a 2 )ι′ /Sigma1−1 g, can be positive or negative. The agent’s
+remaining wealth is invested in stocks. Speciﬁcally, the
+agent allocates a fraction φi of her remaining wealth to the
+ESG portfolio and a fraction 1 − φi to the market portfolio.
+To see this, note that the N ×1 vector of weights within
+agent i ’s stock portfolio, w i , equals the right-hand side of
+Eq. (14) multiplied by 1 / (ι′ X i ) , giving
+w i =
+1
+ι′
+(
+w m +
+(δi /a 2
+)/Sigma1−1 g
+)(
+w m +
+(δi /a 2 )/Sigma1−1 g
+)
+= (1 − φi ) w m + φi w g , (15)
+with the fraction of agent i ’s stock portfolio invested in the
+ESG portfolio given by
+φi =
+(δi /a 2 ) ι′ /Sigma1−1 g
+1 + (δi /a 2 ) ι′ /Sigma1−1 g
+, (16)
+554
+
+===== PAGE 6 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+and the N ×1 vector of weights in the ESG portfolio given
+by
+w g =
+1
+ι′ /Sigma1−1 g
+/Sigma1−1 g. (17)
+In the special case where ι′ /Sigma1−1 g = 0 , no agent holds the
+riskless asset, and the ESG portfolio is a zero-cost position,
+with 5
+w g = /Sigma1−1 g, (18)
+and w i = X i , so that
+w i = w m + φi w g , (19)
+with φi then deﬁned as
+φi = δi /a 2 . (20)
+Denote the ESG portfolio’s greenness as
+g g = w ′
+g g. (21)
+From Eqs. (17) and (18) , g g is nonzero as long as g ⁄ = 0 .
+Also, g g is negative if ι′ /Sigma1−1 g < 0 , but it is otherwise pos-
+itive. From Eqs. (16) through (20) , we see that φi has the
+same sign as the product of g g and δi if the denominator of
+φi in Eq. (16) is positive. From Eq. (14) , this last condition
+obtains if agent i invests a positive fraction of her wealth
+in stocks, so that ι′ X i > 0 .
+Therefore, for an agent with positive wealth in stocks
+and δi > 0 , φi is positive (negative) if g g is positive (nega-
+tive). That is, such an agent in general tilts away from the
+market portfolio in the direction of greenness, in that she
+tilts toward the ESG portfolio when it is green and away
+from it when it is brown. In contrast, agents with δi < 0
+tilt away from the ESG portfolio when it is green and to-
+ward it when it is brown. From Eq. (10) , the ESG portfolio’s
+CAPM alpha is
+αg = −
+¯d
+a
+g g , (22)
+whose sign is opposite that of g g . Therefore, for the same
+agents described above, those with positive (negative) val-
+ues of δi have ESG-portfolio tilts that produce negative
+(positive) alphas for their overall portfolios.
+The ESG tilt is zero (i.e., φi = 0 ) for agents with average
+ESG concerns, i.e., for whom d i = ¯d and thus δi = 0 . Those
+agents hold the market portfolio. In contrast, agents who
+are indifferent to ESG, for whom d i = 0 and thus δi < 0 ,
+tilt away from the market portfolio as explained above. It
+is suboptimal to say, “I don’t care about ESG, so I just hold
+the market.” In a world with ESG concerns, agents indif-
+ferent to ESG should tilt away from the market portfolio;
+otherwise they are not optimizing. The market portfolio is
+optimal for agents with average concerns about ESG but
+not for those indifferent to ESG.
+If all agents have identical ESG concerns, so that δi = 0
+for all i, then Eqs. (16) and (20) imply a zero ESG tilt for
+each agent. We thus have the following corollary.
+5 In the special case considered in Section 4 , in which ι′ /Sigma1−1 g = 0 and
+/Sigma1has a two-factor structure, w g is proportional to g, so that the ESG
+portfolio goes long green stocks and short brown stocks.
+Corollary 4 . If there is no dispersion in ESG tastes across
+agents, then all agents hold the market portfolio.
+For example, all agents hold the market portfolio when
+none of them have ESG concerns, as in the familiar CAPM.
+All agents also hold the market, however, when they have
+strong but equal ESG tastes. The reason is that stock prices
+then fully adjust to reﬂect those tastes, again making
+the market everybody’s optimal choice. Dispersion in ESG
+tastes is necessary for an ESG investment industry to exist.
+2.3. Two-factor pricing with the ESG portfolio
+The excess return on the ESG portfolio is ˜ r g = w ′
+g ˜ r . From
+Eqs. (8) and (17) and βm = (1 /σ2
+m )/Sigma1w m , the ESG portfolio’s
+market beta is zero (i.e., w ′
+g βm = 0 ). Premultiplying both
+sides of Eq. (9) by w ′
+g gives the expected excess return on
+the ESG portfolio as
+μg = −
+¯d
+a
+g g , (23)
+the same as its alpha in Eq. (22) . The variance of the ESG
+portfolio’s return is
+σ2
+g =
+( 1
+ι′ /Sigma1−1 g
+)
+2 g ′ /Sigma1−1 g =
+( 1
+ι′ /Sigma1−1 g
+)
+g g , (24)
+and the covariance of its return with the N assets is
+Cov( ˜ r , ˜ r g ) =
+( 1
+ι′ /Sigma1−1 g
+)
+g . (25)
+Deﬁne the vector of simple betas with respect to ˜ r g as βg =
+(1 /σ2
+g )Cov( ˜ r , ˜ r g ) . From Eqs. (24) and (25) ,
+βg =
+1
+g g
+g. (26)
+By combining Eqs. (9) , (23) , and (26) , we relate expected
+returns to betas on the market and the ESG portfolio:
+Proposition 4 . Expected excess returns in equilibrium are
+given by
+μ = μm βm + μg βg . (27)
+As noted earlier, the ESG portfolio is zero-beta, so that
+Cov( ˜ r g , ˜ r m ) = 0 . Thus βm and βg are also the slope coef-
+ﬁcients in the multivariate regression of ˜ r on ˜ r m and ˜ r g .
+Therefore, using Eq. (27) , we have a two-factor asset pric-
+ing model:
+Proposition 5 . Excess returns obey the regression model
+˜ r = βm ˜ r m + βg ˜ r g + ˜ ν, (28)
+in which E ( ˜ ν| ˜ r m , ˜ r g , βm , βg ) = 0 and all assets have zero two-
+factor alphas, equivalent to zero intercepts in the above re-
+gression.
+From Eqs. (9) , (10) , and (27) , the vector of CAPM alphas
+is given by
+α = βg μg (29)
+= −( ¯d /a ) g. (30)
+Eqs. (29) and (30) allow alternative interpretations of α.
+On one hand, Eq. (29) offers a risk-based interpretation:
+555
+
+===== PAGE 7 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+The elements of βg represent exposures to the risky re-
+turn ˜ r g , and μg is the expected return accompanying a
+unit of that risk. In other words, one can attribute assets’
+nonzero CAPM alphas to that omitted priced risk factor.
+On the other hand, the only reason that investors expose
+themselves to the risk in ˜ r g is that they have non-average
+tastes for green and brown holdings. While the popular
+risk-based interpretation of factor pricing models is me-
+chanically valid, we see here an example of how that in-
+terpretation can miss the underlying economics. The latter
+are evident in Eq. (30) , which reveals that the sources of α
+are tastes for known characteristics, g, not aversion to an
+additional fundamental risk. In Section 5 , however, we ex-
+tend our model to include an example of such risk, climate
+shocks, and we discuss how g can also reﬂect exposures to
+that risk.
+3. The ESG factor
+We next introduce an empirically identiﬁable ESG fac-
+tor, closely related to the ESG portfolio, that maintains
+two-factor pricing. After discussing approaches for con-
+structing the ESG factor, we analyze its underlying eco-
+nomic sources of risk. The latter analysis provides insights
+into ex post versus ex ante performance of green stocks
+relative to brown.
+3.1. Constructing the ESG factor
+We deﬁne the ESG factor as
+˜ f g = (1 /g g ) ˜ r g , (31)
+so that the traded factor ˜ f g is simply the excess return on
+a position in the ESG portfolio, either long or short, lev-
+ered or delevered, depending on the sign and value of g g .
+Using Eq. (26) , we can then rewrite the two-factor model
+in Eq. (28) as
+˜ r = βm ˜ r m + g ˜ f g + ˜ ν. (32)
+Assets’ loadings on the ESG factor, their ESG betas, are sim-
+ply their ESG characteristics, g. A higher-than-expected re-
+alization of ˜ f g boosts the returns on green stocks and de-
+presses those on brown ones. From Eqs. (23) and (31) , the
+ESG factor’s premium is negative:
+E
+{˜ f g
+}
+= − ¯d /a. (33)
+One approach to constructing the ESG factor is to run a
+cross-sectional regression of market-adjusted excess stock
+returns, ˜ r e ≡ ˜ r − βm ˜ r m , on the stocks’ ESG characteristics,
+g, with no intercept. The slope from that regression is
+ˆ f g =
+g ′ ˜ r e
+g ′ g
+, (34)
+which from Eq. (32) has mean-zero estimation error ˆ f g −
+˜ f g = g ′ ˜ ν/g ′ g. As N grows large, the probability limit of this
+estimation error is zero as long as the covariance matrix
+of ˜ ν has bounded eigenvalues and the cross-sectional sec-
+ond moment of the elements of g is bounded below by
+a positive value. The ESG factor is thus essentially just a
+g-weighted average of market-adjusted stock returns. To
+obtain the time series of the ESG factor’s realizations in
+practice, one can run a series of such cross-sectional re-
+gressions, period by period.
+A simpler version of ˆ f g arises if we add the assump-
+tions of g ′ ι = 0 and g ′ βm = 0 ; that is, if we assume that
+not only the value-weighted average of g n ’s but also their
+equal- and beta-weighted averages are zero (recall from
+Eq. (8) that g ′ w m = 0 ). In this case, g ′ ˜ r e in Eq. (34) equals
+g ′ ˜ r , so ˆ f g is just a scaled (by g ′ g) excess return on a zero-
+cost portfolio whose weights are proportional to g. Simpli-
+fying further, ˆ f g is proportional to the difference between
+returns on green-stock and brown-stock portfolios:
+ˆ f g ∝ ˜ r green − ˜ r brown , (35)
+with the weights in the green (brown) portfolio propor-
+tional to the positive (negative) elements of g. 6 A popu-
+lar approach to constructing traded factors (e.g., Fama and
+French, 1993 ) is to have them be excess returns on long-
+short portfolios whose stock weights sum to zero. Our
+model provides a formal justiﬁcation for such an ap-
+proach in the context of ESG investing. However, unlike
+in Fama and French (1993) , stocks in our ESG factor are
+weighted by their g n ’s rather than by their market capital-
+izations.
+3.2. Sources of ESG factor risk
+In this subsection, we extend our model from
+Section 2 to identify potential sources of risk in the
+ESG factor. The strength of ESG concerns can change
+over time, both for investors in ﬁrms’ shares and for the
+customers who buy the ﬁrms’ goods and services. If ESG
+concerns strengthen, customers could shift their demands
+for goods and services to greener providers (the “cus-
+tomer” channel), and investors could derive more utility
+from holding the stocks of greener ﬁrms (the “investor”
+channel). Both channels contribute to the ESG factor’s risk
+in our framework.
+To model the customer channel, we need to model ﬁrm
+proﬁts. Let ˜ u n denote the ﬁnancial payoff (proﬁt in our
+one-period setting) that ﬁrm n produces at time 1, for each
+dollar invested in the ﬁrm’s stock at time 0. We assume a
+simple two-factor structure for the N ×1 vector of these
+payoffs of the form
+˜ u −E 0 { ˜ u } = ˜ z m βm + ˜ z g g + ˜ ζ, (36)
+where E 0 { } denotes expectation as of time 0; the ran-
+dom quantities ˜ z m , ˜ z g , and ˜ ζ have zero means and are
+mutually uncorrelated; β′
+m g = 0 ; and the elements of ˜ ζ
+have identical variances and are uncorrelated with each
+other. The shock ˜ z m can be viewed as a macro output
+factor, with ﬁrms’ sensitivities to that pervasive shock
+being proportional to their stocks’ market betas. The shock
+˜ z g represents the effect on ﬁrms’ payoffs of unanticipated
+ESG-related shifts in customers’ demands. These shifts
+can result not only from changes in consumers’ tastes
+but also from revisions of government policy. For exam-
+ple, pro-environmental regulations could subsidize green
+6 In Eq. (35) , the constant of proportionality is time invariant if g ′ g and
+ι′ | g| both are.
+556
+
+===== PAGE 8 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+products, leading to more customer demand, or handicap
+brown products, leading to less demand. A positive ˜ z g
+shock increases the payoffs of green ﬁrms but hurts those
+of brown ﬁrms.
+To model the investor channel, we assume that the av-
+erage ESG taste ¯d shifts unpredictably from time 0 to time
+1. We therefore need to price stocks not only at time 0, as
+we have done so far, but also at time 1, after the prefer-
+ence shift in ¯d occurs. To make this possible in our simple
+framework, we split time 1 into two times, 1 − and 1 + , that
+are close to each other. We calculate prices p 1 as of time
+1 −, by which time ESG tastes have shifted and all risk as-
+sociated with ˜ u has been realized. Stockholders receive ˜ u
+at time 1 + . During the instant between times 1 − and 1 + ,
+these payoffs are riskless. For economy of notation, we as-
+sume the risk-free rate r f = 0 .
+There are two generations of agents, Gen-0 and Gen-1.
+Gen-0 agents live from time 0 to time 1 −; Gen-1 agents
+live from time 1 − to 1 + . Gen-1 agents have identical tastes
+of d i = ¯d 1 , a condition that gives them ﬁnite utility, given
+the absence of both risk and position constraints during
+their lifespan. Neither a nor g change across generations. At
+time 1 −, Gen-0 agents sell stocks to Gen-1 agents at prices
+p 1 , which depend on Gen-1 ESG tastes ¯d 1 and the ﬁnancial
+payoff ˜ u . This simple setting maintains single-period payoff
+uncertainty while also allowing risk stemming from shifts
+in ESG tastes to enter via both channels described earlier.
+Given that the payoff ˜ u n is known at the time when
+the price p 1 ,n is computed, p 1 ,n is equal to ˜ u n discounted
+at the expected return implied by Eq. (9) with βm,n set to
+zero:
+p 1 ,n =
+˜ u n
+1 − g n
+a
+¯d 1
+≈ ˜ u n +
+g n
+a
+¯d 1 . (37)
+The approximation above holds well for typical discount
+rates, which are not too far from zero. 7 Representing it as
+an equality for all assets gives
+p 1 = ˜ u +
+1
+a
+¯d 1 g, (38)
+which is the vector of payoffs to Gen-0 agents. Its expected
+value at time 0 equals
+E 0 { p 1 } = E 0 { ˜ u } +
+1
+a
+E 0 { ¯d 1 } g. (39)
+Note that p 1 −E 0 { p 1 } equals the vector of unexpected
+returns for Gen-0 agents, because ˜ u n is the ﬁrm’s pay-
+off per  dollar invested in its stock at time 0. From
+Eqs. (36) through (39) , these unexpected returns are given
+by
+˜ r −E 0 { ˜ r } = βm ˜ z m + g ˜ f e
+g + ˜ ζ (40)
+with
+˜ f e
+g = ˜ z g +
+1
+a
+[¯d 1 −E 0 { ¯d 1 }
+]
+. (41)
+7 Let ρ1 ≡ ˜ u n −1 and ρ2 ≡ g n
+a ¯d 1 . The approximation in Eq. (37) follows
+from 1+ ρ1
+1 −ρ2 = (1+ ρ1 )(1+ ρ2 )
+1 −ρ2
+2 ≈ (1 + ρ1 )(1 + ρ2 ) ≈ 1 + ρ1 + ρ2 , where we as-
+sume that the second-order terms ρ2
+2 and ρ1 ρ2 are small enough to be
+neglected. This assumption seems plausible because the magnitudes of ρ1
+and ρ2 are comparable to discount rates. We rely on this approximation
+in the remainder of Section 3 .
+As shown in the Appendix, when N is large,
+˜ f e
+g ≈ ˜ f g −E 0 { ˜ f g } , (42)
+where ˜ f g is the ESG factor deﬁned in Eq. (31) .
+Eq. (41) therefore identiﬁes the two sources of risk in
+the ESG factor discussed earlier: ˜ z g represents the cus-
+tomer channel while the other term represents the in-
+vestor channel. While the customer channel follows closely
+from the structure assumed in Eq. (36) , the investor chan-
+nel emerges from the equilibrium dependence of stock
+prices on ¯d .
+The elements of ˜ f e
+g g in Eq. (40) drive a wedge between
+expected and realized returns for Gen-0 agents. Suppose
+that ESG concerns strengthen unexpectedly, so that ˜ f e
+g > 0 .
+A ﬁrm’s unexpected return in Eq. (40) is then expected to
+be positive for green ﬁrms (for which ˜ f e
+g g n > 0 ) and nega-
+tive for brown ﬁrms (for which ˜ f e
+g g n < 0 ), because the ex-
+pected values of ˜ z m and ˜ ζ are both zero. In other words,
+if ˜ ϵn denotes the unexpected return for stock n, E { ˜ ϵn | ˜ f e
+g >
+0 , g n > 0 } > 0 , and E { ˜ ϵn | ˜ f e
+g > 0 , g n < 0 } < 0 . We thus have
+the following proposition.
+Proposition 6 . Green (brown) stocks perform better (worse)
+than expected if ESG concerns strengthen unexpectedly via ei-
+ther the customer channel or the investor channel.
+As noted earlier, green stocks have lower expected re-
+turns than brown stocks. A positive realization of ˜ f e
+g , how-
+ever, boosts the realized performance of green stocks while
+hurting that of brown stocks. If one computes average re-
+turns over a sample period when ESG concerns strengthen
+more than investors expected, so that the average of ˜ f e
+g
+over that period is strongly positive, then green stocks
+outperform brown stocks, contrary to what is expected.
+Furthermore, if ESG concerns strengthen via the investor
+channel, making d increase, then green stocks’ alphas are
+more negative at the end of the period than the begin-
+ning (see Corollary 2 ). In this case, past outperformance of
+green stocks makes it especially likely that they will un-
+derperform in the future.
+To empirically distinguish alphas from unexpected
+shocks, one could use proxies for shifts in ESG tastes. Prox-
+ies for shifts in investors’ tastes could come from investor
+surveys or from the ﬂows in and out of ESG-tilted funds.
+Proxies for shifts in customers’ ESG tastes could come from
+consumer surveys or from data on ﬁrm revenues or prof-
+itability. With such proxies, one could test whether green
+stocks outperform brown ones when either type of ESG
+taste strengthens unexpectedly. In addition, one could at-
+tempt to separate the effects of investors’ and customers’
+tastes, because only shifts in investors’ tastes make green
+stocks’ future alphas more negative after green stocks out-
+perform.
+4. Quantitative implications
+To explore the model’s quantitative implications, we
+consider a special case with two types of agents: ESG in-
+vestors, for whom d i = d > 0 , and non-ESG investors, for
+whom d i = 0 . ESG investors thus enjoy nonpecuniary bene-
+ﬁts dg, whereas non-ESG investors receive no beneﬁts (see
+557
+
+===== PAGE 9 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+Fig. 1. ESG versus non-ESG expected portfolio return. This ﬁgure plots
+the expected excess return on the portfolio of ESG investors mi-
+nus the corresponding value for non-ESG investors. Results are plot-
+ted against λ, the fraction of wealth belonging to ESG investors, and
+for different values of /Delta1, the maximum certain return an ESG investor
+would sacriﬁce to invest in her optimal portfolio instead of the market
+portfolio.
+Eq. (3) ). Let λ denote the fraction of total wealth belonging
+to ESG investors, so that 1 − λ is the corresponding frac-
+tion for non-ESG investors.
+We further simplify the two-factor setting in Eq. (32) by
+assuming that ν in Eq. (32) has a scalar covariance matrix,
+η2 I N , where I N is the identify matrix. The covariance ma-
+trix of ˜ r is therefore of the form
+/Sigma1= σ2
+m βm β′
+m + σ2
+f gg ′ + η2 I N . (43)
+Recall that w ′
+m g = 0 , which here implies ι′ g = 0 . We
+assume that β′
+m g = 0 , so that ESG characteristics are or-
+thogonal to market betas. We also assume equal market
+weights across stocks, w m = (1 /N) ι. Without loss of gener-
+ality, we set (g ′ g) /N = 1 . In all calculations, we take limits
+as the number of stocks, N, grows large.
+4.1. Parameter values
+In this simple setting there are only four parameters
+whose numerical values are relevant to the initial set of
+results we present: λ, a, σm , and /Delta1(deﬁned below).
+We vary λ over its entire [0 , 1] range. We set σm = 0 . 20 ,
+roughly the historical standard deviation of the market
+portfolio’s excess return. Following Eq. (7) , we then set
+a = μm /σ2
+m with μm = 0 . 08 , roughly the market’s histori-
+cal mean excess return. 8
+8 Identifying σ2
+m in Eq. (43) as the market variance is justiﬁed for large
+N. If we instead denote that variance as simply σ2 , note that the implied
+variance of the market, w ′
+m /Sigma1w m , is
+σ2
+m = 1
+N 2 ι′ (σ2 βm β′
+m + σ2
+f gg ′ + η2 I N
+)ι = σ2 + η2
+N , (44)
+noting w ′
+m βm = (1 /N) ι′ βm = 1 and recalling ι′ g = 0 , so we simply set
+σ2 = σ2
+m , the limit as N grows large.
+Rather than calibrating d, we translate it to a more eas-
+ily interpreted quantity, /Delta1. We deﬁne /Delta1as the maximum
+rate of return that an ESG investor is willing to sacriﬁce,
+for certain, to invest in her desired portfolio rather than in
+the market portfolio. The sacriﬁce is greatest when there
+are no other ESG investors, i.e., when λ ≈ 0 , because that
+is when the ESG investor’s portfolio most differs from
+the market portfolio. Speciﬁcally, we deﬁne /Delta1≡ r ∗
+esg −r ∗
+m ,
+where r ∗
+esg is the ESG investor’s certainty equivalent excess
+return when investing in her optimal portfolio, and r ∗
+m is
+the same investor’s corresponding certainty equivalent if
+forced to hold the market portfolio instead. Both certainty
+equivalents are computed for λ = 0 . In this setting,
+/Delta1=
+d 2 g g
+2 a 3 , (45)
+as shown in the Appendix, along with the expressions for
+r ∗
+esg and r ∗
+m . Note that /Delta1is larger under stronger ESG tastes
+(larger d), lower risk aversion (smaller a ), and a greener
+ESG portfolio (larger g g ). We consider four values of /Delta1:
+1%, 2%, 3%, and 4% per year.
+4.2. ESG versus non-ESG expected portfolio returns
+The difference in expected excess returns on the port-
+folios of the two investor types is
+E { ˜ r esg } −E { ˜ r non } = −2 λ/Delta1, (46)
+as shown in the Appendix. Fig. 1 plots this difference as
+λ goes from zero to one. The difference is zero at λ = 0 ,
+but it declines linearly as λ increases. At λ = 1 , ESG tastes
+are fully reﬂected in prices, and the difference reaches its
+largest magnitude. In that scenario, the difference is −2 %
+when /Delta1= 0 . 01 , but it is −8 % when /Delta1= 0 . 04 . ESG in-
+vestors thus earn signiﬁcantly lower returns than non-ESG
+investors when the former account for a larger fraction of
+wealth (larger λ) and when they have stronger ESG de-
+mands (larger /Delta1). In both scenarios, ESG tastes exert large
+effects on asset prices, hurting ESG investors’ returns.
+The certainty equivalent returns of the two types, r ∗
+esg
+for ESG investors and r ∗
+non for non-ESG investors, are both
+increasing in /Delta1, but r ∗
+esg decreases with λ whereas r ∗
+non
+increases with λ, as we show in the Appendix. As λ in-
+creases, stock prices are affected more by ESG investors’
+tastes, so these investors must pay more for the green
+stocks they desire. The resulting drop in r ∗
+esg need not im-
+ply, however, that an ESG investor is made less happy by
+an increased presence of ESG investors. With the latter,
+there is also greater social impact of ESG investing, as we
+discuss in Section 6 . The additional utility that the ESG in-
+vestor derives from the greater social impact, as in Eq. (68) ,
+can exceed the drop in utility corresponding to the lower
+r ∗
+esg . Non-ESG investors, on the other hand, do prefer to
+be lonely in their ESG tastes. A non-ESG investor is hap-
+piest when all other investors are ESG ( λ = 1 ), because
+that scenario maximizes deviations of prices from pecu-
+niary fundamentals, which the non-ESG investor exploits
+to her advantage. This investor’s preference for loneliness
+in ESG tastes is even stronger if she derives utility from
+social impact, because that impact is maximized when
+λ = 1 .
+558
+
+===== PAGE 10 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+Fig. 2. Correlation of ESG investor’s portfolio return with the market re-
+turn. The ﬁgure plots the correlation between the returns on the ESG in-
+vestor’s portfolio and the market portfolio. Results are plotted against λ,
+the fraction of wealth belonging to ESG investors, and for different val-
+ues of /Delta1, the maximum certain return an ESG investor would sacriﬁce to
+invest in her optimal portfolio instead of the market portfolio.
+4.3. Correlation between the ESG return and the market
+return
+The correlation between the return on an ESG investor’s
+portfolio and the return on the market portfolio is derived
+in the Appendix:
+ρ( ˜ r esg , ˜ r m ) =
+σm √
+σ2
+m + 2/Delta1
+a (1 − λ) 2
+. (47)
+Fig. 2 plots the value of ρ(
+˜ r esg , ˜ r m
+)
+as λ goes from zero
+to one. The correlation takes its lowest value at λ = 0 . For
+/Delta1= 0 . 01 , that value is nearly 0.9, whereas for /Delta1= 0 . 04 ,
+it is just over 0.7. As /Delta1increases, indicating that ESG
+investors feel increasingly strongly about ESG, those in-
+vestors’ portfolios become increasingly different from the
+market portfolio in terms of ρ(
+˜ r esg , ˜ r m
+)
+, and this effect is
+strongest when λ = 0 . However, as λ approaches one, so
+does ρ(
+˜ r esg , ˜ r m
+)
+. When ESG investors hold an increasingly
+large fraction of wealth, market prices adjust to their pref-
+erences, and all portfolios converge to the market portfolio.
+4.4. Alphas and the investor surplus
+The alphas of the ESG and non-ESG investors’ portfolios
+are derived in the Appendix:
+αesg = −2 λ(1 − λ)/Delta1 (48)
+αnon = 2 λ2 /Delta1. (49)
+Panel A of Fig. 3 plots αesg as λ goes from zero to
+one. ESG investors earn zero alpha at both extremes of
+λ. Their portfolio differs most from the market portfo-
+lio when λ = 0 , but all stocks have zero alphas in that
+scenario, because there is no impact of ESG investors on
+prices. At the other extreme, when λ = 1 , many stocks
+have nonzero alphas, due to the price impacts of ESG in-
+vestors, but ESG investors hold the market, so again they
+earn zero alpha. Otherwise, ESG investors earn negative al-
+pha, which is greatest in magnitude when λ = 0 . 5 . At that
+peak, αesg = −0 . 5 % when /Delta1= 0 . 01 , but αesg = −2 % when
+/Delta1= 0 . 04 .
+Interestingly, these worst-case alphas are substantially
+smaller in magnitude than the corresponding /Delta1’s. For ex-
+ample, when ESG investors are willing to give up a 2% cer-
+tain return to hold their portfolio rather than the market
+(i.e., /Delta1= 0 . 02 ), their worst-case alpha is only −1 %. The
+reason is that equilibrium stock prices adjust to ESG de-
+mands. These demands push the market portfolio toward
+the portfolio desired by ESG investors, thereby bringing
+those investors’ negative alphas closer to zero. Through
+this adjustment of market prices, ESG investors earn an
+“investor surplus” in that they do not have to give up as
+much return as they are willing to in order to hold their
+desired portfolio.
+The magnitude of this investor surplus is easy to read
+from Panel B of Fig. 3 , which plots αesg as a function of
+/Delta1. For any given value of λ, investor surplus is the differ-
+ence between the corresponding solid line and the dashed
+line, which has a slope of −1 . The surplus increases with
+/Delta1because the stronger the ESG investors feel about green-
+ness, the more they move market prices. The relation be-
+tween the surplus and λ is richer. Formally, investor sur-
+plus I ≡ αesg + /Delta1follows quickly from Eq. (48) :
+I = /Delta1[1 −2 λ(1 − λ)] . (50)
+Because 0 ≤ λ ≤ 1 , the value in brackets is always between
+0.5 and 1, so I is always between /Delta1/ 2 and /Delta1. It reaches its
+smallest value of /Delta1/ 2 when λ = 0 . 5 and its largest value of
+/Delta1when λ = 0 or 1. For example, when /Delta1= 0 . 02 , I ranges
+from 1% to 2% depending on λ.
+Fig. 4 plots αnon as a function of λ and /Delta1. Like ESG in-
+vestors, non-ESG investors earn zero alpha when λ = 0 or
+/Delta1= 0 . However, αnon increases in both λ or /Delta1. This alpha
+can be as large as 8% when λ = 1 and /Delta1= 0 . 04 . A non-
+ESG investor earns the highest alpha when all other in-
+vestors are ESG (i.e., λ = 1 ) and when those investors’ ESG
+tastes are strong (i.e., /Delta1is large) because the price impact
+of ESG tastes is then particularly large. By overweighting
+brown stocks, whose alphas are positive and large, and un-
+derweighting green stocks, whose alphas are negative and
+large, the non-ESG investor earns a large positive alpha.
+Given our assumptions, the differences between the al-
+phas plotted in Figs. 3 and 4 are equal to the differences
+in expected returns plotted in Fig. 1 . Speciﬁcally, from
+Eqs. (46) through (49) , αesg − αnon = E { ˜ r esg } −E { ˜ r non } .
+4.5. Size of the ESG investment industry
+We deﬁne the size of the ESG investment industry by
+the aggregate amount of ESG-driven investment that devi-
+ates from the market portfolio, divided by the stock mar-
+ket’s total value. In general, this aggregate ESG tilt is given
+by
+T =
+∫
+i : d i > 0
+ω i T i di, (51)
+559
+
+===== PAGE 11 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+Fig. 3. Alphas of ESG investors. This ﬁgure plots the alpha for the portfo-
+lio held by ESG investors as a function of λ, the fraction of wealth belong-
+ing to ESG investors, and /Delta1, the maximum certain return an ESG investor
+would sacriﬁce to invest in her optimal portfolio instead of the market
+portfolio. Panel A plots the ESG alpha as a function of λ for four different
+values of /Delta1; Panel B ﬂips the roles of λ and /Delta1. The dashed line in Panel B
+has a slope of −1 . The differences between the solid lines and the dashed
+line represent investor surplus.
+where
+T i =
+1
+2
+ι′ | w i −w m | . (52)
+The aggregate ESG tilt, T , is a wealth-weighted average
+of agent-speciﬁc tilts, T i , across all agents who care at
+least to some extent about ESG (i.e., d i > 0 ). Each T i is
+one half of the sum of the absolute values of the N el-
+ements of agent i ’s ESG tilt, | w i −w m | . We compute ab-
+solute values of portfolio tilts because ESG-motivated in-
+vestors both overweight and underweight stocks relative
+to the market. We divide by two because we do not want
+to double-count: for each dollar that an agent moves into
+a green stock, she must move a dollar out of another
+stock.
+With two types of agents, the expression for T simpli-
+ﬁes to
+T =
+1
+N
+λ(1 − λ)
+√
+/Delta1
+2 aσ2
+f
+ι′ | g| , (53)
+Fig. 4. Alphas of non-ESG investors. This ﬁgure plots the alpha for the
+portfolio held by non-ESG investors as a function of λ, the fraction of
+wealth belonging to ESG investors, and /Delta1, the maximum certain return
+an ESG investor would sacriﬁce to invest in her optimal portfolio instead
+of the market portfolio. Panel A plots the ESG alpha as a function of λ for
+four different values of /Delta1; Panel B ﬂips the roles of λ and /Delta1.
+as we show in the Appendix. The aggregate tilt depends
+on the absolute values of the elements of g. To eval-
+uate ι′ | g| in this quantitative exercise, we further as-
+sume that the elements of g are normally distributed
+across stocks, in addition to the previous assumptions that
+these elements have zero mean and unit variance (recall
+ι′ g = 0 and (g ′ g) /N = 1 ). Then ι′ | g| = N E (| g n | ) = N
+√
+2 /π.
+Therefore,
+T = λ(1 − λ)
+√
+/Delta1
+aπσ2
+f
+. (54)
+For this analysis, we now need to specify the value of
+one additional parameter, σ2
+f , the standard deviation of the
+ESG factor. We set σf = (0 . 2) σm , but the effect of this pa-
+rameter is easily gauged from Eq. (54) . The more volatile
+is the ESG factor, the more reluctant both ESG and non-
+ESG investors are to tilt away from the market and thereby
+560
+
+===== PAGE 12 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+Fig. 5. Size of the ESG industry. The ﬁgure plots the aggregate dollar size
+of ESG investors’ deviations from the market portfolio (the ESG “tilt”), ex-
+pressed as a fraction of the market’s total capitalization. In Panel A, re-
+sults are plotted against λ, the fraction of wealth belonging to ESG in-
+vestors, and for different values of /Delta1, the maximum certain return an
+ESG investor would sacriﬁce to invest in her optimal portfolio instead of
+the market portfolio. In Panel B, results are plotted against /Delta1and for dif-
+ferent values of λ.
+expose themselves to the ESG factor’s risk. Higher risk
+aversion (greater a ) also makes them more reluctant to do
+so, but they tilt more when ESG investors have stronger
+tastes (greater /Delta1).
+Fig. 5 plots T for different values of λ and /Delta1. In Panel
+A, λ goes from zero to one. At both λ = 0 and λ = 1 , we
+have T = 0 because all investors hold the market portfolio.
+Again, we see that dispersion in ESG tastes is needed for
+an ESG investment industry to exist. The maximum value
+of T in Eq. (54) always occurs at λ = 0 . 5 , the maximum of
+λ(1 − λ) . In Panel B, /Delta1goes from 0 to 0.04. Larger values
+of /Delta1produce larger values of T . This relation between /Delta1
+and T is concave (see also Eq. (54) ). For example, the ESG
+industry peaks at 35% of the stock market’s value when
+/Delta1= 0 . 02 , but doubling the strength of ESG tastes (raising
+/Delta1to 0.04) increases that maximum industry size by less
+than half, to 50% of the market’s value. We see that the
+price impact of ESG tastes weakens their impact on the
+size of the ESG investment industry.
+5. Climate risk
+Sustainable investing is motivated in part by concerns
+about climate change. Many experts expect climate change
+to impair quality of life, lowering utility of the typical in-
+dividual beyond what is captured by climate’s effect on
+wealth. Unanticipated climate changes present investors
+with an additional source of risk, which is non-traded and
+only partially insurable. 9 This section extends our model
+from Section 2 to include climate risk.
+Let ˜ C denote climate at time 1, which is unknown at
+time 0. We modify the utility function for individual i in
+Eq. (2) to include ˜ C as follows:
+V ( ˜ W 1 i , X i , ˜ C ) = −e −A i ˜ W 1 i −b ′
+i X i −c i ˜ C . (55)
+Let ¯c ≡
+∫
+i ω i c i di, the wealth-weighted mean of climate sen-
+sitivity across agents. We assume ¯c > 0 , so that agents dis-
+like low realizations of ˜ C , on average. We also assume ˜ C
+is normally distributed, and without loss of generality we
+set E { ˜ C } = 0 and Var { ˜ C } = 1 . Besides replacing Eq. (2) with
+Eq. (55) , we maintain all other assumptions from Section 2 .
+In principle, “climate” can be interpreted broadly, for
+example, as “social climate.” However, for shocks to cli-
+mate to affect asset prices, these shocks must enter the
+average agent’s utility, in that ¯c > 0 . This assumption is
+nontrivial because individuals’ views on various social is-
+sues, such as guns and abortion, are quite heterogeneous
+in practice. We emphasize the narrow interpretation of cli-
+mate (“E” in ESG), for which the assumption is likely to
+hold. Indeed, the correlations in ESG ratings across rating
+agencies are higher for the “E” ratings than for the “S” and
+“G” ratings (e.g., Berg et al., 2019 ).
+5.1. Expected returns and portfolio holdings
+Climate risk affects equilibrium stock returns, as shown
+in the Appendix.
+Proposition 7 . Expected excess returns in equilibrium are
+given by
+μ = μm βm −
+¯d
+a
+g + ¯c
+(
+1 − ρ2
+mC
+)ψ, (56)
+where ψ is the N ×1 vector of “climate betas” (slope coeﬃ-
+cients on ˜ C in a multivariate regression of ˜ ϵon both ˜ ϵm and
+˜ C ), and ρmC is the correlation between ˜ ϵm and ˜ C .
+Expected returns depend on climate betas, ψ, which
+represent ﬁrms’ exposures to non-market climate risk. To
+understand the regression deﬁning ψ, recall that ˜ ϵis an
+N ×1 vector of unexpected stock returns from Eq. (1) and
+˜ ϵm is the unexpected market return. A ﬁrm’s climate beta
+9 In that sense, climate risk is related to “background risk” analyzed
+in prior work. Research into the risk associated with non-marketable
+assets originates with Mayers (1972) . Examples of non-traded system-
+atic risk factors include human capital ( Fama and Schwert, 1977 ), liquid-
+ity ( Pástor and Stambaugh, 2003 ), and innovation-induced displacement
+( Garleanu et al., 2012 ).
+561
+
+===== PAGE 13 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+is its loading on ˜ C after controlling for the market return.
+Climate betas, ψ n , are likely to be related to ESG charac-
+teristics, g n , as we argue in Section 5.2 .
+Compared to Eq. (9) , expected excess returns contain an
+additional component given by the last term on the right-
+hand side of Eq. (56) . Stock n ’s climate beta, ψ n , enters ex-
+pected return positively. Thus, a stock with a negative ψ n ,
+which provides investors with a climate-risk hedge, has a
+lower expected return than it would in the absence of cli-
+mate risk. Vice versa, a stock with a positive ψ n , which
+performs particularly poorly when the climate worsens un-
+expectedly, has a higher expected return.
+Proposition 8 . Agent i ’s equilibrium portfolio weights on the
+Ns t o c k s are given by
+X i = w m +
+δi
+a 2
+(/Sigma1−1 g
+)
+− γi
+a
+(/Sigma1−1 σϵC
+)
+, (57)
+where γi ≡ c i − ¯c and σϵC is an N ×1 vector of covariances
+between ˜ ϵn and ˜ C .
+Eq. (57) , which we prove in the Appendix, implies four-
+fund separation. The ﬁrst three funds are the same as in
+Proposition 3 ; the fourth one is a climate-hedging portfo-
+lio whose weights are proportional to /Sigma1−1 σϵC . Agents with
+γi > 0 , whose climate sensitivity is above average, short
+the hedging portfolio, whereas agents with γi < 0 go long.
+The climate-hedging portfolio, /Sigma1−1 σϵC , is a natural
+mimicking portfolio for ˜ C . To see this, note that the N ele-
+ments of /Sigma1−1 σϵC are the slope coeﬃcients from the mul-
+tiple regression of ˜ C on ˜ ϵ. Therefore, the return on the
+hedging portfolio has the highest correlation with ˜ C among
+all portfolios of the N stocks. Investors in our model hold
+this maximum-correlation portfolio, to various degrees de-
+termined by their γi , to hedge climate risk. The climate-
+hedging portfolio can tilt toward either green stocks or
+brown stocks, depending on how returns on each type re-
+late to climate shocks. The latter issue is addressed next.
+5.2. Green stocks as climate hedges
+Ultimately the issue of whether green stocks or brown
+stocks are better climate hedges is an empirical question,
+because sensible economic arguments can be made either
+way. The argument that green stocks should hedge climate
+risk can be motivated through both channels described in
+Section 3 .
+First, consider the customer channel. Unexpected wors-
+ening of the climate can heighten consumers’ climate
+concerns, prompting greater demands for goods and ser-
+vices of greener providers. These demands can arise not
+only from consumers’ preferences but also from govern-
+ment regulation. Negative climate shocks can prompt gov-
+ernment regulations that favor green providers or pe-
+nalize brown ones. For example, the new regulations
+could subsidize green products and tax, or even prohibit,
+brown ones. Half of the institutional investors surveyed by
+Krueger et al. (2020) state that climate risks related to reg-
+ulation have already started to materialize.
+Second, consider the investor channel. Unexpected
+worsening of the climate can strengthen investors’ pref-
+erence for green holdings (i.e., increase ¯d ), possibly
+as a result of stronger public pressure on institutional
+investors to divest from brown assets. For example,
+Choi et al. (2020) show that retail investors sell carbon-
+intensive ﬁrms in extremely warm months, consistent with
+¯d rising in such months.
+Climate shocks are thus likely to correlate negatively
+with both components of the ESG factor in Eq. (41) . Green
+stocks, which have positive exposures to this factor, are
+likely to have negative exposures to ˜ C . These arguments
+imply a negative correlation between g n and ψ n across
+ﬁrms.
+One can also argue that the better hedges of climate
+risk are brown stocks, not green. Baker et al. (2020) as-
+sume negative climate shocks result from positive shocks
+to the output of brown ﬁrms. The latter shocks trans-
+late to positive unexpected returns on those ﬁrms’ stocks,
+thereby making brown stocks climate hedges. As noted
+earlier, whether brown stocks or green stocks better hedge
+climate risk ultimately rests on empirical evidence.
+The evidence suggests that the better climate hedges
+are green stocks. For example, Choi et al. (2020) show that
+green ﬁrms, as measured by low carbon emissions, outper-
+form brown ﬁrms during months with abnormally warm
+weather, which the authors argue alerts investors to cli-
+mate change. Engle et al. (2020) report that green ﬁrms, as
+measured by high E-Scores from Sustainalytics, outperform
+brown ﬁrms in periods with negative climate news. Both
+studies thus show that a high-minus-low g n stock portfo-
+lio is a good hedge against climate risk, indicating that g n
+is negatively correlated with ψ n across ﬁrms.
+In the special case where this negative correlation is
+perfect, so that
+ψ n = −ξg n , (58)
+where ξ > 0 is a constant, Eq. (56) simpliﬁes to
+μ = μm βm −
+[ ¯d
+a
++ ¯c
+(
+1 − ρ2
+mC
+)ξ
+]
+g. (59)
+Stock n ’s CAPM alpha is then given by
+αn = −
+[ ¯d
+a
++ ¯c
+(
+1 − ρ2
+mC
+)ξ
+]
+g n . (60)
+Both terms inside the brackets are positive, so the negative
+relation between αn and g n is stronger than in Corollary 2 .
+Greener stocks now have lower CAPM alphas not only be-
+cause of investors’ tastes for green holdings, but also be-
+cause of greener stocks’ ability to better hedge climate
+risk. Climate risk thus represents another reason to expect
+green stocks to underperform brown ones over the long
+run. For the same reason, green stocks have a lower cost
+of capital than brown stocks relative to the CAPM.
+In this special case, two-factor pricing from
+Section 3 continues to hold. Each stock has a zero al-
+pha in the two-factor model in Eq. (32) . The ESG factor
+is still deﬁned as in Eq. (31) , but its premium is reduced
+by ¯c
+(
+1 − ρ2
+mC
+)ξ, as compared to Eq. (33) . This reduction
+reﬂects compensation for climate risk. The compensation
+is negative because greener ﬁrms are better hedges against
+this risk. The ESG factor’s premium thus has one taste-
+based component, − ¯d /a, and one risk-based component,
+−¯c
+(
+1 − ρ2
+mC
+)ξ.
+562
+
+===== PAGE 14 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+6. Social impact
+Does sustainable investing produce real social impact?
+This section explores how ﬁrms respond to the asset pric-
+ing effects from Section 2 . We extend our baseline model
+from that section to include ﬁrms’ choices of investment
+and ESG characteristics.
+We deﬁne the social impact of ﬁrm n as
+S n ≡ g n K n , (61)
+where K n is the ﬁrm’s operating capital. Social impact cap-
+tures the ﬁrm’s total externalities, which depend on both
+the nature of the ﬁrm’s operations ( g n ) and their scale ( K n ).
+We consider two scenarios. In Section 6.1 , we let the ﬁrm’s
+manager choose K n while taking g n as given. In Section 6.2 ,
+we allow the manager to choose both K n and g n . Through-
+out, the manager maximizes the ﬁrm’s market value at
+time 0.
+The extra assumptions we make here change none of
+the previous sections’ predictions. Since investors are in-
+ﬁnitesimally small, they still take asset prices and ﬁrms’
+ESG characteristics as given, even though ﬁrms now choose
+those characteristics. Firms’ choices of K n and g n affect
+their market values, which are consistent with the ex-
+pected returns derived in Section 2 .
+6.1. Green ﬁrms invest more, brown ﬁrms less
+The ﬁrm is initially endowed with operating capital
+K 0 ,n > 0 . The ﬁrm’s manager chooses how much additional
+capital, /Delta1K n , to buy, while taking the ﬁrm’s ESG character-
+istic, g n , as given. The ﬁrm’s capital investment produces a
+time-0 cash ﬂow of −/Delta1K n − κn
+2 (/Delta1K n ) 2 , where κn > 0 con-
+trols capital-adjustment costs. The ﬁrm uses capital to pro-
+duce an expected gross cash ﬂow at time 1 equal to /Pi1n K n ,
+where /Pi1n is a positive quantity denoting one plus the
+ﬁrm’s gross proﬁtability.
+The optimal amount of additional capital is derived in
+the Appendix:
+/Delta1K n ( d ) =
+1
+κn
+[
+/Pi1n
+1 + r f + μm βm,n − d
+a g n
+−1
+]
+. (62)
+This value is increasing in g n , indicating that greener ﬁrms
+invest more, ceteris paribus.
+For any ﬁrm n, agents’ ESG tastes induce social impact
+equal to the difference between the ﬁrm’s actual social
+impact and its hypothetical impact if agents did not care
+about ESG:
+S n ( d ) −S n (0) = g n
+(/Delta1K n ( d ) − /Delta1K n ( 0 )
+)
+. (63)
+We prove the following proposition in the Appendix.
+Proposition 9 . Firm n ’s ESG-induced social impact is posi-
+tive:
+S n ( d ) −S n (0)
+=
+d g 2
+n /Pi1n
+aκn
+(
+1 + r f + μm βm,n −d
+a g n
+)(
+1 + r f + μm βm,n
+) > 0
+(64)
+as long as ¯d > 0 and g n ⁄ = 0 . Moreover, this impact is increas-
+ing in d , decreasing in a, increasing in /Pi1n , decreasing in κn ,
+and decreasing in βm,n .
+The intuition behind this result builds on Eq. (62) ,
+which shows that ESG tastes lead green ﬁrms to invest
+more and brown ﬁrms to invest less. That result relates
+to Corollary 1 , which states that ESG tastes reduce green
+ﬁrms’ expected returns and hence their costs of capital.
+Green ﬁrms’ lower costs of capital increase their projects’
+NPVs, so green ﬁrms invest more. And vice versa, ESG
+tastes increase brown ﬁrms’ costs of capital, reducing their
+investment. As a result, ESG tastes tilt investment from
+brown to green ﬁrms, which increases social impact for
+both types of ﬁrms.
+The comparative statics are also intuitive. Social im-
+pact is larger when ESG tastes are stronger (i.e., when ¯d
+is larger) because stronger tastes move asset prices more.
+The impact is also larger when risk aversion is weaker (i.e.,
+a is smaller) because less risk-averse agents tilt their port-
+folios more to accommodate their tastes, again resulting in
+larger price effects (see Propositions 1 and 3 ). The impact
+is larger when capital is less costly to adjust (i.e., when
+κn is smaller) because more investment reallocation takes
+place. The impact is also larger when ﬁrms are more pro-
+ductive (i.e., when /Pi1n is larger) because a given change in
+the cost of capital has a larger effect on investment. Finally,
+the impact is larger for ﬁrms with smaller market betas
+because such ﬁrms have a lower cost of capital to begin
+with, so the ESG-induced change in their cost of capital is
+relatively larger.
+In our model, investors’ ESG tastes tilt real investment
+from brown to green ﬁrms because those tastes generate
+alphas, which affect the cost of capital, which in turn af-
+fects investment. There is considerable empirical support
+for this mechanism. Baker and Wurgler (2012) survey stud-
+ies that ﬁnd a negative relation between corporate in-
+vestment and alpha. Most of these studies interpret alpha
+as mispricing, whereas our study’s ESG-induced alphas do
+not reﬂect mispricing. We expect ESG-induced alphas to
+have an especially strong effect on investment. Whereas
+mispricing is transient, ﬁrms’ ESG traits are highly per-
+sistent, which makes ESG-induced alphas highly persis-
+tent. Van Binsbergen and Opp (2019) show that when al-
+phas are more persistent, they have stronger effects on
+investment.
+6.2. Firms become greener
+We now extend the framework from Section 6.1 by al-
+lowing ﬁrm n ’s manager to choose not only K n but also
+g n . The ﬁrm is initially endowed with an ESG characteristic
+g 0 ,n . The manager chooses both /Delta1K n and /Delta1g n , the change
+in the ﬁrm’s ESG characteristic. For example, a coal power
+producer can increase its g n by installing scrubbers. Adjust-
+ing g n is costly: it reduces the ﬁrm’s time-1 cash ﬂow by a
+fraction χn
+2 (/Delta1g n ) 2 , where χn > 0 controls ESG-adjustment
+costs.
+We prove the following proposition in the Appendix.
+563
+
+===== PAGE 15 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+Proposition 10 . Firm n ’s value-maximizing choices of ESG
+adjustment and investment are
+/Delta1g n
+(
+d
+)
+≈ d
+aχn
+(65)
+/Delta1K n
+(
+d
+)
+=
+1
+κn
+[
+/Pi1n
+(
+1 − χn
+2 (/Delta1g n ( d )) 2 )
+1 + r f + μm βm,n − d
+a g n ( d )
+−1
+]
+, (66)
+where g n ( d ) = g 0 ,n + /Delta1g n ( d ) , and the approximation uses
+log (1 + x ) ≈ x for small x.
+Both choices are intuitive given the results from
+Section 2 . When d > 0 , expected returns decrease in g n
+( Corollary 1 ), so ﬁrms’ market values increase in g n . Man-
+agers who wish to maximize market value therefore make
+their ﬁrms greener (i.e, /Delta1g n > 0 ). This effect is especially
+strong when risk aversion a is low because ESG character-
+istics then have large effects on market values. Firms also
+adjust g n by more when doing so is less costly.
+As in Section 6.1 , ESG tastes lead green ﬁrms to in-
+vest more and brown ﬁrms to invest less. The denomi-
+nator in Eq. (66) shows that ESG tastes reduce the costs
+of capital for green ﬁrms, which increases their projects’
+NPV and hence investment. And vice versa, ESG tastes in-
+crease brown ﬁrms’ costs of capital, reducing their projects’
+NPV and investment. In addition, ESG tastes affect ex-
+pected cash ﬂows in the numerator of Eq. (66) . Stronger
+ESG tastes induce all ﬁrms, green and brown, to adjust
+their g n by more, which reduces their expected cash ﬂows,
+and hence also their investment.
+Agents’ ESG tastes now increase social impact not only
+by tilting investment from brown to green ﬁrms, as before,
+but also by making ﬁrms greener:
+S n ( d ) −S n ( 0 ) = g 0 ,n
+(/Delta1K n ( d ) − /Delta1K n ( 0 )
+)
++ K n ( d ) /Delta1g n ( d ) .
+(67)
+The ﬁrst term reﬂects the investment effect analogous
+to Eq. (63) . As discussed previously, when ﬁrms cannot
+change their g n ’s, /Delta1K n ( d ) − /Delta1K n (0) is positive for green
+ﬁrms and negative for brown ﬁrms, making this term pos-
+itive for both types of ﬁrms. When ﬁrms can change their
+g n ’s, the ﬁrst term in Eq. (67) is still generally positive.
+The second term reﬂects ﬁrms’ capital becoming greener.
+This term is also positive since /Delta1g n ( d ) > 0 , as implied by
+Eq. (65) .
+Fig. 6 plots the ESG-induced social impact across ﬁrms
+with different initial ESG characteristics. We see that all
+ﬁrms have positive social impact. The two colored regions
+indicate the two sources of social impact from Eq. (67) . The
+second source, from ﬁrms becoming greener, is roughly
+equal across ﬁrms (top green region). The ﬁrst source,
+from tilting investment toward green ﬁrms, is zero for an
+ESG-neutral ﬁrm, but it is large for very green or very
+brown ﬁrms, which experience the largest shifts in invest-
+ment (bottom blue region). Due to this non-monotonicity,
+the overall social impact induced by ESG-motivated in-
+vestors is largest for ﬁrms with extreme ESG charac-
+Fig. 6. Firm-level social impact. This ﬁgure plots S n ( d ) −S n (0) , the so-
+cial impact induced by ESG-motivated investors, for different ﬁrms n . The
+horizontal axis indicates the ﬁrm’s initial ESG characteristic, g 0 ,n . The two
+regions indicate the components of S n ( d ) −S n (0) from Eq. (67) . This ﬁg-
+ure uses the same parameters as the previous ﬁgures, with λ = 0 . 5 and
+/Delta1= 0 . 02 , as well as r f = 0 . 02 , K 0 ,n = 1 , /Pi1n = 1 . 2 , χn = 0 . 5 , and κn = 1 .
+These parameter values produce d = 0 . 0113 , /Delta1g n ( d ) = 0 . 0113 , /Delta1K n (0) =
+0 . 0909 , and /Delta1K n ( d ) ranging from 0.0813 to 0.1007.
+teristics, but it is strictly positive even for ESG-neutral
+ﬁrms.
+The aggregate social impact induced by ESG investors,
+denoted S( d ) −S(0) , is the sum of S n ( d ) −S n (0) across
+ﬁrms n . This sum can be computed from the curve in
+Fig. 6 . Since this curve is convex in g 0 ,n , S( d ) −S(0) is
+greater when there is more dispersion in ESG character-
+istics across ﬁrms. A larger dispersion in g 0 ,n deepens
+the cost-of-capital differentials between green and brown
+ﬁrms, leading to larger investment differentials. With green
+ﬁrms investing more and brown ﬁrms investing less, aggre-
+gate social impact increases.
+Fig. 7 illustrates how aggregate social impact varies
+with the strength of ESG preferences. We assume ﬁrms dif-
+fer only in their initial ESG characteristics g 0 ,n , which are
+uniformly distributed with mean zero. The ﬁgure shows
+that S( d ) −S(0) increases as ESG preferences strengthen,
+which is intuitive. We also see that both sources of so-
+cial impact from Eq. (67) grow larger as ESG preferences
+strengthen. These results hold whether ESG preferences
+strengthen because there are more ESG investors (Panel A)
+or because ESG investors have stronger tastes (Panel B).
+We have made the standard assumption that managers
+maximize the ﬁrm’s market value. This assumption makes
+sense if, for example, managers wish to maximize the
+value of their stock-based compensation. Alternatively, a
+manager could maximize shareholder welfare, which de-
+pends not just on market value but also on the ﬁrm’s ESG
+characteristics (e.g., Hart and Zingales, 2017 ). Such behav-
+ior could result from shareholders engaging actively with
+the ﬁrm, so that managers run the ﬁrm as shareholders de-
+sire (e.g., Dyck et al., 2019 ), or from shareholders appoint-
+ing managers whose preferences match their own. Our
+564
+
+===== PAGE 16 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+Fig. 7. Aggregate social impact. The ﬁgure plots [ S( d ) −S(0)] /N, the ag-
+gregate social impact induced by ESG-motivated investors, scaled by the
+number of ﬁrms. We assume the ﬁrms’ initial ESG characteristics g 0 ,n are
+uniformly distributed in [ −
+√
+3 ,
+√
+3 ] . (These endpoints maintain g ′
+0 ι = 0
+and (g ′
+0 g 0 ) /N = 1 .) The two colored regions indicate the components of
+S n ( d ) −S n (0) from Eq. (67) , aggregated across ﬁrms. In Panel A, results
+are plotted against λ, the fraction of wealth belonging to ESG investors,
+assuming /Delta1= 0 . 02 . In Panel B, results are plotted against /Delta1, the maxi-
+mum certain return an ESG investor would sacriﬁce to invest in her op-
+timal portfolio instead of the market portfolio, assuming λ = 0 . 5 . All re-
+maining parameter values are the same as in Fig. 6 .
+model arguably provides a lower bound on social impact.
+Extending the model so that managers additionally care
+about their ﬁrms’ ESG characteristics should produce /Delta1g n
+values (and hence social impact) even larger than we cur-
+rently predict. Put differently, we show that ESG-motivated
+investors generate social impact even without direct en-
+gagement by shareholders, and even if managers do not
+care directly about ﬁrms’ ESG characteristics. Even a “self-
+ish” manager who cares only about market value behaves
+in a way that increases social impact.
+6.3. Preferences for aggregate social impact
+As noted in Section 2 , agents derive utility not only
+from their holdings, X i , but also from ﬁrms’ aggregate so-
+cial impact, S =
+∑  N
+n =1 S n . We assume each agent i ’s utility
+is increasing in S:
+U( ˜ W 1 i , X i , S) = V ( ˜ W 1 i , X i ) + h i (S) , (68)
+where h ′
+i (S) > 0 and V is the original utility function from
+Eq. (2) . (The additive speciﬁcation is not needed; our re-
+sults are identical if S enters utility multiplicatively.)
+Proposition 11 . If agents derive utility also from aggregate
+social impact ( Eq. (68) ), all of our results in Propositions 1
+through 10 and Corollaries 1 through 4 continue to hold.
+The inclusion of S in the utility function does not af-
+fect any of our prior results. The reason is that inﬁnitesi-
+mally small agents take stock prices, and hence S, as given
+when choosing their portfolios. When an agent tilts toward
+green stocks, she generates a positive externality on other
+agents via the h i (S) term in their utility. 10 Being inﬁnitesi-
+mal, though, she does not internalize any of this effect. As
+the preference for S does not affect portfolio choice, it does
+not affect equilibrium asset prices, real investment, or S. In
+the model of Oehmke and Opp (2020) , agents’ preference
+for social impact does lead to impact because agents are
+assumed to coordinate. In our model, agents cannot coor-
+dinate. Social impact is caused by the inclusion of X i , not
+S, in the utility function in Eq. (68) .
+To provide more intuition for the roles of X i and S in
+the utility function, consider why people vote in elections.
+Many individuals vote because they derive utility directly
+from doing so, analogous to investors deriving utility from
+their holdings ( X i ) in our setting. This utility from voting
+can have various sources; for example, some people enjoy
+participating in a democracy, others feel a warm glow from
+voting for their favorite candidate, and some might like to
+tell friends they have exercised their patriotic duty. Each
+individual’s utility could also depend on the election out-
+come ( S), but that by itself is not why an individual votes.
+If there are a large number of voters, the individual sees
+her vote as having no effect on that component of her util-
+ity. Just as utility from voting produces an aggregate social
+good (a healthy democracy), investors’ utility from their
+portfolio holdings generates aggregate social impact.
+More research is clearly needed on the real effects
+of sustainable investing. For example, what is the rel-
+ative importance of the investment channel ( /Delta1K n ) and
+the “become-greener” channel ( /Delta1g n )? What if agents care
+about both social impact and climate, and the effect of the
+former on the latter is uncertain? How would social impact
+change if we combined the asset pricing effects we ex-
+amine with direct engagement by large shareholders? We
+leave these questions for future work.
+10 In the presence of externalities, the competitive market solution gen-
+erally differs from the social planner’s solution. For an example of a social
+planner’s solution in a different setting, with interesting implications for
+ESG mandates, see Hong et al. (2020) .
+565
+
+===== PAGE 17 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+7. Conclusion
+We analyze both ﬁnancial and real effects of sustain-
+able investing in a highly tractable equilibrium model. The
+model produces a number of empirical implications re-
+garding asset prices, portfolio holdings, the size of the ESG
+investment industry, climate risk, and the social impact of
+sustainable investing. We review those implications below.
+First, ESG preferences move asset prices. Stocks of
+greener ﬁrms have lower ex ante CAPM alphas, especially
+when risk aversion is low and the average ESG prefer-
+ence is strong. Green stocks have negative alphas, whereas
+brown stocks have positive alphas. Green stocks’ negative
+alphas stem from two sources: investors’ tastes for green
+holdings and such stocks’ ability to hedge climate risk.
+Green and brown stocks have opposite exposures to an ESG
+risk factor, which captures unexpected changes in ESG con-
+cerns of customers and investors. If either kind of ESG con-
+cern strengthens unexpectedly over a given period of time,
+green stocks can outperform brown stocks over that pe-
+riod, despite having lower alphas. Stocks are priced by a
+two-factor asset pricing model, where the factors are the
+market portfolio and the ESG factor. A simple version of
+the ESG factor is a green-minus-brown portfolio return,
+where both green and brown portfolios are weighted by
+ESG characteristics.
+Second, portfolio holdings exhibit three-fund separa-
+tion. Investors with stronger than average ESG tastes hold
+portfolios that have a green tilt away from the market
+portfolio, whereas investors with weaker than average ESG
+tastes take a brown tilt. These tilts are larger when risk
+aversion is lower. Investors with stronger ESG tastes earn
+lower expected returns, especially when risk aversion is
+low and the average ESG taste is high. Yet these investors
+give up less return than they are willing to in order to
+hold their desired portfolio. In the model extension that
+adds climate risk, we obtain four-fund separation, with the
+fourth fund representing a climate-hedging portfolio with
+a green tilt.
+Third, the size of the ESG investment industry—the ag-
+gregate dollar amount of ESG-driven investment that de-
+viates from the market portfolio—is increasing in the dis-
+persion of investors’ ESG preferences. With no dispersion
+there is no ESG industry, because everyone holds the mar-
+ket.
+Finally, sustainable investing generates positive social
+impact in two ways. First, it leads ﬁrms to become greener.
+Second, it induces more real investment by green ﬁrms
+and less investment by brown ﬁrms.
+While the model’s predictions for alphas have been ex-
+amined empirically by prior studies, most of its other pre-
+dictions remain untested, presenting opportunities for fu-
+ture empirical work. One challenge is that our model aims
+to describe the world of the present and the future, but
+not necessarily the world of the past. Although the “sin”
+aspects of investing have been recognized for decades, the
+emphasis on ESG criteria is a recent phenomenon. How the
+model ﬁts in various time periods is another question for
+empirical work.
+Appendix. Proofs and derivations
+Derivation of Eq. ( 4 ):
+To compute agent i ’s expected utility, we rely on Eq. (2) ,
+the relation ˜ W 1 i = W 0 i (1 + r f + X ′
+i ˜ r ) , and the fact that ˜ r is
+normally distributed, ˜ r ∼ N(μ, /Sigma1) :
+E
+{
+V ( ˜ W 1 i , X i )
+}
+= E
+{
+−e −A i ˜ W 1 i −b ′
+i X i
+}
+= E
+{
+−e −A i [ W 0 i (1+ r f + X ′
+i ˜ r )] −b ′
+i X i
+}
+= −e −a i (1+ r f ) E
+{
+e
+−a i X ′
+i [ ˜ r + 1
+a i b i ]
+}
+= −e −a i (1+ r f ) e
+−a i X ′
+i [ E( ˜ r )+ 1
+a i b i ]+ 1
+2 a 2
+i X ′
+i Var ( ˜ r )X i
+= −e −a i (1+ r f ) e
+−a i X ′
+i [ μ+ 1
+a i b i ]+ 1
+2 a 2
+i X ′
+i /Sigma1X i (A1)
+where a i ≡ A i W 0 i is agent i ’s relative risk aversion. Agents
+take μ and /Sigma1as given. Differentiating with respect to X i ,
+we obtain the ﬁrst-order condition
+−a i [ μ +
+1
+a i
+b i ] +
+1
+2
+a 2
+i (2/Sigma1X i ) = 0 (A2)
+from which we obtain agent i ’s portfolio weights
+X i =
+1
+a i
+/Sigma1−1
+(
+μ +
+1
+a i
+b i
+)
+. (A3)
+Derivation of Eq. ( 5 ):
+The n th element of agent i ’s portfolio weight vector, X i ,
+is given by
+X i,n =
+W 0 i,n
+W 0 i
+(A4)
+where W 0 i,n is the dollar amount invested by agent i in
+stock n . Let W 0 ,n ≡
+∫
+i W 0 i,n di denote the total amount in-
+vested in stock n by all agents. Then the n th element of
+the market-weight vector, w m , is given by
+w m,n =
+W 0 ,n
+W 0
+=
+1
+W 0
+∫
+i
+W 0 i,n di =
+1
+W 0
+∫
+i
+W 0 i X i,n di
+=
+∫
+i
+W 0 i
+W 0
+X i,n di =
+∫
+i
+ω i X i,n di. (A5)
+Note that
+∑  N
+n =1 w m,n = 1 because
+∑  N
+n =1 W 0 ,n = W 0 , which
+follows from the riskless asset being in zero net supply.
+Plugging in for X i from Eq. (A3) and imposing a i = a, we
+have
+x =
+∫
+i
+ω i X i di
+=
+∫
+i
+ω i
+[ 1
+a
+/Sigma1−1
+(
+μ +
+1
+a
+b i
+)]
+di
+=
+1
+a
+/Sigma1−1 μ
+(∫
+i
+ω i di
+)
++
+1
+a 2 /Sigma1−1 g
+(∫
+i
+ω i d i di
+)
+=
+1
+a
+/Sigma1−1 μ +
+¯d
+a 2 /Sigma1−1 g. (A6)
+Proof of the statement in footnote 4 :
+Let ˜ g in denote agent i ’s perceived ESG characteristic of
+ﬁrm n, known by all agents. Eq. (3) changes to b i = d i ˜ g i ,
+where ˜ g i is an agent-speciﬁc N ×1 vector containing the
+values of ˜ g in . Eq. (5) is unchanged, with g redeﬁned as
+566
+
+===== PAGE 18 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+g = (1 / d )
+∫
+i
+ω i d i ˜ g i di
+= E ω [ ˜ g i ] + Cov ω
+(
+d i / d , ˜ g i
+)
+, (A7)
+where E ω and Cov ω denote the wealth-weighted expecta-
+tion and covariance, respectively, across agents. The ﬁrst
+term on the right-hand side of Eq. (A7) is an N ×1 vector
+whose n th element is the wealth-weighted average of ˜ g in
+across agents. The second term is a vector whose n th el-
+ement is the wealth-weighted covariance between agents’
+scaled ESG tastes, d i / d , and perceived ESG characteristics,
+˜ g in . It seems plausible to assume that the second term is
+a zero vector, but we do not need to make that assump-
+tion. Since Eq. (5) is unchanged, Eqs. (6) through (9) are
+also unchanged.
+Derivation of Eq. ( 11 ):
+Agent i ’s expected excess return is given by E ( ˜ r i ) = X ′
+i μ.
+We take μ from Eq. (9) and express X i in terms of w m by
+subtracting Eq. (5) from Eq. (4) . Recalling the assumption
+w ′
+m g = 0 from Eq. (8) , we obtain agent i ’s expected excess
+return as
+E ( ˜ r i ) = X ′
+i μ
+=
+[
+w ′
+m +
+δi
+a 2 g ′ /Sigma1−1
+][
+μm βm −
+¯d
+a
+g
+]
+=
+[
+w ′
+m +
+δi
+a 2 g ′ /Sigma1−1
+][μm
+σ2
+m
+/Sigma1w m −
+¯d
+a
+g
+]
+= μm − d
+a
+w ′
+m g +
+δi μm
+a 2 σ2
+m
+g ′ w m − δi d
+a 3 g ′ /Sigma1−1 g
+= μm − δi ¯d
+a 3 g ′ /Sigma1−1 g. (A8)
+Derivation of Eq. ( 12 ):
+Recall that agent i ’s excess portfolio return is ˜ r i = X ′
+i ˜ r ,
+where ˜ r ∼ N(μ, /Sigma1) . Therefore,
+Var ( ˜ r i ) = X ′
+i /Sigma1X i
+=
+[
+w ′
+m +
+δi
+a 2 g ′ /Sigma1−1
+]
+/Sigma1
+[
+w m +
+δi
+a 2 /Sigma1−1 g
+]
+= w ′
+m /Sigma1w m +
+δi
+a 2 g ′ /Sigma1−1 /Sigma1w m + w ′
+m /Sigma1δi
+a 2 /Sigma1−1 g
++
+δ2
+i
+a 4 g ′ /Sigma1−1 /Sigma1/Sigma1−1 g
+= w ′
+m /Sigma1w m +
+δi
+a 2 g ′ w m +
+δi
+a 2 w ′
+m g +
+δ2
+i
+a 4 g ′ /Sigma1−1 g. (A9)
+Recognizing that w ′
+m /Sigma1w m = σ2
+m and w ′
+m g = 0 , we have
+Var ( ˜ r i ) = σ2
+m +
+δ2
+i
+a 4 g ′ /Sigma1−1 g (A10)
+which is Eq. (12) . We see that Var ( ˜ r i ) > σ2
+m as long as δi ⁄ =
+0 .
+Derivation of Eq. ( 13 ):
+The second exponent in agent i ’s expected util-
+ity in Eq. (A1) contains the terms −aX ′
+i μ, −X ′
+i b i , and
+(a 2 / 2) X ′
+i /Sigma1X i . The ﬁrst of these is simply minus a times the
+expression in Eq. (A8) . The second is given by
+−X ′
+i b i = −
+[
+w ′
+m +
+δi
+a 2 g ′ /Sigma1−1
+]
+[ d i g ]
+= −d i δi
+a 2 g ′ /Sigma1−1 g, (A11)
+and the third is given by
+a 2
+2
+X ′
+i /Sigma1X i =
+a 2
+2
+[
+w ′
+m +
+δi
+a 2 g ′ /Sigma1−1
+]
+/Sigma1
+[
+w m +
+δi
+a 2 /Sigma1−1 g
+]
+=
+a 2
+2
+σ2
+m +
+δ2
+i
+2 a 2 g ′ /Sigma1−1 g, (A12)
+recalling w ′
+m g = 0 in both cases. Adding the three terms
+then gives
+−aX ′
+i μ −X ′
+i b i + (a 2 / 2) X ′
+i /Sigma1X i
+= −aμm +
+δi ¯d
+a 2 g ′ /Sigma1−1 g − d i δi
+a 2 g ′ /Sigma1−1 g +
+a 2
+2
+σ2
+m +
+δ2
+i
+2 a 2 g ′ /Sigma1−1 g
+= −aμm +
+a 2
+2
+σ2
+m +
+1
+a 2
+(
+δi d −d i δi +
+1
+2
+δ2
+i
+)
+g ′ /Sigma1−1 g
+= −a
+(
+μm − a
+2
+σ2
+m
+)
+− δ2
+i
+2 a 2 g ′ /Sigma1−1 g. (A13)
+Substituting this exponent into Eq. (A1) gives
+E
+{
+V ( ˜ W 1 i , X i )
+}
+= −e −a (1+ r f ) e −a ( μm −a
+2 σ2
+m ) −
+δ2
+i
+2 a 2 g ′ /Sigma1−1 g
+=
+[
+−e −a (1+ r f ) e −a ( μm −a
+2 σ2
+m )
+]
+e −
+δ2
+i
+2 a 2 g ′ /Sigma1−1 g
+= ¯V e −
+δ2
+i
+2 a 2 g ′ /Sigma1−1 g , (A14)
+noting that the bracketed term is ¯V , the agent’s expected
+utility if δi = 0 .
+Derivation of Eq. ( 42 ):
+The assumptions below Eq. (36) , along with Eq. (40) ,
+imply that the covariance matrix of ˜ r is of the form
+/Sigma1= B /Omega1B ′ + σ2
+ζ I, (A15)
+in which B = [ βm g] , and both B ′ B and /Omega1are diagonal ma-
+trices:
+B ′ B =
+[
+β′
+m βm 0
+0 g ′ g
+]
+, /Omega1=
+[
+σ2
+1 0
+0 σ2
+2
+]
+. (A16)
+Inverting /Sigma1using the Woodbury identity gives
+/Sigma1−1 =
+1
+σ2
+ζ
+I − 1
+σ4
+ζ
+B /Theta1B ′ , (A17)
+in which /Theta1is the diagonal matrix,
+/Theta1=
+[
+θm 0
+0 θg
+]
+=
+[
+/Omega1−1 +
+1
+σ2
+ζ
+B ′ B
+]−1
+, (A18)
+and
+θg =
+σ2
+2 σ2
+ζ
+σ2
+ζ + g ′ gσ2
+2
+. (A19)
+Post-multiplying the right-hand side of Eq. (A17) by g and
+recognizing that g ′ βm = 0 gives
+/Sigma1−1 g =
+(
+1
+σ2
+ζ
+− θg g ′ g
+σ4
+ζ
+)
+g =
+(
+1
+σ2
+ζ + g ′ gσ2
+2
+)
+g. (A20)
+567
+
+===== PAGE 19 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+If ι′ g ⁄ = 0 , then from Eqs. (17) through (21) and the sur-
+rounding discussion, w g = g/ (ι′ g) , and g g = (g ′ g) / (ι′ g) . If
+ι′ g = 0 , then w g equals the right-hand side of Eq. (A20) ,
+and g g = (g ′ g) / (σ2
+ζ + g ′ gσ2
+2 ) . In either case, (1 /g g ) w g =
+g/ (g ′ g) . The deﬁnition of ˜ f g in Eq. (31) implies that pre-
+multiplying the right-hand side of Eq. (40) by (1 /g g ) w ′
+g ,
+recalling that w ′
+g βm = 0 , gives
+˜ f g −E 0 { f g } = ˜ f e
+g + ˜ ξ, (A21)
+with ˜ ξ = (g ′ ˜ ζ) / (g ′ g) . The variance of ˜ ξ is σ2
+ζ / (g ′ g) , which
+goes to zero as N → ∞ if the cross-sectional second mo-
+ment of the elements of g, (g ′ g) /N, is bounded below by a
+positive value for all N.
+Derivation of Eq. ( 45 ):
+First note that /Sigma1is of the same form as in Eq. (A15) ,
+with the relabelings η2 = σ2
+ζ , σm = σ1 , and σf = σ2 . Also,
+as there, β′
+m g = 0 . Therefore, using Eq. (A20) ,
+/Sigma1−1 g =
+(
+1
+η2 + g ′ gσ2
+f
+)
+g =
+(
+1
+η2 + Nσ2
+f
+)
+g. (A22)
+Using Eq. (A22) and noting g ′ g = N, observe that for large
+N,
+g ′ /Sigma1−1 g =
+(
+1
+η2 + Nσ2
+f
+)
+g ′ g =
+1
+σ2
+f
+. (A23)
+Also observe that, because ι′ /Sigma1−1 g = 0 (recall ι′ g = 0 ), the
+ESG portfolio has zero cost and weights w g = /Sigma1−1 g as in
+Eq. (18) . By Eq. (A22) , the ESG portfolio goes long green
+stocks and short brown stocks. The greenness of the ESG
+portfolio is given by
+g g = w ′
+g g = g ′ /Sigma1−1 g =
+1
+σ2
+f
+. (A24)
+The portfolio weights for each type of investor follow di-
+rectly from Eq. (14) , with δi = (1 − λ) d for an ESG investor
+and δi = −λd for a non-ESG investor:
+X esg = w m + (1 − λ)
+d
+a 2 /Sigma1−1 g (A25)
+X non = w m − λ d
+a 2 /Sigma1−1 g. (A26)
+Therefore, using Eq. (A22) , the ESG investor’s portfolio
+weights in Eq. (A25) become
+X esg =
+1
+N
+ι + (1 − λ)
+d
+a 2 /Sigma1−1 g =
+1
+N
+(ι + hg) , (A27)
+with
+h =
+(1 − λ) d
+a 2 (η2 /N + σ2
+f )
+, (A28)
+which, as N grows large, converges to
+h =
+(1 − λ) d
+a 2 σ2
+f
+. (A29)
+With expected utility as given by Eq. (A1) , an ESG in-
+vestor’s certainty equivalent excess return from holding
+her optimal portfolio is
+r ∗
+esg = X ′
+esg
+(
+μ +
+d
+a
+g
+)
+− a
+2
+X ′
+esg /Sigma1X esg
+=
+1
+N
+(ι + hg) ′
+(
+μm βm − λd
+a
+g +
+d
+a
+g
+)
+− a
+2
+X ′
+esg /Sigma1X esg
+= μm +
+h (1 − λ) d
+a
+− a
+2
+X ′
+esg /Sigma1X esg . (A30)
+Recall that δi for the ESG investor is (1 − λ) d, and thus
+the variance of the ESG investor’s portfolio return, using
+Eq. (12) , is
+X ′
+esg /Sigma1X esg = σ2
+m +
+(1 − λ) 2 d 2
+a 4 σ2
+f
+. (A31)
+Combining Eqs. (A29) , (A30) , and (A31) , we then see
+r ∗
+esg = μm − a
+2
+σ2
+m +
+(1 − λ) 2 d 2
+2 a 3 σ2
+f
+. (A32)
+If the ESG investor is instead constrained to hold the mar-
+ket portfolio, the resulting certainty equivalent excess re-
+turn is given by
+r ∗
+m = w ′
+m μ − a
+2
+w ′
+m /Sigma1w m = μm − a
+2
+σ2
+m . (A33)
+The ESG investor’s certainty-equivalent gain from investing
+as desired, versus investing in the market, is therefore
+r ∗
+esg −r ∗
+m =
+(1 − λ) 2 d 2
+2 a 3 σ2
+f
+. (A34)
+This difference in certainty equivalents is largest when λ =
+0 . That largest difference, /Delta1, is therefore
+/Delta1=
+d 2
+2 a 3 σ2
+f
+, (A35)
+and substituting for σ2
+f using Eq. (A24) gives Eq. (45) . The
+corresponding value of d is
+d =
+√
+2/Delta1a 3 σ2
+f . (A36)
+Derivation of the certainty equivalent excess return of a non-
+ESG investor ( Section 4.2 ):
+Proceeding as above, the non-ESG investor’s portfolio
+weights in Eq. (A26) become
+X non =
+1
+N
+ι − λ d
+a 2 /Sigma1−1 g =
+1
+N
+(ι + kg) , (A37)
+with
+k = − λd
+a 2 (η2 /N + σ2
+f )
+. (A38)
+Similarly, the variance of the non-ESG investor’s portfolio
+return for large N is
+X ′
+non /Sigma1X non = σ2
+m + k 2 σ2
+f , (A39)
+and a non-ESG investor’s certainty equivalent excess return
+from holding her optimal portfolio is
+r ∗
+non = X ′
+non μ − a
+2
+X ′
+non /Sigma1X non
+=
+1
+N
+(ι + kg) ′ (μm βm − λd
+a
+g) − a
+2
+X ′
+non /Sigma1X non
+568
+
+===== PAGE 20 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+= μm − a
+2
+σ2
+m +
+λ2 d 2
+2 a 3 σ2
+f
+= r ∗
+m +
+λ2 d 2
+2 a 3 σ2
+f
+. (A40)
+Derivation of Eq. ( 46 ):
+From Eqs. (11) and (A23) , the difference in expected ex-
+cess returns earned by the two types of investors is
+E ( ˜ r esg ) −E ( ˜ r non ) = −λd 2
+a 3 g ′ /Sigma1−1 g = − λd 2
+a 3 σ2
+f
+. (A41)
+Substituting for d 2 from Eq. (A36) gives Eq. (46) .
+Derivation of Eq. ( 47 ):
+The covariance between the ESG investor’s return and
+the market return, using Eq. (A27) is
+X ′
+esg /Sigma1w m =
+1
+N 2 (ι + hg) ′ (σ2
+m βm β′
+m + σ2
+f gg ′ + η2 I N
+)ι
+= σ2
+m +
+1
+N
+η2 , (A42)
+which equals σ2
+m for large N. Combining this result with
+Eq. (A31) gives the correlation between the ESG investor’s
+return and the market return as
+ρ( ˜ r esg , ˜ r m ) =
+X ′
+esg /Sigma1w m
+σm
+√
+X ′
+esg /Sigma1X esg
+=
+σm √
+σ2
+m + (1 −λ) 2 d 2
+a 4 σ2
+f
+. (A43)
+Substituting for d 2 from Eq. (A36) gives Eq. (47) .
+Derivations of Eqs. ( 48 ) and ( 49 ):
+Let α denote the N ×1 vector of alphas given by Eq.
+(10) . The alpha of the ESG investor is given by
+αesg = X ′
+esg α
+=
+1
+N
+( ι + hg ) ′
+(
+−λd
+a
+g
+)
+= −λ(1 − λ)
+d 2
+a 3 σ2
+f
+, (A44)
+using Eqs. (A27) and (A29) . Substituting for d 2 from Eq.
+(A36) gives Eq. (48) . The wealth-weighted average alpha
+must equal zero,
+λαesg + (1 − λ) αnon = 0 , (A45)
+and applying that identity gives Eq. (49) .
+Derivation of Eq. ( 53 ):
+Because ι′ X esg = 1 , ESG investors’ stock portfolio
+weights, w i , are simply X esg from Eq. (A27) . Using Eqs.
+(A27) and (A29) , along with w m = (1 /N) ι, gives
+T =
+1
+2
+λι′ | X esg −w m |
+=
+1
+2
+λι′
+⏐⏐⏐
+1
+N
+(ι + hg) − 1
+N
+ι
+⏐⏐⏐
+=
+1
+2
+λι′
+⏐⏐
+⏐
+⏐
+(1 − λ) d
+Na 2 σ2
+f
+g
+⏐
+⏐
+⏐
+⏐
+. (A46)
+Substituting for d from Eq. (A36) , we obtain Eq. (53) .
+Derivation of Eq. ( 56 ):
+Modifying the earlier derivation of Eq. (4) , we obtain
+E
+{
+V ( ˜ W 1 i , X i , ˜ C )
+}
+= −e −a i (1+ r f ) E
+{
+e
+−a i X ′
+i [ ˜ r + 1
+a i b i ] −c i ˜ C
+}
+= −e −a i (1+ r f ) e
+−a i X ′
+i [E( ˜ r )+ 1
+a i b i ]+ 1
+2 a 2
+i X ′
+i Var ( ˜ ϵ) X i + a i c i X ′
+i Cov ( ˜ ϵ, ˜ C )+ 1
+2 c 2
+i Var ( ˜ C )
+= −e −a i (1+ r f ) e
+−a i X ′
+i [ μ+ 1
+a i b i ]+ 1
+2 a 2
+i X ′
+i /Sigma1X i + a i c i X ′
+i σϵC + 1
+2 c 2
+i σ2
+C (A47)
+where σϵC ≡ Cov( ˜ ϵ, ˜ C ) . Differentiating with respect to X i
+gives the ﬁrst-order condition
+−a i [ μ +
+1
+a i
+b i ] + a 2
+i /Sigma1X i + a i c i σϵC = 0 (A48)
+from which we obtain agent i ’s portfolio weights
+X i =
+1
+a i
+/Sigma1−1
+(
+μ +
+1
+a i
+b i −c i σϵC
+)
+. (A49)
+Again imposing the market-clearing condition and a i = a
+gives
+w m =
+∫
+i
+ω i X i di
+=
+1
+a
+/Sigma1−1 μ +
+¯d
+a 2 /Sigma1−1 g − ¯c
+a
+/Sigma1−1 σϵC (A50)
+which implies
+μ = a /Sigma1w m −
+¯d
+a
+g + ¯c σϵC . (A51)
+Premultiplying by w ′
+m , again imposing the assumption
+w ′
+m g = 0 , gives
+μm = aσ2
+m + ¯c σmC (A52)
+where σmC ≡ Cov( ˜ ϵm , ˜ C ) = w ′
+m σϵC . Solving Eq. (A52) for a
+and substituting into the ﬁrst term on the right-hand side
+of Eq. (A51) gives
+μ =
+μm − ¯c σmC
+σ2
+m
+/Sigma1w m −
+¯d
+a
+g + ¯c σϵC
+= (μm − ¯c σmC ) βm −
+¯d
+a
+g + ¯c σϵC
+= μm βm −
+¯d
+a
+g + ¯c
+(
+σϵC − σmC
+σ2
+m
+σϵm
+)
+, (A53)
+noting βm = (1 /σ2
+m ) σϵm = (1 /σ2
+m )/Sigma1w m . To see that the
+third term on the right-hand side of Eq. (A53) is the same
+as that in Eq. (56) , ﬁrst observe that in the multivariate
+regression of ˜ ϵon ˜ ϵm and ˜ C , the N ×2 matrix of slope co-
+eﬃcients is given by
+[ σϵm σϵC ]
+[
+σ2
+m σmC
+σmC σ2
+C
+]−1
+=
+1
+σ2
+m σ2
+C − σ2
+mC
+[σ2
+C σϵm − σmC σϵC σ2
+m σϵC − σmC σϵm
+]
+,
+so the second column is given by
+ψ =
+1
+σ2
+m σ2
+C − σ2
+mC
+(σ2
+m σϵC − σmC σϵm ) . (A54)
+Using Eq. (A54) , we can rewrite the third term on the
+right-hand side of Eq. (A53) as
+569
+
+===== PAGE 21 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+¯c
+(
+σϵC − σmC
+σ2
+m
+σϵm
+)
+= ¯c
+σ2
+m σ2
+C − σ2
+mC
+σ2
+m
+ψ
+= ¯c
+(
+1 − ρ2
+mC
+)ψ (A55)
+recalling that σC = 1 .
+Derivation of Eq. ( 57 ):
+Substituting for μ from Eq. (A53) into Eq. (A49) and
+setting a i = a, we obtain
+X i =
+1
+a
+/Sigma1−1
+(
+μ +
+1
+a
+b i −c i σϵC
+)
+=
+1
+a
+/Sigma1−1
+[
+μm βm −
+¯d
+a
+g + ¯c
+(
+σϵC − σmC
+σ2
+m
+σϵm
+)
++
+1
+a
+b i −c i σϵC
+]
+=
+μm
+a
+/Sigma1−1 βm − 1
+a
+/Sigma1−1 ¯c
+σmC
+σ2
+m
+σϵm
++
+1
+a
+/Sigma1−1
+(
+d i
+a
+g −
+¯d
+a
+g
+)
+− 1
+a
+/Sigma1−1 ( c i − ¯c ) σϵC
+=
+μm
+a
+/Sigma1−1 βm − 1
+a
+/Sigma1−1 ( ¯c σmC )
+σϵm
+σ2
+m
++
+1
+a
+/Sigma1−1 δi
+a
+g − c i − ¯c
+a
+/Sigma1−1 σϵC . (A56)
+Noting from Eq. (A52) that ¯c σmC = μm −aσ2
+m , and that
+βm = 1
+σ2 m
+σϵm = 1
+σ2 m
+/Sigma1w m , we have
+X i =
+μm
+a
+/Sigma1−1 βm − 1
+a
+/Sigma1−1 (μm −aσ2
+m
+)βm
++
+δi
+a 2 /Sigma1−1 g − c i − ¯c
+a
+/Sigma1−1 σϵC
+= σ2
+m /Sigma1−1 βm +
+δi
+a 2 /Sigma1−1 g − c i − ¯c
+a
+/Sigma1−1 σϵC
+= w m +
+δi
+a 2 /Sigma1−1 g − c i − ¯c
+a
+/Sigma1−1 σϵC (A57)
+which is Eq. (57) .
+Derivation of Eq. ( 64 ):
+The ﬁrm’s value at time 0 is
+υn = −/Delta1K n − κn
+2
+(/Delta1K n ) 2 +
+/Pi1n ( K 0 ,n + /Delta1K n )
+1 + r f + μm βn − d
+a g n
+. (A58)
+The manager maximizes υn by choosing /Delta1K n . The ﬁrst-
+order condition yields
+/Delta1K n ( d ) =
+1
+κn
+[
+/Pi1n
+1 + r f + μm βn − d
+a g n
+−1
+]
+. (A59)
+Substituting into Eq. (63) produces
+S n ( d ) −S n (0) = g n
+1
+κn
+[
+/Pi1n
+1 + r f + μm βn − d
+a g n
+− /Pi1n
+1 + r f + μm βn
+]
+= g n
+/Pi1n
+κn
+[
+d
+a g n
+(1 + r f + μm βn − d
+a g n )(1 + r f + μm βn )
+]
+,
+(A60)
+which produces Eq. (64) . Comparative statics for /Pi1n , βn ,
+and κn follow immediately from Eq. (64) . For the compar-
+ative statics for d and a, we deﬁne ˜ d ≡ d /a and compute
+∂
+∂ ˜ d
+(
+S n ( d ) −S n (0)
+)
+=
+g 2
+n /Pi1n
+κn (1 + r f + μm βn )
+[(1 + r f + μm βn − ˜ d g n ) + ˜ d g n
+(1 + r f + μm βn − ˜ d g n ) 2
+]
+=
+g 2
+n /Pi1n
+κn
+[
+1
+(1 + r f + μm βn − ˜ d g n ) 2
+]
+(A61)
+which is positive if g n ⁄ = 0 . Since S n ( d ) −S n (0) increases in
+˜ d , it increases in d and decreases in a .
+Derivation of Eqs. ( 65 ) and ( 66 ) :
+The ﬁrm’s value at time 0 is now
+υn = −/Delta1K n − κn
+2
+(/Delta1K n ) 2
++
+/Pi1n ( K 0 ,n + /Delta1K n )
+(
+1 − χn
+2 (/Delta1g n ) 2 )
+1 + r f + μm βn − d
+a (g 0 ,n + /Delta1g n )
+. (A62)
+The manager maximizes υn by choosing /Delta1g n and /Delta1K n . The
+choice of /Delta1g n depends only on the third term of Eq. (A62) ,
+and we can maximize its log. Using the approximation that
+log (1 + x ) ≈ x and ignoring terms without /Delta1g n , the choice
+of /Delta1g n simpliﬁes to
+max
+/Delta1g n
+−χn
+2
+(/Delta1g n ) 2 +
+d
+a
+/Delta1g n . (A63)
+The ﬁrst-order condition delivers Eq. (65) . Without taking
+logs, the ﬁrst-order condition for /Delta1K n is
+−1 − κn /Delta1K n +
+/Pi1n
+(
+1 − χn
+2 (/Delta1g n ) 2 )
+1 + r f + μm βn − d
+a g n
+= 0 (A64)
+which delivers Eq. (66) .
+References
+Albuquerque, R. , Koskinen, Y. , Zhang, C. , 2019. Corporate social responsi-
+bility and ﬁrm risk: theory and empirical evidence. Manag. Sci. 65,
+4 451–4 469 .
+Baker, M. , Bergstresser, D. , Serafeim, G. , Wurgler, J. ,2 0 1 8 . Financing the
+response to climate change: the pricing and ownership of U.S. green
+bonds. Harvard University .
+Baker, M. , Wurgler, J. , 2012. Behavioral corporate ﬁnance: an updated sur-
+vey. In: Constantinides, G., Harris, M., Stulz, R. (Eds.), Handbook of the
+Economics of Finance, Vol. 2. Elsevier, Amsterdam, pp. 357–424 .
+Baker, S. , Holliﬁeld, B. , Osambela, E. , 2020. Asset prices and portfolios with
+externalities. University of Virginia .
+Bank, M. , Insam, F. , 2017. Return contributions of factors and characteris-
+tics in an integrated asset pricing approach. University of Innsbruck .
+Bansal, R. , Ochoa, M. , Kiku, D. , 2016. Climate change and growth risks.
+Duke University .
+Barber, B. , Morse, A. , Yasuda, A. , 2021. Impact investing. J. Financ. Econ.
+forthcoming .
+Bauer, R. , Koedijk, K. , Otten, R. , 2005. International evidence on ethical
+mutual fund performance and investment style. J. Bank. Financ. 29,
+1751–1767 .
+Berg, F. , Koelbel, J. , Rigobon, R. , 2019. Aggregate confusion: the divergence
+of ESG ratings. Massachusetts Institute of Technology .
+Bialkowski, J. , Starks, L. , 2016. SRI funds: investor demand, exogenous
+shocks and ESG proﬁles. University of Canterbury .
+van Binsbergen, J. , Opp, C. , 2019. Real anomalies. J. Financ. 74, 1659–1706 .
+Bollen, N. , 2007. Mutual fund attributes and investor behavior. J. Financ.
+Quant. Anal. 42, 683–708 .
+570
+
+===== PAGE 22 =====
+
+Ľ . Pástor, R.F. Stambaugh and L.A. Taylor Journal of Financial Economics 142 (2021) 550–571
+Bolton, P. , Kacperczyk, M. , 2019. Do investors care about carbon risk?.
+Columbia University .
+Chava, S. , 2014. Environmental externalities and cost of capital. Manag.
+Sci. 60, 2223–2247 .
+Cheng, I. , Hong, H. , Shue, K. , 2016. Do Managers Do Good With Other Peo-
+ples’ Money?. Dartmouth College .
+Choi, D. , Gao, Z. , Jiang, W. , 2020. Attention to global warming. Rev. Financ.
+Stud. 33, 1112–1145 .
+Dimson, E. , Karakas, O. , Li, X. , 2015. Active ownership. Rev. Financ. Stud.
+28, 3225–3268 .
+Dyck, A. , Lins, K. , Roth, L. , Wagner, H. , 2019. Do institutional investors
+drive corporate social responsibility? International evidence. J. Financ.
+Econ. 131, 693–714 .
+Edmans, A. , 2011. Does the stock market fully value intangibles? Employee
+satisfaction and equity prices. J. Financ. Econ. 101, 621–640 .
+El Ghoul, S. , Guedhami, O. , Kwok, C. , Mishra, D. , 2011. Does corporate
+social responsibility affect the cost of capital? J. Bank. Financ. 35,
+2388–2406 .
+Engle, R. , Giglio, S. , Kelly, B. , Lee, H. , Stroebel, J. , 2020. Hedging climate
+change news. Rev. Financ. Stud. 33, 1184–1216 .
+Fama, E. , French, K. , 1993. Common risk factors in the returns on stocks
+and bonds. J. Financ. Econ. 33, 3–56 .
+Fama, E. , French, K. , 2007. Disagreement, tastes, and asset prices. J. Financ.
+Econ. 83, 667–689 .
+Fama, E. , Schwert, G. , 1977. Human capital and capital market equilibrium.
+J. Financ. Econ. 4, 95–125 .
+Friedman, H. , Heinle, M. , 2016. Taste, information, and asset prices: impli-
+cations for the valuation of CSR. Rev. Account. Stud. 21, 740–767 .
+Garleanu, N. , Kogan, L. , Panageas, S. , 2012. Displacement risk and asset
+returns. J. Financ. Econ. 105, 491–510 .
+Geczy, C. , Stambaugh, R. , Levin, D. , 2005. Investing in socially responsible
+mutual funds. University of Pennsylvania .
+Gollier, C. , Pouget, S. , 2014. The “Washing Machine”: investment strategies
+and corporate behavior with socially responsible investors. Toulouse
+School of Economics .
+Gompers, P. , Ishii, J. , Metrick, A. , 2003. Corporate governance and equity
+prices. Q. J. Econ. 118, 107–156 .
+Hart, O. , Zingales, L. ,2 0 1 7 . Companies should maximize shareholder wel-
+fare not market value. J. Law Finance Account. 2, 247–274 .
+Hartzmark, S. , Sussman, A. , 2019. Do investors value sustainability? A
+natural experiment examining ranking and fund ﬂows. J. Financ. 74,
+2789–2837 .
+Heinkel, R. , Kraus, A. , Zechner, J. , 2001. The effect of green investment on
+corporate behavior. J. Financ. Quant. Anal. 36, 431–449 .
+Hoepner, A. , Oikonomou, I. , Sautner, Z. , Starks, L. , Zhou, X. , 2018.
+ESG shareholder engagement and downside risk. University College
+Dublin .
+Hong, H. , Kacperczyk, M. , 2009. The price of sin: the effects of social
+norms on markets. J. Financ. Econ. 93, 15–36 .
+Hong, H. , Kostovetsky, L. , 2012. Red and blue investing: values and ﬁ-
+nance. J. Financ. Econ. 103, 1–19 .
+Hong, H. , Li., F. , Xu, J. , 2019. Climate risks and market eﬃciency. J. Econom.
+208, 265–281 .
+Hong, H. , Wang, N. , Yang, J. , 2020. Implications of mitigating disaster risks
+for sustainable investing and growth. Columbia University .
+Humphrey, J. , Kogan, S. , Sagi, J. , Starks, L. , 2020. The asymmetry in respon-
+sible investing preferences. University of Queensland .
+Ilhan, E. , Sautner, Z. , Vilkov, G. , 2020. Carbon tail risk. Frankfurt School of
+Finance and Management .
+Kempf, A. , Osthoff, P. , 2007. The effect of socially responsible investing on
+portfolio performance. Eur. Financ. Manag. 13, 908–922 .
+Krueger, P. , Sautner, Z. , Starks, L. , 2020. The importance of climate risks
+for institutional investors. Rev. Financ. Stud. 33, 1067–1111 .
+Luo, A. , Balvers, R. , 2017. Social screens and systematic investor boycott
+risk. J. Financ. Quant. Anal. 52, 365–399 .
+Mayers, D. , 1972. Nonmarketable assets and capital market equilibrium
+under uncertainty. In: Jensen, M. (Ed.), Studies in the Theory of Capi-
+tal Markets. Praeger, New York, pp. 223–248 .
+Oehmke, M. , Opp, M. , 2020. A theory of socially responsible investment.
+London School of Economics .
+Pástor, L. , Stambaugh, R. , 2003. Liquidity risk and expected stock returns.
+J. Polit. Econ. 111, 642–685 .
+Pedersen, L. , Fitzgibbons, S. , Pomorski, L. , 2021. Responsible investing: the
+ESG-eﬃcient frontier. J. Financ. Econ. forthcoming .
+Renneboog, L. , ter Horst, J. , Zhang, C. , 2008. Socially responsible invest-
+ments: institutional aspects, performance, and investor behavior. J.
+Bank. Financ. 32, 1723–1742 .
+Renneboog, L. , ter Horst, J. , Zhang, C. , 2011. Is ethical money ﬁnancially
+smart? Nonﬁnancial attributes and money ﬂows of socially responsi-
+ble investment funds. J. Financ. Intermed. 20, 562–588 .
+Riedl, A. , Smeets, P. , 2017. Why do investors hold socially responsible mu-
+tual funds? J. Financ. 72, 2505–2550 .
+Zerbib, O. , 2019. The effect of pro-environmental preferences on bond
+prices: evidence from green bonds. J. Bank. Financ. 98, 39–60 .
+571

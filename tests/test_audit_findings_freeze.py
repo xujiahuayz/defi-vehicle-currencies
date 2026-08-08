@@ -7,6 +7,8 @@ import pandas as pd
 from ddvc.asset_types import TYPES
 from scripts.audit_findings_freeze import (
     cited_bibliography_keys,
+    companion_sources_closed,
+    companion_source_keys,
     complete_literature_card,
     expected_market_state_keys,
     expected_unified_route_venue_days,
@@ -16,6 +18,8 @@ from scripts.audit_findings_freeze import (
     published_venue_version,
     registered_empirical_consumers,
     route_measurement_invariants,
+    source_materialized,
+    source_set_record_closed,
     transaction_frontier_support_checks,
     validate_literature_audit,
     validate_canonical_consumer_boundary,
@@ -189,7 +193,9 @@ status: complete
 - Status: claim-verified
 - Roles: central, mechanism
 - Source: literature/papers/paper-a.pdf
+- Source key: PaperA
 - Version: Journal version, 2020
+- Companions: Complete: Internet Appendix saved and read with the main article
 - Uses: Contribution and mechanism claims in sections 1 and 3
 - Scientific: Identifies the mechanism with a panel design and states its limits
 - Structure: Motivation, model, design, results, mechanisms, and robustness
@@ -205,7 +211,9 @@ status: complete
 - Status: full-text-read
 - Roles: venue
 - Source: literature/venue/paper-one.pdf
+- Source key: PaperOne
 - Version: Published JFE version, 2021
+- Companions: None: no appendix, supplement, correction, or data appendix found in the article, DOI page, or author page
 - Uses: Venue structure and presentation benchmark
 - Scientific: Uses a focused finance question and a design matched to the claim
 - Structure: Introduction, setting, design, results, channels, and conclusion
@@ -224,6 +232,7 @@ status: complete
         )
         self.assertTrue(passed, detail)
         self.assertTrue(complete_literature_card(cards["PaperA"]))
+        self.assertTrue(companion_sources_closed(cards["PaperA"]))
         self.assertTrue(published_venue_version(cards["venue:one"]))
         working_only = text.replace(
             "Version: Published JFE version, 2021",
@@ -242,6 +251,24 @@ status: complete
             missing_optics, {"PaperA"}, {"venue:one"}
         )
         self.assertFalse(passed, detail)
+        missing_companion = text.replace(
+            "- Companions: Complete: Internet Appendix saved and read with the main article\n",
+            "",
+            1,
+        )
+        passed, detail = validate_literature_audit(
+            missing_companion, {"PaperA"}, {"venue:one"}
+        )
+        self.assertFalse(passed, detail)
+        unresolved_companion = text.replace(
+            "Companions: Complete: Internet Appendix saved and read with the main article",
+            "Companions: Missing: Internet Appendix cited but not retrieved",
+            1,
+        )
+        passed, detail = validate_literature_audit(
+            unresolved_companion, {"PaperA"}, {"venue:one"}
+        )
+        self.assertFalse(passed, detail)
         passed, _detail = validate_literature_audit(
             text.replace("Independent: complete", "Independent: pending"),
             {"PaperA"},
@@ -249,6 +276,139 @@ status: complete
         )
         self.assertFalse(passed)
 
+    def test_companion_gate_requires_registered_materialized_keys(self) -> None:
+        fields = {
+            "companions": "Complete: appendix `PaperAAppendix` saved and read",
+        }
+        self.assertEqual(companion_source_keys(fields), {"PaperAAppendix"})
+        self.assertTrue(
+            companion_sources_closed(
+                fields,
+                materialized={"PaperAAppendix": True},
+                source_text="Main article text",
+            )
+        )
+        self.assertFalse(
+            companion_sources_closed(
+                fields,
+                materialized={"PaperAAppendix": False},
+                source_text="Main article text",
+            )
+        )
+        self.assertFalse(
+            companion_sources_closed(
+                {"companions": "Complete: appendix saved and read"},
+                materialized={},
+                source_text="Main article text",
+            )
+        )
+        self.assertFalse(
+            companion_sources_closed(
+                fields,
+                materialized={"PaperAAppendix": True},
+            )
+        )
+        self.assertFalse(
+            companion_sources_closed(
+                {"companions": "None: DOI and author pages checked"},
+                source_text="Results are reported in the Online Appendix.",
+            )
+        )
+        self.assertFalse(
+            companion_sources_closed(
+                {"companions": "None: DOI and author pages checked"},
+                source_text="Supplementary material associated with this article can be found online.",
+            )
+        )
+        self.assertTrue(
+            companion_sources_closed(
+                {"companions": "None: DOI and author pages checked"},
+                source_text="The exchange rule refers to Supplementary Material .05 of Rule 104.",
+            )
+        )
+
+    def test_live_companion_gate_requires_auditable_discovery_record(self) -> None:
+        fields = {
+            "source key": "PaperA",
+            "companions": "Complete: appendix `PaperAAppendix` saved and read",
+        }
+        complete = {
+            "status": "complete",
+            "main": "PaperA",
+            "checks": {
+                "article": "tracked full text checked",
+                "publisher_or_doi": "DOI landing page checked",
+                "author_or_repository": "author publication page checked",
+            },
+            "companions": ["PaperAAppendix"],
+        }
+        materialized = {"PaperA": True, "PaperAAppendix": True}
+        self.assertTrue(source_set_record_closed(complete, materialized))
+        self.assertTrue(
+            companion_sources_closed(
+                fields,
+                materialized=materialized,
+                source_text="Main article text",
+                source_set=complete,
+            )
+        )
+        for missing_check in complete["checks"]:
+            incomplete = {**complete, "checks": {**complete["checks"], missing_check: ""}}
+            self.assertFalse(
+                companion_sources_closed(
+                    fields,
+                    materialized=materialized,
+                    source_text="Main article text",
+                    source_set=incomplete,
+                )
+            )
+        self.assertFalse(
+            companion_sources_closed(
+                fields,
+                materialized=materialized,
+                source_text="Main article text",
+                source_set={**complete, "companions": []},
+            )
+        )
+        self.assertFalse(
+            companion_sources_closed(
+                fields,
+                materialized={"PaperAAppendix": True},
+                source_text="Main article text",
+                source_set=complete,
+            )
+        )
+
+    def test_materialization_does_not_confuse_main_and_companion_prefixes(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            text_root = root / "text"
+            note_root = root / "notes"
+            text_root.mkdir()
+            note_root.mkdir()
+            (text_root / "2021-PaperAAppendix-supplement.txt").write_text("appendix")
+            keys = {"PaperA", "PaperAAppendix"}
+            self.assertFalse(
+                source_materialized(
+                    "PaperA",
+                    bib_keys=keys,
+                    source_keys=keys,
+                    text_root=text_root,
+                    note_root=note_root,
+                )
+            )
+            self.assertTrue(
+                source_materialized(
+                    "PaperAAppendix",
+                    bib_keys=keys,
+                    source_keys=keys,
+                    text_root=text_root,
+                    note_root=note_root,
+                )
+            )
     def test_citation_inventory_reads_every_key_in_a_group(self) -> None:
         import tempfile
         from pathlib import Path

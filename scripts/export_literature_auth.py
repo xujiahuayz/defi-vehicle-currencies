@@ -24,6 +24,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Any
 
+from ddvc.literature_sources import openathens_url  # noqa: E402
 from ddvc.paths import (  # noqa: E402
     LITERATURE_BIB,
     LITERATURE_AUTH_HEADERS,
@@ -49,10 +50,6 @@ def import_playwright():
 def load_bib_doi_urls(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
     return [f"https://doi.org/{doi}" for doi in sorted(set(re.findall(r"^\s*doi\s*=\s*\{([^}]+)\}", text, re.M)))]
-
-
-def openathens_url(url: str, domain: str) -> str:
-    return f"https://go.openathens.net/redirector/{domain}?url={urllib.parse.quote(url, safe='')}"
 
 
 def load_source_urls(path: Path, *, version: str | None) -> list[str]:

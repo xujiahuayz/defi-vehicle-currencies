@@ -1,0 +1,3674 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 144 (2022) 347–369
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Bitcoin’s limited adoption problem
+Franz J. Hinzen a , Kose John a , Fahad Saleh b , ∗
+a New York University Stern School of Business, 44 West 4th Street, New York, NY 10012, USA
+b Wake Forest University, 1834 Wake Forest Rd, Winston-Salem, NC 27109, USA
+a r t i c l e i n f o
+Article history:
+Received 16 December 2021
+Revised 26 January 2022
+Accepted 26 January 2022
+JEL classiﬁcation:
+E42
+G00
+G29
+Keywords:
+Bitcoin
+Limited adoption
+Consensus
+Network delay
+Blockchain
+Fintech
+a b s t r a c t
+We demonstrate theoretically that Bitcoin’s limited adoption arises as an equilibrium out-
+come rather than as a short-lived property. Our results are driven by negative network
+effects which arise due to Bitcoin’s need for consensus and the existence of network de-
+lay. As the Bitcoin network expands, network delay grows thereby prolonging the time
+needed for generating consensus. In turn, transaction settlement becomes prolonged, and
+users abandon the system, yielding limited adoption. Increasing transaction rates fails to
+solve this problem because increasing transaction rates increases fork probabilities which
+prolongs the consensus process and generates limited adoption.
+©2 0 2 2 Elsevier B.V. All rights reserved.
+1. Introduction
+Bitcoin was proposed by Nakamoto (2008) with the
+goal of becoming a widely adopted decentralized payment
+system. To date, however, Bitcoin remains sparsely adopted
+as a payment system. Accordingly, a natural question be-
+comes whether Bitcoin’s economic design is compatible
+with its goal. This paper answers that question by demon-
+strating that Bitcoin’s design makes limited adoption an
+equilibrium outcome.
+Our results arise because we uncover the existence
+of negative network effects within Bitcoin’s design. These
+negative network effects distinguish Bitcoin from tradi-
+tional centralized payment systems and serve as the driv-
+ing force for its limited adoption. To understand how nega-
+tive network effects arise, we emphasize that a blockchain
+∗ Corresponding author.
+E-mail addresses: fhinzen@stern.nyu.edu (F.J. Hinzen),
+kjohn@stern.nyu.edu (K. John), salehf@wfu.edu (F. Saleh).
+constitutes a unique electronic ledger that is stored among
+a potentially large network of agents commonly referred
+to as miners . Bitcoin’s design implies that miners are likely
+to possess inconsistent ledgers at certain times, but such
+inconsistencies must be reconciled for Bitcoin to be viable
+because a transaction is deemed settled only if all miners
+agree on it being on the ledger. Our analysis uncovers that
+achieving agreement among miners, commonly referred to
+as consensus , becomes more diﬃcult as the mining net-
+work size increases which, in turn, contributes to negative
+network effects.
+The economics literature has thus far overlooked the
+negative network effects from Bitcoin. That oversight arises
+because theoretical analyses of Bitcoin typically neglect to
+model network delay which refers to the time required to
+communicate information across the mining network. A
+novel feature of our analysis is that we incorporate net-
+work delay which, together with the need for consen-
+sus, generates negative network effects. To understand this
+point, we highlight that miners cannot agree on any par-
+https://doi.org/10.1016/j.jﬁneco.2022.01.003
+0304-405X/© 2022 Elsevier B.V. All rights reserved.
+
+===== PAGE 2 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+ticular information unless they are all aware of that infor-
+mation. Network delay is relevant because it corresponds
+to the time required for new information to become com-
+mon information across the network. As we discuss in
+Section 2.3 , network delay imposes limits upon the abil-
+ity to generate consensus expeditiously even when miners
+attempt to coordinate. Our analysis highlights that these
+limits contribute to prohibitive delays for Bitcoin users and
+consequently induce limited adoption.
+We model Bitcoin as a queuing system in which miners
+service a set of users. Each user has a unit transaction de-
+mand and derives utility from her transaction being settled
+on the blockchain. Users have a heterogeneous disutility
+for waiting. Each user may pay a transaction fee to reduce
+her expected wait time, but each user also incurs disutility
+in proportion to the fee paid. Therefore, each user selects
+a fee level in equilibrium to optimally balance her dislike
+for waiting with that of paying a fee. If her optimal utility
+from using Bitcoin falls below a reservation level then she
+chooses to abandon Bitcoin, and we classify this choice as
+non-adoption. The reservation level reﬂects the existence
+of an outside option so that not adopting Bitcoin implies
+transacting via a traditional alternative payment system.
+Our ﬁrst main result, Proposition 2 , highlights that Bit-
+coin cannot maintain a non-negligible adoption rate when
+transaction demand becomes large. We deem this inabil-
+ity to maintain a non-negligible adoption rate for large
+transaction demands as limited adoption , which aligns our
+meaning of limited adoption with common usage. To un-
+derstand how our meaning of limited adoption aligns with
+common usage, we offer a simple fact: Bitcoin is used by
+more people than certain developed economy ﬁat curren-
+cies, but Bitcoin’s adoption rate among all people is triv-
+ial whereas those developed economy ﬁat currencies pos-
+sess a near-universal adoption rate within their respective
+countries. To give a concrete example, New Zealand has ap-
+proximately 5 million people within its borders whereas
+over 30 million people use Bitcoin. Nonetheless, the New
+Zealand Dollar (NZD) is not considered sparsely adopted,
+and Bitcoin is not considered widely adopted as a payment
+system. The referenced framing arises because the adop-
+tion rate of NZD in New Zealand is approximately 100%
+whereas the adoption rate of Bitcoin almost anywhere in
+the world is less than 1%. Thus, we focus on the adoption
+rate rather than the raw number of users. Moreover, we
+examine the adoption rate as transaction demand becomes
+large because we seek to understand how widely adopted
+Bitcoin could become if it were to compete directly with
+traditional payment systems which experience large trans-
+action demands.
+We relate the aforementioned result to three features
+of Bitcoin: the need for consensus among miners, free en-
+try with respect to the mining network, and a supply con-
+straint on the transaction rate. As discussed, the need for
+consensus arises because the blockchain is a unique ledger,
+and disagreement implies that miners possess different
+ledgers. Free entry is directly imposed within Bitcoin by
+the fact that serving as a miner requires no special per-
+mission, implying that mining is feasible but not necessar-
+ily incentive-compatible for all agents. As previously noted,
+users may pay fees to reduce wait times, and those fees
+are paid to miners. Potential miners trade off the beneﬁts
+from earning those fees against the costs of participating
+in the mining process. Accordingly, our analysis imposes a
+free-entry condition by determining the set of active min-
+ers as those for whom mining is economically proﬁtable.
+The supply constraint on the transaction rate refers to an
+observed fact of Bitcoin. More precisely, the Bitcoin ledger
+updates approximately every 10 min and that rate of up-
+dating corresponds to a supply constraint on the transac-
+tion rate.
+Proposition 2 arises from a straight-forward economic
+analysis. The supply constraint on Bitcoin’s transaction rate
+implies that prices rather than quantities primarily re-
+spond to an increase in transaction demand. Thus, height-
+ened transaction demand endogenously generates an in-
+crease in fees (i.e., the price for expedited service). The
+fee increase, in turn, augments expected revenues from
+serving as a miner. The mining network’s free entry con-
+dition then implies that additional miners enter the net-
+work. The resulting network expansion exacerbates net-
+work delay which, due to the need for consensus, pro-
+longs expected user wait times. The prolonged user wait
+times then drive users away from Bitcoin towards the tra-
+ditional alternative so that a shrinking fraction of users ac-
+tually adopt Bitcoin. Accordingly, Proposition 2 establishes
+that Bitcoin cannot maintain a non-negligible adoption rate
+when facing heightened demand - we term this problem
+the limited adoption problem .
+A natural response to the described limited adoption
+problem might be to propose that Bitcoin adopt a ﬂexi-
+ble transaction rate that expands in the presence of height-
+ened demand. While such a proposal may succeed in a tra-
+ditional setting, we ﬁnd that it fails in the case of Bitcoin
+due to Bitcoin’s decentralized economic design, which re-
+quires consensus and makes network delay an important
+constraint. We formalize that point via our second main
+result, Proposition 3 .
+To convey the intuition from Proposition 3 , we offer an
+example of how an expansion of processing rates solves
+limited adoption in a traditional setting and contrast that
+with Bitcoin’s context. For the example of a traditional set-
+ting, we consider a grocery store. Just as Bitcoin might
+face a heightened demand for transactions, the grocery
+store might face a heightened demand for check out by
+customers. Nonetheless, the grocery store’s heightened de-
+mand need not lead to prohibitive wait times and cus-
+tomers abandoning the store (akin to limited adoption) be-
+cause the grocery store could counter the heightened de-
+mand by increasing the number of check-out counters (i.e.,
+increasing the processing rate). The increased processing
+rate would then reduce wait times, thereby solving the
+problem. In contrast, the analogous action of increasing
+Bitcoin’s transaction rate fails to solve the limited adoption
+problem for Bitcoin. This failure arises precisely because of
+the need for consensus and the relevance of network delay.
+Importantly, within a grocery store, the cashiers need not
+jointly agree upon one sequence of customers (i.e., they
+do not need to attain consensus); rather, the cashiers con-
+duct parallel processing without any need to communi-
+cate thereby rendering communication time (akin to net-
+work delay) irrelevant. If the cashiers were required to
+348
+
+===== PAGE 3 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+communicate with each other and converge upon a sin-
+gle sequence of customers processed across all cashiers
+(akin to consensus), then increasing the number of cashiers
+would not solve the problem because that increase would
+exacerbate communication diﬃculties. Those communica-
+tion diﬃculties would then generate delays, leading to pro-
+longed customer wait times. Similarly, within Bitcoin, in-
+creasing the transaction rate increases the time needed to
+achieve consensus which then generates prohibitive user
+wait times and thus results in limited adoption.
+We distinguish between the Bitcoin payment system
+and its native asset, bitcoin, with our focus being on the
+former. Importantly, our results do not preclude the suc-
+cess of bitcoin as an asset. Rather, we demonstrate that
+such success is unlikely to be driven by adoption of the un-
+derlying payment system so that bitcoin should be viewed
+as something other than as a medium of exchange. Recent
+work supports this view, demonstrating that transactional
+beneﬁts can explain only a trivial fraction of bitcoin price
+movements (see Biais et al., 2020 ).
+Our results apply to Bitcoin and similar blockchains
+but do not apply to blockchains in general. In particu-
+lar, as we discuss in Section 5 , there are a variety of
+blockchain proposals that potentially overcome limited
+adoption although those proposals remain understudied
+among economists. Some particularly compelling proposals
+include Bitcoin NG, modern Proof-of-Stake protocols and
+permissioned blockchains.
+Our paper relates to a large literature that stud-
+ies the economics of Bitcoin. John et al. (2022) pro-
+vide a survey of that literature. Moreover, some
+notable works within that literature include
+Yermack (2015) , Biais et al. (2019) , Easley et al. (2019) ,
+Foley et al. (2019) , Raskin et al. (2019) , Biais et al. (2020) ,
+Chiu and Koeppl (2020) , Griﬃn and Shams (2020) ,
+Makarov and Schoar (2020) , Alsabah and Capponi (2021) ,
+Cong et al. (2021a) , Huberman et al. (2021) and
+Pagnotta (2022) . Papers closely related to our work include
+Cong et al. (2021b) and Iyengar et al. (2022) . In particular,
+both Cong et al. (2021b) and Iyengar et al. (2022) also
+study blockchain adoption, but neither examine the
+speciﬁc context of Bitcoin. Iyengar et al. (2022) study
+blockchain adoption in a business context, whereas
+Cong et al. (2021b) abstract from network delay, which is
+a key friction for Bitcoin as our results establish.
+Our work also relates to a part of the computer sci-
+ence literature that offers solutions for scaling blockchains.
+That literature provides technical speciﬁcations but not
+economic analyses. More concretely, the referenced liter-
+ature does not model user preferences nor endogenous
+adoption decisions so that our work serves as an economic
+complement to it. For a survey of prominent ideas from
+the referenced literature, the interested reader may consult
+Zhou et al. (2020) .
+2. Model
+We model an inﬁnite horizon setting with two types
+of agents, users and miners. Our setting also involves two
+types of payment systems, Bitcoin and a traditional alter-
+native. We assume that each user possesses unit transac-
+tion demand and conducts that transaction via either Bit-
+coin or the traditional alternative. Transactions are added
+to the Bitcoin blockchain by miners who receive fees, en-
+dogenously selected by users, for processing those transac-
+tions. The remainder of this section presents our model in
+detail.
+2.1. Users
+At t = 0 , N ≥ 2 users arrive simultaneously. Each user
+possesses unit transaction demand and satisﬁes that de-
+mand using either Bitcoin or a traditional alternative.
+User i ∈ { 1 , . . . , N} possesses type c i ∼U[ c , c ] which cor-
+responds to her disutility towards waiting for her transac-
+tion to be processed. We assume that c > c so that there
+exists heterogeneity among users (i.e., P (c i = c j ) = 0 for i ̸ =
+j). We also assume that c > 0 so that all users are impa-
+tient (i.e., c i > 0 for all i ). We let W (f, f −i ) denote User i ’s
+wait time when she pays fee f ≥ 0 with f −i denoting the
+equilibrium fees paid by other users. In turn, User i ’s to-
+tal expected disutility from waiting equals c i · E [ W (f, f −i )]
+when she pays fee f. We further assume that User i
+earns endogenous utility R 1 · (π∗N) α + R 0 from transact-
+ing via Bitcoin where R 0 , R 1 ∈ R + and α ∈ (0 , 1) are exoge-
+nous parameters, whereas π∗ ∈ [0 , 1] denotes the endoge-
+nous adoption rate of Bitcoin. 1 In turn, π∗N represents the
+endogenous adoption level of Bitcoin. User i ’s total utility
+from transacting via Bitcoin equals R 1 · (π∗N) α + R 0 −c i ·
+E [ W (f, f −i )] − f when she pays fee f. We model the tra-
+ditional alternative as an outside option with utility from
+using it normalized to 0. Therefore, User i solves:
+max { max
+f≥0
+R 1 · (π∗N) α + R 0 −c i · E [ W (f, f −i )] − f, 0 }
+(1)
+We assume that user types are private information but
+the distribution from which types are drawn is common
+knowledge (i.e., User i does not know c j for j ̸ = i but
+knows c j ∼U[ c , c ] ). Accordingly, the expectation over wait
+times is taken over the equilibrium fees of other users,
+each of which will depend upon the type of the respective
+user. Miners optimally process transactions in descending
+fee order so that a higher fee improves the probability
+that a user receives service sooner. Each user trades off
+the disutility from paying a higher fee with the utility gain
+from a reduction in her expected wait time and thereby
+selects an optimal fee in equilibrium. If R 1 · (π∗N) α + R 0 −
+c i · E [ W (f i , f −i )] − f i ≥ 0 , with f i ≥ 0 denoting User i ’s op-
+timal fee, then User i transacts via Bitcoin. Otherwise, User
+i employs the traditional alternative. This adoption choice
+follows from the user’s access to a traditional alternative
+that confers her a utility of 0.
+Akin to Huberman et al. (2021) , we examine cut-off
+equilibria with the cut-off denoted by c ∗ ∈ [ c , c ] . More pre-
+cisely, we solve for equilibria such that the set of users that
+adopt is given by { i : c i ≤ c ∗} with User c ∗ being referred
+1 We impose R 0 > R to rule out a trivial equilibrium in which no user
+adopts Bitcoin, which we deﬁne formally later in this section. Explicitly,
+R = c · ( 1
+/Lambda1+ τ(/Lambda1, /Delta1( B
+β )) where B , β, /Lambda1, /Delta1(·) and τ(·, ·) are introduced
+later in this section.
+349
+
+===== PAGE 4 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+to as the marginal user hereafter. We deﬁne the adoption
+rate, π∗, as the expected proportion of users that adopt
+Bitcoin (i.e., π∗ ≡ P (c i ≤ c ∗) ). Consequently, the cut-off, c ∗,
+possesses a bijective relationship with the adoption rate,
+π∗, as follows:
+π∗ =
+c ∗ −c
+c −c
+, c ∗ = ( c −c ) · π∗ + c (2)
+2.2. Miners
+A miner refers to a member of the Bitcoin network that
+stores a copy of the Bitcoin ledger and “mines” to update
+the ledger. As a convention, we use “miner” to refer to
+a single computer processor that participates in the Bit-
+coin network. This convention does not preclude that mul-
+tiple processors might be controlled by the same agent.
+In fact, we discuss the implications of such centralization
+in Section 5.1 although our main results hold for arbitrary
+mining market structures.
+Each miner must pay some cost β > 0 to acquire min-
+ing technology. We assume that each processor possesses
+identical hashing power so that each miner expects to earn
+an equal share of fees among all miners. 2 Our analysis fo-
+cuses on transaction fees, but we allow that there exists a
+block reward, B , paid to miners. 3 Then, assuming risk neu-
+tral preferences, each miner solves:
+max {
+1
+M
+(
+B + E [
+∑
+i
+f i ]
+)
+− β, 0 } (3)
+M denotes the equilibrium number of miners so that
+the pay-off from mining equals 1
+M
+(
+B + E [
+∑
+i
+f i ]
+)
+whereas
+the pay-off from not mining equals 0. Bitcoin’s design al-
+lows for free entry among miners, so miners must be in-
+different between mining and not mining. Accordingly, we
+impose the following free entry condition in equilibrium:
+M =
+B + E [
+∑
+i
+f i ]
+β (4)
+As an aside, our model assumes that miners are patient.
+Accordingly, miners do not discount their fee revenues and
+the total expected present value of mining revenues equals
+B + E [
+∑
+i
+f i ] directly. 4 Our assumption regarding miners be-
+ing perfectly patient is a simpliﬁcation to reﬂect that min-
+ers are signiﬁcantly more patient than users seeking casual
+transactions. More precisely, an hour long wait for a casual
+transaction would likely dissuade a user from using Bitcoin
+2 This assumption is appropriate since most miners use the same type
+of specialized computing hardware (see Alsabah and Capponi, 2021 and
+Ferreira et al., 2020 ).
+3 We assume that B > β which ensures that it is incentive compatible
+for at least one processor to participate in mining.
+4 It is important to recognize that while our model considers consensus
+delays, our model never generates perpetual disagreement. Rather, within
+our model, consensus always obtains eventually with probability one. As
+a consequence, miners being patient implies that the expected present
+value of mining revenues equals the expected sum of block rewards and
+fees: B + E [ ∑
+i
+f i ] .
+for a purchase. In contrast, mining is a business and earn-
+ing revenues an hour (or even days) later would be practi-
+cally immaterial.
+2.3. Blockchain
+A blockchain constitutes an electronic ledger. Users sub-
+mit transactions which are accumulated by miners in dis-
+crete chunks called blocks . In turn, the blocks are placed in
+a chain with a speciﬁc order, hence the term blockchain.
+Blocks have a ﬁxed maximal size, and a block can be
+added to the existing chain of blocks only if the block is
+valid . Within the setting of Bitcoin, a block is valid if it
+solves a trivial but computationally intensive puzzle. 5 The
+block generation process is of economic importance be-
+cause it regulates the rate at which transactions enter the
+blockchain which, in turn, affects user utility through user
+wait times.
+The process by which a single miner produces a valid
+block is well-known to be approximated by a Poisson pro-
+cess so that prior literature generally assumes that each
+miner generates valid blocks exactly according to a Pois-
+son process. 6 We also adopt that assumption, but we de-
+part from prior literature with regard to our modeling of
+blocks that ultimately enter the blockchain. In particular,
+our analysis incorporates the fact that all valid blocks do
+not necessarily enter the blockchain. This fact holds true
+because valid blocks might not be consistent with each
+other and thus some valid blocks might have to be dis-
+carded. The possibility for valid blocks to be inconsistent
+with each other is well known and is referred to as a fork . 7
+We ﬁrst qualitatively explain the source of forks within
+our analysis and then state our formal model of the
+blockchain. Our analysis assumes that miners attempt to
+co-ordinate. More precisely, each Miner j ̸ = i accepts a
+valid block sent by Miner i if Miner i ’s block is consis-
+tent with the blockchain already stored by Miner j when
+5 See de Vries (2018) , Chiu and Koeppl (2020) and Saleh (2019) for de-
+tails regarding the magnitude of energy expenditure and associated wel-
+fare implications.
+6 Formally, the number of valid blocks produced by a miner in any in-
+terval of T time units is given exactly by #(T ) :=
+N B ·T ∑
+n =1
+X n where N B denotes
+the number of attempts per unit time and X n denotes an indicator equal-
+ing one if and only if the n th attempt was successful. The Bitcoin com-
+putational puzzle is speciﬁed such that { X n } ∞
+n =1 is an independent and
+identically distributed sequence. Then, letting ρ := P (X n = 1) denote the
+probability that an individual attempt succeeds, the Poisson Limit The-
+orem (PLT) implies that #(T )
+d → Poisson (λ ·T ) as N B → ∞ when ρ → 0 +
+with λ:= lim
+N B →∞ ρ ·N B . Thus, if the number of attempts per unit time is
+large (i.e., N B is large) and the likelihood that each attempt succeeds is
+small (i.e, ρ is near zero), then PLT establishes that the number of blocks
+produced by a given miner, #(T ) , is approximated by a Poisson process.
+In practice, both aforementioned hypotheses are met because attempts
+are conducted by specialized computing units so that N B is large, and the
+computational puzzle is diﬃcult so that ρ is close to zero.
+7 A fork may arise due to network delay or due to misaligned miner
+incentives. Biais et al. (2019) study forks which arise due to misaligned
+miner incentives whereas we focus upon forks that arise due to network
+delay. Decker and Wattenhofer (2013) indicate that Bitcoin forks arise
+largely due to network delay, and our analysis (see Proposition 3 ) indi-
+cates that such forks become especially problematic when the transaction
+rate of the blockchain is increased.
+350
+
+===== PAGE 5 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+Miner j ﬁrst receives news of Miner i ’s block. If any Miner
+j ̸ = i ﬁnds that Miner i ’s block is not consistent with her
+blockchain when she ﬁrst receives news of Miner i ’s block
+then she rejects the block and a fork arises due to a dis-
+agreement between Miners i and j. Under such an as-
+sumption, if all miners initially store the same blockchain
+(i.e., the blockchain is in a state of consensus) then Miner
+i ’s block will not correspond to a fork if no Miner j ̸ = i
+produces a valid block before receiving news of Miner i ’s
+block. This fact holds because two blocks are necessarily
+inconsistent with each other if they are produced with-
+out knowledge of each other. 8 Intuitively, if Miner j ̸ = i
+produces a valid block after Miner i but before receiv-
+ing news of Miner i ’s block then Miner i and j disagree
+on the temporal order of their two blocks because each
+miner believes that her block was produced ﬁrst. As the
+two blocks are inconsistent with each other, each miner
+must select only one of the two blocks. Since either a time-
+ordering rule or even personal self-interest would lead to
+each miner selecting her own block, a fork results (i.e., lack
+of consensus obtains).
+To incorporate forks into our model, we proceed by de-
+termining the probability that a given valid block corre-
+sponds to a fork:
+P (F ork ) = 1 −e −/Lambda1/Delta1(M) (5)
+/Lambda1denotes the transaction rate, and /Delta1(M) denotes the
+network delay for a normalized single-transaction block
+averaged over all pairs of the M miners in the net-
+work. Equation (5) highlights that the fork probability in-
+creases in both the transaction rate and the network de-
+lay for normalized block; we establish that relationship in
+Appendix A and defer associated technical details to that
+section. Among other results, Appendix A demonstrates an
+equivalence between modifying block sizes and modifying
+block rates so that changes in the transaction rate, /Lambda1, may
+be analyzed without speciﬁc attention to whether such
+changes are implemented by modifying the block size or
+the block rate. Accordingly, we normalize the block size to
+a single transaction hereafter.
+We assume that miners must agree on b ∈ N + con-
+secutive blocks to regain consensus regarding the entire
+blockchain’s contents when the blockchain is not already
+in a state of consensus. All our results hold even for b = 1
+which corresponds to assuming that consensus on the en-
+tire blockchain’s content requires only agreement on the
+most recent block. In general, agreement on a single block
+need not imply consensus on the full chain. Thus, our ﬁnd-
+ings highlight that limited adoption arises for Bitcoin even
+with generous assumptions regarding generating consen-
+sus.
+To complete our model speciﬁcation, we now clarify
+our assumptions regarding /Delta1(M) , the network delay. We
+model /Delta1(M) in general terms as any function that satisﬁes
+the following two conditions: /Delta1(1) = 0 , and /Delta1′ (M) > 0 for
+M > 1 . The ﬁrst condition, /Delta1(1) = 0 , asserts only that a
+8 Knowledge of each other is necessary because the puzzle being solved
+depends upon the entire chain of blocks to which the new block is
+being appended. For further details, the interested reader may consult
+John et al. (2022) .
+network with one miner (i.e., a centralized network) pos-
+sesses no network delay. The second condition states that
+network delay increases as the network size increases be-
+yond a single miner. The ﬁrst condition is self-evident (i.e.,
+communication with oneself requires no time) whereas
+the second assumption is consistent with the random net-
+work topology of Bitcoin (see Chung and Lu, 2002 and
+Riordan and Wormald, 2010 ).
+2.4. Equilibrium
+We formally deﬁne an equilibrium as follows:
+Deﬁnition 1 . Bitcoin Equilibrium
+Our Bitcoin model is parameterized by the number of
+users, N, three parameters relating to the blockchain utility
+for each user, R 0 , R 1 and α, and the blockchain transaction
+rate, /Lambda1. The N users possess types, { c i } N
+i =1 , with c i ∼U[ c , c ] .
+A Bitcoin Equilibrium is (1) an adoption cut-off, c ∗, (2) a
+function, φ(c) , that maps user types to their fees, (3) a set
+of fee realizations for the N users, { f i } N
+i =1 , and (4) a min-
+ing network size, M. The equilibrium satisﬁes the following
+conditions:
+(i) A User Adopts Bitcoin Iff Doing So Is Optimal A user
+adopts Bitcoin (i.e., c i ≤ c ∗) if and only if doing so is
+optimal.
+(i.e., for all c ≤ c ∗ ⇔ max
+f≥0
+R 1 · (π∗N) α + R 0 −c ·
+E [ W (f, f −i )] − f ≥ 0 where π∗ = c ∗−c
+c −c )
+(ii) Equilibrium User Fees Depend Upon User Types
+User i pays a fee, f i , which depends on her type, c i .
+(i.e., for all i : f i = φ(c i ) )
+(iii) Equilibrium Fee Function Provides Optimal Bitcoin
+Fees
+The fee function, φ(c i ) , provides optimal Bitcoin
+fees. In particular, the user maximizes her utility
+from using Bitcoin if she adopts Bitcoin (i.e., φ(c)
+solves max
+f≥0
+R 1 · (π∗N) α + R 0 −c · E [ W (f, f −i )] − f if
+c ≤ c ∗) but pays zero fees to Bitcoin otherwise (i.e.,
+φ(c) = 0 if c > c ∗) because, per Condition i, using
+Bitcoin is not optimal in that case (i.e., max
+f≥0
+R 1 ·
+(π∗N) α + R 0 −c · E [ W (f, f −i )] − f < 0 if c > c ∗).
+(iv) A User Receives Settlement After Higher Priority
+Users And When Consensus Next Obtains
+User i ’s wait time, W (f, f −i ) , if she pays fee f de-
+pends not only on f but also on other user fees,
+f −i . More precisely, transactions are processed in
+descending fee order so that User i must wait ∑
+j: f≤f j H j with H j denoting the service time for
+User j and { j : f ≤ f j } denoting the set of users
+paying higher fees. 9 Further, User i ’s transaction is
+not settled even after her transaction enters the
+blockchain unless the blockchain is at consensus. We
+denote the (random and possibly zero) time until
+consensus next obtains by Z i . 10 Thus, our user wait
+function becomes:
+W (f, f −i ) =
+∑
+j: f≤f j
+H j + Z i
+9 Recall that we normalize the block size to one transaction per block.
+10 We detail the properties of Z i in Appendix B .
+351
+
+===== PAGE 6 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+(v) The Mining Market Is Characterized By Free Entry
+The total expected cost of mining, β, equals the to-
+tal expected proﬁt from mining, 1
+M
+(
+B + E [
+∑
+i
+f i ]
+)
+, for
+each miner. (i.e, β = 1
+M
+(
+B + E [
+∑
+i
+f i ]
+)
+)
+Deﬁnition 1 simply summarizes the discussion from
+Sections 2.1 –2.3 , condensing it into an equilibrium deﬁni-
+tion. Therefore, we do not elaborate further on our equi-
+librium deﬁnition except that we note now that we as-
+sume the blockchain’s stationary distribution characterizes
+its initial state. 11 The subsequent result establishes equilib-
+rium existence:
+Proposition 1 . Bitcoin Equilibrium
+There exists a Bitcoin Equilibrium. The following con-
+ditions characterize that equilibrium with τ(/Lambda1, /Delta1(M)) ≡
+E [ Z 1 ] , /Psi1(/Lambda1, /Delta1(M)) ≡ 1
+/Lambda1+ τ(/Lambda1, /Delta1(M)) and M(c) ≡ B
+β +
+N (N −1)
+6 β/Lambda1
+(c−c ) ·(c 2 + c·c −2 c 2 )
+( c −c ) 2 :
+(A) φ(c) = N−1
+c −c × c 2 −c 2
+2/Lambda1if c ≤ c ∗ and φ(c) = 0 otherwise.
+(B) M = M(c ∗) .
+(C) If R 1 ·N α +R 0 < c · /Psi1(/Lambda1, /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1,
+then c ∗ ∈ ( c , c ) and c ∗ solves:
+R 1 · ( c ∗−c
+c −c ) α ·N α + R 0 = c ∗/Psi1(/Lambda1, /Delta1(M(c ∗))) + N−1
+c −c ×
+c 2 ∗ −c 2
+2/Lambda1
+(D) If R 1 ·N α +R 0 ≥ c · /Psi1(/Lambda1, /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1,
+then a full adoption equilibrium arises:
+c ∗ = c ⇐⇒ π∗ = 1
+We follow prior literature and require that φ constitutes a
+strictly increasing and twice differentiable function on the in-
+terval ( c , c ∗) . In such a case, any equilibrium must satisfy the
+above conditions, and we prove that at least one such equi-
+librium exists for any set of parameters.
+Proposition 1 (A) characterizes the equilibrium fee func-
+tion. This fee function is such that each user’s opti-
+mal fee equals the function evaluated at the user’s type
+(i.e., f i = φ(c i ) ) when each user anticipates that all other
+users select fees according to the same fee function (i.e.,
+for all j ̸ = i : f j = φ(c j ) ). More formally, as required by
+Deﬁnitions 1 (ii) and (iii), φ is a function that solves the
+following problem:
+φ(c i ) = arg max
+f≥0
+R 1 · (π∗N) α + R 0 −c i · E [ W (f, φ(c −i ))] −f
+(6)
+for all c i with φ(c −i ) ≡×
+j : j ̸ = i
+φ(c j ) so that φ(c −i ) corre-
+sponds to the equilibrium fees of all users other than User
+i .
+Note that the equilibrium fee function implies that any
+user who prefers to use the traditional alternative instead
+of the blockchain pays no fees (i.e., φ(c i ) = 0 for all c i >
+c ∗). That behavior is optimal because user utility decreases
+in the level of the fee so that a zero fee is trivially optimal
+11 The interested reader may consult Appendix B for the explicit station-
+ary distribution and associated technical details.
+when a user does not use Bitcoin. In contrast, users who
+transact via the blockchain in equilibrium (i.e., any User i
+such that c i ≤ c ∗) pay fees according to:
+φ(c i ) =
+N −1
+c −c
+× c 2
+i −c 2
+2/Lambda1 (7)
+which highlights that a user’s equilibrium fee increases
+in transaction demand and the user’s wait disutility
+(i.e., φ(c i ) increases in N and c i ) but decreases in the
+blockchain’s transaction rate (i.e., φ(c i ) decreases in /Lambda1).
+Fees increasing in transaction demand and decreasing in
+the blockchain’s transaction rate both reﬂect that fees in-
+crease in congestion. Fees increasing in a user’s wait disu-
+tility reﬂects that a high-wait-disutility user values a re-
+duction in wait time more so than a low-wait-disutility
+user, leading the former to pay a higher fee in equilibrium.
+Proposition 1 (B) characterizes the equilibrium number
+of miners, M(c ∗) , in an equilibrium where c ∗ denotes the
+adoption cut-off. This condition arises directly from apply-
+ing the equilibrium fee function to the free entry condition
+of the mining market, given by Deﬁnition 1 v.
+Proposition 1 (C) characterizes the adoption cut-off in
+the case that there exists a user indifferent between us-
+ing the blockchain and using the traditional alternative.
+In such a case, the cut-off user (i.e., any User i such that
+c i = c ∗) gains no utility from transacting via the blockchain
+since, as discussed, we normalize the utility of the tradi-
+tional alternative to zero. In turn, this implies that the util-
+ity from transacting via the blockchain, R 1 · (π∗N) α + R 0 =
+R 1 · ( c ∗−c
+c −c ) α ·N α + R 0 , must equal the sum of the wait disu-
+tility, c ∗/Psi1(/Lambda1, /Delta1(M(c ∗))) , and the fees paid, φ(c ∗) = N−1
+c −c ×
+c 2 ∗ −c 2
+2/Lambda1.
+Proposition 1 (D) characterizes the adoption cut-off
+in the case that all users weakly prefer transacting via
+the blockchain. In this case, c ∗ = c ⇔ π∗ = 1 because then
+any User c i is below the adoption cut-off (i.e., c i ≤ c ∗ = c
+for all i ). Note that this case arises only when the ex-
+ogenous utility from transacting via the blockchain with
+full adoption, R 1 · (π∗N) α +R 0 = R 1 ·N α +R 0 , is suﬃciently
+high such that even the highest-wait-disutility user (i.e.,
+any User c i such that c i = c ) weakly prefers to use the
+blockchain instead of the traditional alternative (i.e., R 1 ·
+N α + R 0 ≥ c · /Psi1(/Lambda1, /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1).
+3. Main results
+We begin by considering Bitcoin with a ﬁxed transac-
+tion rate (i.e., ﬁxed /Lambda1), which is consistent with Bitcoin’s
+existing design. In that context, we demonstrate that Bit-
+coin faces limited adoption ( Proposition 2 ). We then allow
+for a variable transaction rate within Bitcoin (i.e., we let
+/Lambda1vary), and we demonstrate that our conclusion regard-
+ing Bitcoin facing limited adoption holds in that case also
+( Proposition 3 ).
+Proposition 2 . Limited Adoption I
+Bitcoin faces limited adoption (i.e., lim
+N→∞
+π∗ = 0) .
+Proposition 2 provides our ﬁrst main result. This re-
+sult establishes that Bitcoin’s adoption rate tends to zero
+(i.e., π∗ → 0 ) as transaction demand diverges (i.e., N →
+352
+
+===== PAGE 7 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+∞ ). Note that this result implies that Bitcoin’s adop-
+tion rate is arbitrarily small for suﬃciently large trans-
+action demand. As such, Proposition 2 thus highlights
+that Bitcoin cannot maintain a non-trivial adoption rate
+if a large number of users consider Bitcoin as a feasible
+option.
+We note that our formal characterization of limited
+adoption is lim
+N→∞
+π∗ = 0 . Our characterization examines
+N → ∞ because our analysis aims to consider the Bitcoin
+adoption rate across the globe, and, for tractability reasons,
+it is easier to analyze N → ∞ rather than N being some
+particular large number such as global transaction demand.
+We emphasize that lim
+N→∞
+π∗ = 0 implies that for large N,
+the Bitcoin adoption rate, π∗, is close to zero hence our us-
+age of lim
+N→∞
+π∗ = 0 as the formal characterization of limited
+adoption. As a practical matter, our ﬁndings establish that
+Bitcoin is unlikely to become widely adopted as a payment
+system across the world, as initially hoped.
+To provide further context, we explain the channel for
+Proposition 2 based on our equilibrium solutions given
+by Proposition 1 . Per Proposition 1 (A), an increase in
+transaction demand exacerbates congestion, thereby rais-
+ing equilibrium fees (i.e., φ(c) increases in N). Then, per
+Proposition 1 (B), that increase in fees generates an in-
+crease in the number of miners (i.e., M increases in N).
+The relationship between fees and the number of min-
+ers arises because fees correspond to revenue for min-
+ers, and the mining network is characterized by free entry
+so that increased fees induce entry of miners. Finally, per
+Proposition 1 (C), Bitcoin’s adoption rate declines as the
+equilibrium number of miners increases (i.e., π∗ decreases
+in M). This decrease in the adoption rate arises because
+the increase in the mining network size implies a com-
+mensurate increase in network delay which, in turn, pro-
+longs user wait times (i.e., /Psi1(/Lambda1, /Delta1(M )) increases in M per
+Lemma 10 ). Those increased wait times then reduce the
+adoption rate. Proposition 2 establishes that the adoption
+rate becomes arbitrarily small (i.e., π∗ → 0 ) as transaction
+demand becomes arbitrarily large (i.e., N → ∞ ), thereby
+establishing limited adoption.
+A natural response to the limited adoption thus far de-
+scribed might be to suggest Bitcoin adopt a ﬂexible trans-
+action rate that increases with transaction demand (i.e.,
+Bitcoin should vary /Lambda1with N). In fact, that proposed solu-
+tion is employed in traditional settings to resolve a similar
+problem. For instance, in the introduction, we discuss the
+example of a grocery store that could experience height-
+ened demand but overcomes the problem by increasing
+its processing rate. In particular, when there exists an in-
+crease in customers checking out of the grocery store (i.e.,
+heightened demand), the store responds by increasing the
+number of cashiers (i.e., increasing the processing rate).
+In the grocery store setting, the described response keeps
+wait times low and thereby avoids customers abandon-
+ing the store. With that example as motivation, we sub-
+sequently explore the implications of Bitcoin allowing in-
+creased transaction rates. In contrast to the grocery store
+setting, we ﬁnd that this policy fails to resolve the prob-
+lem within the Bitcoin setting. Proposition 3 formalizes
+this point:
+Proposition 3 . Limited Adoption II
+Suppose that Bitcoin’s transaction rate, /Lambda1N , varies with
+transaction demand, N. Then, even in such a case, Bitcoin
+faces limited adoption (i.e., lim
+N→∞
+π∗ = 0) .
+Proposition 3 allows that Bitcoin’s transaction rate,
+/Lambda1, depends upon transaction demand, N, and we here-
+after acknowledge that dependence by denoting the trans-
+action rate as /Lambda1N . Even allowing for such dependence,
+Proposition 3 establishes that Bitcoin faces limited adop-
+tion.
+To understand Proposition 3 , we highlight that our
+model implies the following decomposition for User i ’s ex-
+pected equilibrium wait time, E i [ W (f i , f −i )] , with E i [ ·] de-
+noting an expectation with respect to User i ’s information
+set:
+E i [ W (f i , f −i )] =
+(N −1)(c ∗ −c i ) + 1
+/Lambda1N   
+T raditional Wait T ime
++ τ(/Lambda1N , /Delta1(M))
+  
+Consensus Wait T ime
+(8)
+Equation (8) states that the expected wait time of each
+user decomposes into two terms: the traditional wait time
+and the consensus wait time. We refer to the ﬁrst term
+as the traditional wait time because this component would
+appear even for a traditional centralized payment system.
+In contrast, the second term, which we refer to as consen-
+sus wait time, would not appear for a centralized payment
+system and therefore distinguishes Bitcoin from a central-
+ized payment system.
+The traditional wait time refers to the sum of the ex-
+pected wait time for all users served before User i and
+the expected service time for User i . Importantly, the tradi-
+tional wait time decreases in the transaction rate and van-
+ishes as the transaction rate diverges so that it can be kept
+arbitrarily small by adjusting the transaction rate. To in-
+tuit this point, we note that the maximal traditional wait
+equals N
+/Lambda1N because even the adopting user who pays the
+lowest fee waits for no more than N −1 other users. As an
+example, if N = 10 and /Lambda1N = 10 transactions per second,
+then all users complete their traditional wait time within
+1 s. If there is an increase in transaction demand with the
+number of potential users becoming 10 0 0 (i.e., N = 10 0 0 )
+then increasing the transaction rate to 10 0 0 transactions
+per second (i.e., /Lambda110 0 0 = 10 0 0 ) maintains the 1 s upper
+bound for the traditional wait time. More generally, the
+traditional wait time is bounded above by ε > 0 if /Lambda1N =
+N
+ε . Thus, as users for a centralized payment system face
+only this traditional wait time, a centralized payment sys-
+tem may avoid limited adoption simply by increasing its
+transaction rate to meet demand (i.e., increasing /Lambda1N as N
+grows).
+However, unlike a centralized payment system, Bit-
+coin cannot overcome limited adoption by increasing its
+transaction rate as shown by Proposition 3 . That result
+arises because Bitcoin requires consensus among miners
+which, in turn, introduces an additional component to wait
+time that we refer to as the consensus wait time (i.e.,
+τ(/Lambda1N , /Delta1(M)) appears in Eq. (8) ). In fact, as we show
+353
+
+===== PAGE 8 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+subsequently, the consensus wait time, τ(/Lambda1N , /Delta1(M)) , be-
+comes prohibitive as the transaction rate increases:
+Proposition 4 . Consensus Wait Time Diverges with Transac-
+tion Demand
+Suppose that Bitcoin adjusts its transaction rate to keep
+pace with transaction demand (i.e., lim
+N→∞
+/Lambda1N = ∞ ) . Then, the
+Consensus Wait Time, τ(/Lambda1N , /Delta1(M)) , diverges as demand di-
+verges, (i.e., lim
+N→∞
+τ(/Lambda1N , /Delta1(M)) = ∞ ) .
+To provide some intuition regarding Proposition 4 , we
+return to Eq. (5) which establishes that the probability
+a block corresponds to a fork equals 1 −e −/Lambda1/Delta1(M) . 12 Ac-
+cordingly, a higher transaction rate, /Lambda1, implies a higher
+fork probability and thus a lower probability of con-
+sensus. In turn, a lower probability of consensus on a
+given block implies a longer consensus wait time. In
+fact, Proposition 4 highlights that arbitrarily large transac-
+tion rates generate arbitrarily large consensus wait times.
+Thus, expected wait times diverge as transaction rates be-
+come arbitrarily large (i.e., lim
+N→∞
+E i [ W (f i , f −i )] = ∞ when
+lim
+N
+/Lambda1N = ∞ as per Eq. (8) ) so that limited adoption arises
+even when transaction rates keep pace with transaction
+demand per Proposition 3 .
+The implication of our results as a whole is that Bit-
+coin faces a dilemma in the face of heightened transaction
+demand. Either Bitcoin keeps transaction rates ﬁxed or it
+varies transaction rates with transaction demand. If Bitcoin
+keeps transaction rates ﬁxed (in line with Bitcoin’s cur-
+rent design) then Bitcoin faces prohibitive traditional wait
+times and, in turn, limited adoption per Proposition 2 . Al-
+ternatively, if Bitcoin varies transaction rates with trans-
+action demand then the consensus wait time becomes
+prohibitive thereby also generating limited adoption per
+Proposition 3 .
+We have noted that a novelty of our analysis is in-
+corporating network delay into an economic model of
+blockchain. To emphasize the importance of incorpo-
+rating this real-world feature that constitutes a prac-
+tical constraint for Bitcoin, we provide the following
+result:
+Proposition 5 . No Adoption Problem Without Network Delay
+Widespread adoption (i.e., lim
+N→∞
+π∗ > 0) can be obtained
+within arbitrarily large networks (i.e., lim
+N→∞
+M = ∞ ) under the
+counterfactual assumption of no network delay (i.e., /Delta1(M) =
+0 for all M) .
+Proposition 5 establishes that Bitcoin could overcome
+limited adoption if it did not possess network delay. In-
+tuitively, an absence of network delay implies that forks
+would never arise (i.e., P (F ork ) = 0 in Eq. (5) if /Delta1(M) =
+0 ). In such a case, Bitcoin would always be in a state
+of consensus (i.e., τ(/Lambda1N , /Delta1(M)) = τ(/Lambda1N , 0) = 0 ) and thus
+could overcome limited adoption in a manner similar
+to a centralized payment system. Nonetheless, Bitcoin
+possessing no network delay is counterfactual so that
+12 Appendix A provides details regarding Eq. (5) .
+Proposition 5 should be interpreted as a result that clar-
+iﬁes economic limitations intrinsic to Bitcoin.
+4. Finite N
+Our main ﬁndings, Propositions 2 and 3 , provide limit-
+ing results (i.e., N → ∞ ) to establish implications for adop-
+tion when demand is large (i.e., large N). In this section, we
+supplement those ﬁndings with results that hold for ﬁnite
+N. In particular, Section 4.1 demonstrates that there exists
+a ﬁnite adoption level for all N (i.e., sup
+N∈ N
+π∗N < ∞ ). More-
+over, Section 4.2 clariﬁes that the referenced bound falls
+below transaction volumes for traditional payment systems
+for any reasonable model parameters. The implication of
+our ﬁndings is thus that Bitcoin is unlikely to replace tra-
+ditional centralized payment systems.
+4.1. Absolute bound on adoption level
+There exists a bound on Bitcoin’s adoption level that
+applies uniformly for all N:
+Proposition 6 . Finite Bound on Adoption Level
+There exists a ﬁnite bound on the total adoption level that
+applies uniformly across all levels of transaction demand. (i.e.,
+sup
+N∈ N
+π∗N < ∞ ) .
+Proposition 6 arises because an increase in the adoption
+level, π∗N, implies an increase in the endogenous fee level
+for the marginal user, φ(c ∗) . In turn, any adoption level
+beyond a particular ﬁnite bound cannot arise in equilib-
+rium because any such adoption level implies a fee level
+that is too excessive to be consistent with such adoption
+levels.
+More formally, Proposition 1 (C) implies the following:
+R 1 · (
+c ∗ −c
+c −c
+) α ·N α +R 0
+  
+Ut ilit y F rom Bitcoin
+≥ N −1
+c −c
+× c 2
+∗ −c 2
+2/Lambda1  
+Marginal User F ee
+(9)
+which states that the endogenous utility from using Bitcoin
+must exceed the fee paid for the marginal user. Then, using
+Eq. (2) and applying some algebra yields:
+R 1 +
+R 0
+(π∗N) α ≥ N −1
+N
+× c ∗ + c
+2/Lambda1× (π∗N) 1 −α (10)
+which reveals that arbitrarily large adoption levels can-
+not arise in equilibrium. In particular, letting the adop-
+tion level grow arbitrarily (i.e., π∗N → ∞ ) in Eq. (10) yields
+R 1 ≥∞  , which delivers a contradiction since user utility
+from transacting via Bitcoin is ﬁnite (i.e., R 0 , R 1 ∈ R + ). Intu-
+itively, arbitrarily large adoption levels generate arbitrarily
+large fees such that only an inﬁnite utility from using Bit-
+coin (i.e., R 1 = ∞ ) is consistent with arbitrarily large adop-
+tion levels in equilibrium.
+Proposition 6 takes the transaction rate as ﬁxed (i.e., /Lambda1
+is a ﬁxed parameter), but that assumption is not neces-
+sary for establishing a bound on the Bitcoin adoption level.
+More explicitly, our next result generalizes Proposition 6 to
+354
+
+===== PAGE 9 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+the case that the transaction rate varies with transaction
+demand:
+Proposition 7 . Finite Bound on Adoption Level II
+Suppose that Bitcoin’s transaction rate, /Lambda1N , varies with
+transaction demand, N. Then, even in such a case, Bit-
+coin faces a ﬁnite bound on its adoption level that ap-
+plies uniformly across all levels of transaction demand. (i.e.,
+sup
+N∈ N
+π∗N < ∞ ) .
+Proposition 7 arises for a similar reason as
+Proposition 3 . In particular, Bitcoin faces a dilemma
+in the face of heightened transaction demand (i.e., when
+N is large). Either Bitcoin keeps transaction rates too low
+such that the congestion from fees ensures a ﬁnite bound
+on its adoption level (as per Proposition 6 ) or Bitcoin in-
+creases its transaction rate suﬃciently fast such that wait
+times become prohibitive due to the need for consensus,
+also generating a ﬁnite bound on its adoption level. More
+formally, Proposition 1 (C) implies:
+R 1 ·
+(
+c ∗ −c
+c −c
+)α
+·N α + R 0
+  
+Ut ilit y F rom Bitcoin
+≥ c ∗/Psi1(/Lambda1N , /Delta1(M))
+  
+Marginal Wait Disut ilit y
+(11)
+which states that the endogenous utility from using Bitcoin
+must exceed the disutility from waiting incurred by the
+marginal user. Then, applying Eq. (2) and /Psi1(/Lambda1N , /Delta1(M)) ≡
+1
+/Lambda1N + τ(/Lambda1N , /Delta1(M)) ≥ τ(/Lambda1N , /Delta1(M)) to Eq. (11) yields:
+R 1 · (π∗N) α +R 0 ≥ c ∗τ(/Lambda1N , /Delta1(M)) (12)
+and dividing through by (π∗N) α implies:
+R 1 +
+R 0
+(π∗N) α ≥ c ∗τ(/Lambda1N , /Delta1(M))
+(π∗N) α (13)
+In our proof for Proposition 7 , we establish that the
+transaction rate growing suﬃciently fast to avoid pro-
+hibitive fees implies that c ∗τ(/Lambda1N , /Delta1(M))
+(π∗·N) α → ∞ as the adop-
+tion level grows arbitrarily large (i.e., π∗N → ∞ ). Con-
+sequently, if the transaction rate grows suﬃciently fast
+to avoid prohibitive fees, Eq. (13) implies R 1 ≥∞  , which
+is a contradiction and thereby precludes arbitrarily large
+adoption levels. Alternatively, if the transaction rate does
+not grow suﬃciently fast to overcome prohibitive fees,
+then the level of the fees themselves preclude arbitrarily
+large adoption levels akin to the intuition given earlier for
+Proposition 6 .
+4.2. Practical adoption limits
+We provide context regarding our previous analysis
+with the following result:
+Proposition 8 . Practical Limits of Adoption
+Suppose that Bitcoin were to employ a transaction rate
+suﬃcient to process 150 million transactions per day and that
+Bitcoin’s network delay were bounded below by empirical es-
+timates given in Croman et al. (2016) . Then, the following re-
+sults hold:
+(A) Each block would correspond to a fork with over 99%
+probability and the blockchain would be in the state of
+a fork with over 99% probability.
+(B) As a consequence, the expected time for transaction
+settlement would become prohibitive. More explicitly,
+the expected time for transaction settlement would ex-
+ceed one year.
+Proposition 8 clariﬁes that the transaction rate neces-
+sary for Bitcoin to achieve VISA’s US transaction volume
+(i.e., 150 million transactions per day) implies a frequency
+of forks such that user wait times become prohibitively
+lengthy irrespective of model preference parameters (i.e.,
+R 0 , R 1 , α, c , c ). In turn, any reasonable model parameters
+are inconsistent with Bitcoin achieving such a transaction
+volume and thus Bitcoin faces a practical limit to adoption
+that renders it unlikely to compete with traditional pay-
+ment systems.
+To understand Proposition 8 , note that Bitcoin achiev-
+ing an increased transaction volume would require Bit-
+coin employing an increased transaction rate but an in-
+creased transaction rate would imply a higher fork prob-
+ability ( Proposition 8 (A)). The higher fork probability, in
+turn, would imply a higher expected wait time due to
+the need to achieve consensus on transaction settlement
+( Proposition 8 (B)). While particular preference parameters
+might be consistent with arbitrarily long settlement times
+(e.g., R 0 , R 1 = ∞ ), we deem such model parameters as un-
+reasonable because we do not consider it plausible that
+users would be willing to wait arbitrarily long for trans-
+action settlement of casual payments.
+More concretely, Eq. (5) , which determines the fork
+probability, is central to Proposition 8 . In particular, while
+current transaction rates for Bitcoin imply a near-zero fork
+probability, increasing Bitcoin’s transaction rate to tolerate
+the demand of a traditional payment system would im-
+ply that most blocks would result in a fork. Consequently,
+most Bitcoin transactions would then be subjected to an
+elongated settlement process, thereby undermining adop-
+tion. We emphasize that a particular model-implied wait-
+ing time computation is not as relevant as the order of
+magnitude for wait times being unreasonably large when-
+ever Bitcoin’s transaction rate is expedited to tolerate large
+transaction demands.
+To provide some practical context regarding the impli-
+cations of persistent forks upon Bitcoin adoption, we turn
+to the only well-known example of a persistent Bitcoin
+fork. That fork demonstrates that persistent forks are a sig-
+niﬁcant threat to widespread adoption in practice just as
+our model predicts. To provide more detail, a fork arose
+on the Bitcoin blockchain in March 2013 for technical rea-
+sons, but that fork was not resolved quickly so that it was
+persistent in a similar sense that forks generated in our
+model due to high transaction rates are persistent. In re-
+sponse to the fork, the largest cryptocurrency exchange at
+the time, Mt. Gox, suspended Bitcoin transactions, induc-
+ing a decline in Bitcoin usage. While Mt. Gox eventually
+restored Bitcoin transactions, the cause of the March 2013
+fork was known to be idiosyncratic and thus not indicative
+of such a fork occurring in the future. In contrast, the forks
+that would arise if Bitcoin’s transaction rate became too
+rapid are not idiosyncratic as they would arise regularly
+per our formal analysis. Mt. Gox’s reaction to the March
+2013 fork thus suggests that forks arising from an expe-
+355
+
+===== PAGE 10 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+dited Bitcoin transaction rate would undermine adoption
+more generally, which is consistent with our ﬁndings. 13
+5. Overcoming limited adoption
+Although our results establish limited adoption for Bit-
+coin, our results do not imply that Bitcoin’s adoption rate
+cannot be increased with centralization of Bitcoin mining.
+Moreover, our results do not imply that more recent eco-
+nomic designs of blockchains face limited adoption. We
+discuss these points, in turn, in Sections 5.1 and 5.2 .
+5.1. Bitcoin centralization
+Lehar and Parlour (2020) and Cong et al. (2021a) high-
+light that Bitcoin mining markets are partially centralized
+in the sense that the majority of blocks are produced by
+a few mining pools. While such partial centralization does
+not preclude limited adoption (see Propositions 2 and 3 ),
+it does enable Bitcoin to achieve higher adoption rates for
+any ﬁnite level of transaction demand. We formalize this
+point with the following result:
+Proposition 9 . Partial Centralization of Mining Markets
+Let πC
+∗ denote the adoption rate of Bitcoin if the network
+delay function is given by /Delta1C (M) . Let πD
+∗ denote the adop-
+tion rate of Bitcoin if the network delay function is given by
+/Delta1D (M) . We assume that /Delta1C (M) ≤ /Delta1D (M) for all Ms o that
+the former case reﬂects a (relatively) centralized mining mar-
+ket in which information propagates more quickly. Then, the
+adoption rate for the relatively centralized mining market ex-
+ceeds that of the adoption rate for the relatively decentralized
+mining market (i.e., πC
+∗ ≥ πD
+∗ ) .
+Recall that M refers to the number of computer pro-
+cessors irrespective of the mining market structure. Since
+partial centralization of mining entails many such proces-
+sors being controlled by the same entity, our model re-
+ﬂects partial centralization through a reduction in the net-
+work delay function (i.e., /Delta1C (M) ≤ /Delta1D (M) for all M). In
+that context, Proposition 9 demonstrates that a relatively
+centralized mining market implies a higher adoption rate
+than a more decentralized mining market. Intuitively, a
+relatively centralized mining market reduces not only the
+network delay but also the probability of a fork. In turn,
+a reduced fork probability implies a reduction in the ex-
+pected settlement time for any transaction and thereby en-
+ables a higher equilibrium adoption rate.
+5.2. Beyond Bitcoin
+Our ﬁnal result provides general context regarding over-
+coming limited adoption:
+Proposition 10 . Overcoming Limited Adoption
+Suppose that the fork probability is given as follows:
+P (F ork ) = p F (/Lambda1, /Delta1(M))
+where p F : R + × R + ↦→ [0 , 1] is an arbitrary function.
+13 For additional details regarding the March 2013 fork, the interested
+reader may consult Biais et al. (2019) or Saleh (2021) .
+If the fork probability is bounded away from unity
+(i.e., sup
+/Lambda1, /Delta1
+p F (/Lambda1, /Delta1) < 1) , then widespread adoption (i.e.,
+lim
+N→∞
+π∗ > 0) can be obtained in equilibrium even with an ar-
+bitrarily large network (i.e., lim
+N→∞
+M = ∞ ) .
+Proposition 10 clariﬁes that limited adoption can be
+overcome if the fork probability is bounded away from
+unity. This result arises because the fork probability be-
+ing bounded away from unity implies that the consensus
+wait time is bounded above and eventually decreases in
+the blockchain’s transaction rate (see Lemma 7 ). In turn,
+a suﬃciently large increase in the transaction rate reduces
+both consensus wait times and overall wait times, thereby
+enabling widespread adoption.
+We conclude by discussing some prominent blockchain
+proposals that seek to improve upon Bitcoin. We discuss
+those proposals in the context of this paper’s ﬁndings.
+5.2.1. An expedited transaction rate
+Several proposals aim to improve upon Bitcoin by em-
+ploying a design identical to Bitcoin except with an expe-
+dited transaction rate. Such proposals are typically imple-
+mented either by increasing block sizes (e.g., Bitcoin Cash)
+or by increasing block rates (e.g., Litecoin). Our analysis
+indicates that such proposals do not succeed at overcom-
+ing limited adoption. In particular, Appendix A establishes
+that the fork probability approaches unity as the transac-
+tion rate diverges irrespective of whether the transaction
+rate diverges due to an increase in the block rate or an in-
+crease in the block size. Consequently, the consensus wait
+time becomes prohibitive as the transaction rate diverges
+irrespective of the implementation method for the increase
+in the transaction rate. In turn, expediting the transaction
+rate does not resolve the limited adoption problem as per
+Proposition 3 .
+While increasing the blockchain’s transaction
+rate does not resolve the limited adoption problem,
+Proposition 10 indicates that limited adoption may be
+overcome by reﬁning the blockchain’s design to enable
+a high transaction rate without a high fork probability.
+Several blockchain proposals aim for such a reﬁnement.
+The remainder of this section focuses on such proposals.
+5.2.2. Bitcoin NG
+Bitcoin NG, put forth by Eyal et al. (2015) , confers
+authority to a single miner to add transactions to the
+blockchain for a period of time known as an epoch . This
+protocol differs from Bitcoin in that Bitcoin confers such
+authority only for a single block. The described modiﬁca-
+tion enables Bitcoin NG to achieve a lower fork probability
+because a fork cannot arise within an epoch once the en-
+tire network has learned which particular miner has the
+authority to add blocks during the epoch.
+Bitcoin NG confers authority to a miner to add trans-
+actions in the same manner that Bitcoin selects a block to
+be added to the blockchain. In particular, in both cases, a
+miner must create a block which solves a computationally
+intensive puzzle to receive the authority to add transac-
+tions. In Bitcoin’s case, the transactions that can be added
+to the blockchain must be included directly on the block
+356
+
+===== PAGE 11 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+that solves the puzzle. In contrast, in Bitcoin NG’s case,
+the block that solves the puzzle identiﬁes a miner who
+may add transactions to the blockchain for the duration of
+the epoch, and no other miner may add transactions dur-
+ing the epoch. Once the epoch concludes, Bitcoin NG con-
+fers authority to another miner to add transactions for the
+subsequent epoch in the same manner as for the previous
+epoch.
+Intuitively, Bitcoin NG achieves a reduction in the fork
+probability by implementing a temporary centralization of
+authority. More explicitly, each epoch corresponds to a pe-
+riod in which a single miner has a monopoly with regard
+to adding transactions to the blockchain. As a consequence,
+a fork cannot arise within an epoch for the same reason
+that a fork would not arise in general in a centralized set-
+ting. It is noteworthy that Bitcoin NG may maintain a fork
+probability bounded away from unity even when expand-
+ing its transaction rate by extending the duration of each
+epoch.
+5.2.3. Modern proof-of-stake protocols
+The previously referenced concept of dividing time into
+epochs and pre-specifying authority to add transactions
+within the epoch has been used in many recent blockchain
+proposals. A key distinguishing factor between some of
+those recent proposals and Bitcoin NG is that recent pro-
+posals generally do not confer authority on the basis of
+computational puzzles. Rather, most recent proposals con-
+fer such authority on the basis of lotteries over outstanding
+cryptocurrency units (or a subset of those units) with the
+lottery winners receiving the authority to add blocks to the
+blockchain and the blocks including transactions. Such re-
+cent proposals are referred to as employing a Proof-of-Stake
+(PoS) protocol because an agent’s likelihood of receiving
+the authority to add blocks depends upon her stake where
+stake refers to cryptocurrency holdings. 14
+The particular concept of having a single agent deter-
+mine all transactions within an epoch has been employed
+by some PoS blockchains (see, e.g., Pass and Shi, 2018 ), but
+many others employ a further modiﬁcation that entails di-
+viding each epoch into slots where each slot corresponds
+to a single block. In such a case, each slot is assigned to
+an agent based on independent lotteries, and all lotteries
+for slots within a particular epoch occur at the beginning
+of that epoch. This process of specifying which agent may
+add a block in each slot of the epoch keeps the fork proba-
+bility low because of the lack of ambiguity regarding which
+agent may add a block in a particular slot. Moreover, the
+number of slots within each epoch may be increased when
+increasing the transaction rate to keep the fork probability
+bounded away from unity.
+5.2.4. Permissioned blockchains
+Another method to enable high transaction rates with-
+out inducing a high fork probability is to specify the under-
+lying blockchain as a permissioned blockchain. A permis-
+sioned blockchain differs from Bitcoin and PoS blockchains
+14 A discussion of PoS is beyond the scope of this paper. The interested
+reader may consult Saleh (2021) for details.
+in that the set of agents who may participate in the pro-
+cess of creating blocks is set in an exogenous fashion.
+Moreover, this set is typically kept to a small number, and
+an eﬃcient process is speciﬁed for the agents within the
+set to arrive at consensus on blocks.
+One process frequently used for generating consensus
+in a permissioned blockchain is Practical Byzantine Fault
+Tolerance (PBFT). PBFT, introduced by Castro et al. (1999) ,
+entails one agent being designated as the leader where
+only the leader can propose new blocks. Consequently, a
+permissioned blockchain with PBFT can operate at high
+transaction rates while avoiding a high fork probability.
+6. Conclusion
+Bitcoin was created with the ambition of becoming
+a widely-adopted decentralized payment system. To date,
+Bitcoin has fallen short of that goal. Our paper examines
+Bitcoin’s goal in the context of its design and ﬁnds the for-
+mer incompatible with the latter. In particular, we ﬁnd that
+limited adoption is an equilibrium outcome for Bitcoin.
+Nonetheless, we emphasize that our work does not
+imply limited adoption universally across all blockchains.
+Rather, our results apply only to Bitcoin and similar
+blockchains, thereby highlighting the need for economic
+analysis of blockchains other than Bitcoin. As discussed
+within Section 5.2 , some blockchain proposals that show
+promise to overcome limited adoption include Bitcoin
+NG, modern Proof-of-Stake protocols and Permissioned
+blockchains. 15 We hope that researchers will extend our
+framework to formally examine those ideas in the future.
+Declaration of Competing Interest
+The authors declare that they have no known compet-
+ing ﬁnancial interests or personal relationships that could
+have appeared to inﬂuence the work reported in this pa-
+per.
+Acknowledgments
+Ron Kaniel was the editor for this article. We thank
+the editor and two anonymous referees for many helpful
+suggestions. We also thank Anup Agrawal, Yakov Amihud,
+Daniel Andrei, Bruno Biais, Jaroslav Borovicka, Matthieu
+Bouvard, Agostino Capponi, Lin William Cong, Kathleen
+DeRose, Sean Foley, Vishal Gaur, Thomas George, Manasa
+Gopal, Hanna Halaburda, Rick Harris, Iftekhar Hasan, Joel
+Hasbrouck, Craig Holden, Sabrina Howell, Gur Huberman,
+Felix Irresberger, Ari Juels, Steven Kou, Jongsub Lee, Doron
+Levit, Jiasun Li, Tao Li, Ye Li, Laura Xiaolei Liu, Evgeny Lyan-
+dres, Katya Malinova, Bill Marcum, David Musto, Shunya
+Noda, Maureen O’Hara, Andreas Park, Christine Parlour,
+Ajay Patel, Thomas Rivera, Alberto Rossi, Bryan Routledge,
+Ville Savolainen, Zhan Shi, Chester Spatt, Deon Strickland,
+Raghu Sundaram, Charles Trzcinka, Gerry Tsoukalas, Larry
+Wall, Baolian Wang, Chaojun Wang, Warren Weber, Danxia
+15 For technical details on such proposals and other potential solutions
+for limited adoption, we direct readers to Zhou et al. (2020) .
+357
+
+===== PAGE 12 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+Xie, Baozhong Yang, David Yermack and Zhen Zhou, as
+well as seminar participants at Georgetown University, In-
+diana University, NYU Stern, Peking University, Tsinghua
+PBC School of Finance, Tsinghua School of Social Sciences,
+University of Florida, University of Georgia, University of
+Houston, Wake Forest University and conference partici-
+pants at the 2019 Conference on Financial Economics and
+Accounting, the 2020 American Finance Association meet-
+ing, the 2020 Midwest Finance Association meeting, the
+2020 European Finance Association meeting and the 2020
+Tokenomics Conference for valuable comments.
+Appendix A. Fork probability
+As explained in Section 2.3 , a valid block produced by
+some Miner i does not correspond to a fork if no blocks
+inconsistent with it are produced. Therefore:
+P (F ork ) = 1 − P (
+⋂
+j
+{ Miner j does not produce a v alid
+inconsistent block } ) (A.1)
+Recall that Miner j produces a valid block inconsistent
+with Miner i ’s block if and only if Miner j produces a valid
+block before receiving news of Miner i ’s block. Accordingly,
+for Miner j’s next valid block to be consistent with Miner
+i ’s valid block, Miner j must not generate a valid block in
+the time that Miner i takes to communicate her block to
+Miner j. Decker and Wattenhofer (2013) demonstrate that
+this time, also known as the network delay between Min-
+ers i and j, depends upon the amount of information being
+sent and is approximately linear in the size of information
+being sent. Thus, letting σ denote the block size (i.e., num-
+ber of transactions per block) and /Delta1i,j denote the network
+delay between Miners i and j for a block with one trans-
+action, we have that:
+Network Delay Between Miners i and j = σ × /Delta1i,j (A.2)
+Further, letting X j denote the time until Miner j pro-
+duces her next valid block (starting from the time at which
+Miner i produces a valid block), we also have that:
+{ Miner j does not produce a v al id inconsistent bl ock } =
+{ X j > σ × /Delta1i,j } (A.3)
+It is well known that each miner’s block production
+process is independent (see, e.g., Narayanan et al., 2016 )
+so that Eqs. (A .1) –(A .3) imply:
+P (F ork ) = 1 −
+∏
+j
+P ({ X j > σ × /Delta1i,j } ) (A.4)
+As discussed within Sections 2.2 and 2.3 , each miner
+produces valid blocks according to a Poisson process and
+each miner corresponds to a computer processor of com-
+parable hashing power. Thus, X j is an exponential ran-
+dom variable with some parameter λ > 0 that denotes
+the rate at which each miner produces valid blocks, and
+Eq. (A.4) becomes:
+P (F ork ) = 1 −
+∏
+j
+e −λ×σ×/Delta1i,j (A.5)
+Then, after some algebra, we have that:
+P (F ork ) = 1 −e
+−λ×M×σ× 1
+M
+∑
+j
+/Delta1i,j
+(A.6)
+Recall that λ denotes the block rate for an individ-
+ual miner and M denotes the total number of miners so
+that ρ ≡ λ ×M denotes the block rate for the entire min-
+ing network. Additionally, since σ denotes the number of
+transactions per block, /Lambda1≡ ρ × σ = λ ×M × σ equals the
+blockchain’s transaction rate. Finally, as /Delta1i,j denotes the
+network delay between Miners i and j for a normalized
+single-transaction block, /Delta1(M) ≡ 1
+M
+∑
+j
+/Delta1i,j denotes the av-
+erage network delay for a normalized single-transaction
+block. 16 Then, a simple re-writing of Eq. (A.6) delivers
+Eq. (5) :
+P (F ork ) = 1 −e −/Lambda1/Delta1(M) (A.7)
+Equivalence between Block Rates, ρ, and Block Sizes, σ
+Our results establish an equivalence between modifying
+block rates, ρ, and modifying block sizes, σ. In particular,
+recall that /Lambda1= ρ × σ so that Eq. (A.7) implies:
+P (F ork ) = 1 −e −ρ×σ×/Delta1(M) (A.8)
+Formally, the block rate, ρ, and the block size, σ, enter
+symmetrically within Eq. (A.8) so that a change in the for-
+mer produces identical implications as a change in the lat-
+ter. Accordingly, we may study implications of varying the
+blockchain transaction rate, /Lambda1= ρ × σ, upon fork proba-
+bilities without speciﬁc attention to whether the changes
+in the transaction rate are achieved by modifying the block
+rate, ρ, or the block size, σ.
+To provide some intuition for this point, we remind the
+reader that a fork arises when some Miner j produces a
+valid block before receiving news of the prior valid block
+by Miner i . Thus, intuitively, a fork arises for one of two
+reasons: either Miner j produces a valid block too quickly,
+or Miner i ’s block requires too long to communicate to the
+network. Increasing the block rate, ρ, makes a fork more
+likely due to the former reason, whereas increasing the
+block size, σ, makes the fork more likely due to the latter
+reason. In particular, a faster block rate implies that each
+miner produces blocks at a faster rate (i.e., ρ ↑⇒ λ = ρ
+M ↑ )
+whereas a larger block size, σ, implies that Miner i ’s block
+takes longer to communicate (i.e., σ ↑⇒ σ × /Delta1i,j ↑ ). In the
+former case, the fork becomes more likely because the
+likelihood that some Miner j produces a valid block too
+quickly increases; in the latter case, the fork becomes more
+likely because the time necessary for Miner i to communi-
+cate with each Miner j ̸ = i elongates.
+Appendix B. CTMC Blockchain model
+We model the blockchain as a Continuous Time Markov
+Chain (CTMC), { X t } t≥0 , with states x ∈ X ≡ { 0 , 1 , . . . , b} . In
+our model, any state x < b corresponds to a state in which
+the blockchain is in the midst of a fork whereas the state
+x = b corresponds to the blockchain being in a state of con-
+sensus. Recall that from a state of consensus (i.e., x = b),
+16 As the Bitcoin network is not supposed to favor any participant rel-
+ative to any other participant, we impose symmetry and drop the i sub-
+script (i.e., /Delta1(M) = /Delta1i (M) ≡ 1
+M
+∑
+j
+/Delta1i,j ).
+358
+
+===== PAGE 13 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+the blockchain enters a fork if there are multiple blocks
+generated at a given height. We denote the blockchain
+state immediately after there is a disagreement on the
+most recent block by x = 0 < b. As discussed in Section 2.3 ,
+regaining consensus requires agreement on b consecutive
+blocks, and we keep track of this transition through the
+blockchain’s state by incrementing the blockchain state by
+one with each consecutive block on which there is agree-
+ment until the blockchain regains consensus (i.e., x = b) at
+which point the state remains at x = b until there is dis-
+agreement on a block. As at any other time, if there is a
+disagreement on a block during the aforementioned tran-
+sition period or after regaining consensus, the blockchain
+state then changes to x = 0 .
+Formally, the CTMC rate matrix, Q ∈ R X×X , character-
+izes our model. For exposition, we deﬁne p(x, y ) = 1 −e −xy
+and abuse notation by setting p ≡ p(/Lambda1, /Delta1) = 1 −e −/Lambda1/Delta1∈
+(0 , 1) . Note that p corresponds to the fork probability (see
+Eq. (5) ). Then, since blocks arrive at rate /Lambda1and only
+the states x = 0 and x = b can transition back to them-
+selves, we have that ∀ x ∈ X/ { 0 , b} : Q x,x = −/Lambda1. Moreover,
+since there is disagreement over any block with probability
+p and the blockchain transitions to state x = 0 upon such
+disagreement, we have that ∀ x ∈ X/ { 0 } : Q x, 0 = /Lambda1p. Simi-
+larly, since the state of the blockchain increments from x
+to x + 1 until x = b whenever there is agreement on a block
+(which occurs with probability 1 − p for any given block),
+we have that ∀ x ∈ X/ { b} : Q x,x +1 = /Lambda1(1 − p) . Finally, triv-
+ially, we have that Q b,b = −/Lambda1p, Q 0 , 0 = −/Lambda1(1 − p) and all
+other entries of Q equal 0.
+Lemma 1 . Stationary Distribution
+{ πx } x ∈ X corresponds to the unique stationary distribution
+with ∀ x < b : πx = p(1 − p) x and πb = (1 − p) b
+Proof . Any stationary distribution, ˜ π ∈ R X , must satisfy
+˜ πQ = 0 . The result follows from algebra. □
+For exposition, we uniformize our CTMC. We let { Y t } t∈ N
+denote the associated Discrete Time Markov Chain (DTMC)
+and P ∈ R X×X denote the associated transition matrix.
+Then, X t = Y N(t) with { N(t) } t≥0 being a Poisson Process
+with rate /Lambda1.
+Lemma 2 . Consensus Wait Times
+We deﬁne T b ≡ inf { t ∈ N : Y t = b} . Then, the expected
+block heights until fork resolution, s x = E [ T b | Y 0 = x ] , con-
+ditional upon initial state, x ∈ X, satisﬁes ∀ x ∈ X : s x =
+( 1 + s 0 p ) 1 −(1 −p) b−x
+p ∀ x ∈ Xs o that s 0 = 1 −(1 −p) b
+p(1 −p) b .
+Proof . We prove the result by induction. s k −j =
+(1 + s 0 p)
+∑  j−1
+i =0 (1 − p) i holds for j = 1 by deﬁnition. Then,
+s k −(j+1) = 1 + (1 − p) s k −j + ps 0 = (1 + s 0 p)
+∑  (j+1) −1
+i =0 (1 −
+p) i with the last equality following from the inductive
+hypothesis. The conclusion then follows from algebra. □
+Subsequently, we provide results useful for establishing
+results within the body of our manuscript, which are sub-
+sequently proved in Appendix C .
+Lemma 3 . Monotone Consensus Wait Times
+∀ x ∈ X/ { b} : s x > s x +1 ≥ 0
+Proof . We prove the result by induction. By deﬁnition, ∀ x ∈
+X/ { b} : s x = 1 + (1 − p) s x +1 + ps 0 so that s 0 > s 1 follows by
+taking x = 0 . Then, by induction, s x = 1 + (1 − p) s x +1 +
+ps 0 > 1 + (1 − p) s x +1 + ps x which implies s x > s x +1 as de-
+sired. ∀ x ∈ X/ { b} : s x +1 ≥ 0 follows from s b = 0 . □
+Hereafter, we deﬁne ∀ x ∈ X : s x (/Lambda1, /Delta1) ≡ s x (p) ≡
+s x (p(/Lambda1, /Delta1)) and abuse notation  by using  s x to
+mean the multivariate function. Similarly, we deﬁne
+∀ x ∈ X : πx (/Lambda1, /Delta1) ≡ πx (p) ≡ πx (p(/Lambda1, /Delta1)) and abuse
+notation by using πx to mean the multivariate function.
+Lemma 4 . Monotone Consensus Wait Times Derivatives
+∀ x ∈ X/ { b} : ds x
+dp ≡ d
+dp [ s x (p)] > ds x +1
+dp ≡ d
+dp [ s x +1 (p)] ≥ 0
+Proof . We prove the result by induction. By deﬁnition,
+∀ x ∈ X/ { b} : s x = 1 + (1 − p) s x +1 + ps 0 so that s 0 = 1
+1 −p +
+s 1 and thus ds 0
+dp = 1
+(1 −p) 2 + ds 1
+dp > ds 1
+dp . Then, s x = 1 + (1 −
+p) s x +1 + ps 0 implies ds x
+dp = (1 − p) ds x +1
+dp −s x +1 + p ds 0
+dp + s 0 .
+Then, Lemma 3 gives that s 0 > s x +1 and the inductive hy-
+pothesis gives that ds 0 )
+dp > ds x
+dp so that (1 − p) ds x +1
+dp −s x +1 +
+p ds 0
+dp + s 0 > (1 − p) ds x +1
+dp + p ds x
+dp so that ds x
+dp > (1 − p) ds x +1
+dp +
+p ds x
+dp . The last equation further implies ds x
+dp > ds x +1
+dp , which
+provides the inductive step and thereby establishes ds x
+dp >
+ds x +1
+dp for all x ∈ X/ { b} . To complete the proof, we must
+demonstrate that ds x +1
+dp ≥ 0 for all x ∈ X/ { b} . This follows
+immediately from s b = 0 , which itself follows from the def-
+inition of s b . More precisely, since we already have ds x
+dp >
+ds x +1
+dp for all x ∈ X/ { b} , then, for all x ∈ X/ { b} , ds x +1
+dp ≥ ds b
+dp =
+0 . □
+Lemma 5 . Monotone Consensus Wait Times Derivatives II
+∀ x ∈ X/ { b} : ∂s x
+∂/Lambda1> ∂s x +1
+∂/Lambda1≥ 0 , ∂s x
+∂/Delta1> ∂s x +1
+∂/Delta1≥ 0
+Proof . For all x ∈ X/ { b} , ∂s x
+∂/Lambda1= ds x
+dp
+∂p
+∂/Lambda1= ds x
+dp /Delta1e −/Lambda1/Delta1. In turn:
+∀ x ∈ X/ { b} :
+∂s x
+∂/Lambda1>
+∂s x +1
+∂/Lambda1≥ 0 ⇐⇒
+ds x
+dp
+>
+ds x +1
+dp
+≥ 0
+so that ∀ x ∈ X/ { b} : ∂s x
+∂/Lambda1> ∂s x +1
+∂/Lambda1≥ 0 follows from Lemma 5 .
+The proof for the second half of the lemma is similar.
+More explicitly, for all x ∈ X/ { b} , ∂s x
+∂/Delta1= ds x
+dp
+∂p
+∂/Delta1= ds x
+dp /Lambda1e −/Lambda1/Delta1.
+In turn:
+∀ x ∈ X/ { b} :
+∂s x
+∂/Delta1>
+∂s x +1
+∂/Delta1≥ 0 ⇐⇒
+ds x
+dp
+>
+ds x +1
+dp
+≥ 0
+and thus ∀ x ∈ X/ { b} : ∂s x
+∂/Delta1> ∂s x +1
+∂/Delta1≥ 0 also follows from
+Lemma 5 . □
+We deﬁne ˜ τ ≡ E [ T b ] as the expected number of blocks
+until fork resolution under the stationary distribution. We
+further deﬁne τ ≡ E [
+∑  T b
+t=1 A t ] as the expected fork reso-
+lution time under the stationary distribution with { A t } ∞
+t=1
+independent and exponentially distributed. Note that the
+stationary distribution is given by { πx } x ∈ X , which is given
+explicitly in Lemma 1 . Note also that Z i
+d =
+∑  T b
+t=1 A t where Z i
+denotes the expected fork resolution time for User i , and
+that the distribution for all Z i are identical because we ini-
+tialize our model with the stationary distribution.
+359
+
+===== PAGE 14 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+Note that τ ≡ E [
+∑  T b
+t=1 A t ] = E [ A 1 ] × E [ T b ] = 1
+/Lambda1× ˜ τ,
+because { A t } ∞
+t=1 is an i.i.d sequence. More explicitly,
+˜ τ = ˜ τ(p) ≡ ∑
+x ∈ X s x (p) πx (p) , whereas τ = τ(p, /Lambda1) ≡∑
+x ∈ X
+s x (p)
+/Lambda1πx (p) .
+Lemma 6 . ˜ τ Increases in p
+Let p, p ′ ∈ (0 , 1) such that p ≤ p ′ . Then, ˜ τ(p) ≤ ˜ τ(p ′ )
+Proof . Recall that ˜ τ(p) =
+∑
+x ∈ X s x (p) πx (p) by deﬁnition.
+Then, since Lemma 4 implies s x (p) ≤ s x (p ′ ) , we have that
+˜ τ(p) =
+∑
+x ∈ X s x (p) πx (p) ≤ ∑
+x ∈ X s x (p ′ ) πx (p) . Lemma 1 im-
+plies that the stationary distribution characterized by
+p ﬁrst-order stochastically dominates that character-
+ized by p ′ , whereas Lemma 2 implies that s x is
+a decreasing function of x ; these two results col-
+lectively imply
+∑
+x ∈ X s x (p ′ ) πx (p) ≤ ∑
+x ∈ X s x (p ′ ) πx (p ′ ) . 17 In
+turn, ˜ τ(p) ≤ ∑
+x ∈ X s x (p ′ ) πx (p) ≤ ∑
+x ∈ X s x (p ′ ) πx (p ′ ) = ˜ τ(p ′ )
+as desired. □
+Lemma 7 . τ vanishes in /Lambda1if fork probability bounded away
+from unity
+Suppose that the fork probability is given by an arbitrary
+function p F : R + × R + ↦→ [0 , 1] such that sup
+/Lambda1, /Delta1
+p F (/Lambda1, /Delta1) < 1 .
+Then, for any sequence { /Lambda1N , /Delta1N } ∞
+N=1 such that lim
+N→∞
+/Lambda1N = ∞ ,
+we have that lim
+N→∞
+τ(p F (/Lambda1N , /Delta1N ) , /Lambda1N ) = 0 .
+Proof . Lemma 6 implies that ˜ τ(p F (/Lambda1N , /Delta1N )) ≤
+˜ τ( sup
+/Lambda1, /Delta1
+p F (/Lambda1, /Delta1)) < ∞ for all N so that
+sup
+N
+˜ τ(p F (/Lambda1N , /Delta1N )) ≤ ˜ τ( sup
+/Lambda1, /Delta1
+p F (/Lambda1, /Delta1)) < ∞ . Then,
+τ(p F (/Lambda1N , /Delta1N )) , /Lambda1N ) = 1
+/Lambda1N × ˜ τ(p F (/Lambda1N , /Delta1N )) ≤
+1
+/Lambda1N × ˜ τ( sup
+/Lambda1, /Delta1
+p F (/Lambda1, /Delta1)) for any N implies
+that lim sup
+N→∞
+τ(p F (/Lambda1N , /Delta1N ) , /Lambda1N ) ≤ lim sup
+N→∞
+(1
+/Lambda1N ×
+˜ τ( sup
+/Lambda1, /Delta1
+p F (/Lambda1, /Delta1))
+)
+= lim
+N→∞
+(1
+/Lambda1N
+)
+× ˜ τ( sup
+/Lambda1, /Delta1
+p F (/Lambda1, /Delta1)) = 0 .
+Finally, recall that τ is deﬁned as the expecta-
+tion of a non-negative random variable so that
+lim inf
+N→∞
+τ(p F (/Lambda1N , /Delta1N ) , /Lambda1N ) ≥ 0 holds trivially and thus
+lim
+N→∞
+τ(p F (/Lambda1N , /Delta1N ) , /Lambda1N ) = 0 as desired. □
+We deﬁne τ(/Lambda1, /Delta1) ≡ τ(p(/Lambda1, /Delta1) , /Lambda1) . Recall that
+p(/Lambda1, /Delta1) = 1 −e −/Lambda1/Delta1which is the fork probability function
+for Bitcoin (see Appendix A ). In turn, τ(/Lambda1, /Delta1) corre-
+sponds speciﬁcally to Bitcoin’s consensus wait time.
+When examining more general settings (e.g., Section 5.2,
+Proposition 10 and Lemma 7 ), we explicitly acknowl-
+edge the underlying fork probability function (e.g.,
+τ = τ(p F ) = τ(p F (/Lambda1, /Delta1) , /Lambda1) for fork probability func-
+tion p F ).
+Lemma 8 . Lower Bound for τ
+τ(/Lambda1, /Delta1) ≥ /Delta1e /Lambda1/Delta1−1
+/Lambda1/Delta1
+17 To see this point, note that ∑
+x ∈ X s x (p ′ ) πx (p) and ∑
+x ∈ X s x (p ′ ) πx (p ′ )
+each correspond to expectations of the same random variable that takes
+on values { s x (p ′ ) } x ∈ X . For each x ∈ X, s x (p ′ ) occurs with probability πx (p)
+in the ﬁrst case and with probability πx (p ′ ) in the second case. Cru-
+cially, as s x (p ′ ) decreases in x , the expectation is higher when taken with
+respect to the distribution which is smaller in the sense of ﬁrst-order
+stochastic dominance (i.e., ∑
+x ∈ X s x (p ′ ) πx (p) ≤ ∑
+x ∈ X s x (p ′ ) πx (p ′ ) ).
+Proof . τ(/Lambda1, /Delta1) ≥ /Delta1s 0 (/Lambda1, /Delta1)
+/Lambda1/Delta1π0 (/Lambda1, /Delta1) = /Delta1e /Lambda1/Delta1b −1
+/Lambda1/Delta1≥ /Delta1e /Lambda1/Delta1−1
+/Lambda1/Delta1
+as desired. □
+We deﬁne /Psi1(/Lambda1, /Delta1) ≡ τ(/Lambda1, /Delta1) + 1
+/Lambda1= τ(p(/Lambda1, /Delta1) , /Lambda1) +
+1
+/Lambda1which equates with the expected wait time for the
+marginal user (i.e., Type c i = c ∗). Unless explicitly stated
+otherwise (e.g., Proposition 10 ), we use p(/Lambda1, /Delta1) = 1 −
+e −/Lambda1/Delta1, which is Bitcoin’s fork probability function.
+Lemma 9 . /Psi1reduces in Centralization
+Let /Delta1C : R + ↦→ R + and /Delta1D : R + ↦→ R + denote network
+delay functions such that /Delta1C (M) ≤ /Delta1D (M) for all M. Then,
+/Psi1(/Lambda1, /Delta1C (M)) ≤ /Psi1(/Lambda1, /Delta1D (M)) for all /Lambda1, M ≥ 0 .
+Proof . By deﬁnition, /Psi1(/Lambda1, /Delta1i (M)) = τ(p(/Lambda1, /Delta1i (M))) +
+1
+/Lambda1= 1
+/Lambda1· ˜ τ(p(/Lambda1, /Delta1i (M))) + 1
+/Lambda1for i ∈ { C, D } . Then,
+p(/Lambda1, /Delta1) = 1 −e −/Lambda1/Delta1implies that p(/Lambda1, /Delta1C (M)) ≤
+p(/Lambda1, /Delta1D (M)) so that Lemma 6 implies ˜ τ(p(/Lambda1, /Delta1C (M))) ≤
+˜ τ(p(/Lambda1, /Delta1D (M)) . In turn, /Psi1(/Lambda1, /Delta1C (M)) = 1
+/Lambda1·
+˜ τ(p(/Lambda1, /Delta1C (M))) + 1
+/Lambda1≤ 1
+/Lambda1· ˜ τ(p(/Lambda1, /Delta1D (M))) + 1
+/Lambda1=
+/Psi1(/Lambda1, /Delta1D (M)) as desired. □
+Lemma 10 . Increasing Wait Time in M
+∀ M ′ > M ≥ 0 : /Psi1(/Lambda1, /Delta1(M ′ )) − /Psi1(/Lambda1, /Delta1(M)) =
+τ(/Lambda1, /Delta1(M ′ )) − τ(/Lambda1, /Delta1(M)) > 0
+Proof . /Psi1(/Lambda1, /Delta1(M ′ )) − /Psi1(/Lambda1, /Delta1(M))
+= τ(/Lambda1, /Delta1(M ′ )) − τ(/Lambda1, /Delta1(M))
+=
+∑
+x ∈ X
+{ s x (/Lambda1, /Delta1(M ′ ))
+/Lambda1πx (/Lambda1, /Delta1(M ′ )) −
+s x (/Lambda1, /Delta1(M))
+/Lambda1πx (/Lambda1, /Delta1(M)) }
+≥ ∑
+x ∈ X
+s x (/Lambda1, /Delta1(M ′ )) −s x (/Lambda1, /Delta1(M))
+/Lambda1 πx (/Lambda1, /Delta1(M))
+=
+∑
+x ∈ X
+1
+/Lambda1
+M ′ ∫
+M
+∂s x
+∂/Delta1| /Delta1=/Delta1(m ) /Delta1′ (m ) dm πx (/Lambda1, /Delta1(M))
+> 0 □
+Lemma 11 . Zero Wait
+τ(/Lambda1, 0) = 0
+Proof . τ(/Lambda1, 0) = s k (/Lambda1, 0) = 0 □
+Appendix C. Proofs for results in main text
+Appendix C.1 derives Proposition 1 , which estab-
+lishes equilibrium existence. Appendix C.2 then de-
+rives preliminary lemmas that are necessary for prov-
+ing the results stated within Sections 3 –5 . Our proofs of
+Propositions 2 and 3 rely upon Propositions 6 and 7 re-
+spectively, so we derive our results in this Appendix in a
+different order than that which the results are stated in
+the manuscript. More explicitly, we ﬁrst derive the results
+from Section 4 in Appendix C.3 and then derive all other
+results in Appendix C.4 . Our ordering of proofs within this
+Appendix ensures that each proof relies only upon results
+derived earlier within the Appendices.
+C1. Proof of Proposition 1
+Proof . For coherence of our discussion, we must specify
+an initial distribution for our Blockchain CTMC model. We
+specify that distribution as the stationary distribution as
+360
+
+===== PAGE 15 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+derived in Lemma 1 . The interested reader may consult
+Appendix B for additional details.
+We proceed as follows: ﬁrst, we assume that users take
+the equilibrium objects c ∗ and M as given and establish
+that (A) gives the equilibrium fee function in that con-
+text. Then, we demonstrate that (B)–(D) must hold. Finally,
+we demonstrate existence of c ∗ and M that satisfy (B)–(D),
+thereby completing the proof.
+Establishing (A) given c ∗ and M
+Deﬁnition 1 (iii) requires that the equilibrium fee func-
+tion, φ, satisﬁes:
+φ(c i ) = arg max
+f≥0
+R 1 · (π∗N) α + R 0 −c i · E [ W (f, f −i )] − f
+(C.1)
+for c i ≤ c ∗. Then, since transactions are processed
+in descending fee order and blocks are unit-sized,
+Deﬁnition 1 (iv) implies:
+E [ W (f, f −i )] =
+1
+/Lambda1× E [
+∑
+j : j ̸ = i
+I{ f j > f} ] + E [ Z i ] (C.2)
+where the ﬁrst term on the right-hand side represents the
+wait due to higher-priority users and the second term on
+the right-hand side represents the stationary expected wait
+time due to the need for miners to attain consensus.
+Per Deﬁnition 1 (iii), each user who does not adopt
+Bitcoin (i.e., any User j such that c j > c ∗) optimally pays
+zero fees. Consequently, f j > f ≥ 0 implies c j ≤ c ∗ and thus
+Eq. (C.2) can be re-written as:
+E [ W (f, f −i )] =
+1
+/Lambda1× E [
+∑
+j : j ̸ = i
+I{ c ∗ ≥ c j , f j > f} ] + E [ Z i ]
+(C.3)
+Note that Deﬁnition 1 (ii) imposes that each user an-
+ticipates that adopting users (i.e., any User j such that
+c j ∈ [ c , c ∗] ) select fees according to the equilibrium fee
+function, φ. As a consequence, f j = φ(c j ) for all j so that
+Eq. (C.3) becomes:
+E [ W (f, f −i )] =
+1
+/Lambda1× E [
+∑
+j : j ̸ = i
+I{ c ∗ ≥ c j , φ(c j ) > f} ] + E [ Z i ]
+(C.4)
+Then, using { c j } N
+j=1 being i.i.d yields:
+E [ W (f, f −i )] = E [ W (f, φ(c −i )]=
+N −1
+/Lambda1×P { c ∗ ≥ c j , φ(c j )
+> f} + E [ Z i ] (C.5)
+We follow prior literature and restrict ourselves to
+φ being strictly increasing  over the set of adopting
+users. Hence, the inverse of φ, φ−1 , is well-deﬁned and
+Eq. (C.5) becomes:
+E [ W (f, f −i )] = E [ W (f, φ(c −i )]
+=
+N −1
+/Lambda1×P { c ∗ > c j >φ−1 (f ) }++ E [ Z i ] (C.6)
+Since c j ∼U[ c , c ] , Eq. (C.6) simpliﬁes to:
+E [ W (f, f −i )] = E [ W (f, φ(c −i )]
+=
+N −1
+/Lambda1×max
+{
+c ∗ − φ−1 (f )
+c −c
+, 0
+}
++ E [ Z i ]
+(C.7)
+Applying Eq. (C.7) to Eq. (C.1) then yields:
+φ(c i ) = arg max
+f≥0
+/Gamma1− c i · (N −1)
+/Lambda1
+×max {
+c ∗ − φ−1 (f )
+c −c
+, 0 } − f (C.8)
+where /Gamma1= R 1 · (π∗N) α + R 0 −c i · E [ Z i ] does not depend
+upon User i ’s fee choice. Note that paying f i > φ(c ∗) is
+dominated by paying f i = φ(c ∗) because paying f i = φ(c ∗)
+ensures a user the highest priority with probability one; in
+particular, paying f i > φ(c ∗) does not reduce wait time rel-
+ative to f i = φ(c ∗) and thus only reduces user utility rela-
+tive to f i = φ(c ∗) because f i > φ(c ∗) entails higher disutil-
+ity from the higher fee payment. As a consequence, with-
+out loss of generality, we can restrict the fee optimization
+problem to f ∈ [0 , φ(c ∗)] and Eq. (C.8) thereby becomes:
+φ(c i ) = arg max
+f∈ [0 ,φ(c ∗ )]
+/Gamma1− c i · (N −1)
+/Lambda1× c ∗ − φ−1 (f )
+c −c
+− f
+(C.9)
+Then, taking the ﬁrst order condition yields:
+c i · (N −1)
+/Lambda1· ( c −c )
+× 1
+φ′ (φ−1 (f i ))
+−1 = 0 (C.10)
+where f i is User i ’s optimal fee. In equilibrium, per
+Deﬁnition 1 (ii), we must have f i = φ(c i ) so that
+Eq. (C.10) then becomes:
+c i · (N −1)
+/Lambda1· ( c −c )
+× 1
+φ′ (c i )
+−1 = 0 (C.11)
+Note that Eq. (C.11) represents a differential equa-
+tion that the equilibrium fee function must satisfy. In par-
+ticular, after some algebra, Eq. (C.11) becomes:
+φ′ (c i ) =
+c i · (N −1)
+/Lambda1· ( c −c )
+(C.12)
+Note that φ( c ) = 0 must hold in any equilibrium where
+φ is strictly increasing over [ c , c ] . This is because φ strictly
+increasing over [ c , c ] implies that any User j with c j = c
+receives service with the lowest priority with probability
+one. In turn, any strictly positive fee by a User j with c j = c
+is dominated by paying a zero fee because the lower fee
+directly increases User j’s utility without increasing her ex-
+pected wait time. Then, solving (C.12) explicitly and impos-
+ing φ( c ) = 0 yields:
+φ(c) =
+N −1
+c −c
+× c 2 −c 2
+2/Lambda1 (C.13)
+for c ≤ c ∗. Note that φ(c) = 0 when c > c ∗ because, per
+Deﬁnition 1 (i), we subsequently determine c ∗ such that
+any User i with c i > c ∗ prefers the traditional alternative.
+Consequently, any User i with c i > c ∗ optimally selects a
+fee φ(c i ) = 0 . Explicitly, φ is given as follows:
+361
+
+===== PAGE 16 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+φ(c)=
+N −1
+c −c
+× c 2 −c 2
+2/Lambda1if c ≤ c ∗ and φ(c) = 0 otherwise
+(C.14)
+which proves (A).
+Establishing (B) - (D)
+Deﬁnition 1 (ii) and (v) imply:
+βM = B + E [
+∑
+i
+φ(c i )] (C.15)
+Then, invoking symmetry of user types (i.e., c i are i.i.d)
+yields:
+βM = B + N × E [ φ(c 1 )] (C.16)
+Further, invoking our solution for φ from Eqs. (C.14) ,
+(C.16) becomes:
+βM = B + N
+c ∗∫
+c
+(N −1
+c −c
+× c 2 −c 2
+2/Lambda1
+)
+× 1
+c −c
+dc (C.17)
+Evaluating the integral on the right-hand side and di-
+viding by β then establishes (B):
+M = M(c ∗) ≡ B
+β +
+N(N −1)
+6 β/Lambda1
+(c ∗ −c ) · (c 2
+∗ + c ∗c −2 c 2 )
+( c −c ) 2
+(C.18)
+To establish (C), note that if c ∗ ∈ ( c , c ) , then for arbitrar-
+ily small ε > 0 , Deﬁnition 1 (i) and (ii) imply that adopting
+users (i.e., any User c i such that c i ≤ c ∗) ﬁnd adoption op-
+timal. More formally, the following equation must hold:
+max
+f≥0
+(
+R 1 ·(π∗N) α + R 0 −(c ∗−ε) ·E [ W (f, φ(c −i ))] −f
+)
+≥0
+(C.19)
+Moreover, Deﬁnition 1 (i) and (ii) also imply that non-
+adopting users (i.e., any User c i such that c i > c ∗) ﬁnd non-
+adoption optimal so that the following equation must also
+hold:
+max
+f≥0
+(
+R 1 ·(π∗N) α +R 0 −(c ∗ + ε)·E [ W (f, φ(c −i ))]−f
+)
+< 0
+(C.20)
+Then, taking ε → 0 + in both Eqs. (C.19) and (C.20) col-
+lectively imply that the marginal user (i.e., any User c i
+such that c i = c ∗) is indifferent between adoption and non-
+adoption:
+max
+f≥0
+(
+R 1 · (π∗N) α + R 0 −c ∗ · E [ W (f, φ(c −i ))] − f
+)
+= 0
+(C.21)
+In turn, applying Deﬁnition 1 (ii) and (iii) which re-
+quires that the marginal user pay the optimal fee (i.e.,
+f i = φ(c ∗) for any User i such that c i = c ∗) implies:
+R 1 · (π∗N) α + R 0 −c ∗ · E [ W (φ(c ∗) , φ(c −i ))] − φ(c ∗) = 0
+(C.22)
+Recall that the marginal user pays the highest fee (i.e.,
+φ is increasing over [ c , c ∗] and zero thereafter) so that,
+with probability one, she does not have to wait for any
+other users to receive service ahead of her. As a conse-
+quence, her wait equals the sum of her individual ser-
+vice time, 1
+/Lambda1, and the consensus wait time, τ(/Lambda1, /Delta1(M)) .
+Then, since /Psi1(/Lambda1, /Delta1(M)) ≡ 1
+/Lambda1+ τ(/Lambda1, /Delta1(M)) , Eq. (C.22) be-
+comes:
+R 1 · (π∗N) α + R 0 −c ∗ · /Psi1(/Lambda1, /Delta1(M)) − φ(c ∗) = 0 (C.23)
+and applying Eq. (2) and the previously derived results (A)
+and (B) to Eq. (C.23) then yields:
+R 1 ·
+((
+c ∗ −c
+c −c
+)
+·N
+)α
++ R 0 = c ∗ · /Psi1(/Lambda1, /Delta1(M(c ∗)))
++
+N −1
+c −c
+× c 2
+∗ −c 2
+2/Lambda1(C.24)
+which establishes (C). Note that (C) employs the hy-
+pothesis R 1 ·N α + R 0 < c · /Psi1(/Lambda1, /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1,
+which we have not yet used. This hypothesis will be em-
+ployed in the last part of this proof to establish existence
+of c ∗ and M that satisfy all equilibrium conditions.
+Turning to (D), note that Deﬁnition 1 (i) implies that,
+if c ∗ = c , then any User i with c i = c must ﬁnd adoption
+optimal:
+max
+f≥0
+(
+R 1 · (π∗N) α + R 0 −c · E [ W (f, f −i )] − f
+)
+≥ 0 (C.25)
+Deﬁnition 1 (ii) then implies that User i anticipates all
+other user fees are given by the equilibrium fee function
+(i.e., f −i = φ(c −i ) ) so that Eq. (C.25) implies:
+max
+f≥0
+(
+R 1 · (π∗N) α + R 0 −c · E [ W (f, φ(c −i ))] − f
+)
+≥ 0
+(C.26)
+In turn, Deﬁnition 1 (ii) and (iii) collectively imply that
+any User i with c i = c selects her fee optimally (i.e., f i =
+φ( c ) when c i = c ) so that Eq. (C.26) implies:
+R 1 · (π∗N) α + R 0 −c · E [ W (φ( c ) , φ(c −i ))] − φ( c ) ≥ 0
+(C.27)
+Recall that φ is increasing over [ c , c ∗] and hence over
+[ c , c ] when c ∗ = c . In turn, a User i with c i = c receives
+service ﬁrst with probability one whenever c ∗ = c and
+her wait equals /Psi1(/Lambda1, /Delta1(M)) . Consequently, Eq. (C.27) be-
+comes:
+R 1 · (π∗N) α + R 0 −c · /Psi1(/Lambda1, /Delta1(M)) − φ( c ) ≥ 0 (C.28)
+Further, applying Eq. (2) and the previously derived re-
+sults (A) and (B) to Eq. (C.28) with c ∗ = c then yields:
+R 1 ·N α + R 0 ≥ c · /Psi1(/Lambda1, /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1
+(C.29)
+which is the hypothesis for (D). Note that (D) asserts that
+this hypothesis implies a full adoption equilibrium (i.e.,
+c ∗ = c ). Thus far, we have shown only that this hypoth-
+esis is the condition for adoption to be optimal for any
+User i with c i = c in a full adoption equilibrium (i.e., when
+c ∗ = c ). To complete this portion of the proof, we must
+demonstrate that Eq. (C.29) implies also that adoption is
+optimal for any User i such that c i < c . As we demonstrate
+362
+
+===== PAGE 17 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+subsequently, that fact follows from the user utility of an
+adopting user decreasing in c i . More formally, we let U de-
+note the user utility of any adopting User i (i.e., c ≤ c ∗) in
+any equilibrium with cut-off c ∗ so that U is given as fol-
+lows:
+U(c, c ∗) ≡ max
+f≥0
+(
+R 1 ·
+((
+c ∗ −c
+c −c
+)
+·N
+)α
++ R 0
+−c · E [ W (f, φ(c −i ))] − f
+)
+(C.30)
+and we let ˜ U denote the utility of any adopting User i (i.e.,
+c ≤ c ∗) when she selects fee f so that ˜ U is given as fol-
+lows:
+˜ U (c, f, c ∗) ≡ R 1 ·
+((
+c ∗−c
+c −c
+)
+·N
+)α
++ R 0 −c·E [ W (f, φ(c −i ))] −f (C.31)
+Deﬁnitions 1 (ii) and (iii) require that User i ’s fee is
+set optimally (i.e., f i = φ(c i ) ) so that the following equa-
+tion holds for any c i ≤ c ∗ in any equilibrium:
+U(c i , c ∗) = ˜ U (c i , φ(c i ) , c ∗) (C.32)
+Then, differentiating with respect to c yields:
+∂U(c i , c ∗)
+∂c
+=
+∂ ˜ U (c i , φ(c i ) , c ∗)
+∂c
++
+∂ ˜ U (c i , φ(c i ) , c ∗)
+∂f
+×dφ(c i )
+dc
+(C.33)
+Note that the ﬁrst-order condition in the derivation of
+(A) implies that ∂ ˜ U (c i ,φ(c i ) ,c ∗)
+∂f = 0s o that direct com puta-
+tion from Eqs. (C.31) and (C.33) yield:
+∂U(c i , c ∗)
+∂c
+=
+∂ ˜ U (c i , φ(c i ) , c ∗)
+∂c
+=− E [ W (φ(c i ) , φ(c −i ))] < 0
+(C.34)
+Recall that Eq. (C.28) corresponds to the condition that
+any User i with c i = c ﬁnds adoption optimal in a full
+adoption equilibrium (i.e., when c ∗ = c ). More formally,
+Eq. (C.28) is equivalent to U( c , c ) ≥ 0 so that Eq. (C.34) im-
+plies that adoption is optimal for all Users (i.e., U(c i , c ) ≥ 0
+for all c i ≤ c ), which thus establishes (D).
+Existence of c ∗ and M
+As just shown, when Eq. (C.28) holds, then a full adop-
+tion equilibrium arises. In such an equilibrium, solutions
+for c ∗ and M are given explicitly by:
+c ∗ = c , M = M( c ) (C.35)
+When Eq. (C.28) does not hold, then a full adoption
+equilibrium cannot arise since Eq. (C.28) is the condition
+for a User i with c i = c to ﬁnd adoption optimal and there-
+fore is a necessary condition for a full adoption equilib-
+rium. Consequently, in such a case, only an equilibrium
+such that c ∗ ∈ ( c , c ) can arise. We subsequently demon-
+strate the existence of such an equilibrium. More for-
+mally, we demonstrate existence of c ∗ and M such that
+(B) and (C) both hold. Note that (A) holds for any given
+c ∗ and (D) is not relevant because it applies only when
+Eq. (C.28) holds. In turn, existence of c ∗ and M satisfying
+(B) and (C) suﬃces to establish existence of an equilibrium
+for model parameters such that Eq. (C.28) does not hold.
+Note that Eq. (C.28) corresponds to a User i such that
+c i = c ﬁnding not adopting optimal whenever c ∗ = c . More
+formally, in this case, the following equation must hold:
+U( c , c ) < 0 (C.36)
+Recall that we impose R 0 > c · ( 1
+/Lambda1+ τ(/Lambda1, /Delta1( B
+β ))) ,
+which ensures that adopting is optimal whenever c ∗ = c
+(i.e., non-adoption for all users is not an equilibrium).
+Explicitly, R 0 > c · ( 1
+/Lambda1+ τ(/Lambda1, /Delta1( B
+β ))) is equivalent to:
+U( c , c ) > 0 (C.37)
+Then, Eqs. (C.36) - (C.37) , and continuity of U ∗(c) ≡
+U(c, c) implies the existence of ˜ c ∗ ∈ ( c , c ) such that
+U ∗( ˜ c ∗) = 0 . Note that U ∗( ˜ c ∗) = 0 is equivalent to (C) if
+Eq. (C.28) does not hold. In turn, the equilibrium c ∗ and
+M are given explicitly as follows:
+c ∗ = ˜ c ∗, M = M( ˜ c ∗) (C.38)
+where the latter equation satisﬁes (B) and thereby com-
+pletes the proof. □
+C2. Preliminary lemmas
+Lemma 12 . Interior Adoption Rate For Large N
+Suppose that the transaction rate, /Lambda1> 0 , is ﬁxed. Then,
+there exists N > 0 such that for all N > N , we have the fol-
+lowing:
+R 1 ·N α + R 0 < c · /Psi1(/Lambda1, /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1
+where M(c) is deﬁned explicitly in Proposition 1 .
+Proof . α ∈ (0 , 1) implies that lim
+N→∞
+N−1
+N α = ∞ which further
+implies:
+lim
+N→∞
+(
+R 1 ·N α + R 0 − (N −1) × c + c
+2/Lambda1
+)
+= −∞ (C.39)
+In turn, that implies that there exists N such that for all
+N > N , we have the following:
+R 1 ·N α + R 0 < (N −1) × c + c
+2/Lambda1 (C.40)
+and since c · /Psi1(/Lambda1, M( c )) ≥ 0 , we also have the following
+for N > N :
+R 1 ·N α + R 0 < c · /Psi1(/Lambda1, /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1
+(C.41)
+which completes the proof. □
+Lemma 13 . Interior Adoption Rate For Large NA n d Variable
+Transaction Rate, /Lambda1N
+Suppose that the transaction rate, /Lambda1N > 0 , is a function of
+transaction demand, N. Then, there exists N > 0 such that for
+all N > N , we have the following:
+R 1 ·N α + R 0 < c · /Psi1(/Lambda1N , /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1N
+where M(c) is deﬁne explicitly in Proposition 1 .
+Proof . We prove this result by contradiction. In particular,
+if there did not exist an N as described in the statement of
+363
+
+===== PAGE 18 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+this lemma, then there must be inﬁnitely many values of
+N such that:
+R 1 ·N α + R 0 ≥ c · /Psi1(/Lambda1N , /Delta1(M( c ))) + (N −1) × c + c
+2/Lambda1N
+(C.42)
+and we demonstrate that this is not possible.
+Note that if there existed inﬁnitely many N such that
+Eq. (C.42) held for all those N, then we could form a sub-
+sequence indexed by N k such that:
+R 1 ·N α
+k + R 0 ≥ c · /Psi1(/Lambda1N k , /Delta1(M( c ))) + (N k −1) × c + c
+2/Lambda1N k
+(C.43)
+for all k and lim
+k →∞
+N k = ∞ . On that sub-sequence, either
+lim inf
+k →∞
+N 1 −α
+k
+/Lambda1N k
+= ∞ or lim inf
+k →∞
+N 1 −α
+k
+/Lambda1N k
+< ∞ . We subsequently
+consider each case and demonstrate that each implies a
+contradiction, thereby establishing the lemma.
+Case 1: lim inf
+k →∞
+N 1 −α
+k
+/Lambda1N k
+= ∞
+Equation (C.43) implies:
+R 1 ·N α
+k + R 0 ≥ (N k −1) × c + c
+2/Lambda1N k
+(C.44)
+Equation (C.44) can be re-written as:
+R 1 ·N α
+k + R 0 ≥ N k −1
+N k
+×N k × c + c
+2/Lambda1N k
+(C.45)
+Then, dividing each side of Eq. (C.45) by N α
+k yields:
+R 1 +
+R 0
+N α
+k
+≥ N k −1
+N k
+×N 1 −α
+k × c + c
+2/Lambda1N k
+(C.46)
+Note that inf
+k
+(
+N k −1
+N k ×N 1 −α
+k × c + c
+2/Lambda1N k
+)
+≥ c + c
+2 ×inf
+k
+N k −1
+N k ×
+inf
+k
+N 1 −α
+k
+/Lambda1N k
+≥ c + c
+4 ×inf
+k
+N 1 −α
+k
+/Lambda1N k
+where the last inequality follows
+because N k ≥ 2 for all k implies N k −1
+N k ≥ 1
+2 for all k . As a
+consequence, Eq. (C.46) implies:
+R 1 +
+R 0
+N α
+k
+≥ c + c
+4
+×inf
+k
+N 1 −α
+k
+/Lambda1N k
+(C.47)
+Taking limits on both sides as k → ∞ implies R 1 = ∞ ,
+which yields the desired contradiction since R 1 is a ﬁnite
+model parameter.
+Case 2: lim inf
+k →∞
+N 1 −α
+k
+/Lambda1N k
+< ∞
+Note that there must exist a further sub-sequence of
+the sub-sequence indexed by N k l such that the further sub-
+sequence converges to lim inf
+k →∞
+N 1 −α
+k
+/Lambda1N k
+. Denoting the further
+sub-sequence by index N k l , Eq. (C.43) implies:
+R 1 ·N α
+k l + R 0 ≥ c · /Psi1(/Lambda1N k l , /Delta1(M( c ))) (C.48)
+for all l ∈ N with lim
+l→∞
+N k l = ∞ .
+Proposition 1 (B) implies that M( c ) ≥ B
+β. More-
+over, Lemma 6 and p(/Lambda1, /Delta1) = 1 −e −/Lambda1/Delta1increasing
+in /Delta1imply that /Psi1(/Lambda1, /Delta1) increases in /Delta1so that
+/Psi1(/Lambda1N k l
+, /Delta1(M( c ))) ≥ /Psi1(/Lambda1N k l
+, /Delta1( B
+β )) . In turn, applying
+those facts to Eq. (C.48) yields:
+R 1 ·N α
+k l + R 0 ≥ c · /Psi1(/Lambda1N k l , /Delta1(
+B
+β )) (C.49)
+Lemma 8 implies /Psi1(/Lambda1N k l
+, /Delta1( B
+β )) ≥ e
+/Lambda1N k l
+/Delta1( B
+β )
+−1
+/Lambda1N k l
+so that
+Eq. (C.49) implies:
+R 1 ·N α
+k l + R 0 ≥ c · e
+/Lambda1N k l /Delta1( B
+β )
+−1
+/Lambda1N k l
+(C.50)
+Note that e x −1 =
+∞ ∑
+n =1
+x n
+n ! ≥ x ν
+ν! when x ≥ 0 where ν ≡
+⌈ α
+1 −α + 2 ⌉ . Then, e
+/Lambda1N k /Delta1( B
+β )
+−1
+/Lambda1N k
+≥ 1
+ν! ·
+(/Lambda1N k /Delta1( B
+β )) ν
+/Lambda1N k
+≥ 1
+ν! · /Lambda1ν−1
+N k ·
+/Delta1( B
+β ) ν so that Eq. (C.50) implies:
+R 1 ·N α
+k l + R 0 ≥ c
+ν!
+· /Lambda1ν−1
+N k l
+· /Delta1(
+B
+β ) ν (C.51)
+Moreover, since /Lambda1ν−1
+N k = (
+/Lambda1N k
+N 1 −α
+k
+) (ν−1) ·N (1 −α) ·(ν−1)
+k ,
+Eq. (C.51) can be re-written as:
+R 1 ·N α
+k l + R 0 ≥ c
+ν!
+· (
+/Lambda1N k l
+N 1 −α
+k l
+) ν−1 ·N (1 −α) ·(ν−1)
+k l · /Delta1(
+B
+β ) ν
+(C.52)
+In turn, dividing both sides by N α
+k l
+yields:
+R 1 +
+R 0
+N α
+k l
+≥ c
+ν!
+· (
+/Lambda1N k l
+N 1 −α
+k l
+) ν−1 ·N (1 −α) ·(ν−1) −α
+k l · /Delta1(
+B
+β ) ν
+(C.53)
+lim
+l→∞
+/Lambda1N k l
+N 1 −α
+k l
+= 1
+lim
+l→∞
+N 1 −α
+k l
+/Lambda1N k l
+= 1
+liminf
+k →∞
+N 1 −α
+k
+/Lambda1N k
+> 0 where the second
+equality follows from the further sub-sequence being con-
+structed to converge to lim inf
+k →∞
+N 1 −α
+k
+/Lambda1N k
+, and the strict inequal-
+ity follows from lim inf
+k →∞
+N 1 −α
+k
+/Lambda1N k
+< ∞ . Moreover, recall that
+ν ≡ ⌈ α
+1 −α + 2 ⌉ so that (1 − α) · (ν −1) ≥ (1 − α) · ( α
+1 −α +
+1) = 1 . In turn, (1 − α) · (ν −1) − α ≥ 1 − α > 0 so that
+lim
+l→∞
+N (1 −α) ·(ν−1) −α
+k l
+= ∞ because lim
+l→∞
+N k l = ∞ . Then, since
+lim
+l→∞
+/Lambda1N k l
+N 1 −α
+k l
+> 0 and lim
+l→∞
+N (1 −α) ·(ν−1) −α
+k l
+= ∞ , taking l → ∞ on
+both sides of Eq. (C.53) implies R 1 = ∞ , which generates
+the desired contradiction. R 1 = ∞ is a contradiction be-
+cause R 1 is a ﬁnite parameter of our model. □
+Lemma 14 . Bounded Adoption Eventually Implies Uniformly
+Bounded Adoption
+If the adoption level, π∗N, is bounded as N → ∞ (i.e.,
+lim sup
+N→∞
+π∗N < ∞ ) , then the adoption level is bounded uni-
+formly for all N (i.e., sup
+N∈ N
+π∗N < ∞ ) .
+Proof . Let L ≡ lim sup
+N→∞
+π∗N < ∞ . Then, by deﬁnition,
+there exists N ε < ∞ such that sup
+N ∈ N : N ≥N ε
+π∗N ≤ L + ε < ∞
+364
+
+===== PAGE 19 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+where ε > 0 and ε < ∞ . Additionally, note that
+π∗ ∈ [0 , 1] so that sup
+N ∈ N : N ≤N ε
+π∗N ≤ N ε . Thus, sup
+N∈ N
+π∗N ≤
+max { sup
+N ∈ N : N ≤N ε
+π∗N, sup
+N ∈ N : N ≥N ε
+π∗N} ≤ max { N ε , L + ε} < ∞ ,
+thereby completing the proof. □
+C3. Proofs for Section 4
+Proof of Proposition 6. . Lemma 14 yields that lim sup
+N→∞
+π∗N <
+∞ ⇒ sup
+N∈ N
+π∗N < ∞ , so it suﬃces to show lim sup
+N→∞
+π∗N < ∞ .
+We establish that result by contradiction. In particular, we
+assume lim sup
+N→∞
+π∗N = ∞ and demonstrate that this yields
+a contradiction, thereby establishing lim sup
+N→∞
+π∗N < ∞ and,
+via Lemma 14 , also sup
+N∈ N
+π∗N < ∞ .
+Lemma 12 and Proposition 1 (C) collectively imply that
+there exists an N such that for all N > N , the following
+equation holds:
+R 1 ·
+(
+c ∗ −c
+c −c
+)α
+·N α + R 0 = c ∗/Psi1(/Lambda1, /Delta1(M(c ∗))) +
+N −1
+c −c
+×c 2
+∗ −c 2
+2/Lambda1 (C.54)
+which implies:
+R 1 ·
+(
+c ∗ −c
+c −c
+)α
+·N α + R 0 ≥ N −1
+c −c
+× c 2
+∗ −c 2
+2/Lambda1(C.55)
+for N > N . Then, using π∗ = c ∗−c
+c −c , implies:
+R 1 · (π∗N) α + R 0 ≥ N −1
+N
+× (π∗N) × c ∗ + c
+2/Lambda1(C.56)
+for all N > N . Further, using c ∗ ≥ c yields:
+R 1 · (π∗N) α + R 0 ≥ N −1
+N
+× (π∗N) × c
+/Lambda1 (C.57)
+Then, dividing through by (π∗N) α and isolating
+(π∗N) 1 −α yields:
+(π∗N) 1 −α ≤
+( N
+N −1
+)
+×
+(/Lambda1
+c
+)
+·
+(
+R 1 +
+R 0
+(π∗N) α
+)
+(C.58)
+for all N > N . Note that there must exist a sub-sequence
+starting after index N = N along which π∗N converges to
+lim sup
+N→∞
+π∗N = ∞ . As a consequence, indexing such a sub-
+sequence by N k yields:
+(π∗N k ) 1 −α ≤
+( N k
+N k −1
+)
+×
+(/Lambda1
+c
+)
+·
+(
+R 1 +
+R 0
+(π∗N k ) α
+)
+(C.59)
+for all k with lim
+k →∞
+N k = ∞ and lim
+k →∞
+π∗N k = ∞ . In turn, tak-
+ing k → ∞ in Eq. (C.59) yields:
+∞ = lim
+k →∞
+(π∗N k ) 1 −α ≤ lim
+k →∞
+{
+( N k
+N k −1
+)
+×
+(/Lambda1
+c
+)
+×
+(
+R 1 +
+R 0
+(π∗N k ) α
+)} ≤ /Lambda1·R 1
+c
+(C.60)
+but /Lambda1, R 1 and c are all ﬁnite model parameters, implying
+that that /Lambda1R 1
+c < ∞ so that Eq. (C.60) delivers a contradic-
+tion and completes the proof. □
+Proof of Proposition 7 . Lemma 14 yields that lim sup
+N→∞
+π∗N <
+∞ ⇒ sup
+N∈ N
+π∗N < ∞ , so it suﬃces to show lim sup
+N→∞
+π∗N < ∞ .
+We establish that result by contradiction. In particular, we
+assume lim sup
+N→∞
+π∗N = ∞ and demonstrate that this yields
+a contradiction, thereby establishing lim sup
+N→∞
+π∗N < ∞ and,
+via Lemma 14 , also sup
+N∈ N
+π∗N < ∞ .
+Lemma 13 and Proposition 1 (C) collectively imply that
+there exists an N such that for all N > N , the following
+equation holds:
+R 1 ·
+(
+c ∗ −c
+c −c
+)α
+·N α + R 0 = c ∗/Psi1(/Lambda1N , /Delta1(M(c ∗)))
++
+N −1
+c −c
+× c 2
+∗ −c 2
+2/Lambda1N
+(C.61)
+Note that N−1
+c −c × (c 2
+∗ −c 2 ) = N−1
+N × N
+c −c × (c 2
+∗ −c 2 ) =
+N−1
+N ×N × c ∗−c
+c −c × (c ∗ + c ) = N−1
+N × (π∗N) × (c ∗ + c ) . Then,
+invoking π∗ = c ∗−c
+c −c in Eq. (C.61) implies:
+R 1 · (π∗N) α + R 0 = c ∗/Psi1(/Lambda1N , /Delta1(M(c ∗))) +
+N −1
+N
+× (π∗N)
+×c ∗ + c
+2/Lambda1N
+(C.62)
+for all N > N . Moreover, since lim sup
+N→∞
+π∗N = ∞ , there exists
+a sub-sequence indexed by N k such that:
+R 1 · (π∗N k ) α + R 0 = c ∗/Psi1(/Lambda1N k , /Delta1(M(c ∗))) +
+N k −1
+N k
+×(π∗N k ) × c ∗ + c
+2/Lambda1N k
+(C.63)
+for all k with lim
+k →∞
+N k = ∞ and lim
+k →∞
+π∗N k = ∞ . On this sub-
+sequence, either lim inf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+= ∞ or lim inf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+<
+∞ . We subsequently consider each case separately.
+Case 1: lim inf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+= ∞
+Equation (C.63) implies:
+R 1 · (π∗N k ) α + R 0 ≥ N k −1
+N k
+× (π∗N k ) × c ∗ + c
+2/Lambda1N k
+(C.64)
+Note that c ∗ ≥ c so that Eq. (C.64) implies:
+R 1 · (π∗N k ) α + R 0 ≥ N k −1
+N k
+× (π∗N k ) × c
+/Lambda1N k
+(C.65)
+Dividing each side in Eq. (C.66) by (π∗N) α then yields:
+R 1 +
+R 0
+(π∗N k ) α ≥ N k −1
+N k
+× (π∗N k ) 1 −α × c
+/Lambda1N k
+(C.66)
+Note that N k −1
+N k × (π∗N k ) 1 −α × c
+/Lambda1N k
+≥ inf
+k
+(
+N k −1
+N k ×
+(π∗N k ) 1 −α × c
+/Lambda1N k
+)
+≥ inf
+k
+N k −1
+N k ×c ×inf
+k
+(π∗N k ) 1 −α
+/Lambda1N k
+≥
+c
+2 ×inf
+k
+(π∗N k ) 1 −α
+/Lambda1N k
+where the last inequality uses N k ≥ 2
+for all k . Note also that R 0
+inf
+k (π∗N k ) α ≥ R 0
+(π∗N k ) α . In turn,
+Eq. (C.66) implies:
+R 1 +
+R 0
+inf
+k
+(π∗N k ) α ≥ c
+2
+×inf
+k
+(π∗N) 1 −α
+/Lambda1N k
+(C.67)
+365
+
+===== PAGE 20 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+Then, taking limits as k → ∞ implies R 1 = ∞ , which de-
+livers the desired contradiction since R 1 is a ﬁnite param-
+eter of our model.
+Case 2: lim inf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+< ∞
+Equation (C.63) implies:
+R 1 · (π∗N k ) α + R 0 ≥ c ∗/Psi1(/Lambda1N k , /Delta1(M(c ∗))) (C.68)
+Proposition 1 (B) implies that M(c ∗) ≥ B
+β for any
+c ∗. Moreover, Lemma 6 and p(/Lambda1, /Delta1) = 1 −e −/Lambda1/Delta1in-
+creasing in /Delta1imply that /Psi1(/Lambda1, /Delta1) increases in /Delta1so
+that /Psi1(/Lambda1N k , /Delta1(M(c ∗))) ≥ /Psi1(/Lambda1N k , /Delta1( B
+β )) . In turn, applying
+those facts and c ∗ ≥ c to Eq. (C.68) yields:
+R 1 · (π∗N k ) α + R 0 ≥ c · /Psi1(/Lambda1N k , /Delta1(
+B
+β )) (C.69)
+Lemma 8 implies /Psi1(/Lambda1N k , /Delta1( B
+β )) ≥ e
+/Lambda1N k /Delta1( B
+β )
+−1
+/Lambda1N k
+so that
+Eq. (C.69) implies:
+R 1 · (π∗N k ) α + R 0 ≥ c · e /Lambda1N k /Delta1( B
+β ) −1
+/Lambda1N k
+(C.70)
+Note that e x −1 =
+∞ ∑
+n =1
+x n
+n ! ≥ x ν
+ν! when x ≥ 0 where ν ≡
+⌈ α
+1 −α + 2 ⌉ . Then, e
+/Lambda1N k /Delta1( B
+β )
+−1
+/Lambda1N k
+≥ 1
+ν! ·
+(/Lambda1N k /Delta1( B
+β )) ν
+/Lambda1N k
+≥ 1
+ν! · /Lambda1ν−1
+N k ·
+/Delta1( B
+β ) ν so that Eq. (C.70) implies:
+R 1 · (π∗N k ) α + R 0 ≥ c
+ν!
+· /Lambda1ν−1
+N k · /Delta1(
+B
+β ) ν (C.71)
+Moreover, since /Lambda1ν−1
+N k = (
+/Lambda1N k
+(π∗N k ) 1 −α ) (ν−1) ·
+(π∗N k ) (1 −α) ·(ν−1) , Eq. (C.71) can be re-written as:
+R 1 · (π∗N k ) α + R 0 ≥ c
+ν!
+· (
+/Lambda1N k
+(π∗N k ) 1 −α ) (ν−1)
+·(π∗N k ) (1 −α) ·(ν−1) · /Delta1(
+B
+β ) ν (C.72)
+Dividing through by (π∗N k ) α then yields:
+R 1 +
+R 0
+(π∗N k ) α ≥ c
+ν!
+· (
+/Lambda1N k
+(π∗N k ) 1 −α ) (ν−1)
+·(π∗N k ) (1 −α) ·(ν−1) −α · /Delta1(
+B
+β ) ν (C.73)
+Note that there exists a further sub-sequence that con-
+verges to lim inf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+. Explicitly, indexing that fur-
+ther sub-sequence by N k l , we have that lim
+l→∞
+(π∗N k l ) 1 −α
+/Lambda1N k l
+=
+lim inf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+due to the construction of the fur-
+ther sub-sequence. Note also that lim
+l→∞
+N k l = ∞ and
+lim
+l→∞
+π∗N k l = ∞ because lim
+k →∞
+N k = ∞ and lim
+k →∞
+π∗N k = ∞ .
+Since Eq. (C.73) holds for all k , it also holds for all k l . More
+explicitly:
+R 1 +
+R 0
+(π∗N k l ) α ≥ c
+ν!
+· (
+/Lambda1N k l
+(π∗N k l ) 1 −α ) (ν−1)
+·(π∗N k l ) (1 −α) ·(ν−1) −α · /Delta1(
+B
+β ) ν (C.74)
+lim
+l→∞
+/Lambda1N k l
+(π∗N k l ) 1 −α = 1
+lim
+l→∞
+(π∗N k l ) 1 −α
+/Lambda1N k l
+= 1
+liminf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+> 0
+where the second equality follows from the further sub-
+sequence being constructed to converge to lim inf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+,
+and the strict inequality follows from lim inf
+k →∞
+(π∗N k ) 1 −α
+/Lambda1N k
+< ∞ .
+Moreover, recall that ν ≡ ⌈ α
+1 −α + 2 ⌉ so that (1 − α) · (ν −
+1) ≥ (1 − α) · ( α
+1 −α + 1) = 1 . In turn, (1 − α) · (ν −1) −
+α ≥ 1 − α > 0 so that lim
+l→∞
+(π∗N k l ) (1 −α) ·(ν−1) −α = ∞ be-
+cause lim
+l→∞
+π∗N k l = ∞ . Then, since lim
+l→∞
+/Lambda1N k l
+(π∗N k l ) 1 −α > 0 and
+lim
+l→∞
+(π∗N k l ) (1 −α) ·(ν−1) −α = ∞ , taking l → ∞ on both sides
+of Eq. (C.74) implies R 1 = ∞ , which generates the desired
+contradiction. R 1 = ∞ is a contradiction because R 1 is a
+ﬁnite parameter of our model. □
+Proof of Proposition 8. . As per the hypothesis of the result,
+we restrict only the transaction rate, /Lambda1, and the network
+delay function, /Delta1(M) , in establishing this result. Our result
+is invariant to any given set of preference parameters in
+our model.
+Explicitly, we require that the transaction rate /Lambda1corre-
+sponds to 150 million transactions per day. Moreover, we
+require that the network delay function, /Delta1(M) , be such
+that /Delta1(M) ≥ /Delta1, whereas /Delta1is given by empirical estimates
+in Croman et al. (2016) .
+It is useful to convert to seconds so the transaction rate,
+/Lambda1, is given as follows:
+/Lambda1=
+150 ×10 6 transactions
+day
+× 1 day
+24 ×60 ×60 seconds
+= 1736
+transactions
+second
+(C.75)
+where we round down to the nearest integer.
+Croman et al. (2016) ﬁnd that a 1 MB block possesses
+a median propagation time of 15.7 s. Our network delay
+function corresponds to the mean propagation time for a
+single transaction. Thus, assuming that the mean exceeds
+the median and that a 1 MB block has 20 0 0 transactions,
+the lower bound for network delay, /Delta1, can itself be
+bounded below as follows:
+/Delta1≥ 15 . 7 seconds
+block
+× 1 block
+20 0 0 transactions
+(C.76)
+Note that the network delay data in
+Croman et al. (2016) is right-skewed, so our assumption
+regarding the mean exceeding the median is consistent
+with their data. Moreover, assuming 20 0 0 transactions per
+block is also consistent with the publicly available data on
+Bitcoin and is used in Huberman et al. (2021) .
+Turning to Proposition 8 (A), Eq. (5) implies:
+p ≡ P (F ork ) ≥ 1 −e −/Lambda1/Delta1> 0 . 99 (C.77)
+which establishes the ﬁrst part of Proposition 8 (A). For the
+second part of Proposition 8 (A), note that Lemma 1 im-
+plies that the blockchain is in a fork with probability
+1 − (1 − p) b , where p is the fork  probability given by
+Eq. (C.77) , and b is the number of blocks on which the
+network must agree to regain consensus. Note that b ≥ 1
+366
+
+===== PAGE 21 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+by deﬁnition so that 1 − (1 − p) b ≥ 1 − (1 − p) 1 = p > 0 . 99
+thereby completing the proof of Proposition 8 (A).
+Turning to Proposition 8 (B), recall that the expected
+wait time for any User i is bounded below by the con-
+sensus wait time, and the consensus wait time is identical
+across users. More explicitly, the following equation holds:
+E [ W (f i , f −i )] ≥ τ(/Lambda1, /Delta1(M)) (C.78)
+Then, since the consensus wait time increases in
+network delay (see Lemma 6 ), /Delta1(M) ≥ /Delta1applied to
+Eq. (C.78) yields:
+E [ W (f i , f −i )] ≥ τ(/Lambda1, /Delta1) (C.79)
+In turn, computing τ directly yields (see Appendix Ap-
+pendix B ):
+E [ W (f i , f −i )] ≥ τ(/Lambda1, /Delta1) ≫ 1 year (C.80)
+which thereby completes the proof.
+As a technical aside, the last computation requires a
+value for b, and we use b = 6 . Moreover, for ease of com-
+putation, we use 0.99 as the fork probability even though
+p > 0 . 99 . Note that Lemma 6 implies that the computa-
+tion for a fork probability of 0.99 will produce a lower
+consensus wait time than that for p > 0 . 99 so that our
+computations can be seen as a lower bound. Finally, per
+Appendix Appendix B , the expected number of blocks to
+regain consensus, ˜ τ, does not depend upon the block rate
+independently of the transaction rate. In turn, the over-
+all consensus wait time decreases in the block rate for a
+given transaction rate and thus the consensus wait time is
+lowest when the block rate is highest. Since the block rate
+and block size are inversely proportional for a given trans-
+action rate, the consensus wait time is lowest when the
+block size is minimized, so we set block sizes to unity for
+our computation. □
+C4. Proofs for Sections 3 and 5
+Proof of Proposition 2. . For all N, the following holds true:
+π∗ ≤
+sup
+N∈ N
+π∗N
+N
+(C.81)
+In turn, invoking sup
+N∈ N
+π∗N < ∞ from Proposition 6 im-
+plies:
+lim sup
+N→∞
+π∗ ≤ lim sup
+N→∞
+sup
+N∈ N
+π∗N
+N
+= lim
+N→∞
+sup
+N∈ N
+π∗N
+N
+= 0
+(C.82)
+Finally, π∗ ∈ [0 , 1] for all N implies lim inf
+N→∞
+π∗ ≥ 0 so
+that Eq. (C.82) implies lim
+N→∞
+π∗ = 0 , thereby completing the
+proof. □
+Proof of Proposition 3. . For all N, the following holds true:
+π∗ ≤
+sup
+N∈ N
+π∗N
+N
+(C.83)
+In turn, invoking sup
+N∈ N
+π∗N < ∞ from Proposition 7 im-
+plies:
+lim sup
+N→∞
+π∗ ≤ lim sup
+N→∞
+sup
+N∈ N
+π∗N
+N
+= lim
+N→∞
+sup
+N∈ N
+π∗N
+N
+= 0
+(C.84)
+Finally, π∗ ∈ [0 , 1] for all N implies lim inf
+N→∞
+π∗ ≥ 0 so
+that Eq. (C.84) implies lim
+N→∞
+π∗ = 0 , thereby completing the
+proof. □
+Proof of Proposition 4. . Lemma 8 yields:
+τ(/Lambda1N , /Delta1(M)) ≥ e /Lambda1N /Delta1(M) −1
+/Lambda1N
+(C.85)
+Note that e x −1 =
+∑  ∞
+n =1
+x n
+n ! so that e x −1 ≥ x 2
+2 + x when
+x ≥ 0 . In turn, Eq. (C.85) implies:
+τ(/Lambda1N , /Delta1(M)) ≥ /Lambda1N /Delta1(M) 2
+2
++ /Delta1(M) (C.86)
+From Proposition 1 v, M ≥ B
+β > 1 so that /Delta1(M) ≥
+/Delta1( B
+β ) > /Delta1(1) = 0 . As a consequence, Eq. (C.86) further im-
+plies:
+τ(/Lambda1N , /Delta1(M)) ≥
+/Lambda1N /Delta1( B
+β ) 2
+2
++ /Delta1(
+B
+β ) (C.87)
+so that taking N → ∞ on both sides implies
+lim
+N→∞
+τ(/Lambda1N , /Delta1(M)) = ∞ as desired. □
+Proof of Proposition 5. . We provide a constructive proof. In
+particular, we explicitly specify /Lambda1N such that there exists
+a full adoption equilibrium for all suﬃciently large N (i.e.,
+there exists N > 0 such that π∗ = 1 for all N > N and thus
+lim
+N→∞
+π∗ = 1 > 0 ) and the mining network size diverges (i.e.,
+lim
+N→∞
+M = ∞ ).
+We specify the transaction rate as follows: /Lambda1N = N−1
+2 .
+Note that /Delta1(M) = 0 implies /Psi1(/Lambda1N , /Delta1(M)) = 1
+/Lambda1N . Then, via
+Proposition 1 (D), a full adoption equilibrium exists if:
+R 1 ·N α + R 0 ≥ c
+/Lambda1N
++ (N −1)
+c + c
+2/Lambda1N
+=
+2 ·c
+N −1
++ c + c
+(C.88)
+Note that:
+lim
+N→∞
+(
+R 1 ·N α +R 0 − 2 ·c
+N −1
+−c −c
+)
+= ∞ (C.89)
+which implies that Eq. (C.88) is satisﬁed for all N suﬃ-
+ciently large. In turn, via Proposition 1 (C), there exists an
+N > 0 such that π∗ = 1 for all N > N as desired.
+To complete the proof, we must demonstrate only that
+lim
+N→∞
+M = ∞ . Proposition 1 (B) yields:
+M = M(c ∗) =
+B
+β +
+N(N −1)
+6 β/Lambda1N
+(c ∗ −c ) · (c 2
+∗ + c ∗c −2 c 2 )
+( c −c ) 2
+(C.90)
+Then, using /Lambda1N = N−1
+2 and π∗ = 1 ⇔ c ∗ = c for N > N ,
+Eq. (C.90) becomes:
+M = M( c ) =
+B
+β +
+N
+3 β · c 2 + c c −2 c 2
+c −c
+(C.91)
+367
+
+===== PAGE 22 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+for N > N . Finally, taking N → ∞ in Eq. (C.91) yields:
+lim
+N→∞
+M = lim
+N→∞
+(B
+β +
+N
+3 β · c 2 + c c −2 c 2
+c −c
+)
+= ∞ (C.92)
+which completes the proof. □
+Proof of Proposition 9. . Either R 1 ·N α + R 0 ≥ c ·
+/Psi1(/Lambda1, /Delta1C (M( c ))) + (N −1) × c + c
+2/Lambda1or R 1 ·N α + R 0 <
+c · /Psi1(/Lambda1, /Delta1C (M( c ))) + (N −1) × c + c
+2/Lambda1. We proceed by prov-
+ing our result for each case in turn.
+Case 1: R 1 ·N α + R 0 ≥ c · /Psi1(/Lambda1, /Delta1C (M( c ))) + (N −1) ×
+c + c
+2/Lambda1
+In this case, Proposition 1 (D) implies that πC
+∗ = 1 so
+that πC
+∗ ≥ πD
+∗ follows trivially from πD
+∗ ∈ [0 , 1] since πD
+∗ ≤
+1 = πC
+∗ .
+Case 2: R 1 ·N α + R 0 < c · /Psi1(/Lambda1, /Delta1C (M( c ))) + (N −1) ×
+c + c
+2/Lambda1
+Note that Proposition 1 implies that πC
+∗ < 1 in this case.
+Moreover, note that Lemma 9 implies that:
+c · /Psi1(/Lambda1, /Delta1C (M( c ))) + (N −1) × c + c
+2/Lambda1
+≤ c · /Psi1(/Lambda1, /Delta1D (M( c ))) + (N −1) × c + c
+2/Lambda1 (C.93)
+so that:
+R 1 ·N α +R 0 < c · /Psi1(/Lambda1, /Delta1D (M( c ))) + (N −1) × c + c
+2/Lambda1
+(C.94)
+and thus Proposition 1 also implies that πD
+∗ < 1 . More ex-
+plicitly, Proposition 1 (C) implies that πD
+∗ = c D ∗ −c
+c −c where c D
+∗
+solves the following equation:
+R 1 · (
+c D
+∗ −c
+c −c
+) α ·N α + R 0 = c D
+∗ /Psi1(/Lambda1, /Delta1D (M(c D
+∗ )))
++
+N −1
+c −c
+× (c D
+∗ ) 2 −c 2
+2/Lambda1(C.95)
+Lemma 9 implies:
+c D
+∗ /Psi1(/Lambda1, /Delta1D (M(c D
+∗ ))) +
+N −1
+c −c
+× (c D
+∗ ) 2 −c 2
+2/Lambda1
+> c D
+∗ /Psi1(/Lambda1, /Delta1C (M(c D
+∗ ))) +
+N −1
+c −c
+× (c D
+∗ ) 2 −c 2
+2/Lambda1(C.96)
+so that Eq. (C.95) becomes:
+R 1 ·
+(
+c D
+∗ −c
+c −c
+)α
+·N α + R 0 > c D
+∗ /Psi1(/Lambda1, /Delta1C (M(c D
+∗ ))) +
+N −1
+c −c
+×(c D
+∗ ) 2 −c 2
+2/Lambda1 (C.97)
+In turn, we deﬁne:
+/Xi1(x ) ≡ R 1 · (
+x −c
+c −c
+) α ·N α + R 0 −
+(
+c ∗/Psi1(/Lambda1, /Delta1C (M(x )))
++
+N −1
+c −c
+× x 2 −c 2
+2/Lambda1
+)
+(C.98)
+so that Eq. (C.97) is equivalent to /Xi1(c D
+∗ ) > 0 . Note
+that the hypothesis of Case 2 (i.e., R 1 ·N α + R 0 < c ·
+/Psi1(/Lambda1, /Delta1C (M( c ))) + (N −1) × c + c
+2/Lambda1) is equivalent to /Xi1( c ) <
+0 . Then, /Xi1(c D
+∗ ) > 0 , /Xi1( c ) < 0 and /Xi1being continuous im-
+plies there exists an x ∗ ∈ (c D
+∗ , c ) such that /Xi1(x ∗) = 0 . Fur-
+ther, Proposition 1 (C) establishes that /Xi1(x ∗) = 0 implies
+c C
+∗ = x ∗ > c D
+∗ where the associated adoption cut-off is given
+by πC
+∗ = c C ∗−c
+c −c . Finally, πk
+∗ = c k ∗−c
+c −c for k ∈ { C, D } implies πC
+∗ >
+πD
+∗ , thereby completing the proof. □
+Proof of Proposition 10. . We provide a constructive proof.
+In particular, we explicitly specify /Lambda1N such that there ex-
+ists a full adoption equilibrium for all suﬃciently large N
+(i.e., there exists N > 0 such that π∗ = 1 for all N > N and
+thus lim
+N→∞
+π∗ = 1 > 0 ) and the network size diverges (i.e.,
+lim
+N→∞
+M = ∞ ).
+Recall that /Psi1(/Lambda1N , /Delta1(M)) = 1
+/Lambda1N + τ(p F (/Lambda1N , /Delta1(M)) ,
+/Lambda1N ) where τ(p F (/Lambda1N , /Delta1(M)) , /Lambda1N ) is deﬁned in
+Appendix Appendix B and discussed after the proof of
+Lemma 7 . Note that we are not using Bitcoin’s fork proba-
+bility function and rather using a fork probability function
+as given by the hypothesis of this proposition (i.e., p F such
+that sup
+/Lambda1, /Delta1
+p F (/Lambda1, /Delta1) < 1 ). Then, via Proposition 1 (D), a full
+adoption equilibrium exists if:
+R 1 ·N α + R 0 ≥ c ×
+( 1
+/Lambda1N
++ τ(p F (/Lambda1N , /Delta1(M)) , /Lambda1N )
+)
++(N −1)
+c + c
+2/Lambda1N
+(C.99)
+We select the transaction rate to vary according to
+/Lambda1N = N−1
+2 , which implies that Eq. (C.99) becomes:
+R 1 ·N α + R 0 ≥ c ×
+( 1
+/Lambda1N
++ τ(p F (/Lambda1N , /Delta1(M)) , /Lambda1N )
+)
++ c + c
+(C.100)
+Then, Lemma 7 yields that lim
+N→∞
+τ(p F (/Lambda1N , /Delta1(M)) ,
+/Lambda1N ) = 0 so that:
+lim
+N→∞
+(
+R 1 ·N α + R 0 −c ×
+( 1
+/Lambda1N
++ τ(p F (/Lambda1N , /Delta1(M)) , /Lambda1N )
+)
+−c −c
+)
+= ∞ (C.101)
+which implies that Eq. (C.99) is satisﬁed for all N suﬃ-
+ciently large. In turn, via Proposition 1 (C), there exists an
+N > 0 such that π∗ = 1 for all N > N as desired.
+To complete the proof, we must demonstrate only that
+lim
+N→∞
+M = ∞ . Proposition 1 (B) yields:
+M = M(c ∗) =
+B
+β +
+N(N −1)
+6 β/Lambda1N
+(c ∗ −c ) · (c 2
+∗ + c ∗c −2 c 2 )
+( c −c ) 2
+(C.102)
+Then, using /Lambda1N = N−1
+2 and π∗ = 1 ⇔ c ∗ = c for N > N ,
+Eq. (C.102) becomes:
+M = M( c ) =
+B
+β +
+N
+3 β · c 2 + c c −2 c 2
+c −c
+(C.103)
+for N > N . Finally, taking N → ∞ in Eq. (C.103) yields:
+lim
+N→∞
+M = lim
+N→∞
+(B
+β +
+N
+3 β · c 2 + c c −2 c 2
+c −c
+)
+= ∞ (C.104)
+which completes the proof. □
+368
+
+===== PAGE 23 =====
+
+F.J. Hinzen, K. John and F. Saleh Journal of Financial Economics 144 (2022) 347–369
+References
+Alsabah, H. , Capponi, A. , 2021. Pitfalls of Bitcoin’s Proof-of-Work: R&D
+Arms Race and Mining Centralization. Working Paper .
+Biais, B. , Bisiére, C. , Bouvard, M. , Casamatta, C. , 2019. The blockchain folk
+theorem. Rev. Financ. Stud. 32 (5), 1662–1715 .
+Biais, B. , Bisiére, C. , Bouvard, M. , Casamatta, C. , Menkveld, A.J. , 2020. Equi-
+librium Bitcoin Pricing. Working Paper .
+Castro, M. , Liskov, B. , et al. , 1999. Practical byzantine fault tolerance. In:
+OSDI, vol. 99, pp. 173–186 .
+Chiu, J. , Koeppl, T.V. , 2020. The Economics of Cryptocurrencies - Bitcoin
+and Beyond. Working Paper .
+Chung, F. , Lu, L. , 2002. The average distances in random graphs with given
+expected degrees. Proc. Natl. Acad. Sci. 99 (25), 15879–15882 .
+Cong, L.W. , He, Z. , Li, J. , 2021. Decentralized mining in centralized pools.
+Rev. Financ. Stud. 34, 1191–1235 .
+Cong, L.W. , Li, Y. , Wang, N. , 2021. Tokenomics: dynamic adoption and val-
+uation. Rev. Financ. Stud. 34, 1105–1155 .
+Croman, K. , Decker, C. , Eyal, I. , Gencer, A.E. , Juels, A. , Kosba, A. , Miller, A. ,
+Saxena, P. , Shi, E. , Sirer, E.G. , et al. , 2016. On scaling decentralized
+blockchains. In: International Conference on Financial Cryptography
+and Data Security. Springer, pp. 106–125 .
+Decker, C. , Wattenhofer, R. , 2013. Information propagation in the bitcoin
+network. In: IEEE P2P 2013 Proceedings .
+Easley, D., O’Hara, M., Basu, S., 2019. From mining to markets: the evo-
+lution of bitcoin transaction fees. J. Financ. Econ. 134 (1), 91–109.
+doi: 10.1016/j.jﬁneco.2019.03.004 .
+Eyal, I., Gencer, A.E., Sirer, E.G., van Renesse, R., 2015. Bitcoin-NG: a scal-
+able blockchain protocol. CoRR. abs/1510.02037 .
+Ferreira, D. , Li, J. , Nikolowa, R. , 2020. Corporate Capture of Blockchain
+Governance. Working Paper .
+Foley, S. , Karlsen, J.R. , Putnins, T.J. , 2019. Sex, drugs, and bitcoin: how
+much illegal activity is ﬁnanced through cryptocurrencies? Rev. Fi-
+nanc. Stud. 32 (5), 1798–1853 .
+Griﬃn, J.M. , Shams, A. , 2020. Is bitcoin really un-tethered? J. Finance 75,
+1913–1964 .
+Huberman, G., Leshno, J.D., Moallemi, C., 2021. Monopoly without a mo-
+nopolist: an economic analysis of the bitcoin payment system. Rev.
+Econ. Stud. doi: 10.1093/restud/rdab014 .
+Iyengar, G. , Saleh, F. , Sethuraman, J. , Wang, W. , 2022. Economics of Per-
+missioned Blockchain Adoption. Working Paper. Columbia University .
+John, K. , O’Hara, M. , Saleh, F. , 2022. Bitcoin and beyond. Annu. Rev. Financ.
+Econ. 14 .
+Lehar, A. , Parlour, C. , 2020. Miner Collusion and the Bitcoin Protocol.
+Working Paper .
+Makarov, I. , Schoar, A. , 2020. Trading and arbitrage in cryptocurrency mar-
+kets. J. Financ. Econ. 135 (2), 293–319 .
+Nakamoto, S., 2008. Bitcoin: a peer-to-peer electronic cash system. https:
+//bitcoin.org/bitcoin.pdf .
+Narayanan, A. , Bonneau, J. , Felten, E. , Miller, A. , Goldfeder, S. , 2016. Bitcoin
+and Cryptocurrency Technologies. Princeton University Press .
+Pagnotta, E. , 2022. Bitcoin as decentralized money: prices, mining re-
+wards, and network security. Rev. Financ. Stud. . Forthcoming
+Pass, R. , Shi, E. , 2018. Thunderella: blockchains with optimistic instant
+conﬁrmation. In: Annual International Conference on the Theory and
+Applications of Cryptographic Techniques. Springer, pp. 3–33 .
+Raskin, M. , Saleh, F. , Yermack, D. , 2019. How Do Private Digital Currencies
+Affect Government Policy? NBER Working Paper .
+Riordan, O. , Wormald, N. , 2010. The diameter of sparse random graphs.
+Comb. Probab. Comput. 19, 835–926 .
+Saleh, F. , 2019. Volatility and Welfare in a Crypto Economy. Working Pa-
+per .
+Saleh, F. , 2021. Blockchain without waste: proof-of-stake. Rev. Financ.
+Stud. 34, 1156–1190 .
+de Vries, A. , 2018. Bitcoin’s growing energy problem. Joule 2 (5), 801–805 .
+Yermack, D. , 2015. Is bitcoin a real currency? An economic appraisal.
+Handb. Digit. Currency 31–43 .
+Zhou, Q. , Huang, H. , Zheng, Z. , Bian, J. , 2020. Solutions to scalability of
+blockchain: a survey. IEEE Access 8, 16440–16455 .
+369

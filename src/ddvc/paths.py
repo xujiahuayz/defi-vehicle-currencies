@@ -35,11 +35,11 @@ OUTPUT_DIR = REPO_ROOT / "output"
 ROUTE_COST_JOB_LOCK = DATA_DIR / "empirical" / ".route_cost_panel.lock"
 
 
-def _shared_git_runtime_dir(repo_root: Path) -> Path:
-    """One untracked runtime directory shared by every linked worktree."""
+def git_common_dir(repo_root: Path) -> Path | None:
+    """Resolve the common git directory for a primary checkout or linked worktree."""
     marker = repo_root / ".git"
     if marker.is_dir():
-        common = marker.resolve()
+        return marker.resolve()
     elif marker.is_file():
         try:
             prefix, value = marker.read_text(encoding="utf-8").strip().split(":", 1)
@@ -47,19 +47,30 @@ def _shared_git_runtime_dir(repo_root: Path) -> Path:
                 raise ValueError("invalid git worktree marker")
             git_dir = (repo_root / value.strip()).resolve()
             commondir = git_dir / "commondir"
-            common = (
+            return (
                 (git_dir / commondir.read_text(encoding="utf-8").strip()).resolve()
                 if commondir.exists()
                 else git_dir
             )
         except (OSError, ValueError):
-            common = DATA_DIR / ".locks"
-    else:
-        common = DATA_DIR / ".locks"
+            return None
+    return None
+
+
+def primary_checkout_root(repo_root: Path) -> Path:
+    """Return the primary checkout shared by a linked worktree."""
+    common = git_common_dir(repo_root)
+    return common.parent if common and common.name == ".git" else repo_root
+
+
+def _shared_git_runtime_dir(repo_root: Path) -> Path:
+    """One untracked runtime directory shared by every linked worktree."""
+    common = git_common_dir(repo_root) or DATA_DIR / ".locks"
     return common / "ddvc-runtime"
 
 
 SHARED_RUNTIME_DIR = _shared_git_runtime_dir(REPO_ROOT)
+PRIMARY_REPO_ROOT = primary_checkout_root(REPO_ROOT)
 RAW_MARKET_DATA_LOCK = SHARED_RUNTIME_DIR / "raw-market-data.lock"
 
 

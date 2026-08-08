@@ -1,0 +1,3409 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 146 (2022) 552–593
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Corporate culture: Evidence from the ﬁeld /p82
+John R. Graham a , b , ∗, Jillian Grennan c , Campbell R. Harvey a , b , Shivaram Rajgopal d
+a Duke University, Durham, NC, 27708 USA
+b National Bureau of Economic Research, Cambridge, MA, 02138 USA
+c Santa Clara University, Santa Clara, CA, 95053 USA
+d Columbia Business School, New York , NY, 10027 USA
+a r t i c l e i n f o
+Article history:
+Received 26 June 2019
+Revised 27 July 2022
+Accepted 27 July 2022
+JEL classiﬁcation:
+D23
+G23
+G30
+K22
+M14
+M41
+O16
+a b s t r a c t
+Ninety-two percent of the 1348 North American executives we survey believe that im-
+proving corporate culture would increase ﬁrm value. A striking 84% believe their company
+needs to improve its culture. But how can that be achieved? Our paper provides some
+guidance by documenting the following: executives’ views on what corporate culture is
+and how it operates, distinguishing between stated values and everyday norms; the extent
+to which culture is perceived to inﬂuence value creation (productivity, mergers), ethical
+choices (compliance, short-termism), and innovation (creativity, risk-taking); and a list of
+obstacles that can prevent culture from being where it should be (inattentive leaders, mis-
+aligned incentive compensation). Finally, we provide evidence that the executives’ survey
+responses are consistent with external data.
+/p82 Toni Whited and Bill Schwert were the editors for this article. We thank CFO magazine, Fuqua’s Center on Leadership and Ethics (COLE), and Columbia Business School External
+Relations for their partnership in conducting the survey; the results presented herein do not necessarily reﬂect their views. We are especially grateful to our research team of 61 RAs
+who helped transcribe interviews, discover CXO emails, send personal invitations to participants, classify responses, and check tables. We thank the following people for providing
+helpful feedback on the survey instrument: Sigal Barsade, Charles Calomiris, John Core, Cesare Fracassi, Paul Ingram, Simi Kedia, Hamid Mehran, Thomas Noone, Susan Ochs,
+Charles O’Reilly, and Suraj Srinivasan. We thank an anonymous referee, Alon Brav, Francois Brochet, Diego Garcia, Simon Gervais, Marina Niessner, Kelly Shue, David Yermack, Luigi
+Zingales, workshop participants at American Finance Association Meetings, Utah Winter Finance Conference, American Accounting Association Meetings, NBER Summer Institute, Tel
+Aviv Finance Conference, Conference on Financial Economics and Accounting, Mountain Finance Conference, Journal of Accounting and Economics/Federal Reserve Bank of New York
+Conference, International Atlantic Economic Society Conference, Duke University, University of Virginia, Rice University, Yale University, Aalto University, Hanken School of Economics,
+Washington University in St. Louis, University of Illinois, Indian School of Business, Temple University, Rutgers University, Norges Bank, Baruch College, and Fordham University for
+their helpful comments on earlier drafts of the paper. Replication data can be downloaded at https://dataverse.harvard.edu/dataverse/corporateculturesurveydata
+∗ Corresponding author at: Finance Department, Fuqua School of Business, Duke University, 100 Fuqua Drive, Durham, NC 27708, USA.
+E-mail addresses: john.graham@duke.edu (J.R. Graham), jgrennan@scu.edu (J. Grennan), cam.harvey@duke.edu (C.R. Harvey), sr3269@gsb.columbia.edu
+(S. Rajgopal) .
+https://doi.org/10.1016/j.jﬁneco.2022.07.008
+0304-405X/© 2022 The Author(s). Published by Elsevier B.V. This is an open access article under the CC BY-NC-ND license
+( http://creativecommons.org/licenses/by-nc-nd/4.0/ )
+
+===== PAGE 2 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Keywords:
+Corporate culture
+Values
+Norms
+Leadership
+Corporate governance
+Incentive compensation
+Informal institutions
+Intangible assets
+Risk-taking
+Myopia
+Innovation
+Firm value
+Productivity
+M&A valuation
+Integrity
+Trust
+Ethics
+Compliance
+Earnings management
+Intrinsic motivation
+© 2022 The Author(s). Published by Elsevier B.V.
+This is an open access article under the CC BY-NC-ND license
+( http://creativecommons.org/licenses/by-nc-nd/4.0/ )
+1. Introduction
+Corporate culture is claimed to be an important driver
+of business value. However, there are many unanswered
+research questions, such as: how do we deﬁne and mea-
+sure corporate culture, is it possible to assign a dollar value
+to culture, what is the relation between the elements that
+constitute a ﬁrm’s culture and performance, do leaders in-
+vest enough in culture, and how do investors, incentive
+compensation, and various governance structures reinforce
+or work against a value-enhancing culture? Our research
+seeks to make progress on answering these questions and
+more.
+Our approach to investigating culture is an observa-
+tional study that includes a detailed survey of 1348 corpo-
+rate executives in North America and in-depth interviews
+of an additional 18 prominent business leaders. This ap-
+proach provides insights into top executives’ views of cul-
+ture. Our analysis of executives’ views can be broken into
+three main blocks: (1) what do executives think corporate
+culture is, (2) is culture perceived to inﬂuence corporate
+valuation and actions, and (3) what do executives think
+reinforces or works against a value-enhancing culture? Fi-
+nally, we evaluate common criticisms of surveys and pro-
+vide evidence that suggests that our sample is reasonably
+representative, with responses that are authentic and con-
+sistent with external data sources.
+We began our investigation of question (1) by asking
+executives in interviews, “What is corporate culture?” The
+executives characterized culture as “a beliefs system,” “a
+coordination mechanism,” “an invisible hand,” “how em-
+ployees interact with one another,” “a standard of behav-
+ior,” and “the tone for what type of company this is.” Our
+survey instrument also begins with the open-ended ques-
+tion: “Brieﬂy, what words or phrases best describe the
+current corporate culture at your ﬁrm?” Ninety-three per-
+cent of executives describe their culture as values-based,
+and some of the most common cultural values mentioned
+are results-orientation (55%), community-orientation (49%),
+collaboration (39%), and adaptability (38%). Overall, the ex-
+ecutives’ views of corporate culture parallel academic def-
+initions 1 and are consistent with the notion that cultural
+values are focal points for conveying aspiration ( Kreps,
+1990; Hermalin, 2013 ).
+The executives’ descriptions of what culture is can be
+grouped broadly into cultural values and cultural norms .
+While values are the ideals employees strive to fulﬁll,
+norms reﬂect whether employees “walk the talk” by ac-
+tually living out these values. For example, integrity is a
+cultural value to live up to, while fostering a willingness
+to report unethical outcomes is a cultural norm that re-
+ﬂects integrity. We operationalize our measure of cultural
+norms via direct survey questions about the actual behav-
+iors that employees’ exhibit. Thus, one contribution of our
+study is to broaden the understanding of how culture re-
+lates to business outcomes by splitting culture into values
+(big principles) and norms (day-to-day practices).
+We start our empirical analyses by presenting descrip-
+tive statistics about cultural values and norms conditional
+on ﬁrm characteristics. This sheds light on some compo-
+nents that may inﬂuence cultural values and norms. For
+example, we ﬁnd that there are large numerical differences
+in the average importance of values and norms in rela-
+tion to a ﬁrm’s competitive position in its industry. Execu-
+tives at ﬁrms seeking to challenge the industry leader re-
+port stronger values and norms than do executives at ﬁrms
+in the middle of the pack. We also show that employee
+turnover is high when differences between cultural values
+and norms are large. Finally, we observe other interesting
+and sometimes unexpected correlations such as high man-
+agerial ownership being positively related to strong cul-
+ture, more so than is top executive ownership.
+Next, we explore executive views on the second ques-
+tion: does culture inﬂuence corporate valuation and ac-
+tions? Starting with the former, we document that exec-
+utives strongly believe that an effective corporate culture
+1 According to O’Reilly and Chatman (1996) , culture includes “the val-
+ues and norms widely shared and strongly held throughout the ﬁrm that
+help employees understand which behaviors are and are not appropriate.”
+553
+
+===== PAGE 3 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+enhances ﬁrm value: 91% of executives consider corporate
+culture to be “important” or “very important” at their ﬁrm.
+While it may not be surprising that executives say culture
+matters, it might be surprising that it matters so much
+that 54% of executives would walk away from an M&A tar-
+get that is culturally misaligned, while another one-third
+would discount a misaligned target by between 10%–30%
+of the purchase price. In fact, when executives rank “the
+things that contribute to long-term ﬁrm value,” culture
+ranks highest. Executives also link culture to a wide range
+of actions and decisions including ethical choices (com-
+pliance, short-termism), innovation (creativity, risk taking)
+and value creation (productivity, investment). For example,
+85% believe a poorly implemented, ineffective culture in-
+creases the chance that an employee might act unethically
+or even illegally. Seventy-seven percent of executives in-
+dicate that culture plays a moderate or important role in
+compliance decisions, and 69% indicate the same about the
+importance of culture to ﬁnancial reporting quality.
+The executives’ responses also point to the role of cul-
+ture in ﬁrms possibly taking myopic actions that boost
+short-term stock price at the expense of long-term value. A
+majority believe that an effective culture would reduce the
+tendency of companies to engage in value-destroying end-
+of-quarter practices such as delaying valuable projects to
+hit consensus earnings. When we use a hypothetical ques-
+tion that asks respondents to choose between two other-
+wise identical projects with ﬁve-year durations, we ﬁnd
+that 41% would choose the NPV-inferior project that fa-
+vors short-term proﬁtability. Among executives that choose
+projects that enhance long-term value (over projects that
+enhance short-term objectives), 80% indicate their ﬁrm’s
+culture inﬂuences their choices.
+The third question we explore with our survey is
+what do executives think works for and against a value-
+enhancing culture. While 92% of executives believe that
+improving their ﬁrm’s culture would increase the value of
+their company, only 16% of these executives believe that
+their own ﬁrm’s culture is where it needs to be. Thus,
+it is important to understand what prevents these execu-
+tives from improving their culture and maximizing value.
+To help contextualize this issue, we draw from the broader
+literature on institutions ( North, 1991; Guiso et al., 2015a )
+and incentive structures ( Holmstrom and Milgrom, 1991;
+Bénabou and Tirole, 2003 ). As Fig. 1 illustrates and the
+prior literature suggests, corporate actions can be inﬂu-
+enced by formal policies such as governance structures and
+incentive compensation and also by less tangible and more
+informal things like culture. Figure 1 is our attempt to de-
+tail how mechanisms underlying culture may relate to one
+other. The ﬁgure displays that the culture can be value en-
+hancing if values and norms are aligned and formal institu-
+tions and leadership strengthen such alignment. Next, we
+provide empirical context for these mechanisms.
+Examining conditional correlations within the context
+of the framework in Fig. 1 , we ﬁnd that executives be-
+lieve that formal institutions such as governance and com-
+pensation can either reinforce or work against corporate
+culture. Interestingly, among the subset of executives who
+say that incentive compensation is inﬂuential in setting the
+current culture, these executives also report that certain
+cultural values and norms, such as integrity and a will-
+ingness to report unethical behavior, play a signiﬁcantly
+weaker role in setting corporate culture. Intriguingly, exec-
+utive perspectives on the effectiveness of their current cul-
+ture has a somewhat stronger statistical association with
+cultural norms (versus values). While this is only a corre-
+lation and executives do not explicitly say that norms mat-
+ter more than values, it does suggest the potential useful-
+ness of distinguishing between aspiration and day-to-day
+actions in follow-up research.
+Finally, given that leaders believe that an effective cul-
+ture positively inﬂuences value creation, we ask them what
+else they believe prevents their ﬁrm’s culture from being
+effective in practice: 69% blame their ﬁrms’ underinvest-
+ment in culture. Even more surprising, nearly one-ﬁfth of
+respondents indicate that senior leadership works against
+the ﬁrm’s corporate culture being effective. Given that this
+is a survey of top managers, this then begs the question
+of why managers say they underinvest in culture. Open-
+ended responses provide numerous insights into what ex-
+ecutives perceive to be the cause of underinvestment in
+culture. External forces include impatient investors, inad-
+equate governance structures, and lack of attention to cul-
+ture within an industry. While executives are less likely to
+identify internal shortcomings as the source of the under-
+investment in culture, some do and the key factors they
+highlight are: (i) trust among employees and coordination
+challenges; (ii) capacity constraints such as limited time or
+resources; and (iii) a lack of a catalyst (e.g., regular invest-
+ment in culture would be ideal but only a broken culture
+convinces others that investment is needed).
+One key advantage of using a survey is that we are able
+to directly ask the executives who are most responsible
+for corporate culture about their views of culture at their
+ﬁrms. Our survey thus provides unique data about cul-
+ture, relative to attempting to infer corporate culture from
+other data sources. Of course, as with any survey, there
+are three primary concerns: (i) that the respondents may
+be a selected sample of executives interested in culture,
+(ii) that survey answers could be self-serving, and (iii) that
+observed correlations may be driven by some unobserved
+common characteristic (e.g., product market success of the
+ﬁrm).
+With respect to the ﬁrst concern, by conducting a “cul-
+ture survey,” those who respond to the survey could be a
+selected sample of executives who are very interested in
+culture and thereby more likely to view culture favorably.
+One of the convincing pieces of evidence that we have
+to mitigate this potential concern is that we conducted a
+second survey as part of the regular Duke Quarterly CFO
+Global Business Outlook survey that asked a broad valu-
+ation question that relates to a question we asked on the
+culture survey. Speciﬁcally, we asked “Of all the things that
+contribute to long-term ﬁrm value, for my ﬁrm I rank the
+following items as a Top 3 Value Driver.” Other than ap-
+pearing as one choice on this speciﬁc question, the words
+corporate culture did not appear in this separate survey.
+The results from this separate survey are consistent with
+the ﬁndings from our primary culture survey; namely, that
+culture is viewed by executives as the top driver of corpo-
+rate value. Finally, our summary statistics from the demo-
+554
+
+===== PAGE 4 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Corporate
+Culture
+Values Norms
+Integrity
+Adaptability
+Other
+Report unethical behavior
+Develop new ideas organically
+Other
+Corporate Institutions
+Effectiveness of culture
+determined by alignment of
+and interactions between
+values, norms, and formal
+institutions.
+Outcomes
+Compliance
+(ethics)
+Creativity
+(innovation)
+Productivity
+& firm value
+Formal
+Institutions
+Human
+Resources Governance
+Incentive compensation
+Hiring, firing, promotion
+Other
+External
+(e.g., Board)
+Internal
+(e.g., Finance)Fig. 1. Diagram linking corporate culture to outcomes According to North (1991) , institutions can be classiﬁed as informal and formal. We deﬁne corporate
+culture as an informal institution comprised of cultural values and cultural norms. The values and norms characterize the structure in place that guides
+employees’ actions when they face unforeseen contingencies. A cultural value represents an ideal state of behavior such as integrity or adaptability. Cultural
+norms are the day-to-day living out of the cultural values via the typical patterns of conduct. An effective culture is one that promotes the behaviors
+needed to successfully execute the ﬁrm’s strategies and achieve its goals. The effectiveness of culture is determined by alignment of and interactions
+between values, norms, and formal institutions.
+graphic questions suggest that those answering the culture
+survey are broadly similar to those who have responded to
+prior Duke surveys, which were not about culture.
+The second critique (item ii above) is that survey
+respondents may bias their responses by overweight-
+ing outcomes they think the researchers want to hear
+and underweighting less favorable outcomes. To ascer-
+tain whether there is an appreciable bias in the survey
+responses, we compare the survey responses for both
+culture and business outcomes with external data sources.
+While the survey is conﬁdential and does not require sub-
+jects to disclose their names, we can match about 15% of
+the responses to publicly available data. While the sample
+is small, we do not detect evidence that selectivity alters
+any of the implications of the external validation tests. We
+externally validate the culture measures by matching the
+survey responses to data from crowd-sourced employee
+reviews from Glassdoor, a career intelligence website that
+attempts to provide transparency about jobs, salaries, and
+companies; and we also match to corporate websites.
+First, we ﬁnd that the survey measures of the effective-
+ness of culture are signiﬁcantly associated with a higher
+number of stars for Glassdoor’s ﬁve-star rating system for
+company culture. Second, we compare executives’ written
+descriptions of their culture with what is advertised on
+their websites and written in Glassdoor company reviews.
+The survey measures are more associated with the Glass-
+door reviews than with the website measures, which sug-
+gests that the survey may more closely reﬂect actual than
+advertised culture. To explore this issue in more detail, we
+quantify the degree of misalignment between advertised
+values on the website and survey responses. As the sur-
+vey and website values become more misaligned, execu-
+tives are signiﬁcantly more likely to indicate that their cul-
+ture does not track stated values and also that their culture
+is not where it should be.
+Third, we show the survey-based measure of culture
+and the executives’ perceptions of the impact of culture
+on company valuations are positively associated with ex-
+ternal measures such as Tobin’s Q and Total Q ( Peters and
+Taylor, 2017 ). In addition, we link our survey-based mea-
+sures of speciﬁc cultural values and norms to several ex-
+ternal measures of innovation, value creation, and ﬁnancial
+reporting quality.
+The ﬁnal concern (item iii above) is that the condi-
+tional correlations that we observe among the responses
+are driven by some unobserved factor. While causal state-
+ments are not possible in our context and we cannot elim-
+inate the possibility that our conditional correlations are
+driven by some omitted unobservable variable, we do in-
+clude a rich set of control variables and focus only on
+those results that do not meaningfully change as various
+control variables are included. In addition, in the Inter-
+net Appendix we perform additional checks on the correla-
+tions we report, including placebo tests and the “halo ap-
+proach” used by Guiso et al. (2015b) , as ways to mitigate
+inference concerns associated with potential measurement
+error.
+This study provides new information about how execu-
+tives view corporate culture, gauges the perceived ﬁnan-
+cial value of culture, discerns how culture relates to ac-
+tivity inside the ﬁrm, and describes what executives think
+works for and against a value-enhancing culture. We learn
+that culture, both values and norms, appears to matter a
+lot to executives and is believed to have pervasive inﬂu-
+ence over activities within the ﬁrm. Moreover, some top-
+ics that have long interested researchers such as incen-
+tive structures and corporate governance appear to work
+555
+
+===== PAGE 5 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+against culture in some cases. By documenting these cor-
+relations, we broaden the literature on corporate culture
+from one that views culture as a vague concept loosely re-
+lated to values to one that unpacks elements of culture and
+helps show how and why the elements are value-relevant
+for a variety of topics central to ﬁnancial economics:
+ethics ( Guiso et al., 2006 ), whistle-blowing ( Bowen et al.,
+2010; Dyck et al., 2010 ), corruption ( Gao et al., 2014; Liu,
+2016; Pacelli, 2019 ), risk ( Fahlenbrach et al., 2012; Gren-
+nan, 2021 ), myopia ( Graham et al., 2005; Dichev et al.,
+2013 ), ﬁnancial reporting choices ( Healy and Palepu, 2001;
+Dechow et al., 2010 ), compliance ( Kedia et al., 2018 ), in-
+centive compensation ( Lazear, 20 0 0; Cheng et al., 2015 ),
+corporate governance ( Shleifer and Vishny, 1997; Grennan,
+2020 ), leadership style ( Bertrand and Schoar, 2003; Gra-
+ham et al., 2013 ), middle management practices ( Bloom
+and Van Reenen, 2007; Bloom et al., 2012 ), social cap-
+ital ( Guiso et al., 2004; Servaes and Tamayo, 2017 ), re-
+lational contracts ( Macaulay, 1963; Gibbons, 1998; Baker
+et al., 2002; Gibbons and Henderson, 2013 ), and reputa-
+tion ( La Porta et al., 1997 ). Finally, our research highlights
+the vital, but underappreciated, role that culture plays in
+value creation ( Hermalin, 2001; Guiso et al., 2015b; Gren-
+nan, 2020 ).
+The paper most similar to ours is Guiso et al. (2015b) .
+They evaluate advertised values on companies’ websites
+and survey evidence from rank-and-ﬁle employees ad-
+ministered by the Great Place to Work Institute; they
+show that advertised culture has no relation with ﬁrm
+value, yet employees’ perceptions of integrity and ethics
+are associated with ﬁrm value. We also assess whether
+culture is perceived to be value-enhancing and (for a
+subsample of ﬁrms) whether it is value-enhancing. We
+complement Guiso et al. (2015b) by examining corporate
+websites and employees’ perceptions of culture, and we
+contribute beyond their study by examining the percep-
+tions of executives of both aspirational values and day-
+to-day practices (norms). Also, in terms of complementing
+Guiso et al. (2015b) , we ﬁnd that executives’ responses are
+consistent with a link between integrity and ﬁrm value,
+and we ﬁnd that websites convey little information about
+ﬁrm value. The fact that these results coincide between the
+two papers despite two very different methods and sam-
+ples provides credibility to the importance of culture for
+value creation.
+Our research goes beyond Guiso et al. (2015b) by re-
+porting the views of the executives who are most respon-
+sible for corporate culture at their ﬁrms; by distinguishing
+between stated values and norms, highlighting the key role
+of the latter; by exploring culture conditional on numerous
+company and executive characteristics such as size, indus-
+try position and compensation structure; and by specify-
+ing two variables that can be used to identify companies
+that do not currently have an ideal culture (i.e., the wedge
+between website values and Glassdoor reviews, and em-
+ployee turnover), variables that even researchers without
+access to survey responses can use as proxies of a mis-
+aligned culture. Finally, while Guiso et al. (2015b) show
+that public ownership is an obstacle to culture, our paper
+develops a pecking order of obstacles that prevent culture
+from being where it should be: corporate leaders, inability
+to adapt to business changes, incentive compensation and
+other company policies, ineﬃcient workplace interactions,
+and suggestive evidence that investors can work against
+the culture.
+The rest of the paper proceeds as follows. Section 2 de-
+scribes how we gather the data and measure corporate
+culture. Section 3 presents the survey results. Section 4 ex-
+plores the factors preventing culture from being improved,
+and Section 5 evaluates common concerns related to the
+use of survey data. Some concluding remarks are offered in
+the ﬁnal section. The online appendices contain a copy of
+the survey, variable deﬁnitions, and many additional anal-
+yses.
+2. Measuring corporate culture
+In this section, we explain how we quantify the cultural
+values and cultural norms that underlie corporate culture.
+Given that we measure corporate culture based on a sur-
+vey, in this section we also discuss the response rate as-
+sociated with data gathered from the survey and the ad-
+vantages of using a survey approach to measure culture. In
+Section 5 , we also discuss reliability of survey responses.
+2.1. Interview and survey methods
+To measure corporate culture, we began by interview-
+ing 18 corporate executives, mostly CFOs and CEOs. To
+learn about culture in a variety of settings, we interviewed
+executives that lead public and private ﬁrms, those in early
+and late lifecycle stages, conglomerates, singularly-focused
+ﬁrms, and holding companies. Some executives compared
+and contrasted their experience at multiple ﬁrms. Over-
+all, the current and past employers of the executives com-
+prise a set of ﬁrms that contribute meaningfully to the U.S.
+economy and reﬂect about 20% of the market capitalization
+of the NYSE plus NASDAQ. The average ﬁrm in the inter-
+view sample is much larger (mean sales of $47 billion in
+2015), has more leverage, greater proﬁtability, lower sales
+growth, and higher credit ratings than the typical Compu-
+stat ﬁrm.
+We incorporated the knowledge gained about corporate
+culture from the interviews into the design of our sur-
+vey instrument. Then, we sent survey requests to a list
+of CFO and CEO email addresses maintained by the Fuqua
+School of Business at Duke University and Columbia Busi-
+ness School. From this list, we had a 13.4% response rate,
+which is a higher response rate than in most previous cor-
+porate surveys ( Graham and Harvey, 2001 ). We supple-
+mented the business school email lists with emails from
+external sources such as CFO magazine. 2 We include ad-
+ditional interview and survey details as well as a copy of
+the survey instrument in Appendix A . For example, details
+2 We do not have the CFO magazine source list that would be needed
+to evaluate an overall response rate because their list is proprietary. In
+Section 4.2 , we evaluate the possibility of bias due to the different email
+lists that we used to solicit responses. In unreported analysis that exam-
+ines only the Duke and Columbia samples, we ﬁnd similar results to what
+we ﬁnd using the full sample. The reported results are based on a sample
+that includes all three data sources.
+556
+
+===== PAGE 6 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+such as how we randomly scramble the order of choices
+within a question, so as to mitigate potential order-of-
+presentation effects, are explained.
+2.2. Corporate culture measures
+In total, we collected 1898 responses. We eliminate re-
+sponses from participants located outside the United States
+and Canada to attenuate effects of possibly confounding in-
+ﬂuences from national cultures. We also remove respon-
+dents working for the government and non-proﬁts and re-
+sponses that do not ﬁll out the ﬁrst question of the survey.
+Applying these ﬁlters produces 1348 observations from
+North American executives at public and private ﬁrms. The
+Duke plus Columbia sample represent 750 responses (56%
+of the sample) and the magazine sample represents 598
+responses (44% of the sample). Following the recommen-
+dation by List (2007) , we benchmark the demographics
+from our public survey ﬁrms to Compustat ﬁrms. These re-
+sults are available in Appendix Table C.1. Our public ﬁrm
+respondents work for larger ﬁrms with more employees
+and sales revenue. Survey ﬁrms are also more likely to re-
+port an after-tax proﬁt but they have similar leverage and
+return on equity (ROE).
+In Appendix Table C.2, we summarize the demographic
+information collected for the full sample of survey respon-
+dents. Seventy percent of respondents indicate their ﬁrm
+is private. The median executive is from a ﬁrm that is 30
+years old with three segments and 300 employees. About
+half of ﬁrms are family-owned. The average CEO age is
+55 with a tenure of seven years. Eighty-four percent of
+these ﬁrms earn an after-tax proﬁt, and the mean revenue
+growth rate is 13%. We observe a wide range of revenue
+with about half indicating revenue less than $100 million
+and a quarter indicating revenue greater than $1 billion.
+Similarly, we observe a wide range of number of employ-
+ees with 26% indicating fewer than 50 employees and 16%
+indicating more than 10,0 0 0 employees.
+We begin the survey with an open-ended question ask-
+ing respondents to brieﬂy describe their ﬁrm’s current cul-
+ture: “Brieﬂy, what words or phrases best describe the cur-
+rent corporate culture at your ﬁrm?” We hand-code 1348
+written responses to categorize elements of culture. To es-
+tablish the credibility of our hand-coding, we had ﬁve re-
+searchers (one from our team and four independent re-
+search assistants) hand-code the written responses. To cre-
+ate a combined hand-coding value, we require at least
+three of the ﬁve researchers to agree on the coding. Over-
+all, our hand-coding of the executives’ responses to Q1 in-
+dicates that 93% of executives say that their culture is val-
+ues based and, on average, they describe 2.5 cultural values
+at their ﬁrm. This description of culture is consistent with
+using focal points ( Schelling, 1960; Kreps, 1990 ) to convey
+the culture.
+Next, the ﬁve independent researchers map each writ-
+ten response to the six well-known cultural values estab-
+lished by O’Reilly et al. (1991) and Chatman et al. (2014) .
+To map to the values identiﬁed by Guiso et al. (2015b) ,
+we add a seventh cultural value “community-orientation,”
+which reﬂects the notion of caring for the community
+through social and environmental responsibility, good citi-
+zenship, respect and diversity. 3 Thus, our measure of cor-
+porate values aligns with that in the established literature,
+and we allow the executives’ own words to deﬁne their
+ﬁrms’ values.
+The seven cultural values are adaptability, collabora-
+tion, community, customer-orientation, detail-orientation,
+integrity, and results-orientation. We code a cultural value
+as 1 when the executive provides a description consistent
+with the following:
+1. Adaptability : willing to experiment, fast-moving, quick
+to take advantage of opportunities, taking initiative
+2. Collaboration : team-oriented, supportive, not aggres-
+sive, low levels of conﬂict
+3. Community : respectful of diversity, community, and
+the environment, inclusive, caring, and open
+4. Customer-orientation : listening to customers, being
+brand driven, taking pride in service
+5. Detail-orientation : paying attention to detail, being
+precise, emphasizing quality and safety, being analyti-
+cal
+6. Integrity : high ethical standards, being honest, trans-
+parent
+7. Results-orientation : high expectations for perfor-
+mance, focus on achievement, competitive, demanding
+In the analysis that follows, we assign 1 to a given cul-
+tural value if at least three out of ﬁve reviewers agree it
+is present. We assign −1 if at least three out of ﬁve re-
+viewers agree that the opposite of the cultural value is
+present. For example, a ﬁrm with a strong team-oriented
+culture receives a score of 1 for the “collaboration” value,
+while a ﬁrm with an every-employee-for-herself culture
+receives a score of −1. Respondents that do not mention
+collaboration at their company receive a score of 0. Across
+the ﬁve independent reviews of the executives’ responses,
+the average Spearman’s rank-order correlation coeﬃcient is
+0.54 for the cultural values. The hand-coders strongly agree
+about the cultural value of customer-orientation (0.72
+correlation) while there is less agreement about detail-
+orientation (0.34). Finally, the researchers hand-code ad-
+ditional characteristics of the executives’ responses. These
+characteristics help both to clarify what executives think
+culture is and serve as control variables in subsequent
+analyses. These additional characteristics show, for exam-
+ple, that 63% of executives express a positive sentiment
+in general, 16% a negative sentiment, 3% a mixed tone,
+and the rest do not express sentiment. About 6% suggest
+that their culture is in transition or changing. Some as-
+sociate culture with management practices as evidenced
+by 8% discussing how decisions are delegated within the
+3 We also hand-code responses to the open-ended subpart of our 14th
+survey question to supplement the culture information we gather from
+question 1. Question 14 states “Please provide a speciﬁc example of how
+culture affects X,” where X is various business outcomes (e.g., productiv-
+ity). We code these written answers to identify the existence of any of
+same seven cultural values, to supplement our coding of the ﬁrst ques-
+tion.
+557
+
+===== PAGE 7 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+ﬁrm and 18% discussing the spirit with which actions
+were taken. Only 8% of responses were not useful in the
+sense that they either gave a textbook deﬁnition of cul-
+ture or said something uninformative such as “the culture
+is okay.”
+2.3. Advantages of survey approach
+The paper relies on an original survey of CEOs and
+CFOs to assess the importance of cultural values and norms
+in companies. Strengths of our survey include that it is
+large scale in nature and that it captures the views of cor-
+porate culture of top managers. Surveys have been con-
+ducted before within the management literature, but on
+a much smaller scale. Our survey approach offers two ad-
+vantages to previous studies. First, the size of our sample
+is large. Second, the detail of our survey and inclusion of
+open-ended questions allow us to gather information with-
+out conﬁning responses to those pre-deﬁned by the re-
+searcher. 4
+Within the economics literature, researchers have fo-
+cused either on time-invariant features of culture such
+as ﬁrm ﬁxed-effects ( Cronqvist et al., 2009; Fahlenbrach
+et al., 2012 ) or have attempted to construct time-varying
+measures of culture using publicly available data (see
+Gorton et al. (2022) for an overview of the measurement
+of culture). 5 The detailed nature of our interviews and sur-
+vey enables us to explore both time-varying and time-
+invariant aspects of culture. Further, by cross-checking our
+data against corporate websites and career intelligence
+websites (Section 4.1), we help to build a bridge for future
+researchers seeking to measure culture.
+Finally, meaningful differences exist between corporate
+culture and societal culture ( Guiso et al., 2008; Fernández,
+2011; Algan and Cahuc, 2013; Karolyi, 2016 ). The speed
+of change and element of purposeful design in corpo-
+rate culture do not exist in societal culture, where beliefs
+slowly evolve over decades ( Guiso et al., 2006; Fernández,
+2013 ). In this sense, cultural differences and their associ-
+ations with business outcomes may be easier to observe
+given the simpler, more controlled corporate environment
+( Guiso et al., 2015a ). Further, studies of societal culture of-
+ten examine moral and social values (e.g., preference for
+redistribution) which are known to weaken in market set-
+tings ( Roth et al., 1991; Falk and Szech, 2013 ). Thus, an im-
+portant contribution of our paper is to highlight the cul-
+tural values and norms that are positively associated with
+economic outcomes in for-proﬁt settings.
+4 Four popular survey tools exist ( Denison, 1984; Cameron et al., 2006;
+O’Reilly et al., 1991; Cooke and Rousseau, 1988 ) but a recurring cri-
+tique of these tools is that they can confound constructs ( Chatman and
+O’Reilly, 2016 ). For example, by including outcomes such as employee
+productivity or formal institutions such as compensation in their mea-
+surement of culture, they potentially cloud statistical inferences about
+culture itself.
+5 Common approaches include: (1) a ﬁrm’s appearance in the top 100
+Great Places to Work ( Edmans, 2011; Guiso et al., 2015b ); (2) analysis of
+employee-generated reviews of their ﬁrms from career intelligence web-
+sites ( Grennan, 2020; Makridis, 2018 ); (3) analysis of corporate ﬁnancial
+reports, conference calls, and websites ( Audi et al., 2016; Li et al., 2021;
+Grennan, 2021 ).
+3. Survey results
+3.1. Summary statistics
+Panel A of Table 1 provides descriptive statistics for in-
+dividual cultural values as well as for an aggregate mea-
+sure (i.e., the mean of the individual values). We create the
+aggregate variable to solve an econometric issue discussed
+below and to later test if cultural values broadly are asso-
+ciated with ﬁrm performance. The most commonly listed
+values are adaptability, community, results-orientation, and
+collaboration. The cultural value variables are coded as 1, 0,
+and −1 to reﬂect that an executive might describe a given
+value in positive or negative terms. Thus, when we aggre-
+gate, the overall sign of a given value is preserved. See
+Appendix B for additional details on construction of each
+value.
+Our measures of the cultural values are similar to
+the sample statistics for cultural values reported in
+Guiso et al. (2015b) , who analyze cultural values advertised
+on the websites of ﬁrms that are in Fortune’s “100 Best
+Companies to Work For” list. Advertised website values,
+however, may be more likely to include aspirational rather
+than current, actual values. By asking directly, our mea-
+sures of culture are more granular in that we speciﬁcally
+ask about the current culture and separately ask about
+how well the current culture tracks the aspirational cul-
+ture. A company’s website would not describe its culture
+as “non-inclusive, political and backstabbing” or advertise
+that they value “noncooperation.” Yet some of our respon-
+dents use descriptions like these to indicate their ﬁrm does
+not value collaboration. We carefully explore the reliability
+of our measures in the next subsection.
+Panel B of Table 1 provides descriptive statistics for the
+cultural norms as well as for an aggregate measure (the
+average of the norms). The most commonly listed norms
+are trust, decision-making that reﬂects long-term corporate
+interests, agreement about goals and values, and coordina-
+tion among employees. The norms are extracted from sur-
+vey question 6, which asks “in the context of your ﬁrm’s
+current culture, please indicate which factors determine
+the effectiveness of your culture.” A score of 1 indicates a
+norm that enhances cultural effectiveness, a score of 0 in-
+dicates no effect, and a score of −1 indicates a norm that
+works against culture being effective. Other norms include
+urgency with which employees work, employees’ comfort
+in suggesting critiques, consistency and predictability of
+employees’ actions, employees’ willingness to report com-
+pliance risks or unethical behavior, and new ideas de-
+velop organically. Executives are least likely to perceive the
+norms of urgency with which employees work and con-
+sistent and predictable actions by employees as important
+drivers of an effective culture.
+As previously described, we highlight an important dif-
+ference in how we deﬁne cultural values versus norms.
+The cultural values are derived by mapping open-ended re-
+sponses into values deﬁned in the literature. This approach
+tends to elicit responses about well-established and aspi-
+rational values. The norms, in contrast, are ascertained via
+direct questions about the actual behaviors that employees
+exhibit on a day-to-day basis. This feature of the survey
+558
+
+===== PAGE 8 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 1
+Corporate Culture Summary Statistics.
+Cultural values from Q1 “Brieﬂy, what words or phrases best describe the current corporate culture at your ﬁrm?”
+- 1 = Described value is opposite, 0 = No mention of value, 1 = Executive indicated this value is element of culture
+Percent of respondents
+Panel A. Cultural values Obs. −1 0 1 Mean Std. dev. Median
+Adaptability 1348 8% 62% 30% 0.21 0.58 0
+Collaboration 1348 7% 61% 32% 0.25 0.57 0
+Community 1348 10% 51% 39% 0.29 0.63 0
+Customer-oriented 1348 1% 80% 19% 0.19 0.41 0
+Detail-oriented 1348 4% 80% 16% 0.13 0.43 0
+Integrity 1348 2% 75% 24% 0.22 0.45 0
+Results-oriented 1348 7% 45% 48% 0.41 0.62 0
+Agg. cultural values 1348 0.24 0.30 0.29
+Cultural norms from Q6 “In the context of your ﬁrm’s current culture, please indicate which factors determine the
+effectiveness of your culture,” −1 = Works against, 0 = No effect, and 1 = Key factor helping our culture be effective
+Percent of respondents
+Panel B. Cultural norms Obs. −1 0 1 Mean Std. dev. Median
+Agreement about goals and values 1348 8% 30% 62% 0.54 0.64 1
+Consistency and predictability of actions 1348 8% 45% 47% 0.39 0.63 0
+Coordination among employees 1348 10% 23% 67% 0.57 0.66 1
+Decision-making reﬂects long-term 1348 10% 27% 63% 0.53 0.67 1
+Employees comfort in suggesting critiques 1348 13% 33% 54% 0.42 0.71 1
+New ideas develop organically 1348 8% 41% 52% 0.44 0.63 1
+Trust among employees 1348 9% 15% 76% 0.68 0.63 1
+Urgency with which employees work 1348 12% 39% 49% 0.37 0.69 0
+Willingness to report unethical behavior 1348 7% 44% 49% 0.42 0.62 0
+Agg. cultural norms 1348 0.48 0.43 0.56
+Perceived effect on culture of formal institutions and leadership from Q6/Q13, “Do the following items reinforce or
+work against the effectiveness of your corporate culture.” −1 = Works against, 0 = No impact, 1 = Reinforces
+Percent of respondents
+Panel C. Formal institutions and leadership Obs. −1 0 1 Mean Std. dev. Median
+Corporate governance 1348 9% 42% 48% 0.39 0.65 0
+Finance function 1348 7% 50% 43% 0.36 0.61 0
+Hiring, ﬁring, and promotion 1348 13% 35% 52% 0.38 0.71 1
+Incentive compensation 1348 17% 33% 50% 0.32 0.75 0
+Agg. formal institutions 1348 0.39 0.47 0.40
+Leadership 1348 17% 18% 65% 0.48 0.77 1
+Perceived effect of culture on ﬁrm outcomes extracted from Q14, “To what extent does the corporate culture at your
+ﬁrm affect the following items: 1 = No Effect, 2 = Little effect, 3 = Moderate effect 4 = Big effect.”
+Percent of respondents
+Panel D. Outcomes culture affects Obs. 1 2 3 4 Mean Std. dev. Median
+Compliance 1119 9% 14% 30% 47% 3.15 0.97 3
+Tax aggressiveness 1020 32% 32% 25% 10% 2.14 0.99 2
+Quality of our ﬁnancial reporting 1118 10% 21% 33% 36% 2.94 0.99 3
+Beat EPS 302 11% 29% 60% 3.24 1.03 4
+Agg. ethics 1152 2.80 0.77 3.00
+Creativity 1136 2% 9% 32% 57% 3.43 0.76 4
+Willingness to take on risky projects 1129 5% 11% 43% 41% 3.21 0.82 3
+Agg. innovation 1150 3.32 0.61 3.50
+Firm value 1124 3% 8% 31% 57% 3.43 0.78 4
+Proﬁtability 1137 1% 8% 36% 54% 3.44 0.69 4
+Productivity 1126 1% 8% 29% 62% 3.51 0.70 4
+Agg. productivity & value outcomes 1153 3.46 0.54 3.67
+Agg. all outcomes 1162 3.20 0.46 3.22
+This table shows summary statistics of the values (Panel A) and norms (Panel B) that executives say comprise corporate culture, as
+well as formal institutions (Panel C). Panel D presents summary statistics on three different types of business outcomes affected
+by corporate culture. The sample consists of survey responses from executives at public and private North American ﬁrms. For a
+detailed description of each variable, see Appendix B . The survey questions are presented in Appendix A .
+559
+
+===== PAGE 9 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+design helps to separate cultural values from norms and
+allows for a more nuanced construct of culture than is pos-
+sible without a detailed survey tool. Having said this, we
+acknowledge that while conceptually there is logic behind
+separating cultural values and norms, there is not always
+a sharp distinction in practice. Even if despite our best ef-
+forts our measures do not cleanly distinguish the effects of
+values separately from the effects of norms, our ﬁndings
+are suggestive that some combination of values and norms
+is associated with an effective corporate culture.
+Panel C of Table 1 provides descriptive statistics for
+leadership and formal institutions, which include corpo-
+rate governance, the ﬁnance function, the human resources
+function, and incentive compensation. The leadership
+and formal institutions represent responses to question
+13 which asks “do the following items reinforce or work
+against the effectiveness of your corporate culture?” A
+score of 1 indicates a formal institution that reinforces an
+effective corporate culture, a score of 0 indicates no ef-
+fect, and a score of −1 means it works against effective
+culture. Leadership plays a prominent role in determining
+the effectiveness of corporate culture: Nearly two-thirds
+of respondents indicate that leadership reinforces an ef-
+fective culture, while nearly one-ﬁfth indicate that their
+company’s leadership works against the ﬁrm’s corporate
+culture being effective. We explore this issue further in
+Section 4 .
+Panel D of Table 1 provides descriptive statistics about
+corporate outcomes grouped by ethics, innovation, and
+productivity/value. 6 The responses stem from question 14
+which asks, “To what extent does the corporate culture at
+your ﬁrm affect the following items:” where a score or 4 =
+big effect, 3 = moderate effect, 2 = little effect, and 1 = no
+effect. In addition, the panel includes one outcome asked
+as a separate question in the demographics section, “How
+important is meeting or beating earnings at your ﬁrm?”
+Because we use a survey, these are the perceptions of ex-
+ecutives about which outcomes are likely affected by cul-
+ture. The ethics outcomes include compliance, tax aggres-
+siveness, quality of ﬁnancial reporting, and importance of
+meeting or beating earnings. The innovation outcomes in-
+clude creativity and amount of project risk. The produc-
+tivity and ﬁrm value outcomes include ﬁrm value, prof-
+itability, and productivity. The aggregate for all outcomes
+is the simple average of the ethics, innovation, and produc-
+tivity/ﬁrm value aggregate outcomes. The survey responses
+indicate that more than 40% of executives believe corpo-
+rate culture has a big effect on whether a ﬁrm is compliant
+with accounting standards, creativity, project risk, produc-
+tivity, proﬁtability, and ﬁrm value. 60% of public ﬁrms say
+culture affects their desire to meet or beat EPS targets.
+3.2. Culture by industry
+Table 2 shows that our measures of culture appear to
+vary intuitively across industries. For example, high levels
+6 The number of observations is smaller in Panel D of Table 1 because
+executives could skip questions and the number of missing observations
+is larger for this question than the preceding questions. Also, note that in
+Appendix Table C.3, we report the pairwise correlations among the items
+shown in Table 1 .
+of adaptability and the community ideals that millennials
+embrace are most evident in technology ﬁrms, whereas the
+cultural value of customer-orientation is tied more closely
+with health, service, and ﬁnancial ﬁrms. All of the cultural
+values exhibit statistically signiﬁcant variation across in-
+dustry as evidenced by a joint F -test. Cultural norms also
+exhibit statistically signiﬁcant variation across industry but
+the magnitude of the difference is small for some norms
+and large for others. For example, decision-making that re-
+ﬂects the long-term is low in the ﬁnance industry (0.52)
+and highest in the services industry (0.61), but the magni-
+tude of the difference is small. In contrast, the develop-
+ment of new ideas organically is again lowest in the ﬁ-
+nance industry (0.36) and highest in the services indus-
+try (0.67), but in this case, the high minus low magnitude
+of the cross-industry difference is more than three times
+larger. Other norms that have substantive variation across
+industries are willingness to report unethical behavior and
+employee comfort in suggesting critiques.
+The rightmost columns of Table 2 analyze cultural val-
+ues and norms by a ﬁrm’s self-reported competitive po-
+sition within its industry. We see that ﬁrms that are in-
+dustry leaders and near-leaders, on average, exhibit higher
+scores for cultural values and norms than do ﬁrms in the
+middle of the pack. At the other end of the scale, chal-
+lengers also have higher scores for values and norms than
+middle-of-the-pack ﬁrms, which reveals an overall pattern
+between competitive position and culture that effectively
+is U-shaped. The difference in magnitude by competitive
+position is statistically signiﬁcant as evidence by the joint
+F -test for equivalence of the coeﬃcients. Big differences
+in culture for ﬁrms in different competitive positions is
+consistent with earlier survey work from Kotter and Hes-
+kett (1992) .
+3.3. Culture by company and executive characteristics
+At the end of the survey, we collect demographic in-
+formation about the sample of executives and their ﬁrms.
+Table 3 presents the average (i.e., the mean values from
+Table 1 ) of the values and norms that comprise culture
+conditional on demographics. The sample size is smaller
+than the full sample because not all executives ﬁlled out
+all the demographic questions, which were at the end of
+the survey. On average, 75% of the sample ﬁlled out the
+demographic questions, with fewer responses for numeric
+(versus categorical) questions.
+Across the 15 ﬁrm characteristics that we evaluate, we
+ﬁnd some variables for which there are few differences,
+some for which almost all measures of culture are differ-
+ent, and some for which only a few cultural values and
+norms are signiﬁcantly different. For example, when we
+consider family vs. non-family control (second page of ta-
+ble), we ﬁnd that only the cultural values of collaboration
+and community-orientation are signiﬁcantly larger in fam-
+ily ﬁrms. Similarly, when we compare public and private
+ﬁrms, we see that only the cultural value of integrity and
+the cultural norms of goal agreement and willingness to
+report unethical behavior are signiﬁcantly lower for public
+ﬁrms.
+560
+
+===== PAGE 10 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 2
+Corporate Culture Values and Norms by Industry.
+Speciﬁc Industry Competitive Position in Industry
+Joint Among Middle Joint
+Fin. Health Manu. Retail Serv. Tech. F-stat Leader Leading of Pack Challenger F-stat
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+Cultural values ( - 1 = Described value is opposite, 0 = No mention of value, 1 = Indicated this value)
+Adaptability 0.19 0.39 0.13 0.20 0.29 0.36 3.07 ∗∗∗ 0.34 0.22 0.07 0.30 6.04 ∗∗∗
+Collaboration 0.28 0.11 0.25 0.14 0.46 0.31 2.74 ∗∗∗ 0.33 0.32 0.11 0.27 9.33 ∗∗∗
+Community 0.28 0.15 0.37 0.31 0.45 0.39 3.19 ∗∗∗ 0.41 0.38 0.11 0.33 13.41 ∗∗∗
+Customer-oriented 0.25 0.26 0.21 0.21 0.22 0.14 2.93 ∗∗∗ 0.20 0.25 0.13 0.16 9.38 ∗∗∗
+Detail-oriented 0.16 0.16 0.17 0.00 0.17 0.14 2.30 ∗∗∗ 0.19 0.18 0.06 0.09 7.48 ∗∗∗
+Integrity 0.30 0.16 0.25 0.22 0.28 0.21 2.20 ∗∗ 0.28 0.26 0.14 0.16 5.26 ∗∗∗
+Results-oriented 0.47 0.40 0.45 0.29 0.53 0.43 2.52 ∗∗∗ 0.52 0.49 0.28 0.41 10.95 ∗∗∗
+Cultural norms (- 1 = Works against, 0 = No effect, 1 = Key factor)
+Agreement about goals and values 0.58 0.66 0.52 0.62 0.59 0.52 2.28 ∗∗∗ 0.67 0.61 0.40 0.53 10.21 ∗∗∗
+Consistency and predictability of actions 0.45 0.53 0.41 0.28 0.43 0.32 1.95 ∗∗ 0.46 0.45 0.33 0.38 5.07 ∗∗∗
+Coordination among employees 0.53 0.55 0.64 0.58 0.72 0.68 2.70 ∗∗∗ 0.65 0.67 0.46 0.65 12.49 ∗∗∗
+Decision-making reﬂects long-term 0.52 0.52 0.55 0.53 0.61 0.52 2.29 ∗∗∗ 0.66 0.60 0.39 0.56 8.66 ∗∗∗
+Employees comfort in suggesting critiques 0.36 0.55 0.38 0.37 0.57 0.57 2.26 ∗∗ 0.52 0.45 0.28 0.55 6.32 ∗∗∗
+New ideas develop organically 0.36 0.47 0.40 0.41 0.67 0.53 3.89 ∗∗∗ 0.52 0.47 0.28 0.61 9.66 ∗∗∗
+Trust among employees 0.73 0.76 0.67 0.65 0.77 0.80 3.91 ∗∗∗ 0.82 0.75 0.56 0.74 15.44 ∗∗∗
+Urgency with which employees work 0.31 0.31 0.44 0.40 0.46 0.45 1.87 ∗∗ 0.43 0.42 0.29 0.45 4.91 ∗∗∗
+Willingness to report unethical behavior 0.58 0.56 0.49 0.33 0.43 0.39 2.53 ∗∗∗ 0.52 0.48 0.34 0.41 5.55 ∗∗∗
+Aggregate cultural measures
+Agg. cultural values (Q1, Q14) 0.44 0.39 0.42 0.32 0.46 0.44 2.54 ∗∗∗ 0.46 0.47 0.25 0.37 22.79 ∗∗∗
+Agg. cultural norms (Q6) 0.21 0.18 0.21 0.14 0.30 0.28 2.93 ∗∗∗ 0.28 0.26 0.06 0.25 20.63 ∗∗∗
+Culture in practice (1 = No. 4 = Yes)
+Tracks stated values (Q4) 3.39 3.21 3.28 3.16 3.51 3.38 1.77 ∗ 3.50 3.40 2.90 3.32 17.53 ∗∗∗
+Culture is exactly where it should be (Q4b) 2.82 2.69 2.70 2.58 3.02 2.90 2.93 ∗∗∗ 2.91 2.87 2.37 2.83 21.64 ∗∗∗
+Observations 174 62 191 111 150 105 258 484 227 128
+This table provides the average prominence of the values and norms that executives say comprise corporate culture by industry. Columns 1 through 6
+display the mean response from executives in the speciﬁc industries for which we obtain at least 50 responses. Columns 8 through 11 display the mean
+response from executives conditional on their competitive position in the industry, ranging from leader to challenger. Columns 7 and 12 display the F-
+statistic from the joint hypothesis test that the industry coeﬃcients are equivalent. The sample consists of survey responses from executives at public
+and private North American ﬁrms. For a detailed description of each variable, see the deﬁnitions in Appendix B . ∗∗∗ , ∗∗ and ∗ indicate p-values under the
+assumption of a single test of 1%, 5%, and 10%, respectively.
+We ﬁnd few differences across measures of cultural
+values and norms for single vs. multi-segment ﬁrms. In
+contrast, some of the categorizations for which we ob-
+serve meaningful differences are low- and high-employee
+turnover, low- and high-CEO turnover, and low and high-
+revenue growth. Firms with low-employee turnover are
+uniformly more likely to report more prominent cultural
+values and norms. This suggests that researchers looking
+for a simple proxy for strong or weak cultural values and
+norms may want to look at employee turnover relative to
+industry averages. Interestingly, while revenue growth is
+correlated with the reported strength of values and norms,
+this pattern does not appear to be the result of executives
+reporting such metrics to look good given that other com-
+mon metrics of ﬁnancial performance such as proﬁtability
+do not exhibit similar patterns.
+Another intriguing correlation that emerges from this
+analysis is that the cultural value of adaptability, often em-
+phasized by management scholars as a way to avoid the
+innovator’s dilemma ( Christensen, 1997 ) and the fate of
+ﬁrms like Kodak and Blackberry, varies meaningfully with
+leadership characteristics. Adaptability is signiﬁcantly dif-
+ferent by CEO age and the inﬂuence of the current CEO vs.
+the founder or past CEO in the setting the ﬁrm’s current
+culture. Finally, for those interested in traditional corporate
+ﬁnance policies like capital structure, we ﬁnd that high
+leverage is signiﬁcantly correlated with weaker cultural
+norms (e.g., coordination and decision-making that reﬂects
+the long-term) and corporate culture not being where it
+should be (Q4b). This suggests a potential future direction
+for researchers is to understand the extent to which differ-
+ent elements of culture drive ﬁnancing decisions and other
+corporate policies that may have long-term, persistent im-
+plications for ﬁrm value.
+3.4. Perceived impact of culture on company value
+We now explore in detail executive’s views on the per-
+ceived relation between corporate culture and ﬁrm value.
+Table 4 summarizes the four survey questions with per-
+ceptions of the link between culture and ﬁrm value. The
+ﬁrst question (Q2), “how important do you believe corpo-
+rate culture is at your ﬁrm?” reveals that 91% of survey re-
+spondents consider corporate culture to be “important” or
+“very important” at their ﬁrms. This result is corroborated
+by responses to the next question (Q3),“in terms of all of
+the things that make your ﬁrm valuable, where would you
+place corporate culture?” 54% of respondents consider cul-
+ture to be among the “top3” factors affecting ﬁrm value
+and 79% rank culture as at least a “top 5” contributor. In
+another question (Q4c), 92% of executives believe that im-
+proving corporate culture would increase their ﬁrm’s value.
+561
+
+===== PAGE 11 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 3
+Corporate Culture Conditional on Company Characteristics.
+Size (employees) Size (segments) Revenue Growth Proﬁtable ROE
+Small Large Single Multi Low High No Yes Low High
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10)
+Cultural values (Q1, Q14)
+Adaptability 0.25 0.19 ∗ 0.24 0.22 0.13 0.33 ∗∗∗ 0.34 0.21 ∗∗∗ 0.18 0.26 ∗
+Collaboration 0.31 0.21 ∗∗∗ 0.32 0.23 ∗∗ 0.23 0.35 ∗∗∗ 0.14 0.29 ∗∗∗ 0.19 0.35 ∗∗∗
+Community-oriented 0.37 0.25 ∗∗∗ 0.34 0.31 0.24 0.43 ∗∗∗ 0.26 0.33 0.26 0.39 ∗∗∗
+Customer-oriented 0.19 0.24 ∗∗ 0.20 0.23 0.21 0.24 0.12 0.22 ∗∗∗ 0.22 0.24
+Detail-oriented 0.14 0.17 0.15 0.14 0.15 0.16 0.13 0.15 0.14 0.19
+Integrity 0.22 0.27 ∗ 0.21 0.25 0.23 0.24 0.18 0.24 0.20 0.29 ∗∗∗
+Results-oriented 0.46 0.42 0.43 0.48 0.41 0.51 ∗∗ 0.33 0.46 ∗∗ 0.33 0.59 ∗∗∗
+Cultural norms (Q6)
+Agreement about goals and values 0.57 0.59 0.58 0.57 0.53 0.62 ∗ 0.51 0.58 0.57 0.58
+Consistency and predictability of actions 0.44 0.38 0.44 0.40 0.38 0.46 ∗ 0.46 0.41 0.44 0.39
+Coordination among employees 0.64 0.57 0.64 0.59 0.57 0.67 ∗∗ 0.65 0.61 0.54 0.67 ∗∗
+Decision-making reﬂects long-term 0.57 0.58 0.60 0.53 0.54 0.66 ∗∗ 0.47 0.59 ∗ 0.56 0.63
+Employees comfort in suggesting critiques 0.45 0.44 0.46 0.43 0.37 0.53 ∗∗∗ 0.51 0.43 0.38 0.46
+New ideas develop organically 0.49 0.41 ∗∗ 0.47 0.46 0.39 0.55 ∗∗∗ 0.48 0.46 0.46 0.47
+Trust among employees 0.75 0.69 ∗ 0.76 0.70 0.67 0.80 ∗∗∗ 0.69 0.73 0.66 0.78 ∗∗
+Urgency with which employees work 0.42 0.37 0.42 0.37 0.36 0.44 0.42 0.41 0.35 0.43
+Willingness to report unethical behavior 0.40 0.54 ∗∗∗ 0.42 0.47 0.44 0.42 0.39 0.46 0.41 0.44
+Aggregate cultural measures
+Agg. cultural values (Q1, Q14) 0.28 0.25 0.27 0.27 0.23 0.32 ∗∗∗ 0.21 0.27 ∗∗ 0.22 0.33 ∗∗∗
+Agg. cultural norms (Q6) 0.52 0.51 0.53 0.50 0.47 0.57 ∗∗∗ 0.51 0.52 0.49 0.54
+Culture in practice (1 = No. 4 = Yes)
+Tracks stated values (Q4) 3.33 3.31 3.33 3.31 3.27 3.43 ∗∗∗ 3.10 3.35 ∗∗∗ 3.21 3.45 ∗∗∗
+Culture is exactly where it should be (Q4b) 2.83 2.68 ∗∗∗ 2.81 2.75 2.65 2.93 ∗∗∗ 2.62 2.80 ∗∗ 2.62 2.88 ∗∗∗
+Observations 693 377 494 521 436 379 173 892 362 368
+Firm Age Family Control Ownership Leverage Investment Grade
+Young Old Family Non-family Public Private Low High No Yes
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10)
+Cultural values (Q1, Q14)
+Adaptability 0.31 0.16 ∗∗∗ 0.25 0.21 0.19 0.25 0.23 0.21 0.30 0.18 ∗∗∗
+Collaboration 0.33 0.24 ∗∗ 0.34 0.24 ∗∗ 0.25 0.29 0.29 0.25 0.26 0.28
+Community-oriented 0.35 0.31 0.38 0.30 ∗ 0.31 0.33 0.33 0.29 0.30 0.33
+Customer-oriented 0.18 0.24 ∗∗ 0.22 0.20 0.21 0.21 0.21 0.24 0.19 0.22
+Detail-oriented 0.13 0.16 0.16 0.13 0.18 0.14 0.17 0.16 0.13 0.16
+Integrity 0.23 0.24 0.25 0.21 0.30 0.21 ∗∗∗ 0.22 0.25 0.18 0.26 ∗∗
+Results-oriented 0.47 0.45 0.46 0.41 0.48 0.43 0.46 0.45 0.38 0.47 ∗∗
+Cultural norms (Q6)
+Agreement about goals and values 0.56 0.58 0.56 0.56 0.66 0.54 ∗∗∗ 0.59 0.53 0.50 0.62 ∗∗∗
+Consistency and predictability of actions 0.41 0.43 0.44 0.41 0.39 0.43 0.43 0.39 0.40 0.42
+Coordination among employees 0.59 0.62 0.59 0.62 0.60 0.62 0.66 0.56 ∗∗ 0.58 0.63
+Decision-making reﬂects long-term 0.54 0.58 0.53 0.56 0.61 0.55 0.64 0.53 ∗∗ 0.48 0.62 ∗∗∗
+Employees comfort in suggesting critiques 0.49 0.41 0.45 0.42 0.44 0.45 0.47 0.40 0.45 0.44
+New ideas develop organically 0.52 0.41 ∗∗∗ 0.47 0.45 0.45 0.47 0.50 0.43 0.45 0.47
+Trust among employees 0.76 0.70 0.73 0.72 0.75 0.72 0.77 0.68 ∗ 0.70 0.74
+Urgency with which employees work 0.42 0.38 0.37 0.41 0.40 0.40 0.43 0.38 0.38 0.40
+Willingness to report unethical behavior 0.43 0.48 0.46 0.38 ∗ 0.56 0.40 ∗∗∗ 0.43 0.40 0.41 0.47
+Aggregate cultural measures
+Agg. cultural values (Q1, Q14) 0.28 0.26 0.29 0.24 ∗∗ 0.27 0.27 0.27 0.27 0.25 0.27
+Agg. cultural norms (Q6) 0.53 0.51 0.51 0.50 0.54 0.51 0.55 0.48 ∗∗ 0.48 0.53 ∗
+Culture in practice (1 = No. 4 = Yes)
+Tracks stated values (Q4) 3.33 3.30 3.33 3.30 3.31 3.32 3.39 3.27 ∗ 3.24 3.35 ∗
+Culture is exactly where it should be (Q4b) 2.83 2.72 ∗∗ 2.81 2.73 2.75 2.79 2.88 2.66 ∗∗∗ 2.72 2.80
+Observations 479 551 358 429 314 743 345 389 364 695
+( continued on next page )
+562
+
+===== PAGE 12 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 3
+( continued )
+Employees with
+ﬁrm for less than Inﬂuential in setting
+three years Employee Turnover CEO Turnover CEO Age the current culture
+Founder or
+Few Many < ind. avg. = ind. avg. > ind. avg. < ind. avg. = ind. avg. > ind. avg. < 50 50–59 60 + Current CEO Past CEO
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13)
+Cultural values (Q1, Q14)
+Adaptability 0.19 0.26 ∗ 0.25 0.23 0.15 0.24 0.13 0.20 0.31 0.23 0.17 ∗∗ 0.26 0.17 ∗∗
+Collaboration 0.30 0.24 0.39 0.21 0.00 ∗∗∗ 0.32 0.13 0.13 ∗∗∗ 0.28 0.29 0.25 0.28 0.23
+Community-oriented 0.35 0.27 ∗ 0.44 0.33 –0.01 ∗∗∗ 0.36 0.22 0.19 ∗∗∗ 0.39 0.32 0.30 0.34 0.29
+Customer-oriented 0.23 0.18 ∗∗ 0.26 0.18 0.09 ∗∗∗ 0.22 0.18 0.11 ∗ 0.13 0.25 0.22 ∗∗∗ 0.20 0.18
+Detail-oriented 0.17 0.11 ∗ 0.18 0.15 –0.02 ∗∗∗ 0.16 0.10 0.05 ∗ 0.12 0.14 0.18 0.14 0.12
+Integrity 0.26 0.19 ∗∗ 0.31 0.20 0.06 ∗∗∗ 0.26 0.18 0.11 ∗∗ 0.20 0.24 0.28 0.23 0.23
+Results-oriented 0.46 0.44 0.49 0.51 0.24 ∗∗∗ 0.48 0.38 0.30 ∗∗ 0.50 0.47 0.41 0.43 0.44
+Cultural norms (Q6)
+Agreement about goals and values 0.59 0.52 0.68 0.54 0.30 ∗∗∗ 0.60 0.54 0.41 ∗ 0.52 0.62 0.56 0.60 0.58
+Consistency and predictability of actions 0.42 0.40 0.48 0.37 0.30 ∗∗∗ 0.43 0.46 0.23 ∗ 0.38 0.38 0.50 ∗∗ 0.42 0.40
+Coordination among employees 0.65 0.55 ∗∗ 0.67 0.63 0.40 ∗∗∗ 0.63 0.69 0.36 ∗∗∗ 0.60 0.64 0.59 0.64 0.58
+Decision-making reﬂects long-term 0.61 0.48 ∗∗∗ 0.67 0.47 0.37 ∗∗∗ 0.59 0.50 0.44 0.53 0.58 0.60 0.58 0.56
+Employees comfort in suggesting critiques 0.45 0.43 0.52 0.41 0.31 ∗∗∗ 0.47 0.40 0.30 0.46 0.46 0.43 0.45 0.43
+New ideas develop organically 0.47 0.44 0.57 0.36 0.30 ∗∗∗ 0.49 0.38 0.30 ∗∗ 0.52 0.47 0.40 ∗ 0.44 0.52
+Trust among employees 0.75 0.69 0.81 0.73 0.45 ∗∗∗ 0.75 0.76 0.41 ∗∗∗ 0.73 0.75 0.70 0.76 0.70
+Urgency with which employees work 0.42 0.37 0.45 0.40 0.25 ∗∗∗ 0.41 0.43 0.19 ∗∗ 0.38 0.41 0.40 0.43 0.38
+Willingness to report unethical behavior 0.49 0.36 ∗∗∗ 0.49 0.45 0.30 ∗∗∗ 0.44 0.54 0.31 ∗∗ 0.38 0.48 0.46 0.48 0.44
+Aggregate cultural measures
+Agg. cultural values (Q1, Q14) 0.28 0.24 ∗ 0.33 0.26 0.07 ∗∗∗ 0.29 0.19 0.15 ∗∗∗ 0.28 0.28 0.26 0.27 0.24
+Agg. cultural norms (Q6) 0.54 0.47 ∗∗ 0.59 0.48 0.33 ∗∗∗ 0.53 0.52 0.33 ∗∗∗ 0.50 0.53 0.52 0.53 0.51
+Culture in practice (1 = No. 4 = Yes)
+Tracks stated values (Q4) 3.43 3.16 ∗∗∗ 3.58 3.25 2.58 ∗∗∗ 3.41 3.06 2.75 ∗∗∗ 3.20 3.34 3.40 ∗∗ 3.37 3.22 ∗∗
+Culture is exactly where it should be (Q4b) 2.87 2.65 ∗∗∗ 3.00 2.73 2.08 ∗∗∗ 2.86 2.54 2.25 ∗∗∗ 2.77 2.77 2.81 2.77 2.76
+Observations 565 408 570 298 164 817 141 64 245 485 327 743 266
+This table provides descriptive statistics of the average prominence of the values and norms that executives say comprise corporate culture, conditional on ﬁrm characteristics. For each ﬁrm characteristic, we
+divide the sample into two or three subsamples based on the median or relevant category, and we report the mean for each subsample. Recall that each cultural value and norm is assigned a value of −1, 0, or
+1 for a given ﬁrm, and the mean is the average across companies in a subsample. The characteristics, which span three panels, include ﬁrm size (below vs. above 10 0 0 employees), number of segments (single
+vs. multi segment), revenue growth (median), an indicator for having positive proﬁts, and ROE (median), ﬁrm age (median), family control (family vs. not), ownership (public vs. private), leverage (median),
+credit rating (investment grade vs. not), the number of employees with the ﬁrm for less than three years (median), employee turnover (less than industry average, industry average, above industry average), CEO
+turnover (less than industry average, industry average, above industry average), CEO age (less than 50, 50–59, 60+), an indicator for who is inﬂuential in setting the current culture (current CEO, founder or past
+CEO). The sample consists of survey responses from executives at public and private North American ﬁrms. For a detailed description of each variable, see the deﬁnitions in Appendix B . ∗∗∗ , ∗∗ and ∗ indicate
+p-values under the assumption of a single test of 1%, 5%, and 10%, respectively.
+563
+
+===== PAGE 13 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 4
+The Perceived Impact of Corporate Culture on Company Value.
+Q2, “How important do you believe corporate culture is at your ﬁrm?”
+1 = 2 = 3 = 4 =
+Obs. Mean Std. dev. Median Not impt. Somewhat Impt. Very impt.
+(1) (2) (3) (4) (5) (6) (7) (8)
+1335 3.52 0.77 4 4.2% 4.9% 25.4% 65.5%
+Q3, “In terms of all of the things that make your ﬁrm valuable, where would you place corporate culture?”
+1 = 2 = 3 = 4 =
+Obs. Mean Std. dev. Median Not top 10 Top 10 Top 5 Top 3
+(1) (2) (3) (4) (5) (6) (7) (8)
+1345 3.22 1.00 4 10.0% 11.5% 25.0% 53.5%
+Q4c, “Do you believe that improving your corporate culture would increase your ﬁrm’s value?”
+0 = 1 =
+Obs. Mean Std. dev. Median No Yes
+(1) (2) (3) (4) (5) (6)
+1104 0.92 0.27 1 8.1% 91.9%
+Q11,“You work at a ﬁrm with an effective, strong culture. You are evaluating two acquisition targets, A and B. A and B would bring the
+same strategic and operational beneﬁts if acquired, and the targets are identical in all dimensions except corporate culture. Company A’s
+culture is very aligned with your ﬁrm’s culture, whereas company B’s culture is not at all aligned. Relative to how much you would offer
+for A, how much less would you offer for company B due to the culture misalignment?”
+0 = 1 = 2 = 3 = 4 = 5 =
+Obs. Mean Std. dev. Median Same amt. 5% discount 10% disc. 20% disc. 30 + % disc. No offer
+1000 3.69 1.71 5 10.3% 3.0% 10.5% 13.8% 8.8% 53.6%
+This table provides descriptive statistics on the perceived value placed on corporate culture by surveyed executives at public and private North American
+ﬁrms. The question is listed along with the percentage of responses in each category. For details on all survey questions, please see Appendix A .
+While the executives’ perceptions are important, it is pos-
+sible that these are self-serving perceptions. We evaluate
+this concern in Section 4.2.6.
+Our interviews help to explain why so many executives
+believe culture is important for ﬁrm value. As one inter-
+viewee said, “culture can be described as foundational. It
+is the most important thing because in some ways it can
+inﬂuence your ability to come to solutions to all the un-
+known problems and challenges that you will face from
+inception to growth.” Another executive echoed that, “cul-
+ture is the foundation of all companies, and can make or
+break the success of a company.”
+The ﬁnal question (Q11) presented in Table 4 explores
+managerial views on the value effects of culture in a hy-
+pothetical setting: “You work at a ﬁrm with an effective,
+strong culture. You are evaluating two acquisition targets,
+A and B. Both of these targets would bring the same strate-
+gic and operational beneﬁts if acquired, and the targets
+are identical in all dimensions except corporate culture.
+Company A’s culture is very aligned with your ﬁrm’s cul-
+ture, whereas company B’s culture is not at all aligned.
+Relative to how much you would offer for A, how much
+less would you offer for company B due to the culture
+misalignment?”
+Our results indicate that executive beliefs about cultural
+ﬁt in M&A deals is so important that 54% of executives
+would walk away from an acquisition target that is a poor
+cultural ﬁt, while another one-third of respondents would
+discount the offer price for the culturally misaligned target
+by 10–30%. In the M&A context, this indicates that the per-
+ceived valuation implications of culture can be large. This
+is consistent with economic theory of the costs and bene-
+ﬁts of corporate culture and the effects of “culture clash” in
+mergers and acquisitions ( Weber and Camerer, 2003; Van
+den Steen, 2010 ).
+The interviews offer insight into why executives would
+walk away from acquisitions lacking cultural ﬁt: “we would
+test for cultural ﬁt. If the gap is wide enough it does not
+matter if it is a great price. We won’t move forward.” An-
+other manager put it this way: “I would deﬁnitely pay
+more for the company whose culture is closer. Less fric-
+tion and assimilation cost, we can get it all done easier,
+faster and at lower cost.” When we asked how cultural
+ﬁt is tested, one executive responded, “we had a check-
+list set of questions that we would ask about the elements
+of the culture and we would compare them with the key
+elements of our culture. For example, we would look for
+strong focus on customer, high levels of integrity, open
+door communication and so on ... among a list of 10–12
+items.” For this ﬁrm, a deal would be abandoned for tar-
+gets scoring low on the culture checklist.
+3.5. Risk and ethics
+In addition to culture potentially being an important
+source of ﬁrm value in mergers, theory indicates that cor-
+porate culture also relates to ﬁrm value via routine corpo-
+rate actions. To understand the variety of actions poten-
+tially associated with culture, Table 5 summarizes several
+survey questions that link culture to employee or company
+actions related to risk-taking, short-termism, and ethics.
+The ﬁrst question (Q7) in Table 5 explores the relation
+between corporate risk-taking and culture. We start by es-
+tablishing how much business risk a given company under-
+564
+
+===== PAGE 14 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 5
+The Perceived Inﬂuence of Corporate Culture on Risk-taking, Investment, Ethics, and Earnings Management.
+Q7, “Do you think your company takes the right amount of risk in its investments to achieve its goals?”
+−1 = 0 = 1 =
+Obs. Mean Std. dev. Median Too little Right amount Too much
+(1) (2) (3) (4) (5) (6) (7)
+1117 −0.18 0.61 0 28.8% 60.2% 11.0%
+Q7b, “Our corporate culture is a (ﬁll in the blank) reason that our company takes on this amount of risk.”
+1 = 2 = 3 = 4 =
+Obs. Mean Std. dev. Median Not a reason Somewhat impt. Impt. Very impt.
+(1) (2) (3) (4) (5) (6) (7) (8)
+860 2.70 1.08 3 19.2% 19.8% 33.0% 28.0%
+Q8, “Suppose your ﬁrm is considering two projects A and B:
+• A and B are very similar in that they require the same capital up front, have the same expected life, and have the same probability of failure.
+• A is more valuable than project B (A has greater NPV).
+• A generates negative cash ﬂows for the ﬁrst two years, while B has positive cash ﬂows in all years.
+Assuming all cash ﬂow forecasts are equally accurate, does your ﬁrm’s culture make it more likely that project A or B will be chosen?”
+0 = 1 =
+Obs. Mean Std. dev. Median Project B Project A
+(1) (2) (3) (4) (5) (6)
+1025 0.59 0.49 1 40.6% 59.4%
+Q8b, “Does your ﬁrm’s culture pay a role in the preference for Project A?”
+0 = 1 =
+Obs. Mean Std. dev. Median No Yes
+(1) (2) (3) (4) (5) (6)
+629 0.80 0.40 1 20.0% 80.0%
+Q10, “Do you think having a poorly implemented/ineffective  culture at a company increases the chances that an employee would do something
+unethical (or even illegal)?”
+0 = 1 =
+Obs. Mean Std. dev. Median No Yes
+(1) (2) (3) (4) (5) (6)
+1126 0.85 0.36 1 15.5% 84.5%
+Q12, “Sometimes companies engage in end-of-quarter practices such as delaying valuable projects in order to hit market expected earnings.
+How likely is it that an effective corporate culture would reduce the chance that such actions are taken?”
+1 = 2 = 3 = 4 =
+Obs. Mean Std. dev. Median Not likely Somewhat likely Very likely Extremely likely
+(1) (2) (3) (4) (5) (6) (7) (8)
+1103 2.55 1.00 3 18.9% 25.6% 36.7% 18.8%
+Q12, limited to only public companies:
+299 2.55 1.01 3 19.7% 24.4% 37.1% 18.7%
+This table provides descriptive statistics on the perceived inﬂuence of corporate culture at public and private North American ﬁrms. The actual question
+is listed along with the percentage of responses in each category. For details on all survey questions, please see Appendix A .
+takes: “Do you think your company takes the right amount
+of risk in its investments to achieve its goals?” reveals that
+that 60% believe that their ﬁrms take on the “right amount
+of risk,” 29% believe their ﬁrms take “too little risk,” and
+11% believe that their ﬁrms take “too much risk.” A follow-
+up question (Q7b) connects this amount of risk to corpo-
+rate culture by asking whether a ﬁrm’s culture was a “very
+important,” “important,” “somewhat important,” or “not a
+reason” that their ﬁrm takes on their chosen amount of
+business risk. The responses indicate that 61% of executives
+believe that culture plays an important or very important
+role in their risk decisions.
+In Table 6 , we explore the relation between corporate
+risk-taking and speciﬁc cultural values and norms. One
+key ﬁnding is that values and norms are more prominent
+among companies that take on the right amount of risk
+(Column 2) versus the prevalence of values and norms
+among companies that operate with too much (Column
+3) or too little (Column 1) risk. For example, consider
+the cultural norm of “decision making that reﬂects the
+long-term”: 70% of ﬁrms that take on the right amount
+of risk exhibit this norm, versus 43% (26%) for ﬁrms that
+take on too little (too much) risk. This same relation be-
+tween the different degrees of corporate risk-taking holds
+for many other values and norms shown in the other rows
+in Table 6 . In terms of statistical signiﬁcance, the cross
+(+) indicates the elements of culture that are signiﬁcant
+in a multivariate regression format that includes a num-
+565
+
+===== PAGE 15 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 6
+Prominence of Cultural Values and Norms Conditional on Risk-taking and Investment Decisions.
+Do you think your company takes the right
+amount of investment risk? (Q7)
+The ﬁrm’s culture makes it more likely
+that the ______ project will be chosen (Q8)
+Too little Right amount Too much NPV-inferior NPV-superior
+(1) (2) (3) (4) (5)
+Cultural values (Q1, Q14)
+Adaptability 0.05 0.32 0.22 ∗+ 0.07 0.33 ∗∗∗ +
+Collaboration 0.20 0.35 0.10 ∗∗∗ 0.14 0.35 ∗∗∗ +
+Community-oriented 0.16 0.46 0.14 ∗∗∗ + 0.15 0.43 ∗∗∗
+Customer-oriented 0.20 0.23 0.13 ∗∗ 0.15 0.24 ∗∗∗ +
+Detail-oriented 0.14 0.18 –0.01 ∗∗∗ 0.06 0.20 ∗∗∗ +
+Integrity 0.16 0.29 0.11 ∗∗∗ + 0.17 0.28 ∗∗∗
+Results-oriented 0.29 0.54 0.30 ∗∗∗ + 0.29 0.54 ∗∗∗
+Cultural norms (Q6)
+Agreement about goals and values 0.50 0.68 0.24 ∗∗∗ 0.46 0.67 ∗∗∗ +
+Consistency and predictability of actions 0.32 0.49 0.24 ∗∗∗ 0.31 0.48 ∗∗∗ +
+Coordination among employees 0.50 0.70 0.47 ∗∗∗ 0.54 0.69 ∗∗∗
+Decision-making reﬂects long-term 0.43 0.70 0.26 ∗∗∗ + 0.49 0.65 ∗∗∗
+Employees comfort in suggesting critiques 0.32 0.54 0.23 ∗∗∗ 0.34 0.53 ∗∗∗
+New ideas develop organically 0.34 0.55 0.28 ∗∗∗ 0.40 0.53 ∗∗∗
+Trust among employees 0.68 0.81 0.42 ∗∗∗ 0.63 0.80 ∗∗∗
+Urgency with which employees work 0.27 0.47 0.29 ∗∗ 0.31 0.43 ∗∗∗
+Willingness to report unethical behavior 0.43 0.49 0.27 ∗∗∗ + 0.40 0.50 ∗∗
+Aggregate cultural measures
+Agg. cultural values (Q1, Q14) 0.17 0.34 0.14 ∗∗∗ + 0.15 0.34 ∗∗∗ +
+Agg. cultural norms (Q6) 0.42 0.60 0.30 ∗∗∗ + 0.43 0.59 ∗∗∗ +
+Culture in practice (1 = No. 4 = Yes)
+Tracks stated values (Q4) 3.08 3.57 2.79 ∗∗∗ + 3.03 3.53 ∗∗∗ +
+Culture is exactly where it should be (Q4b) 2.52 3.03 2.19 ∗∗∗ + 2.47 2.99 ∗∗∗ +
+Observations 322 672 123 416 609
+This table presents the prominence of cultural values and norms conditional on executives’ responses about investment risk (Columns 1 to 3) and
+selection of an NPV-superior investment project (Columns 4 and 5). The actual question is listed, with the ﬁrms grouped into columns based on their
+answers to a given question. Recall that each cultural value and norm is assigned a value of −1, 0, or 1; the number presented is the average across
+ﬁrms in a given column. For example, the average prominence of Adaptability is 0.22 among ﬁrms that take on “too much” investment risk (in Column
+3). ∗∗∗ , ∗∗ and ∗ indicate p-values under the assumption of a single test of 1%, 5%, and 10%, respectively, for univariate differences across columns. +
+indicates that the element of culture is statistically signiﬁcant in multiple regression format with executives’ responses on risk-taking or NPV-superior
+investments question as the dependent variable in a speciﬁcation that controls for noise, executive, and ﬁrm characteristics and includes industry ﬁxed
+effects. For details on all survey questions, please see Appendix A .
+ber of control variables and industry ﬁxed effects. The
+six cultural elements with statistically signiﬁcant correla-
+tions in the multivariate speciﬁcation for taking the right
+amount of investment risk are the values of adaptability,
+integrity, community-orientation and results-orientation,
+and the norms of decision-making that reﬂects the long-
+term and a willingness to report unethical behavior.
+Returning to Table 5 , the second question (Q8) exam-
+ines the role of culture in choosing between long-term
+value creation versus short-term objectives. We ask CFOs
+a hypothetical question in which they choose between
+two otherwise identical projects with a ﬁve-year duration.
+Project A creates greater NPV but reports negative cash
+ﬂows for the ﬁrst two years, whereas lower-NPV Project B
+reports positive cash ﬂows throughout the duration of the
+project. A surprising 41% of respondents said they would
+choose the NPV-inferior project. To disentangle the role of
+culture in this choice, in response to a follow-up question
+(Q8b), four-out-of-ﬁve of the 59% who choose the project
+with the greater NPV say culture plays a role in their pref-
+erence for the greater NPV project. We explore the ef-
+fects of speciﬁc cultural values and norms on the choice of
+Project A (the long-term, value-creating choice) in Columns
+4 and 5 of Table 6 . In a multivariate speciﬁcation, two cul-
+tural norms are signiﬁcantly related to choosing the NPV-
+superior project: goal agreement and consistency and pre-
+dictability of actions.
+Next, we study the relation between corporate culture
+and ethical choices. Theory predicts that culture is likely
+to have its strongest association with actions that cannot
+properly be regulated ex ante ( Kreps, 1990; Akerlof and
+Kranton, 2005 ). To explore this possibility, we ask whether
+an ineffective culture can lead to unethical behavior (Q10):
+“do you think having a poorly implemented/ineffective cul-
+ture at a company increases the chances that an em-
+ployee would do something unethical (or even illegal)?”
+Table 5 shows that 85% of respondents indicate that “yes”,
+ineffective corporate culture can lead to unethical behav-
+ior. As a test for the authenticity of this response, we com-
+pare those respondents who provide contact information
+after the survey is complete with those who do not. This
+test suggests respondents are being honest because those
+that did not leave any contact information are signiﬁcantly
+more likely to agree that an employee would do something
+unethical (or even illegal).
+Finally, the interviews highlight several channels that
+link corporate culture to ﬁrm performance. First, execu-
+tives say that culture is perceived to enhance ﬁrm perfor-
+mance because it enables superior execution: “Culture is
+very important because it allows you to execute. Culture is
+566
+
+===== PAGE 16 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+like the tendons and ligaments that hold the body together
+and allow it to be healthy as a body and execute daily.”
+Second, executives indicate that culture may enhance ﬁrm
+performance through reduced agency costs. “When corpo-
+rate culture is working at its best, it reduces dramatically
+the agency costs within an organization because you have
+an invisible hand at work inside of each of the employ-
+ees that helps to guide their decisions and judgments in a
+way that the overall corporation would desire it to be.” For
+additional details on the transcribed recordings from the
+interviews, see Graham et al. (2018) .
+3.6. Earnings targets, ﬁnancial reporting, compliance, and
+taxes
+The previous sections establish executive views on the
+relations between corporate culture, company actions, and
+ﬁrm value. In this section we seek to understand the con-
+nections between culture and ﬁnancial reporting. Speciﬁ-
+cally, we summarize survey questions related to incentives
+to hit earnings targets, ﬁnancial reporting quality, compli-
+ance and tax aggressiveness.
+The ﬁnal question (Q12) in Table 5 explores end-of-
+quarter earnings management: “sometimes companies en-
+gage in end-of-quarter practices such as delaying valuable
+projects in order to hit market expected earnings. How
+likely is it that an effective corporate culture would reduce
+the chance that such actions are taken?” 56% of executives
+believe that it is very likely or extremely likely that an ef-
+fective corporate culture would reduce real earnings man-
+agement. Only 20% of respondents believe that an effective
+culture would not reduce real earnings management. 7
+Survey question 14 asks “To what extent does the cor-
+porate culture at your ﬁrm affect the following items: X,”
+where X is compliance, ﬁnancial reporting quality, or tax
+aggressiveness, and the choices are 1 = no effect, 2 = little
+effect, 3 = moderate effect, and 4 = big effect. As summa-
+rized in Table 1 Panel D, 77% of executives indicate that
+culture has a moderate or big effect in compliance deci-
+sions, and 69% indicate the same about the importance
+of culture to ﬁnancial reporting quality. To help interpret
+these numbers, we analyze the open-ended responses from
+respondents about these accounting outcomes. Examples
+where culture has a positive inﬂuence on compliance and
+reporting quality include: “we have a culture of playing by
+the rules. If we didn’t employees would be more prone
+to play games,” “the compliance department is always at
+the table whether it is in a strategy discussion or a work
+place error deviation. As a result, everyone feels comfort-
+able when an issue arises and it needs to be reported,”
+and “integrity is a key part of our corporate culture, en-
+hancing/reinforcing the quality of our ﬁnancial reporting.”
+There are also several examples of how an ineffective cul-
+ture may weaken compliance and reporting quality: “if the
+culture promotes or tolerates ‘rogue’ behavior then [the
+company is] less likely to have compliance,” “the pressure
+7 Real earnings management is the manipulation of business activi-
+ties to smooth earnings and meet or beat analysts’ consensus forecasts.
+Such practices can have meaningful economic implications ( Graham et al.,
+2005; Roychowdhury, 2006 ).
+to meet numbers leads to doing the wrong thing,” “an ag-
+gressive culture of risk taking impacts aggressiveness of ac-
+counting policies to compensate for high risk projects that
+go bad,” and “we take creative chances with numbers.”
+In contrast to the compliance and reporting quality im-
+plications, in Table 1 Panel D only 35% of respondents
+think that culture has a moderate or big effect on tax ag-
+gressiveness. Again the open-ended responses help to ex-
+plain why the link between culture and tax aggressive-
+ness is weaker ( Hanlon and Heitzman, 2010 ). For example,
+“our culture involves driving positive results with our cus-
+tomers, and tax schemes just don’t achieve that,” or “if the
+culture from the top promotes honesty and doing the right
+thing, the company will not take risky aggressive tax posi-
+tions.”
+3.7. Views on culture conditional on ﬁrm size, ownership,
+and family control
+Tables 4 and 5 presented unconditional averages that
+summarize the views of executives about the extent to
+which culture inﬂuences corporate valuation and actions.
+In Appendix Tables C.4, C.5 and C.6 we analyze these views
+conditional on several key ﬁrm characteristics: public and
+private ﬁrms, family and non-family controlled ﬁrms, and
+small and large ﬁrms. We ﬁnd public ﬁrms believe that
+culture plays less of a role in relation to the ﬁrms’ choice
+of investment risk and creativity, and plays a bigger role
+in being compliant. We ﬁnd family ﬁrms and non-family
+ones are indistinguishable, on average, on the importance
+of corporate culture. Non-family ﬁrms, however, are less
+likely than family ﬁrms to believe culture inﬂuences earn-
+ings management or leverage, but they are more likely to
+believe that culture has a big effect ﬁrm value. Finally, ex-
+ecutives from large ﬁrms are more likely than those from
+small ﬁrms to consider culture to be “very important” at
+their own ﬁrm and to report that culture has a big effect
+on ﬁrm value, compliance, and risk management.
+4. What prevents culture from being improved?
+Eighty-four percent of executives say that their ﬁrm
+needs to improve its corporate culture, and a majority be-
+lieve that doing so would increase ﬁrm value. But how can
+this be achieved? Are there deterrents to improving corpo-
+rate culture? In this section, we seek to better understand
+the factors that executives say contribute to an ineffective
+culture by placing their perspectives broadly in the context
+of prevailing paradigms for how culture works as an infor-
+mal system, interacting with individuals and formal sys-
+tems inside and outside the ﬁrm ( O’Reilly and Chatman,
+1996; Guiso et al., 2015a ). While there can be many fac-
+tors inﬂuencing the culture, we structure our exploration
+into systems (i.e., incentive compensation, corporate gov-
+ernance) and people (i.e., leadership, investors).
+4.1. The relation between corporate culture and people
+Table 7 summarizes three survey questions that explore
+how culture is established and what factors might con-
+tribute to an ineffective culture. The ﬁrst question (Q5),
+567
+
+===== PAGE 17 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 7
+Executives’ Perceptions of What Establishes Corporate Culture and What Drives the Effectiveness of Culture.
+Panel A. Q5, “Which of the following have been most inﬂuential in setting your ﬁrm’s current culture? [Check up to 4]”
+Freq. Pct. Freq. Pct.
+(1) (2) (3) (4)
+Current CEO 743 55% Past CEO 240 18%
+Our reputation or image in the marketplace 478 35% Changing needs of the market 229 17%
+Owners 432 32% Non-management employees 179 13%
+Founder 410 30% Incentive compensation 158 12%
+Internal policies and procedures 332 25% Board of Directors 157 12%
+Hard times we experienced 268 20% Peer ﬁrms 45 3%
+Panel B. Q4d, “What is preventing your ﬁrm’s culture from being exactly where it should be?”
+−2 = −1 = 0 = 1 = 2 =
+Obs. Mean Std. dev. Median Strongly disagree Disagree Agree Strongly Agree
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+Leadership
+Leadership needs to invest more time in the culture 1130 0.79 1.20 1 6% 11% 13% 36% 33%
+Formal Institutions
+Firm policies work against the intended culture (e.g., compensation) 1120 −0.04 1.27 0 16% 23% 24% 25% 13%
+Cultural Values and Cultural Norms
+Our cultural values are not fully aligned with our business needs 1125 −0.12 1.32 0 19% 26% 17% 27% 12%
+Our ﬁrm has ineﬃcient workplace interactions 1123 0.20 1.25 0 11% 21% 19% 33% 15%
+Our employees are not fully committed to the culture 1125 −0.03 1.26 0 14% 26% 20% 27% 12%
+Our culture has not caught up with recent business changes 1117 0.24 1.31 0 13% 18% 20% 30% 19%
+Panel C. Pecking order of Q4d, “What is preventing your ﬁrm’s culture from being exactly where it should be?”
+Subsample of execs who say culture does Subsample of execs who say culture is Either
+not track stated values (Q4) not where it should be (Q4b) subsample
+1 = 2 = 1 = 2 =
+Obs. Agree Strongly Agree Rank order Obs. Agree Strongly Agree Rank order Combined rank order
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+Leadership needs to invest more time in the culture 229 15% 81% 1 415 25% 67% 1 1
+Our culture has not caught up with recent business changes 228 27% 51% 2 411 32% 40% 2 2
+Our cultural values are not fully aligned with our business needs 228 35% 41% 3 413 39% 28% 4 3
+Our ﬁrm has ineﬃcient workplace interactions 227 33% 39% 5 412 38% 30% 3 4
+Firm policies work against the intended culture (e.g., compensation) 227 32% 41% 4 413 33% 27% 6 5
+Our employees are not fully committed to the culture 227 28% 37% 6 413 33% 28% 5 6
+Panel D. Q13a/b, “What are the most important ways incentive compensation/the ﬁnance function works against your corporate culture?”
+Freq. Pct. Freq. Pct.
+Incentive Compensation Works Against (1) (2) Finance Function Works Against (3) (4)
+Attracts/retains the wrong type of people to the ﬁrm 120 47% Focuses employees too much on short-term objectives 186 56%
+Focuses employees too much on short-term objectives 69 27% Focuses employees on imperfect metrics 90 27%
+Leads to fear of failure and insuﬃcient risk taking 68 26% Finance employees operate in a separate silo 56 17%
+This table presents executives’ views on inﬂuential factors in setting a ﬁrm’s current culture (Panel A) and in preventing the ﬁrm’s culture from being effective (Panel B, C, and D). The sample consists of survey
+responses from executives at public and private North American ﬁrms. The actual question is listed along with the percentage of responses in each category. The results in the table for Q13a/b are for ﬁrms at
+which the ﬁnance function (or separately, incentive compensation) work against the effectiveness of the culture. For details on all survey questions, please see Appendix A .
+568
+
+===== PAGE 18 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+“which of the following have been most inﬂuential in set-
+ting your ﬁrm’s current culture?” reveals that leadership
+and marketplace reputation are thought to be the two
+most inﬂuential factors in establishing the culture. Among
+potential leaders, the current CEO (55%), the owners (32%),
+the founder (30%), and past CEOs (18%) are identiﬁed as re-
+sponsible for shaping the current culture. To better under-
+stand the importance of marketplace reputation, we eval-
+uated the open-ended responses, which frequently men-
+tion the inﬂuence of investors in relation to the market-
+place reputation. Some of the factors that executives say
+are less likely to be inﬂuential in setting culture directly
+are the formal institutions associated with corporate gov-
+ernance such as the board of directors (12%) and incentive
+compensation (12%). These results align with theory sug-
+gesting that leadership sets culture ( Hermalin, 2013 ).
+The second question (Q4d) in Table 7 asks “what is pre-
+venting your ﬁrm’s culture from being exactly where it
+should be?” The responses highlight both the importance
+of leadership and what we can learn by studying the ef-
+fects of cultural values separate from the effects of day-to-
+day norms. In terms of the latter, 39% of executives believe
+that “Our cultural values are not fully aligned with our
+business needs,” and 48% cite day-to-day norms like ineﬃ-
+cient workplace interactions as preventing an effective cul-
+ture. This suggests that executives looking to improve cul-
+ture may want to focus on developing cultural norms that
+support the stated values. Finally, what may be most re-
+markable about the responses to this question is that 69%
+of executives themselves agree that “leadership needs to
+invest more time in the culture.”
+To further explore the importance of the various fac-
+tors that prevent culture from being where it should be
+(which is shown in Table 7 Panel B for the full sample of
+respondents), in Panel C we examine subsamples of ﬁrms
+that answered aﬃrmatively that current culture does not
+align with ideal culture according to two different mea-
+sures: Columns 1 to 4 of Panel C examine just the subset
+of companies that indicate that their ﬁrm’s culture does
+not track stated values (Q4 responses -not very closely- or
+-not at all-); and Columns 5 to 8 examine just the subsam-
+ple of respondents who indicate that their culture is not
+where it should be (Q4b responses of -needs considerable
+work to get to where it should be- or -needs a substan-
+tial overhaul-). The idea is that for these two subsamples
+in Panel C, relative to the full sample analysis in Panel B,
+the magnitudes of the frictions that work against culture
+should be larger. This is just what we ﬁnd. For example,
+among ﬁrms that say existing culture does not track stated
+values, 96% agree or strongly agree that leadership needing
+to invest more time in culture plays a key role in prevent-
+ing culture from being where it should be.
+While the top two ranked obstacles to effective culture
+(leadership; and failure to adapt to business changes) are
+the same for the two subsamples, the ranking of the other
+obstacles varies in Columns 4 and 8. As such, in Column 9
+we create a pecking order of the major obstacles that hin-
+der improving culture by ranking the average of strongly
+agree and agree across the two subsamples. The combined
+pecking order of factors that prevent culture from being
+where it should be is (i) leadership needs to invest more
+time in the culture, (ii) culture has not caught up with
+business changes, (iii) cultural values are not fully aligned
+with our business needs, (iv) our ﬁrm has ineﬃcient work-
+place interactions, (v) ﬁrm policies work against the in-
+tended culture (e.g., compensation), and (vi) our employ-
+ees are not fully committed to the culture.
+To try to gain insight into why management may under-
+invest in culture, we hand-code responses to open-ended
+questions to ﬂag any instances in the text where exec-
+utives describe the challenges they faced. We then sys-
+tematically categorize those into three domains: organiza-
+tional, investor, and leadership. We summarize these ﬁnd-
+ings in the text (not shown in a table). While the orga-
+nizational elements are consistent with Schein (2017) , our
+qualitative evidence of executive self-blame and the inﬂu-
+ence of investors is new.
+First, the open-ended responses suggest underinvest-
+ment in culture is associated with: (i) setting cultural
+goals and objectives; (ii) measuring culture; (iii) not having
+strategies or appropriate reward and punishment systems
+to correct for cultural problems; (iv) diﬃculties establish-
+ing group boundaries for employees and contractors; and
+more generally, (v) issues associated with the distribution
+of power, trust, and openness among employees.
+Second, executives also believe that lack of investor
+support for culture initiatives contributes to an ineffec-
+tive culture. Some executives noted a tension between de-
+livering growth for investors and culture. In this context,
+one executive notes that, “we are very thoughtful in terms
+of growth and recognize that growing too fast will erode
+the company culture. We are particular about the projects
+we accept and value quality over quantity.” Executives
+also blame impatient investors. This set of results suggests
+that managers believe that investors inﬂuence culture, and
+therefore suggests that in some cases investors may need
+to change their stance about culture to achieve greater in-
+vestment returns.
+Third, some executives blame themselves and reveal
+how their own personal characteristics and beliefs can pre-
+vent meaningful investment in culture. A few executives
+report that their incentives are not aligned with investing
+in culture because doing so is a high-risk, long-term ac-
+tion. Instead, these executives seek to maintain the status
+quo by looking for low-risk, near-term outcomes to avoid
+failures and the drastic reactions that come with failures.
+Executives also commonly note how their personal actions
+are inﬂuenced or constrained by other factors such as: (i)
+a belief that not investing in culture is standard for the
+industry; (ii) capacity constraints such as limited time or
+resources available to coordinate an improvement in cul-
+ture; and (iii) a lack of a catalyst to drive the necessary
+changes.
+4.2. The relation between corporate culture and incentive
+compensation
+Beyond the roles played by leadership, investors, and
+organizational factors, we also study the inﬂuence of
+formal policies (e.g., compensation and corporate gover-
+nance). Panel B of Table 7 presents evidence of a bifur-
+cated inﬂuence of formal policies. For example, in the sec-
+569
+
+===== PAGE 19 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+ond row of Panel B, 38% of executives strongly agree or
+agree that formal policies work against the intended cul-
+ture, while another 39% of executives feel the opposite
+and strongly disagree or disagree that formal policies work
+against the intended culture. In fact, when we evaluate the
+pecking order of what is working against the culture by
+looking exclusively at those ﬁrms not tracking their stated
+values, 73% of executives agree or strongly agree that cor-
+porate polices work against the culture (see Columns 2 and
+3 in Panel C).
+The ﬁnal question in Panel D of Table 7 explores the
+potential negative inﬂuence of formal institutions in more
+detail. Question (Q13a/b) asks “what are the most impor-
+tant ways incentive compensation [or in a separate ques-
+tion, the ﬁnance function] works against your corporate
+culture?”8 We learn that some executives think incentive
+compensation works against the effectiveness of culture
+by attracting and/or retaining the wrong type of people
+to the ﬁrm (47%), focusing employees too much on short-
+term objectives (27%), and discouraging risk-taking (26%).
+Taken together with the results above, these results sug-
+gest that while formal structures such as incentive com-
+pensation may have a limited direct role in setting com-
+pany culture (Panel A), they may nonetheless have impor-
+tant indirect relationships that limit the effectiveness of the
+chosen culture (Panels B, C, and D).
+The insight from the survey that executives think that
+incentive compensation at times works against corporate
+culture is perhaps surprising because a central tenet of
+economics is that incentives promote better performance
+through enhanced effort ( Gibbons, 1998; Lazear, 20 0 0 ). To
+explore this issue further, in Table 8 we examine the im-
+portance of the underlying cultural values and norms, con-
+ditional on survey responses about incentives and compen-
+sation.
+The ﬁrst three columns of Table 8 summarize measures
+of ﬁrm culture, conditional on executives’ views of the
+possibility that corporate policies (such as compensation)
+work for or against intended culture (Q4d). Executives in-
+dicate their degree of agreement on a scale ranging from
+strongly disagree to strongly agree. Column 1 summarizes
+cultural values among the executives that disagree with
+this statement (i.e., do not perceive that ﬁrm policies pre-
+vent culture from being exactly where it should be). Col-
+umn 2 represents executives who are neutral (i.e., do not
+think ﬁrm polices inﬂuence culture), and Column 3 rep-
+resents executives who agree or strongly agree that ﬁrm
+policies work against intended culture. The rows report the
+mean presence of each cultural value and norm for the
+ﬁrms conditional on the categorization in the columns. Re-
+call that we have scaled cultural values to range from 1,
+which indicates the presence of that value, to −1, which
+indicates the presence of the opposite value; a 0 indicates
+no mention of a particular value. Cultural norms also range
+8 To reduce the time required to complete the survey, we randomly se-
+lected approximately 40% of respondents to answer the question about
+incentive compensation and another 40% to answer with respect to the
+ﬁnance function. The presented results are for ﬁrms at which the incen-
+tive compensation (or separately, the ﬁnance function) works against the
+effectiveness of the culture.
+from 1 to −1. Therefore, among respondents who disagree
+or strongly disagree to the statement posed in Q4d, the
+mean score of 0.30 at the top of Column 1 is the average
+across the −1, 0, and 1 occurrences of the cultural value
+of adaptability (i.e., 30% more respondents are likely indi-
+cate a 1, that adaptability is a cultural value, than indicate
+−1.) Comparing this 0.30 to the 0.03 at the top of Column
+3 indicates that, among the subsample of ﬁrms that dis-
+agree with the Q4d statement that compensation works
+against the intended culture, more executives aﬃrmatively
+indicate that their company exhibits the cultural value of
+adaptability.
+Table 8 reports statistical signiﬁcance in two ways. First,
+a univariate signiﬁcance level of a t -test of the null hy-
+pothesis that the neutral and agree column group means
+are equivalent is shown with ∗’s. This analysis documents
+that those who agree that ﬁrm policies work against the
+intended culture are less likely to indicate the presence
+of cultural values or norms (i.e., Column 3 mean score is
+less than Column 2 mean score), with the univariate differ-
+ences being signiﬁcant in many cases. 9 Second, the cross
+(+) reports statistical signiﬁcance of the same difference
+between neutral and agree groups for each cultural value
+or norm, but from a multivariate regression conditioning
+on survey noise, executive, and ﬁrm characteristics (i.e. 20
+regressions, one for each cultural value, norm, aggregate
+measure of culture, and status of culture in practice). 10
+Adding these controls soaks up some of the cultural dif-
+ferences between the neutral and agree groups in the indi-
+vidual values and norms, but signiﬁcant differences remain
+in three cases: the cultural elements of adaptability, agree-
+ment about goals and values, and trust are less likely to be
+present in ﬁrms where corporate policies like compensa-
+tion are thought to work against the culture. It is not clear
+whether the differences between the ∗ and + measures of
+signiﬁcance are due to controls soaking up real aspects of
+culture or a lack of statistical precision at the individual
+value and norm levels. Towards the bottom of the table,
+adding controls does not affect the statistical signiﬁcance
+of differences between the neutral and agree groups for
+the aggregate cultural value and norm measures, the ex-
+tent to which culture tracks stated values, or whether cul-
+ture is where it should be.
+As mentioned, the three individual elements of culture
+that are statistically signiﬁcant are adaptability, agreement
+about goals and values, and trust. These cultural elements
+align well with dimensions highlighted as important in the
+literature on formal vs. informal contracting ( Baker et al.,
+2002; Hart and Moore, 2008 ), offering one potential inter-
+9 In untabulated analyses, we also observe consistent and signiﬁcant
+differences when we examine Q13, which asks a similar question about
+incentive compensation but asks instead if it reinforces the effectiveness
+of the culture rather than works against. The results are similar to those
+reported here.
+10 Speciﬁcally, each regression includes controls for noise (date, response
+delay, job title, and source of email), demographic (proﬁtability, employee
+turnover, CEO turnover, family ﬁrm, ﬁrm location, CEO age, CEO tenure,
+CEO incentive compensation, revenue, number of employees, industry
+competitiveness, credit rating), and Q1 controls (sentiment, uninforma-
+tive response, number of cultural values, culture is changing, culture is
+mixed), as well as industry ﬁxed effects
+570
+
+===== PAGE 20 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 8
+The Relation Between Incentive Compensation and Cultural Values and Norms.
+Firms categorized by whether executives agree or
+disagree that ﬁrm policies (e.g., compensation) work
+against the intended culture (Q4d)
+Firms categorized by whether
+executives perceive incentive
+compensation to be inﬂuential
+in setting the culture (Q5)
+Firms categorized
+by CEO incentive
+pay (Demographics)
+Firms categorized by
+managerial incentive
+pay (Demographics)
+Disagree, Agree,
+Strongly Disagree Neutral Strongly Agree No Yes Low High Low High
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+Cultural values (Q1, Q14)
+Adaptability 0.30 0.27 0.03 ∗∗∗ + 0.22 0.15 0.22 0.23 0.17 0.27 ∗∗
+Collaboration 0.36 0.25 0.06 ∗∗∗ 0.25 0.28 0.26 0.28 0.21 0.34 ∗∗∗
+Community-oriented 0.45 0.28 0.02 ∗∗∗ 0.30 0.23 0.34 0.32 0.29 0.34
+Customer-oriented 0.22 0.18 0.11 ∗∗ 0.18 0.21 0.19 0.22 0.22 0.21
+Detail-oriented 0.18 0.10 0.05 0.13 0.09 0.11 0.17 ∗∗ 0.15 0.14
+Integrity 0.28 0.16 0.09 ∗∗ 0.23 0.15 ∗∗ + 0.22 0.25 0.22 0.24
+Results-oriented 0.53 0.39 0.23 ∗∗∗ 0.41 0.45 0.40 0.49 ∗∗ 0.41 0.48
+Cultural norms (Q6)
+Agreement about goals and values 0.65 0.52 0.30 ∗∗∗ + 0.55 0.44 ∗∗ 0.52 0.62 ∗∗ + 0.52 0.60 ∗∗
+Consistency and predictability of actions 0.49 0.30 0.24 0.39 0.37 0.45 0.40 0.38 0.45 ∗
+Coordination among employees 0.67 0.48 0.39 0.57 0.57 0.60 0.64 0.56 0.66 ∗∗
+Decision-making reﬂects long-term 0.66 0.46 0.32 ∗∗ 0.53 0.54 0.54 0.62 ∗ 0.51 0.60 ∗∗ +
+Employees comfort in suggesting critiques 0.51 0.41 0.18 ∗∗∗ 0.43 0.32 ∗ 0.46 0.46 0.38 0.50 ∗∗
+New ideas develop organically 0.53 0.42 0.26 ∗∗∗ 0.46 0.28 ∗∗∗ + 0.47 0.48 0.40 0.52 ∗∗∗ +
+Trust among employees 0.78 0.68 0.45 ∗∗∗ + 0.68 0.65 0.72 0.75 0.68 0.78 ∗∗
+Urgency with which employees work 0.44 0.35 0.19 ∗∗∗ 0.37 0.40 0.41 0.41 0.35 0.45 ∗∗
+Willingness to report unethical behavior 0.50 0.34 0.32 0.43 0.35 + 0.42 0.46 0.44 0.43
+Aggregate cultural measures
+Agg. cultural values (Q1, Q14) 0.33 0.23 0.09 ∗∗∗ + 0.25 0.22 0.25 0.28 ∗ 0.24 0.29 ∗∗
+Agg. cultural norms (Q6) 0.58 0.44 0.30 ∗∗∗ + 0.49 0.44 0.51 0.54 0.47 0.55 ∗∗∗
+Culture in practice (1 = No. 4 = Yes)
+Tracks stated values (Q4) 3.61 3.18 2.74 ∗∗∗ + 3.31 3.13 ∗∗ + 3.28 3.36 3.23 3.40 ∗∗∗
+Culture is exactly where it should be (Q4b) 2.84 2.52 2.17 ∗∗∗ + 2.75 2.65 2.75 2.81 2.67 2.87 ∗∗∗
+Observations 430 267 423 1190 158 411 565 439 519
+This table presents the prominence of cultural values and norms conditional on various aspects of incentive compensation. The actual question is listed, with the ﬁrms are grouped into columns based on their
+answers to a given question. Recall that each cultural value and norm is assigned a value of −1, 0,or 1; the number presented is the average across ﬁrms in a given column. For example, the average prominence
+of Adaptability is 0.30 among ﬁrms that disagree or strongly disagree that company policies like compensation work against the intended corporate culture (in Column 1). The sample consists of survey responses
+from executives at public and private North American ﬁrms. For a detailed description of each variable, see the deﬁnitions in Appendix B . ∗∗∗ , ∗∗ and ∗ indicate p-values under the assumption of a single test of
+1%, 5%, and 10%, respectively, for univariate differences across columns. + indicates that the element of culture is statistically signiﬁcant in multiple regression format with executives’ responses to the incentive
+compensation question as the dependent variable in a speciﬁcation that controls for noise, executive, and ﬁrm characteristics and includes industry ﬁxed effects. For details on all survey questions, please see
+Appendix A .
+571
+
+===== PAGE 21 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+pretation of why this set of executives view their compen-
+sation system as working against their culture. 11
+Columns 4 and 5 of Table 8 investigate a slightly differ-
+ent view of incentive compensation, namely, whether ex-
+ecutives believe that incentive pay is inﬂuential in setting
+the current culture (Q5). Given that incentive compensa-
+tion can directly or indirectly change the culture, the anal-
+ysis in Columns 4 and 5 is intended to determine whether
+direct inﬂuence may occur for certain elements of culture.
+Again columns condition on the response to Q5 (Column 4
+is No; Column 5 is Yes) and rows report means of the cul-
+tural measures for the set of ﬁrms in each column. The ∗’s
+report statistical signiﬁcance in the univariate comparison
+of the difference between the column group means. The
+cross (+) reports the same difference from a multivariate
+regression with controls analogous to the one described
+two paragraphs above.
+In this case of compensation having a direct inﬂuence
+in setting culture, we see that only a few individual norms
+or values are signiﬁcant, but they are notable. For exam-
+ple, the cultural value of integrity and the cultural norm of
+being willing to report unethical behavior are signiﬁcantly
+weaker as evidenced by a low score when incentive pay is
+inﬂuential in setting the culture. This implies that incen-
+tive pay may be an important company policy to monitor
+when seeking to enhance ethics and integrity within an or-
+ganization.
+Finally, in the rightmost columns of Table 8 , we again
+report group means in each row, but now condition on de-
+mographic information reﬂecting the magnitude of incen-
+tive pay for CEOs (Column 6 is Low; Column 7 is High)
+and managers (Column 8 is Low; Column 9 is High). Two
+interesting patterns emerge. First, univariate t-tests do not
+indicate much signiﬁcant evidence that the likelihood of
+particular values or norms existing at a company varies
+conditional on the importance of CEO incentive pay. How-
+ever, some cultural values and many norms are statistically
+more likely to be present at ﬁrms with high managerial
+incentive pay. This culture-based difference between CEOs
+and managers is intriguing because it suggests changing
+how managerial pay is structured is likely to be more ben-
+eﬁcial than changing executive compensation.
+Second, in both the univariate and the multivariate set-
+ting, conditional on higher managerial incentive pay in
+Column 9 of Table 8 , cultural norms are statistically sig-
+niﬁcant more frequently than cultural values. This ﬁnding
+that cultural norms are more likely to be strong in ﬁrms
+with high managerial incentive compensation, in combi-
+nation with other ﬁndings in the paper that link the im-
+portance of establishing strong cultural norms to desirable
+business outcomes, suggests that managerial compensation
+is likely to be an important ﬁrm policy that leaders looking
+to improve culture may want to target.
+Taken together, the tabulated data and the textual sum-
+maries of open-ended responses demonstrate that a mul-
+11 In the relational contracting literature, ﬁrms use their detailed knowl-
+edge of their speciﬁc situation to adapt to new information; however,
+such contracts cannot be enforced by a third party and so must be self-
+enforcing. In practice, this means the relationship must be clearly under-
+stood ( goal agreement ) and parties must be trusted not to renege.
+titude of factors can reinforce or undermine the effective-
+ness of corporate culture. Given that executives in our sur-
+vey indicate that designing and implementing mechanisms
+to help leadership align cultural values, norms, and formal
+institutions would be beneﬁcial, future research should ex-
+plore these issues. For example, research could examine (i)
+whether incentives impede culture or complement it, es-
+pecially in settings that allow for causal inference, or (ii)
+examine the nuanced relation between stock compensa-
+tion grants to rank-and-ﬁle employees, the effectiveness
+of whistle-blower policies or speak-up initiatives, and a
+value-enhancing culture.
+5. Validation of survey responses
+By using a survey to measure corporate culture, we gain
+direct insights from the executives who are most respon-
+sible for setting the culture about their views of culture
+at their ﬁrms. Yet this unique beneﬁt of surveys could be
+offset by three primary concerns: (i) that the respondents
+may be a selected sample of executives interested in cul-
+ture, (ii) that survey answers could be self-serving, and (iii)
+that observed correlations may be driven by some unob-
+served common characteristic (e.g., product market success
+of the ﬁrm). We consider each of these concerns in subsec-
+tions below.
+5.1. Are respondents a selected sample of executives?
+To understand the extent to which conducting a survey
+about “culture” primed respondents to make culture seem
+extra important, we included a single question about value
+creation on a later Duke quarterly CFO survey. This quar-
+terly survey explored various corporate ﬁnance issues and
+included only one question with one potential response re-
+lated to culture. Speciﬁcally, we asked “Of all the things
+that contribute to long-term ﬁrm value, for my ﬁrm I rank
+the following items as a ‘Top 3 Value Driver.”’ Other than
+as one choice on this question, the words corporate cul-
+ture did not appear on this additional survey. Based on
+484 responses, 47.9% of respondents listed culture in the
+Top 3 value creators among 12 choices. The conﬁdence in-
+terval on this mean response puts it within the range of
+the 53.5% elicited in Q3 of the culture survey. In addition,
+of all possible choices, culture was the most popular, with
+strategic plan coming in second at 39.7%. Further, culture
+was deemed more important than CEO leadership, incen-
+tive compensation, and corporate governance. These addi-
+tional survey results are summarized in Table 9 .
+While the evidence suggests that our sample of sur-
+vey responses do not appear to suffer from selection bias,
+we subject our data to additional sub-sample tests. The
+idea being that if selection is an issue, and two subsam-
+ples exhibit differential selection, then each sub-sample
+would show systematically different results on the ques-
+tions where selection matters. First, we consider the extent
+of participation bias by comparing sub-samples: (i) regular
+vs. occasional CFO survey responders; (ii) early vs. late re-
+sponders; (iii) by job title; (iv) by email solicitation lists;
+and (v) by who is inﬂuential in setting the culture. The re-
+sults from these tests are reported in Appendix D.
+572
+
+===== PAGE 22 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 9
+External Validation: Question on Quarterly Survey.
+CFO Quarterly Survey Question, “Of all the things that contribute
+to long-term ﬁrm value, for my ﬁrm I rank the following items as a top 3 value driver”
+CFO Quarterly Survey, Culture Survey Q3,
+Top 3 Value Driver Top 3 Value Driver
+(1) (2)
+Corporate Culture 47.9% 53.5%
+Strategic Plan 39.7%
+Operating Plan 39.0%
+CEO 37.4%
+Marketing 20.5%
+Production Process 19.0%
+Finance Function 17.6%
+Incentive Compensation 14.3%
+Regulatory Environment 14.0%
+Human Resources 11.4%
+Governance/Board 8.9%
+Other 8.0%
+Obs. 484 1348
+Column 1 of this table presents the response to a one-off culture question included on the
+2016Q3 Duke Quarterly CFO Global Business Outlook survey. The responses indicate that
+47.9% of CFOs rank corporate culture as a Top 3 value driver. This is consistent with the
+53.5% in Column 2 that reﬂects the percentage of respondents to culture survey Q3, “In
+terms of all things that make your ﬁrm valuable, where would you place corporate culture?”
+where answers include Top 3, Top 5, Top 10, or Not in Top 10. This 53.5% is also reported
+in Table 4 of this paper.
+In most cases, we see little statistical difference. When
+conditioning on job title, we see that CEOs more frequently
+mention speciﬁc cultural values and norms but the impor-
+tance of culture is similar to other executives. Not observ-
+ing systematic differences in executives’ perceptions of the
+value of culture across executives is noteworthy, because it
+suggests some of our key descriptive statistics are robust to
+many types of conditioning. When examining by email so-
+licitation list, CFO magazine respondents perceive culture
+as less important but are also less likely to indicate that
+their culture very closely tracks their stated ﬁrm values.
+There are also some directional differences in perceptions
+for actions inﬂuenced by culture across the email lists, but
+the directions vary as positive or negative. To account for
+these minor differences, in all multivariate regression set-
+tings, we include job title and email source as control vari-
+ables (which we label as “noise” variables in the tables).
+5.2. Do executives’ views accurately reﬂect corporate culture?
+An important survey design issue is how to interpret
+the views of executives about culture. Are the self-reported
+views biased? Are the executives accurately representing
+culture or are they telling self-serving stories? To assess
+potential measurement error associated with executives’
+self-reporting, we cross-check our survey measures using
+internal and external data. For example, using a sample
+of respondents that identiﬁed themselves, we match their
+survey responses to 10 independent datasets (Audit Ana-
+lytics, Compustat, Glassdoor, U.S. Patent and Trademark Of-
+ﬁce data, KLD, Sustainalytics, Brand Ranking, Best Places to
+Work, RepRisk, company websites via Wayback Machine)
+to provide external validity to our survey results. More
+than two-thirds (68%) of executives provide their email ad-
+dress; however, the external validation tests can only be
+performed on public ﬁrms, which limits our sample size to
+15% of the full sample.
+5.2.1. Internal data
+We examine two small sub-samples for internally con-
+sistent responses: (i) executives that both completed the
+survey and conducted an interview, and (ii) ﬁrms from
+which multiple executives responded. In each case, we ﬁnd
+pairwise positive correlations that suggest that executives’
+responses are internally consistent. We also ask a similar
+question twice on the survey (Q4d and Q13 about incen-
+tive compensation), but one version has a negative conno-
+tation and one has a positive connotation. This allows us to
+gauge how well the survey is actually measuring what we
+want it to measure, and again, we ﬁnd evidence to suggest
+internal validity.
+5.2.2. Glassdoor data
+We ﬁrst explore the reliability of our survey measure
+of an effective culture from Q4b “Our ﬁrm’s corporate cul-
+ture: 4 = is exactly where it should be, . . . 1 = needs
+a substantial overhaul.” The higher the ranking on this
+scale, the more effective the current culture is. Figure 2
+illustrates the relation between our measure of an effec-
+tive culture from the survey and an external rating of cul-
+ture, which we obtain from crowd-sourced employee re-
+views of culture on Glassdoor. The Glassdoor reviews pro-
+vide star ratings for the company overall, for a subcategory
+labeled “Culture & Values,” and for textual responses about
+the pros and cons of the company. This matched survey-
+Glassdoor sample is limited to 171 ﬁrms. The line of best
+ﬁt shows a signiﬁcant positive relationship. The rank-and-
+ﬁle employees who review their ﬁrm on Glassdoor per-
+ceive a culture that is generally similar in effectiveness to
+that described by corporate executives. While Glassdoor
+573
+
+===== PAGE 23 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+-1 -.5 0 .5 1
+Culture is where it should be (Q4b)
+2 2.5 3 3.5 4 4.5 5
+Glassdoor culture rating
+Source: Glassdoor data that match 171 survey responses from executives at public firms.
+Fig. 2. External validation of executive responses to Q4b “Our ﬁrm’s corporate culture is exactly where it should be”This ﬁgure is a binned scatterplot
+of the relationship between our survey measure from Q4b, “Our ﬁrm’s corporate culture: 4 = is exactly where it should be, . . . , 1 = needs a substantial
+overhaul” and an external culture rating. The external culture rating is derived from crowd-sourced employee reviews on Glassdoor. Each dot shows the
+average survey status of culture for a given external culture rating, after controlling for the number of current employee reviews in the survey year. The
+plotted line represents the best linear approximation to the conditional expectation function. A positive slope indicates that executives’ views of culture
+from our survey generally align with rank-and-ﬁle employees’ views of the same ﬁrm’s culture.
+and other data can be used to analyze culture, we em-
+phasize that our survey also elicits executives’ views about
+which elements of culture are most important, when, and
+why. These extra dimensions provide insights that go well
+beyond Glassdoor data.
+In Table 10 we further analyze the statistical relation
+between our survey measure of culture and the Glassdoor
+culture ratings. We focus on coeﬃcient estimates from us-
+ing an OLS regression with noise and additional question
+controls. 12
+In Panel A of Table 10 , the estimate in Column 1 in-
+dicates that our measure of an effective culture is posi-
+tive and signiﬁcantly correlated with the external Glass-
+door culture measure. The point estimate shows that a
+0.247 standard deviation increase in culture being where
+12 Appendix Table C.7 summarizes these control variables, which include
+response date ﬁxed effects, the delay in response to the solicitation email,
+indicator variables for various job titles (e.g., CEO, CFO, other executive),
+and the email source list (i.e., Duke, Columbia, CFO magazine). The date
+and delay variables help to account for potential participation bias (ex-
+cited to respond vs. wants to get the last word in). The job title and email
+source list help to account for potential selection. Additional Q1 controls
+come from the RAs hand-coding of the open-ended responses and include
+sentiment, informativeness, number of cultural values, an indicator for a
+changing culture, and an indicator for a mixed culture. In our most satu-
+rated speciﬁcation, we also include demographic controls. For example, in
+companies that pay their executives more, managers may be happier and
+thereby choose to answer the survey questions more positively. The de-
+mographic variables include categorical responses related to proﬁtability,
+employee turnover, CEO turnover, family-ownership, ﬁrm location, CEO
+age, CEO tenure, CEO compensation, corporate revenue, number of em-
+ployees, industry competitiveness, and credit rating.
+it should be (as measured by our survey in Q4b) is asso-
+ciated with a one star increase in the Glassdoor culture
+star rating. This result holds even given the small num-
+ber of observations and is robust to trimming the lowest
+1% of 5% of observations. We present results excluding the
+ﬁrms with the ﬁve lowest Glassdoor culture ratings (Col-
+umn 2) and limiting the sample to only those ﬁrms with
+more than 50 current employee reviews in the survey year
+(Column 3). The result is robust to the inclusion of the full
+battery of demographic controls (Column 4). Given that de-
+mographic controls include proﬁtability, industry competi-
+tiveness, and credit rating, which are all related to prod-
+uct market success, this suggests the measures of cultural
+effectiveness are capturing something beyond those suc-
+cess factors. Finally, we show the correlation is robust to
+alternative Glassdoor metrics such as the overall ﬁrm rat-
+ing, the net promoter score, and the approval of the CEO
+(Column 5 through 7). Overall, this set of tests helps to
+rule out the possibility that an outlier or noise is driving
+the observed relationship between Glassdoor and the sur-
+vey responses. 13
+In addition, we use the Glassdoor data to evaluate the
+extent to which the pros and cons text from Glassdoor
+reviews match to the cultural values described by execu-
+tives in Q1 and Q14. To transform the text of the Glassdoor
+13 Our tests report p-values based on an assumption of a single test.
+Because there are multiple comparisons, following recommendations out-
+lined in Harvey et al. (2016) and Harvey (2017) , we mostly focus on the
+results that are signiﬁcant at the 99th percentile.
+574
+
+===== PAGE 24 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 10
+Externally Validating Survey-measured Culture Against Glassdoor and Company Website Culture.
+Glassdoor Glassdoor Glassdoor
+Glassdoor culture rating ﬁrm rating net promoter score approves of CEO
+Panel A. Glassdoor comparison (1) (2) (3) (4) (5) (6) (7)
+Culture is where it should be (Q4b) 0.247 ∗∗∗ 0.168 ∗∗ 0.362 ∗∗∗ 0.267 ∗∗∗ 0.170 ∗∗∗ 0.106 ∗∗ 0.119 ∗∗
+(0.068) (0.074) (0.095) (0.057) (0.038) (0.050) (0.057)
+Noise, question, and number of review controls Yes Yes Yes Yes Yes Yes Yes
+Exclude ﬁrms with ﬁve lowest Glassdoor culture ratings No Yes No No No No No
+Exclude ﬁrms with less than 50 reviews No No Yes No No No No
+Additional survey controls No No No Yes Yes Yes Yes
+Industry ﬁxed effects Yes Yes Yes Yes Yes Yes Yes
+Observations 171 166 80 171 171 171 169
+Adjusted R -squared 45.8% 40.6% 77.5% 69.7% 75.0% 75.8% 74.8%
+Cultural values executives describe (Q1, Q14)
+Panel B. Company website comparison (1) (2) (3) (4) (5) (6) (7)
+Independent variable = Advertised cultural value
+Adaptability 0.333
+(0.211)
+Collaboration 0.099
+(0.089)
+Community-oriented −0.002
+(0.191)
+Customer-oriented 0.025
+(0.234)
+Detail-oriented −0.121
+(0.181)
+Integrity −0.240 ∗∗
+(0.094)
+Results-oriented −0.185
+(0.190)
+Noise and question controls Yes Yes Yes Yes Yes Yes Yes
+Additional survey controls Yes Yes Yes Yes Yes Yes Yes
+Industry ﬁxed effects Yes Yes Yes Yes Yes Yes Yes
+Observations 188 188 188 188 188 188 188
+Adjusted R -squared 69.5% 73.9% 81.5% 72.2% 67.4% 69.4% 73.3%
+This table provides a robustness check by comparing our survey measures of culture to independent, external data sources on culture. In Panel A, we
+examine how our survey responses relate to an external culture rating derived from crowd-sourced employee reviews on Glassdoor. The key explanatory
+variable is Q4b, “Our current culture: 4 = is exactly where it should be, . . . , 1 = needs a substantial overhaul.” Additional explanatory variables
+include the number of employee reviews in the survey year, noise controls (date, response delay, job title, and source of email), additional Q1 controls
+(sentiment, uninformative response, number of cultural values, culture is changing, culture is mixed), and additional survey controls (proﬁtability,
+employee turnover, CEO turnover, family ﬁrm, ﬁrm location, CEO age, CEO tenure, CEO incentive compensation, revenue, number of employees, industry
+competitiveness, credit rating). In Panel B, we connect the cultural values extracted from the open-ended survey questions to those advertised on the
+company websites. Robust standard errors clustered by industry are in parentheses under coeﬃcient estimates. For a detailed description of each
+variable, please see the deﬁnitions in Appendix B . ∗∗∗ , ∗∗ and ∗ indicate p-values under the assumption of a single test of 1%, 5%, and 10%, respectively.
+reviews into cultural values, we follow the approach in
+Popadak (2016) and Grennan (2020) . Speciﬁcally, we create
+a normalized vector of lemmatized word counts from the
+text in the year of the survey for both the pros and the
+cons. We then calculate the cosine similarity between the
+Glassdoor vector and lemmatized vector of culture words
+for the pros and the cons separately. Given that the text
+may contain synonyms or antonyms for the value, syn-
+onyms are assigned a positive count and antonyms a neg-
+ative count. We subtract the cosine similarity score for
+the cons from the cosine similarity score for the pros to
+arrive at the ﬁnal value. The word list is the same set
+of synonyms and antonyms for nouns, verbs, adjectives,
+and word phrases associated with speciﬁc cultural values
+that the RAs received as part of their instructions for how
+to code the cultural values as discussed previously. 14 Ap-
+14 The full set of culture words, the sign, the associated cultural values,
+the word sense from WordNet, and part of speech are available upon re-
+quest.
+pendix Table C.8 shows that three of the seven cultural
+values on Glassdoor are signiﬁcantly associated with the
+survey equivalent (adaptability, collaboration, and results-
+orientation) and that these correlations exhibit similar pat-
+terns in more saturated regressions. This exercise suggests
+that the cultural values we measure with the survey are
+reasonably aligned with the culture lived by rank-and-ﬁle
+employees.
+5.2.3. Company websites
+Next, in Panel B of Table 10 we consider corporate web-
+sites as a source of external validation. Following the ap-
+proach of Guiso et al. (2015b) , we examine whether cor-
+porate websites convey information about the culture that
+the executives choose to advertise and potentially aspire
+to have. To analyze the advertised values, we look at the
+company’s website using archive.org to collect the relevant
+cultural values as of the survey date. A corporate website
+typically has one or more sections dedicated to the com-
+pany’s values, culture and working environment. We col-
+575
+
+===== PAGE 25 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+-1 -.5 0 .5 1
+Culture tracks stated values (Q4)
+0 2 4 6 8 10
+Sum of differences between survey-based and website-based culture
+Source: Company website data that match to 185 executive survey responses.
+Fig. 3. External validation of Q4 “How closely does your current corporate culture track with your stated ﬁrm values?” This ﬁgure is a binned scatterplot
+of the relationship between our survey measure from Q4, “How closely does your current corporate culture track with your stated ﬁrm values? 4 = very
+closely, . . . , 1 = not at all” and a measure of external alignment derived from corporate websites. Speciﬁcally, we take the sum of the absolute value of
+the difference between whether a cultural value is espoused on the corporate website versus whether the cultural value is described in the executive’s
+textual descriptions of the current corporate culture in Q1 and Q14 on the survey. Each dot shows the average tracking with stated values for a given
+alignment with externally espoused values. The plotted line represents the best linear approximation to the conditional expectation function. A negative
+slope indicates that when an executive says on the survey that the current culture is not aligned with aspirational culture ( y -axis), the ﬁrm’s website-stated
+culture differs the most from survey-measured culture ( x -axis). This is consistent with websites reﬂecting aspirational culture and executive responses to
+our survey reﬂecting their views on the actual current culture.
+lect all the values listed in all these sections and then,
+using the same team of RAs, hand-code the cultural val-
+ues from the website into the same set of cultural values
+that we extract from the executives’ open-ended survey re-
+sponses. Then, we analyze the statistical relation between
+the advertised values of the website and the executives’
+perceptions of the current values. We ﬁnd little statistical
+evidence that the espoused values on the website are pos-
+itively related to the values described by the executives. In
+fact, one of the seven cultural values exhibit a signiﬁcant,
+negative correlation (integrity). The same pattern emerges
+regardless of whether we include or exclude demographic
+controls. A potential explanation for this apparent discon-
+nect may be strategic misrepresentation on the website to
+appeal to investors, regulators, and/or potential employees.
+A more benign interpretation is that website values are as-
+pirational and not yet achieved. In any case, the differences
+seem to go in the direction of our survey respondents be-
+ing relatively candid at times in supplying potentially un-
+ﬂattering information about their ﬁrms.
+Next, we further evaluate the relationship between the
+external values advertised on company websites and the
+survey responses by estimating the relation between cur-
+rent culture tracking stated values and the number of mis-
+aligned cultural values, which we deﬁne as the sum of
+the absolute value of the differences between the cultural
+value indicated on the website and the cultural value indi-
+cated by the executives on the survey. Figure 3 illustrates
+the relationship between the misaligned values and the
+survey question Q4, “How closely does your current corpo-
+rate culture track with your stated ﬁrm values?” The line
+of best ﬁt depicts a clear negative relation, which indicates
+that when the executive describing the current culture per-
+ceives it differently than what is described on the corpo-
+rate website, that executive is also much more likely to say
+that the current culture does not track aspiration. That is,
+when the executive says actual culture is not aligned with
+aspirational culture, this is exactly when the correlation
+between our survey measure of culture differs most from
+website culture. Appendix Table C.9 reports formal esti-
+mates from multivariate regressions with noise and sur-
+vey question controls. Taken together, this visual and mul-
+tivariate evidence is consistent with the survey responses
+reﬂecting current culture at the ﬁrm and website-declared
+culture reﬂecting not-yet-achieved or aspirational culture.
+5.2.4. Business outcomes from Compustat
+Next, we augment our external validation of the exec-
+utives’ descriptions of culture by linking our survey mea-
+sures to external measures of business outcomes. Given
+that the vast majority of executives believe that improving
+culture increases ﬁrm value, we focus on the link between
+culture and value. First, we explore the relation between
+an executive reporting that his or her culture is exactly
+where it should be (Q4b), which is a measure of culture ef-
+fectiveness, and publicly available ﬁnancial data. This sam-
+576
+
+===== PAGE 26 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table 11
+Externally Validating Survey-measured Culture Against Tobin’s Q and Total Q.
+Survey year 2-year avg. 3-year avg. 4-year avg. 5-year avg.
+Panel A. Dependent variable = Tobin’s Q (1) (2) (3) (4) (5)
+Culture is where it should be (Q4b) 0.402 ∗∗ 0.434 ∗∗ 0.453 ∗∗ 0.440 ∗∗ 0.425 ∗∗
+(0.184) (0.181) (0.178) (0.175) (0.170)
+Firm-level Compustat controls Yes Yes Yes Yes Yes
+Formal institution and leadership controls Yes Yes Yes Yes Yes
+Noise and question controls Yes Yes Yes Yes Yes
+Industry ﬁxed effects Yes Yes Yes Yes Yes
+Observations 158 158 158 158 158
+Adjusted R -squared 62.2% 64.0% 63.9% 62.6% 62.1%
+Survey year 2-year avg. 3-year avg. 4-year avg. 5-year avg.
+Panel B. Dependent variable = Total Q (1) (2) (3) (4) (5)
+Culture is where it should be (Q4b) 0.386 ∗ 0.468 ∗∗ 0.514 ∗∗ 0.499 ∗∗ 0.482 ∗∗
+(0.225) (0.232) (0.223) (0.218) (0.219)
+Firm-level Compustat controls Yes Yes Yes Yes Yes
+Formal institution and leadership controls Yes Yes Yes Yes Yes
+Noise and question controls Yes Yes Yes Yes Yes
+Industry ﬁxed effects Yes Yes Yes Yes Yes
+Observations 146 146 147 147 149
+Adjusted R -squared 72.1% 73.3% 72.2% 72.0% 70.5%
+Survey year 2-year avg. 3-year avg. 4-year avg. 5-year avg.
+Panel C. Dependent variable = Tobin’s Q (1) (2) (3) (4) (5)
+Aggregate cultural values (Q1, Q14) −0.084 −0.052 0.063 0.136 0.153
+(0.305) (0.302) (0.300) (0.290) (0.284)
+Aggregate cultural norms (Q6) 0.488 ∗∗∗ 0.530 ∗∗∗ 0.515 ∗∗∗ 0.467 ∗∗∗ 0.427 ∗∗
+(0.185) (0.183) (0.182) (0.176) (0.172)
+Best place to work for indicator 0.116 0.033 −0.025 −0.067 −0.066
+(0.453) (0.449) (0.445) (0.432) (0.422)
+Glassdoor culture rating 0.496 ∗∗∗ 0.461 ∗∗ 0.444 ∗∗ 0.432 ∗∗ 0.396 ∗∗
+(0.181) (0.179) (0.178) (0.172) (0.168)
+Cultural values advertised on website −0.401 −0.332 −0.403 −0.461 −0.439
+(0.491) (0.487) (0.482) (0.468) (0.457)
+Firm-level Compustat controls Yes Yes Yes Yes Yes
+Formal institution and leadership controls Yes Yes Yes Yes Yes
+Noise and question controls Yes Yes Yes Yes Yes
+Industry ﬁxed effects Yes Yes Yes Yes Yes
+Observations 147 147 147 147 147
+Adjusted R -squared 68.7% 69.3% 68.9% 68.2% 67.4%
+This table provides a robustness check by connecting our survey measures of culture to independent, external data sources on
+ﬁnancial performance. In Panel A and C, the dependent variable is Tobin’s Q and in Panel B, the dependent variable is Total Q
+( Peters and Taylor, 2017 ). The key explanatory variable in Panel A and B is Q4b, “Our current culture: 4 = is exactly where it
+should be, . . . , 1 = needs a substantial overhaul.” In Panel C, the key explanatory variables are the survey-based aggregate cul-
+tural values (Q1, Q14) and aggregate cultural norms (Q6) as well as external proxies for culture. Additional explanatory variables
+include aggregate formal institutions, leadership, noise controls (date, response delay, job title, and source of email), ﬁrm-level
+Compustat controls (ﬁrm size, number of employees, investment-to-capital, tangibility, SG&A), and additional question controls
+(Q1, Q4, Q4b). Robust standard errors clustered by industry are in parentheses under coeﬃcient estimates. For a detailed de-
+scription of each variable, please see the deﬁnitions in Appendix B . ∗∗∗ , ∗∗ and ∗ indicate p-values under the assumption of a
+single test of 1%, 5%, and 10%, respectively.
+ple is limited to the 158 ﬁrms that we can identify and
+that have the required information, so to reduce noise we
+look at external outcomes averaged over one, two, three,
+four, and ﬁve years, respectively. Table 11 demonstrates
+that when executives view the culture as effective there
+is a positive and consistent association with Tobin’s Q and
+also with Total Q ( Peters and Taylor, 2017 ) as reported in
+Panels A and B, respectively. This suggests that executives’
+views that culture is value-enhancing when it is effective
+is accurately reﬂected in their responses.
+In Panel C of Table 11 , we explore which elements of
+culture are associated with value-creation by including in
+the speciﬁcation aggregate survey measures of cultural val-
+ues (Q1, Q14) and cultural norms (Q6), as well as our ex-
+ternal measures; we ﬁnd our survey measure of cultural
+norms is positive and signiﬁcantly associated with Tobin’s
+Q. This suggests that what actually happens within com-
+panies on a day-to-day basis (the norms) is important for
+connecting culture to performance. In contrast, none of the
+survey-based cultural values, website advertised cultural
+values, or Best Places to Work indicators are associated
+with Tobin’s Q. The Glassdoor rating is positive and sig-
+niﬁcantly associated with Tobin’s Q. 15
+15 This regression is performed on only a small subset of our sample,
+and the reduced signiﬁcance on some aspects of culture may occur be-
+cause of it.
+577
+
+===== PAGE 27 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+In Section 2.4, we saw that executives’ believe the im-
+pact of culture on ﬁrm value is large –b u t it is possi-
+ble that these could be self-serving perceptions. In Ap-
+pendix Table C.10, we use regressions to respectively link
+the executives’ perceptions from Q4c “Do you believe that
+improving your corporate culture would increase your
+ﬁrm’s value?” and Q3, “In terms of all the things that make
+your ﬁrm valuable, where would you place corporate cul-
+ture?” to Tobin’s Q. The table provides evidence that sug-
+gests that the executives’ survey responses are not simply
+self-serving. In particular, we ﬁnd a negative relation be-
+tween Tobin’s Q and executive beliefs that improving the
+current culture would increase their ﬁrm value; and a pos-
+itive (though statistically weak) relation between Tobin’s Q
+and executives’ views on culture being important to ﬁrm
+value.
+5.2.5. Disaggregated business outcomes from various sources
+To externally validate the relation between our hand-
+coded measures of cultural values and more disaggregated
+business outcomes, we surveyed the literature for other
+proxies that have been used to externally validate various
+measures of cultural values ( Guiso et al., 2015b; Li et al.,
+2021 ). The typical approach is to link a cultural value such
+as adaptability to a business outcome such as R&D expen-
+ditures. As such, in Appendix Table C.11, we did the same
+for our cultural values. To ease comparability across many
+data sets, we have standardized the external proxies such
+that a positive correlation supports the validity of the cul-
+tural value. We ﬁnd the correct sign in all but one regres-
+sion in Panels A to E, many signiﬁcantly so, which is con-
+sistent with the hand-coding of the cultural values and the
+link between culture and business outcomes.
+In Panel A of Appendix Table C.11 we evaluate asso-
+ciations between adaptability and R&D expenses, as well
+as whether the company applies for patents in the sur-
+vey year. We ﬁnd positive and signiﬁcant correlations for
+each proxy. To validate community-orientation in Panel
+B, we consider the number of diversity strengths mi-
+nus the number of diversity concerns as reported by
+KLD database, the ESG score from Sustainalytics, and the
+Best Places to Work indicator. We ﬁnd mixed results
+for community-orientation. Next, detail-orientation encom-
+passes high-quality products and processes as well as be-
+ing precise and analytical. To validate detail-orientation in
+Panel C, we follow the prior literature and consider brand
+rankings, data security violations, and accounting restate-
+ments. Across each measure, we see signiﬁcant correla-
+tions with survey-reported detail-orientation. In Panel D,
+we ﬁnd some support for the cultural value of integrity
+using the Reputational Risk measure. Finally, to evaluate
+results-orientation in Panel E, we consider asset growth
+and “earnings beats target” and ﬁnd support for results-
+orientation. We note that we did not evaluate collaboration
+or customer-orientation given limited proxies.
+Finally, we extend our external validation analysis to ac-
+counting numbers and the information content they pro-
+vide to capital markets. This validation exercise is impor-
+tant because 60% of the executives indicate that culture
+affects their desire to meet or beat EPS targets. In Ap-
+pendix Table C.12, we present estimates that relate our
+survey-based responses about earnings and culture to ac-
+tual earnings surprises. We observe that the executives
+who indicate that meeting or beating earnings is more im-
+portant at their ﬁrms are also less likely to have a negative
+earnings surprise and more likely to have a positive earn-
+ings surprise based on their external ﬁnancial reports. The
+point estimate does not change meaningfully as the speci-
+ﬁcation changes to include more controls or a longer time-
+series of earnings announcements. Interestingly, when we
+focus on cultural norms, we see that the importance of
+day-to-day actions correlates signiﬁcantly with not having
+negative earnings’ surprises. As discussed in prior stud-
+ies ( Edmans, 2011 ), interpreting correlations between prox-
+ies for culture and earnings’ surprises is challenging. Such
+a relation could suggest culture is an important determi-
+nant of proﬁtability not observed by the stock market,
+and thus able to generate constant positive earnings sur-
+prises; or it could mean that if a ﬁrm does not have a cul-
+ture of beating earnings forecasts, the surprises are more
+informative.
+5.2.6. External validation using only the Duke and Columbia
+data
+As an extension to our analysis of the reliability of the
+culture and business outcome data, we examine how our
+external validation tests perform when we use just the
+Duke and Columbia sample. Crossing the Duke+Columbia
+sample with Glassdoor leaves us with the small sample
+size of 75; however, even so, we document that the ex-
+ternal measure of Glassdoor’s culture rating has a signiﬁ-
+cant positive association with the survey-based measure of
+culture, that the survey measure of executives’ perceptions
+of how closely they track to stated values is negatively as-
+sociated with the external misalignment with the corpo-
+rate website, and that the same survey-based measure of
+culture is signiﬁcantly and positively associated with To-
+bin’s Q. These results are reported in Appendix Table C.13.
+In conclusion, while accurate measurement of executives’
+views has the potential to be a problem in our data, we
+ﬁnd no evidence that it is a serious issue.
+5.2.7. Selection in the external validation sample
+While a random sampling of executives exhibiting ex-
+ternal validity would be strong evidence of the unbiased-
+ness of our survey data, as long as there are no systematic
+differences with both the executives’ propensity to share
+an email address and self-reported perceptions of the cul-
+ture, our external validity tests are still informative.
+To better understand selection via email address, it is
+important to understand our process for going from email
+to external validation sample. First, providing an email was
+common; 68% of executives provided an email. Given that
+we need to match to public data sources for our external
+validation exercises, we limit our matching to the sample
+of emails from public ﬁrms. Only 30% of our full sample
+(314 executives) worked at public ﬁrms. Among the pub-
+lic ﬁrms, we had a slightly higher email response rate of
+77%. However, we were not able to match all of the email
+addresses that executives provided with a ﬁrm.
+To test for selection among the 314 publicly owned
+ﬁrms, we split our sample into no email provided, yes
+578
+
+===== PAGE 28 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+email provided but cannot ﬁnd a match, and yes email pro-
+vided and found a match. Across the 53 survey questions
+and response categories, only 9 (17%) are signiﬁcantly dif-
+ferent across the subgroups at a 10% level. These results are
+included in Appendix Table D.7 and D.8. Moreover, when
+we run a joint test across all 53 questions for the pub-
+lic ﬁrms by whether an email is provided or not, we do
+not ﬁnd a signiﬁcant difference (p-value of 0.89). There-
+fore, based on this lack of signiﬁcance, we do not ﬁnd ev-
+idence against these differences representing random vari-
+ation, because there does not seem to be a clear pattern.
+For example, only one cultural value is signiﬁcant across
+the columns, and only one question about perceived value
+is signiﬁcant, rather than a whole category of related ques-
+tions being signiﬁcant. Given that there does not seem to
+be a systematic pattern, we do not think the potential for
+bias in our interpretation of external validity tests is very
+concerning.
+5.3. Robustness to alternative potential drivers
+5.3.1. Placebo checks
+Appendix Table C.11 provides evidence of positive cor-
+relations between speciﬁc cultural variables and relevant
+business outcomes. What if, however, these seemingly
+strong correlations are driven by an omitted variable or
+chance? To address this concern, we run placebo tests
+that look for an association that may be present if the
+main analysis is ﬂawed but should not be present oth-
+erwise. Speciﬁcally, we perform multivariate regressions
+with the same business outcomes but replace the rel-
+evant cultural values mentioned in the prior literature
+with values and norms that seem plausibly irrelevant to
+the business outcomes. For example, we again evaluate if
+the company applies for patents in the survey year and
+its R&D expenses but this time we associate it with in-
+tegrity and employees willingness to report unethical be-
+havior. These results are reported in Appendix Table C.14.
+In each Panel, we observe insigniﬁcant correlations in rela-
+tion to the proxies. Thus, this again suggests that the sur-
+vey is picking up some true measure of culture and not
+a common but omitted characteristic like product market
+competition.
+5.3.2. Halo effect
+In Appendix Table C.15, we replicate Table 10 that ex-
+ternally validates the culture measures but we attempt to
+statistically address a possible “halo effect” (carry-over in
+judgment from one question to the next) using the ap-
+proach suggested by ( Guiso et al., 2015b ). The speciﬁca-
+tion is meant to help with the problem that arises in data
+collection when there is carry-over from one judgment to
+another. To address the potential error-in-variables prob-
+lem and the bias it can induce, we include as a control
+the response to a question that, though possibly contain-
+ing the halo effect, in theory is orthogonal to the ques-
+tions about the ﬁrm’s underlying true culture. Speciﬁcally,
+we use question 11, which is a hypothetical question about
+a potential M&A deal. By disconnecting from the ﬁrm’s un-
+derlying true culture, this addresses the halo effect because
+this response will not have the same systematic correla-
+tion with the executive’s underlying belief about his or her
+ﬁrm’s culture. The point estimates in this speciﬁcation are
+similar to the original estimates and suggest that the cor-
+relations with the external culture measures are reliable.
+In Appendix Table C.16, we replicate the external validation
+of the business outcomes from Table 11 that use Compus-
+tat data but with a halo effect speciﬁcation. Again, we ﬁnd
+similar patterns and signiﬁcance.
+5.3.3. Larger sample
+Given that the preceding sections provide conﬁdence
+in the quality of our survey data, we also examine the
+extent to which the correlations we document general-
+ize to the full sample and collection of survey questions.
+Speciﬁcally, in Appendix E, we explore the wide range
+of business outcomes extracted from Q14 (e.g., proﬁtabil-
+ity, productivity, etc.). First, we document signiﬁcant, pos-
+itive correlations between both speciﬁc business outcomes
+and speciﬁc cultural values. The patterns are similar to
+those that we document in the external validation tests
+but provide information about a richer, more detailed set
+of outcomes. Next, we show positive correlations between
+having a culture where it should be (Q4b), an indica-
+tor of an effective culture, and many of these business
+outcomes. Then, we explore what factors are associated
+with having an effective culture, and we ﬁnd that cul-
+tural norms are signiﬁcantly and positively correlated with
+having an effective culture, more so than cultural val-
+ues. Finally, we seek to isolate which of the many ele-
+ments that comprise culture are associated with an effec-
+tive culture. We do so using model selection techniques
+(e.g., LASSO regressions). Collaboration and new ideas de-
+velop organically are the two cultural elements selected.
+While these results are simply correlations and not causal,
+they nevertheless suggest fruitful research paths moving
+forward.
+6. Conclusion
+Among the items that executives believe drive value,
+corporate culture is the most under-researched. Our sur-
+vey provides detailed information about how executives
+view culture, the elements that comprise culture (values
+and norms), the perceived ﬁnancial value of culture, how
+culture inﬂuences employees’ decisions, and what forces
+work for and against a value-enhancing culture. In sum-
+mary, 91% of executives believe culture is important to
+their ﬁrms and 79% place culture among the top value
+drivers of their company. Fifty-four percent of executives
+would walk away from an acquisition target that is a poor
+cultural ﬁt, while another 33% would require discounts be-
+tween 10%–30% of the purchase price of the target. Cul-
+ture inﬂuences a range of ﬁnancial decisions such as in-
+vestment and risk-taking. For example, 41% of executives
+do not choose to maximize NPV when the NPV-superior
+investment requires short-term challenges (negative cash
+ﬂows) and 80% indicate that culture is a factor linked to
+short-termism. Similarly, 61% believe culture is an impor-
+tant force behind their ﬁrm’s chosen level of investment
+risk. Culture inﬂuences actions that are hard to contract on,
+579
+
+===== PAGE 29 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+such as ethical decisions. An overwhelming 85% of exec-
+utives believe an ineffective culture increases the chances
+that an employee might act unethically or even illegally.
+Our study also helps to expand our understanding of
+how culture relates to business outcomes by separating
+culture into values (big principles) and norms (day-to-day
+practices). While this theoretical distinction is not new, our
+empirical results that executives believe cultural norms are
+an important part of establishing a value-enhancing cul-
+ture is new. Further, we document many interesting cor-
+relations with speciﬁc elements of culture. For example,
+there is a negative correlation between both integrity and
+a willingness to report unethical behavior and incentive
+compensation being inﬂuential in setting the culture.
+Finally, we believe that our novel survey data give us
+both enough detail in the responses and the scale neces-
+sary to guide future research on this topic and enable re-
+searchers to bring cultural elements into the set of forces
+that can be modeled and measured. Given the many ﬁnd-
+ings from our study, we conclude by summarizing the de-
+sired characteristics of a potential theory of corporate cul-
+ture that is consistent with our key facts. A theory of cor-
+porate culture would have several key ingredients: (i) ex-
+ecutives who believe culture has large and persistent ef-
+fects in magnitude, both on the upside and downside, for
+ﬁrm value, (ii) power to inﬂuence many corporate poli-
+cies rather than a select few, (iii) greater eﬃcacy when
+the cultural norms embodied by the day-to-day actions
+of employees support the cultural values, and (iv) effec-
+tive culture requires investment, and acknowledgement of
+how people (leaders, investors) and formal systems (gov-
+ernance, incentive compensation) may be working for or
+against such optimal investment. In conclusion, we believe
+corporate culture deserves substantial research going for-
+ward and we hope our paper helps provide a foundation
+to enable such future work.
+Appendix A. Survey Questions and Logistics
+For our interviews, we promised the executives
+anonymity to encourage frank discussion. With the inter-
+viewee’s permission, we recorded and transcribed each in-
+terview to ensure accuracy in quotations. We began the
+interviews on October 22, 2014 and concluded them on
+April 3, 2015. We began each interview with open-ended
+questions such as, “What, in your view, is corporate cul-
+ture?” and “How would you describe the corporate cul-
+ture at your ﬁrm?”16 This allowed us to initially capture
+broad themes and then we narrowed the focus as the in-
+terview proceeded, without leading the interviewee by our
+presenting predetermined deﬁnitions of corporate culture.
+We also used interviews to identify under-researched top-
+ics and as input to develop our survey instrument. All but
+one of the executives that we contacted agreed to be inter-
+viewed (and he told us, “read my book!”). The interviews
+occurred over the phone or in-person and vary in length,
+lasting from 40 to 90 min. The executives seemed thought-
+ful and forthcoming in their responses.
+16 We conduct interviews according to the scientiﬁc practices described
+in Bradburn and Sudman (1982) .
+Reliable survey tools require careful design and sample
+planning. To minimize measurement error, we consulted
+12 experts to vet the survey design and administered 20
+beta tests prior to launching the survey. After beta-testing
+and receiving feedback from survey design specialists, the
+ﬁnal survey contains 14 main questions, some with sub-
+parts dependent on the initial answer selected, and was
+administered over the Internet. The survey is anonymous
+and does not require subjects to disclose their names or
+their corporate aﬃliation and is IRB approved at the au-
+thors’ home institutions. One advantage of online admin-
+istration is the ability to randomly scramble the order of
+choices within a question, so as to mitigate potential order-
+of-presentation effects. Speciﬁcally, the survey scrambles
+the order of answers in questions 4d, 6, 13 and 14. For the
+remaining questions, order of sub-questions is deemed not
+to be a ﬁrst-order issue (demographic questions, qualita-
+tive questions) or there is a natural order to the presented
+alternatives (e.g., 3, 7 and 11). Participants were allowed
+to skip questions if they did not want to answer them,
+which is why the number of observations varies across
+questions. Most multiple-choice questions included a
+free-text response option, so that survey takers could pro-
+vide answers that were not explicitly speciﬁed in the ques-
+tion.
+In addition, we include redundant questions that
+rephrase and reframe issues of interest. These additional
+questions help attenuate the effect of noise attributable
+to potential respondent behavioral biases. To avoid exec-
+utives’ engaging in “cheap talk” about culture, we use a
+mix of questions that elicit hypothetical and real business
+decisions. Neuroscience research suggests these two types
+of questions when asked in isolation activate different
+parts of the brain. When the neuroscience researchers
+switched back and forth between hypothetical and real
+choices, they discovered brain activity was stronger in the
+region associated with real choices, serving to reduce dif-
+ferences in response ( Kang et al., 2011 ). Thus, by requiring
+respondents to switch back and forth between real and
+hypothetical decisions, our survey design tries to mitigate
+selection concerns.
+Finally, invitations to take the survey were sent via
+email to a diverse sample of corporate executives and in-
+vitations were sent in a staggered manner. We used two
+key databases of email addresses of CFOs supplied by (i) a
+list of CFO email addresses the Fuqua School of Business at
+Duke University maintains for their quarterly survey; and
+(ii) a list of CEO and CFO email addresses from among
+the alumni of the Columbia Business School. We stag-
+gered our initial event invitation on two dates (Septem-
+ber 15, or September 22, 2015) to take the survey, a re-
+minder was sent a week or more later to these sub-groups
+(September 29, October 6, October 20). The survey closed
+on October 31, 2015. We supplemented the main email
+list from Duke’s quarterly survey and Columbia Business
+School with additional email lists from CFO magazine, the
+Center for Leadership and Ethics (COLE) at Duke Univer-
+sity, the Fuqua School of Business Board of Visitors, and
+Fortune 10 0 0 CEOs and CFOs. Our baseline summary re-
+sults do not vary whether we include all of these groups
+or not.
+580
+
+===== PAGE 30 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+581
+
+===== PAGE 31 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+582
+
+===== PAGE 32 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+583
+
+===== PAGE 33 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+584
+
+===== PAGE 34 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+585
+
+===== PAGE 35 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+586
+
+===== PAGE 36 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+587
+
+===== PAGE 37 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+588
+
+===== PAGE 38 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Appendix B. Variable Deﬁnitions
+Aggregate ethics outcomes is the mean of the follow-
+ing four components:
+1. Compliance which is part of question 14 “To what ex-
+tent does the corporate culture at your ﬁrm affect the
+following items: compliance” where 1 = no effect, 2 =
+little effect, 3 = moderate effect, and 4 = big effect.
+2. Tax Aggressiveness which is part of question 14 “To
+what extent does the corporate culture at your ﬁrm af-
+fect the following items: tax aggressiveness” where 1 =
+no effect, 2 = little effect, 3 = moderate effect, and 4 =
+big effect.
+3. Reporting Quality which is part of question 14 “To
+what extent does the corporate culture at your ﬁrm af-
+fect the following items: reporting quality” where 1 =
+no effect, 2 = little effect, 3 = moderate effect, and 4 =
+big effect.
+4. Rescale Beat EPS which is a demographic variable,
+“How important is meeting or beating quarterly earn-
+ings estimates to your company?” where 1 = Not im-
+portant, 2.5 = Somewhat important, 4 = Very impor-
+tant. Please note we rescale this question to correspond
+to the [1, 4] scale of question 14 variables. Speciﬁcally,
+we transform [ −1, 1] scale to −1 = 1, 0 = 2.5, and 1 =
+4.
+Aggregate innovation outcomes is the mean of the fol-
+lowing two components:
+1. Creativity which is part of question 14 “To what extent
+does the corporate culture at your ﬁrm affect the fol-
+lowing items: creativity” where 1 = no effect, 2 = little
+effect, 3 = moderate effect, and 4 = big effect.
+2. Project Risk which is part of question 14 “To what ex-
+tent does the corporate culture at your ﬁrm affect the
+following items: project risk” where 1 = no effect, 2 =
+little effect, 3 = moderate effect, and 4 = big effect.
+Aggregate productivity and ﬁrm value outcomes is
+the mean of the following three components:
+1. Firm Value which is part of question 14 “To what ex-
+tent does the corporate culture at your ﬁrm affect the
+following items: ﬁrm value” where 1 = no effect, 2 =
+little effect, 3 = moderate effect, and 4 = big effect.
+2. Proﬁtability which is part of question 14 “To what ex-
+tent does the corporate culture at your ﬁrm affect the
+following items: proﬁtability” where 1 = no effect, 2 =
+little effect, 3 = moderate effect, and 4 = big effect.
+3. Productivity which is part of question 14 “To what ex-
+tent does the corporate culture at your ﬁrm affect the
+following items: productivity” where 1 = no effect, 2 =
+little effect, 3 = moderate effect, and 4 = big effect.
+Aggregate all outcomes is the mean of the aggregate
+ethics, aggregate innovation, and aggregate productivity
+and ﬁrm value outcomes.
+Aggregate cultural values is the mean of seven cultural
+values independently hand-coded by ﬁve reviewers for the
+open-ended question 1, “Brieﬂy, what words or phrases
+best describe the current corporate culture at your ﬁrm?”
+and the open-ended part of question 14, “Please provide
+a speciﬁc example of how culture affects X.” Cultural val-
+ues can take on a score of 1, 0 or −1 where a negative
+value indicates the opposite. The hand-coding categorized
+the written responses into seven individual cultural val-
+ues. Three out of ﬁve reviewers had to indicate the same
+score for each individual cultural value in the response for
+it to be coded that way. The individual cultural values align
+with the principal components of culture ( O’Reilly et al.,
+1991; Chatman et al., 2014 ), when the respondents write
+descriptions consistent with the following:
+1. Adaptability : willing to experiment, fast-moving, quick
+to take advantage of opportunities, taking initiative
+2. Collaboration : team-oriented, supportive, not aggres-
+sive, low levels of conﬂict
+3. Community : respectful of diversity, community, and
+the environment, inclusive, caring, and open
+4. Customer-orientation : listening to customers, being
+market driven, taking pride in service
+5. Detail-orientation : paying attention to detail, being
+precise, emphasizing quality and safety, being analyti-
+cal
+6. Integrity : high ethical standards, being honest, trans-
+parent
+7. Results-orientation : high expectations for perfor-
+mance, focus on achievement, competitive, demanding
+Aggregated cultural norms is the mean of the nine
+cultural norms extracted from question 6, “In the context
+of your ﬁrm’s current culture, please indicate which factors
+determine the effectiveness of your culture,” where −1 =
+Works against our culture being effective, 0 = Little or no
+effect on culture, 1 = Key factor helping our culture to be
+more effective. The individual cultural norms are:
+1. Agreement about goals and values
+2. Consistency and predictability of actions
+3. Coordination among employees
+4. Decision-making reﬂects long-term
+5. Employees comfort in suggesting critiques
+6. New ideas develop organically
+7. Trust among employees
+8. Urgency with which employees work
+9. Willingness to report unethical behavior
+Aggregate formal institutions is the mean response
+about the four formal institutions that are options in ques-
+tion 13 and question 6 “Do the following items reinforce
+or work against the effectiveness of your corporate culture”
+where the scale is −1 = Works against, 0 = No impact, and
+1 = Reinforces.
+1. Corporate governance
+2. Finance function
+3. Hire, ﬁre, promote (Please note this option comes from
+question 6 “In the context of your ﬁrm’s current cul-
+ture, please indicate which factors determine the effec-
+tiveness of your culture” but has the same scale −1 =
+Works against, 0 = No impact, and 1 = Key factor)
+4. Incentive compensation
+Demographic controls include proﬁtability, employee
+turnover, CEO turnover, family ﬁrm, ownership (public vs.
+589
+
+===== PAGE 39 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+private), ﬁrm location, CEO age, CEO tenure, CEO incen-
+tive compensation, revenue, number of employees, indus-
+try, and credit rating. Non-response categorical variables
+included as its own category.
+Noise controls include date of survey response, re-
+sponse delay from initial email, job title, and source of
+email (i.e., Duke, Columbia, CF O magazine)
+Addition question controls include controls extracted
+from question 1, question 4, and question 4b.
+1. Question 1 controls are hand-coded from the open-
+ended response to “Brieﬂy, in words or phrases best de-
+scribe the current corporate culture at your ﬁrm?” The
+controls include an indicator for if the response is unin-
+formative (e.g., wrote the deﬁnition of culture), for the
+emotion in question 1 response (1 = positive emotion,
+0 = neutral, −1 = negative emotion), an indicator for
+saying the ﬁrm has no culture, the number of values
+mentioned (this also serves as a proxy for length of re-
+sponse), an indicator if the executives describe the cul-
+ture as changing, an indicator for if the executives dis-
+cuss positives and negatives of the culture, an indicator
+for if the executives describe how decisions are dele-
+gated (e.g., hierarchical, unstructured, or decentralized),
+and an indicator for if an executive describes an ideol-
+ogy underlying actions and decisions (e.g., progressive
+or conservative).
+2. Question 4 controls for the response to “How closely
+does your current corporate culture track with your
+stated ﬁrm values?” where 1 = Not at all, 2 = Not very
+closely, 3 = Somewhat, and 4 = Very closely”
+3. Question 4b controls for the response to “Our ﬁrm’s
+culture:” where 1 = Needs a substantial overhaul, 2 =
+Needs considerable work to get to where it should be,
+3 = Needs some work but is close to where it should
+be, and 4 = Is exactly where it should be.
+Formal institutions controls are either aggregate for-
+mal institutions if the regression involves aggregate inde-
+pendent variables or four different controls, one for each of
+the formal institutions (i.e., corporate governance, ﬁnance
+function, hire, ﬁre, promote, and incentive compensation)
+if the regression involves individual independent variables.
+Leadership control is the mean response to question
+13 “Does senior management behavior reinforce or work
+against the effectiveness of your corporate culture” where
+the scale is −1 = Works against, 0 = No impact, and 1 =
+Reinforces.
+“Halo Effect” speciﬁcation includes response to the hy-
+pothetical asked in question 11 “You work at a ﬁrm with
+an effective, strong culture. You are evaluating two acquisi-
+tion targets, A and B. A and B would bring the same strate-
+gic and operational beneﬁts if acquired, and the targets are
+identical in all dimensions except corporate culture. Com-
+pany A’s culture is very aligned with your ﬁrm’s culture,
+whereas company B’s culture is not at all aligned. Relative
+to how much you would offer for A, how much less would
+you offer for company B due to the culture misalignment?”
+By disconnecting from the actual culture at the survey re-
+spondent’s ﬁrm, this question will not be systematically
+correlated with the ﬁrm’s true culture.
+Glassdoor culture rating is derived from crowd-
+sourced employee reviews on www.glassdoor.com . Each
+employee review has a “Culture & Values” star rating,
+which we convert into a count variable that ranges from
+1 to 5, with 5 stars representing the best external culture
+rating. We limit our sample to the ratings provided by cur-
+rent employees who rated the ﬁrm during the survey year.
+The ﬁgure below helps to illustrate exactly which compo-
+nent (just the second row) that we use as our external cul-
+ture rating. In addition, we consider the other rating met-
+rics including the overall ﬁrm rating, the recommends rat-
+ing, and the employees’ approval of CEO rating.
+Glassdoor cultural values are derived from natural
+language processing (NLP) of the text of the Glassdoor
+reviews. To transform the Glassdoor reviews into cul-
+tural values, we follow the approach in Popadak (2016) ,
+Grennan (2020) . Speciﬁcally, we create a normalized vector
+of lemmatized word counts from the text in all employee
+reviews (current and former) in the year of the survey.
+We then calculate the cosine similarity between the lem-
+matized Glassdoor vector and lemmatized vector of cul-
+ture words for each cultural value. We do this separately
+for the pros and cons. Our ﬁnal metric is the pros co-
+sine similarity less the cons cosine similarity for each cul-
+tural value. The set of culture words, which include nouns,
+verbs, adjectives/adverbs and phrases as well as their syn-
+onyms are the same ones that we used to guide the hand-
+coding of cultural values from Q1 and Q14. The full set of
+words, the associated cultural values, the assigned value
+(+1 if synonym, −1 if antonym), the word sense from
+WordNet, and part of speech are available for download.
+Table B.1 below illustrates a few examples of text from ac-
+tual Glassdoor reviews with the relevant cultural word in
+context.
+Best Places to Work designation is an indicator vari-
+able equal to one when a ﬁrm appears on the Forbes’ 100
+Best Places to Work list in the survey year.
+Brand rating is the rank of the ﬁrm if it is included
+in the top-500 list of Brand Finance rankings, and 501
+590
+
+===== PAGE 40 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Table B.1
+Glassdoor word-in-context examples for adaptability.
+Word Word-in-context
+Relevance to
+adaptability
+(1) (2) (3)
+adapt complex organization, undergoing frequent changes to adapt to marketplace; act rapidly and adapt;
+company is able to adapt and change; adapts to the market needs; the people are lovely and have a
+real desire to make things happen and to change and adapt; company can’t adapt to changing
+business conditions; leadership adapts and changes to meet their goal; entrepreneurial environment,
+able to adapt organization to challenges rapidly.
+Syn.
+chance fair chance; great chance to learn; chances to start at the bottom and end at the top; given a chance;
+lots of chances; take a chance and innovate.
+Syn.
+creativity conducive environment for creativity; loads of creativity from product to social media; work can be
+done with conﬁdence and scope of creativity prevails; the three pillars of the culture are uncap
+creativity, be bold, and tell the truth; company based on creativity, innovation, and improvement;
+ideas are listened to and creativity is encouraged; management promotes creativity and out of the
+box thinking to solve business issues.
+Syn.
+develop Keep developing new and innovative products; funds for developing disruptive technology; ability to
+develop as a leader; continue to identify and develop talent; I was able to develop strong leadership
+and motivational skills; develop a strategy; good company to help develop your skills.
+Syn.
+entrepreneurial entrepreneurial culture; innovative and entrepreneurial; entrepreneurial attitude is rewarded; strong
+entrepreneurial spirit in the company; entrepreneurial environment; opportunities to be
+entrepreneurial; entrepreneurial spirit - you can make your own future; start-up, entrepreneurial
+culture; opportunity to be creative / entrepreneurial.
+Syn.
+rigid slow, rigid, behind in technology; culture feels very rigid; extremely structured environment,
+unnecessarily rigid; a rigid and old-fashioned company; rigid with rules; rigid environment,
+draconian rules and outdated ideas; the company is rigid and boring; conservative workplace with a
+rigid, top-down management style; trying to force diverse businesses into a rigid clone of the other
+businesses; all managers can do is work within the conﬁnes of the rigid system.
+Ant.
+slow slow to change; matrix org that slows/prevents work from getting done; believe in slow and steady;
+slow to react to change; slow moving and old school culture; management that moves slow and
+doesn’t take many risks; pace is slow; slow, unorganized, and rigid; conservative culture and slow
+decisions.
+Ant.
+stable stable company; stable work environment; stable business model; stable ﬁnancially; stable –h a s
+been around since the 1800s; stable and consistent job; strong company with stable processes;
+opportunity to have a stable, reliable career; very stable and ethical company, don’t have to worry
+about an Enron situation; changing industry but large, stable company; strong, stable company with
+a conservative atmosphere.
+Ant.
+status quo poor accountability, content with status quo; relying on the status quo; lots of new blood
+challenging the status quo; the status quo won’t cut it anymore; tactics to maintain the status quo;
+people that look for the status quo; people just want to coast on the status quo; management
+perpetuates the status quo.
+Ant.
+traditional management has a traditional mindset; traditional company; stick in traditional styles of
+management; traditional/conservative company; traditional and old-fashioned; traditional and stable;
+being too traditional scares off younger generation; traditional, respectable company; slow,
+traditional company.
+Ant.
+This table provides example text from actual Glassdoor reviews. The rows contain example synonyms and antonyms that we use as key words when
+creating word count vectors of the Glassdoor pros and cons text for adaptability. The cosine similarity score is then computed between the actual word
+count vector and a vector with only adaptability words. The words-in-context help illustrate how textual analysis of Glassdoor reviews can capture
+elements of culture.
+otherwise. The list is constructed by Brand Finance www.
+brandirectory.com .
+KLD diversity is the number of diversity strengths mi-
+nus the number of diversity concerns from KLD.
+KLD data security concern is KLD product concern re-
+lated to “privacy and data security.”
+Patenting ﬁrm is an indicator = 1 if the ﬁrm has been
+granted a patent by the U.S. Patent and Trademark Oﬃce.
+Reputational risk is derived from RepRisk ratings. It
+is a proprietary algorithm developed by RepRisk that dy-
+namically captures and quantiﬁes a company’s exposure to
+Environmental, Social, and Governance (ESG) and business
+conduct risks. The ratings range from AAA to D with 10
+unique notches and where AAA is the lowest risk exposure.
+To translate this rating system into a numeric scale, we let
+AAA = 10 and D = 1. Thus, a ﬁrm with a good reputation
+has the lowest risk exposure.
+Restatements comes from Audit Analytics Restatements
+data. The main measure of restatements includes all re-
+statements as opposed to just material restatements that
+required the ﬁling of an 8-k with the U.S. Securities and
+Exchange Commission. We match to the survey sample us-
+ing the Best Edgar Ticker variable available in Audit Ana-
+lytics which results in a match rate of about 70%.
+Sustainalytics ESG score comes from Sustainalytics
+data. We use the historical weighted score version of the
+data and the variable labeled to tal _ esg _ score . Sustainalyt-
+ics’ ESG Ratings measure how well companies proactively
+manage the environmental, social and governance issues
+that are the most material to their business
+591
+
+===== PAGE 41 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Corporate accounting data are from the Compustat-
+CRSP fundamental annual database. Deﬁnitions are as fol-
+low.
+Assets = AT
+Credit Rating is a categorical variable that can take on
+one of three values: investment grade, high yield, and no
+rating. SP LT ICRM gives the letter rating. Investment grade
+requires a rating of BBB- or higher on S&P scale.
+Debt-to-Assets = (DLC + DLT T ) /AT
+Earnings surprise follows the methodology outlined in
+Livnat and Mendenhall (2006) . SU E1 jt =
+X jt −X jt−4
+P jt where
+X jt is the primary Earnings Per Share (EPS) before ex-
+traordinary items for ﬁrm j in quarter t, and P jt is the
+price per share for ﬁrm j at the end of quarter t from
+Compustat. We adjust for stock splits using Compustat’s
+adjustment factor ( AJEXQ). We use Compustat’s primary
+( EP SP XQ) or diluted ( EP SF XQ) EPS for X jt depending on
+if the majority of analyst EPS forecasts are based on pri-
+mary or diluted basis. Similarly, we also then adjust to di-
+vide by the number of shares used to calculate primary
+EPS ( CSHP RQ) or diluted EPS ( CSHF DQ). To link IBES and
+CRSP, we use the IBES-CRSP link table available on WRDS.
+SU E2 jt excludes special items from EPS which is equiva-
+lent to SP IQ ×0 . 65 . SU E3 jt is deﬁned similarly to SU E1 ,
+except X jt−4 and X jt are replaced with a measure of ana-
+lyst’s expectations and actual earnings as reported by IBES.
+The measure for analysts’ expectations is the median of
+latest individual analysts forecasts issued within the 90
+days prior to the earnings announcement date. A positive
+earnings surprise is deﬁned as the intersection of the set
+of positive observations for SUE1, SUE2, and SUE3. Sim-
+ilarly, a negative earnings surprise is deﬁned as the in-
+tersection of the set of negative observations for SUE1,
+SUE2, and SUE3. Large earnings surprises are deﬁned as
+being in either the bottom quartile or the upper quar-
+tile of a surprise. The quartile is deﬁned separately for
+each SUE measure. A small positive earnings surprise is
+deﬁned as a surprise greater than 0 but not in the up-
+per quartile of surprises. Similarly, a small negative earn-
+ings surprise is deﬁned as a negative surprise that is not
+in the bottom quartile of surprises. Finally, both small and
+large surprises are deﬁned as the intersection of the three
+measures.
+Firm Size = lo g(AT ) , in which AT is in real 2010 dollars.
+Investment-to-Capital = ((CAP X − SP P E) − (CAP X t−1 −
+SP P E t−1 )) /P P ENT t−1
+Market Capitalization (MEQ) = P RC C _ F × C SHO
+Market Value of Assets ( MVA ) = MEQ + DLC + DLT T +
+P ST KL − T XDIT C
+Number of Employees = EMP
+Proﬁtability = OIBDP/AT
+R&D Expenses = log (1 + XRD ) where missing values
+are set equal to 0
+Return on Equity = NI/SEQ t−1
+Revenue = REV T
+Revenue Growth = RE V T /RE V T t−1
+SG&A = XSGA/AT
+Tangibility = P P ENT /AT
+Tobin’s Q = MVA/AT
+Total Q = Q _ T OT ( Peters and Taylor, 2017 ).
+Management ownership data are from Execucomp. Def-
+initions are as follow.
+CEO Age = PAGE
+CEO Time in Job = (LEF T OF C − BECAMECEO ) / 365 . 25 . If
+the CEO did not leave oﬃce in the calendar year prior to
+the survey, then LEF T OF C is the date of the survey.
+Management Ownership = SHROW N _ T OT _ P CT
+Supplementary material
+Supplementary material associated with this article can
+be found, in the online version, at doi: 10.1016/j.jﬁneco.
+2022.07.008 .
+References
+Akerlof, G.A., Kranton, R.E., 2005. Identity and the economics of organiza-
+tions. J. Econ. Perspect. 19 (1), 9–32 .
+Algan, Y., Cahuc, P., 2013. Trust and growth. Annu. Rev. Econom. 5 (1),
+521–549 .
+Audi, R., Loughran, T., McDonald, B., 2016. Trust, but verify: MD&A lan-
+guage and the role of trust in corporate culture. J. Bus. Ethics 139 (3),
+551–561 .
+Baker, G., Gibbons, R., Murphy, K.J., 2002. Relational contracts and the the-
+ory of the ﬁrm. Q. J. Econ. 117 (1), 39–84 .
+Bénabou, R., Tirole, J., 2003. Intrinsic and extrinsic motivation. Rev. Econ.
+Stud. 70 (3), 489–520 .
+Bertrand, M., Schoar, A., 2003. Managing with style: The effect of man-
+agers on ﬁrm policies. Q. J. Econ. 118 (4), 1169–1208 .
+Bloom, N., Sadun, R., Van Reenen, J., 2012. Americans do it better: U.S.
+multinationals and the productivity miracle. Am. Econ. Rev. 102 (1),
+167–201 .
+Bloom, N., Van Reenen, J., 2007. Measuring and explaining management
+practices across ﬁrms and countries. Q. J. Econ. 122 (4), 1351–1408 .
+Bowen, R.M., Call, A.C., Rajgopal, S., 2010. Whistle-blowing: target ﬁrm
+characteristics and economic consequences. Account. Rev. 85 (4),
+1239–1271 .
+Bradburn, N., Sudman, S., 1982. Asking Questions: A Practical Guide to
+Questionnaire Design. Jossey Bass, San Francisco .
+Cameron, K., Quinn, R., DeGraff, J., Thakor, A., 2006. Competing Values
+Leadership: Creating Value in Organizations. Edward Elgar, London .
+Chatman, J., O’Reilly, C., 2016. Paradigm lost: reinvigorating the study of
+organizational culture. Res. Organ. Behav. 38, 199–224 .
+Chatman, J.A., Caldwell, D.F., O’Reilly, C.A., Doerr, B., 2014. Parsing orga-
+nizational culture: how the norm for adaptability inﬂuences the re-
+lationship between culture consensus and ﬁnancial performance in
+high-technology ﬁrms. J. Organ. Behav. 35 (6), 785–808 .
+Cheng, I.-H., Hong, H., Scheinkman, J., 2015. Yesterday’s heroes: compen-
+sation and risk at ﬁnancial ﬁrms. J. Finance 70 (2), 839–879 .
+Christensen, C.M., 1997. The Innovator’s Dilemma. Harvard Business
+School Press .
+Cooke, R.A., Rousseau, D.M., 1988. Behavioral norms and expectations:
+a quantitative approach to the assessment of organizational culture.
+Group Organ. Stud. 13 (3), 245–273 .
+Cronqvist, H., Low, A., Nilsson, M., 2009. Persistence in Firm Policies, Firm
+Origin, and Corporate Culture: Evidence from Corporate Spin-Offs . Un-
+published working paper
+Dechow, P., Ge, W., Schrand, C., 2010. Understanding earnings quality: a
+review of the proxies, their determinants and their consequences. J.
+Account. Econ. 50, 344–401 .
+Denison, D.R., 1984. Bringing corporate culture to the bottom line. Organ.
+Dyn. 13 (2), 5–22 .
+Dichev, I.D., Graham, J.R., Harvey, C.R., Rajgopal, S., 2013. Earnings quality:
+evidence from the ﬁeld. J. Account. Econ. 56, 1–33 .
+Dyck, A., Morse, A., Zingales, L., 2010. Who blows the whistle on corporate
+fraud? J. Finance 65 (6), 2213–2253 .
+Edmans, A., 2011. Does the stock market fully value intangibles? Employee
+satisfaction and equity prices. J. Financ. Econ. 101 (3), 621–640 .
+Fahlenbrach, R., Prilmeier, R., Stulz, R.M., 2012. This time is the same: Us-
+ing bank performance in 1998 to explain bank performance during
+the recent ﬁnancial crisis. J. Finance 67 (6), 2139–2185 .
+Falk, A., Szech, N., 2013. Morals and markets. Science 340 (6133), 707–711 .
+Fernández, R., 2011. Handbook of Social Economics. North-Holland,
+pp. 481–510 . Ch. Does Culture Matter?
+592
+
+===== PAGE 42 =====
+
+J.R. Graham, J. Grennan, C.R. Harvey et al. Journal of Financial Economics 146 (2022) 552–593
+Fernández, R., 2013. Cultural change as learning: the evolution of fe-
+male labor force participation over a century. Am. Econ. Rev. 103 (1),
+472–500 .
+Gao, F., Lisic, L.L., Zhang, I.X., 2014. Commitment to social good and in-
+sider trading. J. Account. Econ. 57 (2), 149–175 .
+Gibbons, R., 1998. Incentives in organizations. J. Econ. Perspect. 12 (4),
+115–132 .
+Gibbons, R., Henderson, R., 2013. Handbook of Organizational Economics.
+Princeton University Press, pp. 680–731 . Ch. What Do Managers Do?
+Exploring Persistent Performance Differences among Seemingly Simi-
+lar Enterprises
+Gorton, G., Grennan, J., Zenteﬁs, A., 2022. Corporate culture. Annu. Rev.
+Financ. Econ. 14, 1–27 .
+Graham, J.R., Grennan, J., Harvey, C.R., Rajgopal, S., 2018. Corporate Cul-
+ture: The Interview Evidence. Unpublished working paper .
+Graham, J.R., Harvey, C.R., 2001. The theory and practice of corporate ﬁ-
+nance: evidence from the ﬁeld. J. Financ. Econ. 60 (2), 187–243 .
+Graham, J.R., Harvey, C.R., Puri, M., 2013. Managerial attitudes and corpo-
+rate actions. J. Financ. Econ. 109 (1), 103–121 .
+Graham, J.R., Harvey, C.R., Rajgopal, S., 2005. The economic implications
+of corporate ﬁnancial reporting. J. Account. Econ. 40 (1), 3–73 .
+Grennan, J., 2020. A Corporate Culture Channel: How Increased Share-
+holder Governance Decreases Firm Value. Unpublished working paper .
+Grennan, J., 2021. Communicating Culture Consistently: Evidence from
+Banks. Unpublished working paper .
+Guiso, L., Sapienza, P., Zingales, L., 2004. The role of social capital in ﬁ-
+nancial development. Am. Econ. Rev. 94 (3), 526–556 .
+Guiso, L., Sapienza, P., Zingales, L., 2006. Does culture affect economic out-
+comes? J. Econ. Perspect. 20 (2), 23–48 .
+Guiso, L., Sapienza, P., Zingales, L., 2008. Social capital as good culture. J.
+Eur. Econ. Assoc. 6 (2–3), 295–320 .
+Guiso, L., Sapienza, P., Zingales, L., 2015. Corporate culture, societal cul-
+ture, and institutions. Am. Econ. Rev. 105 (5), 336–339 .
+Guiso, L., Sapienza, P., Zingales, L., 2015. The value of corporate culture. J.
+Financ. Econ. 117 (1), 60–76 .
+Hanlon, M., Heitzman, S., 2010. A review of tax research. J. Account. Econ.
+50, 127–178 .
+Hart, O., Moore, J., 2008. Contracts as reference points. Q. J. Econ. 123 (1),
+1–48 .
+Harvey, C.R., 2017. Presidential address: the scientiﬁc outlook in ﬁnancial
+economics. J. Finance 72, 1399–1440 .
+Harvey, C.R., Liu, Y., Zhu, H., 2016. ... And the cross-section of expected
+returns. Rev. Financ. Stud. 29 (1), 5–68 .
+Healy, P.M., Palepu, K.G., 2001. Information asymmetry, corporate disclo-
+sure, and the capital markets: a review of the empirical disclosure
+literature. J. Account. Econ. 31, 405–440 .
+Hermalin, B., 2001. The International Handbook of Organizational Culture
+and Climate. New York: John Wiley & Sons . Ch. Economics and Cor-
+porate Culture
+Hermalin, B.E., 2013. Handbook of Organizational Economics. Princeton
+University Press, pp. 432–478 . Ch. Leadership and Corporate Culture
+Holmstrom, B., Milgrom, P., 1991. Multitask principal-agent analyses: in-
+centive contracts, asset ownership, and job design. J. Law Econ. Organ.
+7, 24–52 .
+Kang, M.J., Rangel, A., Camus, M., Camerer, C.F., 2011. Hypothetical and
+real choice differentially activate common valuation areas. J. Neurosci.
+31 (2), 461–468 .
+Karolyi, G.A., 2016. The gravity of culture for ﬁnance. J. Corp. Finance 41,
+610–625 .
+Kedia, S., Luo, S., Rajgopal, S., 2018. Compliance History: Effect on Finan-
+cial Reporting Risk. Unpublished working paper .
+Kotter, J., Heskett, J., 1992. Corporate Culture and Performance. Free Press .
+Kreps, D.M., 1990. Corporate culture and economic theory. In: Political
+Economy of Institutions and Decisions. Cambridge University Press,
+pp. 90–143 .
+La Porta, R., Lopez-de-Silanes, F., Shleifer, A., Vishny, R.W., 1997. Trust in
+large organizations. Am. Econ. Rev. 87 (2), 333–338 .
+Lazear, E.P., 20 0 0. Performance pay and productivity. Am. Econ. Rev. 90
+(5), 1346–1361 .
+Li, K., Mai, F., Shen, R., Yan, X., 2021. Measuring corporate culture using
+machine learning. Rev. Financ. Stud. 34 (7), 3265–3315 .
+List, J., 2007. Field experiments: A bridge between lab and naturally oc-
+curring data. B.E. J. Econ. Anal. Policy 5 (2), 1–45 .
+Liu, X., 2016. Corruption culture and corporate misconduct. J. Financ. Econ.
+122 (2), 307–327 .
+Livnat, J., Mendenhall, R.R., 2006. Comparing the post–earnings announce-
+ment drift for surprises calculated from analyst and time series fore-
+casts. J. Account. Res. 44 (1), 177–205 .
+Macaulay, S., 1963. Non-contractual relations in business: a preliminary
+study. Am. Sociol. Rev. 28 (1), 55–67 .
+Makridis, C., 2018. Does culture pay? Evidence from Crowd-Sourced Em-
+ployee Engagement Data. Unpublished working paper .
+North, D.C., 1991. Institutions. J. Econ. Perspect. 5 (1), 97–112 .
+O’Reilly, C.A., Chatman, J., Caldwell, D.F., 1991. People and organizational
+culture: a proﬁle comparison approach to assessing person-organiza-
+tion ﬁt. Acad. Manage. J. 34 (3), 487–516 .
+O’Reilly, C.A ., Chatman, J.A ., 1996. Research in Organizational Behavior: An
+Annual Series of Analytical Essays and Critical Reviews. Elsevier/JAI
+Press, pp. 157–200 . Ch. Culture as social control: Corporations, cults,
+and commitment.
+Pacelli, J., 2019. Corporate culture and analyst catering. J. Account. Econ. .
+forthcoming.
+Peters, R.H., Taylor, L.A., 2017. Intangible capital and the investment-q re-
+lation. J. Financ. Econ. 123 (2), 251–272 .
+Popadak, J., 2016. Balancing governance and culture to create sustainable
+ﬁrm value. Brookings Inst. Governance Stud. 27, 1–13 .
+Roth, A.E., Prasnikar, V., Okuno-Fujiwara, M., Zamir, S., 1991. Bargaining
+and market behavior in Jerusalem, Ljubljana, Pittsburgh, and Tokyo:
+An experimental study. Am. Econ. Rev. 81 (5), 1068–1095 .
+Roychowdhury, S., 2006. Earnings management through real activities ma-
+nipulation. J. Account. Econ. 42 (3), 335–370 .
+Schein, E.H., 2017. Organizaitonal Culture and Leadership, 5th ed. Wiley .
+Schelling, T.C., 1960. The Strategy of Conﬂict. Harvard University Press .
+Servaes, H., Tamayo, A., 2017. The role of social capital in corporations: a
+review. Oxf. Rev. Econ. Policy 33 (2), 201–220 .
+Shleifer, A., Vishny, R.W., 1997. A survey of corporate governance. J. Fi-
+nance 52 (2), 737–783 .
+Van den Steen, E., 2010. Culture clash: the costs and beneﬁts of homo-
+geneity. Manage. Sci. 56 (10), 1718–1738 .
+Weber, R.A., Camerer, C.F., 2003. Cultural conﬂict and merger failure: an
+experimental approach. Manage. Sci. 14, 400–415 .
+593

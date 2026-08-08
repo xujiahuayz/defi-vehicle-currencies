@@ -1,5 +1,400 @@
 {
   "openathens": "ucl.ac.uk",
+  "source_sets": {
+    "BoltonKacperczyk2021CarbonRisk": {
+      "checks": {
+        "article": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt",
+        "author_or_repository": "https://www.ecgi.global/publications/paper-publications/do-investors-care-about-carbon-risk",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2021.05.008"
+      },
+      "companions": [
+        "BoltonKacperczyk2021CarbonRiskAppendix"
+      ],
+      "main": "BoltonKacperczyk2021CarbonRisk",
+      "status": "complete"
+    },
+    "CarlettiDeMarcoIoannidouSette2021PatientLenders": {
+      "checks": {
+        "article": "literature/text/2021-CarlettiDeMarcoIoannidouSette2021PatientLenders-banks-as-patient-lenders-evidence-from-a-tax-reform.txt",
+        "author_or_repository": "https://eprints.lancs.ac.uk/id/eprint/154282/",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2020.07.021"
+      },
+      "companions": [
+        "CarlettiDeMarcoIoannidouSette2021PatientLendersAppendix"
+      ],
+      "main": "CarlettiDeMarcoIoannidouSette2021PatientLenders",
+      "status": "complete"
+    },
+    "ChangDuLouPolk2022Ripples": {
+      "checks": {
+        "article": "literature/text/2022-ChangDuLouPolk2022Ripples-ripples-into-waves-trade-networks-economic-activity-and-asset-prices.txt",
+        "author_or_repository": "https://personal.lse.ac.uk/polk/research/RipplesIntoWaves.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2021.08.005"
+      },
+      "companions": [
+        "ChangDuLouPolk2022RipplesAppendix",
+        "ChangDuLouPolk2026RipplesCorrigendum"
+      ],
+      "main": "ChangDuLouPolk2022Ripples",
+      "status": "complete"
+    },
+    "CongLiWang2022TokenPlatform": {
+      "checks": {
+        "article": "literature/text/2022-CongLiWang2022TokenPlatform-token-based-platform-finance.txt",
+        "author_or_repository": "https://nengwang-economics.com/research/papers/Cong_Li_Wang_JFE_2022.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2021.10.002"
+      },
+      "companions": [
+        "CongLiWang2022TokenPlatformAppendix"
+      ],
+      "main": "CongLiWang2022TokenPlatform",
+      "status": "complete"
+    },
+    "DiamondHuRajan2022LiquidityPledgeability": {
+      "checks": {
+        "article": "literature/text/2022-DiamondHuRajan2022LiquidityPledgeability-liquidity-pledgeability-and-the-nature-of-lending.txt",
+        "author_or_repository": "https://www.nber.org/papers/w28377",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2021.05.005"
+      },
+      "companions": [],
+      "main": "DiamondHuRajan2022LiquidityPledgeability",
+      "status": "complete"
+    },
+    "ErenMalamud2022DominantDebt": {
+      "checks": {
+        "article": "literature/text/2022-ErenMalamud2022DominantDebt-dominant-currency-debt.txt",
+        "author_or_repository": "https://egemeneren.net/wp-content/uploads/2021/05/int_app_dominantcurrencydebt.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2021.06.023"
+      },
+      "companions": [
+        "ErenMalamud2022DominantDebtAppendix"
+      ],
+      "main": "ErenMalamud2022DominantDebt",
+      "status": "complete"
+    },
+    "GrahamGrennanHarveyRajgopal2022CorporateCulture": {
+      "checks": {
+        "article": "literature/text/2022-GrahamGrennanHarveyRajgopal-corporate-culture-evidence-field-jfe.txt",
+        "author_or_repository": "https://people.duke.edu/~charvey/Research/Published_Papers/P159_Corporate_culture_evidence.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2022.07.008"
+      },
+      "companions": [
+        "GrahamGrennanHarveyRajgopal2022CorporateCultureAppendix"
+      ],
+      "main": "GrahamGrennanHarveyRajgopal2022CorporateCulture",
+      "status": "complete"
+    },
+    "HajdaNikolov2022ProductMarket": {
+      "checks": {
+        "article": "literature/text/2022-HajdaNikolov2022ProductMarket-product-market-strategy-and-corporate-policies.txt",
+        "author_or_repository": "https://www.aeaweb.org/conference/2021/preliminary/paper/TKG2iHeK",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2022.09.003"
+      },
+      "companions": [
+        "HajdaNikolov2022ProductMarketAppendix"
+      ],
+      "main": "HajdaNikolov2022ProductMarket",
+      "status": "complete"
+    },
+    "HinzenJohnSaleh2022LimitedAdoption": {
+      "checks": {
+        "article": "literature/text/2022-HinzenJohnSaleh2022LimitedAdoption-bitcoin-s-limited-adoption-problem.txt",
+        "author_or_repository": "https://www.resistance.money/research/bitcoin_limited_adoption_problem.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2022.01.003"
+      },
+      "companions": [],
+      "main": "HinzenJohnSaleh2022LimitedAdoption",
+      "status": "complete"
+    },
+    "HuangRanaldoSchrimpfSomogyi2025Constrained": {
+      "checks": {
+        "article": "literature/text/2025-HuangRanaldoSchrimpfSomogyi-constrained-liquidity-provision-currency-markets-jfe.txt",
+        "author_or_repository": "https://www.bis.org/publ/work1204.htm",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2025.104028"
+      },
+      "companions": [
+        "HuangRanaldoSchrimpfSomogyi2025ConstrainedAppendix"
+      ],
+      "main": "HuangRanaldoSchrimpfSomogyi2025Constrained",
+      "status": "complete"
+    },
+    "LiYeZheng2023Refusing": {
+      "checks": {
+        "article": "literature/text/2023-LiYeZheng2023Refusing-refusing-the-best-price.txt",
+        "author_or_repository": "https://par.nsf.gov/servlets/purl/10559018",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2022.11.004"
+      },
+      "companions": [],
+      "main": "LiYeZheng2023Refusing",
+      "status": "complete"
+    },
+    "MakarovSchoar2020Arbitrage": {
+      "checks": {
+        "article": "literature/text/2020-MakarovSchoar2020Arbitrage-trading-and-arbitrage-in-cryptocurrency-markets.txt",
+        "author_or_repository": "https://researchonline.lse.ac.uk/id/eprint/100409/",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2019.07.001"
+      },
+      "companions": [],
+      "main": "MakarovSchoar2020Arbitrage",
+      "status": "complete"
+    },
+    "Mayer2022FinancingBreakthroughs": {
+      "checks": {
+        "article": "literature/text/2022-Mayer2022FinancingBreakthroughs-financing-breakthroughs-under-failure-risk.txt",
+        "author_or_repository": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3320502",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2022.01.005"
+      },
+      "companions": [
+        "Mayer2022FinancingBreakthroughsAppendix"
+      ],
+      "main": "Mayer2022FinancingBreakthroughs",
+      "status": "complete"
+    },
+    "MilionisMoallemiRoughgardenZhang2022LVR": {
+      "checks": {
+        "article": "literature/text/2022-MilionisMoallemiRoughgardenZhang2022LVR-preprint-automated-market-making-and-loss-versus-rebalancing.txt",
+        "author_or_repository": "https://arxiv.org/abs/2208.06046",
+        "publisher_or_doi": "arXiv is the canonical repository record; no journal DOI exists"
+      },
+      "companions": [],
+      "main": "MilionisMoallemiRoughgardenZhang2022LVR",
+      "status": "complete"
+    },
+    "AmitiItskhokiKonings2022Dominant": {
+      "checks": {
+        "article": "literature/text/2022-AmitiItskhokiKonings2022Dominant-dominant-currencies-how-firms-choose-currency-invoicing-and-why-it-matters.txt",
+        "author_or_repository": "https://itskhoki.com/papers/DominantCurrencies.pdf",
+        "publisher_or_doi": "https://doi.org/10.1093/qje/qjac004"
+      },
+      "companions": [
+        "AmitiItskhokiKonings2022DominantAppendix"
+      ],
+      "main": "AmitiItskhokiKonings2022Dominant",
+      "non_text_companions": [
+        "https://doi.org/10.7910/DVN/ZOOWEA"
+      ],
+      "status": "complete"
+    },
+    "CaparrosChaudharyKlein2024BlockchainScaling": {
+      "checks": {
+        "article": "literature/text/2024-CaparrosChaudharyKlein2024BlockchainScaling-working-paper-blockchain-scaling-and-liquidity-concentration-on-decentralized-exchanges.txt",
+        "author_or_repository": "https://wrap.warwick.ac.uk/id/eprint/186143/",
+        "publisher_or_doi": "https://arxiv.org/abs/2306.17742"
+      },
+      "companions": [
+        "CaparrosChaudharyKlein2024BlockchainScalingAppendix"
+      ],
+      "main": "CaparrosChaudharyKlein2024BlockchainScaling",
+      "status": "complete"
+    },
+    "ChenDuffie2021Fragmentation": {
+      "checks": {
+        "article": "literature/text/2021-ChenDuffie2021Fragmentation-market-fragmentation.txt",
+        "author_or_repository": "https://www.nber.org/papers/w26828",
+        "publisher_or_doi": "https://www.aeaweb.org/articles?id=10.1257/aer.20200829"
+      },
+      "companions": [
+        "ChenDuffie2021FragmentationAppendix"
+      ],
+      "main": "ChenDuffie2021Fragmentation",
+      "status": "complete"
+    },
+    "ComertonFordeEtAl2010Inventories": {
+      "checks": {
+        "article": "literature/text/2010-ComertonFordeEtAl2010Inventories-accepted-time-variation-in-liquidity-the-role-of-market-maker-inventories-and-revenues.txt",
+        "author_or_repository": "https://business.columbia.edu/faculty/research/time-variation-liquidity-role-market-maker-inventories-and-revenues",
+        "publisher_or_doi": "https://doi.org/10.1111/j.1540-6261.2009.01530.x"
+      },
+      "companions": [
+        "ComertonFordeEtAl2010InventoriesAppendix"
+      ],
+      "main": "ComertonFordeEtAl2010Inventories",
+      "status": "complete"
+    },
+    "GarleanuPedersenPoteshman2009DemandBased": {
+      "checks": {
+        "article": "literature/text/2009-GarleanuPedersenPoteshman2009DemandBased-demand-based-option-pricing.txt",
+        "author_or_repository": "https://archive.nyu.edu/bitstream/2451/26791/2/S-DRP-06-01.pdf",
+        "publisher_or_doi": "https://doi.org/10.1093/rfs/hhp005"
+      },
+      "companions": [
+        "GarleanuPedersenPoteshman2009DemandBasedAppendix"
+      ],
+      "main": "GarleanuPedersenPoteshman2009DemandBased",
+      "status": "incomplete"
+    },
+    "GopinathEtAl2020DCP": {
+      "checks": {
+        "article": "literature/text/2020-GopinathEtAl2020DCP-dominant-currency-paradigm.txt",
+        "author_or_repository": "https://www.nber.org/papers/w22943",
+        "publisher_or_doi": "https://www.aeaweb.org/articles?id=10.1257/aer.20171201"
+      },
+      "companions": [
+        "GopinathEtAl2020DCPAppendix"
+      ],
+      "main": "GopinathEtAl2020DCP",
+      "non_text_companions": [
+        "https://doi.org/10.3886/E111161V1"
+      ],
+      "status": "complete"
+    },
+    "GopinathStein2021Making": {
+      "checks": {
+        "article": "literature/text/2021-GopinathStein2021Making-banking-trade-and-the-making-of-a-dominant-currency.txt",
+        "author_or_repository": "https://stein.scholars.harvard.edu/publications/banking-trade-and-making-dominant-currency",
+        "publisher_or_doi": "https://doi.org/10.1093/qje/qjaa036"
+      },
+      "companions": [
+        "GopinathStein2021MakingAppendix"
+      ],
+      "main": "GopinathStein2021Making",
+      "non_text_companions": [
+        "https://doi.org/10.7910/DVN/CI13SP"
+      ],
+      "status": "incomplete"
+    },
+    "GriffinShams2020Untethered": {
+      "checks": {
+        "article": "literature/text/2020-GriffinShams2020Untethered-is-bitcoin-really-untethered.txt",
+        "author_or_repository": "https://www.jgriffin.info/papers",
+        "publisher_or_doi": "https://doi.org/10.1111/jofi.12903"
+      },
+      "companions": [
+        "GriffinShams2020UntetheredAppendix",
+        "GriffinShams2020UntetheredDisclosure"
+      ],
+      "main": "GriffinShams2020Untethered",
+      "non_text_companions": [
+        "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0002-ReplicationCode.zip"
+      ],
+      "status": "incomplete"
+    },
+    "HendershottJonesMenkveld2011Algorithmic": {
+      "checks": {
+        "article": "literature/text/2011-HendershottJonesMenkveld2011Algorithmic-accepted-does-algorithmic-trading-improve-liquidity.txt",
+        "author_or_repository": "https://faculty.haas.berkeley.edu/hender/Algo.pdf",
+        "publisher_or_doi": "https://doi.org/10.1111/j.1540-6261.2010.01624.x"
+      },
+      "companions": [
+        "HendershottJonesMenkveld2011AlgorithmicAppendix"
+      ],
+      "main": "HendershottJonesMenkveld2011Algorithmic",
+      "status": "complete"
+    },
+    "HendershottMenkveld2014PricePressures": {
+      "checks": {
+        "article": "literature/text/2014-HendershottMenkveld2014PricePressures-accepted-price-pressures.txt",
+        "author_or_repository": "https://albertjmenkveld.com/text/hendershottmenkveld1_ia.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2014.08.001"
+      },
+      "companions": [
+        "HendershottMenkveld2014PricePressuresAppendix"
+      ],
+      "main": "HendershottMenkveld2014PricePressures",
+      "status": "complete"
+    },
+    "KleinKozhanViswanathNatrajWang2026InformedLP": {
+      "checks": {
+        "article": "literature/text/2026-KleinKozhanViswanathNatrajWang2026InformedLP-working-paper-informed-liquidity-provision-on-decentralized-exchanges.txt",
+        "author_or_repository": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4642411",
+        "publisher_or_doi": "https://www.snb.ch/en/services-events/events/scientific-conferences/snb_cif_conference/sem_2026_05_22"
+      },
+      "companions": [
+        "KleinKozhanViswanathNatrajWang2026InformedLPAppendix"
+      ],
+      "main": "KleinKozhanViswanathNatrajWang2026InformedLP",
+      "status": "complete"
+    },
+    "LeharParlour2024Uniswap": {
+      "checks": {
+        "article": "literature/text/2024-LeharParlour2024Uniswap-decentralized-exchange-the-uniswap-automated-market-maker.txt",
+        "author_or_repository": "https://doi.org/10.1111/jofi.13405",
+        "publisher_or_doi": "https://doi.org/10.1111/jofi.13405"
+      },
+      "companions": [],
+      "main": "LeharParlour2024Uniswap",
+      "non_text_companions": [
+        "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.13405&file=jofi13405-sup-0001-ReplicationCode.zip"
+      ],
+      "status": "complete"
+    },
+    "LiWangYe2021WhoProvides": {
+      "checks": {
+        "article": "literature/text/2021-LiWangYe2021WhoProvides-who-provides-liquidity-and-when.txt",
+        "author_or_repository": "https://par.nsf.gov/servlets/purl/10296864",
+        "publisher_or_doi": "https://www.jfinec.com/internet-appendices"
+      },
+      "companions": [
+        "LiWangYe2021WhoProvidesAppendix"
+      ],
+      "main": "LiWangYe2021WhoProvides",
+      "status": "incomplete"
+    },
+    "LyonsViswanathNatraj2023Stablecoins": {
+      "checks": {
+        "article": "literature/text/2023-LyonsViswanathNatraj2023Stablecoins-what-keeps-stablecoins-stable.txt",
+        "author_or_repository": "https://wrap.warwick.ac.uk/id/eprint/173269/",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jimonfin.2022.102777"
+      },
+      "companions": [
+        "LyonsViswanathNatraj2023StablecoinsAppendix"
+      ],
+      "main": "LyonsViswanathNatraj2023Stablecoins",
+      "status": "complete"
+    },
+    "Mukhin2022InternationalPriceSystem": {
+      "checks": {
+        "article": "literature/text/2022-Mukhin2022InternationalPriceSystem-an-equilibrium-model-of-the-international-price-system.txt",
+        "author_or_repository": "https://www.dmitry-mukhin.com/research",
+        "publisher_or_doi": "https://www.aeaweb.org/articles?id=10.1257/aer.20181550"
+      },
+      "companions": [
+        "Mukhin2022InternationalPriceSystemAppendix"
+      ],
+      "main": "Mukhin2022InternationalPriceSystem",
+      "non_text_companions": [
+        "https://doi.org/10.3886/E149661V1"
+      ],
+      "status": "complete"
+    },
+    "Nagel2012EvaporatingLiquidity": {
+      "checks": {
+        "article": "literature/text/2012-Nagel2012EvaporatingLiquidity-evaporating-liquidity.txt",
+        "author_or_repository": "https://voices.uchicago.edu/stefannagel/research/",
+        "publisher_or_doi": "https://doi.org/10.1093/rfs/hhs066"
+      },
+      "companions": [
+        "Nagel2012EvaporatingLiquidityAppendix"
+      ],
+      "main": "Nagel2012EvaporatingLiquidity",
+      "status": "complete"
+    },
+    "Somogyi2026DollarDominanceFX": {
+      "checks": {
+        "article": "literature/text/2026-Somogyi2026DollarDominanceFX-dollar-dominance-in-fx-trading.txt",
+        "author_or_repository": "https://sites.google.com/view/fabricius-somogyi/research",
+        "publisher_or_doi": "https://doi.org/10.1287/mnsc.2024.07656"
+      },
+      "companions": [
+        "Somogyi2026DollarDominanceFXAppendix"
+      ],
+      "main": "Somogyi2026DollarDominanceFX",
+      "non_text_companions": [
+        "https://services.informs.org/dataset/mnsc/download.php?doi=mnsc.2024.07656"
+      ],
+      "status": "complete"
+    },
+    "PastorStambaughTaylor2021SustainableInvesting": {
+      "checks": {
+        "article": "literature/text/2021-PastorStambaughTaylor2021SustainableInvesting-sustainable-investing-in-equilibrium.txt",
+        "author_or_repository": "https://faculty.chicagobooth.edu/lubos-pastor/research",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2020.12.011"
+      },
+      "companions": [],
+      "main": "PastorStambaughTaylor2021SustainableInvesting",
+      "status": "complete"
+    }
+  },
   "sources": {
     "AdamsZinsmeisterRobinson2021UniswapV3": [
       {
@@ -31,6 +426,14 @@
         "version": "accepted"
       }
     ],
+    "AmitiItskhokiKonings2022DominantAppendix": [
+      {
+        "access": "public",
+        "label": "Author-hosted manuscript with Online Appendix on pages 42-55",
+        "url": "https://itskhoki.com/papers/DominantCurrencies.pdf",
+        "version": "supplement"
+      }
+    ],
     "AnaduEtAl2023StablecoinRuns": [
       {
         "access": "public",
@@ -59,6 +462,22 @@
         "label": "Crossref syndication",
         "url": "https://academic.oup.com/rfs/advance-article-pdf/doi/10.1093/rfs/hhz056/29077047/hhz056.pdf",
         "version": "accepted"
+      }
+    ],
+    "BoltonKacperczyk2021CarbonRisk": [
+      {
+        "access": "authenticated",
+        "label": "ScienceDirect published JFE PDF",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X21001902/pdfft",
+        "version": "published"
+      }
+    ],
+    "BoltonKacperczyk2021CarbonRiskAppendix": [
+      {
+        "access": "public",
+        "label": "ECGI working-paper PDF with embedded Online Appendix Tables A.1-A.15",
+        "url": "https://www.ecgi.global/sites/default/files/working_papers/documents/boltonkacpercyzkfinal.pdf",
+        "version": "supplement"
       }
     ],
     "BessembinderHaoZheng2015Contracts": [
@@ -111,11 +530,59 @@
         "version": "working-paper"
       }
     ],
+    "CaparrosChaudharyKlein2024BlockchainScalingAppendix": [
+      {
+        "access": "embedded",
+        "label": "Appendices A-E and Internet Appendix IA1-IA4 embedded in arXiv v4 pages 62-87",
+        "url": "https://arxiv.org/pdf/2306.17742.pdf",
+        "version": "supplement"
+      }
+    ],
+    "CarlettiDeMarcoIoannidouSette2021PatientLenders": [
+      {
+        "access": "authenticated",
+        "label": "ScienceDirect published JFE PDF",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X21000908/pdfft",
+        "version": "published"
+      }
+    ],
+    "CarlettiDeMarcoIoannidouSette2021PatientLendersAppendix": [
+      {
+        "access": "public",
+        "label": "Lancaster University-hosted Internet Appendix PDF",
+        "url": "https://eprints.lancs.ac.uk/id/eprint/154282/1/CDMIS_JFE.pdf",
+        "version": "supplement"
+      }
+    ],
     "CataliniDeGortariShah2022Stablecoins": [
       {
         "access": "authenticated",
         "label": "Annual Reviews PDF",
         "url": "https://www.annualreviews.org/doi/pdf/10.1146/annurev-financial-111621-101151",
+        "version": "published"
+      }
+    ],
+    "ChangDuLouPolk2022Ripples": [
+      {
+        "access": "public",
+        "label": "Author-hosted published JFE PDF",
+        "url": "https://personal.lse.ac.uk/polk/research/RipplesIntoWaves.pdf",
+        "version": "published"
+      }
+    ],
+    "ChangDuLouPolk2022RipplesAppendix": [
+      {
+        "access": "public",
+        "label": "Author-hosted Internet Appendix PDF",
+        "url": "https://personal.lse.ac.uk/loud/Du_Lou_Polk_Zhang_Appendix.pdf",
+        "version": "supplement"
+      }
+    ],
+    "ChangDuLouPolk2026RipplesCorrigendum": [
+      {
+        "access": "public",
+        "label": "Official free-access JFE corrigendum PDF",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X25002090/pdfft",
         "version": "published"
       }
     ],
@@ -131,6 +598,14 @@
         "label": "NBER Working Paper 26828",
         "url": "https://www.nber.org/system/files/working_papers/w26828/w26828.pdf",
         "version": "working-paper"
+      }
+    ],
+    "ChenDuffie2021FragmentationAppendix": [
+      {
+        "access": "public",
+        "label": "Official AER supplemental appendix PDF",
+        "url": "https://www.aeaweb.org/articles/materials/15030",
+        "version": "supplement"
       }
     ],
     "ChordiaRollSubrahmanyam2000Commonality": [
@@ -169,6 +644,30 @@
         "version": "published"
       }
     ],
+    "ComertonFordeEtAl2010InventoriesAppendix": [
+      {
+        "access": "embedded",
+        "label": "Internet Appendix embedded in accepted manuscript pages 54-59; official AFA copy independently matched",
+        "url": "https://afajof.org/wp-content/uploads/files/supplements/Internet_Appendix_for_Time_V.pdf",
+        "version": "supplement"
+      }
+    ],
+    "CongLiWang2022TokenPlatform": [
+      {
+        "access": "public",
+        "label": "Author-hosted published JFE PDF",
+        "url": "https://nengwang-economics.com/research/papers/Cong_Li_Wang_JFE_2022.pdf",
+        "version": "published"
+      }
+    ],
+    "CongLiWang2022TokenPlatformAppendix": [
+      {
+        "access": "public",
+        "label": "Official Elsevier supplementary PDF",
+        "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0304405X21004414-mmc1.pdf",
+        "version": "supplement"
+      }
+    ],
     "CoughenourSaad2004CommonMarketMakers": [
       {
         "access": "public",
@@ -188,6 +687,14 @@
         "access": "authenticated",
         "label": "Crossref similarity-checking",
         "url": "http://xplorestaging.ieee.org/ielx7/9144328/9152199/09152675.pdf?arnumber=9152675",
+        "version": "published"
+      }
+    ],
+    "DiamondHuRajan2022LiquidityPledgeability": [
+      {
+        "access": "authenticated",
+        "label": "ScienceDirect published JFE PDF",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X21001872/pdfft",
         "version": "published"
       }
     ],
@@ -225,6 +732,14 @@
         "label": "ScienceDirect page-inspected PDF",
         "url": "https://www.sciencedirect.com/science/article/pii/S0304405X21002932/pdfft?md5=5f3aef1ab60050906c0f76a5b8f7f476&pid=1-s2.0-S0304405X21002932-main.pdf",
         "version": "published"
+      }
+    ],
+    "ErenMalamud2022DominantDebtAppendix": [
+      {
+        "access": "public",
+        "label": "Author-hosted JFE Internet Appendix PDF",
+        "url": "https://egemeneren.net/wp-content/uploads/2021/05/int_app_dominantcurrencydebt.pdf",
+        "version": "supplement"
       }
     ],
     "FlandreauJobst2009Empirics": [
@@ -269,6 +784,14 @@
         "version": "published"
       }
     ],
+    "GarleanuPedersenPoteshman2009DemandBasedAppendix": [
+      {
+        "access": "public",
+        "label": "NYU institutional predecessor containing the three omitted proofs; final-version appendix unresolved",
+        "url": "https://archive.nyu.edu/bitstream/2451/26791/2/S-DRP-06-01.pdf",
+        "version": "supplement"
+      }
+    ],
     "GlostenMilgrom1985BidAsk": [
       {
         "access": "public",
@@ -303,6 +826,14 @@
         "version": "working-paper"
       }
     ],
+    "GopinathEtAl2020DCPAppendix": [
+      {
+        "access": "public",
+        "label": "Official AER supplemental appendix PDF",
+        "url": "https://www.aeaweb.org/articles/materials/12201",
+        "version": "supplement"
+      }
+    ],
     "GopinathStein2021Making": [
       {
         "access": "authenticated",
@@ -317,12 +848,48 @@
         "version": "accepted"
       }
     ],
+    "GopinathStein2021MakingAppendix": [
+      {
+        "access": "public",
+        "label": "Author-hosted QJE Online Appendix PDF",
+        "url": "https://stein.scholars.harvard.edu/sites/g/files/omnuum5951/files/stein/files/dominant_currency_september_2020_appendix.pdf",
+        "version": "supplement"
+      },
+      {
+        "access": "public",
+        "label": "Legacy Harvard Scholars mirror of the same Online Appendix",
+        "url": "https://scholar.harvard.edu/files/stein/files/dominant_currency_september_2020_appendix.pdf",
+        "version": "supplement"
+      },
+      {
+        "access": "public",
+        "label": "Legacy Harvard multisite mirror of the same Online Appendix",
+        "url": "https://scholar.harvard.edu/sites/scholar.harvard.edu/files/stein/files/dominant_currency_september_2020_appendix.pdf",
+        "version": "supplement"
+      }
+    ],
     "GortonZhang2023Wildcat": [
       {
         "access": "public",
         "label": "University of Chicago Law Review PDF",
         "url": "https://chicagounbound.uchicago.edu/cgi/viewcontent.cgi?article=6342&context=uclrev",
         "version": "published"
+      }
+    ],
+    "GrahamGrennanHarveyRajgopal2022CorporateCulture": [
+      {
+        "access": "public",
+        "label": "Author-hosted published JFE PDF",
+        "url": "https://people.duke.edu/~charvey/Research/Published_Papers/P159_Corporate_culture_evidence.pdf",
+        "version": "published"
+      }
+    ],
+    "GrahamGrennanHarveyRajgopal2022CorporateCultureAppendix": [
+      {
+        "access": "public",
+        "label": "Official Elsevier supplementary PDF",
+        "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0304405X22001684-mmc1.pdf",
+        "version": "supplement"
       }
     ],
     "GriffinShams2020Untethered": [
@@ -345,6 +912,28 @@
         "version": "published"
       }
     ],
+    "GriffinShams2020UntetheredAppendix": [
+      {
+        "access": "public",
+        "label": "Official Journal of Finance Internet Appendix PDF",
+        "url": "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0001-InternetAppendix.pdf",
+        "version": "supplement"
+      },
+      {
+        "access": "public",
+        "label": "SSRN-hosted Internet Appendix mirror",
+        "url": "https://ucg.cdn.doma.dev/SSRN-id3195066.pdf",
+        "version": "supplement"
+      }
+    ],
+    "GriffinShams2020UntetheredDisclosure": [
+      {
+        "access": "public",
+        "label": "Official Journal of Finance supporting-information disclosure PDF",
+        "url": "https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fjofi.12903&file=jofi12903-sup-0003-disclosures.pdf",
+        "version": "supplement"
+      }
+    ],
     "GrossmanMiller1988Liquidity": [
       {
         "access": "public",
@@ -357,6 +946,22 @@
         "label": "Journal of Finance PDF",
         "url": "https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1540-6261.1988.tb04594.x",
         "version": "published"
+      }
+    ],
+    "HajdaNikolov2022ProductMarket": [
+      {
+        "access": "authenticated",
+        "label": "ScienceDirect published JFE PDF",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X2200188X/pdfft",
+        "version": "published"
+      }
+    ],
+    "HajdaNikolov2022ProductMarketAppendix": [
+      {
+        "access": "public",
+        "label": "Official Elsevier supplementary PDF",
+        "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0304405X2200188X-mmc1.pdf",
+        "version": "supplement"
       }
     ],
     "HeimbachPahariSchertenleib2024NonAtomic": [
@@ -387,6 +992,14 @@
         "version": "published"
       }
     ],
+    "HendershottJonesMenkveld2011AlgorithmicAppendix": [
+      {
+        "access": "public",
+        "label": "Official Journal of Finance Internet Appendix PDF",
+        "url": "https://afajof.org/wp-content/uploads/files/supplements/Internet_Appendix_for_Does_A.pdf",
+        "version": "supplement"
+      }
+    ],
     "HendershottMenkveld2014PricePressures": [
       {
         "access": "public",
@@ -398,6 +1011,36 @@
         "access": "authenticated",
         "label": "ScienceDirect PDF",
         "url": "https://www.sciencedirect.com/science/article/pii/S0304405X14001639/pdfft",
+        "version": "published"
+      }
+    ],
+    "HendershottMenkveld2014PricePressuresAppendix": [
+      {
+        "access": "public",
+        "label": "Official Journal of Financial Economics supplementary PDF",
+        "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0304405X14001639-mmc1.pdf",
+        "version": "supplement"
+      },
+      {
+        "access": "public",
+        "label": "Author-hosted Internet Appendix PDF",
+        "url": "https://albertjmenkveld.com/text/hendershottmenkveld1_ia.pdf",
+        "version": "supplement"
+      }
+    ],
+    "HinzenJohnSaleh2022LimitedAdoption": [
+      {
+        "access": "public",
+        "label": "Public copy of published JFE PDF",
+        "url": "https://www.resistance.money/research/bitcoin_limited_adoption_problem.pdf",
+        "version": "published"
+      }
+    ],
+    "LiYeZheng2023Refusing": [
+      {
+        "access": "public",
+        "label": "NSF-hosted published JFE PDF",
+        "url": "https://par.nsf.gov/servlets/purl/10559018",
         "version": "published"
       }
     ],
@@ -421,6 +1064,14 @@
         "label": "ScienceDirect open-access PDF",
         "url": "https://www.sciencedirect.com/science/article/pii/S0304405X25000364/pdfft",
         "version": "published"
+      }
+    ],
+    "HuangRanaldoSchrimpfSomogyi2025ConstrainedAppendix": [
+      {
+        "access": "public",
+        "label": "Official Elsevier supplementary PDF",
+        "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0304405X25000364-mmc1.pdf",
+        "version": "supplement"
       }
     ],
     "KiyotakiWright1989MoneyMedium": [
@@ -455,6 +1106,14 @@
         "label": "SSRN PDF",
         "url": "https://papers.ssrn.com/sol3/Delivery.cfm/4642411.pdf?abstractid=4642411&mirid=1",
         "version": "working-paper"
+      }
+    ],
+    "KleinKozhanViswanathNatrajWang2026InformedLPAppendix": [
+      {
+        "access": "embedded",
+        "label": "Internet Appendix A-C embedded in the SNB conference paper pages 65-72",
+        "url": "https://www.snb.ch/dam/jcr%3Aa60e3838-c2db-4ea3-bcb3-96e87c9ebdc0/sem_2026_05_22_klein.n.pdf",
+        "version": "supplement"
       }
     ],
     "KleinSong2021CommonalityIntraday": [
@@ -535,6 +1194,14 @@
         "version": "published"
       }
     ],
+    "LiWangYe2021WhoProvidesAppendix": [
+      {
+        "access": "unresolved",
+        "label": "Official JFE appendices index lists Li_Wang_Ye_app.pdf, but its linked Dropbox target is stale",
+        "url": "https://www.jfinec.com/internet-appendices",
+        "version": "supplement"
+      }
+    ],
     "LiuMakarovSchoar2023Terra": [
       {
         "access": "public",
@@ -557,6 +1224,14 @@
         "version": "working-paper"
       }
     ],
+    "LyonsViswanathNatraj2023StablecoinsAppendix": [
+      {
+        "access": "public",
+        "label": "Official Elsevier supplementary PDF",
+        "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0261560622001802-mmc1.pdf",
+        "version": "supplement"
+      }
+    ],
     "MakarovSchoar2020Arbitrage": [
       {
         "access": "authenticated",
@@ -577,6 +1252,22 @@
         "label": "NBER Working Paper 30006",
         "url": "https://www.nber.org/system/files/working_papers/w30006/w30006.pdf",
         "version": "working-paper"
+      }
+    ],
+    "Mayer2022FinancingBreakthroughs": [
+      {
+        "access": "authenticated",
+        "label": "ScienceDirect published JFE PDF",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X22000587/pdfft",
+        "version": "published"
+      }
+    ],
+    "Mayer2022FinancingBreakthroughsAppendix": [
+      {
+        "access": "public",
+        "label": "Official Elsevier supplementary PDF",
+        "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0304405X22000587-mmc1.pdf",
+        "version": "supplement"
       }
     ],
     "Meister2026AutomatedLiquidity": [
@@ -623,6 +1314,14 @@
         "version": "accepted"
       }
     ],
+    "Mukhin2022InternationalPriceSystemAppendix": [
+      {
+        "access": "public",
+        "label": "Official AER supplemental appendix PDF",
+        "url": "https://www.aeaweb.org/articles/materials/15979",
+        "version": "supplement"
+      }
+    ],
     "Nagel2012EvaporatingLiquidity": [
       {
         "access": "public",
@@ -635,6 +1334,14 @@
         "label": "RFS PDF",
         "url": "https://academic.oup.com/rfs/article-pdf/25/7/2005/24293577/hhs066.pdf",
         "version": "published"
+      }
+    ],
+    "Nagel2012EvaporatingLiquidityAppendix": [
+      {
+        "access": "public",
+        "label": "Author-hosted Online Appendix corroborated by the RFS issue record",
+        "url": "https://cpb-us-w2.wpmucdn.com/voices.uchicago.edu/dist/f/575/files/2020/07/LiqSupply_RFS_InternetAppendix.pdf",
+        "version": "supplement"
       }
     ],
     "PastorStambaugh2003LiquidityRisk": [
@@ -654,6 +1361,14 @@
         "access": "authenticated",
         "label": "Crossref similarity-checking",
         "url": "https://www.journals.uchicago.edu/doi/pdf/10.1086/374184",
+        "version": "published"
+      }
+    ],
+    "PastorStambaughTaylor2021SustainableInvesting": [
+      {
+        "access": "authenticated",
+        "label": "ScienceDirect published JFE PDF",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0304405X20303512/pdfft",
         "version": "published"
       }
     ],
@@ -689,6 +1404,14 @@
         "label": "UniCredit Foundation working paper PDF",
         "url": "https://www.unicreditgroup.eu/content/dam/unicreditgroup-eu/ucfoundation/WorkingPapers/2021/WP162_Somogyi_Econ-Job-Market-Best-Paper-Award-8ed.pdf",
         "version": "working-paper"
+      }
+    ],
+    "Somogyi2026DollarDominanceFXAppendix": [
+      {
+        "access": "public",
+        "label": "Official Management Science Online Appendix PDF",
+        "url": "https://pubsonline.informs.org/doi/suppl/10.1287/mnsc.2024.07656/suppl_file/mnsc.2024.07656.sm1.pdf",
+        "version": "supplement"
       }
     ],
     "Uhlig2022Lunatic": [

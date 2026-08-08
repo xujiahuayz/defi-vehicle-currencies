@@ -1,0 +1,208 @@
+
+
+===== PAGE 1 =====
+
+Online Appendix
+for
+“Evaporating Liquidity”
+Stefan Nagel ∗
+Stanford University, NBER, and CEPR
+This Online Appendix reports additional robustness checks.
+Predictive regression bias. Given that VIX is quite persistent, one might worry that
+the predictive regressions with VIX as predictor could suﬀer from predictive regression bias.
+However, the bias-adjustment proposed by Stambaugh (1999) is virtually zero in this case
+here. The reason is that the time- t innovation in the predictor variable (VIX) has virtually
+zero correlation with the innovation in time-t reversal strategy returns. As a result, the bias-
+adjustment is also extremely close to zero. This is very diﬀerent from the situation in typical
+stock market return prediction regressions with scaled price ratios as predictors, where the
+correlation of these innovations is far from zero. Thus, there is little reason to believe that
+the predictive regressions in the paper suﬀer from predictive regression bias.
+Return horizon in construction of reversal strategy portfolio weights. The reversal strate-
+gies in the main analysis are constructed as an overlay of sub-strategies with portfolio weights
+conditioned on day t− 1, t− 2, ..., t− 5 returns. Table OA.1 shows that focusing on the
+reversal strategy with portfolio weights conditioned on dayt−1 returns only delivers a similar
+relationship between reversal strategy returns and the VIX as in the analysis in Table 2 of
+the main article. Only for industry portfolios, the relationship with VIX becomes weak. For
+portfolios like the industry portfolios in this analysis, non-synchronous trading or lead-lag
+relationships between ﬁrms within an industry is a potential explanation for small short-run
+∗Stanford University, Graduate School of Business, 655 Knight Way, Stanford, CA 94305, e-mail:
+Nagel Stefan@gsb.stanford.edu, http://faculty-gsb.stanford.edu/nagel
+1
+
+===== PAGE 2 =====
+
+continuations in industry portfolio returns. Overlaying sub-strategies with portfolio weights
+conditioned on day t− 1, t− 2, ..., t− 5 returns as in the main analysis helps to reduce the
+inﬂuence of these short-run continuations.
+Alternative scaling of reversal strategy portfolio weights. The portfolio weights of the rever-
+sal strategies in the main analysis are scaled to sum up to $1 long and $1 short. Table OA.2 re-
+peats the regressions from Table 2 in the main article for a reversal strategy that is constructed
+with alternative portfolio weights wit =−
+(∑N
+i=1 (Rit−1− Rmt−1)2
+)−1
+(Rit−1− Rmt−1). In
+this case, the reversal strategy proﬁt is the negative of the slope coeﬃcient in a cross-sectional
+regression of market-adjusted returns on their own lag, and hence, eﬀectively, the negative of
+a cross-sectional estimate of the autocorrelation. Table OA.2 shows that VIX is a strong pre-
+dictor of the proﬁts from this alternative speciﬁcation of reversal strategies. Table OA.3 shows
+results for a reversal strategy with weights wit =− (1/N) (Rit−1− Rmt−1), which yields, ef-
+fectively, the negative of a cross-sectional estimate of the autocovariance of market-adjusted
+returns. VIX is again a strong predictor of reversal strategy proﬁts for this alternative for-
+mulation.
+Heterogeneity in scale . In the model, all stocks are of the same size. In reality, there
+are large diﬀerences in scale between stocks. A unit of unexpected order ﬂow has less price
+impact for a large stock than for a small stock. Market maker inventory, and hence mar-
+ket maker’s portfolios and proﬁts are likely to be heavily dominated by large stocks. For
+this reason, Table OA.4 explores value-weighted reversal strategies where the weights wit =
+−
+(
+1
+2
+∑N
+i=1|(Rit−1− Rmt−1)Mit−1|
+)−1
+(Rit−1− Rmt−1) Mit−1 have been multiplied withMit−1,
+stock i’s lagged market capitalization. The results are similar to those of Table 2 in the main
+article. VIX is still strongly related to reversal strategy proﬁts. This demonstrates that the
+results in the main paper are not driven just by small stocks. One notable diﬀerence, though,
+is that the reversal strategy proﬁts in terms of transaction-price returns and quote-midpoint
+returns are now almost identical. This reﬂects the fact that large stocks have tiny bid-ask
+spreads, and hence there is hardly any diﬀerence between quote-midpoints and transaction
+2
+
+===== PAGE 3 =====
+
+prices.
+Long and short components of reversal strategy . Table OA.5 splits the reversal strategy
+(9) in the main article into long and short positions to check whether there is any asymmetry
+in the returns from liquidity provision between the long and short side. The reversal strategy
+portfolio is split into two components: stocks with positive portfolio weight (long) and stocks
+negative portfolio weights (short). The equal-weighted market return is subtracted from the
+long component and added to the short component, so that both components represent $1
+long/$1short strategies. As Table OA.5 shows, there is little diﬀerence in the results for the
+long and short components. Only for the industry reversal strategy, there is some evidence
+for a higher sensitivity to VIX on the long side which indicates that the industry reversals
+arise mostly from price impact of sell orders.
+3
+
+===== PAGE 4 =====
+
+Table OA.1: Predicting Reversal Strategy Returns with VIX: Reversal Strategies Formed Based on Day t− 1 returns
+Individual stocks Individual stocks Industry
+Transaction-price returns Quote-midpoint returns portfolios
+Daily Monthly Daily Monthly Daily Monthly
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+Intercept -0.13 -0.21 -0.12 -0.06 -0.41 -0.38 -0.22 -0.13 -0.06 -0.06 -0.10 -0.08
+(0.13) (0.10) (0.09) (0.08) (0.11) (0.11) (0.10) (0.12) (0.06) (0.06) (0.06) (0.05)
+VIX 0.77 0.71 0.65 0.61 0.51 0.53 0.43 0.34 0.01 0.00 0.03 0.02
+(0.10) (0.08) (0.08) (0.06) (0.09) (0.09) (0.08) (0.10) (0.05) (0.05) (0.05) (0.05)
+Pre-decim. 0.70 0.72 0.70 -0.27 -0.25 -0.23 0.03 0.03 0.03
+(0.08) (0.08) (0.12) (0.09) (0.08) (0.12) (0.04) (0.04) (0.05)
+RM -1.52 -1.30 -2.70 -1.59 0.62 -0.12
+(0.58) (0.68) (0.88) (0.89) (0.42) (0.43)
+Adj. R2 0.14 0.21 0.21 0.63 0.05 0.05 0.06 0.18 -0.00 -0.00 0.00 -0.01
+This table repeats the regressions from Table ??, but with reversal strategies with portfolio weights formed based on day t− 1 returns
+instead of the overlay of sub-strategies formed based on day t− 1 to t− 5 returns that is used in the main text. Predictor variables are
+measured on day t− 1.
+4
+
+===== PAGE 5 =====
+
+Table OA.2: Predicting Reversal Strategy Returns with VIX: Reversal Strategies Scaled to Estimate Autocorrelation
+Individual stocks Individual stocks Industry
+Transaction-price returns Quote-midpoint returns portfolios
+Daily Monthly Daily Monthly Daily Monthly
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+Intercept 1.38 1.19 1.72 2.06 0.09 0.07 0.61 0.97 -3.43 -3.51 -2.60 -2.25
+(0.31) (0.26) (0.27) (0.29) (0.32) (0.31) (0.30) (0.29) (1.29) (1.30) (1.37) (1.07)
+VIX 1.88 1.73 1.38 1.08 1.50 1.48 1.13 0.78 2.66 2.60 2.00 1.64
+(0.22) (0.20) (0.20) (0.18) (0.24) (0.25) (0.23) (0.20) (0.86) (0.87) (0.88) (0.62)
+Pre-decim. 1.63 1.70 1.80 0.15 0.23 0.41 0.63 0.76 1.02
+(0.30) (0.28) (0.38) (0.30) (0.28) (0.35) (1.06) (1.05) (1.24)
+RM -9.01 -2.28 -9.11 -5.30 -15.40 0.47
+(2.06) (2.36) (2.40) (2.64) (9.13) (7.97)
+Adj. R2 0.03 0.05 0.05 0.36 0.02 0.02 0.02 0.14 0.00 0.00 0.00 0.01
+This table repeats the regressions from Table ??, but with reversal strategies with portfolio weights wit =
+−
+(∑N
+i=1 (Rit−1− Rmt−1)2
+)−1
+(Rit−1− Rmt−1). The reversal strategy proﬁts in this case correspond to the negative of a cross-
+sectional autocorrelation estimate.
+5
+
+===== PAGE 6 =====
+
+Table OA.3: Predicting Reversal Strategy Returns with VIX: Reversal Strategies Scaled to Estimate Autocovariance
+Individual stocks Individual stocks Industry
+Transaction-price returns Quote-midpoint returns portfolios
+Daily Monthly Daily Monthly Daily Monthly
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+Intercept -0.66 -0.76 -0.59 -0.39 -0.62 -0.66 -0.50 -0.33 -0.14 -0.14 -0.11 -0.08
+(0.15) (0.16) (0.14) (0.11) (0.17) (0.17) (0.15) (0.12) (0.04) (0.04) (0.03) (0.02)
+VIX 1.05 0.98 0.87 0.72 0.79 0.76 0.65 0.53 0.11 0.11 0.09 0.07
+(0.12) (0.13) (0.12) (0.09) (0.14) (0.15) (0.13) (0.11) (0.03) (0.03) (0.03) (0.02)
+Pre-decim. 0.83 0.85 0.87 0.34 0.36 0.39 -0.00 0.00 0.01
+(0.12) (0.12) (0.15) (0.14) (0.14) (0.15) (0.03) (0.03) (0.03)
+RM -2.85 -0.45 -2.72 -0.40 -0.54 -0.01
+(0.87) (1.32) (0.96) (1.39) (0.23) (0.22)
+Adj. R2 0.10 0.13 0.14 0.53 0.04 0.05 0.05 0.27 0.01 0.01 0.01 0.13
+This table repeats the regressions from Table ??, but with reversal strategies with portfolio weights wit =− (1/N) (Rit−1− Rmt−1)×100.
+The reversal strategy proﬁts in this case correspond to the negative of a cross-sectional autocovariance estimate of percentage market-
+adjusted returns.
+6
+
+===== PAGE 7 =====
+
+Table OA.4: Predicting Reversal Strategy Returns with VIX: Value-weighted Reversal Strategies
+Individual stocks Individual stocks Industry
+Transaction-price returns Quote-midpoint returns portfolios
+Daily Monthly Daily Monthly Daily Monthly
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+Intercept -0.14 -0.15 -0.09 -0.05 -0.16 -0.18 -0.11 -0.06 -0.06 -0.06 -0.02 -0.01
+(0.04) (0.04) (0.03) (0.03) (0.05) (0.05) (0.04) (0.05) (0.04) (0.04) (0.04) (0.03)
+VIX 0.20 0.20 0.15 0.13 0.25 0.24 0.19 0.15 0.06 0.07 0.04 0.03
+(0.03) (0.04) (0.03) (0.02) (0.04) (0.04) (0.04) (0.04) (0.04) (0.04) (0.03) (0.03)
+Pre-decim. 0.07 0.08 0.09 0.13 0.14 0.16 -0.02 -0.01 -0.01
+(0.04) (0.04) (0.04) (0.06) (0.06) (0.06) (0.04) (0.03) (0.03)
+RM -1.14 -0.57 -1.18 -1.10 -0.62 -0.34
+(0.28) (0.41) (0.35) (0.58) (0.34) (0.29)
+Adj. R2 0.03 0.03 0.03 0.27 0.02 0.02 0.02 0.25 0.00 0.00 0.00 0.03
+This table repeats the regressions from Table ??, but with value-weighted reversal strategies with portfolio weights wit =
+−
+(
+1
+2
+∑N
+i=1|(Rit−1− Rmt−1)Mit−1|
+)−1
+(Rit−1− Rmt−1) Mit−1, where Mit−1 is stock i’s lagged market capitalization.
+7
+
+===== PAGE 8 =====
+
+Table OA.5: Long and Short Components of Reversal Strategy
+Individual stocks Individual stocks Industry
+Transaction-price returns Quote-midpoint returns portfolios
+Daily Monthly Daily Monthly Daily Monthly
+Long Short Long Short Long Short Long Short Long Short Long Short
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+Intercept -0.04 -0.02 0.01 0.01 -0.05 -0.03 -0.02 -0.00 -0.05 -0.03 -0.05 -0.01
+(0.02) (0.02) (0.01) (0.01) (0.02) (0.02) (0.02) (0.02) (0.02) (0.01) (0.01) (0.01)
+VIX 0.11 0.09 0.08 0.07 0.07 0.09 0.05 0.07 0.04 0.02 0.04 0.00
+(0.01) (0.01) (0.01) (0.01) (0.02) (0.02) (0.01) (0.02) (0.01) (0.01) (0.01) (0.00)
+Pre-decim. 0.12 0.09 0.13 0.10 0.04 0.03 0.04 0.03 -0.02 0.02 -0.02 0.02
+(0.02) (0.03) (0.02) (0.03) (0.03) (0.04) (0.03) (0.05) (0.01) (0.01) (0.01) (0.01)
+Adj. R2 (0.05) (0.04) (0.46) (0.27) (0.01) (0.01) (0.06) (0.06) (0.01) (0.00) (0.10) (0.01)
+This table repeats the regressions from Table ??, but with reversal strategy portfolios split into those with positive portfolio weight (long)
+and negative portfolio weights (short). The equal-weighted market return is subtracted from the long component and added to the short
+component. The returns used in the regressions are hedged against conditional market factor exposure as in Table ??.
+8
+
+===== PAGE 9 =====
+
+References
+Stambaugh, R. F. 1999. Predictive Regressions. Journal of Financial Economics 54:375–
+421.
+9

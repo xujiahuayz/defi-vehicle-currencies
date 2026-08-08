@@ -1,0 +1,3363 @@
+
+
+===== PAGE 1 =====
+
+Dominant Currencies
+How /f_irms choose currency invoicing and why it matters∗
+Mary Amiti
+Mary.Amiti@ny.frb.org
+Oleg Itskhoki
+Itskhoki@econ.Ucla.edu
+Jozef Konings
+Joep.Konings@KULeuven.be
+December 21, 2021
+Abstract
+We analyze how /f_irms choose the currency of invoicing and the implications of this choice for
+exchange rate pass-through into export prices and quantities. Using a new dataset for Belgian /f_irms,
+we /f_ind currency invoicing to be an active /f_irm-level decision, shaped by the /f_irm’s size, exposure
+to imported inputs, and the currency choices of its competitors. Our results show that the /f_irm’s
+currency choice, in turn, has a direct causal impact on the exchange rate pass-through into prices
+and quantities. Moreover, the diﬀerential price response of similar /f_irms that invoice in diﬀerent
+currencies is large, persists beyond a one-year horizon, and gradually wanes in the long run. This
+results in allocative expenditure-switching eﬀects on export quantities, which build up over time,
+suggesting a role for quantity adjustment frictions in addition to price stickiness. Our /f_indings shed
+light on the mechanisms that make or break a dominant currency and the consequences it has for
+the international transmission of shocks. JEL Codes: E31, F31, F41.
+∗Amiti: Federal Reserve Bank of New York, 33 Liberty Street, New York, NY 10045 (email: mary.amiti@ny.frb.org).
+Itskhoki: UCLA, Department of Economics, Los Angeles, CA 90095 (email: itskhoki@econ.ucla.edu). Konings: Nazarbayev
+University Graduate School of Business, Nur Sultan 010000, Kazakhstan; Katholieke Universiteit Leuven, Department of Eco-
+nomics, Naamsestraat 69, 3000 Leuven, Belgium; and University of Liverpool Management School, Chatham St, Liverpool
+L69 7ZH, UK (email: joep.konings@kuleuven.be). We thank our discussants Ariel Burstein, Andres Drenik and Philip Sauré,
+as well as Andy Atkeson, Emmanuel Dhyne, Linda Goldberg, Dima Mukhin, Maxim Pinkovskiy, Jesse Schreger and semi-
+nar/conference participants for comments; and Joris Hoste and Aidan Wang for excellent research assistance. We thank the
+National Bank of Belgium for providing access to their data and research facilities. The views expressed in this paper are
+those of the authors and do not necessarily represent those of the Federal Reserve Bank of New York or the Federal Reserve
+System or the National Bank of Belgium.
+Published in the Quarterly Journal of Economics, August 2022, 137(3): 1435-1493
+https://doi.org/10.1093/qje/qjac004
+
+===== PAGE 2 =====
+
+1 Introduction
+Does the currency of invoicing used in price setting matter for the international transmission of shocks?
+A large literature has shown that exchange rate pass-through (ERPT) into destination prices is incom-
+plete when exports are invoiced in a foreign currency. However, establishing whether this foreign
+price stickiness is causal has faced two major challenges. First, the relationship could be driven by
+confounding macroeconomic variables, whereby exchange rates comove with macroeconomic shocks
+(e.g., during global /f_inancial crisis) that also aﬀect the trade prices and quantities. Second, this relation-
+ship could be due to selection, where certain /f_irm characteristics determine simultaneously the /f_irm’s
+currency choice and the exchange rate pass-through into its prices and quantities. Whether the /f_irms’
+currency choice has a direct causal eﬀect on the the dynamics of prices and quantities in response to
+exchange rate movements, as assumed in workhorse international macro models, has a direct bearing
+on the way shocks are transmitted internationally and the design of the optimal macroeconomic policy
+in an open economy.
+In this paper, we analyze how /f_irms choose the currency of invoicing and the implications of this
+choice for exchange rate pass-through into export prices and quantities at diﬀerent time horizons. We
+address the identi/f_ication challenges that have plagued previous studies by developing a new dataset
+that combines a rich set of /f_irm-level characteristics with the /f_irm’s currency choice in exports and
+imports — a combination which has not been previously available. By comparing /f_irms with similar
+characteristics that choose to price in diﬀerent currencies, we are able to isolate the eﬀect of the /f_irm’s
+currency choice on ERPT, controlling for the selection eﬀects. Moreover, we exploit the cross-sectional
+variation for identi/f_ication, holding constant the general equilibrium macro-economic environment.
+This new dataset, from the National Bank of Belgium, covers all of Belgium’s extra-EU trade, comprising
+information on the /f_irm’s currency of invoicing in exporting and importing; /f_irm characteristics, such
+as /f_irm size and variable costs, as well as their imports and exports by product and country of origin
+and destination at very /f_ine levels of product disaggregation.
+To guide the empirical analysis, we draw on existing theory to develop a uni/f_ied framework of
+currency choice and exchange rate pass-through from which we derive structural estimating equations.
+As there are a number of competing assumptions in models of currency choice, we turn to the patterns
+in the data to inform our modeling choices. Two key patterns in the data stand out. First, we /f_ind that
+the dollar and the euro play nearly equal roles, while third currencies — including those of destination
+and source countries — play much more modest, yet still noticeable, roles. Therefore, the data are
+characterized by the prevalence of dominant currency pricing — rather than producer or destination
+currency pricing — with the dollar exhibiting the status of the global dominant currency and the euro
+emerging as the dominant regional currency.1 Second, the Belgian data feature substantial variation in
+the use of currencies — across countries, industries and /f_irms — an essential feature for the analysis of
+currency choice. The data further reveal that much of this variation is at the /f_irm level within industry-
+1A distinctive feature of a dominant currency paradigm is that the same currency is equally prevalent in both imports and
+exports, a feature common to both the dollar and the euro in our data. Nonetheless, a clear distinction between the two is
+that the dollar in many cases is also a vehicle currency, not used domestically by either importing or exporting country.
+1
+
+===== PAGE 3 =====
+
+destinations, suggesting that the currency choice is an active (albeit persistent) /f_irm-level decision,
+which is the focus of our empirical analysis.
+Our theoretical framework — combining heterogeneous /f_irms with variable markups, international
+input sourcing and staggered price setting with endogenous currency choice — generates testable hy-
+pothesis that we take to the data. The theory predicts that the desired (/f_lexible-price) ERPT is shaped
+by the import intensity of the /f_irm and its strategic complementarities in price setting with other /f_irms
+in the market. The currency choice of the /f_irm is determined, in turn, by the desired ERPT during the
+period of price stickiness.2 The short-run ERPT, during the period of price non-adjustment, is directly
+determined by the currency choice of the /f_irms, which feeds back into price setting and currency choice
+decisions via strategic complementarities across /f_irms. This results in a two-way feedback between cur-
+rency choice and ERPT, which are jointly determined in equilibrium.
+Our empirical analysis uncovers four sets of new results. First, we consider the determinants of the
+/f_irm’s export currency choice, initially as a binary choice between euros (producer currency) and other
+currencies, and then also the choice between the destination currency and the dollar. As predicted
+by the theory, we /f_ind that /f_irmsize, proxying for strategic complementarities with local competitors,
+and the cost share of imported inputs are the two key determinants of currency choice: larger and
+more import-intensive /f_irms are more likely to deviate from producer currency pricing and choose
+foreign-currency invoicing in exports. Furthermore, the /f_irms that rely more on imported inputs, in
+particular those invoiced in dollars, are more likely to adopt the dollar in export pricing, while larger
+/f_irms are more likely to adopt the destination currency. Using instrumental variables, we /f_ind evidence
+of strategic complementarities in currency choice, whereby the currency used by the /f_irm’s competitors
+has a strong impact on the /f_irm’s own currency choice.3
+Second, our results show that the /f_irm’s currency choice is, in turn, a key determinant of the ex-
+change rate pass-through into prices and quantities. In our empirical pass-through speci/f_ications, we
+control for both /f_lexible-price determinants of ERPT (/f_irm size and import intensity), as well as the
+currency choice, which shapes the short-run response of prices to the movements in both the euro-
+destination and the dollar-destination exchange rates. This structural speci/f_ication oﬀers a new test
+of the allocative eﬀects of price stickiness, by estimating the treatment eﬀect of invoicing currency on
+the dynamic responses of prices and quantities to exchange rate changes, beyond what is predicted by
+the /f_lexible-price determinants of ERPT.4 This inference is based on the diﬀerential response of /f_irms
+to the same exchange rate shocks in the same equilibrium environment, thus excluding confounding
+macroeconomic variation.
+We /f_ind that the eﬀects of foreign-currency price stickiness are still signi/f_icant beyond the one-year
+horizon, gradually dissipating in the long run. Speci/f_ically, small Belgian exporters with no exposure to
+foreign inputs that price their exports in euros exhibit complete pass-through of the euro-destination
+2The /f_irms use the currency choice decision to approximate the variation in their desired prices when prices cannot adjust.
+3We further extend the baseline theoretical and empirical analyses of currency choice to allow for additional determinants
+capturing /f_ixed costs of currency use, participation in global value chains and /f_irm /f_inancing constraints. We also extend our
+analysis to currency use in imports, which appears to be a less active endogenous choice at the level of the importing /f_irm.
+4Eﬀectively, we compare the response of two subsets of /f_irms — pricing in dollars and in the destination currency — relative
+to the subset pricing in euros, while holding /f_ixed /f_irm characteristics that shape /f_irms’ desired /f_lexible-price pass-through.
+2
+
+===== PAGE 4 =====
+
+exchange rate into destination prices at all horizons, and are insensitive to the dollar-destination ex-
+change rate. By contrast, large /f_irms with high foreign-input intensity have a signi/f_icantly lower pass-
+through of the euro exchange rate, and a positive pass-through of the dollar exchange rate into the
+destination prices. These eﬀects are present after controlling for the currency choice of the /f_irms, and
+their magnitude gradually builds up over time, consistent with a greater role of the /f_lexible-price de-
+terminants of pass-through over longer horizons. Firms that instead price their exports in a foreign
+currency, whether local or dominant, exhibit a much lower pass-through of the euro-destination ex-
+change rate, especially in the short run, with the gap slowly decreasing over time. In addition, /f_irms
+that price in dollars exhibit large pass-through of the dollar exchange rate into destination prices in the
+short run, which also gradually decays over time.
+Third, our theoretical framework provides a clear structural interpretation of both sticky-price and
+/f_lexible-price coeﬃcients in the dynamic pass-through regressions. We show that the non-parametrically
+estimated dynamics of ERPT are consistent with a Calvo model of staggered price setting in diﬀerent
+currencies, with roughly a 10% monthly probability of price adjustment, or in other words with an av-
+erage duration of prices of 10 months. 5 This extent of price stickiness implies that about 30% of /f_irms
+have yet to adjust their prices a year after the shock and the diﬀerential pass-through across /f_irms
+pricing in diﬀerent currencies is approximately 50% for 12-month changes in prices, consistent with
+our empirical estimates. By controlling for /f_irm characteristics, our results provide the /f_irst evidence of
+the long-run convergence in ERPT for /f_irms pricing in diﬀerent currencies that is consistent with the
+theoretical predictions.
+Finally, the cross-currency diﬀerential pass-through into prices translates into consistent diﬀer-
+ences in the response of quantities, with an estimated negative export quantity elasticity of around 1.5.
+This establishes the allocative eﬀects of sticky prices in the endogenously chosen currency of invoicing.
+The quantities, however, take time to adjust, with the eﬀects becoming signi/f_icant only about a year
+after the shock, suggesting a role for quantity adjustment frictions in addition to price stickiness.
+Our results have broad macroeconomic implications. In particular, they emphasize the forces that
+currently lock in the dominant role of the dollar in world trade, but may also ultimately lead to the
+demise of the dollar and its replacement by either another single dominant currency or a basket of
+currencies. While currency choice is an active /f_irm-level decision, it is taken under strategic comple-
+mentarities with other /f_irms, resulting in a persistent currency choice equilibrium. This, however, may
+also cause a profound shift in the patterns of currency use and international transmission of shocks in
+response to accumulated changes in the equilibrium environment, such as shifts in monetary policy in
+certain regions of the world, as we discuss in the concluding section.
+5This estimate is broadly consistent with somewhat higher direct estimates in the literature (see Gopinath and Rigobon
+2008, Nakamura and Steinsson 2008), which are based on nominal price durations that we do not observe in our dataset.
+Our estimate is, instead, obtained from the dynamic response of prices to exchange rates, which we show has allocative
+expenditure-switching consequences.
+3
+
+===== PAGE 5 =====
+
+Literature review The international macro literature has long emphasized the importance of cur-
+rency of invoicing for the dynamics of terms of trade and expenditure switching (see e.g. the debate in
+Obstfeld and Rogoﬀ 2000 and Engel 2003 and a more recent analysis in Boz, Gopinath, and Plagborg-
+Møller 2017), as well as for the direction of international policy spillovers (see e.g. summary in Corsetti
+and Pesenti 2007) and for the optimal exchange rate policy (see e.g. Devereux and Engel 2003 and Egorov
+and Mukhin 2020). Barbiero, Farhi, Gopinath, and Itskhoki (2019) emphasize the role of the currency
+of invoicing for the trade balance consequences of tax and tariﬀ policies.
+International macro models rely, for the most part, on an exogenously assumed pattern of currency
+invoicing. In particular, the original frameworks of Mundell (1963) and Fleming (1962), as well as of
+Dornbusch (1976) and Obstfeld and Rogoﬀ (1995), relied on the assumption of producer currency pric-
+ing (PCP), whereby exporters use the currency of their home country for invoicing. The evidence of
+low exchange rate pass-through in the aftermath of the Bretton-Woods system (see Dornbusch 1987,
+Krugman 1987), led to a shift towards the assumption of local currency pricing (LCP), whereby /f_irms
+set prices in the destination currency (see e.g. Bacchetta and van Wincoop 2000, Betts and Devereux
+2000, Chari, Kehoe, and McGrattan 2002). The emergence of micro-level data sets with information
+on the currency of invoicing at the transaction level (see e.g. Gopinath, Itskhoki, and Rigobon 2010)
+has emphasized the role of the US dollar as the universal currency of invoicing, and led to the growing
+prominence of the dominant currency paradigm (DCP), whereby a single dominant currency is used for
+invoicing of all global trade (see Gopinath, Boz, Casas, Díez, Gourinchas, and Plagborg-Møller 2020). 6
+In this paper, we document that none of the exogenous invoicing paradigms (PCP, LCP or DCP) ap-
+proximates well the patterns in our data, where invoicing is an active /f_irm-level decision, which results
+in a co-existence of two dominant currencies with endogenous relative prominence.
+Our work draws on important earlier contributions to the analysis of currency choice at the /f_irm
+level and its implications for exchange rate pass-through. In a seminal paper, Engel (2006) provides an
+equivalence result between currency choice and exchange rate pass-through in a one-period sticky-
+price model, showing how existing theories of currency choice map into this equivalence result. 7
+Gopinath, Itskhoki, and Rigobon (2010) generalize this result to a dynamic multi-period framework,
+separately identifying the feedback eﬀects between currency choice and the dynamics of ERPT. Mukhin
+(2021) nests this framework in a general equilibrium model of the international price system with
+endogenously-emerging dominant currencies, which relies on /f_irms with variable markups (as in Amiti,
+Itskhoki, and Konings 2019) and international input sourcing (as in Amiti, Itskhoki, and Konings 2014).
+We combine the insights from this literature to derive our structural estimating equations.
+Our paper relates to the growing empirical literature on the dominant role of the US dollar in
+6The dominant currency assumption was /f_irst explored in an earlier literature, both theoretical (see e.g. Corsetti and
+Pesenti 2007, Goldberg and Tille 2009) and empirical (see Goldberg and Tille 2008, Gopinath 2016), based on global trends in
+the aggregate data. Prior to the availability of micro-level data, Friberg (1998) used a survey approach to elicit information
+on the currency of invoicing for exports.
+7Other important early contributions to the literature on currency choice include Corsetti and Pesenti (2004), Devereux,
+Engel, and Storgaard (2004), Bacchetta and van Wincoop (2005), as well as more recent work by Bhattarai (2009) and Cravino
+(2017). Our work is also related to a vast exchange rate pass-through literature summarized in a number of survey articles,
+most recently by Burstein and Gopinath (2013) and Itskhoki (2020).
+4
+
+===== PAGE 6 =====
+
+international trade /f_lows, following Goldberg and Tille (2008) and Gopinath (2016). 8 The empirical
+evidence in support of these models largely stems from data on countries which almost exclusively
+rely on the dollar in both their exports and their imports (e.g., Gopinath, Itskhoki, and Rigobon 2010
+examine the evidence for the US and Casas, Díez, Gopinath, and Gourinchas 2016 study the case of a
+developing country—Colombia). The advantage of studying a Euro Area country, like Belgium, is that
+there is much greater variation in currency choice, with the euro used at least as intensively as the dollar.
+This additional variation enables us to shed light on the competition between two dominant currencies
+— an established global leader and a regional contender — a case of intense theoretical interest.
+More recently, currency data has become available on other countries (e.g., UK, France, Switzerland,
+Canada and some developing countries) with interesting cross-currency variation at the transaction
+level that has been exploited to analyze either currency choice or ERPT (see Chung 2016, Chen, Chung,
+and Novy 2018, Corsetti, Crowley, and Han 2020, Barbiero 2020, Auer, Burstein, and Lein 2020, Goldberg
+and Tille 2016, Devereux, Dong, and Tomlin 2017, Drenik and Perez 2018). A distinguishing feature of
+our study is that we can match the currency invoicing data with detailed /f_irm-level characteristics
+required by the theory in order to estimate a structural speci/f_ication for both currency choice and the
+resulting ERPT, capturing the contribution of both its /f_lexible-price and sticky-price determinants.
+The rest of the paper is organized as follows. Section 2 presents our theoretical framework of
+endogenous currency choice and exchange rate pass-through, which informs our estimating equations
+and empirical strategy. Section 3 describes our dataset and the construction of the variables for the
+empirical analysis, and then documents a number of stylized facts on the currency use in export and
+import transactions of Belgian /f_irms. Section 4 contains our empirical /f_irm-level analysis of the currency
+choice in exports. Section 5 presents the results on pass-through of exchange rates into export prices
+and quantities, /f_irst at the annual frequency and then non-parametrically for various horizons using
+the monthly data. Section 6 oﬀers concluding remarks on the likely scenarios for the changing status
+of dominant currencies. Additional derivations and results are contained in the online appendix.
+2 Theoretical Framework
+In this section, we draw on new insights developed in the recent literature to provide a uni/f_ied theory
+of currency choice and exchange rate pass-through in order to derive a structural empirical framework.
+We consider an industry equilibrium in a given industrys in foreign destinationk, and we omit notation
+s andk when it causes no confusion. We focus on the problem of a home (Belgian) /f_irmi exporting to
+marketk, and consider in turn its desired price, optimal preset price and optimal currency choice. We
+begin with a baseline one-period model of price stickiness and then extend the analysis to a dynamic
+environment, as well as discuss possible additional determinants of currency choice.
+8An even larger literature, summarized in Gourinchas (2019), explores the other roles of the dollar as the dominant cur-
+rency — in /f_irm /f_inancing (see e.g. Gopinath and Stein 2020, Maggiori, Neiman, and Schreger 2020), as reserve and global
+safe-asset currency (see e.g. Farhi and Maggiori 2017, He, Krishnamurthy, and Milbradt 2019), and for exchange rate pegging
+and monetary anchoring (see e.g. Ilzetzki, Reinhart, and Rogoﬀ 2019). An earlier literature has explored the role of the US
+dollar as the dominant currency from the transaction-cost point of view (see e.g. Krugman 1980, Rey 2001, Devereux and Shi
+2013 and more recently Drenik, Kirpalani, and Perez 2019).
+5
+
+===== PAGE 7 =====
+
+2.1 Baseline model of price setting and currency choice
+Desired price Firm i’s pro/f_it from exporting to destinationk is denoted by Πi(pi) ≡ Πi(pi|Ω),
+wherepi is the log export price in producer currency (euros), with all lower-case letters corresponding
+to logarithms of the variables. The vectorΩ describes the state of the world, which includes exogenous
+shocks (e.g. productivity), endogenous shocks (e.g. exchange rate movements), and the /f_irm’s competi-
+tor prices. The desired price of /f_irmi is given by:9
+˜pi = arg maxpi Πi(pi). (1)
+That is, ˜pi≡ ˜pi(Ω) is the price that the /f_irm would choose in stateΩ, if it were setting prices /f_lexibly.
+The log desired price of the /f_irm can be converted to any currency ℓ (including the destination
+currencyℓ =k or the dollarℓ =D):
+˜pℓ
+i = ˜pi +eℓ,
+whereeℓ is the log bilateral exchange rate between currencyℓ and the euro. Speci/f_ically,eℓ is equal to
+the number of units of currencyℓ for one euro, and hence an increase ineℓ corresponds to adepreciation
+of currencyℓ against the euro. We reserve the∗ notation for the destination currencyk, that is ˜p∗
+i≡ ˜pk
+i .
+Price stickiness and preset prices The /f_irm presets the price¯pℓ
+i in currencyℓ before the state Ω is
+observed, and with probability δ this price stays in eﬀect. That is, the realized price in the producer
+currency is thenpi = ¯pℓ
+i−eℓ. With the complementary probability (1−δ), the /f_irm adjusts its price
+to the desired level, and in this case the realized price ispi = ˜pi.
+The optimal preset price in currencyℓ solves:
+¯pℓ
+i = arg max¯pℓ
+i
+E Πi(¯pℓ
+i−eℓ|Ω), (2)
+where the expectation is taken over all possible realizations of the state vector Ω.10 One can prove
+the following characterization of the optimal preset price ¯pℓ
+i, extending the logic of Proposition 1 in
+Gopinath, Itskhoki, and Rigobon (2010):11
+Lemma 1 (Preset prices) For any currency ℓ, the /f_irst-order approximation to the optimal preset price
+is given by ¯pℓ
+i = E{ ˜pi +eℓ} = E ˜pℓ
+i, where ˜pℓ
+i = ˜pi +eℓ is the desired price expressed in currency ℓ.
+That is, under any currency choice ℓ, the /f_irm chooses its preset price to target the average desired
+price ˜pℓ
+i expressed in currencyℓ.
+9The analysis here goes through if the pro/f_it functionΠi(·) is replaced with the joint surplus function of the supplier
+and the buyer of product i, and hence the currency choice is not necessarily a unilateral decision of the supplier, but could
+also be the outcome of a bargaining game. We use the pro/f_it function interpretation, however, in Section 2.2 to derive the
+expansion for the desired price ˜pi. Also note that since we do not impose any structure on the pro/f_it function, apart from
+double diﬀerentiability in price, it can additionally incorporate any stochastic discount factor.
+10This implicitly assumes that the /f_irm’s opportunity to adjust the price (with probability1−δ) is idiosyncratic, as in the
+Calvo model (see e.g. Gopinath and Itskhoki 2010, which extends this analysis to a model of state-contingent price adjustment).
+11Formally, this lemma obtains from the Taylor expansion of the /f_irst-order condition (FOC) for¯pℓ
+i in (2) around ˜pℓ
+i, which
+in turn satis/f_iesΠ′
+i(˜pℓ
+i−eℓ) = 0, i.e. the FOC for ˜pi in (1).
+6
+
+===== PAGE 8 =====
+
+Currency choice When choosing ¯pℓ
+i, the /f_irm also chooses the currencyℓ in which it presets the
+price. The optimal currency choice solves:
+ℓ = arg maxℓ
+{
+max¯pℓ
+i
+E Πi
+(
+¯pℓ
+i−eℓ|Ω
+)}
+. (3)
+In other words, given that prices are sticky (with probabilityδ), the /f_irm has the option to choose the cur-
+rencyℓ, which minimizes the loss from price stickiness,Πi(˜pi)− Πi(¯pℓ
+i−eℓ), averaged across statesΩ.
+Following the insights in Engel (2006), Gopinath, Itskhoki, and Rigobon (2010), and Mukhin (2021),
+the complex problem in (3) with a general pro/f_it function Πi(·) can be shown to be approximately
+equivalent to a simpler problem, connecting the currency choice to the covariance properties of the
+desired prices with exchange rates. Speci/f_ically, we have:12
+Lemma 2 (Currency choice) Under a second-order approximation to the general pro/f_it functionΠi(·),
+the optimal currency choice in (3) is equivalent to ℓ = arg minℓ
+{
+var
+(
+˜pℓ
+i
+)}
+, minimizing the variance of
+the desired price expressed in currency ℓ, ˜pℓ
+i = ˜pi +eℓ.
+The optimal currency of pricingℓ ensures the minimal variation in the desired price˜pℓ
+i expressed in
+currencyℓ. This result may at /f_irst appear surprising; nonetheless, it is very intuitive upon re/f_lection.
+The preset price attempts to target the desired price on average (Lemma 1). When the desired price
+expressed in currency ℓ is volatile across states, currency ℓ is a poor choice for presetting the price,
+as it results in large gaps between ¯pℓ
+i and ˜pℓ
+i, and thus large pro/f_it losses across states of the world.
+In contrast, when the desired price is stable in a given currencyℓ, /f_ixing the price in that same currency
+results in little loss relative to the /f_lexible price settingpi = ˜pℓ
+i, as it can be accurately targeted by a
+constant ¯pℓ
+i. In other words, a moving target is easy when its movement is limited. This explains the
+result in Lemma 2.
+Using Lemma 2, the choice of currency ℓ would be favored over the default option of pricing in
+euros if var(˜pi) > var(˜pℓ
+i) = var(˜pi +eℓ). Expanding the last variance term and manipulating the
+inequality, this condition is equivalent to:
+cov
+(
+˜pi +eℓ,eℓ
+)
+var
+(
+eℓ
+) < 1
+2, (4)
+where a speci/f_ic threshold of1/2 comes from the second-order (quadratic) approximation. Note that
+the left-hand side is the projection of the desired price in currency ℓ on the corresponding bilateral
+exchange rate, or the exchange rate pass-through (ERPT) elasticity for the desired price. Currencyℓ is
+favored if the exchange rate pass-through into ˜pℓ
+i is low, or equivalently ˜pℓ
+i does not vary closely with
+the exchange rate. In the opposite case, if the inequality in (4) is reversed for every currency ℓ, the
+optimal choice for the /f_irm is the producer currency (euro), which ensures high (complete) ERPT in
+every currencyℓ other than the euro.13
+12To prove this lemma, Taylor expand around ˜pi the gap in average pro/f_its between currencies ℓ and d to obtain:
+E Πi
+(
+¯pℓ
+i−eℓ
+)
+−E Πi
+(
+¯pd
+i−ed
+)
+≈ 1
+2 E{−˜Π′′
+i (˜pi)}·
+[
+var(˜pd
+i
+)
+−var(˜pℓ
+i
+)]
+, and thus currencyℓ is chosen whenvar(˜pℓ
+i
+)
+< var(˜pd
+i
+)
+for all alternativesd; the proof uses Π′
+i(˜pi) = 0 and Π′′
+i (˜pi)< 0, as well as Lemma 1, which implies E(˜pℓ
+i− ¯pℓ
+i)2 = var(˜pℓ
+i
+)
+.
+13Note that currency choice is akin to an indexing decision: it ensures that, in the instance of price non-adjustment, the
+7
+
+===== PAGE 9 =====
+
+We consider three modes of pricing — producer currency pricing (PCP, euro), dominant/vehicle
+currency pricing (DCP, dollar), and local currency pricing (LCP, destination currency k) — with the
+realized destination-currency price conditional on price non-adjustment given by:
+p∗
+i =
+
+
+¯pi +ek, under PCP (euro),
+¯pD
+i +eD
+k, under DCP (dollar),
+¯p∗
+i, under LCP (destination currencyk),
+(5)
+where eD
+k is the dollar-destination exchange rate measuring the depreciation of currency k against
+the dollar. Thus, PCP is favored if the destination-currency desired price ˜p∗
+i tracks closely the euro-
+destination bilateral exchange rateek, as PCP ensures complete pass-through ofek intop∗
+i in the short
+run. Similarly, DCP is favored if ˜p∗
+i tracks closely the dollar-destination exchange rate eD
+k , or in other
+words the desired price is stable in dollars. Finally, LCP is favored if ˜p∗
+i is itself stable and does not
+track any exchange rate, as LCP ensures zero short-run pass-through of all exchange rates into the
+destination-currency pricep∗
+i .
+2.2 Exchange rate pass-through and currency choice
+Desired pass-through The desired price de/f_ines the desired (log) markup of the /f_irm˜µi according
+to the following price identity:
+˜pi = ˜µi +mci, (6)
+wheremci is the log marginal cost of the /f_irm. In the remainder of the analysis, all lower-case letters
+denote the log deviations from a constant-price steady state.
+We follow Amiti, Itskhoki, and Konings (2019) and adopt the following decomposition of the desired
+price of the /f_irm, based on the structure of the desired markup, which applies across a general class of
+models of monopolistic and oligopolistic competition:14
+˜pi = 1
+1 + Γi
+mci + Γi
+1 + Γi
+(z∗
+k−ek) +εi, (7)
+wherez∗
+k is the competitor price index in the destination currency (in a given industry-destination),
+εi is the demand (markup) shock, and Γi is the elasticity of the desired markup with respect to price,
+Γi≡−∂˜µi/∂pi. As a result, 1
+1+Γi
+is the own cost pass-through elasticity of the /f_irm andΓi
+1+Γi
+re/f_lects
+the strength of strategic complementarities in price setting.
+We now explore the elasticity of the desired price in the destination currency, ˜p∗
+i = ˜pi +ek, with
+respect to bilateral euro-destination and dollar-destination exchange rates, ek andeD
+k . By convention,
+an increase inek andeD
+k corresponds to the depreciation of the destination currency against the euro
+realized destination price of the /f_irmp∗
+i = ¯pℓ
+i +eℓ
+k tracks one-for-one the bilateral exchange rateeℓ
+k between the destination
+currencyk and the currency of pricingℓ. The goal of the currency choice is to /f_ind suchℓ that allowsp∗
+i = ¯pℓ
+i +eℓ
+k to closely
+track ˜p∗
+i . Lemma 2 and equation (4) formalize this idea as a condition on the low volatility of the desired price˜pℓ
+i expressed in
+currencyℓ, or equivalently the low exchange rate pass-through into ˜pℓ
+i. Also note that the volatility in ˜p∗
+i that is orthogonal
+to exchange rates is of no relevance for currency choice, as it cannot be addressed.
+14Formally, (7) is the full diﬀerential of (6) with the desired markup given by ˜µi =M(pi +ek−z∗
+k;εi) and decreasing in
+the relative price of the /f_irm, so thatΓi≡−M′(˜pi +ek−z∗
+k;εi)> 0.
+8
+
+===== PAGE 10 =====
+
+and the dollar respectively. We approximate the projection of the /f_irm’s desired export price on the two
+exchange rates as follows:
+Lemma 3 (Desired pass-through) Firm i’s desired export price to k in the destination currency, ˜p∗
+i ,
+comoves with the euro-destination and the dollar-destination exchange rates as follows:
+d˜p∗
+i = (1−ϕi−γi) dek +
+(
+ϕD
+i +γD
+i
+)
+deD
+k, (8)
+whereϕi≡− ∂mci
+∂ek
+andϕD
+i ≡ ∂mci
+∂eD
+k
+capture the exposure of the /f_irm’s marginal cost to foreign currencies
+and to the dollar speci/f_ically, andγi ≡− Γi
+1+Γi
+∂[z∗
+k−mci−ek]
+∂ek
+and γD
+i ≡ Γi
+1+Γi
+∂[z∗
+k−mci−ek]
+∂eD
+k
+capture the
+exposure of the /f_irm’s desired markup to foreign currencies and to the dollar via the competitor prices.
+This result follows directly from (6), by noting from (7) that ˜µi = Γi
+1+Γi
+(z∗
+k−ek−mci) +εi, and
+assuming that the /f_irm’s idiosyncratic demand shifterεi is orthogonal with the exchange rates. A /f_irm
+exhibiting no strategic complementarities in price setting, namely Γi = 0 , has γi = γD
+i = 0 ; and a
+/f_irm with a marginal costmci stable in the producer currency has ϕi =ϕD
+i = 0. If both are true, the
+/f_irm exhibits complete pass-through of the euro-destination exchange rate into its desired destination
+price,∂ ˜p∗
+i/∂ek = 1, and zero pass-through of the dollar-destination exchange rate,∂ ˜p∗
+i/∂eD
+k = 0. This
+is the complete ERPT benchmark. In contrast, if the /f_irm’s marginal cost is sensitive to the euro or the
+dollar exchange rate, e.g. due to the use of foreign intermediate inputs or if the /f_irm’s optimal markup
+is sensitive to the prices of its competitors in the destination market, then such a /f_irm would exhibit
+an incomplete pass-through of the euro-destination exchange rate and a non-zero pass-through of the
+dollar-destination exchange rate into its desired destination-currency price.
+In practice, we proxy forϕi andϕD
+i with the /f_irm’s share of imported inputs in total variable costs,
+sourced in all foreign currencies and in dollars in particular. The /f_irms that source all their intermediates
+domestically, or within the eurozone, are assumed to haveϕi =ϕD
+i = 0. For the markup channel, we
+follow Amiti, Itskhoki, and Konings (2019) who show, both theoretically and empirically, that markup
+elasticity Γi is increasing in /f_irm size and is zero for /f_irms with negligible sales shares. We, therefore,
+expectγi =γD
+i = 0 for the smallest /f_irms,γi,γD
+i > 0 for larger /f_irms and increasing in /f_irm size.
+Currency choice Lemma 3 provides a convenient decomposition of the variation in the desired
+price ˜p∗
+i . We now combine it with equation (5) to determine whether PCP, DCP or LCP best tracks
+the desired price. The three limiting cases are as follows:
+(i) PCP (euro) if dp∗
+i≈ dek, corresponding toϕi,γi,ϕD
+i ,γD
+i ≈ 0;
+(ii) DCP (dollar) if d˜p∗
+i≈ deD
+k , whenϕi +γi≈ϕD
+i +γD
+i ≈ 1;
+(iii) LCP (destination currency) if d˜p∗
+i≈ 0, whenϕi +γi≈ 1 andϕD
+i +γD
+i ≈ 0.
+Outside of these limiting cases, one can use Lemma 2 and condition (4) to establish the optimal currency
+choice pairwise. For example, LCP is favored over PCP if d˜p∗
+i
+dek
+< 1
+2, which requires ϕi +γi > 1
+2, and
+PCP is favored otherwise.
+To summarize, marginal costs and desired markups stable in producer currency (i.e., lowϕi andγi)
+favor PCP, while marginal costs and markups that respond to exchange rates favor the use of foreign
+9
+
+===== PAGE 11 =====
+
+currencies (LCP or DCP). For example, importing intermediate inputs in dollars (highϕD
+i ) favors the use
+of the dollar in exports, while strong strategic complementarities in price setting with local competitors
+(highγi) favors the use of the local currency (see Gopinath, Itskhoki, and Rigobon 2010, Mukhin 2021).
+Realized pass-through The realized pass-through is shaped by a combination of the currency choice,
+conditional on price non-adjustment which occurs with probabilityδ, and of the desired ERPT, condi-
+tional on a price change. As a result, the realized price of the /f_irm satis/f_ies:
+dp∗
+i =
+[
+d[¯pℓ
+i +eℓ
+k] = deℓ
+k, with probabilityδ,
+d˜p∗
+i, with probability 1−δ,
+where d˜p∗
+i is given by (8) andeℓ
+k =ek−eℓ is the exchange rate between the currency of pricingℓ and
+the destination currencyk. The expected price change is therefore E dp∗
+i =δdeℓ
+k + (1−δ)d˜p∗
+i .
+We again focus on the three cases — PCP, DCP and LCP — denoting with ιL
+i,ιD
+i ∈ {0, 1} the
+indicators for whether the /f_irm adopts LCP or DCP respectively. Then, the choice of PCP corresponds
+toιi≡ ιD
+i +ιL
+i = 0 andιi = 1 indicates the choice of any foreign currency. Using this notation, we
+combine (5) and (8) to obtain the expression for the expected observed price change:
+Edp∗
+i = dek +δ
+[
+−ιi dek +ιD
+i deD
+k
+]
++ (1−δ)
+[
+− (ϕi +γi)dek + (ϕD
+i +γD
+i )deD
+k
+]
+. (9)
+The /f_irst term (dek) isolates the complete pass-through of the euro-destination exchange rate (that is,
+dp∗
+i/dek = 1) of a /f_irm pricing in euros (PCP, withιi = ιD
+i = 0) and not exposed to foreign currency
+/f_luctuations either via its marginal cost (ϕi =ϕD
+i = 0) or desired markup (γi =γD
+i = 0).
+The next terms in (9), in the /f_irst square brackets pre-multiplied byδ, isolate the direct eﬀect of price
+stickiness in local or dominant currency. This eﬀect occurs conditional on no price adjustment, which
+happens with probability δ, and results in zero pass-through of the euro-destination exchange rate
+under LCP and a complete pass-through of the dollar-destination exchange rate under DCP. The larger
+the extent of price stickinessδ, the greater is the impact of this sticky price term on the realized ERPT.
+The last term in (9), in square brackets pre-multiplied by (1−δ), isolates the eﬀect of the /f_lexible-
+price (or desired-price) determinants of ERPT, conditional on a price adjustment which occurs with
+probability (1−δ). As emphasized by Lemma 3, the desired pass-through re/f_lects the exposure of the
+/f_irm’s marginal cost and desired markup to foreign exchange (ϕi andγi) and the dollar in particular
+(ϕD
+i andγD
+i ). Therefore, equation (9) oﬀers a convenient way to decompose the observed incomplete
+ERPT into the direct eﬀect of foreign-currency price stickiness (LCP and DCP) and the incomplete
+pass-through into the desired price (8) conditional on a price adjustment.
+The one-period model does not specify a time unit, and as such can be applied at any time horizon.
+In particular, equation (9) describing the realized ERPT can be applied over any time interval, where
+parameterδ decreases over time to re/f_lect the fact that prices become more /f_lexible over longer horizons.
+In the very short run, we expectδ≈ 1, and in the long runδ→ 0. Therefore, as we consider longer time
+horizons, the relative weight in (9) shifts away from the sticky-price term and towards the /f_lexible-price
+(desired-price) term. We approach the data non-parametrically, and estimate a sequence of equations (9)
+over varying time horizons.
+10
+
+===== PAGE 12 =====
+
+2.3 Dynamics of ERPT
+We now extend the analysis to a dynamic price-setting problem with a Calvo price-setting friction,
+in order to aid the interpretation of our empirical estimates. 15 That is, we consider a /f_irm that has an
+exogenous opportunity to reset its price with a probability(1−λ) each period, while with probabilityλ
+it keeps its price unchanged from the previous period. We characterize below how λ maps into the
+regression coeﬃcient δ in (9). Consider a /f_irm that sets its price in currencyℓ, which may correspond
+to PCP, LCP or DCP, with the realized destination-currency price given by:
+p∗
+it =
+[
+¯pℓ
+it +eℓ
+kt, with probability 1−λ,
+pℓ
+i,t−1 +eℓ
+kt, with probabilityλ,
+where the optimal reset price ¯pℓ
+it = (1−βλ)∑∞
+j=0(βλ)jEt˜pℓ
+i,t+j is a weighted average of current and
+future desired prices expressed in the invoicing currencyℓ (using the probability of non-adjustmentλ
+and the discount factorβ as weights, see e.g. Galí 2008). This generalizes the concept of preset price (2)
+in the static model to a dynamic environment. For simplicity, we assume that all bilateral exchange
+rates follow a random walk with Et∆eℓ
+k,t+1 = 0, and we consider the special case of the desired price
+in (8) with ∆˜p∗
+it =ψi∆ekt +ψD
+i ∆eD
+kt, whereψi≡ 1−ϕi−γi andψD
+i ≡γD
+i +ϕD
+i .
+With this data generating process, we show in Online Appendix A that by estimating equation (9)
+over any time horizonh (months), one can recover both the structural parameter of price stickinessλ,
+as well as the causal treatment eﬀect of currency of pricing. In particular, by projecting an h-period
+change in the observed prices, ∆hp∗
+it≡ p∗
+it−p∗
+i,t−h, on the h-period change in the exchange rates,
+∆hekt and ∆heD
+kt, interacted with dummies for foreign currency choice {ιi,ιD
+i}, and controlling for
+the desired pass-through terms, as in (9), one obtains the following regression equation:
+E∆hp∗
+it = ∆hekt + ˆδ(h)
+[
+−ιi ∆hekt +ιD
+i ∆heD
+kt
+]
++
+(
+1− ˆδ(h)
+)[
+−ψi∆hekt +ψD
+i ∆heD
+kt
+]
+, (10)
+where the regression coeﬃcients are now shaped by the following function of horizonh and the Calvo
+parameterλ:
+ˆδ(h) = 1
+h
+λ
+1−λ(1−λh). (11)
+Therefore, the /f_lexible-price coeﬃcients increase with horizonh in proportion with 1− ˆδ(h), while
+the sticky-price coeﬃcients equal ˆδ(h).16 The parameter λ allows us to evaluate the average price
+duration given by 1/(1−λ) and the fraction of prices that have not yet been adjusted h periods after
+the shock given by a declining geometric progressionλh, which also measures the causal eﬀect of the
+foreign-currency price stickiness on the realized ERPTh periods out.
+15One can adopt alternative models of price and quantity dynamics, and use our non-parametric dynamic estimates to
+discipline the structural coeﬃcients in those models.
+16Note that ˆδ(1) =λ and ˆδ(h)>λ h forh> 1, and the convergence of the sequenceδh = ˆδ(h)→h 0 is hyperbolic inh.
+This is because ˆδ(h) is a regression coeﬃcient of the change in prices on the contemporaneous change in the exchange rates
+over increasingly longer windowsh, and thus estimates the average response over these windows as opposed to an impulse
+response. An alternative projection of a one-period price change on the distributed lag of past exchange rate changes recovers
+a geometrically decreasing impulse responses,λh, which is in a one-to-one relationship with ˆδ(h) (see Online Appendix A).
+11
+
+===== PAGE 13 =====
+
+2.4 Additional determinants of currency choice
+The analysis thus far has focused on a baseline model of currency choice that isolates the desired pass-
+through as a suﬃcient statistic. A straightforward generalization of the currency choice problem in (3)
+incorporates an additional /f_ixed costFℓ,i associated with the use of currencyℓ and possibly idiosyncratic
+to /f_irmi:
+ℓ = arg maxℓ
+{
+max¯pℓ
+i
+E Πi
+(
+¯pℓ
+i−eℓ|Ω
+)
+−Fℓ,i
+}
+. (12)
+This formulation allows us to consider a number of possible extensions that identify additional deter-
+minants of currency choice.
+First, consider the case where some /f_irms /f_ind it particularly costly to adopt a certain currencyℓ, or
+all /f_irms (in a given industry or at large) /f_ind it costly to use a speci/f_ic currencyℓ. This interpretation
+of (12) captures a number of possible narratives, starting from macroeconomic country-level risk which
+makes certain currencies ill-suited for pricing (e.g., due to the risk of unexpected in/f_lation or devalu-
+ation) and ranging to institutional path-dependency of using a particular currency in pricing certain
+products (e.g., the use of the dollar in pricing commodities). It also allows for /f_irm-speci/f_ic determinants
+such as participation in global value chains that make the use of a particular currency more likely in
+/f_irm’s trade, independent of its desired ERPT. Testing such theories requires the use of variables that
+proxy for the /f_ixed costFℓ,i after controlling for the desired pass-through of the /f_irm.
+Second, another interpretation of (12) is one in which a /f_irm must adopt a single invoicing currency
+across multiple destinations or pay a /f_ixed cost associated with using non-uniform pricing policies
+across destination markets. Formally, this can be captured by a /f_ixed costFℓ,i which equals zero under
+uniform pricing and is positive if the /f_irm chooses a diﬀerent currency or price for sales to a given
+destination relative to its other exports. In other words, under such /f_ixed costs, /f_irms have a motive
+to avoid using diﬀerent currencies in diﬀerent destinations. Indeed, there is evidence that /f_irms adopt
+common invoicing and pricing policies, at least across a subset of their export destinations (see e.g.
+Cavallo, Neiman, and Rigobon 2014, Crowley, Han, and Son 2021). Testing this theory requires a /f_irm-
+level proxy that compels the /f_irm to adopt some currency in one of its destinations, which then makes
+the use of that currency more likely in other destinations independently of the destination-speci/f_ic
+desired pass-through.
+Lastly, a third extension features the /f_inancing channel of currency choice, whereby the balance
+sheet of the /f_irm aﬀects the optimal currency invoicing either as way of hedging or relaxing the /f_irm’s
+/f_inancial constraints (see e.g. Gopinath and Stein 2020, Drenik and Perez 2021).17 These theories sug-
+gest that the optimal price of the /f_irm is no longer shaped exclusively by the static desired markup, but
+incorporates expected shadow costs associated with the eﬀects of invoicing and pricing decisions on
+/f_inancing constraints of the /f_irm. As a result, variables characterizing /f_irm /f_inancing and /f_inancial con-
+straints are likely to shape the optimal currency choice beyond the determinants of the desired ERPT.
+17Incorporating this formulation within our framework requires augmenting the decision problem in (12) with an additional
+constraintG(¯pℓ
+i,xi|Ω)≤ 0, where xi are the other decision variables of the /f_irm, which for example can represent /f_irm
+/f_inancing or working capital constraints.
+12
+
+===== PAGE 14 =====
+
+3 Empirical Analysis
+In this section, we describe our data sets and the construction of the main variables. We then present
+new stylized facts on currency invoicing, before delving into a more formal empirical analysis of cur-
+rency choice and exchange rate pass-through in Sections 4 and 5.
+3.1 Data Description
+To empirically implement the theoretical framework of Section 2, it is critical to have /f_irm-level cur-
+rency data as well as good proxies for the /f_lexible-price /f_irm-level characteristics. The availability of
+this combination of data is unique to Belgium. The Belgian Customs Oﬃce began compiling the cur-
+rency of invoicing data at a disaggregated level at the beginning of 2017, which were then processed
+by the National Bank of Belgium. These data report the value, quantity, and currency of invoicing for
+exports and imports at the /f_irm-product level by destination and source country outside the EU with
+each product classi/f_ied at the 8-digit combined nomenclature (CN), comprising around 10,000 distinct
+products. All international trade transactions that take place within the EU are collected by a diﬀerent
+authority, the Intrastat Survey, which does not report the currency of invoicing, but does report all the
+values and quantities of trade at the same level of disaggregation.18
+To understand the determinants of currency choice and exchange rate pass-through, we combine
+the currency invoicing data with /f_irm characteristics drawn from annual income statements of all in-
+corporated /f_irms in Belgium. In particular, we use the quarterly VAT declarations, which all /f_irms are
+required to submit to the tax oﬃce, for information on the cost of total material inputs used. We draw
+on data from the Social Security Oﬃce for the wage bill, where all /f_irms have to report their employ-
+ment and wages paid. It is straightforward to merge these data with the currency data as they both
+include a unique /f_irm identi/f_ier common across datasets.
+Using these data, we construct the following /f_irm-level determinants. The /f_irst is the /f_irm’s import
+intensity from outside the eurozone (ex-EZ), as a proxy for the /f_irm’s marginal cost sensitivity to the
+exchange rate:
+ϕi≡ Total ex-EZ import valuei
+Total variable costsi
+, (13)
+where total variable costs comprise a /f_irm’s total wage bill and total material costs. Note that ϕi is
+measured at the /f_irm-level, and thus applies to all CN8-productsi exported by multi-product /f_irms. We
+measure a /f_irm’s import intensity in each year and then average it over time. A novelty with our data is
+that we can further split a /f_irm’s import intensity by the currency of invoicing, to get a measure of the
+share of imports invoiced in euros and other currencies. We denote the euro- and non-euro-invoiced
+import intensities with E andX superscripts respectively, so that the overall import intensity of the
+/f_irm can be decomposed asϕi =ϕE
+i +ϕX
+i . In some cases we further split the non-euro import intensity
+into its dollar componentϕD
+i and the remaining other currencies.
+Second, we construct two measures of /f_irm size to proxy for strategic complementarities in price
+setting and markup sensitivity to the exchange rate. We use the /f_irm’s average log employmentlogLi
+18Belgian trade with ex-EU countries accounts for 27% of their exports and 34% of imports in 2018. Nonetheless, as Belgium
+is a very open economy, with a trade (exports plus imports) to GDP ratio of 151% in 2018, its ex-EU trade /f_lows are still large
+as a share of GDP.
+13
+
+===== PAGE 15 =====
+
+to capture its absolute size and the destination-speci/f_ic sales shareSik to re/f_lect its relative size. In
+particular, we proxy the /f_irm’s market share in a given destination by its sales share relative to the
+total sales of all Belgian products in a given industry-destination, with industries de/f_ined at the HS 4-
+digit level.19 Third, we construct variables to proxy for additional /f_irm-level determinants of currency
+choice, comprising the /f_irm’s export share in total sales, share of exports to eurozone destinations,
+inward and outward FDI, R&D intensity, measured TFP, and various /f_inancial (balance sheet) variables,
+as we describe in our robustness analysis in Section 4.
+We estimate two types of equations. First, we estimate the determinants of currency choice, in
+which we use the full sample of monthly currency data available to us, from March 2017 to December
+2020. In the main speci/f_ications, the dependent variableιikt is equal to 0 if the currency choice for a
+given /f_irm-product-destination-month is the euro and 1 for non-euro (any other currency). In cases
+where we consider the subset of products invoiced in non-euros, we construct an indicator variableιD
+ikt
+equal to 1 if the currency choice for a given /f_irm-product-destination-month is the dollar.
+Second, we estimate exchange rate pass-through (ERPT) by regressing changes in export prices
+on changes in exchange rates interacted with /f_irm characteristics. We start with annual data on trade
+/f_lows and /f_irm characteristics for the period 2012 to 2020 as our benchmark speci/f_ication; we then turn
+to estimating the dynamics of ERPT by using the monthly data and varying the horizon of the change
+in each variable. The dependent variable is the log change in the export price of /f_irm-product i to
+destination countryk at timet, measured as the ratio of export value to export quantity (unit value):
+∆p∗
+ikt≡ ∆ log
+( Export value∗
+ikt
+Export quantityikt
+)
+, (14)
+where values are converted to the destination currencies k (hence∗ superscript) and quantities are
+measured as weights (where available) or units.20 Summary statistics for all variables and further details
+on data construction are provided in Online Appendix B.
+In some of our analysis, we separate the subsets of dollar-pegged and /f_loating destinations. We
+follow Ilzetzki, Reinhart, and Rogoﬀ (2019) and use monthly data (from 2012 to 2018) to classify as pegs
+and partial pegs all countries with an annualized root mean squared error of exchange rate changes
+against the dollar below 5%, identifying 65 dollar pegs (in addition to the US) among 179 destination
+countries, which jointly account for 44% of Belgian exports outside the EU.
+3.2 Stylized facts on currency choice
+We start by documenting the overall incidence of diﬀerent currencies in Belgian exports and imports.
+In Table 1, we report the shares of currency use (for the euro, dollar, and other currencies combined) in
+Belgian ex-EU exports and imports for our full sample (March 2017 to December 2020). We report the
+shares both by the number of observed transactions (at /f_irm-product-country-month level) and by the
+19From theory, it is desirable to know the /f_irm’s sales as a share of total industry sales (including all importsand local sales)
+rather than just sales by Belgian /f_irms; however, obtaining such a measure for all destination countries is infeasible.
+20Despite the high degree of disaggregation in the CN product codes, unit values may still be an imprecise proxy for prices
+because there may be more than one product within a CN 8-digit code exported by the /f_irm, resulting in unit value changes
+due to compositional changes in aggregation, or because of errors in measuring quantities. To minimize these issues, we clean
+the data by dropping the observations with abnormally large price jumps, with year-to-year price ratios above 3 or below 1/3.
+14
+
+===== PAGE 16 =====
+
+Table 1: Currency use in exports and imports
+Exports Imports
+Count Value share Count Value share
+share All Diﬀ Non-diﬀ share All Diﬀ Non-diﬀ
+Euro 0.653 0.349 0.371 0.316 0.387 0.425 0.532 0.265
+Dollar 0.229 0.514 0.420 0.658 0.508 0.519 0.386 0.720
+Other 0.118 0.137 0.209 0.026 0.104 0.055 0.082 0.015
+Note: The currency data are at the /f_irm-product (CN8)-country-month level for 2017:03 to 2020:12, for all ex-EU countries.
+“Other” row refers to currencies other than the euro or the dollar (in most cases, corresponding to the destination or source
+currency). “Diﬀ” columns refer to diﬀerentiated goods as de/f_ined by the Rauch classi/f_ication; “Non-diﬀ” are all other goods.
+value of trade /f_lows. For exports, the euro accounts for two-thirds of the observations, yet only 35% of
+the value, suggesting that it is the smaller transactions that are denominated in euros. In contrast, the
+dollar accounts for just 23% of observations, yet around half (51%) of the value of exports, making the
+dollar the dominant export currency. The other currencies combined account for under 14% of Belgian
+exports, both in count and in value terms, and for the most part correspond to the destination currency.
+Therefore, the incidence of local (destination) currency pricing — other than the dollar — is not very
+high in Belgian exports.21
+For imports, the distribution of value shares across these diﬀerent currency categories is similar
+to exports, with a somewhat larger role of the euro at the expense of the share of other currencies:
+the dollar still accounts for around half of the value of imports, the euro accounts for 43%, and all
+other currencies combined account for only 6%. For imports, however, there is almost no discrepancy
+between the shares in terms of number of observations and in value terms, suggesting that on average
+there is no diﬀerence in the size of the transactions across the three currency bins that we consider.
+The limited role of the other currencies suggests that producer currency pricing — again outside of the
+case of the dollar — is an infrequent phenomenon in Belgian imports.
+Diﬀerentiated goods (de/f_ined by the Rauch classi/f_ication) account for more than 80% of the obser-
+vations and 60% of the value of trade (for both exports and imports). The distributions across currency
+categories for diﬀerentiated goods show similar patterns to the overall value shares, with a more pro-
+nounced role for other currencies at the expense of the dollar share. Unsurprisingly, the role of the
+dollar is particularly dominant for commodities and homogeneous goods (non-diﬀerentiated category,
+where the dollar accounts for 66% of exports and 72% of imports), while it is smaller for the diﬀer-
+entiated products (42% and 39%, respectively). The euro share is equally prominent for diﬀerentiated
+exports (37%) and it is even larger for diﬀerentiated imports (53%). Note that the use of third currencies,
+which are nearly absent in the non-diﬀerentiated trade invoicing, becomes considerably more prevalent
+for diﬀerentiated goods, in particular for diﬀerentiated exports (21%).
+21Importantly, these invoicing patterns are not driven by the US, which is the largest Belgian trade partner outside the
+EU, accounting for about 20% of Belgian ex-EU exports and imports. When we drop the US as an export destination, the
+share of the dollar use in Belgian ex-EU export invoicing only falls from 51% to 44%, and it hardly changes for ex-EU imports.
+This highlights the dominant role of the US dollar as the vehicle currency in international trade, consistent with the patterns
+documented by Gopinath (2016).
+15
+
+===== PAGE 17 =====
+
+(a) Exports
+0 0.2 0.4 0.6 0.8 1
+0
+0.2
+0.4
+0.6
+0.8
+1 (b) Imports
+0 0.2 0.4 0.6 0.8 1
+0
+0.2
+0.4
+0.6
+0.8
+1
+Figure 1: Dominant currencies in Belgian bilateral trade
+Note: The /f_igures plot the share of dollar invoicing against the share of euro invoicing by country, for Belgium ex-EU exports
+(on the left) and imports (on the right); circles represent the size of individual countries in Belgian trade; the distance to the
+diagonal corresponds to the share of third currencies (other than the dollar and the euro). The legends identify the top-10
+Belgian trade partners outside the EU in terms of total trade. The dotted lines plot the average currency shares from Table 1.
+A clear message from Table 1 is that the currency patterns are at odds with standard macro models
+that assume either producer (PCP) or local (LCP) currency pricing. The co-dominance of euros and
+dollars in both importing and exporting suggests that neither LCP nor PCP accurately re/f_lect currency
+choices. Instead, the patterns are more in line with recent work emphasizing the role of the dominant
+currencies (DCP). A distinctive feature of DCP relative to PCP and LCP is that the same currency is
+equally dominant in both imports and exports (see Gopinath and Itskhoki 2021). This feature is common
+to both the dollar and the euro in our data.
+Nonetheless, a clear distinction between the dollar and the euro is that the dollar in many cases is
+also a vehicle currency, not used domestically by either importing or exporting country. Indeed, the
+dollar plays an outsized role relative to the US trade share. However, to gauge the relative importance of
+the US dollar, a more informative benchmark may be the Belgian trade share with dollarized and dollar-
+pegged countries. Indeed, for diﬀerentiated products, the value share of dollar invoicing of around 40%
+is smaller than the combined Belgian trade share of the US and dollar-pegged countries, equal to 47%
+for exports and 53% for imports.22
+Bilateral trade /f_lows The prominence of the two dominant currencies is also apparent in Belgian
+bilateral trade as shown in Figure 1, where we plot the dollar and the euro share of trade, for exports in
+the left panel and imports in the right panel. Each circle corresponds to a separate country outside the
+EU and the size of the circles depicts the share of the country in total Belgian trade. The fact that most
+circles lie on the negative diagonal, or slightly below it, re/f_lects the dominance of the combined use of
+the dollar and the euro in trade invoicing with virtually every trade partner. Furthermore, exports to
+the US and India, among major trade partners, are invoiced largely in the US dollar, while trade with
+22For all goods, where commodities account for a large portion of trade, the value share of dollar invoicing of 51% slightly
+exceeds the trade share of the US and pegged countries combined, equal to 44% for exports and 50% for imports.
+16
+
+===== PAGE 18 =====
+
+Switzerland and Turkey is invoiced largely in euros, with a lot of variation in the relative shares of the
+two dominant currencies across other trade partners, suggesting a role for country-level determinants
+of currency invoicing.
+Figure 1 also shows that there are bigger departures towards third currencies in exports than in
+imports. For imports, only Japan among the main trade partners has a sizeable third-currency share,
+which in particular implies that very few major industrial countries use their own currency when
+exporting to Belgium. However, for Belgian exports, there are more countries below the diagonal with a
+sizable share of trade invoiced in third currencies, which is in most cases the currency of the destination
+country. This includes China, Japan, Switzerland, Turkey and Russia, as well as a number of other
+smaller trading partners. The patterns are similar when we focus on the subsample of diﬀerentiated
+products in Appendix Figure A1, yet with a noticeable shift away from the dollar and towards the euro
+and third currencies for many destination and source countries.
+Variance decomposition Lastly, we explore the dimensions of variation in export currency invoic-
+ing across the /f_irm-product-destination-month observations in our sample. Speci/f_ically, we project the
+currency choice dummyιikt (equal to one for non-euro use in exports) on various subsets of /f_ixed eﬀects
+and report the adjustedR2 in Appendix Table A1. Firm /f_ixed eﬀects alone explain nearly two-thirds of
+the variation in export currency invoicing, and interacting /f_irm /f_ixed eﬀects with country of destination
+boosts that to 90%, with little variation in currency choice over time.23 In contrast, the variation across
+destination countries alone accounts for only a small share, 15%, of the variation in the currency choice
+in our panel, while the variation across industries (at HS4 level) accounts for 40%.24 This is suggestive of
+a central role played by the diﬀerential behavior across /f_irms within industry-destinations in explaining
+the patterns of currency choice in the data, consistent with the theory presented in Section 2.
+4 Currency Choice
+This section analyzes the /f_irm-level determinants of currency choice in exports using an empirical
+framework motivated by the theoretical predictions in Section 2. To begin the analysis, Figure 2 il-
+lustrates the variation in currency choice across /f_irms of diﬀerent size by splitting all /f_irms into eight
+bins ranked by employment.25 The left panel presents the results for exports to all ex-EU destinations,
+showing a stark downward gradient in the use of the euro (PCP, plotted with the red bars): the smallest
+/f_irms invoice their exports in euros with a nearly 80% incidence, the average-sized /f_irms with around
+60% incidence, and the largest /f_irms with only a 40% incidence. For the majority of /f_irms, the alternative
+currency is the dollar (the dark and light blue bars combined); and it is only the largest /f_irms that have
+a non-trivial incidence of invoicing in the destination currency other than the dollar (the white bars).
+23Over the 45-month sample period, there was a switch between euros and non-euros for only 2.6% of observations.
+24Interacting industry and destination-country /f_ixed eﬀects boosts the share of explained currency choice to 65%. The more
+micro-level dimensions of our data explain a greater share of variation in currency invoicing: interacting CN8-product and
+destination-country /f_ixed eﬀects explains over 75% of the variation, yet still not as much as with /f_irm-destination /f_ixed eﬀects.
+25We group all /f_irms into non-overlapping bins with up to 50, 100, 200, 350, 550, 850, 2,000 and more than 2,000 employees.
+The /f_irst 7 bins roughly correspond to the /f_irst 7 deciles of /f_irms by ex-EU Belgian manufacturing exports, while the last bin
+contains only 12 /f_irms that together account for 36% of exports and 50% of imports, as we show in Appendix Table A2.
+17
+
+===== PAGE 19 =====
+
+(a) All destinations (ex-eurozone)
+ (b) Excluding US and dollar pegs
+Figure 2: Firm size and currency choice in exports
+Note: Export currency invoicing shares by employment size bins of /f_irms: the red bars correspond to euros (PCP), the dark
+blue bars to dollars (DCP), the white bars to destination currency (LCP); the left panel additionally separates the category of
+dollar pricers to the US and dollar-peg destinations using the light-blue bars (DCP+LCP). The use of other currencies is less
+than 1.1% in every size bin, and we exclude it from totals. See also Appendix Table A2 and Appendix Figure A2.
+Separating dominant and local currency pricing is challenging for dollar-pegged destinations, and
+is impossible to do so for the United States and other fully dollarized economies. Thus, the right panel
+of Figure 2 focuses on the subset of ex-EU destinations that excludes the United States and the dollar-
+pegged countries, to enable us to cleanly diﬀerentiate between LCP and DCP. Again we observe a
+clear pattern of decreasing incidence of the euro invoicing with /f_irm size, but now we also see that
+the destination currency pricing in non-dollars (LCP) has a high incidence among the very large /f_irms,
+exceeding the incidence of dollar pricing (DCP). The dollar-currency pricing is most pronounced among
+large /f_irms with employment between 200 and 850 employees.
+Figure 2 establishes a systematic pattern of currency choice across /f_irms of diﬀerent employment
+size, and Appendix Table A3 further describes the variation in /f_irm characteristics across diﬀerent
+bins of currency invoicing. 26 Since /f_irm size correlates with many exogenous and endogenous /f_irm
+characteristics, this suggests that the currency choice is indeed an active decision made at the level of
+the /f_irm. In particular, these patterns of currency invoicing are consistent with the theory laid out in
+Section 2, where the size of the /f_irm proxies for the strength of strategic complementarities in pricing.
+However, such patterns could also be consistent with alternative mechanisms, as /f_irm size may correlate
+with other potential determinants of currency choice, as we further explore below.27
+26Almost 90% of Belgian ex-EU exporters rely on euro invoicing, 9% use the dollar, and only 22 out of 2,765 use the desti-
+nation currency for the majority of their exports. Firms invoicing in euros are much smaller in terms of employment, sales,
+exports and imports, while /f_irms using destination currencies are the largest. Exporters that use the dollar are more import
+intensive (ex-EZ) and most likely to source their imports in dollars, as well as export to dollar-pegged destinations. There is
+less variation in the average export intensity or the share of ex-EU exports across the three subsets of /f_irms.
+27Appendix Figure A2 plots the relationship between /f_irm size and currency use in imports, showing a lack of any robust
+pattern in contrast with exports. This is consistent with the common theoretical approach whereby currency choice in
+exports is a more active /f_irm-level decision than in imports: exporters make currency-choice and price-setting decisions, while
+importers choose quantities given prices. We provide a further discussion of currency use in imports in Online Appendix C.
+18
+
+===== PAGE 20 =====
+
+The main /f_irm-level determinants We now study the determinants of currency choice in exports
+more formally, by estimating an empirical speci/f_ication following the theory in Section 2.2, which
+emphasizes the /f_irm’s size and import intensity, as well as its competitors’ currency choice in shaping
+the /f_irm’s own currency choice decision.
+Speci/f_ically, we estimate a linear probability regression:
+P{ιikt = 1} =at,sk +bϕi +cSSik +cL logLi +d¯ι−ik. (15)
+The dependent variable is a dummy ιikt ∈ {0, 1} at the /f_irm-product(CN8)-destination-time level,
+with 0 corresponding to the use of the euro in export transaction (PCP) and 1 corresponding to any
+other currency, including the destination currency (LCP) and the dollar (DCP). We explore further the
+choice between the dollar and the destination currency below. The /f_ixed eﬀectsat,ks are at the date
+(month-year) and country-industry (HS4) level, respectively, thus we focus on the variation in currency
+choice across /f_irms within industry-destinations.28 As described in Section 3, ϕi is the /f_irm’s ex-EZ
+import intensity,Sik is the /f_irm’s industry-destination sales share (relative to other Belgian exporters),
+and logLi is the /f_irm’s employment. Lastly,¯ι−ik is the export-weighted average currency use of the
+/f_irm’s Belgian competitors in a given destination-industry (HS4) to capturestrategic complementarities
+in currency choice.29
+We report the results in Table 2. The /f_irst three speci/f_ication focus on the /f_irm-level determinants,
+and the next three add in the competitor currency choice. The speci/f_ication in column 1 includes only
+the import intensity and the /f_irm’s destination market share. Both variables are positive and signi/f_icant
+in predicting the currency choice outcome. That is, /f_irms that use a larger share of imported (ex-EZ)
+intermediate inputs in their production costs and have a larger destination sales share among their
+Belgian competitors are less likely to invoice their exports in euros and thus more likely to use other
+currencies — the dollar or the destination currency.
+In column 2, we split the import intensity variable into the share of imports sourced in euros and
+in all other currencies, and we /f_ind that it is only the non-euro import intensity that is statistically
+associated with the foreign currency use in exports, in line with the theoretical predictions. 30 That
+is, import-intensive /f_irms are more likely to adopt non-euros in their export transactions only if their
+imports are themselves priced in non-euros, which in the vast majority of cases is the dollar. In other
+words, the higher the share of imports in dollars, the more likely the /f_irm is to invoice its exports
+in dollars, which ensures real hedging by coordinating the pass-through into export prices with the
+28Our data is an unbalanced panel. Only 2.6% of the observations record a change in currency use across any two months,
+and therefore the results in the panel are essentially the same as in any single cross section (see Online Appendix Table B3).
+By including all time periods we capture more transactions as /f_irms generally do not trade in each product-destination every
+period. We cluster the standard errors at the /f_irm level, which corresponds to the most aggregate right-hand-side variable.
+29Theoretically, it is desirable to know the currency use of all of the /f_irm’s competitors in a given destination, including
+the local competitors, however, the currency choice data for non-Belgian /f_irms are unavailable to us, and thus we use¯ι−ik as
+a proxy. The same applies to the destination sales share variableSik, which is measured relative to other Belgian /f_irms. Note
+that the industry-destination /f_ixed eﬀects alleviate this problem to some extent, albeit incompletely.
+30Our baseline speci/f_ications use the overall ex-EZ import intensityϕi, as the import currency data do not have complete
+coverage, and in particular we are missing currency data on all ex-EZ imports from within the EU (e.g., from the UK); the
+speci/f_ication in column 2 of Table 2 includes a control for the missing currency portion of the /f_irm’s import intensity.
+19
+
+===== PAGE 21 =====
+
+Table 2: Currency choice in exports
+Firm-level determinants and competitor currency choice
+OLS IV
+Dep. var.: ιikt (1) (2) (3) (4) (5) (6)
+ϕi 0.411∗∗∗
+(0.123)
+0.286∗∗∗
+(0.105)
+0.311∗∗∗
+(0.104)
+0.308∗∗∗
+(0.112)
+0.304∗∗∗
+(0.110)
+ϕE
+i 0.102
+(0.195)
+ϕX
+i 0.414∗∗∗
+(0.159)
+Sik 0.125∗∗∗
+(0.032)
+0.119∗∗∗
+(0.031)
+−0.020
+(0.033)
+−0.011
+(0.020)
+0.024
+(0.024)
+logLi 0.088∗∗∗
+(0.015)
+0.085∗∗∗
+(0.014)
+0.089∗∗∗
+(0.015)
+0.088∗∗∗
+(0.015)
+¯ι−ik 0.031∗
+(0.018)
+0.536∗∗∗
+(0.150)
+0.364∗∗
+(0.150)
+¯ι−ik× HighSik 0.220∗∗
+(0.092)
+# obs. 1,265,885 1,265,885 1,265,885 1,185,771 1,142,082 1,142,082
+R2
+adj 0.528 0 .532 0 .579 0 .387 — —
+Cragg-DonaldF -stat 1,865.4 1,054.4
+HansenJ-test [p-val] 2.95
+[0.567]
+8.26
+[0.409]
+Fixed Eﬀects:
+month×year ✓ ✓ ✓ ✓ ✓ ✓
+industry & destination ✓ ✓ ✓
+industry×destination ✓ ✓ ✓
+Notes: The observations are at the /f_irm-product(CN8)-destination-month level for all ex-EU destinations from March 2017
+to December 2020. The dependent variable ιikt = 0 if the export transaction is invoiced in euros and 1 otherwise. Import
+intensityϕi, destination sales shareSik and log employment logLi are as de/f_ined in Section 3;¯ι−ik is competitors’ export-
+weighted foreign-currency use; High Sik is a dummy for whether Sik is above 0.1. Column 2 splits ϕi into euro and non-
+euro componentsϕE
+i andϕX
+i , additionally controlling for the “missing currency” component (not reported). Standard errors
+clustered at the /f_irm level. Columns 1–4 are estimated with OLS; column 5–6 with IV (see text for description of instruments).
+movements in the marginal costs.31
+Column 3 builds on the speci/f_ication in column 1 by adding log employment as a measure of the
+overall /f_irm size. This /f_irm size variable is strongly statistically signi/f_icant in shaping the currency
+choice, as illustrated in Figure 2, however, it also positively correlates with other /f_irm-level variables,
+in particular the import intensity and the destination market share. Including /f_irm employment in
+column 3 reduces somewhat the coeﬃcient on the /f_irm’s import intensity, yet still leaves it positive,
+31Note that /f_inancial hedging (by means of forward exchange rate contracts) is not a substitute for real hedging. Although
+it can insure against /f_inancial risk and/or relax /f_inancial constraints, it cannot aﬀect the realized or the desired price of the
+/f_irm. Currency choice and real hedging instead make it possible to bring the two prices closer together during periods of
+price stickiness. See Fauceglia, Shingal, and Wermelinger (2012), Lyonnet, Martin, and Mejean (2021) and Alfaro, Calani, and
+Varela (2021) on the mechanisms of real and /f_inancial hedging of exchange rate risk.
+20
+
+===== PAGE 22 =====
+
+statistically signi/f_icant and economically large.32 The coeﬃcient on the destination market share, how-
+ever, becomes statistically insigni/f_icant and close to zero, which may be due to a number of reasons:
+(i) Employment is a less noisy measure of /f_irm size than our proxy for the destination-speci/f_ic mar-
+ket share Sik, which does not capture the sales of non-Belgian competitors of the /f_irm; (ii) Currency
+choice is decided at the level of the /f_irm, rather than /f_irm-destination, and thus a /f_irm-level size variable
+has more predictive power; and (iii) Currency choice is shaped by other forces that correlate with the
+overall /f_irm size, such as /f_ixed costs, as we explore further below.
+Strategic complementarities In columns 4–6 of Table 2 we augment the speci/f_ication in column 3
+with the competitor currency choice variable¯ι−ik, which is constructed as the value of exports invoiced
+in non-euros by all other Belgian exporters within an HS4 industry-destination. Since the variation in
+this variable is mostly across industry-destinations, we replace the interactive industry-destination
+/f_ixed eﬀects with the industry and destination /f_ixed eﬀects included separately. The OLS speci/f_ication
+in column 4 results in a small positive coeﬃcient on the competitor currency choice, signi/f_icant at the
+10% level. However, this speci/f_ication suﬀers from possiblesimultaneity and re/f_lectionproblems, which
+we address using instrumental variables estimation in the subsequent columns.
+Our instrument set comprises two distinct types of instruments. The /f_irst set proxies for the
+marginal costs and markups of the /f_irm’s Belgian competitors: we calculate the export-weighted aver-
+age within industry (HS4)-destination of all other Belgian /f_irms’ import intensityϕi and log employ-
+ment for 2017–2019. These instruments should correlate with the /f_irm’s own currency choice only via
+strategic complementarities with other /f_irms, thus satisfying the exclusion restriction. As we do not
+have this information available for non-Belgian competitors, we construct a second set of instruments
+that rely on macroeconomic variation. We use UN COMTRADE annual bilateral trade data at the HS
+6-digit industry level for 2017–2019, excluding Belgium, to construct the shares of exports from the
+US, China and other dollar-pegged countries to countryk at the HS4 industry level. For example, for a
+Belgian /f_irm exporting to Japan, these instruments measure the shares of Japan’s imports from the US,
+China and other dollar-pegged countries, which increase the likelihood that the /f_irm’s competitors use
+dollar invoicing. The variation in these instruments relies on the monetary-policy decisions of coun-
+tries to peg their exchange rates, which are plausibly exogenous to the variation in currency choice
+across Belgian exports within industries.
+In our baseline speci/f_ication, column 5, we include both sets of instruments and /f_ind a large and
+highly statistically signi/f_icant coeﬃcient on competitor currency choice, suggesting that a 10 percent-
+age point increase in the incidence of foreign currency pricing by competitors increases the likelihood
+of a given /f_irm to adopt foreign currency invoicing by 5.4 percentage points. The coeﬃcients on the
+/f_irm-level determinants of currency choice are very close to the baseline speci/f_ication in column 3. The
+32The overall ex-EU import intensity of Belgian exporters varies in our sample from 0.5% at the 5th percentile to 45% at
+the 95th percentile, with a mean of 14% percent (see summary statistics in Online Appendix Table B2). Thus, the variation
+across these percentiles of import intensity corresponds to a reduction of 13 percentage points (=0.29*0.44) in the probability
+of choosing euros for export invoicing. For comparison, the variation in employment is about 500 log points from the 5th
+to the 95th percentile (that is, almost 200 times), which corresponds to a 45 percentage point (=0.09*500) reduction in the
+probability of the euro invoicing, consistent with Figure 2.
+21
+
+===== PAGE 23 =====
+
+instruments pass the overidenti/f_icationJ-test and the weak instrument test according to the Cragg-
+DonaldsonF -stat.33 Furthermore, the estimation results are similar when we include each set of in-
+struments separately, providing con/f_idence in the validity of the instruments as they use very diﬀerent
+type of variation for identi/f_ication (see Online Appendix Table B4, which also reports the /f_irst stages).
+The theoretical analysis in Section 2.2 suggests that strategic complementarities should be partic-
+ularly strong among /f_irms with large destination market shares, which is the main reason we include
+/f_irm destination sales share as a determinant of currency choice in our baseline speci/f_ication. This
+determinant of currency choice only operates in industries where the /f_irm’s competitors are them-
+selves pricing in foreign currencies, either in local or dollar. Therefore, a more complete speci/f_ication
+should additionally include an interaction of Sik and ¯ι−ik, as we add in column 6. 34 Indeed, using IV
+as in column 5, we /f_ind that this interaction is positive and statistically signi/f_icant, identifying a much
+stronger response to competitor currency choice by the large /f_irms. That is, strategic complementar-
+ities in currency choice are particularly pronounced among the large market-share exporters, in line
+with theoretical predictions.
+Additional determinants Table 3 augments the baseline currency choice speci/f_ication (column 3 of
+Table 2) with a number of additional /f_irm-level determinants, motivated by the theoretical discussion
+in Section 2.4. To proxy for the /f_ixed cost of using a currency, we include the /f_irm’s share of exports
+that are shipped within the eurozone in column 1. If there is a /f_ixed cost involved with the use of
+diﬀerent currencies, /f_irms may choose to use the same currency across multiple destination markets,
+which is likely to be the euro for /f_irms with a high export share to the eurozone. Indeed, this is a
+robust and pronounced pattern, which holds conditional on /f_irm size. An alternative proxy for the
+/f_ixed cost mechanism is the /f_irm’s overall export intensity, as more export intensive /f_irms should be
+more willing to pay the /f_ixed cost and adopt a foreign currency to invoice their exports. Interestingly,
+this more direct proxy for /f_ixed costs does not aﬀect the magnitude or signi/f_icance of our baseline
+determinants of currency choice, including the /f_irm size, suggesting a complementary role for a /f_ixed
+cost mechanism.35
+In column 2, we include the export intensity of the /f_irm as an alternative proxy for /f_ixed costs,
+measured as the ratio of the /f_irm’s total exports to total sales. However, we /f_ind it to be statistically
+insigni/f_icant when controlling for the overall size of the /f_irm. In columns 3 and 4 we include another set
+of the /f_irm’s export currency choice correlates, namely dummies for its participation in international
+FDI, whether inward or outward.36 These variables proxy for the international nature of the /f_irm and/or
+whether the /f_irm is part of a global value chain, which we expect increases the likelihood of choosing
+the dollar or another foreign currency in export pricing. This is indeed the case, and both dummies sig-
+33The instruments also comfortably pass the alternative Montiel-P/f_lueger weak instrument test (equal to 21.6) and the
+Anderson-Rubin 95% con/f_idence interval[0.1, 0.97] rejects zero (see Andrews, Stock, and Sun 2019).
+34More precisely, we interact¯ι−ik with a dummy variable for whetherSik is at least 10%, separating large and small /f_irms
+into two bins. The high bin accounts for 48% of the observations.
+35We also experiment with alternative measures of /f_irm size, including log total revenues and log total assets. All these
+variables are positively associated with non-euro invoicing; however, they are strongly positively correlated with /f_irm log
+employment (with a correlation above 0.9), and thus cannot be included simultaneously.
+36Speci/f_ically, we use two dummies that indicate whether a /f_irm has inward or outward FDI: the dummies equal 1 if the
+/f_irm has at least 10% inward or any outward FDI, respectively.
+22
+
+===== PAGE 24 =====
+
+Table 3: Currency choice in exports: additional determinants
+EZ share Export FDI R&D Log TFP Financial
+in exports share inward outward variables
+Dep. var.: ιikt (1) (2) (3) (4) (5) (6) (7)
+ϕi 0.321∗∗∗
+(0.091)
+0.281∗∗∗
+(0.106)
+0.297∗∗∗
+(0.102)
+0.267∗∗
+(0.103)
+0.287∗∗∗
+(0.103)
+0.344∗∗∗
+(0.101)
+0.291∗∗∗
+0.108
+logLi 0.086∗∗∗
+(0.013)
+0.087∗∗∗
+(0.015)
+0.072∗∗∗
+(0.013)
+0.059∗∗∗
+(0.014)
+0.084∗∗∗
+(0.014)
+0.074∗∗∗
+(0.009)
+0.090∗∗∗
+(0.016)
+Additional − 0.265∗∗∗
+(0.056)
+0.032
+(0.025)
+0.093∗∗∗
+(0.035)
+0.140∗∗∗
+(0.035)
+1.002∗∗
+(0.417)
+0.075∗∗∗
+(0.024)
+✓†
+control
+# obs. 1,265,885 1,265,084 1,265,885 1,265,885 1,265,885 1,253,624 1,252,839
+R2
+adj 0.588 0 .580 0 .583 0 .586 0 .582 0 .588 0 .599
+Fixed Eﬀects:
+month×year ✓ ✓ ✓ ✓ ✓ ✓ ✓
+industry×destination ✓ ✓ ✓ ✓ ✓ ✓ ✓
+Notes: Baseline speci/f_ication (3) from Table 2 with additional controls (named in the title of each column); each speci/f_ication
+additionally includes Sik, which remains insigni/f_icant as in the baseline (not reported). EZ share in exports is the ratio of
+the /f_irm’s exports to the eurozone destination to its total exports. Export share is the ratio of the /f_irm’s total exports to all
+destinations relative to its total revenues from domestic sales and exports combined. FDI variables are dummies for whether
+the /f_irm has inward and outwards FDI respectively. R&D is the R&D expenditure share in total sales.†Financial variables in
+column 7 include three measures of the /f_irm’s /f_inancial/liquidity constraints and solvency, as described in the text. See also
+Online Appendix Table B5 which reports the results with all variables, /f_inancial and non-/f_inancial, included simultaneously.
+ni/f_icantly increase the likelihood of foreign currency invoicing: a /f_irm that engages in inward (outward)
+FDI is 10 (14) percentage points less likely to use the euro in pricing of its exports. We also experiment
+with alternative measures of /f_irm performance and /f_ind that the /f_irm’s R&D intensity and measured
+TFP correlate positively with the likelihood of foreign currency invoicing (see columns 5 and 6).
+Finally, we explore the possibility that export currency invoicing is shaped by the /f_irm’s /f_inancial
+decisions and/or /f_inancing constraints. Our data do not contain information on the currency of the
+/f_irm’s /f_inancing (which is likely disproportionately in euros in the eurozone), instead we have a variety
+of conventional balance sheet variables. In column 7 of Table 3 we include three variables commonly
+viewed to capture the /f_irm’s /f_inancial/liquidity constraints and solvency: namely, the cash ratio (to
+short-term debt), the coverage ratio (pro/f_its relative to debt service) and the leverage ratio (debt relative
+to assets). The /f_irst of these variables is positively associated with foreign-currency invoicing, the
+second correlates negatively, while the third is not signi/f_icant. While this might be suggestive of a
+/f_inancial channel of currency invoicing, a complete study requires measurable variation in the currency
+of /f_inancing, which we leave to future research.37 What we establish here is that the inclusion of the
+commonly used balance-sheet variables does not aﬀect our main coeﬃcients of interest on the import
+intensity and the size of the /f_irm, thus suggesting that the /f_inancial channel is complementary to the
+main determinants emphasized in Table 2.
+37The currency of /f_inancing, as well as the prevalence of hedging, may be correlated with /f_irm size, as suggested recently
+by Lyonnet, Martin, and Mejean (2021) and Alfaro, Calani, and Varela (2021).
+23
+
+===== PAGE 25 =====
+
+Robustness We conduct further robustness checks on our baseline speci/f_ication (column 3 of Table 2)
+in Online Appendix Table B3. First, we consider diﬀerent subsamples. In column 1, we show that our
+baseline results are stronger in the subsample of diﬀerentiated products, where the theory applies most
+directly, and are less precisely estimated for the set of non-diﬀerentiated products in column 2. To
+address the possibility of mismeasurement of variables for multi-product /f_irms, column 3 only includes
+the /f_irm’s main product, with the results also holding strongly for this subsample. We also show, in
+column 4, that the results are not driven by pooling observations over time: the results hold for a given
+cross-section of the data (e.g., June of 2017), and the standard errors are of similar size to those in the
+full sample, suggesting that the /f_irm-level clustering results in an appropriate correction of the standard
+errors in the pooled panel.
+Second, in columns 5–9, we experiment with aggregate macroeconomic determinants at the coun-
+try and industry level in place of the interactive industry-destination /f_ixed eﬀects. We /f_ind that the
+likelihood of invoicing in euros (producer currency) is lower for exports to the dollar-pegged destina-
+tions, the destinations with low CPI in/f_lation, high GDP per capita, and to larger trade partners (in line
+with the patterns documented in the earlier literature, see e.g. Goldberg and Tille 2008, 2016). None of
+these controls, which are absorbed into /f_ixed eﬀects in our baseline speci/f_ication, have any impact on
+the estimated coeﬃcients for our main /f_irm-level variables of interest.
+Vehicle currency use So far, we have focused on the determinants of a /f_irm’s choice between in-
+voicing in euros and any other foreign currency, without distinguishing whether the foreign currency
+is a vehicle currency. There are two main reasons for this approach. First, theoretically, there is a clear
+mapping between /f_irm characteristics and the choice between producer currency and other currencies,
+while the theory provides a less sharp prediction regarding which foreign currency will be chosen. In
+particular, both import intensity and strategic complementarities can favor either the dominant or local
+currency use, depending on the currency of import invoicing and the composition of competitors in the
+destination market. Second, distinguishing between the choice of local and dominant currency is com-
+plicated by the fact that many countries peg their exchange rates to the dollar, limiting the diﬀerential
+bene/f_it for the /f_irms of using the local currency versus the dollar.38
+To cleanly distinguish between the choice of vehicle and local currency, we focus on the subsample
+of /f_irms that choose non-euros in their export pricing and consider only export destinations with a
+/f_loating exchange rate with the dollar.39 Using this smaller sample of /f_irm-product-destinations, we
+estimate a speci/f_ication for export currency choice between the vehicle and the local currency, which
+parallels the baseline speci/f_ication in Table 2. Speci/f_ically, we de/f_ine a dummyιD
+ikt = 1 when the
+US dollar is used in the export transaction and 0 if the destination currency is used.
+We report the results in Table 4. The /f_irst column shows that the choice between local and vehicle
+currency is not aﬀected by the overall ex-EZ import intensity. However, in the subsequent columns,
+38In practice, almost all exports to dollar-pegged destinations are invoiced in either euros or dollars, and almost never in
+destination currencies, thus limiting the empirical variation needed for identi/f_ication.
+39This subsample also drops observations where invoicing is neither in dollars nor in the destination currency, which occurs
+in only 3% of non-euro observations (1.7% of all observations); including these observations does not change the results.
+24
+
+===== PAGE 26 =====
+
+Table 4: Vehicle currency choice in exports
+All products Diﬀerentiated products
+Dep. var.:ιDikt (1) (2) (3) (4) (5) (6) (7)
+ϕi 0.005
+(0.106)
+ϕEi −0.106
+(0.142)
+−0.113
+(0.142)
+−0.060
+(0.124)
+−0.045
+(0.142)
+−0.123
+(0.139)
+−0.090
+(0.136)
+ϕXi 0.503∗∗∗
+(0.158)
+ϕDi 0.526∗∗∗
+(0.165)
+0.626∗∗∗
+(0.160)
+0.541∗∗∗
+(0.170)
+0.705∗∗∗
+(0.178)
+0.632∗∗∗
+(0.193)
+logLi −0.092∗∗∗
+(0.010)
+−0.081∗∗∗
+(0.010)
+−0.080∗∗∗
+(0.009)
+−0.095∗∗∗
+(0.013)
+−0.081∗∗∗
+(0.011)
+−0.085∗∗∗
+(0.010)
+−0.088∗∗∗
+(0.011)
+in-FDI 0.094∗∗
+(0.040)
+¯ιD−ik 0.386∗
+(0.209)
+0.582∗∗
+(0.280)
+# obs. 202,412 202,412 202,412 202,412 191,016 158,939 154,152
+R2adj 0.874 0 .879 0 .879 0 .881 — 0.880 —
+Cragg-DonaldF-stat 349.3 395 .6
+HansenJ-stat [p-val] 12.356
+[0.030]
+7.070
+[0.215]
+Fixed Eﬀects:
+month×year ✓ ✓ ✓ ✓ ✓ ✓ ✓
+industry & destination ✓ ✓
+industry×destination ✓ ✓ ✓ ✓ ✓
+Notes: The observations are at the /f_irm-product (CN8)-destination-month level for the subsample of non-euro-invoiced ex-
+ports to non-pegged destinations only (i.e., excluding the US and dollar-pegged countries) from March 2017 to December 2020.
+The dependent variable isιD
+ikt = 1 for exports invoiced in dollar (DCP) and 0 in destination currency (LCP). Each speci/f_ica-
+tion includesSik, which is insigni/f_icant as in column 3 of Table 2 (not reported); in-FDI is the inward FDI dummy, as used
+in column 3 of Table 3. Columns 3–7 split import intensity ϕi into its euro and dollar components, ϕE
+i andϕD
+i , controlling
+for the residual import intensity in other currencies (not reported). Standard errors are clustered at the /f_irm level. Columns 5
+and 7 are estimated using IV with the same instrument set as in column 5 of Table 2.
+where we split import intensity by currency, we /f_ind that importing in non-euros (ϕX
+i ), and in particular
+in dollars (ϕD
+i ), favors the use of the dominant currency in exporting, and the eﬀect is both strong and
+economically large.
+There is also a robust negative association between the absolute size of the /f_irm (log employment)
+and the use of the dollar: the largest /f_irms adopt local currency pricing instead of the dollar. Note,
+however, that this sample only comprises the larger /f_irms, as we limit the sample to /f_irms that do not
+price their exports in the producer currency (euro). Even if surprising at /f_irst, this pattern is consistent
+with theory: to the extent that /f_irm size proxies for strategic complementarities, we expect larger /f_irms
+to adopt local currency pricing to ensure that their prices are better aligned with their local competitors
+in the destination country, who use the local currency by default.
+In addition to /f_irm size, the FDI variables used in columns 3 and 4 of Table 3 also correlate pos-
+itively with the use of the dollar in exports, likely proxying for the international nature of the /f_irm
+and its role in global value chains. We display the result for inward FDI in column 4 of Table 4, and
+25
+
+===== PAGE 27 =====
+
+the results for outward FDI are comparable. Finally, using instrumental variables as in Table 2, we
+/f_ind evidence of strong strategic complementarities in the dominant currency choice across Belgian
+exporters: /f_irms with competitors invoicing in dollars are themselves more likely to adopt dollars in
+their exports (column 5). These eﬀects are particularly pronounced in the subsample of diﬀerentiated
+products (columns 6–7), where the theory applies most directly.
+5 Currency Invoicing and Exchange Rate Pass-through
+Having established the /f_irm-level determinants of currency choice, we now analyze the exchange rate
+pass-through (ERPT) into prices and quantities. We start with the analysis of ERPT into prices at an
+annual horizon, and then explore the dynamics of ERPT into both prices and quantities with monthly
+data. We focus on the diﬀerential impact of the /f_lexible-price and sticky-price determinants of ERPT,
+and in particular on the contribution of the currency invoicing channel.
+5.1 ERPT into prices at the annual horizon
+We begin our analysis by studying how /f_irm-product-destination prices respond to movements in both
+the euro-destination and the dollar-destination exchange rates, using annual data for the period 2012–
+2020. We interact exchange rate changes with /f_lexible- and sticky-price determinants of pass-through to
+capture the realized ERPT both during the period of price stickiness and after price adjustment. Specif-
+ically, we estimate an empirical counterpart to the theoretical relationship (9) derived in Section 2:
+∆p∗
+ikt =
+[
+α +βϕi +γ logLi +διik
+]
+∆ekt +
+[
+βDϕi +γD logLi +δDιD
+ik
+]
+∆eD
+kt +νskt +ϵikt, (16)
+where the dependent variable ∆p∗
+ikt is the annual change in the /f_irm’s export price in the destina-
+tion currency k, and ∆ekt and ∆eD
+kt measure the depreciation of the destination currency k against
+the euro and the dollar, respectively. 40 We use the /f_irm’s ex-EZ import intensityϕi to proxy for the
+marginal cost channel of ERPT and measures of its size (log employment logLi, and destination sales
+shareSik in certain speci/f_ications) to proxy for the markup channel. The currency choice dummyιik
+is equal to one if the /f_irm prices in any currency other than the euro, and the dummyιD
+ik is equal to
+one if the currency choice is dollars speci/f_ically.41 Finally,νskt are either industry×destination×year
+or industry×destination and year /f_ixed eﬀects, depending on the speci/f_ication; each speci/f_ication ad-
+ditionally controls for the level terms corresponding to all interaction terms.
+The coeﬃcients in (16) have a clear mapping to the theory in Section 2. The coeﬃcient α measures
+the ERPT of a counterfactual small Belgian /f_irm that uses no inputs imported outside of the eurozone
+and prices all of its exports in euros. The theory predicts that α = 1 , corresponding to a complete
+40The bilateral exchange rates are average monthly rates from the IMF, reported for each country relative to the U.S. dollar
+and converted to be relative to the euro for ∆ekt. The annual rates are averages of the monthly rates.
+41Since we do not have currency data prior to 2017, we extrapolate currency invoicing from 2017-2020 backward to 2012-
+2016 at the /f_irm-destination level. Speci/f_ically, we calculate each /f_irm’s share of exports by destination invoiced in non-euros
+and dollars,ιik andιD
+ik. For 87% of the observations, these /f_irm-destination shares are zero-one dummy variables; otherwise,
+we use fractional values. Our approach relies on the high persistence in the currency of invoicing we observe in the data (see
+Section 3); to the extent persistence is incomplete, our estimates of δ andδD provide lower bounds on the eﬀects of price
+stickiness due to potential attenuation bias.
+26
+
+===== PAGE 28 =====
+
+ERPT of the euro-destination exchange rate into destination prices. The coeﬃcients β, γ and δ are
+expected to be negative, re/f_lecting the lower (incomplete) ERPT for /f_irms that rely on foreign inter-
+mediate inputs (marginal cost channel), that are large in the destination market (markup channel),
+or price in foreign currency (sticky price channel), respectively. Symmetrically, we expect positive
+coeﬃcients βD, γD and δD to capture the pass-through of the dollar-destination exchange rate into
+destination prices for /f_irms that rely on imported inputs, are large and invoice their exports in dollars.
+Lastly, the coeﬃcients δ andδD measure the extent of price stickiness at the annual horizon.
+The /f_irm-level determinants of currency choice (ϕi and logLi, see (15)) and the currency choice
+itself (ιi andιD
+i ) appear jointly in (16) as, respectively, the /f_lexible-price and the sticky-price determi-
+nants of ERPT. This raises the question of how one can identify separately the contributions of these
+two sets of ERPT determinants — an identi/f_ication challenge posed by Engel (2006). The resolution
+rests in the fact that the realized currency choice is both observable and has a direct eﬀect on ERPT
+in the second stage, rather than just indirectly via sample selection as in e.g. the Heckman selection
+model. Indeed, the residual in (16) is driven by idiosyncratic changes in marginal costs and markups
+(e.g., productivity and demand shocks) that are plausibly orthogonal with currency choice and other
+cross-sectional /f_irm-level variables.42 As a result, estimation of (16) can be carried out directly with OLS
+without the need to conjecture functional forms or seek exogenous variation and exclusion restrictions,
+as we show in Online Appendix A.
+We report our estimation results in Table 5, starting with the baseline speci/f_ication (16) in column 1
+for the full sample of ex-EU destinations. We /f_ind:
+α≈ 1, β ≈−βD≈− 0.3, γ ≈−γD≈− 0.01, δ ≈−δD≈− 0.4,
+with signs and magnitudes in line with the theory. All coeﬃcients are strongly statistically signi/f_icant,
+apart from the size coeﬃcients γ and γD, which are only marginally signi/f_icant at the 10% level.43
+Therefore, we /f_ind that small non-import-intensive /f_irms that invoice their exports in euros exhibit
+complete pass-through of the euro-destination exchange rate. The /f_irms that rely intensively on the
+ex-EZ imported inputs exhibit markedly lower pass-through of the euro-destination exchange rate and
+signi/f_icant pass-through of the dollar-destination exchange rate. Finally, currency invoicing dummies
+have a large impact on pass-through consistent with a large fraction of prices (≈ 40%) still being sticky
+at the annual horizon in the currency they are invoiced, as we further discuss below.
+In columns 2 and 3 of Table 5, we consider the /f_lexible-price and the sticky-price determinants of
+pass-through separately. When the currency choice dummies are omitted in column 2, we /f_ind larger
+42The fact that currency choice is, in most cases, a zero-one dummy, while its /f_lexible-price determinants are continuous
+variables, means that multicollinearity is also not an issue in practice. There is always a possibility of omitted variable bias;
+to address this, we experimented with including additional terms, used in Table 3 and Online Appendix Table B3, interacted
+with exchange rates, and found them to be insigni/f_icant and did not aﬀect our main coeﬃcients of interest (see the analysis
+in Table 6 below).
+43Berman, Martin, and Mayer (2012) were the /f_irst to emphasize the diﬀerential ERPT across /f_irms of diﬀerent size and
+productivity. Once we control for the /f_irm’s import intensity and currency invoicing, the signi/f_icance of the size interaction
+varies from sample to sample and depends on the speci/f_ic size variable used (see columns 2–5 in Online Appendix Table B6).
+The sign of the coeﬃcient is, however, robustly consistent with the theory, and the coeﬃcient is economically signi/f_icant
+sinceLi varies by 500 log points from 5th to 95th percentiles of the /f_irm size distribution.
+27
+
+===== PAGE 29 =====
+
+Table 5: Exchange rate pass-through: annual horizon
+Baseline Only Only Detailed Subsamples
+/f_lexible sticky /f_ixed eﬀects US & Pegs Non-pegs
+Dep. var.:∆p∗
+ikt (1) (2) (3) (4) (5) (6)
+∆ekt 1.007∗∗∗
+(0.029)
+1.038∗∗∗
+(0.031)
+1.004∗∗∗
+(0.009)
+— 1.133∗∗∗
+(0.073)
+1.026∗∗∗
+(0.029)
+∆ekt·ϕi −0.257∗∗∗
+(0.080)
+−0.481∗∗∗
+(0.076)
+−0.251∗∗
+(0.102)
+−0.322∗∗
+(0.133)
+−0.238∗∗
+(0.105)
+∆eD
+kt·ϕi 0.328∗∗∗
+(0.075)
+0.500∗∗∗
+(0.071)
+0.351∗∗∗
+(0.113)
+0.339∗∗∗
+(0.087)
+∆ekt· logLi −0.013∗
+(0.007)
+−0.029∗∗∗
+(0.007)
+−0.020∗
+(0.010)
+−0.009
+(0.011)
+−0.015
+(0.009)
+∆eD
+kt· logLi 0.010
+(0.008)
+0.016∗∗
+(0.008)
+0.012
+(0.011)
+0.008
+(0.009)
+∆ekt·ιik −0.383∗∗∗
+(0.037)
+−0.406∗∗∗
+(0.036)
+−0.305∗∗∗
+(0.051)
+−0.421∗∗∗
+(0.048)
+−0.344∗∗∗
+(0.054)
+∆eD
+kt·ιD
+ik 0.411∗∗∗
+(0.041)
+0.434∗∗∗
+(0.040)
+0.349∗∗∗
+(0.055)
+0.379∗∗∗
+(0.050)
+# obs. 339,684 339,684 339,684 276,146 128,537 211,147
+R2
+adj. 0.060 0.059 0.060 0.085 0.016 0.077
+Fixed Eﬀects:
+year ✓ ✓ ✓ ✓ ✓
+ind.×dest. ✓ ✓ ✓ ✓ ✓
+ind.×dest.×year ✓
+Notes: The data are at the /f_irm-product-destination-annual level for 2012-2020. The dependent variable ∆p∗
+ikt is the log
+change in the export unit value in the destination currency, as de/f_ined in (14); ∆ekt and ∆eD
+kt are the log changes in the
+bilateral euro-destination and dollar-destination exchange rates. Standard errors are clustered at the destination-year level.
+coeﬃcients (in absolute value) on the /f_lexible-price determinants of ERPT, consistent with omitted
+variable bias, since /f_lexible-price variables predict the currency choice of the /f_irms, as we showed in
+Section 4. Similarly, omitting /f_lexible-price determinants of ERPT in column 3 in/f_lates somewhat the
+coeﬃcients on the currency choice dummies, although quantitatively more modestly. This is again
+consistent with omitted variable bias, underscoring the importance of controlling simultaneously for
+the /f_lexible-price and sticky-price determinants of ERPT, as predicted by the theory in (9).
+Columns 4–6 of Table 5 estimate various robustness speci/f_ications. First, in column 4, we include
+a full set of industry×destination×year /f_ixed eﬀects. The advantage of this speci/f_ication, which in-
+cludes over 60,000 /f_ixed eﬀects, is that all of the identi/f_ication is from /f_irms’ diﬀerential responses to
+the same exchange rate movement within a given industry-destination at a given point in time, and
+thus facing the same general equilibrium environment. However, it comes at the cost of not being
+able to identify the level of ERPT captured byα, because the /f_ixed eﬀects in this speci/f_ication fully ab-
+sorb the exchange rate variation, thus allowing us to identify only the diﬀerential pass-through across
+/f_irm-products. Nonetheless, we /f_ind that all estimated coeﬃcients remain similar to our baseline spec-
+i/f_ication in column 1, which included industry×destination and year /f_ixed eﬀects separately.
+The last two columns consider two sets of export destinations with distinct exchange rate regimes.
+28
+
+===== PAGE 30 =====
+
+In column 5, we include all countries that are pegged to the dollar as well as the US, and in column 6
+we include all other destinations. By construction, the pegged countries lack suﬃcient variation in the
+dollar-destination exchange rate, and thus we omit∆eD
+kt from this speci/f_ication, while we keep it for the
+non-pegged countries. Both speci/f_ications display the same patterns of coeﬃcients, even though they
+comprise very diﬀerent destinations and column 5 omits the dollar-destination interactions. In contrast,
+if we were to omit the dollar-destination exchange rate ∆eD
+kt interactions in the subsample of non-
+pegged countries, this would result in a strong downward omitted variables bias on the euro-destination
+exchange rate∆ekt interactions, making them small and insigni/f_icant (see column 8 in Online Appendix
+Table B6). This emphasizes the importance of working with the theoretically-consistent ERPT equation,
+which in particular must include the dollar-destination exchange rate where it is relevant.44
+Currency invoicing: causal eﬀect or selection The large non-zero coeﬃcients on the currency in-
+voicing dummiesιik andιD
+ik in shaping ERPT at the annual horizon in Table 5 suggest an important role
+for price stickiness in the currency of invoicing. One potential concern, however, is that these eﬀects
+arise due to selection of particular types of /f_irms with diﬀerent desired ERPT into diﬀerent currency
+of pricing rather than a direct causal eﬀect of foreign-currency price stickiness. The speci/f_ications in
+columns 1–3 of Table 5 address this to some extent by showing the importance of including jointly
+both the /f_lexible-price and the sticky-price determinants of ERPT.45 We now provide further evidence
+in support of a direct causal eﬀect of currency invoicing on the realized ERPT at the annual horizon.
+To check whether we are merely picking up a selection eﬀect, we construct proxies of currency
+choice denoted with zik andzD
+ik, in three diﬀerent ways. The /f_irst one, included in columns 1 and 2
+of Table 6, is constructed as the predicted values for ιik and ιD
+ik from the baseline currency choice
+regressions in columns 3 of Tables 2 and 4, respectively. That is, we set zik =ˆιik andzD
+ik =ˆιD
+ik based
+on the linear probability speci/f_ications for currency choice that we estimate in Section 4. The idea is
+to separate the selection eﬀect, captured by the currency choice proxies zik andzD
+ik, from the causal
+eﬀects of actual realized currency choice given by ιik andιD
+ik. If the selection eﬀect is dominant, we
+expectzik andzD
+ik to reduce the impact ofιik andιD
+ik, when included jointly. If the direct causal impact is
+important, we instead expect that the inclusion ofιik andιD
+ik should dominate the impact ofzik andzD
+ik.
+In columns 3 and 4 of Table 6 we instead use the /f_irm’s competitor currency choice,zik = ¯ι−ik and
+zD
+ik = ¯ιD
+−ik, used in column 5 of Tables 2 and Table 4 respectively to predict the /f_irm’s own currency
+choice. Finally, in columns 5 and 6 of Table 6 we use the /f_irm’s export share to the eurozoneχE
+i as a
+measure of bothzik andzD
+ik, since it is a strong predictor of the use of the euro in exports to the ex-EU
+destinations (recall column 1 of Table 3), but should not otherwise impact pass-through dynamics in
+these destinations, thus oﬀering a test of an exclusion restriction.
+The results in Table 6 provide support for a direct causal eﬀect of currency invoicing on ERPT. When
+the realized currency invoicing dummies ιik andιD
+ik are not included (in the odd numbered columns),
+the predictors/proxies of currency choice zik andzD
+ik have a strong impact on ERPT. However, once
+44We show that our results are robust to diﬀerent subsamples in Online Appendix Table B6, including separately for dif-
+ferentiated and non-diﬀerentiated products, for the /f_irms’ main product, in exports to OECD destinations and to the US only.
+45Column 1 of Online Appendix Table B6 provides a further robustness which augments the baseline speci/f_ication with
+/f_irm /f_ixed eﬀects that absorb unobserved /f_irm-level variation.
+29
+
+===== PAGE 31 =====
+
+Table 6: ERPT: predicted versus actual currency choice
+Predicted currency Competitor currency EZ share in exports
+zik =ˆιik andzD
+ik =ˆιD
+ik zik = ¯ι−ik andzD
+ik = ¯ιD
+−ik zik =zD
+ik =χEi
+Dep. var.:∆p∗
+ikt (1) (2) (3) (4) (5) (6)
+∆ekt 1.025∗∗∗
+(0.035)
+1.020∗∗∗
+(0.034)
+1.072∗∗∗
+(0.033)
+1.029∗∗∗
+(0.031)
+1.041∗∗∗
+(0.029)
+1.019∗∗∗
+(0.029)
+∆ekt·ϕi −0.282∗∗∗
+(0.088)
+−0.244∗∗∗
+(0.088)
+−0.501∗∗∗
+(0.078)
+−0.317∗∗∗
+(0.080)
+−0.476∗∗∗
+(0.076)
+−0.267∗∗∗
+(0.080)
+∆eD
+kt·ϕi 0.454∗∗∗
+(0.087)
+0.426∗∗∗
+(0.087)
+0.557∗∗∗
+(0.075)
+0.422∗∗∗
+(0.078)
+0.495∗∗∗
+(0.072)
+0.343∗∗∗
+(0.075)
+∆ekt·ιik −0.318∗∗∗
+(0.047)
+−0.363∗∗∗
+(0.037)
+−0.359∗∗∗
+(0.036)
+∆eD
+kt·ιD
+ik 0.360∗∗∗
+(0.060)
+0.394∗∗∗
+(0.042)
+0.370∗∗∗
+(0.038)
+∆ekt·zik −0.466∗∗∗
+(0.043)
+−0.175∗∗∗
+(0.056)
+−0.170∗∗∗
+(0.038)
+−0.070∗∗
+(0.034)
+0.096∗∗
+(0.045)
+0.027
+(0.044)
+∆eD
+kt·zD
+ik 0.466∗∗∗
+(0.053)
+0.126∗
+(0.075)
+0.177∗∗∗
+(0.047)
+0.054
+(0.041)
+−0.098∗∗
+(0.048)
+−0.061
+(0.047)
+# obs. 247,507 247,507 293,710 293,710 303,993 303,993
+R2
+adj. 0.059 0.059 0.060 0.061 0.057 0.057
+Fixed Eﬀects:
+date ✓ ✓ ✓ ✓ ✓ ✓
+ind.×dest. ✓ ✓ ✓ ✓ ✓ ✓
+Notes: The sample is at the /f_irm-product-destination-annual level for 2012-2020, as in column 1 of Table 5, but there are fewer
+observations due to missingzik, and we keep the same observations in each pair of columns for ease of comparison. Thezik
+in the /f_irst two columns is the predicted currency choice estimated from columns 3 in Tables 2 and 4; thezik in columns 3
+and 4 is the competitor currency choice in non-euros and in dollars; and in the /f_inal two columns it is the EZ export share.
+we also control for the actual currency of invoicing (in the even columns), the role of the predictors
+becomes quantitatively much smaller and often insigni/f_icant. Most importantly, the coeﬃcients on
+the actual currency choice dummies are not signi/f_icantly diﬀerent from those reported in the baseline
+speci/f_ication in column 1 of Table 5 when we control for the predictors of currency choicezik andzD
+ik.
+This evidence suggests that it is the actual realized currency choice that directly matters for ERPT rather
+than selection of /f_irms into diﬀerential invoicing based on endogenous or exogenous characteristics.
+5.2 Dynamics of pass-through into prices and quantities
+We now turn to the dynamics of exchange rate pass-through by re-estimating (16) using monthly data
+for the period January 2012 to December 2020, for diﬀerent time horizons from 1 to 24 months, gradually
+increasing the horizon over which we measure price and exchange rate changes. Indeed, the regression
+speci/f_ication (16) applies, in general, over any time interval, with the coeﬃcients changing to re/f_lect the
+relative importance of the sticky- and /f_lexible-price determinants of pass-through at diﬀerent horizons.
+30
+
+===== PAGE 32 =====
+
+(a) Sticky-price determinants
+ (b) Flexible-price determinants
+Figure 3: Exchange rate pass-through dynamics
+Note: Coeﬃcient estimates from the ERPT speci/f_ication (17), with /f_irm, industry-destination and time /f_ixed eﬀects, for diﬀer-
+ent horizonsh; shaded areas re/f_lect 95% con/f_idence intervals. The left panel plots the sticky-price coeﬃcients:αh depicts the
+euro-destination ERPT for the PCP /f_irms andαh +δh for the foreign-currency (LCP and DCP) pricing /f_irms;δD
+h corresponds
+to the additional dollar-destination ERPT of the DCP /f_irms (see text). The right panel plots the /f_lexible-price coeﬃcients:βh
+andβD
+h depict the euro-destination and the dollar-destination ERPT per unit of the /f_irm’s ex-EZ import intensityϕi. Standard
+errors clustered at the country-time level, which corresponds to the most aggregated right hand side variable (the exchange
+rate); the results are robust to alternative clustering at the /f_irm-country level or two-way clustering.
+Concretely, we estimate the following speci/f_ication for each regression horizonh, as in (10):
+∆hp∗
+ikt =
+[
+αh +βhϕi +δhιik
+]
+∆hekt +
+[
+βD
+hϕi +δD
+hιD
+ik
+]
+∆heD
+kt +νskt +ϵikt, (17)
+where ∆h is the h-month diﬀerence, e.g. ∆hekt ≡ ekt− ek,t−h, and the other variables are as in
+the benchmark speci/f_ication (16) above. We also include log employment (as a measure of /f_irm size)
+interacted with exchange rate changes, which tend to be insigni/f_icant at most horizons. In addition, we
+include /f_irm /f_ixed eﬀects to control for possible omitted /f_irm characteristics, as in column 1 of Online
+Appendix Table B6. The estimates at very short horizons are noisy due to the standard unobserved
+timing issue of the shock and price adjustment, therefore we report the results starting from a four-
+month horizon and up to 24 months,h∈{ 4,.., 24}, where the timing issue no longer results in noisy
+ERPT estimates.46
+The sticky-price coeﬃcients δh andδD
+h in (17) estimate respectively the diﬀerential pass-through of
+the euro- and dollar-destination exchange rates for the euro- and dollar-pricing /f_irms relative to a com-
+parable /f_irm pricing in the destination currency. From theory in Section 2.2, we expectδh< 0<δ D
+h ,
+αh = 1 for allh, andβh < 0 < βD
+h . As prices become more /f_lexible over longer horizons, we expect
+46An advantage of the monthly data is that we do not need to average the exchange rates over the year, as we did in Table 5,
+and therefore the pass-through estimates have a cleaner timing interpretation for various horizonsh. An alternative approach
+is a distributed lags speci/f_ication, which projects a one-month price change∆p∗
+ikt on an increasing number of lags of the
+monthly exchange rate changes,{∆ek,t−j, ∆eD
+k,t−j}j=h
+j=0 , and estimates an impulse response. However, this approach is too
+demanding of the data since we focus on the diﬀerential response to exchange rates across /f_irms captured by the interaction
+terms. We discuss below the one-to-one relationship between our estimates and the impulse response.
+31
+
+===== PAGE 33 =====
+
+the sticky-price coeﬃcients to decline in absolute value towards zero with h, while the /f_lexible-price
+coeﬃcients βh andβD
+h increase in magnitude re/f_lecting the adjustment of prices towards their desired
+levels that are shaped, in part, by the import intensity of the /f_irms (recall (9)).
+These are exactly the patterns we /f_ind in the data, as we show in Figure 3 which plots the esti-
+mated coeﬃcients from the dynamic speci/f_ication (17). The left panel plots the dynamics of the euro-
+destination ERPT for the euro-pricing /f_irms in yellow,αh, and for the non-euro-pricing /f_irms in blue,
+αh +δh, as well as the dynamics of the dollar-destination ERPT for the dollar-pricing /f_irms in red,δD
+h .
+The results show that we cannot reject that the pass-through of the euro-destination exchange rate
+into destination prices is complete (αh = 1) at all horizonsh for the euro pricing /f_irms, while the pass-
+through of non-euro pricing /f_irms is incomplete and gradually increases over time, from around 40%
+over 4 months to 65% over 24 months. The dollar ERPT of the dollar-pricing /f_irms is high (nearly 60%)
+in the short run and gradually decreasing with horizonh, to slightly above 30% over 24 months.47
+The right panel of Figure 3 shows, in turn, that the more a /f_irm relies on foreign inputs in production
+(as captured by ex-EZ import intensityϕi), the lower is the pass-through of the euro exchange rate and
+the higher the pass-through of the dollar exchange rate into its destination price, for any given currency
+of invoicing. These eﬀects are mute in the short run and gradually build up over time, continuing to
+increase beyond the one-year horizon, which was the benchmark in our analysis in Table 5.
+How sticky are prices? We now use a structural model of price setting to evaluate the duration of
+price stickiness implied by our dynamic ERPT estimates. Towards this end, we compare our estimates
+{δh,δD
+h,βh,βD
+h}h with the structural predictions of a Calvo model described in Section 2.3, which
+suggests that the sticky-price coeﬃcients |δh| = δD
+h = ˆδ(h), where ˆδ(h) = 1
+h
+λ
+1−λ(1−λh) as derived
+in (11) andλ is the Calvo non-adjustment probability. Furthermore,|βh| andβD
+h increase in proportion
+with 1−ˆδ(h). We depict these theoretical predictions with black dashed lines in both panels of Figure 3.
+Speci/f_ically, we match the estimated pass-through rates ath = 12 by setting the Calvo parameter
+δ≈ 0.90 in the left panel, and we use this calibrated value ofλ and plot± ¯β·(1−ˆδ(h)) in the right panel,
+setting the value of the long-run elasticity¯β≈ 0.50 to again match the estimated coeﬃcients ath = 12.
+Comparing the black dashed lines with our estimates, we /f_ind that the dynamic patterns in the data
+are broadly in line with the quantitative predictions of the Calvo sticky price model. Furthermore, both
+δh andδD
+h follow ˆδ(h), whileβh andβD
+h in the right panel evolve nearly perfectly in line with1− ˆδ(h)
+across the full range of estimation horizonh. Note that we do not use information on the dynamics of
+(βh,βD
+h ) to calibrateλ, and therefore the right panel of the /f_igure oﬀers an over-identi/f_ication test for
+the Calvo model calibrated to match ERPT estimates in the left panel ath = 12.
+Our dynamic estimates indicate an expected price duration of nearly 10 months (equal to1/(1−λ)),
+consistent with many direct estimates of price durations in the data (see e.g. Nakamura and Steinsson
+2008, Gopinath and Rigobon 2008). What are the implications of this estimate? First,λ12 = 0.28 means
+that about 28% of export prices have not yet been adjusted a year after the shock. This fraction falls to
+λ24 = 0.08 two years after the shock. Second, the impulse response of the diﬀerential price response
+47From the left panel of Figure 3 note also thatδh (the gap between the yellow and blue lines) is a near mirror image ofδD
+h
+(the red curve), suggesting the same patterns of price stickiness for goods priced in euros and in dollars.
+32
+
+===== PAGE 34 =====
+
+to the exchange rate across currency of invoicing, which is the causal eﬀect of foreign-currency price
+stickiness, is also given byλh (see Section 2.3). This is diﬀerent from our estimatesδh andδD
+h which are
+larger in absolute value than λh for allh >1. For example, the ERPT estimates at h = 12 are around
+0.5 as opposed to 0.28. Indeed,δh andδD
+h in the estimating equation (17) captureaverage pass-through
+diﬀerentials over the estimation horizonh rather than the impulse response ath, but there is a general
+one-to-one mapping between the two, as we illustrate here in the parametric case of the Calvo model.
+The one notable discrepancy with the Calvo model is in the ERPT in the short run, for horizons
+of 3 quarters or less, where the data exhibit lower rates of ERPT relative to the model. In contrast,
+the observed empirical dynamics from 3 quarters out to 8 quarters line up well with the predictions
+of the Calvo model. Therefore, we cannot reject the model prediction that pass-through diﬀerentials
+across comparable /f_irms pricing in diﬀerent currencies are expected to disappear in the long-run at a
+rate consistent with the Calvo model of price adjustment (cf. Gopinath, Itskhoki, and Rigobon 2010).
+What are the possible reasons for the discrepancy between the Calvo model and the empirical ERPT
+dynamics at short horizons? One possibility is measurement error since we do not know the exact
+timing of price changes and exchange rate shocks within a month, which leads to attenuation bias over
+short horizons. Another possibility is model misspeci/f_ication. If the Calvo model is correct for each
+/f_irm-product, but /f_irms or products are heterogeneous in their Calvo adjustment probability, then we
+expect the observed coeﬃcients in the short run to re/f_lect the early adjustments by the more /f_lexible
+/f_irm-products, while the long-run ERPT patterns are dominated by the more sticky /f_irm-products taking
+a long time to adjust their prices. For example, diﬀerentiated products exhibit longer price durations
+than homogenous products: this is evident from the diﬀerential pass-through patterns between the two
+categories of goods in columns 3–4 of Online Appendix Table B6. Estimating the monthly dynamic
+speci/f_ication (17) for diﬀerentiated and non-diﬀerentiated products separately, we /f_ind that the implied
+λ’s are 0.9 and 0.8, respectively, corresponding to average price durations of 10 and 5 months for
+diﬀerentiated and non-diﬀerentiated products.
+In sum, our results establish an important role played by both /f_lexible-price and sticky-price deter-
+minants of ERPT. The international dimension of our data oﬀers a new test of the sticky price mecha-
+nism by comparing outcomes for /f_irms that export in the same industry to the same destination and are
+similar in terms of their observable characteristics, such as size and import intensity, yet diﬀer in the
+currency of invoicing. Our results provide new evidence for the long-run convergence of ERPT across
+/f_irms invoicing exports in diﬀerent currencies, conditional on the same observable /f_irm characteristics.
+Response of export quantities A crucial question is whether prices are allocative, and speci/f_ically
+whether the diﬀerential pass-through into prices across diﬀerent currencies of invoicing translates into
+a diﬀerential response of quantities as well. After all, most of international trade is either among re-
+lated parties or between long-term trade partners, and as such export prices might not be allocative. In
+contrast, direct evidence of the allocative role of currency of invoicing and sticky prices is an essential
+test of the modern international macroeconomic framework which emphasizes these features as cen-
+tral to the international transmission of shocks and the design of optimal policies. We provide such
+evidence here.
+33
+
+===== PAGE 35 =====
+
+(a) All products
+ (b) Diﬀerentiated products
+Figure 4: The dynamics of quantity elasticity
+Note: The /f_igures plot the non-parametric dynamic estimates of the quantity elasticity θh over varying horizons h in the
+second stage (18), for all products (left panel) and diﬀerentiated products (right panel); shaded areas re/f_lect 95% con/f_idence
+intervals. The /f_irst stage either includes the full set of ERPT determinants (as in (17); blue lines) or only the sticky-price
+determinants (ιik andιD
+ik; red lines). All speci/f_ications include /f_irm and industry×destination×time /f_ixed eﬀects. Standard
+errors clustered at the country-time level, as in Figure 3.
+Towards this end, we estimate a two-stage speci/f_ication in which the price pass-through equa-
+tion (17) plays the role of the /f_irst stage, and the second-stage equation is given by:
+∆hq∗
+ikt =θh∆hp∗
+ikt +fi +vskt +uikt, (18)
+where θh is the elasticity of demand over horizon h, and both stages include a full set of /f_irm and
+industry×destination×time /f_ixed eﬀects, which absorb all macroeconomic variation including exchange
+rate movements. As a result, the identi/f_ication relies on the diﬀerential response of prices across /f_irms
+with diﬀerent characteristics, including the invoicing currency of their exports, to the same exchange
+rate /f_luctuations in the same general equilibrium environment of a given industry-destination.48 Thus,
+the estimates of θh capture the diﬀerential change in quantities in response to diﬀerential changes in
+prices across /f_irm-products with diﬀerent characteristics.
+We report the results in Figure 4, for all products in the left panel and the subset of diﬀerentiated
+products in the right panel. 49 Speci/f_ically, we plot the estimated quantity elasticityθh for two sets
+of instruments. In the /f_irst speci/f_ication, the /f_irst stage includes the full set of /f_irm characteristics
+— capturing both /f_lexible-price and sticky-price determinants — interacted with exchange rates (blue
+lines), as in (17). In the second speci/f_ication, it includes only the currency choice dummy interactions
+capturing only the sticky-price determinants of price adjustment (red lines). We see that the estimated
+48Note that our identi/f_ication is robust to demand shocks correlated with exchange rates. Since we include both sticky-
+price and /f_lexible-price interaction terms as instruments in estimating ERPT into prices, we alleviate the potential concern
+of a systematic diﬀerence in the correlation of idiosyncratic demand shocks with exchange rates for /f_irms with diﬀerent
+characteristics (e.g., diﬀerent currency invoicing).
+49Online Appendix Table B7 reports /f_irst stages, second stages and reduced forms for selecth∈{ 6, 12, 18, 24}.
+34
+
+===== PAGE 36 =====
+
+elasticity is similar across the two speci/f_ications, and if anything larger in absolute value in the second
+speci/f_ication. This implies that export quantities respond as strongly to the diﬀerential movements in
+prices caused by price stickiness in diﬀerent currencies as to diﬀerential movements in prices caused
+by the /f_lexible price determinants of pass-through, such as the /f_irm’s import intensity.
+In terms of point estimates, the elasticity is always negative, as expected, yet very small in ab-
+solute value and insigni/f_icant for horizons under one year (h < 12 months). The quantity elasticity
+gradually increases in absolute value becoming both signi/f_icant and exceeding unitary elasticity past
+the 18-month horizon for all products, with the long-run absolute value of this elasticity approach-
+ing 1.5. The magnitude of the quantity elasticities for the subset of diﬀerentiated products are larger,
+exceeding 1 already byh = 12 months and exceeding 2 byh = 24 months.50
+These long-run quantity elasticities are consistent with the estimates in the time-series macro liter-
+ature (Feenstra, Luck, Obstfeld, and Russ 2018, Boehm, Levchenko, and Pandalai-Nayar 2020), yet still
+small compared to the micro-level elasticities conventional in the international trade literature (Broda
+and Weinstein 2006). Note, however, that the prices we work with are the factory-gate export prices, af-
+ter which there may be multiple further rounds of incomplete pass-through into /f_inal consumer prices,
+reducing the quantity response (see Auer, Burstein, and Lein 2020). As a result, our estimates may well
+be consistent with a much higher structural elasticity of the /f_inal product demand.
+To summarize, we provide evidence of the allocative eﬀects of price stickiness in diﬀerent currencies
+of invoicing, which is consistent with the recent international macro framework. Yet, we also /f_ind that
+the response of quantities is very sluggish in the /f_irst year after the shock, suggesting the presence of
+additional frictions limiting the response of quantities on impact and in the short run ( cf. theJ-curve
+literature), in addition to sticky prices.
+6 Conclusion
+In this paper, we show that the currency of invoicing is an active /f_irm-level decision, which aﬀects
+how much of the exchange rate movements are passed through into destination prices and quanti-
+ties. The currency choice in exports is shaped by the exposure to imported inputs and is responsive to
+competitors’ pricing and currency choice decisions. The impact of currency invoicing on price dynam-
+ics persists beyond a one-year horizon, generating allocative expenditure-switching eﬀects on export
+quantities, and wanes in the long run.
+Our results have important implications for the international transmission of shocks and macroeco-
+nomic policies. The large cross-/f_irm heterogeneity in currency choice combined with the persistence of
+dominant currencies over time suggest interesting counterfactuals. One possibility is that the US dollar
+strengthens its position as the dominant global currency. This could happen with greater globalization
+of production and more intensive reliance on global value chains, as our results show that cross-border
+FDI — a proxy for global value chains — is associated with more US dollar currency invoicing. This
+would render exchange rates less relevant as determinants of relative prices and expenditure switching
+50As with ERPT estimates, this is not a point elasticity ath, but rather the average elasticity over the period 1-to-h months.
+35
+
+===== PAGE 37 =====
+
+in the global supply chain. In contrast, fragmentation and localization of production chains, e.g. in
+response to a global pandemic shock, can reverse this trend and speed up the transition to a multi-
+currency equilibrium, with more intensive regional trade and greater barriers to cross-regional trade.
+This, in turn, may increase the expenditure-switching role of bilateral exchange rate movements.
+Alternatively, a shift in the exchange rate anchoring policies of the major trade partners, such as
+China, could trigger a long-run shift in the equilibrium environment. If China were to freely /f_loat its
+exchange rate, encouraging Chinese exporters to price more intensively in renminbi, the equilibrium
+environment would change for exporting /f_irms around the world. In particular, this would alter both
+the dynamics of prices in the input markets, as well as the competitive environment in the output mar-
+kets across many industries. As our results show, the currency in which a /f_irm’s imports are invoiced
+and the currency in which its competitors price are key determinants of an exporting /f_irm’s currency
+choice, and hence this shift could dramatically change the optimal invoicing patterns for exporting
+/f_irms. Despite the persistence in currency use that we observe, the fact that the currency choice is an
+endogenous /f_irm-level decision means that such a major shock to the long-run equilibrium environ-
+ment can lead to abrupt changes in the optimal invoicing patterns. Our empirical estimates, combined
+with a general-equilibrium international macro model, allow for a quantitative counterfactual analysis
+of such tectonic shifts in the global monetary system.
+36
+
+===== PAGE 38 =====
+
+Appendix: Additional Figures and Tables
+Figure A1: Dominant currencies in Belgian bilateral trade: diﬀerentiated goods
+(a) Exports
+0 0.2 0.4 0.6 0.8 1
+0
+0.2
+0.4
+0.6
+0.8
+1 (b) Imports
+0 0.2 0.4 0.6 0.8 1
+0
+0.2
+0.4
+0.6
+0.8
+1
+Note: as Figure 1, but for the subsample of the diﬀerentiated products, where we observe a shift away from dollar invoicing
+and towards euro and foreign-currency invoicing relative to the full sample of products.
+Figure A2: Firm size and import currency invoicing
+(a) All import sources (ex-eurozone)
+ (b) Excluding US and dollar pegs
+Note: Import currency invoicing shares by employment size bins of /f_irms (see Appendix Table A2). Unlike for exports in
+Figure 2, the incidence of currency use in imports does not robustly change with /f_irm size. See also Online Appendix C.
+37
+
+===== PAGE 39 =====
+
+Table A1: Currency invoicing in exports: variance decomposition
+(1) (2) (3) (4) (5) (6) (7) (8)
+AdjustedR2 0.657 0 .899 0 .147 0 .400 0 .648 0 .767 0 .915 0 .935
+# of observations (’000) 6,181.3 6,139.3 6,189.0 6,189.0 6,173.7 6,109.8 6,124.7 6,062.0
+# of /f_ixed eﬀects (’000) 20.7 111.9 0.2 1.2 69.2 215.7 179.1 320.9
+· /f_irm ✓
+· /f_irm×destination ✓ ✓ ✓
+· destination ✓
+· HS4 industry ✓
+· HS4 industry×destination ✓ ✓
+· CN8 product×destination ✓ ✓
+Note: Export value weighted projections of ιikt, a dummy for whether a given /f_irm-product-destination-month export ob-
+servation is in non-euros, on diﬀerent sets of /f_ixed eﬀects; numbers of observations and included /f_ixed eﬀects (in thousands),
+with the latter generally being two orders of magnitude smaller than the former.
+Table A2: Firm-size distribution
+Employment size bins <50 50–100 100–200 200–350 350–550 550–850 850–2000 ≥2,000
+Number of /f_irms 1,937 299 247 115 60 36 23 12
+Share in total exports 6% 7% 12% 10% 7% 9% 13% 36%
+Share in total imports 5% 3% 8% 9% 7% 10% 8% 50%
+Note: Firms are sorted by employment into 8 size bins roughly corresponding to the /f_irst 7 deciles of export revenues and the
+last bin consisting of the largest 12 /f_irms that together account for 36% (50%) of Belgian manufacturing exports (imports).
+Table A3: Firm characteristics by export currency use
+Euro Dollar Other
+Number of /f_irms 2,489 254 22
+Employment (FTE) 71.6 214.8 325.9
+Sales (million) 39.9 157.1 271.9
+Exports (million) 21.1 100.8 144.0
+Imports (million) 15.3 57.5 158.1
+Exports/total sales 0.400 0.503 0.377
+Ex-EU export share 0.632 0.648 0.564
+EZ export share 0.368 0.352 0.436
+US+Dollar Peg export share 0.210 0.372 0.095
+Average destination 0.149 0.223 0.177
+market share,Sik |0.055, 0.594] |0.137, 0.747] |0.122, 0.499]
+Ex-EZ import share 0.071 0.144 0.090
+in total variable costs,ϕi |0.018, 0.335] |0.093, 0.471] |0.039, 0.456]
+— non-euro, ϕX
+i 0.027 0.095 0.019
+— dollar, ϕD
+i 0.024 0.092 0.011
+Note: We assign /f_irms to the three currency categories based on the largest share currency use in the /f_irm’s ex-EU exports.
+Other currencies almost always correspond to the destination currency (LCP). The table reports average /f_irm characteristics
+within each category; forSik andϕi we also report the median and the 95th percentile in brackets.
+38
+
+===== PAGE 40 =====
+
+References
+A/l.sc/f.sc/a.sc/r.sc/o.sc, L., M. C/a.sc/l.sc/a.sc/n.sc/i.sc, /a.sc/n.sc/d.sc L. V /a.sc/r.sc/e.sc/l.sc/a.sc(2021): “Currency Hedging: Managing Cash Flow Exposure, ” NBER Work-
+ing Paper No. 28910.
+A/m.sc/i.sc/t.sc/i.sc, M., O. I/t.sc/s.sc/k.sc/h.sc/o.sc/k.sc/i.sc, /a.sc/n.sc/d.sc J. K/o.sc/n.sc/i.sc/n.sc/g.sc/s.sc(2014): “Importers, Exporters, and Exchange Rate Disconnect, ”American
+Economic Review, 7(104), 1942–1978.
+(2019): “International Shocks, Variable Markups and Domestic Prices, ”Review of Economic Studies, 6(86),
+2356–402.
+A/n.sc/d.sc/r.sc/e.sc/w.sc/s.sc, I., J. H. S/t.sc/o.sc/c.sc/k.sc, /a.sc/n.sc/d.sc L. S/u.sc/n.sc(2019): “Weak Instruments in Instrumental Variables Regression: Theory
+and Practice, ”The Annual Review of Economics , 11(5), 727–52.
+A/u.sc/e.sc/r.sc, R., A. T. B/u.sc/r.sc/s.sc/t.sc/e.sc/i.sc/n.sc, /a.sc/n.sc/d.sc S. L/e.sc/i.sc/n.sc(2020): “Exchange Rates and Prices: Evidence from the 2015 Swiss Franc
+Appreciation, ”American Economic Review, forthcoming.
+B/a.sc/c.sc/c.sc/h.sc/e.sc/t.sc/t.sc/a.sc, P., /a.sc/n.sc/d.sc E. /v.sc/a.sc/n.sc W/i.sc/n.sc/c.sc/o.sc/o.sc/p.sc(2000): “Does Exchange-Rate Stability Increase Trade and Welfare?, ”Amer-
+ican Economic Review, 90(5), 1093–1109.
+(2005): “A Theory of the Currency Denomination of International Trade, ”Journal of International Eco-
+nomics, 67(2), 295–319.
+B/a.sc/r.sc/b.sc/i.sc/e.sc/r.sc/o.sc, O.(2020): “The Valuation Eﬀects of Trade, ” https://obarbiero.github.io//f_iles/VET.pdf.
+B/a.sc/r.sc/b.sc/i.sc/e.sc/r.sc/o.sc, O., E. F/a.sc/r.sc/h.sc/i.sc, G. G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, /a.sc/n.sc/d.sc O. I/t.sc/s.sc/k.sc/h.sc/o.sc/k.sc/i.sc(2019): “The Macroeconomics of Border Taxes, ” inNBER
+Macroeconomics Annual 2018, vol. 33. forthcoming.
+B/e.sc/r.sc/m.sc/a.sc/n.sc, N., P. M/a.sc/r.sc/t.sc/i.sc/n.sc, /a.sc/n.sc/d.sc T. M/a.sc/y.sc/e.sc/r.sc(2012): “How do diﬀerent exporters react to exchange rate changes?, ”
+Quarterly Journal of Economics , 127(1), 437–492.
+B/e.sc/t.sc/t.sc/s.sc, C., /a.sc/n.sc/d.sc M. D/e.sc/v.sc/e.sc/r.sc/e.sc/u.sc/x.sc(2000): “Exchange Rate Dynamics in a Model of Pricing-to-Market, ” Journal of
+International Economics, 50(1), 215–44.
+B/h.sc/a.sc/t.sc/t.sc/a.sc/r.sc/a.sc/i.sc, S.(2009): “Optimal currency denomination of trade: Theory and quantitative exploration, ” https:
+//sites.google.com/site/bhattaraisaroj/.
+B/o.sc/e.sc/h.sc/m.sc, C. E., A. A. L/e.sc/v.sc/c.sc/h.sc/e.sc/n.sc/k.sc/o.sc, /a.sc/n.sc/d.sc N. P/a.sc/n.sc/d.sc/a.sc/l.sc/a.sc/i.sc/hyphen.scN/a.sc/y.sc/a.sc/r.sc(2020): “The Long and Short (Run) of Trade Elasticities, ”
+NBER Working Paper No. 27064.
+B/o.sc/z.sc, E., G. G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, /a.sc/n.sc/d.sc M. P/l.sc/a.sc/g.sc/b.sc/o.sc/r.sc/g.sc/hyphen.scM/oslash.sc/l.sc/l.sc/e.sc/r.sc(2017): “Global Trade and the Dollar, ” NBER Working Paper
+No. 23988.
+B/r.sc/o.sc/d.sc/a.sc, C., /a.sc/n.sc/d.sc D. W/e.sc/i.sc/n.sc/s.sc/t.sc/e.sc/i.sc/n.sc(2006): “Globalization and the Gains from Variety, ”Quarterly Journal of Economics,
+121(2), 541–85.
+B/u.sc/r.sc/s.sc/t.sc/e.sc/i.sc/n.sc, A., /a.sc/n.sc/d.sc G. G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc(2013): “International Prices and Exchange Rates, ” inHandbook of International
+Economics, ed. by G. Gopinath, E. Helpman, and K. Rogoﬀ, vol. IV.
+C/a.sc/s.sc/a.sc/s.sc, C., F. J. D/iacute.sc/e.sc/z.sc, G. G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, /a.sc/n.sc/d.sc P./hyphen.scO. G/o.sc/u.sc/r.sc/i.sc/n.sc/c.sc/h.sc/a.sc/s.sc(2016): “Dominant Currency Paradigm, ” NBER Work-
+ing Paper No. 22943.
+C/a.sc/v.sc/a.sc/l.sc/l.sc/o.sc, A., B. N/e.sc/i.sc/m.sc/a.sc/n.sc, /a.sc/n.sc/d.sc R. R/i.sc/g.sc/o.sc/b.sc/o.sc/n.sc(2014): “Currency Unions, Product Introductions, and the Real Ex-
+change Rate, ”The Quarterly Journal of Economics , 129(2), 529–595.
+C/a.sc/v.sc/e.sc/s.sc, D. W., L. C/h.sc/r.sc/i.sc/s.sc/t.sc/e.sc/n.sc/s.sc/e.sc/n.sc, /a.sc/n.sc/d.sc E. W. D/i.sc/e.sc/w.sc/e.sc/r.sc/t.sc(1982): “Multilateral Comparisons of Output, Input and
+Productivity Using Superlative Index Numbers, ”Economic Journal, 92(365), 73–86.
+C/h.sc/a.sc/r.sc/i.sc, V., P. K/e.sc/h.sc/o.sc/e.sc, /a.sc/n.sc/d.sc E. M/c.scG/r.sc/a.sc/t.sc/t.sc/a.sc/n.sc(2002): “Can Sticky Price Models Generate Volatile and Persistent
+Exchange Rates?, ”Review of Economic Studies , 69(3), 533–63.
+C/h.sc/e.sc/n.sc, N., W. C/h.sc/u.sc/n.sc/g.sc, /a.sc/n.sc/d.sc D. N/o.sc/v.sc/y.sc(2018): “Vehicle Currency Pricing and Exchange Rate Pass-Through, ” CEPR
+Discussion Papers No. 13085.
+C/h.sc/u.sc/n.sc/g.sc, W.(2016): “Imported inputs and invoicing currency choice: Theory and evidence from UK transaction
+data, ”Journal of International Economics , 99, 237–250.
+39
+
+===== PAGE 41 =====
+
+C/o.sc/r.sc/s.sc/e.sc/t.sc/t.sc/i.sc, G., M. A. C/r.sc/o.sc/w.sc/l.sc/e.sc/y.sc, /a.sc/n.sc/d.sc L. H/a.sc/n.sc(2020): “Invoicing and Pricing-to-market: Evidence on international
+pricing by UK exporters, ” CEPR Discussion Paper No. 13282.
+C/o.sc/r.sc/s.sc/e.sc/t.sc/t.sc/i.sc, G., /a.sc/n.sc/d.sc P. P/e.sc/s.sc/e.sc/n.sc/t.sc/i.sc(2004): “Endogenous Pass-Through and Optimal Monetary Policy: A Model of
+Self-Validating Exchange Rate Regimes, ” CEPR Working Paper No. 8737.
+(2007): “The Simple Geometry of Transmission and Stabilization in Closed and Open Economies [with
+Comments], ”NBER International Seminar on Macroeconomics , pp. 65–129.
+C/r.sc/a.sc/v.sc/i.sc/n.sc/o.sc, J.(2017): “Exchange Rates, Aggregate Productivity and the Currency of Invoicing of International
+Trade, ” https://sites.google.com/a/umich.edu/javiercravino/.
+C/r.sc/o.sc/w.sc/l.sc/e.sc/y.sc, M. A., L. H/a.sc/n.sc, /a.sc/n.sc/d.sc M. S/o.sc/n.sc(2021): “Dominant currency dynamics: Evidence on dollar-invoicing from
+UK exporters, ” Cambridge-INET Working Paper No. 2051.
+D/e.sc/v.sc/e.sc/r.sc/e.sc/u.sc/x.sc, M., /a.sc/n.sc/d.sc C. E/n.sc/g.sc/e.sc/l.sc(2003): “Monetary Policy in the Open Economy Revisited: Price Setting and Ex-
+change Rate Flexibility, ”Review of Economic Studies , 70, 765–84.
+D/e.sc/v.sc/e.sc/r.sc/e.sc/u.sc/x.sc, M., C. E/n.sc/g.sc/e.sc/l.sc, /a.sc/n.sc/d.sc P. S/t.sc/o.sc/r.sc/g.sc/a.sc/a.sc/r.sc/d.sc(2004): “Endogenous Pass-through when Nominal Prices are set in
+Advance, ”Journal of International Economics , 63(2), 263–291.
+D/e.sc/v.sc/e.sc/r.sc/e.sc/u.sc/x.sc, M. B., W. D/o.sc/n.sc/g.sc, /a.sc/n.sc/d.sc B. T/o.sc/m.sc/l.sc/i.sc/n.sc(2017): “Importers and exporters in exchange rate pass-through and
+currency invoicing, ”Journal of International Economics , 105(C), 187–204.
+D/e.sc/v.sc/e.sc/r.sc/e.sc/u.sc/x.sc, M. B., /a.sc/n.sc/d.sc S. S/h.sc/i.sc(2013): “Vehicle Currency, ”International Economic Review, 54(1), 97–133.
+D/o.sc/r.sc/n.sc/b.sc/u.sc/s.sc/c.sc/h.sc, R.(1976): “Expectations and Exchange Rate Dynamics, ”Journal of Political Economy , 84(6), 1161–
+1176.
+(1987): “Exchange Rate and Prices, ”American Economic Review, 77(1), 93–106.
+D/r.sc/e.sc/n.sc/i.sc/k.sc, A., R. K/i.sc/r.sc/p.sc/a.sc/l.sc/a.sc/n.sc/i.sc, /a.sc/n.sc/d.sc D. P/e.sc/r.sc/e.sc/z.sc(2019): “Currency Choice in Contracts, ” http://www.andresdrenik.com/
+research/.
+D/r.sc/e.sc/n.sc/i.sc/k.sc, A., /a.sc/n.sc/d.sc D. P/e.sc/r.sc/e.sc/z.sc(2018): “Pricing in Multiple Currencies in Domestic Markets, ” http://www.
+andresdrenik.com/research/.
+D/r.sc/e.sc/n.sc/i.sc/k.sc, A., /a.sc/n.sc/d.sc D. J. P/e.sc/r.sc/e.sc/z.sc(2021): “Domestic Price Dollarization in Emerging Economies, ”Journal of Monetary
+Economics, forthcoming.
+E/g.sc/o.sc/r.sc/o.sc/v.sc, K., /a.sc/n.sc/d.sc D. M/u.sc/k.sc/h.sc/i.sc/n.sc(2020): “Optimal Policy under Dollar Pricing, ” https://sites.google.com/site/
+dmitry0mukhin/.
+E/n.sc/g.sc/e.sc/l.sc, C.(2003): “Expenditure Switching and Exchange Rate Policy, ” in NBER Macroeconomics Annual 2002 ,
+vol. 17, pp. 231–272.
+(2006): “Equivalence Results for Optimal Pass-Through, Optimal Indexing to Exchange Rates, and Opti-
+mal Choice of Currency for Export Pricing, ”Journal of European Economic Association , 4(6), 1249–60.
+F/a.sc/r.sc/h.sc/i.sc, E., /a.sc/n.sc/d.sc M. M/a.sc/g.sc/g.sc/i.sc/o.sc/r.sc/i.sc(2017): “A Model of the International Monetary System, ”The Quarterly Journal of
+Economics, 133(1), 295–355.
+F/a.sc/u.sc/c.sc/e.sc/g.sc/l.sc/i.sc/a.sc, D., A. S/h.sc/i.sc/n.sc/g.sc/a.sc/l.sc, /a.sc/n.sc/d.sc M. W/e.sc/r.sc/m.sc/e.sc/l.sc/i.sc/n.sc/g.sc/e.sc/r.sc(2012): “‘Natural hedging’ of exchange rate risk: The role of
+imported input prices, ” http://www.alexandria.unisg.ch/publications/citation/Martin_Wermelinger/.
+F/e.sc/e.sc/n.sc/s.sc/t.sc/r.sc/a.sc, R. C., P. L/u.sc/c.sc/k.sc, M. O/b.sc/s.sc/t.sc/f.sc/e.sc/l.sc/d.sc, /a.sc/n.sc/d.sc K. N. R/u.sc/s.sc/s.sc(2018): “In Search of the Armington Elasticity, ”The Review
+of Economics and Statistics , The Review of Economics and Statistics(1), 135–150.
+F/l.sc/e.sc/m.sc/i.sc/n.sc/g.sc, J. M.(1962): “Domestic /f_inancial policies under /f_ixed and /f_loating exchange rates, ”IMF Staﬀ Papers No. 9,
+pp. 369–379.
+F/r.sc/i.sc/b.sc/e.sc/r.sc/g.sc, R.(1998): “In which currency should exporters set their prices?, ”Journal of International Economics , 45,
+59–76.
+G/a.sc/l.sc/iacute.sc, J.(2008): Monetary Policy, In/f_lation and the Business Cycle: An Introduction to the New Keynesian Framework.
+Princeton University Press.
+G/o.sc/l.sc/d.sc/b.sc/e.sc/r.sc/g.sc, L. S., /a.sc/n.sc/d.sc C. T/i.sc/l.sc/l.sc/e.sc(2008): “Vehicle currency use in international trade, ” Journal of International
+40
+
+===== PAGE 42 =====
+
+Economics, 76(2), 177–192.
+(2009): “Macroeconomic interdependence and the international role of the dollar, ”Journal of Monetary
+Economics, 56(7), 990–1003.
+(2016): “Micro, macro, and strategic forces in international trade invoicing: Synthesis and novel patterns, ”
+Journal of International Economics , 102, 173–187.
+G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, G.(2016): “The International Price System, ”Jackson Hole Symposium Proceedings .
+G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, G., E. B/o.sc/z.sc, C. C/a.sc/s.sc/a.sc/s.sc, F. J. D/iacute.sc/e.sc/z.sc, P./hyphen.scO. G/o.sc/u.sc/r.sc/i.sc/n.sc/c.sc/h.sc/a.sc/s.sc, /a.sc/n.sc/d.sc M. P/l.sc/a.sc/g.sc/b.sc/o.sc/r.sc/g.sc/hyphen.scM/oslash.sc/l.sc/l.sc/e.sc/r.sc(2020): “Dominant
+Currency Paradigm, ”American Economic Review, 110(3), 677–719.
+G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, G., /a.sc/n.sc/d.sc O. I/t.sc/s.sc/k.sc/h.sc/o.sc/k.sc/i.sc(2010): “Frequency of Price Adjustment and Pass-through, ”Quarterly Journal of
+Economics, 125(2), 675–727.
+(2021): “Dominant Currencies in International Pricing, ” inHandbook of International Economics , ed. by
+G. Gopinath, E. Helpman, and K. Rogoﬀ, vol. IV. forthcoming.
+G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, G., O. I/t.sc/s.sc/k.sc/h.sc/o.sc/k.sc/i.sc, /a.sc/n.sc/d.sc R. R/i.sc/g.sc/o.sc/b.sc/o.sc/n.sc(2010): “Currency Choice and Exchange Rate Pass-through, ”Amer-
+ican Economic Review, 100(1), 306–336.
+G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, G., /a.sc/n.sc/d.sc R. R/i.sc/g.sc/o.sc/b.sc/o.sc/n.sc(2008): “Sticky Borders, ”Quarterly Journal of Economics , 123(2), 531–575.
+G/o.sc/p.sc/i.sc/n.sc/a.sc/t.sc/h.sc, G., /a.sc/n.sc/d.sc J. C. S/t.sc/e.sc/i.sc/n.sc(2020): “Banking, Trade, and the making of a Dominant Currency, ” Quarterly
+Journal of Economics, forthcoming.
+G/o.sc/u.sc/r.sc/i.sc/n.sc/c.sc/h.sc/a.sc/s.sc, P./hyphen.scO.(2019): “The Dollar Hegemon? Evidence and Implications for Policymakers, ” the 6th Asian
+Monetary Policy Forum, Singapore.
+H/e.sc, Z., A. K/r.sc/i.sc/s.sc/h.sc/n.sc/a.sc/m.sc/u.sc/r.sc/t.sc/h.sc/y.sc, /a.sc/n.sc/d.sc K. M/i.sc/l.sc/b.sc/r.sc/a.sc/d.sc/t.sc(2019): “A Model of Safe Asset Determination, ”American Economic
+Review, 109(4), 1230–62.
+I/l.sc/z.sc/e.sc/t.sc/z.sc/k.sc/i.sc, E., C. M. R/e.sc/i.sc/n.sc/h.sc/a.sc/r.sc/t.sc, /a.sc/n.sc/d.sc K. S. R/o.sc/g.sc/o.sc/f.sc/f.sc(2019): “Exchange Arrangements Entering the Twenty-First
+Century: Which Anchor will Hold?, ”The Quarterly Journal of Economics , 134(2), 599–646.
+I/t.sc/s.sc/k.sc/h.sc/o.sc/k.sc/i.sc, O.(2020): “The Story of the Real Exchange Rate, ” http://scholar.princeton.edu/itskhoki/.
+K/r.sc/u.sc/g.sc/m.sc/a.sc/n.sc, P. R.(1980): “Vehicle Currencies and the Structure of International Exchange, ”Journal of Money, Credit
+and Banking, 12, 513–26.
+(1987): “Pricing to Market when the Exchange Rate Changes, ” in Real Financial Linkages among Open
+Economies, ed. by S. Arndt, and J. Richardson, pp. 49–70. MIT Press, Cambridge.
+L/y.sc/o.sc/n.sc/n.sc/e.sc/t.sc, V., J. M/a.sc/r.sc/t.sc/i.sc/n.sc, /a.sc/n.sc/d.sc I. M/e.sc/j.sc/e.sc/a.sc/n.sc(2021): “Invoicing Currency, Firm Size, and Hedging, ”Journal of Money,
+Credit and Banking, forthcoming.
+M/a.sc/g.sc/g.sc/i.sc/o.sc/r.sc/i.sc, M., B. N/e.sc/i.sc/m.sc/a.sc/n.sc, /a.sc/n.sc/d.sc J. S/c.sc/h.sc/r.sc/e.sc/g.sc/e.sc/r.sc(2020): “International Currencies and Capital Allocation, ”Journal of
+Political Economy, forthcoming.
+M/u.sc/k.sc/h.sc/i.sc/n.sc, D.(2021): “An Eqilibrium Model of the International Price System, ”American Economic Review, forth-
+coming.
+M/u.sc/n.sc/d.sc/e.sc/l.sc/l.sc, R. A.(1963): “Capital mobility and stabilization policy under /f_ixed and /f_lexible exchange rates, ”Cana-
+dian Journal of Economics and Political Science , 29(4), 475–485.
+N/a.sc/k.sc/a.sc/m.sc/u.sc/r.sc/a.sc, E., /a.sc/n.sc/d.sc J. S/t.sc/e.sc/i.sc/n.sc/s.sc/s.sc/o.sc/n.sc(2008): “Five Facts about Prices: A Reevaluation of Menu Cost Models, ”Quar-
+terly Journal of Economics , 123(4), 1415–1464.
+O/b.sc/s.sc/t.sc/f.sc/e.sc/l.sc/d.sc, M., /a.sc/n.sc/d.sc K. R/o.sc/g.sc/o.sc/f.sc/f.sc(1995): “Exchange Rate Dynamics Redux, ”Journal of Political Economy , 103, 624–
+60.
+(2000): “New Directions for Stochastic Open Economy Models, ”Journal of International Economics , 50,
+117–153.
+R/e.sc/y.sc, H.(2001): “International Trade and Currency Exchange, ”Review of Economic Studies , 68(2), 443–464.
+V /a.sc/n.sc B/i.sc/e.sc/s.sc/e.sc/b.sc/r.sc/o.sc/e.sc/c.sc/k.sc, J.(2007): “Robustness of Productivity Estimates, ”Journal of Industrial Economics, (3), 529–568.
+41
+
+===== PAGE 43 =====
+
+Online Appendix
+Amiti, Itskhoki and Konings: “Dominant Currencies:
+How /f_irms choose currency invoicing and why it matters”
+A Dynamics of Pass-through
+Setup Consider a dynamic Calvo model of price setting, with prices preset in diﬀerent currencies. We assume
+that the desired price of the /f_irm in the destination currency is given by:
+˜p∗
+it = (1−ψi)et +ψD
+i eD
+t +ωit,
+whereψi,ψD
+i ≥ 0 are desired pass-through coeﬃcients, andet andeD
+t are euro-destination and dollar-destination
+exchange rates, and ωit combines all the components of the desired price uncorrelated with exchange rates. 51
+We assume that exchange rates follow random walks:
+Et∆et = Et∆eD
+t = 0,
+and ∆et and ∆eD
+t are possibly correlated. Note that the desired price can be converted to the producer currency
+(euro) and the dollar as follows: ˜p∗
+it = ˜pit +et = ˜pD
+it +eD
+t , and therefore
+˜pit =−ψiet +ψD
+i eD
+t +ωit,
+˜pD
+it = (1−ψi)et− (1−ψD
+i )eD
+t +ωit,
+in euros and in dollars, respectively. Lastly, note thatψi = 1−ϕi−γi andψD
+i =ϕD
+i +γD
+i , as a special case of
+Lemma 3.
+The /f_irm sets prices either in local (LCP), producer (PCP) or dominant (DCP) currency, and adjusts them in
+any given period with a Calvo probability (1−λ) to a reset price:
+¯p∗
+it = (1−βλ)
+∑∞
+j=0
+(βλ)jEt˜p∗
+t+j = (1−ψi)et +ψD
+i eD
+t + Ωit,
+¯pit = (1−βλ)
+∑∞
+j=0
+(βλ)jEt˜pt+j =−ψiet +ψD
+i eD
+t + Ωit,
+¯pD
+it = (1−βλ)
+∑∞
+j=0
+(βλ)jEt˜pD
+t+j = (1−ψi)et− (1−ψD
+i )eD
+t + Ωit,
+where the second equalities obtain due to the random walk properties of exchange rates and Ωit ≡ (1−
+βλ)∑∞
+j=0(βλ)jEtωi,t+j is the same independently of the currency of invoicing.
+With probabilityλ the prices remain unchanged in the currency in which they were preset. Therefore, price
+dynamics for LCP, PCP and DCP /f_irms in the destination currency, euros and dollars satisfy, respectively:
+p∗
+it =λp∗
+i,t−1 + (1−λ)¯p∗
+it,
+pit =λpi,t−1 + (1−λ)¯pit,
+pD
+it =λpD
+i,t−1 + (1−λ)¯pD
+it.
+51Without loss of generality,ωit can be viewed as the residual from the projection of ˜p∗
+it onet andeD
+t .
+1
+
+===== PAGE 44 =====
+
+The realized price in the destination currency is:
+p∗
+it =
+
+
+p∗
+it, if LCP,
+pit +et, if PCP,
+pD
+it +eD
+t , if DCP.
+Lastly, to complete the description of the environment, we model currency choice as follows:
+ιi = 1{ψi +ηi≥ 0},
+ιD
+i = 1{ψD
+i +ηD
+i ≥ 0,ιi = 1} =ιi· 1{ψD
+i +ηD
+i ≥ 0|ιi = 1},
+whereιi∈{ 0, 1} is an indicator equal to one under non-euro invoicing (i.e., in any foreign currency, destination
+or dominant) and ιD
+i ∈{ 0, 1} is an indicator equal to one under dominant currency pricing. Note that ιD
+i = 1
+impliesιi = 1. Currency choice is shaped by both the desired pass-through (ψi,ψD
+i ) and idiosyncratic shocks
+(ηi,ηD
+i ), which capture additional channels such as /f_ixed costs.
+Results 1 (Distributed Lag Regression) The projection of price changes ∆p∗
+it, ∆pit and ∆pD
+it (in respective
+currencies) on exchange rates ∆et and ∆eD
+t all follow AR(1) processes with persistence λ.52 The impulse re-
+sponses of these prices to exchange rates,h periods out, are thus proportional to (1−λ)λh, and the cumulative
+impulse response is proportional to [1−λh+1]. For example, under LCP:
+E
+{
+∆p∗
+it|{∆et−j, ∆eD
+t−j}j≥0
+}
+= (1−λ)
+∞∑
+j=0
+λj[(1−ψi)∆et−j +ψD
+i ∆eD
+t−j], (A1)
+and similarly under PCP and DCP. This also characterizes the distributed-lag regression coeﬃcients of ∆p∗
+it =
+p∗
+it−p∗
+i,t−1 on{∆et−j, ∆eD
+t−j}j∈[0,..,ℓ] for anyℓ, since exchange rates follow a random walk.
+Result 2 (Long Diﬀerence Regression) The projection of anh-period diﬀerence of the destination-currency
+price ∆hp∗
+it = p∗
+it−p∗
+i,t−h on the contemporaneous h-period diﬀerences in exchange rates ∆het = et−et−h
+and ∆heD
+t = eD
+t −eD
+t−h interacted with the currency choice dummies ιi andιD
+i and the desired pass-through
+coeﬃcients ψi andψD
+i , respectively, results in the following regression equation:
+E{∆hp∗
+it|∆het, ∆heD
+t ,ιi,ιD
+i ,ψi,ψD
+i} = ∆het− ˆδ(h)[ιi∆het−ιD
+i ∆heD
+t
+]
+(A2)
+−
+(
+1− ˆδ(h)
+)[
+ψi∆het−ψD
+i ∆heD
+t
+]
+,
+where ˆδ(h)≡ 1
+h
+λ
+1−λ(1−λh), as in (10)–(11) in the text. Note thatˆδ(1) =λ, ˆδ(h)→ 0 ash→∞ , and ˆδ(h)>λ h
+forh> 1.53
+Proof: We use (A1), under LCP, to calculate:
+∆hp∗
+it = (1−δ)
+h−1∑
+k=0
+∞∑
+j=0
+δj[(1−ψi)∆et−j−k +ψD
+i ∆eD
+t−j−k],
+52Proof: From price dynamics equations, under LCP, we have ∆p∗
+it = λ∆p∗
+i,t−1 + (1−λ)∆¯p∗
+it, and the reset price
+satis/f_iesE{∆¯p∗
+it|∆et, ∆eD
+t} = (1−ψi)∆et +ψD
+i ∆eD
+t ∼iid, since Ωit is orthogonal to exchange rates and exchange rates
+follow random walks. Therefore, the projection of∆¯p∗
+it on exchange rates follows an AR(1) with persistenceλ, and similarly
+under PCP and DCP in euros and dollars, respectively■
+53Note that 1
+h
+λ
+1−λ(1−λh) = 1
+h(λ +... +λh)> 1
+hhλh =λh, ifh> 1 andλ< 1.
+2
+
+===== PAGE 45 =====
+
+where by default we consider projection on exchange rates (thus, omitting terms in Ωit). Similar expressions
+hold for ∆hpit and ∆hpD
+it under PCP and DCP, in euros and dollars, respectively. Note that ∆hpit + ∆het and
+∆hpD
+it + ∆heD
+t converts the price changes to the destination currency, under PCP and DCP respectively. Also
+note that ∆het =∑h−1
+k=0 ∆et−k and ∆heD
+t =∑h−1
+k=0 ∆eD
+t−k.
+We calculate the following conditional expectations (also conditioning on /f_irm characteristicsψi,ψD
+i ):
+E{∆hp∗
+it|∆het, ∆heD
+t ,ιi = 1,ιD
+i = 0} = [(1−ψi)∆het +ψD
+i ∆heD
+t ]
+= 1
+h
+∑h
+ℓ=1[1−λℓ]
+  
+1
+h(1−λ)
+h−1∑
+k=0
+h−k−1∑
+j=0
+λj
+=
+(
+1− ˆδ(h)
+)
+[(1−ψi)∆het +ψD
+i ∆heD
+t ],
+E{∆hp∗
+it|∆het, ∆heD
+t ,ιi = 0,ιD
+i = 0} = E{∆hpit|∆het, ∆heD
+t ,ιi = 0,ιD
+i = 0} + ∆het
+= ∆het +
+(
+1− ˆδ(h)
+)
+[−ψi∆het +ψD
+i ∆heD
+t ]
+E{∆hp∗
+it|∆het, ∆heD
+t ,ιi =ιD
+i = 1} = E{∆hpD
+it|∆het, ∆heD
+t ,ιi =ιD
+i = 1} + ∆heD
+t
+= ∆heD
+t +
+(
+1− ˆδ(h)
+)
+[(1−ψi)∆het− (1−ψD
+i )∆heD
+t ].
+Note thatιi = 1,ιD
+i = 0 corresponds to LCP;ιi =ιD
+i = 0 to PCP; andιi =ιD
+i = 1 to DCP. In our calculations,
+we use the fact that var(∆het) =hσ2
+e, whereσ2
+e = var(∆et), and
+cov
+(
+(1−λ)∑h−1
+k=0
+∑∞
+j=0λj(1−ψi)∆et−j−k,∑h−1
+k=0 ∆et−j
+)
+=σ2
+e(1−ψi)(1−λ)∑h−1
+k=0
+∑h−k−1
+j=0 λj.
+The three conditional expectations above imply the regression speci/f_ication (A2).■
+Lastly, we note that ιi and ψi are not collinear, as ιi = 1{ψi +ηi ≥ 0}, and similarly for ιD
+i and ψD
+i .
+The estimation of (A2) does not require instrumentation for ιi andιD
+i , as long as ψi andψD
+i interactions are
+controlled for.
+3
+
+===== PAGE 46 =====
+
+B Data Appendix
+B.1 Data Sources and Coverage
+Our data come from a variety of sources, all of which are easily merged together by the /f_irm’s VAT, which is a
+unique /f_irm identi/f_ier. We restrict the sample of /f_irms to those that report their main product in manufacturing,
+identi/f_ied as NACE 2-digit categories 10 to 33. We do not include /f_irms that switch between manufacturing and
+non-manufacturing (only 2% of the sample).
+Currency invoicing data These data are collected by the Belgium Customs Oﬃce and then processed by
+the National Belgium Bank on a monthly basis, beginning in 2017. The unit of observation is at the /f_irm-CN8-
+country-month level for both exports and imports, indicating the currency of invoicing of the transaction and its
+value. These data comprise the universe of transactions for Belgian trade with ex-EU countries; a small number
+of /f_irms were suppressed due to con/f_identiality, nonresident status of the /f_irm, or missing information at the NBB
+statistical department. The currency data covers nearly 90% of the value of the transactions.
+Trade data The within EU trade transaction data are collected by the Intrastat Survey at the same level of
+disaggregation that the Customs Oﬃce collects the ex-EU trade data – at the /f_irm-CN8-country-month level.
+The /f_irst 6-digits of the CN codes correspond to the World Hamonized System (HS). These data report values
+and quantities in weights for most observations and units in other cases. For extra-EU trade all transactions are
+reported; all transactions above one million euros (0.4 million euros) are reported for intra-EU exports (imports).
+Accounts data The /f_irm characteristic data are drawn from annual income statements, the quarterly VAT
+declarations, which all /f_irms are required to submit to the tax oﬃce, and from the Social Security Oﬃce.
+B.2 Variable De/f_initions
+Exchange rates The bilateral exchange rates are from the IMF. They are reported as monthly averages relative
+to the US dollar, which we convert to be relative to the euro for the log change in the euro-destination exchange
+rate.
+Prices (unit values) used as the dependent variable in the ERPT regressions, are measured in log changes as:
+∆p∗
+ikt≡ ∆ log
+( Export value∗
+ikt
+Export quantityikt
+)
+,
+at the /f_irm-CN8-destination level. We clean the data for outliers in changes in unit values, only keeping those
+observations where the unit values ratio int andt− 1 is no smaller than 1/3 and no greater than 3.
+Imported input intensity Theϕi is the /f_irm’s share of imports from ex-EZ countries as a share of its total
+variable costs, de/f_ined as the wage bill plus the total material costs. This is further split into the portion of ex-EZ
+imports that are invoiced in euros and those in non-euros. However, these measures are incomplete because we
+do not have currency data for the ex-EZ imports within the EU: Bulgaria, Croatia, Czech Republic, Denmark,
+Hungary, Poland, Romania, Sweden, and the United Kingdom, account for 10% of Belgium imports (and 15% of
+its exports).
+4
+
+===== PAGE 47 =====
+
+Firm destination sales share is measured as
+Sik≡
+Export valuef (i)sk∑
+f ′∈Fsk
+Export valuef ′sk
+, (A3)
+where Export valuefsk is the combined export value of all productsi of /f_irmf in industrys shipped to destination
+k, andFsk is the set of all Belgian exporters to destinationk in industrys, where we constructSikt in each year
+t and then average it over the years in which the /f_irm has positive exports tok.
+Additional /f_irm characteristics The R&D variable is de/f_ined as the /f_irm’s total R&D expenditure as a share
+of its total sales in 2017. The /f_irm-level R&D expenditure is from the Center for R&D monitoring, ECOOM. The
+FDI inward and outward variables are zero/one dummies indicating whether FDI that constitutes at least 10%
+over the sample period, sourced from the NBB annual FDI survey.
+Competitor variables We de/f_ine the competitor currency variables as the share of exports within an HS4-
+destination that are invoiced in non-euro currency; and similarly for the dollar competitor currency, averaged
+over the sample period. The Belgium competitor instruments are constructed as the export weighted average
+of the competitors’ import intensity and employment size within an HS4-destination. These variables are con-
+structed at the annual level and then averaged over 2017-2019.
+Country-level data The instruments for non-Belgium competitors are constructed using COMTRADE bilat-
+eral data at the HS6 level for 2017-2019. The peg countries are identi/f_ied as those with a root mean squared error
+less than 0.05, using monthly bilateral exchange rates for 2012-2020. The country-level macroeconomic variables,
+comprising GDP and CPI, are from the World Bank.
+Total factor productivity We compute total factor productivity (TFP) using a standard Törnqvist index ap-
+proach as proposed by Caves, Christensen, and Diewert (1982). Each /f_irm is compared to its NACE 2-digit sector
+average with average log output log ¯Qt, average log number of jobs log ¯Lt, average log capital log ¯Kt and the
+average labor share ˜st. In particular, the TFP index number is then given for each /f_irmi by the following:
+logTFP it− logTFP t = (logQit− log ¯Qt)− ˜sit(logLit− log ¯Lt)− (1− ˜sit)(logKit− log ¯Kt),
+where ˜sit = (sL
+it +sL
+t )/2. We proxy output by value added, labor by the number of full time equivalent jobs,
+capital by tangible /f_ixed assets, and the labor share is computed by the ratio of the wage bill to value added. The
+main advantage of this approach is that no estimation is required and it allows a /f_lexible production technology.
+Van Biesebroeck (2007) compares diﬀerent non-parametric and parametric methods to compute TFP and shows
+that the index number approach produces consistently accurate productivity growth estimates when data are not
+subject to a lot of measurement error. Since the index approach is a deterministic one, it is straightforward to
+include as a control in our estimations.
+5
+
+===== PAGE 48 =====
+
+C Import Currency Invoicing
+Next, we explore the /f_irm-level determinants of currency choice in imports. Now, the dependent variable is
+ιM
+ikt∈{ 0, 1} corresponding to the /f_irm-product (CN8)-source country dummy for the invoicing currency of /f_irm
+imports, where zero corresponds to euro invoicing and one otherwise. We construct /f_irm-level determinants
+analogous to those in the export regressions in Table 2, adjusting the variables appropriately. In particular,
+instead of the ex-EZ import intensity variables we include the share of ex-EZ exportsχi in total sales of the /f_irm
+(overall and split by currency of exports); instead of the industry-destination export market share variable, we
+construct the share of the /f_irm’s importsSM
+ijk in total Belgian imports by HS4-industry×source country; and in
+parallel with the competitor currency in exports we include the average competitor share of foreign-currency
+inputs in total variable costs, ¯ιM
+−ikt.
+Online Appendix Table B1 shows that a key correlate of the /f_irm import currency invoicing is the currency
+the /f_irm adopts in its total sales, proxied by the ex-EZ export shareχi in total revenues in column 1, and the
+foreign-currency export share in revenues χX
+i in columns 2–4. This pattern is the mirror image of the results
+for the export currency choice. Firms that use foreign currency in export pricing also tend to use it in importing,
+consistent with the real hedging mechanism and marginal cost channel for desired pass-through, and this may
+re/f_lect two-way causality.
+Furthermore, strategic complementarities in import currency choice also play a large role, just like in exports.
+Firms with competitors that import in non-euros are themselves more likely to import in foreign currencies. The
+OLS estimate in column 3 is quantitatively small, but the IV speci/f_ication in column 4 recovers a large coeﬃcients,
+comparable with that for exports. If all of a /f_irm’s competitors switch from euros to foreign currency in importing,
+that /f_irm is 56 percentage points more likely to also use the foreign currency (controlling for industry and source
+country /f_ixed eﬀects).
+Interestingly, we do not /f_ind a similar eﬀect of /f_irm size on import currency choice as we did for export cur-
+rency choice. Here, the coeﬃcient on the overall /f_irm size (log employment) is insigni/f_icantly diﬀerent from zero
+in almost all of the speci/f_ications, consistent with Appendix Figure A2 in the paper and with the currency choice
+in imports being a less active /f_irm-level decision. However, controlling for the /f_irm’s overall employment size, if
+a /f_irm is a large importer of a particular good (relative to the size of the Belgian import market in an industry),
+then it is more likely to source its imports in local currency (euros) — that is, the coeﬃcient on the import market
+share variable is negative and signi/f_icant. This is more characteristic of the inward-looking domestically-oriented
+/f_irms whose sales are predominantly denominated in euros.
+6
+
+===== PAGE 49 =====
+
+Table B1: Currency choice in imports
+Dep. var.: ιM
+ikt (1) (2) (3) (4)
+χi 0.095∗
+(0.049)
+χE
+i −0.034
+(0.064)
+−0.058
+(0.072)
+−0.048
+(0.074)
+χX
+i 0.302∗∗∗
+(0.080)
+0.339∗∗∗
+(0.086)
+0.330∗∗∗
+(0.094)
+SM
+ik − 0.139∗∗∗
+(0.032)
+− 0.137∗∗∗
+(0.032)
+− 0.112∗∗∗
+(0.031)
+− 0.140∗∗∗
+(0.036)
+logLi −0.007
+(0.005)
+− 0.012∗∗
+(0.005)
+−0.006
+(0.010)
+−0.006
+(0.010)
+¯ιM
+−ikt 0.035∗∗
+(0.018)
+0.564∗∗∗
+(0.211)
+# obs. 460,093 460,093 441,491 420,457
+R2
+adj 0.477 0 .480 0 .357 —
+Fixed Eﬀects:
+month×year ✓ ✓ ✓ ✓
+industry & destination ✓ ✓
+industry×destination ✓ ✓
+Notes: The observations are at the /f_irm-product (CN8)-source country-month level for all ex-EU source countries from
+March 2017 to December 2020. The dependent variable isιM
+ikt = 0 for import transactions invoiced in euros and 1 otherwise.
+Standard errors are clustered at the /f_irm level. Columns 1–3 are estimated with OLS; column 4 with IV (the instrument set
+is constructed analogously to the macro instruments in the export regression, and it also passes the weak IV test with a
+Cragg-DonaldF -stat of 969.3 and the over-id HansenJ-test with ap-value of 0.33).
+7
+
+===== PAGE 50 =====
+
+D Additional Tables
+Table B2: Summary statistics
+Variable Mean St Dev. 5 pctl Median 95 pctl Count
+Currency choice (Tables 2 and 4)
+ιikt 0.323 0.463 0 0 1 1,273,384
+ϕi 0.138 0.133 0.005 0.097 0.445 1,273,384
+ϕX
+i 0.052 0.081 0.000 0.033 0.227 1,273,384
+logLi 5.708 1.788 2.657 5.745 7.850 1,273,384
+Sik 0.246 0.307 0.000 0.085 0.923 1,273,384
+ιD
+ikt 0.544 0.498 0 1 1 204,403
+Exchange rate pass-through (Table 5)
+∆p∗
+ikt 0.038 0.353 −0.596 0.030 0.682 344,560
+∆ekt 0.029 0.096 −0.116 0.019 0.192 344,560
+∆eD
+kt 0.0429 0.093 −0.046 0.011 0.201 344,560
+Notes: The upper panel reports summary statistics for the variables used in the currency choice regressions, where the
+observations are at the /f_irm-product-country-month level for March 2017 to December 2020; the lower panel for the ERPT
+regressions at the /f_irm-product-destination-year level for 2012 to 2020.
+8
+
+===== PAGE 51 =====
+
+Table B3: Currency choice in exports: robustness
+Sample Destination country variables HS-4 industry
+Dep. var.: ιikt Diﬀ Non-Diﬀ Main Single USD CPI GDP Log world
+product x-section peg in/f_lation per capita exports log exports
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+ϕi 0.288∗∗∗
+(0.098)
+0.337∗
+(0.183)
+0.361∗∗∗
+(0.094)
+0.326∗∗∗
+(0.113)
+0.357∗∗
+(0.153)
+0.345∗∗
+(0.155)
+0.319∗∗
+(0.158)
+0.325∗∗
+(0.153)
+0.315∗∗
+(0.157)
+logLi 0.097∗∗∗
+(0.015)
+0.049∗∗∗
+(0.015)
+0.033∗∗∗
+(0.007)
+0.085∗∗∗
+(0.015)
+0.096∗∗∗
+(0.024)
+0.093∗∗∗
+(0.024)
+0.097∗∗∗
+(0.026)
+0.098∗∗∗
+(0.025)
+0.092∗∗∗
+(0.024)
+Sik −0.004
+(0.031)
+−0.017
+(0.049)
+0.128∗∗
+(0.054)
+−0.023
+(0.022)
+−0.067
+(0.042)
+−0.074
+(0.049)
+−0.043
+(0.043)
+−0.005
+(0.038)
+−0.056
+(0.049)
+Additional 0.190∗∗∗
+(0.033)
+− 0.008∗∗∗
+(0.003)
+0.041∗∗∗
+(0.011)
+0.047∗∗∗
+(0.007)
+0.012∗∗
+(0.006)control
+# obs. 957,090 308,634 360,102 29,467 1,238,039 1,199,904 1,225,822 1,195,267 1,273,380
+R2
+adj 0.582 0 .580 0 .689 0 .392 0 .184 0 .144 0 .152 0 .174 0 .142
+Fixed Eﬀects:
+month×year ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓
+industry&destination ✓
+industry×destination ✓ ✓ ✓
+Notes: Robustness for the baseline speci/f_ication 3 from Table 2. Columns 1 to 4 explore diﬀerent subsamples: column 1 only includes diﬀerentiated products as de/f_ined by the Rauch
+index and column 2 the non-diﬀerentiated products; column 3 only includes the /f_irm’s main products de/f_ined as all observations within an HS4 that accounts for at least 60% of
+the /f_irm’s exports; column 4 only includes one cross-section for June 2017 (results are robust in other months of our data). Columns 5 to 8 include additional controls measuring
+various macroeconomic characteristics of the destination country as follows: a dummy variable indicating a USD-peg country; CPI in/f_lation; log GDP per capita; log total exports
+of the destination country. Column 9 includes the world log exports in the HS4 industry as a measure of the industry size.
+9
+
+===== PAGE 52 =====
+
+Table B4: Currency choice in exports: IV estimation of strategic complementarities
+All IV Macro IV Micro IV US IV US &
+only only only micro IV
+Dep. var.: ιikt (1) (2) (3) (4) (5)
+Second stage
+ϕi 0.308∗∗∗
+(0.112)
+0.304∗∗∗
+(0.114)
+0.304∗∗∗
+(0.109)
+0.306∗∗∗
+(0.113)
+0.309∗∗∗
+(0.111)
+logLi 0.089∗∗∗
+(0.015)
+0.089∗∗∗
+(0.016)
+0.087∗∗∗
+(0.014)
+0.089∗∗∗
+(0.016)
+0.088∗∗∗
+(0.015)
+¯ι−ik 0.536∗∗∗
+(0.150)
+0.672∗∗∗
+(0.249)
+0.407∗
+(0.219)
+0.569∗∗
+(0.258)
+0.489∗∗∗
+(0.152)
+First stage
+Macro IV
+(imports from)
+US 0.139∗∗∗
+(0.026)
+0.139∗∗∗
+(0.026)
+0.154∗∗∗
+(0.022)
+0.154∗∗∗
+(0.022)
+China − 0.041∗∗
+(0.017)
+− 0.040∗∗
+(0.017)
+other pegs −0.025
+(0.031)
+−0.026
+(0.031)
+Micro IV
+¯ϕ−ik 0.143∗∗∗
+(0.021)
+0.136∗∗∗
+(0.020)
+0.143∗∗∗
+(0.021)
+log ¯L−ik 0.009∗∗∗
+(0.002)
+0.010∗∗∗
+(0.002)
+0.009∗∗∗
+(0.002)
+# obs. 1,142,082 1,148,459 1,179,137 1,148,459 1,142,082
+Fixed Eﬀects:
+month×year ✓ ✓ ✓ ✓ ✓
+industry & destination ✓ ✓ ✓ ✓ ✓
+Notes: /f_irst and second stages for currency choice regressions with diﬀerent instrument sets. Column 1 corresponds to the
+baseline speci/f_ication in column 5 of Table 2 with full set of instruments. Columns 2–3 check the robustness of the baseline
+IV speci/f_ication in column 1 using diﬀerent subsets of the instruments for the competitor currency share, namely only the
+macro instruments in column 2 and only the micro instruments in column 3 (see de/f_initions of the instruments in the text
+of the paper). Columns 4–5 use only the US for the macro instrument. All second stages include additionally Sik which is
+insigni/f_icant and not reported.
+10
+
+===== PAGE 53 =====
+
+Table B5: Currency choice in exports: robustness with additional variable
+Baseline Non-/f_inancial Financial All variables
+Dep. var.: ιikt (1) (2) (3) (4)
+ϕi 0.286∗∗∗
+(0.105)
+0.341∗∗∗
+(0.094)
+0.291∗∗∗
+(0.108)
+0.347∗∗∗
+(0.096)
+logLi 0.088∗∗∗
+(0.015)
+0.049∗∗∗
+(0.010)
+0.090∗∗∗
+(0.016)
+0.053∗∗∗
+(0.010)
+Non-/f_inancial variables:
+EZ share − 0.207∗∗∗
+(0.045)
+− 0.210∗∗∗
+(0.045)
+Exp. share 0.019
+(0.021)
+0.018
+(0.020)
+in-FDI 0.001
+(0.040)
+−0.002
+(0.039)
+out-FDI 0.113∗∗∗
+(0.042)
+0.101∗∗
+(0.041)
+R&D 0.610
+(0.380)
+0.493
+(0.361)
+log TFP 0.058∗∗∗
+(0.021)
+0.061∗∗∗
+(0.020)
+Financial variables:
+Cash ratio 0.016∗∗∗
+(0.006)
+0.013∗∗
+(0.006)
+Coverage ratio − 0.004∗∗
+(0.002)
+− 0.003∗
+(0.002)
+Leverage ratio 0.019
+(0.025)
+0.016
+(0.024)
+# obs. 1,265,885 1,259,516 1,252,839 1,250,733.
+R2 0.579 0 .599 0 .583 0 .601
+Fixed Eﬀects:
+month×year ✓ ✓ ✓ ✓
+industry×destination ✓ ✓ ✓ ✓
+Notes: the table reports “kitchen sink” regressions with all additional variables from Table 3 in the draft included at once.
+Column 1 reproduces the baseline regression from column 3 of Table 2. Column 2 includes additionally all non-/f_inancial
+variables from columns 1–6 of Table 3. Column 3 corresponds to column 7 in Table 3, showing explicitly the estimated
+coeﬃcients for all /f_inancial variables (see de/f_initions of the variables in the text). Column 4 combines together all non-
+/f_inancial and /f_inancial variables from previous columns. All regressions include destination sales shareSik, as in column 3
+of Table 2, which is insigni/f_icant and not reported.
+11
+
+===== PAGE 54 =====
+
+Table B6: Exchange rate pass-through: robustness
+Baseline Large Subsamples Non-dollar
+w/Firm FEs Dummy Diﬀ Non-diﬀ Main Prod OECD US only Non-pegs Drop 2020 vehicle
+Dep. var.: ∆p∗
+ikt (1) (2) (3) (4) (5) (6) (7) (8) (9) (10)
+∆ekt 1.026∗∗∗
+(0.029)
+0.994∗∗∗
+(0.010)
+1.010∗∗∗
+(0.033)
+1.027∗∗∗
+(0.042)
+1.032∗∗∗
+(0.050)
+0.911∗∗∗
+(0.061)
+— 1.069∗∗∗
+(0.027)
+1.008∗∗∗
+(0.031)
+1.006∗∗∗
+(0.027)
+∆ekt·ϕi − 0.228∗∗∗
+(0.078)
+− 0.242∗∗∗
+(0.080)
+− 0.170∗
+(0.094)
+− 0.446∗∗∗
+(0.122)
+−0.221
+(0.151)
+− 0.468∗∗∗
+(0.141)
+− 0.647∗∗∗
+(0.129)
+0.029
+(0.081)
+− 0.294∗∗∗
+(0.080)
+− 0.216∗∗∗
+(0.078)
+∆eD
+kt·ϕi 0.304∗∗∗
+(0.073)
+0.309∗∗∗
+(0.075)
+0.309∗∗∗
+(0.091)
+0.372∗∗
+(0.118)
+0.471∗∗∗
+(0.137)
+0.516∗∗∗
+(0.140)
+— 0.342∗∗∗
+(0.076)
+0.273∗∗∗
+(0.075)
+∆ekt· logLi − 0.014∗∗
+(0.007)
+− 0.061∗∗
+(0.027)
+− 0.021∗∗
+(0.009)
+0.005
+(0.010)
+− 0.047∗∗∗
+(0.010)
+−0.004
+(0.009)
+−0.011
+(0.023)
+− 0.012∗∗
+(0.006)
+−0.009
+(0.007)
+− 0.012∗
+(0.006)
+∆eD
+kt· logLi 0.007
+(0.008)
+0.057∗
+(0.030)
+0.017∗
+(0.010)
+−0.011
+(0.010)
+0.040∗∗∗
+(0.011)
+0.015
+(0.011)
+— 0.007
+(0.008)
+0.011
+(0.007)
+∆ekt·ιik − 0.388∗∗∗
+(0.038)
+− 0.387∗∗∗
+(0.036)
+− 0.434∗∗∗
+(0.046)
+− 0.271∗∗∗
+(0.044)
+− 0.547∗∗∗
+(0.054)
+− 0.373∗∗∗
+(0.069)
+− 0.279∗∗
+(0.084)
+− 0.123∗∗∗
+(0.037)
+− 0.357∗∗∗
+(0.037)
+− 0.389∗∗∗
+(0.034)
+∆eD
+kt·ιD
+ik 0.410∗∗∗
+(0.041)
+0.413∗∗∗
+(0.041)
+0.519∗∗∗
+(0.055)
+0.228∗∗∗
+(0.048)
+0.540∗∗∗
+(0.057)
+0.160
+(0.121)
+— 0.373∗∗∗
+(0.039)
+0.402∗∗∗
+(0.040)
+# obs. 339,087 339,684 240,186 99,382 110,119 25,720 211,147 94,097 292,274 387,796
+R2
+adj. 0.061 0.060 0.049 0.110 0.016 0.018 0.077 0.067 0.060 0.053
+Fixed Eﬀects:
+year ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓
+ind.×dest. ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓
+/f_irm ✓
+Notes: Robustness for the baseline ERPT speci/f_ication in column 3 of Table 5. Column 1 includes /f_irm /f_ixed eﬀects; column 2 replaces the employment interaction terms with a
+Large dummy interaction, de/f_ined as /f_irms with at least 500 workers. The next seven columns re-estimate column 3 for diﬀerent subsamples as indicted in the column headings (the
+main product de/f_ined as in Table B3). Columns 8 omits the dollar exchange rate terms predicted by the theory (see discussion in the text). The last column includes observations
+with non-dollar vehicle currency that were dropped in the main analysis.
+12
+
+===== PAGE 55 =====
+
+Table B7: ERPT: /f_irst-stage and reduced-form speci/f_ications
+A. First stage:∆hp∗
+ikt B. Reduced form:∆hq∗
+ikt
+h = 6 h = 12 h = 18 h = 24 h = 6 h = 12 h = 18 h = 24
+∆hekt·ϕi 0.004
+(0.117)
+−0.066
+(0.091)
+−0.178∗
+(0.094)
+−0.186∗∗
+(0.093)
+0.002
+(0.483)
+−0.092
+(0.346)
+−0.440
+(0.346)
+−0.223
+(0.330)
+∆heD
+kt·ϕi 0.217∗
+(0.121)
+0.219∗∗
+(0.094)
+0.289∗∗∗
+(0.092)
+0.265∗∗∗
+(0.087)
+−0.565
+(0.490)
+0.123
+(0.374)
+0.876∗∗
+(0.363)
+0.549
+(0.346)
+∆hekt·ιik −0.516∗∗∗
+(0.032)
+−0.451∗∗∗
+(0.027)
+−0.338∗∗∗
+(0.027)
+−0.216∗∗∗
+(0.026)
+0.099
+(0.126)
+0.200∗∗
+(0.089)
+0.287∗∗∗
+(0.096)
+0.289∗∗∗
+(0.085)
+∆heD
+kt·ιD
+ik 0.515∗∗∗
+(0.047)
+0.427∗∗∗
+(0.037)
+0.341∗∗∗
+(0.034)
+0.252∗∗∗
+(0.031)
+−0.267
+(0.205)
+−0.307∗∗
+(0.129)
+−0.441∗∗∗
+(0.129)
+−0.373∗∗∗
+(0.114)
+C. Second stage:∆hq∗
+ikt (all IV) D. Second stage: ∆hq∗
+ikt (sticky-price IV only)
+∆hp∗
+ikt −0.287
+(0.233)
+−0.455∗∗
+(0.190)
+−0.735∗∗∗
+(0.260)
+−1.104∗∗∗
+(0.331)
+−0.244
+(0.236)
+−0.470∗∗
+(0.193)
+−0.892∗∗∗
+(0.272)
+−1.337∗∗∗
+(0.357)
+# obs. 643,652 573,496 483,203 427,013 643,652 573,496 483,203 427,013
+R2
+adj. 0.076 0.124 0.167 0.209 0.076 0.071 0.088 0.087
+Fixed Eﬀects:
+ind.×dest.×date ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓
+/f_irm ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓
+Notes: The table reports /f_irst stages (panel A), reduced forms (panel B), and second stages (panel C for all instruments and
+panel D for sticky-price instrumentsιik andιD
+ik only) for the quantity elasticity estimates in (18), as depicted in Figure 4 (see
+also Figures 3), for select horizonsh∈{ 6, 12, 18, 24}.
+13

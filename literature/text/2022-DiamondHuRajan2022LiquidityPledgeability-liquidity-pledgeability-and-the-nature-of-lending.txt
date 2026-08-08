@@ -1,0 +1,3501 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 143 (2022) 1275–1294
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Liquidity, pledgeability, and the nature of lending /p82
+Douglas W. Diamond a , b , ∗, Yunzhi Hu c , Raghuram G. Rajan a , b
+a University of Chicago, Booth School of Business 5807 S Woodlawn Ave, Chicago, IL 60637, United States
+b The National Bureau of Economic Research 1050 Massachusetts Ave, Cambridge, MA 02138, United States
+c University of North Carolina at Chapel Hill, Kenan-Flagler School of Business, 300 Kenan Center Drive, Chapel Hill, NC 27599, United
+States
+a r t i c l e i n f o
+Article history:
+Received 25 May 2020
+Revised 17 January 2021
+Accepted 4 February 2021
+Available online 18 May 2021
+JEL classiﬁcation:
+G21
+G24
+G32
+G33
+Keywords:
+Liquidity
+Pledgeability
+Financial cycle
+Monitoring
+Loans
+Performance-pricing debt
+Intermediary capital
+a b s t r a c t
+We develop a theory of how corporate lending and ﬁnancial intermediation change based
+on the fundamentals of the ﬁrm and its environment. We focus on the interaction be-
+tween the prospective net worth or liquidity of an industry and the ﬁrm’s internal gover-
+nance or pledgeability . Variations in prospective liquidity can induce changes in the nature,
+covenants, and quantity of loans that are made, the identity of the lender, and the extent
+to which the lender is leveraged. We offer predictions on how these might vary over the
+ﬁnancial cycle.
+©2 0 2 1 Elsevier B.V. All rights reserved.
+/p82 The authors thank the Center for Research in Security Prices at
+Chicago Booth, the Fama-Miller Center, the Stigler Center and IGM at
+Chicago Booth for research support. We are grateful for helpful comments
+from Ron Kaniel (the co-editor), an anonymous referee, Jason Roderick
+Donaldson, Ye Li, Arvind Krishnamurthy, S. “Vish” Viswanathan, Ming
+Yang, and conference/seminar participants at the 2019 AEA, FIFI, Chicago
+Booth, Columbia, SFS Cavalcade, FIRS, Rochester, and IMF. This incorpo-
+rates some results from a working paper, Liquidity and securitization.
+∗ Corresponding author at: University of Chicago, Booth School of Busi-
+ness 5807 S Woodlawn Ave, Chicago, IL 60637, United States.
+E-mail addresses:
+Douglas.Diamond@chicagobooth.edu (D.W. Diamond), Yunzhi_Hu@kenan-
+ﬂagler.unc.edu (Y. Hu),Raghuram.Rajan@chicagobooth.edu (R.G. Rajan).
+1. Introduction
+The nature of lending in an economy changes over the
+ﬁnancial cycle. 1 Clearly, the quantity of debt a borrower
+can take on varies. The extent to which banks play an
+important role, or give way to more arm’s length lend-
+ing also changes. So does the form of debt, whether it has
+many covenants or few, whether enforcement requires di-
+rect lender intervention or whether the loan contract em-
+beds performance pricing so that interest rates adjust to
+the borrower’s situation automatically. Finally, changes in
+the nature of lending also affect the capital structure of
+1 See, for example, Bradley and Roberts (2015) ; Benmelech et al. (2020) ,
+and Halling et al. (2020) . For a description of the ﬁnancial cycle, see
+Borio (2014) .
+https://doi.org/10.1016/j.jﬁneco.2021.05.005
+0304-405X/© 2021 Elsevier B.V. All rights reserved.
+
+===== PAGE 2 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+intermediaries like banks. A vast empirical literature ex-
+amines various aspects of lending, but there is relatively
+little theory explaining when one might see some aspects
+particularly pronounced. 2 In this paper, we present a parsi-
+monious model that attempts to explain why and how the
+nature of lending changes with the environment in which
+lending takes place.
+Since our focus is on the environment, we keep the
+nature of the borrowing ﬁrm and the cash ﬂows it gen-
+erates ﬁxed, while altering industry-wide ﬁnancing condi-
+tions. Speciﬁcally, we alter prospective liquidity by which
+we mean the net worth of potential buyers for the ﬁrm’s
+assets (though we offer other interpretations later). We an-
+alyze how such changes affect the borrower’s incentives to
+improve the internal governance of the corporation, as well
+as how it alters the nature of lending. More speciﬁcally,
+we describe the types of lenders and debt contracts that
+are selected by borrowers and the types of actions (such
+as verifying or monitoring information) that will be under-
+taken by lenders as part of these contracts. To summarize
+our main results, starting from a low level, higher prospec-
+tive corporate liquidity will initially reduce monitored bor-
+rowing from a bank in favor of arm’s length borrowing,
+then steadily raise the amount corporations can borrow
+arm’s length, and eventually reduce the need for internal
+corporate governance to support corporate borrowing. In
+parallel, higher prospective corporate liquidity will allow
+banks to operate with less capital or higher leverage.
+Let us elaborate. Consider an economy where expert
+managers bid for an asset producing cash ﬂows, hence-
+forth called the ﬁrm. Experts fund their bid by borrow-
+ing against the ﬁrm. The winning bidder becomes the in-
+cumbent manager of the ﬁrm. The other agents in the
+model are investors and ﬁnancial intermediaries, hence-
+forth banks. Investors are individuals with some personal
+funds to lend, but who do not have the inclination or abil-
+ity to engage closely with borrowing ﬁrms. Banks, in con-
+trast, can intervene at a cost when a corporate loan goes
+off-track. We assume that there are plenty of investors
+around, so their ability to ﬁnance ﬁrms directly, or via
+banks, is unlimited. Neither investors nor banks can man-
+age ﬁrms.
+The size of the loan that an expert receives for their
+initial bid depends on the debt capacity the ﬁrm can sup-
+port. The fundamental agency problem is limited enforce-
+ment, i.e., the expert is unwilling to repay if she can avoid
+it. When at arm’s length, lenders have two sorts of con-
+trol rights, which allow them to be repaid and are the
+basis for the expert’s borrowing capacity. First, they have
+the right to repossess and sell the ﬁrm’s assets for going-
+concern value if payments are missed. This right only re-
+quires the frictionless enforcement of property rights in
+the economy, which we assume. It has especial value when
+there are a large number of potential buyers in the future,
+willing to pay a high price for the ﬁrm’s assets. Greater
+future wealth amongst experts outside the ﬁrm (that is,
+prospective expert liquidity , or more practically, prospective
+2 Exceptions include Berlin and Mester (1992) ; Diamond (1991, 1993) ;
+Hackbarth et al. (2007) ; Hu (2017) , and Rajan and Winton (1995) .
+corporate net worth of other ﬁrms in the industry) leads
+to higher prices for the ﬁrm in the resale market, with less
+of a ﬁre-sale discount. This increases the upfront availabil-
+ity of this asset-sale-based ﬁnancing, as in Gennaioli et al.
+(2015) . Clearly, this kind of control right is exogenous to
+the ﬁrm and depends on economic and ﬁnancial condi-
+tions.
+The second right is that lenders can obtain some of the
+cash ﬂows generated by the asset directly. Unlike asset-
+based rights, which depend on the enforcement of prop-
+erty rights, cash ﬂow rights are more endogenous; they
+stem from the incumbent expert’s actions improving ﬁrm
+governance. These increase the pledgeability of the ﬁrm’s
+cash ﬂows so that they are more directly appropriable
+by creditors. Raising pledgeability might entail, for exam-
+ple, improving accounting quality or setting up a stronger
+board so that the expert cannot divert project cash ﬂows
+into their own coffers. Higher pledgeability allows the in-
+cumbent to borrow more directly against the ﬁrm’s cash
+ﬂows.
+A key feature in our model is that the two rights in-
+teract. In general, both the higher prospective wealth of
+non-incumbent experts outside the ﬁrm (that is, prospec-
+tive liquidity) as well as the higher amount of the ﬁrm’s
+future cash ﬂow that a non-incumbent expert can borrow
+against (that is, higher future pledgeability of the ﬁrm’s
+cash ﬂows) will increase their future bids for the ﬁrm.
+Higher prospective bids will increase debt repayments,
+and the willingness of creditors to lend up front. Higher
+prospective liquidity and pledgeability thus increase debt ca-
+pacity .
+Another key feature is that pledgeability is chosen
+by the incumbent expert in advance, and it lasts some-
+time into the future. Current pledgeability choice clearly
+has some impact into the future: once in place, rep-
+utable accountants and their accounting practices cannot
+be changed instantaneously. Change has to occur slowly,
+perhaps at the time the accountant’s term ends, if it is not
+to be challenged. In addition, it is plausible but not criti-
+cal to our approach that pledgeability takes time to imple-
+ment: improving accounting quality is not instantaneous
+because it requires adopting new systems and hiring rep-
+utable accountants. 3
+Consider now the expert incumbent manager’s incen-
+tives while setting cash ﬂow pledgeability for the next pe-
+riod, after buying the ﬁrm with own funds and borrowed
+money. For this to be an interesting decision, we assume
+she may have some likelihood of selling the ﬁrm or some
+portion of it next period, either because she loses abil-
+ity and is no longer capable of running it, or because she
+needs to raise ﬁnance for new investments.
+If the incumbent has no debt claims outstanding,
+she would undoubtedly want to increase pledgeability,
+especially if the direct costs of doing so are small; this
+would simply increase the proceeds she would obtain
+by selling the ﬁrm to non-incumbent experts if she lost
+ability. However, when the incumbent expert has taken
+3 Section 5.7 describes the impact of removing the assumption that it
+takes time to improve pledgeability.
+1276
+
+===== PAGE 3 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+on debt, she will see enhancing cash ﬂow pledgeability
+as a double-edged sword. The higher future bid from
+non-incumbent experts also enables the upfront lender to
+collect more payments if the incumbent stays in control
+because the lender has the right to seize the ﬁrm and sell
+it when not paid in full. In such situations, the incumbent
+has to “buy” the ﬁrm from the lender by outbidding
+experts (or repaying the initial loan fully). The higher the
+probability the incumbent will retain ability and stay in
+control and the higher the outstanding debt, the lower her
+incentive to raise pledgeability . This means that when high
+pledgeability is needed for debt enforcement, outstanding
+debt cannot be very high.
+Another way of seeing this is that any incumbent man-
+ager always has mixed motives in improving governance
+(that is, pledgeability): it enhances her access to new
+external ﬁnance but also make existing outside claims
+stronger. So the higher the existing claims are relative to
+new ﬁnancing needs, the lower her incentives to improve
+governance. This is a form of overhang but different from
+the conventional one.
+Now consider the effect of prospective liquidity on
+pledgeability choice. When prospective liquidity is not
+high, higher pledgeability, as we have seen, helps increase
+outside expert bids. However, experts will never pay more
+for the ﬁrm in the future than its fundamental value.
+Therefore, when future expert liquidity is very high, non-
+incumbent experts will have enough wealth to buy the
+ﬁrm at the full fundamental value without needing to
+borrow against the ﬁrm’s future cash ﬂows. In this case,
+higher pledgeability has no effect on how much experts
+will bid to pay for the ﬁrm. In other words, high future
+liquidity crowds out the need for pledgeability in enhancing
+debt repayments.
+Finally, consider banks. For the most part in our paper,
+they do not play a direct role in governance. Instead, they
+incentivize the borrower to improve pledgeability, which
+allows them to lend more upfront. To see this, assume
+there is a noisy proxy for pledgeability that is observable
+and veriﬁable, and a covenant can be written on it. For
+instance, the covenant could be the requirement that the
+ﬁrm submit periodic audited ﬁnancial statements. We ex-
+amine what happens when the bank observes a covenant
+violation, for instance a delayed submission of ﬁnancial
+statements, which signals, albeit with noise, that the re-
+alized pledgeability is low.
+The bank has a number of advantages over arm’s length
+lenders with respect to a contractual covenant. It inter-
+acts with the borrower continuously and can catch a vi-
+olation of the covenant early, it can monitor further to get
+a more precise read of pledgeability, and it can liquidate
+the ﬁrm early. Early liquidation is different from seizing
+and auctioning the ﬁrm for going-concern value or sell-
+ing plant and equipment piecemeal. The liquidation value
+is not negligible early on because it includes the yet-to-
+be-invested portion of the loan amount. Importantly, un-
+like going-concern value, it is not dependent on the hu-
+man capital of experts Hart and Moore (1994) , and there-
+fore liquidation can be used as a credible threat if the in-
+cumbent does not raise pledgeability.
+Arm’s length loans can also be tied to the covenant, so
+long as the consequence of covenant violation is purely a
+change in the loan terms. For instance, the contract could
+mandate a rise in interest rates if the covenant is violated.
+We term such a loan contract performance pricing .
+Our main interest is in studying how the equilib-
+rium choice of borrowing contract and the type of lender
+changes over the ﬁnancial cycle as the level of prospective
+liquidity varies. Depending on the level of liquidity, differ-
+ent contractual forms of borrowing with differing extents
+of ﬁnancial intermediation will maximize the access to up-
+front ﬁnance. Competition for access to ﬁnance will force
+experts to use the contract and the type of lender with
+maximal access.
+When prospective expert liquidity is relatively low,
+bank lending with covenants is particularly effective. If
+the incumbent expert sets pledgeability low, the covenant
+will likely be violated and expected future bids for going-
+concern value will be low. The (early) liquidation value
+will exceed expected future bids, so the bank’s liq-
+uidation threat will be credible. This then means the
+incumbent will set pledgeability high even when fac-
+ing large repayments, knowing that otherwise she risks
+liquidation.
+As prospective liquidity rises further, expected going-
+concern value will exceed the early liquidation value.
+The bank’s threat to liquidate will no longer be credi-
+ble, which renders its ability to verify information early
+and monitor of little value. Yet lending will not cease.
+Arm’s length lenders will induce the incumbent expert to
+set pledgeability high by limiting the amount of straight
+debt they offer. In such a situation, faced with only
+moderate levels of repayment of existing debt, and the
+need potentially to sell the ﬁrm (or, equivalently, raise
+more ﬁnance), the incumbent expert will choose high
+pledgeability.
+It turns out that with little aggregate uncertainty, even
+though performance pricing debt offers more contractual
+ﬂexibility than straight debt, it adds nothing to the amount
+of funds that can be raised. It will be dominated if there
+are small transaction costs associated with its enforce-
+ment. However, with suﬃcient aggregate uncertainty and
+high prospective liquidity, arm’s length performance pric-
+ing debt can raise more than straight debt, when the ag-
+gregate state cannot be contracted upon directly. In par-
+ticular, the automatic rise in interest rates conditional on
+covenant violation gives the incumbent stronger incentives
+to increase pledgeability, and allows her to borrow yet
+more.
+Finally, as the level of prospective liquidity gets very
+high, higher pledgeability has little incremental impact
+on likely debt repayment. Indeed, the ceiling on debt
+needed to maintain incentives for pledgeability becomes
+onerous. Instead, experts will take on high leverage up
+front, without any intent to raise pledgeability. Investors
+will be happy making large “covenant-lite” loans without
+covenants or monitoring, relying solely on high prospective
+liquidity for repayment.
+Importantly, the bank’s capital structure depends on the
+nature of the loans it makes, whether the loans need the
+bank to take costly unobservable actions such as informa-
+tion acquisition or whether they are arm’s length loans
+that could be made by any passive investor. If the for-
+1277
+
+===== PAGE 4 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+mer, the bank will have to maintain some “skin in the
+game,” that is, a stake in the loans it has made so that
+it has the incentive to take these actions: Bank capital
+has to be positive when costly bank intermediation ser-
+vices are needed. However, as prospective liquidity rises
+and the bank can switch to making passive arm’s length
+loans, it can become a complete pass through, transferring
+the amounts collected from investors to the ﬁrm and vice
+versa. It will need no skin in the game, that is, bank cap-
+ital. Equivalently, experts will be ﬁnanced directly by in-
+vestors through arm’s length loans or bonds. More gen-
+erally, periods of high prospective liquidity are periods of
+substantial arm’s length lending, high corporate leverage,
+and high bank leverage. As we will see, this has implica-
+tions for how episodes like the run-up to the global ﬁnan-
+cial crisis of 20 07–20 09 are interpreted.
+We have associated higher liquidity with high ex-
+pert/corporate net worth (stemming from an economy-
+wide boom in the real sector). It is plausible that higher
+expert bids could also result from accommodative mone-
+tary policy, easier credit conditions, rapid ﬁnancial devel-
+opment, lax supervision, or even irrational exuberance in
+ﬁnancial markets. Any of these will ease the ﬁnancing of
+expert bidders, induce higher future bids, and higher lever-
+age today, which in turn induces lower pledgeability and
+more need for ﬁnancial intermediation. This generalization
+would be useful in taking the model to the data.
+Our paper follows an earlier paper Diamond et al.
+(2020) on industry liquidity and ﬁrms’ pledgeability
+choices. It is closely related to Gennaioli et al. (2015) ,
+where the liquidity of asset acquirers increases the re-
+sale value of assets, to Acharya and Viswanathan (2011) ,
+where this allows highly levered entities to borrow, and
+Eisfeldt and Rampini (20 06, 20 08) where this reduces
+moral hazard. Dow et al. (2005) study the choice of
+pledgeability, assuming that debt ﬁnance increases pledge-
+abilty. Philippon (2006) presents a model where investors
+tolerate poor corporate governance in booms which cre-
+ates over-investment. This can lead to worse outcomes as
+shown in Johnson et al. (20 0 0) . Manove et al. (2001) shows
+that collateral value, if independent of the project’s out-
+come, weaken the bank’s screening incentives. Closely re-
+lated models where ﬁnancial intermediation improves ac-
+cess to ﬁnance include Diamond (1984) ; Holmstrom and
+Tirole (1997) and Rampini and Viswanathan (2010) . In
+Hanson et al. (2015) , deposit-insurance-backed banks have
+stable funding and ﬁnance long term illiquid assets and
+shadow banks ﬁnance more liquid assets, while being sub-
+ject to ﬁre sale losses and deposit runs. So greater asset
+liquidity leads to more ﬁnancing by shadow banks. Our pa-
+per makes a similar prediction but the explanation comes
+from prospective liquidity of the asset itself rather than the
+intermediary’s liability structure.
+In the rest of the paper, we will formalize our argu-
+ments. In Section 2 , we describe the basic framework and
+the timing of decisions in a two-period model. In Section 3 ,
+we study the ﬁrm’s borrowing without aggregate uncer-
+tainty, and in Section 4 we add aggregate uncertainty. In
+Section 5 we examine robustness and a few extensions and
+then conclude in Section 6 .
+2. The framework and model setup
+Let us start with the simplest setup possible. Consider
+an economy with two periods spanning three dates, t =
+0 , 1 , 2 . At date 0, there is an asset, speciﬁcally a ﬁrm, which
+is up for sale. At dates 1 and 2, the ﬁrm generates cash
+ﬂows C 1 and C 2 , respectively.
+2.1. Agents
+The economy is populated with three groups of agents:
+expert managers henceforth termed experts, ﬁnancial in-
+termediaries whom we refer to as banks, and investors.
+All agents are risk neutral and do not discount the future.
+Therefore, the prevailing gross interest rate is 1. Experts
+have the ability to produce cash ﬂows with the ﬁrm. How-
+ever, they need to bid against each other for the ﬁrm at
+date 0 (their initial bid also includes any amount required
+for ﬁrm investments), as well as possibly at date 1 (see
+shortly). Experts can bid with their wealth, supplemented
+with any amount they can borrow. We will determine the
+form of borrowing that allows an expert to raise the max-
+imum possible at date 0. The winning expert manager will
+become the incumbent expert manager of the ﬁrm.
+Let θ be a measure of the ﬁrm’s stability , or the extent
+to which the ﬁrm’s technology or the skills it needs are
+unchanging. With probability 1 − θ during period 1, the in-
+cumbent learns that her skills have become mismatched
+with the technologies needed, so after producing period-1
+cash ﬂows, she will lose her ability to produce cash ﬂows
+in period 2. If this occurs, she will want to sell the ﬁrm
+at date 1. We assume there are plenty of non-incumbent
+experts around at date 1 who can run the ﬁrm, and will
+therefore bid for it. Importantly, the event of the incum-
+bent losing ability offers her a reason to increase the date-
+1 resale value of the ﬁrm.
+2.2. Payment enforcement
+In general, a lender has two ways of getting repaid by
+the incumbent manager on the date that a payment is due.
+Deﬁne cash ﬂow pledgeability as the fraction of realized
+cash ﬂow that can be veriﬁed by a court and therefore can
+go directly to satisfy the lender’s claim. If γ2 is the pledge-
+ability of cash ﬂows C 2 , the period-2 incumbent can com-
+mit to repay up to γ2 C 2 of date-2 cash ﬂows to a lender.
+This is the ﬁrst channel for repayment.
+Second, just before the end of the period, the lender
+gets the right to seize and auction the ﬁrm to the high-
+est expert bidder if it has not been paid in full. This allows
+it to extract repayment either by the threat of, or by actu-
+ally, seizing and auctioning the ﬁrm. In this auction, both
+other experts and the incumbent manager are allowed to
+bid: we assume the incumbent can always bid using other
+proxies, so contracts that ban her from participating in the
+auction are infeasible. 4
+4 If the incumbent could be prohibited from bidding, strategic defaults
+would be ruled out and debt contracts would raise far more. More gen-
+erally, credible threats by the incumbent to withdraw her human capital
+from the project (as in Hart and Moore (1994) ) would result in similar
+1278
+
+===== PAGE 5 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+2.3. More on cash ﬂow pledgeability
+Cash ﬂow pledgeability is endogenous, and chosen by
+the incumbent expert one period in advance. She can
+raise pledgeability by adopting more informative account-
+ing practices, hiring better accountants, setting up es-
+crow accounts for cash ﬂows, simplifying corporate orga-
+nizational structures and enhancing their transparency, or
+putting in place better governance structures such as a
+more expert and independent board (see Rajan (2012) ).
+Essentially, the incumbent can credibly close off tunnels
+which divert cash ﬂows generated by the ﬁrm. There are
+also other ways she can change pledgeability. For instance,
+the incumbent can invest in projects that require signif-
+icant managerial inputs (or not make such investments)
+and thus increase the rents future managers will capture
+because of the need to provide them incentives for effort.
+This too will affect the fraction of cash ﬂow that can be
+pledged (see Gennaioli et al. (2015) ).
+The range of feasible values for pledgeability γ2 ∈ [γ, ¯γ ]
+, where 0 ≤ γ < ¯γ < 1 are determined by the econ-
+omy’s institutions supporting corporate governance, both
+operating within the ﬁrm (such as the availability of bet-
+ter auditors and accounting norms) and through outside
+institutions (such as laws protecting investors and the ef-
+fectiveness of the judiciary). Linearity allows us to focus
+on the extremes of the range, without loss of generality.
+That is, we analyze only γ2 = γ or γ2 = ¯γ. To keep nota-
+tion simple, we assume the interim cash ﬂows produced
+during period 1 are not pledgeable, so that γ1 = 0 (this is
+simply a normalization).
+The process of improving pledgeability, for example, se-
+lecting and installing a reputable auditor, takes time. The
+incumbent manager has to invite applications, do due dili-
+gence to screen out unsuitable applicants, interview the ﬁ-
+nal candidates, and select one at the end. Moreover, there
+could be some noise/errors in the process of improving
+pledgeability. So we assume if the incumbent in period
+1 exerts effort λ ∈
+{λ, ¯λ}
+in raising pledgeability, where
+0 < λ < ¯λ < 1 , then Pr { γ2 = ¯γ} = λ. Note therefore that ef-
+fort ¯λ results in a high probability ¯λ of high pledgeability
+being realized one period later. The cost to the incumbent
+of high effort is ε. Throughout the paper, the result will be
+presented in the limiting case ε → 0 , as we focus primar-
+ily on the beneﬁts to the incumbent of higher pledgeabil-
+ity (which can be negative), rather than her direct cost. We
+also assume that high effort is generally attractive so that
+¯λ( 1 − θ) > λ (intuitively, this is because high pledgeability
+can beneﬁt the incumbent with probability ( 1 − θ) ).
+2.4. More on wealth and liquidity
+We assume experts start with no wealth or net worth
+at date 0, so that ω 0 = 0 (this is again just a normalization,
+what matters is the need for outside funds). Then ω I
+1 = C 1
+is the incumbent’s personal wealth at date 1. Let ω E
+1 be the
+date-1 wealth of other experts who do not own any ﬁrm;
+outcomes where the lender’s outside option (of selling the ﬁrm to oth-
+ers) matters.
+they do generate some wealth by working independently
+over period 1. In the spirit of Gennaioli et al. (2015) , we
+term this date-1 net worth of industry experts prospective
+“liquidity ”. Prospective liquidity is exogenous to the model
+and driven by the economic environment. It will be impor-
+tant in what follows.
+2.5. Financial contracts and intermediation
+At date 0, each expert applies to one lender for funding.
+We assume the ﬁnancial contract between the expert and
+the lender (bank or investor) is a one-period debt contract:
+the lender lends l 0 at date 0 in return for which the expert
+promises to repay D 1 at date 1. We examine various forms
+of one-period debt contracts, each with different enforce-
+ment costs. We could allow for long-term debt, but it will
+always be diluted and adds nothing if ¯λ is suﬃciently high,
+as we have shown in Diamond et al. (2020) . In the absence
+of aggregate uncertainty, one-period debt will turn out to
+be optimal, without loss of generality.
+With straight debt , only the repayment, D 1 is speci-
+ﬁed. The lender has the right to seize the ﬁrm and auc-
+tion it if not fully paid. Straight debt requires no addi-
+tional information. In case of non-payment, only the trans-
+fer to the lender of the right to auction the ﬁrm has to be
+enforced.
+Alternatively, the loan may contain a covenant: After
+the incumbent chooses her pledgeability effort, a noisy
+and veriﬁable binary signal φ ∈
+{φH , φL }
+about γ2 will be-
+come available. If γ2 = γ, the signal is φ = φL . If γ2 = ¯γ,
+the signal is φ = φH with probability 1 −e 1 and φ = φL
+(a “type I” error) with probability e 1 < 0.5, so the sig-
+nal is informative. When φ = φL , the covenant is deemed
+tripped or violated. 5 The covenant in our model is rep-
+resentative of a variety of real world covenants that are
+violated when governance is deﬁcient. Covenants requir-
+ing periodic audited ﬁnancial statements, requiring com-
+pliance with certain accounting principles, or requiring
+earnings to be a minimum ratio of debt, get tripped
+when governance is of poor quality or cash ﬂow tunnel-
+ing is excessive. Alternatively, covenants requiring mainte-
+nance of a certain amount of liquid assets/working capi-
+tal or covenants prohibiting mergers ensure that the rents
+associated with managing the assets are limited. Such
+covenants get tripped when pledgeability of future cash
+ﬂows is likely to be low.
+The loan contract may itself specify a new interest rate
+based on the signal. We term this a performance pricing
+loan contract. 6 Since we have one-period contracts, this
+means the face value D 1 is automatically augmented to ˜ D 1
+5 We examine Type II errors in the appendix, where the covenant trips
+even if pledgeability is high: apart from making it harder to incentivize
+pledgeability, it changes little qualitatively.
+6 In practice, performance pricing contracts are based on a pricing
+grid. The most commonly used trigger is the debt to EBITDA ratio (see
+Asquith et al. (2005) ). For ease of comparison, we tie both the loan
+covenant and the pricing grid to the same information, so we use the
+term “covenant violation” both for performance pricing contracts as well
+as bank loan contracts.
+1279
+
+===== PAGE 6 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+upon a covenant violation, φ = φL . 7 We assume the lender
+incurs a small veriﬁcation cost to establish the value of φ at
+date 1. This cost is assumed negligible (to avoid unneces-
+sary notation) and is used only to break ties between con-
+tracts.
+A bank loan covenant is also violated if φ = φL ; there is
+no ﬁner information that the bank can contract on. How-
+ever, the bank can verify the realization of φ earlier (say
+at date 1/2). This allows the bank to intervene before the
+signal becomes public. 8 We will assume that although van-
+ishingly small, the bank’s early veriﬁcation cost at date 1/2
+exceeds the veriﬁcation cost of the signal at date 1 (if used
+in performance pricing). These costs will matter only in
+breaking ties.
+If a lending bank sees the covenant violated at date
+1/2, it has two available actions at that time. First, it can
+pay an additional cost ψ > 0 , monitor the incumbent, and
+learn the realized pledgeability γ2 . We term this a mon-
+itored loan. The information from monitoring is privately
+observed by the bank and therefore is not veriﬁable. As
+we will see later, monitoring is a powerful incentive de-
+vice to increase pledgeability. However, its cost ψ exceeds
+all of the previously mentioned costs. Second, the bank has
+the authority to demand immediate repayment of D 1 or
+propose a new face value. In case the bank demands im-
+mediate repayment, the incumbent can try to borrow from
+other banks to repay. If the incumbent cannot repay or re-
+jects the proposed new face value, the bank can liquidate
+and recover L . This recovery or early liquidation value is
+not simply the sale of plant and equipment after a viola-
+tion or loan default (it is not necessarily the Chapter VII
+liquidation value in US bankruptcy). This early liquidation
+value includes recovering part of the upfront loan amount
+that has not been spent yet on investment. It encapsulates
+the bank’s advantage of getting the signal early and being
+able to act quickly to recover funds, before the borrower
+goes seriously off track. We assume ¯γC 2 > L so that under
+high pledgeability, the amount of pledgeable cash ﬂows ex-
+ceeds the liquidation value.
+2.6. Timing
+The timing of events is described in Fig. 1 . After fund-
+ing the project at date 0, the incumbent expert chooses her
+pledgeability effort λ. The noisy and veriﬁable signal φ on
+γ2 is realized. If the lender is a bank, it observes the signal
+early. The bank may monitor the incumbent to learn real-
+ized pledgeability and/or may demand repayment without
+further monitoring. If not repaid, the bank may raise the
+face value or liquidate. Subsequently, the incumbent’s abil-
+ity in period 2 becomes known to all. If the project is not
+liquidated, the cash ﬂows (if any) are produced. At date 1,
+7 Asquith et al. (2005) describe interest increasing and interest decreas-
+ing performance pricing debt contracts. Given we have only two out-
+comes (covenant tripped or not), either face value can be thought of as
+the base. In other words, we do not distinguish between the two forms
+of debt pricing.
+8 Dichev and Skinner (2002) and Nini et al. (2012) show that banks
+intervene long before distress while Ivashina et al. (2016) show that arm’s
+length investors like hedge funds enter the picture only much later.
+the incumbent either pays the remaining debt due or en-
+ters the auction. The period ends with potentially a new
+incumbent in control.
+3. Equilibrium without aggregate uncertainty
+We ﬁrst analyze this simple model, then add aggregate
+uncertainty. Since experts start with equal wealth, the ex-
+pert who can borrow the most upfront will bid the most
+at date 0, and becomes the initial incumbent. Our interest
+is in determining what kind of debt this might be and how
+much of it they will issue.
+We fold backward from period 2. Any expert in place
+at the beginning of period 2 can only commit to repay
+D 2 = γ2 C 2 in period 2, where γ2 is the pledgeability set in
+period 1. As a result, they can borrow up to γ2 C 2 when
+bidding for control at date 1.
+Turn now to the decisions made during period 1, the
+most interesting part of the analysis. Since the pledgeabil-
+ity of period 1 cash ﬂows is assumed to be zero, the repay-
+ment of the debt contracted at date 0 is driven entirely by
+the face value to be paid, D 1 , and the non-incumbent ex-
+pert’s bid for the ﬁrm in a possible date-1 auction. This is
+determined by ω E
+1 , his wealth on date 1, as well as what he
+can borrow against future cash ﬂows, which is determined
+by γ2 . A rational expert’s date-1 bid for the ﬁrm will not
+exceed the value of the future cash ﬂows, C 2 , so he will bid
+B E
+1 ( γ2 ) = min
+{ω E
+1 + γ2 C 2 , C 2
+}
+. Similarly, the maximum the
+incumbent will bid is B I
+1 ( γ2 ) = min
+{ω I
+1 + γ2 C 2 , C 2
+}
+. Com-
+paring B I
+1 ( γ2 ) and B E
+1 ( γ2 ) , and using the assumption ω I
+1 =
+C 1 ≥ ω E
+1 , we see that if the incumbent retains ability, she
+can retain control by outbidding experts in any possible
+date-1 auction. Since the continuation value of the ﬁrm,
+C 2 , is identical for the incumbent and experts, the incum-
+bent always wants to retain the ﬁrm if she retains ability.
+To do so, she either pays the amount of debt outstanding
+or outbids other experts. So she pays min
+{
+D 1 , B E
+1 ( γ2 )
+}
+=
+min
+{
+D 1 , ω E
+1 + γ2 C 2 , C 2
+}
+.
+Many of our results stem from this expression, so some
+points are worth noting. First, so long as outside expert
+bids are below C 2 , the greater the wealth of outside ex-
+perts, that is, greater their prospective liquidity, ω E
+1 , the
+greater will be expert bids, and the greater will be the
+debt face value that can be enforced. Similarly, the greater
+the pledgeability γ2 chosen, the greater the date-1 bid,
+and hence the greater the enforceability of debt payments.
+However, no rational bidder will pay more than the resid-
+ual value of the ﬁrm, C 2 . So when expert liquidity is suﬃ-
+ciently high (that is, ω E
+1 ≥ (1 − γ ) C 2 ), higher pledgeability
+is no longer needed to enhance debt capacity; bidders have
+enough wealth of their own to make a bid for full value,
+without borrowing any more than the minimum pledge-
+able cash ﬂows of the asset, γC 2 . In other words, high liq-
+uidity can crowd out any need for more pledgeability in
+enhancing borrowing capacity.
+3.1. Straight debt
+We ﬁrst analyze the (dis)incentives for choosing high
+pledgeability created by straight debt without covenants.
+1280
+
+===== PAGE 7 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+Fig. 1. Timeline and decisions.
+Given D 1 , let V 1
+(
+D 1 , λ)
+be the incumbent’s payoff when
+she chooses λ :
+V 1 ( D 1 , λ) = λθ [
+C 2 −Min
+[
+B E
+1 ( ¯γ ) , D 1
+]]
++ λ( 1 − θ)
+[
+B E
+1 ( ¯γ ) −Min
+[
+B E
+1 ( ¯γ ) , D 1
+]]
++ ( 1 − λ) θ [
+C 2 −Min
+[
+B E
+1 ( γ ) , D 1
+]]
++ ( 1 − λ) (1 − θ)
+[
+B E
+1 ( γ ) −Min
+[
+B E
+1 ( γ ) , D 1
+]]
+− ε1 { λ= ¯λ} (1)
+The ﬁrst term on the right hand side is the gross payoff
+if she retains ability and is successful in raising pledgeabil-
+ity, the second term is if she loses ability but has raised
+pledgeability so she can sell at a high price, the third term
+is if she retains ability but pledgeability turns out to be
+low, and the fourth term is if she loses ability and the
+ﬁrm has to be sold at a low price because pledgeability
+is also low. The ﬁnal term is the direct cost of pledge-
+ability effort if she sets it high. For any debt level D 1 ,
+deﬁne /Delta11
+(
+D 1
+)
+= V 1
+(
+D 1 , ¯λ)
+−V 1
+(
+D 1 , λ)
+as the incumbent’s
+beneﬁt from choosing high versus low effort. The level of
+contracted debt shifts the beneﬁt, so /Delta11
+(
+D 1
+)
+(weakly) de-
+creases in D 1 . The reason is straightforward. If the incum-
+bent retains her ability, she has to pay more on the out-
+standing debt if pledgeability is higher, and the higher the
+outstanding debt, the more this is. Similarly, if she loses
+her ability, she gets the residual value after the selling the
+ﬁrm, and higher the outstanding debt, the less this is when
+pledgeability is higher. So higher outstanding debt reduces
+the incumbent’s incentive to raise pledgeability. Speciﬁ-
+cally,
+Lemma 3.1 . An incumbent’s net beneﬁt from
+choosing high pledgeability is /Delta11
+(
+D 1
+)
+=
+(¯λ − λ)
+[θB E
+1 ( γ ) + (1 − θ) B E
+1 ( ¯γ ) −max
+{
+B E
+1
+(γ )
+, min
+{
+D 1 , B E
+1 ( ¯γ )
+}}]
+−
+ε.
+Fig. 2. Net payoff to high pledgeability.
+The proof directly follows from the deﬁnition of
+V 1
+(
+D 1 , λ)
+above and is therefore omitted.  Let us deﬁne
+D PayIC
+1 ≡ θB E
+1 ( γ ) + (1 − θ) B E
+1 ( ¯γ ) − ε (¯λ−λ) as the maximum
+debt at which the incumbent still has an incentive to exert
+high pledgeability effort. Fig. 2 plots the net beneﬁt to the
+incumbent at different levels of debt.
+For D 1 ≤ B E
+1
+(γ )
+, debt repayment is not increased by
+higher pledgeability because the face value of outstand-
+ing debt is low. Instead, higher pledgeability only increases
+outside expert bids, which is beneﬁcial to the incum-
+bent when she loses ability and sells the asset. The ex-
+pected beneﬁts of higher pledgeability effort are /Delta11 ( D 1 ) = (¯λ − λ)
+( 1 − θ)
+[
+B E
+1 ( ¯γ ) −B E
+1
+(γ )]
+− ε. When D 1 rises above
+B E
+1
+(γ )
+, the incumbent has to pay more to debt holders
+when pledgeability is higher. So as the face value of debt
+increases further, /Delta11 ( D 1 ) falls to zero at D 1 = D PayIC
+1 and
+then goes negative. When D 1 ≥ B E
+1 ( ¯γ ) , the incumbent has
+to pay the entire increment in sale price from increasing
+pledgeability to debt holders when she loses ability. She
+gets nothing from increasing pledgeability in this case. At
+the same time, if she retains ability and pledgeability is
+high she pays debt B E
+1 ( ¯γ ) instead of B E
+1
+(γ )
+. Hence the ex-
+pected beneﬁt of higher pledgeability effort is negative and
+equals −
+(¯λ − λ)θ [
+B E
+1 ( ¯γ ) −B E
+1
+(γ )]
+− ε.
+1281
+
+===== PAGE 8 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+Finally, note that if liquidity is so high that ω E
+1 ≥(
+1 − γ )
+C 2 , non-incumbent experts can pay the full price
+of the asset C 2 even with low pledgeability. In that case,
+both B E
+1 ( ¯γ ) and B E
+1
+(γ )
+equal C 2 , and /Delta11 ( D 1 ) = −ε for any
+D 1 . Put differently, when liquidity crosses the threshold of (
+1 − γ )
+C 2 , higher pledgeability does not increase bids by
+other experts.
+Before moving on, note the role played by θ. In choos-
+ing effort to increase pledgeability, the incumbent trades
+off being forced to make higher possible repayments con-
+ditional on retaining ability, when she “buys” the ﬁrm back
+from the lender, against the higher possible resale value
+when she sells the ﬁrm after losing ability. The higher the
+stability θ, the more the disadvantage looms large relative
+to the beneﬁt, and higher is the moral hazard associated
+with raising pledgeability. This is why the maximum debt
+consistent with high pledgeability effort, D PayIC
+1 , falls in θ.
+The level of debt determines whether the borrower will
+choose high or low effort in pledgeability. For straight debt
+this implies that one of two levels of debt will allow the
+borrower to raise the most. The ﬁrst is straight debt at
+the incentive compatible limit, which thus encourages high
+pledgeability effort. Because pledgeability is induced with-
+out outside governance action, we term this internal gov-
+ernance debt . The amount the incumbent expert raises at
+date 0 is l IG
+0 ≡ ¯λD PayIC
+1 +
+(
+1 − ¯λ)
+B E
+1 ( γ ) . Given high effort,
+high pledgeability is realized with probability ¯λ, in which
+case the incumbent repays D PayIC
+1 . Otherwise, she repays
+B E
+1 ( γ ) .
+The second possibility is for the expert to issue
+covenant-free straight debt with D 1 = B E
+1 ( ¯γ ) . Since this ex-
+ceeds the incentive-compatible level, the expert chooses
+low effort λ = λ. Given the high debt, the low average
+pledgeability and low internal and external governance,
+the debt is best labeled covenant-lite debt . The expert is
+able to borrow l CL
+0 = λB E
+1 ( ¯γ ) + ( 1 − λ) B E
+1 ( γ ) . Given low ef-
+fort, high pledgeability is only realized with probability λ.
+Note that internal governance straight debt and covenant-
+lite straight debt are both straight debt, but set at different
+levels so as to induce, or not induce, high pledgeability.
+3.2. Performance-pricing debt versus straight debt
+We now evaluate performance-pricing debt, where the
+face value moves up from D 1 to ˜ D 1 when the covenant is
+violated. It is without loss of generality to assume D 1 , ˜ D 1 ∈ [
+B E
+1 ( γ ) , B E
+1 ( ¯γ )
+]
+. Payments below B E
+1
+(γ )
+will never be de-
+faulted on, whereas those above B E
+1 ( ¯γ ) can never be re-
+paid. With some slight abuse of notation, let V 1
+(
+D 1 , ˜ D 1 , λ)
+be the incumbent’s payoff when she chooses effort λ, given
+the debt payments schedule
+{
+D 1 , ˜ D 1
+}
+:
+V 1
+(
+D 1 , ˜ D 1 , λ)
+= λ[θC 2 + ( 1 − θ) B E
+1 ( ¯γ ) − ( 1 −e 1 ) D 1 −e 1 ˜ D 1
+]
++ ( 1 − λ) θ[
+C 2 −B E
+1 ( γ )
+]
+− ε1 { λ= ¯λ} . (2)
+The terms on the right-hand side are straightforward. With
+probability λ, the realized pledgeability is high. In this
+case, with probability θ, the incumbent retains her abil-
+ity and receive cash ﬂows C 2 in period 2. With probability
+1 − θ, the incumbent loses her ability, in which case she
+has to sell the asset at price B E
+1 ( ¯γ ) . In both cases, she re-
+pays D 1 to the lender if the covenant is not violated but
+˜ D 1 if the covenant is triggered in error. The two events oc-
+cur with probability 1 −e 1 and e 1 , respectively. The second
+term is when the realized pledgeability is low γ2 = γ and
+the covenant is violated for sure. In this case, regardless
+of the new face value ˜ D 1 , if she keeps her ability the in-
+cumbent repays only B E
+1 ( γ ) and retains control of the ﬁrm.
+If she loses her ability, however, the proceeds B E
+1 ( γ ) from
+selling the ﬁrm at a date-1 auction are insuﬃcient to re-
+pay creditors, and the incumbent receives nothing. The last
+term is the cost ε incurred whenever she chooses high ef-
+fort λ = ¯λ.
+High effort requires V 1
+(
+D 1 , ˜ D 1 , ¯λ)
+≥V 1
+(
+D 1 , ˜ D 1 , λ)
+, which
+simpliﬁes to
+( 1 −e 1 ) D 1 + e 1 ˜ D 1 ≤ D PayIC
+1 . (3)
+This IC constraint says the maximum expected performance
+pricing payment consistent with the incumbent choosing
+high pledgeability effort is the same as the incentive com-
+patible maximum straight debt, D PayIC
+1 . Let l P
+0 be the max-
+imum amount that an expert is able to raise with an in-
+centive compatible perform pricing loan at date 0. Clearly,
+for any
+{
+D 1 , ˜ D 1
+}
+s.t. D 1 , ˜ D 1 ∈
+[
+B E
+1 ( γ ) , B E
+1 ( ¯γ )
+]
+, the lender is
+willing to lend
+¯λ( 1 −e 1 ) D 1 + ¯λe 1 ˜ D 1 +
+(
+1 − ¯λ)
+B E
+1 ( γ ) ≤ l P
+0 ≡ ¯λD PayIC
+1
++
+(
+1 − ¯λ)
+B E
+1 ( γ ) ≡ l IG
+0 . (4)
+Therefore, straight internal governance debt leads to the
+same expected repayment as performance pricing and also
+saves on the tiny veriﬁcation cost incurred in the latter.
+Proposition 3.1 . If there is no aggregate risk and B E
+1 ( γ ) < C 2 ,
+the incumbent can borrow more with the internal governance
+level of straight debt than with performance-pricing debt.
+The rationale is straightforward hence the proof is
+omitted. Moreover, the restriction ¯λ( 1 − θ) > λ implies
+high pledgeability effort is in general desirable for borrow-
+ing, so that l IG
+0 > l CL
+0 , as long as B E
+1 ( γ ) < C 2 . Of course, if the
+level of industry liquidity gets suﬃciently high such that
+B E
+1 ( γ ) = C 2 , then D PayIC
+1 = C 2 − ε
+¯λ−λ. In this case covenant-
+lite debt is best because l CL
+0 = C 2 . It dominates internal
+governance debt (because no costly pledgeability effort
+is needed) and performance-pricing debt (as veriﬁcation
+costs are not needed).
+3.3. Bank early veriﬁcation of covenants with or without
+monitoring
+None of the loan contracts thus far requires non-
+contractual intervention, nor is performance pricing domi-
+nant, so nothing except payment default needs to be ver-
+iﬁed. The loans could well have been held directly by in-
+vestors. Can bank lending add value here?
+The bank can intervene early and recover L . In addi-
+tion, if the bank observes a covenant violation early, it
+can monitor for more precise information before it de-
+cides to intervene. Throughout this subsection, we assume
+D 1 ≥ L without loss of generality: D 1 < L is always risk-
+less so the initial bidder will, at minimum, set D 1 = L . Let
+1282
+
+===== PAGE 9 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+¯π =
+¯λe 1
+¯λe 1 +(1 −¯λ) and π = λe 1
+λe 1 +(1 −λ) be the posterior probabil-
+ity of high pledgeability conditional on φ = φL under high
+and low effort, respectively. Then deﬁne ¯l CV
+1 = ¯πB E
+1 ( ¯γ ) +
+( 1 − ¯π) B E
+1 ( γ ) as the maximum expected payments that
+the bank can receive on date 1 upon a covenant viola-
+tion, conditional on the incumbent manager having chosen
+high effort λ = ¯λ. The subsequent analysis of what hap-
+pens on covenant violation depends on the comparison be-
+tween the liquidation value L , the experts’ bid under low
+pledgeability B E
+1 ( γ ) and ¯l CV
+1 .
+Case 1: L ≤ B E
+1 ( γ )
+The bank never liquidates since it is always better off
+seizing and auctioning the ﬁrm at date 1 in case of non-
+repayment. Early veriﬁcation is of no use. Therefore, the
+maximum amount of borrowing with a bank-monitored
+loan is (weakly) dominated by arm’s length straight debt
+that induces internal governance.
+Case 2: B E
+1 ( γ ) < L ≤ ¯l CV
+1 Upon covenant violation, the
+ﬁrm is liquidated if and only if the bank knows that
+pledgeability is low, which can only happen if it has mon-
+itored. Consider the bank’s incentive to monitor. A bank
+that monitors at date 1/2 has an information monopoly
+(since the signal and γ2 become public only at date 1). It
+will therefore set the renegotiated face value at ˜ D 1 = B E
+1 ( ¯γ )
+if it has learned γ2 = ¯γ and liquidate to receive L if γ2 = γ.
+If the bank does not monitor and simply makes a take-it-
+or-leave-it offer, then ˜ D 1 = B E
+1 ( ¯γ ) . 9 Therefore, the beneﬁt
+of monitoring comes from the bank’s option to liquidate
+the project upon learning γ2 = γ. If M is the beneﬁt from
+monitoring, M = ( 1 − ¯π)
+(
+L −B E
+1 ( γ )
+)
+. The bank monit ors if
+and only if M ≥ ψ.
+Turn now to the borrower’s IC constraint in choosing
+high effort. If the bank does not monitor (and therefore
+does not liquidate) in equilibrium, the IC constraint is sim-
+ilar to the case of performance-pricing debt, with ˜ D 1 =
+B E
+1 ( ¯γ ) , i.e., ( 1 −e 1 ) D 1 + e 1 B E
+1 ( ¯γ ) ≤ D PayIC
+1 . If the bank does
+monitor, the incumbent’s payoff is
+V M
+1 ( D 1 , λ) = λ( 1 −e 1 )
+[θC 2 + ( 1 − θ) B E
+1 ( ¯γ ) −D 1
+]
++ λe 1 θ [
+C 2 −B E
+1 ( ¯γ )
+]
+− ε1 { λ= ¯λ} . (5)
+With probability λ( 1 −e 1 ) , there is no covenant violation.
+If there is a covenant violation, there are two possibili-
+ties. If the bank ﬁnds pledgeability has been set high but
+the covenant has been erroneously tripped (with probabil-
+ity λe 1 ), D 1 is augmented to ˜ D 1 = B E
+1 ( ¯γ ) . With probabil-
+ity 1 − λ, pledgeability is low, and the ﬁrm is liquidated
+with the incumbent getting nothing. The incumbent’s IC
+constraint requires V M
+1
+(
+D 1 , ¯λ)
+≥V M
+1
+(
+D 1 , λ)
+, which holds for
+any D 1 . 10
+Therefore, with bank monitoring, the face value of debt
+is not limited by the need to provide the incumbent in-
+centives. Intuitively, earlier the incumbent was tempted
+9 In the subgame following the covenant violation and subsequent
+monitoring, we assume the bank can match any offer that outsiders offer.
+The winners-curse effect therefore allows the monitoring bank to charge
+˜ D 1 = B E
+1 ( ¯γ ) .
+10 Note that if D 1 > B E
+1 ( ¯γ ) , only B E
+1 ( ¯γ ) is collectible, so we just need to
+check the condition for all D 1 ≤ B E
+1 ( ¯γ ) .
+to lower pledgeability effort because it reduced debt re-
+payment when pledgeability was low. Because low effort
+causes a higher probability of covenant violation and the
+bank monitors, detects, and liquidates when pledgeability
+is low, the incumbent has no incentive to shirk pledgeabil-
+ity effort now, and the face value of debt can be set at the
+highest level.
+Let l M
+0 be the maximum initial borrowing under a
+loan that will induce incumbent effort and bank monitor-
+ing. Clearly, l M
+0 = ¯λB E
+1 ( ¯γ ) +
+(
+1 − ¯λ)
+L −
+[¯λe 1 +
+(
+1 − ¯λ)]ψ.
+Monitoring is preferred if l M
+0 > l IG
+0 and M ≥ ψ. Other-
+wise, the expert picks the IG level of debt, D 1 = D PayIC
+1
+without any covenant, and voluntarily chooses
+high pledgeability effort. We can rewrite l M
+0 −l IG
+0 =
+[¯λe 1 +
+(
+1 − ¯λ)][
+( M − ψ ) + ¯λ
+¯λe 1 +
+(
+1 −¯λ)
+(
+B E
+1 ( ¯γ ) −D PayIC
+1
+)]
+,
+which is always positive as long as M ≥ ψ.
+Case 3: B E
+1 ( ¯γ ) ≥ L > ¯l CV
+1
+Upon the covenant violation here, the project is al-
+ways liquidated unless the bank monitors and learns that
+pledgeability is high. If the bank monitors, it sets ˜ D 1 =
+B E
+1 ( ¯γ ) if γ2 = ¯γ and liquidates to receive L if γ2 = γ. If it
+doesn’t monitor, it gets L instead. In this case, the beneﬁt
+of monitoring comes from avoiding liquidating the project
+upon learning γ2 = ¯γ so that M = ¯π (
+B E
+1 ( ¯γ ) −L
+)
+. The bank
+chooses to monitor if and only if M ≥ ψ.
+Next, let us turn to the borrower’s IC constraint
+in effort choice. Let superscript NM denote the case
+where the bank does not monitor (and therefore
+liquidates whenever the covenant is violated, even
+if in error). The incumbent receives V NM
+1
+(
+D 1 , λ)
+=
+λ( 1 −e 1 )
+[θC 2 + ( 1 − θ) B E
+1 ( ¯γ ) −D 1
+]
+− ε1 {λ= ¯λ}. The IC
+constraint V NM
+1
+(
+D 1 , ¯λ)
+≥V NM
+1
+(
+D 1 , λ)
+is slack for any
+D 1 for reasons similar to the one described earlier. If
+the bank monitors, the incumbent receives V M
+1
+(
+D 1 , λ)
+as in the previous case. Once again, the IC con-
+straint V M
+1
+(
+D 1 , ¯λ)
+≥V M
+1
+(
+D 1 , λ)
+is always slack for any
+D 1 . Then l M
+0 = ¯λB E
+1 ( ¯γ ) +
+(
+1 − ¯λ)
+L −
+[¯λe 1 +
+(
+1 − ¯λ)]ψ
+is unchanged. Moreover, l NM
+0 = ¯λ( 1 −e 1 ) B E
+1 ( ¯γ ) + [¯λe 1 +
+(
+1 − ¯λ)]
+L . A simple comparison shows that
+l NM
+0 −l IG
+0 = ¯λ
+(
+B E
+1 ( ¯γ ) −D PayIC
+1
+)
++
+[¯λe 1 +
+(
+1 − ¯λ)](
+L − ¯l CV
+1
+)
+,
+which is greater than zero because L > ¯l CV
+1 . Moreover, it is
+easily shown that l M
+0 > l NM
+0 if and only if M > ψ.
+3.4. Equilibrium outcome
+Combining the results, we get the following, based
+roughly in descending order of liquidity ω E
+1 :
+Proposition 3.2 .
+(i) If B E
+1 ( γ ) = C 2 , covenant-lite debt D 1 = B E
+1 ( ¯γ ) is chosen,
+which induces low effort.
+(ii) If B E
+1 ( γ ) ∈ [ L, C 2 ) , internal-governance debt D 1 = D PayIC
+1 is
+chosen, which induces high effort.
+(iii) If B E
+1 ( γ ) < L ≤ ¯l CV
+1 , bank debt D 1 = B E
+1 ( ¯γ ) with monitor-
+ing is chosen if and only if ψ ≤ ( 1 − ¯π)
+(
+L −B E
+1 ( γ )
+)
+. Oth-
+erwise, internal-governance debt D 1 = D PayIC
+1 is chosen. In
+either case, high effort is chosen.
+1283
+
+===== PAGE 10 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+Fig. 3. Equilibrium without aggregate risk.
+(iv) If B E
+1 ( γ ) ≤ ¯l CV
+1 < L , bank debt D 1 = B E
+1 ( ¯γ ) is chosen. The
+bank monitors if and only if ψ ≤ ¯π (
+B E
+1 ( ¯γ ) −L
+)
+. Other-
+wise, the bank does not monitor and it liquidates follow-
+ing a covenant violation. In either case, high effort is cho-
+sen.
+Fig. 3 illustrates the equilibrium results as a function of
+industry liquidity ω E
+1 and the bank monitoring cost, ψ. We
+will discuss it shortly.
+3.5. Discussion
+Our analysis highlights the difference between external
+sources of corporate governance and internal sources of
+governance, and how this affects the source of ﬁnancing.
+We identify two sources of external pressure on the ﬁrm to
+repay: the threat to liquidate the project (or halt the fur-
+ther funding of project investment), which will incentivize
+the expert to enhance her effort to raise pledgeability, and
+the threat to take away the going-concern ﬁrm and sell it
+(a form of U.S. Chapter 11), which is augmented by outside
+expert liquidity. In many situations, these external threats
+enhance repayment most when the incumbent is also in-
+centivized to choose higher pledgeability.
+Of course, if outside experts had plenty of liquidity and
+could always bid full value, the threat to sell to them
+would be suﬃcient to enforce full repayment. Pledgeabil-
+ity matters when experts are insuﬃciently liquid to bid full
+value.
+Traditional models of agency and debt tend to focus on
+project choice. Since different projects result in different
+“pies,” a differential sharing of those pies with ﬁnanciers
+is needed to ensure the incumbent manager chooses the
+biggest pie. The design of ﬁnancing contracts is about in-
+centivizing the right choice. In our paper, we essentially
+have a single pie. The key question is how much internal,
+and how much external, governance is brought about by
+the speciﬁc debt contract and by the environment. That
+determines how the pie is shared, and the amount ﬁ-
+nanciers will put up initially for their share.
+The key external variables are the early recov-
+ery/liquidation value, L, and expert liquidity, ω E
+1 , which en-
+hances going-concern sale value. It is essential that the liq-
+uidation value be something the bank can obtain without
+the borrower’s co-operation; only then can seizing it be a
+strong punishment for non-cooperation. It will certainly be
+high if the ﬁrm’s assets sold piecemeal (as opposed to as
+a going concern) have strong secondary market values, but
+it is also likely to be high when investment in a project is
+drawn out and the bank can halt further disbursement of
+cash. As we have seen, the threat of liquidation works best
+when the future going-concern value with low pledgeabil-
+ity (that is, B E
+1 ( γ ) ) is likely to be low. This is when ex-
+pert liquidity ω E
+1 is low (see Fig. 3 ). In these circumstances,
+bank ﬁnancing with monitoring dominates.
+Two points are worth noting. First, the liquidation value
+can be much lower than the contracted debt, and can
+nevertheless be useful in ensuring it is paid back, by en-
+suring the incumbent enhances the appropriable going-
+concern value of the ﬁrm through pledgeability effort (see
+Kermani and Ma (2020) for related evidence). Second, a
+bank loan with a covenant also protects the borrower from
+the bank when the covenant is not violated, thus im-
+proving incentives. If the bank always had the right to
+raise rates, the incumbent would never set pledgeability
+high.
+However, as liquidity increases and the ﬁrm’s going
+concern value, B E
+1 ( γ ) , exceeds L , the bank’s threat to liq-
+uidate is no longer credible, and bank ﬁnance is no longer
+attractive. Interestingly, the upfront debt the ﬁrm can issue
+may actually fall with higher prospective outside expert
+liquidity ω E
+1 as the ﬁrm transitions from bank ﬁnance to
+internal governance: since the ﬁrm has to be incentivized
+to boost pledgeability without liquidation threats, external
+debt has to be set at D PayIC
+1 rather than at B E
+1 ( ¯γ ) . Therefore,
+the inability to get the bank to monitor has consequences
+for borrowing capacity. Of course, as expert liquidity in-
+creases still further, ﬁrst D PayIC
+1 increases, and eventually
+expert liquidity is so high that there is no need to incen-
+tivize pledgeability; debt can be set as high as C 2 and be
+covenant-lite.
+When we have no aggregate risk, performance pric-
+ing, which allows more contractual ﬂexibility than straight
+debt, cannot improve over incentive compatible straight
+debt. The reason is interesting. Performance pricing allows
+the face value of debt to be raised from the pre-contracted
+value D 1 , conditional on covenant violation. There are two
+reasons the covenant is violated. First, pledgeability could
+be low, γ. It might seem that raising face value in this
+situation should penalize the incumbent, and improve her
+1284
+
+===== PAGE 11 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+incentives to choose high pledgeability. However, so long
+as D 1 ≥ B E
+1 ( γ ) , which it always is, raising the face value
+further does nothing for payment recovery. Put differently,
+low pledgeability itself defuses the possible penalty im-
+posed by performance pricing. Of course, the second situ-
+ation where the covenant is violated is when it is violated
+in error, when pledgeability is actually high, ¯γ. However,
+while the face value can be raised from D 1 up to a col-
+lectible B E
+1 ( ¯γ ) , the higher face value acts as a disincentive
+to higher pledgeability effort (because it is collected when
+high pledgeability is realized). This is why the performance
+pricing IC constraint is ( 1 −e 1 ) D 1 + e 1 B E
+1 ( ¯γ ) ≤ D PayIC
+1 . Per-
+formance pricing cannot do better than setting the straight
+debt face value at D PayIC
+1 and leaving it unchanged on
+covenant violation. In sum, performance pricing cannot
+incentivize pledgeability more easily because the penalty
+needs to be inﬂicted when the incumbent shirks effort, but
+this is precisely when the penalty is unenforceable. Aggre-
+gate uncertainty will alter this conclusion.
+Finally, consider the role played by θ, the stability of
+the ﬁrm’s technology. If θ = 1 , the incumbent never loses
+ability and never has to sell the ﬁrm. Consequently, higher
+pledgeability always hurts her by strengthening external
+creditor claims. The only way to get her to raise pledge-
+ability is for the bank to threaten to liquidate her if she
+does not. Otherwise, she can get ﬁnancing only to the ex-
+tent available through external liquidity (up to B E
+1 ( γ ) ). So
+monitored bank ﬁnance or covenant-lite debt are her only
+two options. A wider range of ﬁnancing options open up
+only when θ < 1 and the incumbent can be incentivized
+to raise pledgeability. Nevertheless, the availability of un-
+monitored ﬁnance decreases in θ because of the greater
+diﬃculty in incentivizing pledgeability, while the availabil-
+ity of bank ﬁnance does not, suggesting that bank ﬁnance
+dominates arm’s length ﬁnance when moral hazard over
+pledgeability is high.
+Another interpretation of θ is it is the extent to which
+the ﬁrm can ﬁnance new projects from internal sources. A
+high θ thus is most consistent with a mature ﬁrm in a sta-
+ble industry with high free cash ﬂows and few investment
+opportunities, a class of ﬁrms that Jensen (1986, 1989) ar-
+gues is prone to high agency costs and little internal gov-
+ernance.
+We will examine the empirical evidence in the next
+section. Note however that performance pricing is domi-
+nated in this section because of small contracting costs of
+changing the face value. Let us now add uncertainty to the
+model to see if that continues to be the case.
+4. Equilibrium with aggregate uncertainty
+We will now show that with aggregate uncertainty,
+performance-pricing debt can be preferred to straight debt
+when the state cannot be contracted on, even though
+the covenant violation (based on ﬁrm-speciﬁc choices and
+outcomes) is prima-facie uncorrelated with the aggre-
+gate state. Intuitively, through implicit state-contingency,
+performance-pricing debt can provide better incentives for
+high pledgeability than straight debt.
+Let us introduce the following modiﬁcations to the
+model presented in the previous section. With probabil-
+Fig. 4. States of nature.
+ity q , let the economy be in the good prosperous state G
+at date 1 where the ﬁrm generates C 1 and industry liq-
+uidity is high. With probability 1 −q , it is in the bad dis-
+tressed state B , where the ﬁrm fails to generate any cash
+ﬂow and industry liquidity is low. The aggregate state is re-
+alized after pledgeability effort is chosen, pledgeability re-
+alized, and the covenant tripped (or not). Fig. 4 illustrates
+the evolution of the state of nature. Note that for simplic-
+ity, the cash ﬂow at date 2 is assumed independent of the
+state at date 1.
+Let ω I,s 1
+1 be the incumbent’s wealth in state s 1 at date 1,
+so ω I,G
+1 = C 1 and ω I,B
+1 = 0 . Let ω E,s 1
+1 be the state- s 1 wealth
+of other experts who do not own any ﬁrm. The wealth of
+these non-incumbent experts (who work elsewhere when
+not running a ﬁrm) is augmented when the economy is in
+state G, so ω E,G
+1 > ω E,B
+1 . As earlier, we assume ω I,G
+1 = C 1 >
+ω E,G
+1 , and for simplicity that ω E,B
+1 = ω I,B
+1 = 0 , so that the in-
+cumbent manager always has (weakly) more wealth than
+industry experts. Finally, to focus on the largest number of
+relevant cases, we assume the difference in liquidity be-
+tween the two future states is large enough that regard-
+less of pledgeability, possible repayment is higher in future
+state G than in future state B, that is,
+Assumption 1 . B E,G
+1
+(γ )
+≡ ω E,G
+1 + γC 2 > ¯γC 2 ≡ B E,B
+1 ( ¯γ )
+Some of the cases described in Proposition 4.2 below
+will disappear if Assumption 1 is violated.
+4.1. Internal-governance and covenant-lite debt
+Let us ﬁrst study straight debt again. In the previ-
+ous section with no uncertainty, we determined /Delta11
+(
+D 1
+)
+,
+the incumbent’s beneﬁt from choosing high versus low
+pledgeability effort for any given D 1 . Corresponding to
+the parameters of each state, we can determine D B,PayIC
+1
+and D G,PayIC
+1 , the respective incentive compatible levels
+of debt if state B or state G were to occur with cer-
+tainty. With aggregate uncertainty, the risk-neutral incum-
+bent will choose high pledgeability effort if and only if
+q /Delta1G
+1
+(
+D 1
+)
++ (1 −q )/Delta1B
+1
+(
+D 1
+)
+≥ 0 , where q is the probability
+of state G. Let D IC
+1 be the value of D 1 that makes this
+weak inequality equal zero. Since both /Delta1G
+1 and /Delta1B
+1 are
+weakly decreasing in D 1 , it must be that D IC
+1 , the thresh-
+old of debt below which high effort is incentivized when
+1285
+
+===== PAGE 12 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+the incumbent has to choose effort before the state occurs,
+lies between D B,PayIC
+1 and D G,PayIC
+1 . 11 Following Lemma 3.1 ,
+we deﬁne /Delta1
+max ,s 1
+1 =
+(¯λ−λ)(1 −θ)
+[
+B
+E,s 1
+1 ( ¯γ ) −B
+E,s 1
+1 ( γ )
+]
+−ε and /Delta1
+min ,s 1
+1 =
+(¯λ−λ)θ
+[
+B
+E,s 1
+1 ( γ ) −B
+E,s 1
+1 ( ¯γ )
+]
+−ε as the maximum and minimum
+of /Delta1s 1
+1 ( D 1 ) in state s 1 ∈ { G, B } . These are the levels of ﬂat
+regions on the left and right of Fig. 2 , respectively.
+Lemma 4.1 .
+(i) If
+q /Delta1max ,G
+1 + ( 1 −q ) /Delta1min ,B
+1 ≥ 0 , (6)
+then
+D IC
+1 ≥ B E,G
+1
+(γ )
+. (7)
+Otherwise,
+D IC
+1 < B E,B
+1 ( ¯γ ) . (8)
+(ii)
+l IG
+0 = q
+[¯λD IC
+1 +
+(
+1 − ¯λ)
+min
+{
+D IC
+1 , B E,G
+1
+(γ )}]
++ ( 1 −q )
+[¯λmin
+{
+D IC
+1 , B E,B
+1 ( ¯γ )
+}
++
+(
+1 − ¯λ)
+B E,B
+1
+(γ )]
+l CL
+0 = q
+[λB E,G
+1 ( ¯γ ) + ( 1 − λ) B E,G
+1
+(γ )]
++ ( 1 −q )
+[λB E,B
+1 ( ¯γ ) + ( 1 − λ) B E,B
+1
+(γ )]
+.
+If q is suﬃciently high, there exists a unique ω ∗ such that
+l IG
+0 < l CL
+0 if and only if ω E,G
+0 > ω ∗.
+Proof: See appendix.
+It is useful to understand the conditions under which
+(6) in Lemma 4.1 is more likely to hold. In particular, it
+holds when the degree of moral hazard θ is low, and the
+expected value of raising pledgeability in the G state itself
+is high. In that case, the face value of incentive-compatible
+debt is higher than B E,G
+1
+(γ )
+because there is enough in-
+centive to raise pledgeability emanating from the G state.
+Conversely, as liquidity in the G state, ω E,G
+1 , rises, the value
+to raising pledgeability emanating from the G state falls. 12
+If so, D IC
+1 has to be below B E,B
+1 ( ¯γ ) so that some of the in-
+centive to raise pledgeability also comes from the B state.
+As we will see shortly, performance pricing will be helpful
+in this situation of lower face value.
+An extreme case is if ω E,G
+1 ≥
+(
+1 − γ )
+C 2 , so that higher
+pledgeability does not enhance expert bids in the G state
+because the expert has enough wealth to bid full value
+with pledgeability even at γ. All the incentive to raise
+pledgeability then comes from state B. So to incentivize
+high effort, the promised payment cannot exceed D IC
+1 =
+D B,PayIC
+1 . If the probability of the good state q is suﬃciently
+high (as shown in the appendix), it may be best to raise
+funds without incentivizing pledgeability, as covenant-lite
+debt. Even in the general case where ω E,G
+1 <
+(
+1 − γ )
+C 2 , if
+11 Let D IC
+1 be the highest value if there are multiple solutions to the
+equation q /Delta1G
+1
+(
+D 1
+)
++ (1 −q )/Delta1B
+1
+(
+D 1
+)
+= 0 , which only happens in a zero-
+measure parametric space.
+12 The left-hand side simpliﬁes to q
+{
+( 1 − θ)
+(
+¯γ − γ )
+C 2 − ε
+¯λ−λ
+}
+when
+ω E,G
+1 < ( 1 − ¯γ ) C 2 . But when ω E,G
+1 ≥ ( 1 − ¯γ ) C 2 , B E,G
+1 ( ¯γ ) is capped at C 2 , so
+it becomes q
+{
+( 1 − θ)
+[(
+1 − γ )
+C 2 − ω E,G
+1
+]
+− ε
+¯λ−λ
+}
+which falls in ω E,G
+1 until
+ω E,G
+1 ≥
+(
+1 − γ )
+C 2 , when it is −q ε
+¯λ−λ < 0 .
+B E,G
+1 ( γ ) is much larger than D IC
+1 (either because liquidity
+in the G state is high or the moral hazard associated with
+pledgeability is high so that D IC
+1 is low), the incumbent
+could commit to more repayment (and thus raise more) by
+setting D 1 = B E,G
+1 ( γ ) and disincentivizing effort.
+The broader point is that the prospect of a highly liq-
+uid future state not only makes feasible greater promised
+straight debt payments, but these high promised pay-
+ments also eliminate incentives to enhance pledgeabil-
+ity, the covenant-lite situation. To restore those incentives,
+debt may have to be set so low that funds raised are
+greatly reduced, something the incumbent will not want
+to do if she needs to compete to buy the ﬁrm at date 0.
+This situation where low-pledgeability covenant-lite loans
+are attractive can occur even if the probability of the low
+state is signiﬁcant, and even if the direct cost ε of enhanc-
+ing pledgeability is zero.
+4.2. Performance-pricing debt
+Once again, let
+{
+D 1 , ˜ D 1
+}
+be the performance-pricing
+debt contract. We prove in Lemma A.1 in the appendix that
+it is without loss of generality to assume ˜ D 1 = B E,G
+1 ( ¯γ ) fol-
+lowing a covenant violation. Intuitively, ˜ D 1 = B E,G
+1 ( ¯γ ) pro-
+vides the harshest punishment for low effort choice under
+performance-pricing debt.
+Lemma 4.2 . Under Assumption 1 and e 1 < ¯e 1 , there exists a
+unique D P
+1 such that the incumbent chooses high effort if and
+only if D 1 ≤ D P
+1 . Under
+{
+D 1 , ˜ D 1
+}
+=
+{
+D P
+1 , B E,G
+1 ( ¯γ )
+}
+, the incum-
+bent can raise
+l P
+0 = ¯λ[
+qD G,PayIC
+1 + ( 1 −q ) D B,PayIC
+1
+]
++
+(
+1 − ¯λ)[
+qB E,G
+1
+(γ )
++ ( 1 −q ) B E,B
+1
+(γ )]
+. (9)
+The expressions for ¯e 1 is contained in the appendix. Inter-
+estingly, and unlike the case without the aggregate risk,
+performance pricing can do strictly better than internal-
+governance debt when there is aggregate uncertainty.
+Summarizing the analysis above, we get the following re-
+sult.
+Proposition 4.1 . Under aggregate uncertainty, if condition
+(6) in Lemma 4.1 holds, (i) l IG
+0 = l P
+0 . Internal-governance
+debt raises more than performance-pricing debt (by the
+amount of the enforcement cost). Otherwise, (ii) l P
+0 > l IG
+0
+so that performance-pricing debt raises more than internal-
+governance debt. Finally, (iii) l P
+0 > l CL
+0 always holds as long as
+ω E,B
+1 <
+(
+1 − γ )
+C 2 .
+Recall that if (6) holds, Lemma 4.1 states that the incen-
+tive compatible level of straight debt, D IC
+1 , is higher than
+B E,G
+1
+(γ )
+. Performance pricing allows the face value to be
+raised conditional on covenant violation. In the B state, D IC
+1
+is already above the possible enforceable values, B E,B
+1 ( ¯γ )
+and B E,B
+1
+(γ )
+, so raising the face value any further would
+not alter the amount the lender could recover in that state.
+This then means that from the perspective of incentivizing
+effort, the two states effectively reduce to the one G state.
+However, we know from our analysis in the previous sec-
+tion that performance pricing cannot improve over straight
+debt in the G state if D IC
+1 > B E,G
+1
+(γ )
+.
+1286
+
+===== PAGE 13 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+If (6) does not hold, then Lemma 4.1 states that the
+incentive compatible level of straight debt, D IC
+1 , is lower
+than B E,B
+1 ( ¯γ ) . In this case, performance pricing can indeed
+improve over straight debt. In particular, if the covenant
+is violated, the face value of debt can be raised in the
+G state to B E,G
+1 ( ¯γ ) so that a higher payment can be col-
+lected. 13 This higher payment penalizes the incumbent if
+low pledgeability is realized, which improves her incentive
+for high pledgeability effort.
+Of course, performance pricing can also be triggered in
+error when the realized pledgeability is actually high. We
+know, however, that any disincentive effect of the higher
+repayment triggered by covenant error can be offset by
+setting the payment commensurately lower when pledge-
+ability is high and there is no covenant error. In sum, when
+the incentive compatible face value for straight debt is low
+as in Proposition 4.1 (ii), it can be improved upon by rais-
+ing the face value and collecting more when low pledge-
+ability is realized in the G state. Not only does this directly
+increase repayment to the lender, it improves the incum-
+bent’s effort incentives, and thereby further enhances the
+incentive compatible level of baseline debt.
+Finally, Proposition 4.1 (iii) suggests performance-
+pricing debt outraises covenant-lite debt so long as higher
+pledgeability improves recovery in some state. We have
+l P
+0 −l CL
+0 =
+[¯λ( 1 − θ) − λ][
+q
+(
+B E,G
+1 ( ¯γ ) −B E,G
+1
+(γ ))
++ ( 1 −q )
+(
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ ))]
+− ¯λ ε
+¯λ − λ
+> 0 ,
+(10)
+which always holds when ¯λ( 1 − θ) > λ, ω E,B
+1 <
+(
+1 − γ )
+C 2 ,
+and ε is small.
+4.3. Bank monitoring
+With some abuse of notation, let us deﬁne
+¯l CV
+1 = ¯π
+[
+qB E,G
+1 ( ¯γ )+ ( 1 −q ) B E,B
+1 ( ¯γ )
+]
++ ( 1 − ¯π)
+[
+qB E,G
+1 ( γ )+ ( 1 −q ) B E,B
+1 ( γ )
+]
+. This is
+the maximum expected payment that the bank can receive
+on date 1 upon a covenant violation, conditional on the
+incumbent manager having chosen high effort λ = ¯λ.
+The subsequent analysis depends on the comparison
+between the liquidation value L , the minimum expected
+continuation value when realized pledgeability is low,
+l 1 = qB E,G
+1 ( γ ) + ( 1 −q ) B E,B
+1 ( γ ) , and ¯l CV
+1 . Again, we assume
+D 1 ≥ L and that L < qB E,G
+1 ( ¯γ ) + ( 1 −q ) B E,B
+1 ( ¯γ ) ; otherwise,
+the ﬁrm will always be liquidated. Since the solution
+with aggregate risk is qualitatively similar to that with no
+aggregate risk, we will only sketch the analysis. The cases
+are ordered according to decreasing state G liquidity, ω E,G
+1 .
+Recall that beyond some level of liquidity, performance
+pricing debt will dominate internal governance debt as an
+alternative to bank debt.
+Case 1: L ≤ l 1 It does not make sense to liquidate since
+continuation values are always higher. Therefore, the maxi-
+mum amount of borrowing under a loan that induces bank
+monitoring is always (weakly) dominated by straight debt
+13 If the covenant is correctly tripped, B E,G
+1
+(γ )
+can be repaid. If triggered
+by the type-I error, the actual payment is B E,G
+1 ( ¯γ ) .
+or performance-pricing debt, whichever raises more fol-
+lowing Proposition 4.1 .
+Case 2: l 1 < L ≤ ¯l CV
+1
+Upon the covenant violation, the project is liquidated if
+and only if the bank knows that pledgeability is low, which
+can only happen if it has monitored. As earlier, the beneﬁt
+of monitoring, M, is ( 1 − ¯π) ( L −l 1 ) . The bank chooses to
+monitor if and only if M ≥ ψ.
+Next, let us turn to the borrower’s IC constraint in ef-
+fort choice. If the bank does not monitor, the IC constraint
+is identical to the IC constraint in case of performance-
+pricing debt described in Lemma 4.2 . So there will be a
+maximum incentive compatible D P
+1 where D P
+1 < B E,G
+1 ( ¯γ ) . If
+the bank does monitor, the incumbent’s IC constraint is al-
+ways satisﬁed for any D 1 ≤ B E,G
+1 ( ¯γ ) . This is because after
+monitoring, the bank will liquidate the project whenever
+realized pledgeability is low, in which case the incumbent
+receives nothing. There is no advantage to her to lower
+pledgeability.
+Case 3: L > ¯l CV
+1
+Upon covenant violation, the project is always liqui-
+dated unless the bank monitors and learns that pledge-
+ability is high. Once again, if the bank monitors, it sets
+˜ D 1 = B E,G
+1 ( ¯γ ) if it has learned γ2 = ¯γ and liquidates if
+γ2 = γ. The beneﬁt of monitoring comes from the op-
+tion to avoid liquidating the project upon learning γ2 =
+¯γ so that M = ¯π [
+qB E,G
+1 ( ¯γ ) + ( 1 −q ) B E,B
+1 ( ¯γ ) −L
+]
+. The bank
+chooses to monitor if and only if M ≥ ψ.
+It is easily shown that the incumbent’s IC constraint
+V 1
+(
+D 1 , ¯λ)
+≥V 1
+(
+D 1 , λ)
+is always satisﬁed for any D 1 , regard-
+less of whether the bank chooses to monitor (M) or not
+(NM) - any liquidation on covenant violation is a powerful
+threat. Also, l NM
+0 > max
+{
+l P
+0 , l IG
+0
+}
+as long as L > ¯l CV
+1 . Finally,
+as earlier, l M
+0 > l NM
+0 if and only if M > ψ.
+4.4. Equilibrium outcomes
+Combining the results in the previous three cases, we
+have
+Proposition 4.2 .
+(i) If (6) in Lemma 4.1 holds, internal governance debt with
+D 1 = D IC
+1 is preferred to performance-pricing debt, else
+performance-pricing debt
+{
+D P
+1 , B E,G
+1 ( γ )
+}
+is chosen.
+(ii) If L < l 1 , the form of debt found superior in (i) is preferred.
+(iii) If L ∈
+[
+l 1 , ¯l CV
+1
+]
+, a bank monitored loan D 1 = B E,G
+1 ( ¯γ ) is
+chosen if and only if ψ ≤ ( 1 − ¯π) ( L −l 1 ) . Otherwise, the
+form of debt found superior in (i) is preferred.
+(iv) If L ≥ ¯l CV
+1 , a bank monitored loan D 1 = B E,G
+1 ( ¯γ ) is cho-
+sen if and only if ψ ≤ ¯π [
+qB E,G
+1 ( ¯γ ) + ( 1 −q ) B E,B
+1 ( ¯γ ) −L
+]
+.
+Otherwise, D 1 = B E,G
+1 ( ¯γ ) , and the bank liquidates the
+project following a covenant violation.
+Fig. 5 offers a graphic illustration of the equilibrium
+described in Proposition 4.2 , where we have implicitly
+assumed the level of ω E,G
+1 that ensures condition (6) is
+satisﬁed with equality is above the level that satisﬁes
+L = l 1 . Otherwise, the dashed red line shifts towards the
+left, which further squeezes the region where internal-
+governance debt can be optimal. The qualitative features
+1287
+
+===== PAGE 14 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+Fig. 5. Equilibrium with aggregate risk.
+are unchanged from those in Fig. 3 except that covenant-
+lite loan is always dominated by performance-pricing loan,
+as long as the liquidity in state B remains suﬃciently low.
+Of course, if both ω E,G
+1 and ω E,B
+1 rise above
+(
+1 − γ )
+C 2 (not
+illustrated in Fig. 5 ) so that pledgeability is not needed in
+either state, then covenant-lite debt always dominates all
+the other options.
+4.5. Discussion and empirical evidence
+The purpose of examining aggregate risk combined
+with debt contracts was to illustrate the rationale for per-
+formance pricing. Note that the probability of the realiza-
+tion of various aggregate states is orthogonal to the prob-
+ability of the covenant tripping: the latter is tied only
+to the incumbent’s decision on pledgeability. Nevertheless,
+we still get performance pricing as a dominant contract.
+The rationale is interesting. The need to give the incum-
+bent incentives to raise pledgeability in the presence of ag-
+gregate uncertainty forces down the face value of the in-
+centive compatible debt contract, and creates room for the
+interest rate to be credibly raised conditional on genuine
+covenant violation. This allows the face value increase to
+punish the shirking borrower. Note that if state-contingent
+face values are hard to contract on, performance pricing
+brings in state contingency through the back door because
+an expert’s bid, and therefore repayment enforcement, is
+state contingent. Allowing loan pricing contingent on the
+ﬁrm-speciﬁc news about pledgeability effort can therefore
+strictly improve the available set of contracts. Of course,
+if covenant violations and the state were correlated, this
+would only strengthen the result.
+There is an extensive literature on covenants (see, for
+example, Ivashina et al. (2016) on covenants in public
+debt contracts, Bradley and Roberts (2015) in private debt
+contracts, and Kaplan and Stromberg (2003) in VC con-
+tracts). There are various categorizations of covenants.
+Christensen and Nikolaev (2012) term covenants that limit
+leverage, or require a minimum amount of equity, “capital”
+covenants. Performance covenants, on the other hand, are
+formulated directly in terms of cash ﬂows or in combina-
+tion with balance sheet data (such as a debt to EBITDA ra-
+tio). Performance covenants align well with the covenant
+in our paper. Since γt C t is the veriﬁable cash ﬂow, the
+covenant will be tripped in practice whenever the en-
+trepreneur diverts cash ﬂows or puts in place weak gov-
+ernance, so veriﬁable cash ﬂows are low. Christensen and
+Nikolaev argue that performance covenants are the ones
+that are associated with contract renegotiation.
+In a more extensive study of the conditions under
+which contracts are renegotiated, Nikolaev (2018) ﬁnds a
+positive correlation between the audit premium and the
+frequency of renegotiation. 14 The audit premium is a proxy
+for low pledgeability, and to the extent that covenant vi-
+olations are necessary for creditor-initiated renegotiations,
+the positive correlation between audit fees and renegoti-
+ation is consistent with the structure of our model. In-
+terestingly, Nikolaev (2018) ﬁnds that performance pricing
+contracts are signiﬁcantly less likely to be renegotiated;
+the performance pricing grid substitutes for renegotiation.
+Asquith et al. (2005) also provide suggestive evidence that
+performance pricing contracts are more arm’s length con-
+tracts meant to reduce the costs of monitoring and renego-
+tiation; performance pricing contracts are associated with
+larger loan syndicates rather than single banks (also see
+Saavedra (2018) .
+Turning to predictions, we ﬁnd a role for performance
+pricing contracts (relative to straight debt contracts or
+bank debt contracts with extensive covenants) when there
+is aggregate risk and prospective liquidity is high so that
+the baseline incentive compatible level of debt is low. Rel-
+ative to internal governance debt (straight debt with no
+covenants), our model suggest performance pricing is more
+likely when moral hazard is high. Asquith et al. (2005) ﬁnd
+that performance pricing contracts are positively associ-
+ated with their proxy for moral hazard, whether the con-
+tract is predicted to contain material restrictions on the
+borrower’s ﬁnancing and investment behavior.
+The covenant in our model is also representative of
+what Ivashina et al. (2016) call maintenance covenants (re-
+quiring say a minimum amount of working capital) as well
+as covenants requiring compliance (such as regular audited
+statements) and covenants limiting mergers and acquisi-
+tions (so as to limit entrenching investment). Entrenching
+investment, which requires substantial management input
+in the future, and thus entrenches future managerial rents,
+reduces future pledgeability. Covenants that limit capital
+14 The audit premium is the unexplained variation in a linear regression
+of the natural log of audit fees on a set of their determinants. It is an
+accounting measure of low transparency and information quality about a
+ﬁrm’s performance
+1288
+
+===== PAGE 15 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+expenditure thus discourage managerial actions lowering
+pledgeability. More research on when such covenants are
+used is warranted.
+5. Extensions
+It is useful to relax assumptions/extend the model in
+some directions.
+5.1. Covenant tightness
+Suppose the type-I error of the covenant violation e 1 is
+chosen by the bank. It incurs some convex cost κ( 1 −e 1 )
+that satisﬁes, κ( 1 − ¯e ) = 0 , κ′ > 0 and κ′′ > 0 , where ¯e can
+be thought as the maximum probability of a type-I error. A
+higher e 1 corresponds to a slacker covenant. What would
+the optimal choice be? Consider the case without aggre-
+gate uncertainty, the uncertainty case is qualitatively simi-
+lar.
+If liquidity is suﬃciently high such that B E
+1
+(γ )
+≥ L , e 1 =
+¯e is chosen. This is because early liquidation never oc-
+curs. This corresponds to the loosest covenant, when bank
+debt is equivalent to arm’s length debt (this is an alter-
+native interpretation of covenant-lite). Recall that if the
+bank chooses to monitor upon a covenant violation, the
+amount that the incumbent can raise is l M
+0 = ¯λB E
+1 ( ¯γ ) + (
+1 − ¯λ)
+L −
+[¯λe 1 +
+(
+1 − ¯λ)]ψ. Clearly, a lower e 1 reduces
+the cost the bank incurs in unnecessary monitoring, so
+e 1 is chosen to maximize −¯λe 1 ψ − κ( 1 −e 1 ) . If the bank
+always liquidates the project following a covenant viola-
+tion, the amount that the incumbent can raise is l NM
+0 =
+¯λ( 1 −e 1 ) B E
+1 ( ¯γ ) +
+[¯λe 1 +
+(
+1 − ¯λ)]
+L . Clearly, a lower e 1 re-
+duces the chances the bank liquidates ineﬃciently, so e 1 is
+chosen to maximize −¯λe 1
+[
+B E
+1 ( ¯γ ) −L
+]
+− κ( 1 −e 1 ) . In both
+cases, e 1 is optimally set less than ¯e . The broader point
+is that bank covenants are more detailed and precisely
+set than covenants in public debt because bank monitor-
+ing costs and the value consequences of bank actions are
+higher (see, for example, Kahan and Tuckman (1995) ).
+5.2. Maximizing borrowing vs. maximizing payoff
+For simplicity, we have assumed the expert’s objective
+is to maximize her upfront borrowing. An alternative is to
+assume an expert owns the project idea and needs to bor-
+row to make a ﬁxed amount of investment upfront. Con-
+ditional on being able to borrow that amount, the incum-
+bent will try to avoid loan contracts that cause a surplus
+loss. First, under the assumption C 2 > L , liquidation is al-
+ways costly. Since liquidation will occur only under bank
+ﬁnancing, this suggests a reason why the incumbent would
+prefer internal-governance debt and performance-pricing
+debt over bank ﬁnancing. The second source of surplus loss
+comes if the incumbent loses her ability and must resell
+the asset. In this case, the future incumbent earns rents
+amounting to C 2 −B E
+1 ( γ2 ) . Clearly, a contract that induces
+higher effort ¯λ reduces the rents to future acquirers and
+increases the initial incumbent’s surplus.
+In a model that requires a ﬁxed amount of investment,
+the expert will be forced to use bank debt if this is the
+only contract that allows her to borrow enough. Otherwise,
+she would avoid using it, because it might lead to early
+liquidation.
+5.3. Banks contributing to pledgeability
+Thus far, banks only choose whether to intervene if
+there is a covenant violation. In practice, intermediaries
+may do more to improve the governance of their borrower
+(this may be a role played by banks in less ﬁnancially de-
+veloped markets; in developed markets by banks for small
+young ﬁrms, by venture capitalists (VCs) for young inno-
+vative ﬁrms, and by private equity for large mature ﬁrms).
+For instance, VCs often work to make the enterprise more
+transparent, governable, and acceptable to the stock mar-
+ket (see Hellmann and Puri (2002); Rajan (2012) ).
+We extend our model to study this role of ﬁnancial in-
+termediaries. For simplicity, we assume ¯λ = 1 and λ = 0 so
+that there is a one-to-one mapping between the incum-
+bent’s effort and the realized pledgeability. Before the in-
+cumbent sets pledgeability, the bank could augment its ﬁ-
+nal value by β2 after paying an additional cost δ where
+β2 ∈
+{
+0 , ¯β}
+. The date-1 bid of experts is then B E
+1 ( γ2 , β2 ) =
+min
+{ω E
+1 + ( γ2 + β2 ) C 2 , C 2
+}
+.
+Following the analysis in Section 3 , it is straightforward
+to show that the incumbent expert will choose high
+pledgeability γ2 = ¯γ if and only if D 1 ≤ D PayIC
+1 ( β2 ) , where
+D PayIC
+1 ( β2 ) = θB E
+1
+(γ, β2
+)
++ ( 1 − θ) B E
+1 ( ¯γ, β2 ) − ε. Clearly,
+D PayIC
+1
+(¯β)
+≥ D PayIC
+1 ( 0 ) , with the inequality being strict so
+long as B E
+1
+(γ, 0
+)
+< C 2 . So high bank-determined pledge-
+ability β2 = ¯β will increase the incumbent’s incentive-
+compatible level of debt (unless liquidity is high enough
+that pledgeability is never needed).
+Next, let us turn to the bank’s incentive in choosing
+pledgeability. The bank chooses β2 = ¯β if and only if
+min
+[
+D 1 , B E
+1
+(γ2 , ¯β)]
+−min
+[
+D 1 , B E
+1 ( γ2 , 0 )
+]
+≥ δ. (11)
+It is straightforward to show that the banker’s incen-
+tive to increase pledgeability (the left hand side of the
+constraint above) is maximized at D 1 = D PayIC
+1
+(¯β)
+. This il-
+lustrates an interesting double-blessing effect. Intuitively,
+D 1 = D PayIC
+1
+(¯β)
+is the highest claim that incentivizes γ2 =
+¯γ if β2 = ¯β. However, such a high level of debt will induce
+the incumbent to choose γ2 = γ if β2 = 0 . This means
+the incumbent expert will choose high pledgeability if and
+only if the bank also increases pledgeability. Therefore, in
+addition to giving the bank the maximum beneﬁt of rais-
+ing β2 , D 1 = D PayIC
+1
+(¯β)
+will also induce high ﬁrm pledge-
+ability. In this sense, ﬁrm internal governance and bank
+governance can complement each other. Any higher debt
+level will induce only the bank to raise pledgeability (a
+“single-blessing,” which lowers the bank’s incentive to do
+so), while a lower debt level will diminish the bank’s in-
+centive to incur cost δ.
+5.4. Intermediation and intermediary capital
+So far, we have implicitly assumed the bank will re-
+tain all the loans on its balance sheet and that the banker
+is self-ﬁnanced. If the bank originates loans and ﬁnances
+1289
+
+===== PAGE 16 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+them by raising money from investors, it will need to be
+provided incentives to take costly actions such as veriﬁca-
+tion or monitoring. We now analyze the implications for
+bank capital (skin in the game).
+Incentive compatibility requires that a suﬃciently large
+part of the beneﬁt from a costly action accrues to the in-
+termediary. In other words, the intermediary must retain
+“skin in the game,” a suﬃciently large claim whose value
+is increased by the costly action. We can see this most
+easily in the case of certainty. For instance, consider Case
+2 in Section 3.3 where B E
+1 ( γ ) < L ≤ ¯l CV
+1 . Without monitor-
+ing, the bank will not liquidate the project. The repayment
+is then B E
+1 ( ¯γ ) with probability ¯π and B E
+1 ( γ ) with proba-
+bility 1 − ¯π. We would like to implement monitoring and
+liquidation following a covenant violation. This can be ac-
+complished as long as M = ( 1 − ¯π)
+(
+L −B E
+1 ( γ )
+)
+≥ ψ. The
+required bank capital structure is, in general, not unique,
+once the bank’s stake is suﬃciently sensitive to its actions.
+One feasible capital structure is for the bank to issue debt
+claims on itself with face value B E
+1 ( γ ) . Next, it sells a frac-
+tion η of the equity and retains a fraction 1 − η, which sat-
+isﬁes ( 1 − η) ( 1 − ¯π)
+(
+L −B E
+1 ( γ )
+)
+= ψ. 15
+Of course, when monitoring and veriﬁcation are
+not needed (for example, internal governance debt or
+covenant-lite debt), the intermediary can sell or borrow
+against the entire loan. Thus full pass through funding
+(with no requirement for intermediary skin in the game)
+will occur in times of high future liquidity. Conversely, the
+demand for the intermediary to have skin in the game is
+highest in times of low prospective liquidity.
+More generally, the form of the intermediary’s skin in
+the game may vary with the nature of the desired interme-
+diary intervention. If the intermediary is simply required to
+collect information to verify covenant violation (or screen
+out bad borrowers in a model of adverse selection), it is
+suﬃcient that the skin in the game take the form of a pari
+passu share in the loan repayments, or a junior stake in
+them (bank or securitization equity). Of course, if the in-
+termediary could delegate some of this information pro-
+duction to an accounting ﬁrm (by requiring timely audited
+ﬁnancial statements), the cost of information production
+might be (close to) zero, and the loan could (almost) to-
+tally sold or borrowed against, with little intermediary skin
+in the game. If, however, the intermediary has to exert
+costly effort to decide whether to liquidate, it must get a
+strictly positive payment from liquidation. In this case, it
+can help to have the loan made by the intermediary be ef-
+fectively senior to some other claims on the project (see
+Park (20 0 0); Rajan and Winton (1995) ), and the interme-
+diary’s stake in the loan repayments should be suﬃciently
+large and sensitive to its monitoring and liquidation ac-
+tions.
+Empirically, periods with extremely high liquidity
+would thus be associated with either entry by highly lev-
+ered intermediaries (such as pass through securitization
+15 Similar results are in Holmstrom and Tirole (1997) ; DeMarzo and
+Duﬃe (1999) , and Park (20 0 0) . Hu and Varas (2020) present a dynamic
+model in which intermediary cannot commit to its skin-in-the-game. The
+pricing impact deters the intermediary from selling too soon and too ag-
+gressively.
+vehicles) who do not screen or monitor and have a tiny
+fraction of junior claim retained as “skin in the game,”
+or a switch by banks to higher leverage and a suspension
+of monitoring. 16 The securitization vehicles can buy loans
+originated by banks or other intermediaries and the loans
+will be covenant-lite. Thus covenant-lite loans will have a
+large market share at times when intermediary leverage is
+high and non-bank lending increases. From a policy per-
+spective, demanding that intermediaries hold more skin in
+the game during the period of high liquidity may be inef-
+fective. It may simply accentuate the move toward lending
+structures that minimize intermediary involvement.
+In sum, our discussion in this subsection focuses
+on the demand for intermediary services and conse-
+quently for intermediary capital as liquidity conditions
+vary. In contrast, most of the analysis of intermediary as-
+set pricing and intermediary capital has studied the ef-
+fects of variation in the supply of intermediary capital
+(see Brunnermeier and Sannikov (2014); He and Krishna-
+murthy (2013); Holmstrom and Tirole (1997); Rampini and
+Viswanathan (2019) for example). In such models, ﬂuctu-
+ations in repayments shock intermediary net worth, and
+thus the supply of intermediary capital. Because some
+types of monitored lending can only occur if the interme-
+diaries have suﬃcient own net worth, these shocks have
+pervasive effects of their own (in addition to their direct
+effects on intermediary net worth).
+5.5. Alternative interpretations of liquidity and agency
+problems
+Note that a range of agency problems can be addressed
+by future bidders bidding with their own wealth. Under-
+lying this is the assumption that there is no problem with
+the underlying asset (the ﬁrm), and its full production pos-
+sibilities can be obtained in large measure by seizing and
+selling the asset to the right expert. If, however, the asset
+itself (and the cash ﬂows that can be produced with it),
+rather than the human capital that controls it, is of vari-
+able and hidden quality, future liquidity will be of little
+help in correcting malfeasance. Similarly, if the incumbent
+can make away with the asset in period 1 before it can
+be sold upon default, date-1 liquidity will be of little use.
+The broader point is that prospective liquidity can correct a
+variety of problems of asymmetric information and moral
+hazard, not all.
+5.6. Complete contracts
+If the aggregate state were observable and veriﬁable
+and could be written into contracts, and there was no
+other reason to use debt contracts (such as tax advan-
+tages), then the face values on date 1 could be made state
+contingent. 17 If so, the results without aggregate risk apply,
+16 See Diamond (1984) ; DeMarzo (2005) ; DeMarzo and Duﬃe (1999) ,
+and Gorton and Souleles (2006) for related work on the beneﬁts of secu-
+ritization.
+17 Our results are unchanged if the incumbent’s project is risk free and
+only industry liquidity varies by state. In that case, to justify debt con-
+tracts, it is suﬃcient (and plausible) to require that contracts cannot be
+contingent on outside expert liquidity.
+1290
+
+===== PAGE 17 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+state by state. The contract which raises the largest initial
+proceeds in that state is chosen. There will be no need for
+performance pricing to deal with pledgeability incentives.
+With debt contracts (as we have seen) or contracts con-
+tingent on a noisy measure of the aggregate state, we will
+recover a role for performance pricing.
+Finally, even with debt contracts let alone complete
+contracts, there is no gain from making contract payments
+contingent on the loss of ability of the incumbent. To
+see this, let us assume the one-period debt is denoted as {
+D θ
+1 , D 1 −θ
+1
+}
+, where the payment due depends on whether
+the incumbent retains her ability or not. In the case with-
+out the aggregate uncertainty, the IC constraint in choosing
+high effort is
+θ [
+C 2 −D θ
+1
+]
++ ( 1 − θ)
+[
+B E
+1 ( ¯γ ) −D 1 −θ
+1
+]
+− ε
+¯λ − λ
+≥ θ [
+C 2 −B E
+1 ( γ )
+]
+, (12)
+which implies the expected payments satisfy θD θ
+1 +
+( 1 − θ) D 1 −θ
+1 ≤ D PayIC
+1 . Therefore, in the case of straight
+debt, making debt payments contingent on the incum-
+bent’s ability does not alter either the incumbent’s IC con-
+straint or the expected amount that the lender can collect.
+5.7. Immediate increases in pledgeability
+We have shown that current pledgeability choices
+and the incentives for improved governance depend on
+prospective liquidity through its effect on future bids by
+experts. This follows because we assume that the effort
+decision made by the initial incumbent inﬂuences future
+pledgeability, i.e., cash ﬂows produced on date 2. Mean-
+while, the pledgeability of date-1 cash ﬂows stays un-
+changed (with pledgeability being zero). While this is plau-
+sible, our key results go through without assuming it. In
+Appendix A.2 , we analyze the model where the incum-
+bent’s effort changes both the current and future pledge-
+ability, i.e., cash ﬂows produced on both dates. A main dif-
+ference between pledging out cash ﬂows C 1 and C 2 is that,
+the former forces the incumbent to pay more and does not
+affect how much the incumbent can sell the ﬁrm for in the
+event that she loses her ability, whereas the latter does
+affect the sale price. Therefore, compared to the model
+where γ1 , the pledgeability of date-1 cash ﬂows, is ﬁxed,
+the maximum amount that an expert can raise at date 0 is
+never increased. If straight debt is used, this amount may
+actually be lower, because the incentive to choose high ef-
+fort is further reduced.
+Bank veriﬁcation and monitoring become more attrac-
+tive, because the threat of liquidation remains a pow-
+erful incentive device. Essentially, pledgeable cash ﬂows
+paid out before ﬁnancing or sale needs arise cannot ei-
+ther reduce the cost of ﬁnancing or increase the proceeds
+from selling the ﬁrm. Instead, they may even disincen-
+tivize pledgeability effort when pledgeability effort s set s
+pledgeability from now into the future. This is a down-
+side associated with cash ﬂows that mature before ﬁnanc-
+ing needs arise: pledging them is akin to securing short
+term debt, potentially crowding out incentives for internal
+governance, and forcing the lender to rely on monitoring
+plus liquidation.
+The broader point is that allowing for effort to change
+both current and future pledgeability only changes the
+model quantitatively. It will not eliminate the result
+that the governance incentives decrease with increased
+prospective liquidity.
+6. Conclusion
+While this paper describes how ﬁnancial intermediation
+varies with prospective liquidity in the underlying real bor-
+rowing sector, there is a more general point here. Liquid-
+ity tends to diminish the consequences of many kinds of
+moral hazard over repayment. Internal governance matters
+little if the ﬁrm can be seized and sold for full repayment
+in a Chapter 11 bankruptcy. Therefore, prospective liquid-
+ity encourages leverage at both the borrower and interme-
+diary level, even while requiring less governance. Equiv-
+alently, because the intermediary performs fewer useful
+functions, high prospective liquidity encourages disinter-
+mediation.
+Risky loans to highly leveraged borrowers, made by
+highly leveraged intermediaries, may therefore not be ev-
+idence of systemic moral hazard or over-optimism, but
+may simply be a consequence of high prospective liq-
+uidity crowding out intermediation. Such crowding out
+may, of course, have adverse consequences. As prospec-
+tive liquidity fades and the demand for intermediation
+services expands again, the need for intermediary capi-
+tal also increases. To the extent that intermediary capi-
+tal is run down in periods when liquidity is expected to
+be plentiful, it may not be available in suﬃcient quan-
+tities when liquidity conditions turn and demand for
+capital ramps up. Prospective liquidity breeds a depen-
+dence on continued liquidity for debt enforcement as it
+crowds out other modes of enforcement, especially cor-
+porate governance. This will make debt returns more
+skewed.
+We have not examined multiple claims on the same
+ﬁrm and the relationship between creditors (see, for exam-
+ple, Bolton and Scharfstein (1996); Diamond (1993) ). We
+have also not explored how intermediaries might behave
+as the demand for their services wax and wane. Can they
+shrink easily after having expanded, or do they compete
+for mandates even when they have little comparative ad-
+vantage relative to other forms of ﬁnance? Does this con-
+tribute to ﬁnancial fragility? We have also not explored
+other factors that would increase prospective liquidity such
+as accommodative monetary policy or irrational exuber-
+ance. Finally, at a macroeconomic level, liquidity is endoge-
+nous and deserves to be explored further (see, for example,
+Kiyotaki and Moore (1997) ). These are important areas for
+future research.
+Appendix A. Proofs
+Proof of Lemma 4.1. Let us deﬁne V s 1
+1
+(
+D 1 , ¯λ)
+, V s 1
+1
+(
+D 1 , λ)
+, and
+/Delta1s 1
+1 ( D 1 ) as in Section 3 . Assumption 1 leads to B E,G
+1
+(γ )
+>
+1291
+
+===== PAGE 18 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+B E,B
+1 ( ¯γ ) . If q /Delta1max ,G
+1 + ( 1 −q ) /Delta1max ,B
+1 > 0 , then
+D IC
+1 = D G,PayIC
+1 − ( 1 −q )
+q
+{
+θ [
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ )]
++
+ε
+¯λ − λ
+}
+> B E,G
+1
+(γ )
+. (A.1)
+Otherwise,
+D IC
+1 = D B,PayIC
+1
++
+q
+1 −q
+{
+( 1 − θ)
+[
+B E,G
+1 ( ¯γ ) −B E,G
+1
+(γ )]
+− ε
+¯λ − λ
+}
+< B E,B
+1 ( ¯γ ) . (A.2)
+The solution to D IC
+1 is unique unless
+q
+{
+( 1 − θ)
+[
+B E,G
+1 ( ¯γ ) −B E,G
+1
+(γ )]
+− ε
+¯λ − λ
+}
+= ( 1 −q )
+{
+θ [
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ )]
++
+ε
+¯λ − λ
+}
+, (A.3)
+in which case we pick the highest solution. At B E,G
+1
+(γ )
+= C 2 , D IC
+1 = D B,PayIC
+1 . In this case, l IG
+0 = D B,PayIC
+1 + ( 1 −q ) (
+1 − ¯λ)
+B E,B
+1
+(γ )
+, and l CL
+0 = qC 2 + ( 1 −q )
+[λB E,B
+1 ( ¯γ ) + ( 1 − λ)
+B E,B
+1
+(γ )]
+. A comparison between them shows that l IG
+0 < l CL
+0
+if and only if
+q
+[
+C 2 −D B,PayIC
+1
+]
+> ( 1 −q )
+[¯λ( 1 − θ) − λ][
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ )]
+,
+(A.4)
+which holds if q is suﬃciently high. In this case, ω ∗ exists.
+The uniqueness follows from the monotonicity of l IG
+0 −l CL
+0
+with respect to ω E,G
+1 once B E,G
+1
+(γ )
+< C 2 = B E,G
+1 ( ¯γ ) .
+Proof of Lemma 4.2. Let us write down the incumbent’s IC
+constraint in choosing high effort:
+¯λ( 1 −e 1 )
+{
+q
+[θC 2 + ( 1 − θ) B E,G
+1 ( ¯γ ) −D 1
+]
++ ( 1 −q )
+[θC 2 + ( 1 − θ) B E,B
+1 ( ¯γ ) −min
+{
+D 1 , B E,B
+1 ( ¯γ )
+}]}
++ ¯λe 1
+{
+qθ[
+C 2 −B E,G
+1 ( ¯γ )
+]
++ ( 1 −q ) θ[
+C 2 −B E,B
+1 ( ¯γ )
+]}
++
+(
+1 − ¯λ){
+qθ[
+C 2 −B E,G
+1
+(γ )]
++ ( 1 −q ) θ[
+C 2 −B E,B
+1
+(γ )]}
+− ε
+≥ λ( 1 −e 1 )
+{
+q
+[θC 2 + ( 1 − θ) B E,G
+1 ( ¯γ ) −D 1
+]
++ ( 1 −q )
+[θC 2 + ( 1 − θ) B E,B
+1 ( ¯γ ) −min
+{
+D 1 , B E,B
+1 ( ¯γ )
+}]}
++ λe 1
+{
+qθ[
+C 2 −B E,G
+1 ( ¯γ )
+]
++ ( 1 −q ) θ[
+C 2 −B E,B
+1 ( ¯γ )
+]}
++ ( 1 − λ)
+{
+qθ[
+C 2 −B E,G
+1
+(γ )]
++ ( 1 −q ) θ[
+C 2 −B E,B
+1
+(γ )]}
+.
+(A.5)
+While seemingly complicated, the inequality is straightfor-
+ward: with probability λ( 1 −e 1 ) , the realized pledgeabil-
+ity is high, and the covenant is not violated. In this case,
+the incumbent manager receives θC 2 + ( 1 − θ) B E,s 1
+1 ( ¯γ ) and
+repays min
+{
+D 1 , B E,s 1
+1 ( ¯γ )
+}
+. With probability λe 1 , however,
+the type-I error occurs, in which case D 1 is augmented
+to ˜ D 1 = B E,G
+1 ( ¯γ ) . Therefore, the incumbent only receives a
+payoff
+[
+C 2 −B E,s 1
+1 ( ¯γ )
+]
+if she retains her ability. With prob-
+ability ( 1 − λ) , the realized pledgeability is low and the
+covenant is correctly triggered. In this case, the incumbent
+receives a payoff
+[
+C 2 −B E,s 1
+1
+(γ )]
+if she retains her ability.
+Finally, the incumbent incurs the cost of effort ε. This con-
+straint is easily simpliﬁed to
+( 1 −e 1 )
+{
+q
+[
+B E,G
+1 ( ¯γ ) −D 1
+]
++ ( 1 −q ) max
+{
+B E,B
+1 ( ¯γ ) −D 1 , 0
+}}
+− ε
+¯λ − λ
+≥ θ {
+q
+[
+B E,G
+1 ( ¯γ ) −B E,G
+1
+(γ )]
++ ( 1 −q )
+[
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ )]}
+. (A.6)
+Given that the left-hand side is decreasing in D 1 , the con-
+dition on e 1 follows from evaluating the constraint at D 1 =
+0 . In particular, the detailed expression is
+¯e 1 = 1
+−
+θ{
+q
+[
+B E,G
+1 ( ¯γ ) −B E,G
+1
+(γ )]
++ ( 1 −q )
+[
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ )]}
++ ε
+¯λ−λ
+qB E,G
+1 ( ¯γ ) + ( 1 −q ) B E,B
+1 ( ¯γ )
+.
+(A.7)
+Evaluating the constraint at D 1 = B E,B
+1 ( ¯γ ) , we get two
+cases.
+(i) If
+( 1 −e 1 ) q
+[
+B E,G
+1 ( ¯γ ) −B E,B
+1 ( ¯γ )
+]
+− ε
+¯λ − λ
+≥ θ {
+q
+[
+B E,G
+1 ( ¯γ ) −B E,G
+1
+(γ )]
++ ( 1 −q )
+[
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ )]}
+, (A.8)
+then
+D P
+1 = B E,G
+1 ( ¯γ ) − θ
+q ( 1 −e 1 )
+{
+q
+[
+B E,G
+1 ( ¯γ ) −B E,G
+1
+(γ )]
++ ( 1 −q )
+[
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ )]}
+− ε
+q ( 1 −e 1 )
+(¯λ − λ) > B E,B
+1 ( ¯γ ) . (A.9)
+(ii) Otherwise,
+D P
+1 =
+[
+qB E,G
+1 ( ¯γ ) + ( 1 −q ) B E,B
+1 ( ¯γ )
+]
+− θ
+1 −e 1
+{
+q
+[
+B E,G
+1 ( ¯γ ) −B E,G
+1
+(γ )]
++ ( 1 −q )
+[
+B E,B
+1 ( ¯γ ) −B E,B
+1
+(γ )]}
+− ε
+( 1 −e 1 )
+(¯λ − λ) ≤ B E,B
+1 ( ¯γ ) . (A.10)
+Lemma A.1 . In performance-pricing debt, it is without loss of
+generality to assume ˜ D 1 = B E,G
+1 ( ¯γ ) .
+Proof: Let us write down the IC constraint under {
+D 1 , ˜ D 1
+}
+:
+¯λ( 1 −e 1 )
+{
+q
+[θC 2 + ( 1 − θ) B E,G
+1 ( ¯γ ) −D 1
+]
++ ( 1 −q )
+[θC 2 + ( 1 − θ) B E,B
+1 ( ¯γ ) −min
+{
+D 1 , B E,B
+1 ( ¯γ )
+}]}
++ ¯λ( 1 −e 1 )
+{
+q
+[θC 2 + ( 1 − θ) B E,G
+1 ( ¯γ ) − ˜ D 1
+]
+1292
+
+===== PAGE 19 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
++ ( 1 −q )
+[θC 2 + ( 1 − θ) B E,B
+1 ( ¯γ ) −min
+{˜ D 1 , B E,B
+1 ( ¯γ )
+}]}
++
+(
+1 − ¯λ){
+q
+[θC 2 + ( 1 − θ) B E,G
+1
+(γ )
+− ˜ D 1
+]
++ ( 1 −q )
+[θC 2 + ( 1 − θ) B E,B
+1
+(γ )
+−min
+{˜ D 1 , B E,B
+1
+(γ )}]}
+− ε
+≥ λ( 1 −e 1 )
+{
+q
+[θC 2 + ( 1 − θ) B E,G
+1 ( ¯γ ) −D 1
+]
++ ( 1 −q )
+[θC 2 + ( 1 − θ) B E,B
+1 ( ¯γ ) −min
+{
+D 1 , B E,B
+1 ( ¯γ )
+}]}
++ λ( 1 −e 1 )
+{
+q
+[θC 2 + ( 1 − θ) B E,G
+1 ( ¯γ ) − ˜ D 1
+]
++ ( 1 −q )
+[θC 2 + ( 1 − θ) B E,B
+1 ( ¯γ ) −min
+{˜ D 1 , B E,B
+1 ( ¯γ )
+}]}
++ ( 1 − λ)
+{
+q
+[θC 2 + ( 1 − θ) B E,G
+1
+(γ )
+− ˜ D 1
+]
++ ( 1 −q )
+[θC 2 + ( 1 − θ) B E,B
+1
+(γ )
+−min
+{˜ D 1 , B E,B
+1
+(γ )}]}
+.
+(A.11)
+Meanwhile, the goal is to maximize
+l P
+0 = ¯λ( 1 −e 1 )
+{
+qD 1 + ( 1 −q ) min
+{
+D 1 , B E,B
+1 ( ¯γ )
+}}
++ ¯λ( 1 −e 1 )
+{
+q ˜ D 1 + ( 1 −q ) min
+{˜ D 1 , B E,B
+1 ( ¯γ )
+}}
++
+(
+1 − ¯λ){
+q ˜ D 1 + ( 1 −q ) B E,B
+1
+(γ )}
+− ε. (A.12)
+Let
+{
+D ∗
+1 , ˜ D ∗
+1
+
+}
+be the solution. If we increase ˜ D ∗
+1
+ and de-
+crease D ∗
+1
+ such that l P
+0 is unchanged, it is straightforward to
+see that the IC constraint gets more slack because ¯λ > λ.
+Q.E.D.
+A1. Type-II error
+For simplicity, we have assumed that the signal φ only
+involves a type-I error. A type-II error, where low pledge-
+ability may not trigger a covenant violation, will only
+change the results qualitatively, as we show in this subsec-
+tion; it makes it harder to incentivize effort. Speciﬁcally, let
+us assume that if γ2 = γ, the signal is φ = φH with prob-
+ability e 2 and φ = φL with probability 1 −e 2 . In this case,
+we need to redeﬁne ¯π =
+¯λe 1
+¯λe 1 +
+(
+1 −¯λ)
+( 1 −e 2 ) . Again, we are go-
+ing to focus on the case without the aggregate risk.
+In the case of performance-pricing debt, the incum-
+bent’s payoff stays unchanged (and remains no better than
+straight debt.) The incumbent could retain control by pay-
+ing B E
+1 ( γ ) .
+The presence of the type-II error reduces the incum-
+bent’s incentive to choose high effort under monitoring.
+To see this, suppose that the bank monitors following a
+covenant violation and liquidates the project if it learns the
+pledgeability is low. In this case, the incumbent’s IC con-
+straint in choosing high effort becomes
+¯λ( 1 −e 1 )
+[θC 2 + ( 1 − θ) B E
+1 ( ¯γ ) −D 1
+]
++ ¯λe 1 θ [
+C 2 −B E
+1 ( ¯γ )
+]
++
+(
+1 − ¯λ)
+e 2 θ [
+C 2 −B E
+1
+(γ )]
+− ε
+≥ λ( 1 −e 1 )
+[θC 2 + ( 1 − θ) B E
+1 ( ¯γ ) −D 1
+]
++ λe 1 θ [
+C 2 −B E
+1 ( ¯γ )
+]
++ ( 1 − λ) e 2 θ [
+C 2 −B E
+1
+(γ )]
+.
+(A.13)
+If e 2 = 0 , this constraint is always slack whenever D 1 ≤
+B E
+1 ( ¯γ ) . Under a general e 2 , the constraint holds if and
+only if D 1 ≤ θ( 1 −e 2 ) C 2 + ( 1 −e 1 −θ) B E
+1 ( ¯γ ) + e 2 θB E
+1 ( γ )
+( 1 −e 1 ) − ε (¯λ−λ)
+( 1 −e 1 ) .
+The higher is e 2 , the lower the right hand side, and lower
+the incentive compatible level of debt.
+By a similar argument, in the case of aggregate uncer-
+tainty an increase in the probability of a high type-II er-
+ror will reduce the amount that can be raised with perfor-
+mance pricing, whenever performance pricing raises more
+than straight debt.
+A2. Current and future pledgeability
+Let us elaborate on how our results vary when the
+incumbent’s effort affects both contemporaneous and fu-
+ture pledgeability. We keep assuming γ2 ∈
+{γ, ¯γ }
+and
+now allow γ1 ∈
+{γ1 , ¯γ1
+}
+. The model presented in the pa-
+per corresponds to the case where γ1 = ¯γ1 = 0 . In this
+model, whenever the incumbent chooses effort λ ∈
+{¯λ, λ}
+,
+with probability λ, γ2 = ¯γ and γ1 = ¯γ1 . With probabil-
+ity 1 − λ, γ2 = γ and γ1 = γ1 . Throughout, we focus on
+the case without aggregate uncertainty so that the re-
+sults can be directly comparable with those in Section 3 .
+Let ˜ V 1
+(
+D 1 , λ)
+be the incumbent’s payoff when she chooses
+λ:
+˜ V 1 ( D 1 , λ) = λ{θ [
+C 2 −Min
+[
+B E
+1 ( ¯γ ) , D 1
+]]
++ ( 1 − θ)
+[
+B E
+1 ( ¯γ ) −Min
+[
+B E
+1 ( ¯γ ) , D 1
+]]
++ ( 1 − ¯γ1 ) C 1
+}
++ ( 1 − λ)
+{θ [
+C 2 −Min
+[
+B E
+1 ( γ ) , D 1
+]]
++ (1 − θ)
+[
+B E
+1 ( γ ) −Min
+[
+B E
+1 ( γ ) , D 1
+]]
++
+(
+1 − γ1
+)
+C 1
+}
+− ε1 { λ= ¯λ}
+= V 1 ( D 1 , λ) + λ( 1 − ¯γ1 ) C 1 + ( 1 − λ)
+(
+1 − γ1
+)
+C 1 ,
+(A.14)
+where V 1
+(
+D 1 , λ)
+is the payoff shown  in subsection
+2.A under γ1 ≡ 0 . Similarly, let us deﬁne ˜ /Delta11
+(
+D 1
+)
+=
+˜ V 1
+(
+D 1 , ¯λ)
+− ˜ V 1
+(
+D 1 , λ)
+, which simpliﬁes into ˜ /Delta11
+(
+D 1
+)
+=
+/Delta11
+(
+D 1
+)
+−
+(¯λ − λ)(
+¯γ1 − γ1
+)
+C 1 , where /Delta11
+(
+D 1
+)
+is the same
+as in Lemma 3.1 . Deﬁne ˜ D PayIC
+1 = θB E
+1 ( γ ) + (1 − θ) B E
+1 ( ¯γ ) −(
+¯γ1 − γ1
+)
+C 1 − ε (¯λ−λ), which is shown also as ˜ D PayIC
+1 =
+D PayIC
+1 −
+(
+¯γ1 − γ1
+)
+C 1 . There are two cases.
+(i) If ˜ D PayIC
+1 > B E
+1 ( γ ) , then under straight debt, ˜ D PayIC
+1 is the
+maximum face value that still induces high effort. In
+this case, the initial expert can borrow
+˜ l IG
+0 ≡ ¯λ(
+¯γ1 C 1 + ˜ D PayIC
+1
+)
++
+(
+1 − ¯λ)(γ1 C 1 + B E
+1 ( γ )
+)
+.
+(A.15)
+Note that in the benchmark model where γ1 ≡ γ1 ,
+l IG
+0 ≡ ¯λ(γ1 C 1 + D PayIC
+1
+)
++
+(
+1 − ¯λ)(γ1 C 1 + B E
+1 ( γ )
+)
+= ˜ l IG
+0 .
+(A.16)
+In other words, the ability to increase current pledge-
+ability γ1 does not increase the overall amount that
+the experts can borrow under internal-governance
+debt. Obviously, the amount that can be raised under
+covenant-lite debt will stays unchanged. Given so, the
+amount under performance-pricing debt also stays un-
+changed. Bank loan with monitoring is able to raise
+more
+1293
+
+===== PAGE 20 =====
+
+D.W. Diamond, Y. Hu and R.G. Rajan Journal of Financial Economics 143 (2022) 1275–1294
+˜ l M
+0 = ¯λ(
+¯γ1 C 1 + B E
+1 ( ¯γ )
+)
++
+(
+1 − ¯λ)
+L −
+[¯λe 1 +
+(
+1 − ¯λ)]ψ,
+(A.17)
+which exceeds the amount
+l M
+0 = ¯λ(γ1 C 1 + B E
+1 ( ¯γ )
+)
++
+(
+1 − ¯λ)
+L −
+[¯λe 1 +
+(
+1 − ¯λ)]ψ
+(A.18)
+if γ1 ≡ γ1 . Therefore, bank loans can be more attrac-
+tive.
+(ii) If ˜ D PayIC
+1 ≤ B E
+1 ( γ ) , then under straight debt, high ef-
+fort in choosing pledgeability can never been induced.
+Performance-pricing debt cannot do better either, be-
+cause the elevated face value later will require an even
+lower face value to begin with. Bank monitoring in this
+case will be more helpful, because the threat of liqui-
+dation is still suﬃcient to induce high effort.
+References
+Acharya, V. , Viswanathan, S. , 2011. Leverage, moral hazard, and liquidity.
+J. Finance 66, 99–138 .
+Asquith, P. , Beatty, A. , Weber, J. , 2005. Performance pricing in bank debt
+contracts. J. Account. Econ. 40, 101–128 .
+Benmelech, E., Kumar, N., Rajan, R., 2020. The decline of secured debt.
+Unpublished working paper. University of Chicago.
+Berlin, M. , Mester, L.J. , 1992. Debt covenants and renegotiation. J. Financ.
+Intermed. 2, 95–133 .
+Bolton, P. , Scharfstein, D. , 1996. Optimal debt structure and the number of
+creditors. J. Polit. Econ. 104 (1), 1–25 .
+Borio, C. , 2014. The ﬁnancial cycle and macroeconomics: what have we
+learnt? J. Bank. Finance 45, 182–198 .
+Bradley, M. , Roberts, M.R. , 2015. The structure and pricing of corporate
+debt covenants. Q. J. Finance 5, 1–37 .
+Brunnermeier, M.K. , Sannikov, Y. , 2014. A macroeconomic model with a
+ﬁnancial sector. Am. Econ. Rev. 104 (2), 379–421 .
+Christensen, H.B. , Nikolaev, V.V. , 2012. Capital versus performance
+covenants in debt contracts. J. Account. Res. 50 (1), 75–116 .
+DeMarzo, P. , 2005. The pooling and tranching of securities: a model of
+informed intermediation. Rev. Financ. Stud. 18 (1), 1–35 .
+DeMarzo, P. , Duﬃe, D. , 1999. A liquidity-based model of security design.
+Econometrica 67 (1), 65–99 .
+Diamond, D.W. , 1984. Financial intermediation and delegated monitoring.
+Rev. Econ. Stud. 51, 393–414 .
+Diamond, D.W. , 1991. Monitoring and reputation: the choice between
+bank loans and directly placed debt. J. Polit. Econ. 99, 689–721 .
+Diamond, D.W. , 1993. Seniority and maturity of debt contracts. J. Financ.
+Econ. 33, 341–368 .
+Diamond, D.W. , Hu, Y. , Rajan, R.G. , 2020. Pledgeability, industry liquidity,
+and ﬁnancing cycles. J. Finance 75 (1), 419–461 .
+Dichev, I. , Skinner, D. , 2002. Large sample evidence on the debt covenant
+hypothesis. J. Account. Res. 40, 1091–1123 .
+Dow, J. , Gorton, G. , Krishnamurthy, A. , 2005. Equilibrium investment and
+asset prices under imperfect corporate control. Am. Econ. Rev. 95,
+359–681 .
+Eisfeldt, A. , Rampini, A. , 2006. Capital reallocation and liquidity. J. Monet.
+Econ. 53, 369–399 .
+Eisfeldt, A. , Rampini, A. , 2008. Managerial incentives, capital reallocation,
+and the business cycle. J. Financ. Econ. 87, 177–199 .
+Gennaioli, N. , Shleifer, A. , Vishny, R. , 2015. Neglected risks: the psychology
+of ﬁnancial crises. Am. Econ. Rev. 105 (5), 310–314 .
+Halling, M., Yu, J., Zechner, J., 2020. The Dynamics of Corporate Debt
+Structure. Unpublished working paper. Swedish House of Finance.
+Gorton, G. , Souleles, N.S. , 2006. Special purpose vehicles and securitiza-
+tion. Risks Financ. Inst. 549–602 .
+Hackbarth, D. , Hennessy, C.A. , Leland, H.E. , 2007. Can the trade-off theory
+explain debt structure? Rev. Financ. Stud. 20 (5), 1389–1428 .
+Hanson, S. , Shleifer, A. , Stein, J. , Vishny, R. , 2015. Banks as patient ﬁxed-in-
+come investors. J. Financ. Econ. 117 (3), 449–469 .
+Hart, O. , Moore, J. , 1994. A theory of debt based on the inalienability of
+human capital. Q. J. Econ. 109, 841–879 .
+He, Z. , Krishnamurthy, A. , 2013. Intermediary asset pricing. Am. Econ. Rev.
+103 (2), 732–770 .
+Hellmann, T. , Puri, M. , 2002. Venture capital and the professionalization
+of start-up ﬁrms: empirical evidence. J. Finance 57, 169–197 .
+Holmstrom, B. , Tirole, J. , 1997. Financial intermediation, loanable funds,
+and the real sector. Q. J. Econ. 112, 663–691 .
+Hu, Y., 2017. A dynamic theory of bank lending, ﬁrm entry, and invest-
+ment ﬂuctuations. Unpublished working paper. University of North
+Carolina.
+Hu, Y., Varas, F., 2020. Intermediary Financing without Commitment,
+working paper. Unpublished working paper. University of North Car-
+olina.
+Ivashina, V. , Iverson, B. , Smith, D.C. , 2016. The ownership and trading
+of debt claims in chapter 11 restructurings. J. Financ. Econ. 119 (2),
+316–335 .
+Jensen, M.C. , 1989. Eclipse of the Public Corporation. HARVARD BUSINESS
+REVIEW . (Sept.-Oct. 1989), revised 1997.
+Jensen, M.C. , 1986. Agency costs of free cash ﬂow, corporate ﬁnance, and
+takeovers.. Am. Econ. Rev. 76 (2), 323–329 .
+Johnson, S. , Boone, P. , Breach, A. , Friedman, E. , 20 0 0. Corporate gover-
+nance in the Asian ﬁnancial crisis. J. Financ. Econ. 58, 1–2 .
+Kahan, M. , Tuckman, B. , 1995. Private versus public lending: evidence
+from covenants. In: Finnerty, J.D., Fridson, M.S. (Eds.), The Yearbook
+of Fixed Income Investing. Irwin .
+Kaplan, S.N. , Stromberg, P. , 2003. Financial contracting theory meets the
+real world: an empirical analysis of venture capital contracts. Rev.
+Econ. Stud. 70, 281–315 .
+Kermani, A., Ma, Y., 2020. Two Tales of Debt, working paper. Unpublished
+working paper. University of Chicago.
+Kiyotaki, N. , Moore, J. , 1997. Credit cycles. J. Polit. Econ. 105, 211–248 .
+Manove, M. , Padilla, A.J. , Pagano, M. , 2001. Collateral versus project
+screening: a model of lazy banks. Rand J. Econ. 32, 726–744 .
+Nikolaev, V.V. , 2018. Scope for renegotiation in private debt contracts. J.
+Account. Econ. 65, 270–301 .
+Nini, G., Smith, D., Suﬁ, A., 2012. Creditor Control Rights, Corporate Gov-
+ernance, and Firm Value. Vol. 25.
+Park, C. , 20 0 0. Monitoring and structure of debt contracts. J. Finance 55,
+2157–2195 .
+Philippon, T. , 2006. Corporate governance over the business cycle. J. Econ.
+Dyn. Control 30 (11), 2117–2141 .
+Rajan, R.G. , 2012. Presidential address: the corporation in ﬁnance. J. Fi-
+nance 67 (4), 1173–1217 .
+Rajan, R.G. , Winton, A. , 1995. Covenants and collateral as incentives to
+monitor. J. Finance 50, 1113–1146 .
+Rampini, A .A . , Viswanathan, S. , 2010. Collateral, risk management, and the
+distribution of debt capacity. J. Finance 65 (6), 2293–2322 .
+Rampini, A .A . , Viswanathan, S. , 2019. Financial intermediary capital, the
+review of economic studies. Rev. Econ. Stud. 86, 413–455 .
+Saavedra, D. , 2018. Syndicate size and the choice of covenants in debt
+contracts. The Accounting Review 93 (6), 301–329 Saavedra (2018).
+In press .
+1294

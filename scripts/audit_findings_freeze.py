@@ -40,6 +40,10 @@ STATE = ROOT / "docs" / "findings-freeze.md"
 SPECIFICATION_LOCK = ROOT / "docs" / "specification-lock.json"
 MODEL_LEDGER = ROOT / "docs" / "model-ledger.json"
 LITERATURE_AUDIT = ROOT / "docs" / "literature-audit.md"
+LITERATURE_BIB = ROOT / "literature" / "vehicle-currencies.bib"
+LITERATURE_SOURCES = ROOT / "literature" / "pdf-sources.json"
+LITERATURE_TEXT = ROOT / "literature" / "text"
+LITERATURE_SOURCE_NOTES = ROOT / "literature" / "source-notes"
 MARKET_STATE_QUALITY = ROOT / "data" / "processed" / "market_state_quality.parquet"
 CANONICAL_EMPIRICAL_CONSUMERS = (
     "scripts/build_transaction_state_frontier.py",
@@ -65,7 +69,9 @@ LITERATURE_CARD_REQUIRED_FIELDS = frozenset(
         "status",
         "roles",
         "source",
+        "source key",
         "version",
+        "companions",
         "uses",
         "scientific",
         "structure",
@@ -82,7 +88,9 @@ LITERATURE_CARD_PLACEHOLDERS = frozenset({"", "todo", "tbd", "n/a"})
 LITERATURE_CARD_EVIDENCE_FIELDS = frozenset(
     {
         "source",
+        "source key",
         "version",
+        "companions",
         "uses",
         "scientific",
         "structure",
@@ -94,22 +102,23 @@ LITERATURE_CARD_EVIDENCE_FIELDS = frozenset(
         "first reader",
     }
 )
-JFE_VENUE_CARDS = {
-    "venue:bolton-kacperczyk-carbon",
-    "venue:carletti-banks-patient-lenders",
-    "venue:chang-ripples-into-waves",
-    "venue:cong-li-wang-token-platform",
-    "venue:diamond-hu-rajan-liquidity-pledgeability",
-    "venue:eren-malamud-dominant-currency-debt",
-    "venue:graham-corporate-culture",
-    "venue:hajda-nikolov-product-market",
-    "venue:hinzen-bitcoin-adoption",
-    "venue:huang-constrained-liquidity-fx",
-    "venue:li-ye-zheng-refusing-best-price",
-    "venue:makarov-schoar-crypto-arbitrage",
-    "venue:mayer-financing-breakthroughs",
-    "venue:pastor-sustainable-investing",
+JFE_VENUE_SOURCE_KEYS = {
+    "venue:bolton-kacperczyk-carbon": "BoltonKacperczyk2021CarbonRisk",
+    "venue:carletti-banks-patient-lenders": "CarlettiDeMarcoIoannidouSette2021PatientLenders",
+    "venue:chang-ripples-into-waves": "ChangDuLouPolk2022Ripples",
+    "venue:cong-li-wang-token-platform": "CongLiWang2022TokenPlatform",
+    "venue:diamond-hu-rajan-liquidity-pledgeability": "DiamondHuRajan2022LiquidityPledgeability",
+    "venue:eren-malamud-dominant-currency-debt": "ErenMalamud2022DominantDebt",
+    "venue:graham-corporate-culture": "GrahamGrennanHarveyRajgopal2022CorporateCulture",
+    "venue:hajda-nikolov-product-market": "HajdaNikolov2022ProductMarket",
+    "venue:hinzen-bitcoin-adoption": "HinzenJohnSaleh2022LimitedAdoption",
+    "venue:huang-constrained-liquidity-fx": "HuangRanaldoSchrimpfSomogyi2025Constrained",
+    "venue:li-ye-zheng-refusing-best-price": "LiYeZheng2023Refusing",
+    "venue:makarov-schoar-crypto-arbitrage": "MakarovSchoar2020Arbitrage",
+    "venue:mayer-financing-breakthroughs": "Mayer2022FinancingBreakthroughs",
+    "venue:pastor-sustainable-investing": "PastorStambaughTaylor2021SustainableInvesting",
 }
+JFE_VENUE_CARDS = frozenset(JFE_VENUE_SOURCE_KEYS)
 GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
 LOCKED_CLAIM_STATUSES = {
     "enter_fgh_primary",
@@ -197,19 +206,192 @@ def published_venue_version(fields: dict[str, str]) -> bool:
     return fields.get("version", "").strip().lower().startswith("published ")
 
 
+def companion_source_keys(fields: dict[str, str]) -> set[str]:
+    """Read canonical companion bibliography keys from the card disposition."""
+    return set(re.findall(r"`([^`]+)`", fields.get("companions", "")))
+
+
+def literature_source_key(fields: dict[str, str]) -> str:
+    """Resolve scientific and venue cards to one canonical main-paper source set."""
+    return fields.get("source key", "").strip()
+
+
+def materialized_companion_sources() -> dict[str, bool]:
+    """Report whether each registered source key has durable extracted text or a source note."""
+    bib_keys = set(re.findall(r"@\w+\s*\{\s*([^,\s]+)", LITERATURE_BIB.read_text()))
+    try:
+        source_keys = set(json.loads(LITERATURE_SOURCES.read_text()).get("sources", {}))
+    except (json.JSONDecodeError, OSError):
+        source_keys = set()
+    return {
+        key: source_materialized(
+            key,
+            bib_keys=bib_keys,
+            source_keys=source_keys,
+            text_root=LITERATURE_TEXT,
+            note_root=LITERATURE_SOURCE_NOTES,
+        )
+        for key in bib_keys | source_keys
+    }
+
+
+def source_materialized(
+    key: str,
+    *,
+    bib_keys: set[str],
+    source_keys: set[str],
+    text_root: Path,
+    note_root: Path,
+) -> bool:
+    """Require an exact-key durable artifact; a prefix-sharing companion is insufficient."""
+    return bool(
+        key in bib_keys
+        and key in source_keys
+        and (
+            any(text_root.glob(f"*-{key}-*.txt"))
+            or any(note_root.glob(f"*-{key}.md"))
+        )
+    )
+
+
+def literature_source_sets() -> dict[str, dict]:
+    """Load the auditable discovery record for each required paper source set."""
+    try:
+        source_sets = json.loads(LITERATURE_SOURCES.read_text()).get("source_sets", {})
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return {
+        str(key): value
+        for key, value in source_sets.items()
+        if isinstance(value, dict)
+    }
+
+
+def card_source_text(fields: dict[str, str]) -> str | None:
+    """Resolve a card's saved PDF to its tracked page-delimited extract."""
+    source = fields.get("source", "").strip()
+    if not source.startswith("literature/papers/") or not source.endswith(".pdf"):
+        return None
+    path = LITERATURE_TEXT / f"{Path(source).stem}.txt"
+    return path.read_text(errors="replace") if path.exists() else None
+
+
+def companion_sources_closed(
+    fields: dict[str, str],
+    *,
+    materialized: dict[str, bool] | None = None,
+    source_text: str | None = None,
+    source_set: dict | None = None,
+) -> bool:
+    """Require explicit disposition and, at the live gate, materialized full source-set evidence."""
+    if materialized is not None and source_text is None:
+        return False
+    if source_set is not None:
+        main_key = source_set.get("main")
+        if main_key != literature_source_key(fields):
+            return False
+        if not materialized or not source_set_record_closed(source_set, materialized):
+            return False
+        recorded_companions = source_set.get("companions")
+        if not isinstance(recorded_companions, list) or any(not isinstance(key, str) for key in recorded_companions):
+            return False
+        if set(recorded_companions) != companion_source_keys(fields):
+            return False
+    disposition = fields.get("companions", "").strip().lower()
+    if disposition.startswith("complete:"):
+        if materialized is None:
+            return True
+        keys = companion_source_keys(fields)
+        return bool(keys) and all(materialized.get(key, False) for key in keys)
+    if disposition.startswith("none:"):
+        if source_text is None:
+            return True
+        return not re.search(
+            r"\b(?:online|internet|web)\s+appendix\b"
+            r"|\b(?:the|in\s+the)\s+supplementary\s+material\b"
+            r"|\bsupplementary\s+(?:material|data)\s+associated\s+with\s+this\s+(?:article|paper)\b"
+            r"|\bdata\s+appendix\b"
+            r"|\bseparate(?:ly)?\s+(?:hosted\s+)?supplement(?:ary|al)?\b",
+            source_text,
+            flags=re.IGNORECASE,
+        )
+    return False
+
+
+def source_set_record_closed(
+    source_set: dict,
+    materialized: dict[str, bool],
+    *,
+    root: Path = ROOT,
+) -> bool:
+    """Validate discovery coverage and durable artifacts independently of prose cards."""
+    checks = source_set.get("checks", {})
+    companions = source_set.get("companions")
+    main_key = source_set.get("main")
+    article = checks.get("article") if isinstance(checks, dict) else None
+    article_path = (root / article).resolve() if isinstance(article, str) else None
+    text_root = (root / "literature" / "text").resolve()
+    tracked_article = bool(
+        article_path
+        and article_path.is_relative_to(text_root)
+        and article_path.is_file()
+    )
+    return bool(
+        source_set.get("status") == "complete"
+        and isinstance(main_key, str)
+        and isinstance(checks, dict)
+        and all(checks.get(kind) for kind in ("article", "publisher_or_doi", "author_or_repository"))
+        and isinstance(companions, list)
+        and all(isinstance(key, str) for key in companions)
+        and (tracked_article or materialized.get(main_key, False))
+        and all(materialized.get(key, False) for key in companions)
+    )
+
+
 def validate_literature_audit(
     text: str,
     cited_keys: set[str],
     venue_cards: set[str],
+    *,
+    verify_source_sets: bool = False,
 ) -> tuple[bool, str]:
     """Require individual full-text cards before findings may freeze."""
     frontmatter = parse_state_frontmatter(text)
     cards = parse_literature_cards(text)
     required_cards = cited_keys | venue_cards
+    materialized = materialized_companion_sources() if verify_source_sets else None
+    source_sets = literature_source_sets() if verify_source_sets else {}
+    required_source_keys = cited_keys | {
+        JFE_VENUE_SOURCE_KEYS[key]
+        for key in venue_cards
+        if key in JFE_VENUE_SOURCE_KEYS
+    }
+    closed_source_sets = {
+        key
+        for key in required_source_keys
+        if key in source_sets
+        and materialized is not None
+        and source_set_record_closed(source_sets[key], materialized)
+    }
     complete_cards = {
         key
         for key in required_cards
-        if key in cards and complete_literature_card(cards[key])
+        if key in cards
+        and complete_literature_card(cards[key])
+        and (
+            not verify_source_sets
+            or literature_source_key(cards[key]) in source_sets
+        )
+        and companion_sources_closed(
+            cards[key],
+            materialized=materialized,
+            source_text=card_source_text(cards[key]) if verify_source_sets else None,
+            source_set=(
+                source_sets.get(literature_source_key(cards[key]))
+                if verify_source_sets
+                else None
+            ),
+        )
     }
     verified_citations = {
         key
@@ -236,6 +418,7 @@ def validate_literature_audit(
     }
     passed = bool(
         frontmatter.get("status") == "complete"
+        and (not verify_source_sets or closed_source_sets == required_source_keys)
         and complete_cards == required_cards
         and verified_citations == cited_keys
         and read_venues == venue_cards
@@ -243,6 +426,7 @@ def validate_literature_audit(
     )
     return passed, (
         f"status={frontmatter.get('status') or 'missing'}; "
+        f"source-sets={len(closed_source_sets)}/{len(required_source_keys)}; "
         f"five-axis-cards={len(complete_cards)}/{len(required_cards)}; "
         f"cited={len(verified_citations)}/{len(cited_keys)}; "
         f"venue={len(read_venues)}/{len(venue_cards)}; "
@@ -918,7 +1102,7 @@ def main() -> int:
     if LITERATURE_AUDIT.exists():
         cited = cited_bibliography_keys(sorted(PAPER_SECTIONS.glob("*.tex")))
         literature_passed, literature_detail = validate_literature_audit(
-            LITERATURE_AUDIT.read_text(), cited, JFE_VENUE_CARDS
+            LITERATURE_AUDIT.read_text(), cited, JFE_VENUE_CARDS, verify_source_sets=True
         )
         record("node B full-text literature ledger", literature_passed, literature_detail)
     else:

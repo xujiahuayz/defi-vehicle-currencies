@@ -1,0 +1,960 @@
+
+
+===== PAGE 1 =====
+
+Token-based Platform Finance :
+Online Appendix
+Lin William Cong† Ye Li§ Neng Wang‡
+†Cornell University Johnson Graduate School of Management. E-mail: will.cong@cornell.edu
+§The Ohio State University Fisher College of Business. E-mail: li.8935@osu.edu
+‡Columbia Business School and NBER. E-mail: neng.wang@columbia.edu
+
+===== PAGE 2 =====
+
+A. Institutional background
+This section provides the institutional background of token-based platforms. We discuss
+how platforms, blockchains, and the use of tokens are all connected in practice, using the
+Kik/Kin system and various other real-life examples. First, the platform token plays dual
+roles: it serves as local means of payment among users, and as a platform ﬁnancing tool
+(contributors’ compensation), and it gathers eﬀorts and resources for platform development.
+Second, platform designers (owners and entrepreneurs) increasingly utilize token-supply
+strategies to manage platform development dynamically, and derive beneﬁts by issuing tokens
+to themselves and actively managing the total amount of tokens in circulation. We highlight
+that, on traditional and blockchain-based platforms, entrepreneurs and platform owners
+exercise signiﬁcant discretion in dynamic token allocation, which is a salient feature of our
+baseline model. Finally, we discuss how blockchain technology can limit discretion and enable
+commitment.
+To start, we note that in the past few years, over 1,000 cryptocurrencies have been
+introduced on digital platforms. In these applications, including Bitcoin and Ripple, blockchains
+provide a relatively decentralized consensus that helps avoid double-spending and enables
+digital currencies to act as a media of exchange among platform users. In terms of crowd-based
+ﬁnancing, blockchain-based crypto tokens have also emerged as a popular means to raise
+funds for startups (e.g., Howell et al., 2018; Davydiuk et al., 2019). In Initial Coin Oﬀerings
+(ICOs), Security Token Oﬀerings (STOs), and Initial Exchange Oﬀerings (IEOs), entrepreneurs
+sell “tokens” or “AppCoins” to dispersed investors around the globe. 1 Moreover, tokens are
+routinely used as compensation for talents joining the startup teams. Kik/Kin constitutes a
+well-known example.
+1While the ﬁrst ICO in 2013 raised a meager $500,000 and had sporadic activities over the next two
+years. 2016 saw 46 ICOs raising about $100 million and according to CoinSchedule, in 2017 there were
+235 ICOs. The year-end totals came in over $3 billion raised in ICOs. In August 2017, OmiseGO (OMG)
+and Qtum passed a US$1 billion market cap recently, according to coinmarketcap.com, to become the ﬁrst
+ERC20 tokens built on the Ethereum network and sold via an ICO to reach the unicorn status.
+A-1
+
+===== PAGE 3 =====
+
+A.1. Kik/Kin case
+Kik Interative Inc. is a social media messaging company founded in Waterloo in 2009. It
+is currently involved in a well-publicized lawsuit with the SEC for violations of the Securities
+Act. Kik introduced a messaging app “Kik Messenger” in 2010 that later became one of the
+most popular social media applications (Brenner, 2018).
+To better compete with larger players in the advertising market and to allow its users
+to monetize their participation, in 2014 Kik launched Kik Points, a virtual currency within
+Kik Messenger. Advertisers can exchange ﬁat money with Kik for points to pay consumers
+for answering surveys and polls and consumers can pay for purchases and usage with the
+points. Kik Points while in operation created an average of 300,000 daily transactions, but
+advertisers and users were concerned that nothing prevents Kik from creating more Kik
+Points or not accepting them entirely in the future.
+The company therefore conceived towards the end of 2016 a new blockchain-based platform,
+Kin, which issues native tokens for user transactions and compensations for dispersed contributors
+in an ecosystem for digital services and social network wherein Kik is a key founding
+member.2 The Kin project is overseen by the Kin Foundation and aims to oﬀer Kik and
+similar developers a way to monetize their businesses, which was previously diﬃcult without
+a large initial scale or potentially abusing user data. The blockchain-based token can credibly
+have a limited supply. Moreover, token demand can be boosted by token usage not only on
+Kik Messenger but also for a potentially unlimited number of applications, services, and
+products oﬀered by participating developers. Therefore, Kin has the potential to overcome
+the concern of over supply and value destruction.
+Importantly, even though the maximum supply of Kin is at $10 trillion, the founding team
+and the Kin Foundation actively manage token allocations (e.g., using smart contracts): 30%
+is pre-allocated to the original Kik platform for being a founding member of Kin and early
+2Facebook’s role in the creation of Libra coins is similar.
+A-2
+
+===== PAGE 4 =====
+
+adopter; 10% (1 trillion) of Kin tokens are issued to dispersed investors in a two-week ICO
+in 2017, raising about US$100 million; 60% is initially allocated to the Kin Foundation
+and is to be gradually distributed to early users and contributors through the Kin Rewards
+Engine schema or used to cover operation and marketing expenses. Every year, 20% of
+the remaining token reserves at the Kin Foundation are released to corporate partners, for
+example, as incentive payments for decentralized contributions. While it is unclear whether
+Kik and Kin optimally designed the allocation, they apparently thought about issues related
+to promoting user adoption, incentivizing third-party contributors to the system, controlling
+inﬂation, and compensating key personnel and partners while growing the platform.
+A.2. Common features of token-based platforms
+The case of Kik/Kin leads to the following three observations that apply generally to
+blockchain-based platforms.
+(i) Token embedding. It should be clear from the example that tokens are used as a
+platform currency/local medium of exchange — a “Token Embedding” phenomenon ﬁrst
+highlighted in CLW. Indeed, in many blockchain applications, native tokens are the required
+or favored medium of exchange.3 For example, it is cheaper to make international payments
+and settlements using Ripples (RXP) on the Ripple network; to make proﬁts by providing
+validation services, OmiseGo (OMG) tokens are required as stakes on the OmiseGo blockchain;
+even though the Ethereum platform allows other AppCoins and cryptocurrencies, many
+transactions and fundraising activities are still carried out using Ethers (ETH) due to the
+convenience and popularity. Moreover, platformentrepreneurs and owners actively design the
+3See also Brunnermeier et al. (2019) who conclude, “Payments are at the center of any economic platform,
+and all other activities would organize themselves around the central payment functionality.” Even though
+policy makers often generically refer to non-cash-ﬂow-based tokens as “utility tokens,” the majority of them
+are not to redeem a product or service from the entrepreneur per se at ﬁxed prices. They simply represent
+the right to use the platforms to conduct business. These include many of the high-proﬁle projects: Filecoin,
+Golem, 0x, Civic, Raiden, and Basic Attention Token (BAT). Prices are not pre-set but emerge from markets
+where the users’ token demand meet the platforms’ supply.
+A-3
+
+===== PAGE 5 =====
+
+rules for token supplies and attributes and use tokens to compensate resource contributors
+(investors, developers, etc.), as well as to manage the platform development.
+We note that it is natural and common in practice to introduce platform tokens that
+agents hold and use because transfers in ﬁat currencies inevitably rely on centralized third
+parties such as banks that are subject to the conﬁnes of physical locations and jurisdictions.
+Tokens, in contrast, can be used not only for peer-to-peer exchanges, but also for compensating
+miners, validators, and other contributors who work to improve the stability and functionality
+of the ecosystem. This is especially convenient because cryptocurrency miners who maintain
+network securities under the Proof-of-Work protocol and liquidity providers in a staking-based
+system are not long-term employees of the platform and demand on the spot, reliable
+payments. Moreover, native coins can be directly linked to the history of transactions and
+events on the blockchain, a feature other currencies cannot provide. 4
+There are many examples other than the Kin project. Filecoin (FIL) is used as the
+sole means of payment in the network marketplace to reward miners for block creation
+in the Filecoin consensus process. Another example is Basic Attention Token (BAT).
+As explained in the BAT token launch research report, BAT also functions as a medium
+exchange between users, advertisers, and publishers who participate in the Brave browser
+ecosystem. Advertisers purchase ads using BAT tokens, which are then distributed among
+both publishers and browser users as compensation for hosting the ads and viewing them,
+respectively.
+The fact that platforms including blockchain-based ones tend to introduce tokens is
+only one aspect of token embedding. In principle no one needs to hold the native token if
+its velocity is inﬁnite (i.e., people can instantaneously exchange other currencies with the
+native tokens). The second aspect of token embedding is that agents actually need to hold
+4Kocherlakota (1998) models money as an object that does not enter utility or production functions. He
+then shows that from a technological point of view, money is equivalent to a primitive form of memory. With
+the blockchain technology, money is indeed memory. Tokens are useful as a means of payment and stores of
+value precisely because of agents’ knowledge of full histories of token-based transactions.
+A-4
+
+===== PAGE 6 =====
+
+the tokens to conduct transactions and perform economic activities. While this is also true
+for ﬁat money in practice, blockchain-based systems add at least three more reasons.
+First, to incentivize and allocate service ﬂows to decentralized miners or service providers,
+many tokens are designed such that these agents have to hold the native tokens to earn the
+right to perform work to maintain the system, be it service provision or recordkeeping.
+Proof-of-Stake protocols typically fall in this category. These tokens are sometimes referred
+to as work tokens or staking tokens, and notable implementations include Keep (oﬀ-chain
+private computation), Filecoin (distributed ﬁle storage), Truebit (oﬀ-chain computation),
+Livepeer (distributed video encoding), and Gems (decentralized mechanical Turk). 5
+Second, blockchains enable the use of smart contracts, which are digital contracts allowing
+terms contingent on decentralized consensus that are typically self-enforcing and tamper-proof
+through automated execution. Smart contracts need to automate transactions once certain
+contingencies are fulﬁlled, which in turn requires a certain amount of tokens to be “escrowed”
+during the episode that such contingencies may be triggered.
+Third, because the generation of decentralized consensus takes time, there exist technical
+and economic limits on how quickly transactions can be validated and recorded (Chiu
+and Koeppl, 2017). While many protocols such as the Lightening Network and Ethereum
+process transactions signiﬁcantly faster than Bitcoin (seconds versus 10-11 minutes), the
+decentralized nature of the validation means it takes time to ensure robustness and synchronization
+of the consensus. During the conﬁrmation period, agents have to hold tokens.
+(ii) Dynamic token supply and platform management. Admittedly, much of the
+discussion on cryptocurrency has focused on its role as a competitor for ﬁat currency for
+general payments. In a way, ﬁat currencies are also an extreme form of platform tokens in
+5To enforce a mechanism to penalize workers who fail to perform their job to some pre-speciﬁed standard,
+work tokens have to be held as collateral. For example, in Filecoin, service providers contractually commit
+to storing some data with 24/7 access and some minimum bandwidth guarantee for a speciﬁed period of
+time. During the contract term, service providers must “escrow” some number of Filecoin, which can be
+automatically slashed (taken away) should they fail to perform the service.
+A-5
+
+===== PAGE 7 =====
+
+that people “join” the platform by recognizing their value and accepting them (Gans and
+Halaburda, 2015), and the platform being the broader economy. What distinguishes tokens
+on digital platforms is that the adoption is no longer dictated by physical constraints: it
+is way more costly to adopt a diﬀerent ﬁat currency by emigrating to a diﬀerent country,
+but switching among digital platforms is relatively easy, which implies that the adoption of
+digital platforms is more endogenous than the adoption of a ﬁat currency.
+Not only is user adoption on platforms endogenous, the development of platforms is as
+well. Just like executives manage ﬁrms’ hiring and investment dynamically, tokens allow
+entrepreneurs to manage the contributions from dispersed agents in the network and thus
+manage the evolution of the platform. It is not only about a one-time ICO. Blockchain-based
+platforms often pay workers (contributors) on the spot with their tokens on an on-going basis,
+instead of a contract that promises the typical deferred compensation. 6
+For example, Kin tokens were issued to allow broad adoption and contribution by developers
+and users to foster a “virtuous cycle in which the ecosystem grows in both size and quality”
+(Livingston, 2017). Through measures such as capping individual purchases at $4,400, Kik
+structured the oﬀering to encourage actual usage of the tokens as a medium of exchange,
+instead of hoarding and speculation. It is believed that a token-based ecosystem of independent
+users and developers would have the right incentives to grow the platform. Indeed, by
+the end of 2018, Kin exceeded Ether and Bitcoin in blockchain user activities according to
+blocktivity.info. Both the Apple App and Google Play Stores accept Kin as a digital currency;
+the Kin ecosystem has also integrated dozens of third-party apps including Perfect 365, a
+top-rated augmented-reality app for photo makeup with over 100 million users, and Nearby,
+a popular app with millions of users for meeting new people. The Kin Rewards Engine
+schema dynamically incentivizes dispersed agents in the system to grow the platform, so
+6Gathering resources through spot payment instead of deferred compensation is a salient feature of
+blockchain-based platforms. Deferred compensation is common in traditional ﬁrms and economic theories.
+Note that even in the simplest setting of production where ﬁrms combine labor and capital into output (often
+through a Cobb-Douglas function), there exists an implicit assumption that ﬁrms obtain inputs and then
+pay workers and investors after production.
+A-6
+
+===== PAGE 8 =====
+
+that founders’ eﬀort needs not play a central role after launching the platform.
+The use of platform tokens is not necessarily decentralized or blockchain-based. Even a
+traditional, centralized transaction platform may see the opportunity to use platform tokens.
+Before the Kin project, Kik was using a platform local currency even though it was not
+blockchain-based; many community-based companies, such as Facebook, Tencent, Microsoft,
+and Amazon, have also introduced platform tokens before (see Gans and Halaburda (2015)
+for an excellent discussion). Other notable examples of non-blockhain tokens include those
+introduced in online games, such as the Linden dollar for the game Second Life and WoW
+Gold for the game World of Warcraft.
+(iii) Entrepreneurs’ token payouts and buyback. How entrepreneurs get compensated
+through tokens is under-discussed in academic studies yet is important in practice. In the
+Kik/Kin example, founders, early investors, and key personnel get tokens which they can sell
+in secondary markets. This is a form of seigniorage. 7 What distinguishes blockchain-based
+platforms is that the issuance of tokens can be rule-based whereas inﬂation presents a
+perennial concern with ﬁat money run by central banks that are potentially under political
+inﬂuences. Indeed, many token designs speciﬁcally guard against inﬂation, for example,
+by pre-specifying the level or growth rate of token supply. Bitcoin supply is capped at 21
+million and Dﬁnity, at 469.21 million. Platforms like Kin also employs more sophisticated
+token-supply policies, balancing the rule-based and discretionary approeaches, in order to
+optimally incentivize the platform participants and compensate the founders.
+Precisely because tokens are used to compensate platform owners, founding entrepreneurs
+and designers care about how “inﬂated” the ecosystem is because they care about the
+platform’s franchise value going forward. This leads to many platforms also burning tokens
+to reduce inﬂation. Kin burned about 10% of tokens during the migration from Etherem
+7Entrepreneurs earn seigniorage for building infrastructure for and promoting platform networks. Even
+for stablecoins such as JPM Coin and Libra, the core networks of powerful institutions the founders foster
+add to attracting users. Key members in Libra are also compensated through Libra Investment Tokens.
+A-7
+
+===== PAGE 9 =====
+
+to its own blockchain. 8 Another recent example of the discretionary reduction of tokens in
+supply is the Synereo team, which burned 33% of its cryptocurrency reserves on March 31,
+2018 after meeting development goals with fewer tokens (AMP) than initially projected.
+Burning tokens out of circulation by buying tokens back from the secondary market
+requires cash reserves held by foundations or other entities that are in charge of platform
+operation. To bolster community activity and maintain the stability of the token market,
+TRON Foundation announced a $20 million token buyback plan on June 25, 2019 (one of
+the largest token buyback plans at the that time). 9 Its cash reserve was partly built by the
+$70 million raised in an ICO in 2017. Such cash reserves comes from operating proﬁts, ICOs
+or venture capital backing. 10 Spending cash incurs both a direct cost and a shadow price
+that is ultimately attributed to the standard costs of external ﬁnancing (e.g., Bolton, Chen,
+and Wang, 2011; D´ ecamps, Gryglewicz, Morellec, and Villeneuve, 2016). In our model, the
+parameter χ captures this economic force.
+Finally, as in our model, token burning in practice often depends on the stages of platform
+development. In preparation for a technical upgrade of its tokens, the Swiss-based crypto
+platform Eidoo announced in June 2020 a burning of 28 million $EDO tokens. Binance,
+which is a cryptocurrency exchange ﬁnanced by VCs such as Sequoia, burned 2.5 million
+BNB tokens in July 2018 (worth approximately $30 million). 11 The company also planned
+to burn tokens worth 20% of its proﬁts each year, and then stopped such operation in January
+2020. Next, we discuss the discretion and commitment in token supply.
+8https://medium.com/kinblog/blockchain-strategy-update-next-steps-in-migrating-to-the-kin-blockchain-aed99e209654.
+9https://cointelegraph.com/news/tron-foundation-announces-20-million-buyback-plan.
+10Notable blockchain-focused venture capital ﬁrms include include A16z Crypto (a subsidiary of Andreessen
+Horowitz), Pantera Capital (a U.S.-based investment fund), Coinbase Ventures (VC arm of crypto exchange
+Coinbase), Yeoman’s Capital (active early-stage angel investor), and IDG Capital (angel and seed investments
+in Ripple, Circle, etc.).
+11https://binance.zendesk.com/hc/en-us/articles/360007242192-Binance-4th-Quarter-Token-Burn.
+A-8
+
+===== PAGE 10 =====
+
+A.3. Discretion in dynamic token allocation
+The entrepreneur’s discretion is a salient feature of our baseline model. Many traditional
+centralized platforms and blockchain-based platforms allow the entrepreneur and owners
+to dynamically decide token allocations. While public blockchains assign relatively few
+tokens under the control of platforms (e.g., less than 1% of Ether is owned by the Ethereum
+platform), many other platforms do have discretion in token supply.12 While many crypto-tokens
+have pre-speciﬁed long-run maximum supply and certain rules against inﬂation, the numbers
+are often ad hoc. Moreover, the maximum token supply is large and relevant only in the
+distant future, not to mention that token burning renders the caps on supply eﬀectively
+non-binding (except in extreme market conditions). So its impact on short-term platform
+development and user activities is limited. Some platforms do not even have a maximum
+supply speciﬁed (Ethereum being the most notable example).
+Therefore, not all token supply is pre-set. The Kin Foundation’s Rewards Engine schema
+discussed above is just one example of discretionary dynamic token allocation. An excellent
+article by Kajpust (2019) documents that in general, token foundations’ operations are
+not very transparent, disclosure practices/requirements are only gradually introduced, and
+token allocation allows much discretion. For example, as of Jan 2019, Stellar is eﬀectively in
+control of over 85% of Lumen tokens. The future token distribution is fully centralized, and
+is by no means not written in stone. Moreover, Stellar Operational Fund and Development
+Foundation (Stellar.org) manage over 10% of Lumens through the Build Challenge that
+distributes millions of Lumens to is proposed challenge. 13
+As another example, the complaint of Securities and Exchange Commission (SEC) against
+Telegram Group Inc. and its wholly owned subsidiary TON Issuer Inc. (allegation No. 74)
+describes the ﬁrm’s discretion over the release of unsold Grams, 14 The primers issued to
+12https://www.cryptocompare.com/media/1383735/pdfs-termsandconditionsoftheethereumgenesissale.pdf.
+13See also https://www.stellar.org/blog/bitcoin-claim-lumens/ and https://www.stellar.org/blog/bitcoin-claim-lumens-2/.
+14https://www.sec.gov/litigation/complaints/2019/comp-pr2019-212.pdf.
+A-9
+
+===== PAGE 11 =====
+
+investors in 2017 and 2018 explain that “[f]our percent of the supply (200 million Grams)
+will be reserved for the development team with a 4–18 year vesting period” and at least 52%
+of the supply will be “retained by the TON Reserve to protect the nascent cryptocurrency
+from speculative trading.” It also explained that the TON Reserve would transfer its Grams
+to the TON Foundation, and that the “founders of Telegram will be responsible for the
+eﬃcient use of funds resulting from any [additional] sale[s].”
+Related, YouNow, also currently sued by the SEC, has 10% of their tokens (100,000,000
+Props Tokens) allocated to wallets controlled by the Props Foundation Public Beneﬁt Corporation
+(PBC) and is “distributed by Props PBC on a discretionary basis in the form of grants or
+expense reimbursements to developers building either applications on the Props Network or
+Network infrastructure, strategic content partners, and other entities directly supporting the
+growth of the Props Network or sold for cash proceeds.” 15
+Yet one more example is that three million of Polkadot’s DOT tokens, which is 30% of the
+total number eventually in circulation, are allocated to the Web3 Foundation (led by Gavin
+Wood, co-founder of Ethereum) and retained or distributed at the foundation’s discretion. 16
+The key takeaway here is that even though the blockchain technology facilitates commitment
+as highlighted in Section 5, many current practices do not fully implement such commitment,
+leaving a signiﬁcant portion of tokens under the discretion of the platform designers and
+entrepreneurs. Our analysis starts from the baseline model of discretionary token supply
+to capture such practice and then moves on to analyze the value added from commitment
+enabled by blockchain technology.
+Finally, we summarize the four aspects of blockchain technology that are critical in
+enabling commitment: data structure, smart contracting, decentralized data storage, and
+governance. Then we highlight the advantages of blockchain-based commitment over traditional
+approaches (e.g., collateral) and discuss the limitations of blockchain-based commitment.
+15https://www.sec.gov/Archives/edgar/data/1725129/000162827918000249/ﬁlename2.htm.
+16See, e.g., https://polkadot.network/faq.
+A-10
+
+===== PAGE 12 =====
+
+First, blockchain technology entails a linked-list data structure such that each block of
+records is time-stamped. Along the consensus chain of blocks, no agent can retroactively
+modify the record, which prevents tempering and manipulation of data and information.
+The immutability and distributed structure makes blockchains promising infrastructures for
+commitment schemes.17 Cao et al. (2018) and Cao et al. (2020) provide use cases of such
+data structure in ﬁnancial reporting and auditing.
+Second, building on the aforementioned data structure, many blockchains allow smart
+contracts, which utilize computer scripts that automatically execute transactions or contractual
+promises. Smart-contracting enables certain levels of automation and commitment, without
+relying on a centralized authority for execution (Rastegar et al., 2012; Buterin, 2014; Tinn,
+2019; Holden and Malani, 2018; Bakos and Halaburda, 2019). Cong and He (2019) discuss
+the applications of smart contracting and industrial organization. Chen et al. (2019) provide
+a broader survey on the related issues.
+Execution and renegotiation of traditional contracts can be costly. Revelation mechanisms
+and renegotiation designs rarely show up in practice because they are too complex to
+implement using traditional technologies and legal methods as they often require multiple
+stages of structured bargaining. In contrast, the future transactions coded in smart contracts
+are automatically executed thanks to the immutability of blockchain records. Thus, smart
+contracts, when applicable, induce fewer costs than traditional contracting and commitment.
+Multi-signature smart contracts are particularly eﬀective in mitigating frauds. For example,
+escrow Bitcoin wallets (e.g., the system employed by blockchain-based retail platform OpenBazaar)
+are eﬀective in allowing buyers and sellers to commit to transaction execution.
+Third, blockchain commitments do not come from data structure and smart contracts
+alone. The decentralized storage and governance of data play important roles. Due to
+the distributed nature of the blockchain ledger, abandoning historical records, changing
+17A commitment scheme is a cryptographic primitive that allows one to commit to a chosen value (or
+chosen statement) while keeping it hidden to others, with the ability to reveal the committed value later.
+Commitment schemes such as zero-knowledge proofs are designed to be binding.
+A-11
+
+===== PAGE 13 =====
+
+governance protocols, forfeiting existing contracts, etc., all require great coordination eﬀorts,
+which makes deviations from pre-committed actions diﬃcult.
+Whether consensus is generated in a centralized way or not, the distributed storage also
+provides greater transparency and monitoring. For example, the uncertainty and lack of
+information that aﬄict traditional contracting apply to smart contracts as well. But public
+witness on blockchains makes smart contracts less prone to uncertainty in execution and
+veriﬁcation of state contingency. It has less interpretation ambiguity too.
+Finally, the conventional commitment mechanisms often applied to debt contracts, such
+as seniority provisions, restrictive covenants, and relationship banking, may reduce ﬁrms’
+ﬁnancial ﬂexibility and suﬀer from issues such as reduced capital market competition and
+systematic ﬁnancial fragility. While blockchain-based commitment has its advantages, it is
+not a panacea for commitment. The space for smart contracting is limited. Information
+feed from oracles and the Internet of Things (IoTs) is still being developed. That said,
+blockchain-based commitment does have its unique applications, especially the lack of reliance
+on a centralized third party for legal or other enforcement.
+B. A model of platform transaction surplus
+We adopt the following theoretical foundation for the speciﬁcation of platform transaction
+surplus from CLW. Time, t∈ R+, is continuous. The economy is populated with a unit
+measure of inﬁnitely lived risk-neutral agents who have a discount rate r >0. Agents have
+investment opportunities that occur at Poisson arrival times,{Tn}+∞
+n=1, with time-varying and
+agent-speciﬁc intensity, λi,t. At a Poisson time, Tn, agent i is endowed with a technology,
+ωiF (·), that transforms labor into goods, and is matched with another agent who can supply
+the labor input. Agent-speciﬁc productivity is captured by ωi. To simplify the exposition,
+we assume that the labor supply has a constant marginal cost of one, and the supplier breaks
+even, so the trade surplus accrues to agent i.
+B-1
+
+===== PAGE 14 =====
+
+Agent i’s labor demand, denoted by h, is not restricted by the real balance of token
+holdings, Ptki,Tn−, where ki,Tn− denotes the units of tokens carried to Tn. Since the focus
+of this paper is not on ﬁnancial constraints, we allow the agent to borrow dollars (an
+instantaneous loan) at zero cost, so h may exceed agenti’s wealth at the moment. Once the
+production is complete, the loan is repaid immediately by the goods produced.
+The lumpy payment for labor incurs a transaction cost that is proportional to the total
+payment value,υh (υ >0), but using tokens as a means of payment saves the transaction cost
+byU (Ptki,Tn−) (U′ > 0,U′′ < 0) because agenti does not need to exchange dollars for tokens,
+the required means of payment on the platform. This transaction cost can be interpreted
+as the cost of a traditional bank transfer service, the legal costs of contracting. Native
+tokens in many cases allow transaction parties unknown and untrusted to still complete a
+value transfer remotely, or to contract on simple terms, thanks to the blockchain ledger and
+smarting contracting functionalities. For these reasons, platforms such as KIN require all
+on-platform transactions to be mediated using KIN tokens.
+Agenti maximizes the investment proﬁt, which is a jump in wealth,
+max
+h
+ωiF (h)−h− (υh−U (Ptki,Tn−)), (B.1)
+where the last term is the transaction cost. The optimal labor demand, h∗, is given by
+ωiF′ (h∗) = 1 +υ, (B.2)
+so that the marginal value of production is equal to the marginal cost of labor plus the
+transaction cost, υ. We can substitute the constant h∗ into the investment proﬁt to have
+ωiF (h∗)− (1 +υ)h∗ +U (Ptki,Tn−). (B.3)
+We assume that ωi is suﬃciently high so h∗≥ Ptki,Tn−. The conversion between the local
+B-2
+
+===== PAGE 15 =====
+
+currency (token) and other assets can be costly, especially when a lumpy transaction is
+required within a short period of time. By holding tokens, agents save such costs.
+Therefore, at time t, agent i has an expected gain of λi,tU (Ptki,t)dt by holding ki,t
+units of tokens for dt. To obtain a tighter analytical characterization of the equilibrium,
+we specify λi,t = (Nγ
+tAteui)α (α∈ (0, 1)). A larger community ( Nt) makes it easier to ﬁnd
+transaction counterparties. A higher platform quality ( At) makes matching more eﬃcient.
+And ui captures agent-speciﬁc transaction needs. We specify U (Ptki,t) = ζ (Ptki,t)1−α, so
+the expected transaction costs saved are:
+λi,tU (Ptki,t) = (Nγ
+tAteui)α (Ptki,t)1−αζdt. (B.4)
+We normalizeζ = 1 because its scaling eﬀect can be subsumed by the level of At.
+We may reinterpreth as goods or services other than labor, and the investment proﬁt as
+a burst of consumption or utility value from transactions. Our micro-foundation captures
+are two features: (i) the arrival of transaction opportunities depends on the user base, the
+platform quality, and agent-speciﬁc factors; and (ii) holding tokens on the tokenized platform
+saves transaction costs for lumpy payments. In essence, we model the ﬂow utility of token
+holdings as a form of convenience yield, as emphasized by John Cochrane. 18
+We have many applications of native tokens as a means of payment on platforms. In the
+case of KIN, entrepreneurs obtain information from consumer surveys that helps improve
+product quality. Consumers are rewarded by the native currency, KIN tokens. In our model,
+we do not diﬀerentiate buyers and sellers among users because in reality, entrepreneurs and
+service providers are often consumers of other sellers’ products in the platform marketplace.
+They can simultaneously take on diﬀerent roles (investor, user, developer or operator), and
+actively participate in a sharing economy or digital network.
+18Please refer to https://johnhcochrane.blogspot.com/2017/11/bitcoin-and-bubbles.html.
+C-1
+
+===== PAGE 16 =====
+
+C. Proofs
+C.1. Proof for proposition 1 and corollary 1
+Proof. We collect the terms that involve Lt in the HJB equation (9), so the ﬁrst-order
+condition with respect to Lt gives,
+dVMt
+([
+F (Lt,At)
+Pt
+dt +dDt
+]
++VAtAtLtµHdt + 1
+2VAtAtA2
+tL2
+t
+(
+σH)2
+dt
+)
+dLt
+= 0. (C.1)
+Simplifying, we get Eq. (10). The terms involveing dDt in the objective are:
+(Pt +VMt) I{dDt≥0} + (Pt(1 +χ) +VMt) I{dDt<0}. (C.2)
+Therefore, the optimal dDt is such that it is positive only if Pt≥−VMt and negative only if
+−VMt≥Pt(1 +χ). The proposition and corollary follow.
+C.2. Proof for proposition 2
+Proof. Rearranging Eq. (12)
+k∗
+i,t = Nγ
+tAtui
+Pt
+( 1−α
+r−µP
+t
+) 1
+α
+(C.3)
+Usingk∗
+i,t, we obtain the following expression for the user’s maximized proﬁts conditional
+on participating on the platform:
+Nγ
+tAtuiα
+( 1−α
+r−µP
+t
+) 1−α
+α
+−φ. (C.4)
+C-2
+
+===== PAGE 17 =====
+
+The adoption threshold of users is given by (14) equal to 0:
+ut =u
+(
+Nt;At,µP
+t
+)
+= φ
+Nγ
+tAtα
+(r−µP
+t
+1−α
+) 1−α
+α
+. (C.5)
+Because only agents with ui≥ut participate, the user base is then
+Nt = 1−Gt (ut). (C.6)
+Eq. (C.5) and Eq. (C.6) jointly determine the user base Nt givenAt and µP
+t . Note that
+zero adoption is always a solution, and trivially leads to a zero token price. We focus on
+characterizing a Markov equilibrium with a positive token price.
+C.3. Proof for proposition 3
+Proof. Substituting optimal holdings in Eq. (13) into the market-clearing condition in Eq.
+(18):
+Mt =
+∫
+i∈[0,1]
+k∗
+i,tdi =
+∫
+u≥ut
+Nγ
+tAtu
+Pt
+( 1−α
+r−µP
+t
+) 1
+α
+dGt(u) = Nγ
+tAt
+Pt
+( 1−α
+r−µP
+t
+) 1
+α
+∫
+u≥ut
+udGt(u)
+= Nγ
+tAt
+Pt
+( 1−α
+r−µP
+t
+) 1
+α
+∫
+u≥ut
+udGt(u) = Nγ
+tAt
+Pt
+( 1−α
+r−µP
+t
+) 1
+α
+Ut. (C.7)
+Rearranging, we obtain Eq. (3).
+C.4. Proof for lemmas 1-3
+Proof. Substituting Eq. (15) and Eq. (20) into Eq. (16):
+Nt = 1−
+(
+1−
+(Ut
+ut
+)ξ)
+=
+
+
+1
+(ωAκ
+t )
+φ
+Nγ
+t Atα
+(
+r−µP
+t
+1−α
+) 1−α
+α
+
+
+ξ
+(C.8)
+C-3
+
+===== PAGE 18 =====
+
+which implies an equation for Nt as the unknown. Solving this equation, we obtain the
+solution of Nt in Eq. (21) in Lemma 1. Next,
+Ut =
+∫
+u≥ut
+ξUt
+ξ
+uξ du = ξ
+ξ− 1
+Ut
+ξ
+utξ−1 =Nt
+( ξut
+ξ− 1
+)
+(C.9)
+= ξ
+ξ− 1N 1−γ
+t
+φ
+Atα
+(r−µP
+t
+1−α
+) 1−α
+α
+=
+( ξ
+(ξ− 1)ωAκ
+t
+)(A1−κ
+t α
+ωφ
+) ξ−1
+1−ξγ
+( 1−α
+r−µP
+t
+)( ξ−1
+1−ξγ )( 1−α
+α )
+.
+Plugging in Eq. (3), we obtain the solution of Pt given by Eq. (23) in Lemma 2:
+Pt = Nγ
+tUtAt
+Mt
+( 1−α
+r−µP
+t
+) 1
+α
+=Nγ
+t
+(
+ξ
+ξ− 1N 1−γ
+t
+φ
+Atα
+(r−µP
+t
+1−α
+) 1−α
+α
+)
+At
+Mt
+( 1−α
+r−µP
+t
+) 1
+α
+=
+( ξ
+ξ− 1
+φ
+α
+1−α
+r−µP
+) Nt
+Mt
+= A
+(1−κ)( ξ
+1−ξγ )
+t
+Mt
+ξ
+(ξ− 1)ω
+ξ
+1−ξγ
+(α
+φ
+) ξ
+1−ξγ−1( 1−α
+r−µP
+t
+)1+( ξ
+1−ξγ )( 1−α
+α )
+.
+(C.10)
+Finally, substituting Eq. (24) into Eq. (10), the optimal L∗
+t satisﬁes:
+VAtAtµH +VAtAtA2
+tL∗
+t
+(
+σH)2
+= (1 +θL∗
+t )Aδ
+t
+(−VMt
+Pt
+)
+. (C.11)
+Note that under the functional form, Vt =v(mt)Aδ
+t we have
+∂Vt
+∂Mt
+=v′(mt), (C.12)
+and the ﬁrst derivative with respect to At
+∂Vt
+∂At
+= [v(mt)−v′(mt)mt]δAδ−1
+t , (C.13)
+and the second derivative with respect to At
+∂2Vt
+∂A2
+t
+=δ(δ− 1) [v(mt)−v′(mt)mt] +δ2v′′(mt)m2
+t. (C.14)
+C-4
+
+===== PAGE 19 =====
+
+Substituting these expressions into Eq. (C.11), we obtain the solution of L∗
+t given by Eq.
+(27) in Lemma 3.
+C.5. Proof for proposition 4
+Proof. We should show that the conjecture of v(mt), P (mt) and L(mt) being univariate
+functions of mt is internally consistent. In other words, if we start by conjecturing v(mt),
+P (mt) andL(mt) are functions ofmt, the equilibrium conditions will conﬁrm our conjecture.
+The relevant equilibrium conditions are the token pricing equation Eq. (23) in Lemma 2,
+the A′
+t-scaled HJB equation (26), and the optimal investment Eq. (27) in Lemma 3.
+First, Eq. (27) in Lemma 3 demonstrates that Lt is a function ofmt as long asv(mt) and
+P (mt) are functions ofmt. Therefore, if we start withv(mt) andP (mt) being functions ofmt,
+the equilibrium condition Eq. (27) conﬁrms that L(mt) is indeed a function ofmt. Moreover,
+if we start with L(mt) and P (mt) being functions of mt, the A′
+t-scaled HJB equation (26)
+is an ordinary diﬀerential equation that implicitly solves the function v(mt), which conﬁrms
+v(mt) being a univariate function of mt. Finally, we show that if we start with v(mt) and
+L(mt) being functions of mt, the equilibrium conditions imply P (mt) is indeed a univariate
+function of mt. Applying Itˆ o’s lemma toA′
+t =Aδ
+t, we have
+dA′
+t
+A′
+t
+=
+[
+δµHL(mt) + 1
+2δ(δ− 1)(σH)2L(mt)2
+]
+dt +δσHL(mt)dZt. (C.15)
+Then, we obtain the law of motion of mt in the interior region (where dDt = 0):
+dmt
+mt
+=
+{(
+L(mt) + θ
+2L(mt)2)
+Ptmt
+−
+[
+δµHL(mt) + 1
+2δ(δ− 1)(σH)2L(mt)2
+]
++δ2L(mt)2(σH)2
+}
+dt
+−δσHL(mt)dZt. (C.16)
+C-5
+
+===== PAGE 20 =====
+
+Therefore, the drift and diﬀusion of mt are functions of mt and Pt:
+µm
+t =mt
+{(
+L(mt) + θ
+2L(mt)2)
+Ptmt
+−
+[
+δµHL(mt) + 1
+2δ(δ− 1)(σH)2L(mt)2
+]
++δ2L(mt)2(σH)2
+}
+,
+=µm(mt,Pt). (C.17)
+and
+σm
+t =−mtδσHL(mt) =σm(mt,Pt). (C.18)
+Now, we examine Eq. (23) in Lemma 2. The equation links Pt on the left-hand side to mt
+and µP
+t on the right-hand side. To show that the conjecture of Pt being a function of mt is
+internally consistent, we apply the Itˆ o’s lemma to obtain:
+µP
+t = P′(mt)µm(mt,Pt)
+P (mt) + P′′(mt)(σm(mt,Pt))2
+2P (mt) , (C.19)
+which implies that Eq. (23) is an ordinary diﬀerential equation that implicitly solves Pt as a
+function of mt. These steps of conﬁrming an equilibrium conjecture by verifying its internal
+consistency follows Brunnermeier and Sannikov (2014).
+So far, we have shown that in the interior region where dDt = 0, the conjecture of v(mt),
+P (mt) andL(mt) being univariate functions ofmt is internally consistent. To show thatdDt
+only depends on mt, we need to show the optimality conditions only depend on mt. This is
+indeed the case because, ﬁrst, the optimality conditions for dDt > 0 are−v′(mt) = P (mt)
+and−v′′(mt) =P′(mt) at the payout boundarym, and second, the optimality conditions for
+dDt < 0 are−v′(mt) =P (mt)(1 +χ) and−v′′(mt) =P′(mt)(1 +χ) at the payout boundary
+m. At the reﬂecting boundary m, the amount of payout is determined by the necessary
+increase in Mt that brings mt =Mt/A′
+t back up to m in case of any increase in A′
+t. At the
+reﬂecting boundarym, the amount of token buyback is determined by the necessary decrease
+in Mt that brings mt =Mt/A′
+t back down to m in case of any decrease in A′
+t.
+C-6
+
+===== PAGE 21 =====
+
+C.6. Proof for proposition 5
+Proof. The result that investment increases in Ptmt is derived in the main text, and the
+results on whether to payout tokens to the entrepreneur or conduct costly token buyback
+follow the proof of Proposition 1.
+D. Additional comparative statics results
+We present more comparative statics results, focusing on the dependence of the entrepreneur’s
+value function, investment, and token payout and buyback on various parameters. The
+token-price dynamics, i.e., the drift term ( µP
+t ) and diﬀusion term ( σP
+t ), are stable across
+parameter values. Recall thatmt = Mt
+Aδ
+t
+(whereδ = (1−κ)( ξ
+1−ξγ ) is the productivity-normalized
+token supply, the key state variable that drives investment and token price.
+D.1. Platform competition
+In Section 4.1, we specify the distribution of ui to reﬂect the eﬀect of competition. As
+productivity grows, the functionality of the platform attracts more attention from competitors
+who provide alternatives to users and reduce their aggregate transaction needs on this
+platform (Ut). The strength of competition is captured by the parameters ω and κ. When
+either ω or κ is higher, an increase in At shifts the mass of ui down to the lower values.
+In Fig. D.1, we show that under weaker competition (i.e., lower values of ω or κ), the
+entrepreneur’s value function and optimal investment decline. Moreover, the entrepreneur
+maintains a lower normalized token supply ( mt) as the buyback (upper) boundary shifts
+inward. The result seems surprising as weaker competition typically makes the platform
+better oﬀ and more aggressive in investment. The same economic force discussed in Section
+D-1
+
+===== PAGE 22 =====
+
+A B
+C D
+Figure D.1: Comparative statics: competition. This ﬁgure shows the A′-scaled value function (Panel A)
+and optimal investment (Panel B) under ω = 98 and the baseline value ω = 100 and compares the value
+function (Panel C) and investment (Panel D) under κ = 0.62 and the baseline value κ = 0.625.
+4.4.2 explains these ﬁndings. A weaker competition eﬀect implies greater investment risk, so
+the entrepreneur becomes more conservative in token issuance and investment.
+To understand why competition dampens investment risk, consider a positive shock.
+Investment raises productivity more than expected, but competition causes a sharper decline
+of Ut (see Section 4.1). Likewise, following a productivity decline, competition results
+in a counteracting rightward shift of ui distribution (i.e., an increase in Ut). Therefore,
+competition weakens the shock impact on token demand and price and thereby alleviates the
+conﬂict of interest between the entrepreneur and users (and the underinvestment problem).
+Under weaker competition (captured by the lower values of ω and κ in Fig. D.1), the
+propagation of investment risk to token demand and price strengthens, so the entrepreneur,
+who faces greater investment risk, reduces investment, which in turn lowers the value function.
+D-2
+
+===== PAGE 23 =====
+
+Lower \xi -> more mess on higher u (shape of Pareto distribution), invest less, why? conflict of
+interest more severe when agents are more dispersed (the break-even marginal guy is more
+different from the users with positive surplus, i.e., leakage from the platform's perspective. Can
+also see the platform buyback tokens earlier at lower boundary. but overall more agents with
+high u benefits the platform, so v barely changes.
+Figure D.2: Comparative statics: user distribution. This ﬁgure shows the A′-scaled value function (Panel
+A) and optimal investment (Panel B) under ξ = 1.999 and the baseline value ξ = 2.000.
+D.2. User distribution
+In Section 4.1, we specify a Pareto distribution for ui (user i’s transaction needs). The
+shape parameter is ξ. A decline in ξ means a thicker right tail (i.e., more users having
+relatively largeui). Intuitively, this would beneﬁt the platform. Indeed, as shown in Fig. D.2,
+the entrepreneur’s value function and investment increase near the payout (lower) boundary
+ofmt whenξ decreases. However, near the token buyback (upper) boundary of mt, both the
+value function and investment are lower whenξ is lower. To understand the intuition, notice
+that a lower value of ξ implies not only a thicker right tail but also a overall more dispersed
+distribution of ui. As previously discussed, the conﬂict of interest between the entrepreneur
+and users and the resultant underinvestment problem depend on (1) the ﬁnancing cost, (2)
+user heterogeneity, and (3) investment risk. In our model, only the marginal user (whose ui
+is equal to the threshold ut) breaks even, so when the entrepreneur’s investment successfully
+raises productivity, the resultant economic surplus must be shared with users with ui >u t.
+Therefore, a more dispersed distribution ofui exacerbates the leakage of surplus to users and
+thereby reduces investment as the entrepreneur forgoes a greater share of upside to users and
+still bears the downside of costly token buyback alone. As shown in Fig. D.2, the decline of
+value function and investment under a lower value of ξ happens exactly near the buyback
+(right) boundary of mt where the likelihood of costly token buyback is the highest.
+D-3
+
+===== PAGE 24 =====
+
+References
+Bakos, Y., Halaburda, H., 2019. When do smart contracts and iot sensors improve eﬃciency?
+automated execution vs. ﬁner information. Automated Execution vs. Finer Information. NYU
+Stern School of Business .
+Bolton, P., Chen, H., Wang, N., 2011. A uniﬁed theory of tobin’s q, corporate investment, ﬁnancing,
+and risk management. The Journal of Finance 66, 1545–1578.
+Brenner, C., 2018. 15 most popular social media networks and sites. G2 Crowd .
+Brunnermeier, M. K., James, H., Landau, J.-P., 2019. The digitalization of money. Tech. rep.,
+Princeton University.
+Brunnermeier, M. K., Sannikov, Y., 2014. A macroeconomic model with a ﬁnancial sector. American
+Economic Review 104, 379–421.
+Buterin, V., 2014. A next-generation smart contract and decentralized application platform. White
+Paper 3.
+Cao, S., Cong, L. W., Han, M., Hou, Q., Yang, B., 2020. Blockchain architecture for auditing
+automation and trust building in public markets. IEEE Computer 67.
+Cao, S., Cong, L. W., Yang, B., 2018. Financial reporting and blockchains: collaborative auditing,
+mis-statements, and regulation. Working Paper .
+Chen, L., Cong, L. W., Xiao, Y., 2019. A brief introduction to blockchain economics. Working
+Paper. .
+Chiu, J., Koeppl, T. V., 2017. The economics of cryptocurrencies – Bitcoin and beyond. Working
+Paper .
+Cong, L. W., He, Z., 2019. Blockchain disruption and smart contracts. The Review of Financial
+Studies 32, 1754–1797.
+Davydiuk, T., Gupta, D., Rosen, S., 2019. De-crypto-ing signals in initial coin oﬀerings: evidence
+of rational token retention. Working paper, Carnegie Mellon University and Temple University.
+D´ ecamps, J.-P., Gryglewicz, S., Morellec, E., Villeneuve, S., 2016. Corporate policies with
+permanent and transitory shocks. The Review of Financial Studies 30, 162–210.
+Gans, J. S., Halaburda, H., 2015. Some economics of private digital currency. In: Economic Analysis
+of the Digital Economy, University of Chicago Press, pp. 257–276.
+Holden, R., Malani, A., 2018. Can blockchain solve the holdup problem in contracts? Working
+Paper .
+Howell, S. T., Niessner, M., Yermack, D., 2018. Initial coin oﬀerings: ﬁnancing growth with
+cryptocurrency token sales. Tech. rep., National Bureau of Economic Research.
+Kajpust, D., 2019. Examining funding token allocation of blockchain foundations. Medium Jan 22.
+Kocherlakota, N. R., 1998. Money is memory. Journal of Economic Theory 81, 232–251.
+Livingston, T., 2017. Announcing kin, a cryptocurrency for an open future. Medium May 25.
+D-4
+
+===== PAGE 25 =====
+
+Rastegar, M., Fotuhi-Firuzabad, M., Aminifar, F., 2012. Load commitment in a smart home.
+Applied Energy 96, 45–54.
+Tinn, K., 2019. Blockchain and the future of optimal ﬁnancing contracts. Available at SSRN
+3061532 .
+D-5

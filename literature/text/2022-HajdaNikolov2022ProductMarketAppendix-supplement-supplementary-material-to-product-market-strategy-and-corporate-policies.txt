@@ -1,0 +1,1054 @@
+
+
+===== PAGE 1 =====
+
+Internet Appendix to the paper
+Product Market Strategy and Corporate Policies ∗
+Jakub Hajda † Boris Nikolov ‡
+September 1, 2022
+Internet Appendix
+The Internet Appendix consists of three sections. Section A contains the analysis of product
+characteristics other than product portfolio age, additional empirical results, and robustness
+checks. Section B provides additional details regarding the solution of the model and the
+analysis of numerical policy functions. Section C provides more detail on the estimation
+procedure and provides additional structural estimation results.
+Internet Appendix A. Data and stylized facts
+1. Robustness: an alternative measure of product portfolio age
+We test the robustness of our results to an alternative measure of product portfolio age,
+in which we do not require that each product needs to have entered or exited our sample
+during the sample period. We thus classify products that have existed at the beginning of
+the sample and exited within 16 quarters as ‘old’ and those that entered during the last 16
+quarters and did not exit at the end of the sample as ‘new’ . This classification assumes that
+∗Researcher(s) own analyses calculated (or derived) based in part on data from The Nielsen Company
+(US), LLC and marketing databases provided through the Nielsen Datasets at the Kilts Center for Marketing
+Data Center at The University of Chicago Booth School of Business. The conclusions drawn from the Nielsen
+data are those of the researcher(s) and do not reflect the views of Nielsen. Nielsen is not responsible for, had
+no role in, and was not involved in analyzing and preparing the results reported herein.
+†HEC Montréal, 3000, chemin de la Côte-Sainte-Catherine, Montréal (Québec) H3T 2A7, Canada.
+‡Faculty of Business and Economics at the University of Lausanne, Extranef 228, CH-1015, Switzerland,
+Swiss Finance Institute (SFI), and European Corporate Governance Institute (ECGI).
+1
+
+===== PAGE 2 =====
+
+0 .02 .04 .06 .08 .1
+0 .2 .4 .6 .8 1
+Fig. A.1. Histogram of the alternative proxy of product portfolio age.
+the products live at least as long as the average product in the sample does, i.e. about 16
+quarters.
+The alternative proxy for product portfolio age is positively correlated to the original one,
+with the correlation coeﬀicient of 0.478. It has a mean of 0.407, a median of 0.380 and a
+standard deviation of 0.276, all of which are close to those of the original product portfolio
+age proxy (0.445, 0.405 and 0.324, respectively). Its distribution, presented in Figure A.1, is
+also qualitatively similar to that of the original measure in Figure 1 in the paper.
+2. Robustness: defining product portfolio age
+Figure A.2 documents that the stylized fact about investment and product portfolio age is
+qualitatively robust to adopting a different definition of a product or a different definition of
+product portfolio age.
+3. Further evidence about product portfolio characteristics
+In this part of the appendix we investigate basic empirical relationships between three product
+portfolio characteristics: age, size, and adjustments, and corporate policies.
+The first column of Figure A.3 documents that product portfolio age is largely negatively
+related to firm value, except for the firms with oldest product portfolios which are also
+predominantly riskier. Capital investment tends to decline with product portfolio age, which
+2
+
+===== PAGE 3 =====
+
+0
+-0.003
+-0.002
+-0.001
+0
+0.001
+Share of old products – adjusted (w)
+Residual investment
+0 0.2 0.4 0.6 0.8 1
+-0.001
+0
+0.001
+Share of old products (0.5; uw)
+Residual investment
+0 4 8 12 16
+-0.003
+-0.002
+-0.001
+0
+0.001
+A verage product age (w)
+Residual investment
+0 0.2 0.4 0.6 0.8 1
+-0.002
+-0.001
+0
+0.001
+Share of old products (w; 0.75)
+Residual investment
+0 0.2 0.4 0.6 0.8 1
+-0.002
+-0.001
+0
+0.001
+Share of old products (w; 0.9)
+Residual investment
+0 0.2 0.4 0.6 0.8 1
+-0.002
+-0.001
+0
+0.001
+Share of old products (w; 0.75; bm)
+Residual investment
+Fig. A.2. Robustness check: defining product portfolio age. Each graph is obtained from local polynomial regression of the residuals
+from an investment regression on a given product portfolio age variable, using an Epanechnikov kernel function with a rule-of-thumb
+bandwidth estimator and local-mean smoothing. The controls used to compute the investment residuals include size, cash flow, and
+market-to-book. ‘Adjusted’ indicates that the alternative product portfolio proxy is used. w indicates that product-level revenue weights
+were used (uw - not used). 0.5, 0.75, 0.9 are the thresholds used to define an old product, i.e. one that exceeds 50%, 75% and 90% of its
+lifespan, respectively. bm indicates that brand-module level was used rather than UPC-level.
+3
+
+===== PAGE 4 =====
+
+Product portfolio age Product portfolio size Product portfolio adjustments
+Histogram
+0 .05 .1 .15
+0 .2 .4 .6 .8 1
+0 .05 .1 .15 .2
+0 50 100 150 200 250
+0 .2 .4 .6 .8
+−1 −.5 0 .5 1Market-to-book
+1.4 1.55 1.7 1.85 2 2.15
+1 2 3 4
+1.4 1.55 1.7 1.85 2 2.15
+1 2 3 4
+1.4 1.55 1.7 1.85 2 2.15
+1 2 3 4Investment
+.01 .015 .02 .025
+1 2 3 4
+.01 .015 .02 .025
+1 2 3 4
+.01 .015 .02 .025
+1 2 3 4Book leverage
+.15 .2 .25 .3 .35
+1 2 3 4
+.15 .2 .25 .3 .35
+1 2 3 4
+.15 .2 .25 .3 .35
+1 2 3 4Cash
+0 .03 .06 .09 .12 .15
+1 2 3 4
+0 .03 .06 .09 .12 .15
+1 2 3 4
+0 .03 .06 .09 .12 .15
+1 2 3 4
+Fig. A.3. Product portfolio structure and the relationship between firms’ corporate policies and
+product characteristics. The first row contains the histograms of product portfolio age, size and
+adjustments. Rows two to 5 contain the relationship between each product portfolio and firm
+characteristic. In each of these graphs, every product portfolio characteristic is divided in four
+equally-sized bins and the corresponding average firm characteristic in every bin is computed. Each
+bar contains the 95% confidence interval.
+4
+
+===== PAGE 5 =====
+
+suggests that investment and product introductions act to a large extent as complements.
+Finally, leverage is a hump-shaped function of product portfolio age (and cash a u-shaped
+one), meaning that firms with youngest and oldest product portfolios adopt lower leverage
+ratios. It should be noted, however, that these relationships are ‘contaminated’ by other firm
+characteristics. For example, the fact that leverage initially increases with product portfolio
+age could be attributed to firm entry and their initial growth, rather than within-firm changes
+in product portfolio composition. For this reason, in the following subsection we investigate
+the relationship between product portfolio age and corporate policies in more detail given
+that this characteristic will be the key ingredient in the model to follow.
+We consider the number of products supplied by firms as the measure of their product
+portfolio size. Firms differ greatly in the number of products they supply: as shown in Table
+1, the average number of products is 527. A comparison with Table 3 suggests that not
+all products are equally important for firms, as the average ‘effective’ number of products
+(≈ 63) is much lower than the raw one ( ≈ 765). This result indicates that the majority
+of firms’ revenues can be attributed to a small number of products, supporting the notion
+that product revenues are fairly concentrated. Thus, rather than only using the raw number
+of products supplied by firms, we focus on the effective number of products, equal to the
+inverse of their product revenue concentration measured using the normalized HHI of each
+firm’s product revenue:
+portfolio sizeit = 1/ ˜Hit, with ˜Hit =
+Pit∑
+p=1
+(
+revpit
+∑Pit
+p=1revpit
+)2
+, (1)
+where Pit is the number of products supplied by firm i in quarter t and revpit is the revenue
+of product p. The effective number of products can be interpreted as the number of products
+supplied by the firm assuming all of its products generate the same revenue. As such, it
+better reflects the number of products that contribute to the firm’s total sales as opposed
+to the raw number which may contain many small products contributing little. However,
+the effective number of products also varies substantially across- and within firms, which
+is documented by its distribution in the top panel of Fig. A.3. Notably, the shape of the
+distribution of product portfolio size resembles that of firm size, which is intuitive given that
+5
+
+===== PAGE 6 =====
+
+firm- and product portfolio size are positively, but not perfectly, correlated ( ρ ≈ 0.45).
+We measure the product portfolio adjustments by computing the extent of net product entry,
+that is the difference between firm-level product entry and exit, similar to to Argente, Lee,
+and Moreira (2021). Each quarter, we count the share of new products introduced by each
+firm, that is ones that have never been supplied before, and the share of products that are
+withdrawn, i.e. that are never supplied again in the future (relative to the total number of
+products):1
+net product entry it = entry rateit − exit rateit, (2)
+where entry rate and exit rate are defined as in Argente, Lee, and Moreira (2018) The his-
+togram of product portfolio adjustments in the top panel of Fig. A.3 shows that 50% of time
+firms’ product portfolios do not change, which indicates that product portfolio adjustments
+take place relatively infrequently. This result is ’the other side’ of the evidence of Argente
+et al. (2021), who document that product reallocation is very large in the aggregate: while
+the average net product entry equals 0.7% per quarter, not all firms adjust their product
+portfolios all the time. This indicates that a large degree of between- and within-firm varia-
+tion in product portfolios is necessary to reconcile the two findings. Moreover, in Table 3 we
+report that the average net entry of sample firms amounts to 0.4% each quarter, thus lower
+than the aggregate one, implying that a vast majority of product creation and destruction
+takes place in private firms. In practice, these numbers correspond to an average sample
+firm introducing 3.5 products each quarter, which increase its retail sales by roughly 1.2%,
+suggesting that within-firm product-level dynamics have important implications for cash flow
+dynamics.
+The second column of Fig. A.3 indicates that firms with smaller product portfolios invest more
+and adopt lower leverage ratios (or hold more cash) than firms with larger product portfolios.
+The u-shaped relationship between product portfolio size and market-to-book suggests that
+firms with many products also have higher valuations. This result is at odds with the standard
+notion that market-to-book declines with firm size and is consistent with the notion of product
+1Given the definition of the proxy, we exclude first and last two years of the data when computing the
+proxy to make sure that product entry and exit are correctly captured.
+6
+
+===== PAGE 7 =====
+
+portfolio size increasing firms’ market power, e.g. through differentiation (e.g. Feenstra and
+Ma, 2007). The third column of Fig. A.3 shows that firm value increases in the extent of net
+product entry. This reaﬀirms the notion that managing product portfolios is important for
+firms. The graphs also show that firms invest more when withdrawing or introducing new
+products. This suggests that capital investment could serve as a substitute or a complement
+for product introductions.
+4. A comparison with firm age
+-0.4 -0.3 -0.2 -0.1 0-0.0009
+-0.0006
+-0.0003
+0.0000
+0.0003
+Firm age
+Residual investment
+-0.4 -0.3 -0.2 -0.1 0-0.009
+-0.006
+-0.003
+0.000
+0.003
+0.006
+Firm age
+Residual net book leverage
+Fig. A.4. Firm age and corporate policies. The figure shows how firms’ unexplained investment
+and leverage change with firm age. The solid lines are obtained from local polynomial regressions
+of each variable on the firm age proxy using an Epanechnikov kernel function with a rule-of-thumb
+bandwidth estimator and local-mean smoothing. The controls used to compute the predicted values
+include profitability, size, cash flow volatility, market-to-book and tangibility for leverage, and size,
+cash flow, and market-to-book for investment. All variables are winsorized at 2.5% and 97.5%
+percentile.
+Fig. A.4 provides further evidence that product portfolio age and firm age capture different
+notions of life cycle. While Fig. 3 suggests that both residualized investment and leverage
+tend to decrease as product portfolio ages, the evidence for firm age (defined as in Loderer,
+Stulz, and Waelchli , 2017) is mixed. Whereas for very young firms these policies are also
+negatively related with age, on average the unexplained parts of investment and leverage tend
+to increase as firms age. However, only the effect on net leverage is economically meaningful,
+as the correlation with residual investment is one order of magnitude smaller than that for
+firm age. This means that product portfolio age provides much more explanatory power in
+investment regression than firm age does, when controlling for other firm characteristics.
+7
+
+===== PAGE 8 =====
+
+Internet Appendix B. Model solution
+This section provides additional details regarding the solution of the model. Subsection 1
+describes how to compute the product portfolio transition matrix. Subsection 2 provides ad-
+ditional results about the derivation of the investment Euler equation. Subsection 3 presents
+and discussed the numerical policy functions implied by the estimated model.
+1. Product portfolio transition matrix
+To get the product portfolio transition matrix TΦ, we have to consider all possible states
+of the products in the future Φ′ = (Pn′,P o′) conditional on Φ = ( Pn,P o). We know that
+Pe = (Pn′ +Po′) − (Pn +Po) products exit. There are 32 cases in total to consider. Note that
+for the purpose of computing the transition matrix we also allow old products to transition
+to being new (which in the main specification is not allowed) hence we need to know both
+qo→o and qo→e. Pe denotes the number of exiting products. Two examples of how these are
+computed are as follows:
+• Pn′ =Pn and Po′ =Po:
+Pr(Φ′|Φ) =
+min(P o,P n)∑
+k=0
+Bin(max(Pn −k, 0),P n,pn→n) ×Trin (k,P e,P o,qo→o,qo→e). (3)
+• Pn′ =Pn and Po′ <P o:
+Pr(Φ′|Φ) =
+min(P n′,P o−P e)∑
+k=0
+Bin(max(Pn −k, 0),P n,pn→n) ×Trin (k,P e,P o,qo→o,qo→e).
+(4)
+Given that solving the model on the grid means that the firm can have at most ¯Pn new
+products and ¯Po old products, the transition matrix will be ill-defined in certain states,
+as the probabilities will not sum to one. To alleviate this issue, we normalize each such
+state by distributing the residual probability across all states with non-zero probability, with
+weights proportional to ex ante transition probabilities to these states. The results are
+qualitatively robust to considering alternative normalization schemes, e.g. attributing the
+residual probability to current state.
+8
+
+===== PAGE 9 =====
+
+2. Further details on computing the investment Euler equation
+To compute the investment Euler equation, we first take the first-order condition of Eq. (12)
+with respect to K ′, which yields
+(1 + Λ(E(·)))(−1 − ΨK′(K,K ′)) +βE [VK′(K ′,D ′, Φ′,Z ′|φ)] = 0 (5)
+as well as the envelope condition that gives
+VK(K,D, Φ,Z |φ) = (1 + Λ(E(·)))(1 −τ )
+[
+γ
+φ (1 −ϕ(1 −ξ))θKθ−1Z −η∆n
+]
++τδ + (1 −δ) − ΨK(K,K ′).
+(6)
+Combining them both yields the investment Euler equation
+1 =βE
+[
+FΛ
+1
+1 + ψ
+2i
+(
+(1 −τ )γ
+φθK ′θ−1Z ′ + 1 − (1 −τ )δ +ψi′
+( 1
+2i′ + 1 −δ
+)
+− (1 −τ )γ
+φ
+(
+ϕ′(1 −ξ)θK ′θ−1Z ′ +η∆n′
+))]
+,
+(7)
+where
+FΛ = (1 + Λ′(E(·)))
+(1 + Λ(E(·))) (8)
+is the ‘external financing discount factor,’ see e.g. Eisfeldt and Muir (2016). As such, the
+marginal benefit (MB ) to investment in physical capital and the marginal cost ( MC ) are
+MB = (1 −τ )θK ′θ−1Z ′ + 1 − (1 −τ )δ +ψi′
+( 1
+2i′ + 1 −δ
+)
+, (9)
+MC = 1 + ψi, (10)
+MB Φ(·) = −(1 −τ )γ
+φ
+(
+ϕ′(1 −ξ)θK ′θ−1Z ′ +η∆n′
+)
+, (11)
+where i =I/K . Thus, we derived Eq. (14).
+1 = βE
+[
+(1 + Λ′(E(·))
+(1 + Λ(E(·))
+(
+MB
+MC + MB Φ(K ′,Z ′, ∆n′, ∆o′, Φ′)
+MC
+)]
+. (12)
+9
+
+===== PAGE 10 =====
+
+Verifying that ∂MB Φ(·)/∂ϕ′ < 0 follows from a direct computation
+∂MB Φ(·)
+∂ϕ′ = −(1 −τ )γ
+φ (1 −ξ)θK ′θ−1Z ′ < 0. (13)
+3. Numerical policy functions
+To examine the implications of the estimated parameters for firms’ optimal policies, we
+compute the numerical policy functions {I/K,D/K, ∆P } = h(K,D, Φ,Z ) for investment
+rate I/K , net leverage D/K, and product introductions ∆P . In the discussion that follows,
+we focus on two sets of policy functions. First, we fix K andD at their average values in the
+simulated sample and set Z = 1 as we want to focus on the economic forces driven by product
+portfolio setting. Panel A of Fig. B.1 plots the policy functions {I/K,D/K, ∆P } = ˜h(Po|Pi
+n)
+for a firm with a low and high number of new products, i.e. i ∈ {l,h }. Second, in Panel B of
+Fig. B.1 we fix K andD at their average values in the simulated sample and plot the policy
+functions for the profitability shocks Z: {I/K,D/K, ∆P } = ˜h(Z|Φi), while varying Φ from
+a low to a high value, i.e. i ∈ {l,h }.
+The numerical policy functions in Panel A of Fig. B.1 show how firms optimally respond to
+changing the product portfolio structure. In particular, the left graph in Panel A shows that
+the policy function for product introductions can be characterized by an inaction region due
+to a fixed cost of product introduction. That is, firms only tend to introduce new products
+once the current stock of old products is suﬀiciently large, which means that they introduce
+products at the highest rate when their product portfolios are older. The policy function
+for product introductions has natural implications for investment and financing policy. The
+middle graph in Panel A illustrates that investment tends to decrease as the share of old
+products increases, consistent with the investment Euler equation.
+The right graph in Panel A documents the precautionary savings motive induced by product
+dynamics, as it indicates that firms’ financing policy depends on product portfolio structure.
+Firms adopt higher leverage when the share of old products is low and then delever as product
+portfolio age increases. This happens for two reasons. First, because firms have stronger
+precautionary savings incentives and thus value preserving debt capacity more, because they
+10
+
+===== PAGE 11 =====
+
+Panel A : policy functions for product portfolio age ϕ
+0 0.25 0.5 0.75 1
+0
+1
+2
+Product portfolio age
+Product introductions
+0 0.25 0.5 0.75 10%
+1%
+2%
+3%
+4%
+Product portfolio age
+Investment
+0 0.25 0.5 0.75 110%
+15%
+20%
+25%
+Product portfolio age
+Net leverage
+Panel B : policy functions for the profitability shock Z
+Zlow Zhigh
+0
+1
+2
+3
+Product introductions
+ϕlow
+ϕhigh
+Zlow Zhigh
+0%
+2%
+4%
+Investment
+ϕlow
+ϕhigh
+Zlow Zhigh
+10%
+20%
+30%
+Net leverage
+ϕlow
+ϕhigh
+Fig. B.1. Numerical policy functions for the product portfolio age ϕ and the profitability shock Z. In Panel A, the policy functions
+are computed for the baseline parameter estimates and average values of capital, debt, and profitability shock. Each point of the policy
+function is computed as the average corresponding to a given value of product portfolio age. In Panel B, the policy functions are computed
+for the baseline parameter estimates and average values of capital and debt.
+11
+
+===== PAGE 12 =====
+
+would have to tap external financing when the old products exit and its revenue drops.
+Thus, given the costly nature of external equity it is optimal to act conservatively and adopt
+lower leverage. Second, firms also adopt lower leverage as they benefits less from tax shields
+due to lower operating income. In the counterfactual experiments below, we show that the
+quantitative effect on debt capacity is strongly influenced by the product-level characteristics.
+Panel B of Fig. B.1 documents how firms optimally respond to profitability shock when
+varying product portfolio structure. The left graph shows that when firms have older prod-
+uct portfolios (higher ϕ), they may choose not to introduce new products following a low
+realization of Z, because introducing new products is costly. The result in the middle graph
+in Panel B indicate that investment increases with Z, which is a standard result in neoclas-
+sical investment models, but it also confirms the intuition conveyed in Panel A of Fig. B.1
+that firms invest less when they have an older product portfolio. The product dimension
+also changes firms’ sensitivity of investment to the profitability shock, as firms with younger
+product portfolios start to invest earlier than those with older product portfolios when hit
+by a large realization of Z.
+The right graph in Panel B illustrates that the effect of the profitability shock Z on leverage
+also depends on product portfolio structure. When hit by a low shock realization, firms tend
+to introduce less new products, invest less, and use the remaining proceeds to pay down debt,
+resulting in lower leverage. Similarly, when the realization of the profitability shock is high,
+firms use debt to fund investment and product introductions, which increases their leverage
+ratios. These effects are magnified by product portfolio structure, as firms with lower product
+portfolio age have higher leverage ratios, given that they have less incentives to preserve debt
+capacity.
+To conclude the discussion of the policy functions, we investigate whether the dynamics
+induced by the product-level economic forces are economically important. To this end, we
+perform a variance decomposition of investment and leverage. The results highlight that
+product dynamics account for roughly 20–22% of the total investment and leverage variance. 2
+2To obtain these numbers, we compute the share of Type III partial sum of squares for product portfolio
+age in the model in the total variance. That is, the number represents the % of total variance explained by
+the variable.
+12
+
+===== PAGE 13 =====
+
+Moreover, most of the variation is due to the dynamics of the stock of old products, which is
+intuitive given their importance in the product life cycle channel. Overall, the results suggest
+that product dynamics can contribute substantially to the observed variation in corporate
+policies.
+Internet Appendix C. Structural estimation
+In this section we provide additional results concerning the structural estimation of our model.
+Subsection 1 presents the estimation diagnostics of Andrews, Gentzkow, and Shapiro (2017).
+Subsection 2 provides the estimation results of the baseline model using an alternative prod-
+uct portfolio age measure. Subsection 3 provides new evidence concerning the importance of
+distinguishing between cash and negative debt in our sample of firms. Subsection 4 provides
+the data-implied transition probabilities. Subsection 5 reports the model- and data-implied
+moments and parameter estimates for all sample splits.
+1. Estimation diagnostics
+We compute the diagnostic measure of Andrews et al. (2017) to investigate whether the
+model parameters are locally identified by the underlying moments. The key benefit of the
+measure is that a reported high sensitivity means not only that the moment is sensitive to
+the underlying parameter, but also that the parameter is precisely estimated. The results
+are presented in Table C.1, in which each column corresponds to a structural parameter and
+each row to a moment. The sensitivities in the table are trimmed at 0.4 in absolute value to
+ease the presentation of key relationships, similar to Michaels, Page, and Whited (2018).
+[Table C.1 about here.]
+The results confirm the intuition behind the identification of the structural parameters. For
+example, the standard deviation and persistence of the profit shock are sensitive to variance
+and serial correlation of profitability, the depreciation rate δ is closely linked to the mean of
+investment and the collateral constraint parameter ω is positively related to the mean of net
+leverage. Importantly, the product-related moments are sensitive to product characteristics ξ
+andη. It should be noted, however, that the elasticities are only local and, moreover, highly
+13
+
+===== PAGE 14 =====
+
+sensitive to the numerical properties of the gradient. Because of that it might appear that
+some moments are not informative about the underlying parameter while in reality they do
+provide substantial identifying information. One example of that is the effect of the product
+introduction costη and the old-product specific revenue discount ξ on mean product portfolio
+age: while the Andrews et al. (2017) sensitivities are smaller than 0.4 in absolute value (0.28
+and -0.21, respectively), over a wider range of the parameter values they are substantial.
+It should also be noted that the sign and magnitudes of the elasticities for product-related
+moments are different, in line with the intuition outlined in Section 3 of the paper.
+2. Additional results: robustness of product portfolio age proxy
+We estimate the model using the alternative measure of product portfolio age described in
+Section A. The resulting estimates are presented in Table C.2 and suggest that the alternative
+proxy results in qualitatively similar results to the baseline measure.
+[Table C.2 about here.]
+3. Distinguishing between cash and debt
+An important assumption in the model concerns the fact that cash is treated as negative
+debt, and thus the firm decides on the stock of net debt rather than cash and debt separately.
+This assumption might be imperfect, as the distinction between cash and debt could play
+an important role, e.g. for small and innovative firms (e.g. Gamba and Triantis , 2008).
+To better understand whether the assumption affects our results, we examine the following
+subsamples of our data: we first split firms into two samples based on their cash holdings
+and then split each into two further subsamples based on leverage. We call the subsample
+with below-median cash and below-median leverage as the ‘low’ distance subsample and
+the subsample with above-median cash and above-median leverage as the ‘high’ distance
+subsample. We then estimate our model on each subsample. The resulting estimates are
+presented in Table C.3.
+[Table C.3 about here.]
+The results provide several insights. First, the two subsamples have similar moments related
+14
+
+===== PAGE 15 =====
+
+to financing, despite using very different mix of debt and cash, as their mean net leverage
+ratios are close. Second, the resulting structural estimates do not recover any major difference
+between the subsamples. In particular, the collateral constraint paramter ω is virtually the
+same and all the other parameters are statistically indistinguishable. This is true despite
+the fact that the two subsamples have quite distinctive product portfolio characteristics, as
+product portfolio age is higher in the subsample with higher distance between debt and cash.
+At the same time, the result is not surprising given our sample consists primarily of large,
+profitable and old companies, at least when compared to an an average Compustat firm, for
+which the distinguishing between debt and cash should be less important.
+4. Product transition probabilities
+Table C.4 presents the implied transition probabilities across all the subsamples of firms on
+which we estimate our model.
+[Table C.4 about here.]
+5. Additional results: sample splits
+In this subsection we provide the data- and model-implied moments for each sample split
+discussed in the paper, in addition to the structural estimates.
+Product portfolio size
+[Table C.5 about here.]
+Between-firm product concentration
+[Table C.6 about here.]
+Product uniqueness
+[Table C.7 about here.]
+15
+
+===== PAGE 16 =====
+
+Product durability
+[Table C.8 about here.]
+Product offering variety
+[Table C.9 about here.]
+Within-firm product concentration
+[Table C.10 about here.]
+Product revenue growth rate
+[Table C.11 about here.]
+Early vs. late time period
+[Table C.12 about here.]
+16
+
+===== PAGE 17 =====
+
+References
+Andrews, I., Gentzkow, M., Shapiro, J. M., 2017. Measuring the Sensitivity of Parameter
+Estimates to Estimation Moments. Quarterly Journal of Economics 132, 1553–1592.
+Argente, D., Lee, M., Moreira, S., 2018. Innovation and product reallocation in the great
+recession. Journal of Monetary Economics 93, 1–20.
+Argente, D., Lee, M., Moreira, S., 2021. The Life Cycle of Products: Evidence and Implica-
+tions Unpublished working paper. Pennsylvania State University.
+Eisfeldt, A., Muir, T., 2016. Aggregate Issuance and Savings Waves. Journal of Monetary
+Economics 84, 116–133.
+Feenstra, R., Ma, H., 2007. Optimal Choice of Product Scope for Multiproduct Firms under
+Monopolistic Competition. Working Paper 13703.
+Gamba, A., Triantis, A., 2008. The value of financial flexibility. Journal of Finance 63, 2263–
+2296.
+Loderer, C., Stulz, R., Waelchli, U., 2017. Firm Rigidities and the Decline in Growth Op-
+portunities. Management Science 63, 3000–3020.
+Michaels, R., Page, T. B., Whited, T. M., 2018. Labor and Capital Dynamics under Financing
+Frictions. Review of Finance 23, 279–323.
+17
+
+===== PAGE 18 =====
+
+T able C.1
+Local sensitivity of parameters to moments.
+The table presents the sensitivities of the structural parameters to moments using the estimates of the industry equilibrium model
+from Table 5 and the normalized diagnostic tool of Andrews et al. (2017). Blank entries indicate sensitivities lower than 0.4 in absolute
+value. θ is the production function curvature; σ is the standard deviation of the profitability shock; ρ is the persistence of the profitability
+process; δ is the capital depreciation rate; ψ is the investment adjustment cost; ω is the parameter governing the collateral constraint; η
+is the product introduction cost; ξ is the old-product specific revenue discount.
+Moments θ σ ρ δ ψ ω η ξ
+Mean operating profits -0.727 -0.424 0.457
+Variance of operating profits 0.814 0.839 -0.454
+Serial correlation of operating profits
+Mean investment 0.596 0.935 0.426 -0.456
+Variance of investment -0.539
+Serial correlation of investment 0.472 0.433 -0.459
+Mean net leverage 0.503 0.424
+Variance of net leverage
+Serial correlation of net leverage -0.427
+Mean old product share
+Variance of old product share -0.561 -0.727 0.822
+Serial correlation of old product share -0.646 -0.794 -0.736 0.699 0.495
+18
+
+===== PAGE 19 =====
+
+T able C.2
+Structural estimates and model-implied moments: An alternative product portfolio age proxy.
+The table reports the structural estimates and the model-implied moments while using an al-
+ternative measure of product portfolio age. The industry equilibrium model is estimated using
+the simulated method of moments, which chooses model parameters by minimizing the distance
+between the moments from a simulated panel of firms and their data counterparts. Panel A reports
+the simulated and actual moments and the t-statistics for the differences between the corresponding
+moments. Panel B reports the the estimated parameters and their standard errors, clustered at the
+firm-level. θ is the production function curvature; σ is the standard deviation of the profitability
+shock; ρ is the persistence of the profitability process; δ is the capital depreciation rate; ψ is the
+investment adjustment cost; ω is the parameter governing the collateral constraint; η is the product
+introduction cost; ξ is the old-product specific revenue discount.
+Panel A: Moments
+Simulated Actual t-stat
+Mean operating profits 0.0402 0.0401 -0.018
+Variance of operating profits 0.0013 0.0009 -2.274
+Serial correlation of operating profits 0.2899 0.2093 -0.718
+Mean investment 0.0195 0.0212 1.199
+Variance of investment 0.0005 0.0006 1.259
+Serial correlation of investment 0.1318 0.1742 0.576
+Mean net leverage 0.1540 0.1716 0.673
+Variance of net leverage 0.0096 0.0093 -0.240
+Serial correlation of net leverage 0.5851 0.7848 4.283
+Mean old product share 0.4251 0.4048 -2.335
+Variance of old product share 0.0814 0.0688 -2.477
+Serial correlation of old product share 0.4093 0.5547 1.396
+Panel B: Parameters
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.5893 0.3839 0.4409 0.0766 0.6492 0.2712 0.0066 0.5517
+Std. error (0.0317) (0.0183) (0.0170) (0.0042) (0.1271) (0.0170) (0.0009) (0.0464)
+19
+
+===== PAGE 20 =====
+
+T able C.3
+Structural estimates and model-implied moments: Distance between cash and debt.
+The table reports the estimation results for subsamples of firms with low and high distance
+between cash and debt, for the same level of net debt. The subsample with below-median cash
+and below-median leverage is the ‘low’ distance subsample and the subsample with above-median
+cash and above-median leverage is the ‘high’ distance subsample. The industry equilibrium model
+is estimated on each subsample using the simulated method of moments, which chooses model
+parameters by minimizing the distance between the moments from a simulated panel of firms and
+their data counterparts. Panel A reports the simulated and actual moments, while Panel B the
+estimated parameters and their standard errors, clustered at the firm-level. θ is the production
+function curvature; σ is the standard deviation of the profitability shock; ρ is the persistence of
+the profitability process; δ is the capital depreciation rate; ψ is the investment adjustment cost;
+ω is the parameter governing the collateral constraint; η is the product introduction cost; ξ is the
+old-product specific revenue discount.
+Panel A: Moments
+Lower distance Higher distance
+Simulated Actual Simulated Actual
+Mean operating profits 0.0338 0.0345 0.0364 0.0459
+Variance of operating profits 0.0004 0.0004 0.0006 0.0004
+Serial correlation of operating profits 0.2835 0.2250 0.2976 0.2424
+Mean investment 0.0187 0.0204 0.0194 0.0201
+Variance of investment 0.0003 0.0004 0.0003 0.0002
+Serial correlation of investment 0.1956 0.2479 0.1907 0.1567
+Mean net leverage 0.2163 0.1980 0.2125 0.2116
+Variance of net leverage 0.0024 0.0027 0.0035 0.0038
+Serial correlation of net leverage 0.5937 0.7984 0.5581 0.6378
+Mean old product share 0.4245 0.4168 0.4365 0.4731
+Variance of old product share 0.0757 0.0655 0.0745 0.0823
+Serial correlation of old product share 0.4027 0.6183 0.3944 0.4844
+Panel B: Parameters
+Lower distance between debt and cash
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6582 0.2507 0.3809 0.0740 0.5987 0.3363 0.0053 0.5374
+Std. error (0.0412) (0.0279) (0.0553) (0.0057) (0.6556) (0.0253) (0.0018) (0.1442)
+Higher distance between debt and cash
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6349 0.2761 0.4116 0.0768 0.6364 0.3333 0.0060 0.5351
+Std. error (0.0244) (0.0143) (0.0358) (0.0011) (1.7630) (0.0148) (0.0011) (0.0552)
+20
+
+===== PAGE 21 =====
+
+T able C.4
+Product transition probabilities across subsamples.
+The table reports how product transition probabilities change across subsamples.
+Subsample pn→n qo→e m(intr.,exit)
+Baseline 0.8746 0.1254 15.95
+Lower sensitivity to product life cycle 0.8663 0.1337 14.96
+Higher sensitivity to product life cycle 0.8836 0.1164 17.18
+Small product portfolio 0.8770 0.1230 16.26
+Large product portfolio 0.8738 0.1262 15.85
+Firms operating in competitive product markets 0.8723 0.1277 15.66
+Firms operating in concentrated product markets 0.8779 0.1221 16.38
+Lower cost of sales 0.8878 0.1122 17.83
+Higher cost of sales 0.8598 0.1402 14.26
+Lower product durability 0.8174 0.1826 10.95
+Higher product durability 0.9055 0.0945 21.17
+Lower product concentration within product markets 0.8754 0.1246 16.05
+Higher product concentration within product markets 0.8745 0.1255 15.93
+Lower product offering variety 0.8750 0.1250 16.01
+Higher product offering variety 0.8746 0.1254 15.95
+Lower cash-debt distance 0.8792 0.1208 16.56
+Higher cash-debt distance 0.8782 0.1218 16.42
+Lower product revenue growth 0.8723 0.1277 15.66
+Higher product revenue growth 0.8769 0.1231 16.24
+Lower volatility 0.8792 0.1208 16.55
+Higher volatility 0.8700 0.1300 15.38
+21
+
+===== PAGE 22 =====
+
+T able C.5
+Structural estimates and model-implied moments: Product portfolio size.
+The table reports the estimation results for subsamples of firms with small and large product
+portfolios, classified using the median breakpoint of the effective number of products. The industry
+equilibrium model is estimated on each subsample using the simulated method of moments, which
+chooses model parameters by minimizing the distance between the moments from a simulated panel
+of firms and their data counterparts. Panel A reports the simulated and actual moments, while Panel
+B the estimated parameters and their standard errors, clustered at the firm-level. θ is the production
+function curvature; σ is the standard deviation of the profitability shock; ρ is the persistence of the
+profitability process; δ is the capital depreciation rate; ψ is the investment adjustment cost; ω
+is the parameter governing the collateral constraint; η is the product introduction cost; ξ is the
+old-product specific revenue discount.
+Panel A: Moments
+Small product portfolio Large product portfolio
+Simulated Actual Simulated Actual
+Mean operating profits 0.0374 0.0391 0.0436 0.0415
+Variance of operating profits 0.0016 0.0014 0.0005 0.0005
+Serial correlation of operating profits 0.0939 0.1005 0.2472 0.4092
+Mean investment 0.0254 0.0239 0.0180 0.0190
+Variance of investment 0.0012 0.0011 0.0003 0.0003
+Serial correlation of investment 0.1236 0.1137 0.1475 0.1573
+Mean net leverage 0.0842 0.1022 0.1742 0.2396
+Variance of net leverage 0.0093 0.0111 0.0067 0.0062
+Serial correlation of net leverage 0.5851 0.7649 0.6184 0.6961
+Mean old product share 0.4329 0.4611 0.4270 0.4278
+Variance of old product share 0.0882 0.1074 0.0744 0.0736
+Serial correlation of old product share 0.4207 0.3897 0.3822 0.6292
+Panel B: Parameters
+Small product portfolio
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.7272 0.4745 0.1474 0.0992 0.2452 0.2392 0.0099 0.4364
+Std. error (0.0037) (0.0191) (0.0140) (0.0068) (0.1013) (0.0208) (0.0012) (0.0717)
+Large product portfolio
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.5042 0.2139 0.3411 0.0715 0.5351 0.2657 0.0053 0.6360
+Std. error (0.0417) (0.0228) (0.0320) (0.0020) (0.5577) (0.0134) (0.0007) (0.0100)
+22
+
+===== PAGE 23 =====
+
+T able C.6
+Structural estimates and model-implied moments: Between-firm product concentration.
+The table reports the estimation results for subsamples of firms with higher and lower between-
+firm product concentration, computed using the exposure of each firm’s sales to the HHI of each
+product market, defined by product groups. The industry equilibrium model is estimated on each
+subsample using the simulated method of moments, which chooses model parameters by minimizing
+the distance between the moments from a simulated panel of firms and their data counterparts.
+Panel A reports the simulated and actual moments, while Panel B the estimated parameters and
+their standard errors, clustered at the firm-level. θ is the production function curvature; σ is the
+standard deviation of the profitability shock; ρ is the persistence of the profitability process; δ is
+the capital depreciation rate; ψ is the investment adjustment cost; ω is the parameter governing
+the collateral constraint; η is the product introduction cost; ξ is the old-product specific revenue
+discount.
+Panel A: Moments
+Lower concentration Higher concentration
+Simulated Actual Simulated Actual
+Mean operating profits 0.0332 0.0338 0.0458 0.0469
+Variance of operating profits 0.0014 0.0010 0.0006 0.0007
+Serial correlation of operating profits 0.3438 0.2141 0.0873 0.2519
+Mean investment 0.0223 0.0215 0.0213 0.0210
+Variance of investment 0.0009 0.0008 0.0003 0.0004
+Serial correlation of investment 0.1816 0.1501 0.1124 0.1634
+Mean net leverage 0.1733 0.1820 0.1429 0.1598
+Variance of net leverage 0.0095 0.0092 0.0053 0.0077
+Serial correlation of net leverage 0.5674 0.8213 0.6038 0.7242
+Mean old product share 0.4334 0.4322 0.4357 0.4567
+Variance of old product share 0.0843 0.0835 0.0746 0.0848
+Serial correlation of old product share 0.4121 0.3198 0.3972 0.3331
+Panel B: Parameters
+Firms lower between-firm product concentration
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.7624 0.4499 0.5213 0.0871 0.7338 0.3168 0.0054 0.5044
+Std. error (0.0509) (0.0329) (0.0717) (0.0060) (0.1615) (0.0013) (0.0006) (0.0641)
+Firms higher between-firm product concentration
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.5532 0.2555 0.1354 0.0848 0.2716 0.2184 0.0054 0.6663
+Std. error (0.0351) (0.0258) (0.0099) (0.0054) (0.0689) (0.0298) (0.0006) (0.0133)
+23
+
+===== PAGE 24 =====
+
+T able C.7
+Structural estimates and model-implied moments: Product uniqueness.
+The table reports the estimation results for subsamples of firms with higher and lower selling-
+related expenses, computed using Compustat item xsga scaled by total assets. The industry equilib-
+rium model is estimated on each subsample using the simulated method of moments, which chooses
+model parameters by minimizing the distance between the moments from a simulated panel of firms
+and their data counterparts. Panel A reports the simulated and actual moments, while Panel B
+the estimated parameters and their standard errors, clustered at the firm-level. θ is the production
+function curvature; σ is the standard deviation of the profitability shock; ρ is the persistence of
+the profitability process; δ is the capital depreciation rate; ψ is the investment adjustment cost;
+ω is the parameter governing the collateral constraint; η is the product introduction cost; ξ is the
+old-product specific revenue discount.
+Panel A: Moments
+Lower cost of sales Higher cost of sales
+Simulated Actual Simulated Actual
+Mean operating profits 0.0322 0.0353 0.0471 0.0447
+Variance of operating profits 0.0002 0.0005 0.0013 0.0014
+Serial correlation of operating profits 0.2865 0.4049 0.0796 0.1113
+Mean investment 0.0179 0.0191 0.0224 0.0233
+Variance of investment 0.0002 0.0004 0.0006 0.0009
+Serial correlation of investment 0.1332 0.2148 0.0973 0.1962
+Mean net leverage 0.2350 0.2179 0.1664 0.1248
+Variance of net leverage 0.0027 0.0079 0.0074 0.0091
+Serial correlation of net leverage 0.7401 0.7740 0.5884 0.7513
+Mean old product share 0.4208 0.4673 0.4314 0.4216
+Variance of old product share 0.0691 0.0906 0.0891 0.0867
+Serial correlation of old product share 0.3701 0.5927 0.3977 0.3720
+Panel B: Parameters
+Firms with lower cost of sales
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6364 0.1089 0.1263 0.0715 0.5056 0.3497 0.0073 0.4322
+Std. error (0.0168) (0.0296) (0.0337) (0.0021) (0.0727) (0.0355) (0.0008) (0.0919)
+Firms with higher cost of sales
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.5617 0.3585 0.1295 0.0883 0.3480 0.2789 0.0078 0.5822
+Std. error (0.0449) (0.0499) (0.0250) (0.0008) (0.1335) (0.0475) (0.0018) (0.0417)
+24
+
+===== PAGE 25 =====
+
+T able C.8
+Structural estimates and model-implied moments: Product durability.
+The table reports the estimation results for subsamples of firms supplying more and less durable
+products, computed using the products’ average calendar age at exit. The industry equilibrium
+model is estimated on each subsample using the simulated method of moments, which chooses
+model parameters by minimizing the distance between the moments from a simulated panel of firms
+and their data counterparts. Panel A reports the simulated and actual moments, while Panel B
+the estimated parameters and their standard errors, clustered at the firm-level. θ is the production
+function curvature; σ is the standard deviation of the profitability shock; ρ is the persistence of
+the profitability process; δ is the capital depreciation rate; ψ is the investment adjustment cost;
+ω is the parameter governing the collateral constraint; η is the product introduction cost; ξ is the
+old-product specific revenue discount.
+Panel A: Moments
+Less durable More durable
+Simulated Actual Simulated Actual
+Mean operating profits 0.0349 0.0391 0.0383 0.0412
+Variance of operating profits 0.0004 0.0010 0.0006 0.0007
+Serial correlation of operating profits 0.2272 0.2224 0.2851 0.0571
+Mean investment 0.0237 0.0213 0.0194 0.0212
+Variance of investment 0.0004 0.0006 0.0004 0.0006
+Serial correlation of investment 0.2458 0.2053 0.1729 0.1980
+Mean net leverage 0.1631 0.1574 0.2245 0.1855
+Variance of net leverage 0.0023 0.0081 0.0022 0.0086
+Serial correlation of net leverage 0.6963 0.8528 0.6075 0.7401
+Mean old product share 0.4420 0.4688 0.4118 0.4201
+Variance of old product share 0.0924 0.0957 0.0724 0.0742
+Serial correlation of old product share 0.3095 0.3026 0.4476 0.8090
+Panel B: Parameters
+Firms supplying less durable products
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.7307 0.1655 0.2048 0.0941 0.4841 0.2583 0.0064 0.4740
+Std. error (0.0618) (0.0808) (0.0227) (0.0013) (0.1410) (0.0162) (0.0011) (0.0952)
+Firms supplying more durable products
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6083 0.2660 0.4103 0.0768 0.4902 0.3093 0.0077 0.5740
+Std. error (0.0232) (0.0342) (0.0318) (0.0054) (0.1952) (0.0430) (0.0013) (0.0916)
+25
+
+===== PAGE 26 =====
+
+T able C.9
+Structural estimates and model-implied moments: Product offering variety.
+The table reports the estimation results for subsamples of firms with more and less product variety,
+computed using as the average fraction of the number of brand-modules to the number of product
+groups. The industry equilibrium model is estimated on each subsample using the simulated method
+of moments, which chooses model parameters by minimizing the distance between the moments
+from a simulated panel of firms and their data counterparts. Panel A reports the simulated and
+actual moments, while Panel B the estimated parameters and their standard errors, clustered at the
+firm-level. θ is the production function curvature; σ is the standard deviation of the profitability
+shock; ρ is the persistence of the profitability process; δ is the capital depreciation rate; ψ is the
+investment adjustment cost; ω is the parameter governing the collateral constraint; η is the product
+introduction cost; ξ is the old-product specific revenue discount.
+Panel A: Moments
+Less product variety More product variety
+Simulated Actual Simulated Actual
+Mean operating profits 0.0415 0.0370 0.0496 0.0431
+Variance of operating profits 0.0007 0.0014 0.0006 0.0005
+Serial correlation of operating profits 0.0960 0.1250 0.4328 0.3367
+Mean investment 0.0218 0.0215 0.0215 0.0211
+Variance of investment 0.0006 0.0008 0.0004 0.0005
+Serial correlation of investment 0.0711 0.0721 0.1558 0.3074
+Mean net leverage 0.1550 0.1305 0.1519 0.2128
+Variance of net leverage 0.0055 0.0106 0.0081 0.0069
+Serial correlation of net leverage 0.5979 0.7365 0.5145 0.7159
+Mean old product share 0.4340 0.4373 0.4364 0.4516
+Variance of old product share 0.0782 0.0989 0.0743 0.0787
+Serial correlation of old product share 0.4062 0.5362 0.3921 0.3788
+Panel B: Parameters
+Firms with lower product variety
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6172 0.2925 0.1513 0.0860 0.2895 0.2482 0.0052 0.6383
+Std. error (0.0367) (0.0642) (0.0150) (0.0055) (0.1108) (0.0012) (0.0004) (0.0520)
+Firms with higher product variety
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.5185 0.1572 0.6610 0.0847 0.7244 0.2800 0.0081 0.5162
+Std. error (0.0179) (0.0122) (0.0643) (0.0038) (0.1192) (0.0343) (0.0015) (0.0315)
+26
+
+===== PAGE 27 =====
+
+T able C.10
+Structural estimates and model-implied moments: Within-firm product concentration.
+The table reports the estimation results for subsamples of firms with higher and lower within-firm
+product concentration, computed as the product sales-weighted average of within-product group
+UPC-level concentration. The industry equilibrium model is estimated on each subsample using
+the simulated method of moments, which chooses model parameters by minimizing the distance
+between the moments from a simulated panel of firms and their data counterparts. Panel A reports
+the simulated and actual moments, while Panel B the estimated parameters and their standard
+errors, clustered at the firm-level. θ is the production function curvature; σ is the standard deviation
+of the profitability shock; ρ is the persistence of the profitability process; δ is the capital depreciation
+rate;ψ is the investment adjustment cost; ω is the parameter governing the collateral constraint; η
+is the product introduction cost; ξ is the old product-specific revenue discount.
+Panel A: Moments
+Lower concentration Higher concentration
+Simulated Actual Simulated Actual
+Mean operating profits 0.0422 0.0408 0.0405 0.0396
+Variance of operating profits 0.0007 0.0006 0.0015 0.0013
+Serial correlation of operating profits 0.1432 0.2074 0.1701 0.1479
+Mean investment 0.0177 0.0189 0.0185 0.0237
+Variance of investment 0.0003 0.0003 0.0005 0.0010
+Serial correlation of investment 0.0836 0.1269 0.0934 0.1099
+Mean net leverage 0.2630 0.2406 0.1484 0.1024
+Variance of net leverage 0.0046 0.0069 0.0092 0.0106
+Serial correlation of net leverage 0.6141 0.7011 0.5750 0.7900
+Mean old product share 0.4377 0.4363 0.4344 0.4507
+Variance of old product share 0.0751 0.0834 0.0848 0.0982
+Serial correlation of old product share 0.3875 0.5503 0.4274 0.4702
+Panel B: Parameters
+Firms lower within-firm product concentration
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.5211 0.2775 0.1822 0.0705 0.7334 0.3803 0.0056 0.5908
+Std. error (0.0020) (0.0185) (0.0083) (0.0028) (0.1039) (0.0333) (0.0004) (0.0220)
+Firms higher within-firm product concentration
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.5557 0.4369 0.2628 0.0730 0.6160 0.2683 0.0082 0.5147
+Std. error (0.0373) (0.0408) (0.0144) (0.0063) (0.0987) (0.0229) (0.0008) (0.0628)
+27
+
+===== PAGE 28 =====
+
+T able C.11
+Structural estimates and model-implied moments: Product revenue growth.
+The table reports the estimation results for subsamples of firms with high and low average
+product revenue growth. The industry equilibrium model is estimated on each subsample using the
+simulated method of moments, which chooses model parameters by minimizing the distance between
+the moments from a simulated panel of firms and their data counterparts. Panel A reports the
+simulated and actual moments, while Panel B the estimated parameters and their standard errors,
+clustered at the firm-level. θ is the production function curvature; σ is the standard deviation of
+the profitability shock; ρ is the persistence of the profitability process; δ is the capital depreciation
+rate;ψ is the investment adjustment cost; ω is the parameter governing the collateral constraint; η
+is the product introduction cost; ξ is the old-product specific revenue discount.
+Panel A: Moments
+Low growth High growth
+Simulated Actual Simulated Actual
+Mean operating profits 0.0384 0.0375 0.0404 0.0428
+Variance of operating profits 0.0007 0.0011 0.0008 0.0007
+Serial correlation of operating profits 0.2728 -0.1276 0.2950 0.0426
+Mean investment 0.0210 0.0209 0.0194 0.0215
+Variance of investment 0.0003 0.0005 0.0004 0.0007
+Serial correlation of investment 0.1752 0.2422 0.1440 0.1616
+Mean net leverage 0.1989 0.1855 0.1899 0.1577
+Variance of net leverage 0.0063 0.0087 0.0067 0.0090
+Serial correlation of net leverage 0.5514 0.6905 0.5698 0.8084
+Mean old product share 0.4270 0.4627 0.4286 0.4262
+Variance of old product share 0.0781 0.0912 0.0806 0.0893
+Serial correlation of old product share 0.3951 0.4280 0.4092 0.5819
+Panel B: Parameters
+Firms with low product revenue growth
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6378 0.2836 0.3779 0.0830 0.6200 0.3279 0.0067 0.5082
+Std. error (0.0256) (0.0303) (0.0252) (0.0033) (0.0547) (0.0299) (0.0011) (0.0552)
+Firms with high product revenue growth
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.5853 0.3042 0.4208 0.0767 0.6536 0.2978 0.0061 0.5888
+Std. error (0.0380) (0.0200) (0.0759) (0.0051) (0.1147) (0.0328) (0.0005) (0.0295)
+28
+
+===== PAGE 29 =====
+
+T able C.12
+Structural estimates and model-implied moments: Early and late sample period.
+The table reports the estimation results for subsamples of firms split based on the sample pe-
+riod: an early ( ≤ 2010) period and a late ( > 2010) period. The industry equilibrium model is
+estimated on each subsample using the simulated method of moments, which chooses model pa-
+rameters by minimizing the distance between the moments from a simulated panel of firms and
+their data counterparts. Panel A reports the simulated and actual moments, while Panel B the
+estimated parameters and their standard errors, clustered at the firm-level. θ is the production
+function curvature; σ is the standard deviation of the profitability shock; ρ is the persistence of
+the profitability process; δ is the capital depreciation rate; ψ is the investment adjustment cost;
+ω is the parameter governing the collateral constraint; η is the product introduction cost; ξ is the
+old-product specific revenue discount.
+Panel A: Moments
+Early period Late period
+Simulated Actual Simulated Actual
+Mean operating profits 0.0367 0.0400 0.0352 0.0405
+Variance of operating profits 0.0014 0.0010 0.0007 0.0006
+Serial correlation of operating profits 0.2780 0.2082 0.2806 0.1388
+Mean investment 0.0195 0.0213 0.0176 0.0210
+Variance of investment 0.0006 0.0006 0.0003 0.0005
+Serial correlation of investment 0.1246 0.1100 0.1671 0.3323
+Mean net leverage 0.1109 0.1555 0.1722 0.1882
+Variance of net leverage 0.0094 0.0071 0.0057 0.0062
+Serial correlation of net leverage 0.6041 0.7844 0.5481 0.7609
+Mean adj. old product share 0.4363 0.3884 0.4425 0.4217
+Variance of adj. old product share 0.0786 0.0574 0.0769 0.0690
+Serial correlation of adj. old product share 0.4032 0.5274 0.3894 0.6960
+Panel B: Parameters
+Early period
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6368 0.4318 0.4067 0.0772 0.6391 0.2478 0.0060 0.5281
+Std. error (0.0365) (0.0315) (0.0398) (0.0031) (0.2922) (0.0413) (0.0005) (0.0475)
+Late period
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6094 0.3197 0.4030 0.0694 0.6743 0.2913 0.0062 0.5238
+Std. error (0.0198) (0.0261) (0.0319) (0.0031) (0.2269) (0.0265) (0.0005) (0.0193)
+29

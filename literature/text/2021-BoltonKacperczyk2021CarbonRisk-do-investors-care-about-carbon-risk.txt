@@ -1,0 +1,2595 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 142 (2021) 517–549
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Do investors care about carbon risk? ✩
+Patrick Bolton a , b , Marcin Kacperczyk a , b , ∗
+a Columbia University, Imperial College London, CEPR, and NBER, United States
+b Imperial College London and CEPR, United Kingdom
+a r t i c l e i n f o
+Article history:
+Received 21 October 2019
+Revised 24 September 2020
+Accepted 23 October 2020
+Available online 14 May 2021
+JEL classiﬁcation:
+G12
+G23
+G30
+D62
+Keywords:
+Carbon emissions
+Climate change
+Stock returns
+Institutional investors
+a b s t r a c t
+We study whether carbon emissions affect the cross-section of US stock returns. We ﬁnd
+that stocks of ﬁrms with higher total carbon dioxide emissions (and changes in emissions)
+earn higher returns, controlling for size, book-to-market, and other return predictors. We
+cannot explain this carbon premium through differences in unexpected proﬁtability or
+other known risk factors. We also ﬁnd that institutional investors implement exclusionary
+screening based on direct emission intensity (the ratio of total emissions to sales) in a few
+salient industries. Overall, our results are consistent with an interpretation that investors
+are already demanding compensation for their exposure to carbon emission risk.
+© 2021 Elsevier B.V. All rights reserved.
+1. Introduction
+Many studies seek to explain the cross-sectional pat-
+tern of stock returns based on exposures to aggregate risk
+factors such as size and book-to-market ratios, or ﬁrm-
+speciﬁc risk linked to observable ﬁrm characteristics. One
+✩ We thank Jawad Addoum, Franklin Allen, Eric Bouyé, Kent Daniel,
+Charles Donovan, Elyse Douglas, Gerry Garvey, Lukasz Pomorski, Ailsa
+Roell, Zacharias Sautner, Gireesh Shrimali, Michela Verardo, Jeff Wurgler,
+and the referee for helpful suggestions. We also appreciate comments
+from seminar participants at Blackrock, EFA Conference, IESE, Newcastle
+University, the New Frontiers in Investment Research conference, NHH
+Bergen, NYU Law Roundtable on Climate Disclosure, UBS, University of
+Cardiff, and University College Dublin. We are grateful to Trucost for giv-
+ing us access to their corporate carbon emissions data, and to Jingyu
+Zhang for very helpful research assistance. This project has received fund-
+ing from the European Research Council (ERC) under the ERC Advanced
+Grant programme (grant agreement No. 885552 Investors and Climate
+Change).
+∗ Corresponding author.
+E-mail addresses: pb2208@columbia.edu (P. Bolton), mkacperc@ic.
+ac.uk (M. Kacperczyk).
+variable that has so far been missing from the analysis is
+corporate carbon emissions. This omission may be for his-
+torical reasons, as concerns over global warming linked to
+carbon dioxide (CO 2 ) emissions from human activity have
+only recently become salient. But, both the evidence of ris-
+ing temperatures and the renewed policy effort s to curb
+CO 2 emissions raise the question of whether carbon emis-
+sions represent a material risk for investors that is re-
+ﬂected in the cross-section of stock returns and portfolio
+holdings.
+Two major developments, in particular, suggest that this
+may be the case. First, the Paris COP 21 climate agree-
+ment of December 2015, with 195 signatories committing
+to limit global warming to well below 2 °C above pre-
+industrial levels. Second, the rising engagement of the ﬁ-
+nance industry with climate change, largely as a result
+of the call to non-governmental actors to join the ﬁght
+against climate change at the COP 21. Institutional in-
+vestors are increasingly tracking the greenhouse gas emis-
+sions of listed ﬁrms and forming coalitions such as Climate
+Action 100 + to engage with companies to reduce their
+https://doi.org/10.1016/j.jﬁneco.2021.05.008
+0304-405X/© 2021 Elsevier B.V. All rights reserved.
+
+===== PAGE 2 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+carbon emissions. 1 More and more asset owners are fol-
+lowing the lead of the Church of England Pension Fund,
+whose stated goal is “to demonstrate transparently that it
+has delivered on its commitment to be aligned to the Paris
+Agreement.”2
+Even if the US has pulled out of the Paris Agreement
+under the Trump administration, and even if the commit-
+ments of the other remaining signatories are only partially
+credible, major curbs in CO 2 emissions are likely to be in-
+troduced over the next decade. Primarily affected by these
+curbs are the companies with operations generating high
+CO 2 emissions, or with activities linked to companies in
+the value chain that have high CO 2 emissions. In light of
+these developments, one would expect to see the risk with
+respect to carbon emissions to be reﬂected in the cross-
+section of stock returns. Yet, considerable skepticism re-
+mains, not least in the US where the Trump administra-
+tion had worked to upend regulations that limit CO 2 emis-
+sions. For example, Darren Woods, ExxonMobil’s CEO, re-
+cently declared that “Individual companies setting targets
+and then selling assets to another company so that their
+portfolio has a different carbon intensity has not solved the
+problem for the world.” And that ExxonMobil was “taking
+steps to solve the problem for society as a whole and not
+try and get into a beauty competition.”3
+The lack of consensus among institutional investors
+around climate change naturally raises the possibility that
+carbon risk may not yet be reﬂected in asset prices. To ﬁnd
+out, in this paper we systematically explore whether in-
+vestors demand a carbon risk premium by looking at how
+stock returns vary with CO 2 emissions across ﬁrms and in-
+dustries. We undertake a standard cross-sectional analysis,
+asking whether carbon emissions affect cross-sectional US
+stock returns.
+There are several ways in which one might expect CO 2
+emissions to affect stock returns. First, since CO 2 emis-
+sions are tied to fossil-fuel energy use, returns are affected
+by fossil-fuel energy prices and commodity price risk. Re-
+latedly, ﬁrms with disproportionately high CO 2 emissions
+may be exposed to carbon pricing risk and other regulatory
+interventions to limit emissions. The ﬁrms that are most
+reliant on fossil energy are also more exposed to tech-
+nology risk from lower-cost renewable energy. Forward-
+looking investors may seek compensation for holding the
+stocks of disproportionately high CO 2 emitters and the as-
+sociated higher carbon risk they expose themselves to, giv-
+ing rise to a positive relation in the cross-section between
+a ﬁrm’s own CO 2 emissions and its stock returns. We refer
+to this as the carbon risk premium hypothesis.
+An interesting question is whether carbon emissions
+are perceived to be a systematic risk factor and whether
+the carbon risk premium is tied to loadings on this risk
+1 See http://www.climateaction100.org/ .
+2 Statement made by Adam Matthews, the fund’s director of ethics and
+engagement. The Church of England Pension Fund is co-chairing the IIGCC
+initiative.
+3 Quoted in Exxon CEO Calls Rivals’ Climate Targets a ‘Beauty Com-
+petition’ by Kevin Crowley, Bloomberg News , March 5, 2020, https://
+www.bnnbloomberg.ca/exxon- ceo- calls- rivals- climate- targets- a- beauty-
+competition-1.1400957 .
+factor. Carbon emissions could be a systematic risk factor if
+expected regulatory interventions to curb emissions apply
+uniformly to all emissions. For example, if a large federal
+carbon tax were to be introduced, this would be a system-
+atic shock affecting all companies with signiﬁcant emis-
+sions. Alternatively, most regulatory interventions could be
+introduced in a piecemeal way at the state, industry, and
+municipal level. Similarly, technological improvements in
+the use of renewable energy could be mostly targeted to
+particular operations or sectors. In this case, one would not
+expect carbon emissions to be a systematic risk factor.
+A second hypothesis is that ﬁnancial markets are pric-
+ing carbon risk ineﬃciently and the risk associated with
+carbon emissions is underpriced. Carbon risk may not be
+fully integrated by most investors, who by force or habit
+look at future cash-ﬂow projections through local thinking
+àl a Gennaioli and Shleifer (2010) , ignoring unrepresenta-
+tive information about global warming and its attendant
+risks. To be sure, the cash-ﬂow scenarios commonly used
+by ﬁnancial analysts do not directly refer to carbon emis-
+sions and their possible future repricing. A recent study by
+In et al. (2019) on a different sample than ours ﬁnds that a
+portfolio that is long stocks of companies with low carbon
+emissions and short stocks of companies with high emis-
+sions generates positive abnormal returns. We refer to this
+hypothesis as the market ineﬃciency, or carbon alpha, hy-
+pothesis. An important question we explore is whether ﬁ-
+nancial markets underprice carbon risk (after controlling
+for other known risk factors, industry, and ﬁrm charac-
+teristics) to the point that responsible investors, who care
+about carbon emissions and climate change, could be “do-
+ing well by doing good.”
+A third hypothesis is that the stocks of ﬁrms with high
+emissions are like other “sin stocks”; they are shunned by
+socially responsible, or ethical, investors to such an extent
+that the spurned ﬁrms present higher stock returns. A key
+question in this respect is how investors identify the ﬁrms
+to be divested from. Do they look at carbon emissions at
+the ﬁrm level, or do they pigeonhole ﬁrms into broader
+categories such as the industry they operate in? Even so-
+cially responsible investors that care about climate change
+may use sparse models (à la Gabaix, 2014 ) and not look
+much beyond industry categorizations, such as the energy
+and electric utility sectors, which produce a disproportion-
+ate share of CO 2 emissions. Prominent divestors like the
+Rockefeller Brothers Fund, for example, who have pledged
+to divest from fossil fuel companies, largely focus on en-
+ergy companies that extract coal and oil from tar sands. 4
+We refer to this as the divestment hypothesis.
+A pioneer in producing company-level CO 2 emissions
+data is the Carbon Disclosure Project (CDP). 5 It has been
+joined by other leading providers of carbon data, includ-
+ing MSCI ESG Research and Trucost, among others. 6 While
+more and more institutional investors make use of the
+data, it is not known how much individual companies’
+stock returns are actually affected by the availability of
+4 See https://www.rbf.org/mission- aligned- investing/divestment .
+5 See http://www.cdp.net/en- US/Pages/About- Us.aspx .
+6 See https://www.msci.com/climate- change- solutions and https://
+www.trucost.com/policy- academic- research .
+518
+
+===== PAGE 3 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+these more granular CO 2 emissions data to ﬁnancial an-
+alysts. Our study relies on the Trucost EDX data, which
+cover around 10 0 0 listed companies since ﬁscal year 2005,
+and over 2900 listed companies in the US since ﬁscal year
+2016. We match these data with the FactSet returns and
+balance sheet data for all US-listed companies from 2005
+to 2017.
+Carbon emissions from a company’s operations and
+economic activity are typically grouped into three different
+categories: direct emissions from production (scope 1), in-
+direct emissions from consumption of purchased electric-
+ity, heat, or steam (scope 2), and other indirect emissions
+from the production of purchased materials, product use,
+waste disposal, outsourced activities, etc. (scope 3). The
+scope 3 category in turn is separated into upstream and
+downstream indirect emissions. The data on scope 1 and
+scope 2 emissions are widely reported. Scope 3 emissions
+on the other hand are estimated using an input-output
+matrix. Although scope 3 emissions are the most impor-
+tant component of companies’ emissions in a number of
+industries (e.g., automobile manufacturing), they have not
+been reported by companies until recently.
+Our main broad ﬁnding is that carbon emissions sig-
+niﬁcantly affect stock returns. For all three categories of
+emissions, we ﬁnd a positive and statistically signiﬁcant
+effect on ﬁrms’ stock returns. We designate the higher
+returns associated with higher emissions as a carbon pre-
+mium. We estimate how this carbon premium is related
+to three different measures of corporate emissions: 1)
+the total level of emissions; 2) the year-by-year change
+in emissions; and 3) emission intensity, which measures
+carbon emissions per unit of sales. A striking result is
+that the carbon premium is related to the level of (and
+to changes in) emissions, but not to emission intensity.
+One reason why the premium is tied to total emissions
+is that regulations limiting emissions are more likely to
+target activities where the level of emissions is highest.
+For example, in its planned climate stress test, the Bank of
+England focuses only on large ﬁrms and measures risk in
+terms of required reductions in the level of emissions (see
+the 2021 biennial exploratory scenario on the ﬁnancial
+risks from climate change (Bank of England discussion
+paper, 2019)). Similarly, since technological change gen-
+erally involves a ﬁxed cost, renewable energy is more
+likely to displace fossil fuels in ﬁrms where returns to
+scale are highest. Another consideration is that since
+emission intensity is a ratio, it is likely to be a noisier
+metric of carbon risk exposure. Two ﬁrms with identical
+emission intensities may vary substantially in their levels
+of emissions. Indeed, this is what we ﬁnd: the correlation
+coeﬃcient between the level of scope 1 emissions and
+emission intensity is 0.6, and signiﬁcantly less for scope 2
+and scope 3. Nevertheless, it is somewhat surprising that
+we ﬁnd no premium associated with emission intensity
+since emission-intensive ﬁrms might well be the ﬁrst to
+become unproﬁtable should the carbon price rise. Investors
+would then demand a premium for holding these ﬁrms.
+Interestingly, there is also a signiﬁcant carbon premium
+associated with the year-to-year growth in emissions. As
+one would expect, we ﬁnd that the level of emissions is
+highly persistent. Hence, emission levels reﬂect a long-run
+risk exposure with respect to carbon emissions. Changes
+in emissions, in turn, reﬂect short-run effects; how much
+worse, or better, carbon risk gets. Of course, changes in
+emissions could also indicate changes in earnings, but we
+control for this effect by adding the company’s return on
+equity, sales growth, and earnings growth, among our in-
+dependent variables.
+The carbon premium is economically signiﬁcant: A one-
+standard-deviation increase in respectively the level and
+change of scope 1 emissions leads to a 15-bps and 26-bps
+increase in stock returns, or respectively a 1.8% and 3.1%
+annualized increase. In addition, a one-standard-deviation
+increase in the level and change of scope 2 emissions leads
+to respectively a 24-bps and 18-bps increase in stock re-
+turns, or a 2.9% and 2.2% annualized increase. Finally, a
+corresponding one-standard-deviation increase in the level
+and change of scope 3 emissions increases stock returns
+by 33 bps and 31 bps per month, or 4.0% and 3.8% on
+an annual basis. Importantly, ﬁrms with higher emissions
+generate higher returns, after controlling for size, book-to-
+market, momentum, other well-recognized variables that
+predict returns, and ﬁrm characteristics, such as the value
+of property, plant & equipment (PPE), and investment over
+assets.
+Other things equal, a carbon premium is the reﬂection
+of a lower investor demand for stocks of companies as-
+sociated with high emissions. In equilibrium, this lower
+demand translates into a lower stock price, and possibly
+also lower holdings of high-emission stocks by some cate-
+gories of investors. Following Hong and Kacperczyk (2009) ,
+we explore to what extent companies with high carbon
+emissions are treated like “sin stocks” by institutional in-
+vestors. We ﬁnd that, in aggregate, institutional investors
+do hold a signiﬁcantly smaller fraction of companies with
+high scope 1 emission intensity, but they are not under-
+weight companies with high levels of emissions. When we
+disaggregate by investor categories (mutual funds, insur-
+ance companies, banks, pension funds, and hedge funds),
+we ﬁnd that insurance companies, pension funds, and mu-
+tual funds are underweight scope 1 emission intensity.
+The negative ownership effect of moving from high to low
+scope 1 emission-intensity ﬁrms is economically large and
+accounts for about 15% −20% of the cross-sectional varia-
+tion in the ownership variable. This ﬁnding is in line with
+the rise in the sustainable investment movement and the
+popular negative exclusionary screening investment strat-
+egy followed by funds with an environmental, social, and
+governance (ESG) tilt. 7
+We ﬁnd that divestment is only based on scope 1 emis-
+sion intensity. This is true both in aggregate and for each
+institutional investor category. Essentially, institutional in-
+vestors have been applying exclusionary screens (or not)
+solely on the basis of scope 1 emission intensity. Even
+more remarkable, we ﬁnd that when we exclude the in-
+7 See Krueger, Sautner, and Starks (2020) . Also, according to the
+Global Sustainable Investment Review 2018, negative/exclusionary screen-
+ing is the largest sustainable investment strategy globally, representing
+$19.8 trillion of assets under management. http://www.gsi-alliance.org/
+wp-content/uploads/2019/03/GSIR _ Review2018.3.28.pdf .
+519
+
+===== PAGE 4 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+dustries with the highest CO 2 emissions (oil & gas, utilities,
+and motor industries), there is no signiﬁcant exclusionary
+screening at all by institutional investors. In other words,
+the exclusionary screening is done entirely in these salient
+industries; in all other industries, there is no signiﬁcant di-
+vestment. Overall, these ﬁndings lead us to reject the di-
+vestment hypothesis. First, although there is signiﬁcant di-
+vestment by institutional investors, it is not directly linked
+to an effect on stock returns. Institutional investor portfo-
+lios are signiﬁcantly underweight ﬁrms with high scope 1
+emission intensity, but stock returns are not affected sig-
+niﬁcantly by emission intensity.
+Our ﬁnding that stock returns are positively related to
+the level (and changes) of carbon emissions is largely con-
+sistent with the view that investors are pricing in a carbon
+risk premium at the ﬁrm level. This result contradicts the
+carbon alpha hypothesis, whereby investors holding a port-
+folio long stocks of companies with low carbon emissions
+and short stocks of companies with high emissions gen-
+erates positive abnormal returns. Garvey et al. (2018) and
+In et al. (2019) suggest that portfolios that sort stocks by
+emission intensity (going long stocks with low intensity
+and short stocks with high intensity) generate a positive
+alpha. In contrast, we ﬁnd that there is no signiﬁcant ef-
+fect of carbon intensity on stock returns. Our study differs
+in two important respects from theirs. First, we cover a dif-
+ferent time period and sample of ﬁrms. Second, we control
+for industry, ﬁrm characteristics, and known risk factors,
+while neither of these studies includes all of these con-
+trols. Controlling for industry signiﬁcantly affects the re-
+sults. Also, in contrast to In et al. (2019) , we analyze the
+effects of carbon emissions for each scope category sepa-
+rately, thereby avoiding double counting.
+Another important ﬁnding is that the carbon premium
+has only materialized recently. We show that if we look
+back to the 1990s by imputing the 2005 cross-sectional
+distribution of total emissions to the 1990s, there is no sig-
+niﬁcant carbon premium, consistent with the view that in-
+vestors at that time likely did not pay as much attention to
+carbon emissions. However, if we apply the same analysis
+to our sample period, by imputing the 2017 cross-sectional
+distribution of emissions back throughout our sample pe-
+riod, we ﬁnd that there is a highly signiﬁcant carbon pre-
+mium.
+To summarize, investors seem to take a somewhat
+schizophrenic attitude to carbon emissions. On the one
+hand, institutional investors clearly want to take a proac-
+tive approach by divesting from industries with high CO 2
+emissions. On the other hand, this categorical exclusion-
+ary screening approach only partially addresses the carbon
+risk issue. Indeed, investors price in a carbon emission risk
+premium at the ﬁrm level in all industries even though di-
+vestment is concentrated in the industries with the highest
+CO 2 emissions (oil & gas, utilities, and transportation in-
+dustries). If there is one general lesson that emerges from
+our analysis it is that carbon risk cannot just be reduced to
+a fossil fuel supply problem. It is also a demand problem.
+Once one factors in both the supply and demand aspects,
+all companies in all sectors are exposed to various degrees
+to carbon emissions risk. A coarse exclusionary approach
+focusing only on the energy and utility sectors misses the
+full extent of the problem investors face. Accounting for
+carbon risk is also required on the demand side, which in-
+evitably involves the careful tracking of emissions at the
+ﬁrm level in all sectors.
+Our study is related to a rapidly growing literature on
+climate change and ﬁnancial markets. An early study by
+Matsumura, Prakash, and Vera-Munoz (2014) of S&P 500
+ﬁrms between 2006 and 2008 looks at the effects of di-
+rect carbon emissions on ﬁrm value, and the effects of
+voluntary public disclosure of emissions (through CDP) on
+ﬁrm value. They ﬁnd that higher emissions are associ-
+ated with lower ﬁrm values, but that voluntary disclo-
+sure mitigates the negative valuation effect of emissions.
+Relatedly, Chava (2014) looks at the effects of environ-
+mental concerns, as reﬂected in KLD ratings, on ﬁrms’
+cost of capital. He ﬁnds that ﬁrms that derive substan-
+tial revenues from the sale of coal or oil, as reﬂected in
+a KLD rating, are associated with a higher implied cost
+of capital. In an extensive survey of institutional investors,
+Krueger et al. (2020) also ﬁnd that institutional investors
+believe that carbon emissions represent a material risk.
+Among their responses, institutional investors also say that
+they do not believe that there is substantial underpricing
+of carbon risk. Andersson et al. (2016) propose a carbon
+risk hedging strategy for passive investors based on low
+carbon indexes.
+More recently, Ilhan et al. (2020) ﬁnd that carbon emis-
+sions increase downside risk as reﬂected in out-of-the-
+money put option prices. Hsu et al. (2019) look at the
+effects of environmental pollution on the cross-section of
+stock returns. They ﬁnd that highly polluting ﬁrms are
+more exposed to environmental regulation risk and com-
+mand higher average returns. Engle et al. (2020) con-
+struct an index of climate news through textual analy-
+sis of The Wall Street Journal and other media and show
+how a dynamic portfolio strategy can be implemented
+that hedges risk with respect to climate change news.
+Görgen et al. (2019) construct a carbon-risk factor and es-
+timate a carbon beta for ﬁrms. Monasterolo and De An-
+gelis (2019) explore whether investors demand higher risk
+premia for carbon-intensive assets following the COP 21
+agreement.
+Other related studies explore the asset pricing conse-
+quences of greater material risks linked to climate events
+and global warming. Hong et al. (2019) ﬁnd that the ris-
+ing drought risk caused by climate change is not eﬃciently
+priced by stock markets. Several studies examine climate
+change and real estate prices. Baldauf et al. (2020) ﬁnd
+little evidence of declining prices as a result of greater
+ﬂood risk due to sea level rise. Bakkensen and Barrage
+(2017) ﬁnd that climate risk beliefs in coastal areas are
+highly heterogeneous and that rising ﬂood risk due to cli-
+mate change is not fully reﬂected in coastal house prices.
+Bernstein et al. (2019) ﬁnd that coastal homes vulnerable
+to sea-level rise are priced at a 6.6% discount relative to
+similar homes at higher elevations. However, in a related
+study, Murﬁn and Spiegel (2020) ﬁnd no evidence that sea
+level rise risk is reﬂected in residential real estate prices.
+Finally, Giglio et al. (2018) use real estate pricing data to
+infer long-run discount rates for valuing investments in cli-
+mate change abatement.
+520
+
+===== PAGE 5 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+The remainder of the paper is organized as follows.
+In Section 2 , we describe the data and provide summary
+statistics. We discuss the results in Section 3 . Concluding
+remarks are in Section 4 .
+2. Data and sample
+Our primary database covers the 2005–2017 period and
+is largely a result of matching two data sets by Trucost
+and FactSet in the US. Trucost provides information on cor-
+porate carbon and other greenhouse gas emissions. Fact-
+Set provides data on stock returns, corporate fundamentals,
+and institutional ownership. We performed the matching
+using ISIN as a main identiﬁer. In some instances, in which
+ISIN was not available to create a perfect match, we relied
+on matching based on company names (after standardizing
+the company names in FactSet and Trucost we match the
+names with a similarity score of one). Finally, when there
+are multiple subsidiaries of a given company, we used the
+primary location as a matching entity. The ultimate match-
+ing produced 3421 unique companies out of 3481 com-
+panies available in Trucost. Among the 60 companies we
+were not able to match, more than half are not exchange
+listed and the remaining ones are small. Hence, we be-
+lieve our data cover almost the entire universe of compa-
+nies with available emission data.
+2.1. Data on corporate carbon emissions
+Firm-level carbon emissions data are assembled by
+seven main providers: CDP, Trucost, MSCI, Sustainalytics,
+Thomson Reuters, Bloomberg, and ISS. All these providers
+follow the Greenhouse Gas Protocol that sets the stan-
+dards for measuring corporate emissions. 8 More and more
+companies disclose their greenhouse gas emissions, and
+most large corporations report their emissions to CDP.
+Other providers rely on the CDP data and supplement it
+with other sources. Emissions can be measured directly
+at the source or more commonly by applying conversion
+factors to energy use. The Greenhouse Gas Protocol dis-
+tinguishes between three different sources of emissions:
+scope 1 emissions, which cover direct emissions over one
+year from establishments that are owned or controlled by
+the company; these include all emissions from fossil fuel
+used in production. Scope 2 emissions come from the gen-
+eration of purchased heat, steam, and electricity consumed
+by the company. Scope 3 emissions are caused by the
+operations and products of the company but occur from
+sources not owned or controlled by the company. These in-
+clude emissions from the production of purchased materi-
+als, product use, waste disposal, and outsourced activities.
+In some sectors, like automobile manufacturing, by far
+the most important component of their emissions is the
+aggregation of all their scope 3 emissions. The Greenhouse
+Gas Protocol distinguishes between 15 different categories
+of scope 3 emissions, including purchased goods and ser-
+vices, capital goods, upstream & downstream transporta-
+tion and distribution, waste generated in operations, busi-
+ness travel, employee commuting, processing & use of sold
+8 See https://ghgprotocol.org .
+products, and end-of-life treatment of sold products. 9 Ac-
+cording to CDP’s 2016 Climate Change Report, most scope
+3 emissions are concentrated in two categories: purchased
+goods and services (around 44%) and use of sold products
+(around 48%). 10 The Greenhouse Gas Protocol provides de-
+tailed guidance on how to identify a company’s most im-
+portant sources of scope 3 emissions and how to calculate
+them. For purchased goods and services, this basically in-
+volves measuring inputs, or “activity data,” and applying
+emission factors to these purchased inputs that convert ac-
+tivity data into emissions data. The upstream scope 3 data
+from Trucost that we use is constructed using an input-
+output model that provides the fraction of expenditures
+from one sector across all other sectors of the economy.
+This model is extended to include sector-level emission
+factors, so that an upstream scope 3 emissions estimate
+can be determined from each ﬁrm’s expenditures across all
+sectors from which it obtains its inputs (see Trucost, 2019).
+Downstream scope 3 emissions caused using sold prod-
+ucts can also be estimated and are increasingly reported
+by companies. Trucost has recently started assembling this
+data, but we were not able to include it our study.
+Because they are easier to measure, and because dis-
+closure requirements are stricter, data on scope 1 and
+scope 2 have been more systematically reported and accu-
+rately estimated. As Busch et al. (2018) show, there is very
+little variation in the reported scope 1 and 2 emissions
+data across the data providers. Correlations in the reported
+scope 1 (scope 2) data average 0.99 (0.98), across the ﬁve
+providers CDP, Trucost, MSCI, Sustainalytics, and Thomson
+Reuters. 11 However, when it comes to estimated scope 1
+and scope 2 emissions (when reported data are missing),
+the correlations drop to 0.79 and 0.63, respectively for the
+three providers, Trucost, MSCI, and Sustainalytics, that of-
+fer these estimates. Finally, only two data providers, Tru-
+cost and ISS ESG, provide estimates of scope 3 emissions.
+The Trucost EDX database we use in our main analysis re-
+ports all three scopes of carbon emissions in units of tons
+of CO 2 emitted in a year. We report the summary statistics
+of the emissions variables in Panel A of Table 1 .
+The average ﬁrm in our sample produces 1.97 million
+tons of scope 1 emissions, and is tied to 1.72 million tons
+of scope 3 emissions. The quantity of scope 2 emissions is
+relatively smaller, at 342,0 0 0 tons of CO 2 equivalent. No-
+tably, the median number is the largest for scope 3 emis-
+sions, as almost all companies in our sample are tied to
+a signiﬁcant quantity of such emissions. The scope 1, 2,
+and 3 measures are in units of tons of CO 2 and normal-
+ized using the natural log scale. We also report annual
+growth rates in each emission measure. To mitigate the
+impact of outliers, we winsorize all growth measures at
+the 2.5% level. The carbon intensity of a company is ex-
+pressed as tons of CO 2 equivalent divided by the com-
+9 See http://ghgprotocol.org/standards/scope- 3- standard .
+10 See CDP 2016 Climate Change Report “Tracking Progress on Corporate
+Climate Action.”
+11 More than 6,300 companies worldwide answered CDP’s climate
+change questionnaire in 2018. Of these, 76% disclosed scope 1 emissions,
+68% scope 2 emissions, and 38% scope 3 emissions (see https://www.cdp.
+net ).
+521
+
+===== PAGE 6 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 1
+Summary statistics.
+This tables reports summary statistics (averages, medians, and standard deviations) for the variables used for the six sets of regressions. The sample
+period is 2005–2017. Panel A reports the emission variables. Panel B reports the cross-sectional return variables. RET is the monthly stock return; LOG SIZE
+is the natural logarithm of market capitalization (in $ million); B/M is the book value of equity divided by market value of equity; ROE is the return on
+equity; LEVERAGE is the book value of leverage deﬁned as the book value of debt divided by the book value of assets; MOM is the cumulative stock return
+over the one-year period; INVEST/A is the CAPEX divided by book value of assets; HHI is the Herﬁndahl index of the business segments of a company with
+weights proportional to revenues; LOG PPE is the natural logarithm of plant, property & equipment (in $ million); BETA is the CAPM beta calculated over
+the one year period; VOLAT is the monthly stock return volatility calculated over the one year period. Panel C reports the time-series variables. MKTRF
+is the monthly return on the value-weighted stock market net of the risk free rate; HML is the monthly return on the portfolio long value stocks and
+short growth stocks; SMB is the monthly return on the portfolio long small-cap stocks and short large-cap stocks; MOM is the monthly return on the
+portfolio long 12-month stock winners and short 12-month past losers; CMA is the monthly return of a portfolio that is long on conservative investment
+stocks and short on aggressive investment stocks; BAB is the monthly return of a portfolio that is long on low-beta stocks and short on high-beta stocks;
+LIQ is the liquidity factor of Pastor and Stambaugh; NET ISSUANCE is the monthly return of a portfolio that is long on high-net-issuance stocks and short
+on low-net-issuance stocks. Net issuance for year t is the change in the natural log of split-adjusted shares outstanding from the ﬁscal yearend in t -2 to
+the ﬁscal yearend in t -1; IDIO VOL is the monthly return of a portfolio that is long on low idiosyncratic volatility stocks and short on high idiosyncratic
+volatility stocks. Panel D reports the ownership variables. IO i,t is the fraction of the shares of company i held by institutions in the FactSet database at
+the end of year t. IO is calculated by aggregating the shares held by all types of institutions at the end of the year, and then dividing this amount by
+shares outstanding at the end of the year. IO_BANKS is the ownership by banks; IO_INSURANCE is the ownership by insurance companies; IO_INVESTCOS
+is the ownership by investment companies (e.g., mutual funds); IO_ADVISERS is the ownership by independent investment advisers; IO_PENSIONS is the
+ownership by pension funds; IO_HFS is the ownership by hedge funds. PRINV i,t is the inverse of ﬁrm i ’s share price at the end of year t; TOT VOLAT i,t is the
+standard deviation of daily stock returns for company i over the one-year period; VOLUME i,t is the average daily trading volume (in $million) of stock i over
+the calendar year t; NASDAQ i,t is an indicator variable equal to one if a stock i is listed on NASDAQ in year t , and zero otherwise; SP50 0 i,t is an indicator
+variable equal to one if a stock i is part of the S&P 500 Index in year t , and zero otherwise.
+Variable Mean Median Std. Dev.
+Panel A: Emission variables
+Log (Carbon Emissions Scope 1 (tons CO 2 e)) 10.55 10.47 2.95
+Log (Carbon Emissions Scope 2 (tons CO 2 e)) 10.52 10.66 2.36
+Log (Carbon Emissions Scope 3 (tons CO 2 e)) 12.31 12.46 2.25
+Growth Rate in Carbon Emissions Scope 1 (winsorized at 2.5%) 0.08 0.03 0.36
+Growth Rate in Carbon Emissions Scope 2 (winsorized at 2.5%) 0.14 0.05 0.45
+Growth Rate in Carbon Emissions Scope 3 (winsorized at 2.5%) 0.09 0.06 0.24
+Carbon Intensity Scope 1 (tons CO 2 e/USD m.)/100 (winsorized at 2.5%) 1.92 0.15 5.88
+Carbon Intensity Scope 2 (tons CO 2 e/USD m.)/100 (winsorized at 2.5%) 0.34 0.18 0.46
+Carbon Intensity Scope 3 (tons CO 2 e/USD m.) /100 (winsorized at 2.5%) 1.58 0.98 1.59
+Carbon Intensity Direct (winsorized at 2.5%)/100 2.12 0.16 6.45
+Carbon Intensity Indirect (winsorized at 2.5%)/100 1.04 0.58 1.31
+GHG Direct Impact Ratio (winsorized at 2.5%) 0.75 0.06 2.29
+GHG Indirect Impact Ratio (winsorized at 2.5%) 0.71 0.47 0.68
+Panel B: Cross-sectional return variables
+RET (%) 1.14 1.08 10.84
+LOGSIZE 8.25 8.25 1.57
+B/M (winsorized at 2.5%) 0.50 0.39 0.41
+LEVERAGE (winsorized at 2.5%) 0.24 0.22 0.18
+MOM (winsorized at 0.5%) 0.15 0.11 0.45
+INVEST/A (winsorized at 2.5%) 0.05 0.03 0.05
+ROE (winsorized at 2.5%, in%) 9.76 11.32 21.23
+HHI 0.82 1.00 0.24
+LOGPPE 6.22 6.34 2.26
+BETA 1.10 1.05 0.44
+VOLAT (winsorized at 0.5%) 0.10 0.08 0.06
+SALESGR (winsorized at 0.5%) 0.02 0.03 0.30
+EPSGR (winsorized at 0.5%) 0.01 0.00 0.43
+Panel C: Time-series variables
+MKTRF (in%) 0.70 1.06 4.08
+HML (in%) 0.00 −0.22 2.57
+SMB (in%) 0.07 0.04 2.26
+MOM (in%) 0.07 0.36 4.53
+CMA (in%) 0.02 −0.06 1.39
+BAB (in%) 0.49 0.74 2.66
+LIQ (in%) 0.15 0.38 3.59
+NET ISSUANCE (in%) 0.51 0.55 1.65
+IDIO VOL (in%) −0.18 0.03 5.27
+Panel D: Ownership variables
+IO (in%) 76.84 82.93 22.22
+IO_BANKS (in%) 0.10 0.07 0.16
+IO_INSURANCE (in%) 0.35 0.13 3.11
+IO_INVESTCOS. (in%) 18.19 18.37 8.64
+IO_ADVISERS (in%) 43.94 46.11 15.39
+IO_PENSIONS (in%) 3.40 3.51 2.31
+IO_HFS (in%) 10.87 7.73 10.04
+PRINV (winsorized at 0.5%) 0.05 0.03 0.11
+VOLAT (winsorized at 0.5%) 0.10 0.08 0.06
+VOLUME (in $million) (winsorized at 2.5%) 0.44 0.21 0.56
+NASDAQ 0.30 0.00 0.46
+SP500 0.37 0.00 0.48
+522
+
+===== PAGE 7 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 2
+Stock characteristics by emission calculation.
+The table reports the sample means of the main variables over the
+2005–2017 period. All variables are deﬁned in Table 1 . Imputed includes
+all ﬁrms for which Trucost estimates the levels of emissions. Direct in-
+cludes all ﬁrms for which data is directly available.
+Calculation Method Imputed Direct
+SCOPE 1 TOT 1,366,013 5,954,876
+SCOPE 2 TOT 264,203 957,827
+SCOPE 3 TOT 1,433,741 4,057,516
+SCOPE 1 INT 211.76 588.91
+SCOPE 2 INT 35.89 68.26
+SCOPE 3 INT 158.11 197.92
+RET (%) 1.00 1.09
+LOGSIZE 8.22 9.64
+B/M 0.50 0.48
+LEVERAGE 0.24 0.27
+MOM 0.15 0.13
+INVEST/A 0.05 0.05
+ROE 9.88 14.89
+HHI 0.84 0.72
+LOGPPE 6.19 8.03
+BETA 1.13 1.04
+VOLAT 0.10 0.07
+SALESGR (%) 1.67 −0.16
+EPSGR (%) 1.53 0.25
+pany’s revenues in million US dollar units, also winsorized
+at the 2.5% level. The average (unwinsorized) scope 1 in-
+tensity in our sample equals 265.26 tons/million, while the
+intensities for scope 2 and scope 3 are 39.64 tons/million
+and 164.22 tons/million, respectively. The EDX database
+also provides information on whether the emissions data
+was reported or estimated, which allows us to do a sensi-
+tivity analysis and determine how the results are affected
+by the exclusion of the estimated data. We describe how
+the data breaks down into ﬁrms with reported and esti-
+mated emissions data in Table 2 . As Matsumura, Prakash,
+and Vera-Munoz (2014) note, ﬁrms that do not report their
+emissions are typically smaller (and therefore have smaller
+emissions) and are less proﬁtable. But in other respects,
+ﬁrms that report their emissions have similar characteris-
+tics to those that do not. In particular, their stock returns,
+volatility, leverage, book-to-market ratios, capital expendi-
+tures, and betas are very similar.
+We also report alternative measures Trucost provides,
+in particular: i) CARBON DIRECT , which adds three addi-
+tional greenhouse gas to the GHG Protocol scope 1 mea-
+sures; ii) CARBON INDIRECT , which covers a slightly broader
+set of emissions by the direct suppliers to a company than
+scope 2; iii) GHG DIRECT , measured in US dollars, which
+covers all direct external environmental impacts of a com-
+pany. Trucost applies a monetary value to GHG emissions
+quantities, which represents the global average damage of
+each environmental impact; and iv) GHG INDIRECT , which
+covers indirect supply chain environmental impacts. These
+are estimated impacts based on Trucost’s environmental
+impact models. Again, these are reported in US dollars and
+represent the global average damages of each environmen-
+tal impact.
+How correlated are these different emission variables?
+We report the cross-correlations in Panel A of Table 3 .
+As one would expect, the levels of all three categories of
+emissions are positively correlated. Yet, the coeﬃcients are
+relatively small. Similarly, the level of scope 1 emissions is
+obviously positively correlated with scope 1 emission in-
+tensity, but the size of the coeﬃcient is only 0.6, reﬂecting
+the fact that two ﬁrms with the same scope 1 intensity
+may have very different levels of emissions. A large ﬁrm,
+with high emissions, can have the same emission intensity
+as a small ﬁrm. The low correlation between levels and in-
+tensity is even more pronounced for scope 2 (0.24) and
+scope 3 (0.27). In Panel B, we also report the autocorre-
+lation coeﬃcients for the different measures of emissions.
+Emission levels for all three categories are highly persis-
+tent, with an autocorrelation coeﬃcient of 0.977 for scope
+1, 0.955 for scope 2, and 0.967 for scope 3. Interestingly,
+the year-to-year growth in emissions also has some persis-
+tence, especially for scope 3 emissions. As for the emission
+intensity variables they are, not surprisingly, also highly
+persistent as sales are highly persistent.
+We also analyze the average values of all three emission
+sources over time. Fig. 1 and Table 4 present the results. As
+one might expect, there is a steady decline in scope 1 and
+scope 3 emissions at the ﬁrm level over time as a result
+of energy eﬃciency improvements, technological innova-
+tions, and an increase in the reliance on renewable energy
+sources. There is a sharp decline in scope 1 emissions from
+2015 to 2016. However, this mainly reﬂects the addition by
+Trucost of many smaller ﬁrms to the sample in 2015, as
+can be seen in Fig. 2 . The addition of all these ﬁrms to the
+sample also explains why total scope 3 emissions sharply
+increase from 2015 to 2016, and why total scope 1 emis-
+sions remain ﬂat even though per-ﬁrm emissions decline.
+All these results are further conﬁrmed by the numbers in
+Panels A and B of Table 4 ; averages for all ﬁrms in our
+sample are in Panel A while those conditioned on the pres-
+ence in the sample prior to 2015 are in Panel B. We can see
+that when we drop the new ﬁrms added in 2016 from the
+sample, the averages for 2016 and 2017 are very close to
+the numbers in 2015. While we still observe some decline
+in scope 1 emissions, there is no such decline in scope 2
+and scope 3 emissions. If anything, the numbers for scope
+3 emissions go up, although not by much.
+We note that ﬁrms with signiﬁcant emissions are rep-
+resented in a wide range of industries. In Table 5 , we
+present the distribution of ﬁrms in our sample with re-
+spect to the six-digit Global Industry Classiﬁcation (GIC 6).
+Banks, biotech, and oil & gas are the most represented in-
+dustries, with each one having more than 150 ﬁrms. 12 In
+Table 6 , we provide a list of industries with the highest
+and the lowest intensity of emissions. Power, electric, and
+multi-utility industries produce the most scope 1 emis-
+sions, while consumer ﬁnance, thrifts and mortgages, and
+capital markets are the cleanest. The ranking is somewhat
+different when we classify industries with respect to their
+scope 2 and scope 3 emissions. Metals and mining, elec-
+tric utilities, and construction materials are the three most
+scope 2 emission-intensive industries (the cleanest indus-
+tries mimic those based on scope 1 classiﬁcation). In turn,
+12 Some ﬁrms in this table are classiﬁed into multiple industries; hence,
+the total number of ﬁrms in the table (3917) exceeds the number of
+unique ﬁrms in our sample (3421).
+523
+
+===== PAGE 8 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 3
+Carbon emissions: correlations.
+The sample period is 2005–2017. Panel A presents the cross-correlations among emission variables. Panel B presents the coeﬃcients from estimating the AR(1) model for various measures of emissions. All
+regressions include year-month ﬁxed effects. We cluster standard errors at ﬁrm and year dimensions. The emission variables are deﬁned in Table 1 . ∗∗∗ 1% signiﬁcance; ∗∗5% signiﬁcance; ∗10% signiﬁcance.
+Panel A: Cross-correlations
+SCOPE 1 TOT SCOPE 2 TOT SCOPE 3 TOT SCOPE 1 INT SCOPE 2 INT SCOPE 3 INT
+SCOPE 1 TOT 1.00
+SCOPE 2 TOT 0.39 1.00
+SCOPE 3 TOT 0.51 0.75 1.00
+SCOPE 1 INT 0.60 0.03 0.03 1.00
+SCOPE 2 INT 0.05 0.24 0.02 0.10 1.00
+SCOPE 3 INT 0.21 0.09 0.27 0.25 0.10 1.00
+Panel B: Autocorrelations
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+VARIABLES LOG (SCOPE 1) LOG (SCOPE 2) LOG (SCOPE 3) /Delta1SCOPE 1 /Delta1SCOPE 2 /Delta1SCOPE 3 SCOPE 1 INT SCOPE 2 INT SCOPE 3 INT
+LOG (SCOPE 1 TOT) t-1 0.977 ∗∗∗
+(0.003)
+LOG (SCOPE 2 TOT) t-1 0.955 ∗∗∗
+(0.005)
+LOG (SCOPE 3 TOT) t-1 0.967 ∗∗∗
+(0.004)
+/Delta1SCOPE 1 t-1 0.045 ∗
+(0.021)
+/Delta1SCOPE 2 t-1 0.025
+(0.015)
+/Delta1SCOPE 3 t-1 0.190 ∗∗∗
+(0.047)
+SCOPE 1 INT t-1 0.945 ∗∗∗
+(0.005)
+SCOPE 2 INT t-1 0.946 ∗∗∗
+(0.012)
+SCOPE 3 INT t-1 0.969 ∗∗∗
+(0.021)
+Constant 0.281 ∗∗∗ 0.573 ∗∗∗ 0.475 ∗∗∗ 0.057 ∗∗∗ 0.106 ∗∗∗ 0.053 ∗∗∗ 0.065 ∗∗∗ 0.026 ∗∗∗ 0.031
+(0.033) (0.052) (0.046) (0.001) (0.002) (0.003) (0.013) (0.004) (0.033)
+Year/month F.E. Yes Yes Yes Yes Yes Yes Yes Yes Yes
+Observations 156,446 156,374 156,578 122,686 122,602 122,794 156,578 156,578 156,578
+R-squared 0.972 0.945 0.975 0.014 0.020 0.085 0.962 0.850 0.964
+524
+
+===== PAGE 9 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Fig. 1. Carbon emissions: time series summary.
+The data source is Trucost and the data sample period is 2005–2017. Pan-
+els A and B present average ﬁrm emissions (in tons of CO 2 equivalent
+to revenues in $ million). The emissions are broken down into scope 1,
+scope 2, and scope 3 emissions. In Panel B, GHG Direct and GHG Indirect
+are impact ratios expressed as a percentage of costs in revenues (in $ mil-
+lion). Carbon direct and Carbon indirect are intensities expressed in tons of
+CO 2 equivalent to revenues in $ million. Panels C and D present the total
+emissions (across all ﬁrms) per year.
+food products, metals and mining, and construction mate-
+rials are the three most scope 3 emission-intensive indus-
+tries. Internet software and services, health care technolo-
+gies, and software are the three least emission-intensive
+industries. The Trucost industry classiﬁcation is ﬁner than
+the GIC six-digit classiﬁcation. Given that we control for
+industry a natural question is how sensitive the results are
+to the classiﬁcation itself. The classiﬁcation in theory could
+be so ﬁne that it includes only one ﬁrm in each industry or
+so coarse that it includes all ﬁrms in one industry. Adding
+industry ﬁxed effects would be meaningless under these
+polar classiﬁcation systems. As a robustness check, we also
+perform our analysis under the GIC classiﬁcation and re-
+port the results in Table A.4 in the Appendix.
+Finally, we observe not only substantial variation in the
+growth rates of emissions across different industries, but
+also signiﬁcant variation in the rates of all three categories
+of emissions across ﬁrms within the same industry. Fig. 3
+displays the time series plots of the average cross-sectional
+standard deviations of emission growth rates across all
+ﬁrms (Panel A) and across all ﬁrms within a given GIC 6
+industry (Panel B). Even though the scale of the variation
+in Panel A is larger than that in Panel B, there is still a
+signiﬁcant dispersion in emissions in Panel B. Moreover,
+the standard deviation in carbon emission growth rates is
+very stable over time. In particular, the standard deviation
+did not signiﬁcantly change following the addition of new
+ﬁrms to the sample in 2015.
+2.2. Variables in cross-sectional return regressions
+Our empirical analysis of stock returns employs a
+monthly measure of returns as a dependent variable. In
+our cross-sectional return regressions, the dependent vari-
+able RET i,t is the monthly return of an individual stock i
+in month t . Our return data primarily comes from FactSet,
+but for a small subset of delisted ﬁrms, we replace the re-
+turn data with delisting-adjusted values from Compustat.
+Finally, we remove observations with returns greater than
+100% to mitigate the impact of outliers. The number of ex-
+cluded ﬁrm/month observations is 109 and its exclusion
+does not materially affect our results. However, using unre-
+stricted returns data would be problematic as the data, for
+example, include four observations with monthly returns
+greater than 10,0 0 0%.
+Our control variables are deﬁned as follows: LOG SIZE i,t
+is the natural logarithm of ﬁrm i ’s market capitalization
+(price times shares outstanding) at the end of year t; B/M i,t
+is ﬁrm i ’s book value divided by its market capitalization
+at the end of year t; LEVERAGE is the book leverage of the
+company; ROE i,t is the ﬁrm’s earnings performance, given
+by the ratio of ﬁrm i ’s net yearly income divided by the
+value of its equity; MOM i,t is the average of the most re-
+cent 12 months’ returns on stock i , leading up to and in-
+cluding month t -1; INVEST/A represents the ﬁrm’s capital
+expenditures divided by the book value of its assets; HHI
+is the Herﬁndahl concentration index of ﬁrms with respect
+to different business segments, based on each segment’s
+revenues; LOG PPE is the natural logarithm, of the ﬁrm’s
+property, plant, and equipment; BETA i,t is the market beta
+of ﬁrm i in year t , calculated over the one year period
+525
+
+===== PAGE 10 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Fig. 2. Carbon emissions: sample selection.
+The data source is Trucost. The ﬁgure presents the number of ﬁrms with valid emission data over the 2005–2017 period.
+Table 4
+Carbon emissions over time.
+The table reports the cross-sectional averages of scope 1, scope 2, and scope 3 levels and intensity variables over the 2005–2017 period. Panel A considers
+a full sample of ﬁrms. Panel B is restricted to a sample of ﬁrms that existed prior to 2016. The emissions variables are deﬁned in Table 1 .
+Panel A: Full sample
+Year SCOPE 1 TOT SCOPE 2 TOT SCOPE 3 TOT SCOPE 1 INT SCOPE 2 INT SCOPE 3 INT
+2005 2,697,225 335,402 2,414,925 411.16 37.55 229.79
+2006 2,775,999 379,869 2,229,797 373.64 39.17 205.90
+2007 2,893,335 410,656 2,281,158 341.57 37.38 193.13
+2008 3,147,450 683,294 2,750,231 308.70 39.75 164.33
+2009 2,482,940 385,670 1,907,531 334.35 41.41 184.06
+2010 2,655,585 400,848 1,987,772 339.68 40.47 173.56
+2011 2,639,823 440,716 2,217,712 305.06 40.20 169.39
+2012 2,417,298 431,992 2,222,692 308.23 39.57 160.65
+2013 2,223,849 398,491 2,046,741 335.82 39.22 159.69
+2014 2,255,386 425,080 1,979,578 281.89 54.37 152.26
+2015 2,161,598 419,362 1,783,537 273.32 56.79 150.77
+2016 883,498 184,335 858,982 154.25 33.66 139.00
+2017 809,277 176,805 935,203 139.29 33.88 145.53
+Panel B: Legacy sample
+Year SCOPE 1 TOT SCOPE 2 TOT SCOPE 3 TOT SCOPE 1 INT SCOPE 2 INT SCOPE 3 INT
+2005 2,697,225 335,402 2,414,925 411.16 37.55 229.79
+2006 2,775,999 379,869 2,229,797 373.64 39.17 205.90
+2007 2,893,335 410,656 2,281,158 341.57 37.38 193.13
+2008 3,147,450 683,294 2,750,231 308.70 39.75 164.33
+2009 2,482,940 385,670 1,907,531 334.35 41.41 184.06
+2010 2,655,585 400,848 1,987,772 339.68 40.47 173.56
+2011 2,639,823 440,716 2,217,712 305.06 40.20 169.39
+2012 2,417,298 431,992 2,222,692 308.23 39.57 160.65
+2013 2,223,849 398,491 2,046,741 335.82 39.22 159.69
+2014 2,255,386 425,080 1,979,578 281.89 54.37 152.26
+2015 2,161,598 419,362 1,783,537 273.32 56.79 150.77
+2016 1,993,060 404,850 1,874,254 269.09 45.78 167.35
+2017 1,922,550 404,904 2,149,459 243.38 44.95 176.12
+526
+
+===== PAGE 11 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 5
+Industry representation by number of ﬁrms.
+The table reports the distribution of unique ﬁrms in our sample with regard to GIC 6 industry classiﬁcation. Total represents the total number of ﬁrms
+in our sample. The sample period is 2005–2017.
+GIC 6 Industry Name # of Firms
+1 Energy Equipment & Services 75
+2 Oil, Gas & Consumable Fuels 164
+3 Chemicals 81
+4 Construction Materials 17
+5 Containers & Packaging 21
+6 Metals & Mining 47
+7 Paper & Forest Products 12
+8 Aerospace & defense 46
+9 Building Products 32
+10 Construction & Engineering 36
+11 Electrical Equipment 54
+12 Industrial Conglomerates 16
+13 Machinery 118
+14 Trading Companies & Distributors 40
+15 Commercial Services & Supplies 69
+16 Professional Services 42
+17 Air Freight & Logistics 15
+18 Airlines 13
+19 Marine 27
+20 Road & Rail 31
+21 Transportation Infrastructure 5
+22 Auto Components 43
+23 Automobiles 8
+24 Household Durables 64
+25 Leisure Products 21
+26 Textiles, Apparel & Luxury Goods 41
+27 Hotels, Restaurants & Leisure 95
+28 Diversiﬁed Consumer Services 38
+29 Media 83
+30 Distributors 8
+31 Internet & Direct Marketing Retail 45
+32 Multiline Retail 17
+33 Specialty Retail 110
+34 Food & Staples Retailing 27
+35 Beverages 17
+36 Food Products 57
+37 Tobacco 9
+38 Household Products 12
+39 Personal Products 15
+40 Health Care Equipment & Supplies 109
+41 Health Care Providers & Services 77
+42 Health Care Technology 20
+43 Biotechnology 203
+44 Pharmaceuticals 87
+45 Life Sciences Tools & Services 34
+46 Banks 260
+47 Thrifts & Mortgage Finance 61
+48 Diversiﬁed Financial Services 28
+49 Consumer Finance 37
+50 Capital Markets 92
+51 Mortgage Real Estate Investment Trusts (REITs) 22
+52 Insurance 111
+53 Internet Software & Services 100
+54 IT Services 102
+55 Software 150
+56 Communications Equipment 47
+57 Technology Hardware, Storage & Peripherals 34
+58 Electronic Equipment, Instruments & Components 82
+59 Semiconductors & Semiconductor Equipment 103
+60 Diversiﬁed Telecommunication Services 34
+61 Wireless Telecommunication Services 15
+62 Media 49
+63 Entertainment 22
+64 Interactive Media & Services 29
+65 Electric Utilities 42
+66 Gas Utilities 17
+67 Multi-Utilities 30
+68 Water Utilities 13
+69 Independent Power and Renewable Electricity Producers 17
+70 Equity Real Estate Investment Trusts (REITs) 184
+71 Real Estate Management & Development 35
+Total 3917
+527
+
+===== PAGE 12 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 6
+Carbon emission production by industry.
+Panel A reports the top 10 of GIC 6 industries in terms of average emission production (scope 1, scope 2, scope 3). Panel B reports the bottom 10 of GIC
+6 industries in terms of average emission production (scope 1, scope 2, scope 3). The sample period is 2005–2017. The emission variables are expressed in
+tons of CO 2 e.
+Panel A: Largest emissions (avg.)
+GIC 6 Scope 1 GIC 6 Scope 2 GIC 6 Scope 3
+69 33,300,000 34 2,163,081 23 18,700,000
+65 30,700,000 23 2,094,174 36 11,800,000
+18 17,600,000 6 1,749,360 37 6,847,386
+67 17,200,000 3 1,475,783 12 6,575,213
+6 6,343,545 7 1,375,637 35 6,106,099
+2 6,302,663 60 1,219,956 2 6,049,237
+17 4,316,221 12 1,014,037 34 5,882,429
+4 3,827,648 38 994,783 38 4,313,762
+7 3,286,922 32 825,501 6 3,580,245
+3 3,280,770 2 820,777 22 3,285,134
+Panel B: Smallest emissions (avg.)
+GIC 6 Scope 1 GIC 6 Scope 2 GIC 6 Scope 3
+47 601 47 1756 47 15,193
+50 6767 42 11,824 51 27,069
+46 6965 19 21,798 68 41,182
+49 7469 16 22,653 42 64,097
+64 7649 43 24,606 71 84,764
+51 8770 50 35,404 70 102,300
+53 8898 51 36,013 16 114,132
+55 9132 66 39,177 46 116,073
+42 11,657 45 44,082 28 145,311
+16 17,895 46 45,627 43 151,772
+using daily data; VOLAT i,t is the standard deviation of re-
+turns based on the past 12 months of monthly returns;
+SALESGR i,t is the dollar change in annual ﬁrm revenues nor-
+malized by last month’s market capitalization; EPSGR i,t is
+the dollar change in annual earnings per share, normal-
+ized by the ﬁrm’s equity price. To eliminate the impact
+of outliers, we winsorize B/M, LEVERAGE, and INVEST/A at
+the 2.5% level, and MOM, VOLAT, SALESGR , and EPSGR at the
+0.5% level. We report the summary statistics of these vari-
+ables in Panel B of Table 1 .
+The average ﬁrm’s monthly stock return is 1.14%, with
+a standard deviation of 10.84%. The average ﬁrm has a
+market capitalization of $13 billion, with a median value
+of $3.8 billion. The average book-to-market ratio is 0.50,
+while the average book leverage is 24%. The average mar-
+ket beta is 1.10, slightly more than that of the market.
+2.3. Variables in the time series return regressions
+The variables for our time series regressions are de-
+ﬁned as follows: MKTRF t is the monthly return of the CRSP
+value-weighted portfolio in month t , net of the risk-free
+rate; SMB t , HML t , MOM t, and CMAt are well-known portfo-
+lio return series downloaded from Ken French’s website:
+SMB is the monthly return of a portfolio that is long on
+small stocks and short on large stocks; HML is the monthly
+return of a portfolio that is long on high book-to-market
+stocks and short on low book-to-market stocks; MOM is
+the monthly return of a portfolio that is long on past one-
+year return winners and short on past one-year return
+losers; CMA is the monthly return of a portfolio that is
+long on conservative investment stocks and short on ag-
+gressive investment stocks. BAB is the monthly return of a
+portfolio that is long on low-beta stocks and short on high-
+beta stocks; LIQ is the liquidity factor of Pastor and Stam-
+baugh; NET ISSUANCE is the monthly return of a portfolio
+that is long on high-net-issuance stocks and short on low-
+net-issuance stocks. Net issuance for year t is the change
+in the natural log of split-adjusted shares outstanding from
+the ﬁscal yearend in t -2 to the ﬁscal yearend in t -1; IDIO
+VOL is the monthly return of a portfolio that is long on low
+idiosyncratic volatility stocks and short on high idiosyn-
+cratic volatility stocks. We present the summary statistics
+for the various portfolio returns in Panel C of Table 1 .
+The average market risk premium in our sample is 0.7%
+per month. Other factors with relatively high risk premia
+are net issuance and BAB . Somewhat atypically, the value
+factor return in our sample is equal to 0%. Similarly, the
+momentum factor generates a mere 0.07% per month, and
+the volatility factor has a negative return of −0.18% per
+month.
+2.4. Variables in divestment regressions
+Our institutional ownership regression variables are:
+IO i,t , which is the fraction of the shares of company i
+held by institutions in the FactSet database at the end of
+year t. IO is calculated by aggregating the shares held by
+all types of institutions at the end of the year, and then
+dividing this value by the number of shares outstanding
+at the end of the year. We further decompose the in-
+stitutional ownership with respect to subgroups of own-
+ers. IO_BANKS is the ownership by banks; IO_INSURANCE
+is the ownership by insurance companies; IO_INVESTCOS
+528
+
+===== PAGE 13 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Fig. 3. Standard deviation of carbon emission growth rates.
+The data source is Trucost. Panel A presents the cross-sectional standard deviation of ﬁrm-level emissions. Panel B presents the cross-sectional standard
+deviation of ﬁrm level emissions within GIC-6 industries, all averaged across all the industries in a given year. All emissions are broken down into scope
+1, scope 2, and scope 3, over the 2005–2017 period. The emission levels are measured in millions of tons of CO 2 equivalent and are winsorized at the 1%
+level.
+is the ownership by investment companies (e.g., mutual
+funds); IO_ADVISERS is the ownership by independent in-
+vestment advisers; IO_PENSIONS is the ownership by pen-
+sion funds and IO_HFS is the ownership by hedge funds.
+Even though the total institutional ownership captures the
+intensive margin only, the range of disaggregated own-
+ership variables varies from 0% to 100% (as long as the
+total institutional ownership in the data has a positive
+value).
+The control variables in the ownership regressions in-
+clude PRINV i,t , which is the inverse of ﬁrm i ’s share price
+at the end of year t; VOLAT i,t is the standard deviation of
+monthly stock returns for ﬁrm i over the one-year period;
+VOLUME i,t is the average daily trading volume (in $million)
+of stock i over the calendar year t. NASDAQ i,t is an indica-
+tor variable equal to one if a stock i is listed on NASDAQ in
+year t , and zero otherwise; SP50 0 i,t is an indicator variable
+equal to one if a stock i is part of the S&P 500 Index in
+529
+
+===== PAGE 14 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+year t , and zero otherwise. We report the summary statis-
+tics for these variables in Panel D of Table 1 .
+The average IO is 0.77, and the cross-sectional standard
+deviation of IO is 0.22. In other words, in a typical year,
+a typical ﬁrm has about 77% of its shares held by institu-
+tional investors, and the standard deviation of institutional
+ownership in a typical cross-section is 22%. Among the dif-
+ferent institutional owners, independent advisers are the
+biggest holders, with an average stock’s ownership equal
+to 43.9%, followed by investment companies with an av-
+erage 18.2% ownership. Banks and insurance companies,
+in turn, are the smallest institutional owners. The average
+daily stock return volatility in our sample is 10% or annu-
+alized 158.7%. The average daily stock volume is $440,0 0 0.
+Finally, about 30% of stock-month observations are com-
+panies listed on NASDAQ, and 37% observations are ﬁrms
+from the S&P 500 Index.
+3. Results
+We begin our analysis by investigating the determinants
+of scope 1, scope 2, and scope 3 emissions. We then turn to
+the evaluation of the carbon return premium in the cross-
+section of stocks. We next explore the time-series prop-
+erties of the cross-sectional carbon premium with respect
+to well-known risk factors. Finally, we consider the divest-
+ment hypothesis by looking at institutional ownership pat-
+terns.
+3.1. Determinants of carbon emissions
+Since emissions are not reported by all companies, one
+basic issue to explore ﬁrst is how companies that do report
+their emissions compare with non-reporting companies. To
+assess the quantitative differences on the extensive mar-
+gin, we compare various ﬁrm-level characteristics for the
+reporting and non-reporting ﬁrms. We describe basic sum-
+mary statistics of the two categories of ﬁrms in Table A.1
+of the Appendix. As one might expect, we ﬁnd that larger
+ﬁrms are more likely to report their emissions. Also, ﬁrms
+with lower book-to-market ratios and higher book leverage
+are more likely to report emissions. At the same time, the
+two groups of ﬁrms do not differ signiﬁcantly in terms of
+their stock returns or investment levels.
+Next, we assess the differences in emission levels, year-
+by-year changes, and emission intensities across ﬁrms us-
+ing a regression framework. Our dependent variables are
+levels, changes, and intensities of scope 1, scope 2, and
+scope 3. Since there is little theory that can guide us on
+what determines the level of carbon emissions, especially
+with regard to their different sources, we include a host of
+ﬁrm-level variables, comprising LOG SIZE, B/M, ROE, LEVER-
+AGE, INVEST/A, HHI, LOG PPE, SALESGR , and EPSGR . To reﬂect
+the possibility that ﬁrm-level emissions could concentrate
+across ﬁrms and over time, we cluster standard errors at
+the ﬁrm and year levels. Standard errors in all panel re-
+gressions become signiﬁcantly smaller in alternative speci-
+ﬁcations that cluster at the ﬁrm, industry, time, or industry
+and time levels. We present the results in Table 7 .
+Not surprisingly, all three categories of emission levels,
+and changes in emissions, are signiﬁcantly positively re-
+lated to LOG SIZE . However, scope 1 and scope 3 emission
+intensities are weakly negatively related to LOG SIZE . The
+level of emissions is also signiﬁcantly associated with high
+book-to-market ratios, high tangible capital (PPE), highly
+levered ﬁrms, and ﬁrms with high growth in sales and
+earnings. On the other hand, the level of emissions is lower
+for ﬁrms with high capital expenditures, although these
+growth ﬁrms are associated with high increases in emis-
+sions. Interestingly, only diversiﬁcation (HHI) and tangible
+capital signiﬁcantly affect emission intensity.
+3.2. Evidence on cross-sectional returns
+For all three categories of emissions, we relate in turn
+the level of companies’ emissions, the year-to-year growth
+in emissions, and the companies’ emission intensity to
+their corresponding stock returns in the cross-section.
+We ﬁrst estimate the following cross-sectional regression
+model using pooled OLS:
+RE T i,t = a 0 + a 1 LOG ( T OT Emissions ) i,t
++ a 2 Control s i,t−1 + μt + ε i,t , (1)
+where RE T i,t measures the stock return of company i in
+month t and Emissions is a generic term alternately stand-
+ing for SCOPE 1, SCOPE 2, and SCOPE 3 emissions. The
+vector of controls includes a host of ﬁrm-speciﬁc vari-
+ables known to predict returns, such as LOG SIZE, B/M,
+ROE, LEVERAGE, MOM, INVEST/A, HHI, LOG PPE, BETA, VOLAT,
+SALESGR , and EPSGR . 13 We also include year/month ﬁxed
+effects. We cluster standard errors at the ﬁrm and year lev-
+els. Our coeﬃcient of interest is a 1 .
+We report the results in Table 8 , Panel A. Column 1
+shows the results for SCOPE 1 ; column 2 for SCOPE 2 , and
+column 3 for SCOPE 3 . For all three categories of emissions,
+we ﬁnd a positive and statistically signiﬁcant effect on
+ﬁrms’ stock returns. The effect is also economically signiﬁ-
+cant: a one-standard-deviation increase in SCOPE 1 leads to
+a 13-bps increase in stock returns, or 1.5% annualized, and
+a one-standard-deviation increase in SCOPE 2 leads to a 23-
+bps increase in stock returns, or 2.8% annualized. Finally, a
+one-standard-deviation increase in SCOPE 3 increases stock
+returns by 30 bps per month, or 3.6% annualized.
+Since emissions tend to cluster signiﬁcantly within spe-
+ciﬁc industries, a question of interest is whether the ﬁrm-
+speciﬁc differences can be attributed to industry-speciﬁc
+effects. To examine this possibility, we additionally include
+industry-ﬁxed effects using the Trucost industry classiﬁca-
+tion. The results presented in columns 4 to 6 are quite
+striking. Including industry effects signiﬁcantly strength-
+ens the cross-sectional dispersion of returns due to car-
+bon emissions. In fact, the economic signiﬁcance increases
+by anywhere between 70% and 280% relative to the model
+without industry effects.
+We also plot the time series of the cumulative values
+of the unadjusted and industry-adjusted carbon premia in
+13 HHI, SALESGR , and EPSGR are measured as of time t to reﬂect the fact
+that all three may have a nontrivial contemporaneous effect on the level
+of emissions at time t .
+530
+
+===== PAGE 15 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 7
+Determinants of carbon emissions.
+The sample period is 2005–2017. The dependent variables are natural logarithm of total emissions, percentage change in total emissions, and carbon intensity . All variables are deﬁned in Table 1 . We report
+the results of the pooled regression with standard errors clustered at the ﬁrm level and year (in parentheses). All regressions include year-month ﬁxed effects and industry-ﬁxed effects. ∗∗∗ 1% signiﬁcance;
+∗∗5% signiﬁcance; ∗10% signiﬁcance.
+(1) (2) (3) (4) (5) (6) (7) (8) (9)
+Variables LOG (SCOPE 1) LOG (SCOPE 2) LOG (SCOPE 3) /Delta1SCOPE 1 /Delta1SCOPE 2 /Delta1SCOPE 3 SCOPE 1 INT SCOPE 2 INT SCOPE 3 INT
+LOGSIZE 0.438 ∗∗∗ 0.571 ∗∗∗ 0.572 ∗∗∗ 0.026 ∗∗∗ 0.026 ∗∗∗ 0.027 ∗∗∗ −0.118 ∗ 0.002 −0.021 ∗∗
+(0.036) (0.032) (0.022) (0.008) (0.008) (0.006) (0.063) (0.006) (0.009)
+B/M 0.464 ∗∗∗ 0.555 ∗∗∗ 0.562 ∗∗∗ −0.033 ∗∗ −0.038 −0.041 ∗∗ −0.003 0.003 0.000
+(0.060) (0.059) (0.054) (0.015) (0.021) (0.017) (0.107) (0.010) (0.013)
+ROE 0.006 ∗∗∗ 0.006 ∗∗∗ 0.007 ∗∗∗ −0.002 ∗∗∗ −0.002 ∗∗∗ −0.001 ∗∗∗ −0.002 −0.000 0.000
+(0.001) (0.001) (0.001) (0.000) (0.001) (0.000) (0.002) (0.000) (0.000)
+LEVERAGE 0.531 ∗∗ 0.625 ∗∗∗ 0.574 ∗∗∗ 0.026 0.010 0.019 0.364 0.002 −0.056 ∗
+(0.196) (0.188) (0.162) (0.020) (0.030) (0.023) (0.230) (0.030) (0.030)
+INVEST/A −2.026 ∗∗∗ −1.950 ∗∗∗ −2.457 ∗∗∗ 0.676 ∗∗∗ 0.706 ∗∗∗ 0.530 ∗∗∗ −0.586 −0.067 −0.446 ∗∗
+(0.489) (0.460) (0.432) (0.145) (0.132) (0.117) (1.161) (0.153) (0.201)
+HHI −1.044 ∗∗∗ −0.569 ∗∗∗ −0.499 ∗∗∗ 0.014 −0.024 0.023 ∗∗ −2.185 ∗∗∗ 0.009 −0.260 ∗∗∗
+(0.119) (0.081) (0.063) (0.021) (0.024) (0.008) (0.497) (0.030) (0.062)
+LOGPPE 0.376 ∗∗∗ 0.372 ∗∗∗ 0.317 ∗∗∗ −0.033 ∗∗∗ −0.034 ∗∗∗ −0.030 ∗∗∗ 0.127 ∗∗∗ 0.025 ∗∗∗ 0.026 ∗∗∗
+(0.036) (0.037) (0.023) (0.005) (0.006) (0.006) (0.042) (0.007) (0.007)
+SALESGR 0.237 ∗∗∗ 0.190 ∗∗ 0.231 ∗∗ 0.311 ∗∗∗ 0.343 ∗∗∗ 0.320 ∗∗∗ −0.085 −0.019 ∗∗ 0.010
+(0.059) (0.062) (0.077) (0.042) (0.041) (0.030) (0.070) (0.007) (0.024)
+EPSGR 0.137 ∗∗ 0.146 ∗∗ 0.144 ∗∗ −0.005 −0.011 0.001 0.009 0.006 ∗∗ −0.002
+(0.049) (0.049) (0.050) (0.008) (0.012) (0.006) (0.038) (0.003) (0.006)
+Year/month F.E. Yes Yes Yes Yes Yes Yes Yes Yes Yes
+Industry F.E. Yes Yes Yes Yes Yes Yes Yes Yes Yes
+Observations 189,187 189,115 189,283 156,506 156,410 156,578 189,283 189,283 189,283
+R-squared 0.899 0.849 0.905 0.150 0.136 0.320 0.786 0.650 0.935
+531
+
+===== PAGE 16 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 8
+Carbon emissions and stock returns.
+The sample period is 2005–2017. The dependent variable is RET. All variables are deﬁned in Table 1 . We report the results of the pooled regression
+with standard errors clustered at the ﬁrm and year level (in parentheses). All regressions include year-month ﬁxed effects. In the regressions for columns
+4 through 6, we additionally include industry-ﬁxed effects. Panel A reports the results for the natural logarithm of total ﬁrm-level emissions; Panel B
+reports the results for the percentage change in carbon total emissions; Panel C reports the results for carbon emission intensity. ∗∗∗ 1% signiﬁcance; ∗∗5%
+signiﬁcance; ∗10% signiﬁcance.
+Panel A: Total emissions
+Variables (1) (2) (3) (4) (5) (6)
+LOG (SCOPE 1 TOT) 0.043 ∗∗ 0.164 ∗∗∗
+(0.023) (0.036)
+LOG (SCOPE 2 TOT) 0.098 ∗∗ 0.167 ∗∗∗
+(0.042) (0.048)
+LOG (SCOPE 3 TOT) 0.135 ∗∗ 0.312 ∗∗∗
+(0.046) (0.071)
+LOGSIZE −0.140 −0.184 −0.193 −0.302 ∗ −0.327 ∗ −0.410 ∗∗
+(0.163) (0.167) (0.165) (0.148) (0.154) (0.163)
+B/M 0.460 0.469 0.444 0.656 ∗∗ 0.642 ∗∗ 0.562 ∗∗
+(0.260) (0.266) (0.258) (0.234) (0.229) (0.224)
+LEVERAGE −0.559 ∗ −0.579 ∗ −0.498 ∗ −0.699 ∗∗∗ −0.712 ∗∗∗ −0.790 ∗∗∗
+(0.272) (0.280) (0.274) (0.177) (0.171) (0.167)
+MOM 0.321 0.348 0.338 0.284 0.294 0.301
+(0.276) (0.272) (0.274) (0.291) (0.290) (0.290)
+INVEST/A −2.218 −1.914 −1.587 0.277 0.267 0.699
+(1.740) (1.794) (1.838) (2.111) (2.126) (2.082)
+ROE 0.010 ∗ 0.009 0.008 0.009 ∗ 0.009 ∗ 0.007 ∗
+(0.005) (0.005) (0.005) (0.004) (0.004) (0.004)
+HHI 0.032 −0.026 0.137 0.130 ∗ 0.052 0.111
+(0.110) (0.112) (0.101) (0.072) (0.073) (0.071)
+LOGPPE −0.015 −0.027 −0.045 0.020 0.019 −0.017
+(0.100) (0.088) (0.090) (0.058) (0.058) (0.057)
+BETA 0.059 0.023 0.047 0.045 0.040 0.063
+(0.131) (0.131) (0.130) (0.148) (0.147) (0.146)
+VOLAT 0.978 0.674 0.749 0.622 0.501 0.549
+(3.571) (3.415) (3.506) (3.290) (3.285) (3.269)
+SALESGR 0.692 0.688 0.672 0.679 0.686 0.648
+(0.429) (0.430) (0.420) (0.412) (0.412) (0.407)
+EPSGR 0.592 ∗∗ 0.589 ∗∗ 0.575 ∗∗ 0.637 ∗∗ 0.636 ∗∗ 0.615 ∗∗
+(0.234) (0.231) (0.232) (0.231) (0.233) (0.227)
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 184,288 184,216 184,384 184,288 184,216 184,384
+R-squared 0.203 0.204 0.204 0.206 0.206 0.206
+Panel B: Growth rate in total emissions
+Variables (1) (2) (3) (4) (5) (6)
+/Delta1SCOPE 1 0.641 ∗∗∗ 0.627 ∗∗∗
+(0.153) (0.144)
+/Delta1SCOPE 2 0.345 ∗∗ 0.321 ∗∗
+(0.125) (0.120)
+/Delta1SCOPE 3 1.203 ∗∗∗ 1.186 ∗∗∗
+(0.318) (0.314)
+LOGSIZE −0.023 −0.013 −0.037 −0.107 −0.099 −0.121
+(0.110) (0.112) (0.111) (0.114) (0.115) (0.117)
+B/M 0.391 0.388 0.410 ∗ 0.771 ∗∗ 0.764 ∗∗ 0.789 ∗∗∗
+(0.232) (0.233) (0.226) (0.257) (0.257) (0.246)
+LEVERAGE −0.433 ∗ −0.414 ∗ −0.441 ∗ −0.794 ∗∗∗ −0.785 ∗∗∗ −0.799 ∗∗∗
+(0.217) (0.216) (0.213) (0.213) (0.217) (0.214)
+MOM 0.204 0.217 0.166 0.160 0.175 0.124
+(0.265) (0.268) (0.267) (0.264) (0.266) (0.264)
+INVEST/A −2.508 −2.244 −2.638 −0.620 −0.463 −0.807
+(1.820) (1.848) (1.867) (2.326) (2.291) (2.341)
+ROE 0.009 ∗∗ 0.009 ∗∗ 0.009 ∗∗ 0.008 ∗∗ 0.008 ∗∗ 0.009 ∗∗
+(0.004) (0.004) (0.004) (0.003) (0.003) (0.003)
+HHI −0.143 −0.112 −0.162 −0.072 −0.056 −0.089
+(0.154) (0.153) (0.151) (0.098) (0.097) (0.102)
+LOGPPE −0.006 −0.015 0.006 0.053 0.045 0.066
+(0.058) (0.057) (0.060) (0.041) (0.041) (0.044)
+BETA 0.109 0.119 0.106 0.155 0.166 0.145
+(Continued on next page)
+532
+
+===== PAGE 17 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 8
+( Continued )
+Panel B: Growth rate in total emissions
+Variables (1) (2) (3) (4) (5) (6)
+(0.165) (0.165) (0.168) (0.158) (0.157) (0.162)
+VOLAT 1.853 2.004 1.800 1.373 1.504 1.341
+(4.240) (4.226) (4.274) (4.072) (4.075) (4.107)
+SALESGR 0.459 0.544 0.280 0.463 0.549 0.284
+(0.447) (0.454) (0.430) (0.429) (0.434) (0.402)
+EPSGR 0.573 ∗∗ 0.573 ∗∗ 0.568 ∗∗ 0.641 ∗∗ 0.641 ∗∗ 0.636 ∗∗
+(0.247) (0.246) (0.250) (0.263) (0.263) (0.266)
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 153,051 152,955 153,123 153,051 152,955 153,123
+R-squared 0.218 0.218 0.218 0.221 0.221 0.222
+Panel C: Emission intensity
+Variables (1) (2) (3) (4) (5) (6)
+SCOPE 1 INT −0.010 0.005
+(0.012) (0.006)
+SCOPE 2 INT 0.145 0.081
+(0.121) (0.074)
+SCOPE 3 INT 0.055 0.048
+(0.033) (0.075)
+LOGSIZE −0.154 −0.133 −0.124 −0.229 −0.230 −0.229
+(0.169) (0.159) (0.164) (0.142) (0.141) (0.142)
+B/M 0.456 0.470 0.479 ∗ 0.732 ∗∗ 0.732 ∗∗ 0.732 ∗∗
+(0.264) (0.269) (0.258) (0.244) (0.243) (0.244)
+LEVERAGE −0.545 ∗ −0.558 ∗ −0.532 ∗ −0.608 ∗∗∗ −0.606 ∗∗∗ −0.603 ∗∗∗
+(0.264) (0.269) (0.263) (0.195) (0.195) (0.196)
+MOM 0.332 0.321 0.317 0.282 0.282 0.281
+(0.277) (0.279) (0.279) (0.292) (0.292) (0.291)
+INVEST/A −1.953 −2.047 −1.916 −0.041 −0.037 −0.022
+(1.815) (1.823) (1.867) (2.123) (2.127) (2.134)
+ROE 0.010 ∗ 0.010 ∗ 0.010 ∗ 0.010 ∗∗ 0.010 ∗∗ 0.010 ∗∗
+(0.005) (0.005) (0.005) (0.004) (0.004) (0.004)
+HHI −0.139 −0.069 0.028 −0.032 −0.043 −0.030
+(0.137) (0.113) (0.082) (0.074) (0.072) (0.067)
+LOGPPE 0.034 0.010 0.006 0.081 0.079 0.080
+(0.099) (0.087) (0.093) (0.065) (0.064) (0.066)
+BETA 0.047 0.045 0.051 0.035 0.034 0.036
+(0.131) (0.131) (0.131) (0.148) (0.148) (0.148)
+VOLAT 1.027 0.978 1.028 0.577 0.558 0.572
+(3.512) (3.527) (3.563) (3.296) (3.297) (3.300)
+SALESGR 0.709 0.714 0.712 0.718 0.719 0.717
+(0.435) (0.432) (0.427) (0.414) (0.413) (0.413)
+EPSGR 0.600 ∗∗ 0.600 ∗∗ 0.600 ∗∗ 0.660 ∗∗ 0.660 ∗∗ 0.661 ∗∗
+(0.234) (0.232) (0.232) (0.235) (0.236) (0.235)
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 184,384 184,384 184,384 184,384 184,384 184,384
+R-squared 0.203 0.203 0.203 0.206 0.206 0.206
+Fig. 4 . Because different emission variables have different
+supports, we express the magnitudes in terms of unit stan-
+dard deviation of each variable at each cross-section in
+time, so that all plots of the cumulative effect show com-
+parable numbers in terms of economic signiﬁcance. As can
+be seen in the ﬁgure, there are large positive cumulative
+returns for all measures of total emissions. The economic
+magnitudes of the effect become even larger once we fac-
+tor in differences in industry exposures.
+We next estimate the same cross-sectional regres-
+sion model (1) replacing the level of emissions ( LOG
+(Emissions TOT) ) with the year-to-year growth in emissions
+( /Delta1(Emissions) ). The results are reported in Table 8 , Panel B.
+We ﬁnd again a positive and statistically signiﬁcant effect
+of the growth in emissions on stock returns. Interestingly,
+controlling for industry makes almost no difference when
+it comes to the effect of the growth in emissions. To
+allay any concern that our results may be driven by the
+correlation between emissions and size, we provide ad-
+ditional robustness tests in which we estimate univariate
+regression models with respective emission variables only,
+and regressions with emissions and size only. The results,
+reported in Table A.2 of the Online Appendix indicate that
+size is an important control when one considers the level
+of total emissions as a regressor but it is not as important
+in the model with the growth rate of emissions. Note
+533
+
+===== PAGE 18 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Fig. 4. Carbon cumulative return premia: level effect.
+Figures show the cumulative values of carbon premia estimated from the cross-sectional regressions of monthly returns on the natural logarithm of the
+level of scope 1, scope 2, and scope 3 emissions. The regressions include the same set of controls as in Table 7 . Panel A shows the plots for the model
+without industry ﬁxed effects, while Panel B shows the results with industry-ﬁxed effects as additional control. The data source is Trucost and the sample
+period is 2005–2017.
+also that ROE has a signiﬁcant positive effect on stock
+returns under this speciﬁcation (it is insigniﬁcant in the
+speciﬁcation with emission levels). We attribute this to
+the fact that ﬁrms with high emission growth likely also
+have higher earnings, which could result in higher stock
+returns (to the extent that the higher earnings outcome is
+unanticipated).
+We also plot the time series of the cumulative values
+of the unadjusted and industry-adjusted carbon premia re-
+lated to the growth in emissions in Fig. 5 . All measures of
+emissions exhibit a steady rate of increase in the carbon
+premium over time.
+Finally, we estimate the cross-sectional regression
+model in (1) for emission intensities. We report the results
+in Table 8 , Panel C. There is no signiﬁcant effect of emis-
+sion intensity on returns for any of the three categories
+of emissions, whether we control for industry or not. The
+cumulative effect of emission intensity on the carbon pre-
+534
+
+===== PAGE 19 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Fig. 5. Carbon cumulative return premia: change effect.
+Figures show the cumulative values of carbon premia estimated from the cross-sectional regressions of monthly returns on the percentage changes (year
+over year) of scope 1, scope 2, and scope 3 emission levels. The regressions include the same set of controls as in Table 7 . Panel A shows the plots for the
+model without industry ﬁxed effects, while Panel B shows the results with industry-ﬁxed effects as additional control. The data source is Trucost and the
+sample period is 2005–2017.
+mium, presented in Fig. 6 , is also quite weak, with the ex-
+ception of scope 2 for which we observe a slightly positive
+trend. Overall, these results reveal that there is a signif-
+icant carbon premium with respect to the level of emis-
+sions, reﬂecting ﬁrms’ long-run risk exposure to carbon
+emissions, and a premium with respect to the growth in
+emissions, which capture the more short-term evolution of
+ﬁrms’ risk exposure to future emissions.
+One open question with our analysis above is that we
+use carbon emission data in year t to explain monthly re-
+turns over the same year t . This could conceivably intro-
+duce a look-ahead bias. That is, under this speciﬁcation we
+might unwittingly relate stock returns for some months
+in year t to emission data that might not yet have been
+available to investors. To address this question, we under-
+take the following robustness check. We relate monthly
+stock returns with a lag of respectively 0 to 12 months
+between the time when emissions are reported and the
+month when returns are realized.
+Another interpretation of the results with lagged re-
+turns is that investors have limited attention and do not
+immediately absorb new information about carbon emis-
+sions at the ﬁrm level ( Kacperczyk et al., 2016 ). In that
+case, carbon emissions for year t will be gradually reﬂected
+in returns over the year. An additional consideration is that
+investors obtain information about carbon emissions from
+multiple sources that are not all available at the same time.
+For example, a lot of ﬁrms disclose their emissions ﬁrst
+to the CDP, data which then is merged into and combined
+with other sources by Trucost. Different information that is
+likely to be highly correlated with other information (given
+that all providers use the same data collection protocols)
+535
+
+===== PAGE 20 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Fig. 6. Carbon cumulative return premia: intensity effect.
+Figures show the cumulative values of carbon premia estimated from the cross-sectional regressions of monthly returns on the carbon intensity of scope 1,
+scope 2, and scope 3 emissions. The regressions include the same set of controls as in Table 7 . Panel A shows the plots for the model without industry ﬁxed
+effects, while Panel B shows the results with industry-ﬁxed effects as additional control. The data source is Trucost and the sample period is 2005–2017.
+becomes available at different times. This is another rea-
+son why carbon emissions are only gradually reﬂected in
+stock returns.
+We report the results in Table A.3. A remarkable pat-
+tern emerges from this analysis. Panel A1 reports the re-
+sults for LOG (SCOPE 1 TOT) . The coeﬃcient is statistically
+signiﬁcant for the ﬁrst month (without industry ﬁxed ef-
+fects), remains signiﬁcant at the 5% level until month 6
+(with industry ﬁxed effects), and is insigniﬁcant thereafter.
+Not surprisingly, it takes time for information about emis-
+sions to be reﬂected in stock prices, but eventually (after
+six months or so) this information appears to be fully ab-
+sorbed. Essentially the same pattern is observed for the
+level of scope 2 and scope 3 emissions (with a somewhat
+faster (slower) integration of scope 2 (scope 3) emission
+information into stock prices), as the results in Panels A2
+and A3 show. The same pattern is present for the growth
+in total emissions, as can be seen in panels B1, B2, and B3.
+However, emission intensity is nearly always insigniﬁcant,
+as we report in Panels C1, C2, and C3. The only visible ex-
+536
+
+===== PAGE 21 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Fig. 7. Carbon intensity and institutional ownership: cumulative effect.
+Figures show the cumulative values of the coeﬃcient of emission intensity estimated from the cross-sectional regressions of monthly ﬁrm-level institutional
+ownership on scope 1, scope 2, and scope 3 emissions intensity. The regressions include the same set of controls as Table 11 . Panel A shows the plots for
+the full sample, Panel B shows the results for the sample of ﬁrms excluding salient industries (GIC 19, 20, 23), Panel C shows the results for the sample
+of ﬁrms excluding the same salient industries and also ﬁrms that are added to the sample post 2015. The data source is Trucost and the sample period is
+2005–2017.
+537
+
+===== PAGE 22 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 9
+Carbon emissions and stock returns net of earnings returns.
+The sample period is 2005–2017. The dependent variable is RET net of daily return realized on the earnings announcement day . All variables are deﬁned
+in Table 1 . We report the results of the pooled regression with standard errors clustered at the ﬁrm and year level (in parentheses). All regressions include
+year-month ﬁxed effects. In the regressions for columns 4 through 6, we additionally include industry-ﬁxed effects. Panel A reports the results for the
+natural logarithm of total emissions; Panel B reports the results for the percentage change in carbon total emissions; Panel C reports the results for carbon
+emission intensity. ∗∗∗ 1% signiﬁcance; ∗∗5% signiﬁcance; ∗10% signiﬁcance.
+Panel A: Total emissions
+Variables (1) (2) (3) (4) (5) (6)
+LOG (SCOPE 1 TOT) 0.044 ∗ 0.152 ∗∗∗
+(0.024) (0.031)
+LOG (SCOPE 2 TOT) 0.088 ∗∗ 0.150 ∗∗∗
+(0.040) (0.044)
+LOG (SCOPE 3 TOT) 0.121 ∗∗ 0.279 ∗∗∗
+(0.047) (0.067)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 184,288 184,216 184,384 184,288 184,216 184,384
+R-squared 0.220 0.221 0.220 0.223 0.223 0.223
+Panel B: Growth rate in total emissions
+Variables (1) (2) (3) (4) (5) (6)
+/Delta1SCOPE 1 0.552 ∗∗∗ 0.532 ∗∗∗
+(0.137) (0.131)
+/Delta1SCOPE 2 0.288 ∗∗ 0.266 ∗∗
+(0.111) (0.108)
+/Delta1SCOPE 3 0.896 ∗∗ 0.882 ∗∗
+(0.313) (0.316)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 153,051 152,955 153,123 153,051 152,955 153,123
+R-squared 0.235 0.236 0.235 0.239 0.239 0.239
+Panel C: Emission intensity
+Variables (1) (2) (3) (4) (5) (6)
+SCOPE 1 INT −0.008 0.004
+(0.011) (0.007)
+SCOPE 2 INT 0.155 0.079
+(0.124) (0.068)
+SCOPE 3 INT 0.050 0.029
+(0.032) (0.071)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 184,384 184,384 184,384 184,384 184,384 184,384
+R-squared 0.220 0.220 0.220 0.223 0.223 0.223
+ception is scope 1 emission intensity, which is signiﬁcant
+at the 5% level in month 6 in the model with industry ﬁxed
+effects. We conclude from this analysis that our results are
+not biased by a look-ahead effect.
+Another possible explanation is that ﬁrms with higher
+emissions have also been exposed to unexpected positive
+value shocks. We explore this hypothesis by analyzing re-
+turns that strip out the effect of earnings surprises. Speciﬁ-
+cally, we subtract from the monthly stock returns the com-
+ponent that is realized on earnings announcement days
+and re-estimate the regression model in (1) with the ad-
+justed returns. We report the results in Table 9 for the
+level of total emissions (Panel A), for the growth rate of
+emissions (Panel B), and for emission intensity (Panel C).
+We ﬁnd no signiﬁcant differential effect of earnings an-
+nouncements on the carbon premium. Stocks with higher
+levels and growth rates of emissions still have higher re-
+turns, and emission intensity is still insigniﬁcant.
+3.3. Carbon premium and risk factors
+Is the carbon premium linked to traditional risk factors?
+To answer this question, we estimate the following time-
+series regression model using monthly data:
+a 1 ,t = c 0 + c F t + ε t , (2)
+where a 1 ,t is the carbon return premium estimated from
+the cross-sectional Fama-MacBeth regression in Eq. (1) ; F
+is a set of factor-mimicking portfolios that includes MK-
+TRF, HML, SMB, MOM, CMA, BAB, LIQ, NET ISSUANCE, and
+538
+
+===== PAGE 23 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+IDIO VOL. These factors have been widely used in many
+studies of asset prices. There are also economic reasons
+to believe that they could be meaningfully related to our
+carbon factor. Speciﬁcally, the ﬁrst ﬁve factors correspond
+to the classic framework of Fama and French. In light of
+our results reported above, ﬁrm-level emissions are related
+to ﬁrm size and to ﬁrms’ growth opportunities; hence
+we include both the SMB and HML factors. The invest-
+ment factor, CMA , controls for any differences in invest-
+ments across ﬁrms. The market and momentum factors
+are standard controls in all time-series regressions. The
+BAB factor controls for the possibility that high carbon risk
+ﬁrms may be exposed to margin investments. The liquid-
+ity factor controls for possible differences in market liquid-
+ity among ﬁrms with different levels of carbon emissions,
+which could arise if some ﬁrms are not as actively traded
+as others due to ESG norm-based reasons. The net-issuance
+factor controls for any variation in capital structure and
+market timing by ﬁrm managers. Finally, the idiosyncratic
+volatility factor controls for the possibility that the mea-
+sure of risk we capture may be idiosyncratic in nature. We
+calculate the standard errors of the coeﬃcients using the
+Newey-West procedure with 12 lags to account for auto-
+correlation in error terms. Our coeﬃcient of interest is c 0 ,
+which measures the residual carbon premium, controlling
+for other risk/style factors.
+Panel A in Table 10 shows the results for the carbon
+premium related to total emissions. In the odd columns,
+we report the unconditional carbon premium as a bench-
+mark. In the even columns, we report results from re-
+gressions that add various factors MKTRF, HML, SMB, MOM,
+CMA, BAB, LIQ, NET ISSUANCE, and IDIO VOL . Comparing the
+odd and even columns for the respective scope categories
+of emissions, we ﬁnd that the carbon premium remains
+statistically and economically signiﬁcant after we adjust for
+differential factor exposures. However, the economic size
+of the premium is about 10% −20% smaller in magnitude.
+Overall, the regression intercepts from the cross-sectional
+return regressions are both economically and statistically
+signiﬁcant in the presence of various risk factors.
+Panel B shows the results for the carbon premium re-
+lated to the growth rate in total emissions. We ﬁnd again
+that the set of standard risk factors cannot explain the av-
+erage value of the carbon premium for any of the emis-
+sions categories. This time, however, the difference in mag-
+nitudes across speciﬁcations is much smaller. Panel C gives
+the results for emission intensity. Whether unconditionally
+or conditionally on the risk factors, we ﬁnd no signiﬁcant
+carbon premium.
+Overall, our time-series regression results show that the
+carbon premium cannot be explained by known risk fac-
+tors. This result reinforces the ﬁnding in Section 3.2 that
+the level of carbon emissions contains independent infor-
+mation about the cross-section of average returns.
+3.4. The divestment hypothesis
+An important possible explanation for the observed car-
+bon premium could be under-diversiﬁcation resulting from
+divestment and exclusionary screening of stocks with high
+carbon emissions by institutional investors implementing a
+sustainable investment policy. To the extent that some in-
+vestors may shun companies with high carbon emissions,
+risk sharing would be limited, and idiosyncratic risk could
+be priced (e.g., Merton, 1987 ; Hong and Kacperczyk, 2009 ).
+If the extent of such divestment is high, one would expect
+to see signiﬁcant pricing effects.
+We test this possibility by looking at the portfolio hold-
+ings of institutional investors. Formally, we estimate the
+following pooled regression model:
+I O i,t = d 0 + d 1 Emissio n j,t + d 2 Control s j,t + ε i,t . (3)
+We consider ownership effects based on carbon in-
+tensity, the measure that is most aligned with explicit
+mandates imposed by socially sensitive asset managers. In
+the Online Appendix, Table A.4, we also present the results
+for the less commonly used measures of total emissions
+and growth in emissions. As these results conﬁrm, these
+variables have no signiﬁcant impact on institutional in-
+vestor portfolios. The vector of controls includes LOG SIZE,
+PRINV, B/M, MOM, BETA, VOLAT, VOLUME, NASDAQ , and
+SP50 0. All regressions include year/month ﬁxed effects.
+Also, carbon emissions tend to vary geographically, due
+to resource-driven ﬁrm locations. It is thus possible that
+the geographic location may also interact with ownership
+incentives. We test this idea by including in the ownership
+regression state ﬁxed effects determined by the ﬁrm head-
+quarters’ locations (in even columns). Our coeﬃcient of
+interest is d 1 , which measures the degree of avoidance of
+ﬁrms with greater carbon emissions. We cluster standard
+errors at the industry and year levels.
+In Panel A of Table 11 , we report the results for the ag-
+gregate institutional ownership measure. Columns 1 and 2
+show the results for SCOPE 1 INT , respectively without and
+with state ﬁxed effects. Both coeﬃcients are negative and
+statistically signiﬁcant at the 5% level. The economic effect
+of the divestment is relatively modest: a one-standard-
+deviation increase in SCOPE 1 leads to approximately a
+1.3-percentage-point decrease in aggregate institutional
+ownership, which is about 6.3% of the cross-sectional stan-
+dard deviation in ownership. In contrast, the coeﬃcients
+are statistically insigniﬁcant for SCOPE 2 INT and SCOPE 3
+INT , indicating that the exclusionary screens institutional
+investors apply in constructing their portfolios are entirely
+based on SCOPE 1 INT .
+The institutional investor world pools a number of dif-
+ferent constituencies with possibly different investor pres-
+sures. We conjecture that certain institutions, such as in-
+surance companies, investment advisers, or pension funds,
+are more likely to face investor pressure, and thus they
+avoid high-emission companies, as opposed to mutual
+funds and hedge funds who are natural arbitrageurs. We
+test this hypothesis formally by dividing the institutional
+investors’ universe into six categories: banks, insurance
+companies, investment companies, independent advisers,
+pension funds, and hedge funds. For each category, we
+obtain their stock-level institutional ownership and esti-
+mate the regression model in (3) for each of them sep-
+arately. Panel B reports the results broken down by in-
+vestor category. We observe a strong cross-sectional vari-
+ation in the ownership patterns. Insurance companies, in-
+539
+
+===== PAGE 24 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+vestment advisers, and pension funds tend to hold less of
+the high scope 1 emission companies. At the same time,
+we observe positive, though weaker, ownership effects for
+banks, investment companies, and hedge funds, consis-
+tent with these groups being natural arbitrageurs. The di-
+vestment effects are economically large. A movement in
+SCOPE 1 INT from one standard deviation below the mean
+to one standard deviation above the mean, corresponding
+to a spread between low and high-emission ﬁrms leads
+to a reduction in ownership by 21%, 5%, and 4% of the
+Table 10
+Can the carbon premium be explained by risk factors?
+The sample period is 2005–2017. The dependent variable is the monthly carbon premium estimated each period using a cross-sectional return regression .
+All variables are deﬁned in Table 1 . We report the results of the time-series regression with standard errors adjusted for autocorrelation with 12 lags using
+Newey-West test (in parentheses). Panel A reports the results for the natural logarithm of contemporaneous total emissions; Panel B reports the results for
+the percentage change in carbon emissions; Panel C reports the results for carbon emission intensity. ∗∗∗ 1% signiﬁcance; ∗∗5% signiﬁcance; ∗10% signiﬁcance.
+Panel A: Total emissions
+LOG (SCOPE 1 TOT) LOG (SCOPE 2 TOT) LOG (SCOPE 3 TOT)
+Variables (1) (2) (3) (4) (5) (6)
+MKTRF −1.176 3.298 ∗∗∗ 3.429 ∗∗
+(0.714) (1.084) (1.357)
+HML −6.020 ∗∗∗ −4.284 ∗∗ −6.444 ∗∗
+(1.598) (1.759) (2.537)
+SMB −0.331 1.184 1.539
+(0.887) (2.858) (1.840)
+MOM 0.399 −3.853 ∗∗ −3.580 ∗∗∗
+(0.559) (1.721) (1.281)
+CMA 0.086 ∗∗∗ 0.053 0.116 ∗∗∗
+(0.028) (0.036) (0.036)
+BAB 0.772 0.303 1.581
+(0.824) (1.749) (1.681)
+LIQ 2.658 ∗∗∗ 0.816 3.094 ∗∗∗
+(0.768) (1.135) (1.016)
+NET ISSUANCE 1.250 −1.603 0.376
+(1.015) (2.207) (2.352)
+IDIO VOL 1.566 ∗∗ 0.986 0.414
+(0.723) (1.332) (1.319)
+Constant 0.058 ∗∗ 0.053 ∗∗ 0.085 ∗∗ 0.070 ∗∗∗ 0.103 ∗∗∗ 0.065 ∗∗
+(0.026) (0.023) (0.037) (0.027) (0.035) (0.027)
+Industry adj. No No No No No No
+Adj. R2 0.001 0.331 0.001 0.335 0.001 0.247
+Observations 156 156 156 156 156 156
+Panel B: Growth rate in total emissions
+/Delta1SCOPE 1 /Delta1SCOPE 2 /Delta1SCOPE 3
+Variables (1) (2) (3) (4) (5) (6)
+MKTRF 4.847 −2.463 8.303
+(5.605) (2.516) (8.965)
+HML −8.427 ∗∗ −5.897 ∗ −17.483 ∗∗
+(3.853) (3.362) (7.113)
+SMB −15.284 ∗∗ −9.960 ∗ −23.109 ∗
+(6.419) (5.667) (13.738)
+MOM 3.223 3.703 9.171
+(4.704) (2.727) (8.912)
+CMA −0.159 ∗ −0.153 ∗∗∗ −0.468 ∗∗∗
+(0.087) (0.058) (0.168)
+BAB −8.919 ∗∗∗ 2.396 11.861
+(3.255) (2.036) (8.199)
+LIQ 0.808 −1.343 9.512 ∗
+(2.495) (2.342) (4.847)
+NET ISSUANCE 4.702 1.724 15.976
+(5.262) (4.821) (13.211)
+IDIO VOL 3.851 6.477 ∗ 16.111
+(6.820) (3.474) (11.811)
+Constant 0.640 ∗∗∗ 0.643 ∗∗∗ 0.435 ∗∗∗ 0.463 ∗∗∗ 1.559 ∗∗∗ 1.424 ∗∗∗
+(0.089) (0.120) (0.065) (0.063) (0.237) (0.250)
+Industry adj. No No No No No No
+Adj. R2 0.001 0.107 0.001 0.178 0.001 0.290
+Observations 144 144 144 144 144 144
+( continued on next page )
+540
+
+===== PAGE 25 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 10
+( continued )
+Panel C: Emission intensity
+SCOPE 1 INT SCOPE 2 INT SCOPE 3 INT
+Variables (1) (2) (3) (4) (5) (6)
+MKTRF −0.793 ∗∗∗ 1.790 0.820
+(0.177) (2.810) (0.880)
+HML −0.927 ∗∗∗ −6.181 −4.063 ∗∗
+(0.315) (4.340) (1.635)
+SMB −1.027 ∗∗ −9.486 −0.722
+(0.519) (6.371) (1.214)
+MOM 0.855 ∗∗∗ −1.195 −0.449
+(0.214) (2.970) (0.597)
+CMA 0.001 0.008 0.039
+(0.007) (0.101) (0.031)
+BAB 0.302 −4.055 −0.645
+(0.391) (3.961) (0.915)
+LIQ 0.229 0.372 2.608 ∗∗∗
+(0.297) (2.942) (0.800)
+NET ISSUANCE 0.445 −6.006 −0.139
+(0.304) (5.742) (1.159)
+IDIO VOL 0.333 8.908 ∗∗∗ 0.424
+(0.293) (3.069) (0.723)
+Constant −0.006 −0.004 0.121 0.181 ∗ 0.018 0.012
+(0.008) (0.007) (0.102) (0.097) (0.027) (0.028)
+Industry adj. No No No No No No
+Adj. R2 0.001 0.413 0.001 0.135 0.001 0.104
+Observations 156 156 156 156 156 156
+cross-sectional standard deviation of ownership for invest-
+ment advisers, insurance companies, and pension funds,
+respectively. In particular, given its large aggregate shares
+of stock holdings, the effect through investment advisers
+could lead to signiﬁcant pricing effects. In sharp contrast
+to the results for SCOPE 1 INT , we observe that (with the
+exception of banks loading up positively on SCOPE 3 INT )
+all coeﬃcients for the different investor types are small
+and statistically insigniﬁcant, which suggests that insti-
+tutional investors do not seem to discriminate between
+stocks with regard to their scope 2 and scope 3 emission
+intensities.
+Overall, institutional investors do signiﬁcantly divest
+from ﬁrms associated with high SCOPE 1 INT . They do not
+screen companies based on the level of their emissions (or
+growth in emissions), even though the carbon premium
+is associated with these variables. They prefer to screen
+ﬁrms based on how eﬃciently they use fossil fuel energy
+and do not seem to be concerned about reducing their ex-
+posure to the level of carbon emissions per se. We con-
+clude from these ﬁndings that, unlike for “sin” stocks (as
+shown by Hong and Kacperczyk, 2009 ), limited risk shar-
+ing caused by divestment cannot alone explain why we ob-
+serve a return premium for companies with higher levels
+(and growth) of emissions.
+3.5. Coarse categorization
+It is often pointed out that only a handful of indus-
+tries produce the most signiﬁcant fraction of carbon emis-
+sions. 14 The typical salient industries that are mentioned
+14 For instance, in a 2016 report, the International Energy Agency es-
+timates that 39% of CO 2 emissions come from electricity and heat
+are oil & gas (GIC = 2), utilities (GIC = 65–69), and
+transportation (GIC = 19, 20, and 23). It is therefore nat-
+ural to wonder whether our results are disproportionately
+driven by these sectors, and whether our cross-sectional
+carbon premium would become signiﬁcantly smaller if we
+exclude these industries from our analysis.
+In Table 12 , we report the results for the subset of
+ﬁrms, excluding the sectors mentioned above. Panel A re-
+ports the results for total emissions, Panel B for the growth
+rate in emissions, and Panel C for emission intensity. Com-
+pared with the results in Table 8 , we observe that, if
+anything, excluding these salient sectors strengthens the
+results on the ﬁrm-level carbon premium. These ﬁndings
+imply that there is a coarser categorization of companies
+by investors within the salient industries, where returns
+are less sensitive to differences in emissions across ﬁrms.
+In Table 13 , we report the results on institutional
+ownership when the salient high-CO 2 industries are ex-
+cluded. Consistent with Gabaix (2014) , we ﬁnd that coarse
+industry-level categorization drives our divestment results.
+Indeed, there is no signiﬁcant divestment in the other in-
+dustries. This is true in the aggregate as well as for the dif-
+ferent categories of investors. It is as if investors decided
+to reduce their exposure to certain industries by divest-
+ing from some ﬁrms but holding on to the best in class
+in terms of scope 1 emission intensity in those industries.
+In Table A.5 of the Online Appendix, we provide additional
+evidence on this result with respect to levels and changes
+in emissions. We do not observe any divestment based
+on levels of emissions, but some divestment based on the
+production, 30% from transport, and 11% from industrial production
+(see https://www.iea.org/media/statistics/Energy _ and _ CO2 _ Emissions _ in _
+the _ OECD.pdf ).
+541
+
+===== PAGE 26 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 11
+Carbon emissions and institutional ownership.
+The sample period is 2005–2017. The dependent variable in Panel A is IO. The dependent variables in Panel B, Panel C, and Panel D are IO_BANK,
+IO_INSURANCE, IO_INVESTCOS, IO_ADVISERS, IO_PENSIONS, and IO_HFS. Panels A-D present the result for contemporaneous measures of emission intensity.
+Panel B presents the results for SCOPE 1 , Panel C presents the results for SCOPE 2 , and Panel D presents the results for SCOPE 3 . All variables are deﬁned
+in Table 1 . We report the results of the pooled regression with standard errors clustered at the industry and year level (in parentheses). All regressions
+include year-month ﬁxed effects. In Panel A, the regressions for columns 2, 4, and 6 additionally include state-ﬁxed effects. All regressions in Panels B-D
+include state ﬁxed effects. ∗∗∗ 1% signiﬁcance; ∗∗5% signiﬁcance; ∗10% signiﬁcance.
+Panel A: Aggregate ownership (Emission intensity)
+Variables (1) (2) (3) (4) (5) (6)
+(0.085) (0.083)
+SCOPE 2 INT −0.383 −0.381
+(1.621) (1.610)
+SCOPE 3 INT 0.094 −0.130
+(0.550) (0.581)
+LOGSIZE 2.078 1.847 2.096 1.859 2.104 1.850
+(1.510) (1.702) (1.484) (1.678) (1.499) (1.706)
+PRINV −29.353 ∗∗∗ −37.098 ∗∗∗ −29.333 ∗∗∗ −37.161 ∗∗∗ −29.308 ∗∗∗ −37.200 ∗∗∗
+(5.614) (6.448) (5.611) (6.392) (5.640) (6.476)
+MOM −1.453 −1.792 ∗ −1.542 −1.871 ∗∗ −1.544 −1.858 ∗
+(0.937) (0.876) (0.895) (0.823) (0.920) (0.856)
+B/M −1.165 −0.890 −1.533 −1.205 −1.498 −1.216
+(1.423) (1.602) (1.366) (1.541) (1.339) (1.549)
+BETA 9.123 ∗∗∗ 9.470 ∗∗∗ 9.332 ∗∗∗ 9.705 ∗∗∗ 9.300 ∗∗∗ 9.695 ∗∗∗
+(1.508) (1.459) (1.421) (1.375) (1.430) (1.388)
+VOLAT −7.617 4.118 −6.867 4.770 −7.095 4.532
+(14.257) (12.827) (13.550) (11.939) (14.024) (12.565)
+VOLUME −4.427 ∗∗∗ −4.612 ∗∗ −4.379 ∗∗∗ −4.568 ∗∗ −4.389 ∗∗∗ −4.582 ∗∗
+(1.400) (1.636) (1.422) (1.650) (1.378) (1.626)
+NASDAQ −1.159 −1.529 −0.875 −1.255 −0.751 −1.292
+(1.467) (1.700) (1.431) (1.638) (1.303) (1.505)
+SP500 2.559 1.711 2.418 1.508 2.394 1.510
+(2.120) (2.093) (2.122) (2.088) (2.129) (2.095)
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+State ﬁxed effect No Yes No Yes No Yes
+Observations 170,701 160,406 170,701 160,406 170,701 160,406
+R-squared 0.121 0.166 0.118 0.162 0.118 0.162
+Panel B: Disaggregate ownership
+(1) (2) (3) (4) (5) (6)
+Variables Banks Insurance Invest. Cos. Advisers Pensions Hedge Funds
+SCOPE 1 INT 0.001 ∗∗ −0.011 ∗ 0.026 −0.258 ∗∗∗ −0.009 ∗ 0.033
+(0.000) (0.005) (0.022) (0.056) (0.004) (0.028)
+SCOPE 2 INT 0.009 −0.253 −0.139 −0.156 0.049 0.108
+(0.006) (0.144) (0.406) (0.992) (0.097) (0.441)
+SCOPE 3 INT 0.004 ∗ −0.021 0.038 0.052 0.028 −0.230
+(0.002) (0.071) (0.115) (0.409) (0.030) (0.151)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+State ﬁxed effect Yes Yes Yes Yes Yes Yes
+Observations 160,406 160,406 160,406 160,406 160,406 160,406
+growth of scope 2 and scope 3 emissions. This divestment
+is particularly strong for pension funds.
+3.6. Investor awareness
+The carbon premium in stock returns could also be
+affected by the changing awareness of investors about car-
+bon risk. In particular, one would expect that periods with
+greater climate change awareness would have a higher
+carbon premium. We evaluate this hypothesis in two ways.
+First, we compare the estimated carbon premium before
+and after the Paris Agreement in 2015. Second, we impute
+carbon emissions in the 1990s based on their levels in
+2005 and estimate the carbon premium over this decade
+and compare this premium to the one obtained over
+our sample period, when similarly imputing back carbon
+emissions based on the levels of emissions in 2017. Both
+tests offer complementary views on the role of changing
+investors’ attention. The ﬁrst test allows us to assess the
+short-term impact of changing attention, while the second
+test is more suited for the long-term changes in attention.
+The Paris Agreement possibly raised both the awareness
+of risks tied to carbon emissions and the prospect of reg-
+ulatory interventions to limit carbon emissions. One could
+therefore expect that the carbon risk premium would in-
+crease after 2015 following the Paris Agreement. We test
+542
+
+===== PAGE 27 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 12
+Carbon emissions and stock returns: excluding salient industries.
+The sample period is 2005–2017. The dependent variable is RET. All variables are deﬁned in Table 1 . We report the results of the pooled regression
+with standard errors clustered at the industry level (in parentheses). The sample excludes companies in the oil and gas (gic = 2), utilities (gic = 65–69),
+and transportation (gic = 18, 19, 23) industries All regressions include year-month ﬁxed effects. In the regressions for columns 4–6, we additionally include
+industry-ﬁxed effects. Panel A reports the results for the natural logarithm of total emissions; Panel B reports the results for the percentage change in
+carbon emissions; Panel C reports the results for carbon emission intensity. ∗∗∗ 1% signiﬁcance; ∗∗5% signiﬁcance; ∗10% signiﬁcance.
+Panel A: Total emissions
+Variables (1) (2) (3) (4) (5) (6)
+LOG (SCOPE 1 TOT) 0.072 ∗∗ 0.177 ∗∗∗
+(0.025) (0.044)
+LOG (SCOPE 2 TOT) 0.097 ∗∗ 0.227 ∗∗∗
+(0.039) (0.057)
+LOG (SCOPE 3 TOT) 0.117 ∗∗ 0.324 ∗∗∗
+(0.048) (0.074)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 164,094 164,166 164,190 164,094 164,166 164,190
+R-squared 0.213 0.213 0.213 0.216 0.216 0.216
+Panel B: Growth rate in total emissions
+Variables (1) (2) (3) (4) (5) (6)
+/Delta1SCOPE 1 0.657 ∗∗∗ 0.630 ∗∗∗
+(0.151) (0.142)
+/Delta1SCOPE 2 0.463 ∗∗∗ 0.438 ∗∗∗
+(0.117) (0.112)
+/Delta1SCOPE 3 1.480 ∗∗∗ 1.456 ∗∗∗
+(0.321) (0.322)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 135,522 135,570 135,594 135,522 135,570 135,594
+R-squared 0.230 0.230 0.230 0.233 0.233 0.233
+Panel C: Emission intensity
+Variables (1) (2) (3) (4) (5) (6)
+SCOPE 1 INT 0.004 −0.012
+(0.016) (0.016)
+SCOPE 2 INT 0.154 0.150
+(0.102) (0.112)
+SCOPE 3 INT 0.054 0.160 ∗
+(0.035) (0.078)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 164,190 164,190 164,190 164,190 164,190 164,190
+R-squared 0.213 0.213 0.213 0.216 0.216 0.216
+this hypothesis by estimating the regression model in (1)
+on the two sub-periods: 2005–2015, and 2016–2017. 15 We
+report the results in Table 14 . We ﬁnd that indeed the pre-
+mium associated with all three categories of emissions is
+larger during the 2016–2017 subperiod, especially for scope
+1 and scope 2. This could be seen as evidence that in-
+vestors care more about carbon risk following the Paris
+Agreement. However, an important caveat is that our sam-
+ple increases after 2015, so that the difference in returns
+pre and post Paris could be attributed to the new ﬁrms
+that were added to our sample. We explore this possibility
+15 To enhance the statistical robustness of our results, we now cluster
+standard errors at the ﬁrm and year-month levels.
+in the Online Appendix and indeed ﬁnd in Table A.6 that
+the increase in return premium is mostly due to the addi-
+tion of the new ﬁrms. We ﬁnd that when we exclude the
+new ﬁrms, the carbon premium becomes insigniﬁcant in
+the two years following the Paris Agreement. The insignif-
+icance of the carbon premium does not necessarily mean
+that carbon risk is no longer priced after the Paris Agree-
+ment in 2015; it could be due to a weak statistical power
+given how noisy returns tend to be.
+We further explore the cross-sectional variation of the
+effect of the Paris Agreement by examining whether the
+awareness that the Paris Agreement raised had a differen-
+tial effect on the returns of ﬁrms with different exposures
+to carbon policy risk. We measure the exposures using
+our three measures of ﬁrm-level emissions. Our treatment
+543
+
+===== PAGE 28 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 13
+Carbon emissions and institutional ownership: excluding salient industries.
+The sample excludes companies in the oil & gas (gic = 2), utilities (gic = 65–69), and transportation (gic = 18, 19, 23) industries. The sample period is
+2005–2017. Panel A presents the results for aggregate ownership for contemporaneous carbon intensity measures, Panel B for disaggregated ownership.
+All variables are deﬁned in Table 1 . We report the results of the pooled regression with standard errors clustered at the industry and year level (in
+parentheses). All regressions include year-month ﬁxed effects. In Panel A, the regressions for columns 2, 4, and 6, the regressions additionally include
+state-ﬁxed effects. All regressions for Panel B results include state ﬁxed effects. ∗∗∗ 1%; ∗∗5%; ∗10% signiﬁcance.
+Panel A: Aggregate ownership
+Variables (1) (2) (3) (4) (5) (6)
+SCOPE 1 INT −0.015 −0.007
+(0.094) (0.104)
+SCOPE 2 INT −0.565 −0.525
+(1.968) (2.024)
+SCOPE 3 INT 0.421 0.246
+(0.538) (0.568)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+State ﬁxed effect No Yes No Yes No Yes
+Observations 152,799 143,337 152,799 143,337 152,799 143,337
+R-squared 0.126 0.169 0.126 0.169 0.127 0.170
+Panel B: Disaggregate ownership
+(1) (2) (3) (4) (5) (6)
+Variables Banks Insurance Invest. Cos. Advisers Pensions Hedge Funds
+SCOPE 1 INT 0.001 ∗ −0.013 −0.059 −0.060 0.009 0.114
+(0.000) (0.012) (0.041) (0.078) (0.010) (0.068)
+SCOPE 2 INT 0.006 −0.298 ∗ −0.320 −0.224 0.051 0.261
+(0.006) (0.164) (0.487) (1.252) (0.124) (0.523)
+SCOPE 3 INT 0.004 ∗ −0.015 0.063 0.436 0.041 −0.282
+(0.002) (0.077) (0.125) (0.376) (0.031) (0.170)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+State ﬁxed effect Yes Yes Yes Yes Yes Yes
+Observations 143,337 143,337 143,337 143,337 143,337 143,337
+sample is the subset of ﬁrms in the largest quartile of the
+distribution of ﬁrms sorted by the size of their carbon
+emission as of the end of 2014. We match these ﬁrms
+with a control group of ﬁrms with similar characteris-
+tics identiﬁed by two different techniques: the nearest
+neighbor and the Mahalanobis distance. The matching
+characteristics we use are the same as those we include in
+our return regressions. We report the results based on the
+nearest neighbor matching in Table 15 . The results based
+on Mahalanobis matching are qualitatively similar.
+To validate the quality of our matching, in Table A.7,
+we show, as an example, the balance test for the matched
+samples of treatment and control ﬁrms based on the scope
+1 emission levels. We ﬁnd that the two samples are not
+very different from each other along many ﬁrm-level di-
+mensions. Notable exceptions are market capitalization,
+book-to-market ratio, return on equity, and property plant
+and equipment for which the differences are statistically
+signiﬁcant, though not economically large. Importantly, the
+differences in market capitalization and PPE are expected
+given that the treatment sample is based on the size of
+ﬁrm emissions, which are strongly correlated with both
+characteristics. Next, we compare the returns of ﬁrms in
+the treatment and control groups in the one-year period
+around the Paris Agreement of December 2015. Formally,
+we estimate the following difference-in-differences regres-
+sion model:
+RE T i,t = e 0 + e 1 T REAT ∗ AF T E R j,t + e 2 Control s i,t
++ e 3 μi + e 4 μt + ε i,t , (4)
+where TREAT is a generic indicator variable taking the
+value one for ﬁrms in the treatment sample and zero for
+ﬁrms in the control sample, and AFTER is an indicator
+variable equal to zero for the period 2015/05–2015/11 and
+equal to one for the period 2015/12–2016/05. We also in-
+clude ﬁrm and year-month ﬁxed effects in the regression.
+We estimate this model separately for each scope and
+emission measure. In the regressions, the sorts correspond
+to each scope measure, which then separately identify each
+individual treatment variable. Our coeﬃcient of interest is
+e 1 , which measures the differential effect of the change on
+ﬁrms with high emissions and ﬁrms with low emissions.
+In Panel A of Table A.7, we present the results for the
+level of total emissions. We ﬁnd a strong and positive
+effect on returns based on scope 1 emissions, but no
+signiﬁcant effects for the other two scopes of emissions.
+The effect is economically large, implying that the Paris
+Agreement resulted in an average increase in returns of
+more than 10.6% over the six-month period. In Panel B, we
+show the results based on changes in emissions. While the
+magnitudes of the results for scope 1 and scope 3 based
+on the model with industry ﬁxed effects are fairly large
+544
+
+===== PAGE 29 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 14
+Carbon emissions and stock returns: sub-periods.
+The sample period is 2005–2017. The dependent variable is RET. All variables are deﬁned in Table 1 . We report the results of the pooled regression with
+standard errors clustered at the ﬁrm and year/month level (in parentheses). All regressions include year-month ﬁxed effects and industry-ﬁxed effects. We
+report the results for the natural logarithm of contemporaneous total emissions in Panel A; the results for the growth rate in ﬁrm emissions in Panel B;
+and the results for emission intensity in Panel C. ∗∗∗ 1% signiﬁcance; ∗∗5% signiﬁcance; ∗10% signiﬁcance.
+Panel A: Total emissions
+2005–2015 2016–2017
+Variables (1) (2) (3) (4) (5) (6)
+LOG (SCOPE 1 TOT) 0.127 ∗∗∗ 0.205 ∗∗
+(0.037) (0.075)
+LOG (SCOPE 2 TOT) 0.127 ∗∗∗ 0.233 ∗∗
+(0.042) (0.087)
+LOG (SCOPE 3 TOT) 0.265 ∗∗∗ 0.340 ∗∗∗
+(0.086) (0.107)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. Yes Yes Yes Yes Yes Yes
+Observations 121,694 121,622 121,778 62,594 62,594 62,606
+R-squared 0.268 0.269 0.269 0.115 0.115 0.115
+Panel B: Growth rate in total emissions
+2005–2015 2016–2017
+Variables (1) (2) (3) (4) (5) (6)
+/Delta1SCOPE 1 0.610 ∗∗∗ 0.629 ∗∗
+(0.161) (0.249)
+/Delta1SCOPE 2 0.265 ∗∗∗ 0.459 ∗∗
+(0.097) (0.193)
+/Delta1SCOPE 3 1.259 ∗∗∗ 1.032 ∗∗
+(0.355) (0.436)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. Yes Yes Yes Yes Yes Yes
+Observations 108,888 108,804 108,948 44,163 44,151 44,175
+R-squared 0.278 0.279 0.279 0.089 0.089 0.089
+Panel C: Emission intensity
+2005–2015 2016–2017
+Variables (1) (2) (3) (4) (5) (6)
+SCOPE 1 INT 0.005 0.010
+(0.007) (0.019)
+SCOPE 2 INT 0.091 0.117
+(0.094) (0.125)
+SCOPE 3 INT 0.030 0.040
+(0.091) (0.087)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. Yes Yes Yes Yes Yes Yes
+Observations 121,778 121,778 121,778 62,606 62,606 62,606
+R-squared 0.268 0.268 0.268 0.114 0.114 0.114
+(between 3.7% and 4.5%), they are statistically insigniﬁ-
+cant. In Panel C, we present the results based on carbon
+intensity. Surprisingly, we ﬁnd a strong negative coeﬃcient
+for scope 3 emissions. The effects for the other two scopes
+are small and insigniﬁcant. Overall, these results on the
+differential cross-sectional effects of the Paris Agreement
+are broadly consistent with our other results but their
+statistical signiﬁcance is relatively small. Again, one of
+the reasons could be the relatively small statistical power
+of the tests, as returns are generally quite noisy. Another
+reason could be that the salient effects, such as Paris
+Agreement, take a longer time to materialize in investors’
+beliefs.
+To offer a longer-term perspective on the changing in-
+vestors’ beliefs, we exploit the fact that climate change
+and carbon emissions were not yet salient issues in the
+1990s. It is only in the last two decades, with the accumu-
+lation of CO 2 in the atmosphere and the repeated record-
+breaking temperatures, that climate change has turned into
+a widespread concern. This naturally raises the question of
+whether stock returns were already affected by corporate
+carbon emissions in the 1990s. If information about ﬁrm-
+545
+
+===== PAGE 30 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 15
+Paris Agreement and stock returns: difference-in-differences estimation.
+The dependent variable is RET. Our treatment sample is the subset of ﬁrms in the largest quartile of the distribution of ﬁrms sorted by the size of their
+carbon emission as of the end of 2014. We match these ﬁrms with a control group of ﬁrms with similar characteristics identiﬁed by the nearest neighbor
+method. The matching characteristics we use are the same as those in our return regressions. TREAT is a generic indicator variable taking the value one for
+ﬁrms in the treatment sample and zero for ﬁrms in the control sample, and AFTER is an indicator variable equal to zero for the period 2015/05–2015/11
+and equal to one for the period 2015/12–2016/05. We estimate this model separately for each scope and emission measure. In the regressions, the sorts
+correspond to each scope measure which then separately identify each individual treatment variable. We also include ﬁrm and year-month ﬁxed effects
+in the regression. All variables are deﬁned in Table 1 . Standard errors (in parentheses) are clustered at the ﬁrm and year/month level. All regressions for
+columns 4–6 include industry-ﬁxed effects. We report the results for the natural logarithm of contemporaneous total emissions in Panel A; the results for
+the growth rate in ﬁrm emissions in Panel B; and the results for emission intensity in Panel C. ∗∗∗ 1% signiﬁcance; ∗∗5% signiﬁcance; ∗10% signiﬁcance.
+Panel A: Total emissions
+Variables (1) (2) (3) (4) (5) (6)
+TREAT1 ∗AFTER 10.615 ∗∗∗ 10.705 ∗∗∗
+(1.175) (1.200)
+TREAT2 ∗AFTER −1.783 −1.681
+(5.861) (5.821)
+TREAT3 ∗AFTER −8.917 −8.782
+(6.081) (6.127)
+Controls Yes Yes Yes Yes Yes Yes
+Firm F.E. Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 5452 6604 6604 5452 6604 6324
+Panel B: Growth rate in total emissions
+Variables (1) (2) (3) (4) (5) (6)
+TREAT1 ∗AFTER 0.438 4.425
+(4.426) (3.373)
+TREAT2 ∗AFTER −3.712 0.361
+(3.541) (2.592)
+TREAT3 ∗AFTER 0.396 3.671
+(4.338) (3.927)
+Controls Yes Yes Yes Yes Yes Yes
+Firm F.E. Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 5764 5706 5901 5764 5706 5901
+Panel C: Emission intensity
+Variables (1) (2) (3) (4) (5) (6)
+TREAT1 ∗AFTER 2.825 2.855
+(5.876) (5.994)
+TREAT2 ∗AFTER −0.016 0.021
+(5.344) (5.417)
+TREAT3 ∗AFTER −7.614 ∗∗∗ −7.749 ∗∗∗
+(2.070) (2.128)
+Controls Yes Yes Yes Yes Yes Yes
+Firm F.E. Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 4540 4853 4736 4540 4853 4736
+level emissions was scarce and/or investors did not pay
+attention to carbon risk, one would expect that the pric-
+ing effects we identify between 2005 and 2017 would be
+much smaller back then. Given that our carbon emissions
+data begins in 2005, we cannot evaluate this hypothesis di-
+rectly. However, we can impute back the unobserved emis-
+sions data for each ﬁrm in the 1990s from the values we
+observe later on. In other words, since emission levels are
+highly autocorrelated and the cross-sectional variation in
+emissions is stable over time (see Fig. 3 ), it seems reason-
+able, as a ﬁrst pass, to assume that the cross-sectional vari-
+ation of emissions in the 1990s tracks closely that observed
+in our data.
+Speciﬁcally, we make the assumption that each ﬁrm
+with stocks trading during the 1990s has an emission in-
+tensity equal to the ﬁrst oﬃcially reported value in the
+2005–2017 period. We then collect the time-series infor-
+mation on each company’s revenues for the 1990–1999 pe-
+riod and impute the total value of emissions for each ﬁrm
+by taking the product of the emission intensity coeﬃcient
+and the ﬁrm’s time-varying sales. We thus obtain a panel
+of imputed total corporate emissions for 1990–1999. We
+546
+
+===== PAGE 31 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Table 16
+Carbon emissions and stock returns (imputed emissions).
+The sample period is 1990–1999. The dependent variable is RET. All variables are deﬁned in Table 1 . We report the results of the pooled regression with
+standard errors clustered at the ﬁrm and year level (in parentheses). All regressions include year-month ﬁxed effects. In the regressions for columns 4
+through 6, we additionally include industry-ﬁxed effects. The total level of emissions is imputed using the earliest observed level of emission intensity
+for each ﬁrm for the period 2005–2017 (in Panel A) and for 1990–1999 (in Panel B) and scaling it by respective revenue values. ∗∗∗ 1% signiﬁcance; ∗∗5%
+signiﬁcance; ∗10% signiﬁcance.
+Panel A: (2005–2017)
+Variables (1) (2) (3) (4) (5) (6)
+LOG (SCOPE 1 TOT) 0.097 ∗∗∗ 0.291 ∗∗∗
+(0.024) (0.046)
+LOG (SCOPE 2 TOT) 0.186 ∗∗∗ 0.336 ∗∗∗
+(0.043) (0.065)
+LOG (SCOPE 3 TOT) 0.245 ∗∗∗ 0.585 ∗∗∗
+(0.043) (0.127)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 161,122 161,062 161,313 161,122 161,062 161,313
+R-squared 0.199 0.200 0.200 0.203 0.203 0.204
+Panel B: (1990–1999)
+Variables (1) (2) (3) (4) (5) (6)
+LOG (SCOPE 1 TOT) −0.037 0.082
+(0.034) (0.078)
+LOG (SCOPE 2 TOT) 0.033 0.236
+(0.045) (0.134)
+LOG (SCOPE 3 TOT) 0.005 0.318 ∗
+(0.059) (0.162)
+Controls Yes Yes Yes Yes Yes Yes
+Year/month F.E. Yes Yes Yes Yes Yes Yes
+Industry F.E. No No No Yes Yes Yes
+Observations 59,878 59,878 59,878 59,878 59,878 59,878
+R-squared 0.149 0.149 0.149 0.156 0.156 0.156
+do exactly the same for emissions over our sample period.
+That is, we take the emission intensity coeﬃcient for 2017
+and impute back total emissions over the 2017–2005 sam-
+ple period by multiplying this coeﬃcient with the ﬁrm’s
+sales year by year. This latter imputation has the additional
+beneﬁt of adding imputed emissions to our sample for all
+the new ﬁrms added to our sample in 2016 and provides
+another robustness check of our ﬁndings.
+Next, we estimate the regression model in (1) using the
+imputed emission values for both time periods and report
+the results in Table 16 . The process of imputation is not
+suitable to obtain the variation in emission growth rates
+since changes in emissions would vary one to one with
+changes in revenues. We have therefore considered an al-
+ternative model in which we have ﬁxed the growth rates at
+the ﬁrst available reported value and used it for all dates
+in the 1990–1999 period. The results from this estimation,
+available upon request, indicate that again the carbon pre-
+mium is insigniﬁcant. The results in Panel A for the period
+of our sample indicate that this imputation works and that
+there is a signiﬁcant carbon premium associated with the
+imputed level of emissions for all three scope categories.
+Notably, the magnitude of the results is even stronger than
+for the reported emission data. In contrast, the results in
+Panel B for the 1990s indicate that there was no signiﬁcant
+carbon premium over this period. This ﬁnding is consistent
+with the quite plausible view that investors did not yet in-
+ternalize carbon risk over this time period, but began to do
+so in the last two decades, as reporting on climate change,
+the effects of global warming, technological progress in re-
+newable energy, and political action to curb carbon emis-
+sions intensiﬁed.
+3.7. Robustness
+We have explored a number of alternatives that provide
+insight on the effects we document. We report the speciﬁc
+tables in the Online Appendix. Below, we brieﬂy summa-
+rize the main ﬁndings in these tables.
+First, we estimate the carbon premium excluding the
+period of the ﬁnancial crisis, which we deﬁne as the period
+from August 2007 to July 2009. The reason for excluding
+the ﬁnancial crisis is that during this period the level of
+emissions is artiﬁcially low because of the crisis and stock
+returns are highly volatile. As a result, the relation between
+stock returns and carbon emissions may be distorted by
+the observations from the crisis period. Broadly, we ﬁnd
+in Table A.8 that excluding the crisis period does not affect
+our results in a major way.
+Second, we explore the robustness of our results to the
+alternative GIC 6-digit industry classiﬁcation. How much
+does this alternative classiﬁcation affect changes in the es-
+timates when industry ﬁxed effects are included? Again,
+the results, reported in Table A.9, are broadly similar to
+547
+
+===== PAGE 32 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+those obtained under the ﬁner Trucost industry classiﬁ-
+cation. Third, we exclude the salient industries from our
+analysis of the carbon premium pre and post Paris Agree-
+ment. The results are reported in Table A.10. If anything,
+the increase in the size of the premium is more pro-
+nounced in the non-salient industries (with the exception,
+possibly, of scope 3 emissions).
+Fourth, we split the sample into two categories of ﬁrms,
+those that report their emissions and those for which
+emissions are estimated, and contrast how the carbon pre-
+mium varies across the two categories. The results are re-
+ported in Table A.11. The coeﬃcient for the level of scope
+1 emissions is slightly smaller and slightly less signiﬁcant
+for ﬁrms that disclose their emissions than for ﬁrms that
+do not. This is not entirely surprising given that, other
+things equal, ﬁrms are more likely to disclose their emis-
+sions if their performance on that dimension is better. Al-
+ternatively, ﬁrms that go out of their way to disclose may
+also have taken steps to reduce their emissions. 16 Overall,
+the carbon premium is larger and more signiﬁcant for the
+ﬁrms that do not disclose their emissions for all categories
+of emissions and for both emission levels and the growth
+in emissions (with one exception for scope 3 emission
+levels).
+Fifth, we estimate the premium associated with the
+level and intensity of all three categories of emissions
+added up together. This is to facilitate comparison with
+the results in Garvey et al. (2018) and In et al. (2019) . As
+one might expect based on our results for the disaggre-
+gated emissions, there is a highly signiﬁcant premium as-
+sociated with the level of emissions, but not with emission
+intensity. The results are presented in Table A.12. Sixth,
+we also report how institutional investor portfolios are not
+underweight companies with high levels of emissions (or
+high growth rates) in Table A.4. If anything, institutional
+investors load up on scope 2 and scope 3 emission lev-
+els. This could be a mechanical effect of their exclusionary
+screening policies based on scope 1 emission intensity.
+Seventh, we further report how institutional investor
+portfolios are affected by the level of emissions in the
+companies they hold outside the salient industries tied to
+fossil fuels. We report the results in Table A.5. Interest-
+ingly, institutional investor portfolios load up on all three
+scope emission levels in the non-salient industries. Again,
+this is likely the consequence of institutional investors’ ex-
+clusionary screening in the salient industries. If they hold
+less in these industries, they must hold more in other in-
+dustries. Table A.13 also reports the exposure to emission
+levels of institutional investors’ portfolios in the salient in-
+dustries. Here we observe that their portfolios do not ex-
+hibit a signiﬁcant tilt away from or into ﬁrms with high
+emission levels (with the exception of scope 3 emissions,
+where they are signiﬁcantly underweight).
+16 The magnitudes of the coeﬃcients of the estimated emissions could
+also be affected by measurement error. In general, such measurement er-
+ror leads to attenuation bias; irrespective of the direction of the bias our
+comparisons should be treated with caution in the absence of a system-
+atic adjustment for such an error.
+Eighth, we explore how sensitive the carbon premium
+is to the addition of other ﬁrm characteristics besides size.
+Table A.2 reports the results. It turns out that, controlling
+for other ﬁrm characteristics such as B/M, PPE, leverage,
+etc. matters. Without these controls, there is no signiﬁcant
+premium associated with the level of emissions; however,
+the growth in emissions remains highly signiﬁcant). Note
+also that when we add industry ﬁxed effects, adding size
+as a control or not affects results, with a signiﬁcant pre-
+mium associated with the level of scope 1 emissions ap-
+pearing only when we control for size.
+Ninth, we check the robustness of our ownership re-
+gressions with respect to outliers using the natural loga-
+rithm transformation. The results, in Table A.14, indicate
+that there is no signiﬁcant difference compared to our
+baseline results in Table 8 . Tenth, we estimate the carbon
+premium on only the subset of ﬁrms for which we have
+carbon emission data before 2016. The results are reported
+in Table A.15. Although the size of the premium is a little
+smaller, it is broadly in line with the one estimated on the
+full sample.
+4. Conclusion
+How is climate change affecting stock returns? This is
+a fundamental question for the burgeoning ﬁeld of climate
+change and ﬁnance. It is also a fundamental question for
+policy makers who are seeking to enlist investors in the
+ﬁght against climate change. We address this question
+by undertaking a cross-sectional stock returns analysis,
+with carbon emissions as a ﬁrm characteristic, and ﬁnd
+robust evidence that carbon emissions signiﬁcantly and
+positively affect stock returns. There is a straightforward
+link between climate change mitigation and the reduction
+in carbon emissions. Whether through the production of
+their goods and services, or through the use of their prod-
+ucts, ﬁrms are differentially affected by policies to curb
+carbon emissions and by renewable-energy technology
+shocks. Our evidence suggests that investors are discerning
+these cross-sectional differences and are pricing in carbon
+risk. We also ﬁnd that the carbon premium cannot be ex-
+plained through a sin stock divestment effect. Divestment
+takes place in a coarse way in a few industries such as oil
+and gas, utilities, and automobiles, and is entirely based
+on scope 1 emission intensity screens. Notably, we ﬁnd
+no carbon premium associated with emission intensity.
+Moreover, outside the salient industries where all the
+divestment takes place, we ﬁnd a robust, persistent, and
+signiﬁcant carbon premium at the ﬁrm level for all three
+categories of emission levels and growth rates.
+References
+Andersson, M. , Bolton, P. , Samama, F. , 2016. Hedging climate risk. Financ.
+Anal. J. 72 (3), 13–32 .
+Baldauf, M. , Garlappi, L. , Yannelis, C. , 2020. Does climate change affect
+real estate prices? Only if you believe in it. Rev. Financ. Stud. 33,
+1256–1295 .
+Bernstein, A. , Gustafson, M. , Lewis, R. , 2019. Disaster on the horizon: the
+price effect of sea level rise. J. Financ. Econ 134 (2), 253–272 .
+Busch, T. , Johnson, M. , Pioch, T. , 2018. Consistency of Corporate Car-
+bon Emission Data. University of Hamburg Report WWF Deutschland,
+Hamburg .
+548
+
+===== PAGE 33 =====
+
+P. Bolton and M. Kacperczyk Journal of Financial Economics 142 (2021) 517–549
+Chava, S. , 2014. Environmental externalities and cost of capital. Manage.
+Sci. 60 (9), 2223–2247 .
+Engle, R. , Giglio, S. , Lee, H. , Kelly, B. , Stroebel, J. , 2020. Hedging climate
+change news. Rev. Financ. Stud. 33, 1184–1216 .
+Giglio, S. , Maggiori, M. , Rao, K. , Stroebel, J. , Weber, A. , 2018. Climate
+Change and Long-Run Discount rates: Evidence from Real Estate
+Chicago Booth Research Paper No. 17-22 .
+Gabaix, X. , 2014. A sparsity-based model of bounded rationality. Q. J. Econ.
+129 (4), 1661–1710 .
+Gennaioli, N. , Shleifer, A. , 2010. What comes to mind. Q. J. Econ. 125 (4),
+1399–1433 .
+Garvey, G.T. , Iyer, M. , Nash, J. , 2018. Carbon footprint and productivity:
+does the “E” in ESG capture eﬃciency as well as environment? J. In-
+vest. Manage. 16 (1), 59–69 .
+Görgen, M. , Jacob, A. , Nerlinger, M. , Riordan, R. , Rohleder, M. , Wilkens, M. ,
+2019. Carbon risk. Unpublished working Paper. University of Augs-
+burg .
+Hong, H. , Kacperczyk, M. , 2009. The price of sin: the effects of social
+norms on markets. J. Financ. Econ. 93 (1), 15–36 .
+Hong, H. , Li, F.W. , Xu, J. , 2019. Climate risks and market eﬃciency. J.
+Econom. 208 (1), 265–281 .
+Hsu, P.-.H. , Li, K. , Tsou, C.Y. , 2019. The Pollution Premium Unpublished
+working paper. HKUST .
+Ilhan, E. , Sautner, Z. , Vilkov, G. , 2020. Carbon tail risk. Rev. Financ. Stud.
+forthcoming .
+In, S.Y., Park, K.Y., Monk, A., 2019. Is ’being green’ Rewarded in the mar-
+ket? An empirical Investigation of Decarbonization and Stock Returns
+Unpublished working paper. Stanford Global Project Center https:
+//ssrn.com/abstract=3020304 .
+Kacperczyk, M. , Van Nieuwerburgh, S. , Veldkamp, L. , 2016. A rational
+theory of mutual funds’ attention allocation. Econometrica 84 (2),
+571–626 .
+Krueger, P. , Sautner, Z. , Starks, L. , 2020. The importance of climate risks
+for institutional investors. Rev. Financ. Stud. 33, 1067–1111 .
+Merton, R.C. , 1987. A simple model of capital market equilibrium with in-
+complete information. J. Finance 42, 483–510 .
+Monasterolo, I. , De Angelis, L. , 2019. Blind to Carbon risk? An analysis of
+Stock Market’s Reaction to the Paris Agreement. University of Bologna
+Unpublished working paper .
+Murﬁn, J. , Spiegel, M. , 2020. Is the risk of sea level rise capitalized in res-
+idential real estate? Rev. Financ. Stud. 33, 1217–1255 .
+549

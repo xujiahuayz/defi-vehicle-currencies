@@ -1,0 +1,3508 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 146 (2022) 932–964
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Product market strategy and corporate policies /p82
+Jakub Hajda a , Boris Nikolov b , c , d , ∗
+a HEC Montréal, 30 0 0, chemin de la Côte-Sainte-Catherine, Montréal, Québec H3T 2A7, Canada
+b Faculty of Business and Economics at the University of Lausanne, Extranef 228, Lausanne CH-1015, Switzerland
+c Swiss Finance Institute (SFI), Switzerland
+d European Corporate Governance Institute (ECGI), Belgium
+a r t i c l e i n f o
+Article history:
+Received 23 December 2020
+Revised 8 September 2022
+Accepted 9 September 2022
+Available online 14 October 2022
+JEL classiﬁcation:
+G31
+G32
+Keywords:
+Product market strategy
+Product life cycle
+Investment
+Capital structure
+Structural estimation
+a b s t r a c t
+We examine how product life cycle affects investment and ﬁnancing by estimating an
+industry equilibrium model that embeds product portfolio characteristics. In the model,
+ﬁrms trade off higher proﬁtability of newer products versus product introduction costs.
+Using product-level data, we ﬁnd that the product dimension is critical in quantitatively
+explaining cash ﬂow dynamics, corporate policies, and industry structure. We show that
+product introductions and capital investment are complements and that product dynamics
+incentivize preserving more debt capacity. Our estimates reveal that product life cycle is
+more pronounced for ﬁrms with smaller and more concentrated product portfolios as well
+as those with high product variety.
+©2 0 2 2 Elsevier B.V. All rights reserved.
+1. Introduction
+Firms use products to translate their ideas into prof-
+its. Product introductions alter ﬁrms’ product portfolios,
+which, in turn, inﬂuence their cash ﬂows. As such, prod-
+uct dynamics and cash ﬂow dynamics are closely related.
+Empirical evidence suggests that within-ﬁrm product cre-
+ation and destruction is substantial. For example, ﬁrms
+in the consumer goods sector introduce or withdraw on
+/p82 Researcher(s) own analyzes calculated (or derived) based in part on
+data from The Nielsen Company (US), LLC and marketing databases pro-
+vided through the Nielsen Datasets at the Kilts Center for Marketing Data
+Center at The University of Chicago Booth School of Business. The conclu-
+sions drawn from the Nielsen data are those of the researcher(s) and do
+not reﬂect the views of Nielsen. Nielsen is not responsible for, had no role
+in, and was not involved in analyzing and preparing the results reported
+herein.
+∗ Corresponding author.
+E-mail address: boris.nikolov@unil.ch (B. Nikolov) .
+average 10.8% of products in their portfolios every year
+( Argente et al., 2018 ). 1 The large extent of product creation
+and destruction can be attributed to product life cycle,
+as ﬁrms’ revenue growth crucially depends on either de-
+veloping current product lines or introducing novel prod-
+ucts (e.g. Levitt, 1965; Argente et al., 2021b ). Thus, the
+product-level variation is bound to inﬂuence cash ﬂow dy-
+namics and to impact ﬁrms’ policies. Moreover, as ﬁrms
+choose not only their product portfolio but also the way
+in which it is ﬁnanced and implemented in their real ac-
+tivities, product dynamics must be related to investment
+and ﬁnancing decisions.
+The importance of product dynamics induced by prod-
+uct life cycle raises a number of novel questions for ﬁnan-
+cial economists. First, how does product life cycle inﬂu-
+1 Product dynamics contribute much more to macroeconomic ﬂuctua-
+tions than the effects of labor markets or establishment entry and exit
+( Broda and Weinstein, 2010 ).
+https://doi.org/10.1016/j.jﬁneco.2022.09.003
+0304-405X/© 2022 Elsevier B.V. All rights reserved.
+
+===== PAGE 2 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+ence corporate policies? Second, to what extent do ﬁrms’
+product portfolio choices affect their investment and ﬁ-
+nancing decisions? Third, which product characteristics are
+vital in determining ﬁrms’ exposure to product life cycle?
+Finally, how quantitatively important are product dynamics
+for corporate policies and industry structure?
+In this paper, we demonstrate both empirically and
+quantitatively that corporate valuations and policies are
+better understood when taking into account the charac-
+teristics of products, which microfound ﬁrms’ cash ﬂows.
+First, we describe the empirical relation between prod-
+uct portfolio age and ﬁrms’ investment and ﬁnancing de-
+cisions. Second, we develop and estimate a dynamic in-
+dustry equilibrium model to understand and quantify the
+inﬂuence of the economic mechanisms underpinning the
+empirical results. By doing so, we document that product
+life cycle has signiﬁcant and economically meaningful im-
+plications for corporate policies and industry structure.
+To analyze the implications of product life cycle, we re-
+construct ﬁrms’ product portfolios by using detailed and
+disaggregated product data from Nielsen Homescan. We
+focus on ﬁrms’ product portfolio age, measured by the
+share of products that exceed half of their lifespan. Prod-
+uct portfolio age is related to product life cycle due to
+the negative relationship between product-speciﬁc revenue
+and age (e.g. Argente et al., 2021b ). An important result
+of the paper is to show that this relationship aggregates
+to product portfolio level, because product portfolio age is
+negatively associated with ﬁrms’ proﬁtability. Crucially, the
+effect of product portfolio age on cash ﬂow is markedly
+different from that of ﬁrm age. We also document that the
+product life cycle channel results in a negative relation-
+ship between the market-to-book ratio and product port-
+folio age, which implies that managing product portfolios
+has direct implications for ﬁrm value. As such, product de-
+cisions of value-maximizing ﬁrms should be reﬂected in
+their investment and ﬁnancing choices: empirically, both
+net leverage and capital investment are also negatively re-
+lated to product portfolio age. 2
+We rationalize these empirical patterns by develop-
+ing and estimating a dynamic industry equilibrium model
+of monopolistic competition in which ﬁrms make invest-
+ment, ﬁnancing and product decisions. In the model, each
+ﬁrm combines capital and products to generate revenue.
+It ﬁnances its activities with current cash ﬂow, net debt
+subject to a collateral constraint and costly external eq-
+uity. Consistent with the product life cycle channel, each
+product follows a life-cycle pattern: new products provide
+higher revenue than old ones and are expected to last
+longer, because old products can exit. When deciding on
+introducing a new product to its portfolio, ﬁrms trade off
+the beneﬁts, associated with higher and more durable rev-
+enue of a younger product portfolio, versus product intro-
+duction costs. The fact that ﬁrms can adjust their prod-
+uct portfolio has direct implications for cash ﬂow dynam-
+2 Using an alternative, text-based approach, Hoberg and Maksi-
+movic (2021) document that ﬁrms in the late stage of their product life
+cycle have a higher investment- q sensitivity. Our data suggests that in-
+vestment policy of ﬁrms with older product portfolios is more sensitive to
+Tobin’s q .
+ics, and thus connects ﬁrms’ real, ﬁnancial, and product
+decisions. By embedding these ﬁrm-level dynamics in an
+industry equilibrium framework, we can examine the im-
+plications of equilibrium effects for the product life cy-
+cle channel as ell as the effects of product-level economic
+forces on industry structure. 3
+The model provides economic rationale to the empir-
+ical stylized facts. First, it shows that capital investment
+and product introductions are complements rather than
+substitutes, meaning that the ﬁrm expands its product
+lines while also investing in production capacity. Firms in-
+crease capital investment when introducing new products
+because a higher level and durability of revenues associ-
+ated with a younger product portfolio increases its incen-
+tives to invest in physical capital. However, ﬁrms tend to
+invest less as its product portfolio ages, because its rev-
+enues decline and become more risky as they are expected
+to diminish quicker. Thus, the model rationalizes the nega-
+tive relationship between investment and product portfolio
+age observed in the data.
+Second, the model documents that product life cycle in-
+duces stronger precautionary savings motives. In particu-
+lar, when the product portfolio ages, ﬁrms have higher in-
+centives to preserve debt capacity. This happens because
+ﬁrms want to avoid issuing costly external equity ﬁnanc-
+ing to ﬁll the revenue gap created by old products becom-
+ing obsolete. Firms, however, also tend to increase their
+leverage when introducing new products, as they are pre-
+dominantly ﬁnanced with debt. As such, the model sheds
+light on the economic mechanism driving the negative em-
+pirical relationship between leverage and product portfolio
+age. Notably, these effects are absent in standard dynamic
+model of the ﬁrm that do not account for product portfolio
+structure.
+Third, our model shows that industry equilibrium ef-
+fects have a mitigating effect on ﬁrm-level policies, be-
+cause changes in ﬁrm value induced by varying product
+characteristics are counterbalanced by an adjustment in
+entry cost and industry structure. Thus, the model docu-
+ments a close link between product characteristics and in-
+dustry concentration and shows that product life cycle can
+be an important channel through which industry effects
+inﬂuence corporate policies.
+To quantify the importance of product life cycle on
+corporate policies, we estimate the structural parameters
+of the model by matching a set of model-implied mo-
+ments to their empirical counterparts. Crucially, the esti-
+mation procedure relies on the product portfolio data, as
+ﬁrms’ product portfolio structure is indicative of the im-
+portance of the product life cycle channel. Thus, the ob-
+servable product portfolio characteristics help identify the
+two key parameters governing the ﬁrm’s product deci-
+sions: the old product revenue discount and the product
+introduction cost. We ﬁnd that the estimated model quan-
+titatively matches key features of the data, particularly dif-
+3 Livdan and Nezlobin (2021) argue that controlling for the vintage
+composition of capital stock can help explain ﬁrms’ investment decisions,
+as the age of capital affects its proﬁtability. In this paper, a product’s age
+affects its revenue as well. However, product introductions are different
+from capital investment.
+933
+
+===== PAGE 3 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+ferent moments of product portfolio age. Moreover, the
+estimates suggest that the product life cycle channel is
+quantitatively important, with each old product providing
+only 54.2% of a new product’s revenue and the cost of in-
+troducing each new products being equal to 0.68% of as-
+sets, that is $6.85m for a typical sample ﬁrm. Both esti-
+mates are signiﬁcant and substantial in magnitude, sug-
+gesting that product-level economic forces are sizeable. We
+also document that their effects for industry structure are
+important, as higher introduction costs and lower expo-
+sure to product life cycle result in a more concentrated
+industry.
+To understand which features of the data help ex-
+plain the exposure to the product life cycle channel, we
+study the cross-sectional implications of the model. We
+do so by estimating the model on subsamples of ﬁrms.
+We ﬁrst study the validity of our setting by splitting ﬁrms
+based on their sensitivity to product life cycle. We demon-
+strate that ﬁrms whose products are more sensitive to
+ageing are also more exposed to the product life cycle
+channel. These ﬁrms have a larger estimated old prod-
+uct revenue discount, invest more in physical capital and
+adopt lower leverage. Hence, the results are in line with
+the model’s prediction that stronger product life cycle ef-
+fects induce higher precautionary savings incentives, and
+that ﬁrm complement product introductions with capital
+investment. Second, we create subsamples varying along
+two sets of variables: ﬁrm-level characteristics and product
+market strategy characteristics. By doing so, we examine
+whether the model successfully captures differences across
+product dimensions that might not be directly represented
+in product data that is aggregated to the ﬁrm level.
+We analyze three ﬁrm-level characteristics: product
+portfolio size, between-ﬁrm product concentration, and
+product uniqueness. We document that ﬁrms with smaller
+product portfolios are more exposed to the product life cy-
+cle channel, as they face more pronounced old product rev-
+enue discount and higher product introduction costs. As
+their cash ﬂows are effectively riskier, these ﬁrms adopt
+lower leverage ratios. At the same time, ﬁrms supplying
+many products tend to have younger product portfolios,
+which results in higher, but less volatile proﬁts, highlight-
+ing that ﬁrms may also use their product lines as means
+of revenue diversiﬁcation. We also show that between-
+ﬁrm product concentration strengthens the product life cy-
+cle channel. Speciﬁcally, ﬁrms facing lower between-ﬁrm
+product concentration are more sensitive to product-level
+economic forces, as their products become obsolete faster.
+This leads to a higher rate of product introductions, which
+translates into their product portfolio structure and feeds
+back to investment and ﬁnancing decisions. Finally, we
+demonstrate that ﬁrms with more unique products have
+higher product introduction costs, but are less exposed to
+product life cycle. Given that we use cost of sales as proxy
+for product uniqueness, this result means that ﬁrms try to
+inﬂuence the exposure to product life cycle by managing
+costs such as advertising. We provide evidence that ﬁrms
+do so because their products have lower durability, which
+incentivizes them to prolong the products’ life cycle.
+We focus on three dimensions of ﬁrms’ product mar-
+ket strategies: product durability, product offering vari-
+ety, and within-ﬁrm product concentration. We show that
+ﬁrms supplying more durable products can beneﬁt from
+their products for a longer period of time but also face
+higher product introduction costs. This is a result of two
+opposing forces: on the one hand, these ﬁrms are more
+exposed to product life cycle, in that their products lose
+a larger chunk of their revenue when ageing. On the other
+hand, more durable products also tend to last longer, the
+effect of which dominates. Additionally, we demonstrate
+that ﬁrms with wider product offering variety are less ex-
+posed to product life cycle and face a lower cost of intro-
+ducing a new product. These results are consistent with
+the notion of product-level diversiﬁcation. Importantly, the
+extent of product offering variety also varies with the frac-
+tion of capital that can be collateralized, further indicat-
+ing that ﬁrms might use the intangible capital inherent in
+product brands as collateral. The last sample split concerns
+the notion of within-ﬁrm product concentration. We ﬁnd
+that ﬁrms with more concentrated product portfolios are
+more exposed to product life cycle and have higher prod-
+uct introduction costs than ﬁrms following a more diversi-
+ﬁed product market strategy. The results reinforce the no-
+tion that product market strategy is used by ﬁrms to miti-
+gate the effects of product life cycle. This means that both
+the number of products and the structure of their sales are
+important dimensions to consider when studying the effect
+of product market strategy on corporate policies.
+Overall, the cross-sectional results highlight that the es-
+timated model provides insights on how different dimen-
+sions of ﬁrms’ product characteristics and product market
+strategy affect corporate policies. The empirical evidence
+shows that both between- and within-ﬁrm product mar-
+ket forces are important determinants of investment and
+ﬁnancing decisions.
+The last contribution of the paper is to provide evidence
+that the product life cycle channel has quantitatively im-
+portant implications for corporate policies and ﬁrm valua-
+tion. First, counterfactual experiments related to the sever-
+ity of life cycle effects suggest that a 1% decrease in the
+revenue gap between new and old products increases ﬁrm
+value by 0.083%. Similarly, lowering the product intro-
+duction costs by 1% results in a 0.068% increase in ﬁrm
+value, indicating that costs related to product introduction
+are economically signiﬁcant. Firms’ proﬁtability and corpo-
+rate policies are also greatly affected by the product-level
+parameters. Hence, the counterfactual experiments imply
+that managing the life cycle of products, by means of intro-
+duction cost or sensitivity to ageing, yields material ben-
+eﬁts to ﬁrms. Second, we show that product-level char-
+acteristics are important determinants of industry struc-
+ture. In particular, more severe product life cycle effects
+result in less concentrated industry, while higher product
+introduction costs increase industry concentration. This in-
+dicates that product life cycle and industry concentration
+are inherently related. Third, we demonstrate that prod-
+uct characteristics largely inﬂuence the precautionary sav-
+ings incentives of the ﬁrm. More severe product life cy-
+cle effects result in stronger precautionary savings motives,
+as the ﬁrm can lose a large fraction of revenue when its
+products age. Similarly, less frequent product introductions
+lower the ﬁrm’s incentives to preserve debt capacity, be-
+934
+
+===== PAGE 4 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+cause product introductions require less ﬁnancing. These
+effects are lar ge: for exam ple, when eliminating the prod-
+uct life cycle channel, the ﬁrm would essentially double its
+leverage ratio.
+We also carry out a host of robustness tests to better
+understand the performance of our model and the inﬂu-
+ence of channels that could affect our results. First, we
+show that our model is able to generate out-of-sample
+moments of similar sign and magnitude. Second, we ex-
+tend our model to study the effect of endogenous product
+withdrawal, product cannibalization, as well as the product
+portfolio implications for debt and equity ﬁnancing. The
+extensions support the key mechanism between product
+life cycle and corporate policies. All in all, the results fur-
+ther highlight the fact that ﬁrms’ internal product setting,
+which can be diﬃcult to observe in the data or may be
+concealed as a ﬁrm ﬁxed effect, matters for ﬁrm value, and
+that the effects of product characteristics are large.
+1.1. Related literature
+This paper contributes to several strands of litera-
+ture. First, the paper adds to the literature that uses
+dynamic models to quantitatively explain corporate in-
+vestment and ﬁnancing policies. Recent examples in-
+clude Gomes (2001) , Hennessy and Whited (20 05, 20 07) ,
+DeAngelo et al. (2011) , Morellec et al. (2012, 2018) , Taylor
+(2010, 2013) , Nikolov and Whited (2014) , Glover (2015) ,
+Wu (2018) , or Nikolov et al. (2018, 2021) . We contribute to
+this literature by explicitly considering ﬁrms’ product port-
+folio decisions. In particular, we show that product dynam-
+ics inﬂuence ﬁrms’ cash ﬂow dynamics and matter quanti-
+tatively for ﬁrms’ investment and ﬁnancing decisions.
+To this end, the paper is also related to the growing
+literature on the relationship between corporate strategy
+and corporate policies, e.g. Titman (1984) , Hellmann and
+Puri (20 0 0) , Parsons and Titman (20 08) , Gourio and
+Rudanko (2014) , Clayton (2017) , D’Acunto et al. (2018) or
+Hoberg and Maksimovic (2021) . We differ from this litera-
+ture by focusing explicitly on ﬁrms’ product market strat-
+egy and showing that cash ﬂow dynamics and corporate
+policies are affected by ﬁrms’ product portfolio charac-
+teristics other than pricing policy, as documented by e.g.
+D’Acunto et al. (2018) . In that respect, this paper is most
+closely related to Hoberg and Maksimovic (2021) , who in-
+fer ﬁrms’ life cycle stage from a text-based measure of
+product life cycle and study its implications for investment.
+Hoberg and Maksimovic (2021) document that product life
+cycle matters for ﬁrms’ investment- q sensitivity, as the in-
+vestment policy of ﬁrms in the late stage of their product
+life cycle is more sensitive to Tobin’s q . Our papers offers
+a complementary view on the importance of the product
+dimension for corporate policies by directly using disag-
+gregated product-level data and by providing quantitative
+evidence of its signiﬁcance.
+The paper also adds to the literature on how prod-
+uct market characteristics affect corporate ﬁnancing pol-
+icy, e.g. Spence (2009) , Maksimovic (1988) , Phillips (1995) ,
+Chevalier (1995a,b) , Kovenock and Phillips (1995, 1997) ,
+MacKay (2003) , Frésard (2010) , and Valta (2012) . In con-
+trast to these papers, we focus on within-ﬁrm product mar-
+ket characteristics, that is the product market strategy and
+we argue that internal product market setting is an im-
+portant determinant of corporate investment and ﬁnancing
+policies.
+Finally, the paper is related to the literature on
+multiple-product ﬁrms such as Broda and Wein-
+stein (2010) , Bernard et al. (2010) , Hottman et al. (2016) ,
+Argente et al. (2018, 2021b) , and Argente et al. (2021a) ,
+who study the reasons why ﬁrms choose to supply mul-
+tiple goods. In contrast to these papers, we analyze the
+corporate ﬁnance implications of product portfolio choice.
+2. Data and stylized facts
+In this section, we analyze the empirical relation be-
+tween product life cycle and corporate policies. Product
+life cycle implies a negative relationship between product-
+speciﬁc revenue and product age (e.g. Levitt, 1965; Argente
+et al., 2021b ). We focus on product portfolio age as the
+measure of ﬁrms’ exposure to product life cycle and show
+that the product-level life cycle effects naturally translate
+to the product portfolio level, resulting in a negative re-
+lationship between product portfolio age and proﬁtabil-
+ity. We document that corporate investment and ﬁnancing
+policy are both negatively related to product portfolio age
+when controlling for other ﬁrm characteristics, indicating
+that product life cycle constitutes an important and novel
+source of variation in corporate policies.
+2.1. Data sources
+We use the data from Nielsen Homescan (NH) to re-
+construct ﬁrms’ product portfolios. The data set contains
+information on prices and quantities of nondurable con-
+sumer goods sold in the US over the period of 2004–2018.
+The product data is comprehensive, as it covers about
+66% of expenditure on goods in CPI ( Broda and Wein-
+stein, 2010 ), and detailed, as it contains vastly more infor-
+mation about products than other data sets such as BLS.
+To study the effects of product life cycle on corporate poli-
+cies, we merge NH with ﬁnancial data from quarterly Com-
+pustat. Appendix A provides a detailed description of the
+data and the merging procedure. Appendix B contains def-
+initions of variables used throughout the paper.
+2.1.1. Deﬁning a product
+One crucial aspect of NH concerns the deﬁnition of a
+product, which is important given the notion of product
+life cycle as well as the measurement of product portfo-
+lio age. In principle, NH allows for many different notions
+of a product. For example, one could assume that ﬁrms
+supply a representative good, indicating a very wide no-
+tion of a product. Another approach would be to take a
+more narrow view of a product that would, e.g., differ-
+entiate between varieties of the same good. In this sub-
+section we consider three deﬁnitions of a product to de-
+scribe the data: a UPC code (most granular; can be as-
+sociated with a particular variety of a product), a brand-
+module (intermediate granularity; can be considered a par-
+ticular brand of a product) and a product group (least
+935
+
+===== PAGE 5 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 1
+Comparison of product characteristics across different samples. The table
+compares product characteristics in the Nielsen Homescan (NH) sample,
+the matched sample of public ﬁrms and the sample of ﬁrms with sub-
+stantial exposure to retail product sales. Market shares are computed at
+the product group-level. Net product entry is the difference between the
+share of entering products and the share of exiting products at the ﬁrm-
+level. Net product creation is the difference between the share of the rev-
+enues of the entering products and the share of the revenue of the exiting
+products at the ﬁrm-level. Share of aggregate revenue (share of all UPCs)
+is the portion of aggregate product revenue (aggregate number of UPCs)
+that can be attributed to each sample, as compared to NH. Establishments
+are ﬁrms identiﬁed in NH. Appendix B provides a description of all vari-
+ables.
+NH Public Matched
+Average # of UPC 57.2 595.9 527.0
+Average # of brand-modules 8.8 56.1 67.4
+Average # of product groups 2.4 7.3 7.0
+Average net product entry 0.7% 0.4% 0.4%
+Average net product creation 0.5% 0.3% 0.1%
+Average market share (all markets) 0.5% 1.9% 3.0%
+Share of aggregate revenue 100% 46.8% 27.1%
+Share of all UPC 100% 25.1% 7.8%
+# establishments 38386 1116 389
+# public ﬁrms 702 108
+granular; can be related to particular product market). 4
+Table 1 presents the summary statistics of several prod-
+uct characteristics in three different samples: the Nielsen
+Homescan, all matched public ﬁrms, and the sample of
+public ﬁrms with substantial exposure to retail product
+sales.
+The data shows that ﬁrms vary substantially in the
+number of supplied products. In particular, an average
+public ﬁrm supplies roughly 9 times as many UPC codes,
+6 times as many brand-modules and operates in 3 times
+as many product groups, than an average ﬁrm in NH. The
+average net product entry and net product creation rates
+of matched public ﬁrms are, however, lower than those
+of NH ﬁrms, due to the size of their product portfolios.
+Table 1 also documents that while public ﬁrms supply
+≈ 25% of all products in the market, sales of these products
+constitute ≈ 47% of the total product revenue in NH. This
+result highlights that analyzing product market strategies
+of public ﬁrms is important, even though there are rela-
+tively fewer public than private ﬁrms in the data. More-
+over, ﬁrms in the matched sample supply roughly as many
+products as all public ﬁrms, but their sales correspond to
+a smaller share of aggregate sales. This happens because
+this sample contains fewer ﬁrms which operate in fewer
+industries. However, they also possess substantial exposure
+to retail product sales. Finally, while public ﬁrms operate
+in roughly 7.3 markets at once, their average market share
+in these markets is fairly low, 1.9% on average, which rein-
+forces the notion that nondurable consumer good market
+in the US is fairly competitive.
+4 Table A.2 in Appendix A presents the summary statistics of the num-
+ber of supplied products using other deﬁnitions. The stylized facts pre-
+sented in this section are qualitatively robust to employing alternative
+deﬁnitions of a product.
+Table 2
+Comparison of product portfolio dynamics. The table presents the dynam-
+ics of product introductions and withdrawals as well as the evolution of
+product portfolio characteristics over time across three different product
+classiﬁcations: product groups (PG), brand-modules (B-M) and UPCs. The
+results are computed using the ﬁnal ﬁltered sample of ﬁrms matched to
+Compustat. Panel A presents the average/median entry and exit rates. En-
+try rate is the share of entering products in a ﬁrm’s product portfolio. Exit
+rate is the share of exiting products in a ﬁrm’s product portfolio. Panel
+B presents the average number of products over time. Panel C presents
+the average product revenue concentration over time. Revenue concen-
+tration is computed using HHI of product revenue corresponding to a par-
+ticular deﬁnition of a product and adjusted for the number of products.
+Appendix B provides a description of all variables.
+PG B-M UPC
+Panel A : Product entry and exit dynamics
+Average entry rate 0.3% 1.1% 1.9%
+Average exit rate 0.3% 0.7% 1.6%
+Median entry rate 0.0% 0.0% 1.4%
+Median exit rate 0.0% 0.0% 1.2%
+Panel B : Average number of products
+< 2008 14.510 134.133 795.289
+2009 −2012 14.292 128.995 769.933
+> 2013 14.137 130.479 728.892
+Panel C : Average product revenue concentration
+< 2008 0.1259 0.1180 0.0391
+2009 −2012 0.1236 0.1193 0.0383
+> 2013 0.1267 0.1081 0.0385
+Having established that product characteristics differ
+across the three samples, we now focus on the differences
+between the three deﬁnitions of a product and on time
+trends. In Panel A of Table 2 , we investigate the dynamics
+of product entry and exit as well as the trends in prod-
+uct portfolio characteristics in the actual and ﬁnal sample
+of ﬁrms used in the paper. 5 Overall, we ﬁnd that the ex-
+tent of product dynamics, and thus product life cycle, is
+much greater when considering more granular deﬁnitions
+of a product. For example, the average entry rate is more
+than three times higher in brand-modules as compared to
+product groups and more than six times higher in UPCs
+than in product groups. The differences in median prod-
+uct entry and exit rates are even starker, as the median
+product entry and exit rates are zero for product groups
+and brand modules, while only slightly smaller than the
+averages for UPCs, highlighting that the most action in the
+product space is taking place at the most granular level.
+Panels B and C of Table 2 document how the average
+number of products as well as the average product revenue
+concentration evolve over time according to each deﬁnition
+of a product. The results suggest that the number of prod-
+ucts supplied is fairly stable across time and deﬁnitions.
+The same is true for the average product revenue concen-
+tration, computed at the level corresponding to each prod-
+uct deﬁnition: while the HHIs are the higher, the coarser
+5 The average number of products is higher in Table 2 than in
+Table 1 due to further ﬁltering of Compustat data. Appendix A provides
+an overview of all the data processing steps and data ﬁlters.
+936
+
+===== PAGE 6 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+the product deﬁnition, the averages remain at similar lev-
+els over time.
+Our results suggest that focusing on a wide deﬁnition of
+a product would to a large extent neglect the product-level
+dynamics that are of crucial importance in this paper. As
+such, the results motivate focusing on the UPC-level deﬁ-
+nition of a product, given that it allows to investigate the
+life cycle of each individual product and to construct a pre-
+cise measure of product portfolio age.
+Finally, evidence in Tables 1 and 2 provides support for
+the interpretation of a new product that is an old product
+offering a minor change to the ﬁrm’s existing product port-
+folio. This change is mostly driven by changing consumer
+taste or by a decline in perceived product quality. Impor-
+tantly, in our sample, new products do not exhibit large
+changes that would come, for example, from R&D innova-
+tion. 6
+2.2. Product portfolio age
+To measure product portfolio age, we follow Melser and
+Syed (2015) and Argente et al. (2018, 2021b) . We deﬁne
+our measure as the weighted share of old products, whose
+age exceeds half of their lifespan 7 , in the product portfolio,
+where the weights correspond to product-speciﬁc revenue:
+age it = weighted # of products with age exceeding 50% of lifespan (it)
+total weighted # of products (it) .
+(1)
+As such, our measure captures the effective age of ﬁrm’s
+i product portfolio in quarter t. Measuring product portfo-
+lio age this way allows us to directly link the data to the
+model, in which the products will also change between the
+two states, as prescribed by product life cycle. Measuring
+product portfolio age also requires observing both entry
+and exit of each product. As such, we only use the data
+on products which were introduced and withdrawn during
+our sample period. 8
+The average ﬁrm in our sample has 44.5% of old prod-
+ucts, as indicated by Panel A of Table 3 . Product port-
+folio age varies substantially as its standard deviation is
+0.325 and a further variance decomposition into within-
+and between-ﬁrm effects suggests that as much as 80% of
+the variance can be attributed to within-ﬁrm variation. The
+average product portfolio age is slightly higher when prod-
+ucts are not weighted by their revenues (0.512) and when
+products are deﬁned at a brand-module rather than UPC
+level (0.519). Taking a higher than 50% threshold for the
+proxy results in a smaller share of older products (0.315 for
+6 In our sample, about half of the ﬁrms do not issues patents. Moreover,
+we ﬁnd that issuance of patents does not consistently lead to product
+introductions. These results are available upon request.
+7 Argente et al. (2021b) provide evidence that the decline in product-
+speciﬁc revenue can start as early as at the end of the ﬁrst year for prod-
+ucts lasting at least 4 years and that it varies with product duration. Thus,
+using half of the lifespan is conservative.
+8 In the Internet Appendix, we consider several alternative deﬁnitions
+of product portfolio age as well as alternative breakpoints for half of the
+lifespan. We show that these deﬁnitions produce qualitatively and quan-
+titatively similar results.
+Fig. 1. Histogram of product portfolio age. Appendix B provides a descrip-
+tion of all variables.
+75% threshold and 0.202 for 90% threshold), but the varia-
+tion between- and within- ﬁrms remains fairly high.
+The large variation in product portfolio age is also ev-
+ident in its distribution shown in Fig. 1 . In particular,
+there are many observations of ﬁrms with only new and
+only old products. Finally, product portfolio age and ﬁrm
+age are only weakly positively related, with the correla-
+tion coeﬃcient of 0.03, suggesting that product portfolio
+age can provide additional information above and beyond
+ﬁrm age. This result is expected given the evidence of, e.g.,
+Hoberg and Maksimovic (2021) , documenting that ﬁrms
+transition from being an ‘old’ product life cycle ﬁrm to a
+‘new.’
+2.2.1. Other product portfolio characteristics
+While product portfolio age is our main variable of in-
+terest measuring the exposure to product life cycle, other
+product portfolio characteristics may interact with product
+life cycle as well. We focus on two such characteristics:
+product portfolio size and product portfolio adjustments.
+A comparison between Tables 2 and 3 suggests that the
+average effective number of products ( ≈ 63 ) is much lower
+than the raw one ( ≈ 765 ). 9 This implies that not only do
+public ﬁrms differ in the number of products supplied, but
+also that the majority of their revenues can be attributed
+to a small number of products, supporting the notion that
+product revenues are fairly concentrated (e.g. Clara et al.,
+2021; Benkard et al., 2021 ). Moreover, product portfolio
+size and product portfolio age are negatively correlated,
+implying that ﬁrms with older product portfolios have on
+average fewer products.
+The average product portfolio adjustment, proxied by
+net product entry, amounts to 0.4% each quarter. This cor-
+responds to an average sample ﬁrm introducing 3.5 prod-
+ucts each quarter, which increase its retail sales by roughly
+1.2%, suggesting that within-ﬁrm product-level dynamics
+have important implications for cash ﬂow dynamics. The
+ﬁrm-speciﬁc average net product creation is nearly twice
+9 The effective number of products equals the inverse of the product-
+level revenue concentration, measured using the normalized HHI of each
+ﬁrm’s product revenue, see Appendix B for details.
+937
+
+===== PAGE 7 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 3
+Summary statistics of product portfolio and ﬁrm characteristics. Age is the share of old products in product portfolio, that is those exceeding half of their
+lifespan. Size is the number of products in product portfolio. Adjustments is the net product entry, that is the difference between the share of entering
+products in a ﬁrm’s product portfolio and the share of exiting products. Market-to-book is the market value of equity plus book value of debt over total
+assets. Investment is capital investment over gross plant, property and equipment. Book leverage is book debt over total assets. Cash is cash and short-
+term investments over total assets. Firm size is the log of deﬂated total assets. Proﬁtability is operating proﬁts over total assets. Firm age is deﬁned as in
+Loderer et al. (2017) . All variables are winsorized at 2.5% and 97.5% percentile. Appendix B provides a description of all variables.
+Panel A : Summary statistics
+age size adjustment market-to-book investment book lev. cash ﬁrm size proﬁtability ﬁrm age
+Mean 0.444 62.735 0.004 1.478 0.021 0.172 0.090 6.657 0.040 -0.068
+p50 0.403 37.633 0.000 1.356 0.017 0.207 0.056 6.871 0.038 -0.036
+sd 0.325 60.604 0.028 0.820 0.016 0.231 0.095 2.267 0.024 0.077
+Count 2319 2319 2319 2319 2319 2319 2319 2319 2319 2313
+Panel B : Pairwise correlations
+age size adjustments market-to-book investment book lev. cash ﬁrm size proﬁtability ﬁrm age
+Age 1
+Size -0.060 ∗∗ 1
+Adjustments -0.098 ∗∗∗ 0.005 1
+Market-to-book 0.055 ∗∗ 0.052 ∗ 0.091 ∗∗∗ 1
+Investment -0.072 ∗∗∗ -0.082 ∗∗∗ 0.056 ∗∗ 0.201 ∗∗∗ 1
+Book leverage 0.048 ∗ 0.324 ∗∗∗ -0.040 -0.395 ∗∗∗ -0.109 ∗∗∗ 1
+Cash 0.007 -0.278 ∗∗∗ 0.030 0.455 ∗∗∗ 0.148 ∗∗∗ -0.784 ∗∗∗ 1
+Firm size 0.015 0.449 ∗∗∗ -0.015 -0.037 -0.172 ∗∗∗ 0.400 ∗∗∗ -0.311 ∗∗∗ 1
+Proﬁtability -0.037 0.120 ∗∗∗ 0.078 ∗∗∗ 0.622 ∗∗∗ 0.106 ∗∗∗ -0.220 ∗∗∗ 0.300 ∗∗∗ 0.141 ∗∗∗ 1
+Firm age 0.026 0.132 ∗∗∗ -0.047 ∗ 0.084 ∗∗∗ -0.125 ∗∗∗ -0.069 ∗∗∗ -0.014 0.245 ∗∗∗ 0.117 ∗∗∗ 1
+as small as the one in the full NH sample ( Table 1 ), imply-
+ing that a large share of product creation and destruction
+takes place in private ﬁrms. Finally, product portfolio ad-
+justments are negatively related to product portfolio age.
+This means that ﬁrms with older product portfolios also
+introduce new products less often. 10
+2.3. Product life cycle, cash ﬂow, and proﬁtability
+An important result of the paper is to show that
+the notion of product life cycle of Levitt (1965) and
+Abernathy and Utterback (1978) can be generalized to
+the ﬁrm-level. The left graph in Panel A of Fig. 2 docu-
+ments that ﬁrms with older product portfolios have lower
+proﬁtability. This means that individual-product life cycle
+and product portfolio age are closely related. As such, the
+proxy passes the ‘sanity check’ of matching the ﬁndings of
+Argente et al. (2021b) by using ﬁrm- rather than product-
+level data. Therefore, the product life cycle provides a nat-
+ural channel through which product-level economic forces
+interact with corporate policies.
+The fact that product portfolios consist of individual
+products, together with product life cycle, jointly imply
+that ﬁrms’ cash ﬂow should be directly affected by both
+product portfolio age and product introductions. We pro-
+vide two distinctive pieces of evidence to argue that this is
+indeed the case.
+Firm characteristics We ﬁrst document how product
+life cycle affects cash ﬂow dynamics through the lens of
+different ﬁrm characteristics. The right graph in Panel A of
+Fig. 2 shows that product portfolio age is tightly related
+10 In the Internet Appendix, we provide further empirical evidence
+about the relationship between these product portfolio characteristics and
+corporate policies.
+to product sales growth, which declines as product portfo-
+lio ages. The economic signiﬁcance is substantial: product
+revenues of ﬁrms with younger product portfolios grow by
+about 1.7% annually, largely due to new product introduc-
+tions. On the other hand, revenue growth of ﬁrms with old
+product portfolios is close to zero. These numbers are con-
+sistent with the observed decline in proﬁtability.
+The left graph in Panel B of Fig. 2 shows that ﬁrms
+with youngest and oldest product portfolios have on av-
+erage higher cash ﬂow volatility. This result stem from the
+fact that older products carry higher risk, due to the de-
+cline in revenue as well as the chance of becoming obso-
+lete. Finally, the cost of sales, presented in the right graph
+in Panel B of Fig. 2 , is a u-shaped function of product port-
+folio age. Provided that this variable proxies for ﬁrms’ mar-
+keting expenses, the shape is intuitive: ﬁrms with younger
+products must devote more resources to introducing new
+products and to advertising. Similarly, ﬁrms with older
+products may try to prolong the lifespan of their products
+by devoting more resources to marketing.
+Importantly, product life cycle has different implications
+for ﬁrm characteristics than ﬁrm life cycle, as proxied by
+ﬁrm age in Panel C of Fig. 2 . Both proﬁtability and product
+sales growth tend to increase, on average, as ﬁrm age in-
+creases. As such, we provide further evidence that product
+and ﬁrm life cycle could have distinctive implications for
+ﬁrms.
+Product introductions If the inﬂuence of product life
+cycle on corporate policies operates through ﬁrms’ cash
+ﬂow dynamics, the effect of product introductions and
+withdrawals on cash ﬂow should be substantial. To inves-
+tigate this claim, we analyze how ﬁrms’ operating rev-
+enues and expenses, adjusted for R&D as in Peters and
+Taylor (2017) , change around quarters in which ﬁrms in-
+troduce new products and withdraw old products. We do
+938
+
+===== PAGE 8 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Fig. 2. Product portfolio age, ﬁrm age and ﬁrm characteristics. The ﬁgure shows how proﬁtability and product revenue growth change with product
+portfolio age (Panel A) and ﬁrm age (Panel C) and how cash ﬂow volatility and cost of sales relate to product portfolio age (Panel B). The solid lines are
+obtained from local polynomial regressions of each variable on the product portfolio age or ﬁrm age proxy using an Epanechnikov kernel function with a
+rule-of-thumb bandwidth estimator and local-mean smoothing. All variables are winsorized at 2.5% and 97.5% percentile. Appendix B provides a description
+of all variables.
+so by regressing each log-transformed variable on a vari-
+able proxying the change in the number of products in the
+portfolio, as well as ﬁrm- and time ﬁxed effects.
+Panel A of Table 4 shows that the average sales are 4.0%
+higher in quarters when the number of products increases,
+while the average cost of goods sold and selling costs are
+3.3% and 2.3% higher, respectively. These effects are even
+stronger when conditioning on the number of products in-
+troduced, e.g. average sales are 5.9% higher when ﬁrms
+introduce more products than a typical ﬁrm in a given
+quarter. The impact of product introduction on revenues
+is persistent, but tends to become weaker over time. For
+939
+
+===== PAGE 9 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 4
+The effect of product introductions and withdrawals on cash ﬂow and
+operating costs. The table shows the change in average sales, cost of
+goods sold and selling costs when introducing new products (Panel A)
+or withdrawing old products (Panel B) today. Product introductions and
+withdrawals are measured by increases and decreases, respectively, in the
+number of UPC codes. Each entry in the table is the percent change in
+the variable of interest in current quarter as well as 4 and 8 quarters for-
+ward, following product introductions or withdrawals. The changes result
+from regressing the log variable of interest on the variable proxying the
+change in the number of products in the portfolio, while controlling for
+ﬁrm and time ﬁxed effects. The ‘dummy’ row is equal to one if product
+stock increases (decreases). The below/ above median + rows split the pos-
+itive (negative) changes in product stock into two equally-sized groups;
+the reference group being ﬁrms with no increase (decrease) in the num-
+ber of products. All variables are winsorized at 2.5% and 97.5% percentile.
+Appendix B provides a description of all variables.
+Panel A: Product introductions
+Sales
+t t + 4 t + 8
+dummy 4.0% 3.4% 3.0%
+below median + 2.2% 1.9% 1.9%
+above median + 5.9% 5.0% 4.1%
+Cost of goods sold
+t t + 4 t + 8
+dummy 3.3% 3.0% 2.2%
+below median + 0.8% 0.9% 0.6%
+above median + 6.2% 5.2% 3.9%
+Selling costs
+t t + 4 t + 8
+dummy 2.3% 1.8% 1.9%
+below median + 1.3% 0.0% 0.2%
+above median + 3.3% 3.7% 3.6%
+Panel B : Product withdrawals
+Sales
+t t + 4 t + 8
+dummy -2.3% -2.1% -2.0%
+below median + -3.3% -2.0% -1.9%
+above median + -1.1% -2.3% -2.2%
+Cost of goods sold
+t t + 4 t + 8
+dummy -1.1% -1.3% -0.9%
+below median + -2.3% -1.5% -1.5%
+above median + 0.2% -1.0% -0.3%
+Selling costs
+t t + 4 t + 8
+dummy -1.2% -0.7% -1.2%
+below median + -3.3% -1.2% -1.0%
+above median + 1.1% -0.2% -1.5%
+example, a product introduction is associated with 3.0%
+higher average sales 8 quarters after the introduction took
+place, thus 25% lower than the contemporaneous effect.
+The average cost of goods sold is 3.3% higher when ﬁrms
+introduce new products and only 2.2% higher after 8 quar-
+ters, closely following the effect of sales. The pattern fol-
+lowed by selling costs, which can be viewed as a proxy
+for marketing expenses, is similar: selling costs increase on
+average by 2.3% in quarters when the number of products
+increases, and the effect subsides over time.
+Panel B of Table 4 illustrates how these three variables
+are affected by product withdrawals. In quarters when the
+size of the product stock shrinks, the average revenues
+tend to decrease and are are 2.3% lower, while the average
+cost of goods sold and selling costs are 1.1% and 1.2% lower,
+respectively. Overall, our results indicate that product in-
+troductions and withdrawals have a substantial effect on
+cash ﬂow dynamics, further highlighting the importance of
+product life cycle.
+2.4. Product portfolio age and corporate policies
+Having documented that product portfolio age affects
+cash ﬂow dynamics and that it is negatively associated
+with ﬁrms’ proﬁtability, the natural question that arises
+is whether product life cycle also has implications for
+ﬁrm value. In other words, do value-maximizing ﬁrms care
+about managing product portfolio age?
+To answer this question, the top graph in Panel A of
+Fig. 3 presents the relationship between product portfo-
+lio age and the unexplained part of the market-to-book ra-
+tio. The ﬁgure documents that ﬁrm value declines with the
+share of old products. In other words, product portfolio age
+has direct implications for ﬁrm value. The fact that the re-
+lationship is robust to controlling for other ﬁrm character-
+istics (as in Loderer et al., 2017 ) again highlights the incre-
+mental information conveyed by product portfolio age. 11
+Given that product life cycle may inﬂuence the behav-
+ior of value-maximizing ﬁrms, it should also have an effect
+on ﬁrms’ investment and ﬁnancing policy. The middle and
+bottom graphs in Panel A of Fig. 3 indicate that both resid-
+ualized investment and net leverage tend to decline with
+product portfolio age. Importantly, the fact that the lines
+are not ﬂat indicates that product portfolio age provides
+economically signiﬁcant additional explanatory power in
+standard leverage or investment regressions. For example,
+the within- R 2 of the leverage regression, with speciﬁcation
+identical to the one employed in Fig. 4 , increases from 4.9
+to 5.5%, that is by roughly 11%. For investment regression
+it increases by 6%.
+As a robustness check, in Panel B of Fig. 3 we docu-
+ment that controlling for ﬁrm age does not affect the re-
+lationship between product life cycle and corporate poli-
+cies: all the ﬁgures are qualitatively similar. This result fol-
+lows from two facts: ﬁrm age being closely correlated with
+other ﬁrm characteristics such as ﬁrm size, hence provid-
+ing limited additional explanatory power, and ﬁrm age and
+product portfolio age being uncorrelated. Overall, the re-
+sults in Panel B of Fig. 3 suggest that controlling for prod-
+uct life cycle is important above and beyond the effects of
+ﬁrm life cycle.
+The empirical relationships are also intuitive. The de-
+cline in the investment rate is consistent with the notion
+11 Fig. A.3 in the Internet Appendix presents the raw relationships be-
+tween product portfolio age, ﬁrm value, investment and net leverage.
+940
+
+===== PAGE 10 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Fig. 3. The relationship between product portfolio age and ﬁrms’ unexplained market-to-book, investment and leverage. The solid lines are obtained from
+local polynomial regressions of each variable on the product portfolio age proxy using an Epanechnikov kernel function with a rule-of-thumb bandwidth
+estimator and local-mean smoothing. The controls used to compute the predicted values in Panel A include proﬁtability, investment, leverage, size, cash
+ﬂow volatility for market-to-book, proﬁtability, size, cash ﬂow volatility, market-to-book and tangibility for leverage, and size, cash ﬂow, and market-to-
+book for investment. The controls in Panel B also include ﬁrm age. All models control for ﬁrm and time ﬁxed effects. All variables are winsorized at 2.5%
+and 97.5% percentile. Appendix B provides a description of all variables.
+that product and capital investment are complements, that
+will be later formally conﬁrmed by the model. The ratio-
+nale behind the decline in net leverage is twofold. First,
+when ﬁrms’ product portfolios age, that is when they do
+not replace their ageing products by new ones, ﬁrms are at
+risk of abruptly losing their revenues and prefer to pursue
+a more conservative ﬁnancing policy in case their revenues
+vanish. Second, it also makes ﬁrms more risky. These ef-
+fects result in a substitution between debt and cash ﬁnanc-
+ing: cash holdings increase and debt issuance decreases
+and hence net leverage declines. 12
+12 In Fig. A.2 of the Internet Appendix, we investigate the robustness
+of these results by using other deﬁnitions of product portfolio age. The
+results imply that all different measures produce qualitatively similar re-
+lationship between product portfolio age and investment. In Fig. A.4 in
+the Internet Appendix we show explicitly that ﬁrm age is differently re-
+lated to residualized investment and leverage, as both tend to increase on
+average as ﬁrms age.
+941
+
+===== PAGE 11 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Fig. 4. Assessing the signiﬁcance of product portfolio age for corporate policies. All graphs are obtained from local polynomial regressions of the residuals
+from an investment (or leverage) regression on a given variable, using an Epanechnikov kernel function with a rule-of-thumb bandwidth estimator and
+local-mean smoothing. The controls used to compute the investment residuals include size, cash ﬂow, and market-to-book. The controls used to compute
+the leverage residuals include proﬁtability, size, cash ﬂow volatility, market-to-book, share of old products, and tangibility for proﬁtability and proﬁtability,
+size, cash ﬂow volatility, market-to-book, and share of old products for tangibility. All regression models control for ﬁrm and time ﬁxed effects. All variables
+are winsorized at 2.5% and 97.5% percentile. Appendix B provides a description of all variables.
+One remaining issue to address is whether the magni-
+tudes of the reduced-form relationships in Fig. 3 are eco-
+nomically meaningful. To show that the effects of prod-
+uct portfolio age are indeed signiﬁcant, we compare how
+other ﬁrm characteristics, which are considered standard
+determinants of investment and capital structure, fare in
+explaining residualized investment or leverage, when con-
+trolling for all other variables. For each policy, we focus on
+two such characteristics: size and market-to-book for in-
+vestment as well as proﬁtability and tangibility for lever-
+age. The results are presented in Fig. 4 . The graphs show
+that each variable correlates with the corresponding policy
+in an intuitive way, e.g. investment and market-to-book are
+positively related, while proﬁtability is negatively related
+to leverage. More importantly, the graphs suggest that the
+economic magnitude of product portfolio age is larger than
+that of size and comparable to those of market-to-book for
+investment, while at least comparable to that of tangibility,
+and slightly smaller than that of proﬁtability for leverage.
+Therefore, the results again reinforce the notion that prod-
+uct portfolio age constitutes an important and novel source
+of variation in corporate policies.
+In summary, the stylized facts presented in this sec-
+tion showcase a non-trivial relationship between ﬁrms’ ex-
+posure to product life cycle, as captured by product port-
+folio age, and corporate policies. However, the presented
+empirical evidence makes it diﬃcult to formulate state-
+ments regarding the quantitative importance of product
+characteristics. Isolating product-level forces is challenging
+in a reduced-form setting, because ﬁnancial data is essen-
+tially observed at the ﬁrm- rather than product-level. So,
+we turn now to examining the quantitative implication of
+product life cycle for ﬁnancing and investment through the
+lens of a structural model. The structural approach allows
+us to investigate the importance of frictions driving prod-
+uct portfolio adjustments and to study how they translate
+to variation in corporate policies and ultimately to ﬁrm
+value.
+3. Model
+In this section, we develop a discrete-time dynamic
+model in which a ﬁrm makes optimal ﬁnancing, invest-
+ment, and product portfolio decisions. We embed the
+942
+
+===== PAGE 12 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+model in an industry equilibrium of monopolistic compe-
+tition to study how industry structure interacts with ﬁrms’
+product portfolio decisions.
+3.1. Firm and industry structure
+There exists a mass F of monopolistic ﬁrms indexed
+by i . Each ﬁrm is risk-neutral and governed by managers
+whose incentives are fully aligned with shareholders and
+who discount cash ﬂows at the risk-free rate r. Every ﬁrm
+produces homogeneous output, which can be structured
+into many different products. We assume that the produc-
+tive capacity is split equally across all products. For exam-
+ple, one could think of the ﬁrm producing the same kind
+of product but marketing it to different market niches or
+tastes by exploiting differentiation, by altering its branding,
+appearance, etc. The products are thus ex ante identical.
+However, each product follows a life cycle pattern, which
+is the key feature of the model. Hence, the products will
+be different ex post as they will be in a different stage of
+their life cycle.
+Each ﬁrm uses a decreasing return-to-scale technology
+to produce output and is subject to ﬁrm-wide productivity
+shock. Given the capital stock K i and the proﬁtability shock
+Z i , ﬁrm i generates output, equal to ZK θ, shared equally
+across all products. The proﬁtability shock Z i follows an
+AR(1) process in logs,
+log (Z ′
+i ) = ρlog (Z i ) + σε ′
+i , ε ′
+i ∼ N(0 , 1) , (2)
+where a prime indicates the subsequent period. Given
+gross investment I i , the next-period physical capital stock
+evolves according to
+K ′
+i = I i + (1 − δ) K i , (3)
+with capital depreciation rate δ ∈ [0 , 1] . Depreciation ex-
+penses are tax deductible. When ﬁrm i adjusts its capital
+stock, it incurs convex capital adjustment costs deﬁned as
+/Psi1(K i , K ′
+i ) = ψ
+[
+K ′
+i − (1 − δ) K i
+]2
+/ 2 K i . (4)
+3.2. Product dynamics
+In the model, each product follows a life-cycle pattern
+and can be in one of four states: ‘introduction,’ ‘new,’ ‘old,’
+and ‘exit.’ New and old products are different, as each old
+product provides only 100 × ξ% of the revenue of a new
+product, consistent with product life cycle. A product that
+exits contributes nothing to the ﬁrm’s revenue. The graph-
+ical illustration of an individual product’s life cycle is pre-
+sented in Fig. 5 .
+A product that is introduced immediately becomes new,
+which corresponds to t n in Fig. 5 . Every period, a new
+product can transition to being an old product with proba-
+bility p n → o , which happens at time t o in Fig. 5 , or remains
+new with probability p n → n ≡ 1 − p n → o . Similarly, every pe-
+riod an old product can either remain old with probability
+q o→ o , or exits with probability q o→ e ≡ 1 − q o→ o , which hap-
+pens at time t e in Fig. 5 . A product that exits remains in
+that state forever. The product life cycle of a single prod-
+uct can thus be characterized by a transition matrix
+intr t new t old t exit t
+intr t+1
+new t+1
+old t+1
+exit t+1
+⎡
+⎢
+⎣
+0 0 0 0
+1 p n → n 0 0
+0 p n → o q o→ o 0
+0 0 q o→ e 1
+⎤
+⎥
+⎦
+(5)
+At the beginning of each period, the ﬁrm owns P n
+i
+new products and P o
+i old products, and decides whether
+to introduce /Delta1n
+i new products. It does so by trading off
+the beneﬁts of a younger product portfolio, that is higher
+current revenue and higher durability of revenue, versus
+product introduction costs equal to ηK i · /Delta1n
+i . The prod-
+uct introduction costs capture the fact that introducing
+new products is costly, as it requires the ﬁrm to conduct
+market research, repurpose its production technology, or
+hire workers to market the products. 13 Thus, the stock of
+new products P n can change in two ways: the ﬁrm can in-
+troduce more products or existing new products can be-
+come old. The stock of old products P o
+i changes due to the
+ageing of new products and because old products can exit.
+As such, the transition probability for the ﬁrm’s end-of-
+period product portfolio state /Phi1≡ (P n
+i , P o
+i ) (also called the
+product portfolio structure) can be expressed by a tran-
+sition matrix T /Phi1i , which contains the probability that the
+ﬁrm’s products transition to the state /Phi1′ = (P ′
+n , P ′
+o ) condi-
+tional on being in the state /Phi1= (P n
+i , P o
+i ) . The construction
+of the product portfolio transition matrix T /Phi1i is described
+in detail in the Internet Appendix. 14
+Given the structure of product dynamics in the model,
+we can compute the share of old products in the ﬁrm’s
+product portfolio as:
+φ ≡ φ(/Delta1n
+i , /Phi1i ) =
+P o
+i
+P n
+i + /Delta1n
+i + P n
+i
+, (6)
+which is tightly linked to the empirical proxy for prod-
+uct portfolio age developed in Section 2 . Furthermore, the
+transition matrix allows to infer the expected lifetime of
+each product,
+m ( intr ., exit ) =
+1
+1 − p n → n
++
+1
+1 − q o→ o
+. (7)
+Formally, Eq. (7) is the expected hitting time of state
+‘exit’ of a product starting at state ‘introduction’ and it im-
+plies that each product is expected to remain ‘new’ for
+1 / (1 − p n → n ) periods and ‘old’ for 1 / (1 − q o→ o ) periods.
+Given that we can observe the left-hand side of Eq. (7) in
+the data, and given the break point assumption used to
+create the measure of product portfolio age, the model can
+be tightly linked to the data using this deﬁnition of prod-
+uct portfolio age.
+13 The chosen functional form of the product introduction cost is con-
+sistent with the evidence in Table 4 which shows that there is indeed a
+discrete change in ﬁrms’ cash ﬂows when introducing new products.
+14 In the baseline model, the ﬁrm does not have the possibility to re-
+move a product from its portfolio, meaning that product exit is purely
+stochastic. This modeling choice captures the notion of product exit being
+driven by exogenous customer demand forces: the ﬁrm would withdraw
+the product when it contributes nothing to revenue. In Section 5 , we relax
+this assumption by extending the model to allow for endogenous product
+exit.
+943
+
+===== PAGE 13 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Fig. 5. Graphical representation of each product’s evolution in the model.
+3.3. The representative consumer’s problem
+The representative consumer is endowed with Dixit-
+Stiglitz preferences and thus has a preference for vari-
+ety, captured by parameter 0 < γ < 1 . This parameter is
+directly related to the elasticity of substitution between
+product varieties, equal to 1 / (1 − γ ) . We assume that
+the representative consumer prefers new products to old,
+which is captured by the parameter 0 ≤ ξ ≤ 1 . This im-
+plies that product prices and quantities will vary along the
+product life cycle. In particular, each product, indexed by
+j, is sold by ﬁrm i at price p ζ
+ij and in quantity q ζ
+ij , with
+ζ ∈ { n, o} , depending on the stage of product’s j life cy-
+cle. As a consequence, old products contribute less to the
+ﬁrm’s revenue than new ones, in line with empirical ev-
+idence of Argente et al. (2021b) . We assume that the to-
+tal number of products in the economy is given by P n and
+P o for new and old products, respectively. This formulation
+implies that representative consumer’s utility function is:
+U 0 =
+(
+∫
+i ∈F
+P n
+i ∑
+j=1
+(
+q n
+ij
+)γ
+d i + ξ
+∫
+i ∈F
+P o
+i ∑
+j=1
+(
+q o
+ij
+)γ
+d i
+) 1
+γ
+. (8)
+The representative consumer’s problem is to maximize
+its utility in Eq. (8) subject to a budget constraint (we nor-
+malize the total endowment to 1):
+∫
+i ∈F
+P n
+i ∑
+j=1
+p n
+ij q n
+ij d i +
+∫
+i ∈F
+P o
+i ∑
+j=1
+p o
+ij q o
+ij d i = 1 . (9)
+We can solve the representative consumer’s optimiza-
+tion problem to obtain the optimal prices:
+p n
+ij =
+γ
+ϕ
+(
+q n
+ij
+)γ−1
+and p o
+ij = ξ γ
+ϕ
+(
+q o
+ij
+)γ−1
+, (10)
+where ϕ is the Lagrange multiplier associated with the
+budget constraint. The quantities q n
+ij and q o
+ij are obtained
+by using the assumption that the ﬁrm produces homoge-
+neous output, equally split across all of its products:
+q n
+ij =
+(
+Z i K θ
+i
+P n
+i + P o
+i
+)1
+γ
+and q o
+ij =
+(
+Z i K θ
+i
+P n
+i + P o
+i
+)1
+γ
+. (11)
+The product-speciﬁc revenue is thus equal to
+p n
+ij q n
+ij =
+γ
+ϕ
+Z i K θ
+i
+P n
+i + P o
+i
+and p o
+ij q o
+ij = ξ γ
+ϕ
+Z i K θ
+i
+P n
+i + P o
+i
+. (12)
+for a new and an old product, respectively.
+3.4. Financing frictions
+Each ﬁrm’s ﬁnancing choices consist of internal funds
+(cash and current proﬁts), risk-free debt, and costly exter-
+nal equity. Since in the model it is never optimal to hold
+both debt and cash at the same time, we deﬁne the stock
+of net debt D i as the difference between the stock of debt
+and the stock of cash.
+Debt takes the form of a riskless perpetual bond incur-
+ring taxable interest at a rate r(1 − τ) . As in Hennessy and
+Whited (2005) and DeAngelo et al. (2011) , the stock of
+debt is subject to a collateral constraint proportional to the
+depreciated value of capital
+D i ≤ ω(1 − δ) K i , (13)
+where ω is the collateral constraint parameter such that
+ω ∈ [0 , 1] . Alternatively, ﬁrms may choose to hoard liquid
+assets to save on the costs of external equity issuance or to
+avoid depleting their debt capacity. However, the interest
+earned on the cash balance is equal to r(1 − τ) , meaning
+that liquid assets earn a lower rate of return than the risk-
+free rate.
+The cost of raising external equity is modeled in
+reduced form, similar to Hennessy and Whited (2005,
+2007)
+/Lambda1(E i (·)) = λE i (·) 1 { E i (·) < 0 } , (14)
+944
+
+===== PAGE 14 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+where E i is ﬁrm’s i cash ﬂow, implying that ﬁrm i has to
+bear a proportional equity ﬁnancing cost λ if it issues ex-
+ternal equity.
+3.5. The ﬁrm’s cash ﬂow
+Using the derived product-speciﬁc revenue in Eq. (12) ,
+the ﬁrm’s i gross proﬁts are:
+P n
+i ∑
+j=1
+p n
+ij q n
+ij +
+P o
+i ∑
+j=1
+p o
+ij q o
+ij =
+γ
+ϕ
+P n
+i + ξ P o
+i
+P n
+i + P o
+i
+Z i K θ
+i
+=
+γ
+ϕ
+[ (1 − φi ) + ξφ i ] Z i K θ
+i
+=
+γ
+ϕ
+[1 − (1 − ξ) φi ] Z i K θ
+i . (15)
+Note that the ﬁrm’s operating revenue in Eq. (15) consists
+of the ﬁrm’s share of old products, which evolves as
+φ′
+i ≡ φ′
+i (/Delta1n
+i , /Delta1o
+i , /Phi1i ) =
+P o′
+i
+P n ′
+i + P o′
+i
+. (16)
+The share of old products in Eq. (16) is thus tightly linked
+to the empirical measure of product portfolio age devel-
+oped in Section 2 . The ﬁrm’s i cash ﬂow E i is a function of
+(/Delta1n
+i , K i , K ′
+i , D i , D ′
+i , /Phi1i , Z i ) , consists of operating, investment,
+and ﬁnancing cash ﬂow
+E i (·) = (1 − τ)
+[ γ
+ϕ
+Z i K θ
+i (1 − φi (1 − ξ)) − ηK i /Delta1n
+i
+]
+/bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+after −tax operating proﬁt
++ τδ × K i /bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+depreciation
+tax credit
+− K ′
+i + (1 − δ) K i /bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+investment
+− ψ
+[
+K ′
+i − (1 − δ) K i
+]2
+/ 2 K i
+/bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+capital
+adjustment cost
++ D ′
+i −[1 + r(1 − τ)] D i /bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+net debt issuance
+less interest expense
+. (17)
+This formulation implies that ﬁrm i issues external eq-
+uity if its cash ﬂow is negative or pays out a dividend oth-
+erwise.
+3.6. Entry
+To close the model, we must formulate the entrants’
+problem. We assume that there is a mass of potential en-
+trants facing an endogenous entry cost. We specify the en-
+try cost to be equal to the value of the entering ﬁrm upon
+entry, which depends on the entrant’s initial capital (set to
+the lower bound value), net debt (set to zero) and prod-
+uct portfolio structure (set to a single new product). We
+look for stationary equilibria in which the entry condition
+is binding, i.e. in which there is no entry. This assumption,
+together with the fact that the total number of new and
+old products in the economy is ﬁxed, allows to pin down
+the Lagrange multiplier ϕ in equilibrium when other pa-
+rameters change. 15
+15 Consequently, when taking the model to the data we set ϕ = 1 . This
+is a normalizing assumption, which allows us to study the effects on in-
+dustry structure in counterfactual experiments.
+3.7. Recursive formulation and model solution
+Each ﬁrm’s problem is to maximize the present value of
+its future cash ﬂows by choosing the investment, debt and
+product policies, subject to the external equity issuance
+cost /Lambda1(·) and the collateral constraint. Since all of our
+ﬁrms are symmetric, we can drop the subscript i and the
+corresponding Bellman equation is:
+V (K, D, /Phi1, Z| ϕ) = max
+/Delta1n ,K ′ ,D ′ { E(·) + /Lambda1(E(·))
++ βE
+[
+V (K ′ , D ′ , /Phi1′ , Z ′ | ϕ)
+]}
+,
+s.t. D ≤ ω(1 − δ) K. (18)
+The model is solved numerically using value function
+iteration. The numerical algorithm takes as given the en-
+try cost and solves for the corresponding ϕ that makes the
+entry condition binding. Once obtained, ϕ together with
+Eq. (9) determine the mass of ﬁrms F, which is informa-
+tive about the industry structure.
+3.8. Optimal policies and industry equilibrium implications
+In this section, we analyze the optimal product, invest-
+ment and ﬁnancing policies of a single ﬁrm. We derive the
+ﬁrst-order conditions and investigate how product portfo-
+lio decisions interact with the ﬁrm’s choice of investment
+and debt. We focus on highlighting insights that are in-
+herently different from those stemming from standard dy-
+namic models of the ﬁrm. Finally, we outline the main im-
+plications of the industry equilibrium effects.
+3.8.1. Product portfolio adjustments
+To understand how ﬁrms optimally adjust their product
+portfolios, we ﬁrst derive the approximate ﬁrst-order con-
+dition for product introduction /Delta1n , assuming for simplicity
+that the ﬁrm does not issue equity:
+(1 − τ) ηK
+/bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+product
+introduction
+cost
+≈− (1 − τ)
+γ
+ϕ
+ZK θ (1 − ξ)
+/Delta1(φ)
+/Delta1(/Delta1n )
+/bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+proﬁtincrease
+today
++ βE
+[
+/Delta1(V (K ′ , D ′ , /Phi1′ (/Delta1n ) , Z ′ ))
+/Delta1(/Delta1n )
+]
+/bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+proﬁtincrease
+tomorrow
+.
+(19)
+Firms will introduce new products as long as the
+marginal cost on the left-hand side of Eq. (19) is smaller
+than the marginal beneﬁt of introducing a new product on
+the right-hand side of Eq. (19) . 16 The marginal cost consists
+of the after-tax product introduction cost. The marginal
+beneﬁt has two parts: the contemporaneous effect on prof-
+its today (which is positive, as the effect of /Delta1n on φ is
+negative) and the effect on future proﬁts. The ﬁrst effect
+depends on the old product-speciﬁc revenue discount ξ
+and on the elasticity of substitution γ. Furthermore, the
+marginal beneﬁt also changes with product portfolio struc-
+ture /Phi1and the proﬁtability shock Z. For example, when
+16 In Eq. (19) , /Delta1(·) indicates the discrete derivative, deﬁned as
+/Delta1(f(n )) = f(n + 1) − f(n ) .
+945
+
+===== PAGE 15 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+the proﬁtability shock is more persistent, the ﬁrm has
+more incentives to introduce new products to reap the
+beneﬁts associated with the proﬁtability shock whose ef-
+fects last longer. Finally, the marginal beneﬁt of a new
+product today also contains the expected marginal change
+in ﬁrm value, because today’s product portfolio adjustment
+affects its potential future evolution. Thus, Eq. (19) shows
+that investment and debt decisions indirectly affect prod-
+uct portfolio structure. 17
+3.8.2. Investment
+Eq. (19) suggests that the ﬁrm’s product portfolio
+adjustment is intertwined with other corporate policies
+through the effect on the expected marginal change in ﬁrm
+value. To see the exact link between investment and prod-
+uct decisions, we derive the investment Euler equation,
+which sets the discounted expected return on capital in-
+vestment equal to the value of a dollar payout today: 18
+1 = βE
+[
+(1 + /Lambda1′ (E(·))
+(1 + /Lambda1(E(·))
+(
+MB i
+MC i
++
+MB /Phi1
+i (K ′ , Z ′ , /Delta1n ′ , /Phi1′ )
+MC i
+)]
+,
+(20)
+where
+MB /Phi1
+i (K ′ , Z ′ , /Delta1′
+P , /Phi1′ )
+= −θ(1 − τ)
+γ
+ϕ
+(1 − ξ)
+(φ′ K ′ θ−1 Z ′ − η/Delta1n ′ )
+. (21)
+Eq. (20) shows that the return on capital investment
+consists of two parts. The ﬁrst part, common to e.g. the
+neoclassical investment model, is the ratio of the marginal
+beneﬁt of investment MB , which comprises the marginal
+increase in output, the value of additional depreciated
+capital, and lower adjustment costs in the future, to the
+marginal cost MC, equal to a dollar spent on investment
+and the corresponding investment adjustment costs. The
+second part is the ratio of the marginal beneﬁt of invest-
+ment due to the product portfolio structure, captured by
+MB /Phi1(·) , to the marginal cost.
+Product and investment policies are related, because
+older product portfolio negatively affects the ﬁrm’s rev-
+enue, resulting in a lower marginal beneﬁt of investment.
+Introducing more new products increases the marginal
+beneﬁt of investment, because lower revenue discount as-
+sociated with younger product portfolios and higher dura-
+bility of revenue increase the ﬁrm’s incentives to invest in
+physical capital. Intuitively, the ﬁrm can now beneﬁt from
+its physical capital for a longer period of time. This sug-
+gests that product introductions and capital investment act
+as complements. Finally, a direct computation shows that
+∂ MB /Phi1
+i (·) /∂ φ′ < 0 , documenting that the model is able to
+reconcile the stylized fact that product portfolio age and
+17 Eq. (19) shows that the next period stock of new products P ′
+n and old
+products P ′
+o both depend on how many new products were introduced
+and withdrawn in the current period, as it affects the transition matrix
+T /Phi1. Thus, ∂ V ′ /∂ /Delta1n and ∂ V ′ /∂ /Delta1o are non-trivial quantities depending on
+∂ /Phi1′ /∂ /Delta1n and ∂ /Phi1′ /∂ /Delta1o .
+18 Details of the computation are provided in the Internet Appendix.
+investment are negatively related. Overall, the Euler equa-
+tion shows that incentive to invest in physical capital can
+vary with the ﬁrm’s product portfolio structure.
+3.8.3. Net debt
+To examine how ﬁnancing and product decisions are
+interrelated, we combine the ﬁrst-order condition for the
+debt choice D ′ and the corresponding envelope condition,
+which yields
+1 = βE
+[
+1 + /Lambda1′ (E(·))
+1 + /Lambda1(E(·))
+(
+1 + r(1 − τ) + μ′ )]
+, (22)
+where μ is the Lagrange multiplier associated with the
+collateral constraint. The right-hand side of Eq. (22) is the
+expected discounted value of debt, which is equal to the
+interest payments less the tax shield and the shadow value
+of relaxing the constraint on issuing debt. The Lagrange
+multiplier μ indicates that debt is more valuable when
+the collateral constraint is expected to bind, highlighting
+that the ﬁrm may have incentives to preserve its debt ca-
+pacity today to avoid reaching the collateral constraint to-
+morrow and having to issue costly external equity. This
+result, standard in dynamic investment models such as
+e.g. Gamba and Triantis (2008) or DeAngelo et al. (2011) ,
+shows that debt capacity has value as it grants the ﬁrm
+more ﬁnancial ﬂexibility. One implication of this notion is
+the fact that ﬁnancial, investment and product policies will
+be intertwined: if the ﬁrm is more likely to introduce new
+products tomorrow, it will follow a conservative debt pol-
+icy today.
+Eq. (22) suggests that the model can reconcile the styl-
+ized facts: absent product portfolio adjustment opportuni-
+ties, the ﬁrm will preserve its debt capacity, resulting in a
+negative relation between product portfolio age and lever-
+age. Thus, even though product choice does not directly af-
+fect the ﬁrm’s debt policy, it has an indirect effect, because
+it affects the ﬁrm value as well as the probability of incur-
+ring the equity issuance cost. 19
+3.8.4. Industry equilibrium
+The industry equilibrium setup affects corporate poli-
+cies and industry structure in three ways. First, the prefer-
+ence for variety parameter γ directly inﬂuences cash ﬂows
+and, as such, translates into investment and ﬁnancing de-
+cisions, as indicated by Eq. (17) . Second, the entry cost is
+closely related to ﬁrm value and thus the industry equilib-
+rium effects following changes in entry cost will feed back
+into the ﬁrm-level policies. This happens because when
+a change in the underlying product or ﬁrm characteris-
+tic affects valuation, the Lagrange multiplier ϕ adjusts so
+that the entry cost can be matched. This mechanism re-
+sults in a moderating effect of industry equilibrium on in-
+dividual ﬁrm policies, similarly to, e.g., Geelen et al. (2022) .
+19 While the model puts emphasis on the fact that product introduction
+decisions affect ﬁrms’ ﬁnancing decisions only through the ’quantitative
+rationing’ effects of the collateral constraint, the negative association be-
+tween leverage and product portfolio age is also consistent with ﬁrms
+issuing debt for tax reasons. Indeed, since younger product portfolios are
+associated with higher proﬁts, their incentives to shield these proﬁts from
+taxation are also higher and thus they will issue more debt. This channel
+is also present in the model.
+946
+
+===== PAGE 16 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Third, the industry structure, captured by ﬁrm granularity
+F, adapts as well, so that the budget constraint in Eq. (9) is
+satisﬁed. In particular, F varies following i. changes in
+model parameters, ii. changes in corporate policies and iii.
+the adjustment of the Lagrange multiplier ϕ. Finally, we
+use the ﬁrm granularity measure F as a natural proxy for
+industry concentration, 1 / F.
+4. Estimation and identiﬁcation
+We structurally estimate the industry equilibrium
+model to examine the quantitative implications of product
+decisions on corporate policies. In this section, we describe
+the estimation procedure, discuss the identiﬁcation of the
+structural parameters, present the baseline results and the
+cross-sectional implications of the model.
+4.1. Estimation
+While the majority of the structural parameters of
+the model are estimated using simulated method of mo-
+ments (SMM), several parameters are estimated separately.
+Throughout the paper, we set the tax rate τ to 20% as an
+approximation of the corporate tax rate relative to personal
+taxes. The risk-free interest rate r is 1.21%, which is close
+to the average 3 month T-bill rate over the sample period.
+We also directly estimate the proportional external equity
+ﬁnancing cost by regressing issuance proceeds on under-
+writing fees using a matched sample from SDC Platinum,
+which implies a value of 0.0259. 20 The ‘preference for va-
+riety’ parameter γ is set to 0.8457 based on Redding and
+Weinstein (2019) , who estimate the elasticity of substitu-
+tion between varieties using the Nielsen Homescan data.
+Finally, we also estimate separately the probability of a
+‘new’ product remaining ‘new’ p n → n and the probability of
+an ‘old’ product exiting p o→ e . These probabilities can be
+inferred directly using the expected lifetime of a product
+implied by the model, shown in Eq. (7) , and the deﬁnition
+of the empirical proxy. In particular, in our data a prod-
+uct is considered ‘old’ if it exceeds half of its lifetime. This
+means that each product spends half of its lifespan being
+‘new’ and the other half being ‘old.’ In terms of the model,
+this implies that
+m ( intr ., exit ) = 1
+2
+1
+1 − p n → n
++ 1
+2
+1
+1 − q o→ o
+, 1
+1 − p n → n
+= 1
+1 − q o→ o
+. (23)
+In the data, the average lifespan of a product (weighted by
+revenue) is 15.95 quarters. This implies that p n → n = 0 . 8746
+and q o→ e = 1 − q o→ o = 0 . 1254 . 21
+We estimate the remaining 9 parameters
+(θ, σ, ρ, δ, ψ, ω, η, ξ) using SMM, where θ is the pro-
+duction function curvature, σ is the standard deviation
+and ρ the autocorrelation of the proﬁtability process; δ
+20 By doing so, we only control for direct costs of equity issuance, as in
+e.g. Warusawitharana and Whited (2016) or Michaels et al. (2018) .
+21 We re-estimate the product transition probability every time we es-
+timate the model on a new subsample, as the average product lifes-
+pan changes as well. Table C.4 in the Internet Appendix shows how
+the estimated product transition probabilities change across different
+subsamples.
+is the physical capital depreciation rate; ψ is the capital
+adjustment cost parameter; ω is the parameter governing
+the collateral constraint; η is the product introduction
+cost and ξ is the old product-speciﬁc revenue discount.
+To do so, we ﬁrst solve the model numerically, given the
+parameters, and generate simulated data from the model.
+Then, we compute a set of moments of interest using both
+the simulated and actual data. The SMM estimation proce-
+dure determines the parameter values that minimize the
+weighted distance between the model-implied moments
+and their empirical counterparts. Appendix C provides
+further details on the estimation procedure.
+4.2. Identiﬁcation
+Before proceeding with estimation, we discuss the iden-
+tiﬁcation of the structural parameters. SMM estimators are
+identiﬁed when the selected empirical moments equal the
+simulated moments if and only if the structural parame-
+ters are at their true value. A suﬃcient condition for this
+is a one-to-one mapping between a subset of structural pa-
+rameters and the selected moments, that is the moments
+have to vary when the structural parameters vary. Because
+the ﬁrm’s product, investment, ﬁnancing, and payout de-
+cisions are intertwined, all of the moments are to some
+extent sensitive to all the parameters. However, some re-
+lationships are strongly monotonic in the underlying pa-
+rameters and as such more informative of the relationship,
+thus useful for identifying the corresponding parameter.
+For example, the variance of operating proﬁts is informa-
+tive of σ while ρ is identiﬁed from the serial correlation of
+operating proﬁts, which is estimated using the technique
+of Han and Phillips (2010) .
+We select 12 moments related to ﬁrms’ operating prof-
+its, investment, net leverage and product portfolio charac-
+teristics. We do not choose the moments arbitrarily but
+rather include a wide selection of moments to understand
+which features of the data the model can and cannot ex-
+plain. Therefore, we examine all means, variances and se-
+rial correlations of all main variables of interest that can be
+computed in the model. Notably, in the estimation proce-
+dure we refrain from using moments related to the size of
+the product portfolio (i.e. the number of products), given
+that the model is unlikely to match the data on this mar-
+gin, as ﬁrms introduce products for variety of reasons that
+are not captured by this model (see e.g. Hottman et al.,
+2016 ). Instead, we focus on product portfolio age which, as
+we argue, helps identify parameters related to the product
+characteristics.
+The remaining parameters are identiﬁed as follows. The
+physical capital depreciation rate δ is strongly linked to the
+mean of investment. The capital adjustment cost parame-
+ter ψ is identiﬁed by the variance and autocorrelation of
+investment, as higher adjustment costs result in the ﬁrm
+smoothing investment. The collateral constraint parameter
+ω is identiﬁed by the mean of net leverage. The product
+introduction cost η is identiﬁed by the variance and auto-
+correlation of old product share, as higher cost results in
+more lumpy product introduction policy. The old product-
+speciﬁc discount ξ, on the other hand, is tightly linked to
+the mean of old product share, as it determines the trade
+947
+
+===== PAGE 17 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 5
+Structural estimates and model-implied moments. The table reports the structural estimates and the model-
+implied moments. The industry equilibrium model is estimated using the simulated method of moments, which
+chooses model parameters by minimizing the distance between the moments from a simulated panel of ﬁrms
+and their data counterparts. Panel A reports the simulated and actual moments and the t -statistics for the differ-
+ences between the corresponding moments. Panel B reports the estimated parameters and their standard errors,
+clustered at the ﬁrm-level. θ is the production function curvature; σ is the standard deviation of the proﬁtability
+shock; ρ is the persistence of the proﬁtability process; δ is the capital depreciation rate; ψ is the investment
+adjustment cost; ω is the parameter governing the collateral constraint; η is the product introduction cost; ξ is
+the old product-speciﬁc revenue discount. Appendix C provides the details about the estimation procedure.
+Panel A : Moments
+Simulated Actual t-stat
+Mean operating proﬁts 0.0400 0.0401 0.075
+Variance of operating proﬁts 0.0009 0.0009 0.466
+Serial correlation of operating proﬁts 0.2771 0.2093 -0.605
+Mean investment 0.0211 0.0212 0.022
+Variance of investment 0.0003 0.0006 2.642
+Serial correlation of investment 0.1876 0.1742 -0.183
+Mean net leverage 0.1824 0.1716 -0.409
+Variance of net leverage 0.0058 0.0093 2.903
+Serial correlation of net leverage 0.5784 0.7848 4.425
+Mean old product share 0.4295 0.4444 1.463
+Variance of old product share 0.0796 0.0946 2.978
+Serial correlation of old product share 0.4010 0.4392 0.425
+Panel B : Parameters
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6317 0.3052 0.3958 0.0838 0.6575 0.3024 0.0068 0.5420
+Std. error (0.0346) (0.0352) (0.0646) (0.0052) (0.3135) (0.0239) (0.0010) (0.0574)
+off the ﬁrm faces when deciding on product introductions
+today.
+4.3. Estimation results
+We summarize the results of the structural estimation
+in Table 5 . Panel A contains simulated and actual moments.
+Panel B reports the parameter estimates and their standard
+errors.
+The estimated model ﬁts the data fairly well on ﬁnan-
+cial, real, and product dimensions, which is reﬂected by
+the low values of t-statistics in Panel A testing the differ-
+ence between the model- and data-implied moments. The
+only exceptions are the variance and serial correlation of
+net leverage and the variances of investment and product
+portfolio age. Nevertheless, even if the difference between
+simulated and actual moments is statistically signiﬁcant,
+the economic difference is negligible.
+Panel B documents that all estimated parameters are
+economically meaningful and statistically signiﬁcant. It is
+worth noting that the structural parameters have been es-
+timated precisely, as their standard errors are low, indicat-
+ing that the model is well identiﬁed. Additionally, in the
+Internet Appendix we show that the model parameters are
+locally identiﬁed by the underlying moments by comput-
+ing the diagnostic measure of Andrews et al. (2017) .
+The estimate of the product introduction cost η equals
+0.68%, which implies that a typical sample ﬁrm behaves
+as if it had to incur a cost of approximately $6.85m when
+introducing a new product. While this cost appears sub-
+stantial, it is required to square the fact that ﬁrms do not
+continuously adjust product portfolios in the data, as the
+distribution of product entry is fairly lumpy (see Fig. A.2
+in the Internet Appendix). Moreover, the estimated cost
+is ﬁxed and as such can be interpreted as if it com-
+prised both the direct costs of introduction as well as indi-
+rect ones (such as marketing). When analyzing the cross-
+sectional predictions of the model, we show that the esti-
+mate of the product introduction cost does vary with ﬁrm-
+level variables such as product portfolio size and between-
+ﬁrm product concentration as well as with product market
+strategy characteristics, e.g. the durability of products.
+The old product-speciﬁc discount ξ is estimated at
+0.5420, meaning that ﬁrms act as if each old product in
+their portfolio only contributed 54.2% of a new product’s
+revenue. As such, the discount is fairly large, which is con-
+sistent with the notion of product life cycle. In particular,
+the fact that the estimate of ξ is strictly larger than 0 im-
+plies that product life cycle effects are present and impor-
+tant. On the other hand, the fact that it is not equal to 1
+suggests ﬁrms still beneﬁt from old products, which is in-
+deed the case as their proﬁtability does not drop to 0, as
+per Fig. 2 . 22
+The structural estimates of the remaining parameters
+are in range of those in extant studies of ﬁrms’ ﬁnanc-
+22 Products in the model do not differ with regard to their expected life-
+time, whereas this is the case in the data. The effective revenue of old but
+long-lasting products could be higher than that of old but short-lasting
+products. In Panel A of Table 7 we show that this is indeed the case as
+the estimate of ξ is indeed higher in the sample of ﬁrms with long-lived
+products.
+948
+
+===== PAGE 18 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 6
+Structural estimates and model-implied moments: The ‘product-less’ benchmark model. The table reports the struc-
+tural estimates and the model-implied moments. The industry equilibrium model is estimated using the simulated
+method of moments, which chooses model parameters by minimizing the distance between the moments from a
+simulated panel of ﬁrms and their data counterparts. Panel A reports the simulated and actual moments and the t -
+statistics for the differences between the corresponding moments. Panel B reports the estimated parameters and their
+standard errors, clustered at the ﬁrm-level. θ is the production function curvature; σ is the standard deviation of the
+proﬁtability shock; ρ is the persistence of the proﬁtability process; δ is the capital depreciation rate; ψ is the invest-
+ment adjustment cost; ω is the parameter governing the collateral constraint. Appendix C provides the details about
+the estimation procedure.
+Panel A : Moments
+Simulated Actual t-stat
+Mean operating proﬁts 0.0399 0.0401 0.078
+Variance of operating proﬁts 0.0002 0.0009 4.011
+Serial correlation of operating proﬁts 0.1396 0.2093 0.621
+Mean investment 0.0150 0.0212 4.484
+Variance of investment 0.00004 0.0006 5.543
+Serial correlation of investment 0.0114 0.1742 2.214
+Mean net leverage 0.2154 0.1716 -1.668
+Variance of net leverage 0.00002 0.0093 7.727
+Serial correlation of net leverage 0.6592 0.7848 2.692
+Panel B : Parameters
+Parameter θ σ ρ δ ψ ω
+Estimate 0.4746 0.1957 0.2486 0.0599 0.2352 0.2398
+Std. error (0.0261) (0.0314) (0.1008) (0.0040) (0.0412) (0.0290)
+ing and investment policy. For example, the standard de-
+viation of the proﬁtability shock σ and the collateral con-
+straint parameter ω that determines the ﬁrm’s debt capac-
+ity are close to the ones obtained in Nikolov et al. (2018) .
+The persistence of the proﬁtability process ρ and the con-
+vex investment adjustment cost ψ are similar to the ones
+reported in Warusawitharana and Whited (2016) for the
+food manufacturing industry, which comprise the major-
+ity of the sample ﬁrms. Furthermore, to ensure robustness
+of our results, in the Internet Appendix we estimate our
+model using an alternative measure, which does not re-
+quire that each product needs to have entered or exited
+our sample during the sample period. Table C.2 documents
+that the parameter estimates are quantitatively similar to
+those obtained by using the baseline measure of product
+portfolio age.
+To understand the implications of accounting for prod-
+uct dynamics on the ability of the model to ﬁt the data,
+we estimate a restricted version of the model in which we
+turn off the product dimension. As such, the ﬁrm always
+has a single new product and its product portfolio age is
+equal to 0 at all times. Table 6 presents the estimation re-
+sults of the restricted, ‘product-less’, model.
+The evidence in Table 6 shows that that a model that
+abstracts from the product level dimension largely fails
+to match the empirical moments and results in less pre-
+cise estimates. Indeed, the t-statistics of the differences be-
+tween the model-implied and actual moments suggest that
+the simpliﬁed model fails to match key moments in the
+data, in particular means and variances of investment and
+leverage. This may be due to the particular nature of the
+ﬁrms that in our sample, which heavily rely on the prod-
+uct retail channel. This aspect of the data is not captured
+at all in the restricted model, resulting in a poor empir-
+ical performance and a large difference in the estimated
+parameters between the full- and restricted models.
+4.4. Cross-sectional implications of the model
+The results discussed until now show that the model
+is able to jointly explain corporate investment, ﬁnancing
+and product portfolio policies of the average sample ﬁrm.
+In this section, we provide further empirical evidence of
+the importance of the product life cycle channel by esti-
+mating the model on subsamples of ﬁrms varying along
+key characteristics. First, we investigate whether the esti-
+mated model can reconcile differences between ﬁrms vary-
+ing in their products’ sensitivity to product life cycle. This
+analysis serves as a ‘sanity check’ as to whether the prod-
+uct life cycle channel in the model corresponds to the one
+observed in the data. Second, we investigate the cross-
+sectional implications of other important product market
+characteristics for the product life cycle channel. We fo-
+cus on two dimensions of the data and split ﬁrms based
+on aggregate, i.e. ﬁrm-level, as well as on product market
+strategy characteristics. Third, we examine how industry-
+wide effects interact with the product life cycle. We do so
+by focusing on an early- vs. late sample split that high-
+lights different aggregate characteristics and on booming
+vs. declining ﬁrms, as measured by their product revenue
+growth rate. This additional evidence provides further in-
+sight as to how economic forces behind product life cycle
+affect ﬁrms differing in dimensions not explicitly captured
+by the model.
+4.4.1. Sensitivity to product life cycle
+To analyze whether the model reﬂects differences
+across ﬁrms whose products vary in their sensitivity to
+product life cycle, for each ﬁrm in the sample, we estimate
+a product-level regression of the form
+log ( rev ) jt = α + β ×log ( age ) jt + ηj + γc + ε jt , (24)
+949
+
+===== PAGE 19 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 7
+Structural estimates and model-implied moments: Sensitivity to product life cycle. The table reports the estimation results for subsamples of ﬁrms
+more and less exposed to product life cycle, PLC, classiﬁed using the ﬁrm-speciﬁc regression coeﬃcient of product-level revenue on age, while
+controlling for product-level and cohort-level ﬁxed effects. The industry equilibrium model is estimated using the simulated method of moments,
+which chooses model parameters by minimizing the distance between the moments from a simulated panel of ﬁrms and their data counterparts.
+Panel A reports the simulated and actual moments, while Panel B the estimated parameters and their standard errors, clustered at the ﬁrm-level.
+θ is the production function curvature; σ is the standard deviation of the proﬁtability shock; ρ is the persistence of the proﬁtability process; δ
+is the capital depreciation rate; ψ is the investment adjustment cost; ω is the parameter governing the collateral constraint; η is the product
+introduction cost; ξ is the old product-speciﬁc revenue discount. Appendix C provides the details about the estimation procedure.
+Panel A : Moments
+Low sensitivity to PLC High sensitivity to PLC
+Simulated Actual Simulated Actual
+Mean operating proﬁts 0.0379 0.0428 0.0367 0.0376
+Variance of operating proﬁts 0.0007 0.0008 0.0016 0.0011
+Serial correlation of operating proﬁts 0.0804 0.1455 0.2392 0.3123
+Mean investment 0.0190 0.0190 0.0236 0.0240
+Variance of investment 0.0003 0.0003 0.0011 0.0012
+Serial correlation of investment 0.1385 -0.0030 0.1428 0.3189
+Mean net leverage 0.1992 0.1863 0.1378 0.1565
+Variance of net leverage 0.0016 0.0073 0.0083 0.0112
+Serial correlation of net leverage 0.5943 0.8056 0.5848 0.7673
+Mean old product share 0.4310 0.4248 0.4341 0.4647
+Variance of old product share 0.0899 0.0860 0.0875 0.1034
+Serial correlation of old product share 0.3983 0.4420 0.4407 0.4367
+Panel B : Parameters
+Low sensitivity to product life cycle
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.6173 0.3016 0.1022 0.0756 0.5959 0.2959 0.0067 0.5898
+Std. error (0.0321) (0.0419) (0.0133) (0.0029) (0.7534) (0.0457) (0.0075) (0.0397)
+High sensitivity to product life cycle
+Parameter θ σ ρ δ ψ ω η ξ
+Estimate 0.7203 0.4677 0.3633 0.0925 0.3973 0.2701 0.0089 0.4909
+Std. error (0.0067) (0.0418) (0.0184) (0.0076) (0.0816) (0.0559) (0.0035) (0.1360)
+where j and t indicate the product and the quarter, and
+c indicates the product’s corresponding cohort following
+Deaton (1997) and Argente et al. (2021b) . We then split the
+ﬁrms into two groups based on the estimates of β. Firms
+with below-median (above-median) sensitivity of product
+revenue to product age β should be less (more) exposed to
+product life cycle effects, for example due to the fact that
+their products are more (less) durable or are less (more)
+susceptible to ageing.
+Table 7 presents the estimation results for the two
+subsamples. Panel A documents that the model-implied
+and data moments are relatively close, implying that the
+model captures well the policies of ﬁrms in both subsam-
+ples. The results also suggest that ﬁrms supplying prod-
+ucts less exposed to product life cycle have, on average,
+higher proﬁtability and younger product portfolios. The
+fact that these ﬁrms also adopt higher net leverage speaks
+to the importance of the precautionary savings motive of
+product life cycle, that should be less pronounced when
+ﬁrms are less exposed to product life cycle. On the other
+hand, ﬁrms with higher sensitivity to product life cycle
+invest more on average, to extend the capacity and thus
+revenue for their existing products before they become
+obsolete.
+The parameter estimates in Panel B indicate that prod-
+ucts of ﬁrms with high product life cycle sensitivity lose
+about 49% of revenue when they become old, as com-
+pared to 59% for ﬁrms with low product life cycle sen-
+sitivity. This shows that the model successfully captures
+the intuition underlying the relationship between product
+revenue and age, and as such the product-level informa-
+tion is not lost when aggregating the product-level data to
+the ﬁrm-level. Finally, ﬁrms with higher product life cy-
+cle sensitivity are also more sensitive to ﬁrm-wide pro-
+ductivity shocks, as the estimate of production function
+curvature θ is higher in this subsample, as is the stan-
+dard deviation of the proﬁtability shock. This ﬁnding sug-
+gests that there can be some differences in the underly-
+ing economic environment across the two subsamples of
+ﬁrms, for example they may supply products in industries
+that may be subject to different kinds of customer demand
+dynamics.
+4.4.2. Firm-level characteristics
+We now turn to investigating the differences in esti-
+mates along product dimensions not explicitly captured by
+the model. We ﬁrst focus on aggregate characteristics, that
+is those based on ﬁrm-level variables: the size of prod-
+uct portfolio, between ﬁrm product concentration, and the
+uniqueness of products supplied by ﬁrms. Table 8 contains
+the parameter estimates for each subsample. To keep the
+presentation of the results concise, the corresponding data-
+and model-implied moments are relegated to the Internet
+Appendix.
+950
+
+===== PAGE 20 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 8
+Cross-sectional evidence from sample splits: Firm-level characteristics. The table reports the estimation results for sub-
+samples of ﬁrms varying according to speciﬁc ﬁrm characteristics. The industry equilibrium model is estimated on
+each subsample using the simulated method of moments, which chooses model parameters by minimizing the distance
+between the moments from a simulated panel of ﬁrms and their data counterparts. Panel A presents the results for
+ﬁrms with small and large product portfolios. Panel B presents the results for ﬁrms with higher and lower between-
+ﬁrm product concentration. Panel C presents the results for ﬁrms supplying more and less durable products. The table
+reports the estimated structural parameters. Standard errors clustered at the ﬁrm-level are in parentheses. θ is the
+production function curvature; σ is the standard deviation of the proﬁtability shock; ρ is the persistence of the prof-
+itability process; δ is the capital depreciation rate; ψ is the investment adjustment cost; ω is the parameter governing
+the collateral constraint; η is the product introduction cost; ξ is the old product-speciﬁc revenue discount. Appendix C
+provides the details about the estimation procedure.
+Panel A : Product portfolio size
+θ σ ρ δ ψ ω η ξ
+Smaller 0.7272 0.4745 0.1474 0.0992 0.2452 0.2392 0.0099 0.4364
+(0.0037) (0.0191) (0.0140) (0.0068) (0.1013) (0.0208) (0.0012) (0.0717)
+Larger 0.5042 0.2139 0.3411 0.0715 0.5351 0.2657 0.0053 0.6360
+(0.0410) (0.0221) (0.0618) (0.0016) (0.1910) (0.0204) (0.0014) (0.0090)
+Panel B : Between-ﬁrm product concentration
+θ σ ρ δ ψ ω η ξ
+Lower 0.7624 0.4499 0.5213 0.0871 0.7338 0.3168 0.0054 0.5044
+(0.0509) (0.0329) (0.0717) (0.0060) (0.1615) (0.0013) (0.0006) (0.0641)
+Higher 0.5532 0.2555 0.1354 0.0848 0.2716 0.2184 0.0054 0.6663
+(0.0351) (0.0258) (0.0099) (0.0054) (0.0689) (0.0298) (0.0006) (0.0133)
+Panel C : Product uniqueness
+θ σ ρ δ ψ ω η ξ
+Lower 0.6364 0.1089 0.1263 0.0715 0.5056 0.3497 0.0073 0.4322
+(0.0168) (0.0296) (0.0337) (0.0021) (0.0727) (0.0355) (0.0008) (0.0919)
+Higher 0.5617 0.3585 0.1295 0.0883 0.3480 0.2789 0.0078 0.5822
+(0.0449) (0.0499) (0.0250) (0.0008) (0.1335) (0.0475) (0.0018) (0.0417)
+Product portfolio size Panel A of Table 8 shows the
+estimation results for ﬁrms with small and large product
+portfolios, that is those with below- and above-median ef-
+fective number of products, respectively. The parameter es-
+timates indicate that ﬁrms with smaller product portfolios
+face a higher cost of introducing new products and a more
+pronounced old product-speciﬁc revenue discount. The re-
+sults reinforce the notion that managing product portfo-
+lios is even more important for ﬁrms with smaller product
+portfolios, because they are more exposed to product life
+cycle. Additionally, the fraction of capital that can be col-
+lateralized ω is lower for ﬁrms with smaller product port-
+folios than for ﬁrms with larger product portfolios. This
+result has two explanations. First, since the correlation be-
+tween product portfolio size and ﬁrm size is positive, a
+part of the result is due to small ﬁrms having less capi-
+tal (in terms of total assets) that can be pledged as col-
+lateral, consistent with e.g. Nikolov et al. (2018) . Second,
+the fact that the estimate of ω varies across the two sam-
+ples suggests that the number of products also plays a
+critical role, which can be consistent with ﬁrms behav-
+ing as if their intangible assets (e.g. patents or trademarks)
+can be pledged as collateral as well (see e.g. Mann, 2018;
+Suh, 2019; Xu, 2021 ). The size of product portfolio could
+also serve as a way for ﬁrms to diversify their revenues,
+as ﬁrms with large product portfolios have lower variance
+and higher autocorelation estimates for the proﬁtability
+shock.
+Between-ﬁrm product concentration Our model fea-
+tures endogenous industry structure which interacts with
+product life cycle and offers predictions on ﬁrm-level
+concentration within the industry. The model does not,
+however, explicitly take into account product concentra-
+tion between ﬁrms. This dimension relates to the degree
+of competitive pressure in the product market. Investigat-
+ing this dimension of the data is important for two rea-
+sons. First, it could affect the trade-offs determining prod-
+uct life cycle, e.g. ﬁrms operating in more competitive or
+less concentrated markets could be forced to introduce
+more new products to be able to keep up with their com-
+petitors or gain market share. Second, the empirical liter-
+ature on product market competition has largely focused
+on the between -ﬁrm dimension of the data. It is there-
+fore instructive to examine how within -ﬁrm product mar-
+ket forces, such as product life cycle, are related to cor-
+porate policies. Importantly, the measure of concentration
+adopted in this paper is better suited to characterize the
+competitive environment faced by ﬁrms as it incorporates
+complete information about the product markets they op-
+erate in.
+We explore how our model estimates vary with respect
+to between ﬁrm product concentration. To do so, we ﬁrst
+compute the revenue concentration in each product group
+using HHI. Importantly, the concentration in each product
+group relies on the entire available data comprising pub-
+lic and private ﬁrms. Second, we compute the ﬁrm-level
+951
+
+===== PAGE 21 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+measure by weighting the product group concentrations
+by the share of each product group’s sales in ﬁrms’ over-
+all revenue. That is, this measure provides information of
+whether a ﬁrm is exposed to more or less concentrated
+product markets.
+Panel B of Table 8 presents the estimates from two
+subsamples differing in the degree of between-ﬁrm prod-
+uct concentration. The results suggest that old products of
+ﬁrms operating in more concentrated product markets pro-
+vide about 66.3% of a new product’s revenue, compared
+to 50.4% for ﬁrms subject to more competitive pressures.
+Given that higher competition may result in products be-
+coming obsolete quicker, that is ξ being lower, the re-
+sults show that product life cycle is related to competitive
+pressure, highlighting that both between- and within-ﬁrm
+product market forces play an important role in shaping
+corporate policies. Finally, ﬁrms operating in more concen-
+trated product markets have higher operating proﬁts, con-
+sistent with less intensive competition.
+Importantly, our model-implied concentration measure,
+1 / F, is consistent with the sample split. Indeed, in the
+data, we observe that if ﬁrms operate in more concen-
+trated product markets then, on average, they operate in a
+more concentrated industry. As such, the two dimensions
+of concentration reinforce each other and thus act as com-
+plements.
+Product uniqueness –c o s t of sales The last sample
+split based on ﬁrm-level variables is related to product
+uniqueness, typically proxied by the cost of sales (e.g.
+Titman and Wessels, 1988 ), which captures all costs not di-
+rectly related to goods sold, such as advertisement or cor-
+porate expenses (Compustat item xsga ). This sample split
+is important, as it speaks to the notion of selling more or
+less specialized products and since the cost of sales con-
+tains marketing expenses. As such, it should be related to
+product life cycle, to the extent that ﬁrms try to inﬂuence
+the lifetime of their products by engaging in, e.g., advertis-
+ing. Finally, it measures a cost of selling products, which
+should be closely related to the product introduction
+cost η.
+Panel C of Table 8 presents the results and indicates
+that ﬁrms with higher cost of sales have higher product in-
+troduction costs. Their products are, however, less exposed
+to product life cycle: new products lose 42% of their rev-
+enue when becoming old, as compared to 57% for ﬁrms
+with lower cost of sales. Interestingly, higher cost of sales
+do not translate to higher durability. In fact, ﬁrms with
+higher cost of sales have lower average lifespan of their
+products (85.98% vs. 88.78%), indicating that lower prod-
+uct durability could be the underlying reason why ﬁrms
+spend more on selling-related activities. It also highlights
+that product durability is markedly different from prod-
+uct uniqueness: more specialized ﬁrms are not necessarily
+those that also supply more durable products.
+4.4.3. Product market strategy characteristics
+Product market strategy may determine the extent to
+which product life cycle matters for ﬁrms. To this end, we
+examine the effect of product market strategies that are
+not directly accounted for by the model. Doing so is impor-
+tant as it allows to examine how the estimates vary with
+unmodeled product characteristics. More speciﬁcally, we
+investigate three sample splits based on product durabil-
+ity, product offering variety, and within ﬁrm product con-
+centration. Table 9 contains the parameter estimates for
+each subsample. We relegate the corresponding data- and
+model-implied moments to the Internet Appendix.
+Product durability In the model, each product is ex
+ante homogeneous and is expected to last for the same
+amount of time. However, in reality ﬁrms follow prod-
+uct market strategies inﬂuencing the expected durabil-
+ity of products, e.g. by expanding to more lasting prod-
+uct categories or investing in customer retention. To
+this end, we investigate how product durability interacts
+with the product-level forces in the model. Panel A of
+Table 9 presents the estimation results from two subsam-
+ples split according to the expected durability of ﬁrms’
+products, measured by the products’ average calendar age
+at exit.
+The estimates show that ﬁrms with lower product
+durability face lower product introduction costs and are
+more exposed to product life cycle, as their old products
+provide only 47.4% of their revenue, as compared to 57.4%
+for ﬁrms that introduce more durable products. Product
+durability also has a large effect on the product transi-
+tion probabilities, as the implied p n → n changes from 81.74%
+to 90.55% across the two subsamples, which suggests that
+products of ﬁrms with higher product durability are also
+expected to last longer than those of ﬁrms with lower
+product durability. This means that the net effect of having
+product durability should be positive, which is conﬁrmed
+in the data as ﬁrms supplying more durable products are
+also more proﬁtable.
+Product offering variety We now analyze how our es-
+timates are affected by the degree of product offering va-
+riety. Indeed, ﬁrms may choose to offer more vs. less vari-
+ety of products within a product group. To do so, we focus
+on the average number of brand-modules within a prod-
+uct group. That is, ﬁrms exhibiting a larger product offer-
+ing variety offer more brand-modules per product group.
+As such, ﬁrms with more product variety are effectively
+more diversiﬁed at the product level.
+The results in Panel B of Table 9 document that ﬁrms
+with larger product offering variety are more exposed to
+product life cycle and face a higher cost of introducing a
+new product. This latter effect is intuitive as offering a new
+product that contributes to higher variety is costlier to cre-
+ate. Moreover, these results are consistent with the notion
+of product-level diversiﬁcation as the volatility estimate in
+the subsample of ﬁrms with larger product offering variety
+is about two times smaller.
+Within-ﬁrm product concentration We further ex-
+plore the notion of product concentration but now do so
+at the ﬁrm-level. More speciﬁcally, we build a measure of
+within-ﬁrm product concentration as the weighted average
+concentration of product-speciﬁc sales within each product
+group where the weights correspond to the share of the
+product group in a ﬁrm’s overall product sales. As such,
+this measure is informative of the degree of revenue con-
+centration within the ﬁrm.
+Panel C of Table 9 shows that ﬁrms supplying more
+focused product portfolios are more exposed to product
+952
+
+===== PAGE 22 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 9
+Cross-sectional evidence from sample splits: Product market strategy characteristics. The table reports the estimation
+results for subsamples of ﬁrms varying according to speciﬁc product characteristics. The industry equilibrium model is
+estimated on each subsample using the simulated method of moments, which chooses model parameters by minimizing
+the distance between the moments from a simulated panel of ﬁrms and their data counterparts. Panel A presents the
+results for ﬁrms supplying more and less durable products. Panel B presents the results for with lower and higher
+product offering variety. Panel C presents the results for ﬁrms with higher or lower within-ﬁrm product concentration.
+The table reports the estimated structural parameters. Standard errors clustered at the ﬁrm-level are in parentheses.
+θ is the production function curvature; σ is the standard deviation of the proﬁtability shock; ρ is the persistence of
+the proﬁtability process; δ is the capital depreciation rate; ψ is the investment adjustment cost; ω is the parameter
+governing the collateral constraint; η is the product introduction cost; ξ is the old product-speciﬁc revenue discount.
+Appendix C provides the details about the estimation procedure.
+Panel A : Product durability
+θ σ ρ δ ψ ω η ξ
+Lower 0.7307 0.1655 0.2048 0.0941 0.4841 0.2583 0.0064 0.4740
+(0.0618) (0.0808) (0.0227) (0.0013) (0.1410) (0.0162) (0.0011) (0.0952)
+Higher 0.6083 0.2660 0.4103 0.0768 0.4902 0.3093 0.0077 0.5740
+(0.0232) (0.0342) (0.0318) (0.0054) (0.1952) (0.0430) (0.0013) (0.0916)
+Panel B : Product offering variety
+θ σ ρ δ ψ ω η ξ
+Lower 0.6172 0.2925 0.1513 0.0860 0.2895 0.2482 0.0052 0.6383
+(0.0367) (0.0642) (0.0150) (0.0055) (0.1108) (0.0012) (0.0004) (0.0520)
+Higher 0.5185 0.1572 0.6610 0.0847 0.7244 0.2800 0.0081 0.5162
+(0.0179) (0.0122) (0.0643) (0.0038) (0.1192) (0.0343) (0.0015) (0.0315)
+Panel C : Within-ﬁrm product concentration
+θ σ ρ δ ψ ω η ξ
+Lower 0.5211 0.2775 0.1822 0.0705 0.7334 0.3803 0.0056 0.5908
+(0.0020) (0.0185) (0.0083) (0.0028) (0.1039) (0.0333) (0.0004) (0.0220)
+Higher 0.5557 0.4369 0.2628 0.0730 0.6160 0.2683 0.0082 0.5147
+(0.0373) (0.0408) (0.0144) (0.0063) (0.0987) (0.0229) (0.0008) (0.0628)
+life cycle and have higher product introduction costs than
+ﬁrms following a more diversiﬁed product market strategy.
+The results thus reinforce the notion that product market
+strategy is used by ﬁrms to mitigate the effects of product
+life cycle. Unlike product offering variety, however, within-
+ﬁrm product concentration affects ﬁnancing to a larger ex-
+tent, as the estimated fraction of capital that can be collat-
+eralized ω varies more across the subsamples. This result
+further indicates how product market strategy interacts
+with external ﬁnancing. Finally, we observe that ﬁrms with
+lower within-ﬁrm product concentration exhibit a lower
+estimate for volatility. This evidence shows that ﬁrms can
+use yet another product portfolio dimension for diversiﬁ-
+cation purposes.
+4.4.4. Industry-wide characteristics
+We provide further empirical evidence on the role of
+the product life cycle that relates to the aggregate state of
+the industry by means of sample splits. More speciﬁcally,
+we focus on the average product revenue growth rate and
+and early and late sample period. 23
+First, we consider ﬁrms that exhibit high vs. low prod-
+uct revenue growth, a sample split that characterizes ﬁrms
+in booming vs. declining industries. Estimation results in
+Panel A of Table 10 reveal that the product introduction
+23 For the early and late sample split, we use an alternative deﬁnition of
+product portfolio age, described in the Internet Appendix, to better deal
+with right- and left-censored product entry and exit.
+cost remains very similar across the two subsamples, while
+the old product-speciﬁc revenue discount is higher in the
+subsample with higher product revenue growth rate. This
+evidence is consistent with the mechanism in the model in
+that ﬁrms growing faster also have younger product port-
+folios.
+Second, we consider an early vs. late subsample, by
+splitting the data until 2010 and after 2010, respectively. In
+our dataset, the early subsample is characterized by high
+volatility of proﬁts while the volatility in the late sub-
+sample is much lower. Estimation results in Panel B of
+Table 10 show that despite the overall different level of
+volatility across the two subsamples, the parameters char-
+acterizing the product life cycle effect, namely the prod-
+uct introduction cost, η, and the old product-speciﬁc rev-
+enue discount, ξ, remain very close. Overall, the evidence
+shows that the importance of the life cycle effect is pre-
+served irrespective of the state of the economy, for exam-
+ple whether ﬁrms are in high or low growth regime or
+subject to high or low volatility of proﬁts.
+5. Analysis, counterfactuals, and robustness
+In this section, we study the implications of the
+product-level economic forces for corporate policies. First,
+we consider a number of counterfactuals to better under-
+stand the quantitative importance of product market strat-
+egy for corporate policies as well as industry structure.
+Second, we extend the model to analyze the robustness of
+the result with respect to the endogenous entry decision,
+953
+
+===== PAGE 23 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 10
+Evidence from sample splits: Industry-wide characteristics. The table reports the estimation results for subsamples of
+ﬁrms varying according to speciﬁc industry-wide characteristics. The industry equilibrium model is estimated on each
+subsample using the simulated method of moments, which chooses model parameters by minimizing the distance
+between the moments from a simulated panel of ﬁrms and their data counterparts. Panel A presents results for high
+vs. low product revenue growth ﬁrms. Panel B presents results for early and late sample periods with a cutoff year of
+2010. The table reports the estimated structural parameters; standard errors clustered at ﬁrm-level are in parentheses.
+θ is the production function curvature; σ is the standard deviation of the proﬁtability shock; ρ is the persistence of
+the proﬁtability process; δ is the capital depreciation rate; ψ is the investment adjustment cost; ω is the parameter
+governing the collateral constraint; η is the product introduction cost; ξ is the old product-speciﬁc revenue discount.
+Appendix C provides the details about the estimation procedure.
+Panel A : Product revenue growth rate
+θ σ ρ δ ψ ω η ξ
+Lower 0.6378 0.2836 0.3779 0.0830 0.6200 0.3279 0.0067 0.5082
+(0.0256) (0.0303) (0.0252) (0.0033) (0.0547) (0.0299) (0.0011) (0.0552)
+Higher 0.5853 0.3042 0.4208 0.0767 0.6536 0.2978 0.0061 0.5888
+(0.0380) (0.0200) (0.0759) (0.0051) (0.1147) (0.0328) (0.0005) (0.0295)
+Panel B : Time period
+θ σ ρ δ ψ ω η ξ
+Early 0.6368 0.4318 0.4067 0.0772 0.6391 0.2478 0.0060 0.5281
+(0.0380) (0.0200) (0.0759) (0.0051) (0.1147) (0.0328) (0.0005) (0.0295)
+Late 0.6094 0.3197 0.4030 0.0694 0.6743 0.2913 0.0062 0.5238
+(0.0198) (0.0261) (0.0319) (0.0031) (0.2269) (0.0265) (0.0005) (0.0193)
+the role of product cannibalization as well as the product
+portfolio implications for debt and equity ﬁnancing.
+5.1. Counterfactuals
+We investigate the quantitative importance of product
+dynamics for corporate policies by means of several coun-
+terfactual exercises. First, we examine the impact of chang-
+ing parameter values related to the product market dimen-
+sion. We do so by varying the old product-speciﬁc dis-
+count ξ and the probability of product exit q o→ e that gov-
+ern the expected beneﬁt per product and expected product
+lifetime. Second, we consider how product-level economic
+forces affect corporate policies and ﬁrm value. We also
+compare the results obtained from our industry equilib-
+rium model to those implied by a ﬁrm-level model. Third,
+we document how changing product characteristics affects
+industry structure.
+5.1.1. Comparative statics: product characteristics
+We ﬁrst examine the effect of changing product-level
+characteristics on corporate policies, in particular product
+portfolio age. In Panels A and B of Fig. 6 we presents the
+comparative statics of product portfolio age for the old
+product-speciﬁc revenue discount ξ and for the probabil-
+ity of old product exit q o→ e , which govern ﬁrms’ exposure
+to the product life cycle channel and the durability of each
+product, respectively. To construct these ﬁgures, we solve
+the model in which the values of each parameter deviate
+from its baseline estimated value, and then simulate the
+model using the resulting optimal policies. 24
+Higher values of ξ imply that each product provides
+ﬁrms with more beneﬁts over the same expected life-
+time. As such, ﬁrms have more incentives to introduce new
+24 We present the graphs for product portfolio age, but discuss the im-
+plications for investment and leverage as well. The respective graphs of
+these policies are omitted for conciseness.
+products and their product portfolio age declines, see Panel
+A of Fig. 6 . This, in turn, results in ﬁrms substituting capi-
+tal for product investment, as the latter becomes relatively
+cheaper for the same level of total output. Thus, the av-
+erage investment will decrease with ξ. Leverage, on the
+other hand, increases in ξ, for three reasons. First, ﬁrms
+ﬁnance product introductions by issuing debt, especially
+when having an old product portfolio. Second, smaller old
+product discount ξ results in higher revenues, which in-
+centivizes ﬁrms to issue debt to beneﬁt from tax shields.
+Finally, higher ξ means that ﬁrms are less exposed to the
+product life cycle channel and thus having many old prod-
+ucts is less risky, which means that ﬁrms value preserving
+debt capacity less.
+Panel B of Fig. 6 presents the effects of changing the
+probability that an old product exits q o→ e on product port-
+folio age. Essentially, this parameter determines the ex-
+pected longevity of the ﬁrm’s products. When the proba-
+bility is small, ﬁrms need to introduce less new products
+to achieve the same level of product portfolio longevity, as
+the existing products are expected to survive for a longer
+period of time. This results in a higher average product
+portfolio age. Product portfolio age declines with q o→ e due
+to more frequent product introductions and more frequent
+product exit. Increasing q o→ e will result in lower average
+investment rate, for two reasons. First, ﬁrms will have to
+introduce new products more often when they are less
+durable and focus less on physical capital investment. Sec-
+ond, when ﬁrms’ products become less durable, they re-
+main proﬁtable for a shorter period of time and, as such,
+ﬁrms will have lower incentives to invest in physical cap-
+ital to beneﬁt from product revenue. Finally, ﬁrms will
+adopt higher leverage when q o→ e increases as they ﬁnance
+new product introductions by debt rather than by costly
+external ﬁnancing as well as due to the fact that their rev-
+enues are also higher and thus so are the tax beneﬁts of
+debt.
+954
+
+===== PAGE 24 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Fig. 6. Comparative statics of product-related parameters. The ﬁgures present comparative statics of product portfolio age related to the baseline model
+as well as to the model extensions. Panel A shows the old product-speciﬁc discount ξ. Panel B presents the probability of old product exit q o→ e . Panel C
+shows the effects of changing the product portfolio withdrawal cost parameter κ. Panel D analyzes product cannibalization by varying the cannibalization
+parameter ϵ. Panel E illustrates the effects of changing the collateral constraint factor ω 1 . Panel F documents the effects of changing the equity cost factor
+λ1 . Each point on the curve corresponds to the value of product portfolio age from a counterfactual experiment in which only the respective parameter
+is changed in the industry equilibrium model. Each curve is a second-order polynomial interpolation of moments from a discrete set of counterfactual
+experiments.
+Table 11
+Counterfactuals. The table reports the outcomes of counterfactual experiments stemming from two sets of alternative
+model parametrizations. The ﬁrst set results from varying the old product-speciﬁc revenue discount ξ and the prod-
+uct introduction cost η. Each cell represents the mid-point elasticity of a given moment with respect to changing the
+parameter value by 1% around the baseline value. The columns indicated by ‘IE’ follow from the industry equilibrium
+model, while those indicated by ‘Firm’ from the ﬁrm-level model, in which the industry equilibrium effects are not
+accounted for. The second set examines the effect of the preference for variety parameter γ. Each cell represents the
+mid-point elasticity between the model with no preference for variety and the baseline speciﬁcation. Firm value is mea-
+sured using the average market-to-book ratio. Debt capacity is measured as the average difference between maximum
+debt capacity ωK and current net debt, both as a fraction of capital.
+ξ η γ
+IE Firm IE Firm
+Firm value 0.083% 0.379% -0.068% -0.129% 0.399%
+Proﬁtability 0.084% 0.244% -0.016% -0.030% 0.130%
+Investment -0.027% -0.131% -0.058% -0.028% 0.027%
+Net leverage 2.519% 2.337% 1.526% 1.568% 0.379%
+Debt capacity -3.866% -3.527% -2.321% -2.383% -0.626%
+5.1.2. Firm value implications
+We now investigate how quantitatively important prod-
+uct market characteristics are in shaping ﬁrm value, cor-
+porate policies as well as industry structure. In Table 11 ,
+we consider two sets of counterfactual experiments. First,
+we investigate the effects of changing the old product-
+speciﬁc discount ξ and the cost of introducing new prod-
+ucts η. Second, we analyze the quantitative importance of
+the preference for variety parameter γ.
+The elasticities of ξ in Table 11 imply that a 1% increase
+in the old product-speciﬁc discount ξ results in the ﬁrm
+value increasing by 0.083%. This happens because ﬁrms can
+now proﬁt from their products for a longer period of time,
+as upon becoming old, products lose a smaller share of
+revenues. Importantly, the elasticity obtained using the es-
+timates in the industry equilibrium model is lower than
+that implied by the ﬁrm-level model, which does not take
+into account the adjustment in industry structure. This
+means that the equilibrium feedback effects also play an
+important role in shaping corporate policies. The elastici-
+ties of the moments due to changing ξ are also intuitive
+and align with the mechanism described in Section 5.1.1 .
+955
+
+===== PAGE 25 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+First, the effect on proﬁtability mirrors that on ﬁrm value,
+including the more muted effect in industry equilibrium:
+the higher the old product-speciﬁc discount, the higher the
+proﬁtability. Second, the negative effect of ξ on physical
+investment is negative but quantitatively small. Finally, the
+effect on net leverage is large and highlights that ﬁrms are
+more proﬁtable and enjoy larger tax beneﬁts of debt when
+ξ increases. It also underlies the inﬂuence of product life
+cycle on the precautionary savings channel.
+Table 11 also examines how the product introduction
+cost η inﬂuences ﬁrm value and corporate policies. In par-
+ticular, we ﬁnd that the elasticities of ﬁrm value and prof-
+itability to η are negative: a 1% increase in the product in-
+troduction cost results in ﬁrm value decreasing by 0.068%
+in the industry equilibrium model and by 0.129% in the
+ﬁrm-level model. The implications of changing η for in-
+vestment and net leverage are also intuitive. The primary
+channel through which they affect corporate policies is by
+incentivizing new product introductions. Less new prod-
+ucts imply lower investment in physical capital and higher
+net leverage, as the introductions are more costly and as
+more severe product life cycle effects now discourage the
+ﬁrm to preserve its debt capacity. Overall, the results in
+Table 11 suggest that the more severe the effects of prod-
+uct life cycle are, the lower the ﬁrm value is.
+The effects of the preference for variety parameter γ
+on ﬁrm value and corporate policies are also meaningful.
+Given that higher values of γ indicate a higher prefer-
+ence for variety, and consistent with the direct effect of γ
+on cash ﬂows in Eq. (17) , a 1% increase in γ results in a
+0.13% increase in proﬁtability and a 0.399% increase in ﬁrm
+value. Higher proﬁtability and ﬁrm value means that ﬁrms
+have more incentives to invest in physical capital and to
+shield their proﬁts from taxes, which results in the elastic-
+ities of investment and net leverage being positive when γ
+increases.
+Finally, we investigate the quantitative implications of
+product characteristics on debt capacity, which is an im-
+portant channel in the model. As argued before, the prod-
+uct life cycle effects induce particular precautionary sav-
+ings incentives for ﬁrms. In the counterfactual exercise,
+we examine how the magnitude of these incentives is af-
+fected by product-level economic forces. The last row of
+Table 11 presents the elasticity of debt capacity, measured
+as the difference between the maximum debt capacity ωK
+and net debt D (both scaled by capital K), to changes in
+the old product-speciﬁc discount. The results suggest that
+product characteristics can largely magnify ﬁrms’ incen-
+tives to preserve debt capacity. For example, less frequent
+product introductions lower ﬁrms’ incentives to preserve
+debt capacity. The effects of varying the exposure to the
+product life cycle channel, by altering the old product-
+speciﬁc discount, are even stronger: more severe product
+life cycle effects result in stronger precautionary savings
+motives. This happens because the ﬁrm can lose a larger
+fraction of revenue due to product exit, which makes it
+value spare debt capacity more. This is the reason why the
+elasticity of debt capacity to ξ is negative: the less impor-
+tant product life cycle effects are, the less do ﬁrms worry
+about preserving debt capacity. This ﬁnding also highlights
+that the ﬁnancing behavior induced by the product life cy-
+cle channel would be absent in standard dynamic models
+of the ﬁrm that do not account for product-level dynamics.
+In other words, product life cycle magniﬁes the precaution-
+ary savings effects.
+5.1.3. Industry structure implications
+To understand the quantitative and qualitative impli-
+cations of our model for industry structure, we consider
+how the model-implied industry concentration, calculated
+as the inverse of industry granularity F. Fig. 7 presents the
+results.
+As discussed in Section 3 , when an underlying product
+or ﬁrm characteristic changes, the industry granularity F
+adjusts so that the budget constraint of the representative
+consumer in Eq. (9) is satisﬁed. Fig. 7 shows that increas-
+ing the old product-speciﬁc discount ξ results in higher in-
+dustry concentration, which is due to higher proﬁtability
+and lower product portfolio age of ﬁrms in the industry.
+Higher product introduction costs also result in higher im-
+plied concentration, as when it is more expensive to intro-
+duce new products, ﬁrms will do so less often, resulting in
+less granular, and hence more concentrated, industry and
+ﬁrms having smaller product portfolios.
+5.2. Robustness
+To examine the robustness of the results, we ﬁrst in-
+vestigate how our estimated model performs at replicating
+a number of non-targeted moments. We also implement
+three extensions of the model, which allow us to study
+the effects of endogenizing product withdrawals, account-
+ing for product line cannibalization when introducing new
+products, and the product portfolio implications for debt
+and equity ﬁnancing. 25
+5.2.1. Non-targeted moments
+To assess the ﬁt of the model, we analyze whether
+the model can match several moments which are not tar-
+geted in the estimation. In particular, we examine whether
+we can replicate the correlation between product portfo-
+lio age and moments such as investment, net leverage,
+proﬁtability, product entry and exit rates. We do so by
+closely following the empirical policy function framework
+of Bazdresch et al. (2017) , i.e., by regressing each vari-
+able on the beginning-of-period product portfolio age and
+a host of controls, matching the state variables in the
+model: size, leverage and proﬁtability (and also control-
+ling for ﬁrm and time ﬁxed effects that are not present in
+the model-generated data). Table 12 presents the resulting
+model- and data-implied moments.
+We ﬁnd that our model provides a surprisingly good
+match to the six non-targeted moments. Despite not us-
+ing any correlations between moments in the estimation
+procedure, we can replicate the sign of the regression co-
+eﬃcient correctly for each variable. Effectively, our model
+25 In the model and the estimation, we focus on net debt. In the Inter-
+net Appendix C, Section 3 , we consider an additional robustness test and
+show in Table C.3 that accounting for different combinations of cash and
+debt that yield the same net leverage does not materially affect the main
+results.
+956
+
+===== PAGE 26 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Fig. 7. Industry structure and product characteristics. The graphs show the relationship between the model-implied industry concentration, computed as
+1 / F , where F is the granularity of the industry, and model parameters: the old product-speciﬁc revenue discount ξ and the product introduction cost
+η. Each point on the curve corresponds to the model-implied concentration from a counterfactual experiment, starting from the baseline estimates of
+structural parameters and changing only the respective parameter by 10% up and 10% down. Each curve is a second-order polynomial interpolation of
+moments from a discrete set of counterfactual experiments.
+Table 12
+Non-targeted moments. The table reports the regression coeﬃcients of
+old product share, the proxy of product portfolio age, from regressing
+each variable on the beginning-of-period product portfolio age and a host
+of controls (size, leverage and proﬁtability) that mimic the state variables
+in the model, while also accounting for ﬁrm- and time ﬁxed effects. All
+data variables are winsorized at 2.5% and 97.5% percentile. Appendix B
+provides a description of all variables.
+Variable Coeﬃcient
+Model Data
+Investment -0.062 -0.020
+Net leverage -0.049 -0.004
+Proﬁtability -0.015 -0.003
+Entry rate 0.520 0.002
+Exit rate 0.103 0.008
+captures well the dynamic interactions of the key variables.
+This evidence provides a further empirical backing for the
+model.
+5.2.2. Endogenous product exit
+In the main speciﬁcation of the model, each product ex-
+its with an exogenously speciﬁed (but data-implied) proba-
+bility, as shown in Eq. (5) . We now proceed to relaxing this
+assumption to better understand the effect of this mod-
+eling choice on our estimates. To do so, we allow ﬁrms
+to withdraw old products from their portfolio. This means
+that ﬁrms are now able to repurpose the existing produc-
+tive capacity towards newer products that they supply.
+To implement the endogenous product exit, we specify
+that every period, each ﬁrm can decide to withdraw /Delta1o
+old products. If it does so, it has to incur a product portfo-
+lio adjustment cost κK · /Delta1o which is related to the fact that
+this part of capital was speciﬁc to the products that are be-
+ing withdrawn. 26 The product transition probabilities are
+26 Evidence in Table 4 provides support for a ﬁxed cost speciﬁcation of
+the product withdrawal cost.
+also affected, as the probability of exit is no longer exoge-
+nous. As such, we only infer the probability of a new prod-
+uct becoming old p n → o from the data by assuming that
+each new product spends half of its lifespan being new.
+To make sure that we correctly capture the time spent be-
+ing old, we proxy the probability of product exit 1 − q o→ o
+by its empirical counterpart, the exit rate, in the estima-
+tion procedure. This moment, which also helps identify the
+product portfolio withdrawal cost parameter κ, is deﬁned
+as the number of product withdrawals divided by the total
+number of products in ﬁrms’ product portfolios. We esti-
+mate the extended model exactly as in our baseline indus-
+try equilibrium case outlined in Section 4 .
+The extended model features a new trade-off faced by
+ﬁrms when adjusting the old product stock. In partic-
+ular, when deciding on product withdrawals, ﬁrms will
+on the one hand beneﬁt from removing old products, as
+their product portfolio effectively becomes younger, which
+boosts existing products’ revenue. On the other hand, each
+product withdrawal incurs a ﬁxed product portfolio adjust-
+ment cost. This additional trade-off affects ﬁrms’ policies
+and, as such, inﬂuences the underlying structural parame-
+ters. The resulting estimates presented in Table 13 indicate
+that endogenous product exit has several important impli-
+cations for the magnitudes of the estimates.
+First, the standard parameters shared with the baseline
+model have similar magnitudes, in particular the technol-
+ogy parameters describing cash ﬂow dynamics and produc-
+tion function curvature. Second, the estimates of product-
+level parameters in the extended model differ from the
+baseline model. In particular, the old product-speciﬁc rev-
+enue discount is estimated at about 47%, as compared to
+54% in the main model, while the product introduction
+cost is lower. However, the fact that both estimates are
+different does not imply that they have been misidentiﬁed
+in the baseline model, but rather that their interpretation
+is changed. Since ﬁrms will now withdraw old products
+when their share in the product portfolio is high, and as
+these withdrawals are beneﬁcial, new products must lose a
+957
+
+===== PAGE 27 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 13
+Structural estimates and model-implied moments: Endogenous product exit. The table reports the structural estimates and the model-implied moments
+from the extended model that allows for an endogenous product exit. The industry equilibrium model is estimated using the simulated method of mo-
+ments, which chooses model parameters by minimizing the distance between the moments from a simulated panel of ﬁrms and their data counterparts.
+Panel A reports the simulated and actual moments and the t -statistics for the differences between the corresponding moments. Panel B reports the esti-
+mated parameters and their standard errors, clustered at the ﬁrm-level. θ is the production function curvature; σ is the standard deviation of the prof-
+itability shock; ρ is the persistence of the proﬁtability process; δ is the capital depreciation rate; ψ is the investment adjustment cost; ω is the parameter
+governing the collateral constraint; η is the product introduction cost; κ is the cost associated with withdrawing a product; ξ is the old product-speciﬁc
+revenue discount. Appendix C provides the details about the estimation procedure.
+Panel A : Moments
+Simulated Actual t-stat
+Mean operating proﬁts 0.0318 0.0401 3.797
+Variance of operating proﬁts 0.0008 0.0009 0.668
+Serial correlation of operating proﬁts 0.0996 0.2093 0.977
+Mean investment 0.0201 0.0212 0.757
+Variance of investment 0.0004 0.0006 1.962
+Serial correlation of investment 0.3515 0.1742 -2.413
+Mean net leverage 0.2667 0.1716 -3.621
+Variance of net leverage 0.0034 0.0093 4.913
+Serial correlation of net leverage 0.8046 0.7848 -0.424
+Mean old product share 0.4125 0.4444 3.120
+Variance of old product share 0.0381 0.0946 11.185
+Serial correlation of old product share -0.0672 0.4392 5.638
+Exit rate 0.0210 0.0180 -2.592
+Panel B : Parameters
+Parameter θ σ ρ δ ψ ω η κ ξ
+Estimate 0.6592 0.2563 0.4294 0.0797 0.3659 0.4081 0.0048 0.0099 0.4698
+Std. error (0.0068) (0.0085) (0.0458) (0.0008) (0.1278) (0.2108) (0.0029) (0.0032) (0.1562)
+larger fraction of revenue when becoming old so that the
+old product share and product exit rate in the model can
+be matched to their empirical counterparts. In particular,
+the parameter κ, which captures the adjustment cost re-
+lated to product withdrawal, will adjust so that the trade-
+off between the beneﬁt and the cost of withdrawing an
+old product allows to match the model-implied and actual
+product exit rate. This fact is illustrated in Panel C of Fig. 6 ,
+which documents that product portfolio age is strongly af-
+fected by the product portfolio adjustment cost κ. In fact,
+in the extended model product entry and exit are closely
+related, which implies that the magnitude of product in-
+troduction cost must change due to the new parameter κ.
+Overall, the evidence from the extended model with
+endogenous product withdrawal suggests that the effect
+of product life cycle on corporate policies can be even
+stronger when accounting for additional product frictions.
+As such, our evidence is indicative of a lower bound of the
+true, possibly even greater, effect of product characteristics
+on investment, leverage, and ﬁrm value.
+5.2.3. The effects of cannibalization
+The product setting in the model is silent on many as-
+pects of real-world product portfolio management, for ex-
+ample the fact that introducing new products usually re-
+sults in negative externalities for existing product lines,
+which is known as ‘cannibalization,’ which could play a
+role in shaping ﬁrms’ product market strategies. To study
+whether this is indeed the case, we examine the quanti-
+tative importance of the effects of cannibalization. To this
+end, we extend the model by explicitly allowing for a de-
+pendence between the number of introduced products and
+the probability of existing products becoming old p n → o . In
+the extended model, it is parametrized as
+˜ p n → o = p n → o +
+/Delta1n ∑
+p=1
+ϵp , (25)
+where /Delta1P is the number of products introduced by the
+ﬁrm and ϵ can be considered as a parameter related
+to ﬁrms’ elasticity of substitution between existing and
+new products’ revenues. Since in the model old prod-
+ucts generate lower revenue than new ones, we effec-
+tively assume that product cannibalization acts by age-
+ing products, which is reasonable given that, as argued by
+Argente et al. (2021b) , product life cycle is largely due to
+changes in customer preferences. We assume that ϵvaries
+from 0 (the baseline case) to half of the baseline value
+of p n → o . This implies that, when ϵ= p n → o / 2 , the product-
+speciﬁc revenue is expected to lower by 21.9% when intro-
+ducing one new product, as compared to the “no cannibal-
+ization” benchmark. 27
+Panel D of Fig. 6 presents the effects of changing the
+cannibalization parameter ϵon product portfolio age. New
+products now age faster, which translates to higher aver-
+age product portfolio age. In unreported results, we also
+ﬁnd that product cannibalization also lowers ﬁrms’ debt
+capacity, for two reasons. First, ﬁrms ﬁnance product in-
+troductions by issuing debt which increases their leverage.
+27 The industrial organizations and marketing literature does not spec-
+ify a clear-cut candidate for the value of this parameter. For example,
+Hottman et al. (2016) estimate the product elasticity of substitution due
+to price increases, which implies a cannibalization rate of 0.5 for the me-
+dian ﬁrm in their sample. This means that about half of the sales of a
+new product introduced by a ﬁrm comes from the sales of existing prod-
+ucts and half from the new ones.
+958
+
+===== PAGE 28 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table 14
+Structural estimates and model-implied moments: Collateral constraint dependent on product portfolio age. The table reports the structural estimates and
+the model-implied moments from the extended model in which debt capacity depends on product portfolio age. The industry equilibrium model is es-
+timated using the simulated method of moments, which chooses model parameters by minimizing the distance between the moments from a simulated
+panel of ﬁrms and their data counterparts. Panel A reports the simulated and actual moments and the t -statistics for the differences between the corre-
+sponding moments. Panel B reports the estimated parameters and their standard errors, clustered at the ﬁrm-level. θ is the production function curvature;
+σ is the standard deviation of the proﬁtability shock; ρ is the persistence of the proﬁtability process; δ is the capital depreciation rate; ψ is the investment
+adjustment cost; ω 0 and ω 1 are the parameters governing the collateral constraint; η is the product introduction cost; ξ is the old product-speciﬁc revenue
+discount. Appendix C provides the details about the estimation procedure.
+Panel A : Moments
+Simulated Actual t-stat
+Mean operating proﬁts 0.0406 0.0401 -0.209
+Variance of operating proﬁts 0.0009 0.0009 0.253
+Serial correlation of operating proﬁts 0.3230 0.2093 -1.014
+Mean investment 0.0204 0.0212 0.556
+Variance of investment 0.0004 0.0006 2.469
+Serial correlation of investment 0.2171 0.1742 -0.584
+Mean net leverage 0.1996 0.1716 -1.068
+Variance of net leverage 0.0066 0.0093 2.214
+Serial correlation of net leverage 0.6223 0.7848 3.484
+Mean old product share 0.4222 0.4444 2.173
+Variance of old product share 0.0885 0.0946 1.216
+Serial correlation of old product share 0.4273 0.4392 0.133
+Panel B : Parameters
+Parameter θ σ ρ δ ψ ω 0 ω 1 η ξ
+Estimate 0.6117 0.3021 0.4586 0.0807 0.7384 0.4311 0.2833 0.0079 0.5692
+Std. error (0.0060) (0.0257) (0.0268) (0.0039) (0.2818) (0.0680) (0.0339) (0.0010) (0.0538)
+Second, higher cannibalization rate results in a more stable
+product portfolio structure, which lowers product portfo-
+lio age variance and thus also the variance of proﬁtabil-
+ity. This affects ﬁrms’ precautionary savings incentives and
+results in lower maintained debt capacity. Overall, the ef-
+fect of cannibalization can magnify the effects of product
+life cycle, but does not alter the main mechanisms through
+which product dynamics interact with corporate policies.
+5.2.4. Product portfolio implications for debt and equity
+ﬁnancing
+We have documented that product portfolio structure
+have important implications for ﬁrms’ ﬁnancing decisions.
+However, so far the effect has been indirect –i t operated
+through ﬁrms’ incentive to issue debt or equity and to ﬁ-
+nance product introductions. In this section, we extend our
+model to better understand whether a direct effect can
+be important as well. For example, ﬁrms may be able to
+secure a better conditions when raising external funds if
+their product portfolios are more attractive, e.g., if they
+consist of more new products.
+To understand if this effect plays a role in our model,
+we analyze two extensions. First, we allow for an ex-
+plicit dependence between ﬁrms’ debt capacity and prod-
+uct portfolio age. To this end, we extend the collateral con-
+straint in Eq. (13) to take the form of
+D i ≤ K i × (1 − δ) × (ω 0 − ω 1 × φi ) . (26)
+Firms’ debt capacity is now characterized by two parame-
+ters: ω 0 , which represents the share of depreciated capital
+that can be collateralized independent of product portfo-
+lio age, and ω 1 , which captures the fact that older product
+portfolios may reduce the available debt capacity as, e.g.,
+the capital used to produce these goods or their trademark
+value are worth less.
+We structurally estimate the extended model and we
+identify the new parameter ω 1 by using higher moments
+of leverage: as ω 1 increases, the exposure of debt capac-
+ity to product portfolio age rises, and as such net lever-
+age should be more volatile given that the share of old
+products changes as well. On the other hand, ω 0 is iden-
+tiﬁed as before, i.e. by using the mean of net leverage.
+Table 14 presents the resulting estimates and reveals that
+the effect of product portfolio age on debt capacity is sub-
+stantial. The estimated ω 1 amounts to 0.2833, which sug-
+gests that the collateralized share of depreciated capital is
+lower by 0 . 4222 ×0 . 2833 ≈ 12% due to product portfolio
+age. Interestingly, we can nearly recover the baseline esti-
+mate of ω of 0.3024, which is very close to the one implied
+by the extended model: 0 . 4311 −0 . 4222 ×0 . 2833 = 0 . 3115 .
+In Panel E of Fig. 6 we show that product portfolio
+age decreases with ω 1 , which is intuitive, as ﬁrms inter-
+nalize product characteristics when making debt issuance
+decisions not only indirectly, but also directly. As such,
+when collateral constraint becomes more exposed to prod-
+uct portfolio age, ﬁrms choose to lower their product port-
+folio age so as to maintain their debt capacity. They do so
+by, e.g., introducing more new products.
+Finally, we also examine the interaction between prod-
+uct portfolio age and equity issuance cost. We model this
+interaction as an increase in the equity issuance cost λ that
+amounts to a percent λ1 of the old product share φ. That
+is, when ﬁrms have φ% of old products in their portfo-
+lio, they raise equity at the higher cost of λ + λ1 × φ. As
+we estimate the baseline equity issuance cost λ outside of
+the model, rather than structurally estimating the exten-
+959
+
+===== PAGE 29 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+sion, we analyze its implications by studying the effects of
+varying λ1 .
+Panel F of Fig. 6 reports the effect of old product share
+on equity issuance cost by changing the value of λ1 . The
+results show that higher exposure of the equity issuance
+cost on product portfolio age results into a very limited
+quantitative effect. In fact, the same is true in the data, as
+ﬁrms in our sample only rarely engage in SEOs, given that
+our sample consists primarily of large, proﬁtable and well-
+established companies. The evidence thus suggests that
+there is no economically relevant link between product
+portfolio structure and equity issuance costs.
+6. Conclusion
+In this paper, we demonstrate that product life cy-
+cle has important implications for corporate policies, ﬁrm
+value and industry structure by developing and estimating
+a dynamic industry equilibrium model of investment, ﬁ-
+nancing and product portfolio decisions. In line with the
+product life cycle channel, new products are more prof-
+itable, and are expected to last longer than old ones. Thus,
+when deciding whether to introduce new products, the
+ﬁrm trades off the beneﬁts of a younger product portfolio
+versus product introduction costs.
+We embed the product life cycle channel into a ﬂex-
+ible industry equilibrium model of ﬁnancing and invest-
+ment that can be taken to the data by means of structural
+estimation. In the model, ﬁrms’ product introduction deci-
+sions have direct implications for cash ﬂow dynamics. As a
+result, investment, ﬁnancing and product decisions are in-
+tertwined at the ﬁrm level and spill over to industry struc-
+ture. In particular, the model implies that product intro-
+ductions and capital investment act as complements and
+that product life cycle induces stronger precautionary sav-
+ings motives for ﬁrms. These predictions are in line with
+empirical stylized facts about product portfolio age, invest-
+ment and leverage.
+Using detailed data on ﬁrms’ product portfolios, we
+structurally estimate the model to quantify the effects of
+the product life cycle channel. By doing so, the paper de-
+livers three novel results. First, the structural estimates
+imply that the product-level forces are quantitatively im-
+portant, as products lose 46% of their revenue when they
+become old and ﬁrms spend $6.85m per product intro-
+duction. Second, the estimated model provides important
+cross-sectional predictions, as the estimates suggest that
+ﬁrms supplying fewer products, facing less between-ﬁrm
+product concentration, and supplying products more sen-
+sitive to ageing are also more exposed to the product life
+cycle channel. Moreover, by examining characteristics such
+as product durability, product offering variety and prod-
+uct concentration, we document that product market strat-
+egy signiﬁcantly affects ﬁrms’ exposure to product life cy-
+cle. Third, by means of counterfactual experiments, we ﬁnd
+that product life cycle substantially affects ﬁrm value, in-
+dustry structure as well as corporate investment and ﬁ-
+nancing decisions. Overall, the data suggests that manag-
+ing the life cycle of products, by means of introduction
+cost or sensitivity to ageing, yields material beneﬁts to
+ﬁrms.
+Acknowledgments
+Bill Schwert was the editor for this article and Dim-
+itris Papanikolaou was the co-editor. We thank an anomy-
+mous referee, Theodosios Dimopoulos, Rüdiger Fahlen-
+brach, Laurent Frésard, Thomas Geelen, Daniel Kim, Evgeny
+Lyanders (AFA discussant), Erwan Morellec, Diane Pierret,
+Nagpurnanand Prabhala, Lukas Schmid, Norman Schürhoff,
+Roberto Steri, Suzanne Vissers (SFI discussant), Toni
+Whited, Yufeng Wu (FIRS and WFA discussant) as well
+as seminar participants at BI Oslo, Copenhagen Business
+School, HEC Montréal, JHU Carey, McGill, Michigan Ross,
+Pittsburgh Katz, UNIL, UGA and USI as well as to 4th HEC
+Paris Finance Workshop, SFI Research Days 2019, FIRS 2019,
+WFA 2020 and AFA 2021.
+Appendix
+The Appendix consists of three sections. Section Ap-
+pendix A provides more details about the product data and
+sample selection. Section Appendix B contains the deﬁni-
+tions of variables. Section Appendix C describes the struc-
+tural estimation procedure.
+Appendix A. Product market data
+A1. Data description
+We use data from the Nielsen Homescan (NH) to obtain
+information about ﬁrms’ product market strategies. An ex-
+tensive description of the database can also be found in
+e.g. Broda and Weinstein (2010) or Hottman et al. (2016) .
+The data contains three dimensions: household, product
+and time. Each household in the sample reports the prices
+and quantities of items purchased during each shopping
+trip and any potential discounts or deals associated with
+the purchases. Overall, the data contains a representative
+sample of approximately 40,0 0 0-60,0 0 0 households strati-
+ﬁed into 61 geographic areas in the US. The sample is de-
+signed so that it can be projected to the total US popu-
+lation (projection factors are available). In total, the data
+spans over the period of 2004–2018.
+A2. Product classiﬁcation in NH
+Each product in the data belongs to speciﬁc categories,
+varying in their granularity. The categories include Depart-
+ments (11), Product Groups ( ≈ 125), Modules ( ≈ 1,075) and
+UPC codes ( ≈ 4.3 million; ≈ 2.3 million thereof are in the
+consumer panel ﬁles). Most products also have a speciﬁc
+brand. An example of product classiﬁcation is presented in
+Table A.1 .
+The most granular level of product categories is the
+UPC code. Each UPC code is 12-digit long and the ﬁrst 6
+to 11 digits are a unique identiﬁer of the ﬁrm to which
+the product belongs (‘GCP code’). However, ﬁrms can have
+many GCP codes. To obtain all possible combinations, all
+GCP codes are collected using the GLN code, issued by GS1
+(which also manages the issuance of the UPC codes). The
+GLN code is used to identify physical locations or legal en-
+tities of the ﬁrms. The key is 12 digits long and comprises
+960
+
+===== PAGE 30 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+Table A. 1
+Example of a product in the data. Details of ‘NESTLE USA 8.47 OZ (240g) Nescafe Frothe Latte Coffee Drink’.
+Compustat identiﬁer GS1 identiﬁer product identiﬁer product department product group product module product brand
+(6 digits) (13 digits) (12 digits) DRY GROCERY CANDY CANDY –CHOCOLATE HERSHEY’S KISSES
+Table A.2
+Summary statistics of different product classiﬁcations. Each classiﬁcation contains data from 38,386 uniquely identiﬁed
+ﬁrms in Nielsen Homescan.
+mean sd q1 med q3 min max
+# UPCs 57.19 493.04 2 5 17 1 36,389
+# brand-modules 8.83 37.30 1 2 5 1 1,742
+# brands 4.68 17.75 1 1 3 1 1,128
+# product modules 4.82 22.56 1 2 3 0 798
+# product groups 2.44 5.12 1 1 2 0 111
+# departments 1.37 0.88 1 1 1 0 11
+Table A.3
+Sales’ shares of matched ﬁrms. The table presents summary statistics concerning the sales’ shares of matched ﬁrms,
+computed as the ratio of the projected sales of each matched Compustat ﬁrm-quarter to its actual sales in that quarter.
+Only industries with at least 10% average projected sales’ share and at least 50 observations were included. All variables
+are winsorized at 2.5 and 97.5% percentile.
+mean sd p25 median p75 N
+Food & Kindred Products 0.518 0.502 0.159 0.402 0.737 2355
+Chemical & Allied Products 0.256 0.416 0.027 0.075 0.267 1092
+Electronic & Other Electric Equipment 0.190 0.289 0.002 0.014 0.312 427
+Paper & Allied Products 0.112 0.167 0.006 0.032 0.212 387
+Fabricated Metal Products 0.302 1.277 0.004 0.015 0.196 209
+Agricultural Production - Crops 0.543 0.305 0.293 0.529 0.746 108
+Tobacco Products 0.186 0.097 0.103 0.136 0.274 96
+Rubber & Miscellaneous Plastics Products 0.185 0.165 0.046 0.091 0.360 88
+Apparel & Accessory Stores 0.132 0.179 0.000 0.016 0.275 55
+Total 0.373 0.520 0.038 0.219 0.579 4894
+a GS1 Company Preﬁx, Location Reference, and Check Digit.
+Both the GCP code as well as the GLN codes are obtained
+from the GEPIR database provided by POD, which addition-
+ally contains the full name and the address of each ﬁrm.
+Overall, the POD database is able to match 3.4 millions
+UPCs ( ≈ 78% of all available products and ≈ 96% of product
+data available in the consumer panel ﬁles) which belong to
+38,386 ﬁrms.
+Table A.2 contains the summary statistics of ﬁrm-level
+number of products per category. It indicates the large de-
+gree of heterogeneity in the data: while an average ﬁrm
+owns roughly 8.82 products, a typical (median) ﬁrm owns
+only 2. Similar conclusions can be drawn from looking at
+other classiﬁcations of products.
+A3. Merging with compustat
+The ﬁrm-product data can be merged with Compustat
+by ﬁrm names. However, many public ﬁrms own multiple
+subsidiaries and the ﬁrm-product data could contain the
+subsidiary name rather the one of the parent company. For
+example, in the product data, P&G directly owns most of
+the products while Newell Brands only owns its products
+through some of the 121 subsidiaries. We obtain the names
+of subsidiaries of Compustat ﬁrms from Capital IQ.
+The text matching procedure is conducted using fuzzy
+merging. The matching scores are based on GEDSCORE,
+SPEDIS and % of the same 3-character combinations of one
+company name in the other. All punctuation, special char-
+acters and common words are removed before conducting
+the comparison. After the merge, we manually verify ev-
+ery match and additionnaly add ﬁrms with at least 200
+UPC codes to the data (out of all unmatched ﬁrms with
+more than 800 UPC codes –4 7 7 ﬁrms –1 5 % turned out
+to be public or subsidiaries of public ﬁrms). In total, we
+ware able to merge 1376 GLN-level ﬁrms (or subsidiaries)
+from the ﬁrm-product data, which corresponds to 702 US-
+headquartered Compustat ﬁrms.
+To further verify the quality of the matching procedure,
+we analyze ﬁrms’ ‘sales share’, i.e. the ratio of the pro-
+jected sales (to the whole US; computed using the pro-
+jection factors in the data) of each matched Compustat
+ﬁrm in a given quarter to its actual sales in that quarter.
+Table A.3 contains the summary statistics on sales share
+for 2-digit SIC industries.
+Table A.3 suggests that not all industries are equally
+well-covered in the data. For example, Agriculture and
+Food industries are relatively well matched. Other in-
+dustries, such as Electronic and Chemicals, are character-
+ized by large degree of within-industry dispersion in sales
+share. This is related to the fact that NH data focuses
+on particular product categories, which are only partially
+present in some industries. For example, Procter and Gam-
+ble’s product portfolio is relatively well-captured in the
+data and is primarily captured in the Chemicals sector,
+which also contains other ﬁrms with low sales share. How-
+961
+
+===== PAGE 31 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+ever, the matched sample contains primarily ﬁrms from
+the ‘food’ industry, which comprises two SIC2 codes: 01
+and 20, and these ﬁrms rely heavily on the retail channel
+in generating sales.
+A4. Sample selection
+To reﬁne the data for further empirical analysis, we
+ﬁrst apply the standard Compustat data ﬁlters: we remove
+ﬁrms with missing data on any variables used in structural
+estimation, market-to-book larger than 15 or negative book
+equity. Based on the matched sample, we remove all ﬁnan-
+cial conglomerates (SIC ≥ 60 0 0 ). We require that ﬁrm’s pro-
+jected sales share be at least 5% and no more than 150% of
+its total sales on average. Moreover, we only keep ﬁrms in
+industries in which the average projected sales share is at
+least 10%. We also remove all ﬁrms which have on average
+less than 20 UPC codes. Even though we control for the
+sales share in the empirical analysis, this ﬁlter is important
+as it disposes of ﬁrms that do no rely on retail channel (so
+the main mechanism is unlikely to matter) or that were
+plausibly mismatched. As an example, this ﬁlter removes
+ﬁrms such as American Crystal Sugar Co or Archer-Daniels-
+Midland Co. for whom the retail channel is clearly of sec-
+ondary if not tertiary importance. Another example of such
+a ﬁrm would be Amazon, which oftentimes sell own prod-
+ucts in retail stores, but these do not constitute the main
+source of revenues for Amazon. To mitigate the concerns
+of mistaking acquired products as being new, we remove
+all merged ﬁrms from our sample; a prominent example
+of which is Kraft/Heinz. Additionally, we manually control
+for many other product line acquisitions over the sample
+period that we managed to identify in the news or in the
+data. Finally, we winsorize the remaining data at 2.5% and
+97.5% level. The ﬁnal sample spans 2004Q1 to 2018Q4 and
+contains 2319 ﬁrm-quarter observations. 28
+Appendix B. Data and stylized facts
+B1. Deﬁnitions of variables
+This section presents the deﬁnitions of variables used
+throughout the paper.
+1. Product portfolio age – weighted share of old prod-
+ucts in the portfolio:
+age it = weighted # of products with age exceeding 50% of lifespan (it)
+total # of products (it) ,
+(27)
+where the weights correspond to product-speciﬁc
+revenues. Given the deﬁnition of the proxy, we ex-
+clude ﬁrst and last two years of the data when com-
+puting the proxy to make sure that product portfolio
+age is correctly captured.
+28 The ﬁrst and last two years of the sample are excluded, similar to
+Argente et al. (2018, 2021b) , when computing the proxies of product port-
+folio age and when identifying product introduction and withdrawal de-
+cisions, given the procedure for constructing these proxies. The primary
+reason is due to the fact that we need to ensure that we correctly cap-
+ture product entry and exit dates.
+2. Product portfolio size –e f f e c t i v e number of prod-
+ucts at level x, x ∈ [ upc , bm ] :
+ef f _ no _ prod it = 1 /rc _ x it , (28)
+where rx _ x is the revenue concentration at level x :
+rc _ x it =
+H it −1 /N it
+1 −1 /N it
+, with H it =
+N it ∑
+x=1
+(
+r _ sale xt
+∑  N it
+x=1 r _ sale xt
+)2
+,
+(29)
+where r _ sale xt are the estimated aggregate retail
+sales for each x ∈ { upc , bm } product at time t. To
+see where the measure for the effective number
+of products stems from, suppose that a ﬁrm sup-
+plies N products. Then its revenue concentration is
+rc =
+∑  N
+i =1 s 2
+i , where s i is the share of product i in
+the ﬁrm’s sales. Assuming all products provide equal
+revenue, their revenue share is then s i = s = 1 /N,
+thus the HHI is now rc =
+∑  N
+i =1 1 /N 2 = N/N 2 = 1 /N,
+which implies that we can back out the ‘effective’
+number of products as ef f _ no _ prod = 1 /rc.
+3. Product portfolio adjustments –n e t product entry:
+netproductentry it = weightedentryrate it −weightedexitrate it ,
+(30)
+where entry rate and exit rate are deﬁned as in
+Argente et al. (2018) and where the weights cor-
+respond to market-speciﬁc revenues, using product
+groups as the deﬁnition of a market. An ‘entry’ in-
+dicates an introductions of a new product that has
+never been offered by ﬁrm i before time t and an
+‘exit’ indicates a product that was no longer supplied
+by ﬁrm i after time t. We exclude the ﬁrst and last
+two years of the data when computing the proxy
+and require ﬁrms to have at least 20 UPCs to make
+sure that product entry and exit rates are correctly
+captured.
+4. Product exit rate :
+exit rate it = # product withdrawals (it)) / total # products ( it)
+(31)
+We exclude ﬁrst and last two years of the data when
+retrieving product withdrawals to make sure that
+product exit rate is correctly captured. Alternatively,
+when using the exit rate to estimate the model, it is
+calculated as the weighted average of product with-
+drawals where the weights correspond to market-
+speciﬁc revenues, using product groups as the def-
+inition of a market.
+5. Net product creation : deﬁned as net product en-
+try, except using the value of revenue created or de-
+stroyed when introducing or withdrawing products,
+respectively, as a share of total product revenue.
+6. Market-to-book : book value of debt plus market
+value of equity over total assets.
+7. Investment : capital expenditure minus asset sales
+over gross PPE.
+8. Net leverage : book debt minus cash and short-term
+investments over book debt plus book equity.
+962
+
+===== PAGE 32 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+9. Cash : cash and short-term investments over total as-
+sets.
+10. Firm size : natural logarithm of real total assets.
+11. Proﬁtability : operating income over total assets.
+12. Firm age :
+ﬁrmage it = − 1
+1 + listingage it
+, where listingage it = t −t i0 ,
+(32)
+with t i 0 being the ﬁrst appearance of ﬁrm i
+in CRSP, as in Pástor and Veronesi (2003) or
+Loderer et al. (2017) .
+13. Cash ﬂow volatility : the rolling standard deviations
+of proﬁtability, computed over the past 8 quarters.
+14. Tangibility : net property, plant and equipment over
+total assets.
+15. Cost of sales : general and administrative expense
+over total assets.
+16. Product revenue growth : the growth rate of non-
+durable consumer good revenue.
+17. Between-ﬁrm product concentration :
+bhhi it =
+M ∑
+p=1
+s pit H H I pt , (33)
+where s pit is the share of ﬁrm’s i sales in product
+group p at time t, and H H I pt is the Herﬁndahl of
+product group p at time t, computed using all ﬁrms
+available in the sample, both public and private.
+18. Product durability : average calendar age of prod-
+ucts at exit.
+19. Product offering variety : the ratio of the number
+of brand-modules offered by a ﬁrm to the number
+of product groups.
+20. Within-ﬁrm product concentration :
+whhi it =
+M ∑
+p=1
+s pit H H I UP C
+pit , (34)
+where s pit is the share of ﬁrm’s i sales in product
+group p at time t, and H H I UP C
+pit is the Herﬁndahl of
+ﬁrm’s i UPC-level revenues in product group p at
+time t.
+Appendix C. Structural estimation
+We follow Lee and Ingram (1991) when estimating
+the model using structural method of moments. As in
+Hennessy and Whited (2007) , we extract as much of ob-
+served heterogeneity from data as possible to make the
+model- and data-implied moments comparable, that is we
+use within-transformed variables to compute all moments
+except for means, which are computed using the raw data.
+Let the pooled time series of all ﬁrms be x i = x 1 , . . . , x N ,
+where N = n × T is the total number of ﬁrm-year obser-
+vations. Using the transformed data, we compute a set of
+moments h (x i ) .
+We create the simulated moments by ﬁrst solv-
+ing the model given a vector of parameters β =
+(θ, σ, ρ, δ, ψ, ω, η, ξ) and then generating simulated data
+y from the model. We simulate S = 10 datasets of N =
+2 , 0 0 0 ﬁrm-quarters, following Michaelides and Ng (20 0 0) ,
+who ﬁnd that a simulation estimator behaves well in ﬁ-
+nite samples if the simulated sample is approximately ten
+times as large as the actual data sample. The resulting mo-
+ments in a given simulated sample are given by the vector
+h (y s , β) .
+The simulated methods of moments estimator ˆ β is then
+the solution to
+ˆ β = arg min
+β
+[ g(x) −g(y , β) ] ′ W [ g(x) −g(y , β) ] , (35)
+where g(x ) = 1
+N
+∑  N
+i =1 h (x i ) and g(y, β) = 1
+S
+∑  S
+s =1 h (y s , β)
+are the sample means of the actual and model-implied
+data, and W a positive deﬁnite weight matrix. We use
+the optimal clustered weight matrix constructed as in
+Bazdresch et al. (2017) . We use simulated annealing to ﬁnd
+the optimum to the minimization problem.
+Under mild regularity conditions, the SMM estimator is
+asymptotically normal
+√
+N ( ˆ β − β)
+d
+−→ N ( 0 , V ) , (36)
+where V is the covariance matrix as in Newey and McFad-
+den (1994) .
+Supplementary material
+Supplementary material associated with this article can
+be found, in the online version, at doi: 10.1016/j.jﬁneco.
+2022.09.003
+References
+Abernathy, W.J., Utterback, J.M., 1978. Patterns of industrial innovation.
+Technol. Rev. 80, 40–47 .
+Andrews, I., Gentzkow, M., Shapiro, J.M., 2017. Measuring the sensitivity
+of parameter estimates to estimation moments. Q. J. Econ. 132, 1553–
+1592. doi: 10.1093/qje/qjx023 .
+Argente, D., Hanley, D., Baslandze, S., Moreira, S., 2021a. Patents to prod-
+ucts: Product innovation and ﬁrm dynamics. Unpublished working pa-
+per. Pennsylvania State University.
+Argente, D., Lee, M., Moreira, S., 2018. Innovation and product reallocation
+in the great recession. J. Monet. Econ. 93, 1–20. doi: 10.1016/j.jmoneco.
+2017.11.003 .
+Argente, D., Lee, M., Moreira, S., 2021b. The life cycle of products: ev-
+idence and implications. Unpublished working paper. Pennsylvania
+State University.
+Bazdresch, S., Kahn, R.J., Whited, T.M., 2017. Estimating and testing dy-
+namic corporate ﬁnance models. Rev. Financ. Stud. 31, 322–361.
+doi: 10.1093/rfs/hhx080 .
+Benkard, C.L., Yurukoglu, A., Zhang, A.L., 2021. Concentration in Prod-
+uct Markets, Working Paper, 28745. National Bureau of Economic Re-
+search doi: 10.3386/w28745 .
+Bernard, A.B., Redding, S.J., Schott, P.K., 2010. Multiple-product ﬁrms and
+product switching. Am. Econ. Rev. 100, 70–97. doi: 10.1257/aer.100.1.
+70 .
+Broda, C., Weinstein, D.E., 2010. Product creation and destruction: evi-
+dence and price implications. Am. Econ. Rev. 100, 691–723. doi: 10.
+1257/aer.100.3.691 .
+Chevalier, J.A., 1995. Capital structure and product-market competition:
+empirical evidence from the supermarket industry. Am. Econ. Rev. 85,
+415–435 .
+Chevalier, J.A., 1995. Do LBO supermarkets charge more? an empirical
+analysis of the effects of LBOs on supermarket pricing. J. Financ. 50,
+1095–1112. doi: 10.1111/j.1540-6261.1995.tb04051.x .
+Clara, N., Corhay, A., Kung, H., 2021. Firm product concentration and asset
+prices. Unpublished working paper. Duke University.
+Clayton, G., 2017. Product market strategy and capital structure: evidence
+from resale price maintenance. Unpublished working paper. Univer-
+sity of Kentucky.
+D’Acunto, F., Liu, R., Pﬂueger, C., Weber, M., 2018. Flexible prices and lever-
+age. J. Financ. Econ. 129, 46–68. doi: 10.1016/j.jﬁneco.2018.03.009 .
+963
+
+===== PAGE 33 =====
+
+J. Hajda and B. Nikolov Journal of Financial Economics 146 (2022) 932–964
+DeAngelo, H., DeAngelo, L., Whited, T.M., 2011. Capital structure dynamics
+and transitory debt. J. Financ. Econ. 99, 235–261. doi: 10.1016/j.jﬁneco.
+2010.09.005 .
+Deaton, A., 1997. The Analysis of Household Surveys. The World Bank
+doi: 10.1596/0- 8018- 5254- 4 .
+Frésard, L., 2010. Financial strength and product market behavior: the real
+effects of corporate cash holdings. J. Financ. 65, 1097–1122. doi: 10.
+1111/j.1540-6261.2010.01562.x .
+Gamba, A., Triantis, A., 2008. The value of ﬁnancial ﬂexibility. J. Financ.
+63, 2263–2296. doi: 10.1111/j.1540-6261.2008.01397.x .
+Geelen, T., Hajda, J., Morellec, E., 2022. Can corporate debt foster inno-
+vation and growth? Rev. Financ. Stud. 35, 4152–4200. doi: 10.1093/rfs/
+hhab129 .
+Glover, B., 2015. The expected cost of default. J. Financ. Econ. 119, 284–
+299. doi: 10.1016/j.jﬁneco.2015.09.007 .
+Gomes, J., 2001. Financing investment. Am. Econ. Rev. 91, 1263–1285.
+doi: 10.1257/aer.91.5.1263 .
+Gourio, F., Rudanko, L., 2014. Customer capital. Rev. Econ. Stud. 81, 1102–
+1136. doi: 10.1093/restud/rdu007 .
+Han, C., Phillips, P., 2010. GMM estimation for dynamic panels with ﬁxed
+effects and strong instruments at unity. Econom. Theory 26, 119–151.
+doi: 10.1017/S026646660909063X .
+Hellmann, T., Puri, M., 20 0 0. The interaction between product market and
+ﬁnancing strategy: the role of venture capital. Rev. Financ. Stud. 13,
+959–984. doi: 10.1093/rfs/13.4.959 .
+Hennessy, C.A., Whited, T.M., 2005. Debt dynamics. J. Financ. 60, 1129–
+1165. doi: 10.1111/j.1540-6261.20 05.0 0758.x .
+Hennessy, C.A., Whited, T.M., 2007. How costly is external ﬁnancing? Ev-
+idence from a structural estimation. J. Financ. 62, 1705–1745. doi: 10.
+1111/j.1540-6261.2007.01255.x .
+Hoberg, G., Maksimovic, V., 2021. Product life cycles in corporate ﬁnance
+doi: 10.1093/rfs/hhab134 . Forthcoming
+Hottman, C.J., Redding, S.J., Weinstein, D.E., 2016. Quantifying the sources
+of ﬁrm heterogeneity. Q. J. Econ. 131, 1291–1364. doi: 10.1093/qje/
+qjw012 .
+Kovenock, D., Phillips, G., 1995. Capital structure and product-market ri-
+valry: how do we reconcile theory and evidence? Am. Econ. Rev. 85,
+403–408 .
+Kovenock, D., Phillips, G., 1997. Capital structure and product market be-
+havior: an examination of plant exit and investment decisions. Rev.
+Financ. Stud. 10, 767–803. doi: 10.1093/rfs/10.3.767 .
+Lee, B.S., Ingram, B.F., 1991. Simulation estimation of time-series models.
+J. Econom. 47, 197–205. doi: 10.1016/0304- 4076(91)90098- X .
+Levitt, T., 1965. Exploit the product life cycle. Harv. Bus. Rev. 43, 81–94 .
+Livdan, D., Nezlobin, A., 2021. Investment, capital stock, and replacement
+cost of assets when economic depreciation is non-geometric. J. Financ.
+Econ. 142, 14 4 4–1469. doi: 10.1016/j.jﬁneco.2021.05.021 .
+Loderer, C., Stulz, R., Waelchli, U., 2017. Firm rigidities and the decline in
+growth opportunities. Manag. Sci. 63, 30 0 0–3020. doi: 10.1287/mnsc.
+2016.2478 .
+MacKay, P., 2003. Real ﬂexibility and ﬁnancial structure: an em-
+pirical analysis. Rev. Financ. Stud. 16, 1131–1165. doi: 10.1093/rfs/
+hhg022 .
+Maksimovic, V., 1988. Capital structure in repeated oligopolies. RAND J.
+Econ. 19, 389–407. doi: 10.2307/2555663 .
+Mann, W., 2018. Creditor rights and innovation: evidence from patent col-
+lateral. J. Financ. Econ. 130, 25–47. doi: 10.1016/j.jﬁneco.2018.07.001 .
+Melser, D., Syed, I.A., 2015. Life cycle price trends and product replace-
+ment: implications for the measurement of inﬂation. Rev. Income
+Wealth 62, 509–533. doi: 10.1111/roiw.12166 .
+Michaelides, A., Ng, S., 20 0 0. Estimating the rational expectations model
+of speculative storage: a Monte Carlo comparison of three simula-
+tion estimators. J. Econom. 96, 231–266. doi: 10.1016/S0304-4076(99)
+0 0 058-5 .
+Michaels, R., Page, T.B., Whited, T.M., 2018. Labor and capital dynamics
+under ﬁnancing frictions. Rev. Financ. 23, 279–323. doi: 10.1093/rof/
+rfy020 .
+Morellec, E., Nikolov, B., Schürhoff, N., 2012. Corporate governance and
+capital structure dynamics. J. Financ. 67, 803–848. doi: 10.1111/j.
+1540-6261.2012.01735.x .
+Morellec, E., Nikolov, B., Schürhoff, N., 2018. Agency conﬂicts around the
+world. Rev. Financ. Stud. 31, 4232–4287. doi: 10.1093/rfs/hhy018 .
+Newey, W.K., McFadden, D., 1994. Chapter 36: large sample estimation
+and hypothesis testing. In: Handbook of Econometrics. In: of Hand-
+book of Econometrics, Vol. 4. Elsevier, pp. 2111–2245. doi: 10.1016/
+s1573-4412(05)80 0 05-4 .
+Nikolov, B., Schmid, L., Steri, R., 2018. Dynamic corporate liquidity. J. Fi-
+nanc. Econ. 132, 76–102. doi: 10.1016/j.jﬁneco.2017.06.018 .
+Nikolov, B., Schmid, L., Steri, R., 2021. The sources of ﬁnancing constraints.
+J. Financ. Econ. 139, 478–501. doi: 10.1016/j.jﬁneco.2020.07.018 .
+Nikolov, B., Whited, T.M., 2014. Agency conﬂicts and cash: estimates from
+a dynamic model. J. Financ. 69, 1883–1921. doi: 10.1111/joﬁ.12183 .
+Parsons, C., Titman, S., 2008. Capital structure and corporate strategy. In:
+Eckbo, B.E. (Ed.), Handbook of Empirical Corporate Finance, Vol. 2. El-
+sevier, San Diego, pp. 203–234 . Handbooks in Finance
+Pástor, L., Veronesi, P., 2003. Stock valuation and learning about proﬁtabil-
+ity. J. Financ. 58, 1749–1789. doi: 10.1111/1540-6261.00587 .
+Peters, R.H., Taylor, L.A., 2017. Intangible capital and the investment- q re-
+lation. J. Financ. Econ. 123, 251–272. doi: 10.1016/j.jﬁneco.2016.03.011 .
+Phillips, G., 1995. Increased debt and industry product markets an empir-
+ical analysis. J. Financ. Econ. 37, 189–238. doi: 10.1016/0304-405X(94)
+00785-Y .
+Redding, S.J., Weinstein, D.E., 2019. Measuring aggregate price indices
+with taste shocks: theory and evidence for CES preferences. Q. J. Econ.
+135, 503–560. doi: 10.1093/qje/qjz031 .
+Spence, M., 2009. Capital Structure and the corporation’s product market
+environment. In: Friedman, B.M. (Ed.), Corporate Capital Structures in
+the United States. University of Chicago Press, pp. 353–382. doi: 10.
+7208/9780226264233-013 .
+Suh, P., 2019. Property Rights and Debt Financing. University of Georgia .
+Unpublished working paper
+Taylor, L., 2010. Why are CEOs rarely ﬁred? evidence from a structural
+estimation. J. Financ. 65, 2051–2087. doi: 10.1111/j.1540-6261.2010.
+01610.x .
+Taylor, L., 2013. CEO Wage dynamics: estimates from a learning model. J.
+Financ. Econ. 108, 79–98. doi: 10.1016/j.jﬁneco.2012.11.008 .
+Titman, S., 1984. The effect of capital structure on a ﬁrm’s liquida-
+tion decision. J. Financ. Econ. 13, 137–151. doi: 10.1016/0304-405X(84)
+90035-7 .
+Titman, S., Wessels, R., 1988. The determinants of capital structure choice.
+J. Financ. 43, 1–19. doi: 10.2307/2328319 .
+Valta, P., 2012. Competition and the cost of debt. J. Financ. Econ. 105, 661–
+682. doi: 10.1016/j.jﬁneco.2012.04.004 .
+Warusawitharana, M., Whited, T.M., 2016. Equity market misvaluation, ﬁ-
+nancing, and investment. Rev. Financ. Stud. 29, 603–654. doi: 10.1093/
+rfs/hhv066 .
+Wu, Y., 2018. What’s behind smooth dividends? Evidence from structural
+estimation. Rev. Financ. Stud. 31, 3979–4016. doi: 10.1093/rfs/hhx119 .
+Xu, Z., 2021. Trademark Collateral and Debt Financing. UNSW . Unpub-
+lished working paper.
+964

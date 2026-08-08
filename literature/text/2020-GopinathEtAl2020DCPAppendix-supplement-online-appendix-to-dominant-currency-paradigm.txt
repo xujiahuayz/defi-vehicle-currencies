@@ -1,0 +1,1046 @@
+
+
+===== PAGE 1 =====
+
+Dominant Currency Paradigm
+Gita Gopinath Emine Boz Camila Casas
+Harvard IMF Banco de la Rep ´ublica
+Federico J. D´ıez Pierre-Olivier Gourinchas Mikkel Plagborg-Møller
+IMF UC Berkeley Princeton
+ONLINE APPENDIX
+
+===== PAGE 2 =====
+
+A ONLINE APPENDIX: NOT FOR PUBLICATION
+A.1 Macro Data
+Here we provide further details on the Comtrade, WDI, and FRED data.
+A.1.1 Data Construction
+Comtrade. U.N. Comtrade (2017) provides detailed annual customs data for a large set of countries at HS 6-
+digit product level with information about the destination country, USD value, quantity, and weight of imports
+and exports. /T_his dataset makes it possible to compute volume changes over time for each product, and use
+the value data to infer unit values. Once unit values are calculated, we compute chained Fisher price indices to
+aggregate up from the product level to the bilateral country level.1 We focus entirely on data for non-commodity
+goods, except noted otherwise. Given the inherent diﬃculty in drawing a line between commodities and non-
+commodities, we de/f_ine commodities fairly broadly as HS chapters 1–27 and 72–83, which comprise animal,
+vegetable, food, mineral, and metal products.
+Coverage of Comtrade at annual frequency over time and across countries is good. /T_he longest time span of
+the data is 1989–2015, although the coverage varies by dyad. Appendix A.1.2 lists the coverage by country. In
+2015, the 55 countries in our sample were responsible for 91.2% and 91.5% of the value of world goods imports
+and exports, respectively, as recorded in Comtrade. We exclusively use Comtrade data reported by the importing
+country, as importer-reported data is regarded as being more reliable since imports generate tariﬀ revenues
+(Feenstra et al., 2005; World Bank, 2010).
+/T_he biggest challenge for constructing price and volume indices using customs data is the so-called unit
+value bias, as argued by Silver (2007). Unit values, calculated simply by dividing observed values by quantities,
+are not actual prices. Even at the narrowly de/f_ined product categories at 6-digit product level, there is likely to
+be a wide range of products whose prices may not be moving proportionately. /T_he implication is that if there are
+shi/f_ts in quantities traded within the narrowly de/f_ined product categories, unit values would be in/f_luenced even
+when there is no price movement. /T_his creates a bias that the employed methodology takes a stab at correcting
+for by eliminating products whose unit values have a variance higher than a threshold and are more likely to be
+biased.
+/T_he second challenge that arises from using Comtrade data is related to the use of diﬀerent HS vintages over
+time. HS classi/f_ication is updated about every /f_ive years to ensure that the available codings accurately re/f_lect
+the variety of products being traded. /T_his involves introducing codes for new products, eliminating the old ones,
+and o/f_ten regrouping existing products. While concordances are readily available to facilitate the matching of
+HS codes across diﬀerent HS vintages, this process inevitably leads to a loss of information, especially in the
+case of data on quantities, because the mapping of products across vintages is rarely one-to-one. To get around
+this problem, for the years in which there is a transition to a new HS vintage, we compute the indices twice,
+once under the old vintage (using concordances) and once under the new one. /T_his way, only these transition
+years would be eﬀected by the loss of information due to matching across vintages. A/f_ter that year, we switch
+to working with the new vintage. /T_his method not only minimizes the loss of information but also allows us to
+include new products in the construction of the indices. Boz et al. (2019) provide further details of this method,
+including the strategy for dealing with outliers and missing values.
+/T_he third potential challenge is associated with the conversion of trade values into and out of dollars. Ex-
+change rate conversion can be made by data compilers at the country level and by Comtrade. United Nation’s
+2006 Survey of National Compilation and Reporting Practices suggests that almost all countries in our sample use
+an exchange rate from an oﬃcial source and most countries use a daily exchange rate at the date of exporting or
+importing. /T_hose that declare not using daily rates report using monthly exchange rates. All in all, results of this
+survey suggest exchange rate conversion at the country level to be pre/t_ty accurate. As for Comtrade, for those
+countries reporting in local currency, Comtrade uses an annual exchange rate that weighs monthly exchange
+rates from the International Financial Statistics of the IMF by monthly trade /f_lows. According to the Explanatory
+Notes provided by Comtrade, most emerging markets report in dollars and advanced economies report in local
+1/T_he Fisher price index satis/f_ies a number of tests laid out in index number theory and is /f_lexible enough to provide a
+good proxy for a large set of functional forms (Gaulier et al., 2008; IMF, 2009).
+1
+
+===== PAGE 3 =====
+
+currency. Because our regressions for diﬀerent country groups in online appendix A.2.1 show similar results for
+advanced and emerging country /f_lows, any discrepancies in how annual exchange rate conversions are done by
+diﬀerent countries appear to not substantially in/f_luence our qualitative /f_indings.
+In the /f_inal stage, we compare our unit value indices to those provided by the Bureau of Labor Statistics
+(BLS) for the U.S., the only country, to our knowledge, that collects import price indices based on price surveys
+by origin. As shown in online appendix A.1.3, this comparison for the U.S. suggests that working with unit values
+is acceptable, as the growth rates of the two series are broadly aligned for most trading partners. Further, the
+results on pass-through into U.S. import and export prices using our constructed unit value indices are wholly
+consistent with the estimates in Casas et al. (2016) and Gopinath and Rigobon (2008) that are based on BLS data.
+Lastly, Boz et al. (2019) /f_ind favorable results when comparing country-level indices with those from the WTO
+and IMF World Economic Outlook.
+Currency invoicing share. For currency invoicing shares we use the data set constructed by Gopinath
+(2015). /T_he invoicing shares tend to be fairly stable over time so we take their simple averages over the years
+in which they are reported during 1999–2014. Appendix A.1.2 lists the USD and euro import invoicing share for
+the 39 countries in our sample with available invoicing data.
+World Development Indicator data. WDI (2017). /T_he exchange rate is the World Bank’s “alternative con-
+version factor” series (PA.NUS.ATLS), which corrects for redenominations and currency substitution, and is mea-
+sured as an annual average of daily rates. Producer prices are given by the wholesale price index (FP.WPI.TOTL).
+Real GDP is measured at market prices in constant U.S. dollars (NY.GDP.MKTP.KD). /T_he GDP de/f_lator is given by
+the ratio of nominal GDP (NY.GDP.MKTP.CD) and real GDP. Consumer prices are constructed from CPI in/f_lation
+rates (FP.CPI.TOTL.ZG), or if in/f_lation is not available, CPI levels (FP.CPI.TOTL). We use data for 1989–2015 only.
+/T_he data was downloaded in September 2016.
+FRED data. FRED (2017). We obtain the WTI oil price (POILWTIUSDA), VIX (VIXCLS), and 1-year Treasury
+bill rate (DTB1YR) from the St. Louis Fed’s FRED database. Annual series are averages of daily indices.
+Country groups. For some exercises below, we look at heterogeneity across advanced and emerging economies.
+We use the October 2017 IMF World Economic Outlook grouping of advanced economies, and label all other
+countries as emerging. /T_his yields 31 advanced and 24 emerging economies, as listed in Appendix A.1.2.
+A.1.2 Comtrade Country Summary Statistics
+Table 10 lists summary statistics on the number of observations for the 55 countries in our merged Com-
+trade/WDI dataset. /T_he table also lists the advanced or emerging economy classi/f_ication of each country. Finally,
+we list the share of imports invoiced in U.S. dollars and euros for the 39 countries for which we observe these
+measures (cf. Gopinath, 2015).
+A.1.3 Comparison of Comtrade and BLS Price Series for the U.S.
+Here we compare our unit value indices to survey price indices from the U.S. Bureau of Labor Statistics. /T_he BLS
+provides U.S. import price indices by locality of origin for Canada, E.U., France, Germany, U.K, Latin America,
+Mexico, Paci/f_ic Rim, China, Japan, ASEAN, Asia Near East, and Asian Newly Industrialized countries. As these
+price indices are constructed from surveys, their comparison with our unit value based indices can help gauge
+the eﬀectiveness of our techniques to deal with the unit value bias and other potential mismeasurement inherent
+in customs data.
+To arrive at comparable series, in this subsection we follow BLS in using Laspeyres indices of total (com-
+modities and non-commodities) goods prices from our Comtrade data set. For regions with multiple countries,
+we aggregate country level growth rates using Comtrade import values with a two year lag. Still, the series are
+not fully comparable because BLS’ preferred price basis is f.o.b. (free on board) while import values recorded at
+customs are c.i.f. (cost, insurance and freight), and not all countries included in BLS regions are in our database.
+2
+
+===== PAGE 4 =====
+
+C/o.sc/u.sc/n.sc/t.sc/r.sc/y.sc /s.sc/u.sc/m.sc/m.sc/a.sc/r.sc/y.sc /s.sc/t.sc/a.sc/t.sc/i.sc/s.sc/t.sc/i.sc/c.sc/s.sc
+As exporter As importer
+Country Adv #dyads avg T #dyads avg T InvS$ InvSe
+Africa
+Algeria 20 12.9 46 20.9 0.49
+Egypt 53 20.2 50 18.0
+South Africa 51 14.8 53 14.7
+Americas
+Argentina 54 21.0 50 20.6 0.88 0.08
+Brazil 54 21.7 50 23.2 0.84 0.11
+Canada ✓ 54 22.0 53 24.2 0.75 0.05
+Chile 52 20.2 48 17.7
+Colombia 52 17.9 49 15.6 0.99 0.00
+Mexico 54 21.7 51 23.0
+United States ✓ 54 22.0 53 22.8 0.93 0.02
+Venezuela 8 17.6 46 17.0
+Asia
+China 54 21.9 53 21.7
+Hong Kong ✓ 53 22.1 51 20.7
+India 54 21.9 53 24.0 0.86 0.10
+Indonesia 53 21.6 51 21.8 0.81 0.04
+Israel ✓ 49 22.1 50 15.0 0.73 0.21
+Japan ✓ 54 22.1 52 25.4 0.71 0.03
+Kazakhstan 32 15.2 52 14.6
+Malaysia 53 22.0 50 23.8
+Philippines 54 21.6 47 18.0
+Saudi Arabia 50 19.7 50 15.3
+Singapore ✓ 54 22.0 50 23.6
+South Korea ✓ 54 22.0 51 23.7 0.81 0.05
+/T_hailand 54 21.8 51 24.7 0.79 0.04
+Turkey 54 22.0 52 24.0 0.59 0.31
+Vietnam 50 19.6 46 12.1
+(continued on next page)
+3
+
+===== PAGE 5 =====
+
+C/o.sc/u.sc/n.sc/t.sc/r.sc/y.sc /s.sc/u.sc/m.sc/m.sc/a.sc/r.sc/y.sc /s.sc/t.sc/a.sc/t.sc/i.sc/s.sc/t.sc/i.sc/c.sc/s.sc (/c.sc/o.sc/n.sc/t.sc/i.sc/n.sc/u.sc/e.sc/d.sc)
+As exporter As importer
+Country Adv #dyads avg T #dyads avg T InvS$ InvSe
+Europe
+Austria ✓ 54 22.2 52 20.7 0.06 0.70
+Belgium ✓ 53 15.8 53 15.9 0.14 0.82
+Czech Republic ✓ 53 20.2 53 21.2 0.19 0.68
+Denmark ✓ 54 22.0 52 24.2 0.25 0.32
+Estonia ✓ 46 17.0 52 18.0 0.34 0.53
+Finland ✓ 54 21.9 52 24.9 0.42 0.38
+France ✓ 54 22.2 53 20.7 0.21 0.75
+Germany ✓ 54 21.4 53 23.3 0.23 0.75
+Greece ✓ 54 21.4 51 22.0 0.40 0.58
+Hungary 54 22.0 52 21.5 0.27 0.57
+Ireland ✓ 54 21.9 52 21.7 0.23 0.47
+Italy ✓ 54 22.2 52 20.7 0.29 0.67
+Lithuania ✓ 51 16.8 48 19.0 0.51 0.39
+Luxembourg ✓ 49 15.6 51 13.6 0.16 0.78
+Netherlands ✓ 54 22.2 53 22.2 0.37 0.46
+Norway ✓ 54 22.0 51 21.6 0.21 0.29
+Poland 54 21.8 52 20.2 0.30 0.58
+Portugal ✓ 54 21.8 52 25.0 0.22 0.76
+Romania 53 21.1 50 19.7 0.31 0.67
+Russia 53 21.0 52 17.6
+Slovak Republic ✓ 50 18.9 51 20.0 0.12 0.79
+Slovenia ✓ 54 19.6 52 20.0 0.20 0.75
+Spain ✓ 54 22.0 54 24.8 0.35 0.58
+Sweden ✓ 54 22.0 54 21.9 0.25 0.36
+Switzerland ✓ 54 22.1 54 25.1 0.13 0.53
+Ukraine 51 18.8 52 17.2 0.75 0.16
+United Kingdom ✓ 54 22.2 54 21.6 0.47 0.15
+Oceania
+Australia ✓ 54 21.8 51 25.4 0.53 0.08
+New Zealand ✓ 53 20.7 50 23.5
+Table 10: Summary statistics for countries in the merged Comtrade/WDI sample. Adv: advanced economy (IMF
+WEO). #dyads: number of non-missing dyads that the country appears in. avg T : average number of years per
+dyad that the country appears in; a dyad-year observation is counted if at least one UVI or volume observation
+is reported by the importer, and exchange rate data exists for both countries. InvS: share of imports invoiced in
+USD/euro.
+4
+
+===== PAGE 6 =====
+
+BLS /c.sc/o.sc/u.sc/n.sc/t.sc/r.sc/y.sc /g.sc/r.sc/o.sc/u.sc/p.sc/s.sc
+BLS group Country ISO codes
+ASEAN BRN* IDN KHM* LAO* MMR* MYS PHL SGP THA VNM*
+Asia Near East ARE* BHR* IRN* IRQ* ISR JOR* KWT* LBN* OMN* QAT* SAU SYR*
+YEM*
+European Union AUT BEL BGR* CYP* CZE DEU DNK ESP EST FIN FRA GBR GRC
+HRV* HUN IRL ITA LTU LUX LVA* MLT* NLD POL PRT ROU SVK
+SVN SWE
+Latin America ARG BRA CHL COL MEX VEN (plus other unspeci/f_ied Central Amer-
+ican, South American, and Caribbean countries*)
+Asian New. Ind. HKG KOR SGP TWN
+Paci/f_ic Rim AUS BRN* CHN HKG IDN JPN KOR MAC* MYS NZL PHL PNG* SGP
+TWN
+Table 11: De/f_inition of BLS country groups in Figure 1. Countries marked with an asterisk (*) are not available
+in the Comtrade sample.
+Our indices constructed from Comtrade unit values track the BLS import price indices fairly well, as shown
+in Figures 1 and 2. /T_hese /f_igures compare the linearly detrended logged indices, since our regressions use log
+growth rates and absorb any disparity in average growth rates in the intercept. /T_he growth rates of our indices
+for Canada, Japan, Mexico, and the aggregated Latin America and Asia Near East match those of BLS remarkably
+well. /T_he comparison with some Asian countries suggests that a unit value bias may still be present, causing the
+unit value series to be somewhat more volatile than the BLS price series. Nevertheless, for every country group
+and individual country except Germany, the correlation coeﬃcient between the Comtrade and BLS growth rates
+is high. Finally, the match for European countries seems acceptable, with the year 2008 being an exception.
+A closer inspection of the case of Germany reveals that a couple of products (transport vehicles) with large
+import shares experienced substantial unit value decreases that year according to Comtrade, leading our indices
+to decline while the BLS index shows an increase.
+5
+
+===== PAGE 7 =====
+
+C/o.sc/m.sc/t.sc/r.sc/a.sc/d.sc/e.sc /a.sc/n.sc/d.sc BLS /i.sc/m.sc/p.sc/o.sc/r.sc/t.sc /p.sc/r.sc/i.sc/c.sc/e.sc /i.sc/n.sc/d.sc/i.sc/c.sc/e.sc/s.sc /f.sc/o.sc/r.sc U.S.: /c.sc/o.sc/u.sc/n.sc/t.sc/r.sc/y.sc /g.sc/r.sc/o.sc/u.sc/p.sc/s.sc
+−.2 −.1 0 .1 .2
+92 96 00 04 08 12 16
+ASEAN
+−.6 −.4 −.2 0 .2 .4
+92 96 00 04 08 12 16
+Asia Near East
+−.1 −.05 0 .05 .1
+92 96 00 04 08 12 16
+European Union
+−.3 −.2 −.1 0 .1 .2
+92 96 00 04 08 12 16
+Latin America
+−.2 −.1 0 .1 .2
+92 96 00 04 08 12 16
+Asian Newly Industralized
+−.1 −.05 0 .05 .1
+92 96 00 04 08 12 16
+Pacific Rim
+Figure 1: Comparison of BLS Locality of Origin import price indices (thick lines, circles) with our constructed
+Comtrade analogues (thin lines, crosses). Plo/t_ted indices are logged and linearly detrended. /T_he Comtrade sample
+does not cover all countries in the BLS country groups, cf. Table 11.
+6
+
+===== PAGE 8 =====
+
+C/o.sc/m.sc/t.sc/r.sc/a.sc/d.sc/e.sc /a.sc/n.sc/d.sc BLS /i.sc/m.sc/p.sc/o.sc/r.sc/t.sc /p.sc/r.sc/i.sc/c.sc/e.sc /i.sc/n.sc/d.sc/i.sc/c.sc/e.sc/s.sc /f.sc/o.sc/r.sc U.S.: /i.sc/n.sc/d.sc/i.sc/v.sc/i.sc/d.sc/u.sc/a.sc/l.sc /c.sc/o.sc/u.sc/n.sc/t.sc/r.sc/i.sc/e.sc/s.sc
+−.2 −.1 0 .1 .2
+92 96 00 04 08 12 16
+Canada
+−.2 −.1 0 .1 .2
+92 96 00 04 08 12 16
+China
+−.1 −.05 0 .05 .1 .15
+92 96 00 04 08 12 16
+France
+−.15 −.1 −.05 0 .05 .1
+92 96 00 04 08 12 16
+Germany
+−.1 −.05 0 .05 .1
+92 96 00 04 08 12 16
+Japan
+−.2 −.1 0 .1 .2
+92 96 00 04 08 12 16
+Mexico
+−.2 −.1 0 .1 .2
+92 96 00 04 08 12 16
+United Kingdom
+Figure 2: Comparison of BLS Locality of Origin import price indices (thick lines, circles) with our constructed
+Comtrade analogues (thin lines, crosses). Plo/t_ted indices are logged and linearly detrended.
+7
+
+===== PAGE 9 =====
+
+T/e.sc/r.sc/m.sc/s.sc /o.sc/f.sc /t.sc/r.sc/a.sc/d.sc/e.sc /a.sc/n.sc/d.sc /e.sc/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc/s.sc: C/o.sc/u.sc/n.sc/t.sc/r.sc/y.sc /g.sc/r.sc/o.sc/u.sc/p.sc /h.sc/e.sc/t.sc/e.sc/r.sc/o.sc/g.sc/e.sc/n.sc/e.sc/i.sc/t.sc/y.sc
+unweighted trade-weighted
+(1) (2) (3) (4) (5) (6)
+E↔E E ↔A A ↔A E↔E E ↔A A ↔A
+∆totij,t ∆totij,t ∆totij,t ∆totij,t ∆totij,t ∆totij,t
+∆eij,t 0.0189 0.0480*** 0.0182 0.0508*** 0.111*** 0.0220
+(0.0173) (0.0110) (0.0256) (0.0176) (0.0310) (0.0473)
+PPI no no no no no no
+R-squared 0.028 0.011 0.008 0.051 0.078 0.025
+Observations 3,527 11,857 8,886 3,527 11,857 8,886
+Dyads 217 670 460 217 670 460
+Table 12: “E↔A”, say, denotes goods /f_lows between Emerging and Advanced economies. /T_he /f_irst (resp., last)
+three columns use unweighted (resp. trade-weighted) regressions, as in speci/f_ications (1) and (3) of Table 2 in the
+paper. All regressions include two ∆ER lags and time FE. S.e. clustered by dyad. *** p<0.01, ** p<0.05, * p<0.1.
+A.2 Macro Regressions: Supplementary Results
+/T_his section provides supplementary macro regression results, including robustness checks.
+A.2.1 Country Group Heterogeneity
+Tables 12 to 14 display the heterogeneity in estimates when we apply our terms of trade regressions, exchange
+rate pass-through regressions and trade elasticity regressions from Sections 3.2 to 3.4 in the paper to separate
+subsamples of advanced and emerging country trade /f_lows. /T_he results are discussed in the main text.
+A.2.2 Spillovers From U.S. Dollar to Foreign In/f_lation
+Our results imply that /f_luctuations in the strength of the dollar, for example those caused by U.S. monetary policy
+actions, have spillover eﬀects on foreign in/f_lation. We have shown that the dollar exchange rate passes strongly
+through to bilateral import prices measured in the importer’s currency, especially for countries whose imports
+are heavily invoiced in dollars. Given a non-negligible import content in consumption, this implies that dollar
+movements will directly aﬀect foreign consumer price index (CPI) in/f_lation, as discussed by Gopinath (2015).
+If foreign /f_irms behave in a monopolistically competitive way, foreign producer prices will react to changes in
+foreign import prices, although perhaps with a lag. Hence, the direct eﬀect of dollar movements on foreign CPI
+in/f_lation may be ampli/f_ied by endogenous producer responses.
+We now provide direct country-level regression evidence on the eﬀects of the U.S. dollar exchange rate
+on foreign consumer and producer prices. Gopinath (2015) computes back-of-the-envelope estimates of these
+spillovers based on estimated country-level import price pass-through and the import content of consumption.
+We instead directly regress countries’ CPI or PPI on the dollar exchange rate. Additionally, we investigate the
+interaction of the dollar exchange rate and the dollar import invoicing share.
+Speci/f_ically, we consider the country-level panel regression
+∆cpij,t =λj +δt +
+2∑
+k=0
+β$
+k∆e$j,t−k +
+2∑
+k=0
+η$
+k∆e$j,t−k×Sj +εj,t, (A.1)
+8
+
+===== PAGE 10 =====
+
+E/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc /i.sc/n.sc/t.sc/o.sc /p.sc/r.sc/i.sc/c.sc/e.sc/s.sc: C/o.sc/u.sc/n.sc/t.sc/r.sc/y.sc /g.sc/r.sc/o.sc/u.sc/p.sc /h.sc/e.sc/t.sc/e.sc/r.sc/o.sc/g.sc/e.sc/n.sc/e.sc/i.sc/t.sc/y.sc
+unweighted trade-weighted
+(1) (2) (3) (4) (5) (6) (7) (8)
+E→E E →A A →E A →A E→E E →A A →E A →A
+∆pij,t ∆pij,t ∆pij,t ∆pij,t ∆pij,t ∆pij,t ∆pij,t ∆pij,t
+∆eij,t 0.0980*** 0.0514** 0.265*** 0.332*** 0.150*** 0.150*** 0.433*** 0.373***
+(0.0329) (0.0225) (0.0379) (0.0195) (0.0391) (0.0269) (0.132) (0.0504)
+∆e$j,t 0.858*** 0.766*** 0.710*** 0.409*** 0.820*** 0.498*** 0.608*** 0.287***
+(0.0353) (0.0364) (0.0382) (0.0284) (0.0487) (0.0533) (0.122) (0.0487)
+R-squared 0.470 0.152 0.530 0.142 0.572 0.252 0.467 0.264
+Observations 6,763 10,589 12,318 17,150 6,763 10,589 12,318 17,150
+Dyads 435 618 700 894 435 618 700 894
+Table 13: “E→A”, say, denotes goods /f_lows from Emerging to Advanced economies. /T_he /f_irst (resp., last) four
+columns use unweighted (resp. trade-weighted) regressions as in speci/f_ications (2) and (5) of Table 3 in the paper.
+All regressions include two∆ER lags, lags 0–2 of exporter ∆PPI, and time FE. S.e. clustered by dyad. *** p<0.01,
+** p<0.05, * p<0.1.
+T/r.sc/a.sc/d.sc/e.sc /e.sc/l.sc/a.sc/s.sc/t.sc/i.sc/c.sc/i.sc/t.sc/y.sc /w.sc/i.sc/t.sc/h.sc /r.sc/e.sc/s.sc/p.sc/e.sc/c.sc/t.sc /t.sc/o.sc /e.sc/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc: C/o.sc/u.sc/n.sc/t.sc/r.sc/y.sc /g.sc/r.sc/o.sc/u.sc/p.sc /h.sc/e.sc/t.sc/e.sc/r.sc/o.sc/g.sc/e.sc/n.sc/e.sc/i.sc/t.sc/y.sc
+unweighted trade-weighted
+(1) (2) (3) (4) (5) (6) (7) (8)
+E→E E →A A →E A →A E→E E →A A →E A →A
+∆yij,t ∆yij,t ∆yij,t ∆yij,t ∆yij,t ∆yij,t ∆yij,t ∆yij,t
+∆eij,t -0.0488 -0.0145 -0.182*** -0.0737 -0.0471 -0.0441** -0.0377 0.0228
+(0.0333) (0.0212) (0.0700) (0.0481) (0.0357) (0.0225) (0.117) (0.0518)
+∆e$j,t -0.163*** -0.435*** 0.00868 -0.340*** -0.208*** -0.251*** -0.0995 -0.302***
+(0.0588) (0.0749) (0.0704) (0.0607) (0.0641) (0.0622) (0.118) (0.0548)
+R-squared 0.093 0.049 0.100 0.082 0.237 0.301 0.218 0.214
+Observations 8,239 12,967 12,932 18,134 8,239 12,967 12,932 18,134
+Dyads 485 679 719 924 485 679 719 924
+Table 14: “E→A”, say, denotes goods /f_lows from Emerging to Advanced economies. /T_he /f_irst (resp., last) four
+columns use unweighted (resp. trade-weighted) regressions as in speci/f_ications (2) and (5) of Table 4 in the paper.
+All regressions include two∆ER lags, lags 0–2 of importer∆GDP, and time FE. S.e. clustered by dyad. *** p<0.01,
+** p<0.05, * p<0.1.
+9
+
+===== PAGE 11 =====
+
+D/o.sc/l.sc/l.sc/a.sc/r.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc /i.sc/n.sc/t.sc/o.sc CPI /a.sc/n.sc/d.sc PPI, 2002–2015
+(1) (2) (3) (4)
+∆cpij,t ∆cpij,t ∆ppij,t ∆ppij,t
+∆e$j,t 0.106*** 0.0221 0.284*** 0.182***
+[0.04, 0.18] [-0.05, 0.09] [0.14, 0.43] [0.05, 0.32]
+∆e$j,t×Sj 0.181** 0.237*
+[0.04, 0.33] [-0.03, 0.51]
+R-squared 0.283 0.453 0.532 0.675
+Observations 766 544 697 525
+Countries 55 39 52 38
+Table 15: /T_he /f_irst (resp., last) two columns use CPI (resp., PPI) growth as dependent variable. All regressions
+include two ∆ER lags and time FE. 95% con/f_idence intervals clustered by country and corrected for small number
+of clusters using “LZ2-BM” method of Imbens and Koles´ar (2016). *** p<0.01, ** p<0.05, * p<0.1 (only 95% interval
+shown).
+where ∆cpij,t is the change in the log CPI in the currency of countryj, andλj andδt are country and year /f_ixed
+eﬀects, respectively. We also consider speci/f_ications with∆ppij,t on the le/f_t-hand side, as well as speci/f_ications
+restrictingψk = 0 for allk. We focus a/t_tention on the post-2002 (post-euro) sample, since full-sample regression
+results are unduly in/f_luenced by a handful of countries’ high-in/f_lation/high-depreciation episodes in the 1990s.2
+Table 15 displays the contemporaneous dollar pass-through into CPI and PPI. /T_he /f_irst two columns shows
+results for CPI pass-through, and the second two show those for PPI pass-through. Columns (1) and (3) do not
+interact exchange rate changes with the dollar invoicing share, while columns (2) and (4) do. /T_he table displays
+95% con/f_idence intervals rather than standard errors because the small number of countries (clusters) necessi-
+tates the use of small-sample corrections (Imbens and Koles´ar, 2016). /T_he average pass-through of the dollar into
+CPI (resp., PPI) is 11% (resp., 28%) within the year. /T_he dollar pass-through is larger for countries that have a sub-
+stantial fraction of imports invoiced in dollars. /T_he contemporaneous interaction term is statistically signi/f_icant
+at the 10% level for both the CPI and PPI speci/f_ications, and also at the 5% level for the CPI speci/f_ication. Hence,
+it appears that countries which invoice more in dollars experience higher dollar pass-through into consumer
+and producer prices. We caution, though, that themagnitude of the pass-through is imprecisely estimated when
+controlling for country and time /f_ixed eﬀects.
+A.2.3 /T_he Dollar Versus the Euro
+We now compare the explanatory power of the dollar exchange rate with that of the euro. We show that the
+dollar dominates both the bilateral exchange rate and the euro in regression speci/f_ications that include all three
+exchange rates.
+/T_he panel regressions in Section 3 in the paper do not directly imply that the U.S. dollar is a uniquely im-
+portant vehicle currency. In our regression speci/f_icationswithout interactions, we would have obtained exactly
+the same coeﬃcient estimates if we had used the euro exchange rate, say, in place of the dollar exchange rate,
+since we control for time /f_ixed eﬀects.3 Nevertheless, our speci/f_icationswith interactions indicated that the dol-
+2/T_he results are very similar if we use the full 1992–2015 sample but drop country-year observations for which the
+arithmetic CPI in/f_lation rate exceeds 30% annually (0.26 log in/f_lation rate).
+3To see this formally, note that one can rewrite the (log) change in the euro exchange rate as∆eej,t = ∆ee$,t + ∆e$j,t
+and the /f_irst term is absorbed by the time /f_ixed eﬀects.
+10
+
+===== PAGE 12 =====
+
+lar plays a special role. Now we directly compare the explanatory power of the dollar against that of the euro
+in panel regressions that do not control for time /f_ixed eﬀects but instead control for observed global real and
+/f_inancial variables.
+To measure bilateral price pass-through from the dollar and the euro, we run panel regressions of the form
+∆pij,t =λij +
+2∑
+k=0
+βk∆eij,t−k +
+2∑
+k=0
+β$
+k∆e$j,t−k +
+2∑
+k=0
+βe
+k ∆eej,t−k +θ′Xij,t +εij,t, (A.2)
+whereeej,t denotes the log euro exchange rate in units of currency j per euro. Notice that we omit time /f_ixed
+eﬀects, as is necessary to identify β$
+k andβe
+k separately. In addition to lags 0–2 of exporter PPI log growth, the
+controlsXij,t consist of the contemporaneous values of global real GDP growth, global GDP de/f_lator in/f_lation,
+global export volume growth, growth in the WTI oil price de/f_lated by the global GDP de/f_lator, and the log VIX.
+/T_he time sample for regressions in this subsection is 2002–2015 due to the introduction of the euro in 1999 and
+our use of lagged exchange rate changes.
+Fig. 3 shows that the euro pass-through into prices is negligible on average, while the dollar pass-through
+remains high when we control for the euro. /T_he /f_igure displays the regression results in the form of impulse
+responses of the bilateral price level; corresponding regression tables are available in online appendix A.2.5.
+Similarly, the dollar exchange rate has the largest predictive power for trade volumes. We run panel regres-
+sions similar to Eq. (A.2), except with volume growth ∆yij,t on the le/f_t-hand side, and we replace exporter PPI
+with lags 0–2 of importer real GDP growth in the list of controls Xij,t. Fig. 4 shows impulse responses of the
+level of bilateral trade volume to the bilateral, dollar, and euro exchange rates. /T_he dollar exchange rate is the
+only one of the three that has a quantitatively large negative association with trade volumes.4
+Tables 16 and 17 display the euro regression results in table form. Speci/f_ications (1) and (4) focus on the
+bilateral and euro exchange rates, speci/f_ications (2) and (5) add the dollar exchange rate, and speci/f_ications (3)
+and (6) include interactions with the dollar and euro import invoicing shares.Se
+j is the importing country’s share
+of imports invoiced in euros from Gopinath (2015). /T_he interactions are statistically and economically signi/f_icant
+and mostly have the expected signs in the price pass-through regressions: A higher share of euro (resp., dollar)
+invoicing implies a higher pass-through from the euro (resp., dollar) exchange rate.
+A.2.4 Trade Elasticity of Dollar Versus Other Major Currencies
+/T_he large negative predictive eﬀect of a uniform dollar appreciation on world trade documented in Section 3.6
+in the paper is robust to controlling for other major exchange rates. Table 18 shows trade elasticity regressions
+as in Eq. (22) in the paper, except that we drop interaction terms but add the exchange rates of the importer
+versus the Swiss franc and versus the Japanese yen. We drop interaction terms here because we do not have
+extensive data on the currency invoicing shares of the franc and the yen. /T_he /f_irst and third columns in the table
+show the contemporaneous trade elasticity coeﬃcients of the bilateral, dollar, and euro exchange rates, without
+controlling for the franc and the yen exchange rates. /T_he second and fourth columns then add the franc and
+the yen exchange rates. /T_he sample is the post-euro period of 2002–2015. Evidently, adding the franc and the
+yen exchange rates as controls does nothing to diminish the large negative eﬀect of the dollar on bilateral trade
+volumes. In fact, the trade-weighted speci/f_ication exhibits an even more negative dollar elasticity when the franc
+and the yen are added as controls, although the standard error on the dollar coeﬃcient is substantially larger
+in this speci/f_ication (the coeﬃcient remains highly signi/f_icant). Moreover, according to the regression results,
+it is only a uniform U.S. dollar appreciation that has a large negative eﬀect on world trade, whereas uniform
+appreciations of the other major currencies do not predict substantial drops in trade volumes. Finally, note that
+the R-squared of the regression hardly increases when the franc and yen are added as controls.
+4/T_he diﬀerent long-run level eﬀect of the dollar in Figure 6 in the paper and Fig. 4 in this appendix is due to the diﬀerence
+in time sample, as discussed in online appendix A.2.5.
+11
+
+===== PAGE 13 =====
+
+P/r.sc/i.sc/c.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc /f.sc/r.sc/o.sc/m.sc /d.sc/o.sc/l.sc/l.sc/a.sc/r.sc /a.sc/n.sc/d.sc /e.sc/u.sc/r.sc/o.sc /e.sc/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc/s.sc
+−.5 0 .5 1−.5 0 .5 1
+0 1 2 0 1 2
+unweighted, bilateral vs. EUR unweighted, bilat. vs. EUR/USD
+trade−weighted, bilateral vs. EUR trade−weighted, bilat. vs. EUR/USD
+Bilateral
+USD
+Euro
+cumul. response to 1% shock, percent
+years after shock
+Figure 3: Impulse responses of bilateral price level to bilateral eij,t, USD e$j,t, and euro eej,t exchange rates.
+Based on regressions in Table 16, on-line appendix A.2.5. Top row: unweighted regression, bo/t_tom row: trade-
+weighted. Le/f_t column: speci/f_ications with only bilateral and euro ER, right column: speci/f_ications adding USD.
+Error bars: 95% con/f_idence intervals, clustering by dyad.
+T/r.sc/a.sc/d.sc/e.sc /e.sc/l.sc/a.sc/s.sc/t.sc/i.sc/c.sc/i.sc/t.sc/y.sc /f.sc/o.sc/r.sc /d.sc/o.sc/l.sc/l.sc/a.sc/r.sc /a.sc/n.sc/d.sc /e.sc/u.sc/r.sc/o.sc /e.sc/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc/s.sc
+−1 −.5 0 .5 1−1 −.5 0 .5 1
+0 1 2 0 1 2
+unweighted, bilateral vs. EUR unweighted, bilat. vs. EUR/USD
+trade−weighted, bilateral vs. EUR trade−weighted, bilat. vs. EUR/USD
+Bilateral
+USD
+Euro
+cumul. response to 1% shock, percent
+years after shock
+Figure 4: Impulse responses of bilateral volume to bilateraleij,t, USDe$j,t, and euroeej,t exchange rates. Based
+on regressions in Table 17, on-line appendix A.2.5. Top row: unweighted regression, bo/t_tom row: trade-weighted.
+Le/f_t column: speci/f_ications with bilateral and euro ER, right column: speci/f_ications adding USD. Error bars: 95%
+con/f_idence intervals, clustering by dyad.
+12
+
+===== PAGE 14 =====
+
+E/u.sc/r.sc/o.sc /v.sc/s.sc. /d.sc/o.sc/l.sc/l.sc/a.sc/r.sc /e.sc/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc /i.sc/n.sc/t.sc/o.sc /p.sc/r.sc/i.sc/c.sc/e.sc/s.sc
+unweighted trade-weighted
+(1) (2) (3) (4) (5) (6)
+∆pij,t ∆pij,t ∆pij,t ∆pij,t ∆pij,t ∆pij,t
+∆eij,t 0.305*** 0.181*** 0.207*** 0.438*** 0.331*** 0.551***
+(0.0159) (0.0174) (0.0695) (0.0490) (0.0567) (0.156)
+∆eij,t× (Sj +Se
+j ) -0.0357 -0.361**
+(0.0784) (0.174)
+∆e$j,t 0.754*** 0.614*** 0.561*** 0.379***
+(0.0373) (0.0405) (0.0755) (0.0672)
+∆e$j,t×Sj 0.510*** 0.769***
+(0.0439) (0.151)
+∆eej,t 0.467*** -0.0800** -0.347*** 0.207*** -0.184*** -0.384***
+(0.0175) (0.0332) (0.0430) (0.0612) (0.0601) (0.0726)
+∆eej,t×Se
+j 0.694*** 0.709***
+(0.0821) (0.122)
+R-squared 0.131 0.143 0.210 0.102 0.112 0.293
+Observations 33,802 33,802 24,463 33,802 33,802 24,463
+Dyads 2,647 2,647 1,900 2,647 2,647 1,900
+Table 16: /T_he /f_irst (resp., last) three columns use unweighted (resp. trade-weighted) regressions. All regressions
+include two ∆ER lags, lags 0–2 of exporter ∆PPI, and global controls as described in the text. S.e. clustered by
+dyad. *** p<0.01, ** p<0.05, * p<0.1.
+13
+
+===== PAGE 15 =====
+
+A.2.5 Regression Details and Robustness Checks
+Post-2002 results. Exchange rate pass-through into prices has been stable over our sample period, while
+trade elasticities may have become larger in absolute value in the la/t_ter part of the sample. We compute results
+for the subsample 2002–2015, roughly corresponding to the second half of our data set, and also corresponding
+to the sample used for the euro regressions in Section A.2.3. Figures 5 and 6 show price and volume impulse
+responses for the 2002–2015 subsample that correspond to the full-sample results in Figures 4 and 6 in Section
+3 in the paper. /T_he price pass-through impulse responses of bilateral and dollar exchange rates are similar to
+the full-sample results. However, the post-2002 USD cumulative trade elasticity (unweighted) is substantially
+negative at lags of 1 and 2 years, whereas the level eﬀect is close to zero at lags 1 and 2 on the full sample.
+Pre-2007 results. Our headline results are not driven by the global /f_inancial crisis starting in 2008. Figures 7
+and 8 show the average exchange rate pass-through and trade elasticity computed on the 1992–2007 sample. /T_he
+results are almost identical to our baseline Figures 4 and 6 in the paper. Figure 9 shows the eﬀect of rest-of-world
+trade of a uniform USD appreciation, using only 2002–2007 data. Here the results are even stronger than in the
+baseline Figure 8 in the paper.
+Weighted average dollar invoicing share. Figure 10 depicts the weighted average dollar import invoic-
+ing share∑
+j̸=USwjSj used in Section 3.6 in the paper, where the ex-U.S. non-commodity import value weights
+wj have been computed for each year in our sample. Notice that the weighted average /f_luctuates tightly around
+a mean of 0.40.
+Additional controls. Table 19 shows that our pass-through regressions results are qualitatively robust to
+adding importer PPI growth and importer real GDP growth as additional controls. We use two lags of the log
+changes of each of these indices. Although our baseline speci/f_ication in Section 3.3 in the paper is common
+in the literature, the addition of importer PPI and GDP controls can be justi/f_ied by models with strategic com-
+plementarity in pricing and country-speci/f_ic demand shi/f_ts. While the overall level of both bilateral and USD
+pass-through is somewhat lower when the controls are added, our qualitative conclusions regarding the domi-
+nance of the USD exchange rate and the relationship with dollar invoicing are as pronounced in Table 19 as in
+Table 3 in the paper.
+14
+
+===== PAGE 16 =====
+
+A/v.sc/e.sc/r.sc/a.sc/g.sc/e.sc /p.sc/r.sc/i.sc/c.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc, 2002–2015
+−.5 0 .5 1−.5 0 .5 1
+0 1 2 0 1 2
+unweighted, bilateral only unweighted, bilateral vs. USD
+trade−weighted, bilateral only trade−weighted, bilateral vs. USD Bilateral
+USD
+cumul. response to 1% shock, percent
+years after shock
+Figure 5: Figure 4 in the paper computed on post-2002 data, but with same weights.
+A/v.sc/e.sc/r.sc/a.sc/g.sc/e.sc /t.sc/r.sc/a.sc/d.sc/e.sc /e.sc/l.sc/a.sc/s.sc/t.sc/i.sc/c.sc/i.sc/t.sc/y.sc, 2002–2015
+−.5 0 .5−.5 0 .5
+0 1 2 0 1 2
+unweighted, bilateral only unweighted, bilateral vs. USD
+trade−weighted, bilateral only trade−weighted, bilateral vs. USD Bilateral
+USD
+cumul. response to 1% shock, percent
+years after shock
+Figure 6: Figure Figure 6 in the paper computed on post-2002 data, but with same weights.
+15
+
+===== PAGE 17 =====
+
+A/v.sc/e.sc/r.sc/a.sc/g.sc/e.sc /p.sc/r.sc/i.sc/c.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc, 1992–2007
+−.5 0 .5 1−.5 0 .5 1
+0 1 2 0 1 2
+unweighted, bilateral only unweighted, bilateral vs. USD
+trade−weighted, bilateral only trade−weighted, bilateral vs. USD Bilateral
+USD
+cumul. response to 1% shock, percent
+years after shock
+Figure 7: Figure 4 in the paper computed on pre-2007 data, but with same weights.
+A/v.sc/e.sc/r.sc/a.sc/g.sc/e.sc /t.sc/r.sc/a.sc/d.sc/e.sc /e.sc/l.sc/a.sc/s.sc/t.sc/i.sc/c.sc/i.sc/t.sc/y.sc, 1992–2007
+−.2 0 .2 .4−.2 0 .2 .4
+0 1 2 0 1 2
+unweighted, bilateral only unweighted, bilateral vs. USD
+trade−weighted, bilateral only trade−weighted, bilateral vs. USD Bilateral
+USD
+cumul. response to 1% shock, percent
+years after shock
+Figure 8: Figure 6 in the paper computed on pre-2007 data, but with same weights.
+16
+
+===== PAGE 18 =====
+
+E/u.sc/r.sc/o.sc /v.sc/s.sc. /d.sc/o.sc/l.sc/l.sc/a.sc/r.sc /t.sc/r.sc/a.sc/d.sc/e.sc /e.sc/l.sc/a.sc/s.sc/t.sc/i.sc/c.sc/i.sc/t.sc/y.sc
+unweighted trade-weighted
+(1) (2) (3) (4)
+∆yij,t ∆yij,t ∆yij,t ∆yij,t
+∆eij,t -0.0631* 0.0229 -0.146*** -0.0560
+(0.0371) (0.0386) (0.0493) (0.0429)
+∆e$j,t -0.695*** -0.573***
+(0.0806) (0.124)
+∆eej,t -0.179*** 0.320*** -0.00647 0.386***
+(0.0413) (0.0759) (0.0494) (0.105)
+R-squared 0.068 0.071 0.197 0.203
+Observations 37,437 37,437 37,437 37,437
+Dyads 2,807 2,807 2,807 2,807
+Table 17: /T_he /f_irst (resp., last) two columns use unweighted (resp. trade-weighted) regressions. All regressions
+include two ∆ER lags, lags 0–2 of importer ∆GDP, and global controls as described in the text. S.e. clustered by
+dyad. *** p<0.01, ** p<0.05, * p<0.1.
+R/e.sc/s.sc/p.sc/o.sc/n.sc/s.sc/e.sc /o.sc/f.sc /r.sc/e.sc/s.sc/t.sc/hyphen.sc/o.sc/f.sc/hyphen.sc/w.sc/o.sc/r.sc/l.sc/d.sc /a.sc/g.sc/g.sc/r.sc/e.sc/g.sc/a.sc/t.sc/e.sc /t.sc/r.sc/a.sc/d.sc/e.sc /t.sc/o.sc USD /a.sc/p.sc/p.sc/r.sc/e.sc/c.sc/i.sc/a.sc/t.sc/i.sc/o.sc/n.sc, 2002–2007
+−2 −1.5 −1 −.5 0−2 −1.5 −1 −.5 0
+0 1 2
+unweighted
+trade−weighted
+cumul. response to 1% shock, percent
+years after shock
+Figure 9: Figure 8 in the paper computed on pre-2007 data, but with same weights.
+17
+
+===== PAGE 19 =====
+
+T/r.sc/a.sc/d.sc/e.sc /e.sc/l.sc/a.sc/s.sc/t.sc/i.sc/c.sc/i.sc/t.sc/y.sc /f.sc/o.sc/r.sc /d.sc/o.sc/l.sc/l.sc/a.sc/r.sc /a.sc/n.sc/d.sc /o.sc/t.sc/h.sc/e.sc/r.sc /m.sc/a.sc/j.sc/o.sc/r.sc /c.sc/u.sc/r.sc/r.sc/e.sc/n.sc/c.sc/i.sc/e.sc/s.sc
+unweighted trade-weighted
+(1) (2) (3) (4)
+∆yij,t ∆yij,t ∆yij,t ∆yij,t
+∆eij,t 0.0177 0.0215 -0.0595 -0.0566
+(0.0385) (0.0387) (0.0422) (0.0424)
+∆e$j,t -0.765*** -0.880*** -0.719*** -1.988***
+(0.0805) (0.287) (0.0795) (0.566)
+∆eej,t 0.393*** 0.331* 0.529*** 1.146***
+(0.0755) (0.191) (0.0856) (0.349)
+∆eCHFj,t -0.0277 -0.127
+(0.134) (0.169)
+∆eYENj,t 0.203 0.786*
+(0.195) (0.418)
+R-squared 0.070 0.071 0.200 0.206
+Observations 37,437 37,437 37,437 37,437
+Dyads 2,807 2,807 2,807 2,807
+Table 18: eCHFj,t andeYENj,t denote the log price of the Swiss franc and Japanese yen, resp., in the importer’s
+currency. /T_he /f_irst (resp., last) two columns use unweighted (resp., trade-weighted) regressions. All regressions
+include two ∆ER lags, lags 0–2 of importer ∆GDP, and the same global controls as in Appendix A.2.3. S.e.
+clustered by dyad. *** p<0.01, ** p<0.05, * p<0.1.
+18
+
+===== PAGE 20 =====
+
+W/e.sc/i.sc/g.sc/h.sc/t.sc/e.sc/d.sc /a.sc/v.sc/e.sc/r.sc/a.sc/g.sc/e.sc /d.sc/o.sc/l.sc/l.sc/a.sc/r.sc /i.sc/n.sc/v.sc/o.sc/i.sc/c.sc/i.sc/n.sc/g.sc /s.sc/h.sc/a.sc/r.sc/e.sc /o.sc/v.sc/e.sc/r.sc /t.sc/i.sc/m.sc/e.sc
+.38 .4 .42 .44
+1990 1995 2000 2005 2010 2015
+Figure 10: Weighted average dollar import invoicing share∑
+j̸=USwjSj, using import value weights wj com-
+puted in diﬀerent reference years (along horizontal axis). Horizontal lines show the mean on the 1992–2015 and
+2002–2015 samples.
+E/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc /i.sc/n.sc/t.sc/o.sc /p.sc/r.sc/i.sc/c.sc/e.sc/s.sc: A/d.sc/d.sc/i.sc/t.sc/i.sc/o.sc/n.sc/a.sc/l.sc /c.sc/o.sc/n.sc/t.sc/r.sc/o.sc/l.sc/s.sc
+unweighted trade-weighted
+(1) (2) (3) (4) (5) (6)
+∆pij,t ∆pij,t ∆pij,t ∆pij,t ∆pij,t ∆pij,t
+∆eij,t 0.519*** 0.163*** 0.214*** 0.550*** 0.328*** 0.456***
+(0.0117) (0.0133) (0.0177) (0.0471) (0.0480) (0.0352)
+∆eij,t×Sj -0.0869*** -0.272***
+(0.0252) (0.0495)
+∆e$j,t 0.706*** 0.524*** 0.464*** 0.103
+(0.0183) (0.0298) (0.0347) (0.0639)
+∆e$j,t×Sj 0.303*** 0.643***
+(0.0360) (0.0951)
+R-squared 0.388 0.411 0.528 0.361 0.382 0.650
+Observations 42,243 42,243 32,916 42,243 42,243 32,916
+Dyads 2,502 2,502 1,853 2,502 2,502 1,853
+Table 19: /T_he /f_irst (resp., last) three columns use unweighted (resp. trade-weighted) regressions. All regressions
+include two ∆ER lags, lags 0–2 of exporter ∆PPI, lags 0–2 of importer ∆PPI, lags 0–2 of importer ∆GDP, and
+time FE. S.e. clustered by dyad. *** p<0.01, ** p<0.05, * p<0.1.
+19
+
+===== PAGE 21 =====
+
+A.3 Firm level data for Colombia
+/T_he data are from the customs agency (DIAN, 2015), and the department of statistics (DANE, 2015), and include
+information on the universe of Colombian importers and exporters . We have access to the data through the
+Banco de la Rep ´ublica. /T_he data include the trading /f_irm’s tax identi/f_ication number, the 10-digit product code
+(according to the Nandina classi/f_ication system, based on the Harmonized System), the FOB value (in U.S. dollars)
+and volume (net kilograms) of exports (imports), and the country of destination (origin), among other details. 5
+/T_he data are available on a monthly basis, and for our analysis we aggregate exports and imports at the annual or
+quarterly level. As in Section 3 in the paper, macroeconomic country controls are from the World Development
+Indicators. Our estimations cover the period between 2005 and 2015. We de/f_ine prices and quantities at the
+/f_irm,10-digit product, country (origin or destination), year (or quarter) level. Prices are given by the FOB value
+per net kilogram, and quantities are given by total net kilograms. Exchange rates are the annual or quarterly
+average.
+Further, starting in 2007, our exports data include information on the invoicing currency of each transaction.
+In Table 20 we present the distribution of currencies, broken down by destination groups. It is evident that the
+vast majority of Colombian exports are priced in dollars. Even for exports to the euro zone, the overwhelm-
+ing invoicing currency is the dollar. Although some transactions are negotiated in euros, Colombian pesos, or
+Venezuelan bol´ıvares among other currencies, the U.S. dollar accounts for over 98% of all exports. Moreover, the
+distribution is very similar if we look at the value of exports negotiated in each currency instead of the number
+of transactions. In this regard the Colombian economy is representative of a large number of economies that
+rely extensively on dollar invoicing.
+5In the case of imports, there are cases where the imported good was produced in one country but actually arrived to
+Colombia from a third country. /T_his case is most commonly seen for goods produced in China arriving to Colombia from
+either the United States or Panama. To avoid introducing unnecessary noise in our empirical work, we only use for our
+regressions those observations where the country of origin and purchase are the same.
+20
+
+===== PAGE 22 =====
+
+C/u.sc/r.sc/r.sc/e.sc/n.sc/c.sc/y.sc /d.sc/i.sc/s.sc/t.sc/r.sc/i.sc/b.sc/u.sc/t.sc/i.sc/o.sc/n.sc /b.sc/y.sc /d.sc/e.sc/s.sc/t.sc/i.sc/n.sc/a.sc/t.sc/i.sc/o.sc/n.sc
+Destination Currency All Exports Manufactures
+US
+US Dollar 99.71% 99.93%
+Euro 0.02% 0.03%
+Colombian Peso 0.27% 0.03%
+Dollar economies
+US Dollar 99.73% 99.91%
+Euro 0.03% 0.04%
+Colombian Peso 0.23% 0.03%
+CAN
+US Dollar 99.75% 99.90%
+Euro 0.07% 0.07%
+Colombian Peso 0.18% 0.03%
+Latin America
+US Dollar 99.18% 99.34%
+Euro 0.13% 0.13%
+Colombian Peso 0.22% 0.03%
+Bol´ıvar (Ven) 0.44% 0.45%
+Mexican Peso 0.02% 0.02%
+Col´on (CR) 0.01% 0.01%
+European Union
+US Dollar 90.73% 86.19%
+Euro 8.64% 13.28%
+Colombian Peso 0.31% 0.21%
+Sterling Pound 0.28% 0.26%
+Euro zone
+US Dollar 88.78% 84.48%
+Euro 10.80% 15.22%
+Colombian Peso 0.39% 0.25%
+Sterling Pound 0.01% 0.01%
+All destinations
+US Dollar 98.28% 98.39%
+Euro 0.72% 0.70%
+Colombian Peso 0.67% 0.52%
+Venezuelan Bol´ıvar 0.27% 0.33%
+Sterling Pound 0.02% 0.01%
+Table 20: Data from DIAN/DANE. Exports of coke, re/f_ined petroleum products, and nuclear fuel (ISIC 23), and
+basic metals (ISIC 27) excluded from “Manufactures”. Distribution calculated as number of invoices in each
+currency.
+21
+
+===== PAGE 23 =====
+
+E/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc /i.sc/n.sc/t.sc/o.sc /p.sc/r.sc/i.sc/c.sc/e.sc/s.sc, /a.sc/n.sc/n.sc/u.sc/a.sc/l.sc /d.sc/a.sc/t.sc/a.sc (/d.sc/o.sc/l.sc/l.sc/a.sc/r.sc/i.sc/z.sc/e.sc/d.sc /e.sc/c.sc/o.sc/n.sc/o.sc/m.sc/i.sc/e.sc/s.sc)
+(1) (2) (3) (4) (5) (6)
+∆pH,t ∆pH,t ∆pH,t ∆pH,t ∆pH,t ∆pH,t
+Exports
+∆e$H,t 0.696*** 0.828*** 0.859*** 0.823*** 0.798*** 0.819***
+(0.0331) (0.0355) (0.0414) (0.0373) (0.0450) (0.0606)
+PPI no yes yes yes yes yes
+Euro ER no no yes no no yes
+∆ER lags no no no yes no no
+Sample M M M M D D
+R-squared 0.288 0.290 0.290 0.290 0.303 0.303
+Observations 169,792 159,041 159,041 159,041 98,831 98,831
+Imports
+∆e$H,t 0.977*** 1.007*** 1.035*** 1.016*** 0.969*** 0.971***
+(0.0177) (0.0309) (0.0430) (0.0192) (0.0352) (0.0357)
+PPI no yes yes yes yes yes
+Euro ER no no yes no no yes
+∆ER lags no no no yes no no
+Sample M M M M D D
+R-squared 0.225 0.225 0.225 0.225 0.250 0.250
+Observations 529,584 529,260 529,260 529,260 275,968 275,968
+Table 21: All regressions include Firm-Industry-Country /f_ixed eﬀects. S.e. clustered at the year level. /T_he
+sample includes all manufactured (M) products excluding petrochemicals and metal industries in columns (1)-(4)
+and only diﬀerentiated (D) products in columns (5)-(6). *** p<0.01, ** p<0.05, * p<0.1.
+A.4 Micro Regressions: Supplementary Results
+/T_his section provides supplementary regression results using the Colombian /f_irm-level data, including robustness
+checks.
+Tables 21-24 display the results of the price pass-through and trade elasticity regressions presented in Section
+4.1 in the paper, including PPI, the peso/euro exchange rate, and two∆ER annual lags as additional controls. All
+regressions include Firm-Industry-Country /f_ixed eﬀects. Our pass-through regressions results are robust to the
+inclusion of these controls, and qualitative results are unchanged when we use the subsample of diﬀerentiated
+products only (instead of the full set of manufactures) constructed using the classi/f_ication of goods by Rauch
+(1999).6
+6In our reported estimates, we follow Rauch’s conservative classi/f_ication, although the results are virtually unchanged
+if we use the liberal de/f_inition instead.
+22
+
+===== PAGE 24 =====
+
+E/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc /i.sc/n.sc/t.sc/o.sc /p.sc/r.sc/i.sc/c.sc/e.sc/s.sc, /a.sc/n.sc/n.sc/u.sc/a.sc/l.sc /d.sc/a.sc/t.sc/a.sc (/n.sc/o.sc/n.sc/hyphen.sc/d.sc/o.sc/l.sc/l.sc/a.sc/r.sc/i.sc/z.sc/e.sc/d.sc /e.sc/c.sc/o.sc/n.sc/o.sc/m.sc/i.sc/e.sc/s.sc)
+(1) (2) (3) (4) (5) (6) (7) (8)
+∆pH,t ∆pH,t ∆pH,t ∆pH,t ∆pH,t ∆pH,t ∆pH,t ∆pH,t
+Exports
+∆eiH,t 0.673*** 0.0616 0.523*** 0.0726 0.0737 0.0576 0.0634 0.0510
+(0.0937) (0.0474) (0.120) (0.0452) (0.0510) (0.0370) (0.0832) (0.115)
+∆e$H,t 0.667*** 0.633*** 0.672*** 0.652*** 0.644*** 0.655***
+(0.0507) (0.0602) (0.0667) (0.0603) (0.0860) (0.104)
+PPI no no yes yes yes yes yes yes
+Euro ER no no no no yes no no yes
+∆ER lags no no no no no yes no no
+Sample M M M M M M D D
+R-squared 0.303 0.305 0.308 0.310 0.300 0.310 0.324 0.315
+Observations 206,226 206,226 139,318 139,318 120,316 139,318 85,659 74,090
+Imports
+∆eiH,t 0.750*** 0.315*** 0.506*** 0.275*** 0.238** 0.255*** 0.293** 0.248**
+(0.116) (0.0777) (0.127) (0.0837) (0.0889) (0.0777) (0.103) (0.0954)
+∆e$H,t 0.528*** 0.534*** 0.607*** 0.572*** 0.535*** 0.601***
+(0.0650) (0.0510) (0.0707) (0.0365) (0.0647) (0.0822)
+PPI no no yes yes yes yes yes yes
+Euro ER no no no no yes no no yes
+∆ER lags no no no no no yes no no
+Sample M M M M M M D D
+R-squared 0.287 0.290 0.291 0.293 0.320 0.293 0.312 0.337
+Observations 931,993 931,993 808,304 808,304 518,898 808,304 419,717 272,060
+Table 22: All regressions include Firm-Industry-Country /f_ixed eﬀects. S.e. clustered at the year level. /T_he
+sample includes all manufactured (M) products excluding petrochemicals and metal industries in columns (1)-(6)
+and only diﬀerentiated (D) products in columns (7)-(8). *** p<0.01, ** p<0.05, * p<0.1.
+23
+
+===== PAGE 25 =====
+
+T/r.sc/a.sc/d.sc/e.sc /e.sc/l.sc/a.sc/s.sc/t.sc/i.sc/c.sc/i.sc/t.sc/y.sc /w.sc/i.sc/t.sc/h.sc /r.sc/e.sc/s.sc/p.sc/e.sc/c.sc/t.sc /t.sc/o.sc /e.sc/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc, /a.sc/n.sc/n.sc/u.sc/a.sc/l.sc /d.sc/a.sc/t.sc/a.sc (/d.sc/o.sc/l.sc/l.sc/a.sc/r.sc/i.sc/z.sc/e.sc/d.sc /e.sc/c.sc/o.sc/n.sc/o.sc/m.sc/i.sc/e.sc/s.sc)
+(1) (2) (3) (4) (5)
+∆yH,t ∆yH,t ∆yH,t ∆yH,t ∆yH,t
+Exports
+∆e$H,t -0.580* -0.425 -0.559 -0.406 -0.00635
+(0.294) (0.370) (0.368) (0.353) (0.404)
+Euro ER no yes no no yes
+∆ER lags no no yes no no
+Sample M M M D D
+R-squared 0.225 0.225 0.225 0.232 0.232
+Observations 159,041 159,041 159,041 98,831 98,831
+Imports
+∆e$H,t -1.206*** -0.959** -1.205** -1.235*** -0.973*
+(0.282) (0.407) (0.466) (0.325) (0.468)
+Euro ER no yes no no yes
+∆ER lags no no yes no no
+Sample M M M D D
+R-squared 0.184 0.184 0.184 0.205 0.205
+Observations 529,276 529,276 529,276 275,974 275,974
+Table 23: All regressions control for PPI, importer GDP, and include Firm-Industry-Country /f_ixed eﬀects. S.e.
+clustered at the year level. /T_he sample includes all manufactured (M) products excluding petrochemicals and
+metal industries in columns (1)-(3) and only diﬀerentiated (D) products in columns (4)-(5). *** p<0.01, ** p<0.05,
+* p<0.1.
+24
+
+===== PAGE 26 =====
+
+T/r.sc/a.sc/d.sc/e.sc /e.sc/l.sc/a.sc/s.sc/t.sc/i.sc/c.sc/i.sc/t.sc/y.sc /w.sc/i.sc/t.sc/h.sc /r.sc/e.sc/s.sc/p.sc/e.sc/c.sc/t.sc /t.sc/o.sc /e.sc/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc, /a.sc/n.sc/n.sc/u.sc/a.sc/l.sc /d.sc/a.sc/t.sc/a.sc (/n.sc/o.sc/n.sc/hyphen.sc/d.sc/o.sc/l.sc/l.sc/a.sc/r.sc/i.sc/z.sc/e.sc/d.sc /e.sc/c.sc/o.sc/n.sc/o.sc/m.sc/i.sc/e.sc/s.sc)
+(1) (2) (3) (4) (5) (6) (7)
+∆yH,t ∆yH,t ∆yH,t ∆yH,t ∆yH,t ∆yH,t ∆yH,t
+Exports
+∆eiH,t -0.763*** 0.0193 -0.0553 -0.0330 -0.992*** -0.136 -0.200
+(0.212) (0.260) (0.314) (0.271) (0.261) (0.333) (0.390)
+∆e$H,t -1.077*** -1.007** -1.032*** -1.152*** -0.977**
+(0.265) (0.322) (0.265) (0.282) (0.342)
+Euro ER no no yes no no no yes
+∆ER lags no no no yes no no no
+Sample M M M M D D D
+R-squared 0.250 0.252 0.245 0.252 0.258 0.260 0.252
+Observations 139,318 139,318 120,316 139,318 85,659 85,659 74,090
+Imports
+∆eiH,t -0.703*** -0.212* -0.319 -0.204 -0.763*** -0.223 -0.314
+(0.217) (0.110) (0.246) (0.114) (0.241) (0.129) (0.251)
+∆e$H,t -0.962*** -0.922*** -0.941*** -1.023*** -0.957***
+(0.224) (0.245) (0.250) (0.281) (0.277)
+Euro ER no no yes no no no yes
+∆ER lags no no no yes no no no
+Sample M M M M D D D
+R-squared 0.236 0.237 0.254 0.237 0.263 0.264 0.286
+Observations 808,409 808,409 519,002 808,409 419,784 419,784 272,126
+Table 24: All regressions control for PPI, importer GDP, and include Firm-Industry-Country /f_ixed eﬀects. S.e.
+clustered at the year level. /T_he sample includes all manufactured (M) products excluding petrochemicals and
+metal industries in columns (1)-(4) and only diﬀerentiated (D) products in columns (5)-(7). *** p<0.01, ** p<0.05,
+* p<0.1.
+25
+
+===== PAGE 27 =====
+
+P/a.sc/r.sc/a.sc/m.sc/e.sc/t.sc/e.sc/r.sc /v.sc/a.sc/l.sc/u.sc/e.sc/s.sc
+Parameter Value
+Measured
+Export Invoicing Shares
+to U.S. θ$
+H$ 1.00
+toR θ $
+HR,θR
+HR 0.93,0.07
+Shocks
+commodity prices σζ,ρζ 0.09, 0.74
+Estimated
+Home bias γHH 0.88
+from U.S. γ$H 0.06
+fromR γ RH 0.06
+Exports
+to U.S. D$ -2.38
+toR D R -0.87
+Oil endowment ¯ζ 0.27
+Import Invoicing Shares
+from U.S. θ$
+$H 1.00
+fromR θ $
+RH,θR
+RH 0.93, 0.07
+eRH process η,ρR,σR 0.74, 0.82,0.016
+a process σa,ρa,ρa,ζ 0.13,0.49,-0.18
+Table 25: Other parameter values as reported in the text.
+A.5 Structural Estimation On Colombian Data
+We use a combination of calibration and estimation to parameterize the model, reported in Table 25 while other
+parameter values are as reported in Table 1 in the paper. /T_he export invoicing shares are measured in the data
+directly. We calibrate the process for commodity price shocks in Eq. (24) in the paper to match the autocorrelation
+and standard deviation of HP-/f_iltered commodity prices.7 /T_he values for¯ζ,D$,DR,γHH , are chosen such that
+in steady state the model matches the Colombian data for the share of oil exports in total exports of 58%, a 10%
+share of oil exports over GDP, and the share of manufacturing exports going to the U.S. of 18%. We also match
+a steady state debt to GDP of 31% for Colombia. We set the interest elasticity to real dollar debt to equal 0.001.
+We estimate the remaining parameters using a minimum distance estimator that minimizes the sum of
+squared deviations from moments in the data. Speci/f_ically, we minimize,
+m(⃗ τ)Ω−1mT(⃗ τ)
+where⃗ τ={θ$
+$H,θ $
+RH,θR
+RH,η,σ r,ρR,σa,ρa,ρa,ζ} is a vector of nine parameters. To estimate these parameters
+we use the following eleven moments m(⃗ τ) that theory suggests are informative. We estimate all parameters
+jointly and consequently all moments ma/t_ter for all parameter values. /T_he most informative moment for each
+parameter is described next.
+7Speci/f_ically, we use the IMF’s price index for all primary commodities, at the quarterly frequency, from 2000Q1 to
+2016Q2. We HP /f_ilter the log of the index and compute the autocorrelation and the standard deviation of the cyclical
+component.
+26
+
+===== PAGE 28 =====
+
+M/o.sc/m.sc/e.sc/n.sc/t.sc /m.sc/a.sc/t.sc/c.sc/h.sc/i.sc/n.sc/g.sc
+ˆβ$
+0,$H
+ˆβ$
+0,RH
+ˆβH
+0,RH ˆη ˆσR ˆρR ˆρa,ζ ˆσa ˆρa ˆβ$
+0,HR
+ˆβ$
+0,RH
+Data 0.97 0.89 0.18 0.54 0.018 0.78 0.84 0.023 0.64 0.85 0.87
+Model 0.97 0.80 0.13 0.54 0.017 0.78 0.87 0.026 0.64 0.81 0.90
+Table 26: Moments in the data and in the estimated model. /T_he diﬀerence between the second and last column is
+that the former estimate is from a regression that controls for the bilateral ER alongside the dollar ER. /T_he la/t_ter
+is from a regression with only the dollar ER.
+• Import Invoicing Shares: To estimate the import invoicing shares,
+– θ$
+$H: We use the contemporaneous estimateβ0 from the pass-through regression for import prices
+from dollar countries.
+– θR
+RH andθ$
+RH: We use the coeﬃcients from regressing the quarterly change in import prices from
+non-dollar destinations on the peso/dollar and peso/origin country exchange rates. 8 ∆pRH,t =
+β$· ∆e$H,t +βR· ∆eRH,t +ϵt
+• Relation betweeneRH ande$H: To estimateη andσR we construct the real exchange rate for Colombia
+relative to the U.S. and the (export share weighted) real exchange rate for Colombia relative to its other
+trading partners. We use these series to estimate the two equations Eq. (23) and (26) in the paper which
+we rewrite here:
+eRH,t +pR,t−pH,t = η
+(
+e$H,t +p$,t−pH,t
+)
++εR,t
+εR,t = ρRεR,t−1 +ϵR,t
+We use the empirical estimate for ˆη, ˆρR and the standard deviation ofϵR,t to obtainη,ρR,σR.
+• Process fora andζ: We match moments for the standard deviation (0.023) and autocorrelation (0.62) of
+manufacturing value added. We also match the contemporaneous correlation (0.84) of value added and
+commodity prices. Note thata refers to productivity, so we infer the process fora from matching moments
+of value added in the model and data.
+• Additional Moments: We match the time zero coeﬃcient on pass-through fromE$H into export and import
+prices forR goods.
+/T_he weighting matrixΩ−1 is a diagonal matrix where the entries are the inverse of the variance of the data
+moments. /T_he estimated values from this minimization are reported in Table 25 and the moment match between
+the model and data are reported in Table 26. As Table 25 reports the data strongly points towards DCP with
+almost all of the import invoicing share in dollars.
+8In the data we also control for the peso/euro exchange rate.
+27
+
+===== PAGE 29 =====
+
+E/x.sc/c.sc/h.sc/a.sc/n.sc/g.sc/e.sc /r.sc/a.sc/t.sc/e.sc /p.sc/a.sc/s.sc/s.sc/hyphen.sc/t.sc/h.sc/r.sc/o.sc/u.sc/g.sc/h.sc /i.sc/n.sc/t.sc/o.sc /p.sc/r.sc/i.sc/c.sc/e.sc/s.sc: D/a.sc/t.sc/a.sc /a.sc/n.sc/d.sc /e.sc/s.sc/t.sc/i.sc/m.sc/a.sc/t.sc/e.sc/d.sc /m.sc/o.sc/d.sc/e.sc/l.sc
+(1) (2) (3) (4)
+∆pHR,t ∆pHR,t ∆pRH,t ∆pRH,t
+Data
+∆eRH,t 0.67*** 0.06 0.750*** 0.32***
+(0.09) (0.05) (0.12) (0.08)
+∆e$H,t 0.68*** 0.53***
+(0.05) (0.07)
+Estimated model
+∆eRH,t 0.70 0.27 0.67 0.22
+∆e$H,t 0.67 0.70
+DCP
+∆eRH,t 0.68 0.22 0.65 0.17
+∆e$H,t 0.72 0.75
+PCP
+∆eRH,t 0.48 0.25 0.92 0.88
+∆e$H,t 0.37 0.06
+LCP
+∆eRH,t 0.97 0.92 0.43 0.18
+∆e$H,t 0.08 0.40
+Table 27: Exchange rate pass-through into export and import prices to/from non-dollarized economies, in the
+data and the model. Both regressions have only the bilateral exchange rate and the dollar exchange rate as
+controls. Data regressions include Firm-Industry-Country /f_ixed eﬀects, with s.e. clustered at the year level.
+/T_he last three sets of results show the model-implied pass-through coeﬃcients for the three extreme pricing
+assumptions, keeping all other parameters /f_ixed at the values in Table 26.
+28
+
+===== PAGE 30 =====
+
+References
+Boz, E., Ceru/t_ti, E., and Pugacheva, E. (2019). Dissecting the Global Trade Slowdown: A New Database. Forth-
+coming IMF Working Paper.
+Casas, C., Diez, F., Gopinath, G., and Gourinchas, P.-O. (2016). Dominant currency paradigm. Working paper.
+DANE (2005-2015). Departamento Administrativo Nacional de Estad´ıstica. (Last Accessed: Aug. 2019).
+DIAN (2000-2015). Direcci ´on de Impuestos y Aduanas Nacionales. (Last Accessed: Aug. 2019).
+Feenstra, R. C., Lipsey, R. E., Deng, H., Ma, A. C., and Mo, H. (2005). World Trade Flows: 1962–2000. NBER
+Working Paper 11040.
+FRED (2017). FRED Economic Data, Federal Reserve Bank of St Louis. h/t_tps://fred.stlouisfed.org/. (Last Accessed:
+Aug. 2017).
+Gaulier, G., Martin, J., Mejean, I., and Zignago, S. (2008). International Trade Price Indices. CEPII Working Paper
+No. 2008/10.
+Gopinath, G. (2015). /T_he international price system. In Jackson Hole Symposium , volume 27. Federal Reserve
+Bank at Kansas City.
+Gopinath, G. and Rigobon, R. (2008). Sticky borders. /Q_uarterly Journal of Economics, 123(2):531–575.
+Imbens, G. W. and Koles´ar, M. (2016). Robust Standard Errors in Small Samples: Some Practical Advice. Review
+of Economics and Statistics , 98(4):701–712.
+IMF (2009). Export and Import Price Index Manual: /T_heory and Practice. International Monetary Fund, Washington,
+D.C.
+Rauch, J. E. (1999). Networks versus markets in international trade.Journal of International Economics, 48(1):7–35.
+Silver, M. (2007). Do Unit Value Export, Import, and Terms of Trade Indices Represent or Misrepresent Price
+Indices? IMF Working Paper No. 07/121.
+U.N. Comtrade (2017). U.N. Comtrade Database. h/t_tps://comtrade.un.org. (Last Accessed: Aug. 2017).
+WDI (2017). World Bank Development Indicators. h/t_tp://datatopics.worldbank.org/world-development-
+indicators/. (Last Accessed: Aug. 2017).
+World Bank (2010). Imports, Exports and Mirror Data with UN COMTRADE. World Integrated Trade Solution
+Online Help.
+29

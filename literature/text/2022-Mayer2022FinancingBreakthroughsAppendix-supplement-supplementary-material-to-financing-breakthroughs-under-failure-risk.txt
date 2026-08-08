@@ -1,0 +1,674 @@
+
+
+===== PAGE 1 =====
+
+Revision of “Financing Breakthroughs under Failure Risk” (#2021-0422)
+Reply to the Referee
+Thank you very much for your feedback and constructive comments on the paper.
+I have revised the paper to take into account your comments as well as those of the
+editor and the other referee. Below, I provide a detailed response to your comments and
+suggestions (repeated in italics). To ease the revision, I follow the structure of the referee
+report and adopt the proposed comment categories — Conceptual Comments, Technical
+Comments, and Other Comments. For convenience, I have also numbered the comments
+in the order they appear in your report.
+Conceptual Comments
+1. Contribution. The model is simple and elegant. The result that the agent must be
+rewarded for disclosing bad news when this information is valuable for the principal is not
+new and present in, e.g., Levitt and Snyder (1997), Eisfeldt and Rampini (2008) and In-
+derst and Mueller (2010). For example, in Eisfeldt and Rampini (2008), an unproductive
+manager needs to be compensated to declare that capital should be reallocated because of
+private beneﬁts of control, which is also the mechanism in this paper. It is also expected
+that if eliciting information is too expensive to the principal relative to the beneﬁt of this
+information, then a pooling contract would be optimal, so sometimes it is better to not
+reward the agent for disclosing bad news because it is too expensive. Given these results,
+the main contribution of this paper is in embedding this intuition into a dynamic model,
+in which disclosure today is linked to disclosure tomorrow via the continuation utility of
+the agent, and so the cost and the beneﬁt of disclosure are endogenous with respect to what
+will happen tomorrow. This is a nice and relevant contribution, but I think the paper could
+make a stronger case that the results it delivers, ﬁrst, explain some empirical patterns in
+the ﬁnancing of innovation that other models could not explain (or alternatively, provide
+a diﬀerent explanation of the phenomenon that other models speak to), and second, are
+robust to reasonable variations in the economic environment modeled.
+1
+Supplementary Material
+
+===== PAGE 2 =====
+
+Thank you very much for your comments. In the revised version, I have done several
+changes to address your comments. First, I have included a paragraph in the introduction
+to diﬀerentiate my paper’s contribution from the static contracting literature (and the ref-
+erences you have mentioned). On page 6 in the introduction, I write “The core mechanism
+leading to rewards for failure, namely to incentivize disclosure of bad outcomes, arises in
+a similar form in prior work on static principal-agent problems (Levitt and Snyder, 1997;
+Eisfeldt and Rampini, 2008; Inderst and Mueller, 2010). The contribution of our paper is
+to study incentive provision for disclosure of bad outcomes in a dynamic environment so
+that the agent’s disclosure incentives are linked across periods and therefore endogenously
+depend on what will happen in the future. As such, our analysis yields the novel implica-
+tions that to incentivize truthful disclosure, the rewards for disclosing bad outcomes must
+decrease over time and it is not optimal to incentivize disclosure of bad outcomes in the
+early contract stages.”
+Second, I have revised Section 3 discussing empirical implications and model predic-
+tions as well as the corresponding paragraphs in the introduction. In the revised paper
+version, I discuss the model implications for venture capital ﬁnancing — which is the
+main application of my model — in Section 3.1 (page 23), while Section 3.2 (page 26)
+discusses other model applications, such as R&D ﬁnancing or executive compensation.
+Importantly, as I discuss in response to your next point on the model’s empirical impli-
+cations (comment 2 in the referee report) in greater detail, I have derived and included
+several model implications that have not been there in the previous paper version, and
+I connect these implications to empirical studies on VC ﬁnancing. I have changed the
+corresponding paragraphs in the introduction too. In addition, I have incorporated your
+feedback on how to improve existing model implications and to sharpen their connection
+to empirical studies.
+Third, I have expanded Section 5 discussing the robustness of my model. As I describe
+in more detail in response to your comment 3 (on discounting and time-decreasing rewards
+for failure), in Appendix C.2 on page 65, I solve now the model with discounting, and
+I show that the model results remain (qualitatively) unchanged under this alternative
+speciﬁcation. Furthermore, I also show that the model results remain similar the same
+when the agent aﬀects the completion timing (Appendix C.3 on page 70), when the agent
+2
+
+===== PAGE 3 =====
+
+can hide success (Appendix C.4 on page 70), or when eﬀort is continuous (i.e., non-
+binary) with convex costs of eﬀort (Appendix C.5 on page 72). These model extensions
+are discussed in Section 5.2 “Robustness” on page 36.
+2. Empirical relevance. The paper discusses many implications, which is appreciated, but I
+found these discussions unfocused and imprecise. Speciﬁc examples from the introduction:
+(a) “The unconditional ﬁnancing stage can also be interpreted as contractual grace or
+probationary period during which the agent is not ﬁred after bad outcomes” - but
+this is not quite true, because in the optimal contract the agent is ﬁred after a bad
+outcome if it is veriﬁable.
+(b) “The model predicts that optimal venture capital contracts involve distinct ﬁnancing
+stages, whereby the continuation of ﬁnancing becomes more performance-sensitive
+over time and the entrepreneur’s incentives and liquidation rights in the startup
+... are backloaded.” - but can we actually call the entrepreneur’s liquidation rights
+back-loaded when under the optimal contract they are non-monotone over time (zero
+initially, then jump up and decrease)? The same comment applies to “Optimal
+contracts for R &D workers stipulate backloaded incentives and tolerance towards
+failure”
+(c) “optimal ﬁnancing contracts for projects that are subject to severe agency con-
+ﬂicts involve a relatively long unconditional ﬁnancing stage ... . That is, precisely
+when agency conﬂicts in project development are severe ..., it is optimal to provide
+substantial unconditional ﬁnancing that is independent of performance or reported
+progress” - where is this result shown in the paper? I did not see results about the
+comparative statics oft1 inφ. Is there any evidence that there is less staged ﬁnancing
+in startups/industries that are more prone to agency conﬂicts?
+(d) “the model highlights the tension that while instruments like golden handshakes,
+golden parachutes, and severance pay provide incentives for truth- 4 full disclosure
+of bad outcomes, they also undermine incentives to generate good outcomes” - but
+this tension is not speciﬁc to this model and also present in, e.g., Levitt and Snyder
+(1997).
+3
+
+===== PAGE 4 =====
+
+(f) “the optimal ﬁnancing contract for projects that generate results quickly stipulates
+substantial unconditional ﬁnancing but a (relatively) short hard deadline, which is
+broadly consistent with a “spray and pray” investment approach” - If I understand
+it correctly, the “spray and pray” investment approach is to ﬁnance a large number
+of small risky ventures, as opposed to a moderate number of larger and less risky
+ventures, and less about the provision of unconditional vs. conditional ﬁnancing.
+I think the paper would beneﬁt from a more focused, even if less ambitious, discussion. I
+suggest that the authors ﬁnd one or two key empirical patterns that the model uniquely
+speaks to, show what formal results in the paper these implications exactly come from,
+and discuss if other existing models can or cannot speak to the same empirical patterns.
+For example, is there any evidence, even anecdotal, that venture capitalists do not elicit
+soft information from entrepreneurs early on but do later on? Or is there any evidence
+that the liquidation preference of entrepreneurs is time-decreasing when the liquidation is
+chosen voluntarily by the entrepreneur?
+Thank you very much for your comments and constructive feedback. I have done
+several things to address your comments. First, I have revised Section 3 discussing model
+applications and implications. Because venture capital (VC) ﬁnancing is the model’s
+main application, Section 3.1 (which starts page on 23) discusses now model implications
+speciﬁc to VC ﬁnancing, while Section 3.2 (which starts on page 26) discusses other model
+applications, such as executive compensation and R&D ﬁnancing. I have also revised the
+corresponding paragraphs in the introduction accordingly. The model implications for
+VC ﬁnancing are now discussed in the introduction, starting from the bottom of page 2.
+I would like to highlight selected model implications which Section 3.1 and the intro-
+duction discuss in greater detail:
+• I am very grateful for your suggestion to investigate whether there is some evidence
+that VCs do not elicit soft information and/or disclosure of failure in the early
+ﬁnancing stages. Indeed, the model predicts that in the early ﬁnancing stages, VCs
+tend not to incentivize disclosure of failure, consistent with the ﬁndings in Puri and
+Zarutskie (2012). Puri and Zarutskie (2012) ﬁnd that especially in the early stages
+(years) of ﬁnancing, VC ﬁnanced startup ﬁrms are less likely to declare failure
+4
+
+===== PAGE 5 =====
+
+than comparable non VC-ﬁnanced ﬁrms (whereas any diﬀerences in failure rates
+between VC-ﬁnanced and non-VC ﬁnanced ﬁrms taper oﬀ in subsequent years). I
+mention this ﬁnding in the introduction on page 3 where I write “According to
+our model, the provision (continuation) of ﬁnancing becomes more performance-
+sensitive over time and across stages. Speciﬁcally, optimal VC contracts feature an
+initial unconditional ﬁnancing stage during which the VC does not elicit disclosure
+of failure or, more broadly, soft information. This initial unconditional ﬁnancing
+period implies a relatively low likelihood that a VC-ﬁnanced startup declares failure
+and is terminated in the early stages/years of ﬁnancing, in line with the empirical
+ﬁndings of Puri and Zarutskie (2012).”
+The corresponding discussion in the main text is on page 23 where I write “Ac-
+cording to our model, optimal VC ﬁnancing contracts do not elicit disclosure of
+failure or, more broadly, soft information in the early ﬁnancing stages. Related,
+the provision (continuation) of ﬁnancing by the VC becomes more performance-
+sensitive over time and across stages. In the data, we do not observe a startup’s
+actual failure date but only the date on which the startup “declares failure” (i.e.,
+is sold/liquidated/shut down). As a result, we should — all else equal — observe
+in the data relatively low failure rates for VC-ﬁnanced startup ﬁrms in the early
+years of ﬁnancing. Consistent with our ﬁndings, Puri and Zarutskie (2012) ﬁnd that
+especially in the early stages (years) of ﬁnancing, VC-ﬁnanced ﬁrms are less likely
+to declare failure than comparable non VC-ﬁnanced ﬁrms (whereas any diﬀerences
+in failure rates between VC-ﬁnanced and non-VC ﬁnanced ﬁrms taper oﬀ in subse-
+quent years). Our analysis suggests that the reason underlying this outcome is that
+in the early stages/years of ﬁnancing, VCs tend to elicit disclosure of failure and
+soft information less than non VC investors.”
+The same paragraph and the following paragraph below (i.e., the last paragraph of
+page 23) provide then additional details on how my paper’s implications relate to
+the empirical results in Puri and Zarutskie (2012).
+• In practice, failure could represent any type of exit that yields relatively low payoﬀs,
+such as liquidation or sale/acquisition of the startup yielding low payoﬀ. The model
+5
+
+===== PAGE 6 =====
+
+prediction that there are no rewards for failure in the early ﬁnancing stages but
+only in the later ﬁnancing stages is consistent with the ﬁndings of Kaplan and
+Str¨ omberg (2003). To refer to this result, I write on page 3 of the introduction
+“Importantly, the entrepreneur should be compensated for failure (i.e., liquidation
+or an acquisition/sale of the startup that leads to relatively low payoﬀ) only in the
+later ﬁnancing stages. Kaplan and Str¨ omberg (2003) Kaplan and Str¨ omberg (2003)
+indeed document that in the later ﬁnancing stages, the founder is more likely to
+have liquidation rights or claims that are senior/par to VC cumulative investment.”
+The corresponding discussion in the main text can be found on the top of page 25:
+“In practice, any exit that generates relatively low payoﬀs could be interpreted as
+failure, such as the liquidation, sale, or “low acquisition” of the startup. 1 Rewards
+for failure could be implemented by granting the entrepreneur liquidation rights or
+claims that are senior or par to the VC’s cumulative investment. According to our
+model, such rewards for failure are more common in the later stages of VC ﬁnancing,
+consistent with the empirical ﬁndings of Kaplan and Str¨ omberg (2003).2”
+• The model also predicts that once in place, rewards for failure decrease over time. I
+discuss the empirical implications of this result in the introduction on page 3 where
+I write “Then, in the later ﬁnancing stages, these rewards for failure decrease over
+time, which could be a consequence of staged ﬁnancing. With staged ﬁnancing, the
+startup undergoes several ﬁnancing rounds that repeatedly dilute the entrepreneur’s
+stake in the startup, thereby reducing her rewards for failure (and success) over time.
+In addition, as rewards for failure decrease over time, the VC’s residual payoﬀ upon
+1For instance, Ewens et al. (2020) classify an exit as “low acquisition” when the startup has a reported
+acquisition value less than 1.5x capital invested (see Figure A1). Similarly, Ewens et al. (2021) classify
+only acquisition with value of more than 2x capital investment as success. Pushing this idea further,
+one can interpret publicly observed failure as a “bad” outcome/exit, such as bankruptcy or liquidation,
+and privately observed failure as an “intermediate” outcome/exit, such as a low acquisition or sale of the
+startup. The idea behind this interpretation is that “good” and “bad” outcomes (i.e., success and failure)
+are observable and veriﬁable for outside investors, but intermediate outcomes are not and it is hard to
+incentivize disclosure of these intermediate outcomes. I would like to thank Neng Wang for suggesting
+this interpretation.
+2In particular, Kaplan and Str¨ omberg (2003) report in Table 4 that non-VC liquidation rights senior
+or par to VC cumulative investment and founder claims senior or par to VC cumulative investment
+are signiﬁcantly more common in later ﬁnancing round than in the ﬁrst ﬁnancing round. Also, Kaplan
+and Str¨ omberg (2003) ﬁnd that after (relatively) good performance — in terms of our model, when the
+startup does not fail — the entrepreneur retains/obtains more control rights and the VC may relinquish
+liquidation rights.
+6
+
+===== PAGE 7 =====
+
+failure and so the VC’s downside protection increases over time, in line with the
+ﬁndings of (Bengtsson and Sensoy, 2011).”
+The corresponding discussion in the main text can be found on pages 25 and 26
+where I write “Importantly, our model predicts that in the later stages of VC ﬁ-
+nancing, the agent receives time-decreasing rewards for failure and success. Recall
+that rewards for failure decrease over time to incentivize the agent not to delay
+disclosure of failure. In practice, the entrepreneur’s time-decreasing payoﬀs (for
+both failure and success) could be a consequence of the repeated dilution of the
+entrepreneur’s stake in the startup when the startup holds a new ﬁnancing round
+to raise funds (which requires investors to grant a stake in the startup). This mech-
+anism is similar to the dilution of early startup investors in later ﬁnancing rounds
+(Bengtsson and Sensoy, 2015). The fact that VC ﬁnancing is provided in several
+stages and ﬁnancing rounds implies the gradual dilution of the entrepreneur’s stake
+and so can induce time-decreasing rewards for failure in the later ﬁnancing stages.
+Hence, we conclude that staged ﬁnancing endows the entrepreneur with incentives
+not to delay disclosure of failure and, more broadly, to choose the optimal exit
+timing. Observe that ceteris paribus, failure rewards for the entrepreneur decrease
+the residual payoﬀ upon failure that is left for the VC; thus, rewards for failure
+(for the entrepreneur) are likely to correlate negatively with investor downside pro-
+tection. Notably, Bengtsson and Sensoy (2011) document a signiﬁcantly positive
+relationship between VC downside protection (which can be seen as the inverse of
+the entrepreneur’s rewards for failure) and startup age. According to our ﬁndings,
+this relationship could reﬂect that in the later ﬁnancing stages, the entrepreneur’s
+rewards for failure decrease and therefore VC downside protection increases over
+time.”
+• I also derive empirical implications based on the comparative statics presented in
+Figure 3 (page 29) which shows that the relative length of the unconditional ﬁnanc-
+ing stage t1/T increases with φ. I relate this ﬁnding to empirical evidence on the
+bottom of page 3 in the introduction where I write “The length of the uncondi-
+tional ﬁnancing stage (relative to total contract duration) captures the principal’s
+propensity to continue ﬁnancing the project after its failure and therefore is related
+7
+
+===== PAGE 8 =====
+
+to the measure of VC investors’ tolerance for failure in Tian and Wang (2011),
+that is, VC investors’ willingness to continue ﬁnancing underperforming ventures.
+Tian and Wang (2011) empirically document a positive relationship between VC
+investors’ failure tolerance and innovation. Our model oﬀers an explanation for
+this result that is based on the agency conﬂicts regarding the disclosure of failure.
+Optimal ﬁnancing contracts for innovative projects — which are subject to severe
+agency conﬂicts — involve a relatively long unconditional ﬁnancing stage, increasing
+the likelihood that the project continues to receive ﬁnancing after failure. That is,
+the principal tends to incentivize disclosure of failure less, precisely when agency
+conﬂicts are severe (e.g., for innovative projects).”
+The corresponding discussion in the main text is on page 24 where I write “The
+quantityt1/T — that is, the length of the unconditional ﬁnancing stage t1 relative
+to total contract duration T — captures the principal’s propensity to continue ﬁ-
+nancing the project after its failure. Therefore, t1/T is related to the measure of VC
+investors’ tolerance for failure in Tian and Wang (2014), that is, their willingness
+to continue ﬁnancing underperforming ventures. Tian and Wang (2014) empirically
+document a positive relationship between VC investors’ tolerance for failure and
+innovation (measured by the number of produced patents as well as their citations).
+Our ﬁndings provide an explanation for these ﬁndings that is based on agency con-
+ﬂicts regarding the disclosure of failure. Because innovative projects (i.e., projects
+that are likely to produce innovative outcomes such as patents) are complex and
+characterized by severe agency conﬂicts (high φ), the optimal ﬁnancing contract
+features a relatively long unconditional ﬁnancing stage and so tends to incentivize
+disclosure of failure less, thus increasing the likelihood that the project continues to
+receive ﬁnancing after failure.”
+Second, I would like to thank you for the detailed comments and suggestions on speciﬁc
+empirical implications presented in the introduction of the previous paper version. I have
+incorporated your feedback and suggestions regarding the bullet points (a) through (f) as
+follows.
+(a) In the revised paper version, I have changed the corresponding statement to “The
+8
+
+===== PAGE 9 =====
+
+unconditional ﬁnancing stage can also be interpreted as contractual grace or pro-
+bationary period during which the agent is not (always) ﬁred after certain bad
+outcomes”, so as to highlight that the agent is sometimes (i.e., after publicly ob-
+served failure) but not always (i.e., after privately observed failure) terminated upon
+failure.
+(b) Thank you very much for your suggestion. In the revised version, I emphasize that
+not the magnitude of liquidation rights but only the likelihood that the entrepreneur
+has some liquidation rights is “backloaded.” In particular, I write on page 3 in
+the introduction “Kaplan and Str¨ omberg (2003) indeed document that in the later
+ﬁnancing stages, the founder is more likely to have liquidation rights or claims that
+are senior/par to VC cumulative investment.”
+(c) Figure 3 on page 29 plots the relative length of the unconditional ﬁnancing stage,
+t1/T , against φ, capturing agency conﬂicts. Notice that t1/T proxies (to a ﬁrst
+order) the principal’s propensity to ﬁnance the project after its failure. Moreover,
+when t1/T is large (low), the principal tends to incentivize disclosure of failure
+less (more). As shown in Figure 3, t1/T increases with φ, which means that the
+principal tends to incentivize disclosure of failure less when agency conﬂicts become
+more severe. To highlight this result more clearly, I write in the revised version of
+the paper on the bottom of page 3 in the introduction “That is, the principal tends
+to incentivize disclosure of failure less, precisely when agency conﬂicts are severe
+(e.g., for innovative projects).” The same paragraph connects the model result that
+t1/T increases with φ to empirical evidence in Tian and Wang (2014) (which was
+discussed on pages 7 and 8 of this letter).
+In addition, I have also updated Figure 3 on page 29 which plots now the ab-
+solute length of the unconditional ﬁnancing stage t1. Notably, while T strictly
+decreases with φ, t1 is hump-shaped (i.e., ﬁrst increases, then decreases) in φ, and
+t1/T increases in φ. The intuition is as follows. As φ increases and moral hazard
+exacerbates, the principal i) reduces the ﬁnancing deadline T and ii) provides rel-
+atively more unconditional ﬁnancing (as disclosure becomes harder to incentivize).
+While less disclosure incentives translate into higher t1 for moderate values of φ, a
+9
+
+===== PAGE 10 =====
+
+“mechanical” eﬀects kicks in when φ becomes suﬃciently large: t1 is bounded from
+above by the ﬁnancing deadline T which decreases with φ so that for suﬃciently
+large φ, t1 must decrease in φ. This mechanical eﬀect also implies that because of
+limφ→∞T = 0, it must be limφ→∞t1 = 0 (as t1≤T ).
+(d) In the revised version, I have changed the corresponding statement to better high-
+light my paper’s contribution. In particular, I write on page 4 in the introduction
+“The model also applies to more general types of ﬁrms. In the context of executive
+compensation contracts, the model highlights the tension that while instruments
+like golden handshakes, golden parachutes, and severance pay provide incentives for
+truthful disclosure of bad outcomes, they may also provide incentives to generate
+bad outcomes on purpose (e.g., an acquisition that is not desirable for shareholders)
+and/or to leave the ﬁrm. As a result, these instruments should not be in place in
+the early stages of the contract (i.e., CEO tenure). Crucially, once in place, the
+dollar value of these instruments should decrease over time and the CEO should be
+provided strong incentives through performance pay that incentivize the CEO not
+to generate bad outcomes.”
+(f) Thank you very much for this clariﬁcation and your suggestions. I write now on
+page 4 in the introduction “Interestingly, the optimal contract for projects that gen-
+erate results quickly stipulates a relatively long unconditional ﬁnancing stage but
+a short hard deadline. This shape of the optimal contract suggests that projects,
+generating results quickly, are particularly suitable for a “spray and pray” invest-
+ment approach in which VCs provide funding to (many) startups over a relatively
+short horizon with limited governance and oversight (Ewens et al. (2018)).” The re-
+vised statement reﬂects that while the “spray and pray” approach involves ﬁnancing
+many startups, the ﬁnancing contract for any of these startups resembles a contract
+with a (relatively) long unconditional ﬁnancing stage but a short hard deadline and
+disclosure stage (whereby limited governance could mean less incentive provision for
+disclosure). The statement is based on the result that t1/T decreases with 1/Λ and
+T is hump-shaped in 1/Λ and therefore low for low values of 1 /Λ (see Figure 3 on
+page 29). This ﬁnding is discussed in more detail on page 29.
+10
+
+===== PAGE 11 =====
+
+3. Time-decreasing reward for failure . The key result in the solution for the optimal con-
+tract is that in the disclosure regime the reward for failure must be time-decreasing. This
+is both an important stand-alone result and a key intermediate step on the way to show
+that the optimal contract has two distinct ﬁnancing stages. The intuition is quite clear,
+but I am worried that it may rely on the assumption that there is no discounting in the
+model. Discounting by itself generates a preference for consuming early (and thus report-
+ing failure early), so it is not obvious that time-decreasing reward for failure would be a
+feature of the optimal contract if there is discounting. And if the reward for failure is not
+time-decreasing in the presence of discounting, then do we get the result that the optimal
+contract has two stages of ﬁnancing, with the unconditional ﬁnancing stage followed by the
+performance-sensitive stage? If the results in the paper require the absence of discount-
+ing, then their relevance would be signiﬁcantly lower, because I cannot think of dynamic
+economic environments in which the lack of discounting is a reasonable assumption. Per-
+haps it can be an approximation when thinking about short horizons, but clearly in the
+applications that the paper deals with (e.g., VC ﬁnancing) the horizon is not short.
+I would like to thank you for this constructive comment on the paper and for en-
+couraging me to analyze the model with discounting in a rigorous way. To address your
+comment, I included Appendix C.2 (page 65) which derives the model solution when prin-
+cipal and agent discount at rate r >0. I refer to Appendix C.2 in the main text in the
+robustness section 5.2 on page 36.
+In Appendix C.2, I show then that discounting does not change the qualitative results
+and the shape of the optimal contract. In particular, with discounting, the optimal
+contract continues to feature i) an unconditional ﬁnancing stage followed by ii) a disclosure
+stage. The state variable w — which has now the dynamics ˙w =rw−φ — decreases over
+time in both stages (i.e., ˙w <0). During the disclosure stage, w equals the rewards for
+reported failure; thus, the disclosure stage features time-decreasing rewards for failure,
+also in the presence of discounting.
+Indeed, as you correctly pointed out, the dynamics of wt (i.e., ˙wt =rwt−φ) suggest
+that wt need not decrease over time. In particular, ˙ wt≥ 0 when wt≥ w = φ
+r , and the
+deadline T = inf{t≥ 0 : wt = 0} might be inﬁnite. However, Appendix C.2 shows then
+that in optimum, wt < w, so that ˙wt < 0 and, during the disclosure stage, wt = βt and
+11
+
+===== PAGE 12 =====
+
+˙βt < 0, leading to time-decreasing rewards for failure.
+Technical Comments
+4. The paper could be clearer about what class of contracts the optimization is over. Even
+after going over Appendix B, it is not clear to me if this contract is globally optimal or if
+it is optimal in a class of contracts, and if it is the latter, then what this class is. More
+clarity will be appreciated.
+Thank you very much for this comment. I have done several things to address your
+comment. First, I emphasize now that I solve for the optimal contract under the as-
+sumption of full eﬀort, and I show later on in Appendix C.1 (page 64) that full eﬀort
+is indeed optimal under the parameter assumptions Λ pµ > φ+κ and φ < κ. For this
+sake, I added footnote 6 on page 9 stating “Appendix C.1 shows that full eﬀort is indeed
+optimal, when Λpµ > φ+κ and φ < κ.” Moreover, I write on page 9: “We focus (with-
+out loss of generality) on contracts that incentivize the agent not to fake failure.” The
+argument why this assumption is without loss of generality is presented on page 13 below
+the incentive constraint (7). Speciﬁcally: “If the agent ﬁnds it optimal to fake failure at
+some time t with βt > 0, the agent reports failure and precipitates termination at time t
+with certainty, while being paid βt > 0. Then, the principal could improve her payoﬀ by
+stipulating termination with zero pay for the agent at timet.” That is, whenβt >W t and
+(7) is violated, the agent precipitates termination with probability one at timet (provided
+there has not been prior termination) and receives payβt > 0 from doing so, which cannot
+be optimal for the principal who is better oﬀ by simply terminating the agent without
+pay at time t.
+Second, to provide additional details and discussion on the contracting problem, I
+have included the last paragraph on the bottom of page 10: “Take any time t before
+termination. When the agent has privately observed failure before time t, she decides at
+timet whether i) to disclose failure at time t, ii) not to disclose failure at time t, or iii) to
+randomize between i) and ii). The contract C incentivizes the agent i) to disclose failure
+at time t, ii) not to disclose failure at time t, or iii) to randomize between i) and ii). The
+payout structure and the deadline T implicitly determine these incentives.” Therefore, it
+12
+
+===== PAGE 13 =====
+
+suﬃces to characterize the contract by the tuple C = (c,T ).
+As I argue in footnote 9 on page 10, one could also write the contract in more extensive
+form to include proposed eﬀort and disclosure of failure. In particular, I write “To save
+on notation, we do not formally include the choice of whether to incentivize disclosure
+into the description of the contract. One could also write the contract as a quadruple
+C = (c,T, ˆa, ˆd) where ˆd ={ ˆdt} denotes on whether the contract incentivizes disclosure and
+ˆa ={ˆat} denotes the proposed eﬀort level. In particular, ˆdt∈ [0, 1] denotes the probability
+with which the agent is incentivized to disclose failure at time t (conditional on failure at
+some times≤t); ˆdt can be inﬁnitesimal in which case disclosure occurs at some rate. Note
+that this formulation encompasses the possibilities of incentivizing randomized disclosure
+( ˆdt∈ (0, 1)) or delayed disclosure at time t (which would be obtained by setting ˆdt′ = 1
+and ˆds = 0 for∈ [t,t′) for t′ >t ).”
+Third, in response to your following two comments, I show that full eﬀort is optimal
+(Appendix C.1 on page 64) and there is no stochastic disclosure (Lemma 6 on page 47),
+so that the principal either incentivizes full disclosure or no disclosure at all. So, the
+contract I solve for is globally optimal.
+5. Lemma 5 in Appendix B shows that if and only if π >0, there exists a contract ˜C that
+does not incentivize disclosure for times t∈ [0, ∆). While it proves that the full-disclosure
+contract is not optimal if π >0, how do we know that the optimal contract belongs to the
+class (no disclosure until ∆, full disclosure from ∆)? In principle, there can be contracts
+that implement neither full disclosure nor full non-disclosure, e.g., if the agent discloses
+failure only with some probability or if the agent discloses failure with some delay, and it
+is unclear to me if this is considered.
+Thank you very much for your comments. To address your ﬁrst point, I included
+Lemma 6 on page 47 in Appendix B which shows that if the principal does not incentivize
+“full” disclosure, then she does not incentivize disclosure at all, precluding randomization
+over disclosure.
+Let me give some overview of the arguments leading to this result. Lemma 5 in
+Appendix B (page 46) demonstrates that a full disclosure contract is not optimal when
+π > 0, and Lemma 4 in Appendix B (pages 44 and 45) shows that a full disclosure
+13
+
+===== PAGE 14 =====
+
+continuation contract is optimal at any time t with Wt≥wt (that is, when Wt≥wt, the
+principal incentivizes full disclosure at all future times s∈ [t,T ]). When π > 0, a full
+disclosure contract is not optimal (see Lemma 5 on page 6). Then, there exists a time
+interval [0,t 1) during which Wt < wt, whereby t1 = inf{t≥ 0 : Wt≥ wt}. We know
+from Lemma 4 that from time t1 onwards (whenWt1≥wt1), the contract incentivizes full
+disclosure (i.e., the optimal continuation contract is a full disclosure contract). As you
+have correctly pointed out, in the previous draft, I did not provide a detailed argument for
+why this already implies that the contract incentivizes no disclosure (at all) over [0 ,t 1).
+Lemma 6 on page 47 of the revised version ﬁlls this gap.
+In principle, the contract could incentivize the agent to randomize between disclosure
+and no-disclosure. Suppose to the contrary the principal incentivizes the agent to ran-
+domize at time t<t 1. But, in this case, the agent must be indiﬀerent between disclosure
+and no-disclosure, so that βt =wt. To incentivize the agent not to fake failure, it must be
+thatWt≥βt, which contradicts the fact thatWt <w t fort<t 1. As a result, the principal
+either incentivizes full disclosure of failure (in which case Wt = wt) or no disclosure at
+all (in which case Wt < wt) and, in particular, does not incentivize randomization over
+disclosure.
+I address your point on delayed disclosure in footnote 9 on page 10 which I have
+discussed in response to one of your previous points. I argue that the i) the contract
+can be written in more extensive form, explicitly keeping track of the principal’s choice
+to incentivize disclosure, and ii) the contract formulation encompasses the possibility
+of (incentivizing) delayed disclosure. In particular, I write “Note that this formulation
+encompasses the possibilities of incentivizing randomized disclosure (ˆdt∈ (0, 1)) or delayed
+disclosure at time t (which would be obtained by setting ˆdt′ = 1 and ˆds = 0 for ∈ [t,t′)
+fort′ >t ).” Importantly, your intuition was correct and delayed disclosure is indeed part
+of the optimal contract. Speciﬁcally, the optimal contract I solve for features delayed
+disclosure due to the unconditional ﬁnancing stage. That is, at any time t < t1 (i.e.,
+during the unconditional ﬁnancing stage), the principal incentivizes the agent to disclose
+failure at time t1, thereby eﬀectively incentivizing delayed disclosure.
+6. The paper restricts attention to contracts that implement full eﬀort at all times. It
+would be helpful to state suﬃcient parameter restrictions under which implementation of
+14
+
+===== PAGE 15 =====
+
+full eﬀort is optimal. .
+Thank you very much for looking into the technical arguments in detail. Indeed, as
+you point out correctly, I solved for the optimal contract under the assumption that the
+principal implements full eﬀort without specifying conditions on the optimality of eﬀort.
+To address your comment, I prove in Appendix C.1 (pages 64) that full eﬀort is indeed
+optimal, provided that the project has suﬃciently high net present value (Λ pµ > κ+φ)
+and that shirking is ineﬃcient ( φ < κ). Both parameter conditions are assumed to hold
+throughout the entire paper.
+Intuitively, the characterization of the optimality of full eﬀort is simple compared
+to prior papers in the dynamic contracting literature (such as DeMarzo and Sannikov
+(2006) or Zhu (2012)), because the choice of eﬀort does not aﬀect the dynamics of w (i.e.,
+˙w =−φ) which is the key state variable in the model.
+7. The extension in Section 5 is potentially interesting, but I could not ﬁgure out what
+contracting problem is being solved in this section. The contracting problem is not stated
+formally either in the section or in the appendix and the informal description is unclear.
+For example, it says: “The outcome of an inspection is public knowledge and contractible.
+But, the principal cannot commit to an inspection policy, in that inspection dates are
+not contractible.” What is the meaning of “inspection dates are not contractible”? Does it
+simply mean that inspection is a hidden action taken by the principal or does it mean more
+than that? If it means that inspection is a hidden action, and if the principal can contract
+on the outcome of the inspection policy, cannot the principal eﬀectively also commit himself
+to speciﬁc inspection dates by postulating very large transfers for inspection outcomes that
+arrive on dates at which the inspection is not desirable? More formal details are needed,
+at least, in the appendix.
+Thank you very much for your comment and for encouraging me to formalize the
+contracting problem. The assumptions in the previous paper version were to reﬂect that
+the principal cannot commit i) to stochastic inspections and ii) to inspections after the
+agent reports failure (to incentivize the agent not to fake failure), so that there are no
+stochastic inspections and no inspections after the agent reports failure. 3 The general
+3If the principal could commit to inspections after the agent report failure, she can incentivize the
+15
+
+===== PAGE 16 =====
+
+solution with full commitment to any monitoring/inspection strategy is likely complicated
+and beyond the scope of the paper.
+To address your comments, the revised version formalizes the assumptions underlying
+the contracting problem with inspections. To achieve more clarity and simplicity, I explic-
+itly state in the beginning of Section 4 on page 32 “ We consider inspections that occur at
+deterministic times, and that inspections and their outcomes are publicly observable and
+contractible subject to the following limited commitment constraint: the principal cannot
+commit to inspections that yield at the time of inspection an expected post-inspection
+continuation payoﬀ (strictly) lower than the inspection costs K.4 The intuition behind
+this limited commitment constraint is that the principal cannot commit to inspections
+that yield her a negative continuation payoﬀ (i.e., the principal’s continuation payoﬀ must
+be positive at all times). The limited commitment constraint precludes that the principal
+inspects the project after failure is reported.”
+A more detailed description of the contracting environment and the underlying as-
+sumptions can be found in Appendix B.5 on page 56 where I write “A contract C =
+(α,β,τ M,T ) stipulates for any time t (before termination of ﬁnancing, i.e., before time
+τA∧T ), the agent’s pay for success αt, the agent’s pay for reported failure βt, and the
+next inspection dateτM
+t ≥t. That is, the principal inspects the project at (deterministic)
+time τM
+t if ﬁnancing is not terminated before time τM
+t ; if ﬁnancing is terminated before
+time τM
+t , the game ends at termination, and there are no more inspections. Besides, the
+contract stipulates a ﬁnancing deadline T .”
+Appendix B.5.1 on page 56 then discusses how inspections generate incentives for the
+agent. The principal’s optimization is then presented in Appendix B.5.2 on page 57. The
+subsequent Appendices B.5.3, B.5.4, B.5.5, and B.5.6 present the diﬀerent steps in the
+solution to the principal’s problem.
+The principal inspects or terminates the project (whichever is optimal) whenever w
+agent not to fake failure by inspecting the project after a failure report, which would make the principal’s
+inspection strategy complicated.
+4Formally, this limited constraint is as follows. Consider a potential inspection at time t, and let
+lims↑t s denote the time “just before” inspection. Then, lim s↑t qs is the principal’s belief (just before the
+inspection) that the project has failed. Let ˆFt denote the principal’s continuation payoﬀ if an inspection
+at time t yields that the project has not failed yet. Then, the limited commitment constraint states that
+the principal only inspects (can commit to inspect) the project at time t if (1− lims↑t qs) ˆFt≥ K, as the
+principal’s payoﬀ is zero when an inspection reveals failure.
+16
+
+===== PAGE 17 =====
+
+reaches zero. After an inspection yields that the project has not failed yet, the contract
+is “restarted” so that w is reset to w0 and the principal’s continuation payoﬀ becomes
+F0. As an inspection allows the principal to reset the state variable w, inspections play,
+mathematically, a similar role in the principal’s optimization as the possibility of costly
+replacement of the manager in DeMarzo and Sannikov (2006).
+Based on the analysis of Section 5, I derive additional empirical implications, such as
+the positive relation between VC monitoring and startup success (Bernstein et al. (2016)).
+This result is based on the fact that whenK >0 is suﬃciently small, the principal prefers
+an inspection over termination, and inspects the project at all times with w = 0, so that
+there is no ﬁnancing deadline and ﬁnancing is never terminated before completion.
+This result is discussed in the introduction on page 5 where I write “Our model
+also provides an explanation for the positive relationship between VC monitoring and
+startup success (Bernstein et al. (2016)): VCs who regularly inspect and monitor the
+startup are less likely to terminate ﬁnancing prematurely, thereby increasing the likelihood
+of eventual success.” Likewise, in the main text on page 34, I write “Our results also
+deliver an explanation for the positive relationship between VC monitoring and startup
+success (Bernstein et al. (2016)). VCs who regularly inspect and monitor the startup
+(e.g., because K is suﬃciently small) are less likely to terminate ﬁnancing prematurely,
+thereby increasing the likelihood of eventual success.”
+17
+
+===== PAGE 18 =====
+
+Other Comments
+8. To get the result that two diﬀerent ﬁnancing regions occur under the optimal contract,
+it is very important to have π >0, i.e., some public news about the failure of the project.
+However, the role of this assumption does not come across from the introduction or from
+the intuitive description of the optimality of unconditional ﬁnancing on page 16 of the main
+text. For example, all sentences in the ﬁrst paragraph of Section 2.3.2 hold regardless of
+π >0 or π = 0.
+In the revised version, I have done two things to address your comments. First, I
+highlight that π = 0 is a knife-edge case of my model. In particular, I write in the ﬁrst
+paragraph of page 7 “Unless otherwise mentioned, we consider that π∈ (0, 1); the knife-
+edge cases π = 0 and π = 1 serve as useful benchmarks in understanding the solution.”
+Second, in the last paragraph of page 21, I convey some intuition for why the case
+π = 0 is diﬀerent which is based on the analogy of the contracting problem at t = 0
+as a static adverse selection problem. In particular, I write “A full disclosure contract
+(i.e., t1 = 0) is optimal when π = 0. To get some intuition, suppose that nature draws
+at time t = 0 whether failure, if it occurs, is privately observed (with probability 1 −π)
+or publicly observed (with probability π); this draw is not known to principal and agent
+at t = 0. That is, with probability 1 −π, the principal faces an agent who “always”
+privately observes failure (if failure occurs) and, with probabilityπ, an agent who “never”
+privately observes failure (if failure occurs). A full disclosure contract requires to grant
+the agent very high rents W0 ex-ante at t = 0, irrespective of whether the agent ends up
+privately observing failure (i.e., irrespective of the agent type). However, with probability
+π, the principal faces an agent who does not privately observe failure (if it occurs) and
+so “overpays” this agent under a full disclosure contract, which renders the full disclosure
+contract ineﬃcient when π > 0. Conversely, when π = 0, the principal never overpays
+the agent under the full disclosure contract which is therefore optimal.”
+9. I think the extension in Section 4 is less interesting than the one in Section 5 and can
+be dropped. I ﬁnd it diﬃcult to relate the notion of a failed project later succeeding to the
+real world. In particular, it is unclear to me why unicorns must have low λ compared to
+non-unicorns.
+18
+
+===== PAGE 19 =====
+
+Thank you very much for your suggestion. I have followed your advice and removed
+Section 4 from the paper, also because the paper is already quite long and the ratio
+of insights to complications of formerly Section 4 was not great. I have also removed
+the corresponding paragraphs in the introduction and the corresponding sections in the
+Appendix.
+10. In Proposition 3, shouldn’t w0 maximize F∗(w0) instead of F (w0)?
+Thank you very much for reading the Proposition in detail and for (correctly) pointing
+out this typo. I have corrected this typo in the revised version.
+I want to thank you once again for your comments and feedback on my paper. I look
+forward to hearing from you.
+19
+
+===== PAGE 20 =====
+
+References
+Bengtsson, O. and B. A. Sensoy (2011). Investor abilities and ﬁnancial contracting:
+Evidence from venture capital. Journal of Financial Intermediation 20 (4), 477–502.
+Bengtsson, O. and B. A. Sensoy (2015). Changing the nexus: The evolution and renegotia-
+tion of venture capital contracts. Journal of Financial and Quantitative Analysis 50 (3),
+349–375.
+Bernstein, S., X. Giroud, and R. R. Townsend (2016). The impact of venture capital
+monitoring. The Journal of Finance 71 (4), 1591–1622.
+DeMarzo, P. M. and Y. Sannikov (2006). Optimal security design and dynamic capital
+structure in a continuous-time agency model.The Journal of Finance 61 (6), 2681–2724.
+Eisfeldt, A. L. and A. A. Rampini (2008). Managerial incentives, capital reallocation, and
+the business cycle. Journal of Financial Economics 87 (1), 177–199.
+Ewens, M., A. Gorbenko, and A. Korteweg (2021). Venture capital contracts. Journal of
+Financial Economics.
+Ewens, M., R. Nanda, and M. Rhodes-Kropf (2018). Cost of experimentation and the
+evolution of venture capital. Journal of Financial Economics 128 (3), 422–442.
+Ewens, M., R. Nanda, and C. T. Stanton (2020). The evolution of CEO compensation in
+venture capital backed startups. Working Paper .
+Inderst, R. and H. M. Mueller (2010). CEO replacement under private information. The
+Review of Financial Studies 23 (8), 2935–2969.
+Kaplan, S. N. and P. Str¨ omberg (2003). Financial contracting theory meets the real
+world: An empirical analysis of venture capital contracts. The review of economic
+studies 70 (2), 281–315.
+Levitt, S. D. and C. M. Snyder (1997). Is no news bad news? information transmission
+and the role of” early warning” in the principal-agent model. The RAND Journal of
+Economics, 641–661.
+20
+
+===== PAGE 21 =====
+
+Puri, M. and R. Zarutskie (2012). On the life cycle dynamics of venture-capital-and
+non-venture-capital-ﬁnanced ﬁrms. The Journal of Finance 67 (6), 2247–2293.
+Tian, X. and T. Y. Wang (2011). Tolerance for failure and corporate innovation. The
+Review of Financial Studies 27 (1), 211–255.
+Tian, X. and T. Y. Wang (2014). Tolerance for failure and corporate innovation. The
+Review of Financial Studies 27 (1), 211–255.
+Zhu, J. Y. (2012). Optimal contracts with shirking. Review of Economic Studies 80 (2),
+812–839.
+21

@@ -1,0 +1,1190 @@
+
+
+===== PAGE 1 =====
+
+Online Appendix to
+"What Keeps Stablecoins Stable?"
+(Not for publication)
+We provide a roadmap of each section of our Appendix.
+1. Appendix A provides a summary of the datasets used in the analysis. This includes a
+description of Tether issuance data used to construct our ﬂow measure, as well as price and
+transaction data.
+2. Appendix B provides a summary of transparency and governance measures undertaken by
+stablecoins.
+3. Appendix C provides statistics on Tether issuance on the Omni and Ethereum blockchains,
+including key wallets and concentration of ﬂows.
+4. Appendix D present results of our DiD speciﬁcation over a longer sample to control for the
+Covid pandemic.
+5. Appendix E presents an IV estimation to determine how much of the increase in peg eﬃciency
+is attributed to decentralized arbitrage.
+6. Appendix F presents additional data for other major dollar-backed stablecoins.
+7. Appendix G provides empirical evidence of fundamentals of stablecoin premiums and dis-
+counts.
+1
+
+===== PAGE 2 =====
+
+A Data
+We have four sources, each supporting a diﬀerent aspect of our analysis.
+1. Coinapi: Online subscription with access to open, high, low, close, and volume (OHLCV)
+trade data and order-book data from multiple crypto exchanges.
+2. Omniexplorer and Etherscan : Blockchain explorers that contain transaction data of
+individual wallets, used to obtain new issuance/redemptions of stablecoin tokens to compute
+ﬂows of these tokens to the secondary market.
+3. Cryptocompare: Price and trading volume data for currencies (based on a representative
+list of crypto exchanges).
+4. Coinmetrics: Provides fundamentals data on the network value, computing power of cryp-
+tocurrency mining, and number of unique addresses.
+Coinapi
+Coinapi oﬀers a monthly subscription with access to their data api, which gives historical
+cryptocurrency OHLCV, trade, and order-book data. We outline in Table A1 the speciﬁc trading
+pairs, coin symbols, and types of data that we employ. To use the api, we followed https:
+//github.com/coinapi/coinapi-sdk, which gives sample code for querying the api.1 The trade
+data are used to construct order-ﬂow data, as it has a boolean "taker_side_sell" variable that is
+a seller-initiated transaction if True, and buyer-initiated if False. Orderbook data for exchanges
+are also provided, useful for bid and ask prices. To construct bid-ask spreads, we take the highest
+bid and the lowest ask out of a set of 20 quotes for a speciﬁc time period, which gives us a lower
+bound for the eﬀective bid-ask spread at any given point in time.
+1Modiﬁcations were made to customize results; api requests are limited to 100,000 data points per day.
+2
+
+===== PAGE 3 =====
+
+Table A1: Coinapi Data
+Data Type Coin Symbol Exchange Sample Period
+OHLCV, Trade and Order-Book Data USDT_USD Kraken 04/17-03/20
+OHLCV, Trade and Order-Book Data USDT_USD Bitﬁnex 12/18-03/20
+OHLCV, Trade and Order-Book Data USDT_USD Bittrex 05/18-03/20
+OHLCV USDC_USD Kraken 01/20-03/20
+OHLCV PAX_USD Bittrex 01/19-03/20
+OHLCV BUSD_USD Binance 10/19-03/20
+OHLCV TUSD_USD Bittrex 06/18-03/20
+OHLCV DAI_USD Bitﬁnex 04/18-03/20
+Where multiple cryptocurrency exchanges oﬀer the same data, we choose 1 of 10 exchanges that
+do not have fraudulent trading activity according report ﬁled by the SEC.2 The report tests ex-
+changes for fraudulent activities (e.g., suspicious variability in bid-ask spreads, systematic patterns
+in histograms of transaction size) and ﬁnds that the exchanges listed in Table A2 do not have the
+telltale patterns in trading volume or spreads. We note that of the ten exchanges that do not have
+fraudulent trading activity, two do not oﬀer an onramp for trading national currencies, Binance
+and Poloniex. Similarly, two platforms, Itbit and Bitﬂyer, only accepted national currencies at the
+time the SEC report was written.
+2See https://www.sec.gov/comments/sr-nysearca-2019-01/srnysearca201901-5164833-183434.pdf .
+3
+
+===== PAGE 4 =====
+
+Table A2: Trusted Exchanges According to SEC Report
+Exchange National Currencies Stablecoins
+Binance N Y
+Bitﬁnex Y Y
+Bitstamp Y Y
+Bittrex Y Y
+Bitﬂyer Y N
+Coinbase Y Y
+Gemini Y Y
+Itbit Y N
+Kraken Y Y
+Poloniex N Y
+Omniexplorer and Etherscan
+We use this dataset to construct net ﬂows from the stablecoin issuer to the secondary market.
+The addresses of the issuers are listed in Table A4. We follow Wei (2018) in obtaining transactions
+of Tether grants (creation of new tokens) and revokes (redemptions) from the Omniexplorer api.
+3 Etherscan is an explorer of all transactions recorded on the Ethereum blockchain, available
+at https://etherscan.io/. This includes transactions for Tether and other national-currency-
+backed coins. The history of token grants and revokes is exportable to a data-readable format.
+For Etherscan, we ﬁrst need the contract address of each coin, which one can ﬁnd by searching
+the ticker ID of the coin (USDT, USDC, PAX and TUSD) in the search portal onhttps://
+etherscan.io/. The contract addresses are listed in Table A3. To construct stablecoin ﬂows from
+the Treasury to the secondary market, we use the Treasury addresses of four coins listed in Table
+A4. Using the following data, we measure net ﬂows in and out of the Treasury wallet, where we
+net "send" transfers of the stablecoin to the secondary market from "receive" transfers which are
+stablecoin redemptions.4 Subtracting net ﬂows into Treasury from the net of grants and revokes
+3Please refer tohttps://api.omniexplorer.info/ on how to obtain transaction histories.
+4New stablecoin tokens are created and destroyed through "grants" and "revokes". The address for creating
+4
+
+===== PAGE 5 =====
+
+of tokens gives a measure of total ﬂows to the secondary market.
+Table A3: Stablecoin Contract Addresses
+Coin Blockchain Contract Address
+USDT Etherscan 0xdac17f958d2ee523a2206206994597c13d831ec7
+USDC Etherscan 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+PAX Etherscan 0x8e870d67f660d95d5be530380d0ec0bd388289e1
+TUSD Etherscan 0x0000000000085d4780B73119b644AE5ecd22b376
+Table A4: Stablecoin Treasury Wallet Addresses
+Coin Blockchain Wallet Address
+USDT Omni Explorer 1NTMakcgVwQpMdGxRQnFKyb3G1FAJysSfz
+USDT Etherscan 0x5754284f345afc66a98fbb0a0afe71e0f007b949
+USDC Etherscan 0x55fe002aeﬀ02f77364de339a1292923a15844b8
+PAX Etherscan 0x5195427ca88df768c298721da791b93ad11eca65
+TUSD Etherscan N/A
+Cryptocompare
+Cryptocompare provides public access to price and volume data based on volume-weighted
+averages of price quotes and trades from 150 cryptocurrency exchanges, available via their api
+https://min-api.cryptocompare.com/.5 We use this resource to measure total traded volume
+in the Tether/USD and BTC/USD pairs. We also use cryptcompare to determine the daily closing
+price of non-stable cryptocurrencies BTC, ETH, XRP, BCH, and LTC.
+grants and revokes of tokens is0x0000000000000000000000000000000000000000 for USDC, PAX and TUSD. The
+address for grants and revokes of Tether tokens on Etherscan is0xc6cde7c39eb2f0f0095f41570af89efc2c1ea828, and
+on the Omni protocol there are two grant/revoke addresses,3MbYQMMmSkC3AgWkj9FMo5LsPTW1zBTwXLand
+32TLn1WLcu8LtfvweLzYUYU6ubc2YV9eZs. As we do not have a Treasury address for TUSD, all transactions
+can be derived from the grant/revoke address. In our analysis in Appendix F, we use coinmetrics which has a
+daily measure of total TUSD tokens in circulation.
+5For more detail on how quotes and traded volume are calculated, see:https://www.cryptocompare.com/media/
+27010937/cccagg_methodology_2018-02-26.pdf.
+5
+
+===== PAGE 6 =====
+
+B Transparency and Accountability Measures
+Tether publishes its balance sheet daily,6 which provides a breakdown of the value of its assets
+(dollar deposits) and liabilities (Tether in circulation on blockchain platforms). While Tether
+liabilities are accounted for based on the record of transactions on the blockchain, there is a need
+to audit issuers to verify that the holdings of dollar deposits are secure. For full solvency, the dollar
+value of assets held in the issuer’s accounts must at least equal the dollar value of its liabilities.
+Audit reports for these top coins assert that they are suﬃciently collateralized.
+Tether Inc. acknowledges in its white paper that there are potential problems with the security
+of its dollar deposits. It lists the following ﬁve points (Tetherinc., 2016):
+1. We (Tether Inc.) could go bankrupt
+2. Our bank could go insolvent
+3. Our bank could freeze or conﬁscate the funds
+4. We could abscond with the reserve funds
+5. Recentralization of risk to a single point of failure
+Of the following points, Tether claims dollar deposits are still redeemable if Tether Inc. goes
+bankrupt or becomes insolvent. For the third and fourth point, they state that their bank is
+familiar with holding cryptocurrency deposits, and that absconding with funds is unlikely due to
+its public charter. The ﬁfth point is the biggest issue with Tether: While Tether in circulation
+uses a decentralized system of exchange by being on the blockchain, all dollar deposits are held
+in a centralized issuer. There is settlement risk if the dollar deposits are vulnerable to attack
+from an outside party. One way for Tether to mitigate the central point of failure is by having
+suﬃcient reserves in its balance sheet. This point is tackled diﬀerently by newer stablecoins, e.g.,
+Paxos, which has FDIC-insured deposits, and USDC tokens via decentralization of the issuer with
+6See https://wallet.tether.to/transparencyformoredetails.
+6
+
+===== PAGE 7 =====
+
+multiple licenses to create tokens, and ﬁnally by protecting counterparty risk through the use of
+escrow accounts.
+The main transparency measure undertaken by Tether is the publication of its daily balance
+sheet. As stated in the Tether White Paper (Tetherinc., 2016), Tether follows a "proof of reserves"
+process in which they account for all liabilities (Tether in circulation) on the blockchain. This
+includes all platforms Tether currently trades on, the three main platforms being Omni explorer,
+Ethereum, and Tron according to its balance sheet in April, 2020. Every Tether in circulation
+is backed, in principle, by a dollar deposit. Tether Inc. releases a daily balance sheet reporting
+their total dollar deposits. For example, on April 2nd, 2020, their balance sheet, according to
+https://wallet.tether.to/transparency, says the Total Assets, which is the bank deposits, is
+equal to$6,480,678,611.74, and totalTetherin circulationis givenby $6,349,160,932.47. The excess
+of assets over liabilities is $131,517,679.27. As a percentage of total assets, that is approximately
+2%. We note that this matches very roughly what a risk-free rate would yield annually on ﬁxed-
+income instruments.7
+Audit Reports
+Similar to Tether, we have monthly auditing reports for TrueUSD and USDC that are managed
+by accounting ﬁrms Cohen & Co and Grant Thornton respectively. For example, a typical audit
+report on TrueUSD, from the December 2019 statement, states the following:"The issued and
+collateralized TrueUSD...do not exceed the balance of the escrow accounts reported above. The
+supply of TUSD tokens can be reconciled to transactions within the escrow accounts...".Similarly,
+a statement on USDC’s accounting ﬁrm Grant Thornton, December 2019 statement, asserts the
+following: "USD Coin (USDC) tokens issued and outstanding = $519,628,995 USDC US Dollars
+held in custody accounts = $520,537,729...the issued and outstanding USDC tokens do not exceed
+the balance of the US Dollars held in custody accounts."Statements conﬁrm that total assets
+exceed total liabilities and that the stablecoins are at least 100% collateralized.
+7While not explicit about their interest-bearing assets, the following article documents that Tether does earn interest
+on its dollar deposits:https://cryptobriefing.com/tether-interest-stablecoins/.
+7
+
+===== PAGE 8 =====
+
+C Tether Treasury Flows on Omni and Ethereum
+In this section, we document in more detail speciﬁc wallet addresses that transact with the
+Tether Treasury on the Omni and Ethereum blockchains. Here is a summary of our analysis.
+1. On the Omni blockchain, the main address transacting with the Tether Treasury is the
+Bitﬁnex exchange. Nearly all Tether (up to 90%) in circulation was channelled from the
+Treasury to Bitﬁnex in 2017 and 2018.
+2. The Ethereum blockchain, in contrast, is much less concentrated, with a total number of 172
+unique addresses transacting with the Treasury versus 71 on the Omni blockchain.
+3. On the Ethereum blockchain, we ﬁnd a shift in net ﬂows from the Treasury toward other
+exchanges. For example, the Binance exchange is the largest recipient of net ﬂows from the
+Treasury on the Ethereum blockchain in the sample (January 2019-March 2020).
+Treasury Transactions on Omni Blockchain
+We have the entire history of Tether Treasury transactions on the Omni layer. Using the
+columns of "reference address" and "sending address" (where the sending address is transferring
+Tether tokens to the "reference address") we can construct a measure of net ﬂows from the Treasury
+to each individual address. This provides a measure of bilateral ﬂows from the Treasury to each
+investor.8
+Over the entire sample (November 2017-March 2020), we record total net ﬂows of Tether to each
+wallet address. We observe 71 unique addresses transacting with the Tether Treasury, Tables A5
+and A6 record the largest positive and negative net ﬂows respectively on the Omni blockchain. The
+key address transacting with the Omni layer is the Bitﬁnex exchange. While it only accounts for
+26% of total positive net ﬂows during the entire sample, prior to 2019 Bitﬁnex was the dominant
+8The ﬂows we report do not yield the ﬁnal distribution of Tether holdings by each investor. For example, an investor
+that transacts with the Treasury may then distribute all of its tokens to other exchanges. Our focus on investor
+transactions with the Treasury is to identify the extent to which direct arbitrage with the Treasury matters for
+peg eﬃciency and stability.
+8
+
+===== PAGE 9 =====
+
+address. For example, if we restrict our sample to the end of 2018, we observe only 11 unique
+addresses transacting with the Treasury, and Bitﬁnex accounted for 83% of outgoing ﬂows from
+the Treasury during that period. In Figure A1 we plot the cumulative bilateral ﬂows with respect
+to Bitﬁnex, and classify all other addresses as "Other Investors." We ﬁnd that nearly all outgoing
+ﬂows from the Treasury were distributed via Bitﬁnex until 2019. This is indicative of Tether
+distribution that begins with dollar deposits ﬁrst deposited with Bitﬁnex, which then proceeds to
+distribute tokens to other exchanges for trading in the secondary market.
+Figure A1: Decomposing Flows to the Secondary Market via Bitﬁnex on the Omni Blockchain.
+2018-012018-042018-072018-102019-012019-042019-072019-102020-012020-04
+Date
+0.00
+0.25
+0.50
+0.75
+1.00
+1.25
+1.50
+1.75
+2.00amount (Billions USD)
+Decomposing Secondary Market Flows
+Bitfinex
+Other Investors
+Note: Decomposes net ﬂows to the secondary market from the Tether Treasury to private wallets on the Omni
+blockchain. Sample is November 2017 through March 31st, 2020. Up to the end of 2018, nearly all ﬂows to the
+secondary market are to the exchange Bitﬁnex. In 2019 we see a shift in composition toward non-Bitﬁnex wallet
+addresses on the Omni Blockchain.
+9
+
+===== PAGE 10 =====
+
+Table A5: Omni Explorer: Breakdown of Treasury Net Flows
+Address Net Flow (Tether) Share Cumulative Share Identity
+1KYiKJEfdJtap9QX2v9BXJMpz2SfU4pgZw 4.85E+08 0.260 0.260 Bitﬁnex
+3LCx3zGC9wsaF5iLDg8do6TdwfJ9yCcwMn 2.11E+08 0.113 0.374
+1GjgKbj69hDB7YPQF9KwPEy274jLzBKVLh 2.00E+08 0.107 0.481
+16pj8cny6Doga428ZNKuz5eXBikLYf7YD1 1.08E+08 0.058 0.539
+16hvRK9Y7dUhzehy3nMHRfVGPq3vqKR33K 8.02E+07 0.043 0.582
+1GrZG61AoHVn8UZcHiX2gJgAkajRaTo1C3 7.07E+07 0.038 0.620
+1Kqn34iJnzTamYRV2ie2qsD1WEAy6BBhvF 6.79E+07 0.037 0.657
+3D2GQZ741GUiJebeTG2pyWQzHtuK6R9VS9 5.49E+07 0.030 0.686
+1KiJkugknjgW6AHXNgVQgNuo3b5DqsVFmk 5.21E+07 0.028 0.714
+1C9J4C8JwB4q7L97Uyqvo12Wo9xFoZ5aAC 4.70E+07 0.025 0.740
+Note: Table reports top-10 positive net ﬂows of Tether to recipients. A positive net ﬂow is deﬁned as a net
+ﬂow of Tether to the recipient address. Shares are calculated based on positive net ﬂows only. Dataset records
+all trades between the Tether Treasury and private wallet addresses on Omniexplorer. We omit Tether grants
+(issuer) addresses in the list of recipients. Sample from November 2017 to March 31st, 2020. Identity of recipients
+is noted based on publicly available information on Omniexplorer and the Tether rich list, available athttps:
+//wallet.tether.to/richlist .
+Table A6: Omni Explorer: Breakdown of Treasury Negative Net Flows
+Address Net Flow (Tether) Share Cumulative Share Identity
+1FoWyxwPXuj4C6abqwhjDWdz6D4PZgYRjA -1.00E+09 7.36E-01 0.736 Binance
+13TMLJdKgCnQLiv4Bx65DqpKvgnC2pdLLC -1.34E+08 9.83E-02 0.834
+1RUBt5inB17W7kjg5ceRhLQa9GgrRtuXt -1.00E+08 7.35E-02 0.908
+1DUb2YYbQA1jjaNYzVXLZ7ZioEhLXtbUru -6.98E+07 5.13E-02 0.959
+1Po1oWkD2LmodfkBYiAktwh76vkF93LKnh -3.70E+07 2.72E-02 0.986 Poloniex
+15bQJVbQPsScK4mkjR7Pk2xt6guT2VTLEJ -1.00E+07 7.35E-03 0.994
+1PktPwDM1h85GW4ab7Xgv83TALXJ71rXLt -5.00E+06 3.67E-03 0.997
+3GyeFJmQynJWd8DeACm4cdEnZcckAtrfcN -2.20E+06 1.62E-03 0.999 Kraken
+33DunQKkUsvLr4GBTAtAj3KKYueyxeCYLR -9.60E+05 7.05E-04 0.9995
+1zgmvYi5x1wy3hUh7AjKgpcVgpA8Lj9FA -4.00E+05 2.94E-04 0.9998
+Note: Table reports top-10 negative net ﬂows of Tether to recipients. Shares are calculated based on negative net
+ﬂows only. Dataset records all trades between the Tether Treasury and private wallet addresses on Omniexplorer.
+We omit Tether grants (issuer) addresses in list of recipients. Sample from November 2017 to March 31st, 2020.
+Identity of recipients is noted based on publicly available information on Omniexplorer and the Tether rich list,
+available athttps://wallet.tether.to/richlist.
+10
+
+===== PAGE 11 =====
+
+Chain Swaps
+WenotetherearesomeaddressesthathavenetnegativeﬂowsofTetherontheOmniblockchain,
+i.e., Tether redemptions. The largest negative net ﬂow recorded is with the Binance exchange, with
+a total of approximately $1 billion worth of Tether redemptions. Many of the transactions between
+the Binance exchange and the Tether Treasury on Omni explorer can be explained as chain swaps.
+This is a special type of transaction that moves a cryptocurrency from one blockchain to
+another.9 In this case, many of the redemptions we see on the Omni blockchain are actually
+chain swaps; the Binance exchange is eﬀectively transferring its Tether tokens to the Ethereum
+blockchain.10 The two legs of the chain swap are:
+1. On the Omni blockchain, Binance will redeem all Tether tokens, and Tether will burn these
+tokens, reducing the Tether supply.
+2. The redemptions of Tether are directly oﬀset by the Tether Treasury on the Ethereum
+blockchain sending tokens to Binance’s address on the Ethereum blockchain.
+The chain swap is neutral with respect to Tether supply. We identify the following chain-swap
+events based on public announcements by Tether, and record them in Table A7.
+9For more information on chain swaps, seehttps://tether.to/explained-chain-swaps/.
+10Motivation for chain swaps is driven by rebalancing of Tether across blockchains based on client demands. For
+example, if there is a larger network of clients on the Ethereum blockchain, cryptocurrency exchanges have an
+incentive to chain swap Tether from Omni to Ethereum in order to meet client demands on Ethereum.
+11
+
+===== PAGE 12 =====
+
+Table A7: Chain Swaps of Tether from the Omni to the Ethereum Blockchain
+Exchange Date Amount (million Tether) Blockchain (Redemptions) Blockchain (Creation)
+Bittrex August 5th, 2019 275 Omni Ethereum
+Binance September 12th, 2019 300 Omni Ethereum
+Binance October 29th, 2019 300 Omni Ethereum
+Binance December 9th, 2019 200 Omni Ethereum
+Binance February 20th, 2020 300 Tron Ethereum
+Binance March 4th, 2020 200 Omni Ethereum
+Note: Table records all chain swaps from the Omni to the Ethereum blockchain. Public announcements are
+from Tether’s tweets pagehttps://twitter.com/Tether_to/. Sample from November 2017 to March 31st, 2020.
+Blockchain redemptions refers to the burning of Tether tokens, and represents a ﬂow of Tether from the exchange to
+the Tether Treasury. Blockchain (creation) refers to an outgoing ﬂow of Tether from the Treasury to the exchange
+on the new blockchain.
+Ethereum Blockchain
+Trades on the Ethereum blockchain are recorded on Etherscan, a block explorer and analyt-
+ics platform for Ethereum. The block explorer data is of a similar format to Omni, with the
+"reference address" and "sending address" named "To" and "From" respectively. We aggregate
+net bilateral ﬂows from the Treasury to each investor in our sample on Etherscan, which dates
+from January 2019 through March 31st, 2020. We ﬁnd 172 unique addresses transacting with the
+Tether Treasury on Etherscan during our sample from January 2019 to March 31st, 2020. Based
+on Table A8, the largest positive cumulative ﬂow to a single address is identiﬁed as belonging to
+the Binance exchange. The top-10 addresses account for up to 60% of the total positive net ﬂows
+on the Ethereum blockchain. This drives home our point that on the Ethereum blockchain a larger
+set of investors are accessing the Treasury directly. In contrast, Bitﬁnex, which had a monopoly
+on distribution on the Omni layer, has negative ﬂows with respect to the Tether Treasury. For two
+identiﬁed Bitﬁnex addresses, we observe negative net ﬂows during our sample period, suggesting
+Bitﬁnex is burning tokens on the Ethereum network (Table A9). In our dataset, a large number of
+users transacting with the Treasury remain "unnamed" and the addresses therefore unidentiﬁed.
+A possible concern with our analysis is that the same decision-maker may hold multiple wallet
+12
+
+===== PAGE 13 =====
+
+addresses. This would violate our interpretation of a one-to-one mapping from unique addresses
+to unique investors transacting with the Treasury. But the one-to-one interpretation is not nec-
+essary for our analysis. Rather, what we have shown is that access to the Treasury was indeed
+democratized on the Ethereum blockchain, with multiple exchanges being able to deposit dollars
+directly with the Treasury and in fact doing so. As we discuss in the paper, reasons for Tether hav-
+ing migrated to the Ethereum blockchain and increasing access to arbitrage include: (i) eﬃciency
+in deposit/withdrawal process, (ii) arbitrage that is higher frequency, and (iii) increased network
+eﬀects, with a larger client base and more tokens using the Ethereum blockchain.
+Table A8: Ethereum Blockchain: Breakdown of Treasury Positive Net Flows
+Address Net Flow (Tether) Share Cumulative Share Identity
+0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be 8.00E+08 0.161 0.161 Binance
+0xf44e17140b4c32ef1e9fab15cbcb14074bd832ee 5.00E+08 0.100 0.261
+0x0c7719f1d7ed41271cbba92ec153afa6610228f8 4.73E+08 0.095 0.356
+0x8bb00060531339d1bb24b804c2f1dd5ea84f6857 4.50E+08 0.090 0.447
+0xb1fa690155821bf9191d609593b556048aca517c 1.58E+08 0.032 0.478
+0xf2103b01cd7957f3a9d9726bbb74c0ccd3f355d3 1.55E+08 0.031 0.509
+0xeeb832aa50517d87a58926437b1a3fcfbdae8f6c 1.46E+08 0.029 0.539
+0xe0507a0e9fa4885a9c470567a342281627cdc7be 1.40E+08 0.028 0.567
+0x2db8a54c3d3b16146efaf7b9a776d94e259c8d80 1.37E+08 0.028 0.594
+0x3bfc9abd438306bb2830ae3fac0ad10348a2242c 1.32E+08 0.027 0.621
+Note: Table reports top-10 positive net ﬂows of Tether to recipients. Data include all trades between the Tether
+Treasury and private investors. We omit Tether grants (issuer) addresses in the list of recipients. Sample from
+January 2019 to March 31st, 2020. Identity of recipients is provided where possible based on publicly available
+information in the Etherscan database.
+13
+
+===== PAGE 14 =====
+
+Table A9: Ethereum Blockchain: Breakdown of Treasury Negative Net Flows
+Address Net Flow (Tether) Share Cumulative Share Identity
+0x742d35cc6634c0532925a3b844bc454e4438f44e -3.84E+08 0.501 0.501 Bitﬁnex 2
+0x876eabf441b2ee5b5b0554fd502a8e0600950cfa -3.03E+08 0.396 0.898 Bitﬁnex 3
+0xa910f92acdaf488fa6ef02174fb86208ad7722ba -6.85E+07 0.089 0.987 Poloniex
+0x0eebbb51cdee449fcfa9ed497c028a6f6080d962 -6.94E+06 0.009 0.996
+0x955cc527a36f125f367078db8b064f1b60df549f -1.56E+06 0.002 0.998
+0xf9b4b3ad5ae1325579660959a39be343c4135027 -7.44E+05 0.001 0.999
+0xﬀec0067f5a79cﬀ07527f63d83dd5462ccf8ba4 -5.00E+05 0.001 1.000 Nexo
+Note: Table reports top-10 negative net ﬂows of Tether to recipients. Data include all trades between the Tether
+Treasury and private investors. We omit Tether grants (issuer) addresses in list of recipients. Sample from January
+2019 to March 31st, 2020. Identity of recipients is provided where possible based on publicly available information
+in the Etherscan database.
+14
+
+===== PAGE 15 =====
+
+D DiD speciﬁcation: Controlling for Covid pandemic
+In this section we show our DiD results are robust to a longer sample that includes the Covid
+pandemic. Our sample is now extended to December 31st, 2021.11 Using this longer sample, we
+repeat the DiD speciﬁcation in equation (1). The coeﬃcientδ measures the net impact of the
+structural change on Tether net of any trends observed in the control group. The results are
+summarized in Table A10.
+Yt =α0 +αi
+∑
+i∈P AX,T U SD
+1 i +βTi +γpostt +δpostt×Ti +controlst +ut (1)
+Our results are robust to the longer sample. The results of the balanced panel are in columns
+(V) and (VI). We still ﬁnd a statistically signiﬁcant diﬀerence-in-diﬀerence coeﬃcient of -33.9 basis
+points for peg-price deviations and -35.1 basis-points for intra-day volatility. In columns (VII) and
+(VIII), we control for the Covid sample withpostQ12020, a dummy variable that takes a value of
+1 for April 1st, 2020 to December 31st, 2021. Controlling for the pandemic, our DiD coeﬃcients
+remain signiﬁcant, with a coeﬃcient of -28.6 basis points for peg-price deviations and -23.6 basis
+points for intra-day volatility. A fraction of the eﬃciency gains are absorbed by the interaction
+of postQ12020 with treatment. During the postQ12020 there is a relative eﬃciency gain of -8.1
+basis points for peg-price deviations and -17.7 basis points for intra-day volatility relative to the
+control group. However, we ﬁnd the majority of the eﬃciency gain in Tether peg-prices happen
+prior to the Covid pandemic, consistent with our narrative of increased arbitrage access leading to
+eﬃciency gains as Tether is issued on the Ethereum blockchain.
+We repeat our two robustness tests on the diﬀerence-in-diﬀerence speciﬁcation using the longer
+sample. First, we test whether the reported regressions are sensitive to the choice of the migration
+date. In Figure A2, we perform a sensitivity analysis of the date of structural change by recording
+the diﬀerence-in-diﬀerence coeﬃcients for alternative structural change dates. The presence of a
+11The results in the main body of the paper are based on a sample to March 31st, 2020.
+15
+
+===== PAGE 16 =====
+
+treatment eﬀect is robust to alternative dates: the peak treatment eﬀect of -38 basis points occurs
+on May 8th, approximately a month after the structural change date of the baseline speciﬁcation.
+In particular, the DiD coeﬃcients get smaller as the structural change date is extended to the post
+Covid sample–again reinforcing the result that the increase in peg eﬃciency occurred in 2019.
+Finally, werepeatthespeciﬁcationforthedynamictrendinthepostperiodinequation(2). The
+diﬀerence-in-diﬀerence coeﬃcientδ traces the net eﬀect of structural change across each quarter in
+the balanced sample, from 2019Q1 to 2021Q4. By tracing the net impact across quarters, we test
+the hypothesis that the structural change is not a step function, but reﬂects a gradual increase in
+arbitrage access.
+Yt =α0 +αi
+∑
+i∈P AX,T U SD
+1 i +βTi +γpostt +
+Q∑
+q=1
+δqQt+q×Ti +ut (2)
+Figure A3 plots the diﬀerence-in-diﬀerence coeﬃcients. Peg price-deviations relative to the
+control group is given by the coeﬃcients of interest for each quarter interacted with the dummy
+for Tether. The coeﬃcients document a trend increase in Tether eﬃciency. Tether peg-price
+deviations in 2019Q1 and 2019Q2 are 27.9 and 29.3 basis points higher relative to the control
+group. In contrast, Tether peg-price deviations decline relative to control group stablecoins from
+2019Q3 to 2021Q4. Intra-day volatility follows a similar qualitative pattern in eﬃciency. The
+results are consistent with agradual increase in peg eﬃciency, with Tether migration to Ethereum
+occurring over a period of months following the date of structural change.
+16
+
+===== PAGE 17 =====
+
+Table A10: Tests of a structural break in Tether issuance: eﬀects of a migration to the Ethereum blockchain in 2019 on the
+size and volatility of Tether peg deviations
+I II III IV V VI VII VIII
+|pt−1| σt |pt−1| σt |pt−1| σt |pt−1| σt
+post -47.26*** -56.06*** -19.82*** -26.11*** -5.48*** -2.69 -0.98 1.69
+(3.25) (2.35) (3.23) (3.83) (1.36) (2.96) (1.84) (3.35)
+T 27.54*** 13.88*** 28.61*** 13.49*** 28.61*** 13.48***
+(2.85) (2.62) (3.29) (1.80) (3.29) (1.80)
+post×T -28.81*** -30.38*** -33.88*** -35.06*** -28.57*** -23.57***
+(4.54) (4.55) (4.54) (3.37) (4.83) (3.88)
+postQ12020 -7.23*** -7.07***
+(1.46) (2.59)
+postQ12020×T -8.07*** -17.72***
+(1.91) (2.91)
+1 P AX 1.65 16.39*** -1.35 12.95*** -1.50 12.79***
+(1.79) (2.42) (1.37) (2.03) (1.38) (2.04)
+1 T U SD -3.4779* 4.08* -8.28*** -2.23 -8.17*** -2.13
+(2.01) (2.15) (1.33) (1.69) (1.33) (1.69)
+RBT C 0.003 -0.0003 0.0010 0.0001 0.0002 -0.0012 -0.0001 -0.0016
+(0.0028) (0.0027) (0.0017) (0.0019) (0.0010) (0.0018) (0.0010) (0.0017)
+σBT C 0.04*** 0.10*** 0.02*** 0.0914*** 0.011*** 0.07*** 0.01*** 0.07***
+(0.008) (0.009) (0.005) (0.006) (0.003) (0.006) (0.003) (0.006)
+R-squared 0.21 0.48 0.17 0.28 0.09 0.19 0.14 0.21
+No. observations 1597 1597 3753 3753 3045 3045 3045 3045
+Sample Full Full Full Full Balanced Balanced Balanced Balanced
+Note: Table presents regressions of the absolute level and volatility of deviations of the peg. The absolute level of deviations is denoted by|pt− 1|,
+and σt is calculated based on a measure of intra-day volatility of the price, both measured in basis points. The post dummyPost t takes a value
+of 1 from April 9th, 2019. The Treatment dummyT takes a value of 1 for USDT, and 0 otherwise. postQ12020 takes a value of 1 from April
+1st, 2020. Control group currencies include TrueUSD, Paxos.σBT C is the intra-day volatility of the BTC/USDT price sourced from the Binance
+exchange, measured in basis points.RBT C is daily BTC/USDT returns sourced from Cryptocompare, measured in basis points. Full sample for
+columns (I) through to (IV) is April 1st, 2017 to December 31st, 2021. Balanced panel for columns (V) through to (VIII) is from January 10th
+2019 to December 31st 2021. Price data for currencies obtained from coinapi, and use closing prices from exchanges Kraken, Bitﬁnex, and Bittrex.
+White heteroscedasticity robust standard errors are used in estimation. *** denotes signiﬁcance at the 1 percent level, ** at the 5 percent level,
+and * at the 10 percent level.
+17
+
+===== PAGE 18 =====
+
+Figure A2: Sensitivity Analysis of Diﬀerence-in-Diﬀerence Coeﬃcients to a Change in the Struc-
+tural Date
+2019-052019-092020-012020-052020-092021-012021-052021-092022-01
+Structural Change Date
+50
+40
+30
+20
+10
+0
+DiD Coefficient
+Sensitivity Analysis to Structural Date: |p-1|
+2019-052019-092020-012020-052020-092021-012021-052021-092022-01
+Structural Change Date
+50
+40
+30
+20
+10
+0
+10
+20
+DiD Coefficient
+Sensitivity Analysis to Structural Date: volatility
+Note: This ﬁgure shows the diﬀerence-in-diﬀerence coeﬃcientδ of the following design: |pt− 1| = βtPost t +
+δtPost t×Tt by changing the structural change datePost t. The outcome variable measures the absolute level of
+peg deviations on the left panel, and intra-day volatility of peg price deviations on the right panel. The treatment
+currency is Tether (USDT), and control group currencies are TrueUSD (TUSD) and Paxos (PAX). The red dotted
+line indicates the structural change date of April 9th used in the baseline speciﬁcation. White heteroscedasticity-
+robust standard error bands are reported at a 5% signiﬁcance level. The sample is January 10th, 2019 to December
+31st, 2021.
+Figure A3: Diﬀerence-in-diﬀerence coeﬃcients for dynamic panel speciﬁcation
+Q12019T
+Q22019T
+Q32019T
+Q42019T
+Q12020T
+Q22020T
+Q32020T
+Q42020T
+Q12021T
+Q22021T
+Q32021T
+Q42021T
+10
+0
+10
+20
+30
+Coefficients
+DiD Coefficients: |p-1|
+Q12019T
+Q22019T
+Q32019T
+Q42019T
+Q12020T
+Q22020T
+Q32020T
+Q42020T
+Q12021T
+Q22021T
+Q32021T
+Q42021T
+40
+20
+0
+20
+40
+Coefficients
+DiD Coefficients: Volatility
+Note: Figure presents coeﬃcients for a dynamic diﬀerence-in-diﬀerence speciﬁcation with the absolute level of peg-
+price deviations (left) and intra-day volatility (right). Coeﬃcients measure the eﬀect of the treatment interacted
+with each quarter. Price data for USDT consolidates trade data from three trusted exchanges: Bitﬁnex, Bittrex,
+and Kraken. Price data for the control group of stablecoins comes from Bittrex. Sample is January 10th, 2019
+through December 31st, 2021. White heteroscedasticity-robust standard-error bars are plotted to construct a 95
+percent conﬁdence interval around coeﬃcient estimates.
+18
+
+===== PAGE 19 =====
+
+E Decentralized Arbitrage and Peg Eﬃciency: IV approach
+The diﬀerence-in-diﬀerence test controls for factors that apply to all stablecoins, such as an
+increase in liquidity across all exchanges, or common network eﬀects. The test is limited in dealing
+with confounding factors that are Tether speciﬁc. For example, an increase in peg eﬃciency during
+the post-migration period may have occurred due to idiosyncratic shocks to Tether, such as an
+announcement on Tether audits, or by aﬀecting expectations of Tether credibility. An instrumental
+variables speciﬁcation that addresses Tether-speciﬁc confounding factors is stated in equations (3)
+and (4). Equation (3) is our ﬁrst stage, and regresses the daily number of addresses transacting
+with the Treasury,NU SDT,T,t, on the proposed instrumentNIV . The instrument measures the daily
+total number of addresses transacting with a set of national-currency backed stablecoins, USDC,
+Paxos, and TrueUSD that operate on the Ethereum blockchain. In the second stage, we regress
+peg eﬃciency outcomeYt on the instrumented number of addresses of the Tether Treasury as the
+explanatory variable of interest. The coeﬃcientβIV measures a plausibly exogenous increase in
+investor access attributed to increased users on the Ethereum network employing stablecoins as a
+vehicle to satisfy increased transactional demand.
+NU SDT,T,t =α1 +β1NIV,t +ϵU SDT,t (3)
+Yt =α2 +βIV ˆNU SDT,T,t +et (4)
+The two identifying assumptions needed are instrument relevance and exclusion listed in equa-
+tions (5) and (6) respectively. Instrument relevance is satisﬁed due to common network eﬀects:
+an increase in the value of the Ethereum network, or increased demand for ERC-20 tokens, will
+drive an increase in the number of holders using all stablecoins. Therefore we expect an increase
+in users of Tether on the Ethereum network to be correlated with an increase in users holding
+other stablecoins. A scatterplot of total users of Tether and other stablecoins in the left panel of
+Figure A4 conﬁrms our hypothesis that demand for stablecoins has a common factor. The right
+panel of Figure A4 plots the number of addresses transacting with the Tether Treasury against
+19
+
+===== PAGE 20 =====
+
+our proposed instrument. The exclusion restriction states that the number of users holding a set
+of other stablecoins on the Ethereum network are plausibly exogenous to idiosyncratic shocks to
+the Tether peg, which we deﬁne accordingly asϵU SDT. Therefore, the identifying assumption is
+that the instrument leads to an increase in the number of addresses transacting with the Tether
+Treasury only through a channel of common network eﬀects on the Ethereum blockchain.
+cov(NU SDT,T,N IV )̸= 0 (5)
+cov(NIV,ϵ U SDT ) = 0 (6)
+We now test whether the absolute level and volatility of peg deviations are directly impacted
+by the number of unique addresses transacting with the Treasury,NU SDT,T in the columns (I)
+and (II) of Table A11. The reduced form estimates suggest a 1-unit increase in investor addresses
+transacting with the Treasury leads to a decline in peg deviations by 3.1 basis points, and a decline
+in volatility of peg deviations by 5.4 basis points.12
+TheresultsofourIVspeciﬁcationaredocumentedincolumns(III)throughto(V)ofTableA11.
+We ﬁrst test instrument relevance in the ﬁrst stage in column (III). A unit increase in the number
+of addresses holding control group stablecoins predicts a 0.0009 increase in the number of addresses
+transacting with the Tether Treasury. A partial F statistic of 178.53 indicates a suﬃciently strong
+instrument for the ﬁrst stage. In columns (IV) and (V), we present the second-stage results on
+the eﬀect of the instrumented number of Treasury addresses on peg-price deviations and volatility.
+A unit increase in the number of addresses transacting with the Treasury leads to decline in the
+absolute size of peg deviations of 9.2 basis points, and a decline in the intra-day volatility of peg
+deviations of 15.4 basis points. Based on our estimates, we can compute how much of the increase
+in peg eﬃciency from the introduction of the Ethereum blockchain is due to direct arbitrage. The
+12We do not mean to suggest a 1:1 mapping from each unique wallet address to a unique investor. This may
+overstate the number of unique investors transacting with the Treasury if, for example, a single investor holds
+multiple unnamed wallet addresses. We provide the full extent of our information on the identity of wallets
+transacting with the Tether Treasury in Appendix C. While we note the Ethereum network has a signiﬁcant
+number of unnamed wallets, we ﬁnd an increased presence of multiple cryptocurrency exchanges transacting with
+the Treasury on the Ethereum blockchain.
+20
+
+===== PAGE 21 =====
+
+Ethereum blockchain has an average of 4.0 addresses transacting daily, versus the Omni layer
+which averaged 1.4 addresses per day. The net decline in the absolute size of deviations due to
+direct arbitrage is then9.2× 2.6≈ 24 basis points. Given an eﬃciency gain of approximately 37
+basis points from the Omni to Ethereum blockchain as estimated in the main body of the paper,
+approximately two thirds of the eﬃciency gain is attributed to direct arbitrage access.
+21
+
+===== PAGE 22 =====
+
+Figure A4: Instrument Test: scatter plot of the number of daily addresses transacting with the
+Tether Treasury with the total number of wallets holding a control group of stablecoins
+0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75
+Number of Addresses- Control Group 1e4
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2Number of Addresses- Tether Network
+1e5 Common Network Effects
+0
+2500 5000 7500 10000 12500 15000 17500
+Number of Addresses- Control Group
+0
+5
+10
+15
+20
+25
+30Number of Addresses- Tether Treasury
+IV- First Stage
+Note: Figure presents a scatter plot of the daily total users of Tether (left) and the number of unique addresses
+transacting with the Tether Treasury (right) against the corresponding number of addresses that hold a control
+group of stablecoins USDC, Paxos, and TrueUSD. The total number of addresses using each stablecoin are given by
+theNetwork variable available on Coinmetrics. The number of addresses transacting with the Treasury is calculated
+using the history of Tether transactions available via the Omni, Ethereum, and Tron blockchains. Sample period is
+April 1st, 2017 to March 31st, 2020.
+22
+
+===== PAGE 23 =====
+
+Table A11: Eﬀects of the number of unique addresses transacting with the Tether Treasury on the
+size and volatility of Tether peg deviations
+I II III IV V
+|pt− 1| σt NU SDT,T |pt− 1| σt
+N -3.07*** -5.36*** -9.17*** -15.41***
+(0.53) (0.88) (1.40) (2.26)
+NIV 0.0009***
+(0.0001)
+R-squared 0.01 0.02 0.42
+No. observations 1093 1093 1093 1093 1093
+IV First Stage No No Yes No No
+IV Second Stage No No No Yes Yes
+Note: Table presents regressions of the absolute level and volatility of deviations of the peg. The absolute level
+of deviations is denoted by|pt− 1|, and σt is calculated based on a measure of intra-day volatility of the price,
+both measured in basis points. NU SDT,T measures the daily number of unique addresses transacting with the
+Tether Treasury on the blockchain platforms of Omni, Ethereum, and Tron.NIV measures the total number of
+addresses transacting with a control group of stablecoins, USDC, Paxos, and TrueUSD. In columns (III) and (IV)
+we instrumentNU SDT,T with the daily number of addresses transacting with a set of control group stablecoins,
+USDC, Paxos, and TrueUSD. Sample is April 1st, 2017 to March 31st, 2020. Price data for currencies obtained from
+coinapi, and use closing-price data from exchanges Kraken, Bitﬁnex, and Bittrex.White heteroscedasticity-robust
+standard errors are reported in parentheses. *** denotes signiﬁcance at the 1 percent level, ** at the 5 percent
+level, and * at the 10 percent level.
+F Other Centralized Stablecoins
+We provide supplementary evidence on other national-currency-backed stablecoins. USDC,
+Paxos, and TrueUSD are among the largest 5 coins by market capitalization as of March, 2020,
+and are national-currency-backed like Tether. They diﬀer from Tether: USDC decentralises the
+primary issuer to have multiple issuers with licenses to create USDC tokens; Paxos dollar deposits
+are insured by FDIC banks; and TrueUSD uses a system of escrow accounts in transactions between
+investorsandthestablecoinissuer. Allofthesesystemsassert100%backingbyUS-dollarcollateral.
+We subdivide this section into the following:
+1. Transaction prices and histograms showing a two-sided distribution of deviations.
+23
+
+===== PAGE 24 =====
+
+2. Balance sheets and secondary-market ﬂows.
+Transaction Price and Histogram of Deviations
+We plot transaction-price deviations from the peg for USDC, Paxos, and TrueUSD. Data are
+from Coinapi for all coins. We make two general observations based on the following Figures A5,
+A6, and A7. The ﬁrst is that deviations are two-sided – these stablecoins trade at both premiums
+and discounts to the dollar parity peg. The second observation is that deviations are typically
+persistent, and as indicated in section 1, we note a half-life of deviations that ranges from 5 to 10
+days for most coins.
+Figure A5: USDC/USD Deviations from Peg and Histogram of Deviations
+2020-01-152020-02-012020-02-152020-03-012020-03-152020-04-01
+Date
+0.002
+0.000
+0.002
+0.004
+0.006
+0.008
+0.010
+USD
+Deviations from Peg: USDC
+0.020
+ 0.015
+ 0.010
+ 0.005
+ 0.000 0.005 0.010 0.015 0.020
+USD
+0
+500
+1000
+1500
+2000
+2500Frequency
+Deviations from Peg: USDC
+Note: Figure plots deviations of the USDC peg from parity (left panel). A positive deviation indicates USDC trades
+at a premium. right panel is a histogram of deviations of the USDC peg. Data from Coinapi. Sample is January
+10th, 2020 to March 31st, 2020.
+24
+
+===== PAGE 25 =====
+
+Figure A6: PAX/USD Deviations from Peg and Histogram of Deviations
+2019-012019-032019-052019-072019-092019-112020-012020-03
+Date
+0.010
+0.005
+0.000
+0.005
+0.010
+0.015
+0.020
+USD
+Deviations from Peg: PAX
+0.020
+ 0.015
+ 0.010
+ 0.005
+ 0.000 0.005 0.010 0.015 0.020
+USD
+0
+200
+400
+600
+800Frequency
+Deviations from Peg: PAX
+Note: Figure plots the Paxos deviations of the peg from parity (left panel). A positive deviation indicates Paxos
+trades at a premium. right panel is a histogram of deviations of the Paxos peg. Data from Coinapi. Sample is
+January 2019 to March 31st, 2020.
+Figure A7: TUSD/USD Deviations from Peg and Histogram of Deviations
+2018-072018-102019-012019-042019-072019-102020-012020-04
+Date
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+USD
+Deviations from Peg: TUSD
+0.020
+ 0.015
+ 0.010
+ 0.005
+ 0.000 0.005 0.010 0.015 0.020
+USD
+0
+50
+100
+150
+200
+250Frequency
+Deviations from Peg: TUSD
+Note: Figure plots the deviations of the TrueUSD peg from parity (left panel). A positive deviation indicates
+TrueUSD trades at a premium. right panel is a histogram of deviations of the TrueUSD peg. Data from Coinapi.
+Sample is June 2018 to March 31st, 2020.
+F.0.1 Balance Sheets of Other Stablecoins
+We plot here the balance sheets of other major stablecoins. The data platform we use is
+Etherscan, which records the entire set of transactions of a given stablecoin on the blockchain. To
+use Etherscan, we identify the wallet address of the issuer, and the wallet address of the Treasury
+(where applicable). We can then use the api to extract a set of transactions of a given wallet.
+Transactions are classiﬁed as a "from" or "to". The underlying assumption is that for the set
+25
+
+===== PAGE 26 =====
+
+of transactions involving the primary issuer, if the issuer is "from" this indicates a ﬂow from
+the issuer to the secondary market. Conversely, "to" indicates redemptions and a withdrawal of
+stablecoin tokens from circulation. Sample period is from introduction of a given coin to Etherscan
+to November 2019.
+Figure A8: Balance Sheet for USDC, Paxos, and TrueUSD
+2018-09 2018-11 2019-01 2019-03 2019-05 2019-07 2019-09 2019-11
+Date
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5amount (Billions USD)
+USDC Balance Sheet
+Secondary Market
+USDC Treasury
+2018-09 2018-11 2019-01 2019-03 2019-05 2019-07 2019-09 2019-11
+Date
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25amount (Billions USD)
+Paxos Balance Sheet
+Secondary Market
+Paxos Treasury
+2018-04 2018-07 2018-10 2019-01 2019-04 2019-07 2019-10 2020-01
+Date
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25amount (Billions USD)
+TrueUSD Balance Sheet
+Secondary Market
+Note: Figure plots the balance sheet of USDC, Paxos, and TrueUSD. Balance-sheet data from Etherscan.
+F.1 Dollar Backed Stablecoins
+We analyze the stabilizing properties of issuance ﬂows for other dollar backed stablecoins
+TrueUSD and Paxos. Both of these stablecoins operate on the Ethereum blockchain, but diﬀer in
+the way stablecoins are audited, with dollar reserves backed by FDIC-insured banks in the case of
+26
+
+===== PAGE 27 =====
+
+Paxos, and backed by escrow accounts in the case of TrueUSD dollar. Similar to our construction of
+the Tether balance sheet, we can construct the aggregate stock of stablecoins in circulationQAgg,t,
+and the stock of stablecoins held by the Treasury accountQT,t. The total amount of the stablecoin
+held by private wallets and exchanges is equal to the total stablecoin creation net of stablecoins
+held in the Treasury’s account, given byQEX,t in equation (7). To construct a proper aggregate
+measure of net stablecoin issuance, take ﬁrst diﬀerences of equation (7), and deﬁne ﬂows from the
+Treasury to the secondary market,Flow T→EX,t = ∆QEX,t, as the change in total stablecoins in
+circulation net of changes in the Treasury account (equation (8)).
+QEX,t =QAgg,t−QT,t (7)
+Flow T⇒EX,t = ∆QAgg,t− ∆QT,t (8)
+Flows from the Treasury to the secondary market should be stabilizing, by moving peg price
+deviations toward zero. As before, we conduct local projections (based on Jordà (2005)) of the
+value of net inﬂows from the Treasury to the secondary market on the level of deviations from
+Tether’s parity peg. We denoteFlow T⇒EX,h as total ﬂows from the Treasury to the secondary
+market, measured at a daily frequency.13 The change in the stablecoin dollar price,Pt+h−Pt−1, is
+projected on the level of arbitrage ﬂows of investors in equation (9), allowing for feedback eﬀects
+using lagged price and ﬂows as controls. We hypothesize a negative coeﬃcientβh, which suggests
+that positive ﬂows to the secondary market have a stabilizing impact on price. The results for
+Paxos and TrueUSD in Figure A9 suggest a stabilizing eﬀect, on the order of 40 basis points for
+Paxos and 10 basis points for TrueUSD (for a one-standard-deviation shock in net ﬂows to the
+secondary market).
+13A positive ﬂow to the secondary market is equivalent to a net positive deposit of dollars with the Tether Treasury,
+aggregated at a daily frequency.
+27
+
+===== PAGE 28 =====
+
+Pt+h−Pt−1 =α +βhFlow T⇒EX,t +
+L∑
+k=1
+δkFlow T⇒EX,t−k+
+L∑
+k=1
+γk(Pt−k−1−Pt−k−2) +ut h = 0, 1, 2,... (9)
+Figure A9: Response of Paxos (Left panel) and TrueUSD (Right) Prices to a Unit Standard
+Deviation of Flows to the Secondary Market
+0 5 10 15 20 25 30
+days
+60
+40
+20
+0
+20
+basis points
+PAX price response to Arbitrage Flows
+0 5 10 15 20 25 30
+days
+30
+20
+10
+0
+10
+20
+basis points
+TUSD price response to Arbitrage Flows
+Note: Figure documents the eﬀect of a 1 standard deviation shock to net secondary market ﬂows on the price of
+Paxos and TrueUSD. Data for secondary-market ﬂows from Etherscan. Price data from Coinapi. Sample is January
+2019 to March 2020 in left panel, and June 2018 to March 2020 in right panel. Gray area denotes 95% conﬁdence
+interval using White heteroscedasticity robust standard errors.
+G Fundamentals of Peg Deviations
+In this section we test channels through which stablecoins trade at a premium or discount. We
+present evidence that premiums arise in times of increased volatility in non-stable cryptocurrency
+markets. Notable examples include the crash of Bitcoin in early 2018 and the COVID-19 crisis
+of 2020. We document an example of speculation on Tether in October 2018, when Bitﬁnex
+temporarily suspended convertibility of dollar deposits. This signalled to investors that Tether
+may not have been fully collateralized, and Tether traded at a discount of approximately 500
+basis points, with signiﬁcant increases in bid-ask spreads. All data used in this section, including
+28
+
+===== PAGE 29 =====
+
+transaction data used to construct order ﬂow, are discussed further in the data Appendix A.
+G.1 Liquidity Fundamentals
+We quantify factors that determine pricing in the Tether/USD market. We identify two such
+factors, order ﬂow, which is a measure of net buying pressure, and cryptocurrency volatility.
+Determinants of Tether’s value are diﬃcult to model in traditional ways, e.g., with macroeconomic
+fundamentals such as inﬂation and interest-rate diﬀerentials. We draw instead from the medium-
+of-exchange role in monetary theory to posit that the price of Tether is driven by factors connected
+to Bitcoin- and Tether-market liquidity.
+Order Flow
+The ﬁrst determinant of Tether returns we examine is order ﬂow. Order ﬂow is a measure of
+net buying pressure in the secondary market and, viewed through the lens of information models in
+microstructure theory, is the primary means through which dispersed information in the market is
+expressed and aggregated in price-setting. We construct a measure of order ﬂow using transaction
+data provided by cryptocurrency vendor Coinapi. This includes a history of trades from a series
+of exchanges that trade in the Tether/USD pair.14 This dataset provides the timestamp of each
+trade, together with the amount of underlying Tether in each trade, and a true-or-false variable
+taker side sellwhich we use to construct the sign of each transaction.
+The exchange follows a maker-taker structure. The market maker is the provider of liquidity,
+and typically submits limit orders to the exchange with a speciﬁed bid and ask price. The takers are
+typically private investors who submit market orders for Tether, and are initiating the transaction.
+When the taker side sell column reads true, this signiﬁes that the taker is selling Tether and
+buying USD. The price they are willing to sell Tether is the bid price oﬀered by the market maker.
+Conversely, whentaker side sell is false, the taker is buying Tether and selling USD. They buy
+Tether at the ask price oﬀered by the market maker. Using this signing convention we can construct
+14Exchanges that trade signiﬁcantly in Tether/USD are Bitﬁnex and Kraken. For the baseline results we use the
+Kraken exchange as it has the highest volume of trades, and the earliest history (starting in April 2017).
+29
+
+===== PAGE 30 =====
+
+a measure of order ﬂow as the diﬀerence between buyer- and seller-initiated transactions, expressed
+in the following equation whereTk is the transaction,B indicates it is buyer-initiated,S indicates
+it is seller-initiated, andVTk is the amount of the transaction.
+OF vol
+t =
+k=t∑
+k=t0
+VTk(1[Tk =B]− 1[Tk =S]) (10)
+Volatility of Cryptocurrency Markets
+We construct a measure of intra-day price volatility in the BTC/USDT market. To calculate
+intra-day volatility, we use transaction data of the BTC/USDT pair in the Binance exchange at
+5-minute intervals to construct 5-minute returns. We then calculate the average sum of squared
+returns over 5-minute intervals over the trading day, and take the square root. This fundamental
+captures the safety premium of Tether; in market downturns, investors want to liquidate to a
+store of value. Stablecoins have lower intermediation costs and lower latency time of transactions,
+with bank wires taking signiﬁcantly longer than a transaction executed on the blockchain. We
+hypothesize that this results in investors choosing to liquidate unstable cryptocurrencies to sta-
+blecoins, as opposed to dollars, causing Tether to trade at a premium in times of increased risk in
+cryptocurrency markets.
+We now regress the deviation of the Tether price from the peg,pt−1, on signed order ﬂowOFt,
+as well as a measure of intra-day price volatility of the BTC/USDT pair,σBT C,t, as expressed in
+equation (11).
+pt− 1 =α +β1OFt +β2σBT C,t +ut (11)
+Table A12 provides evidence that liquidity fundamentals have an important role in explaining
+deviations from the peg. In column (I), we present the results of regression 11 for the full sample.
+We then condition on subsets of the sample in columns (II), (III), and (IV). In column (II) we
+30
+
+===== PAGE 31 =====
+
+condition on the USDT price being within 1 standard deviation of parity. In columns (III) and
+(IV) we condition on price being more than 1 standard deviation below parity, and greater than
+1 standard deviation above parity respectively. We ﬁnd positive eﬀects of an increase in Bitcoin
+volatility on the Tether price. Based on column (I), a 1 per cent (100 basis point) increase in
+BTC/USDT intra-day price volatility raises the price of Tether by approximately 5 basis points,
+allelseequal. Thissuggestsapotentialrisk-hedgingmotiveforholdingTetherinperiodsofextreme
+Bitcoin volatility. One of Tether’s features is its store-of-value function for crypto investors.
+Table A12: Determinants of Tether/USD Price – Liquidity Fundamentals
+I II III IV
+pt− 1 pt− 1 pt− 1 pt− 1
+OF 21.98*** 10.92*** 13.22 22.31***
+(3.33) (1.46) (13.03) (7.37)
+σBT C 0.05*** 0.03*** -0.01 0.03
+(0.01) (0.01) (0.05) (0.03)
+Intercept -18.92*** -6.51* -177.68*** 112.35***
+(5.00) (3.58) (20.04) (15.19)
+R-squared 0.11 0.14 0.03 0.08
+No. observations 953 802 70 79
+Full Sample Y N N N
+|pt−1− 1|< 1sd N Y N N
+pt−1− 1<−1sd N N Y N
+pt−1− 1> 1sd N N N Y
+Note: Table presents regressions of the deviation from parity in the USD price of Tether on variables capturing
+liquidity in the Tether/USD and BTC market.OF measures order ﬂow and is constructed as the net of buyer-
+initiated transactions for the Tether/USD pair, where a buy transaction is signed positively when the buyer of
+Tether is initiating the trade.σBT C is the intra-day volatility of the BTC/USDT price sourced from the Binance
+exchange, measured in basis points. Sample is April 1st, 2017 to March 31st, 2020 and consolidates trade data
+from three trusted exchanges: Bitﬁnex, Bittrex, and Kraken. White heteroscedasticity-robust standard errors are
+reported in parentheses. *** denotes signiﬁcance at the 1 percent level, ** at the 5 percent level, and * at the 10
+percent level.
+31
+
+===== PAGE 32 =====
+
+G.2 Stablecoin Premiums
+Why do Tether and other stablecoins exhibit safe-haven properties? In periods of risk, investors
+need to liquidate into a store of value. Portfolio rebalancing toward Tether and other stablecoins
+provide this function with minimal intermediation costs. As noted, on some exchanges for example,
+there are long processing lags for dollar withdrawals to comply with intermediation procedures.
+Fees are also often imposed when dollar withdrawals are frequent or large.15 We provide evidence
+of safe-haven demand with reference to theBlack Thursday Crypto event.
+The COVID-19 economic crisis resulted in a collapse of the BTC market of approximately 40%,
+as it fell from approximately $8,000 to $5,000 from March 12th to 13th. Amidst the widespread
+sell-oﬀ in cryptocurrency markets, there were clear eﬀorts by investors to liquidate into a store
+of value. To gauge investors incentive to liquidate into a store of value quickly, we use the Ether
+Network’s gas prices. These prices are denominated in GWEI which is equivalent to one-billionth
+of one ETH, and they are typically an average of 10 GWEI per transaction. Critically, these units
+of GWEI provide a proxy for transactions’ latency time. For example, on March 29th, 2020, the
+Ether gas station states that there is transaction cost of 8 units of GWEI for a transaction time
+less than 2 minutes, 5 units of GWEI for a transaction time less than 5 minutes, and 3 units of
+GWEI for a transaction time less than 30 minutes.16
+On March 12th, the average gas prices temporarily spiked to over 100 GWEI per transaction
+from the 10 GWEI average seen just one day prior. There was congestion on the Ethereum
+blockchain as investors wanted to liquidate unstable cryptocurrencies into stablecoins. The rise in
+gas costs reﬂected the cost of latency time; investors were willing to pay more gas costs to liquidate
+faster.17
+15For more information, see announcements by Bitﬁnex:https://bit.ly/2NEzITW and https://www.bitfinex.
+com/posts/311. As noted previously, Bitﬁnex states it will take investors 7 to 15 days to make dollar withdrawals
+from their platform in order to comply with intermediation procedures. Bitﬁnex has also introduced transaction
+costs of a 3% fee for investors who make more than two dollar withdrawals a month, or for withdrawals larger
+than $1 million in a given month.
+16Gas prices, as well as daily amounts of Ether Gas used, are provided inhttps://ethgasstation.info/.
+17For more information seehttps://blockonomi.com/ethereum-gas-prices-surged/.
+32
+
+===== PAGE 33 =====
+
+We plot in Figure A10 the USD price response of the six largest coins by market cap, based
+on data in March 31st, 2020. Shaded areas indicate the period in which the price of Bitcoin fell
+by 50%. In all cases, we see a rise in the price of stablecoins of approximately 500 basis points.
+The largest increase is for BinanceUSD coin, the stablecoin issued by the Binance cryptocurrency
+exchange. A potential reason why BinanceUSD trades at a premium to the dollar is because
+Binance platforms do not allow conversion to national currencies directly. Therefore, for investors
+on the Binance exchange, converting to BinanceUSD is a good option for reducing latency time.
+33
+
+===== PAGE 34 =====
+
+Figure A10: Response of stablecoin prices to negative price shock of Bitcoin in March, 2020
+2020-02-292020-03-012020-03-052020-03-092020-03-132020-03-172020-03-212020-03-252020-03-29
+Date
+0.99
+1.00
+1.01
+1.02
+1.03
+1.04
+1.05Price (USD)
+Price USDT
+2020-02-292020-03-012020-03-052020-03-092020-03-132020-03-172020-03-212020-03-252020-03-29
+Date
+0.985
+0.990
+0.995
+1.000
+1.005
+1.010
+1.015
+1.020
+1.025Price (USD)
+Price USDC
+2020-02-292020-03-012020-03-052020-03-092020-03-132020-03-172020-03-212020-03-252020-03-29
+Date
+0.990
+0.995
+1.000
+1.005
+1.010
+1.015
+1.020
+1.025
+1.030Price (USD)
+Price PAX
+2020-02-292020-03-012020-03-052020-03-092020-03-132020-03-172020-03-212020-03-252020-03-29
+Date
+1.00
+1.02
+1.04
+1.06
+1.08
+1.10Price (USD)
+Price BUSD
+2020-02-292020-03-012020-03-052020-03-092020-03-132020-03-172020-03-212020-03-252020-03-29
+Date
+0.99
+1.00
+1.01
+1.02
+1.03
+1.04Price (USD)
+Price TUSD
+2020-02-292020-03-012020-03-052020-03-092020-03-132020-03-172020-03-212020-03-252020-03-29
+Date
+1.00
+1.02
+1.04
+1.06
+1.08
+1.10Price (USD)
+Price DAI
+Note: Price (in USD) of 6 largest stablecoins by market cap during March 31st, 2020. Price data are from Coinapi
+andarehourly, availableoncryptocurrencyexchangesBinance, Bitﬁnex, Bittrex, andKraken. Shadedareasindicate
+the period when the price of Bitcoin fell approximately 50% from March 12th to March 13th.
+34
+
+===== PAGE 35 =====
+
+G.3 Stablecoin Discounts
+Stablecoin discounts can be due to mismanagement by the issuer, a lack of collateral, or spec-
+ulation. A speculative attack on Tether occurred on 11th October, 2018. On that day, Bitﬁnex
+decided to temporarily pause national-currency deposits (USD, GBP, EUR, JPY) for certain cus-
+tomer accounts in the face of processing complications.18 Figure A11 shows the unfolding of this
+event on Tether’s dollar price and on measures of bid-ask spreads. Tether transaction prices fall
+to 95 cents on October 15th. While the whole-sample average bid-ask spread is between 0.1 and
+0.15 of a cent, with a standard deviation of 0.2 cents, there are evident spikes in bid-ask spreads,
+suggesting an information asymmetry in response to speculative events. In particular, the sharp
+fall in bid and ask prices corresponds to a spike in the width of the spread of 6 cents (600 basis
+points). Widening bid-ask spreads is consistent with a story of increased collateral risk as buyers
+and sellers of Tether are unsure of the fundamental trading price and whether others might have
+superior information.
+Figure A11: Tether/USD prices and Bid-Ask Spreads
+2018-10-012018-10-052018-10-092018-10-132018-10-172018-10-212018-10-252018-10-292018-11-01
+Date
+0.850
+0.875
+0.900
+0.925
+0.950
+0.975
+1.000USD
+bid and ask prices
+2018-10-012018-10-052018-10-092018-10-132018-10-172018-10-212018-10-252018-10-292018-11-01
+Date
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06USD
+bid-ask spread
+Note: Schematic illustrates the movement in Tether/USD price and bid-ask spreads. Transaction, bid, and ask
+prices from Coinapi trade and order-book data. Volume data are from Cryptocompare. Sample is October 2018.
+18See https://twitter.com/bitfinex/status/1051750465782906880?lang=en.
+35
+
+===== PAGE 36 =====
+
+References
+Jordà, Òscar , “Estimation and inference of impulse responses by local projections,”American
+economic review, 2005,95 (1), 161–182.
+Tetherinc., “Tether: Fiat currencies on the Bitcoin blockchain,” 2016.
+Wei, Wang Chun , “The impact of Tether grants on Bitcoin,”Economics Letters, 2018, 171,
+19–22.
+36

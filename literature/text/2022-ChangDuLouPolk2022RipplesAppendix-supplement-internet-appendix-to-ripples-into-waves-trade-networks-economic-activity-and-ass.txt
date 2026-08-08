@@ -1,0 +1,918 @@
+
+
+===== PAGE 1 =====
+
+
+
+
+
+
+
+Internet Appendix to
+
+Ripples into Waves:
+Trade Networks, Economic Activity, and Asset Prices
+
+
+
+
+Jeffery (Jinfan) Chang
+Chinese University of Hong Kong (Shenzhen)
+zhangjinfan@cuhk.edu.cn
+
+
+Huancheng Du
+Central University of Finance and Economics
+huancheng.du@gmail.com
+
+
+Dong Lou
+London School of Economics and CEPR
+d.lou@lse.ac.uk
+
+
+Christopher Polk
+London School of Economics and CEPR
+c.polk@lse.ac.uk
+
+
+
+
+
+
+First Draft: March 2018
+This Draft: June 2021
+
+
+
+
+
+===== PAGE 2 =====
+
+1
+
+I. Variance Decomposition
+We follow di Giovanni et al. (2017) and decompose the variance of global SCDS returns
+as a way to differentiate between the theories of Gabaix (2011) and Acemoglu et al. (2012)
+in this context. In particular, we treat our SCDS returns in an a nalogous way as they
+treat their firm-specific shocks. We measure the variance of the aggregate monthly SCDS
+return,
+𝑅𝑅𝑅𝑅𝑅𝑅
+𝑔𝑔,𝜏𝜏 = ∑ 𝑤𝑤𝑖𝑖,𝜏𝜏−1 ∗ 𝑅𝑅𝑅𝑅𝑅𝑅𝑖𝑖,𝑡𝑡𝑖𝑖 .
+over our sample period. We fix the weights so that the variance of 𝑅𝑅𝑅𝑅𝑅𝑅𝑔𝑔,𝜏𝜏, 𝜎𝜎𝑔𝑔,𝜏𝜏
+2  is not
+affected by variation associated with changes in portfolio weights over time. As in
+Carvalho and Gabaix (2013), we decompose 𝜎𝜎𝑔𝑔,𝜏𝜏
+2  as follows,
+𝜎𝜎𝑔𝑔,𝜏𝜏
+2 = ∑ 𝑤𝑤𝑖𝑖,𝜏𝜏−1
+2 ∗ 𝑉𝑉𝑉𝑉𝑉𝑉�𝑅𝑅𝑅𝑅𝑅𝑅𝑖𝑖,𝑡𝑡�𝑖𝑖���������������
+𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝜏𝜏
++ ∑ ∑ 𝑤𝑤𝑖𝑖,𝜏𝜏−1𝑤𝑤𝑗𝑗,𝜏𝜏−1𝐶𝐶𝐶𝐶𝐶𝐶�𝑅𝑅𝑅𝑅𝑅𝑅𝑖𝑖,𝑡𝑡, 𝑅𝑅𝑅𝑅𝑅𝑅𝑗𝑗,𝑡𝑡�𝑗𝑗≠𝑖𝑖𝑖𝑖≠𝑗𝑗���������������������������
+𝐿𝐿𝐷𝐷𝑁𝑁𝐾𝐾𝜏𝜏
+      (1)
+As the above equation shows, at each time 𝜏𝜏, the variance of 𝑅𝑅𝑅𝑅𝑅𝑅𝑔𝑔,𝜏𝜏 can be decomposed
+into two components, 𝐷𝐷𝐷𝐷𝑅𝑅𝐷𝐷𝐶𝐶𝐷𝐷𝜏𝜏 and 𝐿𝐿𝐷𝐷𝐿𝐿𝐿𝐿𝜏𝜏, where 𝐷𝐷𝐷𝐷𝑅𝑅𝐷𝐷𝐶𝐶𝐷𝐷𝜏𝜏 measures the volatility of each
+country’s SCDS returns and 𝐿𝐿𝐷𝐷𝐿𝐿𝐿𝐿𝜏𝜏 measures the comovement of SCDS returns that may
+in part be driven by the trade links in which we are interested.
+These two components can be computed directly using trade data and SCDS
+returns. We first compute the variance of SCDS returns for each country to o btain
+𝑉𝑉𝑉𝑉𝑉𝑉�𝑅𝑅𝑅𝑅𝑅𝑅𝑖𝑖,𝑡𝑡�. We then compute the covariance of SCDS return for any given pair of
+countries to obtain 𝐶𝐶𝐶𝐶𝐶𝐶�𝑅𝑅𝑅𝑅𝑅𝑅𝑖𝑖,𝑡𝑡, 𝑅𝑅𝑅𝑅𝑅𝑅𝑗𝑗,𝑡𝑡�. Finally, we compute the portfolio weights as the
+ratio of country exports to the aggregate exports of our sample. This procedure allows us
+to compute both 𝐷𝐷𝐷𝐷𝑅𝑅𝐷𝐷𝐶𝐶𝐷𝐷𝜏𝜏 and 𝐿𝐿𝐷𝐷𝐿𝐿𝐿𝐿𝜏𝜏 and thus their contribution to total volatility. We
+can compute similar analogues, 𝐷𝐷𝐷𝐷𝑅𝑅𝐷𝐷𝐶𝐶𝐷𝐷𝐷𝐷,𝜏𝜏 = ∑ 𝑤𝑤𝑖𝑖,𝜏𝜏−1
+2 ∗ 𝑉𝑉𝑉𝑉𝑉𝑉�𝑅𝑅𝑅𝑅𝑅𝑅𝑖𝑖,𝑡𝑡�𝑖𝑖∈𝐷𝐷 , for countries in a
+particular geographic region R and measure their contribution to 𝐷𝐷𝐷𝐷𝑅𝑅𝐷𝐷𝐶𝐶𝐷𝐷𝜏𝜏.
+ We first find that 92% of the global variance is contributed by the second term in
+equation (1), consist with the mechanism in Acemoglu et al. (2012) being more important
+in our context. We then turn to understanding the economic drivers of cross -sectional
+variation in each of those two terms. Appendix Figure A1 examines the variance terms at
+the regional level by linking the regional share of the first set of terms on the right-hand
+
+===== PAGE 3 =====
+
+2
+
+side of equation ( 1) to the Herfindahl Index of the export weights in each region. 1
+Consistent with the mechanism in Gabaix (2011), we find that a region’s weight
+concentration is positively associated with its contribution to  global variance with an
+adjusted R2 over 60%.
+Table VII then examines the way the covariance terms in equation ( 1) vary with
+export activity.2 In particular, we estimate a regression explaining the pairwise correlation
+of SCDS returns using 𝐷𝐷𝐸𝐸𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅𝑖𝑖,𝑗𝑗,𝑡𝑡−1
+𝐴𝐴𝐴𝐴𝐴𝐴 , the average fraction of country i and j’s total
+exports that are accounted for by their bilateral trade in the previous year. We first focus
+on explaining the correlation component of the second term in equation ( 1) as that
+component is at the heart of the Acemoglu et al. (2012) mechanism. The estimate is
+strongly statistically significant with a
+t-statistic of 2.91. This findi ng is robust to
+controlling for distance, language, and colony —pairwise characteristics often used to
+identify similar countries. In results not reported, if we instead forecast weighted
+covariances (i.e., the full second term in equation ( 1)), the resulting
+t-statistic increases
+to 8.49 and the R2 nearly triples to 30.8%.
+
+
+II. Identification through Heteroscedasticity
+The results in Table VII represent an improvement on those in di Giovanni et al. (2017)
+as we use returns instead of sales. Returns primarily reflect news about all future
+fundamentals of a country while accounting variables such as sales only directly reflect
+information from the period in question and typically contain a large predictable
+component.
+3 However, like the results in di Giovanni et al. (2017), the findings in Section
+I are subject to endogeneity concerns. Trade links may not cause countries to move
+together; instead, countries which are similar for other reasons (and hence comove as a
+consequence) may choose to trade with each other.
+
+1 Appendix Table A1 Panel B provides a detailed list of which countries comprise each region.
+2  Anton and Polk (2014) introduce this approach to link pairwise return correlation to common
+institutional ownership.
+3 Though the literature has focused on accounting information such as sales, r ecent work by di Giovanni
+and Hale (2020) links U.S. monetary policy shocks to country -sector stock returns using the network of
+global production linkages.
+
+===== PAGE 4 =====
+
+3
+
+In this section, we trace the propagation of shocks reflected in weekly SCDS returns
+through trade links using the Identification Through Heteroscedasticity (ITH) method of
+(Rigobon, 2003). First, for each country 𝑖𝑖, we calculate its idiosyncratic SCDS return
+(labeled 𝑅𝑅𝑖𝑖,𝑡𝑡) by purging out the part of the return that is correlated with the  export-
+weighted global SCDS return. For each country pair, we then model the joint dynamics
+of the two countries’ idiosyncratic SCDS returns with a system of two simultaneous
+equations:
+𝑅𝑅𝑖𝑖,𝑡𝑡 = 𝜌𝜌𝑖𝑖𝑅𝑅𝑖𝑖,𝑡𝑡−1 + 𝛽𝛽𝑖𝑖,𝑗𝑗𝑅𝑅𝑗𝑗,𝑡𝑡 + 𝜂𝜂𝑖𝑖,𝑡𝑡
+𝑅𝑅𝑗𝑗,𝑡𝑡 = 𝜌𝜌𝑗𝑗𝑅𝑅𝑗𝑗,𝑡𝑡−1 + 𝛽𝛽𝑗𝑗,𝑖𝑖𝑅𝑅𝑖𝑖,𝑡𝑡 + 𝜂𝜂𝑗𝑗,𝑡𝑡,
+where 𝜂𝜂𝑖𝑖,𝑡𝑡 and 𝜂𝜂𝑗𝑗,𝑡𝑡 are the shocks originating from countries 𝑖𝑖 and 𝑗𝑗 in period 𝑅𝑅. It is clear
+that OLS estimates are biased. However, it is easy to show that the SCDS returns of the
+two countries in each period can be characterized by a simple structural VAR with a one-
+period lag:
+�𝑅𝑅𝑖𝑖,𝑡𝑡
+𝑅𝑅𝑗𝑗,𝑡𝑡
+� =
+⎣
+⎢
+⎢
+⎢
+⎡ 𝜌𝜌𝑖𝑖
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+𝛽𝛽𝑖𝑖,𝑗𝑗𝜌𝜌𝑗𝑗
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+𝛽𝛽𝑗𝑗,𝑖𝑖𝜌𝜌𝑖𝑖
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+𝜌𝜌𝑗𝑗
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖⎦
+⎥
+⎥
+⎥
+⎤
+× �𝑅𝑅𝑖𝑖,𝑡𝑡−1
+𝑅𝑅𝑗𝑗,𝑡𝑡−1
+� +
+⎣
+⎢
+⎢
+⎢
+⎡ 1
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+𝛽𝛽𝑖𝑖,𝑗𝑗
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+𝛽𝛽𝑗𝑗,𝑖𝑖
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+1
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖⎦
+⎥
+⎥
+⎥
+⎤
+�����������������
+𝐷𝐷𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑖𝑖𝑇𝑇𝑇𝑇𝑖𝑖𝑇𝑇𝑇𝑇 𝑀𝑀𝑇𝑇𝑡𝑡𝑇𝑇𝑖𝑖𝑀𝑀 𝐵𝐵
+× �
+𝜂𝜂𝑖𝑖,𝑡𝑡
+𝜂𝜂𝑗𝑗,𝑡𝑡
+�.
+The transmission matrix B captures the way shocks to one country  affect the return of
+itself as well as the return of the other country. The objective of our empirical analysis is
+to estimate the matrix B for each country pair and to relate the off- diagonal terms 𝐵𝐵12
+and 𝐵𝐵21 to bilateral trade flows. Intuitively, the off-diagonal terms reflect how much one
+country’s idiosyncratic SCDS returns react to the other country’s shocks. More specifically,
+suppose that there is structural shock to country  𝑗𝑗, then the off- diagonal term 𝐵𝐵12 =
+𝛽𝛽𝑖𝑖,𝑗𝑗
+1−𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+ captures the variation in country 𝑖𝑖’s SCDS return due to the shock to country 𝑗𝑗.
+
+II.A. Structural VAR estimation with Identification through Heteroscedasticity
+We can rewrite the above system of equations in matrix form:
+𝑹𝑹𝒕𝒕
+′ = 𝚼𝚼𝑹𝑹𝒕𝒕−𝟏𝟏
+′ + 𝝁𝝁𝒕𝒕
+′
+,
+where
+
+===== PAGE 5 =====
+
+4
+
+𝝁𝝁𝒕𝒕
+′ = 𝑩𝑩 ∗ 𝜼𝜼𝒕𝒕
+′
+=
+⎣
+⎢
+⎢
+⎢
+⎡ 1
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+𝛽𝛽𝑖𝑖,𝑗𝑗
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+𝛽𝛽𝑗𝑗,𝑖𝑖
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖
+1
+1 − 𝛽𝛽𝑖𝑖,𝑗𝑗𝛽𝛽𝑗𝑗,𝑖𝑖⎦
+⎥
+⎥
+⎥
+⎤
+�����������������
+𝐷𝐷𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑖𝑖𝑇𝑇𝑇𝑇𝑖𝑖𝑇𝑇𝑇𝑇 𝑀𝑀𝑇𝑇𝑡𝑡𝑇𝑇𝑖𝑖𝑀𝑀 𝐵𝐵
+× �
+𝜂𝜂𝑖𝑖,𝑡𝑡
+𝜂𝜂𝑗𝑗,𝑡𝑡
+�.
+A standard VAR estimation produces estimates for matrix 𝚼𝚼, but 𝑩𝑩 is not identified since
+we have four unknowns �𝛽𝛽𝑖𝑖,𝑗𝑗, 𝛽𝛽𝑗𝑗,𝑖𝑖, 𝜎𝜎𝜂𝜂
+𝑖𝑖 , 𝜎𝜎𝜂𝜂
+𝑗𝑗 � but only three empirical moments �𝜎𝜎𝜇𝜇
+𝑖𝑖 , 𝜎𝜎𝜇𝜇
+𝑗𝑗, 𝐶𝐶𝐶𝐶𝐶𝐶𝜇𝜇
+𝑖𝑖,𝑗𝑗�.
+Following Rigobon (2003), for each pair, we split each year of the sample into two regimes
+(high vs. low volatility), with the assumption that the model parameters stay constant
+across the two regimes. With this additional assumption, the proposed VAR model now
+has six unknowns,
+�𝛽𝛽𝑖𝑖,𝑗𝑗, 𝛽𝛽𝑗𝑗,𝑖𝑖, 𝜎𝜎𝜂𝜂
+𝑖𝑖,ℎ𝑖𝑖𝑔𝑔ℎ, 𝜎𝜎𝜂𝜂
+𝑗𝑗,ℎ𝑖𝑖𝑔𝑔ℎ, 𝜎𝜎𝜂𝜂
+𝑖𝑖,𝑙𝑙𝑇𝑇𝑙𝑙, 𝜎𝜎𝜂𝜂
+𝑗𝑗,𝑙𝑙𝑇𝑇𝑙𝑙�,
+along with six empirical moments,
+�𝜎𝜎𝜇𝜇
+𝑖𝑖,ℎ𝑖𝑖𝑔𝑔ℎ, 𝜎𝜎𝜇𝜇
+𝑗𝑗,ℎ𝑖𝑖𝑔𝑔ℎ, 𝐶𝐶𝐶𝐶𝐶𝐶𝜇𝜇
+𝑖𝑖,𝑗𝑗,ℎ𝑖𝑖𝑔𝑔ℎ, 𝜎𝜎𝜇𝜇
+𝑖𝑖,𝑙𝑙𝑇𝑇𝑙𝑙, 𝜎𝜎𝜇𝜇
+𝑗𝑗,𝑙𝑙𝑇𝑇𝑙𝑙, 𝐶𝐶𝐶𝐶𝐶𝐶𝜇𝜇
+𝑖𝑖,𝑗𝑗,𝑙𝑙𝑇𝑇𝑙𝑙� .
+and the model becomes exactly identified.
+We estimate this simple two-regime VAR model for each country-pair/year using
+weekly SCDS returns in that year. We use 𝐷𝐷 to denote a year in our sample and 𝑅𝑅 to
+index a week in that year. We then sort each of the 52 weeks in the year into two halves
+based on the realized SCDS return volatility of the shock-originating country in the past
+26 weeks (e.g., week t is sorted based on the realized volatility in weeks t-26 to t-1).
+
+II.B The Relation between the matrix B and bilateral trade flows
+After estimating the time-series of the B matrix, we conduct a panel regression where the
+dependent variable is a vector containing the relevant off- diagonal terms of the
+asymmetric B matrix,
+𝐵𝐵�𝑖𝑖,𝑗𝑗,𝐷𝐷 = 𝛼𝛼𝑖𝑖,𝑗𝑗 + 𝛼𝛼𝐷𝐷 + 𝛽𝛽𝑒𝑒𝑀𝑀𝑒𝑒𝐷𝐷𝐸𝐸𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅𝑖𝑖,𝑗𝑗,𝐷𝐷 + 𝛽𝛽𝑖𝑖𝑇𝑇𝑒𝑒𝐷𝐷𝐼𝐼𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅𝑖𝑖,𝑗𝑗,𝐷𝐷 + 𝐶𝐶𝐶𝐶𝐿𝐿𝐷𝐷𝑅𝑅𝐶𝐶𝐿𝐿 + 𝜖𝜖𝑖𝑖,𝑗𝑗,𝐷𝐷.
+Our main independent variables of interest are 𝐷𝐷𝐸𝐸𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅𝑖𝑖,𝑗𝑗,𝐷𝐷  and 𝐷𝐷𝐼𝐼𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅𝑖𝑖,𝑗𝑗,𝐷𝐷 , the
+bilateral exports and imports from country i to country j, divided by the combined GDP
+of the two countries, respectively. We also control for country-pair fixed effects and year
+fixed effects to account for unobserved but time -invariant pairwise heterogeneity as well
+as common shocks to all country-pairs.
+
+===== PAGE 6 =====
+
+5
+
+The regression results, shown in Appendix Table A3, suggest that shock
+propagation in SCDS returns is strongly related to export links but not to import links.
+For example, with the full set of controls, the coefficient on 𝐷𝐷𝐸𝐸𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅 is 0.445 (t-statistic
+= 3.52). Since all the independent variables are standardized, a one -standard-deviation
+increase in 𝐷𝐷𝐸𝐸𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅 leads to an increase of a 0.0045 increase in 𝐵𝐵𝑖𝑖,𝑗𝑗; for reference, the
+standard deviation of 𝐵𝐵𝑖𝑖,𝑗𝑗 is 0.048, so an increase of nearly 10% of the standard deviation.
+In contrast, the coefficient on 𝐷𝐷𝐼𝐼𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅 is indistinguishable from zero.
+
+II.C. Shock transmission from export destinations to exporters
+We now exploit our composite measure of export destination news to not o nly increase
+the power of our test but also facilitate the measurement of intuitive heterogeneity in the
+magnitude of the effect. Therefore, for each exporting country, we first collapse all its
+export destinations into one portfolio and measure 𝐷𝐷𝐸𝐸𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅, the export-weighted average
+SCDS returns across all export destination countries. As in the analysis of Table A3, we
+then split the 52 weeks in each year into two regimes based on the realized volatilities of
+𝐷𝐷𝐸𝐸𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅 in the past 26 weeks and estimate the transmission coefficient from the export
+destination portfolio to the exporting country using ITH. One can think of this exercise
+as a simple extension of the basic two country ITH as described in Section II. For each
+country in our sample, instead of focusing on individual trading partners, we create one
+“composite trading partner” whose SCDS return is 𝐷𝐷𝐸𝐸𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅. Therefore, we have only 88
+country pairs and the estimated coefficient in the transmission matrix can be interpreted
+as how much a shock to 𝐷𝐷𝐸𝐸𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅 affects a country’s SCDS return.
+We estimate a panel regression of the resulting shock transmission coefficients on
+an export country’s characteristics. The main independent variables of interest are the
+eigenvector centrality of the export country in the trade network and its vulnerability
+index (the rank average of the export country’s credit rating and its external debt to GDP
+ratio). Countries with relatively poor credit quality and/or relatively high external debt
+are likely more vulnerable to bad news about fundamentals. Similarly, as transmission of
+information is facilitated by investors’ attention , one would expect that more central
+countries in the network, such as Singapore, Hong Kong, China, United States, and the
+United Kingdom, would experience stronger effects as investors are likely more attentive
+
+===== PAGE 7 =====
+
+6
+
+to trade information for these countries. We measure a country’s “centrality” using the
+most widely used eigen -centrality measure in network analysis (see, for example, Allen
+and Babus (2008), Acemoglu, Ozdaglar and Tahbaz-Salehi (2010, 2013)). Specifically, the
+eigen-centrality is the corresponding  eigenvalue calculated by applying the standard
+eigenvalue decomposition on the export destination matrix 𝐷𝐷𝑉𝑉𝑉𝑉𝑇𝑇𝑅𝑅 in year t in a way
+similar to Richmond (2016).
+For ease of interpretation, both measures of vulnerability and centrality are
+converted to zero-one dummies using the cross- sectional median as the threshold. Other
+control variables include the logarithm of GDP and the logarithm of total export. Column
+1 of Appendix Table A4 shows the results for the full sample, while Columns 2 -7 report
+the results based on various subsamples. As is evident in the table, export countries that
+are more central in the trade network and more vulnerable are more likely to be affected
+by shocks to their export destinations in the contemporaneous period.
+In summary, our novel use of weekly SCDS returns and identification through
+heteroskedasticity provides causal evidence that country -level shocks propagate through
+the trade network, in contrast to the alternative view that countries simply have common
+exposures to aggregate shocks.
+
+
+III. Linking Variation in the Global SCDS Return to Macroeconomic Quantities: Further
+Evidence
+Appendix Figure A2 explores the predictive relation between the global SCDS return and
+subsequent global equity volatility. As the figure shows, the lagged global SCDS return is
+positively correlated (0.44) with global equity volatility. We confirm this relation in
+Appendix Table A5. Column (1) of the table documents that the lagged global SCDS
+return forecasts subsequent global equity volatility with a t-statistic of 3.29. Column (2)
+of Appendix Table A5 highlights that the global SCDS return continues to forecast equity
+volatility even after adding six lags of equity volatility to the regression.
+
+
+
+===== PAGE 8 =====
+
+7
+
+Appendix Table A1: Sample of Countries
+
+Panel A: SCDS and Stock Index Start Dates
+
+Country SCDS Starting Date Stock Index Stock index Starting
+Date
+Algeria Sep-08
+Angola Oct-09
+Argentina Apr-01 MERVAL Apr-01
+Australia Oct-03 AS51 Oct-03
+Austria Jul-01 ATX Jul-01
+Bahrain Aug-04 BHSEASI Aug-04
+Barbados Jul-06
+Belgium Mar-01 BEL20 Mar-01
+Belize Jan-10
+Brazil Feb-01 IBOV Feb-01
+Bulgaria May-01 SOFIX May-01
+Canada Oct-03 SPTSX Oct-03
+Chile Mar-02 IGPA Mar-02
+China Feb-01 SHSZ300 Feb-01
+Colombia Apr-01 COLCAP Apr-01
+Costa Rica Sep-03 CRSMBCT Sep-03
+Croatia Feb-01 CRO Feb-01
+Cyprus Aug-02 CYSMMAPA Aug-02
+Czech Apr-01 PX Apr-01
+Denmark Dec-02 KFX Dec-02
+Dominica Aug-03
+Ecuador Jul-03
+Egypt Apr-02 HERMES Apr-02
+El Salvador Jul-03
+Estonia Jul-04 TALSE Jul-04
+Fiji Jul-07
+Finland Aug-02 HEX Aug-02
+France May-02 CAC May-02
+Georgia Jul-15
+Germany Nov-02 DAX Nov-02
+Ghana Jun-08 GGSECI Jun-08
+Greece Feb-01 ASE Feb-01
+Guatemala Sep-03
+Hong Kong Sep-04 HSCI Sep-04
+Hungary Apr-01 BUX Apr-01
+Iceland Apr-04
+India Aug-03 SENSEX Aug-03
+
+===== PAGE 9 =====
+
+8
+
+Indonesia Jan-02 JCI Jan-02
+Iraq Mar-06
+Ireland Feb-03 ISEQ Feb-03
+Israel May-01 TA-25 May-01
+Italy Mar-01 FTSEMIB Mar-01
+Jamaica Oct-03 JMSMX Oct-03
+Japan Feb-01 TPX Feb-01
+Jordan Oct-03 JOSMGNFF Oct-03
+Kazakhstan Feb-04 KZKAK Feb-04
+Latvia Sep-04 RIGSE Sep-04
+Lebanon Apr-03 BLOM Apr-03
+Lithuania May-02 VILSE May-02
+Macedonia Oct-11 MCTSTAT Oct-11
+Malaysia May-01 FBMKLCI May-01
+Malta Aug-04 MALTEX Aug-04
+Mexico Feb-01 MEXBOL Feb-01
+Morocco May-01 MCSINDEX May-01
+Netherlands Sep-03 AEX Sep-03
+New Zealand Jan-04 NZSE50FG Jan-04
+Nigeria Jan-07 NGSEINDX Jan-07
+Norway Nov-03 OBX Nov-03
+Oman Dec-08 MSM30 Dec-08
+Pakistan Aug-04 KSE100 Aug-04
+Panama Mar-02 BVPSBVPS Mar-02
+Peru Mar-02 SPBLPGPT Mar-02
+Philippines Apr-01 PCOMP Apr-01
+Poland Feb-01 WIG Feb-01
+Portugal Mar-02 BVLX Mar-02
+Qatar Oct-01 DSM Oct-01
+Romania Apr-02 BET Apr-02
+Russia Oct-01 INDEXCF Oct-01
+Saudi Arabia Mar-07 SASEIDX Mar-07
+Serbia Jul-06 BELEXLN Jul-06
+Singapore Aug-03 STI Aug-03
+Slovakia Jun-01 SKSM Jun-01
+Slovenia Mar-02
+South Africa Feb-01 TOP40 Feb-01
+South Korea May-01 KRX100 May-01
+Spain Mar-01 IBEX Mar-01
+Sri Lanka Jan-08 CSEALL Jan-08
+Sweden Jul-01 OMX Jul-01
+Switzerland Jul-07 SMI Jul-07
+Taiwan Sep-06 TWSE Sep-06
+
+===== PAGE 10 =====
+
+9
+
+Thailand Apr-01 SET Apr-01
+Trinidad and
+Tobago Dec-04
+Tunisia Dec-03 TUSISE Dec-03
+Turkey Feb-01 XU100 Feb-01
+UAE Mar-07 DFMGI Mar-07
+Ukraine Oct-02 UX Oct-02
+United Kingdom Apr-06 UKX Apr-06
+Uruguay Jun-02
+US Jan-04 SPX Jan-04
+Venezuela Mar-01
+Vietnam Sep-02 VNINDEX Sep-02
+
+
+Panel B: List of Countries in Each Region
+
+Africa:  Algeria, Angola, Egypt, Ghana, Morocco, Nigeria, South Africa, Tunisia
+Americas: Argentina, Barbados, Belize, Brazil, Canada, Chile, Colombia, Costa Rica,
+Dominican Republic, Ecuador, El Salvador, Guatemala, Jamaica, Mexico,
+Panama, Peru, Trinidad and Tobago, United States, Uruguay, Venezuela
+Eastern Europe: Bulgaria, Czech Republic, Hungary, Poland, Russia, Slovak Republic, Ukraine
+Northern Europe Denmark, Estonia, Finland, Iceland, Ireland, Latvia, Lithuania, Norway, Sweden,
+United Kingdom
+South Asia Australia, Fiji, India, Kazakhstan, New Zealand, Pakistan, Sri Lanka
+Southeastern Asia China, Hong Kong, Indonesia, Japan, Korea, Malaysia, Philippines, Singapore,
+Thailand, Vietnam
+Southern Europe Croatia, Greece, Italy, Malta, North Macedonia, Portugal, Slovenia, Spain
+Western Asia Bahrain, Cyprus, Georgia, Iraq, Israel, Jordan, Lebanon, Oman, Qatar, Turkey,
+Saudi Arabia, United Arab Emirates
+Western Europe Austria, Belgium, France, Germany, Netherlands, Switzerland
+
+
+
+===== PAGE 11 =====
+
+10
+
+Appendix Table A2: Forecasting SCDS Returns in Various Subsamples
+
+This table reports calendar-time portfolio returns of sovereign CDS (SCDS) contracts. At the end of each
+month, SCDS contracts are sorted into five groups (P1 to P5) based on 𝐷𝐷𝐸𝐸𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅, the weighted average
+SCDS return on a country’s export destinations  over the past three  months, where the weights are
+proportional to how much the country exported to its export destinations in the prior year. All countries
+are equally weighted within each quintile and the portfolios are held for one month. The long/short strategy
+is constructed by going long SCDS in quintile P5 and selling short SCDS in quintile P1. In all specifications,
+we control for the sovereign CDS momentum factor ( 𝐶𝐶𝑤𝑤𝑂𝑂𝑅𝑅𝑅𝑅𝑅𝑅, constructed based on a 3 -month forming
+period and a one -month holding period), the equal- weighted global SCDS factor  (𝑀𝑀𝑀𝑀𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅), the global
+momentum (𝑀𝑀𝐶𝐶𝑀𝑀_𝐷𝐷𝐸𝐸) and value factors (𝑉𝑉𝑉𝑉𝑉𝑉𝑉𝑉𝑅𝑅_𝐷𝐷𝐸𝐸) (as in Asness, Moskowitz and Pedersen, 2013), the
+US equity market factor (𝑈𝑈𝐸𝐸 𝑅𝑅𝑀𝑀𝑅𝑅𝑅𝑅), as well as commodity market momentum (𝐶𝐶𝑀𝑀_𝑀𝑀𝐿𝐿𝐷𝐷) and carry factors
+(𝐶𝐶𝑀𝑀 𝐶𝐶𝐶𝐶𝑅𝑅𝑅𝑅𝐶𝐶). Column 1 of Panel A reports the full sample result; Column 2 reports portfolio alpha using
+market-adjusted SCDS returns of export destination countries in the construction of 𝐷𝐷𝐸𝐸𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅; Column 3
+reports portfolio alpha by scaling the long/short portfolio to have constant volatility following Barroso and
+Santa Clara (2015). Panel B reports portfolio alpha based on various subsamples. We report t-statistics
+based on standard errors with Newey-West adjustments of up to 12 lags in parentheses with *, **, and ***
+indicating statistical significance at the 10%, 5%, and 1% levels, respectively.
+
+Panel A
+ (1) (2) (3)
+ Full Sample SCDS Market
+adjusted Portfolio
+Constant Volatility
+Portfolio
+𝐶𝐶𝑉𝑉𝐸𝐸ℎ𝑉𝑉 0.0021*** 0.0022** 0.0024***
+ (2.64) (2.41) (2.71)
+𝐶𝐶𝑤𝑤𝑂𝑂𝑅𝑅𝑅𝑅𝑅𝑅 0.3626*** 0.0901 0.3774***
+ (5.11) (0.70) (5.79)
+𝑀𝑀𝑀𝑀𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅 0.1582 0.0406 -0.0432
+ (1.18) (0.20) (-0.30)
+𝑉𝑉𝑉𝑉𝑉𝑉𝑉𝑉𝑅𝑅_𝐷𝐷𝐸𝐸 0.1510 -0.0704 0.1871
+ (1.44) (-0.46) (1.50)
+𝑀𝑀𝐶𝐶𝑀𝑀_𝐷𝐷𝐸𝐸 0.0591 -0.219 0.0753
+ (1.38) (-0.37) (1.13)
+𝑈𝑈𝐸𝐸 𝑅𝑅𝑀𝑀𝑅𝑅𝑅𝑅 0.0002 0.0006** -6.08e-06
+ (0.66) (2.11) (-0.02)
+𝐶𝐶𝑀𝑀_𝑀𝑀𝐿𝐿𝐷𝐷 0.0541*** 0.0140 0.0480**
+ (2.96) (0.47) (2.32)
+𝐶𝐶𝑀𝑀 𝐶𝐶𝐶𝐶𝑅𝑅𝑅𝑅𝐶𝐶 -0.0367 -0.0704** -0.0387**
+ (-1.43) (-2.18) (-1.97)
+
+No. of Obs. 173 173 173
+
+
+
+===== PAGE 12 =====
+
+11
+
+
+Panel B
+ (1) (2) (3) (4) (5) (6) (7)
+ Drop China Drop Safe
+Haven Drop G20 Drop EU
+Drop 10%
+Smallest
+Countries
+Drop 10%
+Illiquid
+Countries
+Drop
+OPEC
+𝐶𝐶𝑉𝑉𝐸𝐸ℎ𝑉𝑉 0.0018** 0.0024*** 0.0030*** 0.0037*** 0.0023*** 0.0021** 0.0026***
+ (2.26) (2.81) (3.15) (2.57) (2.74) (2.49) (3.13)
+𝐶𝐶𝑤𝑤𝑂𝑂𝑅𝑅𝑅𝑅𝑅𝑅 0.3526*** 0.3378*** 0.3056*** 0.1900*** 0.3619*** 0.3721*** 0.3055***
+ (4.78) (4.74) (3.35) (2.99) (4.52) (5.82) (4.20)
+𝑀𝑀𝑀𝑀𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅 0.1931 0.1725 0.0929 0.3834 0.1307 0.1834 0.1984
+ (1.29) (1.31) (0.69) (-1.65) (0.78) (1.41) (1.20)
+𝑉𝑉𝑉𝑉𝑉𝑉𝑉𝑉𝑅𝑅_𝐷𝐷𝐸𝐸 0.1322 0.1518 0.0717 0.2387 0.1562 0.1644* 0.1513
+ (1.18) (1.41) (0.67) (1.41) (1.61) (1.67) (1.51)
+𝑀𝑀𝐶𝐶𝑀𝑀_𝐷𝐷𝐸𝐸 0.0503 0.0578 0.0543 0.0495 -0.0267 0.0584 0.0565
+ (1.04) (1.27) (1.12) (0.70) (-0.53) (1.39) (1.17)
+𝑈𝑈𝐸𝐸 𝑅𝑅𝑀𝑀𝑅𝑅𝑅𝑅 0.0002 0.0002 0.0003 0.0004 0.0002 0.0002 0.00004
+ (0.79) (0.66) (1.03) (1.20) (0.68) (0.67) (0.15)
+𝐶𝐶𝑀𝑀 𝑀𝑀𝐿𝐿𝐷𝐷 0.0541*** 0.0541*** 0.0111 0.0755*** 0.0667*** 0.0568 0.0469**
+ (3.09) (2.94) (0.39) (2.82) (2.71) (3.02) (2.63)
+𝐶𝐶𝑀𝑀 𝐶𝐶𝐶𝐶𝑅𝑅𝑅𝑅𝐶𝐶 -0.0296 -0.0452* -0.0262 -0.0223 -0.0592* -0.0408 -0.0196
+ (-1.04) (-1.71) (-0.83) (-0.76) (-1.90) (-1.61) (-0.62)
+
+No. of Obs. 173 173 173 173 173 173 173
+
+
+
+===== PAGE 13 =====
+
+12
+
+Appendix Table A3: Shock Transmission between Country Pairs
+
+This table reports panel regressions of estimated pairwise shock transmission coefficients, using the
+Identification Through Heteroscedasticity (ITH) approach of Rigobon (2003), on export/import shares. We
+obtain the pairwise shock transmission coefficient by estimating a structural VAR for each pair of the G20
+member countries in each year using their weekly idiosyncratic SCDS returns. More specifically, following
+Rigobon (2003), we divide the 52 weeks in each year into two halves based on realized volatility to solve
+the simultaneous equations. In each column, the estimated pairwise shock transmission coefficient is
+regressed on two main variables, 𝐷𝐷𝐸𝐸𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅 and 𝐷𝐷𝐼𝐼𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅, measured as the total export or import divided
+by the total GDP for each  pair of country. For ease of interpretation, both 𝐷𝐷𝐸𝐸𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅 and 𝐷𝐷𝐼𝐼𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅 are
+standardized to have a standard deviation of one. Other control variables include the log GDP in the shock
+originator country, log GDP in the shock destination count ry, as well as the pairwise difference between
+the two. We also include year and country pair fixed effects. We report
+t-statistics based on standard errors
+double-clustered at the year and country-pair level in parentheses with *, **, and *** indicating statistical
+significance at the 10%, 5%, and 1% levels, respectively.
+
+
+
+Depvar = Pairwise Shock Transmission Coefficient (in %)
+  (1) (2)  (3) (4)  (5) (6)
+𝐷𝐷𝐸𝐸𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅  0.5391*** 0.4986**     0.4655*** 0.4451***
+  (2.64) (2.40)     (5.20) (3.52)
+
+𝐷𝐷𝐼𝐼𝐸𝐸𝐸𝐸ℎ𝑉𝑉𝑉𝑉𝑅𝑅     -0.4709 -0.4299  -0.0901 -0.0655
+     (-1.60) (-1.46)  (-0.23) (-0.17)
+
+𝐺𝐺𝐷𝐷𝐺𝐺𝑂𝑂𝑇𝑇𝑖𝑖𝑔𝑔𝑖𝑖𝑇𝑇   -0.2504   -0.2624   -0.2514
+   (-0.43)   (-0.45)   (-0.44)
+
+𝐺𝐺𝐷𝐷𝐺𝐺𝐷𝐷𝑒𝑒𝑇𝑇𝑡𝑡    -0.0644   -0.0712   -0.0662
+   (-0.13)   (-0.15)   (-0.14)
+
+𝐺𝐺𝐷𝐷𝐺𝐺𝐷𝐷𝑖𝑖𝐷𝐷𝐷𝐷    0.0534   0.0080   0.0475
+   (0.19)   (0.03)   (0.16)
+
+Time FE  Yes Yes  Yes Yes  Yes Yes
+Country Pair FE  Yes Yes  Yes Yes  Yes Yes
+No. of Obs  2,442 2,442  2,442 2,442  2,442 2,442
+Adj. R2  0.15 0.15  0.15 0.15  0.15 0.15
+
+===== PAGE 14 =====
+
+13
+
+Appendix Table A4: Shock Transmission from Export Destinations to Exporters
+
+This table reports panel regressions of shock transmission coefficients using the Identification Through
+Heteroscedasticity (ITH) approach of Rigobon (2003). In each year, for each exporting country in our
+sample, we estimate a shock transmission coefficie nt from 𝐷𝐷𝐸𝐸𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅 (the weighted average SCDS return s
+across all export destination countr ies) to the contemporaneous SCDS returns of the exporting country in
+question based on weekly data in that year. Following Rigobon (2003), we divide the 52 weeks in each year
+into two halves based on realized volatility to solve the simultaneous equations. We then conduct a panel
+regression of the country-specific shock transmission coefficients on the country’s eigenvector centrality in
+the trade network and the vulnerability index (which is the rank average of each country’s (inverse) credit
+rating, and external- debt-to-GDP ratio). For ease of interpretation, both independent variables are then
+transformed into a zero/one dummy with the sample median as the threshold. Other control variables
+include log GDP and log total export. Observations in each year are weighted by the inverse of the number
+observations in that year. Column (1) shows the results for the full sample, Columns (2) -(7) report the
+results based on va rious subsamples. We report
+t-statistics based on standard errors double -clustered at
+both year and country levels in parentheses with *, **, and *** indicating statistical significance at the
+10%, 5%, and 1% levels, respectively.
+
+Depvar = Shock Transmission Coefficients
+ Full
+Sample
+Drop Safe
+Haven Drop G20 Drop EU
+Drop 10%
+Smallest
+Countries
+Drop 10%
+Illiquid
+Countries
+Drop
+OPEC
+ (1) (2) (3) (4) (5) (6) (7)
+𝑉𝑉𝑉𝑉𝑉𝑉𝑂𝑂𝑅𝑅𝑉𝑉𝑉𝑉𝑉𝑉𝑖𝑖𝑉𝑉𝑖𝑖𝑅𝑅𝑉𝑉 1.454*** 1.281** 1.379** 1.915** 1.403** 0.965* 1.331**
+ (2.59) (2.29) (2.23) (2.41) (2.48) (1.94) (2.16)
+𝐶𝐶𝑅𝑅𝑂𝑂𝑅𝑅𝑉𝑉𝑉𝑉𝑉𝑉𝑖𝑖𝑅𝑅𝑉𝑉 1.885*** 1.815*** 1.941*** 2.333*** 1.826*** 1.576*** 1.911***
+ (3.32) (3.20) (3.10) (3.05) (3.05) (3.08) (3.07)
+
+Adj-R2 0.07 0.07 0.06 0.08 0.08 0.07 0.08
+No. Obs. 1,027 965 719 674 972 998 941
+
+
+
+
+===== PAGE 15 =====
+
+14
+
+Appendix Table A5: SCDS Returns Forecasting Global Equity Volatilities
+
+This table reports forecasting regressions of equity market volatility on lagged sovereign CDS (SCDS)
+returns. Daily global equity market returns are the export-volume weighted average of all countries’ equity
+market returns in a given day; we then compute the realized monthly volatility of the daily global equity
+returns. The main independent variable, the monthly global SCDS return, is defined as the export-volume
+weighted average of all countries’ SCDS returns in each month. Column (1) includes the previous month
+global equity market volatility as a control; column (2) includes five additional lags of global equity market
+volatility. We report t-statistics based on a Newey-West adjustment with up to 12 lags in parentheses with
+*, **, and *** indicating statistical significance at the 10%, 5%, and 1% levels, respectively.
+
+Depvar = Trade-weighted global equity volatility in month t
+ (1) (2)
+
+𝐺𝐺𝑉𝑉𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉 𝐸𝐸𝐶𝐶𝐷𝐷𝐸𝐸 𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡−1 0.00303*** 0.00288***
+ (3.29) (2.43)
+
+𝐺𝐺𝑉𝑉𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉 𝐷𝐷𝐸𝐸𝑉𝑉𝑖𝑖𝑅𝑅𝑉𝑉 𝑉𝑉𝐶𝐶𝑉𝑉𝑡𝑡−1 0.676*** 0.865***
+ (12.60) (9.25)
+
+𝐺𝐺𝑉𝑉𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉 𝐷𝐷𝐸𝐸𝑉𝑉𝑖𝑖𝑅𝑅𝑉𝑉 𝑉𝑉𝐶𝐶𝑉𝑉𝑡𝑡−2  -0.309***
+  (-2.78)
+
+𝐺𝐺𝑉𝑉𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉 𝐷𝐷𝐸𝐸𝑉𝑉𝑖𝑖𝑅𝑅𝑉𝑉 𝑉𝑉𝐶𝐶𝑉𝑉𝑡𝑡−3  0.037
+  (0.32)
+
+𝐺𝐺𝑉𝑉𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉 𝐷𝐷𝐸𝐸𝑉𝑉𝑖𝑖𝑅𝑅𝑉𝑉 𝑉𝑉𝐶𝐶𝑉𝑉𝑡𝑡−4  0.089
+  (0.78)
+
+𝐺𝐺𝑉𝑉𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉 𝐷𝐷𝐸𝐸𝑉𝑉𝑖𝑖𝑅𝑅𝑉𝑉 𝑉𝑉𝐶𝐶𝑉𝑉𝑡𝑡−5  -0.030
+  (-0.27)
+
+𝐺𝐺𝑉𝑉𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉 𝐷𝐷𝐸𝐸𝑉𝑉𝑖𝑖𝑅𝑅𝑉𝑉 𝑉𝑉𝐶𝐶𝑉𝑉𝑡𝑡−6  0.095
+  (1.06)
+
+No. of Obs. 175 170
+Adj. R2 0.581 0.623
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===== PAGE 16 =====
+
+15
+
+Appendix Table A6. Investor Sentiment and Future Returns
+
+This table reports regressions forecasting future equity returns and sovereign CDS returns. The dependent
+variable in column (1) to (4) are equity returns in future 1 -month, 3-month, 6-month and 12-month. The
+dependent variable in column (5) to (8) are sovereign CDS returns in future 1 -month, 3-month, 6-month
+and 12-month. The main independent variable, 𝐵𝐵𝐸𝐸 𝐷𝐷𝑂𝑂𝑇𝑇𝑅𝑅𝐸𝐸
+𝑡𝑡, is the sentiment index in Baker and Wurgler
+(2006). In columns (1) to (4), we control for the past 12- month equity returns by controlling for the pa st
+1-month equity return, 𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡, and the additional past 11 -month equity return, 𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡−11,𝑡𝑡−1. In
+columns (5) to (8), we control for the past 12- month sovereign CDS returns by controlling for the past 1 -
+month sovereign CDS return, 𝐸𝐸𝐶𝐶𝐷𝐷𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡 , and the additional past 11 -month sovereign CDS return,
+𝐸𝐸𝐶𝐶𝐷𝐷𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡−11,𝑡𝑡−1. We report t-statistics based on standard errors with Newey-West adjustments of up to 12
+lags in parentheses  with *, **, and *** indicating statistical significance at the 10%, 5%, and 1% levels,
+respectively.
+
+ 𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑅𝑅𝑅𝑅𝑅𝑅 𝐸𝐸𝐶𝐶𝐷𝐷𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅
+ (1) (2) (3) (4) (5) (6) (7) (8)
+ 𝑅𝑅 + 1  𝑅𝑅 + 3 𝑅𝑅 + 6 𝑅𝑅 + 12 𝑅𝑅 + 1 𝑅𝑅 + 3 𝑅𝑅 + 6 𝑅𝑅 + 12
+𝐵𝐵𝐸𝐸 𝐷𝐷𝑂𝑂𝑇𝑇𝑅𝑅𝐸𝐸𝑡𝑡  -0.020** -0.067*** -0.147*** -0.277*** 0.0001 0.001 0.004 0.008
+ (-2.16) (-2.87) (-3.32) (-3.75) (0.08) (0.40) (1.21) (1.10)
+𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡  0.113 0.190 0.107 -0.177
+ (1.06) (0.89) (0.48) (-0.64)
+𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡−11,𝑡𝑡−1 0.011 0.006 -0.021 -0.072
+ (0.38) (0.09) (-0.19) (-0.76)
+𝐸𝐸𝐶𝐶𝐷𝐷𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡     0.040 -0.142 -0.241 -0.379**
+     (0.31) (-0.50) (-1.13) (-2.27)
+𝐸𝐸𝐶𝐶𝐷𝐷𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡−11,𝑡𝑡−1     -0.053 -0.151 -0.240 -0.184
+     (-0.64) (-0.98) (-1.43) (-1.46)
+
+Obs. 164 162 159 153 129 127 124 118
+Adj. R2 0.03 0.09 0.18 0.32 0.001 0.03 0.09 0.11
+
+
+===== PAGE 17 =====
+
+16
+
+Appendix Table A7. SCDS Returns Forecasting Real Economic Outcomes
+
+This table reports regressions forecasting real economic outcomes with SCDS returns . The dependent
+variable in Panel A is the export growth of each country in year t+1. The main independent variable of
+interest is the corresponding country’s annual SCDS return in year t (𝐶𝐶𝑤𝑤𝑂𝑂𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡). Other control variables
+include the country’s equity market return ( 𝐶𝐶𝑤𝑤𝑂𝑂𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑡𝑡), currency return ( 𝐶𝐶𝑤𝑤𝑂𝑂𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉𝑡𝑡), as well as export
+growth and GDP growth, all measured in year t. Panel B reports regressions of forecasting future one-year
+import growth with the exporting countries’ SCDS returns. The dependent variable is the import growth
+of each country in year t+1. The main independent variable of interest, 𝐷𝐷𝐼𝐼𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡, is the weighted average
+of annual SCDS returns for the import destination (upstream) countries in year t. Other control variables
+include the import-weighted average of annual equity returns, 𝐷𝐷𝐼𝐼𝐸𝐸𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑡𝑡, and currency returns, 𝐷𝐷𝐼𝐼𝐸𝐸𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉𝑡𝑡
+for the import destination (upstream) countries in year t. All independent variables are standardized to
+have a mean of zero and standard deviation of one. Time fixed effects are included in all specifications. We
+report t-statistics based on standard errors double-clustered by time and country in parentheses with *, **,
+and *** indicating statistical significance at the 10%, 5%, and 1% levels, respectively.
+
+Panel A: Depvar = Export Growth (in %)
+ (1) (2) (3) (4) (5)
+𝐶𝐶𝑤𝑤𝑂𝑂𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡 -0.517 -0.505 -0.324 -0.135 -0.126
+ (-0.56) (-0.53) (-0.35) (-0.17) (-0.16)
+𝐶𝐶𝑤𝑤𝑂𝑂𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑡𝑡    1.287 1.260
+    (1.56) (1.44)
+𝐶𝐶𝑤𝑤𝑂𝑂𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉𝑡𝑡     0.063
+     (0.12)
+𝐷𝐷𝐸𝐸𝐸𝐸𝐶𝐶𝑉𝑉𝑅𝑅𝐺𝐺𝑉𝑉𝐶𝐶𝑤𝑤𝑅𝑅ℎ𝑡𝑡   -0.713 -2.216 -0.431 -0.428
+  (-0.29) (-0.89) (-0.24) (-0.24)
+𝐺𝐺𝐷𝐷𝐺𝐺𝐺𝐺𝑉𝑉𝐶𝐶𝑤𝑤𝑅𝑅ℎ𝑡𝑡    3.497*** 2.666*** 2.665***
+   (3.83) (3.42) (3.44)
+
+Time FE Yes Yes Yes Yes Yes
+No. of Obs. 894 894 894 768 767
+Adj. R2 0.61 0.61 0.63 0.70 0.70
+
+
+
+===== PAGE 18 =====
+
+17
+
+
+Panel B: Depvar = 𝐷𝐷𝐼𝐼𝐸𝐸𝐶𝐶𝑉𝑉𝑅𝑅𝐺𝐺𝑉𝑉𝐶𝐶𝑤𝑤𝑅𝑅ℎ𝑡𝑡+1 (in %)
+𝐷𝐷𝐼𝐼𝐸𝐸𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡  -0.870 -1.017
+ (-1.24) (-1.57)
+𝐷𝐷𝐼𝐼𝐸𝐸𝐸𝐸𝑅𝑅𝐶𝐶𝑆𝑆𝑀𝑀𝑡𝑡 6.555*** 6.454***
+ (3.27) (3.27)
+𝐷𝐷𝐼𝐼𝐸𝐸𝐶𝐶𝑉𝑉𝑉𝑉𝑉𝑉𝑡𝑡 -0.914 -0.405
+ (1.32) (-0.48)
+𝐶𝐶𝑤𝑤𝑂𝑂𝑅𝑅𝑅𝑅𝑅𝑅𝑡𝑡 -2.205*** -2.203***
+ (-3.20) (-3.28)
+𝐷𝐷𝐼𝐼𝐸𝐸𝐶𝐶𝑉𝑉𝑅𝑅𝐺𝐺𝑉𝑉𝐶𝐶𝑤𝑤𝑅𝑅ℎ𝑡𝑡   1.420*
+  (1.85)
+
+Time FE Yes Yes
+No. of Obs. 950 950
+Adj. R2 0.52 0.53
+
+
+
+===== PAGE 19 =====
+
+18
+
+
+
+
+
+Appendix Figure A1. Global SCDS Volatilities and Regional Export Concentration
+
+This figure shows the relation between regional export concentration and the region’s contribution to the
+global SCDS volatility. The y -axis is the share of regional contribution to the 𝐷𝐷𝐷𝐷𝑅𝑅𝐷𝐷𝐶𝐶𝐷𝐷 component of the
+global SCDS volatility. T he decomposition of global SCDS volatility into the 𝐷𝐷𝐷𝐷𝑅𝑅𝐷𝐷𝐶𝐶𝐷𝐷  and 𝐿𝐿𝐷𝐷𝐿𝐿𝐿𝐿
+components follows Giovanni, Levchenko and Mejean (2014):
+𝜎𝜎𝑔𝑔,𝜏𝜏
+2 = ∑ 𝑤𝑤𝑖𝑖,𝜏𝜏−1
+2 𝑉𝑉𝑉𝑉𝑉𝑉�𝑅𝑅𝑅𝑅𝑅𝑅𝑖𝑖,𝑡𝑡�𝑖𝑖���������������
+𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝜏𝜏
++ ∑ ∑ 𝑤𝑤𝑖𝑖,𝜏𝜏−1 ∗ 𝑤𝑤𝑗𝑗,𝜏𝜏−1 ∗ 𝐶𝐶𝐶𝐶𝐶𝐶�𝑅𝑅𝑅𝑅𝑅𝑅𝑖𝑖,𝑡𝑡, 𝑅𝑅𝑅𝑅𝑅𝑅𝑗𝑗,𝑡𝑡�𝑗𝑗𝑖𝑖���������������������������
+𝐿𝐿𝐷𝐷𝑁𝑁𝐾𝐾𝜏𝜏
+.
+The x-axis is the Herfindahl index of each country’s share of the global export in each region. We also fit
+a regression line through these observations, with an adj-R2 of 61%.
+
+
+
+
+===== PAGE 20 =====
+
+19
+
+
+
+Appendix Figure A2. Global Equity Volatilities and Lagged SCDS Returns
+
+This figure shows the monthly series of global equity market volatilities and lagged one-month global SCDS
+returns. Both variables are calculated as the trade-weighted averages across all countries in the sample.
+
+
+
+0
+0.0002
+0.0004
+0.0006
+0.0008
+0.001
+0.0012
+-0.04
+-0.03
+-0.02
+-0.01
+0
+0.01
+0.02
+0.03
+0.04
+ 2001m2
+ 2001m8
+ 2002m2
+ 2002m8
+ 2003m2
+ 2003m8
+ 2004m2
+ 2004m8
+ 2005m2
+ 2005m8
+ 2006m2
+ 2006m8
+ 2007m2
+ 2007m8
+ 2008m2
+ 2008m8
+ 2009m2
+ 2009m8
+ 2010m2
+ 2010m8
+ 2011m2
+ 2011m8
+ 2012m2
+ 2012m8
+ 2013m2
+ 2013m8
+ 2014m2
+ 2014m8
+ 2015m2
+ 2015m8
+Global Equity V olatility
+Global SCDS Return
+Month
+Lagged Global SCDS Return
+Global Equity Volatility

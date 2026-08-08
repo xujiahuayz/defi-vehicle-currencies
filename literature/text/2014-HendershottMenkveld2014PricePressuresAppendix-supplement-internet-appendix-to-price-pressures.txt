@@ -1,0 +1,484 @@
+
+
+===== PAGE 1 =====
+
+Online appendix for “Price Pressures”
+Terrence Hendershott and Albert J. Menkveld
+
+===== PAGE 2 =====
+
+This document has the following supplemental material:
+1. Section1presents the inﬁnite horizon version of the Ho and Stoll (1981) model and solves it numeri-
+cally. Fig.7graphs its solution.
+2. Table5extends Table3by providing all parameters instead of just a subset.
+1. A recursive version of the Ho and Stoll (1981) model and its numerical
+solution
+1.1. Recursive dynamic inventory model setup
+Ho and Stoll(1981)a r et h eﬁ r s tt os e tu pt h ed y n a m i cp r o g r a mf o rt h er i s k - a v e r s ei n t e r m e d i a r ya n d
+cast it in a ﬁnite time horizon where utility is generated only by ﬁnal wealth. To better ﬁt our analysis of
+liquidity supplier inventory and prices on the NYSE, we take the model, cast it in recursive form with an
+inﬁnite horizon, and solve for the intermediary’s optimal policy and the resulting stationary distribution.1
+1.1.1. Liquidity demand process
+Ho and Stoll(1981)u s ear e d u c e df o r mm o d e lf o rt h et r a n s a c t i o nr a t e s( w h e r et r a n s a c t i o ns i z ei sﬁ x e d
+at one unit) of public buyers and sellers that was ﬁrst proposed byGarman(1976). These transaction rates
+are linear in the ask and bid price, with the public buy rate decreasing in the ask price and public sell rate
+increasing in the bid price.
+The social cost analysis requires a bit more structure on the liquidity demand process. Instead of sep-
+arating the two sides of the market, we generalize the investor arrival process by considering agents who
+arrive at the market and depending on the prices quoted decided whether to buy, sell, or not trade. The in-
+vestors incur idiosyncratic endowment shocks that can be hedged by an oﬀsetting position in a (single) risky
+security that trades in the market. This private valuevis stochastic and zero in expectation as it is a private
+value relative to a security’s common value that we ﬁx at zero throughout for ease of notation.2The agent
+1Others also study dynamic inventory control.Madhavan and Smidt(1993)f u r t h e re n r i c h e st h eHo and Stoll(1981)s e t t i n gb y
+adding an informed liquidity demander.Amihud and Mendelson(1980)a n a l y z ead y n a m i ci n v e n t o r ym o d e li nr e c u r s i v ef o r mw h e r e
+ar i s k - n e u t r a li n t e r m e d i a r ym a x i m i z e sa v e r a g ep r o ﬁ ta n ds t a y sa w a yf r o ma ne x o g e n o u s l yg i v e nm a x i m u mi n v e n t o r yc o n s t r a i n ta s
+arriving at that state limits her proﬁt opportunity (she can essentially exit on one side). We work from theHo and Stoll(1981)
+model as we focus on the price risk associated with an suboptimal inventory position.2The common value here is the equilibrium price in the absence of the liquidity friction that is modeled. It is the price at which
+all idiosyncratic shocks wash in the crosssection of investors. We refer to the investors’ idiosyncratic desire to trade as their hedging
+values, although their private motivations for trade could be more general.
+1
+
+===== PAGE 3 =====
+
+arrives at the market and trades only ifvis above the ask (agent buys a unit) or below the bid (agent sells a
+unit).3We parameterize this process as follows. The idiosyncratic shocks happen, and agents arrive at the
+market according to a Poisson process with rate 2λθ.C o n d i t i o n a lo na r r i v a l ,t h ep r i v a t ev a l u evis uniformly
+distributed with support [−1
+θ,1
+θ]. This speciﬁcation implies Fig.6for the public buy (sell) rate at the ask
+(bid) price, where the arrival rate per private value is derived as the arrival rate (2λθ)t i m e st h ep r i v a t ev a l u e
+density (1
+2θ)a n dt h ep u b l i cb u ya n ds e l lr a t e sf o l l o wb yi n t e g r a t i n go v e rp r i v a t ev a l u er a t e sf r o mt h ea s kt o
+1
+θand from1
+θto the bid, respectively. The total private value rate (or the size of the market) is obtained by
+setting the bid and ask price equal to zero and is thus representated by the size of the triangle deﬁned by−1
+θ
+and1
+θon the price axis andλθon the transaction rate axis. The size of this area isλ,w h i c hr e p r e s e n t st h e
+size of maximum consumer surplus. The realized private value rate depends on the bid and ask price set by
+the intermediary who produces liquidity. If she is risk-neutral and, therefore, operates on a zero cost rate,
+she charges the monopoly pricep=1
+2θand, for public buys, captures a producer surplus rate equal to the
+square deﬁned by A in the graph. The consumer surplus rate on this side of the market is the triangle B, and
+the deadweight loss due to monopoly power is C on this side of the market.
+[Insert Figure6near here]
+The second parameterθcaptures the dispersion of private values and, therefore, governs the price sen-
+sitivity of the net transaction rate (deﬁned as the public buy rate minus the public sell rate) standardized by
+the investor arrival rate. Lowering of both the bid quote and the ask quote bysincreases the rate of buys
+minus sells by 2sλθ2,w h i c h ,s t a n d a r d i z e db yt h ea r r i v a lr a t eo f2λθ,e q u a l sθs.C o m p a r a t i v e s t a t i c s s h o w
+that this is an important parameter in the intermediary’s optimization behavior.θparallels the price elasticity
+of demand that a monopolist faces in a standard product market.
+1.1.2. The intermediary’s dynamic program
+We set up the intermediary’s optimization in discrete time to solve for her optimal policy and obtain a
+stationary distribution of pricing errors and inventory. This distribution characterizes the series’ time series
+properties, i.e., contemporaneous as well as lagged moments. The Poisson private demand arrivals are
+modeled as discrete probabilities that are linear in prices.4The intermediary is risk-averse and maximizes
+3If agents have the opportunity to contact the market more than once thenvcan be interpreted as the hedging beneﬁt from the
+current trading opportunity until the investor’s next contact with the market [seeWeill(2007)a n dLagos et al.(2011)f o rm o r eo n
+investors’ intertemporal optimization].4This is a reasonable approximation as the Poisson process itself is the limiting case of event probabilities that are linear in
+small discrete time increments.
+2
+
+===== PAGE 4 =====
+
+expected utility where her utility is the standard time-separableCRRA utility. She is a monopolist liquidity
+supplier who produces liquidity supply by issuing ﬁrm price quotes that are take-it-or-leave-it prices that
+liquidity demanders see when arriving at the market. She can therefore not price discriminate and capture
+the full consumer surplus.
+LetV(.)b et h em a x i m u mu t i l i t yt h a tt h ei n t e r m e d i a r yc a na c h i e v ew h e ns t a r t i n goﬀwith an inventory of
+i0shares and a wealth ofw0:
+V(i0,w0)= max{ct,at≤1
+θ,bt≥−1
+θ}∞
+t=0
+E[Σ∞
+t=0βtu(ct)|i0,w0]( 3 8 )
+subject to the budget constraint
+wt+1=R(wt−ct)+it∆mt+1+atmax(−∆it,0)−btmax(∆it,0) (39)
+and subject to the following transition probabilities across inventory states:
+P[it+1=it−1|it]=
+∫1
+θ
+at
+(2λθ)
+(1
+2θ
+)
+dv=λθ(1−θat)( 4 0 )
+and
+P[it+1=it+1|it]=λθ(1+θbt),
+whereitis the intermediary’s inventory position at timet,wtis her wealth,ctis her consumption at timet,β
+is her discount factor,Ris the gross risk-free return,∆mtis her stochastic dividend in periodt+1( w h i c hr u n s
+from timetto timet+1), which has zero expectation and a variance equal toσ2,a n dbt(at)i st h eb i d( a s k )
+price she sets at timet.T h e s t o c h a s t i cd i v i d e n ds t r e a mi s a m o d e l i n gd e v i c et o m i n i m i z e t h e a c c o u n t i n gi n
+the model. We emphasize that no sources of uncertainty are ignored (see alsoHo and Stoll,1981,p .5 2 ) .
+We exploit the recursive nature of the problem that leads to the following Bellman equation for the
+3
+
+===== PAGE 5 =====
+
+inventory statei(using the law of iterated expectations):
+V(i,w)= maxciw,aiw,biw
+u(ciw)+βE∆m
+[
+V(i+1,R(w−ciw)+i∆m−biw)
+]
+λθ(1+θbiw)+
+βE∆m
+[
+V(i−1,R(w−ciw)+i∆m+aiw)
+]
+λθ(1−θaiw)+ (41)
+βE∆m
+[
+V(i,R(w−ciw)+i∆m
+]
+(1−λθ(1+θbiw)−λθ(1−θaiw)),
+where∆mis the stochastic dividend in the oncoming period.
+With upper bounds on the absolute inventory position and wealth it is straightforward to show that the
+functional equations deﬁned by Eq. (41)d e ﬁ n eac o n t r a c t i o ni nt h e(i,w)s p a c eb yv e r i f y i n gB l a c k w e l l ’ sp a i r
+of suﬃcient conditions (seeLjungqvist and Sargent,2004,p .1 0 1 2 ) .T h i si m p l i e st h ee x i s t e n c eo fau n i q u e
+ﬁxed point in the space of bounded continuous functions and therefore guarantees the existence of a unique
+equilibrium.
+The numerical solution illustrates that the intermediary seems to endogenously stay away from large
+inventory and wealth upper bounds for our calibration in which relative risk aversion is larger than one and
+the reciprocal of the discount rate (β−1)i ss t r i c t l yl a r g e rt h a nt h er i s k - f r e er a t e(R). The endogenous upper
+bound on wealth is best understood based onHuggett(1993), which shows that for exogenous nondiver-
+siﬁable endowment risk the two parameter restrictions guarantee that the agent does not let wealth grow
+inﬁnitely large. The intuition is that with CRRA utility the agent’s willingness to bear absolute risk grows
+with wealth. The reciprocal of the discount rate being strictly larger than the risk-free rate makes her prefer
+consuming today over tomorrow. It is, therefore, perfectly intuitive that at some level of wealth she prefers
+consuming out of wealth over accumulating more given that risk is less of a consideration on high wealth
+levels.
+The model we propose extends this setting as the exposure to idiosyncratic risk (inventory) is decided
+upon endogenously. The same intuition applies for why she does not let wealth grow to inﬁnity. In addition,
+the intermediary does not visit extreme inventory states as her earning potential does not change with inven-
+tory, whereas her cost does given the stochastic dividend exposure (i∆m). In the numerical solution we set
+the bounds wide enough so that the intermediary decides never to visit the upper bound states.
+4
+
+===== PAGE 6 =====
+
+1.2. The numerical solution: the optimal policy and implied stationary distribution
+We numerically solve the intermediary’s dynamic program, which is summarized by Eq. (38). The
+calibration follows, to the extent possible, the base case parametrization proposed by (Ho and Stoll,1981,
+p. 67). We present the calibration details in Section2.
+Fig.7presents the numerical solution to the intermediary’s dynamic program. Panel A plots the value
+function which is deﬁned as the maximum discounted utility the intermediary obtains conditional on starting
+oﬀin a particular inventory-wealth state. Its concavity is generated by the time discounting in the dynamic
+program (seeLjungqvist and Sargent,2004,S e c t i o nA . 2 . ) .G i v e nt h ev a l u ef u n c t i o na n dt h eB e l l m a ne q u a -
+tions, it is a straightforward one-period optimization to establish the intermediary’s optimal control policy
+(i.e., bid price, ask price, and consumption) in each inventory-wealth state. This control policy, in turn,
+determines the system transition laws. If she is started oﬀwith suﬃcient wealth and zero inventory, she
+eventually ends up in the stationary distribution over the inventory-wealth states, which is also depicted in
+Panel A. The stationary distribution illustrates that she endogenously chooses to stay far from the inventory
+and wealth upper and lower bounds.
+[Insert Figure7near here]
+Panel B of Fig.7illustrates the optimal control policy, which consists of the bid price, the ask price, and
+the consumption in each of the inventory-wealth states. The graphs provide the midquote and the bid-ask
+spread instead of the bid and ask price separately to better illustrate price pressures. The graph conﬁrms
+the intuition that the intermediary skews the midquote to generate an transactions that mean-reverts her
+inventory. She lowers the midquote on long positions and raises it on short positions.
+Two observations are particularly useful to motivate the econometric model we propose for the empir-
+ical analysis. First, the intermediary’s policy seems to support the ﬁrst-order approximation we use in the
+econometric model, which is that price pressure is linear in inventory and does not depend on wealth. The
+wealth result is particularly useful given that we do not have access to data on the intermediary’s wealth
+level. Second, relative to midquote changes the bid-ask spread appears constant across states.5It is only
+slightly higher than the spread that a risk-neutral intermediary would charge: 2(2θ)−1=0.2.6This is a
+5Zabel(1981)a n dMildenstein and Schleef(1983)ﬁ n dt h a tt h es p r e a di si n d e p e n d e n to fi n v e n t o r y .Ho and Stoll(1981)ﬁ n d
+inventory has a very small eﬀect on the spread.6It is not surprising that the price of immediacy, i.e., the spread, is slightly higher because the marginal cost of production is no
+longer zero but becomes positive when the intermediary is risk-averse.
+5
+
+===== PAGE 7 =====
+
+reassuring result as it conﬁrms theGrossman and Miller(1988)a r g u m e n tt h a tt h es p r e a dc a p t u r e st h ec o s t
+of processing orders (or monopoly rents in our case), whereas midquote changes capture the dynamic trade-
+oﬀthe intermediary does between staying one more period on a costly suboptimal position or discounting
+prices to mean-revert that position. This apparent orthogality of monopoly rents that are reﬂected in the
+spread and limited risk-bearing capacity that lead to price pressures suggests that competition in the inter-
+mediation sector on unchanged overall risk-bearing capacity drives down the bid-ask spread to marginal cost
+but leaves price pressures unchanged. That is, the fundamental trade-oﬀof discounting price versus bearing
+idiosyncratic risk for an additional period remains. This is our intuition and to formally derive a general
+result is beyond the scope of the current paper.
+The consumption graph illustrates that the intermediary insures against adverse dividend shocks by
+maintaining a wealth buﬀer. She consumes less than expected earnings on low wealth levels and more
+than expected earnings on high wealth levels. This is best illustrated by the zero inventory policies as her
+expected earnings of a potential current period transaction equal a constant 2×(1−0.5×0.23)∗×0=0.98 as
+prices are unchanged across the wealth dimension. She consumes less than these expected earnings on low
+wealth levels and thus insures against adverse future dividend shocks through savings. She consumes more
+than expected earnings and thus eats out of her large wealth buﬀer on high wealth levels. This consumption
+pattern makes wealth mean-reverting. Furthermore, she reduces her consumption when on a larger nonzero
+inventory, which reﬂects the higher need for a wealth buﬀer given that she is in a more risky state.
+2. Details on the calibration and the solution method
+2.1. Base case model calibration
+We numerically solve the intermediary’s dynamic program, which is summarized by Eq. (38). The
+calibration follows, to the extent possible, the base case parametrization proposed by (Ho and Stoll,1981,
+p. 67).
+1. The intermediary’s coeﬃcient of relative risk aversion (ρ)i st w o .
+2. The time interval length is one day.
+3. The arrival rate function isg(x)=λ0(1−θx), whereλ0=1a n dθ=5s ot h a te a c hd a yt h er e p r e s e n t a t i v e
+investor arrives and considers a trade. The transaction size is ten units.7
+7Ho and Stoll(1981)u s et h es a m eθbut setλ0=2,000 as the annual transaction rate. To match their arrival rate we set
+6
+
+===== PAGE 8 =====
+
+4. The stochastic dividend risk on one inventory unit equalsσ=√
+0.50/200=0.05, where one year
+contains two hundred trading days.
+5. The intermediary’s discount rateβis 0.9 to capture the two week horizon Stoll proposes for the
+intermediary.8
+6. The intermediary earns a gross daily risk-free rate ofR=1+0.10/200 on her savings for the next
+period.
+We then discretize the set of inventory-wealth states (i,w)b yc h o o s i n gag r i dw i t hc a r e f u l l ys e l e c t e db o u n d s
+for both the inventory and the wealth dimension of the state. We choose upper bounds for inventory and
+wealth so that the state-space becomes a ﬁnite set. We set inventory bounds equal to -50 and 50 and verify
+that expost these inventory states appear to be nonbinding constraints.9The step size for the inventory
+dimension is governed by the transaction size ten. We choose a wealth upper bound of ten where we again
+verify that the limit does not bind endogenously. We set the wealth lower bound equal to zero, which is an
+absorbing bankruptcy state from which point on consumption is arbitrarily small.10The wealth step size is
+constrained by the stochastic dividend risk, which is implemented as a discrete random variable where the
+outcome is plus or minusσwith equal probability. As the inventory dimension contains only multiples of
+ten, the stochastic dividend commands a (maximum) wealth step size of 10×0.05=0.5.11
+We then set up the discretized version of the Bellman equation, which is a trivial extension of the
+system deﬁned by Eq. (41). The step size on the wealth dimension necessarily discretizes the bid and ask
+prices that the intermediary can choose, but we can get as close as one might desire to a continuum of
+prices by shrinking the wealth step size at the cost of computational speed. After discretizing, we solve the
+dynamic program numerically by iterating on the Bellman equation, relying on the contraction property of
+the recursive mapping to achieve convergence.
+the transaction size equal to ten with the interpretation that one successful daily transaction means 2,000/200=10 intraday
+transactions of one inventory unit.8A0 . 9d i s c o u n tr a t ei m p l i e st h a tr o u g h l yt w o - t h i r d so ft h et o t a ld i s c o u n t e dv a l u eo fad i v i d e n ds t r e a mo fo n ef a l l si n t ot h eﬁ r s t
+two weeks.9One has to be careful here, as in addition to it being a very risky state, the intermediary internalizes that she can exit this state
+only on one side (i.e., less inventory), which limits her earning potential. Ideally, we would like to let the inventory upper boundI
+tend to inﬁnity to rule out this nonrisk explanation. We simulate such limit numerically and verify that the solution does not change
+by taking larger upper bounds.10CRRA utility satisﬁes the Inada conditions so that intermediaries steer clear of this state.
+11Technically, the intermediary could still end up strictly outside of wealth interval if she gets a large enough draw on the
+stochastic dividend. In the implementation, we steer her to the lower or upper bound of wealth in the cases that this happens. This
+does not aﬀect our solution as the intermediary endogenously chooses to stay away from those states.
+7
+
+===== PAGE 9 =====
+
+2.2. Bellman equations for the interior of the inventory-wealth state domain
+We arrive at the following discrete state dynamic program:
+V(i,w)= max˜wiw,aiw,biw
+u(w−R−1˜wiw)( 4 2 )
++βE∆m
+[V(i,˜w+i∆m)](1−g(aiw)−g(biw))
++βE∆m
+[V(i+1,˜w+i∆m+biw∆i)+∆m]g(biw)
++βE∆m
+[V(i−1,˜w+i∆m−aiw∆i)+∆m]g(aiw)
+g(x)=1−θx(probability of a transaction)
+i∈{ −50,−40,...,50}w∈{0,0.5,...,10},
+where the three expected value terms correspond to no-arrival, seller-arrival, and buyer-arrival, respectively.
+Eq. (42)d e ﬁ n e st h eB e l l m a ne q u a t i o n sf o rt h en o n b o u n d a r yi n v e n t o r y - w e a l t hs t a t e s . B u t ,b e f o r et u r n i n g
+to the boundary Bellman equations, we need to make sure that we stay on the inventory-wealth grid in the
+iterations. This motivates a binomial distribution for stochastic dividend
+P[∆m=−σ]=P[∆m=+σ]=0.5( 4 3 )
+and restricts the set of admissible controls to
+aiw,biw∈{0,0.05,0.10,...}s.t.g(aiw),g(biw),1−g(aiw)−g(biw)≥0( 4 4 )
+˜wiw∈{0,0.5,...,min(10,0.5⌊2Rw⌋)} (45)
+The upper bound for end-of-period wealth ˜wiwprevents negative current period consumption.
+2.3. Bellman equations for the boundary of the inventory-wealth state domain
+As for the boundary inventory states, we adjust the Bellman equation deﬁned in Eq. (42)b yr e d u c i n g
+the set of admissible controls. For the maximum inventory state, for example, we restrict the bid price to
+bIw=θ−1(which eﬀectively sets the seller arrival rate to zero). As for the boundary wealth states, in the zero
+wealth state we keep the intermediary on a low enough consumption level relative to her earning power in
+the nonzero wealth state to make her endogenously choose to stay away from the bankruptcy state. In states
+8
+
+===== PAGE 10 =====
+
+close to the maximum wealth state, we redirect her to the maximum wealth state if she enjoys a stochastic
+dividend that would make her transit to a larger wealth than the maximum wealth. One interpretation is that
+the government taxes excessive wealth away in these high wealth states. We reiterate that these assumptions
+on the maximum inventory or maximum wealth Bellman equations are inconsequential as we choose the
+maximum inventory and maximum wealth boundary large enough so that the intermediary endogenously
+chooses never to get near to these states (see discussion in footnote11).
+From this point on, we follow (Ljungqvist and Sargent,2004,S u b s e c t i o n4 . 2 ,p .9 5 ) ,i . e . ,w ei t e r a t eo n
+the Bellman equation and the contraction property of the recursive mapping guarantees convergence to the
+unique solution.
+9
+
+===== PAGE 11 =====
+
+Tab l e 5
+State space model estimates.
+This table reports the parameter panels that were ommitted from Table3.
+Quintile 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 All t-statistic
+Panel I:σ(u)ierror term permanent volatility (in basis points)
+Q1 116 117 121 126 164 187 241 183 177 120 101 98 146
+Q2 133 127 130 134 171 201 251 200 196 141 118 116 160
+Q3 140 133 136 144 185 200 241 196 193 141 128 127 164
+Q4 151 144 144 145 182 199 224 197 185 148 133 140 166
+Q5 166 162 168 167 211 222 246 225 225 182 161 174 192
+All 141 136 140 143 182 202 240 200 195 146 128 131 166
+Panel J:σ(f)tcommon factor volatility (in basis points)
+All 57 46 67 98 122 106 152 130 154 98 70 63 97
+Panel K:βi
+Q1 0.99 0.98 1.04 0.99 0.88 0.73 0.32 0.79 0.99 0.97 0.90 0.94 0.88 14.46
+Q2 1.09 0.87 0.95 0.85 0.82 0.55 0.35 0.85 1.00 1.08 1.04 1.11 0.88 12.51
+Q3 1.15 1.02 0.93 0.82 1.02 0.56 0.48 0.84 1.06 1.11 1.21 1.14 0.94 13.21
+Q4 1.12 0.72 0.67 0.73 0.90 0.48 0.35 0.77 0.90 1.01 1.25 1.24 0.84 10.41
+Q5 1.02 0.69 0.58 0.63 0.87 0.36 0.43 0.79 0.77 0.93 1.28 1.20 0.79 9.90
+All 1.07 0.86 0.83 0.80 0.90 0.54 0.39 0.81 0.94 1.02 1.13 1.13 0.87 13.66
+Panel L:β0
+i
+Q1 0.07 0.01 0.03 0.05 0.06 0.09 0.18 -0.04 -0.02 0.01 0.01 0.02 0.04 2.27
+Q2 -0.11 0.01 -0.09 -0.03 0.01 0.02 0.13 -0.12 -0.08 -0.09 -0.04 -0.02 -0.03 -1.62
+Q3 -0.22 -0.15 -0.12 -0.12 -0.16 -0.06 0.08 -0.08 -0.13 -0.15 -0.11 0.02 -0.10 -4.18
+Q4 -0.33 -0.12 -0.10 -0.16 -0.20 -0.08 0.14 -0.07 -0.03 -0.08 0.01 0.10 -0.08 -2.19
+Q5 -0.35 -0.19 -0.08 -0.18 -0.32 -0.09 -0.12 -0.27 -0.12 -0.20 -0.15 0.05 -0.17 -5.31
+All -0.19 -0.09 -0.07 -0.09 -0.12 -0.02 0.08 -0.12 -0.08 -0.10 -0.06 0.03 -0.07 -3.38
+Panel M:β1
+i
+Q1 0.04 0.01 0.02 0.03 0.06 0.03 0.09 -0.04 0.01 -0.02 0.02 -0.02 0.02 1.81
+Q2 -0.02 0.05 -0.03 -0.00 0.04 -0.03 0.08 -0.09 0.00 -0.04 -0.00 -0.00 -0.00 -0.29
+Q3 -0.09 -0.03 -0.04 -0.02 -0.04 -0.07 0.06 -0.05 -0.07 -0.06 -0.07 0.08 -0.03 -2.27
+Q4 -0.13 -0.01 -0.01 -0.04 -0.13 -0.04 0.08 -0.09 -0.08 -0.05 -0.07 0.13 -0.04 -1.64
+Q5 -0.20 -0.07 0.02 -0.06 -0.19 -0.04 -0.03 -0.18 -0.15 -0.13 -0.14 0.12 -0.09 -3.29
+All -0.08 -0.01 -0.01 -0.02 -0.05 -0.03 0.06 -0.09 -0.06 -0.06 -0.05 0.06 -0.03 -2.11
+Panel N:β2
+i
+Q1 0.04 -0.01 0.02 0.03 0.04 0.04 0.04 -0.01 -0.01 -0.01 -0.00 -0.04 0.01 1.70
+Q2 -0.03 0.03 -0.03 -0.01 0.04 -0.03 0.05 -0.08 0.01 -0.03 -0.01 0.01 -0.01 -0.74
+Q3 -0.04 -0.02 -0.07 -0.02 -0.03 -0.06 -0.00 -0.07 -0.02 -0.04 -0.02 0.07 -0.03 -2.70
+Q4 -0.06 0.02 -0.06 -0.07 -0.09 -0.07 0.03 -0.11 0.01 0.00 -0.04 0.11 -0.03 -1.66
+Q5 -0.14 -0.01 -0.03 -0.06 -0.09 -0.07 -0.03 -0.15 -0.04 -0.03 -0.10 0.12 -0.05 -2.72
+All -0.05 0.00 -0.03 -0.03 -0.03 -0.04 0.02 -0.09 -0.01 -0.02 -0.03 0.05 -0.02 -2.21
+Panel O:β3
+i
+Q1 -0.00 0.01 0.00 0.00 0.01 0.01 0.04 -0.00 0.01 -0.00 -0.00 -0.02 0.00 1.02
+Q2 -0.03 0.03 0.00 0.00 0.03 -0.01 0.04 -0.03 0.01 -0.03 -0.01 -0.02 -0.00 -0.27
+Q3 0.00 0.02 -0.01 0.00 -0.01 -0.02 0.00 -0.02 -0.00 -0.02 -0.04 0.03 -0.01 -1.12
+Q4 -0.03 0.05 -0.03 -0.02 -0.02 -0.02 0.04 -0.03 0.03 0.00 -0.04 0.08 -0.00 -0.03
+Q5 -0.05 0.02 0.00 -0.02 -0.03 -0.02 0.00 -0.06 -0.00 -0.01 -0.03 0.08 -0.01 -1.00
+All -0.02 0.03 -0.01 -0.01 -0.00 -0.01 0.02 -0.03 0.01 -0.01 -0.02 0.03 -0.00 -0.50
+10
+
+===== PAGE 12 =====
+
+A: Producer (intermediary) surplus
+Public sell rate
+Public buy rate
+δ
+Price
+(Ask)
+(Bid)
+B: Consumer (investor) surplus
+C: Deadweight loss
+-δ
+Tr a n s a c t i o n r a t e
+−1
+θ
+1
+θ
+λθ
+A C
+B
+Fig. 6.Consumer and producer surplus.
+11
+
+===== PAGE 13 =====
+
+Panel A: V alue function and stationary distribution
+-60-40-20  0  20 40 60 0
+ 2
+ 4
+ 6
+ 8
+ 10
+-1600
+-1400
+-1200
+-1000
+-800
+-600
+-400
+-200
+ 0
+Value
+"-"
+    -500
+  -1e+03
+Inventory
+Wealth
+Value
+-60-40-20  0  20 40 60 0
+ 2
+ 4
+ 6
+ 8
+ 10
+-0.005
+ 0
+ 0.005
+ 0.01
+ 0.015
+ 0.02
+ 0.025
+Probability
+"-"
+    0.02
+   0.015
+    0.01
+   0.005
+       0
+Inventory
+Wealth
+Probability
+Panel B: Optimal controls: midquote, bid-ask spread, and consumption
+-30-20-10  0  10 20 30 0 1 2 3 4 5 6 7 8
+-0.1-0.08-0.06-0.04-0.02 0 0.02 0.04 0.06 0.08 0.1
+Midquote
+"-"
+    0.05
+       0
+   -0.05
+Inventory
+Wealth
+Midquote
+-30-20-10  0  10 20 30 0 1 2 3 4 5 6 7 8
+ 0.1 0.12 0.14 0.16 0.18 0.2 0.22 0.24 0.26 0.28 0.3
+Spread
+"-"
+    0.22
+   0.215
+    0.21
+   0.205
+Inventory
+Wealth
+Spread
+-30-20-10  0  10 20 30 0 1 2 3 4 5 6 7 8
+ 0.2
+ 0.4
+ 0.6
+ 0.8
+ 1
+ 1.2
+ 1.4
+Consumption
+"-"
+     1.2
+       1
+     0.8
+     0.6
+     0.4
+Inventory
+Wealth
+Consumption
+Fig. 7.Va l u e f u n c t i o n , s t a t i o n a r y d i s tribution, and optimal control. This ﬁgureillustrates the numerical solution to a dynamic
+programming problem of an intermediary whom a x i m i z e se x p e c ted utility while quoting bid and ask prices to liquidity demanders
+whose arrival rates are less than perfectly price elastic. Panel A plots the value function (left) and the stationary distribution
+(right) over all the inventory-wealth states that the intermediary could ﬁnd herself in. Panel B illustrates her optimal control by
+plotting the midquote (left),the bid-ask spread (right), and her consumption (bottom) conditional on her inventory-wealth state. The
+parametrization of the problem is standard and follows Ho and Stoll (1981). The intermediary has constant relative risk aversion
+utility with a coeﬃcient of relative risk aversion equal to two. She operates at a daily frequency and has a two-week horizon
+that we capture by a (daily) discount factor of 0.9. Without lossof generality, we ﬁx the fundamental price at zero and capture
+inventory price risk through a stochastic dividend with mean zero and daily standard deviation of $0.05. The probability of a public
+buyer (seller) arrival depends linearly on the ask (bid) price, where the slopeθcaptures the elasticity of arrival rates to prices (the
+benchmark is no friction, i.e.,θ=∞).
+12

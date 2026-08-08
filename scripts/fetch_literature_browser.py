@@ -21,10 +21,30 @@ import signal
 import tempfile
 import time
 import urllib.parse
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ddvc.literature_sources import (  # noqa: E402
+    Entry,
+    Source,
+    default_sources_from_bib,
+    existing_files_for_key,
+    file_version,
+    install_pdf,
+    is_pdf,
+    load_source_registry,
+    mirror_validated_pdf,
+    openathens_url,
+    ordered_sources,
+    parse_bibtex,
+    preferred_existing_file,
+    remove_weaker_versions,
+    safe_filename,
+    should_replace_existing,
+    source_keys_lock,
+    write_manifest_records,
+    with_openathens,
+)
 from ddvc.paths import (  # noqa: E402
     LITERATURE_BIB,
     LITERATURE_DIR,
@@ -39,21 +59,6 @@ from ddvc.runtime import atomic_output
 PROFILE_DIR = LITERATURE_DIR / "auth" / "browser-profile"
 
 
-@dataclass(frozen=True)
-class Entry:
-    key: str
-    kind: str
-    fields: dict[str, str]
-
-
-@dataclass(frozen=True)
-class Source:
-    url: str
-    version: str
-    access: str = "unknown"
-    label: str = ""
-
-
 def import_playwright():
     try:
         from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -64,125 +69,6 @@ def import_playwright():
             "&& python3 -m playwright install chromium"
         ) from exc
     return sync_playwright, PlaywrightTimeoutError
-
-
-def parse_bibtex(path: Path) -> dict[str, Entry]:
-    text = path.read_text(encoding="utf-8")
-    entries: dict[str, Entry] = {}
-    for match in re.finditer(r"@(\w+)\s*\{\s*([^,\s]+)\s*,(.*?)\n\}", text, re.S):
-        kind = match.group(1).strip().lower()
-        key = match.group(2).strip()
-        body = match.group(3)
-        fields: dict[str, str] = {}
-        for field in re.finditer(r"^\s*([A-Za-z]+)\s*=\s*\{(.*?)\}\s*,?\s*$", body, re.M):
-            fields[field.group(1).lower()] = field.group(2).strip()
-        entries[key] = Entry(key=key, kind=kind, fields=fields)
-    return entries
-
-
-def load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-
-
-def load_sources(path: Path) -> tuple[str | None, dict[str, list[Source]]]:
-    data = load_json(path)
-    result: dict[str, list[Source]] = {}
-    for key, raw_sources in data.get("sources", {}).items():
-        result[key] = [
-            Source(
-                url=str(raw["url"]),
-                version=str(raw.get("version", "unknown")),
-                access=str(raw.get("access", "unknown")),
-                label=str(raw.get("label", "")),
-            )
-            for raw in raw_sources
-        ]
-    openathens = data.get("openathens")
-    return str(openathens) if openathens else None, result
-
-
-def default_sources_from_bib(entry: Entry) -> list[Source]:
-    doi = entry.fields.get("doi")
-    if not doi:
-        return []
-    doi_l = doi.lower()
-    version = "working-paper" if doi_l.startswith(("10.3386/", "10.59576/")) or entry.kind == "techreport" else "published"
-    return [Source(url=f"https://doi.org/{doi}", version=version, access="authenticated", label="DOI resolver")]
-
-
-def openathens_url(url: str, domain: str) -> str:
-    return f"https://go.openathens.net/redirector/{domain}?url={urllib.parse.quote(url, safe='')}"
-
-
-def with_openathens(sources: list[Source], domain: str | None) -> list[Source]:
-    expanded: list[Source] = []
-    for source in sources:
-        if domain and source.version == "published" and source.access != "institutional" and source.url.startswith("http"):
-            expanded.append(
-                Source(
-                    url=openathens_url(source.url, domain),
-                    version=source.version,
-                    access="institutional",
-                    label=f"OpenAthens {domain}: {source.label}",
-                )
-            )
-        expanded.append(source)
-    return expanded
-
-
-def ordered_sources(sources: list[Source], prefer: str) -> list[Source]:
-    if prefer == "published":
-        priority = {"published": 0, "accepted": 1, "working-paper": 2, "preprint": 3, "whitepaper": 4}
-    else:
-        priority = {"working-paper": 0, "preprint": 1, "published": 2, "accepted": 3, "whitepaper": 4}
-    return sorted(sources, key=lambda source: priority.get(source.version, 50))
-
-
-def safe_filename(entry: Entry, source: Source) -> str:
-    year = entry.fields.get("year", "undated")
-    title = entry.fields.get("title", entry.key)
-    title = re.sub(r"[{}\\\\]", "", title)
-    title = re.sub(r"[^A-Za-z0-9]+", "-", title).strip("-").lower()
-    title = title[:80].strip("-")
-    suffix = "" if source.version == "published" else f"-{source.version}"
-    return f"{year}-{entry.key}{suffix}-{title}.pdf"
-
-
-def is_pdf(data: bytes) -> bool:
-    return data.startswith(b"%PDF")
-
-
-def write_pdf(path: Path, data: bytes, overwrite: bool) -> str:
-    if path.exists() and not overwrite:
-        return "exists"
-    with atomic_output(path) as temporary:
-        temporary.write_bytes(data)
-    return f"{len(data)} bytes"
-
-
-def existing_files_for_key(out_dir: Path, key: str) -> list[Path]:
-    return sorted(out_dir.glob(f"*-{key}*.pdf"))
-
-
-def file_version(path: Path) -> str:
-    for version in ["working-paper", "preprint", "accepted", "whitepaper"]:
-        if f"-{version}-" in path.name:
-            return version
-    return "published"
-
-
-def should_replace_existing(existing: list[Path], source: Source, overwrite: bool) -> bool:
-    if overwrite or not existing:
-        return True
-    return source.version == "published" and all(file_version(path) in {"working-paper", "preprint", "accepted"} for path in existing)
-
-
-def remove_weaker_versions(existing: list[Path], source_version: str, target: Path) -> None:
-    if source_version != "published":
-        return
-    for path in existing:
-        if path != target and file_version(path) in {"working-paper", "preprint", "accepted"}:
-            path.unlink()
 
 
 def pdf_from_response(response: Any) -> bytes | None:
@@ -657,6 +543,15 @@ def _browser_fetch_pdf(
     return None, f"{detail}; browser-fetch not-pdf; final={final_url}"
 
 
+def browser_executable_options(channel: str, executable_path: str) -> dict[str, str]:
+    """Select one explicit browser binary route without ambiguous precedence."""
+    if channel and executable_path:
+        raise ValueError("use either --channel or --executable-path, not both")
+    if executable_path:
+        return {"executable_path": executable_path}
+    return {"channel": channel} if channel else {}
+
+
 def _source_worker(
     result_path_text: str,
     data_path_text: str,
@@ -668,6 +563,7 @@ def _source_worker(
     password: str | None,
     headless: bool,
     channel: str,
+    executable_path: str = "",
 ) -> None:
     """Run one browser source in an independently killable process."""
     if hasattr(os, "setsid"):
@@ -687,8 +583,7 @@ def _source_worker(
                     "viewport": {"width": 1400, "height": 1000},
                     "args": ["--disable-blink-features=AutomationControlled"],
                 }
-                if channel:
-                    kwargs["channel"] = channel
+                kwargs.update(browser_executable_options(channel, executable_path))
                 context = playwright.chromium.launch_persistent_context(**kwargs)
                 try:
                     page = context.pages[0] if context.pages else context.new_page()
@@ -747,6 +642,7 @@ def browser_fetch_with_deadline(
     password: str | None,
     headless: bool,
     channel: str,
+    executable_path: str = "",
 ) -> tuple[bytes | None, str]:
     """Fetch one source behind an operating-system-enforced deadline."""
     process_context = multiprocessing.get_context("spawn")
@@ -768,6 +664,7 @@ def browser_fetch_with_deadline(
                 password,
                 headless,
                 channel,
+                executable_path,
             ),
         )
         process.start()
@@ -825,6 +722,7 @@ def main() -> int:
     parser.add_argument("--key", action="append", help="Fetch only this BibTeX key; repeatable.")
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--channel", default="", help="Browser channel, e.g. chrome. Empty uses bundled Chromium.")
+    parser.add_argument("--executable-path", default="", help="Explicit Chromium-family browser binary, e.g. Brave; mutually exclusive with --channel.")
     parser.add_argument("--timeout-ms", type=int, default=90000)
     parser.add_argument("--source-timeout-ms", type=int, default=120000)
     parser.add_argument("--username-env", default="UCL_USER")
@@ -837,7 +735,7 @@ def main() -> int:
 
     import_playwright()
     entries = parse_bibtex(args.bib)
-    openathens_domain, source_map = load_sources(args.sources)
+    openathens_domain, source_map = load_source_registry(args.sources)
     keys = list(entries)
     if args.key:
         wanted = set(args.key)
@@ -849,71 +747,79 @@ def main() -> int:
     args.profile.mkdir(parents=True, exist_ok=True)
 
     records: list[dict[str, Any]] = []
-    for key in keys:
-        entry = entries[key]
-        committed = source_map.get(key, [])
-        sources = [
-            *ordered_sources(with_openathens(committed, openathens_domain), args.prefer),
-            *(
-                []
-                if committed
-                else ordered_sources(with_openathens(default_sources_from_bib(entry), openathens_domain), args.prefer)
-            ),
-        ]
-        attempts: list[dict[str, Any]] = []
-        for index, source in enumerate(sources, start=1):
-            target = args.out / safe_filename(entry, source)
-            existing = existing_files_for_key(args.out, key)
-            if existing and not should_replace_existing(existing, source, args.overwrite):
-                existing_file = existing[0]
-                remove_weaker_versions(existing, file_version(existing_file), existing_file)
-                print(f"ok {key}: {existing_file.relative_to(REPO_ROOT)} ({source.version}, existing)")
-                records.append(
-                    {
-                        "key": key,
-                        "status": "ok",
-                        "file": str(existing_file.relative_to(REPO_ROOT)),
-                        "version": "existing",
-                        "access": source.access,
-                        "url": source.url,
-                        "attempts": [attempt_record(source, "exists", ok=True)],
-                    }
+    with source_keys_lock(keys):
+        for key in keys:
+            entry = entries[key]
+            committed = source_map.get(key, [])
+            sources = [
+                *ordered_sources(with_openathens(committed, openathens_domain), args.prefer),
+                *(
+                    []
+                    if committed
+                    else ordered_sources(with_openathens(default_sources_from_bib(entry), openathens_domain), args.prefer)
+                ),
+            ]
+            attempts: list[dict[str, Any]] = []
+            for index, source in enumerate(sources, start=1):
+                target = args.out / safe_filename(
+                    entry.key,
+                    entry.fields.get("year", "undated"),
+                    entry.fields.get("title", entry.key),
+                    source,
                 )
-                break
-            print(f"try {key} [{index}/{len(sources)}] {source.version}: {source.url}", flush=True)
-            data, detail = browser_fetch_with_deadline(
-                profile=args.profile,
-                url=source.url,
-                timeout_ms=args.timeout_ms,
-                source_timeout_ms=args.source_timeout_ms,
-                username=username,
-                password=password,
-                headless=args.headless,
-                channel=args.channel,
-            )
-            if data:
-                remove_weaker_versions(existing, source.version, target)
-                saved = write_pdf(target, data, args.overwrite)
-                print(f"ok {key}: {target.relative_to(REPO_ROOT)} ({source.version}, {saved})")
-                records.append(
-                    {
-                        "key": key,
-                        "status": "ok",
-                        "file": str(target.relative_to(REPO_ROOT)),
-                        "version": source.version,
-                        "access": source.access,
-                        "url": source.url,
-                        "attempts": [*attempts, attempt_record(source, detail, ok=True)],
-                    }
+                existing = existing_files_for_key(args.out, key)
+                if existing and not should_replace_existing(existing, source, args.overwrite):
+                    existing_file = preferred_existing_file(existing)
+                    remove_weaker_versions(existing, file_version(existing_file), existing_file)
+                    mirror_validated_pdf(existing_file)
+                    print(f"ok {key}: {existing_file.relative_to(REPO_ROOT)} ({source.version}, existing)")
+                    records.append(
+                        {
+                            "key": key,
+                            "status": "ok",
+                            "file": str(existing_file.relative_to(REPO_ROOT)),
+                            "version": "existing",
+                            "access": source.access,
+                            "url": source.url,
+                            "attempts": [attempt_record(source, "exists", ok=True)],
+                        }
+                    )
+                    break
+                print(f"try {key} [{index}/{len(sources)}] {source.version}: {source.url}", flush=True)
+                data, detail = browser_fetch_with_deadline(
+                    profile=args.profile,
+                    url=source.url,
+                    timeout_ms=args.timeout_ms,
+                    source_timeout_ms=args.source_timeout_ms,
+                    username=username,
+                    password=password,
+                    headless=args.headless,
+                    channel=args.channel,
+                    executable_path=args.executable_path,
                 )
-                break
-            attempts.append(attempt_record(source, detail))
-            print(f"miss {key} [{index}/{len(sources)}] {source.version}: {detail}", flush=True)
-            time.sleep(0.5)
-        else:
-            records.append({"key": key, "status": "miss", "attempts": attempts, "sources": [source.__dict__ for source in sources]})
+                if data:
+                    saved = install_pdf(target, data, args.overwrite)
+                    remove_weaker_versions(existing, source.version, target)
+                    print(f"ok {key}: {target.relative_to(REPO_ROOT)} ({source.version}, {saved})")
+                    records.append(
+                        {
+                            "key": key,
+                            "status": "ok",
+                            "file": str(target.relative_to(REPO_ROOT)),
+                            "version": source.version,
+                            "access": source.access,
+                            "url": source.url,
+                            "attempts": [*attempts, attempt_record(source, detail, ok=True)],
+                        }
+                    )
+                    break
+                attempts.append(attempt_record(source, detail))
+                print(f"miss {key} [{index}/{len(sources)}] {source.version}: {detail}", flush=True)
+                time.sleep(0.5)
+            else:
+                records.append({"key": key, "status": "miss", "attempts": attempts, "sources": [source.__dict__ for source in sources]})
 
-    args.manifest.write_text(json.dumps(records, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        write_manifest_records(args.manifest, records, merge=bool(args.key or args.limit))
     ok_count = sum(1 for record in records if record["status"] == "ok")
     print(f"downloaded_or_present={ok_count} total_requested={len(keys)} manifest={args.manifest}")
     if args.strict and ok_count != len(keys):

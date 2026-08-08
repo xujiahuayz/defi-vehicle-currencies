@@ -1,0 +1,1979 @@
+
+
+===== PAGE 1 =====
+
+Journal of Financial Economics 141 (2021) 6–26
+Contents lists available at ScienceDirect
+Journal of Financial Economics
+journal homepage: www.elsevier.com/locate/jfec
+Banks as patient lenders: Evidence from a tax reform ✩
+Elena Carletti, Filippo De Marco, Vasso Ioannidou ∗, Enrico Sette
+a Elena Carletti: Bocconi University, Baﬃ Careﬁn, IGIER and CEPR Italy
+b Filippo De Marco: Bocconi University, Baﬃ Careﬁn and IGIER Italy
+c Vasso Ioannidou (contact author): The Business School (formerly Cass), City University of London, and CEPR, 106 Bunhill Row, EC1Y8TZ,
+London, United Kingdom
+d Enrico Sette: Bank of Italy Italy
+a r t i c l e i n f o
+Article history:
+Received 23 January 2020
+Revised 11 June 2020
+Accepted 10 July 2020
+Available online 4 March 2021
+JEL classiﬁcation:
+G21
+G28
+Keywords:
+Banks
+Deposits
+Maturity
+Risk-taking
+Government guarantee
+a b s t r a c t
+We provide new evidence on how deposit funding affects bank lending. For identiﬁcation,
+we exploit the 2011 reform of the investment income tax in Italy that induced house-
+holds to substitute bank bonds with deposits. We ﬁnd that banks with larger increases in
+deposits expand the supply of credit lines and long-term credit to low-risk ﬁrms. Addi-
+tional evidence indicates that these results are consistent with theories emphasizing the
+demandable nature of the deposit contract rather than theories stressing the stability of
+deposit funding due to government guarantees. In this regard, we show that banks under
+stress face large runs on retail deposits, but not on retail bonds.
+© 2021 Elsevier B.V. All rights reserved.
+✩ We thank Toni Ahnert, Manuel Adelino, Tobias Berg, Claire Célérier,
+Federico Cingano, Paolo Colla, Matteo Crosignani, Hans Degryse, Franco
+Fiordelisi, Mark Flannery, Paolo Fulghieri, Nicola Gennaioli, Gabriel
+Jiménez, Anil Kashyap, Stephen Karolyi, Thomas Kick, Co-Pierre Georg,
+Victoria Ivashina, Mathias Lè, Jose Luis Peydró, Kebin Ma, Marco Pagano,
+Jean-Charles Rochet, Farzad Saidi, Antoinette Schoar, Paolo Sestito, and
+participants at AFA 2019, Banca d’Italia, Banque de France, Bocconi Univer-
+sity, Bundesbank, Bristol University, Carlo Alberto, Imperial-CEPR Spring
+Symposium, EFA 2018, EuroFit 2018, HEC Lausanne, IE Business School,
+FIRS 2018, 13th IGIER-CSEF symposium, KU Leuven, Lancaster, 7th MoFiR
+Workshop, NBER SI 2018 (ME), SFS Cavalcade NA 2018, WFA 2018, Univer-
+sity of Zurich for many helpful comments and suggestions. Elena Carletti
+and Filippo De Marco gratefully acknowledge ﬁnancial support from the
+Baﬃ Careﬁn research center at Bocconi University. Carletti also gratefully
+acknowledges ﬁnancial support from the Volkswagen Foundation (project
+n. 94,752). The views in this paper are those of the authors and do not
+represent the views of Banca d’Italia or of the Eurosystem.
+∗ Corresponding author.
+E-mail addresses: elena.carletti@unibocconi.it (E. Carletti),
+ﬁlippo.demarco@unibocconi.it (F. De Marco), vasso.ioannidou@ciy.ac.uk
+(V. Ioannidou), enrico.sette@bancaditalia.it (E. Sette).
+1. Introduction
+This paper provides new evidence on how a greater
+reliance on deposit funding affects bank lending policies.
+The traditional business model of commercial banks com-
+bines short-term deposit funding with long-term lend-
+ing, often together with lending commitments in the
+form of credit lines. Building on the seminal papers of
+Diamond (1984) and Diamond and Dybvig (1983) , many
+studies in the ﬁnancial intermediation literature attempt to
+explain banks’ peculiar business model. The common as-
+sumption in these studies is that deposits are a deﬁning
+characteristic of banks due to their distinctive contractual
+features.
+According to inﬂuential theories of ﬁnancial intermedi-
+ation, the demandable nature of the deposit contract is key
+not only for providing liquidity on demand on the asset
+side through credit lines ( Kashyap et al., 2002 ), but also
+for maturity transformation. Under this view, the inher-
+https://doi.org/10.1016/j.jﬁneco.2020.07.021
+0304-405X/© 2021 Elsevier B.V. All rights reserved.
+
+===== PAGE 2 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+ent fragility in their funding structure, through the threat
+of runs, is precisely what enables banks to fund opaque
+and illiquid long-term loans with debt. Calomiris and
+Kahn (1991) and Flannery (1994) argue that demandabil-
+ity serves as an incentive scheme to discipline bank risk-
+taking, while in Diamond and Rajan (2001) demandability
+works as a commitment device allowing banks to increase
+their borrowing capacity against long-term illiquid loans.
+Crucial in both cases is debtholders’ ability to withdraw
+their funds in response to the arrival of negative news
+on bank fundamentals ( Jacklin and Bhattacharya, 1988 ;
+Goldstein and Pauzner, 2005 ).
+The empirical relevance of these theories is unclear.
+Other studies view deposits as a stable source of fund-
+ing due to the presence of strong government guarantees
+on deposits ( Hanson et al., 2015 ) or bank market power
+on retail depositors ( Drechsler et al., 2021 ; Li et al., 2019 ).
+It follows that the stability of deposits—rather than their
+demandability—constitutes banks’ comparative advantage
+in the provision of long-term credit, which may however
+come at the cost of excessive risk-taking, especially if it
+draws on government guarantees Merton (1977) .
+Estimating the causal impact of deposits on bank lend-
+ing policies and assessing the empirical relevance of these
+groups of theories poses signiﬁcant identiﬁcation chal-
+lenges. Bank funding structure is endogenous to both
+their lending policies and the overall economic environ-
+ment, making it very hard to obtain causal estimates. In
+addition, investors behind different funding sources are
+also typically different. It is thus very diﬃcult to distin-
+guish whether any differences in lending outcomes are
+due to the intrinsic characteristics of the different funding
+sources or investor differences (e.g., retail vs. institutional
+investors).
+To obtain exogenous variation in bank deposit fund-
+ing within the same class of investors, we take advan-
+tage of the reform of the investment income tax (“Riforma
+della tassazione sulle rendite ﬁnanziarie”) enacted in Italy
+in September 2011. The reform eliminated a tax disadvan-
+tage in the treatment of interest income from deposits over
+other privately issued securities held by households, induc-
+ing a shock in household demand for bank bonds and de-
+posits. Within two years of the reform, households substi-
+tuted €75 billion of their holdings of bank bonds with de-
+posits, causing a signiﬁcant change in banks’ retail funding:
+bonds decreased from 21% to 17% of total assets, while de-
+posits increased from 38% to 42% of total assets, leaving
+their total funding unchanged. 1
+This substitution within the same class of investors
+presents a unique opportunity to evaluate how the dis-
+tinctive characteristics of the deposit contract may af-
+fect bank lending. Deposits are a demandable, ﬁrst-come
+ﬁrst-served contract that exposes banks to the threat of
+runs, especially in crisis periods, such as the one we
+analyze, when bank fundamentals are weak. In contrast,
+bank funding from bonds is secured from issuance until
+1 This reshuﬄing is consistent with a price elasticity of retail bonds
+and deposits of about 0.29, which is in line with estimates of house-
+hold deposit rate elasticity to interest rates found in Egan, Hortaçsu, and
+Matvos (2017) .
+maturity with limited second market liquidity (see, e.g.,
+Bessembinder et al., 2020 ). Relative to bonds, deposits en-
+joy stronger government guarantees. Deposits are explicitly
+insured up to €10 0,0 0 0 and are typically senior to bonds,
+thus also enjoying stronger implicit guarantees.
+Because of the longer maturity and the limited sec-
+ondary market liquidity, retail bank bonds represent a
+more stable source of funding compared to retail deposits,
+which can be withdrawn on demand. The ensuing differ-
+ence in the probability of a run between the two sources
+of funding is crucial to understanding our results. In this
+regard, we show that a selected group of Italian banks that
+went under stress between 2015 and 2017 faced massive
+runs on retail deposits but not on retail bonds, although
+both types of liabilities are held by the same class of in-
+vestors. The evidence on the stability of retail bonds versus
+the run-like behavior of deposits reinforces our key result
+that it is the demandability of the deposit contract that
+drives banks “special” ability to lend in the form of credit
+commitments or long-term loans.
+We employ three micro-level datasets: data on deposit
+volumes at the bank-province level from the supervisory
+reports, information on bank bonds held by households at
+the security-level from the Securities Holding Statistics and
+the Centralized Securities Database, and information on
+bank-ﬁrm credit from the Italian Credit Register. All three
+datasets are held at the Bank of Italy.
+We proceed in two steps. We ﬁrst show that the tax
+reform induced households to substitute bank bonds with
+deposits, and then analyze how this change in bank fund-
+ing affected lending. To identify the substitution from
+bonds to deposits, we use a differences-in-differences
+speciﬁcation exploiting within bank-time variation aris-
+ing from pre-existing geographical heterogeneity in bank
+presence and household portfolios. That is, we compare
+changes in deposits of the same bank over a short event
+window around the reform across different provinces. We
+hypothesize that, all else equal, banks with branches in
+provinces where households held larger volumes of bank
+bonds prior to the reform experience larger increases in
+household deposits.
+We ﬁnd that banks in provinces with one standard de-
+viation higher volume of bank bonds prior to the reform
+experienced a 27% larger increase in total deposits and a
+corresponding reduction in bonds. Bank total funding from
+household deposits and bonds did not change, indicating
+an average pass through of around one ( €1 of bonds was
+converted into €1 of deposits). We also ﬁnd that this sub-
+stitution began at the time of the law approval in Septem-
+ber 2011 with no prior signiﬁcant treatment effects. To
+lend further support to the internal validity of our identi-
+ﬁcation strategy, we conduct placebo tests on ﬁrms whose
+tax treatment was not changed by the reform and ﬁnd no
+signiﬁcant treatment effects.
+The substitution occurred predominantly from bonds to
+term deposits, which carry interest rates closer to those
+of bank bonds. In provinces with a one standard devia-
+tion higher volume of bonds prior to the reform, banks
+experienced 67% larger increases in term deposits. Exploit-
+ing variation in the time to maturity of household bond
+holdings, we ﬁnd that only the share of bonds maturing in
+7
+
+===== PAGE 3 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+the post-event window has signiﬁcant explanatory power,
+indicating that households substituted their bonds with
+deposits as their bonds began maturing, consistent with
+the fact that 91% of these bonds are not publicly traded
+( Grasso et al., 2010 ). Importantly, term deposits have a
+ﬁxed contractual maturity, but contrary to bonds, are a
+demandable contract: account holders can withdraw their
+funds prior to the contractual maturity by forgoing inter-
+est payments. 2 The tax reform thus led to a signiﬁcant in-
+crease in the share of bank demandable liabilities, poten-
+tially affecting their lending policies.
+To exclude plausible alternative explanations for house-
+holds’ behavior, we provide evidence that the substitution
+from bonds to deposits was not due to a “ﬂight to quality”,
+although it occurred during a time of crisis. First, we show
+that households reshuﬄed their senior and junior bonds to
+a similar degree, and that riskier banks (with lower capi-
+tal and worse loan portfolios) increased their term deposits
+more than safer ones. A ﬂight to quality explanation would
+predict the opposite. Second, term deposits increased only
+after the approval of the reform in September 2011, despite
+the increase in bank and sovereign risk after the ﬁrst Greek
+bailout in May 2010. Finally, no increases in term deposits
+occurred in other European countries that were similarly
+affected by the sovereign debt crisis.
+In the second part of the analysis, we study how the
+increase in banks’ reliance on deposit funding affects their
+lending policies. To absorb possible confounding changes
+in ﬁrms’ demand for credit and other ﬁrm unobserv-
+able characteristics, we exploit within-ﬁrm variation as in
+Khwaja and Mian (2008) . To obtain exogenous variation
+in deposit funding, we build an instrument for changes in
+bank deposit funding based on the predetermined cross-
+sectional variation studied in the ﬁrst part of the anal-
+ysis. The instrument aggregates household bond holdings
+across provinces at the bank level. This helps to further re-
+duce concerns that increases in household deposits may
+correlate with contemporaneous increases in ﬁrms’ de-
+mand for credit as banks use internal capital markets to
+move funds from one region to another ( Gilje et al., 2016 ;
+Drechsler et al., 2017 ). 3
+We ﬁnd that the change in bank funding following the
+reform did not change the overall credit supply, consistent
+with total funding not expanding. It led, however, to im-
+portant compositional changes: the greater reliance on de-
+posits led to an increase in both credit lines and long-term
+loans (with maturities longer than ﬁve years). The latter
+result is only evident in the two-stage least squares (2SLS)
+estimates, underscoring the importance of taking into ac-
+count the endogeneity of bank funding to not underesti-
+mate the causal effect of deposits on long-term credit.
+Further analysis on the mechanisms behind our base-
+line ﬁndings reveals that increases in credit lines are con-
+sistent with Kashyap et al. (2002) , who argue that the
+2 Artavanis et al. (2019) ﬁnd that early withdrawals on time deposits
+are common and households exhibit a high willingness to pay for early
+withdrawals when concerned about the safety of their funds.
+3 To further strengthen the exclusion restrictions in robustness tests we
+also exclude banks with branches in a single province (or a group of ad-
+jacent provinces).
+provision of liquidity on demand to depositors creates
+synergies for the provision of liquidity on demand to bor-
+rowers. We ﬁnd that banks increase their liquidity holdings
+when their reliance on deposits increases, and that better
+capitalized banks, with arguably better capital market ac-
+cess and thus smaller synergies, show smaller increases in
+credit lines. Overall, these ﬁndings indicate that a banking
+system funded with more deposits is better able to provide
+liquidity insurance to ﬁrms, reinforcing and complement-
+ing key insights from Gatev and Strahan (2006) . 4
+We also ﬁnd that the increases in credit lines and
+longer maturity loans are concentrated in low-risk ﬁrms.
+Term credit to risky ﬁrms is instead found to decrease,
+particularly from banks with worse fundamentals that are
+naturally more exposed to runs. These results are con-
+sistent with theories emphasizing the disciplinary role
+of demandable debt through the credible threat of runs
+( Calomiris and Kahn, 1991 ; Flannery, 1994 ; Diamond and
+Rajan, 2001 ) and are not supportive of the guarantee chan-
+nel ( Hanson et al., 2015 ). The threat of runs is credible in
+our setting because our sample overlaps with a crisis pe-
+riod and the increase in deposits comes from large depos-
+itors (with more than €250,0 0 0) who, all else equal, are
+more responsive to bank fundamentals. Retail bonds in-
+stead are more stable as we ﬁnd for stressed banks. Over-
+all, these novel ﬁndings indicate that demandable debt can
+limit credit to riskier ﬁrms and enhance the provision of
+long-term credit to the real economy. 5
+Our ﬁndings complement and expand several strands
+of the extant literature. In our paper, we exploit a shock
+leading to a substitution from bonds to deposits within the
+same class of investors to test seminal theories on the ef-
+fects of banks’ capital structure for lending. In this sense,
+our paper differs from prior studies analyzing the trans-
+mission of deposits shocks across regions (e.g., Gilje et al.,
+2016 ; Bustos et al., 2020 ) in that the shock we analyze
+does not involve the inﬂux of new funds into banks, but
+rather the substitution of one funding source with another
+within the same class of investors.
+The tax reform we exploit takes place during the Eu-
+ropean sovereign debt crisis. In this context, our paper
+relates to studies analyzing deposit withdrawals during
+stress periods due to either panic or deterioration of
+bank fundamentals. Recent contributions include Iyer and
+Puri (2012) , Iyer et al. (2016) , Martin et al. (2018) , and
+Artavanis et al. (2019) . Our study builds on these studies
+to investigate the asset side implications of depositors’ be-
+havior in crisis periods.
+4 Ippolito et al. (2016) analyze a distinct mechanism through which the
+provision of credit lines may be affected by banks’ funding structure. They
+show that banks more reliant on wholesale interbank deposits, rather
+than retail demandable deposits, experience an increase in credit line
+drawdowns around the 2007 shock to interbank market, as ﬁrms tried
+to pre-empt banks from reducing the amount of credit lines.
+5 In additional tests, we also analyze whether market power on retail
+depositors could also explain the increase in long-term credit, in line with
+recent work by Drechsler et al. (2021) and Li et al. (2019) . We ﬁnd that
+market power has an additional independent effect on banks’ ability to
+provide long-term credit to the real economy but does not affect our
+baseline results (see Table A1 in the Appendix).
+8
+
+===== PAGE 4 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Our paper also relates to an emerging literature
+on how tax shocks impact bank capital structure and
+lending. Schepens (2016) shows that the reduction of
+the tax advantage of debt over equity in Belgium in-
+creased bank equity and decreased loan portfolio risk.
+Célérier et al. (2017) use changes in the taxation of banks’
+proﬁts in several European countries to analyze the effects
+of an increase in capital ratios on credit supply. 6 Our pa-
+per differs from these in that the tax reform we analyze
+induces a change in the composition of bank liabilities,
+not in capital ratios. An important common takeaway is
+that changes in taxation can prompt substantial changes in
+bank funding structures and lending policies.
+Finally, recent studies examine the role of deposits for
+the transmission of monetary policy ( Drechsler et al., 2017 ;
+Hoffmann et al., 2019 ; Heider et al., 2019 ). An impor-
+tant insight from these studies is that deposits resemble
+ﬁxed rate liabilities facilitating bank maturity transforma-
+tion, consistent with our ﬁndings that a greater reliance on
+deposits leads to more long-term loans.
+The remainder of the paper is organized as follows.
+In Section 2 , we offer an overview of the tax reform
+and its aggregate effects on the Italian banking system.
+In Section 3 , we describe the data. In Section 4 , we re-
+port our key ﬁndings on bank deposit and bond funding.
+In Section 5 , we explore bank credit policies. Concluding
+remarks are in Section 6.
+2. The tax reform
+As the European sovereign debt crisis intensiﬁed in the
+summer of 2011 and yields on Italian sovereign bonds
+surged, the Italian government passed an emergency bud-
+get law to increase government revenues and reduce its
+deﬁcit. One of the provisions of this budget law eliminated
+the asymmetry in the tax treatment of income from de-
+posits over income from other securities. Until this reform,
+income from deposits was taxed at 27%, while income from
+all other securities was taxed at 12.5%. 7 The 2011 reform
+harmonized the tax treatment of deposits and all private
+sector securities at 20%. Sovereign bonds, both domestic
+and foreign, maintained their lower 12.5% tax rate. The
+new tax rates went into effect in January 2012 but were
+ﬁrst announced in August 2011 and approved in September
+2011. Importantly, these changes applied only to house-
+holds and not to ﬁrms, since the withholding tax is only
+on individuals, not ﬁrms.
+The reform shocked bank funding sources by inducing
+a positive supply shock to bank deposits and a negative
+supply shock to bond ﬁnancing. All else equal, the changes
+in the tax code made bank deposits (all private sector
+securities) more (less) attractive to households and cre-
+ated incentives for households to reshuﬄe their portfolios
+6 Bond et al. (2016) and Gambacorta et al. (2017) examine a similar
+question on bank capital structure using cross-sectional variation in cor-
+porate taxes across Italian provinces.
+7 This asymmetry was introduced in 1996 when the Italian govern-
+ment increased the tax rate on bank deposits to 27%, while leaving the
+tax rate on all other securities at 12.5%. Since then, Italian banks have
+been selling signiﬁcant amounts of bank bonds to households ( Ricotti and
+Sanelli, 2008 ).
+away from private sector securities towards bank deposits.
+Aggregate banking sector statistics, visualized in Panel A
+of Fig. 1 , show that between the end of 2011 and 2013,
+bank deposits and bonds in Italy moved in opposite di-
+rections by roughly the same amount: deposits increased
+by about €100 billion and bonds decreased by about €94
+billion. Distinguished by the size of the deposit account,
+Panel B of Fig. 1 shows that the inﬂow of deposits into
+the banking sector shifted the distribution of deposits to-
+ward larger accounts. Between the end of 2011 and 2013,
+accounts with more than €250,0 0 0 increased substantially
+from €288 billion to almost €400 billion. In sharp contrast,
+deposits from smaller accounts with at most €50,0 0 0 re-
+mained fairly constant. The increase in the share of large
+accounts is consistent with the idea that households hold-
+ing bank bonds are fairly wealthy (by way of comparison,
+Italy’s GDP per capita in 2012 was €27,0 0 0).
+Fig. 2 reveals that the increase in deposits was mainly
+driven by an increase in household deposits, which in-
+creased by about €75 billion from €560 to €635 billion,
+and in particular by term deposits. Demand deposits, in-
+stead, remained roughly constant, suggesting that house-
+holds may view term deposits as a closer substitute to
+bank bonds than demand deposits. Term deposits and
+bank bonds, for example, carried more comparable interest
+rates. In particular, in the year prior to the reform, the av-
+erage annual interest rate on household demand deposits
+was 0.36%. Household term deposits instead paid on aver-
+age 2.27% per annum, closer to the 3.81% average yield on
+bank bonds held by households. The higher interest rate
+on bank bonds reﬂects their longer maturities and higher
+risk. Bank bonds have an average maturity of four years
+and are uninsured, while more than 90% of term deposits
+have a contractual maturity of one year or less and part of
+them is explicitly insured.
+The increase in term deposits in Fig. 2 appears very
+large. This is due to the very small initial levels of term
+deposits and the large initial volume of bank bonds held
+by households. The reshuﬄed volume from bank bonds to
+term deposits is in fact consistent with what one would
+expect, given the change in after-tax net returns of bonds
+over deposits and prior studies on households’ demand
+elasticity to interest rates. In particular, in the year prior
+to the reform, the average interest rate spread between the
+bank bonds and term deposits was 154 bps (3.81%–2.27%). 8
+Because of their differential tax treatment, the net spread
+was even larger at 168 bps; after the tax reform, this dif-
+ference dropped by 66% to about 57 bps, reducing sig-
+niﬁcantly the attractiveness of bonds over deposits. Thus,
+the observed reshuﬄing from bank bonds to term deposits
+is consistent with a price elasticity of 0.29 (as given by
+the 19% drop in bank bonds over the 66% decrease in the
+spread between bonds and deposits). This ﬁgure is in line
+with estimates of household demand elasticity to inter-
+8 These ﬁgures are all gross of fees. Accounting for differences in
+fees between bank bonds and deposits yields a larger net spread of
+about 207 bps as household deposit accounts carry on average fees of
+about 53 bps, while retail bank bonds do not typically carry any fees
+( Grasso et al., 2010 ).
+9
+
+===== PAGE 5 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Fig. 1. Bank deposits and bonds.
+This ﬁgure shows total deposits and bank bonds from December 2009 to December 2013. Panel A shows total deposits (solid line) and bonds (dashed line)
+from aggregate banking sector statistics including all counterparties (e.g., households, ﬁrms). Panel B shows total deposits below €50,0 0 0 (solid line) and
+above € 250,0 0 0 (dashed line) from bank balance sheet data.
+Fig. 2. Household deposits.
+This ﬁgure shows household deposits from December 2009 to December 2013. Panel A shows total deposits while Panel B shows demand (dashed line)
+and term (solid line) deposits.
+est rates found in recent studies (e.g., Egan et al., 2017 ;
+Artavanis et al., 2019 ).
+Overall, the patterns in Figs. 1 and 2 are consistent
+with the hypothesis that the tax reform created a shock in
+household demand for bonds and deposits, leading house-
+holds to substitute bank bonds with term deposits. There
+could be, however, other factors that contributed to this
+reshuﬄing at the aggregate level. The reform coincides
+with the European sovereign debt crisis. It is therefore pos-
+sible that the observed reshuﬄing is not driven by the tax
+changes, but by a general “ﬂight to quality” due to this
+crisis.
+We think this is unlikely for several reasons. First, as
+shown in Fig. 2 , term deposits increased sharply only right
+after the reform, while they were completely ﬂat before,
+despite signiﬁcant increases in bank risk after the ﬁrst
+Greek bailout in 2010. Second, a similar reshuﬄing is not
+observed in other European countries, such as Spain and
+Portugal, that experienced similar pressures on their bank-
+ing system during the sovereign debt crisis ( Fig. 3 ). It is
+worth observing that the 1996 tax reform, which took
+place in a non-crisis period, increased the relative taxa-
+tion of bank deposits over bank bonds and led to opposite
+changes in bank funding sources (Fig. IA.1 in the Internet
+Appendix).
+Nevertheless, there could be other factors that may
+have affected bank funding, such as liquidity interventions
+from the European Central Bank (ECB) over the same pe-
+riod. 9 In what follows, we propose an identiﬁcation strat-
+9 The most noteworthy intervention is the announcement of the ECB’s
+three-year long-term reﬁnancing operation (LTRO) in December 2011, con-
+10
+
+===== PAGE 6 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Fig. 3. Term deposits in other countries and the 1996 tax reform.
+This ﬁgure shows household term deposits using monthly data from De-
+cember 2009 to December 2013 for several European countries: Germany
+(dotted), Spain (dashed), Italy (solid), Portugal (long dash) and Greece
+(dash dot). All deposit series have been normalized to have a value of
+one as of the reform approval date (i.e. index value = 1 in August 2011).
+Source: ECB Statistical Data Warehouse.
+egy that is geared to absorb such confounding factors by
+exploiting within bank-time variation in the intensity of
+the shock arising from pre-existing geographical hetero-
+geneity in bank presence and household portfolios.
+3. Data and summary statistics
+For the empirical analysis, we rely on three datasets: (1)
+deposit volumes at the bank-province level from the su-
+pervisory reports; (2) bank bond volumes held by house-
+holds at the bank-province level from the Securities Hold-
+ing Statistics (SHS) and bond pricing from the Centralized
+Securities Database (CSDB); and (3) bank-ﬁrm credit from
+the Italian Credit Register (CR). These data sets are merged
+with balance sheet data for banks from the Bank of Italy
+and for non-ﬁnancial ﬁrms from CERVED. Province charac-
+teristics, such as population and GDP as of 2012, are taken
+from census data by the National Statistical Oﬃce (ISTAT).
+Data on deposits volumes from households and non-
+ﬁnancial ﬁrms are reported monthly, broken down by type
+of deposits (demand or term), and the depositors’ province
+of residence or headquarters. Data coverage is available for
+about 500 banking groups across 110 provinces. 10 Infor-
+mation by size of deposit account is available with less
+granularity i.e., at the bank-level, with an annual frequency
+and including deposits from all types of investors (house-
+holds, non-ﬁnancial ﬁrms, other ﬁnancial ﬁrms, foreigners).
+The data allow us to distinguish between three account
+sisting of an unlimited offering of three-year maturity collateralized cash
+loans on two “allotment” dates, December 21, 2011 and February 29, 2012
+( Carpinelli and Crosignani, 2021 ).
+10 Italy is divided in 20 regions and each region is subdivided into
+provinces, each surrounding a large city. The number of provinces was be-
+tween 107 and 110 in 2005-2016. In terms of population, Italian provinces
+are about the size of US Metropolitan Statistical Areas (MSAs). For ex-
+ample, in 2012 Italian provinces had an average (median) population
+of 544,0 0 0 (377,0 0 0), similar to corresponding ﬁgures for US MSAs at
+660,0 0 0 (20 0,0 0 0) from the 2010 US Census Bureau.
+size categories: accounts with amounts below €50,0 0 0, be-
+tween €50,0 0 0 and €250,0 0 0, and above €250,0 0 0. Ac-
+counts in the second and third size categories are partially
+insured up to €10 0,0 0 0.
+Information on bank bonds is obtained from the SHS
+and the CSDB. The SHS covers the securities issued, held,
+and traded by euro area residents broken down by holder
+sector and province of residence at a quarterly frequency
+since 2008. The SHS data are at the security level (ISIN)
+and are obtained directly from the banks that manage the
+securities on behalf of clients. Since the SHS records secu-
+rity holdings at their market values, we obtain changes in
+household bond holdings net of any market valuation ef-
+fects by dividing each security with its market price, ob-
+tained at quarterly frequency from CSDB.
+Data on credit to Italian non-ﬁnancial ﬁrms is obtained
+from the Italian CR (“Centrale dei Rischi”). CR is main-
+tained by the Bank of Italy and collects information on in-
+dividual borrowers with an outstanding exposure with a
+single intermediary over €30,0 0 0. The registry tracks the
+amount of credit granted to each borrower from each in-
+stitution by loan type and maturity class. In particular,
+the data allow us to distinguish between two key credit
+products (credit lines and term loans) and three matu-
+rity classes (less than one year, between one year and ﬁve
+years, and longer than ﬁve years). For identiﬁcation pur-
+poses, in our credit analysis we use ﬁrms with both credit
+lines (drawn or undrawn) and term loans from at least two
+banks. This yields a sample of 315,774 bank-ﬁrm relation-
+ships to about 107,670 ﬁrms.
+Our sample covers the period between September 2010
+and December 2012 (a two-year window around the tax
+reform). Panel A of Table 1 provides an overview of key
+bank characteristics (funding sources, size, and loan qual-
+ity) in Italy at the beginning of the sample period (De-
+cember 2009). Deposits from both households and ﬁrms
+are banks’ largest funding source (38.27% of total assets),
+followed by bonds (22.54%), equity (11.81%), and inter-
+bank funding (3.95%). There is, however, signiﬁcant vari-
+ation across banks in terms of funding sources.
+The share of retail deposits in Italy is considerably
+smaller than in other countries. For example, in the US,
+core deposits are on average about 75% of total assets
+( Hanson et al., 2015 ). The difference is partly made up by
+bank bonds, which in Italy represented about 22.5% of to-
+tal assets in 2011, half of which are held by households
+( Coletta and Santioni, 2016 ) . In terms of size, deposits
+are equally split in each of the three size categories (be-
+low €50,0 0 0, between €50,0 0 0 and €250,0 0 0, and above
+€250,0 0 0), each representing roughly one-third of total de-
+posits. The vast majority of term deposits (93.74%) have a
+contractual maturity of up to one year, while retail bank
+bonds have longer maturities. As of December 2009, there
+were 26,836 bank bonds held by retail investors. These se-
+curities have an average contractual maturity of about 4.3
+years, with 90% of these securities having a contractual
+maturity between 2 and 7 years.
+Panels B and C of Table 1 report the summary statis-
+tics of the variables used to estimate our empirical speci-
+ﬁcations. We return to these below when we discuss our
+models.
+11
+
+===== PAGE 7 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Table 1
+Summary statistics.
+This table provides summary statistics for all variables used in the empirical analyses, 2009–2012.
+Obs. Mean Std. Dev. Median Min Max
+Panel A: Bank characteristics as of 2009, in% (bank level)
+Household Deposits/Total Assets 523 32.39 13.68 30.19 9.70 77.39
+Firm Deposits/Total Assets 523 5.878 5.47 4.62 .40 36.78
+Deposits < €50,000/Total Deposits 520 34.28 15.80 36.40 0 100
+Deposits > €250,000/Total Deposits 520 32.09 24.12 26.17 0 100
+Bank Bonds/Total Assets 475 22.54 11.67 24.26 2.74 45.76
+Equity/Total Assets 523 11.81 6.86 10.55 6.528 91.54
+Interbank Funding/Total Assets 523 3.95 9.37 1.35 0 75.93
+Nonperforming Loans/Total Assets 517 4.88 3.22 4.63 0 20.58
+Total Assets ( € billions) 524 6.79 63.47 0.37 0.05 1261
+Exp _ B B b 513 0.015 0.014 0.013 0 0.087
+Term Deposits < 1Y/Term Deposits 509 93.74 14.10 98.74 0.089 1
+Retail bonds maturity (days – security level) 26,836 1637.47 1026.84 1153 733 16,619
+Panel B: Household deposits and bonds (bank-province level)
+log ( Total Dep ) b,p,t 29,190 12.64 2.79 11.90 4.74 17.76
+log ( Demand Dep ) b,p,t 28,517 12.32 2.86 11.64 4.72 17.61
+log ( Term Dep ) b,p,t 19,827 11.16 3.81 11.12 2.19 17.11
+log ( Bonds ) b,p,t 16,426 13.43 3.01 12.67 4.10 19.41
+/Delta1Log ( Total Dep ) b,p,t ×100 29,045 0.629 8.44 0.324 −105.7 102.9
+/Delta1Log ( Demand Dep ) b,p,t ×100 28,360 −0.166 9.29 −0.051 −116.9 112.6
+/Delta1Log ( Term Dep ) b,p,t ×100 19,592 2.33 4.92 0.917 −19.1 34.27
+/Delta1Log ( Bonds ) b,p,t ×100 16,082 −0.61 6.36 −0.178 −28.02 30.74
+B B p, 2009 29,045 0.014 0.015 0.09 0.0001 0.095
+GD P p, 2009 28,964 0. 014 0.021 0.007 0.0008 0.096
+Populatio n p, 2012 (thousand head) 29,045 774.4 852.2 473.6 86.9 3995.2
+Panel C: Bank credit (bank-ﬁrm level)
+/Delta1Log (Credit ) b,f 315,708 −0.136 0.387 0 −1.779 1.056
+/Delta1Log (Credit Lines ) b,f 222,052 −0.033 0.420 0 −1.707 1.397
+/Delta1Log (Term Loans ) b,f 315,708 −0.246 0.773 −0.181 −2.972 1.999
+/Delta1Log (Term Loans < 5 Y ) b,f 181,881 −0.250 0.955 −0.153 −3.572 2.589
+/Delta1Log (Term Loans > 5 Y ) b,f 116,008 −0.292 0.704 −0.201 −2.865 1.450
+Altman Z-score 315,708 4.62 4.98 5 1 9
+Risk y f 315,708 0.151 0.358 0 0 1
+Dshare 250 K b 315,708 0.635 0.48 0 0 1
+/Delta1Log (Term Dep) b 315,708 0.783 0.366 0.003 0.51 2.17
+Exp _ B B b 315,708 0.024 0.013 0.025 0 0.062
+4. The impact of the tax reform on bank funding
+4.1. Identiﬁcation strategy
+To estimate the impact of the reform on bank deposits
+and bond funding, we rely on disaggregated deposit and
+bank bond data at the bank-province level. Using bank-
+province information, as opposed to bank-level informa-
+tion, allows us to employ a differences-in-differences anal-
+ysis and evaluate the impact of the reform on deposits,
+controlling for economy-wide and bank-level shocks. Iden-
+tiﬁcation of treatment is obtained by comparing changes
+in household deposits before and after the reform within
+the same bank across different provinces. All else equal, a
+shock in the households’ net returns from bonds and de-
+posits will lead to larger changes in household demand
+at the bank-province level in provinces where households
+held larger volumes of bank bonds. Cross-sectional varia-
+tion may arise either because these provinces are larger
+(a given change in household demand is aggregated across
+more households leading to a larger effect at the bank-
+province level) or because they are richer (the per capi-
+tal changes in household demand are larger due to higher
+per capita holdings). Our analysis exploits both sources of
+variation.
+We begin by estimating the following differences-in-
+differences speciﬁcation:
+log ( Dep ) b,p,t = β B B p, 2009 ×P os t t + αb,t + αp + ε b,p,t , (1)
+where Log ( Dep ) b,p,t denotes the natural logarithm of
+household (total, demand, and term) deposits of bank b in
+province p before and after the reform ( t = 0 , 1 , respec-
+tively). It is constructed by collapsing and time-averaging
+the volume of deposits at the bank-province level in
+the twelve months before the announcement of the re-
+form (September 2010 to September 2011) and the twelve
+months after the reform went into effect (January 2012 to
+December 2012), thus excluding the last quarter of 2011,
+when the reform was approved, but not yet in effect.
+B B p, 2009 denotes the volume of bank bonds held by
+households in province p scaled by total bank bonds across
+all Italian provinces in 2009. We use predetermined val-
+ues as of December 2009, two years prior to the reform,
+to avoid a simultaneity bias. Provinces with larger B B p, 2009
+values tend to be larger and richer i.e., they have larger
+population and account for a larger fraction of GDP (Fig.
+12
+
+===== PAGE 8 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+IA2 and Table IA.1 in the Internet Appendix). As can be
+observed in Panel B of Table 1 , there is signiﬁcant bank-
+province variation in the sample with respect to both mea-
+sures. B B p, 2009 has a mean value of 1.4% and a standard de-
+viation of 1.5%.
+Pos t t is a dummy variable that equals one after the re-
+form, and equals zero otherwise. αb,t and αp denote bank-
+time and province ﬁxed effects, respectively, while ε b,p,t
+denotes the idiosyncratic error term. All else equal, we ex-
+pect a positive and statistically signiﬁcant β.
+The inclusion of bank-time ﬁxed effects, αb,t , is im-
+portant as it helps absorb economy-wide and bank-level
+shocks that may inﬂuence the average levels of bank de-
+posits during the event window. The inclusion of province
+ﬁxed effects, αp , absorbs the level effect of B B p, 2009 and
+the effects of any other time-invariant province character-
+istic on the level of deposits. Given our narrow event win-
+dow, province characteristics, such as overall economic and
+ﬁnancial development, as well as household demographics
+can be considered time-invariant.
+To allow for different time trends across provinces,
+we also estimate growth speciﬁcations by replacing the
+dependent variable in Eq. (1) with the deposit growth
+rate, /Delta1Log ( Dep ) b,p,t . Growth speciﬁcations with province
+ﬁxed effects control for province-speciﬁc time trends on
+the levels of deposits (this would not be possible in our
+level speciﬁcations as province-time ﬁxed effects would
+absorb our key explanatory variable, B B p, 2009 ×Pos t t ). Sim-
+ilar growth speciﬁcations are also estimated, for example,
+in Gilje et al. (2016) and Drechsler et al. (2021) .
+4.2. Parallel trends assumption
+The internal validity of Eq. (1) rests on the assump-
+tion that in the absence of treatment (the tax reform), the
+difference in deposit volumes in “high” and “low” bond
+provinces is constant over time— known as the parallel
+trends assumption. Visual inspection of deposit volumes in
+high and low bond provinces prior to the reform shows
+that this assumption is likely to hold.
+Fig. 4 reports the average deposit volume for total, de-
+mand, and term deposits in provinces with B B p, 2009 values
+below or above the median. The ﬁgure conﬁrms with con-
+ﬁdence that the parallel trends assumption is satisﬁed for
+all types of deposits. In particular, term deposits in high
+and low bond provinces are very stable and move in par-
+allel trends before the reform.
+We provide a more formal test below by estimat-
+ing Eq. (1) where Pos t t is replaced with monthly time
+dummies. The coeﬃcients on the interaction terms with
+B B p, 2009 thus estimate the change in the dependent vari-
+able relative to the omitted baseline period (October 2010).
+This allows us to also visually inspect and test when the
+break takes place.
+4.3. Results on bank funding structure: deposits vs. bonds
+Table 2 reports our ﬁndings for Eq. (1) . We report re-
+sults for the total, demand, and term deposits of house-
+holds in both levels and growth rates. The latter are more
+conservative as they control for province-speciﬁc time
+trends in the volumes of deposits. For each dependent
+variable, we report two speciﬁcations: one with bank ﬁxed
+effects and one with bank-time ﬁxed effects. For the for-
+mer, we include a dummy variable, Pos t t , to control for
+the average post-reform trends in deposits. In all cases, we
+use standardized B B p, 2009 so that the estimated coeﬃcients
+measure the percentage change in the dependent variable
+due to a one standard deviation increase in B B p, 2009 . This
+also facilitates the comparison of coeﬃcients across differ-
+ent measures.
+Consistent with the unconditional results in Fig. 4 , we
+ﬁnd that banks experienced larger increases in the lev-
+els and growth rates of their deposits in provinces where
+households held larger volumes of bank bonds before the
+reform, driven mainly by increases in term deposits.
+In particular, we ﬁnd that total deposits at the bank-
+province level increased on average by 9.6%. 11 Banks in
+provinces with 1.5% points higher B B p, 2009 (i.e., one stan-
+dard deviation) saw larger increases in total deposits by
+27.1% per annum (column 2) 12 and higher growth rates
+by about 0.127% per month or 1.5% per annum (column
+8). Demand deposits feature an overall downward trend in
+the post-reform period (coeﬃcient of Pos t t in column 3)
+that is somewhat less pronounced in areas with higher val-
+ues of B B p, 2009 (coeﬃcient of B B p, 2009 ×Pos t t in columns
+3 and 4). These differences, however, are not sustained
+when we estimate growth speciﬁcations (columns 9 and
+10) either because they are not suﬃciently large or be-
+cause they are driven by province-speciﬁc trends, absorbed
+in growth speciﬁcations. Instead, term deposits grew sig-
+niﬁcantly after the reform: the estimated coeﬃcient of
+Pos t t in column 5 indicates that in the post-reform pe-
+riod, term deposits increased on average by 132.1%. The
+differences-in-differences coeﬃcient in column 6 indicates
+that in provinces with a one standard deviation increase
+in B B p, 2009 , the same bank experienced larger increases in
+its term deposits by about 4.4% per month or 67.5% per
+annum. The coeﬃcient in column 12 also points to faster
+growth rates by about 0.284% per month or 3.5% per an-
+num. 13
+To study how the impact of the reform may have var-
+ied over time and evaluate the internal validity of our
+identiﬁcation strategy, we estimate a modiﬁed version of
+Eq. (1) using the full bank-province panel at a monthly
+frequency with monthly time dummy variables instead of
+Pos t t . We use the ﬁrst month of the event window as the
+omitted group. Fig. 5 reports the estimated coeﬃcients and
+the 95% conﬁdence intervals. The results show that the
+11 The coeﬃcient Pos t t in column 1, 0.092, measures the percentage in-
+crease in Log ( TotDep ) b,p,t in the post-reform period. The effect on the
+level of TotDe p b,p,t is then equal to (exp(0.092) −1) = 0.096.
+12 The annualized compounded percentage change is 0 . 271 =
+( 1 + 0 . 02 ) 12 −1 .
+13 In robustness tests, we also explore an alternative measure with bank
+bonds scaled by the population of province p in 2009 ( PerCapitaB B p, 2009 ) .
+This alternative measure absorbs cross-sectional variation in B B p, 2009 due
+to the size of the province and draws on differences in household demo-
+graphics (e.g., wealth). The results are qualitatively similar (see Table IA.2
+in the Internet Appendix). In additional robustness checks, we also allow
+for additional interactions between Pos t t and economic and demographic
+province characteristics (e.g., GDP, population). Our key coeﬃcient of in-
+13
+
+===== PAGE 9 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Fig. 4. Household bank deposits by province.
+This ﬁgure shows the evolution of household (total, demand, and term) deposits between provinces with above the median holdings of bank bonds B B p, 2009
+(solid line) and below the median holdings (dashed line) using monthly data from December 2009 to December 2013. All deposit series are normalized
+to have a value of one as of the reform approval date (i.e. index value = 1 in August 2011). Panels A, B, and C report total deposits, demand deposits, and
+term deposits, respectively.
+Table 2
+The effect of the tax reform on bank deposits.
+This table provides the estimates for the effect of the reform on bank deposits held by households ( Eq. (1) ). The dependent variable is the time averaged
+monthly log or log-change in deposits at bank b in province p in twelve months before the announcement of the reform (September 2010 to September
+2011) and the twelve months after the reform came in effect (January 2012 to December 2012). B B p, 2009 is the standardized share of bank bonds held by
+households in province p over total bank bonds held by Italian households in 2009. Pos t t is a dummy equal to one for the twelve months after the reform
+and zero before. Standard errors are clustered at the province level. T -statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical signiﬁcance at the
+1%, 5%, and 10% levels, respectively.
+log(Total Dep) log(Demand Dep) log(Term Dep) /Delta1log(Total Dep) /Delta1log(Dem Dep) /Delta1log(Term Dep)
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+B B p, 2009 ×Pos t t 0.016 ∗ 0.020 ∗ 0.011 0.020 ∗ 0.022 0.043 ∗∗∗ 0.153 ∗∗∗ 0.127 ∗∗ 0.078 0.068 0.124 ∗∗∗ 0.284 ∗∗∗
+(1.86) (1.98) (1.29) (1.81) (1.32) (3.33) (2.78) (2.16) (1.21) (0.94) (4.14) (6.91)
+Pos t t 0.092 ∗∗∗ −0.070 ∗∗∗ 0.842 ∗∗∗ 0.570 ∗∗∗ −0.252 1.319 ∗∗∗
+(7.16) ( −5.58) (20.84) (4.10) ( −1.58) (18.64)
+Fixed Effects
+Province Y Y Y Y Y Y Y Y Y Y Y Y
+Bank Y N Y N Y N Y N Y N Y N
+Bank-Time N Y N Y N Y N Y N Y N Y
+Observations 29,190 29,169 28,517 28,494 19,827 19,795 29,045 29,026 28,360 28,338 19,592 19,558
+R 2 0.497 0.500 0.488 0.491 0.358 0.371 0.172 0.212 0.093 0.132 0.404 0.530
+No of provinces 107 107 107 107 107 107 107 107 107 107 107 107
+No of banks 520 520 520 520 503 503 519 519 518 518 501 501
+14
+
+===== PAGE 10 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Fig. 5. Dynamic effect of tax reform.
+This ﬁgure shows the β coeﬃcients and associated 95% conﬁdence interval from the following regression: Y b,p,t = βt B B p, 2009 + αp + αb,t + ε b,p,t , where Y b,p,t
+is the Log ( TermDep ) b,p,t in Panel A and the /Delta1Log ( TermDep ) b,p,t in Panel B. B B p, 2009 are bank bonds held by households in province p as of 2009 and βt
+measures the impact of B B p, 2009 in each month from October 2010 to December 2012 (omitting September 2010). Standard errors are clustered at the
+province level.
+break occurs as soon as the tax reform law was approved
+(September 2011) and before it went into effect (January
+2012). We do not ﬁnd substantial differences between the
+treatment and control group before then, conﬁrming that
+the parallel trend assumption is satisﬁed in our setting.
+To further evaluate the internal validity of our identiﬁ-
+cation strategy, we also estimate similar speciﬁcations for
+non-ﬁnancial ﬁrms, whose tax rates were not changed. We
+ﬁnd no signiﬁcant treatment effects. The coeﬃcients of the
+interaction terms between B B p, 2009 and Pos t t are close to
+zero and statistically insigniﬁcant (see Appendix Table A2 ).
+The results on placebo tests for ﬁrms, along with the re-
+sults in Fig. 5 , lend further support to our identiﬁcation
+strategy.
+We next evaluate the impact of the reform on banks’
+funding mix between household bonds and deposits. The
+results are reported in Table 3 . Consistent with households
+substituting bank bonds with deposits, we ﬁnd that in the
+areas where banks experienced larger increases in house-
+hold deposits, they also experienced larger drops in bond
+funding from households. We ﬁnd that in provinces with
+higher B B p, 2009 values, banks experienced larger decreases
+and lower growth rates in bond funding from households
+(column 1). We ﬁnd that, on average, there are no system-
+atic differences in total funding from bonds and deposits
+(column 2), implying an average pass-through of around
+one (i.e., on average, a one euro decrease in bank bonds is
+associated with a one euro increase in term deposits), 14 re-
+terest B B p, 2009 ×Pos t t remains unchanged and the new interaction terms
+are not found to matter (see Table IA.3 in the Internet Appendix).
+14 This is likely to vary across different banks and time horizons de-
+pending on the amount of bonds maturing at each point in time. In ro-
+bustness tests, using shorter event windows (e.g., six months), we ﬁnd
+that in the initial months substitution is unequal, with deposits increas-
+ing on average more than bonds fall. We do not expect that such tem-
+porary increases in balance sheet capacity should inﬂuence banks’ long-
+sulting in an increase in banks’ average reliance on house-
+hold deposits over bonds (column 3).
+We next study the heterogeneity in the estimated treat-
+ment effect on term deposits with respect to the maturity
+and seniority of household bond holdings and bank char-
+acteristics. This analysis helps to further understand how
+households responded to the reform, which banks were
+able to raise deposits more easily, and evaluate plausible
+alternative explanations for our ﬁndings. The results are re-
+ported in Table 4 . In all cases, we report the results for
+our more conservative growth speciﬁcations with bank-
+time ﬁxed effects.
+We begin by distinguishing the household holdings of
+bank bonds in 2009 with respect to their time to matu-
+rity by splitting our key explanatory variable, B B p, 2009 , into
+three components depending on whether they mature be-
+fore, during or after 2012. We ﬁnd that only the share of
+bonds maturing during 2012 ( BBmat = 2012 p, 2009 ) has sig-
+niﬁcant predictive power in explaining the increase in term
+deposits after the reform (see column 1 of Table 4 ). This
+result indicates that households waited for their bonds
+to mature to reinvest their proceeds into term deposits,
+rather than selling them prior to maturity. This is not sur-
+prising, given that most banks in the sample are not pub-
+licly listed (only 25 banks are publicly listed), resulting in
+low secondary market liquidity for their retail bonds. This
+result lends further support to our identiﬁcation strategy
+as it suggests that the province variation we exploit is re-
+lated to a substitution of bonds with deposits rather than
+other province-speciﬁc confounding factors that may hap-
+pen to correlate with B B p, 2009 and changes in household
+deposits.
+Next, we distinguish the household holdings of bank
+bonds in 2009 with respect to their seniority by splitting
+term credit policies, given that banks were aware that the market for re-
+tail bonds was going to dry up.
+15
+
+===== PAGE 11 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Table 3
+The effect of the tax reform on the substitution between bonds and deposits.
+This table provides the estimates of the effect of the reform on bank bonds and banks’ debt ﬁnancing mix between
+deposits and bonds. The dependent variables, either in log-level (Panel A) or in quarterly log difference (Panel B), are
+the following: bonds issued by bank b held by households in province p in the pre- and post-reform period ( ± 12
+months from the reform) in column (1); total deposits and bonds in column (2) or the share of deposits over deposits
+plus bonds issued by bank b held by households in province p in column (3). B B p, 2009 is the standardized share of
+bank bonds held by households in province p over total bank bonds held by Italian households in 2009. Pos t t is a
+dummy equal to one for the twelve months after the reform and zero before. All estimations include province and
+bank-time ﬁxed effects. Standard errors are clustered at the province level. T -statistics are reported in parentheses. ∗∗∗ ,
+∗∗, ∗ indicate statistical signiﬁcance at the 1%, 5%, and 10% levels, respectively.
+Panel A: In log-levels
+Log(Bonds) Log(Bonds + Total Dep) Total Dep/(Total Dep + Bonds)
+(1) (2) (3)
+B B p, 2009 ×Pos t t −0.014 ∗∗ 0.002 0.006 ∗∗∗
+( −2.19) (0.31) (5.09)
+Fixed Effects
+Province Y Y Y
+Bank-Time Y Y Y
+Observations 16,426 16,426 16,426
+R 2 0.451 0.488 0.393
+No of provinces 107 107 107
+No of banks 446 432 448
+Panel B; In log differences ( /Delta1Log)
+/Delta1log(Bonds) /Delta1log(Bonds + Total Dep) /Delta1Total Dep/(Total Dep + Bonds)
+(1) (2) (3)
+B B p, 2009 ×Pos t t −0.223 ∗∗∗ 0.082 0.116 ∗∗∗
+( −4.50) (1.16) (3.43)
+Fixed Effects
+Province Y Y Y
+Bank-Time Y Y Y
+Observations 16,082 16,082 16,082
+R 2 0.285 0.186 0.189
+No of provinces 107 107 107
+No of banks 446 432 448
+B B p, 2009 between senior and junior (subordinated) bonds.
+We ﬁnd a positive and signiﬁcant treatment effect of sim-
+ilar size for both senior and junior bank bonds (columns
+2–3), indicating that households with both senior and ju-
+nior bank bonds reshuﬄed their portfolios towards term
+deposits and the seniority of their bond holdings did not
+play a role. Consistent with earlier ﬁndings, this result fur-
+ther suggests that households’ substitution of bank bonds
+with term deposits is unlikely to be driven by a ﬂight to
+quality as this would predict a larger treatment effect for
+junior bonds that bear more risk.
+We next examine which banks experienced larger in-
+creases in deposits. We ﬁnd that it is the banks that had a
+higher dependence on bank bonds prior to the reform that
+increase their term deposits more (columns 4–6). This is
+intuitive insofar as these banks had to make up for larger
+negative shocks in bond ﬁnancing, following the new more
+unfavorable taxation of bonds. We ﬁnd that term deposits
+grow twice as fast for banks with above median depen-
+dence on bond funding in areas with more bank bonds. In-
+teractions with bank characteristics also show that riskier
+banks (with more non-performing loans and lower capi-
+tal) experienced larger increases in term deposits, which
+is again inconsistent with ﬂight to quality. We also ﬁnd
+no signiﬁcant heterogeneity with respect to interbank
+funding.
+Overall, our ﬁndings indicate that the 2011 tax reform
+in Italy shocked bank funding structure by inducing a sub-
+stitution of retail bank bonds with deposits that led to
+an increase in the share of retail deposit funding, with-
+out changing bank total funding or investor class. More
+broadly, these ﬁndings also indicate that changes in tax-
+ation can prompt substantial changes in bank funding
+sources in line with insights from other taxation changes
+in Schepens (2016) and Célérier et al. (2017) . In this re-
+gard, it is important to note that in our setting the effects
+are sizable not because the treated investors (households)
+are very price sensitive, but because they hold large vol-
+umes of the securities whose returns are being shocked by
+changes in taxation. Because of the unusually high reliance
+of Italian banks on retail bond funding, the tax reform ex-
+amined here provides a rare opportunity to isolate the im-
+pact of the demandable nature of the deposit contract on
+bank lending.
+5. The effect of higher deposit funding on bank lending
+5.1. Identiﬁcation strategy
+In the second part of the analysis, we trace the im-
+pact of the reform on bank lending policies (i.e., credit
+availability, type of loans, willingness to lend to riskier
+16
+
+===== PAGE 12 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Table 4
+Heterogeneity by bond and bank characteristics.
+This table provides estimates for the heterogeneity of the impact of the reform on term deposits from households. The dependent variable in all speciﬁca-
+tions is the time averaged monthly growth rate of term household deposits at bank b in province p in the pre- and post-reform period ( ± 12 months from
+the reform). B B p, 2009 is the standardized share of bank bonds held by households in province p over total bank bonds held by Italian households in 2009.
+BBmat < 2012 p, 2009 , BBmat = 2012 p, 2009 , and BBmat > 2012 p, 2009 are the standardized shares of bank bonds held by households in 2009 maturing before,
+during, and after 2012, respectively. BBsenio r p, 2009 and BBjunio r p, 2009 are the standardized shares of senior and junior (subordinated) debt held by house-
+holds in 2009. Pos t t is a dummy equal to one for the twelve months after the reform and zero before. H ighBon d b, 2009 , H ighNP L b, 2009 , H ighEquit y b, 2009 , and
+HighInterban k b, 2009 are dummies equal to one if bank b is above the median in the following characteristic: bond funding over total assets, Nonperforming
+loans (NPLs) over total assets, equity over total assets, and interbank funding over total assets in 2009, zero otherwise. All estimations include province and
+bank-time ﬁxed effects. Standard errors are clustered at the province level. T -statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical signiﬁcance
+at the 1%, 5%, and 10% levels, respectively.
+Bond Maturity Bond Seniority Bank Characteristics
+(1) (2) (3) (4) (5) (6)
+BBmat < 2012 p, 2009 −0.010
+×Pos t t ( −0.06)
+BBmat = 2012 p, 2009 0.358 ∗∗∗
+×Pos t t (3.01)
+BBmat > 2012 p, 2009 −0.099
+×Pos t t ( −0.53)
+BBsenio r p, 2009 0.280 ∗∗∗
+(6.91)
+BBjunio r p, 2009 0.248 ∗∗∗
+(6.54)
+B B p, 2009 ×Pos t t 0.177 ∗∗∗ 0.162 ∗∗ 0.164 ∗∗∗
+(3.10) (2.10) (3.00)
+B B p, 2009 ×Pos t t 0.153 ∗∗ 0.130 ∗ 0.130 ∗∗
+×HighBon d b, 2009 (2.47) (1.97) (2.00)
+B B p, 2009 ×Pos t t 0.159 ∗∗ 0.159 ∗∗
+×HighNP L b, 2009 (2.58) (2.57)
+B B p, 2009 ×Pos t t −0.133 −0.134 ∗
+×HighEquit y b, 2009 ( −1.50) ( −1.69)
+B B p, 2009 ×Pos t t −0.004
+×HighInterban k b, 2009 ( −0.06)
+Fixed Effects
+Province Y Y Y Y Y Y
+Bank-Time Y Y Y Y Y Y
+Observations 19,558 19,558 19,558 19,381 19,381 19,381
+R 2 0.529 0.529 0.529 0.499 0.499 0.499
+No of provinces 107 107 107 107 107 107
+No of banks 501 501 501 498 498 498
+ﬁrms). Studies indicate that banks use internal capital mar-
+kets to reallocate available liquidity from one region to an-
+other ( Gilje et al., 2016 ; Bustos et al., 2020 ). We thus use
+the cross-sectional variation in household bond holdings
+and bank geographical presence, analyzed earlier, to con-
+struct a bank-level instrument of changes in deposit fund-
+ing and trace their impact on bank credit supply. Identiﬁ-
+cation is obtained using within-ﬁrm variation by compar-
+ing changes in the supply of credit to the same ﬁrm across
+banks that were differentially affected by the reform. Ex-
+ploiting within-ﬁrm variation helps absorb possible con-
+founding changes in ﬁrms’ demand for credit that are
+common across differentially affected banks ( Khwaja and
+Mian, 2008 ) . More formally, we estimate the following
+speciﬁcation:
+/Delta1log ( Credit ) b,f = γ /Delta1log ( T erm Dep ) b
++ δ Control s b, 2009 + αf + ε b,f , (2)
+where /Delta1log ( Credit ) b,f denotes the growth rate in credit
+of bank b to ﬁrm f before and after the reform and
+/Delta1log ( T ermDep ) b denotes the growth rate of bank b ’s term
+deposits before and after the reform. Control s b, 2009 is a
+vector of bank characteristics that may inﬂuence bank
+lending policies. It includes a set of dummy variables for
+each quintile of bank assets, as well as the ratios of non-
+performing loans (NPLs), equities, bonds, retail deposits,
+interbank wholesale funding, liquid assets, and net income
+to total assets, all predetermined as of December 2009. αf
+denotes ﬁrm ﬁxed effects and ε b,f denotes the idiosyn-
+cratic error term.
+The key problem we face is that /Delta1log ( T ermDep ) b
+may be endogenous, either because of reverse causality or
+omitted variables inﬂuencing both the growth rate of de-
+posits and growth of credit at the same time. Banks with
+better lending opportunities may, for example, increase
+their supply of deposits because they want to increase
+their supply of loans. To obtain exogenous variation in
+/Delta1log ( T ermDep ) b , we construct a bank-level instrument to
+measure a bank’s exposure to the reform using the cross-
+sectional variation in household holdings and bank pres-
+ence by aggregating across the provinces in which each
+bank was present in 2009:
+Exp _ B B b, 2009 =
+∑
+p
+w b,p, 2009 ×B B p, 2009 , (3)
+17
+
+===== PAGE 13 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Table 5
+Balancing of bank characteristics.
+This table reports the average values of bank characteristics as of De-
+cember 2009 computed by the median of bank exposure ( Exp _ B B b ) at
+the bank-ﬁrm level. Tier1 Ratio is Tier 1 capital over risk-weighted as-
+sets, equity is total equity capital, interbank is total wholesale fund-
+ing from interbank deposits, liquidity ratio is the ratio of liquid assets
+(cash and other short-term marketable securities such as government
+bonds) over total assets. Numbers in parentheses are the normalized
+differences (the difference between the average below/above the me-
+dian and the average above/below, normalized by the square root of the
+sum of the corresponding variances, see Imbens and Wooldridge 2009 ).
+The last column shows the overall average for the sample.
+Below
+median
+Above
+median
+Overall
+average
+Assets ( € mil) 271,242 272,748 271,795
+( −0.01) (0.00)
+Tier1 Ratio 8.85 8.72 8.80
+(0.05) ( −0.04)
+Equity/Assets 7.68 8.24 7.90
+( −0.43) (0.26)
+Interbank/Assets 7.47 8.71 7.96
+( −0.12) (0.18)
+Retail Deposits/Assets 44.16 42.95 43.72
+(0.12) ( −0.15)
+Bonds/Assets 23.83 25.29 24.34
+( −0.16) (0.17)
+NPL/Assets 5.16 4.29 4.85
+(0.59) ( −0.33)
+ROA 0.24 0.32 0.27
+( −0.32) (0.20)
+Liquidity Ratio 8.30 7.94 8.17
+(0.10) ( −0.07)
+Sovereign Bonds/Assets 6.91 6.61 6.80
+(0.08) ( −0.06)
+where w b,p, 2009 denotes the share of bank b ′ sh o u s e h o l d
+deposits in province p in 2009 over the total deposits of
+the bank and B B p, 2009 denotes the volume of bank bonds
+held by households in province p scaled by total bank
+bonds across all Italian provinces in 2009.
+In line with the results in Table 2 , we hypothesize that
+banks with a geographical presence in bond-rich areas ex-
+perienced larger increases in deposits, especially if they
+had a larger deposit base in that province. Besides rele-
+vance, a valid instrument must satisfy the exclusion re-
+striction. We think this is likely to be the case in our con-
+text for several reasons.
+First, the instrument is constructed using predeter-
+mined values, which reduces simultaneity concerns. Sec-
+ond, Exp _ B B b, 2009 draws on variation in household demand
+for deposit products, which is less likely to correlate with
+contemporaneous changes in ﬁrms’ demand for different
+credit products as depositors and ﬁrms value different ser-
+vices from banks ( Egan et al., 2017 ). Third, aggregating
+across provinces reduces concerns that increases in house-
+hold deposits may be driven by changes in local bank lend-
+ing opportunities. As in Drechsler et al. (2017) , we assume
+that because of internal capital markets, a bank’s deci-
+sion to raise deposits in one province is independent of
+its lending opportunities and lending decisions in another
+province. Fourth, the results in Table 5 show that banks
+with below or above median values of Exp _ B B b, 2009 are not
+too different with respect to other bank characteristics. We
+ﬁnd that banks with below median values of Exp _ B B b, 2009
+tend to be somewhat less proﬁtable with somewhat higher
+ratios of non-performing loans than banks with above me-
+dian values. The two groups have similar average size, cap-
+ital, dependence on bonds, retail deposits, interbank fund-
+ing, liquid assets, and sovereign bond holdings. Given the
+non-random nature of Exp _ B B b, 2009 , these results provide
+some assurance that the treatment and control banks are
+not too different with respect to key bank characteristics
+that may also inﬂuence their lending policies. In our spec-
+iﬁcations, we control for these bank characteristics.
+We cannot, however, exclude the possibility that the
+two groups of banks are different with respect to unob-
+servable characteristics. Hence, in our analysis we provide
+several additional tests supporting the internal validity of
+our approach, such as including changes to central bank
+funding during the event window due to the LTRO among
+the control variables and a placebo test in the period prior
+to the reform.
+Eq. (2) is estimated using 2SLS for the sub-sample of
+ﬁrms that have term loans with multiple bank-lending re-
+lationships. This corresponds to about 89% of all ﬁrms, con-
+ﬁrming that multiple bank lending relationships are very
+common in Italy ( Detragiache et al., 20 0 0 ). Identiﬁcation
+is obtained by comparing how the supply of credit to the
+same ﬁrm varies across banks whose household deposits
+increased differentially due to the reform.
+We also run separate regressions for different types of
+loans (credit lines, short- and long-term loans, using the
+ﬁve-year maturity cut-off available in the data). We thus
+compare the growth rates of the same type of loan across
+banks that were differentially affected by the reform. This
+further addresses concerns that treatment effects may be
+inﬂuenced by different banks specializing in different types
+of loans ( Paravisini et al., 2017 ) as we condition on the
+type of credit granted.
+We also employ interactions with ﬁrm risk and bank
+characteristics to uncover possible mechanisms driving
+changes in lending policies. We use Altman’s Z-score
+as our baseline measure of ﬁrm risk. Firms with a Z-
+score greater than seven are classiﬁed as high-risk ﬁrms
+( Rodano et al., 2018 ).
+5.2. Results: bank lending policies
+5.2.1. Baseline results
+Panel A of Table 6 reports our baseline results using
+2SLS. We report results for total credit to a ﬁrm, as well as
+different types of credit. For each speciﬁcation, we report
+the second stage coeﬃcients and F -stat values, indicating
+the strength of the instrument in the ﬁrst stage regression.
+In Panel B, we report OLS results for comparison.
+In all speciﬁcations, the F -stat values are between 20
+and 30, well above the rule of thumb of 10, indicating that
+in all cases the instrument is strong. The 2SLS estimates
+show that the increased reliance on deposit funding did
+not change the overall credit supply of banks, but it did
+lead to important compositional changes. Larger increases
+in deposits are associated with relatively more credit lines.
+Although the total amount of term loans is not signiﬁ-
+cantly affected, there is a compositional change towards
+more long-term credit. Term loans with longer maturities
+18
+
+===== PAGE 14 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Table 6
+Bank credit: Credit lines and term loans.
+This table provides the estimates for the effects of the growth rate of deposits on credit lines and term loans, broken down by maturity ( Eq. (2) ). The
+dependent variable in each column is the log-change in the time averaged amount of credit granted from bank b to ﬁrm f twelve months before the
+announcement of the reform (September 2010 to September 2011) and the twelve months after the reform came in effect (January 2012 to December
+2012) by type of credit. /Delta1Log ( Term Dep ) b is the bank growth rate in term deposits over the event window. Exp _ B B b is the bank exposure to the reform.
+Panel A reports the 2SLS estimates (using Exp _ B B b as the IV), while Panel B reports the OLS estimates. All bank controls are dated as of December 2009.
+We include bank-size ﬁxed effects as dummies for each quartile of bank total assets. Standard errors are two-way clustered at the bank and ﬁrm level.
+T -statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical signiﬁcance at the 1%, 5%, and 10% levels, respectively.
+Panel A: 2SLS
+(1) (2) (3) (4) (5) (6) (7)
+Total Credit Credit Lines All Term Term < 5Y Term > 5Y Term > 5Y/Total Term > 5Y/Term
+/Delta1Log ( Term Dep ) b 0.032 0.064 ∗∗∗ −0.038 −0.071 0.159 ∗∗∗ 0.032 0.064 ∗∗∗
+(1.52) (3.16) ( −0.88) ( −1.20) (3.89) (1.52) (3.16)
+Fixed Effects
+Firm Y Y Y Y Y Y Y
+Bank-size Y Y Y Y Y Y Y
+Observations 315,708 222,052 315,708 181,881 116,008 315,708 315,708
+R 2 0.400 0.376 0.368 0.391 0.413 0.361 0.345
+No of ﬁrms 107,654 77,189 107,654 62,736 46,235 107,654 107,654
+No of banks 482 468 482 454 474 482 482
+1st stage F-stat 32.79 22.08 32.79 27.52 40.97 32.79 32.79
+Panel B: OLS
+(1) (2) (3) (4) (5) (6) (7)
+Total Credit Credit Lines All Term Term < 5Y Term > 5Y Term > 5Y/Total Term > 5Y/Term
+/Delta1Log ( Term Dep ) b 0.014 0.026 ∗∗∗ −0.021 −0.003 0.015 −0.002 −0.002
+(1.34) (2.71) ( −1.53) ( −0.15) (0.88) ( −0.83) ( −0.51)
+Fixed Effects
+Firm Y Y Y Y Y Y Y
+Bank-size Y Y Y Y Y Y Y
+Observations 315,708 222,052 315,708 181,881 116,008 315,708 315,708
+R 2 0.402 0.376 0.369 0.392 0.417 0.363 0.349
+No of ﬁrms 107,654 77,189 107,654 62,736 46,235 107,654 107,654
+No of banks 482 468 482 454 474 482 482
+( ≥ ﬁve years) have a positive statistically signiﬁcant coeﬃ-
+cient, while those with shorter maturities have a negative
+but insigniﬁcant coeﬃcient. The coeﬃcient of term loans
+≥ ﬁve years to total loans is also positive and statistically
+signiﬁcant, indicating that larger increases in deposits are
+associated with more long-term loans as a fraction of the
+total credit to the ﬁrm (i.e., inclusive of credit lines).
+In terms of magnitudes, our estimates indicate that a
+bank with a one standard deviation increase in the growth
+rate of term deposits (i.e., by about 36%) increases credit
+lines and long-term loans by 2.3 (0.36 × 0.064) and 5.72
+(0.36 × 0.159) percentage points, respectively. Relative to
+their respective mean values, these estimates point to a
+69% larger increase in the growth rates of credit lines
+and a 19% larger increase in the grow rate of long-term
+loans. Both are economically signiﬁcant, considering that
+our sample period is characterized by marked decreases in
+credit availability in both short- and long-term credit. 15
+OLS estimates in Panel B of Table 6 indicate that fail-
+ing to account for endogenous changes in term deposits bi-
+ases the coeﬃcients of /Delta1log ( T erm Dep ) b towards zero in
+most cases. The point estimate for credit lines is still pos-
+itive and statistically signiﬁcant, but substantially smaller
+15 During the event window, total credit granted to all ﬁrms decreased
+on average by 13%, with credit lines decreasing by 3% and term loans by
+24%. Longer maturity term loans decreased even more by around 29%.
+(by about 59%). More importantly, we ﬁnd no increase in
+long-term credit in the OLS speciﬁcation. The estimated
+coeﬃcients for term loans with longer or shorter matu-
+rities are both statistically insigniﬁcant and close to zero.
+The same holds for the ratios of long-term credit to term
+loans or total credit. Overall, these results underscore the
+importance of addressing the endogeneity in bank deposit
+funding.
+To evaluate the internal validity of our identiﬁcation
+strategy, we perform several tests. First, one concern with
+Eq. (2) is that contemporaneous changes in bank capital
+or the provision of central bank funding (e.g., through the
+ECB LTRO program in December 2011 and February 2012)
+correlate with our exposure measure, inﬂuencing our in-
+ference. Fig. 6 shows that this is not the case. Equity to
+total capital ratios move in parallel trends both before and
+after the reform, with the 95% conﬁdence bands overlap-
+ping in both periods. Similarly, the dependence on central
+bank funding, which increases for all banks in 2012 after
+the three-year LTRO does not appear to be markedly differ-
+ent between the two groups. We investigate this further in
+Panel A of Table 7 by estimating an augmented Eq. (2) in-
+cluding bank-level changes in central bank funding among
+the control variables. Results remain unchanged, both qual-
+itatively and quantitatively.
+Second, in Panel B of Table 7 we also exclude the sam-
+ple banks with branches in only one province as reallo-
+19
+
+===== PAGE 15 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Fig. 6. Bank funding by bank exposure.
+This ﬁgure shows the bank funding between banks with above the median (solid line) and below the median (dash-dot line) exposure to the reform
+( Exp _ B B b ) with the associated standard errors. Panel A shows the fraction of bank capital over total assets. Panel B shows the fraction of total central bank
+funding, including the three-year LTRO, as a fraction of assets. All series are normalized to have a value of one as of the reform approval date (i.e., index
+value = 1 in June 2011, given that balance sheet information is only available semi-annually).
+Table 7
+Bank credit: Identiﬁcation and robustness.
+This table provides robustness tests for the 2SLS estimates of Eq. (2) . Panel A reports augmented speciﬁcations with a bank’s three-year LTRO funding as
+an additional control. Panel B reports corresponding speciﬁcations excluding banks with bank branches in a single province. Panel C reports corresponding
+speciﬁcations for a placebo period. The post-reform placebo period in Panel C is January 2010 - December 2010 and the pre-reform period is January 2009
+– December 2009. All bank controls are dated as of December 2009. We include bank-size ﬁxed effects as dummies for each quartile of bank total assets.
+Standard errors are two-way clustered at the bank and ﬁrm level. T -statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical signiﬁcance at the
+1%, 5%, and 10% levels, respectively.
+Panel A: Including 3-year LTRO funding
+(1) (2) (3) (4) (5) (6) (7)
+Total Credit Credit Lines All Term Term < 5Y Term > 5Y Term > 5Y/Total Term > 5Y/Term
+/Delta1Log ( Term Dep ) b 0.033 0.066 ∗∗∗ −0.041 −0.084 0.159 ∗∗∗ 0.025 ∗∗∗ 0.041 ∗∗∗
+(1.47) (3.06) ( −1.00) ( −1.62) (3.87) (3.48) (3.23)
+/Delta1CBF und/Asset s b 0.001 0.001 −0.003 −0.010 ∗∗∗ 0.002 0.002 ∗∗∗ 0.004 ∗∗∗
+(0.83) (0.95) ( −1.22) ( −3.18) (0.58) (3.83) (5.97)
+Observations 315,708 222,052 315,708 181,881 116,008 315,708 315,708
+R 2 0.402 0.376 0.369 0.392 0.414 0.361 0.348
+No of ﬁrms 107,654 77,189 107,654 62,736 46,235 107.654 107.654
+No of banks 482 468 482 454 474 482 482
+1st stage F -stat 26.87 14.75 26.87 21.66 37.82 26.87 26.87
+Panel B: Excluding single-province banks
+/Delta1Log ( Term Dep ) b 0.031 0.066 ∗∗∗ −0.045 −0.086 0.164 ∗∗∗ 0.025 ∗∗∗ 0.042 ∗∗∗
+(1.37) (2.95) ( −1.09) ( −1.64) (3.91) (3.49) (3.29)
+Observations 308,452 217,110 308,452 178,356 112,828 308,452 308,452
+R 2 0.403 0.376 0.370 0.393 0.415 0.362 0.349
+No of ﬁrms 105,440 75,642 105,440 61,629 45,050 105,440 105,440
+No of banks 386 373 386 363 379 386 386
+1st stage F -stat 26.22 13.92 26.22 21.09 37.01 26.22 26.22
+Panel C: Placebo 2010–2009
+/Delta1Log ( Term Dep ) b −0.015 −0.029 −0.024 −0.027 −0.044 0.010 0.016
+( −1.10) ( −1.38) ( −1.17) ( −1.06) ( −1.27) (1.18) (1.36)
+Fixed Effects
+Firm Y Y Y Y Y Y Y
+Bank-size Y Y Y Y Y Y Y
+Observations 320,008 229,549 320,008 183,253 117,225 320,008 320,008
+R 2 0.374 0.364 0.365 0.386 0.415 0.352 0.345
+No of ﬁrms 107,670 77,194 107,670 62,742 46,246 107,670 107,670
+No of banks 489 472 489 458 477 489 489
+1st stage F -stat 2.18 3.83 2.18 3.18 2.39 2.18 2.18
+20
+
+===== PAGE 16 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+cation of funds through internal capital markets for such
+banks is limited (i.e., these banks collect deposits and lend
+in the same province). This decreases the number of banks
+in the sample from 482 to 386, but leaves the sample of
+loans and results virtually unchanged as these are very
+small (mostly cooperative) banks that account for only a
+very small fraction of loans in our sample. 16 This reassures
+that our baseline estimates are not affected much by the
+presence of many, but small, single-province banks. 17
+We also perform a placebo test by re-estimating our
+augmented model prior to the reform, using as event win-
+dow the period between January 2009 to December 2010.
+Pre-reform tests can be informative as to whether the
+identiﬁed treatment effects are driven by omitted variable
+biases that are likely to also be present in the recent pre-
+reform period (such as systematic differences in lending
+policies due to, for example, differences in expertise, lend-
+ing technologies, or preferences). We ﬁnd this is not the
+case. Re-estimating the model prior to the reform yields
+no signiﬁcant treatment effect (see last panel of Table 7 ).
+To sum up, the greater reliance on deposits after
+the reform led to an increase both in credit lines and
+long-term credit. The former result is consistent with
+Kashyap et al. (2002) , while the latter is consistent
+with different theories. It could be the equilibrium out-
+come of greater discipline associated with runnable debt
+( Calomiris and Kahn, 1991 ; Flannery, 1994 ; Diamond and
+Rajan, 2001 ) or of greater reliance on stable funding
+sources due to government guarantees ( Hanson et al.,
+2015 ) or market power ( Drechsler et al., 2021 ). From the
+perspective of a prudential regulator, these channels are
+very different. While the discipline channel predicts a de-
+crease in bank risk-taking incentives, a lower funding sen-
+sitivity to risk may lead to an increase in bank risk-taking
+incentives. Below we study in more detail the mechanisms
+driving our baseline ﬁndings.
+5.2.2. Synergies between deposits and credit lines
+In this section, we study the mechanisms driving the
+credit lines result. Kashyap et al. (2002) argue that bank
+provision of liquidity on demand to depositors on the li-
+ability side creates synergies for the provision of liquidity
+on demand to borrowers on the asset side. Such synergies
+emerge because banks save on costly liquidity holdings
+(that are needed to honor both deposits and credit lines)
+and exist so long as: i) deposit withdrawals and credit line
+drawdowns are not positively correlated, and ii) banks can-
+not simply raise new external liquidly at a moment’s no-
+tice, creating a need for costly liquidity buffers in the ﬁrst
+place.
+Both conditions seem likely in our case. First, evidence
+in Gatev and Strahan (2006) for the US indicates that
+16 Similar results are obtained if we drop banks with branches in a sin-
+gle region (on average, a region is a collection of ﬁve adjacent provinces).
+A region is the relevant unit for local lending markets for anti-trust pur-
+poses. The number of banks (loans) in this case drops to 280 (296,475).
+The estimated coeﬃcients are very similar to Panel A (0.060 ∗∗∗ for credit
+lines, 0.153 ∗∗∗ for long-term loans, and 0.032 ∗∗∗ and 0.061 ∗∗∗ for the two
+ratios).
+17 Results in Table 8 are also robust to using a two-year window after
+the reform (see Appendix Table A3 ).
+Table 8
+Bank credit lines.
+This table provides the 2SLS estimates for credit lines.
+Equit y/Asset s b and T ier1 /RW A b are the de-meaned bank lever-
+age and regulatory capital ratio as of 2009. All bank controls are
+dated as of December 2009. We include bank-size ﬁxed effects as
+dummies for each quartile of bank total assets. Standard errors
+are two-way clustered at the bank and ﬁrm level. T -statistics are
+reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical signiﬁcance at
+the 1%, 5%, and 10% levels, respectively.
+(1) (2)
+Credit Lines Credit Lines
+/Delta1Log ( Term Dep ) b 0.082 ∗∗∗ 0.061 ∗∗∗
+(3.51) (3.20)
+/Delta1Log ( Term Dep ) b −0.011 ∗∗∗
+×Equit y/Asset s b ( −2.62)
+/Delta1Log ( Term Dep ) b −0.009 ∗∗∗
+×T ier1 /RW A b ( −3.30)
+Observations 222,052 222,052
+R 2 0.376 0.376
+No of ﬁrms 77,189 77,189
+No of banks 468 468
+1st stage F -stat 8.11 10.31
+banks experience deposit inﬂows in times of market stress,
+pointing to a negative, rather than positive, correlation be-
+tween deposit withdrawals and credit line drawdowns. 18 A
+positive correlation is even more unlikely in our setting.
+The increase in deposit funding in our experiment draws
+from a reshuﬄing of previously accumulated wealth, in-
+vested for future consumption in the form of bank bonds.
+Withdrawals on such funds are thus unlikely to coincide
+with the credit line drawdowns of ﬁrms. Second, accessing
+external liquidity at a moment’s notice is also unlikely for
+any bank in our sample period due to the sovereign debt
+crisis. However, there may be important cross-sectional
+variation in this dimension that could allow us to test the
+underlying mechanism behind the credit lines result. All
+else equal, better capitalized banks should have better ac-
+cess to external liquidity. Synergies for better capitalized
+banks should be smaller and thus should exhibit a smaller
+increase in credit lines in response to the reform. The re-
+sults in Table 8 are consistent with this prediction. We ﬁnd
+that increases in term deposits in banks with higher ratios
+of equity to total assets or higher Tier 1 capital ratio ex-
+hibit systematically smaller increases in credit lines.
+An additional important prediction in
+Kashyap et al. (2002) explaining why deposits and loan
+commitments do not crowd out each other (given that
+they both compete for the same scarce resource) is that
+banks optimally increase their liquid asset holdings as
+their reliance on deposit funding increases. This ensures
+that they will be better able to cover the risk of deposit
+withdrawals and commitment drawdowns. Consistent with
+this, Fig. 7 shows in fact that banks experiencing larger
+increases in term deposits (i.e., banks with above median
+18 Evidence for the US during the 20 07-20 09 ﬁnancial crisis underscores
+the importance of government guarantees. Acharya and Mora (2015) ﬁnd
+that during the initial phases of the crisis, credit line takedowns outpaced
+the aggregate deposit inﬂows until the US government increased its back-
+ing of the banking sector (e.g., with an increase of the deposit insurance
+limit to $250,0 0 0, among other measures) and deposit inﬂows soared.
+21
+
+===== PAGE 17 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Fig. 7. Liquidity ratio by bank exposure.
+This ﬁgure shows the liquidity ratio (cash and other short-term securities
+over total assets) for banks with above the median (solid line) and below
+the median (dash-dot line) exposure to the reform ( Exp _ B B b ) with the as-
+sociated standard errors. The series has been normalized to have a value
+of one before the reform approval date (i.e., index value = 1 in June 2011,
+given that balance sheet information is only available semi-annually).
+values of Exp _ B B b, 2009 ) increase their holdings of liquid
+assets more. Prior to the reform, both groups have much
+lower levels of liquid assets that move in parallel.
+Overall, our results provide strong empirical support to
+the predictions in Kashyap et al. (2002) and indicate that
+a banking system funded with more deposits is better able
+to provide liquidity insurance to ﬁrms in crises periods, re-
+inforcing and complementing key insights from Gatev and
+Strahan (2006) .
+5.2.3. Demandability and government guarantees
+In this section, we evaluate the role of demandability
+and government guarantees. As discussed earlier, the in-
+crease in the provision of long-term credit could be driven
+by different forces. It could be the equilibrium outcome
+of greater discipline emanating from the demandable na-
+ture of the deposit contract or conversely it could be the
+outcome of greater funding stability, stemming, for exam-
+ple, from stronger government guarantees. While the two
+channels have similar predictions with respect to loan ma-
+turity, they have contrasting predictions on the type of
+borrowers that banks should be directing their credit to.
+The discipline channel predicts a shift in credit availabil-
+ity away from riskier borrowers towards safer borrowers,
+particularly when the threat of runs is higher. The guaran-
+tee channel instead predicts an increase in credit to riskier
+ﬁrms Merton (1977) , particularly by riskier banks more ex-
+posed to runs.
+Hence, to disentangle these two channels, we ﬁrst dis-
+tinguish between high- and low-risk ﬁrms by allowing
+for an interaction between /Delta1log ( T erm Dep ) b and Risk y f ,
+a dummy variable that equals one for ﬁrms with an
+Altman Z-score greater than seven and zero otherwise.
+The results are reported in Table 9 . The coeﬃcient of
+/Delta1log ( T erm Dep ) b measures the treatment effect for low-
+risk ﬁrms (omitted group). The sum of the coeﬃcients of
+/Delta1log ( T erm Dep ) b and its interaction with Risk y f , reported
+at the bottom of Table 9 , measures the overall treatment
+effect for high-risk ﬁrms.
+The results do not provide support for the government
+guarantee channel. We ﬁnd that the higher provision of
+credit lines and longer-maturity term loans, observed ear-
+lier, is concentrated in low-risk ﬁrms. Total credit to these
+ﬁrms is also found to increase. We ﬁnd no such increases
+for riskier ﬁrms, as visible in the sum of coeﬃcients at
+the bottom of Table 9 . If anything, total term credit to
+riskier ﬁrms seems to decrease. This is more evident for
+term loans with shorter maturities that are arguably faster
+to record any decreases in bank credit availability. 19 The
+point estimates indicate that a one standard deviation in-
+crease in /Delta1log ( T erm Dep ) b leads to a 1.72 (6.48) percent-
+age point higher growth in credit lines (long-term loans)
+to low-risk ﬁrms and a 7 percentage point lower growth
+in term loans to riskier ﬁrms.
+Overall, the results in Table 9 are consistent with theo-
+ries predicting that the demandable nature of the deposit
+contract, which exposes banks to runs, decreases their
+willingness to take risk in the ﬁrst place. This mechanism
+requires that the threat of a run is credible. We believe this
+holds in our sample for several reasons. First, term deposits
+can be withdrawn before contractual maturity simply by
+forgoing interest payments. Artavanis et al. (2019) ﬁnd
+that early withdrawals on time deposits are common and
+households exhibit a high willingness to pay for early
+withdrawals when fundamental and strategic uncertainty
+increases. Second, as shown in Panel B of Fig. 1 , the sub-
+stitution of bonds with deposits induced by the reform
+shifted the distribution of deposits towards larger accounts
+(e.g., with more than €250,0 0 0), which are largely unin-
+sured. These accounts are expected to be less “sleepy” as
+households behind them are better able and have stronger
+incentives to exercise their demandability rights when con-
+cerned about the safety of their funds. Existing studies
+conﬁrm that retail depositors, particularly if uninsured,
+are prone to runs and responsive to deterioration in bank
+fundamentals (e.g., Iyer et al., 2016 ; Egan et al., 2017 ;
+Artavanis et al., 2019 ). Third, since our sample period co-
+incides with a period of crisis both in the sovereign and
+banking sector, we expect banks, particularly those with
+weak fundamentals, to be under a credible threat of de-
+positor run and thus decrease their exposure to risky ﬁrms.
+The results in Table 10 conﬁrm this hypothesis.
+Overall, our results provide new evidence that, when
+not neutralized by government guarantees, the deposit
+contract can be an effective disciplinary mechanism on
+banks, limiting credit to riskier ﬁrms and enabling the pro-
+vision of more long-term credit to the real economy.
+5.2.4. Depositor runs and stability of retail bonds at stressed
+banks
+The interpretation of our results above relies on the hy-
+pothesis that retail deposits, including time deposits, are
+19 Term loans track a bank’s outstanding loan amount to a ﬁrm. Due to
+lags in repayment, decreases in the availability of term loans are naturally
+less precisely estimated than increases. Credit lines may also be slow to
+record decreases in credit availability as riskier ﬁrms may be more likely
+to draw on pre-committed credit lines.
+22
+
+===== PAGE 18 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Table 9
+Bank credit: Firm risk.
+This table provides the 2SLS estimates for the effects of the growth rate of deposits on credit lines and term loans by ﬁrm risk. Risk y f is a dummy equal
+to one for ﬁrms with Z-score equal to or above seven. All bank controls are dated as of December 2009. We include bank-size ﬁxed effects as dummies
+for each quartile of bank total assets. Standard errors are two-way clustered at the bank and ﬁrm level. T -statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗
+indicate statistical signiﬁcance at the 1%, 5%, and 10% levels, respectively.
+(1) (2) (3) (4) (5) (6) (7)
+Total Credit Credit Lines All Term Term < 5Y Term > 5Y Term > 5Y/Total Term > 5Y/Term
+/Delta1Log ( Term Dep ) b 0.048 ∗∗ 0.073 ∗∗∗ −0.010 −0.048 0.180 ∗∗∗ 0.025 ∗∗∗ 0.040 ∗∗∗
+(2.11) (3.16) ( −0.23) ( −0.91) (4.06) (3.62) (3.38)
+/Delta1Log ( Term Dep ) b ×Risk y f −0.089 ∗∗ −0.047 ∗∗ −0.186 ∗∗∗ −0.235 ∗∗∗ −0.117 ∗∗ 0.005 0.005
+( −2.41) ( −1.97) ( −3.02) ( −3.43) ( −2.14) (0.47) (0.48)
+/Delta1Log ( Term Dep ) b + /Delta1Log ( Term Dep ) b ×Risk y f −0.041 0.026 −0.196 ∗∗∗ −0.283 ∗∗ 0.063 0.029 ∗∗ 0.045 ∗∗∗
+( −1.02) (1.10) ( −3.24) ( −3.73) (1.17) (2.26) (2.36)
+Fixed Effects
+Firm Y Y Y Y Y Y Y
+Bank-size Y Y Y Y Y Y Y
+Observations 315,708 222,052 315,708 181,881 116,008 315,708 315,708
+R 2 0.401 0.375 0.368 0.391 0.414 0.361 0.348
+No of ﬁrms 107,654 77,189 107,654 62,736 46,235 107,654 107,654
+No of banks 482 468 482 454 474 482 482
+1st stage F -stat 13.23 7.29 13.23 10.63 7.27 13.23 13.23
+Table 10
+Bank term loans.
+This table provides the 2SLS estimates for term loans. Equit y/Asset s b
+and T ier1 /RW A b are the de-meaned bank leverage and regulatory capi-
+tal ratio as of 2009. All bank controls are dated as of December 2009.
+We include bank-size ﬁxed effects as dummies for each quartile of bank
+total assets. Standard errors are two-way clustered at the bank and ﬁrm
+level. T -statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical
+signiﬁcance at the 1%, 5%, and 10% levels, respectively.
+(1) (2) (3)
+All ﬁrms High-Risk Risk y f = 1 Low-Risk Risk y f = 0
+Panel A: Bank leverage ratio
+/Delta1Log ( Term Dep ) b −0.077 ∗ −0.164 ∗∗∗ −0.061
+( −1.84) ( −3.61) ( −1.38)
+/Delta1Log ( Term Dep ) b 0.019 ∗∗ 0.013 0.021 ∗∗∗
+×Equit y/Asset s b (2.45) (1.23) (2.59)
+R 2 0.369 0.377 0.367
+1st stage F -stat 14.31 21.03 13.20
+Observations 315,708 48,950 266,758
+No of ﬁrms 107,654 17,761 89,893
+No of banks 482 451 480
+Panel B: Bank regulatory ratio
+/Delta1Log ( Term Dep ) b −0.044 −0.144 ∗∗∗ −0.024
+( −1.04) ( −3.24) ( −0.53)
+/Delta1Log ( Term Dep ) b 0.015 ∗∗∗ 0.015 ∗∗∗ 0.015 ∗∗∗
+×T ier1 /RW A b (3.22) (2.95) (3.01)
+R 2 0.369 0.378 0.367
+1st stage F-stat 17.20 23.85 16.12
+Observations 315,708 48,950 266,758
+No of ﬁrms 107,654 17,761 89,893
+No of banks 482 451 480
+indeed prone to runs and, all else equal, are a less stable
+funding source than bank bonds, given their longer matu-
+rities and limited secondary market liquidity.
+To further strengthen this key hypothesis, we provide
+novel evidence on the run-like behavior of deposits, in-
+cluding term deposits, relative to retail bonds. In particu-
+lar, in Fig. 8 we trace the evolution of the retail deposit
+and bond funding of seven Italian banks—Monte dei Paschi,
+Banca Carige, Banca Etruria, Banca Marche, CariFerrara, and
+CariChieti—that have come under stress recently due to
+weak fundamentals. 20 All stress event dates are collapsed
+into a single date (time 0) and deposit and bond values are
+normalized to 1 at time 0.
+Consistent with the Italian ﬁnancial press pointing to
+signiﬁcant depositor withdrawals on these banks, we ob-
+serve that in the six-month window after the event date,
+total household deposits of the stressed banks fell rapidly
+(by around 15%) even though deposits for the entire bank-
+ing system were increasing (Panel A of Fig. 8 ). Splitting the
+total deposits of stressed banks into demand and term de-
+posits reveals that they experienced large drops in both
+(Panel B of Fig. 8 ). In percentage terms, drops in term
+deposits are even larger ( −20% vs. −12%), indicating that
+term deposits, our key variable of interest, are indeed de-
+mandable and potentially even more prone to runs than
+deposits in checking accounts. Retail bond funding, instead,
+shows no abnormal drops around the event dates, trailing
+on the same downward trend before and after the stress
+event, like the rest of the system, with no acceleration af-
+ter the event date (Panel C of Fig. 8 ).
+Collectively, we view these results as key evidence that
+retail bonds are quite stable, whereas retail deposits, in-
+cluding term, quickly evaporate when bank fundamentals
+deteriorate. This is crucial to understanding the mechanism
+underlying our credit results as it underscores the impor-
+tance of the demandable nature of the deposit contract
+20 Monte dei Paschi came under intense stress in July 2016 after fail-
+ing the ECB stress test. The crisis in Banca Carige, a smaller regional
+lender, instead intensiﬁed in November 2017, after a failed recapitaliza-
+tion attempt. The four small banks, Banca Etruria, Banca Marche, CariFer-
+rara, and CariChieti, came under pressure in November 2015 after the an-
+nouncement of the bail-in or burden sharing of retail junior bondholders.
+The Italian ﬁnancial press indicates that around these periods these banks
+experienced signiﬁcant runs from retail depositors (see “La grande fuga
+dei clienti dalla banca: depositi giù di 14 miliardi in nove mesi,” Fabio
+Pavesi, December 12, 2016, IlSole24ore “Carige: nel 2018 “in fuga” 2.4
+miliardi,” Stefano Neri, April 9, 2019, FinanzaReport.it; “Senza salvataggio,
+a rischio stipendi e apertura degli sportelli,” Marco Ricci, Novembre 28,
+2015, Cronache Maceratesi).
+23
+
+===== PAGE 19 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Fig. 8. Deposit runs at stressed banks.
+This ﬁgure shows the evolution of household deposits and bonds for a selected group of stressed banks against household deposits and bonds of all Italian
+banks over the same period. All series are normalized to have a value of one as of the event date (i.e., index value = 1 as of date 0). Panel A shows total
+household deposits for stressed banks (solid line) against total household deposits of all Italian banks (dashed line); Panel B shows the demand (solid line)
+and term deposits (dashed line) for stressed banks only and Panel C shows the retail bank bonds at stressed banks (solid line) against total retail bonds of
+all Italian banks (dashed line).
+and shows that the tax reform increased the share of bank
+liabilities that are potentially exposed to the threat of runs.
+6. Conclusion
+In this paper, we study how a greater reliance on de-
+posit funding affects bank lending policies. The analysis ex-
+ploits a tax reform in Italy, which led households to sub-
+stitute their holdings of bank bonds with deposits, leading
+to a signiﬁcant increase in demandable liabilities. Consis-
+tent with seminal theories in banking, we ﬁnd that banks
+funded with more deposits provide more credit lines and
+long-term credit to the real economy. These beneﬁts em-
+anate from the demandability of deposits and bank market
+power over retail depositors.
+An additional important insight from the paper is that
+changes in taxation can be a powerful ﬁnancial stabil-
+ity tool to induce changes in bank funding structures and
+lending policies. This complements insights for other stud-
+ies analyzing different taxation reforms.
+Appendix A. Market power on depositors
+Drechsler et al. (2021) highlight that bank market
+power in deposit markets is a key mechanism behind their
+maturity transformation. The idea is that operating a de-
+posit franchise (i.e., the bank branch network) gives banks
+market power over retail depositors, allowing them to pay
+interest rates insensitive to market rates. Since running
+the deposit franchise has high operating costs, banks must
+hold long-term illiquid assets to make a proﬁt. Extend-
+ing this idea, Li et al. (2019) show that banks raising de-
+posits in more concentrated markets have less pro-cyclical
+funding costs, enabling them to originate more long-term
+loans.
+To evaluate the extent to which our baseline re-
+sults on long-term credit are driven by market power
+on depositors, we estimate an augmented speciﬁcation
+of Eq. (2) including the same measure of bank market
+power as in Li et al. (2019) . Similarly to Exp _ B B b, 2009 , this
+measure is constructed as the weighted average of the
+Herﬁndahl-Hirschman Index (HHI) of deposits in 2009 in
+24
+
+===== PAGE 20 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Table A1
+Bank market power on depositors.
+This table provides the 2SLS estimates for credit, controlling for market power in deposits. /Delta1Log ( Term Dep ) b is the bank growth rate in term deposits
+over the event window. Exp _ B B b is the bank exposure to the reform. H H I b, 2009 is the weighted average of province deposit HHI at the bank level. All bank
+controls are dated as of December 2009. We include bank-size ﬁxed effects as dummies for each quartile of bank total assets. Standard errors are two-
+way clustered at the bank and ﬁrm level. T-statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical signiﬁcance at the 1%, 5%, and 10% levels,
+respectively.
+(1) (2) (3) (4) (5) (6) (7)
+Total Credit Credit Lines All Term Term < 5Y Term > 5Y Term > 5Y/Total Term > 5Y/Term
+/Delta1Log ( Term Dep ) b 0.031 0.068 ∗∗∗ −0.043 −0.075 0.142 ∗∗∗ 0.025 ∗∗∗ 0.041 ∗∗∗
+(1.26) (3.01) ( −0.94) ( −1.22) (3.37) (3.04) (2.92)
+H H I b, 2009 0.058 −0.020 0.026 −0.218 0.661 ∗∗∗ 0.020 0.010
+(0.73) ( −0.30) (0.14) ( −0.82) (3.39) (0.71) (0.20)
+Fixed Effects
+Firm Y Y Y Y Y Y Y
+Bank-size Y Y Y Y Y Y Y
+Observations 315,708 222,052 315,708 181,881 116,008 315,708 315,708
+R 2 0.400 0.375 0.368 0.391 0.415 0.361 0.346
+No of ﬁrms 107,654 77,189 107,654 62,736 46,235 107,654 107,654
+No of banks 482 468 482 454 474 482 482
+1st stage F-stat 37.90 18.99 37.90 28.73 49.95 37.90 37.90
+Table A2
+Placebo test: Non-ﬁnancial ﬁrm deposits.
+This table provides the estimates for a placebo effect of the reform on bank deposits held by non-ﬁnancial ﬁrms. The dependent variable is the time
+averaged monthly log or log-change in deposits at bank b in province p in twelve months before the announcement of the reform (September 2010 to
+September 2011) and the twelve months after the reform came in effect (January 2012 to December 2012). B B p, 2009 is the standardized share of bank bonds
+held by households in province p over total bank bonds held by Italian households in 2009. Pos t t is a dummy equal to one for the twelve months after the
+reform and zero before. Standard errors are clustered at the province level. T -statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical signiﬁcance
+at the 1%, 5%, and 10% levels, respectively.
+log(Total Dep) log(Demand Dep) log(Term Dep) /Delta1log (Total Dep) /Delta1log (Dem Dep) /Delta1log (Term Dep)
+(1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12)
+B B p, 2009 ×Pos t t −0.004 0.001 −0.008 −0.005 0.017 0.020 −0.015 0.048 −0.065 0.034 −0.060 0.017
+( −0.36) (0.12) ( −0.83) ( −0.49) (0.51) (0.81) ( −0.19) (0.46) ( −0.71) (0.29) ( −1.06) (0.17)
+Pos t t 0.065 ∗∗ 0.016 0.869 ∗∗∗ 0.714 ∗∗∗ 0.598 ∗∗ 0.970 ∗∗∗
+(2.60) (0.67) (12.73) (2.78) (2.10) (8.43)
+Fixed Effects
+Province Y Y Y Y Y Y Y Y Y Y Y Y
+Bank Y N Y N Y N Y N Y N Y N
+Bank-Time N Y N Y N Y N Y N Y N Y
+Observations 15,287 15,220 15,118 15,049 6226 5969 15,047 14,978 14,871 14,799 6089 5825
+R 2 0.379 0.385 0.384 0.389 0.291 0.302 0.069 0.111 0.065 0.106 0.203 0.264
+No of provinces 107 107 107 107 107 107 107 107 107 107 107 107
+No of banks 500 500 499 499 361 361 498 498 497 497 355 355
+each province where the bank was present in 2009:
+H H I b, 2009 =
+∑
+p
+w b,p, 2009 ×HH I p, 2009 , (A.1)
+where H H I p, 2009 is the HHI of deposits in province p in
+2009. The weights, w b,p, 2009 , are deﬁned as in Eq. (2) as
+the share of bank b’s household deposits in province p in
+2009 over the total deposits of the bank. The correlation
+between Exp _ B B b, 2009 and H H I b, 2009 is 0.283.
+The results are presented in Table A1 . Consistent with
+Drechsler et al. (2021) and Li et al. (2019) , we also conﬁrm
+that bank presence in high HHI provinces increases the
+provision of long-term loans. Our estimates imply that a
+one standard deviation increase in H H I b, 2009 (i.e., by 0.047)
+leads to a 3.11 percentage point increase in the growth
+rate of long-term loans. This corresponds to an 11% in-
+crease relative to the mean. Crucially though, the coeﬃ-
+cient of deposit growth, instrumented by Exp _ B B b , barely
+changes compared to the baseline (0.142 vs. 0.159), imply-
+ing that our results on long-term credit are independent of
+the market power channel. In terms of magnitudes, a one
+standard deviation increase in deposit growth leads to a 5%
+point larger increase in the growth rate of long-term loans,
+which is quantitatively similar to the economic signiﬁcance
+of the coeﬃcient of H H I b, 2009 .
+Overall, our results indicate that both depositor disci-
+pline and market power over depositors facilitate the bank
+maturity transformation and provision of long-term credit.
+Both channels appear of similar economic magnitude and
+independent of each other. This may be due to several rea-
+sons. First, households’ initial holdings of bonds were inde-
+pendent of bank market power in local markets as bonds
+are sold nationally with uniform pricing. Second, earlier re-
+sults show that banks’ funding at the bank-province level
+remained constant, suggesting that market power in lo-
+cal deposit markets played a limited role in households’
+25
+
+===== PAGE 21 =====
+
+E. Carletti, F. De Marco, V. Ioannidou et al. Journal of Financial Economics 141 (2021) 6–26
+Table A3
+Bank credit: Two-year window after the reform.
+This table provides the estimates for the effects of the growth rate of deposits on credit lines and term loans, broken down by maturity ( Eq. (2) ).
+The dependent variable in each column is the log-change in the time averaged amount of credit granted from bank b to ﬁrm f twelve months before
+the announcement of the reform (September 2010 to September 2011) and the twenty-four months after the reform went into effect (January 2012 to
+December 2013) by type of credit. /Delta1Log ( Term Dep ) b is the bank growth rate in term deposits over the event window. Exp _ B B b is the bank exposure to the
+reform. Panel A reports the 2SLS estimates (using Exp _ B B b as the IV), Panel B reports the OLS estimates. All bank controls are dated as of December 2009.
+We include bank-size ﬁxed effects as dummies for each quartile of bank total assets. Standard errors are two-way clustered at the bank and ﬁrm level.
+T -statistics are reported in parentheses. ∗∗∗ , ∗∗, ∗ indicate statistical signiﬁcance at the 1%, 5%, and 10% levels, respectively.
+(1) (2) (3) (4) (5) (6) (7)
+Total Credit Credit Lines All Term Term < 5Y Term > 5Y Term > 5Y/Total Term > 5Y/Term
+/Delta1Log ( Term Dep ) b 0.045 0.067 ∗∗ 0.026 −0.024 0.159 ∗∗∗ 0.032 ∗∗∗ 0.039 ∗∗
+(1.50) (2.37) (0.35) ( −0.24) (2.90) (2.82) (2.41)
+Fixed Effects
+Firm Y Y Y Y Y Y Y
+Bank-size Y Y Y Y Y Y Y
+Observations 324,096 228,918 324,096 189,267 118,872 324,096 324,096
+R 2 0.411 0.386 0.373 0.399 0.417 0.362 0.351
+No of ﬁrms 110,110 79,237 110,110 64,963 47,271 110,110 110,110
+No of banks 475 464 475 449 468 475 475
+1st stage F-stat 21.39 11.42 21.39 19.52 27.56 21.39 21.39
+substitution from bonds to deposits. In fact, the estimated
+coeﬃcient of H H I p , 2009 ×Pos t t in augmented speciﬁcations
+of our ﬁrst stage is not statistically signiﬁcant.
+Table A1 , Table A2 , Table A3 .
+References
+Acharya, V. , Mora, N. , 2015. A crisis of banks as liquidity providers. J. Fi-
+nance 70, 1–43 .
+Artavanis, N., Paravisini, D., Robles-Garcia, C., Seru, A., Tsoutsoura, M.,
+2019. Deposit withdrawals. Unpublished working paper.
+Bessembinder, H. , Spatt, C. , Venkataraman, K. , 2020. A survey of the mi-
+crostructure of ﬁxed-income markets. J. Financ. Quant. Anal. 55, 1–45 .
+Bond, S. , Ham, K.Y. , Maﬃni, G. , Nobili, A. , Ricotti, G. , 2016. Regulation,
+tax and capital structure: evidence from administrative data on Italian
+banks. Bank of Italy WP 361 .
+Bustos, P. , Garber, G. , Ponticelli, J. , 2020. Capital accumulation and struc-
+tural transformation. Q. J. Econ. 135, 1037–1094 .
+Calomiris, C. , Kahn, C. , 1991. The role of demandable debt in structuring
+optimal banking arrangements. Am. Econ. Rev. 81, 497–513 .
+Carpinelli, L. , Crosignani, M. , 2021. The design and transmission of central
+bank liquidity provisions. J. Financ. Econ. forthcoming .
+Célérier, C., Kick, T., Ongena, S., 2017. Changes in the cost of bank equity
+and the supply of bank credit. Unpublished working paper.
+Coletta, M., Santioni, R., 2016. Le obbligazioni bancarie nel portafoglio
+delle famiglie italiane. Unpublished working paper. Bank of Italy.
+Detragiache, E. , Garella, P. , Guiso, L. , 20 0 0. Multiple versus single banking
+relationships: theory and evidence. J. Finance 55, 1133–1161 .
+Diamond, D. , Dybvig, P. , 1983. Bank runs, deposit insurance, and liquidity.
+J. Polit. Econ. 91, 401–419 .
+Diamond, D. , 1984. Financial intermediation and delegated monitoring.
+Rev. Econ. Studies 51, 393–414 .
+Diamond, D. , Rajan, R. , 2001. Liquidity risk, liquidity creation, and ﬁnan-
+cial fragility: a theory of banking. J. Polit. Econ. 109, 287–327 .
+Drechsler, I. , Savov, A. , Schnabl, P. , 2017. The deposits channel of monetary
+policy. Q. J. Econ. 132, 1819–1876 .
+Drechsler, I. , Savov, A. , Schnabl, P. , 2021. Banking on deposits: maturity
+transformation without interest rate risk. J. Finance forthcoming .
+Egan, M. , Hortaçsu, A. , Matvos, G. , 2017. Deposit competition and ﬁnancial
+fragility: evidence from the US banking sector. Am. Econ. Rev. 107,
+169–216 .
+Flannery, M. , 1994. Debt maturity and the deadweight cost of leverage:
+optimally ﬁnancing banking ﬁrms. Am. Econ. Rev. 84, 320–331 .
+Gambacorta, L. , Ricotti, G. , Sundaresan, S.M. , Wang, Z. , 2017. The effects
+of tax on bank liability structure. Unpublished working paper.. Centre
+Econ. Policy Res. .
+Gatev, E. , Strahan, P.E. , 2006. Banks’ advantage in hedging liquidity risk:
+theory and evidence from the commercial paper market. J. Finance 61,
+867–892 .
+Gilje, E. , Loutskina, E. , Strahan, P. , 2016. Exporting liquidity: branch bank-
+ing and ﬁnancial integration. J. Finance 71, 1159–1184 .
+Goldstein, I. , Pauzner, A. , 2005. Demand-deposit contracts and the proba-
+bility of runs. J. Finance 60, 1293–1327 .
+Grasso, R., Linciano, N., Pierantoni, L., Siciliano, G., 2010. Le obbligazioni
+emesse da banche italiane. Unpublished working paper. Consob.
+Hanson, S.G. , Shleifer, A. , Stein, J. , Vishny, R. , 2015. Banks as patient
+ﬁxed-income investors. J. Financ. Econ. 177, 449–469 .
+Heider, F. , Saidi, F. , Schepens, G. , 2019. Life below zero: bank lending un-
+der negative policy rates. Rev. Financ. Stud. 32, 3728–3761 .
+Hoffmann, P. , Langﬁeld, S. , Pierobon, F. , Vuillemey, G. , 2019. Who bears
+interest rate risk? Rev. Financ. Stud. 32, 2921–2954 .
+Imbens, G.W. , Wooldridge, J.M. , 2009. Recent developments in the econo-
+metrics of program evaluation. J. Econ. Lit. 47, 5–86 .
+Ippolito, F. , Peydrò, J. , Polo, A. , Sette, E. , 2016. Double bank runs and liq-
+uidity risk management. J. Financ. Econ. 122, 135–154 .
+Iyer, R. , Puri, M. , 2012. Understanding bank runs: the importance of
+depositor-bank relationships and networks. Am. Econ. Rev. 102,
+1414–1445 .
+Iyer, R. , Puri, M. , Ryan, N. , 2016. A tale of two runs: depositor responses
+to bank solvency risk. J. Finance 71, 2687–2725 .
+Jacklin, C. , Bhattacharya, S. , 1988. Distinguishing panics and informa-
+tion-based bank runs: welfare and policy implications. J. Polit. Econ.
+96, 568–592 .
+Kashyap, A.K. , Rajan, R.G. , Stein, J.C. , 2002. Banks as liquidity providers:
+an explanation for the co-existence of lending and deposit-taking. J.
+Finance 57, 33–74 .
+Khwaja, A.I. , Mian, A. , 2008. Tracing the impact of bank liquidity shocks:
+evidence from an emerging market. Am. Econ. Rev. 98, 1413–1442 .
+Li, L. , Loutskina, E. , Strahan, P. , 2019. Deposit market power, funding sta-
+bility and long-term credit. Unpublished working paper.. Natl Bureau
+Econ. Res. .
+Martin, C. , Puri, M. , Uﬁer, A. , 2018. Deposit inﬂows and outﬂows in fail-
+ing banks: the role of deposit insurance. Unpublished working paper..
+Natl Bureau Econ. Res. .
+Merton, R. , 1977. An analytic derivation of the cost of deposit insurance
+and loan guarantees: an application of modern option pricing theory.
+J. Bank. Finance 1, 3–11 .
+Paravisini, D. , Rappoport, V. , Schnabl, P. , 2017. Specialization in bank lend-
+ing: evidence from exporting ﬁrms. Unpublished working paper. Natl.
+Bureau Econ. Res. .
+Ricotti, G., Sanelli, A., 2008. Financial accounts and taxation: a historical
+analysis. Unpublished working paper. Bank of Italy.
+Rodano, G. , Serrano-Velarde, N. , Tarantino, E. , 2018. Lending standards
+over the cycle. Rev. Financ. Stud. 31, 2943–2982 .
+Schepens, G. , 2016. Taxes and bank capital structure. J. Financ. Econ. 120,
+585–600 .
+26
