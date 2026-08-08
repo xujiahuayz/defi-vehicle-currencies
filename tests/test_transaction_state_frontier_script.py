@@ -26,6 +26,7 @@ from scripts.build_transaction_state_frontier import (
     load_target_routes,
     load_replay_checkpoint,
     rejection_record,
+    replay_checkpoint_due,
     save_replay_checkpoint,
     select_days,
     strict_route_order,
@@ -178,6 +179,29 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
             selected = latest_replay_checkpoint(root, "20230615")
         assert selected is not None
         self.assertEqual(checkpoint_day(selected), "20230101")
+
+    def test_daily_frontier_checkpoints_only_at_bounded_intervals(self) -> None:
+        selected = {"20200101", "20200102"}
+        self.assertTrue(
+            replay_checkpoint_due(
+                day="20200101", index=1, selected_days=selected, daily_mode=True
+            )
+        )
+        self.assertFalse(
+            replay_checkpoint_due(
+                day="20200102", index=2, selected_days=selected, daily_mode=True
+            )
+        )
+        self.assertTrue(
+            replay_checkpoint_due(
+                day="20200102", index=2, selected_days=selected, daily_mode=False
+            )
+        )
+        self.assertTrue(
+            replay_checkpoint_due(
+                day="20200629", index=181, selected_days=selected, daily_mode=True
+            )
+        )
 
     def test_day_cache_installs_support_marker_after_panel(self) -> None:
         panel = pd.DataFrame({"route_id": ["one"], "public_path_regret_bps": [1.0]})
