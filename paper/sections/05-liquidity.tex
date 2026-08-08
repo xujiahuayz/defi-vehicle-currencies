@@ -30,7 +30,7 @@ The middle term has a closed form on the constant-product invariant. \citet{Mili
 \mathrm{RV}_{p,t} \;=\; \sum_{h} \bigl( \Delta \log P_{p,h} \bigr)^{2},
 \label{eq:lvr}
 \end{equation}
-with $P_{p,h}$ the pool's own marginal price at hour $h$ and the sum taken over the day's hourly log returns. Realised variance is invariant to which leg is the numeraire, since inverting a price flips the sign of every log return and leaves its square alone. This is the on-chain form of the adverse selection \citet{GlostenMilgrom1985BidAsk} and \citet{Kyle1985ContinuousAuctions} price against an informed counterparty, and \citet{KleinKozhanViswanathNatrajWang2026InformedLP} identify the same asymmetry inside the provider population itself.
+with $P_{p,h}$ the pool's own marginal price at hour $h$ and the sum taken over the day's hourly log returns. Realised variance is invariant to which leg is the numeraire, since inverting a price flips the sign of every log return and leaves its square alone. This is the on-chain form of the adverse selection \citet{GlostenMilgrom1985BidAsk} and \citet{Kyle1985ContinuousAuctions} price against an informed counterparty. \citet{KleinKozhanViswanathNatrajWang2026InformedLP} separately document that signed liquidity additions and withdrawals predict short-horizon returns, consistent with information in provider timing but not a measure of providers' adverse-selection losses.
 
 Dividing \eqref{eq:lvr} by capital removes the pool's size from the loss,
 \begin{equation}

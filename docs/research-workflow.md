@@ -287,6 +287,8 @@ The lesson generalises. The exposure was never that somebody else had reached th
 
 Independence is the point. Form the reading from our own measurement, then check the sources we lean on.
 
+**Parallel literature work is paper-grained.** Independent paper families may be discovered, downloaded and audited concurrently. One owner keeps a paper's published article, appendices, supplements, corrections, replication artifacts, full reading and claim adjudication in one sequential chain because companion evidence can reverse the main text's apparent result. Workers use isolated staging directories and manifests and do not edit the shared ledger. One reconciler verifies versions and hashes, removes superseded artifacts, writes the source-set record and closes the card. Never split one paper across concurrent readers merely to increase throughput.
+
 ## 5. Method discipline adopted from documented practice (node F)
 
 Sourced from an R&D pass over reproducibility and specification-robustness practice; full sourcing in the agent output.

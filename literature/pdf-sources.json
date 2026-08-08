@@ -534,6 +534,18 @@
       "non_text_companions": [
         "https://services.informs.org/dataset/mnsc/download.php?doi=mnsc.2024.07656"
       ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2026-Somogyi2026DollarDominanceFXReplicationPackage-supplement-informs.zip",
+          "bytes": 5164152397,
+          "note": "literature/source-notes/2026-Somogyi2026DollarDominanceFXReplicationPackage.md",
+          "sha256": "5b02fac4ee719871b65ee885277ce4742b0152beca41b6d0180c981c1a47d4f5",
+          "sources": [
+            "https://services.informs.org/dataset/mnsc/download.php?doi=mnsc.2024.07656"
+          ],
+          "status": "materialized"
+        }
+      ],
       "status": "complete"
     },
     "PastorStambaughTaylor2021SustainableInvesting": {

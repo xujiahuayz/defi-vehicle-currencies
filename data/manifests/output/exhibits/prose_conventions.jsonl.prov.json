@@ -6,41 +6,28 @@
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-08T19:24:46+00:00",
+ "created_at": "2026-08-08T19:47:35+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "d61296142f56c658d329fd635e2658196bd178fb",
+  "commit": "d5e95908252dc54d88601a7d4e7f89ecdce8f692",
   "dirty": true,
   "dirty_generated_files": [
-   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
-   "output/exhibits/prose_outliers.jsonl",
-   "output/exhibits/venue_optics.jsonl"
+   "output/exhibits/venue_optics.jsonl",
+   "output/nbc_pipeline/01_source_fidelity.md"
   ],
   "dirty_tracked_files": [
    "docs/literature-audit.md",
-   "docs/research-questions-and-empirical-design.md",
+   "docs/research-workflow.md",
    "literature/pdf-sources.json",
-   "literature/text/2010-ComertonFordeEtAl2010Inventories-accepted-time-variation-in-liquidity-the-role-of-market-maker-inventories-and-revenues.txt",
-   "literature/text/2011-HendershottJonesMenkveld2011Algorithmic-accepted-does-algorithmic-trading-improve-liquidity.txt",
-   "literature/text/2022-MakarovSchoar2022DeFi-working-paper-cryptocurrencies-and-decentralized-finance-defi.txt",
-   "literature/text/_index.jsonl",
    "literature/vehicle-currencies.bib",
    "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
+   "paper/sections/05-liquidity.tex",
    "paper/sections/05-rivals.tex"
   ],
   "dirty_untracked_files": [
-   "literature/source-notes/2011-HendershottJonesMenkveld2011AlgorithmicInstrumentData.md",
-   "literature/source-notes/2020-GopinathEtAl2020DCPReplicationPackage.md",
-   "literature/source-notes/2021-GopinathStein2021MakingReplicationData.md",
-   "literature/source-notes/2022-AmitiItskhokiKonings2022DominantReplicationPackage.md",
-   "literature/source-notes/2022-MakarovSchoar2022DeFiReplicationData.md",
-   "literature/source-notes/2022-Mukhin2022InternationalPriceSystemReplicationPackage.md",
-   "literature/text/2010-ComertonFordeEtAl2010Inventories-time-variation-in-liquidity-the-role-of-market-maker-inventories-and-revenues.txt",
-   "literature/text/2010-ComertonFordeEtAl2010InventoriesAppendix-supplement-internet-appendix-to-time-variation-in-liquidity-the-role-of-market-maker-invent.txt",
-   "literature/text/2011-HendershottJonesMenkveld2011Algorithmic-does-algorithmic-trading-improve-liquidity.txt",
-   "literature/text/2022-MakarovSchoar2022DeFi-cryptocurrencies-and-decentralized-finance-defi.txt"
+   "literature/source-notes/2026-Somogyi2026DollarDominanceFXReplicationPackage.md"
   ]
  },
  "inputs": [],
