@@ -41,17 +41,31 @@ ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.asset_types import asset_type
 from ddvc.analysis.regression import ols_clustered
+from ddvc.data_release import require_node_d_release
 from ddvc.gas import load_daily_gas_prices
-from ddvc.provenance import stamp
+from ddvc.provenance import require_current_artifacts, stamp
+from ddvc.runtime import exclusive_job
 from ddvc.tables import write_exhibit, write_panel
 
 PROC = ROOT / "data" / "processed"
 OUT = ROOT / "output" / "empirical" / "rent_incidence"
+LOCK = OUT / ".run.lock"
+REQUIRED_PANELS = [
+    PROC / "daily_gas_price_graph.parquet",
+    PROC / "v2_token_price_daily.parquet",
+    PROC / "vehicle_centrality_dense.parquet",
+    PROC / "rent_incidence_v2_pool_day.parquet",
+    PROC / "rent_incidence_v3_pool_day.parquet",
+]
 SRC = [
     "scripts/run_rent_incidence.py",
     "scripts/build_rent_incidence_panel.py",
     "src/ddvc/gas.py",
+    "src/ddvc/asset_types.py",
+    "src/ddvc/analysis/regression.py",
+    "src/ddvc/tables.py",
 ]
+OUTPUT_PROVENANCE = {"code_sources": SRC, "inputs": REQUIRED_PANELS}
 
 MIN_TVL = 10_000.0
 BALANCE_TOL = 3.0          # CPMM holds equal value on both legs; 3x is generous
@@ -417,11 +431,11 @@ def pool_months(df: pd.DataFrame, cent: pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> int:
+    require_node_d_release(routes=True, market_state=True)
+    require_current_artifacts(REQUIRED_PANELS, consumer="rent-incidence estimator")
     OUT.mkdir(parents=True, exist_ok=True)
     prices, gas = _prices(), _gas()
     cpath = PROC / "vehicle_centrality_dense.parquet"
-    if not cpath.exists():
-        cpath = PROC / "vehicle_centrality.parquet"
     cent = pd.read_parquet(cpath, columns=["day", "token", "betweenness_volume", "degree"])
     print(f"centrality from {cpath.name}: {cent.day.nunique()} sampled days, "
           f"{cent.token.nunique():,} tokens")
@@ -445,7 +459,7 @@ def main() -> int:
         size_tabs.append(by_size(df, venue))
 
     screens = pd.DataFrame(all_steps)
-    write_exhibit(screens, OUT / "screens.jsonl", code_sources=SRC)
+    write_exhibit(screens, OUT / "screens.jsonl", **OUTPUT_PROVENANCE)
 
     roles = pd.concat(role_tabs, ignore_index=True)
     print("\n=== Rent incidence by pool asset role (annualised) ===")
@@ -462,14 +476,14 @@ def main() -> int:
                  "net_musd", "fee_over_lvr", "fee_over_lvr_plus_gas",
                  "med_pool_day_fee_over_lvr", "share_net_positive",
                  "share_net_positive_pre_gas"]].to_string(index=False, float_format=fmt))
-    write_exhibit(roles, OUT / "rent_by_asset_role.jsonl", code_sources=SRC)
+    write_exhibit(roles, OUT / "rent_by_asset_role.jsonl", **OUTPUT_PROVENANCE)
 
     sizes = pd.concat(size_tabs, ignore_index=True)
     sizes = sizes[sizes.venue == "uniswap_v2"]
     print("\n=== Net yield by capital decile, v2 only because a v3 decile would sort "
           "on virtual and not deposited capital (the gas threshold) ===")
     print(sizes.to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
-    write_exhibit(sizes, OUT / "rent_by_capital_decile.jsonl", code_sources=SRC)
+    write_exhibit(sizes, OUT / "rent_by_capital_decile.jsonl", **OUTPUT_PROVENANCE)
 
     # ---------------- centrality curse ----------------
     pms = []
@@ -479,7 +493,7 @@ def main() -> int:
         pms.append(pm)
     pm = pd.concat(pms, ignore_index=True)
     pm = pm[np.isfinite(pm.sharpe) & np.isfinite(pm.log_tvl) & np.isfinite(pm.log_rv)]
-    write_panel(pm, PROC / "rent_incidence_pool_month.parquet", code_sources=SRC)
+    write_panel(pm, PROC / "rent_incidence_pool_month.parquet", **OUTPUT_PROVENANCE)
 
     regs = []
     print("\n=== Does profitability differ by asset role? Tested, not read off a table ===")
@@ -590,8 +604,11 @@ def main() -> int:
                              "p": p, "mde_80pct": float("nan"), "n": int(len(si)),
                              "clusters": int(gsz)})
 
-    write_exhibit(pd.DataFrame(regs), OUT / "centrality_curse_regressions.jsonl",
-                  code_sources=SRC)
+    write_exhibit(
+        pd.DataFrame(regs),
+        OUT / "centrality_curse_regressions.jsonl",
+        **OUTPUT_PROVENANCE,
+    )
 
     # ---------------- robustness ----------------
     rob = []
@@ -625,16 +642,17 @@ def main() -> int:
     robf = pd.DataFrame(rob)
     print("\n=== Robustness ===")
     print(robf.to_string(index=False, float_format=lambda v: f"{v:,.4f}"))
-    write_exhibit(robf, OUT / "robustness.jsonl", code_sources=SRC)
+    write_exhibit(robf, OUT / "robustness.jsonl", **OUTPUT_PROVENANCE)
 
     summary = {"min_tvl_usd": MIN_TVL, "balance_tol": BALANCE_TOL,
                "min_month_days": MIN_MONTH_DAYS, "gas_units": GAS_UNITS,
                "venues": {v: {"pool_days": int(len(f)), "pools": int(f.pool.nunique()),
                               "days": int(f.day.nunique())} for v, f in frames.items()}}
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1, sort_keys=True) + "\n")
-    stamp(OUT / "summary.json", code_sources=SRC)
+    stamp(OUT / "summary.json", **OUTPUT_PROVENANCE)
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    with exclusive_job(LOCK, job="rent-incidence estimator"):
+        raise SystemExit(main())

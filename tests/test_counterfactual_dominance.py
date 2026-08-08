@@ -11,10 +11,17 @@ from scripts.build_counterfactual_dominance import (
     classify_state_support,
     counterfactual_days,
     dominance_level_summary,
+    target_price_usd,
 )
 
 
 class CounterfactualDominanceTests(unittest.TestCase):
+    def test_missing_or_invalid_target_price_is_unsupported_not_a_crash(self) -> None:
+        prices = {"good": ("GOOD", 2.0), "zero": ("ZERO", 0.0)}
+        self.assertEqual(target_price_usd(prices, "good"), 2.0)
+        self.assertIsNone(target_price_usd(prices, "missing"))
+        self.assertIsNone(target_price_usd(prices, "zero"))
+
     def test_level_summary_keeps_weighting_uncertainty_and_dollars(self) -> None:
         frame = pd.DataFrame(
             {

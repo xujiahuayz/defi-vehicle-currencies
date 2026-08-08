@@ -16,20 +16,49 @@ import pyarrow.parquet as pq
 
 ROOT = Path(__file__).resolve().parents[1]
 from ddvc.asset_types import TYPES
+from ddvc.analysis.transaction_frontier import (
+    MIN_CHOSEN_REPRODUCTION,
+    chosen_reproduction_share,
+)
+from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
+from ddvc.fetch.sources import get_source
 from ddvc.provenance import sidecar_path, verify
+from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
+from ddvc.state_data import FAMILY_STREAMS
 
 PANEL = ROOT / "data" / "empirical" / "route_cost_panel_v2.parquet"
 EXTENT = ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet"
 INTERMEDIATION = ROOT / "data" / "processed" / "intermediation_by_type_daily.parquet"
 CROSS_VENUE = ROOT / "data" / "processed" / "cross_venue_routing_daily.parquet"
-TRANSACTION_FRONTIER = ROOT / "data" / "processed" / "transaction_state_frontier.parquet"
-TRANSACTION_FRONTIER_SUPPORT = ROOT / "output" / "exhibits" / "transaction_state_frontier_support.jsonl"
+TRANSACTION_FRONTIER = ROOT / "data" / "processed" / "transaction_state_frontier_audit.parquet"
+TRANSACTION_FRONTIER_REJECTIONS = ROOT / "data" / "processed" / "transaction_state_frontier_audit_rejections.parquet"
+TRANSACTION_FRONTIER_SUPPORT = ROOT / "output" / "exhibits" / "transaction_state_frontier_audit_support.jsonl"
 V4 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v4"
 REFRESH = ROOT / "scripts" / "refresh_panel_dependents.py"
 STATE = ROOT / "docs" / "findings-freeze.md"
 SPECIFICATION_LOCK = ROOT / "docs" / "specification-lock.json"
+MODEL_LEDGER = ROOT / "docs" / "model-ledger.json"
 LITERATURE_AUDIT = ROOT / "docs" / "literature-audit.md"
+MARKET_STATE_QUALITY = ROOT / "data" / "processed" / "market_state_quality.parquet"
+CANONICAL_EMPIRICAL_CONSUMERS = (
+    "scripts/build_transaction_state_frontier.py",
+    "scripts/build_counterfactual_dominance.py",
+    "scripts/build_rent_incidence_panel.py",
+    "scripts/validate_curve_quoter.py",
+    "scripts/validate_weighted_quoter.py",
+    "scripts/run_balancer_weighted_quote_extension.py",
+    "src/ddvc/pricing/tick_replay.py",
+    "src/ddvc/pricing/v2_replay.py",
+)
+RAW_PROVIDER_PATTERNS = (
+    "data/raw/thegraph",
+    '"raw" / "thegraph"',
+    "from ddvc.fetch.raw import",
+    "import ddvc.fetch.raw",
+    "gzip.open(",
+    "raw_stream_path(",
+)
 PAPER_SECTIONS = ROOT / "paper" / "sections"
 LITERATURE_CARD_REQUIRED_FIELDS = frozenset(
     {
@@ -88,6 +117,7 @@ LOCKED_CLAIM_STATUSES = {
     "enter_fgh_mechanism",
     "enter_fgh_companion",
 }
+MODEL_LEDGER_STATUSES = {"admissible", "diagnostic", "withheld", "retired"}
 
 
 def _manifest(path: Path) -> dict:
@@ -230,6 +260,151 @@ def graph_status(fields: dict[str, str]) -> str:
     )
 
 
+def validate_canonical_consumer_boundary(
+    paths: tuple[str, ...] | None = None,
+) -> tuple[bool, str]:
+    """Keep active estimators and quote consumers behind the node-D data boundary."""
+    if paths is None:
+        paths = registered_empirical_consumers()
+    violations: list[str] = []
+    missing: list[str] = []
+    for relative in paths:
+        path = ROOT / relative
+        if not path.exists():
+            missing.append(relative)
+            continue
+        source = path.read_text(encoding="utf-8")
+        matched = [pattern for pattern in RAW_PROVIDER_PATTERNS if pattern in source]
+        if matched:
+            violations.append(f"{relative}:{','.join(matched)}")
+    passed = not violations and not missing
+    return passed, (
+        f"consumers={len(paths)}; violations={violations or 'none'}; "
+        f"missing={missing or 'none'}"
+    )
+
+
+def _artifact_producer(relative: str) -> str | None:
+    manifest = sidecar_path(ROOT / relative)
+    if not manifest.exists():
+        return None
+    try:
+        producer = json.loads(manifest.read_text(encoding="utf-8")).get("script")
+    except (json.JSONDecodeError, OSError):
+        return None
+    return str(producer) if producer else None
+
+
+def registered_empirical_consumers() -> tuple[str, ...]:
+    """Resolve active claim/model producers from their registered artifacts."""
+    consumers = set(CANONICAL_EMPIRICAL_CONSUMERS)
+    try:
+        specification = json.loads(SPECIFICATION_LOCK.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        specification = {}
+    for claim in specification.get("claims", []):
+        if not isinstance(claim, dict) or str(claim.get("status", "")).startswith("retired"):
+            continue
+        for artifact in claim.get("outputs", []):
+            producer = _artifact_producer(str(artifact))
+            if producer:
+                consumers.add(producer)
+    try:
+        ledger = json.loads(MODEL_LEDGER.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        ledger = {}
+    for family in ledger.get("families", []):
+        if not isinstance(family, dict) or family.get("status") == "retired":
+            continue
+        for artifact in family.get("artifacts", []):
+            producer = _artifact_producer(str(artifact))
+            if producer:
+                consumers.add(producer)
+    return tuple(sorted(consumers))
+
+
+def expected_market_state_keys(
+    start: str = RESEARCH_SAMPLE_START,
+    end: str = RESEARCH_SAMPLE_END,
+) -> set[tuple[str, str, str]]:
+    """Exact family-venue-day perimeter required by the node-D gate."""
+    keys: set[tuple[str, str, str]] = set()
+    for family, venues in FAMILY_STREAMS.items():
+        for venue in venues:
+            lower = max(start, get_source(venue).genesis.strftime("%Y%m%d"))
+            keys.update((family, venue, day) for day in calendar_days(lower, end))
+    return keys
+
+
+def expected_unified_route_venue_days(
+    start: str = RESEARCH_SAMPLE_START,
+    end: str = RESEARCH_SAMPLE_END,
+) -> int:
+    """Exact routed-venue perimeter, independent of observed source files."""
+    return sum(
+        len(calendar_days(max(start, get_source(venue).genesis.strftime("%Y%m%d")), end))
+        for venue in DEX_FAMILY
+    )
+
+
+def validate_unified_route_layer(
+    quality: pd.DataFrame,
+    *,
+    provenance_status: str,
+) -> tuple[bool, str]:
+    """Require every calendar day and every launched routed venue before analysis."""
+    expected_days = set(calendar_days(RESEARCH_SAMPLE_START, RESEARCH_SAMPLE_END))
+    observed_rows = quality.get("day", pd.Series(dtype=str)).astype(str).tolist()
+    observed_days = set(observed_rows)
+    duplicate_days = len(observed_rows) - len(observed_days)
+    missing_days = expected_days - observed_days
+    unexpected_days = observed_days - expected_days
+    required = {
+        "day",
+        "expected_sources",
+        "missing_sources",
+        "conflicting_events",
+        "malformed_rows",
+        "passed",
+    }
+    missing_columns = sorted(required - set(quality.columns))
+    expected_venue_days = expected_unified_route_venue_days()
+    observed_venue_days = int(
+        pd.to_numeric(quality.get("expected_sources", pd.Series(dtype=float)), errors="coerce").sum()
+    )
+    failed = int((~quality.get("passed", pd.Series(dtype=bool)).astype(bool)).sum())
+    missing_sources = int(
+        pd.to_numeric(quality.get("missing_sources", pd.Series(dtype=float)), errors="coerce").sum()
+    )
+    conflicts = int(
+        pd.to_numeric(quality.get("conflicting_events", pd.Series(dtype=float)), errors="coerce").sum()
+    )
+    malformed = int(
+        pd.to_numeric(quality.get("malformed_rows", pd.Series(dtype=float)), errors="coerce").sum()
+    )
+    passed = bool(
+        not missing_columns
+        and len(quality) == len(expected_days)
+        and not missing_days
+        and not unexpected_days
+        and duplicate_days == 0
+        and observed_venue_days == expected_venue_days
+        and failed == 0
+        and missing_sources == 0
+        and conflicts == 0
+        and malformed == 0
+        and provenance_status == "ok"
+    )
+    return passed, (
+        f"calendar_days={len(quality):,}/{len(expected_days):,}; "
+        f"venue_days={observed_venue_days:,}/{expected_venue_days:,}; failed={failed:,}; "
+        f"missing_sources={missing_sources:,}; conflicts={conflicts:,}; malformed={malformed:,}; "
+        f"missing_days={len(missing_days):,}; unexpected_days={len(unexpected_days):,}; "
+        f"duplicate_days={duplicate_days:,}; missing_columns={missing_columns or 'none'}; "
+        f"provenance={provenance_status}"
+    )
+
+
 def validate_specification_lock(payload: dict) -> tuple[bool, str]:
     """Validate the canonical hash and minimum decision contract for node E."""
     declared_hash = str(payload.get("lock_hash") or "")
@@ -295,15 +470,146 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
     return passed, detail
 
 
+def validate_claim_input_layer(
+    payload: dict,
+    *,
+    root: Path = ROOT,
+    verifier=verify,
+) -> tuple[bool, str]:
+    """Require every registered non-retired claim input to be canonical and current."""
+    inputs = sorted(
+        {
+            str(relative)
+            for claim in payload.get("claims", [])
+            if isinstance(claim, dict)
+            and not str(claim.get("status", "")).startswith("retired")
+            for relative in claim.get("inputs", [])
+        }
+    )
+    raw_inputs = [relative for relative in inputs if relative.startswith("data/raw/")]
+    missing = [relative for relative in inputs if not (root / relative).exists()]
+    statuses = {
+        relative: verifier(root / relative).get("status")
+        for relative in inputs
+        if relative not in missing and relative not in raw_inputs
+    }
+    stale = {relative: status for relative, status in statuses.items() if status != "ok"}
+    passed = bool(inputs and not raw_inputs and not missing and not stale)
+    return passed, (
+        f"inputs={len(inputs)}; current={sum(status == 'ok' for status in statuses.values())}; "
+        f"raw={raw_inputs or 'none'}; missing={missing or 'none'}; stale={stale or 'none'}"
+    )
+def validate_model_ledger(
+    payload: dict,
+    *,
+    claim_ids: set[str],
+) -> tuple[bool, str]:
+    """Validate the one family-level count of executed empirical models."""
+    families = payload.get("families") or []
+    required = {
+        "id",
+        "claim_id",
+        "estimator",
+        "fixed_effects",
+        "inference",
+        "substantive_specifications",
+        "diagnostic_specifications",
+        "resampling_refits",
+        "status",
+        "artifacts",
+        "note",
+    }
+    ids = [str(family.get("id") or "") for family in families if isinstance(family, dict)]
+    incomplete = [
+        str(family.get("id") or "missing")
+        for family in families
+        if not isinstance(family, dict) or required - set(family)
+    ]
+    invalid_status = [
+        str(family.get("id") or "missing")
+        for family in families
+        if isinstance(family, dict)
+        and family.get("status") not in MODEL_LEDGER_STATUSES
+    ]
+    invalid_counts = [
+        str(family.get("id") or "missing")
+        for family in families
+        if isinstance(family, dict)
+        and any(
+            not isinstance(family.get(field), int) or family.get(field, -1) < 0
+            for field in (
+                "substantive_specifications",
+                "diagnostic_specifications",
+                "resampling_refits",
+            )
+        )
+    ]
+    unknown_live_claims = [
+        str(family.get("id") or "missing")
+        for family in families
+        if isinstance(family, dict)
+        and family.get("status") != "retired"
+        and family.get("claim_id") not in claim_ids
+    ]
+    missing_artifacts = [
+        artifact
+        for family in families
+        if isinstance(family, dict)
+        for artifact in family.get("artifacts", [])
+        if not (ROOT / str(artifact)).exists()
+    ]
+    reported = sum(
+        int(family.get("substantive_specifications", 0))
+        + int(family.get("diagnostic_specifications", 0))
+        for family in families
+        if isinstance(family, dict)
+    )
+    refits = sum(
+        int(family.get("resampling_refits", 0))
+        for family in families
+        if isinstance(family, dict)
+    )
+    statuses = {
+        status: sum(
+            int(family.get("substantive_specifications", 0))
+            + int(family.get("diagnostic_specifications", 0))
+            for family in families
+            if isinstance(family, dict) and family.get("status") == status
+        )
+        for status in sorted(MODEL_LEDGER_STATUSES)
+    }
+    passed = bool(
+        payload.get("schema_version") == 1
+        and ids
+        and len(ids) == len(families)
+        and len(ids) == len(set(ids))
+        and not incomplete
+        and not invalid_status
+        and not invalid_counts
+        and not unknown_live_claims
+        and not missing_artifacts
+    )
+    detail = (
+        f"families={len(families)}; reported={reported:,}; refits={refits:,}; "
+        f"status={statuses}; incomplete={incomplete or 'none'}; "
+        f"unknown_live_claims={unknown_live_claims or 'none'}; "
+        f"missing_artifacts={missing_artifacts or 'none'}"
+    )
+    return passed, detail
+
+
 def transaction_frontier_support_checks(
     support: pd.DataFrame,
     *,
     panel_rows: int,
+    rejection_rows: int,
 ) -> list[tuple[str, bool, str]]:
     """Validate the fixed-calendar frontier funnel and chosen-output reproduction."""
     required = {
         "day",
         "scored_routes",
+        "rejected_routes",
+        "exact_venue_two_leg_routes",
         "invalid_realised_input",
         "invalid_realised_output",
         "invalid_chosen_output",
@@ -315,6 +621,10 @@ def transaction_frontier_support_checks(
         return [("transaction frontier support schema", False, f"missing={missing}")]
     days = sorted(support["day"].astype(str).unique())
     scored = int(pd.to_numeric(support["scored_routes"], errors="coerce").sum())
+    rejected = int(pd.to_numeric(support["rejected_routes"], errors="coerce").sum())
+    exact = int(
+        pd.to_numeric(support["exact_venue_two_leg_routes"], errors="coerce").sum()
+    )
     available = int(
         pd.to_numeric(
             support["within_20pct_chosen_quote_available"], errors="coerce"
@@ -325,16 +635,17 @@ def transaction_frontier_support_checks(
             support["within_20pct_chosen_output_mismatch"], errors="coerce"
         ).sum()
     )
-    reproduction = 1.0 - mismatches / available if available else 0.0
+    reproduction = chosen_reproduction_share(available, mismatches)
     return [
         (
             "transaction frontier row contract",
-            scored == panel_rows,
-            f"panel={panel_rows:,}; support={scored:,}",
+            scored == panel_rows and rejected == rejection_rows and scored + rejected == exact,
+            f"scored panel={panel_rows:,}; support={scored:,}; "
+            f"rejections={rejection_rows:,}; support={rejected:,}; exact={exact:,}",
         ),
         (
             "transaction frontier chosen-output validation",
-            reproduction >= 0.99,
+            reproduction >= MIN_CHOSEN_REPRODUCTION,
             f"coherent={available:,}; mismatches={mismatches:,}; pass={reproduction:.2%}",
         ),
         (
@@ -489,19 +800,120 @@ def main() -> int:
         not missing_graph_fields,
         graph_status(state),
     )
+    boundary_passed, boundary_detail = validate_canonical_consumer_boundary()
+    record("node D raw-provider boundary", boundary_passed, boundary_detail)
+
+    if MARKET_STATE_QUALITY.exists():
+        quality = pd.read_parquet(MARKET_STATE_QUALITY)
+        required_quality_columns = {
+            "family",
+            "venue",
+            "day",
+            "passed",
+            "missing_required_streams",
+            "conflicting_events",
+        }
+        missing_quality_columns = sorted(required_quality_columns - set(quality.columns))
+        expected_keys = expected_market_state_keys()
+        observed_key_rows = list(
+            quality.reindex(columns=["family", "venue", "day"])
+            .astype(str)
+            .itertuples(index=False, name=None)
+        )
+        observed_keys = set(observed_key_rows)
+        duplicate_keys = len(observed_key_rows) - len(observed_keys)
+        missing_keys = expected_keys - observed_keys
+        unexpected_keys = observed_keys - expected_keys
+        expected_venues = {venue for _family, venue, _day in expected_keys}
+        observed_venues = set(quality.get("venue", pd.Series(dtype=str)).astype(str))
+        passed = bool(
+            not missing_quality_columns
+            and not quality.empty
+            and not missing_keys
+            and not unexpected_keys
+            and duplicate_keys == 0
+            and observed_venues == expected_venues
+            and quality.get("passed", pd.Series(dtype=bool)).astype(bool).all()
+            and pd.to_numeric(
+                quality.get("missing_required_streams", pd.Series(dtype=float)),
+                errors="coerce",
+            ).sum() == 0
+            and pd.to_numeric(
+                quality.get("conflicting_events", pd.Series(dtype=float)),
+                errors="coerce",
+            ).sum() == 0
+            and verify(MARKET_STATE_QUALITY).get("status") == "ok"
+        )
+        record(
+            "node D full-calendar market-state gate",
+            passed,
+            f"partitions={len(quality):,}/{len(expected_keys):,}; venues={sorted(observed_venues)}; "
+            f"failed={int((~quality.get('passed', pd.Series(dtype=bool)).astype(bool)).sum()):,}; "
+            f"missing_days={len(missing_keys):,}; unexpected_days={len(unexpected_keys):,}; "
+            f"duplicate_days={duplicate_keys:,}; "
+            f"missing_columns={missing_quality_columns or 'none'}; "
+            f"provenance={verify(MARKET_STATE_QUALITY).get('status')}",
+        )
+    else:
+        record(
+            "node D full-calendar market-state gate",
+            False,
+            str(MARKET_STATE_QUALITY.relative_to(ROOT)),
+        )
+    if UNIFIED_QUALITY_PANEL.exists():
+        route_quality = pd.read_parquet(UNIFIED_QUALITY_PANEL)
+        route_provenance = str(verify(UNIFIED_QUALITY_PANEL).get("status"))
+        route_passed, route_detail = validate_unified_route_layer(
+            route_quality,
+            provenance_status=route_provenance,
+        )
+        record("node D full-calendar directed-route gate", route_passed, route_detail)
+    else:
+        record(
+            "node D full-calendar directed-route gate",
+            False,
+            str(UNIFIED_QUALITY_PANEL.relative_to(ROOT)),
+        )
+    lock_claim_ids: set[str] = set()
     if SPECIFICATION_LOCK.exists():
         try:
             lock_payload = json.loads(SPECIFICATION_LOCK.read_text())
             lock_passed, lock_detail = validate_specification_lock(lock_payload)
+            lock_claim_ids = {
+                str(claim.get("id"))
+                for claim in lock_payload.get("claims", [])
+                if isinstance(claim, dict) and claim.get("id")
+            }
+            input_passed, input_detail = validate_claim_input_layer(lock_payload)
         except (json.JSONDecodeError, OSError) as exc:
             lock_passed, lock_detail = False, type(exc).__name__
+            input_passed, input_detail = False, type(exc).__name__
         record("node E specification lock", lock_passed, lock_detail)
+        record("node D claim-input provenance gate", input_passed, input_detail)
     else:
         record(
             "node E specification lock",
             False,
             str(SPECIFICATION_LOCK.relative_to(ROOT)),
         )
+        record(
+            "node D claim-input provenance gate",
+            False,
+            str(SPECIFICATION_LOCK.relative_to(ROOT)),
+        )
+
+    if MODEL_LEDGER.exists():
+        try:
+            model_payload = json.loads(MODEL_LEDGER.read_text())
+            model_passed, model_detail = validate_model_ledger(
+                model_payload,
+                claim_ids=lock_claim_ids,
+            )
+        except (json.JSONDecodeError, OSError) as exc:
+            model_passed, model_detail = False, type(exc).__name__
+        record("empirical model ledger", model_passed, model_detail)
+    else:
+        record("empirical model ledger", False, str(MODEL_LEDGER.relative_to(ROOT)))
 
     if LITERATURE_AUDIT.exists():
         cited = cited_bibliography_keys(sorted(PAPER_SECTIONS.glob("*.tex")))
@@ -566,10 +978,20 @@ def main() -> int:
     else:
         record("route-cost panel exists", False, str(PANEL.relative_to(ROOT)))
 
-    if TRANSACTION_FRONTIER.exists() and TRANSACTION_FRONTIER_SUPPORT.exists():
+    if (
+        TRANSACTION_FRONTIER.exists()
+        and TRANSACTION_FRONTIER_REJECTIONS.exists()
+        and TRANSACTION_FRONTIER_SUPPORT.exists()
+    ):
         frontier_rows = pq.ParquetFile(TRANSACTION_FRONTIER).metadata.num_rows
+        frontier_rejection_rows = pq.ParquetFile(
+            TRANSACTION_FRONTIER_REJECTIONS
+        ).metadata.num_rows
         frontier_verdicts = {
             TRANSACTION_FRONTIER.name: verify(TRANSACTION_FRONTIER).get("status"),
+            TRANSACTION_FRONTIER_REJECTIONS.name: verify(
+                TRANSACTION_FRONTIER_REJECTIONS
+            ).get("status"),
             TRANSACTION_FRONTIER_SUPPORT.name: verify(
                 TRANSACTION_FRONTIER_SUPPORT
             ).get("status"),
@@ -585,12 +1007,17 @@ def main() -> int:
         for name, passed, detail in transaction_frontier_support_checks(
             frontier_support,
             panel_rows=frontier_rows,
+            rejection_rows=frontier_rejection_rows,
         ):
             record(name, passed, detail)
     else:
         missing_frontier = [
             str(path.relative_to(ROOT))
-            for path in (TRANSACTION_FRONTIER, TRANSACTION_FRONTIER_SUPPORT)
+            for path in (
+                TRANSACTION_FRONTIER,
+                TRANSACTION_FRONTIER_REJECTIONS,
+                TRANSACTION_FRONTIER_SUPPORT,
+            )
             if not path.exists()
         ]
         record(

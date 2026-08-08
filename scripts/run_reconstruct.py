@@ -4,7 +4,7 @@
 Usage:
     ./scripts/run scripts/run_reconstruct.py --start YYYY-MM-DD --end YYYY-MM-DD
     ./scripts/run scripts/run_reconstruct.py --day YYYY-MM-DD
-    ./scripts/run scripts/run_reconstruct.py --all
+    ./scripts/run scripts/run_reconstruct.py
 """
 import argparse
 import sys
@@ -24,17 +24,17 @@ def main() -> None:
     ap.add_argument(
         "--no-skip-existing",
         action="store_true",
-        help="recompute days already in data/unified/ (default: skip them)",
+        help="recompute even when the day marker is current (default: reuse current days)",
     )
     args = ap.parse_args()
-    run(
+    raise SystemExit(run(
         start=args.start,
         end=args.end,
         day=args.day,
         dexes=args.dex,
         concurrency=args.concurrency,
         skip_existing=not args.no_skip_existing,
-    )
+    ))
 
 
 if __name__ == "__main__":

@@ -8,8 +8,12 @@ from pathlib import Path
 from unittest.mock import patch
 
 from ddvc.fetch.raw import (
-    block_value,
     merge_stream_metadata,
+    write_json,
+    write_jsonl_gz,
+)
+from ddvc.source_records import (
+    block_value,
     merge_v4_statics,
     source_event_payload,
     timestamp_value,
@@ -17,8 +21,6 @@ from ddvc.fetch.raw import (
     v4_pool_quote_supported,
     v4_quote_status,
     v4_statics_complete,
-    write_json,
-    write_jsonl_gz,
 )
 from scripts.fetch_raw_market_data import enrich_v4_statics_day
 

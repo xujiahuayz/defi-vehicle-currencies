@@ -11,8 +11,7 @@ Availability is dated at FIRST TRADE, not pair creation, because the `swaps` str
 
 Token USD prices come from `amountUSD` divided by the token amount on the same side of the swap, medianed within a token-day. The subgraph's own `amountUSD` is used rather than a reconstruction, so the price panel inherits whatever repricing failures the subgraph has; that is the reason the crosswalk demands a decimals match as well as a price match, and the reason unresolved exchanges are reported as unresolved instead of matched loosely.
 
-Reads   data/raw/thegraph/uniswap_v2/uniswap_v2_swaps_YYYYMMDD.jsonl.gz
-        data/raw/thegraph/uniswap_v2/uniswap_v2_hourly_reserves_YYYYMMDD.jsonl.gz (sampled)
+Reads   the released canonical Uniswap V2 constant-product state partitions
 Writes  data/processed/v2_token_price_daily.parquet
         data/processed/v2_token_decimals.parquet
         data/processed/v2_pair_first_trade.parquet
@@ -23,34 +22,30 @@ Run     ./scripts/run scripts/build_v2_token_panel.py [--workers N] [--until YYY
 from __future__ import annotations
 
 import argparse
-import gzip
-import json
 import statistics
-import sys
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from pathlib import Path
+from concurrent.futures import as_completed
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-V2 = ROOT / "data" / "raw" / "thegraph" / "uniswap_v2"
-OUT_PRICE = ROOT / "data" / "processed" / "v2_token_price_daily.parquet"
-OUT_DEC = ROOT / "data" / "processed" / "v2_token_decimals.parquet"
-OUT_PAIR = ROOT / "data" / "processed" / "v2_pair_first_trade.parquet"
+from ddvc.data_release import require_node_d_release
+from ddvc.paths import DATA_DIR, REPO_ROOT
+from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
+from ddvc.state_data import STATE_ROOT, available_state_days, read_cp_partition
+from ddvc.tables import write_panel
+
+OUT_PRICE = DATA_DIR / "processed" / "v2_token_price_daily.parquet"
+OUT_DEC = DATA_DIR / "processed" / "v2_token_decimals.parquet"
+OUT_PAIR = DATA_DIR / "processed" / "v2_pair_first_trade.parquet"
+LOCK = OUT_PRICE.with_suffix(".lock")
+CODE_SOURCES = [
+    "scripts/build_v2_token_panel.py",
+    "src/ddvc/state_data.py",
+]
 
 # Trades below this USD notional give a price built from a tiny denominator and are
 # dropped from the price panel; they are the main source of absurd implied prices.
 MIN_TRADE_USD = 50.0
-# Days of hourly_reserves sampled for the decimals map. Decimals never change, so a
-# spread sample suffices and reading all 2.4 GB to learn a constant is waste.
-DECIMALS_SAMPLE = 60
-
-
-def _day(path: Path) -> str:
-    return path.name.split("_")[-1].split(".")[0]
-
-
 def _f(x: object) -> float:
     try:
         return float(x)  # noqa: TRY300
@@ -58,45 +53,59 @@ def _f(x: object) -> float:
         return 0.0
 
 
-def one_swaps_day(path: Path) -> dict | None:
+def one_swaps_day(day: str) -> dict | None:
     """Median USD price per token, and every (token0, token1) pair that traded."""
-    try:
-        with gzip.open(path, "rt") as fh:
-            rows = [json.loads(line) for line in fh]
-    except (OSError, EOFError, json.JSONDecodeError) as exc:
-        return {"date": _day(path), "error": f"{type(exc).__name__}: {exc}"[:160]}
-    if not rows:
+    state = read_cp_partition("uniswap_v2", day)
+    swaps = state[state["record_type"].eq("swap")]
+    if swaps.empty:
         return None
 
     px: dict[str, list[float]] = defaultdict(list)
     sym: dict[str, str] = {}
+    decimals: dict[str, int] = {}
     pairs: dict[tuple[str, str], dict] = {}
     kept = dropped_small = dropped_nonpos = 0
 
-    for r in rows:
-        pr = r.get("pair") or {}
-        t0, t1 = pr.get("token0") or {}, pr.get("token1") or {}
-        a0, a1 = str(t0.get("id") or "").lower(), str(t1.get("id") or "").lower()
+    snapshots = state[state["record_type"].eq("snapshot")]
+    for row in snapshots.itertuples(index=False):
+        for token, value in (
+            (str(row.token0 or "").lower(), row.decimals0),
+            (str(row.token1 or "").lower(), row.decimals1),
+        ):
+            if not token or pd.isna(value):
+                continue
+            parsed = int(value)
+            if token in decimals and decimals[token] != parsed:
+                raise RuntimeError(f"canonical state disagrees on decimals for {token}")
+            decimals[token] = parsed
+
+    for row in swaps.itertuples(index=False):
+        a0 = str(row.token0 or "").lower()
+        a1 = str(row.token1 or "").lower()
         if not a0 or not a1:
             continue
-        for a, t in ((a0, t0), (a1, t1)):
-            s = t.get("symbol")
+        for a, s in ((a0, row.symbol0), (a1, row.symbol1)):
             if s and a not in sym:
                 sym[a] = s
         key = (a0, a1) if a0 < a1 else (a1, a0)
-        p = pairs.setdefault(key, {"n": 0, "usd": 0.0, "sym0": sym.get(key[0]),
-                                   "sym1": sym.get(key[1])})
-        usd = _f(r.get("amountUSD"))
+        p = pairs.setdefault(
+            key,
+            {
+                "n": 0,
+                "usd": 0.0,
+                "sym0": sym.get(key[0]),
+                "sym1": sym.get(key[1]),
+            },
+        )
+        usd = _f(row.value_usd)
         p["n"] += 1
         p["usd"] += usd
 
         if usd < MIN_TRADE_USD:
             dropped_small += 1
             continue
-        # amount on each side; a token's traded quantity is its In plus its Out,
-        # exactly one of which is nonzero in a well-formed V2 swap
-        q0 = _f(r.get("amount0In")) + _f(r.get("amount0Out"))
-        q1 = _f(r.get("amount1In")) + _f(r.get("amount1Out"))
+        q0 = abs(_f(row.amount0_delta))
+        q1 = abs(_f(row.amount1_delta))
         for a, q in ((a0, q0), (a1, q1)):
             if q > 0:
                 # each side of the swap is worth the trade's USD value
@@ -105,20 +114,20 @@ def one_swaps_day(path: Path) -> dict | None:
             else:
                 dropped_nonpos += 1
 
-    d = _day(path)
     return {
-        "date": d,
-        "n_swaps": len(rows),
+        "date": day,
+        "n_swaps": len(swaps),
         "price_obs_kept": kept,
         "price_obs_dropped_small": dropped_small,
         "price_obs_dropped_nonpos": dropped_nonpos,
         "_px": [
-            {"date": d, "token": a, "symbol": sym.get(a),
-             "price_usd": statistics.median(v), "n_obs": len(v)}
+            {"date": day, "token": a, "symbol": sym.get(a),
+             "decimals": decimals.get(a), "price_usd": statistics.median(v),
+             "n_obs": len(v)}
             for a, v in px.items()
         ],
         "_pairs": [
-            {"date": d, "token0": k[0], "token1": k[1],
+            {"date": day, "token0": k[0], "token1": k[1],
              "sym0": v["sym0"], "sym1": v["sym1"],
              "n_swaps": v["n"], "volume_usd": v["usd"]}
             for k, v in pairs.items()
@@ -126,39 +135,45 @@ def one_swaps_day(path: Path) -> dict | None:
     }
 
 
-def one_hourly_day(path: Path) -> dict | None:
-    """Harvest the token address to decimals map. Decimals are a contract constant."""
-    try:
-        with gzip.open(path, "rt") as fh:
-            rows = [json.loads(line) for line in fh]
-    except (OSError, EOFError, json.JSONDecodeError) as exc:
-        return {"date": _day(path), "error": f"{type(exc).__name__}: {exc}"[:160]}
-    dec: dict[str, int] = {}
-    sym: dict[str, str] = {}
-    for r in rows:
-        pr = r.get("pair") or {}
-        for t in (pr.get("token0") or {}, pr.get("token1") or {}):
-            a = str(t.get("id") or "").lower()
-            if not a or t.get("decimals") is None:
-                continue
-            dec[a] = int(t["decimals"])
-            if t.get("symbol"):
-                sym[a] = t["symbol"]
-    return {"date": _day(path), "_dec": [
-        {"token": a, "decimals": v, "symbol": sym.get(a)} for a, v in dec.items()]}
+def token_decimals(token_days: pd.DataFrame) -> pd.DataFrame:
+    """One conflict-checked decimals row for every canonically priced token."""
+    decimals = token_days[["token", "decimals", "symbol"]].dropna(
+        subset=["token", "decimals"]
+    ).copy()
+    decimals["decimals"] = decimals["decimals"].astype(int)
+    conflicts = decimals.groupby("token")["decimals"].nunique()
+    conflicts = conflicts[conflicts.gt(1)]
+    if not conflicts.empty:
+        raise RuntimeError(
+            f"canonical state disagrees on decimals for {len(conflicts):,} token(s)"
+        )
+    decimals = decimals.sort_values(["token", "symbol"], na_position="last")
+    decimals = decimals.drop_duplicates("token").reset_index(drop=True)
+    missing = int(token_days["token"].nunique() - decimals["token"].nunique())
+    if missing:
+        raise RuntimeError(
+            f"canonical snapshots miss decimals for {missing:,} priced token(s)"
+        )
+    return decimals
 
 
-def _run(fn, paths: list[Path], workers: int, label: str) -> tuple[list[dict], list[dict]]:
+def _run(fn, days: list[str], workers: int, label: str) -> tuple[list[dict], list[dict]]:
     ok, err = [], []
-    with ProcessPoolExecutor(max_workers=workers) as pool:
-        futs = {pool.submit(fn, p): p for p in paths}
+    with interruptible_process_pool(workers) as pool:
+        futs = {pool.submit(fn, day): day for day in days}
         for i, f in enumerate(as_completed(futs), 1):
-            r = f.result()
+            try:
+                r = f.result()
+            except Exception as exc:
+                err.append(
+                    {"date": futs[f], "error": f"{type(exc).__name__}: {exc}"[:160]}
+                )
+                continue
             if r is None:
                 continue
-            (err if "error" in r else ok).append(r)
+            ok.append(r)
             if i % 400 == 0:
-                print(f"  {label} {i:,}/{len(paths):,}", flush=True)
+                print(f"  {label} {i:,}/{len(days):,}", flush=True)
     return ok, err
 
 
@@ -169,29 +184,30 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--until", default=None, help="stop after this YYYYMMDD")
     args = ap.parse_args()
+    require_node_d_release(market_state=True)
+    workers = bounded_workers(args.workers)
 
-    swaps = sorted(V2.glob("uniswap_v2_swaps_*.jsonl.gz"))
-    hourly = sorted(V2.glob("uniswap_v2_hourly_reserves_*.jsonl.gz"))
+    swaps = available_state_days("constant_product", "uniswap_v2")
     if args.until:
-        swaps = [p for p in swaps if _day(p) <= args.until]
+        swaps = [day for day in swaps if day <= args.until]
     if not swaps:
-        sys.exit(f"no V2 swaps files under {V2}")
-    step = max(1, len(hourly) // DECIMALS_SAMPLE)
-    hourly = hourly[::step]
-    print(f"V2 swaps days: {len(swaps):,}   hourly days sampled for decimals: "
-          f"{len(hourly):,}", flush=True)
+        print("no released Uniswap V2 state partitions")
+        return 1
+    print(f"V2 swaps days: {len(swaps):,}", flush=True)
 
-    srows, serr = _run(one_swaps_day, swaps, args.workers, "swaps")
-    hrows, herr = _run(one_hourly_day, hourly, args.workers, "hourly")
-    for name, e in (("swaps", serr), ("hourly", herr)):
-        if e:
-            print(f"\n{len(e)} {name} day(s) failed to parse:")
-            for x in e[:5]:
-                print("  ", x["date"], x["error"])
+    srows, serr = _run(one_swaps_day, swaps, workers, "swaps")
+    if serr:
+        print(f"\n{len(serr)} swap day(s) failed to parse:")
+        for error in serr[:5]:
+            print("  ", error["date"], error["error"])
+        print("refusing partial V2 token panels")
+        return 1
 
     px = pd.DataFrame([d for r in srows for d in r["_px"]])
     px["date"] = pd.to_datetime(px["date"], format="%Y%m%d")
     px = px.sort_values(["token", "date"]).reset_index(drop=True)
+    dec = token_decimals(px)
+    px = px.drop(columns="decimals")
 
     pairs = pd.DataFrame([d for r in srows for d in r["_pairs"]])
     pairs["date"] = pd.to_datetime(pairs["date"], format="%Y%m%d")
@@ -204,13 +220,34 @@ def main() -> int:
              sym0=("sym0", "first"), sym1=("sym1", "first"))
     )
 
-    dec = pd.DataFrame([d for r in hrows for d in r["_dec"]])
-    dec = dec.drop_duplicates("token").reset_index(drop=True)
+    if args.until is not None:
+        print(
+            f"bounded construction check complete through {args.until}; canonical outputs unchanged"
+        )
+        return 0
 
-    OUT_PRICE.parent.mkdir(parents=True, exist_ok=True)
-    px.to_parquet(OUT_PRICE, index=False)
-    dec.to_parquet(OUT_DEC, index=False)
-    first.to_parquet(OUT_PAIR, index=False)
+    state_input = STATE_ROOT / "constant_product" / "uniswap_v2"
+    write_panel(
+        px,
+        OUT_PRICE,
+        code_sources=CODE_SOURCES,
+        inputs=[state_input],
+        notes="daily median token prices from usable canonical Uniswap V2 swaps with at least $50 reported notional",
+    )
+    write_panel(
+        dec,
+        OUT_DEC,
+        code_sources=CODE_SOURCES,
+        inputs=[state_input],
+        notes="conflict-checked token decimals from every usable canonical Uniswap V2 swap pair",
+    )
+    write_panel(
+        first,
+        OUT_PAIR,
+        code_sources=CODE_SOURCES,
+        inputs=[state_input],
+        notes="first and last usable canonical Uniswap V2 swap date per unordered token pair",
+    )
 
     tot_obs = sum(r["price_obs_kept"] for r in srows)
     tot_small = sum(r["price_obs_dropped_small"] for r in srows)
@@ -228,10 +265,11 @@ def main() -> int:
     n_weth = ((first.token0 == weth) | (first.token1 == weth)).sum()
     print(f"pairs including WETH: {n_weth:,} ({n_weth / len(first):.1%})   "
           f"non-WETH pairs: {len(first) - n_weth:,}")
-    print(f"\nwrote {OUT_PRICE.relative_to(ROOT)}, {OUT_DEC.relative_to(ROOT)}, "
-          f"{OUT_PAIR.relative_to(ROOT)}")
+    print(f"\nwrote {OUT_PRICE.relative_to(REPO_ROOT)}, {OUT_DEC.relative_to(REPO_ROOT)}, "
+          f"{OUT_PAIR.relative_to(REPO_ROOT)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    with exclusive_job(LOCK, job="V2 token panels"):
+        raise SystemExit(main())

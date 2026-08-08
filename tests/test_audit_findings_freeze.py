@@ -8,23 +8,159 @@ from ddvc.asset_types import TYPES
 from scripts.audit_findings_freeze import (
     cited_bibliography_keys,
     complete_literature_card,
+    expected_market_state_keys,
+    expected_unified_route_venue_days,
     graph_status,
     parse_literature_cards,
     parse_state_frontmatter,
     published_venue_version,
+    registered_empirical_consumers,
     route_measurement_invariants,
     transaction_frontier_support_checks,
     validate_literature_audit,
+    validate_canonical_consumer_boundary,
+    validate_claim_input_layer,
+    validate_model_ledger,
     validate_specification_lock,
+    validate_unified_route_layer,
 )
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_claim_input_gate_rejects_raw_missing_and_stale_inputs(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        payload = {
+            "claims": [
+                {
+                    "id": "live",
+                    "status": "enter_fgh_primary",
+                    "inputs": ["data/processed/clean.parquet"],
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            clean = root / "data" / "processed" / "clean.parquet"
+            clean.parent.mkdir(parents=True)
+            clean.touch()
+            passed, detail = validate_claim_input_layer(
+                payload,
+                root=root,
+                verifier=lambda _path: {"status": "ok"},
+            )
+            self.assertTrue(passed, detail)
+            passed, _detail = validate_claim_input_layer(
+                payload,
+                root=root,
+                verifier=lambda _path: {"status": "stale"},
+            )
+            self.assertFalse(passed)
+            payload["claims"][0]["inputs"] = ["data/raw/provider.jsonl"]
+            passed, _detail = validate_claim_input_layer(payload, root=root)
+            self.assertFalse(passed)
+
+    def test_registered_consumers_cover_active_claim_and_model_producers(self) -> None:
+        consumers = set(registered_empirical_consumers())
+        self.assertIn("scripts/build_intermediation_by_type.py", consumers)
+        self.assertIn("scripts/run_rent_incidence.py", consumers)
+        self.assertIn("scripts/test_block_vs_hour_verdict.py", consumers)
+
+    def test_market_state_perimeter_is_the_full_genesis_clamped_calendar(self) -> None:
+        keys = expected_market_state_keys()
+        self.assertEqual(len(keys), 11_009)
+        self.assertIn(("tick", "uniswap_v4", "20250124"), keys)
+        self.assertNotIn(("tick", "uniswap_v4", "20250123"), keys)
+        self.assertIn(("constant_product", "uniswap_v2", "20260630"), keys)
+
+    def test_directed_route_perimeter_keeps_empty_days_and_all_eight_venues(self) -> None:
+        self.assertEqual(expected_unified_route_venue_days(), 12_802)
+        days = pd.date_range("2020-02-11", "2026-06-30", freq="D").strftime("%Y%m%d")
+        expected_sources = []
+        from ddvc.reconstruct import DEX_FAMILY, active_route_sources
+
+        for day in days:
+            expected_sources.append(len(active_route_sources(day, list(DEX_FAMILY))))
+        quality = pd.DataFrame(
+            {
+                "day": days,
+                "expected_sources": expected_sources,
+                "missing_sources": 0,
+                "conflicting_events": 0,
+                "malformed_rows": 0,
+                "passed": True,
+            }
+        )
+        passed, detail = validate_unified_route_layer(quality, provenance_status="ok")
+        self.assertTrue(passed, detail)
+        quality = quality.iloc[1:].copy()
+        passed, _detail = validate_unified_route_layer(quality, provenance_status="ok")
+        self.assertFalse(passed)
+
+    def test_active_empirical_consumers_cannot_parse_raw_provider_files(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as directory:
+            clean = Path(directory) / "clean.py"
+            raw = Path(directory) / "raw.py"
+            imported_raw = Path(directory) / "imported_raw.py"
+            clean.write_text("from ddvc.state_data import read_tick_partition\n")
+            raw.write_text('with gzip.open(ROOT / "data/raw/thegraph/x"):\n    pass\n')
+            imported_raw.write_text("from ddvc.fetch.raw import raw_path\n")
+            clean_relative = str(clean.relative_to(Path.cwd()))
+            raw_relative = str(raw.relative_to(Path.cwd()))
+            imported_raw_relative = str(imported_raw.relative_to(Path.cwd()))
+            passed, detail = validate_canonical_consumer_boundary((clean_relative,))
+            self.assertTrue(passed, detail)
+            passed, detail = validate_canonical_consumer_boundary((raw_relative,))
+            self.assertFalse(passed, detail)
+            passed, detail = validate_canonical_consumer_boundary((imported_raw_relative,))
+            self.assertFalse(passed, detail)
+
+    def test_model_ledger_counts_families_once_and_binds_live_claims(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.NamedTemporaryFile(dir=Path.cwd(), delete=False) as handle:
+            artifact = Path(handle.name)
+        try:
+            relative = str(artifact.relative_to(Path.cwd()))
+            payload = {
+                "schema_version": 1,
+                "families": [
+                    {
+                        "id": "live",
+                        "claim_id": "lead",
+                        "estimator": "OLS",
+                        "fixed_effects": "pair and date",
+                        "inference": "pair clustered",
+                        "substantive_specifications": 2,
+                        "diagnostic_specifications": 3,
+                        "resampling_refits": 100,
+                        "status": "admissible",
+                        "artifacts": [relative],
+                        "note": "one family",
+                    }
+                ],
+            }
+            passed, detail = validate_model_ledger(payload, claim_ids={"lead"})
+            self.assertTrue(passed, detail)
+            self.assertIn("reported=5", detail)
+            payload["families"][0]["claim_id"] = "unknown"
+            passed, detail = validate_model_ledger(payload, claim_ids={"lead"})
+            self.assertFalse(passed, detail)
+        finally:
+            artifact.unlink(missing_ok=True)
+
     def test_transaction_frontier_gate_separates_validation_from_calendar(self) -> None:
         support = pd.DataFrame(
             {
                 "day": ["20250615"],
                 "scored_routes": [100],
+                "rejected_routes": [1],
+                "exact_venue_two_leg_routes": [101],
                 "invalid_realised_input": [0],
                 "invalid_realised_output": [0],
                 "invalid_chosen_output": [0],
@@ -37,6 +173,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
             for name, passed, detail in transaction_frontier_support_checks(
                 support,
                 panel_rows=100,
+                rejection_rows=1,
             )
         }
         self.assertTrue(checks["transaction frontier row contract"][0])

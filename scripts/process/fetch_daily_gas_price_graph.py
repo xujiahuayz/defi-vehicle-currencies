@@ -26,9 +26,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.data_release import require_node_d_release
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
 from ddvc.quoter import rpc_post
-from ddvc.runtime import atomic_output
+from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
+from ddvc.release_calendar import released_route_days
+from ddvc.runtime import atomic_output, bounded_workers, exclusive_job
 from ddvc.tables import write_exhibit, write_panel
 
 V3_START = "20210505"
@@ -37,10 +40,13 @@ RAW_V1 = DATA_DIR / "raw" / "thegraph" / "uniswap_v1"
 RAW_V3 = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
 OUT_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "daily_gas_price_graph.jsonl"
-CACHE = DATA_DIR / "interim" / "gas_price_graph"
+CACHE = SHARED_RUNTIME_DIR / "cache" / "gas_price_graph"
+LOCK = SHARED_RUNTIME_DIR / "daily-gas-price-panel.lock"
 CODE_SOURCES = [
     "scripts/process/fetch_daily_gas_price_graph.py",
     "src/ddvc/quoter.py",
+    "src/ddvc/reconstruct/__init__.py",
+    "src/ddvc/release_calendar.py",
 ]
 BLOCK_SAMPLE_VERSION = "full_blocks_v1"
 PANEL_COLUMNS = [
@@ -245,14 +251,15 @@ def main() -> int:
     )
     ap.add_argument("--workers", type=int, default=5,
                     help="bounded concurrent historical-block requests")
+    ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
-    if args.workers < 1:
-        ap.error("--workers must be positive")
+    require_node_d_release(routes=True)
+    workers = bounded_workers(args.workers)
     if args.blocks_per_day < 1:
         ap.error("--blocks-per-day must be positive")
 
     unified_dir = DATA_DIR / "unified"
-    unified = sorted(p.stem for p in unified_dir.glob("[0-9]" * 8 + ".parquet"))
+    unified = released_route_days(UNIFIED_QUALITY_PANEL, nonempty=True)
     days = [
         day
         for day in unified
@@ -265,7 +272,7 @@ def main() -> int:
         flush=True,
     )
     rows, failed = [], 0
-    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         futs = {
             pool.submit(
                 fetch_day,
@@ -301,9 +308,19 @@ def main() -> int:
         df,
         OUT_PANEL,
         code_sources=CODE_SOURCES,
-        inputs=[CACHE, unified_dir, RAW_V1, RAW_V2, RAW_V3],
+        inputs=[
+            CACHE,
+            unified_dir,
+            UNIFIED_QUALITY_PANEL,
+            RAW_V1,
+            RAW_V2,
+            RAW_V3,
+        ],
         notes=f"daily gas-price median from {args.blocks_per_day} evenly spaced full blocks",
     )
+    if args.panel_only:
+        print(f"wrote analysis-ready panel {OUT_PANEL.relative_to(REPO_ROOT)}")
+        return 0
     write_exhibit(
         df.drop(columns=["day"]),
         OUT_EXHIBIT,
@@ -324,4 +341,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    with exclusive_job(LOCK, job="daily gas-price panel"):
+        raise SystemExit(main())

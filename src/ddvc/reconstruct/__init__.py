@@ -39,26 +39,92 @@ which validated to 0.24%) are trusted as-is and only sanity-capped.
 from __future__ import annotations
 
 import gzip
+import hashlib
+import inspect
 import json
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
 
-from ddvc.paths import DATA_DIR
-from ddvc.fetch.raw import block_value, raw_path, timestamp_value, transaction_id
-from ddvc.fetch.dune import dune_path
-import datetime as _dt
+from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
+from ddvc.fetch.sources import get_source
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, RAW_MARKET_DATA_LOCK
+from ddvc.provenance import code_fingerprint
+from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
+from ddvc.source_records import block_value, timestamp_value, transaction_id
+from ddvc.tables import write_exhibit, write_panel
 
 # ---------------------------------------------------------------------------
 # Path helpers
 # ---------------------------------------------------------------------------
 
-def unified_path(stamp: str) -> Path:
+ROUTE_SEMANTIC_SOURCES = [
+    "src/ddvc/fetch/sources.py",
+    "src/ddvc/source_records.py",
+]
+RECONSTRUCT_CODE_SOURCES = [
+    "src/ddvc/calendar.py",
+    "src/ddvc/reconstruct/__init__.py",
+    *ROUTE_SEMANTIC_SOURCES,
+]
+RECONSTRUCTION_ENGINE = "pending-import"
+UNIFIED_QUALITY_COLUMNS = [
+    "schema_version",
+    "engine",
+    "day",
+    "input_fingerprint",
+    "expected_sources",
+    "missing_sources",
+    "raw_rows",
+    "normalised_rows",
+    "usable_rows",
+    "duplicate_events",
+    "conflicting_events",
+    "malformed_rows",
+    "missing_identity",
+    "missing_order",
+    "unpriced_rows",
+    "unpriced_provider_usd",
+    "output_rows",
+    "output_bytes",
+    "output_mtime_ns",
+    "passed",
+]
+UNIFIED_QUALITY_PANEL = DATA_DIR / "processed" / "unified_route_quality.parquet"
+UNIFIED_QUALITY_EXHIBIT = OUTPUT_DIR / "exhibits" / "unified_route_quality.jsonl"
+UNIFIED_COLUMNS = [
+    "tx_hash",
+    "log_index",
+    "source",
+    "token_in",
+    "token_out",
+    "token_in_sym",
+    "token_out_sym",
+    "amount_in",
+    "amount_out",
+    "amount_usd",
+    "component_id",
+    "n_components",
+    "route_class",
+    "ambiguous",
+    "tin_role",
+    "tout_role",
+    "timestamp_utc",
+]
+
+
+def unified_path(stamp: str, *, root: Path | None = None) -> Path:
     """data/unified/YYYYMMDD.parquet"""
-    return DATA_DIR / "unified" / f"{stamp}.parquet"
+    return (root or DATA_DIR / "unified") / f"{stamp}.parquet"
+
+
+def unified_quality_path(stamp: str, *, root: Path | None = None) -> Path:
+    """Input-aware quality marker for one canonical route day."""
+    base = root or DATA_DIR / "unified"
+    return base / ".quality" / f"{stamp}.json"
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +273,8 @@ def _norm_messari(rec: dict) -> dict | None:
         "tin": tin.get("symbol"), "tin_id": tin.get("id"),
         "tout": tout.get("symbol"), "tout_id": tout.get("id"),
         "usd": usd, "pool": (rec.get("pool") or {}).get("id"),
-        "in_amt": 0.0, "out_amt": 0.0, "trusted": True,
+        "in_amt": _f(rec.get("amountIn")), "out_amt": _f(rec.get("amountOut")),
+        "trusted": True,
     }
 
 
@@ -265,18 +332,24 @@ NORMALISERS = {
 # Raw file loading — resolves path per source backend
 # ---------------------------------------------------------------------------
 
-def _raw_file_path(dex: str, stamp: str) -> Path:
+def _raw_file_path(dex: str, stamp: str, *, data_root: Path | None = None) -> Path:
     """Resolve raw file path for a given DEX and YYYYMMDD stamp."""
-    day = _dt.date(int(stamp[:4]), int(stamp[4:6]), int(stamp[6:8]))
     stream = DEX_STREAM[dex]
+    data = data_root or DATA_DIR
     if dex in DUNE_SOURCES:
-        return dune_path(dex, stream, day)
-    return raw_path(dex, stream, day)
+        return data / "raw" / "dune" / dex / f"{dex}_{stream}_{stamp}.jsonl.gz"
+    return data / "raw" / "thegraph" / dex / f"{dex}_{stream}_{stamp}.jsonl.gz"
 
 
-def load_legs(dex: str, day: str) -> list[dict]:
+def load_legs(
+    dex: str,
+    day: str,
+    *,
+    data_root: Path | None = None,
+    counters: dict[str, int] | None = None,
+) -> list[dict]:
     """Normalised legs for one DEX on one day; [] if no raw file that day."""
-    path = _raw_file_path(dex, day.replace("-", ""))
+    path = _raw_file_path(dex, day.replace("-", ""), data_root=data_root)
     if not path.exists():
         return []
     fn = NORMALISERS[DEX_FAMILY[dex]]
@@ -286,13 +359,30 @@ def load_legs(dex: str, day: str) -> list[dict]:
             line = line.strip()
             if not line:
                 continue
+            if counters is not None:
+                counters["raw_rows"] += 1
             try:
                 rec = json.loads(line)
             except json.JSONDecodeError:
+                if counters is not None:
+                    counters["malformed_rows"] += 1
                 continue
             leg = fn(rec)
-            if not (leg and leg["tx"] and leg["tin"] and leg["tout"]
-                    and leg["tin_id"] and leg["tout_id"]):
+            if not (
+                leg
+                and leg["tx"]
+                and leg["tin"]
+                and leg["tout"]
+                and leg["tin_id"]
+                and leg["tout_id"]
+                and leg["pool"]
+            ):
+                if counters is not None:
+                    counters["missing_identity"] += 1
+                continue
+            if leg["block"] <= 0 or leg["ts"] <= 0 or leg["log"] < 0:
+                if counters is not None:
+                    counters["missing_order"] += 1
                 continue
             # lowercase join keys so tx grouping + token matching are case-safe
             leg["tx"] = leg["tx"].lower()
@@ -300,6 +390,8 @@ def load_legs(dex: str, day: str) -> list[dict]:
             leg["tout_id"] = leg["tout_id"].lower()
             leg["dex"] = dex
             legs.append(leg)
+            if counters is not None:
+                counters["normalised_rows"] += 1
     return legs
 
 
@@ -449,16 +541,120 @@ def _is_bridged(profiles: list[dict], tol: float) -> bool:
     return False
 
 
-def reconstruct_day(day: str, dexes: list[str]) -> pd.DataFrame:
-    """All legs for the day, tagged with route metadata. Empty df if no data."""
+def _empty_quality(day: str, active_sources: list[str]) -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "engine": RECONSTRUCTION_ENGINE,
+        "day": day.replace("-", ""),
+        "input_fingerprint": "",
+        "expected_sources": len(active_sources),
+        "missing_sources": 0,
+        "raw_rows": 0,
+        "normalised_rows": 0,
+        "usable_rows": 0,
+        "duplicate_events": 0,
+        "conflicting_events": 0,
+        "malformed_rows": 0,
+        "missing_identity": 0,
+        "missing_order": 0,
+        "unpriced_rows": 0,
+        "unpriced_provider_usd": 0.0,
+        "output_rows": 0,
+        "output_bytes": 0,
+        "output_mtime_ns": 0,
+        "passed": False,
+    }
+
+
+def active_route_sources(day: str, dexes: list[str]) -> list[str]:
+    """Selected routed venues that had launched by one UTC day."""
+    stamp = day.replace("-", "")
+    return sorted(
+        dex
+        for dex in dexes
+        if get_source(dex).genesis.strftime("%Y%m%d") <= stamp
+    )
+
+
+def route_input_paths(
+    day: str,
+    dexes: list[str],
+    *,
+    data_root: Path | None = None,
+) -> list[Path]:
+    """Exact raw swap partitions required for one canonical route day."""
+    stamp = day.replace("-", "")
+    return [
+        _raw_file_path(dex, stamp, data_root=data_root)
+        for dex in active_route_sources(day, dexes)
+    ]
+
+
+def route_input_fingerprint(paths: list[Path]) -> str:
+    """Cheap exact-partition identity for atomically replaced immutable inputs."""
+    digest = hashlib.sha256()
+    for path in sorted(paths):
+        digest.update(path.name.encode())
+        if not path.exists():
+            digest.update(b"<missing>")
+            continue
+        stat = path.stat()
+        digest.update(str(stat.st_size).encode())
+        digest.update(str(stat.st_mtime_ns).encode())
+    return digest.hexdigest()
+
+
+def _deduplicate_legs(
+    legs: list[dict],
+    counters: dict[str, object],
+) -> list[dict]:
+    """Keep one event per venue/transaction/log identity and reject conflicts."""
+    unique: list[dict] = []
+    seen: dict[tuple[str, str, int], dict] = {}
+    for leg in legs:
+        key = (str(leg["dex"]), str(leg["tx"]), int(leg["log"]))
+        prior = seen.get(key)
+        if prior is None:
+            seen[key] = leg
+            unique.append(leg)
+            continue
+        comparable = {name: value for name, value in leg.items() if name != "usd"}
+        prior_comparable = {name: value for name, value in prior.items() if name != "usd"}
+        if comparable == prior_comparable:
+            counters["duplicate_events"] = int(counters["duplicate_events"]) + 1
+        else:
+            counters["conflicting_events"] = int(counters["conflicting_events"]) + 1
+    return unique
+
+
+def reconstruct_day_with_quality(
+    day: str,
+    dexes: list[str],
+    *,
+    data_root: Path | None = None,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    """Build one canonical route day and expose every exclusion before publication."""
+    active = active_route_sources(day, dexes)
+    quality = _empty_quality(day, active)
+    inputs = route_input_paths(day, dexes, data_root=data_root)
+    quality["input_fingerprint"] = route_input_fingerprint(inputs)
+    missing = [path for path in inputs if not path.exists()]
+    quality["missing_sources"] = len(missing)
+    if missing:
+        return pd.DataFrame(), quality
+
     all_legs: list[dict] = []
-    for dex in dexes:
-        all_legs.extend(load_legs(dex, day))
+    for dex in active:
+        all_legs.extend(load_legs(dex, day, data_root=data_root, counters=quality))
+    all_legs = _deduplicate_legs(all_legs, quality)
 
     # Reprice off token amounts against a stablecoin-anchored day price table,
     # discarding the subgraph's corruptible amountUSD, BEFORE route reconstruction
     # (every downstream USD — net flows, roles, volume metrics — reads leg["usd"]).
-    all_legs, _dropped, _dropped_usd = _reprice_legs(all_legs)
+    all_legs, dropped, dropped_usd = _reprice_legs(all_legs)
+    quality["unpriced_rows"] = dropped
+    quality["unpriced_provider_usd"] = dropped_usd
+    quality["usable_rows"] = len(all_legs)
 
     txs: dict[str, list[dict]] = defaultdict(list)
     for leg in all_legs:
@@ -528,7 +724,81 @@ def reconstruct_day(day: str, dexes: list[str]) -> pd.DataFrame:
                     "tout_role": role(leg["tout_id"]),
                     "timestamp_utc": ts,
                 })
-    return pd.DataFrame(rows)
+    frame = pd.DataFrame(rows, columns=UNIFIED_COLUMNS)
+    quality["output_rows"] = len(frame)
+    quality["passed"] = not any(
+        int(quality[name])
+        for name in ("missing_sources", "malformed_rows", "conflicting_events")
+    )
+    return frame, quality
+
+
+def reconstruct_day(day: str, dexes: list[str]) -> pd.DataFrame:
+    """All usable route legs for one day, after canonical quality checks."""
+    frame, quality = reconstruct_day_with_quality(day, dexes)
+    if not quality["passed"]:
+        raise ValueError(
+            f"canonical route input failed on {day}: "
+            f"missing={quality['missing_sources']}, malformed={quality['malformed_rows']}, "
+            f"conflicts={quality['conflicting_events']}"
+        )
+    return frame
+
+
+ROUTE_SEMANTIC_FUNCTIONS = (
+    _f,
+    _i,
+    _norm_uni_signed,
+    _norm_uni_v2,
+    _norm_messari,
+    _norm_balancer,
+    _fluid_ts,
+    _norm_fluid,
+    _raw_file_path,
+    load_legs,
+    _median,
+    _day_price_table,
+    _reprice_legs,
+    _root,
+    _union,
+    _component_profiles,
+    _is_bridged,
+    _empty_quality,
+    active_route_sources,
+    route_input_paths,
+    route_input_fingerprint,
+    _deduplicate_legs,
+    reconstruct_day_with_quality,
+    reconstruct_day,
+)
+
+
+def route_semantic_fingerprint() -> str:
+    """Hash row semantics without tying day caches to build orchestration."""
+    digest = hashlib.sha256()
+    digest.update(code_fingerprint(ROUTE_SEMANTIC_SOURCES).encode())
+    constants = {
+        "dex_family": DEX_FAMILY,
+        "dex_stream": DEX_STREAM,
+        "dune_sources": sorted(DUNE_SOURCES),
+        "bridge_tolerance": BRIDGE_TOL,
+        "intermediate_tolerance": INTERMEDIATE_TOL,
+        "stable_addresses": sorted(STABLE_ADDRS),
+        "weth": WETH_ADDR,
+        "wbtc": WBTC_ADDR,
+        "sanity_max_usd": SANITY_MAX_USD,
+        "reprice_rounds": REPRICE_ROUNDS,
+        "unified_columns": UNIFIED_COLUMNS,
+        "quality_columns": UNIFIED_QUALITY_COLUMNS,
+    }
+    digest.update(json.dumps(constants, sort_keys=True, separators=(",", ":")).encode())
+    for function in ROUTE_SEMANTIC_FUNCTIONS:
+        digest.update(function.__name__.encode())
+        digest.update(inspect.getsource(function).encode())
+    return digest.hexdigest()
+
+
+RECONSTRUCTION_ENGINE = route_semantic_fingerprint()[:12]
 
 
 # ---------------------------------------------------------------------------
@@ -536,25 +806,15 @@ def reconstruct_day(day: str, dexes: list[str]) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 def _available_days(dexes: list[str]) -> list[str]:
-    """Union of UTC days (YYYY-MM-DD) for which any DEX has a raw swaps file."""
-    days: set[str] = set()
-    for dex in dexes:
-        if dex in DUNE_SOURCES:
-            d = DATA_DIR / "raw" / "dune" / dex
-        else:
-            d = DATA_DIR / "raw" / "thegraph" / dex
-        if not d.is_dir():
-            continue
-        stream = DEX_STREAM[dex]
-        for f in d.glob(f"{dex}_{stream}_*.jsonl.gz"):
-            # Handle symlinks to empty files gracefully
-            stem = f.name
-            # extract stamp: last underscore-separated token before .jsonl.gz
-            parts = stem.replace(".jsonl.gz", "").split("_")
-            stamp = parts[-1]
-            if len(stamp) == 8 and stamp.isdigit():
-                days.add(f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}")
-    return sorted(days)
+    """Independent full calendar; missing observed files stay in the denominator."""
+    lower = max(
+        RESEARCH_SAMPLE_START,
+        min(get_source(dex).genesis.strftime("%Y%m%d") for dex in dexes),
+    )
+    return [
+        f"{stamp[:4]}-{stamp[4:6]}-{stamp[6:]}"
+        for stamp in calendar_days(lower, RESEARCH_SAMPLE_END)
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -562,22 +822,80 @@ def _available_days(dexes: list[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def _write_parquet(df: pd.DataFrame, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp.parquet")
-    df.to_parquet(tmp, index=False)
-    tmp.replace(path)
+    with atomic_output(path) as temporary:
+        df.to_parquet(temporary, index=False)
 
 
-def _process_one(day: str, dexes: list[str], skip_existing: bool) -> tuple[str, int]:
+def _write_quality_marker(
+    quality: dict[str, object],
+    *,
+    unified_root: Path | None = None,
+) -> None:
+    marker = unified_quality_path(str(quality["day"]), root=unified_root)
+    with atomic_output(marker) as temporary:
+        temporary.write_text(json.dumps(quality, indent=1, sort_keys=True) + "\n")
+
+
+def read_unified_quality(
+    day: str,
+    dexes: list[str],
+    *,
+    data_root: Path | None = None,
+    unified_root: Path | None = None,
+) -> dict[str, object] | None:
+    """Return one current passing route-day marker, otherwise None."""
     stamp = day.replace("-", "")
-    out = unified_path(stamp)
-    if skip_existing and out.exists():
-        return day, -1
-    df = reconstruct_day(day, dexes)
-    if df.empty:
-        return day, 0
+    output = unified_path(stamp, root=unified_root)
+    marker = unified_quality_path(stamp, root=unified_root)
+    if not output.exists() or not marker.exists():
+        return None
+    try:
+        quality = json.loads(marker.read_text())
+    except (json.JSONDecodeError, OSError):
+        return None
+    inputs = route_input_paths(day, dexes, data_root=data_root)
+    current = route_input_fingerprint(inputs)
+    output_stat = output.stat()
+    if (
+        quality.get("engine") != RECONSTRUCTION_ENGINE
+        or quality.get("input_fingerprint") != current
+        or not quality.get("passed")
+        or int(quality.get("output_rows", -1)) < 0
+        or int(quality.get("output_bytes", -1)) != output_stat.st_size
+        or int(quality.get("output_mtime_ns", -1)) != output_stat.st_mtime_ns
+    ):
+        return None
+    return quality
+
+
+def _process_one(
+    day: str,
+    dexes: list[str],
+    force: bool,
+    data_root: Path | None = None,
+    unified_root: Path | None = None,
+) -> tuple[dict[str, object], str]:
+    stamp = day.replace("-", "")
+    out = unified_path(stamp, root=unified_root)
+    if not force:
+        current = read_unified_quality(
+            day,
+            dexes,
+            data_root=data_root,
+            unified_root=unified_root,
+        )
+        if current is not None:
+            return current, "current"
+    df, quality = reconstruct_day_with_quality(day, dexes, data_root=data_root)
+    if not quality["passed"]:
+        _write_quality_marker(quality, unified_root=unified_root)
+        return quality, "failed"
     _write_parquet(df, out)
-    return day, len(df)
+    output_stat = out.stat()
+    quality["output_bytes"] = output_stat.st_size
+    quality["output_mtime_ns"] = output_stat.st_mtime_ns
+    _write_quality_marker(quality, unified_root=unified_root)
+    return quality, "written"
 
 
 def run(
@@ -587,7 +905,7 @@ def run(
     dexes: list[str] | None = None,
     concurrency: int = 8,
     skip_existing: bool = True,
-) -> None:
+) -> int:
     """Reconstruct all (or a range of) days and write unified Parquet files.
 
     start / end are YYYY-MM-DD inclusive bounds. day overrides start/end for a
@@ -604,36 +922,93 @@ def run(
             days = [d for d in days if d <= end]
     if not days:
         print("no days to process", flush=True)
-        return
+        return 0
 
+    workers = bounded_workers(concurrency, maximum=10)
     print(
         f"reconstructing {len(days)} day(s) [{days[0]} .. {days[-1]}] "
-        f"across {len(dexes)} DEXes, concurrency={concurrency}",
+        f"across {len(dexes)} DEXes, concurrency={workers}",
         flush=True,
     )
 
-    done = skipped = empty = 0
+    done = skipped = failed = 0
     total_rows = 0
-    with ProcessPoolExecutor(max_workers=concurrency) as ex:
-        futs = {ex.submit(_process_one, d, dexes, skip_existing): d for d in days}
-        for i, fut in enumerate(as_completed(futs), 1):
-            d, n = fut.result()
-            if n == -1:
-                skipped += 1
-            elif n == 0:
-                empty += 1
-            else:
-                done += 1
-                total_rows += n
-            if i % 50 == 0 or i == len(days):
-                print(
-                    f"  [{i}/{len(days)}] written={done} skipped={skipped} "
-                    f"empty={empty} rows={total_rows:,}",
-                    flush=True,
-                )
+    quality_rows: list[dict[str, object]] = []
+    with exclusive_job(
+        RAW_MARKET_DATA_LOCK,
+        job="raw market-data fetch, enrichment, or canonical materialisation",
+    ):
+        with interruptible_process_pool(workers) as pool:
+            futures = {
+                pool.submit(_process_one, day_value, dexes, not skip_existing): day_value
+                for day_value in days
+            }
+            for index, future in enumerate(as_completed(futures), 1):
+                quality, status = future.result()
+                quality_rows.append(quality)
+                if status == "current":
+                    skipped += 1
+                elif status == "failed":
+                    failed += 1
+                else:
+                    done += 1
+                    total_rows += int(quality["output_rows"])
+                if index % 50 == 0 or index == len(days):
+                    print(
+                        f"  [{index}/{len(days)}] written={done} current={skipped} "
+                        f"failed={failed} rows={total_rows:,}",
+                        flush=True,
+                    )
 
+    full_run = (
+        set(dexes) == set(DEX_FAMILY)
+        and days[0].replace("-", "") == RESEARCH_SAMPLE_START
+        and days[-1].replace("-", "") == RESEARCH_SAMPLE_END
+    )
+    quality = pd.DataFrame(quality_rows, columns=UNIFIED_QUALITY_COLUMNS).sort_values("day")
+    if full_run:
+        raw_source_roots = [
+            DATA_DIR / "raw" / ("dune" if dex in DUNE_SOURCES else "thegraph") / dex
+            for dex in sorted(DEX_FAMILY)
+        ]
+        write_panel(
+            quality,
+            UNIFIED_QUALITY_PANEL,
+            code_sources=[*RECONSTRUCT_CODE_SOURCES, "scripts/run_reconstruct.py"],
+            inputs=[DATA_DIR / "unified" / ".quality", *raw_source_roots],
+            notes="full-calendar canonical directed-route quality gate",
+        )
+        summary = pd.DataFrame(
+            [{
+                "calendar_days": len(quality),
+                "expected_venue_days": int(quality["expected_sources"].sum()),
+                "raw_rows": int(quality["raw_rows"].sum()),
+                "normalised_rows": int(quality["normalised_rows"].sum()),
+                "usable_rows": int(quality["usable_rows"].sum()),
+                "output_rows": int(quality["output_rows"].sum()),
+                "missing_sources": int(quality["missing_sources"].sum()),
+                "duplicate_events": int(quality["duplicate_events"].sum()),
+                "conflicting_events": int(quality["conflicting_events"].sum()),
+                "malformed_rows": int(quality["malformed_rows"].sum()),
+                "missing_identity": int(quality["missing_identity"].sum()),
+                "missing_order": int(quality["missing_order"].sum()),
+                "unpriced_rows": int(quality["unpriced_rows"].sum()),
+                "failed_days": int((~quality["passed"]).sum()),
+            }]
+        )
+        write_exhibit(
+            summary,
+            UNIFIED_QUALITY_EXHIBIT,
+            code_sources=[*RECONSTRUCT_CODE_SOURCES, "scripts/run_reconstruct.py"],
+            inputs=[UNIFIED_QUALITY_PANEL],
+            notes="canonical directed-route coverage and integrity summary",
+        )
+        print(summary.to_string(index=False), flush=True)
+    else:
+        print("PARTIAL: the global route quality ledger was not published", flush=True)
     print(
-        f"done: {done} written, {skipped} skipped, {empty} empty; "
-        f"{total_rows:,} total legs -> {DATA_DIR / 'unified'}",
+        f"done: {done} written, {skipped} current, {failed} failed; "
+        f"{total_rows:,} newly materialised legs",
         flush=True,
     )
+    return 1 if failed else 0

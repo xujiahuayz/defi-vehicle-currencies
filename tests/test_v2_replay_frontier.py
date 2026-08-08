@@ -12,6 +12,7 @@ from ddvc.pricing.mixed_frontier import MixedFrontierState, mixed_leg_quotes, qu
 from ddvc.pricing.tick_state import TickPoolState
 from ddvc.pricing.v2_frontier import quote_v2_pool, v2_leg_quotes
 from ddvc.pricing.v2_replay import V2PoolMeta, V2ReplayDay, load_v2_replay_day
+from ddvc.state_data import CP_STREAMS, write_cp_partition
 
 
 A = "0x0000000000000000000000000000000000000001"
@@ -26,10 +27,18 @@ def write_gzip(path: Path, rows: list[dict]) -> None:
             handle.write(json.dumps(row) + "\n")
 
 
+def complete_cp_day(raw: Path, venue: str, day: str) -> None:
+    for stream, _record_type, _sign in CP_STREAMS[venue]:
+        path = raw / venue / f"{venue}_{stream}_{day}.jsonl.gz"
+        if not path.exists():
+            write_gzip(path, [])
+
+
 class V2ReplayFrontierTests(unittest.TestCase):
     def test_loader_owns_clean_pretrade_state_and_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+            raw, state = root / "raw", root / "state"
             venue = "uniswap_v2"
             pair = {
                 "id": "pool",
@@ -37,11 +46,11 @@ class V2ReplayFrontierTests(unittest.TestCase):
                 "token1": {"id": B},
             }
             write_gzip(
-                root / venue / f"{venue}_hourly_reserves_20250614.jsonl.gz",
+                raw / venue / f"{venue}_hourly_reserves_20250614.jsonl.gz",
                 [{"hourStartUnix": 0, "reserve0": "1000", "reserve1": "1000", "pair": pair}],
             )
             write_gzip(
-                root / venue / f"{venue}_hourly_reserves_20250615.jsonl.gz",
+                raw / venue / f"{venue}_hourly_reserves_20250615.jsonl.gz",
                 [{"hourStartUnix": 3600, "reserve0": "1010", "reserve1": "991", "pair": pair}],
             )
             swap = {
@@ -52,14 +61,20 @@ class V2ReplayFrontierTests(unittest.TestCase):
                 "amount0Out": "0",
                 "amount1In": "0",
                 "amount1Out": "9",
-                "pair": {"id": "pool"},
+                "pair": pair,
                 "transaction": {"id": "tx", "blockNumber": "100"},
             }
             write_gzip(
-                root / venue / f"{venue}_swaps_20250615.jsonl.gz",
+                raw / venue / f"{venue}_swaps_20250615.jsonl.gz",
                 [swap],
             )
-            replay = load_v2_replay_day(root, "20250615", venues=(venue,))
+            complete_cp_day(raw, venue, "20250614")
+            complete_cp_day(raw, venue, "20250615")
+            write_cp_partition(raw, venue, "20250614", root=state)
+            write_cp_partition(raw, venue, "20250615", root=state)
+            replay = load_v2_replay_day(
+                state, "20250615", venues=(venue,), raw_root=raw
+            )
             self.assertEqual(
                 replay.state_before(venue, "pool", 3600, (100, 5)),
                 (Decimal("1000"), Decimal("1000")),

@@ -2,7 +2,7 @@
 
 Built by `scripts/build_counterfactual_dominance.py` from strict pre-transaction pool state and calibrated by `scripts/process/build_route_gas_units.py`. The canonical outputs are `data/processed/counterfactual_dominance.parquet`, `output/exhibits/counterfactual_dominance_summary.jsonl`, `output/exhibits/counterfactual_dominance_support.jsonl`, and `output/exhibits/route_gas_units_summary.jsonl`.
 
-The mixed-venue pilot is built by `scripts/build_transaction_state_frontier.py`; its tracked summaries are `output/exhibits/transaction_state_frontier_summary.jsonl` and `output/exhibits/transaction_state_frontier_support.jsonl`, with the row panel at `data/processed/transaction_state_frontier.parquet`.
+The mixed-venue construction audit is built by `scripts/build_transaction_state_frontier.py --audit-calendar`; its tracked summaries are `output/exhibits/transaction_state_frontier_audit_summary.jsonl` and `output/exhibits/transaction_state_frontier_audit_support.jsonl`, with the audit row panel at `data/processed/transaction_state_frontier_audit.parquet`. Only after that audit passes does `--daily-calendar` publish the distinct analysis input at `data/processed/transaction_state_frontier_daily.parquet`.
 
 This document supersedes every earlier figure based on the retired 103,857-route enumerated panel, the four-day matched panel, pooled gas constants, or hour-end state. In particular, 17.9%, 30.0%, 27.2%, 41.3%, and 70.1% are not admissible paper findings.
 

@@ -40,7 +40,6 @@ from ddvc.provenance import git_state, verify  # noqa: E402
 ARTEFACT_DIRS = (
     "data/processed",
     "data/empirical",
-    "data/unified",
     "data/interim",
     "data/metrics",
     "output/exhibits",
@@ -57,11 +56,13 @@ SUFFIXES = (".parquet", ".pkl", ".jsonl", ".json", ".gz", ".tex", ".pdf", ".png"
 
 # Per-day cache shards are not stamped individually and should not be reported as
 # missing provenance. Their generation is already encoded in the directory name,
-# which is a fingerprint of the quoting sources plus the arguments that decide what
-# is computed, so a shard from superseded code is unreachable rather than merely
-# unlabelled. Stamping each of 2,277 shards would add thousands of sidecars that
-# say the same thing as their parent directory.
-CACHE_MARKERS = ("_route_cost_day_cache", "_day_cache", "__pycache__")
+# which is a fingerprint of the sources plus the arguments that decide what is
+# computed, so a shard from superseded code is unreachable instead of merely
+# unlabelled. Stamping each shard would add thousands of redundant sidecars.
+# Canonical ``data/unified`` days are excluded at the directory level above: their
+# release contract is owned by the per-day quality markers and the stamped global
+# quality panel, not by one manifest per day.
+CACHE_MARKERS = ("_route_cost_day_cache", "_day_cache", "_checkpoints", "__pycache__")
 
 
 def collect() -> list[Path]:
@@ -73,7 +74,7 @@ def collect() -> list[Path]:
         for p in sorted(base.rglob("*")):
             if not p.is_file() or p.suffix not in SUFFIXES:
                 continue
-            if any(m in p.parts for m in CACHE_MARKERS):
+            if any(marker in part for part in p.parts for marker in CACHE_MARKERS):
                 continue
             out.append(p)
     return out

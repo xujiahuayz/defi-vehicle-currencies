@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import gzip
-import json
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from ddvc.asset_types import canonical_token
 from ddvc.cpquote import (
     ReserveEvent,
     hour_is_clean,
@@ -18,6 +15,7 @@ from ddvc.cpquote import (
     prior_observed_state,
     reserve_state_before,
 )
+from ddvc.state_data import RAW_ROOT, cp_partition_path, read_cp_partition
 
 
 V2_VENUES = ("uniswap_v2", "sushiswap_v2")
@@ -72,58 +70,52 @@ class V2ReplayDay:
 
 
 def reserve_delta(row: dict) -> tuple[Decimal, Decimal]:
-    """Net reserve change from one V2 swap row."""
-    return (
-        Decimal(row.get("amount0In", "0")) - Decimal(row.get("amount0Out", "0")),
-        Decimal(row.get("amount1In", "0")) - Decimal(row.get("amount1Out", "0")),
-    )
+    """Net reserve change from one canonical V2 swap row."""
+    return Decimal(str(row["amount0_delta"])), Decimal(str(row["amount1_delta"]))
 
 
 def _read_reserves(
-    path: Path,
+    frame,
     venue: str,
     reserves: dict[PoolHourKey, tuple[Decimal, Decimal]],
     meta: dict[PoolKey, V2PoolMeta],
     *,
     latest_only: bool,
 ) -> None:
-    if not path.exists():
-        return
     latest: dict[str, tuple[int, tuple[Decimal, Decimal], V2PoolMeta]] = {}
-    with gzip.open(path, "rt") as handle:
-        for line in handle:
-            row = json.loads(line)
-            pair = row.get("pair") or {}
-            pool = str(pair.get("id") or "").lower()
-            try:
-                hour = int(row["hourStartUnix"])
-                state = (Decimal(row["reserve0"]), Decimal(row["reserve1"]))
-                token0 = canonical_token(str(pair["token0"]["id"]).lower())
-                token1 = canonical_token(str(pair["token1"]["id"]).lower())
-            except (KeyError, TypeError, ValueError):
-                continue
-            if not pool or token0 is None or token1 is None:
-                continue
-            pool_meta = V2PoolMeta(venue, pool, token0, token1)
-            if latest_only:
-                prior = latest.get(pool)
-                if prior is None or hour > prior[0]:
-                    latest[pool] = (hour, state, pool_meta)
-            else:
-                reserves[(venue, pool, hour)] = state
-                meta[(venue, pool)] = pool_meta
+    snapshots = frame[frame["record_type"].eq("snapshot")]
+    for row in snapshots.to_dict("records"):
+        pool = str(row.get("pool") or "").lower()
+        try:
+            hour = int(row["period_start"])
+            state = (Decimal(str(row["reserve0"])), Decimal(str(row["reserve1"])))
+            token0 = str(row["token0"]).lower()
+            token1 = str(row["token1"]).lower()
+        except (InvalidOperation, KeyError, TypeError, ValueError):
+            continue
+        if not pool or not token0 or not token1:
+            continue
+        pool_meta = V2PoolMeta(venue, pool, token0, token1)
+        if latest_only:
+            prior = latest.get(pool)
+            if prior is None or hour > prior[0]:
+                latest[pool] = (hour, state, pool_meta)
+        else:
+            reserves[(venue, pool, hour)] = state
+            meta[(venue, pool)] = pool_meta
     for pool, (hour, state, pool_meta) in latest.items():
         reserves[(venue, pool, hour)] = state
         meta[(venue, pool)] = pool_meta
 
 
 def load_v2_replay_day(
-    raw_root: Path,
+    state_root: Path,
     day: str,
     *,
     venues: tuple[str, ...] = V2_VENUES,
+    raw_root: Path = RAW_ROOT,
 ) -> V2ReplayDay:
-    """Load and validate every reconstructable V2 pool-hour for ``day``."""
+    """Load and validate every reconstructable canonical V2 pool-hour for ``day``."""
     reserves: dict[PoolHourKey, tuple[Decimal, Decimal]] = {}
     meta: dict[PoolKey, V2PoolMeta] = {}
     swaps: dict[PoolHourKey, list[V2SwapEvent]] = defaultdict(list)
@@ -135,71 +127,59 @@ def load_v2_replay_day(
     )
 
     for venue in venues:
-        venue_root = raw_root / venue
-        _read_reserves(
-            venue_root / f"{venue}_hourly_reserves_{previous_day}.jsonl.gz",
-            venue,
-            reserves,
-            meta,
-            latest_only=True,
+        previous_frame = (
+            read_cp_partition(venue, previous_day, root=state_root, raw_root=raw_root)
+            if cp_partition_path(venue, previous_day, root=state_root).exists()
+            else None
         )
-        _read_reserves(
-            venue_root / f"{venue}_hourly_reserves_{day}.jsonl.gz",
-            venue,
-            reserves,
-            meta,
-            latest_only=False,
+        day_frame = (
+            read_cp_partition(venue, day, root=state_root, raw_root=raw_root)
+            if cp_partition_path(venue, day, root=state_root).exists()
+            else None
         )
-        swap_path = venue_root / f"{venue}_swaps_{day}.jsonl.gz"
-        if swap_path.exists():
-            with gzip.open(swap_path, "rt") as handle:
-                for line in handle:
-                    row = json.loads(line)
-                    pool = str((row.get("pair") or {}).get("id") or "").lower()
-                    transaction = row.get("transaction") or {}
-                    try:
-                        timestamp = int(row["timestamp"])
-                        log_index = int(row["logIndex"])
-                        order = (int(transaction["blockNumber"]), log_index)
-                    except (KeyError, TypeError, ValueError):
-                        continue
-                    tx_hash = str(transaction.get("id") or row.get("id") or "").lower()
-                    if not pool or not tx_hash or timestamp <= 0:
-                        continue
-                    hour = timestamp - timestamp % 3600
-                    swaps[(venue, pool, hour)].append(
-                        V2SwapEvent(
-                            venue,
-                            pool,
-                            tx_hash,
-                            timestamp,
-                            hour,
-                            order,
-                            log_index,
-                            row,
-                        )
-                    )
-        for stream, sign in (("mints", Decimal(1)), ("burns", Decimal(-1))):
-            path = venue_root / f"{venue}_{stream}_{day}.jsonl.gz"
-            if not path.exists():
+        if previous_frame is not None:
+            _read_reserves(previous_frame, venue, reserves, meta, latest_only=True)
+        if day_frame is None:
+            continue
+        _read_reserves(day_frame, venue, reserves, meta, latest_only=False)
+        for row in day_frame[day_frame["record_type"].eq("swap")].to_dict("records"):
+            pool = str(row.get("pool") or "").lower()
+            try:
+                timestamp = int(row["timestamp"])
+                log_index = int(row["log_index"])
+                order = (int(row["block_number"]), log_index)
+            except (InvalidOperation, KeyError, TypeError, ValueError):
                 continue
-            with gzip.open(path, "rt") as handle:
-                for line in handle:
-                    row = json.loads(line)
-                    pool = str((row.get("pair") or {}).get("id") or "").lower()
-                    transaction = row.get("transaction") or {}
-                    try:
-                        timestamp = int(row["timestamp"])
-                        order = (int(transaction["blockNumber"]), int(row["logIndex"]))
-                        delta = (
-                            sign * Decimal(row["amount0"]),
-                            sign * Decimal(row["amount1"]),
-                        )
-                    except (KeyError, TypeError, ValueError):
-                        continue
-                    if pool:
-                        hour = timestamp - timestamp % 3600
-                        liquidity[(venue, pool, hour)].append((order, delta))
+            tx_hash = str(row.get("tx_hash") or "").lower()
+            if not pool or not tx_hash or timestamp <= 0:
+                continue
+            hour = timestamp - timestamp % 3600
+            swaps[(venue, pool, hour)].append(
+                V2SwapEvent(
+                    venue,
+                    pool,
+                    tx_hash,
+                    timestamp,
+                    hour,
+                    order,
+                    log_index,
+                    row,
+                )
+            )
+        for row in day_frame[day_frame["record_type"].eq("liquidity")].to_dict("records"):
+            pool = str(row.get("pool") or "").lower()
+            try:
+                timestamp = int(row["timestamp"])
+                order = (int(row["block_number"]), int(row["log_index"]))
+                delta = (
+                    Decimal(str(row["amount0_delta"])),
+                    Decimal(str(row["amount1_delta"])),
+                )
+            except (KeyError, TypeError, ValueError):
+                continue
+            if pool:
+                hour = timestamp - timestamp % 3600
+                liquidity[(venue, pool, hour)].append((order, delta))
 
     candidate_events: dict[PoolHourKey, list[ReserveEvent]] = {}
     deltas_by_hour: dict[PoolHourKey, list[tuple[Decimal, Decimal]]] = {}

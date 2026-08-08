@@ -36,7 +36,7 @@ Bias directions:
     bound on all-in dominance. The gas-inclusive version requires historical gas
     prices and receipt-measured gas per route topology.
 
-Reads   data/raw/thegraph/{uniswap_v2,sushiswap_v2}/*_{swaps,hourly_reserves}_*.gz
+Reads   the canonical constant-product market-state layer
 Writes  data/processed/counterfactual_dominance.parquet
         output/exhibits/counterfactual_dominance_summary.jsonl
         output/exhibits/counterfactual_dominance_support.jsonl
@@ -46,12 +46,14 @@ from __future__ import annotations
 
 import argparse
 from decimal import Decimal
+from math import isfinite
 
 import pandas as pd
 
 from ddvc.analysis.regression import mean_clustered
 from ddvc.asset_types import WETH, classify
 from ddvc.calendar import nearest_day_per_month
+from ddvc.data_release import require_node_d_release
 from ddvc.cpquote import (
     Pool,
     all_in_direct_advantage_bps_from_units,
@@ -63,14 +65,18 @@ from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.prices import PRICE_COLUMNS, day_prices
 from ddvc.realised import LINEAR_ROUTE_COLUMNS, extract_linear_realised_routes
 from ddvc.pricing.v2_replay import V2_VENUES, load_v2_replay_day
+from ddvc.provenance import require_current_artifacts
 from ddvc.route_gas import GAS_ESTIMATE_COLUMNS, estimate_route_gas
+from ddvc.runtime import exclusive_job
+from ddvc.state_data import STATE_ROOT
 from ddvc.tables import write_exhibit, write_panel
 
-RAW = DATA_DIR / "raw" / "thegraph"
+MARKET_STATE = STATE_ROOT
 UNIFIED = DATA_DIR / "unified"
 OUT_PARQUET = DATA_DIR / "processed" / "counterfactual_dominance.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_summary.jsonl"
 OUT_SUPPORT = OUTPUT_DIR / "exhibits" / "counterfactual_dominance_support.jsonl"
+LOCK = OUT_PARQUET.with_suffix(".lock")
 GAS_PANEL = DATA_DIR / "processed" / "daily_gas_price_graph.parquet"
 ROUTE_GAS_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
 CODE_SOURCES = [
@@ -78,6 +84,7 @@ CODE_SOURCES = [
     "src/ddvc/calendar.py",
     "src/ddvc/cpquote.py",
     "src/ddvc/pricing/v2_replay.py",
+    "src/ddvc/state_data.py",
     "src/ddvc/gas.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/prices.py",
@@ -90,6 +97,17 @@ VENUES = V2_VENUES
 MIN_USD = 100.0            # below this, gas dominates and the comparison is moot
 
 
+def target_price_usd(
+    prices: dict[str, tuple[object, float]], token: str
+) -> float | None:
+    """A usable target-token price, or explicit unsupported state."""
+    record = prices.get(token)
+    if record is None:
+        return None
+    value = float(record[1])
+    return value if isfinite(value) and value > 0 else None
+
+
 def counterfactual_days(
     available: list[str], *, explicit: list[str] | None = None, limit: int | None = None
 ) -> list[str]:
@@ -99,7 +117,7 @@ def counterfactual_days(
 
 
 def one_day(day: str) -> pd.DataFrame | None:
-    replay = load_v2_replay_day(RAW, day, venues=VENUES)
+    replay = load_v2_replay_day(MARKET_STATE, day, venues=VENUES)
     if not replay.pool_hour_events or not replay.swaps_by_pool_hour:
         return None
 
@@ -208,7 +226,9 @@ def one_day(day: str) -> pd.DataFrame | None:
         hop2_source = str(route["realised_hop2_source"])
         direct_source, direct_pool = best_direct_pool
         realised_venue_set = {hop1_source, hop2_source}
-        target_price = prices[b_out][1]
+        target_price = target_price_usd(prices, b_out)
+        if target_price is None:
+            continue
         direct_output_usd = float(best_direct) * target_price
         realised_output_usd = float(route["output_usd"])
         gross_direct_advantage_bps = (
@@ -547,13 +567,18 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", nargs="+", help="explicit YYYYMMDD days")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
+    require_node_d_release(routes=True, market_state=True)
+    require_current_artifacts(
+        [GAS_PANEL, ROUTE_GAS_PANEL], consumer="counterfactual-dominance panel"
+    )
     if args.limit is not None and args.limit < 1:
         ap.error("--limit must be positive")
 
     available = sorted(
-        p.name.removeprefix("uniswap_v2_swaps_").removesuffix(".jsonl.gz")
-        for p in (RAW / "uniswap_v2").glob("uniswap_v2_swaps_*.jsonl.gz")
+        p.stem
+        for p in (MARKET_STATE / "constant_product" / "uniswap_v2").glob("[0-9]" * 8 + ".parquet")
     )
     days = counterfactual_days(available, explicit=args.days, limit=args.limit)
     print(f"quoting counterfactuals on {len(days)} day(s)", flush=True)
@@ -587,13 +612,27 @@ def main() -> int:
         df["valuation_coherent_20pct"]
     )
     df["state_support"] = classify_state_support(df)
+    if args.days is not None or args.limit is not None:
+        print(
+            f"bounded counterfactual diagnostic complete on {len(days):,} day(s); "
+            "canonical outputs unchanged"
+        )
+        return 0
     write_panel(
         df,
         OUT_PARQUET,
         code_sources=CODE_SOURCES,
-        inputs=[*[RAW / venue for venue in VENUES], UNIFIED, GAS_PANEL, ROUTE_GAS_PANEL],
+        inputs=[
+            *(MARKET_STATE / "constant_product" / venue for venue in VENUES),
+            UNIFIED,
+            GAS_PANEL,
+            ROUTE_GAS_PANEL,
+        ],
         notes="V2-family exact-size direct counterfactual at strict pre-transaction block-log state; historical gas prices and receipt-calibrated route gas with explicit fallback support",
     )
+    if args.panel_only:
+        print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
+        return 0
 
     print(f"\ncomparable intermediated routes with a direct alternative: {len(df):,}")
     print(f"date range: {df.date.min().date()} to {df.date.max().date()}")
@@ -748,4 +787,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    with exclusive_job(LOCK, job="counterfactual-dominance panel"):
+        raise SystemExit(main())

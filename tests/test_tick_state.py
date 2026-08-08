@@ -108,7 +108,7 @@ class TickStateTests(unittest.TestCase):
         self.assertEqual(state["pool"].sym0, "A")
         self.assertEqual((state["pool"].block, state["pool"].tick), (2, 10))
 
-    def test_existing_v4_pool_rejects_static_drift(self) -> None:
+    def test_existing_v4_pool_quarantines_static_drift(self) -> None:
         record = row(
             5,
             7,
@@ -135,15 +135,16 @@ class TickStateTests(unittest.TestCase):
         )
         record["transaction"]["blockNumber"] = "6"
         record["pool"]["tickSpacing"] = "60"
-        with self.assertRaisesRegex(ValueError, "statics changed"):
-            absorb_swap_state(
-                "uniswap_v4",
-                record,
-                state,
-                swap_samples={},
-                token_decimals=token_decimals,
-                quarantined_pools={},
-            )
+        quarantine: dict[str, set[str]] = {}
+        absorb_swap_state(
+            "uniswap_v4",
+            record,
+            state,
+            swap_samples={},
+            token_decimals=token_decimals,
+            quarantined_pools=quarantine,
+        )
+        self.assertEqual(quarantine, {"uniswap_v4": {"pool"}})
 
     def test_v4_pool_with_conflicting_token_metadata_is_quarantined(self) -> None:
         record = row(

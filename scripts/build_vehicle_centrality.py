@@ -69,13 +69,6 @@ choice changes the answer:
   wider on value than on count. A single large transfer
   can make a pair look like a highway; a thousand small ones mean it is one.
 
-  COST-WEIGHTED. Edges carry the measured execution cost of the pair, so a shortest path
-  is a cheapest path. This is the version that speaks to the thick-market externality,
-  because an asset is central here when routing through it is genuinely cheap, and it is
-  the only one of the three that can fall while the other two stay high. That divergence,
-  if it exists, is the paper: topological and volume dominance persisting after cost
-  dominance has gone is what incumbency without a cost basis looks like.
-
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/vehicle_centrality.parquet
         output/exhibits/vehicle_centrality.jsonl
@@ -89,14 +82,20 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
+from ddvc.asset_types import classify
+from ddvc.data_release import require_node_d_release
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, repo_path
+from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
+from ddvc.tables import write_exhibit, write_panel
 
-from ddvc.asset_types import classify  # noqa: E402
-from ddvc.tables import write_exhibit, write_panel  # noqa: E402
-
-UNIFIED = ROOT / "data" / "unified"
-OUT_PANEL = ROOT / "data" / "processed" / "vehicle_centrality.parquet"
-OUT_EXHIBIT = ROOT / "output" / "exhibits" / "vehicle_centrality.jsonl"
+UNIFIED = DATA_DIR / "unified"
+OUT_PANEL = DATA_DIR / "processed" / "vehicle_centrality.parquet"
+OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "vehicle_centrality.jsonl"
+LOCK = DATA_DIR / "processed" / ".vehicle_centrality.lock"
+CODE_SOURCES = [
+    "scripts/build_vehicle_centrality.py",
+    "src/ddvc/asset_types.py",
+]
 
 
 def day_edges(day: str, min_usd: float) -> pd.DataFrame:
@@ -172,17 +171,20 @@ def main() -> int:
     ap.add_argument("--out", type=Path, default=OUT_PANEL,
                     help="panel path, so a denser sample can be built without "
                          "replacing the one other nodes already read")
+    ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
+    args.out = repo_path(args.out)
+    require_node_d_release(routes=True)
+    jobs = bounded_workers(args.jobs)
 
     days = sorted(p.stem for p in UNIFIED.glob("[0-9]" * 8 + ".parquet"))[:: args.stride]
     print(f"building trading graphs on {len(days)} sampled days "
           f"({days[0]}..{days[-1]}), k={args.k} source nodes\n")
 
     frames = []
-    if args.jobs > 1:
-        from concurrent.futures import ProcessPoolExecutor
+    if jobs > 1:
         from functools import partial
-        with ProcessPoolExecutor(max_workers=args.jobs) as ex:
+        with interruptible_process_pool(jobs) as ex:
             for i, c in enumerate(ex.map(partial(_one_day, min_usd=args.min_usd,
                                                  k=args.k), days), 1):
                 if c is None or c.empty:
@@ -207,7 +209,16 @@ def main() -> int:
         return 1
     panel = pd.concat(frames, ignore_index=True)
     panel["date"] = pd.to_datetime(panel.day, format="%Y%m%d")
-    write_panel(panel, args.out)
+    write_panel(
+        panel,
+        args.out,
+        code_sources=CODE_SOURCES,
+        inputs=[UNIFIED],
+        notes="network robustness panel on the canonical directed-route layer",
+    )
+    if args.panel_only:
+        print(f"wrote analysis-ready panel {args.out.relative_to(REPO_ROOT)}")
+        return 0
 
     print("\nBetweenness centrality by asset TYPE, share of the total, by year.")
     print("Topological betweenness is how often a path MUST pass through the type.")
@@ -233,13 +244,28 @@ def main() -> int:
             r = g.iloc[0]
             print(f"    {yr}  {r.symbol:<8} {r.betweenness_topological:.4f}")
 
-    write_exhibit(panel.groupby(["year", "asset_type"], as_index=False)[
-        ["betweenness_topological", "betweenness_count", "betweenness_volume",
-         "degree", "strength_usd"]
-    ].sum(), OUT_EXHIBIT)
-    print(f"\nwrote {args.out.relative_to(ROOT)} and {OUT_EXHIBIT.relative_to(ROOT)}")
+    write_exhibit(
+        panel.groupby(["year", "asset_type"], as_index=False)[
+            [
+                "betweenness_topological",
+                "betweenness_count",
+                "betweenness_volume",
+                "degree",
+                "strength_usd",
+            ]
+        ].sum(),
+        OUT_EXHIBIT,
+        code_sources=CODE_SOURCES,
+        inputs=[args.out],
+        notes="network robustness summary; not the primary dominance construct",
+    )
+    print(
+        f"\nwrote {args.out.relative_to(REPO_ROOT)} and "
+        f"{OUT_EXHIBIT.relative_to(REPO_ROOT)}"
+    )
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    with exclusive_job(LOCK, job="vehicle-centrality panel"):
+        sys.exit(main())

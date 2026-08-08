@@ -15,12 +15,12 @@ Writes  output/exhibits/weighted_quoter_validation.jsonl
 from __future__ import annotations
 
 import argparse
-import gzip
 import json
 import statistics
 import sys
 from collections import defaultdict
 from decimal import Decimal
+from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
@@ -41,81 +41,68 @@ from ddvc.pricing.weighted import (  # noqa: E402
     quote_exact_input,
     rebuild_pre_trade_balances,
 )
+from ddvc.state_data import STATE_ROOT, read_multi_asset_partition  # noqa: E402
 from ddvc.tables import write_exhibit  # noqa: E402
 
-RAW = ROOT / "data" / "raw" / "thegraph" / "balancer"
+MARKET_STATE = STATE_ROOT
+SOURCE_FINGERPRINT_ROOT: Path | None = None
 OUT = ROOT / "output" / "exhibits" / "weighted_quoter_validation.jsonl"
+CODE_SOURCES = [
+    "scripts/validate_weighted_quoter.py",
+    "src/ddvc/pricing/weighted.py",
+    "src/ddvc/state_data.py",
+]
 
 
-def _rows(path: Path):
-    if not path.exists():
-        return
-    with gzip.open(path, "rt") as fh:
-        for line in fh:
-            if line.strip():
-                yield json.loads(line)
+@lru_cache(maxsize=4)
+def _state(day: str) -> pd.DataFrame:
+    kwargs = (
+        {}
+        if SOURCE_FINGERPRINT_ROOT is None
+        else {"raw_root": SOURCE_FINGERPRINT_ROOT}
+    )
+    return read_multi_asset_partition("balancer", day, root=MARKET_STATE, **kwargs)
 
 
 def days_with_state() -> list[str]:
-    """Days carrying both per-token balances and the liquidity events needed to replay them.
-
-    `amounts` is requested by the current schema but absent from every file fetched before that
-    schema changed, and `skip_existing` kept those files, so presence has to be read off the file
-    itself. A raw file records when it was fetched and not which fields were asked for, which is
-    exactly how this venue looked unpriceable for longer than it was.
-
-    A day missing its joins-and-exits file is dropped instead of reconstructed from swaps alone,
-    because the swap-only walk silently misattributes every liquidity event to the invariant.
-    """
-    out = []
-    for p in sorted(RAW.glob("balancer_daily_*.jsonl.gz")):
-        day = p.name[len("balancer_daily_"):-len(".jsonl.gz")]
-        if not (RAW / f"balancer_joins_exits_{day}.jsonl.gz").exists():
-            continue
-        for r in _rows(p):
-            if r.get("amounts"):
-                out.append(day)
-            break
+    """Days whose canonical partition passed and carries usable closing balances."""
+    out: list[str] = []
+    for path in sorted(
+        (MARKET_STATE / "multi_asset" / "balancer").glob("[0-9]" * 8 + ".parquet")
+    ):
+        state = _state(path.stem)
+        if state["record_type"].eq("snapshot_token").any():
+            out.append(path.stem)
     return out
 
 
-def _raw(amount: str, decimals: int) -> int:
-    return int((Decimal(amount) * (10 ** decimals)).to_integral_value())
-
-
 def load_pools(day: str) -> dict[str, dict]:
-    """Pool statics plus the day's closing balances, in RAW integer units."""
+    """Pool statics plus closing balances from one canonical state partition."""
     pools: dict[str, dict] = {}
-    for r in _rows(RAW / f"balancer_daily_{day}.jsonl.gz"):
-        po = r.get("pool") or {}
-        pid = (po.get("id") or "").lower()
-        toks = po.get("tokens") or []
-        order = [str(a).lower() for a in (po.get("tokensList") or [])]
-        amounts = r.get("amounts") or []
-        if not pid or not toks or len(order) != len(amounts):
-            continue
+    snapshots = _state(day)
+    snapshots = snapshots[snapshots["record_type"].eq("snapshot_token")]
+    for pid, group in snapshots.groupby("pool", sort=False):
         try:
-            addresses = tuple((t.get("address") or "").lower() for t in toks)
-            decimals = tuple(int(t["decimals"]) for t in toks)
-            weights = tuple(int(Decimal(t["weight"]) * ONE) if t.get("weight") is not None
-                            else 0 for t in toks)
-            human = dict(zip(order, amounts))
-            closing = tuple(_raw(human.get(a, "0"), d)
-                            for a, d in zip(addresses, decimals))
-            fee = int(Decimal(po.get("swapFee") or "0") * ONE)
-        except (KeyError, TypeError, ValueError, ArithmeticError):
+            addresses = tuple(group["token"].astype(str).str.lower())
+            decimals = tuple(int(value) for value in group["decimals"])
+            weights = tuple(
+                int(value) if pd.notna(value) else 0 for value in group["weight_1e18"]
+            )
+            closing = tuple(int(value) for value in group["balance_raw"])
+            fees = group["fee_1e18"].dropna()
+            fee = int(fees.iloc[0]) if not fees.empty else 0
+            pool_types = group["pool_type"].dropna()
+            pool_type = str(pool_types.iloc[0]) if not pool_types.empty else "unknown"
+        except (TypeError, ValueError, ArithmeticError):
             continue
-        pools[pid] = {
+        if not addresses or len(addresses) != len(set(addresses)):
+            continue
+        pools[str(pid).lower()] = {
             "tokens": addresses, "decimals": decimals, "weights": weights,
             "closing": closing, "fee": fee,
-            "pool_type": po.get("poolType") or "unknown",
+            "pool_type": pool_type,
         }
     return pools
-
-
-def _log_index(entity_id: str) -> int:
-    """The decimal log index the subgraph suffixes to a transaction hash in an entity id."""
-    return int(entity_id[66:]) if len(entity_id) > 66 else 0
 
 
 def load_events(day: str) -> tuple[dict[str, list], dict[str, float]]:
@@ -129,36 +116,42 @@ def load_events(day: str) -> tuple[dict[str, list], dict[str, float]]:
     """
     staged: dict[str, list] = defaultdict(list)
     volume: dict[str, float] = defaultdict(float)
-    for s in _rows(RAW / f"balancer_swaps_{day}.jsonl.gz"):
-        pid = ((s.get("poolId") or {}).get("id") or "").lower()
+    state = _state(day)
+    for swap in state[state["record_type"].eq("swap")].to_dict("records"):
+        pid = str(swap.get("pool") or "").lower()
         if not pid:
             continue
         try:
-            usd = float(s.get("valueUSD") or 0)
+            usd = float(swap.get("value_usd") or 0)
         except (TypeError, ValueError):
             usd = 0.0
         volume[pid] += max(usd, 0.0)
         try:
             staged[pid].append((
-                int(s["block"]), _log_index(str(s["id"])), "swap",
-                (s["tokenIn"] or "").lower(), (s["tokenOut"] or "").lower(),
-                Decimal(s["tokenAmountIn"]), Decimal(s["tokenAmountOut"]), None))
+                int(swap["block_number"]), int(swap["log_index"]), "swap",
+                str(swap["token_in"]).lower(), str(swap["token_out"]).lower(),
+                int(swap["amount_in_raw"]), int(swap["amount_out_raw"]), None))
         except (KeyError, TypeError, ValueError, ArithmeticError):
             continue
-    for e in _rows(RAW / f"balancer_joins_exits_{day}.jsonl.gz"):
-        pool = e.get("pool") or {}
-        pid = (pool.get("id") or "").lower()
-        order = [str(a).lower() for a in (pool.get("tokensList") or [])]
-        amounts = e.get("amounts") or []
-        if not pid or len(order) != len(amounts):
+    liquidity: dict[tuple[str, int, int, str, str], dict[str, int]] = defaultdict(dict)
+    for event in state[state["record_type"].eq("liquidity_token")].to_dict("records"):
+        pid = str(event.get("pool") or "").lower()
+        token = str(event.get("token") or "").lower()
+        if not pid or not token:
             continue
-        sign = -1 if str(e.get("type") or "").lower() == "exit" else 1
         try:
-            signed = {a: sign * Decimal(v) for a, v in zip(order, amounts)}
-            staged[pid].append((int(e["block"]), _log_index(str(e["id"])),
-                                "liquidity", None, None, None, None, signed))
+            key = (
+                pid,
+                int(event["block_number"]),
+                int(event["log_index"]),
+                str(event.get("tx_hash") or ""),
+                str(event.get("event_id") or ""),
+            )
+            liquidity[key][token] = int(event["balance_delta_raw"])
         except (KeyError, TypeError, ValueError, ArithmeticError):
             continue
+    for (pid, block, log_index, _tx_hash, _event_id), signed in liquidity.items():
+        staged[pid].append((block, log_index, "liquidity", None, None, None, None, signed))
     for v in staged.values():
         v.sort(key=lambda x: (x[0], x[1]))
     return staged, volume
@@ -166,7 +159,6 @@ def load_events(day: str) -> tuple[dict[str, list], dict[str, float]]:
 
 def build_observations(meta: dict, staged: list) -> list | None:
     """One observation per trade, each carrying the balances that trade faced."""
-    dec = dict(zip(meta["tokens"], meta["decimals"]))
     idx = {t: i for i, t in enumerate(meta["tokens"])}
     n = len(meta["tokens"])
     events: list[BalanceEvent] = []
@@ -174,12 +166,12 @@ def build_observations(meta: dict, staged: list) -> list | None:
     for _, _, kind, t_in, t_out, amt_in, amt_out, signed in staged:
         deltas = [0] * n
         if kind == "swap":
-            if t_in not in dec or t_out not in dec or t_in == t_out:
+            if t_in not in idx or t_out not in idx or t_in == t_out:
                 return None
             try:
-                raw_in = _raw(str(amt_in), dec[t_in])
-                raw_out = _raw(str(amt_out), dec[t_out])
-            except ArithmeticError:
+                raw_in = int(amt_in)
+                raw_out = int(amt_out)
+            except (TypeError, ValueError, ArithmeticError):
                 return None
             if raw_in <= 0 or raw_out <= 0:
                 return None
@@ -192,8 +184,8 @@ def build_observations(meta: dict, staged: list) -> list | None:
             if token not in idx:
                 continue                       # a token the snapshot does not carry
             try:
-                deltas[idx[token]] = _raw(str(amount), dec[token])
-            except ArithmeticError:
+                deltas[idx[token]] = int(amount)
+            except (TypeError, ValueError, ArithmeticError):
                 return None
         events.append(BalanceEvent(deltas=tuple(deltas), is_swap=False))
     path = rebuild_pre_trade_balances(meta["closing"], events)
@@ -504,11 +496,16 @@ def main() -> int:
     print("`valueUSD` counts the same end-user trade more than once and the linear families sit")
     print("high in that ranking partly for that reason. The bound is therefore an upper bound on")
     print("what the panel loses, and it is not small even so.")
-    write_exhibit(pd.DataFrame(rows), OUT)
+    write_exhibit(
+        pd.DataFrame(rows),
+        OUT,
+        code_sources=CODE_SOURCES,
+        inputs=[MARKET_STATE / "multi_asset" / "balancer"],
+        notes="held-out Balancer quote errors from canonical transaction-state partitions",
+    )
     print(f"\nwrote {OUT.relative_to(ROOT)}")
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

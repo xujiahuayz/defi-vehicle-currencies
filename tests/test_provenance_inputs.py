@@ -5,10 +5,29 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from ddvc.provenance import cache_key, describe_input, git_state, input_matches
+from ddvc.provenance import (
+    cache_key,
+    describe_input,
+    git_state,
+    input_matches,
+    require_current_artifacts,
+)
 
 
 class ProvenanceInputTests(unittest.TestCase):
+    @patch("ddvc.provenance.verify")
+    def test_consumer_gate_rejects_any_noncurrent_input(self, verify) -> None:
+        verify.side_effect = [
+            {"artefact": "first.parquet", "status": "ok"},
+            {"artefact": "second.parquet", "status": "stale"},
+        ]
+        with self.assertRaisesRegex(
+            RuntimeError, "consumer requires current analysis inputs: second.parquet=stale"
+        ):
+            require_current_artifacts(
+                ["first.parquet", "second.parquet"], consumer="consumer"
+            )
+
     def test_absolute_data_symlink_keeps_its_logical_repo_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "worktree"

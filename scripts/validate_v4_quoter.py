@@ -35,7 +35,7 @@ import json
 
 import pandas as pd
 
-from ddvc.fetch.raw import v4_pool_quote_supported
+from ddvc.source_records import v4_pool_quote_supported
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.pricing.v3quote import quote_exact_input
 from ddvc.pricing.tick_state import apply_tick_change, iter_pretrade_states
@@ -247,7 +247,8 @@ def main() -> int:
         df,
         OUT,
         code_sources=[
-            "src/ddvc/fetch/raw.py",
+            "scripts/validate_v4_quoter.py",
+            "src/ddvc/source_records.py",
             "src/ddvc/pricing/tick_state.py",
             "src/ddvc/pricing/v3quote.py",
         ],

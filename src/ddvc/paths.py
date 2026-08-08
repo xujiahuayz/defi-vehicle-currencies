@@ -34,6 +34,40 @@ DATA_DIR = REPO_ROOT / "data"
 OUTPUT_DIR = REPO_ROOT / "output"
 ROUTE_COST_JOB_LOCK = DATA_DIR / "empirical" / ".route_cost_panel.lock"
 
+
+def _shared_git_runtime_dir(repo_root: Path) -> Path:
+    """One untracked runtime directory shared by every linked worktree."""
+    marker = repo_root / ".git"
+    if marker.is_dir():
+        common = marker.resolve()
+    elif marker.is_file():
+        try:
+            prefix, value = marker.read_text(encoding="utf-8").strip().split(":", 1)
+            if prefix != "gitdir":
+                raise ValueError("invalid git worktree marker")
+            git_dir = (repo_root / value.strip()).resolve()
+            commondir = git_dir / "commondir"
+            common = (
+                (git_dir / commondir.read_text(encoding="utf-8").strip()).resolve()
+                if commondir.exists()
+                else git_dir
+            )
+        except (OSError, ValueError):
+            common = DATA_DIR / ".locks"
+    else:
+        common = DATA_DIR / ".locks"
+    return common / "ddvc-runtime"
+
+
+SHARED_RUNTIME_DIR = _shared_git_runtime_dir(REPO_ROOT)
+RAW_MARKET_DATA_LOCK = SHARED_RUNTIME_DIR / "raw-market-data.lock"
+
+
+def repo_path(value: str | Path) -> Path:
+    """Resolve a CLI path against the repository without changing absolute paths."""
+    path = Path(value)
+    return path if path.is_absolute() else REPO_ROOT / path
+
 LITERATURE_BIB = LITERATURE_DIR / "vehicle-currencies.bib"
 LITERATURE_PDF_SOURCES = LITERATURE_DIR / "pdf-sources.json"
 LITERATURE_LOCAL_SOURCES = LITERATURE_DIR / "sources.local.json"

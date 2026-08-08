@@ -25,46 +25,31 @@ Writes  output/exhibits/curve_quoter_validation.jsonl
 from __future__ import annotations
 
 import argparse
-import gzip
-import json
 import statistics
 from collections import defaultdict
-from pathlib import Path
 
 import pandas as pd
 
-from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.paths import OUTPUT_DIR, REPO_ROOT
 from ddvc.pricing.stableswap import StablePool, calibrate_amp, quote_exact_input
+from ddvc.state_data import STATE_ROOT, read_multi_asset_partition
 from ddvc.tables import write_exhibit
 
-RAW = DATA_DIR / "raw" / "thegraph" / "curve"
+MARKET_STATE = STATE_ROOT
 OUT = OUTPUT_DIR / "exhibits" / "curve_quoter_validation.jsonl"
 CODE_SOURCES = [
     "scripts/validate_curve_quoter.py",
     "src/ddvc/pricing/stableswap.py",
+    "src/ddvc/state_data.py",
 ]
 
 
-def _rows(path: Path):
-    if not path.exists():
-        return
-    with gzip.open(path, "rt") as fh:
-        for line in fh:
-            if line.strip():
-                yield json.loads(line)
-
-
 def days_with_balances(limit: int | None) -> list[str]:
-    out = []
-    for p in sorted(RAW.glob("curve_daily_*.jsonl.gz")):
-        day = p.name[len("curve_daily_"):-len(".jsonl.gz")]
-        for r in _rows(p):
-            if "inputTokenBalances" in r:
-                out.append(day)
-            break
-        if limit and len(out) >= limit:
-            break
-    return out
+    days = sorted(
+        path.stem
+        for path in (MARKET_STATE / "multi_asset" / "curve").glob("[0-9]" * 8 + ".parquet")
+    )
+    return days[:limit] if limit else days
 
 
 def summarise_errors(signed_errors_pct: list[float]) -> dict[str, float]:
@@ -105,32 +90,28 @@ def main() -> int:
     rows = []
     pooled_signed_errors: list[float] = []
     for day in picked:
+        state = read_multi_asset_partition("curve", day, root=MARKET_STATE)
         pools: dict[str, dict] = {}
-        for r in _rows(RAW / f"curve_daily_{day}.jsonl.gz"):
-            p = r.get("pool") or {}
-            pid = (p.get("id") or "").lower()
-            bals = r.get("inputTokenBalances")
-            toks = p.get("inputTokens") or []
-            if not pid or not bals or len(bals) != len(toks):
-                continue
+        snapshots = state[state["record_type"].eq("snapshot_token")]
+        for pid, group in snapshots.groupby("pool", sort=False):
             try:
                 pools[pid] = {
-                    "tokens": tuple((t.get("id") or "").lower() for t in toks),
-                    "decimals": tuple(int(t.get("decimals")) for t in toks),
-                    "balances": tuple(int(b) for b in bals),
+                    "tokens": tuple(group["token_raw"].astype(str)),
+                    "decimals": tuple(int(value) for value in group["decimals"]),
+                    "balances": tuple(int(value) for value in group["balance_raw"]),
                 }
             except (TypeError, ValueError):
                 continue
 
         trades: dict[str, list] = defaultdict(list)
-        for s in _rows(RAW / f"curve_swaps_{day}.jsonl.gz"):
-            pid = ((s.get("pool") or {}).get("id") or "").lower()
+        for swap in state[state["record_type"].eq("swap")].to_dict("records"):
+            pid = str(swap.get("pool") or "").lower()
             if pid not in pools:
                 continue
             try:
-                ti = (s["tokenIn"]["id"] or "").lower()
-                to = (s["tokenOut"]["id"] or "").lower()
-                ai, ao = int(s["amountIn"]), int(s["amountOut"])
+                ti = str(swap["token_in_raw"]).lower()
+                to = str(swap["token_out_raw"]).lower()
+                ai, ao = int(swap["amount_in_raw"]), int(swap["amount_out_raw"])
             except (KeyError, TypeError, ValueError):
                 continue
             if ai > 0 and ao > 0:
@@ -199,7 +180,7 @@ def main() -> int:
         pd.DataFrame(rows),
         OUT,
         code_sources=CODE_SOURCES,
-        inputs=[RAW],
+        inputs=[MARKET_STATE / "multi_asset" / "curve"],
         notes="held-out Curve quote errors with upper-tail and signed-overquote diagnostics",
     )
     print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")

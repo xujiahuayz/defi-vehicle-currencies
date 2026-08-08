@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "locked_at": "2026-08-07",
-  "lock_hash": "82f03045e376565a0dda4fc222b157a59c5c262e09453a0527248265485c146c",
+  "lock_hash": "f325e4f0c49bc891c7b4b5e68e94fbcea69e62cf0c75614570ba6f661a680617",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",
@@ -20,6 +20,8 @@
     "multiplicity": "Holm adjustment within each claim's primary coefficient family",
     "causal_language": "permitted only after timing, pretrend, balance, exclusion, and placebo gates pass",
     "missing_data": "retain topology-valid counts; unsupported values contribute zero and remain visible in coverage",
+    "audit_sampling": "one transaction-state day near the middle of each calendar month is an estimator-validation snapshot only; it does not define a monthly estimand, a persistence sample, or a structural-break sample",
+    "dynamic_horizons": "final dynamic estimation uses daily exact-state observations linked by exact calendar dates at 1, 7, 30, and 120 days; calendar months and row shifts are not substitutes",
     "prose_gate": "no claim enters prose until its status is enter_fgh or supporting and two stable F-G-H passes add no claim and retire none"
   },
   "claims": [
@@ -82,7 +84,7 @@
       "status": "descriptive_only_pending_transaction_state_frontier",
       "role": "first rival mechanism",
       "estimand": "changes in opportunity-set integration, direct splitting, true intermediation, path complexity, and realised routing regret",
-      "sample": "economic routes on full and balanced venue perimeters",
+      "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar, while exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
       "unit": "route for topology; endpoint-vehicle-reach-notional-state cell for regret",
       "dependent_variable": "separate topology margins and same-state cost shortfalls",
       "transformation": "incidence levels, percentage-point changes, and basis-point cost gaps",
@@ -105,15 +107,21 @@
           "mixed indirect",
           "two legs",
           "more than two legs"
+        ],
+        "response_horizon_days": [
+          1,
+          7,
+          30,
+          120
         ]
       },
       "falsifier": "stable transition vanishes inside fixed opportunity and search-efficiency cells",
       "admissible_interpretation": "integration expands while true intermediation contracts; this is consistent with improved direct-liquidity discovery",
       "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption",
-      "blocking_measurement": "multi-venue alternatives are still priced at hour end rather than strict pre-transaction state",
+      "blocking_measurement": "the repaired 77-date transaction-state construction audit reproduces 697608 of 697699 coherent chosen quotes, or 99.987 percent, against the 99 percent gate; build the separate full daily exact-state frontier and link outcomes by exact 1, 7, 30, and 120 calendar days before estimation",
       "inputs": [
         "data/processed/cross_venue_routing_daily.parquet",
-        "data/empirical/route_cost_panel_v2.parquet"
+        "data/processed/transaction_state_frontier_daily.parquet"
       ],
       "outputs": [
         "output/exhibits/cross_venue_routing_series.jsonl",
@@ -208,7 +216,10 @@
       "forbidden_interpretation": "all LP compensation is negative, token incentives are absent, V2 and selected V3 levels are comparable, v3 virtual reserves measure deposited-capital migration, or rent incidence explains the stable vehicle transition",
       "inputs": [
         "data/processed/daily_gas_price_graph.parquet",
-        "data/processed/vehicle_centrality_dense.parquet"
+        "data/processed/v2_token_price_daily.parquet",
+        "data/processed/vehicle_centrality_dense.parquet",
+        "data/processed/rent_incidence_v2_pool_day.parquet",
+        "data/processed/rent_incidence_v3_pool_day.parquet"
       ],
       "outputs": [
         "output/empirical/rent_incidence"
@@ -219,7 +230,15 @@
       "status": "withheld",
       "role": "excluded from current claims",
       "estimand": "pair-candidate-period persistence and asymmetric displacement conditional on current all-in economics",
-      "blocking_measurement": "multi-venue strict transaction-state candidate costs and symmetric incumbent-challenger event construction",
+      "validation_sample": "77 one-day transaction-state snapshots sampled across calendar months validate reconstruction only and cannot estimate a duration or response",
+      "final_estimation_sample": "full daily pair-candidate exact-state cost and vehicle-share panel with outcomes linked by exact calendar dates",
+      "response_horizon_days": [
+        1,
+        7,
+        30,
+        120
+      ],
+      "blocking_measurement": "repair chosen-route reproduction, construct multi-venue strict transaction-state candidate costs on the full daily calendar, and build symmetric incumbent-challenger events",
       "forbidden_interpretation": "the V2-family level incidence identifies persistence or hysteresis"
     },
     {

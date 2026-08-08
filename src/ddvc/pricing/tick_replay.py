@@ -2,20 +2,18 @@
 
 from __future__ import annotations
 
-import gzip
-import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ddvc.fetch.raw import source_event_payload, timestamp_value, transaction_id
+import pandas as pd
+
 from ddvc.pricing.tick_frontier import PoolIndex, TickQuoteIndexes
 from ddvc.pricing.tick_state import TickPoolState, absorb_swap_state, apply_tick_change
+from ddvc.source_records import block_value, source_event_payload, transaction_id
+from ddvc.state_data import RAW_ROOT, read_tick_partition, tick_partition_path
 
 
-TICK_LIQUIDITY_STREAMS: dict[str, tuple[tuple[str, int], ...]] = {
-    "uniswap_v3": (("mints", 1), ("burns", -1)),
-    "uniswap_v4": (("modify_liquidities", 1),),
-}
+TICK_VENUES = ("uniswap_v3", "uniswap_v4")
 
 
 @dataclass(frozen=True)
@@ -27,42 +25,64 @@ class TickReplayEvent:
     sign: int = 0
 
 
-def timestamp_order(row: dict) -> tuple[int, int] | None:
-    """Comparable chain order across V3 and V4 when V4 omits block number."""
+def chain_order(row: dict) -> tuple[int, int] | None:
+    """Exact on-chain order; rows without a block number are not replayable."""
     try:
-        timestamp = int(timestamp_value(row) or 0)
+        block = int(block_value(row) or 0)
         log_index = int(row.get("logIndex") or 0)
     except (TypeError, ValueError):
         return None
-    return (timestamp, log_index) if timestamp > 0 else None
+    return (block, log_index) if block > 0 else None
 
 
-def _raw_path(raw_root: Path, venue: str, stream: str, day: str) -> Path:
-    return raw_root / venue / f"{venue}_{stream}_{day}.jsonl.gz"
+def _plain(value: object) -> object | None:
+    try:
+        return None if pd.isna(value) else value
+    except (TypeError, ValueError):
+        return value
 
 
-def _load_stream(
-    raw_root: Path,
-    venue: str,
-    stream: str,
-    day: str,
-    *,
-    kind: str,
-    sign: int = 0,
-) -> list[TickReplayEvent]:
-    path = _raw_path(raw_root, venue, stream, day)
-    if not path.exists():
-        return []
-    events: list[TickReplayEvent] = []
-    with gzip.open(path, "rt") as handle:
-        for line in handle:
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            order = timestamp_order(row)
-            if order is not None:
-                events.append(TickReplayEvent(order, venue, kind, row, sign))
-    return events
+def canonical_tick_row(record: dict) -> dict:
+    """Adapt one canonical record to the pricing domain object used by tick math."""
+    token0 = {
+        "id": _plain(record.get("token0_raw")),
+        "symbol": _plain(record.get("symbol0")),
+        "decimals": _plain(record.get("decimals0")),
+    }
+    token1 = {
+        "id": _plain(record.get("token1_raw")),
+        "symbol": _plain(record.get("symbol1")),
+        "decimals": _plain(record.get("decimals1")),
+    }
+    pool = {
+        "id": _plain(record.get("pool")),
+        "token0": token0,
+        "token1": token1,
+        "feeTier": _plain(record.get("fee_pips")),
+        "tickSpacing": _plain(record.get("tick_spacing")),
+        "hooks": _plain(record.get("hooks")),
+    }
+    tx_hash = _plain(record.get("tx_hash"))
+    block = _plain(record.get("block_number"))
+    timestamp = _plain(record.get("timestamp"))
+    return {
+        "id": _plain(record.get("event_id")),
+        "transaction": {
+            "id": tx_hash,
+            "blockNumber": block,
+            "timestamp": timestamp,
+        },
+        "timestamp": timestamp,
+        "logIndex": _plain(record.get("log_index")),
+        "pool": pool,
+        "amount0": _plain(record.get("amount0")),
+        "amount1": _plain(record.get("amount1")),
+        "sqrtPriceX96": _plain(record.get("sqrt_price_x96")),
+        "tick": _plain(record.get("tick")),
+        "amount": _plain(record.get("liquidity_delta")),
+        "tickLower": _plain(record.get("tick_lower")),
+        "tickUpper": _plain(record.get("tick_upper")),
+    }
 
 
 def _same_chain_event(left: TickReplayEvent, right: TickReplayEvent) -> bool:
@@ -79,28 +99,26 @@ def _same_chain_event(left: TickReplayEvent, right: TickReplayEvent) -> bool:
 
 
 def load_tick_day_events(
-    raw_root: Path,
+    state_root: Path,
     day: str,
     *,
-    venues: tuple[str, ...] = ("uniswap_v3", "uniswap_v4"),
+    venues: tuple[str, ...] = TICK_VENUES,
+    raw_root: Path = RAW_ROOT,
 ) -> list[TickReplayEvent]:
-    """Load and globally order one day's swaps and liquidity changes."""
+    """Load and globally order one canonical day's swaps and liquidity changes."""
     events: list[TickReplayEvent] = []
     for venue in venues:
-        for stream, sign in TICK_LIQUIDITY_STREAMS[venue]:
-            events.extend(
-                _load_stream(
-                    raw_root,
-                    venue,
-                    stream,
-                    day,
-                    kind="liquidity",
-                    sign=sign,
-                )
-            )
-        events.extend(
-            _load_stream(raw_root, venue, "swaps", day, kind="swap")
-        )
+        if not tick_partition_path(venue, day, root=state_root).exists():
+            continue
+        for record in read_tick_partition(
+            venue, day, root=state_root, raw_root=raw_root
+        ).to_dict("records"):
+            row = canonical_tick_row(record)
+            order = chain_order(row)
+            if order is None:
+                raise ValueError(f"canonical tick record lacks causal order: {venue} {day}")
+            kind = str(record["record_type"])
+            events.append(TickReplayEvent(order, venue, kind, row, 1 if kind == "liquidity" else 0))
     events.sort(
         key=lambda event: (
             event.order,
@@ -119,7 +137,7 @@ def load_tick_day_events(
                 and prior.row == event.row
             ) or _same_chain_event(prior, event):
                 continue
-            raise ValueError(f"conflicting tick events at timestamp-log {event.order}")
+            raise ValueError(f"conflicting tick events at block-log {event.order}")
         unique.append(event)
     return unique
 
@@ -146,6 +164,11 @@ class TickReplayState:
         self.quote_indexes_by_venue.setdefault(venue, {}).pop(pool, None)
 
     def apply_swap(self, venue: str, row: dict) -> None:
+        # Exact-state replay must never compare a Unix timestamp with an Ethereum
+        # block height. Some legacy V4 rows have only a scalar transaction hash;
+        # they can identify a swap, but cannot establish its causal chain order.
+        if chain_order(row) is None:
+            return
         states = self.states_by_venue.setdefault(venue, {})
         pool = str((row.get("pool") or {}).get("id") or "").lower()
         if not pool:
@@ -194,31 +217,14 @@ class TickReplayState:
 
 
 def warm_tick_day(
-    raw_root: Path,
+    state_root: Path,
     day: str,
     replay: TickReplayState,
     *,
-    venues: tuple[str, ...] = ("uniswap_v3", "uniswap_v4"),
+    venues: tuple[str, ...] = TICK_VENUES,
+    raw_root: Path = RAW_ROOT,
 ) -> None:
-    """Stream one non-target day into end-of-day state without sorting events.
-
-    Tick liquidity changes are additive, and ``absorb_swap_state`` retains the
-    latest block-log state even if a source file is not ordered. Only target days
-    need a globally interleaved event list for strict pre-transaction scoring.
-    """
-    for venue in venues:
-        for stream, sign in TICK_LIQUIDITY_STREAMS[venue]:
-            path = _raw_path(raw_root, venue, stream, day)
-            if not path.exists():
-                continue
-            with gzip.open(path, "rt") as handle:
-                for line in handle:
-                    if line.strip():
-                        replay.apply_liquidity(venue, json.loads(line), sign=sign)
-        path = _raw_path(raw_root, venue, "swaps", day)
-        if not path.exists():
-            continue
-        with gzip.open(path, "rt") as handle:
-            for line in handle:
-                if line.strip():
-                    replay.apply_swap(venue, json.loads(line))
+    """Stream one canonical non-target day into end-of-day state."""
+    replay.apply_all(
+        load_tick_day_events(state_root, day, venues=venues, raw_root=raw_root)
+    )

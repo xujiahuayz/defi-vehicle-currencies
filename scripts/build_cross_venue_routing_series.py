@@ -66,13 +66,14 @@ import pandas as pd
 
 from ddvc.analysis.regression import common_calendar_day_mask, year_endpoint_change
 from ddvc.asset_types import canonical_token
+from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_roles import (
     VALUE_SUPPORT_SCOPES,
     component_eligibility,
     component_value_support,
 )
-from ddvc.runtime import exclusive_job, interruptible_process_pool
+from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
@@ -81,7 +82,6 @@ OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "cross_venue_routing_series.jsonl"
 OUT_INFERENCE = OUTPUT_DIR / "exhibits" / "cross_venue_routing_inference.jsonl"
 OUT_TECHNOLOGY_WINDOWS = OUTPUT_DIR / "exhibits" / "routing_technology_windows.jsonl"
 LOCK = OUT_PARQUET.with_suffix(".lock")
-MAX_WORKERS = 8
 CODE_SOURCES = [
     "scripts/build_cross_venue_routing_series.py",
     "src/ddvc/analysis/regression.py",
@@ -113,10 +113,6 @@ ROUTING_TECHNOLOGY_EVENTS = (
         "https://blog.uniswap.org/permit2-and-universal-router",
     ),
 )
-
-
-def bounded_workers(requested: int) -> int:
-    return min(MAX_WORKERS, max(1, requested))
 
 
 def empty_day(date: object) -> dict[str, object]:
@@ -547,7 +543,9 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int, default=None, help="first N days only, for a smoke test")
+    ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
+    require_node_d_release(routes=True)
     args.workers = bounded_workers(args.workers)
 
     days = sorted(UNIFIED.glob("*.parquet"))
@@ -590,6 +588,9 @@ def main() -> int:
         inputs=[UNIFIED],
         notes="topology-valid routes; indirect incidence requires an intermediary; direct pool splits are separate; values report all, 2x and 20 percent flow-coherence bands",
     )
+    if args.panel_only:
+        print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
+        return 0
     write_exhibit(
         df,
         OUT_EXHIBIT,

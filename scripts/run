@@ -5,6 +5,10 @@ repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 common_dir=$(git -C "$repo_root" rev-parse --path-format=absolute --git-common-dir)
 primary_root=$(dirname -- "$common_dir")
 
+if [ "$repo_root" != "$primary_root" ] && [ ! -f "$repo_root/.env" ] && [ -f "$primary_root/.env" ]; then
+    export DDVC_ENV_FILE="$primary_root/.env"
+fi
+
 if [ -n "${DDVC_PYTHON:-}" ]; then
     python=$DDVC_PYTHON
 elif [ "$repo_root" != "$primary_root" ] && [ -x "$primary_root/.venv/bin/python" ]; then

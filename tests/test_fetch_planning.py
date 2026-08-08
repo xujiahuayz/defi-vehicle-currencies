@@ -1,20 +1,85 @@
 from __future__ import annotations
 
 import datetime as dt
+import tempfile
 import unittest
+from argparse import Namespace
+from pathlib import Path
+from unittest.mock import patch
 
-from scripts.fetch_raw_market_data import bounded_graph_workers
+from scripts import audit_v2_refetch_receipts, build_market_state, fetch_raw_market_data
+from scripts.fetch_raw_market_data import cmd_fetch, sparse_days
 
 from ddvc.fetch.raw import raw_path, where_for_entity
+from ddvc.fetch.graph import GraphClient
 from ddvc.fetch.schemas import EntitySpec, get_schema
 from ddvc.fetch.sources import get_source, iter_days, last_complete_month_exclusive
+from ddvc.reconstruct import RAW_MARKET_DATA_LOCK as RECONSTRUCT_RAW_MARKET_DATA_LOCK
 
 
 class FetchPlanningTests(unittest.TestCase):
-    def test_graph_worker_count_is_bounded(self) -> None:
-        self.assertEqual(bounded_graph_workers(0), 1)
-        self.assertEqual(bounded_graph_workers(5), 5)
-        self.assertEqual(bounded_graph_workers(100), 8)
+    def test_fetch_and_materialisation_share_one_raw_data_lock(self) -> None:
+        self.assertEqual(
+            fetch_raw_market_data.RAW_MUTATION_LOCK,
+            build_market_state.RAW_MARKET_DATA_LOCK,
+        )
+        self.assertEqual(
+            fetch_raw_market_data.RAW_MUTATION_LOCK,
+            RECONSTRUCT_RAW_MARKET_DATA_LOCK,
+        )
+        self.assertEqual(
+            fetch_raw_market_data.RAW_MUTATION_LOCK,
+            audit_v2_refetch_receipts.RAW_MARKET_DATA_LOCK,
+        )
+
+    def test_fetch_command_holds_the_shared_raw_mutation_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            lock = Path(directory) / "raw.lock"
+            with (
+                patch.object(fetch_raw_market_data, "RAW_MUTATION_LOCK", lock),
+                patch.object(fetch_raw_market_data, "_cmd_fetch", return_value=7) as inner,
+            ):
+                self.assertEqual(cmd_fetch(Namespace()), 7)
+            inner.assert_called_once()
+            self.assertTrue(lock.exists())
+
+    def test_sparse_repair_calendar_is_unique_sorted_and_genesis_checked(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "days.txt"
+            path.write_text("# repair\n2024-10-26\n2024-10-25\n2024-10-26\n")
+            self.assertEqual(
+                sparse_days(path, "uniswap_v2"),
+                [dt.date(2024, 10, 25), dt.date(2024, 10, 26)],
+            )
+            path.write_text("2020-05-04\n")
+            with self.assertRaisesRegex(ValueError, "precedes genesis"):
+                sparse_days(path, "uniswap_v2")
+
+    def test_graph_response_has_true_body_deadline(self) -> None:
+        class Response:
+            def iter_content(self, *, chunk_size: int):
+                self.chunk_size = chunk_size
+                yield b'{"data":'
+                yield b'{}}'
+
+        client = object.__new__(GraphClient)
+        client.response_deadline_seconds = 2
+        response = Response()
+        with patch("ddvc.fetch.graph.time.monotonic", side_effect=[0, 1, 3]):
+            with self.assertRaisesRegex(TimeoutError, "body deadline"):
+                client._response_json(response)
+        self.assertEqual(response.chunk_size, 64 * 1024)
+
+    def test_graph_response_decodes_within_deadline(self) -> None:
+        class Response:
+            def iter_content(self, *, chunk_size: int):
+                yield b'{"data":'
+                yield b'{}}'
+
+        client = object.__new__(GraphClient)
+        client.response_deadline_seconds = 2
+        with patch("ddvc.fetch.graph.time.monotonic", side_effect=[0, 1, 2]):
+            self.assertEqual(client._response_json(Response()), {"data": {}})
 
     def test_last_complete_month_exclusive(self) -> None:
         self.assertEqual(last_complete_month_exclusive(dt.date(2026, 7, 1)), dt.date(2026, 7, 1))

@@ -16,8 +16,9 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.asset_types import CURRENCY_TYPES, backing
+from ddvc.data_release import require_node_d_release
 from ddvc.paths import REPO_ROOT
-from ddvc.runtime import exclusive_job, interruptible_process_pool
+from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 from ddvc.vehicle_extent import (
     REQUIRED_COLUMNS,
@@ -30,17 +31,12 @@ OUT_PANEL = REPO_ROOT / "data" / "processed" / "vehicle_excess_use_daily.parquet
 OUT_EXHIBIT = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use.jsonl"
 OUT_QUARTERLY = REPO_ROOT / "output" / "exhibits" / "vehicle_excess_use_quarterly.jsonl"
 LOCK = OUT_PANEL.with_suffix(".lock")
-MAX_WORKERS = 8
 CODE_SOURCES = [
     "scripts/build_vehicle_excess_use.py",
     "src/ddvc/asset_types.py",
     "src/ddvc/vehicle_extent.py",
     "src/ddvc/route_roles.py",
 ]
-
-
-def bounded_workers(requested: int) -> int:
-    return min(MAX_WORKERS, max(1, requested))
 
 
 def one_day(path: Path) -> pd.DataFrame:
@@ -78,7 +74,9 @@ def main() -> int:
     )
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--panel-only", action="store_true")
     args = ap.parse_args()
+    require_node_d_release(routes=True)
     workers = bounded_workers(args.workers)
 
     files = sorted(UNIFIED.glob("*.parquet"))
@@ -113,6 +111,11 @@ def main() -> int:
     panel = pd.concat(parts, ignore_index=True).sort_values(
         ["date", "intermediate_share"], ascending=[True, False]
     )
+    if args.limit is not None:
+        print(
+            f"smoke reduction complete on {len(files):,} days; canonical outputs unchanged"
+        )
+        return 0
     write_panel(
         panel,
         OUT_PANEL,
@@ -120,6 +123,9 @@ def main() -> int:
         inputs=[UNIFIED],
         notes="topology-valid cycles excluded; counts use full support; value fields retain all routes plus nested 2x and 20 percent source-intermediary-sink coherence bands",
     )
+    if args.panel_only:
+        print(f"wrote analysis-ready panel {OUT_PANEL.relative_to(REPO_ROOT)}")
+        return 0
 
     panel["year"] = panel["date"].dt.year
     panel["quarter"] = panel["date"].dt.to_period("Q").astype(str)

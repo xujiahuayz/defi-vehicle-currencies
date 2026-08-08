@@ -30,9 +30,12 @@ from pathlib import Path
 import pandas as pd
 
 from ddvc.calendar import nearest_day_per_month
-from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
+from ddvc.data_release import require_node_d_release
+from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, SHARED_RUNTIME_DIR
 from ddvc.provenance import cache_key
 from ddvc.quoter import rpc_post
+from ddvc.reconstruct import UNIFIED_QUALITY_PANEL
+from ddvc.release_calendar import released_route_days
 from ddvc.route_gas import (
     CANDIDATE_COLUMNS,
     REQUIRED_COLUMNS,
@@ -40,14 +43,19 @@ from ddvc.route_gas import (
     candidate_transactions,
     deterministic_cell_sample,
 )
-from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
+from ddvc.runtime import (
+    atomic_output,
+    bounded_workers,
+    exclusive_job,
+    interruptible_process_pool,
+)
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
-CACHE = DATA_DIR / "interim" / "route_gas_receipts"
-CANDIDATE_CACHE_ROOT = DATA_DIR / "empirical" / "_route_gas_candidate_cache"
+CACHE = SHARED_RUNTIME_DIR / "cache" / "route_gas_receipts"
+CANDIDATE_CACHE_ROOT = SHARED_RUNTIME_DIR / "cache" / "route_gas_candidates"
 RECEIPT_SNAPSHOT = DATA_DIR / "empirical" / "route_gas_receipt_selection.jsonl"
-LOCK = DATA_DIR / "empirical" / ".route_gas_units.lock"
+LOCK = SHARED_RUNTIME_DIR / "route-gas-units.lock"
 OUT_PANEL = DATA_DIR / "processed" / "route_gas_units.parquet"
 OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "route_gas_units_summary.jsonl"
 CODE_SOURCES = [
@@ -59,6 +67,8 @@ CODE_SOURCES = [
     "src/ddvc/asset_types.py",
     "src/ddvc/fetch/sources.py",
     "src/ddvc/quoter.py",
+    "src/ddvc/reconstruct/__init__.py",
+    "src/ddvc/release_calendar.py",
 ]
 CANDIDATE_CODE_SOURCES = [
     "src/ddvc/route_gas.py",
@@ -67,13 +77,6 @@ CANDIDATE_CODE_SOURCES = [
     "src/ddvc/fetch/sources.py",
 ]
 SUMMARY_CELLS = [*SAMPLE_CELLS, "mid_type"]
-MAX_WORKERS = 8
-
-
-def bounded_workers(requested: int) -> int:
-    return min(MAX_WORKERS, max(1, requested))
-
-
 def worker_batches(
     days: list[str], workers: int, tasks_per_worker: int = 4
 ) -> list[list[str]]:
@@ -209,6 +212,23 @@ def write_receipt_snapshot(receipts: list[dict], path: Path = RECEIPT_SNAPSHOT) 
     return path
 
 
+def load_receipt_snapshot(path: Path = RECEIPT_SNAPSHOT) -> dict[str, dict]:
+    """Reusable immutable-chain receipts from the previous selected sample."""
+    if not path.exists():
+        return {}
+    rows: dict[str, dict] = {}
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            tx_hash = str(row.get("tx_hash") or "").lower()
+            if tx_hash and isinstance(row.get("gas_used"), int) and row["gas_used"] > 0:
+                rows[tx_hash] = row
+    return rows
+
+
 def _main_unlocked() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -222,7 +242,9 @@ def _main_unlocked() -> int:
         default=3,
         help="bounded candidate-extraction processes and receipt-fetch threads",
     )
+    parser.add_argument("--panel-only", action="store_true")
     args = parser.parse_args()
+    require_node_d_release(routes=True)
     if args.per_cell < 1:
         parser.error("--per-cell must be positive")
     if args.workers < 1:
@@ -233,7 +255,7 @@ def _main_unlocked() -> int:
         dict.fromkeys(
             args.days
             or nearest_day_per_month(
-                path.stem for path in UNIFIED.glob("[0-9]" * 8 + ".parquet")
+                released_route_days(UNIFIED_QUALITY_PANEL, nonempty=True)
             )
         )
     )
@@ -274,13 +296,20 @@ def _main_unlocked() -> int:
         flush=True,
     )
 
-    receipts = []
+    stored_receipts = load_receipt_snapshot()
+    selected_hashes = [str(tx_hash).lower() for tx_hash in sample["tx_hash"]]
+    receipts = [stored_receipts[tx_hash] for tx_hash in selected_hashes if tx_hash in stored_receipts]
+    missing_hashes = [tx_hash for tx_hash in selected_hashes if tx_hash not in stored_receipts]
+    print(
+        f"reused {len(receipts):,} immutable receipts; fetching {len(missing_hashes):,}",
+        flush=True,
+    )
     failed = []
     pool = ThreadPoolExecutor(max_workers=args.workers)
     try:
         futures = {
             pool.submit(fetch_receipt, tx_hash): tx_hash
-            for tx_hash in sample["tx_hash"]
+            for tx_hash in missing_hashes
         }
         for index, future in enumerate(as_completed(futures), 1):
             tx_hash = futures[future]
@@ -317,9 +346,12 @@ def _main_unlocked() -> int:
         panel,
         OUT_PANEL,
         code_sources=CODE_SOURCES,
-        inputs=[UNIFIED, receipt_snapshot],
+        inputs=[UNIFIED, UNIFIED_QUALITY_PANEL, receipt_snapshot],
         notes=f"hash-ranked cap of {args.per_cell} exact one-component transactions per year-topology-venue-intermediary cell",
     )
+    if args.panel_only:
+        print(f"wrote analysis-ready panel {OUT_PANEL.relative_to(REPO_ROOT)}")
+        return 0
     summary = panel.groupby(SUMMARY_CELLS, as_index=False).agg(
         mid_symbol=("mid_symbol", "first"),
         transactions=("gas_used", "size"),

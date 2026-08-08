@@ -30,10 +30,11 @@ from ddvc.analysis.regression import (
     year_endpoint_change,
 )
 from ddvc.asset_types import TYPES, classify
+from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_roles import VALUE_SUPPORT_SCOPES
 from ddvc.realised import realised_routes
-from ddvc.runtime import exclusive_job, interruptible_process_pool
+from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit, write_panel
 
 UNIFIED = DATA_DIR / "unified"
@@ -42,7 +43,6 @@ OUT_EXHIBIT = OUTPUT_DIR / "exhibits" / "intermediation_by_type.jsonl"
 OUT_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_integration_rival.jsonl"
 OUT_COMPLEXITY_RIVAL = OUTPUT_DIR / "exhibits" / "intermediation_complexity_rival.jsonl"
 LOCK = OUT_PARQUET.with_suffix(".lock")
-MAX_WORKERS = 8
 HAC_LAG = 30
 INTEGRATION_RIVAL_WINDOWS = ((2023, 2024), (2024, 2026))
 CODE_SOURCES = [
@@ -65,10 +65,6 @@ def value_field(asset_type: str, *, scope: str = "all", support: str = "all_rout
     scope_prefix = "" if scope == "all" else f"{scope}_"
     support_prefix = "usd_" if support == "all_routes" else f"usd_{support}_"
     return f"{support_prefix}{scope_prefix}{asset_type}"
-
-
-def bounded_workers(requested: int) -> int:
-    return min(MAX_WORKERS, max(1, requested))
 
 
 def empty_day(day: str) -> dict[str, object]:
@@ -363,7 +359,9 @@ def main() -> int:
     )
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--panel-only", action="store_true")
     args = parser.parse_args()
+    require_node_d_release(routes=True)
     workers = bounded_workers(args.workers)
 
     days = sorted(UNIFIED.glob("*.parquet"))
@@ -397,9 +395,11 @@ def main() -> int:
         panel[f"share_{asset_type}"] = panel[f"cnt_{asset_type}"] / panel["episodes"].where(
             panel["episodes"].gt(0)
         )
-    annual = annual_composition(panel)
-    rival = integration_rival_windows(panel)
-    complexity_rival = complexity_rival_tests(panel)
+    if args.limit is not None:
+        print(
+            f"smoke reduction complete on {len(panel):,} days; canonical outputs unchanged"
+        )
+        return 0
     write_panel(
         panel,
         OUT_PARQUET,
@@ -407,6 +407,12 @@ def main() -> int:
         inputs=[UNIFIED],
         notes="topology-valid non-cyclic routes; counts use full topology support; values report all, 2x and 20 percent source-intermediary-sink coherence bands",
     )
+    if args.panel_only:
+        print(f"wrote analysis-ready panel {OUT_PARQUET.relative_to(REPO_ROOT)}")
+        return 0
+    annual = annual_composition(panel)
+    rival = integration_rival_windows(panel)
+    complexity_rival = complexity_rival_tests(panel)
     write_exhibit(
         annual,
         OUT_EXHIBIT,

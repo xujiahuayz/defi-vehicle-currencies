@@ -6,7 +6,6 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 
 from ddvc.asset_types import canonical_token
-from ddvc.fetch.raw import block_value, timestamp_value, v4_pool_quote_supported
 from ddvc.pricing.v3pools import (
     ANCHOR_DECIMALS,
     DECIMAL_SAMPLE_SIZE,
@@ -16,6 +15,7 @@ from ddvc.pricing.v3pools import (
     resolve_decimals,
     tick_spacing_for_fee,
 )
+from ddvc.source_records import block_value, timestamp_value, v4_pool_quote_supported
 
 
 @dataclass
@@ -131,7 +131,8 @@ def absorb_swap_state(
                 old.dec1,
             )
             if observed_statics != expected_statics:
-                raise ValueError(f"Uniswap v4 pool statics changed: {pool_id}")
+                venue_quarantine.add(pool_id)
+                return
         fee_pips = old.fee_pips
         tick_spacing = old.tick_spacing
         decimals = (old.dec0, old.dec1)

@@ -3,7 +3,23 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from datetime import datetime
+from datetime import datetime, timedelta
+
+
+RESEARCH_SAMPLE_START = "20200211"
+RESEARCH_SAMPLE_END = "20260630"
+
+
+def calendar_days(start: str, end: str) -> list[str]:
+    """Every inclusive UTC calendar day between two YYYYMMDD stamps."""
+    first = datetime.strptime(str(start).replace("-", ""), "%Y%m%d")
+    last = datetime.strptime(str(end).replace("-", ""), "%Y%m%d")
+    if first > last:
+        raise ValueError("calendar start must not follow end")
+    return [
+        (first + timedelta(days=offset)).strftime("%Y%m%d")
+        for offset in range((last - first).days + 1)
+    ]
 
 
 def nearest_day_per_month(

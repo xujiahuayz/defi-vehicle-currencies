@@ -5,10 +5,36 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from ddvc.runtime import atomic_output, exclusive_job, interruptible_process_pool
+from ddvc.paths import REPO_ROOT, _shared_git_runtime_dir, repo_path
+from ddvc.runtime import atomic_output, bounded_workers, exclusive_job, interruptible_process_pool
 
 
 class RuntimeGuardTests(unittest.TestCase):
+    def test_cli_paths_resolve_once_against_the_repository(self) -> None:
+        self.assertEqual(repo_path("data/panel.parquet"), REPO_ROOT / "data/panel.parquet")
+        absolute = Path("/tmp/panel.parquet")
+        self.assertEqual(repo_path(absolute), absolute)
+
+    def test_git_runtime_directory_is_shared_across_linked_worktrees(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            primary = root / "primary"
+            worktree = root / "worktree"
+            git_dir = primary / ".git" / "worktrees" / "research"
+            git_dir.mkdir(parents=True)
+            worktree.mkdir()
+            (worktree / ".git").write_text(f"gitdir: {git_dir}\n")
+            (git_dir / "commondir").write_text("../..\n")
+            expected = primary.resolve() / ".git" / "ddvc-runtime"
+            self.assertEqual(_shared_git_runtime_dir(primary), expected)
+            self.assertEqual(_shared_git_runtime_dir(worktree), expected)
+
+    def test_worker_bound_is_positive_and_capped(self) -> None:
+        self.assertEqual(bounded_workers(0), 1)
+        self.assertEqual(bounded_workers(4), 4)
+        self.assertEqual(bounded_workers(20), 8)
+        self.assertEqual(bounded_workers(20, maximum=3), 3)
+
     def test_atomic_output_installs_only_successful_unique_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             target = Path(temporary_directory) / "artifact.json"

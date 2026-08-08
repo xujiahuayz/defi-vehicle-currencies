@@ -19,7 +19,7 @@ The target sample through 2026-06-30 UTC should be represented in scripts as `st
 Plan the full genesis-through-last-complete-month raw fetch:
 
 ```bash
-python3 scripts/fetch_raw_market_data.py plan --dex all
+./scripts/run scripts/fetch_raw_market_data.py plan --dex all
 ```
 
 Genesis is recorded by block first where known, with a cached UTC date used only
@@ -27,14 +27,14 @@ for day partitioning. Audit the configured block/date against the first indexed
 swap in each Graph source before a full run:
 
 ```bash
-GRAPH_API_KEYS=... python3 scripts/fetch_raw_market_data.py audit-genesis --dex all --strict
+GRAPH_API_KEYS=... ./scripts/run scripts/fetch_raw_market_data.py audit-genesis --dex all --strict
 ```
 
 Run the fetch after setting `GRAPH_API_KEYS` and, for Dune-backed sources such as
 Uniswap V1, SushiSwap V2, and Fluid, `DUNE_API_KEYS` in `.env` or the shell:
 
 ```bash
-GRAPH_API_KEYS=... DUNE_API_KEYS=... python3 scripts/fetch_raw_market_data.py fetch --dex all --start genesis --end 2026-07-01
+GRAPH_API_KEYS=... DUNE_API_KEYS=... ./scripts/run scripts/fetch_raw_market_data.py fetch --dex all --start genesis --end 2026-07-01
 ```
 
 The fetcher writes verbatim gzipped JSONL and tiny metadata sidecars under

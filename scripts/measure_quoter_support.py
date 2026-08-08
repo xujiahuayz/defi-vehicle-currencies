@@ -42,7 +42,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ddvc.fetch.raw import v4_quote_status
+from ddvc.source_records import v4_quote_status
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.route_cost import MAX_INPUT_TO_RESERVE, SUPPORT_QUANTILE
 from ddvc.tables import write_exhibit
@@ -178,7 +178,10 @@ def write_v4_support() -> None:
     write_exhibit(
         support,
         V4_OUT,
-        code_sources=["src/ddvc/fetch/raw.py"],
+        code_sources=[
+            "scripts/measure_quoter_support.py",
+            "src/ddvc/source_records.py",
+        ],
         inputs=[V4_RAW],
     )
     supported = support[(support["year"] == "ALL") & support["supported"]]

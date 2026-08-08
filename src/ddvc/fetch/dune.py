@@ -13,15 +13,20 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from ddvc.config import dotenv_value
 from ddvc.fetch.raw import write_jsonl_gz
 from ddvc.fetch.sources import DexSource
-from ddvc.paths import DATA_DIR, REPO_ROOT
+from ddvc.paths import DATA_DIR
 
 API = "https://api.dune.com/api/v1"
 
 
 def dune_keys() -> list[str]:
-    raw = os.getenv("DUNE_API_KEYS") or os.getenv("DUNE_API_KEY") or _read_dotenv_keys()
+    raw = (
+        os.getenv("DUNE_API_KEYS")
+        or os.getenv("DUNE_API_KEY")
+        or dotenv_value("DUNE_API_KEYS", "DUNE_API_KEY")
+    )
     keys: list[str] = []
     seen: set[str] = set()
     for value in raw.replace("\n", ",").split(","):
@@ -31,21 +36,6 @@ def dune_keys() -> list[str]:
         seen.add(key)
         keys.append(key)
     return keys
-
-
-def _read_dotenv_keys() -> str:
-    env_path = REPO_ROOT / ".env"
-    if not env_path.exists():
-        return ""
-    values: dict[str, str] = {}
-    for line in env_path.read_text().splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        values[key.strip()] = value.strip().strip("'\"")
-    return values.get("DUNE_API_KEYS") or values.get("DUNE_API_KEY") or ""
-
 
 def dune_path(source: str, stream: str, day: dt.date) -> Path:
     return DATA_DIR / "raw" / "dune" / source / f"{source}_{stream}_{day:%Y%m%d}.jsonl.gz"

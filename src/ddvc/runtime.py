@@ -13,6 +13,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
 
+DEFAULT_MAX_WORKERS = 8
+
+
+def bounded_workers(requested: int, *, maximum: int = DEFAULT_MAX_WORKERS) -> int:
+    """Clamp user-requested concurrency to a positive, explicit process bound."""
+    if maximum < 1:
+        raise ValueError("maximum worker count must be positive")
+    return min(maximum, max(1, requested))
+
 
 @contextmanager
 def atomic_output(target: Path) -> Iterator[Path]:

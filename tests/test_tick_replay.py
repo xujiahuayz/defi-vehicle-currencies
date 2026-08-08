@@ -6,22 +6,29 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from ddvc.fetch.raw import transaction_id
+from ddvc.source_records import transaction_id
 from ddvc.pricing.tick_quote import prepare_tick_quote_index
 from ddvc.pricing.tick_replay import (
     TickReplayEvent,
     TickReplayState,
+    chain_order,
     load_tick_day_events,
-    timestamp_order,
     warm_tick_day,
 )
+from ddvc.state_data import TICK_STREAMS, write_tick_partition
 
 
-def v4_swap(*, timestamp: int = 100, log_index: int = 4) -> dict:
+def v4_swap(*, block: int = 10, timestamp: int = 100, log_index: int = 4) -> dict:
     return {
-        "transaction": "0xabc",
+        "transaction": {
+            "id": "0xabc",
+            "blockNumber": str(block),
+            "timestamp": str(timestamp),
+        },
         "timestamp": str(timestamp),
         "logIndex": str(log_index),
+        "amount0": "1",
+        "amount1": "-1",
         "sqrtPriceX96": str(1 << 96),
         "tick": "0",
         "pool": {
@@ -35,14 +42,36 @@ def v4_swap(*, timestamp: int = 100, log_index: int = 4) -> dict:
     }
 
 
+def materialize_tick(root: Path, rows: dict[tuple[str, str], list[dict]]) -> Path:
+    raw, state = root / "raw", root / "state"
+    venues: set[str] = set()
+    for (venue, stream), values in rows.items():
+        venues.add(venue)
+        path = raw / venue / f"{venue}_{stream}_20250101.jsonl.gz"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with gzip.open(path, "wt") as handle:
+            for value in values:
+                handle.write(json.dumps(value) + "\n")
+    for venue in venues:
+        for stream, _record_type, _sign in TICK_STREAMS[venue]:
+            path = raw / venue / f"{venue}_{stream}_20250101.jsonl.gz"
+            if not path.exists():
+                with gzip.open(path, "wt"):
+                    pass
+        write_tick_partition(raw, venue, "20250101", root=state)
+    return state
+
+
 class TickReplayTests(unittest.TestCase):
-    def test_common_timestamp_order_and_transaction_identity(self) -> None:
+    def test_common_chain_order_and_transaction_identity(self) -> None:
         row = v4_swap(timestamp=123, log_index=7)
-        self.assertEqual(timestamp_order(row), (123, 7))
+        self.assertEqual(chain_order(row), (10, 7))
         self.assertEqual(transaction_id(row), "0xabc")
         row["transaction"] = {"id": "0xdef", "blockNumber": "99"}
         self.assertEqual(transaction_id(row), "0xdef")
-        self.assertEqual(timestamp_order(row), (123, 7))
+        self.assertEqual(chain_order(row), (99, 7))
+        row["transaction"] = "0xlegacy"
+        self.assertIsNone(chain_order(row))
 
     def test_state_applies_liquidity_before_indexing_swap(self) -> None:
         state = TickReplayState(token_decimals={"0xa": 18, "0xb": 18})
@@ -56,6 +85,14 @@ class TickReplayTests(unittest.TestCase):
         state.apply(TickReplayEvent((100, 4), "uniswap_v4", "swap", v4_swap()))
         self.assertEqual(state.ticks_by_venue["uniswap_v4"]["pool"], {-10: 1000, 10: -1000})
         self.assertEqual(state.pool_index[frozenset(("0xa", "0xb"))], [("uniswap_v4", "pool")])
+
+    def test_state_rejects_swap_without_exact_chain_order(self) -> None:
+        state = TickReplayState(token_decimals={"0xa": 18, "0xb": 18})
+        row = v4_swap()
+        row["transaction"] = "0xlegacy"
+        state.apply_swap("uniswap_v4", row)
+        self.assertEqual(state.states_by_venue, {})
+        self.assertEqual(state.pool_index, {})
 
     def test_quarantined_pool_releases_tick_and_state_indexes(self) -> None:
         state = TickReplayState(token_decimals={"0xa": 0, "0xb": 18})
@@ -72,52 +109,39 @@ class TickReplayTests(unittest.TestCase):
         self.assertEqual(state.states_by_venue["uniswap_v4"], {})
         self.assertEqual(state.pool_index, {})
 
-    def test_day_loader_interleaves_venues_by_timestamp_and_log(self) -> None:
+    def test_day_loader_interleaves_venues_by_block_and_log(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             rows = {
                 ("uniswap_v3", "swaps"): [
-                    {**v4_swap(timestamp=100, log_index=9), "transaction": {"id": "0x1"}}
+                    v4_swap(block=11, timestamp=99, log_index=9)
                 ],
-                ("uniswap_v4", "swaps"): [v4_swap(timestamp=100, log_index=4)],
+                ("uniswap_v4", "swaps"): [v4_swap(block=10, timestamp=100, log_index=4)],
             }
-            for (venue, stream), values in rows.items():
-                path = root / venue / f"{venue}_{stream}_20250101.jsonl.gz"
-                path.parent.mkdir(parents=True)
-                with gzip.open(path, "wt") as handle:
-                    for value in values:
-                        handle.write(json.dumps(value) + "\n")
-            events = load_tick_day_events(root, "20250101")
-        self.assertEqual([event.order for event in events], [(100, 4), (100, 9)])
+            state = materialize_tick(root, rows)
+            events = load_tick_day_events(state, "20250101", raw_root=root / "raw")
+        self.assertEqual([event.order for event in events], [(10, 4), (11, 9)])
         self.assertEqual([event.venue for event in events], ["uniswap_v4", "uniswap_v3"])
 
     def test_day_loader_deduplicates_source_ids_for_one_chain_event(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            path = root / "uniswap_v4" / "uniswap_v4_swaps_20250101.jsonl.gz"
-            path.parent.mkdir(parents=True)
             rows = [
                 {**v4_swap(), "id": "0xabc#1"},
                 {**v4_swap(), "id": "0xabc#2"},
             ]
-            with gzip.open(path, "wt") as handle:
-                for row in rows:
-                    handle.write(json.dumps(row) + "\n")
-            events = load_tick_day_events(root, "20250101")
+            state = materialize_tick(root, {("uniswap_v4", "swaps"): rows})
+            events = load_tick_day_events(state, "20250101", raw_root=root / "raw")
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0].row["id"], "0xabc#1")
 
     def test_day_loader_rejects_conflicting_rows_for_one_chain_order(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            path = root / "uniswap_v4" / "uniswap_v4_swaps_20250101.jsonl.gz"
-            path.parent.mkdir(parents=True)
-            rows = [v4_swap(), {**v4_swap(), "amount0": "1"}]
-            with gzip.open(path, "wt") as handle:
-                for row in rows:
-                    handle.write(json.dumps(row) + "\n")
-            with self.assertRaisesRegex(ValueError, "conflicting tick events"):
-                load_tick_day_events(root, "20250101")
+            rows = [v4_swap(), {**v4_swap(), "amount0": "2"}]
+            state = materialize_tick(root, {("uniswap_v4", "swaps"): rows})
+            with self.assertRaisesRegex(ValueError, "identity gate"):
+                load_tick_day_events(state, "20250101", raw_root=root / "raw")
 
     def test_liquidity_change_invalidates_prepared_quote_index(self) -> None:
         state = TickReplayState()
@@ -141,6 +165,7 @@ class TickReplayTests(unittest.TestCase):
             change = {
                 "timestamp": "99",
                 "logIndex": "3",
+                "transaction": {"id": "0xchange", "blockNumber": "9"},
                 "pool": {"id": "pool"},
                 "tickLower": "-10",
                 "tickUpper": "10",
@@ -150,16 +175,13 @@ class TickReplayTests(unittest.TestCase):
                 ("uniswap_v4", "modify_liquidities"): [change],
                 ("uniswap_v4", "swaps"): [v4_swap()],
             }
-            for (venue, stream), values in rows.items():
-                path = root / venue / f"{venue}_{stream}_20250101.jsonl.gz"
-                path.parent.mkdir(parents=True, exist_ok=True)
-                with gzip.open(path, "wt") as handle:
-                    for value in values:
-                        handle.write(json.dumps(value) + "\n")
+            state_root = materialize_tick(root, rows)
             ordered = TickReplayState()
-            ordered.apply_all(load_tick_day_events(root, "20250101"))
+            ordered.apply_all(
+                load_tick_day_events(state_root, "20250101", raw_root=root / "raw")
+            )
             streamed = TickReplayState()
-            warm_tick_day(root, "20250101", streamed)
+            warm_tick_day(state_root, "20250101", streamed, raw_root=root / "raw")
         self.assertEqual(streamed.ticks_by_venue, ordered.ticks_by_venue)
         self.assertEqual(streamed.states_by_venue, ordered.states_by_venue)
         self.assertEqual(streamed.pool_index, ordered.pool_index)

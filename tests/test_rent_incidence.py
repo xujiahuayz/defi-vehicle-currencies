@@ -16,7 +16,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts.run_rent_incidence import by_role_over_time
+from scripts.run_rent_incidence import (
+    OUTPUT_PROVENANCE,
+    REQUIRED_PANELS,
+    by_role_over_time,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -24,6 +28,12 @@ _spec = importlib.util.spec_from_file_location(
     "build_rent_incidence_panel", ROOT / "scripts" / "build_rent_incidence_panel.py")
 brp = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(brp)
+
+
+def test_every_estimator_output_uses_one_current_input_contract():
+    source = (ROOT / "scripts" / "run_rent_incidence.py").read_text()
+    assert OUTPUT_PROVENANCE["inputs"] == REQUIRED_PANELS
+    assert source.count("**OUTPUT_PROVENANCE") == 7
 
 
 def test_role_exhibit_keeps_pooled_and_annual_bridge_rows():
@@ -124,6 +134,44 @@ def test_square_root_price_input_is_doubled_into_log_returns():
     rv_price, _, _, _ = brp._rv_multiscale(hours, price)
     rv_sqrt, _, _, _ = brp._rv_multiscale(hours, np.sqrt(price), scale=2.0)
     assert rv_sqrt == pytest.approx(rv_price)
+
+
+def test_v3_daily_swaps_and_liquidity_counts_share_one_partition_read(monkeypatch):
+    state = pd.DataFrame(
+        [
+            {
+                "record_type": "swap",
+                "pool": "pool",
+                "token0": "token0",
+                "token1": "token1",
+                "symbol0": "T0",
+                "symbol1": "T1",
+                "fee_pips": 3_000,
+                "value_usd": 100.0,
+                "timestamp": 3_600,
+                "sqrt_price_x96": 2.0,
+                "tick": 10,
+                "source_stream": "swaps",
+            },
+            {
+                "record_type": "liquidity",
+                "pool": "pool",
+                "source_stream": "mints",
+            },
+        ]
+    )
+    calls = []
+
+    def read_partition(venue, day):
+        calls.append((venue, day))
+        return state
+
+    monkeypatch.setattr(brp, "read_tick_partition", read_partition)
+    swaps, counts = brp._v3_day_summary("20250101", {"pool"})
+
+    assert calls == [("uniswap_v3", "20250101")]
+    assert swaps["pool"]["n"] == 1
+    assert counts["pool"] == (1, 0)
 
 
 def test_lvr_closed_form_equals_the_numeric_delta_hedging_loss():

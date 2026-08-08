@@ -17,14 +17,14 @@ Writes  output/exhibits/venue_technology_rival.jsonl
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import as_completed
 from pathlib import Path
 
 import pandas as pd
 
 from ddvc.asset_types import CURRENCY_TYPES
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
-from ddvc.runtime import exclusive_job
+from ddvc.runtime import bounded_workers, exclusive_job, interruptible_process_pool
 from ddvc.tables import write_exhibit
 from ddvc.vehicle_extent import (
     REQUIRED_COLUMNS,
@@ -45,13 +45,6 @@ CODE_SOURCES = [
     "src/ddvc/route_roles.py",
     "src/ddvc/venues.py",
 ]
-MAX_WORKERS = 8
-
-
-def bounded_workers(requested: int) -> int:
-    return min(MAX_WORKERS, max(1, requested))
-
-
 def support_status(daily: pd.DataFrame) -> pd.DataFrame:
     """State whether a scope-year contains intermediation that identifies the ratio."""
     support = daily.groupby(["year", "scope"], as_index=False).agg(
@@ -112,7 +105,7 @@ def main() -> int:
     print(f"measuring {len(files):,} days across four venue scopes", flush=True)
     parts: list[pd.DataFrame] = []
     failures: list[tuple[str, str]] = []
-    with ProcessPoolExecutor(max_workers=workers) as pool:
+    with interruptible_process_pool(workers) as pool:
         futures = {pool.submit(one_day, path): path for path in files}
         for i, future in enumerate(as_completed(futures), 1):
             path = futures[future]

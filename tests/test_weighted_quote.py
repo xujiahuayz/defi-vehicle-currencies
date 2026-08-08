@@ -15,6 +15,8 @@ from ddvc.pricing.weighted import (
     quote_exact_input,
     rebuild_pre_trade_balances,
 )
+from ddvc.state_data import write_multi_asset_partition
+from scripts import validate_weighted_quoter
 
 
 @lru_cache(maxsize=1)
@@ -116,6 +118,62 @@ class WeightedQuoteTests(unittest.TestCase):
         events = [BalanceEvent(deltas=(10 ** 30, 0), is_swap=True)]
 
         self.assertIsNone(rebuild_pre_trade_balances((10 ** 18, 10 ** 18), events))
+
+
+class BalancerCanonicalStateTests(unittest.TestCase):
+    def test_validator_loads_raw_integer_state_and_events_from_canonical_partition(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw, state = root / "raw", root / "state"
+            pool = {
+                "id": "pool",
+                "poolType": "Weighted",
+                "swapFee": "0.003",
+                "tokensList": ["0xaa", "0xbb"],
+                "tokens": [
+                    {"address": "0xaa", "symbol": "AA", "decimals": 18, "weight": "0.8"},
+                    {"address": "0xbb", "symbol": "BB", "decimals": 6, "weight": "0.2"},
+                ],
+            }
+            rows = {
+                "daily": [{"id": "state", "timestamp": 100, "amounts": ["101", "198"], "pool": pool}],
+                "swaps": [{
+                    "id": "0x" + "1" * 64 + "7",
+                    "tx": "0xswap",
+                    "block": "10",
+                    "timestamp": 99,
+                    "poolId": {"id": "pool"},
+                    "tokenIn": "0xaa",
+                    "tokenOut": "0xbb",
+                    "tokenAmountIn": "1",
+                    "tokenAmountOut": "2",
+                    "valueUSD": "10",
+                }],
+                "joins_exits": [],
+            }
+            for stream, records in rows.items():
+                path = raw / "balancer" / f"balancer_{stream}_20250101.jsonl.gz"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with gzip.open(path, "wt") as handle:
+                    for record in records:
+                        handle.write(json.dumps(record) + "\n")
+            write_multi_asset_partition(raw, "balancer", "20250101", root=state)
+            original = validate_weighted_quoter.MARKET_STATE
+            original_source = validate_weighted_quoter.SOURCE_FINGERPRINT_ROOT
+            try:
+                validate_weighted_quoter.MARKET_STATE = state
+                validate_weighted_quoter.SOURCE_FINGERPRINT_ROOT = raw
+                validate_weighted_quoter._state.cache_clear()
+                pools = validate_weighted_quoter.load_pools("20250101")
+                events, volume = validate_weighted_quoter.load_events("20250101")
+            finally:
+                validate_weighted_quoter.MARKET_STATE = original
+                validate_weighted_quoter.SOURCE_FINGERPRINT_ROOT = original_source
+                validate_weighted_quoter._state.cache_clear()
+        self.assertEqual(pools["pool"]["closing"], (101 * 10 ** 18, 198 * 10 ** 6))
+        self.assertEqual(pools["pool"]["weights"], (8 * 10 ** 17, 2 * 10 ** 17))
+        self.assertEqual(events["pool"][0][5:7], (10 ** 18, 2 * 10 ** 6))
+        self.assertEqual(volume["pool"], 10.0)
 
 
 class BalancerPanelWiringTests(unittest.TestCase):

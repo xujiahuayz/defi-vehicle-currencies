@@ -38,7 +38,7 @@ size-dependent part of execution cost, which is depth. A verdict that is robust 
 still flip at $100,000 through a thin pool. So a low flip rate bounds the timing threat for
 small trades and does not discharge it for large ones, and the script says which it found.
 
-Reads   data/raw/thegraph/uniswap_v3/uniswap_v3_swaps_*.jsonl.gz
+Reads   canonical tick-state partitions for Uniswap V3
 Writes  output/exhibits/block_vs_hour_verdict.jsonl        per-triangle rows
         output/exhibits/block_vs_hour_conditional.jsonl    the conditional tables
         output/exhibits/triangle_gap_maturation.jsonl       recurrent and horizon-balanced trends
@@ -56,7 +56,7 @@ import pandas as pd
 
 from ddvc.analysis.block_timing import (
     PoolView,
-    load_v3_swap_day,
+    load_v3_state_day,
     oriented,
     summarise_timing_conditionals,
     summarise_triangle_maturation,
@@ -64,9 +64,10 @@ from ddvc.analysis.block_timing import (
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT
 from ddvc.provenance import cache_key
 from ddvc.runtime import atomic_output, exclusive_job
+from ddvc.state_data import STATE_ROOT, available_state_days, read_tick_partition
 from ddvc.tables import write_exhibit
 
-V3 = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
+V3_STATE = STATE_ROOT / "tick" / "uniswap_v3"
 OUT = OUTPUT_DIR / "exhibits" / "block_vs_hour_verdict.jsonl"
 COND_OUT = OUTPUT_DIR / "exhibits" / "block_vs_hour_conditional.jsonl"
 MATURATION_OUT = OUTPUT_DIR / "exhibits" / "triangle_gap_maturation.jsonl"
@@ -96,8 +97,9 @@ OBSERVATION_COLUMNS = ["m_own_bps", "m_hr_bps", "secs_to_boundary"]
 
 
 def load_day(day: str):
-    """Load one raw V3 day through the shared block-timing owner."""
-    return load_v3_swap_day(V3 / f"uniswap_v3_swaps_{day}.jsonl.gz")
+    """Load one canonical V3 day through the shared block-timing owner."""
+    state = load_v3_state_day(read_tick_partition("uniswap_v3", day))
+    return state.tokens, state.series
 
 
 def measure_day(day: str, max_triangles: int, min_swaps: int,
@@ -296,13 +298,12 @@ def main() -> int:
     if args.workers < 1:
         ap.error("--workers must be positive")
 
-    days = sorted(p.name[len("uniswap_v3_swaps_"):-len(".jsonl.gz")]
-                  for p in V3.glob("uniswap_v3_swaps_*.jsonl.gz"))
+    days = available_state_days("tick", "uniswap_v3")
     if not days:
-        print(f"no v3 swap files under {V3.relative_to(REPO_ROOT)}")
+        print(f"no canonical V3 state under {V3_STATE.relative_to(REPO_ROOT)}")
         return 1
     picked = _pick_days(days, args.days)
-    generation = cache_key(CODE_SOURCES, inputs=[V3])
+    generation = cache_key(CODE_SOURCES, inputs=[V3_STATE])
     cache_dir = (
         CACHE_ROOT
         / generation
@@ -444,7 +445,7 @@ def main() -> int:
             df,
             OUT,
             code_sources=CODE_SOURCES,
-            inputs=[V3],
+            inputs=[V3_STATE],
             notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
         )
         if not cond.empty:
@@ -452,7 +453,7 @@ def main() -> int:
                 cond,
                 COND_OUT,
                 code_sources=CODE_SOURCES,
-                inputs=[V3],
+                inputs=[V3_STATE],
                 notes="V3 direct-pool opportunity snapshots; strict pre-event block-log state",
             )
         if not maturation.empty:
@@ -460,7 +461,7 @@ def main() -> int:
                 maturation,
                 MATURATION_OUT,
                 code_sources=CODE_SOURCES,
-                inputs=[V3],
+                inputs=[V3_STATE],
                 notes="V3 strict transaction-state triangle gaps; recurrent and horizon-balanced time trends",
             )
     print(f"\nwrote {OUT.relative_to(REPO_ROOT)}")

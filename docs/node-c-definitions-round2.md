@@ -133,7 +133,7 @@ Gorton and Zhang also supply the property that makes an asset usable as a vehicl
 
 ## 4. Succession against fragmentation
 
-**Current definition.** A Herfindahl index over vehicle shares plus the leader's identity, in `docs/finding-fragmentation-not-succession.md` and `scripts/build_vehicle_concentration.py`, with the rule stated as "a stable HHI with a changing leader is succession and a falling HHI with a stable leader is fragmentation."
+**Rejected definition.** A Herfindahl index over vehicle shares plus the leader's identity, in `docs/finding-fragmentation-not-succession.md` and `scripts/build_vehicle_concentration.py`, with the rule stated as "a stable HHI with a changing leader is succession and a falling HHI with a stable leader is fragmentation."
 
 **What the literature does. It does not use a Herfindahl.** `grep -aicE "herfindahl|HHI"` returns 3 files of 53, and all three are about something else: Klein and Song on venue concentration, Catalini on protocol concentration, Anadu on money-market-fund concentration. Zero international-currency papers in the corpus use one.
 
@@ -145,7 +145,7 @@ Mukhin 2022 supplies the succession object in the same shape. His Figure 3, "Tra
 
 **What the definition should become.** Assign a regime label to every (pair, period) cell using vehicle-use shares and the normalized dominance conditions from section 1, taking three values: incumbent-dominant, multiplicity, challenger-dominant. Then report two statistics. The first is the count of cells in each regime by period, which is Somogyi's Figure 4 aggregated. The second is the switching order, meaning for the cells that changed leader, the distribution of switch dates by pair characteristic, which is Mukhin's Figure 3 made empirical. Succession is many cells switching leader with each cell staying concentrated. Fragmentation is cells moving into the multiplicity region and staying there.
 
-**Cost to switch.** The pair-period panel is the same object section 2 already needs, so this is one additional labelling step on top of it. The current `build_vehicle_concentration.py` HHI can remain as a one-line descriptive statistic and stops being the instrument that answers the question.
+**Cost to switch.** The pair-period panel is the same object section 2 already needs, so this is one additional labelling step on top of it. HHI may return as a one-line descriptive statistic only after it is rebuilt from the released full-daily vehicle panel. The stale 15-day `build_vehicle_concentration.py` output is inadmissible and remains blocked until the paper citations that still consume it are rebuilt or retired.
 
 **What this invalidates.** The reasoning of `docs/finding-fragmentation-not-succession.md`, though not necessarily its conclusion. The claimed identification, that HHI plus leader identity separates succession from fragmentation, does not hold, and the document should not claim it. Combined with section 1, the file needs rebuilding on the excess-use ratio and the per-cell regime label, and the direction its conclusion moves is open, because the excess-use ratio says WETH's vehicle role ended around 2022 while the betweenness measure says WETH led every year.
 

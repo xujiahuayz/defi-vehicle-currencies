@@ -12,6 +12,7 @@ import threading
 from dataclasses import dataclass
 from typing import Any
 
+from ddvc.config import dotenv_value
 from ddvc.http import DEFAULT_USER_AGENT
 from ddvc.paths import REPO_ROOT
 
@@ -21,7 +22,11 @@ PAGE_SIZE = 1000
 
 def graph_keys() -> list[str]:
     """Read an ordered, de-duplicated Graph API-key pool from the environment."""
-    raw = os.getenv("GRAPH_API_KEYS") or os.getenv("GRAPH_API_KEY") or _read_dotenv_keys()
+    raw = (
+        os.getenv("GRAPH_API_KEYS")
+        or os.getenv("GRAPH_API_KEY")
+        or dotenv_value("GRAPH_API_KEYS", "GRAPH_API_KEY")
+    )
     keys: list[str] = []
     seen: set[str] = set()
     for value in re.split(r"[,\n]", raw):
@@ -31,22 +36,6 @@ def graph_keys() -> list[str]:
         seen.add(key)
         keys.append(key)
     return keys
-
-
-def _read_dotenv_keys() -> str:
-    """Small .env reader so fetches work without adding a new dependency."""
-    env_path = REPO_ROOT / ".env"
-    if not env_path.exists():
-        return ""
-    values: dict[str, str] = {}
-    for line in env_path.read_text().splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        values[key.strip()] = value.strip().strip("'\"")
-    return values.get("GRAPH_API_KEYS") or values.get("GRAPH_API_KEY") or ""
-
 
 # Per-key health, persisted so every process does not rediscover the same dead
 # keys. Free Graph quota is per ACCOUNT and resets monthly, so a key is marked dead
@@ -116,6 +105,7 @@ class GraphClient:
     graph_path: str = "subgraphs/id"
     sleep_seconds: float = 0.1
     max_transient_retries: int = 4
+    response_deadline_seconds: float = 120.0
 
     def __post_init__(self) -> None:
         if not self.keys:
@@ -155,6 +145,19 @@ class GraphClient:
                     return True
             return False
 
+    def _response_json(self, response: Any) -> dict[str, Any]:
+        """Read one streamed response under a true wall-clock body deadline."""
+        deadline = time.monotonic() + self.response_deadline_seconds
+        body = bytearray()
+        for chunk in response.iter_content(chunk_size=64 * 1024):
+            if time.monotonic() > deadline:
+                raise TimeoutError(
+                    f"Graph response exceeded {self.response_deadline_seconds:g}s body deadline"
+                )
+            if chunk:
+                body.extend(chunk)
+        return json.loads(body)
+
     def query(self, query: str, variables: dict[str, Any]) -> dict[str, Any]:
         transient = 0
         while True:
@@ -162,7 +165,8 @@ class GraphClient:
                 response = self.session.post(
                     self.url,
                     json={"query": query, "variables": variables},
-                    timeout=90,
+                    timeout=(15, 30),
+                    stream=True,
                 )
             except Exception:
                 transient += 1
@@ -172,24 +176,36 @@ class GraphClient:
                 continue
 
             if response.status_code in {401, 403}:
+                response.close()
                 if self._advance(exhausted=True):
                     continue
                 raise AllKeysExhausted(
                     f"all {len(self.keys)} keys rejected (HTTP {response.status_code})")
             if response.status_code == 429:
                 # Throttling is about rate, not quota, so the key stays usable.
+                response.close()
                 if self._advance(exhausted=False):
                     time.sleep(self.sleep_seconds)
                     continue
             if response.status_code >= 500:
+                response.close()
                 transient += 1
                 if transient > self.max_transient_retries:
                     response.raise_for_status()
                 time.sleep(min(2 ** transient, 20))
                 continue
 
-            response.raise_for_status()
-            payload = response.json()
+            try:
+                response.raise_for_status()
+                payload = self._response_json(response)
+            except Exception:
+                transient += 1
+                if transient > self.max_transient_retries:
+                    raise
+                time.sleep(min(2 ** transient, 20))
+                continue
+            finally:
+                response.close()
             errors = payload.get("errors") or []
             if errors:
                 text = json.dumps(errors)

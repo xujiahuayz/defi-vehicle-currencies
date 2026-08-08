@@ -27,15 +27,11 @@ from pathlib import Path
 from ddvc.fetch.dune import dune_meta_path, dune_path, fetch_dune_month, month_ranges, stream_names_for_dune_source
 from ddvc.fetch.graph import GraphClient, first_record, graph_keys, paginate
 from ddvc.fetch.raw import (
-    block_value,
     fetch_source_day,
     meta_path,
-    merge_v4_statics,
     midnight_ts,
     raw_path,
     stream_names_for_source,
-    timestamp_value,
-    v4_statics_complete,
     write_json,
     write_jsonl_gz,
 )
@@ -48,14 +44,36 @@ from ddvc.fetch.sources import (
     last_complete_month_exclusive,
     source_names,
 )
-from ddvc.paths import DATA_DIR
-from ddvc.runtime import exclusive_job
+from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
+from ddvc.runtime import bounded_workers, exclusive_job
+from ddvc.source_records import (
+    block_value,
+    merge_v4_statics,
+    timestamp_value,
+    v4_statics_complete,
+)
 
-MAX_GRAPH_WORKERS = 8
+RAW_MUTATION_LOCK = RAW_MARKET_DATA_LOCK
 
 
-def bounded_graph_workers(requested: int) -> int:
-    return min(MAX_GRAPH_WORKERS, max(1, requested))
+def sparse_days(path: Path, source_name: str) -> list[dt.date]:
+    """Read a sorted unique repair calendar, one ISO date per non-comment line."""
+    genesis = get_source(source_name).genesis
+    days = sorted(
+        {
+            parse_date(line.strip())
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        }
+    )
+    if not days:
+        raise ValueError(f"empty sparse-day file: {path}")
+    before_genesis = [day for day in days if day < genesis]
+    if before_genesis:
+        raise ValueError(
+            f"{source_name} sparse-day file precedes genesis: {before_genesis[0]}"
+        )
+    return days
 
 
 def enrich_v4_statics_day(day: dt.date) -> dict[str, object]:
@@ -415,7 +433,14 @@ def fetch_gap_days(
 
 
 def cmd_fetch(args: argparse.Namespace) -> int:
+    with exclusive_job(RAW_MUTATION_LOCK, job="raw market-data fetch or enrichment"):
+        return _cmd_fetch(args)
+
+
+def _cmd_fetch(args: argparse.Namespace) -> int:
     failures: list[tuple[str, str, str]] = []
+    if args.days_file and args.gaps_only:
+        raise ValueError("--days-file and --gaps-only are mutually exclusive")
     if args.gaps_only:
         totals = {}
         end_by_source = {}
@@ -438,9 +463,16 @@ def cmd_fetch(args: argparse.Namespace) -> int:
 
     for name in source_names(args.dex):
         source = get_source(name)
-        start, end = effective_range(name, args.start, args.end)
+        days = sparse_days(args.days_file, name) if args.days_file else None
+        start, end = (
+            (days[0], days[-1] + dt.timedelta(days=1))
+            if days is not None
+            else effective_range(name, args.start, args.end)
+        )
         streams = selected_streams(name, args.streams)
         if source.backend == "dune":
+            if days is not None:
+                raise ValueError("--days-file currently supports The Graph sources only")
             for month_start, month_end in month_ranges(start, end):
                 if args.max_days and month_start >= start + dt.timedelta(days=args.max_days):
                     break
@@ -457,7 +489,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
                 for meta in metas:
                     print(json.dumps(meta, sort_keys=True))
             continue
-        days = iter_days(start, end)
+        days = days if days is not None else iter_days(start, end)
         if args.max_days:
             days = days[: args.max_days]
         if args.dry_run:
@@ -476,7 +508,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
         # LIVE keys rather than pushed higher: twelve concurrent workers is what
         # tripped the public RPC endpoints' rate limits earlier, and the same
         # mistake is available here.
-        workers = bounded_graph_workers(args.workers)
+        workers = bounded_workers(args.workers)
         if workers == 1:
             for day in days:
                 meta = fetch_source_day(source, day, streams=streams,
@@ -512,8 +544,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
 
 
 def cmd_enrich_v4_statics(args: argparse.Namespace) -> int:
-    lock_path = DATA_DIR / ".locks" / "v4-statics-enrichment.lock"
-    with exclusive_job(lock_path, job="V4 static enrichment"):
+    with exclusive_job(RAW_MUTATION_LOCK, job="raw market-data fetch or enrichment"):
         return _enrich_v4_statics(args)
 
 
@@ -524,7 +555,7 @@ def _enrich_v4_statics(args: argparse.Namespace) -> int:
         days = days[: args.max_days]
     failures: list[tuple[str, str]] = []
     done = 0
-    with ThreadPoolExecutor(max_workers=bounded_graph_workers(args.workers)) as pool:
+    with ThreadPoolExecutor(max_workers=bounded_workers(args.workers)) as pool:
         futures = {pool.submit(enrich_v4_statics_day, day): day for day in days}
         for future in as_completed(futures):
             day = futures[future]
@@ -575,6 +606,11 @@ def build_parser() -> argparse.ArgumentParser:
     sub.choices["fetch"].add_argument("--overwrite", action="store_true")
     sub.choices["fetch"].add_argument("--max-days", type=int, default=0)
     sub.choices["fetch"].add_argument("--gaps-only", action="store_true", help="Fetch only missing day/stream targets.")
+    sub.choices["fetch"].add_argument(
+        "--days-file",
+        type=Path,
+        help="Fetch only the ISO dates listed in this file; The Graph sources only.",
+    )
     sub.choices["fetch"].add_argument("--dune-sleep", type=float, default=2.0, help="Seconds to sleep between day-sized Dune gap fetches.")
     sub.choices["fetch"].add_argument("--max-retries", type=int, default=50, help="Per-day retries for transient provider/indexer errors in --gaps-only mode.")
     enrich = sub.add_parser(

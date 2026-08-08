@@ -30,7 +30,7 @@ import numpy as np
 import pandas as pd
 
 from ddvc.asset_types import WETH, canonical_token
-from ddvc.fetch.raw import timestamp_value, v4_statics_complete
+from ddvc.source_records import timestamp_value, v4_statics_complete
 from ddvc.paths import DATA_DIR, OUTPUT_DIR, REPO_ROOT, ROUTE_COST_JOB_LOCK
 from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.prices import day_prices

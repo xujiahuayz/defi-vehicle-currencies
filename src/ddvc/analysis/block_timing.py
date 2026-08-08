@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
-from ddvc.fetch.raw import source_event_payload
 from ddvc.pricing.v3pools import resolve_decimals
+from ddvc.source_records import source_event_payload
 
 Q96 = 1 << 96
 SwapState = tuple[int, int, int, int, float]
@@ -38,7 +38,7 @@ class V3DayState:
     transaction_first_log: dict[str, int]
 
 
-def load_v3_day(path: Path) -> V3DayState:
+def _load_v3_rows(rows: Iterable[dict]) -> V3DayState:
     """Load V3 metadata, event identities and post-swap states in causal order."""
     tokens: dict[str, tuple[str, str]] = {}
     decimals: dict[str, tuple[int, int]] = {}
@@ -48,73 +48,67 @@ def load_v3_day(path: Path) -> V3DayState:
     events: dict[tuple[str, int], SwapEvent] = {}
     raw_events: dict[tuple[str, int], dict] = {}
     transaction_first_log: dict[str, int] = {}
-    if not path.exists():
-        return V3DayState(tokens, decimals, series, events, transaction_first_log)
-    with gzip.open(path, "rt") as handle:
-        for line in handle:
-            if not line.strip():
+    for row in rows:
+        pool = row.get("pool") or {}
+        pool_id = str(pool.get("id") or "").lower()
+        token0 = str((pool.get("token0") or {}).get("id") or "").lower()
+        token1 = str((pool.get("token1") or {}).get("id") or "").lower()
+        transaction_id = str((row.get("transaction") or {}).get("id") or "").lower()
+        try:
+            block = int((row.get("transaction") or {}).get("blockNumber") or 0)
+            log_index = int(row.get("logIndex") or 0)
+            timestamp = int(row.get("timestamp") or 0)
+            sqrt_price_x96 = int(row.get("sqrtPriceX96") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not (
+            pool_id
+            and token0
+            and token1
+            and transaction_id
+            and block
+            and timestamp
+            and sqrt_price_x96 > 0
+        ):
+            continue
+        event_key = (transaction_id, log_index)
+        if event_key in raw_events:
+            if source_event_payload(row) == source_event_payload(raw_events[event_key]):
                 continue
-            row = json.loads(line)
-            pool = row.get("pool") or {}
-            pool_id = str(pool.get("id") or "").lower()
-            token0 = str((pool.get("token0") or {}).get("id") or "").lower()
-            token1 = str((pool.get("token1") or {}).get("id") or "").lower()
-            transaction_id = str((row.get("transaction") or {}).get("id") or "").lower()
+            raise ValueError(f"conflicting V3 transaction-log event: {event_key}")
+        raw_events[event_key] = row
+        tokens[pool_id] = (token0, token1)
+        raw_decimals = (
+            (pool.get("token0") or {}).get("decimals"),
+            (pool.get("token1") or {}).get("decimals"),
+        )
+        if all(value is not None and value != "" for value in raw_decimals):
             try:
-                block = int((row.get("transaction") or {}).get("blockNumber") or 0)
-                log_index = int(row.get("logIndex") or 0)
-                timestamp = int(row.get("timestamp") or 0)
-                sqrt_price_x96 = int(row.get("sqrtPriceX96") or 0)
+                parsed_decimals = tuple(int(value) for value in raw_decimals)
             except (TypeError, ValueError):
-                continue
-            if not (
-                pool_id
-                and token0
-                and token1
-                and transaction_id
-                and block
-                and timestamp
-                and sqrt_price_x96 > 0
-            ):
-                continue
-            event_key = (transaction_id, log_index)
-            if event_key in raw_events:
-                if source_event_payload(row) == source_event_payload(raw_events[event_key]):
-                    continue
-                raise ValueError(f"conflicting V3 transaction-log event: {event_key}")
-            raw_events[event_key] = row
-            tokens[pool_id] = (token0, token1)
-            raw_decimals = (
-                (pool.get("token0") or {}).get("decimals"),
-                (pool.get("token1") or {}).get("decimals"),
-            )
-            if all(value is not None and value != "" for value in raw_decimals):
-                try:
-                    parsed_decimals = tuple(int(value) for value in raw_decimals)
-                except (TypeError, ValueError):
-                    parsed_decimals = ()
-                if len(parsed_decimals) == 2 and all(0 <= value <= 255 for value in parsed_decimals):
-                    prior = explicit_decimals.get(pool_id)
-                    if prior is not None and prior != parsed_decimals:
-                        raise ValueError(f"inconsistent V3 token decimals for pool: {pool_id}")
-                    explicit_decimals[pool_id] = parsed_decimals
-            sample = swap_samples[pool_id]
-            if len(sample) < 12:
-                sample.append(row)
-            events[event_key] = SwapEvent(pool_id, block, log_index)
-            transaction_first_log[transaction_id] = min(
+                parsed_decimals = ()
+            if len(parsed_decimals) == 2 and all(0 <= value <= 255 for value in parsed_decimals):
+                prior = explicit_decimals.get(pool_id)
+                if prior is not None and prior != parsed_decimals:
+                    raise ValueError(f"inconsistent V3 token decimals for pool: {pool_id}")
+                explicit_decimals[pool_id] = parsed_decimals
+        sample = swap_samples[pool_id]
+        if len(sample) < 12:
+            sample.append(row)
+        events[event_key] = SwapEvent(pool_id, block, log_index)
+        transaction_first_log[transaction_id] = min(
+            log_index,
+            transaction_first_log.get(transaction_id, log_index),
+        )
+        series[pool_id].append(
+            (
+                block,
                 log_index,
-                transaction_first_log.get(transaction_id, log_index),
+                timestamp,
+                timestamp // 3600,
+                2.0 * math.log(sqrt_price_x96 / Q96),
             )
-            series[pool_id].append(
-                (
-                    block,
-                    log_index,
-                    timestamp,
-                    timestamp // 3600,
-                    2.0 * math.log(sqrt_price_x96 / Q96),
-                )
-            )
+        )
     for pool_id in series:
         series[pool_id].sort()
         token0, token1 = tokens[pool_id]
@@ -125,6 +119,24 @@ def load_v3_day(path: Path) -> V3DayState:
         elif resolved is not None:
             decimals[pool_id] = resolved
     return V3DayState(tokens, decimals, series, events, transaction_first_log)
+
+
+def load_v3_day(path: Path) -> V3DayState:
+    """Load one raw V3 swap partition for ingestion diagnostics."""
+    if not path.exists():
+        return V3DayState({}, {}, {}, {}, {})
+    with gzip.open(path, "rt") as handle:
+        return _load_v3_rows(json.loads(line) for line in handle if line.strip())
+
+
+def load_v3_state_day(frame: pd.DataFrame) -> V3DayState:
+    """Load one canonical V3 state partition for empirical consumers."""
+    from ddvc.pricing.tick_replay import canonical_tick_row
+
+    swaps = frame[frame["record_type"].eq("swap")]
+    return _load_v3_rows(
+        canonical_tick_row(record) for record in swaps.to_dict("records")
+    )
 
 
 def load_v3_swap_day(

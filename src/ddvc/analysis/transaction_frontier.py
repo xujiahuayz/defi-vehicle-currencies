@@ -37,6 +37,14 @@ class RealisedPath:
 
 RealisedTickPath = RealisedPath
 ChosenPathQuoter = Callable[[RealisedPath], PathQuote | None]
+MIN_CHOSEN_REPRODUCTION = 0.99
+
+
+def chosen_reproduction_share(available: int, mismatches: int) -> float:
+    """Share of coherent chosen quotes reproduced inside the locked tolerance."""
+    if available <= 0 or mismatches < 0 or mismatches > available:
+        return 0.0
+    return 1.0 - mismatches / available
 
 
 def positive_finite_amount(value: float) -> bool:

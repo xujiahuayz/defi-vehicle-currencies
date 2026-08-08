@@ -10,10 +10,36 @@ from unittest.mock import patch
 import pandas as pd
 
 from ddvc.gas import load_daily_gas_prices
+from ddvc.release_calendar import released_route_days
 import scripts.process.fetch_daily_gas_price_graph as gas_fetch
 
 
 class DailyGasPriceFetchTests(unittest.TestCase):
+    def test_gas_calendar_excludes_typed_empty_route_days(self) -> None:
+        quality = pd.DataFrame(
+            {
+                "day": ["20200101", "20200102", "20200103"],
+                "output_rows": [10, 0, 5],
+                "passed": [True, True, True],
+            }
+        )
+        with TemporaryDirectory() as temporary:
+            panel = Path(temporary) / "quality.parquet"
+            quality.to_parquet(panel, index=False)
+            self.assertEqual(
+                released_route_days(panel, nonempty=True), ["20200101", "20200103"]
+            )
+
+    def test_released_calendar_refuses_a_failed_quality_day(self) -> None:
+        quality = pd.DataFrame(
+            {"day": ["20200101"], "output_rows": [1], "passed": [False]}
+        )
+        with TemporaryDirectory() as temporary:
+            panel = Path(temporary) / "quality.parquet"
+            quality.to_parquet(panel, index=False)
+            with self.assertRaisesRegex(RuntimeError, "1 failed day"):
+                released_route_days(panel, nonempty=False)
+
     def test_consumer_refuses_incomplete_required_calendar(self) -> None:
         with TemporaryDirectory() as temporary:
             panel = Path(temporary) / "gas.parquet"

@@ -3,28 +3,29 @@
 
 This checks whether adding Balancer weighted pools materially changes the WETH
 route-cost availability story. It uses Balancer daily pool balances, weights,
-and swap fees already present in the rebuilt raw layer.
+and swap fees from the canonical market-state layer.
 """
 from __future__ import annotations
 
 import argparse
-import gzip
-import json
 import math
 from collections import defaultdict
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from ddvc.prices import day_prices
+from ddvc.state_data import STATE_ROOT, read_multi_asset_partition
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 DATA = ROOT / "data"
 OUT = ROOT / "output"
 EMP = OUT / "empirical"
+MARKET_STATE = STATE_ROOT
 
 from ddvc.paper_tables import _int, _num, _pct, _write_table
 
@@ -64,10 +65,6 @@ def _migrate_cached_output() -> int:
     return 0
 
 
-def _raw_daily(stamp: str) -> Path:
-    return DATA / "raw" / "thegraph" / "balancer" / f"balancer_daily_{stamp}.jsonl.gz"
-
-
 def _prices(stamp: str) -> dict[str, float]:
     path = DATA / "unified" / f"{stamp}.parquet"
     if not path.exists():
@@ -78,47 +75,43 @@ def _prices(stamp: str) -> dict[str, float]:
     return {k: v[1] for k, v in day_prices(legs).items()}
 
 
+@lru_cache(maxsize=4)
 def _load_pools(stamp: str) -> dict[frozenset[str], list[WeightedPool]]:
-    path = _raw_daily(stamp)
     pools: dict[frozenset[str], list[WeightedPool]] = defaultdict(list)
+    path = MARKET_STATE / "multi_asset" / "balancer" / f"{stamp}.parquet"
     if not path.exists():
         return pools
-    with gzip.open(path, "rt", encoding="utf-8") as fh:
-        for line in fh:
-            if not line.strip():
-                continue
-            rec = json.loads(line)
-            pool = rec.get("pool") or {}
-            if str(pool.get("poolType") or "").lower() != "weighted":
-                continue
-            toks = pool.get("tokens") or []
-            if len(toks) != 2:
-                continue
-            try:
-                t0, t1 = toks
-                a0 = str(t0.get("address") or "").lower()
-                a1 = str(t1.get("address") or "").lower()
-                b0 = float(t0.get("balance") or 0.0)
-                b1 = float(t1.get("balance") or 0.0)
-                w0 = float(t0.get("weight") or 0.0)
-                w1 = float(t1.get("weight") or 0.0)
-                fee = float(pool.get("swapFee") or 0.0)
-            except (TypeError, ValueError):
-                continue
-            if not a0 or not a1 or b0 <= 0 or b1 <= 0 or w0 <= 0 or w1 <= 0:
-                continue
-            pools[frozenset((a0, a1))].append(WeightedPool(
-                pool=str(pool.get("id") or "").lower(),
-                token0=a0,
-                token1=a1,
-                sym0=str(t0.get("symbol") or ""),
-                sym1=str(t1.get("symbol") or ""),
-                balance0=b0,
-                balance1=b1,
-                weight0=w0,
-                weight1=w1,
-                fee=max(0.0, min(fee, 0.5)),
-            ))
+    state = read_multi_asset_partition("balancer", stamp, root=MARKET_STATE)
+    snapshots = state[state["record_type"].eq("snapshot_token")]
+    for pid, group in snapshots.groupby("pool", sort=False):
+        pool_types = group["pool_type"].dropna()
+        if pool_types.empty or str(pool_types.iloc[0]).lower() != "weighted" or len(group) != 2:
+            continue
+        try:
+            rows = list(group.itertuples(index=False))
+            t0, t1 = rows
+            a0, a1 = str(t0.token).lower(), str(t1.token).lower()
+            b0 = int(t0.balance_raw) / 10 ** int(t0.decimals)
+            b1 = int(t1.balance_raw) / 10 ** int(t1.decimals)
+            w0 = int(t0.weight_1e18) / 10 ** 18
+            w1 = int(t1.weight_1e18) / 10 ** 18
+            fee = int(t0.fee_1e18) / 10 ** 18
+        except (TypeError, ValueError, ArithmeticError):
+            continue
+        if not a0 or not a1 or b0 <= 0 or b1 <= 0 or w0 <= 0 or w1 <= 0:
+            continue
+        pools[frozenset((a0, a1))].append(WeightedPool(
+            pool=str(pid).lower(),
+            token0=a0,
+            token1=a1,
+            sym0=str(t0.token_symbol or ""),
+            sym1=str(t1.token_symbol or ""),
+            balance0=b0,
+            balance1=b1,
+            weight0=w0,
+            weight1=w1,
+            fee=max(0.0, min(fee, 0.5)),
+        ))
     return pools
 
 

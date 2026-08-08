@@ -289,3 +289,20 @@ def verify(artefact: str | Path) -> dict[str, object]:
         "was_dirty": (rec.get("git") or {}).get("dirty"),
         "created_at": rec.get("created_at"),
     }
+
+
+def require_current_artifacts(
+    artefacts: list[str | Path], *, consumer: str
+) -> None:
+    """Refuse to run a consumer against missing, unstamped, or stale inputs."""
+    failures = [
+        verdict
+        for artefact in artefacts
+        if (verdict := verify(artefact)).get("status") != "ok"
+    ]
+    if failures:
+        detail = "; ".join(
+            f"{verdict['artefact']}={verdict['status']}"
+            for verdict in failures
+        )
+        raise RuntimeError(f"{consumer} requires current analysis inputs: {detail}")

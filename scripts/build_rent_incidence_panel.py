@@ -15,9 +15,9 @@ leg is the numeraire, because inverting a price only flips the sign of every log
 return, so the dollar figure does not depend on that choice; what the choice
 fixes is the interpretation, which is stated in the finding.
 
-UNISWAP V3. There is no pool-statics table in the raw layer, so the fee tier is
-recovered exactly from the CREATE2 pool address by `ddvc.pricing.v3pools`, and
-active liquidity is reconstructed by accumulating every mint and burn into a
+UNISWAP V3. The canonical state layer carries the pool fee tier; the CREATE2
+derivation in `ddvc.pricing.v3pools` is retained only as a deterministic fallback. Active
+liquidity is reconstructed by accumulating every mint and burn into a
 per-pool map of net liquidity deltas at initialised ticks. Active liquidity at a
 given tick is then the running sum of deltas at or below it. This is exact for
 the liquidity actually deployed. What is an APPROXIMATION is the return
@@ -27,7 +27,7 @@ the range and wrong at the moment it leaves, and the day's tick is a single
 volume-weighted summary of a path.
 
 GAS. Every mint and every burn is a transaction someone paid for, so the counts
-observed in the raw layer times a per-operation gas figure times the day's
+observed in the canonical event layer times a per-operation gas figure times the day's
 median gas price times the ETH price is the pool's realised repositioning bill.
 It is netted at pool level against pool-level fee revenue, which is the correct
 incidence: the pool's providers as a group paid it.
@@ -38,24 +38,22 @@ the rows a screen removes and the screen can be reported and varied.
 
 from __future__ import annotations
 
-import gzip
-import json
+import argparse
 import math
-import sys
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
+from ddvc.data_release import require_node_d_release
+from ddvc.paths import DATA_DIR
+from ddvc.pricing.v3pools import derive_fee_tier
+from ddvc.runtime import DEFAULT_MAX_WORKERS, exclusive_job, interruptible_process_pool
+from ddvc.state_data import STATE_ROOT, available_state_days, read_cp_partition, read_tick_partition
+from ddvc.tables import write_panel
 
-from ddvc.pricing.v3pools import derive_fee_tier  # noqa: E402
-from ddvc.tables import write_panel  # noqa: E402
-
-RAW = ROOT / "data" / "raw" / "thegraph"
-PROC = ROOT / "data" / "processed"
+PROC = DATA_DIR / "processed"
+LOCK = PROC / ".rent_incidence_panels.lock"
 
 V2_FEE = 0.003
 
@@ -71,15 +69,6 @@ V2_FEE = 0.003
 # must not rest on one.
 GAS_UNITS = {"v2_mint": 155_000, "v2_burn": 155_000,
              "v3_mint": 250_000, "v3_burn": 200_000}
-
-
-def _iter(path: Path):
-    if not path.exists():
-        return
-    with gzip.open(path, "rt", encoding="utf-8") as fh:
-        for line in fh:
-            if line.strip():
-                yield json.loads(line)
 
 
 def _f(x) -> float:
@@ -117,10 +106,8 @@ def _rv_multiscale(hours: np.ndarray, prices: np.ndarray,
     return rv1, rv4, rv_oc, float(np.max(np.abs(lr)))
 
 
-def _days(venue: str, stream: str) -> list[str]:
-    pat = f"{venue}_{stream}_*.jsonl.gz"
-    return sorted(p.name.split("_")[-1].split(".")[0]
-                  for p in (RAW / venue).glob(pat))
+def _days(family: str, venue: str) -> list[str]:
+    return available_state_days(family, venue)
 
 
 # ---------------------------------------------------------------------------
@@ -128,23 +115,26 @@ def _days(venue: str, stream: str) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def _v2_day(day: str) -> list[dict]:
+    state = read_cp_partition("uniswap_v2", day)
     hours: dict[str, list] = defaultdict(list)
     meta: dict[str, tuple] = {}
-    for rec in _iter(RAW / "uniswap_v2" / f"uniswap_v2_hourly_reserves_{day}.jsonl.gz"):
-        pair = rec["pair"]
-        pid = pair["id"]
+    snapshots = state[state["record_type"].eq("snapshot")]
+    for rec in snapshots.itertuples(index=False):
+        pid = rec.pool
         if pid not in meta:
-            t0, t1 = pair["token0"], pair["token1"]
-            meta[pid] = (t0["id"], t1["id"], t0.get("symbol"), t1.get("symbol"))
-        hours[pid].append((int(rec["hourStartUnix"]), _f(rec["reserve0"]),
-                           _f(rec["reserve1"]), _f(rec["hourlyVolumeUSD"])))
+            meta[pid] = (rec.token0, rec.token1, rec.symbol0, rec.symbol1)
+        hours[pid].append(
+            (int(rec.period_start), _f(rec.reserve0), _f(rec.reserve1), _f(rec.value_usd))
+        )
 
     mints: dict[str, int] = defaultdict(int)
     burns: dict[str, int] = defaultdict(int)
-    for rec in _iter(RAW / "uniswap_v2" / f"uniswap_v2_mints_{day}.jsonl.gz"):
-        mints[rec["pair"]["id"]] += 1
-    for rec in _iter(RAW / "uniswap_v2" / f"uniswap_v2_burns_{day}.jsonl.gz"):
-        burns[rec["pair"]["id"]] += 1
+    liquidity = state[state["record_type"].eq("liquidity")]
+    for rec in liquidity.itertuples(index=False):
+        if rec.source_stream == "mints":
+            mints[rec.pool] += 1
+        elif rec.source_stream == "burns":
+            burns[rec.pool] += 1
 
     out = []
     for pid, rows in hours.items():
@@ -179,67 +169,77 @@ def _v2_day(day: str) -> list[dict]:
 def _v3_events(day: str) -> list[tuple]:
     """(pool, tickLower, tickUpper, signed liquidity delta) for one day."""
     ev = []
-    for stream, sign in (("mints", 1), ("burns", -1)):
-        for rec in _iter(RAW / "uniswap_v3" / f"uniswap_v3_{stream}_{day}.jsonl.gz"):
-            try:
-                amt = int(rec["amount"])
-            except (TypeError, ValueError, KeyError):
-                continue
-            if amt == 0:
-                continue
-            ev.append((rec["pool"]["id"], int(rec["tickLower"]),
-                       int(rec["tickUpper"]), sign * amt))
+    state = read_tick_partition("uniswap_v3", day)
+    for rec in state[state["record_type"].eq("liquidity")].itertuples(index=False):
+        try:
+            amount = int(rec.liquidity_delta)
+            lower = int(rec.tick_lower)
+            upper = int(rec.tick_upper)
+        except (TypeError, ValueError):
+            continue
+        if amount:
+            ev.append((rec.pool, lower, upper, amount))
     return ev
 
 
-def _v3_event_counts(day: str) -> dict[str, tuple[int, int]]:
-    m: dict[str, int] = defaultdict(int)
-    b: dict[str, int] = defaultdict(int)
-    for rec in _iter(RAW / "uniswap_v3" / f"uniswap_v3_mints_{day}.jsonl.gz"):
-        m[rec["pool"]["id"]] += 1
-    for rec in _iter(RAW / "uniswap_v3" / f"uniswap_v3_burns_{day}.jsonl.gz"):
-        b[rec["pool"]["id"]] += 1
-    keys = set(m) | set(b)
-    return {k: (m.get(k, 0), b.get(k, 0)) for k in keys}
-
-
-def _v3_swaps_day(day: str, keep: set[str] | None) -> dict[str, dict]:
-    """Per-pool swap summary for one day: volume, hourly price path, tick."""
+def _v3_day_summary(
+    day: str, keep: set[str] | None
+) -> tuple[dict[str, dict], dict[str, tuple[int, int]]]:
+    """Per-pool swaps and liquidity-event counts from one canonical partition read."""
     acc: dict[str, dict] = {}
-    for rec in _iter(RAW / "uniswap_v3" / f"uniswap_v3_swaps_{day}.jsonl.gz"):
-        pool = rec["pool"]
-        pid = pool["id"]
+    state = read_tick_partition("uniswap_v3", day)
+    for rec in state[state["record_type"].eq("swap")].itertuples(index=False):
+        pid = rec.pool
         if keep is not None and pid not in keep:
             continue
         a = acc.get(pid)
         if a is None:
-            t0, t1 = pool["token0"], pool["token1"]
-            a = acc[pid] = {"token0": t0["id"], "token1": t1["id"],
-                            "sym0": t0.get("symbol"), "sym1": t1.get("symbol"),
-                            "vol": 0.0, "n": 0, "hp": {}, "ticks": [], "w": []}
-        usd = _f(rec.get("amountUSD"))
+            a = acc[pid] = {
+                "token0": rec.token0,
+                "token1": rec.token1,
+                "sym0": rec.symbol0,
+                "sym1": rec.symbol1,
+                "fee_pips": rec.fee_pips,
+                "vol": 0.0,
+                "n": 0,
+                "hp": {},
+                "ticks": [],
+                "w": [],
+            }
+        usd = _f(rec.value_usd)
         if math.isfinite(usd):
             a["vol"] += usd
         a["n"] += 1
-        ts = int(rec["timestamp"])
-        sp = _f(rec.get("sqrtPriceX96"))
+        ts = int(rec.timestamp)
+        sp = _f(rec.sqrt_price_x96)
         if math.isfinite(sp) and sp > 0:
             a["hp"][ts // 3600] = sp
         try:
-            tick = int(rec["tick"])
-        except (TypeError, ValueError, KeyError):
+            tick = int(rec.tick)
+        except (TypeError, ValueError):
             tick = None
         if tick is not None:
             a["ticks"].append(tick)
             a["w"].append(abs(usd) if math.isfinite(usd) else 0.0)
-    return acc
+    mints: dict[str, int] = defaultdict(int)
+    burns: dict[str, int] = defaultdict(int)
+    for rec in state[state["record_type"].eq("liquidity")].itertuples(index=False):
+        if keep is not None and rec.pool not in keep:
+            continue
+        if rec.source_stream == "mints":
+            mints[rec.pool] += 1
+        elif rec.source_stream == "burns":
+            burns[rec.pool] += 1
+    pools = set(mints) | set(burns)
+    counts = {pool: (mints.get(pool, 0), burns.get(pool, 0)) for pool in pools}
+    return acc, counts
 
 
 def _v3_pool_universe(days: list[str], top_n: int) -> set[str]:
     """Pools ranked by swap count on a stratified sample of days."""
     sample = days[:: max(1, len(days) // 60)]
     counts: dict[str, int] = defaultdict(int)
-    with ProcessPoolExecutor() as ex:
+    with interruptible_process_pool(DEFAULT_MAX_WORKERS) as ex:
         for res in ex.map(_v3_count_day, sample):
             for k, v in res.items():
                 counts[k] += v
@@ -248,10 +248,9 @@ def _v3_pool_universe(days: list[str], top_n: int) -> set[str]:
 
 
 def _v3_count_day(day: str) -> dict[str, int]:
-    c: dict[str, int] = defaultdict(int)
-    for rec in _iter(RAW / "uniswap_v3" / f"uniswap_v3_swaps_{day}.jsonl.gz"):
-        c[rec["pool"]["id"]] += 1
-    return dict(c)
+    state = read_tick_partition("uniswap_v3", day)
+    swaps = state[state["record_type"].eq("swap")]
+    return swaps.groupby("pool").size().astype(int).to_dict()
 
 
 class Fenwick:
@@ -287,9 +286,9 @@ class Fenwick:
 
 
 def build_v2() -> pd.DataFrame:
-    days = _days("uniswap_v2", "hourly_reserves")
+    days = _days("constant_product", "uniswap_v2")
     rows: list[dict] = []
-    with ProcessPoolExecutor() as ex:
+    with interruptible_process_pool(DEFAULT_MAX_WORKERS) as ex:
         for i, res in enumerate(ex.map(_v2_day, days, chunksize=8)):
             rows.extend(res)
             if i % 200 == 0:
@@ -298,19 +297,19 @@ def build_v2() -> pd.DataFrame:
 
 
 def build_v3(top_n: int = 400) -> pd.DataFrame:
-    swap_days = _days("uniswap_v3", "swaps")
+    swap_days = _days("tick", "uniswap_v3")
     print(f"  v3 ranking pools over {len(swap_days)} days", flush=True)
     keep = _v3_pool_universe(swap_days, top_n)
     print(f"  v3 universe {len(keep)} pools", flush=True)
 
-    ev_days = sorted(set(_days("uniswap_v3", "mints")) | set(_days("uniswap_v3", "burns")))
-    all_days = sorted(set(swap_days) | set(ev_days))
+    ev_days = swap_days
+    all_days = swap_days
 
     # Pass one: read every liquidity event for the universe, so each pool's tick
     # set is known before the replay and can be compressed into a fixed index.
     print("  v3 reading liquidity events", flush=True)
     events: dict[str, list[tuple]] = defaultdict(list)
-    with ProcessPoolExecutor() as ex:
+    with interruptible_process_pool(DEFAULT_MAX_WORKERS) as ex:
         for d, res in zip(ev_days, ex.map(_v3_events, ev_days, chunksize=16)):
             for pid, lo, hi, delta in res:
                 if pid in keep:
@@ -339,10 +338,9 @@ def build_v3(top_n: int = 400) -> pd.DataFrame:
             tree = trees[pid]
             tree.add(pos[lo], delta)
             tree.add(pos[hi], -delta)
-        swaps = _v3_swaps_day(d, keep)
+        swaps, counts = _v3_day_summary(d, keep)
         if not swaps:
             continue
-        counts = _v3_event_counts(d)
         for pid, a in swaps.items():
             if not a["ticks"]:
                 continue
@@ -353,7 +351,10 @@ def build_v3(top_n: int = 400) -> pd.DataFrame:
             hh = np.array([k for k, _ in hp], dtype=np.int64)
             sp = np.array([v for _, v in hp], dtype=float)
             rv1, rv4, rvoc, mx = _rv_multiscale(hh, sp, scale=2.0)
-            fee = derive_fee_tier(pid, a["token0"], a["token1"])
+            try:
+                fee = int(a["fee_pips"])
+            except (TypeError, ValueError):
+                fee = derive_fee_tier(pid, a["token0"], a["token1"])
             liq = float("nan")
             if pid in index:
                 srt, _pos = index[pid]
@@ -379,19 +380,27 @@ def build_v3(top_n: int = 400) -> pd.DataFrame:
 
 
 def main() -> None:
-    which = sys.argv[1] if len(sys.argv) > 1 else "both"
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("which", choices=("v2", "v3", "both"), nargs="?", default="both")
+    args = parser.parse_args()
+    require_node_d_release(market_state=True)
+    which = args.which
     if which in ("v2", "both"):
         v2 = build_v2()
         print(f"v2 pool-days: {len(v2):,}", flush=True)
         write_panel(v2, PROC / "rent_incidence_v2_pool_day.parquet",
-                    code_sources=["scripts/build_rent_incidence_panel.py"])
+                    code_sources=["scripts/build_rent_incidence_panel.py", "src/ddvc/state_data.py"],
+                    inputs=[STATE_ROOT / "constant_product" / "uniswap_v2"])
     if which in ("v3", "both"):
         v3 = build_v3()
         print(f"v3 pool-days: {len(v3):,}", flush=True)
         write_panel(v3, PROC / "rent_incidence_v3_pool_day.parquet",
                     code_sources=["scripts/build_rent_incidence_panel.py",
-                                  "src/ddvc/pricing/v3pools.py"])
+                                  "src/ddvc/pricing/v3pools.py",
+                                  "src/ddvc/state_data.py"],
+                    inputs=[STATE_ROOT / "tick" / "uniswap_v3"])
 
 
 if __name__ == "__main__":
-    main()
+    with exclusive_job(LOCK, job="rent-incidence analysis panels"):
+        main()

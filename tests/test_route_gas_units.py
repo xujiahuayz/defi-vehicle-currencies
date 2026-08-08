@@ -17,6 +17,7 @@ from ddvc.route_gas import (
 from scripts.process import build_route_gas_units as route_gas
 from scripts.process.build_route_gas_units import (
     bounded_workers,
+    load_receipt_snapshot,
     parse_receipt,
     sample_day,
     worker_batches,
@@ -352,6 +353,21 @@ class RouteGasUnitTests(unittest.TestCase):
             [json.loads(line)["tx_hash"] for line in first.decode().splitlines()],
             ["0xa", "0xb"],
         )
+
+    def test_previous_receipt_snapshot_is_a_validated_immutable_seed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "selection.jsonl"
+            path.write_text(
+                "\n".join(
+                    [
+                        json.dumps({"tx_hash": "0xA", "gas_used": 10, "status": 1}),
+                        json.dumps({"tx_hash": "0xb", "gas_used": 0, "status": 1}),
+                        "not-json",
+                    ]
+                )
+            )
+            loaded = load_receipt_snapshot(path)
+        self.assertEqual(set(loaded), {"0xa"})
 
     def test_day_candidate_sample_is_resumable_and_schema_checked(self) -> None:
         original = route_gas.UNIFIED
