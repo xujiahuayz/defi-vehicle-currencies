@@ -355,6 +355,9 @@ def ensure_released_directory_alias(
             f"released cache record has {len(candidates)} engine directories under {perimeter}"
         )
     recorded = candidates[0]
+    for prior in perimeter.glob("engine_*"):
+        if prior.is_symlink() and prior.resolve() == recorded.resolve():
+            prior.unlink()
     expected_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         expected_path.symlink_to(

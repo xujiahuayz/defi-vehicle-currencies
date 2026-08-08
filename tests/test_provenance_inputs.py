@@ -30,6 +30,8 @@ class ProvenanceInputTests(unittest.TestCase):
             released = perimeter / "engine_released"
             expected = perimeter / "engine_current"
             released.mkdir(parents=True)
+            superseded = perimeter / "engine_superseded_alias"
+            superseded.symlink_to(released.name, target_is_directory=True)
             marker = root / "release.prov.json"
             marker.write_text(
                 '{"inputs": [{"path": "' + str(released) + '"}]}',
@@ -42,6 +44,8 @@ class ProvenanceInputTests(unittest.TestCase):
             )
 
             self.assertEqual(actual, released)
+            self.assertFalse(superseded.exists())
+            self.assertFalse(superseded.is_symlink())
             self.assertTrue(expected.is_symlink())
             self.assertEqual(expected.resolve(), released.resolve())
             self.assertIsNone(
