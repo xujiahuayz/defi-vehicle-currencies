@@ -40,6 +40,12 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_refresh_log_path_flattens_script_subdirectories(self) -> None:
+        self.assertEqual(
+            refresher.stage_log_path("process/fetch_daily_gas_price_graph.py").name,
+            "process__fetch_daily_gas_price_graph.py.log",
+        )
+
     @patch("scripts.refresh_panel_dependents.os.killpg")
     def test_refresh_timeout_terminates_then_kills_worker_group(self, killpg) -> None:
         process = Mock(pid=123)

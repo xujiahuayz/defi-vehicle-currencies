@@ -126,6 +126,11 @@ def current_artifacts(paths: tuple[str, ...]) -> tuple[bool, list[str]]:
     return not bad, bad
 
 
+def stage_log_path(script: str) -> Path:
+    """Map a repository-relative script path to one flat, collision-visible log name."""
+    return LOGS / f"{script.replace('/', '__')}.log"
+
+
 def terminate_process_group(process: subprocess.Popen) -> None:
     """Stop a stage and every worker it spawned before releasing the refresh lock."""
     if process.poll() is not None:
@@ -274,7 +279,7 @@ def main() -> int:
             if script in claim_input_scripts:
                 break
             continue
-        log = LOGS / f"{script}.log"
+        log = stage_log_path(script)
         started = time.time()
         print(f"  {i:>2}/{len(stages)} {script:<44} running", end="", flush=True)
         failures_before = len(failures)
