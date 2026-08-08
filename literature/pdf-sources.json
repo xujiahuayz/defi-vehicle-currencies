@@ -173,6 +173,18 @@
       "non_text_companions": [
         "https://doi.org/10.7910/DVN/ZOOWEA"
       ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2022-AmitiItskhokiKonings2022DominantReplicationPackage-supplement-dataverse-v1.1-reconstructed.tar.gz",
+          "bytes": 47115695,
+          "note": "literature/source-notes/2022-AmitiItskhokiKonings2022DominantReplicationPackage.md",
+          "sha256": "e05fc0661ed3d1077b0c15de94b9ae35a5d57eea27dfe6bc63bc480a1d1aa09b",
+          "sources": [
+            "https://doi.org/10.7910/DVN/ZOOWEA"
+          ],
+          "status": "materialized"
+        }
+      ],
       "status": "complete"
     },
     "CaparrosChaudharyKlein2024BlockchainScaling": {
@@ -201,7 +213,7 @@
     },
     "ComertonFordeEtAl2010Inventories": {
       "checks": {
-        "article": "literature/text/2010-ComertonFordeEtAl2010Inventories-accepted-time-variation-in-liquidity-the-role-of-market-maker-inventories-and-revenues.txt",
+        "article": "literature/text/2010-ComertonFordeEtAl2010Inventories-time-variation-in-liquidity-the-role-of-market-maker-inventories-and-revenues.txt",
         "author_or_repository": "https://business.columbia.edu/faculty/research/time-variation-liquidity-role-market-maker-inventories-and-revenues",
         "publisher_or_doi": "https://doi.org/10.1111/j.1540-6261.2009.01530.x"
       },
@@ -236,6 +248,19 @@
       "non_text_companions": [
         "https://doi.org/10.3886/E111161V1"
       ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2020-GopinathEtAl2020DCPReplicationPublicInspection-supplement-openicpsr-v1.tar.gz",
+          "bytes": 26256,
+          "note": "literature/source-notes/2020-GopinathEtAl2020DCPReplicationPackage.md",
+          "reason": "the official full package requires ICPSR account completion and email verification; confidential firm-level inputs are not deposited; the durable public inspection bundle preserves the official inventory, README and code previews but is not the complete binary package",
+          "sha256": "de770eadd1445d1e02be527d3f8e3be2f9d93cd09147f08c525b09d18f0a473c",
+          "sources": [
+            "https://doi.org/10.3886/E111161V1"
+          ],
+          "status": "unavailable"
+        }
+      ],
       "status": "complete"
     },
     "GopinathStein2021Making": {
@@ -250,6 +275,18 @@
       "main": "GopinathStein2021Making",
       "non_text_companions": [
         "https://doi.org/10.7910/DVN/CI13SP"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2021-GopinathStein2021MakingReplicationData-supplement-dataverse-v1.1.zip",
+          "bytes": 11030,
+          "note": "literature/source-notes/2021-GopinathStein2021MakingReplicationData.md",
+          "sha256": "3509dd0cd7d0ac0d8664a29428cb1150fd884a3a9a8f50390130553c05d58dad",
+          "sources": [
+            "https://doi.org/10.7910/DVN/CI13SP"
+          ],
+          "status": "materialized"
+        }
       ],
       "status": "complete"
     },
@@ -312,7 +349,7 @@
     },
     "HendershottJonesMenkveld2011Algorithmic": {
       "checks": {
-        "article": "literature/text/2011-HendershottJonesMenkveld2011Algorithmic-accepted-does-algorithmic-trading-improve-liquidity.txt",
+        "article": "literature/text/2011-HendershottJonesMenkveld2011Algorithmic-does-algorithmic-trading-improve-liquidity.txt",
         "author_or_repository": "https://faculty.haas.berkeley.edu/hender/Algo.pdf",
         "publisher_or_doi": "https://doi.org/10.1111/j.1540-6261.2010.01624.x"
       },
@@ -320,6 +357,21 @@
         "HendershottJonesMenkveld2011AlgorithmicAppendix"
       ],
       "main": "HendershottJonesMenkveld2011Algorithmic",
+      "non_text_companions": [
+        "https://faculty.haas.berkeley.edu/hender/Autoquote%20Dates.xls"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2011-HendershottJonesMenkveld2011AlgorithmicInstrumentData-supplement-autoquote-dates.xls",
+          "bytes": 57856,
+          "note": "literature/source-notes/2011-HendershottJonesMenkveld2011AlgorithmicInstrumentData.md",
+          "sha256": "8cff31e866b0adc811234e77eb28219cf37b2ab52e3d62c90b708d5b81c817ca",
+          "sources": [
+            "https://faculty.haas.berkeley.edu/hender/Autoquote%20Dates.xls"
+          ],
+          "status": "materialized"
+        }
+      ],
       "status": "complete"
     },
     "HendershottMenkveld2014PricePressures": {
@@ -405,6 +457,31 @@
       "main": "LyonsViswanathNatraj2023Stablecoins",
       "status": "complete"
     },
+    "MakarovSchoar2022DeFi": {
+      "checks": {
+        "article": "literature/text/2022-MakarovSchoar2022DeFi-cryptocurrencies-and-decentralized-finance-defi.txt",
+        "author_or_repository": "https://www.brookings.edu/articles/cryptocurrencies-and-decentralized-finance-defi/",
+        "publisher_or_doi": "https://doi.org/10.1353/eca.2022.0014"
+      },
+      "companions": [],
+      "main": "MakarovSchoar2022DeFi",
+      "non_text_companions": [
+        "https://www.brookings.edu/wp-content/uploads/2022/03/BPEA_SP22_MakarovSchoar_TablesFigures_Data2.xlsx"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2022-MakarovSchoar2022DeFiReplicationData-supplement-bpea-tables-figures-data.xlsx",
+          "bytes": 471329,
+          "note": "literature/source-notes/2022-MakarovSchoar2022DeFiReplicationData.md",
+          "sha256": "c5d2995f3f8332f561597cf1d981a830bd8274786439a2e71bead3ec428a741c",
+          "sources": [
+            "https://www.brookings.edu/wp-content/uploads/2022/03/BPEA_SP22_MakarovSchoar_TablesFigures_Data2.xlsx"
+          ],
+          "status": "materialized"
+        }
+      ],
+      "status": "complete"
+    },
     "Mukhin2022InternationalPriceSystem": {
       "checks": {
         "article": "literature/text/2022-Mukhin2022InternationalPriceSystem-an-equilibrium-model-of-the-international-price-system.txt",
@@ -417,6 +494,18 @@
       "main": "Mukhin2022InternationalPriceSystem",
       "non_text_companions": [
         "https://doi.org/10.3886/E149661V1"
+      ],
+      "non_text_dispositions": [
+        {
+          "artifact": "literature/papers/2022-Mukhin2022InternationalPriceSystemReplicationPackage-supplement-openicpsr-v1-reconstructed.tar.gz",
+          "bytes": 119236817,
+          "note": "literature/source-notes/2022-Mukhin2022InternationalPriceSystemReplicationPackage.md",
+          "sha256": "1e8e62e5951cf7fca535646f652b30450aac4b13f8363da8b5cd06444881ff21",
+          "sources": [
+            "https://doi.org/10.3886/E149661V1"
+          ],
+          "status": "materialized"
+        }
       ],
       "status": "complete"
     },
@@ -696,6 +785,12 @@
     "ComertonFordeEtAl2010Inventories": [
       {
         "access": "public",
+        "label": "Berkeley Haas version-of-record PDF",
+        "url": "https://faculty.haas.berkeley.edu/hender/MM-Inv-Rev-Liq.pdf",
+        "version": "published"
+      },
+      {
+        "access": "public",
         "label": "Columbia Business School PDF",
         "url": "https://business.columbia.edu/sites/default/files-efs/pubfiles/4052/jones_time_variation.pdf",
         "version": "accepted"
@@ -709,8 +804,8 @@
     ],
     "ComertonFordeEtAl2010InventoriesAppendix": [
       {
-        "access": "embedded",
-        "label": "Internet Appendix embedded in accepted manuscript pages 54-59; official AFA copy independently matched",
+        "access": "public",
+        "label": "Official Journal of Finance Internet Appendix",
         "url": "https://afajof.org/wp-content/uploads/files/supplements/Internet_Appendix_for_Time_V.pdf",
         "version": "supplement"
       }
@@ -1076,9 +1171,9 @@
     "HendershottJonesMenkveld2011Algorithmic": [
       {
         "access": "public",
-        "label": "Berkeley Haas PDF",
+        "label": "Berkeley Haas version-of-record PDF",
         "url": "https://faculty.haas.berkeley.edu/hender/Algo.pdf",
-        "version": "accepted"
+        "version": "published"
       },
       {
         "access": "authenticated",
@@ -1092,6 +1187,14 @@
         "access": "public",
         "label": "Official Journal of Finance Internet Appendix PDF",
         "url": "https://afajof.org/wp-content/uploads/files/supplements/Internet_Appendix_for_Does_A.pdf",
+        "version": "supplement"
+      }
+    ],
+    "HendershottJonesMenkveld2011AlgorithmicInstrumentData": [
+      {
+        "access": "public",
+        "label": "Author-hosted autoquote assignment workbook",
+        "url": "https://faculty.haas.berkeley.edu/hender/Autoquote%20Dates.xls",
         "version": "supplement"
       }
     ],
@@ -1344,9 +1447,29 @@
     "MakarovSchoar2022DeFi": [
       {
         "access": "public",
+        "label": "Brookings final article with embedded appendix",
+        "url": "https://www.brookings.edu/wp-content/uploads/2022/03/16265-BPEA-Sp22_MakarovSchoar_WEB-Appendix.pdf",
+        "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "Brookings article and source-material landing page",
+        "url": "https://www.brookings.edu/articles/cryptocurrencies-and-decentralized-finance-defi/",
+        "version": "published"
+      },
+      {
+        "access": "public",
         "label": "NBER Working Paper 30006",
         "url": "https://www.nber.org/system/files/working_papers/w30006/w30006.pdf",
         "version": "working-paper"
+      }
+    ],
+    "MakarovSchoar2022DeFiReplicationData": [
+      {
+        "access": "public",
+        "label": "Brookings tables and figures data workbook",
+        "url": "https://www.brookings.edu/wp-content/uploads/2022/03/BPEA_SP22_MakarovSchoar_TablesFigures_Data2.xlsx",
+        "version": "supplement"
       }
     ],
     "Mayer2022FinancingBreakthroughs": [

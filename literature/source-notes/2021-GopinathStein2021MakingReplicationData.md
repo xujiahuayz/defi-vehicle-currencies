@@ -1,0 +1,11 @@
+# Gopinath and Stein (2021) replication data
+
+- Source set: `GopinathStein2021Making`
+- Artifact: official Harvard Dataverse dataset, DOI `10.7910/DVN/CI13SP`, version 1.1 released 26 March 2021 under CC0; version 1.1 adds the published QJE citation while all three member files are byte-identical to version 1.0
+- Verified file: `literature/papers/2021-GopinathStein2021MakingReplicationData-supplement-dataverse-v1.1.zip`
+- SHA-256: `3509dd0cd7d0ac0d8664a29428cb1150fd884a3a9a8f50390130553c05d58dad`
+- Size and integrity: 11,030 bytes; archive integrity passes. Dataverse regenerates ZIP timestamps, so the archive hash is capture-specific and the stable identities are the member hashes: `Data1_invoice_currencies.csv` is `1acbfca1ff14eb94e8554e98e24198edda4e260a59e57b5d92f0b89b1aa6b4c6`, `Data2_liability_allinstruments_currencies.csv` is `5c8a4f616f1443f931592e2364f4ae0814b0a83b5e8ffed152c77fa5e01bdc97`, and `Data3_liability_loansdeposits_currencies.csv` is `15d3f89d2912e86daa90f7367b4c5ec483324a6b518a2353f267e49107ba4f97`
+- Inventory: three CSV files only, with no code or README despite Dataverse metadata describing the deposit as data and programs
+- Reconstruction: the recorded currency shares, `USD_foreign/For_Total`, the documented published exclusions and the South Korea to Korea name mapping reproduce Figure VII exactly. The top panel has 10 observations and R-squared 0.720443; the bottom has eight and R-squared 0.819471. Adding Brazil and India raises the respective fits to 0.749139 and 0.828776. A separate R reconstruction obtains the same values. The coefficient sign survives leave-one-out checks, although the samples are small and availability-selected and Switzerland is influential.
+- Scientific scope: the package supports the preliminary cross-sectional association in Figure VII. It does not support causal identification, the theoretical Figures I to VI, or a claim that the paper's mechanisms were estimated. The BIS vintage, sector and formula construction, sample code and country-name mapping are undocumented, and some totals contain residual or unallocated positions.
+- Disposition: non-text companion, saved byte-identically in the evidence worktree and primary project checkout and inspected at the archive, member, version and reconstruction levels; it receives no paper card of its own

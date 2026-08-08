@@ -1,0 +1,1827 @@
+
+
+===== PAGE 1 =====
+
+THE JOURNAL OF FINANCE • VOL. LXV, NO. 1 • FEBRUARY 2010
+Time Variation in Liquidity: The Role
+of Market-Maker Inventories and Revenues
+CAROLE COMERTON-FORDE, TERRENCE HENDERSHOTT,
+CHARLES M. JONES, PAMELA C. MOULTON, and MARK S. SEASHOLES ∗
+ABSTRACT
+We show that market-maker balance sheet and income statement variables explain
+time variation in liquidity , suggesting liquidity-supplier ﬁnancing constraints matter.
+Using 11 years of NYSE specialist inventory positions and trading revenues, we ﬁnd
+that aggregate market-level and specialist ﬁrm-level spreads widen when specialists
+have large positions or lose money . The effects are nonlinear and most prominent
+when inventories are big or trading results have been particularly poor. These sensi-
+tivities are smaller after specialist ﬁrm mergers, consistent with deep pockets easing
+ﬁnancing constraints. Finally , compared to low volatility stocks, the liquidity of high
+volatility stocks is more sensitive to inventories and losses.
+ASSET MARKET LIQUIDITY VARIES considerably over time. This variation matters
+to market participants who worry about the cost of trading into or out of a
+desired position in a short period of time. Liquidity can affect asset prices, too.
+For example, investors may demand higher rates of return as compensation
+for holding illiquid assets and assets that are particularly sensitive to ﬂuctu-
+ations in liquidity . However, despite the interest in aggregate liquidity from
+both of these angles, we know relatively little about exactly why market liq-
+uidity varies over time. Recent theoretical work by Gromb and Vayanos (2002)
+and Brunnermeier and Pedersen (2009), among others, postulates that limited
+market-maker capital can explain empirical features of asset market liquidity .
+∗Comerton-Forde is at University of Sydney . Hendershott is at Haas School of Business, Univer-
+sity of California Berkeley . Jones is at Columbia Business School. Moulton is at Fordham Graduate
+School of Business. Seasholes is at Hong Kong University of Science and Technology . We thank
+the NYSE for providing data. We thank Cam Harvey , an associate editor, two anonymous referees,
+Y akov Amihud, Jeff Benton, Ekkehart Boehmer, Robin Greenwood, Joel Hasbrouck, Jerry Liu,
+Marios Panayides, ˘Lubo˘sP ´astor, Avanidhar Subrahmanyam, Dimitri Vayanos, Vish Viswanathan,
+Masahiro Watanabe, Pierre-Olivier Weill, and participants at the NBER Market Microstructure
+meeting, the Trading Frictions in Asset Markets conference at UCSB, the 2008 AFA meeting,
+Columbia University , the Federal Reserve Bank of New Y ork, University of Maryland, University
+of Michigan, the Ofﬁce of Economic Analysis of the U.S. Securities and Exchange Commission, So-
+ciety of Quantitative Analysts, University of Amsterdam, University of California Santa Barbara,
+University of Toronto, University of Utah, and University of Washington for helpful comments.
+Hendershott gratefully acknowledges support from the National Science Foundation. Part of this
+research was conducted while Moulton was an economist and Comerton-Forde and Hendershott
+were visiting economists at the New Y ork Stock Exchange. This paper combines two working pa-
+pers by subsets of the authors: “Market Maker Inventories and Liquidity” and “Market Maker
+Revenues and Stock Market Liquidity .”
+295
+
+===== PAGE 2 =====
+
+296 The Journal of Finance R⃝
+Up to now, data limitations have hampered efforts to test the broad implica-
+tions of these models and demonstrate direct links between liquidity supplier
+behavior, capital limitations, and liquidity .
+In this paper, we provide the ﬁrst direct evidence that shocks to market-
+maker balance sheet and income statement variables impact daily stock mar-
+ket liquidity . Using an 11-year (1994 to 2004) panel of daily New Y ork Stock
+Exchange (NYSE) specialist inventory positions and trading revenues, we show
+that after specialists lose money on their inventories and/or ﬁnd themselves
+holding large positions, effective spreads widen. Our results hold even after
+controlling for stock returns and volatility , and they hold at both the aggregate
+market level and the specialist ﬁrm level.
+How are our ﬁndings consistent with the presence of market-maker ﬁnancing
+constraints? In the short run at least, specialists and other market makers have
+limited capital. Lenders typically impose limits on leverage ratios (or equiva-
+lently , ﬁx required margins).
+1 Information asymmetries can make it hard to
+raise capital quickly or cheaply . This means that market makers face short-run
+limits on the amount of risk they can bear. As their inventory positions grow
+larger (in either direction, long or short), market makers become increasingly
+hesitant to take on more inventory , and may quote smaller quantities at less
+attractive prices. Similarly , losses from trading reduce market makers’ equity
+capital. If leverage ratios remain relatively constant, as suggested by the ev-
+idence in Adrian and Shin (2007), market makers’ position limits decrease
+proportionately , which should similarly reduce market makers’ willingness to
+provide liquidity .
+Our general empirical approach is to predict today’s liquidity (spreads) using
+lagged specialist inventories and trading revenues. Because of their structural
+advantages, specialists usually earn positive trading revenue on short-term
+(intraday) round-trip transactions,
+2 but are more exposed to the possibility of
+losses on inventories held for longer periods (overnight or longer). When we
+decompose trading revenues into intraday versus longer-horizon components,
+we ﬁnd that revenues associated with inventories held through at least one
+overnight period are indeed the ones that are associated with future liquidity .
+This overnight breakpoint dovetails nicely with our story , because anecdotal
+evidence indicates that lenders and risk managers are most likely to evaluate
+ﬁnancing terms and position limits based on daily proﬁt and loss statements
+and end-of-day balance sheets.
+1During our sample period, there are three distinct types of specialist ﬁrms in terms of access
+to capital. Specialist ﬁrms that are part of a much larger ﬁrm (such as Goldman, Fleet, Bear, or
+Merrill) deal with the parent in obtaining capital. Most free-standing specialist ﬁrms clear through
+other member ﬁrms and so deal with capital requirements imposed by these other ﬁrms. Only a
+few specialist ﬁrms self-clear; these ﬁrms deal directly with external lenders.
+2During our sample period, an NYSE specialist generally has considerable information about
+liquidity supply and demand. Floor brokers routinely share information with the specialist about
+their trading interests. The specialist continually observes electronic orders in the limit order book.
+Finally , subject to NYSE rules, the specialist has a last-mover advantage in deciding whether or
+not to participate in a given trade.
+
+===== PAGE 3 =====
+
+Time V ariation in Liquidity 297
+Our analysis is carried out at two levels of aggregation. We begin the paper by
+measuring inventories, revenues, and liquidity at the market level. However,
+ﬁnancing constraints are likely to operate at the specialist ﬁrm level, because
+it is the specialist ﬁrm that must obtain capital from lenders or investors.
+Therefore, much of the analysis in this paper is undertaken using a panel of
+specialist ﬁrm inventories, revenues, and liquidity measures.
+At the market level, specialist inventories and trading revenues vary con-
+siderably over time, so there is ample scope for shocks in these variables to
+force contractions in liquidity provision. Aggregate specialist inventories have
+a standard deviation of roughly $100 million per day . We ﬁnd that larger (abso-
+lute) inventory positions predict lower future liquidity . Specialists in aggregate
+lose money on about 10% of the trading days during our sample. The average
+loss is about $4 million on these days, and losses tend to cluster together in
+time. We ﬁnd that revenues associated with inventories held overnight fore-
+cast future liquidity . As predicted by ﬁnancing constraint models, the effects of
+inventories and revenues on liquidity are nonlinear. Effects are greatest when
+inventories are highest and/or revenues are lowest.
+At the specialist ﬁrm level, inventories and revenues have similarly strong
+effects on future liquidity . If ﬁnancing constraints operate at this level, we
+expect to ﬁnd two sets of results. First, there should be a common component
+in liquidity for all stocks assigned to a particular specialist ﬁrm. Second, a
+specialist ﬁrm’s inventories and revenues should affect liquidity in its assigned
+stocks. Coughenour and Saad (2004) demonstrate the former; we show the
+latter result. As with the aggregate results, the inventory and revenue effects
+are greatest when a given ﬁrm’s inventories are highest and/or its revenues
+are lowest.
+To complement the time-series evidence, we next identify a set of market
+makers who are a priori more likely to face ﬁnancial constraints. In particular,
+we examine specialist ﬁrms identiﬁed by Coughenour and Deli (2002) where
+the specialists themselves supply the equity capital. These specialist-owned
+ﬁrms likely face tighter ﬁnancing constraints than corporate-owned specialist
+ﬁrms, and we show that the liquidity of stocks assigned to specialist-owned
+ﬁrms is more sensitive to inventories and trading losses.
+During our sample period, all of the specialist-owned ﬁrms in the Coughenour
+and Deli (2002) sample merge with larger, corporate-owned ﬁrms. These merg-
+ers provide a potentially exogenous, positive shock to capital availability . When
+we follow the stocks assigned to a given specialist-owned ﬁrm, we ﬁnd that liq-
+uidity in these stocks becomes somewhat less sensitive to specialist inventories
+and revenues after the merger. Our ﬁnding is consistent with deep pockets eas-
+ing ﬁnancing constraints.
+We end by studying time variation of liquidity for different types of stocks.
+Brunnermeier and Pedersen (2009) construct a theoretical model showing that
+limited risk-bearing capacity can have a differential impact on high and low
+fundamental volatility stocks. They use the term “ﬂight to quality” to refer to
+the result that the liquidity differential between high and low volatility secu-
+rities is greater when market makers have taken on larger positions or when
+
+===== PAGE 4 =====
+
+298 The Journal of Finance R⃝
+market-maker wealth decreases. Flight-to-quality evidence is also present in
+P ´astor and Stambaugh (2003). We test the Brunnermeier and Pedersen (2009)
+predictions by examining the relation between inventories, trading revenues,
+and the liquidity of high and low volatility stocks. Supporting the theoretical
+prediction, the liquidity of high volatility stocks is more sensitive to larger
+inventories and losses than is the liquidity of low volatility stocks.
+The remainder of the paper is organized as follows. Section I reviews related
+literature, and Section II provides a general description of the data. Section III
+shows the basic relations between aggregate market-maker inventories, rev-
+enues, and market liquidity . Section IV continues the analysis at the specialist
+ﬁrm level. Sections V and VI study a set of specialist-owned ﬁrms where we a
+priori expect ﬁnancing constraints to be tighter. We conduct a cross-sectional
+analysis and an event study/merger analysis on these specialist-owned ﬁrms.
+Section VII investigates whether market makers demonstrate ﬂight to quality
+in their liquidity provision, and Section VIII concludes.
+I. Related Literature
+Most models of liquidity focus on three sources of frictions: ﬁxed costs, inven-
+tory , and asymmetric information. Kyle (1985) and Glosten and Milgrom (1985)
+examine the impact of private information on trading costs. Stoll (1978), Ami-
+hud and Mendelson (1980), Ho and Stoll (1981, 1983), Mildenstein and Schleef
+(1983), and Grossman and Miller (1988) examine the impact of inventories.
+Inventory models without capital constraints generally predict that liquidity
+(the width of the bid-ask spread) is not affected by the market maker’s inven-
+tory position, but there are exceptions. For example, spreads vary positively
+with the amount of inventory exposure in the linear demand and supply case
+of Amihud and Mendelson (1980) and in Shen and Starr (2002) when a market
+maker faces quadratic costs. O’Hara and Oldﬁeld (1986) show that spreads
+depend on inventories if market makers are risk-averse. To the extent that
+ﬁnancing constraints can give rise to risk-averse behavior by market makers,
+this last model can provide an alternative backdrop for the empirical work in
+this paper.
+Even models that do not predict a link between inventories and the width of
+the spread can generate time variation in liquidity , as a market maker’s desire
+to supply liquidity is typically a function of an asset’s fundamental volatility .
+Time variation in volatility would lead to time variation in spreads. To account
+for such a possibility , we control for conditional volatility in our empirical work.
+Theory focusing on funding costs and ﬁnancing constraints is more recent.
+Kyle and Xiong (2001) show that the presence of convergence traders (arbi-
+trageurs) with decreasing risk aversion leads to correlated liquidations and
+high volatility . Gromb and Vayanos (2002) study a model in which arbitrageurs
+face margin constraints and show how arbitrageurs’ liquidity provision bene-
+ﬁts all investors.
+3 However, because the arbitrageurs cannot capture all of the
+3Yuan (2005) provides a model that shows a link between information asymmetry and liquidity
+when informed investors are constrained.
+
+===== PAGE 5 =====
+
+Time V ariation in Liquidity 299
+beneﬁts, they fail to take the socially optimal level of risk. Weill (2007) ex-
+amines dynamic liquidity provision by market makers. He shows that if mar-
+ket makers have access to sufﬁcient capital they provide the socially optimal
+amount of liquidity , whereas if capital is insufﬁcient or too costly then market
+makers undersupply liquidity . Brunnermeier and Pedersen (2009) construct a
+model—along the lines of Grossman and Miller (1988)—that also links market
+makers’ funding and market liquidity . The undersupply of liquidity is more
+severe if market makers face predation (see Attari, Mello, and Ruckes (2005)
+and Brunnermeier and Pedersen (2005)).
+Empirically , Chordia, Roll, and Subrahmanyam (2000), Hasbrouck and Seppi
+(2001), and Huberman and Halka (2001) examine the common component in
+liquidity changes across stocks. Coughenour and Saad (2004) show that co-
+movement in liquidity is stronger among stocks traded by the same NYSE
+specialist ﬁrm. Chordia, Roll, and Subrahmanyam (2001), Chordia, Sarkar,
+and Subrahmanyam (2005), and Hameed, Kang, and Viswanathan (2006) ﬁnd
+that aggregate stock market liquidity is worse following a stock market decline.
+We ﬁnd that specialists are net long over 94% of the time, so a stock market
+decline is likely to reduce overall specialist capital, and this can directly ex-
+plain the reduction in liquidity . Along similar lines, Mitchell, Pedersen, and
+Pulvino (2007) show that a loss of capital suffered by convertible and merger
+arbitrageurs can have strong, long-lasting effects on related asset prices.
+Both liquidity supplier wealth (revenues) and the amount of capital commit-
+ted by liquidity suppliers (inventories) play signiﬁcant roles in the theoretical
+work on capital constraints and liquidity .
+4 Prior data on market-maker in-
+ventories and trading typically cover relatively short periods of time and/or a
+limited number of securities.
+5 While these limitations preclude testing for the
+relation between aggregate liquidity and limited market maker risk-bearing
+capacity at interday horizons, the microstructure literature has been success-
+ful in showing that inventories play an important role in intraday trading and
+price formation.
+6 For example, Madhavan and Smidt (1993), Hansch, Naik, and
+Viswanathan (1999), Reiss and Werner (1998), and Naik and Y adav (2003a) all
+ﬁnd support for market makers’ controlling risk by mean reverting their inven-
+tory positions toward target levels. Hansch et al. (1999) and Reiss and Werner
+(1998) show that differences in inventory positions across dealers determine
+which dealers offer the best prices and when dealers trade.
+4Naik and Y adav (2003b) show that the contemporaneous relationship between government
+bond price changes and changes in market-maker inventories differs when market-maker inven-
+tories are very long or very short, but they do not directly examine liquidity .
+5For examples using NYSE specialist data, see Hasbrouck and Soﬁanos (1993), Madhavan and
+Smidt (1993), and Madhavan and Soﬁanos (1998). For examples using London Stock Exchange
+market-maker data, see Hansch, Naik, and Viswanathan (1999), Reiss and Werner (1998), and
+Naik and Y adav (2003a). For futures markets data, see Manaster and Mann (1996). For options
+market data, see Garleanu, Pedersen, and Poteshman (2009). For foreign exchange data, see Lyons
+(2001) and Cao, Evans, and Lyons (2006).
+6Kavajecz and Odders-White (2001) is an exception. On a trade-by-trade basis they ﬁnd no
+evidence that specialists revise the inside quote in response to changes in inventory .
+
+===== PAGE 6 =====
+
+300 The Journal of Finance R⃝
+Finally , a number of papers examine the proﬁtability of specialists.7 Soﬁanos
+(1995) provides some descriptive statistics on specialist trading revenues, and
+Hasbrouck and Soﬁanos (1993) decompose specialist proﬁts by trading horizon
+and ﬁnd that most proﬁts accrue from high frequency (short-term) trading
+strategies. Coughenour and Harris (2004) extend the results to show that the
+2001 reduction in the minimum tick size impacts specialist proﬁts. Panayides
+(2007) analyzes how specialists’ trading, inventory , and proﬁtability depend on
+their obligations under NYSE rules.
+II. Data and Descriptive Statistics
+A. Data
+Data on specialist trading revenues and inventories are from the NYSE’s
+Specialist Equity Trade Summary (SPETS). As its name suggests, SPETS pro-
+vides a daily summary of specialist activity . For each stock, the ﬁle records the
+daily specialist purchases in dollars and shares, daily specialist sales in dol-
+lars and shares, and opening and closing specialist inventory positions. SPETS
+data are also employed by Madhavan and Soﬁanos (1998) and Hendershott
+and Seasholes (2007). We calculate liquidity measures using NYSE Trades and
+Quotes (TAQ) data, while daily stock returns come from the Center for Research
+in Security Prices (CRSP).
+We measure economic quantities and conduct empirical work at two differ-
+ent levels of aggregation: the market level and the specialist ﬁrm level. Daily
+market-level time series start in 1994, end in 2004, and are denoted with the
+subscript “m.” Analysis at the specialist ﬁrm level is conducted using an un-
+balanced data panel denoted with the subscript “ f.” The panel is unbalanced
+because there is substantial consolidation among specialist ﬁrms over our 11-
+year sample period. There are 41 specialist ﬁrms in 1994, but only 7 ﬁrms at the
+end of our sample.
+8 Our analysis focuses on the 37 specialist ﬁrms that have
+at least 750 days of trading data (about 3 years). Each day we update the set
+of common stocks assigned to each specialist ﬁrm. The resulting panel incorpo-
+rates 96.7% of the stock-day observations used in the aggregate (market-level)
+analysis.
+A.1. Liquidity
+What is the most appropriate measure of liquidity to use? Brunnermeier
+and Pedersen (2009) deﬁne market liquidity as the difference between the
+market-clearing transaction price and the fundamental value. Since the sin-
+gle Walrasian auction in their paper does not describe the actual continuous
+7Market-maker proﬁts have also been examined in other markets. For example, Hansch et al.
+(1999) examine how London Stock Exchange market-maker trading proﬁts vary depending on
+whether the trade is preferenced or internalized.
+8See Hatch and Johnson (2002) for a discussion of specialist ﬁrm consolidation. See Corwin
+(2004) for a discussion of the allocation of stocks to specialist ﬁrms.
+
+===== PAGE 7 =====
+
+Time V ariation in Liquidity 301
+process of trading securities, no empirical measure of liquidity will match up
+perfectly with the model. However, effective spreads are designed to measure
+the difference between the transaction price and the fundamental value at a
+given time, so we use effective spread throughout the paper as our proxy for
+liquidity .
+The effective spread is the difference between an estimate of a security’s true
+value (the midpoint of the bid and ask quotes) and the actual transaction price.
+The wider the effective spread, the less liquid is the stock. We use effective
+spreads rather than quoted spreads because specialists and ﬂoor brokers are
+sometimes willing to trade at prices within quoted bid and ask prices.
+Percentage effective spreads for stock j at time k on day t are deﬁned respec-
+tively as:
+9
+ES(%) j,k,t = 2Ij,k,t(Pj,k,t − Mj,k,t)/Mj,k,t, (1)
+where Ij,k,t = 1 for buyer-initiated trades and Ij,k,t =− 1 for seller-initiated
+trades, Pj,k,t is the trade price, and Mj,k,t is the corresponding quote midpoint.
+We sign trades using Lee and Ready (1991) and use quotes from 5 seconds prior
+to a trade for data up through 1998. After 1998, we use contemporaneous quotes
+to sign trades—see Bessembinder (2003). We use share volume weights to cal-
+culate a stock’s daily average effective spreads ES(%)
+j,t. To calculate ES(%)m,t,
+the market-level effective spreads on date t, we average cross-sectionally using
+market capitalization weights lagged by 6 days so that recent returns are not
+mechanically linked to the aggregate spread measures. Specialist ﬁrm-level ef-
+fective spreads ES(%)
+f,t are calculated similarly for all common stocks assigned
+to that specialist ﬁrm.
+Chordia et al. (2001), Jones (2006), and Hameed et al. (2006) document a
+downward trend in average effective spreads over much of our sample period.
+Figure 1 highlights the narrowing trend along with two sharp declines due
+to reductions in minimum tick sizes. The ﬁrst reduction was from eighths
+to sixteenths on June 24, 1997. The second was from sixteenths to pennies
+on January 29, 2001. To account for these trends, we deﬁne the percentage
+effective spread measure Spr(%)
+t as the effective spread on day t relative to its
+average value in the recent past (subscripts m and f suppressed):
+Sp r(%)t = ES(%)t − 1
+5
+10∑
+j=6
+ES(%)t− j. (2)
+Lags 6 through 10 are used because many of our speciﬁcations predict future
+effective spreads using specialist revenues, inventories, and returns at lags 1
+through 5 as explanatory variables, and we want to ensure that the effective
+spread measure is not affected by contemporaneous correlation with potential
+right-hand side variables.
+9Results for spreads measured in dollars can be found in the Internet Appendix available at
+http://www.afajof.org/supplements.asp.
+
+===== PAGE 8 =====
+
+302 The Journal of Finance R⃝
+0.00%
+0.05%
+0.10%
+0.15%
+0.20%
+0.25%
+1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004
+Proportional effective spread
+$0.00
+$0.02
+$0.04
+$0.06
+$0.08
+$0.10
+$0.12
+$0.14
+Dollar effective spread
+Dollar effective spread
+Proportional effective spread
+Figure 1. NYSE value-weighted dollar and percentage effective spreads, 1994 to 2004.
+A.2. Specialist Trading Revenues
+For each stock i on each day t, we calculate specialist gross trading revenues
+as in Soﬁanos (1995) by marking to market the specialist’s starting and ending
+inventories and adding the gross proﬁts due to buying and selling during the
+day .10 We then decompose specialist gross trading revenues into intraday and
+longer-horizon components, depending on how long a position is held. The
+longer-horizon component, referred to as revenues from overnight inventories,
+are the trading revenues associated with inventories held through at least
+one overnight period. These are deﬁned as the mark-to-market proﬁt/loss on
+inventory held at the end of day t − 1 plus the mark-to-market proﬁt/loss on
+the net change in inventory from the end of day t − 1 to the end of day t.N o t e
+that the revenues from overnight inventories depend both on the overnight
+stock return and on price changes during the trading day . The second (shorter-
+horizon) component captures intraday proﬁts and losses and consists of the
+trading revenues earned on all round-trip transactions where both legs (the
+purchase and the sale) occur on day t. Please see Appendix A for details related
+to the decomposition of specialist revenues.
+10We use the terminology of Soﬁanos (1995), who follows generally accepted accounting princi-
+ples in referring to this daily measure as gross trading revenues. Hasbrouck and Soﬁanos (1993)
+and Coughenour and Harris (2004) refer to the same quantity as gross trading proﬁts.
+
+===== PAGE 9 =====
+
+Time V ariation in Liquidity 303
+Specialist revenues are aggregated each day at the market level or for each
+specialist ﬁrm before being demeaned. There are four regimes for demeaning,
+since specialist participation rates and the nature of specialist trading change
+markedly when the minimum tick size changes and at the beginning of 2003.
+11
+We sometimes refer to specialist losses in the paper; because revenues are de-
+meaned it should be understood that this refers to below-mean trading revenue,
+not necessarily negative specialist trading revenues.
+We envisage sustained losses affecting liquidity more than a 1-day tempo-
+rary loss. Therefore, our analysis sums revenues over 5-day periods. We deﬁne
+the gross trading revenue measure, RevGrt−1, the revenue from overnight in-
+ventories measure, RevInvt−1, and the intraday round-trip revenue measure,
+RevTrt−1, as the sum of the relevant daily revenue over the [ t − 5, t − 1] inter-
+val. The following equation summarizes the decomposition (subscripts m and f
+suppressed):
+RevGrt−1 = Rev Invt−1 + RevTrt−1. (3)
+A.3. Inventories
+We obtain the specialist dollar inventory I for each stock i at the end of day
+t. Inventories are summed cross-sectionally each day at the market level or for
+each specialist ﬁrm, as appropriate. Figure 2 graphs the specialists’ aggregate
+(market-level) inventories between 1994 and 2004.
+The average aggregate inventory position over the 11 years is $196 million.
+Aggregate inventories have a range of –$331 million to +$988 million and a
+daily standard deviation of $137 million. Inventory is negative only 163 of the
+2,770 days in our sample, so specialists in aggregate are net long 94% of the
+time. Similar calculations at the specialist ﬁrm level indicate that, on average,
+a given specialist ﬁrm is net long 83% of the time.
+To measure the amount of risk assumed by market makers, we aggregate
+(signed) dollar inventories up to the specialist ﬁrm level or the market level
+and then take the absolute value to get the magnitude of the overall position
+at the end of day t − 1 (subscripts m and f suppressed):
+Inv
+t−1 =
+⏐⏐
+⏐
+⏐⏐
+∑
+i
+Ii,t−1
+⏐⏐
+⏐
+⏐⏐. (4)
+11For example, specialist participation averages 8.7% during 1994 to 1996 (when prices are
+quoted in eighths), 13.2% during 1998 to 2000 (when prices are in sixteenths), and 15.0% during
+2001 to 2002 (when the minimum tick is a penny). In early 2003, the NYSE and SEC began to
+investigate the trading behavior of specialists. The investigation resulted in criminal indictments
+of individual specialists and ﬁnes for specialist ﬁrms—see Ip and Craig (2003). Specialist partic-
+ipation declines to 12.5% in 2003 and 10.1% in 2004, the last year of our sample. To account for
+these NYSE structural changes, we specify regime changes for specialist revenues on June 24,
+1997 (the adoption of sixteenths), January 29, 2001 (the adoption of decimals), and January 1,
+2003. A graph of specialist participation rates over our sample period can be found in the Internet
+Appendix.
+
+===== PAGE 10 =====
+
+304 The Journal of Finance R⃝
+-400
+-200
+0
+200
+400
+600
+800
+1,000
+1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004
+Figure 2. Aggregate specialist inventories, daily 1994 to 2004, in millions of dollars.
+Dynamic models with market-maker inventories, for example, Amihud and
+Mendelson (1980) and Madhavan and Smidt (1993), predict that market mak-
+ers mean revert their inventories towards target levels. Madhavan and Smidt
+(1993) ﬁnd empirically that the target level is greater than zero, which we also
+ﬁnd using our more recent sample period. Nevertheless, the amount of capital
+needed and the total risk borne by the specialist are proportional to the abso-
+lute inventory level, so the ﬁnancing constraints story implies that we should
+work with the absolute value of inventories rather than deviations from target
+positions.
+A.4. Returns
+We measure the daily return of the value-weighted market portfolio of NYSE
+stocks, as well as the return on the valued-weighted portfolio of common
+stocks assigned to each specialist ﬁrm. Returns, r
+t−1, are averaged over 5 days
+(t − 1t o t − 5) and used as a predictor variable in our analysis (subscripts m
+and f suppressed):
+Rett−1 = 1
+5
+5∑
+j=1
+rt− j. (5)
+
+===== PAGE 11 =====
+
+Time V ariation in Liquidity 305
+A.5. V olatility
+To measure changes in volatility we estimate the asymmetric GARCH (1, 1)
+model of Glosten, Jagannathan, and Runkle (1993). We work with rt, the daily
+log value-weighted return on the market or on the portfolio of stocks assigned to
+a particular specialist ﬁrm (subscripts m and f suppressed), which is normally
+distributed with mean μ and conditional variance h
+t:
+ht = κ + δht−1 + αu2
+t−1 + φu2
+t−1 Dt−1, (6)
+where ut = rt − μ is distributed N(0, ht), and Dt−1 = 1i f ut−1 ≥ 0a n d Dt−1 = 0
+otherwise. In order to match the treatment of effective spreads, we deﬁne the
+conditional return variance measure as
+varRett = ht − 1
+5
+10∑
+j=6
+ht− j. (7)
+Many of the variables used in this paper are calculated relative to recent
+means over the interval [ t − 10, t − 6]. This is a hybrid between working with
+levels and working with ﬁrst differences. Pure ﬁrst differences are not appro-
+priate, since there is no theoretical reason to believe that any of the variables
+(liquidity , volatility , etc.) contain a unit root. Levels are not appropriate in the
+presence of apparent nonstationarity . While we are not aware of any econo-
+metric theory that directly addresses our approach of subtracting off recent
+means, such an approach is common in other areas of ﬁnance (see, e.g., the rel-
+ative T-bill yield introduced by Campbell (1991) and now common in the return
+predictability literature). The hybrid approach induces a modest amount of
+moving average behavior, which requires the use of autocorrelation-consistent
+standard errors throughout the paper.
+B. Descriptive Statistics
+Table I contains correlations and standard deviations for the market-wide
+variables used in this paper. Aggregate specialist revenues ( RevGr
+m,t−1) are
+fairly volatile, with a standard deviation of $16.1 million around the regime
+means. Note that all revenue variables are aggregated over 5 trading days,
+so the standard deviations essentially refer to weekly trading revenues. Rev-
+enues from intraday round-trips ( RevTr
+m,t−1) are more volatile than revenues
+from overnight inventory ( RevInvm,t−1), with respective daily standard devi-
+ations of $13.9 million and $7.7 million. As a result, the 0.88 contemporane-
+ous correlation between RevTrm,t−1 and RevGrm,t−1 is much higher than the
+0.50 correlation between RevInvm,t−1 and RevGrm,t−1. Interestingly , the two
+components of specialist revenues are virtually uncorrelated with each other
+(ρ = 0.03), while revenues from overnight inventory are strongly correlated
+with contemporaneous stock market returns ( ρ = 0.59). The latter correlation
+makes sense given our earlier observation that aggregate specialist inventories
+are almost always net long.
+
+===== PAGE 12 =====
+
+306 The Journal of Finance R⃝
+Table I
+Market-Level Time-Series Correlations and Statistics
+The daily sample extends from 1994 through 2004. Variables denoted with the subscript m are aggregated across all NYSE common stocks. The
+value-weighted effective spread on day t is measured in basis points, Spr(%)m. Spreads are measured as changes from their average values during
+the time interval [ t − 10, t − 6]. Gross trading revenues RevGrm are decomposed into inventory-related revenues RevInvm and round-trip revenues
+RevTrm, each measured in millions of dollars. Specialist revenue variables on day t − 1 are aggregated over the interval [ t − 5, t − 1] and are
+measured relative to the mean of the relevant tick-size regime. Specialist inventory at the close of day t − 1( Invm) is an absolute value and measured
+in hundreds of millions of dollars. Other variables include Retm, the value-weighted market return over the prior 5 days in percent, and var Retm,
+the forecast of the time t return variance from an asymmetric GARCH model less the average conditional variance during the time interval [ t − 10,
+t − 6].
+Spr(%)m,t RevGrm,t−1 RevInvm,t−1 RevTrm,t−1 Invm,t−1 Retm,t−1 VarRetm,t SD
+Spr(%)m,t 1.00 0.77
+RevGrm,t−1 −0.19 1 .00 16.11
+RevInvm,t−1 −0.45 0 .50 1 .00 7.71
+RevTrm,t−1 0.02 0 .88 0 .03 1 .00 13 .91
+Invm,t−1 0.31 −0.15 −0.44 0 .08 1 .00 1 .29
+Retm,t−1 −0.48 0 .28 0 .59 0 .00 −0.55 1 .00 0 .45
+varRetm,t 0.53 −0.13 −0.52 0 .14 0 .33 −0.54 1 .00 0 .71
+
+===== PAGE 13 =====
+
+Time V ariation in Liquidity 307
+Given that we are using absolute values of inventories and specialist trad-
+ing revenues as proxies for ﬁnancing constraints, we expect the two measures
+to be negatively related. This is indeed the case, especially for revenues from
+overnight inventory positions. While the correlation between inventories and
+RevGr
+m,t−1 or RevTrm,t−1 are a modest −0.15 or 0.08, respectively , the corre-
+lation of inventories with RevInvm,t−1 is a much stronger −0.44. The latter
+correlation is a function of the average long specialist position combined with
+the specialist’s liquidity provision role. Specialists tend to ﬁnd themselves with
+even bigger long positions when the market declines (the contemporaneous cor-
+relation between ending inventories on day t − 1 and the 5-day market return
+ending on day t − 1i s −0.55), and they lose money in the process.
+III. Market-Level Liquidity
+The main empirical goal of the paper is to test whether economic state vari-
+ables related to ﬁnancing constraints can account for the observed time-series
+variation in stock market liquidity . Our main innovation is to use specialist rev-
+enues and specialist inventories as proxies for the ﬁnancial constraints faced
+by intermediaries. Control variables account for other possible mechanisms,
+such as the standard theoretical link between conditional volatility and mar-
+ket liquidity that is present in most microstructure models.
+We start by simply regressing market-wide effective spreads on day t on
+aggregate gross trading revenues summed over the interval [ t − 5, t − 1]. The
+results are in the ﬁrst column of Table II. The coefﬁcient on RevGr
+m,t−1 is only
+marginally different from zero. At ﬁrst glance, this result would seem to provide
+little support for a ﬁnancing constraints story , because it is aggregate losses
+that should weaken a market maker’s capital position and make it more difﬁcult
+to ﬁnance trading positions. However, speciﬁcation (2) in the same table reveals
+that when gross trading revenues are decomposed into revenues associated
+with overnight inventory ( RevInv
+m,t−1) and revenues associated with intraday
+round-trips ( RevTrm,t−1), inventory revenues have a large negative effect on
+spreads, while the coefﬁcient on round-trip revenues is indistinguishable from
+zero.
+Throughout the paper, we focus on revenues associated with overnight inven-
+tories because there are confounding effects between intraday trading revenues
+and future spreads. The variable RevTr is essentially the total dollar amount
+of effective spread earned on intraday round-trips by specialists less the as-
+sociated losses to informed traders. Thus, it is a realized or net spread for
+specialists. If realized spreads are persistent for whatever reason (say , e.g.,
+that the specialist has market power or the amount of intraday specialist trad-
+ing is persistent), then the relationship between today’s RevTr and tomorrow’s
+spread could be fairly mechanical. If RevTr and spreads both increase today ,
+they are likely to both remain high tomorrow, and a higher RevTr today ends
+up predicting a higher effective spread tomorrow.
+In contrast, inventory-related revenues are not mechanically tied to spreads
+in this way . For this reason, results involving inventory-related revenues are
+
+===== PAGE 14 =====
+
+308 The Journal of Finance R⃝
+Table II
+Aggregate Specialist Inventories and Revenues and Future Market
+Liquidity
+Time-series regressions on daily data from 1994 to 2004. The dependent variable is Spr(%)m,t,t h e
+value-weighted effective spread on day t relative to its average value during the interval [ t − 10,
+t − 6], measured in basis points. Inv Him is the interaction of Invm and a dummy variable that is
+equal to 1 if Invm is above the 75 th percentile of its distribution and 0 otherwise. RevInv Lom is the
+interaction of RevInvm with a dummy variable equal to 1 if RevInvm is below the 25 th percentile
+of its distribution and 0 otherwise. RevTr Lom is the interaction of RevTrm with a dummy variable
+equal to 1 if RevTrm is below the 25th percentile of its distribution and 0 otherwise. Other variables
+are deﬁned in Table I. All coefﬁcients are multiplied by 10 3. t-statistics are in brackets and are
+based on Newey–West standard errors with 10 lags.
+(1) (2) (3) (4) (5) (6) (7)
+Intercept −42.44 −43.17 −46.83 −419.80 −303.13 −63.21 −34.07
+[1.51] [1 .74] [1 .87] [7 .70] [6 .36] [1 .50] [0 .83]
+RevGrm,t−1 −9.27
+[1.88]
+RevInvm,t−1 −44.94 −44.85 −14.16 −12.93
+[8.37] [8 .38] [2 .95] [2 .69]
+RevInv Lom,t−1 −22.85 −29.48
+[1.60] [2 .38]
+RevTrm,t−1 2.09 2 .15 −1.27 −1.39
+[0.67] [0 .71] [0 .68] [0 .77]
+RevTr Lom,t−1 −2.99 −1.78
+[1.27] [0 .92]
+Invm,t−1 187.51 85 .06 18 .60 −12.14
+[6.32] [3 .16] [0 .97] [0 .56]
+Inv Him,t−1 104.59 33 .06
+[5.41] [2 .18]
+Retm,t−1 −331.18 −322.62
+[4.52] [4 .44]
+varRetm,t 376.79 385 .69
+[6.02] [6 .34]
+Observations 2,760 2,760 2,760 2,760 2,760 2,760 2,760
+R
+2 0.037 0 .201 0 .206 0 .097 0 .116 0 .345 0 .356
+easy to interpret. When specialists make money on their inventories, market-
+wide spreads tend to be narrow in the next period. The statistical evidence
+is compelling, as revenues alone explain about 20% of the daily variance in
+the proportional effective spread measure. In terms of economic magnitude,
+speciﬁcation (2) in Table II shows that if inventory-related revenues are one
+standard deviation greater (equal to $7.7 million from Table I), the aggregate
+effective spread measure is 7.7 ∗− 44.94 / 1,000 = 0.35 basis points narrower on
+average the next day . This amount is a little less than half of the daily standard
+deviation of 0.77 basis points from Table I for the spread measure itself.
+Financial constraints are generally nonlinear, so we next look at whether
+liquidity is more sensitive to extreme specialist losses. In speciﬁcation (3) we
+add a kink to both RevInv
+m,t−1 and RevTrm,t−1 at their lowest quartiles (25 th
+percentile). Consistent with theory , large losses are associated with wider
+
+===== PAGE 15 =====
+
+Time V ariation in Liquidity 309
+spreads, and the nonlinearity is fairly pronounced. Based on the numbers in
+Table II, the slope coefﬁcient on RevInvm,t−1 is about −44.85 for the majority
+of days and −69.70 ( =− 44.85 – 22.85) in the lowest quartile of the inventory
+revenues distribution.
+Turning to our balance sheet proxy , we next test the spread–inventory rela-
+tionship. Speciﬁcation (4) includes only a constant and the absolute value of ag-
+gregate specialist inventories (in hundreds of millions of dollars) as right-hand
+side variables. We ﬁnd that large inventories yesterday imply wide spreads
+today: An additional $100 million in inventory , which is slightly less than
+a one-standard deviation change, corresponds to an increase of 0.187 basis
+points in our proportional effective spread measure. In speciﬁcation (5), we add
+a kink to the linear relation between inventories and future liquidity , located
+at the upper quartile (75
+th percentile) of the absolute inventory distribution.
+The idea is that when inventories are particularly large in either direction,
+market makers may be more constrained and require more compensation to
+provide liquidity . The data reveal strong evidence of this kind of nonlinearity .
+On typical days, each additional $100 million in aggregate inventories implies
+a next-day market-wide effective spread that is 0.085 basis points wider. But
+when inventories are beyond the 75
+th percentile, the sensitivity of spreads to
+inventories more than doubles.
+In addition to our market-maker state variables, there are other variables
+that have been theoretically and empirically associated with changes in liq-
+uidity . For example, classic microstructure models, such as Kyle (1985) and
+Glosten and Milgrom (1985), conclude that liquidity should be decreasing in
+the variance of fundamentals. On the empirical side, Chordia et al. (2000,
+2001) show that when markets fall, liquidity dries up. Perhaps our revenue
+and inventory variables are simply collinear with these other, previously iden-
+tiﬁed effects. For example, since specialists are net long over 94% of the time,
+we know that proﬁts on overnight inventory positions will be quite correlated
+with market returns (Table I shows that the correlation between the two is
+0.59). Similarly , the specialist’s obligation to buffer order ﬂow suggests that
+inventories are likely to grow large following a sharp market decline (the Ta-
+ble I correlation between absolute inventories and returns is −0.55). While
+ﬁnancing constraints plus average net long inventory positions together im-
+ply a correlation between market returns and next period’s average liquidity , a
+ﬁnancing constraint explanation is even more plausible if markets become illiq-
+uid when specialists lose money or take on large positions without big market
+moves.
+Speciﬁcation (6) of Table II combines specialist revenue variables, absolute
+inventories, market returns, and the conditional return variance in the follow-
+ing regression:
+Sp r
+m,t = α + β1 Rev Invm,t−1 + β2 RevTr m,t−1 + β3 Invm,t−1
++β4 Retm,t−1 + β5varRetm,t + εm,t. (8)
+As noted above, there is a fair bit of collinearity between the various explana-
+tory variables, so not all of the right-hand side variables remain signiﬁcant.
+
+===== PAGE 16 =====
+
+310 The Journal of Finance R⃝
+However, we ﬁnd that the coefﬁcient on revenues from overnight inventory
+RevInvm,t−1 remains negative and strongly statistically signiﬁcant. When spe-
+cialists lose money overall, spreads are wider than average, even if the market
+is not falling at the same time. 12
+In the ﬁnal speciﬁcation of Table II, we allow a nonlinear effect for both
+revenues and inventories. While speciﬁcation (7) asks a lot of the data (given
+the collinearity between most of the explanatory variables), we continue to
+ﬁnd evidence that the predictability is greatest when specialists take on large
+positions and when they suffer the biggest losses on their overnight inventory
+positions.
+For robustness, we also conﬁrm that our quasi-differencing is not driving the
+results. We estimate a daily vector autoregression with ﬁve lags on spreads,
+market returns, absolute market returns, intraday and overnight specialist
+revenues, and specialist inventories, taking a piecewise linear time trend out
+of the spreads for each tick regime. We get similar results on the importance
+of specialist inventories and revenues; the results are available in the Internet
+Appendix.
+13
+The aggregate evidence strongly supports a role for ﬁnancial constraints in
+shaping stock market liquidity . However, ﬁnancial constraints should operate
+at the level of the ﬁnancial intermediary . Therefore, we turn next to more
+disaggregated data to test whether they too support a capital constraint story .
+IV. Liquidity at the Specialist Firm Level
+If specialists are marginal liquidity suppliers, then a stock’s liquidity should
+suffer if its specialist ﬁrm faces ﬁnancing constraints. In particular, if specialist
+ﬁrm revenues are imperfectly correlated cross-sectionally , different specialist
+ﬁrms may face ﬁnancing constraints at different times, and we might obtain
+greater statistical power by conducting the analysis at the specialist ﬁrm level.
+At the end of our sample, there are only seven specialist ﬁrms, each with a
+broadly diversiﬁed list of assigned stocks. Facing little idiosyncratic risk, these
+specialist ﬁrms are likely to generate revenues and take on inventories that
+are highly correlated with each other. However, at the beginning of the sample
+there are 41 specialist ﬁrms and considerable cross-sectional dispersion in
+revenues and inventories. This dispersion aids identiﬁcation.
+We work with specialist ﬁrms rather than individual specialists because
+Coughenour and Saad (2004) ﬁnd evidence that capital is allocated at the ﬁrm
+level. They conclude that “information about inventory and proﬁts is shared and
+that ﬁrm capital constraints and other characteristics can affect the provision of
+liquidity” (p. 43). In conversations with us, the former head of a large specialist
+12An examination of dollar spreads shows that this result is not due to a mechanical relationship
+between proportional spreads and the stock price level when spreads are limited by a discrete price
+grid. Results for spreads measured in dollars can be found in the Internet Appendix available at
+http://www.afajof.org/supplements.asp.
+13An Internet Appendix for this article is online in the “Supplements and Datasets” section at
+http://www.afajof.org/supplements.asp.
+
+===== PAGE 17 =====
+
+Time V ariation in Liquidity 311
+ﬁrm agreed with that assessment. He noted that if ﬁrm-wide inventories got too
+large, for example, his specialist ﬁrm risk managers would tell every specialist
+to widen the quote, step back for a while (reduce liquidity provision), and then
+begin to reduce positions.
+14 Internal risk managers would typically step in well
+short of approaching any external constraint.
+To proceed, we create an unbalanced panel of specialist ﬁrm-level data with
+one daily observation for each specialist ﬁrm. We quasi-difference and demean
+all variables as discussed in Section II. In particular, we calculate gross trad-
+ing revenues for each specialist ﬁrm f ending on day t (RevGr
+f,t), which is then
+decomposed into overnight inventory-related revenues ( RevInvf,t) and intra-
+day round-trip revenues ( RevTrf,t). We calculate the absolute dollar inventory
+position ( Invf,t) for each specialist ﬁrm based on its assigned stocks each day .
+The value-weighted effective spread measure Spr(%)f,t) is calculated each day
+for the portfolio of stocks assigned to each specialist ﬁrm. We also calculate the
+value-weighted return ( Retf,t) on the portfolio of assigned stocks in excess of
+the aggregate market return, along with the associated conditional volatility
+(varRet
+f,t) using an asymmetric GARCH model.
+Table III shows average within-ﬁrm correlations and standard deviations for
+the specialist-ﬁrm panel. The general correlation patterns from the market-
+level analysis in Table I carry over to the specialist ﬁrm level. Note that corre-
+lation magnitudes are generally smaller when using specialist ﬁrm-level data.
+Specialist ﬁrm gross trading revenues ( RevGr
+f,t−1) have a standard deviation of
+$1.20 million around the regime means. Again, weekly revenues from intraday
+round-trips (RevTrf,t−1) are substantially more volatile (σ = $1.03 million) than
+revenues from overnight inventory ( RevInvf,t−1), with a standard deviation of
+$0.52 million. The two components of specialist ﬁrm revenue are somewhat
+negatively correlated with each other ( ρ =− 0.10). The correlation between
+RevInvf,t−1 and contemporaneous stock market returns Retf,t−1 (ρ = 0.31) is
+more modest than at the market level.
+There is substantial heterogeneity across specialist ﬁrms. Differences in-
+clude ﬁrm size, organizational structure, and types of stocks assigned. Thus,
+we expect considerable cross-sectional heterogeneity in regression coefﬁcients
+on inventory and revenue variables. For example, a $1 million trading loss
+could be a signiﬁcant event for a small specialist ﬁrm, but not at all unusual
+for a large specialist ﬁrm. To handle this heterogeneity , we estimate a sepa-
+rate time-series regression for each specialist ﬁrm (see Table IV).
+15 We report
+14Interestingly , at high frequencies (trade by trade), Naik and Y adav (2003a) ﬁnd that stock-level
+inventories help predict a London Stock Exchange dealer’s quote placing behavior, but ﬁrm-wide
+inventories do not. At high frequencies, dealers may not be instantaneously aware of changes in
+ﬁrm-wide state variables and may only be able to condition on own-stock variables.
+15Because the tick size changes affect liquidity as may the consolidation of specialist ﬁrms, we
+actually estimate the regressions separately for each “specialist-ﬁrm regime.” Speciﬁcally , each
+time a specialist ﬁrm merges or the tick size changes, a new specialist–ﬁrm regime begins. We
+require at least 100 observations for each specialist-ﬁrm regime, although the results are not
+sensitive to this requirement.
+
+===== PAGE 18 =====
+
+312 The Journal of Finance R⃝
+Table III
+Specialist Firm-Level Correlations and Statistics
+Cross-sectional averages of within-specialist ﬁrm correlations and standard deviations from 1994 through 2004. Variables denoted with the subscr ipt
+f are aggregated across all stocks assigned to a given specialist ﬁrm. The day t value-weighted effective spread is measured in basis points, Spr(%)f .
+Spreads are measured as changes from their average values during the time interval [ t − 10, t − 6]. Variables related to specialist ﬁrm revenues
+on day t − 1 are aggregated over the interval [ t − 5, t − 1] and include gross trading revenues RevGrf decomposed into inventory-related revenues
+RevInvf and round-trip revenues RevTrf , each measured in millions of dollars. Specialist revenues are measured relative to the mean of the relevant
+tick-size regime. Specialist inventories at the close on day t − 1( Invf ) are absolute values, measured in hundreds of millions of dollars. Other variables
+include Retf , the value-weighted return in percent on the portfolio of stocks assigned to a specialist ﬁrm, and var Retf , the forecast of the time t return
+variance on that portfolio from an asymmetric GARCH model less the average conditional variance over the time interval [ t − 10, t − 6].
+Spr(%)f,t RevGrf,t−1 RevInvf,t−1 RevTrf,t−1 Invf,t−1 Retf,t−1 varRetf,t SD
+Spr(%)f,t 1.00 2.06
+RevGrf,t−1 −0.09 1 .00 1.20
+RevInvf,t−1 −0.17 0 .61 1 .00 0.52
+RevTrf,t−1 0.03 0 .62 −0.10 1 .00 1 .03
+Invf,t−1 0.11 −0.10 −0.21 0 .05 1 .00 0 .07
+Retf,t−1 −0.32 0 .20 0 .31 −0.02 −0.22 1 .00 0 .53
+varRetf,t 0.31 −0.11 −0.25 0 .08 0 .17 −0.50 1 .00 0 .89
+
+===== PAGE 19 =====
+
+Time V ariation in Liquidity 313
+Table IV
+Specialist Firm Inventories and Revenues and Future Liquidity
+Cross-sectional averages of time-series regressions estimated for each specialist ﬁrm. Variables are calculated using the stocks assigned to a giv en
+specialist ﬁrm. The dependent variable is Spr(%)m,t, the value-weighted effective spread on day t relative to its average value during the interval
+[t − 10, t − 6], measured in basis points. Most explanatory variables are deﬁned in Table III. In addition, Inv Hif is the interaction of Invf and a
+dummy variable that is equal to 1 if Invf is above the 75 th percentile of its distribution and 0 otherwise. RevInv Lof is the interaction of RevInvf with
+a dummy variable equal to 1 if RevInvf is below the 25 th percentile of its distribution and 0 otherwise. RevTr Lof is the interaction of RevTrf with a
+dummy variable equal to 1 if RevTrf is below the 25 th percentile of its distribution and 0 otherwise. All coefﬁcients are multiplied by 10 3. t-statistics
+are in brackets and account for both time-series and cross-sectional correlation.
+(1) (2) (3) (4) (5) (6) (7)
+Intercept −5.83 −5.47 −5.42 −208.45 −207.92 3 .18 −13.01
+[0.14] [0 .14] [0 .14] [4 .23] [4 .00] [0 .10] [0 .37]
+RevGrf,t−1 −1,289.28
+[6.83]
+RevInvf,t−1 −2,164.15 −2,034.45 −1,030.67 −838.91
+[6.41] [5 .95] [2 .66] [2 .21]
+RevInv Lof,t−1 −2,289.07 −1,946.53
+[3.32] [3 .24]
+RevTrf,t−1 −1,999.19 −2,394.20 −428.30 −425.80
+[1.86] [2 .05] [0 .28] [0 .29]
+RevTr Lof,t−1 76,961.86 38,870 .16
+[1.41] [0 .95]
+Invf,t−1 4,069.98 −3,218.62 2,265 .55 2,419 .10
+[1.82] [0 .38] [1 .44] [0 .75]
+Inv Hif,t−1 6,714.20 −804.19
+[1.03] [0 .29]
+Retf,t−1 −631.34 −627.55
+[12.21] [12 .53]
+varRetf,t 597.52 585 .24
+[8.20] [8 .05]
+Specialist ﬁrms 124 124 124 124 124 124 124
+Average R
+2 0.026 0 .061 0 .080 0 .029 0 .033 0 .190 0 .208
+
+===== PAGE 20 =====
+
+314 The Journal of Finance R⃝
+cross-sectional average coefﬁcients, and standard errors account for both cross-
+sectional correlation across specialist ﬁrms and time-series persistence within
+specialist ﬁrms (see Appendix B for details).
+Speciﬁcation (1) shows that, in contrast to earlier regressions at the aggre-
+gate level, specialist ﬁrm gross trading revenues are signiﬁcant predictors of
+next-day liquidity in that ﬁrm’s assigned stocks. As discussed earlier, there
+could be confounding effects between intraday revenues ( RevTr
+f,t−1)a n df u -
+ture spreads, so we again decompose the specialist ﬁrm’s daily gross revenues
+and focus on revenues that arise from overnight inventory ( RevInv
+f,t−1). Spec-
+iﬁcation (2) shows that these inventory-related revenues continue to predict
+liquidity at the specialist ﬁrm level, with t-statistics above four. In economic
+terms, if a specialist ﬁrm experiences a one-standard deviation inventory rev-
+enue shortfall of $0.52 million, the spread on that ﬁrm’s stocks the next day is
+wider by an average of 1.26 basis points ($0.52 million × the slope coefﬁcient
+of 2.164).
+We look next at nonlinearities following extreme specialist losses. In speciﬁ-
+cation (3) we add a kink to both RevInv and RevTr at the lower quartile point
+(25th percentile). As in the market-level results, the biggest losses are associ-
+ated with signiﬁcantly wider spreads. The slope coefﬁcient on RevInv is about
+−2,034 on a typical day and about −4,324 ( =− 2,034 – 2,289) in the left tail of
+the inventory revenues distribution. We also ﬁnd that larger inventories today
+lead to wider spreads tomorrow. However, the relationship is not as statistically
+strong, with a t-statistic of 1.82 in speciﬁcation (4).
+Speciﬁcation (6) is the kitchen-sink version. Right-hand side variables in-
+clude RevInv
+f,t−1 and RevTrf,t−1, returns on the portfolio of assigned stocks,
+and the conditional volatility on the portfolio of assigned stocks:
+Sprf,t = α + β1RevInv f,t−1 + β2RevTrf,t−1 + β3Inv f,t−1
++β4Ret f,t−1 + β5varRet f,t + ε f,t. (9)
+Recall that all of these explanatory variables exhibit considerable covaria-
+tion, so we expect some of them to become insigniﬁcant when all are included
+together. Revenues related to overnight inventory survive, but inventory does
+not fare well. When we add kinks to the revenue and inventory variables in
+speciﬁcation (7), we ﬁnd that the signiﬁcant coefﬁcient on RevInv is driven
+by the left tail of the distribution, again consistent with ﬁnancial constraints
+binding more severely following relatively large revenue shortfalls. Overall, at
+the specialist ﬁrm level, there is evidence that specialist ﬁrm trading revenues
+and inventories affect next period’s spreads.
+Before we go on, it is worth giving some thought to the link between the
+specialist ﬁrm results and the market-level results in the previous section.
+Financing constraints operating at the specialist ﬁrm level need not imply
+strong effects at the market level. However, if there is a strong common factor
+in revenues and inventories across specialist ﬁrms, ﬁnancing constraints would
+tend to bind for all specialist ﬁrms at once, and there would be a market-wide
+
+===== PAGE 21 =====
+
+Time V ariation in Liquidity 315
+reduction in specialist liquidity provision. To investigate this, we calculate
+the contemporaneous correlation for both revenues and inventories for each
+possible pair of specialist ﬁrms. The average pairwise correlation of RevInv
+f,t is
+0.215, while the average pairwise correlation of Invf,t is 0.110. Thus, specialist
+ﬁrms tend to lose money at the same time, and they suffer similar inventory
+shocks.
+Why are revenue and inventory measures positively correlated across spe-
+cialist ﬁrms? Because there is a strong common factor in returns, and specialist
+ﬁrms tend to be net long most of the time. If the market is down, specialists
+across the ﬂoor are probably accumulating stock as part of their liquidity pro-
+vision, leading to a positive correlation in absolute inventories. The variable
+RevInv
+f,t is positively correlated because most specialist ﬁrms are net long,
+so they all tend to lose money on these inventories when the market is down
+for the day . In short, broad market declines cause constraints to bind at most
+specialist ﬁrms at the same time, and the specialist-ﬁrm relation becomes a
+market-wide phenomenon.
+Next, we identify and examine specialist ﬁrms that a priori are likely to
+face ﬁnancing constraints. In Section V , we compare these ﬁrms to others that
+are less likely to face ﬁnancing constraints. And in Section VI, we look at
+what happens when the more-constrained ﬁrms merge with deeper-pocketed
+partners.
+V. Evidence from Specialist Firm Ownership Structures
+If some specialist ﬁrms have less access to capital, there should be cross-
+sectional differences in the sensitivity of spreads to inventories and trading
+losses. While we do not have access to the specialist ﬁrms’ balance sheets or
+income statements, Coughenour and Deli (2002) identify three ﬁrms that are
+owned by the specialists themselves. The authors also identify three special-
+ist ﬁrms in which the specialists are only employees (corporate ownership).
+Conversations with specialists suggest that specialist-owned ﬁrms may have
+less access to capital than corporate-owned specialist ﬁrms. In this section, we
+investigate whether there is a cross-sectional difference in how these two kinds
+of specialist ﬁrms react to trading losses and inventory shocks.
+We construct a panel of daily data for these six specialist ﬁrms, beginning
+on January 1, 1994. Each specialist ﬁrm remains in the sample until it is
+acquired or March 1, 2002 (the date the last of the three specialist-owned ﬁrms
+is acquired), whichever is earlier. Variables are measured at the specialist ﬁrm
+level as in Section IV . We deﬁne an indicator variable Dum
+f,t−1 that is equal
+to one for specialist-owned ﬁrms and zero otherwise. We then interact this
+dummy with all of the right-hand side variables. For example, a speciﬁcation
+with only inventories on the right-hand side becomes
+Spr
+f,t = α1 + α2Dum f,t−1 + β1|Inv f,t−1|+ β2|Inv f,t−1|· Dumf,t−1 + ε f,t. (10)
+
+===== PAGE 22 =====
+
+316 The Journal of Finance R⃝
+Table V
+Specialist Firm Ownership Structure as a Proxy for Financing
+Constraints
+Data include the three specialist-owned ﬁrms and three corporate-owned specialist ﬁrms identiﬁed
+in Coughenour and Deli (2002). The panel of daily data starts January 1, 1994 and ends March
+1, 2002. Regression variables are calculated using the stocks assigned to a given specialist ﬁrm
+denoted by f . The dependent variable is Spr(%)
+f,t. Explanatory variables are interacted with a
+dummy ( Dum) that is equal to 1 for specialist-owned ﬁrms and 0 otherwise. All coefﬁcients are
+multiplied by 10 3. t-statistics are in brackets and account for both time-series and cross-sectional
+correlation.
+(1) (2) (3)
+Intercept −31.52 −162.80 −9.29
+[2.47] [2 .96] [0 .29]
+IntDum 2.45 45 .27 3 .08
+[0.69] [0 .82] [0 .09]
+RevInvf,t−1 −133.75 −45.18
+[2.59] [1 .08]
+RevInvDumf,t−1 −432.64 −29.61
+[3.67] [0 .43]
+RevTrf,t−1 13.22 −1.08
+[7.50] [0 .62]
+RevTrDumf,t−1 −5.44 4 .55
+[0.47] [0 .45]
+Invf,t−1 6.13 1 .17
+[3.81] [1 .19]
+InvDumf,t−1 22.78 10 .29
+[2.36] [3 .58]
+Retf,t−1 −106.40
+[6.27]
+RetDumf,t−1 −82.13
+[3.23]
+varRetf,t 232.60
+[3.30]
+varRetDumf,t 137.02
+[1.98]
+Observations 10,642 10,642 10,642
+R
+2 0.019 0 .012 0 .157
+In the above regression, we are interested in the null hypothesis that β2 = 0.
+More generally , we look to all of the interaction terms for evidence that spreads
+of stocks assigned to specialist-owned ﬁrms are more sensitive to inventory
+and revenue shocks. Standard errors in these pooled regressions are based on
+Thompson (2009).
+Table V presents the results. In each speciﬁcation, we reject the null in favor
+of the alternative that spreads are more sensitive for specialist-owned ﬁrms.
+For example, speciﬁcation (1) reveals that a $1 million shock to inventory
+revenues causes a 0.134 basis point change in spreads for corporate-owned
+specialist ﬁrms. The effect is more than tripled for specialist-owned ﬁrms.
+Speciﬁcation (2) in the table corresponds to equation (10), above, and uses only
+
+===== PAGE 23 =====
+
+Time V ariation in Liquidity 317
+inventories as an explanatory variable. The effect of ﬁrm ownership structure
+is similarly strong, with a t-statistic of 2.36 on the interacted inventory vari-
+able. When we throw revenues, inventories, past stock returns, and conditional
+return variances into the regression together, the specialist revenue variables
+become insigniﬁcant, but the coefﬁcient on the interacted inventory variable
+is 10.29, with a t-statistic of 3.58. This means that an additional $1 million of
+inventory is associated with an additional 0.010 basis points of spread for the
+specialist-owned ﬁrm relative to other specialist ﬁrms.
+Thus, we have strong evidence that access to capital can affect the sensitiv-
+ity of spreads to market-maker revenue and inventory shocks. However, it is
+possible that the stocks assigned to specialist-owned ﬁrms are somehow dif-
+ferent from the stocks assigned to corporate-owned specialist ﬁrms, and that
+these assignments somehow account for our results in Table V. To address this
+possibility , we look next at a time-series analysis of the same stocks following
+a relaxation of ﬁnancial constraints.
+VI. Evidence from Specialist Firm Mergers
+In this section we ask: What happens if ﬁnancing constraints are suddenly
+relaxed? Specialists should become less sensitive to losses and less constrained
+by large inventory positions. We investigate whether deep pockets help spe-
+cialists provide liquidity by studying the mergers of the three specialist-owned
+ﬁrms from Section V . The ﬁrst merger took place on March 20, 2001 when Ben-
+jamin Jacobson & Sons was acquired by Spear Leeds Kellogg. On October 19,
+2001, Bocklet & Company was acquired by LaBranche & Co. The ﬁnal merger
+took place on March 1, 2002, with Van Der Moolen acquiring Lyden, Dolan,
+Nick & Company .
+The empirical strategy is straightforward. We ﬁrst identify the set of stocks
+assigned to each target specialist ﬁrm just prior to the merger. The same stocks
+are studied post-merger to see if there is a change in the sensitivity of spreads
+to inventories and revenues. Speciﬁcally , we deﬁne a dummy variable Post
+f,t−1
+for each date and specialist ﬁrm that is equal to one after a ﬁrm is merged and
+zero otherwise. We interact this dummy with each of the included revenue and
+inventory measures to see if there is an identiﬁable difference in sensitivities
+post-merger. As in the previous section, the data are pooled. The regression
+speciﬁcation with only inventories on the right-hand side is
+Spr
+f,t = α1 + α2Post f,t−1 + β1|Inv f,t−1|+ β2|Inv f,t−1|· Post f,t−1 + ε f,t, (11)
+and the relevant null hypothesis is that β2 = 0. The pre-merger period covers
+event days [ −70, −11], or about 3 calendar months. The post-merger period
+is deﬁned symmetrically as event days [ +11, +70].16 We apply Newey–West
+standard errors with 10 lags to each pre-merger or post-merger period in order
+to account for time-series dependence in the regression errors.
+16The results are not sensitive to the time interval chosen. The 3-month interval ensures that
+none of the pre- and post-merger sample periods overlap across the three mergers.
+
+===== PAGE 24 =====
+
+318 The Journal of Finance R⃝
+Table VI
+Mergers of Specialist Firms
+Panel regressions for the three specialist-owned ﬁrms identiﬁed in Coughenour and Deli (2002).
+We analyze liquidity before (event days −70 to −11) and after (event days +11 to +70) they merge
+with larger corporate-owned specialist ﬁrms. Regression variables are denoted f and are calculated
+using the set of stocks assigned to the owner-specialist ﬁrm prior to the merger. The dependent
+variable is Spr(%)
+f,t. Explanatory variables are interacted with a dummy ( Post) equal to 1 after the
+merger is consummated and 0 before. All coefﬁcients are scaled by 10 3. Newey–West t-statistics
+with 10 lags are in brackets.
+(1) (2) (3)
+Intercept 1 .46 −474.29 −389.34
+[0.01] [1 .93] [2 .83]
+IntPost −186.14 300 .94 233 .23
+[0.76] [1 .09] [1 .26]
+RevInvf,t−1 −1, 477.01 441 .14
+[1.45] [1 .00]
+RevInvPostf,t−1 1, 337.99 −446.13
+[1.27] [0 .87]
+RevTrf,t−1 −371.87 −581.55
+[0.60] [1 .31]
+RevTrPostf,t−1 −14.94 539 .89
+[0.02] [1 .13]
+Invf,t−1 132.63 75 .27
+[1.52] [1 .89]
+InvPostf,t−1 −145.01 −80.68
+[1.63] [1 .75]
+Retf,t−1 −164.69
+[2.40]
+RetPostf,t−1 193.95
+[2.41]
+varRetf,t 578.82
+[4.40]
+varRetPostf,t 203.06
+[0.61]
+Observations 360 360 360
+R
+2 0.052 0 .040 0 .439
+The results are in Table VI. In every case, we ﬁnd that the coefﬁcient esti-
+mates are consistent with the ﬁnancial constraints hypothesis, though we do
+not obtain statistical signiﬁcance. The lack of signiﬁcance is perhaps due to
+a lack of power given the presence of only three specialist-owned ﬁrms in the
+sample. For the set of stocks previously assigned to the specialist-owned ﬁrm,
+spreads become less sensitive to both revenues and inventories post-merger.
+Consider speciﬁcation (2), for example. The pre-merger sensitivity to special-
+ist ﬁrm level inventories is 132.63, which means that a $1 million increase
+in inventories increases effective spreads by an average of 0.133 basis points,
+while the post-merger sensitivity to absolute inventories is actually slightly
+negative (132.63 – 145.01) and statistically indistinguishable from zero. This
+suggests that the deep pockets of the acquiring ﬁrm enable these specialists
+
+===== PAGE 25 =====
+
+Time V ariation in Liquidity 319
+to take on inventory without widening the spread. The results for specialist
+revenues in speciﬁcations (1) and (3) have the correct signs, but again the re-
+sults are not statistically signiﬁcant. For example, the t-statistic is 1.27 on the
+RevInvPost
+f,t interaction term in speciﬁcation (1). Overall, the evidence points
+to improvements in the specialist’s ability to commit capital to liquidity provi-
+sion once these specialist-owned ﬁrms are taken over, but the ﬁndings are not
+statistically strong.
+VII. Flight to Quality: The Role of Inventories and Revenues
+The Brunnermeier and Pedersen (2009, p. 2206) model implies that “risky
+securities become especially illiquid ... when [available dealer] capital deteri-
+orates, which induces them to mostly provide liquidity in securities that do
+not use much capital (low-volatility stocks with lower margins), implying that
+the liquidity differential between high-volatility and low-volatility securities
+increases.” They term this effect “ﬂight to quality” because the liquidity of
+low volatility (high quality) securities is relatively less sensitive to inventory
+shocks. In our paper, both inventories and specialist revenue measures identify
+reductions in available dealer capital, and these variables can be used to test
+ﬂight-to-quality predictions.
+Because fundamental volatility is unobservable, we sort stocks into quartiles
+using their realized volatility . Each day we calculate each stock’s rolling 60-day
+return volatility , lagged 10 days (i.e., using returns from days t − 11 to t − 70).
+We then sort the stocks based on this rolling volatility . For the lowest and
+highest quartiles, we calculate an aggregate market-wide proportional effec-
+tive spread measure for day t using the same quasi-differencing, demeaning,
+and aggregation methodology described in Section II. The new measures are
+denoted Sp r
+Loσ
+t and Sp rHiσ
+t .
+To test whether there is evidence of a ﬂight to quality in liquidity provision,
+we regress the spreads of the lowest and highest volatility quartiles on absolute
+inventories and the two components of aggregate specialist trading revenues,
+SprLo σ
+m,t = αL + β L
+1 |Invm,t−1|+ β L
+2 RevInvm,t−1 + β L
+3 RevTrm,t−1 + εL
+mt
+SprHi σ
+m,t = αH + β H
+1 |Invm,t−1|+ β H
+2 RevInvm,t−1 + β H
+3 RevTrm,t−1 + εH
+mt, (12)
+and test the null hypothesis β H
+1 = β L
+1 or β H
+2 = β L
+2 against the alternative that
+the sensitivities are different in the two volatility quartiles. To conduct the sta-
+tistical test, we subtract the second equation in (12) from the ﬁrst, regress the
+cross-sectional difference in spreads on the inventory and revenue variables,
+and test whether the relevant slope coefﬁcients are different from zero.
+In addition to this speciﬁcation, we estimate versions of equation (12) using
+subsets and supersets of these variables, as well as piecewise linear versions.
+The results for stocks in the low volatility quartile are in Table VII, Panel
+A, and the results for stocks in the high volatility quartile are in Table VII,
+Panel B. In speciﬁcation (2), which includes only the trading revenue
+
+===== PAGE 26 =====
+
+320 The Journal of Finance R⃝
+Table VII
+Market-Wide Flight to Quality
+Time-series regressions from 1994 to 2004. Volatility quartiles are formed using each stock’s rolling return volatility from days t − 70 to t − 11. The
+dependent variable is the value-weighted effective spread in basis points of the lowest volatility quartile (Panel A) or the highest volatility quar tile
+(Panel B) on day t relative to its average value during the interval [ t − 10, t − 6]. Explanatory variables are market-wide aggregates and are the
+same in both panels. All coefﬁcients are multiplied by 10 3. t-statistics are in brackets and are based on Newey–West standard errors with 10 lags.
+Asterisks in Panel B indicate that a coefﬁcient there differs from its counterpart in Panel A at the 10% ( ∗), 5% (∗∗), or 1% ( ∗∗∗)l e v e l .
+(1) (2) (3) (4) (5) (6) (7)
+Panel A: Dependent Variable Is Sp rLoσ
+m,t , the Effective Spread for Low Volatility Stocks in Basis Points
+Intercept −37.07 −37.64 −40.94 −323.57 −231.06 −95.10 −61.77
+[1.44] [1 .66] [1 .80] [7 .47] [6 .06] [2 .40] [1 .60]
+RevGrm,t−1 −4.43
+[1.46]
+RevInvm,t−1 −30.87 −30.72 −13.76 −12.41
+[7.68] [7 .63] [3 .95] [3 .54]
+RevInv Lom,t−1 −25.03 −27.27
+[2.31] [2.78]
+RevTrm,t−1 3.96 4 .04 2 .36 2 .23
+[2.32] [2 .42] [1 .97] [1 .86]
+RevTr Lom,t−1 −1.14 −0.55
+[0.57] [0.27]
+Invm,t−1 141.87 60 .29 34 .41 0 .03
+[6.41] [2 .79] [1 .90] [0 .00]
+Inv Him,t−1 83.50 37 .38
+[5.07] [2 .50]
+Retm,t−1 −217.89 −209.85
+[3.05] [2 .91]
+varRetm,t 148.27 155 .98
+[2.15] [2 .32]
+Observations 2,660 2,660 2,660 2,660 2,660 2,660 2,660
+R
+2 0.012 0 .133 0 .142 0 .076 0 .092 0 .187 0 .200
+(continued)
+
+===== PAGE 27 =====
+
+Time V ariation in Liquidity 321
+Table VII— Continued
+(1) (2) (3) (4) (5) (6) (7)
+Panel B: Dependent Variable Is Sp rHiσ
+m,t , the Effective Spread for High Volatility Stocks in Basis Points
+Intercept −114.89 −116.76 −132.25 −1,064.35∗∗∗ −831.79∗∗∗ −326.18∗ −297.17
+[1.22] [1 .35] [1 .54] [6 .51] [5 .39] [2 .28] [2 .02]
+RevGrm,t−1 −25.47∗∗
+[1.90]
+RevInvm,t−1 −111.82∗∗∗ −111.26∗∗∗ −43.40∗ −40.72∗
+[7.31] [7 .57] [2 .59] [2 .49]
+RevInv Lom,t−1 −108.74 −127.09∗∗
+[2.39] [2.93]
+RevTrm,t−1 1.94 2 .25 −7.35 −7.40
+[0.23] [0 .27] [1 .10] [1 .14]
+RevTr Lom,t−1 −8.31 −6.65
+[0.86] [0.77]
+Invm,t−1 470.03∗∗∗ 264.96∗∗ 112.82 74 .89
+[5.54] [2 .88] [1 .76] [0 .94]
+Inv Him,t−1 209.92∗ 34.14
+[3.04] [0 .56]
+Retm,t−1 −300.43 −280.24
+[1.41] [1 .34]
+varRetm,t 1,039.42∗∗∗ 1,083.69∗∗∗
+[6.15] [6 .61]
+Observations 2,660 2,660 2,660 2,660 2,660 2,660 2,660
+R
+2 0.026 0 .113 0 .124 0 .056 0 .062 0 .186 0 .202
+
+===== PAGE 28 =====
+
+322 The Journal of Finance R⃝
+variables, the coefﬁcient on RevInvm,t−1 is signiﬁcant and negative for both
+low volatility stocks (Panel A) and high volatility stocks (Panel B), and the co-
+efﬁcient on RevInv
+m,t−1 is more than three times as negative for high volatility
+stocks, consistent with the ﬂight-to-quality prediction. The asterisks in Panel B
+indicate that this cross-sectional difference is strongly statistically signiﬁcant.
+In fact, the t-statistic is almost 6. The piecewise linear version in speciﬁcation
+(3) shows large liquidity effects for high volatility stocks when RevInv
+m,t−1 is
+below its 25 th percentile. Speciﬁcation (4) uses absolute inventories alone and
+yields slope coefﬁcients of 141.87 for low volatility stocks in Panel A and 470.03
+for high volatility stocks in Panel B; t-statistics are 6.41 and 5.54, respectively .
+In other words, if aggregate absolute inventories are $100 million greater, the
+quasi-differenced spread measure on high volatility stocks exceeds the spread
+measure on low volatility stocks by an average of 0.328 basis points, suggest-
+ing that market makers are concentrating their limited risk-bearing capacity
+in the most liquid stocks. Speciﬁcation (5) shows that inventory effects are
+also nonlinear; the ﬂight-to-quality effect is somewhat larger when absolute
+aggregate inventory is above its 75
+th percentile value. Finally , speciﬁcations
+(6) and (7) show that when all the specialist variables are included in the same
+regression along with market returns and conditional volatility , the coefﬁcients
+on revenues and inventories are larger for high volatility stocks than for low
+volatility stocks, consistent with a ﬂight-to-quality effect. Note that the differ-
+ence in the inventory revenue coefﬁcients is statistically signiﬁcant while the
+difference in the inventory coefﬁcients is not.
+The same kind of ﬂight to quality should also be apparent at the specialist
+ﬁrm level. We replace market-wide variables with specialist ﬁrm-level abso-
+lute inventories and revenue variables, and we sort each specialist ﬁrm’s as-
+signed stocks into quartiles based on realized volatility . Each day we calculate
+the average proportional effective spread for the lowest and highest volatility
+quartiles,
+17 regress spread measures on specialist ﬁrm-level inventories and
+revenue measures, and test the null that the relevant pair of coefﬁcients is the
+same for low volatility and high volatility stocks. 18
+The results are in Table VIII and are qualitatively similar to the market-
+wide results from Table VII. In speciﬁcations (2) and (3), the coefﬁcient on
+revenues from overnight inventories (RevInv
+f,t−1) is signiﬁcantly more negative
+for high volatility stocks. In speciﬁcations (4) and (5), high volatility spreads
+are marginally more sensitive to inventory levels. When lagged market returns
+and conditional variances are added in speciﬁcations (6) and (7), the difference
+in the inventory revenue coefﬁcients remains marginally signiﬁcant, but the
+17At the specialist ﬁrm level, spreads are quite noisy for stocks in the high volatility quartile.
+Therefore, we winsorize the spread data series at the 1% and 99% levels to control for extreme
+values.
+18As in the earlier analysis at the specialist ﬁrm level (Table IV), we estimate time-series
+regressions separately for each specialist ﬁrm because of potential specialist ﬁrm heterogeneity .
+We report average coefﬁcient estimates and estimate standard errors that are robust to both cross-
+sectional correlation across specialist ﬁrms and time-series persistence within specialist ﬁrms (see
+Appendix B for details).
+
+===== PAGE 29 =====
+
+Time V ariation in Liquidity 323
+Table VIII
+Specialist Firm Level Flight to Quality
+Cross-sectional averages of time-series regressions for each specialist ﬁrm. The dependent variable is the value-weighted effective spread of the
+lowest volatility quartile (Panel A) or the highest volatility quartile (Panel B) of the stocks assigned to a given specialist ﬁrm. The spread on day t is
+calculated relative to its average value during the interval [ t − 10, t − 6] measured in basis points; volatility quartiles are formed using each stock’s
+rolling return volatility from days t − 11 to t − 70. Explanatory variables are calculated using all stocks assigned to a given specialist ﬁrm and are
+the same in both panels. Average coefﬁcients are reported and are multiplied by 10 3; t-statistics are in brackets and account for both time-series and
+cross-sectional correlation. Asterisks in Panel B indicate that a coefﬁcient there differs from its counterpart in Panel A at the 10% ( ∗), 5% ( ∗∗), or 1%
+(∗∗∗) level.
+(1) (2) (3) (4) (5) (6) (7)
+Panel A: Dependent Variable Is Sp rLoσ
+f,t , the Effective Spread for Low Volatility Stocks in Basis Points
+Intercept −238.37 −238.22 −237.23 −468.50 −496.83 −231.22 −248.86
+[3.84] [4 .10] [4 .09] [6 .64] [7 .32] [3 .68] [4 .09]
+RevGrf,t−1 −1,305.02
+[4.38]
+RevInvf,t−1 −1,497.31 −1,503.79 −804.37 −830.87
+[4.54] [4 .60] [2 .82] [2 .92]
+RevInv Lof,t−1 −541.68 −304.59
+[0.84] [0 .52]
+RevTrf,t−1 −2,595.12 −2,604.65 −2,810.04 −2,739.52
+[3.57] [3 .58] [3 .92] [3 .77]
+RevTr Lof,t−1 519.35 −4,349.13
+[0.12] [1 .27]
+Invf,t−1 6,950.63 8,927 .60 2,736 .72 4,207 .16
+[4.37] [3 .34] [1 .96] [1 .74]
+Inv Hif,t−1 −1,645.51 −1,141.56
+[0.81] [0 .61]
+Retf,t−1 −304.34 −297.24
+[4.33] [4 .29]
+varRetf,t 432.31 426 .20
+[2.79] [2 .77]
+Specialist ﬁrms 120 120 120 120 120 120 120
+Average R2 0.019 0 .056 0 .067 0 .026 0 .030 0 .159 0 .172
+(continued)
+
+===== PAGE 30 =====
+
+324 The Journal of Finance R⃝
+Table VIII— Continued
+(1) (2) (3) (4) (5) (6) (7)
+Panel B: Dependent Variable Is Sp rHiσ
+f,t , the Effective Spread for High Volatility Stocks in Basis Points
+Intercept −1,940.57∗∗∗ −1,936.86∗∗∗ −1,924.09∗∗∗ −2,631.36∗∗∗ −2,739.98∗∗∗ −1,962.73∗∗∗ −2,079.26∗∗∗
+[4.06] [4 .36] [4 .32] [4 .78] [5 .33] [4 .01] [4 .47]
+RevGrf,t−1 −6,580.17∗∗∗
+[3.17]
+RevInvf,t−1 −6,281.88∗∗ −6,386.31∗∗ −4,307.17∗ −4,545.18∗∗
+[2.84] [2 .88] [2 .15] [2 .27]
+RevInv Lof ,t−1 −5,772.73 −6,298.07
+[1.45] [1.69]
+RevTrf,t−1 −16,453.45∗∗∗ −16,744.13∗∗∗ −16,666.01∗∗∗ −16,854.75∗∗∗
+[4.03] [4 .16] [4 .12] [4 .25]
+RevTr Lof ,t−1 14,129.56 2,693 .43
+[1.12] [0.24]
+Invf,t−1 19,720.00∗ 2,734.41 8,202 .18 −4,193.10
+[2.34] [0 .21] [1 .13] [0 .36]
+Inv Hif ,t−1 16,343.90∗ 12,735.13
+[1.56] [1 .31]
+Retf,t−1 54.18 96 .29
+[0.10] [0 .18]
+varRetf,t 2,813.86∗∗ 2,821.47∗∗
+[2.27] [2 .30]
+Specialist ﬁrms 120 120 120 120 120 120 120
+Average R
+2 0.017 0 .044 0 .052 0 .014 0 .019 0 .102 0 .114
+
+===== PAGE 31 =====
+
+Time V ariation in Liquidity 325
+difference in the inventory coefﬁcients does not. Overall, the evidence at both
+the market level and the specialist ﬁrm level is consistent with the ﬂight-to-
+quality story .
+VIII. Conclusions
+In this paper, we use an 11-year panel of daily specialist inventories and
+revenues on individual NYSE stocks to explore the relations between liquidity
+and market-maker ﬁnancial variables. At both the aggregate level and the
+specialist ﬁrm level, we show that when specialists ﬁnd themselves with larger
+positions or lose money on their inventories, effective spreads are signiﬁcantly
+wider in the days that follow. When we include inventories, inventory-related
+specialist revenues, market returns, and conditional return volatility at the
+aggregate market level, we ﬁnd that inventories, revenues, and volatility have
+incremental predictive power for future liquidity . This suggests that market-
+maker ﬁnancial constraints can help us understand time variation in liquidity ,
+while also acknowledging the traditional mechanisms of microstructure theory
+that link price volatility and liquidity .
+NYSE specialists are the most important liquidity suppliers of NYSE-listed
+stocks, given the structural advantages that accrue to specialists over our sam-
+ple period. Thus, studying the inventories and revenues of specialists is ideal
+for starting to understand time-varying liquidity in the world’s largest stock
+market. Clearly , there are other competing liquidity suppliers, such as mar-
+ket makers on regional exchanges, proprietary trading desks at various Wall
+Street ﬁrms, and hedge funds following a market-making strategy . Information
+about their ﬁnancial condition and trading behavior would be of considerable
+interest. But if all liquidity suppliers follow similar strategies and suffer sim-
+ilar shocks (Boehmer and Wu (2008) provide some suggestive evidence along
+these lines), our data may be proxying for this much broader market-making
+sector.
+Ultimately , our revenue and inventory measures are somewhat noisy prox-
+ies for the presence of ﬁnancial constraints. It would be useful to obtain direct
+evidence on changes in collateral requirements, credit limits, or ﬁnancing costs
+imposed by lenders in response to trading losses. Unfortunately , such data
+are not readily available to us. However, Coughenour and Deli (2002) identify
+three specialist ﬁrms that are owned by the specialists themselves, along with
+three corporate-owned specialist ﬁrms in which the specialists are employees.
+Specialist-owned ﬁrms may have less access to capital than corporate-owned
+specialist ﬁrms. We ﬁnd that the sensitivity of liquidity to inventories and
+revenues is greater for specialist-owned ﬁrms compared to corporate-owned
+specialist ﬁrms. The sensitivity is also reduced when specialist-owned ﬁrms
+merge with corporate-owned ﬁrms, consistent with deep pockets easing ﬁnanc-
+ing constraints.
+While we use specialist data from the NYSE, it is important to empha-
+size that our results are about market-making, not NYSE specialists per
+se. Our results should generalize to other market structures. For example,
+specialists have become much less important since the NYSE adopted its mostly
+
+===== PAGE 32 =====
+
+326 The Journal of Finance R⃝
+electronic “Hybrid” market structure in 2007. But other liquidity suppliers
+(such as quantitative hedge funds) have taken the specialists’ place, and these
+liquidity suppliers face exactly the same kinds of ﬁnancing constraints. In fact,
+given the U.S. credit crunch of 2007 to 2008, ﬁnancing constraints are probably
+quite severe at the moment, and if the data were available (unfortunately a
+big if), it would be extremely interesting to see how shocks to the new liquidity
+suppliers are affecting stock market liquidity .
+Our results also have implications for theoretical work. Liquidity is a neb-
+ulous concept, and there is necessarily some distance between liquidity in the
+current theoretical models of ﬁnancing constraints and our empirical measures.
+For example, most of the theoretical models do not attempt to capture the con-
+tinuous nature of trading and instead employ Walrasian auctions that are not
+fully dynamic and have no explicit bid-ask spread. In that sense, our ﬁndings
+move ahead of existing theory , and developing an explicit dynamic inventory
+management problem in the face of ﬁnancing constraints could be a promising
+avenue for future research.
+Finally , our results have potential policy implications. Because liquidity is
+a public good with positive externalities for all traders—Gromb and Vayanos
+(2002) and Weill (2007)—ﬁnancial constraints can lead to an undersupply of
+liquidity . If too little capital is available for market making, there are several
+possible solutions. First, regulators could raise capital requirements for liquid-
+ity suppliers such as specialists. This may be beneﬁcial in avoiding liquidity
+meltdowns, but could also raise the costs of liquidity suppliers’ day-to-day op-
+erations (e.g., opportunity costs of underutilized capital). Thus, higher capital
+requirements might make supplying liquidity less attractive, potentially driv-
+ing out existing market makers and/or reducing new entry . Second, there could
+be subsidies for liquidity suppliers through reduced trading fees, direct pay-
+ment for trading (e.g., liquidity rebates for non-marketable limit orders), or
+an advantageous position in the trading environment. Special privileges for
+market makers have been the traditional mechanism to encourage liquidity
+provision, but such advantages are open to abuse, as seen by the odd-eighths
+and specialist scandals on NASDAQ and the NYSE. Third, predation of liquid-
+ity suppliers should be discouraged, especially when liquidity suppliers have
+taken large capital positions or lost money . Measuring and deﬁning predation
+would undoubtedly prove challenging, intrusive, and contentious. Finally , a
+liquidity supplier of last resort may be valuable when existing liquidity sup-
+pliers have committed most of their capital. For example, the Fed’s actions to
+provide liquidity in 1987 may have prevented a crisis—see SEC (1988). How-
+ever, having a liquidity supplier of last resort can cause moral hazard problems
+in the form of excess risk-taking. To prevent such behavior, regulators could
+designate liquidity suppliers and track their positions and trading closely . In
+exchange for being monitored, market makers could receive more favorable
+lending terms from the Fed (especially during times of low liquidity). In fact,
+the recent extension of Federal Reserve liquidity facilities to investment banks
+is exactly a step in this direction, as is SEC chairman Christopher Cox’s recent
+call for investment banks to disclose publicly more details about capital and
+
+===== PAGE 33 =====
+
+Time V ariation in Liquidity 327
+liquidity positions. 19 These moves could have the beneﬁcial effect of reducing
+the variability of liquidity and its sensitivity to various shocks.
+Appendix A: Specialist Trading Revenues
+For each stock and each day , we measure the specialist’s gross revenues
+from trading. The gross revenues do not subtract costs such as salaries, fees,
+or technology investments, nor do they include possible sources of revenues
+such as brokerage commissions charged to other ﬂoor participants. The gross
+trading revenues (GTR) of stock i on day t are calculated as in Soﬁanos (1995) by
+marking to market the specialist’s starting and ending inventories and adding
+the gross proﬁts due to buying and selling:
+GTR
+it = (Sit − Bit ) + ( pit Iit − pi,t−1 Ii,t−1),
+where pi,t is the share price of stock i at the end of day t, Ii,t is the specialist’s
+inventory in shares of stock i at the end of day t, Si,t is the total dollar value
+of stock i sold on day t,a n d Bi,t is the total dollar value of shares bought. For
+simplicity we suppress subscripts i in the discussion that follows.
+To further decompose the gross revenues, we deﬁne ¯ ps
+t to be the specialist’s
+average selling price on day t,¯ pb
+t to be the corresponding average buying price,
+st to be the shares sold on day t,a n d bt to be the shares bought on day t. Thus,
+St = st ¯ps
+t and Bt = bt ¯pb
+t which allows us to re-write gross trading revenue:
+GTRt =
+(
+st ¯ps
+t − bt ¯pb
+t
+)
++ pt(It − It−1) + It−1( pt − pt−1).
+We then expand the ﬁrst term in parentheses to get
+GTRt = min(st, bt)
+(
+¯ps
+t − ¯pb
+t
+)
++ ¯ps
+t (st − bt)+ − ¯pb
+t (bt − st)+
++ pt(It − It−1) + It−1( pt − pt−1),
+where ( x)+ ≡ max (x, 0). Finally , using the fact that It = It−1 + (bt – st), we
+obtain
+GTRt = min(st, bt)
+(
+¯ps
+t − ¯pb
+t
+)
++
+(
+pt − ¯pb
+t
+)
+(bt − st)+
++
+(
+¯ps
+t − pt
+)
+(st − bt)+ + It−1( pt − pt−1).
+The ﬁrst term of this equation captures the difference in buying and selling
+prices for all round-trip transactions that the specialist completes on day t,a n d
+we call this round-trip trading revenue RTR t:
+RTRt = min(st, bt)
+(
+¯ps
+t − ¯pb
+t
+)
+.
+The remaining terms are deﬁned as inventory-related trading revenue ITRt:
+ITRt =
+(
+pt − ¯pb
+t
+)
+(bt − st)+ + (¯ ps
+t − pt)(st − bt)+ + It−1( pt − pt−1).
+19Chung, Joanna, and Ben White, 2008, SEC to require banks to disclose liquid-
+ity , Financial Times , May 7, http://www.ft.com/cms/s/0/48034c9e-1c83-11dd-8bfc-000077b07658.
+html?nclick check=1; text of speech at http://www.sec.gov/news/speech/2008/spch050708cc.htm.
+
+===== PAGE 34 =====
+
+328 The Journal of Finance R⃝
+The ﬁrst two terms of ITR reﬂect the mark-to-market proﬁts on day t’s
+changes in inventory (either long or short), and the last term is the mark-to-
+market proﬁt on the starting inventory position. The term ITR can be thought
+of as revenues from inventories held overnight. To be precise, ITR measures
+revenues from the close of day t – 1 to the close of day t on positions that
+are held at the close on day t – 1 or at the close on day t.N o t ea l s ot h a tITR
+incorporates both overnight price changes (on day t – 1 inventory) and price
+changes during day t. Thus, we have decomposed daily specialist proﬁts for
+each stock into two parts reﬂecting an intraday spread-related component and
+a component related to multi-day inventory:
+GTR
+t = RTRt + ITRt.
+To calculate aggregate-level (subscript m) or specialist ﬁrm-level (subscript f )
+market-maker revenues for each day , GTR, RTR,a n d ITR are summed across
+all relevant stocks. Specialist participation rates and the nature of specialist
+trading change markedly when the minimum tick size changes from eighths
+to sixteenths on June 24, 1997 and from sixteenths to pennies on January
+29, 2001.
+20 Specialist participation also changes markedly at the beginning of
+2003. To adjust for these discontinuities, we calculate the time-series mean of
+daily specialist revenues in each of four regimes—one for each minimum tick,
+plus an additional breakpoint at January 1, 2003—and adjust our aggregate
+revenue measures by the appropriate regime mean.
+In the regressions, we aggregate revenues over 5 days. The variables used in
+regressions and discussed in the body of the paper are thus
+RevGr
+m,t =
+4∑
+j=0
+GTRm,t− j
+Rev Invm,t =
+4∑
+j=0
+ITRm,t− j
+RevTr m,t =
+4∑
+j=0
+RTRm,t− j
+for market-wide measures, and similarly for specialist ﬁrm-level revenue mea-
+sures, subscripted f .
+Appendix B: Standard Error Calculations for Heterogeneous
+Panel Regressions
+For specialist ﬁrm i, we have Ti time-series observations and a linear relation:
+yi = Xiβi + εi,
+20The NYSE moved approximately 100 common stocks to decimals between September and
+December 2000 as part of testing and roll-out plans. However, the vast majority of stocks switched
+on January 29, 2001.
+
+===== PAGE 35 =====
+
+Time V ariation in Liquidity 329
+where E(εi ) = 0, E
+(
+εiε′
+i
+)
+= /Omega1ii ,a n d E(εitεis ) = 0 for all |t − s| > L. The panel is
+unbalanced, and there may or may not be a time-series overlap for a given cross-
+sectional pair {i, j}. We are interested in the distribution of the cross-sectional
+average OLS slope vector ˆ¯β = 1
+N
+∑ ˆβi , where N is the number of specialist ﬁrms.
+We allow for cross-sectional correlation, so the variance–covariance matrix of
+the average OLS slope vector depends on the pairwise covariances and is given
+by
+E(( ˆ¯β − ¯β)( ˆ¯β − ¯β)′) = 1
+N2
+∑
+i, j
+E[( ˆβi − βi )( ˆβ j − β j )′].
+Using the fact that ˆβi = βi + (X′
+i Xi )−1 X′
+iεi , we have
+E[( ˆβi − βi )( ˆβ j − β j )′] = E
+[
+(X′
+i Xi )−1 X′
+iεiε′
+j Xj (X′
+j Xj )−1]
+= H−1
+i Gij H−1
+j ,
+where
+H−1
+i =
+(
+X′
+i Xi
+)−1
+, Gij = E
+[
+X′
+iεiε′
+j Xj
+]
+.
+When i = j, and given the assumptions on /Omega1ii, we can get consistent estimates
+of Gii and thus var( ˆβi) using Newey–West with L lags. We proceed analogously
+with the covariance terms. We assume a similar structure here, namely that
+E(εiε′
+j) = /Omega1ij , where E(εitε js ) = 0 for all |t − s| > L. Then Gij can be consistently
+estimated with the following analog to the Newey–West estimator:
+ˆGij =
+∑
+t
+eit e jt xit x′
+jt +
+L∑
+k=1
+T∑
+t=k+1
+wkeit e j,t−k
+(
+xit x′
+j,t−k + xi,t−kx′
+jt
+)
+,
+where wk = 1 − k
+L+1 and xit is a k × 1 vector corresponding to the observation
+for ﬁrm i at time t (that is, x′
+it is the tth row of Xi).
+The ﬁrst term captures contemporaneous correlation between ﬁrm i and
+j, and the double sum captures all of the cross-autocovariances between
+ﬁrm i and ﬁrm j up to the maximum lag L. Note that the summations
+extend over the entire sample. In the case of partial overlap, only those
+terms where both the ei and ej elements are non-missing should contribute
+to the overall sum. In particular, this implies that Gij = 0 when the gap
+between the ﬁrm i observations and the ﬁrm j observations is at least
+L periods.
+REFERENCES
+Adrian, Tobias, and Hyun Song Shin, 2007, Liquidity , monetary policy and ﬁnancial cycles,Current
+Issues in Economics and Finance 14, 1–7.
+Amihud, Y akov, and Haim Mendelson, 1980, Dealership market: Market making with inventory,
+Journal of Financial Economics 8, 31–53.
+Attari, Mukarram, Antonio Mello, and Martin Ruckes, 2005, Arbitraging arbitrageurs, Journal of
+Finance 60, 2471–2511.
+
+===== PAGE 36 =====
+
+330 The Journal of Finance R⃝
+Bessembinder, Hendrik, 2003, Issues in assessing trade execution costs, Journal of Financial
+Markets 6, 233–257.
+Boehmer, Ekkehart, and Julie Wu, 2008, Order ﬂow and prices, Working paper, Texas A&M
+University.
+Brunnermeier, Markus, and Lasse H. Pedersen, 2005, Predatory trading, Journal of Finance 60,
+1825–1863.
+Brunnermeier, Markus, and Lasse H. Pedersen, 2009, Market liquidity and funding liquidity,
+Review of Financial Studies 22, 2201–2238.
+Campbell, John, 1991, A variance decomposition for stock returns, Economic Journal 101, 157–
+179.
+Cao, Henry, Martin Evans, and Richard Lyons, 2006, Inventory information, Journal of Business
+79, 325–363.
+Chordia, Tarun, Richard Roll, and Avanidhar Subrahmanyam, 2000, Commonality in liquidity,
+Journal of Financial Economics 56, 3–28.
+Chordia, Tarun, Richard Roll, and Avanidhar Subrahmanyam, 2001, Market liquidity and trading
+activity, Journal of Finance 56, 501–530.
+Chordia, Tarun, Asani Sarkar, and Avanidhar Subrahmanyam, 2005, An empirical analysis of
+stock and bond market liquidity, Review of Financial Studies 18, 85–129.
+Corwin, Shane, 2004, Specialist performance and new listing allocations on the NYSE: An empirical
+examination, Journal of Financial Markets 7, 27–51.
+Coughenour, Jay, and Dan Deli, 2002, Liquidity provision and the organizational form of NYSE
+specialist ﬁrms, Journal of Finance 57, 841–869.
+Coughenour, Jay, and Lawrence Harris, 2004, Specialist proﬁts and the minimum price increment,
+Working paper, University of Delaware.
+Coughenour, Jay, and Mohsen Saad, 2004, Common market makers and commonality in liquidity,
+Journal of Financial Economics 73, 37–69.
+Garleanu, Nicolae, Lasse H. Pedersen, and Allen M. Poteshman, 2009, Demand-based option
+pricing, Review of Financial Studies 22, 4259–4299.
+Glosten, Lawrence, Ravi Jaganathan, and David Runkle, 1993, On the relation between the ex-
+pected value and the volatility of the nominal excess return on stocks, Journal of Finance 48,
+1779–1801.
+Glosten, Lawrence, and Paul Milgrom, 1985, Bid, ask and transaction prices in a specialist market
+with heterogeneously informed traders, Journal of Financial Economics 14, 71–100.
+Gromb, Denis, and Dimitri Vayanos, 2002, Equilibrium and welfare in markets with ﬁnancially
+constrained arbitrageurs, Journal of Financial Economics 66, 361–407.
+Grossman, Sanford, and Merton Miller, 1988, Liquidity and market structure, Journal of Finance
+43, 617–633.
+Hameed, Allaudeen, Wenjin Kang, and S. Viswanathan, 2010, Stock market declines and liquidity,
+Journal of Finance 65, 257–294.
+Hansch, Oliver, Nayaran Naik, and S. Viswanathan, 1999, Best execution, internalization, prefer-
+encing and dealer proﬁts, Journal of Finance 54, 1799–1828.
+Hasbrouck, Joel, and Duane Seppi, 2001, Common factors in prices, order ﬂows and liquidity,
+Journal of Financial Economics 59, 383–411.
+Hasbrouck, Joel, and George Soﬁanos, 1993, The trades of market-makers: An analysis of NYSE
+specialists, Journal of Finance 48, 1565–1594.
+Hatch, Brian, and Shane Johnson, 2002, The impact of specialist ﬁrm acquisitions on market
+quality, Journal of Financial Economics 66, 139–167.
+Hendershott, Terrence, and Mark S. Seasholes, 2007, Market maker inventories and stock prices,
+American Economic Review 97, 210–214.
+Ho, Thomas, and Hans Stoll, 1981, Optimal dealer pricing under transactions and return uncer-
+tainty ,Journal of Financial Economics 9, 47–73.
+Ho, Thomas, and Hans Stoll, 1983, The dynamics of dealer markets under competition, Journal of
+Finance 38, 1053–1074.
+Huberman, Gur, and Dominika Halka, 2001, Systematic liquidity, Journal of Financial Research
+24, 161–178.
+
+===== PAGE 37 =====
+
+Time V ariation in Liquidity 331
+Ip, Greg, and Susanne Craig, 2003, Trading cases: NYSE’s “specialist” probe puts precious asset
+at risk, Wall Street Journal, April 18, 2003, A1.
+Jones, Charles, 2006, A century of stock market liquidity and trading costs, Working paper,
+Columbia University .
+Kavajecz, Kenneth A., and Elizabeth R. Odders-White, 2001, An examination of changes in spe-
+cialists’ posted price schedules, Review of Financial Studies 14, 681–704.
+Kyle, Albert, 1985, Continuous auctions and insider trading, Econometrica 53, 1315–1336.
+Kyle, Albert, and Wei Xiong, 2001, Contagion as a wealth effect, Journal of Finance 56, 1401–1440.
+Lee, Charles, and Mark Ready, 1991, Inferring trade direction from intraday data, Journal of
+Finance 46, 733–747.
+Lyons, Richard K., 2001, The Microstructure Approach to Exchange Rates (MIT Press, Cambridge,
+MA).
+Madhavan, Ananth, and Seymour Smidt, 1993, An analysis of daily changes in specialist invento-
+ries and quotations, Journal of Finance 48, 1595–1628.
+Madhavan, Ananth, and George Soﬁanos, 1998, An empirical analysis of NYSE specialist trading,
+Journal of Financial Economics 48, 189–210.
+Manaster, Steven, and Steven Mann, 1996, Life in the pits: Competitive market making and
+inventory control, Review of Financial Studies 9, 953–975.
+Mildenstein, Eckart, and Harold Schleef, 1983, The optimal pricing policy of a monopolistic market
+maker in the equity market, Journal of Finance 38, 218–231.
+Mitchell, Mark, Lasse H. Pedersen, and Todd Pulvino, 2007, Slow moving capital, American Eco-
+nomic Review 97, 215–220.
+Naik, Narayan, and Pradeep Y adav, 2003a, Do dealer ﬁrms manage inventory on a stock-by-stock
+or a portfolio basis? Journal of Financial Economics 69, 325–353.
+Naik, Narayan, and Pradeep Y adav, 2003b, Risk management with derivatives by dealers and
+market quality in government bond markets, Journal of Finance 58, 1873–1904.
+O’Hara, Maureen, and George S. Oldﬁeld, 1986, The microeconomics of market making, Journal
+of Financial and Quantitative Analysis 21, 361–376.
+Panayides, Marios, 2007, Afﬁrmative obligations and market making with inventory, Journal of
+Financial Economics 86, 513–542.
+P ´astor, ˘Lubo˘s, and Robert Stambaugh, 2003, Liquidity risk and expected stock returns, Journal
+of Political Economy 111, 642–685.
+Reiss, Peter, and Ingrid Werner, 1998, Does risk sharing motivate inter-dealer trading? Journal
+of Finance 53, 1657–1704.
+Securities and Exchange Commission, 1988, The October 1987 market break, Division of Market
+Regulation report.
+Shen, Pu, and Ross Starr, 2002, Market-makers’ supply and pricing of ﬁnancial market liquidity,
+Economics Letters 76, 53–58.
+Soﬁanos, George, 1995, Specialist gross trading revenues at the New Y ork Stock Exchange, NYSE
+Working Paper #95-01.
+Stoll, Hans, 1978, The supply of dealer services in security markets, Journal of Finance 33,
+1133–1151.
+Thompson, Samuel, 2009, Simple formulas for standard errors that cluster by both ﬁrm and time,
+Working paper, SSRN.
+Weill, Pierre-Olivier, 2007, Leaning against the wind, Review of Economic Studies 74, 1329–1354.
+Yuan, Kathy, 2005, Asymmetric price movements and borrowing constraints: A rational expecta-
+tions equilibrium model of crises, contagion, and confusion, Journal of Finance 60, 379–411.

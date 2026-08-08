@@ -1,0 +1,402 @@
+
+
+===== PAGE 1 =====
+
+
+
+
+
+
+
+
+
+Internet Appendix
+
+to
+
+“Time Variation in Liquidity:  The Role of Market-Maker
+Inventories and Revenues” *
+
+
+
+
+
+
+
+
+
+This internet appendix presents supplemental anal yses and results to the main tables in “Time
+Variation in Liquidity: The Role of Market Maker Inventories and Revenues”. We include
+overview statistics on NYSE specialist participation rates and NYSE market share. The additional
+results include two controls.  In the regression analysis, we use dollar effective spreads as a
+dependent variable instead of percentage effec tive spreads.  We also include selected Vector
+Autoregression results.
+
+
+
+
+
+
+
+
+
+
+
+
+
+* Citation format:  Comerton-Forde, Carole, Terrence Hendershott, Charles M. Jones, Pamela C.
+Moulton, and Mark S. Seasholes, 2010, Internet Appendix for “Time Variation in Liquidity: The Role
+of Market Maker Inventories and Revenues,” Journal of Finance  L X V ( 1 ) ,  2 9 5 - 3 1 0 ,
+http://www.afajof.org/IA/Feb2010.asp.  Please note:  Wiley-Blackwell is not responsible for the
+context or functionality of any supporting informati on supplied by the authors.  Any queries (other
+than missing material) should be directed to the authors of the article.
+
+
+===== PAGE 2 =====
+
+
+
+Table of Contents
+
+
+
+Table IA.I NYSE Specialist Participation Rate, 1994–2004
+
+Table IA.II NYSE Market Share, 1994–2003
+
+Table IA.III Aggregate Specialist Inve ntories and Revenues and Future
+ M a r k e t  L i q u i d i t y  ( d o l l a r  s p r e a d s )
+
+Table IA.IV Selected Vect or Autoregression Results
+
+Table IA.V Specialist Firm Inventories and Revenues and Future Liquidity (dollar spreads)
+
+
+
+
+===== PAGE 3 =====
+
+ 1
+Table IA.I
+NYSE Specialist Participation Rate, 1994–2004
+
+The following graph shows specialist participation rates over our sample period.  Specialist participation
+actually rose over much of our sample.  The ending rate (in 2004) is about the same as the beginning
+rate (mid-1990s).  We discuss the participation rate  in footnote 9 of the paper.  The widely reported
+decline in specialist participation rates occurs mainly around the phase-in of the NYSE’s Hybrid market,
+two years after our sample period ends.
+
+
+
+NYSE Specialist Participation Rate:  1994 – 2004
+0.0%
+2.0%
+4.0%
+6.0%
+8.0%
+10.0%
+12.0%
+14.0%
+16.0%
+Participation Rate
+1995 1996 1997 1998 1999 2000 2001 2002 2003 2004
+Year
+
+ Source:  www.nyxdata.com
+
+
+
+
+===== PAGE 4 =====
+
+ 2
+Table IA.II
+NYSE Market Share, 1994–2003
+
+The following graph shows the NYSE market share,  w h i c h  i s  q u i t e  s t a b l e  a r o u n d  8 0 %  d u r i n g  o u r
+sample period.  The graph stops in 2003 because  t h e  N Y S E  c h a n g e d  i t s  m a r k e t  s h a r e  r e p o r t i n g ,
+providing only combined NYSE and ARCA market share numbers beginning in 2004.
+
+
+
+NYSE Market Share:  1994 – 2003
+0.0%
+10.0%
+20.0%
+30.0%
+40.0%
+50.0%
+60.0%
+70.0%
+80.0%
+90.0%
+Market Share
+1995 1996 1997 1998 1999 2000 2001 2002 2003
+Year
+
+ Source:  www.nyxdata.com
+
+
+
+
+
+===== PAGE 5 =====
+
+ 3
+Table IA.III
+Aggregate specialist inventories and revenues and future market liquidity (dollar spreads)
+
+This table can be compared with Table II in the main text.  Time-series regressions are performed on daily data from 1994 to 2004.  The
+dependent variable is the value-weighted dollar effective spread on day t r e l a t i v e  t o  i t s  a v e r a g e  v a l u e  d u r i n g  t h e  i n t e r v a l  [t–10, t–6].
+Spreads are calculated analogously to the percentage spreads in the text but are measured in cents, Spr($)m,t.  Variables are defined in
+Tables I and II of the text.  All coefficients are multiplied by 103.  t-statistics are in brackets and are based on Newey-West standard errors
+with 10 lags.
+
+ ( 1 )  ( 2 )  ( 3 )  ( 4 )  ( 5 )  ( 6 )  ( 7 )
+Intercept -15.58 -15.79 -17.15 -90.03 -55.55 -14.76 -6.42
+ [ 1 . 2 7 ]  [ 1 . 3 4 ]  [ 1 . 4 5 ]  [ 3 . 8 8 ]  [ 2 . 7 0 ]  [ 0 . 7 0 ]  [ 0 . 3 0 ]
+RevGrm,t-1 - 2 . 9 4
+ [ 1 . 9 2 ]
+RevInvm,t-1  - 1 3 . 0 1  - 1 2 . 9 9    - 8 . 0 9  - 7 . 7 2
+  [ 6 . 5 3 ]  [ 6 . 5 3 ]    [ 3 . 2 6 ]  [ 3 . 1 1 ]
+RevInv_Lom,t-1   - 8 . 0 0     - 1 0 . 2 9
+   [ 1 . 0 8 ]     [ 1 . 5 2 ]
+RevTrm,t-1  0 . 2 7  0 . 2 9    - 0 . 6 9  - 0 . 7 3
+  [ 0 . 2 7 ]  [ 0 . 3 0 ]    [ 0 . 6 9 ]  [ 0 . 7 5 ]
+RevTr_Lom,t-1   - 1 . 2 7     - 1 . 2 6
+   [ 1 . 4 6 ]     [ 1 . 0 7 ]
+Invm,t-1    3 6 . 9 9  6 . 7 2  - 1 . 1 7  - 1 0 . 3 7
+    [ 2 . 9 5 ]  [ 0 . 4 9 ]  [ 0 . 1 1 ]  [ 0 . 7 5 ]
+Inv_Him,t-1     3 0 . 9 1   9 . 8 5
+     [ 3 . 1 1 ]   [ 1 . 0 2 ]
+Retm,t-1      2 9 . 7 7  3 2 . 7 8
+      [ 0 . 7 8 ]  [ 0 . 8 7 ]
+VarRetm,t      1 2 6 . 1 7  1 2 9 . 3 9
+      [ 3 . 5 0 ]  [ 3 . 6 6 ]
+
+Observations 2760 2760 2760 2760 2760 2760 2760
+R2 0 . 0 1 3  0 . 0 5 8  0 . 0 6 0  0 . 0 1 3  0 . 0 1 9  0 . 0 8 8  0 . 0 9 2
+
+===== PAGE 6 =====
+
+ 4
+Table IA.IV
+Selected Vector Autoregression Results
+
+The following graphs show orthogonalized impulse response functions (IRFs) from a daily vector
+autoregression (VAR) with five lags on detrende d aggregate market proportional effective spreads
+(SPR), value-weighted market returns ( rm), return volatility as measured by absolute market returns
+(| rm |), specialist trading revenues from inventory held intraday or overnight (RTR and ITR, respectively,
+as defined in Appendix B), and the absolute value of aggregate specialist inventories ( Inv).  The spread
+measure, SPR, begins with the proportional effective spread ES(%)m,t from Appendix A and takes out a
+piecewise linear time trend for each of the four regimes.   Two orderings are provided to confirm that the
+results are similar if the whole shock to inventories and revenues is considered or just the component of
+the shock that is orthogonal to returns and volatility.  We show only the impulse responses of spreads
+(to shocks to each of the six variables).  The 95%  confidence intervals are bounded by the light grey (or
+red) lines.
+
+
+
+
+
+
+
+Ordering #1.  The first ordering is:  specialist inventory ( Inv), revenues from inventories held overnight
+(ITR), revenues from intraday round trips ( RTR), absolute market returns (| rm |), value-weighted market
+returns ( rm), and detrended effective spreads ( SPR).  Shocks to specialist inventories and shocks to
+revenues from overnight inventories both affect spreads for at least the next two weeks.
+
+
+
+Shock to Inv;  Response of SPR Shock to ITR;  Response of SPR Shock to RTR;  Response of SPR
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+0.16
+0.18
+13579 -0.20
+-0.18
+-0.16
+-0.14
+-0.12
+-0.10
+-0.08
+-0.06
+-0.04
+-0.02
+0.00
+13579
+-0.04
+-0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+13579
+
+
+
+Shock to | rm |;  Response of SPR Shock to r m;  Response of SPR Shock to SPR;  Response of SPR
+-0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+13579 -0.12
+-0.10
+-0.08
+-0.06
+-0.04
+-0.02
+0.00
+13579
+0.00
+0.10
+0.20
+0.30
+0.40
+0.50
+0.60
+13579
+
+
+
+
+
+
+
+===== PAGE 7 =====
+
+ 5
+
+
+Ordering #2.  We also consider a second ordering that controls for other effects by putting our inventory
+and revenue measures after volatility and market return s  This means that we consider the response of
+spreads to the part of an inventory or revenue shoc k that is orthogonal to return volatility and/or market-
+level returns.  The ordering is: return volatility as measured by absolute market returns (| rm |), value-
+weighted market returns (rm), inventories (Inv), revenues from inventories held overnight (ITR), intraday
+round-trip trading revenues (RTR), and detrended effective spreads ( SPR).  Inventory effects are weaker
+under this specification than in Ordering #1, but are still reliably present, especia lly a week or so after
+the initial shock.  Revenues from overnight inventor ies continue to have very strong effects over
+multiple weeks.
+
+
+
+Shock to | rm |;  Response of SPR Shock to r m;  Response of SPR Shock to Inv;  Response of SPR
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+0.16
+13579 -0.20
+-0.18
+-0.16
+-0.14
+-0.12
+-0.10
+-0.08
+-0.06
+-0.04
+-0.02
+0.00
+13579
+-0.04
+-0.03
+-0.02
+-0.01
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+13579
+
+
+
+Shock to ITR;  Response of SPR S hock to RTR;  Response of SPR Shock to SPR;  Response of SPR
+-0.14
+-0.12
+-0.10
+-0.08
+-0.06
+-0.04
+-0.02
+0.00
+13579
+-0.04
+-0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+13579 0.00
+0.10
+0.20
+0.30
+0.40
+0.50
+0.60
+13579
+
+
+
+
+
+
+
+===== PAGE 8 =====
+
+
+ 6
+Table IA.V
+Specialist firm inventories and revenues and future liquidity (dollar spreads)
+Table contains cross-sectional averages of time-series regressions estimated for each specialist firm, which can be compared with Table IV in the main
+text.  Variables are calculated using the stocks assigned to a given specialist firm.  The dependent variable is the value-weighted (dollar???) effective
+spread on day t relative to its average value during the interval [t–10, t–6].  Spreads are calculated analogously to the percentage spreads in the text but
+are measured in cents.  Variables are defined in Tables III and IV of the text.  All coefficients are multiplied by 103.  t-statistics are in brackets and
+account for both time-series and cross-sectional correlation.
+ ( 1 )  ( 2 )  ( 3 )  ( 4 )  ( 5 )  ( 6 )  ( 7 )
+Intercept -8.39 -8.36 -8.11 -43.77 -45.15 -13.86 -24.44
+ [ 0 . 7 4 ]  [ 0 . 7 6 ]  [ 0 . 7 3 ]  [ 2 . 9 4 ]  [ 2 . 9 0 ]  [ 1 . 0 9 ]  [ 1 . 8 5 ]
+RevGrf,t-1 - 3 4 5 . 7 9
+ [ 6 . 5 3 ]
+RevInvf,t-1  - 5 7 2 . 3 4  - 5 1 9 . 1 5    - 4 4 6 . 7 3  - 3 7 9 . 9 7
+  [ 4 . 9 3 ]  [ 5 . 0 0 ]    [ 3 . 1 9 ]  [ 2 . 8 2 ]
+RevInv_Lof,t-1   - 7 2 6 . 0 2     - 6 9 5 . 9 9
+   [ 3 . 8 0 ]     [ 3 . 8 1 ]
+RevTrf,t-1  1 1 8 . 5 8  5 8 . 6 9    - 1 3 . 5 1  - 3 8 . 9 8
+  [ 0 . 5 9 ]  [ 0 . 2 9 ]    [ 0 . 0 6 ]  [ 0 . 1 6 ]
+RevTr_Lof,t-1   1 , 5 4 0 . 8 2     2 , 2 8 3 . 4 2
+   [ 0 . 3 3 ]     [ 0 . 4 8 ]
+Invf,t-1    4 0 0 . 3 9  - 2 , 5 6 5 . 5 9  9 2 1 . 4 8  9 8 1 . 0 2
+    [ 0 . 5 0 ]  [ 0 . 7 9 ]  [ 1 . 3 7 ]  [ 0 . 7 7 ]
+Inv_Hif,t-1     2 , 7 8 0 . 6 3   - 2 5 6 . 3 0
+     [ 1 . 0 7 ]   [ 0 . 2 4 ]
+Retf,t-1      7 . 4 3  8 . 0 3
+      [ 0 . 4 0 ]  [ 0 . 4 4 ]
+VarRetf,t      1 9 6 . 5 8  1 9 5 . 4 1
+      [ 3 . 6 6 ]  [ 3 . 5 6 ]
+
+Specialist firms 124 124 124 124 124 124 124
+Average R2 0 . 0 1 2  0 . 0 3 0  0 . 0 4 7  0 . 0 1 4  0 . 0 1 7  0 . 0 8 0  0 . 0 9 9

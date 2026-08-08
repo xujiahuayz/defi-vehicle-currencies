@@ -16,7 +16,7 @@ A vehicle that stops being the cheapest route keeps the largest share of routing
 
 One account is excluded before the race starts. A thick-market cost advantage explains why the native asset is cheap to route through \citep{Krugman1980VehicleCurrencies,KiyotakiWright1989MoneyMedium}, and Section~\ref{sec:setting:definitions} defines the native type as the asset carrying the thickest incumbent pairing network, so an account resting on that advantage restates a definition. Its empirical content appears in Section~\ref{sec:setting:validation} as evidence that the quoting engine reproduces a known ordering. What the four remaining accounts have to explain is why routing does not leave at the moment the cost advantage does.
 
-The determinism of route selection narrows the field in a way the currency literature cannot. A smart-order router runs a graph search afresh at every quote and carries no memory of yesterday's choice \citep{HendershottJonesMenkveld2011Algorithmic}, which removes trader habit as a channel and leaves none of the four accounts resting on it. Each instead names a state variable that updates slowly, and $\theta$ near one is a measurement of how fast that variable moves. The race is therefore about a speed. A definition fixing which asset has the thickest network says nothing about the rate at which that network can be rebuilt around a different asset.
+The determinism of the counterfactual route search narrows the field in a way the currency literature cannot. It is recomputed at every quote and contains no lagged-choice state, which removes habit from the benchmark and leaves none of the four accounts resting on it. Each instead names a state variable that updates slowly, and $\theta$ near one is a measurement of how fast that variable moves. The race is therefore about a speed. A definition fixing which asset has the thickest network says nothing about the rate at which that network can be rebuilt around a different asset.
 
 \begin{table}[t]
 \centering
@@ -100,7 +100,7 @@ Two inputs make \eqref{eq:integration} admissible. The first is the date each ve
 \subsection{Holding cost}
 \label{sec:rivals:holding}
 
-An intermediate asset is warehoused for the duration of the hop, and the cost of the intermediary's own volatility scales with the amount warehoused, which is the inventory channel of the dealer literature applied to the choice of vehicle \citep{AmihudMendelson1980Dealership,HoStoll1981OptimalDealer,ComertonFordeEtAl2010Inventories}. Under \emph{holding cost} a volatile incumbent is abandoned faster under its own stress than a stable one is, and $\theta$ moves with what the role costs to occupy.
+Dealer models and evidence motivate, but do not identify, a holding-cost rival in this setting \citep{AmihudMendelson1980Dealership,HoStoll1981OptimalDealer,ComertonFordeEtAl2010Inventories}. If supplying pools that carry an intermediate asset ties up more risk-bearing capacity when its price is volatile, a volatile incumbent should be abandoned faster under its own stress than a stable one is, and $\theta$ should move with what the role costs to occupy.
 
 A second signature of this account is rejected on the record. If warehousing the intermediary costs something that scales with notional, the native asset's cost advantage weakens as trade size rises, and a profile read off three separate notional subsamples looks exactly like that. Estimated as an interaction on the same screened panel,
 \begin{equation}
