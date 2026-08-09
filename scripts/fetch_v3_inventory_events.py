@@ -7,7 +7,6 @@ import argparse
 from collections import deque
 from concurrent.futures import FIRST_COMPLETED, wait
 from datetime import datetime, timezone
-import gzip
 import json
 from pathlib import Path
 import time
@@ -24,6 +23,7 @@ from ddvc.v3_inventory import (
     decode_inventory_log,
     inventory_chunk_completed,
     inventory_chunk_paths,
+    pool_addresses_from_graph,
 )
 from ddvc.state_data import available_state_days, read_tick_partition
 
@@ -38,16 +38,7 @@ MAX_JOB_ATTEMPTS = 12
 
 
 def v3_pool_addresses(path: Path = STATIC_PATH) -> set[str]:
-    pools: set[str] = set()
-    with gzip.open(path, "rt") as handle:
-        for line in handle:
-            if line.strip():
-                pool = str(json.loads(line).get("id") or "").lower()
-                if pool:
-                    pools.add(pool)
-    if not pools:
-        raise RuntimeError("V3 immutable pool registry is empty")
-    return pools
+    return pool_addresses_from_graph(path)
 
 
 def default_end_block(path: Path = END_META_PATH) -> int:

@@ -29,6 +29,7 @@ from ddvc.v3_inventory import (
     INVENTORY_STATE_GENERATION,
     PoolStatic,
     apply_inventory_events,
+    audit_inventory_chunks,
     block_ranges,
     canonical_inventory_event,
     canonical_inventory_start_block,
@@ -36,6 +37,7 @@ from ddvc.v3_inventory import (
     inventory_chunk_completed,
     inventory_chunk_paths,
     inventory_snapshot_rows,
+    pool_addresses_from_graph,
     pool_static_from_graph,
 )
 from ddvc.v3_inventory_calendar import (
@@ -192,6 +194,16 @@ def require_complete_raw_chunks(start: int, end: int) -> list[tuple[int, int]]:
             f"V3 physical-inventory replay requires all raw event chunks; "
             f"missing={len(missing):,}/{len(ranges):,}; first={sample}"
         )
+    totals = audit_inventory_chunks(
+        ranges,
+        RAW_INVENTORY_ROOT,
+        known_pools=pool_addresses_from_graph(STATIC_PATH),
+    )
+    print(
+        f"PASS: V3 raw inventory chunks={totals['chunks']:,}; "
+        f"logs={totals['raw_logs']:,}; registered={totals['recognized_v3_logs']:,}",
+        flush=True,
+    )
     return ranges
 
 

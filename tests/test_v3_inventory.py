@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from eth_abi import encode as abi_encode
+import gzip
+import json
 from pathlib import Path
 import tempfile
 
@@ -12,6 +14,7 @@ from ddvc.v3_inventory import (
     PoolStatic,
     apply_inventory_event,
     apply_inventory_events,
+    audit_inventory_chunks,
     balance_of_calldata,
     block_ranges,
     canonical_inventory_start_block,
@@ -21,6 +24,7 @@ from ddvc.v3_inventory import (
     decode_balance_of_result,
     decode_inventory_log,
     inventory_snapshot_rows,
+    inventory_chunk_paths,
     pool_static_from_graph,
 )
 from ddvc.v3_inventory_calendar import last_block_before_timestamp
@@ -215,6 +219,36 @@ def test_fetch_queue_retries_throttled_chunk_without_abandoning_other_work() -> 
     assert totals == {"raw": 2, "recognized": 2}
     assert failures == []
     assert calls == {(1, 1): 2, (2, 2): 1}
+
+
+def test_raw_inventory_chunk_audit_reconciles_content_and_metadata() -> None:
+    raw = log("collect_protocol", [1, 2], ["uint128", "uint128"])
+    raw["address"] = "0xpool"
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        raw_path, meta_path = inventory_chunk_paths(100, 100, root)
+        with gzip.open(raw_path, "wt") as handle:
+            handle.write(json.dumps(raw) + "\n")
+        meta_path.write_text(
+            json.dumps(
+                {
+                    "status": "complete",
+                    "from_block": 100,
+                    "to_block": 100,
+                    "event_topics": sorted(EVENT_TOPICS.values()),
+                    "raw_logs": 1,
+                    "recognized_v3_logs": 1,
+                    "unrecognized_logs": 0,
+                    "recognized_by_event": {
+                        "collect": 0,
+                        "flash": 0,
+                        "collect_protocol": 1,
+                    },
+                }
+            )
+        )
+        totals = audit_inventory_chunks([(100, 100)], root, known_pools={"0xpool"})
+    assert totals == {"chunks": 1, "raw_logs": 1, "recognized_v3_logs": 1}
 
 
 def test_balance_of_call_and_result_are_exact_uint256() -> None:

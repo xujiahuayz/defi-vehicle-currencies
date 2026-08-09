@@ -5,6 +5,7 @@ from __future__ import annotations
 from bisect import bisect_left
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+import gzip
 import json
 from pathlib import Path
 from typing import Iterable
@@ -107,6 +108,90 @@ def inventory_chunk_completed(
         and int(record.get("to_block", -1)) == upper
         and set(record.get("event_topics") or []) == set(event_topics)
     )
+
+
+def pool_addresses_from_graph(path: Path) -> set[str]:
+    """Load the complete immutable V3 pool-address perimeter once."""
+
+    pools: set[str] = set()
+    with gzip.open(path, "rt") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            pool = str(json.loads(line).get("id") or "").lower()
+            if not pool.startswith("0x") or len(pool) != 42:
+                raise ValueError("V3 immutable pool registry contains an invalid address")
+            if pool in pools:
+                raise ValueError(f"duplicate V3 immutable pool address: {pool}")
+            pools.add(pool)
+    if not pools:
+        raise RuntimeError("V3 immutable pool registry is empty")
+    return pools
+
+
+def audit_inventory_chunks(
+    ranges: Iterable[tuple[int, int]],
+    root: Path,
+    *,
+    known_pools: set[str],
+) -> dict[str, int]:
+    """Read every raw log and reconcile its exact chunk metadata contract."""
+
+    expected_topics = set(EVENT_TOPICS.values())
+    totals = {"chunks": 0, "raw_logs": 0, "recognized_v3_logs": 0}
+    for lower, upper in ranges:
+        raw_path, meta_path = inventory_chunk_paths(lower, upper, root)
+        if not inventory_chunk_completed(lower, upper, root):
+            raise RuntimeError(f"incomplete V3 inventory chunk {lower}-{upper}")
+        metadata = json.loads(meta_path.read_text())
+        keys: set[tuple[int, str, int]] = set()
+        raw_logs = 0
+        recognized = 0
+        by_event = {name: 0 for name in EVENT_TOPICS}
+        with gzip.open(raw_path, "rt") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                raw = json.loads(line)
+                decoded = decode_inventory_log(raw)
+                block = int(decoded["block_number"])
+                if not lower <= block <= upper:
+                    raise ValueError(
+                        f"V3 inventory log block {block} lies outside {lower}-{upper}"
+                    )
+                identity = (
+                    block,
+                    str(decoded["tx_hash"]),
+                    int(decoded["log_index"]),
+                )
+                if identity in keys:
+                    raise ValueError(f"duplicate V3 inventory log within chunk: {identity}")
+                keys.add(identity)
+                raw_logs += 1
+                if str(decoded["pool"]) in known_pools:
+                    recognized += 1
+                    by_event[str(decoded["event_type"])] += 1
+        if set(metadata.get("event_topics") or []) != expected_topics:
+            raise ValueError(f"V3 inventory chunk {lower}-{upper} has a topic perimeter drift")
+        if int(metadata.get("raw_logs", -1)) != raw_logs:
+            raise ValueError(f"V3 inventory chunk {lower}-{upper} raw row count differs")
+        if int(metadata.get("recognized_v3_logs", -1)) != recognized:
+            raise ValueError(f"V3 inventory chunk {lower}-{upper} recognized row count differs")
+        if int(metadata.get("unrecognized_logs", -1)) != raw_logs - recognized:
+            raise ValueError(f"V3 inventory chunk {lower}-{upper} unrecognized row count differs")
+        recorded_by_event = {
+            str(key): int(value)
+            for key, value in (metadata.get("recognized_by_event") or {}).items()
+        }
+        if recorded_by_event != by_event:
+            raise ValueError(f"V3 inventory chunk {lower}-{upper} event counts differ")
+        totals["chunks"] += 1
+        totals["raw_logs"] += raw_logs
+        totals["recognized_v3_logs"] += recognized
+    temporaries = list(root.glob(".*.tmp"))
+    if temporaries:
+        raise RuntimeError(f"V3 inventory raw perimeter contains {len(temporaries):,} temporaries")
+    return totals
 
 
 def _field(record: object, name: str) -> object:
