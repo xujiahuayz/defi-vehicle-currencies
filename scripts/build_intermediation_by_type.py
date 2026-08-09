@@ -278,7 +278,7 @@ def _stable_share_change_tests(
                         "p_value": estimate.p_value,
                         "days": estimate.n_observations,
                         "hac_lag_days": hac_lag,
-                        "calendar_support": "month-days observed in both endpoint years; calendar-day HAC with unsupported gaps excluded",
+                        "calendar_support": "daily observations at calendar month-and-day positions observed in both endpoint years; calendar-day HAC excludes unsupported gaps",
                         "share_denominator": "native_plus_stable",
                     }
                 )

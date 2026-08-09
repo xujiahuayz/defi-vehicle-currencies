@@ -213,7 +213,7 @@ def choice_regime_rival_tests(
                             "p_value": estimate.p_value,
                             "days": estimate.n_observations,
                             "hac_lag_days": hac_lag,
-                            "calendar_support": "month-days observed in both endpoint years",
+                            "calendar_support": "daily observations at calendar month-and-day positions observed in both endpoint years",
                             "share_denominator": "native_plus_stable",
                         }
                     )

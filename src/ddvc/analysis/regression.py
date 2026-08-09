@@ -155,7 +155,7 @@ def common_calendar_day_mask(
     baseline_year: int,
     comparison_year: int,
 ) -> np.ndarray:
-    """Keep only month-days observed in both endpoint years."""
+    """Keep daily observations at month-and-day positions seen in both endpoint years."""
     date_array = pd.to_datetime(pd.Series(np.asarray(dates).reshape(-1)), errors="coerce")
     year_array = np.asarray(years).reshape(-1)
     if len(date_array) != len(year_array):

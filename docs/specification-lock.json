@@ -30,7 +30,7 @@
       "status": "enter_fgh_primary",
       "role": "lead finding",
       "estimand": "change in stable share of native-plus-stable exact two-leg intermediary routes between 2024 and 2026 on common calendar support",
-      "sample": "topology-valid clean-leg routes with exactly two pool legs and one intermediary; month-days observed in both endpoint years; full venue perimeter",
+      "sample": "topology-valid clean-leg routes with exactly two pool legs and one intermediary; daily observations whose calendar month-and-day position is observed in both endpoint years; full venue perimeter",
       "unit": "day by routing stratum",
       "dependent_variable": "stable intermediary episode share within native plus stable",
       "transformation": "level share and percentage-point change",

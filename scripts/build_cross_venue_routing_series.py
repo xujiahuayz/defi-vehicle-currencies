@@ -433,7 +433,7 @@ def routing_incidence_change_tests(
                 "days": estimate.n_observations,
                 "hac_lag_days": hac_lag,
                 "calendar_days": calendar_days,
-                "calendar_support": "month-days observed in both endpoint years",
+                "calendar_support": "daily observations at calendar month-and-day positions observed in both endpoint years",
                 "share_denominator": "economic routes excluding canonical endpoint round trips",
                 "balanced_route_coverage_baseline": support_share(baseline_year),
                 "balanced_route_coverage_comparison": support_share(comparison_year),
