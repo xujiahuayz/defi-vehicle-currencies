@@ -193,7 +193,7 @@ R_{a,p,t} \, R_{b,p,t} \;=\; \kappa_{p,t},
 \qquad
 q^{\mathrm{cp}}_{p}(a \to b,\, x) \;=\; \frac{(1-\phi_{p}) \, x \, R_{b,p,t}}{R_{a,p,t} + (1-\phi_{p}) \, x},
 \end{equation}
-with the swap fee $\phi_{p}$ fixed at 30 basis points on both constant-product venues. One pricing routine serves both of them, since they run the same invariant and the same event schema. \citet{LeharParlour2024Uniswap} study liquidity provision on exactly this invariant, and \citet{MilionisMoallemiRoughgarden2023Myersonian} characterise the provider's optimal position within it.
+with the swap fee $\phi_{p}$ fixed at 30 basis points on both constant-product venues. One pricing routine serves both of them, since they run the same invariant and the same event schema. \citet{LeharParlour2024Uniswap} study liquidity provision on exactly this invariant.
 
 Concentrated-liquidity pools distribute reserves over a grid of ticks, so the quote walks the tick map with the exact swap step the contract implements \citep{AdamsZinsmeisterRobinson2021UniswapV3}. Index the pool's two tokens as $0$ and $1$, let $P$ be the price of token $0$ in units of token $1$, and let $L$ be the liquidity in range. The token amounts spanned between two prices, and the tick grid the ranges are cut on, are
 \begin{equation}

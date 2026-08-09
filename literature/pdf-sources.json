@@ -665,6 +665,18 @@
       ],
       "status": "complete"
     },
+    "MilionisMoallemiRoughgarden2023Myersonian": {
+      "checks": {
+        "article": "literature/text/2024-MilionisMoallemiRoughgarden2023Myersonian-published-a-myersonian-framework-for-optimal-liquidity-provision-in-automated-market-makers.txt",
+        "author_or_repository": "https://arxiv.org/abs/2303.00208",
+        "publisher_or_doi": "https://doi.org/10.4230/LIPIcs.ITCS.2024.81"
+      },
+      "companions": [],
+      "main": "MilionisMoallemiRoughgarden2023Myersonian",
+      "non_text_companions": [],
+      "non_text_dispositions": [],
+      "status": "complete"
+    },
     "Mukhin2022InternationalPriceSystem": {
       "checks": {
         "article": "literature/text/2022-Mukhin2022InternationalPriceSystem-an-equilibrium-model-of-the-international-price-system.txt",
@@ -1788,7 +1800,13 @@
     "MilionisMoallemiRoughgarden2023Myersonian": [
       {
         "access": "public",
-        "label": "arXiv",
+        "label": "DROPS published version-of-record PDF",
+        "url": "https://drops.dagstuhl.de/storage/00lipics/lipics-vol287-itcs2024/LIPIcs.ITCS.2024.81/LIPIcs.ITCS.2024.81.pdf",
+        "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "arXiv v2 superseded precursor",
         "url": "https://arxiv.org/pdf/2303.00208.pdf",
         "version": "preprint"
       }

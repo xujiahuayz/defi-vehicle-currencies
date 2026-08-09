@@ -1,0 +1,1055 @@
+
+
+===== PAGE 1 =====
+
+A Myersonian Framework for Optimal Liquidity
+Provision in Automated Market Makers
+Jason Milionis /envel⌢pe
+Department of Computer Science, Columbia University, New York, NY, USA
+Ciamac C. Moallemi /envel⌢pe
+Graduate School of Business, Columbia University, New York, NY, USA
+Tim Roughgarden /envel⌢pe
+Department of Computer Science, Columbia University, New York, NY, USA
+a16z Crypto, New York NY 10010, USA
+Abstract
+In decentralized finance (“DeFi”), automated market makers (AMMs) enable traders to program-
+matically exchange one asset for another. Such trades are enabled by the assets deposited by
+liquidity providers (LPs). The goal of this paper is to characterize and interpret the optimal (i.e.,
+profit-maximizing) strategy of a monopolist liquidity provider, as a function of that LP’s beliefs about
+asset prices and trader behavior. We introduce a general framework for reasoning about AMMs based
+on a Bayesian-like belief inference framework, where LPs maintain an asset price estimate, which is
+updated by incorporating traders’ price estimates. In this model, the market maker (i.e., LP) chooses
+a demand curve that specifies the quantity of a risky asset to be held at each dollar price. Traders
+arrive sequentially and submit a price bid that can be interpreted as their estimate of the risky asset
+price; the AMM responds to this submitted bid with an allocation of the risky asset to the trader, a
+payment that the trader must pay, and a revised internal estimate for the true asset price. We define
+an incentive-compatible (IC) AMM as one in which a trader’s optimal strategy is to submit its true
+estimate of the asset price, and characterize the IC AMMs as those with downward-sloping demand
+curves and payments defined by a formula familiar from Myerson’s optimal auction theory. We
+generalize Myerson’s virtual values, and characterize the profit-maximizing IC AMM. The optimal
+demand curve generally has a jump that can be interpreted as a “bid-ask spread,” which we show
+is caused by a combination of adverse selection risk (dominant when the degree of information
+asymmetry is large) and monopoly pricing (dominant when asymmetry is small). This work opens
+up new research directions into the study of automated exchange mechanisms from the lens of
+optimal auction theory and iterative belief inference, using tools of theoretical computer science in a
+novel way.
+2012 ACM Subject ClassificationTheory of computation→ Algorithmic game theory; Theory of
+computation→ Algorithmic mechanism design; Theory of computation→ Computational pricing
+and auctions
+Keywords and phrasesPosted-Price Mechanisms, Asset Exchange, Market Making, Automated
+Market Makers (AMMs), Blockchains, Decentralized Finance, Incentive Compatibility, Optimization
+Digital Object Identifier10.4230/LIPIcs.ITCS.2024.81
+Related Version Relevant Version: https://arxiv.org/abs/2303.00208
+Funding Jason Milionis: Supported in part by NSF awards CNS-2212745, CCF-2212233, DMS-
+2134059, and CCF-1763970.
+Ciamac C. Moallemi: Supported by the Briger Family Digital Finance Lab at Columbia Business
+School.
+Tim Roughgarden: Research at Columbia University supported in part by NSF awards CNS-2212745,
+and CCF-2006737.
+© Jason Milionis, Ciamac C. Moallemi, and Tim Roughgarden;
+licensed under Creative Commons License CC-BY 4.0
+15th Innovations in Theoretical Computer Science Conference (ITCS 2024).
+Editor: Venkatesan Guruswami; Article No.81; pp.81:1–81:19
+Leibniz International Proceedings in Informatics
+Schloss Dagstuhl – Leibniz-Zentrum für Informatik, Dagstuhl Publishing, Germany
+
+===== PAGE 2 =====
+
+81:2 A Myersonian Framework for Optimal LP in AMMs
+1 Introduction
+1.1 Exchanges and Market Makers
+The purpose of an exchange is to enable the trade of two or more assets. At a stock exchange,
+for example, shares of a stock might be exchanged for US dollars via a mechanism known as
+a “limit order book” (LOB), in which buyers and sellers post “limit orders” (offers to buy or
+sell a specified quantity at a specified price) that are then matched greedily.
+Every trade has two sides: for one user to buy a risky asset at a given price, there must
+be a corresponding seller willing to sell at that same price. Such trades can occur organically
+due to a coincidence of wants from two traders, but in practice many trades are enabled by
+professional market makerswho continually match buy and sell orders whenever the price is
+right. This paper is about the profit-maximization problem faced by such a market maker.
+In particular, the market maker is continually updating their beliefs around the asset price,
+according to a Bayesian-like belief inference framework, from a prior belief in conjunction
+with observations by traders who report price estimates.
+Digital assets secured by blockchains, such as cryptocurrencies, are also traded via
+exchanges. In centralized exchanges such as Coinbase or Binance, users hand control of
+their assets over to the exchange and, therefore, accept the credit risk of not getting them
+back. Such exchanges are typically based on the CLOB design. Decentralized exchanges
+(DEXs), on the other hand, operate purely programmatically (i.e., “on-chain”), are typically
+non-custodial (meaning that traders at all times have direct control of their assets in the
+sense that assets are not entrusted to a third party), and often depart from the CLOB
+model. There are several reasons for this departure: on-chain computation and storage can
+be expensive, and CLOBs need a lot of both; the markets for many digital assets (especially
+long-tail ones) are thin and have no dedicated market makers, in which case CLOBs may fail
+to provide an acceptable level of liquidity; and a general openness in the blockchain world to
+experimental designs. The DEX design space is large, and many different designs have been
+deployed (on Ethereum and other general-purpose smart contract platforms) over the past
+years.
+For example, Uniswap (especially in its earliest iterations, v1 and v2) is a canonical
+example of anautomated market maker (AMM). In an AMM (unlike in a CLOB), the roles
+of traders and market makers are clearly separated. A market maker, which in this context
+is called aliquidity provider (LP), deposits into the AMM some amounts of the assets being
+traded (and is, by default, passive thereafter). At all times, the AMM defines a marginal
+price as a function of its current reserves of those assets. (In the case of Uniswap v1 and
+v2, the spot price of an AMM is simply the ratio of the quantities of its two assets.) The
+AMM is willing to take either side of a trade (buy or sell) at its current marginal price, and
+in this sense is always providing liquidity to traders. The latest iteration of Uniswap (v3)
+blurs the line between AMMs and CLOBs by allowing a much wider range of LP demand
+curves than in v2 (to some extent approximating what can be expressed by limit orders in a
+CLOB), thereby encouraging an LP to more actively manage its demand curve as market
+conditions evolve.
+The goal of this paper is to characterize the solution to the following fundamental question:
+What is the optimal liquidity demand curve for a profit-maximizing market maker? This
+question is relevant for a market maker in a CLOB, an LP of an expressive AMM such as
+Uniswap v3, or even the designer of a new AMM (in which case the market making liquidity
+demand curve is defined programmatically rather than submitted by a third-party LP). This
+paper offers a new model for reasoning about this question and a quite general answer, which
+
+===== PAGE 3 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:3
+resembles in many respects, and in fact generalizes, Myerson’s theory of optimal auctions [33].
+To get a feel for our model and results, we next discuss a highly restricted but nonetheless
+illuminating special case, and give a very brief overview of our general theory.
+1.2 The Pure “Noise Trading” Case and an Overview of the General
+Case
+The theory of market microstructure (see e.g., [35]) differentiates between “informed traders,”
+who have better information about the fundamental value of an asset than the market maker
+does, and “noise traders,” who trade for idiosyncratic reasons that do not reflect any private
+information about the fundamental value of the asset. Generally speaking, market makers
+lose money to informed traders due to adverse selection: by virtue of such a trader being
+willing to trade, it expects a profit, which, due to the zero-sum nature of common-value
+assets, comes at the expense of the market maker. Market makers can, however, generally
+profit from noise traders. In this section, we first consider (as an instructive warm-up) the
+special case in whichall traders are noise traders (and hence adverse selection plays no
+role). Our general model, the results of which are briefly presented in the end of this section,
+and which is detailed in Section 3 accommodates arbitrary mixtures of informed and noise
+traders, and our general results must therefore reflect adverse selection effects in addition to
+the aspects identified in this section.
+Fundamentally, a market maker must decide, as a function of the information available
+to it, how much of a risky asset they are willing to buy or sell at different prices. For this
+example, we will assume that the market maker knows the true valuep0 of the risky asset
+that it is trading.
+An obvious strategy for such a market maker is to accept exactly the orders on which it
+makes money: all (and only) the buy orders with offered price more thanp0, and all (and
+only) the sell orders with offered price less thanp0. However, as we will see, this is not in
+general the profit-maximizing strategy for a market maker.
+It will be convenient to encode a market maker’s strategy via the choice of ademand
+curve g, which maps prices to quantities (i.e., an amount of risky asset that will be held
+by the market maker). The interpretation is that the market maker would be interested in
+selling g(p0)−g(p) units of the risky asset at the pricep. (Note that this may be a negative
+number of units, in which case the market maker will be buying the risky asset from the
+trader.) A choice ofp0 and g induces theallocation rulex(p) = g(p0)−g(p), the amount of
+the risky asset allocated to a trader who reports a price ofp.
+Next, we assume that a trader reports a priceˆp∼D that is drawn according to a
+distributionD known to the market maker. We assume that the trader is willing to buy or
+sell at most a bounded amount of the risky asset (normalized to be 1 only for notational
+convenience, since there is no difference whatsoever for any arbitrary finite bound on the
+results), and that the demand curveg and pricep0 accordingly satisfyg(p0)−g(ˆp)∈ [−1, 1] for
+all ˆp. When the noise trader reports their priceˆp, they receive an allocationx(ˆp) = g(p0)−g(ˆp)
+of the risky asset and must remit a paymenty(ˆp) to the AMM for this provision. As we
+will see in Section 2, the natural notion of incentive-compatibility in this setting – that a
+utility-maximizing trader who values the risky asset at a priceˆp will in fact reportˆp to the
+AMM – uniquely pins down the payments (they(ˆp)’s) as a function of the allocation rule
+(the x(ˆp)’s).1
+1 As the reader might guess, it is also essential that the allocation rulex is monotone inˆp, or equivalently
+that the demand curveg is downward-sloping, with the market maker selling more and more of the
+risky asset as the going price gets higher and higher. See Section 2 for details.
+ITCS 2024
+
+===== PAGE 4 =====
+
+81:4 A Myersonian Framework for Optimal LP in AMMs
+With informed traders, a rational market maker will update its estimatep0 of the risky
+asset’s true price following a trade (generally increasing it after a trader buys the risky
+asset from the market maker and decreasing it after a sell). Our general model in Section 3
+accommodates this through a generic update ruleπ(p0, ˆp) that specifies the market maker’s
+new estimate as a function of its old estimatep0 and the new information conveyed by a
+trader reporting the priceˆp. For example,π might correspond to a Bayesian update with
+respect to some assumed information structure, and the update rule may come from and be
+revised according to a no-regret learning algorithm used by the market maker on successive
+rounds. In the simple special case of only noise traders being present, because the behavior of
+noise traders is (by assumption) independent of the true value of the risky asset, the market
+maker has no cause for updating its internal price (i.e.,π(p0, ˆp) = p0 for allp0 and ˆp).
+What is the optimal strategy (i.e., choice of demand curveg) for the market maker? That
+is, which choice ofg maximizes
+E[Profit] = E[y(ˆp)−p0·x(ˆp)], (1)
+where the expectation is with respect toˆp∼D , x(ˆp) = g(p0)−g(ˆp) is the allocation rule,
+and y is the uniquely defined payment rule mentioned above?2 (In the general case, the “p0”
+term in(1) is replaced byπ(p0, ˆp), with the market maker evaluating its portfolio according
+to its new belief about the value of the risky asset, conditioned on observing the trader’s
+report of ˆp.)
+The results in this paper imply that the answer to this question is always defined by a
+posted-price-like mechanism with two prices (depending onD), pl≤p0 and ph≥p0. These
+two prices split the price range into three intervals, and the optimal strategy is to always buy
+the maximum amount in the lowest price interval, always sell in the highest price interval,
+and refuse to trade in the middle price interval.
+We will be interested in the length of this middle price interval, which we call theno-trade
+gap. Bigger no-trade gaps are generally worse from a welfare perspective, with welfare-
+increasing trades sacrificed in the name of higher profit to the market maker. The no-trade
+gap is reminiscent of the “bid-ask spread” in CLOBs, which occupies a central position in
+the study of traditional market-making in CLOBs.3 Traditionally, theoretical justifications
+for non-trivial bid-ask spreads in CLOBs have relied on frictions (like transaction fees or
+inventory costs) or adverse selection (with a market maker needing to exploit noise traders
+to cover the losses to informed traders). In the current example, with neither frictions
+nor adverse selection, the no-trade gap arises for a different reason, namely the monopolist
+position of the market-maker. In our general model, with the possibility of informed traders,
+monopoly pricing and adverse selection both contribute to the no-trade gap. For example,
+no matter what the distributionD is, if all traders have perfect information (i.e., extreme
+adverse selection), then the no-trade gap encompasses the full price range.
+The pricespl andph that split the price range into three intervals, and hence the no-trade
+gap, are distribution-dependent. For example, intuitively, one might expect a smaller gap
+for distributionsD that are tightly concentrated aroundp0. In general, our analysis shows
+that these two prices can be characterized as roots of two functions that resemble the virtual
+valuation functions used in optimal auction theory [33].
+2 Note that, obviously, the choice of the optimal mechanism does not need the knowledge of the reported
+price by the trader; only its probabilistic characteristics are known according to the distributionD.
+3 In a CLOB, the “bid” and “ask” refer to the highest price of an outstanding buy order and the lowest
+price of an outstanding sell order, respectively. Because limit orders in a CLOB are always matched
+greedily, the bid-ask spread is always non-negative. Small spreads are generally viewed as a good thing,
+indicating a “highly liquid” market (with lower trading costs, at least for small quantities).
+
+===== PAGE 5 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:5
+We next give two example cases for pure noise-trading: ifD is the uniform distribution on
+[pmin,pmax], thenpl = (pmin +p0)/2 andph = (p0 +pmax)/2; the resulting optimal allocation
+rule is depicted in Figure 1a. IfD is the exponential distribution with parameterλ (on
+[0,∞)), thenph =p0 + 1
+λ. The lower pricepl does not have a closed-form expression in this
+case, but can be easily approximated numerically (givenp0 and λ); Figure 2 enumerates
+some examples of how these lower prices vary, and an illustration of the optimal allocation
+rule is contained in Figure 1b.
+p0 pmax+p0
+2
+pmax
+-1
+0
+1
+pmin
+pmin+p0
+2
+xa(ˆp)
+ˆp
+p0 p0 + 1
+λ
+-1
+0
+1
+pl
+xb(ˆp)
+ˆp
+Figure 1Optimal allocation rulex(ˆp) in “pure noise trading” showing the no-trade gap around
+p0 when the distributionˆp∼D is: (a) the uniform distribution on[pmin,p max], (b) the exponential
+distribution on [0,∞) with parameterλ = 2 for p0 = 1 (the computation ofpl can only be done via
+numerical methods; see Figure 2).
+p0 \ λ 0.5 1 2
+0.25 0.123 0.121 0.118
+0.5 0.242 0.235 0.221
+0.75 0.358 0.342 0.314
+1 0.470 0.443 0.396
+1.5 0.684 0.627 0.537
+2 0.886 0.792 0.653
+Figure 2 Table of lower pricespl in “pure noise trading” when the distributionˆp∼D is the
+exponential distribution on[0,∞) with parameterλ.
+The rest of this paper develops a similarly precise understanding of optimal market-maker
+strategies in a more general setting. We will now briefly present here the general results in
+an informal way. For the details, the reader is referred to Section 3.
+▶ Informal Theorem 1.There exist virtual valuation functionsϕu(s) and ϕl(s), such that
+the expected profit, shown in Eq.(1) in the general case where the “p0” term is replaced by
+π(p0, ˆp), is equal to the expected virtual welfare of an auction with virtual values derived by
+ϕu(s) if s≥p0 and ϕl(s) if s<p 0.
+▶ Informal Theorem 2.There exist two pricespl≤p0 and ph≥p0, such that the optimal
+allocation rule of a market maker that maximizes their expected profit is to buy the maximum
+amount if the trader reports a priceˆp≤ pl and sell the maximum amount if the trader
+reports a priceˆp≥ph, and refuse to trade in the interval between these two prices, i.e., when
+ˆp∈ (pl,ph).
+ITCS 2024
+
+===== PAGE 6 =====
+
+81:6 A Myersonian Framework for Optimal LP in AMMs
+The formal statements of the above results are Theorem 4 and Theorem 5 respectively.
+Finally, in Section 4, we examine how our general theory above applies in the interesting
+special case of a linear update rule. Through this special case, we naturally show that the
+structure of the no-trade gap captures precisely the complex effect that is the interpolation
+between the effects of adverse selection (observed when all traders have perfect information)
+and monopoly pricing (observed when all traders are noise traders). For further details, we
+refer the interested reader to Section 4.
+1.3 Related Work
+Auctions. This paper critically relates to revenue maximizing auction design, initiated under
+the pioneering work of [33]. Since then, various versions of virtual values have been used in a
+variety of settings among others for specifying optimal auctions and their approximations,
+including as to how they relate to no-regret learning in auctions (e.g., [7, 8, 24, 23, 10, 9,
+2, 37, 36, 26]); in a similar spirit, we define and use functions that can be interpreted as
+virtual valuations. For a survey of results around revenue-optimal mechanisms, virtual values,
+optimal auctions, and their approximations, see the book by [25].
+AMMs. Constant function market makers (CFMMs) have arisen from the idea of holding
+some function constant across “trading states” (from states of the world, previously, on the
+utility-based framework of AMMs for prediction markets by [11]), and are characterized
+by such an invariant called abonding function. This means that the AMM is willing to
+take the other side of any trade that corresponds to remaining on a constant level curve
+of the particular bonding function chosen. Tools from convex analysis – familiar to both
+the algorithmic game theory and machine learning theory communities – are crucially
+used to analyze CFMMs and prove “optimal behavior” properties for participating traders
+[32, 31, 3, 4, 5].
+The description of the framework that we use for AMMs – inspired by a reparameterization
+of a CFMM curve (established by [3]) in terms of portfolio holdings of the pool with respect
+to the price – resembles that in [30], who used a similar AMM framework for a different
+purpose, namely unifying constant function market makers (CFMMs) and limit order books
+(LOBs) and complexity-approximation trade-offs between them. The latter work considers
+neither incentive-compatibility constraints nor the problem of optimal liquidity provision.
+Asset price beliefs in AMMs. [22] also examine beliefs of LPs (specifically on CFMMs)
+around future asset prices; however, in their model, these beliefs are static (i.e., similar to
+a single prior that remains unchanged throughout the trades’ occurrence) or modeled by a
+fixed price dynamic discounted to the present (i.e., still not dynamically revised in response
+to incoming trades). The focus of [22] is the design of CFMMs that maximize the fraction of
+trades that the CFMM can satisfy with small slippage under the stationary distribution of the
+Markov chain induced by their model. Our work focuses instead on LP profit-maximization
+with informed traders and noise traders, showing a formal relation between the optimal
+auction design literature, including computational considerations in approximations of those,
+and the market microstructure literature.
+There is also work specific to Uniswap v3 from the LP perspective around how beliefs
+about future prices should guide the choice of an LP’s demand curve [17, 38, 34].
+Market microstructure. There is a large literature on the market microstructure of limit
+order books; see the textbook by [35] and references therein. Closest to the present work is
+the paper of [19]. Focusing on the role of asymmetric information, [19] considers the problem
+
+===== PAGE 7 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:7
+of a monopolist optimizing their liquidity demand curve, but in the presence of risk averse
+traders (in contrast to our setting, where the traders can be viewed as risk neutral). The risk
+averse setting is more technically challenging, and hence [19] is required to make very strong
+and highly specific technical assumptions (normally distributed values and observation noise)
+that are not necessary, obscure the general intuition in our setting, and do not add value.
+Instead, the intuition provided by our model is much stronger and more general. Moreover,
+our risk neutrality assumption unlocks a fruitful connection between optimal market-making
+and the Myersonian theory of optimal auction design. [20] considers the related problem of
+the liquidity demand curve in a competitive equilibrium. The latter paper is restricted to a
+limit order book, and does not consider more general forms of liquidity provision in exchange
+mechanisms, like the ones we do. [21] operate in a competitive regime with zero expected
+profits, which gives a completely different reason for bid-ask spreads to arise than the one
+given in our work. [27] develops a model where asingle informed trader (“insider”) competes
+with noise traders and market makers, showing the incorporation of insider information
+into the equilibrium price. In this work, the focus is on the informed trader who is a
+monopolist (there is only one), whereas in our work informed traders are unrestricted and
+the market maker is a monopolist in their liquidity provision. [28] continues to examine
+the informational efficiency of equilibrium prices in a slightly more general setting, where
+there is competition among informed traders, showing that prices are less informative than
+in the competitive equilibrium. Both of these papers use strong assumptions, predominantly
+the normal distribution over both the values and the order sizes. While their models are
+related to ours in their considerations of types of participants present and observations in
+the optimal case, the present results were not known in either of these two works; neither
+of these models is as general as ours, neither relates whatsoever to mechanism design and
+incentive compatibility constraints, and both are based on very strong technical assumptions
+that our work does not need.
+Sequential market-making. Finally, the framework we describe is similar to sequential
+market-making procedures in its use of iterative belief updating. Such procedures have been
+studied in the past including in the context of online learning frameworks [1, 6, 15, 14].
+Closer to our Bayesian setting, [15] consider the liquidity present across trade sizes in a
+multi-period monopolistic market making model (and subsequently shows the superiority
+of this compared to a competitive multi-dealer market). The above works, however, do not
+show a connection between optimal market-making and the Myersonian theory of optimal
+auction design, which is the key focus in our results.
+2 Automated market makers
+We begin by presenting a general framework of exchange for automated market makers
+(AMMs) that allows us to consider market making as conducting an auction, and is based on
+market participants (traders) trading with the AMM on the basis of future price beliefs.
+More specifically, suppose there are two assets, a risky asset and a numéraire asset. An
+AMM according to this framework is defined by ademand curve g : (0,∞)→ R+ such that
+the functiong(·) represents thecurrent demand of the market maker for the risky asset as a
+function of price, i.e., the amount of risky asset that the market maker wishes to hold at each
+possible price, along with a payment ruley : (0,∞)→ R such that the functiony(·) specifies
+the quantity of numéraire that a trader needs to pay depending on thecurrent AMM price
+p0 (which instantiates a specific state of this AMM’s demand curve, i.e., a current demand
+ITCS 2024
+
+===== PAGE 8 =====
+
+81:8 A Myersonian Framework for Optimal LP in AMMs
+of the AMM forg(p0) of risky asset) and what they declare to the AMM that their price
+estimate is (see the following paragraph on trading for the precise definition). The market
+maker is assumed to have no inventory costs or budget constraints.
+The demand curveg along with an appropriately defined payment rule can arise through
+bonding curves of traditional constant function market makers (CFMMs, i.e., functions
+f such that the holdings of the joint pool(x,y ) satisfy f (x,y ) = c for somec) but this
+is not necessary: the exchange mechanisms defined by this framework strictly generalize
+CFMMs (see also [30]). Additionally, a non-continuous demand curveg can also be used to
+express limit orders, with the discontinuities representing limit buy or limit sell orders at the
+corresponding price, of quantity of risky asset equal to the jump at that price [30].
+Trading. A trader who wants to trade with the AMM has some (hidden) belief about the
+asset price. The trader will come to the mechanism and specify a price bidˆp. Based on their
+bid, the trader will get a quantityg(p0)−g(ˆp) of risky asset. Finally, the AMM revises its
+current price (which was previouslyp0) according to some update rule (we will see more
+about the update rule from Section 3 onwards; it will play no role in this section). We say
+that the trader wasallocated a quantityx(ˆp) ≜g(p0)−g(ˆp) of asset. This interpretation
+makes it natural to consider the transaction with the traderas an auction with one bidder;
+the trader has a price estimate (valuation) for the risky asset, will be allocated a portion of
+the risky asset (provided by the market maker) based on their submitted price bid, and will
+need to pay the market maker an amounty(ˆp) of numéraire for it. Notice that it may be the
+case thatx(ˆp)< 0, which means that the trader will sell risky asset to the AMM, and the
+market maker will now need to come up with the corresponding payment to the trader for it.
+Example: Uniswap v2. Let’s consider the simple case of a constant product market maker
+(CPMM), such as Uniswap v2, to show how it emerges from the framework above. Consider
+the demand curve of the AMM to be of the formg(p) = c√p, for some c > 0, and the
+payment rule to be of the formy(ˆp) = c
+(√ˆp−√p0
+)
+, for the samec >0. A trader who
+will trade with this exchange at a current pricep0 with a price bidˆp will obtain a quantity
+x(ˆp) = g(p0)−g(ˆp) = c
+(
+1√p0
+− 1√
+ˆp
+)
+of risky asset. Since the curveg(p) above is just a
+reparameterization (in terms of prices) of the risky asset holdings of the CPMM curve4
+xy =k where k =c2 [5], by comparing the expression of the quantity of risky asset that the
+trader gets, we conclude that they get the same quantity as in the CPMM.
+2.1 Incentive-compatible AMMs
+We will now consider that traders interacting with AMMs have utility functions that emerge
+naturally from theirtrue belief about the asset price versus what they bid to obtain a quantity
+of risky asset from the AMM. In particular, a trader who has atrue belief ofp for the asset’s
+price, and submits a bidˆp to the AMM seeks to optimize (maximize) their utility defined by
+u(p, ˆp) ≜p·x(ˆp)−y(ˆp), (2)
+because they consider that the asset’s true value to them isp per unit, they obtain a quantity
+x(ˆp) of it, and payy(ˆp) for this trade.
+4 Note that herex and y – without the parentheses – are not the functions above, but rather the current
+total reserves of the AMM pool.
+
+===== PAGE 9 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:9
+▶ Definition 1(Incentive-compatible AMM). An AMM defined according to a demand curve
+g(p) and a payment ruley(ˆp) is called incentive compatible(IC), if any trader whose utility
+follows Eq. (2) has as an optimal strategy for interacting with the AMM to submit theirtrue
+belief about the asset price as their bid to the AMM.
+Is an AMM defined by an arbitrary demand curveg(p) and an arbitrary payment rule
+y(ˆp) incentive compatible? The answer is no, and the characterization of IC AMMs follows
+standard results of dominant-strategy incentive-compatible (DSIC) single-parameter auctions.
+▶ Proposition 2(Characterization of IC AMMs). An AMM defined according to a demand
+curve g(p) can be paired with a payment ruley(ˆp) to obtain an IC AMM, if and only ifg(p)
+is a non-increasing function.
+Proof. First, we observe the analogy drawn toallocations of asset for trades: x(ˆp) =
+g(p0)−g(ˆp). Since the utility function for the auction with a single bidder (the trader) is of
+the form of Eq. (2), the proposition follows from the characterization of dominant-strategy
+incentive-compatible (DSIC) single-parameter auctions’ allocation rulesx(ˆp) as only those
+functions which are monotone, and specifically non-decreasing functions, becausex(ˆp) is
+non-decreasing precisely if and only ifg(ˆp) is non-increasing.
+More specifically, we follow the standard analysis to showcase the exact correspondence
+of the settings but do not show the entire analysis, as this follows Myerson’s. In order for
+the optimal strategy of any trader with true beliefp to be to submitp to the AMM, we need
+to have that for anyp, ˆp:
+u(p,p )≥u(p, ˆp)⇔p·x(p)−y(p)≥p·x(ˆp)−y(ˆp)⇔p· [x(p)−x(ˆp)]≥y(p)−y(ˆp).
+Additionally, if the converse holds, and the true belief of the trader wasˆpwhile it is considering
+submitting p to the AMM, then we also need to have that for anyp, ˆp:
+u(ˆp, ˆp)≥u(ˆp,p )⇔ ˆp·x(ˆp)−y(ˆp)≥ ˆp·x(p)−y(p)⇔ ˆp· [x(p)−x(ˆp)]≤y(p)−y(ˆp).
+Combining these two inequalities, we get that for anyp, ˆp:
+ˆp· [x(p)−x(ˆp)]≤y(p)−y(ˆp)≤p· [x(p)−x(ˆp)] ,
+hence it is immediate (from the derived inequality(p− ˆp)· [x(p)−x(ˆp)]≥ 0) thatx(ˆp) needs
+to be non-decreasing. ◀
+The next question to be answered is whether arbitrary payment rulesy(ˆp) are allowed
+to be requested by an IC AMM. Not surprisingly, as is the case for payments defined by
+an allocation rule of a DSIC mechanism, the payments need to be precisely defined by the
+demand curve for an IC AMM. The below formula is familiar from Myerson’s single-parameter
+DSIC auction design.
+▶ Corollary 3(Payments of traders on IC AMMs). Suppose that any trader who is allocated a
+quantity 0 of risky asset pays0 amount of numéraire to an IC AMM according to Definition 1
+with a demand curveg(p). The IC AMM’s payment ruley(ˆp) for a trader submitting a price
+bid ˆp needs to be exactly:
+y(ˆp) =
+∫ˆp
+p0
+s dx(s) =−
+∫ˆp
+p0
+p dg(p). (3)
+The above integrals are Riemann–Stieltjes integrals. In cases whereg(p) is differentiable, the
+differential takes the formdg(p) = g′(p) dp.
+ITCS 2024
+
+===== PAGE 10 =====
+
+81:10 A Myersonian Framework for Optimal LP in AMMs
+Proof. From Myerson’s single-parameter auction design, we know that there is a unique
+payment rule (up to an additive constant) for DSIC single-parameter auctions; that is,
+y(ˆp) =
+∫ˆp
+p0
+s dx(s), where the arbitrary additive constant is no longer present, as we have
+integrated the required normalization that for an allocation ofx(p0) = g(p0)−g(p0) = 0
+asset, the payment needs to bey(p0) = 0. This directly translates to the formula given in
+the corollary’s statement in terms of the demand curveg(p) of the AMM. ◀
+Note that the integral that defines the payments is non-negative ifˆp≥p0, and non-positive
+if ˆp≤p0. This is compatible with the direction of the trade, as defined by the allocation
+rule and Proposition 2, which is thatx(ˆp)≥ 0 for ˆp≥p0, andx(ˆp)≤ 0 for ˆp≤p0.
+3 Optimal liquidity provision via revenue maximization
+3.1 Bayesian model for optimal allocation rule
+First, we describe our model for how the market maker should optimize their allocation rule
+for the asset. From now on, the market maker will be assumed to be risk-neutral, i.e., be
+indifferent to “risk,” and only care to be profit-maximizing.
+The Bayesian belief framework operates as follows: the market maker has a prior belief
+distribution on the asset price, and the (single) price it decides to use isp0; for example, and
+most commonly,p0 will be the mean of this prior distribution. A trader then comes to the
+AMM with an estimateˆp (that is the true belief of the trader, if the AMM is IC according to
+Definition 1). Traders are on the market to buy or sell up to 1 unit of the asset;5 that is, the
+allocation rule should satisfy−1≤x(ˆp)≤ 1 for all ˆp. The trader’s estimateˆp is perceived by
+the market maker as one observation of an asset price estimate coming from a distribution
+D that is included in the market maker’s model. For this distributionD, we assume that
+it has a continuous, positive density functionf (ˆp) on a compact support[pmin,pmax] and a
+cumulative density function (CDF)F (ˆp) =
+∫ˆp
+pmin
+f (s) ds.6
+Applying Bayes’ theorem allows the market maker to specify the posterior distribution
+of the asset price, conditional on the observation from the trader. The market maker then
+sets this posterior distribution as their new prior for future observations (trades). We will
+assume that the way this posterior is used by the AMM is through valuing the quantity of
+asset given or obtained at a price ofπ(p0, ˆp) which can be, for instance, the mean of the
+posterior distribution according to the Bayesian framework. (A very interesting special case
+as to how a linear dependence arises on the mean of the posterior with normally distributed
+prior and observational error is shown in Section 4.)
+In general, we will callπ(p0, ˆp) the “update rule” and – for generality – we will not impose
+further constraints arising from the Bayesian framework on what it may be other than that:
+▶ Assumption 1. The following conditions have to hold for the update rule:
+π(p0, ˆp) lies in the interval betweenp0 and ˆp.
+π(p0, ˆp) is non-decreasing inˆp.
+π(p0,p 0) = p0, i.e., if the trader’s estimate is the same as the market maker’s prior, then
+the updated valuation of the market maker for the asset should be the same as their prior.
+E ˆp∼D[π(p0, ˆp)] = p0, i.e., the prior is consistent with the update rule.
+5 This is just for notational convenience. In fact, it generalizes easily for demand up to any arbitrary
+finite bound, and a subsequent normalization enables using exactly our results here with unit demand.
+6 Our results can be extended to non-continuous density functions supported at possibly non-compact
+intervals, e.g., (0,∞), but for simplicity of exposition, we do not focus on handling these edge cases
+here, since they do not add to the general discussion points of the paper.
+
+===== PAGE 11 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:11
+Therefore, according to the above, the market maker’s next best estimate for the asset’s
+price isπ(p0, ˆp) conditioned on receiving the trader’s estimateˆp. It is then natural to consider
+that, when selling (respectively, buying) some quantityx(ˆp) of the asset from the trader,
+the AMM will not only consider the amount of money that they receive (respectively, give)
+but also their perceived best estimate of the value of the asset that they lost (respectively,
+gained). This, then, arises as an interesting contrast to traditional auction theory, where
+the revenue of the auction is only the payment that is made. Here, according to the above
+reasoning, it makes sense for the AMM to value their profit according to
+Profit =y(ˆp)−π(p0, ˆp)·x(ˆp). (4)
+Therefore, an AMM choosing an optimal strategy to provide liquidity will consider the
+strategy that maximizes their profit, among all feasible, incentive-compatible (for the traders)
+strategies.
+3.2 Equivalence of expected profit and virtual welfare, and virtual value
+functions
+By re-working Myerson’s optimal auction theory under the new objective that we want to
+optimize and the constraints that come with the definition of the allocation rule from an
+AMM, we get that:
+▶ Theorem 4(Expected Profit = Expected Virtual Welfare). The expected profit according
+to Eq.(4) of a market maker under the assumptions of Section 3.1 is equal to the expected
+virtual welfare, i.e.,
+E
+ˆp∼D
+[Profit] = E
+ˆp∼D
+[|x(ˆp)|· (ϕu(ˆp)· 1 ˆp≥p0 +ϕl(ˆp)· 1 ˆp≤p0 )]
+where 1A is the indicator function that is 1 whenA holds and 0 otherwise, andϕu(s),ϕl(s)
+are the virtual value functions defined by
+ϕu(s) ≜s− 1−F (s)
+f (s) −π(p0,s ) (5)
+and
+ϕl(s) ≜π(p0,s )−s− F (s)
+f (s) . (6)
+Proof. By Eq. (3) and re-writingx(ˆp) using the normalization condition, we have that7
+y(ˆp) =
+∫ˆp
+p0
+sx′(s) ds and x(ˆp) =
+∫ˆp
+p0
+x′(s) ds,
+so that the expected profitE ˆp∼D[Profit] is
+7 This proof assumes differentiability ofx(s) for simplicity of the technical exposition but carries through
+verbatim in terms of Riemann–Stieltjes integrals wherex′(s) ds =dx(s), which always exist because
+x(s) is guaranteed to be monotonic by Proposition 2.
+ITCS 2024
+
+===== PAGE 12 =====
+
+81:12 A Myersonian Framework for Optimal LP in AMMs
+∫pmax
+pmin
+∫ˆp
+p0
+(s−π(p0, ˆp))x′(s)f (ˆp) ds dˆp
+=
+∫pmax
+p0
+∫ˆp
+p0
+(s−π(p0, ˆp))x′(s)f (ˆp) ds dˆp−
+∫p0
+pmin
+∫p0
+ˆp
+(s−π(p0, ˆp))x′(s)f (ˆp) ds dˆp
+=
+∫pmax
+p0
+∫pmax
+s
+(s−π(p0, ˆp))x′(s)f (ˆp) dˆp ds−
+∫p0
+pmin
+∫s
+pmin
+(s−π(p0, ˆp))x′(s)f (ˆp) dˆp ds
+=
+∫pmax
+p0
+x′(s)
+(
+s(1−F (s))−
+∫pmax
+s
+π(p0, ˆp)f (ˆp) dˆp
+)
+ds
+−
+∫p0
+pmin
+x′(s)
+(
+sF (s)−
+∫s
+pmin
+π(p0, ˆp)f (ˆp) dˆp
+)
+ds
+=−
+∫pmax
+p0
+x(s) (1−F (s) + (π(p0,s )−s)f (s)) ds +
+∫p0
+pmin
+x(s) (F (s) + (s−π(p0,s ))f (s)) ds
+=
+∫pmax
+p0
+|x(s)|
+(
+s−π(p0,s )− 1−F (s)
+f (s)
+)
+f (s) ds +
+∫p0
+pmin
+|x(s)|
+(
+π(p0,s )−s− F (s)
+f (s)
+)
+f (s) ds,
+where the third line arises from switching the order of the integrals (and the correct switching
+depends on the relative order ofp0 and ˆp which is why the second line is needed; the first
+integral when ˆp≥p0 and the second vice-versa), the fifth line from integration by parts, and
+the sixth line becausex(s)≤ 0 for s≤p0 and x(s)≥ 0 for s≥p0.
+Therefore, the two virtual value functions are as in the theorem description. ◀
+3.3 Derivation of the optimal allocation rule and the no-trade gap
+We now turn our attention to optimizing the expected profit, i.e., finding the allocation
+rule (equivalently, the demand curve up to an arbitrary positive additive constant) which
+maximizes the expected profit.
+▶ Theorem 5.The optimal allocation rulex⋆(ˆp) that maximizes the expected profit according
+to Eq.(4) under the assumptions of Section 3.1 has the form
+x⋆(ˆp) =
+
+
+
+1, for p1≤ ˆp≤pmax
+0, for p2 < ˆp<p 1
+−1, for pmin≤ ˆp≤p2
+,
+where p1≥ p0 and p2≤ p0 are some roots of the upper and lower virtual value functions
+ϕu(s),ϕl(s) of Eqs.(5) and (6) respectively.
+Proof. We will use the equivalence of expected profit and expected virtual welfare established
+by Theorem 4. Because we operate under the constraints thatx(p0) = 0 , x(ˆp)≥ 0 for
+ˆp≥ p0, and x(ˆp)≤ 0 for ˆp≤ p0, we can just equivalently optimize the two integrals
+arising from the right hand side of Theorem 4 separately to obtain the optimal allocation
+rule. Additionally, since ϕu(p0) = − 1−F (p0)
+f (p0) ≤ 0, ϕu(pmax) = pmax−π(p0,pmax)≥ 0,
+ϕl(pmin) = π(p0,pmin)−pmin≥ 0, andϕl(p0) =−F (p0)
+f (p0)≤ 0, there always exists a non-trivial
+optimal solution to the optimization problem.
+If ϕu(s) was monotone (increasing), then by the above sign changes, there would exist a
+(unique) rootp1 such thatϕu(p1) = 0. A simple argument by contradiction then shows that
+the structure of the optimal allocation rule is to allocate the maximum allowable quantity
+of asset (by the constraint of unit demand,x(s)≤ 1) to be sold from the pricep1 onwards;
+that is,
+
+===== PAGE 13 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:13
+x⋆(s) =
+{
+1, for p1≤s≤pmax
+0, for p0≤s<p 1
+. (7)
+For the lower virtual value function, a similar argument shows that, ifϕl(s) was monotone
+(decreasing), andp2 is its unique root (which is guaranteed to exist by the aforementioned sign
+changes), then the optimal allocation rule obeying the constraint of unit demandx(s)≥− 1
+would be
+x⋆(s) =
+{
+0, for p2 <s ≤p0
+−1, for pmin≤s≤p2
+. (8)
+In full generality, if the virtual value functions are not monotone, then there may now be
+multiple roots of those functions. In this case, and with an argument by contradiction that
+if the allocation rule were to switch in between roots then we could obtain better or equal
+expected profit by modifying the allocation rule to remain constant in between roots, along
+with the argument that if the allocation rule were not to allocate the entire available demand
+(1,−1, respectively) then we could obtain better or equal expected profit by increasing
+(or decreasing, respectively) the allocated quantity of the asset until the limit (of 1 or−1,
+respectively), we obtain that the optimal allocation rule is exactly characterized by Eqs. (7)
+and (8), where this time the choice of the roots asp1 (and p2, respectively) needs to be
+the root of the upper (lower, respectively) virtual value function that gives the maximum
+expected profit under the allocation rule that has the form of Eq. (7) (Eq. (8), respectively).
+Therefore, the optimal allocation rule is as per the theorem statement. ◀
+Therefore, in any case, we observe that the optimal solution of Eqs. (7) and (8) has a
+well-specified no-trade gap around p0 where the market maker is not willing to buy or sell
+any quantity of the asset to the trader. More specifically, the length of this no-trade gap is
+precisely p1−p2, wherep1≥p0, p2≤p0 are as per the above analysis roots of the upper
+and lower virtual value functions respectively.
+We can now specialize in the two interesting extreme cases that were examined in
+Section 1.2 to obtain the respective observations there: first, consider the pure noise trading
+case, where the traders are assumed to offer no information on the true asset price, and
+hence the market maker’s prior is static, i.e., in the case that the update rule isπ(p0, ˆp) =
+p0, ∀ˆp∈ [pmin,pmax]. In this case, we see that there is anon-trivial no-trade gap, since we
+have for the extremal values thatϕu(p0)< 0, ϕu(pmax)> 0, ϕl(pmin)> 0, andϕl(p0)< 0
+(see the beginning of Section 3.3 for the expressions), hence the respective roots are contained
+strictly in between their corresponding intervals (by continuity of the virtual value functions).
+This no-trade gap is akin to a bid-ask spread observed in traditional CLOB-based markets,
+and is attributable to the monopoly pricing power of the market maker. In addition, it is
+distribution-dependent and its length can be intuitively understood as being smaller under
+distributionsD, according to which the traders’ estimatesˆp are distributed, that are more
+“concentrated” aroundp08. To mention an example that illustrates this intuition, the no-trade
+gap under pure noise trading and a uniform distribution supported on[p(1)
+min,p (1)
+max] will be
+smaller than the one under another uniform distribution supported on[p(2)
+min,p (2)
+max], where
+p(1)
+min >p (2)
+min and p(1)
+max <p (2)
+max.
+8 With this statement, we intend to only give intuition around the length of the interval, because there
+can be pathological cases of pairs of distributions that do not follow this generic intuition, and hence it
+need not be true in full generality.
+ITCS 2024
+
+===== PAGE 14 =====
+
+81:14 A Myersonian Framework for Optimal LP in AMMs
+At the other extreme, consider the case where the traders always have perfect information
+about the true asset price, i.e., the market maker’s update rule isπ(p0, ˆp) = ˆp, ∀ˆp ∈
+[pmin,pmax]. In this case, we observe that the two virtual value functions become
+ϕu(s) =− 1−F (s)
+f (s) ≤ 0 and ϕl(s) =−F (s)
+f (s)≤ 0,
+thus the optimal allocation rule is everywhere zero:x⋆(ˆp) = 0 , ∀ˆp∈ [pmin,pmax]. It is
+therefore the case that this corollary which may be phrased as a version of ano-trade theorem
+in the presence of perfect adverse selection isdistribution-independent: that is, regardless of
+the distributionD of the traders’ asset price estimatesˆp∼D , if the market maker believes
+that the traders have perfect information, then their optimal allocation rule is to perform
+no-trade at all. More specifically:
+▶ Corollary 6(No-trade theorem when all traders have perfect information). If the update rule
+π(p0, ˆp) = ˆp, ∀ˆp∈ [pmin,p max], then for every distributionD, the optimal allocation rule is
+x⋆(ˆp) = 0, ∀ˆp∈ [pmin,p max].
+4 An important special case: linear instantiation of the update rule
+We move on to consider an interesting special case of the update rule of Section 3.1: the
+simplest specialization that allows us to capture an arbitrary mixture of both noise trading
+and adverse selection, and enables us to show exactly how they intermingle with one another.
+More specifically, we consider the case when the update rule is a convex combination of the
+two above extreme cases, controlled by a parameterλ∈ [0, 1]:
+π(p0, ˆp) = λp0 + (1−λ)ˆp (9)
+The extreme cases arise as follows: forλ = 1, we obtain that the update remains the
+same as the market maker’s prior (p0), i.e., the pure noise trading model, where the trader is
+assumed to provide no information on the asset price. Forλ = 0, we obtain that the update
+always follows exactly the trader’s estimate (ˆp), thus the trader is considered as having
+perfect information around the asset price, i.e., pure adverse selection is attained.
+There are standard normality assumptions under which this linear update rule naturally
+emerges as the update rule for Bayesian updating. For example, if we consider that the
+asset valueV ∼N (p0,σ 2
+0) whereN is the normal distribution, and the trader’s estimate is
+ˆp =V +ϵ, whereϵ∼N (0,σ 2
+ϵ ), i.e., ˆp∼N (p0,σ 2
+0 +σ2
+ϵ ), then the posterior according to a
+Bayesian update step would also be a normal distribution with meanπ(p0, ˆp) = λp0 + (1−λ)ˆp,
+where λ = σ2
+ϵ
+σ2
+0 +σ2ϵ
+[18]. Of course, this is just an illustration of the motivation behind the
+linear update rule; it ignores the fact that asset prices cannot obtain negative values, but a
+similar calculation can be performed for log-normal distributions, for instance, and also holds
+approximately for truncated Gaussian distributions in the case of the standard deviation
+being small compared to the mean value. However, in this section, we will not be necessarily
+making any such Gaussian assumptions; we will only be assuming that the conducted update
+corresponds to a linear interpolation (in fact, convex combination) of the two cases ofp0 and
+ˆp that we have seen in Section 1.2 as indicative of noise trading and adverse selection.
+In order to proceed with a more precise characterization of the interval of no-trade around
+p0, we will make a similar assumption to the regularity of the distributionD made by [33]:
+
+===== PAGE 15 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:15
+▶ Assumption 2.The upper and lower virtual value functions, obtained by plugging in Eq.(9)
+to Eqs.(5) and (6),
+ϕu(s;λ) = λ(s−p0)− 1−F (s)
+f (s) and ϕl(s;λ) = λ(p0−s)− F (s)
+f (s)
+are non-decreasing and non-increasing (respectively) with respect tos for allλ∈ [0, 1].
+Discussion of Assumption 2. Assumption 2 can be intuitively understood as stating that
+the distribution of ˆp (i.e.,D) does not have heavy tails away fromp0 on either direction
+(i.e., left or right tails). We now explain in a detailed way why this is the case and why this
+assumption is standard and naturally motivated. First, observe that the original regular
+distributional assumption of [33] is equivalent to the assumption thatϕu(s;λ) is strictly
+increasing forλ = 1. Additionally, notice that an equivalent re-statement of Assumption 2 is
+that the respective monotonicities hold forλ = 0, since this implies the monotonicities for all
+λ∈ [0, 1]. In particular, for the monotonicity of the upper virtual value function, we observe
+that it exactly corresponds to having a monotone hazard rate, where the hazard rate of a
+distribution is defined as
+h(s) ≜ f (s)
+1−F (s).
+Distributions that have a monotone hazard rate (MHR) have been widely used before as
+common distributional assumptions in revenue maximizing settings [25, 12, 13, 16]. More
+generally,ϕu(s;λ) being non-decreasing for a specificλ corresponds to the notion of anα-
+strongly regular distribution (Definition 1.1) of [13] whereα = 1−λ. As for the monotonicity
+of the lower virtual value function assumption, we observe that if we make the change of
+variablesp′ =p0− ˆp (where ˆp∼D is our original random variable, andp′ is the new one),
+then ϕl(s; 0) being non-increasing would be equivalent to the distribution ofp′ having a
+monotone hazard rate (MHR), because if we denote byG(s) andg(s) the CDF and the PDF
+of p′ respectively, then from standard probabilities, we get thatG(s) = 1−F (p0−s), and
+g(s) = f (p0−s), hence
+g(s)
+1−G(s) = f (p0−s)
+F (p0−s),
+and ϕl(s; 0) =−F (s)
+f (s) being non-increasing is equivalent tof (p0−s)
+F (p0−s) being non-decreasing.
+Intuitively, distributions satisfying Assumption 2 are well-behaved, in the sense that they
+correspond to distributions with MHR on both of their tails, i.e., distributions that have
+both left and right tails that are no heavier than an exponential.
+Many interesting distributions satisfy the “non-heavy-tailed” property that Assumption 2
+refers to. For example, all uniform and exponential distributions satisfy the assumption.
+More generally, all distributions with log-concave densities have a monotone hazard rate [16],
+and if centered aroundp0 (for instance symmetrically on both sides), both tail ends would not
+be heavy and they would satisfy the assumption. As with classical non-MHR distributions,
+Assumption 2 is not satisfied by most heavy-tailed distributions; the difference is that this
+assumption includes both left and right tails of the distribution. A good example of a
+double-sided (left and right) heavy-tailed distribution that would fail to satisfy Assumption 2
+would be the Cauchy distribution with a location parameter ofp0, for which the moment
+generating function does not exist anywhere: in this case, both of its left and right tails
+around p0 are heavy [29].
+ITCS 2024
+
+===== PAGE 16 =====
+
+81:16 A Myersonian Framework for Optimal LP in AMMs
+We now move on to characterize the length of the no-trade interval present in the optimal
+solution of Eqs. (7) and (8) asλ varies.
+▶ Proposition 7. The length of the no-trade gap in the optimal solution that obtains the
+maximum expected profit under Eq.(9) is a decreasing function ofλ, when the distribution
+D satisfies Assumption 2.
+Proof. First, observe that under Assumption 2, the optimal allocation rule is exactly
+characterized by Eqs. (7) and (8), whereby there exists exactly one root for each of the
+corresponding upper and lower virtual value functions. We now need to show how the roots
+move, whileλ varies. In particular, we will prove that the root of the upper virtual value
+function increases asλ decreases; the proof that the root of the lower virtual value function
+decreases is similar. These two combined facts mean that, asλ decreases, the length of the
+interval of no-trade increases (because each of the roots moves away fromp0), thus proving
+the desired result.
+We finish the proof as follows: considerλ1≤λ2. The rootsp1,p 2 of the upper virtual
+value functionsϕu(s;λ1),ϕu(s;λ2) for λ1,λ 2 respectively satisfy
+ϕu(p1;λ1) = 0 and ϕu(p2;λ2) = (λ2−λ1)(p2−p0) +ϕu(p2;λ1) = 0.
+Additionally, (λ2−λ1)(p2−p0)≥ 0 since λ1≤ λ2 and p2≥ p0 (by definition of the
+upper virtual value function), so the latter equality means thatϕu(p2;λ1)≤ 0 = ϕu(p1;λ1).
+Therefore, by the monotonicity ofϕu(s;λ1), the latter is equivalent to the orderingp2≤p1
+of the respective roots, as desired. ◀
+Proposition 7 allows us tomake precise the important interpretation of how the effects
+of monopoly pricing and adverse selection interplayin a model of trading that incorporates
+both noise trading and better-informed traders. More specifically, in the optimal solution
+to the profit maximization problem of the market maker, there is a minimal interval of
+no-trade (corresponding to the pure noise trading case,λ = 1) that exhibits the monopoly
+pricing power being the sole driving force of the shape of the optimal mechanism. Asλ gets
+smaller, and the market maker’s model for the trader pre-supposes more and more traders
+with perfect information, according to Proposition 7, the interval aroundp0 on which the
+AMM is not willing to trade grows larger and larger. This change is attributed to adverse
+selection being added in the mixture because of the traders that are better informed than
+the market maker. At the other extreme, where pure adverse selection is observed (λ = 0),
+the optimal solution is to provide no liquidity, or equivalently, perform no trade. This is a
+distribution-independent result that is due to the corresponding virtual value functions (both
+upper and lower) being purely non-positive in that case (c.f., the expressions of Assumption 2
+forϕu(s; 0) andϕl(s; 0) where we substituteλ = 0), making the optimal solution that obtains
+the maximum profit be exactly the no-trade-anywhere solutionx(ˆp) = 0, ∀pmin≤ ˆp≤pmax.
+5 Conclusion and future directions
+The goal of this work is to isolate the most essential and salient properties of the problem
+of optimal liquidity provision: the zero-sum game between traders and liquidity providers,
+uncertain valuations, asymmetric information, and price updates conditioned on trade.
+We show how a “no-trade gap” (that arises as a “bid-ask spread” in traditional market
+microstructure literature for reasons other than the ones considered here) surprisingly arises
+in very general settings of liquidity provision in exchange mechanisms, like the ones we
+
+===== PAGE 17 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:17
+consider, allowing us to unlock a fruitful connection between optimal market-making and
+the Myersonian theory of optimal auction design. This connection has not been made in
+prior literature to the best of our knowledge.
+Our general framework for reasoning about AMMs is based on a Bayesian-like belief
+inference procedure. Such Bayesian updating procedures are well-known and widely used
+in machine learning, even in the specific context of market-making [15]. The generality
+of our framework has the exact intention of capturing any possible exchange mechanism,
+including the most prominent examples of both limit order books and automated market
+makers (see also [30]). At the same time, for the optimal allocation rule whose structure we
+hereby characterize, it would be interesting to give the complexity of the market maker’s
+computation with update rules other than the linear one, which we gave as an indicative
+example of the mixing effects of both adverse selection and noise trading. In the case of
+update rules that can arise from an online learning framework with iterative belief updates,
+what makes the complexity determination not straightforwardly arise from these online
+learning frameworks is exactly the needed calculation of the roots in Theorem 5.
+It might seem, at a first glance, that the market maker in the framework given in this
+work is not just risk-neutral but also myopic, i.e., maximizes expected profit from the next
+trade given its update rule, belief distribution over traders’ estimates, and its own current
+asset value estimate. However, our framework can capture much more generic structures of
+dependencies that allow the market maker to not be myopic, including a (possibly discounted)
+cumulative profit/reward structure. It would be an interesting future direction to examine
+whether the insights we give in this work change in such cases; we conjecture that they do
+not, but additional effects could be observed. In fact, our Bayesian (update rule) framework
+can be adjusted to accommodate these more complicated structures, where the updated belief
+(through the update rule) can have any future expectations already baked in. In particular,
+sequentially, the market maker’s new updated belief of the prior round of trading becomes
+their prior belief in the next trade, so that the prior at each round depends on the entire
+past history of trades; the update rule at each time holds the best (future) expectation of
+the market maker.
+Finally, future empirical work that probes the model’s assumptions and results could be
+explored, just as empirical work on revenue-maximizing auctions and online learning has
+served to usefully probe Myerson’s original theoretical framework.
+Disclosures
+The second author is an advisor to fintech companies. The third author is Head of Research
+at a16z crypto, which reviewed a draft of this article for compliance prior to publication and
+is an investor in various decentralized finance projects, including Uniswap, as well as in the
+crypto ecosystem more broadly (for general a16z disclosures, seehttps://www.a16z.com/
+disclosures/).
+References
+1 Jacob Abernethy and Satyen Kale. Adaptive market making via online learning. In
+C.J. Burges, L. Bottou, M. Welling, Z. Ghahramani, and K.Q. Weinberger, edit-
+ors, Advances in Neural Information Processing Systems , volume 26. Curran Associ-
+ates, Inc., 2013. URL: https://proceedings.neurips.cc/paper_files/paper/2013/file/
+995e1fda4a2b5f55ef0df50868bf2a8f-Paper.pdf.
+ITCS 2024
+
+===== PAGE 18 =====
+
+81:18 A Myersonian Framework for Optimal LP in AMMs
+2 Saeed Alaei, Hu Fu, Nima Haghpanah, and Jason Hartline. The simple economics of approx-
+imately optimal auctions. In2013 IEEE 54th Annual Symposium on Foundations of Computer
+Science, pages 628–637. IEEE, 2013.
+3 Guillermo Angeris and Tarun Chitra. Improved price oracles: Constant function market
+makers. InProceedings of the 2nd ACM Conference on Advances in Financial Technologies,
+pages 80–91, 2020.
+4 Guillermo Angeris, Alex Evans, and Tarun Chitra. Replicating market makers.arXiv preprint,
+2021. arXiv:2103.14769.
+5 Guillermo Angeris, Alex Evans, and Tarun Chitra. Replicating monotonic payoffs without
+oracles. arXiv preprint, 2021. arXiv:2111.13740.
+6 Aseem Brahma, Mithun Chakraborty, Sanmay Das, Allen Lavoie, and Malik Magdon-Ismail. A
+bayesian market maker. InProceedings of the 13th ACM Conference on Electronic Commerce,
+EC ’12, pages 215–232, New York, NY, USA, 2012. Association for Computing Machinery.
+doi:10.1145/2229012.2229031.
+7 Jeremy Bulow and John Roberts. The simple economics of optimal auctions.Journal of
+Political Economy, 97(5):1060–1090, 1989. doi:10.1086/261643.
+8 Shuchi Chawla, Jason D Hartline, and Robert Kleinberg. Algorithmic pricing via virtual
+valuations. InProceedings of the 8th ACM Conference on Electronic Commerce, pages 243–251,
+2007.
+9 Shuchi Chawla, Jason D Hartline, David L Malec, and Balasubramanian Sivan. Multi-
+parameter mechanism design and sequential posted pricing. InProceedings of the forty-second
+ACM symposium on Theory of computing, pages 311–320, 2010.
+10 Shuchi Chawla, Jason D Hartline, and Balasubramanian Sivan. Optimal crowdsourcing
+contests. Games and Economic Behavior, 113:80–96, 2019.doi:10.1016/j.geb.2015.09.001.
+11 Y. Chen and D.M Pennock. A utility framework for bounded-loss market makers. In
+Proceedings of the 23rd Conference on Uncertainty in Artificial Intelligence (UAI 2007, pages
+49–56, Vancouver, BC, Canada, 2007.
+12 Richard Cole and Shravas Rao. Applications ofα-strongly regular distributions to bayesian
+auctions. ACM Trans. Econ. Comput., 5(4), December 2017.doi:10.1145/3157083.
+13 Richard Cole and Tim Roughgarden. The sample complexity of revenue maximization. In
+Proceedings of the forty-sixth annual ACM symposium on Theory of computing, pages 243–252,
+2014.
+14 Sanmay Das. A learning market-maker in the glosten–milgrom model.Quantitative Finance,
+5(2):169–180, 2005.
+15 Sanmay Das and Malik Magdon-Ismail. Adapting to a market shock: Optimal se-
+quential market-making. In D. Koller, D. Schuurmans, Y. Bengio, and L. Bottou, ed-
+itors, Advances in Neural Information Processing Systems, volume 21. Curran Associ-
+ates, Inc., 2008. URL: https://proceedings.neurips.cc/paper_files/paper/2008/file/
+7a614fd06c325499f1680b9896beedeb-Paper.pdf.
+16 Christian Ewerhart. Regular type distributions in mechanism design andρ-concavity.Economic
+Theory, 53(3):591–603, 2013. The original publication is available at www.springerlink.com.
+doi:10.1007/s00199-012-0705-3.
+17 Zhou Fan, Francisco J. Marmolejo-Cossío, Ben Altschuler, He Sun, Xintong Wang, and
+David Parkes. Differential liquidity provision in uniswap v3 and implications for contract
+design. In Proceedings of the Third ACM International Conference on AI in Finance, ICAIF
+’22, pages 9–17, New York, NY, USA, 2022. Association for Computing Machinery.doi:
+10.1145/3533271.3561775.
+18 Andrew Gelman, John B. Carlin, Hal Steven Stern, David B. Dunson, Aki Vehtari, and
+Donald B. Rubin.Bayesian data analysis. CRC Press, Boca Raton, third edition edition, 2014.
+OCLC: 909477393.
+19 Lawrence R Glosten. Insider trading, liquidity, and the role of the monopolist specialist.
+Journal of business, pages 211–235, 1989.
+
+===== PAGE 19 =====
+
+J. Milionis, C.C. Moallemi, and T. Roughgarden 81:19
+20 Lawrence R Glosten. Is the electronic open limit order book inevitable?The Journal of
+Finance, 49(4):1127–1161, 1994.
+21 Lawrence R. Glosten and Paul R. Milgrom. Bid, ask and transaction prices in a specialist
+market with heterogeneously informed traders.Journal of Financial Economics, 14(1):71–100,
+1985. doi:10.1016/0304-405X(85)90044-3.
+22 Mohak Goyal, Geoffrey Ramseyer, Ashish Goel, and David Mazières. Finding the right curve:
+Optimal design of constant function market makers, 2022.doi:10.48550/arXiv.2212.03340.
+23 Nima Haghpanah and Jason D Hartline. Reverse mechanism design. InProceedings of the
+Sixteenth ACM Conference on Economics and Computation, pages 757–758, 2015.
+24 JasonDHartline. Approximationinmechanismdesign. American Economic Review, 102(3):330–
+336, 2012.
+25 Jason D Hartline. Mechanism design and approximation.Book draft, 122(1), 2021.
+26 Jason D Hartline and Tim Roughgarden. Simple versus optimal mechanisms. InProceedings
+of the 10th ACM conference on Electronic commerce, pages 225–234, 2009.
+27 Albert S. Kyle. Continuous auctions and insider trading.Econometrica, 53(6):1315–1335,
+1985. URL: http://www.jstor.org/stable/1913210.
+28 Albert S. Kyle. Informed speculation with imperfect competition.The Review of Economic
+Studies, 56(3):317–355, 1989. URL:http://www.jstor.org/stable/2297551.
+29 Nathan Mantel. Tails of distributions.The American Statistician, 30(1):14–17, 1976. URL:
+http://www.jstor.org/stable/2682880.
+30 Jason Milionis, Ciamac C. Moallemi, and Tim Roughgarden. Complexity-Approximation
+Trade-offs in Exchange Mechanisms: AMMs vs. LOBs. InFinancial Cryptography and Data
+Security. Springer International Publishing, 2023.
+31 Jason Milionis, Ciamac C. Moallemi, and Tim Roughgarden. Extended Abstract: The Effect
+of Trading Fees on Arbitrage Profits in Automated Market Makers. InFinancial Cryptography
+and Data Security. FC 2023 International Workshops. Springer International Publishing, 2023.
+32 Jason Milionis, Ciamac C. Moallemi, Tim Roughgarden, and Anthony Lee Zhang. Quantifying
+loss in automated market makers. InProceedings of the 2022 ACM CCS Workshop on Decent-
+ralized Finance and Security, DeFi’22, pages 71–74, New York, NY, USA, 2022. Association
+for Computing Machinery.doi:10.1145/3560832.3563441.
+33 Roger B. Myerson. Optimal auction design.Mathematics of Operations Research, 6(1):58–73,
+1981. URL: http://www.jstor.org/stable/3689266.
+34 Michael Neuder, Rithvik Rao, Daniel J Moroz, and David C Parkes. Strategic liquidity
+provision in uniswap v3.arXiv preprint, 2021. arXiv:2106.12033.
+35 Maureen O’Hara. Market microstructure theory. Blackwell, Malden, Mass., repr. edition, 2011.
+36 Tim Roughgarden and Inbal Talgam-Cohen. Optimal and robust mechanism design with
+interdependent values.ACM Transactions on Economics and Computation (TEAC), 4(3):1–34,
+2016.
+37 Tim Roughgarden and Inbal Talgam-Cohen. Approximately optimal mechanism design.Annual
+Review of Economics, 11:355–381, 2019.
+38 Jimmy Yin and Mac Ren. On liquidity mining for uniswap v3.arXiv preprint, 2021. arXiv:
+2108.05800.
+ITCS 2024
