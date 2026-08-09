@@ -56,7 +56,6 @@ from ddvc.data_release import require_node_d_release
 from ddvc.cpquote import (
     Pool,
     all_in_direct_advantage_bps_from_units,
-    common_mark_direct_advantage_bps,
     cost_gap_bps,
     quote_one_hop,
 )
@@ -106,6 +105,31 @@ def target_price_usd(
         return None
     value = float(record[1])
     return value if isfinite(value) and value > 0 else None
+
+
+def common_mark_direct_advantage_bps(
+    direct_output: Decimal | float,
+    realised_output: Decimal | float,
+    *,
+    output_price_usd: Decimal | float,
+    input_notional_usd: Decimal | float,
+) -> float | None:
+    """Value a same-token route-output difference at one common mark."""
+    values = tuple(
+        Decimal(str(value))
+        for value in (
+            direct_output,
+            realised_output,
+            output_price_usd,
+            input_notional_usd,
+        )
+    )
+    if not all(value.is_finite() for value in values) or any(
+        value <= 0 for value in values
+    ):
+        return None
+    direct, realised, price, notional = values
+    return float(Decimal(10_000) * (direct - realised) * price / notional)
 
 
 def counterfactual_days(

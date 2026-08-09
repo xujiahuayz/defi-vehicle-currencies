@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -10,6 +11,7 @@ from scripts.build_counterfactual_dominance import (
     add_topology_gas_adjustment,
     add_valuation_support,
     classify_state_support,
+    common_mark_direct_advantage_bps,
     counterfactual_days,
     dominance_level_summary,
     target_price_usd,
@@ -22,6 +24,31 @@ class CounterfactualDominanceTests(unittest.TestCase):
         self.assertEqual(target_price_usd(prices, "good"), 2.0)
         self.assertIsNone(target_price_usd(prices, "missing"))
         self.assertIsNone(target_price_usd(prices, "zero"))
+
+    def test_dollar_advantage_uses_one_mark_for_both_same_token_outputs(self) -> None:
+        advantage = common_mark_direct_advantage_bps(
+            Decimal("101"),
+            Decimal("100"),
+            output_price_usd=2.0,
+            input_notional_usd=200.0,
+        )
+        self.assertEqual(advantage, 100.0)
+        self.assertIsNone(
+            common_mark_direct_advantage_bps(
+                Decimal("101"),
+                Decimal("100"),
+                output_price_usd=0.0,
+                input_notional_usd=200.0,
+            )
+        )
+        self.assertIsNone(
+            common_mark_direct_advantage_bps(
+                Decimal("101"),
+                Decimal("100"),
+                output_price_usd=2.0,
+                input_notional_usd=float("nan"),
+            )
+        )
 
     def test_level_summary_keeps_weighting_uncertainty_and_dollars(self) -> None:
         frame = pd.DataFrame(
