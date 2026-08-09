@@ -15,6 +15,7 @@ from eth_utils import keccak
 
 
 EVENT_SIGNATURES = {
+    "mint": "Mint(address,address,int24,int24,uint128,uint256,uint256)",
     "collect": "Collect(address,address,int24,int24,uint128,uint128)",
     "flash": "Flash(address,address,uint256,uint256,uint256,uint256)",
     "collect_protocol": "CollectProtocol(address,address,uint128,uint128)",
@@ -25,7 +26,7 @@ EVENT_TOPICS = {
 }
 EVENT_BY_TOPIC = {topic: name for name, topic in EVENT_TOPICS.items()}
 BALANCE_OF_SELECTOR = "0x" + keccak(text="balanceOf(address)")[:4].hex()
-INVENTORY_STATE_GENERATION = "uniswap_v3_event_replayed_inventory_v1"
+INVENTORY_STATE_GENERATION = "uniswap_v3_event_replayed_inventory_v2"
 INVENTORY_QUANTITY_KIND = "event_replayed_pool_inventory"
 PENDING_CUSTODY_STATUS = "pending_historical_balance_validation"
 PENDING_OWNERSHIP_STATUS = "pending_protocol_fee_ownership_reconciliation"
@@ -205,12 +206,24 @@ def decimal_to_raw(value: object, decimals: int) -> int:
     """Convert an exact token-decimal string to raw units without rounding."""
 
     try:
-        scaled = Decimal(str(value)) * (Decimal(10) ** int(decimals))
+        number = Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError) as error:
         raise ValueError(f"invalid token amount {value!r}") from error
-    if not scaled.is_finite() or scaled != scaled.to_integral_value():
-        raise ValueError(f"token amount {value!r} is not exact at {decimals} decimals")
-    return int(scaled)
+    if not number.is_finite():
+        raise ValueError(f"invalid token amount {value!r}")
+    decimal_tuple = number.as_tuple()
+    coefficient = int("".join(str(digit) for digit in decimal_tuple.digits) or "0")
+    raw_exponent = int(decimal_tuple.exponent) + int(decimals)
+    if raw_exponent >= 0:
+        raw = coefficient * 10**raw_exponent
+    else:
+        divisor = 10 ** (-raw_exponent)
+        if coefficient % divisor:
+            raise ValueError(f"token amount {value!r} is not exact at {decimals} decimals")
+        raw = coefficient // divisor
+    if decimal_tuple.sign:
+        raw = -raw
+    return raw
 
 
 def canonical_inventory_start_block(records: Iterable[object]) -> int:
@@ -395,7 +408,12 @@ def decode_inventory_log(log: dict) -> dict[str, object]:
         raise ValueError("log is not a registered V3 inventory event")
     event_type = EVENT_BY_TOPIC[topics[0]]
     data = bytes.fromhex(str(log.get("data") or "0x").removeprefix("0x"))
-    if event_type == "collect":
+    if event_type == "mint":
+        _sender, _amount, amount0, amount1 = abi_decode(
+            ["address", "uint128", "uint256", "uint256"], data
+        )
+        delta0, delta1 = int(amount0), int(amount1)
+    elif event_type == "collect":
         _recipient, amount0, amount1 = abi_decode(
             ["address", "uint128", "uint128"], data
         )

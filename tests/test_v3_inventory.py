@@ -34,7 +34,10 @@ from ddvc.v3_inventory_calendar import (
     last_block_before_timestamp,
 )
 from ddvc.quoter import Throttled
-from scripts.build_v3_inventory_panel import CODE_SOURCES as PANEL_CODE_SOURCES
+from scripts.build_v3_inventory_panel import (
+    CODE_SOURCES as PANEL_CODE_SOURCES,
+    _canonical_swap_events_for_day,
+)
 from scripts.audit_v3_inventory_balances import audit_sample_table
 from scripts.fetch_v3_inventory_events import run_fetch_jobs, safe_retry_reason
 
@@ -72,6 +75,17 @@ def test_flash_inventory_delta_is_paid_less_borrowed() -> None:
     decoded = decode_inventory_log(flash)
     assert decoded["amount0_delta_raw"] == 3
     assert decoded["amount1_delta_raw"] == 7
+
+
+def test_raw_mint_uses_exact_integer_transfer_amounts() -> None:
+    mint = log(
+        "mint",
+        ["0x" + "00" * 20, 99, 775_343_764_933_267_394_725_819_694_029, 10**18],
+        ["address", "uint128", "uint256", "uint256"],
+    )
+    decoded = decode_inventory_log(mint)
+    assert decoded["amount0_delta_raw"] == 775_343_764_933_267_394_725_819_694_029
+    assert decoded["amount1_delta_raw"] == 10**18
 
 
 def test_block_chunks_cover_the_perimeter_once() -> None:
@@ -121,6 +135,9 @@ def test_graph_static_requires_exact_pool_and_token_identities() -> None:
 def test_decimal_amounts_convert_to_raw_units_without_rounding() -> None:
     assert decimal_to_raw("1.234567", 6) == 1_234_567
     assert decimal_to_raw("-0.000000000000000001", 18) == -1
+    assert decimal_to_raw("775343764933.267394725819694029", 18) == (
+        775_343_764_933_267_394_725_819_694_029
+    )
     with pytest.raises(ValueError, match="not exact"):
         decimal_to_raw("0.0000001", 6)
 
@@ -155,6 +172,31 @@ def test_mint_and_swap_change_inventory_but_burn_does_not_transfer() -> None:
     assert apply_inventory_event(balances, mint) == (1_500_000, 2 * 10**18)
     assert apply_inventory_event(balances, swap) == (1_000_000, 2_250_000_000_000_000_000)
     assert burn is None
+
+
+def test_daily_graph_events_do_not_duplicate_raw_mints() -> None:
+    item = static()
+    frame = pd.DataFrame(
+        [
+            {
+                "pool": item.pool,
+                "token0": None,
+                "token1": None,
+                "record_type": "liquidity",
+                "source_stream": "mints",
+                "block_number": 100,
+                "log_index": 7,
+                "tx_hash": "0xtx",
+                "amount0": "1.5",
+                "amount1": "2",
+            }
+        ]
+    )
+    with patch("scripts.build_v3_inventory_panel.read_tick_partition", return_value=frame):
+        events = _canonical_swap_events_for_day(
+            "20210504", 90, 110, {item.pool: item}
+        )
+    assert events == []
 
 
 def test_inventory_checkpoint_preserves_negative_raw_balances_without_flooring() -> None:
@@ -309,8 +351,9 @@ def test_raw_inventory_chunk_audit_reconciles_content_and_metadata() -> None:
                     "raw_logs": 1,
                     "recognized_v3_logs": 1,
                     "unrecognized_logs": 0,
-                    "recognized_by_event": {
-                        "collect": 0,
+                        "recognized_by_event": {
+                            "mint": 0,
+                            "collect": 0,
                         "flash": 0,
                         "collect_protocol": 1,
                     },

@@ -215,7 +215,7 @@
       "status": "enter_fgh_companion",
       "role": "companion distributional finding",
       "estimand": "fee revenue minus LVR minus LP gas by pool asset role",
-      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact-lag reserve capital reconciled to independently priced reserves; Uniswap V3 is excluded until event-replayed inventory passes custody and LP-ownership reconciliation and path-integrated LVR passes independently",
+      "sample": "screened Uniswap V2 pool-days with at least 10000 dollars of exact-lag reserve capital reconciled to independently priced reserves; Uniswap V3 is excluded until its core event identities pass independent source-completeness reconciliation, event-replayed inventory passes custody and LP-ownership reconciliation, and path-integrated LVR passes independently",
       "unit": "pool-day descriptives and pool-month inference",
       "dependent_variable": "V2 risk-adjusted net return and indicator that fees exceed LVR plus gas",
       "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator",

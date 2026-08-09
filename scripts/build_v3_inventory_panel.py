@@ -73,7 +73,7 @@ INPUTS = [
     CALENDAR,
 ]
 
-EXTRA_SCHEMA = pa.schema(
+RAW_EVENT_SCHEMA = pa.schema(
     [
         pa.field("event_type", pa.string(), nullable=False),
         pa.field("pool", pa.string(), nullable=False),
@@ -225,7 +225,7 @@ def ranges_by_day(
     return result
 
 
-def _extra_events_for_day(
+def _raw_inventory_events_for_day(
     *,
     lower: int,
     upper: int,
@@ -261,15 +261,12 @@ def _extra_events_for_day(
     return rows
 
 
-def _canonical_events_for_day(
+def _canonical_swap_events_for_day(
     day: str, lower: int, upper: int, statics: dict[str, PoolStatic]
 ) -> list[dict[str, object]]:
     state = read_tick_partition("uniswap_v3", day)
-    addresses = set(VEHICLE_CANDIDATES)
-    candidate_rows = state[state["token0"].isin(addresses) | state["token1"].isin(addresses)]
-    missing = set(candidate_rows["pool"].str.lower()).difference(statics)
-    if missing:
-        raise RuntimeError(f"canonical V3 day {day} has {len(missing):,} pools absent from statics")
+    pool_identity = state["pool"].astype(str).str.lower()
+    candidate_rows = state[pool_identity.isin(statics) & state["record_type"].eq("swap")]
     rows: list[dict[str, object]] = []
     for record in candidate_rows.to_dict("records"):
         static = statics[str(record["pool"]).lower()]
@@ -318,14 +315,14 @@ def build(*, force: bool = False) -> tuple[int, int, int]:
     statics = load_candidate_statics()
     generation = cache_key(CODE_SOURCES, inputs=INPUTS)
     root = CACHE_ROOT / f"engine_{generation}"
-    extra_root = root / "extra_events"
+    raw_event_root = root / "raw_inventory_events"
     inventory_root = root / "inventory"
-    extra_root.mkdir(parents=True, exist_ok=True)
+    raw_event_root.mkdir(parents=True, exist_ok=True)
     inventory_root.mkdir(parents=True, exist_ok=True)
     day_ranges = ranges_by_day(ranges, days, end_blocks)
 
     if force:
-        for directory in (extra_root, inventory_root):
+        for directory in (raw_event_root, inventory_root):
             for path in directory.glob("*"):
                 if path.is_file():
                     path.unlink()
@@ -353,28 +350,28 @@ def build(*, force: bool = False) -> tuple[int, int, int]:
         day = days[position]
         end_block = end_blocks[position]
         lower = start if position == 0 else end_blocks[position - 1] + 1
-        extra_path = extra_root / f"{day}.parquet"
+        raw_event_path = raw_event_root / f"{day}.parquet"
         if not _checkpoint_complete(
-            extra_path, day=day, end_block=end_block, generation=generation
+            raw_event_path, day=day, end_block=end_block, generation=generation
         ):
-            extra = _extra_events_for_day(
+            raw_events = _raw_inventory_events_for_day(
                 lower=lower,
                 upper=end_block,
                 ranges=day_ranges[day],
                 statics=statics,
             )
-            _write_table(extra, EXTRA_SCHEMA, extra_path)
+            _write_table(raw_events, RAW_EVENT_SCHEMA, raw_event_path)
             _write_checkpoint_metadata(
-                extra_path,
+                raw_event_path,
                 day=day,
                 end_block=end_block,
                 generation=generation,
-                rows=len(extra),
+                rows=len(raw_events),
             )
         else:
-            extra = pd.read_parquet(extra_path).to_dict("records")
-        canonical = _canonical_events_for_day(day, lower, end_block, statics)
-        events = [*canonical, *extra]
+            raw_events = pd.read_parquet(raw_event_path).to_dict("records")
+        canonical_swaps = _canonical_swap_events_for_day(day, lower, end_block, statics)
+        events = [*canonical_swaps, *raw_events]
         for event in events:
             event["amount0_delta_raw"] = int(event["amount0_delta_raw"])
             event["amount1_delta_raw"] = int(event["amount1_delta_raw"])
