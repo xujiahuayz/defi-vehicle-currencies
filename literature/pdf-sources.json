@@ -281,6 +281,18 @@
       "main": "ComertonFordeEtAl2010Inventories",
       "status": "complete"
     },
+    "CoughenourSaad2004CommonMarketMakers": {
+      "checks": {
+        "article": "literature/text/2004-CoughenourSaad2004CommonMarketMakers-common-market-makers-and-commonality-in-liquidity.txt",
+        "author_or_repository": "https://www.acsu.buffalo.edu/~keechung/MGF743/Readings/L3.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2003.05.006"
+      },
+      "companions": [],
+      "main": "CoughenourSaad2004CommonMarketMakers",
+      "non_text_companions": [],
+      "non_text_dispositions": [],
+      "status": "complete"
+    },
     "GarleanuPedersenPoteshman2009DemandBased": {
       "checks": {
         "article": "literature/text/2009-GarleanuPedersenPoteshman2009DemandBased-published-demand-based-option-pricing.txt",

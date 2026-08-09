@@ -17,7 +17,7 @@ The anchor audit below is based on the local PDF corpus and the keys in [`litera
 | Literature | Classification | Use in this design |
 |---|---|---|
 | Chordia, Roll, and Subrahmanyam (2000), `ChordiaRollSubrahmanyam2000Commonality` | Pure empirical | Commonality benchmark and control structure for RQ2 |
-| Coughenour and Saad (2004), `CoughenourSaad2004CommonMarketMakers` | Pure empirical | Shared-intermediary capital channel for RQ2 |
+| Coughenour and Saad (2004), `CoughenourSaad2004CommonMarketMakers` | Pure empirical | Supplier-group liquidity commonality, consistent with shared capital and information, for RQ2 |
 | Comerton-Forde et al. (2010), `ComertonFordeEtAl2010Inventories` | Pure empirical | Market-maker wealth/inventory shock template for RQ2 and RQ5 |
 | Hendershott, Jones, and Menkveld (2011), `HendershottJonesMenkveld2011Algorithmic` | Pure empirical | Trading-technology event and IV design; realized-spread and imputed liquidity-supplier-revenue benchmark for RQ4, not provider profit or rent |
 | Anand and Venkataraman (2016), `AnandVenkataraman2016MarketMaking` | Pure empirical | Participation, synchronous withdrawal, and fragility benchmark for RQ2 |
@@ -135,7 +135,7 @@ The 2020 to 2026 transition also spans the diffusion of aggregators, universal r
 | Anchor | Existing result or mechanism | Relationship to RQ2 |
 |---|---|---|
 | Chordia, Roll, and Subrahmanyam (2000) | Liquidity has market and industry common components after standard controls, but the source is not identified | **Corroborate and narrow:** test commonality on economically linked vehicle spokes, then separate common demand from shared-provider capital |
-| Coughenour and Saad (2004) | Common specialist firms transmit capital and information across the stocks they manage | **Direct expansion:** on-chain positions reveal provider overlap and permit explicit exclusion of shared LP addresses |
+| Coughenour and Saad (2004) | Liquidity co-moves within common specialist portfolios after market-liquidity controls, consistent with shared firm capital and information | **Direct expansion:** on-chain provider overlap lets this paper test the analogous supplier-group channel; excluding shared addresses is a new robustness that requires identity-clustering bounds |
 | Comerton-Forde et al. (2010) | Lagged market-maker inventory positions and overnight-income shortfalls predict future liquidity, with stronger nonlinear effects after losses | **Design anchor:** adapt the lagged balance-sheet-state design and add exogenous or predetermined outside-pool LP exposures and token-return shocks where available |
 | Anand and Venkataraman (2016) | Voluntary market makers enter and withdraw synchronously as profits and risk change; designated providers mitigate fragility | **Expand:** test synchronous LP withdrawal and whether vehicle-spoke demand offsets or amplifies it without a designated provider |
 | Clark-Joseph, Ye, and Zi (2017) | Removing NYSE designated market makers impairs marketwide liquidity, while removing a voluntary venue does not | **Expand:** use provider-level shocks and pool capital shares to distinguish economically indispensable LP capital from redundant liquidity supply |
