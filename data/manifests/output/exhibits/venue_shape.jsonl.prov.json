@@ -6,10 +6,10 @@
   "scripts/measure_venue_shape.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T02:06:22+00:00",
+ "created_at": "2026-08-09T02:15:01+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "0350c1707728dd8c080bdfe9853d895ff95ddb07",
+  "commit": "3d414a669e992741230bb446bbfba68bf29377de",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -20,10 +20,17 @@
    "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
+   "deck/sections/05-close.tex",
+   "docs/literature-audit.md",
+   "docs/research-questions-and-empirical-design.md",
+   "literature/source-notes/2020-GopinathEtAl2020DCPReplicationPackage.md",
+   "literature/vehicle-currencies.bib",
    "paper/sections/01-introduction.tex",
    "paper/sections/02-setting.tex",
    "paper/sections/03-dominance.tex",
-   "paper/sections/04-survival.tex"
+   "paper/sections/05-rivals.tex",
+   "paper/sections/06-executability.tex",
+   "paper/sections/07-conclusion.tex"
   ],
   "dirty_untracked_files": []
  },
