@@ -335,7 +335,7 @@
     },
     "DaianEtAl2020FlashBoys": {
       "checks": {
-        "article": "literature/text/2020-DaianEtAl2020FlashBoys-flash-boys-2-0-frontrunning-in-decentralized-exchanges-miner-extractable-value-a.txt",
+        "article": "literature/text/2020-DaianEtAl2020FlashBoys-published-flash-boys-2-0-frontrunning-in-decentralized-exchanges-miner-extractable-value-and-consensus-instability.txt",
         "author_or_repository": "https://arxiv.org/abs/1904.05234",
         "publisher_or_doi": "https://doi.org/10.1109/SP40000.2020.00040"
       },
@@ -366,6 +366,18 @@
         "GarleanuPedersenPoteshman2009DemandBasedAppendix"
       ],
       "main": "GarleanuPedersenPoteshman2009DemandBased",
+      "non_text_companions": [],
+      "non_text_dispositions": [],
+      "status": "complete"
+    },
+    "GlostenMilgrom1985BidAsk": {
+      "checks": {
+        "article": "literature/text/1985-GlostenMilgrom1985BidAsk-bid-ask-and-transaction-prices-in-a-specialist-market-with-heterogeneously-informed-traders.txt",
+        "author_or_repository": "https://business.columbia.edu/faculty/research/bid-ask-and-transaction-prices-specialist-market-heterogeneously-informed-traders",
+        "publisher_or_doi": "https://doi.org/10.1016/0304-405X(85)90044-3"
+      },
+      "companions": [],
+      "main": "GlostenMilgrom1985BidAsk",
       "non_text_companions": [],
       "non_text_dispositions": [],
       "status": "complete"
@@ -1161,16 +1173,16 @@
     "GarleanuPedersenPoteshman2009DemandBasedAppendix": [],
     "GlostenMilgrom1985BidAsk": [
       {
-        "access": "public",
-        "label": "Northwestern Kellogg PDF",
-        "url": "https://www.kellogg.northwestern.edu/research/math/papers/570.pdf",
-        "version": "working-paper"
-      },
-      {
         "access": "authenticated",
-        "label": "ScienceDirect PDF",
+        "label": "ScienceDirect version-of-record PDF",
         "url": "https://www.sciencedirect.com/science/article/pii/0304405X85900443/pdfft",
         "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "Northwestern Kellogg working-paper precursor",
+        "url": "https://www.kellogg.northwestern.edu/research/math/papers/570.pdf",
+        "version": "working-paper"
       }
     ],
     "GopinathEtAl2020DCP": [
