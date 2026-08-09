@@ -84,9 +84,9 @@
       "status": "descriptive_only_pending_transaction_state_frontier",
       "role": "first rival mechanism",
       "estimand": "changes in opportunity-set integration, direct splitting, true intermediation, path complexity, and realised routing regret",
-      "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar, while exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
-      "unit": "route for topology; endpoint-vehicle-reach-notional-state cell for regret",
-      "dependent_variable": "separate topology margins and same-state cost shortfalls",
+      "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar; the fixed-notional cost landscape uses the 200 most heavily intermediated directed endpoint pairs per day at all 24 UTC hours as a selected descriptive panel and requires a baseline-fixed pair cohort before any market-wide trend claim; exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
+      "unit": "route for topology; endpoint-pair-candidate-hour-notional cell for the fixed grid; realised route at its exact pre-transaction state for regret",
+      "dependent_variable": "separate topology margins, direct and indirect availability, fixed-notional quote gaps, and realised same-state routing shortfalls",
       "transformation": "incidence levels, percentage-point changes, and basis-point cost gaps",
       "outlier_treatment": "canonical endpoint round trips excluded; topology counts retained without value support; cost gaps require exact transaction state",
       "inference": "30-day HAC for daily topology changes; pair and date clustering for cost panels",
@@ -108,6 +108,11 @@
           "two legs",
           "more than two legs"
         ],
+        "pair_universe": [
+          "daily top-200 intermediated directed pairs as a selected descriptive panel",
+          "baseline-fixed directed-pair cohort",
+          "persistent common-support directed-pair cohort"
+        ],
         "response_horizon_days": [
           1,
           7,
@@ -121,16 +126,18 @@
         ]
       },
       "falsifier": "stable transition vanishes inside fixed opportunity and search-efficiency cells",
-      "admissible_interpretation": "integration expands while true intermediation contracts; this is consistent with improved direct-liquidity discovery",
-      "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption",
-      "blocking_measurement": "the prior 77-date transaction-state construction audit passed a 99 percent reproduction gate under a tolerance of 100 basis points, which is too loose for basis-point effects; the replacement must reproduce at least 99 percent of coherent chosen quotes within 1 basis point, preserve 0.1- and 0.01-basis-point nested samples, build the separate full daily exact-state frontier, and link outcomes by exact 1, 7, 30, and 120 calendar days before estimation",
+      "admissible_interpretation": "integration expands while true intermediation contracts; conditional routing shortfalls and direct-market opportunity can be compared over time within their declared support",
+      "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption, or the daily top-200 intermediated-pair grid identifies a market-wide efficiency trend",
+      "blocking_measurement": "the route-cost grid must pass its full 24-hour, three-notional semantic release audit and add a baseline-fixed pair cohort before supporting a market-wide opportunity-set trend; the prior 77-date transaction-state construction audit passed a 99 percent reproduction gate under a tolerance of 100 basis points, which is too loose for basis-point effects, so the replacement must reproduce at least 99 percent of coherent chosen quotes within 1 basis point, preserve 0.1- and 0.01-basis-point nested samples, build the separate full daily exact-state frontier, and link outcomes by exact 1, 7, 30, and 120 calendar days before estimation",
       "inputs": [
         "data/processed/cross_venue_routing_daily.parquet",
+        "data/empirical/route_cost_panel_v2.parquet",
         "data/processed/transaction_state_frontier_daily.parquet"
       ],
       "outputs": [
         "output/exhibits/cross_venue_routing_series.jsonl",
         "output/exhibits/cross_venue_routing_inference.jsonl",
+        "output/exhibits/route_cost_maturation.jsonl",
         "output/exhibits/routing_technology_windows.jsonl"
       ]
     },
