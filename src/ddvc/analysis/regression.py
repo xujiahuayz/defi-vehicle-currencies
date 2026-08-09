@@ -50,6 +50,7 @@ class ClusteredOLSResult:
     n_clusters: int
     absorbed_degrees_of_freedom: int
     cluster_counts: tuple[int, ...] = ()
+    finite_sample_observations: int | None = None
 
     @property
     def standard_errors(self) -> np.ndarray:
@@ -273,6 +274,7 @@ def ols_clustered(
     cluster_hac_lag: int | None = None,
     additional_clusters: tuple[pd.Series | np.ndarray, ...] = (),
     weights: pd.Series | np.ndarray | None = None,
+    frequency_weights: bool = False,
 ) -> ClusteredOLSResult:
     """Fit OLS/WLS with one- or two-way CR1 inference, or HAC across one ordered cluster."""
     if cluster_hac_lag is not None and cluster_hac_lag < 0:
@@ -299,12 +301,16 @@ def ols_clustered(
     if len(group_arrays) > 2:
         raise ValueError("absorbed degree-of-freedom correction supports at most two fixed effects")
     weight_array: np.ndarray | None = None
+    if frequency_weights and weights is None:
+        raise ValueError("frequency-weighted OLS requires weights")
     if weights is not None:
         weight_array = np.asarray(weights, dtype=float).reshape(-1)
         if len(weight_array) != len(y_array):
             raise ValueError("weights must align with the regression inputs")
         if not np.isfinite(weight_array).all() or np.any(weight_array <= 0):
             raise ValueError("weights must be finite and positive")
+        if frequency_weights and not np.equal(weight_array, np.rint(weight_array)).all():
+            raise ValueError("frequency weights must be positive integers")
     finite = np.isfinite(y_array) & np.isfinite(x_array).all(axis=1) & pd.notna(cluster_array)
     for value in additional_cluster_arrays:
         finite &= pd.notna(value)
@@ -324,6 +330,11 @@ def ols_clustered(
         y_array = y_array * square_root_weights
         x_array = x_array * square_root_weights[:, None]
     n, k = x_array.shape
+    finite_sample_observations = (
+        int(np.rint(weight_array.sum()))
+        if frequency_weights and weight_array is not None
+        else n
+    )
     cluster_arrays = [cluster_array, *additional_cluster_arrays]
     cluster_counts = tuple(len(pd.unique(value)) for value in cluster_arrays)
     n_clusters = min(cluster_counts)
@@ -339,11 +350,12 @@ def ols_clustered(
         n_clusters=n_clusters,
         absorbed_degrees_of_freedom=absorbed_degrees_of_freedom,
         cluster_counts=cluster_counts,
+        finite_sample_observations=finite_sample_observations,
     )
     if (
-        n < min_observations
+        finite_sample_observations < min_observations
         or n_clusters < min_clusters
-        or n <= k + absorbed_degrees_of_freedom
+        or finite_sample_observations <= k + absorbed_degrees_of_freedom
     ):
         return empty
     if np.linalg.matrix_rank(x_array) < k:
@@ -351,7 +363,9 @@ def ols_clustered(
     xtx_inverse = np.linalg.pinv(x_array.T @ x_array)
     beta = xtx_inverse @ (x_array.T @ y_array)
     residual = y_array - x_array @ beta
-    residual_dof_scale = (n - 1) / (n - k - absorbed_degrees_of_freedom)
+    residual_dof_scale = (finite_sample_observations - 1) / (
+        finite_sample_observations - k - absorbed_degrees_of_freedom
+    )
 
     def clustered_covariance(labels: object, *, ordered_hac_lag: int | None = None) -> np.ndarray:
         codes, unique = pd.factorize(labels, sort=ordered_hac_lag is not None)
@@ -385,6 +399,7 @@ def ols_clustered(
         n_clusters=n_clusters,
         absorbed_degrees_of_freedom=absorbed_degrees_of_freedom,
         cluster_counts=cluster_counts,
+        finite_sample_observations=finite_sample_observations,
     )
 
 
@@ -401,6 +416,7 @@ def ols_clustered_named(
     cluster_hac_lag: int | None = None,
     additional_clusters: tuple[pd.Series | np.ndarray, ...] = (),
     weights: pd.Series | np.ndarray | None = None,
+    frequency_weights: bool = False,
 ) -> tuple[int, int, dict[str, float]]:
     """Fit clustered OLS and expose named statistics for a DataFrame design."""
     result = ols_clustered(
@@ -415,6 +431,7 @@ def ols_clustered_named(
         cluster_hac_lag=cluster_hac_lag,
         additional_clusters=additional_clusters,
         weights=weights,
+        frequency_weights=frequency_weights,
     )
     return (
         result.n_observations,

@@ -102,6 +102,7 @@ def _fit_within(
     fixed_effect: str,
     cluster_columns: tuple[str, str],
     weight_column: str | None = None,
+    frequency_weights: bool = False,
     required_regressors: set[str] | None = None,
     retain_columns: Sequence[str] = (),
 ) -> tuple[ClusteredOLSResult, list[str], list[str], pd.DataFrame]:
@@ -134,6 +135,7 @@ def _fit_within(
         absorbed_groups=(group,),
         additional_clusters=(model[cluster_columns[1]],),
         weights=weights,
+        frequency_weights=frequency_weights,
     )
     if not np.isfinite(fit.beta).all():
         raise ValueError("routing estimator is unidentified after fixed-effect absorption")
@@ -209,6 +211,7 @@ def _annual_fit(
         fixed_effect="cell_id",
         cluster_columns=("cell_id", "date"),
         weight_column=weight_column,
+        frequency_weights=weight_column == "route_count",
         required_regressors=set(primary_year_terms),
         retain_columns=("year", "route_count"),
     )
@@ -235,6 +238,7 @@ def _annual_fit(
         "n_cells": int(model["cell_id"].nunique()),
         "n_dates": int(model["date"].nunique()),
         "route_count": int(model["route_count"].sum()),
+        "cr1_observation_count": fit.finite_sample_observations,
         "cell_clusters": fit.cluster_counts[0],
         "date_clusters": fit.cluster_counts[1],
         "baseline_2021_mean": _weighted_mean(baseline[outcome], baseline_weights),
@@ -375,6 +379,7 @@ def estimate_transition(frame: pd.DataFrame) -> pd.DataFrame:
             fixed_effect="opportunity_cell_id",
             cluster_columns=("endpoint_pair_id", "date"),
             weight_column=weight_column,
+            frequency_weights=weight_column == "route_weight",
             required_regressors={"comparison_year_2026"},
             retain_columns=("year", "route_count"),
         )
@@ -394,6 +399,7 @@ def estimate_transition(frame: pd.DataFrame) -> pd.DataFrame:
                 "n_cells": int(model["opportunity_cell_id"].nunique()),
                 "n_dates": int(model["date"].nunique()),
                 "route_count": int(model["route_count"].sum()),
+                "cr1_observation_count": fit.finite_sample_observations,
                 "candidate_opportunity_cells": candidate_cells,
                 "identifying_opportunity_cells": identifying_cells,
                 "identifying_opportunity_cell_share": identifying_cell_share,

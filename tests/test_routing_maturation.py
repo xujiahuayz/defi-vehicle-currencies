@@ -94,6 +94,15 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         self.assertEqual(set(primary["margin"]), set(MARGINS))
         np.testing.assert_allclose(primary["comparison_2025_beta"], 0.12, atol=1e-10)
         self.assertTrue(primary["comparison_2025_holm_p"].notna().all())
+        self.assertTrue(
+            primary["cr1_observation_count"].eq(primary["n_observations"]).all()
+        )
+        route_weighted = result[result["spec"].eq("route_weighted_sensitivity")]
+        self.assertTrue(
+            route_weighted["cr1_observation_count"]
+            .eq(route_weighted["route_count"])
+            .all()
+        )
         self.assertEqual(
             set(result[result["spec"].eq("linear_elapsed_year_sensitivity")]["margin"]),
             set(MARGINS),
@@ -106,6 +115,10 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         self.assertTrue(result["comparison_2026_beta"].gt(0).all())
         self.assertTrue(result["regret_control_count"].gt(0).all())
         self.assertTrue((result["identifying_opportunity_cell_share"] == 1).all())
+        primary = result[result["spec"].eq("route_weighted_primary")].iloc[0]
+        equal_date = result[result["spec"].eq("equal_date_sensitivity")].iloc[0]
+        self.assertEqual(primary["cr1_observation_count"], primary["route_count"])
+        self.assertEqual(equal_date["cr1_observation_count"], equal_date["n_observations"])
 
     def test_transition_excludes_one_year_cells_and_gates_weak_overlap(self) -> None:
         frame = self._transition()

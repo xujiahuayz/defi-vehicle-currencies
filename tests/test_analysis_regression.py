@@ -257,6 +257,41 @@ class RegressionPrimitiveTests(unittest.TestCase):
                 weights=np.array([1.0, 1.0, 0.0, 1.0]),
             )
 
+    def test_frequency_weighted_two_way_covariance_matches_row_expansion(self) -> None:
+        outcome = np.array([0.0, 1.0, 0.5, 1.5, -0.5, 2.0, 1.0, 2.5])
+        design = np.arange(8, dtype=float)
+        first = np.repeat(["a", "b", "c", "d"], 2)
+        second = np.tile(["t1", "t2"], 4)
+        counts = np.array([1, 3, 2, 4, 3, 1, 2, 5])
+        grouped = ols_clustered(
+            outcome,
+            design,
+            first,
+            additional_clusters=(second,),
+            weights=counts,
+            frequency_weights=True,
+        )
+        expanded = ols_clustered(
+            np.repeat(outcome, counts),
+            np.repeat(design, counts),
+            np.repeat(first, counts),
+            additional_clusters=(np.repeat(second, counts),),
+        )
+        np.testing.assert_allclose(grouped.beta, expanded.beta)
+        np.testing.assert_allclose(grouped.covariance, expanded.covariance)
+        self.assertEqual(grouped.n_observations, len(outcome))
+        self.assertEqual(grouped.finite_sample_observations, int(counts.sum()))
+
+    def test_frequency_weights_reject_noninteger_analytic_weights(self) -> None:
+        with self.assertRaisesRegex(ValueError, "positive integers"):
+            ols_clustered(
+                np.arange(4.0),
+                np.arange(4.0),
+                np.array(["a", "a", "b", "b"]),
+                weights=np.array([1.0, 1.5, 2.0, 1.0]),
+                frequency_weights=True,
+            )
+
     def test_two_way_clustered_ols_matches_cr1_inclusion_exclusion(self) -> None:
         x_value = np.arange(12, dtype=float)
         design = np.column_stack([np.ones(len(x_value)), x_value])
