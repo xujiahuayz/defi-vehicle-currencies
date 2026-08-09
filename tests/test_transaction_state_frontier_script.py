@@ -34,6 +34,7 @@ from scripts.build_transaction_state_frontier import (
     strict_route_order,
     summarise,
     validate_audit_support,
+    validate_daily_support,
     validation_error_diagnostics,
     write_cached_day,
 )
@@ -154,6 +155,17 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "duplicate days"):
             validate_audit_support(support, ["20250115"])
+
+    def test_daily_release_gate_runs_before_canonical_assembly(self) -> None:
+        support = pd.DataFrame(
+            {
+                "day": ["20250101", "20250102"],
+                "within_20pct_chosen_quote_available": [100, 100],
+                "within_20pct_chosen_output_mismatch": [0, 3],
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "full-daily frontier.*below"):
+            validate_daily_support(support, ["20250101", "20250102"])
 
     def test_summary_keeps_all_and_valuation_coherent_samples_separate(self) -> None:
         panel = pd.DataFrame(

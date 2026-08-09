@@ -300,11 +300,13 @@ def select_days(
     return sorted(selected)
 
 
-def validate_audit_support(
+def validate_reproduction_support(
     support: pd.DataFrame,
     expected_days: list[str],
+    *,
+    label: str,
 ) -> float:
-    """Validate the current construction-audit calendar and reproduction gate."""
+    """Validate one frontier calendar and its chosen-route reproduction gate."""
     required = {
         "day",
         "within_20pct_chosen_quote_available",
@@ -313,18 +315,18 @@ def validate_audit_support(
     missing_columns = sorted(required - set(support.columns))
     if missing_columns:
         raise ValueError(
-            "frontier audit support is missing columns: "
+            f"{label} support is missing columns: "
             + ", ".join(missing_columns)
         )
     normalised = support.loc[:, sorted(required)].copy()
     normalised["day"] = normalised["day"].astype(str).str.replace("-", "", regex=False)
     malformed = normalised.loc[~normalised["day"].str.fullmatch(r"\d{8}")]
     if not malformed.empty:
-        raise ValueError("frontier audit support contains malformed days")
+        raise ValueError(f"{label} support contains malformed days")
     duplicates = normalised.loc[normalised["day"].duplicated(), "day"].tolist()
     if duplicates:
         raise ValueError(
-            "frontier audit support contains duplicate days: "
+            f"{label} support contains duplicate days: "
             + ", ".join(sorted(set(duplicates)))
         )
     actual_days = sorted(normalised["day"].tolist())
@@ -338,7 +340,7 @@ def validate_audit_support(
         if extra_days:
             details.append("extra " + ", ".join(extra_days))
         raise ValueError(
-            "frontier audit support calendar does not match the current audit: "
+            f"{label} support calendar does not match the current release: "
             + "; ".join(details)
         )
     counts = normalised[
@@ -348,18 +350,44 @@ def validate_audit_support(
         ]
     ].apply(pd.to_numeric, errors="coerce")
     if counts.isna().any().any() or (counts < 0).any().any():
-        raise ValueError("frontier audit support contains invalid reproduction counts")
+        raise ValueError(f"{label} support contains invalid reproduction counts")
+    if not np.equal(counts, np.floor(counts)).all().all():
+        raise ValueError(f"{label} support contains non-integer reproduction counts")
     available = int(counts["within_20pct_chosen_quote_available"].sum())
     mismatches = int(counts["within_20pct_chosen_output_mismatch"].sum())
     if mismatches > available:
-        raise ValueError("frontier audit mismatches exceed available chosen quotes")
+        raise ValueError(f"{label} mismatches exceed available chosen quotes")
     reproduction = chosen_reproduction_share(available, mismatches)
     if reproduction < MIN_CHOSEN_REPRODUCTION:
         raise ValueError(
-            f"frontier audit chosen-route reproduction {reproduction:.2%} is below "
+            f"{label} chosen-route reproduction {reproduction:.2%} is below "
             f"the {MIN_CHOSEN_REPRODUCTION:.0%} gate"
         )
     return reproduction
+
+
+def validate_audit_support(
+    support: pd.DataFrame,
+    expected_days: list[str],
+) -> float:
+    """Validate the current construction-audit certificate."""
+    return validate_reproduction_support(
+        support,
+        expected_days,
+        label="frontier audit",
+    )
+
+
+def validate_daily_support(
+    support: pd.DataFrame,
+    expected_days: list[str],
+) -> float:
+    """Validate the full-daily ledger before publishing any canonical artifact."""
+    return validate_reproduction_support(
+        support,
+        expected_days,
+        label="full-daily frontier",
+    )
 
 
 def require_frontier_audit_gate(expected_days: list[str]) -> float:
@@ -1234,6 +1262,11 @@ def main() -> int:
             print(f"replayed through {day} ({index:,}/{len(calendar):,} days)", flush=True)
     support = pd.DataFrame(support_rows)
     if daily_mode:
+        try:
+            daily_reproduction = validate_daily_support(support, selected)
+        except ValueError as error:
+            print(f"error: full-daily frontier release gate failed: {error}")
+            return 1
         panel_rows = assemble_cached_output(
             day_cache,
             support_rows,
@@ -1261,7 +1294,8 @@ def main() -> int:
         )
         print(
             f"wrote full-daily frontier on {len(selected):,} calendar days: "
-            f"{panel_rows:,} scored and {rejection_rows:,} rejected routes"
+            f"{panel_rows:,} scored and {rejection_rows:,} rejected routes; "
+            f"chosen-route reproduction {daily_reproduction:.2%}"
         )
         return 0
 
