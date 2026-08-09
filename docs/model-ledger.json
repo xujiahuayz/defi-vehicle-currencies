@@ -141,7 +141,7 @@
       "id": "transaction_state_routing_efficiency",
       "claim_id": "routing_maturation_rival",
       "estimator": "locked target: cell-fixed-effects OLS with flexible calendar-year indicators; linear elapsed-year slope is a summary sensitivity; not yet run",
-      "fixed_effects": "locked target: endpoint-vehicle-observed-reach-notional-bin cell effects for maturation with no date effects; endpoint-reach-notional effects for the conditioned vehicle transition; date effects only for within-date candidate comparisons",
+      "fixed_effects": "locked target: endpoint-vehicle-observed-reach-notional-bin cell effects for maturation with no date effects; endpoint-reach-notional effects for the conditioned vehicle transition, restricted to opportunity cells present in both 2024 and 2026; date effects only for within-date candidate comparisons",
       "inference": "locked target: two-way CR1 by cell and calendar date for maturation; ordered endpoint pair and calendar date for the conditioned transition; exact-calendar 1/7/30/120-day links for persistence diagnostics",
       "substantive_specifications": 0,
       "diagnostic_specifications": 0,
@@ -151,7 +151,7 @@
         "output/exhibits/transaction_state_frontier_audit_support.jsonl",
         "output/exhibits/routing_maturation_results.jsonl"
       ],
-      "note": "The 77 audit dates validate construction only. The prior full daily panel is stale against the active canonical generation and cannot supply findings. D3 must rebuild it, enforce at least 99 percent chosen-route reproduction within one basis point, retain nested 0.1- and 0.01-basis-point support, and materialise the locked recurrent cell-day panel before the first fit."
+      "note": "The 77 audit dates validate construction only. The prior full daily panel is stale against the active canonical generation and cannot supply findings. D3 must rebuild it, enforce at least 99 percent chosen-route reproduction within one basis point, retain nested 0.1- and 0.01-basis-point support, and materialise the locked recurrent cell-day panel before the first fit. All maturation and transition support ledgers execute before any model; a red ledger writes zero fitted specifications and returns the graph to E-to-D review."
     }
   ]
 }

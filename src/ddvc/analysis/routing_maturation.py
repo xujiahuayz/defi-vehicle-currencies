@@ -15,21 +15,15 @@ from ddvc.analysis.regression import (
     holm_adjusted_pvalues,
     ols_clustered,
 )
-
-
-PRIMARY_YEARS = (2021, 2022, 2023, 2024, 2025)
-REPRODUCTION_TOLERANCES_BPS = (1.0, 0.1, 0.01)
-HORIZONS_DAYS = (1, 7, 30, 120)
-MARGINS = (
-    "within_reach_search_regret",
-    "reach_increment",
-    "path_choice_increment",
-    "public_path_regret",
-)
-REGRET_BIN_COLUMNS = (
-    "within_reach_regret_bin",
-    "reach_increment_bin",
-    "path_choice_increment_bin",
+from ddvc.analysis.routing_contract import (
+    HORIZONS_DAYS,
+    MARGINS,
+    PRIMARY_YEARS,
+    REGRET_BIN_COLUMNS,
+    REGRET_BIN_LEVELS,
+    REPRODUCTION_TOLERANCES_BPS,
+    TRANSITION_REPRODUCTION_TOLERANCE_BPS,
+    TRANSITION_YEARS,
 )
 MATURATION_OUTCOME_COLUMNS = tuple(
     [
@@ -117,6 +111,11 @@ def _fit_within(
     model = frame.loc[:, list(dict.fromkeys(columns))].dropna().reset_index(drop=True)
     if model.empty:
         raise ValueError("routing estimator has no complete observations")
+    numeric_columns = [outcome, *regressors]
+    if weight_column:
+        numeric_columns.append(weight_column)
+    if not np.isfinite(model[numeric_columns].to_numpy(dtype=float)).all():
+        raise ValueError("routing estimator inputs must be finite")
     weights = model[weight_column] if weight_column else None
     if weights is not None and (
         not np.isfinite(weights.to_numpy(dtype=float)).all() or (weights <= 0).any()
@@ -333,18 +332,14 @@ def estimate_maturation(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def estimate_transition(frame: pd.DataFrame) -> pd.DataFrame:
-    _required(frame, TRANSITION_COLUMNS, name="routing transition panel")
-    sample = frame.loc[
-        frame["reproduction_tolerance_bps"].eq(1.0), TRANSITION_COLUMNS
-    ].copy()
-    sample["date"] = pd.to_datetime(sample["date"])
-    sample["year"] = sample["date"].dt.year
-    sample = sample[sample["year"].isin((2024, 2026))].copy()
-    sample = sample[
-        common_calendar_day_mask(
-            sample["date"], sample["year"], baseline_year=2024, comparison_year=2026
-        )
-    ].reset_index(drop=True)
+    sample, support = _transition_common_support(frame)
+    if sample.empty:
+        raise ValueError("routing transition has no opportunity cell in both endpoint years")
+    identifying_cells = int(support["identifying_opportunity_cells"])
+    identifying_cell_share = float(support["identifying_opportunity_cell_share"])
+    identifying_route_share = float(support["identifying_route_share"])
+    candidate_cells = int(support["candidate_opportunity_cells"])
+    candidate_routes = int(support["candidate_route_count"])
     sample["comparison_year_2026"] = sample["year"].eq(2026).astype(float)
     controls: list[str] = []
     for column in REGRET_BIN_COLUMNS:
@@ -380,23 +375,137 @@ def estimate_transition(frame: pd.DataFrame) -> pd.DataFrame:
                 "spec": spec,
                 "outcome": "stable_indicator",
                 "weighting": weighting,
-                "support": "common_month_day_2024_2026",
+                "support": "common_month_day_and_opportunity_2024_2026",
                 "reproduction_tolerance_bps": 1.0,
                 "n_observations": fit.n_observations,
                 "n_cells": int(model["opportunity_cell_id"].nunique()),
                 "n_dates": int(model["date"].nunique()),
                 "route_count": int(model["route_count"].sum()),
+                "candidate_opportunity_cells": candidate_cells,
+                "identifying_opportunity_cells": identifying_cells,
+                "identifying_opportunity_cell_share": identifying_cell_share,
+                "candidate_route_count": candidate_routes,
+                "identifying_route_share": identifying_route_share,
                 "pair_clusters": fit.cluster_counts[0],
                 "date_clusters": fit.cluster_counts[1],
                 "common_month_days": int(model["date"].dt.strftime("%m-%d").nunique()),
-                "baseline_2024_mean": _weighted_mean(baseline["stable_indicator"], baseline[weight_column]),
-                "comparison_2026_mean": _weighted_mean(comparison["stable_indicator"], comparison[weight_column]),
+                "baseline_2024_mean": _weighted_mean(
+                    baseline["stable_indicator"], baseline[weight_column]
+                ),
+                "comparison_2026_mean": _weighted_mean(
+                    comparison["stable_indicator"], comparison[weight_column]
+                ),
                 "comparison_2026_beta": statistics["comparison_year_2026_beta"],
                 "comparison_2026_se": statistics["comparison_year_2026_se"],
                 "comparison_2026_t": statistics["comparison_year_2026_t"],
                 "comparison_2026_p": statistics["comparison_year_2026_p"],
                 "regret_control_count": len(kept) - 1,
                 "dropped_collinear_controls": "|".join(dropped),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _transition_common_support(
+    frame: pd.DataFrame,
+) -> tuple[pd.DataFrame, dict[str, int | float]]:
+    """Return the endpoint-year sample restricted to identifying opportunity cells."""
+
+    _required(frame, TRANSITION_COLUMNS, name="routing transition panel")
+    sample = frame.loc[
+        frame["reproduction_tolerance_bps"].eq(
+            TRANSITION_REPRODUCTION_TOLERANCE_BPS
+        ),
+        TRANSITION_COLUMNS,
+    ].copy()
+    sample["date"] = pd.to_datetime(sample["date"])
+    sample["year"] = sample["date"].dt.year
+    sample = sample[sample["year"].isin(TRANSITION_YEARS)].copy()
+    sample = sample[
+        common_calendar_day_mask(
+            sample["date"],
+            sample["year"],
+            baseline_year=TRANSITION_YEARS[0],
+            comparison_year=TRANSITION_YEARS[1],
+        )
+    ].reset_index(drop=True)
+    if sample.empty:
+        raise ValueError("routing transition has no common endpoint-year calendar support")
+    if not np.isfinite(sample["route_count"].to_numpy(dtype=float)).all() or (
+        sample["route_count"] <= 0
+    ).any():
+        raise ValueError("routing transition route counts must be finite and positive")
+    if not sample["stable_indicator"].isin((0, 1)).all():
+        raise ValueError("routing transition stable indicator must be binary")
+    for column in REGRET_BIN_COLUMNS:
+        if not sample[column].isin(REGRET_BIN_LEVELS).all():
+            raise ValueError(f"routing transition {column} has an invalid regret bin")
+    year_counts = sample.groupby("opportunity_cell_id", observed=True)["year"].nunique()
+    identifying_ids = year_counts[year_counts.eq(2)].index
+    identifying = sample[sample["opportunity_cell_id"].isin(identifying_ids)].reset_index(
+        drop=True
+    )
+    candidate_cells = int(sample["opportunity_cell_id"].nunique())
+    candidate_routes = int(sample["route_count"].sum())
+    identifying_cells = int(identifying["opportunity_cell_id"].nunique())
+    identifying_routes = int(identifying["route_count"].sum())
+    support: dict[str, int | float] = {
+        "candidate_observations": len(sample),
+        "candidate_opportunity_cells": candidate_cells,
+        "candidate_route_count": candidate_routes,
+        "identifying_observations": len(identifying),
+        "identifying_opportunity_cells": identifying_cells,
+        "identifying_route_count": identifying_routes,
+        "identifying_opportunity_cell_share": identifying_cells / candidate_cells,
+        "identifying_route_share": identifying_routes / candidate_routes,
+    }
+    return identifying, support
+
+
+def transition_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
+    """Describe and gate the common-opportunity support before transition fits."""
+
+    sample, support = _transition_common_support(frame)
+    annual = sample.groupby("year", observed=True).agg(
+        observations=("opportunity_cell_id", "size"),
+        cells=("opportunity_cell_id", "nunique"),
+        dates=("date", "nunique"),
+        routes=("route_count", "sum"),
+    ).reindex(TRANSITION_YEARS, fill_value=0)
+    maximum_observations = int(annual["observations"].max())
+    maximum_routes = int(annual["routes"].max())
+    observation_ratio = (
+        float(annual["observations"].min() / maximum_observations)
+        if maximum_observations
+        else 0.0
+    )
+    route_ratio = (
+        float(annual["routes"].min() / maximum_routes) if maximum_routes else 0.0
+    )
+    review = (
+        float(support["identifying_opportunity_cell_share"]) < 0.5
+        or float(support["identifying_route_share"]) < 0.5
+        or observation_ratio < 0.5
+        or route_ratio < 0.5
+    )
+    rows: list[dict[str, object]] = []
+    for year, values in annual.iterrows():
+        rows.append(
+            {
+                "record_type": "support",
+                "family": "conditioned_transition_support",
+                "spec": "common_opportunity_2024_2026",
+                "support": "common_month_day_and_opportunity_2024_2026",
+                "reproduction_tolerance_bps": 1.0,
+                "year": int(year),
+                "observations": int(values["observations"]),
+                "n_cells": int(values["cells"]),
+                "n_dates": int(values["dates"]),
+                "route_count": int(values["routes"]),
+                **support,
+                "minimum_to_maximum_observation_ratio": observation_ratio,
+                "minimum_to_maximum_route_ratio": route_ratio,
+                "support_exit_review_required": review,
             }
         )
     return pd.DataFrame(rows)

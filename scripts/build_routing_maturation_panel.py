@@ -22,7 +22,15 @@ from pathlib import Path
 import duckdb
 import pyarrow.parquet as pq
 
-from ddvc.analysis.dynamics import CANONICAL_RESPONSE_HORIZONS
+from ddvc.analysis.routing_contract import (
+    HORIZONS_DAYS,
+    REGRET_BIN_LEVELS,
+    REGRET_MARGINS_BPS,
+    REGRET_THRESHOLDS_BPS,
+    REPRODUCTION_TOLERANCES_BPS,
+    TRANSITION_REPRODUCTION_TOLERANCE_BPS,
+    TRANSITION_YEARS,
+)
 from ddvc.analysis.transaction_frontier import MIN_CHOSEN_REPRODUCTION
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR
@@ -39,17 +47,10 @@ LOCK = DATA_DIR / "processed" / ".routing_maturation_panel.lock"
 CODE_SOURCES = [
     "scripts/build_routing_maturation_panel.py",
     "src/ddvc/analysis/dynamics.py",
+    "src/ddvc/analysis/routing_contract.py",
     "src/ddvc/analysis/transaction_frontier.py",
 ]
 
-REPRODUCTION_TOLERANCES_BPS = (1.0, 0.1, 0.01)
-REGRET_THRESHOLDS_BPS = (0.01, 1.0, 10.0)
-REGRET_MARGINS = (
-    "within_reach_search_regret_bps",
-    "reach_increment_bps",
-    "path_choice_increment_bps",
-    "public_path_regret_bps",
-)
 REQUIRED_COLUMNS = {
     "date",
     "src",
@@ -61,7 +62,7 @@ REQUIRED_COLUMNS = {
     "realised_venues",
     "public_gain_usd",
     "chosen_validation_error_bps",
-    *REGRET_MARGINS,
+    *REGRET_MARGINS_BPS,
 }
 
 
@@ -92,11 +93,13 @@ def notional_bin_sql(column: str = "input_usd") -> str:
 
 def regret_bin_sql(column: str) -> str:
     """Saturated regret bins used by the conditioned transition test."""
+    first, second, third = REGRET_THRESHOLDS_BPS
+    low, medium, high, upper = REGRET_BIN_LEVELS
     return (
-        f"CASE WHEN {column}<=0.01 THEN 'b1_0_0p01' "
-        f"WHEN {column}<=1 THEN 'b2_0p01_1' "
-        f"WHEN {column}<=10 THEN 'b3_1_10' "
-        "ELSE 'b4_above_10' END"
+        f"CASE WHEN {column}<={first} THEN '{low}' "
+        f"WHEN {column}<={second:g} THEN '{medium}' "
+        f"WHEN {column}<={third:g} THEN '{high}' "
+        f"ELSE '{upper}' END"
     )
 
 
@@ -119,7 +122,7 @@ def _eligible_sql(source: Path) -> str:
             input_usd,
             public_gain_usd,
             abs(chosen_validation_error_bps) AS chosen_abs_error_bps,
-            {', '.join(REGRET_MARGINS)}
+            {', '.join(REGRET_MARGINS_BPS)}
         FROM read_parquet('{_quoted(source)}')
         WHERE within_20pct
           AND isfinite(input_usd)
@@ -148,16 +151,16 @@ def _validate_source(con: duckdb.DuckDBPyConnection, source: Path) -> int:
                 WHERE vehicle_type IS NULL OR src IS NULL OR tgt IS NULL OR vehicle IS NULL
             ) AS bad_identity,
             count(*) FILTER (
-                WHERE {REGRET_MARGINS[0]}<0 OR NOT isfinite({REGRET_MARGINS[0]})
-                   OR {REGRET_MARGINS[1]}<0 OR NOT isfinite({REGRET_MARGINS[1]})
-                   OR {REGRET_MARGINS[2]}<0 OR NOT isfinite({REGRET_MARGINS[2]})
-                   OR {REGRET_MARGINS[3]}<0 OR NOT isfinite({REGRET_MARGINS[3]})
+                WHERE {REGRET_MARGINS_BPS[0]}<0 OR NOT isfinite({REGRET_MARGINS_BPS[0]})
+                   OR {REGRET_MARGINS_BPS[1]}<0 OR NOT isfinite({REGRET_MARGINS_BPS[1]})
+                   OR {REGRET_MARGINS_BPS[2]}<0 OR NOT isfinite({REGRET_MARGINS_BPS[2]})
+                   OR {REGRET_MARGINS_BPS[3]}<0 OR NOT isfinite({REGRET_MARGINS_BPS[3]})
             ) AS bad_regret,
             count(*) FILTER (
                 WHERE abs(
-                    {REGRET_MARGINS[3]} - {REGRET_MARGINS[0]}
-                    - {REGRET_MARGINS[1]} - {REGRET_MARGINS[2]}
-                ) > 1e-8 * greatest(1, abs({REGRET_MARGINS[3]}))
+                    {REGRET_MARGINS_BPS[3]} - {REGRET_MARGINS_BPS[0]}
+                    - {REGRET_MARGINS_BPS[1]} - {REGRET_MARGINS_BPS[2]}
+                ) > 1e-8 * greatest(1, abs({REGRET_MARGINS_BPS[3]}))
             ) AS bad_decomposition
         FROM read_parquet('{_quoted(source)}')
         """
@@ -211,7 +214,7 @@ def _validate_support(
 
 def _margin_aggregates() -> str:
     fields: list[str] = []
-    for margin in REGRET_MARGINS:
+    for margin in REGRET_MARGINS_BPS:
         prefix = margin.removesuffix("_bps")
         fields.extend(
             [
@@ -304,23 +307,23 @@ def _write_cell_day(
 def _write_transition(
     con: duckdb.DuckDBPyConnection, source: Path, output: Path
 ) -> int:
-    within_bin = regret_bin_sql(REGRET_MARGINS[0])
-    reach_bin = regret_bin_sql(REGRET_MARGINS[1])
-    path_bin = regret_bin_sql(REGRET_MARGINS[2])
+    within_bin = regret_bin_sql(REGRET_MARGINS_BPS[0])
+    reach_bin = regret_bin_sql(REGRET_MARGINS_BPS[1])
+    path_bin = regret_bin_sql(REGRET_MARGINS_BPS[2])
     with atomic_output(output) as temporary:
         con.execute(
             f"""
             COPY (
                 WITH eligible AS ({_eligible_sql(source)}),
                 expanded AS (
-                    SELECT eligible.*, tolerance.value::DOUBLE AS reproduction_tolerance_bps,
+                    SELECT eligible.*, 1.0::DOUBLE AS reproduction_tolerance_bps,
                            {within_bin} AS within_reach_regret_bin,
                            {reach_bin} AS reach_increment_bin,
                            {path_bin} AS path_choice_increment_bin
                     FROM eligible
-                    CROSS JOIN {_values(REPRODUCTION_TOLERANCES_BPS, 'tolerance')}
-                    WHERE chosen_abs_error_bps<=tolerance.value
+                    WHERE chosen_abs_error_bps<={TRANSITION_REPRODUCTION_TOLERANCE_BPS:g}
                       AND vehicle_type IN ('native','stable')
+                      AND year(date) IN ({','.join(str(year) for year in TRANSITION_YEARS)})
                 )
                 SELECT
                     date, strftime(date,'%m-%d') AS month_day,
@@ -359,7 +362,7 @@ def _write_exact_horizons(
     horizons: tuple[int, ...],
 ) -> int:
     outcome_fields: list[str] = []
-    for margin in REGRET_MARGINS:
+    for margin in REGRET_MARGINS_BPS:
         outcome = margin.removesuffix("_bps") + "_over_1_share"
         outcome_fields.extend(
             [f"origin.{outcome} AS current_{outcome}", f"future.{outcome} AS future_{outcome}"]
@@ -409,7 +412,7 @@ def build_panels(
     full_years: tuple[int, ...] = (2021, 2022, 2023, 2024, 2025),
     primary_min_days: int = 10,
     strict_min_days: int = 30,
-    horizons: tuple[int, ...] = CANONICAL_RESPONSE_HORIZONS,
+    horizons: tuple[int, ...] = HORIZONS_DAYS,
     memory_limit: str = "1GB",
     threads: int = 1,
 ) -> dict[str, int | float]:
@@ -420,9 +423,9 @@ def build_panels(
         or strict_min_days < primary_min_days
     ):
         raise ValueError("invalid recurrent-support contract")
-    if tuple(horizons) != CANONICAL_RESPONSE_HORIZONS:
+    if tuple(horizons) != HORIZONS_DAYS:
         raise ValueError(
-            f"dynamic horizons must equal {CANONICAL_RESPONSE_HORIZONS}, got {horizons}"
+            f"dynamic horizons must equal {HORIZONS_DAYS}, got {horizons}"
         )
     con = duckdb.connect()
     try:
@@ -492,7 +495,11 @@ def main() -> int:
         code_sources=CODE_SOURCES,
         inputs=inputs,
         rows=int(results["transition_rows"]),
-        notes="native-versus-stable route counts with separate endpoint-reach-notional opportunity keys and saturated regret strata; no fitted models",
+        notes=(
+            "2024/2026 native-versus-stable route counts at the locked one-basis-point "
+            "reproduction tolerance, with separate endpoint-reach-notional opportunity "
+            "keys and saturated regret strata; no fitted models"
+        ),
     )
     stamp(
         EXACT_HORIZONS,

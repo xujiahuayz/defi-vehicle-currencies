@@ -24,6 +24,7 @@ from ddvc.analysis.routing_maturation import (
     estimate_maturation,
     estimate_transition,
     support_geometry,
+    transition_support_geometry,
 )
 from ddvc.paths import DATA_DIR, OUTPUT_DIR
 from ddvc.provenance import require_current_artifacts
@@ -38,33 +39,46 @@ OUTPUT = OUTPUT_DIR / "exhibits" / "routing_maturation_results.jsonl"
 LOCK = DATA_DIR / "processed" / ".routing_maturation_estimates.lock"
 CODE_SOURCES = [
     "scripts/run_routing_maturation.py",
+    "src/ddvc/analysis/dynamics.py",
+    "src/ddvc/analysis/routing_contract.py",
     "src/ddvc/analysis/routing_maturation.py",
     "src/ddvc/analysis/regression.py",
 ]
 
 
-def maturation_results_after_support_gate(
-    cell_day: pd.DataFrame,
-) -> tuple[list[pd.DataFrame], bool]:
-    """Return support only when the pre-fit E-to-D review gate is red."""
+def support_review_required(support_frames: list[pd.DataFrame]) -> bool:
+    """Collapse already-computed support ledgers without fitting a model."""
 
-    support = support_geometry(cell_day)
-    review_required = bool(
-        support["support_exit_review_required"].astype(bool).any()
+    return any(
+        bool(frame["support_exit_review_required"].astype(bool).any())
+        for frame in support_frames
     )
-    if review_required:
-        return [support], True
-    return [estimate_maturation(cell_day), support], False
 
 
 def main() -> int:
     inputs = [CELL_DAY, TRANSITION, EXACT_HORIZONS]
     require_current_artifacts(inputs, consumer="routing-maturation estimator")
-    cell_day = pd.read_parquet(CELL_DAY, columns=list(MATURATION_COLUMNS))
-    results, review_required = maturation_results_after_support_gate(cell_day)
-    del cell_day
+    cell_support = pd.read_parquet(
+        CELL_DAY,
+        columns=[
+            "date",
+            "cell_id",
+            "route_count",
+            "reproduction_tolerance_bps",
+            "recurrent_primary",
+            "recurrent_strict",
+        ],
+    )
+    maturation_support = support_geometry(cell_support)
+    del cell_support
     gc.collect()
+    transition = pd.read_parquet(TRANSITION, columns=list(TRANSITION_COLUMNS))
+    transition_support = transition_support_geometry(transition)
+    results = [maturation_support, transition_support]
+    review_required = support_review_required(results)
     if review_required:
+        del transition
+        gc.collect()
         combined = pd.concat(results, ignore_index=True, sort=False)
         write_exhibit(
             combined,
@@ -81,9 +95,12 @@ def main() -> int:
             "wrote 0 fitted specifications"
         )
         return 2
-    transition = pd.read_parquet(TRANSITION, columns=list(TRANSITION_COLUMNS))
-    results.append(estimate_transition(transition))
+    results.insert(0, estimate_transition(transition))
     del transition
+    gc.collect()
+    cell_day = pd.read_parquet(CELL_DAY, columns=list(MATURATION_COLUMNS))
+    results.insert(0, estimate_maturation(cell_day))
+    del cell_day
     gc.collect()
     horizons = pd.read_parquet(EXACT_HORIZONS, columns=list(DYNAMIC_COLUMNS))
     results.append(estimate_dynamics(horizons))

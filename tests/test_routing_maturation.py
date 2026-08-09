@@ -12,8 +12,9 @@ from ddvc.analysis.routing_maturation import (
     estimate_maturation,
     estimate_transition,
     support_geometry,
+    transition_support_geometry,
 )
-from scripts.run_routing_maturation import maturation_results_after_support_gate
+from scripts.run_routing_maturation import support_review_required
 
 
 class RoutingMaturationEstimatorTests(unittest.TestCase):
@@ -103,6 +104,39 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         self.assertTrue((result["common_month_days"] == 2).all())
         self.assertTrue(result["comparison_2026_beta"].gt(0).all())
         self.assertTrue(result["regret_control_count"].gt(0).all())
+        self.assertTrue((result["identifying_opportunity_cell_share"] == 1).all())
+
+    def test_transition_excludes_one_year_cells_and_gates_weak_overlap(self) -> None:
+        frame = self._transition()
+        unmatched = frame[pd.to_datetime(frame["date"]).dt.year.eq(2024)].copy()
+        unmatched["opportunity_cell_id"] = "one_year_only"
+        unmatched["endpoint_pair_id"] = "one_year_pair"
+        unmatched["route_count"] = 1_000
+        expanded = pd.concat([frame, unmatched], ignore_index=True)
+        support = transition_support_geometry(expanded)
+        result = estimate_transition(expanded)
+        self.assertTrue(support["support_exit_review_required"].all())
+        self.assertLess(support["identifying_route_share"].iloc[0], 0.5)
+        self.assertEqual(set(result["identifying_opportunity_cells"]), {4})
+        self.assertEqual(set(result["n_cells"]), {4})
+
+    def test_transition_rejects_nonfinite_inputs_before_absorption(self) -> None:
+        frame = self._maturation()
+        frame.loc[0, "within_reach_search_regret_over_1_share"] = np.inf
+        with self.assertRaisesRegex(ValueError, "inputs must be finite"):
+            estimate_maturation(frame)
+
+    def test_transition_rejects_nonbinary_outcome(self) -> None:
+        frame = self._transition()
+        frame.loc[0, "stable_indicator"] = 2
+        with self.assertRaisesRegex(ValueError, "stable indicator must be binary"):
+            estimate_transition(frame)
+
+    def test_transition_rejects_unregistered_regret_bin(self) -> None:
+        frame = self._transition()
+        frame.loc[0, "within_reach_regret_bin"] = "unknown"
+        with self.assertRaisesRegex(ValueError, "invalid regret bin"):
+            estimate_transition(frame)
 
     def test_exact_horizon_models_preserve_all_four_calendar_links(self) -> None:
         result = estimate_dynamics(self._dynamics())
@@ -124,12 +158,13 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         years = pd.to_datetime(frame["date"]).dt.year
         frame.loc[years.eq(2021), "route_count"] = 1
         frame.loc[years.eq(2025), "route_count"] = 100
-        with patch("scripts.run_routing_maturation.estimate_maturation") as estimator:
-            results, review_required = maturation_results_after_support_gate(frame)
+        with patch("scripts.run_routing_maturation.estimate_maturation") as maturation:
+            results = [support_geometry(frame), transition_support_geometry(self._transition())]
+            review_required = support_review_required(results)
         self.assertTrue(review_required)
-        estimator.assert_not_called()
-        self.assertEqual(len(results), 1)
-        self.assertTrue(results[0]["record_type"].eq("support").all())
+        maturation.assert_not_called()
+        self.assertEqual(len(results), 2)
+        self.assertTrue(all(result["record_type"].eq("support").all() for result in results))
         self.assertTrue(results[0]["support_exit_review_required"].any())
 
     def test_missing_contract_column_fails_before_fit(self) -> None:

@@ -24,6 +24,10 @@ class RoutingMaturationPanelTests(unittest.TestCase):
             ("2021-01-02", "0xC", 0.05, 2.0, 3.0, 0.05, 5.05, "native"),
             ("2021-01-02", "0xD", 0.05, 2.0, 3.0, 0.05, 5.05, "stable"),
             ("2021-01-08", "0xC", 0.005, 0.005, 0.5, 12.0, 12.505, "native"),
+            ("2024-01-01", "0xC", 0.0, 0.0, 0.0, 0.0, 0.0, "native"),
+            ("2024-01-01", "0xD", 0.0, 0.0, 0.0, 12.0, 12.0, "stable"),
+            ("2026-01-01", "0xC", 0.0, 0.0, 0.0, 0.0, 0.0, "native"),
+            ("2026-01-01", "0xD", 0.0, 0.0, 0.0, 12.0, 12.0, "stable"),
         ):
             rows.append(
                 {
@@ -46,8 +50,8 @@ class RoutingMaturationPanelTests(unittest.TestCase):
         pd.DataFrame(rows).to_parquet(source, index=False)
         pd.DataFrame(
             {
-                "scored_routes": [4],
-                "within_20pct_chosen_quote_available": [4],
+                "scored_routes": [8],
+                "within_20pct_chosen_quote_available": [8],
                 "within_20pct_chosen_output_mismatch": [0],
             }
         ).to_parquet(support, index=False)
@@ -75,11 +79,14 @@ class RoutingMaturationPanelTests(unittest.TestCase):
                 primary_min_days=1,
                 strict_min_days=2,
             )
-            self.assertEqual(results["source_rows"], 4)
+            self.assertEqual(results["source_rows"], 8)
             panel = pd.read_parquet(cell)
             self.assertEqual(set(panel["observed_reach"]), {"uniswap_v3"})
             self.assertEqual(set(panel["notional_bin"]), {"b2_1k_10k"})
-            one_bp = panel[panel["reproduction_tolerance_bps"].eq(1.0)]
+            one_bp = panel[
+                panel["reproduction_tolerance_bps"].eq(1.0)
+                & pd.to_datetime(panel["date"]).dt.year.eq(2021)
+            ]
             self.assertTrue(one_bp["recurrent_primary"].all())
             native_cell = one_bp[one_bp["vehicle"].eq("0xc")]
             stable_cell = one_bp[one_bp["vehicle"].eq("0xd")]
@@ -112,6 +119,8 @@ class RoutingMaturationPanelTests(unittest.TestCase):
             self.assertEqual(transition_panel["endpoint_pair_id"].nunique(), 1)
             self.assertEqual(transition_panel["opportunity_cell_id"].nunique(), 1)
             self.assertGreater(transition_panel["transition_cell_id"].nunique(), 1)
+            self.assertEqual(set(transition_panel["reproduction_tolerance_bps"]), {1.0})
+            self.assertEqual(set(pd.to_datetime(transition_panel["date"]).dt.year), {2024, 2026})
 
     def test_rejects_noncanonical_horizons(self) -> None:
         with TemporaryDirectory() as directory:
