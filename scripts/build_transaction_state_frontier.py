@@ -300,6 +300,78 @@ def select_days(
     return sorted(selected)
 
 
+def validate_audit_support(
+    support: pd.DataFrame,
+    expected_days: list[str],
+) -> float:
+    """Validate the current construction-audit calendar and reproduction gate."""
+    required = {
+        "day",
+        "within_20pct_chosen_quote_available",
+        "within_20pct_chosen_output_mismatch",
+    }
+    missing_columns = sorted(required - set(support.columns))
+    if missing_columns:
+        raise ValueError(
+            "frontier audit support is missing columns: "
+            + ", ".join(missing_columns)
+        )
+    normalised = support.loc[:, sorted(required)].copy()
+    normalised["day"] = normalised["day"].astype(str).str.replace("-", "", regex=False)
+    malformed = normalised.loc[~normalised["day"].str.fullmatch(r"\d{8}")]
+    if not malformed.empty:
+        raise ValueError("frontier audit support contains malformed days")
+    duplicates = normalised.loc[normalised["day"].duplicated(), "day"].tolist()
+    if duplicates:
+        raise ValueError(
+            "frontier audit support contains duplicate days: "
+            + ", ".join(sorted(set(duplicates)))
+        )
+    actual_days = sorted(normalised["day"].tolist())
+    expected = sorted(day.replace("-", "") for day in expected_days)
+    if actual_days != expected:
+        missing_days = sorted(set(expected) - set(actual_days))
+        extra_days = sorted(set(actual_days) - set(expected))
+        details = []
+        if missing_days:
+            details.append("missing " + ", ".join(missing_days))
+        if extra_days:
+            details.append("extra " + ", ".join(extra_days))
+        raise ValueError(
+            "frontier audit support calendar does not match the current audit: "
+            + "; ".join(details)
+        )
+    counts = normalised[
+        [
+            "within_20pct_chosen_quote_available",
+            "within_20pct_chosen_output_mismatch",
+        ]
+    ].apply(pd.to_numeric, errors="coerce")
+    if counts.isna().any().any() or (counts < 0).any().any():
+        raise ValueError("frontier audit support contains invalid reproduction counts")
+    available = int(counts["within_20pct_chosen_quote_available"].sum())
+    mismatches = int(counts["within_20pct_chosen_output_mismatch"].sum())
+    if mismatches > available:
+        raise ValueError("frontier audit mismatches exceed available chosen quotes")
+    reproduction = chosen_reproduction_share(available, mismatches)
+    if reproduction < MIN_CHOSEN_REPRODUCTION:
+        raise ValueError(
+            f"frontier audit chosen-route reproduction {reproduction:.2%} is below "
+            f"the {MIN_CHOSEN_REPRODUCTION:.0%} gate"
+        )
+    return reproduction
+
+
+def require_frontier_audit_gate(expected_days: list[str]) -> float:
+    """Require a current, complete audit certificate before a full-daily build."""
+    require_current_artifacts(
+        [AUDIT_PANEL, AUDIT_REJECTIONS, AUDIT_SUPPORT],
+        consumer="full-daily transaction-state frontier",
+    )
+    support = pd.read_json(AUDIT_SUPPORT, lines=True, dtype={"day": str})
+    return validate_audit_support(support, expected_days)
+
+
 def _event_key(event: TickReplayEvent) -> tuple[str, str, int] | None:
     if event.kind != "swap":
         return None
@@ -1020,6 +1092,18 @@ def main() -> int:
     vehicles = candidate_vehicles()
     selected_set = set(selected)
     daily_mode = bool(args.daily_calendar)
+    if daily_mode:
+        expected_audit_days = nearest_day_per_month(available_days(nonempty=True))
+        try:
+            audit_reproduction = require_frontier_audit_gate(expected_audit_days)
+        except (FileNotFoundError, RuntimeError, ValueError) as error:
+            print(f"error: full-daily frontier audit gate failed: {error}")
+            return 1
+        print(
+            f"current frontier audit gate passed on {len(expected_audit_days):,} dates "
+            f"with {audit_reproduction:.2%} chosen-route reproduction",
+            flush=True,
+        )
     frames: list[pd.DataFrame] = []
     rejection_frames: list[pd.DataFrame] = []
     support_rows: list[dict[str, object]] = []

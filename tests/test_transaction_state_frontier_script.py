@@ -33,6 +33,7 @@ from scripts.build_transaction_state_frontier import (
     select_days,
     strict_route_order,
     summarise,
+    validate_audit_support,
     validation_error_diagnostics,
     write_cached_day,
 )
@@ -123,6 +124,36 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         self.assertEqual(MAX_CHOSEN_REPRODUCTION_ERROR, 0.0001)
         self.assertAlmostEqual(chosen_reproduction_share(101, 1), 100 / 101)
         self.assertEqual(chosen_reproduction_share(0, 0), 0.0)
+
+    def test_daily_gate_requires_exact_audit_calendar_and_reproduction(self) -> None:
+        support = pd.DataFrame(
+            {
+                "day": ["20250115", "20250215"],
+                "within_20pct_chosen_quote_available": [100, 100],
+                "within_20pct_chosen_output_mismatch": [0, 1],
+            }
+        )
+        self.assertEqual(
+            validate_audit_support(support, ["20250115", "20250215"]),
+            0.995,
+        )
+        with self.assertRaisesRegex(ValueError, "calendar does not match"):
+            validate_audit_support(support, ["20250115", "20250315"])
+        below_gate = support.copy()
+        below_gate.loc[1, "within_20pct_chosen_output_mismatch"] = 3
+        with self.assertRaisesRegex(ValueError, "below the 99% gate"):
+            validate_audit_support(below_gate, ["20250115", "20250215"])
+
+    def test_daily_gate_rejects_duplicate_audit_days(self) -> None:
+        support = pd.DataFrame(
+            {
+                "day": ["20250115", "20250115"],
+                "within_20pct_chosen_quote_available": [100, 100],
+                "within_20pct_chosen_output_mismatch": [0, 0],
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "duplicate days"):
+            validate_audit_support(support, ["20250115"])
 
     def test_summary_keeps_all_and_valuation_coherent_samples_separate(self) -> None:
         panel = pd.DataFrame(
