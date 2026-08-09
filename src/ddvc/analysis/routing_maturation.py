@@ -586,6 +586,89 @@ def estimate_dynamics(frame: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def dynamics_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
+    """Describe exact-link attrition by horizon and origin year before fitting."""
+
+    _required(frame, DYNAMIC_COLUMNS, name="routing exact-horizon panel")
+    sample = frame.loc[
+        frame["reproduction_tolerance_bps"].eq(1.0), DYNAMIC_COLUMNS
+    ].copy()
+    sample["origin_date"] = pd.to_datetime(sample["origin_date"])
+    if sample["origin_date"].isna().any():
+        raise ValueError("routing exact-horizon origin dates must be valid")
+    sample["origin_year"] = sample["origin_date"].dt.year
+    sample = sample[sample["origin_year"].isin(PRIMARY_YEARS)].copy()
+    if not set(sample["horizon_days"]).issubset(set(HORIZONS_DAYS)):
+        raise ValueError("routing exact-horizon support contains a noncanonical horizon")
+    if sample.empty:
+        raise ValueError("routing exact-horizon support is empty")
+    duplicate = sample.duplicated(["cell_id", "origin_date", "horizon_days"], keep=False)
+    if duplicate.any():
+        raise ValueError("routing exact-horizon support contains duplicate links")
+    if not sample["target_observed"].isin((True, False)).all():
+        raise ValueError("routing exact-horizon target flag must be binary")
+    current_columns = [name for name in DYNAMIC_OUTCOME_COLUMNS if name.startswith("current_")]
+    future_columns = [name for name in DYNAMIC_OUTCOME_COLUMNS if name.startswith("future_")]
+    if not sample[current_columns].notna().all(axis=1).all():
+        raise ValueError("routing exact-horizon current outcomes must be complete")
+    if not np.isfinite(sample[current_columns].to_numpy(dtype=float)).all():
+        raise ValueError("routing exact-horizon current outcomes must be finite")
+    future_complete = sample[future_columns].notna().all(axis=1)
+    future_any = sample[future_columns].notna().any(axis=1)
+    observed = sample["target_observed"].astype(bool)
+    if not observed.eq(future_complete).all() or ((~observed) & future_any).any():
+        raise ValueError("routing exact-horizon target flag disagrees with outcome completeness")
+    if not np.isfinite(sample.loc[observed, future_columns].to_numpy(dtype=float)).all():
+        raise ValueError("routing exact-horizon observed future outcomes must be finite")
+    annual = sample.groupby(["horizon_days", "origin_year"], observed=True).agg(
+        total_links=("cell_id", "size"),
+        observed_links=("target_observed", "sum"),
+        origin_cells=("cell_id", "nunique"),
+        origin_dates=("origin_date", "nunique"),
+    )
+    expected = pd.MultiIndex.from_product(
+        [HORIZONS_DAYS, PRIMARY_YEARS], names=["horizon_days", "origin_year"]
+    )
+    annual = annual.reindex(expected, fill_value=0).reset_index()
+    annual["link_coverage"] = np.divide(
+        annual["observed_links"],
+        annual["total_links"],
+        out=np.zeros(len(annual), dtype=float),
+        where=annual["total_links"].gt(0),
+    )
+    rows: list[dict[str, object]] = []
+    for horizon, horizon_rows in annual.groupby("horizon_days", observed=True):
+        maximum_observed = int(horizon_rows["observed_links"].max())
+        observed_ratio = (
+            float(horizon_rows["observed_links"].min() / maximum_observed)
+            if maximum_observed
+            else 0.0
+        )
+        minimum_coverage = float(horizon_rows["link_coverage"].min())
+        review = minimum_coverage < 0.5 or observed_ratio < 0.5
+        for record in horizon_rows.to_dict("records"):
+            rows.append(
+                {
+                    "record_type": "support",
+                    "family": "exact_horizon_support",
+                    "spec": "recurrent_primary_exact_target",
+                    "support": "origin_year_exact_calendar_link",
+                    "reproduction_tolerance_bps": 1.0,
+                    "horizon_days": int(horizon),
+                    "year": int(record["origin_year"]),
+                    "total_links": int(record["total_links"]),
+                    "observed_links": int(record["observed_links"]),
+                    "n_cells": int(record["origin_cells"]),
+                    "n_dates": int(record["origin_dates"]),
+                    "link_coverage": float(record["link_coverage"]),
+                    "minimum_annual_link_coverage": minimum_coverage,
+                    "minimum_to_maximum_observed_link_ratio": observed_ratio,
+                    "support_exit_review_required": review,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
     _required(
         frame,

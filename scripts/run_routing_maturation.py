@@ -23,6 +23,7 @@ from ddvc.analysis.routing_maturation import (
     estimate_dynamics,
     estimate_maturation,
     estimate_transition,
+    dynamics_support_geometry,
     support_geometry,
     transition_support_geometry,
 )
@@ -74,10 +75,14 @@ def main() -> int:
     gc.collect()
     transition = pd.read_parquet(TRANSITION, columns=list(TRANSITION_COLUMNS))
     transition_support = transition_support_geometry(transition)
-    results = [maturation_support, transition_support]
+    del transition
+    gc.collect()
+    horizons = pd.read_parquet(EXACT_HORIZONS, columns=list(DYNAMIC_COLUMNS))
+    horizon_support = dynamics_support_geometry(horizons)
+    results = [maturation_support, transition_support, horizon_support]
     review_required = support_review_required(results)
     if review_required:
-        del transition
+        del horizons
         gc.collect()
         combined = pd.concat(results, ignore_index=True, sort=False)
         write_exhibit(
@@ -95,6 +100,10 @@ def main() -> int:
             "wrote 0 fitted specifications"
         )
         return 2
+    results.insert(0, estimate_dynamics(horizons))
+    del horizons
+    gc.collect()
+    transition = pd.read_parquet(TRANSITION, columns=list(TRANSITION_COLUMNS))
     results.insert(0, estimate_transition(transition))
     del transition
     gc.collect()
@@ -102,9 +111,6 @@ def main() -> int:
     results.insert(0, estimate_maturation(cell_day))
     del cell_day
     gc.collect()
-    horizons = pd.read_parquet(EXACT_HORIZONS, columns=list(DYNAMIC_COLUMNS))
-    results.append(estimate_dynamics(horizons))
-    del horizons
     combined = pd.concat(results, ignore_index=True, sort=False)
     write_exhibit(
         combined,

@@ -9,6 +9,7 @@ import pandas as pd
 from ddvc.analysis.regression import ClusteredOLSResult
 from ddvc.analysis.routing_maturation import (
     MARGINS,
+    dynamics_support_geometry,
     estimate_dynamics,
     estimate_maturation,
     estimate_transition,
@@ -71,18 +72,23 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
             for year in range(2021, 2026):
                 for day in range(1, 5):
                     for cell in range(5):
+                        target_observed = not (horizon == 120 and cell == 4)
                         row = {
                             "cell_id": f"cell_{cell}",
                             "origin_date": pd.Timestamp(year=year, month=1, day=day),
                             "horizon_days": horizon,
-                            "target_observed": not (horizon == 120 and cell == 4),
+                            "target_observed": target_observed,
                             "reproduction_tolerance_bps": 1.0,
                         }
                         for index, margin in enumerate(MARGINS):
                             current = 0.1 + 0.02 * index + 0.01 * cell + rng.normal(0, 0.005)
                             row[f"current_{margin}_over_1_share"] = current
                             row[f"future_{margin}_over_1_share"] = (
-                                0.5 * current + 0.01 * (year - 2021) + rng.normal(0, 0.005)
+                                0.5 * current
+                                + 0.01 * (year - 2021)
+                                + rng.normal(0, 0.005)
+                                if target_observed
+                                else np.nan
                             )
                         rows.append(row)
         return pd.DataFrame(rows)
@@ -180,6 +186,31 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         self.assertTrue((short["link_coverage"] == 1).all())
         self.assertTrue((long["link_coverage"] == 0.8).all())
         self.assertTrue(result["current_share_beta"].between(0.2, 0.8).all())
+
+    def test_exact_horizon_support_is_annual_and_gates_attrition(self) -> None:
+        frame = self._dynamics()
+        support = dynamics_support_geometry(frame)
+        self.assertEqual(len(support), 20)
+        self.assertFalse(support["support_exit_review_required"].any())
+        years = pd.to_datetime(frame["origin_date"]).dt.year
+        frame.loc[frame["horizon_days"].eq(120) & years.eq(2025), "target_observed"] = False
+        future = [column for column in frame if column.startswith("future_")]
+        frame.loc[frame["horizon_days"].eq(120) & years.eq(2025), future] = np.nan
+        support = dynamics_support_geometry(frame)
+        long = support[support["horizon_days"].eq(120)]
+        self.assertTrue(long["support_exit_review_required"].all())
+
+    def test_exact_horizon_support_rejects_flag_outcome_disagreement(self) -> None:
+        frame = self._dynamics()
+        frame.loc[0, "target_observed"] = False
+        with self.assertRaisesRegex(ValueError, "disagrees with outcome completeness"):
+            dynamics_support_geometry(frame)
+
+    def test_exact_horizon_support_rejects_duplicate_links(self) -> None:
+        frame = self._dynamics()
+        frame = pd.concat([frame, frame.iloc[[0]]], ignore_index=True)
+        with self.assertRaisesRegex(ValueError, "duplicate links"):
+            dynamics_support_geometry(frame)
 
     def test_support_geometry_applies_the_predeclared_half_sample_review_gate(self) -> None:
         result = support_geometry(self._maturation())
