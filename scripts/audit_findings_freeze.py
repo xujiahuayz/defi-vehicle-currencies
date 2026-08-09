@@ -2313,6 +2313,7 @@ def transaction_frontier_support_checks(
         ).sum()
     )
     quote_coverage = chosen_quote_coverage_share(eligible, available)
+    verified_coverage = chosen_quote_coverage_share(eligible, available - mismatches)
     reproduction = chosen_reproduction_share(available, mismatches)
     tolerance = pd.to_numeric(
         support["chosen_validation_tolerance_bps"], errors="coerce"
@@ -2327,7 +2328,8 @@ def transaction_frontier_support_checks(
         (
             f"{prefix} chosen-state support",
             eligible >= available >= mismatches,
-            f"eligible={eligible:,}; quoted={available:,}; coverage={quote_coverage:.2%}",
+            f"eligible={eligible:,}; quoted={available:,}; state_coverage={quote_coverage:.2%}; "
+            f"verified={available - mismatches:,}; verified_coverage={verified_coverage:.2%}",
         ),
         (
             f"{prefix} chosen-output validation",

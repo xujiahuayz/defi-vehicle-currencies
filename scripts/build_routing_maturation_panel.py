@@ -209,7 +209,7 @@ def _validate_source(con: duckdb.DuckDBPyConnection, source: Path) -> int:
 
 def _validate_support(
     con: duckdb.DuckDBPyConnection, support: Path, source_rows: int
-) -> tuple[float, float]:
+) -> tuple[float, float, float]:
     scored, eligible, available, mismatches = con.execute(
         f"""
         SELECT
@@ -228,12 +228,15 @@ def _validate_support(
     if int(available) > int(eligible):
         raise ValueError("frontier available chosen quotes exceed eligible routes")
     reproduction = 0.0 if available <= 0 else 1.0 - mismatches / available
+    verified_coverage = chosen_quote_coverage_share(
+        int(eligible), int(available) - int(mismatches)
+    )
     if reproduction < MIN_CHOSEN_REPRODUCTION:
         raise ValueError(
             f"chosen-route reproduction {reproduction:.3%} is below "
             f"{MIN_CHOSEN_REPRODUCTION:.0%}"
         )
-    return float(reproduction), coverage
+    return float(reproduction), coverage, verified_coverage
 
 
 def _margin_aggregates() -> str:
@@ -460,7 +463,9 @@ def build_panels(
         temp_dir.mkdir(parents=True, exist_ok=True)
         con.execute(f"SET temp_directory='{_quoted(temp_dir)}'")
         source_rows = _validate_source(con, source)
-        reproduction, coverage = _validate_support(con, support, source_rows)
+        reproduction, coverage, verified_coverage = _validate_support(
+            con, support, source_rows
+        )
         cell_rows = _write_cell_day(
             con,
             source,
@@ -483,6 +488,7 @@ def build_panels(
         "source_rows": source_rows,
         "chosen_reproduction": reproduction,
         "chosen_state_coverage": coverage,
+        "chosen_verified_coverage": verified_coverage,
         "cell_rows": cell_rows,
         "transition_rows": transition_rows,
         "horizon_rows": horizon_rows,
@@ -536,7 +542,8 @@ def main() -> int:
     print(
         f"validated {int(results['source_rows']):,} route rows at "
         f"{float(results['chosen_reproduction']):.3%} chosen-route reproduction and "
-        f"{float(results['chosen_state_coverage']):.3%} chosen-state coverage"
+        f"{float(results['chosen_state_coverage']):.3%} chosen-state coverage; "
+        f"{float(results['chosen_verified_coverage']):.3%} verified coverage"
     )
     print(
         f"wrote {int(results['cell_rows']):,} cell-days, "

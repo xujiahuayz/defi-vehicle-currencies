@@ -141,7 +141,7 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         )
         self.assertEqual(
             validate_audit_support(support, ["20250115", "20250215"]),
-            (0.995, 1.0),
+            (0.995, 1.0, 0.995),
         )
         with self.assertRaisesRegex(ValueError, "calendar does not match"):
             validate_audit_support(support, ["20250115", "20250315"])

@@ -85,6 +85,7 @@ class RoutingMaturationPanelTests(unittest.TestCase):
             )
             self.assertEqual(results["source_rows"], 8)
             self.assertEqual(results["chosen_state_coverage"], 1.0)
+            self.assertEqual(results["chosen_verified_coverage"], 1.0)
             panel = pd.read_parquet(cell)
             self.assertEqual(set(panel["observed_reach"]), {"uniswap_v3"})
             self.assertEqual(set(panel["notional_bin"]), {"b2_1k_10k"})

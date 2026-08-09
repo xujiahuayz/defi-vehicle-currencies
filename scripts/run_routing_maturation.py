@@ -24,7 +24,7 @@ from ddvc.analysis.routing_maturation import (
     estimate_maturation,
     estimate_transition,
     dynamics_support_geometry,
-    frontier_state_support_geometry,
+    frontier_verified_support_geometry,
     support_geometry,
     transition_support_geometry,
 )
@@ -67,9 +67,10 @@ def main() -> int:
             "day",
             "within_20pct_chosen_quote_eligible_routes",
             "within_20pct_chosen_quote_available",
+            "within_20pct_chosen_output_mismatch",
         ],
     )
-    state_support = frontier_state_support_geometry(frontier_support)
+    verified_support = frontier_verified_support_geometry(frontier_support)
     del frontier_support
     gc.collect()
     cell_support = pd.read_parquet(
@@ -92,7 +93,7 @@ def main() -> int:
     gc.collect()
     horizons = pd.read_parquet(EXACT_HORIZONS, columns=list(DYNAMIC_COLUMNS))
     horizon_support = dynamics_support_geometry(horizons)
-    results = [state_support, maturation_support, transition_support, horizon_support]
+    results = [verified_support, maturation_support, transition_support, horizon_support]
     review_required = support_review_required(results)
     if review_required:
         del horizons
