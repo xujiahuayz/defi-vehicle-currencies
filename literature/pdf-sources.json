@@ -283,15 +283,17 @@
     },
     "GarleanuPedersenPoteshman2009DemandBased": {
       "checks": {
-        "article": "literature/text/2009-GarleanuPedersenPoteshman2009DemandBased-demand-based-option-pricing.txt",
-        "author_or_repository": "https://archive.nyu.edu/bitstream/2451/26791/2/S-DRP-06-01.pdf",
-        "publisher_or_doi": "https://doi.org/10.1093/rfs/hhp005"
+        "article": "literature/text/2009-GarleanuPedersenPoteshman2009DemandBased-published-demand-based-option-pricing.txt",
+        "author_or_repository": "https://www.lhpedersen.com/research",
+        "publisher_or_doi": "https://academic.oup.com/rfs/article/22/10/4259/1590158"
       },
       "companions": [
         "GarleanuPedersenPoteshman2009DemandBasedAppendix"
       ],
       "main": "GarleanuPedersenPoteshman2009DemandBased",
-      "status": "incomplete"
+      "non_text_companions": [],
+      "non_text_dispositions": [],
+      "status": "complete"
     },
     "GopinathEtAl2020DCP": {
       "checks": {
@@ -1040,9 +1042,9 @@
     "GarleanuPedersenPoteshman2009DemandBased": [
       {
         "access": "public",
-        "label": "Lasse Heje Pedersen PDF",
+        "label": "Lasse Heje Pedersen final typeset production PDF",
         "url": "https://docs.lhpedersen.com/DBOP.pdf",
-        "version": "accepted"
+        "version": "published"
       },
       {
         "access": "authenticated",
@@ -1051,14 +1053,15 @@
         "version": "published"
       }
     ],
-    "GarleanuPedersenPoteshman2009DemandBasedAppendix": [
+    "GarleanuPedersenPoteshman2006DemandBasedPredecessor": [
       {
         "access": "public",
-        "label": "NYU institutional predecessor containing the three omitted proofs; final-version appendix unresolved",
+        "label": "NYU Faculty Digital Archive working paper S-DRP-06-01",
         "url": "https://archive.nyu.edu/bitstream/2451/26791/2/S-DRP-06-01.pdf",
-        "version": "supplement"
+        "version": "working-paper"
       }
     ],
+    "GarleanuPedersenPoteshman2009DemandBasedAppendix": [],
     "GlostenMilgrom1985BidAsk": [
       {
         "access": "public",

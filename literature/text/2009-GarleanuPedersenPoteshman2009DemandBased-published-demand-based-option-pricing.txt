@@ -41,8 +41,6 @@ garleanu@haas.berkeley.edu.
 C⃝ The Author 2009. Published by Oxford University Press on behalf of The Society for Financial Studies.
 All rights reserved. For Permissions, please e-mail: journals.permissions@oxfordjournals.org.
 doi:10.1093/rfs/hhp005 Advance Access publication February 25, 2009
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 2 =====
 
@@ -92,8 +90,6 @@ depending on the demand. Similarly, demand pressure increases the price of any
 1 Options may also be impossible to replicate due to asymmetric information (Back 1993; Easley, O’Hara, and
 Srinivas 1998).
 4260
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 3 =====
 
@@ -144,8 +140,6 @@ tives, Dresdner Kleinwort Benson, states that option-implied volatility skew “
 demand factors.”
 5 Premiums for stochastic volatility or jump risk, as well as premiums for other risk factors, in all likelihood are
 also contributing to option expensiveness. 4261
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 4 =====
 
@@ -195,8 +189,6 @@ changes in implied volatility are correlated with signed option volume. These
 6 In contrast to these papers, Benzoni, Collin-Dufresne, and Goldstein (2005) ﬁnd that option prices can be
 rationalized by certain preferences combined with persistent long-run jump risk.
 4262
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 5 =====
 
@@ -248,8 +240,6 @@ volume dissipates by day t + 1.
 8 All random variables are deﬁned on a probability space ( /Omega1,F, Pr ), with an associated ﬁltration {Ft : t ≥ 0} of
 sub-σ-algebras representing the resolution over time of information commonly available to agents.
 4263
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 6 =====
 
@@ -303,8 +293,6 @@ demand pressure d coming from end-users. All that matters is that end-users
 have demand curves that result in dealers choosing to hold, at the market prices,
 a position of q =− d that we observe in the data.
 4264
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 7 =====
 
@@ -370,8 +358,6 @@ optimal. The following proposition ensures that this inversion is possible.
 Proposition 1. Given any demand pressure process d for end-users, there
 exists a unique equilibrium price process p.
 4265
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 8 =====
 
@@ -434,8 +420,6 @@ time hedging, jumps in the underlying asset price, and stochastic-volatility
 risk (Section 2.2). Section 2.3 studies the price effect with an endogenous
 number of dealers, which gives rise to testable implications relevant for our
 4266
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 9 =====
 
@@ -524,8 +508,6 @@ In equilibrium, dealers take the other side of the trade, buying qi
 t =− di
 t > 0
 4267
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 10 =====
 
@@ -629,8 +611,6 @@ t (pi
 t+1, p j
 t+1| St+1) ≥ 0.
 4268
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 11 =====
 
@@ -696,8 +676,6 @@ trading period. Then there exists a value ¯K such that, for all K ′≤ ¯K an
 such that p (p, K′, 0) = p(c, K′′, 0), it holds that p (p, K′, d) > p(c, K′′, d).
 That is, the price of the OTM put p (p, K′, · ) is more affected by the demand
 4269
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 12 =====
 
@@ -774,8 +752,6 @@ f i
 SS = ∂2
 ∂ S2 f i (t, Xt ), /Delta1S = St+1 − St , and so on.
 4270
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 13 =====
 
@@ -869,8 +845,6 @@ deﬁnes the Black-Scholes implied volatility as the volatility that, when fed i
 the model price equal to the option price, and the Black-Scholes vega as the partial derivative measuring the
 change in the option price when the volatility fed into the Black-Scholes model changes.
 4271
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 14 =====
 
@@ -948,8 +922,6 @@ means that demand can affect the slope of the implied-volatility curve to the
 11 Of course, the jump risk also generates smiles without demand-pressure effects; the result is that demand can
 exacerbate these.
 4272
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 15 =====
 
@@ -1022,8 +994,6 @@ the state variables. While such generalizations would add realism, we want
 to test the effect of the demand in the presence of the most basic sources of
 unhedgeable risk considered here.
 4273
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 16 =====
 
@@ -1074,8 +1044,6 @@ demand effect.
 Part 1(c) gives the surprising result that the overall level of demand does not
 affect option prices when all dealers have the same risk aversion because of
 4274
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 17 =====
 
@@ -1175,8 +1143,6 @@ effect is positive regardless of the sign of the price correlation. The intuitio
 for this surprising result is that the option dealer is hedged and, therefore, has
 proﬁts or losses depending on the magnitude of the price changes, not their
 4275
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 18 =====
 
@@ -1228,8 +1194,6 @@ positions are more correlated with market-maker positions (the time-series
 correlation is 0.44). Consistent with this fact, our results are indeed stronger
 when we reclassify proprietary traders as market-makers (i.e., assume that
 4276
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 19 =====
 
@@ -1277,8 +1241,6 @@ the volatility from the Bates (2006) model, we account for the direct effects of
 jumps, stochastic volatility, and the risk premium implied by the equity market.
 12 We are grateful to David Bates for providing this measure.
 4277
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 20 =====
 
@@ -1331,8 +1293,6 @@ could include in our test only the day that is precisely one month before expira
 results.
 15 The model-implied skew is evaluated for one-month options with moneyness of, respectively, 0.94 and 1. We
 thank Mikhail Chernov for providing this time series.4278
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 21 =====
 
@@ -1381,8 +1341,6 @@ moneyness and maturity. For instance, the moneyness range 0.95–1 consists
 of put options that are up to 5% in-the-money and call options that are up to
 5% OTM. Panel A indicates that 39% of the net demand comes from contracts
 4279
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 22 =====
 
@@ -1412,8 +1370,6 @@ All 70 −168 −244 −320 −426 −400 −331 −899 −2717
 Average non-market-maker net demand for put and call option contracts for SPX and individual equity options by moneyness and maturity, 1996–2001. Eq uity-option demand is per
 underlying stock.
 4280
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 23 =====
 
@@ -1465,8 +1421,6 @@ demand from non-market-maker for SPX options in the moneyness categories,
 where the top part of the leftmost (rightmost) bar shows the net demand for all
 options with moneyness less than 0.8 (greater than 1.2).
 4281
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 24 =====
 
@@ -1518,8 +1472,6 @@ when using a version of the model with jump risk. It is helpful to link these
 demands more directly to the predictions of our theory. Our model shows that
 every option contract demanded leads to an increase in its price—in dollar
 4282
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 25 =====
 
@@ -1573,8 +1525,6 @@ ward sloping but only varies by about 5% across the moneyness categories.
 concentrate on expensiveness expressed in terms of implied volatility. This can be thought of as a normalization
 that eliminates the need for explicit controls for the price level of the underlying asset.
 4283
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 26 =====
 
@@ -1587,7 +1537,7 @@ The Review of Financial Studies / v 22 n 10 2009
 50
 100
 150P/L ($1,000,000s)
-Daily Market Maker Profit/Loss 
+Daily Market Maker Profit/Loss
 01/04/96 12/18/97 12/08/99 12/31/01
 −200
 0
@@ -1596,7 +1546,7 @@ Daily Market Maker Profit/Loss
 600
 800
 1000
-Cumulative Market Maker Profit/Loss 
+Cumulative Market Maker Profit/Loss
 P/L ($1,000,000s)
 Date
 Figure 4
@@ -1626,8 +1576,6 @@ stantial risk and are compensated on average for the risk that they take. Furthe
 17 This number does not take into account the costs of market-making or the proﬁts from the bid-ask spread on
 round-trip trades. A substantial part of market-makers’ proﬁt may come from the latter.
 4284
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 27 =====
 
@@ -1676,8 +1624,6 @@ measures of the demand. The Sharpe ratios are, as expected, positive and in-
 creasing in the number of stocks in which a market-maker deals options. This
 provides further evidence that market-makers are compensated for providing
 4285
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 28 =====
 
@@ -1725,8 +1671,6 @@ signiﬁcant over the ﬁrst subsample, and positive and statistically signiﬁc
 18 We repeated the analysis with the sample periods lengthened or shortened by two or four months. This does not
 change our results qualitatively.
 4286
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 29 =====
 
@@ -1779,8 +1723,6 @@ options. Of course, this demand also contributes to the excess implied volatilit
 give greater weight to near-the-money options. If we just count contracts using a more narrow band of moneyness,
 then the NetDemand variable also becomes signiﬁcant.
 4287
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 30 =====
 
@@ -1829,8 +1771,6 @@ series regression with the recent P&L on the right-hand side interacted with
 1997.
 21 Similar results obtain if the breaking point is the mean or median daily proﬁt.
 4288
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 31 =====
 
@@ -1882,8 +1822,6 @@ results in a change in the dependent variable of 0.53 standard deviations.
 Further, Figure 7 illustrates graphically the demand effect on the volatility
 skew. (As discussed above, we divide the sample into two subsamples because
 4289
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 32 =====
 
@@ -1930,8 +1868,6 @@ model-implied effect of demand on the implied-volatility skew has a positive
 coefﬁcient in all speciﬁcations in conﬁrmation of the model. Interestingly,
 the interaction of market-maker proﬁts with the demand effect has a negative
 4290
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 33 =====
 
@@ -1983,8 +1919,6 @@ volatility, past return, and option volume. In addition, the coefﬁcient on the
 atheoretical demand-skew measure based on aggregating the raw demands for low strikes, minus those with
 strikes close to 1. (This regression is not reported for brevity.)
 4291
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 34 =====
 
@@ -2033,8 +1967,6 @@ tion of option prices. For example, index and equity option prices display very
 23 When interpreting the t-statistics for the second subperiod, it should be borne in mind that it consists of only 27
 monthly cross-sectional regressions.
 4292
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 35 =====
 
@@ -2088,8 +2020,6 @@ J (Wt+1; t + 1, Xt+1)
 ]}
 . (A1)
 4293
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 36 =====
 
@@ -2198,8 +2128,6 @@ t+1 is a
 function of (dt , Xt , dt+1, Xt+1, yt+1, Re
 t+1, t).
 4294
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 37 =====
 
@@ -2373,8 +2301,6 @@ pt = Et
 ]
 , (A16)
 4295
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 38 =====
 
@@ -2484,8 +2410,6 @@ Proof of Proposition 5. Fix a demand process ¯d and write G as G(γ′, ϵ¯d, 
 seen that G(γ′,ϵ¯d, γ, X ) = G(γ′, ¯d, ϵγ, X ). It is equally clear that, for a given distribution of asset
 prices, the vector γ′(q(γ′),θ(γ′)) is independent of the value of γ′. This readily implies that, if the
 4296
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 39 =====
 
@@ -2611,8 +2535,6 @@ where from being able to invest in the underlying, but having no access to optio
 same as G′when demand is identically zero.) Using the results above, the entry condition becomes
 G(1, ¯d, ϵγ, X ) − ¯G′(1) ≥ γ′M. (A28)
 4297
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 40 =====
 
@@ -2662,8 +2584,6 @@ Markets. The Journal of Political Economy 108:79–119.
 Constantinides, G. M., J. C. Jackwerth, and S. Perrakis. 2009. Mispricing of S&P 500 Index Options. Review of
 Financial Studies 22:1247–277.
 4298
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026
-
 
 ===== PAGE 41 =====
 
@@ -2712,4 +2632,3 @@ Stein, J. 1989. Overreactions in the Options Market. Journal of Finance 44:1011�
 Wurgler, J., and E. V . Zhuravskaya. 2002. Does Arbitrage Flatten Demand Curves for Stocks?Journal of Business
 75:583–608.
 4299
-Downloaded from https://academic.oup.com/rfs/article/22/10/4259/1590158 by Catherine Sharp user on 07 July 2026

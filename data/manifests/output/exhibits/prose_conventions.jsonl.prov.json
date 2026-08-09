@@ -6,29 +6,28 @@
   "scripts/measure_prose_conventions.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T02:14:19+00:00",
+ "created_at": "2026-08-09T02:22:46+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "3d414a669e992741230bb446bbfba68bf29377de",
+  "commit": "b033d722c73397a32fe48a4cfb74ca1097b657a6",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
    "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
-   "deck/sections/05-close.tex",
    "docs/literature-audit.md",
-   "docs/research-questions-and-empirical-design.md",
-   "literature/source-notes/2020-GopinathEtAl2020DCPReplicationPackage.md",
+   "literature/pdf-sources.json",
+   "literature/text/2006-GarleanuPedersenPoteshman2009DemandBasedAppendix-supplement-proofs-omitted-from-demand-based-option-pricing.txt -> literature/text/2006-GarleanuPedersenPoteshman2006DemandBasedPredecessor-working-paper-demand-based-option-pricing.txt",
+   "literature/text/2009-GarleanuPedersenPoteshman2009DemandBased-demand-based-option-pricing.txt",
+   "literature/text/_index.jsonl",
    "literature/vehicle-currencies.bib",
-   "paper/sections/01-introduction.tex",
-   "paper/sections/02-setting.tex",
-   "paper/sections/03-dominance.tex",
-   "paper/sections/05-rivals.tex",
-   "paper/sections/06-executability.tex",
-   "paper/sections/07-conclusion.tex"
+   "paper/sections/01-introduction.tex"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "literature/source-notes/2009-GarleanuPedersenPoteshman2009DemandBasedAppendix.md",
+   "literature/text/2009-GarleanuPedersenPoteshman2009DemandBased-published-demand-based-option-pricing.txt"
+  ]
  },
  "inputs": [],
  "libraries": {
