@@ -20,6 +20,7 @@ from ddvc.analysis.transaction_frontier import (
     MIN_CHOSEN_REPRODUCTION,
     chosen_reproduction_share,
 )
+from ddvc.analysis.dynamics import CANONICAL_RESPONSE_HORIZONS
 from ddvc.calendar import RESEARCH_SAMPLE_END, RESEARCH_SAMPLE_START, calendar_days
 from ddvc.fetch.sources import DEX_SOURCES, get_source
 from ddvc.liquidity import (
@@ -1809,14 +1810,45 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
     ]
     global_rules = payload.get("global_rules") or {}
     required_semantic_rules = {
+        "audit_sampling",
         "vehicle_status",
         "vehicle_dominance",
         "cost_domination",
         "abstract_question",
+        "dynamic_horizons",
     }
     missing_semantic_rules = sorted(
         key for key in required_semantic_rules if not str(global_rules.get(key) or "").strip()
     )
+    dynamic_rule = str(global_rules.get("dynamic_horizons") or "").lower()
+    dynamic_numbers = tuple(
+        int(value) for value in re.findall(r"\b\d+\b", dynamic_rule)
+    )
+    dynamic_rule_valid = bool(
+        dynamic_numbers == CANONICAL_RESPONSE_HORIZONS
+        and "exact calendar" in dynamic_rule
+        and "row shifts are not substitutes" in dynamic_rule
+    )
+    sampling_rule = str(global_rules.get("audit_sampling") or "").lower()
+    sampling_rule_valid = bool(
+        "validation" in sampling_rule
+        and "not define a monthly estimand" in sampling_rule
+    )
+    invalid_horizon_claims: list[str] = []
+    for claim in claims:
+        if not isinstance(claim, dict):
+            continue
+        claim_id = str(claim.get("id") or "missing")
+        if "response_horizon_days" in claim and tuple(claim["response_horizon_days"]) != CANONICAL_RESPONSE_HORIZONS:
+            invalid_horizon_claims.append(claim_id)
+        alternatives = claim.get("mandatory_alternatives")
+        if (
+            isinstance(alternatives, dict)
+            and "response_horizon_days" in alternatives
+            and tuple(alternatives["response_horizon_days"]) != CANONICAL_RESPONSE_HORIZONS
+        ):
+            invalid_horizon_claims.append(claim_id)
+    invalid_horizon_claims = sorted(set(invalid_horizon_claims))
     passed = bool(
         payload.get("schema_version") == 1
         and declared_hash == actual_hash
@@ -1825,12 +1857,18 @@ def validate_specification_lock(payload: dict) -> tuple[bool, str]:
         and len(locked_claims) >= 3
         and not incomplete
         and not missing_semantic_rules
+        and dynamic_rule_valid
+        and sampling_rule_valid
+        and not invalid_horizon_claims
     )
     detail = (
         f"hash={'ok' if declared_hash == actual_hash else 'mismatch'}; "
         f"claims={len(claims)}; locked={len(locked_claims)}; "
         f"incomplete={incomplete or 'none'}; "
-        f"missing_semantic_rules={missing_semantic_rules or 'none'}"
+        f"missing_semantic_rules={missing_semantic_rules or 'none'}; "
+        f"dynamic_rule={'ok' if dynamic_rule_valid else 'invalid'}; "
+        f"audit_sampling={'ok' if sampling_rule_valid else 'invalid'}; "
+        f"invalid_horizons={invalid_horizon_claims or 'none'}"
     )
     return passed, detail
 
