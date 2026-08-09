@@ -88,6 +88,19 @@ class RpcPostTests(unittest.TestCase):
                 retry_json_errors=True,
             )
 
+    def test_transport_exhaustion_is_a_retryable_queue_error(self) -> None:
+        with (
+            patch.object(quoter, "rpc_urls", return_value=["https://first"]),
+            patch.object(quoter.urllib.request, "urlopen", side_effect=TimeoutError("slow")),
+            patch.object(quoter.time, "sleep"),
+            self.assertRaises(quoter.Throttled),
+        ):
+            quoter.rpc_post(
+                {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": []},
+                retries=1,
+                retry_json_errors=True,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -33,7 +33,6 @@ V3_GRAPH_ROOT = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
 STATIC_PATH = V3_GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
 END_META_PATH = V3_GRAPH_ROOT / "uniswap_v3_meta_20260630.json"
 DEFAULT_CHUNK_SIZE = 1_000
-MAX_THROTTLE_RETRIES = 8
 MAX_JOB_ATTEMPTS = 12
 
 
@@ -82,19 +81,12 @@ def fetch_chunk(
             "topics": [[EVENT_TOPICS[name] for name in sorted(EVENT_TOPICS)]],
         }],
     }
-    for attempt in range(MAX_THROTTLE_RETRIES + 1):
-        try:
-            response = rpc_post(
-                payload,
-                timeout=90,
-                retries=3,
-                retry_json_errors=True,
-            )
-            break
-        except Throttled:
-            if attempt == MAX_THROTTLE_RETRIES:
-                raise
-            time.sleep(min(2 ** attempt, 30))
+    response = rpc_post(
+        payload,
+        timeout=30,
+        retries=1,
+        retry_json_errors=True,
+    )
     logs = response.get("result") if isinstance(response, dict) else None
     if not isinstance(logs, list):
         raise RuntimeError(f"V3 inventory log response lacks a result list: {lower}-{upper}")

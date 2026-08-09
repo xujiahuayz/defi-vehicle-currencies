@@ -109,7 +109,7 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
             raise RuntimeError("no enabled Ethereum RPC endpoint remains")
         start = _rpc_idx % len(urls)
     ordered = urls[start:] + urls[:start]
-    throttled = False
+    transient_failure = False
     last: Exception | None = None
     for url in ordered:
         for _ in range(retries):
@@ -145,17 +145,18 @@ def rpc_post(payload: dict | list[dict], *, timeout: int = 60,
             except urllib.error.HTTPError as exc:
                 last = exc
                 if exc.code in _RETRYABLE_HTTP_CODES:
-                    throttled = True
+                    transient_failure = True
                     time.sleep(max(sleep, 1.0))
                     continue
                 if exc.code == 403:
-                    throttled = True
+                    transient_failure = True
                     break
                 break
             except Exception as exc:  # transport failures are retryable
                 last = exc
+                transient_failure = True
                 time.sleep(max(sleep, 0.5))
-    if throttled:
+    if transient_failure:
         raise Throttled(str(last))
     raise RuntimeError(f"all RPC endpoints failed: {last}")
 
