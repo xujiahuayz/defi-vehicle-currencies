@@ -9,6 +9,7 @@ import pandas as pd
 from ddvc.asset_types import TYPES
 from scripts import refresh_panel_dependents as refresher
 from scripts.audit_findings_freeze import (
+    card_source_evidence_text,
     cited_bibliography_keys,
     companion_sources_closed,
     companion_source_keys,
@@ -41,6 +42,23 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_primary_technical_card_may_resolve_to_a_source_note(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            note = root / "literature" / "source-notes" / "2021-Protocol.md"
+            note.parent.mkdir(parents=True)
+            note.write_text("Versioned protocol code and archive identity checked.")
+            with patch("scripts.audit_findings_freeze.ROOT", root):
+                self.assertEqual(
+                    card_source_evidence_text(
+                        {"source": "literature/source-notes/2021-Protocol.md"}
+                    ),
+                    "Versioned protocol code and archive identity checked.",
+                )
+
     def test_source_admission_requires_complete_decision_for_every_source(self) -> None:
         record = {
             "key": "Technical",

@@ -80,6 +80,31 @@ class LiteratureBrowserHelperTests(unittest.TestCase):
             True,
         )
 
+    def test_source_identity_requires_complete_bibliography_byline(self) -> None:
+        entry = Entry(
+            key="Protocol",
+            kind="techreport",
+            fields={
+                "title": "A Concentrated Liquidity Protocol",
+                "author": "Alice Adams and Bob Brown and Carol Chen",
+            },
+        )
+        title = "A Concentrated Liquidity Protocol"
+        self.assertFalse(
+            source_identity_verdict(
+                entry,
+                f"{title}\nAlice Adams",
+                byline_text="Alice Adams",
+            )[0]
+        )
+        self.assertTrue(
+            source_identity_verdict(
+                entry,
+                f"{title}\nAlice Adams, Bob Brown, and Carol Chen",
+                byline_text="Alice Adams, Bob Brown, and Carol Chen",
+            )[0]
+        )
+
     def test_partition_existing_quarantines_identity_mismatch(self) -> None:
         entry = Entry("Paper", "article", {"title": "Market Liquidity", "author": "Ada Smith"})
         with tempfile.TemporaryDirectory() as directory:

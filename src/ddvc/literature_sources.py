@@ -223,9 +223,15 @@ def _author_surnames(author_field: str) -> set[str]:
     return surnames
 
 
-def source_identity_verdict(entry: Entry, extracted_text: str) -> tuple[bool, str]:
-    """Require title overlap and an author surname before accepting a PDF."""
+def source_identity_verdict(
+    entry: Entry,
+    extracted_text: str,
+    *,
+    byline_text: str | None = None,
+) -> tuple[bool, str]:
+    """Require title overlap and every bibliography surname in the byline window."""
     observed = set(_identity_words(extracted_text))
+    byline_observed = set(_identity_words(byline_text if byline_text is not None else extracted_text))
     title_words = {
         word
         for word in _identity_words(entry.fields.get("title", entry.key))
@@ -234,29 +240,34 @@ def source_identity_verdict(entry: Entry, extracted_text: str) -> tuple[bool, st
     author_surnames = _author_surnames(entry.fields.get("author", ""))
     title_hits = len(title_words & observed)
     title_required = max(1, (len(title_words) + 1) // 2)
-    author_hits = author_surnames & observed
-    passed = bool(title_hits >= title_required or (title_hits and author_hits))
+    author_hits = author_surnames & byline_observed
+    missing_authors = author_surnames - author_hits
+    passed = bool(
+        title_hits >= title_required
+        and author_surnames
+        and not missing_authors
+    )
     return passed, (
         f"title={title_hits}/{len(title_words)} (required={title_required}); "
-        f"author={','.join(sorted(author_hits)) or 'none'}"
+        f"author={len(author_hits)}/{len(author_surnames)}"
+        f" (missing={','.join(sorted(missing_authors)) or 'none'})"
     )
 
 
 def pdf_identity_verdict(data: bytes, entry: Entry, *, page_limit: int = 5) -> tuple[bool, str]:
-    """Extract a bounded PDF header and verify it against bibliography identity."""
+    """Verify title and complete bibliography byline within a bounded PDF header."""
     if not is_pdf(data):
         return False, "not-pdf"
     try:
         from pypdf import PdfReader
 
         reader = PdfReader(io.BytesIO(data))
-        extracted = "\n".join(
-            (page.extract_text() or "")
-            for page in reader.pages[:page_limit]
-        )
+        pages = [(page.extract_text() or "") for page in reader.pages[:page_limit]]
+        extracted = "\n".join(pages)
+        byline = "\n".join(pages[:2])
     except Exception as exc:  # invalid or image-only sources need a manual verified route
         return False, f"identity-extraction-{type(exc).__name__}"
-    return source_identity_verdict(entry, extracted)
+    return source_identity_verdict(entry, extracted, byline_text=byline)
 
 
 def partition_existing_by_identity(

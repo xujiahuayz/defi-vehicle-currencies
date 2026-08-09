@@ -256,13 +256,16 @@ def literature_source_sets() -> dict[str, dict]:
     }
 
 
-def card_source_text(fields: dict[str, str]) -> str | None:
-    """Resolve a card's saved PDF to its tracked page-delimited extract."""
+def card_source_evidence_text(fields: dict[str, str]) -> str | None:
+    """Resolve a card's PDF extract or primary-technical source note."""
     source = fields.get("source", "").strip()
-    if not source.startswith("literature/papers/") or not source.endswith(".pdf"):
-        return None
-    path = LITERATURE_TEXT / f"{Path(source).stem}.txt"
-    return path.read_text(errors="replace") if path.exists() else None
+    if source.startswith("literature/papers/") and source.endswith(".pdf"):
+        path = LITERATURE_TEXT / f"{Path(source).stem}.txt"
+        return path.read_text(errors="replace") if path.exists() else None
+    if source.startswith("literature/source-notes/") and source.endswith(".md"):
+        path = ROOT / source
+        return path.read_text(errors="replace") if path.is_file() else None
+    return None
 
 
 def companion_sources_closed(
@@ -456,7 +459,7 @@ def validate_literature_audit(
         and companion_sources_closed(
             cards[key],
             materialized=materialized,
-            source_text=card_source_text(cards[key]) if verify_source_sets else None,
+            source_text=card_source_evidence_text(cards[key]) if verify_source_sets else None,
             source_set=(
                 source_sets.get(literature_source_key(cards[key]))
                 if verify_source_sets
