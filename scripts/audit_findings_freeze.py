@@ -76,6 +76,7 @@ LITERATURE_SOURCE_NOTES = ROOT / "literature" / "source-notes"
 MARKET_STATE_QUALITY = ROOT / "data" / "processed" / "market_state_quality.parquet"
 V3_INVENTORY_CALENDAR = ROOT / "data" / "processed" / "v3_inventory_day_calendar.parquet"
 V3_INVENTORY_DAY_CUTS = ROOT / "data" / "raw" / "ethereum" / "uniswap_v3_inventory_day_cuts"
+CEX_REFERENCE_SUPPORT = ROOT / "data" / "processed" / "cex_reference_support.parquet"
 CANONICAL_EMPIRICAL_CONSUMERS = (
     "scripts/build_transaction_state_frontier.py",
     "scripts/build_counterfactual_dominance.py",
@@ -1310,6 +1311,67 @@ def token_price_artifact_checks() -> list[tuple[str, bool, str]]:
     return results
 
 
+def cex_reference_support_checks(
+    path: Path = CEX_REFERENCE_SUPPORT,
+    *,
+    expected_rows: int = 43,
+    expected_sample_rows: int = 4_113,
+) -> list[tuple[str, bool, str]]:
+    """Audit the positive-only, exact-address external-price support perimeter."""
+
+    if not path.is_file():
+        return [("node D CEX positive-support registry", False, "missing canonical panel")]
+    required = {
+        "token_address", "token_symbol", "dex_pool", "binance_symbol",
+        "binance_base_asset", "binance_quote_asset", "source_dex_creation_at",
+        "binance_sample_first_at", "binance_sample_last_at", "binance_sample_rows",
+        "support_definition", "source_publication",
+    }
+    columns = set(pq.ParquetFile(path).schema_arrow.names)
+    missing = sorted(required - columns)
+    results = [
+        (
+            "node D CEX positive-support provenance and schema",
+            verify(path).get("status") == "ok" and not missing,
+            f"provenance={verify(path).get('status')}; missing_columns={missing or 'none'}",
+        )
+    ]
+    if missing:
+        return results
+    frame = pd.read_parquet(path)
+    address_ok = frame["token_address"].astype(str).str.fullmatch(r"0x[0-9a-f]{40}")
+    semantics_ok = frame["support_definition"].eq(
+        "positive_observed_uniswap_binance_reference_support"
+    )
+    first = pd.to_datetime(frame["binance_sample_first_at"], errors="coerce")
+    last = pd.to_datetime(frame["binance_sample_last_at"], errors="coerce")
+    sample_rows = pd.to_numeric(frame["binance_sample_rows"], errors="coerce")
+    passed = bool(
+        len(frame) == expected_rows
+        and frame["token_address"].nunique() == expected_rows
+        and frame["binance_symbol"].nunique() == expected_rows
+        and frame["dex_pool"].nunique() == expected_rows
+        and address_ok.all()
+        and semantics_ok.all()
+        and first.notna().all()
+        and last.notna().all()
+        and first.le(last).all()
+        and sample_rows.gt(0).all()
+        and int(sample_rows.sum()) == expected_sample_rows
+        and not frame["binance_symbol"].isin({"BONDETH", "PROSETH"}).any()
+    )
+    results.append(
+        (
+            "node D CEX positive-support identity and bounds",
+            passed,
+            f"rows={len(frame):,}/{expected_rows:,}; addresses={frame['token_address'].nunique():,}; "
+            f"pairs={frame['binance_symbol'].nunique():,}; sample_rows={int(sample_rows.sum()):,}/"
+            f"{expected_sample_rows:,}; range={first.min()}..{last.max()}",
+        )
+    )
+    return results
+
+
 def rent_incidence_artifact_checks(
     rent_path: Path = RENT_V2_PANEL,
     capital_path: Path = POOL_CAPITAL_PANEL,
@@ -2297,6 +2359,8 @@ def main() -> int:
     for name, passed, detail in capital_artifact_checks():
         record(name, passed, detail)
     for name, passed, detail in token_price_artifact_checks():
+        record(name, passed, detail)
+    for name, passed, detail in cex_reference_support_checks():
         record(name, passed, detail)
     for name, passed, detail in lp_liquidity_flow_artifact_checks():
         record(name, passed, detail)

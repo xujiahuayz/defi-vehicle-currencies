@@ -679,6 +679,11 @@ class VariableRegistryTests(unittest.TestCase):
                 self.assertTrue(spec.formula.startswith("$"), spec.column)
                 self.assertNotEqual(spec.notation, spec.formula, spec.column)
 
+    def test_dynamic_registry_uses_only_exact_canonical_horizons(self) -> None:
+        registry = Path("src/ddvc/variable_registry.py").read_text(encoding="utf-8")
+        self.assertIn(r"$\tau\in\{1,7,30,120\}$ by exact calendar date", registry)
+        self.assertNotIn(r"$\tau\in\{1,14,30\}$", registry)
+
     def test_variable_notation_renderer_uses_automatic_column_widths(self) -> None:
         root = Path(__file__).resolve().parents[1]
         text = (root / "scripts" / "tabulate" / "render_variable_notation.py").read_text(
@@ -694,6 +699,7 @@ class VariableRegistryTests(unittest.TestCase):
         scripts = [
             root / "scripts" / "process" / "build_observations_table.py",
             root / "scripts" / "process" / "build_raw_data_inventory.py",
+            root / "scripts" / "process" / "build_cex_reference_support.py",
             root / "scripts" / "tabulate" / "render_data_coverage.py",
             root / "scripts" / "tabulate" / "render_sample_coverage.py",
             root / "scripts" / "tabulate" / "render_variable_notation.py",
@@ -757,11 +763,13 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertEqual(_latex_escape(">0.025"), r"\ensuremath{>}0.025")
 
     def test_source_does_not_generate_csv_artifacts(self) -> None:
-        """No CSV anywhere in the pipeline. `scripts/verify/` is not the pipeline.
+        """No generated CSV anywhere in the pipeline. `scripts/verify/` is not the pipeline.
 
         The exemption is narrow and is justified by what those files are: independent
         verifiers that shell out to a reference implementation, export a transient
-        sample, parse the estimate back and delete the transient. Nothing under
+        sample, parse the estimate back and delete the transient. The CEX-reference
+        adapter has a second narrow exemption for reading the immutable CSV members of
+        a published replication archive; it writes only Parquet. Nothing under
         `output/` depends on one of them having run, so a tab-separated handoff to
         `Rscript` produces no artifact this rule exists to prevent. Everything else
         under `scripts/` and `src/` stays under the absolute ban.
@@ -769,6 +777,9 @@ class VariableRegistryTests(unittest.TestCase):
 
         root = Path(__file__).resolve().parents[1]
         exempt = root / "scripts" / "verify"
+        read_only_csv_adapters = {
+            root / "src" / "ddvc" / "analysis" / "cex_reference.py",
+        }
         for base in [root / "scripts", root / "src"]:
             for path in base.rglob("*.py"):
                 if exempt in path.parents:
@@ -776,8 +787,9 @@ class VariableRegistryTests(unittest.TestCase):
                 text = path.read_text(encoding="utf-8")
                 msg = str(path.relative_to(root))
                 self.assertNotIn(".to_csv(", text, msg)
-                self.assertNotIn(".read_csv(", text, msg)
-                self.assertNotIn(".csv", text, msg)
+                if path not in read_only_csv_adapters:
+                    self.assertNotIn(".read_csv(", text, msg)
+                    self.assertNotIn(".csv", text, msg)
 
     def test_paper_table_writer_does_not_emit_data_sidecars(self) -> None:
         root = Path(__file__).resolve().parents[1]

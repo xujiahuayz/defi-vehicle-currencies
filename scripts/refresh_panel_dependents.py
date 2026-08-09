@@ -62,6 +62,12 @@ DAILY_FRONTIER_PREREQUISITES = (
 # This is the executable owner of D3-refresh. These are canonical panels, not finding estimators. The order keeps raw- and receipt-dependent measurement ahead of consumers and deliberately runs one memory-heavy transform at a time.
 CLAIM_INPUT_STAGES: list[tuple[str, list[str], str, tuple[str, ...]]] = [
     (
+        "process/build_cex_reference_support.py",
+        [],
+        "published exact-address positive CEX-reference support for the rent bound",
+        ("data/processed/cex_reference_support.parquet",),
+    ),
+    (
         "process/fetch_daily_gas_price_graph.py",
         ["--workers", "8", "--panel-only"],
         "daily gas prices used by all-in route comparisons",

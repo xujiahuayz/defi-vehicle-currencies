@@ -187,6 +187,10 @@
       "outlier_treatment": "anchored-leg price within four times its centered 91-day median; stable price between 0.5 and 2 dollars; no hourly pool-price move above 100 times; V2 reported reserve capital reconciled within three times independently priced reserves and exact-lag capital at least 10000 dollars",
       "inference": "V2 month fixed effects with standard errors clustered by pool and joint role tests; no V3 output or inference",
       "mandatory_alternatives": {
+        "external_reference_support": [
+          "full screened cross-section",
+          "published 43-token positive CEX support within each token's sampled date bounds"
+        ],
         "lvr_sampling": [
           "hourly realised variance",
           "four-hour realised variance",
@@ -215,6 +219,7 @@
       "admissible_interpretation": "trading revenue does not compensate native-long-tail LPs for measured adverse selection and gas; the direction survives the conservative LVR bound; the current temporal bridge rejects this result as the explanation for vehicle rotation",
       "forbidden_interpretation": "all LP compensation is negative, token incentives are absent, V2 and V3 return levels are comparable, provider TVL or local virtual depth is V3 deposited capital, one-tick V3 LVR identifies dollar net flow, or rent incidence explains the stable vehicle transition",
       "inputs": [
+        "data/processed/cex_reference_support.parquet",
         "data/processed/pool_capital_daily.parquet",
         "data/processed/daily_gas_price_graph.parquet",
         "data/processed/v2_token_price_daily.parquet",

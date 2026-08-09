@@ -1644,10 +1644,30 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         construction=(
             r"$\tau$-day change for vehicle $k$ ending on day $t$. The displayed data column "
             r"is the $\tau=7$ instance; the observations table also constructs "
-            r"$\tau\in\{1,14,30\}$."
+            r"$\tau\in\{1,7,30,120\}$ by exact calendar date."
         ),
         source="constructed from observations table",
         used_for="Persistence and displacement tests.",
+    ),
+    VariableSpec(
+        group="Reference-price support",
+        name="Observed CEX reference support",
+        column="cex_reference_supported",
+        notation=r"$\mathrm{CEXRef}_{x,t}$",
+        formula=(
+            r"$\mathbf{1}_{\{x\in\mathcal K^{\mathrm{CEX}},\ "
+            r"t\in[t_x^{\mathrm{first}},t_x^{\mathrm{last}}]\}}$"
+        ),
+        unit="Indicator (0/1)",
+        construction=(
+            r"Equals one only for an exact token address in the published 43-pair "
+            r"Uniswap--Binance comparison and between that pair's first and last "
+            r"observations in the package's 1-in-10,000 minute sample. Absence is "
+            r"unsupported and never means that the token was unlisted."
+        ),
+        source="data/processed/cex_reference_support.parquet",
+        used_for="Positive-support CEX-reference bound on liquidity-rent estimates.",
+        in_observations_table=False,
     ),
     VariableSpec(
         group="Persistence and displacement measures",

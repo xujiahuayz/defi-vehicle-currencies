@@ -462,6 +462,7 @@ def test_missing_exact_identity_is_quarantined_without_guessing_from_symbols():
         "token1_address": None,
         "token1_symbol": "USDC",
         "reported_capital_usd": 10.0,
+        "capital_source": "uniswap_v2.reserveUSD",
         "capital_valid": True,
         **capital_contract_fields("uniswap_v2"),
     }

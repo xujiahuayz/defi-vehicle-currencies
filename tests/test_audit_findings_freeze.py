@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import subprocess
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import Mock, call, patch
 
 import pandas as pd
@@ -10,6 +12,7 @@ from ddvc.asset_types import TYPES
 from scripts import refresh_panel_dependents as refresher
 from scripts.audit_findings_freeze import (
     card_source_evidence_text,
+    cex_reference_support_checks,
     cited_bibliography_keys,
     companion_sources_closed,
     companion_source_keys,
@@ -47,6 +50,46 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_cex_reference_gate_is_positive_exact_address_support(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "cex.parquet"
+            pd.DataFrame(
+                [
+                    {
+                        "token_address": "0x" + "1" * 40,
+                        "token_symbol": "ONE",
+                        "dex_pool": "0x" + "a" * 40,
+                        "binance_symbol": "ONEETH",
+                        "binance_base_asset": "ONE",
+                        "binance_quote_asset": "ETH",
+                        "source_dex_creation_at": pd.Timestamp("2020-01-01"),
+                        "binance_sample_first_at": pd.Timestamp("2020-02-01"),
+                        "binance_sample_last_at": pd.Timestamp("2020-03-01"),
+                        "binance_sample_rows": 2,
+                        "support_definition": "positive_observed_uniswap_binance_reference_support",
+                        "source_publication": "published source",
+                    }
+                ]
+            ).to_parquet(path, index=False)
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = cex_reference_support_checks(
+                    path,
+                    expected_rows=1,
+                    expected_sample_rows=2,
+                )
+            self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
+
+            frame = pd.read_parquet(path)
+            frame.loc[0, "support_definition"] = "unlisted_when_absent"
+            frame.to_parquet(path, index=False)
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = cex_reference_support_checks(
+                    path,
+                    expected_rows=1,
+                    expected_sample_rows=2,
+                )
+            self.assertFalse(checks[-1][1])
+
     def test_v3_inventory_calendar_requires_exact_raw_rpc_identity(self) -> None:
         import json
         from pathlib import Path
@@ -318,6 +361,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         self.assertEqual(
             outputs,
             {
+                "data/processed/cex_reference_support.parquet",
                 "data/processed/counterfactual_dominance.parquet",
                 "data/processed/cross_venue_routing_daily.parquet",
                 "data/processed/daily_gas_price_graph.parquet",
