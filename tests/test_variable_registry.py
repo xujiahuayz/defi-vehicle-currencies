@@ -59,6 +59,7 @@ class VariableRegistryTests(unittest.TestCase):
         self.assertLessEqual(
             {
                 "chosen_validation_error_bps",
+                "chosen_validation_max_abs_error_bps",
                 "within_reach_search_regret_bps",
                 "reach_increment_bps",
                 "path_choice_increment_bps",

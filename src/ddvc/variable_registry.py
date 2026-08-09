@@ -1279,6 +1279,23 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
     ),
     VariableSpec(
         group="Routing-search efficiency measures",
+        name="Chosen-leg maximum reproduction error",
+        column="chosen_validation_max_abs_error_bps",
+        notation=r"$\lvert\mathrm{ChosenError}^{\max}_{r}\rvert$",
+        formula=r"$\max\{\lvert e^{(1)}_r\rvert,\lvert e^{(2)}_r\rvert,\lvert e^{(1\circ2)}_r\rvert\}$",
+        unit="Basis points",
+        construction=(
+            r"Maximum absolute error across the first realised leg, the second realised leg "
+            r"quoted at its observed input, and their composed path. The construction sample "
+            r"requires this measure to be at most one basis point; 0.1- and "
+            r"0.01-basis-point subsets are prespecified."
+        ),
+        source="data/processed/transaction_state_frontier_daily.parquet",
+        used_for="Exact-state construction validation and nested routing-efficiency support.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Routing-search efficiency measures",
         name="Within-reach routing-search regret",
         column="within_reach_search_regret_bps",
         notation=r"$\mathrm{Regret}^{\mathrm{reach}}_{r}$",

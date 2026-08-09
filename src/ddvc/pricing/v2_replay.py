@@ -46,7 +46,7 @@ class V2SwapEvent:
 
 @dataclass(frozen=True)
 class V2ReplayDay:
-    """Clean exact-state pool hours and raw chosen-route identities for one day."""
+    """Identified chosen-pool states plus continuity-clean public alternatives."""
 
     meta: dict[PoolKey, V2PoolMeta]
     pool_hour_events: dict[PoolHourKey, list[ReserveEvent]]
@@ -251,7 +251,7 @@ def load_v2_replay_day(
             pair_index[frozenset((pool_meta.token0, pool_meta.token1))].append(pool_key)
     return V2ReplayDay(
         meta=meta,
-        pool_hour_events=clean_events,
+        pool_hour_events=candidate_events,
         state_support=state_support,
         swaps_by_pool_hour={key: sorted(value, key=lambda event: event.order) for key, value in swaps.items()},
         swaps_by_identity=swaps_by_identity,

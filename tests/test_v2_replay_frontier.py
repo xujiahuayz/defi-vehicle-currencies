@@ -139,6 +139,45 @@ class V2ReplayFrontierTests(unittest.TestCase):
             [],
         )
 
+    def test_unbridged_hour_can_reproduce_chosen_pool_but_not_enter_search(self) -> None:
+        venue = "uniswap_v2"
+        event = ReserveEvent(
+            order=(100, 5),
+            before=(Decimal("1010"), Decimal("991")),
+            after=(Decimal("1020"), Decimal("982")),
+        )
+        replay = V2ReplayDay(
+            meta={(venue, "pool"): V2PoolMeta(venue, "pool", A, B)},
+            pool_hour_events={(venue, "pool", 3600): [event]},
+            state_support={(venue, "pool", 7200): (1, 0)},
+            swaps_by_pool_hour={},
+            swaps_by_identity={},
+            pair_index={frozenset((A, B)): [(venue, "pool")]},
+        )
+        identified = quote_v2_pool(
+            A,
+            B,
+            10.0,
+            venue=venue,
+            pool_id="pool",
+            hour=3600,
+            order=(100, 5),
+            replay=replay,
+            max_input_to_reserve=None,
+        )
+        enumerated = v2_leg_quotes(
+            A,
+            B,
+            10.0,
+            replay=replay,
+            hour=3600,
+            order=(100, 5),
+            allowed_venues=None,
+            max_input_to_reserve=None,
+        )
+        self.assertIsNotNone(identified)
+        self.assertEqual(enumerated, [])
+
     def test_mixed_path_threads_tick_output_into_v2_pool(self) -> None:
         venue = "uniswap_v2"
         event = ReserveEvent(

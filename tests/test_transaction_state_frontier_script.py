@@ -23,6 +23,7 @@ from scripts.build_transaction_state_frontier import (
     assemble_cached_output,
     candidate_vehicles,
     checkpoint_day,
+    chosen_path_validation_errors,
     intermediate_amount_gap_bps,
     latest_replay_checkpoint,
     load_cached_day,
@@ -223,6 +224,20 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
         self.assertEqual(diagnostics["mismatch_abs_min_bps"], 10.0)
         self.assertEqual(diagnostics["mismatch_abs_max_bps"], 500.0)
         self.assertEqual(diagnostics["validation_within_tolerance_share"], 0.25)
+
+    def test_leg_validation_catches_compensating_path_errors(self) -> None:
+        validation = chosen_path_validation_errors(
+            realised_leg1_output=100.0,
+            realised_path_output=100.0,
+            quoted_leg1_output=101.0,
+            quoted_leg2_output=99.0,
+            quoted_path_output=100.0,
+        )
+        assert validation is not None
+        self.assertEqual(validation["chosen_validation_error_bps"], 0.0)
+        self.assertAlmostEqual(
+            validation["chosen_validation_max_abs_error_bps"], 100.0
+        )
 
     def test_latest_checkpoint_never_jumps_past_target(self) -> None:
         with TemporaryDirectory() as directory:

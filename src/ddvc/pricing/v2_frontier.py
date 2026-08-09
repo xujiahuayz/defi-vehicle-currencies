@@ -21,7 +21,7 @@ def quote_v2_pool(
     replay: V2ReplayDay,
     max_input_to_reserve: float | None,
 ) -> LegQuote | None:
-    """Quote one identified pool immediately before ``order``."""
+    """Quote one identified pool immediately before ``order`` for reproduction."""
     meta = replay.meta.get((venue, pool_id))
     state = replay.state_before(venue, pool_id, hour, order)
     if meta is None or state is None:
@@ -61,10 +61,12 @@ def v2_leg_quotes(
     allowed_venues: set[str] | None,
     max_input_to_reserve: float | None,
 ) -> list[LegQuote]:
-    """Return every supported V2 quote in deterministic pool identity order."""
+    """Return continuity-clean V2 alternatives in deterministic pool order."""
     quotes: list[LegQuote] = []
     for venue, pool_id in replay.candidates(token_in, token_out):
         if allowed_venues is not None and venue not in allowed_venues:
+            continue
+        if (venue, pool_id, hour) not in replay.state_support:
             continue
         quote = quote_v2_pool(
             token_in,

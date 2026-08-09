@@ -64,7 +64,10 @@ REQUIRED_COLUMNS = {
     "within_20pct",
     "realised_venues",
     "public_gain_usd",
+    "chosen_leg1_validation_error_bps",
+    "chosen_leg2_validation_error_bps",
     "chosen_validation_error_bps",
+    "chosen_validation_max_abs_error_bps",
     *REGRET_MARGINS_BPS,
 }
 
@@ -124,14 +127,14 @@ def _eligible_sql(source: Path) -> str:
             {notional} AS notional_bin,
             input_usd,
             public_gain_usd,
-            abs(chosen_validation_error_bps) AS chosen_abs_error_bps,
+            chosen_validation_max_abs_error_bps AS chosen_abs_error_bps,
             {', '.join(REGRET_MARGINS_BPS)}
         FROM read_parquet('{_quoted(source)}')
         WHERE within_20pct
           AND isfinite(input_usd)
           AND input_usd>=100
-          AND isfinite(chosen_validation_error_bps)
-          AND abs(chosen_validation_error_bps)<=1
+          AND isfinite(chosen_validation_max_abs_error_bps)
+          AND chosen_validation_max_abs_error_bps<=1
     """
 
 
@@ -154,6 +157,20 @@ def _validate_source(con: duckdb.DuckDBPyConnection, source: Path) -> int:
                 WHERE vehicle_type IS NULL OR src IS NULL OR tgt IS NULL OR vehicle IS NULL
             ) AS bad_identity,
             count(*) FILTER (
+                WHERE NOT isfinite(chosen_leg1_validation_error_bps)
+                   OR NOT isfinite(chosen_leg2_validation_error_bps)
+                   OR NOT isfinite(chosen_validation_error_bps)
+                   OR NOT isfinite(chosen_validation_max_abs_error_bps)
+                   OR chosen_validation_max_abs_error_bps<0
+                   OR abs(
+                       chosen_validation_max_abs_error_bps - greatest(
+                           abs(chosen_leg1_validation_error_bps),
+                           abs(chosen_leg2_validation_error_bps),
+                           abs(chosen_validation_error_bps)
+                       )
+                   )>1e-10
+            ) AS bad_validation,
+            count(*) FILTER (
                 WHERE {REGRET_MARGINS_BPS[0]}<0 OR NOT isfinite({REGRET_MARGINS_BPS[0]})
                    OR {REGRET_MARGINS_BPS[1]}<0 OR NOT isfinite({REGRET_MARGINS_BPS[1]})
                    OR {REGRET_MARGINS_BPS[2]}<0 OR NOT isfinite({REGRET_MARGINS_BPS[2]})
@@ -170,7 +187,7 @@ def _validate_source(con: duckdb.DuckDBPyConnection, source: Path) -> int:
     ).fetchone()
     if any(bad):
         raise ValueError(
-            "transaction frontier violates reach/identity/regret/decomposition "
+            "transaction frontier violates reach/identity/validation/regret/decomposition "
             f"invariants: {bad}"
         )
     inconsistent_vehicle_types = con.execute(

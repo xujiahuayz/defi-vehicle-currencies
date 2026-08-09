@@ -40,7 +40,10 @@ class RoutingMaturationPanelTests(unittest.TestCase):
                     "within_20pct": True,
                     "realised_venues": "uniswap_v3|uniswap_v3",
                     "public_gain_usd": 1.0,
+                    "chosen_leg1_validation_error_bps": error,
+                    "chosen_leg2_validation_error_bps": error,
                     "chosen_validation_error_bps": error,
+                    "chosen_validation_max_abs_error_bps": abs(error),
                     "within_reach_search_regret_bps": within,
                     "reach_increment_bps": reach,
                     "path_choice_increment_bps": path,
@@ -139,6 +142,25 @@ class RoutingMaturationPanelTests(unittest.TestCase):
                     primary_min_days=1,
                     strict_min_days=2,
                     horizons=(1, 7, 30),
+                )
+
+    def test_rejects_a_maximum_error_that_ignores_leg_errors(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, support = self._source(root)
+            panel = pd.read_parquet(source)
+            panel.loc[1, "chosen_validation_max_abs_error_bps"] = 0.0
+            panel.to_parquet(source, index=False)
+            with self.assertRaisesRegex(ValueError, "validation"):
+                build_panels(
+                    source,
+                    support,
+                    root / "cell.parquet",
+                    root / "transition.parquet",
+                    root / "dynamics.parquet",
+                    full_years=(2021,),
+                    primary_min_days=1,
+                    strict_min_days=2,
                 )
 
 

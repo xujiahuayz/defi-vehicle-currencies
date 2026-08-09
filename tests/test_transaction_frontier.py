@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import unittest
 
-from ddvc.analysis.transaction_frontier import RealisedTickPath, score_tick_frontier
+from ddvc.analysis.transaction_frontier import (
+    RealisedTickPath,
+    relative_output_error,
+    score_tick_frontier,
+)
 from ddvc.pricing.tick_frontier import build_pool_index, quote_tick_path
 from ddvc.pricing.tick_state import TickPoolState
 
@@ -78,6 +82,11 @@ class TransactionFrontierTests(unittest.TestCase):
             float(score["public_reach_same_vehicle_regret_bps"]),
             float(score["public_path_regret_bps"]),
         )
+
+    def test_relative_output_error_requires_positive_finite_amounts(self) -> None:
+        self.assertAlmostEqual(relative_output_error(100.0, 101.0), 0.01)
+        self.assertIsNone(relative_output_error(0.0, 1.0))
+        self.assertIsNone(relative_output_error(1.0, float("nan")))
 
     def test_route_that_fails_exact_output_validation_is_quarantined(self) -> None:
         corrupted = RealisedTickPath(

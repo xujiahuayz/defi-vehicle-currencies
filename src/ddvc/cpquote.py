@@ -32,16 +32,19 @@ reserve is the end-of-hour state. Replaying swaps forward from it is wrong and
 measures badly. The state owner instead unwinds every known reserve change in
 reverse block-log order, including Uniswap v2 mints and burns, and validates the
 result against the nearest prior observed reserve after advancing every known
-intervening change. Residual continuity breaks are excluded. Swap-only validation
-had median absolute error 0.0000%, with 96.7% of quotes within 1% and 95.2% within
-0.01% of realised output on 8,024 swaps; replaying liquidity events recovers most
-of the selected-away support without weakening that continuity contract.
+intervening change. Residual continuity breaks are excluded from counterfactual
+pool search; an identified realised pool may only attempt same-size reproduction
+and is retained only if the route-level output passes the separate tolerance.
+Swap-only validation had median absolute error 0.0000%, with 96.7% of quotes
+within 1% and 95.2% within 0.01% of realised output on 8,024 swaps; replaying
+liquidity events recovers most counterfactual support without weakening the
+continuity contract.
 
 Remaining caveats, all reportable:
   - SushiSwap v2 liquidity events remain unavailable. Direct transfers and
     fee-on-transfer tokens are also not explicit state events. Reserve continuity
-    detects and drops their residual breaks, preserving accuracy but selecting
-    support.
+    detects and drops their residual breaks from the public alternative set;
+    realised-pool reproduction remains subject to the output-validation gate.
   - quotes are gross of gas. A two-hop route costs more gas than one hop, so a
     gas-inclusive comparison is required before any all-in claim. Gas per route
     topology must be measured from receipts.
@@ -270,6 +273,10 @@ def hour_is_clean(stored_prev: tuple[Decimal, Decimal] | None,
     with the nearest prior state advanced through any known intervening changes.
     Agreement makes the reconstruction exact. Disagreement means an unobserved
     reserve change remains, so every reconstructed pre-state may be wrong.
+
+    An unbridged hour can still attempt same-size reproduction of its identified
+    realised pool. It may not enter counterfactual pool enumeration; that requires
+    this continuity check to pass.
 
     Liquidity events are observed for Uniswap v2 but not SushiSwap v2. Residual
     breaks remain excluded, and their selection must be reported.

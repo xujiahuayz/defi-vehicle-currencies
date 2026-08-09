@@ -33,8 +33,8 @@ from ddvc.analysis.transaction_frontier import (
     RealisedPath,
     chosen_quote_coverage_share,
     chosen_reproduction_share,
-    chosen_output_error,
     positive_finite_amount,
+    relative_output_error,
     score_frontier_from_quote,
 )
 from ddvc.asset_types import (
@@ -56,7 +56,7 @@ from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.pricing.mixed_frontier import (
     MixedFrontierState,
     mixed_leg_quotes,
-    quote_mixed_path,
+    quote_mixed_pool,
 )
 from ddvc.pricing.path_frontier import PathQuote
 from ddvc.pricing.tick_replay import (
@@ -445,6 +445,8 @@ def rejection_record(
     pools: tuple[str, ...] | None = None,
     chosen_quote_out: float | None = None,
     signed_validation_error_bps: float | None = None,
+    chosen_leg1_validation_error_bps: float | None = None,
+    chosen_leg2_validation_error_bps: float | None = None,
 ) -> dict[str, object]:
     """Preserve the economic and causal identity of every excluded exact route."""
     realised_venues = venues or tuple(
@@ -480,6 +482,8 @@ def rejection_record(
         "reason_detail": reason_detail,
         "chosen_quote_out": chosen_quote_out,
         "signed_validation_error_bps": signed_validation_error_bps,
+        "chosen_leg1_validation_error_bps": chosen_leg1_validation_error_bps,
+        "chosen_leg2_validation_error_bps": chosen_leg2_validation_error_bps,
         "validation_tolerance_bps": MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
     }
 
@@ -748,7 +752,8 @@ def load_target_routes(
         "chosen_output_mismatch": 0,
         "chosen_validation_tolerance_bps": MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
         "quarantined_tick_pools": 0,
-        "clean_v2_pool_hours": int(len(v2_replay.pool_hour_events)),
+        "candidate_v2_pool_hours": int(len(v2_replay.pool_hour_events)),
+        "clean_v2_pool_hours": int(len(v2_replay.state_support)),
     }
     return targets, rejections, support
 
@@ -778,6 +783,35 @@ def validation_error_diagnostics(errors_bps: list[float]) -> dict[str, object]:
         "mismatch_abs_p90_bps": quantile(mismatch, 0.9),
         "mismatch_abs_max_bps": quantile(mismatch, 1.0),
     }
+
+
+def chosen_path_validation_errors(
+    *,
+    realised_leg1_output: float,
+    realised_path_output: float,
+    quoted_leg1_output: float,
+    quoted_leg2_output: float,
+    quoted_path_output: float,
+) -> dict[str, float] | None:
+    """Return both leg errors, composed-path error and their maximum magnitude."""
+    errors = {
+        "chosen_leg1_validation_error_bps": relative_output_error(
+            realised_leg1_output, quoted_leg1_output
+        ),
+        "chosen_leg2_validation_error_bps": relative_output_error(
+            realised_path_output, quoted_leg2_output
+        ),
+        "chosen_validation_error_bps": relative_output_error(
+            realised_path_output, quoted_path_output
+        ),
+    }
+    if any(error is None for error in errors.values()):
+        return None
+    scaled = {name: 10_000 * float(error) for name, error in errors.items()}
+    scaled["chosen_validation_max_abs_error_bps"] = max(
+        abs(error) for error in scaled.values()
+    )
+    return scaled
 
 
 def score_day(
@@ -832,26 +866,62 @@ def score_day(
                 )
                 continue
 
-            def quote_chosen(chosen_route: RealisedPath) -> PathQuote | None:
-                return quote_mixed_path(
-                    chosen_route.token_in,
-                    chosen_route.token_out,
-                    chosen_route.vehicle,
-                    chosen_route.amount_in,
-                    venues=chosen_route.venues,
-                    pools=chosen_route.pools,
-                    state=frontier_state,
-                    max_support=None,
-                )
-
             quote_legs = partial(
                 mixed_leg_quotes,
                 state=frontier_state,
                 allowed_venues=None,
                 max_support=MAX_PRICE_IMPACT,
             )
-            chosen = quote_chosen(route)
-            if chosen is None:
+            chosen_leg1 = quote_mixed_pool(
+                route.token_in,
+                route.vehicle,
+                route.amount_in,
+                venue=route.venues[0],
+                pool_id=route.pools[0],
+                state=frontier_state,
+                max_support=None,
+            )
+            chosen_leg2 = (
+                quote_mixed_pool(
+                    route.vehicle,
+                    route.token_out,
+                    float(target["realised_leg2_input"]),
+                    venue=route.venues[1],
+                    pool_id=route.pools[1],
+                    state=frontier_state,
+                    max_support=None,
+                )
+                if chosen_leg1 is not None
+                else None
+            )
+            composed_leg2 = (
+                quote_mixed_pool(
+                    route.vehicle,
+                    route.token_out,
+                    chosen_leg1.amount_out,
+                    venue=route.venues[1],
+                    pool_id=route.pools[1],
+                    state=frontier_state,
+                    max_support=None,
+                )
+                if chosen_leg1 is not None
+                else None
+            )
+            chosen = (
+                PathQuote(
+                    amount_out=composed_leg2.amount_out,
+                    vehicle=route.vehicle,
+                    venues=route.venues,
+                    pools=route.pools,
+                    price_impacts=(
+                        chosen_leg1.price_impact,
+                        composed_leg2.price_impact,
+                    ),
+                )
+                if chosen_leg1 is not None and composed_leg2 is not None
+                else None
+            )
+            if chosen is None or chosen_leg2 is None:
                 support["chosen_state_unavailable"] += 1
                 rejection_rows.append(
                     rejection_record(
@@ -864,8 +934,14 @@ def score_day(
                     )
                 )
                 continue
-            signed_validation_error = chosen_output_error(route, chosen)
-            if signed_validation_error is None:
+            validation = chosen_path_validation_errors(
+                realised_leg1_output=float(target["realised_leg1_output"]),
+                realised_path_output=route.amount_out,
+                quoted_leg1_output=chosen_leg1.amount_out,
+                quoted_leg2_output=chosen_leg2.amount_out,
+                quoted_path_output=chosen.amount_out,
+            )
+            if validation is None:
                 if not positive_finite_amount(route.amount_out):
                     support["invalid_realised_output"] += 1
                     reason = "invalid_realised_output"
@@ -884,11 +960,20 @@ def score_day(
                     )
                 )
                 continue
-            validation_error = abs(signed_validation_error)
-            validation_errors_bps.append(10_000 * signed_validation_error)
+            signed_validation_error_bps = validation["chosen_validation_error_bps"]
+            leg1_validation_error_bps = validation[
+                "chosen_leg1_validation_error_bps"
+            ]
+            leg2_validation_error_bps = validation[
+                "chosen_leg2_validation_error_bps"
+            ]
+            maximum_validation_error_bps = validation[
+                "chosen_validation_max_abs_error_bps"
+            ]
+            validation_errors_bps.append(maximum_validation_error_bps)
             if bool(target["within_20pct"]):
                 coherent_validation_errors_bps.append(validation_errors_bps[-1])
-            if validation_error > MAX_CHOSEN_REPRODUCTION_ERROR:
+            if maximum_validation_error_bps > MAX_CHOSEN_REPRODUCTION_ERROR_BPS:
                 support["chosen_output_mismatch"] += 1
                 rejection_rows.append(
                     rejection_record(
@@ -899,7 +984,9 @@ def score_day(
                         venues=route.venues,
                         pools=route.pools,
                         chosen_quote_out=float(chosen.amount_out),
-                        signed_validation_error_bps=10_000 * signed_validation_error,
+                        signed_validation_error_bps=signed_validation_error_bps,
+                        chosen_leg1_validation_error_bps=leg1_validation_error_bps,
+                        chosen_leg2_validation_error_bps=leg2_validation_error_bps,
                     )
                 )
                 continue
@@ -946,6 +1033,9 @@ def score_day(
                     "realised_venues": "|".join(route.venues),
                     "realised_pools": "|".join(route.pools),
                     "public_gain_usd": public_gain_usd,
+                    "chosen_leg1_validation_error_bps": leg1_validation_error_bps,
+                    "chosen_leg2_validation_error_bps": leg2_validation_error_bps,
+                    "chosen_validation_max_abs_error_bps": maximum_validation_error_bps,
                     **score,
                 }
             )

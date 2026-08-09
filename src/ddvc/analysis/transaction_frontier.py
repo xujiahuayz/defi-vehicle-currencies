@@ -70,6 +70,13 @@ def positive_finite_amount(value: float) -> bool:
     return isfinite(value) and value > 0
 
 
+def relative_output_error(realised: float, quoted: float) -> float | None:
+    """Signed relative quote error on one positive finite realised output."""
+    if not positive_finite_amount(realised) or not positive_finite_amount(quoted):
+        return None
+    return (quoted - realised) / realised
+
+
 def chosen_output_error(
     route: RealisedPath,
     chosen: PathQuote | None,
@@ -77,11 +84,7 @@ def chosen_output_error(
     """Relative chosen-route reproduction error, or None off valid support."""
     if chosen is None:
         return None
-    if not positive_finite_amount(route.amount_out):
-        return None
-    if not positive_finite_amount(chosen.amount_out):
-        return None
-    return (chosen.amount_out - route.amount_out) / route.amount_out
+    return relative_output_error(route.amount_out, chosen.amount_out)
 
 
 def _gain_bps(frontier: float, realised: float) -> float:
