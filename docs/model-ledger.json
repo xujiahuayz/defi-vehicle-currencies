@@ -58,7 +58,7 @@
       "claim_id": "liquidity_rent_incidence",
       "estimator": "pool-month OLS and linear probability models",
       "fixed_effects": "calendar month",
-      "inference": "pool clustered with joint role Wald tests",
+      "inference": "locked rerun target: two-way pool and calendar-month clustered with joint role Wald tests; pool-only and month-only sensitivities",
       "substantive_specifications": 12,
       "diagnostic_specifications": 0,
       "resampling_refits": 0,
@@ -66,7 +66,7 @@
       "artifacts": [
         "output/empirical/rent_incidence/centrality_curse_regressions.jsonl"
       ],
-      "note": "Twelve V2 models remain after removing every v3 outcome that treated local virtual depth as deposited capital. Their shared artifact is provenance-stale until the exact-lag capital and reserve-reconciliation rerun, so the family is withheld. Five joint Wald rows are derived tests, not additional fitted specifications."
+      "note": "Twelve V2 models remain after removing every v3 outcome that treated local virtual depth as deposited capital. Their shared artifact is provenance-stale until the exact-lag capital and reserve-reconciliation rerun, and their prior pool-only covariance is not the locked primary inference, so the family is withheld. Five joint Wald rows are derived tests, not additional fitted specifications."
     },
     {
       "id": "withheld_v3_approximate_lvr",

@@ -93,8 +93,8 @@
       "mandatory_alternatives": {
         "opportunity_set": [
           "realised venue reach",
-          "balanced public venue set",
-          "full public venue set"
+          "balanced admitted exact-state venue set",
+          "full admitted V2/V3/V4 exact-state venue set"
         ],
         "benchmark": [
           "direct path",
@@ -127,7 +127,7 @@
       },
       "falsifier": "stable transition vanishes inside fixed opportunity and search-efficiency cells",
       "admissible_interpretation": "integration expands while true intermediation contracts; conditional routing shortfalls and direct-market opportunity can be compared over time within their declared support",
-      "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption, or either selected pair cohort identifies a market-wide efficiency trend",
+      "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption, either selected pair cohort identifies a market-wide efficiency trend, or the admitted V2/V3/V4 frontier is the full public venue set",
       "blocking_measurement": "the route-cost grid must pass its full 24-hour, three-notional semantic release audit and add the predeclared baseline-fixed cohort before interpreting time change beyond the daily selected mix; neither cohort is a market census. The prior 77-date transaction-state construction audit passed a 99 percent reproduction gate under a tolerance of 100 basis points, which is too loose for basis-point effects, so the replacement must reproduce at least 99 percent of coherent chosen quotes within 1 basis point, preserve 0.1- and 0.01-basis-point nested samples, build the separate full daily exact-state frontier, and link outcomes by exact 1, 7, 30, and 120 calendar days before estimation",
       "inputs": [
         "data/processed/cross_venue_routing_daily.parquet",
@@ -197,7 +197,7 @@
       "dependent_variable": "V2 risk-adjusted net return and indicator that fees exceed LVR plus gas",
       "transformation": "V2 annualised capital returns and fee-to-LVR ratio, with contemporaneous pool value as the LVR scale and exact prior-calendar capital as the return denominator",
       "outlier_treatment": "anchored-leg price within four times its centered 91-day median; stable price between 0.5 and 2 dollars; no hourly pool-price move above 100 times; V2 reported reserve capital reconciled within three times independently priced reserves and exact-lag capital at least 10000 dollars",
-      "inference": "V2 month fixed effects with standard errors clustered by pool and joint role tests; no V3 output or inference",
+      "inference": "V2 calendar-month fixed effects with two-way standard errors clustered by pool and calendar month and joint role tests from the same covariance; pool-only and month-only clustering are mandatory sensitivities; no V3 output or inference",
       "mandatory_alternatives": {
         "external_reference_support": [
           "full screened cross-section",
@@ -216,6 +216,11 @@
         "weighting": [
           "equal pool-day",
           "V2 capital weighted"
+        ],
+        "inference_covariance": [
+          "two-way pool and calendar-month clustered",
+          "pool clustered",
+          "calendar-month clustered"
         ],
         "venue": [
           "Uniswap V2 full screened cross-section with reserve-capital returns"
