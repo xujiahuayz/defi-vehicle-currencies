@@ -6,23 +6,25 @@
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T03:11:44+00:00",
+ "created_at": "2026-08-09T03:16:53+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "1ca991777acfe1ff79694506494bc8b2e9e84bbd",
+  "commit": "bb7d0db8104dd69894d1b41f73bd5c2598eb9a55",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
    "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
-   "output/exhibits/prose_conventions.jsonl",
+   "output/empirical_rq_design_memo.md",
    "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
    "docs/literature-audit.md",
+   "docs/research-questions-and-empirical-design.md",
    "literature/pdf-sources.json",
-   "paper/sections/01-introduction.tex",
-   "src/ddvc/literature_sources.py",
-   "tests/test_literature_browser_helpers.py"
+   "literature/source-admission.json",
+   "literature/text/2017-ClarkJosephYeZi2017DMM-accepted-designated-market-makers-still-matter-evidence-from-two-natural-experiments.txt",
+   "literature/text/_index.jsonl",
+   "paper/sections/05-liquidity.tex"
   ],
   "dirty_untracked_files": []
  },

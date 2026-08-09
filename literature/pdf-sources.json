@@ -31,6 +31,16 @@
       "main": "DuffieGarleanuPedersen2005OTC",
       "status": "complete"
     },
+    "ClarkJosephYeZi2017DMM": {
+      "checks": {
+        "article": "literature/text/2017-ClarkJosephYeZi2017DMM-published-designated-market-makers-still-matter-evidence-from-two-natural-experiments.txt",
+        "author_or_repository": "https://czi.finance/assets/DMM.pdf",
+        "publisher_or_doi": "https://doi.org/10.1016/j.jfineco.2017.09.001"
+      },
+      "companions": [],
+      "main": "ClarkJosephYeZi2017DMM",
+      "status": "complete"
+    },
     "BoltonKacperczyk2021CarbonRisk": {
       "checks": {
         "article": "literature/text/2021-BoltonKacperczyk2021CarbonRisk-do-investors-care-about-carbon-risk.txt",
@@ -933,16 +943,16 @@
     ],
     "ClarkJosephYeZi2017DMM": [
       {
-        "access": "public",
-        "label": "Author-hosted PDF",
-        "url": "https://czi.finance/assets/DMM.pdf",
-        "version": "accepted"
-      },
-      {
         "access": "authenticated",
-        "label": "ScienceDirect PDF",
+        "label": "ScienceDirect version-of-record PDF",
         "url": "https://www.sciencedirect.com/science/article/pii/S0304405X17302337/pdfft",
         "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "Author-hosted accepted manuscript for version reconciliation",
+        "url": "https://czi.finance/assets/DMM.pdf",
+        "version": "accepted"
       }
     ],
     "ComertonFordeEtAl2010Inventories": [

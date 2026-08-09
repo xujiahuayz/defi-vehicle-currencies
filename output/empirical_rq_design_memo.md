@@ -22,8 +22,8 @@ Use these papers for style, identification architecture, and table design:
    - DOI: https://doi.org/10.1093/rfs/hhz040
 
 2. **Clark-Joseph, Ye, and Zi (2017), JFE, "Designated Market Makers Still Matter"**
-   - Template role: natural-experiment evidence on whether designated intermediaries matter.
-   - Design feature to copy: exploit disruptions/assignment-style variation, then show market-quality and price-discovery consequences.
+   - Template role: layered event and exposure evidence on a designated supplier's marginal spread contribution.
+   - Design feature to copy: pair a focal venue outage with adjacent-time placebos, a second-venue falsification and supplier-exposure decomposition; do not infer provider indispensability or an obligation mechanism from the source.
    - DOI: https://doi.org/10.1016/j.jfineco.2017.09.001
 
 3. **Hendershott, Jones, and Menkveld (2011), JF, "Does Algorithmic Trading Improve Liquidity?"**
