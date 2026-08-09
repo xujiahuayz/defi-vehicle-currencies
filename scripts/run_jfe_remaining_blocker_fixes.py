@@ -22,6 +22,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from ddvc.analysis.dynamics import exact_daily_log_return
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 DATA = ROOT / "data"
@@ -93,7 +95,7 @@ def stress_event_definition_table() -> pd.DataFrame:
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "weth_price"])
     px = bridge.dropna().drop_duplicates("date").sort_values("date").copy()
     px["date"] = pd.to_datetime(px["date"])
-    px["weth_ret"] = np.log(px["weth_price"]).diff()
+    px["weth_ret"] = exact_daily_log_return(px, "weth_price")
     px.loc[px["weth_ret"].abs() > 0.5, "weth_ret"] = np.nan
     px["downside_stress"] = (-px["weth_ret"]).clip(lower=0)
 
@@ -178,7 +180,7 @@ def stress_threshold_overlap_sensitivity() -> pd.DataFrame:
     bridge = pd.read_parquet(DATA / "empirical" / "bridge_daily.parquet", columns=["date", "weth_price"])
     px = bridge.dropna().drop_duplicates("date").sort_values("date").copy()
     px["date"] = pd.to_datetime(px["date"])
-    px["weth_ret"] = np.log(px["weth_price"]).diff()
+    px["weth_ret"] = exact_daily_log_return(px, "weth_price")
     px.loc[px["weth_ret"].abs() > 0.5, "weth_ret"] = np.nan
     px["downside_stress"] = (-px["weth_ret"]).clip(lower=0)
 

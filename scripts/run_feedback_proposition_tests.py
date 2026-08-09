@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.dynamics import CANONICAL_RESPONSE_HORIZONS, value_at_day_offset
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL
 
@@ -31,7 +31,7 @@ def p2_feedback_loop() -> pd.DataFrame:
     d["date"] = pd.to_datetime(d["date"])
     d = d.sort_values(["token", "date"])
     rows = []
-    for h in [1, 7, 14, 30]:
+    for h in CANONICAL_RESPONSE_HORIZONS:
         dd = d.copy()
         dd["future_bridge_share"] = value_at_day_offset(dd, "BridgeShare", h)
         dd["future_lp_capital_share"] = value_at_day_offset(

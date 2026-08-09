@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+import numpy as np
 import pandas as pd
 
 
@@ -43,3 +44,27 @@ def value_at_day_offset(
     )
     values = lookup.reindex(target_index).to_numpy()
     return pd.Series(values, index=panel.index, name=value_column)
+
+
+def exact_daily_log_return(
+    panel: pd.DataFrame,
+    value_column: str,
+    *,
+    entity_columns: Sequence[str] = (),
+    date_column: str = "date",
+) -> pd.Series:
+    """Return log changes only where the exact prior calendar day exists."""
+
+    current = pd.to_numeric(panel[value_column], errors="coerce")
+    previous = pd.to_numeric(
+        value_at_day_offset(
+            panel,
+            value_column,
+            -1,
+            entity_columns=entity_columns,
+            date_column=date_column,
+        ),
+        errors="coerce",
+    )
+    valid = current.gt(0) & previous.gt(0)
+    return np.log(current / previous).where(valid).rename(value_column)

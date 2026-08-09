@@ -11,7 +11,11 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.dynamics import (
+    CANONICAL_RESPONSE_HORIZONS,
+    exact_daily_log_return,
+    value_at_day_offset,
+)
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered
 from ddvc.paths import LP_CAPITAL_CONCENTRATION_PANEL
 
@@ -100,7 +104,7 @@ def liquidity_robustness(bridge: pd.DataFrame) -> pd.DataFrame:
     lp["date"] = pd.to_datetime(lp["date"])
     base = b.merge(lp[["date", "token", "lp_capital_share"]], on=["date", "token"], how="inner")
     rows = []
-    for horizon in [1, 7, 14, 30]:
+    for horizon in CANONICAL_RESPONSE_HORIZONS:
         d = base.sort_values(["token", "date"]).copy()
         d["y"] = value_at_day_offset(d, "BridgeShare", horizon)
         d = d.dropna(subset=["y", "lp_capital_share"])
@@ -155,7 +159,7 @@ def _weth_stress_events(bridge: pd.DataFrame, threshold: float) -> pd.DataFrame:
         .copy()
     )
     px["date"] = pd.to_datetime(px["date"])
-    px["weth_ret"] = np.log(px["weth_price"]).diff()
+    px["weth_ret"] = exact_daily_log_return(px, "weth_price")
     px.loc[px["weth_ret"].abs() > 0.5, "weth_ret"] = np.nan
     px["downside_stress"] = (-px["weth_ret"]).clip(lower=0)
     return px[px["downside_stress"].ge(threshold)][["date", "downside_stress"]]

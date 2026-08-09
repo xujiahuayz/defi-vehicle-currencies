@@ -24,7 +24,11 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.dynamics import (
+    CANONICAL_RESPONSE_HORIZONS,
+    exact_daily_log_return,
+    value_at_day_offset,
+)
 from ddvc.analysis.lp_concentration import candidate_capital_changes
 from ddvc.analysis.regression import absorb_fixed_effects, ols_clustered_named
 from ddvc.asset_types import VEHICLE_CANDIDATE_SYMBOLS
@@ -220,7 +224,7 @@ def core_token_day_panel() -> pd.DataFrame:
     ).merge(rc, on=["date", "token"], how="left")
     d = d.sort_values(["token", "date"])
     d["log_vehicle_linked_capital"] = np.log1p(d["total_lp_capital_usd"])
-    for h in [1, 7, 14, 30]:
+    for h in CANONICAL_RESPONSE_HORIZONS:
         d[f"lag_BridgeShare_t{h}"] = value_at_day_offset(d, "BridgeShare", -h)
         d[f"future_BridgeShare_t{h}"] = value_at_day_offset(d, "BridgeShare", h)
         d[f"future_LPCapitalShare_t{h}"] = value_at_day_offset(
@@ -485,10 +489,11 @@ def common_pool_capital_tests(pool: pd.DataFrame) -> pd.DataFrame:
     weth = bridge[bridge["token"].eq("WETH")][["date", "weth_price"]].copy()
     weth["date"] = pd.to_datetime(weth["date"])
     weth = weth.sort_values("date")
-    weth["downside_stress"] = (-np.log(weth["weth_price"] / weth["weth_price"].shift(1))).clip(lower=0)
-    weth["stress_dummy"] = (weth["downside_stress"] >= 0.08).astype(float)
+    weth["downside_stress"] = (-exact_daily_log_return(weth, "weth_price")).clip(lower=0)
+    weth["stress_dummy"] = (
+        weth["downside_stress"].ge(0.08).astype(float).where(weth["downside_stress"].notna())
+    )
     d = d.merge(weth[["date", "stress_dummy"]], on="date", how="left")
-    d["stress_dummy"] = d["stress_dummy"].fillna(0.0)
     d["vehicle_capital_factor_x_stress"] = d["vehicle_capital_factor_loo"] * d["stress_dummy"]
     d["post_v3"] = (d["date"] >= pd.Timestamp("2021-05-05")).astype(float)
     d["vehicle_capital_factor_x_post_v3"] = d["vehicle_capital_factor_loo"] * d["post_v3"]

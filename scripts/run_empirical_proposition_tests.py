@@ -33,7 +33,7 @@ from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
 
-from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.dynamics import exact_daily_log_return, value_at_day_offset
 from ddvc.analysis.regression import absorb_fixed_effects
 from ddvc.metrics import CLEAN_ROUTE_CLASSES, _routes
 from ddvc.paths import DATA_DIR, LP_CAPITAL_CONCENTRATION_PANEL, OUTPUT_DIR
@@ -321,7 +321,7 @@ def stress_tests(bridge: pd.DataFrame) -> pd.DataFrame:
         .drop_duplicates("date")
         .sort_values("date")
     )
-    px["weth_ret"] = np.log(px["weth_price"]).diff()
+    px["weth_ret"] = exact_daily_log_return(px, "weth_price")
     px["downside_stress"] = (-px["weth_ret"]).clip(lower=0)
     z = d.merge(px[["date", "downside_stress"]], on="date", how="left").dropna()
 
@@ -367,7 +367,7 @@ def common_support_stress_tests(
         .copy()
     )
     px["date"] = pd.to_datetime(px["date"])
-    px["weth_ret"] = np.log(px["weth_price"]).diff()
+    px["weth_ret"] = exact_daily_log_return(px, "weth_price")
     # Same-day on-chain price can be noisy in very early/thin days; discard
     # impossible daily moves rather than letting them define stress events.
     px.loc[px["weth_ret"].abs() > 0.5, "weth_ret"] = np.nan

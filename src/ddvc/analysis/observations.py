@@ -14,7 +14,11 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
-from ddvc.analysis.dynamics import value_at_day_offset
+from ddvc.analysis.dynamics import (
+    CANONICAL_RESPONSE_HORIZONS,
+    exact_daily_log_return,
+    value_at_day_offset,
+)
 from ddvc.paths import DATA_DIR
 from ddvc.variable_registry import OBSERVATIONS_TABLE_COLUMNS
 
@@ -314,9 +318,11 @@ def _add_stress(panel: pd.DataFrame) -> pd.DataFrame:
         .drop_duplicates("date")
         .sort_values("date")
     )
-    weth["weth_log_return"] = np.log(pd.to_numeric(weth["weth_price"], errors="coerce")).diff()
+    weth["weth_log_return"] = exact_daily_log_return(weth, "weth_price")
     weth["stress_downside"] = (-weth["weth_log_return"]).clip(lower=0)
-    weth["stress_event_8pct"] = weth["stress_downside"].ge(0.08).astype(float)
+    weth["stress_event_8pct"] = (
+        weth["stress_downside"].ge(0.08).astype(float).where(weth["stress_downside"].notna())
+    )
     return panel.merge(weth[["date", "weth_log_return", "stress_downside", "stress_event_8pct"]], on="date", how="left")
 
 
@@ -328,7 +334,7 @@ def _add_dynamics(panel: pd.DataFrame) -> pd.DataFrame:
         ("log_vehicle_linked_capital", "log_vehicle_linked_capital"),
         ("direct_cost_advantage_median", "direct_cost_advantage_median"),
     ]
-    for h in (1, 7, 14, 30):
+    for h in CANONICAL_RESPONSE_HORIZONS:
         for base_col, stem in dynamic_cols:
             if base_col not in panel.columns:
                 continue
