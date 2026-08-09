@@ -103,13 +103,14 @@ INVENTORY_SCHEMA = pa.schema(
         pa.field("balance0_units", pa.float64(), nullable=False),
         pa.field("balance1_units", pa.float64(), nullable=False),
         pa.field("negative_inventory", pa.bool_(), nullable=False),
-        pa.field("inventory_valid", pa.bool_(), nullable=False),
+        pa.field("replay_arithmetic_valid", pa.bool_(), nullable=False),
         pa.field("last_event_block", pa.int64(), nullable=False),
         pa.field("last_event_log_index", pa.int64(), nullable=False),
         pa.field("cumulative_inventory_events", pa.int64(), nullable=False),
         pa.field("quantity_kind", pa.string(), nullable=False),
         pa.field("state_generation", pa.string(), nullable=False),
-        pa.field("validation_status", pa.string(), nullable=False),
+        pa.field("custody_validation_status", pa.string(), nullable=False),
+        pa.field("ownership_validation_status", pa.string(), nullable=False),
     ]
 )
 
@@ -196,7 +197,7 @@ def require_complete_raw_chunks(start: int, end: int) -> list[tuple[int, int]]:
     if missing:
         sample = ", ".join(f"{lower}-{upper}" for lower, upper in missing[:3])
         raise RuntimeError(
-            f"V3 physical-inventory replay requires all raw event chunks; "
+            f"V3 event-accounted inventory replay requires all raw event chunks; "
             f"missing={len(missing):,}/{len(ranges):,}; first={sample}"
         )
     totals = audit_inventory_chunks(
@@ -431,7 +432,8 @@ def build(*, force: bool = False) -> tuple[int, int, int]:
         inputs=INPUTS,
         rows=result.rows,
         notes=(
-            f"event-complete physical V3 pool inventory generation {generation}; "
+            f"event-complete V3 pool-inventory replay generation {generation}; "
+            "custody and protocol-fee ownership remain separate promotion gates; "
             f"resumable cache {root.name}; balanceOf validation still required"
         ),
     )

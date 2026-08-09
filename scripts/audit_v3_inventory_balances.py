@@ -101,7 +101,8 @@ def audit_sample_table(
                 token0_address, token0_symbol, token0_decimals,
                 token1_address, token1_symbol, token1_decimals,
                 balance0_raw, balance1_raw, balance0_units, balance1_units,
-                negative_inventory, inventory_valid, state_generation
+                negative_inventory, replay_arithmetic_valid, state_generation,
+                quantity_kind, custody_validation_status, ownership_validation_status
             FROM read_parquet(?)
         ), edge_ranked AS (
             SELECT day, pool,
@@ -119,7 +120,7 @@ def audit_sample_table(
         ), audit_valued AS (
             SELECT b.day, b.pool,
                 CASE WHEN p0.price_usd IS NOT NULL AND p1.price_usd IS NOT NULL
-                    AND b.inventory_valid
+                    AND b.replay_arithmetic_valid
                     THEN b.balance0_units*p0.price_usd + b.balance1_units*p1.price_usd
                     ELSE NULL END AS inventory_value_usd
             FROM base b
@@ -163,7 +164,7 @@ def audit_sample_table(
         )
         SELECT b.*, s.sample_reason,
             CASE WHEN p0.price_usd IS NOT NULL AND p1.price_usd IS NOT NULL
-                AND b.inventory_valid
+                AND b.replay_arithmetic_valid
                 THEN b.balance0_units*p0.price_usd + b.balance1_units*p1.price_usd
                 ELSE NULL END AS inventory_value_usd,
             p0.price_usd IS NOT NULL AND p1.price_usd IS NOT NULL

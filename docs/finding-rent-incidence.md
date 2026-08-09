@@ -4,7 +4,7 @@ Built 2026-08-07 by `scripts/build_rent_incidence_panel.py` and `scripts/run_ren
 
 ## Current admission status
 
-All numerical estimates below describe the superseded pre-repair generation and are retained only as an audit trail. None is admitted to the findings freeze. V2 must be rerun with exact prior-calendar capital and a provider-reserve reconciliation screen. V3 provider TVL is no longer an admitted capital measure: a historical on-chain balance probe produced an actual-balance/reported-TVL ratio with median 0.523, and only 3 of 14 critical pool-days matched within 25%. Every V3 capital, fee-to-LVR, net-flow and return statistic below is retired. V3 re-enters only after event-complete physical-inventory replay reconciles to historical balances and path-integrated concentrated-liquidity LVR passes separately.
+All numerical estimates below describe the superseded pre-repair generation and are retained only as an audit trail. None is admitted to the findings freeze. V2 must be rerun with exact prior-calendar capital and a provider-reserve reconciliation screen. V3 provider TVL is no longer an admitted capital measure: a historical on-chain balance probe produced an actual-balance/reported-TVL ratio with median 0.523, and only 3 of 14 critical pool-days matched within 25%. Every V3 capital, fee-to-LVR, net-flow and return statistic below is retired. V3 re-enters only after event-complete inventory replay passes historical custody checks, protocol-owned claims are removed, and path-integrated concentrated-liquidity LVR passes separately.
 
 This asks workflow item 4.1.3. Does intermediating pay, once the loss to arbitrageurs and the gas bill are both charged against fee revenue, and does the answer depend on the role the pool's assets play.
 
@@ -14,7 +14,7 @@ For V2, fee revenue is 30 basis points times USD volume. Loss-versus-rebalancing
 
 Active liquidity on V3 is reconstructed by replaying every mint and burn into a per-pool binary indexed tree over initialised ticks, so active liquidity at a tick is the running sum of net deltas at or below it. This validates local virtual depth, not dollar LVR over a day. The current calculation collapses a path that may cross initialized ticks to one volume-weighted tick. That can change the LVR magnitude and the sign of fee revenue less LVR and gas, so it remains a diagnostic implementation and supplies no admitted statistic.
 
-Constant-product-equivalent virtual reserves measure local curvature and depth, not deposited capital. Recorded V3 pool TVL also fails as capital in this source generation because it does not reconcile to historical token balances. Capital returns, fee-to-LVR ratios, net-flow signs and every regression using either object are retired. Event-replayed physical inventory and a path-integrated LVR adapter are separate binding objects.
+Constant-product-equivalent virtual reserves measure local curvature and depth, not deposited capital. Recorded V3 pool TVL also fails as capital in this source generation because it does not reconcile to historical token balances. Capital returns, fee-to-LVR ratios, net-flow signs and every regression using either object are retired. Event-replayed inventory, LP-ownership reconciliation and a path-integrated LVR adapter are separate binding objects.
 
 ## Screening, and what it removed
 
@@ -91,7 +91,7 @@ Within pools quoted against the native asset, where the quote leg is held fixed 
 
 The annual bridge normalizes capital-days by observed days, so the partial 2026 sample cannot masquerade as capital withdrawal. On v2, native-other mean daily capital falls from 1.011 billion dollars in 2024 to 0.344 billion in 2026, but its share of all screened capital rises from 70.2% to 77.8%. Other-stable capital falls from 0.151 billion to 0.023 billion and from 10.5% to 5.1%; native-stable falls from 0.232 billion to 0.044 billion and from 16.1% to 10.0%. Over the same period, native-other profitability improves: median net APR rises from -11.1% to -0.5% and the paying share from 16.0% to 34.0%. This is the opposite temporal ordering from a migration of capital or deteriorating native-spoke returns causing the stable vehicle transition.
 
-The V3 provider snapshots contain reported pool TVL, but that series failed the historical-balance audit and cannot identify deposited-capital migration. The earlier local-virtual-depth series also cannot answer the question because it changes with range concentration. Event-replayed physical inventory must supply the capital stock; current mint/burn outputs remain unnormalized dollar supply flows and within-flow shares.
+The V3 provider snapshots contain reported pool TVL, but that series failed the historical-balance audit and cannot identify deposited-capital migration. The earlier local-virtual-depth series also cannot answer the question because it changes with range concentration. Event-replayed inventory is only the custody-accounting input: it can supply a capital stock only after protocol-owned claims are removed and exact LP ownership is established. Current mint/burn outputs remain unnormalized dollar supply flows and within-flow shares.
 
 ## What this says about the paper
 

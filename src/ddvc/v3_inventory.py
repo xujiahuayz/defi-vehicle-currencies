@@ -1,4 +1,4 @@
-"""Uniswap V3 event semantics needed to reconstruct physical pool inventories."""
+"""Uniswap V3 event semantics needed to reconstruct event-accounted pool inventories."""
 
 from __future__ import annotations
 
@@ -26,6 +26,9 @@ EVENT_TOPICS = {
 EVENT_BY_TOPIC = {topic: name for name, topic in EVENT_TOPICS.items()}
 BALANCE_OF_SELECTOR = "0x" + keccak(text="balanceOf(address)")[:4].hex()
 INVENTORY_STATE_GENERATION = "uniswap_v3_event_replayed_inventory_v1"
+INVENTORY_QUANTITY_KIND = "event_replayed_pool_inventory"
+PENDING_CUSTODY_STATUS = "pending_historical_balance_validation"
+PENDING_OWNERSHIP_STATUS = "pending_protocol_fee_ownership_reconciliation"
 
 
 @dataclass(frozen=True)
@@ -342,13 +345,14 @@ def inventory_snapshot_rows(
                 "balance0_units": float(Decimal(balance0) / (Decimal(10) ** static.decimals0)),
                 "balance1_units": float(Decimal(balance1) / (Decimal(10) ** static.decimals1)),
                 "negative_inventory": negative,
-                "inventory_valid": not negative,
+                "replay_arithmetic_valid": not negative,
                 "last_event_block": last_block,
                 "last_event_log_index": last_log,
                 "cumulative_inventory_events": event_counts[pool],
-                "quantity_kind": "physical_pool_inventory",
+                "quantity_kind": INVENTORY_QUANTITY_KIND,
                 "state_generation": INVENTORY_STATE_GENERATION,
-                "validation_status": "event_replay_pending_balanceof_validation",
+                "custody_validation_status": PENDING_CUSTODY_STATUS,
+                "ownership_validation_status": PENDING_OWNERSHIP_STATUS,
             }
         )
     return rows

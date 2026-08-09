@@ -183,7 +183,12 @@ def test_inventory_checkpoint_preserves_negative_raw_balances_without_flooring()
     )
     assert rows[0]["balance1_raw"] == "-3"
     assert rows[0]["negative_inventory"] is True
-    assert rows[0]["inventory_valid"] is False
+    assert rows[0]["replay_arithmetic_valid"] is False
+    assert rows[0]["quantity_kind"] == "event_replayed_pool_inventory"
+    assert rows[0]["custody_validation_status"] == "pending_historical_balance_validation"
+    assert rows[0]["ownership_validation_status"] == (
+        "pending_protocol_fee_ownership_reconciliation"
+    )
 
 
 def test_day_calendar_uses_inclusive_strictly_increasing_block_cuts() -> None:
@@ -309,7 +314,7 @@ def test_balance_of_call_and_result_are_exact_uint256() -> None:
     assert decode_balance_of_result("0x" + "ff" * 32) == 2**256 - 1
 
 
-def test_balance_audit_sample_keeps_pool_edges_and_month_end_value_mass() -> None:
+def test_balance_audit_sample_keeps_pool_edges_and_calendar_audit_date_value_mass() -> None:
     token0 = "0x" + "01" * 20
     token1 = "0x" + "02" * 20
     pool = "0x" + "03" * 20
@@ -332,7 +337,10 @@ def test_balance_audit_sample_keeps_pool_edges_and_month_end_value_mass() -> Non
                 "balance0_units": 1.0,
                 "balance1_units": 1.0,
                 "negative_inventory": False,
-                "inventory_valid": True,
+                "replay_arithmetic_valid": True,
+                "quantity_kind": "event_replayed_pool_inventory",
+                "custody_validation_status": "pending_historical_balance_validation",
+                "ownership_validation_status": "pending_protocol_fee_ownership_reconciliation",
                 "state_generation": "test",
             }
         )
