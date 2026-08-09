@@ -13,6 +13,7 @@ from ddvc.analysis.routing_maturation import (
     estimate_dynamics,
     estimate_maturation,
     estimate_transition,
+    frontier_state_support_geometry,
     support_geometry,
     transition_support_geometry,
 )
@@ -92,6 +93,15 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
                             )
                         rows.append(row)
         return pd.DataFrame(rows)
+
+    def _frontier_support(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                "day": [f"{year}0115" for year in range(2021, 2026)],
+                "within_20pct_chosen_quote_eligible_routes": [100] * 5,
+                "within_20pct_chosen_quote_available": [95, 94, 96, 95, 95],
+            }
+        )
 
     def test_maturation_contract_has_four_primary_and_prespecified_sensitivities(self) -> None:
         result = estimate_maturation(self._maturation())
@@ -217,19 +227,39 @@ class RoutingMaturationEstimatorTests(unittest.TestCase):
         self.assertEqual(len(result), 30)
         self.assertFalse(result["support_exit_review_required"].any())
 
+    def test_frontier_state_coverage_blocks_time_selection_before_fits(self) -> None:
+        support = frontier_state_support_geometry(self._frontier_support())
+        self.assertEqual(len(support), 5)
+        self.assertFalse(support["support_exit_review_required"].any())
+        selected = self._frontier_support()
+        selected.loc[
+            selected["day"].eq("20210115"),
+            "within_20pct_chosen_quote_available",
+        ] = 60
+        support = frontier_state_support_geometry(selected)
+        self.assertTrue(support["support_exit_review_required"].all())
+        self.assertAlmostEqual(support["minimum_primary_year_coverage"].iloc[0], 0.6)
+        self.assertAlmostEqual(support["primary_year_coverage_spread"].iloc[0], 0.36)
+
     def test_support_exit_blocks_every_maturation_fit(self) -> None:
         frame = self._maturation()
         years = pd.to_datetime(frame["date"]).dt.year
         frame.loc[years.eq(2021), "route_count"] = 1
         frame.loc[years.eq(2025), "route_count"] = 100
         with patch("scripts.run_routing_maturation.estimate_maturation") as maturation:
-            results = [support_geometry(frame), transition_support_geometry(self._transition())]
+            results = [
+                frontier_state_support_geometry(self._frontier_support()),
+                support_geometry(frame),
+                transition_support_geometry(self._transition()),
+            ]
             review_required = support_review_required(results)
         self.assertTrue(review_required)
         maturation.assert_not_called()
-        self.assertEqual(len(results), 2)
+        self.assertEqual(len(results), 3)
         self.assertTrue(all(result["record_type"].eq("support").all() for result in results))
-        self.assertTrue(results[0]["support_exit_review_required"].any())
+        self.assertTrue(
+            any(result["support_exit_review_required"].any() for result in results)
+        )
 
     def test_missing_contract_column_fails_before_fit(self) -> None:
         with self.assertRaisesRegex(ValueError, "lacks columns"):

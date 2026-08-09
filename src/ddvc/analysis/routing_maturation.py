@@ -18,6 +18,8 @@ from ddvc.analysis.regression import (
 from ddvc.analysis.routing_contract import (
     HORIZONS_DAYS,
     MARGINS,
+    MAX_PRIMARY_YEAR_CHOSEN_STATE_COVERAGE_SPREAD,
+    MIN_PRIMARY_YEAR_CHOSEN_STATE_COVERAGE,
     PRIMARY_YEARS,
     REGRET_BIN_COLUMNS,
     REGRET_BIN_LEVELS,
@@ -66,6 +68,11 @@ DYNAMIC_COLUMNS = (
     "target_observed",
     "reproduction_tolerance_bps",
     *DYNAMIC_OUTCOME_COLUMNS,
+)
+FRONTIER_SUPPORT_COLUMNS = (
+    "day",
+    "within_20pct_chosen_quote_eligible_routes",
+    "within_20pct_chosen_quote_available",
 )
 
 
@@ -524,6 +531,75 @@ def transition_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
                 **support,
                 "minimum_to_maximum_observation_ratio": observation_ratio,
                 "minimum_to_maximum_route_ratio": route_ratio,
+                "support_exit_review_required": review,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def frontier_state_support_geometry(frame: pd.DataFrame) -> pd.DataFrame:
+    """Gate primary-year time selection in chosen-state availability before fitting."""
+
+    _required(frame, FRONTIER_SUPPORT_COLUMNS, name="transaction frontier support")
+    support = frame.loc[:, FRONTIER_SUPPORT_COLUMNS].copy()
+    support["date"] = pd.to_datetime(support["day"], format="%Y%m%d", errors="coerce")
+    if support["date"].isna().any():
+        raise ValueError("transaction frontier support contains an invalid day")
+    if support["date"].duplicated().any():
+        raise ValueError("transaction frontier support contains duplicate days")
+    support["year"] = support["date"].dt.year
+    support = support[support["year"].isin(PRIMARY_YEARS)].copy()
+    count_columns = list(FRONTIER_SUPPORT_COLUMNS[1:])
+    support[count_columns] = support[count_columns].apply(
+        pd.to_numeric, errors="coerce"
+    )
+    counts = support[count_columns].to_numpy(dtype=float)
+    if not np.isfinite(counts).all() or (counts < 0).any():
+        raise ValueError("transaction frontier support counts must be finite and nonnegative")
+    if not np.equal(counts, np.floor(counts)).all():
+        raise ValueError("transaction frontier support counts must be integers")
+    if (
+        support["within_20pct_chosen_quote_available"]
+        > support["within_20pct_chosen_quote_eligible_routes"]
+    ).any():
+        raise ValueError("available chosen quotes exceed eligible routes")
+    annual = support.groupby("year", observed=True).agg(
+        eligible_routes=("within_20pct_chosen_quote_eligible_routes", "sum"),
+        quoted_routes=("within_20pct_chosen_quote_available", "sum"),
+        dates=("date", "nunique"),
+    ).reindex(PRIMARY_YEARS, fill_value=0)
+    annual["chosen_state_coverage"] = np.divide(
+        annual["quoted_routes"],
+        annual["eligible_routes"],
+        out=np.zeros(len(annual), dtype=float),
+        where=annual["eligible_routes"].gt(0),
+    )
+    minimum_coverage = float(annual["chosen_state_coverage"].min())
+    maximum_coverage = float(annual["chosen_state_coverage"].max())
+    coverage_spread = maximum_coverage - minimum_coverage
+    review = (
+        minimum_coverage < MIN_PRIMARY_YEAR_CHOSEN_STATE_COVERAGE
+        or coverage_spread > MAX_PRIMARY_YEAR_CHOSEN_STATE_COVERAGE_SPREAD
+    )
+    rows: list[dict[str, object]] = []
+    for year, values in annual.iterrows():
+        rows.append(
+            {
+                "record_type": "support",
+                "family": "frontier_state_coverage_support",
+                "spec": "primary_year_time_selection",
+                "support": "within_20pct_chosen_quote_eligible",
+                "reproduction_tolerance_bps": 1.0,
+                "year": int(year),
+                "eligible_routes": int(values["eligible_routes"]),
+                "quoted_routes": int(values["quoted_routes"]),
+                "n_dates": int(values["dates"]),
+                "chosen_state_coverage": float(values["chosen_state_coverage"]),
+                "minimum_primary_year_coverage": minimum_coverage,
+                "maximum_primary_year_coverage": maximum_coverage,
+                "primary_year_coverage_spread": coverage_spread,
+                "minimum_coverage_gate": MIN_PRIMARY_YEAR_CHOSEN_STATE_COVERAGE,
+                "maximum_spread_gate": MAX_PRIMARY_YEAR_CHOSEN_STATE_COVERAGE_SPREAD,
                 "support_exit_review_required": review,
             }
         )

@@ -24,6 +24,7 @@ from ddvc.analysis.routing_maturation import (
     estimate_maturation,
     estimate_transition,
     dynamics_support_geometry,
+    frontier_state_support_geometry,
     support_geometry,
     transition_support_geometry,
 )
@@ -36,6 +37,7 @@ from ddvc.tables import write_exhibit
 CELL_DAY = DATA_DIR / "processed" / "routing_maturation_cell_day.parquet"
 TRANSITION = DATA_DIR / "processed" / "routing_transition_cells.parquet"
 EXACT_HORIZONS = DATA_DIR / "processed" / "routing_maturation_exact_horizons.parquet"
+FRONTIER_SUPPORT = DATA_DIR / "processed" / "transaction_state_frontier_daily_support.parquet"
 OUTPUT = OUTPUT_DIR / "exhibits" / "routing_maturation_results.jsonl"
 LOCK = DATA_DIR / "processed" / ".routing_maturation_estimates.lock"
 CODE_SOURCES = [
@@ -57,8 +59,19 @@ def support_review_required(support_frames: list[pd.DataFrame]) -> bool:
 
 
 def main() -> int:
-    inputs = [CELL_DAY, TRANSITION, EXACT_HORIZONS]
+    inputs = [FRONTIER_SUPPORT, CELL_DAY, TRANSITION, EXACT_HORIZONS]
     require_current_artifacts(inputs, consumer="routing-maturation estimator")
+    frontier_support = pd.read_parquet(
+        FRONTIER_SUPPORT,
+        columns=[
+            "day",
+            "within_20pct_chosen_quote_eligible_routes",
+            "within_20pct_chosen_quote_available",
+        ],
+    )
+    state_support = frontier_state_support_geometry(frontier_support)
+    del frontier_support
+    gc.collect()
     cell_support = pd.read_parquet(
         CELL_DAY,
         columns=[
@@ -79,7 +92,7 @@ def main() -> int:
     gc.collect()
     horizons = pd.read_parquet(EXACT_HORIZONS, columns=list(DYNAMIC_COLUMNS))
     horizon_support = dynamics_support_geometry(horizons)
-    results = [maturation_support, transition_support, horizon_support]
+    results = [state_support, maturation_support, transition_support, horizon_support]
     review_required = support_review_required(results)
     if review_required:
         del horizons

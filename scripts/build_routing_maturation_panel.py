@@ -31,7 +31,10 @@ from ddvc.analysis.routing_contract import (
     TRANSITION_REPRODUCTION_TOLERANCE_BPS,
     TRANSITION_YEARS,
 )
-from ddvc.analysis.transaction_frontier import MIN_CHOSEN_REPRODUCTION
+from ddvc.analysis.transaction_frontier import (
+    MIN_CHOSEN_REPRODUCTION,
+    chosen_quote_coverage_share,
+)
 from ddvc.data_release import require_node_d_release
 from ddvc.paths import DATA_DIR
 from ddvc.provenance import require_current_artifacts, stamp
@@ -189,11 +192,12 @@ def _validate_source(con: duckdb.DuckDBPyConnection, source: Path) -> int:
 
 def _validate_support(
     con: duckdb.DuckDBPyConnection, support: Path, source_rows: int
-) -> float:
-    scored, available, mismatches = con.execute(
+) -> tuple[float, float]:
+    scored, eligible, available, mismatches = con.execute(
         f"""
         SELECT
             coalesce(sum(scored_routes),0),
+            coalesce(sum(within_20pct_chosen_quote_eligible_routes),0),
             coalesce(sum(within_20pct_chosen_quote_available),0),
             coalesce(sum(within_20pct_chosen_output_mismatch),0)
         FROM read_parquet('{_quoted(support)}')
@@ -203,13 +207,16 @@ def _validate_support(
         raise ValueError(
             f"frontier/support row mismatch: {source_rows:,} != {int(scored):,}"
         )
+    coverage = chosen_quote_coverage_share(int(eligible), int(available))
+    if int(available) > int(eligible):
+        raise ValueError("frontier available chosen quotes exceed eligible routes")
     reproduction = 0.0 if available <= 0 else 1.0 - mismatches / available
     if reproduction < MIN_CHOSEN_REPRODUCTION:
         raise ValueError(
             f"chosen-route reproduction {reproduction:.3%} is below "
             f"{MIN_CHOSEN_REPRODUCTION:.0%}"
         )
-    return float(reproduction)
+    return float(reproduction), coverage
 
 
 def _margin_aggregates() -> str:
@@ -436,7 +443,7 @@ def build_panels(
         temp_dir.mkdir(parents=True, exist_ok=True)
         con.execute(f"SET temp_directory='{_quoted(temp_dir)}'")
         source_rows = _validate_source(con, source)
-        reproduction = _validate_support(con, support, source_rows)
+        reproduction, coverage = _validate_support(con, support, source_rows)
         cell_rows = _write_cell_day(
             con,
             source,
@@ -458,6 +465,7 @@ def build_panels(
     return {
         "source_rows": source_rows,
         "chosen_reproduction": reproduction,
+        "chosen_state_coverage": coverage,
         "cell_rows": cell_rows,
         "transition_rows": transition_rows,
         "horizon_rows": horizon_rows,
@@ -510,7 +518,8 @@ def main() -> int:
     )
     print(
         f"validated {int(results['source_rows']):,} route rows at "
-        f"{float(results['chosen_reproduction']):.3%} chosen-route reproduction"
+        f"{float(results['chosen_reproduction']):.3%} chosen-route reproduction and "
+        f"{float(results['chosen_state_coverage']):.3%} chosen-state coverage"
     )
     print(
         f"wrote {int(results['cell_rows']):,} cell-days, "

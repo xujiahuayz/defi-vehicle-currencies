@@ -51,6 +51,7 @@ class RoutingMaturationPanelTests(unittest.TestCase):
         pd.DataFrame(
             {
                 "scored_routes": [8],
+                "within_20pct_chosen_quote_eligible_routes": [8],
                 "within_20pct_chosen_quote_available": [8],
                 "within_20pct_chosen_output_mismatch": [0],
             }
@@ -80,6 +81,7 @@ class RoutingMaturationPanelTests(unittest.TestCase):
                 strict_min_days=2,
             )
             self.assertEqual(results["source_rows"], 8)
+            self.assertEqual(results["chosen_state_coverage"], 1.0)
             panel = pd.read_parquet(cell)
             self.assertEqual(set(panel["observed_reach"]), {"uniswap_v3"})
             self.assertEqual(set(panel["notional_bin"]), {"b2_1k_10k"})
