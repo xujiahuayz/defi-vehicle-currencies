@@ -124,7 +124,7 @@ Days are one currency for the cost of inertia, dollars are the other, and the tw
 L_t \;=\; \sum_{r \in \mathcal{R}_t} \mathbf{1}\{d_{r} = 1\} \, V_r \, \frac{g_r}{10^{4}},
 \label{eq:foregone}
 \end{equation}
-where $\mathcal{R}_t$ indexes realised multi-leg routes on date $t$, $V_r$ is the route's size in dollars, and $g_r$ is its realised cost gap in basis points. The second quantity is the one comparable to the magnitudes the arbitrage literature reports for this market, in dollars and over the same routes \citep{MakarovSchoar2020Arbitrage,HeimbachPahariSchertenleib2024NonAtomic}. A large flow through a slightly worse route and a small flow through a much worse route are different phenomena, and only \eqref{eq:foregone} separates them.
+where $\mathcal{R}_t$ indexes realised multi-leg routes on date $t$, $V_r$ is the route's size in dollars, and $g_r$ is its realised cost gap in basis points. This counterfactual execution-improvement measure is a project-specific object, subject to exact-size quote support and the cost treatment below. It is reported in dollars to make the economic magnitude comparable in units to the arbitrage literature, not because the sources measure the same routes or construct the same quantity \citep{MakarovSchoar2020Arbitrage}. A large flow through a slightly worse route and a small flow through a much worse route are different phenomena, and only \eqref{eq:foregone} separates them.
 
 \subsection{Classification at the block}
 \label{sec:survival:obstacle}

@@ -2,14 +2,16 @@
 """Are the measured route-cost gaps economically possible, or off-support quoter error?
 
 Node I's deepest objection, and it cuts at the counterfactual itself rather than at any
-one estimand: nothing stops a gap being taken. A gap between a direct pool and a two-leg
-route priced at the SAME reconstructed state sits inside one block, where there is no
-settlement latency, no short-sale constraint and no capital control. Makarov and Schoar
-devote a full section of a JFE paper to explaining why their 15-to-40% Korean premium
-survived, naming exactly those frictions, and none of them exists here. This repository's
-own round-trip statistic, a median day at 12.7% of multi-leg routes by count and 21.7% by
-value across 79 sampled days, shows the arbitrage capacity is present, and it is present
-in every sampled day rather than in an episode: the minimum day still runs 4.5% by count.
+one estimand: an executable gap invites capture. A direct pool and a two-leg route priced
+at the SAME reconstructed state can be joined atomically, which removes unmatched-leg
+risk but not financing, gas, competition, reversion, state latency or builder costs.
+Makarov and Schoar devote a full section of a JFE paper to explaining why their 15-to-40%
+Korean premium survived, naming settlement latency, short-sale unavailability and capital
+controls. Those exact frictions differ here, but the on-chain costs still have to be
+measured. This repository's own round-trip statistic, a median day at 12.7% of multi-leg
+routes by count and 21.7% by value across 79 sampled days, establishes a large
+self-returning population; it does not identify every route as arbitrage or prove
+continuous capture capacity. The minimum day still runs 4.5% by count.
 An earlier version of this docstring quoted 25.6% and 90.5% here, which are real but are
 the single most extreme day in the sample and were carrying far more rhetorical weight
 than the corpus supports. So a median same-state gap of -2,459 basis points is

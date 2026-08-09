@@ -333,6 +333,29 @@
       "non_text_dispositions": [],
       "status": "complete"
     },
+    "DaianEtAl2020FlashBoys": {
+      "checks": {
+        "article": "literature/text/2020-DaianEtAl2020FlashBoys-flash-boys-2-0-frontrunning-in-decentralized-exchanges-miner-extractable-value-a.txt",
+        "author_or_repository": "https://arxiv.org/abs/1904.05234",
+        "publisher_or_doi": "https://doi.org/10.1109/SP40000.2020.00040"
+      },
+      "companions": [],
+      "main": "DaianEtAl2020FlashBoys",
+      "non_text_companions": [
+        "https://github.com/pdaian/flashboys2/tree/b101c35361f00f35e667bb92c24c71095f0767fd"
+      ],
+      "non_text_dispositions": [
+        {
+          "note": "literature/source-notes/2020-DaianEtAl2020FlashBoysSourceFamily.md",
+          "reason": "The final study snapshot was inspected but is not retained or redistributed because the repository declares no license and contains historical credential-like strings; raw data, setup and end-to-end reproduction inputs are also absent.",
+          "sources": [
+            "https://github.com/pdaian/flashboys2/tree/b101c35361f00f35e667bb92c24c71095f0767fd"
+          ],
+          "status": "unavailable"
+        }
+      ],
+      "status": "complete"
+    },
     "GarleanuPedersenPoteshman2009DemandBased": {
       "checks": {
         "article": "literature/text/2009-GarleanuPedersenPoteshman2009DemandBased-published-demand-based-option-pricing.txt",
@@ -1016,9 +1039,21 @@
     "DaianEtAl2020FlashBoys": [
       {
         "access": "authenticated",
-        "label": "Crossref similarity-checking",
-        "url": "http://xplorestaging.ieee.org/ielx7/9144328/9152199/09152675.pdf?arnumber=9152675",
+        "label": "IEEE Symposium on Security and Privacy version of record",
+        "url": "https://doi.org/10.1109/SP40000.2020.00040",
         "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "arXiv v1 working paper",
+        "url": "https://arxiv.org/pdf/1904.05234v1",
+        "version": "working-paper"
+      },
+      {
+        "access": "public",
+        "label": "Official author code and data repository",
+        "url": "https://github.com/pdaian/flashboys2/tree/b101c35361f00f35e667bb92c24c71095f0767fd",
+        "version": "supplement"
       }
     ],
     "DiamondHuRajan2022LiquidityPledgeability": [

@@ -10,9 +10,11 @@ region a quote is an extrapolation with no measured error.
 
 The consequence is not speculative. Between 44.5% and 82.0% of the panel's route-cost
 gaps imply an arbitrage cycle that pays after three pool fees and three-hop gas, and at a
-100,000 dollar trade the MEDIAN gap is 4,655 basis points. A 46.5% same-block arbitrage
-would be taken immediately by anyone with a flash loan and no capital, so those gaps
-cannot be economic facts.
+100,000 dollar trade the MEDIAN gap is 4,655 basis points. A gap of that size is
+economically implausible without measured financing, gas, competition, state-latency,
+reversion and builder frictions; atomic execution removes unmatched-leg risk but does not
+remove those costs. The gaps therefore cannot be treated as economic facts without the
+quantitative bound.
 
 The fix has to be an EX-ANTE screen on the pool, not a filter on the gap. Filtering on the
 gap conditions on the magnitude of a monotone function of the outcome, which is selection

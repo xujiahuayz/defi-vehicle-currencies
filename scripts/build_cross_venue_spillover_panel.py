@@ -36,8 +36,8 @@ The Merge placebo has no treated venue, so it is run on both sets.
 
 Screens, all reported by the script that consumes this panel: legs priced at
 zero or above 1e9 USD are dropped as pricing junk, graph edges below a notional
-floor are dropped as dust, and round-trip routes (first input token equal to
-last output token) are dropped as atomic arbitrage or wash trading.
+floor are dropped as dust, and canonical endpoint round trips (first input token equal to
+last output token) are dropped because they are outside the endpoint-conversion unit.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cross_venue_spillover_daily.parquet

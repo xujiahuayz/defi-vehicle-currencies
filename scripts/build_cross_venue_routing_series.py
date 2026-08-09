@@ -26,8 +26,8 @@ still-open vehicle-asset definitions:
   economic     a topology-valid route with distinct source and sink currencies
 
 WHY THE ECONOMIC FILTER EXISTS. A route that starts and ends in the same token
-(A -> K -> A) moves no value between two parties: it is atomic arbitrage or wash
-trading. On 2025-12-06 such round trips were 25.6% of multi-leg routes by count
+(A -> K -> A) is not an endpoint-to-endpoint conversion under this route unit.
+On 2025-12-06 such round trips were 25.6% of multi-leg routes by count
 and 90.5% by dollar value, which is the most extreme day of 79 sampled across the
 corpus, where the median day runs 12.7% by count and 21.7% by value and no other
 sampled day exceeds 81.8% by value. That single day drove the cross-venue
@@ -37,13 +37,12 @@ value-weighted series was round-trip flow in the denominator. One contributing
 case: six separate transactions each running WETH -> (junk token) -> WETH on one
 venue, each repriced to exactly $9,113,892.
 
-This is the same threat the reference repo's `ddc.integrity` module addresses
-with citations (Cong, Li, Tang and Yang 2023 on wash trading; Daian et al. 2020
-and Heimbach et al. 2024 on MEV and non-atomic arbitrage, the latter measuring
-over a quarter of Ethereum DEX volume as likely non-atomic arbitrage). That
-module's conclusion applies here directly: volume-weighted measures are more
-exposed to inflation than count-based ones, so the count series is reported as
-primary and the value series as secondary.
+The excluded population can contain cyclic arbitrage, wash activity and other
+self-returning paths, but this endpoint rule does not classify each route. The reference
+repo's `ddc.integrity` module supplies separate wash and arbitrage screens. The panel's
+own extreme-value diagnostic establishes that volume-weighted measures are more exposed
+to a few repriced self-returning paths than count-based ones, so the count series is
+reported as primary and the value series as secondary.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  data/processed/cross_venue_routing_daily.parquet

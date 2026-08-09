@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""How much of multi-leg routing is round-trip arbitrage, across days and not on one day?
+"""How much of multi-leg routing is self-returning, across days and not on one day?
 
 This exists because a number measured here drifted. A single day, 2025-12-06, was measured
 at 25.6% of multi-leg routes by count and 90.5% by value, and that pair then propagated
@@ -20,9 +20,10 @@ is a script that reports the DISTRIBUTION across days and writes it as an exhibi
 claim about round-trip contamination cites a range with a denominator attached.
 
 The screen itself is unaffected. A route whose first input token equals its last output
-token moves no value between counterparties, so it is atomic arbitrage or a wash trade, and
-that is true at 4.5% or at 25.6%. What the magnitude governs is how much rhetorical weight
-the contamination argument can carry, which is where the drift did its damage.
+token is outside the endpoint-to-endpoint conversion unit. This population can contain
+cyclic arbitrage, wash activity and other self-returning paths; the endpoint rule does not
+classify each route. What the magnitude governs is how much rhetorical weight the
+contamination argument can carry, which is where the drift did its damage.
 
 Reads   data/unified/YYYYMMDD.parquet
 Writes  output/exhibits/round_trip_share_by_day.jsonl

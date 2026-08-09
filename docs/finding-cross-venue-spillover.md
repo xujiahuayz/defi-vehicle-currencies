@@ -27,7 +27,7 @@ The V3 window rests on 5,213,668 pre-event and 3,828,216 post-event intermediati
 | days in panel | 2,277 | 2,277 |
 | days dropped, fewer than 25 episodes | 42 | 42 |
 | multi-leg routes | 33,879,280 | 61,603,474 |
-| round trips dropped as atomic arbitrage or wash | 3,121,196 (9.2%) | 8,410,560 (13.7%) |
+| canonical endpoint round trips excluded from endpoint conversion | 3,121,196 (9.2%) | 8,410,560 (13.7%) |
 | intermediation episodes retained | 32,835,759 | 61,866,811 |
 | candidate graph edges | 8,248,779 | 9,899,168 |
 | edges dropped below the 1,000 USD dust floor | 55.4% | 53.1% |

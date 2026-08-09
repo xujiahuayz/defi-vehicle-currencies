@@ -558,7 +558,7 @@ A route whose first input token equals its last output token,
 \[
 \mathbf{1}\{\,a_{\mathrm{first}} = b_{\mathrm{last}}\,\},
 \]
-moves no value between counterparties and is atomic arbitrage or wash trading \citep{DaianEtAl2020FlashBoys}. Such routes are removed everywhere before anything is measured, because they are the mechanical residue of the same cycle whose profitability Section~\ref{sec:executability:arbitrage} uses as a bound and they would enter a routing statistic as though a trader had chosen an intermediary.
+does not represent endpoint-to-endpoint conversion under the paper's route unit. Such routes are removed everywhere before anything is measured because they would otherwise enter a routing statistic as though a trader had chosen an intermediary between distinct endpoints. The excluded population can contain cyclic arbitrage and other self-returning activity; the endpoint rule does not label every route as arbitrage or wash trading. Multi-trade arbitrage can be bundled atomically \citep{DaianEtAl2020FlashBoys}, which supports the mechanism but not an exhaustive behavioural classification.
 
 The magnitude of the contamination governs how much weight the exclusion argument can carry, and it drifted once in this project's own records. A single day, 2025-12-06, was measured at 25.9\% of multi-leg routes by count and 91.3\% by value, and that pair propagated into eleven places before anyone noticed it was the most extreme day in the sample. The figure was never arithmetically wrong, which is what made it durable, since anyone re-checking it against its stated source reproduced it exactly.
 % output/exhibits/round_trip_share_by_day.jsonl; scripts/measure_round_trip_share.py, 2025-12-06 as the extreme day of 79

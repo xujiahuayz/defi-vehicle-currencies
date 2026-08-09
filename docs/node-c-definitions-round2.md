@@ -155,7 +155,7 @@ Mukhin 2022 supplies the succession object in the same shape. His Figure 3, "Tra
 
 **Current definition.** A reconstructed multi-leg path within one transaction, one coherent component being one route unit regardless of leg count, with round trips excluded at 12.7% of multi-leg routes by count and 21.7% by value on the median of 79 sampled days, 25.9% and 91.3% on 2025-12-06, the worst.
 
-**What the literature does.** The exclusion of round trips is the best-supported definition in this file. Heimbach, Pahari and Schertenleib 2024 name cyclic arbitrage as one of the three canonical MEV types, "the most commonly observed and measured types of MEV on Ethereum are sandwich attacks, cyclic arbitrage, and liquidations", and treat it as extraction and not as user trading throughout. Daian et al 2020 establish the same category. A route whose first input equals its last output is a member of that category and not a payment.
+**What the literature does.** Heimbach, Pahari and Schertenleib 2024 name cyclic arbitrage as one of the three canonical MEV types, "the most commonly observed and measured types of MEV on Ethereum are sandwich attacks, cyclic arbitrage, and liquidations", and treat that identified activity as extraction. Daian et al. 2020 establish atomic multi-trade arbitrage. The project's rule that a route whose first input equals its last output lies outside endpoint-to-endpoint conversion is an operational definition; mapping every such route to cyclic arbitrage or wash trading would be an unsupported behavioural inference.
 
 Krugman's unit is the payment `P_ij` between two parties, resolved either directly or through one vehicle, which is our route unit exactly. Somogyi's measurement unit is the triplet-day, which is an aggregate of ours.
 
