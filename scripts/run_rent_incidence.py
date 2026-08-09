@@ -28,16 +28,16 @@ path-integrated concentrated-liquidity LVR adapter passes independently.
 from __future__ import annotations
 
 import json
-from math import erfc, sqrt
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
 
 from ddvc.asset_types import asset_type
-from ddvc.analysis.regression import ols_clustered
+from ddvc.analysis.regression import ClusteredOLSResult, ols_clustered
 from ddvc.data_release import require_node_d_release
 from ddvc.gas import load_daily_gas_prices
 from ddvc.liquidity import (
@@ -95,10 +95,6 @@ MAX_HOURLY_MOVE = 100.0
 # inference
 # ---------------------------------------------------------------------------
 
-def pval(t: float) -> float:
-    return erfc(abs(t) / sqrt(2)) if np.isfinite(t) else float("nan")
-
-
 def wald(beta, V, idx) -> tuple[float, int, float]:
     """Joint Wald test that every coefficient in `idx` is zero."""
     b = beta[idx]
@@ -106,34 +102,97 @@ def wald(beta, V, idx) -> tuple[float, int, float]:
     stat = float(b @ np.linalg.pinv(Vs) @ b)
     q = len(idx)
     # chi-square survival by the regularised upper incomplete gamma
-    from scipy.stats import chi2
-    return stat, q, float(chi2.sf(stat, q))
+    return stat, q, float(stats.chi2.sf(stat, q))
 
 
-def report(name, y, X, cols, cluster, k_absorbed=0, focus=None):
+def _inference_fields(fit: ClusteredOLSResult) -> dict[str, object]:
+    counts = fit.cluster_counts or (fit.n_clusters,)
+    return {
+        "n": fit.n_observations,
+        "clusters": fit.n_clusters,
+        "pool_clusters": counts[0],
+        "month_clusters": counts[1] if len(counts) > 1 else None,
+        "covariance": "two_way_pool_month_cr1" if len(counts) > 1 else "one_way_pool_cr1",
+    }
+
+
+def report(
+    name,
+    y,
+    X,
+    cols,
+    cluster,
+    *,
+    additional_cluster=None,
+    k_absorbed=0,
+    focus=None,
+):
     fit = ols_clustered(
         y,
         X,
         cluster,
         add_constant=False,
         k_absorbed=k_absorbed,
+        additional_clusters=(additional_cluster,) if additional_cluster is not None else (),
     )
-    beta, V, g = fit.beta, fit.covariance, fit.n_clusters
-    se = np.sqrt(np.maximum(np.diag(V), 0))
-    print(f"\n{name}   n={len(y):,}  clusters={g:,}")
+    beta, V = fit.beta, fit.covariance
+    se, p_values = fit.standard_errors, fit.p_values
+    pool_fit = None
+    month_fit = None
+    if additional_cluster is not None:
+        pool_fit = ols_clustered(
+            y,
+            X,
+            cluster,
+            add_constant=False,
+            k_absorbed=k_absorbed,
+        )
+        month_fit = ols_clustered(
+            y,
+            X,
+            additional_cluster,
+            add_constant=False,
+            k_absorbed=k_absorbed,
+        )
+        if not (
+            np.allclose(beta, pool_fit.beta, equal_nan=True)
+            and np.allclose(beta, month_fit.beta, equal_nan=True)
+        ):
+            raise RuntimeError("covariance sensitivities changed the OLS coefficient sample")
+    cluster_text = " x ".join(f"{count:,}" for count in fit.cluster_counts)
+    print(f"\n{name}   n={fit.n_observations:,}  clusters={cluster_text}")
     print(f"  {'term':<28}{'coef':>12}{'se':>12}{'t':>8}{'p':>8}{'MDE':>12}")
     recs = []
+    mde_multiplier = (
+        stats.t.ppf(0.975, fit.n_clusters - 1)
+        + stats.t.ppf(0.8, fit.n_clusters - 1)
+        if fit.n_clusters >= 2
+        else np.nan
+    )
     for i, c in enumerate(cols):
         if focus is not None and c not in focus:
             continue
-        t = beta[i] / se[i] if se[i] > 0 else np.nan
-        p = pval(t)
-        mde = 2.802 * se[i]
+        t = fit.t_statistics[i]
+        p = p_values[i]
+        mde = mde_multiplier * se[i]
         print(f"  {c:<28}{beta[i]:>12.4f}{se[i]:>12.4f}{t:>8.2f}{p:>8.3f}{mde:>12.4f}")
-        recs.append({"spec": name, "term": c, "coef": float(beta[i]),
-                     "se": float(se[i]), "t": float(t), "p": float(p),
-                     "mde_80pct": float(mde), "n": int(len(y)), "clusters": int(g)})
-    return beta, V, g, recs
+        recs.append(
+            {
+                "spec": name,
+                "term": c,
+                "coef": float(beta[i]),
+                "se": float(se[i]),
+                "t": float(t),
+                "p": float(p),
+                "mde_80pct": float(mde),
+                "se_pool_only": float(pool_fit.standard_errors[i]) if pool_fit else np.nan,
+                "p_pool_only": float(pool_fit.p_values[i]) if pool_fit else np.nan,
+                "se_month_only": float(month_fit.standard_errors[i]) if month_fit else np.nan,
+                "p_month_only": float(month_fit.p_values[i]) if month_fit else np.nan,
+                **_inference_fields(fit),
+            }
+        )
+    return beta, V, fit, recs
 
 
 # ---------------------------------------------------------------------------
@@ -646,16 +705,26 @@ def main() -> int:
             X = np.column_stack([np.ones(len(sr)), D, mo])[m]
             cols = ["const"] + [f"role[{r_}]" for r_ in others] + \
                    [f"m{i}" for i in range(mo.shape[1])]
-            beta, V, gsz, r = report(f"{label} (base {base})", yv.to_numpy()[m], X, cols,
-                                     sr.pool.to_numpy()[m],
-                                     focus=set(cols[:1 + len(others)]))
+            beta, V, fit, r = report(
+                f"{label} (base {base})",
+                yv.to_numpy()[m],
+                X,
+                cols,
+                sr.pool.to_numpy()[m],
+                additional_cluster=sr.month.to_numpy()[m],
+                focus=set(cols[:1 + len(others)]),
+            )
             regs += r
             stat, q, pv = wald(beta, V, list(range(1, 1 + len(others))))
             print(f"  joint Wald, all role effects zero: chi2({q}) = {stat:.2f}, p = {pv:.3f}")
             regs.append({"spec": f"{label} Wald", "term": "joint", "coef": stat,
                          "se": float("nan"), "t": float("nan"), "p": pv,
-                         "mde_80pct": float("nan"), "n": int(m.sum()),
-                         "clusters": int(gsz)})
+                         "mde_80pct": float("nan"),
+                         "se_pool_only": float("nan"),
+                         "p_pool_only": float("nan"),
+                         "se_month_only": float("nan"),
+                         "p_month_only": float("nan"),
+                         **_inference_fields(fit)})
 
     for venue in sorted(pm.venue.unique()):
         s = pm[(pm.venue == venue) & pm.log_c.notna()].copy()
@@ -668,8 +737,15 @@ def main() -> int:
         if return_inference_ready(venue):
             X = np.column_stack([np.ones(len(s)), s.log_c, mo])
             cols = ["const", "log_c"] + [f"m{i}" for i in range(mo.shape[1])]
-            _, _, _, r = report(f"{venue} (1) risk-adjusted net return, centrality + month FE",
-                                s.sharpe.to_numpy(), X, cols, cl, focus={"log_c"})
+            _, _, _, r = report(
+                f"{venue} (1) risk-adjusted net return, centrality + month FE",
+                s.sharpe.to_numpy(),
+                X,
+                cols,
+                cl,
+                additional_cluster=s.month.to_numpy(),
+                focus={"log_c"},
+            )
             regs += r
 
         if venue == "uniswap_v3":
@@ -701,15 +777,29 @@ def main() -> int:
             ]
         for label, yv in outcomes:
             m = np.isfinite(yv.to_numpy())
-            _, _, _, r = report(f"{venue} {label}", yv.to_numpy()[m], X[m], cols, cl[m],
-                                focus={"log_c", "log_capital", "log_local_depth", "log_rv"})
+            _, _, _, r = report(
+                f"{venue} {label}",
+                yv.to_numpy()[m],
+                X[m],
+                cols,
+                cl[m],
+                additional_cluster=s.month.to_numpy()[m],
+                focus={"log_c", "log_capital", "log_local_depth", "log_rv"},
+            )
             regs += r
 
         if return_inference_ready(venue):
             X = np.column_stack([np.ones(len(s)), s.log_deg, s.log_scale, s.log_rv, mo])
             cols = ["const", "log_deg", "log_scale", "log_rv"] + [f"m{i}" for i in range(mo.shape[1])]
-            _, _, _, r = report(f"{venue} (7) degree instead of betweenness",
-                                s.sharpe.to_numpy(), X, cols, cl, focus={"log_deg"})
+            _, _, _, r = report(
+                f"{venue} (7) degree instead of betweenness",
+                s.sharpe.to_numpy(),
+                X,
+                cols,
+                cl,
+                additional_cluster=s.month.to_numpy(),
+                focus={"log_deg"},
+            )
             regs += r
 
         # Within pools quoted against the native asset the quote leg is held
@@ -726,9 +816,15 @@ def main() -> int:
             mow = pd.get_dummies(sw.month, prefix="m", drop_first=True).astype(float).to_numpy()
             Xw = np.column_stack([np.ones(len(sw)), sw.log_c_other, sw.log_scale, sw.log_rv, mow])
             cw = ["const", "log_c_other", "log_scale", "log_rv"] + [f"m{i}" for i in range(mow.shape[1])]
-            _, _, _, r = report(f"{venue} (7) native-quoted pools, other leg's centrality",
-                                sw.sharpe.to_numpy(), Xw, cw, sw.pool.to_numpy(),
-                                focus={"log_c_other", "log_scale", "log_rv"})
+            _, _, _, r = report(
+                f"{venue} (7) native-quoted pools, other leg's centrality",
+                sw.sharpe.to_numpy(),
+                Xw,
+                cw,
+                sw.pool.to_numpy(),
+                additional_cluster=sw.month.to_numpy(),
+                focus={"log_c_other", "log_scale", "log_rv"},
+            )
             regs += r
 
             cnt = sw.other_role.value_counts()
@@ -747,20 +843,26 @@ def main() -> int:
                          + [f"log_c_other x role[{r_}]" for r_ in others])
                 nfoc = len(icols)
                 icols += [f"m{i}" for i in range(Xi.shape[1] - nfoc)]
-                beta, V, gsz, r = report(
+                beta, V, fit, r = report(
                     f"{venue} (8) centrality x other-leg role (base {base})",
                     si.sharpe.to_numpy(), Xi, icols, si.pool.to_numpy(),
+                    additional_cluster=si.month.to_numpy(),
                     focus=set(icols[:nfoc]))
                 regs += r
                 idx = list(range(4 + len(others), 4 + 2 * len(others)))
                 stat, q, p = wald(beta, V, idx)
                 print(f"  joint Wald, all centrality x role interactions zero: "
                       f"chi2({q}) = {stat:.2f}, p = {p:.3f}; "
-                      f"{len(si):,} pool-months, {gsz:,} pools")
+                      f"{len(si):,} pool-months, {fit.cluster_counts[0]:,} pools, "
+                      f"{fit.cluster_counts[1]:,} months")
                 regs.append({"spec": f"{venue} (9) interaction Wald", "term": "joint",
                              "coef": stat, "se": float("nan"), "t": float("nan"),
                              "p": p, "mde_80pct": float("nan"), "n": int(len(si)),
-                             "clusters": int(gsz)})
+                             "se_pool_only": float("nan"),
+                             "p_pool_only": float("nan"),
+                             "se_month_only": float("nan"),
+                             "p_month_only": float("nan"),
+                             **_inference_fields(fit)})
 
     write_exhibit(
         pd.DataFrame(regs),

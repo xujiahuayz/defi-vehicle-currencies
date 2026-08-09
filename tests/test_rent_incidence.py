@@ -23,6 +23,7 @@ from scripts.run_rent_incidence import (
     REQUIRED_PANELS,
     by_role_over_time,
     pool_months,
+    report,
 )
 from ddvc.fetch.pool_daily import pool_day_values, require_pool_daily_coverage
 from ddvc.fetch.sources import DEX_SOURCES
@@ -69,6 +70,44 @@ def test_every_estimator_output_uses_one_current_input_contract():
     source = (ROOT / "scripts" / "run_rent_incidence.py").read_text()
     assert OUTPUT_PROVENANCE["inputs"] == REQUIRED_PANELS
     assert source.count("**OUTPUT_PROVENANCE") == 7
+
+
+def test_rent_report_uses_two_way_primary_and_keeps_one_way_sensitivities():
+    x_value = np.arange(24, dtype=float)
+    design = np.column_stack([np.ones(len(x_value)), x_value])
+    pools = np.repeat(["a", "b", "c", "d", "e", "f"], 4)
+    months = np.tile(["m1", "m2", "m3", "m4"], 6)
+    pool_shock = np.repeat([0.5, -0.5, 0.25, -0.25, 0.75, -0.75], 4)
+    month_shock = np.tile([0.2, -0.1, 0.3, -0.4], 6)
+    outcome = (
+        1.0
+        + 0.2 * x_value
+        + pool_shock
+        + month_shock
+        + np.random.default_rng(0).normal(0, 0.1, len(x_value))
+    )
+
+    _, _, fit, records = report(
+        "test",
+        outcome,
+        design,
+        ["const", "slope"],
+        pools,
+        additional_cluster=months,
+        focus={"slope"},
+    )
+
+    assert fit.cluster_counts == (6, 4)
+    assert len(records) == 1
+    record = records[0]
+    assert record["covariance"] == "two_way_pool_month_cr1"
+    assert record["pool_clusters"] == 6
+    assert record["month_clusters"] == 4
+    assert record["p"] == pytest.approx(fit.p_values[1])
+    assert np.isfinite(record["se_pool_only"])
+    assert np.isfinite(record["p_pool_only"])
+    assert np.isfinite(record["se_month_only"])
+    assert np.isfinite(record["p_month_only"])
 
 
 def test_role_exhibit_keeps_pooled_and_annual_bridge_rows():

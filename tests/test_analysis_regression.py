@@ -4,6 +4,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 from ddvc.analysis.regression import (
     absorb_fixed_effects,
@@ -170,6 +171,65 @@ class RegressionPrimitiveTests(unittest.TestCase):
         )
         self.assertEqual((n, clusters), (12, 4))
         self.assertAlmostEqual(named["slope_beta"], beta[1])
+
+    def test_two_way_clustered_ols_matches_cr1_inclusion_exclusion(self) -> None:
+        x_value = np.arange(12, dtype=float)
+        design = np.column_stack([np.ones(len(x_value)), x_value])
+        outcome = 2.0 + 0.5 * x_value + np.array(
+            [0.0, 1.0, -0.5, 0.5, -1.0, 0.25] * 2
+        )
+        pool = np.repeat(["a", "b", "c", "d"], 3)
+        month = np.tile(["m1", "m2", "m3"], 4)
+        result = ols_clustered(
+            outcome,
+            x_value,
+            pool,
+            additional_clusters=(month,),
+        )
+        beta = np.linalg.lstsq(design, outcome, rcond=None)[0]
+        residual = outcome - design @ beta
+        bread = np.linalg.inv(design.T @ design)
+
+        def covariance(labels: object) -> np.ndarray:
+            codes, unique = pd.factorize(labels)
+            meat = np.zeros((2, 2))
+            for code in range(len(unique)):
+                score = design[codes == code].T @ residual[codes == code]
+                meat += np.outer(score, score)
+            scale = (len(unique) / (len(unique) - 1)) * (11 / 10)
+            return scale * bread @ meat @ bread
+
+        expected = (
+            covariance(pool)
+            + covariance(month)
+            - covariance(pd.MultiIndex.from_arrays([pool, month]))
+        )
+        np.testing.assert_allclose(result.beta, beta)
+        np.testing.assert_allclose(result.covariance, expected)
+        self.assertEqual(result.cluster_counts, (4, 3))
+        self.assertEqual(result.n_clusters, 3)
+        expected_p = 2 * stats.t.sf(abs(result.t_statistics), 2)
+        np.testing.assert_allclose(result.p_values, expected_p)
+
+    def test_multiway_cluster_rejects_hac_and_a_third_dimension(self) -> None:
+        values = np.arange(8, dtype=float)
+        first = np.repeat(["a", "b"], 4)
+        second = np.tile(["x", "y"], 4)
+        with self.assertRaisesRegex(ValueError, "HAC cannot be combined"):
+            ols_clustered(
+                values,
+                values,
+                first,
+                additional_clusters=(second,),
+                cluster_hac_lag=1,
+            )
+        with self.assertRaisesRegex(ValueError, "at most two"):
+            ols_clustered(
+                values,
+                values,
+                first,
+                additional_clusters=(second, first),
+            )
 
     def test_clustered_ols_returns_nan_when_rank_deficient(self) -> None:
         result = ols_clustered(
