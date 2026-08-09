@@ -1,0 +1,992 @@
+
+
+===== PAGE 1 =====
+
+Federal Reserve Bank of Minneapolis
+Research Department Staff Report 140
+May 1991
+MORE ON MONEY AS A MEDIUM OF EXCHANGE
+Timothy J. Kehoe*
+Nobuhiro Kiyotaki*
+University of Minnesota and
+University of Wisconsin - Madison and
+Federal Reserve Bank of Minneapolis
+London School of Economics
+Randall Wright*
+University of Pennsylvania and
+Federal Reserve Bank of Minneapolis
+ABSTRACT
+We extend the analysis of Kiyotaki and Wright, who study an economy in which the different commodities
+that serve as media of exchange are determined endogenously. Kiyotaki and Wright consider only
+symmetric, steady-state, pure-strategy equilibria, and find that for some parameter values no such
+equilibria exist. We consider mixed-strategy equilibria and dynamic equilibria. We prove that a steady-
+state equilibrium exists for all parameter values and that the number of steady-state equilibria is generically
+finite. We also show, however, that there may be a continuum of dynamic equilibria. Further, some
+We thank the National Science Foundation and the University of Pennsylvania Research Foundation for
+financial support, as well as seminar participants at Stanford University, the London School of Economics,
+the Econometric Society World Congress in Barcelona, and the Conference on Monetary Theory and
+Financial Intermediation at the Federal Reserve Bank of Minneapolis for their input.
+The views expressed herein are those of the authors and not necessarily those of the Federal Reserve Bank
+of Minneapolis or the Federal Reserve System.
+
+===== PAGE 2 =====
+
+1. Introduction
+Kiyotaki and Wright (1989) present a model economy in which the objects
+that serve as media of exchange, or monies, are determined endogenously.
+Which objects serve as money depends on their intrinsic properties and,
+also, on the extrinsic beliefs of the agents in the model. In one version,
+called Model A, different objects can play the role of commodity money,
+depending on parameters. In fact, parameter space can be partitioned into
+three regions: in one region there is a unique symmetric, steady-state,
+pure-strategy equilibrium with a single commodity money; in the second
+region there is a unique such equilibrium with two commodity monies; and in
+the third region no symmetric, steady-state, pure-strategy equilibria exist.
+In another version of the model, called Model B, there is a symmetric,
+steady-state, pure-strategy equilibrium for all parameter values, and for
+some parameters there simultaneously exists a second such eguilibrium with
+different commodity monies.
+We extend the analysis in Kiyotaki and Wright (1989) to include
+mixed-strategy equilibria (which can also be interpreted as pure-strategy
+but nonsymmetric equilibria), and to include dynamic (that is, not
+necessarily steady-state) equilibria. Allowing for mixed-strategies allows
+us to do several things. First, we construct a symmetric, steady-state
+equilibrium in the region of parameter space for which no symmetric,
+steady-state, pure-strategy equilibrium exists. This is not too surprising,
+since Aiyagari and Wallace (1989) prove that there always exists a
+symmetric, mixed-strategy, steady-state equilibrium in a fairly general
+version of the model. Yet we think that it is useful to have a constructive
+proof that delivers the equilibrium strategies and commodity monies
+explicitly; as Aiyagari and Wallace argue, establishing existence is
+relatively easy, and the hard part is determining the characteristics of an
+
+===== PAGE 3 =====
+
+2
+equilibrium, such as if and how agents trade. Further, the equilibrium we
+construct is a natural one in the sense that it continuously "ties together"
+the pure-strategy equilibria found earlier.
+Second, we show that once we allow mixed-strategies we lose uniqueness
+in Model A, by constructing a new mixed-strategy, steady-state equilibrium
+in a nonempty open set of parameter space for which we already know that a
+pure-strategy, steady-state equilibrium exists. The economics of these two
+equilibria are rather different and, in particular, they are characterized
+by different commodity monies, simply because agents have different
+extrinsic beliefs as to what the commodity monies will be. This leads us to
+address the issue of exactly how many steady-state equilibria there might be
+in the model. We prove that generically there is a finite number of
+steady-state equilibria in either Model A or Model B. This means that
+extrinsic beliefs do not allow just anything to happen, and is also
+important because it allows us to do comparative statics and other natural
+experiments (see, for example, Kehoe 1985).
+When we extend the analysis beyond steady-states, however, the set of
+equilibria becomes very rich indeed. We first demonstrate that, at least
+for certain regions of parameter space, there can be a robust continuum of
+equilibrium paths. That is, for certain nonempty open sets in parameter
+space, there is a stationary steady-state equilibrium, and for any initial
+values of the (predetermined) inventories in some nonempty open set, there
+exists a continuum of strategies such that the inventories and strategies
+converge to the steady-state along a path starting from these initial
+conditions. Hence, given the predetermined inventory distribution, there is
+a continuum of initial conditions for trading strategies all of which are
+consistent with a dynamic equilibrium. We also show that the model can
+display equilibria that are stable limit cycles. In these equilibria, the
+
+===== PAGE 4 =====
+
+3
+trading strategies and, therefore, the commodity monies vary cyclically,
+even though the fundamentals of the model are time invariant.
+It is worth remarking that the dynamic equilibria of this model are
+reminiscent of the dynamic equilibria in overlapping generations economies.
+Further, we exploit the same types of tools that are used in the study of
+those economies. For example, using similar techniques, Kehoe and Levine
+(1984) demonstrate the generic finiteness of the number of steady-state
+equilibria in overlapping generations economies; Kehoe and Levine (1985)
+analyze the possibility of a continuum of dynamic equilibria converging to a
+steady-state; and Benhabib and Day (1982), Grandmont (1985), and Azariadis
+and Geusnerie (1986) analyze the possibility of equilibrium cycles and even
+more complex dynamics. It is also worth pointing out that our results are
+not special cases of general theorems in game theory, for reasons that we
+discuss further below. In particular, the model we analyze is an anonymous
+sequential game (see Jovanovic and Rosenthal 1988); hence, for example, very
+little about the set of equilibria can be learned from the literature on
+repeated games, as "reputation" is irrelevant here.
+The remainder of the paper is organized as follows. In Section 2 we
+review the basic model in Kiyotaki and Wright (1989), and state the results
+on the existence of a symmetric, steady-state, pure-strategy, commodity
+money equilibrium. (That paper also considered economies with fiat money,
+but here we restrict attention to the commodity money case.) As mentioned
+earlier, there is a region of parameter space for which no such equilibrium
+exists. In Section 3 we extend the model to mixed-strategies and dynamics.
+In Section 4 we fill in the gap in the results of Section 2 by constructing
+a steady-state equilibrium in mixed-strategies.
+We also construct a
+mixed-strategy steady-state equilibrium for parameters for which we already
+know that a pure-strategy equilibrium exists. In Section 5 we prove that
+
+===== PAGE 5 =====
+
+the number of steady-state equilibria is generically finite. In Section 6
+we demonstrate that a robust continuum of dynamic equilibria can arise, and
+in Section 7 we construct a cyclic equilibrium. In Section 8 we present
+some brief concluding remarks.
+2. The Basic Model
+Time is discrete and continues forever. There are three indivisible
+goods, labeled 1 = 1, 2, 3. There is a continuum of agents of unit mass,
+with equal proportions of three types: type i consumes only good i and
+produces only good i+1 modulo 3 (type 1 produces good 2, type 2 produces
+good 3, and type 3 produces good 1). For each type i, u is the utility of
+consuming good i, and ij is the disutility of storing good j for one
+period. The cost of production is normalized to zero, and Be(0,1) is the
+discount factor. Assume that only one good at a time can be stored, and
+assume for now that storage costs are ordered Ci3 > Cj2 > Cil for all 1.
+This is the consumption-production-storage specification called Model A in
+Kiyotaki and Wright (1989). Model B reorders production so that i produces
+i-1 modulo 3 or, equivalently, reorders storage costs. It will be more
+convenient here to have i always produce i+1, and to differentiate Models A
+and B by reordering storage costs.
+Agents meet randomly in pairs at each date and trade bilaterally if and
+only if it is mutually agreeable. When type i acquires good 1, he
+immediately consumes it, produces a new unit of good i+1, and stores it
+until the next date, when he meets a new trading partner. Hence, in
+equilibrium type i always enters a trading period with either good i+1 or
+good 1+2, and never good i. This means that p(t) = (pg(t), p2(t), Pz(t)l,
+where pf(t) is the proportion of type 1 agents holding their production good
+i+1 at date t, completely describes the distribution of inventories at a
+
+===== PAGE 6 =====
+
+5
+point in time. A steady-state inventory distribution satisfies p(t) = p for
+all t.
+Agents choose strategies for deciding when to trade, given the
+strategies of others and p. In this section, as in Kiyotaki and Wright
+(1989), we consider only time-invariant pure-strategies, which we define by
+functions Ti, where T; (j,k) = 1 if type i wants to trade good j for good k,
+and T, (J,K) = 0 otherwise. Also as in Kiyotaki and Wright (1989), we assume
+I, (J,K) = 0 If and only if I,(k,1) = 1 (type i either prefers good k to good
+j or vice-versa). Under mild conditions to guarantee that agents do not
+want to drop out of the economy, we can also show that I, (1,1) = 1 for all j
+(type i always trades for his own consumption good). Therefore, each type
+i's strategy is completely specified once we decide whether 91 = 7, (1+1, 1+2)
+is 1 or 0. If 01 = 1, then i is willing to trade his production good 1+1
+for the intermediate good i+2, which he later uses to buy his consumption
+good; If 01 = 0, then i keeps his production good until he can trade for his
+consumption good directly. Choosing of therefore amounts to choosing
+whether or not type i is willing to use good i+2 as a medium of exchange.
+A symmetric, steady-state, pure-strategy equilibrium is defined to be a
+vector of inventories p= (Polz'P3) and a vector of strategies o=
+(01,02°3) such that: (1) when agents use strategies o, the resulting
+steady-state inventory distribution is p, and (2) for all 1, oj maximizes
+expected discounted utility from consumption net of storage costs, given o
+and p. The following result from Kiyotaki and Wright (1989) describes the
+set of such equilibria for Model A. In order to reduce notation in our
+statement of this result, we normalize utility, with no loss in generality,
+so that Bu/3 = 1. Given this, it turns out that everything depends on the
+single parameter 81 = 13°12'
+
+===== PAGE 7 =====
+
+Proposition 1. In Model A, If 81 = 1/2, then o = (0,1,0) is the unique
+symmetric, steady-state, pure-strategy equilibrium; 1f 8, =12 - 1, then o =
+(1,1,0) 1s the unique such equilibrium; If V2 - 1 < 81 < 112, then there
+exists no such equilibrium.
+The intuition behind Proposition 1 is simple. Assume that °2 = 1 and
+°3 = 0, and consider the best response problem of a type 1 agent. (It is
+easy to show that 02 = 1 and °3 = 0 are best responses for type 2 and type
+3, for all parameter values, when either 01 = 0 or 1.) The instantaneous
+cost to type 1 of trading good 2 for good 3 is &1, the increase in
+one-period storage disutility. The instantaneous benefit is the increase in
+the probability of meeting someone with good 1 next period who is willing to
+trade, 1P3 - (1-P2)1/3, times the discounted utility of consumption, Bu.
+Now 01 = 1 if and only if the cost is less than the benefit - that is, if
+and only if 81 =P3 - (1-P2'. But P2 and P3 depend on strategies. Simple
+calculations show that o = (0,1,0) implies P3 - (1-P2) = 1/2, and so 01 = 0
+is the best response as long as 8, = 1/2 (if good 3 is much more costly to
+store than good 2, type 1 opts for direct barter rather than using a medium
+of exchange). Also, o = (1,1,0) implies P3 - (1-P2) = V2 - 1, and so 01 =
+1 is the best response as long as 8, = V2 - 1 (If good 3 1s not too much
+more costly to store, type 1 opts to use it as a medium of exchange).
+If 12 - 1 < 81 < 1/2, then no symmetric, steady-state, pure-strategy
+equilibrium exists. Thus, when all type 1 agents refuse to accept good 3,
+type 2 agents end up holding more of good 3 and less of good 1, which means
+type 1 agents ought to accept good 3 to facilitate trade with type 3. On
+the other hand, when all type 1 agents accept good 3, type 2 agents end up
+holding less of good 3 and more of good 1, which means type 1 agents do not
+need to trade with type 3 and ought to refuse to accept good 3. Clearly,
+
+===== PAGE 8 =====
+
+7
+what is needed is to have some, but not all, type 1 agents accept good 3, or
+equivalently, to have type 1 agents accept good 3 with a probability
+strictly between 0 and 1. We analyze this possibility in Section 4.
+Another alternative would be to have type 1 agents accept good 1 at some
+dates and not others, a possibility we consider in Section 7.
+3. The Generalized Model
+Let s. (t) be the probability that type i plays strategy ° = 1 at date
+t, and let s(t) = Is, (t), sz(t), 53(t)]. If the probability of agent 1
+trading good i+1 for good 1+2 at date t is si(t), then the probability of
+him trading good i+2 for good 1+1 is 1-S,(t). This implies that whether an
+agent prefers good itl or good i+2 at date t does not depend on the good
+with which he enters the period. Given s(t), the "trading matrices" in
+Figure 1 depict the probability of exchange in any particular meeting,
+excluding cases where two agents of the same type meet, because we assume
+with no loss in generality that i never trades with his own type.
+Given any path for the strategy vector s(t), the transition equation
+for the inventory distribution is given by p(t+1) = gis(t),p(t)], where
+a:R'xR3 , R?. We can use the trading matrices to compute the explicit
+functional form of 8, which we write as
+(3. 1)
+8 (s, p) = p - 3G(s,p),
+where G/s, p) = (G, (s, p), G, (s, p), G3(s, p)1, and
+(3.2)
+G, (S, p) = PIPI+181 - (1-PI)I(1-91+2) (1-51) +91+2+(1-91+1) 1-51+1)).
+
+===== PAGE 9 =====
+
+30
+Type 2
+3
+1
+2
+1
+Type 1
+3
+0
+1-52
+Type 1 meets type 2
+Type 3
+1
+2
+3
+52
+1
+Type 2
+1
+0
+1-53
+Type 2 meets type 3
+Type 1
+2
+3
+1
+1
+Type 3
+2
+0
+1-51
+Type 3 meets type 1
+Figure 1: Trading matrices
+
+===== PAGE 10 =====
+
+8
+The first term on the right-hand side of (3.2) represents (three times) the
+measure of type i agents who switch from good 1+1 to good i+2 through
+exchange, while the second term represents (three times) the measure of type
+i agents who switch from good 1+2 to good it through exchange, consumption
+and production.
+We now describe the individual decision problem. Let Vig(t) be the
+expected discounted utility at the end of period t for type i given an
+inventory of good j (the payoff, or value, function). If we define A (t) =
+Vi, 1+1(t) - V1, 1+2(t), the maximizing choice of s,(t), which is generally a
+correspondence, satisfies
+10% 18A,(1) > 0
+(3.3)
+s, (t)
+€
+10,11 if A {t) = 0.
+11} ifA (t) < 0
+For example, for type 1, If A,(t) = V12(t) - V13(t) > O then he should set
+sy (t) = 0 and not trade good 2 for good 3; if A,(t) & 0 then he should set
+s, (t) = 1 and trade good 2 for good 3 whenever he can; and if Af(t) = 0 he
+is indifferent and may choose the probability s (t) to be anything in 10,11.
+To illustrate the technique, we explicitly derive A,(t). Consider a
+type 1 agent with good 2 at the end of period t. He first pays his storage
+cost 12 and, next period, he meets an agent of type 1, 2, or 3, each with
+probability 1/3. If he meets another type 1, he does not trade and leaves
+with V12(t+1). Now suppose he meets a type 2, who will always want to trade
+given our type 1 agent holds good 2. With probability P2(t+1), the type 2
+agent has good 3 and our agent chooses the probability of trade sy (t+1),
+while with probability 1-P2(t+1) the type 2 agent has good 1, there is a
+double coincidence of wants, and our agent definitely trades, consumes and
+produces a new unit of good 2. Now suppose he meets a type 3. With
+
+===== PAGE 11 =====
+
+9
+probability 1-P3(t+1) both agents have good 2 and they cannot trade, while
+with probability Pz(t+1) the type 3 agent has good 1 and our agent wants to
+trade, so type 3 chooses the probability sz (t+1).
+Writing this explicitly, the payoff for type 1 with good 2 at t is
+112(+) =-912 + 5M12(1+1) + PQ(t+1151(1+1)V13(t+1) +11-51(+71)122 t+1))
++ 11-P2(t+1)1/u+V12 (t+1)1 + 11-P3(t+1)1V12(t+1)
+Minor simplification yields
+112(t) =-912 + 1-92(1+1) + P3(t+1)53(t+1) + BV12(t+1)
+using our normalization Bu/3 = 1. A similar analysis for the case where
+type 1 has good 3 at t yields
+V13(t) =-913 + 11-P2(t+1)](1=52 (t+1)] + Pz(t+1) + BV13(t+1)
++511-82(++1)111-52(++1)1+1-11-Pg(t+1)Is,(t+1)A, (t+1).
+Subtracting these two equations, we arrive at
+1, (t) = 81 + 11-92 (t+1)152 (t+1) - Pz(t+1) I1-S3(t+1)]
++81-6192(4+1)s,(++1) +11-P2(+1)111-52(t+1)1
++ Pg(+71) +11-36871)111-51(171184(1+1).
+
+===== PAGE 12 =====
+
+10
+By symmetry, for any type i, we can write
+(3.4)
+A, (t) = Fj[s(t+1), p(t+1), 81 + BQ, [s(t+1), p(t+1)IA, (t+1),
+where 8, = 91, 1+2 - 91, 1+1. 8 = 181, 02 03), and we define
+(3.5)
+F, (5, 9, 8) = 8, + (1-91+1)51+1-91+211-51+2'
+(3.6)
++(518) 51-5493+15 +11-Pat1-511+P+211-99+21-5,).
+It will be convenient below to write A(t) = lA, (t), A (t), Az(t)] and F(s,p) =
+[F, (s,p), F2 (S,p),F3(s,p)]. Given any path for (s(t), p(t)], a path for A,(t)
+satisfying (3.4) implies the maximizing choice of s,(t) at every date via
+the best response condition (3.3). Notice that [s(t),p(t)] does not pin
+down the sequence Aj(t), however, without some condition on A,(0), and
+without A,(0) there is nothing to pin down the initial choice of 5,(0) in
+the model; this will be important in Section 6.
+In any case, we now have the following definition. A (symmetric)
+equilibrium, given an initial distribution of inventories p(0), is a path
+[s(t), p(t), A(t)] such that: (1) given strategies s(t), p(t) satisfies the
+transition equation (3.1) for all t; (2) given Is(t), p(t)], A,(t) and s,(t)
+satisfy the best response conditions (3.3) and (3.4) for all t. A
+steady-state equilibrium can be defined by [s(t),p(t),A(t)] = (s,P,A) for
+all t, such that: (1) given s, p is a fixed point of the transition
+equation; (2) given (s,p), Aj and si satisfy the best response conditions.
+Notice the definition of a steady-state equilibrium does not make reference
+to a given initial condition p(0). Also notice that, when A(t) = A for all
+t, (3.4) implies
+
+===== PAGE 13 =====
+
+11
+(3.7)
+[1-BQ, (5, p) |4; = F, (5, p,8).
+Since BQ, (s,p) < 1, all that matters for the best response condition in
+steady-state is the sign of F, (s,p, 8).
+To close this section, we point out that no mention has been made so
+far of whether we are considering what was called Model A or Model B in
+Kiyotaki and Wright (1989). The relevant difference between the two models
+is simply that Model A assumes that d,> O for two of the three agent types,
+while Model B assumes that d;> 0 for only one of the three agent types (the
+reordering of production-consumption specializations used in the original
+paper is merely a relabeling, given the &i parameters are reordered
+appropriately). Hence, the above specification incorporates both Model A and
+Model B, depending on the parameter vector .
+4. Steady-State Equilibria
+In this section and the next, we restrict attention to steady-state
+equilibria. Our immediate goal is to fill in the gap in Proposition 1 by
+constructing a symmetric, steady-state, mixed-strategy equilibrium in the
+region of parameter space for which we know that no symmetric equilibria in
+pure-strategies exist for Model A.
+We will construct a steady-state equilibrium in which 52 = 1, 53 = 0,
+and 5,10, 11 will be determined as a function of the parameters. Because
+Model A specifies that 8, > 0, 82 < 0, and ô3 > 0, this implies that type 2
+always trade their production good 3 for the lower storage cost good 1, type
+3 never trade their production good 1 for the higher storage cost good, and
+type 1 may or may not trade their production good 2 for the higher storage
+cost good 3. That this may be an equilibrium is suggested by the
+
+===== PAGE 14 =====
+
+12
+observations at the end of Section 2; it is also suggested by Theorem 7 in
+Alyagari and Wallace (1989) (see also Theorem 7 in Gintis 1989), which says
+that there always exists a mixed-strategy, steady-state equilibrium in
+fairly general versions of this model in which every agent always accepts
+the lowest storage cost good (good 1 in this case).
+If we substitute s2 = 1 and S3 = 0 into (3.5), then the functions Fi
+reduce to
+F, (5, p, 8) = 81 * (1-92) - P3
+F2(5, p, 8) = 82-P1(1-51)
+F3 (s,p, 8) = 83 + (1-91) 51.
+For any 82 ‹ 0 we have F2 < 0, which implies s2 = 1 is a best response for
+type 2; similarly, for any &3 › 0 we have F3 > 0, which implies 53 = 0 is a
+best response for type 3. For type 1, the sign of F1 depends on p. Solving
+for the steady-state inventory distribution p=8/s,p) as a function of s1'
+we find
+(this holds for s, › 0; for s, = 0, take the limit). Hence,
+F1=81-(V1+51-11/51.
+A strategy s, is a best response as long as it satisfies condition
+(3.3).
+Combinations of &, and s, consistent with (3.3) are easily computed
+to be
+
+===== PAGE 15 =====
+
+13
+81=12-1
+and s1 = 1
+12-1 5 8, ≤ 1/2 and 51 = 11-28, 1/8}
+1/2 = 81 and 51 = 0,
+as shown in Figure 2. Hence, for all &1 › 0 an equilibrium exists, and this
+fills in the gap in Proposition 1. Notice that the two pure-strategy
+equilibria in Proposition 1 reappear for appropriate values of oy, and are
+connected by mixed-strategy equilibria. We also point out that it is
+equivalent here to reinterpret our symmetric mixed-strategy equilibria as
+nonsymmetric pure-strategy equilibria, where the fraction sy of type 1
+agents play strategy o1 = 1 with probability 1 while the fraction 1-51 play
+91 = 0 with probability 1.
+We now have existence of a steady-state equilibrium for all parameter
+values in Model A. Introducing mixed-strategies leads to other new
+possibilities as well. For example, suppose 51 = 1, 52 = 0, and Sze(0, 1).
+It is not difficult to check F, < 0, Fz> 0, and F3 = 0, so that these are
+indeed best responses, if and only if the following conditions are
+satisfied:
+12-1 < 83 < 112 and 53= (1-203)/83
+8, 5(83+283-11/183-03)
+52=-(1-283) 103-03).
+Hence, in a certain region of parameter space, this is an equilibrium for
+Model A. But, from Proposition 1, there already exists an equilibrium with
+
+===== PAGE 16 =====
+
+31
+51
+1-t
+0.
++
+0
++2-1
+1/2
+Figure 2: Equilibrium value of s, as a function of &1
+
+===== PAGE 17 =====
+
+14
+51 = 1, 52 = 1, and 53
+= 0, as long as & =V2 - 1. For a nonempty open set
+of parameter values, these equilibria exist simultaneously.
+Interestingly, the two equilibria have rather different properties. In
+the equilibrium described in Proposition 1, type 1 agents use good 3 as a
+medium of exchange and type 2 agents use good 1 as a medium of exchange,
+while type 3 agents hold onto their production good until they can trade
+directly for their consumption good. In the new equilibrium, type 1 agents
+still use good 3 as a medium of exchange, but now type 2 agents hold onto
+their production good until they can trade directly for their consumption
+good, and type 3 agents respond by sometimes accepting good 2 to facilitate
+trade with type 2. In this new equilibrium, agents never trade a high
+storage cost good for a lower storage cost good (unless the latter is their
+consumption good, of course). This is another example of how extrinsic
+beliefs can have a large impact in determining which objects serve as media
+of exchange, even when the objects have different intrinsic properties. In
+the next section, however, we show that the number of steady-state
+equilibria is finite. Hence, it is not the case that anything is possible,
+and so extrinsic beliefs concerning which objects will play the role of
+money are not overwhelming.
+5. Generic Finiteness of Steady-State Equilibria
+To prove generic finiteness of the number of steady-state equilibria,
+we utilize the transversality theorem of differential topology (see
+Guillemin and Pollack 1974, pp. 68-69, or Hirsch 1976, pp. 74-77). Similar
+results have been obtained for finite n-person normal form games by Harsanyi
+(1973) and van Damme (1983). Because of the interaction of p and s in our
+payoff functions, however, their results do not apply directly to our model.
+
+===== PAGE 18 =====
+
+15
+We use the following notation: If F(x,a) is a function of a vector of
+variables x and a vector of parameters a, then we write fa(x) = F(x, a) for
+fixed a.
+Transversality Theorem.
+Let F:XXA → Y, where XcRe is contained in the
+closure of an open set and AcR" and YcR" are open sets. Suppose that F is
+continuously differentiable of order r, where r › max(l-n,0). Suppose too
+that, if (x,a) eXxA satisfies F(x,a) = 0, then DF(x,&) has rank n.
+Then
+Fa(x) = 0 implies Df (x) has rank n for all a in a subset of A of full
+Lebesgue measure.
+Notice that, if l‹ n, then the nxl matrix Df
+(x) cannot possibly have rank
+n. The conclusion of the theorem, in this case, is that for all a in a
+subset of A of full Lebesgue measure, there is no xeX such that f(x) = 0.
+The intuition behind this theorem is one of counting equations and
+unknowns. If l n, then there are more equations than unknowns; we
+therefore would not expect there to be any solutions if we have sufficient
+freedom to perturb the equations. If l =n, then there are the same numbers
+of equations and unknowns; we therefore would expect any solutions to the
+equations to be locally unique if we have sufficient freedom to perturb the
+equations. Indeed, if the nxn matrix Df (x) has rank n, then the inverse
+function theorem tells us that the solution & to the equation f(x) = 0 is
+locally unique. If l> n, then there are more unknowns than equations; we
+would therefore expect there to be an infinite number of solutions.
+Although we could use this theorem and the implicit function theorem to
+count degrees of freedom and parameterize the set of solutions, we are
+concerned here only with situations where l = n. In this case, the formal
+criterion for sufficient freedom to perturb the equations is that the
+nx(l+m) matrix DF (x, 0) = (D,F(x, a), D,F(x, a)] has rank n whenever F(x, a) = 0.
+
+===== PAGE 19 =====
+
+16
+Applying this theorem to our commodity money economy, we are forced to
+consider different cases: 0 < 5, <1 for all 1; SI = 0 for some li and 5, =
+1 for some i. In each case, equilibria are solutions to a different set of
+equations. In the case where 0 ‹ 5, < 1 for all 1, equilibria are solutions
+to E(s,p, 8) = 0 where E:R
+XR XR3 → R3
+XR? is given by the rule E(s,p,&) =
+[F (s,p, 8), G(s,p)] and F and G are given as in Section 3. In cases where si
+= 0 or S, = 1 for some 1, we replace equation i of F(s,p, 8) = 0 with s, = 0
+or Si1 = 0. Therefore, here we solve Els,p,s) = 0, where E(s,p,8) =
+[F (s, p, 8), G(s, p)] and F is formed appropriately. In all of these cases,
+(5, p)ER'xR is the vector of endogenous variables and seR' is the vector of
+parameters. Letting
+D=18ER 18, > 0, 82<07
+be the set of parameters, we allow for the specification of either Model A
+or Model B (after a relabeling) simply by allowing o to be either positive
+or negative.
+Proposition 2. For all & in a set of full Lebesgue measure in D, there is a
+finite number of steady-state equilibria.
+Proof. The strategy of proof is simple: We first apply the transversality
+theorem to each of the cases discussed above, where (s,p) is allowed to
+range over a set contained in the closure of an open set. We then use the
+inverse function theorem to show that solutions to each system of equations
+are locally unique for all & in a set of full Lebesgue measure in D.
+Finally, we restrict (sp) to a compact set and argue that the number of
+equilibria is, in fact, finite.
+
+===== PAGE 20 =====
+
+17
+All equilibria lie in the set
+which is obviously compact. Observe that there can be no equilibrium in
+which P1 = 0 for some i, since the steady-state condition p= g(s,p) implies
+that in this case P1 = P2 = P3 = 0 and 51 = 52 = S3 = 1, which cannot be
+best responses for any seb. Indeed, no matter what p is, 51=52=53=1
+cannot be best responses. In applying the transversality theorem, we
+therefore restrict our attention to the set
+S' = 1(5, p)ES10 < Pj FOr all 1, 51 < 1 for some 1),
+which is contained in the closure of the open set defined by letting all the
+inequalities be strict.
+First, consider the case where E(s,p,8) = [F(s,p,8),G(s,p)], which
+corresponds to equilibria where 0 < 5, < 1 for all 1. In this case,
+0, F(5,D, d) DE (5,p, 8) DE(s,p, 8).
+DE (s, p, 8) =
+DIG(s, p)
+DIG(s, p)
+Notice DiF (s,p,&) is the 3x3 identity matrix.
+If we could show that the 3x3
+matrix DiG(s,p) has rank three, we would then know that DE(s,p,&) has rank
+six. The transversality theorem would imply that, for all & in a set of
+full Lebesgue measure, the 6x6 matrix
+
+===== PAGE 21 =====
+
+18
+DIfg (s,p)
+DzEg (s,p)
+Deg (5,p) =
+DIG(s, p)
+D, G(s, p)
+has rank 6 whenever eg(s,p) = 0.
+The inverse function theorem would then
+imply that any such solution has an open neighborhood in R'r' in which it
+is the only solution. To see that DiG(s,p) has rank three, we merely
+compute it:
+F192+(1-91)(1-93) (1-91)(1-P2)
+DIG(s, p) =
+0
+P2P3+ (1-92) (1-91) (1-P2)(1-₽3)
+(1-P3) (1-P1)
+P3P1 +(1-93)(1-92)
+Since this matrix has sign pattern
++
++ or 0
++
++ or
++ or 0
++
+it has rank three, as required.
+The cases where we replace Fi(s,p, 8) = 0 with si = 0 or 51-1 = 0 are
+more complicated. We can still argue that DF(s,p,) has rank three because
+it contains three linearly independent columns, those columns in DIE for
+which Fi(s,p,8) equals si or 51-1 and those columns in DzE for which
+F, (s,p,8) equals F, (s,p,&). We now need to find three linearly independent
+columns in (DIG(s,p), D,G/s,p)] that do not include the columns in DIG(s, p)
+for which Fi(s,p,8) equals 51 or 51-1.
+
+===== PAGE 22 =====
+
+19
+The case where s; = 0 for some i is the easiest. Here, we can argue
+that the matrix
+D, G(s, p) =
+19281+(1-92)(1-52)
+8151+(1-91) (1-52)
+-(1-91351
++P3+ (1-93) (1-51)
+P352+(1-P3) (1-53)
+- (1-22)52
+9282+(1-92) (1-53)
++91+(1-91)(1-52)
+9183+(1-91) (1-51)
+P353+ (1-P3) (1=51)
+-(1-P3)53
++p2+(1-92) (1-53)
+has rank three because it has sign pattern
++
++ or 0 - or
+or 0
++ or
++ or 0 - or 0
+and at least one of the potentially negative elements is zero.
+In cases where s,1 = O for some i, we need to consider combinations of
+columns from DiG and DeG. When 5j-1 = 0, for example, we choose the second
+and third column from DiG and the first column from D,G.
+These columns form
+a 3X3 matrix with sign pattern
++ or 0
+0
++ or 0
+- or
+0
++ or
+
+===== PAGE 23 =====
+
+20
+which has rank three. The cases where s2-1 = 0 or 53-1 = 0 are similar. In
+the cases where s -1 = 0 for two 1, we combine one column form DiG with two
+from DIG. We have already ruled out the case where s -1 = 0 for all 1.
+Now consider the set of pairs (s,p)es' that satisfy any of the various
+combinations of equations Els,p,s) = 0. This set includes the set of
+equilibria, but may be larger since there is no guarantee that the
+appropriate inequality in the best response condition (3.3) is satisfied if
+S, = 0 or S;-1 = 0. The set of & such that all of the solutions to these
+equations are locally unique has full Lebesgue measure since it is the
+intersection of a finite number (the number of possible cases) of sets of
+full Lebesgue measure. Consequently, for almost all & the set of equilibria
+consists of locally unique points.
+Suppose now that we allow (s,p) to range over all of S. Could there be
+an infinite number of equilibria? If there were, then there would be a
+convergent subsequence of equilibria since S is compact. There would then
+be two possibilities: this convergent subsequence could converge to (s,p)eS'
+or it could converge to (s,p) for which 51 = 52 = 53=1. If (s,p)eS', then
+it too is an equilibrium, but it would not be locally unique, which is a
+contradiction. If 51 = 52 = 53 = 1, any sequence converging to (s,p) would
+eventually violate the best response conditions. Consequently, for all & in
+a subset of D with full Lebesgue measure, there is a finite number of
+steady-state equilibria.
+Several extensions of this result are possible. First, since S is
+compact, we could argue that the set of & for which the number of equilibria
+is finite is also open. Second, it is easy to see that for almost all o,
+the inequalities in the best response condition (3.3) must be strict if 5; =
+0 or 5j = 1; otherwise, the equilibrium would be a solution to a system with
+more equations than unknowns. Third, using an index theorem, we could argue
+
+===== PAGE 24 =====
+
+21
+that for almost all & the number of equilibria is odd (see, for example,
+Mas-Colell 1985).
+6. Dynamic Equilibria
+We now turn our attention to equilibria in which the strategies s(t)
+and inventories p(t) vary over time. In this section, we show that there
+may be a robust continuum of dynamic equilibria, in contrast to the case of
+steady-states. Although many different types of dynamic equilibria are
+possible, for simplicity, we will restrict attention for now to the case
+where 0 < s(t) < 1 for all i and t, and look for dynamic equilibria that
+converge to a steady-state (the construction was suggested by an example in
+Aiyagari and Wallace 1990, in a two-agent model with fiat currency).
+The fact that 0 < salt) ‹ 1 for all t requires A (t) = 0 for all t, or
+Fi [s(t), p(t), 8] = 0 for all t, by equation (3.4). Notice that the condition
+F[s(t) , p(t), 8] = 0 is actually linear in s(t), and can be written
+1-P2 (t) Pz(t)
+[s,(t)]
+P3 (t)-81]
+P, (t)
+1-P3 (t)
+52 (t)
+=
+P1 (t) -82 .
+11-P1(t) Pz(t)
+0
+153(0)
+2(t) -83)
+As argued in the previous section, pi? 0 for all i in any steady state
+equilibrium. Thus, if we start with pi(0) > 0 sufficiently close to a
+stable steady state, then pi(t) > 0 for all t and the above equation can be
+solved to yield s(t) = p|p(t)] for all t (given a fixed 8). In particular,
+suppose that A(t+1) = 0 and every agent i is indifferent between goods i+1
+and i+2 at date t+1. Then we can choose s(t+1) arbitrarily, and if we
+choose s(t+1) = @|p(t+1)], subject to the condition 5j (t+1)e(0, 1) for all 1,
+
+===== PAGE 25 =====
+
+22
+this guarantees A(t) = 0. In other words, if agents are willing to
+randomize at t+1, then as long as we choose s(t+1) appropriately, they will
+also be willing to randomize at t.
+We can use this logic to construct a continuum of dynamic equilibria,
+given the initial inventory distribution p(0) (which is fixed by nature).
+First, choose s(0) so that s;(0)e(0,1) for all 1. Given Is(0), p(0)], the
+transition equation implies p(1) = 8|s(0),p(0)]. Now set s(1) = plp(1)], so
+that FIs(1), p(1), 81 = 0, which means that A(0) = 0 as long as A(1) = 0, and
+our original choices of 5, (0) are indeed best responses as long as 4(1) = 0.
+Continuing in this manner, p(2) = 8Is(1), p(1)], and we can set s(2) =
+pIp(2)] to guarantee that A(1) = 0 as long as A(2) = 0. This implies the
+transition dynamics for p(t),
+p(t+1) = 814(p(t)), p(t)] = TIp(t)] .
+Notice that s(0) is not pinned down in any way here.
+Consequently, since
+p(1) = 8(s(0), p(0)], even given p(0), p(1) is not pinned down in this
+system.
+Any path satisfying p(t+1) = TIp(t)] and s(t) = qlp(t)] for all t is an
+equilibrium with all agents mixing, as long as 0 < s,(t) < 1 for all t. A
+steady-state (s,p) solves p = I(p) and s = p(p). The linearization of I(.)
+around a steady-state p is
+Ip (t+1) -pl = DI(p) Ip (t)-p],
+where DT = DID + D28. We are interested in constructing an example where
+all of the eigenvalues of the 3X3 matrix DT(p) are less than one in modulus.
+Given such an example, we can use the implicit function theorem and the
+
+===== PAGE 26 =====
+
+23
+local stable manifold theorem (see Irwin 1980) to argue that, for all
+[s(0),p(0)] in an open neighborhood of (s,p), there exists an equilibrium
+path [s(t),p(t)] satisfying p(t+1) = I[p(t)] and s(t) = q[p(t)].
+For one such example, consider the economy where & = (0.05, -0.05,0.05).
+It has a steady-state (s,p) with
+5 = (0.7270,0.5538,0.6850), p = (0.6349,0.7070,0.6740).
+At this steady-state, the eigenvalues of DI(p) are
+2 = 0.2151, 0.5021+0.08501, 0.5021-0.08501,
+each of which is less than one in modulus. Hence, the local stable manifold
+theorem implies that, for all p(1) in some open set containing P, p(t+1) =
+IIp(t)] converges to p. It is easy to verify that the conditions of the
+implicit function theorem are satisfied. Thus, for all [s(0), p(0), p(1)] in
+some open set containing (s,p,p), the vector s(0) satisfying p(1) =
+8[s(0), p(0)] varies continuously with [p(0),p(1)]. Furthermore, for fixed
+p(0), the implicit function s(0) = YIp(0),p(1)] is an invertible function of
+p(1). Since p(1) can vary over an open set and still produce a path that
+converges to p, s(0) can also vary over an open set and, together with a
+fixed p(0), produce a dynamic equilibrium that converges to (s,p).
+Figure 3 shows the dynamic path of the above example beginning from
+p(0) = (0.2,0.9,0.8) and s(0) = (0.5,0.5,0.5). Given p(0), the system
+converges for a fairly wide range of s(0), although for other values of s(0)
+it does not, and eventually some or all si(t) leave 10,11. This is true for
+a fairly wide range of p(0). Finally, this example of a continuum of
+equilibria is robust. It is easy to verify that the 6x6 matrix Deg (s,p) has
+
+===== PAGE 27 =====
+
+32
+Equilibrium paths for sj
+1
+52
+4
+1
+2
+3
+8
+Equilibrium paths for pj
+1
+0
+1
+5
+6
+0
+1
+2
+3
+4
+7
+8
+t
+Figure 3: Equilibrium paths for
+strategies and inventories
+
+===== PAGE 28 =====
+
+24
+full rank. Consequently, the parameters & = (0.05, -0.05,0.05) constitute a
+regular economy, and the implicit function theorem implies that the
+steady-state equilibrium (s,p) varies continuously with &.
+Small
+perturbations in & produce small perturbations in the matrix DI(p), and the
+continuity of the eigenvalues in the elements of this matrix therefore
+implies that small perturbations in & still yield economies in which all
+three eigenvalues are less than one in modulus. Hence, all economies with &
+close to (0.05, -0.05,0.05) will display qualitatively the same three
+dimensional indeterminacy.
+Although we do not present the details here, it is easy to produce
+examples with a lower dimension of indeterminacy. Suppose, for example, DT
+has two eigenvalues less than 1 and the third greater than 1 in modulus.
+Then the local stable manifold theorem says that there is a two dimensional
+manifold of inventories p(1) near & that lead to convergence to p. The
+implicit function theorem implies that, for fixed p(0), this corresponds to
+a two dimensional manifold of initial strategies s(0). Similarly, it may be
+possible to produce examples with no indeterminacy or with one dimension of
+indeterminacy; everything depends on the number of stable eigenvalues of DT.
+Furthermore, in this section we have only considered dynamic equilibria
+where s, (t)e(0, 1) for all 1 and for all t. One could also consider dynamic
+equilibria where some types use pure-strategies while others use
+mixed-strategies, or where a given type fluctuates between strategies. We
+take a step in this direction in the next section.
+7. Cyclic Equilibria
+Here we construct a dynamic equilibrium where sq(t) = 1 for all t,
+S3(t) = 0 for all t, and s,(t) = 1 if t is odd, s,(t) = 0 if t is even,
+which is a two-period cycle.
+In this equilibrium, 4(t) will fluctuate
+
+===== PAGE 29 =====
+
+25
+between positive and negative, and so type 1 agents will be willing to trade
+good 2 for good 3 in one period but not the next. (Note that, when 41 > 0,
+they are not willing to dispose of good 3 and produce a new unit of good 2,
+as long as we assume that there is a cost to doing so that is prohibitively
+high.) Given these strategies, it is easy to confirm that the dynamical
+system p(t+1) = 8[s(t),p(t)] converges to a two-cycle: p(t) = p° if t is
+even, p(t) = p° if t is odd, where
+p° = (0.7741, 0.4531, 1.01, p° = 10.8494, 0.4432, 1.0).
+We now verify that, for certain parameter values & and inventories
+p(t), these strategies are best responses. It is easy to check this for
+types 2 and 3 by showing that F,Is(t), p(t), 81 < 0 and F3[s(t), p(t), 81 > 0 in
+both even and odd periods, as long as 82 < 0 and 83 > 0. For type 1,
+4(7) =81-8214+1) +612-82(4+1) 51(1+1)14, (t+1).
+In a two-period cycle, A,(t) = 4° if t is even and A,(t) = 4° if t is odd;
+that is,
+1°=81-15+512-255914°
+This can be solved to yield
+81=8-22+512-8289118-72.
+#D°=8-22+112-2289718-927
+
+===== PAGE 30 =====
+
+26
+where & > 0. The cyclic strategy s,(t) = 0 if t is even and s,(t) = 1 if t
+is odd is a best response for type 1 as long as de = 0z d°. Since si, sj,
+Py and p, are known, these inequalities depend only on &, and B, and Figure
+4 shows the region of (B, 81) space in which de = 0 and d°= 0 both hold. In
+this region, all of the equilibrium conditions are satisfied.
+The same procedure can be used to construct equilibrium cycles of other
+periodicities, and Figure 4 also shows the region of (B,&1) space in which
+there exists a three-cycle equilibrium, with sz(t) = 1 for all t, Sz(t) = 0
+for all t, and s1(t) = (0,0, 1,0,0,1,...). Notice both of these cyclical
+equilibria exist only for values of & that do not allow a steady-state
+equilibrium in pure-strategies - that is, only for 12 - 1 < 8, < 112.
+Finally, we point out that these cycles are stable. Given cyclic
+strategies, p(t) locally converges to a cyclic distribution, and as long as
+A,(t) alternates in sign in the right way in the limit, it will alternate in
+sign close to the limit. Thus, the cyclic strategies will also be best
+responses in the neighborhood of the limit cycle. Given p(0) (determined by
+nature), there will be cyclic strategies that imply that plt) converges to a
+limit cycle, and in certain regions of parameter space these strategies are
+best responses along the entire path.
+8. Concluding Remarks
+In this paper, we have generalized the simple commodity money model in
+Kiyotaki and Wright (1989) by introducing mixed-strategies and dynamic
+equilibria.
+We have constructed some mixed-strategy,
+steady-state
+equilibria, including equilibria for regions of parameter space for which no
+pure-strategy, steady-state equilibria exist, and have proved the generic
+finiteness of the set of steady-state equilibria. We have also described
+
+===== PAGE 31 =====
+
+33
+0.47
+0.46
+0.45
+2-cycle
+0.44 -1.
+Figure 4: Regions where cycles exist
+
+===== PAGE 32 =====
+
+27
+some interesting dynamic equilibria. As pointed out in the introduction,
+this model shares several properties that have been established for
+overlapping generations models, and it can be analyzed using very similar
+techniques.
+One issue not addressed here is the existence of an equilibrium for
+arbitrary initial inventory distributions. It is straightforward to prove
+the existence of such an equilibrium by adapting the approach used for
+overlapping generations models (see, for example, Balasko, Cass and Shell
+1980): truncate the economy at some finite date E by arbitrarily choosing
+the value functions Vig(E), prove existence for the finite economy using a
+standard fixed point argument, let E tend to infinity, and take the
+appropriate limits. However, as pointed out in Aiyagari and Wallace (1989),
+the hard part in this model is establishing that the equilibrium discovered
+in this way is not a degenerate equilibrium. An extension of the technique
+they use for steady state equilibria would have to be used to show that
+dynamic equilibria are nondegenerate at least for certain parameter values.
+Another issue not addressed here is the existence of sunspot
+equilibria, where the equilibrium strategies and hence commodity monies
+fluctuate randomly over time, even though the fundamentals of the model are
+deterministic and time invariant.
+Such equilibria come up often in
+overlapping generations models, of course; see Azariadis and Geusnerie
+(1986), for example. Sunspot equilibria have been constructed for models
+that are simpler, but similar to the one used here in the sense that agents
+search for partners and trade requires a double coincidence of wants, in
+Kiyotaki and Wright (1990) and in Burdett and Wright (1991). Exploring the
+possible relevance of sunspots in this environment is left to future
+research.
+
+===== PAGE 33 =====
+
+28
+References
+Aiyagari, S.R., and N. Wallace (1989) "Existence of steady states with
+positive consumption in the Kiyotaki - Wright model," Review of Economic
+Studies, forthcoming.
+Aiyagari, S.R., and N. Wallace (1990) "Fiat money in the Kiyotaki -
+Wright model," Federal Reserve Bank of Minneapolis Working Paper 453.
+Azariadis, C. and R. Geusnerie (1986) "Sunspots and cycles," Review of
+Economic Studies 53, 725-738.
+Balasko, Y., D. Cass and K. Shell (1980) "Existence of competitive
+equilibrium in a general overlapping generations model," Journal of Economic
+Theory 23, 307-22.
+Benhabib, J., and R.H. Day (1982) "A characterization of erratic
+dynamics in the overlapping generations model," Journal of Economic Dynamics
+and Control 4, 37-55.
+Burdett, K. and R. Wright (1991) "Two-sided search," unpublished
+manuscript, Federal Reserve Bank of Minneapolis.
+van Damme, E. (1983) Refinements of the Nash Equilibrium Concept.
+Lecture Notes in Economics and Mathematical Systems, No. 219. Berlin:
+Springer-Verlag.
+Gintis,
+H.
+(1989) "Money in general equilibrium,"
+unpublished
+manuscript, University of Massachusetts - Amherst.
+Grandmont, J.-M. (1985) "On endogenous competitive business cycles,"
+Econometrica 53, 995-1043.
+Guillemin, V., and A. Pollack (1974) Differential Topology. Englewood
+Cliffs, N.J.: Prentice-Hall.
+Harsanyi, J.C. (1973) "Oddness of the number of equilibrium points: A
+new proof," International Journal of Game Theory 2, 235-50.
+
+===== PAGE 34 =====
+
+29
+Hirsch, M.W. (1976) Differential Topology. New York: Springer-Verlag.
+Irwin, M.C. (1980) Smooth Dynamical Systems. New York: Academic Press.
+Jovanovic, B. and R.W. Rosenthal (1988) "Anonymous Sequential Games,"
+Journal of Matematical Economics 17, 77-87.
+Kehoe, T.J. (1985) "Multiplicity of
+equilibria and comparative
+statics," Quarterly Journal of Economics 100, 119-47.
+Kehoe, T.J., and D.K. Levine (1984)
+"Regularity in overlapping
+generations exchange economies," Journal of Mathematical Economics 13,
+69-93.
+Kehoe, T.J., and D.K. Levine (1985). "Comparative statics and perfect
+foresight in infinite horizon models," Econometrica 53, 433-53.
+Kiyotaki, N., and R. Wright (1989) "On money as a medium of exchange, "
+Journal of Political Economy 97, 927-54.
+Kiyotaki, N., and R. Wright (1990) "Search for a theory of money," NBER
+Working Paper No. 3482.
+Mas-Colell, A. (1985) The Theory of General Economic Equilibrium: A
+Differentiable Approach. Cambridge: Cambridge University Press.

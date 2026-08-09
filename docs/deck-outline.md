@@ -51,7 +51,7 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 
 **Visual.** `deck/v1_star_topology.svg`, drawio tab `v1_mandate`. A star graph: ETH as the single hub vertex, eight token vertices on the rim, every rim vertex joined to the hub and to nothing else. One highlighted two-leg path token A to ETH to token B, both legs labelled with the same ETH amount. The reader should see that no rim-to-rim edge exists, so the hop is a property of the graph and not of a choice, with the equal-legs signature annotated on the highlighted path.
 
-**Citations.** Uniswap V1 protocol documentation for the one-exchange-per-token rule; Kiyotaki and Wright (1989) for why a medium of exchange concentrates.
+**Citations.** Uniswap V1 protocol documentation for the one-exchange-per-token rule. Kiyotaki and Wright (1989) is not used here because its media emerge through bilateral acceptance rather than a contract-imposed star graph.
 
 **Grounding.** `docs/finding-v1-forced-vehicle.md` section 1 and the numerical correction at the end.
 

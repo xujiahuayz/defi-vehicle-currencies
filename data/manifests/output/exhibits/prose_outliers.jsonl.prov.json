@@ -6,10 +6,10 @@
   "scripts/find_prose_outliers.py",
   "src/ddvc/tables.py"
  ],
- "created_at": "2026-08-09T02:29:42+00:00",
+ "created_at": "2026-08-09T02:36:44+00:00",
  "git": {
   "branch": "glotl/fgh-evidence",
-  "commit": "3bfc339bbb183bb30e7c9915e063f96b57a5dbee",
+  "commit": "17e6cece81055887b04d68122786e71ef710cd95",
   "dirty": true,
   "dirty_generated_files": [
    "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
@@ -18,16 +18,25 @@
    "output/exhibits/venue_optics.jsonl"
   ],
   "dirty_tracked_files": [
+   "deck/sections/01-identification.tex",
+   "deck/sections/05-close.tex",
+   "docs/deck-outline.md",
    "docs/literature-audit.md",
    "docs/paper-spine.md",
    "literature/pdf-sources.json",
    "literature/source-admission.json",
-   "literature/text/2014-HendershottMenkveld2014PricePressures-accepted-price-pressures.txt -> literature/text/2014-HendershottMenkveld2014PricePressures-published-price-pressures.txt",
    "literature/text/_index.jsonl",
    "literature/vehicle-currencies.bib",
-   "paper/sections/01-introduction.tex"
+   "paper/sections/01-introduction.tex",
+   "paper/sections/02-setting.tex",
+   "paper/sections/03-dominance.tex",
+   "paper/sections/04-survival.tex",
+   "paper/sections/05-liquidity.tex",
+   "paper/sections/07-conclusion.tex"
   ],
-  "dirty_untracked_files": []
+  "dirty_untracked_files": [
+   "literature/text/1991-KehoeKiyotakiWright1991MoreStaffReport-working-paper-more-on-money-as-a-medium-of-exchange.txt"
+  ]
  },
  "inputs": [],
  "libraries": {
@@ -38,6 +47,6 @@
  },
  "notes": null,
  "python": "3.14.5",
- "rows": 617,
+ "rows": 620,
  "script": "scripts/find_prose_outliers.py"
 }

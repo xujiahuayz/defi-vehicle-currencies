@@ -464,8 +464,12 @@
         "author_or_repository": "https://collaborate.princeton.edu/en/publications/on-money-as-a-medium-of-exchange/",
         "publisher_or_doi": "https://doi.org/10.1086/261634"
       },
-      "companions": [],
+      "companions": [
+        "KehoeKiyotakiWright1991MoreStaffReport"
+      ],
       "main": "KiyotakiWright1989MoneyMedium",
+      "non_text_companions": [],
+      "non_text_dispositions": [],
       "status": "complete"
     },
     "Krugman1980VehicleCurrencies": {
@@ -1415,6 +1419,26 @@
         "access": "authenticated",
         "label": "Crossref similarity-checking",
         "url": "https://www.journals.uchicago.edu/doi/pdf/10.1086/261634",
+        "version": "published"
+      }
+    ],
+    "KehoeKiyotakiWright1991MoreStaffReport": [
+      {
+        "access": "public",
+        "label": "Federal Reserve Bank of Minneapolis Staff Report page",
+        "url": "https://www.minneapolisfed.org/research/staff-reports/more-on-money-as-a-medium-of-exchange",
+        "version": "working-paper"
+      },
+      {
+        "access": "public",
+        "label": "Federal Reserve Bank of Minneapolis Staff Report 140 PDF",
+        "url": "https://researchdatabase.minneapolisfed.org/downloads/fb4948560",
+        "version": "working-paper"
+      },
+      {
+        "access": "public-metadata",
+        "label": "Published Economic Theory extension",
+        "url": "https://doi.org/10.1007/BF01212919",
         "version": "published"
       }
     ],
