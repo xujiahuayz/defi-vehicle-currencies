@@ -31,7 +31,6 @@ from ddvc.v3_inventory import (
     apply_inventory_events,
     audit_inventory_chunks,
     block_ranges,
-    canonical_inventory_event,
     canonical_inventory_start_block,
     decode_inventory_log,
     inventory_chunk_completed,
@@ -235,12 +234,10 @@ def _raw_inventory_events_for_day(
     rows: list[dict[str, object]] = []
     for block_lower, block_upper in ranges:
         raw_path, _ = inventory_chunk_paths(block_lower, block_upper, RAW_INVENTORY_ROOT)
-        with gzip.open(raw_path, "rt") as handle:
-            for line in handle:
-                if not line.strip():
-                    continue
-                raw = json.loads(line)
-                block = int(str(raw["blockNumber"]), 16)
+        parquet = pq.ParquetFile(raw_path)
+        for batch in parquet.iter_batches(batch_size=50_000):
+            for raw in batch.to_pylist():
+                block = int(raw["block_number"])
                 pool = str(raw["address"]).lower()
                 if lower <= block <= upper and pool in statics:
                     decoded = decode_inventory_log(raw)
@@ -257,25 +254,7 @@ def _raw_inventory_events_for_day(
         for row in rows
     }
     if len(identities) != len(rows):
-        raise ValueError("duplicate extra V3 inventory event within one day")
-    return rows
-
-
-def _canonical_swap_events_for_day(
-    day: str, lower: int, upper: int, statics: dict[str, PoolStatic]
-) -> list[dict[str, object]]:
-    state = read_tick_partition("uniswap_v3", day)
-    pool_identity = state["pool"].astype(str).str.lower()
-    candidate_rows = state[pool_identity.isin(statics) & state["record_type"].eq("swap")]
-    rows: list[dict[str, object]] = []
-    for record in candidate_rows.to_dict("records"):
-        static = statics[str(record["pool"]).lower()]
-        event = canonical_inventory_event(record, static)
-        if event is not None:
-            block = int(event["block_number"])
-            if not lower <= block <= upper:
-                raise ValueError(f"canonical V3 event {event['event_id']} lies outside day {day}")
-            rows.append(event)
+        raise ValueError("duplicate raw V3 inventory event within one day")
     return rows
 
 
@@ -370,8 +349,7 @@ def build(*, force: bool = False) -> tuple[int, int, int]:
             )
         else:
             raw_events = pd.read_parquet(raw_event_path).to_dict("records")
-        canonical_swaps = _canonical_swap_events_for_day(day, lower, end_block, statics)
-        events = [*canonical_swaps, *raw_events]
+        events = raw_events
         for event in events:
             event["amount0_delta_raw"] = int(event["amount0_delta_raw"])
             event["amount1_delta_raw"] = int(event["amount1_delta_raw"])

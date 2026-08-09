@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from bisect import bisect_left
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 import gzip
 import json
 from pathlib import Path
@@ -12,10 +12,13 @@ from typing import Iterable
 
 from eth_abi import decode as abi_decode
 from eth_utils import keccak
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 
 EVENT_SIGNATURES = {
     "mint": "Mint(address,address,int24,int24,uint128,uint256,uint256)",
+    "swap": "Swap(address,address,int256,int256,uint160,uint128,int24)",
     "collect": "Collect(address,address,int24,int24,uint128,uint128)",
     "flash": "Flash(address,address,uint256,uint256,uint256,uint256)",
     "collect_protocol": "CollectProtocol(address,address,uint128,uint128)",
@@ -30,6 +33,20 @@ INVENTORY_STATE_GENERATION = "uniswap_v3_event_replayed_inventory_v2"
 INVENTORY_QUANTITY_KIND = "event_replayed_pool_inventory"
 PENDING_CUSTODY_STATUS = "pending_historical_balance_validation"
 PENDING_OWNERSHIP_STATUS = "pending_protocol_fee_ownership_reconciliation"
+RAW_LOG_STORAGE_FORMAT = "exact_rpc_log_parquet_v1"
+RAW_LOG_SCHEMA = pa.schema(
+    [
+        pa.field("address", pa.string(), nullable=False),
+        pa.field("block_number", pa.int64(), nullable=False),
+        pa.field("block_hash", pa.string(), nullable=False),
+        pa.field("transaction_hash", pa.string(), nullable=False),
+        pa.field("transaction_index", pa.int64(), nullable=False),
+        pa.field("log_index", pa.int64(), nullable=False),
+        pa.field("topics", pa.list_(pa.string()), nullable=False),
+        pa.field("data", pa.string(), nullable=False),
+        pa.field("removed", pa.bool_(), nullable=False),
+    ]
+)
 
 
 @dataclass(frozen=True)
@@ -89,7 +106,39 @@ def block_ranges(start: int, end: int, chunk_size: int) -> list[tuple[int, int]]
 
 def inventory_chunk_paths(lower: int, upper: int, root: Path) -> tuple[Path, Path]:
     stem = f"blocks_{lower:08d}_{upper:08d}"
-    return root / f"{stem}.jsonl.gz", root / f"{stem}.meta.json"
+    return root / f"{stem}.parquet", root / f"{stem}.meta.json"
+
+
+def rpc_integer(value: object) -> int:
+    if isinstance(value, int):
+        return value
+    text = str(value)
+    return int(text, 16) if text.startswith("0x") else int(text)
+
+
+def canonical_raw_log(log: dict[str, object]) -> dict[str, object]:
+    """Retain every field needed to re-decode and identify one exact RPC log."""
+
+    topics = [str(value).lower() for value in log.get("topics") or []]
+    record = {
+        "address": str(log.get("address") or "").lower(),
+        "block_number": rpc_integer(log.get("blockNumber")),
+        "block_hash": str(log.get("blockHash") or "").lower(),
+        "transaction_hash": str(log.get("transactionHash") or "").lower(),
+        "transaction_index": rpc_integer(log.get("transactionIndex")),
+        "log_index": rpc_integer(log.get("logIndex")),
+        "topics": topics,
+        "data": str(log.get("data") or "0x").lower(),
+        "removed": bool(log.get("removed", False)),
+    }
+    if (
+        not record["address"]
+        or not record["block_hash"]
+        or not record["transaction_hash"]
+        or not topics
+    ):
+        raise ValueError("RPC log lacks exact block, transaction, address, or topic identity")
+    return record
 
 
 def inventory_chunk_completed(
@@ -104,13 +153,16 @@ def inventory_chunk_completed(
         return False
     try:
         record = json.loads(meta.read_text())
-    except (OSError, json.JSONDecodeError):
+        rows = pq.ParquetFile(raw).metadata.num_rows
+    except (OSError, ValueError, json.JSONDecodeError):
         return False
     return bool(
         record.get("status") == "complete"
         and int(record.get("from_block", -1)) == lower
         and int(record.get("to_block", -1)) == upper
         and set(record.get("event_topics") or []) == set(event_topics)
+        and record.get("storage_format") == RAW_LOG_STORAGE_FORMAT
+        and int(record.get("raw_logs", -1)) == rows
     )
 
 
@@ -152,11 +204,9 @@ def audit_inventory_chunks(
         raw_logs = 0
         recognized = 0
         by_event = {name: 0 for name in EVENT_TOPICS}
-        with gzip.open(raw_path, "rt") as handle:
-            for line in handle:
-                if not line.strip():
-                    continue
-                raw = json.loads(line)
+        parquet = pq.ParquetFile(raw_path)
+        for batch in parquet.iter_batches(batch_size=50_000):
+            for raw in batch.to_pylist():
                 decoded = decode_inventory_log(raw)
                 block = int(decoded["block_number"])
                 if not lower <= block <= upper:
@@ -202,30 +252,6 @@ def _field(record: object, name: str) -> object:
     return record.get(name) if isinstance(record, dict) else getattr(record, name, None)
 
 
-def decimal_to_raw(value: object, decimals: int) -> int:
-    """Convert an exact token-decimal string to raw units without rounding."""
-
-    try:
-        number = Decimal(str(value))
-    except (InvalidOperation, TypeError, ValueError) as error:
-        raise ValueError(f"invalid token amount {value!r}") from error
-    if not number.is_finite():
-        raise ValueError(f"invalid token amount {value!r}")
-    decimal_tuple = number.as_tuple()
-    coefficient = int("".join(str(digit) for digit in decimal_tuple.digits) or "0")
-    raw_exponent = int(decimal_tuple.exponent) + int(decimals)
-    if raw_exponent >= 0:
-        raw = coefficient * 10**raw_exponent
-    else:
-        divisor = 10 ** (-raw_exponent)
-        if coefficient % divisor:
-            raise ValueError(f"token amount {value!r} is not exact at {decimals} decimals")
-        raw = coefficient // divisor
-    if decimal_tuple.sign:
-        raw = -raw
-    return raw
-
-
 def canonical_inventory_start_block(records: Iterable[object]) -> int:
     """Return the first canonical Mint or Swap block in an ordered or unordered frame."""
 
@@ -240,43 +266,6 @@ def canonical_inventory_start_block(records: Iterable[object]) -> int:
     if not blocks or min(blocks) <= 0:
         raise ValueError("canonical V3 state lacks an inventory-changing event")
     return min(blocks)
-
-
-def canonical_inventory_event(record: object, static: PoolStatic) -> dict[str, object] | None:
-    """Map one canonical V3 Mint/Swap/Burn row to a physical-balance delta."""
-
-    record_type = str(_field(record, "record_type") or "")
-    source_stream = str(_field(record, "source_stream") or "")
-    if record_type == "liquidity" and source_stream == "burns":
-        return None
-    if record_type == "swap":
-        event_type = "swap"
-    elif record_type == "liquidity" and source_stream == "mints":
-        event_type = "mint"
-    else:
-        return None
-    pool = str(_field(record, "pool") or "").lower()
-    if pool != static.pool:
-        raise ValueError(f"canonical inventory event pool differs from static identity: {pool}")
-    block = int(_field(record, "block_number"))
-    log_index = int(_field(record, "log_index"))
-    tx_hash = str(_field(record, "tx_hash") or "").lower()
-    if block <= 0 or log_index < 0 or not tx_hash:
-        raise ValueError("canonical inventory event lacks exact block-log identity")
-    delta0 = decimal_to_raw(_field(record, "amount0"), static.decimals0)
-    delta1 = decimal_to_raw(_field(record, "amount1"), static.decimals1)
-    if event_type == "mint" and (delta0 < 0 or delta1 < 0):
-        raise ValueError("V3 mint has a negative physical-balance delta")
-    return {
-        "event_type": event_type,
-        "pool": pool,
-        "block_number": block,
-        "log_index": log_index,
-        "tx_hash": tx_hash,
-        "event_id": f"{tx_hash}:{log_index}",
-        "amount0_delta_raw": delta0,
-        "amount1_delta_raw": delta1,
-    }
 
 
 def apply_inventory_event(
@@ -413,6 +402,11 @@ def decode_inventory_log(log: dict) -> dict[str, object]:
             ["address", "uint128", "uint256", "uint256"], data
         )
         delta0, delta1 = int(amount0), int(amount1)
+    elif event_type == "swap":
+        amount0, amount1, _sqrt_price, _liquidity, _tick = abi_decode(
+            ["int256", "int256", "uint160", "uint128", "int24"], data
+        )
+        delta0, delta1 = int(amount0), int(amount1)
     elif event_type == "collect":
         _recipient, amount0, amount1 = abi_decode(
             ["address", "uint128", "uint128"], data
@@ -426,9 +420,9 @@ def decode_inventory_log(log: dict) -> dict[str, object]:
     else:
         amount0, amount1 = abi_decode(["uint128", "uint128"], data)
         delta0, delta1 = -int(amount0), -int(amount1)
-    block = int(str(log["blockNumber"]), 16)
-    log_index = int(str(log["logIndex"]), 16)
-    tx_hash = str(log["transactionHash"]).lower()
+    block = rpc_integer(log.get("blockNumber", log.get("block_number")))
+    log_index = rpc_integer(log.get("logIndex", log.get("log_index")))
+    tx_hash = str(log.get("transactionHash") or log.get("transaction_hash") or "").lower()
     pool = str(log["address"]).lower()
     timestamp_value = log.get("blockTimestamp")
     timestamp = int(str(timestamp_value), 16) if timestamp_value is not None else None

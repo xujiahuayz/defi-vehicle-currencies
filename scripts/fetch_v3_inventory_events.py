@@ -12,14 +12,20 @@ from pathlib import Path
 import re
 import time
 
-from ddvc.fetch.raw import write_json, write_jsonl_gz
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+from ddvc.fetch.raw import write_json
 from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.quoter import Throttled, rpc_post
-from ddvc.runtime import exclusive_job, interruptible_thread_pool
+from ddvc.runtime import atomic_output, exclusive_job, interruptible_thread_pool
 from ddvc.v3_inventory import (
     EVENT_TOPICS,
+    RAW_LOG_SCHEMA,
+    RAW_LOG_STORAGE_FORMAT,
     block_ranges,
+    canonical_raw_log,
     canonical_inventory_start_block,
     decode_inventory_log,
     inventory_chunk_completed,
@@ -102,8 +108,10 @@ def fetch_chunk(
     keys: set[tuple[int, str, int]] = set()
     recognized = 0
     by_event = {name: 0 for name in EVENT_TOPICS}
+    raw_records: list[dict[str, object]] = []
     for log in logs:
-        decoded = decode_inventory_log(log)
+        raw_record = canonical_raw_log(log)
+        decoded = decode_inventory_log(raw_record)
         block = int(decoded["block_number"])
         if not lower <= block <= upper:
             raise ValueError(f"log outside requested block range: {block} not in {lower}-{upper}")
@@ -111,17 +119,26 @@ def fetch_chunk(
         if key in keys:
             raise ValueError(f"duplicate V3 inventory log in block chunk: {key}")
         keys.add(key)
+        raw_records.append(raw_record)
         if decoded["pool"] in pools:
             recognized += 1
             by_event[str(decoded["event_type"])] += 1
     raw_path, meta_path = paths(lower, upper, root)
     raw_path.parent.mkdir(parents=True, exist_ok=True)
-    write_jsonl_gz(raw_path, logs)
+    table = pa.Table.from_pylist(raw_records, schema=RAW_LOG_SCHEMA)
+    with atomic_output(raw_path) as temporary:
+        pq.write_table(
+            table,
+            temporary,
+            compression="zstd",
+            use_dictionary=True,
+        )
     metadata = {
         "status": "complete",
         "from_block": lower,
         "to_block": upper,
         "event_topics": [EVENT_TOPICS[name] for name in sorted(EVENT_TOPICS)],
+        "storage_format": RAW_LOG_STORAGE_FORMAT,
         "raw_logs": len(logs),
         "recognized_v3_logs": recognized,
         "unrecognized_logs": len(logs) - recognized,

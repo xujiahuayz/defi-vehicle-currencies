@@ -1,29 +1,32 @@
 from __future__ import annotations
 
 from eth_abi import encode as abi_encode
-import gzip
 import json
 from pathlib import Path
 import tempfile
 from unittest.mock import patch
 
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 
 from ddvc.v3_inventory import (
     EVENT_TOPICS,
+    RAW_LOG_SCHEMA,
+    RAW_LOG_STORAGE_FORMAT,
     PoolStatic,
     apply_inventory_event,
     apply_inventory_events,
     audit_inventory_chunks,
     balance_of_calldata,
     block_ranges,
+    canonical_raw_log,
     canonical_inventory_start_block,
-    canonical_inventory_event,
     day_for_block,
-    decimal_to_raw,
     decode_balance_of_result,
     decode_inventory_log,
+    inventory_chunk_completed,
     inventory_snapshot_rows,
     inventory_chunk_paths,
     pool_static_from_graph,
@@ -34,20 +37,19 @@ from ddvc.v3_inventory_calendar import (
     last_block_before_timestamp,
 )
 from ddvc.quoter import Throttled
-from scripts.build_v3_inventory_panel import (
-    CODE_SOURCES as PANEL_CODE_SOURCES,
-    _canonical_swap_events_for_day,
-)
+from scripts.build_v3_inventory_panel import CODE_SOURCES as PANEL_CODE_SOURCES
 from scripts.audit_v3_inventory_balances import audit_sample_table
-from scripts.fetch_v3_inventory_events import run_fetch_jobs, safe_retry_reason
+from scripts.fetch_v3_inventory_events import fetch_chunk, run_fetch_jobs, safe_retry_reason
 
 
 def log(event: str, values: list[int], types: list[str]) -> dict:
     return {
         "address": "0xpool",
         "blockNumber": "0x64",
+        "blockHash": "0xblock",
         "logIndex": "0x7",
         "transactionHash": "0xtx",
+        "transactionIndex": "0x2",
         "topics": [EVENT_TOPICS[event]],
         "data": "0x" + abi_encode(types, values).hex(),
     }
@@ -86,6 +88,21 @@ def test_raw_mint_uses_exact_integer_transfer_amounts() -> None:
     decoded = decode_inventory_log(mint)
     assert decoded["amount0_delta_raw"] == 775_343_764_933_267_394_725_819_694_029
     assert decoded["amount1_delta_raw"] == 10**18
+
+
+def test_raw_swap_uses_exact_signed_integer_transfer_amounts() -> None:
+    swap = log(
+        "swap",
+        [-123, 456, 2**96, 999, -12],
+        ["int256", "int256", "uint160", "uint128", "int24"],
+    )
+    decoded = decode_inventory_log(swap)
+    assert decoded["amount0_delta_raw"] == -123
+    assert decoded["amount1_delta_raw"] == 456
+
+
+def test_burn_is_not_a_physical_inventory_transfer() -> None:
+    assert "burn" not in EVENT_TOPICS
 
 
 def test_block_chunks_cover_the_perimeter_once() -> None:
@@ -130,73 +147,6 @@ def test_graph_static_requires_exact_pool_and_token_identities() -> None:
                 "token1": {"id": "0xtoken1", "decimals": "18"},
             }
         )
-
-
-def test_decimal_amounts_convert_to_raw_units_without_rounding() -> None:
-    assert decimal_to_raw("1.234567", 6) == 1_234_567
-    assert decimal_to_raw("-0.000000000000000001", 18) == -1
-    assert decimal_to_raw("775343764933.267394725819694029", 18) == (
-        775_343_764_933_267_394_725_819_694_029
-    )
-    with pytest.raises(ValueError, match="not exact"):
-        decimal_to_raw("0.0000001", 6)
-
-
-def test_mint_and_swap_change_inventory_but_burn_does_not_transfer() -> None:
-    base = {
-        "pool": "0xpool",
-        "block_number": 100,
-        "log_index": 7,
-        "tx_hash": "0xtx",
-        "amount0": "1.5",
-        "amount1": "2",
-    }
-    mint = canonical_inventory_event(
-        {**base, "record_type": "liquidity", "source_stream": "mints"}, static()
-    )
-    swap = canonical_inventory_event(
-        {
-            **base,
-            "log_index": 8,
-            "record_type": "swap",
-            "source_stream": "swaps",
-            "amount0": "-0.5",
-            "amount1": "0.25",
-        },
-        static(),
-    )
-    burn = canonical_inventory_event(
-        {**base, "record_type": "liquidity", "source_stream": "burns"}, static()
-    )
-    balances: dict[str, tuple[int, int]] = {}
-    assert apply_inventory_event(balances, mint) == (1_500_000, 2 * 10**18)
-    assert apply_inventory_event(balances, swap) == (1_000_000, 2_250_000_000_000_000_000)
-    assert burn is None
-
-
-def test_daily_graph_events_do_not_duplicate_raw_mints() -> None:
-    item = static()
-    frame = pd.DataFrame(
-        [
-            {
-                "pool": item.pool,
-                "token0": None,
-                "token1": None,
-                "record_type": "liquidity",
-                "source_stream": "mints",
-                "block_number": 100,
-                "log_index": 7,
-                "tx_hash": "0xtx",
-                "amount0": "1.5",
-                "amount1": "2",
-            }
-        ]
-    )
-    with patch("scripts.build_v3_inventory_panel.read_tick_partition", return_value=frame):
-        events = _canonical_swap_events_for_day(
-            "20210504", 90, 110, {item.pool: item}
-        )
-    assert events == []
 
 
 def test_inventory_checkpoint_preserves_negative_raw_balances_without_flooring() -> None:
@@ -333,14 +283,38 @@ def test_inventory_retry_reason_redacts_endpoints_and_bounds_output() -> None:
     assert len(reason) == 200
 
 
+def test_inventory_fetch_persists_exact_raw_log_parquet() -> None:
+    raw = log(
+        "swap",
+        [-1, 2, 2**96, 99, 0],
+        ["int256", "int256", "uint160", "uint128", "int24"],
+    )
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        with patch(
+            "scripts.fetch_v3_inventory_events.rpc_post",
+            return_value={"result": [raw]},
+        ):
+            metadata = fetch_chunk(100, 100, {"0xpool"}, root)
+        raw_path, _meta_path = inventory_chunk_paths(100, 100, root)
+        table = pq.read_table(raw_path)
+        assert table.schema == RAW_LOG_SCHEMA
+        assert table.to_pylist()[0] == canonical_raw_log(raw)
+        assert metadata["storage_format"] == RAW_LOG_STORAGE_FORMAT
+        assert metadata["recognized_by_event"]["swap"] == 1
+        assert inventory_chunk_completed(100, 100, root)
+
+
 def test_raw_inventory_chunk_audit_reconciles_content_and_metadata() -> None:
     raw = log("collect_protocol", [1, 2], ["uint128", "uint128"])
     raw["address"] = "0xpool"
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         raw_path, meta_path = inventory_chunk_paths(100, 100, root)
-        with gzip.open(raw_path, "wt") as handle:
-            handle.write(json.dumps(raw) + "\n")
+        pq.write_table(
+            pa.Table.from_pylist([canonical_raw_log(raw)], schema=RAW_LOG_SCHEMA),
+            raw_path,
+        )
         meta_path.write_text(
             json.dumps(
                 {
@@ -348,12 +322,14 @@ def test_raw_inventory_chunk_audit_reconciles_content_and_metadata() -> None:
                     "from_block": 100,
                     "to_block": 100,
                     "event_topics": sorted(EVENT_TOPICS.values()),
+                    "storage_format": RAW_LOG_STORAGE_FORMAT,
                     "raw_logs": 1,
                     "recognized_v3_logs": 1,
                     "unrecognized_logs": 0,
-                        "recognized_by_event": {
-                            "mint": 0,
-                            "collect": 0,
+                    "recognized_by_event": {
+                        "mint": 0,
+                        "swap": 0,
+                        "collect": 0,
                         "flash": 0,
                         "collect_protocol": 1,
                     },
