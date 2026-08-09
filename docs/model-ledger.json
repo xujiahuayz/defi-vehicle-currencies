@@ -141,8 +141,8 @@
       "id": "transaction_state_routing_efficiency",
       "claim_id": "routing_maturation_rival",
       "estimator": "not yet run",
-      "fixed_effects": "locked target: endpoint-vehicle-reach-notional cells with date absorption",
-      "inference": "locked target: assignment clustering and exact-calendar dynamics",
+      "fixed_effects": "locked target: endpoint-vehicle-observed-reach-notional-bin cell effects for maturation with no date effects; endpoint-reach-notional effects for the conditioned vehicle transition; date effects only for within-date candidate comparisons",
+      "inference": "locked target: two-way CR1 by cell and calendar date for maturation; ordered endpoint pair and calendar date for the conditioned transition; exact-calendar 1/7/30/120-day links for persistence diagnostics",
       "substantive_specifications": 0,
       "diagnostic_specifications": 0,
       "resampling_refits": 0,
@@ -150,7 +150,7 @@
       "artifacts": [
         "output/exhibits/transaction_state_frontier_audit_support.jsonl"
       ],
-      "note": "The 77 audit dates validate construction only. Chosen-route reproduction is below its gate, and the full daily 1/7/30/120-day estimation sample has not been built."
+      "note": "The 77 audit dates validate construction only. The prior full daily panel is stale against the active canonical generation and cannot supply findings. D3 must rebuild it, enforce at least 99 percent chosen-route reproduction within one basis point, retain nested 0.1- and 0.01-basis-point support, and materialise the locked recurrent cell-day panel before the first fit."
     }
   ]
 }

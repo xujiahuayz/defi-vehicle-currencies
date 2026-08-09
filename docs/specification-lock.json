@@ -85,11 +85,15 @@
       "role": "first rival mechanism",
       "estimand": "changes in opportunity-set integration, direct splitting, true intermediation, path complexity, and realised routing regret",
       "sample": "economic routes on full and balanced venue perimeters; topology uses the full daily calendar; the fixed-notional cost landscape uses the 200 most heavily intermediated directed endpoint pairs per day at all 24 UTC hours as a selected descriptive panel, a cohort fixed from the first 365 released days for within-established-market changes, and a persistent common-support cohort; exact-state regret uses the full daily realised-route frontier after a separate 77-day estimator-validation audit passes",
-      "unit": "route for topology; endpoint-pair-candidate-hour-notional cell for the fixed grid; realised route at its exact pre-transaction state for regret",
-      "dependent_variable": "separate topology margins, direct and indirect availability, fixed-notional quote gaps, and realised same-state routing shortfalls",
-      "transformation": "incidence levels, percentage-point changes, and basis-point cost gaps",
-      "outlier_treatment": "canonical endpoint round trips excluded; topology counts retained without value support; cost gaps require exact transaction state",
-      "inference": "30-day HAC for daily topology changes; pair and date clustering for cost panels",
+      "unit": "route for topology; endpoint-pair-candidate-hour-notional cell for the fixed grid; realised route at its exact pre-transaction state for construction; endpoint-vehicle-observed-reach-notional-bin by day for maturation inference",
+      "dependent_variable": "separate topology margins, direct and indirect availability, fixed-notional quote gaps, and realised same-state within-reach search regret, public-reach increment, path-choice increment, and total public-path regret",
+      "transformation": "incidence levels, percentage-point changes, basis-point cost gaps, regret above one basis point, and log one plus nonnegative regret basis points",
+      "outlier_treatment": "canonical endpoint round trips excluded; topology counts retained without value support; exact-state outcomes require input notional at least 100 dollars, coherent within-20-percent valuation support, and absolute chosen-route reproduction error at most one basis point; no upper-tail deletion",
+      "analysis_ready_panel": "D3 aggregates the validated route frontier to one endpoint-vehicle-observed-reach-notional-bin-day row before any estimator runs. Endpoints are ordered token addresses; vehicle is the token address; observed reach is the sorted deduplicated set of realised venues; fixed input-notional bins are [100,1000), [1000,10000), [10000,100000), [100000,1000000), and at least 1000000 dollars. The primary recurrent support requires at least 10 observed days in every full calendar year 2021 through 2025; at least 30 days per year is the stricter sensitivity. Support geometry was selected before the refreshed finding run: the stale construction panel retained 1233 cells, 672 directed pairs, 14 vehicles, all 1826 days, and 1533399 routes under the 10-day rule, while the 30-day rule retained 381 cells and 1038829 routes.",
+      "maturation_estimator": "Primary maturation estimates regress the equal-weight cell-day share above one basis point separately for each regret margin on elapsed calendar years with cell fixed effects and no date fixed effects; a negative time coefficient denotes compression. Two-way CR1 clustering by cell and calendar date is primary. Route-weighted cell-day shares and log one plus mean regret are mandatory sensitivities. The full-year 2021-2025 recurrent panel is primary; all released dates are a lifecycle sensitivity.",
+      "transition_conditioning": "The rival test estimates the 2024-versus-2026 stable indicator among native-plus-stable exact two-leg routes on common month-and-day support, conditional on ordered endpoint, sorted observed reach, fixed notional bin, and saturated [0,0.01], (0.01,1], (1,10], and above-10-basis-point bins of each of the three regret components. Endpoint-reach-notional fixed effects hold the opportunity regime fixed without absorbing vehicle type; calendar-date fixed effects are permitted only in within-date candidate comparisons and never in the 2024-versus-2026 transition coefficient. Inference clusters by ordered endpoint pair and calendar date. Route weighting is primary to match the lead transition estimand and equal-date weighting is mandatory. This is a conditioning and falsification exercise, not an aggregator treatment effect.",
+      "exact_calendar_dynamics": "Secondary persistence diagnostics link the same fixed cell by exact calendar date at 1, 7, 30, and 120 days, then regress each future cell-day regret-above-one-basis-point share on its current share and elapsed calendar years with cell fixed effects and two-way cell and origin-date clustering. Missing target dates remain missing and link coverage is reported by horizon; row shifts and variable-length months are forbidden. These diagnostics describe persistence of measured routing shortfalls and cannot identify trader inertia or aggregator causality.",
+      "inference": "30-day HAC for daily topology changes; pair and date clustering for fixed-grid cost panels; two-way cell and calendar-date clustering for maturation; ordered endpoint-pair and calendar-date clustering for the conditioned vehicle transition",
       "mandatory_alternatives": {
         "opportunity_set": [
           "realised venue reach",
@@ -123,6 +127,23 @@
           1.0,
           0.1,
           0.01
+        ],
+        "recurrent_cell_minimum_days_per_full_year": [
+          10,
+          30
+        ],
+        "regret_outcome_threshold_bps": [
+          1.0,
+          0.01,
+          10.0
+        ],
+        "weighting": [
+          "equal endpoint-vehicle-reach-notional cell-day",
+          "route weighted within cell-day"
+        ],
+        "calendar_window": [
+          "full calendar years 2021 through 2025",
+          "all released dates including partial endpoint years"
         ]
       },
       "falsifier": "stable transition vanishes inside fixed opportunity and search-efficiency cells",
