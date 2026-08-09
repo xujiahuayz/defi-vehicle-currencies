@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "locked_at": "2026-08-07",
-  "lock_hash": "8179dc877597e79a2cb85ca65c3e9dc5fa85600ca11c593744ee20093cc38da1",
+  "locked_at": "2026-08-10",
+  "lock_hash": "1e3be6ea02a2fd2defcc806aabb78143202441ea1f51f2dafb18b81b8c957767",
   "paper_scope": "The making and displacement of vehicle-currency roles in Ethereum decentralised exchange",
   "global_rules": {
     "asset_identity": "canonical contract address; symbols are labels only",

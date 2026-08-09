@@ -51,6 +51,25 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_live_json_contracts_have_unique_keys_and_a_current_lock_hash(self) -> None:
+        import json
+
+        def unique_object(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError(f"duplicate JSON contract key: {key}")
+                result[key] = value
+            return result
+
+        root = Path(__file__).resolve().parents[1]
+        payloads = {
+            path.name: json.loads(path.read_text(), object_pairs_hook=unique_object)
+            for path in (root / "docs" / "specification-lock.json", root / "docs" / "model-ledger.json")
+        }
+        passed, detail = validate_specification_lock(payloads["specification-lock.json"])
+        self.assertTrue(passed, detail)
+
     def test_route_cost_gate_checks_cell_semantics_and_formula(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "route-cost.parquet"
