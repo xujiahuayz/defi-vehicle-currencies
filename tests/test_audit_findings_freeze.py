@@ -26,6 +26,7 @@ from scripts.audit_findings_freeze import (
     published_venue_version,
     registered_empirical_consumers,
     route_measurement_invariants,
+    route_cost_panel_checks,
     source_materialized,
     source_set_record_closed,
     transaction_frontier_artifact_checks,
@@ -50,6 +51,54 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_route_cost_gate_checks_cell_semantics_and_formula(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "route-cost.parquet"
+            src = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            tgt = "0xdac17f958d2ee523a2206206994597c13d831ec7"
+            vehicle = "0x6b175474e89094c44da98b954eedeac495271d0f"
+            rows = []
+            for hour in range(24):
+                for size in (1_000.0, 10_000.0, 100_000.0):
+                    direct = size * 0.99
+                    indirect = size * 0.98
+                    rows.append(
+                        {
+                            "date": "2025-01-01",
+                            "method": "v2_cp_plus_v3_exact_tick",
+                            "reserve_hour_utc": hour,
+                            "src": src,
+                            "tgt": tgt,
+                            "vehicle": vehicle,
+                            "trade_size_usd": size,
+                            "direct_available": True,
+                            "vehicle_available": True,
+                            "direct_output_usd": direct,
+                            "vehicle_output_usd": indirect,
+                            "direct_cost_advantage": (direct - indirect) / direct,
+                            "direct_source": "uniswap_v2",
+                            "direct_pool": "direct",
+                            "hop1_source": "uniswap_v2",
+                            "hop1_pool": "hop1",
+                            "hop2_source": "uniswap_v2",
+                            "hop2_pool": "hop2",
+                            "realized_bridge_volume_usd": 1_000_000.0,
+                            "n_realized_routes": 20,
+                        }
+                    )
+            pd.DataFrame(rows).to_parquet(path, index=False)
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = route_cost_panel_checks(path)
+            self.assertTrue(all(passed for _name, passed, _detail in checks), checks)
+
+            frame = pd.read_parquet(path)
+            frame.loc[0, "direct_cost_advantage"] = -0.5
+            frame.to_parquet(path, index=False)
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = route_cost_panel_checks(path)
+            cost_check = next(check for check in checks if check[0].endswith("row semantics"))
+            self.assertFalse(cost_check[1], checks)
+
     def test_cex_reference_gate_is_positive_exact_address_support(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "cex.parquet"

@@ -32,6 +32,7 @@ from ddvc.liquidity import (
 from ddvc.literature_admission import load_source_admission, validate_source_admission
 from ddvc.provenance import sidecar_path, verify
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
+from ddvc.route_cost import MAIN_ROUTE_COST_SPEC, QUOTE_CELL_KEYS
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
 from ddvc.state_data import (
     FAMILY_STREAMS,
@@ -1372,6 +1373,203 @@ def cex_reference_support_checks(
     return results
 
 
+def route_cost_panel_checks(
+    path: Path = PANEL,
+) -> list[tuple[str, bool, str]]:
+    """Audit the release-grade route-cost panel's economic-cell semantics."""
+
+    if not path.is_file():
+        return [("node D route-cost panel", False, "missing canonical panel")]
+    required = {
+        *QUOTE_CELL_KEYS,
+        "method",
+        "direct_available",
+        "vehicle_available",
+        "direct_output_usd",
+        "vehicle_output_usd",
+        "direct_cost_advantage",
+        "direct_source",
+        "direct_pool",
+        "hop1_source",
+        "hop1_pool",
+        "hop2_source",
+        "hop2_pool",
+        "realized_bridge_volume_usd",
+        "n_realized_routes",
+    }
+    columns = set(pq.ParquetFile(path).schema_arrow.names)
+    missing = sorted(required - columns)
+    provenance = verify(path).get("status")
+    results = [
+        (
+            "node D route-cost provenance and schema",
+            provenance == "ok" and not missing,
+            f"provenance={provenance}; missing_columns={missing or 'none'}",
+        )
+    ]
+    if missing:
+        return results
+
+    admitted_sources = sorted(
+        {
+            venue
+            for (venue, _family), contract in LIQUIDITY_CONTRACTS.items()
+            if contract.capability("quote_quality").ready
+            and contract.capability("executable_band_depth").ready
+        }
+    )
+    candidates = sorted(VEHICLE_CANDIDATES)
+    expected_hours = list(MAIN_ROUTE_COST_SPEC.hours_utc)
+    expected_sizes = list(MAIN_ROUTE_COST_SPEC.trade_sizes_usd)
+    con = duckdb.connect()
+    con.execute("SET memory_limit='1500MB'")
+    con.execute("SET threads=2")
+    try:
+        core = con.execute(
+            """
+            WITH panel AS (
+                SELECT *,
+                    direct_available AND vehicle_available AS common_support,
+                    (direct_output_usd - vehicle_output_usd) / direct_output_usd
+                        AS reconstructed_advantage
+                FROM read_parquet(?)
+            )
+            SELECT count(*) AS rows,
+                count(*) FILTER (WHERE method!='v2_cp_plus_v3_exact_tick') AS bad_method,
+                count(*) FILTER (
+                    WHERE src=tgt OR vehicle=src OR vehicle=tgt OR vehicle NOT IN (SELECT unnest(?))
+                ) AS bad_identity,
+                count(*) FILTER (
+                    WHERE direct_output_usd < 0 OR vehicle_output_usd < 0
+                       OR NOT isfinite(direct_output_usd) OR NOT isfinite(vehicle_output_usd)
+                ) AS bad_output,
+                count(*) FILTER (
+                    WHERE direct_available IS DISTINCT FROM (direct_output_usd > 0)
+                       OR vehicle_available IS DISTINCT FROM (vehicle_output_usd > 0)
+                ) AS bad_availability,
+                count(*) FILTER (
+                    WHERE (common_support AND (
+                              NOT isfinite(direct_cost_advantage)
+                              OR abs(direct_cost_advantage - reconstructed_advantage)
+                                 > 1e-12 * greatest(1.0, abs(reconstructed_advantage))
+                          ))
+                       OR (NOT common_support AND isfinite(direct_cost_advantage))
+                ) AS bad_cost,
+                count(*) FILTER (
+                    WHERE direct_available IS DISTINCT FROM (
+                              direct_source IS NOT NULL AND direct_pool IS NOT NULL
+                          )
+                       OR vehicle_available IS DISTINCT FROM (
+                              hop1_source IS NOT NULL AND hop1_pool IS NOT NULL
+                              AND hop2_source IS NOT NULL AND hop2_pool IS NOT NULL
+                          )
+                ) AS bad_path_lineage,
+                count(*) FILTER (
+                    WHERE (direct_source IS NOT NULL AND direct_source NOT IN (SELECT unnest(?)))
+                       OR (hop1_source IS NOT NULL AND hop1_source NOT IN (SELECT unnest(?)))
+                       OR (hop2_source IS NOT NULL AND hop2_source NOT IN (SELECT unnest(?)))
+                ) AS bad_source,
+                count(*) FILTER (
+                    WHERE realized_bridge_volume_usd < 0
+                       OR NOT isfinite(realized_bridge_volume_usd)
+                       OR n_realized_routes <= 0
+                ) AS bad_realized_support
+            FROM panel
+            """,
+            [str(path), candidates, admitted_sources, admitted_sources, admitted_sources],
+        ).fetchone()
+        results.append(
+            (
+                "node D route-cost row semantics",
+                bool(core[0]) and not any(core[index] for index in range(1, 9)),
+                f"rows={core[0]:,}; method={core[1]:,}; identity={core[2]:,}; "
+                f"output={core[3]:,}; availability={core[4]:,}; cost={core[5]:,}; "
+                f"path_lineage={core[6]:,}; source={core[7]:,}; "
+                f"realized_support={core[8]:,}",
+            )
+        )
+
+        scope = con.execute(
+            """
+            SELECT list_sort(list(DISTINCT reserve_hour_utc)),
+                list_sort(list(DISTINCT trade_size_usd)),
+                count(DISTINCT date), min(date), max(date)
+            FROM read_parquet(?)
+            """,
+            [str(path)],
+        ).fetchone()
+        observed_hours = [int(value) for value in scope[0]]
+        observed_sizes = [float(value) for value in scope[1]]
+        results.append(
+            (
+                "node D route-cost declared scope",
+                observed_hours == expected_hours and observed_sizes == expected_sizes,
+                f"hours={observed_hours}; sizes={observed_sizes}; days={scope[2]:,}; "
+                f"range={scope[3]}..{scope[4]}",
+            )
+        )
+
+        duplicates = con.execute(
+            """
+            WITH by_date AS (
+                SELECT date, count(*) AS rows,
+                    count(DISTINCT (
+                        reserve_hour_utc, src, tgt, vehicle, trade_size_usd
+                    )) AS unique_rows
+                FROM read_parquet(?)
+                GROUP BY date
+            )
+            SELECT coalesce(sum(rows - unique_rows), 0),
+                count(*) FILTER (WHERE rows!=unique_rows)
+            FROM by_date
+            """,
+            [str(path)],
+        ).fetchone()
+        results.append(
+            (
+                "node D route-cost unique economic cells",
+                not duplicates[0] and not duplicates[1],
+                f"duplicate_rows={duplicates[0]:,}; affected_dates={duplicates[1]:,}",
+            )
+        )
+
+        invariance = con.execute(
+            """
+            WITH direct_cells AS (
+                SELECT date, reserve_hour_utc, src, tgt, trade_size_usd,
+                    count(DISTINCT direct_output_usd) AS outputs,
+                    count(DISTINCT direct_source) AS sources,
+                    count(DISTINCT direct_pool) AS pools
+                FROM read_parquet(?)
+                GROUP BY date, reserve_hour_utc, src, tgt, trade_size_usd
+            ), realized_cells AS (
+                SELECT date, reserve_hour_utc, src, tgt,
+                    count(DISTINCT realized_bridge_volume_usd) AS volumes,
+                    count(DISTINCT n_realized_routes) AS routes
+                FROM read_parquet(?)
+                GROUP BY date, reserve_hour_utc, src, tgt
+            )
+            SELECT
+                (SELECT count(*) FROM direct_cells
+                    WHERE outputs>1 OR sources>1 OR pools>1),
+                (SELECT count(*) FROM realized_cells WHERE volumes>1 OR routes>1)
+            """,
+            [str(path), str(path)],
+        ).fetchone()
+        results.append(
+            (
+                "node D route-cost repeated-input invariance",
+                not invariance[0] and not invariance[1],
+                f"direct_cells={invariance[0]:,}; realized_cells={invariance[1]:,}",
+            )
+        )
+    except (duckdb.Error, OSError, ValueError) as exc:
+        results.append(("node D route-cost semantic audit", False, f"{type(exc).__name__}: {exc}"))
+    finally:
+        con.close()
+    return results
+
+
 def rent_incidence_artifact_checks(
     rent_path: Path = RENT_V2_PANEL,
     capital_path: Path = POOL_CAPITAL_PANEL,
@@ -2512,6 +2710,8 @@ def main() -> int:
             verdict.get("status") == "ok" and bool(panel_manifest.get("inputs")),
             f"status={verdict.get('status')}; inputs={len(panel_manifest.get('inputs') or [])}",
         )
+        for name, passed, detail in route_cost_panel_checks(PANEL):
+            record(name, passed, detail)
         notes = str(panel_manifest.get("notes") or "")
         argv = [str(value) for value in panel_manifest.get("argv") or []]
         record(
