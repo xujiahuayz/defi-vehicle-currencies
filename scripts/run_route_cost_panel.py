@@ -39,7 +39,12 @@ from ddvc.panel_assembly import assemble_parquet_shards
 from ddvc.prices import day_prices
 from ddvc.provenance import cache_key
 from ddvc.provenance import stamp as record_provenance
-from ddvc.route_cost import MAX_INPUT_TO_RESERVE, MAX_PRICE_IMPACT, QUOTE_CELL_KEYS
+from ddvc.route_cost import (
+    MAIN_ROUTE_COST_SPEC,
+    MAX_INPUT_TO_RESERVE,
+    MAX_PRICE_IMPACT,
+    QUOTE_CELL_KEYS,
+)
 from ddvc.pricing.v2quote import quote_exact_input_float
 from ddvc.pricing.tick_quote import quote_tick_state
 from ddvc.pricing.v3quote import get_sqrt_ratio_at_tick
@@ -94,6 +99,41 @@ DAY_WORK_STREAMS = {
 
 def bounded_route_workers(requested: int) -> int:
     return min(MAX_ROUTE_WORKERS, max(1, requested))
+
+
+def apply_main_build_spec(args: argparse.Namespace) -> str:
+    """Resolve the canonical release scope without relying on CLI defaults."""
+
+    if not args.main_spec:
+        args.hours = args.hours or "12"
+        args.top_pairs = args.top_pairs if args.top_pairs is not None else 200
+        args.trade_sizes = args.trade_sizes or "1000,10000,100000"
+        return "custom"
+    conflicts = {
+        "start": args.start,
+        "end": args.end,
+        "hours": args.hours,
+        "top_pairs": args.top_pairs,
+        "trade_sizes": args.trade_sizes,
+        "split_wrapped": args.split_wrapped or None,
+        "no_v3": args.no_v3 or None,
+    }
+    supplied = sorted(name for name, value in conflicts.items() if value is not None)
+    if supplied:
+        raise ValueError(
+            "--main-spec cannot be combined with scientific scope overrides: "
+            + ", ".join(supplied)
+        )
+    args.start = None
+    args.end = None
+    args.hours = ",".join(str(hour) for hour in MAIN_ROUTE_COST_SPEC.hours_utc)
+    args.top_pairs = MAIN_ROUTE_COST_SPEC.top_pairs
+    args.trade_sizes = ",".join(
+        str(int(value)) for value in MAIN_ROUTE_COST_SPEC.trade_sizes_usd
+    )
+    args.split_wrapped = not MAIN_ROUTE_COST_SPEC.unify_wrapped
+    args.no_v3 = not MAIN_ROUTE_COST_SPEC.include_tick_venues
+    return MAIN_ROUTE_COST_SPEC.scope
 
 
 def require_quote_family_perimeter(*, include_tick: bool = True) -> None:
@@ -934,12 +974,17 @@ def main() -> int:
     ap.add_argument("--start", default=None)
     ap.add_argument("--end", default=None)
     ap.add_argument(
-        "--hours", default="12",
+        "--hours", default=None,
         help="UTC hours of each day to price, as a comma list or range: '12', "
              "'0,6,12,18', or 'all' for every hour. A single hour samples one state "
              "per day, which is 1/24 of the hourly reserve data actually held.")
-    ap.add_argument("--top-pairs", type=int, default=200)
-    ap.add_argument("--trade-sizes", default="1000,10000,100000")
+    ap.add_argument("--top-pairs", type=int, default=None)
+    ap.add_argument("--trade-sizes", default=None)
+    ap.add_argument(
+        "--main-spec",
+        action="store_true",
+        help="use the canonical full-sample, 24-hour release scope and reject overrides",
+    )
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--split-wrapped", action="store_true",
                     help="treat native ETH and WETH as DISTINCT assets. Default "
@@ -955,6 +1000,10 @@ def main() -> int:
     )
     ap.add_argument("--no-v3", action="store_true", help="only use V2-style constant-product pools")
     args = ap.parse_args()
+    try:
+        build_scope = apply_main_build_spec(args)
+    except ValueError as error:
+        ap.error(str(error))
     args.workers = bounded_route_workers(args.workers)
     require_quote_family_perimeter(include_tick=not args.no_v3)
     active_quote_perimeter = (
@@ -968,6 +1017,7 @@ def main() -> int:
 
     global UNIFY_WRAPPED
     UNIFY_WRAPPED = not args.split_wrapped
+    print(f"resolved route-cost build scope: {build_scope}", flush=True)
 
     if args.migrate_day_cache:
         return _migrate_day_cache()
@@ -1090,7 +1140,7 @@ def main() -> int:
             summary = write_route_cost_summary(out_path, summary_path)
             record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,
                               rows=n_rows,
-                              notes=f"quote engine {QUOTE_ENGINE}; "
+                              notes=f"scope={build_scope}; quote engine {QUOTE_ENGINE}; "
                                     f"day cache {DAY_CACHE.name}; {len(hours)} hour(s)/day; "
                                     f"counterfactual quote families {quote_perimeter_label}")
             record_provenance(summary_path, code_sources=SUMMARY_SOURCES, inputs=[out_path],
@@ -1140,7 +1190,7 @@ def main() -> int:
     summary = write_route_cost_summary(out_path, summary_path)
     record_provenance(out_path, code_sources=PANEL_SOURCES, inputs=QUOTE_INPUTS,
                       rows=len(panel),
-                      notes=f"quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}; "
+                      notes=f"scope={build_scope}; quote engine {QUOTE_ENGINE}; day cache {DAY_CACHE.name}; "
                             f"counterfactual quote families {quote_perimeter_label}")
     record_provenance(summary_path, code_sources=SUMMARY_SOURCES, inputs=[out_path],
                       rows=len(summary))

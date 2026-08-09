@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import tempfile
 import unittest
 from pathlib import Path
@@ -106,6 +107,39 @@ class RouteCostPairSelectionTests(unittest.TestCase):
 
     def test_price_owner_invalidates_quote_cache(self) -> None:
         self.assertIn("src/ddvc/prices.py", run_route_cost_panel.QUOTE_SOURCES)
+
+    def test_main_build_scope_resolves_all_scientific_arguments(self) -> None:
+        args = argparse.Namespace(
+            main_spec=True,
+            start=None,
+            end=None,
+            hours=None,
+            top_pairs=None,
+            trade_sizes=None,
+            split_wrapped=False,
+            no_v3=False,
+        )
+        scope = run_route_cost_panel.apply_main_build_spec(args)
+        self.assertEqual(scope, "main_v1")
+        self.assertEqual(run_route_cost_panel.parse_hours(args.hours), tuple(range(24)))
+        self.assertEqual(args.top_pairs, 200)
+        self.assertEqual(args.trade_sizes, "1000,10000,100000")
+        self.assertFalse(args.split_wrapped)
+        self.assertFalse(args.no_v3)
+
+    def test_main_build_scope_rejects_scientific_overrides(self) -> None:
+        args = argparse.Namespace(
+            main_spec=True,
+            start=None,
+            end=None,
+            hours="12",
+            top_pairs=None,
+            trade_sizes=None,
+            split_wrapped=False,
+            no_v3=False,
+        )
+        with self.assertRaisesRegex(ValueError, "scientific scope overrides: hours"):
+            run_route_cost_panel.apply_main_build_spec(args)
 
 
 if __name__ == "__main__":

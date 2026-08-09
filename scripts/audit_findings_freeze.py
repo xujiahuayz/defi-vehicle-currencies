@@ -2135,10 +2135,19 @@ def main() -> int:
             verdict.get("status") == "ok" and bool(panel_manifest.get("inputs")),
             f"status={verdict.get('status')}; inputs={len(panel_manifest.get('inputs') or [])}",
         )
+        notes = str(panel_manifest.get("notes") or "")
+        argv = [str(value) for value in panel_manifest.get("argv") or []]
+        record(
+            "panel release scope explicit",
+            "scope=main_v1" in notes and "--main-spec" in argv,
+            f"main_spec={'--main-spec' in argv}; scope={notes.split(';', 1)[0] or 'missing'}",
+        )
         con = duckdb.connect()
         summary = con.execute(
             f"""
-            SELECT count(DISTINCT date), min(date), max(date)
+            SELECT count(DISTINCT date), min(date), max(date),
+                count(DISTINCT reserve_hour_utc), min(reserve_hour_utc),
+                max(reserve_hour_utc)
             FROM read_parquet('{PANEL.as_posix()}')
             """
         ).fetchone()
@@ -2157,8 +2166,13 @@ def main() -> int:
         con.close()
         record(
             "panel time coverage",
-            int(summary[0]) >= 2_238 and str(summary[2]) == "2026-06-30",
-            f"days={summary[0]:,}; range={summary[1]}..{summary[2]}",
+            int(summary[0]) >= 2_238
+            and str(summary[2]) == "2026-06-30"
+            and int(summary[3]) == 24
+            and int(summary[4]) == 0
+            and int(summary[5]) == 23,
+            f"days={summary[0]:,}; range={summary[1]}..{summary[2]}; "
+            f"hours={summary[3]} ({summary[4]}..{summary[5]})",
         )
         raw_v4 = _nonempty_v4_days()
         overlap = len(v4_days & raw_v4)
