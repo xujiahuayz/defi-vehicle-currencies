@@ -234,7 +234,7 @@
 \node[card,draw=cnative,fill=cnative!12,minimum width=4.4cm,anchor=north west] (n1) at (0,0) {\textbf{Native platform asset}\\{\ttfamily WETH, native ETH}};
 \node[card,draw=crule,minimum width=4.6cm,anchor=north west] (n2) at (6.6,0) {incumbent international currency on thick-market externalities};
 \draw[flow] (n1.east) -- (n2.west);
-\node[card,draw=cstable,fill=cstable!12,minimum width=4.4cm,anchor=north west] (s1) at (0,-1.4) {\textbf{Stable numeraire}\\{\ttfamily USDC, USDT, DAI}};
+\node[card,draw=cstable,fill=cstable!12,minimum width=4.4cm,anchor=north west] (s1) at (0,-1.4) {\textbf{Stablecoin}\\{\ttfamily USDC, USDT, DAI}};
 \node[card,draw=crule,minimum width=4.6cm,anchor=north west] (s2) at (6.6,-1.4) {the managed or pegged stable unit};
 \draw[flow] (s1.east) -- (s2.west);
 \node[card,draw=cimported,fill=cimported!12,minimum width=4.4cm,anchor=north west] (i1) at (0,-2.8) {\textbf{Imported store of value}\\{\ttfamily WBTC, tokenised gold}};
@@ -612,7 +612,7 @@ three or more & 13,736 & 0.54\% \\
 \begin{column}{0.44\textwidth}
 \begin{itemize}
 \item StableSwap venues make stable-to-stable legs nearly free and exist for no other asset class
-\item Their rise coincides with the stable numeraire's
+\item Their rise coincides with stablecoin intermediation
 \item Recomputed on constant-product venues alone, keeping a route only when every leg settles there
 \item Stable share moves $+49.5$ points, native $-68.0$
 \item The transition is larger where the technology does not exist

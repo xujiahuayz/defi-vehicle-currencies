@@ -77,7 +77,7 @@ Candidate type & Matched rate & Population weight & Contribution \\
 \midrule
 Native & 0.237 & 0.669 & 0.159 \\
 % docs/finding-dominance-and-persistence.md per-type panel; matched rate 23.7% and 66.9% of realised routing, four priced days 20230601 to 20230604
-Stable numeraire & 0.454 & 0.114 & 0.052 \\
+Stablecoin & 0.454 & 0.114 & 0.052 \\
 % docs/finding-dominance-and-persistence.md per-type panel; matched rate 45.4% and 11.4% of realised routing, same four days
 Imported & 0.614 & 0.007 & 0.004 \\
 % docs/finding-dominance-and-persistence.md per-type panel; matched rate 61.4% and 0.7% of realised routing, same four days
@@ -101,7 +101,7 @@ Nothing conditional on trade size generalises from the matched sample. The panel
 \subsection{Dominance by type}
 \label{sec:dominance:types}
 
-Dominance incidence on realised routes runs from 23.7\% for the native asset to 61.4\% for imported assets, with the stable numeraire at 45.4\%. Figure~\ref{fig:incidence} adds the rate computed over all candidates a router could have chosen, and Table~\ref{tab:incidence} adds the weights and the route counts each rests on.
+Dominance incidence on realised routes runs from 23.7\% for the native asset to 61.4\% for imported assets, with stablecoins at 45.4\%. Figure~\ref{fig:incidence} adds the rate computed over all candidates a router could have chosen, and Table~\ref{tab:incidence} adds the weights and the route counts each rests on.
 % docs/finding-dominance-and-persistence.md per-type panel and output/exhibits/dominance_windows_screened.jsonl; 1,762 matched realised routes and 1,839 post-screen enumerated routes, four priced days 20230601 to 20230604
 
 \begin{figure}[tbp]
@@ -138,7 +138,7 @@ Dominance incidence on realised routes runs from 23.7\% for the native asset to 
 \put(260.3,26.0){\rule{0.7bp}{74.6bp}}
 \put(208.0,82.0){\makebox(0,0){\scriptsize 45.4}}
 \put(246.0,107.6){\makebox(0,0){\scriptsize 69.1}}
-\put(227.0,14.0){\makebox(0,0){\footnotesize stable numeraire}}
+\put(227.0,14.0){\makebox(0,0){\footnotesize stablecoin}}
 \put(309.7,26.0){\rule{30.0bp}{66.3bp}}
 \put(347.7,26.0){\rule{30.0bp}{0.7bp}}
 \put(347.7,117.1){\rule{30.0bp}{0.7bp}}
@@ -176,7 +176,7 @@ Intermediary type & Dominated (\%) & Weight (\%) & Gross (\%) & All-in (\%) & Ro
 \midrule
 Native & 23.7 & 66.9 & 62.0 & 67.1 & 347 \\
 % docs/finding-dominance-and-persistence.md per-type panel; output/exhibits/dominance_windows_screened.jsonl scope type:native, 347 post-screen routes on the four priced days
-Stable numeraire & 45.4 & 11.4 & 69.1 & 81.4 & 1,212 \\
+Stablecoin & 45.4 & 11.4 & 69.1 & 81.4 & 1,212 \\
 % docs/finding-dominance-and-persistence.md per-type panel; output/exhibits/dominance_windows_screened.jsonl scope type:stable, 1,212 post-screen routes
 Imported & 61.4 & 0.7 & 85.0 & 92.1 & 280 \\
 % docs/finding-dominance-and-persistence.md per-type panel; output/exhibits/dominance_windows_screened.jsonl scope type:imported, 280 post-screen routes
@@ -197,7 +197,7 @@ That level ordering is a measured property, not an implication of the native lab
 \subsection{Migration of the role}
 \label{sec:dominance:transition}
 
-Dominance incidence, read at one state, is a statement about a moment. The moments in this sample are not exchangeable: the vehicle role itself moves across the period. Value-weighted, the native asset's share of intermediation falls from 73.0\% to 14.8\% over 2,240 days, while the stable numeraire's rises from 21.2\% to 50.1\%, and the value-weighted crossover arrives in 2022-Q1, sustained from 2022-Q4. The count-weighted crossover appears only in 2026-H1, in the last two quarters of the sample, so the count series is described as crossing, and Figure~\ref{fig:transition} plots both series. Section~\ref{sec:rivals} takes up the gap between the two crossover dates, where value moves to the stable numeraire years before the count of routes does, the signature of a transition led by large trades. An intermediary asset is held for the duration of the hop, the cost of its volatility scales with trade size, and a unit pegged to the dollar removes that cost where it is largest.
+Dominance incidence, read at one state, is a statement about a moment. The moments in this sample are not exchangeable: the vehicle role itself moves across the period. Value-weighted, the native asset's share of intermediation falls from 73.0\% to 14.8\% over 2,240 days, while the stablecoin share rises from 21.2\% to 50.1\%, and the value-weighted crossover arrives in 2022-Q1, sustained from 2022-Q4. The count-weighted crossover appears only in 2026-H1, in the last two quarters of the sample, so the count series is described as crossing, and Figure~\ref{fig:transition} plots both series. Section~\ref{sec:rivals} takes up the gap between the two crossover dates, where value moves to stablecoins years before the count of routes does, the signature of a transition led by large trades. An intermediary asset is held for the duration of the hop, the cost of its volatility scales with trade size, and a unit pegged to the dollar removes that cost where it is largest.
 % docs/finding-intermediation-transition.md; 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30
 
 \begin{figure}[tbp]
@@ -294,7 +294,7 @@ Dominance incidence, read at one state, is a statement about a moment. The momen
 \put(209.3,85.7){\rule{0.7bp}{4.0bp}}
 \put(35.0,168.0){\makebox(0,0)[l]{\footnotesize Count-weighted, percent of episodes}}
 \put(66.0,146.8){\makebox(0,0)[l]{\scriptsize native}}
-\put(79.2,41.4){\makebox(0,0)[l]{\scriptsize stable numeraire}}
+\put(79.2,41.4){\makebox(0,0)[l]{\scriptsize stablecoin}}
 \put(272.0,34.0){\rule{168.0bp}{0.6bp}}
 \put(267.0,34.0){\makebox(0,0)[r]{\scriptsize 0}}
 \put(272.0,63.5){\rule{168.0bp}{0.3bp}}
@@ -365,11 +365,11 @@ Dominance incidence, read at one state, is a statement about a moment. The momen
 \put(441.3,105.9){\rule{0.7bp}{4.0bp}}
 \put(267.0,168.0){\makebox(0,0)[l]{\footnotesize Value-weighted, percent of episodes}}
 \put(302.8,131.3){\makebox(0,0)[l]{\scriptsize native}}
-\put(314.0,115.1){\makebox(0,0)[l]{\scriptsize stable numeraire}}
+\put(314.0,115.1){\makebox(0,0)[l]{\scriptsize stablecoin}}
 \end{picture}
 \par\vspace{6pt}
 \begin{minipage}{0.92\textwidth}
-\footnotesize\raggedright \emph{Notes.} Share of intermediation episodes passing through the native asset (filled circles, solid) and through the stable numeraire (open squares, dashed), by year. Left panel weights each episode equally; right panel weights it by the value routed. Round trips are excluded. Sample: 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30; the value-weighted series is reported for 2020, 2022, 2024 and 2026.
+\footnotesize\raggedright \emph{Notes.} Share of intermediation episodes passing through the native asset (filled circles, solid) and through stablecoins (open squares, dashed), by year. Left panel weights each episode equally; right panel weights it by the value routed. Round trips are excluded. Sample: 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30; the value-weighted series is reported for 2020, 2022, 2024 and 2026.
 \end{minipage}
 \end{figure}
 % docs/finding-intermediation-transition.md, count-weighted and value-weighted panels; 2,240 days with intermediated routing, 2020-05-06 to 2026-06-30
@@ -614,7 +614,7 @@ Year & Days & HHI & $1/\text{HHI}$ & CR1 (\%) & Native & HHI & $1/\text{HHI}$ & 
 \end{minipage}
 \end{table}
 
-The two bases separate on whether the role also changes hands: on the value basis, leadership alternates between the native asset and the stable numeraire from 2022 onward, and the native asset leads on neither sampled day of 2026. On the count basis it leads on all sampled days in all seven years. A consistent weighting of the share and the concentration measures leaves a change of hands visible on one basis of the two. The succession claim is made on the value basis alone.
+The two bases separate on whether the role also changes hands: on the value basis, leadership alternates between the native asset and a stablecoin from 2022 onward, and the native asset leads on neither sampled day of 2026. On the count basis it leads on all sampled days in all seven years. A consistent weighting of the share and the concentration measures leaves a change of hands visible on one basis of the two. The succession claim is made on the value basis alone.
 % data/processed/vehicle_concentration.parquet, leader_symbol by basis and year; output/exhibits/vehicle_concentration.jsonl; 15 sampled days 20200903 to 20260604
 
 Two worlds the international currency literature separates in principle are separated here in the data. Under succession one vehicle replaces another and concentration persists, the sterling to dollar transition, and the pre-1914 record of that transition shows persistence in a currency's position without lock-in \citep{FlandreauJobst2009Empirics}. Under fragmentation the role spreads across several assets and concentration falls, while the incumbent may still lead. Those are definitions from the joint movement of leader identity and concentration in this paper. A unilateral adopter of a new currency bears both the fixed switching cost and the lost benefit of the incumbent network \citep{DowdGreenaway1993CurrencyCompetition}; the model's choices are simultaneous and do not identify a literal first mover. The value basis here shows both worlds together. The related international-currency evidence compares dollar and euro shares in invoicing \citep{GopinathEtAl2020DCP} and currency shares in debt issuance \citep{ErenMalamud2022DominantDebt}, while the network of quotes that was available is not observed \citep{Mukhin2022InternationalPriceSystem,AmitiItskhokiKonings2022Dominant}.

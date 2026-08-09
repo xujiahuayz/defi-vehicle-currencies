@@ -91,14 +91,14 @@ Figure assets live under `output/figures/deck/` as one file per slide. Diagrams 
 ### 6. Types before tickers [BUILDABLE]
 
 - Native platform asset, thick pairing network, high volatility. Proxies WETH and native ETH
-- Stable numeraire, unit of account. Proxies USDC, USDT, DAI
+- Stablecoin, targeting a fiat peg with backing and redemption varying by design. Proxies USDC, USDT, DAI
 - Imported store of value, wrapped in. Proxies WBTC, tokenised gold
 - Staked native derivative, same exposure, separate instrument
 - Traditional-finance counterpart named for each
 
 **Visual.** `deck/asset_types.svg`, drawio tab `asset_taxonomy`. Four cards in a 2x2 grid, one per type, each carrying the type name in bold, the ticker proxies in monospace, and the traditional-finance counterpart in italic on a hairline-separated lower band. Card fill is the one colour used for that type in every other chart in the deck, so the type-to-colour mapping is established here once and carried by consistency thereafter. Staked native appears as a hairline-bordered inset on the native card, signalling that whether it is the same currency is a specification choice.
 
-**Citations.** Gopinath and Stein (2021) for the incumbent international currency; Gorton and Zhang (2023) and Lyons and Viswanath-Natraj (2023) for the stable unit; Amiti, Itskhoki and Konings (2022) for invoicing-currency choice.
+**Citations.** Gopinath and Stein (2021) for the incumbent international currency; Gorton and Zhang (2023) for reserve-backed par design and run exposure; Catalini, de Gortari and Shah (2022) and Lyons and Viswanath-Natraj (2023) for heterogeneous backing and peg-restoration mechanisms; Amiti, Itskhoki and Konings (2022) for invoicing-currency choice.
 
 **Grounding.** `src/ddvc/asset_types.py`.
 
@@ -216,7 +216,7 @@ Right panel, the magnitude. X axis is the direct pool's advantage over the route
 ### 13. Eighty-three million dollars through a beaten vehicle [BUILDABLE]
 
 - $83.1m of realised multi-leg volume through vehicles a direct pool beat, four days
-- $69.7m of it through the stable numeraire
+- $69.7m of it through stablecoins
 - $9.1m native, $4.2m imported
 - More value through beaten vehicles than through cheapest ones
 
@@ -399,7 +399,7 @@ Not presented. Reached by number when a question lands. Every slide keeps the ph
 ### A13. Asset types and their traditional-finance counterparts [BUILDABLE]
 
 - Native platform asset: the incumbent international currency resting on thick-market externalities
-- Stable numeraire: the managed or pegged stable unit
+- Stablecoin: targets a fiat peg; backing and redemption vary by design
 - Imported store of value: gold or a foreign reserve asset
 - Staked native derivative: same exposure, different instrument
 - Other: the classified set ends and no type claim is made past it

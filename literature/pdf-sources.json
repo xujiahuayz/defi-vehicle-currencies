@@ -464,6 +464,18 @@
       ],
       "status": "complete"
     },
+    "GortonZhang2023Wildcat": {
+      "checks": {
+        "article": "literature/text/2023-GortonZhang2023Wildcat-taming-wildcat-stablecoins.txt",
+        "author_or_repository": "https://repository.law.umich.edu/facarticles/2896/",
+        "publisher_or_doi": "https://lawreview.uchicago.edu/print-archive/taming-wildcat-stablecoins"
+      },
+      "companions": [],
+      "main": "GortonZhang2023Wildcat",
+      "non_text_companions": [],
+      "non_text_dispositions": [],
+      "status": "complete"
+    },
     "GriffinShams2020Untethered": {
       "checks": {
         "article": "literature/text/2020-GriffinShams2020Untethered-is-bitcoin-really-untethered.txt",
@@ -1256,8 +1268,20 @@
     "GortonZhang2023Wildcat": [
       {
         "access": "public",
-        "label": "University of Chicago Law Review PDF",
+        "label": "University of Chicago Law Review version-of-record PDF",
+        "url": "https://lawreview.uchicago.edu/sites/default/files/2023-04/03_Zhang%20%26%20Gorton_ART_Final.pdf",
+        "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "Chicago Unbound version-of-record PDF",
         "url": "https://chicagounbound.uchicago.edu/cgi/viewcontent.cgi?article=6342&context=uclrev",
+        "version": "published"
+      },
+      {
+        "access": "public",
+        "label": "University of Michigan Law repository copy",
+        "url": "https://repository.law.umich.edu/cgi/viewcontent.cgi?article=3900&context=facarticles",
         "version": "published"
       }
     ],
