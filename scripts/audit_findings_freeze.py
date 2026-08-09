@@ -17,6 +17,7 @@ import pyarrow.parquet as pq
 ROOT = Path(__file__).resolve().parents[1]
 from ddvc.asset_types import TYPES, VEHICLE_CANDIDATES
 from ddvc.analysis.transaction_frontier import (
+    MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
     MIN_CHOSEN_REPRODUCTION,
     chosen_reproduction_share,
 )
@@ -2283,6 +2284,7 @@ def transaction_frontier_support_checks(
         "invalid_chosen_output",
         "within_20pct_chosen_quote_available",
         "within_20pct_chosen_output_mismatch",
+        "chosen_validation_tolerance_bps",
     }
     missing = sorted(required - set(support.columns))
     if missing:
@@ -2304,6 +2306,9 @@ def transaction_frontier_support_checks(
         ).sum()
     )
     reproduction = chosen_reproduction_share(available, mismatches)
+    tolerance = pd.to_numeric(
+        support["chosen_validation_tolerance_bps"], errors="coerce"
+    )
     return [
         (
             f"{prefix} row contract",
@@ -2313,8 +2318,11 @@ def transaction_frontier_support_checks(
         ),
         (
             f"{prefix} chosen-output validation",
-            reproduction >= MIN_CHOSEN_REPRODUCTION,
-            f"coherent={available:,}; mismatches={mismatches:,}; pass={reproduction:.2%}",
+            reproduction >= MIN_CHOSEN_REPRODUCTION
+            and tolerance.notna().all()
+            and tolerance.eq(MAX_CHOSEN_REPRODUCTION_ERROR_BPS).all(),
+            f"coherent={available:,}; mismatches={mismatches:,}; pass={reproduction:.2%}; "
+            f"tolerance_bps={sorted(tolerance.dropna().unique().tolist())}",
         ),
         (
             f"{prefix} {coverage_label} coverage",

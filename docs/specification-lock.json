@@ -113,12 +113,17 @@
           7,
           30,
           120
+        ],
+        "absolute_chosen_quote_error_bps": [
+          1.0,
+          0.1,
+          0.01
         ]
       },
       "falsifier": "stable transition vanishes inside fixed opportunity and search-efficiency cells",
       "admissible_interpretation": "integration expands while true intermediation contracts; this is consistent with improved direct-liquidity discovery",
       "forbidden_interpretation": "aggregators caused efficiency convergence or stable-vehicle adoption",
-      "blocking_measurement": "the repaired 77-date transaction-state construction audit reproduces 697608 of 697699 coherent chosen quotes, or 99.987 percent, against the 99 percent gate; build the separate full daily exact-state frontier and link outcomes by exact 1, 7, 30, and 120 calendar days before estimation",
+      "blocking_measurement": "the prior 77-date transaction-state construction audit passed a 99 percent reproduction gate under a tolerance of 100 basis points, which is too loose for basis-point effects; the replacement must reproduce at least 99 percent of coherent chosen quotes within 1 basis point, preserve 0.1- and 0.01-basis-point nested samples, build the separate full daily exact-state frontier, and link outcomes by exact 1, 7, 30, and 120 calendar days before estimation",
       "inputs": [
         "data/processed/cross_venue_routing_daily.parquet",
         "data/processed/transaction_state_frontier_daily.parquet"

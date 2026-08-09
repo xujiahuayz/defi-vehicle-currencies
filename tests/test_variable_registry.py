@@ -54,6 +54,20 @@ class VariableRegistryTests(unittest.TestCase):
             columns,
         )
 
+    def test_transaction_frontier_efficiency_variables_are_registered(self) -> None:
+        columns = {spec.column for spec in VARIABLE_SPECS}
+        self.assertLessEqual(
+            {
+                "chosen_validation_error_bps",
+                "within_reach_search_regret_bps",
+                "reach_increment_bps",
+                "path_choice_increment_bps",
+                "public_path_regret_bps",
+                "direct_omission_bps",
+            },
+            columns,
+        )
+
     def test_notation_key_defines_route_indices_and_superscripts(self) -> None:
         notation = " ".join(item.notation for item in NOTATION_DEFINITIONS)
         definitions = " ".join(item.definition for item in NOTATION_DEFINITIONS)

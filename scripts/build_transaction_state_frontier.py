@@ -26,6 +26,8 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 from ddvc.analysis.transaction_frontier import (
+    MAX_CHOSEN_REPRODUCTION_ERROR,
+    MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
     MIN_CHOSEN_REPRODUCTION,
     RealisedPath,
     chosen_reproduction_share,
@@ -89,7 +91,6 @@ EXACT_VENUES = (*V2_VENUES, *TICK_VENUES)
 REPLAY_START = "20210504"
 TOKEN_DECIMALS = DATA_DIR / "processed" / "v2_token_decimals.parquet"
 MIN_INPUT_USD = 100.0
-VALIDATION_TOLERANCE = 0.01
 INTERMEDIATE_FLOW_TOLERANCE_BPS = 0.01
 CHECKPOINT_INTERVAL_DAYS = 180
 CHECKPOINT_GLOB = "pre_" + "[0-9]" * 8 + ".pkl"
@@ -371,7 +372,7 @@ def rejection_record(
         "reason_detail": reason_detail,
         "chosen_quote_out": chosen_quote_out,
         "signed_validation_error_bps": signed_validation_error_bps,
-        "validation_tolerance_bps": 10_000 * VALIDATION_TOLERANCE,
+        "validation_tolerance_bps": MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
     }
 
 
@@ -633,6 +634,7 @@ def load_target_routes(
         "invalid_chosen_output": 0,
         "chosen_state_unavailable": 0,
         "chosen_output_mismatch": 0,
+        "chosen_validation_tolerance_bps": MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
         "quarantined_tick_pools": 0,
         "clean_v2_pool_hours": int(len(v2_replay.pool_hour_events)),
     }
@@ -642,7 +644,7 @@ def load_target_routes(
 def validation_error_diagnostics(errors_bps: list[float]) -> dict[str, object]:
     """Summarise every available chosen-route quote, including rejected tails."""
     absolute = pd.Series(errors_bps, dtype=float).abs()
-    mismatch = absolute[absolute.gt(10_000 * VALIDATION_TOLERANCE)]
+    mismatch = absolute[absolute.gt(MAX_CHOSEN_REPRODUCTION_ERROR_BPS)]
 
     def quantile(values: pd.Series, probability: float) -> float | None:
         return float(values.quantile(probability)) if not values.empty else None
@@ -655,7 +657,7 @@ def validation_error_diagnostics(errors_bps: list[float]) -> dict[str, object]:
         "validation_abs_p99_bps": quantile(absolute, 0.99),
         "validation_abs_max_bps": quantile(absolute, 1.0),
         "validation_within_tolerance_share": (
-            float(absolute.le(10_000 * VALIDATION_TOLERANCE).mean())
+            float(absolute.le(MAX_CHOSEN_REPRODUCTION_ERROR_BPS).mean())
             if not absolute.empty
             else None
         ),
@@ -774,7 +776,7 @@ def score_day(
             validation_errors_bps.append(10_000 * signed_validation_error)
             if bool(target["within_20pct"]):
                 coherent_validation_errors_bps.append(validation_errors_bps[-1])
-            if validation_error > VALIDATION_TOLERANCE:
+            if validation_error > MAX_CHOSEN_REPRODUCTION_ERROR:
                 support["chosen_output_mismatch"] += 1
                 rejection_rows.append(
                     rejection_record(
@@ -794,7 +796,7 @@ def score_day(
                 chosen=chosen,
                 vehicles=vehicles,
                 quote_legs=quote_legs,
-                validation_tolerance=VALIDATION_TOLERANCE,
+                validation_tolerance=MAX_CHOSEN_REPRODUCTION_ERROR,
             )
             if score is None:
                 raise AssertionError("validated chosen path was rejected during frontier scoring")

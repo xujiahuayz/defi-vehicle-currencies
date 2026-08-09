@@ -1262,6 +1262,114 @@ VARIABLE_SPECS: tuple[VariableSpec, ...] = (
         in_observations_table=False,
     ),
     VariableSpec(
+        group="Routing-search efficiency measures",
+        name="Chosen-path reproduction error",
+        column="chosen_validation_error_bps",
+        notation=r"$\mathrm{ChosenError}_{r}$",
+        formula=r"$10^4(O^{\mathrm{chosen}}_r-O^{\mathrm{real}}_r)/O^{\mathrm{real}}_r$",
+        unit="Basis points",
+        construction=(
+            r"Signed difference between the exact pre-transaction quote of realised route $r$ "
+            r"and its observed token output. The construction sample requires an absolute error "
+            r"of at most one basis point; 0.1- and 0.01-basis-point subsets are prespecified."
+        ),
+        source="data/processed/transaction_state_frontier_daily.parquet",
+        used_for="Exact-state construction validation and nested routing-efficiency support.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Routing-search efficiency measures",
+        name="Within-reach routing-search regret",
+        column="within_reach_search_regret_bps",
+        notation=r"$\mathrm{Regret}^{\mathrm{reach}}_{r}$",
+        formula=(
+            r"$10^4[\max\{O^{\mathrm{real}}_r,O^{k,\mathcal V_r}_r\}"
+            r"-O^{\mathrm{real}}_r]/O^{\mathrm{real}}_r$"
+        ),
+        unit="Basis points",
+        construction=(
+            r"Output gain from the best path through the realised vehicle $k$ using only the "
+            r"venues observed on route $r$, relative to realised output at the same pre-transaction state."
+        ),
+        source="data/processed/transaction_state_frontier_daily.parquet",
+        used_for="Routing search quality while holding venue reach and intermediary fixed.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Routing-search efficiency measures",
+        name="Public-reach increment",
+        column="reach_increment_bps",
+        notation=r"$\mathrm{ReachIncrement}_{r}$",
+        formula=(
+            r"$10^4[\max\{O^{\mathrm{real}}_r,O^{k,\mathcal V}_r\}"
+            r"-\max\{O^{\mathrm{real}}_r,O^{k,\mathcal V_r}_r\}]"
+            r"/O^{\mathrm{real}}_r$"
+        ),
+        unit="Basis points",
+        construction=(
+            r"Additional output from expanding the same-vehicle search from route $r$'s observed "
+            r"venues $\mathcal V_r$ to the admitted public venue set $\mathcal V$."
+        ),
+        source="data/processed/transaction_state_frontier_daily.parquet",
+        used_for="Opportunity-set expansion separated from within-reach search.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Routing-search efficiency measures",
+        name="Intermediary and path-choice increment",
+        column="path_choice_increment_bps",
+        notation=r"$\mathrm{PathChoiceIncrement}_{r}$",
+        formula=(
+            r"$10^4[\max\{O^{\mathrm{real}}_r,O^{\mathrm{public}}_r\}"
+            r"-\max\{O^{\mathrm{real}}_r,O^{k,\mathcal V}_r\}]"
+            r"/O^{\mathrm{real}}_r$"
+        ),
+        unit="Basis points",
+        construction=(
+            r"Additional output from allowing the admitted public frontier to change the "
+            r"intermediary or choose a direct path after public venue reach is already available."
+        ),
+        source="data/processed/transaction_state_frontier_daily.parquet",
+        used_for="Intermediary/path choice separated from search and venue reach.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Routing-search efficiency measures",
+        name="Public-path routing regret",
+        column="public_path_regret_bps",
+        notation=r"$\mathrm{Regret}^{\mathrm{public}}_{r}$",
+        formula=(
+            r"$\mathrm{Regret}^{\mathrm{reach}}_{r}+\mathrm{ReachIncrement}_{r}"
+            r"+\mathrm{PathChoiceIncrement}_{r}$"
+        ),
+        unit="Basis points",
+        construction=(
+            r"Total nonnegative output shortfall against the best admitted direct or two-leg "
+            r"public path at the same pre-transaction state."
+        ),
+        source="data/processed/transaction_state_frontier_daily.parquet",
+        used_for="Overall realised-to-public-frontier routing efficiency.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
+        group="Routing-search efficiency measures",
+        name="Direct-path omission",
+        column="direct_omission_bps",
+        notation=r"$\mathrm{DirectOmission}_{r}$",
+        formula=(
+            r"$10^4[\max\{O^{\mathrm{real}}_r,O^{D,\mathcal V}_r\}"
+            r"-O^{\mathrm{real}}_r]/O^{\mathrm{real}}_r$"
+        ),
+        unit="Basis points",
+        construction=(
+            r"Output gain from the best admitted public direct path relative to the realised "
+            r"indirect route; undefined when no direct path is executable."
+        ),
+        source="data/processed/transaction_state_frontier_daily.parquet",
+        used_for="Direct-route omission as a separate extensive routing margin.",
+        in_observations_table=False,
+    ),
+    VariableSpec(
         group="Route-cost opportunity measures",
         name="Any indirect route available",
         column="any_indirect_available",

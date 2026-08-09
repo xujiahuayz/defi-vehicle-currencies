@@ -573,6 +573,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                 "invalid_chosen_output": [0],
                 "within_20pct_chosen_quote_available": [101],
                 "within_20pct_chosen_output_mismatch": [1],
+                "chosen_validation_tolerance_bps": [1.0],
             }
         )
         checks = {
@@ -586,6 +587,16 @@ class FindingsFreezeAuditTest(unittest.TestCase):
         self.assertTrue(checks["transaction frontier row contract"][0])
         self.assertTrue(checks["transaction frontier chosen-output validation"][0])
         self.assertFalse(checks["transaction frontier audit-day coverage"][0])
+        support["chosen_validation_tolerance_bps"] = 100.0
+        checks = {
+            name: (passed, detail)
+            for name, passed, detail in transaction_frontier_support_checks(
+                support,
+                panel_rows=100,
+                rejection_rows=1,
+            )
+        }
+        self.assertFalse(checks["transaction frontier chosen-output validation"][0])
 
     def test_daily_frontier_gate_requires_all_artifacts_and_full_calendar(self) -> None:
         import tempfile
@@ -614,6 +625,7 @@ class FindingsFreezeAuditTest(unittest.TestCase):
                     "invalid_chosen_output": [0],
                     "within_20pct_chosen_quote_available": [1],
                     "within_20pct_chosen_output_mismatch": [0],
+                    "chosen_validation_tolerance_bps": [1.0],
                 }
             ).to_parquet(support, index=False)
             with patch(

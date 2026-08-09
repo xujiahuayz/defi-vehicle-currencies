@@ -38,6 +38,8 @@ class RealisedPath:
 RealisedTickPath = RealisedPath
 ChosenPathQuoter = Callable[[RealisedPath], PathQuote | None]
 MIN_CHOSEN_REPRODUCTION = 0.99
+MAX_CHOSEN_REPRODUCTION_ERROR_BPS = 1.0
+MAX_CHOSEN_REPRODUCTION_ERROR = MAX_CHOSEN_REPRODUCTION_ERROR_BPS / 10_000.0
 
 
 def chosen_reproduction_share(available: int, mismatches: int) -> float:

@@ -9,6 +9,8 @@ import pandas as pd
 
 from ddvc.asset_types import NATIVE_ETH, WETH
 from ddvc.analysis.transaction_frontier import (
+    MAX_CHOSEN_REPRODUCTION_ERROR,
+    MAX_CHOSEN_REPRODUCTION_ERROR_BPS,
     MIN_CHOSEN_REPRODUCTION,
     RealisedPath,
     chosen_reproduction_share,
@@ -117,6 +119,8 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
 
     def test_chosen_reproduction_gate_has_one_canonical_owner(self) -> None:
         self.assertEqual(MIN_CHOSEN_REPRODUCTION, 0.99)
+        self.assertEqual(MAX_CHOSEN_REPRODUCTION_ERROR_BPS, 1.0)
+        self.assertEqual(MAX_CHOSEN_REPRODUCTION_ERROR, 0.0001)
         self.assertAlmostEqual(chosen_reproduction_share(101, 1), 100 / 101)
         self.assertEqual(chosen_reproduction_share(0, 0), 0.0)
 
@@ -165,11 +169,11 @@ class TransactionStateFrontierScriptTests(unittest.TestCase):
     def test_validation_diagnostics_keep_rejected_tail_visible(self) -> None:
         diagnostics = validation_error_diagnostics([0.0, -10.0, 200.0, -500.0])
         self.assertEqual(diagnostics["quote_available"], 4)
-        self.assertEqual(diagnostics["output_mismatch"], 2)
+        self.assertEqual(diagnostics["output_mismatch"], 3)
         self.assertEqual(diagnostics["validation_abs_max_bps"], 500.0)
-        self.assertEqual(diagnostics["mismatch_abs_min_bps"], 200.0)
+        self.assertEqual(diagnostics["mismatch_abs_min_bps"], 10.0)
         self.assertEqual(diagnostics["mismatch_abs_max_bps"], 500.0)
-        self.assertEqual(diagnostics["validation_within_tolerance_share"], 0.5)
+        self.assertEqual(diagnostics["validation_within_tolerance_share"], 0.25)
 
     def test_latest_checkpoint_never_jumps_past_target(self) -> None:
         with TemporaryDirectory() as directory:
