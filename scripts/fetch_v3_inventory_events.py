@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import as_completed
+from collections import deque
+from concurrent.futures import FIRST_COMPLETED, wait
 from datetime import datetime, timezone
 import gzip
 import json
@@ -16,7 +17,15 @@ from ddvc.fetch.sources import get_source
 from ddvc.paths import DATA_DIR, RAW_MARKET_DATA_LOCK
 from ddvc.quoter import Throttled, rpc_post
 from ddvc.runtime import exclusive_job, interruptible_thread_pool
-from ddvc.v3_inventory import EVENT_TOPICS, decode_inventory_log
+from ddvc.v3_inventory import (
+    EVENT_TOPICS,
+    block_ranges,
+    canonical_inventory_start_block,
+    decode_inventory_log,
+    inventory_chunk_completed,
+    inventory_chunk_paths,
+)
+from ddvc.state_data import available_state_days, read_tick_partition
 
 
 RAW_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_events"
@@ -25,6 +34,7 @@ STATIC_PATH = V3_GRAPH_ROOT / "uniswap_v3_pool_statics_20260630.jsonl.gz"
 END_META_PATH = V3_GRAPH_ROOT / "uniswap_v3_meta_20260630.json"
 DEFAULT_CHUNK_SIZE = 1_000
 MAX_THROTTLE_RETRIES = 8
+MAX_JOB_ATTEMPTS = 12
 
 
 def v3_pool_addresses(path: Path = STATIC_PATH) -> set[str]:
@@ -42,43 +52,27 @@ def v3_pool_addresses(path: Path = STATIC_PATH) -> set[str]:
 
 def default_end_block(path: Path = END_META_PATH) -> int:
     metadata = json.loads(path.read_text())
-    value = metadata.get("max_block")
+    value = metadata.get("head_block_at_fetch") or metadata.get("max_block")
     if value is None:
-        raise RuntimeError("research-end V3 raw metadata lacks a maximum block")
+        raise RuntimeError("research-end V3 raw metadata lacks a safe terminal block")
     return int(value)
 
 
-def block_ranges(start: int, end: int, chunk_size: int) -> list[tuple[int, int]]:
-    if start < 0 or end < start or chunk_size <= 0:
-        raise ValueError("invalid block-range perimeter")
-    ranges: list[tuple[int, int]] = []
-    lower = start
-    while lower <= end:
-        upper = min(((lower // chunk_size) + 1) * chunk_size - 1, end)
-        ranges.append((lower, upper))
-        lower = upper + 1
-    return ranges
+def default_start_block() -> int:
+    days = available_state_days("tick", "uniswap_v3")
+    if not days:
+        raise RuntimeError("canonical V3 state has no day from which to set the fetch perimeter")
+    return canonical_inventory_start_block(
+        read_tick_partition("uniswap_v3", days[0]).to_dict("records")
+    )
 
 
 def paths(lower: int, upper: int, root: Path = RAW_ROOT) -> tuple[Path, Path]:
-    stem = f"blocks_{lower:08d}_{upper:08d}"
-    return root / f"{stem}.jsonl.gz", root / f"{stem}.meta.json"
+    return inventory_chunk_paths(lower, upper, root)
 
 
 def completed(lower: int, upper: int, root: Path = RAW_ROOT) -> bool:
-    raw, meta = paths(lower, upper, root)
-    if not raw.is_file() or not meta.is_file():
-        return False
-    try:
-        record = json.loads(meta.read_text())
-    except (OSError, json.JSONDecodeError):
-        return False
-    return bool(
-        record.get("status") == "complete"
-        and int(record.get("from_block", -1)) == lower
-        and int(record.get("to_block", -1)) == upper
-        and set(record.get("event_topics") or []) == set(EVENT_TOPICS.values())
-    )
+    return inventory_chunk_completed(lower, upper, root)
 
 
 def fetch_chunk(
@@ -146,40 +140,98 @@ def fetch_chunk(
     return metadata
 
 
+def run_fetch_jobs(
+    jobs: list[tuple[int, int]],
+    pools: set[str],
+    *,
+    workers: int,
+    max_attempts: int,
+    fetch=fetch_chunk,
+) -> tuple[dict[str, int], list[tuple[int, int, str]]]:
+    """Run a bounded queue, moving transiently throttled chunks to its tail."""
+
+    queue = deque((lower, upper, 1) for lower, upper in jobs)
+    failures: list[tuple[int, int, str]] = []
+    totals = {"raw": 0, "recognized": 0}
+    complete = 0
+    with interruptible_thread_pool(max_workers=workers) as executor:
+        futures = {}
+        while queue or futures:
+            while queue and len(futures) < workers:
+                lower, upper, attempt = queue.popleft()
+                future = executor.submit(fetch, lower, upper, pools)
+                futures[future] = (lower, upper, attempt)
+            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+            for future in done:
+                lower, upper, attempt = futures.pop(future)
+                try:
+                    result = future.result()
+                except Throttled as error:
+                    if attempt < max_attempts:
+                        queue.append((lower, upper, attempt + 1))
+                        print(
+                            f"  retrying throttled inventory chunk {lower}-{upper} "
+                            f"at queue tail ({attempt + 1}/{max_attempts})",
+                            flush=True,
+                        )
+                    else:
+                        failures.append((lower, upper, str(error)))
+                    continue
+                totals["raw"] += int(result["raw_logs"])
+                totals["recognized"] += int(result["recognized_v3_logs"])
+                complete += 1
+                if complete % 100 == 0 or complete + len(failures) == len(jobs):
+                    print(
+                        f"  inventory logs [{complete:,}/{len(jobs):,}]; "
+                        f"raw={totals['raw']:,}; V3={totals['recognized']:,}; "
+                        f"queued_remaining={len(queue):,}; "
+                        f"terminal_failures={len(failures):,}",
+                        flush=True,
+                    )
+    return totals, failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--start-block", type=int, default=get_source("uniswap_v3").genesis_block)
+    parser.add_argument("--start-block", type=int, default=None)
     parser.add_argument("--end-block", type=int, default=None)
     parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--max-job-attempts", type=int, default=MAX_JOB_ATTEMPTS)
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
     end = args.end_block if args.end_block is not None else default_end_block()
-    ranges = block_ranges(int(args.start_block), end, args.chunk_size)
+    start = args.start_block if args.start_block is not None else default_start_block()
+    indexed_start = get_source("uniswap_v3").genesis_block
+    if start > indexed_start:
+        raise RuntimeError(
+            f"inventory start block {start} is after indexed V3 genesis {indexed_start}"
+        )
+    ranges = block_ranges(int(start), end, args.chunk_size)
     pools = v3_pool_addresses()
     jobs = [item for item in ranges if args.force or not completed(*item)]
     print(
-        f"V3 inventory log perimeter: {len(ranges):,} chunks; "
+        f"V3 inventory log perimeter: {start:,}-{end:,}; {len(ranges):,} chunks; "
         f"cached={len(ranges) - len(jobs):,}; fetch={len(jobs):,}; pools={len(pools):,}",
         flush=True,
     )
     with exclusive_job(RAW_MARKET_DATA_LOCK, job="raw V3 inventory-event fetch"):
-        with interruptible_thread_pool(max_workers=max(1, min(args.workers, 4))) as executor:
-            futures = {
-                executor.submit(fetch_chunk, lower, upper, pools): (lower, upper)
-                for lower, upper in jobs
-            }
-            totals = {"raw": 0, "recognized": 0}
-            for index, future in enumerate(as_completed(futures), 1):
-                result = future.result()
-                totals["raw"] += int(result["raw_logs"])
-                totals["recognized"] += int(result["recognized_v3_logs"])
-                if index % 100 == 0 or index == len(futures):
-                    print(
-                        f"  inventory logs [{index:,}/{len(futures):,}]; "
-                        f"raw={totals['raw']:,}; V3={totals['recognized']:,}",
-                        flush=True,
-                    )
+        workers = max(1, min(args.workers, 4))
+        max_attempts = max(1, args.max_job_attempts)
+        _totals, failures = run_fetch_jobs(
+            jobs,
+            pools,
+            workers=workers,
+            max_attempts=max_attempts,
+        )
+        if failures:
+            sample = ", ".join(
+                f"{lower}-{upper}: {error}" for lower, upper, error in failures[:3]
+            )
+            raise RuntimeError(
+                f"V3 inventory fetch exhausted {max_attempts} attempts for "
+                f"{len(failures):,} chunks; first={sample}"
+            )
     return 0
 
 

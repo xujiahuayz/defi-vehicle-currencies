@@ -150,6 +150,13 @@ class ProvenanceInputTests(unittest.TestCase):
             (root / "b.txt").write_text("b")
             after = cache_key(sources, inputs=[root])
             self.assertNotEqual(before, after)
+
+    def test_token_price_release_does_not_treat_resumability_cache_as_input(self) -> None:
+        source = (Path(__file__).resolve().parents[1] / "scripts" / "build_token_price_panel.py").read_text()
+        self.assertIn("inputs=INPUTS", source)
+        self.assertNotIn("inputs=[*INPUTS, root]", source)
+        self.assertIn("resumable cache", source)
+
     @patch("ddvc.provenance._run")
     def test_generated_target_does_not_mark_its_own_build_dirty(self, run) -> None:
         run.side_effect = [

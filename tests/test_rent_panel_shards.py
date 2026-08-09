@@ -116,6 +116,25 @@ def test_shard_writer_refuses_a_missing_semantic_column() -> None:
             )
 
 
+def test_missing_provider_capital_is_explicitly_typed_and_not_coerced(monkeypatch) -> None:
+    base = v2_frame("20250101", "pool-a").drop(columns=list(rent.CAPITAL_COLUMNS))
+    empty_capital = pd.DataFrame(columns=["day", "pool", *rent.CAPITAL_COLUMNS])
+    monkeypatch.setattr(rent, "_capital_day", lambda _venue, _day: empty_capital)
+
+    merged = rent._merge_capital_day(
+        base,
+        venue="uniswap_v2",
+        day="20250101",
+        columns=rent.V2_COLUMNS,
+    ).iloc[0]
+
+    assert merged["capital_source"] == "unavailable_missing_provider_pool_day"
+    assert merged["capital_validation_status"] == "missing_pool_day_capital"
+    assert merged["quantity_kind"] == "deposited_capital"
+    assert not merged["exact_lag_valid"]
+    assert pd.isna(merged[rent.CAPITAL_COLUMN])
+
+
 def test_atomic_shard_write_rejects_duplicate_pool_day_and_preserves_prior_file() -> None:
     with tempfile.TemporaryDirectory() as temporary:
         path = Path(temporary) / "20250101.parquet"

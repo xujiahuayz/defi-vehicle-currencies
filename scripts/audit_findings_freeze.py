@@ -129,6 +129,7 @@ LITERATURE_CARD_EVIDENCE_FIELDS = frozenset(
         "first reader",
     }
 )
+RENT_V2_PANEL = ROOT / "data" / "processed" / "rent_incidence_v2_pool_day.parquet"
 GRAPH_FIELDS = ("active_node", "parent_loop", "next_edge", "prose_node")
 LOCKED_CLAIM_STATUSES = {
     "enter_fgh_primary",
@@ -1035,6 +1036,121 @@ def token_price_artifact_checks() -> list[tuple[str, bool, str]]:
     return results
 
 
+def rent_incidence_artifact_checks(
+    rent_path: Path = RENT_V2_PANEL,
+    capital_path: Path = POOL_CAPITAL_PANEL,
+) -> list[tuple[str, bool, str]]:
+    """Audit the construction-only V2 rent panel before any screen or estimator."""
+
+    if not rent_path.is_file() or not capital_path.is_file():
+        missing = [path.name for path in (rent_path, capital_path) if not path.is_file()]
+        return [("node D V2 rent construction", False, f"missing={missing}")]
+    provenance = verify(rent_path).get("status")
+    required = {
+        "venue",
+        "day",
+        "pool",
+        "n_hours",
+        "n_ret",
+        "volume_usd",
+        "reserve0",
+        "reserve1",
+        "rv",
+        "rv_4h",
+        "rv_oc",
+        "max_abs_ret",
+        "reported_capital_usd",
+        CAPITAL_COLUMN,
+        "capital_source",
+        "quantity_kind",
+        "pool_family",
+        "invariant_family",
+        "state_generation",
+        "capital_validation_status",
+        "exact_lag_valid",
+    }
+    missing_columns = sorted(required - set(pq.ParquetFile(rent_path).schema_arrow.names))
+    results = [
+        (
+            "node D V2 rent construction provenance and schema",
+            provenance == "ok" and not missing_columns,
+            f"provenance={provenance}; missing_columns={missing_columns or 'none'}",
+        )
+    ]
+    if missing_columns:
+        return results
+    con = duckdb.connect()
+    con.execute("SET memory_limit='1500MB'")
+    con.execute("SET threads=2")
+    try:
+        core = con.execute(
+            """
+            SELECT count(*) AS row_count,
+                count(DISTINCT (venue, day, pool)) AS unique_count,
+                count(*) FILTER (WHERE venue!='uniswap_v2'
+                    OR pool_family!='full_range_constant_product'
+                    OR invariant_family!='full_range_constant_product'
+                    OR state_generation!='provider_pool_day_v1'
+                    OR quantity_kind!='deposited_capital') AS contract_mismatch,
+                count(*) FILTER (WHERE n_hours<1 OR n_ret!=greatest(n_hours-1,0)
+                    OR volume_usd<0 OR reserve0<=0 OR reserve1<=0 OR rv<0
+                    OR rv_4h<0 OR rv_oc<0 OR max_abs_ret<0) AS value_mismatch,
+                count(*) FILTER (WHERE exact_lag_valid !=
+                    (capital_usd_lagged IS NOT NULL)) AS lag_mismatch,
+                count(*) FILTER (WHERE capital_validation_status=
+                    'missing_pool_day_capital') AS missing_capital,
+                count(*) FILTER (WHERE capital_validation_status=
+                    'missing_pool_day_capital' AND (
+                        capital_source!='unavailable_missing_provider_pool_day'
+                        OR exact_lag_valid OR capital_usd_lagged IS NOT NULL
+                        OR reported_capital_usd IS NOT NULL)) AS bad_missing,
+                count(*) FILTER (WHERE capital_source IS NULL OR quantity_kind IS NULL
+                    OR pool_family IS NULL OR invariant_family IS NULL
+                    OR state_generation IS NULL OR capital_validation_status IS NULL
+                    OR exact_lag_valid IS NULL) AS null_semantics
+            FROM read_parquet(?)
+            """,
+            [str(rent_path)],
+        ).fetchone()
+        results.append(
+            (
+                "node D V2 rent construction row contract",
+                bool(core[0] == core[1] and not any(core[index] for index in (2, 3, 4, 6, 7))),
+                f"rows={core[0]:,}; unique={core[1]:,}; contract={core[2]:,}; "
+                f"values={core[3]:,}; lag={core[4]:,}; missing_capital={core[5]:,}; "
+                f"bad_missing={core[6]:,}; null_semantics={core[7]:,}",
+            )
+        )
+        joined = con.execute(
+            """
+            SELECT count(*) FILTER (WHERE c.pool IS NOT NULL AND (
+                    r.reported_capital_usd IS DISTINCT FROM c.reported_capital_usd
+                    OR r.capital_usd_lagged IS DISTINCT FROM c.capital_usd_lagged
+                    OR r.exact_lag_valid IS DISTINCT FROM c.exact_lag_valid
+                    OR r.capital_validation_status IS DISTINCT FROM
+                        c.capital_validation_status)) AS matched_mismatch,
+                count(*) FILTER (WHERE c.pool IS NULL) AS missing_join,
+                count(*) FILTER (WHERE c.pool IS NULL AND
+                    r.capital_validation_status!='missing_pool_day_capital')
+                    AS unlabeled_missing
+            FROM read_parquet(?) r
+            LEFT JOIN read_parquet(?) c USING (venue, day, pool)
+            """,
+            [str(rent_path), str(capital_path)],
+        ).fetchone()
+        results.append(
+            (
+                "node D V2 rent construction capital lineage",
+                bool(joined[0] == 0 and joined[1] == core[5] and joined[2] == 0),
+                f"matched_mismatch={joined[0]:,}; missing_join={joined[1]:,}; "
+                f"unlabeled_missing={joined[2]:,}",
+            )
+        )
+    finally:
+        con.close()
+    return results
+
+
 def lp_liquidity_flow_artifact_checks() -> list[tuple[str, bool, str]]:
     """Audit causal tick use, allocation conservation, and proxy-free flow scaling."""
 
@@ -1872,6 +1988,8 @@ def main() -> int:
     for name, passed, detail in token_price_artifact_checks():
         record(name, passed, detail)
     for name, passed, detail in lp_liquidity_flow_artifact_checks():
+        record(name, passed, detail)
+    for name, passed, detail in rent_incidence_artifact_checks():
         record(name, passed, detail)
 
     if MARKET_STATE_QUALITY.exists():

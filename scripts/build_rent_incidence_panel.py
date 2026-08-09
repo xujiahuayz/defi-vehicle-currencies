@@ -39,6 +39,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from ddvc.capital_contracts import capital_contract
 from ddvc.data_release import require_node_d_release
 from ddvc.liquidity import CAPITAL_COLUMN
 from ddvc.panel_assembly import assemble_parquet_shards
@@ -235,6 +236,16 @@ def _merge_capital_day(
         how="left",
         validate="one_to_one",
     )
+    missing = merged["capital_source"].isna()
+    if missing.any():
+        contract = capital_contract(venue)
+        merged.loc[missing, "capital_source"] = "unavailable_missing_provider_pool_day"
+        merged.loc[missing, "quantity_kind"] = "deposited_capital"
+        merged.loc[missing, "pool_family"] = contract.pool_family
+        merged.loc[missing, "invariant_family"] = contract.invariant_family
+        merged.loc[missing, "state_generation"] = contract.state_generation
+        merged.loc[missing, "capital_validation_status"] = "missing_pool_day_capital"
+        merged.loc[missing, "exact_lag_valid"] = False
     return merged.reindex(columns=columns)
 
 

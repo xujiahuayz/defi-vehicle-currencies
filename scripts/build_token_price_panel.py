@@ -129,9 +129,12 @@ def build(*, workers: int = 2, force: bool = False) -> int:
     stamp(
         TOKEN_PRICE_DAILY_PANEL,
         code_sources=CODE_SOURCES,
-        inputs=[*INPUTS, root],
+        inputs=INPUTS,
         rows=assembled.rows,
-        notes=f"canonical address-day price generation {generation}",
+        notes=(
+            f"canonical address-day price generation {generation}; "
+            f"resumable cache {root.name}"
+        ),
     )
     expected, actual, first_missing, last_missing = _candidate_coverage(
         TOKEN_PRICE_DAILY_PANEL
