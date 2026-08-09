@@ -5,6 +5,7 @@ import gzip
 import json
 from pathlib import Path
 import tempfile
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -27,7 +28,11 @@ from ddvc.v3_inventory import (
     inventory_chunk_paths,
     pool_static_from_graph,
 )
-from ddvc.v3_inventory_calendar import last_block_before_timestamp
+from ddvc.v3_inventory_calendar import (
+    CODE_SOURCES,
+    _fetch_block_timestamp,
+    last_block_before_timestamp,
+)
 from ddvc.quoter import Throttled
 from scripts.audit_v3_inventory_balances import audit_sample_table
 from scripts.fetch_v3_inventory_events import run_fetch_jobs
@@ -197,6 +202,37 @@ def test_exact_day_cut_is_last_block_strictly_before_midnight() -> None:
     assert block == 20
     assert block_timestamp == 1_240
     assert next_timestamp == 1_252
+
+
+def test_calendar_provenance_covers_every_semantic_dependency() -> None:
+    assert set(CODE_SOURCES) == {
+        "src/ddvc/v3_inventory_calendar.py",
+        "src/ddvc/fetch/raw.py",
+        "src/ddvc/paths.py",
+        "src/ddvc/quoter.py",
+        "src/ddvc/runtime.py",
+        "src/ddvc/state_data.py",
+    }
+
+
+def test_calendar_rpc_retry_budget_is_not_nested_inside_rpc_post() -> None:
+    response = {
+        "result": {
+            "number": "0x64",
+            "hash": "0xhash",
+            "parentHash": "0xparent",
+            "timestamp": "0x3e8",
+        }
+    }
+    evidence: list[dict[str, object]] = []
+    with (
+        patch("ddvc.v3_inventory_calendar.rpc_post", side_effect=[Throttled(), response]) as request,
+        patch("ddvc.v3_inventory_calendar.time.sleep"),
+    ):
+        assert _fetch_block_timestamp(100, evidence) == 1_000
+    assert request.call_count == 2
+    assert all(item.kwargs["retries"] == 1 for item in request.call_args_list)
+    assert len(evidence) == 1
 
 
 def test_fetch_queue_retries_throttled_chunk_without_abandoning_other_work() -> None:

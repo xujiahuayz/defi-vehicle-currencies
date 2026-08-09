@@ -1,0 +1,85 @@
+{
+ "argv": [
+  "--calendar-only",
+  "--workers",
+  "1"
+ ],
+ "artefact": "data/processed/v3_inventory_day_calendar.parquet",
+ "code_fingerprint": "5a517c3647d164313c87c035c19c00d1075059ca6d7f92ccaa601e0714dc73cf",
+ "code_sources": [
+  "src/ddvc/fetch/raw.py",
+  "src/ddvc/paths.py",
+  "src/ddvc/quoter.py",
+  "src/ddvc/runtime.py",
+  "src/ddvc/state_data.py",
+  "src/ddvc/v3_inventory_calendar.py"
+ ],
+ "created_at": "2026-08-09T17:30:59+00:00",
+ "git": {
+  "branch": "glotl/fgh-evidence",
+  "commit": "c8d68a5dd46e8af8b04834a60112256ddaaae4ac",
+  "dirty": true,
+  "dirty_generated_files": [
+   "data/manifests/data/processed/market_state_quality.parquet.prov.json",
+   "data/manifests/data/processed/rent_incidence_v2_pool_day.parquet.prov.json",
+   "data/manifests/data/processed/unified_route_quality.parquet.prov.json",
+   "data/manifests/data/processed/v2_pair_first_trade.parquet.prov.json",
+   "data/manifests/data/processed/v2_token_decimals.parquet.prov.json",
+   "data/manifests/data/processed/v2_token_price_daily.parquet.prov.json",
+   "data/manifests/data/processed/v4_pool_static_quarantine.parquet.prov.json",
+   "data/manifests/output/exhibits/market_state_quality.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_conventions.jsonl.prov.json",
+   "data/manifests/output/exhibits/prose_outliers.jsonl.prov.json",
+   "data/manifests/output/exhibits/unified_route_quality.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_optics.jsonl.prov.json",
+   "data/manifests/output/exhibits/venue_shape.jsonl.prov.json",
+   "output/exhibits/market_state_quality.jsonl",
+   "output/exhibits/prose_conventions.jsonl",
+   "output/exhibits/prose_outliers.jsonl",
+   "output/exhibits/venue_optics.jsonl",
+   "output/exhibits/venue_shape.jsonl",
+   "output/tables/summary_statistics.tex",
+   "data/manifests/data/exhibits/",
+   "data/manifests/data/processed/lp_liquidity_flow_candidates_v3.parquet.prov.json",
+   "data/manifests/data/processed/lp_liquidity_flow_daily_v3.parquet.prov.json",
+   "data/manifests/data/processed/lp_liquidity_flow_events_v3.parquet.prov.json",
+   "data/manifests/data/processed/lp_liquidity_flow_rejections_v3.parquet.prov.json",
+   "data/manifests/data/processed/token_price_daily.parquet.prov.json",
+   "output/exhibits/lp_capital_share_top5.pdf"
+  ],
+  "dirty_tracked_files": [
+   "paper/results_evidence_map.tex",
+   "scripts/audit_findings_freeze.py",
+   "src/ddvc/v3_inventory_calendar.py",
+   "tests/test_audit_findings_freeze.py",
+   "tests/test_v3_inventory.py"
+  ],
+  "dirty_untracked_files": []
+ },
+ "inputs": [
+  {
+   "entries": 9423,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/thegraph/uniswap_v3",
+   "tree_fingerprint": "d1069244dca5a43b39ec6d9f6c41e882aad760cb1a6fe55c13fb31d8a05f2b09"
+  },
+  {
+   "entries": 1884,
+   "exists": true,
+   "kind": "directory",
+   "path": "data/raw/ethereum/uniswap_v3_inventory_day_cuts",
+   "tree_fingerprint": "ef310c7a49ff78ff59ff0b0f2fe19465d399bb3fc14e867976b59eba4863039c"
+  }
+ ],
+ "libraries": {
+  "numpy": "2.5.1",
+  "pandas": "3.0.3",
+  "pyarrow": "25.0.0",
+  "scipy": "1.18.0"
+ },
+ "notes": "exact UTC day-end Ethereum block calendar; raw RPC evidence persisted per cut",
+ "python": "3.14.5",
+ "rows": 1884,
+ "script": "scripts/build_v3_inventory_panel.py"
+}

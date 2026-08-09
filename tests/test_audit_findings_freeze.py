@@ -36,6 +36,7 @@ from scripts.audit_findings_freeze import (
     validate_model_ledger,
     validate_specification_lock,
     validate_unified_route_layer,
+    v3_inventory_calendar_checks,
 )
 from ddvc.literature_admission import validate_source_admission
 from ddvc.liquidity import LIQUIDITY_CONTRACTS
@@ -46,6 +47,85 @@ from scripts.refresh_panel_dependents import (
 
 
 class FindingsFreezeAuditTest(unittest.TestCase):
+    def test_v3_inventory_calendar_requires_exact_raw_rpc_identity(self) -> None:
+        import json
+        from pathlib import Path
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw_root = root / "cuts"
+            raw_root.mkdir()
+            calendar = root / "calendar.parquet"
+            day = "20250101"
+            target = 1_735_776_000
+            record = {
+                "status": "complete",
+                "day": day,
+                "target_timestamp": target,
+                "day_end_block": 100,
+                "day_end_block_timestamp": target - 5,
+                "next_block": 101,
+                "next_block_timestamp": target + 7,
+                "initial_lower_bracket": 90,
+                "resolved_upper_bracket": 110,
+                "rpc_evidence": [
+                    {
+                        "request": {
+                            "method": "eth_getBlockByNumber",
+                            "params": [hex(block), False],
+                        },
+                        "response": {
+                            "number": hex(block),
+                            "hash": f"0x{block}",
+                            "parentHash": f"0x{block - 1}",
+                            "timestamp": hex(
+                                {
+                                    90: target - 100,
+                                    100: target - 5,
+                                    101: target + 7,
+                                    110: target + 100,
+                                }[block]
+                            ),
+                        },
+                    }
+                    for block in (90, 100, 101, 110)
+                ],
+            }
+            (raw_root / f"{day}.json").write_text(json.dumps(record))
+            pd.DataFrame(
+                [
+                    {
+                        key: value
+                        for key, value in record.items()
+                        if key not in {"rpc_evidence", "status"}
+                    }
+                ]
+            ).to_parquet(calendar, index=False)
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = dict(
+                    (name, (passed, detail))
+                    for name, passed, detail in v3_inventory_calendar_checks(
+                        calendar,
+                        raw_root,
+                        expected_days=[day],
+                    )
+                )
+            self.assertTrue(all(passed for passed, _detail in checks.values()), checks)
+            record["next_block_timestamp"] = target - 1
+            (raw_root / f"{day}.json").write_text(json.dumps(record))
+            with patch("scripts.audit_findings_freeze.verify", return_value={"status": "ok"}):
+                checks = dict(
+                    (name, (passed, detail))
+                    for name, passed, detail in v3_inventory_calendar_checks(
+                        calendar,
+                        raw_root,
+                        expected_days=[day],
+                    )
+                )
+            self.assertFalse(checks["node D V3 inventory raw-to-panel identity"][0])
+            self.assertFalse(checks["node D V3 inventory RPC evidence"][0])
+
     def test_every_canonical_venue_has_a_coherent_liquidity_contract(self) -> None:
         passed, detail = validate_liquidity_contracts()
         self.assertTrue(passed, detail)

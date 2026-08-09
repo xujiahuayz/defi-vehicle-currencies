@@ -22,7 +22,15 @@ RAW_DAY_CUT_ROOT = DATA_DIR / "raw" / "ethereum" / "uniswap_v3_inventory_day_cut
 V3_GRAPH_ROOT = DATA_DIR / "raw" / "thegraph" / "uniswap_v3"
 CALENDAR = DATA_DIR / "processed" / "v3_inventory_day_calendar.parquet"
 CALENDAR_LOCK = SHARED_RUNTIME_DIR / "v3-inventory-day-calendar.lock"
-CODE_SOURCES = ["src/ddvc/v3_inventory_calendar.py"]
+CODE_SOURCES = [
+    "src/ddvc/v3_inventory_calendar.py",
+    "src/ddvc/fetch/raw.py",
+    "src/ddvc/paths.py",
+    "src/ddvc/quoter.py",
+    "src/ddvc/runtime.py",
+    "src/ddvc/state_data.py",
+]
+RPC_CALL_MAX_ATTEMPTS = 12
 
 
 def last_block_before_timestamp(
@@ -95,17 +103,17 @@ def _fetch_block_timestamp(block: int, evidence: list[dict[str, object]]) -> int
         "method": "eth_getBlockByNumber",
         "params": [hex(block), False],
     }
-    for attempt in range(12):
+    for attempt in range(RPC_CALL_MAX_ATTEMPTS):
         try:
             response = rpc_post(
                 payload,
                 timeout=30,
-                retries=3,
+                retries=1,
                 retry_json_errors=True,
             )
             break
         except Throttled:
-            if attempt == 11:
+            if attempt == RPC_CALL_MAX_ATTEMPTS - 1:
                 raise
             time.sleep(min(2 ** attempt, 30))
     result = response.get("result") if isinstance(response, dict) else None

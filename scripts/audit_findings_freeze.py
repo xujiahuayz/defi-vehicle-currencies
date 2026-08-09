@@ -32,7 +32,13 @@ from ddvc.literature_admission import load_source_admission, validate_source_adm
 from ddvc.provenance import sidecar_path, verify
 from ddvc.reconstruct import DEX_FAMILY, UNIFIED_QUALITY_PANEL
 from ddvc.route_roles import VALUE_SUPPORT_COLUMNS
-from ddvc.state_data import FAMILY_STREAMS, STATE_GENERATIONS, STATE_ROOT, pool_semantics
+from ddvc.state_data import (
+    FAMILY_STREAMS,
+    STATE_GENERATIONS,
+    STATE_ROOT,
+    available_state_days,
+    pool_semantics,
+)
 from ddvc.venue_corpus import JFE_VENUE_CARDS, JFE_VENUE_SOURCE_KEYS
 from ddvc.paths import (
     LITERATURE_SOURCE_ADMISSION,
@@ -67,6 +73,8 @@ LITERATURE_SOURCES = ROOT / "literature" / "pdf-sources.json"
 LITERATURE_TEXT = ROOT / "literature" / "text"
 LITERATURE_SOURCE_NOTES = ROOT / "literature" / "source-notes"
 MARKET_STATE_QUALITY = ROOT / "data" / "processed" / "market_state_quality.parquet"
+V3_INVENTORY_CALENDAR = ROOT / "data" / "processed" / "v3_inventory_day_calendar.parquet"
+V3_INVENTORY_DAY_CUTS = ROOT / "data" / "raw" / "ethereum" / "uniswap_v3_inventory_day_cuts"
 CANONICAL_EMPIRICAL_CONSUMERS = (
     "scripts/build_transaction_state_frontier.py",
     "scripts/build_counterfactual_dominance.py",
@@ -151,6 +159,222 @@ CAPITAL_CONTRACT_COLUMNS = (
 def _manifest(path: Path) -> dict:
     sidecar = sidecar_path(path)
     return json.loads(sidecar.read_text()) if sidecar.exists() else {}
+
+
+def v3_inventory_calendar_checks(
+    calendar_path: Path = V3_INVENTORY_CALENDAR,
+    raw_root: Path = V3_INVENTORY_DAY_CUTS,
+    *,
+    expected_days: list[str] | None = None,
+) -> list[tuple[str, bool, str]]:
+    """Audit exact UTC cuts against their persisted RPC evidence and state calendar."""
+
+    if not calendar_path.is_file() or not raw_root.is_dir():
+        return [
+            (
+                "node D V3 inventory calendar exists",
+                False,
+                f"calendar={calendar_path.is_file()}; raw_root={raw_root.is_dir()}",
+            )
+        ]
+    provenance_status = verify(calendar_path).get("status")
+    results = [
+        (
+            "node D V3 inventory calendar provenance",
+            provenance_status == "ok",
+            f"provenance={provenance_status}",
+        )
+    ]
+    frame = pd.read_parquet(calendar_path)
+    required = {
+        "day",
+        "target_timestamp",
+        "day_end_block",
+        "day_end_block_timestamp",
+        "next_block",
+        "next_block_timestamp",
+        "initial_lower_bracket",
+        "resolved_upper_bracket",
+    }
+    missing = sorted(required - set(frame.columns))
+    results.append(
+        (
+            "node D V3 inventory calendar schema",
+            not missing,
+            f"missing_columns={missing or 'none'}",
+        )
+    )
+    if missing:
+        return results
+
+    expected = expected_days or available_state_days("tick", "uniswap_v3")
+    days = frame["day"].astype(str).tolist()
+    duplicate_days = len(days) - len(set(days))
+    results.append(
+        (
+            "node D V3 inventory calendar perimeter",
+            days == expected and not duplicate_days,
+            f"rows={len(days):,}/{len(expected):,}; duplicates={duplicate_days:,}; "
+            f"range={days[0] if days else 'none'}..{days[-1] if days else 'none'}",
+        )
+    )
+    if not days or duplicate_days or days != expected:
+        return results
+
+    raw_paths = sorted(raw_root.glob("*.json"))
+    unexpected = sorted(
+        path.name for path in raw_root.iterdir() if path.is_file() and path.suffix != ".json"
+    )
+    records: list[dict[str, object]] = []
+    parse_failures: list[str] = []
+    for path in raw_paths:
+        try:
+            record = json.loads(path.read_text())
+            if str(record.get("day")) != path.stem:
+                raise ValueError("filename/day mismatch")
+            records.append(record)
+        except (OSError, TypeError, ValueError, json.JSONDecodeError):
+            parse_failures.append(path.name)
+    raw_days = [str(record.get("day")) for record in records]
+    complete = sum(record.get("status") == "complete" for record in records)
+    results.append(
+        (
+            "node D V3 inventory raw-cut coverage",
+            raw_days == expected
+            and complete == len(records)
+            and not parse_failures
+            and not unexpected,
+            f"cuts={len(records):,}/{len(expected):,}; parse_failures={len(parse_failures):,}; "
+            f"complete={complete:,}; unexpected_files={len(unexpected):,}",
+        )
+    )
+    if (
+        raw_days != expected
+        or complete != len(records)
+        or parse_failures
+        or unexpected
+    ):
+        return results
+
+    integer_columns = [
+        "target_timestamp",
+        "day_end_block",
+        "day_end_block_timestamp",
+        "next_block",
+        "next_block_timestamp",
+        "initial_lower_bracket",
+        "resolved_upper_bracket",
+    ]
+    raw_frame = pd.DataFrame.from_records(records).sort_values("day").reset_index(drop=True)
+    observed = frame[["day", *integer_columns]].sort_values("day").reset_index(drop=True)
+    for column in integer_columns:
+        raw_frame[column] = pd.to_numeric(raw_frame[column], errors="coerce").astype("Int64")
+        observed[column] = pd.to_numeric(observed[column], errors="coerce").astype("Int64")
+    raw_frame["day"] = raw_frame["day"].astype(str)
+    observed["day"] = observed["day"].astype(str)
+    results.append(
+        (
+            "node D V3 inventory raw-to-panel identity",
+            observed.equals(raw_frame[["day", *integer_columns]]),
+            f"rows={len(observed):,}; exact_columns={len(integer_columns) + 1}",
+        )
+    )
+
+    target = observed["target_timestamp"].astype("int64")
+    end_timestamp = observed["day_end_block_timestamp"].astype("int64")
+    next_timestamp = observed["next_block_timestamp"].astype("int64")
+    end_block = observed["day_end_block"].astype("int64")
+    next_block = observed["next_block"].astype("int64")
+    expected_target = (
+        pd.to_datetime(observed["day"], format="%Y%m%d", utc=True) + pd.Timedelta(days=1)
+    ).map(lambda value: int(value.timestamp()))
+    strict = bool(
+        np.array_equal(target.to_numpy(), expected_target.to_numpy())
+        and (end_timestamp < target).all()
+        and (target <= next_timestamp).all()
+        and (next_block == end_block + 1).all()
+        and (observed["initial_lower_bracket"].astype("int64") <= end_block).all()
+        and (end_block < observed["resolved_upper_bracket"].astype("int64")).all()
+        and end_block.is_monotonic_increasing
+        and end_block.is_unique
+    )
+    results.append(
+        (
+            "node D V3 inventory exact UTC-cut contract",
+            strict,
+            f"before_midnight={int((target - end_timestamp).min())}.."
+            f"{int((target - end_timestamp).max())}s; after_midnight="
+            f"{int((next_timestamp - target).min())}..{int((next_timestamp - target).max())}s",
+        )
+    )
+
+    bad_evidence = 0
+    evidence_counts: list[int] = []
+    for record in records:
+        evidence = record.get("rpc_evidence")
+        if not isinstance(evidence, list):
+            bad_evidence += 1
+            continue
+        evidence_counts.append(len(evidence))
+        requested: set[int] = set()
+        returned: set[int] = set()
+        responses: dict[int, dict[str, object]] = {}
+        evidence_bad = False
+        for item in evidence:
+            request = item.get("request") if isinstance(item, dict) else None
+            response = item.get("response") if isinstance(item, dict) else None
+            try:
+                if request.get("method") != "eth_getBlockByNumber":
+                    raise ValueError("wrong method")
+                requested_block = int(str(request["params"][0]), 16)
+                returned_block = int(str(response["number"]), 16)
+                int(str(response["timestamp"]), 16)
+                if requested_block != returned_block or not response.get("hash") or not response.get("parentHash"):
+                    raise ValueError("incomplete response identity")
+                requested.add(requested_block)
+                returned.add(returned_block)
+                responses[returned_block] = response
+            except (AttributeError, KeyError, TypeError, ValueError):
+                evidence_bad = True
+                break
+        end = int(record["day_end_block"])
+        following = int(record["next_block"])
+        required_blocks = {
+            end,
+            following,
+            int(record["initial_lower_bracket"]),
+            int(record["resolved_upper_bracket"]),
+        }
+        if (
+            requested != returned
+            or not required_blocks.issubset(requested)
+            or len(requested) != len(evidence)
+            or int(str(responses.get(end, {}).get("timestamp")), 16)
+            != int(record["day_end_block_timestamp"])
+            or int(str(responses.get(following, {}).get("timestamp")), 16)
+            != int(record["next_block_timestamp"])
+            or responses.get(following, {}).get("parentHash") != responses.get(end, {}).get("hash")
+        ):
+            evidence_bad = True
+        if evidence_bad:
+            bad_evidence += 1
+    evidence_ok = bool(
+        len(evidence_counts) == len(records)
+        and evidence_counts
+        and min(evidence_counts) >= 2
+        and max(evidence_counts) <= 64
+        and not bad_evidence
+    )
+    results.append(
+        (
+            "node D V3 inventory RPC evidence",
+            evidence_ok,
+            f"cuts={len(evidence_counts):,}/{len(records):,}; calls_per_cut="
+            f"{min(evidence_counts) if evidence_counts else 0}.."
+            f"{max(evidence_counts) if evidence_counts else 0}; bad={bad_evidence:,}",
+        )
+    )
+    return results
 
 
 def _nonempty_v4_days() -> set[str]:
@@ -2039,6 +2263,8 @@ def main() -> int:
     for name, passed, detail in lp_liquidity_flow_artifact_checks():
         record(name, passed, detail)
     for name, passed, detail in rent_incidence_artifact_checks():
+        record(name, passed, detail)
+    for name, passed, detail in v3_inventory_calendar_checks():
         record(name, passed, detail)
 
     if MARKET_STATE_QUALITY.exists():
