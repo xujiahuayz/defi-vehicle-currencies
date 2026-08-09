@@ -70,6 +70,7 @@ from ddvc.pricing.tick_state import (
 from ddvc.pricing.v3pools import load_token_decimals
 from ddvc.runtime import atomic_output, exclusive_job
 from ddvc.route_cost_summary import write_route_cost_summary
+from ddvc.work_partition import weighted_contiguous_chunks
 
 ROOT = REPO_ROOT
 
@@ -97,7 +98,16 @@ WETH_ADDR = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 
 # The support rule and quote-cell identity are owned by ``ddvc.route_cost`` so the
 # builder, diagnostics, assembler, and cache fingerprint cannot drift independently.
-MAX_ROUTE_WORKERS = 10
+DEFAULT_ROUTE_WORKERS = 4
+MAX_ROUTE_WORKERS = 6
+DAY_WORK_STREAMS = {
+    "uniswap_v2": ("hourly_reserves",),
+    "sushiswap_v2": ("hourly_reserves",),
+    "uniswap_v3": ("swaps", "mints", "burns"),
+    "uniswap_v4": ("swaps", "modify_liquidities"),
+    "curve": ("daily", "swaps"),
+    "balancer": ("daily", "swaps", "joins_exits"),
+}
 
 
 def _impact_ok(marginal_out: float, actual_out: float) -> bool:
@@ -109,6 +119,17 @@ def _impact_ok(marginal_out: float, actual_out: float) -> bool:
 
 def bounded_route_workers(requested: int) -> int:
     return min(MAX_ROUTE_WORKERS, max(1, requested))
+
+
+def estimated_day_input_bytes(stamp: str) -> int:
+    """Compressed input bytes used to balance expensive contiguous day chunks."""
+    paths = [DATA_DIR / "unified" / f"{stamp}.parquet"]
+    paths.extend(
+        _raw_path(venue, stream, stamp)
+        for venue, streams in DAY_WORK_STREAMS.items()
+        for stream in streams
+    )
+    return max(1, sum(path.stat().st_size for path in paths if path.exists()))
 OUT_DATA = DATA_DIR / "empirical"
 OUT = OUTPUT_DIR / "empirical"
 
@@ -1408,9 +1429,9 @@ def main() -> int:
                     help="treat native ETH and WETH as DISTINCT assets. Default "
                          "unifies them, since wrapping is one-for-one and routers "
                          "wrap silently, so a trader spending ETH never chose WETH")
-    ap.add_argument("--workers", type=int, default=10,
-                    help="parallel day-chunk workers; each replays the cheap V3 "
-                         "liquidity scan then prices its own contiguous chunk")
+    ap.add_argument("--workers", type=int, default=DEFAULT_ROUTE_WORKERS,
+                    help="parallel byte-weighted contiguous day chunks; each worker "
+                         "replays the cheap V3 liquidity prefix (default 4, maximum 6)")
     ap.add_argument(
         "--migrate-day-cache",
         action="store_true",
@@ -1481,8 +1502,12 @@ def main() -> int:
         if parallel:
             if _missing_day_cache(stamps):
                 all_stamps = _available_stamps(None, None)
-                width = -(-len(stamps) // args.workers)          # ceil division
-                chunks = [stamps[j:j + width] for j in range(0, len(stamps), width)]
+                work_bytes = {stamp: estimated_day_input_bytes(stamp) for stamp in stamps}
+                chunks = weighted_contiguous_chunks(
+                    stamps,
+                    [work_bytes[stamp] for stamp in stamps],
+                    args.workers,
+                )
                 payloads = []
                 for ch in chunks:
                     warm = [s for s in all_stamps if V3_START <= s < min(ch)] \
@@ -1491,10 +1516,17 @@ def main() -> int:
                                      "sizes": sizes, "top_pairs": args.top_pairs,
                                      "no_v3": args.no_v3,
                                      "unify_wrapped": UNIFY_WRAPPED})
-                print(f"pricing {len(stamps):,} days in {len(chunks)} chunks across "
-                      f"{args.workers} workers "
-                      f"({min(len(c) for c in chunks)}-{max(len(c) for c in chunks)} days each)",
-                      flush=True)
+                chunk_megabytes = [
+                    sum(work_bytes[stamp] for stamp in chunk) / 1_000_000
+                    for chunk in chunks
+                ]
+                print(
+                    f"pricing {len(stamps):,} days in {len(chunks)} byte-weighted "
+                    f"contiguous chunks across {args.workers} workers "
+                    f"({min(len(c) for c in chunks)}-{max(len(c) for c in chunks)} days; "
+                    f"{min(chunk_megabytes):,.0f}-{max(chunk_megabytes):,.0f} input MB)",
+                    flush=True,
+                )
                 with ProcessPoolExecutor(max_workers=args.workers) as pool:
                     futs = {pool.submit(_price_chunk, pl): i for i, pl in enumerate(payloads)}
                     for k, fut in enumerate(as_completed(futs), 1):

@@ -325,9 +325,10 @@ class BalancerPanelWiringTests(unittest.TestCase):
                 _panel()._raw_path = original
 
     def test_route_worker_count_is_bounded(self) -> None:
+        self.assertEqual(_panel().DEFAULT_ROUTE_WORKERS, 4)
         self.assertEqual(_panel().bounded_route_workers(0), 1)
         self.assertEqual(_panel().bounded_route_workers(6), 6)
-        self.assertEqual(_panel().bounded_route_workers(100), 10)
+        self.assertEqual(_panel().bounded_route_workers(100), 6)
 
 
 if __name__ == "__main__":
